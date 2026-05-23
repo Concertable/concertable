@@ -23,6 +23,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Xunit;
+using Concertable.Customer.Artist.Domain.Entities;
+using Concertable.Customer.Venue.Domain.Entities;
 
 namespace Concertable.Testing.Integration.Customer;
 
@@ -108,11 +110,11 @@ public class ApiFixture : IAsyncLifetime
         return user;
     }
 
-    public async Task<Concertable.Customer.Venue.Domain.VenueReadModel> SeedVenueAsync(int id = 1)
+    public async Task<VenueReadModel> SeedVenueAsync(int id = 1)
     {
         using var scope = Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<VenueDbContext>();
-        var venue = Concertable.Customer.Venue.Domain.VenueReadModel.Create(
+        var venue = VenueReadModel.Create(
             id, Guid.NewGuid(), "Test Venue", "About the venue", "avatar.jpg", "banner.jpg",
             "Test County", "Test Town", 51.5, -0.1, "venue@test.com");
         db.Venues.Add(venue);
@@ -120,11 +122,11 @@ public class ApiFixture : IAsyncLifetime
         return venue;
     }
 
-    public async Task<Concertable.Customer.Artist.Domain.ArtistReadModel> SeedArtistAsync(int id = 1)
+    public async Task<ArtistReadModel> SeedArtistAsync(int id = 1)
     {
         using var scope = Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<ArtistDbContext>();
-        var artist = Concertable.Customer.Artist.Domain.ArtistReadModel.Create(
+        var artist = ArtistReadModel.Create(
             id, Guid.NewGuid(), "Test Artist", "About the artist", "avatar.jpg", "banner.jpg",
             "Test County", "Test Town", 51.5, -0.1, "artist@test.com");
         db.Artists.Add(artist);
