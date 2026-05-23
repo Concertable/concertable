@@ -23,6 +23,7 @@ public class AppFixture : IAsyncLifetime
     public const string TestPaymentMethodId = "pm_card_visa";
 
     public string ApiBaseUrl { get; }
+    public string SearchApiBaseUrl { get; }
     public string AuthBaseUrl { get; }
     public string CustomerSpaUrl { get; }
     public string VenueSpaUrl { get; }
@@ -52,6 +53,8 @@ public class AppFixture : IAsyncLifetime
 
         ApiBaseUrl = configuration["Endpoints:Api"]
             ?? throw new InvalidOperationException("Endpoints:Api is not configured in appsettings.E2E.json.");
+        SearchApiBaseUrl = configuration["Endpoints:SearchApi"]
+            ?? throw new InvalidOperationException("Endpoints:SearchApi is not configured in appsettings.E2E.json.");
         AuthBaseUrl = configuration["Endpoints:Auth"]
             ?? throw new InvalidOperationException("Endpoints:Auth is not configured in appsettings.E2E.json.");
         CustomerSpaUrl = configuration["Endpoints:CustomerSpa"]
@@ -73,7 +76,7 @@ public class AppFixture : IAsyncLifetime
         var builder = await DistributedApplicationTestingBuilder
             .CreateAsync<Projects.Concertable_AppHost>();
 
-        builder.AddE2E(ApiBaseUrl, AuthBaseUrl);
+        builder.AddE2E(ApiBaseUrl, SearchApiBaseUrl, AuthBaseUrl);
         var stripeClient = new StripeClient(configuration["Stripe:SecretKey"]);
         StripePaymentIntents = new PaymentIntentService(stripeClient);
         Stripe = new StripeFixture(stripeClient);

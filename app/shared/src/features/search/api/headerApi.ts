@@ -1,4 +1,4 @@
-import api from "../../../lib/axiosClient";
+import api from "../../../lib/searchAxiosClient";
 import type { Pagination } from "../../../types/common";
 import type { Header, HeaderType } from "../types";
 import type { SearchFilters } from "../schemas/searchSchema";

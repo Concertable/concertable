@@ -8,16 +8,19 @@ namespace Concertable.E2ETests;
 internal static class DistributedApplicationBuilderExtensions
 {
     private const string ApiResourceName = "api";
+    private const string SearchWebResourceName = "search-web";
     private const string AuthResourceName = "auth";
     private const string StripeCliResourceName = "stripe-cli";
 
     public static IDistributedApplicationTestingBuilder AddE2E(
         this IDistributedApplicationTestingBuilder builder,
         string apiBaseUrl,
+        string searchApiBaseUrl,
         string authBaseUrl)
     {
         builder.PinAuth(authBaseUrl);
         builder.PinApi(apiBaseUrl, authBaseUrl);
+        builder.PinSearchWeb(searchApiBaseUrl, authBaseUrl);
         builder.AddEphemeralSql();
         builder.PinStripeCli(apiBaseUrl);
         return builder;
@@ -46,6 +49,23 @@ internal static class DistributedApplicationBuilderExtensions
                 context.EnvironmentVariables["GoogleApiKey"] = googleApiKey;
             if (!string.IsNullOrEmpty(stripeSecretKey))
                 context.EnvironmentVariables["Stripe__SecretKey"] = stripeSecretKey;
+        }));
+    }
+
+    private static void PinSearchWeb(
+        this IDistributedApplicationTestingBuilder builder,
+        string searchApiBaseUrl,
+        string authBaseUrl)
+    {
+        var searchWeb = builder.Resources
+            .OfType<ProjectResource>()
+            .Single(r => r.Name == SearchWebResourceName);
+
+        searchWeb.Annotations.Add(new EnvironmentCallbackAnnotation(context =>
+        {
+            context.EnvironmentVariables["ASPNETCORE_ENVIRONMENT"] = "E2E";
+            context.EnvironmentVariables["ASPNETCORE_URLS"] = searchApiBaseUrl;
+            context.EnvironmentVariables["Auth__Authority"] = authBaseUrl;
         }));
     }
 
