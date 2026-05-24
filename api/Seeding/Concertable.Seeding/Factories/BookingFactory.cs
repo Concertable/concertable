@@ -6,36 +6,30 @@ namespace Concertable.Seeding.Factories;
 
 public static class BookingFactory
 {
-    public static StandardBooking Confirmed(ConcertEntity concert)
+    public static StandardBooking Confirmed(int id)
         => New<StandardBooking>()
-            .With(nameof(BookingEntity.Status), BookingStatus.Confirmed)
-            .With(nameof(BookingEntity.Concert), concert);
+            .With("Id", id)
+            .With(nameof(BookingEntity.Status), BookingStatus.Confirmed);
 
-    public static DeferredBooking ConfirmedDeferred(ConcertEntity concert, string paymentMethodId = "pm_card_visa")
+    public static DeferredBooking ConfirmedDeferred(int id, string paymentMethodId = "pm_card_visa")
         => New<DeferredBooking>()
+            .With("Id", id)
             .With(nameof(BookingEntity.Status), BookingStatus.Confirmed)
-            .With(nameof(BookingEntity.Concert), concert)
             .With(nameof(DeferredBooking.PaymentMethodId), paymentMethodId);
 
-    public static StandardBooking AwaitingPayment(ConcertEntity? concert = null)
-    {
-        var booking = New<StandardBooking>()
+    public static StandardBooking AwaitingPayment(int id)
+        => New<StandardBooking>()
+            .With("Id", id)
             .With(nameof(BookingEntity.Status), BookingStatus.AwaitingPayment);
 
-        if (concert is not null)
-            booking.With(nameof(BookingEntity.Concert), concert);
-
-        return booking;
-    }
-
-    public static StandardBooking Complete(ConcertEntity concert)
+    public static StandardBooking Complete(int id)
         => New<StandardBooking>()
-            .With(nameof(BookingEntity.Status), BookingStatus.Complete)
-            .With(nameof(BookingEntity.Concert), concert);
+            .With("Id", id)
+            .With(nameof(BookingEntity.Status), BookingStatus.Complete);
 
-    public static DeferredBooking CompleteDeferred(ConcertEntity concert, string paymentMethodId = "pm_card_visa")
+    public static DeferredBooking CompleteDeferred(int id, string paymentMethodId = "pm_card_visa")
         => New<DeferredBooking>()
+            .With("Id", id)
             .With(nameof(BookingEntity.Status), BookingStatus.Complete)
-            .With(nameof(BookingEntity.Concert), concert)
             .With(nameof(DeferredBooking.PaymentMethodId), paymentMethodId);
 }

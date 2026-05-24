@@ -32,6 +32,7 @@ public class SeedData
     public ArtistEntity Artist { get; set; } = null!;
     public VenueEntity Venue { get; set; } = null!;
 
+    public IReadOnlyList<BookingEntity> Bookings { get; set; } = [];
     public IReadOnlyList<OpportunityEntity> Opportunities { get; set; } = [];
 
     public IReadOnlyList<ContractEntity> Contracts { get; set; } = [];
