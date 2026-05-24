@@ -23,6 +23,7 @@ public class AppFixture : IAsyncLifetime
     public const string TestPaymentMethodId = "pm_card_visa";
 
     public string ApiBaseUrl { get; }
+    public string CustomerApiBaseUrl { get; }
     public string SearchApiBaseUrl { get; }
     public string AuthBaseUrl { get; }
     public string CustomerSpaUrl { get; }
@@ -51,20 +52,17 @@ public class AppFixture : IAsyncLifetime
             .AddEnvironmentVariables()
             .Build();
 
-        ApiBaseUrl = configuration["Endpoints:Api"]
-            ?? throw new InvalidOperationException("Endpoints:Api is not configured in appsettings.E2E.json.");
-        SearchApiBaseUrl = configuration["Endpoints:SearchApi"]
-            ?? throw new InvalidOperationException("Endpoints:SearchApi is not configured in appsettings.E2E.json.");
-        AuthBaseUrl = configuration["Endpoints:Auth"]
-            ?? throw new InvalidOperationException("Endpoints:Auth is not configured in appsettings.E2E.json.");
-        CustomerSpaUrl = configuration["Endpoints:CustomerSpa"]
-            ?? throw new InvalidOperationException("Endpoints:CustomerSpa is not configured in appsettings.E2E.json.");
-        VenueSpaUrl = configuration["Endpoints:VenueSpa"]
-            ?? throw new InvalidOperationException("Endpoints:VenueSpa is not configured in appsettings.E2E.json.");
-        ArtistSpaUrl = configuration["Endpoints:ArtistSpa"]
-            ?? throw new InvalidOperationException("Endpoints:ArtistSpa is not configured in appsettings.E2E.json.");
-        BusinessSpaUrl = configuration["Endpoints:BusinessSpa"]
-            ?? throw new InvalidOperationException("Endpoints:BusinessSpa is not configured in appsettings.E2E.json.");
+        var endpoints = configuration.GetSection("Endpoints").Get<E2EEndpoints>()
+            ?? throw new InvalidOperationException("Endpoints section is missing from appsettings.E2E.json.");
+
+        ApiBaseUrl         = endpoints.B2BWeb;
+        CustomerApiBaseUrl = endpoints.CustomerWeb;
+        SearchApiBaseUrl   = endpoints.SearchWeb;
+        AuthBaseUrl        = endpoints.Auth;
+        CustomerSpaUrl     = endpoints.CustomerSpa;
+        VenueSpaUrl        = endpoints.VenueSpa;
+        ArtistSpaUrl       = endpoints.ArtistSpa;
+        BusinessSpaUrl     = endpoints.BusinessSpa;
 
         tokenMinter = new TestTokenMinter(configuration);
     }
@@ -76,7 +74,7 @@ public class AppFixture : IAsyncLifetime
         var builder = await DistributedApplicationTestingBuilder
             .CreateAsync<Projects.Concertable_AppHost>();
 
-        builder.AddE2E(ApiBaseUrl, SearchApiBaseUrl, AuthBaseUrl);
+        builder.AddE2E(ApiBaseUrl, CustomerApiBaseUrl, SearchApiBaseUrl, AuthBaseUrl);
         var stripeClient = new StripeClient(configuration["Stripe:SecretKey"]);
         StripePaymentIntents = new PaymentIntentService(stripeClient);
         Stripe = new StripeFixture(stripeClient);
@@ -153,16 +151,24 @@ public class AppFixture : IAsyncLifetime
     {
         logger.WaitingForAppToBeHealthy(ApiBaseUrl);
 
+        await WaitForHealthAsync(Client);
+
+        using var customerClient = new HttpClient { BaseAddress = new Uri(CustomerApiBaseUrl) };
+        await WaitForHealthAsync(customerClient);
+
+        logger.AppIsHealthy();
+    }
+
+    private async Task WaitForHealthAsync(HttpClient client)
+    {
         await Polling.UntilAsync(async () =>
         {
-            var response = await Client.GetAsync("/health");
+            var response = await client.GetAsync("/health");
             logger.HealthCheck(response.StatusCode);
             return response.IsSuccessStatusCode;
         },
         timeout: TimeSpan.FromMinutes(3),
         interval: TimeSpan.FromSeconds(1));
-
-        logger.AppIsHealthy();
     }
 
     private static ILoggerFactory BuildMessageSinkLoggerFactory(IMessageSink messageSink) =>

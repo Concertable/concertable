@@ -7,38 +7,37 @@ namespace Concertable.E2ETests;
 
 internal static class DistributedApplicationBuilderExtensions
 {
-    private const string ApiResourceName = "api";
-    private const string SearchWebResourceName = "search-web";
-    private const string AuthResourceName = "auth";
-    private const string StripeCliResourceName = "stripe-cli";
+    private const string StripeCliResourceName = AppHostConstants.ResourceNames.StripeCli;
 
     public static IDistributedApplicationTestingBuilder AddE2E(
         this IDistributedApplicationTestingBuilder builder,
         string apiBaseUrl,
+        string customerApiBaseUrl,
         string searchApiBaseUrl,
         string authBaseUrl)
     {
-        builder.PinAuth(authBaseUrl);
-        builder.PinApi(apiBaseUrl, authBaseUrl);
+        builder.PinAuthService(authBaseUrl);
+        builder.PinB2BWeb(apiBaseUrl, authBaseUrl);
+        builder.PinCustomerWeb(customerApiBaseUrl, authBaseUrl);
         builder.PinSearchWeb(searchApiBaseUrl, authBaseUrl);
         builder.AddEphemeralSql();
         builder.PinStripeCli(apiBaseUrl);
         return builder;
     }
 
-    private static void PinApi(
+    private static void PinB2BWeb(
         this IDistributedApplicationTestingBuilder builder,
         string apiBaseUrl,
         string authBaseUrl)
     {
-        var api = builder.Resources
+        var b2bWeb = builder.Resources
             .OfType<ProjectResource>()
-            .Single(r => r.Name == ApiResourceName);
+            .Single(r => r.Name == AppHostConstants.ResourceNames.B2BWeb);
 
         var googleApiKey = builder.Configuration["GoogleApiKey"];
         var stripeSecretKey = builder.Configuration["Stripe:SecretKey"];
 
-        api.Annotations.Add(new EnvironmentCallbackAnnotation(context =>
+        b2bWeb.Annotations.Add(new EnvironmentCallbackAnnotation(context =>
         {
             context.EnvironmentVariables["ASPNETCORE_ENVIRONMENT"] = "E2E";
             context.EnvironmentVariables["ASPNETCORE_URLS"] = apiBaseUrl;
@@ -52,6 +51,23 @@ internal static class DistributedApplicationBuilderExtensions
         }));
     }
 
+    private static void PinCustomerWeb(
+        this IDistributedApplicationTestingBuilder builder,
+        string customerApiBaseUrl,
+        string authBaseUrl)
+    {
+        var customerWeb = builder.Resources
+            .OfType<ProjectResource>()
+            .Single(r => r.Name == AppHostConstants.ResourceNames.CustomerWeb);
+
+        customerWeb.Annotations.Add(new EnvironmentCallbackAnnotation(context =>
+        {
+            context.EnvironmentVariables["ASPNETCORE_ENVIRONMENT"] = "E2E";
+            context.EnvironmentVariables["ASPNETCORE_URLS"] = customerApiBaseUrl;
+            context.EnvironmentVariables["Auth__Authority"] = authBaseUrl;
+        }));
+    }
+
     private static void PinSearchWeb(
         this IDistributedApplicationTestingBuilder builder,
         string searchApiBaseUrl,
@@ -59,7 +75,7 @@ internal static class DistributedApplicationBuilderExtensions
     {
         var searchWeb = builder.Resources
             .OfType<ProjectResource>()
-            .Single(r => r.Name == SearchWebResourceName);
+            .Single(r => r.Name == AppHostConstants.ResourceNames.SearchWeb);
 
         searchWeb.Annotations.Add(new EnvironmentCallbackAnnotation(context =>
         {
@@ -69,13 +85,13 @@ internal static class DistributedApplicationBuilderExtensions
         }));
     }
 
-    private static void PinAuth(
+    private static void PinAuthService(
         this IDistributedApplicationTestingBuilder builder,
         string authBaseUrl)
     {
         var auth = builder.Resources
             .OfType<ProjectResource>()
-            .Single(r => r.Name == AuthResourceName);
+            .Single(r => r.Name == AppHostConstants.ResourceNames.Auth);
 
         auth.Annotations.Add(new EnvironmentCallbackAnnotation(context =>
         {
@@ -90,7 +106,7 @@ internal static class DistributedApplicationBuilderExtensions
     {
         var stripeCli = builder.Resources
             .OfType<ContainerResource>()
-            .FirstOrDefault(r => r.Name == StripeCliResourceName);
+            .FirstOrDefault(r => r.Name == AppHostConstants.ResourceNames.StripeCli);
 
         if (stripeCli is null) return;
 
