@@ -182,6 +182,7 @@
     <Project Path="Shared/Concertable.Shared.Geocoding/Concertable.Shared.Geocoding.Infrastructure/Concertable.Shared.Geocoding.Infrastructure.csproj" />
     <Project Path="Shared/Concertable.Shared.Imaging/Concertable.Shared.Imaging.Application/Concertable.Shared.Imaging.Application.csproj" />
     <Project Path="Shared/Concertable.Shared.Imaging/Concertable.Shared.Imaging.Infrastructure/Concertable.Shared.Imaging.Infrastructure.csproj" />
+    <Project Path="Shared/Concertable.Shared.Notification/Concertable.Shared.Notification.Infrastructure/Concertable.Shared.Notification.Infrastructure.csproj" />
     <Project Path="Shared/Concertable.Shared.Pdf/Concertable.Shared.Pdf.Application/Concertable.Shared.Pdf.Application.csproj" />
     <Project Path="Shared/Concertable.Shared.Pdf/Concertable.Shared.Pdf.Infrastructure/Concertable.Shared.Pdf.Infrastructure.csproj" />
     <Project Path="Shared/Tests/Concertable.Kernel.UnitTests/Concertable.Kernel.UnitTests.csproj" />

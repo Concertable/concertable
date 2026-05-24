@@ -4,33 +4,42 @@ using Aspire.Hosting.Testing;
 using Concertable.Seeding;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Stripe;
-using System.Net;
 using System.Net.Http.Headers;
-using Xunit.Abstractions;
 
 namespace Concertable.E2ETests;
 
 public class AppFixture : IAsyncLifetime
 {
+    private static readonly HttpClient healthClient = new(
+        new HttpClientHandler
+        {
+            ServerCertificateCustomValidationCallback = (message, cert, chain, errors) =>
+                message.RequestUri?.IsLoopback == true
+        });
+
     private DistributedApplication app = null!;
-    private readonly ILoggerFactory loggerFactory;
+    private AspireResourceLogger resourceLogger = null!;
+    public ILoggerFactory LoggerFactory { get; }
     private readonly ILogger<AppFixture> logger;
     private readonly IConfiguration configuration;
     private readonly TestTokenMinter tokenMinter;
 
     public const string TestPaymentMethodId = "pm_card_visa";
 
-    public string ApiBaseUrl { get; }
-    public string CustomerApiBaseUrl { get; }
-    public string SearchApiBaseUrl { get; }
-    public string AuthBaseUrl { get; }
+    public string B2BWebUrl { get; }
+    public string CustomerWebUrl { get; }
+    public string SearchWebUrl { get; }
+    public string PaymentWebUrl { get; }
+    public string AuthUrl { get; }
     public string CustomerSpaUrl { get; }
     public string VenueSpaUrl { get; }
     public string ArtistSpaUrl { get; }
     public string BusinessSpaUrl { get; }
-    public HttpClient Client { get; private set; } = null!;
+    public HttpClient B2BClient { get; private set; } = null!;
+    public HttpClient CustomerClient { get; private set; } = null!;
+    public HttpClient SearchClient { get; private set; } = null!;
+    public HttpClient PaymentClient { get; private set; } = null!;
     public IPollingService Polling { get; private set; } = null!;
     public PaymentIntentService StripePaymentIntents { get; private set; } = null!;
     public StripeFixture Stripe { get; private set; } = null!;
@@ -38,14 +47,13 @@ public class AppFixture : IAsyncLifetime
     public SqlFixture Sql { get; private set; } = null!;
     public TestDb Db { get; private set; } = null!;
 
-    public AppFixture() : this(NullLoggerFactory.Instance) { }
-    public AppFixture(IMessageSink messageSink) : this(BuildMessageSinkLoggerFactory(messageSink)) { }
-
-    private AppFixture(ILoggerFactory loggerFactory)
+    public AppFixture()
     {
-        this.loggerFactory = loggerFactory;
-        logger = loggerFactory.CreateLogger<AppFixture>();
-        Polling = new PollingService(loggerFactory.CreateLogger<PollingService>());
+        LoggerFactory = Microsoft.Extensions.Logging.LoggerFactory.Create(b => b
+            .AddSimpleConsole(o => o.SingleLine = true)
+            .SetMinimumLevel(LogLevel.Information));
+        logger = LoggerFactory.CreateLogger<AppFixture>();
+        Polling = new PollingService(LoggerFactory.CreateLogger<PollingService>());
 
         configuration = new ConfigurationBuilder()
             .AddJsonFile(Path.Combine(AppContext.BaseDirectory, "appsettings.E2E.json"))
@@ -55,14 +63,15 @@ public class AppFixture : IAsyncLifetime
         var endpoints = configuration.GetSection("Endpoints").Get<E2EEndpoints>()
             ?? throw new InvalidOperationException("Endpoints section is missing from appsettings.E2E.json.");
 
-        ApiBaseUrl         = endpoints.B2BWeb;
-        CustomerApiBaseUrl = endpoints.CustomerWeb;
-        SearchApiBaseUrl   = endpoints.SearchWeb;
-        AuthBaseUrl        = endpoints.Auth;
-        CustomerSpaUrl     = endpoints.CustomerSpa;
-        VenueSpaUrl        = endpoints.VenueSpa;
-        ArtistSpaUrl       = endpoints.ArtistSpa;
-        BusinessSpaUrl     = endpoints.BusinessSpa;
+        B2BWebUrl      = endpoints.B2BWeb;
+        CustomerWebUrl = endpoints.CustomerWeb;
+        SearchWebUrl   = endpoints.SearchWeb;
+        PaymentWebUrl  = endpoints.PaymentWeb;
+        AuthUrl        = endpoints.Auth;
+        CustomerSpaUrl = endpoints.CustomerSpa;
+        VenueSpaUrl    = endpoints.VenueSpa;
+        ArtistSpaUrl   = endpoints.ArtistSpa;
+        BusinessSpaUrl = endpoints.BusinessSpa;
 
         tokenMinter = new TestTokenMinter(configuration);
     }
@@ -74,15 +83,19 @@ public class AppFixture : IAsyncLifetime
         var builder = await DistributedApplicationTestingBuilder
             .CreateAsync<Projects.Concertable_AppHost>();
 
-        builder.AddE2E(ApiBaseUrl, CustomerApiBaseUrl, SearchApiBaseUrl, AuthBaseUrl);
+        builder.AddE2E(B2BWebUrl, CustomerWebUrl, SearchWebUrl, AuthUrl, PaymentWebUrl);
         var stripeClient = new StripeClient(configuration["Stripe:SecretKey"]);
         StripePaymentIntents = new PaymentIntentService(stripeClient);
         Stripe = new StripeFixture(stripeClient);
 
         app = await builder.BuildAsync();
+        resourceLogger = new AspireResourceLogger(app.ResourceNotifications, logger);
         await app.StartAsync();
 
-        Client = new HttpClient { BaseAddress = new Uri(ApiBaseUrl) };
+        B2BClient      = new HttpClient();
+        CustomerClient = new HttpClient();
+        SearchClient   = new HttpClient();
+        PaymentClient  = new HttpClient();
 
         await WaitForAppAsync();
 
@@ -95,9 +108,12 @@ public class AppFixture : IAsyncLifetime
 
     public async Task ResetAsync()
     {
+        logger.ResettingTestState();
         Stripe.Reset();
         await Sql.ResetAsync();
-        var response = await Client.PostAsync("/e2e/reseed");
+        var response = await B2BClient.PostAsync($"{B2BWebUrl}/e2e/reseed");
+        if (!response.IsSuccessStatusCode)
+            logger.ReseedEndpointFailed((int)response.StatusCode);
         SeedData = (await response.Content.ReadAsync<SeedDataResponse>())!;
         await PopulateStripeIdsAsync();
     }
@@ -131,48 +147,73 @@ public class AppFixture : IAsyncLifetime
     public async Task<HttpClient> CreateAuthenticatedClientAsync(string email)
     {
         var token = await tokenMinter.MintAsync(email, SeedData.TestPassword);
-        var client = new HttpClient { BaseAddress = new Uri(ApiBaseUrl) };
+        var client = new HttpClient();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         return client;
     }
 
     public async Task DisposeAsync()
     {
-        Client.Dispose();
+        B2BClient.Dispose();
+        CustomerClient.Dispose();
+        SearchClient.Dispose();
+        PaymentClient.Dispose();
         tokenMinter.Dispose();
         await Sql.DisposeAsync();
         await app.DisposeAsync();
-        loggerFactory.Dispose();
+        await resourceLogger.DisposeAsync();
+        LoggerFactory.Dispose();
     }
 
     public ResourceNotificationService ResourceNotifications => app.ResourceNotifications;
 
     private async Task WaitForAppAsync()
     {
-        logger.WaitingForAppToBeHealthy(ApiBaseUrl);
+        logger.WaitingForAppToBeHealthy(B2BWebUrl);
 
-        await WaitForHealthAsync(Client);
+        using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(6));
 
-        using var customerClient = new HttpClient { BaseAddress = new Uri(CustomerApiBaseUrl) };
-        await WaitForHealthAsync(customerClient);
+        await Task.WhenAll(
+            WaitForHealthAsync(B2BWebUrl, cts.Token),
+            WaitForHealthAsync(CustomerWebUrl, cts.Token),
+            WaitForHealthAsync(SearchWebUrl, cts.Token),
+            WaitForHealthAsync(PaymentWebUrl, cts.Token));
 
         logger.AppIsHealthy();
     }
 
-    private async Task WaitForHealthAsync(HttpClient client)
+    private async Task WaitForHealthAsync(string baseUrl, CancellationToken cancellationToken = default)
     {
-        await Polling.UntilAsync(async () =>
+        var url = $"{baseUrl}/health";
+
+        while (!cancellationToken.IsCancellationRequested)
         {
-            var response = await client.GetAsync("/health");
-            logger.HealthCheck(response.StatusCode);
-            return response.IsSuccessStatusCode;
-        },
-        timeout: TimeSpan.FromMinutes(3),
-        interval: TimeSpan.FromSeconds(1));
+            try
+            {
+                var response = await healthClient.GetAsync(url, cancellationToken);
+                if (response.IsSuccessStatusCode) return;
+                logger.HealthCheckError(url, $"HTTP {(int)response.StatusCode}");
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                break;
+            }
+            catch (Exception ex)
+            {
+                logger.HealthCheckError(url, ex.Message);
+            }
+
+            try
+            {
+                await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                break;
+            }
+        }
+
+        throw new TimeoutException($"Health check timed out for {url}");
     }
 
-    private static ILoggerFactory BuildMessageSinkLoggerFactory(IMessageSink messageSink) =>
-        LoggerFactory.Create(b => b
-            .AddProvider(new MessageSinkLoggerProvider(messageSink))
-            .SetMinimumLevel(LogLevel.Debug));
 }

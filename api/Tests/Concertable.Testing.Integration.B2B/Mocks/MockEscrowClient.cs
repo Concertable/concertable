@@ -8,10 +8,10 @@ namespace Concertable.Testing.Integration.B2B.Mocks;
 
 internal class MockEscrowClient : IEscrowClient
 {
-    private readonly IMockStripeApiClient stripeApiClient;
+    private readonly MockStripeApiClient stripeApiClient;
     private readonly PaymentDbContext dbContext;
 
-    public MockEscrowClient(IMockStripeApiClient stripeApiClient, PaymentDbContext dbContext)
+    public MockEscrowClient(MockStripeApiClient stripeApiClient, PaymentDbContext dbContext)
     {
         this.stripeApiClient = stripeApiClient;
         this.dbContext = dbContext;

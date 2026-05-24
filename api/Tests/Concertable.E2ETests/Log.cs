@@ -25,4 +25,16 @@ internal static partial class Log
 
     [LoggerMessage(Level = LogLevel.Information, Message = "App is healthy")]
     internal static partial void AppIsHealthy(this ILogger logger);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "[Aspire] {Resource}: {State}")]
+    internal static partial void AspireResourceStateChanged(this ILogger logger, string resource, string state);
+
+    [LoggerMessage(Level = LogLevel.Warning, Message = "[Health] {Url} → {Error}")]
+    internal static partial void HealthCheckError(this ILogger logger, string url, string error);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Resetting test state")]
+    internal static partial void ResettingTestState(this ILogger logger);
+
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Reseed endpoint returned {StatusCode}")]
+    internal static partial void ReseedEndpointFailed(this ILogger logger, int statusCode);
 }

@@ -1,7 +1,7 @@
-using Concertable.B2B.Notification.Contracts;
+using Concertable.Kernel.Notifications;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Concertable.B2B.Notification.Infrastructure.Extensions;
+namespace Concertable.Shared.Notification.Infrastructure.Extensions;
 
 public static class ServiceCollectionExtensions
 {

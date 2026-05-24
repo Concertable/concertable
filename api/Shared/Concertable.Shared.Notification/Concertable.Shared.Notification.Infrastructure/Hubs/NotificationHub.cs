@@ -1,10 +1,10 @@
-using Concertable.B2B.Notification.Infrastructure;
+using Concertable.Kernel.Identity;
+using Concertable.Shared.Notification.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
-using Concertable.Kernel.Identity;
 
-namespace Concertable.B2B.Notification.Infrastructure.Hubs;
+namespace Concertable.Shared.Notification.Infrastructure.Hubs;
 
 [Authorize]
 public class NotificationHub : Hub
@@ -38,4 +38,3 @@ public class NotificationHub : Hub
         await base.OnDisconnectedAsync(exception);
     }
 }
-

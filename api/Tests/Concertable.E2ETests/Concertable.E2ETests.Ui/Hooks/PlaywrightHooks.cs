@@ -6,38 +6,30 @@ namespace Concertable.E2ETests.Ui.Hooks;
 public class PlaywrightHooks
 {
     public static UiFixture Fixture { get; private set; } = null!;
-    private static readonly SemaphoreSlim InitLock = new(1, 1);
-    private readonly Browser browser;
-
-    public PlaywrightHooks(Browser browser) => this.browser = browser;
 
     [BeforeTestRun(Order = 1)]
-    public static async Task BeforeTestRun()
+    public static async Task BeforeRun()
     {
-        await InitLock.WaitAsync();
-        try
-        {
-            if (Fixture is not null) return;
-            Fixture = new UiFixture();
-            await Fixture.InitializeAsync();
-        }
-        finally
-        {
-            InitLock.Release();
-        }
+        Fixture = new UiFixture();
+        await Fixture.InitializeAsync();
     }
 
     [AfterTestRun]
-    public static async Task AfterTestRun()
+    public static Task AfterRun() => Fixture.DisposeAsync();
+
+    private readonly Browser browser;
+    private readonly UiFixture fixture;
+
+    public PlaywrightHooks(Browser browser, UiFixture fixture)
     {
-        if (Fixture is not null)
-            await Fixture.DisposeAsync();
+        this.browser = browser;
+        this.fixture = fixture;
     }
 
     [BeforeScenario(Order = 1)]
     public async Task BeforeScenario(ScenarioContext scenarioContext)
     {
-        await Fixture.App.ResetAsync();
+        await fixture.App.ResetAsync();
         LoginCaptureHooks.Reset();
 
         var tags = scenarioContext.ScenarioInfo.Tags;
@@ -47,7 +39,7 @@ public class PlaywrightHooks
             .Select(tag => Enum.TryParse<Role>(tag, out var r) ? (Role?)r : null)
             .FirstOrDefault(r => r is not null);
 
-        await browser.InitializeAsync(Fixture.Browser, role, Fixture);
+        await browser.InitializeAsync(fixture.Browser, role, fixture);
     }
 
     [AfterScenario]

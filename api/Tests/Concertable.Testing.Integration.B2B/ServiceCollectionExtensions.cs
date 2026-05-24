@@ -9,7 +9,7 @@ internal static class ServiceCollectionExtensions
     internal static IServiceCollection AddResettables(
         this IServiceCollection services,
         IMockNotificationService notificationService,
-        IMockStripeApiClient stripePaymentClient,
+        MockStripeApiClient stripePaymentClient,
         IMockEmailSender emailSender)
     {
         services.AddSingleton<IResettable>(notificationService);
