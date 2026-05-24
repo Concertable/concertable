@@ -32,7 +32,7 @@ public class SignUpSteps
         surfaceUrl = fixture.App.CustomerSpaUrl;
         homePage = new HomePage(browser.Page, surfaceUrl);
         loginPage = new LoginPage(browser.Page, surfaceUrl);
-        registerPage = new RegisterPage(browser.Page, fixture.App.AuthBaseUrl);
+        registerPage = new RegisterPage(browser.Page, fixture.App.AuthUrl);
         await homePage.GotoAsync();
     }
 
@@ -41,7 +41,7 @@ public class SignUpSteps
     {
         businessGateway = new BusinessGatewayPage(browser.Page, fixture.App.BusinessSpaUrl);
         loginPage = new LoginPage(browser.Page, fixture.App.BusinessSpaUrl);
-        registerPage = new RegisterPage(browser.Page, fixture.App.AuthBaseUrl);
+        registerPage = new RegisterPage(browser.Page, fixture.App.AuthUrl);
         await businessGateway.GotoAsync();
     }
 
@@ -67,7 +67,7 @@ public class SignUpSteps
     [When(@"they click the sign up link")]
     public async Task ClickSignUpLink()
     {
-        await loginPage.WaitForUrlAsync($"{fixture.App.AuthBaseUrl}/Account/Login**");
+        await loginPage.WaitForUrlAsync($"{fixture.App.AuthUrl}/Account/Login**");
         await loginPage.ClickSignUpAsync();
         await registerPage.WaitForLoadAsync();
     }
@@ -94,7 +94,7 @@ public class SignUpSteps
     [When(@"they sign in with their new credentials")]
     public async Task SignInWithNewCredentials()
     {
-        await loginPage.WaitForUrlAsync($"{fixture.App.AuthBaseUrl}/Account/Login**");
+        await loginPage.WaitForUrlAsync($"{fixture.App.AuthUrl}/Account/Login**");
         await loginPage.SignInAsync(state.SignUpEmail!, state.SignUpPassword!);
     }
 

@@ -7,10 +7,10 @@ namespace Concertable.Testing.Integration.B2B;
 
 internal class MockWebhookSimulator : IWebhookSimulator
 {
-    private readonly IMockStripeApiClient stripeApiClient;
+    private readonly MockStripeApiClient stripeApiClient;
     private readonly IServiceScopeFactory scopeFactory;
 
-    public MockWebhookSimulator(IMockStripeApiClient stripeApiClient, IServiceScopeFactory scopeFactory)
+    public MockWebhookSimulator(MockStripeApiClient stripeApiClient, IServiceScopeFactory scopeFactory)
     {
         this.stripeApiClient = stripeApiClient;
         this.scopeFactory = scopeFactory;

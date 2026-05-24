@@ -4,9 +4,9 @@ namespace Concertable.Testing.Integration.B2B.Mocks;
 
 internal class MockStripeHoldClient : IStripeHoldClient
 {
-    private readonly IMockStripeApiClient stripeApiClient;
+    private readonly MockStripeApiClient stripeApiClient;
 
-    public MockStripeHoldClient(IMockStripeApiClient stripeApiClient)
+    public MockStripeHoldClient(MockStripeApiClient stripeApiClient)
     {
         this.stripeApiClient = stripeApiClient;
     }

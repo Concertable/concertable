@@ -14,12 +14,14 @@ internal static class DistributedApplicationBuilderExtensions
         string apiBaseUrl,
         string customerApiBaseUrl,
         string searchApiBaseUrl,
-        string authBaseUrl)
+        string authBaseUrl,
+        string paymentBaseUrl)
     {
         builder.PinAuthService(authBaseUrl);
         builder.PinB2BWeb(apiBaseUrl, authBaseUrl);
         builder.PinCustomerWeb(customerApiBaseUrl, authBaseUrl);
         builder.PinSearchWeb(searchApiBaseUrl, authBaseUrl);
+        builder.PinPaymentWeb(paymentBaseUrl, authBaseUrl);
         builder.AddEphemeralSql();
         builder.PinStripeCli(apiBaseUrl);
         return builder;
@@ -82,6 +84,24 @@ internal static class DistributedApplicationBuilderExtensions
             context.EnvironmentVariables["ASPNETCORE_ENVIRONMENT"] = "E2E";
             context.EnvironmentVariables["ASPNETCORE_URLS"] = searchApiBaseUrl;
             context.EnvironmentVariables["Auth__Authority"] = authBaseUrl;
+        }));
+    }
+
+    private static void PinPaymentWeb(
+        this IDistributedApplicationTestingBuilder builder,
+        string paymentBaseUrl,
+        string authBaseUrl)
+    {
+        var paymentWeb = builder.Resources
+            .OfType<ProjectResource>()
+            .Single(r => r.Name == AppHostConstants.ResourceNames.PaymentWeb);
+
+        paymentWeb.Annotations.Add(new EnvironmentCallbackAnnotation(context =>
+        {
+            context.EnvironmentVariables["ASPNETCORE_ENVIRONMENT"] = "E2E";
+            context.EnvironmentVariables["ASPNETCORE_URLS"] = paymentBaseUrl;
+            context.EnvironmentVariables["Auth__Authority"] = authBaseUrl;
+            context.EnvironmentVariables["Stripe__SkipWebhookVerification"] = "true";
         }));
     }
 

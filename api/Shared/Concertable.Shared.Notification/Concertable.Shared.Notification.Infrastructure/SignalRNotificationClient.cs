@@ -1,9 +1,9 @@
-using Concertable.B2B.Notification.Contracts;
-using Concertable.B2B.Notification.Infrastructure.Hubs;
+using Concertable.Kernel.Notifications;
+using Concertable.Shared.Notification.Infrastructure.Hubs;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 
-namespace Concertable.B2B.Notification.Infrastructure;
+namespace Concertable.Shared.Notification.Infrastructure;
 
 internal class SignalRNotificationClient : INotificationClient
 {
@@ -22,4 +22,3 @@ internal class SignalRNotificationClient : INotificationClient
         return hubContext.Clients.Group(userId).SendAsync(eventName, payload);
     }
 }
-

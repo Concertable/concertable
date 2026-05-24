@@ -1,17 +1,11 @@
-using Aspire.Hosting.ApplicationModel;
-using Xunit.Abstractions;
-
 namespace Concertable.E2ETests.Ui.Support;
 
-public class UiFixture : IAsyncLifetime
+public class UiFixture
 {
     private IPlaywright playwright = null!;
 
-    public AppFixture App { get; }
+    public AppFixture App { get; } = new();
     public IBrowser Browser { get; private set; } = null!;
-
-    public UiFixture() => App = new AppFixture();
-    public UiFixture(IMessageSink messageSink) => App = new AppFixture(messageSink);
 
     public async Task InitializeAsync()
     {
@@ -23,11 +17,10 @@ public class UiFixture : IAsyncLifetime
         {
             Headless = headless,
             SlowMo = headless ? 0 : 250,
-            Args = new[]
-            {
+            Args = [
                 "--disable-features=IsolateOrigins,site-per-process",
-                "--disable-site-isolation-trials",
-            }
+                "--disable-site-isolation-trials"
+                ]
         });
         await WarmUpSpaAsync();
     }

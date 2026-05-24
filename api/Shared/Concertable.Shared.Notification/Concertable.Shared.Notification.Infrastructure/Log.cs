@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 
-namespace Concertable.B2B.Notification.Infrastructure;
+namespace Concertable.Shared.Notification.Infrastructure;
 
 internal static partial class Log
 {

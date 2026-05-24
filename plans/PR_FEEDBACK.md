@@ -12,12 +12,12 @@
 3. **HIGHs** — before merge.
 4. **Conventions (CV*)** — follow-up commit, lowest risk.
 
-## Progress — updated 2026-05-22
+## Progress — updated 2026-05-24
 
-**Done (10/30):** OC2, DI1, DI2, OB1, EH1, EH2, EH3, EH4, DI3, DI4 — see each item's note below.
-**Wontfix (2):** DI5, OB5 — false findings; dispatcher requires `IDomainEventHandler<T>` registration and uses `IsAssignableFrom` to split phases.
+**Done (14/30):** OC2, DI1, DI2, OB1, EH1, EH2, EH3, EH4, DI3, DI4, EH5, SB1, OB2, OC1, OC3 — see each item's note below.
+**Wontfix (5):** DI5, OB5, DI6, DI7, SB2 — see notes below.
 **Verified:** `Concertable.B2B.Web` + `Concertable.Messaging.UnitTests` build clean (0 errors); `Concert.Infrastructure` + `Customer.Ticket.Infrastructure` build clean after EH1/EH2.
-**Next:** DI6 / DI7 / EH5.
+**Next:** HIGHs — SB3, SB4, SB5, OB3, OB4, OB6, OC4, OC5, OC6, OC7, OC8, OC9.
 **Whole-solution build is NOT green — pre-existing, unrelated to these fixes:**
 - `Concertable.Organization.UnitTests`: `OrganizationEntity does not exist` compile error (pre-existing on the branch; Organization module untouched by this review).
 - `Concertable.E2ETests.dll`: file-lock from a stray `testhost` process — environmental, not a code error.
@@ -26,13 +26,11 @@
 
 ## 1. Service boundary violations
 
-- [ ] **SB1 — CRITICAL** — `Concertable.Customer.Web.csproj:33-34`
-  Customer.Web references B2B's `Authorization.Infrastructure` **and** `Notification.Infrastructure` (impl assemblies, not Contracts); calls `AddNotificationModule()` which registers B2B's `SignalRNotificationModule`/`IHubContext<NotificationHub>`.
-  **Fix:** Extract what Customer needs behind shared contracts or Customer-owned wrappers; drop the two `.Infrastructure` project refs.
+- [x] **SB1 — CRITICAL — DONE** — `Concertable.Customer.Web.csproj:27`
+  *Done: `INotificationClient` moved from `B2B.Notification.Contracts` to `Concertable.Kernel.Notifications`. `NotificationHub`, `SignalRNotificationClient`, `AddNotificationClient()`, and `Log` moved to new `Concertable.Shared.Notification.Infrastructure` shared project. B2B.Web and Customer.Web both reference the shared project. Customer.Web now maps `NotificationHub` at `/hub/notifications` and calls `AddNotificationClient()`. B2B.Notification.Contracts no longer has any consumers; B2B.Notification.Infrastructure is now empty. All four GlobalUsings.cs files updated to `global using Concertable.Kernel.Notifications`. `Authorization.Infrastructure` reference was a false finding — `ICurrentUser` was already in `Concertable.Kernel` before this review.*
 
-- [ ] **SB2 — CRITICAL** — `DataAccess.Infrastructure.csproj:23`
-  Shared infra lib references B2B's `Authorization.Contracts` (for `ICurrentUser` in `AuditInterceptor`). Every non-B2B service transitively depends on a B2B module.
-  **Fix:** Move `ICurrentUser` (+ `CurrentUserExtensions`, `ClaimsPrincipalExtensions`) into `Concertable.Kernel` or `Concertable.Contracts`; drop the project ref.
+- [wontfix] **SB2 — CRITICAL** — `DataAccess.Infrastructure.csproj:23`
+  *False finding. `ICurrentUser`, `CurrentUserExtensions`, and `ClaimsPrincipalExtensions` already live in `Concertable.Kernel.Identity`. `DataAccess.Infrastructure.csproj` references only `Concertable.Kernel` — no B2B `Authorization.Contracts` ref exists.*
 
 - [ ] **SB3 — HIGH** — `DataAccess.Application.csproj:10-17`
   Shared `DataAccess.Application` references 7 service-specific `.Domain` assemblies (User/Artist/Venue/Concert/Contract/Payment/Customer) because `IReadDbContext` (a B2B concern) lives in a shared project.
@@ -100,9 +98,8 @@
 - [x] **EH4 — HIGH — DONE** — all inbox handlers
   *Done: added `catch (DbUpdateException ex) when (ex.IsDuplicateKey())` with `LogDebug` around the save-triggering call in all 7 handlers. DB-writing handlers wrap the module/service call; notification-only handlers wrap `context.SaveChangesAsync`. `AnyAsync` pre-check kept as fast-path.*
 
-- [ ] **EH5 — MEDIUM** — Payment `TicketTransactionHandler`, `VerifyTransactionHandler` (via `TransactionService.LogAsync`)
-  `LogAsync` doesn't check for an existing transaction by `PaymentIntentId` → duplicate transaction rows on redelivery. (Escrow/Settlement handlers do guard.)
-  **Fix:** `LogAsync` checks `GetByPaymentIntentIdAsync` first, no-ops if present.
+- [x] **EH5 — MEDIUM — DONE** — Payment `TicketTransactionHandler`, `VerifyTransactionHandler` (via `TransactionService.LogAsync`)
+  *Done: `LogAsync` now calls `GetByPaymentIntentIdAsync(dto.PaymentIntentId)` first and returns early if a row exists, preventing duplicate transaction rows on `PaymentSucceededEvent` redelivery. Escrow/Settlement handlers already guarded separately.*
 
 ## 4. DI registration completeness
 
@@ -125,13 +122,11 @@
 - [wontfix] **DI5** — `Customer Review ServiceCollectionExtensions.cs:38`
   *False finding. `DomainEventDispatcher.DispatchPhaseAsync` resolves all `IDomainEventHandler<T>` services then filters by `IPreCommitDomainEventHandler<T>.IsAssignableFrom(handler.GetType())` — registration under the base interface is required and correct. Registering under `IPreCommitDomainEventHandler<T>` would cause `GetServices(IDomainEventHandler<T>)` to miss the handler entirely.*
 
-- [ ] **DI6 — MEDIUM** — `B2B.Web/Program.cs:122`
-  `AddInbox(...)` registers an `InboxDbContext` nothing uses at runtime (handlers write inbox rows via their own module contexts).
-  **Fix:** Keep `InboxDbContext` for migrations only; drop the runtime registration if it serves nothing. (Confirm migration ownership first.)
+- [wontfix] **DI6** — `B2B.Web/Program.cs:122`
+  *False finding. `DevDbInitializer` injects `InboxDbContext` from DI and calls `MigrateAsync` on it at startup — the registration is required for migration execution, not handler injection (handlers use their module contexts). Registration stays.*
 
-- [ ] **DI7 — MEDIUM** — `AppHost/DistributedApplicationBuilderExtensions.cs:108`
-  B2B.Workers gets `sql` but no `WithReference(asb)`.
-  **Fix:** If B2B.Workers subscribes to any ASB topic, add the `asb` reference; otherwise confirm it genuinely needs none.
+- [wontfix] **DI7** — `AppHost/DistributedApplicationBuilderExtensions.cs:108`
+  *False finding. B2B.Workers calls `AddInMemoryTransport()` only — no `AddAzureServiceBusTransport`, no `SubscribeTo<>()` calls, outbox dispatcher disabled (`runDispatcher: false`). No ASB reference required.*
 
 ## 5. Conventions
 

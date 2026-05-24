@@ -7,9 +7,9 @@ namespace Concertable.Testing.Integration.B2B.Mocks;
 
 internal class MockManagerPaymentClient : IManagerPaymentClient
 {
-    private readonly IMockStripeApiClient stripeApiClient;
+    private readonly MockStripeApiClient stripeApiClient;
 
-    public MockManagerPaymentClient(IMockStripeApiClient stripeApiClient)
+    public MockManagerPaymentClient(MockStripeApiClient stripeApiClient)
     {
         this.stripeApiClient = stripeApiClient;
     }

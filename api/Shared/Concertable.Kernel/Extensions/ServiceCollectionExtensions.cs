@@ -60,4 +60,5 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICurrentUser, CurrentUserAccessor>();
         return services;
     }
+
 }

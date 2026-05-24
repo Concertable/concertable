@@ -49,7 +49,7 @@ public class ConcertDraftTests : IAsyncLifetime
 
         // Webhook fires SettleAsync â†’ draft concert created
         await fixture.Polling.UntilAsync(
-            async () => await fixture.Client.GetAsync<ApplicationResponse>(
+            async () => await fixture.B2BClient.GetAsync<ApplicationResponse>(
                 $"/api/Application/{fixture.SeedData.PendingFlatFeeApp.ApplicationId}"),
             app => app?.Status == ApplicationStatus.Accepted,
             timeout: TimeSpan.FromSeconds(15));
@@ -74,7 +74,7 @@ public class ConcertDraftTests : IAsyncLifetime
 
         // Webhook fires SettleAsync â†’ draft concert created
         await fixture.Polling.UntilAsync(
-            async () => await fixture.Client.GetAsync<ApplicationResponse>(
+            async () => await fixture.B2BClient.GetAsync<ApplicationResponse>(
                 $"/api/Application/{fixture.SeedData.PendingVenueHireApp.ApplicationId}"),
             app => app?.Status == ApplicationStatus.Accepted,
             timeout: TimeSpan.FromSeconds(15));
@@ -88,7 +88,7 @@ public class ConcertDraftTests : IAsyncLifetime
             new { PaymentMethodId = AppFixture.TestPaymentMethodId });
 
         // No upfront payment â€” draft created immediately
-        var application = await fixture.Client.GetAsync<ApplicationResponse>(
+        var application = await fixture.B2BClient.GetAsync<ApplicationResponse>(
             $"/api/Application/{fixture.SeedData.PendingDoorSplitApp.ApplicationId}");
 
         Assert.Equal(ApplicationStatus.Accepted, application!.Status);
@@ -102,7 +102,7 @@ public class ConcertDraftTests : IAsyncLifetime
             new { PaymentMethodId = AppFixture.TestPaymentMethodId });
 
         // No upfront payment â€” draft created immediately
-        var application = await fixture.Client.GetAsync<ApplicationResponse>(
+        var application = await fixture.B2BClient.GetAsync<ApplicationResponse>(
             $"/api/Application/{fixture.SeedData.PendingVersusApp.ApplicationId}");
 
         Assert.Equal(ApplicationStatus.Accepted, application!.Status);

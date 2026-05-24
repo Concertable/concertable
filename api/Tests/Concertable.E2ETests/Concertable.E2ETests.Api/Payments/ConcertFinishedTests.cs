@@ -79,7 +79,7 @@ public class ConcertFinishedTests(AppFixture fixture) : IAsyncLifetime
 
     private async Task TriggerConcertFinishedFunctionAsync()
     {
-        var response = await fixture.Client.PostAsync("/e2e/run-completion", content: null);
+        var response = await fixture.B2BClient.PostAsync("/e2e/run-completion", content: null);
         await response.ShouldBe(HttpStatusCode.OK);
     }
 }

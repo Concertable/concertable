@@ -1,4 +1,4 @@
-using Concertable.B2B.Notification.Contracts;
+using Concertable.Kernel.Notifications;
 using Concertable.Payment.Domain;
 using Concertable.Payment.Client;
 using Concertable.Payment.Application.Interfaces;
@@ -46,7 +46,7 @@ public class ApiFixture : IAsyncLifetime
     private IServiceScope? scope;
 
     public IMockNotificationService NotificationService { get; } = new MockNotificationService();
-    public IMockStripeApiClient StripeApiClient { get; } = new MockStripeApiClient();
+    public MockStripeApiClient StripeApiClient { get; } = new MockStripeApiClient();
     public IMockEmailSender EmailSender { get; } = new MockEmailSender();
     public IWebhookSimulator StripeClient { get; private set; } = null!;
     public SeedData SeedData { get; private set; } = null!;
@@ -85,7 +85,7 @@ public async Task InitializeAsync()
                 services.AddScoped<IStripeAccountClient, MockStripeAccountClient>();
                 services.AddScoped<IStripeHoldClient, MockStripeHoldClient>();
                 services.AddSingleton<INotificationClient>(NotificationService);
-                services.AddSingleton<IMockStripeApiClient>(StripeApiClient);
+                services.AddSingleton(StripeApiClient);
                 services.AddSingleton<IStripeApiClient>(StripeApiClient);
                 services.AddKeyedScoped<IStripePaymentIntentClient, MockStripePaymentIntentClient>(PaymentSession.OnSession);
                 services.AddKeyedScoped<IStripePaymentIntentClient, MockStripePaymentIntentClient>(PaymentSession.OffSession);
