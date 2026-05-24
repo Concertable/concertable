@@ -2,6 +2,7 @@ using Concertable.Messaging.Infrastructure.Inbox;
 using Concertable.Messaging.Infrastructure.Outbox;
 using Concertable.Seeding;
 using Concertable.Seeding.Fakers;
+using Concertable.Seeding.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Concertable.DataAccess.Application;
@@ -19,6 +20,7 @@ public class TestDbInitializer : IDbInitializer
     private readonly IEnumerable<ITestSeeder> seeders;
     private readonly InboxDbContext inboxDbContext;
     private readonly OutboxDbContext outboxDbContext;
+    private readonly SeedingScope seedingScope;
 
     public TestDbInitializer(
         [FromKeyedServices(GeometryProviderType.Geographic)] IGeometryProvider geometryProvider,
@@ -27,7 +29,8 @@ public class TestDbInitializer : IDbInitializer
         TimeProvider timeProvider,
         IEnumerable<ITestSeeder> seeders,
         InboxDbContext inboxDbContext,
-        OutboxDbContext outboxDbContext)
+        OutboxDbContext outboxDbContext,
+        SeedingScope seedingScope)
     {
         this.geometryProvider = geometryProvider;
         this.seed = seed;
@@ -36,6 +39,7 @@ public class TestDbInitializer : IDbInitializer
         this.seeders = seeders;
         this.inboxDbContext = inboxDbContext;
         this.outboxDbContext = outboxDbContext;
+        this.seedingScope = seedingScope;
     }
 
     public async Task InitializeAsync()
@@ -46,7 +50,10 @@ public class TestDbInitializer : IDbInitializer
         foreach (var seeder in seeders.OrderBy(s => s.Order))
             await seeder.MigrateAsync();
 
-        foreach (var seeder in seeders.OrderBy(s => s.Order))
-            await seeder.SeedAsync();
+        using (seedingScope.Activate())
+        {
+            foreach (var seeder in seeders.OrderBy(s => s.Order))
+                await seeder.SeedAsync();
+        }
     }
 }

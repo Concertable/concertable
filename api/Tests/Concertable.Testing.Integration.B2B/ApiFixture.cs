@@ -16,6 +16,7 @@ using Concertable.B2B.Venue.Infrastructure.Extensions;
 using Concertable.B2B.Conversations.Infrastructure.Extensions;
 using Concertable.DataAccess.Infrastructure.Extensions;
 using Concertable.Seeding;
+using Concertable.Seeding.Extensions;
 using Concertable.Seeding.Fakers;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
@@ -97,7 +98,8 @@ public async Task InitializeAsync()
                     opts.UseSqlServer(sqlFixture.ConnectionString)
                         .AddInterceptors(
                             sp.GetRequiredService<AuditInterceptor>(),
-                            sp.GetRequiredService<DomainEventDispatchInterceptor>()));
+                            sp.GetRequiredService<DomainEventDispatchInterceptor>())
+                        .UseSeedingSupport(sp));
                 services.AddScoped<IManagerPaymentClient, MockManagerPaymentClient>();
                 services.AddScoped<ICustomerPaymentClient, MockCustomerPaymentClient>();
                 services.AddScoped<IEscrowClient, MockEscrowClient>();
@@ -107,6 +109,7 @@ public async Task InitializeAsync()
                 services.AddScoped<IGeocodingService, MockGeocodingService>();
                 services.AddScoped<IImageService, MockImageService>();
                 services.AddScoped<IDbInitializer, TestDbInitializer>();
+                services.AddSeedingInfrastructure();
                 services.AddScoped<SeedData>();
                 services.AddScoped<ILocationFaker, LocationFaker>();
                 services.AddUserTestSeeder();
