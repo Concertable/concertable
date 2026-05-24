@@ -1,4 +1,4 @@
-import api from "../../../lib/axiosClient";
+import customerApi from "../../../lib/customerAxiosClient";
 import type { Pagination } from "../../../types/common";
 import type { PaginationParams } from "../../../hooks/usePagination";
 import type { Review, ReviewSummary, ReviewEntityType } from "../types";
@@ -18,7 +18,7 @@ const reviewApi = {
     id: number,
     params: PaginationParams,
   ): Promise<Pagination<Review>> => {
-    const { data } = await api.get<Pagination<Review>>(basePath(type, id), {
+    const { data } = await customerApi.get<Pagination<Review>>(basePath(type, id), {
       params,
     });
     return data;
@@ -28,14 +28,14 @@ const reviewApi = {
     type: ReviewEntityType,
     id: number,
   ): Promise<ReviewSummary> => {
-    const { data } = await api.get<ReviewSummary>(
+    const { data } = await customerApi.get<ReviewSummary>(
       `${basePath(type, id)}/summary`,
     );
     return data;
   },
 
   canReview: async (type: ReviewEntityType, id: number): Promise<boolean> => {
-    const { data } = await api.get<boolean>(
+    const { data } = await customerApi.get<boolean>(
       `${basePath(type, id)}/eligibility`,
     );
     return data;
@@ -43,7 +43,7 @@ const reviewApi = {
 
   createReview: async (request: CreateReviewRequest): Promise<Review> => {
     const { concertId, ...body } = request;
-    const { data } = await api.post<Review>(
+    const { data } = await customerApi.post<Review>(
       `${basePath("concert", concertId)}`,
       body,
     );
