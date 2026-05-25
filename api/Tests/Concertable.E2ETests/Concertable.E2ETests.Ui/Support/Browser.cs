@@ -44,6 +44,18 @@ public class Browser : IAsyncDisposable, IDisposable
             Sources = false,
         });
         Page = await Context.NewPageAsync();
+        Page.Response += async (_, response) =>
+        {
+            if (response.Status < 400 || !response.Url.Contains("/api/")) return;
+            string body;
+            try { body = await response.TextAsync(); }
+            catch { body = "<unreadable>"; }
+            logger.HttpErrorResponse(response.Status, response.Request.Method, response.Url, body);
+        };
+        Page.Console += (_, msg) =>
+        {
+            if (msg.Type == "error") logger.BrowserConsoleError(msg.Text);
+        };
         currentRole = role;
     }
 

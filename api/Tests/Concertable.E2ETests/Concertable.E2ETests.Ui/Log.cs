@@ -6,4 +6,10 @@ internal static partial class Log
 {
     [LoggerMessage(Level = LogLevel.Information, Message = "Playwright trace saved to playwright-traces/")]
     internal static partial void PlaywrightTraceSaved(this ILogger logger);
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "HTTP {Status} {Method} {Url}\n{Body}")]
+    internal static partial void HttpErrorResponse(this ILogger logger, int status, string method, string url, string body);
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Browser console error: {Message}")]
+    internal static partial void BrowserConsoleError(this ILogger logger, string message);
 }

@@ -13,6 +13,7 @@ export default defineConfig({
   envDir: '../',
   define: {
     'import.meta.env.VITE_OIDC_CLIENT_ID': JSON.stringify('venue-web'),
+    'import.meta.env.VITE_OIDC_SCOPE': JSON.stringify('openid profile roles concertable.b2b.api offline_access'),
   },
   resolve: {
     alias: [

@@ -6,7 +6,7 @@ export const userManager = new UserManager({
   redirect_uri: `${window.location.origin}/auth/callback`,
   post_logout_redirect_uri: window.location.origin,
   response_type: "code",
-  scope: "openid profile roles concertable.api offline_access",
+  scope: import.meta.env.VITE_OIDC_SCOPE as string,
   userStore: new WebStorageStateStore({ store: window.localStorage }),
   automaticSilentRenew: true,
   loadUserInfo: true,

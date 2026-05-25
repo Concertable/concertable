@@ -18,19 +18,20 @@ internal static class DistributedApplicationBuilderExtensions
         string paymentBaseUrl)
     {
         builder.PinAuthService(authBaseUrl);
-        builder.PinB2BWeb(apiBaseUrl, authBaseUrl);
-        builder.PinCustomerWeb(customerApiBaseUrl, authBaseUrl);
+        builder.PinB2BWeb(apiBaseUrl, authBaseUrl, paymentBaseUrl);
+        builder.PinCustomerWeb(customerApiBaseUrl, authBaseUrl, paymentBaseUrl);
         builder.PinSearchWeb(searchApiBaseUrl, authBaseUrl);
         builder.PinPaymentWeb(paymentBaseUrl, authBaseUrl);
         builder.AddEphemeralSql();
-        builder.PinStripeCli(apiBaseUrl);
+        builder.PinStripeCli(paymentBaseUrl);
         return builder;
     }
 
     private static void PinB2BWeb(
         this IDistributedApplicationTestingBuilder builder,
         string apiBaseUrl,
-        string authBaseUrl)
+        string authBaseUrl,
+        string paymentBaseUrl)
     {
         var b2bWeb = builder.Resources
             .OfType<ProjectResource>()
@@ -44,6 +45,7 @@ internal static class DistributedApplicationBuilderExtensions
             context.EnvironmentVariables["ASPNETCORE_ENVIRONMENT"] = "E2E";
             context.EnvironmentVariables["ASPNETCORE_URLS"] = apiBaseUrl;
             context.EnvironmentVariables["Auth__Authority"] = authBaseUrl;
+            context.EnvironmentVariables["services__payment-web__https__0"] = paymentBaseUrl;
             context.EnvironmentVariables["ExternalServices__UseRealStripe"] = "true";
             context.EnvironmentVariables["ExternalServices__UseRealEmail"] = "false";
             if (!string.IsNullOrEmpty(googleApiKey))
@@ -56,7 +58,8 @@ internal static class DistributedApplicationBuilderExtensions
     private static void PinCustomerWeb(
         this IDistributedApplicationTestingBuilder builder,
         string customerApiBaseUrl,
-        string authBaseUrl)
+        string authBaseUrl,
+        string paymentBaseUrl)
     {
         var customerWeb = builder.Resources
             .OfType<ProjectResource>()
@@ -67,6 +70,7 @@ internal static class DistributedApplicationBuilderExtensions
             context.EnvironmentVariables["ASPNETCORE_ENVIRONMENT"] = "E2E";
             context.EnvironmentVariables["ASPNETCORE_URLS"] = customerApiBaseUrl;
             context.EnvironmentVariables["Auth__Authority"] = authBaseUrl;
+            context.EnvironmentVariables["services__payment-web__https__0"] = paymentBaseUrl;
         }));
     }
 
@@ -96,12 +100,17 @@ internal static class DistributedApplicationBuilderExtensions
             .OfType<ProjectResource>()
             .Single(r => r.Name == AppHostConstants.ResourceNames.PaymentWeb);
 
+        var stripeSecretKey = builder.Configuration["Stripe:SecretKey"];
+
         paymentWeb.Annotations.Add(new EnvironmentCallbackAnnotation(context =>
         {
             context.EnvironmentVariables["ASPNETCORE_ENVIRONMENT"] = "E2E";
             context.EnvironmentVariables["ASPNETCORE_URLS"] = paymentBaseUrl;
             context.EnvironmentVariables["Auth__Authority"] = authBaseUrl;
+            context.EnvironmentVariables["ExternalServices__UseRealStripe"] = "true";
             context.EnvironmentVariables["Stripe__SkipWebhookVerification"] = "true";
+            if (!string.IsNullOrEmpty(stripeSecretKey))
+                context.EnvironmentVariables["Stripe__SecretKey"] = stripeSecretKey;
         }));
     }
 

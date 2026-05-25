@@ -27,7 +27,7 @@ internal sealed class TestTokenMinter : IDisposable
                 new("client_id", "concertable-test"),
                 new("username", email),
                 new("password", password),
-                new("scope", "concertable.api"),
+                new("scope", "concertable.b2b.api concertable.customer.api concertable.search.api"),
             ]));
         response.EnsureSuccessStatusCode();
 
