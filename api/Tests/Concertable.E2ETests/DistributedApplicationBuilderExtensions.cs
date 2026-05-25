@@ -131,7 +131,7 @@ internal static class DistributedApplicationBuilderExtensions
 
     private static void PinStripeCli(
         this IDistributedApplicationTestingBuilder builder,
-        string apiBaseUrl)
+        string paymentBaseUrl)
     {
         var stripeCli = builder.Resources
             .OfType<ContainerResource>()
@@ -141,7 +141,7 @@ internal static class DistributedApplicationBuilderExtensions
 
         var apiKey = builder.Configuration["Stripe:SecretKey"]
             ?? throw new InvalidOperationException("Stripe:SecretKey is not configured.");
-        var forwardTo = $"{apiBaseUrl.Replace("localhost", "host.docker.internal")}/api/Webhook";
+        var forwardTo = $"{paymentBaseUrl.Replace("localhost", "host.docker.internal")}/api/Webhook";
 
         foreach (var annotation in stripeCli.Annotations.OfType<CommandLineArgsCallbackAnnotation>().ToList())
             stripeCli.Annotations.Remove(annotation);
