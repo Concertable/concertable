@@ -43,5 +43,10 @@ public class PlaywrightHooks
     }
 
     [AfterScenario]
-    public Task AfterScenario() => browser.DisposeAsync().AsTask();
+    public async Task AfterScenario(ScenarioContext scenarioContext)
+    {
+        if (scenarioContext.TestError is not null)
+            await browser.CaptureFailureAsync(scenarioContext.ScenarioInfo.Title);
+        await browser.DisposeAsync();
+    }
 }

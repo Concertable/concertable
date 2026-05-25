@@ -72,6 +72,42 @@ public class Browser : IAsyncDisposable, IDisposable
         Context = null!;
     }
 
+    public async Task CaptureFailureAsync(string scenarioTitle)
+    {
+        if (Page is null) return;
+
+        Directory.CreateDirectory("playwright-failures");
+        var safeName = new string(scenarioTitle.Take(60).Select(c => char.IsLetterOrDigit(c) ? c : '-').ToArray());
+        var path = $"playwright-failures/{safeName}-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}.png";
+        await Page.ScreenshotAsync(new() { Path = path, FullPage = true });
+        logger.FailureScreenshot(path);
+
+        string[] selectors =
+        [
+            "[role='alert']",
+            "[data-sonner-toast]",
+            "[data-testid*='error']",
+            "[data-testid*='toast']",
+            ".text-destructive",
+        ];
+
+        foreach (var selector in selectors)
+        {
+            var locator = Page.Locator(selector);
+            var count = await locator.CountAsync();
+            for (var i = 0; i < count; i++)
+            {
+                try
+                {
+                    var text = (await locator.Nth(i).InnerTextAsync(new() { Timeout = 1_000 })).Trim();
+                    if (!string.IsNullOrWhiteSpace(text))
+                        logger.OnScreenError(selector, text);
+                }
+                catch { }
+            }
+        }
+    }
+
     public void Dispose() => DisposeAsync().AsTask().GetAwaiter().GetResult();
 
     public async ValueTask DisposeAsync()

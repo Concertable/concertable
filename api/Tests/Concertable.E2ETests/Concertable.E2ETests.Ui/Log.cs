@@ -12,4 +12,10 @@ internal static partial class Log
 
     [LoggerMessage(Level = LogLevel.Error, Message = "Browser console error: {Message}")]
     internal static partial void BrowserConsoleError(this ILogger logger, string message);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Failure screenshot: {Path}")]
+    internal static partial void FailureScreenshot(this ILogger logger, string path);
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "On-screen error [{Selector}]: {Text}")]
+    internal static partial void OnScreenError(this ILogger logger, string selector, string text);
 }
