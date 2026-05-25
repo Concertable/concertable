@@ -3,9 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Controllers;
 
-namespace Concertable.B2B.Venue.Api.Extensions;
+namespace Concertable.Shared.Api.Controllers;
 
-internal class InternalControllerFeatureProvider : ControllerFeatureProvider
+public sealed class InternalControllerFeatureProvider : ControllerFeatureProvider
 {
     protected override bool IsController(TypeInfo typeInfo)
     {
