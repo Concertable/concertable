@@ -12,10 +12,7 @@ customerApi.interceptors.request.use(async (config) => {
 
 customerApi.interceptors.response.use(
   (res) => res,
-  async (error: AxiosError) => {
-    if (error.response?.status === 401) await userManager.removeUser();
-    return Promise.reject(error);
-  },
+  (error: AxiosError) => Promise.reject(error),
 );
 
 export default customerApi;

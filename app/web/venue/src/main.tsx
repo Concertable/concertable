@@ -15,7 +15,6 @@ import { ThemeProvider } from "shared/providers/ThemeProvider";
 import { TooltipProvider } from "shared/components/ui/tooltip";
 import "shared/lib/axios";
 import "shared/lib/searchAxios";
-import "shared/lib/customerAxios";
 import "shared/lib/geocoding";
 import "shared/index.css";
 

@@ -37,7 +37,7 @@ export function ReviewSection({ type, id }: Readonly<Props>) {
     <section className="space-y-4">
       {isLoading && <ReviewSectionSkeleton />}
 
-      {reviews && reviews.data.length === 0 && (
+      {reviews?.data?.length === 0 && (
         <p className="text-muted-foreground text-sm">No reviews yet.</p>
       )}
 
