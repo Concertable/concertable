@@ -22,8 +22,42 @@ internal static class DistributedApplicationBuilderExtensions
         builder.PinCustomerWeb(customerApiBaseUrl, authBaseUrl, paymentBaseUrl);
         builder.PinSearchWeb(searchApiBaseUrl, authBaseUrl);
         builder.PinPaymentWeb(paymentBaseUrl, authBaseUrl);
+        builder.PinPaymentWorkers();
         builder.AddEphemeralSql();
         builder.PinStripeCli(paymentBaseUrl);
+        return builder;
+    }
+
+    public static IDistributedApplicationTestingBuilder AddB2BE2E(
+        this IDistributedApplicationTestingBuilder builder,
+        string apiBaseUrl,
+        string searchApiBaseUrl,
+        string authBaseUrl,
+        string paymentBaseUrl)
+    {
+        builder.PinAuthService(authBaseUrl);
+        builder.PinB2BWeb(apiBaseUrl, authBaseUrl, paymentBaseUrl);
+        builder.PinSearchWeb(searchApiBaseUrl, authBaseUrl);
+        builder.PinPaymentWeb(paymentBaseUrl, authBaseUrl);
+        builder.PinPaymentWorkers();
+        builder.AddEphemeralSql();
+        builder.PinStripeCli(paymentBaseUrl);
+        return builder;
+    }
+
+    public static IDistributedApplicationTestingBuilder AddCustomerE2E(
+        this IDistributedApplicationTestingBuilder builder,
+        string customerApiBaseUrl,
+        string searchApiBaseUrl,
+        string authBaseUrl,
+        string paymentBaseUrl)
+    {
+        builder.PinAuthService(authBaseUrl);
+        builder.PinCustomerWeb(customerApiBaseUrl, authBaseUrl, paymentBaseUrl);
+        builder.PinSearchWeb(searchApiBaseUrl, authBaseUrl);
+        builder.PinPaymentWeb(paymentBaseUrl, authBaseUrl);
+        builder.PinPaymentWorkers();
+        builder.AddEphemeralSql();
         return builder;
     }
 
@@ -107,7 +141,6 @@ internal static class DistributedApplicationBuilderExtensions
             context.EnvironmentVariables["ASPNETCORE_ENVIRONMENT"] = "E2E";
             context.EnvironmentVariables["ASPNETCORE_URLS"] = paymentBaseUrl;
             context.EnvironmentVariables["Auth__Authority"] = authBaseUrl;
-            context.EnvironmentVariables["ExternalServices__UseRealStripe"] = "true";
             context.EnvironmentVariables["Stripe__SkipWebhookVerification"] = "true";
             if (!string.IsNullOrEmpty(stripeSecretKey))
                 context.EnvironmentVariables["Stripe__SecretKey"] = stripeSecretKey;
@@ -126,6 +159,18 @@ internal static class DistributedApplicationBuilderExtensions
         {
             context.EnvironmentVariables["ASPNETCORE_ENVIRONMENT"] = "E2E";
             context.EnvironmentVariables["ASPNETCORE_URLS"] = authBaseUrl;
+        }));
+    }
+
+    private static void PinPaymentWorkers(this IDistributedApplicationTestingBuilder builder)
+    {
+        var paymentWorkers = builder.Resources
+            .OfType<ProjectResource>()
+            .Single(r => r.Name == AppHostConstants.ResourceNames.PaymentWorkers);
+
+        paymentWorkers.Annotations.Add(new EnvironmentCallbackAnnotation(context =>
+        {
+            context.EnvironmentVariables["DOTNET_ENVIRONMENT"] = "E2E";
         }));
     }
 

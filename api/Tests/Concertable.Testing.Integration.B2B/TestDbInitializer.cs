@@ -1,3 +1,4 @@
+using Concertable.B2B.Seeding;
 using Concertable.Messaging.Infrastructure.Inbox;
 using Concertable.Messaging.Infrastructure.Outbox;
 using Concertable.Seeding;

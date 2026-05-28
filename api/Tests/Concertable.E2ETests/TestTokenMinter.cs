@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace Concertable.E2ETests;
 
-internal sealed class TestTokenMinter : IDisposable
+public sealed class TestTokenMinter : IDisposable
 {
     private readonly HttpClient httpClient;
     private readonly string authBaseUrl;

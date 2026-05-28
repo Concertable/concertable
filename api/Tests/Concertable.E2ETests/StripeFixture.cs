@@ -12,7 +12,7 @@ public class StripeFixture
 
     public void Reset() => LastReset = DateTime.UtcNow;
 
-    internal StripeFixture(StripeClient client)
+    public StripeFixture(StripeClient client)
     {
         paymentIntents = new PaymentIntentService(client);
         transfers = new TransferService(client);
@@ -55,4 +55,5 @@ public class StripeFixture
         });
         return results.Data.SingleOrDefault(t => t.Amount == (long)(amount * 100));
     }
+
 }

@@ -20,7 +20,7 @@
     <ProjectReference Include="..\..\Concertable.Search\Concertable.Search.Infrastructure\Concertable.Search.Infrastructure.csproj" />
     <ProjectReference Include="..\Concertable.Testing\Concertable.Testing.csproj" />
     <ProjectReference Include="..\Concertable.Testing.Integration\Concertable.Testing.Integration.csproj" />
-    <ProjectReference Include="..\..\Seeding\Concertable.Seeding\Concertable.Seeding.csproj" />
+    <ProjectReference Include="..\..\Seeding\Concertable.Customer.Seeding\Concertable.Customer.Seeding.csproj" />
   </ItemGroup>
 
 </Project>

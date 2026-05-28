@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <ReqnrollCategory>Mobile</ReqnrollCategory>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,6 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Concertable.E2ETests.csproj" />
+    <ProjectReference Include="..\..\..\Concertable.Customer\Tests\E2ETests\Concertable.Customer.E2ETests\Concertable.Customer.E2ETests.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -34,36 +36,13 @@
     <Using Include="Xunit" />
     <Using Include="Concertable.E2ETests" />
     <Using Include="Concertable.Testing" />
-    <Using Include="Concertable.B2B.User.Contracts" />
+    <Using Include="Concertable.Customer.E2ETests" />
+    <Using Include="Concertable.Customer.Seeding" />
     <Using Include="OpenQA.Selenium" />
     <Using Include="OpenQA.Selenium.Appium" />
     <Using Include="OpenQA.Selenium.Appium.Android" />
     <Using Include="Reqnroll" />
   </ItemGroup>
 
-  <UsingTask TaskName="StripReqnrollTraits" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
-    <ParameterGroup>
-      <Files ParameterType="System.String[]" Required="true" />
-    </ParameterGroup>
-    <Task>
-      <Code Type="Fragment" Language="cs"><![CDATA[
-        var pattern = @"[ \t]*\[global::Xunit\.TraitAttribute\(""(FeatureTitle|Description|Category)"",[^\]]*\][ \t]*\r?\n";
-        foreach (var file in Files)
-        {
-            var text = System.IO.File.ReadAllText(file);
-            var stripped = System.Text.RegularExpressions.Regex.Replace(text, pattern, "");
-            if (stripped != text)
-                System.IO.File.WriteAllText(file, stripped);
-        }
-      ]]></Code>
-    </Task>
-  </UsingTask>
-
-  <Target Name="StripReqnrollGeneratedTraits" AfterTargets="GenerateFeatureFileCodeBehindFiles" BeforeTargets="CoreCompile">
-    <ItemGroup>
-      <_ReqnrollFeatureCs Include="**\*.feature.cs" />
-  </ItemGroup>
-    <StripReqnrollTraits Files="@(_ReqnrollFeatureCs->'%(FullPath)')" />
-  </Target>
 
 </Project>

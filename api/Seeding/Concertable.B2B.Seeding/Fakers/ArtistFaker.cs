@@ -1,0 +1,28 @@
+using Bogus;
+using Concertable.B2B.Artist.Domain;
+using Concertable.B2B.Seeding.Extensions;
+using Concertable.Contracts;
+using Concertable.Kernel;
+using NetTopologySuite.Geometries;
+
+namespace Concertable.B2B.Seeding.Fakers;
+
+public static class ArtistFaker
+{
+    public static Faker<ArtistEntity> GetFaker(
+        int id,
+        Guid userId,
+        string name,
+        string bannerUrl,
+        string avatar,
+        Point location,
+        Address address,
+        string email,
+        IEnumerable<Genre> genres)
+    {
+        return new Faker<ArtistEntity>()
+            .CustomInstantiator(f =>
+                ArtistEntity.Create(userId, name, f.Lorem.Paragraph(7), bannerUrl, avatar, location, address, email, genres)
+                    .With(nameof(ArtistEntity.Id), id));
+    }
+}

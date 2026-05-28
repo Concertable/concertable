@@ -1,4 +1,4 @@
-Feature: Ticket purchase happy path (mobile)
+﻿Feature: Ticket purchase happy path (mobile)
   A customer browses the home screen on the mobile app, opens a concert,
   purchases a ticket through the Stripe payment sheet, and views the QR code
   on the ticket detail screen.

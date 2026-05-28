@@ -9,7 +9,7 @@ using Concertable.Customer.User.Infrastructure.Data;
 using Concertable.Customer.Venue.Infrastructure.Data;
 using Concertable.Messaging.Contracts;
 using Concertable.Payment.Client;
-using Concertable.Seeding;
+using Concertable.Customer.Seeding;
 using Concertable.Shared.Email.Application;
 using Concertable.Shared.Geocoding.Application;
 using Concertable.Testing.Integration;
@@ -141,17 +141,16 @@ public class ApiFixture : IAsyncLifetime
         DateTime? startDate = null)
     {
         using var scope = Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<ConcertDbContext>();
+        var context = scope.ServiceProvider.GetRequiredService<ConcertDbContext>();
         var start = startDate ?? DateTime.UtcNow.AddDays(7);
         var period = new DateRange(start, start.AddHours(3));
         var concert = ConcertReadModel.Create(
             id, "Test Concert", "About the concert",
             null, null, availableTickets, 15.00m, period,
             posted ? DateTime.UtcNow.AddDays(-1) : null,
-            artistId: 1, "Test Artist", venueId: 1, "Test Venue",
-            Guid.NewGuid(), "FlatFee");
-        db.Concerts.Add(concert);
-        await db.SaveChangesAsync();
+            artistId: 1, "Test Artist", venueId: 1, "Test Venue");
+        context.Concerts.Add(concert);
+        await context.SaveChangesAsync();
         return concert;
     }
 

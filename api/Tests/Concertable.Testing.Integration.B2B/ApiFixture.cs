@@ -6,6 +6,7 @@ using Concertable.Payment.Application.Interfaces.Webhook;
 using Concertable.Payment.Infrastructure.Data;
 using Concertable.Payment.Infrastructure.Extensions;
 using Concertable.B2B.User.Contracts;
+using Concertable.Kernel.Identity;
 using Concertable.B2B.User.Domain;
 using Concertable.Testing.Integration.Mocks;
 using Concertable.B2B.Artist.Infrastructure.Extensions;
@@ -15,7 +16,7 @@ using Concertable.B2B.User.Infrastructure.Extensions;
 using Concertable.B2B.Venue.Infrastructure.Extensions;
 using Concertable.B2B.Conversations.Infrastructure.Extensions;
 using Concertable.DataAccess.Infrastructure.Extensions;
-using Concertable.Seeding;
+using Concertable.B2B.Seeding;
 using Concertable.Seeding.Extensions;
 using Concertable.Seeding.Fakers;
 using Microsoft.AspNetCore.Authentication;
@@ -166,13 +167,6 @@ public async Task InitializeAsync()
         var client = factory.CreateClient();
         client.DefaultRequestHeaders.Add(TestAuthHandler.UserIdHeader, user.Id.ToString());
         client.DefaultRequestHeaders.Add(TestAuthHandler.RoleHeader, user.Role.ToString());
-        return client;
-    }
-
-    public HttpClient CreateClient(SeedCustomer customer)
-    {
-        var client = factory.CreateClient();
-        client.DefaultRequestHeaders.Add(TestAuthHandler.UserIdHeader, customer.Id.ToString());
         return client;
     }
 

@@ -80,6 +80,12 @@ dotnet test Tests/Concertable.E2ETests/Concertable.E2ETests.Ui/Concertable.E2ETe
   tables (one artist "Test Artist" with Rock genre, one venue "Test Venue", one posted
   concert with Rock genre and `Price > 0`).
 
+## Seeding conventions
+
+**Factory seeding pattern** — domain entities must never carry a `Seed` static factory; that leaks test/infra concerns into the domain. When a seeder needs a known ID and no domain events, add `Seed` to the entity's **Factory** class. The factory calls the real DDD constructor (invariants enforced), uses `EntityReflectionExtensions.With(...)` to stamp in the ID, then `ClearDomainEvents()` to suppress outbox publication. See `CredentialFactory.Seed` vs `CredentialFactory.Create`.
+
+**Sentinel pattern for `SeedIfEmptyAsync`** — when a cross-service event handler can write to the same table before the seeder runs, don't guard on `AnyAsync()` (a race-created row skips the entire seed). Guard on a specific entity that only the seeder ever creates (e.g. admin user ID), so partial event-driven rows don't prevent a full seed.
+
 ## Adding new tests
 
 1. Create a test class in the relevant module's `*.IntegrationTests` project.

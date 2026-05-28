@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <IsTestProject>false</IsTestProject>
     <IsPackable>false</IsPackable>
-    <DefaultItemExcludes>$(DefaultItemExcludes);Concertable.E2ETests.Api\**;Concertable.E2ETests.Ui\**;Concertable.E2ETests.Mobile\**</DefaultItemExcludes>
+    <DefaultItemExcludes>$(DefaultItemExcludes);Concertable.E2ETests.Ui\**;Concertable.E2ETests.Mobile\**</DefaultItemExcludes>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,20 +15,14 @@
     <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.0" />
     <PackageReference Include="Dapper" Version="2.1.72" />
     <PackageReference Include="Respawn" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Playwright" Version="1.59.0" />
     <PackageReference Include="Stripe.net" Version="47.3.0" />
-<PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit" Version="2.9.3" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Concertable.B2B\Modules\Concert\Concertable.B2B.Concert.Application\Concertable.B2B.Concert.Application.csproj" />
-    <ProjectReference Include="..\..\Concertable.B2B\Modules\Concert\Concertable.B2B.Concert.Api\Concertable.B2B.Concert.Api.csproj" />
-    <ProjectReference Include="..\..\Seeding\Concertable.Seeding\Concertable.Seeding.csproj" />
+    <ProjectReference Include="..\..\Concertable.AppHost.Shared\Concertable.AppHost.Shared.csproj" IsAspireProjectResource="false" />
     <ProjectReference Include="..\Concertable.Testing\Concertable.Testing.csproj" />
-    <ProjectReference Include="..\..\Concertable.AppHost\Concertable.AppHost.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="..\..\Concertable.B2B\Concertable.B2B.Web\appsettings.E2E.json" CopyToOutputDirectory="PreserveNewest" Condition="Exists('..\..\Concertable.B2B\Concertable.B2B.Web\appsettings.E2E.json')" />
   </ItemGroup>
 
   <ItemGroup>

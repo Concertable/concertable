@@ -16,7 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Concertable.Shared.Blob.Application\Concertable.Shared.Blob.Application.csproj" />
-    <ProjectReference Include="..\..\..\Seeding\Concertable.Seeding\Concertable.Seeding.csproj" />
+    <ProjectReference Include="..\..\..\Seeding\Concertable.Seeding.Shared\Concertable.Seeding.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>

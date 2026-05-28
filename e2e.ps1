@@ -1,24 +1,41 @@
 param(
     [Parameter(Position = 0)]
     [string]$cmd,
-    [Parameter(Position = 1, ValueFromRemainingArguments)]
-    [string[]]$args
+    [switch]$Headed
 )
 
-$e2eUi = "api/Tests/Concertable.E2ETests/Concertable.E2ETests.Ui"
+$b2bUi      = "api/Tests/Concertable.B2B.E2ETests.Ui"
+$customerUi = "api/Tests/Concertable.Customer.E2ETests.Ui"
+
+if (-not $Headed) { $env:HEADLESS = "true" }
 
 switch ($cmd) {
-    "run"   { & "$e2eUi/run-ui-tests.ps1" @args }
-    "3ds"   { & "$e2eUi/Run-3dsTests.ps1" @args }
+    "run" {
+        dotnet test "$b2bUi/Concertable.B2B.E2ETests.Ui.csproj" --logger "console;verbosity=normal" | Tee-Object -FilePath "$b2bUi/ui-tests.last.log"
+        dotnet test "$customerUi/Concertable.Customer.E2ETests.Ui.csproj" --logger "console;verbosity=normal" | Tee-Object -FilePath "$customerUi/ui-tests.last.log"
+    }
+    "b2b" {
+        dotnet test "$b2bUi/Concertable.B2B.E2ETests.Ui.csproj" --logger "console;verbosity=normal" | Tee-Object -FilePath "$b2bUi/ui-tests.last.log"
+    }
+    "customer" {
+        dotnet test "$customerUi/Concertable.Customer.E2ETests.Ui.csproj" --logger "console;verbosity=normal" | Tee-Object -FilePath "$customerUi/ui-tests.last.log"
+    }
+    "3ds" {
+        dotnet test "$b2bUi/Concertable.B2B.E2ETests.Ui.csproj" --filter "DisplayName~3DS" --logger "console;verbosity=normal" | Tee-Object -FilePath "$b2bUi/ui-tests.last.log"
+    }
     "trace" { & "api/Tests/Concertable.E2ETests/ui-trace.ps1" }
     default {
         Write-Host ""
-        Write-Host "  Usage: ./e2e.ps1 <command> [options]" -ForegroundColor White
+        Write-Host "  Usage: ./e2e.ps1 <command> [-Headed]" -ForegroundColor White
         Write-Host ""
         Write-Host "  Commands:" -ForegroundColor DarkGray
-        Write-Host "    run    [-Headed]                  Run UI E2E tests"
-        Write-Host "    3ds    [-SuccessOnly] [-Headless]  Run 3DS E2E tests"
-        Write-Host "    trace                             Open latest Playwright trace"
+        Write-Host "    run       Run all UI E2E tests (B2B + Customer)"
+        Write-Host "    b2b       Run B2B UI E2E tests only"
+        Write-Host "    customer  Run Customer UI E2E tests only"
+        Write-Host "    3ds       Run 3DS scenarios (B2B only)"
+        Write-Host "    trace     Open latest Playwright trace"
         Write-Host ""
     }
 }
+
+Remove-Item Env:\HEADLESS -ErrorAction SilentlyContinue

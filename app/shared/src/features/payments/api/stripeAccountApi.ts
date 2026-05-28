@@ -1,4 +1,4 @@
-import api from "../../../lib/axiosClient";
+import api from "../../../lib/paymentAxiosClient";
 import type { PayoutAccountStatus, PaymentMethod } from "../types";
 
 const stripeAccountApi = {

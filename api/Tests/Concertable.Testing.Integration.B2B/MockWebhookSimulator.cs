@@ -24,7 +24,7 @@ internal class MockWebhookSimulator : IWebhookSimulator
         await using var scope = scopeFactory.CreateAsyncScope();
         var handlers = scope.ServiceProvider.GetServices<IIntegrationEventHandler<PaymentSucceededEvent>>();
         var messageId = StableGuid(stripeApiClient.LastPaymentIntentId);
-        var envelope = new MessageEnvelope(messageId, MessageEnvelope.TypeNameFor(typeof(PaymentSucceededEvent)), DateTimeOffset.UtcNow);
+        var envelope = new MessageEnvelope(messageId, MessageTypeAttribute.Resolve(typeof(PaymentSucceededEvent)), DateTimeOffset.UtcNow);
         var evt = new PaymentSucceededEvent(stripeApiClient.LastPaymentIntentId, stripeApiClient.LastMetadata);
 
         foreach (var handler in handlers)
