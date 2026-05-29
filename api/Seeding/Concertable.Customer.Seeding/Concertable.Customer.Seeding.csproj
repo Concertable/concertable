@@ -8,6 +8,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Concertable.Seeding.Identity\Concertable.Seeding.Identity.csproj" />
+    <ProjectReference Include="..\..\Concertable.Customer\Modules\Venue\Concertable.Customer.Venue.Domain\Concertable.Customer.Venue.Domain.csproj" />
+    <ProjectReference Include="..\..\Concertable.Customer\Modules\Artist\Concertable.Customer.Artist.Domain\Concertable.Customer.Artist.Domain.csproj" />
+    <ProjectReference Include="..\..\Concertable.Customer\Modules\Concert\Concertable.Customer.Concert.Domain\Concertable.Customer.Concert.Domain.csproj" />
   </ItemGroup>
 
 </Project>
