@@ -37,7 +37,4 @@ internal static partial class Log
 
     [LoggerMessage(Level = LogLevel.Warning, Message = "Reseed endpoint returned {StatusCode}")]
     internal static partial void ReseedEndpointFailed(this ILogger logger, int statusCode);
-
-    [LoggerMessage(Level = LogLevel.Information, Message = "Waiting for {TypeName}: count={Current} target={Target}")]
-    internal static partial void DbHealthWaiterProgress(this ILogger logger, string typeName, int current, int target);
 }

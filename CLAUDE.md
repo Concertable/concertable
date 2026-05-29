@@ -1,5 +1,26 @@
 # Concertable
 
+## STOP — read this before any seeding work
+
+**Before writing or modifying any `IDevSeeder` / `ITestSeeder`, and before any change that would put rows into a table whose data the production app never writes directly, read [`api/docs/SEEDING_CONVENTIONS.md`](./api/docs/SEEDING_CONVENTIONS.md) in full.** Not the summary below — the full file. Every time.
+
+The rule: **a seeder may only write data that production code writes directly.** If production only creates this data as a *reaction* to something — an event, an outbox message, a handler firing, a webhook — the seeder must drive that same trigger, not bypass it and write the row.
+
+Things you must NOT seed directly. Each of these has a production write path that is *only* a reaction, never a direct insert:
+
+- **Read-model projections** — `VenueReadModel`, `ArtistReadModel`, `ConcertReadModel`, anything in a `[concert]` / `[venue]` / `[artist]` / `[search]` projection schema. Written by `XChangedEvent` handlers.
+- **`UserEntity` rows** in B2B, Customer, and Payment user tables. Written by `CredentialRegisteredHandler` reacting to `CredentialRegisteredEvent` from Auth.
+- **Manager profile rows** (`VenueManagerProfileEntity`, `ArtistManagerProfileEntity`, `AdminProfileEntity`). Written alongside the user by the same `CredentialRegisteredHandler`.
+- **Stripe `PayoutAccount` rows** in Payment. Provisioned by `CredentialRegisteredHandler` in Payment.
+- **Inbox / outbox / messaging rows.** Owned by the messaging infrastructure.
+- **Anything else whose only production write is in an `IIntegrationEventHandler` / `IDomainEventHandler` / outbox dispatcher / webhook handler.**
+
+If the table is empty at seed time and prod never writes it directly, the fix is **always** to make the trigger fire (publish the event, register the credential, etc.) — never `context.X.AddRange(...)` in a seeder.
+
+Quick check before writing a seeder body: open the entity's repository / service / handler. If the only code that calls `.Add` / `.AddRange` on this DbSet in production is inside a handler reacting to an event, your seeder is not allowed to write it either. Drive the event instead.
+
+This mistake has cost real time, multiple times. If unsure, re-read `SEEDING_CONVENTIONS.md` before writing the seeder body.
+
 ## Migrations
 
 Don't add additive migrations. When the model changes, run `./initial-migrations.ps1` from `api/`
