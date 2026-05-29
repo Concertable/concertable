@@ -11,6 +11,10 @@ export default defineConfig({
     hmr: false,
   },
   envDir: "../",
+  define: {
+    'import.meta.env.VITE_API_URL': JSON.stringify('https://localhost:7086/api'),
+    'import.meta.env.VITE_BASE_URL': JSON.stringify('https://localhost:7086'),
+  },
   resolve: {
     alias: [
       { find: /^@\/(components|features|hooks|lib|providers|context|types|assets)(\/.*)?$/, replacement: path.resolve(__dirname, "../shared/src/$1$2") },

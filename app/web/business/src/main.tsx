@@ -72,6 +72,15 @@ function App() {
   return (
     <div className="flex min-h-dvh flex-col bg-accent">
       <header className="bg-primary px-8 pb-12 pt-14 text-center text-primary-foreground">
+        <div className="absolute right-6 top-5">
+          <a
+            href={`${venueUrl}/login`}
+            data-testid="header-login"
+            className="text-sm font-medium text-primary-foreground/80 hover:text-primary-foreground"
+          >
+            Sign in
+          </a>
+        </div>
         <img src="/logo-long.png" alt="Concertable" className="mx-auto mb-5 h-10 brightness-0 invert" />
         <p className="text-sm leading-relaxed text-primary-foreground/80">
           Whether you book shows or play them, this is where the work happens.

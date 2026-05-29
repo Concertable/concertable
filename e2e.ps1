@@ -4,8 +4,8 @@ param(
     [switch]$Headed
 )
 
-$b2bUi      = "api/Tests/Concertable.B2B.E2ETests.Ui"
-$customerUi = "api/Tests/Concertable.Customer.E2ETests.Ui"
+$b2bUi      = "api/Concertable.B2B/Tests/E2ETests/Concertable.B2B.E2ETests.Ui"
+$customerUi = "api/Concertable.Customer/Tests/E2ETests/Concertable.Customer.E2ETests.Ui"
 
 if (-not $Headed) { $env:HEADLESS = "true" }
 
