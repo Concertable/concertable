@@ -1,4 +1,4 @@
-namespace Concertable.Customer.Seeding;
+namespace Concertable.Seeding.Identity;
 
 public sealed record SeedCustomer(Guid Id, string Email);
 

@@ -10,6 +10,7 @@ using Concertable.Customer.Venue.Infrastructure.Data;
 using Concertable.Messaging.Contracts;
 using Concertable.Payment.Client;
 using Concertable.Customer.Seeding;
+using Concertable.Seeding.Identity;
 using Concertable.Shared.Email.Application;
 using Concertable.Shared.Geocoding.Application;
 using Concertable.Testing.Integration;

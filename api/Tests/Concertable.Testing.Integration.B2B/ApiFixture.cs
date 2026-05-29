@@ -99,7 +99,7 @@ public async Task InitializeAsync()
                     opts.UseSqlServer(sqlFixture.ConnectionString)
                         .AddInterceptors(
                             sp.GetRequiredService<AuditInterceptor>(),
-                            sp.GetRequiredService<DomainEventDispatchInterceptor>())
+                            sp.GetRequiredService<IDomainEventDispatchInterceptor>())
                         .UseSeedingSupport(sp));
                 services.AddScoped<IManagerPaymentClient, MockManagerPaymentClient>();
                 services.AddScoped<ICustomerPaymentClient, MockCustomerPaymentClient>();

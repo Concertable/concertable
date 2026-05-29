@@ -28,30 +28,24 @@ A navigation property from a write-model entity to a read-model projection creat
 
 If you see `HasOne(o => o.XReadModel).WithMany().HasForeignKey(o => o.XId)` in an EF configuration, that FK needs to be removed. `XId` stays as a plain `int` column with no constraint. Remove the navigation property from the entity too.
 
-## SeedData ref assignment pattern
+## SeedData is ctor-built; seeders only persist
 
-When a seeder needs to expose a named reference (e.g. `seedData.ArtistManager1`) for later seeders or tests to use:
+`SeedData` is a singleton with a parameterless constructor that builds every entity it exposes from compile-time-deterministic inputs (IDs come from `Concertable.Seeding.Identity.SeedUsers` / `SeedCustomers`; geometry, addresses, names, and relationships are hardcoded in the ctor). All properties are `{ get; }` — there are no setters.
 
-1. Create the entity via its factory method (which accepts an explicit known ID).
-2. Assign `seedData.X = entity` **on the factory-created object, before `SaveChangesAsync`**.
-3. Conditionally call `context.X.Add(entity)` only if that ID doesn't already exist in the DB.
+Per-aggregate `XFactory.Seed` statics live in `Module.Domain/Factories/` and chain `.With(nameof(X.Id), id)` (from `Concertable.Seeding.Extensions.EntityReflectionExtensions`) over the domain's `Create` method. `CredentialFactory.Seed` is the canonical pattern.
 
-```csharp
-// Correct
-seedData.ArtistManager1 = UserEntity.FromRegistration(SeedIds.ArtistManager(1), "artistmanager1@test.com", Role.ArtistManager);
-if (!existingIds.Contains(SeedIds.ArtistManager(1)))
-    context.Users.Add(seedData.ArtistManager1);
-
-await context.SaveChangesAsync(ct);
-```
-
-Never load the entity back from the DB after saving to assign the `seedData` ref:
+Seeders read from `SeedData` and persist; they never assign to it:
 
 ```csharp
-// Wrong — don't do this
-await context.SaveChangesAsync(ct);
-seedData.ArtistManager1 ??= await context.Users.SingleAsync(u => u.Id == SeedIds.ArtistManager(1), ct);
+public async Task SeedAsync(CancellationToken ct)
+{
+    if (await context.Artists.AnyAsync(ct)) return;
+    context.Artists.AddRange(seedData.Artists);
+    await context.SaveChangesAsync(ct);
+}
 ```
+
+Manager `User` rows are owned by `AuthDevSeeder`, which writes credentials in the Auth DB and publishes `CredentialRegisteredEvent` per credential through the outbox. The B2B/Customer `CredentialRegisteredHandler` writes the matching `User` row in its own DB. There is no separate `UserEventSeeder` in the E2E projects — `[user].[Users]` and the manager profile tables stay in each `DbFixture`'s `TablesToIgnore`, so the rows survive Respawner resets.
 
 ## Idempotency
 
