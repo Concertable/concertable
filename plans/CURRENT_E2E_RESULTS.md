@@ -1,78 +1,8 @@
 # Current E2E Results — 2026-05-29
 
-Branch: `Refactor/Microservices`
+Branch: `Refactor/Microservices`, head `ec3a6723` ("Drop Roles= from B2B auth attributes, swap IHealthWaiter for IHealthCheck, add Customer dev seeders").
 
-## Run 4 — after switching to `IHealthCheck` (matches Run 2 baseline)
-
-**9 passed, 21 failed (out of 30 total)**
-
-| Suite | Total | Passed | Failed |
-|-------|-------|--------|--------|
-| B2B | 23 | 7 | 16 |
-| Customer | 7 | 2 | 5 |
-
-Same pass/fail set as Run 2. The Run 3 regression is fully resolved.
-
-### What changed since Run 3
-
-The `IHealthWaiter` abstraction was thrown out entirely in favour of `IHealthCheck` (the ASP.NET Core standard):
-
-- New `UserHealthCheck : IHealthCheck` in `Concertable.B2B.User.Infrastructure.Data` — polls `[user].[Users]` count, returns `Healthy` when ≥ 71 else `Unhealthy("users={count}/71")`.
-- `AddUserModule` now does `services.AddHealthChecks().AddCheck<UserHealthCheck>("users")` instead of registering `DbHealthWaiter` + `IHealthWaiter`.
-- `Concertable.ServiceDefaults.MapDefaultEndpoints()` already wires `app.MapHealthChecks("/health")` in Dev/E2E — no new endpoint mapping needed. (Run 3 added an explicit `MapHealthChecks` call that duplicated this and caused `AmbiguousMatchException` on every `/health` probe.)
-- Both `DevDbInitializer`s reverted to seeders-only (no `IEnumerable<IHealthWaiter>`).
-- Deleted: `IHealthWaiter.cs`, `DbHealthWaiter.cs` + its `Log.cs`, `UserHealthWaiter.cs`.
-
-Net effect: the test fixture's existing `HealthWaiter.WaitForAllHealthyAsync([B2BWebUrl, ...])` call at `AppFixture.cs:116` now waits for the actual data — `/health` returns 503 until 71 users land, then 200. No deadlock; no Program.cs reorder; less code than Run 2 had. Registration fires in dev AND E2E automatically via `AddUserModule`.
-
-### Still failing (21)
-
-Same set as Run 2: all 3DS scenarios, all "new card" variants, all declined-card variants, plus the Customer 3DS / ticket-purchase / declined-purchase / search-purchase scenarios. Per Run 2's analysis these are Stripe-flow related, not auth or fixture-readiness related.
-
----
-
-## Run 3 — after `IHealthWaiter` merge (regressed)
-
-**2 passed, 28 failed (out of 30 total)**
-
-| Suite | Total | Passed | Failed |
-|-------|-------|--------|--------|
-| B2B | 23 | 0 | 23 |
-| Customer | 7 | 2 | 5 |
-
-All 23 B2B scenarios failed at fixture init (1 ms each) with:
-
-```
-Unhandled exception. System.TimeoutException: Timed out waiting for 71 UserEntity rows; last observed count 1.
-```
-
-…then `System.TimeoutException : Health check timed out for https://localhost:7086/health`.
-
-### Root cause (regression, introduced in this run's prep)
-
-`E2EDbInitializer` was deleted and its waiter loop folded into `DevDbInitializer` via `IEnumerable<IHealthWaiter>`. Per user instruction, `UserHealthWaiter` was registered inside `AddUserModule` so it would also fire in B2B Web's own startup. That registration creates a **chicken-and-egg deadlock** in B2B Web:
-
-- `Program.cs` blocks on `await initializer.InitializeAsync()` before `app.Run()`.
-- The waiter inside `InitializeAsync` polls `[user].[Users]` waiting for 71 rows.
-- Those rows arrive only when the ASB consumer (a hosted service) consumes `CredentialRegisteredEvent`.
-- Hosted services don't start until `app.Run()`, which is unreachable while `InitializeAsync` blocks.
-
-The test fixture's host has the same registration via its own `AddUserModule` call, polls the same DB, and times out for the same reason — B2B Web never finishes starting, so no events ever get consumed.
-
-### Fix (decided, not yet applied)
-
-Move the `services.AddScoped<IHealthWaiter, UserHealthWaiter>()` line out of `AddUserModule` and back into `AppFixture` only. `DevDbInitializer`'s consumption of `IEnumerable<IHealthWaiter>` stays — B2B Web in dev mode just resolves an empty enumerable and doesn't wait. The test fixture's host (a separate process from B2B Web) gets the waiter and works.
-
-Wanting the waiter to also fire in B2B Web's own startup is architecturally not possible from inside `DevDbInitializer` without a post-`app.Run()` hosted service.
-
-### Salvageable observations from this run
-
-- The new permanent source-gen logs in `Concertable.Auth/Log.cs` now report `CustomerProfileClaimsProvider: failed subjectId=…` instead of silently catching. This will be useful for diagnosing the remaining Customer payment-flow failures once B2B is unblocked.
-- File moves performed (still good even after rolling back the registration): `DbHealthWaiter` and `IHealthWaiter` now in `Concertable.DataAccess.Infrastructure` / `Concertable.DataAccess.Application`; `UserHealthWaiter` in `Concertable.B2B.User.Infrastructure`. `E2EDbInitializer` deleted.
-
----
-
-## Run 2 — after auth attribute + IBusTransport fixes
+## Summary
 
 **9 passed, 21 failed (out of 30 total)**
 
@@ -81,52 +11,51 @@ Wanting the waiter to also fire in B2B Web's own startup is architecturally not 
 | B2B | 23 | 7 | 16 |
 | Customer | 7 | 2 | 5 |
 
-### Passing scenarios
+## Passing scenarios
 
-- B2B: New artist manager registers · Venue manager books artist on a door split · Venue manager books artist on a flat fee · Venue manager signs in via OIDC · Artist pays hire fee upfront to book venue · New venue manager registers · Venue manager books artist on a versus deal
-- Customer: New customer registers and signs in · Customer signs in via OIDC
+- **B2B (7):** New artist manager registers · Venue manager books artist on a door split · Venue manager books artist on a flat fee · Venue manager signs in via OIDC · Artist pays hire fee upfront to book venue · New venue manager registers · Venue manager books artist on a versus deal
+- **Customer (2):** New customer registers and signs in · Customer signs in via OIDC
 
-### Still failing
+## Failing scenarios (21)
 
-- B2B (16): all 3DS scenarios, "new card" variants, declined-card variants across flat-fee/door-split/versus/venue-hire
-- Customer (5): 3DS scenarios, ticket purchase scenarios, declined-card
+All 21 failures cluster on Stripe payment flows. Auth (the original 403 on `/api/venue/user` and `/api/artist/user`) and fixture readiness are no longer in the failure set.
 
-The remaining failures look Stripe/payment-related rather than auth-related — happy-path bookings pass, 3DS/decline/new-card paths fail across all workflows.
+- **B2B (16):** all 3DS scenarios, all "new card" variants, all declined-card variants, across flat-fee / door-split / versus / venue-hire
+- **Customer (5):** Customer 3DS authentication fails · Customer completes 3DS challenge · Customer purchases a ticket using a new card · Customer purchase is declined · Customer searches for concerts, purchases a ticket
 
-## Run 1 baseline — for reference
+## What landed in `ec3a6723`
 
-1 passed, 29 failed. Customer all hard-failed in 1ms on `IBusTransport` DI; B2B 22/23 failed on 403 from `/api/artist/user` and `/api/venue/user`.
+### 1. B2B 403 fix — drop `Roles =` from auth attributes
 
-## Fixes applied between Run 1 and Run 2
+The attributes introduced in `56ace89d` set both `Policy = "X"` and `Roles = "X"`. The framework's role check fires before the policy handler; the JWT after the role-agnostic auth refactor (`1089da3d`) no longer carries a static `role` claim, so every protected request 403'd without reaching the DB-backed `XManagerProfileHandler`.
 
-### 1. B2B AuthorizeAttribute had `Roles = "..."` blocking before the DB-backed policy
+Renamed `AuthorizeXAttribute` → `XAttribute` (dropping the `Authorize` prefix per C# convention) and removed `Roles =`. Policy handler — which checks for the row in `[user].[XManagerProfiles]` keyed by `sub` — is the source-of-truth role check. Updated 7 B2B controllers.
 
-In commit `56ace89d` ("Seed data redesign") three new attributes were introduced:
+### 2. Readiness gate via `IHealthCheck`
 
-- `AuthorizeVenueManagerAttribute` — `Policy = "VenueManager"` AND `Roles = "VenueManager"`
-- `AuthorizeArtistManagerAttribute` — `Policy = "ArtistManager"` AND `Roles = "ArtistManager"`
-- `AuthorizeAdminAttribute` — `Policy = "Admin"` AND `Roles = "Admin"`
+`E2EDbInitializer` was a test-fixture-only wrapper that called `DevDbInitializer` then awaited a custom `IHealthWaiter` until `[user].[Users]` reached 71 (event-driven by `CredentialRegisteredEvent`). It deleted the abstraction and the wrapper:
 
-The `Roles` check fires before the policy handler. The JWT carried no `role` claim (the role-agnostic auth design from `1089da3d` removed it from the static token shape and put it on a dynamic-lookup path via `B2BProfileClaimsProvider`, which was returning empty), so every protected request 403'd without reaching the DB-backed `XManagerProfileHandler`.
+- Added `UserHealthCheck : IHealthCheck` in `Concertable.B2B.User.Infrastructure.Data` — polls user count, returns `Unhealthy("users=N/71")` until the target is reached.
+- Registered via `services.AddHealthChecks().AddCheck<UserHealthCheck>("users")` in `AddUserModule`. Fires in dev AND E2E with one registration.
+- `Concertable.ServiceDefaults.MapDefaultEndpoints` already maps `/health` via `MapHealthChecks` in Dev/E2E, so no endpoint changes needed. The static `app.MapGet("/health", () => Ok())` line was removed (it caused an `AmbiguousMatchException` against the proper health check route).
+- Deleted: `IHealthWaiter`, `DbHealthWaiter` + its `Log.cs`, `UserHealthWaiter`, `E2EDbInitializer`. Both `DevDbInitializer`s reverted to seeders-only.
 
-**Fix:** dropped `Roles = "..."`; the policy handler (which checks for a `XManagerProfile` row in `[user].[XManagerProfiles]` keyed by `sub`) is the source-of-truth role check. Took the opportunity to rename the attributes to drop the `Authorize` prefix per C# convention (`[VenueManager]`, `[ArtistManager]`, `[Admin]`).
+The test fixture's existing `HealthWaiter.WaitForAllHealthyAsync([B2BWebUrl, ...])` at `AppFixture.cs:116` already polls `/health` — it now waits for the actual data without any custom abstraction. Architectural side-benefit: B2B Web's own `/health` honestly reports unready until users land, so Aspire / future health-aware orchestrators respect it.
 
-Files touched:
-- Renamed `AuthorizeXxx.cs` → `Xxx.cs` in `api/Concertable.B2B/Modules/User/Concertable.B2B.User.Api/Authorization/`
-- Updated 7 controllers in B2B (Venue, Artist, Concert, Application, Opportunity, VenueDashboard, ArtistDashboard)
+### 3. Customer dev seeders replace `ProjectionSeeder`
 
-### 2. Customer seed host was missing `IBusTransport` registration
+`ProjectionSeeder` published three fake B2B events through ASB and polled SQL for projections to land — needed because `Concertable.Customer.AppHost` doesn't run B2B. Replaced with idempotent `IDevSeeder`s in each Customer module (`ArtistDevSeeder`, `VenueDevSeeder`, `ConcertDevSeeder`) that write the projection rows directly via EF. No bus, no polling, no ASB transport in the seed host. Idempotent so the umbrella `Concertable.AppHost` (where B2B does publish those events) doesn't double-write.
 
-In `56ace89d` the `AddAzureServiceBusTransport(...)` block was deleted from `Concertable.Customer.E2ETests.AppFixture.cs`, but `ProjectionSeeder.SeedAsync()` still calls `scope.ServiceProvider.GetRequiredService<IBusTransport>()` to publish seed `VenueChangedEvent`/`ArtistChangedEvent`/`ConcertChangedEvent`.
+### 4. Observability — permanent source-gen logs in claims providers
 
-**Fix (interim):** restored the `AddAzureServiceBusTransport(...)` block. This unblocks Customer suite but is being replaced in the next change (see "ProjectionSeeder hackiness" below).
+`B2BProfileClaimsProvider` and `CustomerProfileClaimsProvider` previously had `catch { return []; }` (silent). Now they emit `B2BClaimsRequested / Received / NonSuccess / Failed` (and Customer equivalents) via `Concertable.Auth/Log.cs` source-gen. `UserClaimsController` logs the role being returned. These are permanent — useful for any future auth weirdness.
 
-## Outstanding — ProjectionSeeder refactor in progress
+## Suggested next investigation
 
-`ProjectionSeeder` publishes 3 fake B2B events through ASB and polls SQL for the projections to land. It exists because `Concertable.Customer.AppHost` doesn't run B2B, so there's nothing to publish those events naturally.
+The 21 failures cluster on 3DS / declined-card / new-card payment flows. Most likely candidates:
 
-Refactor in progress: replace with idempotent `IDevSeeder`s in each Customer module (Venue, Artist, Concert) that write the projection rows directly via EF. No bus, no polling, no ASB transport in the seed host. Same source-of-truth pattern as `AddCustomerPreferenceDevSeeder`. Idempotent so the umbrella `Concertable.AppHost` (where B2B does publish those events) doesn't double-write.
+- Stripe-CLI webhook routing (`stripe-cli` container forwards to `payment-web` — confirm port match in E2E)
+- Payment-intent state handling (3DS requires `requires_action` → confirm → `succeeded` lifecycle)
+- 3DS challenge iframe interaction in Playwright (frame switching, click timing)
 
-## Suggested follow-ups for the remaining 21 failures
-
-The 16 B2B + 5 Customer failures all cluster on 3DS/declined-card/new-card payment flows. Most likely candidates: Stripe-CLI webhook routing, payment intent state handling, or 3DS challenge frame interactions. Worth triaging one failing scenario in detail (re-run with `--filter "DisplayName~3DS"` and inspect HTTP 4xx/5xx + Aspire payment-web logs).
+Pick one failing scenario (e.g. `Venue manager completes 3DS challenge on flat fee`), re-run with `--filter "DisplayName~..."`, and inspect HTTP 4xx/5xx + `Resources.payment-web` `fail:`/`error:` lines in the test output. The screenshot under `playwright-failures/` will show the on-screen state at the moment of timeout.
