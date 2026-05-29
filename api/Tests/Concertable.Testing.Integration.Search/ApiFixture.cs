@@ -1,6 +1,6 @@
 using Concertable.Search.Infrastructure.Data;
 using Concertable.Search.Infrastructure.Data.Seeders;
-using Concertable.Customer.Seeding;
+using Concertable.Seeding.Identity;
 using Concertable.Testing.Integration;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;

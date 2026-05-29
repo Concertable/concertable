@@ -1,16 +1,17 @@
+using Concertable.Customer.User.Contracts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Concertable.B2B.User.Api.Controllers;
+namespace Concertable.Customer.User.Api.Controllers;
 
 [ApiController]
 [Route("internal/users")]
 [Authorize("UserClaimsScope")]
-internal class InternalUserController : ControllerBase
+internal class UserClaimsController : ControllerBase
 {
     private readonly IUserModule userModule;
 
-    public InternalUserController(IUserModule userModule)
+    public UserClaimsController(IUserModule userModule)
     {
         this.userModule = userModule;
     }
@@ -18,11 +19,11 @@ internal class InternalUserController : ControllerBase
     [HttpGet("{sub:guid}/claims")]
     public async Task<ActionResult<ClaimDto[]>> GetClaims(Guid sub)
     {
-        var user = await userModule.GetByIdAsync(sub);
-        if (user is null)
+        var users = await userModule.GetByIdsAsync([sub]);
+        if (users.Count == 0)
             return Ok(Array.Empty<ClaimDto>());
 
-        return Ok(new[] { new ClaimDto("role", user.Role.ToString()) });
+        return Ok(new[] { new ClaimDto("role", "Customer") });
     }
 
     public record ClaimDto(string Type, string Value);

@@ -1,4 +1,4 @@
-using Concertable.Customer.Seeding;
+using Concertable.Seeding.Identity;
 
 namespace Concertable.Testing.Integration.Search;
 

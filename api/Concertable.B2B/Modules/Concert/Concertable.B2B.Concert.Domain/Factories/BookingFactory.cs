@@ -1,8 +1,8 @@
 using Concertable.B2B.Concert.Domain.Entities;
 using Concertable.B2B.Concert.Domain.Enums;
-using static Concertable.B2B.Seeding.Extensions.EntityReflectionExtensions;
+using static Concertable.Seeding.Extensions.EntityReflectionExtensions;
 
-namespace Concertable.B2B.Seeding.Factories;
+namespace Concertable.B2B.Concert.Domain.Factories;
 
 public static class BookingFactory
 {
