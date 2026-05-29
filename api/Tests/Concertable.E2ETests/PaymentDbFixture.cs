@@ -2,6 +2,7 @@ using System.Data.Common;
 using Aspire.Hosting;
 using Respawn;
 using Respawn.Graph;
+using PaymentSchema = Concertable.Payment.Infrastructure.Schema;
 
 namespace Concertable.E2ETests;
 
@@ -22,7 +23,7 @@ public sealed class PaymentDbFixture
     {
         await db.InitializeAsync(app, AppHostConstants.Databases.Payment, new RespawnerOptions
         {
-            TablesToIgnore = ["__EFMigrationsHistory", new Table("payment", "PayoutAccounts")],
+            TablesToIgnore = ["__EFMigrationsHistory", new Table(PaymentSchema.Name, PaymentSchema.PayoutAccounts)],
             DbAdapter = DbAdapter.SqlServer,
             WithReseed = true
         });

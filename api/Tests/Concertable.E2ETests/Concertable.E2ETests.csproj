@@ -24,6 +24,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Concertable.AppHost.Shared\Concertable.AppHost.Shared.csproj" IsAspireProjectResource="false" />
     <ProjectReference Include="..\Concertable.Testing\Concertable.Testing.csproj" />
+    <ProjectReference Include="..\..\Concertable.Payment\Concertable.Payment.Infrastructure\Concertable.Payment.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>
