@@ -1,6 +1,6 @@
 using Concertable.Search.Infrastructure.Data;
 using Concertable.Search.Infrastructure.Data.Seeders;
-using Concertable.Seeding.Identity;
+using Concertable.Seed.Identity;
 using Concertable.Testing.Integration;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
@@ -17,7 +17,7 @@ public class ApiFixture : IAsyncLifetime
     private SqlFixture sqlFixture = null!;
     private WebApplicationFactory<Program> factory = null!;
 
-    public SearchSeedData SeedData { get; } = new SearchSeedData();
+    public SeedData SeedData { get; } = new SeedData();
 
     public async Task InitializeAsync()
     {

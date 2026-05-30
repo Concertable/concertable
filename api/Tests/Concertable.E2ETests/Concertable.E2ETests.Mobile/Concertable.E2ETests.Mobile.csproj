@@ -37,7 +37,7 @@
     <Using Include="Concertable.E2ETests" />
     <Using Include="Concertable.Testing" />
     <Using Include="Concertable.Customer.E2ETests" />
-    <Using Include="Concertable.Customer.Seeding" />
+    <Using Include="Concertable.Customer.Seed" />
     <Using Include="OpenQA.Selenium" />
     <Using Include="OpenQA.Selenium.Appium" />
     <Using Include="OpenQA.Selenium.Appium.Android" />

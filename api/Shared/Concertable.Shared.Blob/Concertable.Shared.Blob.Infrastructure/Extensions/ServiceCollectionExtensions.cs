@@ -1,4 +1,4 @@
-using Concertable.Seeding;
+using Concertable.Seed;
 using Concertable.Shared.Blob.Application;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
