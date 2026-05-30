@@ -1,5 +1,9 @@
 # Concertable
 
+## Architecture
+
+Concertable is a multi-microservice system. Each service owns its runtime; cross-service deps are Contracts-only; standalone AppHosts are canonical. **Read [`ARCHITECTURE.md`](./ARCHITECTURE.md) before designing anything that crosses a service boundary.** Forgetting this leads to re-monolithing the system.
+
 ## STOP — read this before any seeding work
 
 **Before writing or modifying any `IDevSeeder` / `ITestSeeder`, and before any change that would put rows into a table whose data the production app never writes directly, read [`api/docs/SEEDING_CONVENTIONS.md`](./api/docs/SEEDING_CONVENTIONS.md) in full.** Not the summary below — the full file. Every time.

@@ -1,11 +1,11 @@
 ---
-name: run-ui-e2e-tests
-description: Run the Concertable UI E2E tests (Reqnroll + Playwright), surface failures with enriched logs, then diagnose and fix failing scenarios. Use this skill whenever the user asks to run UI/E2E tests, check E2E failures, or debug Playwright/Reqnroll scenarios.
+name: e2e-ui-debug
+description: Run the full Concertable UI E2E suite (Reqnroll + Playwright, all 30 scenarios) and diagnose / fix failing ones using enriched HTTP + Playwright logs. Use whenever the user wants to debug a UI E2E failure, run the full suite, discover newly-passing or newly-failing scenarios, or investigate a flaky Reqnroll/Playwright scenario. For a quick "did I break anything?" check on already-passing scenarios, use the `e2e-ui-regress` skill instead (~3-6 min, vs ~25-30 min for this one).
 ---
 
-# run-ui-e2e-tests
+# e2e-ui-debug
 
-Run the Concertable UI E2E test suite and analyse any failures using the enriched HTTP + Playwright logs already baked into the test fixtures.
+Run the Concertable UI E2E test suite and analyse any failures using the enriched HTTP + Playwright logs already baked into the test fixtures. Use this for full sweeps and deep-dive debugging; use `e2e-ui-regress` for fast no-regression checks.
 
 ## Input
 
@@ -29,11 +29,20 @@ If invoked with no arguments, run Step 0 then the full suite (Step 1) to discove
 - Hooks: `api/Concertable.Customer/Tests/E2ETests/Concertable.Customer.E2ETests.Ui/Hooks/`
 - Last run log: `api/Concertable.Customer/Tests/E2ETests/Concertable.Customer.E2ETests.Ui/ui-tests.last.log`
 
-- Script (both suites): `./e2e.ps1 run`
+- Full suite (both): `./e2e.ps1 run` (~25–30 min)
+- **Regression check** (baseline-passing only): `./e2e.ps1 regress` (~3–6 min)
 - B2B only: `./e2e.ps1 b2b`
 - Customer only: `./e2e.ps1 customer`
 - 3DS-only: `./e2e.ps1 3ds`
 - Trace viewer: `./e2e.ps1 trace`
+
+**Baseline file** (which scenarios are expected to pass vs fail): `api/Tests/Concertable.E2ETests/E2E_BASELINE.md`.
+
+## Which command to use
+
+- **User wants to verify a code change hasn't broken anything → `./e2e.ps1 regress`.** It parses `E2E_BASELINE.md`, runs only the scenarios listed under the `passing` fenced blocks, and exits 1 if any of them fails or if any baseline name no longer matches a real test. Much faster than the full suite, and the only signal needed to confirm "no regression."
+- **User wants to discover newly-passing or newly-failing scenarios, or you've just landed a real test fix → `./e2e.ps1 run`.** This runs all 30 scenarios.
+- **After `./e2e.ps1 run` reveals a status change** (a scenario crossed the line), prompt the user to update `E2E_BASELINE.md`: move the scenario between the `passing` and `failing` fenced blocks and bump the `(N)` count in the heading. Both regress and PR review depend on this file being current.
 
 ## Step 0 — Pre-flight check
 

@@ -1,4 +1,5 @@
 using Bogus;
+using Concertable.B2B.Concert.Contracts.Events;
 using Concertable.B2B.Concert.Domain.Entities;
 using Concertable.Contracts;
 using Concertable.Kernel;
@@ -40,6 +41,25 @@ public static class ConcertFaker
     {
         var concert = Create(id, bookingId, name, price, totalTickets, artistId, venueId, period, genres);
         concert.Post(concert.Name, concert.About, concert.Price, concert.TotalTickets, datePosted);
+        return concert;
+    }
+
+    public static ConcertEntity FromSeedFixture(ConcertChangedEvent e, int bookingId)
+    {
+        var concert = ConcertEntity
+            .CreateDraft(
+                bookingId: bookingId,
+                artistId:  e.ArtistId,
+                venueId:   e.VenueId,
+                period:    e.Period,
+                name:      e.Name,
+                about:     e.About,
+                genres:    e.Genres)
+            .With(nameof(ConcertEntity.Id), e.ConcertId)
+            .With(nameof(ConcertEntity.Price), e.Price)
+            .With(nameof(ConcertEntity.TotalTickets), e.TotalTickets);
+        if (e.DatePosted is not null)
+            concert.Post(concert.Name, concert.About, concert.Price, concert.TotalTickets, e.DatePosted.Value);
         return concert;
     }
 }

@@ -15,6 +15,9 @@
     <Project Path="Concertable.B2B/Concertable.B2B.Web/Concertable.B2B.Web.csproj" />
     <Project Path="Concertable.B2B/Concertable.B2B.Workers/Concertable.B2B.Workers.csproj" />
     <Project Path="Concertable.B2B/Concertable.B2B.DataAccess/Concertable.B2B.DataAccess.csproj" />
+    <Project Path="Concertable.B2B/Concertable.B2B.Seeding/Concertable.B2B.Seeding.csproj" />
+    <Project Path="Concertable.B2B/Concertable.B2B.Seeding.Fixture/Concertable.B2B.Seeding.Fixture.csproj" />
+    <Project Path="Concertable.B2B/Concertable.B2B.Seeding.Simulator/Concertable.B2B.Seeding.Simulator.csproj" />
   </Folder>
   <Folder Name="/B2B/Modules/Artist/">
     <Project Path="Concertable.B2B/Modules/Artist/Concertable.B2B.Artist.Api/Concertable.B2B.Artist.Api.csproj" />
@@ -81,6 +84,7 @@
     <Project Path="Concertable.Customer/Concertable.Customer.AppHost/Concertable.Customer.AppHost.csproj" />
     <Project Path="Concertable.Customer/Concertable.Customer.AppHost.Extensions/Concertable.Customer.AppHost.Extensions.csproj" />
     <Project Path="Concertable.Customer/Concertable.Customer.Web/Concertable.Customer.Web.csproj" />
+    <Project Path="Concertable.Customer/Concertable.Customer.Seeding/Concertable.Customer.Seeding.csproj" />
   </Folder>
   <Folder Name="/Customer/Modules/Artist/">
     <Project Path="Concertable.Customer/Modules/Artist/Concertable.Customer.Artist.Api/Concertable.Customer.Artist.Api.csproj" />
@@ -172,14 +176,6 @@
     <Project Path="Concertable.Search/Tests/Concertable.Search.IntegrationTests/Concertable.Search.IntegrationTests.csproj" />
     <Project Path="Concertable.Search/Tests/Concertable.Search.UnitTests/Concertable.Search.UnitTests.csproj" />
   </Folder>
-  <Folder Name="/Seeding/">
-    <Project Path="Seeding/Concertable.Seeding.Shared/Concertable.Seeding.Shared.csproj" />
-    <Project Path="Seeding/Concertable.Seeding.Infrastructure/Concertable.Seeding.Infrastructure.csproj" />
-    <Project Path="Seeding/Concertable.Seeding.Identity/Concertable.Seeding.Identity.csproj" />
-    <Project Path="Seeding/Concertable.Seeding.WellKnown/Concertable.Seeding.WellKnown.csproj" />
-    <Project Path="Seeding/Concertable.B2B.Seeding/Concertable.B2B.Seeding.csproj" />
-    <Project Path="Seeding/Concertable.Customer.Seeding/Concertable.Customer.Seeding.csproj" />
-  </Folder>
   <Folder Name="/Shared/">
     <Project Path="Shared/Concertable.Contracts/Concertable.Contracts.csproj" />
     <Project Path="Shared/Concertable.Shared.Api/Concertable.Shared.Api.csproj" />
@@ -195,6 +191,9 @@
     <Project Path="Shared/Concertable.Shared.Notification/Concertable.Shared.Notification.Infrastructure/Concertable.Shared.Notification.Infrastructure.csproj" />
     <Project Path="Shared/Concertable.Shared.Pdf/Concertable.Shared.Pdf.Application/Concertable.Shared.Pdf.Application.csproj" />
     <Project Path="Shared/Concertable.Shared.Pdf/Concertable.Shared.Pdf.Infrastructure/Concertable.Shared.Pdf.Infrastructure.csproj" />
+    <Project Path="Shared/Concertable.Seeding.Shared/Concertable.Seeding.Shared.csproj" />
+    <Project Path="Shared/Concertable.Seeding.Identity/Concertable.Seeding.Identity.csproj" />
+    <Project Path="Shared/Concertable.Seeding.Infrastructure/Concertable.Seeding.Infrastructure.csproj" />
     <Project Path="Shared/Tests/Concertable.Kernel.UnitTests/Concertable.Kernel.UnitTests.csproj" />
   </Folder>
   <Folder Name="/B2B/Tests/E2ETests/">

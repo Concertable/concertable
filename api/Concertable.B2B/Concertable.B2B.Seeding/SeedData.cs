@@ -4,10 +4,11 @@ using Concertable.B2B.Concert.Domain.Factories;
 using Concertable.B2B.Contract.Domain.Entities;
 using Concertable.B2B.Contract.Domain.Factories;
 using Concertable.B2B.Seeding.Fakers;
+using Concertable.B2B.Seeding.Fixture;
 using Concertable.B2B.User.Domain;
+using Concertable.Contracts;
 using Concertable.B2B.User.Domain.Factories;
 using Concertable.B2B.Venue.Domain;
-using Concertable.Contracts;
 using Concertable.Kernel;
 using Concertable.Kernel.Identity;
 using Concertable.Seeding.Identity;
@@ -140,127 +141,10 @@ public sealed class SeedData
 
         Users = [Admin, .. ArtistManagers, .. VenueManagers];
 
-        var bands = new (string Name, string Banner, Genre[] Genres)[]
-        {
-            ("The Rockers", "rockers.jpg", [Genre.Rock, Genre.Pop, Genre.Jazz]),
-            ("Indie Vibes", "indievibes.jpg", [Genre.Rock, Genre.Electronic, Genre.HipHop]),
-            ("Electronic Pulse", "electronicpulse.jpg", [Genre.Electronic, Genre.Jazz]),
-            ("Hip-Hop Flow", "hiphopflow.jpg", [Genre.HipHop]),
-            ("Jazz Masters", "jazzmaster.jpg", [Genre.Indie, Genre.Jazz]),
-            ("Always Punks", "alwayspunks.jpg", [Genre.Rock, Genre.Indie]),
-            ("The Hollow Frequencies", "hollowfrequencies.jpg", [Genre.Pop]),
-            ("Neon Foxes", "neonfoxes.jpg", [Genre.HipHop, Genre.Pop]),
-            ("Velvet Static", "velvetstatic.jpg", [Genre.Electronic, Genre.Jazz]),
-            ("Echo Bloom", "echobloom.jpg", [Genre.Rock, Genre.DnB]),
-            ("The Wild Chords", "wildchords.jpg", [Genre.Indie, Genre.Rock]),
-            ("Glitch & Glow", "glitchandglow.jpg", [Genre.Pop]),
-            ("Sonic Mirage", "sonicmirage.jpg", [Genre.Indie, Genre.Electronic]),
-            ("Neon Echoes", "neonechoes.jpg", [Genre.HipHop]),
-            ("Dreamwave Collective", "dreamwavecollective.jpg", [Genre.DnB]),
-            ("Synth Pulse", "synthpulse.jpg", [Genre.Rock]),
-            ("The Brass Poets", "brasspoets.jpg", [Genre.Jazz]),
-            ("Groove Alchemy", "groovealchemy.jpg", [Genre.Indie]),
-            ("Velvet Rhymes", "velvetrhymes.jpg", [Genre.HipHop]),
-            ("The Lo-Fi Syndicate", "lofisyndicate.jpg", [Genre.DnB]),
-            ("Beats & Blue Notes", "beatsbluenotes.jpg", [Genre.House]),
-            ("Bass Pilots", "basspilots.jpg", [Genre.Rock]),
-            ("The Digital Prophets", "digitalprophets.jpg", [Genre.Electronic]),
-            ("Neon Bass Theory", "neonbasstheory.jpg", [Genre.Indie]),
-            ("Wavelength 303", "wavelength303.jpg", [Genre.Pop]),
-            ("Gravity Loops", "gravityloops.jpg", [Genre.Rock]),
-            ("The Golden Reverie", "goldenreverie.jpg", [Genre.House]),
-            ("Fable Sound", "fablesound.jpg", [Genre.Electronic]),
-            ("Moonlight Static", "moonlightstatic.jpg", [Genre.DnB]),
-            ("The Chromatics", "thechromatics.jpg", [Genre.Jazz]),
-            ("Echo Reverberation", "echoreverberation.jpg", [Genre.Indie]),
-            ("Midnight Reverie", "midnightreverie.jpg", [Genre.Rock]),
-            ("Static Wolves", "staticwolves.jpg", [Genre.HipHop]),
-            ("Echo Collapse", "echocollapse.jpg", [Genre.Pop]),
-            ("Violet Sundown", "violetsundown.jpg", [Genre.House])
-        };
-
-        int locIndex = 0;
-        Artists = bands.Select((b, i) =>
-        {
-            var loc = Locations[locIndex++ % Locations.Length];
-            return ArtistFaker.Create(
-                i + 1,
-                ArtistManagers[i].Id,
-                b.Name,
-                b.Banner,
-                "avatar.jpg",
-                new Point(loc.Longitude, loc.Latitude) { SRID = 4326 },
-                new Address(loc.County, loc.Town),
-                $"{b.Name.ToLowerInvariant().Replace(" ", "")}@test.com",
-                b.Genres);
-        }).ToArray();
+        Artists = [.. B2BSeedFixture.Artists.Select(ArtistFaker.FromSeedFixture)];
         Artist = Artists[0];
 
-        var venueData = new (string Name, string Banner)[]
-        {
-            ("Redhill Hall", "redhillhall.jpg"),
-            ("Weybridge Pavilion", "weybridgepavilon.jpg"),
-            ("Cobham Arts Centre", "cobhamarts.jpg"),
-            ("Chertsey Arena", "chertseyarena.jpg"),
-            ("Camden Electric Ballroom", "camdenballroom.jpg"),
-            ("Manchester Night & Day Café", "manchesternightday.jpg"),
-            ("Birmingham O2 Institute", "birminghamo2.jpg"),
-            ("Edinburgh Usher Hall", "edinburghusher.jpg"),
-            ("Liverpool Philharmonic Hall", "liverpoolphilharmonic.jpg"),
-            ("Leeds Brudenell Social Club", "leedsbrudenell.jpg"),
-            ("Glasgow Barrowland Ballroom", "glasgowbarrowland.jpg"),
-            ("Sheffield Leadmill", "sheffieldleadmill.jpg"),
-            ("Nottingham Rock City", "nottinghamrockcity.jpg"),
-            ("Bristol Thekla", "bristolthekla.jpg"),
-            ("Brighton Concorde 2", "brightonconcorde2.jpg"),
-            ("Cardiff Tramshed", "cardifftramshed.jpg"),
-            ("Newcastle O2 Academy", "newcastleo2.jpg"),
-            ("Oxford O2 Academy", "oxfordo2.jpg"),
-            ("Cambridge Corn Exchange", "cambridgecornexchange.jpg"),
-            ("Bath Komedia", "bathkomedia.jpg"),
-            ("Aberdeen The Lemon Tree", "aberdeenlemontree.jpg"),
-            ("York Barbican", "yorkbarbican.jpg"),
-            ("Belfast Limelight", "belfastlimelight.jpg"),
-            ("Dublin Vicar Street", "dublinvicarstreet.jpg"),
-            ("Norwich Waterfront", "norwichwaterfront.jpg"),
-            ("Exeter Phoenix", "exeterphoenix.jpg"),
-            ("Southampton Engine Rooms", "southamptonengine.jpg"),
-            ("Hull The Welly Club", "hullwellyclub.jpg"),
-            ("Plymouth Junction", "plymouthjunction.jpg"),
-            ("Swansea Sin City", "swanseasincity.jpg"),
-            ("Inverness Ironworks", "invernessironworks.jpg"),
-            ("Stirling Albert Halls", "stirlingalberthalls.jpg"),
-            ("Dundee Fat Sams", "dundeefatsams.jpg"),
-            ("Coventry Empire", "coventryempire.jpg")
-        };
-
-        var venuesList = new List<VenueEntity>
-        {
-            VenueFaker.Create(
-                1,
-                VenueManager1.Id,
-                "The Grand Venue",
-                "grandvenue.jpg",
-                "avatar.jpg",
-                new Point(0, 51) { SRID = 4326 },
-                new Address("Test County", "Test Town"),
-                VenueManager1.Email)
-        };
-        for (int i = 0; i < venueData.Length; i++)
-        {
-            var loc = Locations[locIndex++ % Locations.Length];
-            var v = venueData[i];
-            venuesList.Add(VenueFaker.Create(
-                i + 2,
-                VenueManagers[i + 1].Id,
-                v.Name,
-                v.Banner,
-                "avatar.jpg",
-                new Point(loc.Longitude, loc.Latitude) { SRID = 4326 },
-                new Address(loc.County, loc.Town),
-                $"{v.Name.ToLowerInvariant().Replace(" ", "").Replace("&", "and").Replace("é", "e")}@test.com"));
-        }
-        Venues = venuesList;
+        Venues = [.. B2BSeedFixture.Venues.Select(VenueFaker.FromSeedFixture)];
         Venue = Venues[0];
 
         ConfirmedAppContract = FlatFeeContractFactory.Create(6, 200m);
@@ -545,76 +429,7 @@ public sealed class SeedData
             ApplicationFactory.CreatePrepaid(8, 48),
         ];
 
-        Concerts =
-        [
-            ConcertFaker.Post(1,  Bookings[0].Id,  "Ultimate Dance Party",       27m, 160, 1,  opps[5].VenueId,  opps[5].Period,  now.AddDays(2)),
-            ConcertFaker.Post(2,  Bookings[1].Id,  "Boogie Wonderland",          25m, 120, 1,  opps[52].VenueId, opps[52].Period, now, [Genre.Rock, Genre.Indie]),
-            ConcertFaker.Post(3,  Bookings[2].Id,  "Funk it up",                 20m, 150, 2,  opps[53].VenueId, opps[53].Period, now, [Genre.Rock, Genre.Indie]),
-            ConcertFaker.Post(4,  Bookings[3].Id,  "Boogie it up!",              20m, 150, 2,  opps[30].VenueId, opps[30].Period, now.AddDays(-85)),
-            ConcertFaker.Post(5,  Bookings[4].Id,  "VenueHire Spectacular",      30m, 200, 1,  opps[20].VenueId, opps[20].Period, now.AddDays(-40)),
-            ConcertFaker.Post(6,  Bookings[5].Id,  "Awaiting Show",              15m, 100, 1,  opps[32].VenueId, opps[32].Period, now.AddDays(3)),
-            ConcertFaker.Post(7,  Bookings[6].Id,  "DoorSplit Settlement Show",  20m, 100, 1,  opps[49].VenueId, opps[49].Period, now.AddDays(-60)),
-            ConcertFaker.Post(8,  Bookings[7].Id,  "Versus Settlement Show",     20m, 100, 1,  opps[50].VenueId, opps[50].Period, now.AddDays(-90)),
-            ConcertFaker.Post(9,  Bookings[8].Id,  "Past Versus Show",           20m, 100, 1,  opps[63].VenueId, opps[63].Period, now.AddDays(-120)),
-            ConcertFaker.Post(10, Bookings[9].Id,  "Past FlatFee Show",          20m, 100, 1,  opps[64].VenueId, opps[64].Period, now.AddDays(-85)),
-            ConcertFaker.Post(11, Bookings[10].Id, "Past VenueHire Show",        30m, 100, 1,  opps[65].VenueId, opps[65].Period, now.AddDays(-40)),
-            ConcertFaker.Post(12, Bookings[11].Id, "Past DoorSplit Show",        20m, 100, 1,  opps[66].VenueId, opps[66].Period, now.AddDays(-60)),
-            ConcertFaker.Post(13, Bookings[12].Id, "Upcoming FlatFee Show",      20m, 150, 2,  opps[57].VenueId, opps[57].Period, now, [Genre.Rock, Genre.Indie]),
-            ConcertFaker.Post(14, Bookings[13].Id, "Upcoming VenueHire Show",    30m, 200, 1,  opps[58].VenueId, opps[58].Period, now, [Genre.Rock, Genre.Indie]),
-            ConcertFaker.Post(15, Bookings[14].Id, "Rockin' all Night",          15m, 120, 1,  opps[0].VenueId,  opps[0].Period,  now.AddDays(-58)),
-            ConcertFaker.Post(16, Bookings[15].Id, "Non Stop Party",             12m, 110, 2,  opps[0].VenueId,  opps[0].Period,  now.AddDays(-55)),
-            ConcertFaker.Post(17, Bookings[16].Id, "Super Mix",                  18m, 130, 3,  opps[0].VenueId,  opps[0].Period,  now.AddDays(-52)),
-            ConcertFaker.Post(18, Bookings[17].Id, "Hip-Hop till you flip-flop", 10m, 100, 4,  opps[0].VenueId,  opps[0].Period,  now.AddDays(-49)),
-            ConcertFaker.Post(19, Bookings[18].Id, "Dance the night away",       25m, 140, 1,  opps[1].VenueId,  opps[1].Period,  now.AddDays(-46)),
-            ConcertFaker.Post(20, Bookings[19].Id, "Dizzy One",                  20m, 150, 2,  opps[1].VenueId,  opps[1].Period,  now.AddDays(-43)),
-            ConcertFaker.Post(21, Bookings[20].Id, "Beers and Boombox",          30m, 170, 5,  opps[1].VenueId,  opps[1].Period,  now.AddDays(-40)),
-            ConcertFaker.Post(22, Bookings[21].Id, "Rockin' Tonight!",           16m, 130, 6,  opps[1].VenueId,  opps[1].Period,  now.AddDays(-37)),
-            ConcertFaker.Post(23, Bookings[22].Id, "Groovin' All Night",         14m, 115, 1,  opps[2].VenueId,  opps[2].Period,  now.AddDays(-34)),
-            ConcertFaker.Post(24, Bookings[23].Id, "Nonstop Vibes",              22m, 135, 2,  opps[2].VenueId,  opps[2].Period,  now.AddDays(-31)),
-            ConcertFaker.Post(25, Bookings[24].Id, "Electric Dreams",            13m, 125, 7,  opps[2].VenueId,  opps[2].Period,  now.AddDays(-28)),
-            ConcertFaker.Post(26, Bookings[25].Id, "Beat Drop Frenzy",           11m, 120, 8,  opps[2].VenueId,  opps[2].Period,  now.AddDays(-25)),
-            ConcertFaker.Post(27, Bookings[26].Id, "Summer Jam",                 19m, 140, 1,  opps[3].VenueId,  opps[3].Period,  now.AddDays(-22)),
-            ConcertFaker.Post(28, Bookings[27].Id, "Midnight Madness",           17m, 135, 2,  opps[3].VenueId,  opps[3].Period,  now.AddDays(-19)),
-            ConcertFaker.Post(29, Bookings[28].Id, "Like a Boss",                21m, 145, 9,  opps[3].VenueId,  opps[3].Period,  now.AddDays(-16)),
-            ConcertFaker.Post(30, Bookings[29].Id, "Lights and Sound",           18m, 140, 10, opps[3].VenueId,  opps[3].Period,  now.AddDays(-13)),
-            ConcertFaker.Post(31, Bookings[30].Id, "Rhythm Nation",              26m, 155, 1,  opps[4].VenueId,  opps[4].Period,  now.AddDays(-10)),
-            ConcertFaker.Post(32, Bookings[31].Id, "Bass Drop Party",            15m, 120, 2,  opps[4].VenueId,  opps[4].Period,  now.AddDays(-7)),
-            ConcertFaker.Post(33, Bookings[32].Id, "Chill & Thrill",             28m, 160, 11, opps[4].VenueId,  opps[4].Period,  now.AddDays(-4)),
-            ConcertFaker.Post(34, Bookings[33].Id, "Vibin' till Night",          24m, 150, 12, opps[4].VenueId,  opps[4].Period,  now.AddDays(-1)),
-            ConcertFaker.Post(35, Bookings[34].Id, "Rock Your Soul",             23m, 130, 2,  opps[5].VenueId,  opps[5].Period,  now.AddDays(5)),
-            ConcertFaker.Post(36, Bookings[35].Id, "Danceaway",                  29m, 155, 13, opps[5].VenueId,  opps[5].Period,  now.AddDays(8)),
-            ConcertFaker.Post(37, Bookings[36].Id, "Bassline Groove Beats",      10m, 110, 14, opps[5].VenueId,  opps[5].Period,  now.AddDays(11)),
-            ConcertFaker.Post(38, Bookings[37].Id, "Once in a Lifetime!",        15m, 125, 1,  opps[6].VenueId,  opps[6].Period,  now.AddDays(14)),
-            ConcertFaker.Post(39, Bookings[38].Id, "Jungle Fever",               30m, 180, 2,  opps[6].VenueId,  opps[6].Period,  now.AddDays(17)),
-            ConcertFaker.Post(40, Bookings[39].Id, "Boogie Nights",              20m, 100, 1,  opps[13].VenueId, opps[13].Period, now.AddDays(6)),
-            ConcertFaker.Post(41, Bookings[40].Id, "Bass in the Air",            30m, 140, 8,  opps[14].VenueId, opps[14].Period, now.AddDays(18)),
-            ConcertFaker.Post(42, Bookings[41].Id, "Jumpin and thumpin",         15m, 100, 11, opps[15].VenueId, opps[15].Period, now.AddDays(22)),
-            ConcertFaker.Post(43, Bookings[42].Id, "Groove Night",               18m, 130, 3,  opps[33].VenueId, opps[33].Period, now.AddDays(-1)),
-            ConcertFaker.Post(44, Bookings[43].Id, "Electric Midnight",          22m, 140, 1,  opps[34].VenueId, opps[34].Period, now),
-            ConcertFaker.Post(45, Bookings[44].Id, "Summer Haze",                20m, 150, 4,  opps[45].VenueId, opps[45].Period, now.AddDays(10)),
-            ConcertFaker.Post(46, Bookings[45].Id, "Night Drive",                25m, 160, 5,  opps[46].VenueId, opps[46].Period, now.AddDays(12)),
-            ConcertFaker.Post(47, Bookings[46].Id, "Weekend Rush",               15m, 120, 6,  opps[47].VenueId, opps[47].Period, now.AddDays(14)),
-        ];
+        Concerts = [.. B2BSeedFixture.Concerts(now)
+            .Select(e => ConcertFaker.FromSeedFixture(e, bookingId: Bookings[e.ConcertId - 1].Id))];
     }
-
-    private sealed record SeedLocation(string County, string Town, double Latitude, double Longitude);
-
-    private static readonly SeedLocation[] Locations =
-    [
-        new("Leicestershire", "Loughborough", 52.7721, -1.2062),
-        new("Greater London", "London", 51.5074, -0.1278),
-        new("Greater Manchester", "Manchester", 53.4808, -2.2426),
-        new("Surrey", "Guildford", 51.2362, -0.5704),
-        new("West Yorkshire", "Leeds", 53.8008, -1.5491),
-        new("West Midlands", "Birmingham", 52.4862, -1.8904),
-        new("Tyne and Wear", "Newcastle", 54.9783, -1.6178),
-        new("South Yorkshire", "Sheffield", 53.3811, -1.4701),
-        new("Merseyside", "Liverpool", 53.4084, -2.9916),
-        new("Bristol", "Bristol", 51.4545, -2.5879),
-        new("Nottinghamshire", "Nottingham", 52.9548, -1.1581),
-        new("Hampshire", "Southampton", 50.9097, -1.4043),
-        new("Lancashire", "Preston", 53.7632, -2.7031),
-        new("Cambridgeshire", "Cambridge", 52.2053, 0.1218),
-        new("Oxfordshire", "Oxford", 51.7520, -1.2577),
-    ];
 }

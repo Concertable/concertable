@@ -1,5 +1,38 @@
 # Seeding Conventions
 
+> ## ⚠ READ THIS FIRST
+>
+> **Never write `context.X.Add(...)` or `context.X.AddRange(...)` against a DbSet whose entity is only written by a handler in production.**
+>
+> Read-model projections (`VenueReadModel`, `ArtistReadModel`, `ConcertReadModel`, anything in `[concert]` / `[venue]` / `[artist]` / `[search]` schemas), `UserEntity` rows, manager profile rows, Stripe `PayoutAccount` rows, inbox/outbox messages — none of these are seeded. They are written by handlers reacting to events. The seeder's job in those cases is to **drive the event**, not to write the row.
+>
+> If standalone Customer (or any service) lacks projection data because the producing service isn't running, the answer is **not** "seed the projection table." The answer is "stand up a seeding simulator for the producing service" — see [Standalone-service seeding](#standalone-service-seeding) below.
+>
+> This mistake has cost real time, multiple times. If unsure, re-read this whole file before writing the seeder body.
+
+## Standalone-service seeding
+
+Each microservice has its own AppHost (`Concertable.Customer.AppHost`, `Concertable.B2B.AppHost`, etc.) that runs the service standalone for dev iteration. A standalone service still needs the projection data it would receive in production — venues/artists/concerts that come from B2B's integration events.
+
+Without B2B running:
+
+- Customer's projection tables stay empty → Customer SPA shows nothing → useless dev environment.
+- Customer E2E tests that depend on a concert fail.
+
+The convention rules out the easy hack (`context.XReadModels.AddRange(...)` in a seeder — see banner above). The approved mechanism is a **seeding simulator** — a small Worker host owned by the producing service that publishes its integration events on startup and exits.
+
+For the B2B case:
+
+- `Concertable.B2B.Seeding.Simulator` (Worker host) publishes the canonical B2B `XChangedEvent` set on startup.
+- `Concertable.B2B.Seeding.Fixture` holds the canonical event records — single source of truth that both B2B's own seeders (`Concertable.B2B.Seeding.SeedData`) and the simulator derive from. Byte-for-byte sync, no field drift.
+- Registered in `Concertable.Customer.AppHost` as an Aspire resource. **Not** registered in the umbrella `Concertable.AppHost` (real B2B is already there).
+
+Customer's projection handlers run unchanged in both scenarios. Same code path, same data shape.
+
+See `api/Concertable.B2B/Concertable.B2B.Seeding.Simulator/CLAUDE.md` for the full design — what the fixture holds, what it doesn't, how to add entities, what NOT to do, and how the split-repo distribution works.
+
+The same pattern applies to any future standalone-service seeding need: the upstream service ships a simulator, downstream AppHosts reference it.
+
 ## IDevSeeder vs ITestSeeder
 
 - `IDevSeeder` runs in **dev and E2E** environments via `DevDbInitializer`.

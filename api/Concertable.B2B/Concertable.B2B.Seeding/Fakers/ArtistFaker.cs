@@ -1,4 +1,5 @@
 using Bogus;
+using Concertable.B2B.Artist.Contracts.Events;
 using Concertable.B2B.Artist.Domain;
 using Concertable.Contracts;
 using Concertable.Kernel;
@@ -24,4 +25,18 @@ public static class ArtistFaker
         => ArtistEntity
             .Create(userId, name, faker.Lorem.Paragraph(7), bannerUrl, avatar, location, address, email, genres)
             .With(nameof(ArtistEntity.Id), id);
+
+    public static ArtistEntity FromSeedFixture(ArtistChangedEvent e)
+        => ArtistEntity
+            .Create(
+                userId:    e.UserId,
+                name:      e.Name,
+                about:     e.About,
+                bannerUrl: e.BannerUrl,
+                avatar:    e.Avatar,
+                location:  new Point(e.Longitude, e.Latitude) { SRID = 4326 },
+                address:   new Address(e.County, e.Town),
+                email:     e.Email,
+                genres:    e.Genres)
+            .With(nameof(ArtistEntity.Id), e.ArtistId);
 }

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -16,7 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Concertable.Shared.Blob.Application\Concertable.Shared.Blob.Application.csproj" />
-    <ProjectReference Include="..\..\..\Seeding\Concertable.Seeding.Shared\Concertable.Seeding.Shared.csproj" />
+    <ProjectReference Include="..\..\..\Shared\Concertable.Seeding.Shared\Concertable.Seeding.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>
