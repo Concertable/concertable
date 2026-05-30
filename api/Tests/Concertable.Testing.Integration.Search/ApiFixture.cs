@@ -17,7 +17,7 @@ public class ApiFixture : IAsyncLifetime
     private SqlFixture sqlFixture = null!;
     private WebApplicationFactory<Program> factory = null!;
 
-    public SeedData SeedData { get; } = new SeedData();
+    public SeedState SeedState { get; } = new SeedState();
 
     public async Task InitializeAsync()
     {

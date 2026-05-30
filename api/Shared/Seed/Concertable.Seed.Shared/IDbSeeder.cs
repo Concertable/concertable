@@ -1,4 +1,4 @@
-namespace Concertable.Seed;
+namespace Concertable.Seed.Shared;
 
 public interface IDbSeeder
 {

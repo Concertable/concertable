@@ -28,8 +28,8 @@ public class CustomerSteps
     public async Task GivenSignedIn()
     {
         loginScreen = new LoginScreen(app);
-        var seed = fixture.App.SeedData;
-        await loginScreen.SignInAsync(seed.Customer.Email, SeedData.TestPassword);
+        var seed = fixture.App.SeedState;
+        await loginScreen.SignInAsync(seed.Customer.Email, SeedState.TestPassword);
         homeScreen = new HomeScreen(app);
         homeScreen.WaitUntilLoaded();
     }

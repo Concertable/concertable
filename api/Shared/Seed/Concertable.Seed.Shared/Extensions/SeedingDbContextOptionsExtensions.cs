@@ -1,8 +1,8 @@
-using Concertable.Seed.Identity;
+using Concertable.Seed.Shared.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Concertable.Seed.Extensions;
+namespace Concertable.Seed.Shared.Extensions;
 
 public static class SeedingDbContextOptionsExtensions
 {

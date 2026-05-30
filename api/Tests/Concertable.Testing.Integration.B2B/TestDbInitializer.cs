@@ -1,9 +1,9 @@
 using Concertable.B2B.Seed.Infrastructure;
 using Concertable.Messaging.Infrastructure.Inbox;
 using Concertable.Messaging.Infrastructure.Outbox;
-using Concertable.Seed;
-using Concertable.Seed.Fakers;
-using Concertable.Seed.Identity;
+using Concertable.Seed.Shared;
+using Concertable.B2B.Seed.Infrastructure.Fakers;
+using Concertable.Seed.Shared.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Concertable.DataAccess.Application;
@@ -15,7 +15,7 @@ namespace Concertable.Testing.Integration.B2B;
 public class TestDbInitializer : IDbInitializer
 {
     private readonly IGeometryProvider geometryProvider;
-    private readonly SeedData seed;
+    private readonly SeedState seed;
     private readonly ILocationFaker locationFaker;
     private readonly TimeProvider timeProvider;
     private readonly IEnumerable<ITestSeeder> seeders;
@@ -25,7 +25,7 @@ public class TestDbInitializer : IDbInitializer
 
     public TestDbInitializer(
         [FromKeyedServices(GeometryProviderType.Geographic)] IGeometryProvider geometryProvider,
-        SeedData seed,
+        SeedState seed,
         ILocationFaker locationFaker,
         TimeProvider timeProvider,
         IEnumerable<ITestSeeder> seeders,

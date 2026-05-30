@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace Concertable.Seed.Extensions;
+namespace Concertable.Seed.Identity.Extensions;
 
 public static class EntityReflectionExtensions
 {
