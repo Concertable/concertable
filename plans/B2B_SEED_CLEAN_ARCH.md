@@ -1,8 +1,57 @@
 # B2B Seed Clean Architecture Refactor
 
-Rename and reorganize the B2B seed projects to match the codebase's existing module/factory conventions. Introduce static factories for spec → entity construction so that side matches `ApplicationFactory` / `BookingFactory` / `UserFactory` shape. Keep the source-of-truth concept: one canonical catalog of spec data, derived into both wire events (cross-boundary) and Domain entities (B2B-internal).
+Rename and reorganize **every seeding project** in the codebase to match the per-module Contracts/Infrastructure convention used elsewhere. Introduce static factories for spec → entity construction so that side matches `ApplicationFactory` / `BookingFactory` / `UserFactory` shape. Keep the source-of-truth concept: one canonical catalog of spec data, derived into both wire events (cross-boundary) and Domain entities (B2B-internal).
 
-This is a self-contained doc — explains the current state, the problems, the design decisions, and the implementation order. No prior conversation needed.
+This is a self-contained doc — explains the current state, the problems, the design decisions, and the implementation order. No prior conversation needed. Execute it cold after `/clear`.
+
+---
+
+## 0. Prior state — what's already committed on `Refactor/Microservices`
+
+Two commits leading up to this work:
+
+- **`57a60743`** — replaced `B2BSeedFixture`'s compressed scaffolding (private row records, magic index sets, locIndex-cycling) with explicit `XSeedSpec` literals in partial files. Introduced spec→event and spec→entity static mappers in `SeedSpecMappers`. Made the fixture a DI singleton with `TimeProvider`. Removed `UpcomingConcertId` const (tests now filter by `Name`).
+- **`652a6d04`** — moved the three `XSeedSpec` records out of per-module `Module.Contracts/Seed/` folders into a single `Concertable.B2B.Seeding.Fixture/Specs/` location. Reverted the now-unnecessary `Concert.Contracts` → `Artist/Venue.Contracts` ProjectReferences.
+
+Regress on `652a6d04`: B2B 7/7 + Customer 2/2, clean first run.
+
+Current shape (pre-this-refactor):
+
+```
+Concertable.B2B.Seeding.Fixture/                  (cross-boundary; Customer + simulator + B2B)
+  B2BSeedFixture.cs + Venues/Artists/Concerts partials
+  Specs/VenueSeedSpec.cs, ArtistSeedSpec.cs, ConcertSeedSpec.cs
+  SeedSpecMappers.cs                              spec → ChangedEvent (extensions)
+
+Concertable.B2B.Seeding/                          (B2B-internal; Domain visible)
+  SeedData.cs                                     composition root
+  SeedSpecMappers.cs                              spec → DomainEntity (extensions)
+  Extensions/, Fakers/                            existing helpers
+
+Concertable.B2B.Seeding.Simulator/                (Worker host)
+  Program.cs, SeedEventPublishingService.cs
+
+Concertable.Customer.Seeding/                     (Customer-internal)
+  SeedData.cs                                     TestPassword const, SeedCustomer ref, CustomerIds list
+
+Concertable.Payment.Seeding/                      (Payment-internal)
+  StripeE2EAccountResolver.cs                     Stripe E2E account mapping
+  E2EStripeAccountClient.cs                       provisioning client
+  E2EServiceCollectionExtensions.cs               DI extensions
+
+Shared/Concertable.Seeding.Identity/              (cross-service helpers)
+  SeedUsers.cs                                    Guid generators for seed user identities (referenced everywhere)
+  SeedCustomers.cs                                Customer seed identities
+
+Shared/Concertable.Seeding.Shared/                (cross-service helpers)
+  Extensions/SeedingDbContextOptionsExtensions.cs
+  Extensions/SeedingServiceCollectionExtensions.cs
+  Identity/SeedingIdentityInterceptor.cs
+  Identity/SeedingScope.cs
+
+Shared/Concertable.Seeding.Infrastructure/        (cross-service infrastructure)
+  IDevSeeder, ITestSeeder, related infrastructure
+```
 
 ---
 
@@ -477,10 +526,91 @@ Recommended commit boundary: do the shared renames first (small, mechanical, wid
 
 ### Phase 1 — shared project renames (separate commit)
 
-0a. **Rename `Concertable.Seeding.Shared` → `Concertable.Seed.Shared`**
-0b. **Rename `Concertable.Seeding.Identity` → `Concertable.Seed.Identity`**
-0c. **Rename `Concertable.Seeding.Infrastructure` → `Concertable.Seed.Infrastructure`**
-For each: rename folder, csproj, namespace in every .cs file, every `ProjectReference` in every consuming csproj. Build verify. Commit.
+Three shared projects under `api/Shared/` rename. They're referenced from ~25 consuming csprojs and ~25 .cs files. The rename is purely mechanical — no logic changes, just folder/file paths, namespace declarations, and `using` directives.
+
+**0a. Rename `Concertable.Seeding.Shared` → `Concertable.Seed.Shared`**
+
+- Rename folder: `api/Shared/Concertable.Seeding.Shared/` → `api/Shared/Concertable.Seed.Shared/`
+- Rename csproj: `Concertable.Seeding.Shared.csproj` → `Concertable.Seed.Shared.csproj`
+- Update namespace in every .cs file inside: `namespace Concertable.Seeding.Shared.*` → `namespace Concertable.Seed.Shared.*`
+  - Files: `Extensions/SeedingDbContextOptionsExtensions.cs`, `Extensions/SeedingServiceCollectionExtensions.cs`, `Identity/SeedingIdentityInterceptor.cs`, `Identity/SeedingScope.cs`
+- Project-wide find/replace: `using Concertable.Seeding.Shared` → `using Concertable.Seed.Shared` (and `Concertable.Seeding.Shared.Extensions`, `Concertable.Seeding.Shared.Identity` sub-namespaces)
+- Update every `<ProjectReference>` pointing at the old csproj across the solution
+
+**0b. Rename `Concertable.Seeding.Identity` → `Concertable.Seed.Identity`**
+
+- Rename folder + csproj as above
+- Files: `SeedUsers.cs`, `SeedCustomers.cs` — update their `namespace Concertable.Seeding.Identity` → `namespace Concertable.Seed.Identity`
+- Project-wide find/replace: `using Concertable.Seeding.Identity` → `using Concertable.Seed.Identity`
+- Update consuming csprojs
+
+**0c. Rename `Concertable.Seeding.Infrastructure` → `Concertable.Seed.Infrastructure`**
+
+- Note: after rename this project sits at root (`Concertable.Seed.Infrastructure`), distinct from the B2B-side `Concertable.B2B.Seed.Infrastructure` (in Phase 2). Different namespaces — no clash, but worth flagging at review.
+- Same procedure as above
+
+**Csproj consumers to update (search-and-replace):**
+
+```
+api/Concertable.B2B/Concertable.B2B.Web/Concertable.B2B.Web.csproj
+api/Concertable.B2B/Concertable.B2B.Workers/Concertable.B2B.Workers.csproj
+api/Concertable.B2B/Concertable.B2B.Seeding.Fixture/Concertable.B2B.Seeding.Fixture.csproj
+api/Concertable.B2B/Concertable.B2B.Seeding/Concertable.B2B.Seeding.csproj
+api/Concertable.B2B/Modules/**/Concertable.B2B.*.Infrastructure.csproj   (multiple)
+api/Concertable.B2B/Modules/**/Concertable.B2B.*.Domain.csproj           (multiple)
+api/Concertable.B2B/Tests/E2ETests/Concertable.B2B.E2ETests/Concertable.B2B.E2ETests.csproj
+api/Concertable.Customer/Concertable.Customer.Web/Concertable.Customer.Web.csproj
+api/Concertable.Customer/Modules/**/Concertable.Customer.*.Infrastructure.csproj   (multiple)
+api/Concertable.Payment/Concertable.Payment.Web/Concertable.Payment.Web.csproj
+api/Concertable.Payment/Concertable.Payment.Workers/Concertable.Payment.Workers.csproj
+api/Concertable.Payment/Concertable.Payment.Infrastructure/Concertable.Payment.Infrastructure.csproj
+api/Auth/Concertable.Auth.csproj
+api/Tests/Concertable.Testing.Integration.B2B/Concertable.Testing.Integration.B2B.csproj
+api/Tests/Concertable.Testing.Integration.Customer/Concertable.Testing.Integration.Customer.csproj
+api/Tests/Concertable.Testing.Integration.Search/Concertable.Testing.Integration.Search.csproj
+api/DataAccess/Concertable.DataAccess.Infrastructure/Concertable.DataAccess.Infrastructure.csproj
+api/Shared/Concertable.Shared.Blob/**/Concertable.Shared.Blob.Infrastructure.csproj
+```
+
+(Run `grep -rln 'Concertable\.Seeding\.\(Identity\|Infrastructure\|Shared\)' api --include='*.csproj'` for the full list.)
+
+**`.slnx` files to update:**
+
+```
+api/Concertable.slnx
+api/Concertable.B2B/Concertable.B2B.slnx       (if it lists shared)
+api/Concertable.Customer/Concertable.Customer.slnx
+api/Concertable.Payment/Concertable.Payment.slnx
+```
+
+**Code `using` updates (search-and-replace across the whole solution):**
+
+```
+using Concertable.Seeding.Shared        → using Concertable.Seed.Shared
+using Concertable.Seeding.Identity      → using Concertable.Seed.Identity
+using Concertable.Seeding.Infrastructure → using Concertable.Seed.Infrastructure
+```
+
+Run `grep -rln 'using Concertable\.Seeding\.\(Identity\|Infrastructure\|Shared\)' api --include='*.cs'` for the precise file list.
+
+**Doc updates** — search `plans/`, `api/docs/`, and any `CLAUDE.md` files for `Concertable.Seeding.Shared` / `.Identity` / `.Infrastructure` references and update.
+
+**Verification for Phase 1:**
+
+- `dotnet build` on the whole solution: zero errors
+- `grep -rn 'Concertable\.Seeding\.\(Identity\|Infrastructure\|Shared\)' api` returns zero matches outside `bin/` and `obj/`
+- `./e2e.ps1 regress` passes (sanity check; behavior is unchanged so it should)
+
+Commit message:
+
+```
+Rename shared Concertable.Seeding.* projects to Concertable.Seed.*
+
+Aligns shared seeding projects with the noun-form convention being
+adopted across the codebase (Seed = the data, Seeding = the verb).
+Pure mechanical rename — namespaces, using directives, project
+references, slnx entries. No logic changes.
+```
 
 ### Phase 2 — B2B seed clean-arch (this plan's main work)
 
@@ -525,28 +655,79 @@ For each: rename folder, csproj, namespace in every .cs file, every `ProjectRefe
 
 10. **Build verify** each affected project sequentially (B2B.Web, Customer.Web, Simulator, both E2E test projects) before running tests.
 
-### Phase 3 — Customer / Payment seed renames (third commit)
+### Phase 3 — Customer / Payment / Simulator renames (third commit)
 
-12. **Rename `Concertable.Customer.Seeding` → `Concertable.Customer.Seed`**
-    - Folder rename, csproj rename
-    - Update namespace in `SeedData.cs` from `Concertable.Customer.Seeding` to `Concertable.Customer.Seed`
-    - Update every `ProjectReference` (Customer.Web, Customer.E2ETests, etc.)
-    - Update `using Concertable.Customer.Seeding;` directives across the codebase
+**12. Rename `Concertable.Customer.Seeding` → `Concertable.Customer.Seed`**
 
-13. **Rename `Concertable.Payment.Seeding` → `Concertable.Payment.Seed`**
-    - Same procedure as Customer; audit `SeedData` content first to confirm there's no equivalent of the B2B catalog/composition split needed
-    - If Payment.Seeding has a single SeedData class, treat it like Customer (flat `.Seed`)
+- Folder rename: `api/Concertable.Customer/Concertable.Customer.Seeding/` → `api/Concertable.Customer/Concertable.Customer.Seed/`
+- Csproj rename: `Concertable.Customer.Seeding.csproj` → `Concertable.Customer.Seed.csproj`
+- Update namespace in `SeedData.cs`: `namespace Concertable.Customer.Seeding` → `namespace Concertable.Customer.Seed`
+- Update every `ProjectReference Include="...Concertable.Customer.Seeding.csproj"` to point at the new path. Consumers:
+  ```
+  api/Concertable.Customer/Concertable.Customer.Web/Concertable.Customer.Web.csproj
+  api/Concertable.Customer/Modules/Preference/Concertable.Customer.Preference.Infrastructure/Concertable.Customer.Preference.Infrastructure.csproj
+  api/Concertable.Customer/Modules/Concert/Concertable.Customer.Concert.Infrastructure/Concertable.Customer.Concert.Infrastructure.csproj
+  api/Concertable.Customer/Tests/E2ETests/Concertable.Customer.E2ETests/Concertable.Customer.E2ETests.csproj
+  api/Concertable.Customer/Tests/E2ETests/Concertable.Customer.E2ETests.Ui/Concertable.Customer.E2ETests.Ui.csproj
+  api/Concertable.Payment/Concertable.Payment.Infrastructure/Concertable.Payment.Infrastructure.csproj
+  api/Tests/Concertable.Testing.Integration.Customer/Concertable.Testing.Integration.Customer.csproj
+  api/Tests/Concertable.Testing.Integration.Search/Concertable.Testing.Integration.Search.csproj
+  api/Tests/Concertable.Customer.E2ETests.Ui/Concertable.Customer.E2ETests.Ui.csproj
+  api/Tests/Concertable.E2ETests/Concertable.E2ETests.Mobile/Concertable.E2ETests.Mobile.csproj
+  ```
+- Project-wide: `using Concertable.Customer.Seeding` → `using Concertable.Customer.Seed`
+- `.slnx` updates: `api/Concertable.slnx`, `api/Concertable.Customer/Concertable.Customer.slnx`
 
-14. **Rename `Concertable.B2B.Seeding.Simulator` → `Concertable.B2B.Seed.Simulator`**
-    - Folder rename, csproj rename
-    - Update `Concertable.Customer.AppHost`'s `AddB2BSeedingSimulator<Projects.Concertable_B2B_Seeding_Simulator>(...)` reference (the generated `Projects.X` type matches the project filename)
-    - Update CLAUDE.md
+**13. Rename `Concertable.Payment.Seeding` → `Concertable.Payment.Seed`**
+
+Content audit: Payment.Seeding holds `StripeE2EAccountResolver.cs`, `E2EStripeAccountClient.cs`, `E2EServiceCollectionExtensions.cs` — Stripe E2E account provisioning helpers. No catalog/composition split needed; flat `.Seed` is correct.
+
+- Folder rename: `api/Concertable.Payment/Concertable.Payment.Seeding/` → `api/Concertable.Payment/Concertable.Payment.Seed/`
+- Csproj rename: `Concertable.Payment.Seeding.csproj` → `Concertable.Payment.Seed.csproj`
+- Update namespace in every .cs file: `namespace Concertable.Payment.Seeding` → `namespace Concertable.Payment.Seed`
+  - Files: `StripeE2EAccountResolver.cs`, `E2EStripeAccountClient.cs`, `E2EServiceCollectionExtensions.cs`
+- Update every `ProjectReference`. Consumers:
+  ```
+  api/Concertable.B2B/Concertable.B2B.Web/Concertable.B2B.Web.csproj
+  api/Concertable.B2B/Tests/E2ETests/Concertable.B2B.E2ETests/Concertable.B2B.E2ETests.csproj
+  api/Concertable.B2B/Tests/E2ETests/Concertable.B2B.E2ETests.Ui/Concertable.B2B.E2ETests.Ui.csproj
+  api/Concertable.Payment/Concertable.Payment.Web/Concertable.Payment.Web.csproj
+  api/Concertable.Payment/Concertable.Payment.Workers/Concertable.Payment.Workers.csproj
+  ```
+- Project-wide: `using Concertable.Payment.Seeding` → `using Concertable.Payment.Seed`
+- Update `<Using Include="Concertable.Payment.Seeding" />` in `Concertable.B2B.E2ETests.csproj` ItemGroup
+- Update `Concertable.Payment.Seeding/CLAUDE.md` (the file itself stays; content references the old project name in some places — search/replace)
+- `.slnx` updates: `api/Concertable.slnx`, `api/Concertable.Payment/Concertable.Payment.slnx`
+
+**14. Rename `Concertable.B2B.Seeding.Simulator` → `Concertable.B2B.Seed.Simulator`**
+
+- Folder rename: `api/Concertable.B2B/Concertable.B2B.Seeding.Simulator/` → `api/Concertable.B2B/Concertable.B2B.Seed.Simulator/`
+- Csproj rename: `Concertable.B2B.Seeding.Simulator.csproj` → `Concertable.B2B.Seed.Simulator.csproj`
+- Update `RootNamespace` in csproj (currently explicit: `<RootNamespace>Concertable.B2B.Seeding.Simulator</RootNamespace>`) → `Concertable.B2B.Seed.Simulator`
+- Update namespace in every .cs file: `namespace Concertable.B2B.Seeding.Simulator` → `namespace Concertable.B2B.Seed.Simulator`
+  - Files: `Program.cs`, `SeedEventPublishingService.cs`
+- **AppHost wiring update:** `Concertable.Customer.AppHost/Program.cs` has `builder.AddB2BSeedingSimulator<Projects.Concertable_B2B_Seeding_Simulator>(asb);` — Aspire generates the `Projects.X` type from the project filename, so renaming the project changes the generated type to `Projects.Concertable_B2B_Seed_Simulator`. Update the line accordingly.
+- Check whether `AddB2BSeedingSimulator` extension method exists in `Concertable.B2B.AppHost.Extensions` — if it's a generic extension `AddB2BSeedingSimulator<T>` it'll still resolve to the new `Projects.X` type via generic inference, just with the renamed type name. No method rename needed.
+- Update `Concertable.B2B.Seed.Simulator/CLAUDE.md` (existing simulator doc — replace all references to the old project name + the old `B2BSeedFixture` references already done in Phase 2)
+- `.slnx` updates: `api/Concertable.slnx`, `api/Concertable.B2B/Concertable.B2B.slnx` (if it lists the simulator), and the AppHost project references
 
 ### Verification
 
-15. **Build verify** the whole solution.
+15. **Build verify** the whole solution:
+    ```
+    dotnet build api/Concertable.slnx
+    ```
+    Zero errors expected.
 
-16. **Run regress** (`./e2e.ps1 regress`) to confirm no regression.
+16. **Boundary grep checks:**
+    ```
+    grep -rn 'Concertable\.Seeding\.' api --include='*.cs' --include='*.csproj' --include='*.slnx'
+    ```
+    Should return zero matches outside `bin/`, `obj/`, the `plans/` doc itself, and unrelated CLAUDE.md historical references (call out any that remain).
+
+17. **Run regress** (`./e2e.ps1 regress`) to confirm no regression.
+
+If a B2B scenario flakes on "Venue manager books artist on a door split" with SQL `0x80131904` TCP drop signatures, refer to §8.1 — it's a known infra flake, not a refactor regression. Kill testhost, retry with `--no-build`.
 
 ---
 
@@ -573,11 +754,13 @@ The underlying flake (SQL connection drops during Aspire container churn) is ort
 
 ## 9. Out of scope
 
-- Renaming `SeedData` — kept as-is; the catalog rename alone is enough to resolve the prior name-clash.
+- Renaming `SeedData` — kept as-is in all services; the catalog rename + shared rename together resolve the prior name-clash.
+- Renaming the `Seeding*` classes within `Concertable.Seed.Shared` (`SeedingScope`, `SeedingIdentityInterceptor`, `SeedingDbContextOptionsExtensions`, `SeedingServiceCollectionExtensions`) — these are *verb-form* class names (the act of seeding) and are accurate as-is. Only the *project* / *namespace* gets the `Seed` rename. The classes inside keep their existing names.
 - Changing wire-event record shapes.
 - Touching B2B-internal entities outside Venues/Artists/Concerts (Contracts, Opportunities, Bookings, Applications stay unchanged).
 - Customer-side projection handler logic.
-- The Customer.Seeding `UpcomingConcertId = 13` const (already unused dead code; leave alone).
+- The Customer.Seeding `UpcomingConcertId = 13` const (already unused dead code; leave alone — surfaces during Phase 3 namespace update but don't delete in this refactor).
+- Renaming `IDevSeeder` / `ITestSeeder` interface names — verb-form, accurate, in-scope only for the project rename.
 
 ---
 
@@ -585,10 +768,13 @@ The underlying flake (SQL connection drops during Aspire container churn) is ort
 
 | Decision | Choice | Rationale |
 |---|---|---|
-| Project naming | `Seed.Contracts` + `Seed.Infrastructure` | Matches per-module convention (`Venue.Contracts` / `Venue.Infrastructure`). No rhyme. No `Fixture` baggage. |
+| Vocabulary | `Seed` (noun) everywhere; `Seeding` (verb) only on specific class/interface names (`IDevSeeder`, `SeedingScope`, etc.) | The data is "seed"; the act of inserting it is "seeding". Projects hold data → `Seed`. Classes that *perform* seeding can stay verb-form. Renaming all project namespaces to `Seed` removes the `Seeding`/`Seeding.X` confusion at import time. |
+| B2B project split | `Seed.Contracts` + `Seed.Infrastructure` | Matches per-module convention (`Venue.Contracts` / `Venue.Infrastructure`). Cross-boundary visibility split is enforced by the project graph. |
+| Customer/Payment projects | Flat `.Seed` (no `.Contracts`/`.Infrastructure` split) | They have no cross-boundary content; flat is sufficient. Splitting would add empty projects. |
 | Catalog class name | `SeedCatalog` | Self-describes via the codebase's "module name in class name" pattern (cf. `VenueChangedEvent`). Distinct word from `SeedData`. |
-| Composition class name | `SeedData` unchanged | Established; renaming would touch many files for cosmetic gain; the catalog rename already resolves the prior clash. |
+| Composition class name | `SeedData` unchanged | Established; renaming touches many files for cosmetic gain; the catalog rename + shared rename together resolve the prior clash. |
 | Entity-side factory shape | Static class, primitive parameters | Matches `ApplicationFactory.Create(int artistId, int opportunityId)`. The factory doesn't know about specs — `SeedData` unpacks at the call site. |
 | Event-side mapping | Static extension method on the spec | Pure record construction — no factory work to encapsulate. Asymmetry with entity side is honest. |
 | Where factories live | `Concertable.B2B.Seed.Infrastructure/Factories/` | B2B-internal because they reference Domain entities. Sub-folder matches other modules' `Domain/Factories/` placement. |
 | Spec records location | `Concertable.B2B.Seed.Contracts/Specs/` | Sub-folder under Contracts; namespace `Concertable.B2B.Seed.Contracts.Specs`. |
+| Phasing | Three commits — shared rename, B2B clean-arch, Customer/Payment/Simulator rename | Keeps each commit reviewable and bisectable. Shared rename first because it has the widest blast radius and is purely mechanical. |
