@@ -2,7 +2,7 @@ using Concertable.Seed.Identity;
 
 namespace Concertable.Testing.Integration.Search;
 
-public class SeedData
+public class SeedState
 {
     public SeedCustomer Customer => SeedCustomers.Customer1;
 }

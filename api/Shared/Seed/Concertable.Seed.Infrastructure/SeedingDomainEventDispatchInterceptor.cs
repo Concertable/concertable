@@ -3,7 +3,7 @@ using Concertable.Kernel;
 using Concertable.Messaging.Infrastructure.Outbox;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
-namespace Concertable.Seed.Events;
+namespace Concertable.Seed.Infrastructure;
 
 public class SeedingDomainEventDispatchInterceptor(
     IDomainEventDispatcher dispatcher,

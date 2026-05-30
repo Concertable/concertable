@@ -191,9 +191,9 @@
     <Project Path="Shared/Concertable.Shared.Notification/Concertable.Shared.Notification.Infrastructure/Concertable.Shared.Notification.Infrastructure.csproj" />
     <Project Path="Shared/Concertable.Shared.Pdf/Concertable.Shared.Pdf.Application/Concertable.Shared.Pdf.Application.csproj" />
     <Project Path="Shared/Concertable.Shared.Pdf/Concertable.Shared.Pdf.Infrastructure/Concertable.Shared.Pdf.Infrastructure.csproj" />
-    <Project Path="Shared/Concertable.Seed.Shared/Concertable.Seed.Shared.csproj" />
-    <Project Path="Shared/Concertable.Seed.Identity/Concertable.Seed.Identity.csproj" />
-    <Project Path="Shared/Concertable.Seed.Infrastructure/Concertable.Seed.Infrastructure.csproj" />
+    <Project Path="Shared/Seed/Concertable.Seed.Shared/Concertable.Seed.Shared.csproj" />
+    <Project Path="Shared/Seed/Concertable.Seed.Identity/Concertable.Seed.Identity.csproj" />
+    <Project Path="Shared/Seed/Concertable.Seed.Infrastructure/Concertable.Seed.Infrastructure.csproj" />
     <Project Path="Shared/Tests/Concertable.Kernel.UnitTests/Concertable.Kernel.UnitTests.csproj" />
   </Folder>
   <Folder Name="/B2B/Tests/E2ETests/">

@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Metadata;
 
-namespace Concertable.Seed.Identity;
+namespace Concertable.Seed.Shared.Identity;
 
 public sealed class SeedingIdentityInterceptor(SeedingScope scope) : DbCommandInterceptor
 {

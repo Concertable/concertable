@@ -1,4 +1,4 @@
-namespace Concertable.Seed.Identity;
+namespace Concertable.Seed.Shared.Identity;
 
 public sealed class SeedingScope : IDisposable
 {

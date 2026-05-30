@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-namespace Concertable.Seed.Extensions;
+namespace Concertable.Seed.Shared.Extensions;
 
 public static class DbSetExtensions
 {

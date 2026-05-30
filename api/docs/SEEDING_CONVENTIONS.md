@@ -24,7 +24,7 @@ The convention rules out the easy hack (`context.XReadModels.AddRange(...)` in a
 For the B2B case:
 
 - `Concertable.B2B.Seed.Simulator` (Worker host) publishes the canonical B2B `XChangedEvent` set on startup.
-- `Concertable.B2B.Seed.Contracts` holds the canonical event records — single source of truth that both B2B's own seeders (`Concertable.B2B.Seed.Infrastructure.SeedData`) and the simulator derive from. Byte-for-byte sync, no field drift.
+- `Concertable.B2B.Seed.Contracts` holds the canonical event records — single source of truth that both B2B's own seeders (`Concertable.B2B.Seed.Infrastructure.SeedState`) and the simulator derive from. Byte-for-byte sync, no field drift.
 - Registered in `Concertable.Customer.AppHost` as an Aspire resource. **Not** registered in the umbrella `Concertable.AppHost` (real B2B is already there).
 
 Customer's projection handlers run unchanged in both scenarios. Same code path, same data shape.
@@ -61,13 +61,13 @@ A navigation property from a write-model entity to a read-model projection creat
 
 If you see `HasOne(o => o.XReadModel).WithMany().HasForeignKey(o => o.XId)` in an EF configuration, that FK needs to be removed. `XId` stays as a plain `int` column with no constraint. Remove the navigation property from the entity too.
 
-## SeedData is ctor-built; seeders only persist
+## SeedState is ctor-built; seeders only persist
 
-`SeedData` is a singleton with a parameterless constructor that builds every entity it exposes from compile-time-deterministic inputs (IDs come from `Concertable.Seed.Identity.SeedUsers` / `SeedCustomers`; geometry, addresses, names, and relationships are hardcoded in the ctor). All properties are `{ get; }` — there are no setters.
+`SeedState` is a singleton with a parameterless constructor that builds every entity it exposes from compile-time-deterministic inputs (IDs come from `Concertable.Seed.Identity.SeedUsers` / `SeedCustomers`; geometry, addresses, names, and relationships are hardcoded in the ctor). All properties are `{ get; }` — there are no setters.
 
-Per-aggregate `XFactory.Seed` statics live in `Module.Domain/Factories/` and chain `.With(nameof(X.Id), id)` (from `Concertable.Seed.Extensions.EntityReflectionExtensions`) over the domain's `Create` method. `CredentialFactory.Seed` is the canonical pattern.
+Per-aggregate `XFactory.Seed` statics live in `Module.Domain/Factories/` and chain `.With(nameof(X.Id), id)` (from `Concertable.Seed.Identity.Extensions.EntityReflectionExtensions`) over the domain's `Create` method. `CredentialFactory.Seed` is the canonical pattern.
 
-Seeders read from `SeedData` and persist; they never assign to it:
+Seeders read from `SeedState` and persist; they never assign to it:
 
 ```csharp
 public async Task SeedAsync(CancellationToken ct)

@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 
-namespace Concertable.Seed;
+namespace Concertable.Seed.Shared;
 
 internal static partial class Log
 {

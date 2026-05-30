@@ -17,8 +17,8 @@ using Concertable.B2B.Venue.Infrastructure.Extensions;
 using Concertable.B2B.Conversations.Infrastructure.Extensions;
 using Concertable.DataAccess.Infrastructure.Extensions;
 using Concertable.B2B.Seed.Infrastructure;
-using Concertable.Seed.Extensions;
-using Concertable.Seed.Fakers;
+using Concertable.Seed.Shared.Extensions;
+using Concertable.B2B.Seed.Infrastructure.Fakers;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -50,7 +50,7 @@ public class ApiFixture : IAsyncLifetime
     public MockStripeApiClient StripeApiClient { get; } = new MockStripeApiClient();
     public IMockEmailSender EmailSender { get; } = new MockEmailSender();
     public IWebhookSimulator StripeClient { get; private set; } = null!;
-    public SeedData SeedData { get; private set; } = null!;
+    public SeedState SeedState { get; private set; } = null!;
     public IReadDbContext ReadDbContext { get; private set; } = null!;
 
 public async Task InitializeAsync()
@@ -111,7 +111,7 @@ public async Task InitializeAsync()
                 services.AddScoped<IImageService, MockImageService>();
                 services.AddScoped<IDbInitializer, TestDbInitializer>();
                 services.AddSeedingInfrastructure();
-                services.AddScoped<SeedData>();
+                services.AddScoped<SeedState>();
                 services.AddScoped<ILocationFaker, LocationFaker>();
                 services.AddUserTestSeeder();
                 services.AddArtistTestSeeder();
@@ -156,7 +156,7 @@ public async Task InitializeAsync()
         scope = factory.Services.CreateScope();
         var initializer = scope.ServiceProvider.GetRequiredService<IDbInitializer>();
         await initializer.InitializeAsync();
-        SeedData = scope.ServiceProvider.GetRequiredService<SeedData>();
+        SeedState = scope.ServiceProvider.GetRequiredService<SeedState>();
         ReadDbContext = scope.ServiceProvider.GetRequiredService<IReadDbContext>();
     }
 
