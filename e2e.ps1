@@ -4,9 +4,12 @@
     [switch]$Headed
 )
 
-$b2bUi      = "api/Concertable.B2B/Tests/E2ETests/Concertable.B2B.E2ETests.Ui"
-$customerUi = "api/Concertable.Customer/Tests/E2ETests/Concertable.Customer.E2ETests.Ui"
-$baselineMd = "api/Tests/Concertable.E2ETests/E2E_BASELINE.md"
+Set-Location $PSScriptRoot
+[Environment]::CurrentDirectory = $PSScriptRoot
+
+$b2bUi      = Join-Path $PSScriptRoot "api/Concertable.B2B/Tests/E2ETests/Concertable.B2B.E2ETests.Ui"
+$customerUi = Join-Path $PSScriptRoot "api/Concertable.Customer/Tests/E2ETests/Concertable.Customer.E2ETests.Ui"
+$baselineMd = Join-Path $PSScriptRoot "api/Tests/Concertable.E2ETests/E2E_BASELINE.md"
 
 if (-not $Headed) { $env:HEADLESS = "true" }
 

@@ -1,9 +1,9 @@
-using Concertable.B2B.Seeding;
+using Concertable.B2B.Seed.Infrastructure;
 using Concertable.Messaging.Infrastructure.Inbox;
 using Concertable.Messaging.Infrastructure.Outbox;
-using Concertable.Seeding;
-using Concertable.Seeding.Fakers;
-using Concertable.Seeding.Identity;
+using Concertable.Seed;
+using Concertable.Seed.Fakers;
+using Concertable.Seed.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Concertable.DataAccess.Application;
