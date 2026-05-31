@@ -1,5 +1,4 @@
 using System.Net.Http.Json;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -23,54 +22,9 @@ public static class HttpClientExtensions
         return await client.PostAsJsonAsync<object?>(url, null, JsonOptions);
     }
 
-    public static async Task<HttpResponseMessage> PostAsJsonEnsureSuccessAsync<T>(this HttpClient client, string url, T body)
-    {
-        var response = await client.PostAsync(url, body);
-        response.EnsureSuccessStatusCode();
-        return response;
-    }
-
-    public static async Task<HttpResponseMessage> PostAsSuccessAsync(this HttpClient client, string url)
-    {
-        var response = await client.PostAsync(url);
-        if (!response.IsSuccessStatusCode)
-        {
-            var body = await response.Content.ReadAsStringAsync();
-            throw new HttpRequestException($"{(int)response.StatusCode} {response.StatusCode}: {body}");
-        }
-        return response;
-    }
-
-    public static async Task<HttpResponseMessage> PostAsSuccessAsync<T>(this HttpClient client, string url, T body)
-    {
-        var response = await client.PostAsync(url, body);
-        if (!response.IsSuccessStatusCode)
-        {
-            var responseBody = await response.Content.ReadAsStringAsync();
-            throw new HttpRequestException($"{(int)response.StatusCode} {response.StatusCode}: {responseBody}");
-        }
-        return response;
-    }
-
     public static async Task<HttpResponseMessage> PutAsync<T>(this HttpClient client, string url, T body)
     {
         return await client.PutAsJsonAsync(url, body, JsonOptions);
-    }
-
-    public static async Task<T?> GetAsync<T>(this HttpClient client, string url)
-    {
-        return await client.GetFromJsonAsync<T>(url, JsonOptions);
-    }
-
-    public static async Task<T?> GetAssertAsync<T>(this HttpClient client, string url)
-    {
-        var response = await client.GetAsync(url);
-        if (!response.IsSuccessStatusCode)
-        {
-            var body = await response.Content.ReadAsStringAsync();
-            throw new HttpRequestException($"GET {url} → {(int)response.StatusCode} {response.StatusCode}: {body}");
-        }
-        return await response.Content.ReadFromJsonAsync<T>(JsonOptions);
     }
 
     public static async Task<HttpResponseMessage> DeleteAsync(this HttpClient client, string url)
