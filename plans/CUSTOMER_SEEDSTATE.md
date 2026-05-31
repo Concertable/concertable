@@ -45,6 +45,22 @@ Customer's `SeedState` was **not** redesigned in that work — it is still minim
 
 ---
 
+## 0a. Decisions locked (2026-05-31)
+
+All §4 and §5 open decisions resolved + two new structural ones added (A, B). Execute against these:
+
+| ID | Decision |
+|---|---|
+| §4 #1 | **E2E / dev: unchanged** — already convention-compliant via B2B Seed Simulator → bus → projection handlers. **Integration tests: direct-insert via new `XProjectionTestSeeder`s driven by the same `SeedCatalog`.** Documented exception to the read-models-via-handlers rule, scoped to integration tests only. Match between simulator output and direct insert is guaranteed because both consume the same catalog data. |
+| §4 #2 | **Mirror B2B's `UserTestSeeder` precedent** — Customer's `UserTestSeeder` direct-inserts `seedState.Customers` (typed `UserEntity` list). Pragmatic test-only shortcut; production users still come from `CredentialRegisteredHandler` via Auth. |
+| §4 #3 | **Yes — full `SeedState` includes Tickets and Reviews.** Build via Customer-owned factories same way B2B builds Bookings / Applications / Concerts. Expose typed named handles (`UpcomingFlatFeeTicket`, `ConfirmedConcertReview`, etc.). |
+| §4 #4 | **Use `SeedCatalog` specs directly as reference handles** — no custom `XReference` DTOs. `Customer.Seed.Infrastructure` references `Concertable.B2B.Seed.Contracts` (cross-boundary OK). |
+| §5 | **Keep identity data in shared `Concertable.Seed.Identity`.** Flatten `SeedCustomers` to B2B-`SeedUsers` shape (raw `Guid` / `string` accessors). Auth and all consumers continue to reference the shared lib — no relocation. |
+| A (new) | **Drop the `SeedCustomer` record entirely.** `SeedCustomers` becomes a flat static class with `CustomerId(int n)` / `CustomerEmail(int n)` accessors mirroring `SeedUsers`. `SeedState` exposes typed `UserEntity Customer1 / Customer2 / Customer3` built via `UserFactory.FromRegistration`. Anywhere that took a `SeedCustomer` switches to taking the `UserEntity` from `SeedState`. |
+| B (new) | **Rename project** `Concertable.Customer.Seed` → `Concertable.Customer.Seed.Infrastructure` (mirrors B2B's `Concertable.B2B.Seed.Infrastructure`). Namespace follows. **No `.Contracts` project** — Customer never publishes specs cross-service (per #4). |
+
+---
+
 ## 1. Current Customer state (verified)
 
 ### 1.1 `Concertable.Customer.Seed/SeedState.cs` (today — minimal)
@@ -127,152 +143,357 @@ B2B *owns* those tables and production writes them directly, so seeding them dir
 
 Customer's `Venue/Artist/Concert` are **read-model projections**. Production writes them **only**
 via the projection handlers reacting to B2B events. Per `api/docs/SEEDING_CONVENTIONS.md` and
-root `CLAUDE.md`, a seeder may only write what production writes directly — so Customer's
-`SeedState` **must not** `context.Venues.Add(readModel)`.
+root `CLAUDE.md`, a seeder may only write what production writes directly — so in E2E / dev /
+prod, Customer's read models are populated through the handler path (driven by the B2B Seed
+Simulator in dev/E2E).
 
-Therefore Customer `SeedState` plays **two roles**, and for read models only the second applies:
+Therefore Customer `SeedState` plays **two roles**:
 
-1. **Seed source** — for tables Customer genuinely owns (Preferences; and Customer users /
-   tickets / reviews if seeded). Build these B2B-style with factories.
-2. **Reference registry** — named handles describing the **expected** projected read-model rows
-   (venue 1, artist 2, concert "Upcoming FlatFee Show"), so tests can assert against them. The
-   *rows themselves* are produced by replaying `SeedCatalog` events through the projection
-   handlers, never inserted by `SeedState`.
+1. **Seed source** — for tables Customer genuinely owns: Customer Users, Preferences, Tickets,
+   Reviews. Build these B2B-style with factories.
+2. **Reference registry** — named handles to the **expected** projected read-model rows (venue 1,
+   artist 2, concert "Upcoming FlatFee Show"). Handles are `SeedCatalog` specs directly, not
+   the read-model entities. The actual DB rows come from:
+   - **E2E / dev:** simulator publishes specs as `XChangedEvent` → projection handlers populate
+     read models (convention-compliant, production code path).
+   - **Integration tests (documented exception):** `XProjectionTestSeeder`s read the same specs
+     and direct-insert read-model rows. Bypasses bus + handler for speed/isolation. Match with
+     simulator output guaranteed because both consume the same `SeedCatalog`.
 
 The reference values are derived from the **same `SeedCatalog`** that drives the events, so the
-handle and the actual projected row are guaranteed to match (single source of truth).
+handle and the actual row are guaranteed to match (single source of truth across all three
+consumers: handles, simulator, integration test seeders).
 
 ---
 
 ## 3. Target shape
 
-`Concertable.Customer.Seed/SeedState.cs`:
+`api/Concertable.Customer/Concertable.Customer.Seed.Infrastructure/SeedState.cs` (note rename per
+decision B):
 
 ```csharp
+namespace Concertable.Customer.Seed.Infrastructure;
+
 public sealed class SeedState
 {
     public const string TestPassword = "Password11!";
 
-    // Customer-owned personas (kept; widen to named handles)
-    public SeedCustomer Customer { get; }            // Customer1 (primary)
-    public SeedCustomer OtherCustomer { get; }       // Customer2
-    public IReadOnlyList<SeedCustomer> Customers { get; }
-    public IReadOnlyList<Guid> CustomerIds { get; }  // kept — PreferenceSeeder depends on it
+    // Customer users — typed entities, B2B style (decision A)
+    public UserEntity Customer1 { get; }
+    public UserEntity Customer2 { get; }
+    public UserEntity Customer3 { get; }
+    public IReadOnlyList<UserEntity> Customers { get; }
 
-    // Customer-owned entities Customer seeds directly (build via factories, B2B-style)
+    // Customer-owned entities (Preferences/Tickets/Reviews built via Customer-side factories)
     public IReadOnlyList<PreferenceEntity> Preferences { get; }
-    // (+ Customer User entities / Tickets / Reviews IF those become seeded — see §4)
+    public IReadOnlyList<TicketEntity> Tickets { get; }
+    public IReadOnlyList<ReviewEntity> Reviews { get; }
 
-    // Reference handles to the EXPECTED projected read-model rows (NOT inserted here).
-    // Derived from SeedCatalog so they match what the handlers produce.
-    public ConcertReference UpcomingFlatFeeConcert { get; }   // e.g. catalog.Concerts.First(c => c.Name == "Upcoming FlatFee Show")
-    public IReadOnlyList<VenueReference> Venues { get; }
-    public IReadOnlyList<ArtistReference> Artists { get; }
-    public IReadOnlyList<ConcertReference> Concerts { get; }
+    // Named ticket / review handles (B2B-style)
+    public TicketEntity UpcomingFlatFeeTicket { get; }
+    public TicketEntity PastDoorSplitTicket { get; }
+    public ReviewEntity ConfirmedConcertReview { get; }
+
+    // Read-model reference handles — SeedCatalog specs directly (decision §4 #4).
+    // NOT inserted here; rows come from simulator (E2E/dev) or XProjectionTestSeeder (integration).
+    public VenueSeedSpec Venue { get; }
+    public IReadOnlyList<VenueSeedSpec> Venues { get; }
+    public ArtistSeedSpec Artist { get; }
+    public IReadOnlyList<ArtistSeedSpec> Artists { get; }
+    public ConcertSeedSpec UpcomingFlatFeeConcert { get; }
+    public ConcertSeedSpec PastDoorSplitConcert { get; }
+    public IReadOnlyList<ConcertSeedSpec> Concerts { get; }
 
     public SeedState(SeedCatalog catalog) { ... }
 }
 ```
 
-Where `XReference` is a lightweight projection of the spec (id + the fields tests assert on),
-**not** the Customer `XReadModel` entity (Customer.Seed must not depend on the read-model Domain
-internals any more than necessary — decide in §4 whether to expose the spec directly vs a
-purpose-built reference type). Simplest: expose the relevant `SeedCatalog` specs directly
-(`VenueSeedSpec` etc.) as the reference handles, since they already carry every asserted field
-and `Customer.Seed` can reference `Concertable.B2B.Seed.Contracts` (cross-boundary OK).
+Ctor takes `SeedCatalog`. Register `AddSingleton<SeedCatalog>()` + `AddSingleton(TimeProvider.System)`
++ `AddScoped<SeedState>()` in `Customer.Web/Program.cs` (non-Testing branch) and both fixtures
+(E2E AppFixture already registers `SeedCatalog`).
 
-Ctor takes `SeedCatalog` (register `AddSingleton<SeedCatalog>()` + `AddSingleton(TimeProvider.System)`
-in Customer.Web / both fixtures — the E2E AppFixture already registers `SeedCatalog`).
+`SeedCustomers` (shared, flattened per decision A):
 
----
+```csharp
+namespace Concertable.Seed.Identity;
 
-## 4. Open decisions (need a human answer — do not guess)
+public static class SeedCustomers
+{
+    public const int CustomerCount = 3;
+    public static Guid CustomerId(int n) => new($"c0000000-0000-0000-0000-{n:D12}");
+    public static string CustomerEmail(int n) => $"customer{n}@test.com";
+}
+```
 
-1. **How are read models populated for integration tests?** Today `ApiFixture` direct-inserts
-   them (convention violation, but isolated/no-bus). Options:
-   - **(a) Convention-compliant replay (recommended):** add a Customer test seeder / fixture
-     helper that takes `SeedCatalog`, calls `spec.ToChangedEvent()`, and invokes the real
-     `VenueProjectionHandler/ArtistProjectionHandler/ConcertProjectionHandler` **in-process**
-     (no bus). Read models populated the production way; `SeedState` exposes references. This
-     unifies E2E and integration on one path and kills the §1.6 violation.
-   - **(b) Keep direct inserts** in integration tests as a pragmatic test-only shortcut, and
-     document the exception. Lower effort, keeps the violation.
-   Decision: __________
-
-2. **Does Customer seed its own `User` rows, and how?** B2B users are created by
-   `CredentialRegisteredHandler` reacting to `CredentialRegisteredEvent` from Auth (NEVER direct
-   insert). Customer users are the same pattern. So `SeedState` should **not** build Customer
-   `UserEntity` directly — confirm whether E2E relies on Auth registration for customer users and
-   whether integration tests need a convention-compliant path (replay `CredentialRegisteredEvent`).
-   Decision: __________
-
-3. **Tickets / Reviews:** should `SeedState` expose seeded tickets/reviews (Customer-owned,
-   purchase-time snapshots)? If tests need them, build via factories B2B-style. If not, omit.
-   Decision: __________
-
-4. **Reference handle type:** expose `SeedCatalog` specs directly as the read-model references,
-   or introduce Customer-side `XReference` DTOs? (Specs are simplest and already cross-boundary.)
-   Decision: __________
+The `SeedCustomer` record is **deleted**. Any signature that took `SeedCustomer` now takes the
+typed `UserEntity` from `SeedState` (or in shared library context, the raw `Guid` from
+`SeedCustomers.CustomerId(n)`).
 
 ---
 
-## 5. SeedCustomers / SeedUsers ownership (flagged — decide here)
+## 4. Decisions (locked — see §0a for the table)
 
-`api/Shared/Seed/Concertable.Seed.Identity/` currently holds **both**:
-- `SeedUsers` — B2B-owned identities (artist/venue managers, admin Guids/emails).
-- `SeedCustomers` — Customer-owned identities (customer Guids/emails).
-- `EntityReflectionExtensions` — genuinely shared (used by every seed factory).
+All open decisions resolved on 2026-05-31. See the table in §0a for the locked answers. Originals
+preserved here for context.
 
-The data ones are mis-located: `SeedUsers` is B2B's, `SeedCustomers` is Customer's. They live in
-shared **only** to coordinate cross-service identity: **Auth** registers these exact Guids, and
-B2B/Customer/Payment all reference the same ones, so they must agree.
-
-**Decision needed:** do we relocate the identity data to the owning services, or keep it shared?
-
-- If we relocate: `SeedCustomers` → a Customer-owned seed-identity location, `SeedUsers` → a
-  B2B-owned one. Then **Auth** (and any cross-service consumer) needs another way to obtain the
-  canonical Guids — e.g. a thin cross-boundary identity contract, or Auth references the owning
-  service's seed contracts. Spell out how coordination is preserved before moving anything.
-- If we keep shared: at minimum split `Seed.Identity` conceptually so B2B vs Customer identity
-  data is clearly delineated, and leave `EntityReflectionExtensions` as the shared remainder.
-
-This is **out of scope for the SeedState body** but in scope for "do it right." Capture the
-decision and, if relocating, sequence it as its own step with the Auth-coordination fix first.
-
-Decision: __________
+1. ~~How are read models populated for integration tests?~~ **Locked:** integration uses new
+   `XProjectionTestSeeder`s driven by `SeedCatalog` (direct-insert, documented exception). E2E /
+   dev keep the simulator → handler path (no change).
+2. ~~Does Customer seed its own User rows?~~ **Locked:** yes, mirror B2B's `UserTestSeeder` —
+   direct-insert `seedState.Customers`. Production unaffected.
+3. ~~Tickets / Reviews?~~ **Locked:** yes, full SeedState exposes them via factories with named
+   handles.
+4. ~~Reference handle type?~~ **Locked:** `SeedCatalog` specs directly, no `XReference` DTOs.
 
 ---
 
-## 6. Implementation order (once §4/§5 decided)
+## 5. SeedCustomers / SeedUsers ownership (locked)
 
-1. Add `SeedState(SeedCatalog catalog)` ctor; register `SeedCatalog` + `TimeProvider` in
-   `Customer.Web/Program.cs` (non-Testing branch) and both E2E/integration fixtures (E2E already
-   has `SeedCatalog`).
-2. Build Customer-owned entities via factories (start with `Preferences`; mirror B2B factory
-   placement — put any new Customer seed factories in `Concertable.Customer.Seed/Factories/`).
-3. Add read-model **reference handles** derived from `catalog` (specs or `XReference`).
-4. Per §4(1): wire read-model population — replay path (recommended) or keep direct inserts.
-5. Update `PreferenceDevSeeder`/`PreferenceTestSeeder` to consume the new `SeedState` shape
-   (they already depend on `CustomerIds` — keep it).
-6. Update `Customer.E2ETests/AppFixture` + `Testing.Integration.Customer/ApiFixture` to expose the
-   richer `SeedState` and use the reference handles in assertions.
-7. Build (`dotnet build api/Concertable.slnx`, 0 errors) + `./e2e.ps1 regress` green.
+**Locked:** **keep identity data in shared `Concertable.Seed.Identity`.** Flatten `SeedCustomers`
+to B2B-`SeedUsers` shape (raw `Guid` / `string` accessors — see §3). Drop the `SeedCustomer`
+record. Auth and every other cross-service consumer continues to reference the shared lib — no
+relocation, no relocation-coordination work needed.
+
+This is the simplest answer that preserves cross-service identity coordination while removing the
+asymmetry that gave Customer a record-shape and B2B a flat-shape.
+
+---
+
+## 6. Implementation order
+
+Do steps in order — each leaves the build green so failures localise.
+
+1. **Flatten `SeedCustomers` (decision A).** Delete the `SeedCustomer` record. Rewrite
+   `api/Shared/Seed/Concertable.Seed.Identity/SeedCustomers.cs` to flat shape (see §3). Update
+   every caller that took `SeedCustomer` — pass `Guid` (for shared lib code) or the typed
+   `UserEntity` (for service code via `SeedState`). Today's callers: `Customer.Web`,
+   `Customer.Concert.Infrastructure`, `Customer.Preference.Infrastructure`, `Customer.E2ETests`,
+   `Customer.E2ETests.Ui`, `Payment.Infrastructure`, `Customer.IntegrationTests.Fixtures`.
+2. **Rename project (decision B).** `Concertable.Customer.Seed` →
+   `Concertable.Customer.Seed.Infrastructure`. Update the csproj filename, folder, namespace, and
+   every `<ProjectReference>` that pointed at it. Add it to `Concertable.Customer.slnx`. No
+   `.Contracts` project — Customer doesn't publish specs.
+3. **Add Customer seed factories.** Mirror B2B layout:
+   `Concertable.Customer.Seed.Infrastructure/Factories/{UserFactory, PreferenceFactory,
+   TicketFactory, ReviewFactory}.cs`. `UserFactory.FromRegistration(Guid, string)` for Customer
+   users, plus factories for Preferences/Tickets/Reviews.
+4. **Rewrite `SeedState`** per §3. Ctor takes `SeedCatalog`, builds Customer1/2/3 via
+   `UserFactory`, builds Preferences/Tickets/Reviews via the new factories, exposes spec-typed
+   reference handles for Venues/Artists/Concerts. Register `SeedCatalog`, `TimeProvider.System`,
+   `SeedState` in `Customer.Web/Program.cs` (non-Testing) + both fixtures.
+5. **Update existing Customer seeders.** `PreferenceDevSeeder` and `PreferenceTestSeeder` consume
+   `SeedState.Preferences` (currently they reach for `CustomerIds`). Add new `UserTestSeeder`
+   (mirrors B2B — direct-inserts `seedState.Customers`), `TicketTestSeeder`, `ReviewTestSeeder`.
+6. **Add `XProjectionTestSeeder`s** (decision §4 #1, integration-only). One per read-model module:
+   - `VenueProjectionTestSeeder` in `Customer.Venue.Infrastructure/Data/Seeders/`
+   - `ArtistProjectionTestSeeder` in `Customer.Artist.Infrastructure/Data/Seeders/`
+   - `ConcertProjectionTestSeeder` in `Customer.Concert.Infrastructure/Data/Seeders/`
+   Each takes `XDbContext` + `SeedCatalog`, iterates `catalog.X`, calls `XReadModel.Create(...)`
+   with the spec's fields, saves. **No dev variant** — dev uses the simulator path.
+7. **Update `Customer.IntegrationTests.Fixtures/ApiFixture`**:
+   - Register `SeedCatalog`, `SeedState`, all `ITestSeeder`s in `ConfigureTestServices`.
+   - On `ResetAsync()`: run all `ITestSeeder`s in order; expose `SeedState` via property.
+   - **Delete** the `SeedUserAsync` / `SeedVenueAsync` / `SeedArtistAsync` / `SeedConcertAsync` /
+     `SeedTicketAsync` helpers.
+   - Existing integration test files that called those helpers move to `fixture.SeedState.X` named
+     handles.
+8. **Update `Customer.E2ETests/AppFixture`** to expose the richer `SeedState` for E2E tests that
+   want named handles. Simulator path is unchanged.
+9. **Document the integration-test exception** in `api/docs/SEEDING_CONVENTIONS.md` —
+   `XProjectionTestSeeder`s are exempt from "read models only via handlers" because they're
+   driven from the same `SeedCatalog` that drives the simulator, so match is guaranteed.
+10. **Verify:** `dotnet build api/Concertable.slnx` → 0 errors. `./integration.ps1 customer` →
+    all green. `./e2e.ps1 regress` → green.
 
 ---
 
 ## 7. Boundary & convention checks
 
-- `Concertable.Customer.Seed` may reference `Concertable.B2B.Seed.Contracts` (SeedCatalog/specs —
-  cross-boundary OK) but **must not** reference `Concertable.B2B.Seed.Infrastructure` (B2B Domain).
-- `SeedState` must **not** `Add` any `XReadModel` — read models come from handlers only.
+- `Concertable.Customer.Seed.Infrastructure` may reference `Concertable.B2B.Seed.Contracts`
+  (SeedCatalog / specs — cross-boundary OK) but **must not** reference
+  `Concertable.B2B.Seed.Infrastructure` (B2B Domain).
+- `SeedState` must **not** `Add` any `XReadModel` — that's the simulator + handlers in dev/E2E,
+  and `XProjectionTestSeeder`s in integration tests. `SeedState` only **describes** what those
+  rows look like (via the spec handles).
+- The integration-test direct-insert exception is documented in `SEEDING_CONVENTIONS.md` and is
+  scoped to `XProjectionTestSeeder`s only. Test code that wants a read-model row reaches into
+  `seedState.Venue` etc.; it never calls `db.Venues.Add()` itself.
 - Re-read `api/docs/SEEDING_CONVENTIONS.md` in full before writing any seeder body.
 
 ---
 
 ## 8. Verification
 
-- Solution builds with 0 errors.
+- `dotnet build api/Concertable.slnx` → 0 errors.
+- `./integration.ps1 customer` → all green.
 - `./e2e.ps1 regress` passes (B2B 7/7, Customer 2/2 baseline) — run from the **repo root**
-  (`e2e.ps1` pins `Set-Location $PSScriptRoot` + `[Environment]::CurrentDirectory`, so cwd is safe).
-- Customer.Seed does not reference B2B.Seed.Infrastructure (grep).
-- New integration/e2e tests can resolve `SeedState` from DI and assert against its handles.
+  (`e2e.ps1` pins `Set-Location $PSScriptRoot` + `[Environment]::CurrentDirectory`).
+- `Concertable.Customer.Seed.Infrastructure` does not reference `Concertable.B2B.Seed.Infrastructure`
+  (grep).
+- `SeedCustomer` record no longer exists in the codebase (grep — should be zero matches).
+- Integration / E2E tests resolve `SeedState` from DI and assert against its named handles
+  (`seedState.UpcomingFlatFeeConcert`, `seedState.Customer1`, etc.).
+
+---
+
+## 9. Reference snippets
+
+Locked code shapes for the work. Match these — don't reinvent.
+
+### 9.1 Flattened `SeedCustomers`
+
+```csharp
+namespace Concertable.Seed.Identity;
+
+public static class SeedCustomers
+{
+    public const int CustomerCount = 3;
+    public static Guid CustomerId(int n) => new($"c0000000-0000-0000-0000-{n:D12}");
+    public static string CustomerEmail(int n) => $"customer{n}@test.com";
+}
+```
+
+### 9.2 `SeedState` (partial — composition root shape)
+
+```csharp
+namespace Concertable.Customer.Seed.Infrastructure;
+
+public sealed class SeedState
+{
+    public const string TestPassword = "Password11!";
+
+    public UserEntity Customer1 { get; }
+    public UserEntity Customer2 { get; }
+    public UserEntity Customer3 { get; }
+    public IReadOnlyList<UserEntity> Customers { get; }
+
+    public IReadOnlyList<PreferenceEntity> Preferences { get; }
+    public IReadOnlyList<TicketEntity> Tickets { get; }
+    public IReadOnlyList<ReviewEntity> Reviews { get; }
+
+    public TicketEntity UpcomingFlatFeeTicket { get; }
+    public TicketEntity PastDoorSplitTicket { get; }
+    public ReviewEntity ConfirmedConcertReview { get; }
+
+    public VenueSeedSpec Venue { get; }
+    public IReadOnlyList<VenueSeedSpec> Venues { get; }
+    public ArtistSeedSpec Artist { get; }
+    public IReadOnlyList<ArtistSeedSpec> Artists { get; }
+    public ConcertSeedSpec UpcomingFlatFeeConcert { get; }
+    public ConcertSeedSpec PastDoorSplitConcert { get; }
+    public IReadOnlyList<ConcertSeedSpec> Concerts { get; }
+
+    public SeedState(SeedCatalog catalog)
+    {
+        Customer1 = UserFactory.FromRegistration(SeedCustomers.CustomerId(1), SeedCustomers.CustomerEmail(1));
+        Customer2 = UserFactory.FromRegistration(SeedCustomers.CustomerId(2), SeedCustomers.CustomerEmail(2));
+        Customer3 = UserFactory.FromRegistration(SeedCustomers.CustomerId(3), SeedCustomers.CustomerEmail(3));
+        Customers = [Customer1, Customer2, Customer3];
+
+        Preferences = Customers.Select(c => PreferenceFactory.CreateDefault(c.Id)).ToList();
+
+        Venues = catalog.Venues;
+        Venue = catalog.Venues[0];
+        Artists = catalog.Artists;
+        Artist = catalog.Artists[0];
+        Concerts = catalog.Concerts;
+        UpcomingFlatFeeConcert = catalog.Concerts.First(c => c.Name == "Upcoming FlatFee Show");
+        PastDoorSplitConcert   = catalog.Concerts.First(c => c.Name == "Past DoorSplit Show");
+
+        UpcomingFlatFeeTicket = TicketFactory.CreateForUpcoming(Customer1.Id, UpcomingFlatFeeConcert);
+        PastDoorSplitTicket   = TicketFactory.CreateForPast(Customer1.Id, PastDoorSplitConcert);
+        Tickets = [UpcomingFlatFeeTicket, PastDoorSplitTicket];
+
+        ConfirmedConcertReview = ReviewFactory.Create(Customer1.Id, PastDoorSplitConcert);
+        Reviews = [ConfirmedConcertReview];
+    }
+}
+```
+
+(Exact handle list — Tickets, Reviews, Concerts — settles during step 4; the named cases above
+are illustrative.)
+
+### 9.3 Projection test seeder (one per read-model module)
+
+```csharp
+namespace Concertable.Customer.Venue.Infrastructure.Data.Seeders;
+
+internal class VenueProjectionTestSeeder : ITestSeeder
+{
+    public int Order => 1;
+
+    private readonly VenueDbContext context;
+    private readonly SeedCatalog catalog;
+
+    public VenueProjectionTestSeeder(VenueDbContext context, SeedCatalog catalog)
+    {
+        this.context = context;
+        this.catalog = catalog;
+    }
+
+    public Task MigrateAsync(CancellationToken ct = default) => context.Database.MigrateAsync(ct);
+
+    public async Task SeedAsync(CancellationToken ct = default)
+    {
+        await context.Venues.SeedIfEmptyAsync(async () =>
+        {
+            foreach (var spec in catalog.Venues)
+            {
+                context.Venues.Add(VenueReadModel.Create(
+                    venueId: spec.VenueId, userId: spec.UserId,
+                    name: spec.Name, about: spec.About,
+                    avatar: spec.Avatar, bannerUrl: spec.BannerUrl,
+                    county: spec.County, town: spec.Town,
+                    latitude: spec.Latitude, longitude: spec.Longitude,
+                    email: spec.Email));
+            }
+            await context.SaveChangesAsync(ct);
+        });
+    }
+}
+```
+
+Same shape for `ArtistProjectionTestSeeder` and `ConcertProjectionTestSeeder`. Field-to-field
+maps spec → `XReadModel.Create(...)`.
+
+### 9.4 `ApiFixture` wiring
+
+```csharp
+builder.ConfigureTestServices(services =>
+{
+    // ... existing logging / auth / messaging mocks ...
+
+    services.AddSingleton(TimeProvider.System);
+    services.AddSingleton<SeedCatalog>();
+    services.AddScoped<SeedState>();
+
+    services.AddScoped<ITestSeeder, UserTestSeeder>();
+    services.AddScoped<ITestSeeder, PreferenceTestSeeder>();
+    services.AddScoped<ITestSeeder, TicketTestSeeder>();
+    services.AddScoped<ITestSeeder, ReviewTestSeeder>();
+    services.AddScoped<ITestSeeder, VenueProjectionTestSeeder>();
+    services.AddScoped<ITestSeeder, ArtistProjectionTestSeeder>();
+    services.AddScoped<ITestSeeder, ConcertProjectionTestSeeder>();
+});
+```
+
+```csharp
+public SeedState SeedState { get; private set; } = null!;
+
+public async Task ResetAsync()
+{
+    await sqlFixture.ResetAsync();
+    NotificationClient.Reset();
+
+    scope?.Dispose();
+    scope = factory.Services.CreateScope();
+    SeedState = scope.ServiceProvider.GetRequiredService<SeedState>();
+
+    foreach (var seeder in scope.ServiceProvider.GetServices<ITestSeeder>().OrderBy(s => s.Order))
+        await seeder.SeedAsync();
+}
+```
+
+All of `SeedUserAsync` / `SeedVenueAsync` / `SeedArtistAsync` / `SeedConcertAsync` /
+`SeedTicketAsync` on the fixture are **deleted**. Tests get the full catalog by default and
+reach into `fixture.SeedState.X` for named handles — same shape as B2B integration tests.
