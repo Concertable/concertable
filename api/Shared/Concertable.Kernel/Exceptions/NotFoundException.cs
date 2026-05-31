@@ -13,9 +13,10 @@ public class NotFoundException : HttpException
 
     public static void ThrowIfNull(
         [NotNull] object? argument,
+        string? message = null,
         [CallerArgumentExpression(nameof(argument))] string? paramName = null)
     {
         if (argument is null)
-            throw new NotFoundException($"{paramName} was not found.");
+            throw new NotFoundException(message ?? $"{paramName} was not found.");
     }
 }
