@@ -13,6 +13,15 @@ exact files, and the open decisions that need a human answer before/while execut
 > (renamed from `SeedData`). The cross-boundary spec list is **`SeedCatalog`**
 > (`Concertable.B2B.Seed.Contracts`). Keep that vocabulary.
 
+> ⚠ PREREQUISITE — fixture moved/renamed: `plans/TEST_PROJECT_RELOCATION.md` relocates and renames
+> the Customer integration fixture. Do that plan's **Customer slice first**. After it,
+> `Concertable.Testing.Integration.Customer` (at `api/Tests/`) no longer exists — it is now
+> **`Concertable.Customer.IntegrationTests.Fixtures`** at
+> `api/Concertable.Customer/Tests/Concertable.Customer.IntegrationTests.Fixtures/`. Everywhere
+> below that says `Testing.Integration.Customer/ApiFixture` (§1.1, §1.6, §6 step 6), read the new
+> name/location. Also: per that plan's Decision C2, `MockCustomerPaymentClient` now lives in this
+> fixture (moved out of shared `Concertable.Testing.Integration`).
+
 ---
 
 ## 0. Prior state — what already landed

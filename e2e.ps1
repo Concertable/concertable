@@ -9,7 +9,7 @@ Set-Location $PSScriptRoot
 
 $b2bUi      = Join-Path $PSScriptRoot "api/Concertable.B2B/Tests/E2ETests/Concertable.B2B.E2ETests.Ui"
 $customerUi = Join-Path $PSScriptRoot "api/Concertable.Customer/Tests/E2ETests/Concertable.Customer.E2ETests.Ui"
-$baselineMd = Join-Path $PSScriptRoot "api/Tests/Concertable.E2ETests/E2E_BASELINE.md"
+$baselineMd = Join-Path $PSScriptRoot "api/Shared/Tests/Concertable.E2ETests/E2E_BASELINE.md"
 
 if (-not $Headed) { $env:HEADLESS = "true" }
 
@@ -121,7 +121,7 @@ switch ($cmd) {
     "3ds" {
         dotnet test "$b2bUi/Concertable.B2B.E2ETests.Ui.csproj" --filter "DisplayName~3DS" --logger "console;verbosity=normal" | Tee-Object -FilePath "$b2bUi/ui-tests.last.log"
     }
-    "trace" { & "api/Tests/Concertable.E2ETests/ui-trace.ps1" }
+    "trace" { & "api/Shared/Tests/Concertable.E2ETests/ui-trace.ps1" }
     default {
         Write-Host ""
         Write-Host "  Usage: ./e2e.ps1 <command> [-Headed]" -ForegroundColor White

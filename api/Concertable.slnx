@@ -165,6 +165,9 @@
     <Project Path="Concertable.Payment/Concertable.Payment.Workers/Concertable.Payment.Workers.csproj" />
     <Project Path="Concertable.Payment/Tests/Concertable.Payment.UnitTests/Concertable.Payment.UnitTests.csproj" />
   </Folder>
+  <Folder Name="/Payment/Tests/E2ETests/">
+    <Project Path="Concertable.Payment/Tests/E2ETests/Concertable.Payment.E2ETests.Helpers/Concertable.Payment.E2ETests.Helpers.csproj" />
+  </Folder>
   <Folder Name="/Search/">
     <Project Path="Concertable.Search/Concertable.Search.AppHost.Extensions/Concertable.Search.AppHost.Extensions.csproj" />
     <Project Path="Concertable.Search/Concertable.Search.Api/Concertable.Search.Api.csproj" />
@@ -174,6 +177,7 @@
     <Project Path="Concertable.Search/Concertable.Search.Web/Concertable.Search.Web.csproj" />
     <Project Path="Concertable.Search/Concertable.Search.Workers/Concertable.Search.Workers.csproj" />
     <Project Path="Concertable.Search/Tests/Concertable.Search.IntegrationTests/Concertable.Search.IntegrationTests.csproj" />
+    <Project Path="Concertable.Search/Tests/Concertable.Search.IntegrationTests.Fixtures/Concertable.Search.IntegrationTests.Fixtures.csproj" />
     <Project Path="Concertable.Search/Tests/Concertable.Search.UnitTests/Concertable.Search.UnitTests.csproj" />
   </Folder>
   <Folder Name="/Shared/">
@@ -195,23 +199,24 @@
     <Project Path="Shared/Seed/Concertable.Seed.Identity/Concertable.Seed.Identity.csproj" />
     <Project Path="Shared/Seed/Concertable.Seed.Infrastructure/Concertable.Seed.Infrastructure.csproj" />
     <Project Path="Shared/Tests/Concertable.Kernel.UnitTests/Concertable.Kernel.UnitTests.csproj" />
+    <Project Path="Shared/Tests/Concertable.Testing/Concertable.Testing.csproj" />
+    <Project Path="Shared/Tests/Concertable.Testing.Integration/Concertable.Testing.Integration.csproj" />
+    <Project Path="Shared/Tests/Concertable.E2ETests/Concertable.E2ETests.csproj" />
+    <Project Path="Shared/Tests/Concertable.E2ETests/Concertable.E2ETests.Mobile/Concertable.E2ETests.Mobile.csproj" />
+  </Folder>
+  <Folder Name="/B2B/Tests/">
+    <Project Path="Concertable.B2B/Tests/Concertable.B2B.IntegrationTests.Fixtures/Concertable.B2B.IntegrationTests.Fixtures.csproj" />
+    <Project Path="Concertable.B2B/Tests/Concertable.B2B.Workers.UnitTests/Concertable.B2B.Workers.UnitTests.csproj" />
   </Folder>
   <Folder Name="/B2B/Tests/E2ETests/">
     <Project Path="Concertable.B2B/Tests/E2ETests/Concertable.B2B.E2ETests/Concertable.B2B.E2ETests.csproj" />
     <Project Path="Concertable.B2B/Tests/E2ETests/Concertable.B2B.E2ETests.Ui/Concertable.B2B.E2ETests.Ui.csproj" />
   </Folder>
+  <Folder Name="/Customer/Tests/">
+    <Project Path="Concertable.Customer/Tests/Concertable.Customer.IntegrationTests.Fixtures/Concertable.Customer.IntegrationTests.Fixtures.csproj" />
+  </Folder>
   <Folder Name="/Customer/Tests/E2ETests/">
     <Project Path="Concertable.Customer/Tests/E2ETests/Concertable.Customer.E2ETests/Concertable.Customer.E2ETests.csproj" />
     <Project Path="Concertable.Customer/Tests/E2ETests/Concertable.Customer.E2ETests.Ui/Concertable.Customer.E2ETests.Ui.csproj" />
-  </Folder>
-  <Folder Name="/Tests/">
-    <Project Path="Tests/Concertable.E2ETests/Concertable.E2ETests.csproj" />
-    <Project Path="Tests/Concertable.E2ETests/Concertable.E2ETests.Mobile/Concertable.E2ETests.Mobile.csproj" />
-    <Project Path="Tests/Concertable.Testing/Concertable.Testing.csproj" />
-    <Project Path="Tests/Concertable.Testing.Integration/Concertable.Testing.Integration.csproj" />
-    <Project Path="Tests/Concertable.Testing.Integration.B2B/Concertable.Testing.Integration.B2B.csproj" />
-    <Project Path="Tests/Concertable.Testing.Integration.Customer/Concertable.Testing.Integration.Customer.csproj" />
-    <Project Path="Tests/Concertable.Testing.Integration.Search/Concertable.Testing.Integration.Search.csproj" />
-    <Project Path="Tests/Concertable.Workers.UnitTests/Concertable.Workers.UnitTests.csproj" />
   </Folder>
 </Solution>
