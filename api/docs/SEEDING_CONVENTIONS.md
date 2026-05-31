@@ -4,7 +4,7 @@
 >
 > **Never write `context.X.Add(...)` or `context.X.AddRange(...)` against a DbSet whose entity is only written by a handler in production.**
 >
-> Read-model projections (`VenueReadModel`, `ArtistReadModel`, `ConcertReadModel`, anything in `[concert]` / `[venue]` / `[artist]` / `[search]` schemas), `UserEntity` rows, manager profile rows, Stripe `PayoutAccount` rows, inbox/outbox messages — none of these are seeded. They are written by handlers reacting to events. The seeder's job in those cases is to **drive the event**, not to write the row.
+> Read-model projections and event-synced replicas (`VenueReadModel`, `ArtistReadModel`, `ConcertReadModel`, Customer's `VenueEntity` / `ArtistEntity` / `ConcertEntity`, anything in `[concert]` / `[venue]` / `[artist]` / `[search]` schemas), `UserEntity` rows, manager profile rows, Stripe `PayoutAccount` rows, inbox/outbox messages — none of these are seeded. They are written by handlers reacting to events. The seeder's job in those cases is to **drive the event**, not to write the row.
 >
 > If standalone Customer (or any service) lacks projection data because the producing service isn't running, the answer is **not** "seed the projection table." The answer is "stand up a seeding simulator for the producing service" — see [Standalone-service seeding](#standalone-service-seeding) below.
 >
@@ -48,7 +48,7 @@ A large category of data exists solely because integration events were processed
 
 Examples of data that must **not** be manually seeded:
 
-- **Read-model projections** — `VenueReadModel`, `ArtistReadModel`, and any other `XReadModel` in a concert/search context. These are populated by `XChangedEvent` handlers. If the table is empty at seed time, it means the event hasn't been processed yet — that is correct and expected.
+- **Read-model projections / event-synced replicas** — `VenueReadModel`, `ArtistReadModel`, any other `XReadModel` in a concert/search context, **and Customer's `VenueEntity` / `ArtistEntity` / `ConcertEntity`** (named `*Entity`, but still populated solely by `XChangedEvent` handlers — the rule follows from *how they're written*, not the suffix). If the table is empty at seed time, it means the event hasn't been processed yet — that is correct and expected.
 - **Stripe payout accounts** — provisioned when `CredentialRegisteredEvent` fires on user registration.
 - **Payment accounts / external service records** — anything provisioned by a handler reacting to a domain event.
 
