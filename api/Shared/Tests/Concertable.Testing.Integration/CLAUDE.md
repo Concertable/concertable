@@ -4,7 +4,9 @@ Shared integration-test infrastructure. This is a reusable library — treat it 
 
 ## What belongs here
 
-Only add something here if it is used by **two or more microservices**. Current consumers: B2B, Customer, Search.
+Only add something here if it is used by **two or more microservices**, *or* it is a **service-agnostic
+contract** that services implement with their own service-specific types (the contract is shared; the
+implementations are not). Current consumers: B2B, Customer, Search.
 
 - `SqlFixture` — Testcontainers MsSql + Respawn reset
 - `TestAuthHandler` — injects `sub` / `role` claims via request headers
@@ -13,6 +15,9 @@ Only add something here if it is used by **two or more microservices**. Current 
 - `Mocks/MockEmailSender` / `IMockEmailSender` — captures sent emails, exposes `Sent` list
 - `Mocks/MockGeocodingService` / `MockGeocodingServiceFail` — stub geocoding
 - `Mocks/MockImageService` — stub image upload/replace/delete
+- `IWebhookSimulator` — service-agnostic contract for driving an inbound payment webhook in-process
+  (e.g. dispatching `PaymentSucceededEvent` to its handlers). The **implementations**
+  (`MockWebhookSimulator` etc.) are service-specific and live in the owning service's fixture.
 
 ## What does NOT belong here
 
@@ -21,7 +26,7 @@ If something is only used by one microservice it goes in that service's own fixt
 | Type of thing | Where it lives |
 |---|---|
 | `ApiFixture` for a specific service | that service's `Concertable.<Service>.IntegrationTests.Fixtures` |
-| Service-specific mocks (Stripe, webhook simulators, notification, payment client) | that service's `...IntegrationTests.Fixtures/Mocks/` |
+| Service-specific mocks (Stripe, webhook simulator *implementations*, notification, payment client) | that service's `...IntegrationTests.Fixtures/Mocks/` |
 | Service-specific DB initializers / seeders | that service's `...IntegrationTests.Fixtures` |
 | Test collection definitions | that service's `...IntegrationTests.Fixtures` |
 

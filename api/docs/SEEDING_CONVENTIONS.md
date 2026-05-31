@@ -52,6 +52,18 @@ Examples of data that must **not** be manually seeded:
 
 The rule: if a record exists because *something happened* (an event was raised and handled), there is no seeder for it. If you find yourself writing `context.XReadModels.AddRange(...)` in a seeder, stop — you are bypassing the event flow.
 
+### The one exception: `XProjectionTestSeeder` (integration tests only)
+
+Integration tests are the single, deliberate exception to "read models only via handlers". Spinning up the producing service's bus + handler path inside a `WebApplicationFactory` is slow and flaky, so each read-model module ships an `XProjectionTestSeeder : ITestSeeder` (e.g. `VenueProjectionTestSeeder`, `ArtistProjectionTestSeeder`, `ConcertProjectionTestSeeder`) that direct-inserts the read-model rows.
+
+This is safe — not a violation of the spirit of the rule — because:
+
+- The seeder is driven from the **same `Concertable.B2B.Seed.Contracts.SeedCatalog`** that drives the dev/E2E simulator. Both consume identical spec data, so the direct-inserted rows are byte-identical to what the handler path would produce. There is no second source of truth to drift from.
+- It is an `ITestSeeder`, so it runs in **integration tests only** — never in dev or E2E, which keep the simulator → `XChangedEvent` → projection-handler path unchanged.
+- It maps each spec to `XReadModel.Create(...)` field-for-field, exactly as the projection handler does.
+
+Test code still never calls `db.XReadModels.Add(...)` itself. Tests reach into `SeedState` handles — and for read models those handles are the `SeedCatalog` specs (`seedState.UpcomingFlatFeeConcert`, `seedState.Venue`, …), never the read-model entities.
+
 ## Write models must not have FK constraints to read models
 
 A navigation property from a write-model entity to a read-model projection creates a database FK from the write table to the read table. This is always wrong:

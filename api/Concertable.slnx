@@ -84,7 +84,7 @@
     <Project Path="Concertable.Customer/Concertable.Customer.AppHost/Concertable.Customer.AppHost.csproj" />
     <Project Path="Concertable.Customer/Concertable.Customer.AppHost.Extensions/Concertable.Customer.AppHost.Extensions.csproj" />
     <Project Path="Concertable.Customer/Concertable.Customer.Web/Concertable.Customer.Web.csproj" />
-    <Project Path="Concertable.Customer/Concertable.Customer.Seed/Concertable.Customer.Seed.csproj" />
+    <Project Path="Concertable.Customer/Concertable.Customer.Seed.Infrastructure/Concertable.Customer.Seed.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/Customer/Modules/Artist/">
     <Project Path="Concertable.Customer/Modules/Artist/Concertable.Customer.Artist.Api/Concertable.Customer.Artist.Api.csproj" />

@@ -29,7 +29,7 @@ public class CustomerSteps
     {
         loginScreen = new LoginScreen(app);
         var seed = fixture.App.SeedState;
-        await loginScreen.SignInAsync(seed.Customer.Email, SeedState.TestPassword);
+        await loginScreen.SignInAsync(seed.Customer1.Email, SeedState.TestPassword);
         homeScreen = new HomeScreen(app);
         homeScreen.WaitUntilLoaded();
     }
