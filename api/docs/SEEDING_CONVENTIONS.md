@@ -33,6 +33,8 @@ See `api/Concertable.B2B/Concertable.B2B.Seed.Simulator/CLAUDE.md` for the full 
 
 The same pattern applies to any future standalone-service seeding need: the upstream service ships a simulator, downstream AppHosts reference it.
 
+**Dependency direction — the part people get wrong.** A producer's `X.Seed.Contracts` is referenced **by** its consumers and references **none** of them. `B2B.Seed.Contracts` is referenced by Customer (its downstream consumer) and references none of them. A `*.Seed.Simulator` is owned only by a **data service** whose server peers don't run (B2B's exists because Customer runs without B2B) — **never** by an agnostic **adapter**. Payment is an adapter that always runs, so it owns no seed catalog and no simulator; it would also be wrong to park a catalog of ticket *purchases* in Payment, since purchase semantics live in the B2B/Customer consumers that read `PaymentSucceededEvent.Metadata`, not in agnostic Payment. The canonical statement of who-depends-on-whom lives in [`ARCHITECTURE.md`](../../ARCHITECTURE.md).
+
 ## IDevSeeder vs ITestSeeder
 
 - `IDevSeeder` runs in **dev and E2E** environments via `DevDbInitializer`.
@@ -63,6 +65,18 @@ This is safe — not a violation of the spirit of the rule — because:
 - It maps each spec to `XReadModel.Create(...)` field-for-field, exactly as the projection handler does.
 
 Test code still never calls `db.XReadModels.Add(...)` itself. Tests reach into `SeedState` handles — and for read models those handles are the `SeedCatalog` specs (`seedState.UpcomingFlatFeeConcert`, `seedState.Venue`, …), never the read-model entities.
+
+### The other exception: inherently-unreproducible historical state (reflection-seed it)
+
+The "drive the event, never write the row" rule assumes the production trigger *can* be replayed at seed time. A narrow class of seed data fails that assumption: state whose only producer is an event that can no longer fire for the data in question. The trigger is genuinely irreproducible, so reflection-seeding the derived row directly is the right tool — **not** a simulator faking the trigger.
+
+The live case is **past-dated ticket sales**:
+
+- B2B `ConcertEntity.TicketsSold` is incremented only by `TicketSaleProcessor` reacting to `PaymentSucceededEvent`; Customer `TicketEntity` rows are written only by Customer's `TicketPaymentProcessor` on the same event.
+- Real Payment emits `PaymentSucceededEvent` only for a **live Stripe webhook**, never for seed data — and you cannot buy a ticket to a concert that has already happened. So the seed sales on past-dated concerts have no reproducible trigger.
+- Therefore: B2B sets `TicketsSold` via `ConcertFactory` (`.With(nameof(ConcertEntity.TicketsSold), …)`) from a `ticketsSold` field on `ConcertSeedSpec`, and Customer direct-inserts `SeedState.Tickets` via `TicketDevSeeder`/`TicketTestSeeder`. Each consumer seeds its **own** copy on its own side; nothing crosses the boundary, and Payment owns none of it.
+
+This is the **only** sanctioned reason to reflection-seed handler-owned state outside integration tests. Do **not** generalise it to live/future state (upcoming concerts, current projections) — those still go through the event path. If you're tempted to re-introduce a `Payment.Seed.Simulator` to "fix" missing ticket sales, this is the convention that says don't.
 
 ## Write models must not have FK constraints to read models
 

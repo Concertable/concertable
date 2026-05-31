@@ -165,6 +165,10 @@ api/Concertable.Customer/Tests/E2ETests/Concertable.Customer.E2ETests.Ui/bin/Deb
 
 The path is anchored to `AppContext.BaseDirectory` so it always lands in the build output folder regardless of the test runner's working directory. The log line `Failure screenshot: <full-path>/<name>-<timestamp>.png` in the test output gives you the exact filename. Read the image with the `Read` tool — it renders inline so you can see exactly what was on screen when the assertion timed out. Use this **after** confirming there are no HTTP/gRPC errors — screenshots show visual state (e.g. a disabled button, a missing element) but the HTTP/gRPC logs identify the root cause.
 
+### When the logs don't pinpoint the cause — add tracing
+
+If the HTTP/gRPC errors, console output, and screenshots still don't explain *why* (e.g. an endpoint 404s because a row is missing and you can't tell whether a projection handler ran, skipped, or failed), add `ILogger` tracing to the relevant server-side class rather than guessing. Read [`api/docs/DEBUGGING_CONVENTIONS.md`](../../../api/docs/DEBUGGING_CONVENTIONS.md) first and follow it: generic, future-useful logs (handler invoked/skipped/wrote, processor lifecycle) get promoted to the project's `Log.cs` with `[LoggerMessage]` source-gen and **kept permanently**; one-off probes stay inline and are removed once the bug is found. Then re-run the single scenario (Step 2) and read your new log lines from the Aspire service output.
+
 ## Step 4 — Fix and verify
 
 After identifying the cause:

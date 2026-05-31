@@ -1,11 +1,59 @@
 # Payment SeedCatalog + Simulator
 
+> **FULLY SUPERSEDED (2026-05-31)** by [`plans/PAYMENT_SEED_REFLECTION_REFACTOR.md`](./PAYMENT_SEED_REFLECTION_REFACTOR.md),
+> which was **implemented**: `Payment.Seed.Contracts` and `Payment.Seed.Simulator` were deleted, and the
+> seed-only payment-derived state (B2B `TicketsSold`, Customer `Ticket` rows) is now reflection-seeded on
+> each consumer's side. Payment owns no seed catalog or simulator. This whole document is historical.
+
 Adopt the B2B seed pattern for Payment, because Payment is a producer of cross-service
 integration events (`PaymentSucceededEvent`, `PaymentFailedEvent`) that both B2B and Customer
 subscribe to (`B2B.Web/Program.cs:138-139`, `Customer.Web/Program.cs:103-104`).
 
 Mirror of: `Concertable.B2B.Seed.Contracts` (SeedCatalog) + `Concertable.B2B.Seed.Simulator`
 (see `api/Concertable.B2B/Concertable.B2B.Seed.Simulator/CLAUDE.md`).
+
+## CORRECTION (2026-05-31) — `Payment.Seed.Contracts` is an anti-pattern; this supersedes the plan below
+
+The premise "adopt the B2B seed pattern for Payment" was **wrong**. Payment is **not** a producer in
+the B2B sense, so it must not own a seed *content* catalog. Everything below — and the
+"Resolved — producer pattern, Payment stays agnostic" note at the bottom — is **superseded by this**.
+
+**Why it's wrong.** Payment is an agnostic conduit: `PaymentSucceededEvent.Metadata` is an opaque
+`IReadOnlyDictionary<string,string>` Payment never reads. The keys `type` / `concertId` / `quantity`
+are stuffed in by the *initiator* (customer checkout) and read by the *consumer*
+(`TicketSaleProcessor`, `TicketPaymentProcessor`). So a `Payment.Seed.Contracts` that owns a catalog of
+**ticket purchases** (`PaymentSeedSpec.Ticket(concertId: 13, …)`) parks consumer-domain meaning in a
+service designed to know nothing about tickets. Using literal `13` instead of importing
+`B2B.Seed.Contracts` made it *reference*-agnostic but not *content*-agnostic — cosmetic.
+
+**Why B2B's shared seed lib is NOT the same** (the discriminator is *ownership of meaning* + direction,
+not "is it shared"): B2B owns concerts/venues/artists, and Customer is genuinely downstream — its read
+models are projections of B2B's events. So `Customer → B2B.Seed.Contracts` is the legitimate
+consumer→producer arrow, the same direction as production. Payment owns no ticket meaning, so
+`Payment.Seed.Contracts` has no such justification.
+
+**Scope of the simulator (narrowed to its real job).** It exists only for the two payment-driven
+**projections** that can't be direct-seeded under the events-only rule:
+- B2B `ConcertReadModel.TicketsSold` (written only by `TicketSaleProcessor`),
+- Customer `TicketEntity` (written only by `TicketPaymentProcessor`).
+
+Booking settlement/escrow/verify states are **B2B-owned write-model** (`BookingEntity.Status`,
+direct-seeded via `BookingFactory`), so `PaymentSeedSpec.Settlement` / `Escrow` / `Verify` are dead code.
+
+**Corrective plan.**
+1. `Payment.Contracts.PaymentSucceededEvent` stays — the only Payment-owned piece (Payment is the real
+   producer of the event *type*).
+2. Move seed-payment *authoring* to the consumer/initiator side — the Customer seed owns the
+   ticket-purchase meaning and already references `B2B.Seed.Contracts` for concert ids; it builds the
+   `PaymentSucceededEvent`s directly (referencing only `Payment.Contracts`).
+3. The simulator becomes a **seed-fixture replayer** referencing `Payment.Contracts` (event type) + the
+   consumer seed (content) — not "Payment's simulator." Re-home it out of the Payment namespace.
+4. Delete `Concertable.Payment.Seed.Contracts` (spec + catalog, including the 3 dead factories).
+5. **Unchanged:** dev/E2E still need the replay (real Payment never emits events for seed data); the
+   integration tier still direct-inserts via `TicketTestSeeder`; events still flow through the real
+   handlers.
+
+Tracked in `api/Concertable.Payment/TECH_DEBT.md`.
 
 ## Prerequisite finding
 
@@ -119,3 +167,57 @@ Add `Concertable.Payment.Contracts` to the `.slnx` files. Build green.
 1. Exact set of seed payments (Stage 2) — needs study of consumer processors + seed scenarios.
 2. Which AppHosts run consumers without Payment (Stage 4).
 3. Whether `TransactionTypes`/`PaymentSession` are cross-service (Stage 1 scope).
+
+## Progress (2026-05-31)
+
+All stages built; umbrella `dotnet build` green (0 errors).
+
+- **Stage 1 ✅** `Concertable.Payment.Contracts` created. `PaymentSucceededEvent`/`PaymentFailedEvent`
+  → `Concertable.Payment.Contracts.Events` (namespace matches `Events/` folder, per sibling
+  `*.Contracts` convention). `TransactionTypes`/`PaymentSession` → `Concertable.Payment.Contracts`
+  (root). All consumers repointed. `B2B.Concert.Application` used no Payment.Domain types → Domain ref
+  dropped entirely. `Payment.Domain` no longer needs `Messaging.Contracts` (events used it) → removed.
+- **Stage 2 ✅** `Concertable.Payment.Seed.Contracts` is **pure vocabulary**: `PaymentSeedSpec`
+  (`Ticket`/`Settlement`/`Escrow`/`Verify` factories) + `SeedSpecMappers.ToPaymentSucceededEvent()`.
+  **Refs `Payment.Contracts` only — knows nothing about B2B.** (Payment is a foundational adapter; a
+  Payment library depending on B2B inverts the graph. The concrete cross-service payment scenarios live
+  in the simulator, the composition host — see Stage 3.)
+- **Resolved open Q1 — seed payment set:** Only the **3 Customer-1 ticket purchases** are populated
+  (`Upcoming FlatFee` / `Past DoorSplit` / `Past FlatFee`). These are the genuinely event-derived state:
+  B2B `TicketsSold` is only set by `TicketSaleProcessor`, Customer tickets by `TicketPaymentProcessor`.
+  Booking settlement/escrow/verify states are **direct-seeded** in `SeedState`, so replaying them would
+  re-drive `SettleAsync`/`VerifyAsync` against settled rows — left out; factories exist for tests.
+- **Resolved open Q2 — AppHosts:** Both `B2B.AppHost` and `Customer.AppHost` run **real Payment**
+  (`AddPaymentWeb`+`AddPaymentWorkers`); the umbrella does too. So the B2B-simulator rationale (consumer
+  without producer) does **not** apply. But real Payment only publishes on a real Stripe webhook, never
+  for seed bookings/tickets — so there is **no double-publish**. The Payment simulator is registered in
+  **both standalone AppHosts** (`AddPaymentSeedingSimulator`) to drive seed ticket events through the
+  real handler path. **Not** in the umbrella (StripeCli is wired there — real test payments produce them).
+  This is a deliberate divergence from the plan's "only hosts without Payment" wording; see the simulator
+  `CLAUDE.md` for the reasoning.
+- **Stage 3/4 — REVERSED after the agnostic audit.** I had built `Concertable.Payment.Seed.Simulator`
+  + `AddPaymentSeedingSimulator` wiring, but that simulator referenced `B2B.Seed.Contracts` — i.e. a
+  Payment-namespaced project pointing **up** at B2B, the exact arrow `PAYMENT_AGNOSTIC_AUDIT.md` had us
+  delete from production. So it's been **removed** (project, extension, `PaymentSeedingSimulator`
+  constant, both AppHost registrations + csproj refs, both `.slnx` entries). Umbrella build green.
+- **Stage 5 ✅** `PaymentTestSeeder` stays payout-only. B2B/Customer integration tests keep their
+  existing `MockWebhookSimulator`-driven scenarios. `TECH_DEBT.md` clean.
+
+### Resolved — producer pattern, Payment stays agnostic   ⚠️ SUPERSEDED — see CORRECTION at top
+
+Settled after the agnostic audit. Payment is the **producer**; it owns its seed library + simulator,
+both B2B-free (consumer → producer, never reverse):
+
+- **`Payment.Seed.Contracts`** — `SeedCatalog.Payments` (the 3 Customer-1 ticket payments) +
+  `PaymentSeedSpec` + `ToPaymentSucceededEvent()`. Refs `Payment.Contracts` + shared `Seed.Identity`
+  only. Concert ids are **literal ints** (13/12/10) — Payment treats `concertId` as an opaque foreign
+  int, so it declares them by fixture convention rather than referencing `B2B.Seed.Contracts`.
+- **`Payment.Seed.Simulator`** — refs **only** `Payment.Seed.Contracts` (+ messaging/ServiceDefaults).
+  Publishes `SeedCatalog.Payments` as `PaymentSucceededEvent`s on startup, then exits. No B2B anywhere.
+- **Wired** into `B2B.AppHost` + `Customer.AppHost` via `AddPaymentSeedingSimulator`; **not** the umbrella
+  (StripeCli drives real payments there). Needed even though real Payment runs in every host — real
+  Payment only emits on a Stripe webhook, never for seed data, so no double-publish.
+- **Pattern documented** in `ARCHITECTURE.md` ("Producer seed libraries point downward only") +
+  pointer in `SEEDING_CONVENTIONS.md`, so the consumer→producer direction isn't re-litigated.
+
+Umbrella build green.
