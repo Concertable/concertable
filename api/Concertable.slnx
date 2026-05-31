@@ -15,9 +15,11 @@
     <Project Path="Concertable.B2B/Concertable.B2B.Web/Concertable.B2B.Web.csproj" />
     <Project Path="Concertable.B2B/Concertable.B2B.Workers/Concertable.B2B.Workers.csproj" />
     <Project Path="Concertable.B2B/Concertable.B2B.DataAccess/Concertable.B2B.DataAccess.csproj" />
-    <Project Path="Concertable.B2B/Concertable.B2B.Seed.Infrastructure/Concertable.B2B.Seed.Infrastructure.csproj" />
-    <Project Path="Concertable.B2B/Concertable.B2B.Seed.Contracts/Concertable.B2B.Seed.Contracts.csproj" />
-    <Project Path="Concertable.B2B/Concertable.B2B.Seed.Simulator/Concertable.B2B.Seed.Simulator.csproj" />
+  </Folder>
+  <Folder Name="/B2B/Seed/">
+    <Project Path="Concertable.B2B/Seed/Concertable.B2B.Seed.Contracts/Concertable.B2B.Seed.Contracts.csproj" />
+    <Project Path="Concertable.B2B/Seed/Concertable.B2B.Seed.Infrastructure/Concertable.B2B.Seed.Infrastructure.csproj" />
+    <Project Path="Concertable.B2B/Seed/Concertable.B2B.Seed.Simulator/Concertable.B2B.Seed.Simulator.csproj" />
   </Folder>
   <Folder Name="/B2B/Modules/Artist/">
     <Project Path="Concertable.B2B/Modules/Artist/Concertable.B2B.Artist.Api/Concertable.B2B.Artist.Api.csproj" />
@@ -84,7 +86,9 @@
     <Project Path="Concertable.Customer/Concertable.Customer.AppHost/Concertable.Customer.AppHost.csproj" />
     <Project Path="Concertable.Customer/Concertable.Customer.AppHost.Extensions/Concertable.Customer.AppHost.Extensions.csproj" />
     <Project Path="Concertable.Customer/Concertable.Customer.Web/Concertable.Customer.Web.csproj" />
-    <Project Path="Concertable.Customer/Concertable.Customer.Seed.Infrastructure/Concertable.Customer.Seed.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/Customer/Seed/">
+    <Project Path="Concertable.Customer/Seed/Concertable.Customer.Seed.Infrastructure/Concertable.Customer.Seed.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/Customer/Modules/Artist/">
     <Project Path="Concertable.Customer/Modules/Artist/Concertable.Customer.Artist.Api/Concertable.Customer.Artist.Api.csproj" />
@@ -161,10 +165,12 @@
     <Project Path="Concertable.Payment/Concertable.Payment.Contracts/Concertable.Payment.Contracts.csproj" />
     <Project Path="Concertable.Payment/Concertable.Payment.Domain/Concertable.Payment.Domain.csproj" />
     <Project Path="Concertable.Payment/Concertable.Payment.Infrastructure/Concertable.Payment.Infrastructure.csproj" />
-    <Project Path="Concertable.Payment/Concertable.Payment.Seed/Concertable.Payment.Seed.csproj" />
     <Project Path="Concertable.Payment/Concertable.Payment.Web/Concertable.Payment.Web.csproj" />
     <Project Path="Concertable.Payment/Concertable.Payment.Workers/Concertable.Payment.Workers.csproj" />
     <Project Path="Concertable.Payment/Tests/Concertable.Payment.UnitTests/Concertable.Payment.UnitTests.csproj" />
+  </Folder>
+  <Folder Name="/Payment/Seed/">
+    <Project Path="Concertable.Payment/Seed/Concertable.Payment.Seed/Concertable.Payment.Seed.csproj" />
   </Folder>
   <Folder Name="/Payment/Tests/E2ETests/">
     <Project Path="Concertable.Payment/Tests/E2ETests/Concertable.Payment.E2ETests.Helpers/Concertable.Payment.E2ETests.Helpers.csproj" />
