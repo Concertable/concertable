@@ -1,13 +1,15 @@
 using Concertable.DataAccess.Infrastructure.Data;
 using Concertable.Kernel;
 using Concertable.Messaging.Infrastructure.Outbox;
+using Concertable.Seed.Shared.Identity;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace Concertable.Seed.Infrastructure;
 
 public class SeedingDomainEventDispatchInterceptor(
     IDomainEventDispatcher dispatcher,
-    IDbContextAccessor contextAccessor) : SaveChangesInterceptor, IDomainEventDispatchInterceptor
+    IDbContextAccessor contextAccessor,
+    SeedingScope seedingScope) : SaveChangesInterceptor, IDomainEventDispatchInterceptor
 {
     private readonly Stack<List<IDomainEvent>> pendingEventsStack = new();
 
@@ -24,6 +26,9 @@ public class SeedingDomainEventDispatchInterceptor(
 
         pendingEventsStack.Push(pendingEvents);
 
+        if (!seedingScope.IsActive)
+            await DispatchPreCommitAsync(eventData.Context, pendingEvents, cancellationToken);
+
         return await base.SavingChangesAsync(eventData, result, cancellationToken);
     }
 
@@ -34,8 +39,21 @@ public class SeedingDomainEventDispatchInterceptor(
     {
         var pendingEvents = pendingEventsStack.Pop();
 
+        if (seedingScope.IsActive)
+            await DispatchPreCommitAsync(eventData.Context!, pendingEvents, cancellationToken);
+
+        await dispatcher.DispatchAsync(pendingEvents, cancellationToken);
+
+        return await base.SavedChangesAsync(eventData, result, cancellationToken);
+    }
+
+    private async Task DispatchPreCommitAsync(
+        Microsoft.EntityFrameworkCore.DbContext context,
+        List<IDomainEvent> pendingEvents,
+        CancellationToken cancellationToken)
+    {
         var previous = contextAccessor.Context;
-        contextAccessor.Context = eventData.Context;
+        contextAccessor.Context = context;
         try
         {
             await dispatcher.DispatchPreCommitAsync(pendingEvents, cancellationToken);
@@ -44,9 +62,5 @@ public class SeedingDomainEventDispatchInterceptor(
         {
             contextAccessor.Context = previous;
         }
-
-        await dispatcher.DispatchAsync(pendingEvents, cancellationToken);
-
-        return await base.SavedChangesAsync(eventData, result, cancellationToken);
     }
 }
