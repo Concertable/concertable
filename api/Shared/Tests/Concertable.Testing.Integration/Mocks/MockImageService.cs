@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Concertable.Testing.Integration.Mocks;
 
-public class MockImageService : IImageService
+public sealed class MockImageService : IImageService
 {
     public Task<string> UploadAsync(IFormFile file) =>
         Task.FromResult($"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}");

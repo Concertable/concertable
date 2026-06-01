@@ -2,7 +2,7 @@ using Concertable.E2ETests.Mobile.Support;
 
 namespace Concertable.E2ETests.Mobile.PageObjects;
 
-public class TicketDetailScreen
+public sealed class TicketDetailScreen
 {
     private readonly MobileApp app;
 

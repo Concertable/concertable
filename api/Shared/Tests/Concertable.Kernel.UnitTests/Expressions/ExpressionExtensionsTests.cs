@@ -3,7 +3,8 @@ using NetTopologySuite.Geometries;
 using System.Linq.Expressions;
 
 namespace Concertable.Kernel.UnitTests.Expressions;
-public class ExpressionExtensionsTests
+
+public sealed class ExpressionExtensionsTests
 {
     [Fact]
     public void Substitute_ShouldInlineSelector_IntoCondition()

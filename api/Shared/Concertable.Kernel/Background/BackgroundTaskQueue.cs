@@ -3,7 +3,7 @@ using System.Threading.Channels;
 
 namespace Concertable.Kernel.Background;
 
-public class BackgroundTaskQueue : IBackgroundTaskQueue
+public sealed class BackgroundTaskQueue : IBackgroundTaskQueue
 {
     private readonly Channel<Func<CancellationToken, Task>> queue;
 

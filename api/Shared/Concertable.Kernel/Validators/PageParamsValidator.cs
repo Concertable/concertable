@@ -3,7 +3,7 @@ using FluentValidation;
 
 namespace Concertable.Kernel.Validators;
 
-public class PageParamsValidator : AbstractValidator<IPageParams>
+public sealed class PageParamsValidator : AbstractValidator<IPageParams>
 {
     public PageParamsValidator()
     {

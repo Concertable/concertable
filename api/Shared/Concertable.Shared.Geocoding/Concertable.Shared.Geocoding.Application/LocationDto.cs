@@ -1,3 +1,3 @@
 namespace Concertable.Shared.Geocoding.Application;
 
-public record LocationDto(string County, string Town);
+public sealed record LocationDto(string County, string Town);

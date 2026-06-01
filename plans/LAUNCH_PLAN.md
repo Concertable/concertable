@@ -2,9 +2,9 @@
 
 > **Goal:** Production launch of the B2B platform (venue↔artist booking + automated settlement) by **November 2026**.
 >
-> **Updated:** 2026-05-18
+> **Updated:** 2026-06-01
 >
-> **Companion docs:** [B2B_LAUNCH_CHECKLIST.md](B2B_LAUNCH_CHECKLIST.md), [ORGANIZATION_REFACTOR_PLAN.md](ORGANIZATION_REFACTOR_PLAN.md), [MARKETPLACE_PLAN.md](MARKETPLACE_PLAN.md), [../api/Concertable.B2B/Modules/Contract/LEGAL_REQUIREMENTS.md](../api/Concertable.B2B/Modules/Contract/LEGAL_REQUIREMENTS.md).
+> **Companion docs:** [B2B_LAUNCH_CHECKLIST.md](B2B_LAUNCH_CHECKLIST.md), [ORGANIZATION_REFACTOR_PLAN.md](ORGANIZATION_REFACTOR_PLAN.md), [MARKETPLACE_PLAN.md](MARKETPLACE_PLAN.md), [../api/Concertable.B2B/Modules/Contract/LEGAL_REQUIREMENTS.md](../api/Concertable.B2B/Modules/Contract/LEGAL_REQUIREMENTS.md), [../api/Concertable.B2B/TENANCY_DESIGN.md](../api/Concertable.B2B/TENANCY_DESIGN.md).
 
 ---
 
@@ -18,6 +18,11 @@
 - Multi-staff Organization model (Owner + Manager roles)
 - DAC7-compliant seller onboarding
 - Cancellation/refund handling on the B2B path (venue or artist cancels — escrow refunds correctly)
+- Per-booking signed agreement (click-wrap e-signature, terms snapshotted at Accept) — see [LEGAL_REQUIREMENTS.md](../api/Concertable.B2B/Modules/Contract/LEGAL_REQUIREMENTS.md) item 2
+- Per-contract-type VAT calculation + VAT-compliant self-billed invoices per settlement (items 1, 3, 4)
+- Per-tenant configuration surface (PRS, VAT, platform fee, payment terms, cancellation defaults) — see [TENANCY_DESIGN.md](../api/Concertable.B2B/TENANCY_DESIGN.md) §5
+
+**Scope caveat — DoorSplit/Versus revenue source:** two of the four contract types settle against door/ticket revenue, which in standalone B2B (no marketplace) has no feed. FlatFee + VenueHire are fully standalone; DoorSplit + Versus need a revenue source decided before they can be sold (see §9). FlatFee + VenueHire alone are a viable v1 if that decision slips.
 
 **Out of scope for v1 (planned, not abandoned):**
 - Customer-facing ticket marketplace — see [MARKETPLACE_PLAN.md](MARKETPLACE_PLAN.md). Designed to be additive; switch-on planned Q1 2027 or later once B2B has traction.
@@ -57,11 +62,11 @@ Calendar-realistic, not optimistic. Slips are flagged as risks (§6).
 
 | Month | Swim-lane A (Legal/Business) | Swim-lane B (Architecture) | Swim-lane C (Compliance UI/UX) |
 |---|---|---|---|
-| **Month 1 (Jun 2026)** | Company registered (Companies House, ~£12, 24hr) · ICO fee paid (~£40-60/yr) · Solicitor engaged + briefed for T&Cs · **Revenue model decided** | **Phase 0** — `Organization` module scaffolding · **Phase 1** — `ComplianceContext` value object | **PRS line removal** from `LEGAL_REQUIREMENTS.md` (small) · **Music licence attestation field** spec (will be wired in Phase 1) |
+| **Month 1 (Jun 2026)** | Company registered (Companies House, ~£12, 24hr) · ICO fee paid (~£40-60/yr) · Solicitor engaged + briefed for T&Cs · **Revenue model decided** · **DoorSplit/Versus revenue-source decision** (§9) | **Phase 0** — `Organization` module scaffolding · **Phase 1** — `ComplianceContext` value object + tenant config surface (TENANCY_DESIGN §5) | **Music licence attestation field** spec (= PRS self-licensed flag; wired in Phase 1) · _(PRS correction in `LEGAL_REQUIREMENTS.md` ✅ done 2026-06-01)_ |
 | **Month 2 (Jul 2026)** | Business bank account opened · Accountant engaged · Solicitor drafts circulating | **Phase 2** — Venue/Artist wired to Organization | **Cookie banner** scaffolding on all 3 SPAs (text from solicitor still pending) |
 | **Month 3 (Aug 2026)** | Insurance arranged (Professional Indemnity + Cyber) · Stripe production application submitted | **Phase 3** — `PayoutAccountEntity` re-key to OrganizationId | **Pricing transparency UI** in checkout (now that revenue model is known) |
-| **Month 4 (Sep 2026)** | Solicitor T&Cs finalised · DPA signed with Stripe · ICO documentation (privacy policy, lawful basis, retention) | **Phase 4** — `ComplianceContext` snapshot on Booking · **Phase 5** — Organization setup UI | **Privacy + T&Cs page routes** wired up (solicitor text now in hand) · **Venue legal details on emails** template change |
-| **Month 5 (Oct 2026)** | HMRC platform-operator registration · Stripe production approved · Marketing site live | **Phase 6** — Multi-user membership + auth sweep | **Refund / cancellation codification** in `Cancelled` workflow · **OSA report-content flow** (button + email + policy doc) · **DAC7 export script** (defer the actual run until Jan 2028) |
+| **Month 4 (Sep 2026)** | Solicitor T&Cs finalised · DPA signed with Stripe · ICO documentation (privacy policy, lawful basis, retention) | **Phase 4** — `ComplianceContext` snapshot on Booking · **Phase 5** — Organization setup UI | **Privacy + T&Cs page routes** wired up (solicitor text now in hand) · **Venue legal details on emails** template change · **Booking agreement + click-wrap e-sign** at Accept (PDF via `IPdfService`) |
+| **Month 5 (Oct 2026)** | HMRC platform-operator registration · Stripe production approved · Marketing site live | **Phase 6** — Multi-user membership + auth sweep | **Refund / cancellation codification** in `Cancelled` workflow · **Per-contract VAT calculation** + **self-billed invoice generation** (reuses agreement PDF plumbing) · **OSA report-content flow** (button + email + policy doc) · **DAC7 export script** (defer the actual run until Jan 2028) |
 | **Month 6 (Nov 2026)** | Beta cohort recruited (~10 venues + 50 artists) · Support process live · Pricing page live | Bugfixes from beta feedback · final integration tests | Final polish · accessibility quick-pass · **LAUNCH** |
 
 ## 4. Critical path
@@ -100,8 +105,12 @@ Stripe production approval (~2-4 weeks elapsed)
 
 | Item | Effort | Depends on | Month |
 |---|---|---|---|
-| PRS 3% line removal from `LEGAL_REQUIREMENTS.md` + code grep | 0.5 days | – | Month 1 |
-| Music licence attestation field (on Organization) | 0.5 days | Phase 1 | Month 1 |
+| PRS correction in `LEGAL_REQUIREMENTS.md` (✅ done 2026-06-01 — was "remove 3% line"; now per-tenant pass-through, venue's liability) | – | – | done |
+| Music licence attestation field (on Organization) = PRS self-licensed flag | 0.5 days | Phase 1 | Month 1 |
+| Tenant configuration surface on Organization (PRS / VAT / platform fee / payment terms / cancellation defaults) | 1-2 days | Phase 1 | Month 1-2 |
+| Booking agreement + click-wrap e-signature at Accept (snapshot terms, PDF via `IPdfService`) — `LEGAL_REQUIREMENTS.md` item 2 | 3-5 days | Phase 4 (Booking snapshot), `IPdfService` | Month 4 |
+| Per-contract-type VAT calculation (branches on supply direction + supplier VAT status) — items 1, 3 | 2-3 days | Tenant config (VAT fields) | Month 5 |
+| Self-billed VAT invoice generation per settlement (sequential numbering, HMRC fields, PDF) — item 4 | 2-3 days | VAT calculation, agreement PDF plumbing | Month 5 |
 | Cookie consent banner on 3 SPAs (scaffolding) | 1-2 days | – (scaffolding can land before solicitor text) | Month 2 |
 | Cookie banner text + privacy policy text from solicitor → wired into banner | 0.5 days | Solicitor draft (Month 4) | Month 4 |
 | Pricing transparency UI in checkout (all fees pre-checkout) | 1-2 days | Revenue model decision | Month 3 |
@@ -111,7 +120,7 @@ Stripe production approval (~2-4 weeks elapsed)
 | Online Safety Act report-content flow (button + email destination + policy doc) | 1 day | – | Month 5 |
 | DAC7 annual export script (writes XML in HMRC schema, doesn't run until Jan 2028) | 2-3 days | Phase 6 complete | Month 5 |
 
-**Total Swim-lane C effort:** ~12-19 working days. Roughly 3 calendar weeks of focused work, but spread across the 6 months because of dependency timing.
+**Total Swim-lane C effort:** ~20-31 working days (up from ~12-19 after adding the booking-agreement, VAT-calculation, self-billed-invoice, and tenant-config items). Roughly 4-6 calendar weeks of focused work, spread across the 6 months because of dependency timing. The VAT chain (calculation → invoice) is the densest cluster and lands in Month 5 — watch it doesn't collide with the Phase 6 auth sweep (R6).
 
 ## 6. Risk register
 
@@ -125,6 +134,8 @@ Stripe production approval (~2-4 weeks elapsed)
 | R6 | Phase 6 auth sweep introduces regressions across 25+ controllers | Medium | Medium | Test coverage assessment in Month 4. If integration test coverage is <60%, write tests first or split Phase 6 into smaller PRs. |
 | R7 | DAC7 schema changes between now and first export (Jan 2028) | Low | Low | Defer DAC7 export *implementation* if HMRC publishes schema updates; keep onboarding field collection on-spec. |
 | R8 | Solicitor flags an issue we haven't planned for (e.g. requires PSR registration, not just disclosed-agent) | Low | High | First solicitor consultation in Month 1 should explicitly confirm disclosed-agent posture is viable on Stripe Connect Express. If they push back, this plan needs major rework. |
+| R9 | DoorSplit/Versus revenue-source decision slips → two of four contract types unsellable at launch | Medium | Medium | Force the decision end of Month 1 (§9). Fallback: ship FlatFee + VenueHire only at v1 (both fully standalone), gate DoorSplit/Versus behind the marketplace or a manual-takings entry screen. |
+| R10 | VAT calculation + invoice work (Month 5) collides with Phase 6 auth sweep | Medium | Medium | Both land Month 5. If Phase 6 is running hot, pull the VAT chain forward to Month 4 (it depends only on the tenant VAT fields from Phase 1, not on Phase 6). |
 
 ## 7. Definition of "launch-ready"
 
@@ -146,6 +157,9 @@ Concrete checklist for Month 6. Don't launch without all of these green.
 - [ ] All Stripe Connect Express payouts flowing through OrganizationId
 - [ ] ComplianceContext snapshot populated on every Booking created post-launch
 - [ ] Auth checks routed through `OrganizationMembership` (not legacy TPH FK)
+- [ ] Booking agreement generated + click-wrap consent recorded at every Accept
+- [ ] VAT calculated per contract type + self-billed invoice generated per settlement
+- [ ] Tenant config surface live (PRS / VAT / fee / payment terms read from it, not constants)
 - [ ] Pre-launch dataset cleared / fresh seeded
 
 ### Compliance UI/UX
@@ -188,6 +202,7 @@ See [MARKETPLACE_PLAN.md](MARKETPLACE_PLAN.md) for the detail. Headline:
 
 These need answers but aren't urgent yet:
 
+- **DoorSplit/Versus revenue source** — these two contract types settle against door/ticket revenue, which standalone B2B has no feed for. Options: (a) manual door-count/takings entry by the venue at settlement, (b) import from a third-party ticketer (DICE/Skiddle/Eventbrite), (c) ship FlatFee + VenueHire only at v1 and gate DoorSplit/Versus behind the marketplace. **Decide by end of Month 1** — it affects what's sellable and what the settlement UI needs.
 - **Revenue model** — per-gig fee / subscription / % commission / hybrid. Decide by end of Month 1.
 - **Subscription tiers** (if going subscription) — what's free, what's paid, what's the price point? Decide by Month 3 (when pricing page work starts).
 - **Beta cohort sourcing** — warm intros via existing music industry contacts? Cold outreach? Industry events? Decide by Month 4.
@@ -198,8 +213,10 @@ These need answers but aren't urgent yet:
 - [B2B_LAUNCH_CHECKLIST.md](B2B_LAUNCH_CHECKLIST.md) — full legal/business setup checklist
 - [ORGANIZATION_REFACTOR_PLAN.md](ORGANIZATION_REFACTOR_PLAN.md) — Swim-lane B detail
 - [MARKETPLACE_PLAN.md](MARKETPLACE_PLAN.md) — Phase 2 marketplace switch-on plan
-- [../api/Concertable.B2B/Modules/Contract/LEGAL_REQUIREMENTS.md](../api/Concertable.B2B/Modules/Contract/LEGAL_REQUIREMENTS.md) — workflow-level legal requirements (currently aspirational; needs PRS line removed)
-- [../api/Concertable.B2B/Modules/Contract/CONTRACT_ARCHITECTURE.md](../api/Concertable.B2B/Modules/Contract/CONTRACT_ARCHITECTURE.md) — contract + workflow architecture
+- [../api/Concertable.B2B/Modules/Contract/LEGAL_REQUIREMENTS.md](../api/Concertable.B2B/Modules/Contract/LEGAL_REQUIREMENTS.md) — B2B legal backlog (rewritten 2026-06-01: contract-type-centric, items 0-9, PRS corrected)
+- [../api/Concertable.B2B/TENANCY_DESIGN.md](../api/Concertable.B2B/TENANCY_DESIGN.md) — tenant = legal entity; Organization → tenant; tenant config surface (§5)
+- [../api/Concertable.Customer/LEGAL_REQUIREMENTS.md](../api/Concertable.Customer/LEGAL_REQUIREMENTS.md) — marketplace/fan legal leads (future, separate system)
+- [../api/Concertable.B2B/Modules/Contract/ARCHITECTURE.md](../api/Concertable.B2B/Modules/Contract/ARCHITECTURE.md) — contract + workflow architecture
 - [MODULAR_MONOLITH_RULES.md](../api/docs/MODULAR_MONOLITH_RULES.md) — module boundary rules
 
 ## Decision log
@@ -208,3 +225,8 @@ These need answers but aren't urgent yet:
 - **2026-05-18** — Target launch Nov 2026 (6 months from plan creation). Reviewable monthly.
 - **2026-05-18** — Three swim-lane structure adopted. Independent parallel workstreams with clearly defined dependencies; allows the legal slow-path and the code work to proceed concurrently.
 - **2026-05-18** — Multi-user membership table in scope from day one (not deferred). Avoids a second auth refactor later.
+- **2026-06-01** — `LEGAL_REQUIREMENTS.md` rewritten contract-type-centric (items 0-9); PRS corrected (not 3%, not platform's liability — per-tenant pass-through at ~4.2%); fan/marketplace items split into a separate Customer doc.
+- **2026-06-01** — Booking agreement + click-wrap e-signature added to v1 scope (legal item 2). It's the backbone for the audit trail, self-billed invoice, and cancellation-terms consent; GigPig/GigXchange market this as "contract signing" and it matters more for us given multi-direction money movement.
+- **2026-06-01** — Per-contract-type VAT calculation + self-billed invoicing added to v1 scope (was implied, never sequenced). VAT branches on supply direction (VenueHire reverses it) and supplier registration status.
+- **2026-06-01** — Tenant configuration surface adopted (TENANCY_DESIGN §5): PRS/VAT/fee/payment-terms/cancellation defaults read from per-tenant config, not constants.
+- **2026-06-01** — Flagged DoorSplit/Versus revenue-source gap (R9): two of four contract types can't settle without a revenue feed; FlatFee + VenueHire are the standalone-safe v1 floor.

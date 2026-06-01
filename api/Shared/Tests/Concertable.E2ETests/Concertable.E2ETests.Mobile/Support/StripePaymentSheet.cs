@@ -2,7 +2,7 @@ using OpenQA.Selenium.Appium.Android;
 
 namespace Concertable.E2ETests.Mobile.Support;
 
-public class StripePaymentSheet
+public sealed class StripePaymentSheet
 {
     private readonly MobileApp app;
 

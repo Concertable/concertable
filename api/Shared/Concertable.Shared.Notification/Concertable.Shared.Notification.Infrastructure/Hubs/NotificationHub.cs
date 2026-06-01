@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 namespace Concertable.Shared.Notification.Infrastructure.Hubs;
 
 [Authorize]
-public class NotificationHub : Hub
+public sealed class NotificationHub : Hub
 {
     private readonly ILogger<NotificationHub> logger;
 

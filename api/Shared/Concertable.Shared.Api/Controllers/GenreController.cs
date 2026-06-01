@@ -5,7 +5,7 @@ namespace Concertable.Shared.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class GenreController : ControllerBase
+public sealed class GenreController : ControllerBase
 {
     [HttpGet]
     public ActionResult<IEnumerable<Genre>> GetAll() => Ok(Enum.GetValues<Genre>());

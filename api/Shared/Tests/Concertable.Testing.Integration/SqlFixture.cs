@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Concertable.Testing.Integration;
 
-public class SqlFixture : IAsyncLifetime
+public sealed class SqlFixture : IAsyncLifetime
 {
     private readonly MsSqlContainer _container = new MsSqlBuilder().Build();
     private DbConnection _dbConnection = null!;

@@ -6,7 +6,7 @@ using Microsoft.Extensions.Options;
 
 namespace Concertable.Testing.Integration;
 
-public class TestAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions>
+public sealed class TestAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions>
 {
     public const string SchemeName = "Test";
     public const string UserIdHeader = "X-Test-Sub";

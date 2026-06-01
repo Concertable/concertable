@@ -1,6 +1,6 @@
 namespace Concertable.Kernel;
 
-public record DateRange
+public sealed record DateRange
 {
     public DateTime Start { get; }
     public DateTime End { get; }

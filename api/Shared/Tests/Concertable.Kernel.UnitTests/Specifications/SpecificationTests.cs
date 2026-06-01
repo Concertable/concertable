@@ -3,7 +3,7 @@ using Concertable.Kernel.Specifications;
 
 namespace Concertable.Kernel.UnitTests.Specifications;
 
-public class SpecificationTests
+public sealed class SpecificationTests
 {
     [Fact]
     public void PredicateSpecification_Apply_FiltersByPredicate()
@@ -59,29 +59,29 @@ public class SpecificationTests
         Assert.Equal([30], result.Select(e => e.Person.Age));
     }
 
-    private record Person(int Age);
-    private record Employee(Person Person);
+    private sealed record Person(int Age);
+    private sealed record Employee(Person Person);
 
-    private class MinAgeSpec : PredicateSpecification<Person>
+    private sealed class MinAgeSpec : PredicateSpecification<Person>
     {
         private readonly int min;
         public MinAgeSpec(int min) { this.min = min; }
         protected override Expression<Func<Person, bool>> Predicate => p => p.Age >= min;
     }
 
-    private class AgeAtLeastSpec : PredicateSpecification<Person, int>
+    private sealed class AgeAtLeastSpec : PredicateSpecification<Person, int>
     {
         protected override Expression<Func<Person, bool>> BuildPredicate(int min) => p => p.Age >= min;
     }
 
-    private class MinAgeExpressionSpec : PredicateExpressionSpecification<Person>
+    private sealed class MinAgeExpressionSpec : PredicateExpressionSpecification<Person>
     {
         private readonly int min;
         public MinAgeExpressionSpec(int min) { this.min = min; }
         protected override Expression<Func<Person, bool>> Predicate => p => p.Age >= min;
     }
 
-    private class AgeAtLeastExpressionSpec : PredicateExpressionSpecification<Person, int>
+    private sealed class AgeAtLeastExpressionSpec : PredicateExpressionSpecification<Person, int>
     {
         protected override Expression<Func<Person, bool>> BuildPredicate(int min) => p => p.Age >= min;
     }

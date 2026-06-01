@@ -6,7 +6,7 @@ using Microsoft.Extensions.Options;
 
 namespace Concertable.Shared.Blob.Infrastructure;
 
-internal class BlobDevSeeder : IDevSeeder
+internal sealed class BlobDevSeeder : IDevSeeder
 {
     public int Order => 0;
 

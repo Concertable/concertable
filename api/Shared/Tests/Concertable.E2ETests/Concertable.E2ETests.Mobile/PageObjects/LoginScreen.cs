@@ -3,7 +3,7 @@ using OpenQA.Selenium.Support.UI;
 
 namespace Concertable.E2ETests.Mobile.PageObjects;
 
-public class LoginScreen
+public sealed class LoginScreen
 {
     private readonly MobileApp app;
 

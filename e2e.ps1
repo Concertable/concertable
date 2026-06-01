@@ -97,6 +97,64 @@ function Invoke-Regress([string]$suite, [string]$csproj) {
     return $false
 }
 
+function Invoke-PrettyTest([string]$suite, [string]$csproj, [string[]]$extra) {
+    $dir = Split-Path $csproj -Parent
+    $log = Join-Path $dir 'ui-tests.last.log'
+    $resultsDir = Join-Path $dir 'TestResults'
+    $trx = Join-Path $resultsDir 'run.trx'
+    if (Test-Path $trx) { Remove-Item $trx -Force }
+
+    Write-Host ""
+    Write-Host "=== $suite (running...) ===" -ForegroundColor Cyan
+
+    $testArgs = @($csproj) + $quiet + @(
+        '--results-directory', $resultsDir,
+        '--logger', 'trx;LogFileName=run.trx',
+        '--logger', 'console;verbosity=normal'
+    ) + $extra
+    dotnet test @testArgs *> $log
+
+    if (-not (Test-Path $trx)) {
+        Write-Host "  No results -- build or run failed. Full log: $log" -ForegroundColor Red
+        return [pscustomobject]@{ Suite = $suite; Passed = 0; Failed = 0; Total = 0 }
+    }
+
+    [xml]$xml = Get-Content $trx
+    $ns = New-Object System.Xml.XmlNamespaceManager($xml.NameTable)
+    $ns.AddNamespace('t', 'http://microsoft.com/schemas/VisualStudio/TeamTest/2010')
+    $results = $xml.SelectNodes("//t:UnitTestResult", $ns) | Sort-Object { $_.GetAttribute('testName') }
+
+    $passed = 0; $failed = 0
+    foreach ($r in $results) {
+        $name = $r.GetAttribute('testName')
+        if ($r.GetAttribute('outcome') -eq 'Passed') {
+            Write-Host "  [PASS] $name" -ForegroundColor Green
+            $passed++
+        } else {
+            Write-Host "  [FAIL] $name" -ForegroundColor Red
+            $failed++
+        }
+    }
+    return [pscustomobject]@{ Suite = $suite; Passed = $passed; Failed = $failed; Total = ($passed + $failed) }
+}
+
+function Show-Summary([object[]]$summaries) {
+    Write-Host ""
+    Write-Host "  Summary" -ForegroundColor Cyan
+    Write-Host ("  {0,-12}{1,8}{2,8}{3,8}" -f 'Suite', 'Passed', 'Failed', 'Total') -ForegroundColor Gray
+    Write-Host ("  {0,-12}{1,8}{2,8}{3,8}" -f '------', '------', '------', '-----') -ForegroundColor Gray
+    foreach ($s in $summaries) {
+        $color = if ($s.Failed -gt 0) { 'Red' } else { 'Green' }
+        Write-Host ("  {0,-12}{1,8}{2,8}{3,8}" -f $s.Suite, $s.Passed, $s.Failed, $s.Total) -ForegroundColor $color
+    }
+    $tp = ($summaries | Measure-Object Passed -Sum).Sum
+    $tf = ($summaries | Measure-Object Failed -Sum).Sum
+    $tt = ($summaries | Measure-Object Total -Sum).Sum
+    $totalColor = if ($tf -gt 0) { 'Red' } else { 'Green' }
+    Write-Host ("  {0,-12}{1,8}{2,8}{3,8}" -f 'TOTAL', $tp, $tf, $tt) -ForegroundColor $totalColor
+    Write-Host ""
+}
+
 function Show-Usage {
     Write-Host ""
     Write-Host "  Usage: ./e2e.ps1 <command> [-Headed]" -ForegroundColor White
@@ -114,14 +172,17 @@ function Show-Usage {
 
 switch ($cmd) {
     "run" {
-        dotnet test "$b2bUi/Concertable.B2B.E2ETests.Ui.csproj" @quiet --logger "console;verbosity=normal" | Tee-Object -FilePath "$b2bUi/ui-tests.last.log"
-        dotnet test "$customerUi/Concertable.Customer.E2ETests.Ui.csproj" @quiet --logger "console;verbosity=normal" | Tee-Object -FilePath "$customerUi/ui-tests.last.log"
+        $b2b  = Invoke-PrettyTest 'B2B'      "$b2bUi/Concertable.B2B.E2ETests.Ui.csproj"
+        $cust = Invoke-PrettyTest 'Customer' "$customerUi/Concertable.Customer.E2ETests.Ui.csproj"
+        Show-Summary @($b2b, $cust)
     }
     "b2b" {
-        dotnet test "$b2bUi/Concertable.B2B.E2ETests.Ui.csproj" @quiet --logger "console;verbosity=normal" | Tee-Object -FilePath "$b2bUi/ui-tests.last.log"
+        $b2b = Invoke-PrettyTest 'B2B' "$b2bUi/Concertable.B2B.E2ETests.Ui.csproj"
+        Show-Summary @($b2b)
     }
     "customer" {
-        dotnet test "$customerUi/Concertable.Customer.E2ETests.Ui.csproj" @quiet --logger "console;verbosity=normal" | Tee-Object -FilePath "$customerUi/ui-tests.last.log"
+        $cust = Invoke-PrettyTest 'Customer' "$customerUi/Concertable.Customer.E2ETests.Ui.csproj"
+        Show-Summary @($cust)
     }
     "regress" {
         $b2bOk  = Invoke-Regress 'B2B'      "$b2bUi/Concertable.B2B.E2ETests.Ui.csproj"
@@ -136,7 +197,8 @@ switch ($cmd) {
         }
     }
     "3ds" {
-        dotnet test "$b2bUi/Concertable.B2B.E2ETests.Ui.csproj" --filter "DisplayName~3DS" @quiet --logger "console;verbosity=normal" | Tee-Object -FilePath "$b2bUi/ui-tests.last.log"
+        $r = Invoke-PrettyTest '3DS' "$b2bUi/Concertable.B2B.E2ETests.Ui.csproj" @('--filter', 'DisplayName~3DS')
+        Show-Summary @($r)
     }
     "trace" { & "api/Shared/Tests/Concertable.E2ETests/ui-trace.ps1" }
     { $_ -in "list","help" } { Show-Usage }

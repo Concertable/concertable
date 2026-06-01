@@ -2,7 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Concertable.Kernel.Events;
 
-public class DomainEventDispatcher(IServiceProvider serviceProvider) : IDomainEventDispatcher
+public sealed class DomainEventDispatcher(IServiceProvider serviceProvider) : IDomainEventDispatcher
 {
     public Task DispatchPreCommitAsync(IEnumerable<IDomainEvent> events, CancellationToken ct = default) =>
         DispatchPhaseAsync(events, preCommitOnly: true, ct);

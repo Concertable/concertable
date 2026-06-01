@@ -3,7 +3,7 @@ using NetTopologySuite.Geometries;
 
 namespace Concertable.Kernel.Services.Geometry;
 
-public class MetricGeometryProvider : IGeometryProvider
+public sealed class MetricGeometryProvider : IGeometryProvider
 {
     private readonly GeometryFactory geometryFactory;
 

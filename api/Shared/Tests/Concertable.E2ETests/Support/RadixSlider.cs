@@ -2,7 +2,7 @@ using Microsoft.Playwright;
 
 namespace Concertable.E2ETests.Support;
 
-public class RadixSlider(IPage page, ILocator root, int min, int max)
+public sealed class RadixSlider(IPage page, ILocator root, int min, int max)
 {
     private ILocator Thumb => root.GetByRole(AriaRole.Slider);
 

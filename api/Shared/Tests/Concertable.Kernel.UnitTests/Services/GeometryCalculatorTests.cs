@@ -2,7 +2,8 @@
 using NetTopologySuite;
 
 namespace Concertable.Kernel.UnitTests.Services;
-public class GeometryCalculatorTests
+
+public sealed class GeometryCalculatorTests
 {
     private readonly GeometryCalculator sut;
 

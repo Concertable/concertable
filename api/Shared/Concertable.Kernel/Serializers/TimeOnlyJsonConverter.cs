@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace Concertable.Kernel.Serializers;
 
-public class TimeOnlyJsonConverter : JsonConverter<TimeOnly>
+public sealed class TimeOnlyJsonConverter : JsonConverter<TimeOnly>
 {
     public override TimeOnly Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {

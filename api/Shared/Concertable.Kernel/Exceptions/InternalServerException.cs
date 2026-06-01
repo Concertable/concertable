@@ -2,7 +2,7 @@ using System.Net;
 
 namespace Concertable.Kernel.Exceptions;
 
-public class InternalServerException : HttpException
+public sealed class InternalServerException : HttpException
 {
     public InternalServerException(string detail) : base(detail, HttpStatusCode.InternalServerError)
     {

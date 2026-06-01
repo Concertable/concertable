@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace Concertable.Seed.Infrastructure;
 
-public class SeedingDomainEventDispatchInterceptor(
+public sealed class SeedingDomainEventDispatchInterceptor(
     IDomainEventDispatcher dispatcher,
     IDbContextAccessor contextAccessor,
     SeedingScope seedingScope) : SaveChangesInterceptor, IDomainEventDispatchInterceptor

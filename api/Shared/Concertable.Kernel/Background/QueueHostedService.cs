@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Concertable.Kernel.Background;
 
-public class QueueHostedService : BackgroundService
+public sealed class QueueHostedService : BackgroundService
 {
     private readonly IBackgroundTaskQueue taskQueue;
     private readonly ILogger<QueueHostedService> logger;

@@ -4,7 +4,7 @@ using Microsoft.Extensions.Options;
 
 namespace Concertable.Shared.Blob.Infrastructure;
 
-public class BlobStorageService : IBlobStorageService
+public sealed class BlobStorageService : IBlobStorageService
 {
     private readonly BlobServiceClient blobServiceClient;
     private readonly string containerName;

@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace Concertable.Kernel.Exceptions;
 
-public class NotFoundException : HttpException
+public sealed class NotFoundException : HttpException
 {
     public NotFoundException(string detail) : base(detail, HttpStatusCode.NotFound)
     {

@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Concertable.Shared.Notification.Infrastructure;
 
-internal class SignalRNotificationClient : INotificationClient
+internal sealed class SignalRNotificationClient : INotificationClient
 {
     private readonly IHubContext<NotificationHub> hubContext;
     private readonly ILogger<SignalRNotificationClient> logger;

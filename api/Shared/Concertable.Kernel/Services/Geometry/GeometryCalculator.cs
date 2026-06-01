@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Concertable.Kernel.Services.Geometry;
 
-public class GeometryCalculator : IGeometryCalculator
+public sealed class GeometryCalculator : IGeometryCalculator
 {
     private readonly IGeometryProvider geometryProvider;
 

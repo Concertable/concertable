@@ -1,6 +1,6 @@
 namespace Concertable.Kernel.Settings;
 
-public class UrlSettings
+public sealed class UrlSettings
 {
     public string Frontend { get; set; } = string.Empty;
 }

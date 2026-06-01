@@ -3,7 +3,7 @@ using Concertable.E2ETests.Mobile.Support;
 namespace Concertable.E2ETests.Mobile.Hooks;
 
 [Binding]
-public class AppiumHooks
+public sealed class AppiumHooks
 {
     private readonly MobileApp app;
     private readonly ScenarioContext scenarioContext;

@@ -4,7 +4,7 @@ using OpenQA.Selenium.Appium.Enums;
 
 namespace Concertable.E2ETests.Mobile.Support;
 
-public class MobileApp : IAsyncDisposable, IDisposable
+public sealed class MobileApp : IAsyncDisposable, IDisposable
 {
     private readonly ILogger<MobileApp> logger;
     private AndroidDriver driver = null!;

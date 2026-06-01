@@ -2,7 +2,7 @@ using Concertable.E2ETests.Mobile.Support;
 
 namespace Concertable.E2ETests.Mobile.PageObjects;
 
-public class HomeScreen
+public sealed class HomeScreen
 {
     private readonly MobileApp app;
 

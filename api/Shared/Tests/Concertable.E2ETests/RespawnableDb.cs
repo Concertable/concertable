@@ -6,7 +6,7 @@ using Respawn;
 
 namespace Concertable.E2ETests;
 
-public class RespawnableDb
+public sealed class RespawnableDb
 {
     private DbConnection connection = null!;
     private Respawner respawner = null!;

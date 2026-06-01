@@ -2,9 +2,9 @@ using Concertable.Shared.Email.Application;
 
 namespace Concertable.Testing.Integration.Mocks;
 
-public record SentEmail(string To, string Subject, string Body);
+public sealed record SentEmail(string To, string Subject, string Body);
 
-public class MockEmailSender : IMockEmailSender
+public sealed class MockEmailSender : IMockEmailSender
 {
     private readonly List<SentEmail> _sent = new();
     public IReadOnlyList<SentEmail> Sent => _sent;

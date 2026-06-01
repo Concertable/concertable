@@ -1,6 +1,6 @@
 namespace Concertable.Contracts;
 
-public class Pagination<T> : IPagination<T>
+public sealed class Pagination<T> : IPagination<T>
 {
     public IReadOnlyList<T> Data { get; set; } = null!;
     public int TotalCount { get; set; }

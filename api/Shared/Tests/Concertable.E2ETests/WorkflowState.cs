@@ -1,6 +1,6 @@
 namespace Concertable.E2ETests;
 
-public class WorkflowState
+public sealed class WorkflowState
 {
     public int VenueId { get; set; }
     public int OpportunityId { get; set; }

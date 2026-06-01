@@ -4,7 +4,7 @@ using Concertable.E2ETests.Mobile.Support;
 namespace Concertable.E2ETests.Mobile.Steps;
 
 [Binding]
-public class CustomerSteps
+public sealed class CustomerSteps
 {
     private readonly MobileFixture fixture;
     private readonly MobileApp app;

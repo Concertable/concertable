@@ -4,7 +4,7 @@ using System.Net;
 
 namespace Concertable.Kernel.Exceptions;
 
-public class BadRequestException : HttpException
+public sealed class BadRequestException : HttpException
 {
     public IReadOnlyList<string>? ValidationErrors { get; }
 

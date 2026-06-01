@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Concertable.Kernel.Background;
 
-public class BackgroundTaskRunner : IBackgroundTaskRunner
+public sealed class BackgroundTaskRunner : IBackgroundTaskRunner
 {
     private readonly IBackgroundTaskQueue queue;
     private readonly IServiceScopeFactory scopeFactory;

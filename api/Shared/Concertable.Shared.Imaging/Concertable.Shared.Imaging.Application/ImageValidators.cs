@@ -49,7 +49,7 @@ public class ImageValidator : AbstractValidator<IFormFile>
     protected virtual void ValidateDimensions(Image image, ValidationContext<IFormFile> ctx) { }
 }
 
-public class BannerImageValidator : ImageValidator
+public sealed class BannerImageValidator : ImageValidator
 {
     private const int MinWidth = 800;
     private const int MinHeight = 200;
@@ -68,7 +68,7 @@ public class BannerImageValidator : ImageValidator
     }
 }
 
-public class AvatarImageValidator : ImageValidator
+public sealed class AvatarImageValidator : ImageValidator
 {
     private const int MinSize = 200;
     private const double MinRatio = 0.8;

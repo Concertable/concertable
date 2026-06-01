@@ -2,7 +2,7 @@ using Concertable.Shared.Blob.Application;
 
 namespace Concertable.Shared.Blob.Infrastructure;
 
-public class FakeBlobStorageService : IBlobStorageService
+public sealed class FakeBlobStorageService : IBlobStorageService
 {
     public Task UploadAsync(Stream content, string blobName) => Task.CompletedTask;
     public Task DeleteAsync(string blobName) => Task.CompletedTask;

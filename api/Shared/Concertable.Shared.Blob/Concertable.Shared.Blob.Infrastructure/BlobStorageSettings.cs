@@ -1,6 +1,6 @@
 namespace Concertable.Shared.Blob.Infrastructure;
 
-public class BlobStorageSettings
+public sealed class BlobStorageSettings
 {
     public string? ConnectionString { get; set; }
     public string? ContainerName { get; set; }

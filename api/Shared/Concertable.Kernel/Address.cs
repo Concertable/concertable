@@ -1,6 +1,6 @@
 namespace Concertable.Kernel;
 
-public record Address
+public sealed record Address
 {
     public string County { get; init; }
     public string Town { get; init; }

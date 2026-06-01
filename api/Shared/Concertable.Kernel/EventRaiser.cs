@@ -1,6 +1,6 @@
 namespace Concertable.Kernel;
 
-public class EventRaiser
+public sealed class EventRaiser
 {
     private readonly List<IDomainEvent> events = [];
 

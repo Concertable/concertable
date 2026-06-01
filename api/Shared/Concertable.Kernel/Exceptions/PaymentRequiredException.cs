@@ -2,7 +2,7 @@ using System.Net;
 
 namespace Concertable.Kernel.Exceptions;
 
-public class PaymentRequiredException : HttpException
+public sealed class PaymentRequiredException : HttpException
 {
     public PaymentRequiredException(string detail) : base(detail, HttpStatusCode.PaymentRequired)
     {

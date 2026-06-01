@@ -2,7 +2,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Concertable.E2ETests;
 
-public class PollingService : IPollingService
+public sealed class PollingService : IPollingService
 {
     private readonly ILogger<PollingService> _logger;
 

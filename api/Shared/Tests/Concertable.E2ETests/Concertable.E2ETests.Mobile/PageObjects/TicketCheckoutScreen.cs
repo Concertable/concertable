@@ -2,7 +2,7 @@ using Concertable.E2ETests.Mobile.Support;
 
 namespace Concertable.E2ETests.Mobile.PageObjects;
 
-public class TicketCheckoutScreen
+public sealed class TicketCheckoutScreen
 {
     private readonly MobileApp app;
     private readonly StripePaymentSheet paymentSheet;

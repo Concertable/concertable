@@ -3,7 +3,7 @@ using Microsoft.Extensions.Options;
 
 namespace Concertable.Kernel.Services;
 
-public class UriService : IUriService
+public sealed class UriService : IUriService
 {
     private readonly UrlSettings _urlSettings;
 

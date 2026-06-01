@@ -4,7 +4,7 @@ using System.Diagnostics;
 
 namespace Concertable.E2ETests.Mobile.Support;
 
-public class MobileFixture : IAsyncLifetime
+public sealed class MobileFixture : IAsyncLifetime
 {
     private Process? emulatorProcess;
     private Process? appiumProcess;
@@ -28,10 +28,10 @@ public class MobileFixture : IAsyncLifetime
             .AddEnvironmentVariables()
             .Build();
 
-        AppiumServerUri = new Uri(config["Mobile:AppiumServer"]   ?? "http://127.0.0.1:4723/");
-        AppPackage      = config["Mobile:AppPackage"]              ?? "com.concertable.app";
-        AppActivity     = config["Mobile:AppActivity"]             ?? ".MainActivity";
-        AvdName         = config["Mobile:AvdName"]                 ?? "ConcertableTest";
+        AppiumServerUri = new Uri(config["Mobile:AppiumServer"] ?? "http://127.0.0.1:4723/");
+        AppPackage = config["Mobile:AppPackage"] ?? "com.concertable.app";
+        AppActivity = config["Mobile:AppActivity"] ?? ".MainActivity";
+        AvdName = config["Mobile:AvdName"] ?? "ConcertableTest";
 
         var apkRelative = config["Mobile:ApkPath"] ?? "TestAssets/concertable-debug.apk";
         ApkPath = Path.IsPathRooted(apkRelative)
