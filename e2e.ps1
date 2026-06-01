@@ -11,6 +11,8 @@ $b2bUi      = Join-Path $PSScriptRoot "api/Concertable.B2B/Tests/E2ETests/Concer
 $customerUi = Join-Path $PSScriptRoot "api/Concertable.Customer/Tests/E2ETests/Concertable.Customer.E2ETests.Ui"
 $baselineMd = Join-Path $PSScriptRoot "api/Shared/Tests/Concertable.E2ETests/E2E_BASELINE.md"
 
+$quiet = @('--nologo', '--verbosity', 'quiet', '-p:NuGetAudit=false', '-p:NoWarn=NU1510')
+
 if (-not $Headed) { $env:HEADLESS = "true" }
 
 function Get-BaselinePassing([string]$suite) {
@@ -52,7 +54,7 @@ function Invoke-Regress([string]$suite, [string]$csproj) {
     $filter = ($expected | ForEach-Object { "DisplayName=$_" }) -join '|'
 
     # Preflight: confirm each baseline scenario resolves to a real test
-    $list = dotnet test $csproj --list-tests --filter $filter 2>&1
+    $list = dotnet test $csproj --list-tests --filter $filter @quiet 2>&1
     $discovered = $list | Where-Object { $_ -match '^\s{4}\S' } | ForEach-Object { $_.Trim() }
     if ($discovered.Count -ne $expected.Count) {
         $missing = $expected | Where-Object { $discovered -notcontains $_ }
@@ -65,7 +67,7 @@ function Invoke-Regress([string]$suite, [string]$csproj) {
 
     # Run them
     $logPath = (Join-Path (Split-Path $csproj -Parent) 'regress.last.log')
-    dotnet test $csproj --filter $filter --logger "console;verbosity=normal" 2>&1 | Tee-Object -FilePath $logPath
+    dotnet test $csproj --filter $filter @quiet --logger "console;verbosity=normal" 2>&1 | Tee-Object -FilePath $logPath
 
     # Parse pass/fail totals (Tee writes UTF-16 on Windows)
     $logBytes = [System.IO.File]::ReadAllBytes($logPath)
@@ -95,16 +97,31 @@ function Invoke-Regress([string]$suite, [string]$csproj) {
     return $false
 }
 
+function Show-Usage {
+    Write-Host ""
+    Write-Host "  Usage: ./e2e.ps1 <command> [-Headed]" -ForegroundColor White
+    Write-Host ""
+    Write-Host "  Commands:" -ForegroundColor DarkGray
+    Write-Host "    run       Run all UI E2E tests (B2B + Customer)"
+    Write-Host "    regress   Run only baseline-passing scenarios; fail on any regression (~3 min)"
+    Write-Host "    b2b       Run B2B UI E2E tests only"
+    Write-Host "    customer  Run Customer UI E2E tests only"
+    Write-Host "    3ds       Run 3DS scenarios (B2B only)"
+    Write-Host "    trace     Open latest Playwright trace"
+    Write-Host "    list      List all available commands"
+    Write-Host ""
+}
+
 switch ($cmd) {
     "run" {
-        dotnet test "$b2bUi/Concertable.B2B.E2ETests.Ui.csproj" --logger "console;verbosity=normal" | Tee-Object -FilePath "$b2bUi/ui-tests.last.log"
-        dotnet test "$customerUi/Concertable.Customer.E2ETests.Ui.csproj" --logger "console;verbosity=normal" | Tee-Object -FilePath "$customerUi/ui-tests.last.log"
+        dotnet test "$b2bUi/Concertable.B2B.E2ETests.Ui.csproj" @quiet --logger "console;verbosity=normal" | Tee-Object -FilePath "$b2bUi/ui-tests.last.log"
+        dotnet test "$customerUi/Concertable.Customer.E2ETests.Ui.csproj" @quiet --logger "console;verbosity=normal" | Tee-Object -FilePath "$customerUi/ui-tests.last.log"
     }
     "b2b" {
-        dotnet test "$b2bUi/Concertable.B2B.E2ETests.Ui.csproj" --logger "console;verbosity=normal" | Tee-Object -FilePath "$b2bUi/ui-tests.last.log"
+        dotnet test "$b2bUi/Concertable.B2B.E2ETests.Ui.csproj" @quiet --logger "console;verbosity=normal" | Tee-Object -FilePath "$b2bUi/ui-tests.last.log"
     }
     "customer" {
-        dotnet test "$customerUi/Concertable.Customer.E2ETests.Ui.csproj" --logger "console;verbosity=normal" | Tee-Object -FilePath "$customerUi/ui-tests.last.log"
+        dotnet test "$customerUi/Concertable.Customer.E2ETests.Ui.csproj" @quiet --logger "console;verbosity=normal" | Tee-Object -FilePath "$customerUi/ui-tests.last.log"
     }
     "regress" {
         $b2bOk  = Invoke-Regress 'B2B'      "$b2bUi/Concertable.B2B.E2ETests.Ui.csproj"
@@ -119,22 +136,11 @@ switch ($cmd) {
         }
     }
     "3ds" {
-        dotnet test "$b2bUi/Concertable.B2B.E2ETests.Ui.csproj" --filter "DisplayName~3DS" --logger "console;verbosity=normal" | Tee-Object -FilePath "$b2bUi/ui-tests.last.log"
+        dotnet test "$b2bUi/Concertable.B2B.E2ETests.Ui.csproj" --filter "DisplayName~3DS" @quiet --logger "console;verbosity=normal" | Tee-Object -FilePath "$b2bUi/ui-tests.last.log"
     }
     "trace" { & "api/Shared/Tests/Concertable.E2ETests/ui-trace.ps1" }
-    default {
-        Write-Host ""
-        Write-Host "  Usage: ./e2e.ps1 <command> [-Headed]" -ForegroundColor White
-        Write-Host ""
-        Write-Host "  Commands:" -ForegroundColor DarkGray
-        Write-Host "    run       Run all UI E2E tests (B2B + Customer)"
-        Write-Host "    regress   Run only baseline-passing scenarios; fail on any regression (~3 min)"
-        Write-Host "    b2b       Run B2B UI E2E tests only"
-        Write-Host "    customer  Run Customer UI E2E tests only"
-        Write-Host "    3ds       Run 3DS scenarios (B2B only)"
-        Write-Host "    trace     Open latest Playwright trace"
-        Write-Host ""
-    }
+    { $_ -in "list","help" } { Show-Usage }
+    default { Show-Usage }
 }
 
 Remove-Item Env:\HEADLESS -ErrorAction SilentlyContinue
