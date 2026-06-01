@@ -1,6 +1,3 @@
 namespace Concertable.Kernel;
 
-public interface IIdEntity : IEntity
-{
-    int Id { get; }
-}
+public interface IIdEntity : IEntity<int>;
