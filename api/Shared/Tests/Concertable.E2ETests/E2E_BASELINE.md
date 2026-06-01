@@ -38,21 +38,21 @@ The contract for which scenarios are **expected** to pass vs fail. `./e2e.ps1 re
 
 ## Summary
 
-Last reconciled: 2026-05-30 / commit `f53f6fe8` + uncommitted B2B seeding simulator session.
+Last reconciled: 2026-06-01 / Stripe new-card flows fixed (card-entry viewport + Customer stripe-cli webhook wiring).
 
 | Suite | Total | Passing | Failing |
 |---|---|---|---|
-| B2B | 23 | 7 | 16 |
-| Customer | 7 | 2 | 5 |
-| **Total** | **30** | **9** | **21** |
+| B2B | 23 | 23 | 0 |
+| Customer | 7 | 7 | 0 |
+| **Total** | **30** | **30** | **0** |
 
-All failing scenarios cluster on Stripe payment flows (3DS challenge, "new card" variants, declined-card variants). Not in scope for the current branch.
+Entire suite green. The previously-failing Stripe payment flows (3DS challenge, "new card" variants, declined-card variants) are fixed: new-card entry now fills the Stripe iframe reliably (tall viewport), and the Customer E2E AppHost now forwards Stripe webhooks via stripe-cli so ticket-purchase confirmation completes.
 
 <!-- BASELINE-DATA-START -->
 
 ## B2B (23 total)
 
-### B2B passing (7)
+### B2B passing (23)
 
 ```text
 New artist manager registers, signs in, creates their artist profile
@@ -62,11 +62,6 @@ Venue manager books artist on a door split
 Venue manager books artist on a flat fee
 Venue manager books artist on a versus deal
 Artist pays hire fee upfront to book venue
-```
-
-### B2B failing (16)
-
-```text
 Venue manager books artist on a door split with a new card
 Venue manager 3DS authentication fails on door split
 Venue manager completes 3DS challenge on door split
@@ -85,21 +80,26 @@ Artist completes 3DS challenge on venue hire
 Artist venue hire attempt is declined
 ```
 
+### B2B failing (0)
+
+```text
+```
+
 ## Customer (7 total)
 
-### Customer passing (2)
+### Customer passing (7)
 
 ```text
 New customer registers and signs in
 Customer signs in via OIDC
-```
-
-### Customer failing (5)
-
-```text
 Customer 3DS authentication fails
 Customer completes 3DS challenge
 Customer purchases a ticket using a new card and views the QR code
 Customer purchase is declined
 Customer searches for concerts, purchases a ticket, and views the QR code
+```
+
+### Customer failing (0)
+
+```text
 ```

@@ -7,11 +7,23 @@ description: Run the full Concertable UI E2E suite (Reqnroll + Playwright, all 3
 
 Run the Concertable UI E2E test suite and analyse any failures using the enriched HTTP + Playwright logs already baked into the test fixtures. Use this for full sweeps and deep-dive debugging; use `e2e-ui-regress` for fast no-regression checks.
 
+## The point of this skill: run autonomously — FIX failing tests yourself, do not ask
+
+When the user invokes this skill, they are delegating the **entire** run → diagnose → fix → verify loop to you, to run autonomously end to end. **Any failing scenario is something you fix in code yourself**, without stopping to ask permission, then re-run and keep going until the suite is green. Do not report findings and wait for a go-ahead; do not treat the `E2E_BASELINE.md` "failing" list or an "out of scope for this branch" note as a reason to leave a test broken — the baseline records the *current* state, it is not an instruction to skip fixing. Diagnose the root cause, write the code change (in the app, page objects, step definitions, or test support — wherever the real bug is), and re-run to confirm green. The only time you pause for the user is a genuine product-behaviour ambiguity you cannot resolve from the code (per the "Test vs prod code — ask first" convention). Otherwise: run the suite, fix every failure you can, verify, and report what you changed — all in one pass.
+
 ## Input
 
 If the skill is invoked with arguments, treat them as the full scenario names as they appear in the test output (e.g. `"Venue manager accepts a venue hire application on a flat fee", "Customer purchases a ticket and completes 3DS challenge"`). Run Step 0, then skip Step 1 and go straight to Step 2, running each one individually using `DisplayName~` with the full name as the filter value.
 
 If invoked with no arguments, run Step 0 then the full suite (Step 1) to discover which scenarios fail, then proceed to Step 2 for each failure.
+
+## Headless vs headed — default to headless
+
+**Always run headless** unless the user explicitly asks to watch the browser. Headless is faster and does not interfere with debugging: failure screenshots (`CaptureFailureAsync`), Playwright traces, and the enriched HTTP/console logs all work identically headless.
+
+- `./e2e.ps1 <cmd>` (Step 1, Step 4 full-suite re-runs) is headless by default — it sets `HEADLESS=true` unless you pass `-Headed`.
+- Direct `dotnet test` runs (Step 2 single-scenario deep-dives) do NOT pick up that default — the fixture runs **headed** with `SlowMo` unless `HEADLESS` is set. So always prefix Step 2 commands with `$env:HEADLESS='true'; ` (shown in Step 2 below).
+- If (and only if) the user asks to watch the browser, run headed: pass `-Headed` to `./e2e.ps1`, or set `$env:HEADLESS='false'` (or omit it) for direct `dotnet test`.
 
 ## Key paths
 
@@ -37,6 +49,8 @@ If invoked with no arguments, run Step 0 then the full suite (Step 1) to discove
 - Trace viewer: `./e2e.ps1 trace`
 
 **Baseline file** (which scenarios are expected to pass vs fail): `api/Tests/Concertable.E2ETests/E2E_BASELINE.md`.
+
+**Scratch run logs** — if you capture `dotnet test` output to a file for later grepping (retries, deep-dives, scenario reruns), write it under `api/Shared/Tests/Concertable.E2ETests/logs/` — **never the repo root**. Create the dir first if needed: `New-Item -ItemType Directory -Force api/Shared/Tests/Concertable.E2ETests/logs | Out-Null`. That folder is git-ignored. The canonical `ui-tests.last.log` / `regress.last.log` files written by `./e2e.ps1` stay in their project dirs (above) — leave those as-is.
 
 ## Which command to use
 
@@ -116,10 +130,18 @@ For each failed scenario, run it alone using `--filter` so the verbose logs from
 
 ```powershell
 # B2B scenario — run via PowerShell tool (not Bash; backtick continuation is PowerShell-only)
-dotnet test 'api/Concertable.B2B/Tests/E2ETests/Concertable.B2B.E2ETests.Ui/Concertable.B2B.E2ETests.Ui.csproj' --filter "DisplayName~<scenario name substring>" --logger "console;verbosity=normal"
+# $env:HEADLESS='true' keeps the direct dotnet test run headless (the fixture is headed by default).
+$env:HEADLESS='true'; dotnet test 'api/Concertable.B2B/Tests/E2ETests/Concertable.B2B.E2ETests.Ui/Concertable.B2B.E2ETests.Ui.csproj' --filter "DisplayName~<scenario name substring>" --logger "console;verbosity=normal"
 
 # Customer scenario
-dotnet test 'api/Concertable.Customer/Tests/E2ETests/Concertable.Customer.E2ETests.Ui/Concertable.Customer.E2ETests.Ui.csproj' --filter "DisplayName~<scenario name substring>" --logger "console;verbosity=normal"
+$env:HEADLESS='true'; dotnet test 'api/Concertable.Customer/Tests/E2ETests/Concertable.Customer.E2ETests.Ui/Concertable.Customer.E2ETests.Ui.csproj' --filter "DisplayName~<scenario name substring>" --logger "console;verbosity=normal"
+```
+
+If you want to keep the output to grep later, tee it into the scratch logs dir (NOT the repo root):
+
+```powershell
+$logs = 'api/Shared/Tests/Concertable.E2ETests/logs'; New-Item -ItemType Directory -Force $logs | Out-Null
+$env:HEADLESS='true'; dotnet test '<csproj>' --filter "DisplayName~<scenario>" --logger "console;verbosity=normal" | Tee-Object -FilePath "$logs/<scenario-slug>.log"
 ```
 
 The test fixtures emit:

@@ -58,6 +58,7 @@ internal static class DistributedApplicationBuilderExtensions
         builder.PinPaymentWeb(paymentBaseUrl, authBaseUrl);
         builder.PinPaymentWorkers();
         builder.AddEphemeralSql();
+        builder.PinStripeCli(paymentBaseUrl);
         return builder;
     }
 
