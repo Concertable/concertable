@@ -1,6 +1,6 @@
 ---
 name: e2e-ui-debug
-description: Run the full Concertable UI E2E suite (Reqnroll + Playwright, all 30 scenarios) and diagnose / fix failing ones using enriched HTTP + Playwright logs. Use whenever the user wants to debug a UI E2E failure, run the full suite, discover newly-passing or newly-failing scenarios, or investigate a flaky Reqnroll/Playwright scenario. For a quick "did I break anything?" check on already-passing scenarios, use the `e2e-ui-regress` skill instead (~3-6 min, vs ~25-30 min for this one).
+description: Run the full Concertable UI E2E suite (Reqnroll + Playwright, all 30 scenarios) and diagnose / fix failing ones using enriched HTTP + Playwright logs. Use whenever the user wants to debug a UI E2E failure, run the full suite, discover newly-passing or newly-failing scenarios, or investigate a flaky Reqnroll/Playwright scenario. For a "did I break anything?" check that fail-fasts on the expected-passing set, use the `e2e-ui-regress` skill instead (it runs whatever the baseline lists as passing — a fast subset when some are excluded as failing, up to the full suite when all pass).
 ---
 
 # e2e-ui-debug
@@ -48,7 +48,7 @@ If invoked with no arguments, run Step 0 then the full suite (Step 1) to discove
 - 3DS-only: `./e2e.ps1 3ds`
 - Trace viewer: `./e2e.ps1 trace`
 
-**Baseline file** (which scenarios are expected to pass vs fail): `api/Tests/Concertable.E2ETests/E2E_BASELINE.md`.
+**Baseline file** (which scenarios are expected to pass vs fail): `api/Shared/Tests/Concertable.E2ETests/E2E_BASELINE.md`.
 
 **Scratch run logs** — if you capture `dotnet test` output to a file for later grepping (retries, deep-dives, scenario reruns), write it under `api/Shared/Tests/Concertable.E2ETests/logs/` — **never the repo root**. Create the dir first if needed: `New-Item -ItemType Directory -Force api/Shared/Tests/Concertable.E2ETests/logs | Out-Null`. That folder is git-ignored. The canonical `ui-tests.last.log` / `regress.last.log` files written by `./e2e.ps1` stay in their project dirs (above) — leave those as-is.
 

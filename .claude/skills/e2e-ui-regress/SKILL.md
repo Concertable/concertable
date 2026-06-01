@@ -1,11 +1,11 @@
 ---
 name: e2e-ui-regress
-description: Run the Concertable UI E2E regression check -- only the scenarios listed under `passing` in `api/Tests/Concertable.E2ETests/E2E_BASELINE.md`. ~3-6 min, fail-fast on any regression. Use whenever the user wants to verify a code change hasn't broken anything ("regress", "check for regression", "verify no regression", "did I break anything", "is it still green", "run the regress"). Use the heavier `e2e-ui-debug` skill instead when the user wants the full 30-scenario suite or wants to discover newly-passing scenarios.
+description: Run the Concertable UI E2E regression check -- the scenarios listed under `passing` in `api/Shared/Tests/Concertable.E2ETests/E2E_BASELINE.md`, fail-fast on any regression. Duration scales with the size of the passing set (a fast subset when some scenarios are excluded as failing, up to ~25-30 min when the whole suite passes). Use whenever the user wants to verify a code change hasn't broken anything ("regress", "check for regression", "verify no regression", "did I break anything", "is it still green", "run the regress"). Use the `e2e-ui-debug` skill instead when the user wants to discover newly-passing scenarios or diagnose/fix a failure.
 ---
 
 # e2e-ui-regress
 
-Fast confidence check that a code change hasn't regressed any baseline-passing UI E2E scenario. Runs ONLY the scenarios under `### B2B passing` and `### Customer passing` in `api/Tests/Concertable.E2ETests/E2E_BASELINE.md`. Does not re-run failing scenarios (they're tracked but expected to stay broken until separately fixed).
+Confidence check that a code change hasn't regressed any baseline-passing UI E2E scenario. Runs the scenarios under `### B2B passing` and `### Customer passing` in `api/Shared/Tests/Concertable.E2ETests/E2E_BASELINE.md`, and skips any under `failing` (tracked but expected broken until separately fixed). It always reflects whatever the baseline currently lists: a fast subset when some scenarios are excluded as failing, or the whole suite when everything passes.
 
 ## When to use this skill
 
@@ -21,10 +21,11 @@ Fast confidence check that a code change hasn't regressed any baseline-passing U
 
 ## Key paths
 
-- Baseline file: `api/Tests/Concertable.E2ETests/E2E_BASELINE.md`
+- Baseline file: `api/Shared/Tests/Concertable.E2ETests/E2E_BASELINE.md`
 - Script: `./e2e.ps1 regress` (PowerShell)
 - B2B run log: `api/Concertable.B2B/Tests/E2ETests/Concertable.B2B.E2ETests.Ui/regress.last.log`
 - Customer run log: `api/Concertable.Customer/Tests/E2ETests/Concertable.Customer.E2ETests.Ui/regress.last.log`
+- Scratch run logs (ad-hoc captures): `api/Shared/Tests/Concertable.E2ETests/logs/` — **never the repo root**. The `regress.last.log` files above are written by `./e2e.ps1` and stay in their project dirs; any extra output you redirect for grepping goes in the scratch dir (git-ignored; `New-Item -ItemType Directory -Force` it first if missing).
 
 ## Step 0 -- Pre-flight
 
@@ -36,7 +37,7 @@ docker ps 2>&1
 
 If the daemon isn't reachable, stop and tell the user: **"Docker is not running -- please start Docker Desktop before running E2E."**
 
-Then tell the user: **"Starting regression check -- ~3-6 minutes. Will report verdict."**
+Then tell the user it's starting and give a rough duration scaled to the passing-baseline size (a small passing set ~3-6 min; the whole suite ~25-30 min): **"Starting regression check -- will report the verdict."** The script prints `Baseline says N scenarios must pass` early in its output; relay that count once you see it.
 
 ## Step 1 -- Run regress in background
 
@@ -128,4 +129,6 @@ This skill (`e2e-ui-regress`) only **verifies** the baseline, never modifies it.
 
 ## Cost
 
-Each regress run takes ~3-6 minutes wall-clock (faster on a warm Aspire cache, slower on cold start). The check is cheap enough to run before every commit on a feature branch; do not skip it just because the code change "looks safe."
+Regress duration scales with the size of the passing baseline: a small passing set runs in ~3-6 min; if the whole suite is listed as passing it covers every scenario (~25-30 min). Either way, do not skip it just because the code change "looks safe."
+
+When the passing baseline equals the full suite, regress and `./e2e.ps1 run` cover the same scenarios — the difference is intent: regress fail-fasts and asserts the expected-passing set (and catches baseline drift), while `run` discovers newly-passing/failing scenarios. Size the Step 2 `Monitor` timeout to the expected run length (up to ~30 min / `timeout_ms: 1800000` when the passing set is the full suite).
