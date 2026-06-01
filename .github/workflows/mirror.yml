@@ -1,0 +1,38 @@
+name: Mirror services to standalone repos
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - prefix: api/Concertable.B2B
+            repo: thomasseery/concertable-b2b
+          - prefix: api/Concertable.Customer
+            repo: thomasseery/concertable-customer
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Split ${{ matrix.prefix }} into its own history
+        run: git subtree split --prefix=${{ matrix.prefix }} -b mirror-split
+
+      - name: Force-push to ${{ matrix.repo }}
+        run: |
+          git push --force \
+            "https://x-access-token:${{ secrets.MIRROR_PAT }}@github.com/${{ matrix.repo }}.git" \
+            mirror-split:master
