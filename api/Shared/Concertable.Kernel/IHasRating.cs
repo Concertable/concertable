@@ -2,6 +2,6 @@ namespace Concertable.Kernel;
 
 public interface IHasRating
 {
-    int Id { get; set; }
-    double? Rating { get; set; }
+    int Id { get; }
+    double? Rating { get; }
 }

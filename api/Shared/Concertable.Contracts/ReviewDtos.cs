@@ -2,10 +2,10 @@ namespace Concertable.Contracts;
 
 public sealed record ReviewDto
 {
-    public int Id { get; set; }
-    public required string Email { get; set; }
-    public int Stars { get; set; }
-    public string? Details { get; set; }
+    public int Id { get; init; }
+    public required string Email { get; init; }
+    public int Stars { get; init; }
+    public string? Details { get; init; }
 }
 
-public sealed record ReviewSummaryDto(int TotalReviews, double? AverageRating);
+public sealed record ReviewSummary(int TotalReviews, double? AverageRating);
