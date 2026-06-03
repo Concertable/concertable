@@ -26,6 +26,12 @@ internal static partial class Log
     [LoggerMessage(Level = LogLevel.Information, Message = "App is healthy")]
     internal static partial void AppIsHealthy(this ILogger logger);
 
+    [LoggerMessage(Level = LogLevel.Information, Message = "Waiting for SPAs to serve at {Urls}")]
+    internal static partial void WaitingForSpasToServe(this ILogger logger, string urls);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "SPAs are serving")]
+    internal static partial void SpasAreServing(this ILogger logger);
+
     [LoggerMessage(Level = LogLevel.Information, Message = "[Aspire] {Resource}: {State}")]
     internal static partial void AspireResourceStateChanged(this ILogger logger, string resource, string state);
 

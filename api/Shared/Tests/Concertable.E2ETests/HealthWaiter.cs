@@ -26,9 +26,21 @@ public sealed class HealthWaiter : IDisposable
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
         cts.CancelAfter(timeout);
 
-        await Task.WhenAll(baseUrls.Select(url => WaitForHealthAsync(url, cts.Token)));
+        await Task.WhenAll(baseUrls.Select(url => PollUntilSuccessAsync($"{url}/health", cts.Token)));
 
         logger.AppIsHealthy();
+    }
+
+    public async Task WaitForAllServingAsync(IEnumerable<string> spaUrls, TimeSpan timeout, CancellationToken ct = default)
+    {
+        logger.WaitingForSpasToServe(string.Join(", ", spaUrls));
+
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        cts.CancelAfter(timeout);
+
+        await Task.WhenAll(spaUrls.Select(url => PollUntilSuccessAsync(url, cts.Token)));
+
+        logger.SpasAreServing();
     }
 
     public async Task WaitForPayoutAccountsAsync(string paymentConnectionString, int expectedCount, TimeSpan timeout)
@@ -52,10 +64,8 @@ public sealed class HealthWaiter : IDisposable
         throw new TimeoutException("Timed out waiting for PayoutAccounts to be provisioned.");
     }
 
-    private async Task WaitForHealthAsync(string baseUrl, CancellationToken cancellationToken = default)
+    private async Task PollUntilSuccessAsync(string url, CancellationToken cancellationToken = default)
     {
-        var url = $"{baseUrl}/health";
-
         while (!cancellationToken.IsCancellationRequested)
         {
             try
@@ -80,7 +90,7 @@ public sealed class HealthWaiter : IDisposable
             }
         }
 
-        throw new TimeoutException($"Health check timed out for {url}");
+        throw new TimeoutException($"Readiness check timed out for {url}");
     }
 
     public void Dispose() => httpClient.Dispose();

@@ -7,8 +7,6 @@ namespace Concertable.E2ETests;
 
 internal static class DistributedApplicationBuilderExtensions
 {
-    private const string StripeCliResourceName = AppHostConstants.ResourceNames.StripeCli;
-
     public static IDistributedApplicationTestingBuilder AddE2E(
         this IDistributedApplicationTestingBuilder builder,
         string apiBaseUrl,
@@ -180,22 +178,16 @@ internal static class DistributedApplicationBuilderExtensions
         string paymentBaseUrl)
     {
         var stripeCli = builder.Resources
-            .OfType<ContainerResource>()
-            .FirstOrDefault(r => r.Name == AppHostConstants.ResourceNames.StripeCli);
+            .SingleOrDefault(r => r.Name == AppHostConstants.ResourceNames.StripeCli);
 
         if (stripeCli is null) return;
 
         var apiKey = builder.Configuration["Stripe:SecretKey"]
             ?? throw new InvalidOperationException("Stripe:SecretKey is not configured.");
-        var forwardTo = $"{paymentBaseUrl.Replace("localhost", "host.docker.internal")}/api/Webhook";
+        var forwardTo = $"{paymentBaseUrl}/api/Webhook";
 
         foreach (var annotation in stripeCli.Annotations.OfType<CommandLineArgsCallbackAnnotation>().ToList())
             stripeCli.Annotations.Remove(annotation);
-
-        var volume = stripeCli.Annotations.OfType<ContainerMountAnnotation>()
-            .FirstOrDefault(m => m.Source == "stripe-cli-config");
-        if (volume is not null)
-            stripeCli.Annotations.Remove(volume);
 
         stripeCli.Annotations.Add(new CommandLineArgsCallbackAnnotation(ctx =>
         {
