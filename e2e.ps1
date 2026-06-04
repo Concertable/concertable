@@ -67,7 +67,7 @@ function Invoke-Regress([string]$suite, [string]$csproj) {
 
     # Run them
     $logPath = (Join-Path (Split-Path $csproj -Parent) 'regress.last.log')
-    dotnet test $csproj --filter $filter @quiet --logger "console;verbosity=normal" 2>&1 | Tee-Object -FilePath $logPath
+    dotnet test $csproj --filter $filter @quiet --logger "console;verbosity=normal" 2>&1 | Tee-Object -FilePath $logPath | Out-Host
 
     # Parse pass/fail totals (Tee writes UTF-16 on Windows)
     $logBytes = [System.IO.File]::ReadAllBytes($logPath)
