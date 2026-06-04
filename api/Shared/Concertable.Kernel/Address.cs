@@ -7,10 +7,8 @@ public sealed record Address
 
     public Address(string county, string town)
     {
-        if (string.IsNullOrWhiteSpace(county))
-            throw new DomainException("County cannot be empty.");
-        if (string.IsNullOrWhiteSpace(town))
-            throw new DomainException("Town cannot be empty.");
+        DomainException.ThrowIfNullOrWhiteSpace(county, "County");
+        DomainException.ThrowIfNullOrWhiteSpace(town, "Town");
 
         County = county;
         Town = town;

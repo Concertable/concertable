@@ -184,6 +184,7 @@
     <Project Path="Concertable.Search/Tests/Concertable.Search.IntegrationTests/Concertable.Search.IntegrationTests.csproj" />
     <Project Path="Concertable.Search/Tests/Concertable.Search.IntegrationTests.Fixtures/Concertable.Search.IntegrationTests.Fixtures.csproj" />
     <Project Path="Concertable.Search/Tests/Concertable.Search.UnitTests/Concertable.Search.UnitTests.csproj" />
+    <Project Path="Concertable.Search/Tests/E2ETests/Concertable.Search.E2ETests.Helpers/Concertable.Search.E2ETests.Helpers.csproj" />
   </Folder>
   <Folder Name="/Shared/">
     <Project Path="Shared/Concertable.Contracts/Concertable.Contracts.csproj" />
@@ -207,7 +208,6 @@
     <Project Path="Shared/Tests/Concertable.Testing/Concertable.Testing.csproj" />
     <Project Path="Shared/Tests/Concertable.Testing.Integration/Concertable.Testing.Integration.csproj" />
     <Project Path="Shared/Tests/Concertable.E2ETests/Concertable.E2ETests.csproj" />
-    <Project Path="Shared/Tests/Concertable.E2ETests/Concertable.E2ETests.Mobile/Concertable.E2ETests.Mobile.csproj" />
   </Folder>
   <Folder Name="/B2B/Tests/">
     <Project Path="Concertable.B2B/Tests/Concertable.B2B.IntegrationTests.Fixtures/Concertable.B2B.IntegrationTests.Fixtures.csproj" />
@@ -222,6 +222,7 @@
   </Folder>
   <Folder Name="/Customer/Tests/E2ETests/">
     <Project Path="Concertable.Customer/Tests/E2ETests/Concertable.Customer.E2ETests/Concertable.Customer.E2ETests.csproj" />
+    <Project Path="Concertable.Customer/Tests/E2ETests/Concertable.Customer.E2ETests.Mobile/Concertable.Customer.E2ETests.Mobile.csproj" />
     <Project Path="Concertable.Customer/Tests/E2ETests/Concertable.Customer.E2ETests.Ui/Concertable.Customer.E2ETests.Ui.csproj" />
   </Folder>
 </Solution>
