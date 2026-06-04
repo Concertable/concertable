@@ -50,6 +50,13 @@ Controllers return either the Dto verbatim (default — most endpoints) or a `Re
 shaping, HATEOAS, multiple endpoints rendering the same Dto differently). Don't pre-emptively
 shadow every Dto with a Response.
 
+Service write inputs are `Request` types from `Module.Application/Requests/` (keep the `Request`
+suffix) — never the read Dto, which carries server-owned fields (`Id`, `UserId`) the caller must not
+set. Identity comes from the route/method parameter, not the body. When Create and Update accept the
+identical writable shape, share a single `XRequest` (`PreferenceRequest`) instead of duplicating
+`CreateXRequest`/`UpdateXRequest`; split them the moment the contracts diverge. Request records use
+`{ get; init; }`.
+
 Validators stay named `XValidators` regardless.
 
 Drop the `Dto` suffix when the name already says what the shape is (`AcceptCheckout`, `TicketCheckout`); only keep it to disambiguate from a same-named entity (`CustomerDto` vs `CustomerEntity`).

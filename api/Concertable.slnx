@@ -96,6 +96,7 @@
   <Folder Name="/Customer/Modules/Concert/">
     <Project Path="Concertable.Customer/Modules/Concert/Concertable.Customer.Concert.Api/Concertable.Customer.Concert.Api.csproj" />
     <Project Path="Concertable.Customer/Modules/Concert/Concertable.Customer.Concert.Application/Concertable.Customer.Concert.Application.csproj" />
+    <Project Path="Concertable.Customer/Modules/Concert/Concertable.Customer.Concert.Contracts/Concertable.Customer.Concert.Contracts.csproj" />
     <Project Path="Concertable.Customer/Modules/Concert/Concertable.Customer.Concert.Domain/Concertable.Customer.Concert.Domain.csproj" />
     <Project Path="Concertable.Customer/Modules/Concert/Concertable.Customer.Concert.Infrastructure/Concertable.Customer.Concert.Infrastructure.csproj" />
     <Project Path="Concertable.Customer/Modules/Concert/Tests/Concertable.Customer.Concert.IntegrationTests/Concertable.Customer.Concert.IntegrationTests.csproj" />
@@ -128,6 +129,7 @@
   <Folder Name="/Customer/Modules/Ticket/">
     <Project Path="Concertable.Customer/Modules/Ticket/Concertable.Customer.Ticket.Api/Concertable.Customer.Ticket.Api.csproj" />
     <Project Path="Concertable.Customer/Modules/Ticket/Concertable.Customer.Ticket.Application/Concertable.Customer.Ticket.Application.csproj" />
+    <Project Path="Concertable.Customer/Modules/Ticket/Concertable.Customer.Ticket.Contracts/Concertable.Customer.Ticket.Contracts.csproj" />
     <Project Path="Concertable.Customer/Modules/Ticket/Concertable.Customer.Ticket.Domain/Concertable.Customer.Ticket.Domain.csproj" />
     <Project Path="Concertable.Customer/Modules/Ticket/Concertable.Customer.Ticket.Infrastructure/Concertable.Customer.Ticket.Infrastructure.csproj" />
     <Project Path="Concertable.Customer/Modules/Ticket/Tests/Concertable.Customer.Ticket.IntegrationTests/Concertable.Customer.Ticket.IntegrationTests.csproj" />

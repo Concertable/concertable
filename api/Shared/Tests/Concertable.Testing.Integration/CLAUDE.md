@@ -9,7 +9,7 @@ contract** that services implement with their own service-specific types (the co
 implementations are not). Current consumers: B2B, Customer, Search.
 
 - `SqlFixture` — Testcontainers MsSql + Respawn reset
-- `TestAuthHandler` — injects `sub` / `role` claims via request headers
+- `TestAuthHandler` — injects `sub` / `role` / `email` claims via request headers
 - `IResettable` — marker interface for mocks that flush state between tests
 - `Mocks/MockBusTransport` — no-op `IBusTransport` (suppresses real ASB)
 - `Mocks/MockEmailSender` / `IMockEmailSender` — captures sent emails, exposes `Sent` list
