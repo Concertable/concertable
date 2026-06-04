@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
 
@@ -5,31 +6,30 @@ namespace Concertable.Kernel.Auth;
 
 internal sealed class ClientCredentialsTokenService : ITokenService
 {
-    private readonly IHttpClientFactory _factory;
-    private readonly IOptions<TokenServiceOptions> _options;
-    private readonly SemaphoreSlim _lock = new(1, 1);
-    private string? _cachedToken;
-    private DateTimeOffset _tokenExpiry = DateTimeOffset.MinValue;
+    private readonly IHttpClientFactory factory;
+    private readonly IOptions<TokenServiceOptions> options;
+    private readonly SemaphoreSlim gate = new(1, 1);
+    private readonly ConcurrentDictionary<string, (string Token, DateTimeOffset Expiry)> cache = new();
 
     public ClientCredentialsTokenService(IHttpClientFactory factory, IOptions<TokenServiceOptions> options)
     {
-        _factory = factory;
-        _options = options;
+        this.factory = factory;
+        this.options = options;
     }
 
     public async Task<string> GetTokenAsync(string scope, CancellationToken ct = default)
     {
-        if (_cachedToken is not null && DateTimeOffset.UtcNow < _tokenExpiry)
-            return _cachedToken;
+        if (TryGetCached(scope, out var token))
+            return token;
 
-        await _lock.WaitAsync(ct);
+        await gate.WaitAsync(ct);
         try
         {
-            if (_cachedToken is not null && DateTimeOffset.UtcNow < _tokenExpiry)
-                return _cachedToken;
+            if (TryGetCached(scope, out token))
+                return token;
 
-            var opts = _options.Value;
-            using var client = _factory.CreateClient();
+            var opts = options.Value;
+            using var client = factory.CreateClient();
             using var response = await client.PostAsync(
                 $"{opts.Authority.TrimEnd('/')}/connect/token",
                 new FormUrlEncodedContent(new Dictionary<string, string>
@@ -42,14 +42,25 @@ internal sealed class ClientCredentialsTokenService : ITokenService
 
             response.EnsureSuccessStatusCode();
             using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync(ct));
-            _cachedToken = doc.RootElement.GetProperty("access_token").GetString()!;
+            token = doc.RootElement.GetProperty("access_token").GetString()!;
             var expiresIn = doc.RootElement.GetProperty("expires_in").GetInt32();
-            _tokenExpiry = DateTimeOffset.UtcNow.AddSeconds(expiresIn - 30);
-            return _cachedToken;
+            cache[scope] = (token, DateTimeOffset.UtcNow.AddSeconds(expiresIn - 30));
+            return token;
         }
         finally
         {
-            _lock.Release();
+            gate.Release();
         }
+    }
+
+    private bool TryGetCached(string scope, out string token)
+    {
+        if (cache.TryGetValue(scope, out var entry) && DateTimeOffset.UtcNow < entry.Expiry)
+        {
+            token = entry.Token;
+            return true;
+        }
+        token = string.Empty;
+        return false;
     }
 }

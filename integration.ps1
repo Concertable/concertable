@@ -33,7 +33,7 @@ function Invoke-IntegrationProject([string]$csproj, [string[]]$extra) {
     Write-Host ""
     Write-Host "=== $name ===" -ForegroundColor Cyan
     $cmdArgs = @($csproj, '--logger', 'console;verbosity=normal') + $extra
-    dotnet test @cmdArgs 2>&1 | Tee-Object -FilePath $logPath
+    dotnet test @cmdArgs 2>&1 | Tee-Object -FilePath $logPath | Out-Host
     return $LASTEXITCODE
 }
 
