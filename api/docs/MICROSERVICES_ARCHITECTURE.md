@@ -29,18 +29,18 @@ The modular monolith already enforces the *internal* boundary correctly. The mic
 
 | Logical service | Category | Composition (deployable hosts) | DB | Owns |
 |---|---|---|---|---|
-| **B2B** | Data | `Concertable.B2B.Api` + `Concertable.B2B.Workers` | B2B SQL | Venue, Artist, Concert (workflow shape), Contract, Booking, Application, Opportunity, Settlement, Organization, Messaging, manager/admin profiles. Manager + venue/artist SPA endpoints. Workers run settlement triggers, lifecycle transitions, payout reconciliation. |
+| **B2B** | Data | `Concertable.B2B.Web` + `Concertable.B2B.Workers` | B2B SQL | Venue, Artist, Concert (workflow shape), Contract, Booking, Application, Opportunity, Settlement, Organization, Messaging, manager/admin profiles. Manager + venue/artist SPA endpoints. Workers run settlement triggers, lifecycle transitions, payout reconciliation. |
 | **Customer** | Data | `Concertable.Customer.Web` | Customer SQL | Tickets (with `AvailableTickets`), Preferences, Reviews, `UserEntity` (customer profile). Single deployable — service is write-light; ASB consumers run in-process. No Workers host needed. |
-| **Search** | Read projection | `Concertable.Search.Api` + `Concertable.Search.Workers` | Search SQL | `ArtistSearchModel`, `VenueSearchModel`, `ConcertSearchModel`. Browse/autocomplete/header/detail reads. Api read-only, sync-callable from B2B and Customer SPAs. Workers consume events from B2B and Customer to populate projections. |
-| **Payment** | Adapter | `Concertable.Payment.Api` + `Concertable.Payment.Workers` | Payment SQL | PayoutAccount, StripeCustomer refs, payment intent / transfer / refund ledger. Sole receiver of Stripe webhooks. Workers process webhooks and reconciliation. |
+| **Search** | Read projection | `Concertable.Search.Web` + `Concertable.Search.Workers` | Search SQL | `ArtistSearchModel`, `VenueSearchModel`, `ConcertSearchModel`. Browse/autocomplete/header/detail reads. Web host read-only, sync-callable from B2B and Customer SPAs. Workers consume events from B2B and Customer to populate projections. |
+| **Payment** | Adapter | `Concertable.Payment.Web` + `Concertable.Payment.Workers` | Payment SQL | PayoutAccount, StripeCustomer refs, payment intent / transfer / refund ledger. Sole receiver of Stripe webhooks. Workers process webhooks and reconciliation. |
 | **Auth** | Adapter | `Concertable.Auth` (Duende IS, single host) | Duende DB | OIDC issuer. Identity authority (`sub`, password hash, email-verification). No role claims. Also issues service tokens for service-to-service auth (§5.5). |
 **Non-deployables:**
 
 | | | |
 |---|---|---|
 | `Concertable.AppHost` | Aspire orchestrator | Local dev only. |
-| `Concertable.Contracts` | csproj (future NuGet if poly-repo) | The *wire*: event contracts, cross-service DTOs, `ICurrentUser`, static lookups (Genre). |
-| `Concertable.Kernel` | csproj (future NuGet if poly-repo) | The *framework*: `BaseEntity`, `Period`, `IUnitOfWork<TContext>`, `DbContextBase`, validation helpers. `IEmailSender` abstraction. |
+| `Concertable.Contracts` | csproj (future NuGet if poly-repo) | The *wire*: event contracts, cross-service DTOs, static lookups (Genre). |
+| `Concertable.Kernel` | csproj (future NuGet if poly-repo) | The *framework*: `BaseEntity`, `Period`, `IUnitOfWork<TContext>`, `DbContextBase`, validation helpers. `IEmailSender` abstraction. `ICurrentUser` + claim helpers (`Identity/`). |
 | `Concertable.Email` | csproj shared library | `IEmailSender` concrete impls (SendGrid, SMTP, Fake). Both B2B and Customer import this library directly — no network hop. See §4.7. |
 | Azure Service Bus | Managed broker | Async event substrate. |
 
@@ -82,7 +82,7 @@ This is the rule the rest of the architecture hangs on. **A read projection serv
 
 - `PayoutAccountEntity` and `StripeCustomerEntity` are **not** partitioned between B2B and Customer. Venues and artists are both payers (FlatFee, VenueHire) and payees (DoorSplit, ticket revenue) depending on contract type, so they need both Connect accounts and Stripe Customer refs. Both live in the Payment service.
 - **Inverse-direction projections.** Most events flow B2B → Search/Customer for browse. `TicketPurchasedEvent`, `TicketRefundedEvent`, `ReviewSubmittedEvent` flow Customer → B2B for analytics and settlement math. The bus is bidirectional; the canonical-owner rule is what's fixed.
-- **Authentication vs authorization.** Auth (Duende) issues tokens with `sub` + audience only — no role claim. Each service derives the persona's role from its own data: B2B inspects the manager-profile subtype/membership for the `sub`; Customer treats any token from its audience as `Customer`. This separates "who are you" (Auth) from "what can you do here" (per-service authorization). `Concertable.Authorization.Contracts` (`ICurrentUser`, claim helpers) stays as a shared library, consumed per-service.
+- **Authentication vs authorization.** Auth (Duende) issues tokens with `sub` + audience only — no role claim. Each service derives the persona's role from its own data: B2B inspects the manager-profile subtype/membership for the `sub`; Customer treats any token from its audience as `Customer`. This separates "who are you" (Auth) from "what can you do here" (per-service authorization). `ICurrentUser` and the claim helpers live in `Concertable.Kernel` (`Identity/`), consumed per-service.
 - **Customer/Search projection split.** Customer DB only needs to project what *Customer's own write paths* require (e.g., `TotalTickets` to compute remaining). Browse/detail reads route through Search. This avoids duplicating projections across Customer and Search.
 
 ## 4.5 Entity migration map
@@ -154,7 +154,7 @@ public class ConcertEntity : BaseEntity<int> {
 | `VenueManagerEntity`, `ArtistManagerEntity`, `AdminEntity` | **B2B** — flat tables (no TPH), each carrying Auth `sub` + B2B-specific fields (`VenueId`, `ArtistId`, etc.) |
 | `CustomerEntity` | **Customer** — becomes `CustomerProfileEntity` (no TPH), carries Auth `sub` + customer-side fields (location, avatar, preferences) |
 | `Role` enum on `UserEntity` | **Deleted** — role inferred from token audience + service-side profile-table membership |
-| `Modules/Authorization/` (`ICurrentUser`, claim extensions) | Stays as cross-cutting library in `Concertable.Contracts` (or its own NuGet), consumed per-service |
+| `Modules/Authorization/` (`ICurrentUser`, claim extensions) | Stays as cross-cutting framework code in `Concertable.Kernel` (`Identity/`), consumed per-service |
 
 ### Search module extraction
 
@@ -345,36 +345,35 @@ Payment is the most distinctive piece of the design — sole reason it's worth p
 
 ## 8. Repository structure
 
-Single Git repo, single `.sln` (or split into multiple `.sln` files for build performance later). Designed so a poly-repo split is a folder move and packaging change, not a rewrite.
+Single Git repo. Solutions are per-service `.slnx` files in each service root (`Concertable.B2B.slnx`, `Concertable.Customer.slnx`, `Concertable.Search.slnx`, `Concertable.Payment.slnx`) plus the umbrella `api/Concertable.slnx`; the legacy single `Concertable.sln` is deleted. Designed so a poly-repo split is a folder move and packaging change, not a rewrite.
 
 ```
 Concertable/
 ├── api/
-│   ├── Concertable.AppHost/                    (Aspire orchestrator)
-│   ├── Concertable.Auth/                       (Duende IS, existing — identity only)
-│   ├── Concertable.Contracts/                  (shared NuGet/csproj: event contracts, DTOs, authorization helpers)
+│   ├── Concertable.slnx                        (umbrella solution)
+│   ├── Concertable.AppHost/                    (umbrella Aspire orchestrator — local dev only)
+│   ├── Concertable.AppHost.Shared/             (shared host topology/reference helpers)
+│   ├── Concertable.Auth/                       (Duende IS — identity only)
+│   ├── Concertable.Auth.Contracts/
 │   ├── Concertable.B2B/
-│   │   ├── Concertable.B2B.Api/                (HTTP host)
+│   │   ├── Concertable.B2B.slnx
+│   │   ├── Concertable.B2B.AppHost/            (standalone host, + AppHost.Extensions)
+│   │   ├── Concertable.B2B.Web/                (HTTP host)
 │   │   ├── Concertable.B2B.Workers/            (background jobs)
-│   │   └── Modules/                            (Venue, Artist, Concert workflow, Contract, Booking, Application, Opportunity, Organization, Messaging, Membership/ManagerProfiles)
-│   ├── Concertable.Customer/
-│   │   ├── Concertable.Customer.Api/
-│   │   ├── Concertable.Customer.Workers/       (optional)
-│   │   └── Modules/                            (Tickets, Preferences, Reviews, CustomerProfile, Projections)
-│   ├── Concertable.Search/
-│   │   ├── Concertable.Search.Api/             (read-only HTTP host: browse, autocomplete, details)
-│   │   ├── Concertable.Search.Workers/         (event consumers populating projections)
-│   │   └── Modules/                            (VenueSearchModel, ArtistSearchModel, ConcertSearchModel)
-│   └── Concertable.Payment/
-│       ├── Concertable.Payment.Api/
-│       ├── Concertable.Payment.Workers/        (webhook processing, reconciliation)
-│       └── Modules/                            (Stripe integration, ledger)
+│   │   ├── Modules/                            (Artist, Concert, Contract, Conversations, Organization, User, Venue)
+│   │   ├── Seed/                               (Seed.Contracts, Seed.Infrastructure, Seed.Simulator)
+│   │   └── Tests/
+│   ├── Concertable.Customer/                   (same shape — Web only, consumers in-process; Modules: Concert, Preference, Review, Ticket, User)
+│   ├── Concertable.Search/                     (Web + Workers, Seed/, Tests/)
+│   ├── Concertable.Payment/                    (Web + Workers + Client gRPC adapters, Seed/, Tests/)
+│   ├── Concertable.Messaging/                  (outbox/inbox/bus + ASB transport, + Tests/)
+│   ├── Concertable.DataAccess/
+│   ├── Concertable.ServiceDefaults/
+│   └── Shared/                                 (Concertable.Kernel, Concertable.Contracts, Concertable.Shared.* libs, Seed/, Tests/)
 ├── app/
-│   ├── web/
-│   │   ├── b2b/                                (venue / artist / business SPAs)
-│   │   └── customer/
+│   ├── web/                                    (customer SPA, b2b/{shared,venue,artist,business} SPAs, shared)
+│   ├── customer/shared                         (npm @customer/shared — customer web+mobile core)
 │   └── mobile/
-├── Concertable.sln
 └── ...
 ```
 
@@ -395,21 +394,19 @@ The microservices split **does not retire the modular monolith pattern** — it 
 
 ```
 B2B/
-├── Concertable.B2B.Api/                (HTTP host — composition root)
+├── Concertable.B2B.Web/                (HTTP host — composition root)
 ├── Concertable.B2B.Workers/            (background jobs host)
 └── Modules/
     ├── Venue/        Api + Application + Domain + Infrastructure + Contracts
     ├── Artist/       same shape
-    ├── Concert/      same shape (now lean post-decomposition)
+    ├── Concert/      same shape (Booking/Application/Opportunity live inside it)
     ├── Contract/
-    ├── Booking/
-    ├── Application/
-    ├── Opportunity/
+    ├── Conversations/
     ├── Organization/
-    └── Messaging/
+    └── User/
 ```
 
-Same shape inside `Concertable.Customer` (modules: Ticket, Review, Preference, CustomerProfile), `Concertable.Search` (VenueSearchModel, ArtistSearchModel, ConcertSearchModel as projection modules), `Concertable.Payment` (Stripe integration, ledger), `Concertable.Notification` (templates, transport).
+Same shape inside `Concertable.Customer` (modules: Concert, Preference, Review, Ticket, User), `Concertable.Search` (VenueSearchModel, ArtistSearchModel, ConcertSearchModel as projection modules), and `Concertable.Payment` (Stripe integration, ledger).
 
 **What stays:**
 
@@ -481,7 +478,7 @@ Roughly a year of evenings-and-weekends if taken seriously. Valuable on a CV at 
 | ~~Q2~~ R9 *(was Q2)* | **Re-resolved 2026-05-19** — Email/Notification is a *shared library* (`Concertable.Email`), not a service. Both B2B and Customer import it in-process. `IEmailSender` is the cross-service abstraction in `Concertable.Kernel`. See §4.7. | — |
 | Q3 | Do we eventually need a dedicated `Concertable.Webhooks.Stripe` service separate from Payment? | Only if Stripe event handling outgrows Payment. Defer. |
 | Q4 | Future B2B venue↔artist reviews — same `ReviewEntity` shape as customer reviews, or different? | Open. Default: separate table in B2B (different bounded context, even if conceptually similar). Same conceptual name `Review` is fine across services. |
-| ~~Q5~~ R10 *(was Q5)* | **Resolved 2026-05-19** — `ICurrentUser` and claim helpers live in `Concertable.Contracts` (the wire package). See §4.8. No central authorization service; each service makes its own authz decisions against tokens it validates. | — |
+| ~~Q5~~ R10 *(was Q5)* | **Resolved 2026-05-19** — `ICurrentUser` and claim helpers stay a shared library; no central authorization service; each service makes its own authz decisions against tokens it validates. *(As-built they landed in `Concertable.Kernel/Identity/` — the framework package — not Contracts.)* | — |
 | Q6 | Service-to-service auth in `client_credentials` model: how are scopes structured? Per-callee service (`payment:write`, `auth:read`) or finer (`payment:intent:create`)? | Open. Default: start coarse (one scope per callee service), refine only if a service legitimately needs to distinguish caller intents. |
 | Q7 | Event schema versioning concrete mechanism. `V1`/`V2` type names? CloudEvents headers? Upcaster pattern? | Open. Decide at Step 13 of §9 with concrete migration in hand. |
 | Q8 | DB-per-service cutover when extracting Customer (Step 3 §9). One logical DB → N physical DBs operationally — backup/restore, logical export, tolerated downtime? | Open. Likely "fresh DB + replay events from B2B outbox to populate Customer's projections" since the boundary is fresh; but spike it before committing. |
@@ -507,6 +504,12 @@ Roughly a year of evenings-and-weekends if taken seriously. Valuable on a CV at 
 - B2B Workers uses `AddInMemoryTransport` (bug — see `api/Concertable.B2B/TECH_DEBT.md`).
 - Inverse-direction event flow (§6) not yet implemented (see `TECH_DEBT.md` files).
 - Per-service `ARCHITECTURE.md` and `TECH_DEBT.md` added at `api/Concertable.B2B/` and `api/Concertable.Customer/`.
+
+**2026-06-05** — Doc-vs-reality reconciliation (big-review NOTE4). `api/ARCHITECTURE.md` is the canonical current-state doc; this doc records the design and its decision history.
+- Solutions are per-service `.slnx` + the umbrella `api/Concertable.slnx`; the single `Concertable.sln` is deleted (§8 updated).
+- Service HTTP hosts are named `Concertable.X.Web`, not `Concertable.X.Api` — `.Api` is reserved for module layers inside a service (§2/§8/§8.5 updated).
+- `ICurrentUser` + claim helpers landed in `Concertable.Kernel/Identity/` (the framework package), not `Concertable.Contracts` and not a `Concertable.Authorization.Contracts` project — no such project exists (§4/§4.5/R10 updated).
+- §8 repo tree redrawn as-built: standalone per-service AppHosts, `Seed/` + `Tests/` inside each service, `api/Shared/` for Kernel/Contracts/cross-cutting libs, `Concertable.Auth.Contracts`.
 
 ## 13. Reference
 
