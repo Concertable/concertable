@@ -7,13 +7,20 @@ using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace Concertable.Seed.Shared.Identity;
 
-public sealed class SeedingIdentityInterceptor(SeedingScope scope) : DbCommandInterceptor
+public sealed class SeedingIdentityInterceptor : DbCommandInterceptor
 {
     private static readonly Regex insertRegex = new(
         @"INSERT\s+INTO\s+(?<table>\[?[\w]+\]?(?:\.\[?[\w]+\]?)?)\s*\((?<cols>[^)]*)\)",
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     private static readonly ConcurrentDictionary<Type, Dictionary<string, string>> tableCache = new();
+
+    private readonly SeedingScope scope;
+
+    public SeedingIdentityInterceptor(SeedingScope scope)
+    {
+        this.scope = scope;
+    }
 
     public override InterceptionResult<int> NonQueryExecuting(DbCommand cmd, CommandEventData e, InterceptionResult<int> r) => Intercept(cmd, e, r);
     public override ValueTask<InterceptionResult<int>> NonQueryExecutingAsync(DbCommand cmd, CommandEventData e, InterceptionResult<int> r, CancellationToken ct = default) => ValueTask.FromResult(Intercept(cmd, e, r));
