@@ -21,6 +21,7 @@ export default defineConfig({
     alias: [
       { find: /^@\/(components|features|hooks|lib|providers|context|types|assets)(\/.*)?$/, replacement: path.resolve(__dirname, "../shared/src/$1$2") },
       { find: /^shared\/(.*)$/, replacement: path.resolve(__dirname, "../shared/src/$1") },
+      { find: /^@b2b\/(.*)$/, replacement: path.resolve(__dirname, "../b2b/shared/src/$1") },
       { find: "@", replacement: path.resolve(__dirname, "./src") },
     ],
   },

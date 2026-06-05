@@ -26,12 +26,12 @@ function ReviewSectionSkeleton() {
 }
 
 export function ReviewSection({ type, id }: Readonly<Props>) {
-  if (!id) return null;
-
   const { reviews, isLoading, params, nextPage, prevPage } = useReviews(
     type,
     id,
   );
+
+  if (!id) return null;
 
   return (
     <section className="space-y-4">

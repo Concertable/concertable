@@ -1,14 +1,7 @@
 import api from "@concertable/shared/lib/axiosClient";
-import customerApi from "@concertable/shared/lib/customerAxiosClient";
 import type { Pagination } from "@concertable/shared/types/common";
 import type { PaginationParams } from "@concertable/shared/hooks/usePagination";
 import type { Review, ReviewSummary, ReviewEntityType } from "../types";
-
-interface CreateReviewRequest {
-  concertId: number;
-  stars: number;
-  details?: string;
-}
 
 const basePath = (type: ReviewEntityType, id: number) =>
   `/${type}s/${id}/reviews`;
@@ -25,17 +18,6 @@ const reviewApi = {
 
   getReviewSummary: async (type: ReviewEntityType, id: number): Promise<ReviewSummary> => {
     const { data } = await api.get<ReviewSummary>(`${basePath(type, id)}/summary`);
-    return data;
-  },
-
-  canReview: async (type: ReviewEntityType, id: number): Promise<boolean> => {
-    const { data } = await customerApi.get<boolean>(`${basePath(type, id)}/eligibility`);
-    return data;
-  },
-
-  createReview: async (request: CreateReviewRequest): Promise<Review> => {
-    const { concertId, ...body } = request;
-    const { data } = await customerApi.post<Review>(`${basePath("concert", concertId)}`, body);
     return data;
   },
 };

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "@tanstack/react-router";
-import { usePayoutAccountStatusQuery, StripeOnboardingBanner } from "@/features/payments";
+import { usePayoutAccountStatusQuery, StripeOnboardingBanner } from "@b2b/features/payments";
 import { Button } from "@/components/ui/button";
 import dayjs from "dayjs";
 import type { ConcertDraftCreatedPayload } from "@/features/notifications";
@@ -8,7 +8,7 @@ import {
   useApplicationQuery,
   useAcceptApplicationMutation,
   AcceptContractSummary,
-} from "@/features/concerts";
+} from "@b2b/features/concerts";
 import { useCheckoutFlow } from "@/features/concerts/hooks/useCheckoutFlow";
 import { VenueAcceptCheckoutFlow } from "./VenueAcceptCheckoutPage";
 

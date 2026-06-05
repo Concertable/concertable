@@ -1,7 +1,8 @@
-﻿import { Hero } from "@/components/Hero";
+﻿import type { ReactNode } from "react";
+import { Hero } from "@/components/Hero";
 import { GoogleMap } from "@/components/GoogleMap";
-import { EditableTextarea } from "@/components/editable/EditableTextarea";
-import { ReviewSection, ReviewSummaryBadge, AddReview } from "@/features/reviews";
+import { AboutSection } from "@/components/details/AboutSection";
+import { ReviewSection, ReviewSummaryBadge } from "@/features/reviews";
 import { ScrollspyNav } from "@/components/ScrollspyNav";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MapPin, Star, TriangleAlertIcon } from "lucide-react";
@@ -22,6 +23,8 @@ interface Props {
   concert: Concert;
   onNameChange?: (value: string) => void;
   onAboutChange?: (value: string) => void;
+  addReviewSlot?: ReactNode;
+  onBuyTickets?: () => void;
 }
 
 function ArtistSection({ artist }: { artist: Concert["artist"] }) {
@@ -60,6 +63,8 @@ export function ConcertDetails({
   concert,
   onNameChange,
   onAboutChange,
+  addReviewSlot,
+  onBuyTickets,
 }: Readonly<Props>) {
   return (
     <div>
@@ -85,14 +90,12 @@ export function ConcertDetails({
       <div className="@container mx-auto max-w-6xl px-6 py-10">
         <div className="flex gap-10">
           <div className="flex-1 space-y-10">
-            <section id="about" className="scroll-mt-24 space-y-2">
-              <h2 className="text-xl font-semibold">About</h2>
-              <EditableTextarea
-                onChange={onAboutChange}
+            <section id="about" className="scroll-mt-24">
+              <AboutSection
+                text={concert.about}
                 placeholder="Tell people about this concert..."
-              >
-                {concert.about}
-              </EditableTextarea>
+                onChange={onAboutChange}
+              />
             </section>
 
             <div className="border-border border-t" />
@@ -123,7 +126,7 @@ export function ConcertDetails({
             <section id="reviews" className="scroll-mt-24 space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-semibold">Reviews</h2>
-                <AddReview concertId={concert.id} />
+                {addReviewSlot}
               </div>
               <Tabs defaultValue="artist">
                 <div className="flex items-center justify-between gap-6">
@@ -157,7 +160,7 @@ export function ConcertDetails({
 
           <div className="hidden w-72 shrink-0 @3xl:block">
             <div className="sticky top-28">
-              <ConcertCard concert={concert} />
+              <ConcertCard concert={concert} onBuyTickets={onBuyTickets} />
             </div>
           </div>
         </div>

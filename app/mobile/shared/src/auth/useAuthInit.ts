@@ -4,7 +4,6 @@ import { userApi } from "@concertable/shared/features/user";
 import { tokenStorage } from "./tokenStorage";
 import "../lib/axios";
 import "../lib/searchAxios";
-import "../lib/customerAxios";
 import "../lib/paymentAxios";
 
 export function useAuthInit() {

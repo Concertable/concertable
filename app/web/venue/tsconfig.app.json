@@ -31,8 +31,9 @@
       "@/types/*": ["../shared/src/types/*"],
       "@/assets/*": ["../shared/src/assets/*"],
       "shared/*": ["../shared/src/*"],
+      "@b2b/*": ["../b2b/shared/src/*"],
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src", "../shared/src"]
+  "include": ["src", "../shared/src", "../b2b/shared/src"]
 }

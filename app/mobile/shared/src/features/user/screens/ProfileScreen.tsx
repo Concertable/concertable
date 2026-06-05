@@ -18,7 +18,16 @@ import type { ProfileStackParamList } from "../../../navigation/types";
 
 type ProfileNav = NativeStackNavigationProp<ProfileStackParamList>;
 
-export function ProfileScreen() {
+export interface ProfileMenuItem {
+  label: string;
+  onPress: () => void;
+}
+
+interface Props {
+  accountItems?: ProfileMenuItem[];
+}
+
+export function ProfileScreen({ accountItems }: Readonly<Props>) {
   const nav = useNavigation<ProfileNav>();
   const user = useAuthStore((s) => s.user);
   const { login, signup, loading, error } = useLogin();
@@ -111,7 +120,9 @@ export function ProfileScreen() {
         <SectionHeader title="Account" />
         <MenuRow label="Edit Profile" onPress={() => nav.navigate("EditProfile")} />
         <MenuRow label="Location" onPress={() => nav.navigate("Location")} />
-        <MenuRow label="Preferences" onPress={() => nav.navigate("Preferences")} />
+        {accountItems?.map((item) => (
+          <MenuRow key={item.label} label={item.label} onPress={item.onPress} />
+        ))}
 
         <SectionHeader title="Support" />
         <MenuRow label="Help Center" onPress={() => {}} />

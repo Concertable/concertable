@@ -1,5 +1,4 @@
 ﻿import { Button } from "@/components/ui/button";
-import { useNavigate } from "@tanstack/react-router";
 import { useImageUrl } from "@concertable/shared/hooks";
 import dayjs from "dayjs";
 import { CalendarDays, MapPin, Ticket } from "lucide-react";
@@ -7,10 +6,10 @@ import type { Concert } from "../types";
 
 interface Props {
   concert: Concert;
+  onBuyTickets?: () => void;
 }
 
-export function ConcertCard({ concert }: Readonly<Props>) {
-  const navigate = useNavigate();
+export function ConcertCard({ concert, onBuyTickets }: Readonly<Props>) {
   const { data: src } = useImageUrl(concert.avatar);
 
   return (
@@ -48,12 +47,8 @@ export function ConcertCard({ concert }: Readonly<Props>) {
       <Button
         className="w-full"
         data-testid="buy-tickets"
-        onClick={() =>
-          void navigate({
-            to: "/concert/checkout/$id",
-            params: { id: concert.id },
-          })
-        }
+        disabled={!onBuyTickets}
+        onClick={onBuyTickets}
       >
         Buy Tickets
       </Button>

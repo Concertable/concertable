@@ -8,9 +8,9 @@ import { useImageUrl } from "@concertable/shared/hooks";
 import { RatingStars } from "@/components/ui/RatingStars";
 import { Text } from "@/components/ui/text";
 import { theme } from "../../../../lib/theme";
-import type { SearchStackParamList } from "../../../../navigation/types";
+import type { ConcertNavParamList } from "../../../../navigation/types";
 
-type SearchNav = NativeStackNavigationProp<SearchStackParamList>;
+type SearchNav = NativeStackNavigationProp<ConcertNavParamList>;
 
 export function VenueHeaderCard({ data }: { data: Header }) {
   const nav = useNavigation<SearchNav>();

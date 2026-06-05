@@ -1,8 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { UserCircle } from "lucide-react";
 import { useAuth } from "react-oidc-context";
-import { useAuthStore, isArtistManager, isVenueManager } from "@/features/auth";
-import { useNavSection } from "@/hooks/useNavSection";
+import { useAuthStore } from "@/features/auth";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/IconButton";
 import {
@@ -17,10 +16,20 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export function ProfileMenu() {
+export interface ProfileMenuItem {
+  label: string;
+  to?: string;
+  href?: string;
+  items?: ProfileMenuItem[];
+}
+
+interface Props {
+  items: ProfileMenuItem[];
+}
+
+export function ProfileMenu({ items }: Readonly<Props>) {
   const user = useAuthStore((s) => s.user);
   const auth = useAuth();
-  const section = useNavSection();
 
   async function handleLogout() {
     await auth.signoutRedirect();
@@ -39,10 +48,6 @@ export function ProfileMenu() {
     );
   }
 
-  const isCustomer = user.role === "Customer";
-  const isAdmin = user.role === "Admin";
-  const inCustomerView = section === "Customer";
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -57,11 +62,10 @@ export function ProfileMenu() {
 
         <DropdownMenuSeparator />
 
-        {isCustomer && (
-          <DropdownMenuItem asChild>
-            <Link to="/profile">Profile</Link>
-          </DropdownMenuItem>
-        )}
+        {items.map((item) => (
+          <MenuItem key={item.label} item={item} />
+        ))}
+
         <DropdownMenuItem asChild>
           <Link to="/settings">Settings</Link>
         </DropdownMenuItem>
@@ -69,67 +73,40 @@ export function ProfileMenu() {
           <Link to="/settings/payment">Payment / Billing</Link>
         </DropdownMenuItem>
 
-        {isCustomer && (
-          <>
-            <DropdownMenuSub>
-              <DropdownMenuSubTrigger>My Tickets</DropdownMenuSubTrigger>
-              <DropdownMenuSubContent>
-                <DropdownMenuItem asChild>
-                  <Link to="/profile/tickets/upcoming">Upcoming</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/profile/tickets/history">History</Link>
-                </DropdownMenuItem>
-              </DropdownMenuSubContent>
-            </DropdownMenuSub>
-            <DropdownMenuItem asChild>
-              <Link to="/profile/preferences">Preferences</Link>
-            </DropdownMenuItem>
-          </>
-        )}
-
-        {isArtistManager(user) && (
-          <>
-            <DropdownMenuItem asChild>
-              <Link to="/my">My Artist</Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link to="/">Dashboard</Link>
-            </DropdownMenuItem>
-          </>
-        )}
-
-        {isVenueManager(user) && (
-          <>
-            <DropdownMenuItem asChild>
-              <Link to="/my">My Venue</Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link to="/">Dashboard</Link>
-            </DropdownMenuItem>
-          </>
-        )}
-
-        {!isCustomer && !isAdmin && (
-          <>
-            <DropdownMenuSeparator />
-            {inCustomerView ? (
-              <DropdownMenuItem asChild>
-                <Link to={user.baseUrl}>Manager View</Link>
-              </DropdownMenuItem>
-            ) : (
-              <DropdownMenuItem asChild>
-                <Link to="/">Customer View</Link>
-              </DropdownMenuItem>
-            )}
-          </>
-        )}
-
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogout} className="text-destructive">
           Logout
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
+  );
+}
+
+function MenuItem({ item }: Readonly<{ item: ProfileMenuItem }>) {
+  if (item.items)
+    return (
+      <DropdownMenuSub>
+        <DropdownMenuSubTrigger>{item.label}</DropdownMenuSubTrigger>
+        <DropdownMenuSubContent>
+          {item.items.map((child) => (
+            <MenuItem key={child.label} item={child} />
+          ))}
+        </DropdownMenuSubContent>
+      </DropdownMenuSub>
+    );
+
+  if (item.href)
+    return (
+      <DropdownMenuItem asChild>
+        <a href={item.href} target="_blank" rel="noopener noreferrer">
+          {item.label}
+        </a>
+      </DropdownMenuItem>
+    );
+
+  return (
+    <DropdownMenuItem asChild>
+      <Link to={item.to!}>{item.label}</Link>
+    </DropdownMenuItem>
   );
 }

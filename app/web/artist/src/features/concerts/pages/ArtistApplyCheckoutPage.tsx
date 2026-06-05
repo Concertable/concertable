@@ -2,8 +2,9 @@ import { useState } from "react";
 import { useParams } from "@tanstack/react-router";
 import { useMutation } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useApplyCheckoutQuery, type Checkout } from "@/features/concerts";
-import applicationApi from "@/features/concerts/api/applicationApi";
+import { useApplyCheckoutQuery } from "@b2b/features/concerts";
+import type { Checkout } from "@/features/concerts";
+import applicationApi from "@b2b/features/concerts/api/applicationApi";
 import { CheckoutAwaiting } from "@/features/concerts/components/checkout/CheckoutAwaiting";
 import { CheckoutLayout } from "@/features/concerts/components/checkout/CheckoutLayout";
 import { CheckoutSection } from "@/features/concerts/components/checkout/CheckoutSection";
@@ -11,7 +12,7 @@ import { CheckoutEventBanner } from "@/features/concerts/components/checkout/Che
 import { OrderSummaryCard } from "@/features/concerts/components/checkout/OrderSummaryCard";
 import { CheckoutSuccess } from "@/features/concerts/components/checkout/CheckoutSuccess";
 import { StripePaymentForm } from "@/features/concerts/components/checkout/StripePaymentForm";
-import { summaryFor } from "@/features/concerts/utils/acceptCheckoutFormat";
+import { summaryFor } from "@b2b/features/concerts/utils/acceptCheckoutFormat";
 
 export function ArtistApplyCheckoutPage() {
   const { opportunityId } = useParams({ strict: false }) as {

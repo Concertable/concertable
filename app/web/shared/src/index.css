@@ -5,6 +5,7 @@
 
 @source "../../shared/src/**/*.{ts,tsx}";
 @source "../../customer/src/**/*.{ts,tsx}";
+@source "../../b2b/shared/src/**/*.{ts,tsx}";
 @source "../../venue/src/**/*.{ts,tsx}";
 @source "../../artist/src/**/*.{ts,tsx}";
 @source "../../business/src/**/*.{ts,tsx}";

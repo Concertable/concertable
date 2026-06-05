@@ -1,7 +1,10 @@
 import { ConfigBar } from "@/components/ConfigBar";
 import { EditableProvider } from "@concertable/shared/providers";
+import { DetailsLayout, type DetailsSection } from "@/components/details/DetailsLayout";
 import { DetailsPageSkeleton } from "@/components/skeletons/DetailsPageSkeleton";
-import { useMyVenue, useVenueStore, VenueDetails } from "@/features/venues";
+import { useVenueStore, VenueHero, venueSections } from "@/features/venues";
+import { useMyVenue } from "../hooks/useMyVenue";
+import { MyOpportunitiesSection } from "../components/MyOpportunitiesSection";
 
 export function MyVenuePage() {
   const { venue, isDirty, isSaving, save, resetDraft, toggleEdit, editMode } =
@@ -15,6 +18,19 @@ export function MyVenuePage() {
 
   const display = draft ?? venue;
 
+  const hero = <VenueHero venue={display} onNameChange={setName} />;
+  const { about, location, concerts, reviews } = venueSections(display, {
+    onAboutChange: setAbout,
+  });
+
+  const opportunities: DetailsSection = {
+    id: "opportunities",
+    label: "Opportunities",
+    content: <MyOpportunitiesSection venueId={venue.id} />,
+  };
+
+  const sections = [about, location, concerts, opportunities, reviews];
+
   return (
     <div>
       <ConfigBar
@@ -27,11 +43,7 @@ export function MyVenuePage() {
       />
 
       <EditableProvider editMode={editMode}>
-        <VenueDetails
-          venue={display}
-          onNameChange={setName}
-          onAboutChange={setAbout}
-        />
+        <DetailsLayout hero={hero} sections={sections} />
       </EditableProvider>
     </div>
   );

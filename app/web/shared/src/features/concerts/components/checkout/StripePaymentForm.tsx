@@ -81,7 +81,7 @@ function Form({
       return;
     }
 
-    const intent = isSetup ? result.setupIntent : result.paymentIntent;
+    const intent = "setupIntent" in result ? result.setupIntent : result.paymentIntent;
     const paymentMethodId = intent?.payment_method as string | undefined;
     if (!paymentMethodId) {
       setError("Payment method missing from confirmation.");

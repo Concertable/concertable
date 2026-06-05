@@ -5,7 +5,8 @@ import { EditableProvider } from "@concertable/shared/providers";
 import artistApi from "@concertable/shared/features/artists/api/artistApi";
 import type { Artist } from "@concertable/shared/features/artists/types";
 import { CreateBar } from "@/components/CreateBar";
-import { useArtistStore, ArtistDetails } from "@/features/artists";
+import { DetailsLayout } from "@/components/details/DetailsLayout";
+import { useArtistStore, ArtistHero, artistSections } from "@/features/artists";
 
 const blank: Artist = {
   id: 0,
@@ -59,6 +60,12 @@ export function CreateArtistPage() {
 
   if (!draft) return null;
 
+  const hero = <ArtistHero artist={draft} onNameChange={setName} />;
+  const { about, location, concerts } = artistSections(draft, {
+    onAboutChange: setAbout,
+  });
+  const sections = [about, location, concerts];
+
   return (
     <div>
       <CreateBar
@@ -67,11 +74,7 @@ export function CreateArtistPage() {
         onCreate={() => mutation.mutate()}
       />
       <EditableProvider editMode>
-        <ArtistDetails
-          artist={draft}
-          onNameChange={setName}
-          onAboutChange={setAbout}
-        />
+        <DetailsLayout hero={hero} sections={sections} />
       </EditableProvider>
     </div>
   );

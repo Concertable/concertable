@@ -1,9 +1,9 @@
 import { NavigationContainer } from "@react-navigation/native";
 import { ActivityIndicator, View } from "react-native";
 import { useAuthInit } from "shared/auth/useAuthInit";
-import { useAuthStore } from "shared/features/auth";
-import { ArtistTabs } from "shared/navigation/ArtistTabs";
-import { VenueTabs } from "shared/navigation/VenueTabs";
+import { useAuthStore } from "@concertable/shared/features/auth";
+import { ArtistTabs } from "./ArtistTabs";
+import { VenueTabs } from "./VenueTabs";
 
 export function RootNavigator() {
   const user = useAuthStore((s) => s.user);

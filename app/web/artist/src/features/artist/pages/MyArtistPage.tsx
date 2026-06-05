@@ -1,7 +1,9 @@
 import { ConfigBar } from "@/components/ConfigBar";
 import { EditableProvider } from "@concertable/shared/providers";
+import { DetailsLayout } from "@/components/details/DetailsLayout";
 import { DetailsPageSkeleton } from "@/components/skeletons/DetailsPageSkeleton";
-import { useMyArtist, useArtistStore, ArtistDetails } from "@/features/artists";
+import { useArtistStore, ArtistHero, artistSections } from "@/features/artists";
+import { useMyArtist } from "../hooks/useMyArtist";
 
 export function MyArtistPage() {
   const { artist, isDirty, isSaving, save, resetDraft, toggleEdit, editMode } =
@@ -15,6 +17,12 @@ export function MyArtistPage() {
 
   const display = draft ?? artist;
 
+  const hero = <ArtistHero artist={display} onNameChange={setName} />;
+  const { about, location, concerts, reviews } = artistSections(display, {
+    onAboutChange: setAbout,
+  });
+  const sections = [about, location, concerts, reviews];
+
   return (
     <div>
       <ConfigBar
@@ -27,11 +35,7 @@ export function MyArtistPage() {
       />
 
       <EditableProvider editMode={editMode}>
-        <ArtistDetails
-          artist={display}
-          onNameChange={setName}
-          onAboutChange={setAbout}
-        />
+        <DetailsLayout hero={hero} sections={sections} />
       </EditableProvider>
     </div>
   );

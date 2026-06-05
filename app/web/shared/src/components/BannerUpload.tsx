@@ -1,5 +1,6 @@
 import { Camera } from "lucide-react";
 import { useScroll, useTransform, motion } from "framer-motion";
+import type { ImageFile } from "@concertable/shared";
 import { useEditableContext } from "@concertable/shared/providers";
 import { useImageUpload } from "@/hooks/useImageUpload";
 
@@ -7,7 +8,7 @@ interface Props {
   src?: string;
   isPending?: boolean;
   name: string;
-  onBannerChange?: (file: File) => void;
+  onBannerChange?: (file: ImageFile) => void;
   testId?: string;
 }
 

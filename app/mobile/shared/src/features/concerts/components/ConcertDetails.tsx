@@ -1,8 +1,6 @@
 import { useState } from "react";
 import { ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useNavigation } from "@react-navigation/native";
-import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import MapView, { Marker } from "react-native-maps";
 import { Image } from "expo-image";
 import { CalendarDays, MapPin, Music, TriangleAlert } from "lucide-react-native";
@@ -17,9 +15,6 @@ import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { theme } from "../../../lib/theme";
 import dayjs from "dayjs";
-import type { ConcertNavParamList } from "../../../navigation/types";
-
-type ConcertNav = NativeStackNavigationProp<ConcertNavParamList>;
 
 const SECTION_OPTIONS = [
   { value: "about" as const, label: "About" },
@@ -31,10 +26,10 @@ type SectionKey = "about" | "artist" | "venue" | "reviews";
 
 interface Props {
   concert: Concert;
+  onBuyTickets?: () => void;
 }
 
-export function ConcertDetails({ concert }: Readonly<Props>) {
-  const nav = useNavigation<ConcertNav>();
+export function ConcertDetails({ concert, onBuyTickets }: Readonly<Props>) {
   const [section, setSection] = useState<SectionKey>("about");
   const soldOut = concert.availableTickets === 0;
   const { data: bannerSrc } = useImageUrl(concert.bannerUrl);
@@ -104,9 +99,9 @@ export function ConcertDetails({ concert }: Readonly<Props>) {
           {concert.rating != null && <RatingStars rating={concert.rating} size={16} />}
         </View>
         <Button
-          disabled={soldOut}
+          disabled={soldOut || !onBuyTickets}
           size="lg"
-          onPress={() => nav.navigate("TicketCheckout", { concertId: concert.id })}
+          onPress={onBuyTickets}
           testID="buy-tickets"
         >
           <Text>{soldOut ? "Sold Out" : "Buy Tickets"}</Text>

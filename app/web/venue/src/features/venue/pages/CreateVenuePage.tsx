@@ -5,7 +5,8 @@ import { EditableProvider } from "@concertable/shared/providers";
 import venueApi from "@concertable/shared/features/venues/api/venueApi";
 import type { Venue } from "@concertable/shared/features/venues/types";
 import { CreateBar } from "@/components/CreateBar";
-import { useVenueStore, VenueDetails } from "@/features/venues";
+import { DetailsLayout } from "@/components/details/DetailsLayout";
+import { useVenueStore, VenueHero, venueSections } from "@/features/venues";
 
 const blank: Venue = {
   id: 0,
@@ -57,6 +58,12 @@ export function CreateVenuePage() {
 
   if (!draft) return null;
 
+  const hero = <VenueHero venue={draft} onNameChange={setName} />;
+  const { about, location, concerts } = venueSections(draft, {
+    onAboutChange: setAbout,
+  });
+  const sections = [about, location, concerts];
+
   return (
     <div>
       <CreateBar
@@ -65,11 +72,7 @@ export function CreateVenuePage() {
         onCreate={() => mutation.mutate()}
       />
       <EditableProvider editMode>
-        <VenueDetails
-          venue={draft}
-          onNameChange={setName}
-          onAboutChange={setAbout}
-        />
+        <DetailsLayout hero={hero} sections={sections} />
       </EditableProvider>
     </div>
   );

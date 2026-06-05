@@ -1,6 +1,4 @@
-﻿export { useTicketPurchasedHandler } from "./hooks/useTicketPurchasedHandler";
-export type {
-  TicketPurchasedPayload,
+﻿export type {
   ConcertPostedPayload,
   MessageReceivedPayload,
   ConcertDraftCreatedPayload,

@@ -2,10 +2,10 @@ import { useRef } from "react";
 
 import { Link } from "@tanstack/react-router";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { ProfileMenu } from "@/components/ProfileMenu";
+import { ProfileMenu, type ProfileMenuItem } from "@/components/ProfileMenu";
 import { Mailbox } from "@/features/messaging";
 import { NavbarSearch } from "@/features/search";
-import { useRole, useRouteRole, useAuthStore } from "@/features/auth";
+import { useAuthStore } from "@/features/auth";
 import { useMountLayoutEffect } from "@/hooks/useMountLayoutEffect";
 
 export interface NavLink {
@@ -16,13 +16,12 @@ export interface NavLink {
 
 interface Props {
   links: NavLink[];
+  profileItems: ProfileMenuItem[];
   onHeightChange: (height: number) => void;
 }
 
-export function Navbar({ links, onHeightChange }: Readonly<Props>) {
-  const role = useRole();
-  const baseUrl = useAuthStore((s) => s.user?.baseUrl ?? "/");
-  const routeRole = useRouteRole();
+export function Navbar({ links, profileItems, onHeightChange }: Readonly<Props>) {
+  const user = useAuthStore((s) => s.user);
   const ref = useRef<HTMLElement>(null);
 
   useMountLayoutEffect(() => {
@@ -35,7 +34,7 @@ export function Navbar({ links, onHeightChange }: Readonly<Props>) {
       className="bg-primary border-primary sticky top-0 z-20 flex items-center justify-between border-b px-6 py-3"
     >
       <div className="flex items-center gap-8">
-        <Link to={baseUrl}>
+        <Link to="/">
           <img
             src="/logo-long.png"
             alt="Concertable"
@@ -77,10 +76,10 @@ export function Navbar({ links, onHeightChange }: Readonly<Props>) {
       </div>
 
       <div className="text-primary-foreground flex items-center gap-2 [&_button]:hover:bg-white/10">
-        {routeRole === "customer" && <NavbarSearch />}
-        {role && <Mailbox />}
+        <NavbarSearch />
+        {user && <Mailbox />}
         <ThemeToggle />
-        <ProfileMenu />
+        <ProfileMenu items={profileItems} />
       </div>
     </nav>
   );

@@ -9,7 +9,11 @@ import type { ConcertNavParamList } from "../../../navigation/types";
 
 type ConcertDetailRoute = RouteProp<ConcertNavParamList, "ConcertDetail">;
 
-export function ConcertDetailScreen() {
+interface Props {
+  onBuyTickets?: () => void;
+}
+
+export function ConcertDetailScreen({ onBuyTickets }: Readonly<Props>) {
   const route = useRoute<ConcertDetailRoute>();
   const { concert, isLoading, isError } = useConcert(route.params.concertId);
 
@@ -35,5 +39,5 @@ export function ConcertDetailScreen() {
     );
   }
 
-  return <ConcertDetails concert={concert} />;
+  return <ConcertDetails concert={concert} onBuyTickets={onBuyTickets} />;
 }

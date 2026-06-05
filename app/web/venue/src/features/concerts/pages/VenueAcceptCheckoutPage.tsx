@@ -9,9 +9,8 @@ import {
   useAcceptApplicationMutation,
   useAcceptCheckoutQuery,
   useApplicationQuery,
-  type Application,
-  type Checkout,
-} from "@/features/concerts";
+} from "@b2b/features/concerts";
+import type { Application, Checkout } from "@/features/concerts";
 import { useCheckoutFlow, type CheckoutFlowState } from "@/features/concerts/hooks/useCheckoutFlow";
 import { CheckoutLayout } from "@/features/concerts/components/checkout/CheckoutLayout";
 import { CheckoutSection } from "@/features/concerts/components/checkout/CheckoutSection";
@@ -20,7 +19,7 @@ import { OrderSummaryCard } from "@/features/concerts/components/checkout/OrderS
 import { CheckoutSuccess } from "@/features/concerts/components/checkout/CheckoutSuccess";
 import { CheckoutFlow } from "@/features/concerts/components/checkout/CheckoutFlow";
 import { StripePaymentForm } from "@/features/concerts/components/checkout/StripePaymentForm";
-import { summaryFor } from "@/features/concerts/utils/acceptCheckoutFormat";
+import { summaryFor } from "@b2b/features/concerts/utils/acceptCheckoutFormat";
 
 export function VenueAcceptCheckoutPage() {
   const { applicationId } = useParams({ strict: false }) as {

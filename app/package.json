@@ -8,7 +8,8 @@
     "web/business",
     "mobile/customer",
     "mobile/business",
-    "shared"
+    "shared",
+    "customer/shared"
   ],
   "scripts": {
     "dev:customer": "npm -w @concertable/web-customer run dev",
@@ -29,6 +30,9 @@
     },
     "react": "19.1.0",
     "react-dom": "19.1.0"
+  },
+  "devDependencies": {
+    "@types/react-dom": "^19"
   },
   "dependencies": {
     "@fontsource-variable/geist": "^5",
