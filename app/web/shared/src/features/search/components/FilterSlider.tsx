@@ -26,8 +26,7 @@ import type { Genre } from "@/types/common";
 
 const ORDER_BY_OPTIONS = [
   { value: "name", label: "Name" },
-  { value: "rating", label: "Rating" },
-  { value: "distance", label: "Distance" },
+  { value: "date", label: "Date" },
 ];
 
 export function FilterSlider() {
@@ -157,7 +156,7 @@ export function FilterSlider() {
           <div className="flex gap-2">
             <Select
               value={filters.orderBy ?? ""}
-              onValueChange={(v) => update({ orderBy: v })}
+              onValueChange={(v) => update({ orderBy: v as "name" | "date" })}
             >
               <SelectTrigger className="flex-1" data-testid="filter-order-by">
                 <SelectValue placeholder="Order By" />

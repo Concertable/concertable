@@ -17,7 +17,7 @@ export const SearchSchema = () =>
       ])
       .optional(),
     radius: z.number().optional(),
-    orderBy: z.string().optional(),
+    orderBy: z.enum(["name", "date"]).optional(),
     sortOrder: z.enum(["asc", "desc"]).optional(),
     showHistory: z.boolean().optional(),
     showSold: z.boolean().optional(),
