@@ -6,12 +6,23 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace Concertable.Seed.Infrastructure;
 
-public sealed class SeedingDomainEventDispatchInterceptor(
-    IDomainEventDispatcher dispatcher,
-    IDbContextAccessor contextAccessor,
-    SeedingScope seedingScope) : SaveChangesInterceptor, IDomainEventDispatchInterceptor
+public sealed class SeedingDomainEventDispatchInterceptor : SaveChangesInterceptor, IDomainEventDispatchInterceptor
 {
+    private readonly IDomainEventDispatcher dispatcher;
+    private readonly IDbContextAccessor contextAccessor;
+    private readonly SeedingScope seedingScope;
+
     private readonly Stack<List<IDomainEvent>> pendingEventsStack = new();
+
+    public SeedingDomainEventDispatchInterceptor(
+        IDomainEventDispatcher dispatcher,
+        IDbContextAccessor contextAccessor,
+        SeedingScope seedingScope)
+    {
+        this.dispatcher = dispatcher;
+        this.contextAccessor = contextAccessor;
+        this.seedingScope = seedingScope;
+    }
 
     public override async ValueTask<InterceptionResult<int>> SavingChangesAsync(
         DbContextEventData eventData,
