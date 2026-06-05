@@ -1,14 +1,33 @@
 namespace Concertable.Seed.Shared.Identity;
 
-public sealed class SeedingScope : IDisposable
+public sealed class SeedingScope
 {
-    public bool IsActive { get; private set; }
+    private int depth;
+
+    public bool IsActive => depth > 0;
 
     public IDisposable Activate()
     {
-        IsActive = true;
-        return this;
+        depth++;
+        return new Activation(this);
     }
 
-    public void Dispose() => IsActive = false;
+    private sealed class Activation : IDisposable
+    {
+        private SeedingScope? scope;
+
+        public Activation(SeedingScope scope)
+        {
+            this.scope = scope;
+        }
+
+        public void Dispose()
+        {
+            if (scope is null)
+                return;
+
+            scope.depth--;
+            scope = null;
+        }
+    }
 }

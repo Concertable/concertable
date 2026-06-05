@@ -25,7 +25,7 @@ Concertable is a multi-microservice system. Each service —
 
 If standalone Customer is broken because B2B isn't running, the fix is **never** "add B2B to Customer.AppHost." That defeats the entire point of microservice isolation. The fix is for the upstream service (B2B) to ship a "seeding simulator" — a Worker that publishes its integration events without needing its full runtime — and Customer.AppHost references that simulator as an Aspire resource.
 
-See `api/Concertable.B2B/Concertable.B2B.Seed.Simulator/CLAUDE.md` for the simulator pattern.
+See `api/Concertable.B2B/Seed/Concertable.B2B.Seed.Simulator/CLAUDE.md` for the simulator pattern.
 
 ### Adapter services may be depended on; data services may not depend on each other
 
@@ -109,8 +109,8 @@ In the split-repo future, the dependency types map as:
 | Project type | Monorepo (today) | Split-repo |
 |---|---|---|
 | `Concertable.X.Contracts` (events, DTOs) | `ProjectReference` | Private NuGet (`PackageReference`) |
-| `Concertable.X.Seeding.Fixture` (canonical wire data) | `ProjectReference` | Private NuGet |
-| `Concertable.X.Seeding.Simulator` (Worker host) | `AddProject<Projects.X>()` in AppHost | Container image, `AddContainer(...)` in AppHost |
+| `Concertable.X.Seed.Contracts` (canonical seed data) | `ProjectReference` | Private NuGet |
+| `Concertable.X.Seed.Simulator` (Worker host) | `AddProject<Projects.X>()` in AppHost | Container image, `AddContainer(...)` in AppHost |
 | Shared seeding infra (`Concertable.Seed.Shared` etc.) | `ProjectReference` from `api/Shared/` | Private NuGet |
 
 C# code changes are minimal across the split — only csproj reference types and a single AppHost line per resource. The ownership-based folder layout (`api/Concertable.X/` for service-owned projects, `api/Shared/` for cross-service infra) previews the split.
@@ -136,5 +136,5 @@ Each service folder contains its own `AppHost/`, `Web/`, `Workers/`, `Seeding/` 
 - `api/docs/SEEDING_CONVENTIONS.md` — seeding rules (never seed event-driven data, etc.).
 - `api/docs/MODULAR_MONOLITH_RULES.md` — module boundary rules within a service.
 - `api/Concertable.X/ARCHITECTURE.md` — per-service architecture docs.
-- `api/Concertable.B2B/Concertable.B2B.Seed.Simulator/CLAUDE.md` — the simulator pattern in detail.
+- `api/Concertable.B2B/Seed/Concertable.B2B.Seed.Simulator/CLAUDE.md` — the simulator pattern in detail.
 - `plans/PAYMENT_AGNOSTIC_AUDIT.md` — why Payment depends on no consumer.
