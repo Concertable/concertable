@@ -11,7 +11,7 @@ $b2bUi      = Join-Path $PSScriptRoot "api/Concertable.B2B/Tests/E2ETests/Concer
 $customerUi = Join-Path $PSScriptRoot "api/Concertable.Customer/Tests/E2ETests/Concertable.Customer.E2ETests.Ui"
 $baselineMd = Join-Path $PSScriptRoot "api/Shared/Tests/Concertable.E2ETests/E2E_BASELINE.md"
 
-$quiet = @('--nologo', '--verbosity', 'quiet', '-p:NuGetAudit=false', '-p:NoWarn=NU1510')
+$quiet = @('--nologo', '--verbosity', 'quiet')
 
 if (-not $Headed) { $env:HEADLESS = "true" }
 

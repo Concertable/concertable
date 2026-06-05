@@ -76,9 +76,11 @@ dotnet test Tests/Concertable.E2ETests/Concertable.E2ETests.Ui/Concertable.E2ETe
   `PaymentSucceededEvent` / `PaymentFailedEvent` directly to `IIntegrationEventHandler`
   implementations in a new scope, bypassing HTTP entirely.
 
-- **Search seeding** — `SearchTestSeeder` writes directly to the `[search].*` projection
-  tables (one artist "Test Artist" with Rock genre, one venue "Test Venue", one posted
-  concert with Rock genre and `Price > 0`).
+- **Search seeding** — `SearchProjectionTestSeeder : ITestSeeder` populates the `[search].*`
+  projection tables from the canonical `Concertable.B2B.Seed.Contracts.SeedCatalog` (the same
+  specs the dev/E2E simulator replays), mapping each spec through `ToChangedEvent()` and then
+  field-for-field as the projection handlers do. Tests derive expectations from
+  `fixture.Catalog`, never from invented literals.
 
 ## Seeding conventions
 

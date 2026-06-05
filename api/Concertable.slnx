@@ -186,6 +186,9 @@
     <Project Path="Concertable.Search/Tests/Concertable.Search.UnitTests/Concertable.Search.UnitTests.csproj" />
     <Project Path="Concertable.Search/Tests/E2ETests/Concertable.Search.E2ETests.Helpers/Concertable.Search.E2ETests.Helpers.csproj" />
   </Folder>
+  <Folder Name="/Search/Seed/">
+    <Project Path="Concertable.Search/Seed/Concertable.Search.Seed.Infrastructure/Concertable.Search.Seed.Infrastructure.csproj" />
+  </Folder>
   <Folder Name="/Shared/">
     <Project Path="Shared/Concertable.Contracts/Concertable.Contracts.csproj" />
     <Project Path="Shared/Concertable.Shared.Api/Concertable.Shared.Api.csproj" />
