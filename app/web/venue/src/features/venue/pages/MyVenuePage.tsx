@@ -7,14 +7,14 @@ import { useMyVenue } from "../hooks/useMyVenue";
 import { MyOpportunitiesSection } from "../components/MyOpportunitiesSection";
 
 export function MyVenuePage() {
-  const { venue, isDirty, isSaving, save, resetDraft, toggleEdit, editMode } =
+  const { venue, isDirty, isSaving, isLoading, save, resetDraft, toggleEdit, editMode } =
     useMyVenue();
 
   const draft = useVenueStore((state) => state.draft);
   const setName = useVenueStore((state) => state.setName);
   const setAbout = useVenueStore((state) => state.setAbout);
 
-  if (!venue) return <DetailsPageSkeleton sections={5} />;
+  if (!venue || isLoading) return <DetailsPageSkeleton sections={5} />;
 
   const display = draft ?? venue;
 

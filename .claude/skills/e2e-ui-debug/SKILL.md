@@ -11,6 +11,16 @@ Run the Concertable UI E2E test suite and analyse any failures using the enriche
 
 When the user invokes this skill, they are delegating the **entire** run → diagnose → fix → verify loop to you, to run autonomously end to end. **Any failing scenario is something you fix in code yourself**, without stopping to ask permission, then re-run and keep going until the suite is green. Do not report findings and wait for a go-ahead; do not treat the `E2E_BASELINE.md` "failing" list or an "out of scope for this branch" note as a reason to leave a test broken — the baseline records the *current* state, it is not an instruction to skip fixing. Diagnose the root cause, write the code change (in the app, page objects, step definitions, or test support — wherever the real bug is), and re-run to confirm green. The only time you pause for the user is a genuine product-behaviour ambiguity you cannot resolve from the code (per the "Test vs prod code — ask first" convention). Otherwise: run the suite, fix every failure you can, verify, and report what you changed — all in one pass.
 
+## NEVER disable or bypass a step to get past its failure
+
+The suite exists to test the CURRENT state of the code. If something is failing — a scenario, a build, a service startup — that failure is the thing to debug. "Fix" means make the failing step work — never make it stop running. If a build hangs, debug the build. If a service won't start, debug the service. If a health check times out, find out why the thing behind it isn't healthy. Concretely banned moves:
+
+- **Never suppress builds** (`--no-build`, `SuppressBuild`, skip-build flags) because a build step hung or was slow — that swaps the failure for silently running stale binaries, which is worse than the failure.
+- Never inflate timeouts to outlast a hang instead of finding what's hanging.
+- Never disable, skip, or stub the failing resource/step/check so the rest goes green.
+
+If a step hangs with no useful output, the next move is **reproduce it and observe it live** (process trees, what the child processes are doing, file locks, CPU) — not to remove the step. A bypass is only acceptable when the user explicitly asks for it after seeing the diagnosis.
+
 ## Input
 
 If the skill is invoked with arguments, treat them as the full scenario names as they appear in the test output (e.g. `"Venue manager accepts a venue hire application on a flat fee", "Customer purchases a ticket and completes 3DS challenge"`). Run Step 0, then skip Step 1 and go straight to Step 2, running each one individually using `DisplayName~` with the full name as the filter value.

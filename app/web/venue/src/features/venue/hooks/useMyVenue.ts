@@ -19,9 +19,10 @@ export function useMyVenue(): UseMyVenueResult {
     hydrate: hydrateOpportunities,
     reset: resetOpportunities,
     isDirty: opportunitiesIsDirty,
+    isSuccess: opportunitiesLoaded,
   } = useOpportunities(venueId);
 
-  return useMyVenueShared({
+  const result = useMyVenueShared({
     onSuccess: () => {
       resetOpportunities();
       toast.success("Venue saved!");
@@ -38,4 +39,6 @@ export function useMyVenue(): UseMyVenueResult {
     onResetDraft: () => resetOpportunities(),
     extraDirty: opportunitiesIsDirty,
   });
+
+  return { ...result, isLoading: result.isLoading || !opportunitiesLoaded };
 }
