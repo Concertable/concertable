@@ -7,6 +7,9 @@ public static class EntityReflectionExtensions
     public static T New<T>() where T : class
         => (T)Activator.CreateInstance(typeof(T), nonPublic: true)!;
 
+    public static T WithId<T>(this T entity, object id) where T : class
+        => entity.With("Id", id);
+
     public static T With<T>(this T entity, string propertyName, object? value) where T : class
     {
         var type = typeof(T) as Type;
