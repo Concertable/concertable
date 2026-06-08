@@ -8,73 +8,170 @@ param(
 Set-Location $PSScriptRoot
 [Environment]::CurrentDirectory = $PSScriptRoot
 
-$psExe = (Get-Process -Id $PID).Path
-if (-not $psExe) { $psExe = if ($PSVersionTable.PSVersion.Major -ge 6) { 'pwsh' } else { 'powershell' } }
+$trxNs = 'http://microsoft.com/schemas/VisualStudio/TeamTest/2010'
 
-function Invoke-Suite([string]$label, [string]$script, [string[]]$scriptArgs) {
-    Write-Host ""
-    Write-Host "============================================================" -ForegroundColor Magenta
-    Write-Host "  $label" -ForegroundColor Magenta
-    Write-Host "============================================================" -ForegroundColor Magenta
-    & $psExe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot $script) @scriptArgs | Out-Host
-    return $LASTEXITCODE
+function Get-TestProjects([string]$pattern, [string]$filter) {
+    $apiRoot = Join-Path $PSScriptRoot 'api'
+    Get-ChildItem -Path $apiRoot -Recurse -Filter '*.csproj' -File |
+        Where-Object { $_.FullName -notmatch '\\(bin|obj)\\' } |
+        Where-Object { $_.BaseName -match $pattern } |
+        Where-Object { -not $filter -or $_.Name -match [regex]::Escape($filter) } |
+        Where-Object { Select-String -Path $_.FullName -Pattern 'Microsoft\.NET\.Test\.Sdk' -Quiet } |
+        Sort-Object FullName |
+        ForEach-Object { $_.FullName }
 }
 
-function Forward([string]$label, [string]$script, [string[]]$scriptArgs) {
-    if (-not $scriptArgs -or $scriptArgs.Count -eq 0) { $scriptArgs = @('run') }
-    $code = Invoke-Suite $label $script $scriptArgs
-    exit $code
+function Short-Name([string]$testName) {
+    $parts = $testName.Split('.')
+    if ($parts.Count -ge 2) { return ($parts[-2..-1] -join '.') }
+    return $testName
 }
 
-function Show-Summary([object[]]$summaries) {
+function Clip([string]$text, [int]$max = 160) {
+    if ($null -eq $text) { return '' }
+    $t = $text.Trim()
+    if ($t.Length -gt $max) { return $t.Substring(0, $max - 3) + '...' }
+    return $t
+}
+
+function Invoke-Project([string]$csproj) {
+    $name = [System.IO.Path]::GetFileNameWithoutExtension($csproj)
+    $dir = Split-Path $csproj -Parent
+    $log = Join-Path $dir 'test.last.log'
+    $errLog = "$log.err"
+    $resultsDir = Join-Path $dir 'TestResults'
+    $trx = Join-Path $resultsDir 'run.trx'
+    if (Test-Path $trx) { Remove-Item $trx -Force }
+
+    Write-Host ("  {0,-54}" -f $name) -NoNewline
+
+    $testArgs = @(
+        'test', $csproj, '--nologo', '--verbosity', 'quiet',
+        '--results-directory', $resultsDir,
+        '--logger', 'trx;LogFileName=run.trx'
+    )
+    $proc = Start-Process -FilePath 'dotnet' -ArgumentList $testArgs -NoNewWindow -Wait -PassThru `
+        -RedirectStandardOutput $log -RedirectStandardError $errLog
+    if ((Test-Path $errLog) -and (Get-Item $errLog).Length -gt 0) { Get-Content $errLog | Add-Content $log }
+    Remove-Item $errLog -ErrorAction SilentlyContinue
+
+    if (-not (Test-Path $trx)) {
+        Write-Host "  FAILED (no results)" -ForegroundColor Red
+        $diag = Select-String -Path $log -Pattern '(^(fail|crit):|: error |\w+Exception:)' |
+            ForEach-Object { Clip $_.Line } | Select-Object -Unique -First 8
+        if ($diag) { $diag | ForEach-Object { Write-Host "      $_" -ForegroundColor DarkRed } }
+        Write-Host ("      full log: {0}" -f $log) -ForegroundColor DarkGray
+        return [pscustomobject]@{ Name = $name; Passed = 0; Failed = 0; Built = $false }
+    }
+
+    [xml]$xml = Get-Content $trx
+    $ns = New-Object System.Xml.XmlNamespaceManager($xml.NameTable)
+    $ns.AddNamespace('t', $trxNs)
+    $counters = $xml.SelectSingleNode('//t:ResultSummary/t:Counters', $ns)
+    $passed = [int]$counters.passed
+    $failed = [int]$counters.failed
+
+    if ($failed -eq 0) {
+        Write-Host ("  PASS   {0,4} passed" -f $passed) -ForegroundColor Green
+    } else {
+        Write-Host ("  FAIL   {0} of {1} failed" -f $failed, ($passed + $failed)) -ForegroundColor Red
+        $failedNodes = @($xml.SelectNodes("//t:UnitTestResult[@outcome='Failed']", $ns))
+        foreach ($n in ($failedNodes | Select-Object -First 10)) {
+            Write-Host ("      - {0}" -f (Short-Name $n.testName)) -ForegroundColor Red
+            $msg = $n.SelectSingleNode('t:Output/t:ErrorInfo/t:Message', $ns)
+            if ($msg -and $msg.InnerText) {
+                $line = ($msg.InnerText -split "`r?`n" | Where-Object { $_.Trim() } | Select-Object -First 1)
+                Write-Host ("        {0}" -f (Clip $line)) -ForegroundColor DarkGray
+            }
+        }
+        if ($failedNodes.Count -gt 10) {
+            Write-Host ("      ... and {0} more (full log: {1})" -f ($failedNodes.Count - 10), $log) -ForegroundColor DarkGray
+        }
+    }
+    return [pscustomobject]@{ Name = $name; Passed = $passed; Failed = $failed; Built = $true }
+}
+
+function Run-Suite([string]$title, [string]$pattern, [string]$filter) {
+    $projects = Get-TestProjects $pattern $filter
     Write-Host ""
-    Write-Host "  Test summary" -ForegroundColor Cyan
-    Write-Host ("  {0,-14}{1,10}" -f 'Suite', 'Result') -ForegroundColor Gray
-    Write-Host ("  {0,-14}{1,10}" -f '------', '------') -ForegroundColor Gray
-    foreach ($s in $summaries) {
-        $ok = $s.ExitCode -eq 0
-        $color = if ($ok) { 'Green' } else { 'Red' }
-        $text = if ($ok) { 'PASS' } else { 'FAIL' }
-        Write-Host ("  {0,-14}{1,10}" -f $s.Suite, $text) -ForegroundColor $color
+    Write-Host ("== {0} ({1} project{2}) ==" -f $title, $projects.Count, $(if ($projects.Count -ne 1) { 's' })) -ForegroundColor Cyan
+    if ($projects.Count -eq 0) {
+        Write-Host "  No matching projects." -ForegroundColor DarkGray
+        return [pscustomobject]@{ Suite = $title; Passed = $null; Failed = $null; Ok = $true }
+    }
+    $passed = 0; $failed = 0; $broken = 0
+    foreach ($p in $projects) {
+        $r = Invoke-Project $p
+        $passed += $r.Passed
+        $failed += $r.Failed
+        if (-not $r.Built) { $broken++ }
+    }
+    return [pscustomobject]@{ Suite = $title; Passed = $passed; Failed = $failed; Ok = ($failed -eq 0 -and $broken -eq 0) }
+}
+
+function Show-Summary([object[]]$rows) {
+    Write-Host ""
+    Write-Host "  Summary" -ForegroundColor Cyan
+    Write-Host ("  {0,-14}{1,8}{2,8}{3,8}" -f 'Suite', 'Passed', 'Failed', 'Result') -ForegroundColor Gray
+    Write-Host ("  {0,-14}{1,8}{2,8}{3,8}" -f '------', '------', '------', '------') -ForegroundColor Gray
+    foreach ($r in $rows) {
+        $color = if ($r.Ok) { 'Green' } else { 'Red' }
+        $result = if ($r.Ok) { 'PASS' } else { 'FAIL' }
+        $p = if ($null -eq $r.Passed) { '-' } else { $r.Passed }
+        $f = if ($null -eq $r.Failed) { '-' } else { $r.Failed }
+        Write-Host ("  {0,-14}{1,8}{2,8}{3,8}" -f $r.Suite, $p, $f, $result) -ForegroundColor $color
     }
     Write-Host ""
 }
 
 function Show-Usage {
     Write-Host ""
-    Write-Host "  Usage: ./test.ps1 <command> [-- <args forwarded to the suite script>]" -ForegroundColor White
+    Write-Host "  Usage: ./test.ps1 <command> [filter]" -ForegroundColor White
     Write-Host ""
     Write-Host "  Commands:" -ForegroundColor DarkGray
-    Write-Host "    all           Run unit + integration + e2e, then a combined PASS/FAIL banner"
-    Write-Host "    unit          Run all unit tests        (forwards to ./unit.ps1)"
-    Write-Host "    integration   Run all integration tests (forwards to ./integration.ps1)"
-    Write-Host "    e2e           Run all UI E2E tests       (forwards to ./e2e.ps1)"
+    Write-Host "    all           Run unit + integration + e2e, then a combined PASS/FAIL summary"
+    Write-Host "    unit [name]   Run unit tests        (optionally filter projects by name, e.g. b2b, concert)"
+    Write-Host "    integration   Run integration tests (optionally filter projects by name)"
+    Write-Host "    e2e [name]    Run E2E tests (API+UI) (headless; full logs to test.last.log)"
     Write-Host "    list          Show this help"
     Write-Host ""
-    Write-Host "  Notes:" -ForegroundColor DarkGray
-    Write-Host "    'all' runs e2e via 'regress' (the baseline-passing set) so it can fold a"
-    Write-Host "    real pass/fail into the banner. For the full discovery run use ./test.ps1 e2e run."
-    Write-Host "    Any extra args are forwarded, e.g. ./test.ps1 unit b2b  or  ./test.ps1 e2e run -Headed"
+    Write-Host "  Output is quiet: each project prints one line; full logs go to test.last.log" -ForegroundColor DarkGray
+    Write-Host "  next to each project, and failures expand inline. For headed/trace E2E use ./e2e.ps1." -ForegroundColor DarkGray
     Write-Host ""
 }
 
 switch ($cmd) {
     "all" {
-        $results = @()
-        $results += [pscustomobject]@{ Suite = 'unit';        ExitCode = (Invoke-Suite 'Unit tests'        'unit.ps1'        @('run')) }
-        $results += [pscustomobject]@{ Suite = 'integration'; ExitCode = (Invoke-Suite 'Integration tests' 'integration.ps1' @('run')) }
-        $results += [pscustomobject]@{ Suite = 'e2e';         ExitCode = (Invoke-Suite 'E2E tests (regress)' 'e2e.ps1'        @('regress')) }
-        Show-Summary $results
-        if ($results | Where-Object { $_.ExitCode -ne 0 }) {
+        $unit = Run-Suite 'Unit'        '\.UnitTests$'        $null
+        $intg = Run-Suite 'Integration' '\.IntegrationTests$' $null
+        $env:HEADLESS = 'true'
+        $e2e = Run-Suite 'E2E' '\.E2ETests(\.Ui)?$' $null
+        Remove-Item Env:\HEADLESS -ErrorAction SilentlyContinue
+        Show-Summary @($unit, $intg, $e2e)
+        if (-not ($unit.Ok -and $intg.Ok -and $e2e.Ok)) {
             Write-Host "  TESTS FAILED -- at least one suite did not pass." -ForegroundColor Red
             exit 1
         }
         Write-Host "  ALL TESTS PASSED." -ForegroundColor Green
         exit 0
     }
-    "unit"        { Forward 'Unit tests'        'unit.ps1'        $rest }
-    "integration" { Forward 'Integration tests' 'integration.ps1' $rest }
-    "e2e"         { Forward 'E2E tests'          'e2e.ps1'         $rest }
-    { $_ -in "list","help" } { Show-Usage }
-    default       { Show-Usage }
+    "unit" {
+        $r = Run-Suite 'Unit' '\.UnitTests$' ($rest | Select-Object -First 1)
+        Show-Summary @($r)
+        exit $(if ($r.Ok) { 0 } else { 1 })
+    }
+    "integration" {
+        $r = Run-Suite 'Integration' '\.IntegrationTests$' ($rest | Select-Object -First 1)
+        Show-Summary @($r)
+        exit $(if ($r.Ok) { 0 } else { 1 })
+    }
+    "e2e" {
+        $env:HEADLESS = 'true'
+        $r = Run-Suite 'E2E' '\.E2ETests(\.Ui)?$' ($rest | Select-Object -First 1)
+        Remove-Item Env:\HEADLESS -ErrorAction SilentlyContinue
+        Show-Summary @($r)
+        exit $(if ($r.Ok) { 0 } else { 1 })
+    }
+    { $_ -in "list", "help" } { Show-Usage }
+    default { Show-Usage }
 }
