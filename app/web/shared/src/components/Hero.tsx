@@ -1,4 +1,5 @@
 ﻿import { MapPin } from "lucide-react";
+import type { ImageFile } from "@concertable/shared";
 import { EditableText } from "@/components/editable/EditableText";
 import { BannerUpload } from "@/components/BannerUpload";
 import { AvatarUpload } from "@/components/AvatarUpload";
@@ -13,8 +14,8 @@ interface Props {
   county?: string;
   namePlaceholder?: string;
   onNameChange?: (value: string) => void;
-  onBannerChange?: (file: File) => void;
-  onAvatarChange?: (file: File) => void;
+  onBannerChange?: (file: ImageFile) => void;
+  onAvatarChange?: (file: ImageFile) => void;
 }
 
 export function Hero({

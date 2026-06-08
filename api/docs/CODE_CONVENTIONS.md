@@ -1,0 +1,74 @@
+# Code Conventions
+
+## Private fields — no underscore prefix
+
+Use `this.field` disambiguation in constructors instead of `_field` prefixes.
+
+```csharp
+// CORRECT
+private readonly SearchDbContext context;
+
+public MyService(SearchDbContext context)
+{
+    this.context = context;
+}
+
+// WRONG
+private readonly SearchDbContext _context;
+
+public MyService(SearchDbContext context)
+{
+    _context = context;
+}
+```
+
+## No primary constructors for services
+
+Services, repositories, handlers, and validators use an explicit constructor with `private readonly` fields assigned via `this.field = param`. No primary constructor shorthand.
+
+## Single-statement branches — no braces
+
+```csharp
+// CORRECT
+if (condition)
+    return;
+
+// WRONG
+if (condition)
+{
+    return;
+}
+```
+
+## No comments on WHAT the code does
+
+Only add a comment when the WHY is non-obvious (hidden constraint, subtle invariant, workaround for a specific bug). Never narrate what the code does — well-named identifiers already do that.
+
+## Mappers — `XMappers` extension methods
+
+Type-to-type mapping (e.g. gRPC proto ⇄ domain/contract types) lives in a static `XMappers` class as extension methods named `ToTarget()`, not as private `MapX` helpers on the consumer.
+
+```csharp
+internal static class EscrowMappers
+{
+    public static EscrowResponse ToEscrowResponse(this Proto.EscrowResponse r) => ...;
+    public static EscrowStatus ToEscrowStatus(this Proto.EscrowStatusType s) => ...;
+}
+```
+
+## Logging — source-generated `Log.cs`
+
+No inline `logger.LogInformation/LogWarning/LogError(...)`. Each project owns one `Log.cs` (`internal static partial class Log`) with a `[LoggerMessage]` method per message; call `logger.PublishedVenueEvents(count)`. Source-gen gates on `IsEnabled(level)` so switched-off levels cost nothing.
+
+```csharp
+[LoggerMessage(Level = LogLevel.Information, Message = "Published {Count} venue events")]
+internal static partial void PublishedVenueEvents(this ILogger logger, int count);
+```
+
+## Geometry — use IGeometryProvider
+
+Inject `[FromKeyedServices(GeometryProviderType.Geographic)] IGeometryProvider geometryProvider` for WGS84 point creation. Never instantiate `GeometryFactory` or `new Point(...)` directly.
+
+```csharp
+var location = geometryProvider.CreatePoint(e.Latitude, e.Longitude);
+```

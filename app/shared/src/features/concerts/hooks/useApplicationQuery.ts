@@ -38,7 +38,7 @@ export function useAcceptApplicationMutation(opportunityId: number) {
       body,
     }: {
       applicationId: number;
-      body: { paymentMethodId: string };
+      body?: { paymentMethodId: string };
     }) => applicationApi.acceptApplication(applicationId, body),
     onSuccess: () => {
       queryClient.invalidateQueries({

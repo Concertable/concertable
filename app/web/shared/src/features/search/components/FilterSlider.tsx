@@ -21,11 +21,12 @@ import { useSearchFiltersStore } from "../store/useSearchFiltersStore";
 import { useSearchFilters } from "../hooks/useSearchFilters";
 import { useGenresQuery } from "../hooks/useGenreQuery";
 import type { SearchFilters } from "../schemas/searchSchema";
+import { genreLabel } from "@/types/common";
+import type { Genre } from "@/types/common";
 
 const ORDER_BY_OPTIONS = [
   { value: "name", label: "Name" },
-  { value: "rating", label: "Rating" },
-  { value: "distance", label: "Distance" },
+  { value: "date", label: "Date" },
 ];
 
 export function FilterSlider() {
@@ -33,7 +34,7 @@ export function FilterSlider() {
   const { updateFilters } = useSearchFilters();
   const { data: genres } = useGenresQuery();
   const [open, setOpen] = useState(false);
-  const [pendingGenre, setPendingGenre] = useState("");
+  const [pendingGenre, setPendingGenre] = useState<Genre | "">("");
 
   function update(next: Partial<SearchFilters>) {
     setFilters({ ...filters, ...next });
@@ -41,9 +42,8 @@ export function FilterSlider() {
 
   function addGenre() {
     if (!pendingGenre) return;
-    const id = Number(pendingGenre);
-    if (filters.genreIds?.includes(id)) return;
-    update({ genreIds: [...(filters.genreIds ?? []), id] });
+    if (filters.genres?.includes(pendingGenre)) return;
+    update({ genres: [...(filters.genres ?? []), pendingGenre] });
     setPendingGenre("");
   }
 
@@ -52,10 +52,8 @@ export function FilterSlider() {
     setOpen(false);
   }
 
-  const selectedGenres =
-    genres?.filter((g) => filters.genreIds?.includes(g.id)) ?? [];
-  const availableGenres =
-    genres?.filter((g) => !filters.genreIds?.includes(g.id)) ?? [];
+  const selectedGenres = genres?.filter((g) => filters.genres?.includes(g)) ?? [];
+  const availableGenres = genres?.filter((g) => !filters.genres?.includes(g)) ?? [];
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -98,14 +96,14 @@ export function FilterSlider() {
           <div className="space-y-2">
             <p className="text-muted-foreground text-xs">Genre</p>
             <div className="flex gap-2">
-              <Select value={pendingGenre} onValueChange={setPendingGenre}>
+              <Select value={pendingGenre} onValueChange={(v) => setPendingGenre(v as Genre)}>
                 <SelectTrigger className="flex-1" data-testid="filter-genre-select">
                   <SelectValue placeholder="Select genre" />
                 </SelectTrigger>
                 <SelectContent>
                   {availableGenres.map((g) => (
-                    <SelectItem key={g.id} value={String(g.id)}>
-                      {g.name}
+                    <SelectItem key={g} value={g}>
+                      {genreLabel(g)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -118,17 +116,13 @@ export function FilterSlider() {
               <div className="flex flex-wrap gap-1.5">
                 {selectedGenres.map((g) => (
                   <span
-                    key={g.id}
+                    key={g}
                     className="bg-muted flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs"
                   >
-                    {g.name}
+                    {genreLabel(g)}
                     <button
                       onClick={() =>
-                        update({
-                          genreIds: filters.genreIds?.filter(
-                            (id) => id !== g.id,
-                          ),
-                        })
+                        update({ genres: filters.genres?.filter((x) => x !== g) })
                       }
                       className="text-muted-foreground hover:text-foreground"
                     >
@@ -162,7 +156,7 @@ export function FilterSlider() {
           <div className="flex gap-2">
             <Select
               value={filters.orderBy ?? ""}
-              onValueChange={(v) => update({ orderBy: v })}
+              onValueChange={(v) => update({ orderBy: v as "name" | "date" })}
             >
               <SelectTrigger className="flex-1" data-testid="filter-order-by">
                 <SelectValue placeholder="Order By" />

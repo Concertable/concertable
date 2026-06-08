@@ -1,4 +1,5 @@
 ﻿import { Camera } from "lucide-react";
+import type { ImageFile } from "@concertable/shared";
 import { useEditableContext } from "@concertable/shared/providers";
 import { useImageUpload } from "@/hooks/useImageUpload";
 import { useImageUrl } from "@concertable/shared/hooks";
@@ -6,7 +7,7 @@ import { useImageUrl } from "@concertable/shared/hooks";
 interface Props {
   avatar?: string;
   name: string;
-  onAvatarChange?: (file: File) => void;
+  onAvatarChange?: (file: ImageFile) => void;
   testId?: string;
 }
 

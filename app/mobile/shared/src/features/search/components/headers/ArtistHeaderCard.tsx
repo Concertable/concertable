@@ -9,9 +9,9 @@ import { RatingStars } from "@/components/ui/RatingStars";
 import { GenreChips } from "@/components/ui/GenreChips";
 import { Text } from "@/components/ui/text";
 import { theme } from "../../../../lib/theme";
-import type { SearchStackParamList } from "../../../../navigation/types";
+import type { ConcertNavParamList } from "../../../../navigation/types";
 
-type SearchNav = NativeStackNavigationProp<SearchStackParamList>;
+type SearchNav = NativeStackNavigationProp<ConcertNavParamList>;
 
 export function ArtistHeaderCard({ data }: { data: Header }) {
   const nav = useNavigation<SearchNav>();

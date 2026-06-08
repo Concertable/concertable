@@ -33,8 +33,7 @@ const artistApi = {
     formData.append("Banner", input.banner);
     formData.append("Avatar", input.avatar);
     input.genres.forEach((g, i) => {
-      formData.append(`Genres[${i}].Id`, String(g.id));
-      formData.append(`Genres[${i}].Name`, g.name);
+      formData.append(`Genres[${i}]`, g);
     });
     const { data } = await api.post<Artist>("/artist", formData);
     return data;

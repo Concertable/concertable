@@ -32,7 +32,7 @@ const opportunityApi = {
         id: "id" in o ? o.id : undefined,
         startDate: o.startDate,
         endDate: o.endDate,
-        genreIds: o.genres.map((g) => g.id),
+        genres: o.genres,
         contract: o.contract,
       })),
     );

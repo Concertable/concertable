@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { GENRE_VALUES } from "../../../types/common";
 
 export const SearchSchema = () =>
   z.object({
@@ -9,14 +10,14 @@ export const SearchSchema = () =>
     locationLabel: z.string().optional(),
     from: z.string().optional(),
     to: z.string().optional(),
-    genreIds: z
+    genres: z
       .union([
-        z.array(z.coerce.number()),
-        z.coerce.number().transform((n) => [n]),
+        z.array(z.enum(GENRE_VALUES)),
+        z.enum(GENRE_VALUES).transform((g) => [g]),
       ])
       .optional(),
     radius: z.number().optional(),
-    orderBy: z.string().optional(),
+    orderBy: z.enum(["name", "date"]).optional(),
     sortOrder: z.enum(["asc", "desc"]).optional(),
     showHistory: z.boolean().optional(),
     showSold: z.boolean().optional(),

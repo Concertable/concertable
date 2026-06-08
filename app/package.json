@@ -3,12 +3,13 @@
   "private": true,
   "workspaces": [
     "web/customer",
-    "web/venue",
-    "web/artist",
-    "web/business",
+    "web/b2b/venue",
+    "web/b2b/artist",
+    "web/b2b/business",
     "mobile/customer",
-    "mobile/business",
-    "shared"
+    "mobile/b2b",
+    "shared",
+    "customer/shared"
   ],
   "scripts": {
     "dev:customer": "npm -w @concertable/web-customer run dev",
@@ -16,7 +17,7 @@
     "dev:artist": "npm -w @concertable/web-artist run dev",
     "dev:business": "npm -w @concertable/web-business run dev",
     "dev:mobile:customer": "npm -w @concertable/mobile-customer run start",
-    "dev:mobile:business": "npm -w @concertable/mobile-business run start",
+    "dev:mobile:b2b": "npm -w @concertable/mobile-b2b run start",
     "build:customer": "npm -w @concertable/web-customer run build",
     "build:venue": "npm -w @concertable/web-venue run build",
     "build:artist": "npm -w @concertable/web-artist run build",
@@ -29,6 +30,9 @@
     },
     "react": "19.1.0",
     "react-dom": "19.1.0"
+  },
+  "devDependencies": {
+    "@types/react-dom": "^19"
   },
   "dependencies": {
     "@fontsource-variable/geist": "^5",

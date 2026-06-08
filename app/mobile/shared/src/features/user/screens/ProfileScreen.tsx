@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Pressable, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -11,18 +12,30 @@ import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { useLogin } from "../../../auth/useLogin";
 import { useLogout } from "../../../auth/useLogout";
+import Config from "../../../lib/config";
 import { theme } from "../../../lib/theme";
 import type { ProfileStackParamList } from "../../../navigation/types";
 
 type ProfileNav = NativeStackNavigationProp<ProfileStackParamList>;
 
-export function ProfileScreen() {
+export interface ProfileMenuItem {
+  label: string;
+  onPress: () => void;
+}
+
+interface Props {
+  accountItems?: ProfileMenuItem[];
+}
+
+export function ProfileScreen({ accountItems }: Readonly<Props>) {
   const nav = useNavigation<ProfileNav>();
   const user = useAuthStore((s) => s.user);
-  const { login, loading, error } = useLogin();
+  const { login, signup, loading, error } = useLogin();
   const { logout } = useLogout();
+  const [choosingRole, setChoosingRole] = useState(false);
 
   if (!user) {
+    const hasRoles = Config.authClientIdArtist !== "";
     return (
       <Screen scroll header={<Navbar />}>
         <View className="items-center gap-4 py-12">
@@ -40,9 +53,33 @@ export function ProfileScreen() {
           {error && (
             <Text className="text-sm text-destructive">{error}</Text>
           )}
-          <Button onPress={login} disabled={loading}>
-            <Text>{loading ? "Signing in..." : "Sign in"}</Text>
-          </Button>
+
+          {choosingRole ? (
+            <View className="gap-2 w-full px-8">
+              <Button onPress={() => signup(Config.authClientId)}>
+                <Text>I manage a venue</Text>
+              </Button>
+              <Button variant="outline" onPress={() => signup(Config.authClientIdArtist)}>
+                <Text>I manage an artist</Text>
+              </Button>
+              <Button variant="ghost" onPress={() => setChoosingRole(false)}>
+                <Text>Back</Text>
+              </Button>
+            </View>
+          ) : (
+            <View className="gap-2 w-full px-8">
+              <Button onPress={login} disabled={loading}>
+                <Text>{loading ? "Signing in..." : "Sign in"}</Text>
+              </Button>
+              <Button
+                variant="outline"
+                disabled={loading}
+                onPress={() => (hasRoles ? setChoosingRole(true) : signup(Config.authClientId))}
+              >
+                <Text>Create account</Text>
+              </Button>
+            </View>
+          )}
         </View>
       </Screen>
     );
@@ -83,7 +120,9 @@ export function ProfileScreen() {
         <SectionHeader title="Account" />
         <MenuRow label="Edit Profile" onPress={() => nav.navigate("EditProfile")} />
         <MenuRow label="Location" onPress={() => nav.navigate("Location")} />
-        <MenuRow label="Preferences" onPress={() => nav.navigate("Preferences")} />
+        {accountItems?.map((item) => (
+          <MenuRow key={item.label} label={item.label} onPress={item.onPress} />
+        ))}
 
         <SectionHeader title="Support" />
         <MenuRow label="Help Center" onPress={() => {}} />

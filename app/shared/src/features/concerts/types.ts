@@ -2,36 +2,10 @@ import type { ActionLink, Genre } from "../../types/common";
 import type { Contract } from "../contracts/types";
 import type { ArtistSummary } from "../artists/types";
 
-export interface TicketConcert {
-  id: number;
-  name: string;
-  price: number;
-  startDate: string;
-  endDate: string;
-  venueName: string;
-  artistName: string;
-}
-
-export interface Ticket {
-  id: string;
-  purchaseDate: string;
-  qrCode: string;
-  userId: string;
-  userEmail: string;
-  concert: TicketConcert;
-}
-
 export interface CheckoutSession {
   clientSecret: string;
   customerSession?: string;
   customerId?: string;
-}
-
-export interface TicketCheckout {
-  session: CheckoutSession;
-  price: number;
-  concertId: number;
-  quantity: number;
 }
 
 export interface CheckoutLabels {

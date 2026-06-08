@@ -2,6 +2,10 @@ import type { Genre } from "../../types/common";
 
 export type HeaderType = "artist" | "venue" | "concert";
 
+export type SortField = "name" | "date";
+export type SortDirection = "asc" | "desc";
+export type SortToken = `${SortField}_${SortDirection}`;
+
 export interface Header {
   $type: HeaderType;
   id: number;

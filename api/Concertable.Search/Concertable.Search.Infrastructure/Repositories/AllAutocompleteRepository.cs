@@ -1,0 +1,48 @@
+using Concertable.Search.Application.DTOs;
+using Concertable.Search.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
+
+namespace Concertable.Search.Infrastructure.Repositories;
+
+internal sealed class AllAutocompleteRepository : IAllAutocompleteRepository
+{
+    private readonly ISearchDbContext context;
+    private readonly IArtistSearchSpecification artistSpecification;
+    private readonly IVenueSearchSpecification venueSpecification;
+    private readonly IConcertSearchSpecification concertSpecification;
+
+    public AllAutocompleteRepository(
+        ISearchDbContext context,
+        IArtistSearchSpecification artistSpecification,
+        IVenueSearchSpecification venueSpecification,
+        IConcertSearchSpecification concertSpecification)
+    {
+        this.context = context;
+        this.artistSpecification = artistSpecification;
+        this.venueSpecification = venueSpecification;
+        this.concertSpecification = concertSpecification;
+    }
+
+    public async Task<IEnumerable<Autocomplete>> GetAsync(string? searchTerm)
+    {
+        var searchParams = new SearchParams { SearchTerm = searchTerm };
+
+        return await artistSpecification
+            .Apply(context.Artists, searchParams)
+            .ToAutocompletes()
+            .Take(20)
+            .Concat(
+                venueSpecification
+                    .Apply(context.Venues, searchParams)
+                    .ToAutocompletes()
+                    .Take(20))
+            .Concat(
+                concertSpecification
+                    .Apply(context.Concerts, searchParams)
+                    .ToAutocompletes()
+                    .Take(20))
+            .OrderBy(r => r.Name)
+            .Take(10)
+            .ToListAsync();
+    }
+}

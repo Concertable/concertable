@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsTestProject>false</IsTestProject>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.4" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.3" />
+    <PackageReference Include="Respawn" Version="7.0.0" />
+    <PackageReference Include="Testcontainers.MsSql" Version="4.1.0" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Concertable.Messaging\Concertable.Messaging.Infrastructure\Concertable.Messaging.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\Shared\Concertable.Shared.Email\Concertable.Shared.Email.Application\Concertable.Shared.Email.Application.csproj" />
+    <ProjectReference Include="..\..\..\Shared\Concertable.Shared.Geocoding\Concertable.Shared.Geocoding.Application\Concertable.Shared.Geocoding.Application.csproj" />
+    <ProjectReference Include="..\..\..\Shared\Concertable.Shared.Imaging\Concertable.Shared.Imaging.Application\Concertable.Shared.Imaging.Application.csproj" />
+  </ItemGroup>
+
+</Project>

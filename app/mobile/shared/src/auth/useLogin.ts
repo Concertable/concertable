@@ -5,14 +5,14 @@ import { useAuthStore } from "@concertable/shared/features/auth";
 import { userApi } from "@concertable/shared/features/user";
 import { tokenStorage } from "./tokenStorage";
 import "../lib/axios";
+import "../lib/searchAxios";
+import "../lib/paymentAxios";
 import Config from "../lib/config";
 
 WebBrowser.maybeCompleteAuthSession();
 
 const REDIRECT_URI = AuthSession.makeRedirectUri();
 console.log("[auth] redirect URI:", REDIRECT_URI);
-
-export type SignupRole = "venue" | "artist" | "customer";
 
 export function useLogin() {
   const setUser = useAuthStore((s) => s.setUser);
@@ -81,11 +81,18 @@ export function useLogin() {
       setError(null);
       loginPromptAsync();
     },
-    signup: (role?: SignupRole) => {
-      const url = role
-        ? `${Config.authAuthority}/Account/Register?roleHint=${role}`
-        : `${Config.authAuthority}/Account/Register`;
-      WebBrowser.openAuthSessionAsync(url, REDIRECT_URI);
+    signup: async (clientId: string = Config.authClientId) => {
+      if (!discovery) return;
+      const request = new AuthSession.AuthRequest({
+        clientId,
+        scopes: Config.authScopes,
+        redirectUri: REDIRECT_URI,
+        usePKCE: true,
+      });
+      const authUrl = await request.makeAuthUrlAsync(discovery);
+      const returnUrl = `/connect/authorize/callback${authUrl.substring(authUrl.indexOf("?"))}`;
+      const registerUrl = `${Config.authAuthority}/Account/Register?ReturnUrl=${encodeURIComponent(returnUrl)}`;
+      await WebBrowser.openAuthSessionAsync(registerUrl, REDIRECT_URI);
     },
     loading: loading || !isReady,
     error,

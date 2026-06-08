@@ -8,7 +8,7 @@ import {
 
 export function useOpportunities(venueId: number) {
   const enabled = venueId > 0;
-  const { isLoading, isError } = useAllOpportunitiesQuery(venueId, enabled);
+  const { isLoading, isError, isSuccess } = useAllOpportunitiesQuery(venueId, enabled);
   const queryClient = useQueryClient();
   const queryKey = opportunitiesQueryKey(venueId);
 
@@ -38,6 +38,7 @@ export function useOpportunities(venueId: number) {
     drafts,
     isLoading,
     isError,
+    isSuccess,
     isDirty,
     hydrate,
     reset,

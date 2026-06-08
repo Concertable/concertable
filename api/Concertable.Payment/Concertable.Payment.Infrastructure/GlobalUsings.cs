@@ -1,0 +1,12 @@
+global using Concertable.Kernel;
+global using Concertable.Contracts;
+global using Concertable.Messaging;
+global using Concertable.Payment.Domain;
+global using Concertable.Payment.Contracts;
+global using Concertable.Payment.Contracts.Events;
+global using Concertable.Payment.Application.Interfaces;
+global using Concertable.Payment.Application.Interfaces.Webhook;
+global using Concertable.Payment.Application.Mappers;
+global using Concertable.Kernel.Identity;
+global using Concertable.Payment.Infrastructure.Repositories;
+global using Concertable.DataAccess.Infrastructure;

@@ -1,6 +1,6 @@
-import api from "../../../lib/axiosClient";
+import api from "../../../lib/searchAxiosClient";
 import type { Pagination } from "../../../types/common";
-import type { Header, HeaderType } from "../types";
+import type { Header, HeaderType, SortToken } from "../types";
 import type { SearchFilters } from "../schemas/searchSchema";
 
 const headerApi = {
@@ -24,12 +24,11 @@ const headerApi = {
       longitude: filters.lng,
       from: filters.from,
       to: filters.to,
-      genreIds: filters.genreIds,
+      genres: filters.genres,
       radiusKm: filters.radius,
-      sort:
-        filters.orderBy && filters.sortOrder
-          ? `${filters.orderBy}_${filters.sortOrder}`
-          : undefined,
+      sort: filters.orderBy
+        ? (`${filters.orderBy}_${filters.sortOrder ?? "asc"}` satisfies SortToken)
+        : undefined,
       showHistory: filters.showHistory,
       showSold: filters.showSold,
     };

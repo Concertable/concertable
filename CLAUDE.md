@@ -1,25 +1,9 @@
 # Concertable
 
-## Migrations
+Concertable is a monorepo (a convenience, not the architecture) with a `.NET` microservices backend in `api/` and frontend surfaces in `app/`. The backend services own their runtime; cross-service deps are Contracts-only; standalone AppHosts are canonical. **Read [`api/ARCHITECTURE.md`](./api/ARCHITECTURE.md) before designing anything that crosses a service boundary.** Forgetting this leads to re-monolithing the system.
 
-Don't add additive migrations. When the model changes, run `./initial-migrations.ps1` from `api/`
-to nuke and re-scaffold every module's `InitialCreate`.
+## Per-area guidance
 
-## DTOs vs Responses
-
-Services return `Dto` types from `Module.Application/DTOs/` (or `Module.Contracts/` for cross-module
-shapes). Services never return HTTP-flavoured `Response` types — keeps services callable from
-non-HTTP consumers (Workers, gRPC, SignalR, etc.).
-
-Controllers return either the Dto verbatim (default — most endpoints) or a `Response` from
-`Module.Api/Responses/` if the wire shape genuinely differs from the Dto (versioning, role-based
-shaping, HATEOAS, multiple endpoints rendering the same Dto differently). Don't pre-emptively
-shadow every Dto with a Response.
-
-Validators stay named `XValidators` regardless.
-
-Drop the `Dto` suffix when the name already says what the shape is (`AcceptCheckout`, `TicketCheckout`); only keep it to disambiguate from a same-named entity (`CustomerDto` vs `CustomerEntity`).
-
-## Module rules
-
-See [MODULAR_MONOLITH_RULES.md](./MODULAR_MONOLITH_RULES.md).
+- **Backend (.NET, `api/`)** — seeding, migrations, DTOs, module rules, C# conventions: [`api/CLAUDE.md`](./api/CLAUDE.md).
+- **Web SPA (`app/web/`)** — [`app/web/CLAUDE.md`](./app/web/CLAUDE.md).
+- **Customer cross-platform core (`app/customer/shared`, npm `@customer/shared`)** — consumed ONLY by the customer web + mobile apps: [`app/customer/shared/CLAUDE.md`](./app/customer/shared/CLAUDE.md).

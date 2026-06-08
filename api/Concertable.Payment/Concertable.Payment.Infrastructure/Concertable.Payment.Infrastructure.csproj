@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentResults" Version="4.0.0" />
+    <PackageReference Include="Google.Protobuf" Version="3.29.2" />
+    <PackageReference Include="Grpc.AspNetCore.Server" Version="2.67.0" />
+    <PackageReference Include="Grpc.Tools" Version="2.67.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.3" />
+    <PackageReference Include="Stripe.net" Version="47.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Protobuf Include="..\Concertable.Payment.Client\Protos\payment.proto" GrpcServices="Server" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Concertable.Payment.Domain\Concertable.Payment.Domain.csproj" />
+    <ProjectReference Include="..\Concertable.Payment.Contracts\Concertable.Payment.Contracts.csproj" />
+    <ProjectReference Include="..\Concertable.Payment.Application\Concertable.Payment.Application.csproj" />
+    <ProjectReference Include="..\..\Concertable.Auth.Contracts\Concertable.Auth.Contracts.csproj" />
+    <ProjectReference Include="..\..\Concertable.DataAccess\Concertable.DataAccess.Infrastructure\Concertable.DataAccess.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Shared\Seed\Concertable.Seed.Shared\Concertable.Seed.Shared.csproj" />
+    <ProjectReference Include="..\..\Shared\Seed\Concertable.Seed.Identity\Concertable.Seed.Identity.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Shared\Concertable.Kernel\Concertable.Kernel.csproj" />
+    <ProjectReference Include="..\..\Concertable.Messaging\Concertable.Messaging.Contracts\Concertable.Messaging.Contracts.csproj" />
+  </ItemGroup>
+
+</Project>
