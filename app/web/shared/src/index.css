@@ -6,9 +6,9 @@
 @source "../../shared/src/**/*.{ts,tsx}";
 @source "../../customer/src/**/*.{ts,tsx}";
 @source "../../b2b/shared/src/**/*.{ts,tsx}";
-@source "../../venue/src/**/*.{ts,tsx}";
-@source "../../artist/src/**/*.{ts,tsx}";
-@source "../../business/src/**/*.{ts,tsx}";
+@source "../../b2b/venue/src/**/*.{ts,tsx}";
+@source "../../b2b/artist/src/**/*.{ts,tsx}";
+@source "../../b2b/business/src/**/*.{ts,tsx}";
 
 /* dark: utility applies when an ancestor has the .dark class (toggled by ThemeProvider) */
 @custom-variant dark (&:is(.dark *));

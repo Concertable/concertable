@@ -3,9 +3,9 @@
   "private": true,
   "workspaces": [
     "web/customer",
-    "web/venue",
-    "web/artist",
-    "web/business",
+    "web/b2b/venue",
+    "web/b2b/artist",
+    "web/b2b/business",
     "mobile/customer",
     "mobile/business",
     "shared",
