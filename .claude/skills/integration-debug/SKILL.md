@@ -178,7 +178,7 @@ After identifying the cause:
 2. Re-run the specific test with `--filter "FullyQualifiedName=<FQN>"` to confirm green.
 3. Re-run the whole module's integration project (`./integration.ps1 <module>`) to catch regressions in sibling tests.
 4. If the change is broader (Kernel, shared infra, fixture, mock), re-run the full suite (`./integration.ps1 run`).
-5. **Run the UI E2E regression check** (`./e2e.ps1 regress`, ~3-6 min). Integration tests live in-process with mocked external services; the regression check exercises the full Aspire stack with real bus + Stripe CLI + browser. A fix that's green at the integration layer can still break the UI E2E baseline (mock vs real bus behaviour, controller / service / SignalR interactions, request shape changes). Required before considering any non-trivial change done. Skill to invoke: `e2e-ui-regress`.
+5. **Run the UI E2E regression check** (`./e2e.ps1 ui regress`, ~3-6 min). Integration tests live in-process with mocked external services; the regression check exercises the full Aspire stack with real bus + Stripe CLI + browser. A fix that's green at the integration layer can still break the UI E2E baseline (mock vs real bus behaviour, controller / service / SignalR interactions, request shape changes). Required before considering any non-trivial change done. Skill to invoke: `e2e-ui-regress`.
 
 ## Useful filter patterns
 

@@ -15,14 +15,14 @@ Confidence check that a code change hasn't regressed any baseline-passing UI E2E
 
 ## When NOT to use this skill
 
-- User wants the full 30-scenario sweep -> use the **`e2e-ui-debug`** skill (`./e2e.ps1 run`, ~25-30 min)
+- User wants the full 30-scenario sweep -> use the **`e2e-ui-debug`** skill (`./e2e.ps1 ui run`, ~25-30 min)
 - User wants to discover scenarios that NEWLY pass (because of a real fix) -> also `e2e-ui-debug`
 - User wants to debug a specific failing scenario -> also `e2e-ui-debug` (it has Step 2 for per-scenario re-runs with enriched logs)
 
 ## Key paths
 
 - Baseline file: `api/Shared/Tests/Concertable.E2ETests/E2E_BASELINE.md`
-- Script: `./e2e.ps1 regress` (PowerShell)
+- Script: `./e2e.ps1 ui regress` (PowerShell)
 - B2B run log: `api/Concertable.B2B/Tests/E2ETests/Concertable.B2B.E2ETests.Ui/regress.last.log`
 - Customer run log: `api/Concertable.Customer/Tests/E2ETests/Concertable.Customer.E2ETests.Ui/regress.last.log`
 - Scratch run logs (ad-hoc captures): `api/Shared/Tests/Concertable.E2ETests/logs/` — **never the repo root**. The `regress.last.log` files above are written by `./e2e.ps1` and stay in their project dirs; any extra output you redirect for grepping goes in the scratch dir (git-ignored; `New-Item -ItemType Directory -Force` it first if missing).
@@ -41,7 +41,7 @@ Then tell the user it's starting and give a rough duration scaled to the passing
 
 ## Step 1 -- Run regress in background
 
-Run `./e2e.ps1 regress` as a **background PowerShell task** (`run_in_background: true`). Capture the output file path.
+Run `./e2e.ps1 ui regress` as a **background PowerShell task** (`run_in_background: true`). Capture the output file path.
 
 The script:
 1. Parses the `### B2B passing (N)` and `### Customer passing (N)` fenced text blocks in `E2E_BASELINE.md`
@@ -118,7 +118,7 @@ The parser found a structural issue in the baseline file (e.g. heading count doe
 
 ## Updating the baseline (the OTHER skill's job)
 
-If after `./e2e.ps1 run` (full suite, run by the `e2e-ui-debug` skill) the user has a scenario that newly passes or newly fails, they manually edit `E2E_BASELINE.md`:
+If after `./e2e.ps1 ui run` (full suite, run by the `e2e-ui-debug` skill) the user has a scenario that newly passes or newly fails, they manually edit `E2E_BASELINE.md`:
 
 - Move the scenario between the relevant `passing` / `failing` fenced blocks
 - Update the `(N)` counts in both affected headings
@@ -131,4 +131,4 @@ This skill (`e2e-ui-regress`) only **verifies** the baseline, never modifies it.
 
 Regress duration scales with the size of the passing baseline: a small passing set runs in ~3-6 min; if the whole suite is listed as passing it covers every scenario (~25-30 min). Either way, do not skip it just because the code change "looks safe."
 
-When the passing baseline equals the full suite, regress and `./e2e.ps1 run` cover the same scenarios — the difference is intent: regress fail-fasts and asserts the expected-passing set (and catches baseline drift), while `run` discovers newly-passing/failing scenarios. Size the Step 2 `Monitor` timeout to the expected run length (up to ~30 min / `timeout_ms: 1800000` when the passing set is the full suite).
+When the passing baseline equals the full suite, regress and `./e2e.ps1 ui run` cover the same scenarios — the difference is intent: regress fail-fasts and asserts the expected-passing set (and catches baseline drift), while `run` discovers newly-passing/failing scenarios. Size the Step 2 `Monitor` timeout to the expected run length (up to ~30 min / `timeout_ms: 1800000` when the passing set is the full suite).

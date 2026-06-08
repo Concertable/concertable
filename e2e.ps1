@@ -1,5 +1,7 @@
-﻿param(
+param(
     [Parameter(Position = 0)]
+    [string]$domain,
+    [Parameter(Position = 1)]
     [string]$cmd,
     [switch]$Headed
 )
@@ -9,6 +11,9 @@ Set-Location $PSScriptRoot
 
 $b2bUi      = Join-Path $PSScriptRoot "api/Concertable.B2B/Tests/E2ETests/Concertable.B2B.E2ETests.Ui"
 $customerUi = Join-Path $PSScriptRoot "api/Concertable.Customer/Tests/E2ETests/Concertable.Customer.E2ETests.Ui"
+$b2bApi      = Join-Path $PSScriptRoot "api/Concertable.B2B/Tests/E2ETests/Concertable.B2B.E2ETests"
+$customerApi = Join-Path $PSScriptRoot "api/Concertable.Customer/Tests/E2ETests/Concertable.Customer.E2ETests"
+$runsettings = Join-Path $PSScriptRoot "api/Concertable.runsettings"
 $baselineMd = Join-Path $PSScriptRoot "api/Shared/Tests/Concertable.E2ETests/E2E_BASELINE.md"
 
 $quiet = @('--nologo', '--verbosity', 'quiet')
@@ -97,9 +102,9 @@ function Invoke-Regress([string]$suite, [string]$csproj) {
     return $false
 }
 
-function Invoke-PrettyTest([string]$suite, [string]$csproj, [string[]]$extra) {
+function Invoke-PrettyTest([string]$suite, [string]$csproj, [string[]]$extra, [string]$logName = 'ui-tests.last.log') {
     $dir = Split-Path $csproj -Parent
-    $log = Join-Path $dir 'ui-tests.last.log'
+    $log = Join-Path $dir $logName
     $resultsDir = Join-Path $dir 'TestResults'
     $trx = Join-Path $resultsDir 'run.trx'
     if (Test-Path $trx) { Remove-Item $trx -Force }
@@ -141,68 +146,119 @@ function Invoke-PrettyTest([string]$suite, [string]$csproj, [string[]]$extra) {
 function Show-Summary([object[]]$summaries) {
     Write-Host ""
     Write-Host "  Summary" -ForegroundColor Cyan
-    Write-Host ("  {0,-12}{1,8}{2,8}{3,8}" -f 'Suite', 'Passed', 'Failed', 'Total') -ForegroundColor Gray
-    Write-Host ("  {0,-12}{1,8}{2,8}{3,8}" -f '------', '------', '------', '-----') -ForegroundColor Gray
+    Write-Host ("  {0,-14}{1,8}{2,8}{3,8}" -f 'Suite', 'Passed', 'Failed', 'Total') -ForegroundColor Gray
+    Write-Host ("  {0,-14}{1,8}{2,8}{3,8}" -f '------', '------', '------', '-----') -ForegroundColor Gray
     foreach ($s in $summaries) {
         $color = if ($s.Failed -gt 0) { 'Red' } else { 'Green' }
-        Write-Host ("  {0,-12}{1,8}{2,8}{3,8}" -f $s.Suite, $s.Passed, $s.Failed, $s.Total) -ForegroundColor $color
+        Write-Host ("  {0,-14}{1,8}{2,8}{3,8}" -f $s.Suite, $s.Passed, $s.Failed, $s.Total) -ForegroundColor $color
     }
     $tp = ($summaries | Measure-Object Passed -Sum).Sum
     $tf = ($summaries | Measure-Object Failed -Sum).Sum
     $tt = ($summaries | Measure-Object Total -Sum).Sum
     $totalColor = if ($tf -gt 0) { 'Red' } else { 'Green' }
-    Write-Host ("  {0,-12}{1,8}{2,8}{3,8}" -f 'TOTAL', $tp, $tf, $tt) -ForegroundColor $totalColor
+    Write-Host ("  {0,-14}{1,8}{2,8}{3,8}" -f 'TOTAL', $tp, $tf, $tt) -ForegroundColor $totalColor
     Write-Host ""
 }
 
 function Show-Usage {
     Write-Host ""
-    Write-Host "  Usage: ./e2e.ps1 <command> [-Headed]" -ForegroundColor White
+    Write-Host "  Usage: ./e2e.ps1 <ui|api> <command> [-Headed]" -ForegroundColor White
     Write-Host ""
-    Write-Host "  Commands:" -ForegroundColor DarkGray
-    Write-Host "    run       Run all UI E2E tests (B2B + Customer)"
-    Write-Host "    regress   Run only baseline-passing scenarios; fail on any regression (~3 min)"
-    Write-Host "    b2b       Run B2B UI E2E tests only"
-    Write-Host "    customer  Run Customer UI E2E tests only"
-    Write-Host "    3ds       Run 3DS scenarios (B2B only)"
-    Write-Host "    trace     Open latest Playwright trace"
-    Write-Host "    list      List all available commands"
+    Write-Host "  UI E2E (Reqnroll + Playwright, real browser):" -ForegroundColor DarkGray
+    Write-Host "    ui run       Run all UI scenarios (B2B + Customer)"
+    Write-Host "    ui regress   Run only baseline-passing scenarios; fail on any regression (~3 min)"
+    Write-Host "    ui b2b       Run B2B UI scenarios only"
+    Write-Host "    ui customer  Run Customer UI scenarios only"
+    Write-Host "    ui 3ds       Run 3DS scenarios (B2B only)"
+    Write-Host "    ui trace     Open latest Playwright trace"
+    Write-Host ""
+    Write-Host "  API E2E (xUnit, full Aspire stack, no browser):" -ForegroundColor DarkGray
+    Write-Host "    api run       Run all API E2E (B2B + Customer); non-zero exit on any failure"
+    Write-Host "    api b2b       Run B2B API E2E only"
+    Write-Host "    api customer  Run Customer API E2E only"
+    Write-Host ""
+    Write-Host "  A bare command with no domain (e.g. './e2e.ps1 run') is treated as 'ui'." -ForegroundColor DarkGray
     Write-Host ""
 }
 
-switch ($cmd) {
-    "run" {
-        $b2b  = Invoke-PrettyTest 'B2B'      "$b2bUi/Concertable.B2B.E2ETests.Ui.csproj"
-        $cust = Invoke-PrettyTest 'Customer' "$customerUi/Concertable.Customer.E2ETests.Ui.csproj"
-        Show-Summary @($b2b, $cust)
-    }
-    "b2b" {
-        $b2b = Invoke-PrettyTest 'B2B' "$b2bUi/Concertable.B2B.E2ETests.Ui.csproj"
-        Show-Summary @($b2b)
-    }
-    "customer" {
-        $cust = Invoke-PrettyTest 'Customer' "$customerUi/Concertable.Customer.E2ETests.Ui.csproj"
-        Show-Summary @($cust)
-    }
-    "regress" {
-        $b2bOk  = Invoke-Regress 'B2B'      "$b2bUi/Concertable.B2B.E2ETests.Ui.csproj"
-        $custOk = Invoke-Regress 'Customer' "$customerUi/Concertable.Customer.E2ETests.Ui.csproj"
-        Write-Host ""
-        if ($b2bOk -and $custOk) {
-            Write-Host "REGRESS PASSED -- every baseline-passing scenario still passes." -ForegroundColor Green
-            exit 0
-        } else {
-            Write-Host "REGRESS FAILED -- at least one baseline-passing scenario regressed." -ForegroundColor Red
-            exit 1
+function Invoke-UiCommand([string]$cmd) {
+    switch ($cmd) {
+        "run" {
+            $b2b  = Invoke-PrettyTest 'B2B'      "$b2bUi/Concertable.B2B.E2ETests.Ui.csproj"
+            $cust = Invoke-PrettyTest 'Customer' "$customerUi/Concertable.Customer.E2ETests.Ui.csproj"
+            Show-Summary @($b2b, $cust)
         }
+        "b2b" {
+            $b2b = Invoke-PrettyTest 'B2B' "$b2bUi/Concertable.B2B.E2ETests.Ui.csproj"
+            Show-Summary @($b2b)
+        }
+        "customer" {
+            $cust = Invoke-PrettyTest 'Customer' "$customerUi/Concertable.Customer.E2ETests.Ui.csproj"
+            Show-Summary @($cust)
+        }
+        "regress" {
+            $b2bOk  = Invoke-Regress 'B2B'      "$b2bUi/Concertable.B2B.E2ETests.Ui.csproj"
+            $custOk = Invoke-Regress 'Customer' "$customerUi/Concertable.Customer.E2ETests.Ui.csproj"
+            Write-Host ""
+            if ($b2bOk -and $custOk) {
+                Write-Host "REGRESS PASSED -- every baseline-passing scenario still passes." -ForegroundColor Green
+                exit 0
+            } else {
+                Write-Host "REGRESS FAILED -- at least one baseline-passing scenario regressed." -ForegroundColor Red
+                exit 1
+            }
+        }
+        "3ds" {
+            $r = Invoke-PrettyTest '3DS' "$b2bUi/Concertable.B2B.E2ETests.Ui.csproj" @('--filter', 'DisplayName~3DS')
+            Show-Summary @($r)
+        }
+        "trace" { & "api/Shared/Tests/Concertable.E2ETests/ui-trace.ps1" }
+        default { Show-Usage }
     }
-    "3ds" {
-        $r = Invoke-PrettyTest '3DS' "$b2bUi/Concertable.B2B.E2ETests.Ui.csproj" @('--filter', 'DisplayName~3DS')
-        Show-Summary @($r)
+}
+
+function Invoke-ApiCommand([string]$cmd) {
+    $settings = @('--settings', $runsettings)
+    switch ($cmd) {
+        "run" {
+            $b2b  = Invoke-PrettyTest 'B2B API'      "$b2bApi/Concertable.B2B.E2ETests.csproj"           $settings 'api-tests.last.log'
+            $cust = Invoke-PrettyTest 'Customer API' "$customerApi/Concertable.Customer.E2ETests.csproj" $settings 'api-tests.last.log'
+            $summaries = @($b2b, $cust)
+            Show-Summary $summaries
+            if ((($summaries | Measure-Object Failed -Sum).Sum) -gt 0) { exit 1 } else { exit 0 }
+        }
+        "b2b" {
+            $b2b = Invoke-PrettyTest 'B2B API' "$b2bApi/Concertable.B2B.E2ETests.csproj" $settings 'api-tests.last.log'
+            Show-Summary @($b2b)
+            if ($b2b.Failed -gt 0) { exit 1 } else { exit 0 }
+        }
+        "customer" {
+            $cust = Invoke-PrettyTest 'Customer API' "$customerApi/Concertable.Customer.E2ETests.csproj" $settings 'api-tests.last.log'
+            Show-Summary @($cust)
+            if ($cust.Failed -gt 0) { exit 1 } else { exit 0 }
+        }
+        default { Show-Usage }
     }
-    "trace" { & "api/Shared/Tests/Concertable.E2ETests/ui-trace.ps1" }
-    { $_ -in "list","help" } { Show-Usage }
-    default { Show-Usage }
+}
+
+if ($domain) { $domain = $domain.ToLowerInvariant() } else { $domain = '' }
+if ($cmd)    { $cmd    = $cmd.ToLowerInvariant() }    else { $cmd    = '' }
+
+if (-not $domain -or $domain -in @('list', 'help', '-h', '--help', '/?')) {
+    Show-Usage
+    Remove-Item Env:\HEADLESS -ErrorAction SilentlyContinue
+    return
+}
+
+# Back-compat: a bare command with no ui/api domain is treated as a UI command.
+if ($domain -notin @('ui', 'api')) {
+    $cmd = $domain
+    $domain = 'ui'
+}
+
+switch ($domain) {
+    'ui'  { Invoke-UiCommand $cmd }
+    'api' { Invoke-ApiCommand $cmd }
 }
 
 Remove-Item Env:\HEADLESS -ErrorAction SilentlyContinue

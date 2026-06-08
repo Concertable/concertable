@@ -31,7 +31,7 @@ If invoked with no arguments, run Step 0 then the full suite (Step 1) to discove
 
 **Always run headless** unless the user explicitly asks to watch the browser. Headless is faster and does not interfere with debugging: failure screenshots (`CaptureFailureAsync`), Playwright traces, and the enriched HTTP/console logs all work identically headless.
 
-- `./e2e.ps1 <cmd>` (Step 1, Step 4 full-suite re-runs) is headless by default — it sets `HEADLESS=true` unless you pass `-Headed`.
+- `./e2e.ps1 ui <cmd>` (Step 1, Step 4 full-suite re-runs) is headless by default — it sets `HEADLESS=true` unless you pass `-Headed`.
 - Direct `dotnet test` runs (Step 2 single-scenario deep-dives) do NOT pick up that default — the fixture runs **headed** with `SlowMo` unless `HEADLESS` is set. So always prefix Step 2 commands with `$env:HEADLESS='true'; ` (shown in Step 2 below).
 - If (and only if) the user asks to watch the browser, run headed: pass `-Headed` to `./e2e.ps1`, or set `$env:HEADLESS='false'` (or omit it) for direct `dotnet test`.
 
@@ -51,12 +51,14 @@ If invoked with no arguments, run Step 0 then the full suite (Step 1) to discove
 - Hooks: `api/Concertable.Customer/Tests/E2ETests/Concertable.Customer.E2ETests.Ui/Hooks/`
 - Last run log: `api/Concertable.Customer/Tests/E2ETests/Concertable.Customer.E2ETests.Ui/ui-tests.last.log`
 
-- Full suite (both): `./e2e.ps1 run` (~25–30 min)
-- **Regression check** (baseline-passing only): `./e2e.ps1 regress` (~3–6 min)
-- B2B only: `./e2e.ps1 b2b`
-- Customer only: `./e2e.ps1 customer`
-- 3DS-only: `./e2e.ps1 3ds`
-- Trace viewer: `./e2e.ps1 trace`
+- Full suite (both): `./e2e.ps1 ui run` (~25–30 min)
+- **Regression check** (baseline-passing only): `./e2e.ps1 ui regress` (~3–6 min)
+- B2B only: `./e2e.ps1 ui b2b`
+- Customer only: `./e2e.ps1 ui customer`
+- 3DS-only: `./e2e.ps1 ui 3ds`
+- Trace viewer: `./e2e.ps1 ui trace`
+
+`e2e.ps1` takes a domain (`ui` or `api`) then a command. This skill is the **`ui`** domain. The **`api`** domain runs the sibling xUnit/Aspire API E2E suite (no browser) — see the `e2e-api-debug` skill; to debug both layers in one pass use `e2e-debug`. A bare command with no domain (`./e2e.ps1 ui run`) still works and is treated as `ui` for back-compat.
 
 **Baseline file** (which scenarios are expected to pass vs fail): `api/Shared/Tests/Concertable.E2ETests/E2E_BASELINE.md`.
 
@@ -64,9 +66,9 @@ If invoked with no arguments, run Step 0 then the full suite (Step 1) to discove
 
 ## Which command to use
 
-- **User wants to verify a code change hasn't broken anything → `./e2e.ps1 regress`.** It parses `E2E_BASELINE.md`, runs only the scenarios listed under the `passing` fenced blocks, and exits 1 if any of them fails or if any baseline name no longer matches a real test. Much faster than the full suite, and the only signal needed to confirm "no regression."
-- **User wants to discover newly-passing or newly-failing scenarios, or you've just landed a real test fix → `./e2e.ps1 run`.** This runs all 30 scenarios.
-- **After `./e2e.ps1 run` reveals a status change** (a scenario crossed the line), prompt the user to update `E2E_BASELINE.md`: move the scenario between the `passing` and `failing` fenced blocks and bump the `(N)` count in the heading. Both regress and PR review depend on this file being current.
+- **User wants to verify a code change hasn't broken anything → `./e2e.ps1 ui regress`.** It parses `E2E_BASELINE.md`, runs only the scenarios listed under the `passing` fenced blocks, and exits 1 if any of them fails or if any baseline name no longer matches a real test. Much faster than the full suite, and the only signal needed to confirm "no regression."
+- **User wants to discover newly-passing or newly-failing scenarios, or you've just landed a real test fix → `./e2e.ps1 ui run`.** This runs all 30 scenarios.
+- **After `./e2e.ps1 ui run` reveals a status change** (a scenario crossed the line), prompt the user to update `E2E_BASELINE.md`: move the scenario between the `passing` and `failing` fenced blocks and bump the `(N)` count in the heading. Both regress and PR review depend on this file being current.
 
 ## Step 0 — Pre-flight check
 
@@ -120,7 +122,7 @@ Fix the root cause before re-running the test. Do not keep waiting on a stuck st
 ## Step 1 — Run the full suite
 
 ```powershell
-./e2e.ps1 run
+./e2e.ps1 ui run
 ```
 
 Run headless (default). After it finishes, parse both `ui-tests.last.log` files to extract pass/fail counts and build a results summary table to present to the user before proceeding:
@@ -225,4 +227,4 @@ After identifying the cause:
 - Each suite writes its own `ui-tests.last.log` — useful for re-reading without re-running.
 - B2B features: `ArtistSignUp`, `DoorSplitWorkflow`, `FlatFeeWorkflow`, `Login`, `VenueHireWorkflow`, `VenueSignUp`, `VersusWorkflow`
 - Customer features: `CustomerSignUp`, `Login`, `TicketPurchase`
-- Integration (non-UI) E2E tests live in sibling projects; this skill covers the Reqnroll+Playwright suites only.
+- The sibling **API E2E** projects (`Concertable.B2B.E2ETests` / `Concertable.Customer.E2ETests`, no `.Ui`) run the same Aspire stack without a browser — `./e2e.ps1 api run`, debugged via the `e2e-api-debug` skill. This skill covers the Reqnroll+Playwright `ui` suites only; to sweep both layers use `e2e-debug`.
