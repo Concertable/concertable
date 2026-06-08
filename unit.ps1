@@ -1,0 +1,142 @@
+param(
+    [Parameter(Position = 0)]
+    [string]$cmd,
+    [Parameter(Position = 1, ValueFromRemainingArguments)]
+    [string[]]$rest
+)
+
+Set-Location $PSScriptRoot
+[Environment]::CurrentDirectory = $PSScriptRoot
+
+$b2bProjects = @(
+    "api/Concertable.B2B/Modules/Concert/Tests/Concertable.B2B.Concert.UnitTests/Concertable.B2B.Concert.UnitTests.csproj",
+    "api/Concertable.B2B/Modules/Contract/Tests/Concertable.B2B.Contract.UnitTests/Concertable.B2B.Contract.UnitTests.csproj",
+    "api/Concertable.B2B/Modules/Organization/Tests/Concertable.B2B.Organization.UnitTests/Concertable.B2B.Organization.UnitTests.csproj",
+    "api/Concertable.B2B/Tests/Concertable.B2B.Workers.UnitTests/Concertable.B2B.Workers.UnitTests.csproj"
+)
+$customerProjects = @(
+    "api/Concertable.Customer/Modules/Concert/Tests/Concertable.Customer.Concert.UnitTests/Concertable.Customer.Concert.UnitTests.csproj",
+    "api/Concertable.Customer/Modules/Review/Tests/Concertable.Customer.Review.UnitTests/Concertable.Customer.Review.UnitTests.csproj",
+    "api/Concertable.Customer/Modules/Ticket/Tests/Concertable.Customer.Ticket.UnitTests/Concertable.Customer.Ticket.UnitTests.csproj",
+    "api/Concertable.Customer/Modules/User/Tests/Concertable.Customer.User.UnitTests/Concertable.Customer.User.UnitTests.csproj"
+)
+$searchProjects = @(
+    "api/Concertable.Search/Tests/Concertable.Search.UnitTests/Concertable.Search.UnitTests.csproj"
+)
+$paymentProjects = @(
+    "api/Concertable.Payment/Tests/Concertable.Payment.UnitTests/Concertable.Payment.UnitTests.csproj"
+)
+$sharedProjects = @(
+    "api/Shared/Tests/Concertable.Kernel.UnitTests/Concertable.Kernel.UnitTests.csproj",
+    "api/Concertable.Messaging/Tests/Concertable.Messaging.UnitTests/Concertable.Messaging.UnitTests.csproj",
+    "api/Concertable.Messaging/Tests/Concertable.Messaging.AzureServiceBus.UnitTests/Concertable.Messaging.AzureServiceBus.UnitTests.csproj"
+)
+
+$allProjects = $b2bProjects + $customerProjects + $searchProjects + $paymentProjects + $sharedProjects
+
+function Invoke-UnitProject([string]$csproj, [string[]]$extra) {
+    $name = [System.IO.Path]::GetFileNameWithoutExtension($csproj)
+    $logPath = Join-Path (Split-Path $csproj -Parent) 'unit-tests.last.log'
+    Write-Host ""
+    Write-Host "=== $name ===" -ForegroundColor Cyan
+    $cmdArgs = @($csproj, '--logger', 'console;verbosity=normal') + $extra
+    dotnet test @cmdArgs 2>&1 | Tee-Object -FilePath $logPath | Out-Host
+    return $LASTEXITCODE
+}
+
+function Invoke-Projects([string]$label, [string[]]$projects, [string[]]$extra) {
+    Write-Host ""
+    Write-Host ">>> $label ($($projects.Count) project$(if ($projects.Count -ne 1) { 's' }))" -ForegroundColor Yellow
+    $failures = @()
+    foreach ($p in $projects) {
+        $code = Invoke-UnitProject $p $extra
+        if ($code -ne 0) { $failures += $p }
+    }
+    Write-Host ""
+    if ($failures.Count -eq 0) {
+        Write-Host "$label OK: $($projects.Count)/$($projects.Count) projects passed." -ForegroundColor Green
+        return 0
+    }
+    Write-Host "$label FAILED: $($failures.Count) project(s) had test failures:" -ForegroundColor Red
+    $failures | ForEach-Object { Write-Host "  - $([System.IO.Path]::GetFileNameWithoutExtension($_))" -ForegroundColor Red }
+    return 1
+}
+
+function Find-ByModule([string]$module) {
+    $needle = ".$module.UnitTests."
+    return $allProjects | Where-Object { $_ -like "*$needle*" }
+}
+
+switch ($cmd) {
+    "run" {
+        $exit = Invoke-Projects 'All unit tests' $allProjects $rest
+        exit $exit
+    }
+    "b2b" {
+        $exit = Invoke-Projects 'B2B unit tests' $b2bProjects $rest
+        exit $exit
+    }
+    "customer" {
+        $exit = Invoke-Projects 'Customer unit tests' $customerProjects $rest
+        exit $exit
+    }
+    "search" {
+        $exit = Invoke-Projects 'Search unit tests' $searchProjects $rest
+        exit $exit
+    }
+    "payment" {
+        $exit = Invoke-Projects 'Payment unit tests' $paymentProjects $rest
+        exit $exit
+    }
+    "shared" {
+        $exit = Invoke-Projects 'Shared unit tests' $sharedProjects $rest
+        exit $exit
+    }
+    "list" {
+        Write-Host ""
+        Write-Host "B2B:" -ForegroundColor Yellow
+        $b2bProjects | ForEach-Object { Write-Host "  $_" }
+        Write-Host ""
+        Write-Host "Customer:" -ForegroundColor Yellow
+        $customerProjects | ForEach-Object { Write-Host "  $_" }
+        Write-Host ""
+        Write-Host "Search:" -ForegroundColor Yellow
+        $searchProjects | ForEach-Object { Write-Host "  $_" }
+        Write-Host ""
+        Write-Host "Payment:" -ForegroundColor Yellow
+        $paymentProjects | ForEach-Object { Write-Host "  $_" }
+        Write-Host ""
+        Write-Host "Shared:" -ForegroundColor Yellow
+        $sharedProjects | ForEach-Object { Write-Host "  $_" }
+        Write-Host ""
+    }
+    default {
+        if ($cmd) {
+            $matches = Find-ByModule $cmd
+            if ($matches.Count -gt 0) {
+                $exit = Invoke-Projects "Module: $cmd" $matches $rest
+                exit $exit
+            }
+            Write-Host "Unknown command or module: '$cmd'" -ForegroundColor Red
+            Write-Host ""
+        }
+        Write-Host "  Usage: ./unit.ps1 <command> [-- <extra dotnet test args>]" -ForegroundColor White
+        Write-Host ""
+        Write-Host "  Commands:" -ForegroundColor DarkGray
+        Write-Host "    run        Run all unit tests (B2B + Customer + Search + Payment + Shared)"
+        Write-Host "    b2b        Run B2B unit tests only"
+        Write-Host "    customer   Run Customer unit tests only"
+        Write-Host "    search     Run Search unit tests only"
+        Write-Host "    payment    Run Payment unit tests only"
+        Write-Host "    shared     Run Shared unit tests only (Kernel + Messaging)"
+        Write-Host "    <module>   Run a specific module (e.g. concert, contract, organization, workers, user, review, ticket, kernel, messaging)"
+        Write-Host "    list       List all unit test projects"
+        Write-Host ""
+        Write-Host "  Examples:" -ForegroundColor DarkGray
+        Write-Host "    ./unit.ps1 run"
+        Write-Host "    ./unit.ps1 b2b"
+        Write-Host "    ./unit.ps1 concert"
+        Write-Host "    ./unit.ps1 contract --filter ""FullyQualifiedName~ContractStateMachineTests"""
+        Write-Host ""
+    }
+}

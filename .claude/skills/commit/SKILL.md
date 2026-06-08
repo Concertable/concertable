@@ -7,6 +7,23 @@ description: Turn the working tree into clean, logical git commits. Use whenever
 
 Turn whatever is in the working tree into a readable commit history. The job is curation, not just `git add -A && git commit`.
 
+## Fast path — single commit (skip everything below)
+
+If the user signals they want ONE commit of everything — "commit all", "commit-all", "one commit", "just commit everything", "everything in one", or similar — **do not survey or slice**. It's one button press:
+
+```
+git add -A
+git commit -m "<one-line summary of the change>"
+git log --oneline -1   # confirm
+```
+
+- No `git status`/`git diff` survey, no per-file dumps, no slicing analysis — that's exactly the ceremony they're opting out of.
+- Still: don't commit on the default branch (branch first), don't `--no-verify`, no AI-attribution trailer.
+- If the index is already partially staged, `git add -A` folds it in — that's the intent here.
+- Only deviate to ask if `git add -A` would obviously sweep in secrets/huge binaries; otherwise trust the instruction.
+
+The survey-and-slice flow below is for "commit my work" / "tidy this into commits" — NOT for an explicit single-commit request.
+
 ## Step 0 — Survey before touching anything
 
 ```
