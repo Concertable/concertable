@@ -96,6 +96,24 @@ return await CurrentTenant.Where(v => v.IsActive).ToListAsync(ct);
 
 Only add a comment when the WHY is non-obvious (hidden constraint, subtle invariant, workaround for a specific bug). Never narrate what the code does — well-named identifiers already do that.
 
+## Comments — short, and multi-line uses `/* */`
+
+Even a WHY-justified comment should be as short as the insight — usually **one line**. Cut a three-line comment to its one essential clause. If a `//` comment genuinely needs more than one line, write it as a single `/* … */` block, **not** a stack of `//` lines:
+
+```csharp
+// CORRECT — one line says it
+// Artists get a tenant too (they own no Bucket-A rows) so Payment provisions them.
+
+/* CORRECT — a genuinely multi-line note is one block, not stacked // lines.
+   Second line continues here. */
+
+// WRONG — stacked // lines for a multi-line thought
+// first line of the thought
+// second line of the thought
+```
+
+This is about `//` explanatory comments. XML `///` doc comments are the exception — they stay `///` (see the doc-comment rule below).
+
 ## Doc comments — XML `<summary>`, not `//`
 
 Use these **sparingly** — don't pollute the codebase with summaries on self-explanatory types and members. Add one only where a developer (or an AI) reading the code later would genuinely benefit: real ambiguity, a non-obvious constraint, a safety/ordering subtlety, an API contract. A summary that just restates the name earns its deletion. The audience is whoever maintains the code next — write it for them.
