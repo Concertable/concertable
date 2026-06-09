@@ -82,6 +82,25 @@ if (condition)
 
 Only add a comment when the WHY is non-obvious (hidden constraint, subtle invariant, workaround for a specific bug). Never narrate what the code does — well-named identifiers already do that.
 
+## Doc comments — XML `<summary>`, not `//`
+
+Use these **sparingly** — don't pollute the codebase with summaries on self-explanatory types and members. Add one only where a developer (or an AI) reading the code later would genuinely benefit: real ambiguity, a non-obvious constraint, a safety/ordering subtlety, an API contract. A summary that just restates the name earns its deletion. The audience is whoever maintains the code next — write it for them.
+
+When you *do* document a type or member, write it as an XML doc comment (`/// <summary>…</summary>`), not a `//` line comment. Reserve `//` for short inline notes *inside* method bodies. Cross-reference with `<see cref="…"/>` / `<see langword="null"/>` instead of bare prose, and use `<c>Name</c>` for a type the declaring assembly can't reference (avoids an unresolved-cref warning).
+
+```csharp
+// CORRECT — documents the member
+/// <summary>
+/// The owning tenant. Settable so <c>TenantInterceptor</c> can stamp it at SaveChanges; domain
+/// code never sets it directly.
+/// </summary>
+Guid TenantId { get; set; }
+
+// WRONG — docstring-style note as a line comment on a member
+// Settable so the interceptor can stamp it
+Guid TenantId { get; set; }
+```
+
 ## Mappers — `XMappers` extension methods
 
 Type-to-type mapping (e.g. gRPC proto ⇄ domain/contract types) lives in a static `XMappers` class as extension methods named `ToTarget()`, not as private `MapX` helpers on the consumer.
