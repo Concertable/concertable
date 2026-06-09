@@ -78,6 +78,20 @@ if (condition)
 }
 ```
 
+## Base-class members — call through `base.`
+
+When invoking a member that's inherited from a base class (not declared on the current type), qualify
+the call with `base.`. It tells the reader at a glance that the member lives on the base, not in this
+class, so they don't hunt for a definition that isn't here.
+
+```csharp
+// CORRECT — CurrentTenant is defined on TenantScopedRepository, not this repo
+return await base.CurrentTenant.Where(v => v.IsActive).ToListAsync(ct);
+
+// WRONG — reads like a local member
+return await CurrentTenant.Where(v => v.IsActive).ToListAsync(ct);
+```
+
 ## No comments on WHAT the code does
 
 Only add a comment when the WHY is non-obvious (hidden constraint, subtle invariant, workaround for a specific bug). Never narrate what the code does — well-named identifiers already do that.
@@ -85,6 +99,8 @@ Only add a comment when the WHY is non-obvious (hidden constraint, subtle invari
 ## Doc comments — XML `<summary>`, not `//`
 
 Use these **sparingly** — don't pollute the codebase with summaries on self-explanatory types and members. Add one only where a developer (or an AI) reading the code later would genuinely benefit: real ambiguity, a non-obvious constraint, a safety/ordering subtlety, an API contract. A summary that just restates the name earns its deletion. The audience is whoever maintains the code next — write it for them.
+
+**Don't document both an interface and its implementation.** The contract lives on the interface — that's the one place a summary belongs. The implementing class repeats nothing; leave it bare unless the *implementation itself* has a non-obvious quirk the interface can't speak to (a specific algorithm, a workaround). Two summaries saying the same thing is just drift waiting to happen.
 
 When you *do* document a type or member, write it as an XML doc comment (`/// <summary>…</summary>`), not a `//` line comment. Reserve `//` for short inline notes *inside* method bodies. Cross-reference with `<see cref="…"/>` / `<see langword="null"/>` instead of bare prose, and use `<c>Name</c>` for a type the declaring assembly can't reference (avoids an unresolved-cref warning).
 

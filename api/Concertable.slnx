@@ -14,13 +14,17 @@
     <Project Path="Concertable.B2B/Concertable.B2B.AppHost.Extensions/Concertable.B2B.AppHost.Extensions.csproj" />
     <Project Path="Concertable.B2B/Concertable.B2B.Web/Concertable.B2B.Web.csproj" />
     <Project Path="Concertable.B2B/Concertable.B2B.Workers/Concertable.B2B.Workers.csproj" />
-    <Project Path="Concertable.B2B/Concertable.B2B.DataAccess/Concertable.B2B.DataAccess.csproj" />
+  </Folder>
+  <Folder Name="/B2B/DataAccess/">
+    <Project Path="Concertable.B2B/Concertable.B2B.DataAccess/Concertable.B2B.DataAccess.Application/Concertable.B2B.DataAccess.Application.csproj" />
+    <Project Path="Concertable.B2B/Concertable.B2B.DataAccess/Concertable.B2B.DataAccess.Infrastructure/Concertable.B2B.DataAccess.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/B2B/Seed/">
     <Project Path="Concertable.B2B/Seed/Concertable.B2B.Seed.Contracts/Concertable.B2B.Seed.Contracts.csproj" />
     <Project Path="Concertable.B2B/Seed/Concertable.B2B.Seed.Infrastructure/Concertable.B2B.Seed.Infrastructure.csproj" />
     <Project Path="Concertable.B2B/Seed/Concertable.B2B.Seed.Simulator/Concertable.B2B.Seed.Simulator.csproj" />
   </Folder>
+  <Folder Name="/B2B/Modules/" />
   <Folder Name="/B2B/Modules/Artist/">
     <Project Path="Concertable.B2B/Modules/Artist/Concertable.B2B.Artist.Api/Concertable.B2B.Artist.Api.csproj" />
     <Project Path="Concertable.B2B/Modules/Artist/Concertable.B2B.Artist.Application/Concertable.B2B.Artist.Application.csproj" />
@@ -86,6 +90,7 @@
   <Folder Name="/Customer/Seed/">
     <Project Path="Concertable.Customer/Seed/Concertable.Customer.Seed.Infrastructure/Concertable.Customer.Seed.Infrastructure.csproj" />
   </Folder>
+  <Folder Name="/Customer/Modules/" />
   <Folder Name="/Customer/Modules/Artist/">
     <Project Path="Concertable.Customer/Modules/Artist/Concertable.Customer.Artist.Api/Concertable.Customer.Artist.Api.csproj" />
     <Project Path="Concertable.Customer/Modules/Artist/Concertable.Customer.Artist.Application/Concertable.Customer.Artist.Application.csproj" />
@@ -170,6 +175,7 @@
   <Folder Name="/Payment/Seed/">
     <Project Path="Concertable.Payment/Seed/Concertable.Payment.Seed/Concertable.Payment.Seed.csproj" />
   </Folder>
+  <Folder Name="/Payment/Tests/" />
   <Folder Name="/Payment/Tests/E2ETests/">
     <Project Path="Concertable.Payment/Tests/E2ETests/Concertable.Payment.E2ETests.Helpers/Concertable.Payment.E2ETests.Helpers.csproj" />
   </Folder>
