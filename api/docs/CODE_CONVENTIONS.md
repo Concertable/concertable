@@ -26,6 +26,44 @@ public MyService(SearchDbContext context)
 
 Services, repositories, handlers, and validators use an explicit constructor with `private readonly` fields assigned via `this.field = param`. No primary constructor shorthand.
 
+## Repositories — inherit the module `Repository<T>` base
+
+Every module owns a `Repositories/Repository.cs` that binds the shared
+`Concertable.DataAccess.Infrastructure` bases to the module's `DbContext` and key type
+(`int` + `IIdEntity` for most modules, `Guid` + `IGuidEntity` for User/Tenant):
+
+```csharp
+internal abstract class BaseRepository<TEntity>(TenantDbContext context)
+    : BaseRepository<TEntity, TenantDbContext>(context)
+    where TEntity : class;
+
+internal abstract class Repository<TEntity>(TenantDbContext context)
+    : Repository<TEntity, TenantDbContext, Guid>(context)
+    where TEntity : class, IGuidEntity;
+```
+
+A concrete repository inherits that base and implements the module's `IXRepository`,
+which extends `IRepository<XEntity, TKey>` (or `IRepository<XEntity>` for `int` keys) and
+needs **no members of its own** unless the module has extra queries.
+`GetAll`/`GetById`/`Exists`/`Add`/`Update`/`Remove`/`SaveChanges` all come from the base —
+**never re-declare them** (not even a `CancellationToken` overload of `GetById`). Add only
+the *extra* finders the base can't express (e.g. `GetByUserIdAsync`), querying through the
+inherited `context` field.
+
+```csharp
+internal interface ITenantRepository : IRepository<TenantEntity, Guid>;
+
+internal sealed class TenantRepository : Repository<TenantEntity>, ITenantRepository
+{
+    public TenantRepository(TenantDbContext context) : base(context) { }
+    // extra finders only (e.g. GetByUserIdAsync) — query via the inherited `context`
+}
+```
+
+The injected `DbContext` field is always named `context` (never `dbContext`) — see the
+field-naming rule above. Don't hand-roll a bare `IXRepository` that re-implements CRUD;
+inherit the base.
+
 ## Single-statement branches — no braces
 
 ```csharp

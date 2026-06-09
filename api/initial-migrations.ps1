@@ -3,7 +3,7 @@ $dirs = @(
     "Concertable.Messaging\Concertable.Messaging.Infrastructure\Data\Migrations\Inbox",
     "Concertable.Search\Concertable.Search.Infrastructure\Data\Migrations",
     "Concertable.B2B\Modules\User\Concertable.B2B.User.Infrastructure\Data\Migrations",
-    "Concertable.B2B\Modules\Organization\Concertable.B2B.Organization.Infrastructure\Data\Migrations",
+    "Concertable.B2B\Modules\Tenant\Concertable.B2B.Tenant.Infrastructure\Data\Migrations",
     "Concertable.B2B\Modules\Artist\Concertable.B2B.Artist.Infrastructure\Data\Migrations",
     "Concertable.B2B\Modules\Venue\Concertable.B2B.Venue.Infrastructure\Data\Migrations",
     "Concertable.B2B\Modules\Concert\Concertable.B2B.Concert.Infrastructure\Data\Migrations",
@@ -30,7 +30,7 @@ if ($LASTEXITCODE -ne 0) { exit 1 }
 dotnet ef migrations add InitialCreate --context UserDbContext --project Concertable.B2B/Modules/User/Concertable.B2B.User.Infrastructure --startup-project Concertable.B2B/Concertable.B2B.Web --output-dir Data/Migrations
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
-dotnet ef migrations add InitialCreate --context OrganizationDbContext --project Concertable.B2B/Modules/Organization/Concertable.B2B.Organization.Infrastructure --startup-project Concertable.B2B/Concertable.B2B.Web --output-dir Data/Migrations
+dotnet ef migrations add InitialCreate --context TenantDbContext --project Concertable.B2B/Modules/Tenant/Concertable.B2B.Tenant.Infrastructure --startup-project Concertable.B2B/Concertable.B2B.Web --output-dir Data/Migrations
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
 dotnet ef migrations add InitialCreate --context ArtistDbContext --project Concertable.B2B/Modules/Artist/Concertable.B2B.Artist.Infrastructure --startup-project Concertable.B2B/Concertable.B2B.Web --output-dir Data/Migrations
