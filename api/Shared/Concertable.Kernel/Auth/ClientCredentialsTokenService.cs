@@ -60,7 +60,7 @@ internal sealed class ClientCredentialsTokenService : ITokenService
             token = entry.Token;
             return true;
         }
-        token = string.Empty;
+        token = null!;
         return false;
     }
 }
