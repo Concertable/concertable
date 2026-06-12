@@ -22,6 +22,23 @@ public MyService(SearchDbContext context)
 }
 ```
 
+## No `string.Empty` as a "populated later" default — use `null!`
+
+A non-nullable `string` property that something else populates (deserialization DTOs, EF entities, config-bound options, audit interceptors) defaults to `null!`, never `string.Empty`. An empty-string default masks a missing value as a present-but-blank one; `null!` says plainly "something else assigns this before use".
+
+Where an empty string is the genuine runtime value (a fallback in `??` / `GetValueOrDefault`, a log fragment), `string.Empty` is correct — keep it. Never the `""` literal.
+
+```csharp
+// CORRECT — populated by the deserializer
+public string LongName { get; init; } = null!;
+
+// CORRECT — empty string is the real fallback value
+var type = metadata.GetValueOrDefault("type", string.Empty);
+
+// WRONG — placeholder default pretending to be a value
+public string LongName { get; init; } = string.Empty;
+```
+
 ## No primary constructors for services
 
 Services, repositories, handlers, and validators use an explicit constructor with `private readonly` fields assigned via `this.field = param`. No primary constructor shorthand.
