@@ -44,21 +44,26 @@ So the loop is: `/big-review` → `/clear` → `/big-review` → `/clear` → �
 ## Step 1 — First run: compute the staging plan
 
 1. Establish the range: `git merge-base master HEAD` (start) and `git rev-parse HEAD` (end). Show `git diff <start>..HEAD --stat | tail -1`.
-2. Bucket the **net-diff** changed files into areas. Default areas (merge/split to fit the actual tree; aim for stages of roughly comparable, digestible size):
-   - **Shared foundation** — `api/Kernel`, `api/Contracts`, anything `Messaging`/`DataAccess`, `api/Shared/*` libraries. (Review first — every service depends on it; do the microservice-isolation boundary sweep here.)
-   - **One stage per data service** — `api/Concertable.B2B/`, `api/Concertable.Customer/`, `api/Concertable.Search/`. Split a service across stages if it alone is huge.
-   - **Adapters** — `api/Concertable.Payment/`, `api/Concertable.Auth/`, Notification.
-   - **Seed + infra** — Seed projects, AppHosts, CI workflows, `.slnx`/`.sln`, `Directory.Build.props`, root docs.
-   - **Tests + frontend** — integration/E2E test projects, `app/`.
-3. Write the tracking file (shape below) with the coverage checklist, the plan-anchor SHA, and an empty Findings section. Then go to Step 3 to review the first area.
+2. **Derive the areas from the diff itself** — never from a preconceived map of the repo. Run `git diff <start>..HEAD --name-only`, cluster the files by component (top-level dirs, service/project roots, `app/` surfaces — whatever structure the changed files actually exhibit), and turn the clusters into stages:
+   - **Only changed code gets a stage.** A component the branch didn't touch does not appear in the plan, no matter how important it is to the repo.
+   - **Size stages for one sitting** — roughly 50–150 changed files or ~10k diff lines each. Split a huge component into sub-stages (by module/sub-tree); merge several small components into one stage.
+   - **Order by dependency, foundation first.** Whatever shared code the rest of the diff builds on (contracts, kernel/shared libs, messaging, schema/migrations) is the first stage — its findings reframe everything downstream, and the cross-service/boundary sweep belongs there. Then consumers/services, then adapters/infra/CI, then tests + frontend last (reviewing tests after the code they test).
+   - **Every changed file must belong to exactly one stage.** After bucketing, verify the union of stage paths covers the full `--name-only` list; sweep leftovers into a final **Everything else** stage rather than letting them silently escape review.
+3. Write the tracking file (shape below) with the coverage checklist — **each checklist item carries its exact path globs**, which are the literal `git diff -- <paths>` arguments later runs will use — the plan-anchor SHA, an empty Cross-area notes section, and an empty Findings section. Then go to Step 3 to review the first area.
 
 ## Step 2 — Resume: pick the next area
 
-Read the coverage checklist. If the plan-anchor SHA differs from current HEAD, note it in the report (areas already `[x]` stay done; new commits after the anchor are picked up by a later `incremental-review` if needed — do not silently re-plan). Pick the **first `[ ]` area**. If all areas are `[x]`, report "Big review complete — all N areas reviewed" and stop.
+Read the coverage checklist. If the plan-anchor SHA differs from current HEAD, note it in the report (areas already `[x]` stay done; new commits after the anchor are picked up by a later `incremental-review` if needed — do not silently re-plan).
+
+- A `[~]` area means a previous run died mid-stage: its findings section (if any) is **incomplete, not trusted** — re-review that area from scratch and replace its partial section.
+- Otherwise pick the **first `[ ]` area**.
+- If all areas are `[x]`: write a short `## Summary` rollup at the top of the file (finding counts by severity/lens, the handful of must-fix items), confirm the Cross-area notes section has no unresolved entries (resolve any stragglers now), report "Big review complete — all N areas reviewed", and stop.
 
 ## Step 3 — Review the chosen area (the `review` procedure, path-scoped)
 
-The review range is `<merge-base>..HEAD` **filtered to the area's paths**. Get the area's real changed surface and **skip move-only files** (a pure rename/move with no content change is not worth line review):
+First, flip the area's checklist item to `[~]` and save — if this context dies mid-review, the next run knows the stage is incomplete rather than untouched. Then **read the Cross-area notes section**: any note targeting this area's paths is a mandatory check for this stage.
+
+The review range is `<merge-base>..HEAD` **filtered to the area's paths** (the globs recorded on its checklist line). Get the area's real changed surface and **skip move-only files** (a pure rename/move with no content change is not worth line review):
 
 ```powershell
 git diff <merge-base>..HEAD --stat -- <area-path-1> <area-path-2> ...
@@ -68,8 +73,10 @@ git diff <merge-base>..HEAD --diff-filter=d --find-renames -- <area-paths>   # e
 Then follow **`review` Steps 2–4 verbatim** on that scoped diff:
 
 - Load the rule docs relevant to the area (`review` Step 2).
-- Review through all five lenses — correctness, microservice isolation, module boundaries, seeding, C# conventions (`review` Step 3). For the shared-foundation stage, lens B (isolation) is the headline check.
+- Review through all five lenses — correctness, microservice isolation, module boundaries, seeding, C# conventions (`review` Step 3). For whichever stage holds the shared/contract code the rest of the diff depends on, the isolation/boundary lens is the headline check.
 - Apply the ≥80-confidence filter (`review` Step 4).
+
+While reviewing, when you spot something whose other half lives in a **different** area (a changed contract whose consumers are in a later stage, a renamed config key, a behaviour change that some other component must absorb), don't drop it and don't review outside your paths — **add a one-line entry to Cross-area notes** naming the target area and what to verify there.
 
 For a very large area, fan out reading with parallel sub-agents (one per sub-tree), but **you** apply the confidence filter and write the findings.
 
@@ -78,8 +85,9 @@ For a very large area, fan out reading with parallel sub-agents (one per sub-tre
 In `reviews/BIG-<branch-slug>-Review.md`:
 
 - **Append** a `## <Area> — reviewed <date>` section with the findings (use `review`'s finding shape and stable IDs; continue the ID scheme across areas, no renumbering). No findings → write the "No issues found in this area" line.
-- Flip that area's checklist item from `[ ]` to `[x]` with the date.
-- Preserve every prior area's section and status marks. Never overwrite.
+- Mark any Cross-area note you checked during this stage as resolved (strike it through with the outcome); leave notes you added for later stages open.
+- Flip that area's checklist item from `[~]` to `[x]` with the date.
+- Preserve every prior area's section and status marks. Never overwrite (the one exception: replacing a partial section left by a dead `[~]` run, per Step 2).
 
 ## Step 5 — Report
 
@@ -92,15 +100,20 @@ Concise: area just reviewed, its finding counts by lens/severity (or none), rema
 
 **Plan anchored to commit:** `<full-HEAD-sha>`  _(<ISO date>)_
 Net diff reviewed: `<short-merge-base>..<short-head>`. Move-only files skipped.
-Status legend: `[ ]` not yet reviewed · `[x]` reviewed (date) · `[~]` in progress.
+Status legend: `[ ]` not yet reviewed · `[x]` reviewed (date) · `[~]` in progress (incomplete — re-review).
 
 ## Coverage
-- [ ] Shared foundation — Kernel, Contracts, Messaging, DataAccess, Shared/* libs
-- [ ] B2B service — `api/Concertable.B2B/`
-- [ ] Customer service — `api/Concertable.Customer/`
-- [ ] Search + adapters — Search, Payment, Auth, Notification
-- [ ] Seed + infra — Seed, AppHosts, CI, .slnx, root docs
-- [ ] Tests + frontend — integration/E2E, `app/`
+<!-- one item per stage, derived from THIS branch's diff in Step 1 — dependency order,
+     foundation first; each item lists its exact path globs (the `git diff -- <paths>` args).
+     Example shape: -->
+- [ ] <Stage name> — <N files> — `<path/glob/one>` `<path/glob/two>`
+- [ ] <Stage name> — <N files> — `<path/glob>`
+- [ ] Everything else — <N files> — <leftover paths not matched above, if any>
+
+## Cross-area notes
+<!-- one-liners added during a stage for things a LATER stage must verify
+     ("Contract X gained field Y — check consumers in <area>"); struck through with the
+     outcome when the owning stage checks them. Empty when the review completes. -->
 
 ## Findings
 <!-- appended per area; finding IDs continue across areas: MS#, MB#, BUG#, SEED#, CV# -->
