@@ -1,9 +1,10 @@
+using Concertable.Kernel.Exceptions;
 using Concertable.Shared.Geocoding.Application;
 
 namespace Concertable.Testing.Integration.Mocks;
 
-public sealed class MockGeocodingService : IGeocodingService
+public sealed class MockGeocodingClientFail : IGeocodingClient
 {
     public Task<LocationDto> GetLocationAsync(double latitude, double longitude)
-        => Task.FromResult(new LocationDto("Test County", "Test Town"));
+        => throw new BadRequestException("County or Town not found");
 }
