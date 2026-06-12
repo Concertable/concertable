@@ -40,6 +40,7 @@ internal static class DistributedApplicationBuilderExtensions
         {
             context.EnvironmentVariables["ASPNETCORE_ENVIRONMENT"] = "E2E";
             context.EnvironmentVariables["ASPNETCORE_URLS"] = authBaseUrl;
+            context.EnvironmentVariables["Auth__Authority"] = authBaseUrl;
         }));
     }
 
