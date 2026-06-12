@@ -20,7 +20,4 @@ internal sealed class CurrentUserAccessor : ICurrentUser
         User?.FindFirst("sub") is { } c && Guid.TryParse(c.Value, out var id) ? id : null;
 
     public string? Email => User?.FindFirst("email")?.Value;
-
-    public Guid? Owner =>
-        User?.FindFirst("owner") is { } c && Guid.TryParse(c.Value, out var id) ? id : null;
 }
