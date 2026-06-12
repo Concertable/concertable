@@ -12,12 +12,17 @@ import {
   SidebarProvider,
 } from "@/components/ui/sidebar";
 
-const links = [
+const baseLinks = [
   { label: "Settings", to: "/settings" },
   { label: "Payment / Billing", to: "/settings/payment" },
 ];
 
-export function SettingsLayout() {
+interface SettingsLayoutProps {
+  extraLinks?: { label: string; to: string }[];
+}
+
+export function SettingsLayout({ extraLinks = [] }: SettingsLayoutProps) {
+  const links = [...baseLinks, ...extraLinks];
   return (
     <SidebarProvider
       style={{ "--sidebar-width": "220px" } as React.CSSProperties}
