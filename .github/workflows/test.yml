@@ -35,7 +35,7 @@ jobs:
         project:
           - api/Concertable.B2B/Modules/Concert/Tests/Concertable.B2B.Concert.UnitTests/Concertable.B2B.Concert.UnitTests.csproj
           - api/Concertable.B2B/Modules/Contract/Tests/Concertable.B2B.Contract.UnitTests/Concertable.B2B.Contract.UnitTests.csproj
-          - api/Concertable.B2B/Modules/Organization/Tests/Concertable.B2B.Organization.UnitTests/Concertable.B2B.Organization.UnitTests.csproj
+          - api/Concertable.B2B/Modules/Tenant/Tests/Concertable.B2B.Tenant.UnitTests/Concertable.B2B.Tenant.UnitTests.csproj
           - api/Concertable.B2B/Tests/Concertable.B2B.Workers.UnitTests/Concertable.B2B.Workers.UnitTests.csproj
           - api/Concertable.Customer/Modules/Concert/Tests/Concertable.Customer.Concert.UnitTests/Concertable.Customer.Concert.UnitTests.csproj
           - api/Concertable.Customer/Modules/Review/Tests/Concertable.Customer.Review.UnitTests/Concertable.Customer.Review.UnitTests.csproj
@@ -67,7 +67,7 @@ jobs:
         project:
           - api/Concertable.B2B/Modules/Artist/Tests/Concertable.B2B.Artist.IntegrationTests/Concertable.B2B.Artist.IntegrationTests.csproj
           - api/Concertable.B2B/Modules/Concert/Tests/Concertable.B2B.Concert.IntegrationTests/Concertable.B2B.Concert.IntegrationTests.csproj
-          - api/Concertable.B2B/Modules/Organization/Tests/Concertable.B2B.Organization.IntegrationTests/Concertable.B2B.Organization.IntegrationTests.csproj
+          - api/Concertable.B2B/Modules/Tenant/Tests/Concertable.B2B.Tenant.IntegrationTests/Concertable.B2B.Tenant.IntegrationTests.csproj
           - api/Concertable.B2B/Modules/User/Tests/Concertable.B2B.User.IntegrationTests/Concertable.B2B.User.IntegrationTests.csproj
           - api/Concertable.B2B/Modules/Venue/Tests/Concertable.B2B.Venue.IntegrationTests/Concertable.B2B.Venue.IntegrationTests.csproj
           - api/Concertable.Customer/Modules/Concert/Tests/Concertable.Customer.Concert.IntegrationTests/Concertable.Customer.Concert.IntegrationTests.csproj

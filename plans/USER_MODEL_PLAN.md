@@ -233,8 +233,10 @@ consumer of the same event, to avoid ordering races) becomes:
    create a `TenantMembershipEntity` per invitation (the invitation's role), mark them Accepted,
    and do **not** auto-provision a personal tenant — invited staff don't get junk tenants.
 3. Otherwise: create `TenantEntity(Type)` + founding Owner membership — idempotent over
-   seed-pre-inserted tenants via the existing `Announce()` path (ensure the Owner membership exists
-   on that branch too).
+   seed-pre-inserted tenants via the handler's existing-tenant branch (today a no-op once the tenant
+   is present; this phase adds "ensure the Owner membership exists" there). The branch must **not**
+   re-publish `TenantCreatedEvent` — the seed insert already published it, so re-publishing would
+   double-provision Payment.
 
 `CredentialRegisteredHandler` (B2B.User) keeps writing the `UserEntity` projection — eventually
 sans `Role` and profile rows (Phase 7).
@@ -290,7 +292,7 @@ holds.
   `UserId`); `TenantEntity.Type` added; `TenantEntity.Create(...)` takes the persona.
 - `Tenant.Infrastructure/Events/TenantProvisioningHandler.cs`: derive `TenantType` from
   `e.ClientId`; create the founding Owner membership on the create branch; ensure it exists
-  (idempotently) on the `Announce()` branch.
+  (idempotently) on the existing-tenant branch (without re-publishing `TenantCreatedEvent`).
 - `Tenant.Infrastructure/Services/TenantContext.cs`: resolve via the membership row (single row
   today) instead of `GetByCreatedByUserIdAsync`; stash the loaded membership on the scoped context.
 - `TenantService` / `ITenantModule.GetTenantIdByUserIdAsync`: membership-backed — the `owner` claim
