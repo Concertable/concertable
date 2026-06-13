@@ -11,7 +11,7 @@ Set-Location $PSScriptRoot
 $b2bProjects = @(
     "api/Concertable.B2B/Modules/Artist/Tests/Concertable.B2B.Artist.IntegrationTests/Concertable.B2B.Artist.IntegrationTests.csproj",
     "api/Concertable.B2B/Modules/Concert/Tests/Concertable.B2B.Concert.IntegrationTests/Concertable.B2B.Concert.IntegrationTests.csproj",
-    "api/Concertable.B2B/Modules/Organization/Tests/Concertable.B2B.Organization.IntegrationTests/Concertable.B2B.Organization.IntegrationTests.csproj",
+    "api/Concertable.B2B/Modules/Tenant/Tests/Concertable.B2B.Tenant.IntegrationTests/Concertable.B2B.Tenant.IntegrationTests.csproj",
     "api/Concertable.B2B/Modules/User/Tests/Concertable.B2B.User.IntegrationTests/Concertable.B2B.User.IntegrationTests.csproj",
     "api/Concertable.B2B/Modules/Venue/Tests/Concertable.B2B.Venue.IntegrationTests/Concertable.B2B.Venue.IntegrationTests.csproj"
 )
@@ -106,7 +106,7 @@ switch ($cmd) {
         Write-Host "    b2b        Run B2B integration tests only"
         Write-Host "    customer   Run Customer integration tests only"
         Write-Host "    search     Run Search integration tests only"
-        Write-Host "    <module>   Run a specific module (e.g. artist, concert, venue, user, organization, review, ticket)"
+        Write-Host "    <module>   Run a specific module (e.g. artist, concert, venue, user, tenant, review, ticket)"
         Write-Host "    list       List all integration test projects"
         Write-Host ""
         Write-Host "  Examples:" -ForegroundColor DarkGray

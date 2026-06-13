@@ -11,7 +11,7 @@ Set-Location $PSScriptRoot
 $b2bProjects = @(
     "api/Concertable.B2B/Modules/Concert/Tests/Concertable.B2B.Concert.UnitTests/Concertable.B2B.Concert.UnitTests.csproj",
     "api/Concertable.B2B/Modules/Contract/Tests/Concertable.B2B.Contract.UnitTests/Concertable.B2B.Contract.UnitTests.csproj",
-    "api/Concertable.B2B/Modules/Organization/Tests/Concertable.B2B.Organization.UnitTests/Concertable.B2B.Organization.UnitTests.csproj",
+    "api/Concertable.B2B/Modules/Tenant/Tests/Concertable.B2B.Tenant.UnitTests/Concertable.B2B.Tenant.UnitTests.csproj",
     "api/Concertable.B2B/Tests/Concertable.B2B.Workers.UnitTests/Concertable.B2B.Workers.UnitTests.csproj"
 )
 $customerProjects = @(
@@ -129,7 +129,7 @@ switch ($cmd) {
         Write-Host "    search     Run Search unit tests only"
         Write-Host "    payment    Run Payment unit tests only"
         Write-Host "    shared     Run Shared unit tests only (Kernel + Messaging)"
-        Write-Host "    <module>   Run a specific module (e.g. concert, contract, organization, workers, user, review, ticket, kernel, messaging)"
+        Write-Host "    <module>   Run a specific module (e.g. concert, contract, tenant, workers, user, review, ticket, kernel, messaging)"
         Write-Host "    list       List all unit test projects"
         Write-Host ""
         Write-Host "  Examples:" -ForegroundColor DarkGray
