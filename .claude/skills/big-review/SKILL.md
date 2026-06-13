@@ -20,6 +20,7 @@ Everything else — the rule docs, the five lenses, the ≥80-confidence filter 
 
 ## When NOT to use
 
+- **A review whose Coverage checklist is already fully `[x]`. The staging pass is DONE.** "Continue the review", "address the comments/findings", or pointing me at a completed `reviews/BIG-*.md` means **work the findings in that doc** — fix the open ones, verify the rest — NOT re-invoke this skill. Re-running here only re-reports "complete" and does zero useful work. Read the doc, act on its findings; do not launch the skill.
 - Normal-sized branch → `review`.
 - Only re-review commits added since a prior review → `incremental-review`.
 - Multi-agent cloud review → `/code-review ultra`.
