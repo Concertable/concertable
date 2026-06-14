@@ -20,13 +20,19 @@ Run E2E only through `./e2e.ps1` via the matching skill (`e2e-ui-regress`, `e2e-
 
 - **`docker ps` answering is NOT proof Docker is healthy.** Docker Desktop can be off, paused, or
   half-started with the engine still answering `docker ps` — even running containers — while
-  host→container port forwarding is dead. The E2E signature of that state: every SQL/health
-  connection is accepted then reset (`pre-login handshake` errors), services never become ready,
-  and the whole suite dies at fixture startup in a few minutes with **zero scenarios executed**.
+  host→container forwarding of real bytes for NEW containers is dead. The E2E signature of that
+  state: every SQL/health connection is accepted then reset (`pre-login handshake` errors), services
+  never become ready, and the whole suite dies at fixture startup in a few minutes with **zero
+  scenarios executed**.
+- **`docker ps`, `docker run hello-world`, and a bare TCP connect are ALL insufficient.** hello-world
+  needs no port forwarding, and the host-side `docker-proxy` completes a TCP handshake *locally* even
+  when forwarding into the container is dead — so a connect "succeeds" while no data flows (exactly
+  the `pre-login handshake` mode). The only valid check is a real **data** round-trip to a fresh
+  container: run **`./docker-health.ps1`** (fresh container + published port + HTTP round-trip +
+  stability check; exit 1 = unhealthy). `./e2e.ps1` runs it as an automatic gate before booting.
 - **A suite that fails at startup is an environment problem until proven otherwise.** STOP after
-  the first such run — do not rerun, do not debug application code. Verify Docker properly first:
-  Docker Desktop UI shows Running, `docker run --rm hello-world` works, **and** a host→container
-  port round-trip succeeds. Fix, then run once.
+  the first such run — do not rerun, do not debug application code. Verify Docker with
+  `./docker-health.ps1` (and Docker Desktop showing **Running**). Fix, then run once.
 
 ## Plans (`plans/*.md`)
 

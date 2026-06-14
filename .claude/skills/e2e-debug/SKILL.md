@@ -28,13 +28,15 @@ Same hard rule as both sub-skills. "Fix" means make the failing step work, never
 
 ## Step 0 — Pre-flight (shared)
 
-Both suites need Docker (SQL containers, ASB emulator, stripe-cli) and the Stripe/Google secrets (`Stripe__SecretKey`, `GoogleApiKey`):
+Both suites need Docker (SQL containers, ASB emulator, stripe-cli) and the Stripe/Google secrets (`Stripe__SecretKey`, `GoogleApiKey`).
+
+**Verify Docker with the real gate — `docker ps` is NOT enough.** `docker ps` answering (and even `docker run hello-world` succeeding, and a bare TCP connect to a published port) does NOT prove Docker is healthy: a half-started/flapping engine keeps `docker ps` answering and completes TCP handshakes at the host-side `docker-proxy` while host→container forwarding of real bytes for NEW containers is dead. The suite then dies later at SQL fixture startup with `pre-login handshake` resets and zero scenarios run. Use the data-round-trip probe:
 
 ```powershell
-docker ps 2>&1
+./docker-health.ps1   # fresh container + published port + real HTTP round-trip + stability check; exit 1 = unhealthy
 ```
 
-If the daemon is unreachable, stop and tell the user **"Docker is not running — please start Docker Desktop before running E2E tests."** Do not proceed. If a run dies instantly with a Stripe-auth / missing-config error, confirm the secrets are set before debugging anything else.
+`./e2e.ps1 api|ui ...` runs this gate automatically and refuses to boot on failure — but run it yourself first so you catch a bad engine before anything else. If it reports unhealthy, **STOP**: tell the user Docker is half-started/down and to wait for Docker Desktop to show **Running**, then retry. Do **not** rerun the suite or debug application code for this — it is an environment failure (see root `CLAUDE.md`). If a run dies instantly with a Stripe-auth / missing-config error, confirm the secrets are set before debugging anything else.
 
 Tell the user the plan and rough cost: **"Running the full E2E sweep — API E2E first (~5–7 min), then UI E2E (~25–30 min). I'll fix failures as I find them and report per layer."**
 

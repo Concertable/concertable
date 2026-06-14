@@ -72,13 +72,13 @@ If invoked with no arguments, run Step 0 then the full suite (Step 1) to discove
 
 ## Step 0 — Pre-flight check
 
-Before running anything, check Docker is up:
+Before running anything, verify Docker with the real gate. **`docker ps` answering is NOT proof Docker is healthy** — a half-started/flapping engine keeps `docker ps` (and `docker run hello-world`, and a bare TCP connect) working while host→container forwarding of real bytes for NEW containers is dead, and the suite then dies at SQL fixture startup with `pre-login handshake` resets:
 
 ```powershell
-docker ps 2>&1
+./docker-health.ps1   # fresh container + published port + real HTTP round-trip + stability check; exit 1 = unhealthy
 ```
 
-If this errors or shows the daemon is not reachable, stop and tell the user: **"Docker is not running — please start Docker Desktop before running E2E tests."** Do not proceed.
+`./e2e.ps1 ui ...` runs this automatically and refuses to boot on failure. If it reports unhealthy, **STOP** — tell the user Docker is half-started/down and to wait for Docker Desktop to show **Running**, then retry. Do not rerun or debug application code for this; it's an environment failure (root `CLAUDE.md`).
 
 Then tell the user: **"Starting full E2E suite — this takes ~7 minutes. I'll report back when done."**
 

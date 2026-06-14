@@ -65,13 +65,13 @@ The big one: in this suite a failing test usually means **the synchronous call r
 
 ## Step 0 — Pre-flight check
 
-These tests need Docker (SQL containers, ASB emulator, stripe-cli):
+These tests need Docker (SQL containers, ASB emulator, stripe-cli). **`docker ps` answering is NOT proof Docker is healthy** — a half-started/flapping engine keeps `docker ps` (and even `docker run hello-world`, and a bare TCP connect) working while host→container forwarding of real bytes for NEW containers is dead, and the suite then dies at SQL fixture startup with `pre-login handshake` resets. Use the data-round-trip gate:
 
 ```powershell
-docker ps 2>&1
+./docker-health.ps1   # fresh container + published port + real HTTP round-trip + stability check; exit 1 = unhealthy
 ```
 
-If this errors or the daemon is unreachable, stop and tell the user: **"Docker is not running — please start Docker Desktop before running E2E tests."** Do not proceed.
+`./e2e.ps1 api ...` runs this automatically and refuses to boot on failure. If it reports unhealthy, **STOP** — tell the user Docker is half-started/down and to wait for Docker Desktop to show **Running**, then retry. Do not rerun or debug application code for this; it's an environment failure (root `CLAUDE.md`).
 
 The suite also needs Stripe + Google secrets in the environment (`Stripe__SecretKey`, `GoogleApiKey`) — the same ones CI injects. If a run dies immediately with a Stripe auth error or missing-config exception, confirm those are set before debugging anything else.
 
