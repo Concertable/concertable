@@ -39,9 +39,11 @@ var type = metadata.GetValueOrDefault("type", string.Empty);
 public string LongName { get; init; } = string.Empty;
 ```
 
-## No primary constructors for services
+## No primary constructors for captured state
 
-Services, repositories, handlers, and validators use an explicit constructor with `private readonly` fields assigned via `this.field = param`. No primary constructor shorthand.
+Captured constructor parameters — anything read by a method or property — must be explicit `private readonly` fields assigned via `this.field = param`, never primary-constructor captures. This covers services, repositories, handlers, and validators, and any base class that uses its dependencies (e.g. the `TenantScopedDbContext` / `AdminDbContext` bases, whose `provider` and `defaultSchema` are read in `OnModelCreating`).
+
+A constructor that only forwards its parameters to `base(...)` and captures nothing may use a primary constructor — there is no field to make `readonly`, so the shorthand is the clearest spelling. The pure base-forwarder leaf DB contexts (e.g. `PublicVenueDbContext`, `AdminVenueDbContext`) are the standing example.
 
 ## Repositories — inherit the module `Repository<T>` base
 
@@ -115,21 +117,7 @@ Only add a comment when the WHY is non-obvious (hidden constraint, subtle invari
 
 ## Comments — short, and multi-line uses `/* */`
 
-Even a WHY-justified comment should be as short as the insight — usually **one line**. Cut a three-line comment to its one essential clause. If a `//` comment genuinely needs more than one line, write it as a single `/* … */` block, **not** a stack of `//` lines:
-
-```csharp
-// CORRECT — one line says it
-// Artists get a tenant too (they own no Bucket-A rows) so Payment provisions them.
-
-/* CORRECT — a genuinely multi-line note is one block, not stacked // lines.
-   Second line continues here. */
-
-// WRONG — stacked // lines for a multi-line thought
-// first line of the thought
-// second line of the thought
-```
-
-This is about `//` explanatory comments. XML `///` doc comments are the exception — they stay `///` (see the doc-comment rule below).
+Keep a WHY-comment as short as the insight (usually one line). Single line → `//`; genuinely multi-line → one `/* */` block, never stacked `//` lines.
 
 ## Doc comments — XML `<summary>`, not `//`
 
