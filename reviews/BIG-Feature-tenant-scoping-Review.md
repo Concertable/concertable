@@ -28,9 +28,9 @@ The 13 applied fixes were re-reviewed at the diff `2b026c61..4a5232e3` (24 files
 
 ### Open items noted for future — 2026-06-13
 Captured so they aren't lost.
-- ~~**CV9 — Transaction half**~~ — **DONE 2026-06-13** (option (b): `Payer/PayeeId`). See CV9.
+- ~~**CV9 — Transaction half**~~ — **DONE & COMMITTED 2026-06-14** (option (b): `Payer/PayeeId`; commit `19afaff2`, build green + Payment UnitTests 25/25). The Escrow half is `bcf0816a`. See CV9.
 - ~~**CV11 — dead/stale SQL helper**~~ — **DONE 2026-06-13** (deleted `PaymentDb.GetPayoutAccountByUserIdAsync` + its `PayoutAccountRow`). See CV11.
-- **Pre-merge E2E pass** (API + UI, needs Docker) — **still not run; the one remaining open item.** The real gate, since BUG4/BUG5 touched the sync/payment flows and the CV9 rename re-scaffolded the Payment DB.
+- **Pre-merge E2E pass** (API + UI, needs Docker) — **still not run; the one and only remaining item.** All code-level findings (BUG1–BUG5, CV1–CV9, CV11; CV10 rejected by design) are now applied and committed. This is the real gate, since BUG4/BUG5 touched the sync/payment flows and the CV9 rename re-scaffolded the Payment DB.
 
 Must-fix before merge:
 - **BUG1** — CI/test scripts still run the deleted Organization test projects and never run the new Tenant ones (`unit.ps1`, `integration.ps1`, `.github/workflows/test.yml`).
