@@ -21,11 +21,19 @@ callers" hides the stance at every call site and is unauditable. The codebase ha
   (`modelBuilder.ApplyVenueArtist<TEntity>(this)` per entity). Filters are declared per entity, never
   auto-derived from the `IVenueArtistTenantScoped` marker: marked ≠ filtered is a per-entity product
   decision (Concert carries the pair but stays public). Example: `ConcertDbContext`.
+- **`TenantScopedDbContext`** (abstract, same seam) — the single-owner counterpart to the above: same
+  shape, but `ApplyTenantFilters` declares per-entity single-owner filters
+  (`modelBuilder.ApplySingleOwner<TEntity>(this)`, `TenantId == current`). Examples: `VenueDbContext`
+  (filters `Venue`/`VenueImage`), `ArtistDbContext`.
 - **`PublicDbContext`** (abstract, same seam) — the public stance. Composes the module's own
   configuration provider with no tenancy on top: public by construction, nothing is lifted because
   nothing was applied. Read-only by construction — `SaveChanges` throws — so the write-side
   `TenantInterceptor` guard can never be bypassed through it. One concrete subclass per module,
   e.g. `PublicConcertDbContext`.
+- **`AdminDbContext`** (abstract, same seam) — the platform-admin stance: composes the provider with no
+  tenancy, but **writable** (unlike `PublicDbContext`), so a cross-tenant operator can act on rows it
+  doesn't own; the `TenantInterceptor` write-guard no-ops for a tenant-less admin. One subclass per
+  module that has an admin write flow, e.g. `AdminVenueDbContext` (venue approval).
 
 Query classes then split by **visibility stance**, one stance per class (mixing them in one class is
 the LSP violation — callers can't know which contract a method honors):
@@ -34,6 +42,8 @@ the LSP violation — callers can't know which contract a method honors):
 - **`PublicXRepository`** — the public marketplace surface (anonymous browse: details pages,
   listings) on `IPublicDbContext`. Never returns private contents. Examples:
   `PublicOpportunityRepository`, `PublicConcertRepository` (Concert module).
+- **`AdminXRepository`** — privileged cross-tenant read/write (e.g. admin approval) on the writable
+  `AdminDbContext`. Only where an admin write flow exists, e.g. `AdminVenueRepository`.
 - **Cross-tenant *facts* that aren't browse** (e.g. "is this slot taken?") get their own named
   abstraction returning only booleans/scalars on `IPublicDbContext` — e.g. `IConcertAvailability` —
   so the name carries the why and nothing needs an apologetic comment.
@@ -41,6 +51,19 @@ the LSP violation — callers can't know which contract a method honors):
 The injection site is then self-documenting: a service holding `repository` + `publicRepository`
 (the codebase convention when a service injects both stances of its own aggregate) states exactly
 which queries see what.
+
+**A stance class only exists when the entity has more than one stance.** A single-stance entity is a
+plain `XRepository` — don't pre-qualify it `Public*`/`Admin*` with no sibling to disambiguate from;
+rename it the day a second stance is actually born. The qualifier carries *which* contract; with
+nothing to contrast, it's noise.
+
+**Filter an entity only when its *reads* are tenant-private.** The marker (`ITenantScoped` /
+`IVenueArtistTenantScoped`) means "carries the owner id," not "is filtered." If the entity's core flow
+reads it *across* tenants, leave it unfiltered and let `TenantInterceptor` guard the writes — filtering
+it fails those cross-tenant reads closed. Unfiltered by design today: **Opportunity** (the artist's
+apply reads the venue's opportunity to stamp the deal), **Contract** (an applying artist reads the
+venue's terms), **Concert** (public listing). Filtered: **Venue**, **Artist** (owner-private reads,
+with browse split off to the public stance).
 
 ## Keyed strategy resolver
 
