@@ -107,7 +107,15 @@ jobs:
           dotnet-version: '10.x'
 
       - name: Provision HTTPS dev certificate
-        run: dotnet dev-certs https --trust
+        run: |
+          # Generates the dev cert so Kestrel can bind https://localhost:708x. On Linux
+          # --trust can only reach the OpenSSL store (no browser/NSS), so it exits 4 even
+          # though the cert is written to ~/.aspnet/dev-certs/trust; tolerate that exit.
+          dotnet dev-certs https --trust || echo "::warning::dotnet dev-certs --trust exited non-zero (Linux OpenSSL-only trust); cert generated, continuing"
+          # Point .NET's OpenSSL HTTP clients at the dev-cert trust dir so inter-service
+          # HTTPS (Auth JWKS, gRPC) validates, while keeping the system CA dirs for real
+          # external calls (e.g. api.stripe.com).
+          echo "SSL_CERT_DIR=$HOME/.aspnet/dev-certs/trust:/etc/ssl/certs:/usr/lib/ssl/certs" >> "$GITHUB_ENV"
 
       - name: Run B2B API E2E tests
         run: dotnet test api/Concertable.B2B/Tests/E2ETests/Concertable.B2B.E2ETests/Concertable.B2B.E2ETests.csproj --configuration Release --settings api/Concertable.runsettings
@@ -133,7 +141,15 @@ jobs:
           dotnet-version: '10.x'
 
       - name: Provision HTTPS dev certificate
-        run: dotnet dev-certs https --trust
+        run: |
+          # Generates the dev cert so Kestrel can bind https://localhost:708x. On Linux
+          # --trust can only reach the OpenSSL store (no browser/NSS), so it exits 4 even
+          # though the cert is written to ~/.aspnet/dev-certs/trust; tolerate that exit.
+          dotnet dev-certs https --trust || echo "::warning::dotnet dev-certs --trust exited non-zero (Linux OpenSSL-only trust); cert generated, continuing"
+          # Point .NET's OpenSSL HTTP clients at the dev-cert trust dir so inter-service
+          # HTTPS (Auth JWKS, gRPC) validates, while keeping the system CA dirs for real
+          # external calls (e.g. api.stripe.com).
+          echo "SSL_CERT_DIR=$HOME/.aspnet/dev-certs/trust:/etc/ssl/certs:/usr/lib/ssl/certs" >> "$GITHUB_ENV"
 
       - name: Build B2B UI E2E tests
         run: dotnet build api/Concertable.B2B/Tests/E2ETests/Concertable.B2B.E2ETests.Ui/Concertable.B2B.E2ETests.Ui.csproj --configuration Release
