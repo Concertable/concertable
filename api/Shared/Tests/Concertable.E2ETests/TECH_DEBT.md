@@ -48,10 +48,14 @@ The B2B/Customer AppHosts add the Vite SPAs (`AddVenueSpa`/`AddArtistSpa`/`AddBu
 
 - The API E2E composition (`AddB2BE2E` / `AddCustomerE2E`) strips the `NodeAppResource` SPA resources, so the headless API stack doesn't launch frontends at all — mirroring how `AddEphemeralSql` tailors the dev AppHost for testing.
 
-### Demo-user seed throughput forces a 12-minute E2E health wait
+### WORKAROUND — 12-minute E2E health wait covers slow demo-user seeding
 
-The 71 demo users are created one `CredentialRegisteredEvent` at a time (Auth registers a credential → outbox → ASB → B2B/Customer handler → insert user). On the CI runner's ASB emulator this reached only ~53/71 in 6 minutes, so the health wait — which gates on the `users` check — was bumped to 12 min (2026-06-15). That's an accommodation, not a fix: it inflates every E2E run.
+> Workaround, not a fix. Tagged `// WORKAROUND` at the call site
+> (`Concertable.B2B`/`Concertable.Customer` `AppFixture.WaitForAllHealthyAsync`). Remove when the
+> resolution below lands; until then every E2E run pays the inflated wait.
+
+The 71 demo users are created one `CredentialRegisteredEvent` at a time (Auth registers a credential → outbox → ASB → B2B/Customer handler → insert user). On the CI runner's ASB emulator this reached only ~53/71 in 6 minutes, so the health wait — which gates on the `users` check — was bumped to 12 min (2026-06-15).
 
 **Resolves when:**
 
-- The credential seed is fast enough to finish well inside the health budget — e.g. tighten the outbox/inbox dispatch interval for the E2E environment, or batch the credential registration — so the timeout can come back down.
+- The credential seed is fast enough to finish well inside a 6-minute budget — e.g. tighten the outbox/inbox dispatch interval for the E2E environment, or batch the credential registration — at which point the timeout reverts to 6 and this entry is deleted.
