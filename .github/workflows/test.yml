@@ -108,13 +108,7 @@ jobs:
 
       - name: Provision HTTPS dev certificate
         run: |
-          # Generates the dev cert so Kestrel can bind https://localhost:708x. On Linux
-          # --trust can only reach the OpenSSL store (no browser/NSS), so it exits 4 even
-          # though the cert is written to ~/.aspnet/dev-certs/trust; tolerate that exit.
-          dotnet dev-certs https --trust || echo "::warning::dotnet dev-certs --trust exited non-zero (Linux OpenSSL-only trust); cert generated, continuing"
-          # Point .NET's OpenSSL HTTP clients at the dev-cert trust dir so inter-service
-          # HTTPS (Auth JWKS, gRPC) validates, while keeping the system CA dirs for real
-          # external calls (e.g. api.stripe.com).
+          dotnet dev-certs https --trust || true  # Linux trust exits 4, but the cert is still generated
           echo "SSL_CERT_DIR=$HOME/.aspnet/dev-certs/trust:/etc/ssl/certs:/usr/lib/ssl/certs" >> "$GITHUB_ENV"
 
       - name: Run B2B API E2E tests
@@ -122,6 +116,14 @@ jobs:
 
       - name: Run Customer API E2E tests
         run: dotnet test api/Concertable.Customer/Tests/E2ETests/Concertable.Customer.E2ETests/Concertable.Customer.E2ETests.csproj --configuration Release --settings api/Concertable.runsettings
+
+      - name: Upload E2E diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-api-diagnostics
+          path: '**/e2e-diagnostics.log'
+          if-no-files-found: ignore
 
   e2e-ui-tests:
     runs-on: ubuntu-latest
@@ -142,13 +144,7 @@ jobs:
 
       - name: Provision HTTPS dev certificate
         run: |
-          # Generates the dev cert so Kestrel can bind https://localhost:708x. On Linux
-          # --trust can only reach the OpenSSL store (no browser/NSS), so it exits 4 even
-          # though the cert is written to ~/.aspnet/dev-certs/trust; tolerate that exit.
-          dotnet dev-certs https --trust || echo "::warning::dotnet dev-certs --trust exited non-zero (Linux OpenSSL-only trust); cert generated, continuing"
-          # Point .NET's OpenSSL HTTP clients at the dev-cert trust dir so inter-service
-          # HTTPS (Auth JWKS, gRPC) validates, while keeping the system CA dirs for real
-          # external calls (e.g. api.stripe.com).
+          dotnet dev-certs https --trust || true  # Linux trust exits 4, but the cert is still generated
           echo "SSL_CERT_DIR=$HOME/.aspnet/dev-certs/trust:/etc/ssl/certs:/usr/lib/ssl/certs" >> "$GITHUB_ENV"
 
       - name: Build B2B UI E2E tests
