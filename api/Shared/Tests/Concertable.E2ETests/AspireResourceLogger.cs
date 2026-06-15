@@ -1,5 +1,6 @@
 using Aspire.Hosting.ApplicationModel;
 using Microsoft.Extensions.Logging;
+using System.Text.RegularExpressions;
 
 namespace Concertable.E2ETests;
 
@@ -32,7 +33,7 @@ public sealed class AspireResourceLogger : IAsyncDisposable
         {
             await foreach (var batch in loggers.WatchAsync(resource).WithCancellation(cts.Token))
                 foreach (var line in batch)
-                    logger.AspireResourceLog(resource.Name, line.Content);
+                    logger.AspireResourceLog(resource.Name, Redact(line.Content));
         }
         catch (OperationCanceledException) { }
         catch (Exception ex)
@@ -40,6 +41,13 @@ public sealed class AspireResourceLogger : IAsyncDisposable
             logger.AspireResourceLog(resource.Name, $"[log-stream error] {ex.Message}");
         }
     }
+
+    // Strip secret-shaped tokens (Stripe keys, webhook signing secrets) so they don't
+    // land in the uploaded diagnostics artifact.
+    private static readonly Regex SecretPattern =
+        new(@"((?:sk|rk)_(?:test|live)_|whsec_)[A-Za-z0-9]+", RegexOptions.Compiled);
+
+    private static string Redact(string content) => SecretPattern.Replace(content, "$1***");
 
     public async ValueTask DisposeAsync()
     {
