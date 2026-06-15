@@ -90,7 +90,10 @@ jobs:
   e2e-api-tests:
     runs-on: ubuntu-latest
     needs: build
-    if: github.event_name == 'merge_group'
+    # TEMP: also run on pull_request so e2e-ui-tests (which needs this job) can validate the
+    # SPA-install fix without merge-queue round-trips. Revert both triggers to merge_group-only
+    # once the UI suite is confirmed green.
+    if: github.event_name == 'merge_group' || github.event_name == 'pull_request'
 
     env:
       GoogleApiKey: ${{ secrets.GOOGLE_API_KEY }}
@@ -147,7 +150,8 @@ jobs:
   e2e-ui-tests:
     runs-on: ubuntu-latest
     needs: [build, e2e-api-tests]
-    if: github.event_name == 'merge_group'
+    # TEMP: also run on pull_request to validate the SPA-install fix (revert to merge_group-only once green).
+    if: github.event_name == 'merge_group' || github.event_name == 'pull_request'
 
     env:
       GoogleApiKey: ${{ secrets.GOOGLE_API_KEY }}
@@ -185,6 +189,18 @@ jobs:
         run: |
           npm install -g azure-functions-core-tools@4 --unsafe-perm true
           func --version
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install web SPA dependencies
+        # The UI E2E AppHost serves the venue/artist/business/customer SPAs via `npm run dev` (Vite).
+        # They live in the app/ npm workspace; node_modules is gitignored, so without this the dev
+        # servers never start and every scenario fails at warm-up with ERR_CONNECTION_REFUSED.
+        working-directory: app
+        run: npm ci
 
       - name: Build B2B UI E2E tests
         run: dotnet build api/Concertable.B2B/Tests/E2ETests/Concertable.B2B.E2ETests.Ui/Concertable.B2B.E2ETests.Ui.csproj --configuration Release
