@@ -124,6 +124,14 @@ jobs:
           sudo tar -xzf /tmp/stripe.tar.gz -C /usr/local/bin stripe
           stripe version
 
+      - name: Install Azure Functions Core Tools
+        # The B2B Workers host is an Azure Functions (v4) app; Aspire launches it via `dotnet run`,
+        # which shells out to the `func` Core Tools. Without them the host never binds, so the
+        # ConcertFinished* tests get "Connection refused (localhost:7078)" when triggering the timer.
+        run: |
+          npm install -g azure-functions-core-tools@4 --unsafe-perm true
+          func --version
+
       - name: Run B2B API E2E tests
         run: dotnet test api/Concertable.B2B/Tests/E2ETests/Concertable.B2B.E2ETests/Concertable.B2B.E2ETests.csproj --configuration Release --settings api/Concertable.runsettings
 
@@ -172,6 +180,13 @@ jobs:
           curl -fsSL "$url" -o /tmp/stripe.tar.gz
           sudo tar -xzf /tmp/stripe.tar.gz -C /usr/local/bin stripe
           stripe version
+
+      - name: Install Azure Functions Core Tools
+        # Same as the API E2E job: the full AppHost boots the B2B Workers Azure Functions host,
+        # which needs the `func` Core Tools on PATH to launch.
+        run: |
+          npm install -g azure-functions-core-tools@4 --unsafe-perm true
+          func --version
 
       - name: Build B2B UI E2E tests
         run: dotnet build api/Concertable.B2B/Tests/E2ETests/Concertable.B2B.E2ETests.Ui/Concertable.B2B.E2ETests.Ui.csproj --configuration Release
