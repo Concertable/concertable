@@ -111,6 +111,15 @@ jobs:
           dotnet dev-certs https --trust || true  # Linux trust exits 4, but the cert is still generated
           echo "SSL_CERT_DIR=$HOME/.aspnet/dev-certs/trust:/etc/ssl/certs:/usr/lib/ssl/certs" >> "$GITHUB_ENV"
 
+      - name: Install Stripe CLI
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          url=$(curl -fsSL -H "Authorization: Bearer $GH_TOKEN" https://api.github.com/repos/stripe/stripe-cli/releases/latest | grep -oE 'https://[^"]+_linux_amd64\.tar\.gz' | head -1)
+          curl -fsSL "$url" -o /tmp/stripe.tar.gz
+          sudo tar -xzf /tmp/stripe.tar.gz -C /usr/local/bin stripe
+          stripe version
+
       - name: Run B2B API E2E tests
         run: dotnet test api/Concertable.B2B/Tests/E2ETests/Concertable.B2B.E2ETests/Concertable.B2B.E2ETests.csproj --configuration Release --settings api/Concertable.runsettings
 
@@ -146,6 +155,15 @@ jobs:
         run: |
           dotnet dev-certs https --trust || true  # Linux trust exits 4, but the cert is still generated
           echo "SSL_CERT_DIR=$HOME/.aspnet/dev-certs/trust:/etc/ssl/certs:/usr/lib/ssl/certs" >> "$GITHUB_ENV"
+
+      - name: Install Stripe CLI
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          url=$(curl -fsSL -H "Authorization: Bearer $GH_TOKEN" https://api.github.com/repos/stripe/stripe-cli/releases/latest | grep -oE 'https://[^"]+_linux_amd64\.tar\.gz' | head -1)
+          curl -fsSL "$url" -o /tmp/stripe.tar.gz
+          sudo tar -xzf /tmp/stripe.tar.gz -C /usr/local/bin stripe
+          stripe version
 
       - name: Build B2B UI E2E tests
         run: dotnet build api/Concertable.B2B/Tests/E2ETests/Concertable.B2B.E2ETests.Ui/Concertable.B2B.E2ETests.Ui.csproj --configuration Release
