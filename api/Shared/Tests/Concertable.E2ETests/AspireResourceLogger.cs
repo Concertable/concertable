@@ -19,22 +19,26 @@ public sealed class AspireResourceLogger : IAsyncDisposable
                 {
                     logger.AspireResourceStateChanged(e.Resource.Name, e.Snapshot.State?.Text ?? "unknown");
                     if (streamed.Add(e.Resource.Name))
-                        _ = StreamResourceLogsAsync(loggers, e.Resource.Name, logger);
+                        _ = StreamResourceLogsAsync(loggers, e.Resource, logger);
                 }
             }
             catch (OperationCanceledException) { }
         });
     }
 
-    private async Task StreamResourceLogsAsync(ResourceLoggerService loggers, string name, ILogger logger)
+    private async Task StreamResourceLogsAsync(ResourceLoggerService loggers, IResource resource, ILogger logger)
     {
         try
         {
-            await foreach (var batch in loggers.WatchAsync(name).WithCancellation(cts.Token))
+            await foreach (var batch in loggers.WatchAsync(resource).WithCancellation(cts.Token))
                 foreach (var line in batch)
-                    logger.AspireResourceLog(name, line.Content);
+                    logger.AspireResourceLog(resource.Name, line.Content);
         }
         catch (OperationCanceledException) { }
+        catch (Exception ex)
+        {
+            logger.AspireResourceLog(resource.Name, $"[log-stream error] {ex.Message}");
+        }
     }
 
     public async ValueTask DisposeAsync()
