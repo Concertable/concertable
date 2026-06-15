@@ -90,7 +90,9 @@ jobs:
   e2e-api-tests:
     runs-on: ubuntu-latest
     needs: build
-    if: github.event_name == 'merge_group'
+    # TEMP: also run on pull_request to validate the HTTPS dev-cert fix without a
+    # merge-queue round-trip. Revert to merge_group-only once confirmed green.
+    if: github.event_name == 'merge_group' || github.event_name == 'pull_request'
 
     env:
       GoogleApiKey: ${{ secrets.GOOGLE_API_KEY }}
@@ -103,6 +105,9 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.x'
+
+      - name: Provision HTTPS dev certificate
+        run: dotnet dev-certs https --trust
 
       - name: Run B2B API E2E tests
         run: dotnet test api/Concertable.B2B/Tests/E2ETests/Concertable.B2B.E2ETests/Concertable.B2B.E2ETests.csproj --configuration Release --settings api/Concertable.runsettings
@@ -126,6 +131,9 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.x'
+
+      - name: Provision HTTPS dev certificate
+        run: dotnet dev-certs https --trust
 
       - name: Build B2B UI E2E tests
         run: dotnet build api/Concertable.B2B/Tests/E2ETests/Concertable.B2B.E2ETests.Ui/Concertable.B2B.E2ETests.Ui.csproj --configuration Release
