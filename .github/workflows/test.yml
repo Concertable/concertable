@@ -90,10 +90,7 @@ jobs:
   e2e-api-tests:
     runs-on: ubuntu-latest
     needs: build
-    # TEMP: also run on pull_request so e2e-ui-tests (which needs this job) can validate the
-    # SPA-install fix without merge-queue round-trips. Revert both triggers to merge_group-only
-    # once the UI suite is confirmed green.
-    if: github.event_name == 'merge_group' || github.event_name == 'pull_request'
+    if: github.event_name == 'merge_group'
 
     env:
       GoogleApiKey: ${{ secrets.GOOGLE_API_KEY }}
@@ -150,8 +147,7 @@ jobs:
   e2e-ui-tests:
     runs-on: ubuntu-latest
     needs: [build, e2e-api-tests]
-    # TEMP: also run on pull_request to validate the SPA-install fix (revert to merge_group-only once green).
-    if: github.event_name == 'merge_group' || github.event_name == 'pull_request'
+    if: github.event_name == 'merge_group'
 
     env:
       GoogleApiKey: ${{ secrets.GOOGLE_API_KEY }}
@@ -218,11 +214,9 @@ jobs:
         run: dotnet test api/Concertable.Customer/Tests/E2ETests/Concertable.Customer.E2ETests.Ui/Concertable.Customer.E2ETests.Ui.csproj --configuration Release --no-build --settings api/Concertable.runsettings
 
       - name: Upload E2E diagnostics
-        # Parity with e2e-api-tests, plus the Playwright failure screenshots + traces the UI suite
-        # writes on failure (Browser.CaptureFailureAsync / SaveTraceAndDisposeAsync). The trace zip
-        # records the exact /header search request + response, which is what we need to see why a
-        # filtered search returns no results in CI.
-        if: always()
+        # Server logs + Playwright traces/screenshots for diagnosing a UI failure. Failure-only:
+        # the trace bundle is large (~hundreds of MB), so don't upload it on green runs.
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: e2e-ui-diagnostics
