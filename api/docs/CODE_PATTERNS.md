@@ -129,3 +129,45 @@ Rules of the shape:
   return values is noise — prefer separate methods or an existing entity/read model.
 - **Discard-tuple calls.** `var (thing, _) = await GetPairAsync(...)` means the API is the wrong
   shape for the caller — add the single-value method to the interface instead.
+
+## Typed HTTP clients — Refit, not hand-rolled `HttpClient`
+
+Every outbound HTTP call we *consume* gets a Refit interface — a `[Get]`/`[Post]`-annotated contract
+registered with `AddRefitClient<T>()`, base address + any auth handler attached at registration. Don't
+hand-roll `IHttpClientFactory.CreateClient()` + `PostAsync` + manual `JsonDocument` parsing when a
+typed interface expresses the same call. *Which* protocol a hop uses is decided first in
+[`MICROSERVICE_COMMUNICATION.md`](./MICROSERVICE_COMMUNICATION.md) (gRPC for our-own internal sync;
+HTTP only at the forced boundaries — browser, third party, OAuth spec); this is the structural shape
+*once that table has chosen HTTP*.
+
+Current Refit clients, one interface per remote contract:
+
+- **`IGoogleGeocodingApi`** — third-party REST (Google geocoding). External, we don't own the shape.
+- **`IUserClaimsApi`** — the internal `/internal/users/{sub}/claims` hop. This is the transition-window
+  exception to "our-own-internal is gRPC" — it stays Refit until that service has a gRPC surface.
+- **`ITokenApi`** (`Concertable.Kernel.Auth`) — the OAuth2 `/connect/token` client-credentials POST
+  behind `ClientCredentialsTokenService`. Form-encoded body via `[Body(BodySerializationMethod.UrlEncoded)]`,
+  response shape pinned with `[JsonPropertyName]` (`access_token`/`expires_in`); the authority is the
+  base address, set per host in `AddClientCredentials`. The token *cache* (scope-keyed
+  `ConcurrentDictionary` + double-checked `SemaphoreSlim` so a stampede collapses to one fetch + an
+  `expires_in − 30s` margin) lives in the service; Refit owns only the wire call underneath it.
+
+`Concertable.Kernel` carries the `Refit.HttpClientFactory` package for `ITokenApi` — fine: Refit is a
+small, already-in-repo library, and a typed contract is worth a package reference. (The "shared is the
+intersection" rule in `api/CLAUDE.md` is about not bolting audience-specific *concepts* onto shared
+*types* — it does not forbid a shared utility package.)
+
+**One caveat specific to `ITokenApi`:** `ClientCredentialsTokenService` is a **singleton** (it owns the
+shared token cache), so the Refit client it injects is a captive dependency — one `HttpMessageHandler`
+pinned for the app's lifetime, no factory handler rotation. Accepted here: the authority is a stable
+internal endpoint hit infrequently. Don't copy that singleton-captures-Refit shape onto a hot or
+DNS-volatile client — those stay scoped/transient so the factory rotates handlers normally.
+
+### The anti-patterns this replaces — never do these
+
+- **Hand-rolled `HttpClient` + manual JSON/`JsonDocument` parsing** for a call a Refit interface could
+  express. The typed contract is the readable source of truth; reach for raw `HttpClient` only when
+  Refit genuinely can't model the call.
+- **Refit against our own internal HTTP.** If both ends are ours it's gRPC (`AddGrpcClient<T>`) —
+  Refit there means two contract surfaces for one service. The only standing exception is a service
+  that doesn't have its gRPC surface yet (`IUserClaimsApi`).
