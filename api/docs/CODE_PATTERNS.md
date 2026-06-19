@@ -1,0 +1,173 @@
+# Code Patterns
+
+Recurring design patterns this codebase commits to. When a change fits one of these shapes, use the
+pattern — don't invent a local variant. Sibling of [`CODE_CONVENTIONS.md`](./CODE_CONVENTIONS.md)
+(naming/style); this file is about *structure*.
+
+## Tenancy is composed, never subtracted
+
+Visibility comes from **what a context is built from**, not from disabling rules after the fact.
+Per-query `IgnoreQueryFilters` calls are banned — "add a global rule, then remove it for half the
+callers" hides the stance at every call site and is unauditable. The codebase has zero
+`IgnoreQueryFilters` calls; the building blocks (all in `B2B.DataAccess.Infrastructure`):
+
+- **The module's `XConfigurationProvider` is the anemic core** — pure table mappings, zero tenancy.
+  Both stances below compose it; neither modifies it. Both stances are **per module** — a cross-module
+  "sees everything" context would break module isolation (every module reads only its own model).
+- **`VenueArtistTenantDbContext`** (abstract, `B2B.DataAccess.Infrastructure`) — the tenant-filtered
+  stance. Ctor-injects the module's configuration provider + `ITenantContext` (it implements
+  `IHasTenantContext`); its sealed `OnModelCreating` composes the anemic core first, then the module's
+  filter declarations via the abstract `ApplyTenantFilters` hook
+  (`modelBuilder.ApplyVenueArtist<TEntity>(this)` per entity). Filters are declared per entity, never
+  auto-derived from the `IVenueArtistTenantScoped` marker: marked ≠ filtered is a per-entity product
+  decision (Concert carries the pair but stays public). Example: `ConcertDbContext`.
+- **`TenantScopedDbContext`** (abstract, same seam) — the single-owner counterpart to the above: same
+  shape, but `ApplyTenantFilters` declares per-entity single-owner filters
+  (`modelBuilder.ApplySingleOwner<TEntity>(this)`, `TenantId == current`). Examples: `VenueDbContext`
+  (filters `Venue`/`VenueImage`), `ArtistDbContext`.
+- **`PublicDbContext`** (abstract, same seam) — the public stance. Composes the module's own
+  configuration provider with no tenancy on top: public by construction, nothing is lifted because
+  nothing was applied. Read-only by construction — `SaveChanges` throws — so the write-side
+  `TenantInterceptor` guard can never be bypassed through it. One concrete subclass per module,
+  e.g. `PublicConcertDbContext`.
+- **`AdminDbContext`** (abstract, same seam) — the platform-admin stance: composes the provider with no
+  tenancy, but **writable** (unlike `PublicDbContext`), so a cross-tenant operator can act on rows it
+  doesn't own; the `TenantInterceptor` write-guard no-ops for a tenant-less admin. One subclass per
+  module that has an admin write flow, e.g. `AdminVenueDbContext` (venue approval).
+
+Query classes then split by **visibility stance**, one stance per class (mixing them in one class is
+the LSP violation — callers can't know which contract a method honors):
+
+- **`XRepository`** — party/host reads on the module's filtered context. The default.
+- **`PublicXRepository`** — the public marketplace surface (anonymous browse: details pages,
+  listings) on `IPublicDbContext`. Never returns private contents. Examples:
+  `PublicOpportunityRepository`, `PublicConcertRepository` (Concert module).
+- **`AdminXRepository`** — privileged cross-tenant read/write (e.g. admin approval) on the writable
+  `AdminDbContext`. Only where an admin write flow exists, e.g. `AdminVenueRepository`.
+- **Cross-tenant *facts* that aren't browse** (e.g. "is this slot taken?") get their own named
+  abstraction returning only booleans/scalars on `IPublicDbContext` — e.g. `IConcertAvailability` —
+  so the name carries the why and nothing needs an apologetic comment.
+
+The injection site is then self-documenting: a service holding `repository` + `publicRepository`
+(the codebase convention when a service injects both stances of its own aggregate) states exactly
+which queries see what.
+
+**A stance class only exists when the entity has more than one stance.** A single-stance entity is a
+plain `XRepository` — don't pre-qualify it `Public*`/`Admin*` with no sibling to disambiguate from;
+rename it the day a second stance is actually born. The qualifier carries *which* contract; with
+nothing to contrast, it's noise.
+
+**Filter an entity only when its *reads* are tenant-private.** The marker (`ITenantScoped` /
+`IVenueArtistTenantScoped`) means "carries the owner id," not "is filtered." If the entity's core flow
+reads it *across* tenants, leave it unfiltered and let `TenantInterceptor` guard the writes — filtering
+it fails those cross-tenant reads closed. Unfiltered by design today: **Opportunity** (the artist's
+apply reads the venue's opportunity to stamp the deal), **Contract** (an applying artist reads the
+venue's terms), **Concert** (public listing). Filtered: **Venue**, **Artist** (owner-private reads,
+with browse split off to the public stance).
+
+## Keyed strategy resolver
+
+**When a rule varies by a closed key** (typically `ContractType`): one facade class implements the
+public interface, constructor-injects the concrete strategies, maps key → strategy in a
+`FrozenDictionary`, and delegates. Consumers inject the interface and call it — they never branch on
+the key, never see the map, never touch keyed DI.
+
+Canonical example — `ContractMapper`
+(`Modules/Contract/Concertable.B2B.Contract.Application/Mappers/ContractMapper.cs`):
+
+```csharp
+internal sealed class ContractMapper : IContractMapper
+{
+    private readonly FrozenDictionary<ContractType, IContractMapper> mappers;
+
+    public ContractMapper(
+        FlatFeeContractMapper flatFee,
+        DoorSplitContractMapper doorSplit,
+        VersusContractMapper versus,
+        VenueHireContractMapper venueHire)
+    {
+        mappers = new Dictionary<ContractType, IContractMapper>
+        {
+            [ContractType.FlatFee] = flatFee,
+            [ContractType.DoorSplit] = doorSplit,
+            [ContractType.Versus] = versus,
+            [ContractType.VenueHire] = venueHire,
+        }.ToFrozenDictionary();
+    }
+
+    public IContract ToContract(ContractEntity entity) =>
+        mappers[entity.ContractType].ToContract(entity);
+}
+```
+
+Other instances: `PayeeResolver` (Concert module — which party receives a concert's ticket revenue).
+
+Rules of the shape:
+
+- The facade and the strategies implement the **same interface**; the facade is the only DI-default
+  registration (`AddSingleton<IXResolver, XResolver>()`), strategies register as their concrete types.
+- Strategies are injected as **concrete constructor parameters** — not `IServiceProvider`, not
+  `GetRequiredKeyedService`, not `IEnumerable<IX>` scanning. The dictionary in the constructor IS the
+  rule, written once, readable at a glance.
+- Methods return **existing domain types or scalars** — don't mint a one-use DTO just to bundle a
+  resolver's outputs; add a second method instead.
+- An unmapped key throws (`KeyNotFoundException`) — a new enum member fails loudly rather than
+  silently defaulting.
+
+### The anti-patterns this replaces — never do these
+
+- **Branching on the key in agnostic components.** A `ContractType == VenueHire ? … : …` ternary (or
+  switch) inside a handler/service/mapper that is otherwise contract-agnostic plants a business rule
+  where nobody will look for it, and it WILL get copy-pasted (that's how it spreads). The rule lives
+  in exactly one resolver.
+- **Service location at the consumer.** `GetRequiredKeyedService<T>(key)` in a handler or step leaks
+  the dispatch mechanism into business code. Keyed/dynamic resolution, if ever needed, stays inside
+  the facade next to the composition root.
+- **Enum + switch as an API.** Returning an enum that every caller must re-interpret with its own
+  switch just multiplies the branch across the codebase. Return the resolved *value*, not a label.
+- **Throwaway result records.** A `record Xyz(Guid A, Guid B)` created only to carry one resolver's
+  return values is noise — prefer separate methods or an existing entity/read model.
+- **Discard-tuple calls.** `var (thing, _) = await GetPairAsync(...)` means the API is the wrong
+  shape for the caller — add the single-value method to the interface instead.
+
+## Typed HTTP clients — Refit, not hand-rolled `HttpClient`
+
+Every outbound HTTP call we *consume* gets a Refit interface — a `[Get]`/`[Post]`-annotated contract
+registered with `AddRefitClient<T>()`, base address + any auth handler attached at registration. Don't
+hand-roll `IHttpClientFactory.CreateClient()` + `PostAsync` + manual `JsonDocument` parsing when a
+typed interface expresses the same call. *Which* protocol a hop uses is decided first in
+[`MICROSERVICE_COMMUNICATION.md`](./MICROSERVICE_COMMUNICATION.md) (gRPC for our-own internal sync;
+HTTP only at the forced boundaries — browser, third party, OAuth spec); this is the structural shape
+*once that table has chosen HTTP*.
+
+Current Refit clients, one interface per remote contract:
+
+- **`IGoogleGeocodingApi`** — third-party REST (Google geocoding). External, we don't own the shape.
+- **`IUserClaimsApi`** — the internal `/internal/users/{sub}/claims` hop. This is the transition-window
+  exception to "our-own-internal is gRPC" — it stays Refit until that service has a gRPC surface.
+- **`ITokenApi`** (`Concertable.Kernel.Auth`) — the OAuth2 `/connect/token` client-credentials POST
+  behind `ClientCredentialsTokenService`. Form-encoded body via `[Body(BodySerializationMethod.UrlEncoded)]`,
+  response shape pinned with `[JsonPropertyName]` (`access_token`/`expires_in`); the authority is the
+  base address, set per host in `AddClientCredentials`. The token *cache* (scope-keyed
+  `ConcurrentDictionary` + double-checked `SemaphoreSlim` so a stampede collapses to one fetch + an
+  `expires_in − 30s` margin) lives in the service; Refit owns only the wire call underneath it.
+
+`Concertable.Kernel` carries the `Refit.HttpClientFactory` package for `ITokenApi` — fine: Refit is a
+small, already-in-repo library, and a typed contract is worth a package reference. (The "shared is the
+intersection" rule in `api/CLAUDE.md` is about not bolting audience-specific *concepts* onto shared
+*types* — it does not forbid a shared utility package.)
+
+**One caveat specific to `ITokenApi`:** `ClientCredentialsTokenService` is a **singleton** (it owns the
+shared token cache), so the Refit client it injects is a captive dependency — one `HttpMessageHandler`
+pinned for the app's lifetime, no factory handler rotation. Accepted here: the authority is a stable
+internal endpoint hit infrequently. Don't copy that singleton-captures-Refit shape onto a hot or
+DNS-volatile client — those stay scoped/transient so the factory rotates handlers normally.
+
+### The anti-patterns this replaces — never do these
+
+- **Hand-rolled `HttpClient` + manual JSON/`JsonDocument` parsing** for a call a Refit interface could
+  express. The typed contract is the readable source of truth; reach for raw `HttpClient` only when
+  Refit genuinely can't model the call.
+- **Refit against our own internal HTTP.** If both ends are ours it's gRPC (`AddGrpcClient<T>`) —
+  Refit there means two contract surfaces for one service. The only standing exception is a service
+  that doesn't have its gRPC surface yet (`IUserClaimsApi`).

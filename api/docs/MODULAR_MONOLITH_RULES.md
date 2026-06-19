@@ -91,6 +91,13 @@ Shared libs sit at `api/Shared/Concertable.<Name>/` and follow the same per-laye
 ## Cross-module rules (the §1 of MM_NORTH_STAR)
 
 - Zero cross-module runtime queries. Every module reads only from its own `DbContext`.
+- **This applies per *stance* too:** when a module has both a tenant-filtered and a public context
+  (see `CODE_PATTERNS.md` — "Tenancy is composed, never subtracted"), the public one is still a
+  per-module context composing only that module's configuration provider (`PublicConcertDbContext`).
+  A service-wide "public context over every module's model" is the same monolith query surface this
+  rule exists to prevent — don't add one. (The cross-module `ReadDbContext` that existed during the
+  extraction has been **deleted**; even the integration-test fixtures now read back through a module's
+  own `Public<Module>DbContext`.)
 - Cross-module communication only via `IXModule` facades in Contracts (commands, narrow queries)
   or integration events (fan-out).
 - Cross-module FKs are plain primitives (`int ArtistId`, `Guid UserId`) — never nav properties

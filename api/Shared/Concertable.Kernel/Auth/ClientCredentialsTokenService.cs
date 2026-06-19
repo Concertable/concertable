@@ -1,19 +1,18 @@
 using System.Collections.Concurrent;
-using System.Text.Json;
 using Microsoft.Extensions.Options;
 
 namespace Concertable.Kernel.Auth;
 
 internal sealed class ClientCredentialsTokenService : ITokenService
 {
-    private readonly IHttpClientFactory factory;
+    private readonly ITokenApi api;
     private readonly IOptions<TokenServiceOptions> options;
     private readonly SemaphoreSlim gate = new(1, 1);
     private readonly ConcurrentDictionary<string, (string Token, DateTimeOffset Expiry)> cache = new();
 
-    public ClientCredentialsTokenService(IHttpClientFactory factory, IOptions<TokenServiceOptions> options)
+    public ClientCredentialsTokenService(ITokenApi api, IOptions<TokenServiceOptions> options)
     {
-        this.factory = factory;
+        this.api = api;
         this.options = options;
     }
 
@@ -29,22 +28,16 @@ internal sealed class ClientCredentialsTokenService : ITokenService
                 return token;
 
             var opts = options.Value;
-            using var client = factory.CreateClient();
-            using var response = await client.PostAsync(
-                $"{opts.Authority.TrimEnd('/')}/connect/token",
-                new FormUrlEncodedContent(new Dictionary<string, string>
-                {
-                    ["grant_type"] = "client_credentials",
-                    ["client_id"] = opts.ClientId,
-                    ["client_secret"] = opts.ClientSecret,
-                    ["scope"] = scope
-                }), ct);
+            var response = await api.GetTokenAsync(new Dictionary<string, string>
+            {
+                ["grant_type"] = "client_credentials",
+                ["client_id"] = opts.ClientId,
+                ["client_secret"] = opts.ClientSecret,
+                ["scope"] = scope
+            }, ct);
 
-            response.EnsureSuccessStatusCode();
-            using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync(ct));
-            token = doc.RootElement.GetProperty("access_token").GetString()!;
-            var expiresIn = doc.RootElement.GetProperty("expires_in").GetInt32();
-            cache[scope] = (token, DateTimeOffset.UtcNow.AddSeconds(expiresIn - 30));
+            token = response.AccessToken;
+            cache[scope] = (token, DateTimeOffset.UtcNow.AddSeconds(response.ExpiresIn - 30));
             return token;
         }
         finally
@@ -60,7 +53,7 @@ internal sealed class ClientCredentialsTokenService : ITokenService
             token = entry.Token;
             return true;
         }
-        token = string.Empty;
+        token = null!;
         return false;
     }
 }

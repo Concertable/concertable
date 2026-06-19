@@ -29,7 +29,7 @@ The modular monolith already enforces the *internal* boundary correctly. The mic
 
 | Logical service | Category | Composition (deployable hosts) | DB | Owns |
 |---|---|---|---|---|
-| **B2B** | Data | `Concertable.B2B.Web` + `Concertable.B2B.Workers` | B2B SQL | Venue, Artist, Concert (workflow shape), Contract, Booking, Application, Opportunity, Settlement, Organization, Messaging, manager/admin profiles. Manager + venue/artist SPA endpoints. Workers run settlement triggers, lifecycle transitions, payout reconciliation. |
+| **B2B** | Data | `Concertable.B2B.Web` + `Concertable.B2B.Workers` | B2B SQL | Venue, Artist, Concert (workflow shape), Contract, Booking, Application, Opportunity, Settlement, Tenant, Messaging, manager/admin profiles. Manager + venue/artist SPA endpoints. Workers run settlement triggers, lifecycle transitions, payout reconciliation. |
 | **Customer** | Data | `Concertable.Customer.Web` | Customer SQL | Tickets (with `AvailableTickets`), Preferences, Reviews, `UserEntity` (customer profile). Single deployable — service is write-light; ASB consumers run in-process. No Workers host needed. |
 | **Search** | Read projection | `Concertable.Search.Web` + `Concertable.Search.Workers` | Search SQL | `ArtistSearchModel`, `VenueSearchModel`, `ConcertSearchModel`. Browse/autocomplete/header/detail reads. Web host read-only, sync-callable from B2B and Customer SPAs. Workers consume events from B2B and Customer to populate projections. |
 | **Payment** | Adapter | `Concertable.Payment.Web` + `Concertable.Payment.Workers` | Payment SQL | PayoutAccount, StripeCustomer refs, payment intent / transfer / refund ledger. Sole receiver of Stripe webhooks. Workers process webhooks and reconciliation. |
@@ -62,7 +62,7 @@ This is the rule the rest of the architecture hangs on. **A read projection serv
 
 | Concept | Source of truth | Projected to | Sync mechanism |
 |---|---|---|---|
-| Venue | B2B DB (`VenueEntity`, full ~25 fields with Organization, PayoutAccount, ComplianceContext) | Search DB (`VenueSearchModel` for browse/details) | `VenueChangedEvent` via bus |
+| Venue | B2B DB (`VenueEntity`, full ~25 fields with Tenant, PayoutAccount, ComplianceContext) | Search DB (`VenueSearchModel` for browse/details) | `VenueChangedEvent` via bus |
 | Artist | B2B DB (`ArtistEntity`, full) | Search DB (`ArtistSearchModel`) | `ArtistChangedEvent` via bus |
 | Concert (workflow shape) | B2B DB (`ConcertEntity`, lean — `BookingId`, `ContractType`, `CurrentStage`, `DatePosted`, `TotalTickets` capacity only) | Search DB (`ConcertSearchModel` — buyable/browse view: name, period, price, banner, avatar, genres, images, location, rating) | `ConcertChangedEvent` via bus |
 | `TotalTickets` (capacity) | B2B DB (set by venue when posting) | Search DB (display); Customer DB (so Customer can compute remaining) | Carried on `ConcertChangedEvent` |
@@ -360,7 +360,7 @@ Concertable/
 │   │   ├── Concertable.B2B.AppHost/            (standalone host, + AppHost.Extensions)
 │   │   ├── Concertable.B2B.Web/                (HTTP host)
 │   │   ├── Concertable.B2B.Workers/            (background jobs)
-│   │   ├── Modules/                            (Artist, Concert, Contract, Conversations, Organization, User, Venue)
+│   │   ├── Modules/                            (Artist, Concert, Contract, Conversations, Tenant, User, Venue)
 │   │   ├── Seed/                               (Seed.Contracts, Seed.Infrastructure, Seed.Simulator)
 │   │   └── Tests/
 │   ├── Concertable.Customer/                   (same shape — Web only, consumers in-process; Modules: Concert, Preference, Review, Ticket, User)
@@ -402,7 +402,7 @@ B2B/
     ├── Concert/      same shape (Booking/Application/Opportunity live inside it)
     ├── Contract/
     ├── Conversations/
-    ├── Organization/
+    ├── Tenant/
     └── User/
 ```
 

@@ -8,7 +8,7 @@ JWT Bearer validation.
 
 | Infrastructure project | Boots | Test projects that use it |
 |---|---|---|
-| `Tests/Concertable.Testing.Integration` | `Concertable.B2B.Web` | Artist, Venue, User, Organization, Concert |
+| `Tests/Concertable.Testing.Integration` | `Concertable.B2B.Web` | Artist, Venue, User, Tenant, Concert |
 | `Tests/Concertable.Testing.Integration.Search` | `Concertable.Search.Web` | Search |
 | `Tests/Concertable.Testing.Integration.Customer` | `Concertable.Customer.Web` | Customer.* (scaffold — no tests yet) |
 
@@ -20,7 +20,7 @@ JWT Bearer validation.
 dotnet test Concertable.B2B/Modules/Artist/Tests/Concertable.Artist.IntegrationTests/Concertable.Artist.IntegrationTests.csproj
 dotnet test Concertable.B2B/Modules/Venue/Tests/Concertable.Venue.IntegrationTests/Concertable.Venue.IntegrationTests.csproj
 dotnet test Concertable.B2B/Modules/User/Tests/Concertable.User.IntegrationTests/Concertable.User.IntegrationTests.csproj
-dotnet test Concertable.B2B/Modules/Organization/Tests/Concertable.Organization.IntegrationTests/Concertable.Organization.IntegrationTests.csproj
+dotnet test Concertable.B2B/Modules/Tenant/Tests/Concertable.B2B.Tenant.IntegrationTests/Concertable.B2B.Tenant.IntegrationTests.csproj
 dotnet test Concertable.B2B/Modules/Concert/Tests/Concertable.Concert.IntegrationTests/Concertable.Concert.IntegrationTests.csproj
 ```
 
@@ -37,7 +37,7 @@ dotnet test Concertable.Search/Tests/Concertable.Search.IntegrationTests/Concert
   "Concertable.B2B/Modules/Artist/Tests/Concertable.Artist.IntegrationTests/Concertable.Artist.IntegrationTests.csproj",
   "Concertable.B2B/Modules/Venue/Tests/Concertable.Venue.IntegrationTests/Concertable.Venue.IntegrationTests.csproj",
   "Concertable.B2B/Modules/User/Tests/Concertable.User.IntegrationTests/Concertable.User.IntegrationTests.csproj",
-  "Concertable.B2B/Modules/Organization/Tests/Concertable.Organization.IntegrationTests/Concertable.Organization.IntegrationTests.csproj",
+  "Concertable.B2B/Modules/Tenant/Tests/Concertable.B2B.Tenant.IntegrationTests/Concertable.B2B.Tenant.IntegrationTests.csproj",
   "Concertable.B2B/Modules/Concert/Tests/Concertable.Concert.IntegrationTests/Concertable.Concert.IntegrationTests.csproj",
   "Concertable.Search/Tests/Concertable.Search.IntegrationTests/Concertable.Search.IntegrationTests.csproj"
 ) | ForEach-Object { dotnet test $_ }

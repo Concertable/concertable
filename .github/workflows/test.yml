@@ -35,7 +35,7 @@ jobs:
         project:
           - api/Concertable.B2B/Modules/Concert/Tests/Concertable.B2B.Concert.UnitTests/Concertable.B2B.Concert.UnitTests.csproj
           - api/Concertable.B2B/Modules/Contract/Tests/Concertable.B2B.Contract.UnitTests/Concertable.B2B.Contract.UnitTests.csproj
-          - api/Concertable.B2B/Modules/Organization/Tests/Concertable.B2B.Organization.UnitTests/Concertable.B2B.Organization.UnitTests.csproj
+          - api/Concertable.B2B/Modules/Tenant/Tests/Concertable.B2B.Tenant.UnitTests/Concertable.B2B.Tenant.UnitTests.csproj
           - api/Concertable.B2B/Tests/Concertable.B2B.Workers.UnitTests/Concertable.B2B.Workers.UnitTests.csproj
           - api/Concertable.Customer/Modules/Concert/Tests/Concertable.Customer.Concert.UnitTests/Concertable.Customer.Concert.UnitTests.csproj
           - api/Concertable.Customer/Modules/Review/Tests/Concertable.Customer.Review.UnitTests/Concertable.Customer.Review.UnitTests.csproj
@@ -67,7 +67,7 @@ jobs:
         project:
           - api/Concertable.B2B/Modules/Artist/Tests/Concertable.B2B.Artist.IntegrationTests/Concertable.B2B.Artist.IntegrationTests.csproj
           - api/Concertable.B2B/Modules/Concert/Tests/Concertable.B2B.Concert.IntegrationTests/Concertable.B2B.Concert.IntegrationTests.csproj
-          - api/Concertable.B2B/Modules/Organization/Tests/Concertable.B2B.Organization.IntegrationTests/Concertable.B2B.Organization.IntegrationTests.csproj
+          - api/Concertable.B2B/Modules/Tenant/Tests/Concertable.B2B.Tenant.IntegrationTests/Concertable.B2B.Tenant.IntegrationTests.csproj
           - api/Concertable.B2B/Modules/User/Tests/Concertable.B2B.User.IntegrationTests/Concertable.B2B.User.IntegrationTests.csproj
           - api/Concertable.B2B/Modules/Venue/Tests/Concertable.B2B.Venue.IntegrationTests/Concertable.B2B.Venue.IntegrationTests.csproj
           - api/Concertable.Customer/Modules/Concert/Tests/Concertable.Customer.Concert.IntegrationTests/Concertable.Customer.Concert.IntegrationTests.csproj
@@ -95,6 +95,9 @@ jobs:
     env:
       GoogleApiKey: ${{ secrets.GOOGLE_API_KEY }}
       Stripe__SecretKey: ${{ secrets.STRIPE_SECRET_KEY }}
+      ServiceAuth__B2BClientSecret: ${{ secrets.SERVICE_AUTH_B2B_CLIENT_SECRET }}
+      ServiceAuth__CustomerClientSecret: ${{ secrets.SERVICE_AUTH_CUSTOMER_CLIENT_SECRET }}
+      ServiceAuth__AuthClientSecret: ${{ secrets.SERVICE_AUTH_AUTH_CLIENT_SECRET }}
 
     steps:
       - uses: actions/checkout@v4
@@ -104,11 +107,42 @@ jobs:
         with:
           dotnet-version: '10.x'
 
+      - name: Provision HTTPS dev certificate
+        run: |
+          dotnet dev-certs https --trust || true  # Linux trust exits 4, but the cert is still generated
+          echo "SSL_CERT_DIR=$HOME/.aspnet/dev-certs/trust:/etc/ssl/certs:/usr/lib/ssl/certs" >> "$GITHUB_ENV"
+
+      - name: Install Stripe CLI
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          url=$(curl -fsSL -H "Authorization: Bearer $GH_TOKEN" https://api.github.com/repos/stripe/stripe-cli/releases/latest | grep -oE 'https://[^"]+_linux_x86_64\.tar\.gz' | head -1)
+          test -n "$url" || { echo "Stripe CLI linux_x86_64 asset not found"; exit 1; }
+          curl -fsSL "$url" -o /tmp/stripe.tar.gz
+          sudo tar -xzf /tmp/stripe.tar.gz -C /usr/local/bin stripe
+          stripe version
+
+      - name: Install Azure Functions Core Tools
+        # The B2B Workers host is an Azure Functions (v4) app; Aspire launches it via `dotnet run`,
+        # which shells out to the `func` Core Tools. Without them the host never binds, so the
+        # ConcertFinished* tests get "Connection refused (localhost:7078)" when triggering the timer.
+        run: |
+          npm install -g azure-functions-core-tools@4 --unsafe-perm true
+          func --version
+
       - name: Run B2B API E2E tests
         run: dotnet test api/Concertable.B2B/Tests/E2ETests/Concertable.B2B.E2ETests/Concertable.B2B.E2ETests.csproj --configuration Release --settings api/Concertable.runsettings
 
       - name: Run Customer API E2E tests
         run: dotnet test api/Concertable.Customer/Tests/E2ETests/Concertable.Customer.E2ETests/Concertable.Customer.E2ETests.csproj --configuration Release --settings api/Concertable.runsettings
+
+      - name: Upload E2E diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-api-diagnostics
+          path: '**/e2e-diagnostics.log'
+          if-no-files-found: ignore
 
   e2e-ui-tests:
     runs-on: ubuntu-latest
@@ -118,6 +152,9 @@ jobs:
     env:
       GoogleApiKey: ${{ secrets.GOOGLE_API_KEY }}
       Stripe__SecretKey: ${{ secrets.STRIPE_SECRET_KEY }}
+      ServiceAuth__B2BClientSecret: ${{ secrets.SERVICE_AUTH_B2B_CLIENT_SECRET }}
+      ServiceAuth__CustomerClientSecret: ${{ secrets.SERVICE_AUTH_CUSTOMER_CLIENT_SECRET }}
+      ServiceAuth__AuthClientSecret: ${{ secrets.SERVICE_AUTH_AUTH_CLIENT_SECRET }}
 
     steps:
       - uses: actions/checkout@v4
@@ -126,6 +163,40 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.x'
+
+      - name: Provision HTTPS dev certificate
+        run: |
+          dotnet dev-certs https --trust || true  # Linux trust exits 4, but the cert is still generated
+          echo "SSL_CERT_DIR=$HOME/.aspnet/dev-certs/trust:/etc/ssl/certs:/usr/lib/ssl/certs" >> "$GITHUB_ENV"
+
+      - name: Install Stripe CLI
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          url=$(curl -fsSL -H "Authorization: Bearer $GH_TOKEN" https://api.github.com/repos/stripe/stripe-cli/releases/latest | grep -oE 'https://[^"]+_linux_x86_64\.tar\.gz' | head -1)
+          test -n "$url" || { echo "Stripe CLI linux_x86_64 asset not found"; exit 1; }
+          curl -fsSL "$url" -o /tmp/stripe.tar.gz
+          sudo tar -xzf /tmp/stripe.tar.gz -C /usr/local/bin stripe
+          stripe version
+
+      - name: Install Azure Functions Core Tools
+        # Same as the API E2E job: the full AppHost boots the B2B Workers Azure Functions host,
+        # which needs the `func` Core Tools on PATH to launch.
+        run: |
+          npm install -g azure-functions-core-tools@4 --unsafe-perm true
+          func --version
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install web SPA dependencies
+        # The UI E2E AppHost serves the venue/artist/business/customer SPAs via `npm run dev` (Vite).
+        # They live in the app/ npm workspace; node_modules is gitignored, so without this the dev
+        # servers never start and every scenario fails at warm-up with ERR_CONNECTION_REFUSED.
+        working-directory: app
+        run: npm ci
 
       - name: Build B2B UI E2E tests
         run: dotnet build api/Concertable.B2B/Tests/E2ETests/Concertable.B2B.E2ETests.Ui/Concertable.B2B.E2ETests.Ui.csproj --configuration Release
@@ -141,3 +212,16 @@ jobs:
 
       - name: Run Customer UI E2E tests
         run: dotnet test api/Concertable.Customer/Tests/E2ETests/Concertable.Customer.E2ETests.Ui/Concertable.Customer.E2ETests.Ui.csproj --configuration Release --no-build --settings api/Concertable.runsettings
+
+      - name: Upload E2E diagnostics
+        # Server logs + Playwright traces/screenshots for diagnosing a UI failure. Failure-only:
+        # the trace bundle is large (~hundreds of MB), so don't upload it on green runs.
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-ui-diagnostics
+          path: |
+            **/e2e-diagnostics.log
+            **/playwright-traces/**
+            **/playwright-failures/**
+          if-no-files-found: ignore

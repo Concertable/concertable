@@ -58,5 +58,8 @@ internal static partial class Log
     [LoggerMessage(Level = LogLevel.Information, Message = "[Aspire] {Resource}: {State}")]
     internal static partial void AspireResourceStateChanged(this ILogger logger, string resource, string state);
 
+    [LoggerMessage(Level = LogLevel.Information, Message = "[Aspire] {Resource} | {Line}")]
+    internal static partial void AspireResourceLog(this ILogger logger, string resource, string line);
+
     #endregion
 }

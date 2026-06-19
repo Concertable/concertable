@@ -57,7 +57,7 @@ The big one: in this suite a failing test usually means **the synchronous call r
 **Shared E2E infra** (service-agnostic) — `api/Shared/Tests/Concertable.E2ETests/`
 - `HealthWaiter` (`WaitForAllHealthyAsync` / `WaitForAllServingAsync` / `WaitForPayoutAccountsAsync`), `PollingService`, `AspireResourceLogger`, `TestTokenMinter`, `StripeE2EAccountResolver`.
 
-**E2E trigger endpoints** (test-only, mapped on the B2B host) — `api/Concertable.B2B/Concertable.B2B.Web/Extensions/E2EEndpointExtensions.cs`: `POST /e2e/run-completion` (runs the concert-completion sweep), `POST /e2e/finish/{concertId}` (finishes one concert). These let the API E2E tests drive time-based flows deterministically.
+**Triggering time-based flows** — `WorkersFixture.cs` (`fixture.Workers.TriggerAsync(nameof(SomeFunction))`) fires a timer function on the Workers (Functions) host via its admin API `POST /admin/functions/{name}` (e.g. `ConcertFinishedFunction` for the concert-finished → completion sweep). Acceptance (202) is fire-and-forget — assert on the state the function produces. (This replaced the old test-only `POST /e2e/...` endpoints on the B2B Web host.)
 
 **Run settings** — `api/Concertable.runsettings` (`MaxCpuCount=1`; the two E2E apps must not run concurrently — see memory `e2e_parallel_execution`). The wrapper passes this automatically.
 
@@ -65,13 +65,13 @@ The big one: in this suite a failing test usually means **the synchronous call r
 
 ## Step 0 — Pre-flight check
 
-These tests need Docker (SQL containers, ASB emulator, stripe-cli):
+These tests need Docker (SQL containers, ASB emulator, stripe-cli). **`docker ps` answering is NOT proof Docker is healthy** — a half-started/flapping engine keeps `docker ps` (and even `docker run hello-world`, and a bare TCP connect) working while host→container forwarding of real bytes for NEW containers is dead, and the suite then dies at SQL fixture startup with `pre-login handshake` resets. Use the data-round-trip gate:
 
 ```powershell
-docker ps 2>&1
+./docker-health.ps1   # fresh container + published port + real HTTP round-trip + stability check; exit 1 = unhealthy
 ```
 
-If this errors or the daemon is unreachable, stop and tell the user: **"Docker is not running — please start Docker Desktop before running E2E tests."** Do not proceed.
+`./e2e.ps1 api ...` runs this automatically and refuses to boot on failure. If it reports unhealthy, **STOP** — tell the user Docker is half-started/down and to wait for Docker Desktop to show **Running**, then retry. Do not rerun or debug application code for this; it's an environment failure (root `CLAUDE.md`).
 
 The suite also needs Stripe + Google secrets in the environment (`Stripe__SecretKey`, `GoogleApiKey`) — the same ones CI injects. If a run dies immediately with a Stripe auth error or missing-config exception, confirm those are set before debugging anything else.
 

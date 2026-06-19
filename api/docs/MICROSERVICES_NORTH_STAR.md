@@ -42,7 +42,7 @@ The whole architecture is this rule. **A read projection that ever owns a write 
 
 | Service | Category | Owns |
 |---|---|---|
-| **B2B** | Data | Venue, Artist, Concert (workflow shape), Contract, Booking, Application, Opportunity, Settlement, Organization, Messaging, manager/admin profiles |
+| **B2B** | Data | Venue, Artist, Concert (workflow shape), Contract, Booking, Application, Opportunity, Settlement, Tenant, Messaging, manager/admin profiles |
 | **Customer** | Data | Tickets, Reviews, Preferences, customer profile |
 | **Search** | Read projection | `*SearchModel`s — browse, autocomplete, detail-page reads for both audiences |
 | **Payment** | Adapter | Stripe Connect refs, payment/transfer/refund ledger; sole receiver of Stripe webhooks; only service in PCI scope |

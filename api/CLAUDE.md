@@ -13,6 +13,16 @@ Two kinds of service, two rules (full rationale in [`ARCHITECTURE.md`](./ARCHITE
 
 Note: real `Payment` only emits payment events for *live* Stripe webhooks, never for seed data. Payment is an agnostic adapter and owns no seed catalog or simulator; the seed-only payment-derived state (B2B `ConcertEntity.TicketsSold`, Customer `TicketEntity`) is inherently unreproducible historical data, reflection-seeded on each consumer's own side (see `docs/SEEDING_CONVENTIONS.md`).
 
+## Shared code is the intersection, never the union
+
+`Concertable.Kernel` and `Concertable.Contracts` (and any `Concertable.Shared.*` lib) are consumed by **every** service — B2B, Customer, Search, Payment, Auth. Code there MUST be audience-agnostic. **Never put a B2B-only or Customer-only concept onto a shared type** — not a property, not a method, not an enum case, not a claim accessor. A shared abstraction models the *intersection* of what all consumers need, not the *union*.
+
+The litmus test: **if a member is only ever populated or meaningful for one audience — and is dead weight (always null / never read) for another — it does not belong in shared code.** That a shared *container* (e.g. `ICurrentUser`) legitimately lives in `Kernel` does NOT license adding audience-specific *members* to it; the container stays agnostic, the specific concept goes elsewhere.
+
+When a shared adapter (e.g. Payment) needs an audience-specific value, keep the concept out of the shared abstraction: either the **caller** resolves it and passes it in as a parameter, or it lives in a **separate abstraction that only the services with the concept depend on** (e.g. an `ICurrentTenant` referenced by B2B, not by Customer).
+
+Anti-pattern, do not reintroduce: a tenant/owner key on the shared `ICurrentUser` (an `Owner` member + `GetOwnerId()` extension once lived in `Kernel` for exactly this, and were removed). Resolving *who owns a resource* is audience-specific and belongs to the consumer, not the shared identity contract — which carries only `Id` / `Email` / `IsAuthenticated`. As resolved: Payment reads the opaque `owner` claim at its own HTTP boundary (`Concertable.Payment.Api.Identity.ICurrentPayoutOwner`, fail-closed — throws if the claim is absent), and each service's `UserClaimsController` decides what that claim means (B2B issues its tenant id; Customer issues the user's own id). B2B's own request-scoped tenant filtering uses its `ITenantContext` (a DB lookup off the user id), never the shared identity type.
+
 ## STOP — read this before any seeding work
 
 **Before writing or modifying any `IDevSeeder` / `ITestSeeder`, and before any change that would put rows into a table whose data the production app never writes directly, read [`docs/SEEDING_CONVENTIONS.md`](./docs/SEEDING_CONVENTIONS.md) in full.** Not the summary below — the full file. Every time.

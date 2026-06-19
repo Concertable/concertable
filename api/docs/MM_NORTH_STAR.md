@@ -26,15 +26,10 @@ Everything else is a corollary.
 ## Corollaries
 
 ### 1. No `IReadDbContext` on hot paths.
-`IReadDbContext` exists as a transitional shim during extraction. In the north-star state it is
-deleted. No Concert code reaches into Artist. No Payment code reaches into Identity. No
-Notification code reaches into anything.
-
-**Current legitimate use — Search.** Until Search gets its own `SearchDbContext` backed by a
-module-owned projection (populated from `ArtistCreated` / `VenueCreated` / `ConcertScheduled` /
-etc.), it needs `IReadDbContext` to query across modules for search indexing. That's the final
-consumer. Once Search has its projection, `IReadDbContext` and the `Concertable.Data.Application`
-project go away entirely.
+`IReadDbContext` was a transitional cross-module read shim during extraction. **It has been deleted** —
+cross-module / cross-tenant reads now go through each module's own read-only `Public<Module>DbContext`
+(e.g. `PublicConcertDbContext`), and the integration-test fixtures read back through the same. No Concert
+code reaches into Artist. No Payment code reaches into Identity. No Notification code reaches into anything.
 
 ### 2. No `.Include(x => x.OtherModuleEntity)`.
 Navigation properties across module boundaries don't exist. FKs are plain primitives (`Guid UserId`,

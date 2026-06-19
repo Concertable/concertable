@@ -12,6 +12,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using NetTopologySuite;
+using Refit;
 
 namespace Concertable.Kernel.Extensions;
 
@@ -50,6 +51,19 @@ public static class ServiceCollectionExtensions
         Action<TokenServiceOptions> configure)
     {
         services.Configure(configure);
+
+        // The authority is the Refit base address — resolve it now from the same delegate the options bind from.
+        var options = new TokenServiceOptions();
+        configure(options);
+
+        services.AddRefitClient<ITokenApi>()
+            .ConfigureHttpClient(client =>
+            {
+                // Empty authority defers the failure to the first token request (as before), not to startup.
+                if (!string.IsNullOrWhiteSpace(options.Authority))
+                    client.BaseAddress = new Uri(options.Authority.TrimEnd('/'));
+            });
+
         services.AddSingleton<ITokenService, ClientCredentialsTokenService>();
         return services;
     }

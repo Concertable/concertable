@@ -383,7 +383,10 @@ MigrationBackup/
 FodyWeavers.xsd
 
 **/appsettings.Development.json
-**/appsettings.E2E.json
+# appsettings.E2E.json is committed, NOT ignored: it holds only E2E test config
+# (fixed localhost endpoints, log levels, CORS, external-service flags) — no secrets.
+# Real secrets come from env vars / GitHub Secrets. CI runs the E2E suites from a clean
+# checkout, so these files MUST be tracked or the fixtures fail with "not found".
 app/.env.development
 app/.env.production
 
