@@ -3,8 +3,8 @@ using Concertable.Kernel.Expressions;
 
 namespace Concertable.Kernel.Specifications;
 
-public abstract class PredicateExpressionSpecification<TEntity>
-    : PredicateSpecification<TEntity>, IExpressionSpecification<TEntity>
+public abstract class NavigablePredicateSpecification<TEntity>
+    : PredicateSpecification<TEntity>, INavigableSpecification<TEntity>
     where TEntity : class
 {
     public IQueryable<TNav> ApplyVia<TNav>(
@@ -13,8 +13,8 @@ public abstract class PredicateExpressionSpecification<TEntity>
         => query.Where(navigation.Substitute(Predicate));
 }
 
-public abstract class PredicateExpressionSpecification<TEntity, TParams>
-    : PredicateSpecification<TEntity, TParams>, IExpressionSpecification<TEntity, TParams>
+public abstract class NavigablePredicateSpecification<TEntity, TParams>
+    : PredicateSpecification<TEntity, TParams>, INavigableSpecification<TEntity, TParams>
     where TEntity : class
 {
     public IQueryable<TNav> ApplyVia<TNav>(
