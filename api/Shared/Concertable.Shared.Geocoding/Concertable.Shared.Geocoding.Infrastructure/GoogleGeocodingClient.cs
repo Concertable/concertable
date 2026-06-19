@@ -1,4 +1,5 @@
 using System.Globalization;
+using Concertable.Kernel;
 using Concertable.Kernel.Exceptions;
 using Concertable.Shared.Geocoding.Application;
 
@@ -13,7 +14,7 @@ internal sealed class GoogleGeocodingClient : IGeocodingClient
         this.api = api;
     }
 
-    public async Task<LocationDto> GetLocationAsync(double latitude, double longitude)
+    public async Task<Address> GetLocationAsync(double latitude, double longitude)
     {
         var latLng = string.Create(CultureInfo.InvariantCulture, $"{latitude},{longitude}");
         var response = await api.GetAsync(latLng);
@@ -41,6 +42,6 @@ internal sealed class GoogleGeocodingClient : IGeocodingClient
         if (county is null || town is null)
             throw new BadRequestException("County or Town not found");
 
-        return new LocationDto(county, town);
+        return new Address(county, town);
     }
 }
