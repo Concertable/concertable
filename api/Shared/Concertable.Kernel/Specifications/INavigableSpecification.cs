@@ -2,7 +2,7 @@ using System.Linq.Expressions;
 
 namespace Concertable.Kernel.Specifications;
 
-public interface IExpressionSpecification<TEntity> : ISpecification<TEntity>
+public interface INavigableSpecification<TEntity> : ISpecification<TEntity>
     where TEntity : class
 {
     IQueryable<TNav> ApplyVia<TNav>(
@@ -10,7 +10,7 @@ public interface IExpressionSpecification<TEntity> : ISpecification<TEntity>
         Expression<Func<TNav, TEntity>> navigation);
 }
 
-public interface IExpressionSpecification<TEntity, TParams> : ISpecification<TEntity, TParams>
+public interface INavigableSpecification<TEntity, TParams> : ISpecification<TEntity, TParams>
     where TEntity : class
 {
     IQueryable<TNav> ApplyVia<TNav>(
