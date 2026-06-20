@@ -415,27 +415,33 @@ What shipped:
   project references are gone. `GetOwnerByIdAsync` (notification owner) and `SetupCheckoutStep`'s
   `GetManagerByIdAsync` (payout owner) are left for Phase 5/8 — they're attribution/payout, not ownership.
 
-### Phase 4 — Active-tenant resolution + multi-membership *(no re-scaffold; minimal frontend)*
+### Phase 4 — Active-tenant resolution + multi-membership ✅ *(no re-scaffold; minimal frontend)*
 
-- `TenantContext.ResolveAsync` per §3 (header validated against memberships, single-membership
-  default, fails closed). Ordering note: `TenantResolutionMiddleware` currently runs *after*
-  `UseAuthorization` (`B2B.Web/Program.cs:194` vs `:197`), and authorization handlers execute *inside*
-  `UseAuthorization` — so the `PermissionAuthorizationHandler`'s own memoized `ResolveAsync` call, not
-  the middleware, is the primary resolution trigger for permission-gated requests. The middleware only
-  still matters for tenant-scoped endpoints that aren't permission-gated. Either move it to between
-  `UseAuthentication` and `UseAuthorization` for one obvious resolution point, or keep it as-is and
-  document that the handler is the trigger — but do **not** leave the old "confirm it runs before
-  `UseAuthorization`" instruction, which is both false today and unnecessary.
-- `GET /api/auth/me` gains `memberships: [{tenantId, legalName, type, role}]` — additive, existing
-  SPAs ignore it.
-- `owner` claim: with >1 membership, return the founding membership's tenant as a documented
-  transitional default — fully resolved in Phase 5.
-- Frontend (minimal): axios interceptor in `app/web/shared` attaching `X-Tenant-Id` only when a
-  tenant is selected. The switcher UI itself lands in Phase 6 — no current user has two
-  memberships, so E2E stays green with zero UI change.
-
-Tests: `TenantContextTests` multi-membership cases (header valid/invalid/absent); integration test
-seeding a second Owner membership via the test seeder and asserting header-switched data isolation.
+> **Shipped** on `Feature/active-tenant-resolution` (off `Feature/permission-policies`). Build green; affected
+> suites pass — `Tenant.UnitTests` (53, incl. header valid/unowned/malformed + single-default + multi-membership
+> fail-closed) and the integration suites that drive the real ASP.NET pipeline: `Tenant` (15, incl. the new
+> header-switched isolation set), `User` (3). Re-ran `Venue` (25), `Artist` (17), `Concert` (63) — the middleware
+> reorder is behaviour-preserving for the single-membership seed graph. All four web builds green. E2E skipped by
+> policy: Phase 4 isn't in the massive/risky set (§8) and the frontend change is zero-UI (the interceptor sends a
+> header only when a tenant is selected, and nothing selects one until the Phase 6 switcher).
+>
+> **Deviations from the design above:**
+> - **Resolution point:** chose the "one obvious point" option — `TenantResolutionMiddleware` now runs *between*
+>   `UseAuthentication` and `UseAuthorization`, so it (not the permission handler) is the trigger for every
+>   request; the handler's own memoized `ResolveAsync` then no-ops. The middleware was also converted to a
+>   factory-activated `IMiddleware` (registered scoped).
+> - **Owner-claim default:** ordering/predicates over the join-projected `UserMembership` don't translate in EF,
+>   so the founding-first default is a dedicated `GetDefaultTenantIdAsync` (orders on the membership's own
+>   columns, selects just the id — no join). The general `GetMembershipsAsync` is therefore *unordered* (its two
+>   callers — the single-default count check and the `/me` list — don't need order).
+> - **`/me` shape:** memberships are additive as `UserBase.Memberships` (populated only by `/me`, empty for
+>   cross-module reads), which adds a `User.Contracts → Tenant.Contracts` reference. Retired with the polymorphic
+>   DTOs in Phase 7.
+> - **Multi-membership test data** is arranged per-test (a fixture write helper), never added to the global seed —
+>   the seed graph must stay one-membership-per-operator so the no-header single-default keeps every other suite
+>   green. The isolation test drives `/api/organizations` (a `[Authorize]`-only endpoint), so it exercises the
+>   *middleware* resolution path specifically.
+> - **`owner` claim** stays single-valued via `GetDefaultTenantIdAsync` (founding first) — fully resolved in Phase 5.
 
 ### Phase 5 — Payment proxy + kill the `owner` claim *(no re-scaffold; frontend base-URL swap)*
 

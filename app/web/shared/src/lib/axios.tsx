@@ -1,5 +1,6 @@
 import { AxiosError } from "axios";
 import { userManager } from "@/features/auth";
+import { TENANT_HEADER, useActiveTenantStore } from "@/features/tenant";
 import api, { configureApi } from "@concertable/shared/lib/axiosClient";
 
 configureApi(import.meta.env.VITE_API_URL);
@@ -7,6 +8,10 @@ configureApi(import.meta.env.VITE_API_URL);
 api.interceptors.request.use(async (config) => {
   const user = await userManager.getUser();
   if (user?.access_token) config.headers.Authorization = `Bearer ${user.access_token}`;
+
+  const tenantId = useActiveTenantStore.getState().activeTenantId;
+  if (tenantId) config.headers[TENANT_HEADER] = tenantId;
+
   return config;
 });
 
