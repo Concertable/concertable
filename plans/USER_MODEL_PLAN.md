@@ -443,19 +443,40 @@ What shipped:
 >   *middleware* resolution path specifically.
 > - **`owner` claim** stays single-valued via `GetDefaultTenantIdAsync` (founding first) — fully resolved in Phase 5.
 
-### Phase 5 — Payment proxy + kill the `owner` claim *(no re-scaffold; frontend base-URL swap)*
+### Phase 5 — Payment proxy + kill the `owner` claim ✅ *(no re-scaffold; frontend base-URL swap)*
 
-Must land **before invitations create real multi-tenant users** — the per-token `owner` claim goes
-ambiguous/stale the moment a user has two tenants or switches mid-session.
-
-- B2B payouts controller per §5; Payment gRPC surface gains the missing RPCs; B2B SPAs swap the
-  payout feature from the Payment host to their own service's client.
-- Payment's `StripeAccountController` stays for Customer flows (`GetOwnerId() → sub` fallback —
-  verify `CustomerProfileClaimsProvider` doesn't mint `owner` before relying on it).
-- `UserClaimsController` stops emitting `owner`; `ICurrentUser.Owner`/`GetOwnerId()` survive only
-  until Phase 7 cleanup for the Customer fallback path.
-- E2E: `StripeE2EAccountResolver` already keys on `TenantSeedIds` (TS Phase 3) — unchanged; run the
-  payout UI scenarios in the baseline after the base-URL swap.
+> **Shipped** on `Feature/payment-proxy` (off `Feature/active-tenant-resolution`). Build green; affected suites
+> pass — `Tenant.UnitTests` (53), `Payment.UnitTests` (25), and the B2B integration suite (Artist 17, Concert 63,
+> Tenant 21 incl. 6 new `StripeAccountProxyTests`, User 3, Venue 25 = 129, 5/5 projects). All four web builds green.
+> UI E2E (payout scenarios) is the massive/risky exit gate — run via `e2e-ui-debug`/`e2e-ui-regress` after this.
+>
+> **What shipped:**
+> - **Payment** gains a `PayoutAccount` gRPC service (onboarding-link / account-status / payment-method /
+>   setup-intent, explicit `owner_id`). The four operation bodies were extracted into `IPayoutAccountService`
+>   (Infrastructure), shared by the HTTP `StripeAccountController` (now Customer-only) and the gRPC service.
+> - **B2B** adds `Tenant.Api/StripeAccountController` (route `api/stripeaccount`, `[HasPermission(PayoutsManage)]`),
+>   resolving the owner as `ITenantContext.TenantId` and calling Payment via a new `IPayoutAccountClient`
+>   (Payment.Client adapter, reusing the `payment:write` ServiceToken channel). The venue/artist SPAs repoint
+>   `VITE_PAYMENT_API_URL` at their own backend; Customer stays on the Payment host. `paymentAxios` gained the
+>   `X-Tenant-Id` interceptor (zero-UI — only sent once a tenant is selected, Phase 6).
+> - **`owner` killed in B2B:** `UserClaimsController` stops emitting it, and `owner` was dropped from the
+>   `concertable.b2b.api` ApiResource (kept on Customer's). The now-orphaned default-tenant chain
+>   (`GetTenantIdByUserIdAsync` + `GetDefaultTenantIdAsync` + `UserMembership.InvitedByUserId`) was removed.
+>
+> **Deviations from the design above:**
+> - **`ICurrentUser.Owner`/`GetOwnerId()` were already gone** — a prior refactor removed them from Kernel and moved
+>   the read to Payment's own boundary (`ICurrentPayoutOwner`, reads the opaque `owner` claim, fail-closed; see
+>   `api/CLAUDE.md`). So "kill the owner claim" reduced to: B2B stops *emitting* it. Customer still mints
+>   `owner = sub` independently (its own `UserClaimsController`), so its payout path is untouched — there is no
+>   `GetOwnerId()` fallback to verify (it no longer exists).
+> - **No `payment:read` scope.** The new gRPC service sits under the existing `ServiceToken` policy
+>   (`payment:write`) and B2B reuses `payment:write` — consistent with every other Payment RPC. A read/write split
+>   with no read-only consumer would add a new Auth scope + per-method credential routing for no posture gain (the
+>   trusted B2B service already holds `payment:write` for the money-movement RPCs).
+> - New card DTO is `SavedCard` (Payment.Client), not `PaymentMethod` — that name is already a B2B Contract enum
+>   (Cash/Transfer) imported alongside `Payment.Client` across B2B. Wire shape is unchanged (`{ brand, last4,
+>   expMonth, expYear }` regardless of the C# type name).
+> - `StripeE2EAccountResolver` already keys on `TenantSeedIds` (TS Phase 3) — unchanged.
 
 ### Phase 6 — Invitations + member management + UI *(re-scaffold)*
 
