@@ -332,7 +332,24 @@ Tests: `Concertable.B2B.Tenant.UnitTests` (resolve-via-membership; persona deriv
 `Tenant.IntegrationTests` asserts registration creates tenant + Owner membership + persona.
 Everything else untouched.
 
-### Phase 2 — Permission policies replace `[VenueManager]`/`[ArtistManager]` *(no re-scaffold)*
+### Phase 2 — Permission policies replace `[VenueManager]`/`[ArtistManager]` ✅ *(no re-scaffold)*
+
+> **Shipped** on `Feature/permission-policies` (off `Feature/tenant-membership`). Build green; the affected
+> suites pass — `Tenant.UnitTests` (49, incl. catalog-coverage + membership permission/persona cases) and the
+> integration suites that drive the real authorization pipeline: `Tenant` (10), `Venue` (25), `Artist` (17),
+> `Concert` (63), `User` (3). E2E skipped by policy: the blast radius is the B2B authorization pipeline, which
+> the integration suites exercise end-to-end through the real ASP.NET middleware (every swapped family,
+> wrong-persona → 403, Admin delegation, bare `[Authorize]`, anonymous → 401); token issuance, claims, Auth,
+> and the SPA are untouched by this phase.
+>
+> **Deviation from the design below:** persona is enforced at the *call-site* — `[HasPermission(perm,
+> TenantType.X)]` — not as a catalog per-permission constraint. The shared `ProfileEdit`/`OperationsView`
+> permissions gate both venue *and* artist controllers, so one catalog constraint can't express the split;
+> pinning persona at the call-site reproduces today's `[VenueManager]`/`[ArtistManager]` gating exactly
+> (provably identical — the Venue/Artist suites already assert wrong-persona → 403). `PermissionCatalog` is
+> therefore a pure role→permission map. This also lands the Phase-1-deferred stash: `TenantContext` now
+> memoizes role + persona, since `IMembershipContext` is its first consumer. Venue.Api keeps its `User.Api`
+> reference (for the surviving `[Admin]` on `VenueController.Approve`); Artist/Concert Api swap it for `Tenant.Api`.
 
 - New in the Tenant module: `Permissions` (string constants), `TenantRole`, `PermissionCatalog`
   (+ persona constraints), `IMembershipContext`, `HasPermissionAttribute` (Tenant.Api),
