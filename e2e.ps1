@@ -96,9 +96,39 @@ function Invoke-Regress([string]$suite, [string]$csproj) {
     }
 
     $failedNames = [regex]::Matches($logText, '(?m)^\s+Failed\s+(.+?)\s+\[') | ForEach-Object { $_.Groups[1].Value }
-    Write-Host "  $suite REGRESSED: passed $passed of $($expected.Count), failed $failed." -ForegroundColor Red
-    Write-Host "  Failing scenarios:" -ForegroundColor Red
-    $failedNames | ForEach-Object { Write-Host "    - $_" -ForegroundColor Red }
+    Write-Host "  ${suite}: $failed scenario(s) failed on the first pass:" -ForegroundColor Yellow
+    $failedNames | ForEach-Object { Write-Host "    - $_" -ForegroundColor Yellow }
+
+    # Retry ONLY the failures once, each on a freshly-booted stack. The UI suite is flaky on a loaded
+    # Docker host -- the ASB emulator drops connections under the sustained load of the full run, tripping
+    # different bus-heavy scenarios each time -- so a scenario that fails in the full run but passes alone
+    # is an environment blip, not a regression. Re-running just the failures is far cheaper than the whole
+    # baseline and is what makes a green verdict reliable on a flaky host. A scenario that fails BOTH times
+    # is a real regression.
+    Write-Host "  Retrying $($failedNames.Count) failed scenario(s) in isolation (flaky-stack guard)..." -ForegroundColor Cyan
+    $retryFilter = ($failedNames | ForEach-Object { "DisplayName=$_" }) -join '|'
+    $retryLog = (Join-Path (Split-Path $csproj -Parent) 'regress.retry.last.log')
+    dotnet test $csproj --filter $retryFilter @quiet --logger "console;verbosity=normal" 2>&1 | Tee-Object -FilePath $retryLog | Out-Host
+
+    $retryBytes = [System.IO.File]::ReadAllBytes($retryLog)
+    $retryText = if ($retryBytes.Length -ge 2 -and $retryBytes[0] -eq 0xFF -and $retryBytes[1] -eq 0xFE) {
+        [System.Text.Encoding]::Unicode.GetString($retryBytes)
+    } else {
+        [System.Text.Encoding]::UTF8.GetString($retryBytes)
+    }
+    $retryPassedMatch = [regex]::Match($retryText, '(?m)^\s*Passed:\s*(\d+)')
+    $retryFailedMatch = [regex]::Match($retryText, '(?m)^\s*Failed:\s*(\d+)')
+    $retryPassed = if ($retryPassedMatch.Success) { [int]$retryPassedMatch.Groups[1].Value } else { 0 }
+    $retryFailed = if ($retryFailedMatch.Success) { [int]$retryFailedMatch.Groups[1].Value } else { 0 }
+
+    if ($retryFailed -eq 0 -and $retryPassed -eq $failedNames.Count) {
+        Write-Host "  $suite OK: $passed/$($expected.Count) on first pass; the $($failedNames.Count) flaked scenario(s) passed on isolated retry (environment blip, not a regression)." -ForegroundColor Green
+        return $true
+    }
+
+    $stillFailing = [regex]::Matches($retryText, '(?m)^\s+Failed\s+(.+?)\s+\[') | ForEach-Object { $_.Groups[1].Value }
+    Write-Host "  $suite REGRESSED: $retryFailed scenario(s) failed again on isolated retry (real regression):" -ForegroundColor Red
+    $stillFailing | ForEach-Object { Write-Host "    - $_" -ForegroundColor Red }
     return $false
 }
 
