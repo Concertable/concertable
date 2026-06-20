@@ -448,7 +448,13 @@ What shipped:
 > **Shipped** on `Feature/payment-proxy` (off `Feature/active-tenant-resolution`). Build green; affected suites
 > pass — `Tenant.UnitTests` (53), `Payment.UnitTests` (25), and the B2B integration suite (Artist 17, Concert 63,
 > Tenant 21 incl. 6 new `StripeAccountProxyTests`, User 3, Venue 25 = 129, 5/5 projects). All four web builds green.
-> UI E2E (payout scenarios) is the massive/risky exit gate — run via `e2e-ui-debug`/`e2e-ui-regress` after this.
+> **UI E2E (massive/risky gate) run and green** — every baseline scenario passes (B2B 23/23, Customer 7/7). The
+> run surfaced a **latent Phase-3 bug** (not Phase 5): `Venue`/`Artist` `CreateAsync` source the operator's email
+> from `ICurrentUser`, but the `concertable.b2b.api` resource never listed `email` in `UserClaims`, so the token
+> never carried it → `currentUser.Email` null → `"Email is required"` (400) on profile creation. Integration
+> tests inject an email header so never caught it; Phase 3 skipped E2E. Fixed by adding `email` to the B2B
+> resource's `UserClaims` (commit `936eadba`). Note: the suite is ASB/Docker-flaky under sustained load
+> (intermittent connection-refused on bus-heavy scenarios) — those pass on a fresh stack; treat as environment.
 >
 > **What shipped:**
 > - **Payment** gains a `PayoutAccount` gRPC service (onboarding-link / account-status / payment-method /
