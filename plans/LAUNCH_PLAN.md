@@ -2,9 +2,9 @@
 
 > **Goal:** Production launch of the B2B platform (venue↔artist booking + automated settlement) by **November 2026**.
 >
-> **Updated:** 2026-06-01
+> **Updated:** 2026-06-20
 >
-> **Companion docs:** [B2B_LAUNCH_CHECKLIST.md](B2B_LAUNCH_CHECKLIST.md), [ORGANIZATION_REFACTOR_PLAN.md](ORGANIZATION_REFACTOR_PLAN.md), [MARKETPLACE_PLAN.md](MARKETPLACE_PLAN.md), [../api/Concertable.B2B/Modules/Contract/LEGAL_REQUIREMENTS.md](../api/Concertable.B2B/Modules/Contract/LEGAL_REQUIREMENTS.md), [../api/Concertable.B2B/TENANCY_DESIGN.md](../api/Concertable.B2B/TENANCY_DESIGN.md).
+> **Companion docs:** [B2B_LAUNCH_CHECKLIST.md](B2B_LAUNCH_CHECKLIST.md), [USER_MODEL_PLAN.md](USER_MODEL_PLAN.md), [MARKETPLACE_PLAN.md](MARKETPLACE_PLAN.md), [../api/Concertable.B2B/Modules/Contract/LEGAL_REQUIREMENTS.md](../api/Concertable.B2B/Modules/Contract/LEGAL_REQUIREMENTS.md).
 
 ---
 
@@ -20,7 +20,7 @@
 - Cancellation/refund handling on the B2B path (venue or artist cancels — escrow refunds correctly)
 - Per-booking signed agreement (click-wrap e-signature, terms snapshotted at Accept) — see [LEGAL_REQUIREMENTS.md](../api/Concertable.B2B/Modules/Contract/LEGAL_REQUIREMENTS.md) item 2
 - Per-contract-type VAT calculation + VAT-compliant self-billed invoices per settlement (items 1, 3, 4)
-- Per-tenant configuration surface (PRS, VAT, platform fee, payment terms, cancellation defaults) — see [TENANCY_DESIGN.md](../api/Concertable.B2B/TENANCY_DESIGN.md) §5
+- Per-tenant configuration surface (PRS, VAT, platform fee, payment terms, cancellation defaults)
 
 **Scope caveat — DoorSplit/Versus revenue source:** two of the four contract types settle against door/ticket revenue, which in standalone B2B (no marketplace) has no feed. FlatFee + VenueHire are fully standalone; DoorSplit + Versus need a revenue source decided before they can be sold (see §9). FlatFee + VenueHire alone are a viable v1 if that decision slips.
 
@@ -46,9 +46,9 @@ Company registration, ICO, T&Cs, insurance, accounting, HMRC platform-operator r
 
 ### Swim-lane B — Architecture
 **Owner:** you (or contractor dev)
-**Detail:** [ORGANIZATION_REFACTOR_PLAN.md](ORGANIZATION_REFACTOR_PLAN.md)
+**Detail:** [USER_MODEL_PLAN.md](USER_MODEL_PLAN.md)
 
-The Organization refactor — the load-bearing structural change that everything else attaches to. Six sequenced phases, ~15-24 working days end-to-end. Includes the multi-user membership table from day one (Phase 6) so no second auth sweep is ever needed.
+The tenancy refactor — the load-bearing structural change that everything else attaches to, sequenced as the phases in the timeline below. The tenant-scoping foundation (Tenant module with a Guid PK, request-scoped tenant filtering, the compliance value object) has shipped; the outstanding work — multi-user membership, roles, and the authorization sweep — is tracked in [USER_MODEL_PLAN.md](USER_MODEL_PLAN.md).
 
 ### Swim-lane C — Compliance UI/UX + workflow polish
 **Owner:** you (or contractor dev)
@@ -62,9 +62,9 @@ Calendar-realistic, not optimistic. Slips are flagged as risks (§6).
 
 | Month | Swim-lane A (Legal/Business) | Swim-lane B (Architecture) | Swim-lane C (Compliance UI/UX) |
 |---|---|---|---|
-| **Month 1 (Jun 2026)** | Company registered (Companies House, ~£12, 24hr) · ICO fee paid (~£40-60/yr) · Solicitor engaged + briefed for T&Cs · **Revenue model decided** · **DoorSplit/Versus revenue-source decision** (§9) | **Phase 0** — `Organization` module scaffolding · **Phase 1** — `ComplianceContext` value object + tenant config surface (TENANCY_DESIGN §5) | **Music licence attestation field** spec (= PRS self-licensed flag; wired in Phase 1) · _(PRS correction in `LEGAL_REQUIREMENTS.md` ✅ done 2026-06-01)_ |
-| **Month 2 (Jul 2026)** | Business bank account opened · Accountant engaged · Solicitor drafts circulating | **Phase 2** — Venue/Artist wired to Organization | **Cookie banner** scaffolding on all 3 SPAs (text from solicitor still pending) |
-| **Month 3 (Aug 2026)** | Insurance arranged (Professional Indemnity + Cyber) · Stripe production application submitted | **Phase 3** — `PayoutAccountEntity` re-key to OrganizationId | **Pricing transparency UI** in checkout (now that revenue model is known) |
+| **Month 1 (Jun 2026)** | Company registered (Companies House, ~£12, 24hr) · ICO fee paid (~£40-60/yr) · Solicitor engaged + briefed for T&Cs · **Revenue model decided** · **DoorSplit/Versus revenue-source decision** (§9) | **Phase 0** — `Tenant` module scaffolding · **Phase 1** — `ComplianceContext` value object + tenant config surface | **Music licence attestation field** spec (= PRS self-licensed flag; wired in Phase 1) · _(PRS correction in `LEGAL_REQUIREMENTS.md` ✅ done 2026-06-01)_ |
+| **Month 2 (Jul 2026)** | Business bank account opened · Accountant engaged · Solicitor drafts circulating | **Phase 2** — Venue/Artist wired to Tenant | **Cookie banner** scaffolding on all 3 SPAs (text from solicitor still pending) |
+| **Month 3 (Aug 2026)** | Insurance arranged (Professional Indemnity + Cyber) · Stripe production application submitted | **Phase 3** — `PayoutAccountEntity` re-key to TenantId | **Pricing transparency UI** in checkout (now that revenue model is known) |
 | **Month 4 (Sep 2026)** | Solicitor T&Cs finalised · DPA signed with Stripe · ICO documentation (privacy policy, lawful basis, retention) | **Phase 4** — `ComplianceContext` snapshot on Booking · **Phase 5** — Organization setup UI | **Privacy + T&Cs page routes** wired up (solicitor text now in hand) · **Venue legal details on emails** template change · **Booking agreement + click-wrap e-sign** at Accept (PDF via `IPdfService`) |
 | **Month 5 (Oct 2026)** | HMRC platform-operator registration · Stripe production approved · Marketing site live | **Phase 6** — Multi-user membership + auth sweep | **Refund / cancellation codification** in `Cancelled` workflow · **Per-contract VAT calculation** + **self-billed invoice generation** (reuses agreement PDF plumbing) · **OSA report-content flow** (button + email + policy doc) · **DAC7 export script** (defer the actual run until Jan 2028) |
 | **Month 6 (Nov 2026)** | Beta cohort recruited (~10 venues + 50 artists) · Support process live · Pricing page live | Bugfixes from beta feedback · final integration tests | Final polish · accessibility quick-pass · **LAUNCH** |
@@ -81,7 +81,7 @@ Revenue model decision (Month 1)
             └─→ Cookie banner final text (Month 4)
             └─→ Refund / cancellation codification (Month 5)
 
-Phase 0 — Org scaffolding (Month 1)
+Phase 0 — Tenant scaffolding (Month 1)
     └─→ Phase 1 — Compliance value object (Month 1-2)
             └─→ Phase 2 — Venue/Artist FK (Month 2)
                     └─→ Phase 3 — Stripe re-key (Month 3)
@@ -126,7 +126,7 @@ Stripe production approval (~2-4 weeks elapsed)
 
 | # | Risk | Likelihood | Impact | Mitigation |
 |---|---|---|---|---|
-| R1 | Org refactor takes longer than 24 days (EF nested owned-types surprises, migration-script issues) | Medium | High | Phase 0 scaffolding has explicit go/no-go assessment at the end. If it took >3 days, recalibrate timeline before continuing. |
+| R1 | Tenancy refactor takes longer than 24 days (EF nested owned-types surprises, migration-script issues) | Medium | High | Phase 0 scaffolding has explicit go/no-go assessment at the end. If it took >3 days, recalibrate timeline before continuing. |
 | R2 | Solicitor T&Cs drafting takes longer than 4 weeks | Medium | High | Brief solicitor in Month 1, not Month 3. Keep a parallel "draft v1" using a quality T&Cs template as backup. |
 | R3 | Stripe production approval delayed (Stripe asks for more info / rejects) | Medium | High | Submit application Month 3, not Month 5. Have ICO fee + insurance + company info ready as supporting docs. |
 | R4 | Revenue model decision keeps slipping → blocks pricing UI + solicitor work | Medium | Medium | **Hard deadline: end of Month 1.** Force a decision even if imperfect; revisit at v1.1. |
@@ -153,10 +153,10 @@ Concrete checklist for Month 6. Don't launch without all of these green.
 - [ ] Stripe production account approved + webhooks live
 
 ### Architecture
-- [ ] Organization refactor Phases 0-6 merged and integration-tested
-- [ ] All Stripe Connect Express payouts flowing through OrganizationId
+- [ ] Tenancy refactor merged and integration-tested (tenant-scoping done; membership + auth sweep per USER_MODEL_PLAN.md still outstanding)
+- [ ] All Stripe Connect Express payouts flowing through TenantId
 - [ ] ComplianceContext snapshot populated on every Booking created post-launch
-- [ ] Auth checks routed through `OrganizationMembership` (not legacy TPH FK)
+- [ ] Auth checks routed through tenant membership (not legacy TPH FK)
 - [ ] Booking agreement generated + click-wrap consent recorded at every Accept
 - [ ] VAT calculated per contract type + self-billed invoice generated per settlement
 - [ ] Tenant config surface live (PRS / VAT / fee / payment terms read from it, not constants)
@@ -193,7 +193,7 @@ The marketplace is **deliberately additive** — designed so it can be switched 
 See [MARKETPLACE_PLAN.md](MARKETPLACE_PLAN.md) for the detail. Headline:
 - Most of the marketplace infrastructure already exists (Customer SPA, Customer module, TicketEntity, ConcertEntity price/capacity fields).
 - Switch-on is primarily UI work (pricing transparency, refund UI, consumer-facing emails) + consumer-protection legal (separate customer T&Cs from solicitor + CMA secondary-ticketing review).
-- The B2B Organization refactor doesn't change; settlement workflows don't change; Stripe Connect doesn't change.
+- The B2B tenancy refactor doesn't change; settlement workflows don't change; Stripe Connect doesn't change.
 - Estimated effort when the time comes: ~2-3 calendar months.
 
 **Earliest realistic marketplace switch-on:** Q1 2027 (3 months after B2B launch). Push later if B2B traction needs all the focus.
@@ -211,10 +211,9 @@ These need answers but aren't urgent yet:
 ## 10. Reference
 
 - [B2B_LAUNCH_CHECKLIST.md](B2B_LAUNCH_CHECKLIST.md) — full legal/business setup checklist
-- [ORGANIZATION_REFACTOR_PLAN.md](ORGANIZATION_REFACTOR_PLAN.md) — Swim-lane B detail
+- [USER_MODEL_PLAN.md](USER_MODEL_PLAN.md) — Swim-lane B detail: the outstanding multi-user tenant / roles / auth-sweep work
 - [MARKETPLACE_PLAN.md](MARKETPLACE_PLAN.md) — Phase 2 marketplace switch-on plan
 - [../api/Concertable.B2B/Modules/Contract/LEGAL_REQUIREMENTS.md](../api/Concertable.B2B/Modules/Contract/LEGAL_REQUIREMENTS.md) — B2B legal backlog (rewritten 2026-06-01: contract-type-centric, items 0-9, PRS corrected)
-- [../api/Concertable.B2B/TENANCY_DESIGN.md](../api/Concertable.B2B/TENANCY_DESIGN.md) — tenant = legal entity; Organization → tenant; tenant config surface (§5)
 - [../api/Concertable.Customer/LEGAL_REQUIREMENTS.md](../api/Concertable.Customer/LEGAL_REQUIREMENTS.md) — marketplace/fan legal leads (future, separate system)
 - [../api/Concertable.B2B/Modules/Contract/ARCHITECTURE.md](../api/Concertable.B2B/Modules/Contract/ARCHITECTURE.md) — contract + workflow architecture
 - [MODULAR_MONOLITH_RULES.md](../api/docs/MODULAR_MONOLITH_RULES.md) — module boundary rules
@@ -228,5 +227,6 @@ These need answers but aren't urgent yet:
 - **2026-06-01** — `LEGAL_REQUIREMENTS.md` rewritten contract-type-centric (items 0-9); PRS corrected (not 3%, not platform's liability — per-tenant pass-through at ~4.2%); fan/marketplace items split into a separate Customer doc.
 - **2026-06-01** — Booking agreement + click-wrap e-signature added to v1 scope (legal item 2). It's the backbone for the audit trail, self-billed invoice, and cancellation-terms consent; GigPig/GigXchange market this as "contract signing" and it matters more for us given multi-direction money movement.
 - **2026-06-01** — Per-contract-type VAT calculation + self-billed invoicing added to v1 scope (was implied, never sequenced). VAT branches on supply direction (VenueHire reverses it) and supplier registration status.
-- **2026-06-01** — Tenant configuration surface adopted (TENANCY_DESIGN §5): PRS/VAT/fee/payment-terms/cancellation defaults read from per-tenant config, not constants.
+- **2026-06-01** — Tenant configuration surface adopted: PRS/VAT/fee/payment-terms/cancellation defaults read from per-tenant config, not constants.
 - **2026-06-01** — Flagged DoorSplit/Versus revenue-source gap (R9): two of four contract types can't settle without a revenue feed; FlatFee + VenueHire are the standalone-safe v1 floor.
+- **2026-06-20** — Organization refactor superseded by the tenancy route. `ORGANIZATION_REFACTOR_PLAN.md`, `TENANCY_DESIGN.md`, and `TENANT_SCOPING_PLAN.md` shipped and were deleted per the plans rule (git history is the archive). The B2B module is now `Tenant` (Guid PK) with request-scoped filtering and a compliance value object; tenant-scoping is complete (full E2E green). **"Organization" is retained ONLY as the user-facing UI/API label** (Settings → Organization, `api/organizations`) — the backend domain type is `Tenant`. Remaining Swim-lane B work (multi-user membership, roles, the auth sweep) moved to `USER_MODEL_PLAN.md`. This plan's Swim-lane B / §7 references were updated to match; the killed `OrganizationMembership` / `OrganizationId` terminology was scrubbed.

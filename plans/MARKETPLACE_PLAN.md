@@ -8,7 +8,7 @@
 >
 > **Updated:** 2026-05-18
 >
-> **Companion docs:** [LAUNCH_PLAN.md](LAUNCH_PLAN.md), [B2B_LAUNCH_CHECKLIST.md](B2B_LAUNCH_CHECKLIST.md), [ORGANIZATION_REFACTOR_PLAN.md](ORGANIZATION_REFACTOR_PLAN.md).
+> **Companion docs:** [LAUNCH_PLAN.md](LAUNCH_PLAN.md), [B2B_LAUNCH_CHECKLIST.md](B2B_LAUNCH_CHECKLIST.md), [USER_MODEL_PLAN.md](USER_MODEL_PLAN.md).
 
 ---
 
@@ -71,12 +71,12 @@ This is the key constraint the user asked for. Verifying it explicitly:
 
 | B2B component | Touched by marketplace switch-on? |
 |---|---|
-| `OrganizationEntity` + `ComplianceContext` | **No.** Already venue-keyed; ticket sales just feed money into the same Stripe account. |
+| `TenantEntity` + `ComplianceContext` | **No.** Already venue-keyed; ticket sales just feed money into the same Stripe account. |
 | Settlement workflows (FlatFee, DoorSplit, VenueHire, Versus) | **No.** They already handle ticket revenue. Customer ticket purchases just populate `Concert.DoorRevenue` instead of manual entry. |
 | Stripe Connect Express setup | **No.** Same connected accounts, same charge routing. |
 | Venue/Artist onboarding | **No.** DAC7 compliance fields already collect what's needed; the venue's legal entity is already what customers see on tickets. |
 | `BookingEntity` snapshot pattern | **No.** Already snapshots venue + artist compliance at Accept. |
-| Auth model (Organization + Membership) | **No.** Customers use a different auth path (CustomerEntity, separate role); doesn't intersect with venue/artist. |
+| Auth model (Tenant + Membership) | **No.** Customers use a different auth path (CustomerEntity, separate role); doesn't intersect with venue/artist. |
 | Module boundaries | **No.** Customer module exists; ticket logic already lives in Concert + Customer modules. |
 
 ### Things that *might* need a small B2B touch (flag for review at switch-on time)
@@ -88,7 +88,7 @@ This is the key constraint the user asked for. Verifying it explicitly:
 | Settlement timing | B2B might settle immediately; customer-paid bookings may need to hold for a chargeback window. Configurable on the booking, not architectural. |
 | Refund routing | Customer refunds reverse the original ticket charge (in the venue's Stripe account). Currently no code path for this; needs an `ICustomerRefundService`. New code, doesn't touch existing code. |
 
-**Bottom line:** the architectural foundation laid in the Organization refactor handles marketplace correctly. The switch-on work is overwhelmingly **adding new code paths**, not modifying existing ones.
+**Bottom line:** the architectural foundation laid in the tenancy refactor handles marketplace correctly. The switch-on work is overwhelmingly **adding new code paths**, not modifying existing ones.
 
 ## 5. Effort estimate when the time comes
 

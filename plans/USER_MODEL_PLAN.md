@@ -1,12 +1,12 @@
 # User-Model Plan — multi-user tenants, roles, permissions, the auth sweep
 
-> **Sequencing: this work starts only after `api/Concertable.B2B/plans/TENANT_SCOPING_PLAN.md`
-> phases 4–5 are complete.** Phase 4 (Bucket-B two-party scoping) supplies `ArtistEntity.TenantId`
-> and the two-party OR-filters that the ownership sweep (§Phase 3) and the messaging re-model
-> (§Phase 8) build on; landing Phase 5 (compliance value object) first avoids interleaved
-> `TenantEntity` re-scaffolds. This plan owns everything the tenant-scoping plan deferred to "the
-> later user-model plan": membership, roles, the authorization sweep, multi-tenant switching, and
-> the `MessageEntity` group-inbox decision.
+> **Sequencing: the prerequisite tenant-scoping work is complete** — the tenant-scoping plan
+> shipped (full E2E green) and was deleted per the plans rule, so this plan's gate is met and
+> **Phase 1 below is the next stage.** That work supplied what this plan builds on:
+> `ArtistEntity.TenantId` and the two-party OR-filters behind the ownership sweep (§Phase 3) and the
+> messaging re-model (§Phase 8), plus the compliance value object on `TenantEntity`. This plan owns
+> everything the tenant-scoping plan deferred to "the later user-model plan": membership, roles, the
+> authorization sweep, multi-tenant switching, and the `MessageEntity` group-inbox decision.
 
 ## 0. Scope and non-goals
 
@@ -32,15 +32,22 @@ status when starting Phase 1. `api/Concertable.Payment/CLAUDE.md` still names
 ### 1.1 Paradigm: static roles, permissions as the checked unit
 
 Roles are predefined bundles of permissions; **call-sites check permissions, never role names**
-(`[RequirePermission(Permission.ApplicationsDecide)]`). Adding or reshaping a role touches the
+(`[HasPermission(Permissions.ApplicationsDecide)]`). Adding or reshaping a role touches the
 catalog, never an endpoint. There are no resource-level grants: every governable resource is
 tenant-owned, so "may user U act on resource R" decomposes into (a) U's membership in the active
 tenant carries the required permission, and (b) `R.TenantId == activeTenant` — and (b) is exactly
 what the tenant-scoping filters/interceptor already enforce. Authorization is derived per-request
 from B2B's own data; tokens stay identity-only (`sub` + audience), per the architecture north star.
 
+Permissions are **`string` constants**, not an enum (`Permissions.ApplicationsDecide =
+"applications.decide"` in `Tenant.Contracts`) — the idiomatic modern ASP.NET Core permission shape,
+where the permission string *is* the policy name. The identifier never crosses a serialization
+boundary (identity-only tokens carry no permissions; membership rows store the *role*, not
+permissions), so the string form costs nothing the enum would have saved. The one thing it gives up
+— a compile-checked attribute argument — is recovered by a catalog-coverage test (§Phase 2).
+
 Role→permission binding is a **code-defined static map** — `PermissionCatalog` holding a
-`FrozenDictionary<TenantRole, FrozenSet<Permission>>` plus per-permission persona constraints. No
+`FrozenDictionary<TenantRole, FrozenSet<string>>` plus per-permission persona constraints. No
 `RolePermission` table, no per-tenant custom roles: the matrix is unit-testable, versioned with
 code, costs no admin UI, and doesn't fight the full-re-scaffold migration convention. Membership
 rows store only the role name; expansion happens in code. If custom roles are ever truly demanded,
@@ -111,8 +118,9 @@ Cross-module access goes through the `ITenantModule` facade + `Tenant.Contracts`
 stay primitive Guids per `MODULAR_MONOLITH_RULES.md`.
 
 ```csharp
-// Concertable.B2B.Tenant.Contracts: TenantType, TenantRole, Permission, InvitationStatus,
-//                                   PermissionCatalog, IMembershipContext, membership/invitation DTOs
+// Concertable.B2B.Tenant.Contracts: TenantType, TenantRole, Permissions (string constants),
+//                                   InvitationStatus, PermissionCatalog, IMembershipContext,
+//                                   membership/invitation DTOs
 
 // Concertable.B2B.Tenant.Domain
 public sealed class TenantMembershipEntity : IGuidEntity
@@ -170,8 +178,8 @@ Tokens are identity-only and live 900s, so the acting tenant is request state, n
 // Concertable.B2B.Tenant.Contracts
 public interface IMembershipContext
 {
-    TenantRole? Role { get; }                  // null = no active membership
-    bool HasPermission(Permission permission); // catalog bundle + persona constraint vs active TenantType
+    TenantRole? Role { get; }              // null = no active membership
+    bool HasPermission(string permission); // pass a Permissions.* constant; catalog bundle + persona constraint vs active TenantType
 }
 ```
 
@@ -179,21 +187,26 @@ public interface IMembershipContext
 
 ```csharp
 // Concertable.B2B.Tenant.Api — same cross-module Api-reference precedent as today's [VenueManager] in User.Api
-public sealed class RequirePermissionAttribute : AuthorizeAttribute
+public sealed class HasPermissionAttribute : AuthorizeAttribute
 {
-    public RequirePermissionAttribute(Permission permission) => Policy = $"permission:{permission}";
+    public HasPermissionAttribute(string permission) => Policy = $"perm:{permission}"; // pass a Permissions.* constant
 }
 ```
 
-- One policy per `Permission` value, registered in a startup loop in
-  `Tenant.Infrastructure/Extensions/ServiceCollectionExtensions.cs` (mirroring how
-  `User.Infrastructure` registers the profile policies today). No custom
-  `IAuthorizationPolicyProvider` — the set is small and static.
-- `PermissionAuthorizationHandler` does **no DB work of its own**: it calls
-  `ITenantResolver.ResolveAsync()` (memoized — safe if middleware already ran) and reads
-  `IMembershipContext.HasPermission(...)`. One indexed row read per request, no cross-request
-  caching — so role changes and removals take effect on the next request, which is the entire
-  reason authority lives in the DB and not in a 900s token.
+This is the recognized modern shape — string permissions + a custom policy provider + `[HasPermission]`:
+
+- **`PermissionPolicyProvider : IAuthorizationPolicyProvider`** (Tenant.Infrastructure) builds each
+  `perm:<name>` policy **on demand** — `.RequireAuthenticatedUser()` (so anonymous → 401, not 403) +
+  a `PermissionRequirement(name)` — and **delegates `GetDefaultPolicyAsync` /
+  `GetFallbackPolicyAsync` and any non-`perm:` name to an inner `DefaultAuthorizationPolicyProvider`**,
+  so the surviving `Admin` policy and every bare `[Authorize]` keep working (the one place this pattern
+  breaks if the delegation is forgotten). Registered **singleton** — there is no startup policy loop.
+- `PermissionAuthorizationHandler` (registered **scoped** — it depends on the scoped membership
+  context, matching today's profile handlers) does **no DB work of its own**: it calls
+  `ITenantResolver.ResolveAsync()` (memoized — safe whether or not `TenantResolutionMiddleware` ran
+  first) and reads `IMembershipContext.HasPermission(requirement.Permission)`. One indexed row read per
+  request, no cross-request caching — so role changes and removals take effect on the next request,
+  which is the entire reason authority lives in the DB and not in a 900s token.
 - Service-level ownership checks change shape: `entity.UserId != currentUser.GetId()` guards become
   tenant-scoped reads (`TenantScopedRepository.CurrentTenant` — the dormant seam in
   `Concertable.B2B.DataAccess.Infrastructure/TenantScopedRepository.cs`, wired for exactly this) or
@@ -257,7 +270,7 @@ Member-management endpoints (Tenant module):
 Invariant enforced in the service layer: **at least one Owner always remains** — role changes,
 removals, and self-leave all check it.
 
-## 7. Messaging: the group inbox (decision parked here by TENANT_SCOPING_PLAN §8)
+## 7. Messaging: the group inbox (decision deferred here from the tenant-scoping work)
 
 `MessageEntity` becomes tenant-pair-scoped: `FromTenantId`, `ToTenantId`, `SentByUserId`
 (attribution), content/action/sent-date as today. Visibility = active tenant ∈
@@ -311,9 +324,12 @@ Everything else untouched.
 
 ### Phase 2 — Permission policies replace `[VenueManager]`/`[ArtistManager]` *(no re-scaffold)*
 
-- New in the Tenant module: `Permission`, `TenantRole`, `PermissionCatalog` (+ persona
-  constraints), `IMembershipContext`, `RequirePermissionAttribute` (Tenant.Api),
-  `PermissionAuthorizationHandler`, policy-registration loop (Tenant.Infrastructure).
+- New in the Tenant module: `Permissions` (string constants), `TenantRole`, `PermissionCatalog`
+  (+ persona constraints), `IMembershipContext`, `HasPermissionAttribute` (Tenant.Api),
+  `PermissionRequirement` + `PermissionAuthorizationHandler` + `PermissionPolicyProvider`
+  (Tenant.Infrastructure). Registration:
+  `AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>()` +
+  `AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>()` — no startup policy loop.
 - Attribute swap at every call-site: `VenueController`, `VenueDashboardController`,
   `ArtistController`, `ArtistDashboardController`, `OpportunityController`,
   `ApplicationController`, `ConcertController` — per the matrix in §1.3. Module Api projects swap
@@ -328,7 +344,9 @@ Everything else untouched.
   Owner-membership-whose-persona-bundle-contains-the-permission.
 
 Tests: handler unit tests (wrong persona, no membership, Finance vs Manager); one integration test
-per swapped controller family asserting 403 for the wrong persona (artist manager POSTs a venue).
+per swapped controller family asserting 403 for the wrong persona (artist manager POSTs a venue); a
+catalog-coverage unit test asserting every `Permissions.*` constant appears in the matrix and every
+call-site permission string is a real constant (recovers the compile-time guarantee the enum gave).
 Memberships are already seeded from Phase 1, so fixtures pass unchanged.
 
 ### Phase 3 — Service-layer ownership: UserId → TenantId *(no re-scaffold; needs TS Phase 4)*
@@ -353,8 +371,14 @@ behavior identical.
 ### Phase 4 — Active-tenant resolution + multi-membership *(no re-scaffold; minimal frontend)*
 
 - `TenantContext.ResolveAsync` per §3 (header validated against memberships, single-membership
-  default, fails closed). Confirm `TenantResolutionMiddleware` runs before `UseAuthorization` in
-  `B2B.Web/Program.cs` (the handler's own memoized `ResolveAsync` covers it regardless).
+  default, fails closed). Ordering note: `TenantResolutionMiddleware` currently runs *after*
+  `UseAuthorization` (`B2B.Web/Program.cs:194` vs `:197`), and authorization handlers execute *inside*
+  `UseAuthorization` — so the `PermissionAuthorizationHandler`'s own memoized `ResolveAsync` call, not
+  the middleware, is the primary resolution trigger for permission-gated requests. The middleware only
+  still matters for tenant-scoped endpoints that aren't permission-gated. Either move it to between
+  `UseAuthentication` and `UseAuthorization` for one obvious resolution point, or keep it as-is and
+  document that the handler is the trigger — but do **not** leave the old "confirm it runs before
+  `UseAuthorization`" instruction, which is both false today and unnecessary.
 - `GET /api/auth/me` gains `memberships: [{tenantId, legalName, type, role}]` — additive, existing
   SPAs ignore it.
 - `owner` claim: with >1 membership, return the founding membership's tenant as a documented
@@ -464,6 +488,15 @@ preferences. Update the Conversations integration suite and the messaging UI E2E
 
 - **Pure RBAC (role-name checks at endpoints)** — scatters role knowledge across every controller;
   adding Finance/Door means touching every endpoint. Permissions invert that dependency.
+- **`Permission` enum + N policies registered in a startup loop** — works, and is leaner for a closed
+  set, but switched to the idiomatic modern shape recognized across .NET codebases: `string` constants
+  + a custom `IAuthorizationPolicyProvider` building `perm:<name>` policies on demand (delegating
+  default/fallback to `DefaultAuthorizationPolicyProvider`). The permission string *is* the policy name
+  and the identifier never serializes (identity-only tokens; DB stores the role, not permissions), so
+  the string form costs nothing the enum saved. Tradeoff: the attribute argument is no longer
+  compile-checked — covered by the catalog-coverage test (§Phase 2). Footgun owned: the provider must
+  delegate `GetDefaultPolicyAsync`/`GetFallbackPolicyAsync`, or the `Admin` policy and bare
+  `[Authorize]` break.
 - **ABAC / policy-expression engine** — six roles × ~18 permissions is a lookup table, not a rules
   engine; nothing in the domain is attribute-rich enough to justify one.
 - **Resource-scoped grants (per-venue/per-concert ACLs)** — every resource is tenant-owned; tenant

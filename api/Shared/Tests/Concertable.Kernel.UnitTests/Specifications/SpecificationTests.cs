@@ -28,9 +28,9 @@ public sealed class SpecificationTests
     }
 
     [Fact]
-    public void PredicateExpressionSpecification_ApplyVia_RebindsPredicateThroughNavigation()
+    public void NavigablePredicateSpecification_ApplyVia_RebindsPredicateThroughNavigation()
     {
-        var sut = new MinAgeExpressionSpec(18);
+        var sut = new MinAgeNavigableSpec(18);
         var employees = new[]
         {
             new Employee(new Person(10)),
@@ -44,9 +44,9 @@ public sealed class SpecificationTests
     }
 
     [Fact]
-    public void PredicateExpressionSpecification_WithParams_ApplyVia_RebindsBuiltPredicate()
+    public void NavigablePredicateSpecification_WithParams_ApplyVia_RebindsBuiltPredicate()
     {
-        var sut = new AgeAtLeastExpressionSpec();
+        var sut = new AgeAtLeastNavigableSpec();
         var employees = new[]
         {
             new Employee(new Person(10)),
@@ -74,14 +74,14 @@ public sealed class SpecificationTests
         protected override Expression<Func<Person, bool>> BuildPredicate(int min) => p => p.Age >= min;
     }
 
-    private sealed class MinAgeExpressionSpec : PredicateExpressionSpecification<Person>
+    private sealed class MinAgeNavigableSpec : NavigablePredicateSpecification<Person>
     {
         private readonly int min;
-        public MinAgeExpressionSpec(int min) { this.min = min; }
+        public MinAgeNavigableSpec(int min) { this.min = min; }
         protected override Expression<Func<Person, bool>> Predicate => p => p.Age >= min;
     }
 
-    private sealed class AgeAtLeastExpressionSpec : PredicateExpressionSpecification<Person, int>
+    private sealed class AgeAtLeastNavigableSpec : NavigablePredicateSpecification<Person, int>
     {
         protected override Expression<Func<Person, bool>> BuildPredicate(int min) => p => p.Age >= min;
     }
