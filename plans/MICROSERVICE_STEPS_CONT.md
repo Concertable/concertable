@@ -60,11 +60,11 @@
 
 ---
 
-## Phase 9 — Organization refactor (B2B internal)
+## Phase 9 — Tenancy + user-model refactor (B2B internal)
 
-> `ORGANIZATION_REFACTOR_PLAN.md` covers User/Membership/Tenant separation inside B2B. This is pure B2B-internal work — no cross-service impact.
+> Tenant-scoping (the Tenant module, request-scoped filtering, the compliance value object) has shipped. The remaining User/Membership/role separation inside B2B is tracked in `USER_MODEL_PLAN.md`. This is pure B2B-internal work — no cross-service impact.
 
-25. **Execute `ORGANIZATION_REFACTOR_PLAN.md`.**
+25. **Execute `USER_MODEL_PLAN.md`.**
     Read that doc for exact steps. It's B2B-only modular monolith work — the microservices boundary doesn't affect it. Do this after Phases 6–8 so the folder structure is stable first.
 
 ---
