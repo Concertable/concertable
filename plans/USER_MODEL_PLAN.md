@@ -376,24 +376,44 @@ catalog-coverage unit test asserting every `Permissions.*` constant appears in t
 call-site permission string is a real constant (recovers the compile-time guarantee the enum gave).
 Memberships are already seeded from Phase 1, so fixtures pass unchanged.
 
-### Phase 3 — Service-layer ownership: UserId → TenantId *(no re-scaffold; needs TS Phase 4)*
+### Phase 3 — Service-layer ownership: UserId → TenantId ✅ *(no re-scaffold)*
 
-Replace the user-keyed ownership checks with tenant comparisons and tenant-scoped reads:
+> **Shipped** on `Feature/permission-policies`. Build green; the affected suites pass —
+> `Concert.UnitTests` (52), `Venue.IntegrationTests` (25), `Artist.IntegrationTests` (17),
+> `Concert.IntegrationTests` (63). E2E skipped by policy: behavior is identical and Phase 3 isn't in
+> the massive/risky set (§8); the integration suites drive the real ASP.NET authorization + tenant-filter
+> pipeline end-to-end (cross-tenant ownership, wrong-persona, accept-by-wrong-manager). No model change ⇒
+> no re-scaffold.
+>
+> **Key deviation — cross-tenant ownership is 404, not the "403" written below.** TS Phase 4's tenant
+> query filter already enforces ownership on the read-filtered `Venue`/`Artist`: `GetByIdAsync` is a
+> filtered LINQ query, so a cross-tenant id returns null ⇒ `NotFoundException` ⇒ **404** (better posture
+> than 403 — doesn't reveal a sibling tenant's resource, and is the behavior already shipped in Phase 2).
+> The `entity.UserId != currentUser` guards in `UpdateAsync` were therefore dead for cross-tenant and were
+> **removed** (the filter is the enforcement); the existing `Update_ShouldReturn404_WhenNotOwner` tests
+> (Venue: `VenueManager2`; Artist: `ArtistManagerNoArtist`) **are** the two-tenant cross-ownership coverage.
+> Opportunities are **not** read-filtered, so their ownership became explicit
+> `opportunity.TenantId == tenantContext.TenantId` comparisons (`OwnsOpportunity*`,
+> `ApplicationValidator.CanAcceptAsync` — the latter swept too, though the plan's line refs didn't
+> enumerate it).
 
-- `ArtistService.cs` (47, 79, 104 + `GetDetailsByUserIdAsync`/`OwnsArtistAsync`): →
-  `artist.TenantId != tenantContext.TenantId` / tenant-keyed reads (needs `ArtistEntity.TenantId`
-  from TS Phase 4).
-- `VenueService.cs` (46, 76, 105): same sweep; switch reads to
-  `TenantScopedRepository.CurrentTenant`.
-- `OpportunityService.cs` (98, 120–130) and `ApplicationService.cs` (59–62, 72, 80, 109):
-  venue/artist ownership resolved via tenant.
-- The "Manager not found" guards (`ArtistService.cs:46-47`, `VenueService.cs:46`) become
-  `tenantContext.HasTenant` guards — severing the Venue/Artist → User-module manager-lookup
-  dependency.
+What shipped:
 
-Tests: re-assert ownership 403s in the Venue/Artist/Concert integration suites; add a two-tenant
-cross-ownership integration test (manager 2 PUTs manager 1's venue → 403, now via tenant). E2E
-behavior identical.
+- **Venue/Artist services**: "my venue/artist" reads (`GetDetailsForCurrentUser*`, `GetIdForCurrentUser*`,
+  `Owns*`) moved off `UserId` to `TenantScopedRepository.CurrentTenant` (new repo methods
+  `GetIdForCurrentTenantAsync`/`GetDetailsForCurrentTenantAsync`; the dead `GetByUserIdAsync` removed).
+  `CreateAsync`'s `IUserModule.GetManagerByIdAsync` "Manager not found" lookup became a
+  `tenantContext.HasTenant` guard, with `UserId`/`Email` sourced from `ICurrentUser` (the B2B `ApiFixture`
+  now sends the email header, matching production + Customer's fixture). The cross-module facades follow:
+  `IVenueModule.GetVenueIdForCurrentTenantAsync`, `IArtistModule.GetIdForCurrentTenantAsync`.
+- **Concert**: `OpportunityService` resolves "my venue" via the tenant facade and checks opportunity
+  ownership by `TenantId`; `ApplicationService` resolves "my artist" via `GetIdForCurrentTenantAsync`;
+  `ApplicationValidator` swapped `ICurrentUser` for `ITenantContext`. Dead `GetWithVenueByIdAsync` removed
+  and the now-needless `Venue` include dropped from `GetByApplicationIdAsync`.
+- **Dependency severed**: Artist/Venue (Application + Infrastructure) no longer reference the User module
+  at all — `IUserModule` usage, the `User.Contracts` global usings, and the `User.Contracts`/`User.Application`
+  project references are gone. `GetOwnerByIdAsync` (notification owner) and `SetupCheckoutStep`'s
+  `GetManagerByIdAsync` (payout owner) are left for Phase 5/8 — they're attribution/payout, not ownership.
 
 ### Phase 4 — Active-tenant resolution + multi-membership *(no re-scaffold; minimal frontend)*
 
