@@ -9,11 +9,17 @@ Concertable is a monorepo (a convenience, not the architecture) with a `.NET` mi
 - **Web SPA (`app/web/`)** — [`app/web/CLAUDE.md`](./app/web/CLAUDE.md).
 - **Customer cross-platform core (`app/customer/shared`, npm `@customer/shared`)** — consumed ONLY by the customer web + mobile apps: [`app/customer/shared/CLAUDE.md`](./app/customer/shared/CLAUDE.md).
 
-## Git branch naming — capitalized type prefix, always
+## Git branch — branch first, capitalized type prefix, always
+
+**Before starting any work, create a relevant branch for it if you're not already on one** — never commit to `master` or an unrelated branch.
 
 Branches are named `<Type>/<Name>` with the type prefix **capitalized**: `Feature/`, `Refactor/`, `Bug/`, `Fix/`, etc. Never create a lowercase variant (`feature/...`). Windows' case-insensitive filesystem cannot hold two casings of the same ref, so a remote with both `feature/x` and `Feature/x` breaks `git fetch`/`git pull` for everyone ("cannot lock ref ... File exists"). Before creating a branch, match the casing of any existing branch of the same name exactly.
 
 ## E2E suites — Docker health first, always
+
+This section is **how** to run E2E safely. **Whether** to run it for a given change is a judgment
+call — reserved for massive or behaviorally-risky changes, skipped for stage-1/zero-behavior-change
+work — governed by [`plans/CLAUDE.md`](./plans/CLAUDE.md). Don't run the full suites by reflex.
 
 Run E2E only through `./e2e.ps1` via the matching skill (`e2e-ui-regress`, `e2e-ui-debug`,
 `e2e-api-debug`) — the skill's Step 0 Docker pre-flight is mandatory, every run.
@@ -44,8 +50,8 @@ A comment that needs a paragraph to justify the code below it is usually telling
 
 ## Plans (`plans/*.md`)
 
-Plans are working docs for unfinished work, **not** an archive — git history is the archive. A finished plan kept "for reference" is just rot that misleads the next reader into thinking the work is still pending.
+Plans are working docs for unfinished work, **not** an archive — git history is the archive. A finished plan kept "for reference" is just rot that misleads the next reader into thinking the work is still pending. Full workflow (phases, verification gates, when to run E2E): [`plans/CLAUDE.md`](./plans/CLAUDE.md).
 
-- **When you land the commit that completes a plan's work, `git rm` the plan file in that same commit.** Completion = work committed AND its verification (build / tests / E2E) passed. Deletion belongs to that commit — never defer it to a later cleanup pass.
+- **When you land the commit that completes a plan's work, `git rm` the plan file in that same commit.** Completion = work committed AND its verification passed (build + the affected unit/integration tests always; E2E only when the change is massive/risky per `plans/CLAUDE.md`). Deletion belongs to that commit — never defer it to a later cleanup pass.
 - A plan **superseded** by a newer plan, or describing a design that was **rejected**, is deleted the moment that's decided — don't leave a tombstone.
-- A **partially-done** plan stays, but strike/check off the sections that shipped so what remains is only the outstanding work.
+- A **partially-done** plan stays, but strike/check off the sections that shipped (in the same commit as the work) so what remains is only the outstanding work.

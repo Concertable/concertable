@@ -291,12 +291,22 @@ accepting an application via a message action still requires `ApplicationsDecide
 
 ## 8. Phases — each independently shippable, each ends green
 
-Verification gate for every phase: `dotnet build api/Concertable.slnx`, the affected module unit +
-integration test projects via `dotnet test`, the API E2E suite (`Concertable.B2B.E2ETests`), and
-the UI E2E regress against `api/Shared/Tests/Concertable.E2ETests/E2E_BASELINE.md`. Phases marked
-*re-scaffold* end with `./initial-migrations.ps1` from `api/` (never additive migrations).
+Verification gate for every phase: `dotnet build api/Concertable.slnx` and the affected module unit +
+integration test projects via `dotnet test`. The E2E suites (API `Concertable.B2B.E2ETests` + the UI
+regress against `api/Shared/Tests/Concertable.E2ETests/E2E_BASELINE.md`) are run **only when the phase
+is massive or behaviorally risky** — per [`plans/CLAUDE.md`](./CLAUDE.md), not by reflex. Phases that
+flip user-facing behavior on a covered flow (notably 2, 5, 6, 7, 8) clear that bar; foundational
+zero-behavior-change phases (1) do not. Phases marked *re-scaffold* end with `./initial-migrations.ps1`
+from `api/` (never additive migrations).
 
-### Phase 1 — Membership table + `TenantType` + Owner provisioning *(re-scaffold; zero behavior change)*
+### Phase 1 — Membership table + `TenantType` + Owner provisioning ✅ *(re-scaffold; zero behavior change)*
+
+> **Shipped** on `Feature/tenant-membership`. Build green; `Tenant.UnitTests` (28) + `Tenant.IntegrationTests`
+> (10, incl. registration → tenant + Owner membership + persona, and idempotency over the seeded row) pass.
+> E2E intentionally **not** run — zero-behavior-change foundational phase (see `plans/CLAUDE.md`). The one
+> deviation from the design below: `TenantContext` resolves `tenantId` from the membership row but does **not**
+> yet stash the membership on the scoped context — deferred to Phase 4's `IMembershipContext` work where it has
+> a consumer (avoided dead state in Phase 1).
 
 Membership becomes the source of truth for "whose tenant is this" while one-user-per-tenant still
 holds.
