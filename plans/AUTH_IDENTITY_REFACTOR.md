@@ -2,7 +2,11 @@
 
 > **Goal:** Make `Concertable.Auth` a self-contained identity service with no compile-time dependency on any application's user module.
 >
-> **Status:** Phase 1 ✅ complete (2026-05-22). Phase 2 ✅ complete (2026-05-22). Phase 3 next.
+> **Status:** Phase 1 ✅ complete (2026-05-22). Phase 2 ✅ complete (2026-05-22). Phase 3 ✅ structurally
+> complete in code — Auth owns `CredentialEntity` + `AuthDbContext`, B2B's User module is now an event-driven
+> projection consuming `CredentialRegisteredEvent`, and the remote claims provider exists (the tenant-scoping
+> work landed the cut; the step-by-step below was never ticked off line-by-line). The identity-only north star
+> is finished by `USER_MODEL_PLAN.md` Phases 5 & 7, which delete the transitional `owner` then `role` claims.
 >
 > **Why:** Auth is shared infrastructure. Hard-wiring it to B2B's `IUserModule` means any consumer (Customer, future services) would need the same coupling. The `Role` enum and credential storage belong to B2B and Auth respectively — not both in one place.
 

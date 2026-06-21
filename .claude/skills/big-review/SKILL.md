@@ -58,7 +58,14 @@ Read the coverage checklist. If the plan-anchor SHA differs from current HEAD, n
 
 - A `[~]` area means a previous run died mid-stage: its findings section (if any) is **incomplete, not trusted** — re-review that area from scratch and replace its partial section.
 - Otherwise pick the **first `[ ]` area**.
-- If all areas are `[x]`: write a short `## Summary` rollup at the top of the file (finding counts by severity/lens, the handful of must-fix items), confirm the Cross-area notes section has no unresolved entries (resolve any stragglers now), report "Big review complete — all N areas reviewed", and stop.
+- If all areas are `[x]`: write a short `## Summary` rollup at the top of the file (finding counts by severity/lens, the handful of must-fix items), confirm the Cross-area notes section has no unresolved entries (resolve any stragglers now), **stamp the incremental-review handoff marker** (next bullet), report "Big review complete — all N areas reviewed", and stop.
+  - **Handoff to `incremental-review`** — a completed big review has covered exactly `merge-base..<plan-anchor SHA>`, so the plan-anchor SHA *is* the watermark a later `incremental-review` continues from. Add (or update) a single greppable line near the top of the file, beside the plan-anchor line:
+
+    ```
+    **Reviewed up to commit:** `<full plan-anchor SHA>`  _(<today's ISO date>)_
+    ```
+
+    This is the contract `incremental-review` reads (it greps for `Reviewed up to commit:`). Stamp it **only on completion** — never while areas are still `[ ]`/`[~]`, or `incremental-review` would wrongly treat un-reviewed code as covered. New commits added after the anchor are then reviewed by pointing `incremental-review` at this file (it scopes to `<anchor>..HEAD`). Use the plan-anchor SHA, not current HEAD — HEAD may have moved past what this review actually covered.
 
 ## Step 3 — Review the chosen area (the `review` procedure, path-scoped)
 
@@ -100,6 +107,9 @@ Concise: area just reviewed, its finding counts by lens/severity (or none), rema
 # Big review — <branch>
 
 **Plan anchored to commit:** `<full-HEAD-sha>`  _(<ISO date>)_
+<!-- Added ONLY when every area is [x] (Step 2 completion): the watermark `incremental-review`
+     greps for to continue past the anchor. Equals the plan-anchor SHA. Omit until complete. -->
+**Reviewed up to commit:** `<full plan-anchor SHA>`  _(<completion ISO date>)_
 Net diff reviewed: `<short-merge-base>..<short-head>`. Move-only files skipped.
 Status legend: `[ ]` not yet reviewed · `[x]` reviewed (date) · `[~]` in progress (incomplete — re-review).
 

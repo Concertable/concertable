@@ -291,12 +291,22 @@ accepting an application via a message action still requires `ApplicationsDecide
 
 ## 8. Phases — each independently shippable, each ends green
 
-Verification gate for every phase: `dotnet build api/Concertable.slnx`, the affected module unit +
-integration test projects via `dotnet test`, the API E2E suite (`Concertable.B2B.E2ETests`), and
-the UI E2E regress against `api/Shared/Tests/Concertable.E2ETests/E2E_BASELINE.md`. Phases marked
-*re-scaffold* end with `./initial-migrations.ps1` from `api/` (never additive migrations).
+Verification gate for every phase: `dotnet build api/Concertable.slnx` and the affected module unit +
+integration test projects via `dotnet test`. The E2E suites (API `Concertable.B2B.E2ETests` + the UI
+regress against `api/Shared/Tests/Concertable.E2ETests/E2E_BASELINE.md`) are run **only when the phase
+is massive or behaviorally risky** — per [`plans/CLAUDE.md`](./CLAUDE.md), not by reflex. Phases that
+flip user-facing behavior on a covered flow (notably 2, 5, 6, 7, 8) clear that bar; foundational
+zero-behavior-change phases (1) do not. Phases marked *re-scaffold* end with `./initial-migrations.ps1`
+from `api/` (never additive migrations).
 
-### Phase 1 — Membership table + `TenantType` + Owner provisioning *(re-scaffold; zero behavior change)*
+### Phase 1 — Membership table + `TenantType` + Owner provisioning ✅ *(re-scaffold; zero behavior change)*
+
+> **Shipped** on `Feature/tenant-membership`. Build green; `Tenant.UnitTests` (28) + `Tenant.IntegrationTests`
+> (10, incl. registration → tenant + Owner membership + persona, and idempotency over the seeded row) pass.
+> E2E intentionally **not** run — zero-behavior-change foundational phase (see `plans/CLAUDE.md`). The one
+> deviation from the design below: `TenantContext` resolves `tenantId` from the membership row but does **not**
+> yet stash the membership on the scoped context — deferred to Phase 4's `IMembershipContext` work where it has
+> a consumer (avoided dead state in Phase 1).
 
 Membership becomes the source of truth for "whose tenant is this" while one-user-per-tenant still
 holds.
@@ -322,7 +332,24 @@ Tests: `Concertable.B2B.Tenant.UnitTests` (resolve-via-membership; persona deriv
 `Tenant.IntegrationTests` asserts registration creates tenant + Owner membership + persona.
 Everything else untouched.
 
-### Phase 2 — Permission policies replace `[VenueManager]`/`[ArtistManager]` *(no re-scaffold)*
+### Phase 2 — Permission policies replace `[VenueManager]`/`[ArtistManager]` ✅ *(no re-scaffold)*
+
+> **Shipped** on `Feature/permission-policies` (off `Feature/tenant-membership`). Build green; the affected
+> suites pass — `Tenant.UnitTests` (49, incl. catalog-coverage + membership permission/persona cases) and the
+> integration suites that drive the real authorization pipeline: `Tenant` (10), `Venue` (25), `Artist` (17),
+> `Concert` (63), `User` (3). E2E skipped by policy: the blast radius is the B2B authorization pipeline, which
+> the integration suites exercise end-to-end through the real ASP.NET middleware (every swapped family,
+> wrong-persona → 403, Admin delegation, bare `[Authorize]`, anonymous → 401); token issuance, claims, Auth,
+> and the SPA are untouched by this phase.
+>
+> **Deviation from the design below:** persona is enforced at the *call-site* — `[HasPermission(perm,
+> TenantType.X)]` — not as a catalog per-permission constraint. The shared `ProfileEdit`/`OperationsView`
+> permissions gate both venue *and* artist controllers, so one catalog constraint can't express the split;
+> pinning persona at the call-site reproduces today's `[VenueManager]`/`[ArtistManager]` gating exactly
+> (provably identical — the Venue/Artist suites already assert wrong-persona → 403). `PermissionCatalog` is
+> therefore a pure role→permission map. This also lands the Phase-1-deferred stash: `TenantContext` now
+> memoizes role + persona, since `IMembershipContext` is its first consumer. Venue.Api keeps its `User.Api`
+> reference (for the surviving `[Admin]` on `VenueController.Approve`); Artist/Concert Api swap it for `Tenant.Api`.
 
 - New in the Tenant module: `Permissions` (string constants), `TenantRole`, `PermissionCatalog`
   (+ persona constraints), `IMembershipContext`, `HasPermissionAttribute` (Tenant.Api),
@@ -349,60 +376,113 @@ catalog-coverage unit test asserting every `Permissions.*` constant appears in t
 call-site permission string is a real constant (recovers the compile-time guarantee the enum gave).
 Memberships are already seeded from Phase 1, so fixtures pass unchanged.
 
-### Phase 3 — Service-layer ownership: UserId → TenantId *(no re-scaffold; needs TS Phase 4)*
+### Phase 3 — Service-layer ownership: UserId → TenantId ✅ *(no re-scaffold)*
 
-Replace the user-keyed ownership checks with tenant comparisons and tenant-scoped reads:
+> **Shipped** on `Feature/permission-policies`. Build green; the affected suites pass —
+> `Concert.UnitTests` (52), `Venue.IntegrationTests` (25), `Artist.IntegrationTests` (17),
+> `Concert.IntegrationTests` (63). E2E skipped by policy: behavior is identical and Phase 3 isn't in
+> the massive/risky set (§8); the integration suites drive the real ASP.NET authorization + tenant-filter
+> pipeline end-to-end (cross-tenant ownership, wrong-persona, accept-by-wrong-manager). No model change ⇒
+> no re-scaffold.
+>
+> **Key deviation — cross-tenant ownership is 404, not the "403" written below.** TS Phase 4's tenant
+> query filter already enforces ownership on the read-filtered `Venue`/`Artist`: `GetByIdAsync` is a
+> filtered LINQ query, so a cross-tenant id returns null ⇒ `NotFoundException` ⇒ **404** (better posture
+> than 403 — doesn't reveal a sibling tenant's resource, and is the behavior already shipped in Phase 2).
+> The `entity.UserId != currentUser` guards in `UpdateAsync` were therefore dead for cross-tenant and were
+> **removed** (the filter is the enforcement); the existing `Update_ShouldReturn404_WhenNotOwner` tests
+> (Venue: `VenueManager2`; Artist: `ArtistManagerNoArtist`) **are** the two-tenant cross-ownership coverage.
+> Opportunities are **not** read-filtered, so their ownership became explicit
+> `opportunity.TenantId == tenantContext.TenantId` comparisons (`OwnsOpportunity*`,
+> `ApplicationValidator.CanAcceptAsync` — the latter swept too, though the plan's line refs didn't
+> enumerate it).
 
-- `ArtistService.cs` (47, 79, 104 + `GetDetailsByUserIdAsync`/`OwnsArtistAsync`): →
-  `artist.TenantId != tenantContext.TenantId` / tenant-keyed reads (needs `ArtistEntity.TenantId`
-  from TS Phase 4).
-- `VenueService.cs` (46, 76, 105): same sweep; switch reads to
-  `TenantScopedRepository.CurrentTenant`.
-- `OpportunityService.cs` (98, 120–130) and `ApplicationService.cs` (59–62, 72, 80, 109):
-  venue/artist ownership resolved via tenant.
-- The "Manager not found" guards (`ArtistService.cs:46-47`, `VenueService.cs:46`) become
-  `tenantContext.HasTenant` guards — severing the Venue/Artist → User-module manager-lookup
-  dependency.
+What shipped:
 
-Tests: re-assert ownership 403s in the Venue/Artist/Concert integration suites; add a two-tenant
-cross-ownership integration test (manager 2 PUTs manager 1's venue → 403, now via tenant). E2E
-behavior identical.
+- **Venue/Artist services**: "my venue/artist" reads (`GetDetailsForCurrentUser*`, `GetIdForCurrentUser*`,
+  `Owns*`) moved off `UserId` to `TenantScopedRepository.CurrentTenant` (new repo methods
+  `GetIdForCurrentTenantAsync`/`GetDetailsForCurrentTenantAsync`; the dead `GetByUserIdAsync` removed).
+  `CreateAsync`'s `IUserModule.GetManagerByIdAsync` "Manager not found" lookup became a
+  `tenantContext.HasTenant` guard, with `UserId`/`Email` sourced from `ICurrentUser` (the B2B `ApiFixture`
+  now sends the email header, matching production + Customer's fixture). The cross-module facades follow:
+  `IVenueModule.GetVenueIdForCurrentTenantAsync`, `IArtistModule.GetIdForCurrentTenantAsync`.
+- **Concert**: `OpportunityService` resolves "my venue" via the tenant facade and checks opportunity
+  ownership by `TenantId`; `ApplicationService` resolves "my artist" via `GetIdForCurrentTenantAsync`;
+  `ApplicationValidator` swapped `ICurrentUser` for `ITenantContext`. Dead `GetWithVenueByIdAsync` removed
+  and the now-needless `Venue` include dropped from `GetByApplicationIdAsync`.
+- **Dependency severed**: Artist/Venue (Application + Infrastructure) no longer reference the User module
+  at all — `IUserModule` usage, the `User.Contracts` global usings, and the `User.Contracts`/`User.Application`
+  project references are gone. `GetOwnerByIdAsync` (notification owner) and `SetupCheckoutStep`'s
+  `GetManagerByIdAsync` (payout owner) are left for Phase 5/8 — they're attribution/payout, not ownership.
 
-### Phase 4 — Active-tenant resolution + multi-membership *(no re-scaffold; minimal frontend)*
+### Phase 4 — Active-tenant resolution + multi-membership ✅ *(no re-scaffold; minimal frontend)*
 
-- `TenantContext.ResolveAsync` per §3 (header validated against memberships, single-membership
-  default, fails closed). Ordering note: `TenantResolutionMiddleware` currently runs *after*
-  `UseAuthorization` (`B2B.Web/Program.cs:194` vs `:197`), and authorization handlers execute *inside*
-  `UseAuthorization` — so the `PermissionAuthorizationHandler`'s own memoized `ResolveAsync` call, not
-  the middleware, is the primary resolution trigger for permission-gated requests. The middleware only
-  still matters for tenant-scoped endpoints that aren't permission-gated. Either move it to between
-  `UseAuthentication` and `UseAuthorization` for one obvious resolution point, or keep it as-is and
-  document that the handler is the trigger — but do **not** leave the old "confirm it runs before
-  `UseAuthorization`" instruction, which is both false today and unnecessary.
-- `GET /api/auth/me` gains `memberships: [{tenantId, legalName, type, role}]` — additive, existing
-  SPAs ignore it.
-- `owner` claim: with >1 membership, return the founding membership's tenant as a documented
-  transitional default — fully resolved in Phase 5.
-- Frontend (minimal): axios interceptor in `app/web/shared` attaching `X-Tenant-Id` only when a
-  tenant is selected. The switcher UI itself lands in Phase 6 — no current user has two
-  memberships, so E2E stays green with zero UI change.
+> **Shipped** on `Feature/active-tenant-resolution` (off `Feature/permission-policies`). Build green; affected
+> suites pass — `Tenant.UnitTests` (53, incl. header valid/unowned/malformed + single-default + multi-membership
+> fail-closed) and the integration suites that drive the real ASP.NET pipeline: `Tenant` (15, incl. the new
+> header-switched isolation set), `User` (3). Re-ran `Venue` (25), `Artist` (17), `Concert` (63) — the middleware
+> reorder is behaviour-preserving for the single-membership seed graph. All four web builds green. E2E skipped by
+> policy: Phase 4 isn't in the massive/risky set (§8) and the frontend change is zero-UI (the interceptor sends a
+> header only when a tenant is selected, and nothing selects one until the Phase 6 switcher).
+>
+> **Deviations from the design above:**
+> - **Resolution point:** chose the "one obvious point" option — `TenantResolutionMiddleware` now runs *between*
+>   `UseAuthentication` and `UseAuthorization`, so it (not the permission handler) is the trigger for every
+>   request; the handler's own memoized `ResolveAsync` then no-ops. The middleware was also converted to a
+>   factory-activated `IMiddleware` (registered scoped).
+> - **Owner-claim default:** ordering/predicates over the join-projected `UserMembership` don't translate in EF,
+>   so the founding-first default is a dedicated `GetDefaultTenantIdAsync` (orders on the membership's own
+>   columns, selects just the id — no join). The general `GetMembershipsAsync` is therefore *unordered* (its two
+>   callers — the single-default count check and the `/me` list — don't need order).
+> - **`/me` shape:** memberships are additive as `UserBase.Memberships` (populated only by `/me`, empty for
+>   cross-module reads), which adds a `User.Contracts → Tenant.Contracts` reference. Retired with the polymorphic
+>   DTOs in Phase 7.
+> - **Multi-membership test data** is arranged per-test (a fixture write helper), never added to the global seed —
+>   the seed graph must stay one-membership-per-operator so the no-header single-default keeps every other suite
+>   green. The isolation test drives `/api/organizations` (a `[Authorize]`-only endpoint), so it exercises the
+>   *middleware* resolution path specifically.
+> - **`owner` claim** stays single-valued via `GetDefaultTenantIdAsync` (founding first) — fully resolved in Phase 5.
 
-Tests: `TenantContextTests` multi-membership cases (header valid/invalid/absent); integration test
-seeding a second Owner membership via the test seeder and asserting header-switched data isolation.
+### Phase 5 — Payment proxy + kill the `owner` claim ✅ *(no re-scaffold; frontend base-URL swap)*
 
-### Phase 5 — Payment proxy + kill the `owner` claim *(no re-scaffold; frontend base-URL swap)*
-
-Must land **before invitations create real multi-tenant users** — the per-token `owner` claim goes
-ambiguous/stale the moment a user has two tenants or switches mid-session.
-
-- B2B payouts controller per §5; Payment gRPC surface gains the missing RPCs; B2B SPAs swap the
-  payout feature from the Payment host to their own service's client.
-- Payment's `StripeAccountController` stays for Customer flows (`GetOwnerId() → sub` fallback —
-  verify `CustomerProfileClaimsProvider` doesn't mint `owner` before relying on it).
-- `UserClaimsController` stops emitting `owner`; `ICurrentUser.Owner`/`GetOwnerId()` survive only
-  until Phase 7 cleanup for the Customer fallback path.
-- E2E: `StripeE2EAccountResolver` already keys on `TenantSeedIds` (TS Phase 3) — unchanged; run the
-  payout UI scenarios in the baseline after the base-URL swap.
+> **Shipped** on `Feature/payment-proxy` (off `Feature/active-tenant-resolution`). Build green; affected suites
+> pass — `Tenant.UnitTests` (53), `Payment.UnitTests` (25), and the B2B integration suite (Artist 17, Concert 63,
+> Tenant 21 incl. 6 new `StripeAccountProxyTests`, User 3, Venue 25 = 129, 5/5 projects). All four web builds green.
+> **UI E2E (massive/risky gate) run and green** — every baseline scenario passes (B2B 23/23, Customer 7/7). The
+> run surfaced a **latent Phase-3 bug** (not Phase 5): `Venue`/`Artist` `CreateAsync` source the operator's email
+> from `ICurrentUser`, but the `concertable.b2b.api` resource never listed `email` in `UserClaims`, so the token
+> never carried it → `currentUser.Email` null → `"Email is required"` (400) on profile creation. Integration
+> tests inject an email header so never caught it; Phase 3 skipped E2E. Fixed by adding `email` to the B2B
+> resource's `UserClaims` (commit `936eadba`). Note: the suite is ASB/Docker-flaky under sustained load
+> (intermittent connection-refused on bus-heavy scenarios) — those pass on a fresh stack; treat as environment.
+>
+> **What shipped:**
+> - **Payment** gains a `PayoutAccount` gRPC service (onboarding-link / account-status / payment-method /
+>   setup-intent, explicit `owner_id`). The four operation bodies were extracted into `IPayoutAccountService`
+>   (Infrastructure), shared by the HTTP `StripeAccountController` (now Customer-only) and the gRPC service.
+> - **B2B** adds `Tenant.Api/StripeAccountController` (route `api/stripeaccount`, `[HasPermission(PayoutsManage)]`),
+>   resolving the owner as `ITenantContext.TenantId` and calling Payment via a new `IPayoutAccountClient`
+>   (Payment.Client adapter, reusing the `payment:write` ServiceToken channel). The venue/artist SPAs repoint
+>   `VITE_PAYMENT_API_URL` at their own backend; Customer stays on the Payment host. `paymentAxios` gained the
+>   `X-Tenant-Id` interceptor (zero-UI — only sent once a tenant is selected, Phase 6).
+> - **`owner` killed in B2B:** `UserClaimsController` stops emitting it, and `owner` was dropped from the
+>   `concertable.b2b.api` ApiResource (kept on Customer's). The now-orphaned default-tenant chain
+>   (`GetTenantIdByUserIdAsync` + `GetDefaultTenantIdAsync` + `UserMembership.InvitedByUserId`) was removed.
+>
+> **Deviations from the design above:**
+> - **`ICurrentUser.Owner`/`GetOwnerId()` were already gone** — a prior refactor removed them from Kernel and moved
+>   the read to Payment's own boundary (`ICurrentPayoutOwner`, reads the opaque `owner` claim, fail-closed; see
+>   `api/CLAUDE.md`). So "kill the owner claim" reduced to: B2B stops *emitting* it. Customer still mints
+>   `owner = sub` independently (its own `UserClaimsController`), so its payout path is untouched — there is no
+>   `GetOwnerId()` fallback to verify (it no longer exists).
+> - **No `payment:read` scope.** The new gRPC service sits under the existing `ServiceToken` policy
+>   (`payment:write`) and B2B reuses `payment:write` — consistent with every other Payment RPC. A read/write split
+>   with no read-only consumer would add a new Auth scope + per-method credential routing for no posture gain (the
+>   trusted B2B service already holds `payment:write` for the money-movement RPCs).
+> - New card DTO is `SavedCard` (Payment.Client), not `PaymentMethod` — that name is already a B2B Contract enum
+>   (Cash/Transfer) imported alongside `Payment.Client` across B2B. Wire shape is unchanged (`{ brand, last4,
+>   expMonth, expYear }` regardless of the C# type name).
+> - `StripeE2EAccountResolver` already keys on `TenantSeedIds` (TS Phase 3) — unchanged.
 
 ### Phase 6 — Invitations + member management + UI *(re-scaffold)*
 
