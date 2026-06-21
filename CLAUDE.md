@@ -64,3 +64,9 @@ Plans are working docs for unfinished work, **not** an archive — git history i
 - **When you land the commit that completes a plan's work, `git rm` the plan file in that same commit.** Completion = work committed AND its verification passed (build + the affected unit/integration tests always; E2E only when the change is massive/risky per `plans/CLAUDE.md`). Deletion belongs to that commit — never defer it to a later cleanup pass.
 - A plan **superseded** by a newer plan, or describing a design that was **rejected**, is deleted the moment that's decided — don't leave a tombstone.
 - A **partially-done** plan stays, but strike/check off the sections that shipped (in the same commit as the work) so what remains is only the outstanding work.
+
+## Throwaway working markdown — in the repo, then deleted
+
+Ad-hoc markdown — investigation prompts, scratch analysis, handoff notes for another tool/agent — goes **in the repo**, never in a temp/scratchpad directory. The scratchpad is invisible to the user and to other tools operating on the repo, so a doc written there is effectively lost. Put it where it can be seen and used.
+
+These are working docs, not an archive (same rule as plans): **delete the file once it's served its purpose** — the handoff happened, the question was answered, the analysis landed in code/commit. Don't let throwaway markdown accumulate as rot.
