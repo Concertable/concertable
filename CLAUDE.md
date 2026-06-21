@@ -13,6 +13,8 @@ Concertable is a monorepo (a convenience, not the architecture) with a `.NET` mi
 
 **Before starting any work, create a relevant branch for it if you're not already on one** — never commit to `master` or an unrelated branch.
 
+**Don't branch to refactor code from the feature you're already on.** If the code only lives on the current feature branch (not yet in `master`), the refactor is part of that feature — stay on the branch and commit there. A new `Refactor/<Name>` branch is only for code **already merged to `master`**. Branching off an in-flight feature fragments it across two PRs and orphans the original.
+
 Branches are named `<Type>/<Name>` with the type prefix **capitalized**: `Feature/`, `Refactor/`, `Bug/`, `Fix/`, etc. Never create a lowercase variant (`feature/...`). Windows' case-insensitive filesystem cannot hold two casings of the same ref, so a remote with both `feature/x` and `Feature/x` breaks `git fetch`/`git pull` for everyone ("cannot lock ref ... File exists"). Before creating a branch, match the casing of any existing branch of the same name exactly.
 
 ## E2E suites — Docker health first, always
