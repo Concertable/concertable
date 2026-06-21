@@ -51,6 +51,7 @@ Examples of data that must **not** be manually seeded:
 - **Read-model projections / event-synced replicas** — `VenueReadModel`, `ArtistReadModel`, any other `XReadModel` in a concert/search context, **and Customer's `VenueEntity` / `ArtistEntity` / `ConcertEntity`** (named `*Entity`, but still populated solely by `XChangedEvent` handlers — the rule follows from *how they're written*, not the suffix). If the table is empty at seed time, it means the event hasn't been processed yet — that is correct and expected.
 - **Stripe payout accounts** — provisioned when `CredentialRegisteredEvent` fires on user registration.
 - **Payment accounts / external service records** — anything provisioned by a handler reacting to a domain event.
+- **Invitation-derived tenant memberships** — written by the invitation-accept endpoint / `TenantProvisioningHandler`'s invitation branch. Only the **founding Owner** membership is seeded (alongside its tenant, the same documented direct-insert exception); any non-founding membership comes from an accepted invitation and is never seeded.
 
 The rule: if a record exists because *something happened* (an event was raised and handled), there is no seeder for it. If you find yourself writing `context.XReadModels.AddRange(...)` in a seeder, stop — you are bypassing the event flow.
 

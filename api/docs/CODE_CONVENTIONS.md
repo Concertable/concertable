@@ -115,9 +115,9 @@ return await CurrentTenant.Where(v => v.IsActive).ToListAsync(ct);
 
 Only add a comment when the WHY is non-obvious (hidden constraint, subtle invariant, workaround for a specific bug). Never narrate what the code does — well-named identifiers already do that.
 
-## Comments — short, and multi-line uses `/* */`
+## Comments — default to none; mechanics here, policy in root `CLAUDE.md`
 
-Keep a WHY-comment as short as the insight (usually one line). Single line → `//`; genuinely multi-line → one `/* */` block, never stacked `//` lines.
+The repo-wide policy (default to zero, ≤2 lines, *why* lives in the commit message, and the disqualifiers — restating docs, citing transient artifacts, narrating the *what*) is in the root [`CLAUDE.md`](../../CLAUDE.md). The C#-mechanical part: a WHY-comment is one line where it can be → `//`; the rare genuinely-multi-line one → a single `/* */` block, never stacked `//` lines.
 
 ## Doc comments — XML `<summary>`, not `//`
 

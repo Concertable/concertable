@@ -9,11 +9,19 @@ Concertable is a monorepo (a convenience, not the architecture) with a `.NET` mi
 - **Web SPA (`app/web/`)** — [`app/web/CLAUDE.md`](./app/web/CLAUDE.md).
 - **Customer cross-platform core (`app/customer/shared`, npm `@customer/shared`)** — consumed ONLY by the customer web + mobile apps: [`app/customer/shared/CLAUDE.md`](./app/customer/shared/CLAUDE.md).
 
-## Git branch naming — capitalized type prefix, always
+## Git branch — branch first, capitalized type prefix, always
+
+**Before starting any work, create a relevant branch for it if you're not already on one** — never commit to `master` or an unrelated branch.
+
+**Don't branch to refactor code from the feature you're already on.** If the code only lives on the current feature branch (not yet in `master`), the refactor is part of that feature — stay on the branch and commit there. A new `Refactor/<Name>` branch is only for code **already merged to `master`**. Branching off an in-flight feature fragments it across two PRs and orphans the original.
 
 Branches are named `<Type>/<Name>` with the type prefix **capitalized**: `Feature/`, `Refactor/`, `Bug/`, `Fix/`, etc. Never create a lowercase variant (`feature/...`). Windows' case-insensitive filesystem cannot hold two casings of the same ref, so a remote with both `feature/x` and `Feature/x` breaks `git fetch`/`git pull` for everyone ("cannot lock ref ... File exists"). Before creating a branch, match the casing of any existing branch of the same name exactly.
 
 ## E2E suites — Docker health first, always
+
+This section is **how** to run E2E safely. **Whether** to run it for a given change is a judgment
+call — reserved for massive or behaviorally-risky changes, skipped for stage-1/zero-behavior-change
+work — governed by [`plans/CLAUDE.md`](./plans/CLAUDE.md). Don't run the full suites by reflex.
 
 Run E2E only through `./e2e.ps1` via the matching skill (`e2e-ui-regress`, `e2e-ui-debug`,
 `e2e-api-debug`) — the skill's Step 0 Docker pre-flight is mandatory, every run.
@@ -38,14 +46,29 @@ Run E2E only through `./e2e.ps1` via the matching skill (`e2e-ui-regress`, `e2e-
 
 Avoid introducing tech debt wherever possible. But when a quick fix is the right call, or you notice or introduce debt the user is aware of, log a line in the `TECH_DEBT.md` nearest the area you touched (there's one per area — use the closest, not the root).
 
-## Code comments — size is a smell signal
+## Code comments — default to none; the commit message is the archive
 
-A comment that needs a paragraph to justify the code below it is usually telling you the code is hacky. If it is, do the proper fix — or, if a quick fix is genuinely the right call, log it in the nearest `TECH_DEBT.md` and keep the comment short. If the code is sound, it doesn't need a wall of text: state the non-obvious *why* in a line or two and let the commit message carry the full story (the incident, the root cause, the alternatives). Big inline explanations rot in place; commit messages are the archive.
+Default to **zero** comments. The diff shows *what* changed; the commit message is where *why* lives (the incident, the root cause, the alternatives). A code comment is the exception, not the habit — **≤2 lines**, and only for a *why* a reader needs *at this line* and can't get from well-named identifiers. Anything longer belongs in the commit message, not the file; big inline explanations rot in place.
+
+A comment is **wrong**, not merely long, if it:
+- **restates reasoning already in a `CLAUDE.md`/`docs` file** — link it in a phrase, or omit it (two copies drift the day one changes);
+- **cites a transient artifact** (a plan filename, "Phase N", a ticket) that will be deleted — the reference is engineered to dangle;
+- **narrates the *what*** — well-named code already does that.
+
+The one comment that always earns its place: a **single-line footgun/invariant warning** at the exact site a future edit would break something ("don't put X here — it would Y").
+
+And if a comment needs a paragraph to justify the code below it, that's usually the *code* telling you it's hacky — do the proper fix, or if a quick fix is genuinely right, log it in the nearest `TECH_DEBT.md` and keep the comment short.
 
 ## Plans (`plans/*.md`)
 
-Plans are working docs for unfinished work, **not** an archive — git history is the archive. A finished plan kept "for reference" is just rot that misleads the next reader into thinking the work is still pending.
+Plans are working docs for unfinished work, **not** an archive — git history is the archive. A finished plan kept "for reference" is just rot that misleads the next reader into thinking the work is still pending. Full workflow (phases, verification gates, when to run E2E): [`plans/CLAUDE.md`](./plans/CLAUDE.md).
 
-- **When you land the commit that completes a plan's work, `git rm` the plan file in that same commit.** Completion = work committed AND its verification (build / tests / E2E) passed. Deletion belongs to that commit — never defer it to a later cleanup pass.
+- **When you land the commit that completes a plan's work, `git rm` the plan file in that same commit.** Completion = work committed AND its verification passed (build + the affected unit/integration tests always; E2E only when the change is massive/risky per `plans/CLAUDE.md`). Deletion belongs to that commit — never defer it to a later cleanup pass.
 - A plan **superseded** by a newer plan, or describing a design that was **rejected**, is deleted the moment that's decided — don't leave a tombstone.
-- A **partially-done** plan stays, but strike/check off the sections that shipped so what remains is only the outstanding work.
+- A **partially-done** plan stays, but strike/check off the sections that shipped (in the same commit as the work) so what remains is only the outstanding work.
+
+## Throwaway working markdown — in the repo, then deleted
+
+Ad-hoc markdown — investigation prompts, scratch analysis, handoff notes for another tool/agent — goes **in the repo**, never in a temp/scratchpad directory. The scratchpad is invisible to the user and to other tools operating on the repo, so a doc written there is effectively lost. Put it where it can be seen and used.
+
+These are working docs, not an archive (same rule as plans): **delete the file once it's served its purpose** — the handoff happened, the question was answered, the analysis landed in code/commit. Don't let throwaway markdown accumulate as rot.
