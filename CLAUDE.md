@@ -44,9 +44,18 @@ Run E2E only through `./e2e.ps1` via the matching skill (`e2e-ui-regress`, `e2e-
 
 Avoid introducing tech debt wherever possible. But when a quick fix is the right call, or you notice or introduce debt the user is aware of, log a line in the `TECH_DEBT.md` nearest the area you touched (there's one per area — use the closest, not the root).
 
-## Code comments — size is a smell signal
+## Code comments — default to none; the commit message is the archive
 
-A comment that needs a paragraph to justify the code below it is usually telling you the code is hacky. If it is, do the proper fix — or, if a quick fix is genuinely the right call, log it in the nearest `TECH_DEBT.md` and keep the comment short. If the code is sound, it doesn't need a wall of text: state the non-obvious *why* in a line or two and let the commit message carry the full story (the incident, the root cause, the alternatives). Big inline explanations rot in place; commit messages are the archive.
+Default to **zero** comments. The diff shows *what* changed; the commit message is where *why* lives (the incident, the root cause, the alternatives). A code comment is the exception, not the habit — **≤2 lines**, and only for a *why* a reader needs *at this line* and can't get from well-named identifiers. Anything longer belongs in the commit message, not the file; big inline explanations rot in place.
+
+A comment is **wrong**, not merely long, if it:
+- **restates reasoning already in a `CLAUDE.md`/`docs` file** — link it in a phrase, or omit it (two copies drift the day one changes);
+- **cites a transient artifact** (a plan filename, "Phase N", a ticket) that will be deleted — the reference is engineered to dangle;
+- **narrates the *what*** — well-named code already does that.
+
+The one comment that always earns its place: a **single-line footgun/invariant warning** at the exact site a future edit would break something ("don't put X here — it would Y").
+
+And if a comment needs a paragraph to justify the code below it, that's usually the *code* telling you it's hacky — do the proper fix, or if a quick fix is genuinely right, log it in the nearest `TECH_DEBT.md` and keep the comment short.
 
 ## Plans (`plans/*.md`)
 
