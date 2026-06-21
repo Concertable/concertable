@@ -65,6 +65,8 @@ All findings actioned. Backend `dotnet build` green + Tenant unit tests 53/53; a
   the direct `Concertable.B2B.Artist.Infrastructure` ProjectReference from `Artist.Api`, `Workers`, and
   `E2ETests`, which only still compiled via a transitive crutch through the old `Tenant.Api` reference. MB1
   removed that crutch and exposed the breakage; the three references were restored to their committed (HEAD) state.
+  The same stray change had also dropped `Artist.Infrastructure` from `api/Concertable.slnx` (it kept compiling
+  transitively via the restored ProjectReferences); the solution entry has now been restored to match.
 
 ## Coverage
 <!-- dependency order, foundation first. Each item lists exact `git diff -- <paths>` globs. -->
