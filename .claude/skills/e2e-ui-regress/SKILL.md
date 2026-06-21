@@ -48,7 +48,7 @@ The script:
 2. Builds a `dotnet test --filter "DisplayName=X|DisplayName=Y|..."` from those exact names
 3. Preflights via `dotnet test --list-tests --filter ...` to confirm every baseline name resolves to a real Reqnroll DisplayName -- fails fast on baseline drift
 4. Runs the filtered scenarios
-5. **Flaky-stack guard:** if any scenario fails, it re-runs **only the failures** once, each on a freshly-booted stack (the UI suite is flaky on a loaded Docker host -- the ASB emulator drops connections under the full run's sustained load, tripping different bus-heavy scenarios each time). A scenario that passes on the isolated retry is treated as an environment blip (green); one that fails **both** times is a real regression. The retry output goes to `regress.retry.last.log` next to the suite's `regress.last.log`.
+5. **Flaky-stack guard:** if any scenario fails, it re-runs **only the failures** once, together on a single freshly-booted stack separate from the full run's (the UI suite is flaky on a loaded Docker host -- the ASB emulator drops connections under the full run's sustained load, tripping different bus-heavy scenarios each time). A scenario that passes on the isolated retry is treated as an environment blip (green); one that fails **both** times is a real regression. The retry output goes to `regress.retry.last.log` next to the suite's `regress.last.log`.
 6. Asserts the baseline passes (after the retry), `Failed == 0`
 7. Exits 0 on success, 1 on any real regression or baseline drift
 
