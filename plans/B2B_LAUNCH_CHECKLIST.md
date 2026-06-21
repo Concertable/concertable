@@ -2,7 +2,7 @@
 
 > **Disclaimer:** Research-grounded working doc, not legal advice. Items marked **[LEGAL]** require validation by a UK solicitor before you rely on them. Items marked **[ACCT]** want an accountant's eye.
 
-**Scope:** Everything needed to legally operate Concertable as a UK-based B2B SaaS platform connecting venues and artists for paid gigs, with a disclosed-agent posture for money movement via Stripe Connect Standard.
+**Scope:** Everything needed to legally operate Concertable as a UK-based B2B SaaS platform connecting venues and artists for paid gigs, with a disclosed-agent posture for money movement via Stripe Connect Express.
 
 **Out of scope (Phase 2):** Customer-facing ticket sales / marketplace. Mobile app distribution. International expansion.
 
@@ -11,7 +11,7 @@
 ## Phase 0 — Decisions that block other work
 
 - [ ] **Revenue model** picked: per-gig fee / subscription / % commission / hybrid. Drives Stripe billing setup, pricing UI, and venue onboarding copy.
-- [ ] **Multi-tenant org model** decision. Recommended *yes* — see future `TENANT_REFACTOR_PLAN.md`. Block company setup on this only if it changes the company name or domain.
+- [x] **Multi-tenant model** decided & shipped — backend domain type is `Tenant` (Guid PK, request-scoped filtering, tenant-scoping E2E green). "Organization" is retained only as the user-facing UI/API label. Remaining multi-user membership / roles / auth-sweep work is tracked in `USER_MODEL_PLAN.md`.
 - [ ] **Company name** confirmed available at https://find-and-update.company-information.service.gov.uk and as a `.com` / `.co.uk` domain.
 - [ ] **Domain** registered.
 
@@ -184,13 +184,13 @@ Don't tackle until B2B has traction.
 
 ---
 
-## Workflow-specific code changes (separate from this checklist)
+## Workflow-specific code changes (tracked elsewhere)
 
-These live in `api/Modules/Contract/LEGAL_REQUIREMENTS.md` and should be reconciled with research findings:
+Code-level workflow/legal items are owned by `api/Concertable.B2B/Modules/Contract/LEGAL_REQUIREMENTS.md` — the single source; don't duplicate them here. Current state at a glance:
 
-- [ ] Strip the 3% PRS deduction from settlement logic (PRS is the venue's responsibility via TheMusicLicence, not the platform's).
-- [ ] Add venue field: `holdsMusicLicence: bool` (self-attestation at onboarding).
-- [ ] Confirm `Cancelled` stage refund mechanic is wired end-to-end.
+- ✅ 3% PRS deduction — correctly absent: PRS is the venue's liability via TheMusicLicence (not the platform's), and a flat skim would double-charge an already-licensed venue. (A proper per-tenant pass-through for *non*-self-licensed venues is a separate, still-open item — `LEGAL_REQUIREMENTS.md` item 5, marked ABSENT.)
+- [ ] `holdsMusicLicence` self-attestation — outstanding (lives on `Tenant.Compliance`, not `Venue`).
+- [ ] `Cancelled`-stage escrow refund — outstanding; `EscrowEntity.Refund()` exists but B2B never calls it (not just "confirm" — it's unbuilt).
 
 ---
 

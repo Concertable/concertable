@@ -15,7 +15,7 @@
 - Four contract types (FlatFee, DoorSplit, VenueHire, Versus)
 - Automated settlement via Stripe Connect Express
 - Disclosed-agent legal posture (Concertable acts as venue/artist's agent for money handling)
-- Multi-staff Organization model (Owner + Manager roles)
+- Multi-staff Tenant model (Owner + Manager roles)
 - DAC7-compliant seller onboarding
 - Cancellation/refund handling on the B2B path (venue or artist cancels — escrow refunds correctly)
 - Per-booking signed agreement (click-wrap e-signature, terms snapshotted at Accept) — see [LEGAL_REQUIREMENTS.md](../api/Concertable.B2B/Modules/Contract/LEGAL_REQUIREMENTS.md) item 2
@@ -106,8 +106,8 @@ Stripe production approval (~2-4 weeks elapsed)
 | Item | Effort | Depends on | Month |
 |---|---|---|---|
 | PRS correction in `LEGAL_REQUIREMENTS.md` (✅ done 2026-06-01 — was "remove 3% line"; now per-tenant pass-through, venue's liability) | – | – | done |
-| Music licence attestation field (on Organization) = PRS self-licensed flag | 0.5 days | Phase 1 | Month 1 |
-| Tenant configuration surface on Organization (PRS / VAT / platform fee / payment terms / cancellation defaults) | 1-2 days | Phase 1 | Month 1-2 |
+| Music licence attestation field (on `Tenant.Compliance`) = PRS self-licensed flag | 0.5 days | Phase 1 | Month 1 |
+| Tenant configuration surface (PRS / VAT / platform fee / payment terms / cancellation defaults) | 1-2 days | Phase 1 | Month 1-2 |
 | Booking agreement + click-wrap e-signature at Accept (snapshot terms, PDF via `IPdfService`) — `LEGAL_REQUIREMENTS.md` item 2 | 3-5 days | Phase 4 (Booking snapshot), `IPdfService` | Month 4 |
 | Per-contract-type VAT calculation (branches on supply direction + supplier VAT status) — items 1, 3 | 2-3 days | Tenant config (VAT fields) | Month 5 |
 | Self-billed VAT invoice generation per settlement (sequential numbering, HMRC fields, PDF) — item 4 | 2-3 days | VAT calculation, agreement PDF plumbing | Month 5 |
