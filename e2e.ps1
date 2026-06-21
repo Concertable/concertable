@@ -99,7 +99,8 @@ function Invoke-Regress([string]$suite, [string]$csproj) {
     Write-Host "  ${suite}: $failed scenario(s) failed on the first pass:" -ForegroundColor Yellow
     $failedNames | ForEach-Object { Write-Host "    - $_" -ForegroundColor Yellow }
 
-    # Retry ONLY the failures once, each on a freshly-booted stack. The UI suite is flaky on a loaded
+    # Retry ONLY the failures once, together on a single freshly-booted stack (separate from the full run's).
+    # The UI suite is flaky on a loaded
     # Docker host -- the ASB emulator drops connections under the sustained load of the full run, tripping
     # different bus-heavy scenarios each time -- so a scenario that fails in the full run but passes alone
     # is an environment blip, not a regression. Re-running just the failures is far cheaper than the whole

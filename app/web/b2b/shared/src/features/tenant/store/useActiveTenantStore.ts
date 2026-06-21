@@ -9,8 +9,8 @@ interface ActiveTenantState {
 
 /**
  * Persists the selected tenant across reloads. Written by the tenant switcher (Phase 6) and read by the axios
- * interceptor to stamp X-Tenant-Id. Until a user holds more than one membership nothing selects a tenant, so
- * the header is never sent and single-tenant behaviour is unchanged.
+ * interceptors (via installTenantHeaders) to stamp X-Tenant-Id. Until a user holds more than one membership
+ * nothing selects a tenant, so the header is never sent and single-tenant behaviour is unchanged.
  */
 export const useActiveTenantStore = create<ActiveTenantState>()(
   persist(
