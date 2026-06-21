@@ -1,6 +1,7 @@
 # Big review — Feature/payment-proxy
 
 **Plan anchored to commit:** `aa5ccef01ce7fa0a0d198648e34bf3c34f45854f`  _(2026-06-21)_
+**Reviewed up to commit:** `afd1544d0281e7d0c40ccd248a51abd0e105f6fe`  _(2026-06-21)_
 Net diff reviewed: `6c37c5b6..aa5ccef0` (170 files, +2220/-493). Move-only files skipped.
 Status legend: `[ ]` not yet reviewed · `[x]` reviewed (date) · `[~]` in progress (incomplete — re-review).
 
@@ -372,3 +373,76 @@ smudge introduced by routing payouts through the shared axios client.
   could mislead a future debugger into thinking two still-interfering retries can't share a stack (they can).
   Reword to "the failures together, on a single freshly-booted stack (separate from the full run's)". Borderline;
   flagged because the codebase treats comment/doc honesty as a first-class rule.
+
+## Incremental review — 2026-06-21
+
+Range: `574536f7..afd1544d` (4 commits, 35 files, +558/-275 — watermark moved off the original anchor by
+Tommy to the GetTenantId-extension commit, where the big-review staging pass effectively reached). The new
+work after the payment-proxy resolution: the **permission catalog split by persona** (the headline,
+`afd1544d`), the **`ConcertWorkflowCatalog → ConcertWorkflowRegistryBuilder` rename** (`e3e636ad`), the
+**Search projection-mapper extraction + seed/handler parity test** (`2918a668`), and a docs addition
+(`901834f5`). **One LOW finding (`CV8`); everything else clean across all five lenses.**
+
+**Permission persona-split — verified correct (the riskiest change, checked closely).** The old
+persona-blind static `PermissionCatalog` matrix is decomposed into `SharedPermissions` (both-persona base) +
+`VenuePermissions`/`ArtistPermissions` (each composing the base with its exclusive grants), resolved by a
+keyed strategy `PermissionCatalog : IPermissionCatalog` keyed on `TenantType` — the documented
+`CODE_PATTERNS.md` resolver pattern (the DI comment cites it). Checked and sound:
+- **Faithful decomposition** — reconstructing each persona's effective grants (shared ∪ exclusive) reproduces
+  the old matrix exactly, minus the cross-persona grants that were always wrong: a venue tenant loses
+  `applications.submit`, an artist tenant loses `opportunities.manage`/`applications.decide`/`concerts.manage`/
+  `concerts.check_in`. Those are correct removals, not regressions.
+- **Persona enforcement holds two ways, no gate weakened** — persona-*exclusive* permissions self-protect by
+  construction (the other persona's catalog doesn't contain the string → `Grants` returns false → 403), so the
+  controllers that were `[HasPermission(X, TenantType.Y)]` for an exclusive `X` correctly drop the persona arg
+  (`ApplicationController`, `ConcertController`, `OpportunityController`). Shared permissions on a single-persona
+  surface keep their pin via `[TenantPersona(TenantType.Y)]` (the two dashboard controllers). I confirmed every
+  migrated call-site falls into exactly one of these two cases — no shared-permission endpoint silently lost its
+  persona constraint when `PermissionRequirement.Persona`/`PermissionPolicy`'s persona-encoding were removed.
+- **Intended tightening, not a bug** — `ConcertsManage`/`OpportunitiesManage` were persona-*blind* before
+  (`[HasPermission(Permissions.ConcertsManage)]`, no persona) and are now venue-exclusive. An artist
+  Owner/Manager that could theoretically have passed those gates now 403s; concerts/opportunities are
+  venue-owned surfaces with no artist flow, so this is the persona-correct tightening the refactor intends.
+- **Migration is complete** — grep confirms **zero** remaining references to the deleted `Permissions` class
+  and **zero** uses of the removed two-arg `[HasPermission(string, TenantType)]` attribute ctor (the
+  `IMembershipContext.HasPermission(string, TenantType?)` *method* is a distinct, retained signature). No
+  compile break.
+- **`byPersona[persona]` indexer is safe** — `TenantType` is exactly `{ Venue, Artist }`, both mapped, and
+  `HasPermission` fails closed (`tenantType is not { } persona → false`) before the lookup, so the indexer can
+  never throw on an unmapped persona. (Considered as a fail-loud-vs-fail-closed nit; dropped — not reachable.)
+- **Test coverage strengthened** — `PermissionCatalogTests` now asserts declared-constants-exactly-match-granted
+  per catalog, Owner-holds-every-permission-of-its-persona, and the headline invariant
+  `PersonaExclusivePermissions_AreUnreachableForTheOtherPersona` (all roles × all exclusive perms). DI lifetimes
+  are sound (scoped `TenantContext` → singleton `IPermissionCatalog`; the three persona sets + catalog all
+  singleton).
+
+**Search projection extraction + parity — clean.** `ProjectionMappers.ToReadModel(this XChangedEvent, …)`
+hoists the read-model construction out of the three handlers (the `XMappers` extension-method convention;
+the create/update split and genre reconciliation are preserved verbatim). The new `SeedProjectionParityTests`
+proves the seed direct-insert path (`SeedSpecMappers.ToReadModel`) and the live handler path produce
+byte-identical rows for every spec — exactly the guarantee `SEEDING_CONVENTIONS.md` requires for the
+`XProjectionTestSeeder` exception, now machine-enforced rather than trusted. Isolation holds: the B2B
+`*.Contracts.Events` and `B2B.Seed.Contracts` references are allowed consumer→producer crossings (Search reads
+B2B's events; this is pre-existing). `SeedCatalog`'s doc comment is updated to state the parity-by-test (not
+by-construction) guarantee accurately.
+
+**Concert workflow rename — pure mechanical rename**, `ConcertWorkflowCatalog → ConcertWorkflowRegistryBuilder`
+(disambiguating from the seed catalog / keyed-resolver "catalog" senses), internal to `Concert.Infrastructure`.
+No behavior change, no boundary impact.
+
+- [x] **CV8 — LOW — C# conventions** — `api/Concertable.Search/Tests/Concertable.Search.UnitTests/Seed/SeedProjectionParityTests.cs:11-14` and `api/Concertable.B2B/Modules/Tenant/Concertable.B2B.Tenant.Infrastructure/Extensions/ServiceCollectionExtensions.cs:47-48`
+  Two new genuinely-multi-line WHY-comments are written as stacked `//` lines (4 lines on the parity test
+  explaining why the two mappers can't be merged across the project-reference boundary; 2 lines on the persona
+  catalog DI registration). `CODE_CONVENTIONS.md` ("Comments — … the rare genuinely-multi-line one → a single
+  `/* */` block, never stacked `//` lines") is explicit. Both comments' *content* earns its place — only the
+  spelling deviates. This is the same convention as `CV3`/`CV5`/`CV7` from the original pass, which were resolved
+  by converting to `/* */`; these are fresh instances of it. The DI comment also matches the pre-existing
+  stacked-`//` block right below it, so converting both keeps the block consistent. LOW; dismiss freely if you'd
+  rather leave the parity-test explanation as-is.
+
+### Resolution — addressed 2026-06-21
+
+**CV8 actioned.** The parity-test WHY-comment (`SeedProjectionParityTests.cs`) converted to a single `/* */`
+block. In `ServiceCollectionExtensions.cs` both adjacent stacked-`//` blocks (persona catalog DI + string-permission
+authorization) converted to `/* */` so the registration block stays consistent. Content unchanged — spelling only.
+Matches the CV3/CV5/CV7 resolution from the original pass.
