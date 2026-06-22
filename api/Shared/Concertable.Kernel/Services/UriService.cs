@@ -5,16 +5,16 @@ namespace Concertable.Kernel.Services;
 
 public sealed class UriService : IUriService
 {
-    private readonly UrlSettings _urlSettings;
+    private readonly UrlSettings urlSettings;
 
     public UriService(IOptions<UrlSettings> urlSettings)
     {
-        _urlSettings = urlSettings.Value;
+        this.urlSettings = urlSettings.Value;
     }
 
     public Uri GetUri(string path, IDictionary<string, string>? query = null)
     {
-        var builder = new UriBuilder(_urlSettings.Frontend) { Path = path };
+        var builder = new UriBuilder(urlSettings.Frontend) { Path = path };
 
         if (query?.Count > 0)
             builder.Query = string.Join("&", query.Select(kv => $"{kv.Key}={Uri.EscapeDataString(kv.Value)}"));

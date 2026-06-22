@@ -44,10 +44,7 @@ const venueApi = {
     formData.append("About", venue.about);
     formData.append("Latitude", String(venue.latitude));
     formData.append("Longitude", String(venue.longitude));
-    if (banner) {
-      formData.append("Banner.Url", venue.bannerUrl);
-      formData.append("Banner.File", banner as any);
-    }
+    if (banner) formData.append("Banner", banner as any);
     if (avatar) formData.append("Avatar", avatar as any);
     const { data } = await api.put<Venue>(`/venue/${venue.id}`, formData);
     return data;
