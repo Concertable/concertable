@@ -14,7 +14,7 @@
 
 **Decide first — gates everything (see §9):**
 - [ ] Revenue model (per-gig / subscription / % commission / hybrid).
-- [ ] DoorSplit/Versus revenue source — or ship FlatFee + VenueHire only at v1 (both standalone). See R9.
+- [ ] DoorSplit/Versus revenue source — leaning **manual door-takings entry** for v1 (external-ticketer import ruled out — §9); confirm by end of Month 1. See §9 / R9.
 
 **Build — MVP blockers, in priority order:**
 - [ ] 🔴 **Cancellation + escrow refund** — add a `Cancelled` stage and wire `EscrowEntity.Refund()` (the method exists; B2B never calls it). Today escrow money can come in but can't be refunded in-app.
@@ -55,7 +55,7 @@ The legal/business track is [LAUNCH_CHECKLIST.md](LAUNCH_CHECKLIST.md); the hard
 - More granular membership roles beyond Owner/Manager
 - Org-switcher UI (one user managing multiple orgs)
 
-**The differentiation thesis:** unlike GigPig (no escrow, no contracts, no settlement enforcement), Concertable provides typed contracts and automated settlement. Unlike DICE (closed, ticketing-first), Concertable also handles the venue↔artist booking workflow.
+**The differentiation thesis:** GigPig now markets automated payments and a "Payment House" that splits one venue payment across artists (per their 2026 site copy) — so *flat-fee* auto-payout is table stakes, not a moat. Concertable's real edge is **typed contracts + revenue-share settlement (DoorSplit/Versus) computed from ticket data**, which GigPig structurally can't do because it owns no ticketing. Unlike DICE (closed, ticketing-first), Concertable also owns the venue↔artist booking + contract workflow. The moat narrows to the revenue-share contract types — which is exactly why the DoorSplit/Versus revenue feed (§9) is the decision that matters most.
 
 ## 2. Three parallel swim-lanes
 
@@ -157,7 +157,7 @@ Stripe production approval (~2-4 weeks elapsed)
 | R6 | Phase 6 auth sweep introduces regressions across 25+ controllers | Medium | Medium | Test coverage assessment in Month 4. If integration test coverage is <60%, write tests first or split Phase 6 into smaller PRs. |
 | R7 | DAC7 schema changes between now and first export (Jan 2028) | Low | Low | Defer DAC7 export *implementation* if HMRC publishes schema updates; keep onboarding field collection on-spec. |
 | R8 | Solicitor flags an issue we haven't planned for (e.g. requires PSR registration, not just disclosed-agent) | Low | High | First solicitor consultation in Month 1 should explicitly confirm disclosed-agent posture is viable on Stripe Connect Express. If they push back, this plan needs major rework. |
-| R9 | DoorSplit/Versus revenue-source decision slips → two of four contract types unsellable at launch | Medium | Medium | Force the decision end of Month 1 (§9). Fallback: ship FlatFee + VenueHire only at v1 (both fully standalone), gate DoorSplit/Versus behind the marketplace or a manual-takings entry screen. |
+| R9 | DoorSplit/Versus revenue-source decision slips → two of four contract types unsellable at launch | Medium | Medium | Direction set 2026-06-22 (§9): **manual door-takings entry** feeds DoorSplit/Versus at v1 so all four ship; external-ticketer import ruled out; owned checkout (marketplace) is the durable feed. FlatFee + VenueHire remain the standalone floor if the manual-entry screen slips. Confirm by end of Month 1. |
 | R10 | VAT calculation + invoice work (Month 5) collides with Phase 6 auth sweep | Medium | Medium | Both land Month 5. If Phase 6 is running hot, pull the VAT chain forward to Month 4 (it depends only on the tenant VAT fields from Phase 1, not on Phase 6). |
 
 ## 7. Definition of "launch-ready"
@@ -225,7 +225,13 @@ See [MARKETPLACE_PLAN.md](../customer/MARKETPLACE_PLAN.md) for the detail. Headl
 
 These need answers but aren't urgent yet:
 
-- **DoorSplit/Versus revenue source** — these two contract types settle against door/ticket revenue, which standalone B2B has no feed for. Options: (a) manual door-count/takings entry by the venue at settlement, (b) import from a third-party ticketer (DICE/Skiddle/Eventbrite), (c) ship FlatFee + VenueHire only at v1 and gate DoorSplit/Versus behind the marketplace. **Decide by end of Month 1** — it affects what's sellable and what the settlement UI needs.
+- **DoorSplit/Versus revenue source** — these two settle against door/ticket revenue, which standalone B2B has no feed for. Money mechanic is identical for any non-owned-checkout option: Concertable charges the venue for the artist's share and settles it through Stripe (as FlatFee escrow already does); only *owned checkout* puts Concertable in the flow of the ticket funds directly. Options:
+  - **(a) Manual door-takings entry** by the venue at settlement — standalone, zero external dependency. Number is venue-self-reported, which is acceptable (door deals are trust-based anyway; the signed agreement + audit trail backstop it). **The pragmatic v1 feed — lets all four contract types ship.**
+  - **(b) Import from a third-party ticketer (DICE/Skiddle/Eventbrite)** — *researched 2026-06-22; ruled out for v1.* Buys only one thing over (a): a *verified* sales number instead of a self-reported one — the payout still funds by charging the venue. Against that thin gain: only **DICE** exposes per-event sales via API, and only through a **gated, read-only Partner API** (no event creation; Skiddle sells via its dashboard not the API; Eventbrite's create/orders API is app-approval-gated since the 2020 deprecation). All three are merchant-of-record and pay the venue post-event, so you never hold the ticket money regardless. High integration cost + single-provider lock-in for marginal data-trust gain.
+  - **(c) Own checkout (the deferred marketplace)** — the only feed where Concertable holds ticket funds directly and splits them via `TransferData.Destination` with no separate venue charge. The durable long-term feed; see [MARKETPLACE_PLAN.md](../customer/MARKETPLACE_PLAN.md).
+  - **(d) Ship FlatFee + VenueHire only at v1** — the standalone floor if (a)'s entry screen slips.
+
+  **Lean: (a) manual entry for v1 + (c) owned checkout as the durable feed; (b) ruled out. Confirm by end of Month 1** — it affects what's sellable and what the settlement UI needs.
 - **Revenue model** — per-gig fee / subscription / % commission / hybrid. Decide by end of Month 1.
 - **Subscription tiers** (if going subscription) — what's free, what's paid, what's the price point? Decide by Month 3 (when pricing page work starts).
 - **Beta cohort sourcing** — warm intros via existing music industry contacts? Cold outreach? Industry events? Decide by Month 4.
@@ -253,3 +259,4 @@ These need answers but aren't urgent yet:
 - **2026-06-01** — Tenant configuration surface adopted: PRS/VAT/fee/payment-terms/cancellation defaults read from per-tenant config, not constants.
 - **2026-06-01** — Flagged DoorSplit/Versus revenue-source gap (R9): two of four contract types can't settle without a revenue feed; FlatFee + VenueHire are the standalone-safe v1 floor.
 - **2026-06-20** — Organization refactor superseded by the tenancy route. `ORGANIZATION_REFACTOR_PLAN.md`, `TENANCY_DESIGN.md`, and `TENANT_SCOPING_PLAN.md` shipped and were deleted per the plans rule (git history is the archive). The B2B module is now `Tenant` (Guid PK) with request-scoped filtering and a compliance value object; tenant-scoping is complete (full E2E green). **"Organization" is retained ONLY as the user-facing UI/API label** (Settings → Organization, `api/organizations`) — the backend domain type is `Tenant`. Remaining Swim-lane B work (multi-user membership, roles, the auth sweep) moved to `USER_MODEL_PLAN.md`. This plan's Swim-lane B / §7 references were updated to match; the killed `OrganizationMembership` / `OrganizationId` terminology was scrubbed.
+- **2026-06-22** — Deep-research pass on the "delegate ticketing to an external marketplace API" idea + the UK competitive landscape (DICE/Skiddle/Eventbrite APIs; GigPig). Outcomes: (1) §9 option (b) external-ticketer import **ruled out** — only DICE exposes sales via a gated read-only Partner API, all are merchant-of-record, and it buys only sales-number *verification* over manual entry (the money still funds by charging the venue either way); (2) §9 now leans **(a) manual door-takings entry for v1** (ships all four contract types) **+ (c) owned checkout (marketplace) as the durable feed**; (3) GigPig differentiation thesis (§1) corrected — GigPig now markets automated payments + a "Payment House" split, so the moat is specifically **revenue-share settlement from owned ticket data**, not "automated settlement" generally. Confirms (does not reverse) the B2B-first / marketplace-deferred strategy. Sources: DICE Partner GraphQL docs, Skiddle API/Promotion Centre, Eventbrite SEC 10-Q (merchant-of-record), GigPig site copy.
