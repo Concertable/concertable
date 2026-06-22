@@ -59,7 +59,4 @@ public sealed class SharedPermissions : IPermissionSet
 
     public bool Grants(TenantRole role, string permission) =>
         ByRole.TryGetValue(role, out var permissions) && permissions.Contains(permission);
-
-    /// <summary>Every shared permission granted to at least one role — the catalog-coverage test checks this against the declared constants.</summary>
-    public static IReadOnlySet<string> All { get; } = ByRole.Values.SelectMany(p => p).ToFrozenSet();
 }
