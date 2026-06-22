@@ -8,7 +8,7 @@
 >
 > **Updated:** 2026-05-18
 >
-> **Companion docs:** [LAUNCH_PLAN.md](LAUNCH_PLAN.md), [B2B_LAUNCH_CHECKLIST.md](B2B_LAUNCH_CHECKLIST.md), [USER_MODEL_PLAN.md](USER_MODEL_PLAN.md).
+> **Companion docs:** [LAUNCH_PLAN.md](../b2b/LAUNCH_PLAN.md), [LAUNCH_CHECKLIST.md](../b2b/LAUNCH_CHECKLIST.md), [USER_MODEL_PLAN.md](../b2b/USER_MODEL_PLAN.md).
 
 ---
 
@@ -120,8 +120,8 @@ If B2B launch in Nov 2026 goes well, marketplace switch-on could realistically t
 
 ## 8. Reference
 
-- [LAUNCH_PLAN.md](LAUNCH_PLAN.md) §8 — high-level marketplace mention
-- [B2B_LAUNCH_CHECKLIST.md](B2B_LAUNCH_CHECKLIST.md) "Deferred — Phase 2" section — the items it explicitly defers
+- [LAUNCH_PLAN.md](../b2b/LAUNCH_PLAN.md) §8 — high-level marketplace mention
+- [LAUNCH_CHECKLIST.md](../b2b/LAUNCH_CHECKLIST.md) "Deferred — Phase 2" section — the items it explicitly defers
 - DICE Standard Ticket Terms — useful reference for consumer-facing disclosed-agent language
 - CMA guidance on ticketing — required reading before drafting customer T&Cs
 - ICO guidance on cookies + PECR — applies to customer SPA cookie banner

@@ -2,9 +2,32 @@
 
 > **Goal:** Production launch of the B2B platform (venue↔artist booking + automated settlement) by **November 2026**.
 >
-> **Updated:** 2026-06-20
+> **Updated:** 2026-06-22
 >
-> **Companion docs:** [B2B_LAUNCH_CHECKLIST.md](B2B_LAUNCH_CHECKLIST.md), [USER_MODEL_PLAN.md](USER_MODEL_PLAN.md), [MARKETPLACE_PLAN.md](MARKETPLACE_PLAN.md), [../api/Concertable.B2B/Modules/Contract/LEGAL_REQUIREMENTS.md](../api/Concertable.B2B/Modules/Contract/LEGAL_REQUIREMENTS.md).
+> **Companion docs:** [LAUNCH_CHECKLIST.md](LAUNCH_CHECKLIST.md), [USER_MODEL_PLAN.md](USER_MODEL_PLAN.md), [MARKETPLACE_PLAN.md](../customer/MARKETPLACE_PLAN.md), [../../api/Concertable.B2B/Modules/Contract/LEGAL_REQUIREMENTS.md](../../api/Concertable.B2B/Modules/Contract/LEGAL_REQUIREMENTS.md).
+
+---
+
+## Status — what's shipped vs. what's left (code-verified 2026-06-22)
+
+**Shipped — verified in code, don't rebuild:** Tenant model + membership + 6-role RBAC · payout re-keyed to `TenantId` · Stripe Connect Express with both money flows (escrow `OnBehalfOf` for FlatFee/VenueHire; `TransferData.Destination` for DoorSplit/Versus) · artist↔venue messaging · settlement for all four contract types · the 3% PRS skim is correctly absent.
+
+**Decide first — gates everything (see §9):**
+- [ ] Revenue model (per-gig / subscription / % commission / hybrid).
+- [ ] DoorSplit/Versus revenue source — or ship FlatFee + VenueHire only at v1 (both standalone). See R9.
+
+**Build — MVP blockers, in priority order:**
+- [ ] 🔴 **Cancellation + escrow refund** — add a `Cancelled` stage and wire `EscrowEntity.Refund()` (the method exists; B2B never calls it). Today escrow money can come in but can't be refunded in-app.
+- [ ] 🔴 **E-signed booking agreement** — click-wrap at Accept, terms snapshotted, PDF via `IPdfService` (LEGAL_REQUIREMENTS item 2).
+- [ ] 🟠 **DAC7 onboarding completion** — NINO / UTR / Company-Reg on `Tenant.Compliance`; gate payout until complete (no de-minimis for services — reportable from £1).
+- [ ] 🟠 **Self-billed VAT invoice engine** — HMRC legends, per-supplier agreement + annual renewal, VAT-status branching (items 1, 3, 4).
+- [ ] 🟡 **`holdsMusicLicence` attestation** on `Tenant.Compliance` (~0.5 day; the venue's responsibility, we just record it).
+- [ ] 🟡 **Finish Swim-lane B** — membership/invitation endpoints + auth sweep + messaging group-inbox (USER_MODEL_PLAN Phases 6-8).
+- [ ] 🟡 **Per-contract-type VAT calculation** (items 1, 3).
+
+**Verify before trusting — competitor table-stakes, not confirmed in code:** reviews/reputation end-to-end · calendar sync (Google/Apple/Outlook) · financial/settlement CSV export · pricing-transparency UI.
+
+The legal/business track is [LAUNCH_CHECKLIST.md](LAUNCH_CHECKLIST.md); the hard launch gates are in §7.
 
 ---
 
@@ -18,14 +41,14 @@
 - Multi-staff Tenant model (Owner + Manager roles)
 - DAC7-compliant seller onboarding
 - Cancellation/refund handling on the B2B path (venue or artist cancels — escrow refunds correctly)
-- Per-booking signed agreement (click-wrap e-signature, terms snapshotted at Accept) — see [LEGAL_REQUIREMENTS.md](../api/Concertable.B2B/Modules/Contract/LEGAL_REQUIREMENTS.md) item 2
+- Per-booking signed agreement (click-wrap e-signature, terms snapshotted at Accept) — see [LEGAL_REQUIREMENTS.md](../../api/Concertable.B2B/Modules/Contract/LEGAL_REQUIREMENTS.md) item 2
 - Per-contract-type VAT calculation + VAT-compliant self-billed invoices per settlement (items 1, 3, 4)
 - Per-tenant configuration surface (PRS, VAT, platform fee, payment terms, cancellation defaults)
 
 **Scope caveat — DoorSplit/Versus revenue source:** two of the four contract types settle against door/ticket revenue, which in standalone B2B (no marketplace) has no feed. FlatFee + VenueHire are fully standalone; DoorSplit + Versus need a revenue source decided before they can be sold (see §9). FlatFee + VenueHire alone are a viable v1 if that decision slips.
 
 **Out of scope for v1 (planned, not abandoned):**
-- Customer-facing ticket marketplace — see [MARKETPLACE_PLAN.md](MARKETPLACE_PLAN.md). Designed to be additive; switch-on planned Q1 2027 or later once B2B has traction.
+- Customer-facing ticket marketplace — see [MARKETPLACE_PLAN.md](../customer/MARKETPLACE_PLAN.md). Designed to be additive; switch-on planned Q1 2027 or later once B2B has traction.
 - Mobile app distribution to App Store / Play Store
 - Native push notifications
 - Multi-currency / international expansion
@@ -40,7 +63,7 @@ Three workstreams run in parallel across the six months. Each has different owne
 
 ### Swim-lane A — Legal & Business
 **Owner:** you (with solicitor + accountant)
-**Detail:** [B2B_LAUNCH_CHECKLIST.md](B2B_LAUNCH_CHECKLIST.md)
+**Detail:** [LAUNCH_CHECKLIST.md](LAUNCH_CHECKLIST.md)
 
 Company registration, ICO, T&Cs, insurance, accounting, HMRC platform-operator registration, Stripe production activation. Mostly admin work scattered across the six months; some elapsed-time dependencies (solicitor drafting takes 2-4 weeks).
 
@@ -190,7 +213,7 @@ Concrete checklist for Month 6. Don't launch without all of these green.
 
 The marketplace is **deliberately additive** — designed so it can be switched on later without major refactor of the B2B code paths.
 
-See [MARKETPLACE_PLAN.md](MARKETPLACE_PLAN.md) for the detail. Headline:
+See [MARKETPLACE_PLAN.md](../customer/MARKETPLACE_PLAN.md) for the detail. Headline:
 - Most of the marketplace infrastructure already exists (Customer SPA, Customer module, TicketEntity, ConcertEntity price/capacity fields).
 - Switch-on is primarily UI work (pricing transparency, refund UI, consumer-facing emails) + consumer-protection legal (separate customer T&Cs from solicitor + CMA secondary-ticketing review).
 - The B2B tenancy refactor doesn't change; settlement workflows don't change; Stripe Connect doesn't change.
@@ -210,13 +233,13 @@ These need answers but aren't urgent yet:
 
 ## 10. Reference
 
-- [B2B_LAUNCH_CHECKLIST.md](B2B_LAUNCH_CHECKLIST.md) — full legal/business setup checklist
+- [LAUNCH_CHECKLIST.md](LAUNCH_CHECKLIST.md) — full legal/business setup checklist
 - [USER_MODEL_PLAN.md](USER_MODEL_PLAN.md) — Swim-lane B detail: the outstanding multi-user tenant / roles / auth-sweep work
-- [MARKETPLACE_PLAN.md](MARKETPLACE_PLAN.md) — Phase 2 marketplace switch-on plan
-- [../api/Concertable.B2B/Modules/Contract/LEGAL_REQUIREMENTS.md](../api/Concertable.B2B/Modules/Contract/LEGAL_REQUIREMENTS.md) — B2B legal backlog (rewritten 2026-06-01: contract-type-centric, items 0-9, PRS corrected)
-- [../api/Concertable.Customer/LEGAL_REQUIREMENTS.md](../api/Concertable.Customer/LEGAL_REQUIREMENTS.md) — marketplace/fan legal leads (future, separate system)
-- [../api/Concertable.B2B/Modules/Contract/ARCHITECTURE.md](../api/Concertable.B2B/Modules/Contract/ARCHITECTURE.md) — contract + workflow architecture
-- [MODULAR_MONOLITH_RULES.md](../api/docs/MODULAR_MONOLITH_RULES.md) — module boundary rules
+- [MARKETPLACE_PLAN.md](../customer/MARKETPLACE_PLAN.md) — Phase 2 marketplace switch-on plan
+- [../../api/Concertable.B2B/Modules/Contract/LEGAL_REQUIREMENTS.md](../../api/Concertable.B2B/Modules/Contract/LEGAL_REQUIREMENTS.md) — B2B legal backlog (rewritten 2026-06-01: contract-type-centric, items 0-9, PRS corrected)
+- [../../api/Concertable.Customer/LEGAL_REQUIREMENTS.md](../../api/Concertable.Customer/LEGAL_REQUIREMENTS.md) — marketplace/fan legal leads (future, separate system)
+- [../../api/Concertable.B2B/Modules/Contract/ARCHITECTURE.md](../../api/Concertable.B2B/Modules/Contract/ARCHITECTURE.md) — contract + workflow architecture
+- [MODULAR_MONOLITH_RULES.md](../../api/docs/MODULAR_MONOLITH_RULES.md) — module boundary rules
 
 ## Decision log
 

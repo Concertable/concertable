@@ -294,7 +294,7 @@ accepting an application via a message action still requires `ApplicationsDecide
 Verification gate for every phase: `dotnet build api/Concertable.slnx` and the affected module unit +
 integration test projects via `dotnet test`. The E2E suites (API `Concertable.B2B.E2ETests` + the UI
 regress against `api/Shared/Tests/Concertable.E2ETests/E2E_BASELINE.md`) are run **only when the phase
-is massive or behaviorally risky** — per [`plans/CLAUDE.md`](./CLAUDE.md), not by reflex. Phases that
+is massive or behaviorally risky** — per [`plans/CLAUDE.md`](../CLAUDE.md), not by reflex. Phases that
 flip user-facing behavior on a covered flow (notably 2, 5, 6, 7, 8) clear that bar; foundational
 zero-behavior-change phases (1) do not. Phases marked *re-scaffold* end with `./initial-migrations.ps1`
 from `api/` (never additive migrations).
