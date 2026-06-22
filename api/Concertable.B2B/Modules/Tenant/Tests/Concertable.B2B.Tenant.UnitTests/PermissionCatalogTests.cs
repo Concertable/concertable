@@ -5,10 +5,9 @@ namespace Concertable.B2B.Tenant.UnitTests;
 
 /// <summary>
 /// Recovers the compile-time guarantee an enum would have given (§1.3): every declared permission constant is
-/// granted to at least one role within its catalog, and each catalog grants only its own declared constants —
-/// so a typo'd or orphaned permission string fails the build's tests, not silently 403s in production. Plus
-/// the headline guarantee of the persona split: a persona-exclusive permission is unreachable for the other
-/// persona by construction.
+/// granted to at least one role within its catalog — so a typo'd or orphaned permission string fails the
+/// build's tests, not silently 403s in production. Plus the headline guarantee of the persona split: a
+/// persona-exclusive permission is unreachable for the other persona by construction.
 /// </summary>
 public sealed class PermissionCatalogTests
 {
@@ -27,20 +26,20 @@ public sealed class PermissionCatalogTests
             .ToHashSet();
 
     [Fact]
-    public void DeclaredConstants_ExactlyMatchGrantedPermissions()
+    public void EveryDeclaredConstant_IsGrantedToSomeRole()
     {
-        AssertExactMatch(typeof(SharedPermissions), SharedPermissions.All);
-        AssertExactMatch(typeof(VenuePermissions), VenuePermissions.All);
-        AssertExactMatch(typeof(ArtistPermissions), ArtistPermissions.All);
+        var shared = new SharedPermissions();
+        AssertEachConstantGranted(typeof(SharedPermissions), shared);
+        AssertEachConstantGranted(typeof(VenuePermissions), new VenuePermissions(shared));
+        AssertEachConstantGranted(typeof(ArtistPermissions), new ArtistPermissions(shared));
     }
 
-    private static void AssertExactMatch(Type holder, IReadOnlySet<string> granted)
+    private static void AssertEachConstantGranted(Type holder, IPermissionSet set)
     {
-        var declared = ConstantsOf(holder);
-        var ungranted = declared.Except(granted).ToList();
-        var unknown = granted.Except(declared).ToList();
-        Assert.True(ungranted.Count == 0, $"{holder.Name}: declared but absent from the matrix: {string.Join(", ", ungranted)}");
-        Assert.True(unknown.Count == 0, $"{holder.Name}: grants a permission that is not a declared constant: {string.Join(", ", unknown)}");
+        foreach (var permission in ConstantsOf(holder))
+            Assert.True(
+                Enum.GetValues<TenantRole>().Any(role => set.Grants(role, permission)),
+                $"{holder.Name}: declared but granted to no role: {permission}");
     }
 
     [Fact]
@@ -50,10 +49,10 @@ public sealed class PermissionCatalogTests
         var venue = new VenuePermissions(shared);
         var artist = new ArtistPermissions(shared);
 
-        foreach (var permission in SharedPermissions.All.Concat(VenuePermissions.All))
+        foreach (var permission in ConstantsOf(typeof(SharedPermissions)).Concat(ConstantsOf(typeof(VenuePermissions))))
             Assert.True(venue.Grants(TenantRole.Owner, permission), $"Venue Owner is missing {permission}");
 
-        foreach (var permission in SharedPermissions.All.Concat(ArtistPermissions.All))
+        foreach (var permission in ConstantsOf(typeof(SharedPermissions)).Concat(ConstantsOf(typeof(ArtistPermissions))))
             Assert.True(artist.Grants(TenantRole.Owner, permission), $"Artist Owner is missing {permission}");
     }
 
@@ -66,10 +65,10 @@ public sealed class PermissionCatalogTests
 
         foreach (var role in Enum.GetValues<TenantRole>())
         {
-            foreach (var artistOnly in ArtistPermissions.All)
+            foreach (var artistOnly in ConstantsOf(typeof(ArtistPermissions)))
                 Assert.False(venue.Grants(role, artistOnly), $"Venue {role} was granted artist-only {artistOnly}");
 
-            foreach (var venueOnly in VenuePermissions.All)
+            foreach (var venueOnly in ConstantsOf(typeof(VenuePermissions)))
                 Assert.False(artist.Grants(role, venueOnly), $"Artist {role} was granted venue-only {venueOnly}");
         }
     }

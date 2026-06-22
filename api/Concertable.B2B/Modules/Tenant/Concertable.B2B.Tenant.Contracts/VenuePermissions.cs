@@ -42,7 +42,4 @@ public sealed class VenuePermissions : IPermissionSet
     public bool Grants(TenantRole role, string permission) =>
         shared.Grants(role, permission) ||
         (Exclusive.TryGetValue(role, out var permissions) && permissions.Contains(permission));
-
-    /// <summary>The venue-exclusive permissions added on top of the shared base — checked against the declared constants by the catalog-coverage test.</summary>
-    public static IReadOnlySet<string> All { get; } = Exclusive.Values.SelectMany(p => p).ToFrozenSet();
 }
