@@ -60,6 +60,12 @@ Controllers return either the Dto verbatim (default — most endpoints) or a `Re
 shaping, HATEOAS, multiple endpoints rendering the same Dto differently). Don't pre-emptively
 shadow every Dto with a Response.
 
+Bounded exception: the public `Venue`/`Artist`/`Concert` **details** endpoints (B2B and Customer)
+always expose a dedicated `XDetailsResponse`, even when it is currently a field-for-field clone of
+the Dto. These are the anonymous marketplace surface; the Response is the frozen wire contract that
+lets the internal read Dto change (server-only fields, projection shape) without breaking public
+clients. This covers the details read endpoints — not every Dto.
+
 Service write inputs are `Request` types from `Module.Application/Requests/` (keep the `Request`
 suffix) — never the read Dto, which carries server-owned fields (`Id`, `UserId`) the caller must not
 set. Identity comes from the route/method parameter, not the body. When Create and Update accept the
