@@ -138,6 +138,21 @@ boundary. They are violations regardless of this plan.
 - **Note:** the *full* publishable-set marking (Auth.Contracts + the rest of the shared platform) is
   Phase 2 — Phase 1 proves the rails with one package.
 
+> **Publishing model & repo-split notes (worked out during Phase 1 build-out).**
+> - **What publishes:** only `IsPackable=true` *library* projects — the shared platform + the thin
+>   `*.Contracts` / `Payment.Client` packages. **Never** the deployable apps (`*.Web`/`*.Workers`) or a
+>   service's `Domain`/`Application`/`Infrastructure`/`Api` internals — those *consume*, never publish.
+> - **Cadence:** continuous, not one-shot. Every merge to `master` touching a publishable folder
+>   re-packs at a new MinVer version (commit-height bumps; a `v*` tag pins a real version).
+> - **Where:** the **org-scoped** GitHub Packages registry `nuget.pkg.github.com/Concertable` (not a
+>   repo) — shared by every repo in the org, so it survives the eventual split unchanged.
+> - **What does NOT survive the split automatically:** (1) `publish-packages.yml` is repo-root-only (a
+>   GitHub Actions requirement), so a `subtree split` leaves it behind — each separated repo gets its
+>   own smaller publish workflow (platform repo publishes the platform; a service repo publishes only
+>   its own contracts; consume-only repos need none). (2) Cross-repo *restore* needs the org packages
+>   made **internal** (or a `read:packages` PAT — the `GITHUB_PACKAGES_TOKEN` placeholder already in
+>   each `nuget.config`), because a repo's `GITHUB_TOKEN` only reads its own packages.
+
 ## Phase 2 — Prove the mechanism on the most stable boundary (Auth + shared platform)
 
 - Publish `Auth.Contracts` + the shared-platform packages.
