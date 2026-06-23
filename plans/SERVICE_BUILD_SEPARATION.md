@@ -17,10 +17,23 @@ documented-but-never-executed half of the split mapping in `api/ARCHITECTURE.md`
 sit on top of this; it goes first.
 
 **Decisions locked** (with the user):
-- **Feed:** GitHub Packages (already on GitHub).
+- **Feed:** GitHub Packages (already on GitHub) — `https://nuget.pkg.github.com/Concertable/index.json`.
 - **Source stays in the monorepo** — separate the *build closures* in place. Moving services to
-  their own repos is a later, optional, org-driven step; it is **out of scope here**.
+  their own repos is a later, optional, org-driven step; it is **out of scope here**. (But the
+  endgame *is* separate repos — every decision below is shaped so a future split is a no-op.)
 - **Phased by boundary stability** — most-stable contract first, churny shared core last.
+- **Versioning = MinVer** (git tag + commit height). Lockstep across all packages while this is one
+  repo; becomes natural independent per-repo versioning the moment a service splits out. Chosen over
+  CI-build-number (encodes no semver intent) and Nerdbank.GitVersioning (its per-path versioning only
+  earns its config cost *inside* a monorepo — pointless once repos are separate).
+- **Per-service build closures — NEVER repo-root config.** Each service folder + the shared-platform
+  folder carries its **own** `Directory.Packages.props` (CPM, `ManagePackageVersionsCentrally`),
+  `Directory.Build.props`, and `nuget.config`, so the folder is self-contained and carve-ready. **Do
+  not add a repo-root `Directory.Packages.props` (the "monorepo idiom").** Why this is the trap to
+  never re-fall-into: every phase's gate carves a service with `git subtree split
+  --prefix=api/Concertable.X` and builds it standalone, and a split takes *only that folder* — so any
+  `api/`-root config (a root CPM file, today's `api/Directory.Build.props`) is left behind and the
+  carve fails to restore. This is already why `mirror.yml`'s split produces non-building repos.
 
 **Out of scope (explicitly):** the deployment pipeline (containers/registry/host — there is none
 today; that's the *next* effort after this), the frontend, and any repo move.
@@ -100,11 +113,13 @@ boundary. They are violations regardless of this plan.
 
 ## Phase 1 — Stand up the packaging rails (publishes nothing consumed yet)
 
-- Add `nuget.config` with the GitHub Packages source + auth.
-- Add `Directory.Packages.props` (central package management) so package versions are managed in one
-  place across the monorepo.
-- Add package metadata + a deterministic version source (CI run / `MinVer`/`Nerdbank.GitVersioning`)
-  to the projects that will publish.
+- Add a **per-folder `nuget.config`** (GitHub Packages source + auth) in each service + the
+  shared-platform folder, so a carved folder already resolves the feed.
+- Add a **per-folder `Directory.Packages.props`** (CPM: `ManagePackageVersionsCentrally`) in each of
+  those folders and strip inline `Version=` from that folder's csproj; move the analyzer/`NoWarn`
+  settings out of `api/Directory.Build.props` into a per-folder `Directory.Build.props`. **No
+  repo-root version/build config** (see Decisions locked — a root file breaks the carve gate).
+- Add package metadata + **MinVer** to the projects that will publish.
 - Add a CI workflow that builds + **publishes changed packages** to the feed (path-filtered so a
   contract change republishes only that package).
 - **Gate:** a CI run publishes a throwaway package and a consumer can `restore` it. Zero behavior
