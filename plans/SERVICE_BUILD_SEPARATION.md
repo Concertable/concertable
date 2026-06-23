@@ -70,18 +70,33 @@ into `AddContainer`.
 
 ---
 
-## Phase 0 — Remove the cross-service source leaks (no packaging yet)
+## Phase 0 — Remove the cross-service source leaks (no packaging yet) — ✅ DONE
 
 These edges drag another service's **source** into a service's closure, so they'd poison its package
 boundary. They are violations regardless of this plan.
 
-- Land `plans/PAYMENT_AGNOSTIC_AUDIT.md`: drop the dead `Payment → B2B.{Contract,Concert,User}.Contracts`
-  edges + the stale `DataAccess.Application` domain `ProjectReference`s/GlobalUsings, and the
-  B2B↔Payment reverse leak.
-- Remove `B2B.Web → Payment.Seed` (B2B compiling Payment's seed project).
-- Replace `B2B.IntegrationTests.Fixtures → Payment.Infrastructure` (the one true backwards edge into
-  another service's internals) with a Payment Client/contract-based test seam.
-- **Gate:** full build green; B2B + Payment unit/integration green. No E2E (no behavior change).
+- ✅ ~~Land `PAYMENT_AGNOSTIC_AUDIT.md`~~ — **already landed** by the `Feature/payment-proxy` merge.
+  On `master` the dead `Payment → B2B.{Contract,Concert,User}.Contracts` edges, the dead
+  `IStripeValidation*` graph, the `ConcertPayee` projection + `payee_id` re-route, the stale
+  `DataAccess.Application` domain refs/GlobalUsings, and the B2B↔Payment reverse leak are all gone.
+  (That plan file is deleted in this commit — its work is fully shipped.)
+- ✅ Removed `B2B.Web → Payment.Seed` — it was only an orphaned E2E `StripeE2EAccountResolver`
+  registration that nothing in B2B's runtime resolved.
+- ✅ Replaced `B2B.IntegrationTests.Fixtures → Payment.Infrastructure` with a Payment Client/contract
+  test seam: escrow simulation moved from `PaymentDbContext`/`EscrowEntity` to an in-memory
+  `EscrowStore`/`EscrowRecord`; 6 dead Stripe-internal mocks deleted (no consumer once Payment runs
+  out-of-process); `MockStripeApiClient` → plain helper; `UseFailingPayment` re-routed to a failing
+  `IEscrowClient`; csproj now references `Payment.Client` + `Payment.Contracts` (+ `Stripe.net`).
+- ✅ **Gate passed:** full build green (0 errors); Payment + B2B unit (149) and B2B integration (129)
+  green. No E2E (no behavior change).
+
+> **Finding carried forward — a *new* Payment→B2B edge postdates the audit.** The payment-proxy
+> refactor added a live compile edge `Payment.Infrastructure → B2B.Tenant.Contracts` (the
+> `TenantCreatedEvent` payout-provisioning subscription in `TenantCreatedHandler`). It is a
+> `*.Contracts` reference, **not** a source leak, so it is correctly out of Phase 0's scope — but it
+> means the Phase 3 note "Payment depends only on shared + `Auth.Contracts`" no longer holds. Resolve
+> it when packaging Payment (Phase 3): either consume `B2B.Tenant.Contracts` as a package, or re-route
+> the subscription through a Payment-owned/generic event (the audit's pattern E).
 
 ## Phase 1 — Stand up the packaging rails (publishes nothing consumed yet)
 
@@ -106,8 +121,9 @@ boundary. They are violations regardless of this plan.
 
 ## Phase 3 — Payment standalone
 
-- Publish `Payment.Contracts` + `Payment.Client`. Flip Payment's refs to packages (after Phase 0,
-  Payment depends only on shared + `Auth.Contracts`).
+- Publish `Payment.Contracts` + `Payment.Client`. Flip Payment's refs to packages — shared platform,
+  `Auth.Contracts`, and `B2B.Tenant.Contracts` (the `TenantCreatedEvent` subscription; see the Phase 0
+  finding — package it, or re-route the subscription to a Payment-owned event to drop the edge).
 - Prove Payment carves-and-builds against the feed.
 - **Gate:** standalone Payment build + unit tests green.
 
