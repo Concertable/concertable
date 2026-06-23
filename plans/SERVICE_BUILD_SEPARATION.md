@@ -111,19 +111,32 @@ boundary. They are violations regardless of this plan.
 > it when packaging Payment (Phase 3): either consume `B2B.Tenant.Contracts` as a package, or re-route
 > the subscription through a Payment-owned/generic event (the audit's pattern E).
 
-## Phase 1 — Stand up the packaging rails (publishes nothing consumed yet)
+## Phase 1 — Stand up the packaging rails (publishes nothing consumed yet) — ✅ CODE DONE (CI run pending)
 
-- Add a **per-folder `nuget.config`** (GitHub Packages source + auth) in each service + the
-  shared-platform folder, so a carved folder already resolves the feed.
-- Add a **per-folder `Directory.Packages.props`** (CPM: `ManagePackageVersionsCentrally`) in each of
-  those folders and strip inline `Version=` from that folder's csproj; move the analyzer/`NoWarn`
-  settings out of `api/Directory.Build.props` into a per-folder `Directory.Build.props`. **No
-  repo-root version/build config** (see Decisions locked — a root file breaks the carve gate).
-- Add package metadata + **MinVer** to the projects that will publish.
-- Add a CI workflow that builds + **publishes changed packages** to the feed (path-filtered so a
-  contract change republishes only that package).
-- **Gate:** a CI run publishes a throwaway package and a consumer can `restore` it. Zero behavior
-  change; no E2E.
+- ✅ **Per-folder `nuget.config`** in all 12 folders: `<clear/>` + nuget.org + the GitHub Packages
+  feed, with **package source mapping** (`Concertable.*` → github only, `*` → nuget.org) as a
+  dependency-confusion guard. Auth via `%GITHUB_PACKAGES_TOKEN%`. Self-contained (carve-safe).
+- ✅ **Per-folder `Directory.Packages.props`** (CPM) in all 12 folders; stripped inline `Version=`
+  from 164 csproj (versions centralized per folder, derived from prior values; intra-folder conflicts
+  reconciled to the higher pin). **Per-folder `Directory.Build.props`** (`NuGetAudit`/`NoWarn` +
+  Meziantou via `GlobalPackageReference`); root `api/Directory.Build.props` deleted. **No repo-root
+  version/build config** (Decisions locked — a root file breaks the carve gate). _(commit 1)_
+- ✅ **MinVer** (`GlobalPackageReference`, `MinVerMinimumMajorMinor=0.1`, tag prefix `v`) + shared
+  package metadata in `Shared/Directory.Build.props`, with publishing **opt-in via
+  `<IsPackable>true</IsPackable>`** (default `false`, so a solution-wide `dotnet pack` yields only
+  intended packages). `Concertable.Kernel` is the first opted-in package — proven locally:
+  `dotnet pack` → `Concertable.Kernel.0.1.0-alpha.0.526.nupkg`, no NU1507. _(commit 2)_
+- ✅ **CI workflow** `.github/workflows/publish-packages.yml`: packs every `IsPackable` project,
+  pushes to the feed (`GITHUB_TOKEN`, `packages: write`), then a `verify-restore` job restores
+  `Concertable.Kernel` into a fresh consumer from the feed. Triggers: push to `master`
+  (path-filtered) + `workflow_dispatch`.
+- ⏳ **Gate — CI run (handoff):** build green ✅ + full restore green ✅ + local pack green ✅ here, but
+  the publish+restore loop only runs in CI. Verify by merging to `master` (or manual dispatch once on
+  the default branch). **Prereq:** GitHub Packages enabled for the `Concertable` org (the workflow's
+  `GITHUB_TOKEN` has `packages: write`); local dev consuming `Concertable.*` later needs a
+  `GITHUB_PACKAGES_TOKEN` PAT with `read:packages`. Zero behavior change; no E2E.
+- **Note:** the *full* publishable-set marking (Auth.Contracts + the rest of the shared platform) is
+  Phase 2 — Phase 1 proves the rails with one package.
 
 ## Phase 2 — Prove the mechanism on the most stable boundary (Auth + shared platform)
 

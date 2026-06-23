@@ -1,0 +1,86 @@
+name: Publish packages
+
+# Phase 1 rails for SERVICE_BUILD_SEPARATION: pack the publishable Concertable.*
+# projects with a MinVer-derived version and push them to the org's GitHub Packages
+# NuGet feed, then prove a fresh consumer can restore one from the feed.
+#
+# Today this publishes only Concertable.Kernel (the first opted-in package, via
+# <IsPackable>true</IsPackable>). Each later phase opts more projects in; this workflow
+# packs every IsPackable project in the solution, so it scales without edits.
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'api/Shared/**'
+      - 'api/Concertable.Messaging/**'
+      - 'api/Concertable.DataAccess/**'
+      - 'api/Concertable.ServiceDefaults/**'
+      - 'api/Concertable.Auth.Contracts/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  FEED: https://nuget.pkg.github.com/Concertable/index.json
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # MinVer derives the version from git history + tags
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+
+      - name: Pack publishable projects
+        run: dotnet pack api/Concertable.slnx --configuration Release --output ${{ runner.temp }}/nupkgs
+
+      - name: List packages
+        run: ls -l ${{ runner.temp }}/nupkgs
+
+      - name: Push to GitHub Packages
+        run: |
+          dotnet nuget push "${{ runner.temp }}/nupkgs/*.nupkg" \
+            --source "$FEED" \
+            --api-key "${{ secrets.GITHUB_TOKEN }}" \
+            --skip-duplicate
+
+  verify-restore:
+    runs-on: ubuntu-latest
+    needs: publish
+    steps:
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+
+      - name: Restore Concertable.Kernel from the feed (fresh consumer)
+        run: |
+          mkdir consumer && cd consumer
+          cat > nuget.config <<EOF
+          <?xml version="1.0" encoding="utf-8"?>
+          <configuration>
+            <packageSources>
+              <add key="github" value="$FEED" />
+            </packageSources>
+            <packageSourceCredentials>
+              <github>
+                <add key="Username" value="Concertable" />
+                <add key="ClearTextPassword" value="${{ secrets.GITHUB_TOKEN }}" />
+              </github>
+            </packageSourceCredentials>
+          </configuration>
+          EOF
+          dotnet new classlib -o app
+          cd app
+          dotnet add package Concertable.Kernel --prerelease
+          dotnet restore
+          echo "Restored Concertable.Kernel from GitHub Packages."
