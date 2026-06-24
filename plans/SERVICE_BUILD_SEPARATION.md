@@ -132,8 +132,12 @@ boundary. They are violations regardless of this plan.
 - ✅ **MinVer** (`GlobalPackageReference`, `MinVerMinimumMajorMinor=0.1`, tag prefix `v`) + shared
   package metadata in `Shared/Directory.Build.props`, with publishing **opt-in via
   `<IsPackable>true</IsPackable>`** (default `false`, so a solution-wide `dotnet pack` yields only
-  intended packages). `Concertable.Kernel` is the first opted-in package — proven locally:
-  `dotnet pack` → `Concertable.Kernel.0.1.0-alpha.0.526.nupkg`, no NU1507. _(commit 2)_
+  intended packages). `Concertable.Kernel` was the first opted-in package; **`Concertable.Contracts`
+  is opted in alongside it** because Kernel `ProjectReference`s it — without that, Kernel's package
+  would declare a feed-absent `Concertable.Contracts` dependency and `verify-restore` fails NU1101
+  (big-review BUILD1). Both pack at the same lockstep MinVer version — proven locally: `dotnet pack`
+  → `Concertable.Kernel` + `Concertable.Contracts` at `0.1.0-alpha.0.529`, no NU1507.
+  _(commit 2; Contracts opt-in added in the BUILD1 fix)_
 - ✅ **CI workflow** `.github/workflows/publish-packages.yml`: packs every `IsPackable` project,
   pushes to the feed (`GITHUB_TOKEN`, `packages: write`), then a `verify-restore` job restores
   `Concertable.Kernel` into a fresh consumer from the feed. Triggers: push to `master`
@@ -144,7 +148,8 @@ boundary. They are violations regardless of this plan.
   `GITHUB_TOKEN` has `packages: write`); local dev consuming `Concertable.*` later needs a
   `GITHUB_PACKAGES_TOKEN` PAT with `read:packages`. Zero behavior change; no E2E.
 - **Note:** the *full* publishable-set marking (Auth.Contracts + the rest of the shared platform) is
-  Phase 2 — Phase 1 proves the rails with one package.
+  Phase 2 — Phase 1 proves the rails with just `Kernel` (+ its leaf dependency `Contracts`, which the
+  BUILD1 fix pulled forward; the rest of the shared platform is still Phase 2).
 
 > **Publishing model & repo-split notes (worked out during Phase 1 build-out).**
 > - **What publishes:** only `IsPackable=true` *library* projects — the shared platform + the thin
