@@ -74,12 +74,20 @@ every change to it is a publish-then-consume cycle — *even in local dev*. So:
   `Customer.Web`, `Search.Web`, `Search.Workers`, `Payment.Web`, `Payment.Workers`) and the
   `B2B.Seed.Simulator`. Not this plan.
 
-**AppHost note:** AppHost projects legitimately reference sibling deployables to orchestrate the dev
-topology (e.g. `B2B.AppHost` → Auth, Payment.Web/Workers, Search.Web/Workers; `Customer.AppHost` →
-`B2B.Seed.Simulator`). They are the dev-composition layer and remain monorepo-bound — they are the
-**one place** cross-folder references stay allowed. A service's *deployable closure* (Web/Workers +
-modules) must be package-clean; its AppHost need not be until the deployment effort turns those refs
-into `AddContainer`.
+**Composition-layer note (AppHosts + the full-stack E2E harness).** Two layers legitimately cross
+folder boundaries because their whole job is to compose the entire topology, and both stay
+monorepo-bound:
+- **AppHosts** (dev-composition) reference sibling deployables to orchestrate the dev topology (e.g.
+  `B2B.AppHost` → Auth, Payment.Web/Workers, Search.Web/Workers; `Customer.AppHost` →
+  `B2B.Seed.Simulator`).
+- **The full-stack E2E test harness** (test-composition) boots every service together and drives the
+  real cross-service flow, so B2B's E2E projects reference `Payment.E2ETests.Helpers`,
+  `Search.E2ETests.Helpers`, and `Payment.Seed` (the seeded Stripe test-mode payout IDs the payment
+  assertions read). Those are owned by the other services by design.
+
+A service's *deployable closure* (Web/Workers + modules) must be package-clean; its AppHost and its
+E2E harness need not be — until the deployment effort turns those refs into `AddContainer` / a
+containerised E2E topology.
 
 ---
 
@@ -207,8 +215,10 @@ boundary. They are violations regardless of this plan.
 ## Evidence carried forward (from the deleted `REPO_SPLIT_INVESTIGATION.md`)
 
 - **Cross-service runtime coupling is 100% `*.Contracts`** across ~160 `.csproj`. Only source leaks:
-  `B2B.IntegrationTests.Fixtures → Payment.Infrastructure`, `B2B.Web/E2ETests → Payment.Seed`, and the
-  `Payment → B2B.*.Contracts` backwards edges (all addressed in Phase 0).
+  `B2B.IntegrationTests.Fixtures → Payment.Infrastructure` and `B2B.Web → Payment.Seed` (both addressed
+  in Phase 0), plus the `Payment → B2B.*.Contracts` backwards edges (addressed by the payment-proxy
+  merge). The B2B **E2E** projects' `→ Payment.Seed` ref is deliberately *not* cut — it's part of the
+  full-stack E2E harness exception (see the composition-layer note above), not a leak to remove.
 - **Shared surface consumed by all 5 services:** Kernel, Messaging.*, ServiceDefaults,
   DataAccess.Infrastructure, Shared.Api, Seed.{Shared,Identity} → these gate every standalone build.
 - **Package-path churn (3mo ≈ all-time):** Kernel 37, Messaging 35, `@concertable/shared` 23 (FE, not

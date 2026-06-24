@@ -4,20 +4,26 @@ name: Publish packages
 # projects with a MinVer-derived version and push them to the org's GitHub Packages
 # NuGet feed, then prove a fresh consumer can restore one from the feed.
 #
-# Today this publishes only Concertable.Kernel (the first opted-in package, via
-# <IsPackable>true</IsPackable>). Each later phase opts more projects in; this workflow
-# packs every IsPackable project in the solution, so it scales without edits.
+# What publishes is gated by ONE thing: <IsPackable>true</IsPackable> on a project. The
+# pack step packs every IsPackable project in the solution, so opting a package in is a
+# one-line csproj edit with no workflow change. Today that's Concertable.Kernel plus
+# Concertable.Contracts (Kernel's only ProjectReference — it must publish too, or Kernel's
+# package would declare a feed-absent Concertable.Contracts dependency and verify-restore
+# would fail with NU1101).
+#
+# Versioning is lockstep (one MinVer line for every package) while this is one repo; it
+# becomes independent per-repo versioning for free once a service splits out. The push
+# trigger is the coarse backend boundary 'api/**' — deliberately NOT a per-package folder
+# list, which would have to track IsPackable and would silently mis-publish the moment it
+# drifted. 'api/**' only avoids re-running on frontend/docs-only pushes; IsPackable still
+# decides what actually ships.
 
 on:
   push:
     branches:
       - master
     paths:
-      - 'api/Shared/**'
-      - 'api/Concertable.Messaging/**'
-      - 'api/Concertable.DataAccess/**'
-      - 'api/Concertable.ServiceDefaults/**'
-      - 'api/Concertable.Auth.Contracts/**'
+      - 'api/**'
   workflow_dispatch:
 
 permissions:
