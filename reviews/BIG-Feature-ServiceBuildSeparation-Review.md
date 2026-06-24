@@ -1,7 +1,7 @@
 # Big review — Feature/ServiceBuildSeparation
 
 **Plan anchored to commit:** `71ec4f4e1b4d9ee48096f503829744d32bfdfc7e`  _(2026-06-23)_
-**Reviewed up to commit:** `71ec4f4e1b4d9ee48096f503829744d32bfdfc7e`  _(2026-06-24)_
+**Reviewed up to commit:** `72974c9fa5f4c46b87347331982c3b74b1c7ef4e`  _(2026-06-24)_
 Net diff reviewed: `db3e86de..71ec4f4e` (5 commits, 151 files, +1455/-949). Move-only files skipped.
 Status legend: `[ ]` not yet reviewed · `[x]` reviewed (date) · `[~]` in progress (incomplete — re-review).
 
@@ -91,3 +91,19 @@ Verified, all clean:
 **No new correctness, microservice-isolation, module-boundary, seeding, C# convention, or build/packaging issues found in this area.** Two prior findings are confirmed still live by this stage:
 - **BUILD1 (HIGH) stands.** The plan honestly marks the Phase 1 "prove the rails" gate `⏳ CI run pending` (SERVICE_BUILD_SEPARATION.md:308-312) and only claims local `dotnet pack` succeeded — it does **not** claim the `verify-restore` loop passed, exactly the gap BUILD1 predicts will fail with NU1101 (Kernel packs a dependency on the non-packable `Concertable.Contracts`). No contradiction; this stage reinforces BUILD1.
 - **MS1 (MEDIUM) remains open and its doc half is now an internal contradiction.** This same plan-editing commit rewrote Phase 0 to correctly scope the Payment.Seed removal to **`B2B.Web` only** (line 271), yet left the unchanged "Evidence carried forward" line (`SERVICE_BUILD_SEPARATION.md:210-211`) still asserting `B2B.Web/E2ETests → Payment.Seed` was "all addressed in Phase 0." The two now contradict each other in one file. MS1's remedy (a) — scope that evidence line to `B2B.Web` and document the E2E harness as an explicit exception — is the fix and is still outstanding. (Not minted as a new ID: line 210-211 is unchanged by this diff and MS1 already prescribes the exact edit.)
+
+## Incremental review — 2026-06-24 (verifies the fix commit)
+
+Range: `71ec4f4e..72974c9f` (1 commit, `build(cpm): fix Phase 1 publish rails — pack Contracts, simplify trigger, reconcile plan`). 4 files: `publish-packages.yml`, `Concertable.Contracts.csproj`, `SERVICE_BUILD_SEPARATION.md`, and this review doc (the resolution ticks — not product code, not line-reviewed). This run is the verification the prior "✅ Resolved" notes were stamped ahead of — it actually reviews the fix commit through the lenses and re-stamps the watermark from `71ec4f4e` to `72974c9f`.
+
+**All three resolutions verified genuinely sound — no new findings.**
+
+- **BUILD1 (HIGH) — fix is structurally complete, not just plausible.** `Concertable.Contracts.csproj` now carries `<IsPackable>true</IsPackable>` + `<Description>`. Three load-bearing facts confirmed by reading the files (not just trusting the commit message):
+  1. **Contracts is a true leaf** — its csproj has **no `ProjectReference`** (only `<FrameworkReference Include="Microsoft.AspNetCore.App" />` and zero `PackageReference`). So packing it cannot declare a feed-absent project dependency — the NU1101 failure mode does **not** recur one level down. (The AspNetCore.App framework reference resolves against the installed shared framework at restore, not the feed; and it predates this commit on Kernel anyway, so it's not introduced here.)
+  2. **Kernel's *only* `ProjectReference` is Contracts** (`Concertable.Kernel.csproj:35`) — confirming the workflow comment's claim. This single opt-in closes the entire gap; there is no second non-packable project edge left unaddressed.
+  3. **Contracts is in `api/Concertable.slnx`** (line 197, beside Kernel at 199), so `dotnet pack api/Concertable.slnx` genuinely emits `Concertable.Contracts.nupkg`; the push step (`*.nupkg`) ships it in the same run; verify-restore (`add package Concertable.Kernel --prerelease; restore`) then resolves Kernel's lockstep `Concertable.Contracts` dependency from the feed. Both inherit MinVer + metadata from `api/Shared/Directory.Build.props`, so the versions match (`0.1.0-alpha.0.529` per the commit's local `dotnet pack` proof). NU1101 cannot occur as written.
+  - Publishing `Concertable.Contracts` is also *architecturally* correct, not just expedient: it's shared intersection code consumed by every service (`api/CLAUDE.md` "Shared code is the intersection"), so a NuGet package is exactly the post-split consumption model.
+- **BUILD2 (LOW) — sound.** `paths:` collapsed from the hand-maintained 5-folder list to `api/**` — a strict superset of the old list (nothing that triggered before stops triggering), with `IsPackable` remaining the single source of truth for *what* packs at the pack step. Cannot drift or silently mis-publish; split-clean. The rewritten workflow header comment documents the rationale accurately.
+- **MS1 (MEDIUM) — internal contradiction resolved.** The plan is now consistent across all three touch-points: the "AppHost note" became a **Composition-layer note** that explicitly grants the full-stack E2E harness the same cross-folder exception as AppHosts (lines 84-85, naming `Payment.E2ETests.Helpers` / `Search.E2ETests.Helpers` / `Payment.Seed`); Phase 0 (line 104) is scoped to `B2B.Web` only; and the "Evidence carried forward" line (218-220) is now `B2B.Web → Payment.Seed` (Phase 0) **plus** an explicit "the B2B **E2E** projects' `→ Payment.Seed` ref is deliberately *not* cut." `git grep` for `Payment.Seed` / `Phase 0` surfaces no remaining line that still claims the E2E half was cut. The discrepancy that misled Phase 5 is gone.
+
+**Outcome: all 3 big-review findings closed and verified. No correctness, microservice-isolation, module-boundary, seeding, C# convention, or build/packaging issues in the fix commit.** This branch's review is fully current at `72974c9f`.
