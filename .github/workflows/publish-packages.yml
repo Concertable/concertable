@@ -1,0 +1,92 @@
+name: Publish packages
+
+# Phase 1 rails for SERVICE_BUILD_SEPARATION: pack the publishable Concertable.*
+# projects with a MinVer-derived version and push them to the org's GitHub Packages
+# NuGet feed, then prove a fresh consumer can restore one from the feed.
+#
+# What publishes is gated by ONE thing: <IsPackable>true</IsPackable> on a project. The
+# pack step packs every IsPackable project in the solution, so opting a package in is a
+# one-line csproj edit with no workflow change. Today that's Concertable.Kernel plus
+# Concertable.Contracts (Kernel's only ProjectReference — it must publish too, or Kernel's
+# package would declare a feed-absent Concertable.Contracts dependency and verify-restore
+# would fail with NU1101).
+#
+# Versioning is lockstep (one MinVer line for every package) while this is one repo; it
+# becomes independent per-repo versioning for free once a service splits out. The push
+# trigger is the coarse backend boundary 'api/**' — deliberately NOT a per-package folder
+# list, which would have to track IsPackable and would silently mis-publish the moment it
+# drifted. 'api/**' only avoids re-running on frontend/docs-only pushes; IsPackable still
+# decides what actually ships.
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'api/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  FEED: https://nuget.pkg.github.com/Concertable/index.json
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # MinVer derives the version from git history + tags
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+
+      - name: Pack publishable projects
+        run: dotnet pack api/Concertable.slnx --configuration Release --output ${{ runner.temp }}/nupkgs
+
+      - name: List packages
+        run: ls -l ${{ runner.temp }}/nupkgs
+
+      - name: Push to GitHub Packages
+        run: |
+          dotnet nuget push "${{ runner.temp }}/nupkgs/*.nupkg" \
+            --source "$FEED" \
+            --api-key "${{ secrets.GITHUB_TOKEN }}" \
+            --skip-duplicate
+
+  verify-restore:
+    runs-on: ubuntu-latest
+    needs: publish
+    steps:
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+
+      - name: Restore Concertable.Kernel from the feed (fresh consumer)
+        run: |
+          mkdir consumer && cd consumer
+          cat > nuget.config <<EOF
+          <?xml version="1.0" encoding="utf-8"?>
+          <configuration>
+            <packageSources>
+              <add key="github" value="$FEED" />
+            </packageSources>
+            <packageSourceCredentials>
+              <github>
+                <add key="Username" value="Concertable" />
+                <add key="ClearTextPassword" value="${{ secrets.GITHUB_TOKEN }}" />
+              </github>
+            </packageSourceCredentials>
+          </configuration>
+          EOF
+          dotnet new classlib -o app
+          cd app
+          dotnet add package Concertable.Kernel --prerelease
+          dotnet restore
+          echo "Restored Concertable.Kernel from GitHub Packages."

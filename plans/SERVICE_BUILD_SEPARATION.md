@@ -17,10 +17,23 @@ documented-but-never-executed half of the split mapping in `api/ARCHITECTURE.md`
 sit on top of this; it goes first.
 
 **Decisions locked** (with the user):
-- **Feed:** GitHub Packages (already on GitHub).
+- **Feed:** GitHub Packages (already on GitHub) — `https://nuget.pkg.github.com/Concertable/index.json`.
 - **Source stays in the monorepo** — separate the *build closures* in place. Moving services to
-  their own repos is a later, optional, org-driven step; it is **out of scope here**.
+  their own repos is a later, optional, org-driven step; it is **out of scope here**. (But the
+  endgame *is* separate repos — every decision below is shaped so a future split is a no-op.)
 - **Phased by boundary stability** — most-stable contract first, churny shared core last.
+- **Versioning = MinVer** (git tag + commit height). Lockstep across all packages while this is one
+  repo; becomes natural independent per-repo versioning the moment a service splits out. Chosen over
+  CI-build-number (encodes no semver intent) and Nerdbank.GitVersioning (its per-path versioning only
+  earns its config cost *inside* a monorepo — pointless once repos are separate).
+- **Per-service build closures — NEVER repo-root config.** Each service folder + the shared-platform
+  folder carries its **own** `Directory.Packages.props` (CPM, `ManagePackageVersionsCentrally`),
+  `Directory.Build.props`, and `nuget.config`, so the folder is self-contained and carve-ready. **Do
+  not add a repo-root `Directory.Packages.props` (the "monorepo idiom").** Why this is the trap to
+  never re-fall-into: every phase's gate carves a service with `git subtree split
+  --prefix=api/Concertable.X` and builds it standalone, and a split takes *only that folder* — so any
+  `api/`-root config (a root CPM file, today's `api/Directory.Build.props`) is left behind and the
+  carve fails to restore. This is already why `mirror.yml`'s split produces non-building repos.
 
 **Out of scope (explicitly):** the deployment pipeline (containers/registry/host — there is none
 today; that's the *next* effort after this), the frontend, and any repo move.
@@ -61,39 +74,100 @@ every change to it is a publish-then-consume cycle — *even in local dev*. So:
   `Customer.Web`, `Search.Web`, `Search.Workers`, `Payment.Web`, `Payment.Workers`) and the
   `B2B.Seed.Simulator`. Not this plan.
 
-**AppHost note:** AppHost projects legitimately reference sibling deployables to orchestrate the dev
-topology (e.g. `B2B.AppHost` → Auth, Payment.Web/Workers, Search.Web/Workers; `Customer.AppHost` →
-`B2B.Seed.Simulator`). They are the dev-composition layer and remain monorepo-bound — they are the
-**one place** cross-folder references stay allowed. A service's *deployable closure* (Web/Workers +
-modules) must be package-clean; its AppHost need not be until the deployment effort turns those refs
-into `AddContainer`.
+**Composition-layer note (AppHosts + the full-stack E2E harness).** Two layers legitimately cross
+folder boundaries because their whole job is to compose the entire topology, and both stay
+monorepo-bound:
+- **AppHosts** (dev-composition) reference sibling deployables to orchestrate the dev topology (e.g.
+  `B2B.AppHost` → Auth, Payment.Web/Workers, Search.Web/Workers; `Customer.AppHost` →
+  `B2B.Seed.Simulator`).
+- **The full-stack E2E test harness** (test-composition) boots every service together and drives the
+  real cross-service flow, so B2B's E2E projects reference `Payment.E2ETests.Helpers`,
+  `Search.E2ETests.Helpers`, and `Payment.Seed` (the seeded Stripe test-mode payout IDs the payment
+  assertions read). Those are owned by the other services by design.
+
+A service's *deployable closure* (Web/Workers + modules) must be package-clean; its AppHost and its
+E2E harness need not be — until the deployment effort turns those refs into `AddContainer` / a
+containerised E2E topology.
 
 ---
 
-## Phase 0 — Remove the cross-service source leaks (no packaging yet)
+## Phase 0 — Remove the cross-service source leaks (no packaging yet) — ✅ DONE
 
 These edges drag another service's **source** into a service's closure, so they'd poison its package
 boundary. They are violations regardless of this plan.
 
-- Land `plans/PAYMENT_AGNOSTIC_AUDIT.md`: drop the dead `Payment → B2B.{Contract,Concert,User}.Contracts`
-  edges + the stale `DataAccess.Application` domain `ProjectReference`s/GlobalUsings, and the
-  B2B↔Payment reverse leak.
-- Remove `B2B.Web → Payment.Seed` (B2B compiling Payment's seed project).
-- Replace `B2B.IntegrationTests.Fixtures → Payment.Infrastructure` (the one true backwards edge into
-  another service's internals) with a Payment Client/contract-based test seam.
-- **Gate:** full build green; B2B + Payment unit/integration green. No E2E (no behavior change).
+- ✅ ~~Land `PAYMENT_AGNOSTIC_AUDIT.md`~~ — **already landed** by the `Feature/payment-proxy` merge.
+  On `master` the dead `Payment → B2B.{Contract,Concert,User}.Contracts` edges, the dead
+  `IStripeValidation*` graph, the `ConcertPayee` projection + `payee_id` re-route, the stale
+  `DataAccess.Application` domain refs/GlobalUsings, and the B2B↔Payment reverse leak are all gone.
+  (That plan file is deleted in this commit — its work is fully shipped.)
+- ✅ Removed `B2B.Web → Payment.Seed` — it was only an orphaned E2E `StripeE2EAccountResolver`
+  registration that nothing in B2B's runtime resolved.
+- ✅ Replaced `B2B.IntegrationTests.Fixtures → Payment.Infrastructure` with a Payment Client/contract
+  test seam: escrow verification moved from reading real `PaymentDbContext`/`EscrowEntity` rows to
+  asserting the calls B2B makes against a **recording `IEscrowClient` mock** (`MockEscrowClient.Holds`
+  records `(payer, payee, amount, bookingId)`) — testing B2B's behaviour at the client boundary, not
+  Payment's persistence; the real-row check (right payee in `payment.Escrows`) is owned by B2B E2E
+  (`ConcertDraftTests`). 6 dead Stripe-internal mocks deleted (no consumer once Payment runs
+  out-of-process); `MockStripeApiClient` → plain helper; `UseFailingPayment` re-routed to a failing
+  `IEscrowClient`; csproj now references `Payment.Client` + `Payment.Contracts` (+ `Stripe.net`).
+- ✅ **Gate passed:** full build green (0 errors); Payment + B2B unit (149) and B2B integration (129)
+  green. No E2E (no behavior change).
 
-## Phase 1 — Stand up the packaging rails (publishes nothing consumed yet)
+> **Finding carried forward — a *new* Payment→B2B edge postdates the audit.** The payment-proxy
+> refactor added a live compile edge `Payment.Infrastructure → B2B.Tenant.Contracts` (the
+> `TenantCreatedEvent` payout-provisioning subscription in `TenantCreatedHandler`). It is a
+> `*.Contracts` reference, **not** a source leak, so it is correctly out of Phase 0's scope — but it
+> means the Phase 3 note "Payment depends only on shared + `Auth.Contracts`" no longer holds. Resolve
+> it when packaging Payment (Phase 3): either consume `B2B.Tenant.Contracts` as a package, or re-route
+> the subscription through a Payment-owned/generic event (the audit's pattern E).
 
-- Add `nuget.config` with the GitHub Packages source + auth.
-- Add `Directory.Packages.props` (central package management) so package versions are managed in one
-  place across the monorepo.
-- Add package metadata + a deterministic version source (CI run / `MinVer`/`Nerdbank.GitVersioning`)
-  to the projects that will publish.
-- Add a CI workflow that builds + **publishes changed packages** to the feed (path-filtered so a
-  contract change republishes only that package).
-- **Gate:** a CI run publishes a throwaway package and a consumer can `restore` it. Zero behavior
-  change; no E2E.
+## Phase 1 — Stand up the packaging rails (publishes nothing consumed yet) — ✅ CODE DONE (CI run pending)
+
+- ✅ **Per-folder `nuget.config`** in all 12 folders: `<clear/>` + nuget.org + the GitHub Packages
+  feed, with **package source mapping** (`Concertable.*` → github only, `*` → nuget.org) as a
+  dependency-confusion guard. Auth via `%GITHUB_PACKAGES_TOKEN%`. Self-contained (carve-safe).
+- ✅ **Per-folder `Directory.Packages.props`** (CPM) in all 12 folders; stripped inline `Version=`
+  from 164 csproj (versions centralized per folder, derived from prior values; intra-folder conflicts
+  reconciled to the higher pin). **Per-folder `Directory.Build.props`** (`NuGetAudit`/`NoWarn` +
+  Meziantou via `GlobalPackageReference`); root `api/Directory.Build.props` deleted. **No repo-root
+  version/build config** (Decisions locked — a root file breaks the carve gate). _(commit 1)_
+- ✅ **MinVer** (`GlobalPackageReference`, `MinVerMinimumMajorMinor=0.1`, tag prefix `v`) + shared
+  package metadata in `Shared/Directory.Build.props`, with publishing **opt-in via
+  `<IsPackable>true</IsPackable>`** (default `false`, so a solution-wide `dotnet pack` yields only
+  intended packages). `Concertable.Kernel` was the first opted-in package; **`Concertable.Contracts`
+  is opted in alongside it** because Kernel `ProjectReference`s it — without that, Kernel's package
+  would declare a feed-absent `Concertable.Contracts` dependency and `verify-restore` fails NU1101
+  (big-review BUILD1). Both pack at the same lockstep MinVer version — proven locally: `dotnet pack`
+  → `Concertable.Kernel` + `Concertable.Contracts` at `0.1.0-alpha.0.529`, no NU1507.
+  _(commit 2; Contracts opt-in added in the BUILD1 fix)_
+- ✅ **CI workflow** `.github/workflows/publish-packages.yml`: packs every `IsPackable` project,
+  pushes to the feed (`GITHUB_TOKEN`, `packages: write`), then a `verify-restore` job restores
+  `Concertable.Kernel` into a fresh consumer from the feed. Triggers: push to `master`
+  (path-filtered) + `workflow_dispatch`.
+- ⏳ **Gate — CI run (handoff):** build green ✅ + full restore green ✅ + local pack green ✅ here, but
+  the publish+restore loop only runs in CI. Verify by merging to `master` (or manual dispatch once on
+  the default branch). **Prereq:** GitHub Packages enabled for the `Concertable` org (the workflow's
+  `GITHUB_TOKEN` has `packages: write`); local dev consuming `Concertable.*` later needs a
+  `GITHUB_PACKAGES_TOKEN` PAT with `read:packages`. Zero behavior change; no E2E.
+- **Note:** the *full* publishable-set marking (Auth.Contracts + the rest of the shared platform) is
+  Phase 2 — Phase 1 proves the rails with just `Kernel` (+ its leaf dependency `Contracts`, which the
+  BUILD1 fix pulled forward; the rest of the shared platform is still Phase 2).
+
+> **Publishing model & repo-split notes (worked out during Phase 1 build-out).**
+> - **What publishes:** only `IsPackable=true` *library* projects — the shared platform + the thin
+>   `*.Contracts` / `Payment.Client` packages. **Never** the deployable apps (`*.Web`/`*.Workers`) or a
+>   service's `Domain`/`Application`/`Infrastructure`/`Api` internals — those *consume*, never publish.
+> - **Cadence:** continuous, not one-shot. Every merge to `master` touching a publishable folder
+>   re-packs at a new MinVer version (commit-height bumps; a `v*` tag pins a real version).
+> - **Where:** the **org-scoped** GitHub Packages registry `nuget.pkg.github.com/Concertable` (not a
+>   repo) — shared by every repo in the org, so it survives the eventual split unchanged.
+> - **What does NOT survive the split automatically:** (1) `publish-packages.yml` is repo-root-only (a
+>   GitHub Actions requirement), so a `subtree split` leaves it behind — each separated repo gets its
+>   own smaller publish workflow (platform repo publishes the platform; a service repo publishes only
+>   its own contracts; consume-only repos need none). (2) Cross-repo *restore* needs the org packages
+>   made **internal** (or a `read:packages` PAT — the `GITHUB_PACKAGES_TOKEN` placeholder already in
+>   each `nuget.config`), because a repo's `GITHUB_TOKEN` only reads its own packages.
 
 ## Phase 2 — Prove the mechanism on the most stable boundary (Auth + shared platform)
 
@@ -106,8 +180,9 @@ boundary. They are violations regardless of this plan.
 
 ## Phase 3 — Payment standalone
 
-- Publish `Payment.Contracts` + `Payment.Client`. Flip Payment's refs to packages (after Phase 0,
-  Payment depends only on shared + `Auth.Contracts`).
+- Publish `Payment.Contracts` + `Payment.Client`. Flip Payment's refs to packages — shared platform,
+  `Auth.Contracts`, and `B2B.Tenant.Contracts` (the `TenantCreatedEvent` subscription; see the Phase 0
+  finding — package it, or re-route the subscription to a Payment-owned event to drop the edge).
 - Prove Payment carves-and-builds against the feed.
 - **Gate:** standalone Payment build + unit tests green.
 
@@ -148,8 +223,10 @@ boundary. They are violations regardless of this plan.
 ## Evidence carried forward (from the deleted `REPO_SPLIT_INVESTIGATION.md`)
 
 - **Cross-service runtime coupling is 100% `*.Contracts`** across ~160 `.csproj`. Only source leaks:
-  `B2B.IntegrationTests.Fixtures → Payment.Infrastructure`, `B2B.Web/E2ETests → Payment.Seed`, and the
-  `Payment → B2B.*.Contracts` backwards edges (all addressed in Phase 0).
+  `B2B.IntegrationTests.Fixtures → Payment.Infrastructure` and `B2B.Web → Payment.Seed` (both addressed
+  in Phase 0), plus the `Payment → B2B.*.Contracts` backwards edges (addressed by the payment-proxy
+  merge). The B2B **E2E** projects' `→ Payment.Seed` ref is deliberately *not* cut — it's part of the
+  full-stack E2E harness exception (see the composition-layer note above), not a leak to remove.
 - **Shared surface consumed by all 5 services:** Kernel, Messaging.*, ServiceDefaults,
   DataAccess.Infrastructure, Shared.Api, Seed.{Shared,Identity} → these gate every standalone build.
 - **Package-path churn (3mo ≈ all-time):** Kernel 37, Messaging 35, `@concertable/shared` 23 (FE, not

@@ -119,6 +119,8 @@ Only add a comment when the WHY is non-obvious (hidden constraint, subtle invari
 
 The repo-wide policy (default to zero, ≤2 lines, *why* lives in the commit message, and the disqualifiers — restating docs, citing transient artifacts, narrating the *what*) is in the root [`CLAUDE.md`](../../CLAUDE.md). The C#-mechanical part: a WHY-comment is one line where it can be → `//`; the rare genuinely-multi-line one → a single `/* */` block, never stacked `//` lines.
 
+**Placement:** put the `//` on its own line directly above the statement, or inline after it with a single space — never pad with spaces to align comments into a column.
+
 ## Doc comments — XML `<summary>`, not `//`
 
 Use these **sparingly** — don't pollute the codebase with summaries on self-explanatory types and members. Add one only where a developer (or an AI) reading the code later would genuinely benefit: real ambiguity, a non-obvious constraint, a safety/ordering subtlety, an API contract. A summary that just restates the name earns its deletion. The audience is whoever maintains the code next — write it for them.
