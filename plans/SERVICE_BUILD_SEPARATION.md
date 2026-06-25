@@ -177,22 +177,44 @@ boundary. They are violations regardless of this plan.
 only `Kernel` + `Contracts`. Auth cannot `PackageReference` the shared platform until those packages
 exist on the feed, so:
 
-- **2a — publish the rest of the shared platform.** Flip `<IsPackable>true</IsPackable>` on
-  `Auth.Contracts` + `Messaging.*`, `DataAccess.*`, `ServiceDefaults`,
-  `Shared.{Blob,Email,Geocoding,Imaging,Notification,Pdf}.*`, `Seed.{Shared,Identity}`,
-  `Testing(.Integration)`. **Watch the wider BUILD1 trap:** for *every* newly-packable lib, its own
-  `ProjectReference`s must also be packable (or bundled), else its package declares a feed-absent
-  dependency and `verify-restore` hits NU1101 — same failure mode the Kernel→Contracts fix closed in
-  Phase 1, now one level wider. Merge 2a so the publish workflow ships these to the org feed first.
-- **2b — flip Auth to consume them.** Swap Auth's `..\..\Shared\…` `ProjectReference`s for
-  `PackageReference`s (versions via Auth's own `Directory.Packages.props`); flip any other escaping refs.
-- **Prove standalone:** carve Auth's tree (`git subtree split --prefix=api/Concertable.Auth`, the
-  Phase-0 repro) and confirm it now **restores from the feed and builds**. Add this carve as a CI check.
-- **Prereq:** a `GITHUB_PACKAGES_TOKEN` PAT with `read:packages` in the local env — local `dotnet
-  restore` of Auth-as-consumer fails auth without it (the `nuget.config` credential placeholder is
-  already wired). CI uses the repo `GITHUB_TOKEN`.
-- **Gate:** standalone Auth build green + its unit/integration tests green. Branch first
-  (`Feature/<Name>`); zero behaviour change ⇒ no E2E.
+- **2a — publish the rest of the shared platform. — ✅ DONE.** Flipped `<IsPackable>true</IsPackable>`
+  on the 24 remaining shared-platform libs — `Auth.Contracts`;
+  `Messaging.{Contracts,Domain,Application,Infrastructure,AzureServiceBus}`;
+  `DataAccess.{Application,Infrastructure}`; `ServiceDefaults`;
+  `Shared.{Blob,Email,Geocoding,Imaging}.{Application,Infrastructure}`;
+  `Shared.Notification.Infrastructure`; `Shared.Pdf.{Application,Infrastructure}`; `Seed.{Shared,Identity}`;
+  `Testing(.Integration)` — joining the Phase-1 `Kernel`+`Contracts` for **26 packages total**. The four
+  folders that *started* publishing (`Concertable.Auth.Contracts`, `Concertable.Messaging`,
+  `Concertable.DataAccess`, `Concertable.ServiceDefaults`) gained MinVer + package metadata in their **own**
+  `Directory.Build.props` / `Directory.Packages.props` (mirroring `Shared/`; per-folder, carve-safe — no
+  repo-root config). **Wider BUILD1 trap closed and proven:** every packable project's `ProjectReference`s
+  all land inside the published set (the two non-published `Shared/` libs — `Shared.Api`, `Seed.Infrastructure`
+  — are referenced by nobody in the set), confirmed by `dotnet pack api/Concertable.slnx` → exactly the 26
+  packages at lockstep `0.1.0-alpha.0.527`, then auditing every `.nuspec`: **no package declares a feed-absent
+  `Concertable.*` dependency**. `verify-restore` in `publish-packages.yml` was strengthened from restoring
+  just `Kernel` to restoring the **whole 26-package closure** into a fresh consumer, so a future BUILD1
+  regression surfaces as NU1101 in CI. **Gate passed:** `dotnet build api/Concertable.slnx` green (0 errors);
+  shared-platform unit tests green (Kernel 14, Messaging 40, Messaging.AzureServiceBus 8); zero behaviour
+  change ⇒ no E2E. **Merge 2a so the publish workflow ships these 26 to the org feed — 2b cannot start until
+  it has.**
+- **2b — flip Auth to consume them. — REMAINING; blocked until 2a is merged + published.** Auth's csproj has
+  **13 `ProjectReference`s, all of which escape `api/Concertable.Auth/`** — swap every one for a
+  `PackageReference` (`Auth.Contracts`, `Seed.{Shared,Identity}`, `DataAccess.{Application,Infrastructure}`,
+  `Messaging.{AzureServiceBus,Infrastructure}`, `ServiceDefaults`,
+  `Shared.{Blob,Email,Geocoding,Imaging,Pdf}.Infrastructure` — all in the 2a set), pinning versions in Auth's
+  own `Directory.Packages.props` to the version 2a published. This makes even the in-monorepo Auth build
+  consume packages, so it **cannot be committed before those packages exist on the feed** (else `dotnet build`
+  NU1101s and master goes red) — hence the hard 2a→publish→2b ordering.
+- **Prove standalone:** carve Auth's tree (`git subtree split --prefix=api/Concertable.Auth`, the Phase-0
+  repro) and confirm it now **restores from the feed and builds**. Note the carve takes *only*
+  `api/Concertable.Auth/` — it excludes the sibling `api/Concertable.Auth.Contracts/`, so that ref must also
+  be a package (it is, in 2a). Add this carve as a CI check.
+- **Prereq:** a `GITHUB_PACKAGES_TOKEN` PAT with `read:packages` in the local env — local `dotnet restore`
+  of Auth-as-consumer fails auth without it (the `nuget.config` credential placeholder is already wired; the
+  env var is **currently unset on this machine**). CI uses the repo `GITHUB_TOKEN`.
+- **Gate:** standalone Auth build green. (Auth has **no** unit/integration test project — it's a single
+  deployable csproj, behaviour covered by E2E; the shared-platform unit tests are the affected suite.) Branch
+  first (`Feature/<Name>`); zero behaviour change ⇒ no E2E.
 
 ## Phase 3 — Payment standalone
 
