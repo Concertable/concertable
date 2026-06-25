@@ -104,8 +104,11 @@ boundary. They are violations regardless of this plan.
 - ✅ Removed `B2B.Web → Payment.Seed` — it was only an orphaned E2E `StripeE2EAccountResolver`
   registration that nothing in B2B's runtime resolved.
 - ✅ Replaced `B2B.IntegrationTests.Fixtures → Payment.Infrastructure` with a Payment Client/contract
-  test seam: escrow simulation moved from `PaymentDbContext`/`EscrowEntity` to an in-memory
-  `EscrowStore`/`EscrowRecord`; 6 dead Stripe-internal mocks deleted (no consumer once Payment runs
+  test seam: escrow verification moved from reading real `PaymentDbContext`/`EscrowEntity` rows to
+  asserting the calls B2B makes against a **recording `IEscrowClient` mock** (`MockEscrowClient.Holds`
+  records `(payer, payee, amount, bookingId)`) — testing B2B's behaviour at the client boundary, not
+  Payment's persistence; the real-row check (right payee in `payment.Escrows`) is owned by B2B E2E
+  (`ConcertDraftTests`). 6 dead Stripe-internal mocks deleted (no consumer once Payment runs
   out-of-process); `MockStripeApiClient` → plain helper; `UseFailingPayment` re-routed to a failing
   `IEscrowClient`; csproj now references `Payment.Client` + `Payment.Contracts` (+ `Stripe.net`).
 - ✅ **Gate passed:** full build green (0 errors); Payment + B2B unit (149) and B2B integration (129)
