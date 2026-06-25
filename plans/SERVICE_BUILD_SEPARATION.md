@@ -173,12 +173,26 @@ boundary. They are violations regardless of this plan.
 
 ## Phase 2 — Prove the mechanism on the most stable boundary (Auth + shared platform)
 
-- Publish `Auth.Contracts` + the shared-platform packages.
-- Convert **one** service (recommend `Concertable.Auth`, smallest closure) to consume the shared
-  platform via `PackageReference`; flip its escaping refs.
-- **Prove standalone:** carve that service's tree (the Phase-0/`git archive` repro) and confirm it now
-  **restores from the feed and builds**. Add this as a CI check.
-- **Gate:** standalone build of the service green; its tests green.
+**Sequencing — publish *before* you can consume (this is two sub-steps, not one).** Phase 1 published
+only `Kernel` + `Contracts`. Auth cannot `PackageReference` the shared platform until those packages
+exist on the feed, so:
+
+- **2a — publish the rest of the shared platform.** Flip `<IsPackable>true</IsPackable>` on
+  `Auth.Contracts` + `Messaging.*`, `DataAccess.*`, `ServiceDefaults`,
+  `Shared.{Blob,Email,Geocoding,Imaging,Notification,Pdf}.*`, `Seed.{Shared,Identity}`,
+  `Testing(.Integration)`. **Watch the wider BUILD1 trap:** for *every* newly-packable lib, its own
+  `ProjectReference`s must also be packable (or bundled), else its package declares a feed-absent
+  dependency and `verify-restore` hits NU1101 — same failure mode the Kernel→Contracts fix closed in
+  Phase 1, now one level wider. Merge 2a so the publish workflow ships these to the org feed first.
+- **2b — flip Auth to consume them.** Swap Auth's `..\..\Shared\…` `ProjectReference`s for
+  `PackageReference`s (versions via Auth's own `Directory.Packages.props`); flip any other escaping refs.
+- **Prove standalone:** carve Auth's tree (`git subtree split --prefix=api/Concertable.Auth`, the
+  Phase-0 repro) and confirm it now **restores from the feed and builds**. Add this carve as a CI check.
+- **Prereq:** a `GITHUB_PACKAGES_TOKEN` PAT with `read:packages` in the local env — local `dotnet
+  restore` of Auth-as-consumer fails auth without it (the `nuget.config` credential placeholder is
+  already wired). CI uses the repo `GITHUB_TOKEN`.
+- **Gate:** standalone Auth build green + its unit/integration tests green. Branch first
+  (`Feature/<Name>`); zero behaviour change ⇒ no E2E.
 
 ## Phase 3 — Payment standalone
 
