@@ -14,6 +14,15 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+
+    env:
+      # Concertable.Auth consumes the shared platform as packages from the org feed (Phase 2b of
+      # SERVICE_BUILD_SEPARATION); its nuget.config reads this for the feed credential. The repo
+      # GITHUB_TOKEN can read the org packages this repo published.
+      GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
       - uses: actions/checkout@v4
@@ -25,6 +34,45 @@ jobs:
 
       - name: Build solution
         run: dotnet build api/Concertable.slnx --configuration Release
+
+  carve-auth:
+    # Phase 2b gate (SERVICE_BUILD_SEPARATION): prove Concertable.Auth builds from its own package
+    # closure when carved out of the monorepo. `git archive HEAD:api/Concertable.Auth` extracts ONLY
+    # that folder's tracked files (the Phase-0 carve repro) — its sibling Concertable.Auth.Contracts
+    # and the shared platform must resolve as packages from the feed, never as ProjectReferences.
+    # Restores with the repo GITHUB_TOKEN, same technique as publish-packages.yml's verify-restore.
+    # If a ProjectReference escaping the Auth folder ever creeps back, the carved build fails here
+    # (project-not-found) instead of silently at a repo split.
+    #
+    # git archive (not `git subtree split`): the split rewrites every commit of the folder's history
+    # (~1300 here) and is far too slow for a build gate; archive extracts the identical tracked tree
+    # at HEAD instantly and needs no history (so no fetch-depth: 0).
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+
+    env:
+      GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+
+      - name: Carve api/Concertable.Auth into a standalone tree
+        run: |
+          mkdir -p "$RUNNER_TEMP/carve"
+          git archive HEAD:api/Concertable.Auth | tar -x -C "$RUNNER_TEMP/carve"
+          echo "Carved tree (only api/Concertable.Auth tracked files):"
+          ls -la "$RUNNER_TEMP/carve"
+
+      - name: Restore + build the carved Auth from the feed (packages only)
+        working-directory: ${{ runner.temp }}/carve
+        run: dotnet build Concertable.Auth.csproj --configuration Release
 
   unit-tests:
     runs-on: ubuntu-latest
