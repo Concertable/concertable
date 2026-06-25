@@ -5,7 +5,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsTestProject>false</IsTestProject>
-    <IsPackable>false</IsPackable>
+    <IsPackable>true</IsPackable>
+    <Description>Concertable shared integration-testing infrastructure (SqlFixture, test auth handler, shared mocks).</Description>
   </PropertyGroup>
 
   <ItemGroup>
