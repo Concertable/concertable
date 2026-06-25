@@ -5,7 +5,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsTestProject>false</IsTestProject>
-    <IsPackable>false</IsPackable>
+    <IsPackable>true</IsPackable>
+    <Description>Concertable shared unit-testing helpers (xunit assertions and utilities).</Description>
   </PropertyGroup>
 
   <ItemGroup>

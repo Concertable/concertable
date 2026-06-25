@@ -1,15 +1,15 @@
 name: Publish packages
 
-# Phase 1 rails for SERVICE_BUILD_SEPARATION: pack the publishable Concertable.*
+# Packaging rails for SERVICE_BUILD_SEPARATION: pack the publishable Concertable.*
 # projects with a MinVer-derived version and push them to the org's GitHub Packages
-# NuGet feed, then prove a fresh consumer can restore one from the feed.
+# NuGet feed, then prove a fresh consumer can restore the full published closure from the feed.
 #
 # What publishes is gated by ONE thing: <IsPackable>true</IsPackable> on a project. The
 # pack step packs every IsPackable project in the solution, so opting a package in is a
-# one-line csproj edit with no workflow change. Today that's Concertable.Kernel plus
-# Concertable.Contracts (Kernel's only ProjectReference — it must publish too, or Kernel's
-# package would declare a feed-absent Concertable.Contracts dependency and verify-restore
-# would fail with NU1101).
+# one-line csproj edit with no workflow change. The BUILD1 invariant: every packable lib's
+# own ProjectReferences must also be packable, else its package declares a feed-absent
+# Concertable.* dependency and restore fails NU1101. The verify-restore job below guards this
+# by restoring the entire published closure (every Concertable.* package) into a fresh consumer.
 #
 # Versioning is lockstep (one MinVer line for every package) while this is one repo; it
 # becomes independent per-repo versioning for free once a service splits out. The push
@@ -68,7 +68,13 @@ jobs:
         with:
           dotnet-version: '10.x'
 
-      - name: Restore Concertable.Kernel from the feed (fresh consumer)
+      - name: Restore the full published closure from the feed (fresh consumer)
+        # A fresh consumer referencing EVERY published Concertable.* package, restored from the
+        # feed alone. If any package declares a feed-absent Concertable.* dependency (the BUILD1
+        # trap: a packable lib that ProjectReferences a non-packable one) this restore fails
+        # NU1101. Floating '*-*' takes the version just pushed by the publish job; nuget.org is
+        # inherited (no <clear/>) so the packages' external dependencies resolve normally.
+        # Extend the list when a later phase opts a new package in.
         run: |
           mkdir consumer && cd consumer
           cat > nuget.config <<EOF
@@ -85,8 +91,40 @@ jobs:
             </packageSourceCredentials>
           </configuration>
           EOF
-          dotnet new classlib -o app
-          cd app
-          dotnet add package Concertable.Kernel --prerelease
+          cat > consumer.csproj <<'EOF'
+          <Project Sdk="Microsoft.NET.Sdk">
+            <PropertyGroup>
+              <TargetFramework>net10.0</TargetFramework>
+            </PropertyGroup>
+            <ItemGroup>
+              <PackageReference Include="Concertable.Kernel" Version="*-*" />
+              <PackageReference Include="Concertable.Contracts" Version="*-*" />
+              <PackageReference Include="Concertable.Auth.Contracts" Version="*-*" />
+              <PackageReference Include="Concertable.Messaging.Contracts" Version="*-*" />
+              <PackageReference Include="Concertable.Messaging.Domain" Version="*-*" />
+              <PackageReference Include="Concertable.Messaging.Application" Version="*-*" />
+              <PackageReference Include="Concertable.Messaging.Infrastructure" Version="*-*" />
+              <PackageReference Include="Concertable.Messaging.AzureServiceBus" Version="*-*" />
+              <PackageReference Include="Concertable.DataAccess.Application" Version="*-*" />
+              <PackageReference Include="Concertable.DataAccess.Infrastructure" Version="*-*" />
+              <PackageReference Include="Concertable.ServiceDefaults" Version="*-*" />
+              <PackageReference Include="Concertable.Shared.Blob.Application" Version="*-*" />
+              <PackageReference Include="Concertable.Shared.Blob.Infrastructure" Version="*-*" />
+              <PackageReference Include="Concertable.Shared.Email.Application" Version="*-*" />
+              <PackageReference Include="Concertable.Shared.Email.Infrastructure" Version="*-*" />
+              <PackageReference Include="Concertable.Shared.Geocoding.Application" Version="*-*" />
+              <PackageReference Include="Concertable.Shared.Geocoding.Infrastructure" Version="*-*" />
+              <PackageReference Include="Concertable.Shared.Imaging.Application" Version="*-*" />
+              <PackageReference Include="Concertable.Shared.Imaging.Infrastructure" Version="*-*" />
+              <PackageReference Include="Concertable.Shared.Notification.Infrastructure" Version="*-*" />
+              <PackageReference Include="Concertable.Shared.Pdf.Application" Version="*-*" />
+              <PackageReference Include="Concertable.Shared.Pdf.Infrastructure" Version="*-*" />
+              <PackageReference Include="Concertable.Seed.Shared" Version="*-*" />
+              <PackageReference Include="Concertable.Seed.Identity" Version="*-*" />
+              <PackageReference Include="Concertable.Testing" Version="*-*" />
+              <PackageReference Include="Concertable.Testing.Integration" Version="*-*" />
+            </ItemGroup>
+          </Project>
+          EOF
           dotnet restore
-          echo "Restored Concertable.Kernel from GitHub Packages."
+          echo "Restored the full published Concertable.* closure from GitHub Packages."
