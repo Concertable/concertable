@@ -195,16 +195,25 @@ exist on the feed, so:
   just `Kernel` to restoring the **whole 26-package closure** into a fresh consumer, so a future BUILD1
   regression surfaces as NU1101 in CI. **Gate passed:** `dotnet build api/Concertable.slnx` green (0 errors);
   shared-platform unit tests green (Kernel 14, Messaging 40, Messaging.AzureServiceBus 8); zero behaviour
-  change ⇒ no E2E. **Merge 2a so the publish workflow ships these 26 to the org feed — 2b cannot start until
-  it has.**
+  change ⇒ no E2E. **✅ Shipped to the feed:** merged via PR #59 (merge commit `ab2c6473`);
+  `publish-packages.yml` ran green — all 26 packages published to the org feed at lockstep
+  **`0.1.0-alpha.0.526`**, and the strengthened verify-restore restored the full closure from the *live* feed
+  (so the wider BUILD1 trap is proven against real GitHub Packages, not just locally). _(The post-merge `Test`
+  red-X on `ab2c6473` is an unrelated Docker Hub image-pull timeout at Testcontainers fixture startup
+  — `registry-1.docker.io ... context deadline exceeded`; the identical tree passed the merge-queue `Test`,
+  so it is an infra flake, **not** a 2a regression. The `Mirror` red-X is the known pre-existing failure this
+  whole effort fixes.)_ **2b can now proceed.**
 - **2b — flip Auth to consume them. — REMAINING; blocked until 2a is merged + published.** Auth's csproj has
   **13 `ProjectReference`s, all of which escape `api/Concertable.Auth/`** — swap every one for a
   `PackageReference` (`Auth.Contracts`, `Seed.{Shared,Identity}`, `DataAccess.{Application,Infrastructure}`,
   `Messaging.{AzureServiceBus,Infrastructure}`, `ServiceDefaults`,
   `Shared.{Blob,Email,Geocoding,Imaging,Pdf}.Infrastructure` — all in the 2a set), pinning versions in Auth's
-  own `Directory.Packages.props` to the version 2a published. This makes even the in-monorepo Auth build
-  consume packages, so it **cannot be committed before those packages exist on the feed** (else `dotnet build`
-  NU1101s and master goes red) — hence the hard 2a→publish→2b ordering.
+  own `Directory.Packages.props` to the published version (**`0.1.0-alpha.0.526`** as of the 2a publish; the
+  packages are now live, so re-check the feed for the latest before pinning). This makes even the in-monorepo
+  Auth build consume packages — fine now that 2a is published, but it's why 2a had to ship first (committing
+  Auth-as-consumer before the feed had the packages would `NU1101` the build and redden master).
+  **Local prereq before starting:** `GITHUB_PACKAGES_TOKEN` (read:packages) must be set in the env, or
+  `dotnet restore` of Auth-as-consumer 401s against the feed (the `nuget.config` placeholder is already wired).
 - **Prove standalone:** carve Auth's tree (`git subtree split --prefix=api/Concertable.Auth`, the Phase-0
   repro) and confirm it now **restores from the feed and builds**. Note the carve takes *only*
   `api/Concertable.Auth/` — it excludes the sibling `api/Concertable.Auth.Contracts/`, so that ref must also
