@@ -14,6 +14,13 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+
+    env:
+      # Feed credential for Auth's package restore; the repo token reads the org's own packages.
+      GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
       - uses: actions/checkout@v4
@@ -25,6 +32,39 @@ jobs:
 
       - name: Build solution
         run: dotnet build api/Concertable.slnx --configuration Release
+
+  carve-auth:
+    # Gate: Concertable.Auth must build standalone from its own package closure — a ProjectReference
+    # escaping api/Concertable.Auth/ fails here (project-not-found) instead of silently at a repo split.
+    # Use `git archive`, not `git subtree split`: the split rewrites the folder's whole history and is
+    # far too slow for a gate; archive extracts the tracked tree at HEAD instantly (no fetch-depth: 0).
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      contents: read
+      packages: read
+
+    env:
+      GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+
+      - name: Carve api/Concertable.Auth into a standalone tree
+        run: |
+          mkdir -p "$RUNNER_TEMP/carve"
+          git archive HEAD:api/Concertable.Auth | tar -x -C "$RUNNER_TEMP/carve"
+          echo "Carved tree (only api/Concertable.Auth tracked files):"
+          ls -la "$RUNNER_TEMP/carve"
+
+      - name: Restore + build the carved Auth from the feed (packages only)
+        working-directory: ${{ runner.temp }}/carve
+        run: dotnet build Concertable.Auth.csproj --configuration Release
 
   unit-tests:
     runs-on: ubuntu-latest
@@ -92,7 +132,14 @@ jobs:
     needs: build
     if: github.event_name == 'merge_group'
 
+    permissions:
+      contents: read
+      packages: read
+
     env:
+      # Required: dotnet test restores the AppHost, which ProjectReferences Auth's feed packages.
+      # Drop this and the merge-queue gate dies at restore (401) before any scenario runs.
+      GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       GoogleApiKey: ${{ secrets.GOOGLE_API_KEY }}
       Stripe__SecretKey: ${{ secrets.STRIPE_SECRET_KEY }}
       ServiceAuth__B2BClientSecret: ${{ secrets.SERVICE_AUTH_B2B_CLIENT_SECRET }}
@@ -149,7 +196,13 @@ jobs:
     needs: [build, e2e-api-tests]
     if: github.event_name == 'merge_group'
 
+    permissions:
+      contents: read
+      packages: read
+
     env:
+      # Required: building the UI E2E projects restores the AppHost → Auth's feed packages (see e2e-api-tests).
+      GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       GoogleApiKey: ${{ secrets.GOOGLE_API_KEY }}
       Stripe__SecretKey: ${{ secrets.STRIPE_SECRET_KEY }}
       ServiceAuth__B2BClientSecret: ${{ secrets.SERVICE_AUTH_B2B_CLIENT_SECRET }}
