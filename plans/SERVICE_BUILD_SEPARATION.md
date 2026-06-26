@@ -226,15 +226,21 @@ exist on the feed, so:
 - **✅ CI check added.** New `carve-auth` job in `.github/workflows/test.yml` runs the same
   `git archive` carve and restores from the feed with the repo `GITHUB_TOKEN` (same technique as
   `publish-packages.yml`'s `verify-restore`); a re-introduced escaping `ProjectReference` now fails CI
-  there. The `build` job gained `GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}` + `packages: read`
-  so the full-solution `slnx` restore of Auth's packages authenticates.
+  there. The `build`, `carve-auth`, **and both merge-queue E2E jobs** (`e2e-api-tests`, `e2e-ui-tests`)
+  carry `GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}` + `packages: read` — the E2E jobs need it
+  because their `dotnet test`/`build` restores the AppHosts, which `ProjectReference` Auth's now
+  feed-only packages. (`carve-auth` itself is **not** yet a required check in the merge-queue ruleset,
+  so a re-introduced escaping ref fails it without blocking merge — wire it into the ruleset in a later
+  hardening pass.)
 - **✅ Gate passed:** `dotnet build api/Concertable.slnx` green (0 errors) + standalone carve build
   green. Auth has **no** unit/integration test project (single deployable csproj, behaviour
   E2E-covered) — no Auth tests to run; zero behaviour change ⇒ no E2E. Done on branch
   `Feature/ServiceBuildSeparationPhase2b` (one branch → one PR → one merge). **This completes Phase 2.**
   Phases 3–7 remain, so this plan stays.
-- **Local prereq (met):** a `GITHUB_PACKAGES_TOKEN` PAT with `read:packages` in the env — the
-  `nuget.config` credential placeholder was already wired; CI uses the repo `GITHUB_TOKEN`.
+- **Local prereq (now repo-wide, not Auth-only):** a `GITHUB_PACKAGES_TOKEN` PAT with `read:packages`
+  in the env. Because the root/B2B/Customer AppHosts `ProjectReference` Auth, **every** backend dev who
+  builds any of those solutions needs the PAT now — not just devs touching Auth. Documented in the root
+  `README.md` prerequisites; CI uses the repo `GITHUB_TOKEN`.
 
 ## Phase 3 — Payment standalone
 
