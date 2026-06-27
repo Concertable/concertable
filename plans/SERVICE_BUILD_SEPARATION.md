@@ -295,8 +295,8 @@ on merge to `master`, so consume (3b) waits for publish (3a) to be live.
 
 ## Phase 5 — B2B standalone (churny core packaged here, with hybrid inner loop)
 
-- Publish remaining B2B contracts (`User`, `Tenant`) and `Customer.Review.Contracts` (B2B consumes it
-  — the one reverse data-flow). Flip B2B's refs to packages.
+- Publish remaining B2B contracts (`User` — `Tenant` was already published in Phase 3a) and
+  `Customer.Review.Contracts` (B2B consumes it — the one reverse data-flow). Flip B2B's refs to packages.
 - Introduce the **hybrid inner-loop** toggle for `Kernel`/`Messaging` so cross-cutting dev stays fast
   while CI/standalone use packages.
 - **Gate:** standalone B2B build + unit/integration green; **run E2E** (B2B is behaviorally central
