@@ -264,29 +264,51 @@ that the plan hadn't anticipated: `Payment.Api → Concertable.Shared.Api`, and 
 `Shared.Api` and `B2B.Tenant.Contracts` — plus its own `Payment.Contracts`/`Payment.Client`. They only publish
 on merge to `master`, so consume (3b) waits for publish (3a) to be live.
 
-- **3a — publish the packages Payment will consume. — ✅ DONE (local-verified; ships on merge).** Flipped
-  `<IsPackable>true</IsPackable>` on `Concertable.Shared.Api` (inherits MinVer + metadata from `api/Shared/`),
-  `Concertable.Payment.Contracts`, `Concertable.Payment.Client`, and `Concertable.B2B.Tenant.Contracts`. The
-  Payment and B2B folders gained MinVer + package metadata in their **own** `Directory.Build.props` (mirroring
-  `Shared/`; per-folder, carve-safe) + the MinVer `GlobalPackageReference` in their `Directory.Packages.props`.
-  `verify-restore` in `publish-packages.yml` extended with the 4 new packages. **BUILD1 proven clean:**
-  `dotnet pack api/Concertable.slnx` → exactly **30** packages at lockstep `0.1.0-alpha.0.528` (the Phase-2a 26
-  + these 4), and auditing every `.nuspec`: no package declares a feed-absent `Concertable.*` dependency
-  (`Shared.Api`→`Contracts`; `B2B.Tenant.Contracts`→`Contracts`+`Kernel`+`Messaging.Contracts`;
-  `Payment.Contracts`→`Messaging.Contracts`; `Payment.Client`→`Payment.Contracts`+`Kernel` — all in-set).
-  **Gate passed:** `dotnet build api/Concertable.slnx` green (0 errors); zero behaviour change ⇒ no E2E.
-- **3b — flip Payment to consume them. — ⬜ TODO (blocked on 3a publishing).** Swap every Payment
-  `ProjectReference` that escapes `api/Concertable.Payment/` for a `PackageReference`, pinned in Payment's own
-  `Directory.Packages.props` via a single `$(ConcertablePlatformVersion)` to the lockstep version 3a publishes
-  (re-check the feed before pinning — it won't be `.528` if other `api/` commits land first). Intra-folder
-  refs (Payment.Domain/Application/Contracts/Client/Infrastructure/Api/Seed) stay `ProjectReference`s.
-  - Prove Payment carves-and-builds standalone: `git archive HEAD:api/Concertable.Payment` → restore-from-feed
-    → `dotnet build`, outside the repo tree, green.
-  - Add a `carve-payment` CI job in `.github/workflows/test.yml` mirroring `carve-auth`, and wire it into the
-    merge-queue ruleset (`17393335`) required checks.
-  - **Gate:** standalone Payment build + Payment unit tests green.
+- **3a — publish the packages Payment will consume. — ✅ DONE & SHIPPED.** Merged via **PR #61** (merge
+  `af5e0b8c`); the post-merge `Publish packages` run is **green** (both `publish` and `verify-restore`), so all
+  4 packages are **live on the feed at `0.1.0-alpha.0.529`**. Flipped `<IsPackable>true</IsPackable>` on
+  `Concertable.Shared.Api` (inherits MinVer + metadata from `api/Shared/`), `Concertable.Payment.Contracts`,
+  `Concertable.Payment.Client`, and `Concertable.B2B.Tenant.Contracts`. The Payment and B2B folders gained
+  MinVer + package metadata in their **own** `Directory.Build.props` (mirroring `Shared/`; per-folder,
+  carve-safe) + the MinVer `GlobalPackageReference` in their `Directory.Packages.props`. **BUILD1 proven clean:**
+  `dotnet pack` → exactly **30** packages, every `.nuspec` audited (no feed-absent `Concertable.*` dependency);
+  the live `verify-restore` re-proves the full closure on every publish.
+  - **Two CI gaps were fixed in PR #61 (durable, now on `master`):** (1) the `publish` job is credentialed with
+    `GITHUB_PACKAGES_TOKEN` — Phase 2b made Auth a package *consumer*, so `dotnet pack` of the whole solution
+    restores Auth from the feed and had been **401-failing every master publish since #60** until this fix;
+    (2) `verify-restore` now **generates** its package list from the `<IsPackable>true</IsPackable>` projects
+    (PackageId == project-file name; empty-match guarded) instead of a hand-maintained list, so it can't drift.
+    Both proven green by the #61 post-merge publish run.
+- **3b — flip Payment to consume them. — ✅ DONE.** Swapped every `ProjectReference` in Payment's deployable
+  closure that escaped `api/Concertable.Payment/` for a `PackageReference` across **8 csproj** (Web, Workers, Api,
+  Application, Infrastructure, Domain, Contracts, Client) — **13 distinct `Concertable.*` packages**
+  (Auth.Contracts, B2B.Tenant.Contracts, Contracts, Kernel, DataAccess.{Application,Infrastructure},
+  Messaging.{Contracts,Infrastructure,AzureServiceBus}, ServiceDefaults, Shared.Api, Seed.{Shared,Identity}),
+  pinned lockstep in Payment's **own** `Directory.Packages.props` via a single `$(ConcertablePlatformVersion)` =
+  **`0.1.0-alpha.0.529`** (re-verified present on the feed for all 13 ids before pinning). Intra-folder refs
+  (Domain/Application/Contracts/Client/Infrastructure/Api/Seed) stay `ProjectReference`s; AppHost.Extensions and
+  the E2ETests.Helpers harness keep their cross-folder refs (composition / E2E-harness layers, exempt).
+  - **✅ Carve proven standalone.** `git archive HEAD:api/Concertable.Payment` → restore-from-feed → `dotnet build`
+    of the deployable closure (Web + Workers + Client), built **outside the repo tree** (the carve carries its own
+    `nuget.config` / `Directory.{Build,Packages}.props`, and no repo- or `api`-root config sits above it) — **green
+    (0 errors)**. The Phase-0 `9× MSB3202 project-not-found` is gone; the whole shared platform + cross-service
+    contracts resolved as packages from the feed. Built Web/Workers/Client, **not** the `.slnx` (it also carries the
+    exempt AppHost.Extensions + E2ETests.Helpers, which reference cross-folder projects absent from the carve).
+  - **✅ `carve-payment` CI job added** in `.github/workflows/test.yml`, mirroring `carve-auth` (same `git archive`
+    technique, `needs: build`, feed credential via the repo `GITHUB_TOKEN`). It builds a generated closure-only
+    solution of every package-clean Payment project — one feed restore, each project built directly (so a future
+    ref-removal can't orphan one from the gate) — with `MinVerSkip` since the carved tree has no `.git`.
+  - **Ruleset wiring deferred to Phase 7.** `carve-payment` is **not yet a required check** in ruleset `17393335`
+    — and neither is `carve-auth` (Phase 2b never wired it either). So today a re-introduced escaping ref fails the
+    job without blocking merge. Wiring both gates — plus the future carve-* gates — into the ruleset's required
+    checks is one repo-admin step (the agent's PATCH is auto-blocked), to run *after* each job exists on `master`
+    so a concurrent merge-queue entry isn't blocked on a check its branch can't report:
+    `gh api -X PATCH repos/Concertable/Concertable/rulesets/17393335 --input rules.json`. Tracked in Phase 7.
+  - **✅ Gate passed:** `dotnet build api/Concertable.slnx` green (0 errors); standalone carve green; Payment unit
+    tests green (**25 passed**). Zero behaviour change ⇒ no E2E. **This completes Phase 3** (3a + 3b); Phases 4–7
+    remain, so this plan stays.
 
-## Phase 4 — Search standalone
+## Phase 4 — Search standalone — ▶️ START HERE (next phase)
 
 - Publish the B2B contracts Search reads (`B2B.{Artist,Concert,Venue}.Contracts`,
   `B2B.Seed.Contracts`). Flip Search's refs.
@@ -315,6 +337,9 @@ on merge to `master`, so consume (3b) waits for publish (3a) to be live.
 
 - Add a guardrail (build target / test) that **fails the build if any service deployable project
   gains a `ProjectReference` escaping its service folder** — so separation can't silently regress.
+- **Wire every carve gate** (`carve-auth`, `carve-payment`, and the carve jobs added in Phases 4–6) into
+  ruleset `17393335` as **required checks**, so an escaping `ProjectReference` actually blocks merge instead
+  of just failing a non-required job. Repo-admin step; run it after each job is on `master`.
 - Update `api/ARCHITECTURE.md`: the split mapping is now executed; document the hybrid inner-loop
   convention. Delete this plan in the same commit that lands the final phase (per `plans/CLAUDE.md`).
 
