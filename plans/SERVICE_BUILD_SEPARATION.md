@@ -308,17 +308,50 @@ on merge to `master`, so consume (3b) waits for publish (3a) to be live.
     tests green (**25 passed**). Zero behaviour change ⇒ no E2E. **This completes Phase 3** (3a + 3b); Phases 4–7
     remain, so this plan stays.
 
-## Phase 4 — Search standalone — ▶️ START HERE (next phase)
+## Phase 4 — Search standalone
 
-- Publish the B2B contracts Search reads (`B2B.{Artist,Concert,Venue}.Contracts`,
-  `B2B.Seed.Contracts`). Flip Search's refs.
-- Prove Search carves-and-builds against the feed.
-- **Gate:** standalone Search build + unit/integration green.
+**Like Phases 2–3, two sub-steps — publish *before* you can consume.** Search's deployable closure reads
+four B2B contracts that weren't on the feed — `B2B.{Artist,Venue,Concert}.Contracts` and the producer
+seed library `B2B.Seed.Contracts` (`B2B.Tenant.Contracts` was already published in Phase 3a). They only
+publish on merge to `master`, so consume (4b) waits for publish (4a) to be live.
+
+- **4a — publish the B2B contracts Search consumes. — ✅ DONE (awaiting the master publish run).** Flipped
+  `<IsPackable>true</IsPackable>` + added a `<Description>` on the four B2B contracts —
+  `Concertable.B2B.{Artist,Venue,Concert}.Contracts` and `Concertable.B2B.Seed.Contracts` — joining the
+  Phase-3a `B2B.Tenant.Contracts`. **No folder config needed:** the B2B folder already gained MinVer +
+  package metadata (its own `Directory.Build.props`) + the MinVer `GlobalPackageReference` (its own
+  `Directory.Packages.props`) in Phase 3a. **BUILD1 proven clean:** `dotnet pack api/Concertable.slnx` →
+  exactly **34** packages (30 + 4), every `.nuspec` audited — Artist/Venue/Concert.Contracts depend only on
+  Contracts/Kernel/Messaging.Contracts, and Seed.Contracts on the three module contracts + Seed.Identity,
+  all inside the published set; the full 34-package audit shows **no** package declares a feed-absent
+  `Concertable.*` dependency. `verify-restore` auto-generates its list from `<IsPackable>true</IsPackable>`
+  projects, so it picks up the 4 and re-proves the closure on the next master publish. **Gate passed:**
+  `dotnet build api/Concertable.slnx` green (0 errors); zero behaviour change ⇒ no E2E. **4b waits for the
+  post-merge `Publish packages` run to put the 4 packages live on the feed.**
+- **4b — flip Search to consume them, prove the carve, gate it. — ▶️ NEXT (after 4a is live).**
+  - Swap every `ProjectReference` in Search's deployable closure that escapes `api/Concertable.Search/` for a
+    `PackageReference` — the 4 B2B contracts above **plus** the already-published shared platform Search reads
+    (Kernel, Messaging.{Contracts,Domain,Infrastructure,AzureServiceBus}, DataAccess.Infrastructure,
+    ServiceDefaults, Shared.Api, Seed.{Shared,Identity}) — pinned lockstep in Search's **own**
+    `Directory.Packages.props` to the live feed version. Intra-folder refs (Domain/Application/Infrastructure/
+    Api/Seed.Infrastructure) stay `ProjectReference`s; AppHost.Extensions + the E2ETests.Helpers harness keep
+    their cross-folder refs (composition / E2E-harness layers, exempt).
+  - **Prove the carve:** `git archive HEAD:api/Concertable.Search` → restore-from-feed → `dotnet build` of the
+    deployable closure (Web + Workers), built **outside** the repo tree. Build a closure-only solution, **not**
+    the `.slnx` — it also carries the exempt AppHost.Extensions + E2ETests.Helpers, which reference cross-folder
+    projects absent from the carve.
+  - **Add a `carve-search` CI job** in `.github/workflows/test.yml`, mirroring `carve-payment` (same `git
+    archive` technique, `needs: build`, feed credential via the repo `GITHUB_TOKEN`, `MinVerSkip`). Ruleset
+    wiring stays deferred to Phase 7.
+  - **Gate:** standalone Search build + Search unit + integration green (both already in the `unit-tests` /
+    `integration-tests` matrices). Zero behaviour change ⇒ no E2E.
 
 ## Phase 5 — B2B standalone (churny core packaged here, with hybrid inner loop)
 
-- Publish remaining B2B contracts (`User` — `Tenant` was already published in Phase 3a) and
-  `Customer.Review.Contracts` (B2B consumes it — the one reverse data-flow). Flip B2B's refs to packages.
+- Publish the last cross-service B2B contract (`User` — `Tenant` shipped in Phase 3a; `Artist`/`Venue`/
+  `Concert` + `Seed.Contracts` in Phase 4a) and `Customer.Review.Contracts` (B2B consumes it — the one
+  reverse data-flow). `Contract.Contracts`/`Conversations.Contracts` are B2B-internal (cross-module, not
+  cross-service) → they ride along in B2B's carve, never published. Flip B2B's refs to packages.
 - Introduce the **hybrid inner-loop** toggle for `Kernel`/`Messaging` so cross-cutting dev stays fast
   while CI/standalone use packages.
 - **Gate:** standalone B2B build + unit/integration green; **run E2E** (B2B is behaviorally central
