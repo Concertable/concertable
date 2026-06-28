@@ -279,21 +279,33 @@ on merge to `master`, so consume (3b) waits for publish (3a) to be live.
     (2) `verify-restore` now **generates** its package list from the `<IsPackable>true</IsPackable>` projects
     (PackageId == project-file name; empty-match guarded) instead of a hand-maintained list, so it can't drift.
     Both proven green by the #61 post-merge publish run.
-- **3b — flip Payment to consume them. — ⬜ TODO — ▶️ START HERE (next phase; unblocked — 3a is published).**
-  Swap every Payment `ProjectReference` that escapes `api/Concertable.Payment/` for a `PackageReference`, pinned
-  in Payment's own `Directory.Packages.props` via a single `$(ConcertablePlatformVersion)` to the lockstep
-  version on the feed — **`0.1.0-alpha.0.529`** as of the 3a publish (re-check the feed before pinning; it'll be
-  higher if other `api/` commits have merged since). Intra-folder refs
-  (Payment.Domain/Application/Contracts/Client/Infrastructure/Api/Seed) stay `ProjectReference`s.
-  - **Local prereq:** `GITHUB_PACKAGES_TOKEN` (read:packages) set in the env — repo-wide since Phase 2b
-    (building any solution restores Auth from the feed). CI uses the repo `GITHUB_TOKEN`.
-  - Prove Payment carves-and-builds standalone: `git archive HEAD:api/Concertable.Payment` → restore-from-feed
-    → `dotnet build`, outside the repo tree, green.
-  - Add a `carve-payment` CI job in `.github/workflows/test.yml` mirroring `carve-auth`, and wire it into the
-    merge-queue ruleset (`17393335`) required checks.
-  - **Gate:** standalone Payment build + Payment unit tests green.
+- **3b — flip Payment to consume them. — ✅ DONE.** Swapped every `ProjectReference` in Payment's deployable
+  closure that escaped `api/Concertable.Payment/` for a `PackageReference` across **8 csproj** (Web, Workers, Api,
+  Application, Infrastructure, Domain, Contracts, Client) — **13 distinct `Concertable.*` packages**
+  (Auth.Contracts, B2B.Tenant.Contracts, Contracts, Kernel, DataAccess.{Application,Infrastructure},
+  Messaging.{Contracts,Infrastructure,AzureServiceBus}, ServiceDefaults, Shared.Api, Seed.{Shared,Identity}),
+  pinned lockstep in Payment's **own** `Directory.Packages.props` via a single `$(ConcertablePlatformVersion)` =
+  **`0.1.0-alpha.0.529`** (re-verified present on the feed for all 13 ids before pinning). Intra-folder refs
+  (Domain/Application/Contracts/Client/Infrastructure/Api/Seed) stay `ProjectReference`s; AppHost.Extensions and
+  the E2ETests.Helpers harness keep their cross-folder refs (composition / E2E-harness layers, exempt).
+  - **✅ Carve proven standalone.** `git archive HEAD:api/Concertable.Payment` → restore-from-feed → `dotnet build`
+    of the deployable closure (Web + Workers + Client), built **outside the repo tree** (the carve carries its own
+    `nuget.config` / `Directory.{Build,Packages}.props`, and no repo- or `api`-root config sits above it) — **green
+    (0 errors)**. The Phase-0 `9× MSB3202 project-not-found` is gone; the whole shared platform + cross-service
+    contracts resolved as packages from the feed. Built Web/Workers/Client, **not** the `.slnx` (it also carries the
+    exempt AppHost.Extensions + E2ETests.Helpers, which reference cross-folder projects absent from the carve).
+  - **✅ `carve-payment` CI job added** in `.github/workflows/test.yml`, mirroring `carve-auth` (same `git archive`
+    technique, `needs: build`, feed credential via the repo `GITHUB_TOKEN`; builds Web/Workers/Client).
+  - **⬜ Ruleset wiring — one user-run step (needs repo-admin; the agent's PATCH was correctly auto-blocked).**
+    After this lands on `master` (so the job exists on the merged ref and a concurrent merge-queue entry isn't
+    blocked on a check its branch can't report — exactly how `carve-auth` was wired in *post*-merge), add
+    `carve-payment` to ruleset `17393335`'s required checks alongside the existing `e2e-api-tests`, `e2e-ui-tests`,
+    `carve-auth`: `gh api -X PATCH repos/Concertable/Concertable/rulesets/17393335 --input rules.json`.
+  - **✅ Gate passed:** `dotnet build api/Concertable.slnx` green (0 errors); standalone carve green; Payment unit
+    tests green (**25 passed**). Zero behaviour change ⇒ no E2E. **This completes Phase 3** (3a + 3b); Phases 4–7
+    remain, so this plan stays.
 
-## Phase 4 — Search standalone
+## Phase 4 — Search standalone — ▶️ START HERE (next phase)
 
 - Publish the B2B contracts Search reads (`B2B.{Artist,Concert,Venue}.Contracts`,
   `B2B.Seed.Contracts`). Flip Search's refs.

@@ -66,6 +66,45 @@ jobs:
         working-directory: ${{ runner.temp }}/carve
         run: dotnet build Concertable.Auth.csproj --configuration Release
 
+  carve-payment:
+    # Gate: Concertable.Payment's deployable closure must build standalone from its own package
+    # closure — a ProjectReference escaping api/Concertable.Payment/ fails here (project-not-found)
+    # instead of silently at a repo split. Same `git archive` technique as carve-auth.
+    # Build Web/Workers/Client, NOT the .slnx: the slnx also carries AppHost.Extensions and the
+    # E2ETests.Helpers harness, which reference cross-folder projects (Concertable.AppHost.Shared,
+    # Concertable.E2ETests) that are absent from the carve and exempt by design (composition / E2E
+    # harness layers). Web+Workers+Client cover the whole package-clean closure.
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      contents: read
+      packages: read
+
+    env:
+      GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+
+      - name: Carve api/Concertable.Payment into a standalone tree
+        run: |
+          mkdir -p "$RUNNER_TEMP/carve"
+          git archive HEAD:api/Concertable.Payment | tar -x -C "$RUNNER_TEMP/carve"
+          echo "Carved tree (only api/Concertable.Payment tracked files):"
+          ls -la "$RUNNER_TEMP/carve"
+
+      - name: Restore + build the carved Payment deployable closure from the feed (packages only)
+        working-directory: ${{ runner.temp }}/carve
+        run: |
+          dotnet build Concertable.Payment.Web/Concertable.Payment.Web.csproj --configuration Release
+          dotnet build Concertable.Payment.Workers/Concertable.Payment.Workers.csproj --configuration Release
+          dotnet build Concertable.Payment.Client/Concertable.Payment.Client.csproj --configuration Release
+
   unit-tests:
     runs-on: ubuntu-latest
     needs: build
