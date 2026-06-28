@@ -295,12 +295,15 @@ on merge to `master`, so consume (3b) waits for publish (3a) to be live.
     contracts resolved as packages from the feed. Built Web/Workers/Client, **not** the `.slnx` (it also carries the
     exempt AppHost.Extensions + E2ETests.Helpers, which reference cross-folder projects absent from the carve).
   - **✅ `carve-payment` CI job added** in `.github/workflows/test.yml`, mirroring `carve-auth` (same `git archive`
-    technique, `needs: build`, feed credential via the repo `GITHUB_TOKEN`; builds Web/Workers/Client).
-  - **⬜ Ruleset wiring — one user-run step (needs repo-admin; the agent's PATCH was correctly auto-blocked).**
-    After this lands on `master` (so the job exists on the merged ref and a concurrent merge-queue entry isn't
-    blocked on a check its branch can't report — exactly how `carve-auth` was wired in *post*-merge), add
-    `carve-payment` to ruleset `17393335`'s required checks alongside the existing `e2e-api-tests`, `e2e-ui-tests`,
-    `carve-auth`: `gh api -X PATCH repos/Concertable/Concertable/rulesets/17393335 --input rules.json`.
+    technique, `needs: build`, feed credential via the repo `GITHUB_TOKEN`). It builds a generated closure-only
+    solution of every package-clean Payment project — one feed restore, each project built directly (so a future
+    ref-removal can't orphan one from the gate) — with `MinVerSkip` since the carved tree has no `.git`.
+  - **Ruleset wiring deferred to Phase 7.** `carve-payment` is **not yet a required check** in ruleset `17393335`
+    — and neither is `carve-auth` (Phase 2b never wired it either). So today a re-introduced escaping ref fails the
+    job without blocking merge. Wiring both gates — plus the future carve-* gates — into the ruleset's required
+    checks is one repo-admin step (the agent's PATCH is auto-blocked), to run *after* each job exists on `master`
+    so a concurrent merge-queue entry isn't blocked on a check its branch can't report:
+    `gh api -X PATCH repos/Concertable/Concertable/rulesets/17393335 --input rules.json`. Tracked in Phase 7.
   - **✅ Gate passed:** `dotnet build api/Concertable.slnx` green (0 errors); standalone carve green; Payment unit
     tests green (**25 passed**). Zero behaviour change ⇒ no E2E. **This completes Phase 3** (3a + 3b); Phases 4–7
     remain, so this plan stays.
@@ -334,6 +337,9 @@ on merge to `master`, so consume (3b) waits for publish (3a) to be live.
 
 - Add a guardrail (build target / test) that **fails the build if any service deployable project
   gains a `ProjectReference` escaping its service folder** — so separation can't silently regress.
+- **Wire every carve gate** (`carve-auth`, `carve-payment`, and the carve jobs added in Phases 4–6) into
+  ruleset `17393335` as **required checks**, so an escaping `ProjectReference` actually blocks merge instead
+  of just failing a non-required job. Repo-admin step; run it after each job is on `master`.
 - Update `api/ARCHITECTURE.md`: the split mapping is now executed; document the hybrid inner-loop
   convention. Delete this plan in the same commit that lands the final phase (per `plans/CLAUDE.md`).
 
