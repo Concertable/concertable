@@ -264,22 +264,29 @@ that the plan hadn't anticipated: `Payment.Api → Concertable.Shared.Api`, and 
 `Shared.Api` and `B2B.Tenant.Contracts` — plus its own `Payment.Contracts`/`Payment.Client`. They only publish
 on merge to `master`, so consume (3b) waits for publish (3a) to be live.
 
-- **3a — publish the packages Payment will consume. — ✅ DONE (local-verified; ships on merge).** Flipped
-  `<IsPackable>true</IsPackable>` on `Concertable.Shared.Api` (inherits MinVer + metadata from `api/Shared/`),
-  `Concertable.Payment.Contracts`, `Concertable.Payment.Client`, and `Concertable.B2B.Tenant.Contracts`. The
-  Payment and B2B folders gained MinVer + package metadata in their **own** `Directory.Build.props` (mirroring
-  `Shared/`; per-folder, carve-safe) + the MinVer `GlobalPackageReference` in their `Directory.Packages.props`.
-  `verify-restore` in `publish-packages.yml` extended with the 4 new packages. **BUILD1 proven clean:**
-  `dotnet pack api/Concertable.slnx` → exactly **30** packages at lockstep `0.1.0-alpha.0.528` (the Phase-2a 26
-  + these 4), and auditing every `.nuspec`: no package declares a feed-absent `Concertable.*` dependency
-  (`Shared.Api`→`Contracts`; `B2B.Tenant.Contracts`→`Contracts`+`Kernel`+`Messaging.Contracts`;
-  `Payment.Contracts`→`Messaging.Contracts`; `Payment.Client`→`Payment.Contracts`+`Kernel` — all in-set).
-  **Gate passed:** `dotnet build api/Concertable.slnx` green (0 errors); zero behaviour change ⇒ no E2E.
-- **3b — flip Payment to consume them. — ⬜ TODO (blocked on 3a publishing).** Swap every Payment
-  `ProjectReference` that escapes `api/Concertable.Payment/` for a `PackageReference`, pinned in Payment's own
-  `Directory.Packages.props` via a single `$(ConcertablePlatformVersion)` to the lockstep version 3a publishes
-  (re-check the feed before pinning — it won't be `.528` if other `api/` commits land first). Intra-folder
-  refs (Payment.Domain/Application/Contracts/Client/Infrastructure/Api/Seed) stay `ProjectReference`s.
+- **3a — publish the packages Payment will consume. — ✅ DONE & SHIPPED.** Merged via **PR #61** (merge
+  `af5e0b8c`); the post-merge `Publish packages` run is **green** (both `publish` and `verify-restore`), so all
+  4 packages are **live on the feed at `0.1.0-alpha.0.529`**. Flipped `<IsPackable>true</IsPackable>` on
+  `Concertable.Shared.Api` (inherits MinVer + metadata from `api/Shared/`), `Concertable.Payment.Contracts`,
+  `Concertable.Payment.Client`, and `Concertable.B2B.Tenant.Contracts`. The Payment and B2B folders gained
+  MinVer + package metadata in their **own** `Directory.Build.props` (mirroring `Shared/`; per-folder,
+  carve-safe) + the MinVer `GlobalPackageReference` in their `Directory.Packages.props`. **BUILD1 proven clean:**
+  `dotnet pack` → exactly **30** packages, every `.nuspec` audited (no feed-absent `Concertable.*` dependency);
+  the live `verify-restore` re-proves the full closure on every publish.
+  - **Two CI gaps were fixed in PR #61 (durable, now on `master`):** (1) the `publish` job is credentialed with
+    `GITHUB_PACKAGES_TOKEN` — Phase 2b made Auth a package *consumer*, so `dotnet pack` of the whole solution
+    restores Auth from the feed and had been **401-failing every master publish since #60** until this fix;
+    (2) `verify-restore` now **generates** its package list from the `<IsPackable>true</IsPackable>` projects
+    (PackageId == project-file name; empty-match guarded) instead of a hand-maintained list, so it can't drift.
+    Both proven green by the #61 post-merge publish run.
+- **3b — flip Payment to consume them. — ⬜ TODO — ▶️ START HERE (next phase; unblocked — 3a is published).**
+  Swap every Payment `ProjectReference` that escapes `api/Concertable.Payment/` for a `PackageReference`, pinned
+  in Payment's own `Directory.Packages.props` via a single `$(ConcertablePlatformVersion)` to the lockstep
+  version on the feed — **`0.1.0-alpha.0.529`** as of the 3a publish (re-check the feed before pinning; it'll be
+  higher if other `api/` commits have merged since). Intra-folder refs
+  (Payment.Domain/Application/Contracts/Client/Infrastructure/Api/Seed) stay `ProjectReference`s.
+  - **Local prereq:** `GITHUB_PACKAGES_TOKEN` (read:packages) set in the env — repo-wide since Phase 2b
+    (building any solution restores Auth from the feed). CI uses the repo `GITHUB_TOKEN`.
   - Prove Payment carves-and-builds standalone: `git archive HEAD:api/Concertable.Payment` → restore-from-feed
     → `dotnet build`, outside the repo tree, green.
   - Add a `carve-payment` CI job in `.github/workflows/test.yml` mirroring `carve-auth`, and wire it into the
