@@ -63,10 +63,13 @@ every change to it is a publish-then-consume cycle — *even in local dev*. So:
 
 - **Private NuGet (published):** shared platform — `Concertable.Kernel`, `Concertable.Contracts`,
   `Concertable.Messaging.*`, `Concertable.DataAccess.*`, `Concertable.ServiceDefaults`,
-  `Concertable.Shared.{Blob,Email,Geocoding,Imaging,Notification,Pdf}.*`,
+  `Concertable.Shared.Api`, `Concertable.Shared.{Blob,Email,Geocoding,Imaging,Notification,Pdf}.*`,
   `Concertable.Seed.{Shared,Identity}`, `Concertable.Testing(.Integration)`; **plus** cross-service
   contracts — `Auth.Contracts`, `B2B.{Artist,Concert,Venue,User,Tenant}.Contracts`,
   `B2B.Seed.Contracts`, `Customer.Review.Contracts`, `Payment.Contracts`, `Payment.Client`.
+  _(`Shared.Api` was added to this set in Phase 3 — it's shared Web/API infra, **not** a service-internal
+  `*.Api`, and every service's Api/Web layer references it; Phase 2a had wrongly parked it as non-published
+  only because Auth happened not to reference it.)_
 - **Stays source / build-from-source:** every service-internal `*.Domain/.Application/.Infrastructure`
   and module `*.Api`, each service's `Seed.Infrastructure`, and the **AppHosts** (the dev-composition
   layer — see note below).
@@ -244,11 +247,44 @@ exist on the feed, so:
 
 ## Phase 3 — Payment standalone
 
-- Publish `Payment.Contracts` + `Payment.Client`. Flip Payment's refs to packages — shared platform,
-  `Auth.Contracts`, and `B2B.Tenant.Contracts` (the `TenantCreatedEvent` subscription; see the Phase 0
-  finding — package it, or re-route the subscription to a Payment-owned event to drop the edge).
-- Prove Payment carves-and-builds against the feed.
-- **Gate:** standalone Payment build + unit tests green.
+**Decision on the `Payment.Infrastructure → B2B.Tenant.Contracts` edge (the Phase 0 finding): option (a) —
+publish `B2B.Tenant.Contracts` and consume it.** Confirmed with the user. Payment's only compile dependency
+on it is `TenantCreatedEvent` (`TenantCreatedHandler` + its DI registration + the Workers `.SubscribeTo<>`);
+the event is consumed by **nobody but Payment**. Chosen over (b) re-routing to a Payment-owned/generic event
+because: (b) is a runtime re-architecture of the payout-provisioning flow (out of this plan's "separate build
+closures in place" scope); it touches **B2B's** publish path + Seed.Simulator + seeders, which belong to the
+deferred **Phase 5** ("churny core last"); and it changes a wire contract on the E2E-covered payout/settlement
+chain (so it'd need an E2E run), whereas (a) is zero-behaviour-change (build + unit gate). Phase 5 already
+publishes `B2B.Tenant.Contracts`, so (a) just pulls one `<IsPackable>` flip forward — zero wasted work, and it
+**doesn't foreclose** a later deliberate pattern-E re-route (logged in `api/Concertable.Payment/TECH_DEBT.md`).
+
+**Like Phase 2, this is two sub-steps — publish *before* you can consume.** A second escaping ref surfaced
+that the plan hadn't anticipated: `Payment.Api → Concertable.Shared.Api`, and `Shared.Api` wasn't published
+(see the classification note above). So Payment needs **two** packages live on the feed that weren't —
+`Shared.Api` and `B2B.Tenant.Contracts` — plus its own `Payment.Contracts`/`Payment.Client`. They only publish
+on merge to `master`, so consume (3b) waits for publish (3a) to be live.
+
+- **3a — publish the packages Payment will consume. — ✅ DONE (local-verified; ships on merge).** Flipped
+  `<IsPackable>true</IsPackable>` on `Concertable.Shared.Api` (inherits MinVer + metadata from `api/Shared/`),
+  `Concertable.Payment.Contracts`, `Concertable.Payment.Client`, and `Concertable.B2B.Tenant.Contracts`. The
+  Payment and B2B folders gained MinVer + package metadata in their **own** `Directory.Build.props` (mirroring
+  `Shared/`; per-folder, carve-safe) + the MinVer `GlobalPackageReference` in their `Directory.Packages.props`.
+  `verify-restore` in `publish-packages.yml` extended with the 4 new packages. **BUILD1 proven clean:**
+  `dotnet pack api/Concertable.slnx` → exactly **30** packages at lockstep `0.1.0-alpha.0.528` (the Phase-2a 26
+  + these 4), and auditing every `.nuspec`: no package declares a feed-absent `Concertable.*` dependency
+  (`Shared.Api`→`Contracts`; `B2B.Tenant.Contracts`→`Contracts`+`Kernel`+`Messaging.Contracts`;
+  `Payment.Contracts`→`Messaging.Contracts`; `Payment.Client`→`Payment.Contracts`+`Kernel` — all in-set).
+  **Gate passed:** `dotnet build api/Concertable.slnx` green (0 errors); zero behaviour change ⇒ no E2E.
+- **3b — flip Payment to consume them. — ⬜ TODO (blocked on 3a publishing).** Swap every Payment
+  `ProjectReference` that escapes `api/Concertable.Payment/` for a `PackageReference`, pinned in Payment's own
+  `Directory.Packages.props` via a single `$(ConcertablePlatformVersion)` to the lockstep version 3a publishes
+  (re-check the feed before pinning — it won't be `.528` if other `api/` commits land first). Intra-folder
+  refs (Payment.Domain/Application/Contracts/Client/Infrastructure/Api/Seed) stay `ProjectReference`s.
+  - Prove Payment carves-and-builds standalone: `git archive HEAD:api/Concertable.Payment` → restore-from-feed
+    → `dotnet build`, outside the repo tree, green.
+  - Add a `carve-payment` CI job in `.github/workflows/test.yml` mirroring `carve-auth`, and wire it into the
+    merge-queue ruleset (`17393335`) required checks.
+  - **Gate:** standalone Payment build + Payment unit tests green.
 
 ## Phase 4 — Search standalone
 
@@ -259,8 +295,8 @@ exist on the feed, so:
 
 ## Phase 5 — B2B standalone (churny core packaged here, with hybrid inner loop)
 
-- Publish remaining B2B contracts (`User`, `Tenant`) and `Customer.Review.Contracts` (B2B consumes it
-  — the one reverse data-flow). Flip B2B's refs to packages.
+- Publish remaining B2B contracts (`User` — `Tenant` was already published in Phase 3a) and
+  `Customer.Review.Contracts` (B2B consumes it — the one reverse data-flow). Flip B2B's refs to packages.
 - Introduce the **hybrid inner-loop** toggle for `Kernel`/`Messaging` so cross-cutting dev stays fast
   while CI/standalone use packages.
 - **Gate:** standalone B2B build + unit/integration green; **run E2E** (B2B is behaviorally central

@@ -36,6 +36,12 @@ env:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    # `dotnet pack` restores the whole solution, including Concertable.Auth — which since Phase 2b
+    # consumes the shared platform as packages from the feed. Without the feed credential Auth's
+    # restore 401s (NU1301) and pack fails. The repo GITHUB_TOKEN reads the org packages this repo
+    # published; workflow-level `packages: write` already covers the read.
+    env:
+      GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -63,6 +69,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: publish
     steps:
+      - uses: actions/checkout@v4
+
       - name: Set up .NET
         uses: actions/setup-dotnet@v4
         with:
@@ -74,9 +82,15 @@ jobs:
         # trap: a packable lib that ProjectReferences a non-packable one) this restore fails
         # NU1101. Floating '*-*' takes the version just pushed by the publish job; nuget.org is
         # inherited (no <clear/>) so the packages' external dependencies resolve normally.
-        # Extend the list when a later phase opts a new package in.
+        #
+        # The package list is GENERATED from the <IsPackable>true</IsPackable> projects — the same
+        # single source of truth that drives `dotnet pack` — so it can't drift from what publishes:
+        # opting a package in (the one-line csproj edit) automatically adds it to this check, with no
+        # second hand-maintained list to forget. Relies on every packable project's PackageId being
+        # its project-file name (none override PackageId/AssemblyName); the empty-list guard fails
+        # loudly if the grep ever stops matching.
         run: |
-          mkdir consumer && cd consumer
+          mkdir "$RUNNER_TEMP/consumer" && cd "$RUNNER_TEMP/consumer"
           cat > nuget.config <<EOF
           <?xml version="1.0" encoding="utf-8"?>
           <configuration>
@@ -91,40 +105,18 @@ jobs:
             </packageSourceCredentials>
           </configuration>
           EOF
-          cat > consumer.csproj <<'EOF'
-          <Project Sdk="Microsoft.NET.Sdk">
-            <PropertyGroup>
-              <TargetFramework>net10.0</TargetFramework>
-            </PropertyGroup>
-            <ItemGroup>
-              <PackageReference Include="Concertable.Kernel" Version="*-*" />
-              <PackageReference Include="Concertable.Contracts" Version="*-*" />
-              <PackageReference Include="Concertable.Auth.Contracts" Version="*-*" />
-              <PackageReference Include="Concertable.Messaging.Contracts" Version="*-*" />
-              <PackageReference Include="Concertable.Messaging.Domain" Version="*-*" />
-              <PackageReference Include="Concertable.Messaging.Application" Version="*-*" />
-              <PackageReference Include="Concertable.Messaging.Infrastructure" Version="*-*" />
-              <PackageReference Include="Concertable.Messaging.AzureServiceBus" Version="*-*" />
-              <PackageReference Include="Concertable.DataAccess.Application" Version="*-*" />
-              <PackageReference Include="Concertable.DataAccess.Infrastructure" Version="*-*" />
-              <PackageReference Include="Concertable.ServiceDefaults" Version="*-*" />
-              <PackageReference Include="Concertable.Shared.Blob.Application" Version="*-*" />
-              <PackageReference Include="Concertable.Shared.Blob.Infrastructure" Version="*-*" />
-              <PackageReference Include="Concertable.Shared.Email.Application" Version="*-*" />
-              <PackageReference Include="Concertable.Shared.Email.Infrastructure" Version="*-*" />
-              <PackageReference Include="Concertable.Shared.Geocoding.Application" Version="*-*" />
-              <PackageReference Include="Concertable.Shared.Geocoding.Infrastructure" Version="*-*" />
-              <PackageReference Include="Concertable.Shared.Imaging.Application" Version="*-*" />
-              <PackageReference Include="Concertable.Shared.Imaging.Infrastructure" Version="*-*" />
-              <PackageReference Include="Concertable.Shared.Notification.Infrastructure" Version="*-*" />
-              <PackageReference Include="Concertable.Shared.Pdf.Application" Version="*-*" />
-              <PackageReference Include="Concertable.Shared.Pdf.Infrastructure" Version="*-*" />
-              <PackageReference Include="Concertable.Seed.Shared" Version="*-*" />
-              <PackageReference Include="Concertable.Seed.Identity" Version="*-*" />
-              <PackageReference Include="Concertable.Testing" Version="*-*" />
-              <PackageReference Include="Concertable.Testing.Integration" Version="*-*" />
-            </ItemGroup>
-          </Project>
-          EOF
+          packable=$(grep -rl '<IsPackable>true</IsPackable>' "$GITHUB_WORKSPACE/api" --include='*.csproj' \
+            | xargs -n1 basename | sed 's/\.csproj$//' | sort -u || true)
+          test -n "$packable" || { echo "No <IsPackable>true</IsPackable> projects found — refusing to pass"; exit 1; }
+          echo "Published packages to verify (derived from IsPackable projects):"
+          echo "$packable"
+          {
+            echo '<Project Sdk="Microsoft.NET.Sdk">'
+            echo '  <PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup>'
+            echo '  <ItemGroup>'
+            echo "$packable" | sed 's#.*#    <PackageReference Include="&" Version="*-*" />#'
+            echo '  </ItemGroup>'
+            echo '</Project>'
+          } > consumer.csproj
           dotnet restore
-          echo "Restored the full published Concertable.* closure from GitHub Packages."
+          echo "Restored the full published Concertable.* closure ($(echo "$packable" | wc -l) packages) from GitHub Packages."
