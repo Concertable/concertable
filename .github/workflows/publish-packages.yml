@@ -36,6 +36,12 @@ env:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    # `dotnet pack` restores the whole solution, including Concertable.Auth — which since Phase 2b
+    # consumes the shared platform as packages from the feed. Without the feed credential Auth's
+    # restore 401s (NU1301) and pack fails. The repo GITHUB_TOKEN reads the org packages this repo
+    # published; workflow-level `packages: write` already covers the read.
+    env:
+      GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v4
         with:
