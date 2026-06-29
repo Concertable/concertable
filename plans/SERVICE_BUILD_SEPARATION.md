@@ -367,31 +367,45 @@ one reverse data-flow — B2B consumes Customer's review event). They only publi
 consume (5b) waits for publish (5a) to be live. `Contract.Contracts`/`Conversations.Contracts` are
 B2B-internal (cross-module, not cross-service) → they ride along in B2B's carve, never published.
 
-- **5a — publish `B2B.User.Contracts` + `Customer.Review.Contracts`. — ✅ DONE (pending merge-publish).**
-  Flipped `<IsPackable>true</IsPackable>` + added a `<Description>` on both. `B2B.User.Contracts` inherits
-  MinVer + metadata from the B2B folder (added in Phase 3a); the **Customer folder starts publishing for the
-  first time**, so it gained MinVer + package metadata in its **own** `Directory.Build.props` (mirroring
+- **5a — publish `B2B.User.Contracts` + `Customer.Review.Contracts`. — ✅ DONE & SHIPPED.** Merged via
+  **PR #65** (merge `ea94f148`); the post-merge `Publish packages` run (`28396344649`) is **green** (both
+  `publish` and `verify-restore`), so all **36** packages are **live on the feed at `0.1.0-alpha.0.533`**
+  (lockstep). Flipped `<IsPackable>true</IsPackable>` + added a `<Description>` on both. `B2B.User.Contracts`
+  inherits MinVer + metadata from the B2B folder (added in Phase 3a); the **Customer folder started publishing
+  for the first time**, so it gained MinVer + package metadata in its **own** `Directory.Build.props` (mirroring
   `Shared/`/B2B) + the MinVer `GlobalPackageReference` in its `Directory.Packages.props` (per-folder,
   carve-safe — no repo-root config). **BUILD1 proven clean:** `dotnet pack api/Concertable.slnx` → exactly
   **36** packages (34 + 2), every `.nuspec` audited — `User.Contracts` depends only on
   Kernel/Messaging.Contracts/`B2B.Tenant.Contracts`, and `Review.Contracts` on Contracts/Messaging.Contracts,
-  all inside the published set; the full 36-package audit showed **no** feed-absent `Concertable.*` dependency.
-  **Gate:** `dotnet build api/Concertable.slnx` green (0 errors); zero behaviour change ⇒ no tests/E2E. The
-  post-merge `Publish packages` run will push all 36 at the next lockstep version and re-prove the closure via
-  `verify-restore` (auto-generates its list from `<IsPackable>true</IsPackable>` projects). **5b waits for that
-  publish to be live.**
-- **5b — flip B2B to consume them, and stand up the hybrid inner loop.**
-  - Swap every `ProjectReference` in B2B's deployable closure that escapes `api/Concertable.B2B/` for a
-    `PackageReference`, pinned lockstep in B2B's own `Directory.Packages.props`. Intra-folder refs (modules,
-    DataAccess, Seed.Infrastructure) stay `ProjectReference`s; AppHost.Extensions + the E2E harness keep their
-    cross-folder refs (composition / test-harness layers, exempt).
+  all inside the published set; the full 36-package audit showed **no** feed-absent `Concertable.*` dependency,
+  re-proven live by `verify-restore`. **Gate:** `dotnet build api/Concertable.slnx` green (0 errors); zero
+  behaviour change ⇒ no tests/E2E. **5b can now proceed.**
+- **5b — flip B2B to consume them, and stand up the hybrid inner loop. — NEXT (5a is live; start here).**
+  - Pin to the 5a feed version **`0.1.0-alpha.0.533`** (re-verify present on the feed for every id before
+    pinning) via a single `$(ConcertablePlatformVersion)` in B2B's own `Directory.Packages.props`, mirroring
+    Payment/Search.
+  - Swap every `ProjectReference` in B2B's deployable closure that **escapes `api/Concertable.B2B/`** for a
+    `PackageReference`. **Escaping targets to convert** (paths reach `..\..\Shared\`, `..\..\Concertable.X\`):
+    `Shared/` → Kernel, Contracts, Shared.Api, Shared.{Blob,Email,Geocoding,Imaging,Pdf,Notification}.Infrastructure,
+    Seed.{Shared,Identity}; `Concertable.Messaging/` → Contracts/Domain/Infrastructure/AzureServiceBus;
+    `Concertable.ServiceDefaults`; `Concertable.DataAccess/` → Application/Infrastructure;
+    `Concertable.Payment.{Client,Contracts}`; `Auth.Contracts`; and the cross-service `Customer.Review.Contracts`.
+    **Stay `ProjectReference` (intra-B2B, do NOT convert):** B2B's own modules, `B2B.{User,Tenant,Artist,Venue,
+    Concert,Contract,Conversations}.Contracts`, `B2B.DataAccess.*`, `B2B.Seed.Infrastructure` — note paths like
+    `..\..\Concertable.B2B\Seed\...` go up to `api/` then back *into* B2B, so they're **not** escaping.
+    AppHost.Extensions + the IntegrationTests/E2E harness keep their cross-folder refs (composition / test-harness
+    layers, exempt). Verify with: search B2B csproj for `Include="..\..\Shared\` and `Include="..\..\Concertable.`
+    excluding `..\..\Concertable.B2B\`.
   - Introduce the **hybrid inner-loop** toggle for `Kernel`/`Messaging` (the churny core) so cross-cutting dev
     stays fast (`ProjectReference`) while CI/standalone builds use packages (`PackageReference`), per the
     plan's "honest caveat" — an MSBuild prop toggled by an env var / build flag.
   - Prove the carve standalone (`git archive HEAD:api/Concertable.B2B` → restore-from-feed → build the
     package-clean closure outside the repo tree); add a `carve-b2b` CI job mirroring `carve-search`.
   - **Gate:** standalone B2B build + unit/integration green; **run E2E** (B2B is behaviorally central and
-    cross-cutting — meets the massive/risky bar).
+    cross-cutting — meets the massive/risky bar). **Local gotcha (recurs from Phase 4):** after the pin, a
+    repo-root `dotnet build api/Concertable.slnx` can `NU1101` on the just-pinned packages until cached — run
+    `dotnet restore` on one B2B-folder project first (its per-folder `nuget.config` reaches the feed), then the
+    slnx build resolves from cache.
 
 ## Phase 6 — Customer standalone
 
