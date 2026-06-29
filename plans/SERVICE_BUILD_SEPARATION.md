@@ -360,14 +360,38 @@ publish on merge to `master`, so consume (4b) waits for publish (4a) to be live.
 
 ## Phase 5 — B2B standalone (churny core packaged here, with hybrid inner loop)
 
-- Publish the last cross-service B2B contract (`User` — `Tenant` shipped in Phase 3a; `Artist`/`Venue`/
-  `Concert` + `Seed.Contracts` in Phase 4a) and `Customer.Review.Contracts` (B2B consumes it — the one
-  reverse data-flow). `Contract.Contracts`/`Conversations.Contracts` are B2B-internal (cross-module, not
-  cross-service) → they ride along in B2B's carve, never published. Flip B2B's refs to packages.
-- Introduce the **hybrid inner-loop** toggle for `Kernel`/`Messaging` so cross-cutting dev stays fast
-  while CI/standalone use packages.
-- **Gate:** standalone B2B build + unit/integration green; **run E2E** (B2B is behaviorally central
-  and cross-cutting — meets the massive/risky bar).
+**Like Phases 2–4, two sub-steps — publish *before* you can consume.** B2B's deployable closure reads two
+contracts that aren't on the feed: its own last cross-service contract `B2B.User.Contracts` (`Tenant` shipped
+in Phase 3a; `Artist`/`Venue`/`Concert` + `Seed.Contracts` in Phase 4a) and `Customer.Review.Contracts` (the
+one reverse data-flow — B2B consumes Customer's review event). They only publish on merge to `master`, so
+consume (5b) waits for publish (5a) to be live. `Contract.Contracts`/`Conversations.Contracts` are
+B2B-internal (cross-module, not cross-service) → they ride along in B2B's carve, never published.
+
+- **5a — publish `B2B.User.Contracts` + `Customer.Review.Contracts`. — ✅ DONE (pending merge-publish).**
+  Flipped `<IsPackable>true</IsPackable>` + added a `<Description>` on both. `B2B.User.Contracts` inherits
+  MinVer + metadata from the B2B folder (added in Phase 3a); the **Customer folder starts publishing for the
+  first time**, so it gained MinVer + package metadata in its **own** `Directory.Build.props` (mirroring
+  `Shared/`/B2B) + the MinVer `GlobalPackageReference` in its `Directory.Packages.props` (per-folder,
+  carve-safe — no repo-root config). **BUILD1 proven clean:** `dotnet pack api/Concertable.slnx` → exactly
+  **36** packages (34 + 2), every `.nuspec` audited — `User.Contracts` depends only on
+  Kernel/Messaging.Contracts/`B2B.Tenant.Contracts`, and `Review.Contracts` on Contracts/Messaging.Contracts,
+  all inside the published set; the full 36-package audit showed **no** feed-absent `Concertable.*` dependency.
+  **Gate:** `dotnet build api/Concertable.slnx` green (0 errors); zero behaviour change ⇒ no tests/E2E. The
+  post-merge `Publish packages` run will push all 36 at the next lockstep version and re-prove the closure via
+  `verify-restore` (auto-generates its list from `<IsPackable>true</IsPackable>` projects). **5b waits for that
+  publish to be live.**
+- **5b — flip B2B to consume them, and stand up the hybrid inner loop.**
+  - Swap every `ProjectReference` in B2B's deployable closure that escapes `api/Concertable.B2B/` for a
+    `PackageReference`, pinned lockstep in B2B's own `Directory.Packages.props`. Intra-folder refs (modules,
+    DataAccess, Seed.Infrastructure) stay `ProjectReference`s; AppHost.Extensions + the E2E harness keep their
+    cross-folder refs (composition / test-harness layers, exempt).
+  - Introduce the **hybrid inner-loop** toggle for `Kernel`/`Messaging` (the churny core) so cross-cutting dev
+    stays fast (`ProjectReference`) while CI/standalone builds use packages (`PackageReference`), per the
+    plan's "honest caveat" — an MSBuild prop toggled by an env var / build flag.
+  - Prove the carve standalone (`git archive HEAD:api/Concertable.B2B` → restore-from-feed → build the
+    package-clean closure outside the repo tree); add a `carve-b2b` CI job mirroring `carve-search`.
+  - **Gate:** standalone B2B build + unit/integration green; **run E2E** (B2B is behaviorally central and
+    cross-cutting — meets the massive/risky bar).
 
 ## Phase 6 — Customer standalone
 
