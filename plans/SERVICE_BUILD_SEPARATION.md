@@ -426,14 +426,48 @@ B2B-internal (cross-module, not cross-service) → they ride along in B2B's carv
     on the just-pinned packages until cached — `dotnet restore` one B2B-folder project first, then build.
   - **This completes Phase 5.** Phases 6–7 remain, so this plan stays.
 
-## Phase 6 — Customer standalone
+## Phase 6 — Customer standalone — ✅ DONE
 
-- Customer consumes the B2B contracts + `Auth.Contracts` + `Payment.Client/Contracts` as packages.
-  (`Customer.AppHost → B2B.Seed.Simulator` stays a dev-host `ProjectReference` until the deployment
-  effort turns it into `AddContainer` — out of scope here.)
-- Prove Customer carves-and-builds against the feed.
-- **Gate:** standalone Customer build + unit/integration green; **run E2E** (the other cross-cutting
-  service).
+**One sub-step, not two — everything Customer consumes was already on the feed.** Unlike Phases 2–5,
+no 6a publish step was needed: every package Customer's deployable closure reads (shared platform from
+2a/3a/5a.2, `Auth.Contracts` from 2a, the B2B `{Artist,Venue,Concert,Tenant,User}.Contracts` +
+`B2B.Seed.Contracts` from 3a/4a/5a, `Payment.Client`/`Payment.Contracts` from 3a) is live at the
+current lockstep `0.1.0-alpha.0.536`. Customer's own `Customer.Review.Contracts` already publishes
+(Phase 5a) and is consumed in-folder, so it isn't pinned as a package.
+
+- **Pinned** to **`0.1.0-alpha.0.536`** via a single `$(ConcertablePlatformVersion)` in Customer's own
+  `Directory.Packages.props` — **29** distinct `Concertable.*` ids, all re-verified live on the feed
+  before pinning.
+- **Flipped 28 deployable-closure csproj** (Web, modules' Api/Application/Domain/Infrastructure/Contracts,
+  Seed.Infrastructure) from escaping `ProjectReference` → `PackageReference`. Intra-Customer refs +
+  AppHost(.Extensions) + the IntegrationTests/E2ETests harness stayed `ProjectReference` (composition /
+  test-harness exempt). _(Only `Preference.Api` and `User.Api` among the module Api projects had an
+  escaping ref — `Shared.Api`; the other Api projects reach only their own siblings.)_
+- **Hybrid inner loop** mirrored from B2B (Customer is the top co-change partner): default = packages;
+  `-p:UseLocalCore=true` / `CONCERTABLE_LOCAL_CORE=1` swaps the churny core (Kernel, Messaging.*) to
+  in-repo `ProjectReference`s. Implemented in `api/Concertable.Customer/Directory.Build.targets`
+  (`ChurnyCorePackage` id→path) anchored on `$(ConcertableCoreRoot)` from `Directory.Build.props`.
+- **Carve-breaker found & fixed (real bug, any OS):** Web + 7 module Infrastructure projects referenced
+  Customer's *own* `Seed.Infrastructure` via a round-trip path (`..\..\Concertable.Customer\Seed\...` —
+  up to `api/`, back into `Concertable.Customer/`) that resolves in the monorepo but escapes the
+  git-archive carve, whose root *is* the Customer folder. Normalized to direct in-folder relative paths;
+  same target, zero behaviour change. (Identical class of bug to Phase 5b's B2B fix.)
+  - **✅ Carve proven standalone.** `git archive HEAD:api/Concertable.Customer` → restore-from-feed →
+    `dotnet build` of a find-discovered closure-only solution (34 projects), built **outside** the repo
+    tree (carve carries its own `nuget.config` / `Directory.{Build,Packages,Build.targets}.props`, no
+    repo/`api`-root config above it) — **green (0 errors)**. The Phase-0 `MSB3202 project-not-found` is
+    gone; the shared platform + cross-service contracts resolved as packages from the feed. _(Unlike B2B,
+    the Windows local carve build did **not** hit the spurious all-package-leaf `MSB3030`.)_
+  - **✅ `carve-customer` CI job added** in `.github/workflows/test.yml`, mirroring `carve-b2b` (same
+    `git archive` technique, `find`-discovered closure excluding Tests/AppHost, `MinVerSkip` since the
+    carve has no `.git` and Customer's folder carries MinVer for Review.Contracts). **Ruleset wiring
+    stays deferred to Phase 7** (`carve-customer` joins the other carve jobs as non-required until then).
+- **✅ Gate:** `dotnet build api/Concertable.slnx` green (0 errors); standalone carve green; Customer
+  **unit** tests green (Concert 30, Review 16, Ticket 19, User 8). Docker was down locally, so Customer
+  **integration** + **E2E** are verified on **CI** — `integration-tests` (Customer Concert/Review/Ticket/User)
+  runs per-PR, and **E2E** runs as the **merge-queue gate** (`e2e-api-tests` + `e2e-ui-tests`, which run
+  Customer's API + UI E2E); Customer is the other cross-cutting service, so the queue runs E2E before merge.
+  **This completes Phase 6.** Phase 7 remains, so this plan stays.
 
 ## Phase 7 — Lock it in
 
