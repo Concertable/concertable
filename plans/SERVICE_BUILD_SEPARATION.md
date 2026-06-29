@@ -315,36 +315,48 @@ four B2B contracts that weren't on the feed — `B2B.{Artist,Venue,Concert}.Cont
 seed library `B2B.Seed.Contracts` (`B2B.Tenant.Contracts` was already published in Phase 3a). They only
 publish on merge to `master`, so consume (4b) waits for publish (4a) to be live.
 
-- **4a — publish the B2B contracts Search consumes. — ✅ DONE (awaiting the master publish run).** Flipped
-  `<IsPackable>true</IsPackable>` + added a `<Description>` on the four B2B contracts —
+- **4a — publish the B2B contracts Search consumes. — ✅ DONE & SHIPPED.** Merged via **PR #63** (merge
+  `0ebed2f8`); the post-merge `Publish packages` run is **green** (both `publish` and `verify-restore`), so all
+  4 packages are **live on the feed at `0.1.0-alpha.0.531`** (lockstep with `B2B.Tenant.Contracts` + the shared
+  platform). Flipped `<IsPackable>true</IsPackable>` + added a `<Description>` on the four B2B contracts —
   `Concertable.B2B.{Artist,Venue,Concert}.Contracts` and `Concertable.B2B.Seed.Contracts` — joining the
   Phase-3a `B2B.Tenant.Contracts`. **No folder config needed:** the B2B folder already gained MinVer +
-  package metadata (its own `Directory.Build.props`) + the MinVer `GlobalPackageReference` (its own
-  `Directory.Packages.props`) in Phase 3a. **BUILD1 proven clean:** `dotnet pack api/Concertable.slnx` →
-  exactly **34** packages (30 + 4), every `.nuspec` audited — Artist/Venue/Concert.Contracts depend only on
-  Contracts/Kernel/Messaging.Contracts, and Seed.Contracts on the three module contracts + Seed.Identity,
-  all inside the published set; the full 34-package audit shows **no** package declares a feed-absent
-  `Concertable.*` dependency. `verify-restore` auto-generates its list from `<IsPackable>true</IsPackable>`
-  projects, so it picks up the 4 and re-proves the closure on the next master publish. **Gate passed:**
-  `dotnet build api/Concertable.slnx` green (0 errors); zero behaviour change ⇒ no E2E. **4b waits for the
-  post-merge `Publish packages` run to put the 4 packages live on the feed.**
-- **4b — flip Search to consume them, prove the carve, gate it. — ▶️ NEXT (after 4a is live).**
-  - Swap every `ProjectReference` in Search's deployable closure that escapes `api/Concertable.Search/` for a
-    `PackageReference` — the 4 B2B contracts above **plus** the already-published shared platform Search reads
-    (Kernel, Messaging.{Contracts,Domain,Infrastructure,AzureServiceBus}, DataAccess.Infrastructure,
-    ServiceDefaults, Shared.Api, Seed.{Shared,Identity}) — pinned lockstep in Search's **own**
-    `Directory.Packages.props` to the live feed version. Intra-folder refs (Domain/Application/Infrastructure/
-    Api/Seed.Infrastructure) stay `ProjectReference`s; AppHost.Extensions + the E2ETests.Helpers harness keep
-    their cross-folder refs (composition / E2E-harness layers, exempt).
-  - **Prove the carve:** `git archive HEAD:api/Concertable.Search` → restore-from-feed → `dotnet build` of the
-    deployable closure (Web + Workers), built **outside** the repo tree. Build a closure-only solution, **not**
-    the `.slnx` — it also carries the exempt AppHost.Extensions + E2ETests.Helpers, which reference cross-folder
-    projects absent from the carve.
-  - **Add a `carve-search` CI job** in `.github/workflows/test.yml`, mirroring `carve-payment` (same `git
-    archive` technique, `needs: build`, feed credential via the repo `GITHUB_TOKEN`, `MinVerSkip`). Ruleset
-    wiring stays deferred to Phase 7.
-  - **Gate:** standalone Search build + Search unit + integration green (both already in the `unit-tests` /
-    `integration-tests` matrices). Zero behaviour change ⇒ no E2E.
+  package metadata + the MinVer `GlobalPackageReference` in Phase 3a. **BUILD1 proven clean:**
+  `dotnet pack api/Concertable.slnx` → exactly **34** packages (30 + 4), every `.nuspec` audited —
+  Artist/Venue/Concert.Contracts depend only on Contracts/Kernel/Messaging.Contracts, and Seed.Contracts on the
+  three module contracts + Seed.Identity, all inside the published set; the full 34-package audit showed **no**
+  feed-absent `Concertable.*` dependency, re-proven live by `verify-restore` (auto-generates its list from
+  `<IsPackable>true</IsPackable>` projects).
+- **4b — flip Search to consume them. — ✅ DONE.** Swapped every `ProjectReference` in Search's deployable
+  closure that escaped `api/Concertable.Search/` for a `PackageReference` across **7 csproj** (Domain,
+  Application, Infrastructure, Api, Web, Workers, Seed.Infrastructure) — **14 distinct `Concertable.*` packages**
+  (B2B.{Artist,Venue,Concert,Seed}.Contracts, Kernel, DataAccess.Infrastructure,
+  Messaging.{Contracts,Domain,Infrastructure,AzureServiceBus}, ServiceDefaults, Shared.Api, Seed.{Shared,Identity}),
+  pinned lockstep in Search's **own** `Directory.Packages.props` via a single `$(ConcertablePlatformVersion)` =
+  **`0.1.0-alpha.0.531`** (re-verified present on the feed for all 14 ids before pinning). Search **publishes
+  nothing**, so its folder needs **no** MinVer/metadata — only the consume-side pin block. Intra-folder refs
+  stay `ProjectReference`s; AppHost.Extensions + the IntegrationTests/E2ETests.Helpers harness keep their
+  cross-folder refs (composition / test-harness layers, exempt). _(Application's escaping `Kernel` ref was easy
+  to miss — there were 7 csproj to flip, not 6.)_
+  - **✅ Carve proven standalone.** `git archive <tree>:api/Concertable.Search` → restore-from-feed →
+    `dotnet build` of a closure-only solution of the 7 package-clean projects, built **outside** the repo tree
+    (the carve carries its own `nuget.config` / `Directory.{Build,Packages}.props`, and no repo/`api`-root config
+    sits above it) — **green (0 errors)**. The Phase-0 `MSB3202 project-not-found` is gone; the shared platform +
+    B2B contracts resolved as packages from the feed. Built the closure solution, **not** the `.slnx` (it also
+    carries the exempt AppHost.Extensions + test harness, which reference cross-folder projects absent from the carve).
+  - **✅ `carve-search` CI job added** in `.github/workflows/test.yml`, mirroring `carve-payment` (same `git
+    archive` technique, `needs: build`, feed credential via the repo `GITHUB_TOKEN`). No `MinVerSkip` — Search's
+    folder has no MinVer. **Ruleset wiring stays deferred to Phase 7** (`carve-search` joins `carve-auth`/`carve-payment`
+    as a non-required job until then).
+  - **✅ Gate passed:** `dotnet build api/Concertable.slnx` green (0 errors); standalone carve green; Search unit
+    (**14**) + integration (**27**) green. Zero behaviour change ⇒ no E2E. **This completes Phase 4**; Phases 5–7
+    remain, so this plan stays.
+  - **Local gotcha (recurs in Phases 5–6):** after a new lockstep version publishes, a repo-root
+    `dotnet build api/Concertable.slnx` restores the *solution-root* config (no feed source above `api/`), so a
+    just-published version that isn't cached yet fails `NU1101` for the newly-pinned packages. Fix: `dotnet restore`
+    one project in the flipped folder first (its per-folder `nuget.config` reaches the feed and caches the version),
+    then the slnx build resolves from cache. CI is unaffected (the `build`/`publish` jobs prove feed restore on a
+    fresh cache).
 
 ## Phase 5 — B2B standalone (churny core packaged here, with hybrid inner loop)
 
