@@ -30,6 +30,13 @@ jobs:
         with:
           dotnet-version: '10.x'
 
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/Directory.Packages.props') }}
+          restore-keys: nuget-${{ runner.os }}-
+
       - name: Build solution
         run: dotnet build api/Concertable.slnx --configuration Release
 
@@ -54,6 +61,13 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.x'
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/Directory.Packages.props') }}
+          restore-keys: nuget-${{ runner.os }}-
 
       - name: Carve api/Concertable.Auth into a standalone tree
         run: |
@@ -90,6 +104,13 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.x'
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/Directory.Packages.props') }}
+          restore-keys: nuget-${{ runner.os }}-
 
       - name: Carve api/Concertable.Payment into a standalone tree
         run: |
@@ -143,6 +164,13 @@ jobs:
         with:
           dotnet-version: '10.x'
 
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/Directory.Packages.props') }}
+          restore-keys: nuget-${{ runner.os }}-
+
       - name: Carve api/Concertable.Search into a standalone tree
         run: |
           mkdir -p "$RUNNER_TEMP/carve"
@@ -165,6 +193,65 @@ jobs:
             Concertable.Search.Domain/Concertable.Search.Domain.csproj \
             Seed/Concertable.Search.Seed.Infrastructure/Concertable.Search.Seed.Infrastructure.csproj
           dotnet build CarveSearch.slnx --configuration Release
+
+  carve-b2b:
+    # Gate: Concertable.B2B's deployable closure must build standalone from its own package closure —
+    # a ProjectReference escaping api/Concertable.B2B/ fails here (project-not-found) instead of
+    # silently at a repo split. Same `git archive` technique as carve-auth/carve-payment/carve-search.
+    # Build a closure-only solution, NOT the .slnx: the slnx also carries AppHost(.Extensions) and the
+    # IntegrationTests/E2ETests harness, which reference cross-folder projects (Concertable.AppHost.Shared,
+    # Concertable.Testing*, Payment/Search E2E helpers) absent from the carve and exempt by design
+    # (composition / test-harness layers). The closure is large (42 projects), so discover it as "every
+    # csproj that is not a test or AppHost project" — every package-clean project is built directly, and
+    # a new closure project (or a leaf reached only transitively) is picked up automatically, never orphaned.
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      contents: read
+      packages: read
+
+    env:
+      GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/Directory.Packages.props') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - name: Carve api/Concertable.B2B into a standalone tree
+        run: |
+          mkdir -p "$RUNNER_TEMP/carve"
+          git archive HEAD:api/Concertable.B2B | tar -x -C "$RUNNER_TEMP/carve"
+          echo "Carved tree (only api/Concertable.B2B tracked files):"
+          ls -la "$RUNNER_TEMP/carve"
+
+      - name: Restore + build the carved B2B deployable closure from the feed (packages only)
+        working-directory: ${{ runner.temp }}/carve
+        # MinVerSkip: the carved tree has no .git, so MinVer can't derive a version — irrelevant for a build-only gate.
+        run: |
+          dotnet new sln --name CarveB2B --format slnx
+          # Closure = every csproj except the test (Tests/) and AppHost (composition) projects, which
+          # legitimately reference cross-folder projects absent from the carve. Path/name based, so it
+          # can't drift on comment wording and auto-includes new or transitively-only-reached projects.
+          mapfile -t PROJS < <(find . -name '*.csproj' \
+            -not -path '*/Tests/*' \
+            -not -path '*/obj/*' \
+            -not -name 'Concertable.B2B.AppHost.csproj' \
+            -not -name 'Concertable.B2B.AppHost.Extensions.csproj')
+          echo "Package-clean closure projects (${#PROJS[@]}):"
+          printf '%s\n' "${PROJS[@]}"
+          dotnet sln CarveB2B.slnx add "${PROJS[@]}"
+          dotnet build CarveB2B.slnx --configuration Release -p:MinVerSkip=true
 
   unit-tests:
     runs-on: ubuntu-latest
@@ -202,6 +289,13 @@ jobs:
         with:
           dotnet-version: '10.x'
 
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/Directory.Packages.props') }}
+          restore-keys: nuget-${{ runner.os }}-
+
       - name: Run ${{ matrix.project }}
         run: dotnet test ${{ matrix.project }} --configuration Release
 
@@ -238,6 +332,13 @@ jobs:
         with:
           dotnet-version: '10.x'
 
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/Directory.Packages.props') }}
+          restore-keys: nuget-${{ runner.os }}-
+
       - name: Run ${{ matrix.project }}
         run: dotnet test ${{ matrix.project }} --configuration Release
 
@@ -267,6 +368,13 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.x'
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/Directory.Packages.props') }}
+          restore-keys: nuget-${{ runner.os }}-
 
       - name: Provision HTTPS dev certificate
         run: |
@@ -330,6 +438,13 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.x'
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/Directory.Packages.props') }}
+          restore-keys: nuget-${{ runner.os }}-
 
       - name: Provision HTTPS dev certificate
         run: |
