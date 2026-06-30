@@ -1,6 +1,6 @@
 # Polyrepo mirroring
 
-The monorepo (`thomasseery/Concertable`) is the single source of truth. You only
+The monorepo (`Concertable/concertable`) is the single source of truth. You only
 ever work and commit here. Each backend service is **automatically mirrored** into
 its own standalone GitHub repo so the services are also browsable as separate repos.
 

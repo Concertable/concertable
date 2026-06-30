@@ -38,6 +38,34 @@ effort). What remains is staged deliberately so the **one-way door is taken last
 
 ---
 
+# Phase 0 — Naming + ownership cleanup (partly done)
+
+**Done.** The umbrella repo was renamed `Concertable/Concertable` → **`Concertable/concertable`**
+(lowercase, to match the `concertable-*` mirror convention). The org stays `Concertable`; the
+package feed `https://nuget.pkg.github.com/Concertable` keys off the **org**, so it is unaffected.
+Local `origin` remote updated to the lowercase URL; GitHub redirects all old URLs.
+
+**Remaining cleanup (do on a branch — these are build config, not docs):**
+- 8 `Directory.Build.props` (`api/Shared`, `api/Concertable.{Messaging,ServiceDefaults,DataAccess,
+  Auth.Contracts,B2B,Customer,Payment}`) carry `<RepositoryUrl>`/`<PackageProjectUrl>` =
+  `https://github.com/Concertable/Concertable` → lowercase to `…/concertable`. Ships in package
+  metadata; redirects keep it resolving until then, so not urgent.
+
+**OPEN DECISION — mirror repo ownership (blocks Phase 4, resolve before wiring mirrors).**
+`mirror.yml` and POLYREPO.md reference mirror targets under **`thomasseery/`** (personal account:
+`thomasseery/concertable-b2b`, `-customer`, `-contracts`) while the umbrella now lives under the
+**`Concertable` org**. Decide which owner the mirrors live under:
+- **(recommended) `Concertable/concertable-*`** — keep everything under the one org; consistent with
+  the umbrella and the package feed.
+- **`thomasseery/concertable-*`** — mirrors on the personal account (only if deliberate).
+
+The mirror repos appear **not to exist yet** (POLYREPO.md "one-time setup" lists creating them as a
+TODO), so `thomasseery/` is likely just stale drift. Once decided, update `mirror.yml`'s matrix +
+POLYREPO.md's table + this plan's Phase 3/4 references to the chosen owner, then create the repos.
+**Until then, do not change `mirror.yml` targets.**
+
+---
+
 # Phase 1 — Frictionless cross-repo restore (decide + wire feed auth)
 
 **Problem.** The carve gates and `publish-packages.yml` restore using the monorepo Actions'
