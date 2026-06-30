@@ -168,18 +168,25 @@ repos were seeded once (2026-06-01) and went stale.
 **Done (committed / executed):**
 - ✅ `mirror.yml` matrix repointed to all six `Concertable/concertable-*` targets; POLYREPO.md table updated.
 - ✅ The six **public** org repos created (empty): `concertable-{b2b,customer,auth,payment,search,shared}`.
+- ✅ **Org matrix landed on `master`** — `Feature/PolyrepoCompletion` merged (PR #70). The live workflow
+  now targets the org repos; confirmed by inspecting recent `mirror.yml` runs (they attempt all six).
+- ✅ **Mirror-checkout gitlink bug fixed** (`Fix/MirrorWorktreeGitlinks`): three `.claude/worktrees/agent-*`
+  dirs were committed as gitlinks with no `.gitmodules`, so every mirror run logged
+  `fatal: No url found for submodule path '.claude/worktrees/...'` and exited 128. Untracked them and
+  gitignored `.claude/worktrees/` so the first real mirror run is clean.
+- ✅ **403 failure confirmed from run logs** — `mirror.yml` fails for *every* matrix entry with
+  `Permission to Concertable/concertable-<svc>.git denied to github-actions[bot]` (403). This is the
+  fallback `GITHUB_TOKEN` (no cross-repo push); it proves the next item is the sole remaining blocker.
 
 **Remaining — gated on Tommy (each is a credential/scope/approval an agent can't self-clear):**
 1. **Mint `MIRROR_PAT`.** A PAT that can push to the six org repos — classic with `repo` scope, or
    fine-grained with **Contents: Read and write** on them. Add as repo secret `MIRROR_PAT` on
-   `Concertable/concertable` (Settings → Secrets and variables → Actions).
-2. **Land the org matrix + seed.** Merge `Feature/PolyrepoCompletion` to `master` (brings the org
-   matrix live) with `MIRROR_PAT` already set → the push triggers `mirror.yml` and seeds all six
-   (or Actions → "Mirror services…" → Run workflow after merge). *Note: a local seed push from this
-   machine is blocked by the auto-mode safety classifier — use the workflow, not a manual push.*
-3. **Delete the personal mirrors:** `gh auth refresh -h github.com -s delete_repo` then
+   `Concertable/concertable` (Settings → Secrets and variables → Actions). **This is now the only thing
+   standing between the current state and a green mirror** — the matrix is already live on `master`, so
+   once the secret exists just re-run: Actions → "Mirror services…" → Run workflow (or push any commit).
+2. **Delete the personal mirrors:** `gh auth refresh -h github.com -s delete_repo` then
    `gh repo delete ThomasSeery/concertable-b2b --yes` / `…-customer --yes` (the session token lacks
-   `delete_repo`).
+   `delete_repo`). Both are now empty, so this is pure cleanup.
 
 **Verification gate (the real one for this whole plan) — PENDING the above:**
 - Mirror workflow green for every matrix entry.
