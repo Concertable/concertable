@@ -9,9 +9,12 @@ regenerated on every push to `master`. Nothing flows back from a mirror into the
 
 | Source folder              | Mirror repo                      |
 | -------------------------- | -------------------------------- |
-| `api/Concertable.B2B`      | `thomasseery/concertable-b2b`      |
-| `api/Concertable.Customer` | `thomasseery/concertable-customer` |
-| _(future, Rust)_ `api/Concertable.Contract` | `thomasseery/concertable-contracts` |
+| `api/Concertable.B2B`      | `Concertable/concertable-b2b`      |
+| `api/Concertable.Customer` | `Concertable/concertable-customer` |
+| `api/Concertable.Auth`     | `Concertable/concertable-auth`     |
+| `api/Concertable.Payment`  | `Concertable/concertable-payment`  |
+| `api/Concertable.Search`   | `Concertable/concertable-search`   |
+| `api/Shared`               | `Concertable/concertable-shared`   |
 
 ## How it works
 
@@ -45,7 +48,7 @@ Add an entry to the `matrix.include` list in `mirror.yml`:
 
 ```yaml
 - prefix: api/Concertable.Contract
-  repo: thomasseery/concertable-contracts
+  repo: Concertable/concertable-contracts
 ```
 
 …then create the empty target repo and ensure `MIRROR_PAT` can push to it.
