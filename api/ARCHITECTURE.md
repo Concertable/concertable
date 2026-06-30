@@ -104,16 +104,66 @@ Two rules people (and AIs) keep getting wrong:
 
 ## Cross-service contract distribution
 
-In the split-repo future, the dependency types map as:
+**This is executed, not aspirational.** Every backend service builds from its **own published
+package closure**: it consumes the shared platform and cross-service contracts as private NuGet
+`PackageReference`s from the org feed `https://nuget.pkg.github.com/Concertable`, **not** via
+`ProjectReference`s reaching into sibling folders. Carving any service into its own tree (or repo)
+produces a build that restores and compiles. The dependency types map as:
 
 | Project type | Monorepo (today) | Split-repo |
 |---|---|---|
-| `Concertable.X.Contracts` (events, DTOs) | `ProjectReference` | Private NuGet (`PackageReference`) |
-| `Concertable.X.Seed.Contracts` (canonical seed data) | `ProjectReference` | Private NuGet |
+| `Concertable.X.Contracts` (events, DTOs) | **`PackageReference`** (feed) | Private NuGet — unchanged |
+| `Concertable.X.Seed.Contracts` (canonical seed data) | **`PackageReference`** (feed) | Private NuGet — unchanged |
+| Shared platform + seeding infra (`Kernel`, `Messaging.*`, `Seed.Shared`, …) | **`PackageReference`** (feed) | Private NuGet — unchanged |
 | `Concertable.X.Seed.Simulator` (Worker host) | `AddProject<Projects.X>()` in AppHost | Container image, `AddContainer(...)` in AppHost |
-| Shared seeding infra (`Concertable.Seed.Shared` etc.) | `ProjectReference` from `api/Shared/` | Private NuGet |
 
-C# code changes are minimal across the split — only csproj reference types and a single AppHost line per resource. The ownership-based folder layout (`api/Concertable.X/` for service-owned projects, `api/Shared/` for cross-service infra) previews the split.
+Within a service, intra-folder references stay `ProjectReference`. Two layers are **exempt** from the
+package boundary and keep their cross-folder `ProjectReference`s by design: the **AppHosts**
+(dev-composition — they reference sibling deployables to orchestrate the topology) and the
+**full-stack E2E/integration test harnesses** (test-composition — they boot multiple services
+together). A service's *deployable closure* must be package-clean; its AppHost and test harness need
+not be — until the deployment effort turns those refs into `AddContainer` / a containerised E2E topology.
+
+The split-repo step is now nearly a no-op: the csproj reference types are already what they need to
+be, so a `subtree split` of `api/Concertable.X/` restores from the (org-scoped, split-surviving) feed.
+What does *not* survive a split automatically: the root `publish-packages.yml` (GitHub Actions is
+repo-root-only — each separated repo gets its own smaller publish workflow), and cross-repo *restore*
+needs the org packages made internal or a `read:packages` PAT.
+
+### Per-folder build closures — never repo-root config
+
+Each service folder and `api/Shared/` carries its **own** `nuget.config`, `Directory.Packages.props`
+(CPM), and `Directory.Build.props`/`.targets`. There is deliberately **no** repo-root or `api/`-root
+version/build config: a carve takes only the service folder, so any config above it would be left
+behind and break the standalone restore. Don't add a root `Directory.Packages.props` ("the monorepo
+idiom") — it is the trap this separation exists to avoid.
+
+### Hybrid inner loop for the churny core (`UseLocalCore`)
+
+The churny shared core (`Concertable.Kernel`, `Concertable.Messaging.*`) is consumed as packages by
+default — required for the standalone carve + CI, which have no sibling source on disk. But because
+B2B↔Customer co-change with the core constantly, packaging it would force a publish→consume cycle even
+in local dev. So B2B and Customer support a **hybrid inner loop**: pass `-p:UseLocalCore=true` (or set
+`CONCERTABLE_LOCAL_CORE=1`) to swap the core packages for in-repo `ProjectReference`s for fast
+cross-cutting local dev against uncommitted core changes — no publish/restore round-trip. The swap is
+implemented centrally in each folder's `Directory.Build.targets` (`ChurnyCorePackage` = id→path source
+of truth). **Never set `UseLocalCore=true` in committed config** — it breaks the carve.
+
+### How separation is enforced
+
+- **Build-time guardrail (fast-fail, local + CI).** Each service folder's `Directory.Build.targets`
+  fails the build if any deployable-closure project gains a `ProjectReference` escaping the service
+  folder. AppHost/Tests projects and `UseLocalCore=true` builds are exempt (`EnforceServiceBoundary`).
+- **Carve CI gates.** `carve-{auth,payment,search,b2b,customer}` jobs in `.github/workflows/test.yml`
+  `git archive` each service folder, restore from the feed, and build the closure standalone — so an
+  escaping reference (or a missing package on the feed) fails CI as a project-not-found.
+
+**Local prereq:** building any solution that consumes the feed (every backend AppHost does, via Auth)
+needs a `GITHUB_PACKAGES_TOKEN` PAT with `read:packages` in the environment (see root `README.md`). CI
+uses the repo `GITHUB_TOKEN`.
+
+C# code changes are minimal across the split. The ownership-based folder layout (`api/Concertable.X/`
+for service-owned projects, `api/Shared/` for cross-service infra) previews the split.
 
 ## Folder layout
 
