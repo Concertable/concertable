@@ -107,12 +107,29 @@ their own infra; no sibling `WaitFor`. Where a data service needs another's even
 producer's `*.Seed.Simulator` (mirror world: as an `AddContainer` image — but for the monorepo-canonical
 buildable-mirror stage, `AddProject` is still fine since the monorepo composes it).
 
-**Verification gate.**
-- `dotnet build api/Concertable.slnx` green; build-time guardrail green (AppHosts are exempt from the
-  package boundary, so cross-folder refs here are allowed by design).
-- Each new AppHost **boots standalone** (`dotnet run`) to a healthy state with its infra.
-- Carve gates still green (AppHosts aren't in the deployable closure, so this must not regress them).
-- Not a behavior change to covered flows → build + boot smoke is the gate; **skip E2E**.
+**Delivered.** Added `Concertable.{Auth,Payment,Search}.AppHost` (csproj + Program.cs + appsettings +
+launchSettings), composed via the existing `DistributedApplicationBuilderExtensions` helpers, and
+registered them in `Concertable.slnx`. Notes on what the helpers dictated:
+- **Auth is the universal adapter** — every host includes it (`AddPaymentWeb`/`AddSearchWeb` bake in
+  `WaitFor(auth)`, matching `api/CLAUDE.md` "Auth present in every host"). So Payment and Search each
+  boot Auth too; the "no sibling `WaitFor`" rule means no *data-service* sibling, which holds.
+- **Search** is a data service: it boots the **B2B seed simulator** (`AddB2BSeedingSimulator`) to
+  replay catalog events. Its Customer-origin rating events have no simulator yet — logged in
+  `api/Concertable.Search/TECH_DEBT.md`.
+- **Auth glob fix:** `Concertable.Auth.csproj` is a rooted `Sdk.Web` project, so it globbed the new
+  nested AppHost sources (CS8802). Excluded the `Concertable.Auth.AppHost/` subtree from its default
+  Compile/Content/None globs.
+
+**Verification gate — PASSED.**
+- ✅ `dotnet build api/Concertable.slnx` green; build-time guardrail green (AppHosts exempt — name
+  contains `.AppHost`).
+- ✅ Each new AppHost **boots standalone** (`dotnet run`) to healthy, Docker pre-flight green first:
+  Auth `/health`→200 + OIDC discovery live; Payment = Auth + Payment.Web + Payment.Workers all
+  `/health`→200; Search = Auth + Search.Web + Search.Workers all `/health`→200. Infra (SQL + ASB
+  emulator) up and stable each time; no startup exceptions.
+- ✅ Carve gates unaffected: `carve-auth` re-proven locally with the AppHost folder present (service
+  csproj excludes it); `carve-payment`/`carve-search` use explicit project lists that omit AppHosts.
+- Not a behavior change to covered flows → build + boot smoke was the gate; **E2E skipped**.
 
 # Phase 3 — Shared-platform mirror
 
