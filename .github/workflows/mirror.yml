@@ -13,10 +13,23 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # All mirrors live under the Concertable org (resolved in POLYREPO_COMPLETION.md Phase 0).
+          # Service mirrors:
           - prefix: api/Concertable.B2B
-            repo: thomasseery/concertable-b2b
+            repo: Concertable/concertable-b2b
           - prefix: api/Concertable.Customer
-            repo: thomasseery/concertable-customer
+            repo: Concertable/concertable-customer
+          - prefix: api/Concertable.Auth
+            repo: Concertable/concertable-auth
+          - prefix: api/Concertable.Payment
+            repo: Concertable/concertable-payment
+          - prefix: api/Concertable.Search
+            repo: Concertable/concertable-search
+          # Shared-platform mirror. Covers api/Shared (Kernel, Contracts, Shared.*, Seed.*); the other
+          # shared infra libs (Messaging, ServiceDefaults, DataAccess, AppHost.Shared, Auth.Contracts)
+          # are separate top-level folders — finer splits deferred.
+          - prefix: api/Shared
+            repo: Concertable/concertable-shared
 
     steps:
       - uses: actions/checkout@v4
