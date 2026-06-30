@@ -1,6 +1,6 @@
 # Polyrepo mirroring
 
-The monorepo (`thomasseery/Concertable`) is the single source of truth. You only
+The monorepo (`Concertable/concertable`) is the single source of truth. You only
 ever work and commit here. Each backend service is **automatically mirrored** into
 its own standalone GitHub repo so the services are also browsable as separate repos.
 
@@ -9,9 +9,12 @@ regenerated on every push to `master`. Nothing flows back from a mirror into the
 
 | Source folder              | Mirror repo                      |
 | -------------------------- | -------------------------------- |
-| `api/Concertable.B2B`      | `thomasseery/concertable-b2b`      |
-| `api/Concertable.Customer` | `thomasseery/concertable-customer` |
-| _(future, Rust)_ `api/Concertable.Contract` | `thomasseery/concertable-contracts` |
+| `api/Concertable.B2B`      | `Concertable/concertable-b2b`      |
+| `api/Concertable.Customer` | `Concertable/concertable-customer` |
+| `api/Concertable.Auth`     | `Concertable/concertable-auth`     |
+| `api/Concertable.Payment`  | `Concertable/concertable-payment`  |
+| `api/Concertable.Search`   | `Concertable/concertable-search`   |
+| `api/Shared`               | `Concertable/concertable-shared`   |
 
 ## How it works
 
@@ -45,74 +48,23 @@ Add an entry to the `matrix.include` list in `mirror.yml`:
 
 ```yaml
 - prefix: api/Concertable.Contract
-  repo: thomasseery/concertable-contracts
+  repo: Concertable/concertable-contracts
 ```
 
 …then create the empty target repo and ensure `MIRROR_PAT` can push to it.
 
 ---
 
-# Deferred: make the mirrors clone-and-build (nuget.org)
+# Making the mirrors clone-and-build → see `plans/POLYREPO_COMPLETION.md`
 
-The mirrors above are **browsable** but not independently buildable: each service's
-`.csproj`/`.slnx` files reference projects that live outside its folder, so a cloned mirror
-has dangling project references. Making a mirror `dotnet build` / run on its own is a separate,
-larger project — do it on a branch, where a broken build doesn't matter. This section is the
-plan for when you pick it up.
+This file documents the **live, browsable** read-only mirror system above. The larger effort —
+making each mirror **clone-and-`dotnet build` on its own**, then (optionally) cutting over to a
+**true polyrepo** where each service is independently developed — is staged in
+[`POLYREPO_COMPLETION.md`](./POLYREPO_COMPLETION.md).
 
-## The dependency picture
-
-Both `Concertable.B2B` and `Concertable.Customer` reach outside their folders for two tiers:
-
-**Tier 1 — true shared libraries** (no service identity → publish as packages):
-`Concertable.Kernel`, `Concertable.Contracts`, `Concertable.ServiceDefaults`,
-`Concertable.AppHost.Shared`, `Concertable.Messaging.*`, `Concertable.Seed.Shared`, and
-`Concertable.Shared.{Api,Blob,Email,Geocoding,Imaging,Notification,Pdf}` (Application +
-Infrastructure each).
-
-**Tier 2 — sibling services** (`Concertable.Auth`, `Concertable.Payment`, `Concertable.Search`),
-referenced two different ways:
-- their `*.Contracts` projects — real library coupling → publish as packages (each service
-  owns and publishes its own contracts package).
-- their `*.Web` / `*.AppHost.Extensions` — referenced **only** so the AppHost can orchestrate
-  them in local dev. A NuGet package is a library; you cannot launch an executable service from
-  a `.nupkg`. This is the part that does **not** translate — see "The AppHost problem".
-
-## Package hosting decision: nuget.org
-
-Publish the shared + contract packages to the public **nuget.org** feed.
-- Zero friction for anyone cloning a mirror — `dotnet build` just works, no token, no
-  `nuget.config`.
-- Public packages under your name are a genuine portfolio plus.
-- Cost: one nuget.org API key stored as a CI secret. (Rejected alternatives: GitHub Packages
-  requires a PAT to restore even for public repos — 401s for a cloning interviewer; a local
-  `.nupkg` feed committed into each repo is bulletproof but looks odd to a reviewer.)
-
-## The AppHost problem (the real design call)
-
-A standalone mirror cannot reproduce the full multi-service Aspire orchestration, because that
-launches sibling services as executables. The correct microservice story is instead:
-
-- The **full orchestration AppHost stays monorepo-only** (boots every service together).
-- Each mirror ships a **slim per-service AppHost** that boots only that service + its own infra
-  (SQL, Azure Service Bus emulator), with siblings either not run or pointed at config URLs.
-  This is the more honest "this service runs independently against its dependencies' contracts"
-  demonstration anyway.
-
-## Conversion steps (when picked up)
-
-1. Add `Directory.Packages.props` (central package management) + a `nuget.org` API key secret.
-2. Make Tier 1 + every `*.Contracts` project packable (`IsPackable`, `PackageId`, versioning).
-   Honour the existing module-visibility rules — only intentionally public surface ships.
-3. Rewire each service's cross-folder `ProjectReference`s → `PackageReference`s. In the monorepo
-   they stay project references; the **mirror split step** rewrites them to package references
-   (e.g. a transform, or service-local `.slnx` files that the mirror uses).
-4. Add a slim per-service AppHost in each service folder for standalone run.
-5. CI: a pack/publish job pushes shared + contract packages to nuget.org on version bump.
-6. Verify by cloning a mirror into a clean checkout and running `dotnet build` with no monorepo
-   present.
-
-> Reassess whether this is worth it first: interviewers overwhelmingly *browse* a candidate's
-> GitHub rather than clone-and-build it. The read-only mirrors already deliver the
-> separated-repos story. Spend the days on this only if you want the clone-and-build capability
-> and/or the NuGet packaging experience itself.
+Most of the original "deferred clone-and-build" work (central package management, packable
+projects, rewiring cross-folder `ProjectReference`s → feed `PackageReference`s, slim per-service
+AppHosts, carve CI gates) was **already delivered by the Service Build Separation effort** — see
+`api/ARCHITECTURE.md` "Cross-service contract distribution". `POLYREPO_COMPLETION.md` covers only
+what genuinely remains: frictionless cross-repo feed restore, standalone AppHosts for the last
+services, a shared-platform mirror, and the deferred per-service cut to true polyrepo.

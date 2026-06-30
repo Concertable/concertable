@@ -6,6 +6,7 @@
   <Project Path="Concertable.AppHost.Shared/Concertable.AppHost.Shared.csproj" />
   <Project Path="Concertable.ServiceDefaults/Concertable.ServiceDefaults.csproj" />
   <Folder Name="/Auth/">
+    <Project Path="Concertable.Auth/Concertable.Auth.AppHost/Concertable.Auth.AppHost.csproj" />
     <Project Path="Concertable.Auth/Concertable.Auth.csproj" />
     <Project Path="Concertable.Auth.Contracts/Concertable.Auth.Contracts.csproj" />
   </Folder>
@@ -159,6 +160,7 @@
     <Project Path="Concertable.Messaging/Tests/Concertable.Messaging.UnitTests/Concertable.Messaging.UnitTests.csproj" />
   </Folder>
   <Folder Name="/Payment/">
+    <Project Path="Concertable.Payment/Concertable.Payment.AppHost/Concertable.Payment.AppHost.csproj" />
     <Project Path="Concertable.Payment/Concertable.Payment.AppHost.Extensions/Concertable.Payment.AppHost.Extensions.csproj" />
     <Project Path="Concertable.Payment/Concertable.Payment.Api/Concertable.Payment.Api.csproj" />
     <Project Path="Concertable.Payment/Concertable.Payment.Application/Concertable.Payment.Application.csproj" />
@@ -178,6 +180,7 @@
     <Project Path="Concertable.Payment/Tests/E2ETests/Concertable.Payment.E2ETests.Helpers/Concertable.Payment.E2ETests.Helpers.csproj" />
   </Folder>
   <Folder Name="/Search/">
+    <Project Path="Concertable.Search/Concertable.Search.AppHost/Concertable.Search.AppHost.csproj" />
     <Project Path="Concertable.Search/Concertable.Search.AppHost.Extensions/Concertable.Search.AppHost.Extensions.csproj" />
     <Project Path="Concertable.Search/Concertable.Search.Api/Concertable.Search.Api.csproj" />
     <Project Path="Concertable.Search/Concertable.Search.Application/Concertable.Search.Application.csproj" />
