@@ -1,9 +1,9 @@
 ---
-name: review
-description: Full code review of a branch diff against Concertable's conventions, module-boundary rules, and microservice-isolation rules. Reviews the diff for correctness bugs plus convention/boundary/microservice anti-patterns (B2B and Customer are separate services that must only communicate via *.Contracts integration events — never each other's runtime), filters to high-confidence findings, writes them to a per-branch review markdown, and stamps the reviewed-up-to commit SHA at the top. Use when the user wants to "review this branch", "code review my changes", "review the PR", or "do a full review". For re-reviewing only commits added since a previous review, use the `incremental-review` skill (a thin wrapper around this one).
+name: code-review
+description: Full code review of a branch diff against Concertable's conventions, module-boundary rules, and microservice-isolation rules. Reviews the diff for correctness bugs plus convention/boundary/microservice anti-patterns (B2B and Customer are separate services that must only communicate via *.Contracts integration events — never each other's runtime), filters to high-confidence findings, writes them to a per-branch review markdown, and stamps the reviewed-up-to commit SHA at the top. Use when the user wants to "code-review my changes", "review this branch", "review the PR", or "do a full review". For re-reviewing only commits added since a previous review, use the `incremental-review` skill (a thin wrapper around this one). This is Concertable's own architecture-aware review and intentionally replaces the stock built-in code-review; the plain built-in `/review` (GitHub PR review) is left untouched.
 ---
 
-# review
+# code-review
 
 Full code review of the current branch's diff, judged against Concertable's actual documented rules — not generic best practice. The output is a per-branch review markdown with a `Reviewed up to commit:` SHA marker at the top, so a later `incremental-review` run knows exactly where this review stopped.
 
@@ -17,7 +17,8 @@ Full code review of the current branch's diff, judged against Concertable's actu
 ## When NOT to use
 
 - Re-reviewing only what changed since the last review → `incremental-review` (it reads the SHA marker and scopes to `SHA..HEAD`).
-- Multi-agent cloud review → `/code-review ultra`.
+- A massive branch (100s/1000s of files) → `big-review` (stages this skill by area).
+- An exhaustive multi-agent pass → run a `Workflow` (ultracode).
 
 ## Step 1 — Determine the review range
 
