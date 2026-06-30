@@ -48,7 +48,6 @@ This skill is **Concertable-specific**. It encodes how this repo actually merges
    gh pr merge <n> --merge --admin
    ```
    - **No `--delete-branch`** (the queue rejects it).
-   - If the harness's auto-mode classifier blocks the agent from running `--admin` on its own PR, don't fight it — hand the user the exact line to run themselves with the `!` prefix: `! gh pr merge <n> --merge --admin`, then continue once it's merged.
    - **Verify** it landed: `gh pr view <n> --json state,mergeCommit --jq '{state,mergeCommit:.mergeCommit.oid}'` should show `MERGED`.
 
 5. **Return to a clean, up-to-date master.**
