@@ -45,24 +45,18 @@ effort). What remains is staged deliberately so the **one-way door is taken last
 package feed `https://nuget.pkg.github.com/Concertable` keys off the **org**, so it is unaffected.
 Local `origin` remote updated to the lowercase URL; GitHub redirects all old URLs.
 
-**Remaining cleanup (do on a branch — these are build config, not docs):**
-- 8 `Directory.Build.props` (`api/Shared`, `api/Concertable.{Messaging,ServiceDefaults,DataAccess,
-  Auth.Contracts,B2B,Customer,Payment}`) carry `<RepositoryUrl>`/`<PackageProjectUrl>` =
-  `https://github.com/Concertable/Concertable` → lowercase to `…/concertable`. Ships in package
-  metadata; redirects keep it resolving until then, so not urgent.
+**Remaining cleanup — DONE.** The 8 `Directory.Build.props` (`api/Shared`,
+`api/Concertable.{Messaging,ServiceDefaults,DataAccess,Auth.Contracts,B2B,Customer,Payment}`)
+`<RepositoryUrl>`/`<PackageProjectUrl>` are now `https://github.com/Concertable/concertable`
+(lowercased).
 
-**OPEN DECISION — mirror repo ownership (blocks Phase 4, resolve before wiring mirrors).**
-`mirror.yml` and POLYREPO.md reference mirror targets under **`thomasseery/`** (personal account:
-`thomasseery/concertable-b2b`, `-customer`, `-contracts`) while the umbrella now lives under the
-**`Concertable` org**. Decide which owner the mirrors live under:
-- **(recommended) `Concertable/concertable-*`** — keep everything under the one org; consistent with
-  the umbrella and the package feed.
-- **`thomasseery/concertable-*`** — mirrors on the personal account (only if deliberate).
-
-The mirror repos appear **not to exist yet** (POLYREPO.md "one-time setup" lists creating them as a
-TODO), so `thomasseery/` is likely just stale drift. Once decided, update `mirror.yml`'s matrix +
-POLYREPO.md's table + this plan's Phase 3/4 references to the chosen owner, then create the repos.
-**Until then, do not change `mirror.yml` targets.**
+**RESOLVED — mirror repo ownership = `Concertable/concertable-*` (the org).** Keep everything under
+the one org, consistent with the umbrella and the package feed. Correction to the prior note: the
+`thomasseery/` mirrors were **not** stale drift — `ThomasSeery/concertable-b2b` and
+`ThomasSeery/concertable-customer` actually exist (public, auto-synced, created 2026-06-01). Phase 4
+therefore must **create the org repos and retire the personal ones**, not just create-from-scratch.
+`mirror.yml`'s matrix + POLYREPO.md's table get repointed to `Concertable/concertable-*` in Phase 4
+(not before — repointing the live workflow without the target repos existing would just fail the run).
 
 ---
 
@@ -73,26 +67,32 @@ POLYREPO.md's table + this plan's Phase 3/4 references to the chosen owner, then
 mirror 401s (NU1301) against the private org feed. "Buildable mirror" means a stranger's clone
 restores.
 
-**Decision (pick one, record it here when chosen):**
-- **(A — recommended) Make the org feed's `Concertable.*` packages public.** GitHub Packages can be
-  set public per-package (or org default). A clone then restores with **no token** — true
-  "clone-and-build just works". Public packages under your name are also a portfolio plus.
-- **(B) Republish to nuget.org.** Maximally frictionless + public, but a second publish target to
-  maintain. Only if you want the nuget.org presence specifically.
-- **(C) Keep private; ship a `nuget.config` + documented `read:packages` PAT in each mirror.**
-  Bulletproof but a cloner needs a token — reads worse to a reviewer. Fallback only.
+**RESOLVED — option C (keep the packages private; restore with a `read:packages` PAT).** nuget.org
+(B) cannot host private packages, and this repo may go private, so public (A) is off the table —
+publishing then can't be clawed back. C is the standard private-feed pattern (GitHub Packages /
+Azure Artifacts + token in CI). "Buildable mirror" therefore means **clone + authenticate (PAT) +
+build**, not "a stranger builds with nothing" — the correct trade for a possibly-private project.
+The rejected options, for the record:
+- ~~(A) Make the org feed's `Concertable.*` packages public.~~ Incompatible with going private.
+- ~~(B) Republish to nuget.org.~~ nuget.org is public-only; same problem as A, plus a second target.
 
-**Changes.** Apply the chosen option's feed config. Whichever is chosen, ensure each service folder's
-existing `nuget.config` references the resulting public/auth’d feed so the *mirror* (which is just
-that folder) carries working restore config with it.
+**Changes.** Mostly **already in place**: each service folder's `nuget.config` already maps
+`Concertable.*` to the private feed `https://nuget.pkg.github.com/Concertable/index.json` with
+`%GITHUB_PACKAGES_TOKEN%` creds, so the mirror carries working restore config with it. Remaining
+work is to **document the PAT** a cloner needs (`read:packages`, exported as `GITHUB_PACKAGES_TOKEN`)
+so the mirror is honestly buildable — a `nuget.config` comment and/or per-mirror README note.
 
-**Verification gate.**
-- `dotnet build api/Concertable.slnx` green.
-- Carve gates still green in CI.
-- **Cross-repo proof:** in a clean directory with **no monorepo present** and (for A/B) **no token**,
-  `git archive HEAD:api/Concertable.B2B | tar -x` into it, `dotnet restore` + `dotnet build` the
-  deployable closure → succeeds. (This is the carve gate minus the monorepo's token — script it
-  locally; it becomes the real test once mirrors exist in Phase 4.)
+**Verification gate — PASSED.**
+- ✅ `dotnet build api/Concertable.slnx` green.
+- Carve gates run in CI (unchanged here — this phase only touched feed *docs* + `nuget.config` comments).
+- ✅ **Cross-repo proof:** carved `api/Concertable.B2B` into a clean dir with **no monorepo present**,
+  built its 42-project deployable closure with only `GITHUB_PACKAGES_TOKEN` set to a `read:packages`
+  PAT → 0 errors. The honest "clone + authenticate + build" is proven; the full clone proof over real
+  mirror repos lands in Phase 4.
+
+**Delivered:** PAT-scope note added to all 14 `nuget.config`; per-service mirror READMEs
+(`api/Concertable.{B2B,Customer,Auth,Payment,Search}/README.md`) documenting read-only-mirror status
++ the exact standalone build command + the `read:packages` PAT.
 
 # Phase 2 — Standalone bootable AppHost for Auth, Payment, Search
 
@@ -120,7 +120,7 @@ buildable-mirror stage, `AddProject` is still fine since the monorepo composes i
 `Contracts`, `ServiceDefaults`, `AppHost.Shared`, `Messaging.*`, `Seed.Shared`, `Shared.*`) has no
 repo of its own — so the separated world has no browsable/owning home for the platform.
 
-**Changes.** Add a `thomasseery/concertable-shared` (or split finer later) entry to `mirror.yml`'s
+**Changes.** Add a `Concertable/concertable-shared` (or split finer later) entry to `mirror.yml`'s
 matrix for `api/Shared/` (and `api/Concertable.AppHost.Shared` if kept separate). The monorepo's
 `publish-packages.yml` still publishes these — the shared mirror is *browsable/buildable* output only
 at this stage; its own publish workflow is true-polyrepo work (deferred section).
@@ -135,9 +135,11 @@ at this stage; its own publish workflow is true-polyrepo work (deferred section)
 build.
 
 **Changes.**
-1. Extend `mirror.yml` matrix to **all** mirrored targets: `concertable-auth`, `-payment`, `-search`
-   (joining `-b2b`, `-customer`) + `-shared` from Phase 3.
-2. Create the empty GitHub repos (no README/license), default branch `master`.
+1. Repoint + extend `mirror.yml` matrix to **all** org targets:
+   `Concertable/concertable-{b2b,customer,auth,payment,search}` (b2b/customer move off `thomasseery/`)
+   + `concertable-shared` from Phase 3.
+2. Create the empty org repos (no README/license), default branch `master`. **Retire the personal
+   `ThomasSeery/concertable-{b2b,customer}`** (archive or delete) so there's one canonical mirror set.
 3. Ensure `MIRROR_PAT` (or fine-grained equivalent) can push to all of them; confirm the
    `MIRROR_PAT` secret is set on the monorepo.
 4. Trigger the mirror run (push to `master` or `workflow_dispatch`).
@@ -145,8 +147,9 @@ build.
 **Verification gate (the real one for this whole plan):**
 - Mirror workflow green for every matrix entry.
 - **Clone proof:** `git clone` each service mirror into a clean checkout with **no monorepo present**,
-  then `dotnet build` (and for one service, `dotnet run` its AppHost) → succeeds, restoring from the
-  feed per Phase 1's chosen auth model.
+  export `GITHUB_PACKAGES_TOKEN` (a `read:packages` PAT — Phase 1 option C), then `dotnet build`
+  (and for one service, `dotnet run` its AppHost) → succeeds, restoring `Concertable.*` from the
+  private feed.
 - This is a broadly cross-cutting milestone → **run the UI E2E suite** (`e2e-ui-debug`, Docker
   pre-flight first) once against the monorepo to confirm nothing in the AppHost/feed reshuffling
   regressed runtime, since Phase 2 added new hosts.
