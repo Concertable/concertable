@@ -471,13 +471,31 @@ current lockstep `0.1.0-alpha.0.536`. Customer's own `Customer.Review.Contracts`
 
 ## Phase 7 — Lock it in
 
-- Add a guardrail (build target / test) that **fails the build if any service deployable project
-  gains a `ProjectReference` escaping its service folder** — so separation can't silently regress.
-- **Wire every carve gate** (`carve-auth`, `carve-payment`, and the carve jobs added in Phases 4–6) into
-  ruleset `17393335` as **required checks**, so an escaping `ProjectReference` actually blocks merge instead
-  of just failing a non-required job. Repo-admin step; run it after each job is on `master`.
-- Update `api/ARCHITECTURE.md`: the split mapping is now executed; document the hybrid inner-loop
-  convention. Delete this plan in the same commit that lands the final phase (per `plans/CLAUDE.md`).
+- **✅ Build-time guardrail (DONE).** Each service folder's `Directory.Build.targets` carries a
+  `_ValidateServiceBoundary` target (gated by `EnforceServiceBoundary` from `Directory.Build.props`)
+  that **fails the build at `BeforeBuild` if any deployable-closure project gains a `ProjectReference`
+  escaping its service folder** — fast-fail at the desk, not just at the carve CI gate. Exempt:
+  AppHost (`.AppHost` in the name) + Tests (path under `/Tests/`) projects, and `UseLocalCore=true`
+  builds (whose in-repo core refs escape on purpose). Auth/Payment/Search gained a **new**
+  `Directory.Build.targets`; B2B/Customer appended to their existing one. The check uses
+  `[MSBuild]::MakeRelative(serviceRoot, %(FullPath)).StartsWith('..')` — guarded against empty
+  `@(ProjectReference)`/`%(FullPath)` (the empty-batch `MakeRelative('')` trap). **Proven:** full
+  `dotnet build api/Concertable.slnx` green (0 errors); a forced violation fires the exact `Error`
+  listing every escaping ref; `EnforceServiceBoundary` resolves correctly per project type (Web=`true`;
+  AppHost/Tests/`+UseLocalCore`=`false`).
+- **✅ `api/ARCHITECTURE.md` updated (DONE).** The split mapping is documented as **executed**
+  (cross-folder = `PackageReference` today, not "later"); added the per-folder-closure rule, the hybrid
+  `UseLocalCore` inner-loop convention, the carve-gate + build-guardrail enforcement, and the local-PAT
+  prereq.
+- **⏳ Ruleset wiring — OUTSTANDING (user repo-admin step; the agent's PATCH is auto-blocked).**
+  `carve-auth` is **already** a required check in ruleset `17393335`; the four added in Phases 3–6
+  (`carve-payment`, `carve-search`, `carve-b2b`, `carve-customer`) are **not yet required**, so today an
+  escaping ref fails those jobs without blocking merge. Wire them in by running, as a repo admin (the
+  payload — `required_status_checks` = `e2e-api-tests`, `e2e-ui-tests`, and all five `carve-*` jobs — was
+  prepared during this phase):
+  `gh api -X PATCH repos/Concertable/Concertable/rulesets/17393335 --input rules.json`
+- **Delete this plan** in the commit that lands the ruleset wiring (the last outstanding step), per
+  `plans/CLAUDE.md`. Everything else in Phase 7 has shipped.
 
 ---
 
