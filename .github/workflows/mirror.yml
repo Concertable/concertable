@@ -17,6 +17,12 @@ jobs:
             repo: thomasseery/concertable-b2b
           - prefix: api/Concertable.Customer
             repo: thomasseery/concertable-customer
+          # Shared-platform mirror (Phase 3). Covers api/Shared (Kernel, Contracts, Shared.*, Seed.*);
+          # the other shared infra libs (Messaging, ServiceDefaults, DataAccess, AppHost.Shared,
+          # Auth.Contracts) are separate top-level folders — finer splits deferred. Target repo is
+          # created in Phase 4; until then this entry only runs on merge to master.
+          - prefix: api/Shared
+            repo: Concertable/concertable-shared
 
     steps:
       - uses: actions/checkout@v4

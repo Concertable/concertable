@@ -142,9 +142,15 @@ matrix for `api/Shared/` (and `api/Concertable.AppHost.Shared` if kept separate)
 `publish-packages.yml` still publishes these — the shared mirror is *browsable/buildable* output only
 at this stage; its own publish workflow is true-polyrepo work (deferred section).
 
-**Verification gate.**
-- `mirror.yml` YAML valid (Actions lint / `workflow_dispatch` dry intent).
-- No build impact (workflow-only change) — `dotnet build` unaffected.
+**Delivered.** Added an `api/Shared → Concertable/concertable-shared` entry to `mirror.yml`'s matrix.
+Scoped to `api/Shared` (Kernel, Contracts, Shared.*, Seed.*) only; the other shared infra libs
+(`Messaging`, `ServiceDefaults`, `DataAccess`, `AppHost.Shared`, `Auth.Contracts`) are separate
+top-level folders and a per-prefix `subtree split` can't bundle them — **finer splits deferred**.
+The entry's target repo is created in Phase 4; until then it only runs on merge to `master`.
+
+**Verification gate — PASSED.**
+- ✅ `mirror.yml` YAML valid (parsed; 3 matrix entries resolve).
+- ✅ No build impact (workflow-only change).
 
 # Phase 4 — Create repos, wire secrets, first full mirror run + clone proof
 
