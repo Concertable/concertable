@@ -19,20 +19,20 @@ If invoked with no arguments, run Step 0 then the full suite (Step 1), then Step
 
 **Wrapper script** -- `integration.ps1` at the repo root. Commands: `run | b2b | customer | search | <module> | list`. Each project writes its own `integration-tests.last.log`.
 
-**B2B integration tests** -- `api/Concertable.B2B/Modules/<Module>/Tests/Concertable.B2B.<Module>.IntegrationTests/`
+**B2B integration tests** -- `api/Concertable.B2B/src/Modules/<Module>/Tests/Concertable.B2B.<Module>.IntegrationTests/`
 - Modules: `Artist`, `Concert`, `Organization`, `User`, `Venue`
-- Shared fixture: `api/Concertable.B2B/Tests/Concertable.B2B.IntegrationTests.Fixtures/ApiFixture.cs`
+- Shared fixture: `api/Concertable.B2B/tests/Concertable.B2B.IntegrationTests.Fixtures/ApiFixture.cs`
 - Mocks (Stripe, notification, email, geocoding, image, bus transport) live under that Fixtures project's `Mocks/` folder
 - Last run log per project: `<project>/integration-tests.last.log`
 
-**Customer integration tests** -- `api/Concertable.Customer/Modules/<Module>/Tests/Concertable.Customer.<Module>.IntegrationTests/`
+**Customer integration tests** -- `api/Concertable.Customer/src/Modules/<Module>/Tests/Concertable.Customer.<Module>.IntegrationTests/`
 - Modules: `Concert`, `Review`, `Ticket`, `User`
-- Shared fixture: `api/Concertable.Customer/Tests/Concertable.Customer.IntegrationTests.Fixtures/`
+- Shared fixture: `api/Concertable.Customer/tests/Concertable.Customer.IntegrationTests.Fixtures/`
 
-**Search integration tests** -- `api/Concertable.Search/Tests/Concertable.Search.IntegrationTests/`
-- Shared fixture: `api/Concertable.Search/Tests/Concertable.Search.IntegrationTests.Fixtures/`
+**Search integration tests** -- `api/Concertable.Search/tests/Concertable.Search.IntegrationTests/`
+- Shared fixture: `api/Concertable.Search/tests/Concertable.Search.IntegrationTests.Fixtures/`
 
-**Shared test infra** (used by every service's fixture) -- `api/Shared/Tests/Concertable.Testing.Integration/`
+**Shared test infra** (used by every service's fixture) -- `api/Concertable.Shared/tests/Concertable.Testing.Integration/`
 - `SqlFixture` -- Testcontainers MsSql + Respawn
 - `TestAuthHandler` -- header-driven auth
 - `MockBusTransport`, `MockEmailSender`, `MockGeocodingService`, `MockImageService`
@@ -102,7 +102,7 @@ Show totals: **X passed, Y failed across N projects**. Then note which test case
 Once you know which fully-qualified test names failed (the `Failed!` lines in the per-project log include the FQN), re-run each one alone via `--filter` so the assertion message and any captured mock state aren't buried under thousands of other tests:
 
 ```powershell
-dotnet test 'api/Concertable.B2B/Modules/Concert/Tests/Concertable.B2B.Concert.IntegrationTests/Concertable.B2B.Concert.IntegrationTests.csproj' --filter "FullyQualifiedName~ApplicationFlatFeeApiTests.Accept_Returns_400_When_Already_Accepted" --logger "console;verbosity=detailed"
+dotnet test 'api/Concertable.B2B/src/Modules/Concert/Tests/Concertable.B2B.Concert.IntegrationTests/Concertable.B2B.Concert.IntegrationTests.csproj' --filter "FullyQualifiedName~ApplicationFlatFeeApiTests.Accept_Returns_400_When_Already_Accepted" --logger "console;verbosity=detailed"
 ```
 
 `FullyQualifiedName~` does substring match, which is the friendliest for nested classes / theory rows. Use `=` for exact match. For an entire test class, drop the method name: `FullyQualifiedName~ApplicationFlatFeeApiTests`.
@@ -192,7 +192,7 @@ After identifying the cause:
 
 ## Conventions that affect how failures read
 
-- **All HTTP status checks go through `response.ShouldBe(HttpStatusCode.X)`** -- defined in `api/Shared/Tests/Concertable.Testing/HttpResponseAssertions.cs`. Throws `XunitException` with `URL + status + body` in the message. The codebase has no `EnsureSuccessStatusCode` / `Assert.Equal(HttpStatusCode.*)` / `Assert.True(IsSuccessStatusCode)` in tests -- if you see any during debugging, treat it as a regression and switch to `ShouldBe`.
+- **All HTTP status checks go through `response.ShouldBe(HttpStatusCode.X)`** -- defined in `api/Concertable.Shared/tests/Concertable.Testing/HttpResponseAssertions.cs`. Throws `XunitException` with `URL + status + body` in the message. The codebase has no `EnsureSuccessStatusCode` / `Assert.Equal(HttpStatusCode.*)` / `Assert.True(IsSuccessStatusCode)` in tests -- if you see any during debugging, treat it as a regression and switch to `ShouldBe`.
 - **All HTTP calls return `HttpResponseMessage`** (no typed `GetAsync<T>` helper). The canonical pattern for "fetch a JSON resource" is three lines:
   ```csharp
   var response = await client.GetAsync(url);

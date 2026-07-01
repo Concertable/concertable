@@ -78,7 +78,7 @@ jobs:
 
       - name: Restore + build the carved Auth from the feed (packages only)
         working-directory: ${{ runner.temp }}/carve
-        run: dotnet build Concertable.Auth.csproj --configuration Release
+        run: dotnet build src/Concertable.Auth/Concertable.Auth.csproj --configuration Release
 
   carve-payment:
     # Gate: Concertable.Payment's deployable closure must build standalone from its own package
@@ -127,15 +127,15 @@ jobs:
         run: |
           dotnet new sln --name CarvePayment --format slnx
           dotnet sln CarvePayment.slnx add \
-            Concertable.Payment.Web/Concertable.Payment.Web.csproj \
-            Concertable.Payment.Workers/Concertable.Payment.Workers.csproj \
-            Concertable.Payment.Client/Concertable.Payment.Client.csproj \
-            Concertable.Payment.Api/Concertable.Payment.Api.csproj \
-            Concertable.Payment.Application/Concertable.Payment.Application.csproj \
-            Concertable.Payment.Infrastructure/Concertable.Payment.Infrastructure.csproj \
-            Concertable.Payment.Domain/Concertable.Payment.Domain.csproj \
-            Concertable.Payment.Contracts/Concertable.Payment.Contracts.csproj \
-            Seed/Concertable.Payment.Seed/Concertable.Payment.Seed.csproj
+            src/Concertable.Payment.Web/Concertable.Payment.Web.csproj \
+            src/Concertable.Payment.Workers/Concertable.Payment.Workers.csproj \
+            src/Concertable.Payment.Client/Concertable.Payment.Client.csproj \
+            src/Concertable.Payment.Api/Concertable.Payment.Api.csproj \
+            src/Concertable.Payment.Application/Concertable.Payment.Application.csproj \
+            src/Concertable.Payment.Infrastructure/Concertable.Payment.Infrastructure.csproj \
+            src/Concertable.Payment.Domain/Concertable.Payment.Domain.csproj \
+            src/Concertable.Payment.Contracts/Concertable.Payment.Contracts.csproj \
+            src/Seed/Concertable.Payment.Seed/Concertable.Payment.Seed.csproj
           dotnet build CarvePayment.slnx --configuration Release -p:MinVerSkip=true
 
   carve-search:
@@ -185,13 +185,13 @@ jobs:
         run: |
           dotnet new sln --name CarveSearch --format slnx
           dotnet sln CarveSearch.slnx add \
-            Concertable.Search.Web/Concertable.Search.Web.csproj \
-            Concertable.Search.Workers/Concertable.Search.Workers.csproj \
-            Concertable.Search.Api/Concertable.Search.Api.csproj \
-            Concertable.Search.Application/Concertable.Search.Application.csproj \
-            Concertable.Search.Infrastructure/Concertable.Search.Infrastructure.csproj \
-            Concertable.Search.Domain/Concertable.Search.Domain.csproj \
-            Seed/Concertable.Search.Seed.Infrastructure/Concertable.Search.Seed.Infrastructure.csproj
+            src/Concertable.Search.Web/Concertable.Search.Web.csproj \
+            src/Concertable.Search.Workers/Concertable.Search.Workers.csproj \
+            src/Concertable.Search.Api/Concertable.Search.Api.csproj \
+            src/Concertable.Search.Application/Concertable.Search.Application.csproj \
+            src/Concertable.Search.Infrastructure/Concertable.Search.Infrastructure.csproj \
+            src/Concertable.Search.Domain/Concertable.Search.Domain.csproj \
+            src/Seed/Concertable.Search.Seed.Infrastructure/Concertable.Search.Seed.Infrastructure.csproj
           dotnet build CarveSearch.slnx --configuration Release
 
   carve-b2b:
@@ -245,6 +245,7 @@ jobs:
           # can't drift on comment wording and auto-includes new or transitively-only-reached projects.
           mapfile -t PROJS < <(find . -name '*.csproj' \
             -not -path '*/Tests/*' \
+            -not -path '*/tests/*' \
             -not -path '*/obj/*' \
             -not -name 'Concertable.B2B.AppHost.csproj' \
             -not -name 'Concertable.B2B.AppHost.Extensions.csproj')
@@ -304,6 +305,7 @@ jobs:
           # can't drift on comment wording and auto-includes new or transitively-only-reached projects.
           mapfile -t PROJS < <(find . -name '*.csproj' \
             -not -path '*/Tests/*' \
+            -not -path '*/tests/*' \
             -not -path '*/obj/*' \
             -not -name 'Concertable.Customer.AppHost.csproj' \
             -not -name 'Concertable.Customer.AppHost.Extensions.csproj')
@@ -326,19 +328,19 @@ jobs:
     strategy:
       matrix:
         project:
-          - api/Concertable.B2B/Modules/Concert/Tests/Concertable.B2B.Concert.UnitTests/Concertable.B2B.Concert.UnitTests.csproj
-          - api/Concertable.B2B/Modules/Contract/Tests/Concertable.B2B.Contract.UnitTests/Concertable.B2B.Contract.UnitTests.csproj
-          - api/Concertable.B2B/Modules/Tenant/Tests/Concertable.B2B.Tenant.UnitTests/Concertable.B2B.Tenant.UnitTests.csproj
-          - api/Concertable.B2B/Tests/Concertable.B2B.Workers.UnitTests/Concertable.B2B.Workers.UnitTests.csproj
-          - api/Concertable.Customer/Modules/Concert/Tests/Concertable.Customer.Concert.UnitTests/Concertable.Customer.Concert.UnitTests.csproj
-          - api/Concertable.Customer/Modules/Review/Tests/Concertable.Customer.Review.UnitTests/Concertable.Customer.Review.UnitTests.csproj
-          - api/Concertable.Customer/Modules/Ticket/Tests/Concertable.Customer.Ticket.UnitTests/Concertable.Customer.Ticket.UnitTests.csproj
-          - api/Concertable.Customer/Modules/User/Tests/Concertable.Customer.User.UnitTests/Concertable.Customer.User.UnitTests.csproj
+          - api/Concertable.B2B/src/Modules/Concert/Tests/Concertable.B2B.Concert.UnitTests/Concertable.B2B.Concert.UnitTests.csproj
+          - api/Concertable.B2B/src/Modules/Contract/Tests/Concertable.B2B.Contract.UnitTests/Concertable.B2B.Contract.UnitTests.csproj
+          - api/Concertable.B2B/src/Modules/Tenant/Tests/Concertable.B2B.Tenant.UnitTests/Concertable.B2B.Tenant.UnitTests.csproj
+          - api/Concertable.B2B/tests/Concertable.B2B.Workers.UnitTests/Concertable.B2B.Workers.UnitTests.csproj
+          - api/Concertable.Customer/src/Modules/Concert/Tests/Concertable.Customer.Concert.UnitTests/Concertable.Customer.Concert.UnitTests.csproj
+          - api/Concertable.Customer/src/Modules/Review/Tests/Concertable.Customer.Review.UnitTests/Concertable.Customer.Review.UnitTests.csproj
+          - api/Concertable.Customer/src/Modules/Ticket/Tests/Concertable.Customer.Ticket.UnitTests/Concertable.Customer.Ticket.UnitTests.csproj
+          - api/Concertable.Customer/src/Modules/User/Tests/Concertable.Customer.User.UnitTests/Concertable.Customer.User.UnitTests.csproj
           - api/Concertable.Messaging/Tests/Concertable.Messaging.UnitTests/Concertable.Messaging.UnitTests.csproj
           - api/Concertable.Messaging/Tests/Concertable.Messaging.AzureServiceBus.UnitTests/Concertable.Messaging.AzureServiceBus.UnitTests.csproj
-          - api/Concertable.Payment/Tests/Concertable.Payment.UnitTests/Concertable.Payment.UnitTests.csproj
-          - api/Concertable.Search/Tests/Concertable.Search.UnitTests/Concertable.Search.UnitTests.csproj
-          - api/Shared/Tests/Concertable.Kernel.UnitTests/Concertable.Kernel.UnitTests.csproj
+          - api/Concertable.Payment/tests/Concertable.Payment.UnitTests/Concertable.Payment.UnitTests.csproj
+          - api/Concertable.Search/tests/Concertable.Search.UnitTests/Concertable.Search.UnitTests.csproj
+          - api/Concertable.Shared/tests/Concertable.Kernel.UnitTests/Concertable.Kernel.UnitTests.csproj
 
     steps:
       - uses: actions/checkout@v4
@@ -372,16 +374,16 @@ jobs:
     strategy:
       matrix:
         project:
-          - api/Concertable.B2B/Modules/Artist/Tests/Concertable.B2B.Artist.IntegrationTests/Concertable.B2B.Artist.IntegrationTests.csproj
-          - api/Concertable.B2B/Modules/Concert/Tests/Concertable.B2B.Concert.IntegrationTests/Concertable.B2B.Concert.IntegrationTests.csproj
-          - api/Concertable.B2B/Modules/Tenant/Tests/Concertable.B2B.Tenant.IntegrationTests/Concertable.B2B.Tenant.IntegrationTests.csproj
-          - api/Concertable.B2B/Modules/User/Tests/Concertable.B2B.User.IntegrationTests/Concertable.B2B.User.IntegrationTests.csproj
-          - api/Concertable.B2B/Modules/Venue/Tests/Concertable.B2B.Venue.IntegrationTests/Concertable.B2B.Venue.IntegrationTests.csproj
-          - api/Concertable.Customer/Modules/Concert/Tests/Concertable.Customer.Concert.IntegrationTests/Concertable.Customer.Concert.IntegrationTests.csproj
-          - api/Concertable.Customer/Modules/Review/Tests/Concertable.Customer.Review.IntegrationTests/Concertable.Customer.Review.IntegrationTests.csproj
-          - api/Concertable.Customer/Modules/Ticket/Tests/Concertable.Customer.Ticket.IntegrationTests/Concertable.Customer.Ticket.IntegrationTests.csproj
-          - api/Concertable.Customer/Modules/User/Tests/Concertable.Customer.User.IntegrationTests/Concertable.Customer.User.IntegrationTests.csproj
-          - api/Concertable.Search/Tests/Concertable.Search.IntegrationTests/Concertable.Search.IntegrationTests.csproj
+          - api/Concertable.B2B/src/Modules/Artist/Tests/Concertable.B2B.Artist.IntegrationTests/Concertable.B2B.Artist.IntegrationTests.csproj
+          - api/Concertable.B2B/src/Modules/Concert/Tests/Concertable.B2B.Concert.IntegrationTests/Concertable.B2B.Concert.IntegrationTests.csproj
+          - api/Concertable.B2B/src/Modules/Tenant/Tests/Concertable.B2B.Tenant.IntegrationTests/Concertable.B2B.Tenant.IntegrationTests.csproj
+          - api/Concertable.B2B/src/Modules/User/Tests/Concertable.B2B.User.IntegrationTests/Concertable.B2B.User.IntegrationTests.csproj
+          - api/Concertable.B2B/src/Modules/Venue/Tests/Concertable.B2B.Venue.IntegrationTests/Concertable.B2B.Venue.IntegrationTests.csproj
+          - api/Concertable.Customer/src/Modules/Concert/Tests/Concertable.Customer.Concert.IntegrationTests/Concertable.Customer.Concert.IntegrationTests.csproj
+          - api/Concertable.Customer/src/Modules/Review/Tests/Concertable.Customer.Review.IntegrationTests/Concertable.Customer.Review.IntegrationTests.csproj
+          - api/Concertable.Customer/src/Modules/Ticket/Tests/Concertable.Customer.Ticket.IntegrationTests/Concertable.Customer.Ticket.IntegrationTests.csproj
+          - api/Concertable.Customer/src/Modules/User/Tests/Concertable.Customer.User.IntegrationTests/Concertable.Customer.User.IntegrationTests.csproj
+          - api/Concertable.Search/tests/Concertable.Search.IntegrationTests/Concertable.Search.IntegrationTests.csproj
 
     steps:
       - uses: actions/checkout@v4
@@ -459,10 +461,10 @@ jobs:
           func --version
 
       - name: Run B2B API E2E tests
-        run: dotnet test api/Concertable.B2B/Tests/E2ETests/Concertable.B2B.E2ETests/Concertable.B2B.E2ETests.csproj --configuration Release --settings api/Concertable.runsettings
+        run: dotnet test api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests/Concertable.B2B.E2ETests.csproj --configuration Release --settings api/Concertable.runsettings
 
       - name: Run Customer API E2E tests
-        run: dotnet test api/Concertable.Customer/Tests/E2ETests/Concertable.Customer.E2ETests/Concertable.Customer.E2ETests.csproj --configuration Release --settings api/Concertable.runsettings
+        run: dotnet test api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests/Concertable.Customer.E2ETests.csproj --configuration Release --settings api/Concertable.runsettings
 
       - name: Upload E2E diagnostics
         if: always()
@@ -540,19 +542,19 @@ jobs:
         run: npm ci
 
       - name: Build B2B UI E2E tests
-        run: dotnet build api/Concertable.B2B/Tests/E2ETests/Concertable.B2B.E2ETests.Ui/Concertable.B2B.E2ETests.Ui.csproj --configuration Release
+        run: dotnet build api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui/Concertable.B2B.E2ETests.Ui.csproj --configuration Release
 
       - name: Build Customer UI E2E tests
-        run: dotnet build api/Concertable.Customer/Tests/E2ETests/Concertable.Customer.E2ETests.Ui/Concertable.Customer.E2ETests.Ui.csproj --configuration Release
+        run: dotnet build api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui/Concertable.Customer.E2ETests.Ui.csproj --configuration Release
 
       - name: Install Playwright browsers
-        run: pwsh api/Concertable.B2B/Tests/E2ETests/Concertable.B2B.E2ETests.Ui/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+        run: pwsh api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
 
       - name: Run B2B UI E2E tests
-        run: dotnet test api/Concertable.B2B/Tests/E2ETests/Concertable.B2B.E2ETests.Ui/Concertable.B2B.E2ETests.Ui.csproj --configuration Release --no-build --settings api/Concertable.runsettings
+        run: dotnet test api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui/Concertable.B2B.E2ETests.Ui.csproj --configuration Release --no-build --settings api/Concertable.runsettings
 
       - name: Run Customer UI E2E tests
-        run: dotnet test api/Concertable.Customer/Tests/E2ETests/Concertable.Customer.E2ETests.Ui/Concertable.Customer.E2ETests.Ui.csproj --configuration Release --no-build --settings api/Concertable.runsettings
+        run: dotnet test api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui/Concertable.Customer.E2ETests.Ui.csproj --configuration Release --no-build --settings api/Concertable.runsettings
 
       - name: Upload E2E diagnostics
         # Server logs + Playwright traces/screenshots for diagnosing a UI failure. Failure-only:

@@ -37,19 +37,19 @@ If invoked with no arguments, run Step 0 then the full suite (Step 1) to discove
 
 ## Key paths
 
-**B2B UI tests** — `api/Concertable.B2B/Tests/E2ETests/Concertable.B2B.E2ETests.Ui/`
-- Feature files: `api/Concertable.B2B/Tests/E2ETests/Concertable.B2B.E2ETests.Ui/Features/`
-- Step definitions: `api/Concertable.B2B/Tests/E2ETests/Concertable.B2B.E2ETests.Ui/Steps/`
-- Page objects: `api/Concertable.B2B/Tests/E2ETests/Concertable.B2B.E2ETests.Ui/PageObjects/`
-- Fixtures/hooks: `api/Concertable.B2B/Tests/E2ETests/Concertable.B2B.E2ETests.Ui/Fixtures/` and `.../Hooks/`
-- Last run log: `api/Concertable.B2B/Tests/E2ETests/Concertable.B2B.E2ETests.Ui/ui-tests.last.log`
+**B2B UI tests** — `api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui/`
+- Feature files: `api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui/Features/`
+- Step definitions: `api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui/Steps/`
+- Page objects: `api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui/PageObjects/`
+- Fixtures/hooks: `api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui/Fixtures/` and `.../Hooks/`
+- Last run log: `api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui/ui-tests.last.log`
 
-**Customer UI tests** — `api/Concertable.Customer/Tests/E2ETests/Concertable.Customer.E2ETests.Ui/`
-- Feature files: `api/Concertable.Customer/Tests/E2ETests/Concertable.Customer.E2ETests.Ui/Features/`
-- Step definitions: `api/Concertable.Customer/Tests/E2ETests/Concertable.Customer.E2ETests.Ui/Steps/`
-- Page objects: `api/Concertable.Customer/Tests/E2ETests/Concertable.Customer.E2ETests.Ui/PageObjects/`
-- Hooks: `api/Concertable.Customer/Tests/E2ETests/Concertable.Customer.E2ETests.Ui/Hooks/`
-- Last run log: `api/Concertable.Customer/Tests/E2ETests/Concertable.Customer.E2ETests.Ui/ui-tests.last.log`
+**Customer UI tests** — `api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui/`
+- Feature files: `api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui/Features/`
+- Step definitions: `api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui/Steps/`
+- Page objects: `api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui/PageObjects/`
+- Hooks: `api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui/Hooks/`
+- Last run log: `api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui/ui-tests.last.log`
 
 - Full suite (both): `./e2e.ps1 ui run` (~25–30 min)
 - **Regression check** (baseline-passing only): `./e2e.ps1 ui regress` (~3–6 min)
@@ -60,9 +60,9 @@ If invoked with no arguments, run Step 0 then the full suite (Step 1) to discove
 
 `e2e.ps1` takes a domain (`ui` or `api`) then a command. This skill is the **`ui`** domain. The **`api`** domain runs the sibling xUnit/Aspire API E2E suite (no browser) — see the `e2e-api-debug` skill; to debug both layers in one pass use `e2e-debug`. A bare command with no domain (`./e2e.ps1 ui run`) still works and is treated as `ui` for back-compat.
 
-**Baseline file** (which scenarios are expected to pass vs fail): `api/Shared/Tests/Concertable.E2ETests/E2E_BASELINE.md`.
+**Baseline file** (which scenarios are expected to pass vs fail): `api/Concertable.Shared/tests/Concertable.E2ETests/E2E_BASELINE.md`.
 
-**Scratch run logs** — if you capture `dotnet test` output to a file for later grepping (retries, deep-dives, scenario reruns), write it under `api/Shared/Tests/Concertable.E2ETests/logs/` — **never the repo root**. Create the dir first if needed: `New-Item -ItemType Directory -Force api/Shared/Tests/Concertable.E2ETests/logs | Out-Null`. That folder is git-ignored. The canonical `ui-tests.last.log` / `regress.last.log` files written by `./e2e.ps1` stay in their project dirs (above) — leave those as-is.
+**Scratch run logs** — if you capture `dotnet test` output to a file for later grepping (retries, deep-dives, scenario reruns), write it under `api/Concertable.Shared/tests/Concertable.E2ETests/logs/` — **never the repo root**. Create the dir first if needed: `New-Item -ItemType Directory -Force api/Concertable.Shared/tests/Concertable.E2ETests/logs | Out-Null`. That folder is git-ignored. The canonical `ui-tests.last.log` / `regress.last.log` files written by `./e2e.ps1` stay in their project dirs (above) — leave those as-is.
 
 ## Which command to use
 
@@ -143,16 +143,16 @@ For each failed scenario, run it alone using `--filter` so the verbose logs from
 ```powershell
 # B2B scenario — run via PowerShell tool (not Bash; backtick continuation is PowerShell-only)
 # $env:HEADLESS='true' keeps the direct dotnet test run headless (the fixture is headed by default).
-$env:HEADLESS='true'; dotnet test 'api/Concertable.B2B/Tests/E2ETests/Concertable.B2B.E2ETests.Ui/Concertable.B2B.E2ETests.Ui.csproj' --filter "DisplayName~<scenario name substring>" --logger "console;verbosity=normal"
+$env:HEADLESS='true'; dotnet test 'api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui/Concertable.B2B.E2ETests.Ui.csproj' --filter "DisplayName~<scenario name substring>" --logger "console;verbosity=normal"
 
 # Customer scenario
-$env:HEADLESS='true'; dotnet test 'api/Concertable.Customer/Tests/E2ETests/Concertable.Customer.E2ETests.Ui/Concertable.Customer.E2ETests.Ui.csproj' --filter "DisplayName~<scenario name substring>" --logger "console;verbosity=normal"
+$env:HEADLESS='true'; dotnet test 'api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui/Concertable.Customer.E2ETests.Ui.csproj' --filter "DisplayName~<scenario name substring>" --logger "console;verbosity=normal"
 ```
 
 If you want to keep the output to grep later, tee it into the scratch logs dir (NOT the repo root):
 
 ```powershell
-$logs = 'api/Shared/Tests/Concertable.E2ETests/logs'; New-Item -ItemType Directory -Force $logs | Out-Null
+$logs = 'api/Concertable.Shared/tests/Concertable.E2ETests/logs'; New-Item -ItemType Directory -Force $logs | Out-Null
 $env:HEADLESS='true'; dotnet test '<csproj>' --filter "DisplayName~<scenario>" --logger "console;verbosity=normal" | Tee-Object -FilePath "$logs/<scenario-slug>.log"
 ```
 
@@ -169,13 +169,13 @@ Read `Standard Output Messages` in the test output for this enriched detail — 
 
 ```powershell
 # B2B log
-Select-String -Path "api/Concertable.B2B/Tests/E2ETests/Concertable.B2B.E2ETests.Ui/ui-tests.last.log" -Pattern "HTTP [45][0-9][0-9]" | Select-Object -First 50
+Select-String -Path "api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui/ui-tests.last.log" -Pattern "HTTP [45][0-9][0-9]" | Select-Object -First 50
 
 # Customer log
-Select-String -Path "api/Concertable.Customer/Tests/E2ETests/Concertable.Customer.E2ETests.Ui/ui-tests.last.log" -Pattern "HTTP [45][0-9][0-9]" | Select-Object -First 50
+Select-String -Path "api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui/ui-tests.last.log" -Pattern "HTTP [45][0-9][0-9]" | Select-Object -First 50
 
 # Browser console warnings and on-screen errors (adjust path to the relevant log)
-Select-String -Path "api/Concertable.B2B/Tests/E2ETests/Concertable.B2B.E2ETests.Ui/ui-tests.last.log" -Pattern "\[console warn\]|On-screen error" -CaseSensitive:$false | Select-Object -First 50
+Select-String -Path "api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui/ui-tests.last.log" -Pattern "\[console warn\]|On-screen error" -CaseSensitive:$false | Select-Object -First 50
 ```
 
 **Important**: for the individual scenario re-run (Step 2), the enriched output is in the `dotnet test` console output directly — NOT in `ui-tests.last.log` (that file is only written by the `./e2e.ps1` wrapper). Search the console output captured during Step 2 instead.
@@ -193,8 +193,8 @@ Work through the enriched output in this order:
 On every scenario failure, `CaptureFailureAsync` saves a full-page screenshot to:
 
 ```
-api/Concertable.B2B/Tests/E2ETests/Concertable.B2B.E2ETests.Ui/bin/Debug/net10.0/playwright-failures/
-api/Concertable.Customer/Tests/E2ETests/Concertable.Customer.E2ETests.Ui/bin/Debug/net10.0/playwright-failures/
+api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui/bin/Debug/net10.0/playwright-failures/
+api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui/bin/Debug/net10.0/playwright-failures/
 ```
 
 The path is anchored to `AppContext.BaseDirectory` so it always lands in the build output folder regardless of the test runner's working directory. The log line `Failure screenshot: <full-path>/<name>-<timestamp>.png` in the test output gives you the exact filename. Read the image with the `Read` tool — it renders inline so you can see exactly what was on screen when the assertion timed out. Use this **after** confirming there are no HTTP/gRPC errors — screenshots show visual state (e.g. a disabled button, a missing element) but the HTTP/gRPC logs identify the root cause.
