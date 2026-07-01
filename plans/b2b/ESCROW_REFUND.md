@@ -64,7 +64,7 @@ is cancellable.
 
 ## Phases
 
-- [ ] **Phase 1 — Payment: escrow refund capability (service-local).**
+- [x] **Phase 1 — Payment: escrow refund capability (service-local).**
   - `EscrowService.RefundByBookingIdAsync(bookingId, …)` — resolve escrow by booking, issue the Stripe
     refund (charge refund for OnBehalfOf; `reverse_transfer` for destination charges), call
     `EscrowEntity.Refund(refundId, now)`, persist. Idempotent (re-entry on an already-`Refunded`
