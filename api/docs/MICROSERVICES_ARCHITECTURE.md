@@ -207,13 +207,13 @@ Rule: ask "does this reference data need an admin UI?" If no, it's a contract, n
 
 **Future cross-cutting adapters** (file storage, image CDN, geocoding) follow the same library-first principle — only extract to a service if measurable operational pressure demands it.
 
-## 4.8 `api/Shared/*` — decision reversed (2026-05-23)
+## 4.8 `api/Concertable.Shared/*` — decision reversed (2026-05-23)
 
 **Original plan** called for collapsing 6+ shared csprojs into two (`Concertable.Contracts` + `Concertable.Kernel`). **This decision is reversed.**
 
 `Concertable.Contracts` and `Concertable.Kernel` stay as the wire and framework packages respectively. The per-concern shared libraries remain as separate csprojs because each owns a distinct cross-cutting concern with its own Application/Infrastructure split — collapsing them into Kernel would blur that separation without benefit.
 
-**Current shared csprojs under `api/Shared/` and `api/`:**
+**Current shared csprojs under `api/Concertable.Shared/` and `api/`:**
 
 | Csproj | Purpose |
 |---|---|
@@ -509,7 +509,7 @@ Roughly a year of evenings-and-weekends if taken seriously. Valuable on a CV at 
 - Solutions are per-service `.slnx` + the umbrella `api/Concertable.slnx`; the single `Concertable.sln` is deleted (§8 updated).
 - Service HTTP hosts are named `Concertable.X.Web`, not `Concertable.X.Api` — `.Api` is reserved for module layers inside a service (§2/§8/§8.5 updated).
 - `ICurrentUser` + claim helpers landed in `Concertable.Kernel/Identity/` (the framework package), not `Concertable.Contracts` and not a `Concertable.Authorization.Contracts` project — no such project exists (§4/§4.5/R10 updated).
-- §8 repo tree redrawn as-built: standalone per-service AppHosts, `Seed/` + `Tests/` inside each service, `api/Shared/` for Kernel/Contracts/cross-cutting libs, `Concertable.Auth.Contracts`.
+- §8 repo tree redrawn as-built: standalone per-service AppHosts, `Seed/` + `Tests/` inside each service, `api/Concertable.Shared/` for Kernel/Contracts/cross-cutting libs, `Concertable.Auth.Contracts`.
 
 ## 13. Reference
 

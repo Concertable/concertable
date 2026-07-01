@@ -34,10 +34,10 @@ Tell the user: **"Close Visual Studio before I proceed."** Wait for confirmation
 Run all deletions in one shot — do NOT CLI pre-build afterwards:
 
 ```powershell
-Remove-Item -Recurse -Force "api/Concertable.B2B/Tests/E2ETests/Concertable.B2B.E2ETests.Ui/bin" -Confirm:$false -ErrorAction SilentlyContinue
-Remove-Item -Recurse -Force "api/Concertable.B2B/Tests/E2ETests/Concertable.B2B.E2ETests.Ui/obj" -Confirm:$false -ErrorAction SilentlyContinue
-Remove-Item -Recurse -Force "api/Concertable.Customer/Tests/E2ETests/Concertable.Customer.E2ETests.Ui/bin" -Confirm:$false -ErrorAction SilentlyContinue
-Remove-Item -Recurse -Force "api/Concertable.Customer/Tests/E2ETests/Concertable.Customer.E2ETests.Ui/obj" -Confirm:$false -ErrorAction SilentlyContinue
+Remove-Item -Recurse -Force "api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui/bin" -Confirm:$false -ErrorAction SilentlyContinue
+Remove-Item -Recurse -Force "api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui/obj" -Confirm:$false -ErrorAction SilentlyContinue
+Remove-Item -Recurse -Force "api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui/bin" -Confirm:$false -ErrorAction SilentlyContinue
+Remove-Item -Recurse -Force "api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui/obj" -Confirm:$false -ErrorAction SilentlyContinue
 Remove-Item -Recurse -Force "api/.vs" -Confirm:$false -ErrorAction SilentlyContinue
 Write-Host "Done"
 ```

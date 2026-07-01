@@ -1,11 +1,11 @@
 ---
 name: e2e-ui-regress
-description: Run the Concertable UI E2E regression check -- the scenarios listed under `passing` in `api/Shared/Tests/Concertable.E2ETests/E2E_BASELINE.md`, fail-fast on any regression. Duration scales with the size of the passing set (a fast subset when some scenarios are excluded as failing, up to ~25-30 min when the whole suite passes). Use whenever the user wants to verify a code change hasn't broken anything ("regress", "check for regression", "verify no regression", "did I break anything", "is it still green", "run the regress"). Use the `e2e-ui-debug` skill instead when the user wants to discover newly-passing scenarios or diagnose/fix a failure.
+description: Run the Concertable UI E2E regression check -- the scenarios listed under `passing` in `api/Concertable.Shared/tests/Concertable.E2ETests/E2E_BASELINE.md`, fail-fast on any regression. Duration scales with the size of the passing set (a fast subset when some scenarios are excluded as failing, up to ~25-30 min when the whole suite passes). Use whenever the user wants to verify a code change hasn't broken anything ("regress", "check for regression", "verify no regression", "did I break anything", "is it still green", "run the regress"). Use the `e2e-ui-debug` skill instead when the user wants to discover newly-passing scenarios or diagnose/fix a failure.
 ---
 
 # e2e-ui-regress
 
-Confidence check that a code change hasn't regressed any baseline-passing UI E2E scenario. Runs the scenarios under `### B2B passing` and `### Customer passing` in `api/Shared/Tests/Concertable.E2ETests/E2E_BASELINE.md`, and skips any under `failing` (tracked but expected broken until separately fixed). It always reflects whatever the baseline currently lists: a fast subset when some scenarios are excluded as failing, or the whole suite when everything passes.
+Confidence check that a code change hasn't regressed any baseline-passing UI E2E scenario. Runs the scenarios under `### B2B passing` and `### Customer passing` in `api/Concertable.Shared/tests/Concertable.E2ETests/E2E_BASELINE.md`, and skips any under `failing` (tracked but expected broken until separately fixed). It always reflects whatever the baseline currently lists: a fast subset when some scenarios are excluded as failing, or the whole suite when everything passes.
 
 ## When to use this skill
 
@@ -21,11 +21,11 @@ Confidence check that a code change hasn't regressed any baseline-passing UI E2E
 
 ## Key paths
 
-- Baseline file: `api/Shared/Tests/Concertable.E2ETests/E2E_BASELINE.md`
+- Baseline file: `api/Concertable.Shared/tests/Concertable.E2ETests/E2E_BASELINE.md`
 - Script: `./e2e.ps1 ui regress` (PowerShell)
-- B2B run log: `api/Concertable.B2B/Tests/E2ETests/Concertable.B2B.E2ETests.Ui/regress.last.log`
-- Customer run log: `api/Concertable.Customer/Tests/E2ETests/Concertable.Customer.E2ETests.Ui/regress.last.log`
-- Scratch run logs (ad-hoc captures): `api/Shared/Tests/Concertable.E2ETests/logs/` — **never the repo root**. The `regress.last.log` files above are written by `./e2e.ps1` and stay in their project dirs; any extra output you redirect for grepping goes in the scratch dir (git-ignored; `New-Item -ItemType Directory -Force` it first if missing).
+- B2B run log: `api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui/regress.last.log`
+- Customer run log: `api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui/regress.last.log`
+- Scratch run logs (ad-hoc captures): `api/Concertable.Shared/tests/Concertable.E2ETests/logs/` — **never the repo root**. The `regress.last.log` files above are written by `./e2e.ps1` and stay in their project dirs; any extra output you redirect for grepping goes in the scratch dir (git-ignored; `New-Item -ItemType Directory -Force` it first if missing).
 
 ## Step 0 -- Pre-flight
 
