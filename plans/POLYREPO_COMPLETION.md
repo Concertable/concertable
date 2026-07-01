@@ -1,10 +1,11 @@
 # Polyrepo completion
 
-> **STATUS (2026-07-01): Buildable mirrors DONE — Phases 1–4 all complete.** Six `Concertable/concertable-*`
-> repos exist, clone-and-build standalone from the private feed, and auto-sync green on every `master`
-> push. Only two things are left in this file: one trivial cleanup (delete the old `ThomasSeery/*`
-> personal mirrors — Phase 4 item 2, gated on a `delete_repo` scope) and the **deferred, not-started**
-> one-way cut to true polyrepo (bottom section). Keep this file until that cut is done or abandoned.
+> **STATUS (2026-07-01): Buildable mirrors DONE — Phases 1–4 all complete, no cleanup outstanding.**
+> Six `Concertable/concertable-*` repos exist, clone-and-build standalone from the private feed, and
+> auto-sync green on every `master` push. The old `ThomasSeery/concertable-{b2b,customer}` personal
+> mirrors have been **deleted** (via the GitHub web UI — no account-wide `delete_repo` token scope
+> granted). The **only** thing left in this file is the **deferred, not-started** one-way cut to true
+> polyrepo (bottom section). Keep this file until that cut is done or abandoned.
 
 The end goal is **separate per-service repos**. The hard part — making each service's deployable
 closure build standalone from a package feed — is **already done** (the Service Build Separation
@@ -193,15 +194,14 @@ the first masking the second:
   only needs a `read:packages` PAT exported as `GITHUB_PACKAGES_TOKEN` (Phase 1 option C) — the `gh`
   token lacks that scope, so this last confirmation is optional/when convenient.
 
-**Remaining — one cleanup item, gated on Tommy:**
+**Remaining — none. Both items done:**
 1. ✅ **PR #72 merged** (`fb23e93b`) — `persist-credentials: false` + gitlink fixes on `master`. The
    *auto*-mirror-on-master push event now runs the fixed `mirror.yml`: two post-merge master pushes
    (runs `28507647491`, `28507893262`) both GREEN, so auto-sync is the confirmed steady state.
-2. **Delete the personal mirrors** — still present (`ThomasSeery/concertable-{b2b,customer}`). Needs a
-   scope the session token lacks (`gist, read:org, repo, workflow` — no `delete_repo`), so Tommy runs:
-   `gh auth refresh -h github.com -s delete_repo` then
-   `gh repo delete ThomasSeery/concertable-b2b --yes` / `…-customer --yes`. Both superseded by the org
-   repos — pure cleanup, no dependency on it.
+2. ✅ **Personal mirrors deleted** — `ThomasSeery/concertable-{b2b,customer}` removed via the GitHub
+   web UI (both empty, superseded by the org repos). Web UI deliberately over `gh auth refresh -s
+   delete_repo`: that scope is account-wide, so it would have handed the local token delete power over
+   every repo the account can reach (work orgs included) — not worth it for two empty personal repos.
 
 **UI E2E: judgment-skip.** Mirror/CI-config + `.gitignore` only; no runtime behavior on any covered
 flow. Build + the six carve gates + all unit/integration are green on PR #72. Doesn't meet the
