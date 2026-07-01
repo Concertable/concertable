@@ -29,7 +29,7 @@ For the B2B case:
 
 Customer's projection handlers run unchanged in both scenarios. Same code path, same data shape.
 
-See `api/Concertable.B2B/Concertable.B2B.Seed.Simulator/CLAUDE.md` for the full design — what the fixture holds, what it doesn't, how to add entities, what NOT to do, and how the split-repo distribution works.
+See `api/Concertable.B2B/src/Seed/Concertable.B2B.Seed.Simulator/CLAUDE.md` for the full design — what the fixture holds, what it doesn't, how to add entities, what NOT to do, and how the split-repo distribution works.
 
 The same pattern applies to any future standalone-service seeding need: the upstream service ships a simulator, downstream AppHosts reference it.
 

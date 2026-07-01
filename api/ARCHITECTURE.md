@@ -132,7 +132,7 @@ needs the org packages made internal or a `read:packages` PAT.
 
 ### Per-folder build closures — never repo-root config
 
-Each service folder and `api/Shared/` carries its **own** `nuget.config`, `Directory.Packages.props`
+Each service folder and `api/Concertable.Shared/` carries its **own** `nuget.config`, `Directory.Packages.props`
 (CPM), and `Directory.Build.props`/`.targets`. There is deliberately **no** repo-root or `api/`-root
 version/build config: a carve takes only the service folder, so any config above it would be left
 behind and break the standalone restore. Don't add a root `Directory.Packages.props` ("the monorepo
@@ -163,7 +163,7 @@ needs a `GITHUB_PACKAGES_TOKEN` PAT with `read:packages` in the environment (see
 uses the repo `GITHUB_TOKEN`.
 
 C# code changes are minimal across the split. The ownership-based folder layout (`api/Concertable.X/`
-for service-owned projects, `api/Shared/` for cross-service infra) previews the split.
+for service-owned projects, `api/Concertable.Shared/` for cross-service infra) previews the split.
 
 ## Folder layout
 
@@ -174,7 +174,7 @@ for service-owned projects, `api/Shared/` for cross-service infra) previews the 
 - `api/Concertable.Payment/` — Payment service (Stripe integration, payouts).
 - `api/Concertable.AppHost/` — Umbrella AppHost (runs everything; the only host that gates cross-service startup with `WaitFor`).
 - `api/Concertable.AppHost.Shared/` — Aspire resource registration helpers shared by every AppHost (topology/references only — never cross-service `WaitFor`).
-- `api/Shared/` — Cross-service infrastructure (Kernel, shared seeding infra, messaging contracts, etc.).
+- `api/Concertable.Shared/` — Cross-service infrastructure (Kernel, shared seeding infra, messaging contracts, etc.).
 - `api/docs/` — Conventions, rules, design docs.
 
 Each service folder contains its own `AppHost/`, `Web/`, `Workers/`, `Seeding/` (where applicable), `Modules/` (per-bounded-context), and `Tests/` (E2E + integration). Service-level `ARCHITECTURE.md` files describe each service's internal structure.

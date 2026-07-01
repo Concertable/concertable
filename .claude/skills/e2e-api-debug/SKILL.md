@@ -42,26 +42,26 @@ The big one: in this suite a failing test usually means **the synchronous call r
 
 ## Key paths
 
-**B2B API E2E** — `api/Concertable.B2B/Tests/E2ETests/Concertable.B2B.E2ETests/`
+**B2B API E2E** — `api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests/`
 - Tests: `Payments/ConcertDraftTests.cs` (accept → draft → settlement payout), `Payments/ConcertFinishedTests.cs` (concert-finished → completion + door-split/versus payout)
 - Fixture: `AppFixture.cs` (boots `Concertable.B2B.AppHost`, seeds via `DevDbInitializer`, exposes `B2BClient` / `Polling` / `StripePaymentIntents` / `SeedState` / `DbFixture`)
 - DB helpers (raw SQL, for polling state): `DbFixture.cs`, `ApplicationDb.cs`, `BookingDb.cs`, `OpportunityDb.cs`
 - Stack composition: `DistributedApplicationBuilderExtensions.cs` (`AddB2BE2E` — pins Payment/Auth/Search + stripe-cli)
-- Last run log: `api/Concertable.B2B/Tests/E2ETests/Concertable.B2B.E2ETests/api-tests.last.log`
+- Last run log: `api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests/api-tests.last.log`
 
-**Customer API E2E** — `api/Concertable.Customer/Tests/E2ETests/Concertable.Customer.E2ETests/`
+**Customer API E2E** — `api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests/`
 - Tests: `Payments/TicketPurchaseTests.cs` (purchase → PaymentSucceeded → ticket created)
 - Fixture: `AppFixture.cs` (boots `Concertable.Customer.AppHost`; exposes `CustomerClient` / `Polling` / `SeedState` / `Catalog` / `DbFixture`)
-- Last run log: `api/Concertable.Customer/Tests/E2ETests/Concertable.Customer.E2ETests/api-tests.last.log`
+- Last run log: `api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests/api-tests.last.log`
 
-**Shared E2E infra** (service-agnostic) — `api/Shared/Tests/Concertable.E2ETests/`
+**Shared E2E infra** (service-agnostic) — `api/Concertable.Shared/tests/Concertable.E2ETests/`
 - `HealthWaiter` (`WaitForAllHealthyAsync` / `WaitForAllServingAsync` / `WaitForPayoutAccountsAsync`), `PollingService`, `AspireResourceLogger`, `TestTokenMinter`, `StripeE2EAccountResolver`.
 
 **Triggering time-based flows** — `WorkersFixture.cs` (`fixture.Workers.TriggerAsync(nameof(SomeFunction))`) fires a timer function on the Workers (Functions) host via its admin API `POST /admin/functions/{name}` (e.g. `ConcertFinishedFunction` for the concert-finished → completion sweep). Acceptance (202) is fire-and-forget — assert on the state the function produces. (This replaced the old test-only `POST /e2e/...` endpoints on the B2B Web host.)
 
 **Run settings** — `api/Concertable.runsettings` (`MaxCpuCount=1`; the two E2E apps must not run concurrently — see memory `e2e_parallel_execution`). The wrapper passes this automatically.
 
-**Scratch run logs** — capture ad-hoc `dotnet test` output under `api/Shared/Tests/Concertable.E2ETests/logs/` (git-ignored; `New-Item -ItemType Directory -Force` it first) — **never the repo root**. The canonical `api-tests.last.log` files written by `./e2e.ps1 api` stay in their project dirs.
+**Scratch run logs** — capture ad-hoc `dotnet test` output under `api/Concertable.Shared/tests/Concertable.E2ETests/logs/` (git-ignored; `New-Item -ItemType Directory -Force` it first) — **never the repo root**. The canonical `api-tests.last.log` files written by `./e2e.ps1 api` stay in their project dirs.
 
 ## Step 0 — Pre-flight check
 
@@ -126,16 +126,16 @@ Re-run the failed test alone via `--filter` so the resource logs for that one fl
 
 ```powershell
 # B2B
-dotnet test 'api/Concertable.B2B/Tests/E2ETests/Concertable.B2B.E2ETests/Concertable.B2B.E2ETests.csproj' --filter "FullyQualifiedName~ConcertDraftTests.ShouldCreateDraft_WhenDoorSplitApplicationAccepted" --settings api/Concertable.runsettings --logger "console;verbosity=normal"
+dotnet test 'api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests/Concertable.B2B.E2ETests.csproj' --filter "FullyQualifiedName~ConcertDraftTests.ShouldCreateDraft_WhenDoorSplitApplicationAccepted" --settings api/Concertable.runsettings --logger "console;verbosity=normal"
 
 # Customer
-dotnet test 'api/Concertable.Customer/Tests/E2ETests/Concertable.Customer.E2ETests/Concertable.Customer.E2ETests.csproj' --filter "FullyQualifiedName~TicketPurchaseTests" --settings api/Concertable.runsettings --logger "console;verbosity=normal"
+dotnet test 'api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests/Concertable.Customer.E2ETests.csproj' --filter "FullyQualifiedName~TicketPurchaseTests" --settings api/Concertable.runsettings --logger "console;verbosity=normal"
 ```
 
 `FullyQualifiedName~` is a substring match. Drop the method to run a whole class. To keep the output for grepping, `Tee-Object` into the scratch logs dir (NOT the repo root):
 
 ```powershell
-$logs = 'api/Shared/Tests/Concertable.E2ETests/logs'; New-Item -ItemType Directory -Force $logs | Out-Null
+$logs = 'api/Concertable.Shared/tests/Concertable.E2ETests/logs'; New-Item -ItemType Directory -Force $logs | Out-Null
 dotnet test '<csproj>' --filter "FullyQualifiedName~<test>" --settings api/Concertable.runsettings --logger "console;verbosity=normal" | Tee-Object -FilePath "$logs/<test-slug>.log"
 ```
 
@@ -147,7 +147,7 @@ Work the output in this order. **Identify the failure shape first** — it tells
 
 ### Shape A — synchronous `ShouldBe(HttpStatusCode)` mismatch (the direct call failed)
 
-The test's own HTTP call returned the wrong status. `response.ShouldBe(...)` (from `api/Shared/Tests/Concertable.Testing/HttpResponseAssertions.cs`) throws with the full context:
+The test's own HTTP call returned the wrong status. `response.ShouldBe(...)` (from `api/Concertable.Shared/tests/Concertable.Testing/HttpResponseAssertions.cs`) throws with the full context:
 
 ```
 Expected 204 NoContent, got 400 BadRequest.

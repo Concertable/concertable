@@ -17,29 +17,29 @@ JWT Bearer validation.
 ### All B2B integration tests
 
 ```powershell
-dotnet test Concertable.B2B/Modules/Artist/Tests/Concertable.Artist.IntegrationTests/Concertable.Artist.IntegrationTests.csproj
-dotnet test Concertable.B2B/Modules/Venue/Tests/Concertable.Venue.IntegrationTests/Concertable.Venue.IntegrationTests.csproj
-dotnet test Concertable.B2B/Modules/User/Tests/Concertable.User.IntegrationTests/Concertable.User.IntegrationTests.csproj
-dotnet test Concertable.B2B/Modules/Tenant/Tests/Concertable.B2B.Tenant.IntegrationTests/Concertable.B2B.Tenant.IntegrationTests.csproj
-dotnet test Concertable.B2B/Modules/Concert/Tests/Concertable.Concert.IntegrationTests/Concertable.Concert.IntegrationTests.csproj
+dotnet test Concertable.B2B/src/Modules/Artist/Tests/Concertable.Artist.IntegrationTests/Concertable.Artist.IntegrationTests.csproj
+dotnet test Concertable.B2B/src/Modules/Venue/Tests/Concertable.Venue.IntegrationTests/Concertable.Venue.IntegrationTests.csproj
+dotnet test Concertable.B2B/src/Modules/User/Tests/Concertable.User.IntegrationTests/Concertable.User.IntegrationTests.csproj
+dotnet test Concertable.B2B/src/Modules/Tenant/Tests/Concertable.B2B.Tenant.IntegrationTests/Concertable.B2B.Tenant.IntegrationTests.csproj
+dotnet test Concertable.B2B/src/Modules/Concert/Tests/Concertable.Concert.IntegrationTests/Concertable.Concert.IntegrationTests.csproj
 ```
 
 ### Search integration tests
 
 ```powershell
-dotnet test Concertable.Search/Tests/Concertable.Search.IntegrationTests/Concertable.Search.IntegrationTests.csproj
+dotnet test Concertable.Search/tests/Concertable.Search.IntegrationTests/Concertable.Search.IntegrationTests.csproj
 ```
 
 ### All integration tests (one liner)
 
 ```powershell
 @(
-  "Concertable.B2B/Modules/Artist/Tests/Concertable.Artist.IntegrationTests/Concertable.Artist.IntegrationTests.csproj",
-  "Concertable.B2B/Modules/Venue/Tests/Concertable.Venue.IntegrationTests/Concertable.Venue.IntegrationTests.csproj",
-  "Concertable.B2B/Modules/User/Tests/Concertable.User.IntegrationTests/Concertable.User.IntegrationTests.csproj",
-  "Concertable.B2B/Modules/Tenant/Tests/Concertable.B2B.Tenant.IntegrationTests/Concertable.B2B.Tenant.IntegrationTests.csproj",
-  "Concertable.B2B/Modules/Concert/Tests/Concertable.Concert.IntegrationTests/Concertable.Concert.IntegrationTests.csproj",
-  "Concertable.Search/Tests/Concertable.Search.IntegrationTests/Concertable.Search.IntegrationTests.csproj"
+  "Concertable.B2B/src/Modules/Artist/Tests/Concertable.Artist.IntegrationTests/Concertable.Artist.IntegrationTests.csproj",
+  "Concertable.B2B/src/Modules/Venue/Tests/Concertable.Venue.IntegrationTests/Concertable.Venue.IntegrationTests.csproj",
+  "Concertable.B2B/src/Modules/User/Tests/Concertable.User.IntegrationTests/Concertable.User.IntegrationTests.csproj",
+  "Concertable.B2B/src/Modules/Tenant/Tests/Concertable.B2B.Tenant.IntegrationTests/Concertable.B2B.Tenant.IntegrationTests.csproj",
+  "Concertable.B2B/src/Modules/Concert/Tests/Concertable.Concert.IntegrationTests/Concertable.Concert.IntegrationTests.csproj",
+  "Concertable.Search/tests/Concertable.Search.IntegrationTests/Concertable.Search.IntegrationTests.csproj"
 ) | ForEach-Object { dotnet test $_ }
 ```
 
