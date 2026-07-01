@@ -11,7 +11,7 @@ $dirs = @(
     "Concertable.Payment\src\Concertable.Payment.Infrastructure\Data\Migrations",
     "Concertable.B2B\src\Modules\Conversations\Concertable.B2B.Conversations.Infrastructure\Data\Migrations",
     "Concertable.Customer\src\Modules\Preference\Concertable.Customer.Preference.Infrastructure\Data\Migrations",
-    "Concertable.Auth\Data\Migrations",
+    "Concertable.Auth\src\Concertable.Auth\Data\Migrations",
     "Concertable.Customer\src\Modules\Concert\Concertable.Customer.Concert.Infrastructure\Data\Migrations",
     "Concertable.Customer\src\Modules\Ticket\Concertable.Customer.Ticket.Infrastructure\Data\Migrations",
     "Concertable.Customer\src\Modules\Review\Concertable.Customer.Review.Infrastructure\Data\Migrations",
@@ -51,10 +51,10 @@ if ($LASTEXITCODE -ne 0) { exit 1 }
 dotnet ef migrations add InitialCreate --context ConversationsDbContext --project Concertable.B2B/src/Modules/Conversations/Concertable.B2B.Conversations.Infrastructure --startup-project Concertable.B2B/Concertable.B2B.Web --output-dir Data/Migrations
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
-dotnet ef migrations add InitialCreate --context PersistedGrantDbContext --project Concertable.Auth --startup-project Concertable.Auth --output-dir Data/Migrations/Duende
+dotnet ef migrations add InitialCreate --context PersistedGrantDbContext --project Concertable.Auth/src/Concertable.Auth --startup-project Concertable.Auth/src/Concertable.Auth --output-dir Data/Migrations/Duende
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
-dotnet ef migrations add InitialCreate --context AuthDbContext --project Concertable.Auth --startup-project Concertable.Auth --output-dir Data/Migrations/Auth
+dotnet ef migrations add InitialCreate --context AuthDbContext --project Concertable.Auth/src/Concertable.Auth --startup-project Concertable.Auth/src/Concertable.Auth --output-dir Data/Migrations/Auth
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
 dotnet ef migrations add InitialCreate --context ConcertDbContext --project Concertable.Customer/src/Modules/Concert/Concertable.Customer.Concert.Infrastructure --startup-project Concertable.Customer/Concertable.Customer.Web --output-dir Data/Migrations

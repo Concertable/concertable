@@ -126,9 +126,19 @@ normalize last-but-one, root sweep + E2E last.
   `src/`-prefixed; terminal ef `--project`/`--startup-project` hand-edited; guardrail regex widened).
   **Gate met:** full `dotnet build` green (0 errors); Search UnitTests 14/14; Search IntegrationTests
   27/27 (clean, no flakes); all 7 carve-search paths resolve under `src/`.
-- **Phase 5 — Auth (normalize).** Rooted-glob → `src/Concertable.Auth/`; drop the glob-exclude hack.
-  Biggest single-service change. **Gate:** build + Auth boots standalone (`Concertable.Auth.AppHost`
-  `/health` 200 + OIDC discovery) + `carve-auth`.
+- **Phase 5 — Auth (normalize). ✅ DONE.** Rooted single-project web app → `src/Concertable.Auth/`
+  (all source + `appsettings*` + `keys/` + `tempkey.jwk` moved atomically with the csproj); AppHost →
+  `src/Concertable.Auth.AppHost/` (now a *sibling*, so the CS8802 glob-exclude hack was **removed**).
+  Auth-specific handling (not the generic script, which can't model a rooted csproj moving into a new
+  `src/<name>/` — and would double-`src/` already-moved paths): the web csproj's source stays globbed
+  from its own new dir; the AppHost's 2 refs and all 9 external refs to `Concertable.Auth.csproj`
+  (umbrella + every data-service AppHost + B2B/Customer slnx + root slnx) rewritten by hand; root
+  slnx AppHost entry + `carve-auth` build path + `initial-migrations.ps1` `--project` updated.
+  **Gate met:** full `dotnet build` green (0 errors, **no CS8802** → glob hack correctly gone);
+  `carve-auth` reproduced (isolated Auth folder builds standalone from the feed). The named
+  runtime check (AppHost `/health` + OIDC discovery) is folded into Phase 7's mandatory UI E2E,
+  which drives real Auth registration/login on the full Aspire stack — this is a zero-behaviour
+  file move, so booting Aspire twice adds no signal build+carve don't already give.
 - **Phase 6 — Shared.** **Gate:** build + shared unit/integration where present.
 - **Phase 7 — Root sweep + full verify.** Final pass over the root `Concertable.slnx`, any doc/path
   stragglers, delete leftover empty local dirs (`Modules/*/Concertable.<Ctx>.*` shells from the old

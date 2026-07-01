@@ -78,7 +78,7 @@ jobs:
 
       - name: Restore + build the carved Auth from the feed (packages only)
         working-directory: ${{ runner.temp }}/carve
-        run: dotnet build Concertable.Auth.csproj --configuration Release
+        run: dotnet build src/Concertable.Auth/Concertable.Auth.csproj --configuration Release
 
   carve-payment:
     # Gate: Concertable.Payment's deployable closure must build standalone from its own package
