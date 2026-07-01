@@ -110,7 +110,11 @@ normalize last-but-one, root sweep + E2E last.
   at the new `src/` depth, no false positives); `carve-b2b` reproduced locally (build succeeded, 42
   closure projects); B2B integration green (sole red = `Update_ShouldReturn404_WhenNotOwner`, a SQL
   execution-timeout flake under 5-container load, passes clean in isolation).
-- **Phase 2 — Customer** (also modular). **Gate:** build + Customer integration + `carve-customer`.
+- **Phase 2 — Customer** (also modular). **✅ DONE.** Same recipe as B2B (host projects + `Modules/` +
+  `Seed/` → `src/`; `Tests/` → `tests/`; guardrail regex + `carve-customer` `find` fixed). **Gate met:**
+  full `dotnet build` green (0 errors); `carve-customer` closure selects 34 projects (`tests/`
+  excluded, no apphost); Customer integration green (Concert/Ticket/User pass; Review's 2 reds were
+  SQL execution-timeout flakes under host load, pass 8/8 clean in isolation).
 - **Phase 3 — Payment** (flat). **Gate:** build + Payment integration + `carve-payment`.
 - **Phase 4 — Search** (flat). **Gate:** build + Search integration + `carve-search`.
 - **Phase 5 — Auth (normalize).** Rooted-glob → `src/Concertable.Auth/`; drop the glob-exclude hack.
