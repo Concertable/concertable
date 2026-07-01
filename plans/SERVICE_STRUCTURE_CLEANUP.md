@@ -115,7 +115,13 @@ normalize last-but-one, root sweep + E2E last.
   full `dotnet build` green (0 errors); `carve-customer` closure selects 34 projects (`tests/`
   excluded, no apphost); Customer integration green (Concert/Ticket/User pass; Review's 2 reds were
   SQL execution-timeout flakes under host load, pass 8/8 clean in isolation).
-- **Phase 3 — Payment** (flat). **Gate:** build + Payment integration + `carve-payment`.
+- **Phase 3 — Payment** (flat). **✅ DONE.** Flat feature projects + `Seed/` → `src/`; `Tests/` →
+  `tests/`. Flat-service specifics vs the modular recipe: (a) `carve-payment` uses an **explicit**
+  `dotnet sln add` list, not `find` — prefixed each entry with `src/` (`Seed/…` → `src/Seed/…`);
+  (b) `initial-migrations.ps1` `--project`/`--startup-project` are path-*terminal* (`…/Concertable.
+  Payment.Infrastructure`), so hand-edited rather than regex'd. Guardrail regex widened as usual.
+  **Gate met:** full `dotnet build` green (0 errors); Payment UnitTests 25/25 (no integration project
+  exists for Payment); all 9 carve-payment paths resolve under `src/`.
 - **Phase 4 — Search** (flat). **Gate:** build + Search integration + `carve-search`.
 - **Phase 5 — Auth (normalize).** Rooted-glob → `src/Concertable.Auth/`; drop the glob-exclude hack.
   Biggest single-service change. **Gate:** build + Auth boots standalone (`Concertable.Auth.AppHost`

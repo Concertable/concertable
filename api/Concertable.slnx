@@ -160,24 +160,24 @@
     <Project Path="Concertable.Messaging/Tests/Concertable.Messaging.UnitTests/Concertable.Messaging.UnitTests.csproj" />
   </Folder>
   <Folder Name="/Payment/">
-    <Project Path="Concertable.Payment/Concertable.Payment.AppHost/Concertable.Payment.AppHost.csproj" />
-    <Project Path="Concertable.Payment/Concertable.Payment.AppHost.Extensions/Concertable.Payment.AppHost.Extensions.csproj" />
-    <Project Path="Concertable.Payment/Concertable.Payment.Api/Concertable.Payment.Api.csproj" />
-    <Project Path="Concertable.Payment/Concertable.Payment.Application/Concertable.Payment.Application.csproj" />
-    <Project Path="Concertable.Payment/Concertable.Payment.Client/Concertable.Payment.Client.csproj" />
-    <Project Path="Concertable.Payment/Concertable.Payment.Contracts/Concertable.Payment.Contracts.csproj" />
-    <Project Path="Concertable.Payment/Concertable.Payment.Domain/Concertable.Payment.Domain.csproj" />
-    <Project Path="Concertable.Payment/Concertable.Payment.Infrastructure/Concertable.Payment.Infrastructure.csproj" />
-    <Project Path="Concertable.Payment/Concertable.Payment.Web/Concertable.Payment.Web.csproj" />
-    <Project Path="Concertable.Payment/Concertable.Payment.Workers/Concertable.Payment.Workers.csproj" />
-    <Project Path="Concertable.Payment/Tests/Concertable.Payment.UnitTests/Concertable.Payment.UnitTests.csproj" />
+    <Project Path="Concertable.Payment/src/Concertable.Payment.AppHost/Concertable.Payment.AppHost.csproj" />
+    <Project Path="Concertable.Payment/src/Concertable.Payment.AppHost.Extensions/Concertable.Payment.AppHost.Extensions.csproj" />
+    <Project Path="Concertable.Payment/src/Concertable.Payment.Api/Concertable.Payment.Api.csproj" />
+    <Project Path="Concertable.Payment/src/Concertable.Payment.Application/Concertable.Payment.Application.csproj" />
+    <Project Path="Concertable.Payment/src/Concertable.Payment.Client/Concertable.Payment.Client.csproj" />
+    <Project Path="Concertable.Payment/src/Concertable.Payment.Contracts/Concertable.Payment.Contracts.csproj" />
+    <Project Path="Concertable.Payment/src/Concertable.Payment.Domain/Concertable.Payment.Domain.csproj" />
+    <Project Path="Concertable.Payment/src/Concertable.Payment.Infrastructure/Concertable.Payment.Infrastructure.csproj" />
+    <Project Path="Concertable.Payment/src/Concertable.Payment.Web/Concertable.Payment.Web.csproj" />
+    <Project Path="Concertable.Payment/src/Concertable.Payment.Workers/Concertable.Payment.Workers.csproj" />
+    <Project Path="Concertable.Payment/tests/Concertable.Payment.UnitTests/Concertable.Payment.UnitTests.csproj" />
   </Folder>
   <Folder Name="/Payment/Seed/">
-    <Project Path="Concertable.Payment/Seed/Concertable.Payment.Seed/Concertable.Payment.Seed.csproj" />
+    <Project Path="Concertable.Payment/src/Seed/Concertable.Payment.Seed/Concertable.Payment.Seed.csproj" />
   </Folder>
   <Folder Name="/Payment/Tests/" />
   <Folder Name="/Payment/Tests/E2ETests/">
-    <Project Path="Concertable.Payment/Tests/E2ETests/Concertable.Payment.E2ETests.Helpers/Concertable.Payment.E2ETests.Helpers.csproj" />
+    <Project Path="Concertable.Payment/tests/E2ETests/Concertable.Payment.E2ETests.Helpers/Concertable.Payment.E2ETests.Helpers.csproj" />
   </Folder>
   <Folder Name="/Search/">
     <Project Path="Concertable.Search/Concertable.Search.AppHost/Concertable.Search.AppHost.csproj" />
