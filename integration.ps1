@@ -22,7 +22,7 @@ $customerProjects = @(
     "api/Concertable.Customer/src/Modules/User/Tests/Concertable.Customer.User.IntegrationTests/Concertable.Customer.User.IntegrationTests.csproj"
 )
 $searchProjects = @(
-    "api/Concertable.Search/Tests/Concertable.Search.IntegrationTests/Concertable.Search.IntegrationTests.csproj"
+    "api/Concertable.Search/tests/Concertable.Search.IntegrationTests/Concertable.Search.IntegrationTests.csproj"
 )
 
 $allProjects = $b2bProjects + $customerProjects + $searchProjects

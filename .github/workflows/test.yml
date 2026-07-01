@@ -185,13 +185,13 @@ jobs:
         run: |
           dotnet new sln --name CarveSearch --format slnx
           dotnet sln CarveSearch.slnx add \
-            Concertable.Search.Web/Concertable.Search.Web.csproj \
-            Concertable.Search.Workers/Concertable.Search.Workers.csproj \
-            Concertable.Search.Api/Concertable.Search.Api.csproj \
-            Concertable.Search.Application/Concertable.Search.Application.csproj \
-            Concertable.Search.Infrastructure/Concertable.Search.Infrastructure.csproj \
-            Concertable.Search.Domain/Concertable.Search.Domain.csproj \
-            Seed/Concertable.Search.Seed.Infrastructure/Concertable.Search.Seed.Infrastructure.csproj
+            src/Concertable.Search.Web/Concertable.Search.Web.csproj \
+            src/Concertable.Search.Workers/Concertable.Search.Workers.csproj \
+            src/Concertable.Search.Api/Concertable.Search.Api.csproj \
+            src/Concertable.Search.Application/Concertable.Search.Application.csproj \
+            src/Concertable.Search.Infrastructure/Concertable.Search.Infrastructure.csproj \
+            src/Concertable.Search.Domain/Concertable.Search.Domain.csproj \
+            src/Seed/Concertable.Search.Seed.Infrastructure/Concertable.Search.Seed.Infrastructure.csproj
           dotnet build CarveSearch.slnx --configuration Release
 
   carve-b2b:
@@ -339,7 +339,7 @@ jobs:
           - api/Concertable.Messaging/Tests/Concertable.Messaging.UnitTests/Concertable.Messaging.UnitTests.csproj
           - api/Concertable.Messaging/Tests/Concertable.Messaging.AzureServiceBus.UnitTests/Concertable.Messaging.AzureServiceBus.UnitTests.csproj
           - api/Concertable.Payment/tests/Concertable.Payment.UnitTests/Concertable.Payment.UnitTests.csproj
-          - api/Concertable.Search/Tests/Concertable.Search.UnitTests/Concertable.Search.UnitTests.csproj
+          - api/Concertable.Search/tests/Concertable.Search.UnitTests/Concertable.Search.UnitTests.csproj
           - api/Shared/Tests/Concertable.Kernel.UnitTests/Concertable.Kernel.UnitTests.csproj
 
     steps:
@@ -383,7 +383,7 @@ jobs:
           - api/Concertable.Customer/src/Modules/Review/Tests/Concertable.Customer.Review.IntegrationTests/Concertable.Customer.Review.IntegrationTests.csproj
           - api/Concertable.Customer/src/Modules/Ticket/Tests/Concertable.Customer.Ticket.IntegrationTests/Concertable.Customer.Ticket.IntegrationTests.csproj
           - api/Concertable.Customer/src/Modules/User/Tests/Concertable.Customer.User.IntegrationTests/Concertable.Customer.User.IntegrationTests.csproj
-          - api/Concertable.Search/Tests/Concertable.Search.IntegrationTests/Concertable.Search.IntegrationTests.csproj
+          - api/Concertable.Search/tests/Concertable.Search.IntegrationTests/Concertable.Search.IntegrationTests.csproj
 
     steps:
       - uses: actions/checkout@v4

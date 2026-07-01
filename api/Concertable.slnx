@@ -180,21 +180,21 @@
     <Project Path="Concertable.Payment/tests/E2ETests/Concertable.Payment.E2ETests.Helpers/Concertable.Payment.E2ETests.Helpers.csproj" />
   </Folder>
   <Folder Name="/Search/">
-    <Project Path="Concertable.Search/Concertable.Search.AppHost/Concertable.Search.AppHost.csproj" />
-    <Project Path="Concertable.Search/Concertable.Search.AppHost.Extensions/Concertable.Search.AppHost.Extensions.csproj" />
-    <Project Path="Concertable.Search/Concertable.Search.Api/Concertable.Search.Api.csproj" />
-    <Project Path="Concertable.Search/Concertable.Search.Application/Concertable.Search.Application.csproj" />
-    <Project Path="Concertable.Search/Concertable.Search.Domain/Concertable.Search.Domain.csproj" />
-    <Project Path="Concertable.Search/Concertable.Search.Infrastructure/Concertable.Search.Infrastructure.csproj" />
-    <Project Path="Concertable.Search/Concertable.Search.Web/Concertable.Search.Web.csproj" />
-    <Project Path="Concertable.Search/Concertable.Search.Workers/Concertable.Search.Workers.csproj" />
-    <Project Path="Concertable.Search/Tests/Concertable.Search.IntegrationTests/Concertable.Search.IntegrationTests.csproj" />
-    <Project Path="Concertable.Search/Tests/Concertable.Search.IntegrationTests.Fixtures/Concertable.Search.IntegrationTests.Fixtures.csproj" />
-    <Project Path="Concertable.Search/Tests/Concertable.Search.UnitTests/Concertable.Search.UnitTests.csproj" />
-    <Project Path="Concertable.Search/Tests/E2ETests/Concertable.Search.E2ETests.Helpers/Concertable.Search.E2ETests.Helpers.csproj" />
+    <Project Path="Concertable.Search/src/Concertable.Search.AppHost/Concertable.Search.AppHost.csproj" />
+    <Project Path="Concertable.Search/src/Concertable.Search.AppHost.Extensions/Concertable.Search.AppHost.Extensions.csproj" />
+    <Project Path="Concertable.Search/src/Concertable.Search.Api/Concertable.Search.Api.csproj" />
+    <Project Path="Concertable.Search/src/Concertable.Search.Application/Concertable.Search.Application.csproj" />
+    <Project Path="Concertable.Search/src/Concertable.Search.Domain/Concertable.Search.Domain.csproj" />
+    <Project Path="Concertable.Search/src/Concertable.Search.Infrastructure/Concertable.Search.Infrastructure.csproj" />
+    <Project Path="Concertable.Search/src/Concertable.Search.Web/Concertable.Search.Web.csproj" />
+    <Project Path="Concertable.Search/src/Concertable.Search.Workers/Concertable.Search.Workers.csproj" />
+    <Project Path="Concertable.Search/tests/Concertable.Search.IntegrationTests/Concertable.Search.IntegrationTests.csproj" />
+    <Project Path="Concertable.Search/tests/Concertable.Search.IntegrationTests.Fixtures/Concertable.Search.IntegrationTests.Fixtures.csproj" />
+    <Project Path="Concertable.Search/tests/Concertable.Search.UnitTests/Concertable.Search.UnitTests.csproj" />
+    <Project Path="Concertable.Search/tests/E2ETests/Concertable.Search.E2ETests.Helpers/Concertable.Search.E2ETests.Helpers.csproj" />
   </Folder>
   <Folder Name="/Search/Seed/">
-    <Project Path="Concertable.Search/Seed/Concertable.Search.Seed.Infrastructure/Concertable.Search.Seed.Infrastructure.csproj" />
+    <Project Path="Concertable.Search/src/Seed/Concertable.Search.Seed.Infrastructure/Concertable.Search.Seed.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/Shared/">
     <Project Path="Shared/Concertable.Contracts/Concertable.Contracts.csproj" />
