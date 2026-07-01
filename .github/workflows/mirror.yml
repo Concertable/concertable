@@ -25,10 +25,10 @@ jobs:
             repo: Concertable/concertable-payment
           - prefix: api/Concertable.Search
             repo: Concertable/concertable-search
-          # Shared-platform mirror. Covers api/Shared (Kernel, Contracts, Shared.*, Seed.*); the other
-          # shared infra libs (Messaging, ServiceDefaults, DataAccess, AppHost.Shared, Auth.Contracts)
-          # are separate top-level folders — finer splits deferred.
-          - prefix: api/Shared
+          # Shared-platform mirror. Covers api/Concertable.Shared (Kernel, Contracts, Shared.*, Seed.*);
+          # the other shared infra libs (Messaging, ServiceDefaults, DataAccess, AppHost.Shared,
+          # Auth.Contracts) are separate top-level folders — finer splits deferred.
+          - prefix: api/Concertable.Shared
             repo: Concertable/concertable-shared
 
     steps:

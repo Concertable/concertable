@@ -66,7 +66,7 @@ Arrows only point inward (toward Contracts/Kernel). **No outward refs** — `Dom
 ## Folder layout
 
 Modules always include the owning service segment (`B2B`, `Customer`, `Search`, etc.) in the
-project name. Shared libs under `api/Shared/` are unprefixed because they are genuinely
+project name. Shared libs under `api/Concertable.Shared/` are unprefixed because they are genuinely
 cross-service.
 
 ```
@@ -83,7 +83,7 @@ api/Concertable.<Service>/Modules/<ModuleName>/
 
 Examples: `Concertable.B2B.Concert.Domain`, `Concertable.Customer.Review.Application`.
 
-Shared libs sit at `api/Shared/Concertable.<Name>/` and follow the same per-layer csproj split
+Shared libs sit at `api/Concertable.Shared/Concertable.<Name>/` and follow the same per-layer csproj split
 (`Concertable.<Name>.Contracts`, etc.) when they need more than one layer.
 
 ---
