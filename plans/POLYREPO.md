@@ -28,15 +28,20 @@ current repo size. If it ever gets slow, swap the split step for
 [`splitsh/lite`](https://github.com/splitsh/lite), which caches incrementally — same output,
 much faster. The rest of the workflow stays the same.
 
-## One-time setup
+## One-time setup — **DONE** (recorded here as the runbook for adding future orgs/mirrors)
 
-1. **Create the empty mirror repos** on GitHub (no README/license — the push provides
-   everything): `concertable-b2b`, `concertable-customer`.
+All six mirror repos exist, `MIRROR_PAT` is set, and auto-sync on `master` is green. The steps that
+got it there, for reference / re-use:
+
+1. **Create the empty mirror repos** on GitHub (no README/license — the push provides everything).
+   The six live: `concertable-{b2b,customer,auth,payment,search,shared}` under the `Concertable` org.
 2. **Create a Personal Access Token** that can push to those repos:
    - Fine-grained PAT scoped to the mirror repos, **Contents: Read and write**, or a classic
      PAT with `repo` scope.
-3. **Add it as a secret** on the monorepo: Settings → Secrets and variables → Actions →
-   New repository secret, named `MIRROR_PAT`.
+3. **Add it as a secret** on the monorepo, named `MIRROR_PAT` (Settings → Secrets and variables →
+   Actions). **Footgun:** the checkout step must set `persist-credentials: false`, or `actions/checkout`
+   leaves the job `GITHUB_TOKEN` as an `extraheader` that overrides the `MIRROR_PAT` push creds and the
+   cross-repo push 403s as `github-actions[bot]`.
 4. **Set each mirror's default branch to `master`** (the workflow pushes `master`), or change
    the push target in `mirror.yml` to `main`.
 5. Trigger the first run: Actions → "Mirror services to standalone repos" → Run workflow
@@ -55,16 +60,19 @@ Add an entry to the `matrix.include` list in `mirror.yml`:
 
 ---
 
-# Making the mirrors clone-and-build → see `plans/POLYREPO_COMPLETION.md`
+# Clone-and-build mirrors — **DONE**; true polyrepo → see `plans/POLYREPO_COMPLETION.md`
 
-This file documents the **live, browsable** read-only mirror system above. The larger effort —
-making each mirror **clone-and-`dotnet build` on its own**, then (optionally) cutting over to a
-**true polyrepo** where each service is independently developed — is staged in
-[`POLYREPO_COMPLETION.md`](./POLYREPO_COMPLETION.md).
+This file documents the **live, browsable** read-only mirror system above. Those mirrors now also
+**clone-and-`dotnet build` on their own** — a standalone clone restores the deployable closure from
+the private org feed with a `read:packages` PAT (`GITHUB_PACKAGES_TOKEN`) and builds with 0 errors.
+That "buildable mirror" effort (Phases 1–4 of `POLYREPO_COMPLETION.md`) is complete.
 
-Most of the original "deferred clone-and-build" work (central package management, packable
-projects, rewiring cross-folder `ProjectReference`s → feed `PackageReference`s, slim per-service
-AppHosts, carve CI gates) was **already delivered by the Service Build Separation effort** — see
-`api/ARCHITECTURE.md` "Cross-service contract distribution". `POLYREPO_COMPLETION.md` covers only
-what genuinely remains: frictionless cross-repo feed restore, standalone AppHosts for the last
-services, a shared-platform mirror, and the deferred per-service cut to true polyrepo.
+Most of it was **already delivered by the Service Build Separation effort** — central package
+management, packable projects, rewiring cross-folder `ProjectReference`s → feed `PackageReference`s,
+carve CI gates (see `api/ARCHITECTURE.md` "Cross-service contract distribution"). Phases 1–4 added
+the rest: cross-repo feed-restore docs/PAT, slim standalone AppHosts for Auth/Payment/Search, the
+`concertable-shared` mirror, and the six real repos + green auto-sync.
+
+What's **still deferred** in `POLYREPO_COMPLETION.md`: the optional one-way cut to a **true polyrepo**
+where each service is independently developed. Not started — do it only when the monorepo demonstrably
+holds you back.
