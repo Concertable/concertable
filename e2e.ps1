@@ -14,7 +14,7 @@ $customerUi = Join-Path $PSScriptRoot "api/Concertable.Customer/tests/E2ETests/C
 $b2bApi      = Join-Path $PSScriptRoot "api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests"
 $customerApi = Join-Path $PSScriptRoot "api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests"
 $runsettings = Join-Path $PSScriptRoot "api/Concertable.runsettings"
-$baselineMd = Join-Path $PSScriptRoot "api/Shared/Tests/Concertable.E2ETests/E2E_BASELINE.md"
+$baselineMd = Join-Path $PSScriptRoot "api/Concertable.Shared/tests/Concertable.E2ETests/E2E_BASELINE.md"
 
 $quiet = @('--nologo', '--verbosity', 'quiet')
 
@@ -256,7 +256,7 @@ function Invoke-UiCommand([string]$cmd) {
             $r = Invoke-PrettyTest '3DS' "$b2bUi/Concertable.B2B.E2ETests.Ui.csproj" @('--filter', 'DisplayName~3DS')
             Show-Summary @($r)
         }
-        "trace" { & "api/Shared/Tests/Concertable.E2ETests/ui-trace.ps1" }
+        "trace" { & "api/Concertable.Shared/tests/Concertable.E2ETests/ui-trace.ps1" }
         default { Show-Usage }
     }
 }
