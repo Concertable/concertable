@@ -10,9 +10,9 @@ Set-Location $PSScriptRoot
 [Environment]::CurrentDirectory = $PSScriptRoot
 
 $b2bUi      = Join-Path $PSScriptRoot "api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui"
-$customerUi = Join-Path $PSScriptRoot "api/Concertable.Customer/Tests/E2ETests/Concertable.Customer.E2ETests.Ui"
+$customerUi = Join-Path $PSScriptRoot "api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui"
 $b2bApi      = Join-Path $PSScriptRoot "api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests"
-$customerApi = Join-Path $PSScriptRoot "api/Concertable.Customer/Tests/E2ETests/Concertable.Customer.E2ETests"
+$customerApi = Join-Path $PSScriptRoot "api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests"
 $runsettings = Join-Path $PSScriptRoot "api/Concertable.runsettings"
 $baselineMd = Join-Path $PSScriptRoot "api/Shared/Tests/Concertable.E2ETests/E2E_BASELINE.md"
 
