@@ -16,9 +16,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Concertable.Kernel\Concertable.Kernel.csproj" />
+    <ProjectReference Include="..\..\src\Concertable.Kernel\Concertable.Kernel.csproj" />
     <ProjectReference Include="..\..\..\Concertable.DataAccess\Concertable.DataAccess.Infrastructure\Concertable.DataAccess.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\..\Shared\Tests\Concertable.Testing\Concertable.Testing.csproj" />
+    <ProjectReference Include="..\Concertable.Testing\Concertable.Testing.csproj" />
   </ItemGroup>
 
   <ItemGroup>

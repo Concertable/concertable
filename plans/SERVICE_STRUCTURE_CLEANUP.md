@@ -139,7 +139,17 @@ normalize last-but-one, root sweep + E2E last.
   runtime check (AppHost `/health` + OIDC discovery) is folded into Phase 7's mandatory UI E2E,
   which drives real Auth registration/login on the full Aspire stack — this is a zero-behaviour
   file move, so booting Aspire twice adds no signal build+carve don't already give.
-- **Phase 6 — Shared.** **Gate:** build + shared unit/integration where present.
+- **Phase 6 — Shared. ✅ DONE.** Two changes folded together: (a) the reshape (libs Kernel/Contracts/
+  Shared.*/Seed → `src/`; `Tests/` → `tests/`; removed 3 empty `Concertable.Seeding.*` shell dirs);
+  and (b) **renamed the folder `api/Shared` → `api/Concertable.Shared`** so it matches the service
+  naming (it's its own mirror repo, `concertable-shared`). Shared has no `EnforceServiceBoundary`
+  guardrail (it *is* the shared code) and no carve job (consumed as feed packages), so neither applied.
+  Extra touch-points the rename forced beyond csproj/slnx: the `ChurnyCorePackage` Kernel path in B2B
+  & Customer `Directory.Build.targets` (`Shared\` → `Concertable.Shared\src\`), the inline
+  `<Code Source=…\Shared\Tests\*.cs>` Roslyn-task refs in both E2ETests `Directory.Build.targets`
+  (→ `Concertable.Shared\tests\`), the `mirror.yml` subtree **prefix** (`api/Shared` →
+  `api/Concertable.Shared`; the one mirror prefix that *does* change in this plan), and the
+  unit/e2e path lists. **Gate met:** full `dotnet build` green (0 errors); Kernel UnitTests 14/14.
 - **Phase 7 — Root sweep + full verify.** Final pass over the root `Concertable.slnx`, any doc/path
   stragglers, delete leftover empty local dirs (`Modules/*/Concertable.<Ctx>.*` shells from the old
   rename — untracked, local-only). **Gate:** full `dotnet build` + **UI E2E** (`e2e-ui-debug`) — this

@@ -27,7 +27,7 @@ $paymentProjects = @(
     "api/Concertable.Payment/tests/Concertable.Payment.UnitTests/Concertable.Payment.UnitTests.csproj"
 )
 $sharedProjects = @(
-    "api/Shared/Tests/Concertable.Kernel.UnitTests/Concertable.Kernel.UnitTests.csproj",
+    "api/Concertable.Shared/tests/Concertable.Kernel.UnitTests/Concertable.Kernel.UnitTests.csproj",
     "api/Concertable.Messaging/Tests/Concertable.Messaging.UnitTests/Concertable.Messaging.UnitTests.csproj",
     "api/Concertable.Messaging/Tests/Concertable.Messaging.AzureServiceBus.UnitTests/Concertable.Messaging.AzureServiceBus.UnitTests.csproj"
 )
