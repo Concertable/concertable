@@ -122,7 +122,10 @@ normalize last-but-one, root sweep + E2E last.
   Payment.Infrastructure`), so hand-edited rather than regex'd. Guardrail regex widened as usual.
   **Gate met:** full `dotnet build` green (0 errors); Payment UnitTests 25/25 (no integration project
   exists for Payment); all 9 carve-payment paths resolve under `src/`.
-- **Phase 4 — Search** (flat). **Gate:** build + Search integration + `carve-search`.
+- **Phase 4 — Search** (flat). **✅ DONE.** Same as Payment (flat + explicit `carve-search` list →
+  `src/`-prefixed; terminal ef `--project`/`--startup-project` hand-edited; guardrail regex widened).
+  **Gate met:** full `dotnet build` green (0 errors); Search UnitTests 14/14; Search IntegrationTests
+  27/27 (clean, no flakes); all 7 carve-search paths resolve under `src/`.
 - **Phase 5 — Auth (normalize).** Rooted-glob → `src/Concertable.Auth/`; drop the glob-exclude hack.
   Biggest single-service change. **Gate:** build + Auth boots standalone (`Concertable.Auth.AppHost`
   `/health` 200 + OIDC discovery) + `carve-auth`.

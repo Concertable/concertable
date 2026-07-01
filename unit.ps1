@@ -21,7 +21,7 @@ $customerProjects = @(
     "api/Concertable.Customer/src/Modules/User/Tests/Concertable.Customer.User.UnitTests/Concertable.Customer.User.UnitTests.csproj"
 )
 $searchProjects = @(
-    "api/Concertable.Search/Tests/Concertable.Search.UnitTests/Concertable.Search.UnitTests.csproj"
+    "api/Concertable.Search/tests/Concertable.Search.UnitTests/Concertable.Search.UnitTests.csproj"
 )
 $paymentProjects = @(
     "api/Concertable.Payment/tests/Concertable.Payment.UnitTests/Concertable.Payment.UnitTests.csproj"
