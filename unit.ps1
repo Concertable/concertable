@@ -24,7 +24,7 @@ $searchProjects = @(
     "api/Concertable.Search/Tests/Concertable.Search.UnitTests/Concertable.Search.UnitTests.csproj"
 )
 $paymentProjects = @(
-    "api/Concertable.Payment/Tests/Concertable.Payment.UnitTests/Concertable.Payment.UnitTests.csproj"
+    "api/Concertable.Payment/tests/Concertable.Payment.UnitTests/Concertable.Payment.UnitTests.csproj"
 )
 $sharedProjects = @(
     "api/Shared/Tests/Concertable.Kernel.UnitTests/Concertable.Kernel.UnitTests.csproj",
