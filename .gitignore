@@ -1,6 +1,10 @@
 # Claude Code local settings
 .claude/settings.local.json
 
+# Claude Code agent worktrees — ephemeral, must never be committed (they land as
+# stray gitlinks with no .gitmodules entry and break submodule-aware checkouts, e.g. mirror.yml)
+.claude/worktrees/
+
 # Duende IdentityServer developer signing keys
 *.jwk
 tempkey.jwk
