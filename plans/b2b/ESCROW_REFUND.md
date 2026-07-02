@@ -4,10 +4,29 @@ Implements the 🔴 top MVP blocker from [LAUNCH_PLAN.md](LAUNCH_PLAN.md): *"Can
 refund — add a `Cancelled` stage and wire `EscrowEntity.Refund()` (the method exists; B2B never calls
 it). Today escrow money can come in but can't be refunded in-app."*
 
-**Delivery:** one branch (`Feature/EscrowRefund`) → **one PR**, worked across multiple context clears.
-Each phase below is a **clear-safe checkpoint** — it ends build-green with its gate passed, so the
-context can be thrown away and the next session resumes from the next unticked phase. This file is the
+**Delivery:** originally scoped as one PR, but the carve forces a **two-PR split** (see below). Each
+phase is a **clear-safe checkpoint** — it ends build-green with its gate passed. This file is the
 handoff; keep it ticked in lockstep with the commits, and `git rm` it in the final phase's commit.
+
+### Delivery split — forced by the Payment.Client package boundary
+
+B2B compiles against the **published** `Concertable.Payment.Client` package (pinned via
+`ConcertablePlatformVersion` in `api/Concertable.B2B/Directory.Packages.props`), not the source next to
+it. `RefundByBookingIdAsync` (Phase 2) exists only in source until `publish-packages.yml` ships it — and
+that runs **only on push to `master`**. So B2B code calling it (Phase 3+) cannot build on a feature
+branch that also carries the Payment change. Per [`../CLAUDE.md`](../CLAUDE.md) "Boundary-blocked
+refactors", the work is split:
+
+- **PR1 = Payment** (`Feature/EscrowRefund`, Phases 1+2): already committed, builds green, merge first.
+  On merge to master, CI publishes a new `Concertable.Payment.Client` version containing
+  `RefundByBookingIdAsync`.
+- **PR2 = B2B** (Phases 3–6): the Phase 3 code is written and **parked on branch
+  `Feature/EscrowRefundB2B`** (commit `8863b4f0`, does not build until PR1 publishes). To resume:
+  1. After PR1 merges, note the published `Concertable.Payment.Client` version (CI bumps it).
+  2. Branch off updated `master`; bump `ConcertablePlatformVersion` in
+     `api/Concertable.B2B/Directory.Packages.props` to that version.
+  3. Rebase/cherry-pick `Feature/EscrowRefundB2B` onto it (`git cherry-pick 8863b4f0`).
+  4. `dotnet build api/Concertable.slnx` → `integration-debug` → `./initial-migrations.ps1`.
 
 ## Scope
 
@@ -82,16 +101,20 @@ is cancellable.
     stay green when the new Payment.Client package publishes.
   - **Gate:** solution builds. ✓
 
-- [ ] **Phase 3 — B2B: `Cancelled` state + cancel workflow/step.**
-  - Add `Cancelled` to `LifecycleState`; encode legal transitions (from `Booked` /
-    `AwaitingSettlement`; guard `Complete`/terminal).
-  - `RefundEscrowStep` (mirror `ReleaseEscrowFinishStep`) calling `IEscrowClient.RefundByBookingId`;
-    wire into the per-contract-type workflows (FlatFee/VenueHire first; DoorSplit/Versus + Hold-cancel
-    per the mechanics table).
-  - Cancel command/service: transition + run the refund step; emit the booking-cancelled domain/
-    integration event (projections, notifications, Search consume it as usual).
-  - **Model changed → re-scaffold migrations:** `./initial-migrations.ps1` from `api/`.
-  - **Gate:** build; B2B Concert integration tests (`integration-debug`).
+- [~] **Phase 3 — B2B: `Cancelled` state + cancel workflow/step.** *(code written, parked on
+  `Feature/EscrowRefundB2B` @ `8863b4f0` — blocked on PR1 publishing Payment.Client; see Delivery split.)*
+  - ✅ Added `Cancelled` to `LifecycleState` + `Cancel` to `Trigger`; transition `Booked → Cancelled`
+    for **all four** contract types (`WithCancel<TStep>()` in `ConcertWorkflowBuilder`). Scope decision:
+    cancel-with-refund window is **`Booked` only** — escrow types (FlatFee/VenueHire) hold money there so
+    refund; payout types (DoorSplit/Versus) hold **no** money at `Booked` (verify is a SetupIntent, payout
+    is at Finish), so `RefundByBookingIdAsync` is a correct no-op (no escrow row). Deferred: pre-capture
+    Hold-cancel from `Accepted`, and cancel from `AwaitingSettlement` (payout in-flight).
+  - ✅ `RefundEscrowStep : ICancelStep` → `IEscrowClient.RefundByBookingIdAsync`; wired into all 4 workflows.
+  - ✅ `CancelExecutor` + `CancellationDispatcher` + `IConcertWorkflowModule.CancelAsync`;
+    `ConcertCancelledDomainEvent` → `ConcertCancelledDomainEventHandler` → `ConcertCancelledEvent`
+    (B2B-only for now; Customer/Search/Notification consumers are follow-on, not required by the gate).
+  - ⬜ **Still to do on resume (after PR1 publishes):** bump the pin + rebase (Delivery split), then
+    `./initial-migrations.ps1` from `api/`, then **Gate:** build + B2B Concert `integration-debug`.
 
 - [ ] **Phase 4 — B2B API: cancel endpoint + auth + HATEOAS action.**
   - Cancel endpoint on the Concert/Application controller; `[Authorize]` the right role(s) per state;
