@@ -63,6 +63,16 @@ Most of the time the context is then **compacted** (summarized, work continues) 
 makes it safe to **clear** (start fresh) instead. Either way, treat the end of every phase as the
 point where the context becomes disposable. Don't carry unwritten state across a phase boundary.
 
+## Before a clear — hand off a resume prompt
+
+When the work is fully done for now, or the user says they'll clear, do two things after the durable
+state is written:
+
+1. **Prepare for clear** — confirm the plan markdown, `CLAUDE.md`/`TECH_DEBT.md`, and commit messages
+   hold everything; the chat must be safe to throw away.
+2. **Give the user a resume prompt to paste after `/clear`.** Assume zero context: name the plan file,
+   the branch/PR, and the exact next step. Keep it to a few lines.
+
 ## Verification gate per phase
 
 Every phase, no exceptions:
