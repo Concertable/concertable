@@ -17,16 +17,11 @@ that runs **only on push to `master`**. So B2B code calling it (Phase 3+) cannot
 branch that also carries the Payment change. Per [`../CLAUDE.md`](../CLAUDE.md) "Boundary-blocked
 refactors", the work is split:
 
-- **PR1 = Payment** (`Feature/EscrowRefund`, Phases 1+2): already committed, builds green, merge first.
-  On merge to master, CI publishes a new `Concertable.Payment.Client` version containing
-  `RefundByBookingIdAsync`.
-- **PR2 = B2B** (Phases 3–6): the Phase 3 code is written and **parked on branch
-  `Feature/EscrowRefundB2B`** (commit `8863b4f0`, does not build until PR1 publishes). To resume:
-  1. After PR1 merges, note the published `Concertable.Payment.Client` version (CI bumps it).
-  2. Branch off updated `master`; bump `ConcertablePlatformVersion` in
-     `api/Concertable.B2B/Directory.Packages.props` to that version.
-  3. Rebase/cherry-pick `Feature/EscrowRefundB2B` onto it (`git cherry-pick 8863b4f0`).
-  4. `dotnet build api/Concertable.slnx` → `integration-debug` → `./initial-migrations.ps1`.
+- **PR1 = Payment** (`Feature/EscrowRefund`, Phases 1+2): ✅ **merged** (`9352b8c4`). CI published
+  `Concertable.Payment.Client 0.1.0-alpha.0.547` with `RefundByBookingIdAsync`.
+- **PR2 = B2B** (Phases 3–6): in progress on `Feature/EscrowRefundB2B` (fresh off updated master).
+  Pin bumped to `.547` (`cb7841ac`), Phase 3 code cherry-picked from the old parked `8863b4f0`
+  (`4f73352c`), build + B2B Concert integration green. Continuing with Phases 4–6.
 
 ## Scope
 
@@ -101,8 +96,12 @@ is cancellable.
     stay green when the new Payment.Client package publishes.
   - **Gate:** solution builds. ✓
 
-- [~] **Phase 3 — B2B: `Cancelled` state + cancel workflow/step.** *(code written, parked on
-  `Feature/EscrowRefundB2B` @ `8863b4f0` — blocked on PR1 publishing Payment.Client; see Delivery split.)*
+- [x] **Phase 3 — B2B: `Cancelled` state + cancel workflow/step.** *(PR1 merged as `9352b8c4`;
+  Payment.Client republished at `0.1.0-alpha.0.547`. PR2 branch `Feature/EscrowRefundB2B` = pin bump
+  `cb7841ac` + cherry-picked `8863b4f0`. Gate passed: solution builds green; B2B Concert integration
+  suite green. Migration re-scaffold was a confirmed **no-op** — appending `LifecycleState.Cancelled`
+  + a domain-event `Cancel()` method carries no persisted-schema delta; `ConcertDbContextModelSnapshot`
+  unchanged.)*
   - ✅ Added `Cancelled` to `LifecycleState` + `Cancel` to `Trigger`; transition `Booked → Cancelled`
     for **all four** contract types (`WithCancel<TStep>()` in `ConcertWorkflowBuilder`). Scope decision:
     cancel-with-refund window is **`Booked` only** — escrow types (FlatFee/VenueHire) hold money there so
@@ -113,8 +112,8 @@ is cancellable.
   - ✅ `CancelExecutor` + `CancellationDispatcher` + `IConcertWorkflowModule.CancelAsync`;
     `ConcertCancelledDomainEvent` → `ConcertCancelledDomainEventHandler` → `ConcertCancelledEvent`
     (B2B-only for now; Customer/Search/Notification consumers are follow-on, not required by the gate).
-  - ⬜ **Still to do on resume (after PR1 publishes):** bump the pin + rebase (Delivery split), then
-    `./initial-migrations.ps1` from `api/`, then **Gate:** build + B2B Concert `integration-debug`.
+  - ✅ Bumped `ConcertablePlatformVersion` `.535 → .547`, cherry-picked `8863b4f0`, build green,
+    B2B Concert integration green. (Re-scaffold attempted; produced no schema diff, reverted the churn.)
 
 - [ ] **Phase 4 — B2B API: cancel endpoint + auth + HATEOAS action.**
   - Cancel endpoint on the Concert/Application controller; `[Authorize]` the right role(s) per state;
