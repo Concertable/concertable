@@ -131,7 +131,13 @@ is cancellable.
   - ✅ Bumped `ConcertablePlatformVersion` `.535 → .547`, cherry-picked `8863b4f0`, build green,
     B2B Concert integration green. (Re-scaffold attempted; produced no schema diff, reverted the churn.)
 
-- [ ] **Phase 4 — B2B API: concert-cancel endpoint + auth + HATEOAS action.**
+- [x] **Phase 4 — B2B API: concert-cancel endpoint + auth + HATEOAS action.** *(Done. `POST
+  /api/Concert/{id}/cancel` on `ConcertController`, `[HasPermission(VenuePermissions.ApplicationsDecide)]`;
+  `ConcertActions.Cancel` on `ConcertDetailsResponse`, gated on `State == Booked` (surfaced via
+  `ConcertDetails.State` + the `ToDetails` projection). `MockEscrowClient` gained a `Refunds` tracker.
+  4 `ConcertCancelApiTests` (FlatFee/VenueHire refund + Cancelled; DoorSplit no-escrow no-op; artist→403)
+  green; full B2B Concert integration 67/67. Note: the cancel action is state-gated + endpoint-secured
+  (403 for non-venue); viewer-scoping of the HATEOAS hint is deferred, not required for correctness.)*
   - `POST /api/Concert/{concertId}/cancel` on **`ConcertController`** (already `[TenantPersona(Venue)]`),
     calling the concert-keyed `IConcertWorkflowModule.CancelAsync(concertId)` → `NoContent`. Auth:
     `[HasPermission(VenuePermissions.ApplicationsDecide)]` — cancelling is reversing the venue's booking
