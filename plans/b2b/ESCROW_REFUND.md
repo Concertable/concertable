@@ -150,10 +150,15 @@ is cancellable.
   - **Gate:** build; integration tests (endpoint → `Booked → Cancelled` transition + escrow refund via the
     `MockEscrowClient`, for the escrow-holding types; no-op refund asserted for DoorSplit/Versus).
 
-- [ ] **Phase 5 — FE: cancel action on B2B venue + artist SPAs.**
-  - Cancel button + confirmation modal (consequences: refund issued, booking dead), wired to the
-    endpoint via the HATEOAS `cancel` action; loading/empty/error states.
-  - **Gate:** `npm -w @concertable/web-venue run build` + `npm -w @concertable/web-artist run build`.
+- [x] **Phase 5 — FE: cancel action on the B2B venue SPA.** *(Done. Venue-only — cancelling is a venue
+  decision (Phase 4 auth); artist is deferred, consistent with Phase 3.)*
+  - `ConcertActions { cancel? }` + optional `actions?` on the universal `Concert` type (customer-safe);
+    `cancelConcert` API + `useCancelConcert` mutation (invalidates `["concert", id]`) beside the existing
+    `updateConcert`/`useMyConcert`. `CancelBookingButton` (destructive Button + confirmation `Dialog` +
+    `sonner` toast + `isPending` states) lives in the **venue** app; `MyConcertPage` (b2b/shared) gained a
+    `renderActions(concert)` slot so the venue injects the button and the artist injects nothing. Rendered
+    only when `concert.actions?.cancel` is present (Booked window).
+  - **Gate:** all four web builds green (boundary gate) — venue/artist/customer/business ✓.
 
 - [ ] **Phase 6 — Full verify + close out.**
   - Integration: B2B cancel → Payment refund chain end-to-end (Stripe test mode: refund lands, escrow
