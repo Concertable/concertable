@@ -25,9 +25,25 @@ refactors", the work is split:
 
 ## Scope
 
-**This plan = the technical mechanism**: a `Cancelled` lifecycle state + the cross-service refund
-path (B2B workflow → Payment escrow refund) + the cancel action on the B2B SPAs + integration/E2E
-coverage.
+**This plan cancels a *concert*, not an *application* — they are different behaviours, do not conflate
+them.**
+
+- **Cancel a concert (THIS plan).** A booking that reached `Booked`: a draft concert exists and escrow
+  is `Held`. Cancelling it kills the concert (`Booked → Cancelled`) and **refunds the money**. It is
+  concert-keyed end to end (`ConcertEntity.Cancel()`, `IConcertWorkflowModule.CancelAsync(concertId)`,
+  `RefundEscrowStep`). The HTTP surface and HATEOAS action are therefore **concert-shaped**
+  (`POST /api/Concert/{id}/cancel`, a `cancel` action on the concert response) — *not* on
+  `ApplicationActions`. `LifecycleState` living on `ApplicationEntity` is just where the booking state
+  machine sits; it does not make this an "application" action.
+- **Cancel an application (SEPARATE, future plan — equally important).** An artist's *bid* on an
+  opportunity, **before** it is booked: pre-money, no escrow, no refund. Today this is **withdraw**
+  (artist) / **reject** (venue); a holistic "cancel an application" behaviour (incl. cancel from
+  `Accepted`/`PaymentFailed` pre-capture) is its own concern and gets its own plan. Tracked in
+  [LAUNCH_PLAN.md](LAUNCH_PLAN.md) so it is not lost. **Do not fold it into this plan.**
+
+**This plan = the technical mechanism** for the concert-cancel path: a `Cancelled` lifecycle state +
+the cross-service refund path (B2B workflow → Payment escrow refund) + the cancel action on the B2B
+SPAs + integration/E2E coverage.
 
 **NOT in this plan** (separate [LAUNCH_PLAN.md](LAUNCH_PLAN.md) Swim-lane C item — needs solicitor
 input): the *cancellation policy matrix* — cancellation fees, cutoff windows, who-eats-the-Stripe-fee,
@@ -115,10 +131,18 @@ is cancellable.
   - ✅ Bumped `ConcertablePlatformVersion` `.535 → .547`, cherry-picked `8863b4f0`, build green,
     B2B Concert integration green. (Re-scaffold attempted; produced no schema diff, reverted the churn.)
 
-- [ ] **Phase 4 — B2B API: cancel endpoint + auth + HATEOAS action.**
-  - Cancel endpoint on the Concert/Application controller; `[Authorize]` the right role(s) per state;
-    add `cancel` to the per-role `ApplicationActions` vocabulary (venue/artist) the FE already models.
-  - **Gate:** build; integration tests (endpoint → transition + refund via the Payment mock/real).
+- [ ] **Phase 4 — B2B API: concert-cancel endpoint + auth + HATEOAS action.**
+  - `POST /api/Concert/{concertId}/cancel` on **`ConcertController`** (already `[TenantPersona(Venue)]`),
+    calling the concert-keyed `IConcertWorkflowModule.CancelAsync(concertId)` → `NoContent`. Auth:
+    `[HasPermission(VenuePermissions.ApplicationsDecide)]` — cancelling is reversing the venue's booking
+    decision, same authority as `accept` (the venue is the escrow payer on FlatFee/VenueHire). Artist-side
+    cancel is deferred (see Phase 3 scope note).
+  - HATEOAS: a new **`ConcertActions`** block on the concert response with a `cancel` `ActionLink`,
+    emitted **only when the booking is in the cancellable `Booked` window** (concert exists + escrow held).
+    *Not* `ApplicationActions` — this is a concert action (see Scope). First concert-action record; mirror
+    the `ApplicationResponseMapper` conditional-action pattern.
+  - **Gate:** build; integration tests (endpoint → `Booked → Cancelled` transition + escrow refund via the
+    `MockEscrowClient`, for the escrow-holding types; no-op refund asserted for DoorSplit/Versus).
 
 - [ ] **Phase 5 — FE: cancel action on B2B venue + artist SPAs.**
   - Cancel button + confirmation modal (consequences: refund issued, booking dead), wired to the

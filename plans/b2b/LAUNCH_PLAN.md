@@ -15,7 +15,8 @@
 - [x] DoorSplit/Versus revenue source — **resolved: manual door-takings entry + charge-the-venue** for v1 (external-ticketer import ruled out — §9). All four contract types ship in the pure-B2B MVP, no marketplace dependency. See §9 / R9.
 
 **Build — MVP blockers, in priority order:**
-- [ ] 🔴 **Cancellation + escrow refund** — add a `Cancelled` stage and wire `EscrowEntity.Refund()` (the method exists; B2B never calls it). Today escrow money can come in but can't be refunded in-app.
+- [ ] 🔴 **Concert cancellation + escrow refund** — cancel a *booked concert* (escrow `Held`): `Booked → Cancelled` + refund. Wires `EscrowEntity.Refund()` (the method exists; B2B never called it). In progress — see [ESCROW_REFUND.md](ESCROW_REFUND.md). **This is the concert-cancel path only.**
+- [ ] 🔴 **Application cancellation** *(separate — needs its own plan)* — cancelling an artist's *bid before it's booked* (pre-money, no refund). Distinct behaviour from concert cancellation above (don't conflate). Partly covered today by withdraw/reject; a holistic path (incl. cancel from `Accepted`/`PaymentFailed` pre-capture) is unaddressed. Equally important; write the plan when picked up.
 - [ ] 🔴 **E-signed booking agreement** — click-wrap at Accept, terms snapshotted, PDF via `IPdfService` (LEGAL_REQUIREMENTS item 2).
 - [ ] 🔴 **DoorSplit/Versus door-take entry at settlement** — venue enters the door take; Concertable charges the venue for the artist's share + fee and pays the artist (reuses FlatFee escrow). Without it the two revenue-share types — the actual moat vs GigPig/GigXchange — can't settle. See §1 / R9.
 - [ ] 🟠 **DAC7 onboarding completion** — NINO / UTR / Company-Reg on `Tenant.Compliance`; gate payout until complete (no de-minimis for services — reportable from £1).
