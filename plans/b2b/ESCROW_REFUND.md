@@ -160,14 +160,23 @@ is cancellable.
     only when `concert.actions?.cancel` is present (Booked window).
   - **Gate:** all four web builds green (boundary gate) — venue/artist/customer/business ✓.
 
-- [ ] **Phase 6 — Full verify + close out.**
-  - Integration: B2B cancel → Payment refund chain end-to-end (Stripe test mode: refund lands, escrow
-    `Refunded`, lifecycle `Cancelled`) for each covered contract type.
-  - **E2E (this is a payments path → clears the "run E2E" bar):** full cancel→refund flow on the
-    Aspire stack via `e2e-api-debug` (+ `e2e-ui-debug` for the SPA action).
-  - Final `./initial-migrations.ps1` if the model shifted since Phase 3.
-  - **`git rm` this plan file in the commit that closes Phase 6.**
-  - Update [LAUNCH_PLAN.md](LAUNCH_PLAN.md): tick the 🔴 "Cancellation + escrow refund" blocker.
+- [~] **Phase 6 — Full verify + close out.** *(In progress. Integration verified; no migration needed;
+  cancel-specific E2E scenarios still to author; plan NOT yet deleted.)*
+  - ✅ **Integration**: `ConcertCancelApiTests` cover the cancel→refund chain per contract type against
+    the Payment mock — FlatFee/VenueHire (refund fired + `Cancelled`), DoorSplit (no escrow at Booked →
+    correct no-op), artist→403. Full B2B Concert integration 67/67.
+  - ✅ **Migration**: no re-scaffold needed — nothing since Phase 3 changed the persisted model (Phase 4
+    added `ConcertDetails.State`, a read-projection field only; Phase 5 is FE).
+  - ⬜ **E2E cancel scenarios — still to author (this is the outstanding Phase-6 work).** The E2E harness
+    has **no** Stripe-refund query helper and **no** seeded refundable `Booked` booking, so a real
+    cancel→refund test needs new plumbing: (a) a `Booked` booking with a real held escrow charge (drive
+    the accept flow through Stripe test mode, or add a seed), (b) a Stripe-refund assertion helper +
+    escrow-status DB accessor, (c) an API E2E test mirroring `ConcertFinishedTests`, and (d) a UI cancel
+    step in `FlatFeeWorkflow.feature`. Deferred rather than authored blind. **Meanwhile the merge queue
+    runs the existing full E2E suites on PR2 → regression safety for the booking/settlement flows the
+    `ConcertDetails` projection change touches.**
+  - ⬜ **Close-out (do when cancel E2E is green in the merge queue):** `git rm` this plan file; tick the
+    🔴 concert-cancellation blocker in [LAUNCH_PLAN.md](LAUNCH_PLAN.md).
 
 ## Reference
 
