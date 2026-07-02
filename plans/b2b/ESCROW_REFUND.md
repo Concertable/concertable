@@ -74,10 +74,13 @@ is cancellable.
   - **Gate:** Payment builds; `Concertable.Payment.UnitTests` cover `RefundByBookingIdAsync`
     (domain `Refund()` is already tested); carve-payment paths resolve.
 
-- [ ] **Phase 2 — Payment.Client: refund adapter.**
-  - `IEscrowClient.RefundByBookingIdAsync` + `EscrowClient` impl + proto mappers (mirror
-    `ReleaseByBookingIdAsync`).
-  - **Gate:** solution builds. (Mergeable with Phase 1 if small.)
+- [x] **Phase 2 — Payment.Client: refund adapter.**
+  - `IEscrowClient.RefundByBookingIdAsync` + `EscrowClient` impl (mirror `ReleaseByBookingIdAsync`).
+    Additive: returns the existing published `RefundResponse` — the `Response`→shared-`Refund` rename is
+    deferred to [PAYMENT_DTO_CONSOLIDATION.md](../PAYMENT_DTO_CONSOLIDATION.md) (breaking package change).
+    Forward-compat: the `IEscrowClient` mocks (B2B fixtures) implement the new method now so B2B/Customer
+    stay green when the new Payment.Client package publishes.
+  - **Gate:** solution builds. ✓
 
 - [ ] **Phase 3 — B2B: `Cancelled` state + cancel workflow/step.**
   - Add `Cancelled` to `LifecycleState`; encode legal transitions (from `Booked` /
