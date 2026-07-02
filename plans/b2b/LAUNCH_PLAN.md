@@ -2,18 +2,16 @@
 
 > **Goal:** Production launch of the B2B platform (venue↔artist booking + automated settlement) by **November 2026**.
 >
-> **Updated:** 2026-06-22
->
-> **Companion docs:** [LAUNCH_CHECKLIST.md](LAUNCH_CHECKLIST.md), [USER_MODEL_PLAN.md](USER_MODEL_PLAN.md), [MARKETPLACE_PLAN.md](../customer/MARKETPLACE_PLAN.md), [../../api/Concertable.B2B/Modules/Contract/LEGAL_REQUIREMENTS.md](../../api/Concertable.B2B/Modules/Contract/LEGAL_REQUIREMENTS.md).
+> **Companion docs:** [LAUNCH_CHECKLIST.md](LAUNCH_CHECKLIST.md), [USER_MODEL_PLAN.md](USER_MODEL_PLAN.md), [MARKETPLACE_PLAN.md](../customer/MARKETPLACE_PLAN.md), [../../api/Concertable.B2B/src/Modules/Contract/LEGAL_REQUIREMENTS.md](../../api/Concertable.B2B/src/Modules/Contract/LEGAL_REQUIREMENTS.md).
 
 ---
 
-## Status — what's shipped vs. what's left (code-verified 2026-06-22)
+## Status — what's shipped vs. what's left
 
 **Shipped — verified in code, don't rebuild:** Tenant model + membership + 6-role RBAC · payout re-keyed to `TenantId` · Stripe Connect Express with both money flows (escrow `OnBehalfOf` for FlatFee/VenueHire; `TransferData.Destination` for DoorSplit/Versus) · artist↔venue messaging · settlement for all four contract types · the 3% PRS skim is correctly absent.
 
 **Decide first — gates everything (see §9):**
-- [ ] Revenue model (per-gig / subscription / % commission / hybrid) — whatever it is, the fee rides on the settlement transaction (§9 principle).
+- [x] Revenue model — **resolved 2026-07-01: % commission on the settlement transaction, ~5% headline with a small minimum floor.** Rides the settlement transaction per the locked principle; a % that only charges on completed bookings sells with zero traction (unlike an access subscription, which needs an established base). Competitor anchor: GigXchange 0–8% on settlement, agencies ~20%, Stripe cost ~1.5%+20p. Exact % revisitable at v1.1 — the *shape* is what unblocks pricing UI / T&Cs / VAT. See §9 / decision log.
 - [x] DoorSplit/Versus revenue source — **resolved: manual door-takings entry + charge-the-venue** for v1 (external-ticketer import ruled out — §9). All four contract types ship in the pure-B2B MVP, no marketplace dependency. See §9 / R9.
 
 **Build — MVP blockers, in priority order:**
@@ -42,7 +40,7 @@ The legal/business track is [LAUNCH_CHECKLIST.md](LAUNCH_CHECKLIST.md); the hard
 - Multi-staff Tenant model (Owner + Manager roles)
 - DAC7-compliant seller onboarding
 - Cancellation/refund handling on the B2B path (venue or artist cancels — escrow refunds correctly)
-- Per-booking signed agreement (click-wrap e-signature, terms snapshotted at Accept) — see [LEGAL_REQUIREMENTS.md](../../api/Concertable.B2B/Modules/Contract/LEGAL_REQUIREMENTS.md) item 2
+- Per-booking signed agreement (click-wrap e-signature, terms snapshotted at Accept) — see [LEGAL_REQUIREMENTS.md](../../api/Concertable.B2B/src/Modules/Contract/LEGAL_REQUIREMENTS.md) item 2
 - Per-contract-type VAT calculation + VAT-compliant self-billed invoices per settlement (items 1, 3, 4)
 - Per-tenant configuration surface (PRS, VAT, platform fee, payment terms, cancellation defaults)
 
@@ -224,10 +222,9 @@ See [MARKETPLACE_PLAN.md](../customer/MARKETPLACE_PLAN.md) for the detail. Headl
 
 ## 9. Decision points still open
 
-These need answers but aren't urgent yet. (The **DoorSplit/Versus revenue source** is no longer open — *resolved 2026-06-22*: manual door-take entry + charge-the-venue ships all four contract types; external-ticketer import ruled out; own checkout deferred. Reasoning in §1 + the decision log; build item in the Status block; risk in R9.)
+These need answers but aren't urgent yet. (Two items are no longer open: the **DoorSplit/Versus revenue source** — *resolved 2026-06-22*: manual door-take entry + charge-the-venue ships all four contract types; external-ticketer import ruled out; own checkout deferred — and the **revenue model** — *resolved 2026-07-01*, below.)
 
-- **Revenue model** — per-gig fee / subscription / % commission / hybrid. Decide by end of Month 1. **Constraint (settled 2026-06-22):** the fee must ride on the *settlement transaction* routed through our Stripe Connect (charge the venue for the artist's share **+ our fee**, then pay the artist) — never fully invoice-only/GigPig-style, which leaves no transaction to take a cut from. Points toward a % cut on settlement. (Corollary — we never force venues onto our checkout; the marketplace is additive — is in §1 and the decision log.)
-- **Subscription tiers** (if going subscription) — what's free, what's paid, what's the price point? Decide by Month 3 (when pricing page work starts).
+- **Revenue model** — *resolved 2026-07-01:* **% commission on the settlement transaction, ~5% headline with a small minimum floor.** Satisfies the locked constraint (the fee must ride the *settlement transaction* routed through our Stripe Connect — charge the venue the artist's share **+ our fee**, then pay the artist — never invoice-only/GigPig-style, which leaves no transaction to cut from). A % scales with deal value and only bills on completed bookings, which sells with zero traction; subscription (GigPig's model) needs an established base, so it's parked as a possible later add-on, not the v1 path. Exact % is revisitable at v1.1. (Corollary — we never force venues onto our checkout; the marketplace is additive — is in §1 and the decision log.)
 - **Beta cohort sourcing** — warm intros via existing music industry contacts? Cold outreach? Industry events? Decide by Month 4.
 - **Support tooling** — shared inbox (Front, Helpscout) or just Gmail? Discord/Slack/WhatsApp for beta? Decide by Month 5.
 
@@ -236,22 +233,23 @@ These need answers but aren't urgent yet. (The **DoorSplit/Versus revenue source
 - [LAUNCH_CHECKLIST.md](LAUNCH_CHECKLIST.md) — full legal/business setup checklist
 - [USER_MODEL_PLAN.md](USER_MODEL_PLAN.md) — Swim-lane B detail: the outstanding multi-user tenant / roles / auth-sweep work
 - [MARKETPLACE_PLAN.md](../customer/MARKETPLACE_PLAN.md) — Phase 2 marketplace switch-on plan
-- [../../api/Concertable.B2B/Modules/Contract/LEGAL_REQUIREMENTS.md](../../api/Concertable.B2B/Modules/Contract/LEGAL_REQUIREMENTS.md) — B2B legal backlog (rewritten 2026-06-01: contract-type-centric, items 0-9, PRS corrected)
+- [../../api/Concertable.B2B/src/Modules/Contract/LEGAL_REQUIREMENTS.md](../../api/Concertable.B2B/src/Modules/Contract/LEGAL_REQUIREMENTS.md) — B2B legal backlog (rewritten 2026-06-01: contract-type-centric, items 0-9, PRS corrected)
 - [../../api/Concertable.Customer/LEGAL_REQUIREMENTS.md](../../api/Concertable.Customer/LEGAL_REQUIREMENTS.md) — marketplace/fan legal leads (future, separate system)
-- [../../api/Concertable.B2B/Modules/Contract/ARCHITECTURE.md](../../api/Concertable.B2B/Modules/Contract/ARCHITECTURE.md) — contract + workflow architecture
+- [../../api/Concertable.B2B/src/Modules/Contract/ARCHITECTURE.md](../../api/Concertable.B2B/src/Modules/Contract/ARCHITECTURE.md) — contract + workflow architecture
 - [MODULAR_MONOLITH_RULES.md](../../api/docs/MODULAR_MONOLITH_RULES.md) — module boundary rules
 
-## Decision log
+## Decisions locked
 
-- **2026-05-18** — B2B-first launch, marketplace deferred. Rationale: user wants to focus on the SaaS side that differentiates from GigPig; marketplace switch-on can be additive without major B2B refactor.
-- **2026-05-18** — Target launch Nov 2026 (6 months from plan creation). Reviewable monthly.
-- **2026-05-18** — Three swim-lane structure adopted. Independent parallel workstreams with clearly defined dependencies; allows the legal slow-path and the code work to proceed concurrently.
-- **2026-05-18** — Multi-user membership table in scope from day one (not deferred). Avoids a second auth refactor later.
-- **2026-06-01** — `LEGAL_REQUIREMENTS.md` rewritten contract-type-centric (items 0-9); PRS corrected (not 3%, not platform's liability — per-tenant pass-through at ~4.2%); fan/marketplace items split into a separate Customer doc.
-- **2026-06-01** — Booking agreement + click-wrap e-signature added to v1 scope (legal item 2). It's the backbone for the audit trail, self-billed invoice, and cancellation-terms consent; GigPig/GigXchange market this as "contract signing" and it matters more for us given multi-direction money movement.
-- **2026-06-01** — Per-contract-type VAT calculation + self-billed invoicing added to v1 scope (was implied, never sequenced). VAT branches on supply direction (VenueHire reverses it) and supplier registration status.
-- **2026-06-01** — Tenant configuration surface adopted: PRS/VAT/fee/payment-terms/cancellation defaults read from per-tenant config, not constants.
-- **2026-06-01** — Flagged DoorSplit/Versus revenue-source gap (R9): two of four contract types can't settle without a revenue feed; FlatFee + VenueHire are the standalone-safe v1 floor.
-- **2026-06-20** — Organization refactor superseded by the tenancy route. `ORGANIZATION_REFACTOR_PLAN.md`, `TENANCY_DESIGN.md`, and `TENANT_SCOPING_PLAN.md` shipped and were deleted per the plans rule (git history is the archive). The B2B module is now `Tenant` (Guid PK) with request-scoped filtering and a compliance value object; tenant-scoping is complete (full E2E green). **"Organization" is retained ONLY as the user-facing UI/API label** (Settings → Organization, `api/organizations`) — the backend domain type is `Tenant`. Remaining Swim-lane B work (multi-user membership, roles, the auth sweep) moved to `USER_MODEL_PLAN.md`. This plan's Swim-lane B / §7 references were updated to match; the killed `OrganizationMembership` / `OrganizationId` terminology was scrubbed.
-- **2026-06-22** — **Ticket distribution researched (two deep-research passes); model decided.** The merchant-of-record incumbents can't support API-syndication (DICE read-only, Skiddle read-only/non-commercial/competitor-barred, Eventbrite create app-gated; all hold the money). **Ticket Tailor** is the one external platform clearing all three bars (public create API, `ORDER`/`ISSUED_TICKET` webhooks, funds to the connected Stripe with no hold) — but funds land in the *organiser's* Stripe, not ours, so it can't give Concertable fund control unless Concertable is the connected account (which is just the own checkout). **Decision:** §9 option (b) external-ticketer import ruled out; DoorSplit/Versus settle via (a) manual entry + charge-the-venue; (c) own checkout is the deferred durable feed; Ticket Tailor is a post-launch data-ingestion option only. Sources: Ticket Tailor / TicketSource / DICE Partners / Skiddle / Weeztix API docs, Eventbrite SEC 10-Q, GigPig FAQs.
-- **2026-06-22** — **MVP scope + monetization principle settled.** (1) The v1 MVP is **pure B2B competing head-on with GigPig/GigXchange** on the contract types they structurally can't settle — DoorSplit/Versus. A flat-fee-only MVP wouldn't differentiate, so those two must be sellable at v1; manual door-take entry + charge-the-venue makes all four ship with no marketplace and no ticketing ownership. (2) **Monetization principle:** Concertable's fee rides on the settlement transaction routed through our Stripe Connect, never invoice-only (else there's no transaction to take a cut from). (3) Pure-B2B also keeps consumer-protection / CMA / consumer-fund-holding liability out of the MVP; the marketplace stays deferred as the additive *second* distribution option. Reinforces (does not reverse) the 2026-05-18 B2B-first / marketplace-deferred decision. Updated §1, §9, R9.
+The settled calls that constrain the work above. Full rationale + dated history are in git
+(`git log -p plans/b2b/LAUNCH_PLAN.md`) — not duplicated here.
+
+- **B2B-first.** The customer ticket marketplace is deferred and additive (§8), not a v1 dependency.
+- **All four contract types ship in v1.** DoorSplit/Versus settle via **manual door-take entry +
+  charge-the-venue** — external-ticketer import ruled out; own checkout is the deferred durable feed. §9
+- **Revenue model: % commission on the settlement transaction** (~5% headline + small minimum floor).
+  Subscription parked as a possible later add-on. §9
+- **Monetization principle:** the fee always rides the settlement transaction routed through our
+  Stripe Connect — never invoice-only (else there's no transaction to take a cut from). §9
+- **Backend domain type is `Tenant`** (Guid PK, request-scoped filtering, compliance value object);
+  **"Organization" is the user-facing UI/API label only.** Multi-user membership/roles/auth-sweep
+  are the outstanding Swim-lane B work — see [USER_MODEL_PLAN.md](USER_MODEL_PLAN.md).

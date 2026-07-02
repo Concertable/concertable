@@ -27,6 +27,25 @@ verification gate. Phases sequence so that every intermediate state builds and p
 5. A plan **superseded** by a newer plan, or describing a **rejected** design, is deleted the moment
    that's decided — no tombstones.
 
+## Boundary-blocked refactors — capture in a plan, don't force into this PR
+
+Cross-service deps go through **published packages**, not project references (the carve — see
+[`api/ARCHITECTURE.md`](../api/ARCHITECTURE.md)). B2B and Customer compile against the *published*
+`Concertable.*` packages (e.g. `Payment.Client`, `Payment.Contracts`), not the source sitting next to
+them in the solution. So a refactor that **changes a published contract** — renaming/removing a public
+type consumers use, changing a return type, moving a DTO between packages — is a **breaking package
+change**: it can't build/land in one PR, because the consumers won't see the new shape until the
+package republishes (on merge to master). Adding a *method* is safe (additive); changing *types
+consumers already use* is not (no back-compat shim for a return-type change → expand/contract across
+merges).
+
+When you hit one of these mid-feature: **don't force it into the current PR, and don't derail the
+feature to do it.** Capture it in a dedicated plan (design + the expand/contract steps + why it's
+multi-merge), do the safe/additive part the feature needs now, and reference the plan from your commit.
+
+(If the boundary friction itself is being questioned — "is the polyrepo sim worth it yet?" — that's an
+architecture decision for the root, not something to resolve inside a feature PR either.)
+
 ## End of a phase — leave it compaction/clear-safe
 
 A phase isn't done when the code is green; it's done when **nothing important lives only in the chat
