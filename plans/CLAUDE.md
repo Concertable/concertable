@@ -27,6 +27,21 @@ verification gate. Phases sequence so that every intermediate state builds and p
 5. A plan **superseded** by a newer plan, or describing a **rejected** design, is deleted the moment
    that's decided — no tombstones.
 
+## Doc-only close-out — never open its own PR; let it ride the next change
+
+Ideally the plan deletion + blocker tick land **inside the feature's final commit** (Lifecycle 4). But
+sometimes the plan has to outlive the merge — e.g. it was the live working doc while the PR was still
+being debugged in the merge queue — so the close-out only happens *after* the feature already merged.
+When that happens, **do not open a standalone PR for it.** Deleting a completed plan and ticking a
+blocker are doc-only and cannot break a build or another PR (root `CLAUDE.md`: docs are exempt from
+branch hygiene). Spinning up a branch + PR + full merge-queue **E2E cycle (~20-30 min)** for a two-file
+doc change is pure waste — and pushing straight to the protected `master` is (correctly) blocked.
+
+So: make the close-out edits and **leave them in the working tree** to ride along with the next PR that
+lands (or bundle them into the next commit). The same goes for any tiny, non-breaking doc/markdown
+tweak — `TECH_DEBT.md` lines, scratch notes, blocker ticks: never a dedicated PR, just let it travel
+with the next real change.
+
 ## Boundary-blocked refactors — capture in a plan, don't force into this PR
 
 Cross-service deps go through **published packages**, not project references (the carve — see
