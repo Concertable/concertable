@@ -164,40 +164,36 @@ Consequences:
       same-artist re-apply is schema-forbidden (unique `(OpportunityId, ArtistId)`), and the
       duplicate-apply 500 gap is logged in `api/Concertable.B2B/TECH_DEBT.md`.
 
-- [ ] **Phase 2 — B2B: cancel from `Accepted`/`PaymentFailed` (money-aware).** ~1–2 days.
-  - Builder: `WithApplicationCancel<TStep>()` adding `Accepted|PaymentFailed + Withdraw|Cancel →
-    Cancelled` + the tolerant payment-event self-transitions in `Cancelled`; applied to **all four**
-    workflows.
-  - `IApplicationCancelStep` + `RefundEscrowByApplicationStep`: resolve booking via
-    `IBookingRepository.GetByApplicationIdAsync`, call `IEscrowClient.RefundByBookingIdAsync`
-    (refunds FlatFee/VenueHire `Held`; correct no-op for DoorSplit/Versus and `PaymentFailed`).
-    One step for all types — the client's no-op semantics make per-type steps pointless.
-  - Extend `WithdrawExecutor` to run the cancel step when leaving `Accepted`/`PaymentFailed`; new
-    `CancelApplicationExecutor` for the venue verb. Late-capture compensation: on
-    `EscrowPaymentSucceeded` in `Cancelled`, re-run the refund step.
-  - `POST /api/Application/{id}/cancel`; `ApplicationDto.State` (internal); `ApplicationStatus.Cancelled`
-    + mapper fix; state-gated `Cancel` HATEOAS link; `Cancelled` added to the opportunity-availability
-    exclusions.
-  - **Gate:** build green; integration tests — per-type cancel from `Accepted` (FlatFee/VenueHire:
-    `MockEscrowClient.Refunds` fired + terminal `Cancelled`; DoorSplit/Versus: no-op + `Cancelled`),
-    cancel from `PaymentFailed`, artist withdraw from `Accepted` refunds too, cancel from `Booked`
-    → 409 (concert-cancel's territory), late-`EscrowPaymentSucceeded`-after-cancel auto-refunds,
-    opportunity re-opens (application-cancel and concert-cancel cases). No migration (no
-    persisted-model change).
+- [x] **Phase 2 — B2B: cancel from `Accepted`/`PaymentFailed` (money-aware).** ✅ SHIPPED.
+  - As planned, with placement deltas:
+    - `WithApplicationCancel()` (parameterless) adds only the four cancel transitions; the tolerant
+      payment-event self-transitions live in `WithEscrowPayment()`/`WithVerifiedPayment()` so each
+      contract type only declares events it can actually receive. The step is DI-registered once
+      (`IApplicationCancelStep → RefundEscrowByApplicationStep`), not per-workflow.
+    - `Booked + Cancel` is a *valid* machine transition (concert-cancel's), so
+      `CancelApplicationExecutor` guards explicitly: not `Accepted`/`PaymentFailed` → 409.
+    - Late-event compensation branches in the executors: `EscrowExecutor` refunds instead of
+      booking when the application is already `Cancelled`; `VerifyExecutor` no-ops (verify events
+      ring-fence no money).
+    - New fixture helper `ApiFixture.SendEscrowFailedWebhookAsync` fires B2B's
+      `PaymentFailedEvent` handlers in-process — the failure leg the webhook simulator lacked.
+  - Gate met: 10 new integration tests green (suite 87/88; the 1 failure was a Phase-1 test that
+    re-ran green alone — root-caused to host load, a 732s outbox SQL command during concurrent
+    npm builds).
 
-- [ ] **Phase 3 — FE: both manager SPAs.** ~1–1.5 days.
-  - `app/shared` `applicationApi`: `withdrawApplication`, `rejectApplication`, `cancelApplication`,
-    `getPendingForArtist`, `getRecentDeniedForArtist`; `ApplicationActions` type gains
-    `withdraw`/`reject`/`cancel`, `ApplicationStatus` union gains `"Cancelled"`.
-  - **Venue:** pass `onDeny` from `ApplicationsPage` into the existing `ApplicationCard` affordance
-    (confirm dialog + toast, `CancelBookingButton` pattern); add a Cancel button rendered when
-    `actions.cancel` is present. Both action-gated, `data-testid` hooks.
-  - **Artist:** minimal **My Applications** page — new artist-only route
-    `_artist/my/applications` (artist `src/`, not b2b/shared — single-app rule) listing pending +
-    recently-denied via the endpoints above, with Withdraw/Cancel buttons per `actions`. Nav link
-    from the artist my-page. Align the artist dashboard fixtures' `withdraw` href to the real verb
-    (`POST /api/Application/{id}/withdraw`) in passing.
-  - **Gate:** all four web builds green (`web-customer`, `web-venue`, `web-artist`, `web-business`).
+- [x] **Phase 3 — FE: both manager SPAs.** ✅ SHIPPED (gate met: all four web builds green).
+  - As planned, with deltas:
+    - Per-action functionality is encapsulated in hooks (`useDenyApplication`/`useCancelApplication`
+      in venue, `useWithdrawApplication` in artist: dialog target + confirm + toasts over the
+      shared react-query mutations) composed with a shared `ConfirmActionDialog` — which lives in
+      `b2b/shared` (both manager apps consume it, meets the two-consumer bar).
+    - `ApplicationStatus` union also gained `"Accepted"` — the FE union carried stale values
+      (`AwaitingPayment`/`Confirmed`/`Settled`...) the wire never sends; stale members left in
+      place (dashboard fixtures use them), not this PR's cleanup.
+    - Known limitation: the artist pending list (`GET artist/pending`) excludes `Accepted`
+      applications (they have bookings), so artist-side withdraw-from-`Accepted` has no UI surface
+      yet — the unwind of an accepted application is venue-surfaced (Cancel on `ApplicationsPage`);
+      the API supports the artist verb when a surface exists.
 
 - [ ] **Phase 4 — Verify + close out.** ~0.5 day.
   - Full B2B Concert integration suite; **UI E2E regress** via the `e2e-ui-regress` skill (Docker
