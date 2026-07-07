@@ -130,6 +130,54 @@ Rules of the shape:
 - **Discard-tuple calls.** `var (thing, _) = await GetPairAsync(...)` means the API is the wrong
   shape for the caller — add the single-value method to the interface instead.
 
+## Dependency-holders — public get-only auto-properties, not mirrored fields
+
+When a type's whole job is to **surface its injected dependencies as public members** of an interface
+it implements — it holds them, adds no behaviour of its own — assign the constructor params straight to
+**public get-only auto-properties**. Don't declare a private backing field and then mirror it with an
+expression-bodied property; `private readonly IX x;` + `public IX X => x;` is two members and a pointless
+double-hop for one dependency.
+
+Canonical example — the per-`ContractType` `IConcertWorkflow` implementations
+(`Modules/Concert/…/Services/Workflow/Workflows/`), which exist only to expose each workflow step
+(`Apply`, `Accept`, `Book`, `Finish`, `Cancel`) as a public property:
+
+```csharp
+internal sealed class FlatFeeWorkflow : IConcertWorkflow, IAppliesSimple, IAcceptsCheckout, IAcceptsSimple
+{
+    public FlatFeeWorkflow(
+        SimpleApplyStep apply,
+        CaptureEscrowAcceptStep accept,
+        CreateConcertDraftStep book,
+        ReleaseEscrowFinishStep finish,
+        RefundEscrowStep cancel)
+    {
+        this.Apply = apply;      // concrete param (what DI resolves) → interface-typed property
+        this.Accept = accept;
+        this.Book = book;
+        this.Finish = finish;
+        this.Cancel = cancel;
+    }
+
+    public ISimpleApplyStep Apply { get; }
+    public ISimpleAcceptStep Accept { get; }
+    public IBookStep Book { get; }
+    public IFinishStep Finish { get; }
+    public ICancelStep Cancel { get; }
+}
+```
+
+The params stay **concrete** (so DI resolves the registered concrete step) while the properties are
+**interface-typed** (the contract consumers see); the implicit concrete→interface conversion happens at
+assignment. Assignments are `this.`-qualified like any constructor assignment (see
+[`CODE_CONVENTIONS.md`](./CODE_CONVENTIONS.md)).
+
+This is **not** a licence to drop `private readonly` fields everywhere. It applies only when the member
+is a genuine public part of the type's contract that just passes the dependency through. A dependency a
+type consumes *internally* (a repository a service calls, a client a step invokes) stays a
+`private readonly` field — that's captured state, not a surfaced member, and the "no primary
+constructors for captured state" rule in `CODE_CONVENTIONS.md` still governs it.
+
 ## Typed HTTP clients — Refit, not hand-rolled `HttpClient`
 
 Every outbound HTTP call we *consume* gets a Refit interface — a `[Get]`/`[Post]`-annotated contract

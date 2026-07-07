@@ -17,22 +17,33 @@ that runs **only on push to `master`**. So B2B code calling it (Phase 3+) cannot
 branch that also carries the Payment change. Per [`../CLAUDE.md`](../CLAUDE.md) "Boundary-blocked
 refactors", the work is split:
 
-- **PR1 = Payment** (`Feature/EscrowRefund`, Phases 1+2): already committed, builds green, merge first.
-  On merge to master, CI publishes a new `Concertable.Payment.Client` version containing
-  `RefundByBookingIdAsync`.
-- **PR2 = B2B** (Phases 3–6): the Phase 3 code is written and **parked on branch
-  `Feature/EscrowRefundB2B`** (commit `8863b4f0`, does not build until PR1 publishes). To resume:
-  1. After PR1 merges, note the published `Concertable.Payment.Client` version (CI bumps it).
-  2. Branch off updated `master`; bump `ConcertablePlatformVersion` in
-     `api/Concertable.B2B/Directory.Packages.props` to that version.
-  3. Rebase/cherry-pick `Feature/EscrowRefundB2B` onto it (`git cherry-pick 8863b4f0`).
-  4. `dotnet build api/Concertable.slnx` → `integration-debug` → `./initial-migrations.ps1`.
+- **PR1 = Payment** (`Feature/EscrowRefund`, Phases 1+2): ✅ **merged** (`9352b8c4`). CI published
+  `Concertable.Payment.Client 0.1.0-alpha.0.547` with `RefundByBookingIdAsync`.
+- **PR2 = B2B** (Phases 3–6): in progress on `Feature/EscrowRefundB2B` (fresh off updated master).
+  Pin bumped to `.547` (`cb7841ac`), Phase 3 code cherry-picked from the old parked `8863b4f0`
+  (`4f73352c`), build + B2B Concert integration green. Continuing with Phases 4–6.
 
 ## Scope
 
-**This plan = the technical mechanism**: a `Cancelled` lifecycle state + the cross-service refund
-path (B2B workflow → Payment escrow refund) + the cancel action on the B2B SPAs + integration/E2E
-coverage.
+**This plan cancels a *concert*, not an *application* — they are different behaviours, do not conflate
+them.**
+
+- **Cancel a concert (THIS plan).** A booking that reached `Booked`: a draft concert exists and escrow
+  is `Held`. Cancelling it kills the concert (`Booked → Cancelled`) and **refunds the money**. It is
+  concert-keyed end to end (`ConcertEntity.Cancel()`, `IConcertWorkflowModule.CancelAsync(concertId)`,
+  `RefundEscrowStep`). The HTTP surface and HATEOAS action are therefore **concert-shaped**
+  (`POST /api/Concert/{id}/cancel`, a `cancel` action on the concert response) — *not* on
+  `ApplicationActions`. `LifecycleState` living on `ApplicationEntity` is just where the booking state
+  machine sits; it does not make this an "application" action.
+- **Cancel an application (SEPARATE, future plan — equally important).** An artist's *bid* on an
+  opportunity, **before** it is booked: pre-money, no escrow, no refund. Today this is **withdraw**
+  (artist) / **reject** (venue); a holistic "cancel an application" behaviour (incl. cancel from
+  `Accepted`/`PaymentFailed` pre-capture) is its own concern and gets its own plan. Tracked in
+  [LAUNCH_PLAN.md](LAUNCH_PLAN.md) so it is not lost. **Do not fold it into this plan.**
+
+**This plan = the technical mechanism** for the concert-cancel path: a `Cancelled` lifecycle state +
+the cross-service refund path (B2B workflow → Payment escrow refund) + the cancel action on the B2B
+SPAs + integration/E2E coverage.
 
 **NOT in this plan** (separate [LAUNCH_PLAN.md](LAUNCH_PLAN.md) Swim-lane C item — needs solicitor
 input): the *cancellation policy matrix* — cancellation fees, cutoff windows, who-eats-the-Stripe-fee,
@@ -101,8 +112,12 @@ is cancellable.
     stay green when the new Payment.Client package publishes.
   - **Gate:** solution builds. ✓
 
-- [~] **Phase 3 — B2B: `Cancelled` state + cancel workflow/step.** *(code written, parked on
-  `Feature/EscrowRefundB2B` @ `8863b4f0` — blocked on PR1 publishing Payment.Client; see Delivery split.)*
+- [x] **Phase 3 — B2B: `Cancelled` state + cancel workflow/step.** *(PR1 merged as `9352b8c4`;
+  Payment.Client republished at `0.1.0-alpha.0.547`. PR2 branch `Feature/EscrowRefundB2B` = pin bump
+  `cb7841ac` + cherry-picked `8863b4f0`. Gate passed: solution builds green; B2B Concert integration
+  suite green. Migration re-scaffold was a confirmed **no-op** — appending `LifecycleState.Cancelled`
+  + a domain-event `Cancel()` method carries no persisted-schema delta; `ConcertDbContextModelSnapshot`
+  unchanged.)*
   - ✅ Added `Cancelled` to `LifecycleState` + `Cancel` to `Trigger`; transition `Booked → Cancelled`
     for **all four** contract types (`WithCancel<TStep>()` in `ConcertWorkflowBuilder`). Scope decision:
     cancel-with-refund window is **`Booked` only** — escrow types (FlatFee/VenueHire) hold money there so
@@ -113,27 +128,56 @@ is cancellable.
   - ✅ `CancelExecutor` + `CancellationDispatcher` + `IConcertWorkflowModule.CancelAsync`;
     `ConcertCancelledDomainEvent` → `ConcertCancelledDomainEventHandler` → `ConcertCancelledEvent`
     (B2B-only for now; Customer/Search/Notification consumers are follow-on, not required by the gate).
-  - ⬜ **Still to do on resume (after PR1 publishes):** bump the pin + rebase (Delivery split), then
-    `./initial-migrations.ps1` from `api/`, then **Gate:** build + B2B Concert `integration-debug`.
+  - ✅ Bumped `ConcertablePlatformVersion` `.535 → .547`, cherry-picked `8863b4f0`, build green,
+    B2B Concert integration green. (Re-scaffold attempted; produced no schema diff, reverted the churn.)
 
-- [ ] **Phase 4 — B2B API: cancel endpoint + auth + HATEOAS action.**
-  - Cancel endpoint on the Concert/Application controller; `[Authorize]` the right role(s) per state;
-    add `cancel` to the per-role `ApplicationActions` vocabulary (venue/artist) the FE already models.
-  - **Gate:** build; integration tests (endpoint → transition + refund via the Payment mock/real).
+- [x] **Phase 4 — B2B API: concert-cancel endpoint + auth + HATEOAS action.** *(Done. `POST
+  /api/Concert/{id}/cancel` on `ConcertController`, `[HasPermission(VenuePermissions.ApplicationsDecide)]`;
+  `ConcertActions.Cancel` on `ConcertDetailsResponse`, gated on `State == Booked` (surfaced via
+  `ConcertDetails.State` + the `ToDetails` projection). `MockEscrowClient` gained a `Refunds` tracker.
+  4 `ConcertCancelApiTests` (FlatFee/VenueHire refund + Cancelled; DoorSplit no-escrow no-op; artist→403)
+  green; full B2B Concert integration 67/67. Note: the cancel action is state-gated + endpoint-secured
+  (403 for non-venue); viewer-scoping of the HATEOAS hint is deferred, not required for correctness.)*
+  - `POST /api/Concert/{concertId}/cancel` on **`ConcertController`** (already `[TenantPersona(Venue)]`),
+    calling the concert-keyed `IConcertWorkflowModule.CancelAsync(concertId)` → `NoContent`. Auth:
+    `[HasPermission(VenuePermissions.ApplicationsDecide)]` — cancelling is reversing the venue's booking
+    decision, same authority as `accept` (the venue is the escrow payer on FlatFee/VenueHire). Artist-side
+    cancel is deferred (see Phase 3 scope note).
+  - HATEOAS: a new **`ConcertActions`** block on the concert response with a `cancel` `ActionLink`,
+    emitted **only when the booking is in the cancellable `Booked` window** (concert exists + escrow held).
+    *Not* `ApplicationActions` — this is a concert action (see Scope). First concert-action record; mirror
+    the `ApplicationResponseMapper` conditional-action pattern.
+  - **Gate:** build; integration tests (endpoint → `Booked → Cancelled` transition + escrow refund via the
+    `MockEscrowClient`, for the escrow-holding types; no-op refund asserted for DoorSplit/Versus).
 
-- [ ] **Phase 5 — FE: cancel action on B2B venue + artist SPAs.**
-  - Cancel button + confirmation modal (consequences: refund issued, booking dead), wired to the
-    endpoint via the HATEOAS `cancel` action; loading/empty/error states.
-  - **Gate:** `npm -w @concertable/web-venue run build` + `npm -w @concertable/web-artist run build`.
+- [x] **Phase 5 — FE: cancel action on the B2B venue SPA.** *(Done. Venue-only — cancelling is a venue
+  decision (Phase 4 auth); artist is deferred, consistent with Phase 3.)*
+  - `ConcertActions { cancel? }` + optional `actions?` on the universal `Concert` type (customer-safe);
+    `cancelConcert` API + `useCancelConcert` mutation (invalidates `["concert", id]`) beside the existing
+    `updateConcert`/`useMyConcert`. `CancelBookingButton` (destructive Button + confirmation `Dialog` +
+    `sonner` toast + `isPending` states) lives in the **venue** app; `MyConcertPage` (b2b/shared) gained a
+    `renderActions(concert)` slot so the venue injects the button and the artist injects nothing. Rendered
+    only when `concert.actions?.cancel` is present (Booked window).
+  - **Gate:** all four web builds green (boundary gate) — venue/artist/customer/business ✓.
 
-- [ ] **Phase 6 — Full verify + close out.**
-  - Integration: B2B cancel → Payment refund chain end-to-end (Stripe test mode: refund lands, escrow
-    `Refunded`, lifecycle `Cancelled`) for each covered contract type.
-  - **E2E (this is a payments path → clears the "run E2E" bar):** full cancel→refund flow on the
-    Aspire stack via `e2e-api-debug` (+ `e2e-ui-debug` for the SPA action).
-  - Final `./initial-migrations.ps1` if the model shifted since Phase 3.
-  - **`git rm` this plan file in the commit that closes Phase 6.**
-  - Update [LAUNCH_PLAN.md](LAUNCH_PLAN.md): tick the 🔴 "Cancellation + escrow refund" blocker.
+- [~] **Phase 6 — Full verify + close out.** *(In progress. Integration verified; no migration needed;
+  cancel-specific E2E scenarios still to author; plan NOT yet deleted.)*
+  - ✅ **Integration**: `ConcertCancelApiTests` cover the cancel→refund chain per contract type against
+    the Payment mock — FlatFee/VenueHire (refund fired + `Cancelled`), DoorSplit (no escrow at Booked →
+    correct no-op), artist→403. Full B2B Concert integration 67/67.
+  - ✅ **Migration**: no re-scaffold needed — nothing since Phase 3 changed the persisted model (Phase 4
+    added `ConcertDetails.State`, a read-projection field only; Phase 5 is FE).
+  - ✅ **E2E cancel scenarios — authored.** All four pieces built: (a) the `Booked`-with-held-escrow
+    booking is **driven** through the live accept→hold→charge flow (no seed — escrow rows aren't
+    seedable), mirroring `ConcertDraftTests`; (b) `StripeFixture.GetRefundAsync` (Stripe-refund
+    assertion) + `PaymentDb.GetEscrowStatusAsync`/`GetEscrowRefundIdAsync` (escrow-status accessors);
+    (c) API E2E `ConcertCancelledTests` (FlatFee + VenueHire: cancel → `Cancelled` + escrow `Refunded`
+    + real Stripe refund `succeeded` + cancel action gone), mirroring `ConcertFinishedTests`; (d) a
+    cancel scenario in `FlatFeeWorkflow.feature` + `MyConcertPage` page object + step defs (FE
+    `CancelBookingButton` gained `data-testid` hooks). Solution + venue web build green. **Not yet run
+    locally — gated to the merge queue's full E2E suites (the decision on PR2).**
+  - ⬜ **Close-out (do when cancel E2E is green in the merge queue):** `git rm` this plan file; tick the
+    🔴 concert-cancellation blocker in [LAUNCH_PLAN.md](LAUNCH_PLAN.md).
 
 ## Reference
 

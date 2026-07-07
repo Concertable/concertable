@@ -21,6 +21,10 @@ const concertApi = {
     const { data } = await api.put<Concert>(`/concert/${id}`, request);
     return data;
   },
+
+  cancelConcert: async (id: number): Promise<void> => {
+    await api.post(`/concert/${id}/cancel`);
+  },
 };
 
 export default concertApi;

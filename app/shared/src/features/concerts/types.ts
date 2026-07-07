@@ -111,6 +111,10 @@ export interface ConcertVenue {
   longitude: number;
 }
 
+export interface ConcertActions {
+  cancel?: ActionLink | null;
+}
+
 export interface Concert {
   id: number;
   name: string;
@@ -127,4 +131,5 @@ export interface Concert {
   venue: ConcertVenue;
   artist: ConcertArtist;
   genres: Genre[];
+  actions?: ConcertActions;
 }

@@ -22,6 +22,12 @@ public MyService(SearchDbContext context)
 }
 ```
 
+**Constructor assignments are always `this.`-qualified** — fields *and* public auto-properties. When a
+member is a surfaced public auto-property (see the dependency-holder pattern in
+[`CODE_PATTERNS.md`](./CODE_PATTERNS.md)), still write `this.Property = param`, not a bare
+`Property = param`. Uniform `this.` at every assignment site reads consistently and makes the
+member-vs-param split obvious at a glance.
+
 ## No `string.Empty` as a "populated later" default — use `null!`
 
 A non-nullable `string` property that something else populates (deserialization DTOs, EF entities, config-bound options, audit interceptors) defaults to `null!`, never `string.Empty`. An empty-string default masks a missing value as a present-but-blank one; `null!` says plainly "something else assigns this before use".
