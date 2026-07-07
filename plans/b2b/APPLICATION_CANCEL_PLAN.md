@@ -151,18 +151,18 @@ Consequences:
 
 ## Phases
 
-- [ ] **Phase 1 — B2B: withdraw + reject from `Applied` (pre-money).** ~0.5–1 day.
-  - `WithdrawExecutor` + `RejectExecutor` (thin `ILifecycleTransitioner.TransitionAsync` calls —
-    the transitions already exist in every workflow) + dispatchers, mirroring
-    `AcceptanceDispatcher`/`AcceptExecutor`.
-  - `IApplicationService.WithdrawAsync/RejectAsync` with counterparty notifications;
-    `MessageAction` additions.
-  - Endpoints `POST /api/Application/{id}/withdraw` (`ArtistPermissions.ApplicationsSubmit`) and
-    `POST /api/Application/{id}/reject` (`VenuePermissions.ApplicationsDecide`).
-  - HATEOAS: `Withdraw`/`Reject` links on `ApplicationActions`, gated on `Status == Pending`
-    (`Pending ⇔ Applied`, no DTO change needed yet).
-  - **Gate:** build green; Concert module integration tests — withdraw/reject happy paths, wrong-
-    persona 403, cross-tenant 404, second call 400 (invalid transition), opportunity re-opens.
+- [x] **Phase 1 — B2B: withdraw + reject from `Applied` (pre-money).** ✅ SHIPPED.
+  - As planned (executors + dispatchers, endpoints, Pending-gated HATEOAS links, `MessageAction`
+    additions), plus deltas found while building:
+    - Invalid transitions are **409** (`ConflictException` from `ContractStateMachine.Next`), not
+      400 — tests assert 409; same applies to Phase 2's cancel-from-`Booked` gate.
+    - Notification plumbing extracted while adding the withdraw/reject notifications:
+      `IApplicationNotifier` (who/what per application event) over `INotifier` (conversation
+      message + `EmailCopy`, verbs mirroring `IConversationsModule`). `ApplicationService` no
+      longer touches conversations/email/user modules directly.
+    - "Opportunity re-opens" is asserted via the `WhereOpen`-backed venue opportunity list —
+      same-artist re-apply is schema-forbidden (unique `(OpportunityId, ArtistId)`), and the
+      duplicate-apply 500 gap is logged in `api/Concertable.B2B/TECH_DEBT.md`.
 
 - [ ] **Phase 2 — B2B: cancel from `Accepted`/`PaymentFailed` (money-aware).** ~1–2 days.
   - Builder: `WithApplicationCancel<TStep>()` adding `Accepted|PaymentFailed + Withdraw|Cancel →
@@ -181,7 +181,7 @@ Consequences:
   - **Gate:** build green; integration tests — per-type cancel from `Accepted` (FlatFee/VenueHire:
     `MockEscrowClient.Refunds` fired + terminal `Cancelled`; DoorSplit/Versus: no-op + `Cancelled`),
     cancel from `PaymentFailed`, artist withdraw from `Accepted` refunds too, cancel from `Booked`
-    → 400 (concert-cancel's territory), late-`EscrowPaymentSucceeded`-after-cancel auto-refunds,
+    → 409 (concert-cancel's territory), late-`EscrowPaymentSucceeded`-after-cancel auto-refunds,
     opportunity re-opens (application-cancel and concert-cancel cases). No migration (no
     persisted-model change).
 
