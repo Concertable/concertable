@@ -96,7 +96,7 @@ for the boundary. This does *not* change the merge story; it just removes the lo
     (Without it the PR still opens fine; it just won't auto-merge — a human clicks merge when green.)
 - [ ] **Phase 1c** — verify live: a no-op platform bump → sync PR opens green → auto-merges; a
   deliberately-breaking change → sync PR opens red at exactly the consumers to migrate.
-- [ ] **Phase 1d** — document the loop in `api/ARCHITECTURE.md` ("Cross-service contract changes":
+- [x] **Phase 1d** — documented the loop in `api/ARCHITECTURE.md` ("Cross-service contract changes":
   publish → auto sync-PR → green auto-merge / red migrate-in-PR).
 - [ ] **Phase 2 (optional)** — extend the `UseLocalCore` swap to cross-service adapter packages for the
   local inner loop; document; keep out of committed config + CI.
