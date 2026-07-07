@@ -99,16 +99,36 @@ for the boundary. This does *not* change the merge story; it just removes the lo
     `carve-{auth,payment,search,b2b,customer}` + `e2e-api-tests`/`e2e-ui-tests`. A breaking bump reddens
     the carve checks (they restore the just-published package against unmigrated consumer source) → the
     PR can't enter the queue → waits for the migration. So no branch-protection change was needed.
-- [ ] **Phase 1c** — verify live: a no-op platform bump → sync PR opens green → auto-merges; a
-  deliberately-breaking change → sync PR opens red at exactly the consumers to migrate.
-- [x] **Phase 1d** — documented the loop in `api/ARCHITECTURE.md` ("Cross-service contract changes":
-  publish → auto sync-PR → green auto-merge / red migrate-in-PR).
+- [x] **Phase 1d** — documented the loop in `api/ARCHITECTURE.md` ("Cross-service contract changes").
+
+### ⚠️ Phase 1c live run — the v1 auto-merge design caused an incident (fixed in 1e)
+
+Driving the real Payment DTO consolidation through v1 exposed three flaws that combined to redden master:
+1. **Auto-merge armed at PR creation** → the `.552` sync PR merged at its *pins-only* commit before the
+   consumer migration was pushed (race).
+2. **Red PRs merged anyway** → a failed `build` job *skips* the required `carve/e2e` checks, and the
+   queue treats skipped ≠ failed, so a red-build PR satisfied the gate.
+3. **Cascade** → each sync PR edits `api/`, re-triggering publish → another sync PR (`.552`→`.553`→…).
+4. **Phantom versions** → the MinVer *recompute* produced `.553`/`.554` that `publish-packages` never
+   shipped (feed topped out at `.552`) → pins pointed at non-existent packages → `NU1102`.
+
+Recovery: disabled the workflow, closed the in-flight sync PR, and landed `Fix/PaymentDtoConsumerMigration`
+(migrate consumers + reset pins to the real `.552`). Master green again; DTO consolidation **done**.
+
+- [x] **Phase 1e — harden platform-sync (done in `.github/workflows/platform-sync.yml`).**
+  - **Version from the feed, not MinVer.** Resolve the latest published version by reading the feed's
+    flat-container index for `concertable.payment.client` (Basic auth with `GITHUB_TOKEN` + `packages:read`,
+    matching `verify-restore`) → can only ever be a version that truly shipped.
+  - **Cascade guard.** Skip when the triggering commit is itself a platform-sync pin bump (message matches
+    `chore/platform-sync-` / `chore(platform): sync`) — a pin bump changes no package content, so nothing
+    needs re-syncing. Breaks the self-trigger loop.
+  - **No auto-merge.** The sync PR opens for a human to review + merge. Removes both the creation-race and
+    the reliance on the queue gating a red PR.
+- [ ] **Phase 1f — repo governance (NEEDS TOMMY; blocked from auto mode).** Add **`build`** to the
+  "Master merge queue (e2e gate)" ruleset's required status checks, so a red `build` (which skips
+  carve/e2e) can never merge — repo-wide, not just for sync PRs. Command/steps in the handoff.
 - [ ] **Phase 2 (optional)** — extend the `UseLocalCore` swap to cross-service adapter packages for the
   local inner loop; document; keep out of committed config + CI.
 
-## Once this lands — resume the Payment DTO consolidation
-
-With Phase 1 in place, `plans/PAYMENT_DTO_CONSOLIDATION.md` becomes: (1) merge the Payment-side rename
-(publishes new packages) — the validated work is parked on branch `Feature/PaymentDtoConsolidation`,
-commit `wip(payment): … (PAUSED)`; (2) the auto sync-PR opens red at the 4 fixture mocks + `TicketPayment`,
-migrate them there, green, merge. Two painless steps instead of the manual dance.
+## Status: Payment DTO consolidation is DONE (`plans/PAYMENT_DTO_CONSOLIDATION.md` deleted, master green).
+Remaining here: land Phase 1e (this PR), do Phase 1f (ruleset), then `gh workflow enable "Platform sync"`.
