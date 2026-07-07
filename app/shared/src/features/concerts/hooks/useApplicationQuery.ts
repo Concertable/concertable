@@ -47,3 +47,57 @@ export function useAcceptApplicationMutation(opportunityId: number) {
     },
   });
 }
+
+export function usePendingApplicationsQuery() {
+  return useQuery({
+    queryKey: ["applications", "artist", "pending"],
+    queryFn: () => applicationApi.getPendingForArtist(),
+  });
+}
+
+export function useRecentDeniedApplicationsQuery() {
+  return useQuery({
+    queryKey: ["applications", "artist", "recently-denied"],
+    queryFn: () => applicationApi.getRecentDeniedForArtist(),
+  });
+}
+
+export function useWithdrawApplicationMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (applicationId: number) =>
+      applicationApi.withdrawApplication(applicationId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["applications"] });
+    },
+  });
+}
+
+export function useRejectApplicationMutation(opportunityId: number) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (applicationId: number) =>
+      applicationApi.rejectApplication(applicationId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["applications", "opportunity", opportunityId],
+      });
+    },
+  });
+}
+
+export function useCancelApplicationMutation(opportunityId: number) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (applicationId: number) =>
+      applicationApi.cancelApplication(applicationId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["applications", "opportunity", opportunityId],
+      });
+    },
+  });
+}
