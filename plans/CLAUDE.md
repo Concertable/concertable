@@ -5,6 +5,16 @@ archive. A finished plan kept "for reference" is rot: it misleads the next reade
 work is still pending. This file is the workflow; the root [`CLAUDE.md`](../CLAUDE.md) carries the
 short version.
 
+## LAUNCH_PLAN.md is the master tracker — keep it current with every change it tracks
+
+[`plans/b2b/LAUNCH_PLAN.md`](./b2b/LAUNCH_PLAN.md) is the driving doc for the current launch
+effort (a weeks-to-months horizon; most work in this period traces back to one of its items).
+Whenever landed work affects anything it tracks — a blocker shipped or partially shipped, a
+decision resolved, scope changed, a new blocker discovered — update the relevant LAUNCH_PLAN line
+**in the same commit** as the work (tick/strike/annotate in its existing ✅/🔴/🟠/🟡 style), exactly
+like ticking a phase in a feature plan. Don't defer it to a close-out pass. Unlike ordinary plans
+it is **not** deleted as items complete — it lives until launch.
+
 ## Branch first
 
 Before any plan work, create a `Feature/<Name>` branch relevant to the plan if you're not already on one — never commit plan work to `master` or an unrelated branch.
