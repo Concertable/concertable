@@ -148,6 +148,32 @@ Guid TenantId { get; set; }
 Guid TenantId { get; set; }
 ```
 
+## DTO naming — `Response` is HTTP-only; `Result<T>` is the service wrapper; C# DTOs carry no suffix
+
+The `Response` suffix is reserved for the **HTTP-API wire layer** (`Module.Api/Responses/`, see the
+"DTOs vs Responses" section in [`../CLAUDE.md`](../CLAUDE.md)). It does **not** belong on the C#
+service/client DTOs that adapters (gRPC clients, service interfaces) pass around:
+
+- **`Result<T>`** (FluentResults) is already the service-call wrapper — the "did it succeed" envelope.
+  Naming the payload `XResponse` on top of `Result<XResponse>` double-encodes "this is a reply".
+- **Service and client DTOs carry no suffix.** Name them for the shape, Stripe-aligned where the
+  concept mirrors Stripe: `Transfer`, `Refund`, `EscrowDeposit`, `PaymentOutcome` — not
+  `TransferResponse`/`PaymentResponse`. Accept the Stripe-SDK name collision (`Stripe.Transfer`,
+  `Stripe.Refund`) and resolve it with a `using` alias in the few files that need both
+  (`using Transfer = Concertable.Payment.Contracts.Transfer;`).
+- **Proto message names stay `*Response`.** `EscrowResponse`/`PaymentResponse` in a `.proto` are the
+  native gRPC RPC vocabulary — wire-only, generated, and never surfaced as the C# DTO. The client- and
+  server-side `XMappers` map proto `*Response` ⇄ the suffix-free C# DTO.
+
+```csharp
+// CORRECT — service/client DTO, no suffix; Result<T> is the wrapper
+Task<Result<EscrowDeposit>> DepositAsync(...);
+Task<Result<Transfer?>> ReleaseByBookingIdAsync(...);
+
+// WRONG — Response suffix on a non-HTTP DTO, redundant with Result<T>
+Task<Result<EscrowResponse>> DepositAsync(...);
+```
+
 ## Mappers — `XMappers` extension methods
 
 Type-to-type mapping (e.g. gRPC proto ⇄ domain/contract types) lives in a static `XMappers` class as extension methods named `ToTarget()`, not as private `MapX` helpers on the consumer.
@@ -155,7 +181,7 @@ Type-to-type mapping (e.g. gRPC proto ⇄ domain/contract types) lives in a stat
 ```csharp
 internal static class EscrowMappers
 {
-    public static EscrowResponse ToEscrowResponse(this Proto.EscrowResponse r) => ...;
+    public static EscrowDeposit ToEscrowDeposit(this Proto.EscrowResponse r) => ...;
     public static EscrowStatus ToEscrowStatus(this Proto.EscrowStatusType s) => ...;
 }
 ```
