@@ -45,6 +45,78 @@ A **return-type change has no back-compat shim** (you can't have a method return
 type). So this is a breaking package change and must go **expand/contract** across merges — publish the
 new shape first, migrate consumers against the published package, then delete the old.
 
+## ⚠️ BLOCKER — Step 1 as written can't pass the ALLGREEN merge queue (resolve before coding)
+
+Investigated 2026-07-07 (deferred, not yet started). The plan's Step 1 does a **hard return-type swap**
+in Payment.Client source. That is **not mergeable as-is** under this repo's merge queue:
+
+- The required **`build` job runs `dotnet build api/Concertable.slnx`** — the *full* solution, which
+  includes Payment.Client **source** (`.github/workflows/test.yml`).
+- B2B/Customer *production* code consumes Payment.Client/Contracts as **published packages** (old shape),
+  but their **test fixtures `ProjectReference` the source** — confirmed
+  `api/Concertable.B2B/tests/Concertable.B2B.IntegrationTests.Fixtures/…csproj:20-21` (both
+  `Payment.Client` and `Payment.Contracts` as project refs), and the slnx lists the source projects
+  (`Concertable.slnx:167-168`).
+- So the instant Step 1 changes the source return types, the full-solution build has the test graph
+  seeing the **new** shape while production binds the **old** package → mixed-reference collision → the
+  `build` job (a required check) goes **red**. The plan's "root CI red until Step 2 — expected" line is
+  **incompatible with ALLGREEN** — a red `build` can't merge through the queue.
+- Contrast the escrow work (PR1): that was **additive** (a new method), so every step stayed green. A
+  return-type swap has no such luxury.
+
+### ✅ Path 3 executed 2026-07-07 (branch `Feature/PaymentDtoConsolidation`) — empirical red/green
+
+Made the full Step 1 edits (Payment-internal only) on the branch and built. **The Payment-internal
+refactor is sound; the cross-package swap is confirmed un-green-able in one PR.** Results:
+
+- **`Concertable.Payment.slnx` → GREEN** (0 errors). Payment is all-source here, so moving the four
+  DTOs + `EscrowStatus` into `Payment.Contracts`, wiring `Domain → Contracts` (new ProjectReference for
+  the shared enum), retargeting both mapper sets and the `Stripe.*` aliases, and deleting the old
+  `Application/DTOs` + `Client/*Response.cs` copies all compiles clean.
+- **`api/Concertable.slnx` (full) → RED, 20 errors, ALL in the four B2B/Customer integration-test
+  fixture mocks** (`MockEscrowClient`, `MockEscrowClientFail`, `MockManagerPaymentClient`,
+  `MockCustomerPaymentClient`). CS0246 (old `*Response` names gone) + CS0738 (mock return types no
+  longer match the source interface). **Production B2B/Customer code compiled clean** — it binds the
+  *old published package*, the fixtures bind the *source* (project ref). Exactly the predicted split.
+- **Second experiment — co-migrated the four mocks to the new types and rebuilt → STILL RED, 8 errors**,
+  and the residual errors are the real mixed-reference collision, not fixable in this PR:
+  - **CS7069 / CS1061 in `TicketApiTests.cs`**: production `TicketPayment : Client.PaymentResponse`
+    binds the *package* (old), but the test project also pulls *source* `Payment.Client` (which deleted
+    `PaymentResponse`) → base type "could not be found", so `TicketPayment` loses `.TransactionId` /
+    `.RequiresAction`. Unfixable until production `TicketPayment` moves off `Client.PaymentResponse`,
+    which needs the republished package.
+  - **CS0104** `Transfer`/`Refund` ambiguous with `Stripe.*` in `MockEscrowClient` (has `using Stripe;`)
+    — the exact alias gotcha noted below; consumer mocks need the same `using` alias.
+  (These experimental mock edits were reverted; the branch holds only the clean Payment-internal Step 1.)
+
+**Conclusion: a single green PR is impossible for this return-type swap + type deletion.** Migrating the
+fixtures fixes the *build* but the collision resurfaces in `TicketApiTests`, and even a green build would
+leave the integration `test` job red at runtime (production compiled vs old package, source client loaded
+→ type-identity mismatch). Both are required ALLGREEN checks. So path 1 "every step green in one PR" is
+**not** achievable here.
+
+**Decision needed — how to land the breaking swap. Recommended, in order:**
+1. **Restructured additive sequence (preferred — stays green, no bypass).** The blast radius is tiny:
+   4 fixture mocks + **one** production file (`TicketPayment`) + its one test. So:
+   - **PR A (additive, green):** add the four records + `EscrowStatus` to `Payment.Contracts` only —
+     nothing deleted, nothing's return type changed. Publishes the new Contracts shapes.
+   - **PR B (additive, green):** bump consumers' `ConcertablePlatformVersion`; re-point production
+     `TicketPayment` to derive from `Contracts.PaymentOutcome` (while `Client.PaymentResponse` still
+     exists). Now no production code names a to-be-deleted type.
+   - **PR C (the flip):** change `Payment.Client` interface return types to the Contracts shapes, delete
+     `Client/*Response.cs`, migrate the 4 fixture mocks in-PR. Needs validating that C's build+tests are
+     green given package-vs-source — the remaining open risk; if C still can't go green, fall back to 2.
+2. **`--admin`-merge a deliberately-red flip** (original Step 1+2 as written), accepting a short
+   knowingly-red `build`/`test` window until the follow-up restores green. Fast, tiny blast radius, but
+   merges known-red and bypasses the queue's E2E for that step — **use only with explicit sign-off.**
+
+## Also — update `api/docs/CODE_CONVENTIONS.md`
+
+Part of standardizing this: add a convention documenting the naming rule this refactor establishes —
+**`Response` suffix is HTTP-API-layer only; `Result<T>` is the service wrapper; C# service/client DTOs
+carry no suffix (Stripe-aligned: `Transfer`/`Refund`/`EscrowDeposit`/`PaymentOutcome`); proto message
+names stay `*Response` (wire vocabulary).** Land it in the same effort as the code.
+
 ## Steps (expand/contract)
 
 - [ ] **Step 1 — introduce shared DTOs in `Payment.Contracts`; migrate Payment's own service + client.**
