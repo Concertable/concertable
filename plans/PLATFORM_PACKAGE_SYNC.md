@@ -88,12 +88,17 @@ for the boundary. This does *not* change the merge story; it just removes the lo
   locally: bumps all 5 services, idempotent); opens/updates `chore/platform-sync-<version>` and sets
   `gh pr merge --auto --squash`. Auto-merge = green→merges, red→waits for a human to migrate. **Chose
   auto-merge over manual-click** (the whole point is hands-off non-breaking propagation).
-- [ ] **Phase 1b — repo settings (needs Tommy; can't be done from code):**
-  - Add secret **`PLATFORM_SYNC_TOKEN`** — PAT/App token with `contents:write` + `pull-requests:write`
-    + `workflow`. **Required**: the default `GITHUB_TOKEN` can't trigger `test.yml` on the sync PR
-    (GitHub recursion guard), so without this the PR would have no checks to gate auto-merge on.
-  - Enable repo **"Allow auto-merge"** + branch protection on master requiring the `test.yml` checks.
-    (Without it the PR still opens fine; it just won't auto-merge — a human clicks merge when green.)
+- [x] **Phase 1b — repo settings.**
+  - Secret **`PLATFORM_SYNC_TOKEN`** set from the maintainer's `gh` OAuth token (`repo` + `workflow`).
+    Required so the sync PR triggers CI — the default `GITHUB_TOKEN` can't (GitHub recursion guard),
+    which would leave no checks to gate auto-merge on. **Follow-up:** rotate this to a repo-scoped
+    fine-grained PAT (contents + pull-requests write) — a personal OAuth token is broader than needed
+    and breaks if the maintainer re-auths.
+  - **"Allow auto-merge" already enabled** repo-wide; master is governed by the **"Master merge queue
+    (e2e gate)"** ruleset (method MERGE, ALLGREEN) with required checks
+    `carve-{auth,payment,search,b2b,customer}` + `e2e-api-tests`/`e2e-ui-tests`. A breaking bump reddens
+    the carve checks (they restore the just-published package against unmigrated consumer source) → the
+    PR can't enter the queue → waits for the migration. So no branch-protection change was needed.
 - [ ] **Phase 1c** — verify live: a no-op platform bump → sync PR opens green → auto-merges; a
   deliberately-breaking change → sync PR opens red at exactly the consumers to migrate.
 - [x] **Phase 1d** — documented the loop in `api/ARCHITECTURE.md` ("Cross-service contract changes":

@@ -100,6 +100,8 @@ jobs:
             gh pr create --base master --head "$branch" \
               --title "chore(platform): sync to ${VERSION}" --body "$body"
           fi
-          # Green -> merges now; red -> waits until checks pass (i.e. after a human migrates). No-op if
-          # the repo hasn't enabled auto-merge — the PR just waits for a manual merge instead.
-          gh pr merge "$branch" --auto --squash || echo "auto-merge unavailable; PR left for manual merge"
+          # --merge matches the "Master merge queue (e2e gate)" ruleset's method. Green -> the PR
+          # passes the required carve/e2e checks and the queue merges it; red (a consumer needs
+          # migrating) -> a required check fails, so it never enters the queue and waits for a human.
+          # No-op guard if auto-merge is ever unavailable — the PR just waits for a manual merge.
+          gh pr merge "$branch" --auto --merge || echo "auto-merge unavailable; PR left for manual merge"
