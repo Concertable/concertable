@@ -2,21 +2,20 @@ name: Platform sync
 
 # Automates the cross-service publish->consume loop (see plans/PLATFORM_PACKAGE_SYNC.md).
 #
-# When 'Publish packages' pushes new Concertable.* packages to the feed on master, this opens a
-# single PR that bumps every service's <ConcertablePlatformVersion> pin to the just-published
-# version, then sets that PR to auto-merge:
-#   - NON-breaking platform change  -> the bump PR's CI is green -> it auto-merges. Zero touch.
-#   - BREAKING platform change       -> the bump PR's CI is red at exactly the consumers that must
-#                                        migrate. A human does the migration IN THIS PR (now legal:
-#                                        the new package exists on the feed), CI greens, it merges.
+# When 'Publish packages' ships new Concertable.* packages to the feed on master, this opens ONE PR
+# bumping every service's <ConcertablePlatformVersion> pin to the just-published version. A human
+# reviews + merges it:
+#   - NON-breaking platform change -> the bump PR is green -> merge it.
+#   - BREAKING platform change     -> the bump PR is red at exactly the consumers that must migrate.
+#                                     Do the migration IN THIS PR (now legal: the new package exists
+#                                     on the feed), push, and merge when CI greens.
 #
-# PREREQUISITES (one-time, repo settings):
-#   - Secret PLATFORM_SYNC_TOKEN: a PAT (or GitHub App token) with `contents:write` + `pull-requests:write`
-#     + `workflow`. REQUIRED so the sync PR's push/open triggers test.yml — the default GITHUB_TOKEN
-#     deliberately does NOT trigger downstream workflows (GitHub's recursion guard), which would leave the
-#     PR with no checks to gate auto-merge on.
-#   - Repo: "Allow auto-merge" enabled + branch protection on master with the test.yml checks required.
-#     Without it the PR still opens correctly; it just won't auto-merge (a human clicks merge when green).
+# It deliberately does NOT auto-merge (a red-then-merged incident proved that unsafe: a build failure
+# skips the required carve/e2e checks, and skipped != failed). And it will NOT re-trigger off its own
+# pin-bump merge (the cascade guard below), so it can't loop.
+#
+# PREREQUISITE: secret PLATFORM_SYNC_TOKEN — a PAT/App token with contents:write + pull-requests:write.
+# Required so the sync PR's push/open triggers test.yml (the default GITHUB_TOKEN can't — recursion guard).
 
 on:
   workflow_run:
@@ -27,10 +26,17 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  packages: read
+
+env:
+  # Bellwether package to read the actual latest published version from (all platform packages
+  # version lockstep). Sourced from the FEED — never recomputed — so the pin can only ever point at
+  # a version that truly shipped (a MinVer recompute once produced phantom versions -> NU1102).
+  BELLWETHER: concertable.payment.client
+  FEED_DOWNLOAD: https://nuget.pkg.github.com/Concertable/download
 
 jobs:
   sync:
-    # Only after a successful publish from master (or a manual dispatch).
     if: >-
       github.event_name == 'workflow_dispatch' ||
       (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'master')
@@ -40,30 +46,46 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          # The published commit (workflow_run) — its MinVer height is the version that just shipped.
           ref: ${{ github.event.workflow_run.head_sha || github.ref }}
-          fetch-depth: 0 # MinVer + the sync branch push both need full history
+          fetch-depth: 0
           token: ${{ secrets.PLATFORM_SYNC_TOKEN }}
 
-      - name: Set up .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '10.x'
-
-      - name: Compute the just-published platform version (MinVer)
-        id: ver
-        # Same inputs as the pack step, so this reproduces exactly what 'Publish packages' pushed:
-        # lockstep MinVer, tag prefix 'v', floor 0.1 (see each service's Directory.Build.props).
+      - name: Cascade guard — skip if this publish came from a pin-bump merge
+        id: guard
+        # A sync PR merge is itself an api/** change, so it re-triggers 'Publish packages'. Without this,
+        # that would open another sync PR, ad infinitum. A pin bump changes no package content, so no
+        # consumer needs re-syncing — bail out. (Manual workflow_dispatch always proceeds.)
         run: |
-          dotnet tool install --global minver-cli >/dev/null 2>&1 || dotnet tool update --global minver-cli
-          export PATH="$PATH:$HOME/.dotnet/tools"
-          version="$(minver --tag-prefix v --minimum-major-minor 0.1)"
-          test -n "$version" || { echo "MinVer produced no version — refusing"; exit 1; }
+          if [ "${{ github.event_name }}" != "workflow_dispatch" ] \
+             && git log -1 --format='%B' | grep -qE 'chore/platform-sync-|chore\(platform\): sync'; then
+            echo "Triggering commit is a platform-sync pin bump — nothing to sync, stopping to avoid a cascade."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Resolve the latest published platform version (from the feed)
+        id: ver
+        if: steps.guard.outputs.skip == 'false'
+        env:
+          # The feed's flat-container version index needs packages:read — the default GITHUB_TOKEN has
+          # it (PLATFORM_SYNC_TOKEN does not). Basic auth (org + token) matches publish-packages' proven
+          # verify-restore nuget.config, so this reads exactly the versions a restore would resolve.
+          FEED_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          idx="$(curl -fsSL -u "Concertable:$FEED_TOKEN" "$FEED_DOWNLOAD/$BELLWETHER/index.json")" \
+            || { echo "Could not read $BELLWETHER version index from the feed — refusing"; exit 1; }
+          version="$(echo "$idx" | jq -r '.versions[]' | sort -V | tail -1)"
+          case "$version" in
+            [0-9]*.[0-9]*) : ;;  # sane version string
+            *) echo "No usable version parsed from the feed index — refusing"; exit 1 ;;
+          esac
           echo "version=$version" >> "$GITHUB_OUTPUT"
-          echo "Just-published platform version: $version"
+          echo "Latest published platform version on the feed: $version"
 
       - name: Bump every lagging service pin
         id: bump
+        if: steps.guard.outputs.skip == 'false'
         run: |
           changed="$(bash .github/scripts/bump-platform-version.sh '${{ steps.ver.outputs.version }}')"
           if [ -z "$changed" ]; then
@@ -74,8 +96,8 @@ jobs:
             echo "Bumped:"; echo "$changed"
           fi
 
-      - name: Open / update the sync PR and set auto-merge
-        if: steps.bump.outputs.already-synced == 'false'
+      - name: Open / update the sync PR (no auto-merge — a human reviews + merges)
+        if: steps.guard.outputs.skip == 'false' && steps.bump.outputs.already-synced == 'false'
         env:
           VERSION: ${{ steps.ver.outputs.version }}
         run: |
@@ -91,17 +113,13 @@ jobs:
           Automated by \`platform-sync.yml\` after \`Publish packages\` shipped \`${VERSION}\` to the feed.
           Bumps every service's \`<ConcertablePlatformVersion>\` to \`${VERSION}\`.
 
-          - **Green** → auto-merges (non-breaking platform change, consumers already compatible).
+          Review and merge when green:
+          - **Green** → non-breaking; merge it.
           - **Red** → a published contract changed shape. Migrate the failing consumers **in this PR**
-            (now legal — \`${VERSION}\` is on the feed), push, and it merges when CI greens.
+            (now legal — \`${VERSION}\` is on the feed), push, and merge when CI greens.
           EOF
           )
           if ! gh pr view "$branch" --json number >/dev/null 2>&1; then
             gh pr create --base master --head "$branch" \
               --title "chore(platform): sync to ${VERSION}" --body "$body"
           fi
-          # --merge matches the "Master merge queue (e2e gate)" ruleset's method. Green -> the PR
-          # passes the required carve/e2e checks and the queue merges it; red (a consumer needs
-          # migrating) -> a required check fails, so it never enters the queue and waits for a human.
-          # No-op guard if auto-merge is ever unavailable — the PR just waits for a manual merge.
-          gh pr merge "$branch" --auto --merge || echo "auto-merge unavailable; PR left for manual merge"
