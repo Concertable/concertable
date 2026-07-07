@@ -89,64 +89,53 @@ refactor is sound; the cross-package swap is confirmed un-green-able in one PR.*
     — the exact alias gotcha noted below; consumer mocks need the same `using` alias.
   (These experimental mock edits were reverted; the branch holds only the clean Payment-internal Step 1.)
 
-**Conclusion: a single green PR is impossible for this return-type swap + type deletion.** Migrating the
-fixtures fixes the *build* but the collision resurfaces in `TicketApiTests`, and even a green build would
-leave the integration `test` job red at runtime (production compiled vs old package, source client loaded
-→ type-identity mismatch). Both are required ALLGREEN checks. So path 1 "every step green in one PR" is
-**not** achievable here.
+### ✅ Resolved 2026-07-07 — root cause was the fixtures, not the swap itself
 
-**Decision needed — how to land the breaking swap. Recommended, in order:**
-1. **Restructured additive sequence (preferred — stays green, no bypass).** The blast radius is tiny:
-   4 fixture mocks + **one** production file (`TicketPayment`) + its one test. So:
-   - **PR A (additive, green):** add the four records + `EscrowStatus` to `Payment.Contracts` only —
-     nothing deleted, nothing's return type changed. Publishes the new Contracts shapes.
-   - **PR B (additive, green):** bump consumers' `ConcertablePlatformVersion`; re-point production
-     `TicketPayment` to derive from `Contracts.PaymentOutcome` (while `Client.PaymentResponse` still
-     exists). Now no production code names a to-be-deleted type.
-   - **PR C (the flip):** change `Payment.Client` interface return types to the Contracts shapes, delete
-     `Client/*Response.cs`, migrate the 4 fixture mocks in-PR. Needs validating that C's build+tests are
-     green given package-vs-source — the remaining open risk; if C still can't go green, fall back to 2.
-2. **`--admin`-merge a deliberately-red flip** (original Step 1+2 as written), accepting a short
-   knowingly-red `build`/`test` window until the follow-up restores green. Fast, tiny blast radius, but
-   merges known-red and bypasses the queue's E2E for that step — **use only with explicit sign-off.**
+The `build` job (`dotnet build api/Concertable.slnx`, which every required `carve-*`/`e2e-*` check
+`needs:`) went red only because the B2B/Customer **integration-test fixtures `ProjectReference`d Payment
+source** — so the test graph compiled against Payment's *new* shape while production bound the *old*
+package, and they collided (fixture mocks + `TicketApiTests`). That source ref was a latent boundary
+leak: the mocks implemented Payment's *source* `IEscrowClient`, not the *package* one production binds —
+only accidentally compatible while shapes matched.
 
-## Also — update `api/docs/CODE_CONVENTIONS.md`
+**Fix:** the fixtures now consume `Payment.Client`/`Contracts` as the **published package** (like
+production). With that, the full-solution build is **green** (verified: 0 errors) with the Payment
+rename in place — nothing references Payment's source shape, so the swap no longer breaks the build. The
+consumer migration is then carried by the **platform-sync** machinery (`plans/PLATFORM_PACKAGE_SYNC.md`):
+merge the Payment side → new packages publish → the auto sync-PR bumps the pin → it goes red at exactly
+the 4 fixture mocks + `TicketPayment` → migrate them **in that PR** → green → merges. Every step green,
+no `--admin` bypass.
 
-Part of standardizing this: add a convention documenting the naming rule this refactor establishes —
-**`Response` suffix is HTTP-API-layer only; `Result<T>` is the service wrapper; C# service/client DTOs
-carry no suffix (Stripe-aligned: `Transfer`/`Refund`/`EscrowDeposit`/`PaymentOutcome`); proto message
-names stay `*Response` (wire vocabulary).** Land it in the same effort as the code.
+## Steps
 
-## Steps (expand/contract)
+- [x] **CODE_CONVENTIONS.md naming rule** — `Response` = HTTP-API layer only; `Result<T>` is the service
+  wrapper; C# service/client DTOs carry no suffix (Stripe-aligned `Transfer`/`Refund`/`EscrowDeposit`/
+  `PaymentOutcome`); proto message names stay `*Response`. (Landed on branch `Feature/PaymentDtoConsolidation`.)
 
-- [ ] **Step 1 — introduce shared DTOs in `Payment.Contracts`; migrate Payment's own service + client.**
-  - Add the four records to `Payment.Contracts`.
-  - Point `Payment.Application`, `Payment.Infrastructure`, and `Payment.Client` at them; update both
-    mapper sets. Delete `Payment.Application/DTOs/ServiceDtos.cs` copies and `Payment.Client/*Response.cs`.
-  - **This changes the published contract** (client methods now return `Contracts.Transfer` etc.).
-  - **Gotcha:** `Transfer`/`Refund` collide with the Stripe SDK (`Stripe.Transfer`/`Stripe.Refund`) in
-    any file with `using Stripe;` (e.g. `MockEscrowClient`). Add `using Transfer = Concertable.Payment.Contracts.Transfer;`
-    (and `Refund`) aliases in those files.
-  - **Gate:** `Concertable.Payment.slnx` builds green (Payment is self-contained here — all source).
-    The root `Concertable.slnx` / CI will be red on B2B+Customer until Step 2, because they still pin the
-    old package — expected. Merge order: this publishes new `Payment.Contracts` + `Payment.Client`.
+- [x] **Step 1 — shared DTOs in `Payment.Contracts` + migrate Payment's own service + client + fixtures.**
+  On branch `Feature/PaymentDtoConsolidation`:
+  - Four records + `EscrowStatus` moved to `Payment.Contracts`; `Domain`/`Application`/`Infrastructure`/
+    `Client` retargeted; both mapper sets + the `Stripe.*` aliases fixed; old `Application/DTOs` +
+    `Client/*Response.cs` deleted.
+  - **B2B + Customer integration-test fixtures switched from a Payment-source `ProjectReference` to the
+    published `PackageReference`** — the change that makes the full build green (the fixtures no longer
+    compile against Payment's new source shape).
+  - **Gate met:** `Concertable.Payment.slnx` green + 30 unit tests; **full `api/Concertable.slnx` green
+    (0 errors)** with the rename in place. Ready to open the PR.
 
-- [ ] **Step 2 — migrate B2B + Customer consumers to the shared types.**
-  - Bump each service's `ConcertablePlatformVersion` pin to the version published by Step 1.
-  - Replace `*Response` usages: `TicketPayment : PaymentOutcome`; the escrow/manager/customer mocks;
-    any other named usages (most consumer code uses `var` and is unaffected).
-  - **Gate:** `Concertable.B2B.slnx` + `Concertable.Customer.slnx` build; integration tests
-    (`integration-debug`). Root `Concertable.slnx` green again.
-
-- [ ] **Step 3 — remove the old names.**
-  - Delete any leftover `*Response` shims and the `MA0053` suppression that references
-    `Payment.Client.PaymentResponse` (retarget/remove).
-  - **Gate:** full `Concertable.slnx` green; `git rm` this plan file in the commit that closes Step 3.
+- [ ] **Step 2 — merge Step 1, then migrate consumers via the auto sync-PR.**
+  - Merge the Step-1 PR → new `Payment.Client`/`Contracts` publish.
+  - `platform-sync` auto-opens `chore/platform-sync-<ver>`, red at the 4 fixture mocks
+    (`MockEscrowClient`/`Fail`/`Manager`/`Customer`) + production `TicketPayment : PaymentResponse`.
+  - Migrate them there: `TicketPayment : PaymentOutcome`; mocks return the Contracts types
+    (`EscrowDeposit`/`Transfer`/`Refund`/`PaymentOutcome`); add `using Transfer = …Contracts.Transfer;`
+    (+`Refund`) in `MockEscrowClient` (has `using Stripe;`). Green → merges.
+  - **Gate:** full `Concertable.slnx` green; `git rm` this plan file in that commit.
 
 ## Notes / decisions carried forward
 
 - **Proto stays `*Response`.** Only the C# DTOs change.
 - **Naming = Stripe-aligned** (`Transfer`/`Refund`/`EscrowDeposit`/`PaymentOutcome`) — decided on
   Feature/EscrowRefund. Accept the Stripe-SDK name collision (handled by `using` aliases where needed).
-- The service-layer rename (Phase 1 of Feature/EscrowRefund) already did the `Application/DTOs` half of
-  Step 1; Step 1 here relocates those into `Payment.Contracts` and deletes the `Application` copies.
+- **`MA0053` suppression** for the unsealed `PaymentOutcome` now lives in `Payment.Contracts`
+  (`GlobalSuppressions.cs`), retargeted from the old `Payment.Client.PaymentResponse`.
