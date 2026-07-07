@@ -1,0 +1,107 @@
+name: Platform sync
+
+# Automates the cross-service publish->consume loop (see plans/PLATFORM_PACKAGE_SYNC.md).
+#
+# When 'Publish packages' pushes new Concertable.* packages to the feed on master, this opens a
+# single PR that bumps every service's <ConcertablePlatformVersion> pin to the just-published
+# version, then sets that PR to auto-merge:
+#   - NON-breaking platform change  -> the bump PR's CI is green -> it auto-merges. Zero touch.
+#   - BREAKING platform change       -> the bump PR's CI is red at exactly the consumers that must
+#                                        migrate. A human does the migration IN THIS PR (now legal:
+#                                        the new package exists on the feed), CI greens, it merges.
+#
+# PREREQUISITES (one-time, repo settings):
+#   - Secret PLATFORM_SYNC_TOKEN: a PAT (or GitHub App token) with `contents:write` + `pull-requests:write`
+#     + `workflow`. REQUIRED so the sync PR's push/open triggers test.yml — the default GITHUB_TOKEN
+#     deliberately does NOT trigger downstream workflows (GitHub's recursion guard), which would leave the
+#     PR with no checks to gate auto-merge on.
+#   - Repo: "Allow auto-merge" enabled + branch protection on master with the test.yml checks required.
+#     Without it the PR still opens correctly; it just won't auto-merge (a human clicks merge when green).
+
+on:
+  workflow_run:
+    workflows: ["Publish packages"]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    # Only after a successful publish from master (or a manual dispatch).
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'master')
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.PLATFORM_SYNC_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The published commit (workflow_run) — its MinVer height is the version that just shipped.
+          ref: ${{ github.event.workflow_run.head_sha || github.ref }}
+          fetch-depth: 0 # MinVer + the sync branch push both need full history
+          token: ${{ secrets.PLATFORM_SYNC_TOKEN }}
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+
+      - name: Compute the just-published platform version (MinVer)
+        id: ver
+        # Same inputs as the pack step, so this reproduces exactly what 'Publish packages' pushed:
+        # lockstep MinVer, tag prefix 'v', floor 0.1 (see each service's Directory.Build.props).
+        run: |
+          dotnet tool install --global minver-cli >/dev/null 2>&1 || dotnet tool update --global minver-cli
+          export PATH="$PATH:$HOME/.dotnet/tools"
+          version="$(minver --tag-prefix v --minimum-major-minor 0.1)"
+          test -n "$version" || { echo "MinVer produced no version — refusing"; exit 1; }
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Just-published platform version: $version"
+
+      - name: Bump every lagging service pin
+        id: bump
+        run: |
+          changed="$(bash .github/scripts/bump-platform-version.sh '${{ steps.ver.outputs.version }}')"
+          if [ -z "$changed" ]; then
+            echo "already-synced=true" >> "$GITHUB_OUTPUT"
+            echo "All services already pin ${{ steps.ver.outputs.version }} — nothing to sync."
+          else
+            echo "already-synced=false" >> "$GITHUB_OUTPUT"
+            echo "Bumped:"; echo "$changed"
+          fi
+
+      - name: Open / update the sync PR and set auto-merge
+        if: steps.bump.outputs.already-synced == 'false'
+        env:
+          VERSION: ${{ steps.ver.outputs.version }}
+        run: |
+          set -euo pipefail
+          branch="chore/platform-sync-${VERSION}"
+          git config user.name  "concertable-platform-sync[bot]"
+          git config user.email "platform-sync@users.noreply.github.com"
+          git switch -C "$branch"
+          git commit -am "chore(platform): sync ConcertablePlatformVersion to ${VERSION}"
+          git push --force-with-lease origin "$branch"
+
+          body=$(cat <<EOF
+          Automated by \`platform-sync.yml\` after \`Publish packages\` shipped \`${VERSION}\` to the feed.
+          Bumps every service's \`<ConcertablePlatformVersion>\` to \`${VERSION}\`.
+
+          - **Green** → auto-merges (non-breaking platform change, consumers already compatible).
+          - **Red** → a published contract changed shape. Migrate the failing consumers **in this PR**
+            (now legal — \`${VERSION}\` is on the feed), push, and it merges when CI greens.
+          EOF
+          )
+          if ! gh pr view "$branch" --json number >/dev/null 2>&1; then
+            gh pr create --base master --head "$branch" \
+              --title "chore(platform): sync to ${VERSION}" --body "$body"
+          fi
+          # --merge matches the "Master merge queue (e2e gate)" ruleset's method. Green -> the PR
+          # passes the required carve/e2e checks and the queue merges it; red (a consumer needs
+          # migrating) -> a required check fails, so it never enters the queue and waits for a human.
+          # No-op guard if auto-merge is ever unavailable — the PR just waits for a manual merge.
+          gh pr merge "$branch" --auto --merge || echo "auto-merge unavailable; PR left for manual merge"

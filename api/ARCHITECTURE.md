@@ -162,6 +162,22 @@ of truth). **Never set `UseLocalCore=true` in committed config** — it breaks t
 needs a `GITHUB_PACKAGES_TOKEN` PAT with `read:packages` in the environment (see root `README.md`). CI
 uses the repo `GITHUB_TOKEN`.
 
+### Cross-service contract changes — the publish→sync loop
+
+Because consumers bind cross-service code as **version-pinned packages**, changing a *published*
+contract (renaming/removing a public type consumers use, changing a return type, moving a DTO between
+packages) is inherently a **two-step release** — publish the new package, then bump each consumer's
+`ConcertablePlatformVersion` and migrate — since a pin can only move to a version already on the feed.
+This is not monorepo friction to delete; it is exactly what independently-deployable services do, and it
+survives the repo split. Adding a *method* is safe (additive); changing *types consumers already use* is
+not (no back-compat shim for a return-type change).
+
+`platform-sync.yml` automates the second step: after `Publish packages` ships on master it opens one
+`chore/platform-sync-<version>` PR bumping every service's pin, set to auto-merge. **Non-breaking →
+green → merges hands-off. Breaking → red at exactly the consumers to migrate → do the migration in that
+PR** (now legal — the package exists), and it merges when CI greens. Full design + one-time repo setup:
+[`plans/PLATFORM_PACKAGE_SYNC.md`](../plans/PLATFORM_PACKAGE_SYNC.md).
+
 C# code changes are minimal across the split. The ownership-based folder layout (`api/Concertable.X/`
 for service-owned projects, `api/Concertable.Shared/` for cross-service infra) previews the split.
 
