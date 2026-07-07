@@ -167,14 +167,15 @@ is cancellable.
     correct no-op), artist→403. Full B2B Concert integration 67/67.
   - ✅ **Migration**: no re-scaffold needed — nothing since Phase 3 changed the persisted model (Phase 4
     added `ConcertDetails.State`, a read-projection field only; Phase 5 is FE).
-  - ⬜ **E2E cancel scenarios — still to author (this is the outstanding Phase-6 work).** The E2E harness
-    has **no** Stripe-refund query helper and **no** seeded refundable `Booked` booking, so a real
-    cancel→refund test needs new plumbing: (a) a `Booked` booking with a real held escrow charge (drive
-    the accept flow through Stripe test mode, or add a seed), (b) a Stripe-refund assertion helper +
-    escrow-status DB accessor, (c) an API E2E test mirroring `ConcertFinishedTests`, and (d) a UI cancel
-    step in `FlatFeeWorkflow.feature`. Deferred rather than authored blind. **Meanwhile the merge queue
-    runs the existing full E2E suites on PR2 → regression safety for the booking/settlement flows the
-    `ConcertDetails` projection change touches.**
+  - ✅ **E2E cancel scenarios — authored.** All four pieces built: (a) the `Booked`-with-held-escrow
+    booking is **driven** through the live accept→hold→charge flow (no seed — escrow rows aren't
+    seedable), mirroring `ConcertDraftTests`; (b) `StripeFixture.GetRefundAsync` (Stripe-refund
+    assertion) + `PaymentDb.GetEscrowStatusAsync`/`GetEscrowRefundIdAsync` (escrow-status accessors);
+    (c) API E2E `ConcertCancelledTests` (FlatFee + VenueHire: cancel → `Cancelled` + escrow `Refunded`
+    + real Stripe refund `succeeded` + cancel action gone), mirroring `ConcertFinishedTests`; (d) a
+    cancel scenario in `FlatFeeWorkflow.feature` + `MyConcertPage` page object + step defs (FE
+    `CancelBookingButton` gained `data-testid` hooks). Solution + venue web build green. **Not yet run
+    locally — gated to the merge queue's full E2E suites (the decision on PR2).**
   - ⬜ **Close-out (do when cancel E2E is green in the merge queue):** `git rm` this plan file; tick the
     🔴 concert-cancellation blocker in [LAUNCH_PLAN.md](LAUNCH_PLAN.md).
 
