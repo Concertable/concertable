@@ -68,6 +68,32 @@ const applicationApi = {
     );
     return data;
   },
+
+  withdrawApplication: async (applicationId: number): Promise<void> => {
+    await api.post(`/application/${applicationId}/withdraw`);
+  },
+
+  rejectApplication: async (applicationId: number): Promise<void> => {
+    await api.post(`/application/${applicationId}/reject`);
+  },
+
+  cancelApplication: async (applicationId: number): Promise<void> => {
+    await api.post(`/application/${applicationId}/cancel`);
+  },
+
+  getPendingForArtist: async (): Promise<Application[]> => {
+    const { data } = await api.get<Application[]>(
+      `/application/artist/pending`,
+    );
+    return data;
+  },
+
+  getRecentDeniedForArtist: async (): Promise<Application[]> => {
+    const { data } = await api.get<Application[]>(
+      `/application/artist/recently-denied`,
+    );
+    return data;
+  },
 };
 
 export default applicationApi;

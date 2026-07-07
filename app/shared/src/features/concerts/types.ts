@@ -51,6 +51,8 @@ export type ApplicationStatus =
   | "Pending"
   | "Rejected"
   | "Withdrawn"
+  | "Accepted"
+  | "Cancelled"
   | "AwaitingPayment"
   | "Confirmed"
   | "Complete"
@@ -59,6 +61,9 @@ export type ApplicationStatus =
 export interface ApplicationActions {
   accept: ActionLink;
   checkout?: ActionLink | null;
+  withdraw?: ActionLink | null;
+  reject?: ActionLink | null;
+  cancel?: ActionLink | null;
 }
 
 export interface Application {
