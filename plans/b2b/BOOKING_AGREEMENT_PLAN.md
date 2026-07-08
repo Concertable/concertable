@@ -97,20 +97,18 @@ shared-package change for later.
 
 ## Phases
 
-### Phase 1 — Snapshot backbone (zero user-facing behavior change)
+### ✅ Phase 1 — Snapshot backbone (zero user-facing behavior change) — SHIPPED
 
-- `BookingAgreementEntity` (+ `Schema.Tables` entry, `IEntityTypeConfiguration`, provider registration,
-  `DbSet`) in the Concert module, per decision 1 — consent columns nullable at this stage.
-- `IAgreementTermsRenderer` keyed strategy (4 per-type renderers + facade) with unit tests.
-- `IBookingAgreementBuilder` invoked from the `AcceptExecutor` effect after `app.Accept(booking)`:
-  builds + persists the snapshot in the accept transaction. Consents not yet populated.
-- `Legal:PlatformTermsVersion` config value.
-- Check dev/test seeders: if any seeder drives accepted applications through production paths,
-  agreements now appear — verify nothing seeds accepted state by direct row writes (seeding rules).
-- **Gate:** `dotnet build api/Concertable.slnx` green · Concert module unit + integration tests via
-  `integration-debug` (new assertions: accepting each contract type creates an agreement whose numbers
-  survive a subsequent opportunity/contract edit — the freeze test) · `./initial-migrations.ps1`
-  re-scaffold (model change). No E2E — zero-behavior-change backbone.
+All items landed; gate passed (build green · unit 56/56 · Concert integration 92/92 incl. the four
+freeze tests · migrations re-scaffolded). Notes for later phases:
+
+- The agreement gets the **two-party venue-artist query filter** (same stance as Application/Booking —
+  private deal document); Phase 3's endpoints still add explicit party checks on top.
+- Seeder check outcome: seeders write accepted applications/bookings as direct `SeedState` rows, so
+  seeded bookings simply predate the feature — same as production rows at deploy. Nothing to change.
+- `./initial-migrations.ps1` was broken for the Messaging Outbox/Inbox contexts (B2B consumes
+  Messaging as a published package, so EF loaded the packaged assembly's compiled `InitialCreate`);
+  fixed in this phase — Messaging now scaffolds standalone via its design-time factories.
 
 ### Phase 2 — Click-wrap consent, both parties
 
