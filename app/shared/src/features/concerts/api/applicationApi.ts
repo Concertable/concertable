@@ -2,8 +2,13 @@ import api from "../../../lib/axiosClient";
 import type { Application, Checkout } from "../types";
 
 const applicationApi = {
+  /* agreedToTerms is asserted at this layer — the UI must gate apply/accept behind the
+     click-wrap checkbox; never call these from a surface without it. */
   applyToOpportunity: async (opportunityId: number): Promise<Application> => {
-    const { data } = await api.post<Application>(`/application/${opportunityId}`);
+    const { data } = await api.post<Application>(
+      `/application/${opportunityId}`,
+      { agreedToTerms: true },
+    );
     return data;
   },
 
@@ -13,7 +18,7 @@ const applicationApi = {
   ): Promise<Application> => {
     const { data } = await api.post<Application>(
       `/application/${opportunityId}`,
-      { paymentMethodId },
+      { agreedToTerms: true, paymentMethodId },
     );
     return data;
   },
@@ -52,7 +57,10 @@ const applicationApi = {
     applicationId: number,
     body?: { paymentMethodId: string },
   ): Promise<void> => {
-    await api.post(`/application/${applicationId}/accept`, body);
+    await api.post(`/application/${applicationId}/accept`, {
+      agreedToTerms: true,
+      ...body,
+    });
   },
 
   canAccept: async (applicationId: number): Promise<boolean> => {

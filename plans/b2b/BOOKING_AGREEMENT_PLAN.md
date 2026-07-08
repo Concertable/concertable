@@ -53,12 +53,15 @@
 4. **Both parties consent; two click-wraps.**
    - **Artist at Apply** — the application is the artist's offer; an "I agree to the contract terms"
      gate on Apply (both standard and prepaid/checkout apply paths). Recorded on `ApplicationEntity`
-     (nullable `ArtistConsentUserId`/`ArtistConsentAtUtc` + optional IP/UA), copied into the agreement
-     at Accept. Matters most for VenueHire, where the **artist** is the payer.
+     as a nullable owned `Consent` value object (null = predates click-wrap), copied into the
+     agreement at Accept. Matters most for VenueHire, where the **artist** is the payer.
    - **Venue at Accept** — the item-2 gate: `AcceptRequest` grows `AgreedToTerms`; server 400s without
-     it, on both accept paths (the checkout path also ends at `POST /accept`). Identity from the
-     current user; IP/UA captured at the controller and passed in as parameters (services stay
-     non-HTTP-flavoured).
+     it, on both accept paths (the checkout path also ends at `POST /accept`).
+   - **Consent = `Consent` VO** (UserId, AtUtc, Ip?, UserAgent?) mapped as an EF owned type
+     (`DateRange` precedent); `VenueConsent` is **required** on the agreement. Who/when from
+     `ICurrentUser`/`TimeProvider`; IP/UA from a module-local ambient `IClientContext` accessor
+     (`TenantContext` precedent) injected only into `ApplyExecutor`/`BookingAgreementBuilder` — the
+     consent flag never travels below the controller, and no service/dispatcher signatures change.
 5. **Terms-fingerprint guard for the mutability race.** Opportunity edits mutate the contract in place
    with no guard, so the artist could consent to terms the venue then changes before accepting. At
    Apply we store a deterministic fingerprint of what the artist consented to (contract type + numbers
@@ -110,20 +113,25 @@ freeze tests · migrations re-scaffolded). Notes for later phases:
   Messaging as a published package, so EF loaded the packaged assembly's compiled `InitialCreate`);
   fixed in this phase — Messaging now scaffolds standalone via its design-time factories.
 
-### Phase 2 — Click-wrap consent, both parties
+### ✅ Phase 2 — Click-wrap consent, both parties — SHIPPED
 
-- Apply side: `ApplyRequest` grows the consent flag; artist consent (+ terms fingerprint, decision 5)
-  recorded on `ApplicationEntity` at Apply on both apply paths; new applies 400 without consent.
-- Accept side: `AcceptRequest` grows `AgreedToTerms`; accept 400s without it; fingerprint recomputed
-  and mismatches 400; both consent blocks written onto the agreement by the builder.
-- FE: click-wrap checkboxes on the artist apply flow and venue `AcceptApplicationPage` (both accept
-  paths), per decision 8. All four web builds.
-- **UI E2E page objects updated in this phase** (apply/accept scenarios now require the checkboxes —
-  they'd go red in the merge queue otherwise): `AcceptApplicationPage.cs` page object + the artist
-  apply page object / step defs.
-- **Gate:** build green · Concert integration tests via `integration-debug` (consent 400s, consent
-  recorded, fingerprint-mismatch 400) · `./initial-migrations.ps1` (ApplicationEntity change) · four
-  web builds green. Full E2E deferred to Phase 3's gate (one suite run covers both phases' flow changes).
+All items landed; gate passed (solution build green · B2B Concert integration 97/97 incl. consent
+400s / consent recorded / fingerprint-mismatch 400 · Customer Concert 2/2 · four web builds green ·
+migrations re-scaffolded). Notes for later phases / this phase's decisions:
+
+- **Checkbox placement resolved to _independent gate per submit point_**, not the "carried through the
+  checkout route" wording in decision 8. The consent flag never leaves the client (`applicationApi`
+  hardcodes `agreedToTerms: true` server-side), and the venue checkout route is deep-linked directly
+  by UI E2E, so carried state is unusable. Each submit surface owns its own local checkbox: artist
+  `ApplyAction` (simple) + `ArtistApplyCheckoutPage`; venue `AcceptApplicationPage` (simple path only —
+  the checkout path shows "Continue" ungated, its gate lives on `VenueAcceptCheckoutPage`).
+- **`OpportunityRepository.GetPeriodByIdAsync`** (new, for the fingerprint) needs `AsNoTracking()` —
+  projecting the owned `DateRange` in a tracking query throws; fixed here (caught by integration).
+- **UI E2E:** one idempotent `LocatorExtensions.EnsureCheckedAsync` (aria-checked guard — a Radix
+  checkbox click just toggles, so re-ticking from overlapping entry points must be safe); ticks wired
+  at every checkbox entry point (`VenueDetailsPage.AgreeAndApplyAsync`, `ApplyCheckoutPage.PayWith*`,
+  `AcceptApplicationPage.AgreeAndConfirmAsync`, `ApplicationCheckoutPage.Submit*`, and the three venue
+  deep-link `Given`s that pay via `payment` directly). Not run this phase — deferred to Phase 3's gate.
 
 ### Phase 3 — PDF, storage, download, FE surface
 
