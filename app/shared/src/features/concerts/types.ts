@@ -64,6 +64,7 @@ export interface ApplicationActions {
   withdraw?: ActionLink | null;
   reject?: ActionLink | null;
   cancel?: ActionLink | null;
+  agreement?: ActionLink | null;
 }
 
 export interface Application {

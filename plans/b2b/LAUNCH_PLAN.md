@@ -17,7 +17,7 @@
 **Build — MVP blockers, in priority order:**
 - [x] ✅ **Concert cancellation + escrow refund** — cancel a *booked concert* (escrow `Held`): `Booked → Cancelled` + refund. Wires `EscrowEntity.Refund()` (the method existed; B2B never called it). Shipped in PR #76 (concert-cancel path across all four contract types, venue SPA cancel action, API + UI E2E). **This is the concert-cancel path only** — application-cancel below is still open.
 - [x] ✅ **Application cancellation** — shipped (`Feature/ApplicationCancel`): artist **withdraw** + venue **reject** from `Applied`; venue **cancel** / artist withdraw from `Accepted`/`PaymentFailed` → terminal `Cancelled` with the escrow unwind via the existing `RefundByBookingIdAsync` (no new Payment capability), late-capture compensation for the 3DS-window race, opportunity re-opens on cancel (application- and concert-cancel alike), HATEOAS-gated actions in both manager SPAs (venue Deny/Cancel; artist My Applications page + Withdraw). Optional FlatFee hold-release RPC deliberately skipped — orphaned accept-checkout holds self-expire in ~7 days (logged in [api/TECH_DEBT.md](../../api/TECH_DEBT.md)).
-- [ ] 🔴 **E-signed booking agreement** — click-wrap at Accept, terms snapshotted, PDF via `IPdfService` (LEGAL_REQUIREMENTS item 2).
+- [x] ✅ **E-signed booking agreement** — shipped (`Feature/BookingAgreement`): click-wrap consent at Apply + Accept, agreed terms snapshotted at Accept (immutable `BookingAgreementEntity`, terms-fingerprint guard against mid-flight edits), PDF via `IPdfService` (`BookingAgreementDocument`, generated background-at-Accept with a lazy render-on-download fallback, stored under the `agreements/` blob prefix), both-party-authorized `GET /api/Application/{id}/agreement` + `/agreement/pdf` endpoints, HATEOAS `agreement` link, download links in both manager SPAs. Tier 1 click-wrap only (Tier 2 drawn/DocuSign out of scope). LEGAL_REQUIREMENTS item 2.
 - [ ] 🔴 **DoorSplit/Versus door-take entry at settlement** — venue enters the door take; Concertable charges the venue for the artist's share + fee and pays the artist (reuses FlatFee escrow). Without it the two revenue-share types — the actual moat vs GigPig/GigXchange — can't settle. See §1 / R9.
 - [ ] 🟠 **DAC7 onboarding completion** — NINO / UTR / Company-Reg on `Tenant.Compliance`; gate payout until complete (no de-minimis for services — reportable from £1).
 - [ ] 🟠 **Self-billed VAT invoice engine** — HMRC legends, per-supplier agreement + annual renewal, VAT-status branching (items 1, 3, 4).
@@ -180,7 +180,7 @@ Concrete checklist for Month 6. Don't launch without all of these green.
 - [ ] All Stripe Connect Express payouts flowing through TenantId
 - [ ] ComplianceContext snapshot populated on every Booking created post-launch
 - [ ] Auth checks routed through tenant membership (not legacy TPH FK)
-- [ ] Booking agreement generated + click-wrap consent recorded at every Accept
+- [x] Booking agreement generated + click-wrap consent recorded at every Accept
 - [ ] VAT calculated per contract type + self-billed invoice generated per settlement
 - [ ] Tenant config surface live (PRS / VAT / fee / payment terms read from it, not constants)
 - [ ] Pre-launch dataset cleared / fresh seeded

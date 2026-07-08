@@ -53,6 +53,14 @@ const applicationApi = {
     return data;
   },
 
+  getAgreementPdf: async (applicationId: number): Promise<Blob> => {
+    const { data } = await api.get<ArrayBuffer>(
+      `/application/${applicationId}/agreement/pdf`,
+      { responseType: "arraybuffer" },
+    );
+    return new Blob([data], { type: "application/pdf" });
+  },
+
   acceptApplication: async (
     applicationId: number,
     body?: { paymentMethodId: string },
