@@ -21,10 +21,13 @@ $dirs = @(
 )
 foreach ($d in $dirs) { Remove-Item -Recurse -Force -ErrorAction SilentlyContinue $d }
 
-dotnet ef migrations add InitialCreate --context OutboxDbContext --project Concertable.Messaging/Concertable.Messaging.Infrastructure --startup-project Concertable.B2B/src/Concertable.B2B.Web --output-dir Data/Migrations/Outbox
+# Messaging is consumed everywhere as a published package, so a service host can't be its startup
+# project (EF would load the packaged assembly, which already contains InitialCreate). It scaffolds
+# standalone via its design-time factories.
+dotnet ef migrations add InitialCreate --context OutboxDbContext --project Concertable.Messaging/Concertable.Messaging.Infrastructure --startup-project Concertable.Messaging/Concertable.Messaging.Infrastructure --output-dir Data/Migrations/Outbox
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
-dotnet ef migrations add InitialCreate --context InboxDbContext --project Concertable.Messaging/Concertable.Messaging.Infrastructure --startup-project Concertable.B2B/src/Concertable.B2B.Web --output-dir Data/Migrations/Inbox
+dotnet ef migrations add InitialCreate --context InboxDbContext --project Concertable.Messaging/Concertable.Messaging.Infrastructure --startup-project Concertable.Messaging/Concertable.Messaging.Infrastructure --output-dir Data/Migrations/Inbox
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
 dotnet ef migrations add InitialCreate --context UserDbContext --project Concertable.B2B/src/Modules/User/Concertable.B2B.User.Infrastructure --startup-project Concertable.B2B/src/Concertable.B2B.Web --output-dir Data/Migrations
