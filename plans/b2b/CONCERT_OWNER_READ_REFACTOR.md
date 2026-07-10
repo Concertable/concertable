@@ -55,6 +55,14 @@ permission, and owner sub-resources as their own endpoints.** Whether that separ
 choice is right *in general* (vs a richer owner response in one call) is part of what to decide here —
 it recurs for venue/opportunities and concert/agreement alike.
 
+**Venue is NOT broken and is out of scope.** Verified: `VenueDetailsResponse` has **no `Actions` /
+`ActionLink` field** — it carries zero owner-only data, which is exactly why public + owner can share
+it with no leak. Owner affordances are composed FE-side in the manager app. **Concert is the outlier**
+that (uniquely) put `Actions` on its shared response — that is the whole bug. Do not refactor venue's
+read; align concert *to* venue. The separate opportunities endpoint is a legitimate REST sub-resource
+(its own auth, leaks nothing) — the embed-vs-separate point is a **forward-looking consistency
+convention to settle**, not a required venue change now.
+
 ## The decision to make
 
 How should an owner's view of a concert differ from the public marketplace view, such that owner
