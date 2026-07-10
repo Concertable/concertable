@@ -5,6 +5,30 @@
 > reaches beyond the booking-agreement feature (venue/opportunities, concert/agreement, any future
 > owner-only sub-resource) — decide the pattern deliberately, then apply it.
 
+## STATUS — implemented; only the E2E gate is outstanding (env-blocked locally)
+
+Decision made (confirmed with owner) and **implemented**: **Option 1 (venue-style)** — one shared
+`ConcertDetailsResponse` (now nullable `Actions`), public `GET /concert/{id}` returns `Actions = null`,
+new tenant-scoped `GET /concert/user/{id}` (404 for non-parties, mirrors `GET /venue/user`) returns the
+same DTO via `ToCurrentUserDetailsResponse()` with the party action links. Naming follows venue
+(`GetDetailsForCurrentUser*`), not "Owner". General rule affirmed: **owner sub-resources = separate
+endpoints** (venue/opportunities, concert/agreement PDF), the read carries only affordance links.
+`useMyConcert` moved from `app/shared` → `app/web/b2b/shared` (calls the B2B-only owner endpoint via a
+new `myConcertApi`/`useMyConcertQuery`); public `useConcert` stays in `app/shared`.
+
+**Gates:** `dotnet build Concertable.slnx` ✅ · Concert integration ✅ 104/104 (incl. new
+`TenantScopingTests.CurrentUserConcertRead_...`: both parties read w/ actions, 404 for a stranger,
+public read action-free) · four web builds ✅ · migrations ⏭️ not needed (read/response shaping only).
+
+**Outstanding — UI E2E regress (`e2e-ui-regress`):** could not complete in this environment. The full
+suite fails at **startup** on this machine — every scenario dies with
+`SqlException: "There is already an object named 'Outbox'"` (a cold-DB concurrent-migration failure in
+the shared *messaging* infra, `Concertable.Messaging` `InitialCreate`; reproduces on a freshly-reset
+volume). This is unrelated to this read-side change (no migration/model/DbContext/Outbox touched) and
+per the repo's E2E rule a startup failure is an environment problem. **To close this plan:** run
+`./e2e.ps1 ui regress` in a clean environment (keep the FlatFee agreement-download-on-concert-page
+scenario green) — the merge queue runs E2E as its gate — then `git rm` this file.
+
 ## What prompted this
 
 The booking-agreement download button needed a home. An accepted deal is a **concert** for both

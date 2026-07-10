@@ -1,7 +1,6 @@
 ﻿export { useConcertQuery } from "./hooks/useConcertQuery";
 export { useConcert } from "./hooks/useConcert";
 export type { UseConcertResult } from "./hooks/useConcert";
-export { useMyConcert } from "./hooks/useMyConcert";
 export {
   useOpportunitiesQuery,
   useAllOpportunitiesQuery,
