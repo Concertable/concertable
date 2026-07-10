@@ -119,6 +119,7 @@ export interface ConcertVenue {
 
 export interface ConcertActions {
   cancel?: ActionLink | null;
+  agreement?: ActionLink | null;
 }
 
 export interface Concert {

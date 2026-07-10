@@ -25,6 +25,14 @@ const concertApi = {
   cancelConcert: async (id: number): Promise<void> => {
     await api.post(`/concert/${id}/cancel`);
   },
+
+  getAgreementPdf: async (id: number): Promise<Blob> => {
+    const { data } = await api.get<ArrayBuffer>(
+      `/concert/${id}/agreement/pdf`,
+      { responseType: "arraybuffer" },
+    );
+    return new Blob([data], { type: "application/pdf" });
+  },
 };
 
 export default concertApi;
