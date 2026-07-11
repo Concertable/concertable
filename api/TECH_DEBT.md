@@ -32,6 +32,22 @@ Eight hosts coalesce required auth/bus settings to empty string at bind time: `A
 
 ## LOW
 
+### `initial-migrations.ps1` re-stamps every module, desyncing packaged libs from their published packages
+
+`api/initial-migrations.ps1` nukes and re-scaffolds **every** module's `InitialCreate` with a fresh
+timestamp — including libs consumed as *published packages* (`Messaging`, `Payment`, `Auth`) whose
+model didn't change. The regenerated source then carries a newer migration id than the published
+package the standalone/E2E stack actually loads, and `DevDbInitializer` blows up applying a migration
+whose table already exists (seen on `Feature/BookingAgreement`: "There is already an object named
+'Outbox'", every UI E2E scenario dead at fixture init). Workaround each time: after running the
+script, `git checkout origin/master -- <migration dirs>` for every module whose migration content is
+byte-identical to master (only the genuinely-changed module keeps its new migration). Bites every
+migration-touching branch.
+
+**Resolves when:** the script only re-scaffolds modules whose model actually changed (diff the
+generated migration content, skip re-stamp if identical), or packaged-lib migrations are excluded
+from the blanket nuke.
+
 ### Orphaned FlatFee accept-checkout holds release only by ~7-day Stripe expiry
 
 When a venue runs FlatFee accept-checkout (a manual-capture PI ring-fencing the venue's own funds) and the application is then withdrawn/rejected/cancelled instead of accepted, nothing cancels the hold: Payment exposes no cancel RPC (`ManagerPayment` has `FindHeldIntent` but no cancel; `IStripeHoldClient.CancelAsync` is Payment-internal), so the funds stay ring-fenced until Stripe auto-expires the intent (~7 days). Money-safe, just slow to release. This was the deliberately-skipped optional Phase 5 of the delivered application-cancel plan — it needs a Payment-first two-PR cycle across the package boundary.
