@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import applicationApi from "../api/applicationApi";
+import applicationApi, { type ESignatureRequest } from "../api/applicationApi";
 
 export function useApplicationsByOpportunityQuery(opportunityId: number) {
   return useQuery({
@@ -35,11 +35,13 @@ export function useAcceptApplicationMutation(opportunityId: number) {
   return useMutation({
     mutationFn: ({
       applicationId,
+      eSignature,
       body,
     }: {
       applicationId: number;
+      eSignature: ESignatureRequest;
       body?: { paymentMethodId: string };
-    }) => applicationApi.acceptApplication(applicationId, body),
+    }) => applicationApi.acceptApplication(applicationId, eSignature, body),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["applications", "opportunity", opportunityId],

@@ -1,13 +1,22 @@
 import api from "../../../lib/axiosClient";
 import type { Application, Checkout } from "../types";
 
+/* The client's half of an e-signature: the typed full name (required) and an optional drawn image.
+   Its presence IS the consent — the server stamps user/time/IP. Never call apply/accept without it;
+   the UI must gate them behind the signature step (the ESignaturePanel). */
+export interface ESignatureRequest {
+  signatoryName: string;
+  drawnSignatureImage?: string;
+}
+
 const applicationApi = {
-  /* agreedToTerms is asserted at this layer — the UI must gate apply/accept behind the
-     click-wrap checkbox; never call these from a surface without it. */
-  applyToOpportunity: async (opportunityId: number): Promise<Application> => {
+  applyToOpportunity: async (
+    opportunityId: number,
+    eSignature: ESignatureRequest,
+  ): Promise<Application> => {
     const { data } = await api.post<Application>(
       `/application/${opportunityId}`,
-      { agreedToTerms: true },
+      { eSignature },
     );
     return data;
   },
@@ -15,10 +24,11 @@ const applicationApi = {
   applyToOpportunityWithPayment: async (
     opportunityId: number,
     paymentMethodId: string,
+    eSignature: ESignatureRequest,
   ): Promise<Application> => {
     const { data } = await api.post<Application>(
       `/application/${opportunityId}`,
-      { agreedToTerms: true, paymentMethodId },
+      { eSignature, paymentMethodId },
     );
     return data;
   },
@@ -63,10 +73,11 @@ const applicationApi = {
 
   acceptApplication: async (
     applicationId: number,
+    eSignature: ESignatureRequest,
     body?: { paymentMethodId: string },
   ): Promise<void> => {
     await api.post(`/application/${applicationId}/accept`, {
-      agreedToTerms: true,
+      eSignature,
       ...body,
     });
   },

@@ -143,7 +143,16 @@ a safe expand).
 - **Gate:** build green · Concert unit tests (PDF still renders, magic-number/`%PDF` assertions
   hold). No E2E this phase (PDF content is integration/unit-covered).
 
-### Phase 3 — Front-end signature step + conspicuous terms
+### Phase 3 — Front-end signature step + conspicuous terms ✅ SHIPPED
+
+> **Done** (all four web builds green: web-venue, web-artist, web-customer, web-business).
+> `AgreeToTermsCheckbox` → `ESignaturePanel` (testid `e-sign` on the name input): conspicuous terms
+> (`AcceptContractSummary` when a contract is passed + cancellation/liability + platform-terms note),
+> required typed full name, optional `SignatureCanvas` (drawn PNG), explicit intent line, nothing
+> pre-filled. `applicationApi` apply/accept now send `{ eSignature }` (type `ESignatureRequest`,
+> matching the backend) instead of `agreedToTerms`. Wired through all four entry points: artist
+> simple apply (dialog — the card action row has no room inline), artist paid checkout, venue simple
+> accept, venue paid checkout. Buttons gate on a non-empty name (and card auth where relevant).
 
 - Replace the shared `AgreeToTermsCheckbox` with an **`ESignaturePanel`** (rename the component +
   its `data-testid` `agree-to-terms` → `e-sign`). The panel shows:
