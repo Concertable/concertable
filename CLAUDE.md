@@ -52,6 +52,8 @@ Run E2E only through `./e2e.ps1` via the matching skill (`e2e-ui-regress`, `e2e-
 
 Avoid introducing tech debt wherever possible. But when a quick fix is the right call, or you notice or introduce debt the user is aware of, log a line in the `TECH_DEBT.md` nearest the area you touched (there's one per area — use the closest, not the root).
 
+**Reach for the proper fix, not a hacky workaround.** A workaround that needs a paragraph of comment to justify it — a cold-start warm-up, a sleep-to-avoid-a-race, a magic ordering, a defensive re-try papering over a root cause — is the code telling you to refactor, not to explain. Find and fix the actual cause. If a workaround is *genuinely* unavoidable (an upstream bug, a library limitation you can't route around), keep it minimal, and log a line in the nearest `TECH_DEBT.md` naming the root cause and why it couldn't be avoided — the debt entry is the record, not a long inline comment.
+
 ## Code comments — default to none; the commit message is the archive
 
 Default to **zero** comments. The diff shows *what* changed; the commit message is where *why* lives (the incident, the root cause, the alternatives). A code comment is the exception, not the habit — **≤2 lines**, and only for a *why* a reader needs *at this line* and can't get from well-named identifiers. Anything longer belongs in the commit message, not the file; big inline explanations rot in place.

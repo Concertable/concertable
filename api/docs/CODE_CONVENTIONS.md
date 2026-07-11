@@ -103,6 +103,20 @@ if (condition)
 }
 ```
 
+## Optional parameters — don't add one that callers must skip with a named argument
+
+An optional parameter earns its place only when call sites actually pass it *positionally* and naturally. The moment varying one argument forces a call site to name-skip past another —
+`ApplyAsync(opportunityId, signatoryName: name)` to hop over an unwanted `paymentMethodId` — the optional has stopped paying for itself: the signature grew, the call got noisier, and nothing reads more clearly. Prefer, in order: vary the value **inline** at the one call site that needs it (especially in tests — a self-contained Arrange beats threading a knob through a shared helper), or add a small **focused overload/helper** for that shape. Only keep the extra optional when several call sites genuinely pass it the ordinary way.
+
+```csharp
+// WRONG — the named arg exists only to skip paymentMethodId; the knob serves one caller
+private Task<int> ApplyAsync(int opportunityId, string? paymentMethodId = null, string signatoryName = "Test Signatory") ...
+var id = await ApplyAsync(opportunityId, signatoryName: "Aretha Artist");
+
+// CORRECT — the one caller that needs a distinct name just does the apply inline
+await artistClient.PostAsync($"/api/Application/{opportunityId}", new { eSignature = new { signatoryName = "Aretha Artist" } });
+```
+
 ## Base-class members — call through `base.`
 
 When invoking a member that's inherited from a base class (not declared on the current type), qualify
