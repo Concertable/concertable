@@ -127,7 +127,12 @@ a safe expand).
   `integration-debug` (update the `{ agreedToTerms = true }` test payloads to the new object;
   assert `SignatoryName` persists on both parties' signatures). No E2E this phase.
 
-### Phase 2 — PDF signature block
+### Phase 2 — PDF signature block ✅ SHIPPED
+
+> **Done** (build 0 err · Concert unit 56/56 · BookingAgreement integration 15/15 incl. `%PDF`
+> assertions). "Consent" section → "Signatures": per party "Signed by **{name}**", the drawn image
+> if present (base64/data-URI decoded, corrupt → skipped not fatal), then `{ts} · user {id} · IP`.
+> Legacy null case → "No recorded signature (predates e-sign)". Footer copy click-wrapped → e-signed.
 
 - `BookingAgreementDocument` (`api/.../Concert.Infrastructure/Pdf/`): replace the "Consent" section
   with a **"Signatures"** section — for each party render: "Signed by **{SignatoryName}**", the
