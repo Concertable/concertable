@@ -20,7 +20,7 @@ Everything else — the rule docs, the five lenses, the ≥80-confidence filter 
 
 ## When NOT to use
 
-- **A review whose Coverage checklist is already fully `[x]`. The staging pass is DONE.** "Continue the review", "address the comments/findings", or pointing me at a completed `reviews/BIG-*.md` means **work the findings in that doc** — fix the open ones, verify the rest — NOT re-invoke this skill. Re-running here only re-reports "complete" and does zero useful work. Read the doc, act on its findings; do not launch the skill.
+- **A review whose Coverage checklist is already fully `[x]` — the staging pass is DONE.** Don't re-invoke this skill; it only re-reports "complete" and does zero useful work. Pointing at a completed review, or "address the comments/findings", means **work the findings** and then delete the file when they're resolved — see [`reviews/CLAUDE.md`](../../../reviews/CLAUDE.md) for that convention and the delete-when-addressed lifecycle.
 - Normal-sized branch → `code-review`.
 - Only re-review commits added since a prior review → `incremental-review`.
 - An exhaustive multi-agent pass → run a `Workflow` (ultracode).
@@ -120,6 +120,11 @@ Concise: area just reviewed, its finding counts by lens/severity (or none), rema
 
 ```markdown
 # Big review — <branch>
+
+> **This file is a work order, not a discussion.** If you're handed this file, fix the open `[ ]`
+> findings directly and report what changed — don't re-present them as options or ask which to do.
+> Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
+> in one line, take the safe path, keep going.
 
 **Plan anchored to commit:** `<full-HEAD-sha>`  _(<ISO date>)_
 <!-- Added ONLY when every area is [x] (Step 2 completion): the watermark `incremental-review`
