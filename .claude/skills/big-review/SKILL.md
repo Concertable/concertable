@@ -35,12 +35,27 @@ This skill is built to run one stage per context, then `/clear` and continue lat
 
 So the loop is: `/big-review` → `/clear` → `/big-review` → `/clear` → … until every stage is `[x]`. Optional: pass a stage name (e.g. `/big-review B2B`) to review a specific stage out of order; pass nothing for the default next-unticked behaviour. You never edit the markdown manually — the skill owns the checklist.
 
+**Automating the whole pass (unattended):** to run every remaining stage in one go instead of stepping through with `/big-review` + `/clear`, use **`/big-review-all`**. Each stage still gets its own fresh context — it's a thin skill over the `.claude/workflows/big-review-all.js` workflow, which loops one subagent per stage, strictly sequential (stages share the file and leave cross-area notes for later stages), until every area is `[x]`. No arguments; it auto-detects the active tracking file for the current branch.
+
 ## Step 0 — Find or create the tracking file
 
 `reviews/BIG-<branch-slug>-Review.md` at repo root (branch `/` → `-`, e.g. `reviews/BIG-refactor-Microservices-Review.md`). Create the `reviews/` dir if missing.
 
-- **File exists** → this is a resume. Read it, go to Step 2.
+- **File exists** → this is a resume. Read it, then run the **Step 0.5 resume pre-check** below before anything else.
 - **File missing** → first run. Go to Step 1.
+
+## Step 0.5 — Resume pre-check: decide the mode up front (run before touching the checklist)
+
+On a resume, the very first thing — before picking an area — is to compare current HEAD to the plan-anchor SHA **and** read the completion state of the coverage checklist. These two facts together pick the mode; don't discover it procedurally by walking stages. Run `git rev-parse HEAD` and check the checklist:
+
+- **Any area `[ ]` or `[~]`** → normal resume. Go to Step 2 (pick the next / re-review the in-progress area). The anchor-drift note in Step 2 still applies.
+- **All areas `[x]` and HEAD == plan-anchor** → the staging pass is genuinely done; there is nothing new. Report "Big review complete — all N areas reviewed" and stop. Do **not** re-walk the ticked stages.
+- **All areas `[x]` and HEAD ≠ plan-anchor** → the staging pass is **complete but the branch has drifted** past what this review covered. This is the case that must be obvious immediately, not derived stage-by-stage. Do **not** re-plan the completed file and do **not** re-walk its stages. Instead:
+  1. Show the drift: `git log --oneline <anchor>..HEAD` and `git diff <anchor>..HEAD --stat | tail -1`.
+  2. Route by the size of that delta:
+     - **Modest delta** (fits one `code-review` sitting — rule of thumb <300 files, single service) → hand off to **`incremental-review`**, which scopes to `<anchor>..HEAD` off the stamped `Reviewed up to commit:` marker. That is the designed continuation and needs no new staging file.
+     - **Large / multi-area delta** (would itself be unreviewable in one pass) → offer a fresh **staged** wave: a new tracking file `reviews/BIG-<branch-slug>-Review-Wave2.md` (bump the suffix for further waves) anchored to current HEAD, covering `<prior-watermark>..HEAD`. Leave the completed file intact — never overwrite a stamped, finished review.
+  3. State the fork to the user and let them pick (incremental single-pass vs a fresh staged wave) unless it's unambiguous. Then proceed with the chosen path.
 
 ## Step 1 — First run: compute the staging plan
 
