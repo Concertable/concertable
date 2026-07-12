@@ -54,6 +54,8 @@ Avoid introducing tech debt wherever possible. But when a quick fix is the right
 
 **Reach for the proper fix, not a hacky workaround.** A workaround that needs a paragraph of comment to justify it — a cold-start warm-up, a sleep-to-avoid-a-race, a magic ordering, a defensive re-try papering over a root cause — is the code telling you to refactor, not to explain. Find and fix the actual cause. If a workaround is *genuinely* unavoidable (an upstream bug, a library limitation you can't route around), keep it minimal, and log a line in the nearest `TECH_DEBT.md` naming the root cause and why it couldn't be avoided — the debt entry is the record, not a long inline comment.
 
+**Don't default away a failure.** A `?? fallback`, empty `catch`, `?.` past a null that shouldn't be null, or an ignored `TryParse` that turns an absent/invalid value into a benign one hides the case that should surface — and in a test it downgrades a real failure into a false pass. If a value is genuinely optional, handle it explicitly; if it should always be present, let its absence throw.
+
 ## Code comments — default to none; the commit message is the archive
 
 Default to **zero** comments. The diff shows *what* changed; the commit message is where *why* lives (the incident, the root cause, the alternatives). A code comment is the exception, not the habit — **≤2 lines**, and only for a *why* a reader needs *at this line* and can't get from well-named identifiers. Anything longer belongs in the commit message, not the file; big inline explanations rot in place.
