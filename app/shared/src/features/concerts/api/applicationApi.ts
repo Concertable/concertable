@@ -1,13 +1,5 @@
 import api from "../../../lib/axiosClient";
-import type { Application, Checkout } from "../types";
-
-/* The client's half of an e-signature: the typed full name (required) and an optional drawn image.
-   Its presence IS the consent — the server stamps user/time/IP. Never call apply/accept without it;
-   the UI must gate them behind the signature step (the ESignaturePanel). */
-export interface ESignatureRequest {
-  signatoryName: string;
-  drawnSignatureImage?: string;
-}
+import type { Application, Checkout, ESignatureRequest } from "../types";
 
 const applicationApi = {
   applyToOpportunity: async (
@@ -61,14 +53,6 @@ const applicationApi = {
       `/application/${applicationId}`,
     );
     return data;
-  },
-
-  getAgreementPdf: async (applicationId: number): Promise<Blob> => {
-    const { data } = await api.get<ArrayBuffer>(
-      `/application/${applicationId}/agreement/pdf`,
-      { responseType: "arraybuffer" },
-    );
-    return new Blob([data], { type: "application/pdf" });
   },
 
   acceptApplication: async (

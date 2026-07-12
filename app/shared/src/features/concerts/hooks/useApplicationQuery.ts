@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import applicationApi, { type ESignatureRequest } from "../api/applicationApi";
+import applicationApi from "../api/applicationApi";
+import type { ESignatureRequest } from "../types";
 
 export function useApplicationsByOpportunityQuery(opportunityId: number) {
   return useQuery({
