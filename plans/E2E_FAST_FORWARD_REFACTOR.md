@@ -31,15 +31,17 @@ The waste is narrow:
 
 ## Constraint that shapes the fix (don't fight it)
 
-- **Concert creation is a reaction**, not a direct write — `CreateConcertDraftStep` fires off the
-  booking. Per `api/docs/SEEDING_CONVENTIONS.md` a seeder may not insert a "booked + concert" row
-  directly; you'd have to drive the accept trigger anyway. So there is **no seeded "booked" state to
-  jump to** — the earliest honest fast-forward point is the seeded **applied** state.
+- **A seeded "booked + concert" state DOES exist** — `SeedState` carries `Booked`/`Complete` app
+  handles and `Concerts`, and `ConcertDevSeeder` direct-inserts them. But that state is **reflection-
+  stamped** (`ApplicationFactory` forces `State` via `.With(...)` and `.Accept(booking)` only sets the
+  nav — the real state machine never runs), and critically it has **no real Stripe PaymentIntent**.
 - **A refund needs a real Stripe PaymentIntent to reverse** — can't be seeded (real Payment emits only
   on live webhooks). So the refund assertion must run a real accept + pay.
 
-Net: the cancel scenario can drop `post` + `apply` (fast-forward from seeded applied) but must still
-run `accept + pay` to have a real charge to refund. That already removes the redundant half.
+Net: a pure cancel-*transition* test (assert `Cancelled`, no refund) could fast-forward to a seeded
+booked concert via a new `Given`. But the scenario we're fixing asserts **refund**, which needs a real
+charge — so it fast-forwards from the seeded **applied** state (dropping `post` + `apply`) and still
+runs the real `accept + pay → cancel`. That removes the redundant half without faking a charge.
 
 ## Phases
 
