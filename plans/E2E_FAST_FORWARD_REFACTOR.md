@@ -25,9 +25,13 @@ The waste is narrow:
 
 1. **`Venue manager cancels a flat fee booking and the escrow is refunded`** re-drives `post → apply →
    accept + pay → draft concert` through the UI before cancelling — four setup steps another scenario
-   already proves.
-2. **The agreement download + signature assertion is bolted onto the happy path** (`books artist on a
-   flat fee`), mixing two behaviours (booking creation, agreement retrieval) in one scenario.
+   already proves. (Master-resident — belongs on this separate branch.)
+2. ~~**The agreement signature scenario re-asserts booking creation.**~~ ✅ **DONE on `Feature/BookingAgreement`
+   (2026-07-13).** Rather than keep two near-identical scenarios each firing a real Stripe charge, the
+   signature assertion was **merged into** `Venue manager books artist on a flat fee with a new card`
+   (one charge now proves both draft-concert creation AND both PDF signatures). The standalone
+   `The flat fee booking agreement is signed by both parties` scenario was removed. This supersedes the
+   earlier "defer to this branch" decision — see Phase 2 below.
 
 ## Constraint that shapes the fix (don't fight it)
 
@@ -52,13 +56,24 @@ runs the real `accept + pay → cancel`. That removes the redundant half without
 - **Gate:** the scenario passes headed once, then via `./e2e.ps1 ui b2b`. Reconcile `E2E_BASELINE.md`
   if timing/name changes.
 
-### Phase 2 — Split agreement retrieval off the creation happy path
-- Move `download agreement + assert signed by both parties` out of `books artist on a flat fee` into
-  its own scenario that fast-forwards from the applied state and does `accept → download → assert`
-  (the agreement is built in the accept transaction, so this needs the real accept but not the
-  post/apply UI). Leave the creation happy path asserting only creation.
-- **Gate:** both scenarios pass; baseline reconciled (new scenario added to the passing block, counts
-  bumped).
+### ~~Phase 2 — Trim the agreement signature scenario~~ ✅ DONE on `Feature/BookingAgreement` (2026-07-13)
+- **Shipped there, not here.** The earlier "defer to the refactor branch" decision was reversed: since
+  the signature scenario was *created* on `Feature/BookingAgreement` and isn't in master, the root
+  `CLAUDE.md` branch rule says fix it on that branch. Done.
+- **What shipped:** instead of merely dropping the redundant `And a draft concert is created` line, the
+  signature assertion was **merged into** the existing `Venue manager books artist on a flat fee with a
+  new card` scenario (they shared `Given applied → pay-new-card` and differed only in the tail). One
+  real Stripe charge now proves both draft-concert creation AND both PDF signatures; the standalone
+  `The flat fee booking agreement is signed by both parties` scenario is gone. The `downloads the
+  booking agreement` step gained a `[Then]` binding (it now runs in a `Then`/`And` position).
+- **Key constraint that still held:** the accept (`pay with new card`) had to stay — the seeded state
+  carries no `BookingAgreement` (built only by `BookingAgreementBuilder` in the accept transaction), so
+  the agreement must be created by the real accept before it can be downloaded.
+- **Migration side-fix (same work):** the E2E stack couldn't boot — `messaging` (a published package)
+  had its Outbox/Inbox migration IDs re-timestamped in source, diverging from the package the `b2b-web`
+  container runs, so the seeding host hit `already an object named 'Outbox'`. Realigned the messaging
+  migrations back to the published IDs (`20260622101059`/`20260622101129`); EF now reports "database
+  already up to date." Concert's re-scaffold stays (it's a project reference, not a package).
 
 ### Phase 3 — Apply the same audit to the Customer UI suite
 - Check `Concertable.Customer.E2ETests.Ui/Features` for scenarios re-driving browse/search/open to
