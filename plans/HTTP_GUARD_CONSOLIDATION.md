@@ -18,7 +18,7 @@ not introduce a Result type for 404s. Leave every `if (cond) throw` (Shape-B) gu
 Two forms of the guard, and why the split is fundamental:
 
 - **Entity fetch → self-naming, ZERO string at the call site.** The entity already knows its own name
-  (`INamedEntity.DisplayName`). Typing `"Venue"` when you fetched a `VenueEntity` is the redundancy being
+  (`IEntity.DisplayName`). Typing `"Venue"` when you fetched a `VenueEntity` is the redundancy being
   removed.
 - **Value-type / DTO / projection fetch → explicit label, string required and irreducible.**
   `GetTenantIdByIdAsync → Guid?`, `GetDetailsByIdAsync → VenueDetails?`, `GetArtistPayeeAsync →
@@ -62,44 +62,44 @@ returning the non-null value; it fits a fluent guard perfectly. Shape B is a boo
 value to return; the idiomatic form is the `if` already written, and an `Ensure(cond, …)` wrapper is a
 readability regression. One mechanism for Shape A; nothing new for Shape B.
 
-### Self-naming: `DisplayName` on an opt-in `INamedEntity` marker (NOT on `IEntity`)
+### Self-naming: `DisplayName` on `IEntity` as a `static virtual` default member (temporary workaround)
 
 ```csharp
 namespace Concertable.Kernel;
 
-public interface INamedEntity : IEntity
+public interface IEntity
 {
-    static abstract string DisplayName { get; }   // authored, e.g. => "Booking agreement"
+    static virtual string DisplayName =>
+        throw new NotSupportedException("Entity has no DisplayName; override it or use OrNotFound(label).");
 }
 ```
 
-A C# 11 `static abstract` member: an entity that opts in names itself once, compile-time, no reflection, no
-type-name surgery, no `Entity`-suffix leak. **Static** because the name is read off the type `T` when the
-value is `null` (a missing fetch throwing a 404) — there is no instance to read a normal property from. The
-self-naming `OrNotFound` overload is constrained `where T : class, INamedEntity`; entities opt in during the
-call-site migration (Merges 2..N), against the republished Kernel.
+The name lives on `IEntity` itself (the goal). It is a C# 11 `static virtual` **default interface member**,
+NOT `static abstract` — that distinction is the whole workaround. Entities that self-name override it
+(`public static string DisplayName => "Venue";`); the `OrNotFound` self-naming overload is constrained
+`where T : class, IEntity`. **Static** because the name is read off the type `T` when the value is `null`
+(a 404) — there is no instance. Entities opt in (override) during the call-site migration (Merges 2..N).
 
-#### Why NOT `static abstract DisplayName` on `IEntity` itself (REJECTED — proven un-mergeable)
+#### Why `static virtual` (default member), not `static abstract`
 
-Putting the member on the base `IEntity` is the tempting "uniform standard" — and it is **impossible to
-land in this repo**. Proven by two red CI runs (`TypeLoadException: get_DisplayName not implemented`, first
-on `TenantEntity`, then `ConcertEntity` even after adding `DisplayName` to all 37 entities). Root cause:
+`static abstract` was tried first and is **un-mergeable here** — two red CI runs proved it
+(`TypeLoadException: get_DisplayName not implemented`, on `TenantEntity` then `ConcertEntity`, even after
+adding `DisplayName` to all 37 entities). Root cause: `static abstract` is *required*, and its
+implementation mapping is fixed **at compile time** against the interface version the implementer compiled
+against. The **core libs** (`DataAccess.Infrastructure`, `Messaging.Domain`) source-reference Kernel, so
+every integration test loads the **new** Kernel; the **service entities** compile against the Kernel
+**package**, so against the **old** `IEntity` — no mapping recorded, whatever their source says → runtime
+`TypeLoadException`. It's a deadlock (entities can only record the mapping by compiling against a package
+that has the member, which can't exist until this merges, which can't happen while CI is red).
 
-- `static abstract` interface members are wired to their implementation **at compile time**, against the
-  exact interface version the implementer compiled against.
-- The **core libs** (`DataAccess.Infrastructure`, `Messaging.Domain`) reference Kernel by **source**
-  `ProjectReference`, so every integration test loads the **new** Kernel (assembly identity `0.0.0.0`).
-- The **service module entities** reference Kernel by **published package** (`ConcertablePlatformVersion`),
-  so they compile against the **old** `IEntity` — no `get_DisplayName` mapping is recorded in their
-  metadata, whatever their source says.
-- Runtime: new Kernel demands the mapping, package-compiled entities don't have it → `TypeLoadException`.
-
-It is a **deadlock**, not a sequencing problem: entities can only record the mapping by compiling against a
-Kernel *package* that has the member, which cannot exist until this change publishes, which cannot happen
-while CI is red — and the core libs always load source Kernel against package-compiled entities, so no
-single PR and no ≥2-merge split escapes it. `INamedEntity` sidesteps it entirely: `IEntity` gains nothing,
-so no existing entity's type-load ever changes and nothing throws. **Do not re-attempt `IEntity.DisplayName`
-without first changing how the core libs reference Kernel — a separate, much larger architectural change.**
+A `static virtual` **default** member is *additive / binary-non-breaking* — the standard .NET mechanism for
+evolving an interface. Existing entities compiled against the old `IEntity` are not required to implement it
+(the default applies), so **no `TypeLoadException`**. The cost: the "every entity has a name" standard is
+**soft** — an un-overridden entity falls to the throwing default, so `.OrNotFound()` on an un-named entity
+throws at runtime rather than the compiler forcing a name. We only zero-arg entities we've named, so it's
+controlled. A *hard* `static abstract` guarantee would first require the core libs to stop source-
+referencing Kernel (or a whole-repo lockstep build) — a separate, larger change. **This is the temporary
+workaround, logged as such.**
 
 ### The guard — an extension class co-located in `NotFoundException.cs`
 
@@ -182,7 +182,7 @@ public static T OrForbidden<T>(this T? value, string message) where T : struct
 // before
 var agreement = await repository.GetByApplicationIdAsync(applicationId)
     ?? throw new NotFoundException("Booking agreement not found");
-// after  (BookingAgreementEntity : INamedEntity { static string DisplayName => "Booking agreement"; })
+// after  (BookingAgreementEntity overrides: static string DisplayName => "Booking agreement";)
 var agreement = await repository.GetByApplicationIdAsync(applicationId).OrNotFound();
 ```
 → 404 `detail`: **`Booking agreement not found`** (unchanged)
@@ -229,18 +229,23 @@ throw new BadRequestException("You cannot apply to the same concert opportunity 
 ## Migration + merge plan (expand/contract, ≥2 merges)
 
 `Concertable.Kernel` is a published NuGet package (`IsPackable=true`); consumers compile against the
-*published* package, not the source beside them. `INamedEntity` is purely additive — it changes nothing on
-`IEntity`, so it is invisible and harmless downstream until each service bumps Kernel and opts an entity in.
+*published* package, not the source beside them. The `IEntity.DisplayName` default member is purely
+additive (binary-non-breaking), so it is invisible and harmless downstream until each service bumps Kernel
+and overrides it on an entity.
 
-### ☐ Merge 1 — Kernel only (additive; republishes)
-Add `INamedEntity.cs` (the opt-in marker) + the `NotFoundExtensions` static class inside
-`NotFoundException.cs` (+ optional `OrForbidden`). **No entities touched, no call sites touched.**
+### ☑ Merge 1a — INamedEntity marker + OrNotFound (SUPERSEDED, published 0.561)
+The first Kernel merge shipped `INamedEntity` (opt-in marker). Superseded by Merge 1b below when the
+decision moved the name onto `IEntity` itself; `INamedEntity` is removed there (nothing consumed it).
+
+### ☐ Merge 1b — `IEntity.DisplayName` default member + reconstrained OrNotFound (republishes)
+Add the `static virtual DisplayName` default member to `IEntity`; reconstrain the self-naming overload to
+`where T : class, IEntity`; delete `INamedEntity`. **No entities touched, no call sites touched.**
 **Gate:** `dotnet build api/Concertable.slnx` clean + Kernel unit tests. No behaviour change anywhere.
 **This must merge and republish before any call site or entity is migrated.**
 
 ### ☐ Merges 2..N — per service, against the now-published Kernel (parallelisable)
-Each PR bumps `ConcertablePlatformVersion` to the republished Kernel, then for that service: (i) adds
-`: INamedEntity` + `DisplayName` to the entities fetched at canonical Shape-A sites, (ii) migrates that
+Each PR bumps `ConcertablePlatformVersion` to the republished Kernel, then for that service: (i) adds a
+`DisplayName` override to the entities fetched at canonical Shape-A sites (they are already `IEntity`), (ii) migrates that
 module's `?? throw new NotFoundException(...)` sites per the verbatim-match rule (zero-arg where the
 message is canonical, label otherwise). Only entities that actually self-name need the marker — the rest
 stay untouched. Rough distribution of the 75 Shape-A sites:
