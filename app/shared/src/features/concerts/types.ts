@@ -58,12 +58,15 @@ export type ApplicationStatus =
   | "Complete"
   | "Settled";
 
+export type { ESignatureRequest } from "./schemas/eSignatureRequestSchema";
+
 export interface ApplicationActions {
   accept: ActionLink;
   checkout?: ActionLink | null;
   withdraw?: ActionLink | null;
   reject?: ActionLink | null;
   cancel?: ActionLink | null;
+  agreement?: ActionLink | null;
 }
 
 export interface Application {
@@ -118,6 +121,7 @@ export interface ConcertVenue {
 
 export interface ConcertActions {
   cancel?: ActionLink | null;
+  agreement?: ActionLink | null;
 }
 
 export interface Concert {

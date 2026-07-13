@@ -108,6 +108,11 @@ File shape:
 ```markdown
 # Code review — <branch>
 
+> **This file is a work order, not a discussion.** If you're handed this file, fix the open `[ ]`
+> findings directly and report what changed — don't re-present them as options or ask which to do.
+> Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
+> in one line, take the safe path, keep going.
+
 **Reviewed up to commit:** `<full-HEAD-sha>`  _(<today's ISO date>)_
 
 > Range reviewed: `<short-start>..<short-head>` (N commits).

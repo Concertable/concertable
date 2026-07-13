@@ -100,7 +100,8 @@ internal sealed class ContractMapper : IContractMapper
 }
 ```
 
-Other instances: `PayeeResolver` (Concert module — which party receives a concert's ticket revenue).
+Other instances: `PayeeResolver` (Concert module — which party receives a concert's ticket revenue),
+`AgreementTermsRenderer`, `ArtistShareCalculator`, `ContractTermsSerializer` (Concert module).
 
 Rules of the shape:
 
@@ -113,6 +114,19 @@ Rules of the shape:
   resolver's outputs; add a second method instead.
 - An unmapped key throws (`KeyNotFoundException`) — a new enum member fails loudly rather than
   silently defaulting.
+- **The dispatch is its own facade — never inlined into a consumer that also does other work.** The
+  facade's single job is key → strategy → delegate. If a type both holds the map *and* does something
+  else (e.g. `TermsFingerprintCalculator` once held the per-`ContractType` dict *and* hashed), split
+  it: extract the facade, inject it, leave the consumer its own job. A giveaway you've inlined it is a
+  dict typed to a *different* interface than the thing consuming it.
+- **Name the three roles structurally, not with a mandated word** — agent-noun of the strategy's one
+  method, so the name says what it *does*: interface `IX` (shared by facade + strategies); strategies
+  `{Key}X` registered as concrete DI types; facade `X` (unprefixed) holds the dict and is the DI
+  default. `X` follows the method — `Mapper.Map`, `Resolver.Resolve`, `Calculator.Calculate`,
+  `Serializer.Serialize` (canonical string for hashing/compare), `Renderer.Render` (human-facing
+  presentation text). Do **not** force one word across families that do genuinely different things:
+  `AgreementTermsRenderer` (presentation) and `ContractTermsSerializer` (hash input) are correctly
+  different names for correctly different jobs.
 
 ### The anti-patterns this replaces — never do these
 

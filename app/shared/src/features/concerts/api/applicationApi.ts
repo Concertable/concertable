@@ -1,19 +1,26 @@
 import api from "../../../lib/axiosClient";
-import type { Application, Checkout } from "../types";
+import type { Application, Checkout, ESignatureRequest } from "../types";
 
 const applicationApi = {
-  applyToOpportunity: async (opportunityId: number): Promise<Application> => {
-    const { data } = await api.post<Application>(`/application/${opportunityId}`);
+  applyToOpportunity: async (
+    opportunityId: number,
+    eSignature: ESignatureRequest,
+  ): Promise<Application> => {
+    const { data } = await api.post<Application>(
+      `/application/${opportunityId}`,
+      { eSignature },
+    );
     return data;
   },
 
   applyToOpportunityWithPayment: async (
     opportunityId: number,
     paymentMethodId: string,
+    eSignature: ESignatureRequest,
   ): Promise<Application> => {
     const { data } = await api.post<Application>(
       `/application/${opportunityId}`,
-      { paymentMethodId },
+      { eSignature, paymentMethodId },
     );
     return data;
   },
@@ -50,9 +57,13 @@ const applicationApi = {
 
   acceptApplication: async (
     applicationId: number,
+    eSignature: ESignatureRequest,
     body?: { paymentMethodId: string },
   ): Promise<void> => {
-    await api.post(`/application/${applicationId}/accept`, body);
+    await api.post(`/application/${applicationId}/accept`, {
+      eSignature,
+      ...body,
+    });
   },
 
   canAccept: async (applicationId: number): Promise<boolean> => {

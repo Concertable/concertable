@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavbarHeight } from "@/context/NavbarHeightContext";
 import { useMountLayoutEffect } from "@/hooks/useMountLayoutEffect";
@@ -10,6 +10,13 @@ interface Props {
   onToggleEdit: () => void;
   onSave: () => void;
   onCancel: () => void;
+  // Leading page-level entity actions (e.g. download agreement, cancel booking).
+  // Kept a generic slot so this universal bar stays audience-agnostic.
+  actions?: ReactNode;
+  // Optional while the venue/artist edit forms have no client validation yet — they omit it and
+  // default to always-saveable. Make required once every edit form gates Save on a schema.
+  canSave?: boolean;
+  error?: string | null;
 }
 
 export function ConfigBar({
@@ -19,6 +26,9 @@ export function ConfigBar({
   onToggleEdit,
   onSave,
   onCancel,
+  actions,
+  canSave = true,
+  error,
 }: Readonly<Props>) {
   const ref = useRef<HTMLDivElement>(null);
   const { navbarHeight, setConfigHeight } = useNavbarHeight();
@@ -31,31 +41,39 @@ export function ConfigBar({
   return (
     <div
       ref={ref}
-      className="bg-background border-border sticky z-10 flex items-center justify-end gap-2 border-b px-6 py-3"
+      className="bg-background border-border sticky z-10 flex items-center justify-between gap-2 border-b px-6 py-3"
       style={{ top: navbarHeight }}
     >
-      <Button
-        variant={editMode ? "secondary" : "outline"}
-        onClick={onToggleEdit}
-        data-testid="edit"
-      >
-        {editMode ? "Editing" : "Edit"}
-      </Button>
-      <Button
-        variant="outline"
-        onClick={onCancel}
-        disabled={!isDirty}
-        data-testid="cancel"
-      >
-        Cancel
-      </Button>
-      <Button
-        onClick={onSave}
-        disabled={!isDirty || isSaving}
-        data-testid="save"
-      >
-        {isSaving ? "Saving..." : "Save"}
-      </Button>
+      <div className="flex items-center gap-2">{actions}</div>
+      <div className="flex items-center gap-2">
+        {error && (
+          <p className="text-destructive text-sm" data-testid="save-error">
+            {error}
+          </p>
+        )}
+        <Button
+          variant={editMode ? "secondary" : "outline"}
+          onClick={onToggleEdit}
+          data-testid="edit"
+        >
+          {editMode ? "Editing" : "Edit"}
+        </Button>
+        <Button
+          variant="outline"
+          onClick={onCancel}
+          disabled={!isDirty}
+          data-testid="cancel"
+        >
+          Cancel
+        </Button>
+        <Button
+          onClick={onSave}
+          disabled={!isDirty || isSaving || !canSave}
+          data-testid="save"
+        >
+          {isSaving ? "Saving..." : "Save"}
+        </Button>
+      </div>
     </div>
   );
 }
