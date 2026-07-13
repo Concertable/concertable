@@ -1,12 +1,6 @@
 import api from "../../../lib/axiosClient";
 import type { Concert } from "../types";
-
-interface UpdateConcertRequest {
-  name: string;
-  about: string;
-  price: number;
-  totalTickets: number;
-}
+import type { UpdateConcertRequest } from "../schemas/updateConcertRequestSchema";
 
 const concertApi = {
   getConcert: async (id: number): Promise<Concert> => {

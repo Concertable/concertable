@@ -58,13 +58,7 @@ export type ApplicationStatus =
   | "Complete"
   | "Settled";
 
-/* The client's half of an e-signature: the typed full name (required) and an optional drawn image.
-   Its presence IS the consent — the server stamps user/time/IP. Never call apply/accept without it;
-   the UI must gate them behind the signature step (the ESignaturePanel). */
-export interface ESignatureRequest {
-  signatoryName: string;
-  drawnSignatureImage?: string;
-}
+export type { ESignatureRequest } from "./schemas/eSignatureRequestSchema";
 
 export interface ApplicationActions {
   accept: ActionLink;

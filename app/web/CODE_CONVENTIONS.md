@@ -278,6 +278,40 @@ so a key and its invalidations can't drift apart across files.
 **Litmus:** *changes per submit → mutation variable, passed to `mutate()`. Fixed for the hook's life
 → bound inside `useMutation`.*
 
+## Form buffers are validated by a zod schema before becoming an `XRequest`
+
+Every user-editable form validates its buffer against a **zod** schema at submit and maps the
+*parsed* result — never the raw buffer — to the `XRequest`. zod is already the project's validation
+tool (TanStack `validateSearch`; `SearchSchema` in `features/search/schemas/`), so this adds no
+dependency. A form with free-typed fields and no schema is the violation.
+
+One schema does two jobs a hand-rolled `if` can't do together:
+
+- **It narrows the type at the boundary.** `schema.parse(buffer)` returns a value whose fields are
+  proven present and correctly typed, so mapping to the `XRequest` needs no `draft!` bang and no `??`
+  fallback. The non-null assertion *is* the missing validation — a schema removes it honestly instead
+  of asserting past it.
+- **It feeds inline field errors.** `safeParse` yields per-field messages the component renders next
+  to each input, plus a derived `isValid` that gates the submit button. React state then reflects
+  *actual* validity, not a guess — the UX a server `400` can only deliver after a round trip.
+
+The schema lives in `features/<feature>/schemas/`, matching the search precedent. Keep it aligned with
+the `XRequest` shape — `type XRequest = z.infer<typeof xRequestSchema>` makes drift a compile error —
+while the naming and casing rules above still hold (camelCase fields matching the wire).
+
+Client validation is a UX affordance, **not** a trust boundary: the server re-validates every field
+regardless (backend `Validators/`). Never drop a server check because the client has one.
+
+**Litmus:** *a field the user can type into, with nothing parsing it before `mutate()`? → add the
+schema; the parsed output, not the buffer, becomes the `XRequest`.*
+
+> **Reference implementations:** the concert edit form (`useMyConcert.ts` + `updateConcertRequestSchema`,
+> which parses the draft and kills the old `draft!` bang) and the apply/accept signature
+> (`eSignatureRequestSchema` + `useESignature`, with the per-field message in `ESignaturePanel`).
+> **Adopt incrementally:** the venue/artist edit forms (`useMyVenue`/`useMyArtist`) and the remaining
+> write inputs (`CreateArtistRequest`, `CreateReviewRequest`, `CreatePreferenceRequest`,
+> `TicketPurchaseRequest`) still map buffers unchecked — add a schema as each is touched.
+
 ---
 
 ## Violations at a glance
@@ -292,3 +326,4 @@ so a key and its invalidations can't drift apart across files.
 | 6 | Suffix on *raw* query/mutation hooks | dashboard hooks (~20), `useStripeAccount` | Rename `useVenueKpis` → `useVenueKpisQuery`; leave facades |
 | 7 | Per-feature query-key factory | everywhere | Adopt incrementally |
 | 8 | *(tech debt)* duplicated axios clients | `shared/lib`, app trees | Factory + `attachAuth`; log in `TECH_DEBT.md` |
+| 9 | Form buffer unvalidated before `XRequest` | `useMyVenue`/`useMyArtist`, create artist/review/preference/ticket forms | zod schema in `schemas/`; map the parsed result (concert edit + e-signature done) |

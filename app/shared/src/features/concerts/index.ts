@@ -23,6 +23,9 @@ export { useCheckoutFlow } from "./hooks/useCheckoutFlow";
 export type { CheckoutFlowState } from "./hooks/useCheckoutFlow";
 export { useConcertStore } from "./store/useConcertStore";
 export { useOpportunitiesStore } from "./store/useOpportunitiesStore";
+export { updateConcertRequestSchema } from "./schemas/updateConcertRequestSchema";
+export type { UpdateConcertRequest } from "./schemas/updateConcertRequestSchema";
+export { eSignatureRequestSchema } from "./schemas/eSignatureRequestSchema";
 export type {
   Concert,
   ConcertArtist,
