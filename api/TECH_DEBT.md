@@ -6,6 +6,22 @@ Debt spanning multiple services or living in shared code (`Shared/`, `Concertabl
 
 ## MED
 
+### `IEntity.DisplayName` is a soft standard (throwing default member), not a hard `static abstract`
+
+`Shared/Concertable.Kernel/IEntity.cs` carries `DisplayName` as a `static virtual` **default interface
+member** whose default *throws* `NotSupportedException`, so entities that self-name via `OrNotFound()` must
+override it; an un-overridden entity fails at runtime rather than the compiler forcing a name. The intended
+design was `static abstract` (compiler-enforced, every entity named), but that is a binary-breaking change
+that cannot land: the core libs (`DataAccess.Infrastructure`, `Messaging.Domain`) source-reference Kernel
+so integration tests load the new Kernel, while service entities compile against the Kernel *package* — a
+required static-abstract member's implementation mapping is fixed at compile time against the old interface,
+so package-compiled entities throw `TypeLoadException` against the new Kernel (two red CI runs confirmed).
+The default member is the additive workaround.
+
+**Resolves when:** the core libs stop source-referencing Kernel (or the repo builds shared source lockstep
+so entities compile against the same Kernel the tests load), at which point `DisplayName` can become
+`static abstract` and the throwing default is deleted.
+
 ### Kernel `ClaimsPrincipal.GetId()` fails open with `string.Empty`
 
 `Shared/Concertable.Kernel/Identity/ClaimsPrincipalExtensions.cs` returns `user?.FindFirst("sub")?.Value ?? string.Empty` — a principal with no `sub` claim becomes an empty-string user id instead of a failure. Its sibling `CurrentUserExtensions.GetId(ICurrentUser)` gets this right (throws `UnauthorizedAccessException`). The only consumer, `NotificationHub`, assigns the result to `string?` and null-checks it — a check that can never fire because the method never returns null, so an unauthenticated principal sails through as `""`.
