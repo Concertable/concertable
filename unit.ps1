@@ -10,7 +10,7 @@ Set-Location $PSScriptRoot
 
 $b2bProjects = @(
     "api/Concertable.B2B/src/Modules/Concert/Tests/Concertable.B2B.Concert.UnitTests/Concertable.B2B.Concert.UnitTests.csproj",
-    "api/Concertable.B2B/src/Modules/Contract/Tests/Concertable.B2B.Contract.UnitTests/Concertable.B2B.Contract.UnitTests.csproj",
+    "api/Concertable.B2B/src/Modules/Deal/Tests/Concertable.B2B.Deal.UnitTests/Concertable.B2B.Deal.UnitTests.csproj",
     "api/Concertable.B2B/src/Modules/Tenant/Tests/Concertable.B2B.Tenant.UnitTests/Concertable.B2B.Tenant.UnitTests.csproj",
     "api/Concertable.B2B/tests/Concertable.B2B.Workers.UnitTests/Concertable.B2B.Workers.UnitTests.csproj"
 )

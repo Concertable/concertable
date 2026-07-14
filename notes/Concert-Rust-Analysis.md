@@ -420,7 +420,7 @@ The honest cost: the entry-boundary `match` *does* edit when you add a contract 
 **Moves to Rust** (the whole vertical — Concert + Contract bounded contexts):
 - `Concertable.Concert.{Domain,Application,Infrastructure,Api,Contracts}` — including `ApplicationService`, `OpportunityService`, `BookingService`, `ConcertService`. The orchestrators move with the workflow they orchestrate.
 - `Concertable.Concert.Api` controllers → `axum`/`tonic` handlers
-- `Concertable.Contract.{Domain,Application,Infrastructure,Contracts}` — folded into the Rust Concert service; only Concert consumes it
+- `Concertable.B2B.Deal.{Domain,Application,Infrastructure,Contracts}` — folded into the Rust Concert service; only Concert consumes it
 - Tables in `concert.*` and `contract.*` schemas
 - Artist/Venue read-model projection handlers — Rust subscribes to broker events the same way .NET does today
 - QR / PDF generation (Rust crates: `qrcode`, `genpdf` / `printpdf`)
