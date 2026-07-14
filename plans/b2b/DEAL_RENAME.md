@@ -128,11 +128,18 @@ Seed factories/seeders, and all tests. **Keep** every JSON/enum string value and
 - **Gate met:** `dotnet build api/Concertable.slnx` green · Deal 10/10 + Concert 57/57 unit green ·
   Concert integration green.
 
-### Phase 2 — the agreement → `Contract` (depends on Phase 1)
-Now that `Contract*` is free, rename the second table. Re-scaffold migrations (table `BookingAgreements`
-→ `Contracts`). If renaming the route/hook/filename, update the SPA in the same commit.
-- **Gate:** solution build green · Concert integration green (`integration-debug`) · four web builds if
-  the SPA was touched.
+### ✅ Phase 2 — the agreement → `Contract` (DONE — depends on Phase 1)
+~~Now that `Contract*` is free, rename the second table. Re-scaffold migrations (table `BookingAgreements`
+→ `Contracts`).~~
+- Done: `BookingAgreementEntity`→`ContractEntity`, service/builder/pdf-service/repository/document/
+  DTO/config/mappers/tests → `Contract*`, `AgreementPdf`→`ContractPdf`. Concert migration
+  re-scaffolded (table `Contracts`).
+- **SPA/wire left untouched** (the plan's optional bits): HTTP routes `{id}/agreement[/pdf]`, the
+  HATEOAS `Agreement` link + `ApplicationDto.AgreementId`, the download filename, and the SPA hook
+  all keep their names — backend types renamed only, no JSON-key/route change, no SPA builds needed.
+- Also fixed a Phase-1 straggler: `AgreementTermsRendererTests` → `DealTermsRendererTests` (it tests
+  the now-`DealTermsRenderer`).
+- **Gate:** solution build green · Concert unit 57/57 · Concert integration green.
 
 ### Phase 3 — the leak → `LifecycleStateMachine`
 Rename `ContractStateMachine` (+ tests). Pure Concert-domain rename, no model change.
