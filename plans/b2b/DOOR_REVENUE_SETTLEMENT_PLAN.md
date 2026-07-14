@@ -44,8 +44,10 @@ digitises it and adds a signed agreement, an audit trail, and automatic payout o
 
 The trust posture we ship on, stated honestly:
 
-- **The venue declares the door revenue** for the night at settlement (the external ticket sales +
-  cash on the door — the gross the split is calculated against).
+- **The venue declares the door revenue** for the night at settlement — the **external** take only
+  (tickets sold on the venue's own site / other ticketers + cash on the door), **excluding** anything
+  sold through Concertable's own checkout (that's `TicketsSold`, which we already know). The split is
+  calculated against the **sum**: `TicketsSold * Price + DoorRevenue`, not `DoorRevenue` alone.
 - **It is not verified, and we don't claim it is.** The checks are contractual (signed booking
   agreement binds the split), social (the artist was in the room and sees a full/empty house), and
   repeated-game (a venue that lowballs artists loses its acts). The residual risk — a venue shaving a
@@ -68,34 +70,45 @@ verified writer that pre-fills the same field. v1 is not throwaway.
 
 ---
 
-## Phase 1 — Domain + settlement rewire (backend, no UI)
+## Phase 1 — Domain + settlement rewire (backend, no UI) — ✅ DONE
 
-The load-bearing change. Behaviour flips: revenue-share settles off `DoorRevenue`, and only once it's
-present.
+Revenue-share now settles off a venue-declared `DoorRevenue`, and only once it's present.
 
-- **`ConcertEntity.DoorRevenue`** — nullable `decimal?` (null = not yet declared). Domain method
-  `DeclareDoorRevenue(decimal amount)` with validation (`>= 0`; guard state — only a `Booked`, ended,
-  revenue-share concert). Keep `TicketsSold` and `TicketSaleProcessor` exactly as-is — they stay the
-  dormant marketplace writer.
-- **Settlement reads `DoorRevenue`.** Repoint `PayoutFinishStep` / `GetTotalRevenueByConcertIdAsync` at
-  `DoorRevenue` instead of `TicketsSold * Price`. Absent `DoorRevenue` reaching the payout step is a
-  bug (the gate below should make it unreachable) — throw, don't `?? 0` it into a silent £0 (root
-  `CLAUDE.md`: don't default away a failure).
-- **Gate the auto-settlement sweep.** `ConcertCompletionRunner`/`GetEndedConfirmedIdsAsync` must only
-  pick up a revenue-share concert once `DoorRevenue` is set. Fixed-amount types (FlatFee, VenueHire)
-  are unaffected — they finish on end as today (escrow already captured; no input needed). Express the
-  predicate as "settlement inputs ready," not a bare `ContractType` switch in agnostic code — see
-  [CODE_PATTERNS.md](../../api/docs/CODE_PATTERNS.md) on keyed strategies; a `RequiresDoorRevenue`
-  capability on the workflow is the on-pattern way to avoid re-branching on the type.
-- **Migration** — `./initial-migrations.ps1` from `api/` (re-scaffold, never additive).
-- **Tests** — `ConcertDoorSplitApiTests` / `ConcertVersusApiTests` must stop asserting against
-  `TicketsSold * Price` and instead declare `DoorRevenue`, then assert the settlement charge equals
-  `CalculateArtistShare(DoorRevenue)`. Add: a revenue-share concert with **no** `DoorRevenue` is **not**
-  swept/settled (proves the gate). Fix the seeders accordingly.
+**As built** (the original bullets proposed an explicit `AwaitingDoorRevenue` lifecycle state + a
+`RequiresDoorRevenue` marker capability; both were dropped as smells — a pure marker with no behaviour,
+and a new state where the type system already answers the question):
 
-**Gate:** `dotnet build api/Concertable.slnx` green · Concert module unit + integration via
-`integration-debug`. Zero UI, but it flips a covered settlement flow → **run API E2E** (`e2e-api-debug`)
-before calling the phase done.
+- `ConcertEntity.DoorRevenue` (nullable `decimal`) + `DeclareDoorRevenue(amount)` domain method (`>= 0`,
+  throws otherwise). It's a **concert-level fact** (same shelf as `TicketsSold`), not a booking one.
+  It is the **external/box-office/cash** take only — it does **not** replace `TicketsSold` (Concertable's
+  own ticket sales), it is **added** to it.
+- **No new lifecycle state, no marker.** "Is this a revenue-share settlement?" = `Booking is
+  DeferredBooking` (a real behaviour-bearing type — DoorSplit/Versus use it, FlatFee/VenueHire use
+  `StandardBooking`). "Awaiting declaration" = a `DeferredBooking` whose `DoorRevenue` is still `null`;
+  the gig stays `Booked` until declared.
+- `PayoutFinishStep` settles a % of the **total gross** = `TicketsSold * Price` (Concertable's own
+  ticket sales, known) **+** `DoorRevenue` (venue-declared external take). Throws if the door figure is
+  still `null` (total comes back `null` — the gate makes that unreachable). NB: settling off `DoorRevenue`
+  alone was a bug — it would pay the artist £0 on Concertable-sold tickets.
+- Sweep gate `ConcertRepository.GetEndedConfirmedIdsAsync`: `… && !(Booking is DeferredBooking &&
+  DoorRevenue == null)` — fixed types finish on end; a deferred gig is skipped until declared.
+- Declare op `IConcertService.DeclareDoorRevenueAsync` — a plain guarded concert mutation (loads the
+  concert, guards `is DeferredBooking` + ended + `Booked`, sets the field, saves), **not** a workflow
+  executor: it fires no lifecycle transition and has one behaviour for all revenue-share types. See the
+  Concert-module [`CLAUDE.md`](../../api/Concertable.B2B/src/Modules/Concert/CLAUDE.md) for the
+  executor-vs-service-method rule. Re-declarable while `Booked`; frozen once settled.
+- Migration: **only the B2B Concert module** re-scaffolded (`DoorRevenue` column). `initial-migrations.ps1`
+  re-scaffolds every module, but master re-scaffolds per changed module — so only Concert's migration ships.
+- Tests: `ConcertDoorSplit/VersusApiTests` declare then assert `CalculateArtistShare(DoorRevenue)`; added
+  a gate test (`Finish_ShouldNotSettle_WhenDoorRevenueNotDeclared`). E2E arrange declares via a raw-SQL
+  `ConcertDb` helper (no declare endpoint until Phase 2).
+- **Also folded in (per owner):** a shared-fixture fix giving the integration test host a loopback client
+  IP (`TestClientIpStartupFilter`). Pre-existing break from commit `86ab35bc` "require an origin IP on
+  every e-signature" — the harness never set one, so every `Apply` test 500'd on `master`. Unrelated to
+  door revenue but unblocks the Concert integration suite.
+
+**Gate:** build green · Concert unit 57/57 · Concert integration 106/106. API E2E not run locally (a
+separate `Outbox`-at-startup harness issue on this machine); the merge-queue E2E gate is the real check.
 
 ## Phase 2 — Venue declares door revenue (endpoint)
 
@@ -135,9 +148,14 @@ satisfy, not the design itself:
 
 - **Surface the task** — ended revenue-share gigs awaiting declaration appear as an action ("Enter door
   takings to settle"), driven off the HATEOAS link (never a client-side contract-type check).
-- **Entry** — a gross-revenue input (£) with a plain-language note that this is the figure the artist's
-  share is calculated from and that it's a declared, contractually-binding number. Submit → endpoint →
-  refresh; the action clears and the booking moves toward `Complete`.
+- **Entry** — an input (£) for the **external door take only** (venue's own ticketing + other ticketers
+  + cash on the door), with a plain-language note that it **excludes** tickets sold through Concertable
+  and that it's a declared, contractually-binding number. The artist's share is calculated on the **sum**
+  `TicketsSold * Price + DoorRevenue`, so the screen must show that breakdown (Concertable sales, known +
+  declared external take = total the split applies to) — **not** present the input as "the figure the
+  share is calculated from", which would make the venue enter the whole gross and double-count
+  Concertable's own sales. Submit → endpoint → refresh; the action clears and the booking moves toward
+  `Complete`.
 - Fixed-fee bookings never show this — they settle automatically.
 
 **Gate:** build green · this is the final phase and flips a user-facing money flow on a covered path →
