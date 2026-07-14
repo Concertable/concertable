@@ -68,34 +68,38 @@ verified writer that pre-fills the same field. v1 is not throwaway.
 
 ---
 
-## Phase 1 — Domain + settlement rewire (backend, no UI)
+## Phase 1 — Domain + settlement rewire (backend, no UI) — ✅ DONE
 
-The load-bearing change. Behaviour flips: revenue-share settles off `DoorRevenue`, and only once it's
-present.
+Revenue-share now settles off a venue-declared `DoorRevenue`, and only once it's present.
 
-- **`ConcertEntity.DoorRevenue`** — nullable `decimal?` (null = not yet declared). Domain method
-  `DeclareDoorRevenue(decimal amount)` with validation (`>= 0`; guard state — only a `Booked`, ended,
-  revenue-share concert). Keep `TicketsSold` and `TicketSaleProcessor` exactly as-is — they stay the
-  dormant marketplace writer.
-- **Settlement reads `DoorRevenue`.** Repoint `PayoutFinishStep` / `GetTotalRevenueByConcertIdAsync` at
-  `DoorRevenue` instead of `TicketsSold * Price`. Absent `DoorRevenue` reaching the payout step is a
-  bug (the gate below should make it unreachable) — throw, don't `?? 0` it into a silent £0 (root
-  `CLAUDE.md`: don't default away a failure).
-- **Gate the auto-settlement sweep.** `ConcertCompletionRunner`/`GetEndedConfirmedIdsAsync` must only
-  pick up a revenue-share concert once `DoorRevenue` is set. Fixed-amount types (FlatFee, VenueHire)
-  are unaffected — they finish on end as today (escrow already captured; no input needed). Express the
-  predicate as "settlement inputs ready," not a bare `ContractType` switch in agnostic code — see
-  [CODE_PATTERNS.md](../../api/docs/CODE_PATTERNS.md) on keyed strategies; a `RequiresDoorRevenue`
-  capability on the workflow is the on-pattern way to avoid re-branching on the type.
-- **Migration** — `./initial-migrations.ps1` from `api/` (re-scaffold, never additive).
-- **Tests** — `ConcertDoorSplitApiTests` / `ConcertVersusApiTests` must stop asserting against
-  `TicketsSold * Price` and instead declare `DoorRevenue`, then assert the settlement charge equals
-  `CalculateArtistShare(DoorRevenue)`. Add: a revenue-share concert with **no** `DoorRevenue` is **not**
-  swept/settled (proves the gate). Fix the seeders accordingly.
+**As built** (the original bullets proposed an explicit `AwaitingDoorRevenue` lifecycle state + a
+`RequiresDoorRevenue` marker capability; both were dropped as smells — a pure marker with no behaviour,
+and a new state where the type system already answers the question):
 
-**Gate:** `dotnet build api/Concertable.slnx` green · Concert module unit + integration via
-`integration-debug`. Zero UI, but it flips a covered settlement flow → **run API E2E** (`e2e-api-debug`)
-before calling the phase done.
+- `ConcertEntity.DoorRevenue` (nullable `decimal`) + `DeclareDoorRevenue(amount)` domain method (`>= 0`,
+  throws otherwise). It's a **concert-level fact** (same shelf as `TicketsSold`), not a booking one.
+  `TicketsSold`/`TicketSaleProcessor` left untouched (dormant marketplace writer).
+- **No new lifecycle state, no marker.** "Is this a revenue-share settlement?" = `Booking is
+  DeferredBooking` (a real behaviour-bearing type — DoorSplit/Versus use it, FlatFee/VenueHire use
+  `StandardBooking`). "Awaiting declaration" = a `DeferredBooking` whose `DoorRevenue` is still `null`;
+  the gig stays `Booked` until declared.
+- `PayoutFinishStep` reads `DoorRevenue` (throws if `null` — the gate makes that unreachable).
+- Sweep gate `ConcertRepository.GetEndedConfirmedIdsAsync`: `… && !(Booking is DeferredBooking &&
+  DoorRevenue == null)` — fixed types finish on end; a deferred gig is skipped until declared.
+- Declare op `IConcertWorkflowModule.DeclareDoorRevenueAsync` → `DoorRevenueExecutor`, guarded to
+  `is DeferredBooking` + ended + `Booked` (re-declarable while `Booked`; frozen once settled).
+- Migration: **only the B2B Concert module** re-scaffolded (`DoorRevenue` column). `initial-migrations.ps1`
+  re-scaffolds every module, but master re-scaffolds per changed module — so only Concert's migration ships.
+- Tests: `ConcertDoorSplit/VersusApiTests` declare then assert `CalculateArtistShare(DoorRevenue)`; added
+  a gate test (`Finish_ShouldNotSettle_WhenDoorRevenueNotDeclared`). E2E arrange declares via a raw-SQL
+  `ConcertDb` helper (no declare endpoint until Phase 2).
+- **Also folded in (per owner):** a shared-fixture fix giving the integration test host a loopback client
+  IP (`TestClientIpStartupFilter`). Pre-existing break from commit `86ab35bc` "require an origin IP on
+  every e-signature" — the harness never set one, so every `Apply` test 500'd on `master`. Unrelated to
+  door revenue but unblocks the Concert integration suite.
+
+**Gate:** build green · Concert unit 57/57 · Concert integration 106/106. API E2E not run locally (a
+separate `Outbox`-at-startup harness issue on this machine); the merge-queue E2E gate is the real check.
 
 ## Phase 2 — Venue declares door revenue (endpoint)
 
