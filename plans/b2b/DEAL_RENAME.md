@@ -141,8 +141,10 @@ Seed factories/seeders, and all tests. **Keep** every JSON/enum string value and
   the now-`DealTermsRenderer`).
 - **Gate:** solution build green · Concert unit 57/57 · Concert integration green.
 
-### Phase 3 — the leak → `LifecycleStateMachine`
-Rename `ContractStateMachine` (+ tests). Pure Concert-domain rename, no model change.
+### ✅ Phase 3 — the leak → `LifecycleStateMachine` (DONE)
+~~Rename `ContractStateMachine` (+ tests). Pure Concert-domain rename, no model change.~~
+Done: `ContractStateMachine`→`LifecycleStateMachine` (+ `*Tests`) across Concert.Domain.Lifecycle
+and its workflow-registry/builder consumers. `ConcertStateMachine*` (a different type) untouched.
 - **Gate:** build green · Concert unit tests green.
 
 ### Phase 4 — docs + Rust-plan re-alignment (doc-only; can ride Phase 1–3 commits)
