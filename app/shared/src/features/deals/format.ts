@@ -6,7 +6,7 @@ import type {
   VersusDeal,
 } from "./types";
 
-const summaryRegistry: Record<Deal["$type"], (contract: Deal) => string> = {
+const summaryRegistry: Record<Deal["$type"], (deal: Deal) => string> = {
   flatFee: (c) => `£${(c as FlatFeeDeal).fee}`,
   doorSplit: (c) => `${(c as DoorSplitDeal).artistDoorPercent}% door`,
   versus: (c) => {
@@ -16,6 +16,6 @@ const summaryRegistry: Record<Deal["$type"], (contract: Deal) => string> = {
   venueHire: (c) => `£${(c as VenueHireDeal).hireFee} hire fee`,
 };
 
-export function dealSummary(contract: Deal): string {
-  return summaryRegistry[contract.$type](contract);
+export function dealSummary(deal: Deal): string {
+  return summaryRegistry[deal.$type](deal);
 }

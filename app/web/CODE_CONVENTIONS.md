@@ -163,7 +163,7 @@ applyToOpportunity: async (opportunityId: number, eSignature: ESignatureRequest)
 ```
 
 Bodyless endpoints use bare `api.post(url)`, no generic. Binary reads pass
-`{ responseType: "arraybuffer" }` and wrap in a `Blob` (`getAgreementPdf`).
+`{ responseType: "arraybuffer" }` and wrap in a `Blob` (`getContractPdf`).
 
 ## Errors are `ProblemDetails`, handled once at the query client
 

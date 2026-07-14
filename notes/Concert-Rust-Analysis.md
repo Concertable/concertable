@@ -216,7 +216,7 @@ The compiler knows `w: &FlatFee`, looks up `impl Accept for FlatFee { type Input
 // AcceptExecutor.cs — today
 private Task Dispatch(ApplicationEntity app, string? pmId)
 {
-    var workflow = workflows.Create(app.ContractType);
+    var workflow = workflows.Create(app.DealType);
     return workflow switch
     {
         IAcceptsPaid w when pmId is not null => w.Accept.ExecuteAsync(app.Id, pmId),

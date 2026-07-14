@@ -66,7 +66,7 @@ export interface ApplicationActions {
   withdraw?: ActionLink | null;
   reject?: ActionLink | null;
   cancel?: ActionLink | null;
-  agreement?: ActionLink | null;
+  contract?: ActionLink | null;
 }
 
 export interface Application {
@@ -91,7 +91,7 @@ export interface OpportunityDraft {
   startDate: string;
   endDate: string;
   genres: Genre[];
-  contract: Deal;
+  deal: Deal;
 }
 
 export interface Opportunity extends OpportunityDraft {
@@ -121,7 +121,7 @@ export interface ConcertVenue {
 
 export interface ConcertActions {
   cancel?: ActionLink | null;
-  agreement?: ActionLink | null;
+  contract?: ActionLink | null;
 }
 
 export interface Concert {

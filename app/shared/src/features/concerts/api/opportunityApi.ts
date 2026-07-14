@@ -33,7 +33,7 @@ const opportunityApi = {
         startDate: o.startDate,
         endDate: o.endDate,
         genres: o.genres,
-        contract: o.contract,
+        deal: o.deal,
       })),
     );
     return data;

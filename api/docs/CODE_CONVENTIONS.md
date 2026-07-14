@@ -149,6 +149,8 @@ Use these **sparingly** — don't pollute the codebase with summaries on self-ex
 
 When you *do* document a type or member, write it as an XML doc comment (`/// <summary>…</summary>`), not a `//` line comment. Reserve `//` for short inline notes *inside* method bodies. Cross-reference with `<see cref="…"/>` / `<see langword="null"/>` instead of bare prose, and use `<c>Name</c>` for a type the declaring assembly can't reference (avoids an unresolved-cref warning).
 
+**Lead with what the thing *is*, in plain words** — "A snapshot of the deal, frozen at Accept." beats terse jargon like "Columns are copies, never references to the live deal". Name the kind-of-thing ("a snapshot of X", "a cache of X", "a guard that…"), then only the constraint that matters. Don't over-explain — a good "X of Y" opener usually carries it.
+
 ```csharp
 // CORRECT — documents the member
 /// <summary>

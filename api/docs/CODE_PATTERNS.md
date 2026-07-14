@@ -96,12 +96,12 @@ internal sealed class DealMapper : IDealMapper
     }
 
     public IDeal ToDeal(DealEntity entity) =>
-        mappers[entity.ContractType].ToDeal(entity);
+        mappers[entity.DealType].ToDeal(entity);
 }
 ```
 
 Other instances: `PayeeResolver` (Concert module — which party receives a concert's ticket revenue),
-`AgreementTermsRenderer`, `ArtistShareCalculator`, `DealTermsSerializer` (Concert module).
+`DealTermsRenderer`, `ArtistShareCalculator`, `DealTermsSerializer` (Concert module).
 
 Rules of the shape:
 
@@ -116,7 +116,7 @@ Rules of the shape:
   silently defaulting.
 - **The dispatch is its own facade — never inlined into a consumer that also does other work.** The
   facade's single job is key → strategy → delegate. If a type both holds the map *and* does something
-  else (e.g. `TermsFingerprintCalculator` once held the per-`ContractType` dict *and* hashed), split
+  else (e.g. `TermsFingerprintCalculator` once held the per-`DealType` dict *and* hashed), split
   it: extract the facade, inject it, leave the consumer its own job. A giveaway you've inlined it is a
   dict typed to a *different* interface than the thing consuming it.
 - **Name the three roles structurally, not with a mandated word** — agent-noun of the strategy's one
@@ -125,12 +125,12 @@ Rules of the shape:
   default. `X` follows the method — `Mapper.Map`, `Resolver.Resolve`, `Calculator.Calculate`,
   `Serializer.Serialize` (canonical string for hashing/compare), `Renderer.Render` (human-facing
   presentation text). Do **not** force one word across families that do genuinely different things:
-  `AgreementTermsRenderer` (presentation) and `DealTermsSerializer` (hash input) are correctly
+  `DealTermsRenderer` (presentation) and `DealTermsSerializer` (hash input) are correctly
   different names for correctly different jobs.
 
 ### The anti-patterns this replaces — never do these
 
-- **Branching on the key in agnostic components.** A `ContractType == VenueHire ? … : …` ternary (or
+- **Branching on the key in agnostic components.** A `DealType == VenueHire ? … : …` ternary (or
   switch) inside a handler/service/mapper that is otherwise contract-agnostic plants a business rule
   where nobody will look for it, and it WILL get copy-pasted (that's how it spreads). The rule lives
   in exactly one resolver.
@@ -152,7 +152,7 @@ it implements — it holds them, adds no behaviour of its own — assign the con
 expression-bodied property; `private readonly IX x;` + `public IX X => x;` is two members and a pointless
 double-hop for one dependency.
 
-Canonical example — the per-`ContractType` `IConcertWorkflow` implementations
+Canonical example — the per-`DealType` `IConcertWorkflow` implementations
 (`Modules/Concert/…/Services/Workflow/Workflows/`), which exist only to expose each workflow step
 (`Apply`, `Accept`, `Book`, `Finish`, `Cancel`) as a public property:
 

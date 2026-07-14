@@ -10,7 +10,7 @@ interface Props {
   onToggleEdit: () => void;
   onSave: () => void;
   onCancel: () => void;
-  // Leading page-level entity actions (e.g. download agreement, cancel booking).
+  // Leading page-level entity actions (e.g. download contract, cancel booking).
   // Kept a generic slot so this universal bar stays audience-agnostic.
   actions?: ReactNode;
   // Optional while the venue/artist edit forms have no client validation yet — they omit it and

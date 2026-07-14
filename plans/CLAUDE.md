@@ -5,6 +5,30 @@ archive. A finished plan kept "for reference" is rot: it misleads the next reade
 work is still pending. This file is the workflow; the root [`CLAUDE.md`](../CLAUDE.md) carries the
 short version.
 
+## Never leave the codebase out of sync — the plan isn't done until the whole thing is
+
+A refactor isn't finished when the convenient half lands. If a repo/package boundary forces it into
+multiple PRs (e.g. a Kernel change and the B2B change that depends on it), do them back-to-back —
+but the plan stays open until **all** of them land and the codebase is in sync again. Merging the
+B2B PR and calling the plan done while Kernel still speaks the old shape is the thing to never do.
+Don't `git rm` the plan (Lifecycle 4) until that final synced state is in.
+
+### Rename definition-of-done: the grep gate (mechanical, not judgement)
+
+A rename is done **only when `grep -rniE "<oldterm>"` over the entire repo returns zero** — every
+tier, no exceptions: type names, identifiers **of every case** (PascalCase, camelCase, snake, kebab),
+local vars, fields, params, comments, string literals, `data-testid`s, HTTP routes, JSON keys, blob
+paths, file/folder names, and docs. There is **no "cosmetic tier."** A field typed `IDealAccessor`
+named `contractAccessor`, or a comment still saying "the agreement", is *not done* — it's exactly the
+dishonest naming the rename exists to remove.
+
+Run the grep before claiming done. The only acceptable non-zero is an **explicit, written allowlist**
+of deliberate survivors, each justified in the plan — a term that legitimately means something else
+now (a word reused for a different concept), a shared `.Contracts` event package, a wire value kept on
+purpose. Anything not on that allowlist is outstanding work. "I renamed the types, the build's green,
+tests pass" is **not** the bar — the grep is. Don't decide by hand which occurrences "count"; the whole
+failure mode is discretion. Remove the discretion — grep, allowlist, zero.
+
 ## LAUNCH_PLAN.md is the master tracker — keep it current with every change it tracks
 
 [`plans/b2b/LAUNCH_PLAN.md`](./b2b/LAUNCH_PLAN.md) is the driving doc for the current launch

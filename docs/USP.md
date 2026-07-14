@@ -47,7 +47,7 @@ excludes segment 1.
 | | GigPig | GigXchange | Concertable |
 |---|---|---|---|
 | **Marketplace** | Yes — venues post, artists apply | Yes — any role can initiate | Yes |
-| **Contract / settlement model** | Booking confirmation, flat fee only | Digital agreement + Stripe escrow, flat fee only | Four typed contracts: FlatFee, DoorSplit, VenueHire, Versus (see [`ARCHITECTURE.md`](../api/Concertable.B2B/Modules/Contract/ARCHITECTURE.md)) |
+| **Contract / settlement model** | Booking confirmation, flat fee only | Digital contract + Stripe escrow, flat fee only | Four typed deals: FlatFee, DoorSplit, VenueHire, Versus (see [`ARCHITECTURE.md`](../api/Concertable.B2B/Modules/Deal/ARCHITECTURE.md)) |
 | **Door split / revenue share** | No | No | Yes |
 | **Artist-pays-venue direction (VenueHire)** | No | No | Yes |
 | **Guarantee + split (Versus)** | No | No | Yes |
@@ -59,7 +59,7 @@ excludes segment 1.
 | **Target customer** | Background-music pubs (segment 1) | Same as GigPig + some agents/promoters | Ticketed small venues (segment 2 + 3) |
 
 **Key correction to common framing:** GigXchange's "contract" is a *legal artifact*
-(a generated PDF agreement + escrow deposit hold). It is not a typed settlement
+(a generated PDF contract + escrow deposit hold). It is not a typed settlement
 engine. Architecturally they have the equivalent of Concertable's `FlatFeeContract`
 and nothing else. Their "contract generator" markets the *existence* of a contract,
 not the *sophistication* of money-movement models.

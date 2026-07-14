@@ -64,7 +64,7 @@ This is the rule the rest of the architecture hangs on. **A read projection serv
 |---|---|---|---|
 | Venue | B2B DB (`VenueEntity`, full ~25 fields with Tenant, PayoutAccount, ComplianceContext) | Search DB (`VenueSearchModel` for browse/details) | `VenueChangedEvent` via bus |
 | Artist | B2B DB (`ArtistEntity`, full) | Search DB (`ArtistSearchModel`) | `ArtistChangedEvent` via bus |
-| Concert (workflow shape) | B2B DB (`ConcertEntity`, lean — `BookingId`, `ContractType`, `CurrentStage`, `DatePosted`, `TotalTickets` capacity only) | Search DB (`ConcertSearchModel` — buyable/browse view: name, period, price, banner, avatar, genres, images, location, rating) | `ConcertChangedEvent` via bus |
+| Concert (workflow shape) | B2B DB (`ConcertEntity`, lean — `BookingId`, `DealType`, `CurrentStage`, `DatePosted`, `TotalTickets` capacity only) | Search DB (`ConcertSearchModel` — buyable/browse view: name, period, price, banner, avatar, genres, images, location, rating) | `ConcertChangedEvent` via bus |
 | `TotalTickets` (capacity) | B2B DB (set by venue when posting) | Search DB (display); Customer DB (so Customer can compute remaining) | Carried on `ConcertChangedEvent` |
 | `AvailableTickets` (remaining) | Customer DB — decremented atomically with `TicketEntity` insert | Search DB (refresh for "X tickets left" UX) | `TicketPurchasedEvent` / `TicketRefundedEvent` via bus |
 | Booking, Contract, Application, Opportunity, Settlement | B2B DB | Not projected | — |
@@ -95,7 +95,7 @@ Where current monolith code lands post-extraction. Sequence matters — most of 
 
 | Current field on `ConcertEntity` | Post-split owner |
 |---|---|
-| `BookingId`, `ContractType`, `CurrentStage`, `DatePosted` | B2B (workflow shape, canonical) |
+| `BookingId`, `DealType`, `CurrentStage`, `DatePosted` | B2B (workflow shape, canonical) |
 | `TotalTickets` (capacity) | B2B (set by venue when posting) → Search + Customer projections |
 | `AvailableTickets` (remaining) | **Customer** — moves off B2B's `ConcertEntity` entirely (see "Customer's ConcertEntity" below) |
 | `Name`, `About`, `Price`, `BannerUrl`, `Avatar`, `Period`, `Location` | B2B (canonical for editing) → Search (browse projection) |
@@ -179,7 +179,7 @@ Reference data is split by characteristic:
 
 - **Enum-like, static, never admin-CRUD'd** — lives as constants in `Concertable.Contracts`. No DB row in any service. **Genre is this case**: ~20–50 values, set when artist/concert is created, never edited at runtime. The current `SharedDbContext.Genres` table is **deleted**; Genre becomes a `record GenreId(int Value)` or `enum Genre` in `Concertable.Contracts`. Search projects genre names denormalized onto `*SearchModel`s — consumers never join on GenreId.
 - **Admin-editable reference data** (none in Concertable today) — owned by exactly one canonical service. Name denormalized onto outbound events. Treat like Venue.
-- **Per-service status enums** (`OpportunityStage`, `ContractType`) — stay local to the owning service. No cross-service sharing needed.
+- **Per-service status enums** (`OpportunityStage`, `DealType`) — stay local to the owning service. No cross-service sharing needed.
 
 Rule: ask "does this reference data need an admin UI?" If no, it's a contract, not a service. Resist the temptation to make a `Concertable.ReferenceData` service.
 

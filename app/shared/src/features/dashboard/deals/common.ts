@@ -65,7 +65,7 @@ export interface OpportunitySummary {
   startDate: string;
   endDate: string;
   genres: Genre[];
-  contract: Deal;
+  deal: Deal;
 }
 
 export interface OpportunityWithCounts {
@@ -84,7 +84,7 @@ export interface OpportunityCard {
   startDate: string;
   endDate: string;
   genres: Genre[];
-  contract: Deal;
+  deal: Deal;
   fitScore?: number;
   href: string;
 }
