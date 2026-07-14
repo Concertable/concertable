@@ -43,13 +43,13 @@
     <Project Path="Concertable.B2B/src/Modules/Concert/Tests/Concertable.B2B.Concert.IntegrationTests/Concertable.B2B.Concert.IntegrationTests.csproj" />
     <Project Path="Concertable.B2B/src/Modules/Concert/Tests/Concertable.B2B.Concert.UnitTests/Concertable.B2B.Concert.UnitTests.csproj" />
   </Folder>
-  <Folder Name="/B2B/Modules/Contract/">
-    <Project Path="Concertable.B2B/src/Modules/Contract/Concertable.B2B.Contract.Api/Concertable.B2B.Contract.Api.csproj" />
-    <Project Path="Concertable.B2B/src/Modules/Contract/Concertable.B2B.Contract.Application/Concertable.B2B.Contract.Application.csproj" />
-    <Project Path="Concertable.B2B/src/Modules/Contract/Concertable.B2B.Contract.Contracts/Concertable.B2B.Contract.Contracts.csproj" />
-    <Project Path="Concertable.B2B/src/Modules/Contract/Concertable.B2B.Contract.Domain/Concertable.B2B.Contract.Domain.csproj" />
-    <Project Path="Concertable.B2B/src/Modules/Contract/Concertable.B2B.Contract.Infrastructure/Concertable.B2B.Contract.Infrastructure.csproj" />
-    <Project Path="Concertable.B2B/src/Modules/Contract/Tests/Concertable.B2B.Contract.UnitTests/Concertable.B2B.Contract.UnitTests.csproj" />
+  <Folder Name="/B2B/Modules/Deal/">
+    <Project Path="Concertable.B2B/src/Modules/Deal/Concertable.B2B.Deal.Api/Concertable.B2B.Deal.Api.csproj" />
+    <Project Path="Concertable.B2B/src/Modules/Deal/Concertable.B2B.Deal.Application/Concertable.B2B.Deal.Application.csproj" />
+    <Project Path="Concertable.B2B/src/Modules/Deal/Concertable.B2B.Deal.Contracts/Concertable.B2B.Deal.Contracts.csproj" />
+    <Project Path="Concertable.B2B/src/Modules/Deal/Concertable.B2B.Deal.Domain/Concertable.B2B.Deal.Domain.csproj" />
+    <Project Path="Concertable.B2B/src/Modules/Deal/Concertable.B2B.Deal.Infrastructure/Concertable.B2B.Deal.Infrastructure.csproj" />
+    <Project Path="Concertable.B2B/src/Modules/Deal/Tests/Concertable.B2B.Deal.UnitTests/Concertable.B2B.Deal.UnitTests.csproj" />
   </Folder>
   <Folder Name="/B2B/Modules/Conversations/">
     <Project Path="Concertable.B2B/src/Modules/Conversations/Concertable.B2B.Conversations.Api/Concertable.B2B.Conversations.Api.csproj" />

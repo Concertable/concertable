@@ -114,15 +114,19 @@ optional; keep if you'd rather not touch the SPA):
 
 Each phase is one commit (or a tight few), builds green, and ends on a passing gate.
 
-### Phase 1 — deal-terms family → `Deal`
-Rename per the first table across: the whole `Concertable.B2B.Contract` module (5 projects + folders +
+### ✅ Phase 1 — deal-terms family → `Deal` (DONE — branch `Refactor/DealRename`)
+~~Rename per the first table across: the whole `Concertable.B2B.Contract` module (5 projects + folders +
 namespaces + `Concertable.slnx` / `Concertable.B2B.slnx` entries), the Concert-module consumers
 (`DealAccessor`, resolvers, workflows, executors, renderers/fingerprint, mappers, `OpportunityEntity.DealId`),
 Seed factories/seeders, and all tests. **Keep** every JSON/enum string value and the JSON
-`[JsonDerivedType]` discriminators unchanged.
-- Re-scaffold migrations (`./initial-migrations.ps1` from `api/`) — table/discriminator names change.
-- **Gate:** `dotnet build api/Concertable.slnx` green · Concert + Deal (was Contract) unit + integration
-  green via `integration-debug`.
+`[JsonDerivedType]` discriminators unchanged.~~
+- Done. Wire key `contractType` deliberately **kept**: the enum *type* is `DealType`, but the
+  property `IDeal.ContractType` retains its name so the SPA wire contract is untouched (SPA-side
+  rename deferred to Phase 4). Tables `Deals`/`FlatFeeDeals`/…, schema `deal`; `Opportunities.DealId`.
+- Migrations re-scaffolded; only the two changed contexts (Deal, B2B Concert) committed — the
+  timestamp-only churn on unaffected modules was reverted to keep the diff honest.
+- **Gate met:** `dotnet build api/Concertable.slnx` green · Deal 10/10 + Concert 57/57 unit green ·
+  Concert integration green.
 
 ### Phase 2 — the agreement → `Contract` (depends on Phase 1)
 Now that `Contract*` is free, rename the second table. Re-scaffold migrations (table `BookingAgreements`
