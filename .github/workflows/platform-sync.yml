@@ -3,16 +3,18 @@ name: Platform sync
 # Automates the cross-service publish->consume loop (see plans/PLATFORM_PACKAGE_SYNC.md).
 #
 # When 'Publish packages' ships new Concertable.* packages to the feed on master, this opens ONE PR
-# bumping every service's <ConcertablePlatformVersion> pin to the just-published version. A human
-# reviews + merges it:
-#   - NON-breaking platform change -> the bump PR is green -> merge it.
+# bumping every service's <ConcertablePlatformVersion> pin to the just-published version, and turns on
+# GitHub auto-merge for THAT PR only (scoped to this bot PR — not a repo-wide setting):
+#   - NON-breaking platform change -> the bump PR is green -> the merge queue lands it, no review.
 #   - BREAKING platform change     -> the bump PR is red at exactly the consumers that must migrate.
-#                                     Do the migration IN THIS PR (now legal: the new package exists
-#                                     on the feed), push, and merge when CI greens.
+#                                     Auto-merge holds (red never lands). Do the migration IN THIS PR
+#                                     (now legal: the new package exists on the feed) and push; it
+#                                     lands automatically once CI greens.
 #
-# It deliberately does NOT auto-merge (a red-then-merged incident proved that unsafe: a build failure
-# skips the required carve/e2e checks, and skipped != failed). And it will NOT re-trigger off its own
-# pin-bump merge (the cascade guard below), so it can't loop.
+# Auto-merge only SCHEDULES the merge into the queue — the queue still runs the full pipeline as the
+# gate, so a red PR cannot land (this is not the old "skipped check counted as pass" footgun, which
+# was a branch-protection required-checks misconfig, not auto-merge). And this will NOT re-trigger off
+# its own pin-bump merge (the cascade guard below), so it can't loop.
 #
 # PREREQUISITE: secret PLATFORM_SYNC_TOKEN — a PAT/App token with contents:write + pull-requests:write.
 # Required so the sync PR's push/open triggers test.yml (the default GITHUB_TOKEN can't — recursion guard).
@@ -96,7 +98,7 @@ jobs:
             echo "Bumped:"; echo "$changed"
           fi
 
-      - name: Open / update the sync PR (no auto-merge — a human reviews + merges)
+      - name: Open the sync PR and enable auto-merge (scoped to this bot PR only)
         if: steps.guard.outputs.skip == 'false' && steps.bump.outputs.already-synced == 'false'
         env:
           VERSION: ${{ steps.ver.outputs.version }}
@@ -113,13 +115,16 @@ jobs:
           Automated by \`platform-sync.yml\` after \`Publish packages\` shipped \`${VERSION}\` to the feed.
           Bumps every service's \`<ConcertablePlatformVersion>\` to \`${VERSION}\`.
 
-          Review and merge when green:
-          - **Green** → non-breaking; merge it.
+          Auto-merge is on — the merge queue lands this once CI is green:
+          - **Green** → non-breaking; it merges itself, no review.
           - **Red** → a published contract changed shape. Migrate the failing consumers **in this PR**
-            (now legal — \`${VERSION}\` is on the feed), push, and merge when CI greens.
+            (now legal — \`${VERSION}\` is on the feed) and push; it lands once CI greens.
           EOF
           )
           if ! gh pr view "$branch" --json number >/dev/null 2>&1; then
             gh pr create --base master --head "$branch" \
               --title "chore(platform): sync to ${VERSION}" --body "$body"
           fi
+          # Scoped to THIS bot PR only (not a repo-wide setting): schedule it into the merge queue,
+          # which runs the full pipeline. Green -> lands with no review; red -> it just sits.
+          gh pr merge --auto --squash "$branch"
