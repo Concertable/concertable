@@ -7,7 +7,7 @@ $dirs = @(
     "Concertable.B2B\src\Modules\Artist\Concertable.B2B.Artist.Infrastructure\Data\Migrations",
     "Concertable.B2B\src\Modules\Venue\Concertable.B2B.Venue.Infrastructure\Data\Migrations",
     "Concertable.B2B\src\Modules\Concert\Concertable.B2B.Concert.Infrastructure\Data\Migrations",
-    "Concertable.B2B\src\Modules\Contract\Concertable.B2B.Contract.Infrastructure\Data\Migrations",
+    "Concertable.B2B\src\Modules\Deal\Concertable.B2B.Deal.Infrastructure\Data\Migrations",
     "Concertable.Payment\src\Concertable.Payment.Infrastructure\Data\Migrations",
     "Concertable.B2B\src\Modules\Conversations\Concertable.B2B.Conversations.Infrastructure\Data\Migrations",
     "Concertable.Customer\src\Modules\Preference\Concertable.Customer.Preference.Infrastructure\Data\Migrations",
@@ -45,7 +45,7 @@ if ($LASTEXITCODE -ne 0) { exit 1 }
 dotnet ef migrations add InitialCreate --context ConcertDbContext --project Concertable.B2B/src/Modules/Concert/Concertable.B2B.Concert.Infrastructure --startup-project Concertable.B2B/src/Concertable.B2B.Web --output-dir Data/Migrations
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
-dotnet ef migrations add InitialCreate --context ContractDbContext --project Concertable.B2B/src/Modules/Contract/Concertable.B2B.Contract.Infrastructure --startup-project Concertable.B2B/src/Concertable.B2B.Web --output-dir Data/Migrations
+dotnet ef migrations add InitialCreate --context DealDbContext --project Concertable.B2B/src/Modules/Deal/Concertable.B2B.Deal.Infrastructure --startup-project Concertable.B2B/src/Concertable.B2B.Web --output-dir Data/Migrations
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
 dotnet ef migrations add InitialCreate --context PaymentDbContext --project Concertable.Payment/src/Concertable.Payment.Infrastructure --startup-project Concertable.Payment/src/Concertable.Payment.Web --output-dir Data/Migrations

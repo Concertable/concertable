@@ -54,7 +54,7 @@ Eight hosts coalesce required auth/bus settings to empty string at bind time: `A
 timestamp — including libs consumed as *published packages* (`Messaging`, `Payment`, `Auth`) whose
 model didn't change. The regenerated source then carries a newer migration id than the published
 package the standalone/E2E stack actually loads, and `DevDbInitializer` blows up applying a migration
-whose table already exists (seen on `Feature/BookingAgreement`: "There is already an object named
+whose table already exists (first seen while re-scaffolding on a migration-touching branch: "There is already an object named
 'Outbox'", every UI E2E scenario dead at fixture init). Workaround each time: after running the
 script, `git checkout origin/master -- <migration dirs>` for every module whose migration content is
 byte-identical to master (only the genuinely-changed module keeps its new migration). Bites every
