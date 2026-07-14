@@ -1,5 +1,5 @@
 import type { ActionLink, Genre } from "../../types/common";
-import type { Contract } from "../contracts/types";
+import type { Deal } from "../deals/types";
 import type { ArtistSummary } from "../artists/types";
 
 export interface CheckoutSession {
@@ -91,7 +91,7 @@ export interface OpportunityDraft {
   startDate: string;
   endDate: string;
   genres: Genre[];
-  contract: Contract;
+  contract: Deal;
 }
 
 export interface Opportunity extends OpportunityDraft {

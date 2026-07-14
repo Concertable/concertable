@@ -1,5 +1,5 @@
 import type { Genre } from "../../../types/common";
-import type { Contract } from "../../contracts/types";
+import type { Deal } from "../../deals/types";
 import type { ReviewSummary } from "../../reviews/types";
 
 export interface ProfileHealthItem {
@@ -65,7 +65,7 @@ export interface OpportunitySummary {
   startDate: string;
   endDate: string;
   genres: Genre[];
-  contract: Contract;
+  contract: Deal;
 }
 
 export interface OpportunityWithCounts {
@@ -84,7 +84,7 @@ export interface OpportunityCard {
   startDate: string;
   endDate: string;
   genres: Genre[];
-  contract: Contract;
+  contract: Deal;
   fitScore?: number;
   href: string;
 }

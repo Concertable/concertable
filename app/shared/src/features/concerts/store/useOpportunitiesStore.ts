@@ -1,8 +1,8 @@
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
-import { defaultContract } from "../../contracts/defaults";
+import { defaultDeal } from "../../deals/defaults";
 import type { Opportunity, OpportunityDraft } from "../types";
-import type { Contract, PaymentMethod } from "../../contracts/types";
+import type { Deal, PaymentMethod } from "../../deals/types";
 import type { Genre } from "../../../types/common";
 
 interface OpportunitiesStore {
@@ -18,14 +18,14 @@ interface OpportunitiesStore {
   removeDraft: (index: number) => void;
 
   setOpportunityDates: (index: number, start: string, end: string) => void;
-  setOpportunityContractType: (index: number, type: Contract["$type"]) => void;
-  setOpportunityContract: (index: number, contract: Contract) => void;
+  setOpportunityDealType: (index: number, type: Deal["$type"]) => void;
+  setOpportunityDeal: (index: number, contract: Deal) => void;
   setOpportunityPaymentMethod: (index: number, method: PaymentMethod) => void;
   toggleOpportunityGenre: (index: number, genre: Genre) => void;
 
   setDraftDates: (index: number, start: string, end: string) => void;
-  setDraftContractType: (index: number, type: Contract["$type"]) => void;
-  setDraftContract: (index: number, contract: Contract) => void;
+  setDraftDealType: (index: number, type: Deal["$type"]) => void;
+  setDraftDeal: (index: number, contract: Deal) => void;
   setDraftPaymentMethod: (index: number, method: PaymentMethod) => void;
   toggleDraftGenre: (index: number, genre: Genre) => void;
 }
@@ -44,8 +44,8 @@ export const useOpportunitiesStore = create<OpportunitiesStore>()(
     removeDraft: (index) => set((s) => { s.drafts.splice(index, 1); s.isDirty = true; }),
 
     setOpportunityDates: (index, start, end) => set((s) => { s.opportunities[index].startDate = start; s.opportunities[index].endDate = end; s.isDirty = true; }),
-    setOpportunityContractType: (index, type) => set((s) => { s.opportunities[index].contract = defaultContract(type, s.opportunities[index].contract.paymentMethod); s.isDirty = true; }),
-    setOpportunityContract: (index, contract) => set((s) => { s.opportunities[index].contract = contract; s.isDirty = true; }),
+    setOpportunityDealType: (index, type) => set((s) => { s.opportunities[index].contract = defaultDeal(type, s.opportunities[index].contract.paymentMethod); s.isDirty = true; }),
+    setOpportunityDeal: (index, contract) => set((s) => { s.opportunities[index].contract = contract; s.isDirty = true; }),
     setOpportunityPaymentMethod: (index, method) => set((s) => { s.opportunities[index].contract.paymentMethod = method; s.isDirty = true; }),
     toggleOpportunityGenre: (index, genre) => set((s) => {
       const genres = s.opportunities[index].genres;
@@ -55,8 +55,8 @@ export const useOpportunitiesStore = create<OpportunitiesStore>()(
     }),
 
     setDraftDates: (index, start, end) => set((s) => { s.drafts[index].startDate = start; s.drafts[index].endDate = end; s.isDirty = true; }),
-    setDraftContractType: (index, type) => set((s) => { s.drafts[index].contract = defaultContract(type, s.drafts[index].contract.paymentMethod); s.isDirty = true; }),
-    setDraftContract: (index, contract) => set((s) => { s.drafts[index].contract = contract; s.isDirty = true; }),
+    setDraftDealType: (index, type) => set((s) => { s.drafts[index].contract = defaultDeal(type, s.drafts[index].contract.paymentMethod); s.isDirty = true; }),
+    setDraftDeal: (index, contract) => set((s) => { s.drafts[index].contract = contract; s.isDirty = true; }),
     setDraftPaymentMethod: (index, method) => set((s) => { s.drafts[index].contract.paymentMethod = method; s.isDirty = true; }),
     toggleDraftGenre: (index, genre) => set((s) => {
       const genres = s.drafts[index].genres;

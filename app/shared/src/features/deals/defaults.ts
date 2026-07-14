@@ -1,16 +1,16 @@
-import type { Contract, PaymentMethod } from "./types";
+import type { Deal, PaymentMethod } from "./types";
 
-export const CONTRACT_TYPE_LABELS: Record<Contract["$type"], string> = {
+export const DEAL_TYPE_LABELS: Record<Deal["$type"], string> = {
   flatFee: "Flat Fee",
   doorSplit: "Door Split",
   versus: "Versus",
   venueHire: "Venue Hire",
 };
 
-export function defaultContract(
-  type: Contract["$type"],
+export function defaultDeal(
+  type: Deal["$type"],
   paymentMethod: PaymentMethod = "Transfer",
-): Contract {
+): Deal {
   switch (type) {
     case "flatFee":
       return { $type: "flatFee", paymentMethod, fee: 0 };
