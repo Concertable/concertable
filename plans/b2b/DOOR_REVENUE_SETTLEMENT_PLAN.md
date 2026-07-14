@@ -78,12 +78,16 @@ and a new state where the type system already answers the question):
 
 - `ConcertEntity.DoorRevenue` (nullable `decimal`) + `DeclareDoorRevenue(amount)` domain method (`>= 0`,
   throws otherwise). It's a **concert-level fact** (same shelf as `TicketsSold`), not a booking one.
-  `TicketsSold`/`TicketSaleProcessor` left untouched (dormant marketplace writer).
+  It is the **external/box-office/cash** take only — it does **not** replace `TicketsSold` (Concertable's
+  own ticket sales), it is **added** to it.
 - **No new lifecycle state, no marker.** "Is this a revenue-share settlement?" = `Booking is
   DeferredBooking` (a real behaviour-bearing type — DoorSplit/Versus use it, FlatFee/VenueHire use
   `StandardBooking`). "Awaiting declaration" = a `DeferredBooking` whose `DoorRevenue` is still `null`;
   the gig stays `Booked` until declared.
-- `PayoutFinishStep` reads `DoorRevenue` (throws if `null` — the gate makes that unreachable).
+- `PayoutFinishStep` settles a % of the **total gross** = `TicketsSold * Price` (Concertable's own
+  ticket sales, known) **+** `DoorRevenue` (venue-declared external take). Throws if the door figure is
+  still `null` (total comes back `null` — the gate makes that unreachable). NB: settling off `DoorRevenue`
+  alone was a bug — it would pay the artist £0 on Concertable-sold tickets.
 - Sweep gate `ConcertRepository.GetEndedConfirmedIdsAsync`: `… && !(Booking is DeferredBooking &&
   DoorRevenue == null)` — fixed types finish on end; a deferred gig is skipped until declared.
 - Declare op `IConcertWorkflowModule.DeclareDoorRevenueAsync` → `DoorRevenueExecutor`, guarded to
