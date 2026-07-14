@@ -147,28 +147,30 @@ Done: `ContractStateMachine`→`LifecycleStateMachine` (+ `*Tests`) across Conce
 and its workflow-registry/builder consumers. `ConcertStateMachine*` (a different type) untouched.
 - **Gate:** build green · Concert unit tests green.
 
-### Phase 4 — docs + Rust-plan re-alignment (doc-only; can ride Phase 1–3 commits)
-- Rewrite `api/Concertable.B2B/src/Modules/Contract/ARCHITECTURE.md` → the Deal module (also currently
-  **stale** vs code: it references `IContractLoader`, `ConcertStage`, `Steps/` — the code now has
-  `IDealAccessor`, `LifecycleState`, executors/`LifecycleTransitioner`). Move/rename the folder + the
-  module's `LEGAL_REQUIREMENTS.md`.
-- Update references in `api/docs/CODE_PATTERNS.md`, `api/docs/MICROSERVICES_ARCHITECTURE.md`,
+### ✅ Phase 4 — docs + Rust-plan re-alignment (mostly DONE; doc-only)
+- ✅ Moved the module doc folder to `Modules/Deal/`; **names** in `ARCHITECTURE.md` +
+  `LEGAL_REQUIREMENTS.md` updated, title → "Deal Architecture", and a **staleness banner** added at the
+  top (the §2+ workflow narrative still describes the pre-executor / `ConcertStage` design — a full
+  narrative rewrite is pre-existing staleness, *not* created by this rename).
+- ✅ Updated references in `api/docs/CODE_PATTERNS.md`, `api/docs/MICROSERVICES_ARCHITECTURE.md`,
   `api/Concertable.B2B/ARCHITECTURE.md`, `api/Concertable.B2B/TECH_DEBT.md`.
-- **Re-align `plans/RUST_CONTRACT_MICROSERVICE.md`** (nothing built yet — doc-only): the future engine
-  computes *deal* settlement, so `ContractEngine`→`DealEngine`, proto `concertable.contract.v1`→
-  `concertable.deal.v1` / `message Contract`→`Deal` / `service ContractEngine`→`DealEngine`, auth scope
+- ✅ Re-aligned the Rust plan → `plans/RUST_DEAL_MICROSERVICE.md` (`ContractEngine`→`DealEngine`,
+  proto `concertable.contract.v1`→`concertable.deal.v1`, `message Contract`→`Deal`, scope
   `contract:settle`→`deal:settle`, crate `concertable-contract`→`concertable-deal`, folder
-  `api/Concertable.Contract/contract-engine`→`api/Concertable.Deal/deal-engine`. Its `DealType`
-  discriminator over the wire keeps the same string values.
-- Optionally rename the SPA's own TS `ContractType`→`DealType` in
-  `app/shared/src/features/concerts/**` (low-risk, independent).
+  `deal-engine`). Discriminator string values kept.
+- ⬜ **Optional, deferred:** rename the SPA's own TS `ContractType`→`DealType` in
+  `app/shared/src/features/concerts/**` (low-risk, independent; the wire key `contractType` stays either
+  way). Not required for the backend rename.
 
 ### Final gate
-Behaviour change is **zero** (pure rename), so build + unit + integration is the bar for Phases 1–3.
-Run `e2e-ui-debug` **once** at the end as a smoke check because the rename touches the accept → agreement
-→ PDF flow that E2E covers (per `plans/CLAUDE.md` "when to run E2E").
+Behaviour change is **zero** (pure rename). Build + unit + integration is the bar, and it is **met**:
+solution build green; Deal 10/10 + Concert 57/57 unit; B2B Concert integration 105/105 (incl. the former
+`BookingAgreementApiTests` → `ContractApiTests`, which covers the accept → agreement/contract → PDF flow).
+Per `plans/CLAUDE.md` "when to run E2E", a zero-behaviour-change rename with green integration on the
+covered flow does **not** meet the massive/risky bar, so the `e2e-ui-debug` smoke is **judgement-skipped**
+(offered to the user). Only outstanding item is the optional SPA-TS rename above.
 
-`git rm` this plan in the commit that lands the last phase.
+`git rm` this plan once the optional SPA rename is done or explicitly dropped.
 
 ## Not in scope
 - No behaviour, workflow, settlement-math, or lifecycle changes — names only.

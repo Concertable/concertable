@@ -61,47 +61,47 @@ nothing to contrast, it's noise.
 `IVenueArtistTenantScoped`) means "carries the owner id," not "is filtered." If the entity's core flow
 reads it *across* tenants, leave it unfiltered and let `TenantInterceptor` guard the writes — filtering
 it fails those cross-tenant reads closed. Unfiltered by design today: **Opportunity** (the artist's
-apply reads the venue's opportunity to stamp the deal), **Contract** (an applying artist reads the
+apply reads the venue's opportunity to stamp the deal), **Deal** (an applying artist reads the
 venue's terms), **Concert** (public listing). Filtered: **Venue**, **Artist** (owner-private reads,
 with browse split off to the public stance).
 
 ## Keyed strategy resolver
 
-**When a rule varies by a closed key** (typically `ContractType`): one facade class implements the
+**When a rule varies by a closed key** (typically `DealType`): one facade class implements the
 public interface, constructor-injects the concrete strategies, maps key → strategy in a
 `FrozenDictionary`, and delegates. Consumers inject the interface and call it — they never branch on
 the key, never see the map, never touch keyed DI.
 
-Canonical example — `ContractMapper`
-(`Modules/Contract/Concertable.B2B.Contract.Application/Mappers/ContractMapper.cs`):
+Canonical example — `DealMapper`
+(`Modules/Deal/Concertable.B2B.Deal.Application/Mappers/DealMapper.cs`):
 
 ```csharp
-internal sealed class ContractMapper : IContractMapper
+internal sealed class DealMapper : IDealMapper
 {
-    private readonly FrozenDictionary<ContractType, IContractMapper> mappers;
+    private readonly FrozenDictionary<DealType, IDealMapper> mappers;
 
-    public ContractMapper(
-        FlatFeeContractMapper flatFee,
-        DoorSplitContractMapper doorSplit,
-        VersusContractMapper versus,
-        VenueHireContractMapper venueHire)
+    public DealMapper(
+        FlatFeeDealMapper flatFee,
+        DoorSplitDealMapper doorSplit,
+        VersusDealMapper versus,
+        VenueHireDealMapper venueHire)
     {
-        mappers = new Dictionary<ContractType, IContractMapper>
+        mappers = new Dictionary<DealType, IDealMapper>
         {
-            [ContractType.FlatFee] = flatFee,
-            [ContractType.DoorSplit] = doorSplit,
-            [ContractType.Versus] = versus,
-            [ContractType.VenueHire] = venueHire,
+            [DealType.FlatFee] = flatFee,
+            [DealType.DoorSplit] = doorSplit,
+            [DealType.Versus] = versus,
+            [DealType.VenueHire] = venueHire,
         }.ToFrozenDictionary();
     }
 
-    public IContract ToContract(ContractEntity entity) =>
-        mappers[entity.ContractType].ToContract(entity);
+    public IDeal ToDeal(DealEntity entity) =>
+        mappers[entity.ContractType].ToDeal(entity);
 }
 ```
 
 Other instances: `PayeeResolver` (Concert module — which party receives a concert's ticket revenue),
-`AgreementTermsRenderer`, `ArtistShareCalculator`, `ContractTermsSerializer` (Concert module).
+`AgreementTermsRenderer`, `ArtistShareCalculator`, `DealTermsSerializer` (Concert module).
 
 Rules of the shape:
 
@@ -125,7 +125,7 @@ Rules of the shape:
   default. `X` follows the method — `Mapper.Map`, `Resolver.Resolve`, `Calculator.Calculate`,
   `Serializer.Serialize` (canonical string for hashing/compare), `Renderer.Render` (human-facing
   presentation text). Do **not** force one word across families that do genuinely different things:
-  `AgreementTermsRenderer` (presentation) and `ContractTermsSerializer` (hash input) are correctly
+  `AgreementTermsRenderer` (presentation) and `DealTermsSerializer` (hash input) are correctly
   different names for correctly different jobs.
 
 ### The anti-patterns this replaces — never do these

@@ -168,7 +168,7 @@ public class ConcertEntity : BaseEntity<int> {
 | Module | Lands in |
 |---|---|
 | `Modules/Artist`, `Modules/Venue` | B2B (canonical owners) |
-| `Modules/Contract` | B2B |
+| `Modules/Deal` | B2B |
 | `Modules/Messaging` (venue↔artist messaging) | B2B |
 | `Modules/Notification` | Becomes `Concertable.Email` shared library (see §4.7). Not a service. |
 | `Modules/Payment` | Already shaped as adapter service; extracts straight across |
@@ -427,7 +427,7 @@ Same shape inside `Concertable.Customer` (modules: Concert, Preference, Review, 
 
 **Why this earns its keep:**
 
-- If a sub-module within a service later needs its own deployable (e.g., `Contract` grows to warrant a `Concertable.Contract.Api`), extraction is a packaging change because the internal boundary already exists.
+- If a sub-module within a service later needs its own deployable (e.g., `Contract` grows to warrant a `Concertable.B2B.Deal.Api`), extraction is a packaging change because the internal boundary already exists.
 - In-process domain events between modules avoid the latency and operational complexity of the bus for flows that don't actually cross a service boundary.
 - The same patterns devs (or future-you) already know, scoped smaller.
 - `MODULAR_MONOLITH_RULES.md` doesn't get deleted — it gets cited *per service*.

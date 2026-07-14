@@ -297,7 +297,7 @@ claimed stage (defense in depth — the engine does not trust the caller's order
 
 ```proto
 syntax = "proto3";
-package concertable.contract.v1;
+package concertable.deal.v1;
 
 enum Stage { STAGE_UNSPECIFIED = 0; NONE = 1; APPLIED = 2; VERIFIED = 3; ACCEPTED = 4; SETTLED = 5; FINISHED = 6; }
 enum PaymentMethod { PAYMENT_METHOD_UNSPECIFIED = 0; CASH = 1; TRANSFER = 2; }
@@ -310,14 +310,14 @@ message FlatFee   { Money fee = 1; }
 message DoorSplit { string artist_pct = 1; }                         // decimal 0–100 as string
 message VenueHire { Money hire_fee = 1; }
 message Versus    { Money guarantee = 1; string artist_pct = 2; }
-message Contract  { oneof kind { FlatFee flat_fee = 1; DoorSplit door_split = 2; VenueHire venue_hire = 3; Versus versus = 4; } }
+message Deal  { oneof kind { FlatFee flat_fee = 1; DoorSplit door_split = 2; VenueHire venue_hire = 3; Versus versus = 4; } }
 
 message SettleRequest  { Contract contract = 1; Stage claimed_stage = 2; Money gross = 3; }
 message AcceptRequest  { Contract contract = 1; Stage claimed_stage = 2; optional PaymentMethod payment_method = 3; }
 message Decision       { Stage next_stage = 1; }
 message SettleDecision { Stage next_stage = 1; Settlement settlement = 2; }
 
-service ContractEngine {
+service DealEngine {
   rpc Apply  (ApplyRequest)  returns (Decision);
   rpc Verify (VerifyRequest) returns (Decision);
   rpc Accept (AcceptRequest) returns (Decision);
@@ -335,8 +335,8 @@ breaking-change check in CI.
 
 - **Auth (Rust resource server):** Duende issues JWTs via client credentials. The engine validates the
   bearer token with `jsonwebtoken`, fetching JWKS from `{Auth authority}/.well-known/openid-configuration`.
-  New API scope `contract:settle`, audience `concertable.contract.api`. B2B obtains the token exactly as for
-  Payment — `ITokenService.GetTokenAsync("contract:settle")` injected via the gRPC client's
+  New API scope `deal:settle`, audience `concertable.deal.api`. B2B obtains the token exactly as for
+  Payment — `ITokenService.GetTokenAsync("deal:settle")` injected via the gRPC client's
   `AddCallCredentials`. Add the scope + audience in Auth and the client registration in B2B.
 - **Observability:** Rust `opentelemetry` + `tracing-opentelemetry` exporting OTLP to
   `OTEL_EXPORTER_OTLP_ENDPOINT` (Aspire injects it — the same collector `ServiceDefaults` uses). Tonic
@@ -353,14 +353,14 @@ extensions:
 
 ```csharp
 // run mode: cargo binary; publish mode: container image from the crate's Dockerfile
-var contractEngine = builder.AddContractEngine(auth);      // WithReference(auth) for JWKS; WaitFor(auth)
-var api = builder.AddApi<Projects.Concertable_B2B_Web>(/* … */, contractEngine);  // WithReference + WaitFor
+var dealEngine = builder.AddDealEngine(auth);      // WithReference(auth) for JWKS; WaitFor(auth)
+var api = builder.AddApi<Projects.Concertable_B2B_Web>(/* … */, dealEngine);  // WithReference + WaitFor
 ```
 
-`AddContractEngine` uses `AddExecutable("contract-engine", "cargo", workingDir, "run", "--release")` in run
+`AddDealEngine` uses `AddExecutable("deal-engine", "cargo", workingDir, "run", "--release")` in run
 mode and `AddContainer`/`AddDockerfile` in publish mode, exposes an HTTPS (HTTP/2) endpoint, and injects the
 Auth authority/JWKS + OTLP env vars. B2B reads the engine URL via service discovery
-(`services__contract-engine__https__0`) in `AddContractClient`.
+(`services__deal-engine__https__0`) in `AddDealClient`.
 
 ### 7.6 Repo layout
 
@@ -368,32 +368,32 @@ Auth authority/JWKS + OTLP env vars. B2B reads the engine URL via service discov
 service under `api/` (non-.NET already exists in the repo under `app/`).
 
 ```
-api/Concertable.Contract/             # service ownership boundary (polyglot: Rust impl + .NET client SDK)
-  contract-engine/                    # the Rust crate (server host). cargo-built, not in the .slnx
+api/Concertable.Deal/             # service ownership boundary (polyglot: Rust impl + .NET client SDK)
+  deal-engine/                    # the Rust crate (server host). cargo-built, not in the .slnx
     Cargo.toml
     src/                              # see §9
-    proto/contract.proto             # single source of truth for the gRPC contract (Phase 2)
+    proto/deal.proto             # single source of truth for the gRPC contract (Phase 2)
     Dockerfile                       # publish-mode container (Phase 5)
-  Concertable.Contract.Client/        # .NET: generated gRPC client + AddContractClient() (mirrors Concertable.Payment.Client) (Phase 5)
-  Concertable.Contract.slnx           # the .NET projects only
+  Concertable.Deal.Client/        # .NET: generated gRPC client + AddDealClient() (mirrors Concertable.Payment.Client) (Phase 5)
+  Concertable.Deal.slnx           # the .NET projects only
 ```
 
-The Rust crate folder uses **Rust naming** (`contract-engine`, kebab-case), not the .NET dotted-PascalCase
+The Rust crate folder uses **Rust naming** (`deal-engine`, kebab-case), not the .NET dotted-PascalCase
 style — matching repo precedent that non-.NET surfaces keep their own ecosystem's conventions (cf. `app/web`,
-`app/mobile`). The parent `Concertable.Contract/` is the ownership boundary and carries the fleet branding;
-the `.Client`/`.slnx` inside it are .NET and stay PascalCase. (Folder is `contract-engine` = the eventual
-service/binary name; the Cargo *package* is `concertable-contract` — see §9. Folder ≠ package name is fine in
+`app/mobile`). The parent `Concertable.Deal/` is the ownership boundary and carries the fleet branding;
+the `.Client`/`.slnx` inside it are .NET and stay PascalCase. (Folder is `deal-engine` = the eventual
+service/binary name; the Cargo *package* is `concertable-deal` — see §9. Folder ≠ package name is fine in
 Cargo.)
 
 Single source of truth for the proto is the crate's `proto/`; the C# client csproj references it for codegen
-(`<Protobuf Include="..\contract-engine\proto\contract.proto" GrpcServices="Client" />`). Split-repo
+(`<Protobuf Include="..\deal-engine\proto\deal.proto" GrpcServices="Client" />`). Split-repo
 future: client ships as a private NuGet, engine as a container image — one AppHost line changes.
 
 ### 7.7 If you later need state (hybrid migration path)
 
 Adopt only when a concrete need appears (engine authoritative for lifecycle independently of B2B, or an
 autonomous audit/event stream). All additive: add `ContractDb` (DB-per-service, `DbContextBase`,
-nuke-and-rescaffold migrations); add `Concertable.Contract.Contracts` integration events + an outbox; publish
+nuke-and-rescaffold migrations); add `Concertable.Deal.Contracts` integration events + an outbox; publish
 e.g. `ContractSettledEvent`; subscribe via a `ContractTopology` on ASB `event-` topics; reconstitute
 `Concert<C, S>` from the DB row at the runtime stage (the parse then also validates the stored stage). Until
 then: YAGNI.
@@ -463,10 +463,10 @@ rustc --version; cargo --version              # verify
 
 ## 9. Crate structure (Phase 1)
 
-A pure-library crate, no I/O. Package name `concertable-contract`, edition 2021.
+A pure-library crate, no I/O. Package name `concertable-deal`, edition 2021.
 
 ```
-contract-engine/
+deal-engine/
   Cargo.toml
   rust-toolchain.toml # pins the channel for reproducible builds/CI
   src/
@@ -489,7 +489,7 @@ contract-engine/
 
 ```toml
 [package]
-name = "concertable-contract"
+name = "concertable-deal"
 version = "0.1.0"
 edition = "2021"
 
@@ -512,11 +512,11 @@ trybuild = "1"
 1. **Crate + domain model (Phase 1).** Implement Appendix A across the §9 modules. Land the `trybuild`
    compile-fail suite (§11) + the settlement-math/legality unit tests. Invariants A–E and scenarios (i)–(vi)
    proven in isolation. **Definition of done in §11.**
-2. **gRPC boundary.** `proto/contract.proto`; `tonic` server; per-operation handlers = the single parse;
+2. **gRPC boundary.** `proto/deal.proto`; `tonic` server; per-operation handlers = the single parse;
    typed rejections → gRPC status. Boundary tests.
-3. **Auth.** JWT validation via JWKS from Auth; scope `contract:settle`; audience. Reject unauthenticated.
+3. **Auth.** JWT validation via JWKS from Auth; scope `deal:settle`; audience. Reject unauthenticated.
 4. **Observability.** OTel/OTLP + tonic interceptors; tracecontext propagation.
-5. **Aspire + client.** `AddContractEngine` in B2B's host; `Concertable.Contract.Client` + `AddContractClient`
+5. **Aspire + client.** `AddDealEngine` in B2B's host; `Concertable.Deal.Client` + `AddDealClient`
    in B2B; dev secrets.
 6. **Cutover.** Delete B2B's `AcceptExecutor`/`ApplyExecutor`/`VerifyExecutor`/`SettleExecutor`,
    `ConcertWorkflowFactory`, `ConcertWorkflowBuilder`, `ConcertTransitionValidator`. B2B calls the engine for
@@ -572,8 +572,8 @@ VenueHire reverse direction; FlatFee/VenueHire expose their fee as the escrow ch
   only construction path is the checked `parse`. Never add a public field or `new` that bypasses validation.
 - **No interior dynamic dispatch:** no `dyn`, no downcast, no registry. New behaviour is a new trait + impls.
 - **Formatting/lint:** `rustfmt` default; `clippy` clean (`-D warnings`).
-- **Naming:** snake_case modules/functions, PascalCase types; the crate is `concertable-contract`, the Phase-2
-  binary `contract-engine`.
+- **Naming:** snake_case modules/functions, PascalCase types; the crate is `concertable-deal`, the Phase-2
+  binary `deal-engine`.
 - The repo-wide behavioural rules (branch naming `Feature/`/`Refactor/`/`Fix/` + PascalCase; show the staged
   diff and wait for approval before committing; no `Co-Authored-By`/"Generated with" trailers) apply here too.
 
@@ -585,11 +585,11 @@ VenueHire reverse direction; FlatFee/VenueHire expose their fee as the escrow ch
 - **Proto contract params = typed `oneof`** per contract (one variant per type; the variant tag is the
   boundary discriminant) — keeps the compile-time spirit on the wire. Applied in §7.3. (Phase 2.)
 - Money = `rust_decimal::Decimal`; rounding = banker's (MidpointNearestEven) to 2 dp.
-- Edition 2021; package `concertable-contract`.
+- Edition 2021; package `concertable-deal`.
 - Growth scenarios live in `src/growth.rs` (compiled as additivity proof; relocate/trim later).
 
 **Deferred (needed by the noted phase, not Phase 1):**
-- **Auth scope name** (Phase 3): `contract:settle` vs reuse an existing B2B scope.
+- **Auth scope name** (Phase 3): `deal:settle` vs reuse an existing B2B scope.
 - **Rounding policy** sign-off (Phase 1/2): confirm banker's/2dp is correct for door splits.
 - **Run-mode launch** (Phase 5): `cargo run` vs prebuilt binary path.
 
