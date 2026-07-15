@@ -110,56 +110,132 @@ and a new state where the type system already answers the question):
 **Gate:** build green · Concert unit 57/57 · Concert integration 106/106. API E2E not run locally (a
 separate `Outbox`-at-startup harness issue on this machine); the merge-queue E2E gate is the real check.
 
-## Phase 2 — Venue declares door revenue (endpoint)
+## Execution shape — ONE PR, several commits (2026-07-15)
 
-- **Endpoint** — venue-manager action to declare the night's revenue on an ended, `Booked`,
-  revenue-share concert (e.g. `POST /api/Concert/{id}/door-revenue` with a `DoorRevenueRequest`).
-  Authorized to the concert's **venue tenant** only (via `ITenantContext`, per
-  [api/CLAUDE.md](../../api/CLAUDE.md) — not the shared identity type). Idempotent / re-declarable only
-  while still `Booked` (once settlement fires it's frozen).
-- **HATEOAS** — expose a `declare-door-revenue` link on the concert/booking read model, gated to the
-  venue when the concert has ended, is `Booked`, revenue-share, and `DoorRevenue` is still null.
-  Suppress on fixed-fee types and once settled.
-- **Validation** — `DoorRevenueValidators` (`>= 0`, present). Don't `TryParse`-swallow a bad value into
-  a benign one.
-- **Reminder nag (in-phase or fast-follow)** — a venue with an ended revenue-share gig and no declared
-  revenue is a stuck settlement. Surface it (notification / dashboard task) so payout isn't silently
-  parked forever. Minimum: it's visible; escalation policy can be v1.1.
-- **Tests** — integration: authorized venue declares → concert becomes sweep-eligible → settlement
-  charges `CalculateArtistShare(DoorRevenue)` and pays the artist tenant; non-venue caller rejected;
-  declaration blocked once `Complete`.
+Phases 1's work is merged. The remaining phases ship on **one branch → one PR**, but as **one commit per
+phase** (per [plans/CLAUDE.md](../CLAUDE.md) Lifecycle) — Phase 2 (backend), Phase 3 (SPA), Phase 4 (docs
+close-out, folded into the final commit). Branch: **`Feature/DoorRevenueSettlement`** (recreated; the
+Phase-1 branch merged and was deleted).
 
-**Gate:** build green · Concert module integration via `integration-debug`.
+### Decisions pinned before starting (were vague / omitted in the original draft)
+
+- **No new migration in Phase 2.** `DoorRevenue` (Phase 1) and `TicketsSold` (marketplace) columns
+  already exist; `IsRevenueShare` is *derived* (`Booking is DeferredBooking`), never stored. Phase 2 adds
+  no schema change → no `initial-migrations.ps1`.
+- **Money is `decimal` pounds end-to-end** — matches `ConcertEntity.Price`/`DoorRevenue` (decimal) and the
+  existing `deal.fee` `NumberInput` (`step="0.01"`, pounds). The request body, read fields, and SPA input
+  all carry pounds. Do **not** route door-revenue through the cents `formatCurrency(amountCents)` helper;
+  render pounds directly. Convert only if a shared money component demands cents.
+- **Explicit venue-tenant guard is added in Phase 2.** Phase 1's `DeclareDoorRevenueAsync` guards
+  type/timing/state but does *not* assert the caller owns the booking — it leans on the permission gate +
+  row filter (a non-party venue currently falls through to a 400, not a clean 403). Phase 2 injects
+  `ITenantContext` into `ConcertService` and adds `if (concert.Booking.VenueTenantId != tenantContext.TenantId)
+  throw new ForbiddenException(...)` — fail-closed, matching the `ApplyExecutor`/`SetupCheckoutStep` pattern.
+- **Reminder nag scope = the dashboard KPI count + the on-concert action, in this PR. Email/in-app
+  escalation is v1.1.** The venue dashboard is KPI-counts-based (`VenueDashboardCounts` = ApplicationsTo
+  Review / OpenOpportunities / UpcomingConcerts). The minimum "it's visible" is a new `AwaitingDoorRevenue`
+  count (Phase 2 backend) surfaced on the dashboard (Phase 3) plus the HATEOAS action on the concert page.
+  No new notification plumbing.
+
+## Phase 2 — Venue declares door revenue (endpoint + read-model surfacing)
+
+**Read-model prerequisite (do first — the HATEOAS gate and the Phase 3 breakdown both need it).** The
+internal read DTO `ConcertDetails` (`Concert.Application/DTOs/ConcertDtos.cs`) currently carries `State`,
+`EndDate`, `Price`, `TotalTickets` — but **not** `DoorRevenue`, `TicketsSold`, or any revenue-share signal,
+so nothing downstream can gate on them today. Add them:
+- `ConcertDetails`: add `decimal? DoorRevenue`, `int TicketsSold`, `bool IsRevenueShare`.
+- Projection `QueryableConcertMappers.ToDetails` (`Concert.Infrastructure/Mappers`): project
+  `DoorRevenue = c.DoorRevenue`, `TicketsSold = c.TicketsSold`, `IsRevenueShare = c.Booking is DeferredBooking`
+  (EF TPH translates the `is` to a discriminator check; `Booking` is already joined by this projection).
+- Public wire shape stays clean: `TicketsSold`/`DoorRevenue` are **venue-private** — expose them on
+  `ConcertDetailsResponse` as nullable, **populated only in `ToCurrentUserDetailsResponse`** (the owner
+  read), left null by the anonymous `ToDetailsResponse`, exactly the "null on public, set on owner" contract
+  `Actions` already uses. Never surface `DoorRevenue` on the marketplace read.
+
+**Endpoint** — `[HasPermission(VenuePermissions.ConcertsManage)] [HttpPost("{id}/door-revenue")]` on
+`ConcertController`, binding `[FromBody] DoorRevenueRequest` → `concertService.DeclareDoorRevenueAsync(id,
+request.DoorRevenue)` → `NoContent()`. Mirrors the existing `Post`/`Cancel` endpoints. Identity is the
+route + `ITenantContext`, never the body (api/CLAUDE.md DTOs-vs-Requests rule). Re-declarable while `Booked`;
+the Phase-1 service already throws `ConflictException` once settled.
+- `DoorRevenueRequest { public decimal DoorRevenue { get; init; } }` in
+  `Concert.Application/Requests/ConcertRequests.cs`.
+- `DoorRevenueRequestValidator : AbstractValidator<DoorRevenueRequest>` (`GreaterThanOrEqualTo(0)`)
+  alongside `Concert.Application/Validators/ConcertValidators.cs`. No `TryParse`-swallow of a bad value.
+
+**Explicit venue-tenant guard** — inject `ITenantContext` into `ConcertService`; add the
+`VenueTenantId == tenantContext.TenantId` fail-closed check in `DeclareDoorRevenueAsync` (see the pinned
+decision above).
+
+**HATEOAS** — add `ActionLink? DeclareDoorRevenue` to the `ConcertActions` record
+(`Concert.Api/Responses/ConcertResponses.cs`); gate it in `ToCurrentUserDetailsResponse`:
+`State == Booked && IsRevenueShare && DoorRevenue is null && EndDate < utcNow` →
+`ActionLink("/api/Concert/{id}/door-revenue", HttpMethods.Post)`, else null. The mapper is currently
+pure/static and the `Cancel` gate is time-free — thread `utcNow` in as a parameter, sourced from an
+injected `TimeProvider` in the `GetDetailsForCurrentUser`/`GetDetailsByApplicationId` controller actions
+(keeps it testable; no `DateTime.UtcNow` inside the mapper). Suppress on fixed-fee and once declared/settled.
+
+**Reminder nag** — add `AwaitingDoorRevenue` to `VenueDashboardCounts` (`Concert.Contracts`), compute it in
+`ConcertDashboardRepository.GetVenueCountsAsync` (`Period.End < now && State == Booked && Booking is
+DeferredBooking && DoorRevenue == null`, scoped to the venue), and thread it through `VenueDashboardKpis` +
+its mapper. (Frontend surfacing is Phase 3; escalation is v1.1.)
+
+**Tests** — integration (`Concert.IntegrationTests/Concert/`): authorized `VenueManager1` declares **over
+HTTP** (`POST /api/Concert/{id}/door-revenue`) → concert becomes sweep-eligible → settlement charges
+`CalculateArtistShare(TicketsSold*Price + DoorRevenue)` and pays the artist tenant; non-venue (artist)
+caller → **403** (mirror `Cancel_ShouldReturn403_WhenCallerIsArtist`); declaration after `Complete` → **409**;
+assert the `declareDoorRevenue` link appears on the owner read only when the gate holds. **Migrate the arrange
+helpers off their stopgaps to the real endpoint**: `ConcertWorkflowExtensions.DeclareDoorRevenueAsync`
+(currently resolves `IConcertService` in-process) and the E2E `ConcertDb` raw-SQL `UPDATE` (its own comment
+says "until the declare endpoint lands (Phase 2)").
+
+**Gate:** build green · Concert unit + integration via `integration-debug`. No model change → no migration.
+API E2E is left to the merge-queue gate (the settle-after-declare path is covered by integration + the
+Phase-3 UI E2E).
 
 ## Phase 3 — Venue SPA screen
 
-**Research first — do NOT design the interface up front.** Before writing any UI, study how the venue
-manager SPA already surfaces concerts/bookings and their actions, and mirror those patterns rather than
-inventing new ones. In particular read: the concert detail route/page
-(`app/web/b2b/venue/src/routes/_venue/my/concerts/concert.$id.tsx`, `b2b/shared/.../MyConcertPage.tsx`),
-the existing HATEOAS-gated action components (`CancelBookingButton.tsx`, the agreement download flow
-`useDownloadAgreement.ts`, `ESignaturePanel.tsx`) for the established action/hook/link pattern, and the
-settlement surfacing already present on the dashboard (`useVenueSettlements.ts`,
-`VenueSettlementsWidget.tsx`) — the door-take action likely belongs alongside or feeds into that. Also
-confirm the boundary tier: shared vs `b2b/shared` vs venue-only (per [app/web/CLAUDE.md](../../app/web/CLAUDE.md)),
-and remember all four app builds are the gate. Only after that, write up the concrete screen/flow in
-this phase (or a short sub-plan) and build it. The bullets below are the *requirements* the design must
-satisfy, not the design itself:
+**Mirror the existing patterns — don't invent.** The recon below (2026-07-15) already located them; read
+each before writing the analogue. The gating principle is unchanged: render off the **HATEOAS link's
+presence**, never a client-side contract-type check.
 
-- **Surface the task** — ended revenue-share gigs awaiting declaration appear as an action ("Enter door
-  takings to settle"), driven off the HATEOAS link (never a client-side contract-type check).
-- **Entry** — an input (£) for the **external door take only** (venue's own ticketing + other ticketers
-  + cash on the door), with a plain-language note that it **excludes** tickets sold through Concertable
-  and that it's a declared, contractually-binding number. The artist's share is calculated on the **sum**
-  `TicketsSold * Price + DoorRevenue`, so the screen must show that breakdown (Concertable sales, known +
-  declared external take = total the split applies to) — **not** present the input as "the figure the
-  share is calculated from", which would make the venue enter the whole gross and double-count
-  Concertable's own sales. Submit → endpoint → refresh; the action clears and the booking moves toward
-  `Complete`.
-- Fixed-fee bookings never show this — they settle automatically.
+*Three-tier boundary (per [app/web/CLAUDE.md](../../app/web/CLAUDE.md), confirmed):* data/types/mutation
+logic → `app/shared` (`@concertable/shared`); DOM/design-system/web glue → `app/web/shared`; venue-only
+manager code → `app/web/b2b/venue/src`. Declaring door takings is a **venue-only** decision (the artist app
+renders no manager actions), exactly like `CancelBookingButton` — so the component is venue-only; only the
+type + api method + data hook are shared.
 
-**Gate:** build green · this is the final phase and flips a user-facing money flow on a covered path →
-**run UI E2E** via `e2e-ui-debug` (a DoorSplit or Versus settle-via-declared-revenue scenario).
+**Shared tier (`app/shared/src/features/concerts/`):**
+- Add `declareDoorRevenue?: ActionLink | null` to `ConcertActions` in `types.ts`, and surface the owner-only
+  `ticketsSold` / `doorRevenue` on the concert read type (matching the Phase-2 response fields).
+- `concertApi.declareDoorRevenue(id, { doorRevenue })` → `api.post('/concert/${id}/door-revenue', ...)` — a
+  convention path, mirroring `concertApi.cancelConcert` (the UI gates on the link, calls the convention URL).
+- `useDeclareDoorRevenue(id)` mutation mirroring `useCancelConcert`: on success
+  `invalidateQueries(["concert", id])` (the `useMyConcertQuery` key) plus the venue settlements/dashboard keys.
+- Zod request schema (`schemas/`) — `doorRevenue >= 0`, mirroring `updateConcertRequestSchema`.
+
+**Venue tier (`app/web/b2b/venue/src/features/concerts/`):**
+- `DeclareDoorRevenueButton`/panel alongside `CancelBookingButton.tsx` (export from the feature barrel);
+  inject it via the `renderActions` slot in `routes/_venue/my/concerts/concert.$id.tsx`, gated on
+  `concert.actions?.declareDoorRevenue` — same shape as the existing `concert.actions?.cancel` clause.
+- Input pattern: `NumberInput min={0} step="0.01"` with a `(£)` label (the `DealFields.tsx` money-field
+  pattern); validate via the Zod schema `safeParse` surfacing `error.issues[0].message` (the `ESignaturePanel`
+  pattern). Submit → `useDeclareDoorRevenue` → refresh; the action clears as the booking moves toward `Complete`.
+- **The breakdown is mandatory and is the whole point of getting the UX right:** the input is the **external
+  door take only** (venue's own ticketing + other ticketers + cash on the door), with a plain-language note
+  that it **excludes** tickets sold through Concertable. Show the sum the split actually applies to:
+  `Concertable sales (ticketsSold × price, known) + your declared external take = total`. Do **not** present
+  the input as "the figure the share is calculated from" — that invites the venue to enter the whole gross
+  and double-count Concertable's own sales.
+- Fixed-fee bookings never show this (no link) — they settle automatically.
+
+**Dashboard nag (surface the Phase-2 count):** show the `AwaitingDoorRevenue` KPI on the venue dashboard
+(alongside the existing KPI counts / `VenueSettlementsWidget`) so a stuck settlement is visible. Minimal —
+a count/badge that points the venue at the gigs awaiting declaration.
+
+**Gate:** **all four app builds** green (`npm -w @concertable/web-{customer,venue,artist,business} run build`
+— the customer/artist builds prove no venue-only concept leaked into a shared tier) · this is the final
+code phase and flips a user-facing money flow on a covered path → **run UI E2E** via `e2e-ui-debug` (a
+DoorSplit or Versus settle-via-declared-revenue scenario).
 
 ## Phase 4 — Docs close-out (rides Phase 3's PR; no standalone PR)
 
