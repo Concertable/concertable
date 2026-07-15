@@ -122,6 +122,7 @@ export interface ConcertVenue {
 export interface ConcertActions {
   cancel?: ActionLink | null;
   contract?: ActionLink | null;
+  declareDoorRevenue?: ActionLink | null;
 }
 
 export interface Concert {
@@ -140,5 +141,8 @@ export interface Concert {
   venue: ConcertVenue;
   artist: ConcertArtist;
   genres: Genre[];
+  // Venue-private; present only on the owner (party-scoped) read, alongside actions.
+  ticketsSold?: number | null;
+  doorRevenue?: number | null;
   actions?: ConcertActions;
 }
