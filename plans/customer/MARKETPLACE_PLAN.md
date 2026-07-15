@@ -29,7 +29,7 @@ A surprising amount of the marketplace infrastructure exists today. Switch-on is
 | `ConcertEntity.Price`, `TotalTickets`, `AvailableTickets` | Exist on Concert entity already |
 | `TicketEntity` | Exists; ticket-buy flow already wired |
 | Stripe Connect Express customer charges | Same setup as B2B side — Stripe direct charges to the venue's connected account work for both B2B and customer flows |
-| DoorSplit + Versus contract types | Already calculate artist share from `Concert.DoorRevenue` — settlement workflow handles ticket revenue regardless of whether it came from customer ticket sales or manual entry |
+| DoorSplit + Versus contract types | Settle on `TicketsSold × Price + Concert.DoorRevenue` — Concertable's own ticket sales **plus** the venue-declared external take (shipped `Feature/DoorRevenueSettlement`). Marketplace switch-on adds a *second, verified* writer (fan checkout increments `TicketsSold`) to the same total; it **supplements** the venue's declaration for the fraction sold through us, it doesn't replace manual entry (cash/other channels stay declared). |
 
 In short, **the wiring exists**. What's missing is the consumer-protection layer that wraps it.
 
