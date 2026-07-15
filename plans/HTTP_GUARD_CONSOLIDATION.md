@@ -1,277 +1,196 @@
-# HTTP-guard consolidation — kill the copied `?? throw new NotFoundException(...)` boilerplate
+# Self-naming `OrNotFound` — pivot from `static virtual IEntity.DisplayName` to a `[DisplayName]` attribute
 
-**Own branch off `master`: `Refactor/HttpGuardConsolidation`** — codebase-wide cleanup, not part of any
-feature. Delivery is inherently **≥2 merges** because `Concertable.Kernel` is a published package: merge
-the helper into Kernel first (republishes on merge to `master`), then migrate consuming-service call
-sites against the published version. Shipping helper + first call sites in one PR is exactly what broke
-CI last time.
+**Own branch off `master`: `Refactor/DisplayNameAttribute`.** Codebase-wide cleanup. Delivery is inherently
+**≥2 merges** because `Concertable.Kernel` is a published package: land the Kernel mechanism first
+(republishes on merge to `master`), then migrate each consuming service against the published version.
 
-> **Status: designed, ready to implement. Merge 1 not yet started.**
-
----
-
-## Verdict (settled)
-
-**A fluent guard for the `?? throw` (Shape-A) case, living in `Concertable.Kernel`. Adopt no library. Do
-not introduce a Result type for 404s. Leave every `if (cond) throw` (Shape-B) guard alone.**
-
-Two forms of the guard, and why the split is fundamental:
-
-- **Entity fetch → self-naming, ZERO string at the call site.** The entity already knows its own name
-  (`IEntity.DisplayName`). Typing `"Venue"` when you fetched a `VenueEntity` is the redundancy being
-  removed.
-- **Value-type / DTO / projection fetch → explicit label, string required and irreducible.**
-  `GetTenantIdByIdAsync → Guid?`, `GetDetailsByIdAsync → VenueDetails?`, `GetArtistPayeeAsync →
-  PayeeSummary?`. The name (`"Concert Opportunity"`, `"Venue"`) exists **nowhere** in the return type —
-  the call site is the only source. No mechanism can remove it; `typeof(T).Name` can't help (it isn't
-  even an entity), and the display names differ from type names anyway (`OpportunityEntity` → "Concert
-  Opportunity", `BookingAgreementEntity` → "Booking agreement" *with a space*).
-
-So the label/struct overloads are **not** redundant once entities carry `DisplayName` — roughly half the
-Shape-A sites fetch a `Guid?`/`int?`/DTO, which categorically cannot implement the interface. Those are
-the exact sites that *had* to hand-roll (constraint #6).
-
-### Why not the named libraries / Result pattern
-
-| Option | Verdict | Why |
-|---|---|---|
-| **`Ardalis.GuardClauses`** (`Guard.Against.NotFound`) | **Reject** | Ships its *own* `Ardalis.GuardClauses.NotFoundException`, a different type from `Concertable.Kernel.Exceptions.NotFoundException`. Every service's `GlobalExceptionHandler` maps only our `HttpException` → ProblemDetails; Ardalis's would fall through to **500**, not 404. Fixing that means writing custom `IGuardClause` extensions that throw *our* exceptions — the same in-house code, plus a dependency, plus a `Guard.Against.` prefix that reads worse than `.OrNotFound()`. |
-| **`ErrorOr` / expand `FluentResults` to 404s** | **Reject (out of scope)** | This codebase committed to the exception + `GlobalExceptionHandler` → ProblemDetails model everywhere. `FluentResults` 4.0 *is* used, but for a different job (service validation `Result<T>` → caller throws `BadRequestException`). Rebuilding the 404 path on `Result<T>` is a cross-cutting rework, out of scope. |
-| **`CommunityToolkit.Diagnostics`, `Dawn.Guard`, `Ensure.That`** | **Reject** | Throw the `ArgumentException` family — wrong exception type for `GlobalExceptionHandler`, aimed at hot-path arg validation, not consumer-facing HTTP `detail`. |
-| **`TypedResults` / endpoint filters** | **Reject (out of scope)** | Minimal-API idiom; this codebase is controller-based with a central exception handler. |
-| **In-house guard in Kernel** | **Adopt** | Uses the existing sealed `NotFoundException`, so `GlobalExceptionHandler` maps it for free. No new dependency. Additive to the Kernel package. Handles the value-type sites a `where T : class` helper can't touch. |
+> **Status: designed, ready to implement. Supersedes the `static virtual IEntity.DisplayName` mechanism
+> from the prior version of this plan (which is partially built, UNCOMMITTED, in the working tree).**
 
 ---
 
-## Design
+## Why pivot at all (the honest case)
 
-### Scope — which families
+The guard consolidation itself is settled and mostly landed: `.OrNotFound()` / `.OrNotFound(label)` over
+`Task<T?>`, the Shape-A vs Shape-B split, the label/struct overloads, the bespoke-message allowlist, the
+verbatim-match rule. **None of that changes.** What changes is *only how a type carries its own name* for
+the zero-arg self-naming overload.
 
-| Exception (→ status) | total | `?? throw` (A) | `if…throw` (B) | Action |
-|---|---|---|---|---|
-| `NotFoundException` (404) | 79 | 75 | 4 | **Consolidate Shape A** (the win). Shape-B 4 → existing `NotFoundException.ThrowIfNull`. |
-| `ForbiddenException` (403) | 14 | 8 | 6 | **Optional** `.OrForbidden(msg)` for the 8 (mostly `TenantId ?? throw`, a `Guid?`). Leave B. |
-| `InternalServerException` (500) | 4 | 4 | 0 | **Optional** `.OrInternalServerError(msg)`. Marginal — bespoke messages, no template. |
-| `BadRequestException` (400) | 36 | 5 | 31 | **Leave.** Overwhelmingly Shape B + the `if (result.IsFailed) throw` idiom, already consolidated. |
-| `ConflictException` (409) | 3 | 0 | 3 | **Leave.** All Shape B. |
-| `UnauthorizedException` (401) | 1 | 0 | 1 | **Leave.** |
-| `DomainException` (not `HttpException`) | 24 | 0 | 24 | **Out of scope.** Not an `HttpException`; domain-invariant; has its own `ThrowIfNull`. |
+The prior mechanism — `static virtual string DisplayName` as a **default interface member** on `IEntity` —
+was shipped as an explicit **temporary workaround** (see its own write-up: `static abstract` was
+un-mergeable across the published-package boundary, two red CI runs with `TypeLoadException`, so it fell
+back to a *soft* default member). Three costs of that workaround, all removed by the attribute:
 
-**Shape A and Shape B do NOT share one mechanism.** Shape A unwraps a nullable or 404s — a value transform
-returning the non-null value; it fits a fluent guard perfectly. Shape B is a boolean assertion with no
-value to return; the idiomatic form is the `if` already written, and an `Ensure(cond, …)` wrapper is a
-readability regression. One mechanism for Shape A; nothing new for Shape B.
+1. **It leaks a Domain marker into Contracts.** To carry a name, `ArtistView` / `VenueView` (in
+   `*.Contracts`) and the `ReadModels` were made to implement `Concertable.Kernel.IEntity` — the entity
+   marker — purely for the name. A Contracts read-shape is not an entity; that implementation is a smell.
+2. **Soft guarantee.** An un-overridden entity falls to a throwing default at *runtime*, not a compile
+   error — the "every entity is named" standard is unenforced.
+3. **Binary-compat landmine.** A member on the published `IEntity` is the exact thing that caused the
+   `TypeLoadException` saga; every future change to it is package-version-sensitive.
 
-### Self-naming: `DisplayName` on `IEntity` as a `static virtual` default member (temporary workaround)
+The attribute (`[DisplayName("Venue")]`, read by cached reflection) removes all three: read off **any**
+type — entity, Contracts View, ReadModel, DTO — with no `IEntity` coupling; no interface member,
+so no binary-compat landmine; enforcement moves to an **architecture test** (a red test, not a silent
+runtime throw). (`[DisplayName]`'s `AttributeUsage` excludes `Interface`, so the name is read off the
+**concrete class** only — every self-naming type in this codebase is a class, so this costs nothing.)
+
+**The trade accepted (decided):** cached reflection on the throw path (one `ConcurrentDictionary<Type,string>`
+miss per distinct type, ever, on an already-exceptional path) in exchange for the three wins above; and the
+compiler-nudge is recovered via an arch-test rather than a soft runtime default. Attribute chosen over a
+bespoke `[DiagnosticName]` because the name doubles as a genuine display name, so `System.ComponentModel`'s
+`[DisplayName]` is honest and needs no new type; its only other reader (ASP.NET/Swagger) would surface the
+*same correct* string, so the "collision" is benign.
+
+---
+
+## Target mechanism
+
+### Kernel — the resolver + the reconstrained guard
 
 ```csharp
-namespace Concertable.Kernel;
+// Concertable.Kernel — new: cached type→name resolver
+using System.Collections.Concurrent;
+using System.ComponentModel;
+using System.Reflection;
 
-public interface IEntity
+public static class DisplayNameResolver
 {
-    static virtual string DisplayName =>
-        throw new NotSupportedException("Entity has no DisplayName; override it or use OrNotFound(label).");
+    private static readonly ConcurrentDictionary<Type, string> Cache = new();
+
+    public static string Of<T>() => Cache.GetOrAdd(typeof(T), Resolve);
+
+    // [DisplayName] cannot target an interface (AttributeUsage excludes Interface); GetCustomAttribute's
+    // default inherit:true still follows base CLASSES, which is all we need — every named type is a class.
+    private static string Resolve(Type t)
+        => t.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName
+           ?? throw new InvalidOperationException(
+               $"{t.Name} has no [DisplayName]; add one so OrNotFound can name it.");
 }
 ```
 
-The name lives on `IEntity` itself (the goal). It is a C# 11 `static virtual` **default interface member**,
-NOT `static abstract` — that distinction is the whole workaround. Entities that self-name override it
-(`public static string DisplayName => "Venue";`); the `OrNotFound` self-naming overload is constrained
-`where T : class, IEntity`. **Static** because the name is read off the type `T` when the value is `null`
-(a 404) — there is no instance. Entities opt in (override) during the call-site migration (Merges 2..N).
-
-#### Why `static virtual` (default member), not `static abstract`
-
-`static abstract` was tried first and is **un-mergeable here** — two red CI runs proved it
-(`TypeLoadException: get_DisplayName not implemented`, on `TenantEntity` then `ConcertEntity`, even after
-adding `DisplayName` to all 37 entities). Root cause: `static abstract` is *required*, and its
-implementation mapping is fixed **at compile time** against the interface version the implementer compiled
-against. The **core libs** (`DataAccess.Infrastructure`, `Messaging.Domain`) source-reference Kernel, so
-every integration test loads the **new** Kernel; the **service entities** compile against the Kernel
-**package**, so against the **old** `IEntity` — no mapping recorded, whatever their source says → runtime
-`TypeLoadException`. It's a deadlock (entities can only record the mapping by compiling against a package
-that has the member, which can't exist until this merges, which can't happen while CI is red).
-
-A `static virtual` **default** member is *additive / binary-non-breaking* — the standard .NET mechanism for
-evolving an interface. Existing entities compiled against the old `IEntity` are not required to implement it
-(the default applies), so **no `TypeLoadException`**. The cost: the "every entity has a name" standard is
-**soft** — an un-overridden entity falls to the throwing default, so `.OrNotFound()` on an un-named entity
-throws at runtime rather than the compiler forcing a name. We only zero-arg entities we've named, so it's
-controlled. A *hard* `static abstract` guarantee would first require the core libs to stop source-
-referencing Kernel (or a whole-repo lockstep build) — a separate, larger change. **This is the temporary
-workaround, logged as such.**
-
-### The guard — an extension class co-located in `NotFoundException.cs`
-
-`OrNotFound` is the **expression** form (returns the value so it chains inline); `NotFoundException.ThrowIfNull`
-is the **statement** form (`void`, `[NotNull]` flow-analysis). The expression form **must** be an extension
-method — postfix `value.OrNotFound()` on `Task<T>`/`T?`/`Guid?` (types we don't own) is the only C# shape
-that satisfies constraints #4 (no `(await …)` wrapper parens) and #5 (chains inline), and an extension
-method must live in a `static` class, so it **cannot** go on the non-static `NotFoundException` class.
-It lives as a second top-level `static class` in the **same file**, `NotFoundException.cs`.
-
 ```csharp
+// Concertable.Kernel.Exceptions.NotFoundException.cs — reconstrain the self-naming overload
 public static class NotFoundExtensions
 {
-    // Self-naming — entity fetches carry their own display name; ZERO string at the call site.
-    public static async Task<T> OrNotFound<T>(this Task<T?> task) where T : class, IEntity
-        => await task ?? throw new NotFoundException($"{T.DisplayName} not found");
+    // was: where T : class, IEntity  =>  $"{T.DisplayName} not found"
+    public static async Task<T> OrNotFound<T>(this Task<T?> task) where T : class
+        => await task ?? throw new NotFoundException($"{DisplayNameResolver.Of<T>()} not found");
 
-    // Explicit label — DTOs/projections + id-bearing/contextual messages (name is irreducible here).
+    // UNCHANGED — DTOs/projections + id-bearing/contextual messages (name is irreducible here)
     public static async Task<T> OrNotFound<T>(this Task<T?> task, string entity) where T : class
         => await task ?? throw new NotFoundException($"{entity} not found");
 
-    // Value types — the sites a `where T : class` helper can't touch (Guid?/int? id projections).
+    // UNCHANGED — value-type id projections (Guid?/int?) a `where T : class` helper can't touch
     public static async Task<T> OrNotFound<T>(this Task<T?> task, string entity) where T : struct
         => await task ?? throw new NotFoundException($"{entity} not found");
 }
 ```
 
-**Every overload is over `Task<T?>` — no sync `this T?` overloads.** Verified against all 75 sites: every
-migratable one is `await repo.GetX() ?? throw`. The only two sync sites (`StripeHoldClient` `held?.Id`,
-`ManagerPaymentService` `account?.StripeCustomerId`) carry bespoke wording and stay hand-rolled anyway
-(constraint #7), so sync overloads would be dead code — omitted. (This also sidesteps the `CS0121`
-ambiguity a sync `where T : class` label overload would hit against the async `Task<T?>` overload, since
-`Task<Foo?>` is itself a reference type.) If a sync site ever appears, add the overload then.
+- Drop the `IEntity` constraint from the zero-arg overload (`where T : class, IEntity` → `where T : class`).
+  No call-site signature changes; `.OrNotFound()` reads identically.
+- **Remove `static virtual DisplayName` from `IEntity`.** `IEntity` returns to the pure marker it was
+  (still the base of `IEntity<TKey>` → `IGuidEntity`, still used as a data-access constraint) — only the
+  `DisplayName` member goes.
 
-### The one rule that keeps HTTP `detail` unchanged
-
-**Self-name (zero-arg) ONLY where the current message equals `"{DisplayName} not found"` verbatim.**
-Otherwise use the label overload. The same entity often has contextual variants — `VenueEntity` self-names
-to `"Venue not found"`, but `OpportunityService` throws `"Venue not found for current user"` off the same
-type. Self-naming that site would silently change the `detail`. Rule: canonical bare message → zero-arg;
-every contextual / id-bearing / bespoke variant → `.OrNotFound("…")` label. Migration is behaviour-
-preserving: same exception, same status, same `detail` string.
-
-### Constraint scorecard
-
-| # | Constraint | Met by |
-|---|---|---|
-| 1 | No magic string at the common call site | zero-arg self-naming overload — string lives once on the entity |
-| 2 | No type-name string surgery | `static abstract DisplayName` — no `typeof`/`EndsWith` anywhere |
-| 3 | Never leak `Entity` suffix | `DisplayName` is authored (`"Booking agreement"`), never derived |
-| 4 | Composes with `await`, no wrapper parens | extensions over `Task<T?>` (`await task ??` binds tighter than `??`) |
-| 5 | Returns non-null value, chains inline | all overloads return `T` |
-| 6 | Nullable value types | `where T : struct` async + sync overloads |
-| 7 | Preserves id-bearing / bespoke messages | label overload takes interpolation; bespoke non-template sites stay hand-rolled |
-| 8 | Lives in Kernel, agnostic, cheap | `Concertable.Kernel.Exceptions`; no reflection on any path |
-| 9 | Idiomatic & boring | `.OrNotFound()` reads instantly; extension-guard-returns-value is the standard .NET fluent idiom |
-
-### Relationship to the existing `ThrowIfNull`
-
-Keep `NotFoundException.ThrowIfNull` / `ForbiddenException.ThrowIfNull`. They're the **statement** form:
-`[NotNull]`-annotated so the compiler treats the argument as non-null afterwards. `OrNotFound` is the
-**expression** form that returns the value inline. Complementary, not redundant. Do not unify.
-
-### Optional (Forbidden/InternalServer Shape-A, lower value — no template, just removes `throw new`)
+### Each type — attribute instead of static member
 
 ```csharp
-// same NotFoundException.cs sibling static class, or ForbiddenException.cs
-public static async Task<T> OrForbidden<T>(this Task<T?> task, string message) where T : class
-    => await task ?? throw new ForbiddenException(message);
-public static T OrForbidden<T>(this T? value, string message) where T : struct
-    => value ?? throw new ForbiddenException(message);   // e.g. context.TenantId.OrForbidden("No active tenant …")
+[DisplayName("Venue")]                     // was: public static string DisplayName => "Venue";
+public sealed class VenueEntity : IGuidEntity { ... }
+
+[DisplayName("Artist")]                     // Contracts View: ALSO drop `: IEntity` if it existed only for the name
+public sealed class ArtistView { ... }
+```
+
+Shared-const sites (keyed-strategy pattern) — attribute args must be compile-time constants:
+
+```csharp
+// DealMetadata.cs / ConcertMetadata.cs — property → const
+public static class DealMetadata { public const string DisplayName = "Deal"; }  // was: => "Deal";
+
+[DisplayName(DealMetadata.DisplayName)]     // now legal: const, evaluated at compile time
+public sealed class DealEntity : IGuidEntity { ... }
 ```
 
 ---
 
-## Before / after (real sites, with resulting HTTP `detail`)
+## Design decisions carried over unchanged (from the guard consolidation)
 
-**(a) Entity fetch, canonical message → self-naming** — `BookingAgreementService.cs:24`
-```csharp
-// before
-var agreement = await repository.GetByApplicationIdAsync(applicationId)
-    ?? throw new NotFoundException("Booking agreement not found");
-// after  (BookingAgreementEntity overrides: static string DisplayName => "Booking agreement";)
-var agreement = await repository.GetByApplicationIdAsync(applicationId).OrNotFound();
-```
-→ 404 `detail`: **`Booking agreement not found`** (unchanged)
+- The **call-site shape** `.OrNotFound()` / `.OrNotFound(label)` — the name now comes from an attribute
+  instead of a static member, but the call site is byte-identical.
+- The **label** and **struct** overloads, the **Shape-A/Shape-B** split, the **bespoke-message allowlist**
+  (`StripeHoldClient` "No held payment intent…", `ContractAccessor` "No contract with id…", etc.), and the
+  **verbatim-match rule** (self-name only where the message equals `"{DisplayName} not found"` exactly).
+- The **`ThrowIfNull`** statement-form guards — complementary, untouched.
 
-**(b) Value type → label required** — `ApplyExecutor.cs:61` (`GetTenantIdByIdAsync` returns `Task<Guid?>`)
-```csharp
-// before
-application.VenueTenantId = await opportunityRepository.GetTenantIdByIdAsync(opportunityId)
-    ?? throw new NotFoundException("Concert Opportunity not found");
-// after
-application.VenueTenantId = await opportunityRepository.GetTenantIdByIdAsync(opportunityId)
-    .OrNotFound("Concert Opportunity");
-```
-→ 404 `detail`: **`Concert Opportunity not found`** (unchanged)
-
-**(c) DTO fetch → label required** — `VenueService.cs:45` (`GetDetailsByIdAsync` returns `VenueDetails?`)
-```csharp
-// before
-return await publicRepository.GetDetailsByIdAsync(id) ?? throw new NotFoundException("Venue not found");
-// after (VenueDetails is a read DTO, not IEntity → label)
-return await publicRepository.GetDetailsByIdAsync(id).OrNotFound("Venue");
-```
-→ 404 `detail`: **`Venue not found`** (unchanged)
-
-**(d) Contextual variant off a self-naming entity → STAYS on label** — `OpportunityService.cs:43`
-```csharp
-// message ≠ "{DisplayName} not found", so NOT zero-arg
-... .OrNotFound("Venue for current user");
-```
-→ 404 `detail`: **`Venue not found for current user`** (unchanged)
-
-**(e) Bespoke id message → stays hand-rolled** — `StripeHoldClient.cs:29`
-```csharp
-held?.Id ?? throw new NotFoundException($"No held payment intent found for application {applicationId}");
-```
-
-**(f) Shape-B guard — LEFT ALONE** — `ApplyExecutor.cs:85`
-```csharp
-throw new BadRequestException("You cannot apply to the same concert opportunity twice");
-```
+Only two things change per type: `static string DisplayName => "X"` → `[DisplayName("X")]`, and any
+`: IEntity` added *solely* to carry that name is removed.
 
 ---
 
-## Migration + merge plan (expand/contract, ≥2 merges)
+## Merge / phase plan (expand-contract, ≥2 merges)
 
-`Concertable.Kernel` is a published NuGet package (`IsPackable=true`); consumers compile against the
-*published* package, not the source beside them. The `IEntity.DisplayName` default member is purely
-additive (binary-non-breaking), so it is invisible and harmless downstream until each service bumps Kernel
-and overrides it on an entity.
+### Phase 0 — DONE: clean slate (old design stashed)
+The prior mechanism's migration (built on `static virtual IEntity.DisplayName`) was **uncommitted on
+`master`** and has been **stashed** — recover with `git stash pop` (message: "old-design DisplayName
+migration … superseded by [DisplayName] attribute pivot"). `master`'s working tree is now clean; we
+reimplement fresh under the attribute design rather than untangling the old tree.
+- The stash is a **reference only** — if reconstructing the ~75 call-site edits is faster by reading
+  `git stash show -p stash@{...}` than re-deriving them, do so; otherwise implement per the plan.
+- Two untracked orphan files remain in the tree (`DealMetadata.cs`, `ConcertMetadata.cs`) — leftover from
+  the old work; they'll be authored properly (as `const`) in Phase 2. The untracked `reviews/*.md` is
+  unrelated — leave it.
+- **First real step of Phase 1: create branch `Refactor/DisplayNameAttribute` off clean `master`.**
 
-### ☑ Merge 1a — INamedEntity marker + OrNotFound (SUPERSEDED, published 0.561)
-The first Kernel merge shipped `INamedEntity` (opt-in marker). Superseded by Merge 1b below when the
-decision moved the name onto `IEntity` itself; `INamedEntity` is removed there (nothing consumed it).
+### Phase 1 — Kernel (republishes; no consumer touched) — ✅ DONE (branch `Refactor/DisplayNameAttribute`)
+1. ✅ Add `DisplayNameResolver` (cached, walks type + interfaces, throws on missing).
+2. ✅ Reconstrain zero-arg `OrNotFound` to `where T : class`, body → resolver.
+3. ✅ Remove `static virtual DisplayName` from `IEntity` (back to a pure marker).
+4. ✅ Kernel unit tests: attribute on class resolves; attribute inherited via base class resolves;
+   missing attribute throws `InvalidOperationException`; resolver caches (white-boxes the private cache
+   dictionary — reference-equality is vacuous since attribute args are interned literals).
+5. ✅ **Gate:** `dotnet build api/Concertable.slnx` clean (exit 0) + Kernel unit tests (14 passed).
+   Behaviour-preserving. **Must merge and republish before any consumer migrates.**
 
-### ☐ Merge 1b — `IEntity.DisplayName` default member + reconstrained OrNotFound (republishes)
-Add the `static virtual DisplayName` default member to `IEntity`; reconstrain the self-naming overload to
-`where T : class, IEntity`; delete `INamedEntity`. **No entities touched, no call sites touched.**
-**Gate:** `dotnet build api/Concertable.slnx` clean + Kernel unit tests. No behaviour change anywhere.
-**This must merge and republish before any call site or entity is migrated.**
+### Phases 2..N — per service, against the republished Kernel (parallelisable)
+Each PR bumps `ConcertablePlatformVersion` to the republished Kernel, then for that service:
+1. Replace every `static string DisplayName => "X"` with `[DisplayName("X")]` on the type.
+2. `DealMetadata` / `ConcertMetadata`: `DisplayName` property → `const string`; annotate `DealEntity` /
+   `ConcertEntity` with `[DisplayName(<Metadata>.DisplayName)]`. (Verify no consumer used
+   `<Metadata>.DisplayName` in a way a `const` breaks — a static readonly→const swap is transparent to
+   normal string reads.)
+3. Remove `: IEntity` from Contracts `Views` / `ReadModels` that implemented it **only** to carry the name
+   (verify each isn't relied on as an entity marker elsewhere — Views/ReadModels aren't EF entities, so
+   this should hold).
+4. Keep the call-site `.OrNotFound()` migrations from the working tree.
+5. **Arch-test** (per service or one shared test project): every type reachable through a zero-arg
+   `.OrNotFound()` — pragmatically, every `IEntity` aggregate + every annotated View/ReadModel — carries
+   `[DisplayName]`. Red test = the compiler-nudge we gave up. (`NetArchTest`/`ArchUnitNET`, or a reflection
+   `[Fact]` asserting `GetCustomAttribute<DisplayNameAttribute>() is not null`.)
 
-### ☐ Merges 2..N — per service, against the now-published Kernel (parallelisable)
-Each PR bumps `ConcertablePlatformVersion` to the republished Kernel, then for that service: (i) adds a
-`DisplayName` override to the entities fetched at canonical Shape-A sites (they are already `IEntity`), (ii) migrates that
-module's `?? throw new NotFoundException(...)` sites per the verbatim-match rule (zero-arg where the
-message is canonical, label otherwise). Only entities that actually self-name need the marker — the rest
-stay untouched. Rough distribution of the 75 Shape-A sites:
+Rough distribution (unchanged from the guard consolidation): **B2B Concert** ~45 sites, **B2B other** ~10,
+**Customer** ~6, **Payment** ~10 (mostly bespoke → stay hand-rolled), plus the ~37 types needing the
+attribute swap across Auth / B2B / Customer / Payment / Search / Messaging.
 
-- **B2B Concert** (~45): `Services/` (`ApplicationService`, `BookingService`, `ConcertService`,
-  `BookingAgreementService`, `ContractAccessor`, `ConcertDraftService`, `OpportunityService`,
-  `BookingAgreementBuilder`, `ApplicationNotifier`) + `Workflow/Executors` + `Workflow/Steps`. Includes
-  most value-type sites (`GetTenantIdByIdAsync`/`GetVenueTenantIdAsync`/`GetPeriodByIdAsync`).
-- **B2B other** (~10): Venue, Artist, Tenant, Contract, Conversations.
-- **Customer** (~6): `TicketService`, `TicketValidator`, `QrCodeService`, `PreferenceService`, `ConcertReviewService`.
-- **Payment** (~10): `PaymentManager`, `ManagerPaymentService`, `CustomerPaymentService`, `EscrowService`,
-  `StripeHoldClient` — **almost all bespoke id-bearing messages → label overload or stay hand-rolled**.
+**Per-phase gate:** `dotnet build` + the affected module's unit/integration tests via `integration-debug`.
+Behaviour-preserving (same exception, same 404, same `detail` text) → **skip E2E**.
 
-**Sites that intentionally keep a bespoke `?? throw`** (non-`"{X} not found"` wording — do NOT reword):
-`StripeHoldClient` `"No held payment intent found for application {id}"`, `ContractAccessor` `"No contract
-with id {contractId}"`, `"Cannot find ticket"`, `"No concert found for Application ID {id}"`. Constraint #7
-protects their wording.
+---
 
-**Per-phase gate:** build + the affected module's unit/integration tests via `integration-debug`.
-Behaviour-preserving (same exception, same 404, same message text) → **skip E2E**.
-
-### Out of scope / separate (do NOT bundle)
-`ApplyExecutor` fetches the same `opportunityId` three times, two throwing identical `"Concert Opportunity
-not found"`. Collapsing those is a redundant-DB-round-trip fix, not a guard-shape fix — track it with the
-`ApplicationSigning.SignTerms` encapsulation idea; don't double-refactor here.
+## Feasibility notes / gotchas
+- **Attribute args are compile-time constants** — the only reason `DealMetadata`/`ConcertMetadata` need
+  property→`const`. Any *computed* display name (none exist today) could not move to an attribute and would
+  keep the label overload.
+- **No interface annotation** — `[DisplayName]`'s `AttributeUsage` is `class, method, property, indexer,
+  event`; it **cannot** be placed on an interface, so the name is read off the concrete class only. Every
+  self-naming type here is a class, so nothing is lost. A future facade that returns only an interface
+  (`Task<IDeal?>`) would use the `.OrNotFound(label)` overload instead.
+- **Test-only entity** — `GeometrySpecificationTests` has a `static string DisplayName => "Test entity"`;
+  swap to `[DisplayName]` too so the arch-test (if it scans test assemblies) stays green, or exclude tests.
 
 ## Done when
-No `?? throw new NotFoundException(...)` remains outside `NotFoundException.cs` and the enumerated bespoke
-sites (spot-check with a repo-wide grep). Delete this plan in the commit that finishes the last migration.
+`grep -rniE "static.*string DisplayName"` over `api/` returns zero outside the metadata `const`s;
+`static virtual DisplayName` is gone from `IEntity`; no `: IEntity` remains on a Contracts View/ReadModel
+that carried it only for the name; every self-naming type has `[DisplayName]`; the arch-test is green.
+Delete this plan in the commit that finishes the last service migration.
