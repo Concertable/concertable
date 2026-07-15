@@ -128,6 +128,7 @@
   <Folder Name="/Customer/Modules/Preference/">
     <Project Path="Concertable.Customer/src/Modules/Preference/Concertable.Customer.Preference.Api/Concertable.Customer.Preference.Api.csproj" />
     <Project Path="Concertable.Customer/src/Modules/Preference/Concertable.Customer.Preference.Application/Concertable.Customer.Preference.Application.csproj" />
+    <Project Path="Concertable.Customer/src/Modules/Preference/Concertable.Customer.Preference.Contracts/Concertable.Customer.Preference.Contracts.csproj" />
     <Project Path="Concertable.Customer/src/Modules/Preference/Concertable.Customer.Preference.Domain/Concertable.Customer.Preference.Domain.csproj" />
     <Project Path="Concertable.Customer/src/Modules/Preference/Concertable.Customer.Preference.Infrastructure/Concertable.Customer.Preference.Infrastructure.csproj" />
   </Folder>

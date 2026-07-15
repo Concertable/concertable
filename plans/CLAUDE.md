@@ -61,6 +61,22 @@ verification gate. Phases sequence so that every intermediate state builds and p
 5. A plan **superseded** by a newer plan, or describing a **rejected** design, is deleted the moment
    that's decided — no tombstones.
 
+### The trap that ships a finished plan as rot — check `git status` before the completing commit
+
+Lifecycle 4 assumes the plan is already a **tracked** file you `git rm`. The case that slips through is a
+plan **written and fully implemented in the same session** (a "fresh-context implementation plan"): it
+exists only as an **untracked** working-tree file, so a blanket `git add -A` / `git add .` before the
+completing commit **stages it as a new file** — the exact opposite of deleting it — and it ships inside
+the PR as rot. This is precisely how `DISPLAYNAME_CONST_CONSOLIDATION.md` reached `master`'s PR: born and
+completed in one commit, swept in as an addition instead of never being committed.
+
+So, **before any commit that completes plan work, run `git status --short plans/` and eyeball it:**
+- a plan finished by this commit must **not** appear as `A`/`??` (born-and-done → never stage it, or `git rm`);
+- a pre-existing tracked plan whose **last** item this commit lands must appear as `D`, not survive untouched
+  (that second miss is how `HTTP_GUARD_CONSOLIDATION.md` lingered after its arch-test shipped).
+
+The rule is mechanical: after the completing commit, no finished plan is in the tree — as an addition or a survivor.
+
 ## Doc-only close-out — never open its own PR; let it ride the next change
 
 Ideally the plan deletion + blocker tick land **inside the feature's final commit** (Lifecycle 4). But
