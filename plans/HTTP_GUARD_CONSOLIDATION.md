@@ -153,28 +153,33 @@ reimplement fresh under the attribute design rather than untangling the old tree
 5. ✅ **Gate:** `dotnet build api/Concertable.slnx` clean (exit 0) + Kernel unit tests (14 passed).
    Behaviour-preserving. **Must merge and republish before any consumer migrates.**
 
-### Phases 2..N — per service, against the republished Kernel (parallelisable)
-Each PR bumps `ConcertablePlatformVersion` to the republished Kernel, then for that service:
-1. Replace every `static string DisplayName => "X"` with `[DisplayName("X")]` on the type.
-2. `DealMetadata` / `ConcertMetadata`: `DisplayName` property → `const string`; annotate `DealEntity` /
-   `ConcertEntity` with `[DisplayName(<Metadata>.DisplayName)]`. (Verify no consumer used
-   `<Metadata>.DisplayName` in a way a `const` breaks — a static readonly→const swap is transparent to
-   normal string reads.)
-3. Remove `: IEntity` from Contracts `Views` / `ReadModels` that implemented it **only** to carry the name
-   (verify each isn't relied on as an entity marker elsewhere — Views/ReadModels aren't EF entities, so
-   this should hold).
-4. Keep the call-site `.OrNotFound()` migrations from the working tree.
-5. **Arch-test** (per service or one shared test project): every type reachable through a zero-arg
-   `.OrNotFound()` — pragmatically, every `IEntity` aggregate + every annotated View/ReadModel — carries
-   `[DisplayName]`. Red test = the compiler-nudge we gave up. (`NetArchTest`/`ArchUnitNET`, or a reflection
-   `[Fact]` asserting `GetCustomAttribute<DisplayNameAttribute>() is not null`.)
+### Phase 2 — consumer migration — ✅ DONE (branch `Refactor/DisplayNameConsumers`, off the `.571` platform-sync)
+Kernel Phase 1 published `0.1.0-alpha.0.571`; the platform-sync bumped `ConcertablePlatformVersion` to it
+across all five services. On top of that pin:
+1. ✅ Replaced `static string DisplayName => "X"` with `[DisplayName("X")]` on the **8** self-named
+   domain entities — the only types actually reached by a zero-arg `.OrNotFound()`:
+   `ArtistEntity`, `ApplicationEntity`, `BookingEntity`, `ConcertEntity`, `ContractEntity`,
+   `OpportunityEntity` (B2B Concert), `VenueEntity` (B2B Venue), `PreferenceEntity` (Customer Preference).
+2. ✅ `DealMetadata` / `ConcertMetadata`: these were **unreferenced orphan files** — nothing read
+   `<Metadata>.DisplayName`, and neither `DealEntity` nor Customer `ConcertEntity` is self-named via a
+   zero-arg `.OrNotFound()`. So there was no keyed-strategy const to preserve; **deleted them as rot**
+   rather than converting to `const` + annotating.
+3. ✅ No Contracts `View`/`ReadModel` carried `: IEntity` **only** for the name. (Search's `*ReadModel`s
+   list `IEntity`, but redundantly — `IIdEntity : IEntity<int> : IEntity` already implies it, and they're
+   genuine persisted markers, not self-named — so left as-is.)
+4. ✅ Call sites unchanged — `.OrNotFound()` already in the tree; only the name source changed.
+5. 🔴 **REMAINING — arch-test.** Not yet added: a reflection `[Fact]` asserting every entity reached by a
+   zero-arg `.OrNotFound()` carries `[DisplayName]`, so a future un-annotated entity fails a red test
+   rather than only at runtime. This is the compiler-nudge the pivot traded away and the last open item.
+   (Decide per-service vs one shared test; the self-named types live in B2B + Customer domain assemblies.)
 
-Rough distribution (unchanged from the guard consolidation): **B2B Concert** ~45 sites, **B2B other** ~10,
-**Customer** ~6, **Payment** ~10 (mostly bespoke → stay hand-rolled), plus the ~37 types needing the
-attribute swap across Auth / B2B / Customer / Payment / Search / Messaging.
+Scope reality: the "~37 types / ~45 sites" estimate was inflated — only **8** types self-name via the
+zero-arg overload; every other service (Auth / Payment / Search / Messaging) uses only the `(label)` /
+struct overloads or none, so needed nothing but the version bump.
 
-**Per-phase gate:** `dotnet build` + the affected module's unit/integration tests via `integration-debug`.
-Behaviour-preserving (same exception, same 404, same `detail` text) → **skip E2E**.
+**Gate:** `dotnet build api/Concertable.slnx -c Release` clean (0 errors). Behaviour-preserving (same 404
+`detail` text — `[DisplayName]` yields the identical string the static member did) → integration tests via
+CI, **skip E2E**.
 
 ---
 
@@ -186,11 +191,9 @@ Behaviour-preserving (same exception, same 404, same `detail` text) → **skip E
   event`; it **cannot** be placed on an interface, so the name is read off the concrete class only. Every
   self-naming type here is a class, so nothing is lost. A future facade that returns only an interface
   (`Task<IDeal?>`) would use the `.OrNotFound(label)` overload instead.
-- **Test-only entity** — `GeometrySpecificationTests` has a `static string DisplayName => "Test entity"`;
-  swap to `[DisplayName]` too so the arch-test (if it scans test assemblies) stays green, or exclude tests.
-
 ## Done when
-`grep -rniE "static.*string DisplayName"` over `api/` returns zero outside the metadata `const`s;
-`static virtual DisplayName` is gone from `IEntity`; no `: IEntity` remains on a Contracts View/ReadModel
-that carried it only for the name; every self-naming type has `[DisplayName]`; the arch-test is green.
-Delete this plan in the commit that finishes the last service migration.
+✅ `grep -rniE "static.*string DisplayName"` over `api/` returns zero (no metadata `const`s were needed);
+✅ `static virtual DisplayName` is gone from `IEntity`; ✅ no `: IEntity` remains on a Contracts
+View/ReadModel that carried it only for the name; ✅ every self-naming type has `[DisplayName]`.
+🔴 **Outstanding: the arch-test** (see Phase 2, item 5) — the one thing left before this plan is deletable.
+Delete this plan in the commit that adds it.
