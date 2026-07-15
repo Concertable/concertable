@@ -1,6 +1,7 @@
 import api from "../../../lib/axiosClient";
 import type { Concert } from "../types";
 import type { UpdateConcertRequest } from "../schemas/updateConcertRequestSchema";
+import type { DoorRevenueRequest } from "../schemas/doorRevenueRequestSchema";
 
 const concertApi = {
   getConcert: async (id: number): Promise<Concert> => {
@@ -18,6 +19,13 @@ const concertApi = {
 
   cancelConcert: async (id: number): Promise<void> => {
     await api.post(`/concert/${id}/cancel`);
+  },
+
+  declareDoorRevenue: async (
+    id: number,
+    request: DoorRevenueRequest,
+  ): Promise<void> => {
+    await api.post(`/concert/${id}/door-revenue`, request);
   },
 
   getContractPdf: async (id: number): Promise<Blob> => {
