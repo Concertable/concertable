@@ -49,6 +49,12 @@ This mistake has cost real time, multiple times. If unsure, re-read `SEEDING_CON
 Don't add additive migrations. When the model changes, run `./initial-migrations.ps1` from `api/`
 to nuke and re-scaffold every module's `InitialCreate`.
 
+**A migration is NEVER a cost to weigh.** There is no live/production data — every environment is
+seeded from scratch — so re-scaffolding is free and lossless. Never defer, avoid, water down, or even
+mention "but this needs a migration" as a reason against a change. If the model is right, change it,
+run `./initial-migrations.ps1`, move on. The re-scaffold is a mechanical step, not a design
+consideration and not a blocker — do not surface it as one.
+
 ## DTOs vs Responses
 
 Services return `Dto` types from `Module.Application/DTOs/` (or `Module.Contracts/` for cross-module

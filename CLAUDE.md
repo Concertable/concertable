@@ -76,6 +76,7 @@ Plans are working docs for unfinished work, **not** an archive — git history i
 - **When you land the commit that completes a plan's work, `git rm` the plan file in that same commit.** Completion = work committed AND its verification passed (build + the affected unit/integration tests always; E2E only when the change is massive/risky per `plans/CLAUDE.md`). Deletion belongs to that commit — never defer it to a later cleanup pass.
 - A plan **superseded** by a newer plan, or describing a design that was **rejected**, is deleted the moment that's decided — don't leave a tombstone.
 - A **partially-done** plan stays, but strike/check off the sections that shipped (in the same commit as the work) so what remains is only the outstanding work.
+- **A completed + verified phase is a HARD STOP.** Hand off the resume prompt and END THE TURN. Do **not** start the next phase in the same session unless the user explicitly names it *and* says to do it now — a vague "continue"/"why stop?"/"yeah" means re-show the handoff, not start coding. Never append "want me to continue?" or a continue-vs-review fork. Full rule: [`plans/CLAUDE.md`](./plans/CLAUDE.md) "Before a clear."
 
 ## Throwaway working markdown — in the repo, then deleted
 

@@ -88,7 +88,7 @@ Phase 2 or the two `ContractEntity` types collide. Phases 3–4 are independent.
 Judgment calls (decide when you hit them, default in parens):
 - `AgreementTermsRenderer` takes an `IDeal` and produces the terms prose → **`DealTermsRenderer`**
   (renders a deal's terms). `TermsFingerprintCalculator` stays — it fingerprints *terms*, correct.
-- `PayeeResolver` / `ArtistShareCalculator` / `*Calculator` already name what they do — leave them;
+- `TicketPayeeResolver` / `ArtistShareCalculator` / `*Calculator` already name what they do — leave them;
   only their `ContractType`/`IContract` parameters get the type rename.
 
 ### The real contract: `BookingAgreement` → `Contract` (Phase 2)

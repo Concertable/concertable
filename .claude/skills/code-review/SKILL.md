@@ -38,6 +38,24 @@ git diff "<start>..HEAD" --stat
 
 If the range is empty, say so and stop.
 
+## Step 1b — Create the review file NOW, before reviewing (mandatory)
+
+**Create the review markdown immediately** — the moment the range is known, before loading rules or
+reviewing anything. Do not defer file creation to Step 5; a review that's interrupted mid-flight must
+still leave a file on disk.
+
+- Resolve the target path exactly as Step 5 does (`reviews/<branch-slug>.md`, or an existing/named file).
+- **If the file does not exist:** create `reviews/` if needed and write the Step-5 skeleton now — the
+  `# Code review — <branch>` header, the work-order blurb, the `**Reviewed up to commit:**` marker set
+  to current HEAD, the range line, and a `## Findings` section containing a single placeholder line
+  `- _(review in progress — findings appended as they're confirmed)_`.
+- **If the file already exists** (a prior review, an `incremental-review` run, or a legacy
+  `plans/PR_FEEDBACK.md`): leave its contents intact — you'll append per Step 5. Do not overwrite.
+
+Then review (Steps 2–4) and **append each confirmed finding to this file as you go** (replacing the
+placeholder line on the first real finding), rather than buffering them all for a single write at the
+end. Step 5 then just reconciles the final list; Step 6 finalizes the marker.
+
 ## Step 2 — Load the rules (read before flagging anything)
 
 These docs are the source of truth. Read the ones relevant to the diff — do not rely on memory, and only flag a convention issue a doc actually states:
@@ -99,9 +117,13 @@ For each candidate finding, judge whether it's real and will be hit in practice.
 - Issues deliberately silenced in code (lint-ignore, documented exception).
 - A convention "violation" the relevant doc doesn't actually state.
 
-## Step 5 — Write the review markdown
+## Step 5 — Finalize the review markdown
 
-Default location: `reviews/<branch-slug>.md` at repo root (branch `/` → `-`, e.g. `reviews/Refactor-Microservices.md`). Create the `reviews/` dir if missing. If the user named a file, or a review file for this branch already exists (including a legacy one like `plans/PR_FEEDBACK.md`), use that instead.
+The file already exists (created up front in Step 1b) and findings were appended as they were
+confirmed. Here you just reconcile the final list: ensure the placeholder line is gone, findings are
+grouped and ID'd, and the shape below is honoured.
+
+Path (same resolution as Step 1b): `reviews/<branch-slug>.md` at repo root (branch `/` → `-`, e.g. `reviews/Refactor-Microservices.md`). If the user named a file, or a review file for this branch already exists (including a legacy one like `plans/PR_FEEDBACK.md`), that file is the one you've been writing to.
 
 File shape:
 
