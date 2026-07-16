@@ -63,6 +63,14 @@ export interface ESignatureRequest {
 }
 ```
 
+- **Default optional/absent values to `?: T` (undefined); reach for `null` only when "deliberately set to
+  empty" is a distinct, acted-on state from "never set."** `undefined` = unset/absent; `null` = an explicit,
+  intentional "no value." Most fields carry only one absence meaning, so use `undefined`: it composes with
+  optional params, optional chaining, and defaults, and `JSON.stringify` drops it so request bodies stay
+  clean (an omitted key deserializes to the backend's `null`/absent). Don't type a field `| null` merely to
+  mirror a backend `string?` — the API may serialize an explicit `null`, but the frontend contract stays
+  `undefined`, and consumers read defensively (`?? fallback`, `!= null`) so a wire `null` reads the same as
+  absent. Introduce `null` only when the two states genuinely differ and something downstream branches on it.
 - Route/resource identity is a **function argument, never a body field**:
   `applyToOpportunity(opportunityId, eSignature)`. Identity comes from the route, not the body.
 - Share one `XRequest` when create and update take the identical writable shape; split into

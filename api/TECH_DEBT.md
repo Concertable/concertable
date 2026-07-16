@@ -46,6 +46,30 @@ Eight hosts coalesce required auth/bus settings to empty string at bind time: `A
 
 ---
 
+### Shared test libraries are ProjectReferenced across the service-folder boundary (carve leak)
+
+`Concertable.Testing`, `Concertable.Testing.Integration`, and the shared `Concertable.E2ETests` harness
+live under `Concertable.Shared/tests/` — i.e. in the Shared "repo" — yet every consuming test project
+reaches them by a `ProjectReference` that **escapes its own service folder**
+(`api/Concertable.B2B/src/Modules/.../Tests/*.csproj → ..\..\..\..\..\..\Concertable.Shared\tests\Concertable.Testing\...`).
+That is exactly the cross-folder escape the runtime carve forbids for service projects (the
+`PackageReference, never a ProjectReference` guard in the service `.csproj`s). Runtime deps that live in
+the Shared tree (Kernel, Messaging) publish + are pinned; the shared **test** libs alone leak straight
+into every service's test projects. On a real repo split those references break. `Concertable.Testing`
+even carries `IsPackable=true` with **zero** package consumers — a half-committed intent. First flagged
+adding a shared `Money` test helper for the door-revenue UI E2E: it compiled same-PR *because* of this
+leak, where a Kernel helper needs a publish-first PR.
+
+**Resolves when:** the shared test libs are published as test-support packages consumed by pinned
+`PackageReference` like the runtime shared libs (carrying the same publish-first + pin-bump boundary) —
+OR test infra is explicitly documented as carve-exempt (dev-only, never shipped in a service runtime)
+and the misleading `IsPackable=true` is dropped. Decision + execution steps:
+[`plans/SHARED_TEST_LIBS_PACKAGING.md`](../plans/SHARED_TEST_LIBS_PACKAGING.md). Lean: publish, for
+consistency with the Shared-repo model — the cost is that every shared-test-helper edit then takes the
+publish-first cycle.
+
+---
+
 ## LOW
 
 ### `initial-migrations.ps1` re-stamps every module, desyncing packaged libs from their published packages
