@@ -1,3 +1,9 @@
+# Scaffolding only builds the EF model — it never opens the connection — so these need only be parseable,
+# never real credentials (no user/password). Applying migrations to a real DB is a separate Aspire job
+# that resolves the live string from config/Key Vault; it never runs this script.
+$env:ConnectionStrings__B2BDb = "Server=localhost;Database=concertable-b2b;Trusted_Connection=True;TrustServerCertificate=True"
+$env:ConnectionStrings__CustomerDb = "Server=localhost;Database=concertable-customer;Trusted_Connection=True;TrustServerCertificate=True"
+
 $dirs = @(
     "Concertable.Messaging\Concertable.Messaging.Infrastructure\Data\Migrations\Outbox",
     "Concertable.Messaging\Concertable.Messaging.Infrastructure\Data\Migrations\Inbox",

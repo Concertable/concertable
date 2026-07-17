@@ -16,39 +16,11 @@ Competitors do flat-fee contracts only. That's decided. The open problem is **ti
 > connected account (≡ own marketplace). Launch = B own marketplace + C manual fallback; A is post-launch
 > data-ingestion only. Prompt deleted per the working-doc rule.
 
-## Prompt 2 — Production deployment of the Aspire app
-
-**Tweak before running:** if you're not committed to Azure, change the platform line in CONTEXT; if budget is a hard constraint, add a target monthly cost so Q5 optimises for it.
-
-```
-CONTEXT: Concertable is a .NET 10 Aspire microservices app — services B2B, Customer, Auth,
-Search, Payment (each Web + Workers), backed by SQL Server, Azure Service Bus and Azure Storage,
-plus 4 Vite SPAs (venue/artist/business/customer) and a mobile app. Today it ONLY runs locally
-via the Aspire AppHost (SQL/Service Bus/Storage are containers/emulators). There is NO production
-deployment: no Dockerfiles, no IaC, no azure.yaml, no CD pipeline (CI is build + test only).
-EF Core migrations are dev-destructive — a script nukes and re-scaffolds InitialCreate each time.
-I want to take this to production, likely on Azure (already on Azure Service Bus + Storage).
-
-DECISION: the best, lowest-effort production deployment approach for this Aspire app, and the
-specific gotchas to plan for.
-
-QUESTIONS (cited, prefer official Microsoft / .NET Aspire docs; recency = 2025–2026):
-1. Current best practice for deploying a .NET Aspire app to Azure Container Apps with `azd`
-   (azure.yaml generation, `azd up`, container build without Dockerfiles). What does it provision,
-   and what are the limits / things it won't do for you?
-2. How to map Aspire's local emulated resources (SQL container, Service Bus emulator, Storage
-   emulator) to real managed Azure resources in PUBLISH mode only, keeping local dev unchanged
-   (run-vs-publish branching, RunAsEmulator / RunAsContainer).
-3. Production EF Core migration strategy for a multi-database Aspire microservices app — migration
-   bundles vs apply-on-startup vs one-off deploy jobs — to replace a dev nuke-and-rescaffold
-   workflow. Safe patterns and pitfalls (zero-downtime, ordering, rollback).
-4. Hosting Vite SPAs in production alongside ACA services — Azure Static Web Apps vs containerised
-   — and per-environment config (API base URLs, auth redirect URIs, CORS).
-5. Secrets/config (Stripe keys, JWT signing, connection strings) via Key Vault / Container Apps
-   secrets with azd; setting up CD via `azd pipeline config`; and a realistic first-deploy effort
-   + monthly cost ballpark for ~7 container apps + Azure SQL + Service Bus.
-
-DELIVERABLE: a concrete, ordered path from "runs locally in Aspire" to "deployed on Azure with CD"
-— the emulator→managed swap, the migration-strategy fix, the SPA hosting choice, secrets, and a
-rough effort + cost estimate.
-```
+> **Prompt 2 (production deployment of the Aspire app)** — *ran 2026-07-17, landed in
+> `plans/CONFIG_AND_DEPLOYMENT.md` "Phase 0 outcome".* Outcome: deployment target = Azure Container Apps
+> via `azd` (auto-detects AppHost, no `azure.yaml`/Dockerfiles); emulator→managed swap is a publish-time
+> no-op via `RunAsEmulator()`/`RunAsContainer()`; EF migrations = bundles/idempotent scripts as a separate
+> per-DB deploy job (never runtime `Migrate()`); SPAs = Azure Static Web Apps; CD = `azd pipeline config`.
+> Four gaps left open (cost/effort, SWA-vs-container + per-env config, Key-Vault-vs-ACA-secrets wiring,
+> multi-DB migration ordering) are recorded in the plan and may warrant a targeted follow-up run. Prompt
+> deleted per the working-doc rule.

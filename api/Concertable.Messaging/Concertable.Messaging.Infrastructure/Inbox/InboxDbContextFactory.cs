@@ -7,10 +7,8 @@ internal sealed class InboxDbContextFactory : IDesignTimeDbContextFactory<InboxD
 {
     public InboxDbContext CreateDbContext(string[] args)
     {
-        var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__B2BDb")
-            ?? "Server=localhost,1433;Database=concertable-b2b;User Id=sa;Password=Password11!;TrustServerCertificate=True";
         var options = new DbContextOptionsBuilder<InboxDbContext>()
-            .UseSqlServer(connectionString)
+            .UseSqlServer(DesignTimeConfiguration.ConnectionString())
             .Options;
         return new InboxDbContext(options);
     }
