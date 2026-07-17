@@ -4,7 +4,9 @@
 **Terraform**). Phase 1a (factory consolidation + B2B CORS fix) **and Phase 1b-now (ServiceDefaults
 shared-defaults seam + B2B BlobStorage intra-service collapse)** done + build-green on
 `Feature/ConfigConsolidation` (uncommitted). Phase 1b-after-sync (publish-gated cross-service dedup +
-`AddDefaultCors`) + Phases 2-4 outstanding. Triggered by an investigation that found the app has **no production existence** — no
+`AddDefaultCors`) + Phases 2-4 outstanding. The end-to-end config + connection-string **architecture**
+(runtime / design-time / secrets / prod source) is now designed — see **"Recommended architecture …
+(Prompt 3 outcome)"** below; the phases implement it. Triggered by an investigation that found the app has **no production existence** — no
 deployment path, no config/secrets store, secrets committed to source. This is the **app-wide**
 config/secrets/deployment workstream; the *region*-scoped config seam lives separately in
 [`CONFIG_STRATEGY.md`](./CONFIG_STRATEGY.md). Branch when Phase 1 code starts (doc-only until then).
@@ -128,6 +130,233 @@ needs Contributor to create the SP. *(azure-developer-cli/configure-devops-pipel
 **Time-sensitivity:** Aspire moves fast — docs migrated learn.microsoft.com → aspire.dev; API churn
 (`AddQueue`→`AddServiceBusQueue`, `AddAzureRedis`→`AddAzureManagedRedis`); a newer `aspire deploy` CLI now
 co-exists with the azd flow. Re-check against the installed Aspire version before Phase 4.
+
+## Recommended architecture — runtime + design-time + secrets + prod source (Prompt 3 outcome, 2026-07-17)
+
+`DEEP_RESEARCH_PROMPTS.md` Prompt 3, run 2026-07-17 (codebase map + official Aspire/EF/Azure docs,
+2025-26). Prompt 3's stated landing spot was `CONFIG_STRATEGY.md`, but that doc is now *region*-scoped
+and delegates app-wide config here (matching where Prompt 2 landed) — so the architecture lives here.
+This section is the **design** the phases below implement; it refines their "how", it doesn't add phases.
+
+**The one-line answer: the Aspire AppHost already *is* the `IConnectionStringProvider`.** Do **not** build
+a custom connection-string abstraction. `WithReference(db)` → `ConnectionStrings__<Db>` → the service reads
+`ConnectionStrings:<Db>` from `IConfiguration`; that is a single, environment-driven source already. A
+custom `IConnectionStringProvider<T>` would only re-wrap `IConfiguration` and duplicate the resiliency /
+no orchestrator injecting the string; Aspire does — so **its runtime provider idea does not transfer; the
+idiomatic Aspire move is to delete the abstraction, not port it.** (aspire.dev EF SqlServer integration.)
+
+### Runtime (Q1, Q2)
+
+**Q2 — confirmed: no connection-string provider is needed.** Multi-tenancy is shared-DB-per-service with
+scoped `ITenantContext` + EF global query filters (`TenantFilters`, read through the DbContext instance,
+*switching* is a DB-per-tenant pattern and **does not apply**. A custom provider only earns its keep for
+genuinely dynamic resolution (DB-per-tenant, runtime vault fetch, read-replica routing) — none of which
+Concertable does.
+
+**Keep `GetConnectionString(<Name>)`; add Aspire enrichment via `EnrichSqlServerDbContext`, NOT
+`AddSqlServerDbContext`.** The pooled `AddSqlServerDbContext<T>("<Name>")` one-liner is the textbook Aspire
+call, but it registers via `AddDbContextPool`, which **requires a `DbContextOptions`-only constructor**.
+Every Concertable context takes extra ctor args (a `*ConfigurationProvider`, plus `ITenantContext` on
+B2B Concert/Artist/Venue) and varies its model per instance — fundamentally non-poolable. So the idiomatic
+fit is the *enrich* path: keep the existing `AddDbContext` and layer Aspire's retries + `CanConnect` health
+check + OpenTelemetry on top.
+
+```csharp
+// AddXModule — now takes the builder so it can enrich (was IConfiguration).
+public static IHostApplicationBuilder AddTenantModule(this IHostApplicationBuilder builder)
+{
+    builder.Services.AddDbContext<TenantDbContext>((sp, o) =>
+        o.UseSqlServer(builder.Configuration.GetConnectionString(B2BDb.Name))   // constant, not "B2BDb"
+         .AddInterceptors(sp.GetRequiredService<AuditInterceptor>(),
+                          sp.GetRequiredService<IDomainEventDispatchInterceptor>()));
+    builder.EnrichSqlServerDbContext<TenantDbContext>();   // retries + health check + OTel, no pooling
+    return builder;
+}
+```
+
+`<Name>` must equal the AppHost `AddDatabase(<Name>)` name. Tunable per-context under
+`Aspire:Microsoft:EntityFrameworkCore:SqlServer[:{ContextName}]` (`DisableRetry`, `DisableHealthChecks`,
+`DisableTracing`, `CommandTimeout`). Enrichment is a valuable-for-prod add-on and is *independent* of the
+source-of-truth story — adopt it whenever the ~19 module signatures are touched; nothing else here depends
+on it.
+
+**Consistency fix (part of the source-of-truth):** every connection name must be a constant whose value
+matches the AppHost's `Databases.*`. B2B already has `B2BDb.Name`; introduce the sibling per-service
+constant (`CustomerDb.Name`, `SearchDb.Name`, `PaymentDb.Name`, `AuthDb.Name`) and replace the string
+literals (`"CustomerDb"` in all 7 Customer modules, and the Search/Payment/Auth literals). The constant
+can't cross the carve, so its *value* is matched in two places (AppHost `Databases.X` + the service
+constant) — that's carve-correct, and the value is a non-secret name, not a credential.
+
+### Design-time (Q3, Q6)
+
+**`IDesignTimeDbContextFactory<T>` is the canonical, doc-endorsed idiom here** — the documented trigger is
+exactly "the ctor takes parameters not registered in design-time DI" (our `*ConfigurationProvider` /
+`ITenantContext`). Host-based resolution, `--startup-project`, and a dedicated migrations host don't remove
+that need. Migration **bundles/scripts are deploy-time (apply), not design-time (author)** — see prod below.
+
+Replace the 4 hard-coded `DesignTimeConnectionString` helpers (Phase 1a's per-closure consolidation) with a
+per-closure **base factory** that (a) resolves from config by the name constant, (b) **throws — no
+hard-coded fallback**, (c) collapses each of the 18 factories to ~4 lines. Per-closure (not one shared
+package) keeps the carve and matches the granularity Phase 1a already chose; `Microsoft.EntityFrameworkCore.Design`
+is `PrivateAssets` design-time-only, so none of this enters any runtime graph.
+
+```csharp
+// One per closure (B2B.DataAccess.Infrastructure, Customer.Seed.Infrastructure, Messaging, Auth) —
+// where DesignTimeConnectionString already lives. Replaces that helper.
+public abstract class B2BDesignTimeDbContextFactory<TContext> : IDesignTimeDbContextFactory<TContext>
+    where TContext : DbContext
+{
+    public TContext CreateDbContext(string[] args)
+    {
+        var cs = DesignTimeConfiguration.Build().GetConnectionString(B2BDb.Name)     // constant, no literal
+            ?? throw new InvalidOperationException(
+                $"Design-time connection string '{B2BDb.Name}' not set " +
+                $"(ConnectionStrings__{B2BDb.Name} via env or user-secrets).");       // surface, don't default away
+        var options = new DbContextOptionsBuilder<TContext>().UseSqlServer(cs, ConfigureSqlServer).Options;
+        return Create(options);
+    }
+    protected abstract TContext Create(DbContextOptions<TContext> options);
+    protected virtual void ConfigureSqlServer(SqlServerDbContextOptionsBuilder sql) { }
+}
+
+// DesignTimeConfiguration.Build() (shared once per closure): env + user-secrets + optional appsettings.
+// No connection string is embedded in code — the value comes from config, or it throws.
+internal static class DesignTimeConfiguration
+{
+    public static IConfiguration Build() => new ConfigurationBuilder()
+        .AddJsonFile("appsettings.json", optional: true)
+        .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development"}.json", optional: true)
+        .AddUserSecrets(typeof(DesignTimeConfiguration).Assembly, optional: true)
+        .AddEnvironmentVariables()                                                     // picks up ConnectionStrings__<Db>
+        .Build();
+}
+```
+
+Each concrete factory is then trivial, and the tenant stub becomes a **single** `DesignTimeTenantContext`
+in the B2B closure (was duplicated as a nested class in 3 factories):
+
+```csharp
+public sealed class ConcertDbContextFactory : B2BDesignTimeDbContextFactory<ConcertDbContext>
+{
+    protected override ConcertDbContext Create(DbContextOptions<ConcertDbContext> o) =>
+        new(o, new ConcertConfigurationProvider(), DesignTimeTenantContext.Instance);
+    protected override void ConfigureSqlServer(SqlServerDbContextOptionsBuilder sql) => sql.UseNetTopologySuite();
+}
+```
+
+**Where the design-time value comes from — the honest split (this is the crux of "make the env-var step
+disappear"):**
+- **Authoring** (`initial-migrations.ps1` re-scaffold, `migrations add`): EF **never opens the connection**
+  — it only needs a *parseable* string to instantiate the provider and build the model. So there is no
+  secret and no live DB involved. The one central non-secret dev value lives in **one** place read by
+  `DesignTimeConfiguration` (a design-time `appsettings.json`, or the dev's user-secrets, or a single
+  `ConnectionStrings__<Db>` export at the top of the script) — **not** re-hard-coded in 4 C# files, and the
+  factory **throws** if it's absent rather than silently targeting `localhost…Password11!`.
+- **Applying** (real schema change, prod + local): done by Aspire, **no design-time factory, no env-var
+  dance** — a per-DB migration bundle/job that carries the *same* `WithReference(db)` the runtime service
+  uses, resolving the identical connection string / Key-Vault secret. This is where the manual env-var step
+  genuinely disappears (see prod below).
+
+### Secrets + prod config source (Q4, Q5)
+
+**Local secrets — Aspire parameters in the AppHost's user-secrets, replacing gitignored
+`appsettings.Development.json`.** The AppHosts already have `UserSecretsId` and the `AddSecrets(...)` →
+`WithEnvironment` pattern. Complete it: move Stripe/Google keys out of each service's Development.json into
+AppHost user-secrets as `AddParameter("…", secret: true)` / `AddConnectionString(...)`, flow them via
+`WithEnvironment`, and rotate the exposed keys. Values live in AppHost `secrets.json`
+(`Parameters:*` / `ConnectionStrings:*`), set via `aspire secret set` or the dashboard "save to user
+secrets" — one out-of-repo, per-dev store. (Aspire docs: *"Always use `AddParameter` to pass secrets …
+never include passwords or connection strings in source code."*) Raw `dotnet user-secrets` is the storage
+underneath; the *abstraction* is the Aspire parameter, so the same declaration works local and prod.
+
+**Prod config — Azure App Configuration (tree, per-env) + Key Vault (secrets by reference), one AppHost
+with run-vs-publish branching.** Services never change — they only read `IConfiguration`; the AppHost
+decides the source:
+
+```csharp
+// SQL: the current gap — plain AddSqlServer publishes as an ACA app running the SQL image, NOT managed
+// Azure SQL. Switch to the container-substitution form so run = local container, publish = managed Azure SQL.
+var sql = builder.AddAzureSqlServer("sql").RunAsContainer();      // was AddSqlServer("sql")
+var b2bDb = sql.AddDatabase(Databases.B2B);                        // ConnectionStrings__B2BDb unchanged
+
+// Centralized config + secrets, provisioned on publish, emulated/existing locally.
+var appConfig = builder.AddAzureAppConfiguration("appconfig").RunAsEmulator();
+var keyVault  = builder.AddAzureKeyVault("secrets");
+var stripe    = builder.AddParameter("stripe-secret", secret: true);
+var stripeRef = keyVault.AddSecret("stripe-secret", stripe);      // Aspire 9.4 IAzureKeyVaultSecretReference
+
+builder.AddPaymentWeb<Projects.Concertable_Payment_Web>(...)
+       .WithReference(appConfig).WithReference(keyVault)
+       .WithEnvironment("Stripe__SecretKey", stripeRef);           // KV-backed ACA secret, never in the image
+```
+
+On ACA the environment gets a user-assigned managed identity (`AZURE_TOKEN_CREDENTIALS=ManagedIdentityCredential`),
+so `DefaultAzureCredential` resolves App Config + Key Vault with no code change; non-secrets flow as env
+vars, secrets as Key-Vault-backed container-app secrets resolved at revision start. App Configuration
+stores Key Vault *references* (a URI, not the secret); `.ConfigureKeyVault(...)` resolves them. This is the
+provider-swap-at-the-composition-root the Decision section already anticipated. (Reconcile provisioning
+with the Terraform-not-Bicep standard per the Phase 4 ⚠️ note — the *code shape* above is provider-agnostic;
+only who emits the IaC differs.)
+
+**Migrations share the one source of truth.** Prefer Aspire's first-class `AddEFMigrations` (package
+`Aspire.Hosting.EntityFrameworkCore`; verify it's in our SDK version) — `RunDatabaseUpdateOnStart()` locally,
+`PublishAsMigrationBundle(publishContainer: true).PublishAsAzureContainerAppJob()` for a per-DB run-once ACA
+job on publish. Because the job carries the same `WithReference(db)` (and can carry `WithReference(keyVault)`),
+it resolves the identical connection string as runtime — the deploy-time realization of Phase 0's
+"bundles/idempotent scripts as a separate per-DB job, never runtime `Migrate()`". The older dedicated
+migration-worker `BackgroundService` gated by `WaitForCompletion` is the fallback if `AddEFMigrations` isn't
+available in-version.
+
+### Where each value lives, per environment
+
+| Value | Local (`aspire run`) | Prod (`aspire publish` → ACA) | Design-time author | Design-time apply |
+|---|---|---|---|---|
+| Connection strings | AppHost `AddDatabase` → `ConnectionStrings__<Db>` (SQL container) | `AddAzureSqlServer` managed Azure SQL → same env var | one central non-secret value (config/user-secrets); factory throws if absent | Aspire migration job's `WithReference(db)` — same as runtime |
+| App secrets (Stripe/Google) | AppHost user-secrets `Parameters:*` → `WithEnvironment` | `AddParameter(secret:true)` → Key Vault secret → KV-backed ACA secret | n/a (never opens external services) | n/a |
+| Non-secret config (BlobStorage, CORS via extension) | `SharedDefaults/appsettings.json` seam (lowest precedence) → App Config later | Azure App Configuration | reads config if present; not required | n/a |
+| Nothing in source code | — | — | — | — |
+
+### Migration path from today (maps onto the phases below)
+
+1. **Runtime constants + enrich (Phase 1 / after-sync):** add per-service name constants, replace the
+   literals; when touching module registration, switch `AddXModule(IConfiguration)` → `IHostApplicationBuilder`
+   and add `EnrichSqlServerDbContext<T>()`. Source-of-truth unchanged; zero behavior change to resolution.
+2. **Design-time base factory (extends Phase 1a) ✅ DONE (2026-07-17):** replaced the 4
+   `DesignTimeConnectionString` helpers with the per-closure base factory + `DesignTimeConfiguration`
+   (B2B + Customer); deleted the hard-coded `Password11!` fallback — factories now throw if
+   `ConnectionStrings__<Db>` is absent; collapsed the 14 B2B/Customer factories to ~4 lines; single
+   `DesignTimeTenantContext`; Auth + Messaging kept their divergent construction, source swapped only.
+   `./initial-migrations.ps1` now exports **credential-free** design-time strings (scaffolding never
+   connects). Still outstanding: Payment + Search have no design-time factory (they scaffold via their
+   Web host as `--startup-project`); converting them is optional.
+3. **Secrets → user-secrets/Key Vault (Phase 2):** move Development.json secrets to AppHost parameters;
+   delete + history-purge + rotate the orphaned `B2B.Web/appsettings.Production.json` SQL password.
+4. **App Config + run-vs-publish (Phase 3) and migration jobs (Phase 4):** `AddAzureAppConfiguration` /
+   `AddAzureKeyVault`, switch SQL to `AddAzureSqlServer().RunAsContainer()`, `AddEFMigrations` per DB.
+
+### Rating against the "as clean as an injected `IConnectionStringProvider`" bar
+
+- **Runtime — BEATS the bar.** The cleanest result is *no custom abstraction at all*: a two-liner
+  (`AddDbContext(… GetConnectionString(Const) …)` + `EnrichSqlServerDbContext<T>()`) keyed by a constant,
+  giving resiliency/health/telemetry for free and nothing to own. The only gap vs the textbook
+  `AddSqlServerDbContext("Name")` one-liner is the explicit `GetConnectionString` + `Enrich` line — forced
+  by non-poolable ctors, a property of the model, not a design miss.
+- **Design-time — MEETS the bar, with one flagged residual.** A 4-line factory + shared base, constants
+  only, throws on missing, zero secrets. **What can't reach the bar:** `dotnet ef` runs with Aspire *not
+  running*, so authoring still needs a connection string *present in config* — the live orchestrator can't be
+  the source at author time. This is a fundamental EF/design-time limitation, not fixable by any abstraction.
+  Mitigated to near-nothing: authoring never connects (any parseable value works, from one central non-secret
+  place), and applying — the part that needs a *real* string — is fully Aspire-sourced with no env var.
+- **Secrets + prod — MEETS the bar.** Aspire parameters + App Config/Key Vault + run-vs-publish give one
+  env-driven source, zero secrets in code, identical service code across environments; managed identity
+  resolves everything on ACA.
+
+**Sources (key):** aspire.dev EF SqlServer integration + overview (`EnrichSqlServerDbContext`, pooling
+constraint); aspire.dev EF migrations (`AddEFMigrations`, bundles/jobs); aspire.dev external-parameters +
+Azure overview (run-vs-publish, `AddParameter(secret:true)`, `AsExisting`); aspire.dev what's-new 9.4
+(`IAzureKeyVaultSecretReference`); learn.microsoft.com EF `dbcontext-creation` (design-time factory triggers,
+"primary smell is a hard-coded connection string") + `migrations/applying` (never runtime `Migrate()`);
+learn.microsoft.com App Configuration Key Vault references + Aspire quickstart.
 
 ## Phases
 
@@ -256,7 +485,15 @@ Create the repo (config-as-code + native IaC). Provision App Config. Wire the pr
 composition root. Partition by environment; region seam dormant.
 
 ### Phase 4 — Deployment pipeline
-IaC + CD to provision + deploy per Phase 0 (target host, prod EF migrations, SPA hosting).
+IaC + CD to provision + deploy per Phase 0 (target host, prod EF migrations, SPA hosting). **Designed in
+detail in [`DEPLOYMENT.md`](./DEPLOYMENT.md)** (2026-07-17) — the concrete method (Terraform + `dotnet
+publish` images + GitHub Actions; Aspire local-only), resource topology, scaling profile (outbox/inbox →
+which hosts can scale to zero), migrations-as-ACA-Jobs, SWA for the SPAs, the easy/consistent local story,
+and a first-deploy runbook. **Resolves Phase 0's four open gaps:** cost (honest ~£10–15/mo floor, ~£8 of it
+Service Bus Standard; a ≤£5 *ephemeral* mode via `terraform apply`/`destroy` since migrations are
+nuke-and-reseed with no prod data), SPA hosting + per-env config (the `vite.config.ts` localhost-`define`
+blocker), Key-Vault-vs-ACA secrets (App Config Free + KV references via managed identity), and multi-DB
+migration ordering (independent except **B2BDb before Auth** — Auth's idsrv store lives in B2BDb).
 
 ## Verification
 Per phase: `dotnet build` green + affected tests. Phases that change runtime config need a real
