@@ -28,7 +28,8 @@ Three parallel investigations mapped the current state. Headlines (all confirmed
   CORS lists, OIDC `SpaClients` blocks, endpoint/port maps; the localhost SQL string is re-hardcoded in
   **~20 DbContext design-time factories**.
 - Prod config **effectively nonexistent**: one orphaned `B2B.Web/appsettings.Production.json`; no
-  staging anywhere; SPA `.env.production` is a stub (empty API URL/authority, no Stripe key).
+  staging anywhere. *(SPA `.env.production` was an empty stub — ✅ now filled with the prod DNS-scheme hosts;
+  publishable keys stay CI-injected. See `DEPLOYMENT.md` "SPAs → Azure Static Web Apps".)*
 - The **one** thing already centralized: infra connection strings (SQL/ASB/Blob) — but in Aspire code
   (`AppHost.Shared/DistributedApplicationBuilderExtensions.cs`), not config files.
 
@@ -39,7 +40,7 @@ Three parallel investigations mapped the current state. Headlines (all confirmed
 - **`B2B.Web/appsettings.Production.json` commits a plaintext Azure SQL admin password (`Password11!`).**
   It's in git history → rotate + purge (or rotate + accept). The file is orphaned (nothing provisions it).
 
-## Decision (2026-07-17): build `concertable-config`
+## Decision (2026-07-17): build `config`
 A native, simple config-as-IaC repo — **NOT** CRIS's bespoke ~700-line pipeline. Shape:
 - **Config-as-code** — appsettings-shape JSON, partitioned by **environment** (dev/staging/prod) now;
   **region** as a future top partition (dormant while UK-only). Single-sources the duplicated
@@ -480,9 +481,31 @@ before treating any `Development` row as a committable change):**
 Rotate + remove committed secrets (Stripe keys, Google key, the SQL password); delete the orphaned
 Production file. Stand up Key Vault (per Phase 0 target), move secrets there, wire Key Vault references.
 
-### Phase 3 — `concertable-config` repo + App Configuration
-Create the repo (config-as-code + native IaC). Provision App Config. Wire the provider at each service's
-composition root. Partition by environment; region seam dormant.
+### Phase 3 — `config` repo + App Configuration ✅ AUTHORED (2026-07-17); apply deferred (no creds)
+The **`config`** repo (sibling to `Concertable/`, bare-name-under-the-Concertable-org) is built:
+config-as-code + hand-authored **Terraform** (App Configuration store + Key Vault + non-secret key-values +
+secret *references* + role assignments + azurerm remote-state backend) + a GitHub Action + a seed-secrets
+script. `terraform fmt`/`validate` green; **apply blocked on an Azure subscription + creds**. Partition by
+environment; region seam dormant. The single consumer seam is the `config_label` variable (the App Config
+label a consumer selects on) — data, not structure. See the `config` repo README for the platform-agnostic
+design rationale.
+
+> ✅ **Provider swap RESTORED (2026-07-17, working tree).** `AddAzureAppConfiguration` is back in
+> `Concertable.ServiceDefaults/Extensions.cs`, called from `AddServiceDefaults` right after
+> `AddSharedDefaults` — recovered verbatim from the lost pre-merge commit `d669a292` (it was authored
+> before PR #119 but never landed — same loss as `DEPLOYMENT.md`). Reads the endpoint from
+> `ConnectionStrings:appconfig`; **no-op when absent** (local `aspire run`, tests, and E2E all keep the
+> embedded SharedDefaults + user-secrets as the source); when present it connects with
+> `DefaultAzureCredential`, selects unlabeled defaults then this environment's overrides, and resolves Key
+> Vault references via managed identity. Packages added back to ServiceDefaults:
+> `Microsoft.Extensions.Configuration.AzureAppConfiguration` 8.5.0 + `Azure.Identity` 1.16.0. Additive +
+> dormant, full-solution build green (0 errors). Publish-gated like the 1b seam — service consumers pick it
+> up after the next ServiceDefaults publish + platform-sync.
+
+**Next — custom domains:** Cloudflare + `concertable.co.uk` subdomains, which finalize the per-env
+`Auth:Authority` / `Cors:AllowedOrigins` / `Auth:SpaClients:*` values in `config`. Scheme
+decided + DNS runbook authored in [`DOMAINS_AND_DNS.md`](./DOMAINS_AND_DNS.md); apply blocked on domain
+purchase + Cloudflare + Azure creds.
 
 ### Phase 4 — Deployment pipeline
 IaC + CD to provision + deploy per Phase 0 (target host, prod EF migrations, SPA hosting). **Designed in
