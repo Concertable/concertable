@@ -138,6 +138,27 @@ state is written:
 2. **Give the user a resume prompt to paste after `/clear`.** Assume zero context: name the plan file,
    the branch/PR, and the exact next step. Keep it to a few lines.
 
+**The trigger is mechanical — not a judgment call.** The moment you finish a discrete chunk of work
+(a plan designed, a phase landed, a question fully answered) and your next sentence *would* be
+"Want me to start X?" / "Shall I do the next phase?" / "…or leave it as-is?" — **that question IS the
+trigger.** Do not send it. Write the durable state and hand off the resume prompt in the **same
+turn**, unprompted. You do not wait for the user to say "I'll clear now" — finishing the work is the
+signal. Asking whether to continue instead of handing off is the exact anti-pattern this section
+exists to kill: the plan already records what's next, so the honest move is to hand off, not to ask.
+
+**A completed + verified phase is a HARD STOP — end the turn on the resume prompt.** After you hand off,
+do **not** begin the next phase in the same session — not even when asked — **unless the user explicitly
+names the next phase AND says to do it now, in this session.** Everything short of that is a stop:
+
+- A vague *"why are we stopping?"* / *"aren't we continuing?"* / *"keep going"* / *"yeah"* is a request
+  to **clarify or re-show the handoff**, never license to start the next phase. Re-present the resume
+  prompt; don't start coding.
+- **Never** append *"want me to continue?"* or a two-way *"continue vs. review"* fork — that reopens
+  "continue" as an option and is precisely how the stop gets skipped. The resume prompt **is** the
+  deliverable; the turn ends there. At most, one plain sentence noting the phase is done — no question.
+- When genuinely unsure whether the user authorized the next phase in-session, **stop and ask one
+  narrow question**; default to stopping, never to starting.
+
 ## Verification gate per phase
 
 Every phase, no exceptions:

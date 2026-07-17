@@ -2,7 +2,7 @@
 
 > **Goal:** Production launch of the B2B platform (venue↔artist booking + automated settlement) by **November 2026**.
 >
-> **Companion docs:** [LAUNCH_CHECKLIST.md](LAUNCH_CHECKLIST.md), [USER_MODEL_PLAN.md](USER_MODEL_PLAN.md), [MARKETPLACE_PLAN.md](../customer/MARKETPLACE_PLAN.md), [../../api/Concertable.B2B/src/Modules/Contract/LEGAL_REQUIREMENTS.md](../../api/Concertable.B2B/src/Modules/Contract/LEGAL_REQUIREMENTS.md).
+> **Companion docs:** [LAUNCH_CHECKLIST.md](LAUNCH_CHECKLIST.md), [USER_MODEL_PLAN.md](USER_MODEL_PLAN.md), [MARKETPLACE_PLAN.md](../customer/MARKETPLACE_PLAN.md), [../../api/Concertable.B2B/src/Modules/Deal/LEGAL_REQUIREMENTS.md](../../api/Concertable.B2B/src/Modules/Deal/LEGAL_REQUIREMENTS.md).
 
 ---
 
@@ -19,7 +19,7 @@
 - [x] ✅ **Application cancellation** — shipped (`Feature/ApplicationCancel`): artist **withdraw** + venue **reject** from `Applied`; venue **cancel** / artist withdraw from `Accepted`/`PaymentFailed` → terminal `Cancelled` with the escrow unwind via the existing `RefundByBookingIdAsync` (no new Payment capability), late-capture compensation for the 3DS-window race, opportunity re-opens on cancel (application- and concert-cancel alike), HATEOAS-gated actions in both manager SPAs (venue Deny/Cancel; artist My Applications page + Withdraw). Optional FlatFee hold-release RPC deliberately skipped — orphaned accept-checkout holds self-expire in ~7 days (logged in [api/TECH_DEBT.md](../../api/TECH_DEBT.md)).
 - [x] ✅ **E-signed booking agreement** — shipped (`Feature/BookingAgreement`): click-wrap consent at Apply + Accept, agreed terms snapshotted at Accept (immutable `BookingAgreementEntity`, terms-fingerprint guard against mid-flight edits), PDF via `IPdfService` (`BookingAgreementDocument`, generated background-at-Accept with a lazy render-on-download fallback, stored under the `agreements/` blob prefix), both-party-authorized `GET /api/Application/{id}/agreement` + `/agreement/pdf` endpoints, HATEOAS `agreement` link, download links in both manager SPAs. **Advanced-tier self-hosted e-signature** (typed full name required + optional drawn signature, rendered into the PDF Signatures block; no third party / no per-signature cost) — upgraded from the original Tier 1 click-wrap. LEGAL_REQUIREMENTS item 2.
 - [x] ✅ **DoorSplit/Versus door-take entry at settlement** — shipped (`Feature/DoorRevenueSettlement`): the venue declares the **external** door take on an ended, still-`Booked` revenue-share concert (`POST /api/Concert/{id}/door-revenue`, venue-tenant guarded, HATEOAS-gated "Enter door takings" action in the venue SPA). Settlement charges the artist's % of **`TicketsSold × Price + DoorRevenue`** — Concertable's own ticket sales **plus** the declared external take, never either alone. The "awaiting declaration" rule is single-sourced via a composable `PredicateSpecification` combinator (published to Kernel, platform `.576`), shared by the completion sweep and a backend `AwaitingDoorRevenue` KPI. **All four contract types now settle.** See §1 / R9.
-- [ ] 🟠 **DAC7 onboarding completion** — NINO / UTR / Company-Reg on `Tenant.Compliance`; gate payout until complete (no de-minimis for services — reportable from £1).
+- [x] ✅ **DAC7 onboarding completion** — shipped (`Feature/Dac7Onboarding`): fail-closed DAC7 payout gate + jurisdiction seam (UK-only, keyed strategy) + tax-details nag on both dashboards; VAT collapsed to a single number. NINO / UTR / Company-Reg on `Tenant.Compliance`; no payout until the payee tenant is jurisdiction-complete (no de-minimis for services — reportable from £1).
 - [ ] 🟠 **Self-billed VAT invoice engine** — HMRC legends, per-supplier agreement + annual renewal, VAT-status branching (items 1, 3, 4).
 - [ ] 🟡 **`holdsMusicLicence` attestation** on `Tenant.Compliance` (~0.5 day; the venue's responsibility, we just record it).
 - [ ] 🟡 **Finish Swim-lane B** — membership/invitation endpoints + auth sweep + messaging group-inbox (USER_MODEL_PLAN Phases 6-8).
@@ -41,7 +41,7 @@ The legal/business track is [LAUNCH_CHECKLIST.md](LAUNCH_CHECKLIST.md); the hard
 - Multi-staff Tenant model (Owner + Manager roles)
 - DAC7-compliant seller onboarding
 - Cancellation/refund handling on the B2B path (venue or artist cancels — escrow refunds correctly)
-- Per-booking signed agreement (click-wrap e-signature, terms snapshotted at Accept) — see [LEGAL_REQUIREMENTS.md](../../api/Concertable.B2B/src/Modules/Contract/LEGAL_REQUIREMENTS.md) item 2
+- Per-booking signed agreement (click-wrap e-signature, terms snapshotted at Accept) — see [LEGAL_REQUIREMENTS.md](../../api/Concertable.B2B/src/Modules/Deal/LEGAL_REQUIREMENTS.md) item 2
 - Per-contract-type VAT calculation + VAT-compliant self-billed invoices per settlement (items 1, 3, 4)
 - Per-tenant configuration surface (PRS, VAT, platform fee, payment terms, cancellation defaults)
 
@@ -234,9 +234,9 @@ These need answers but aren't urgent yet. (Two items are no longer open: the **D
 - [LAUNCH_CHECKLIST.md](LAUNCH_CHECKLIST.md) — full legal/business setup checklist
 - [USER_MODEL_PLAN.md](USER_MODEL_PLAN.md) — Swim-lane B detail: the outstanding multi-user tenant / roles / auth-sweep work
 - [MARKETPLACE_PLAN.md](../customer/MARKETPLACE_PLAN.md) — Phase 2 marketplace switch-on plan
-- [../../api/Concertable.B2B/src/Modules/Contract/LEGAL_REQUIREMENTS.md](../../api/Concertable.B2B/src/Modules/Contract/LEGAL_REQUIREMENTS.md) — B2B legal backlog (rewritten 2026-06-01: contract-type-centric, items 0-9, PRS corrected)
+- [../../api/Concertable.B2B/src/Modules/Deal/LEGAL_REQUIREMENTS.md](../../api/Concertable.B2B/src/Modules/Deal/LEGAL_REQUIREMENTS.md) — B2B legal backlog (rewritten 2026-06-01: contract-type-centric, items 0-9, PRS corrected)
 - [../../api/Concertable.Customer/LEGAL_REQUIREMENTS.md](../../api/Concertable.Customer/LEGAL_REQUIREMENTS.md) — marketplace/fan legal leads (future, separate system)
-- [../../api/Concertable.B2B/src/Modules/Contract/ARCHITECTURE.md](../../api/Concertable.B2B/src/Modules/Contract/ARCHITECTURE.md) — contract + workflow architecture
+- [../../api/Concertable.B2B/src/Modules/Deal/ARCHITECTURE.md](../../api/Concertable.B2B/src/Modules/Deal/ARCHITECTURE.md) — deal + workflow architecture
 - [MODULAR_MONOLITH_RULES.md](../../api/docs/MODULAR_MONOLITH_RULES.md) — module boundary rules
 
 ## Decisions locked
