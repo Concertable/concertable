@@ -107,3 +107,17 @@ When a venue runs FlatFee accept-checkout (a manual-capture PI ring-fencing the 
 `.github/workflows/test.yml` authenticates the GitHub Packages feed with `secrets.GITHUB_TOKEN` in the `build`, `carve-auth`, and merge-queue E2E jobs. A PR opened from a **fork** (or a Dependabot PR) runs with a read-only token scoped to the fork, which cannot read the `Concertable` org's private packages, so those PRs would 401 at restore regardless of the change. Not a problem for the current same-repo branch + merge-queue workflow (no fork PRs), logged in case the repo is ever opened to external contributors.
 
 **Resolves when:** the org packages are made internal-visible to the org's repos, or fork PRs are given a `read:packages` PAT (or simply aren't accepted).
+
+### Config section names are magic-string literals, not typed constants (one lone outlier)
+
+Every `Configure<XSettings>(configuration.GetSection("..."))` across the backend passes the section name as a
+bare string literal — `"Stripe"` (`Payment.Infrastructure`), `"Legal"` (`B2B.Concert`), `"Urls"` (`Kernel`),
+`"BlobStorage"` (`Shared.Blob`), `"TaxCompliance"` (`B2B.Tenant`), plus the `"Cors:AllowedOrigins"` /
+`"ExternalServices"` reads in the host `Program.cs` files. The sole exception is `Concertable.Auth`'s
+`SpaClientSettings.SectionName = "Auth:SpaClients"`, bound via `GetSection(SpaClientSettings.SectionName)` —
+the pattern the rest should follow. A renamed section silently stops binding: the literal and the appsettings
+key drift independently with no compile error.
+
+**Resolves when:** a repo-wide sweep gives each settings class a `public const string SectionName` and every
+`Configure<T>(GetSection(...))` binds through it (adopting the `SpaClientSettings` pattern). Done as one
+consistency pass, not piecemeal — a lone typed section next to magic-string neighbours is worse than uniform.

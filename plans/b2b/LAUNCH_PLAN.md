@@ -24,6 +24,7 @@
 - [ ] 🟡 **`holdsMusicLicence` attestation** on `Tenant.Compliance` (~0.5 day; the venue's responsibility, we just record it).
 - [ ] 🟡 **Finish Swim-lane B** — membership/invitation endpoints + auth sweep + messaging group-inbox (USER_MODEL_PLAN Phases 6-8).
 - [ ] 🟡 **Per-contract-type VAT calculation** (items 1, 3).
+- [ ] 🔴 **Production deployment + config/secrets** — the app has **no** deployment path, config store, or secret store (all local Aspire + emulators; secrets committed to source, incl. a plaintext Azure SQL password). Surfaced 2026-07-17. Hard launch gate. Plan: [../CONFIG_AND_DEPLOYMENT.md](../CONFIG_AND_DEPLOYMENT.md).
 
 **Verify before trusting — competitor table-stakes, not confirmed in code:** reviews/reputation end-to-end · calendar sync (Google/Apple/Outlook) · financial/settlement CSV export · pricing-transparency UI.
 
