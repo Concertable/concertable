@@ -4,13 +4,13 @@
 `Feature/Dac7Onboarding`). Remaining = consolidate the other latent UK hardcoding (currency, default
 country). No region *machinery* is planned.
 
-> **App-wide config/secrets/deployment** (App Configuration, Key Vault, the `concertable-config` repo,
+> **App-wide config/secrets/deployment** (App Configuration, Key Vault, the `config` repo,
 > Azure deployment) is a *separate, bigger* workstream — see
 > [`CONFIG_AND_DEPLOYMENT.md`](./CONFIG_AND_DEPLOYMENT.md). This doc stays scoped to *region* variance.
 
 ## Position: UK-only today; "scalable" = consolidated, not abstracted
 There is one deployment: UK. We are **not** building region machinery — no Azure App Config, no
-`concertable-config` repo, no Terraform config pipeline, no `VITE_REGION`, no region profiles. All of
+`config` repo, no Terraform config pipeline, no `VITE_REGION`, no region profiles. All of
 that is speculative for a single region; add it the day a real second region (e.g. France) exists, not
 before.
 
