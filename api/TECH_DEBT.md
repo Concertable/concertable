@@ -121,3 +121,19 @@ key drift independently with no compile error.
 **Resolves when:** a repo-wide sweep gives each settings class a `public const string SectionName` and every
 `Configure<T>(GetSection(...))` binds through it (adopting the `SpaClientSettings` pattern). Done as one
 consistency pass, not piecemeal — a lone typed section next to magic-string neighbours is worse than uniform.
+
+### Timestamps are `DateTime` (UTC-by-naming-convention), not `DateTimeOffset`
+
+Every timestamp across the backend is stored as `DateTime` with a `…Utc` suffix — sourced from
+`TimeProvider.GetUtcNow().UtcDateTime`, mapped to SQL `datetime2` (`ContractEntity.CreatedAtUtc`,
+`ConcertEntity.Period`, `InvoiceEntity.TaxPointUtc`/`CreatedAtUtc`, and so on across every module). The
+UTC-ness is a *naming* convention, not carried by the type: nothing stops a caller assigning a `Kind=Local`
+or `Kind=Unspecified` value, and the offset the instant was recorded at is lost. `DateTimeOffset` (SQL
+`datetimeoffset`) would make "this is an absolute instant" type-enforced rather than suffix-promised. New
+entities (e.g. the Phase-2 invoice) match the existing `DateTime` convention deliberately — switching one
+entity in isolation just makes it the odd column type.
+
+**Resolves when:** a repo-wide sweep moves entity/DTO timestamps to `DateTimeOffset` in one consistency
+pass (entities, EF configs → `datetimeoffset`, DTOs, and the `TimeProvider.GetUtcNow()` call sites that
+currently `.UtcDateTime` them away). One coordinated migration-touching change, not piecemeal — a lone
+`DateTimeOffset` next to `DateTime` neighbours is worse than uniform.
