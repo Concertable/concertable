@@ -23,6 +23,17 @@ Branches are named `<Type>/<Name>` with the type prefix **capitalized**: `Featur
 
 **Docs and plans are exempt from branch hygiene.** Non-code markdown — `plans/*.md`, any `TECH_DEBT.md`, scratch notes — is non-breaking and never affects a build or another PR, so just commit it on whatever branch you're already on. Don't branch for it, don't split it into its own commit, and don't worry if `git add -A` sweeps a stray plan/doc into a feature commit — bundling doc-only changes is fine, not worth a force-push to tidy up.
 
+## Confirming a PR merge — Bash background until-loop, never `Monitor`
+
+After enabling auto-merge (or when a merge lands async via the merge queue), confirm the merge with a **Bash `run_in_background` until-loop** that exits the instant `gh pr view <PR> --json state -q .state` is `MERGED` or `CLOSED` — that gives one immediate completion notification.
+
+- **Never use the `Monitor` tool** for a single "tell me when it merges" — it's for streaming many events, and its detached poller silently missed merges here (it timed out instead of firing).
+- **Never swallow poll errors** (`2>/dev/null || continue`) — a broken `gh` then looks identical to "still waiting". Capture stderr into the state (`2>&1`), echo the state every poll, and **cap** the loop so a persistent failure surfaces instead of hanging forever.
+
+```bash
+pr=<PR>; max=120; i=0; while :; do i=$((i+1)); state=$(gh pr view "$pr" --json state -q .state 2>&1); echo "poll $i: state=[$state]"; case "$state" in MERGED|CLOSED) echo ">>> PR #$pr $state"; exit 0;; esac; [ "$i" -ge "$max" ] && { echo ">>> PR #$pr still [$state] after $max polls — surfacing"; exit 1; }; sleep 30; done
+```
+
 ## E2E suites — Docker health first, always
 
 This section is **how** to run E2E safely. **Whether** to run it for a given change is a judgment
