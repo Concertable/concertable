@@ -118,19 +118,32 @@ service's own Domain tidy affects only that service — clean single-PR phases. 
 are touched once, not twice.
 
 - **Phase 1 — Shared foundations.** Kernel VOs → `ValueObjects/`; shared `Contracts/Genre` → `Enums/`.
-  ⚠️ **RESOLVED as package-refs → a two-merge cut-over (see Risk below). Do NOT do it as one PR.**
-  - **Merge 1 (shared expand) — DONE, in the working tree on `Refactor/DomainStereotypeLayout`.** Moved
-    the 5 files + updated the **10 source-built (ProjectReference) shared-area consumers only**. Service
-    deployable closures + all shared source build **green** (they stay on the old pinned package). The
-    only red in `Concertable.slnx` is the **2 boundary-exempt harnesses** below — structural, unfixable
-    pre-publish (they mix source-new-namespace with package-old-namespace assemblies whose public APIs
-    still expose `Concertable.Contracts.Genre` / `Concertable.Kernel.DateRange`). Push Merge 1 → publish.
-  - **Merge 2 (platform-sync, after publish) — NOT done.** `platform-sync.yml` bumps every service's
-    `ConcertablePlatformVersion` to the republished package; migrate the package consumers' `using`s
-    there (services + the 2 harnesses: `Concertable.B2B.Concert.IntegrationTests`,
-    `Concertable.Search.IntegrationTests`), **re-scaffold migrations** (`./initial-migrations.ps1`), and
-    only then can the **old-namespace grep gate reach zero**. The plan stays open until Merge 2 lands and
-    the tree is in sync.
+  ⚠️ **RESOLVED as package-refs → a THREE-merge cut-over (see Risk below). Originally scoped as two;
+  execution found a third cross-service package — `Concertable.B2B.Seed.Contracts` — that also exposes
+  the moved types, adding one more publish hop.**
+  - **Merge 1 (shared expand) — DONE. Landed as PR #126 (admin-merge, squash `df7ed06b`).** Moved the 5
+    files + updated the 10 source-built (ProjectReference) shared-area consumers. Only red was the 2
+    boundary-exempt harnesses (structural, unfixable pre-publish). Merged → `Kernel`/`Contracts`@0.590
+    republished with the new namespaces.
+  - **Merge 2 (platform-sync + consumer migration) — SOURCE DONE, on `chore/platform-sync-0.1.0-alpha.0.590`
+    (PR #127).** Bot bumped `ConcertablePlatformVersion` → 0.590; migrated **every** package consumer's
+    usings — 56 projects' `GlobalUsings` gained `Kernel.ValueObjects`/`Contracts.Enums`, ~30 file-local
+    stragglers (Contracts events, Seed catalogs/specs/factories, the 2 harnesses, unit tests) fixed
+    replace-vs-add. **B2B builds green.** Grep gate clean in hand-written source (only migration snapshots
+    remain — the allowlist).
+    - ⚠️ **Customer + Search are EXPECTED-RED here (22 `CS7069`).** Their deployable services depend
+      (via seed infra) on the **`Concertable.B2B.Seed.Contracts` package**, which — published at Merge 1
+      against the old platform — still exposes `Concertable.Contracts.Genre` / `Concertable.Kernel.DateRange`.
+      Not a source bug (the boundary guardrail forbids source-refs; it's not in the `UseLocalCore` swap
+      list). Clears only when `B2B.Seed.Contracts` republishes — i.e. when Merge 2 itself lands. Same
+      expand/contract shape as Merge 1's harnesses, one package deeper.
+    - Publish still works: the red seed-infra projects are non-packable and no packable project depends
+      on them, so `dotnet pack` republishes `B2B.Seed.Contracts`@new fine (verified). Admin-merge → publish.
+    - **Re-scaffold deferred to Merge 3** — Customer/Search can't build (so can't re-scaffold) until their
+      `B2B.Seed.Contracts` pin advances; do the whole re-scaffold in one pass when the tree is green.
+  - **Merge 3 (final platform-sync) — NOT done.** Next `platform-sync` bump pulls in `B2B.Seed.Contracts`@new
+    → Customer/Search compile clean. Then **re-scaffold all modules** (`./initial-migrations.ps1`) and the
+    **old-namespace grep gate reaches zero**. Plan stays open until Merge 3 lands and the tree is in sync.
 - **Phase 2 — B2B.** All B2B module Domain reorgs + B2B `*.Contracts` enum moves. Re-scaffold. B2B build +
   unit + integration green.
 - **Phase 3 — Customer.** Customer Domain reorgs + any Customer `*.Contracts` enums. Re-scaffold. Green.
