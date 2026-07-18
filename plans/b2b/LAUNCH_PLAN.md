@@ -20,10 +20,10 @@
 - [x] ✅ **E-signed booking agreement** — shipped (`Feature/BookingAgreement`): click-wrap consent at Apply + Accept, agreed terms snapshotted at Accept (immutable `BookingAgreementEntity`, terms-fingerprint guard against mid-flight edits), PDF via `IPdfService` (`BookingAgreementDocument`, generated background-at-Accept with a lazy render-on-download fallback, stored under the `agreements/` blob prefix), both-party-authorized `GET /api/Application/{id}/agreement` + `/agreement/pdf` endpoints, HATEOAS `agreement` link, download links in both manager SPAs. **Advanced-tier self-hosted e-signature** (typed full name required + optional drawn signature, rendered into the PDF Signatures block; no third party / no per-signature cost) — upgraded from the original Tier 1 click-wrap. LEGAL_REQUIREMENTS item 2.
 - [x] ✅ **DoorSplit/Versus door-take entry at settlement** — shipped (`Feature/DoorRevenueSettlement`): the venue declares the **external** door take on an ended, still-`Booked` revenue-share concert (`POST /api/Concert/{id}/door-revenue`, venue-tenant guarded, HATEOAS-gated "Enter door takings" action in the venue SPA). Settlement charges the artist's % of **`TicketsSold × Price + DoorRevenue`** — Concertable's own ticket sales **plus** the declared external take, never either alone. The "awaiting declaration" rule is single-sourced via a composable `PredicateSpecification` combinator (published to Kernel, platform `.576`), shared by the completion sweep and a backend `AwaitingDoorRevenue` KPI. **All four contract types now settle.** See §1 / R9.
 - [x] ✅ **DAC7 onboarding completion** — shipped (`Feature/Dac7Onboarding`): fail-closed DAC7 payout gate + jurisdiction seam (UK-only, keyed strategy) + tax-details nag on both dashboards; VAT collapsed to a single number. NINO / UTR / Company-Reg on `Tenant.Compliance`; no payout until the payee tenant is jurisdiction-complete (no de-minimis for services — reportable from £1).
-- [ ] 🟠 **Self-billed VAT invoice engine** — HMRC legends, per-supplier agreement + annual renewal, VAT-status branching (items 1, 3, 4).
+- [ ] 🟡 **Self-billed VAT invoice engine** — invoice generation **shipped** (`Feature/VatAndSelfBilledInvoicing`): per-settlement immutable invoice, gap-free per-supplier numbering, VAT-status branching (inclusive-gross decompose), HMRC self-billing legends + both parties' VAT numbers, PDF via `IPdfService` (lazy render-on-download, `invoices/` prefix), two-party-scoped `GET /api/Concert/{id}/invoice[/pdf]` + HATEOAS link (items 1, 3, 4). **Outstanding:** the per-supplier self-billing *agreement* + 12-month renewal consent record.
 - [ ] 🟡 **`holdsMusicLicence` attestation** on `Tenant.Compliance` (~0.5 day; the venue's responsibility, we just record it).
 - [ ] 🟡 **Finish Swim-lane B** — membership/invitation endpoints + auth sweep + messaging group-inbox (USER_MODEL_PLAN Phases 6-8).
-- [ ] 🟡 **Per-contract-type VAT calculation** (items 1, 3).
+- [x] ✅ **Per-contract-type VAT calculation** — shipped (`Feature/VatAndSelfBilledInvoicing`): inclusive-gross decomposition branching on supply direction + supplier VAT-registration status, in the Tenant tax area, consumed by Concert via `ITenantModule` (items 1, 3).
 - [ ] 🔴 **Production deployment + config/secrets** — the app has **no** deployment path, config store, or secret store (all local Aspire + emulators; secrets committed to source, incl. a plaintext Azure SQL password). Surfaced 2026-07-17. Hard launch gate. Plan: [../CONFIG_AND_DEPLOYMENT.md](../CONFIG_AND_DEPLOYMENT.md).
 
 **Verify before trusting — competitor table-stakes, not confirmed in code:** reviews/reputation end-to-end · calendar sync (Google/Apple/Outlook) · financial/settlement CSV export · pricing-transparency UI.
@@ -133,8 +133,8 @@ Stripe production approval (~2-4 weeks elapsed)
 | Music licence attestation field (on `Tenant.Compliance`) = PRS self-licensed flag | 0.5 days | Phase 1 | Month 1 |
 | Tenant configuration surface (PRS / VAT / platform fee / payment terms / cancellation defaults) | 1-2 days | Phase 1 | Month 1-2 |
 | Booking agreement + click-wrap e-signature at Accept (snapshot terms, PDF via `IPdfService`) — `LEGAL_REQUIREMENTS.md` item 2 | 3-5 days | Phase 4 (Booking snapshot), `IPdfService` | Month 4 |
-| Per-contract-type VAT calculation (branches on supply direction + supplier VAT status) — items 1, 3 | 2-3 days | Tenant config (VAT fields) | Month 5 |
-| Self-billed VAT invoice generation per settlement (sequential numbering, HMRC fields, PDF) — item 4 | 2-3 days | VAT calculation, agreement PDF plumbing | Month 5 |
+| ✅ Per-contract-type VAT calculation (branches on supply direction + supplier VAT status) — items 1, 3 | 2-3 days | Tenant config (VAT fields) | done |
+| ✅ Self-billed VAT invoice generation per settlement (sequential numbering, HMRC fields, PDF) — item 4 · self-billing *agreement* + renewal still outstanding | 2-3 days | VAT calculation, agreement PDF plumbing | done |
 | Cookie consent banner on 3 SPAs (scaffolding) | 1-2 days | – (scaffolding can land before solicitor text) | Month 2 |
 | Cookie banner text + privacy policy text from solicitor → wired into banner | 0.5 days | Solicitor draft (Month 4) | Month 4 |
 | Pricing transparency UI in checkout (all fees pre-checkout) | 1-2 days | Revenue model decision | Month 3 |
@@ -182,7 +182,7 @@ Concrete checklist for Month 6. Don't launch without all of these green.
 - [ ] ComplianceContext snapshot populated on every Booking created post-launch
 - [ ] Auth checks routed through tenant membership (not legacy TPH FK)
 - [x] Booking agreement generated + click-wrap consent recorded at every Accept
-- [ ] VAT calculated per contract type + self-billed invoice generated per settlement
+- [x] VAT calculated per contract type + self-billed invoice generated per settlement
 - [ ] Tenant config surface live (PRS / VAT / fee / payment terms read from it, not constants)
 - [ ] Pre-launch dataset cleared / fresh seeded
 
