@@ -117,7 +117,7 @@ service's own Domain tidy affects only that service — clean single-PR phases. 
 (Kernel, `*.Contracts`, shared `Contracts`) are the ones with reach — do those first so consumer `using`s
 are touched once, not twice.
 
-- **Phase 1 — Shared foundations.** Kernel VOs → `ValueObjects/`; shared `Contracts/Genre` → `Enums/`.
+- **✅ Phase 1 — Shared foundations — DONE.** Kernel VOs → `ValueObjects/`; shared `Contracts/Genre` → `Enums/`.
   ⚠️ **RESOLVED as package-refs → a THREE-merge cut-over (see Risk below). Originally scoped as two;
   execution found a third cross-service package — `Concertable.B2B.Seed.Contracts` — that also exposes
   the moved types, adding one more publish hop.**
@@ -125,8 +125,8 @@ are touched once, not twice.
     files + updated the 10 source-built (ProjectReference) shared-area consumers. Only red was the 2
     boundary-exempt harnesses (structural, unfixable pre-publish). Merged → `Kernel`/`Contracts`@0.590
     republished with the new namespaces.
-  - **Merge 2 (platform-sync + consumer migration) — SOURCE DONE, on `chore/platform-sync-0.1.0-alpha.0.590`
-    (PR #127).** Bot bumped `ConcertablePlatformVersion` → 0.590; migrated **every** package consumer's
+  - **Merge 2 (platform-sync + consumer migration) — DONE. Landed as PR #127 (admin-merge, squash `a5e9e38b`).**
+    Bot bumped `ConcertablePlatformVersion` → 0.590; migrated **every** package consumer's
     usings — 56 projects' `GlobalUsings` gained `Kernel.ValueObjects`/`Contracts.Enums`, ~30 file-local
     stragglers (Contracts events, Seed catalogs/specs/factories, the 2 harnesses, unit tests) fixed
     replace-vs-add. **B2B builds green.** Grep gate clean in hand-written source (only migration snapshots
@@ -141,9 +141,15 @@ are touched once, not twice.
       on them, so `dotnet pack` republishes `B2B.Seed.Contracts`@new fine (verified). Admin-merge → publish.
     - **Re-scaffold deferred to Merge 3** — Customer/Search can't build (so can't re-scaffold) until their
       `B2B.Seed.Contracts` pin advances; do the whole re-scaffold in one pass when the tree is green.
-  - **Merge 3 (final platform-sync) — NOT done.** Next `platform-sync` bump pulls in `B2B.Seed.Contracts`@new
-    → Customer/Search compile clean. Then **re-scaffold all modules** (`./initial-migrations.ps1`) and the
-    **old-namespace grep gate reaches zero**. Plan stays open until Merge 3 lands and the tree is in sync.
+  - **Merge 3 (final platform-sync) — DONE, on `Refactor/DomainStereotypeLayout-Merge3`.** Bumped
+    `ConcertablePlatformVersion` → **0.591 manually** (see note), pulling in `B2B.Seed.Contracts`@0.591 with
+    the new namespaces → Customer/Search compile clean. Fixed the last 12 Customer no-globals stragglers
+    (test/Api-Response files Merge 2 couldn't reach while blocked). Re-scaffolded all 22 contexts
+    (`./initial-migrations.ps1`) → **old-namespace grep gate = 0**, full `Concertable.slnx` build green.
+    - ⚠️ **Why manual:** platform-sync's **cascade guard** ("triggering commit is a platform-sync pin bump
+      — nothing to sync") suppressed the auto-bump PR, because Merge 2 rode the platform-sync branch. The
+      publish still advanced to 0.591 (Merge 2 added real source), so the pins genuinely needed 0.590→0.591;
+      the guard just didn't open it. Did the bump by hand.
 - **Phase 2 — B2B.** All B2B module Domain reorgs + B2B `*.Contracts` enum moves. Re-scaffold. B2B build +
   unit + integration green.
 - **Phase 3 — Customer.** Customer Domain reorgs + any Customer `*.Contracts` enums. Re-scaffold. Green.
