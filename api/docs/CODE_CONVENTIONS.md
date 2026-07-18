@@ -89,6 +89,16 @@ The injected `DbContext` field is always named `context` (never `dbContext`) —
 field-naming rule above. Don't hand-roll a bare `IXRepository` that re-implements CRUD;
 inherit the base.
 
+## Table + schema names — the module `Schema.cs` constants
+
+Each persistence module owns a `Schema.cs` (`internal static class Schema`) holding its DB schema name and
+its table names as `const string`s — `Schema.Name` (e.g. `"concert"`) and `Schema.Tables.X` (e.g.
+`Schema.Tables.Invoices`). EF configs reference these — `builder.ToTable(Schema.Tables.Invoices, Schema.Name)` —
+never a bare string literal, so a renamed table changes one constant, not N scattered strings.
+
+Column names need no equivalent: EF names each column after its property, so a config sets one only for a
+deliberate rename (`HasColumnName("Period_Start")`) — and those few stay inline literals, not a constants class.
+
 ## Single-statement branches — no braces
 
 ```csharp
@@ -201,6 +211,22 @@ internal static class EscrowMappers
     public static EscrowStatus ToEscrowStatus(this Proto.EscrowStatusType s) => ...;
 }
 ```
+
+## `#region` — sparingly, to group same-shaped members in an aggregating file
+
+The codebase does **not** use `#region` in ordinary classes — it hides code and usually signals a class
+that should be split. It earns its place in exactly one shape: a single file that legitimately
+**aggregates many same-shaped members**, where grouping by owner/subject is the only practical way to
+navigate.
+
+The canonical case is a project's `Log.cs` — one file holding every `[LoggerMessage]` method for the
+project — partitioned into `#region`s named for the **class/service that emits them**
+(`#region EscrowService`, `#region WebhookProcessor`). Name the region for the thing it groups, never a
+generic label. If a class *isn't* an aggregator of one member shape, don't reach for `#region` — split
+it instead.
+
+(Test classes have the analogous rule — region by method-under-test — in
+[`UNIT_CONVENTIONS.md`](./UNIT_CONVENTIONS.md) / [`INTEGRATION_CONVENTIONS.md`](./INTEGRATION_CONVENTIONS.md).)
 
 ## Logging — source-generated `Log.cs`
 

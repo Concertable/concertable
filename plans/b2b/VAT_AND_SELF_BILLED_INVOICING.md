@@ -208,37 +208,32 @@ Zero money-path behaviour change. Unblocks Phase 2. What landed:
 **Gate met:** `dotnet build api/Concertable.slnx` green; 94 Tenant unit tests + the Tenant integration suite green.
 `TenantServiceTests` covers calculator/policy/facade/completeness; `TenantValidatorsTests` the message. No E2E.
 
-## Phase 2 — Concert: invoice entity + gap-free numbering + mint at settlement (item 4, part 1)
+## Phase 2 — Concert: invoice entity + gap-free numbering + mint at settlement (item 4, part 1) — ✅ SHIPPED
 
-**Tasks**
-1. **Single source of truth for the gross.** `ISettlementAmountResolver` (Concert, keyed by `DealType`):
-   `Task<decimal> ResolveGrossAsync(ConcertEntity concert, CancellationToken ct)` — FlatFee→`deal.Fee`,
-   VenueHire→`deal.HireFee`, DoorSplit/Versus→`ArtistShareCalculator` over `GetTotalRevenueByConcertIdAsync`.
-   **Refactor `PayoutFinishStep` to consume it** so charged and invoiced amounts can't diverge (existing DoorSplit/
-   Versus settlement tests are the safety net — amounts must stay identical).
-2. **`InvoiceEntity`** (Concert.Domain, `IVenueArtistTenantScoped`, immutable private-set snapshot mirroring
-   `ContractEntity`): booking id; `SupplierTenantId`/`CustomerTenantId`; both parties' snapshotted `LegalName`,
-   `VatNumber?`, `RegisteredAddress`; `Net`/`Vat`/`Gross`/`VatRate`; `SequenceNumber` + formatted `InvoiceNumber`;
-   `TaxPointUtc` (= performance/finish date); `DealType`; `PdfBlobName` pre-minted `invoices/{bookingId}-{guid:N}.pdf`;
-   `CreatedAtUtc`. EF owned-type config mirroring `ContractEntityConfiguration`; `./initial-migrations.ps1`.
-3. **Gap-free per-supplier numbering** (new capability). `InvoiceSequenceEntity(Guid TenantId PK, long NextNumber)`.
-   Allocate **inside the mint transaction** via an atomic increment (`UPDATE … SET NextNumber = NextNumber + 1`
-   read-back, or locked-read + rowversion retry); lazily insert the row on a supplier's first invoice. Gap-free holds
-   because allocation + insert share one transaction. Format e.g. `INV-{supplier SellerIdentifier}-{n:D6}`.
-4. **`IInvoiceIssuer.IssueAsync`** — called from `FinishExecutor` **after** the successful Finish transition (after
-   the tax-gate passes; deferred settlements mint nothing):
-   - `gross = ISettlementAmountResolver.ResolveGrossAsync(concert)`
-   - `supplierTenantId = SettlementPayeeResolver.ResolveTenantId(concert)`; customer = `TicketPayeeResolver`
-   - `supplierTax = GetTaxComplianceAsync(supplierTenantId)`, `customerTax = GetTaxComplianceAsync(customerTenantId)` — for the snapshot (VAT/seller id/address/bank ref); each party's **`LegalName` from `GetByIdAsync` → `TenantDto.LegalName`** (the tax DTO carries no legal name)
-   - `vat = GetVatCalculationAsync(supplierTenantId, gross)` — the figures (Net/Vat/Rate); invoice `Gross = gross`
-   - allocate the sequence number; persist `InvoiceEntity`, all in the finish transaction.
-   - Tax point = supply/performance date (not payment-settlement date — sound for the async DoorSplit/Versus pay path).
-5. **Read surface:** `InvoiceDto` + service read + `GET /api/Concert/{id}/invoice` (DTO), two-party scoped.
+Invoice minted per settlement, gap-free per-supplier, atomic with the finish. What landed:
+1. **`ISettlementAmountResolver`** (Concert, keyed facade over `FlatFeeSettlementAmount` / `VenueHireSettlementAmount` /
+   `RevenueShareSettlementAmount`) — the single gross source. **`PayoutFinishStep` refactored to consume it**, so the charged
+   share and the invoiced gross resolve through one place (existing DoorSplit/Versus settlement tests green — amounts identical).
+2. **`InvoiceEntity`** (Concert.Domain, `IVenueArtistTenantScoped`, immutable snapshot). Both parties are an `InvoiceParty`
+   value object (`Supplier`/`Customer` complex properties — legal name, VAT number, address). **AS BUILT — new VO not in the
+   original plan:** the four money figures are a `VatBreakdown` VO (`Net`/`Vat`/`Gross`/`Rate`) enforcing `Net + Vat == Gross`.
+   EF configs mirror `ContractEntityConfiguration`; columns `Amounts_*`/`Supplier_*`/`Customer_*`.
+3. **Gap-free numbering:** `InvoiceSequenceEntity(Guid TenantId PK, long NextNumber, RowVersion)` +
+   `IInvoiceSequenceRepository.AllocateNextAsync`. The increment is EF-tracked and flushed by the finish's **own** `SaveChanges`,
+   so a rollback un-consumes the number (gap-free); `RowVersion` serialises same-supplier concurrency (loser rolls back + retries).
+   Format `INV-{supplier SellerIdentifier}-{n:D6}`.
+4. **`IInvoiceIssuer`** wired **inside** the `FinishExecutor` transition effect (atomic with the finish, self-healing — NOT after
+   `TransitionAsync`). **AS BUILT — gate extended:** the finish tax gate now requires **both** parties tax-complete (payee *and*
+   customer), because the self-billed invoice must carry both parties' VAT details (LEGAL_REQUIREMENTS item 4) — a deliberate
+   extension of the payee-only gate; clean defer if either is incomplete, no behaviour change for complete seed data.
+5. **Read surface:** `InvoiceDto` + `InvoiceService` + `GET /api/Concert/{id}/invoice` (on `ConcertController`, venue-persona,
+   two-party scoped → 404 to strangers, mirroring the Concert-side contract PDF endpoint).
 
-**Gate:** build green; Concert integration tests via `integration-debug`: invoice minted on settlement for **all four
-types** with correct direction/amounts/VAT (registered + unregistered supplier); numbering gap-free, per-supplier,
-safe under concurrent settlements for the same supplier; nothing minted when the tax gate defers.
-`./initial-migrations.ps1`.
+**Gate met:** `dotnet build Concertable.slnx` green; **24 Concert integration tests green** — 8 new `ConcertInvoiceApiTests`
+(all four types' direction/amounts/VAT registered+unregistered, `charged == invoiced`, gap-free per-supplier numbering,
+deferred settlement mints nothing, two-party read) + 16 settlement/gate safety-net tests. `./initial-migrations.ps1` (Concert
+re-scaffolded). No E2E (no money-path behaviour change; invoice not surfaced in an E2E flow yet — that's Phase 3). Also logged
+the `DateTimeOffset` convention as tech debt and documented the `Schema.cs` table-constant convention in `CODE_CONVENTIONS.md`.
 
 ## Phase 3 — Concert: invoice PDF + download + HATEOAS (item 4, part 2) — final phase
 
