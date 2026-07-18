@@ -34,7 +34,7 @@ a harness.)
   "nothing service-specific here" rule — confirm it's actually needed, don't just carry it forward.)*
 - **Solution** — `api/Concertable.slnx`.
 - **Scripts** — `e2e.ps1`, the project's `ui-trace.ps1`.
-- **Docs** — `api/docs/TESTS.md`; the four `.claude/skills/e2e-*/SKILL.md`; the shared E2E `CLAUDE.md`
+- **Docs** — the four `.claude/skills/e2e-*/SKILL.md`; the shared E2E `CLAUDE.md`
   plus the two per-suite pointer docs that link to it
   (`Concertable.B2B.E2ETests.Ui/CLAUDE.md`, `Concertable.Customer.E2ETests.Ui/CLAUDE.md` — fix the
   relative path in their links).
