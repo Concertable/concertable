@@ -12,8 +12,69 @@ on:
       - master
 
 jobs:
+  changes:
+    # Classify the diff once so the rest of CI runs only what's relevant. Three outcomes:
+    #   - non-code    (docs / .claude / .github CI config / plans / reviews / root dotfiles) -> run_code=false, run_e2e=false
+    #                 no app-code impact: build + carve + unit + integration + E2E all no-op. (A CI-config change
+    #                 is validated by the workflow simply running — not by the app test suites.)
+    #   - package-only (nothing but Directory.Packages.props — e.g. platform-sync) -> run_code=true, run_e2e=false
+    #                 a dep bump can break compile/tests so those still gate, but it has ZERO runtime delta so E2E no-ops.
+    #   - anything else                                                       -> run_code=true, run_e2e=true (full CI).
+    # Runs on pull_request AND merge_group AND push so the skip applies on the PR too, not just in the queue.
+    # NOTE: required checks (build / carve-* / e2e-*) still RUN when gated off — they no-op their steps and report
+    # success. A *skipped* required check stalls the merge queue until check_response_timeout (60 min); a green no-op
+    # does not. Non-required jobs (unit-tests / integration-tests) can skip cleanly — ci-gate tolerates skipped needs.
+    runs-on: ubuntu-latest
+    outputs:
+      run_code: ${{ steps.detect.outputs.run_code }}
+      run_e2e: ${{ steps.detect.outputs.run_e2e }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Classify changed files
+        id: detect
+        run: |
+          case "${{ github.event_name }}" in
+            merge_group)  base="${{ github.event.merge_group.base_sha }}";  head="${{ github.event.merge_group.head_sha }}";;
+            pull_request) base="${{ github.event.pull_request.base.sha }}"; head="${{ github.event.pull_request.head.sha }}";;
+            push)         base="${{ github.event.before }}";                head="${{ github.event.after }}";;
+            *)            base=""; head="";;
+          esac
+          echo "event=${{ github.event_name }} base=$base head=$head"
+          # No usable range (missing sha, first push with a zero base, unfetched commit) -> fail safe to full CI.
+          if [ -z "$base" ] || [ -z "$head" ] \
+             || [ "$base" = "0000000000000000000000000000000000000000" ] \
+             || ! git rev-parse -q --verify "$base^{commit}" >/dev/null \
+             || ! git rev-parse -q --verify "$head^{commit}" >/dev/null; then
+            echo "-> no usable diff range; running full CI."
+            echo "run_code=true" >> "$GITHUB_OUTPUT"
+            echo "run_e2e=true"  >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          files=$(git diff --name-only "$base" "$head")
+          echo "Changed files:"; printf '%s\n' "$files"
+          # Inert = cannot affect any build or test: markdown anywhere, and the doc/tooling trees.
+          INERT='(\.md$|^\.claude/|^\.github/|^docs/|^plans/|^reviews/|^\.gitignore$|^\.gitattributes$|^LICENSE$)'
+          PKG='(^|/)Directory\.Packages\.props$'
+          run_code=true
+          run_e2e=true
+          if [ -n "$files" ] && ! printf '%s\n' "$files" | grep -qvE "$INERT"; then
+            run_code=false
+            run_e2e=false
+            echo "-> non-code change; skipping build + carve + unit + integration + E2E."
+          elif [ -n "$files" ] && ! printf '%s\n' "$files" | grep -qvE "$PKG"; then
+            run_e2e=false
+            echo "-> package-only bump; build + carve + unit + integration gate, E2E no-ops."
+          else
+            echo "-> code change; full CI."
+          fi
+          echo "run_code=$run_code" >> "$GITHUB_OUTPUT"
+          echo "run_e2e=$run_e2e"  >> "$GITHUB_OUTPUT"
+
   build:
     runs-on: ubuntu-latest
+    needs: changes
     permissions:
       contents: read
       packages: read
@@ -23,14 +84,21 @@ jobs:
       GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
+      - name: Skip build (no code changed)
+        if: needs.changes.outputs.run_code != 'true'
+        run: echo "No code changed -> nothing to compile; required check reports success."
+
       - uses: actions/checkout@v4
+        if: needs.changes.outputs.run_code == 'true'
 
       - name: Set up .NET
+        if: needs.changes.outputs.run_code == 'true'
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.x'
 
       - name: Cache NuGet packages
+        if: needs.changes.outputs.run_code == 'true'
         uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
@@ -38,6 +106,7 @@ jobs:
           restore-keys: nuget-${{ runner.os }}-
 
       - name: Build solution
+        if: needs.changes.outputs.run_code == 'true'
         run: dotnet build api/Concertable.slnx --configuration Release
 
   carve-auth:
@@ -46,7 +115,7 @@ jobs:
     # Use `git archive`, not `git subtree split`: the split rewrites the folder's whole history and is
     # far too slow for a gate; archive extracts the tracked tree at HEAD instantly (no fetch-depth: 0).
     runs-on: ubuntu-latest
-    needs: build
+    needs: [build, changes]
     permissions:
       contents: read
       packages: read
@@ -55,14 +124,21 @@ jobs:
       GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
+      - name: Skip carve (no code changed)
+        if: needs.changes.outputs.run_code != 'true'
+        run: echo "No code changed -> nothing to carve; required check reports success."
+
       - uses: actions/checkout@v4
+        if: needs.changes.outputs.run_code == 'true'
 
       - name: Set up .NET
+        if: needs.changes.outputs.run_code == 'true'
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.x'
 
       - name: Cache NuGet packages
+        if: needs.changes.outputs.run_code == 'true'
         uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
@@ -70,6 +146,7 @@ jobs:
           restore-keys: nuget-${{ runner.os }}-
 
       - name: Carve api/Concertable.Auth into a standalone tree
+        if: needs.changes.outputs.run_code == 'true'
         run: |
           mkdir -p "$RUNNER_TEMP/carve"
           git archive HEAD:api/Concertable.Auth | tar -x -C "$RUNNER_TEMP/carve"
@@ -77,6 +154,7 @@ jobs:
           ls -la "$RUNNER_TEMP/carve"
 
       - name: Restore + build the carved Auth from the feed (packages only)
+        if: needs.changes.outputs.run_code == 'true'
         working-directory: ${{ runner.temp }}/carve
         run: dotnet build src/Concertable.Auth/Concertable.Auth.csproj --configuration Release
 
@@ -89,7 +167,7 @@ jobs:
     # Concertable.E2ETests) that are absent from the carve and exempt by design (composition / E2E
     # harness layers). The solution lists every package-clean project so each is built directly.
     runs-on: ubuntu-latest
-    needs: build
+    needs: [build, changes]
     permissions:
       contents: read
       packages: read
@@ -98,14 +176,21 @@ jobs:
       GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
+      - name: Skip carve (no code changed)
+        if: needs.changes.outputs.run_code != 'true'
+        run: echo "No code changed -> nothing to carve; required check reports success."
+
       - uses: actions/checkout@v4
+        if: needs.changes.outputs.run_code == 'true'
 
       - name: Set up .NET
+        if: needs.changes.outputs.run_code == 'true'
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.x'
 
       - name: Cache NuGet packages
+        if: needs.changes.outputs.run_code == 'true'
         uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
@@ -113,6 +198,7 @@ jobs:
           restore-keys: nuget-${{ runner.os }}-
 
       - name: Carve api/Concertable.Payment into a standalone tree
+        if: needs.changes.outputs.run_code == 'true'
         run: |
           mkdir -p "$RUNNER_TEMP/carve"
           git archive HEAD:api/Concertable.Payment | tar -x -C "$RUNNER_TEMP/carve"
@@ -120,6 +206,7 @@ jobs:
           ls -la "$RUNNER_TEMP/carve"
 
       - name: Restore + build the carved Payment deployable closure from the feed (packages only)
+        if: needs.changes.outputs.run_code == 'true'
         working-directory: ${{ runner.temp }}/carve
         # One closure-only solution → a single feed restore, and every package-clean project is built
         # directly, so a future ref-removal can't orphan one from the gate (e.g. Api, reached only via Web).
@@ -148,7 +235,7 @@ jobs:
     # (composition / test-harness layers). The solution lists every package-clean project so each is
     # built directly. Search publishes nothing, so its folder carries no MinVer (no MinVerSkip needed).
     runs-on: ubuntu-latest
-    needs: build
+    needs: [build, changes]
     permissions:
       contents: read
       packages: read
@@ -157,14 +244,21 @@ jobs:
       GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
+      - name: Skip carve (no code changed)
+        if: needs.changes.outputs.run_code != 'true'
+        run: echo "No code changed -> nothing to carve; required check reports success."
+
       - uses: actions/checkout@v4
+        if: needs.changes.outputs.run_code == 'true'
 
       - name: Set up .NET
+        if: needs.changes.outputs.run_code == 'true'
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.x'
 
       - name: Cache NuGet packages
+        if: needs.changes.outputs.run_code == 'true'
         uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
@@ -172,6 +266,7 @@ jobs:
           restore-keys: nuget-${{ runner.os }}-
 
       - name: Carve api/Concertable.Search into a standalone tree
+        if: needs.changes.outputs.run_code == 'true'
         run: |
           mkdir -p "$RUNNER_TEMP/carve"
           git archive HEAD:api/Concertable.Search | tar -x -C "$RUNNER_TEMP/carve"
@@ -179,6 +274,7 @@ jobs:
           ls -la "$RUNNER_TEMP/carve"
 
       - name: Restore + build the carved Search deployable closure from the feed (packages only)
+        if: needs.changes.outputs.run_code == 'true'
         working-directory: ${{ runner.temp }}/carve
         # One closure-only solution → a single feed restore, and every package-clean project is built
         # directly, so a future ref-removal can't orphan one from the gate (e.g. Api, reached only via Web).
@@ -205,7 +301,7 @@ jobs:
     # csproj that is not a test or AppHost project" — every package-clean project is built directly, and
     # a new closure project (or a leaf reached only transitively) is picked up automatically, never orphaned.
     runs-on: ubuntu-latest
-    needs: build
+    needs: [build, changes]
     permissions:
       contents: read
       packages: read
@@ -214,14 +310,21 @@ jobs:
       GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
+      - name: Skip carve (no code changed)
+        if: needs.changes.outputs.run_code != 'true'
+        run: echo "No code changed -> nothing to carve; required check reports success."
+
       - uses: actions/checkout@v4
+        if: needs.changes.outputs.run_code == 'true'
 
       - name: Set up .NET
+        if: needs.changes.outputs.run_code == 'true'
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.x'
 
       - name: Cache NuGet packages
+        if: needs.changes.outputs.run_code == 'true'
         uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
@@ -229,6 +332,7 @@ jobs:
           restore-keys: nuget-${{ runner.os }}-
 
       - name: Carve api/Concertable.B2B into a standalone tree
+        if: needs.changes.outputs.run_code == 'true'
         run: |
           mkdir -p "$RUNNER_TEMP/carve"
           git archive HEAD:api/Concertable.B2B | tar -x -C "$RUNNER_TEMP/carve"
@@ -236,6 +340,7 @@ jobs:
           ls -la "$RUNNER_TEMP/carve"
 
       - name: Restore + build the carved B2B deployable closure from the feed (packages only)
+        if: needs.changes.outputs.run_code == 'true'
         working-directory: ${{ runner.temp }}/carve
         # MinVerSkip: the carved tree has no .git, so MinVer can't derive a version — irrelevant for a build-only gate.
         run: |
@@ -265,7 +370,7 @@ jobs:
     # not a test or AppHost project" — every package-clean project is built directly, and a new closure
     # project (or a leaf reached only transitively) is picked up automatically, never orphaned.
     runs-on: ubuntu-latest
-    needs: build
+    needs: [build, changes]
     permissions:
       contents: read
       packages: read
@@ -274,14 +379,21 @@ jobs:
       GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
+      - name: Skip carve (no code changed)
+        if: needs.changes.outputs.run_code != 'true'
+        run: echo "No code changed -> nothing to carve; required check reports success."
+
       - uses: actions/checkout@v4
+        if: needs.changes.outputs.run_code == 'true'
 
       - name: Set up .NET
+        if: needs.changes.outputs.run_code == 'true'
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.x'
 
       - name: Cache NuGet packages
+        if: needs.changes.outputs.run_code == 'true'
         uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
@@ -289,6 +401,7 @@ jobs:
           restore-keys: nuget-${{ runner.os }}-
 
       - name: Carve api/Concertable.Customer into a standalone tree
+        if: needs.changes.outputs.run_code == 'true'
         run: |
           mkdir -p "$RUNNER_TEMP/carve"
           git archive HEAD:api/Concertable.Customer | tar -x -C "$RUNNER_TEMP/carve"
@@ -296,6 +409,7 @@ jobs:
           ls -la "$RUNNER_TEMP/carve"
 
       - name: Restore + build the carved Customer deployable closure from the feed (packages only)
+        if: needs.changes.outputs.run_code == 'true'
         working-directory: ${{ runner.temp }}/carve
         # MinVerSkip: the carved tree has no .git, so MinVer can't derive a version — irrelevant for a build-only gate.
         run: |
@@ -316,7 +430,9 @@ jobs:
 
   unit-tests:
     runs-on: ubuntu-latest
-    needs: build
+    needs: [build, changes]
+    # Not a required check (ci-gate aggregates it) — so it can skip cleanly for a non-code change.
+    if: needs.changes.outputs.run_code == 'true'
     permissions:
       contents: read
       packages: read
@@ -362,7 +478,9 @@ jobs:
 
   integration-tests:
     runs-on: ubuntu-latest
-    needs: build
+    needs: [build, changes]
+    # Not a required check (ci-gate aggregates it) — so it can skip cleanly for a non-code change.
+    if: needs.changes.outputs.run_code == 'true'
     permissions:
       contents: read
       packages: read
@@ -415,33 +533,7 @@ jobs:
             echo "A unit/integration matrix job failed or was cancelled — blocking the merge."
             exit 1
           fi
-          echo "All unit + integration jobs passed."
-
-  changes:
-    # Detect a package-only merge (a pure Directory.Packages.props version bump — e.g. the
-    # platform-sync PRs). That has ZERO runtime behaviour, so the E2E jobs below no-op for it. They
-    # still RUN and report success: e2e-api-tests / e2e-ui-tests are required checks, and a *skipped*
-    # required check stalls the merge queue until timeout. unit + integration (via ci-gate) still gate.
-    runs-on: ubuntu-latest
-    if: github.event_name == 'merge_group'
-    outputs:
-      package_only: ${{ steps.detect.outputs.package_only }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Detect package-only change
-        id: detect
-        run: |
-          files=$(git diff --name-only "${{ github.event.merge_group.base_sha }}" "${{ github.event.merge_group.head_sha }}")
-          echo "Changed files in this merge group:"; printf '%s\n' "$files"
-          if [ -n "$files" ] && ! printf '%s\n' "$files" | grep -qvE '(^|/)Directory\.Packages\.props$'; then
-            echo "package_only=true" >> "$GITHUB_OUTPUT"
-            echo "-> package-only (Directory.Packages.props only); E2E will no-op."
-          else
-            echo "package_only=false" >> "$GITHUB_OUTPUT"
-            echo "-> not package-only; E2E runs."
-          fi
+          echo "All unit + integration jobs passed (or were skipped for a non-code change)."
 
   e2e-api-tests:
     runs-on: ubuntu-latest
@@ -463,21 +555,21 @@ jobs:
       ServiceAuth__AuthClientSecret: ${{ secrets.SERVICE_AUTH_AUTH_CLIENT_SECRET }}
 
     steps:
-      - name: Skip API E2E for package-only change
-        if: needs.changes.outputs.package_only == 'true'
-        run: echo "Package-only merge -> skipping API E2E; build + carve + unit + integration gate this."
+      - name: Skip API E2E (no runtime change)
+        if: needs.changes.outputs.run_e2e != 'true'
+        run: echo "No runtime change (non-code or package-only) -> skipping API E2E; build + carve + unit + integration gate this."
 
       - uses: actions/checkout@v4
-        if: needs.changes.outputs.package_only != 'true'
+        if: needs.changes.outputs.run_e2e == 'true'
 
       - name: Set up .NET
-        if: needs.changes.outputs.package_only != 'true'
+        if: needs.changes.outputs.run_e2e == 'true'
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.x'
 
       - name: Cache NuGet packages
-        if: needs.changes.outputs.package_only != 'true'
+        if: needs.changes.outputs.run_e2e == 'true'
         uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
@@ -485,13 +577,13 @@ jobs:
           restore-keys: nuget-${{ runner.os }}-
 
       - name: Provision HTTPS dev certificate
-        if: needs.changes.outputs.package_only != 'true'
+        if: needs.changes.outputs.run_e2e == 'true'
         run: |
           dotnet dev-certs https --trust || true  # Linux trust exits 4, but the cert is still generated
           echo "SSL_CERT_DIR=$HOME/.aspnet/dev-certs/trust:/etc/ssl/certs:/usr/lib/ssl/certs" >> "$GITHUB_ENV"
 
       - name: Install Stripe CLI
-        if: needs.changes.outputs.package_only != 'true'
+        if: needs.changes.outputs.run_e2e == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -502,7 +594,7 @@ jobs:
           stripe version
 
       - name: Install Azure Functions Core Tools
-        if: needs.changes.outputs.package_only != 'true'
+        if: needs.changes.outputs.run_e2e == 'true'
         # The B2B Workers host is an Azure Functions (v4) app; Aspire launches it via `dotnet run`,
         # which shells out to the `func` Core Tools. Without them the host never binds, so the
         # ConcertFinished* tests get "Connection refused (localhost:7078)" when triggering the timer.
@@ -511,15 +603,15 @@ jobs:
           func --version
 
       - name: Run B2B API E2E tests
-        if: needs.changes.outputs.package_only != 'true'
+        if: needs.changes.outputs.run_e2e == 'true'
         run: dotnet test api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests/Concertable.B2B.E2ETests.csproj --configuration Release --settings api/Concertable.runsettings
 
       - name: Run Customer API E2E tests
-        if: needs.changes.outputs.package_only != 'true'
+        if: needs.changes.outputs.run_e2e == 'true'
         run: dotnet test api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests/Concertable.Customer.E2ETests.csproj --configuration Release --settings api/Concertable.runsettings
 
       - name: Upload E2E diagnostics
-        if: always() && needs.changes.outputs.package_only != 'true'
+        if: always() && needs.changes.outputs.run_e2e == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: e2e-api-diagnostics
@@ -545,21 +637,21 @@ jobs:
       ServiceAuth__AuthClientSecret: ${{ secrets.SERVICE_AUTH_AUTH_CLIENT_SECRET }}
 
     steps:
-      - name: Skip UI E2E for package-only change
-        if: needs.changes.outputs.package_only == 'true'
-        run: echo "Package-only merge -> skipping UI E2E; build + carve + unit + integration gate this."
+      - name: Skip UI E2E (no runtime change)
+        if: needs.changes.outputs.run_e2e != 'true'
+        run: echo "No runtime change (non-code or package-only) -> skipping UI E2E; build + carve + unit + integration gate this."
 
       - uses: actions/checkout@v4
-        if: needs.changes.outputs.package_only != 'true'
+        if: needs.changes.outputs.run_e2e == 'true'
 
       - name: Set up .NET
-        if: needs.changes.outputs.package_only != 'true'
+        if: needs.changes.outputs.run_e2e == 'true'
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.x'
 
       - name: Cache NuGet packages
-        if: needs.changes.outputs.package_only != 'true'
+        if: needs.changes.outputs.run_e2e == 'true'
         uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
@@ -567,13 +659,13 @@ jobs:
           restore-keys: nuget-${{ runner.os }}-
 
       - name: Provision HTTPS dev certificate
-        if: needs.changes.outputs.package_only != 'true'
+        if: needs.changes.outputs.run_e2e == 'true'
         run: |
           dotnet dev-certs https --trust || true  # Linux trust exits 4, but the cert is still generated
           echo "SSL_CERT_DIR=$HOME/.aspnet/dev-certs/trust:/etc/ssl/certs:/usr/lib/ssl/certs" >> "$GITHUB_ENV"
 
       - name: Install Stripe CLI
-        if: needs.changes.outputs.package_only != 'true'
+        if: needs.changes.outputs.run_e2e == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -584,7 +676,7 @@ jobs:
           stripe version
 
       - name: Install Azure Functions Core Tools
-        if: needs.changes.outputs.package_only != 'true'
+        if: needs.changes.outputs.run_e2e == 'true'
         # Same as the API E2E job: the full AppHost boots the B2B Workers Azure Functions host,
         # which needs the `func` Core Tools on PATH to launch.
         run: |
@@ -592,13 +684,13 @@ jobs:
           func --version
 
       - name: Set up Node
-        if: needs.changes.outputs.package_only != 'true'
+        if: needs.changes.outputs.run_e2e == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '22'
 
       - name: Install web SPA dependencies
-        if: needs.changes.outputs.package_only != 'true'
+        if: needs.changes.outputs.run_e2e == 'true'
         # The UI E2E AppHost serves the venue/artist/business/customer SPAs via `npm run dev` (Vite).
         # They live in the app/ npm workspace; node_modules is gitignored, so without this the dev
         # servers never start and every scenario fails at warm-up with ERR_CONNECTION_REFUSED.
@@ -606,29 +698,29 @@ jobs:
         run: npm ci
 
       - name: Build B2B UI E2E tests
-        if: needs.changes.outputs.package_only != 'true'
+        if: needs.changes.outputs.run_e2e == 'true'
         run: dotnet build api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui/Concertable.B2B.E2ETests.Ui.csproj --configuration Release
 
       - name: Build Customer UI E2E tests
-        if: needs.changes.outputs.package_only != 'true'
+        if: needs.changes.outputs.run_e2e == 'true'
         run: dotnet build api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui/Concertable.Customer.E2ETests.Ui.csproj --configuration Release
 
       - name: Install Playwright browsers
-        if: needs.changes.outputs.package_only != 'true'
+        if: needs.changes.outputs.run_e2e == 'true'
         run: pwsh api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
 
       - name: Run B2B UI E2E tests
-        if: needs.changes.outputs.package_only != 'true'
+        if: needs.changes.outputs.run_e2e == 'true'
         run: dotnet test api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui/Concertable.B2B.E2ETests.Ui.csproj --configuration Release --no-build --settings api/Concertable.runsettings
 
       - name: Run Customer UI E2E tests
-        if: needs.changes.outputs.package_only != 'true'
+        if: needs.changes.outputs.run_e2e == 'true'
         run: dotnet test api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui/Concertable.Customer.E2ETests.Ui.csproj --configuration Release --no-build --settings api/Concertable.runsettings
 
       - name: Upload E2E diagnostics
         # Server logs + Playwright traces/screenshots for diagnosing a UI failure. Failure-only:
         # the trace bundle is large (~hundreds of MB), so don't upload it on green runs.
-        if: failure() && needs.changes.outputs.package_only != 'true'
+        if: failure() && needs.changes.outputs.run_e2e == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: e2e-ui-diagnostics
