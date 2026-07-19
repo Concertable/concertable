@@ -116,10 +116,11 @@ jobs:
           Bumps every service's \`<ConcertablePlatformVersion>\` to \`${VERSION}\`.
 
           A pin bump is a **package-only** change, so \`test.yml\` gates it on build + unit + integration and
-          **no-ops E2E**. This job admin-merges the moment those are green — it does NOT wait in the merge queue:
-          - **Green** → non-breaking; merges immediately, no review, no E2E.
-          - **Red** → a published contract changed shape. The merge is held; migrate the failing consumers
-            **in this PR** (now legal — \`${VERSION}\` is on the feed) and push; re-run to land it.
+          **no-ops E2E**. Auto-merge is on — the merge queue lands it the moment those are green (its E2E gate
+          has nothing to run for a package-only change, so there's no E2E wait):
+          - **Green** → non-breaking; merges itself, no review, no E2E.
+          - **Red** → a published contract changed shape. Auto-merge holds; migrate the failing consumers
+            **in this PR** (now legal — \`${VERSION}\` is on the feed) and push; it lands once CI greens.
           EOF
           )
           if ! gh pr view "$branch" --json number >/dev/null 2>&1; then
@@ -146,21 +147,16 @@ jobs:
                 --comment "Superseded by the sync to \`${VERSION}\`. Only one platform-sync PR is ever live."
             done
 
-      - name: Merge immediately on green (bypass the merge queue)
+      - name: Enable auto-merge (the merge queue lands it once green)
         if: steps.guard.outputs.skip == 'false' && steps.bump.outputs.already-synced == 'false'
         env:
           VERSION: ${{ steps.ver.outputs.version }}
         run: |
           set -euo pipefail
           branch="chore/platform-sync-${VERSION}"
-          # A pin bump has nothing the merge queue's E2E gate can test (E2E no-ops for package-only), and queueing is
-          # exactly where these used to stall — auto-merge would silently drop and the PR sat green forever. So wait
-          # for the required PR checks to conclude, then admin-merge (repo-Admin is the queue ruleset's bypass actor).
-          #   green -> lands instantly, no queue; red -> a breaking bump, leave it open for the in-PR migration above.
-          if gh pr checks "$branch" --watch --required --fail-fast; then
-            gh pr merge --squash --admin "$branch"
-            echo "Merged ${VERSION} (build + unit + integration green; queue bypassed)."
-          else
-            echo "Required checks are red for ${VERSION} — breaking bump. Leaving the PR open to migrate in-place."
-            exit 0
-          fi
+          # Enable auto-merge with NO strategy flag. master has a merge queue, so the queue owns the merge method:
+          # passing --squash/--merge makes gh reject the whole command ("merge strategy is set by the merge queue"),
+          # auto-merge is then never enabled, and the PR sits green-but-unmerged forever (this is why syncs stalled
+          # and piled up). A pin bump is package-only, so the queue's E2E gate no-ops and it lands in minutes with no
+          # review; a red (breaking) bump just sits for the in-PR migration above.
+          gh pr merge --auto "$branch"
