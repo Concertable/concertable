@@ -160,7 +160,16 @@ are touched once, not twice.
   each moved-out Contracts project got its own `.Enums` global so its interfaces/DTOs still see the enums. Re-scaffolded
   the 7 B2B contexts (`initial-migrations` — B2B only, to keep the PR B2B-scoped). Full `Concertable.slnx` build green;
   old-namespace grep gate = 0; **174 B2B unit + 194 B2B integration tests green** (all 5 module integration suites).
-- **Phase 3 — Customer.** Customer Domain reorgs + any Customer `*.Contracts` enums. Re-scaffold. Green.
+- **✅ Phase 3 — Customer — DONE.** Customer module Domain reorgs (Preference `PreferenceEntity`/`GenrePreferenceEntity`
+  → `Entities/`; User `UserEntity` → `Entities/`, keeping `Factories/UserFactory` cohesive; Artist/Concert/Review/Ticket/Venue
+  already correct). **No Customer `*.Contracts` enums exist** (the Customer service declares zero enums anywhere), so that
+  scope item was a genuine no-op. ⚠️ **RESOLVED as ATOMIC — single PR, no cutover:** verified no consumer outside
+  `Concertable.Customer` references the moved types — every consumer is an in-service project ref. `User.Domain` gained a
+  project-level `global using …User.Domain.Entities;` so `UserFactory` (sibling `.Factories` namespace) still resolves
+  `UserEntity`; every other consumer's `.Domain` import (global + file-local) was rewritten to `.Entities`. Re-scaffolded
+  the Customer User + Preference contexts only (`initial-migrations` — the sole two whose snapshots referenced the moved
+  types; regenerated `InitialCreate` DDL byte-identical → zero model change). Full `Concertable.slnx` build green;
+  old-namespace grep gate = 0; **73 Customer unit + 31 Customer integration tests green** (all 4 module integration suites).
 - **Phase 4 — Search + Payment.** Search `ReadModels/` consolidation; Payment Domain/Contracts/Client
   moves. Re-scaffold. Green.
 - **Phase 5 (optional) — Messaging.** As above.
