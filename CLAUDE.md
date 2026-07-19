@@ -34,6 +34,30 @@ After enabling auto-merge (or when a merge lands async via the merge queue), con
 pr=<PR>; max=120; i=0; while :; do i=$((i+1)); state=$(gh pr view "$pr" --json state -q .state 2>&1); echo "poll $i: state=[$state]"; case "$state" in MERGED|CLOSED) echo ">>> PR #$pr $state"; exit 0;; esac; [ "$i" -ge "$max" ] && { echo ">>> PR #$pr still [$state] after $max polls — surfacing"; exit 1; }; sleep 30; done
 ```
 
+## Platform sync is a live gate — a package merge isn't done until its sync PR is green
+
+Any merge that touches `api/**` makes `publish-packages` republish and `platform-sync` open a
+`chore/platform-sync-*` PR that bumps every service's `<ConcertablePlatformVersion>` to the new
+version (MinVer bumps it on every merge). **Non-breaking → the sync PR auto-merges green in minutes.
+Breaking** — a published type's shape/namespace moved and a consumer no longer compiles against the
+new pin — **→ the sync PR goes RED, and until it's fixed every service is stranded on a broken
+platform pin.** This is the failure that keeps recurring; treat it as a first-class part of merging,
+not an afterthought:
+
+- **Whoever merges owns the sync.** After merging an `api/**` change, follow its `chore/platform-sync-*`
+  PR to green/merged — or, if it's red, migrate the failing consumer(s) **in that PR** (legal now: the
+  new version is on the feed), build `api/Concertable.slnx` to 0 errors, and push. `/merge` step 6
+  automates this; do it by hand if you merged another way. **Never leave a red sync PR behind.**
+- **Before branching for new feature work, confirm no open red sync PR** — don't build on a mid-break
+  platform. This is a **branch-time** check (the cheap checkpoint), *not* a per-prompt one:
+  ```bash
+  sp=$(gh pr list --state open --json number,headRefName --jq '.[] | select(.headRefName|startswith("chore/platform-sync-")) | .number' | head -1)
+  [ -n "$sp" ] && gh pr checks "$sp" | awk -F'\t' '$2=="fail"'   # any output → clear it before starting new work
+  ```
+- **Automated backstop (no action needed):** `.github/workflows/platform-sync-alert.yml` opens a
+  tracking Issue + labels the PR `platform-sync-broken` the moment a sync goes red (and closes the
+  Issue when it greens), so a broken sync can't rot unnoticed even when the merge bypassed `/merge`.
+
 ## E2E suites — Docker health first, always
 
 This section is **how** to run E2E safely. **Whether** to run it for a given change is a judgment
