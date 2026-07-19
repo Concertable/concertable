@@ -1,0 +1,97 @@
+name: Platform sync alert
+
+# A platform-sync PR (chore/platform-sync-*) is auto-merge and expected to land green on its own. A RED
+# one means a published contract changed shape and a consumer no longer compiles against the new pin --
+# it silently strands EVERY service on a broken platform version until someone migrates the consumer.
+# Merges don't always go through the /merge skill (GitHub UI, admin merge, a teammate), so the only
+# path-independent guard is here: when the Test workflow concludes on a chore/platform-sync-* branch,
+# open (red) or close (green) a single tracking Issue and label the PR -- so a broken sync SCREAMS
+# (Issue = email to watchers) instead of rotting unnoticed until it bites an unrelated build.
+#
+# Why workflow_run and not pull_request: this must run with the repo token from the DEFAULT branch so it
+# can write Issues/labels, and it keys off the Test run's own conclusion. It only ever acts on
+# chore/platform-sync-* head branches; every other run is ignored.
+
+on:
+  workflow_run:
+    workflows: ["Test"]
+    types: [completed]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+env:
+  BRANCH: ${{ github.event.workflow_run.head_branch }}
+  LABEL: platform-sync-broken
+
+jobs:
+  red:
+    if: >-
+      github.event.workflow_run.conclusion == 'failure' &&
+      startsWith(github.event.workflow_run.head_branch, 'chore/platform-sync-')
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      RUN_URL: ${{ github.event.workflow_run.html_url }}
+    steps:
+      - name: Open or refresh the tracking issue and flag the PR
+        run: |
+          set -euo pipefail
+          repo="$GITHUB_REPOSITORY"
+          title="🔴 platform-sync is RED — $BRANCH"
+          pr="$(gh pr list --repo "$repo" --state open --head "$BRANCH" --json number --jq '.[0].number // empty')"
+
+          # Idempotent label; flag the PR so it's obvious in the PR list too.
+          gh label create "$LABEL" --repo "$repo" --color B60205 \
+            --description "platform-sync PR is failing CI" 2>/dev/null || true
+          if [ -n "$pr" ]; then
+            gh pr edit "$pr" --repo "$repo" --add-label "$LABEL" || true
+          fi
+
+          body="$(cat <<EOF
+          The automated platform-sync PR on \`$BRANCH\` failed CI${pr:+ (#$pr)}.
+
+          A red platform-sync PR means a **published contract changed shape** and a consumer no longer
+          compiles against the new pin. Auto-merge is holding it, but **every service is stranded on a
+          broken platform version until it's fixed**.
+
+          **Fix:** migrate the failing consumer(s) *in that PR* (legal now — the new version is on the
+          feed), build \`api/Concertable.slnx\` to confirm 0 errors, and push. It lands once CI greens.
+          The build log may flag only the first broken file — build the whole solution; a shape move
+          usually strands several consumers.
+
+          Failing run: $RUN_URL
+          EOF
+          )"
+
+          # One tracking issue per branch, matched by title (no search API quirks) — refresh, don't duplicate.
+          num="$(gh issue list --repo "$repo" --state open --limit 100 --json number,title \
+            --jq '.[] | select(.title | startswith("🔴 platform-sync")) | select(.title | contains("'"$BRANCH"'")) | .number' | head -1)"
+          if [ -n "$num" ]; then
+            gh issue comment "$num" --repo "$repo" --body "Still red as of the latest run: $RUN_URL"
+          else
+            gh issue create --repo "$repo" --title "$title" --body "$body" --label "$LABEL" 2>/dev/null \
+              || gh issue create --repo "$repo" --title "$title" --body "$body"
+          fi
+
+  green:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      startsWith(github.event.workflow_run.head_branch, 'chore/platform-sync-')
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Close the tracking issue once the sync is green again
+        run: |
+          set -euo pipefail
+          repo="$GITHUB_REPOSITORY"
+          num="$(gh issue list --repo "$repo" --state open --limit 100 --json number,title \
+            --jq '.[] | select(.title | startswith("🔴 platform-sync")) | select(.title | contains("'"$BRANCH"'")) | .number' | head -1)"
+          if [ -n "$num" ]; then
+            gh issue close "$num" --repo "$repo" --comment "platform-sync is green again ✅ — closing."
+          else
+            echo "No open tracking issue for $BRANCH — nothing to close."
+          fi
