@@ -115,16 +115,52 @@ jobs:
           Automated by \`platform-sync.yml\` after \`Publish packages\` shipped \`${VERSION}\` to the feed.
           Bumps every service's \`<ConcertablePlatformVersion>\` to \`${VERSION}\`.
 
-          Auto-merge is on — the merge queue lands this once CI is green:
-          - **Green** → non-breaking; it merges itself, no review.
-          - **Red** → a published contract changed shape. Migrate the failing consumers **in this PR**
-            (now legal — \`${VERSION}\` is on the feed) and push; it lands once CI greens.
+          A pin bump is a **package-only** change, so \`test.yml\` gates it on build + unit + integration and
+          **no-ops E2E**. This job admin-merges the moment those are green — it does NOT wait in the merge queue:
+          - **Green** → non-breaking; merges immediately, no review, no E2E.
+          - **Red** → a published contract changed shape. The merge is held; migrate the failing consumers
+            **in this PR** (now legal — \`${VERSION}\` is on the feed) and push; re-run to land it.
           EOF
           )
           if ! gh pr view "$branch" --json number >/dev/null 2>&1; then
             gh pr create --base master --head "$branch" \
               --title "chore(platform): sync to ${VERSION}" --body "$body"
           fi
-          # Scoped to THIS bot PR only (not a repo-wide setting): schedule it into the merge queue,
-          # which runs the full pipeline. Green -> lands with no review; red -> it just sits.
-          gh pr merge --auto --squash "$branch"
+
+      - name: Close any superseded platform-sync PRs
+        if: steps.guard.outputs.skip == 'false' && steps.bump.outputs.already-synced == 'false'
+        env:
+          VERSION: ${{ steps.ver.outputs.version }}
+        run: |
+          set -euo pipefail
+          keep="chore/platform-sync-${VERSION}"
+          # This PR pins the latest feed version, so every OTHER open platform-sync PR is by definition an older,
+          # now-superseded bump. Close it and delete its branch so stale, conflicting sync PRs can never accumulate
+          # (delete_branch_on_merge only cleans up branches that MERGE — a superseded one never does).
+          gh pr list --state open --json number,headRefName \
+            --jq '.[] | select(.headRefName | startswith("chore/platform-sync-")) | select(.headRefName != "'"$keep"'") | .number' \
+          | while read -r n; do
+              [ -n "$n" ] || continue
+              echo "Closing superseded sync PR #$n"
+              gh pr close "$n" --delete-branch \
+                --comment "Superseded by the sync to \`${VERSION}\`. Only one platform-sync PR is ever live."
+            done
+
+      - name: Merge immediately on green (bypass the merge queue)
+        if: steps.guard.outputs.skip == 'false' && steps.bump.outputs.already-synced == 'false'
+        env:
+          VERSION: ${{ steps.ver.outputs.version }}
+        run: |
+          set -euo pipefail
+          branch="chore/platform-sync-${VERSION}"
+          # A pin bump has nothing the merge queue's E2E gate can test (E2E no-ops for package-only), and queueing is
+          # exactly where these used to stall — auto-merge would silently drop and the PR sat green forever. So wait
+          # for the required PR checks to conclude, then admin-merge (repo-Admin is the queue ruleset's bypass actor).
+          #   green -> lands instantly, no queue; red -> a breaking bump, leave it open for the in-PR migration above.
+          if gh pr checks "$branch" --watch --required --fail-fast; then
+            gh pr merge --squash --admin "$branch"
+            echo "Merged ${VERSION} (build + unit + integration green; queue bypassed)."
+          else
+            echo "Required checks are red for ${VERSION} — breaking bump. Leaving the PR open to migrate in-place."
+            exit 0
+          fi
