@@ -1,0 +1,33 @@
+name: Auto-merge
+
+# Marking a PR "ready for review" (or opening one non-draft) enables GitHub auto-merge, so the merge
+# queue lands it the moment its required checks go green. Drafts never auto-merge — flipping a PR to
+# ready IS the merge-intent signal; keep a PR in draft while you're still iterating on it.
+#
+# Safety is the merge queue's, not this workflow's: a red PR is ejected and never reaches master, and
+# the PRs behind it re-base onto clean master untouched. This only SCHEDULES the merge into that queue
+# — it cannot make a red PR land. There is no required-review rule, so a green PR merges unreviewed;
+# that's the accepted trade for a queue-gated personal repo (mark ready only when you mean it).
+
+on:
+  pull_request:
+    types: [opened, ready_for_review]
+    branches: [master]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  enable-auto-merge:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      # No strategy flag: master has a merge queue, which owns the merge method. Passing
+      # --squash/--merge/--rebase makes gh reject the command, auto-merge is never enabled, and the PR
+      # sits green-but-unmerged forever (the footgun that once stalled platform-sync).
+      - name: Enable auto-merge
+        run: gh pr merge --auto "${{ github.event.pull_request.number }}"
