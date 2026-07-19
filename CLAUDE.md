@@ -6,6 +6,8 @@ Concertable is a monorepo (a convenience, not the architecture) with a `.NET` mi
 
 Decide and act on reversible work (doc/plan edits, isolated commits, retrying a transient failure), then report — no check-ins. Research: run end-to-end, update the relevant docs, commit in isolation. Pause only when an action is irreversible or contradicts what you find (e.g. unrelated work already staged) — flag it in one line and take the safe path, don't ask permission.
 
+**Never gate a reversible local (working-tree) change behind a "should I?" — just make it.** Editing / writing / refactoring a file, or running a plan's code steps, is the default action, never a question and never a "just report / do nothing" menu; the *only* thing that waits for an explicit instruction is `git commit` / `git push` (full rule: root `~/.claude/CLAUDE.md`).
+
 ## Per-area guidance
 
 - **Backend (.NET, `api/`)** — seeding, migrations, DTOs, module rules, C# conventions: [`api/CLAUDE.md`](./api/CLAUDE.md).
