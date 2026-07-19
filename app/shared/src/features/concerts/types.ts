@@ -129,8 +129,8 @@ export interface Concert {
   id: number;
   name: string;
   about: string;
-  bannerUrl: string;
-  avatar: string;
+  bannerUrl?: string;
+  avatar?: string;
   rating: number;
   price: number;
   totalTickets: number;
