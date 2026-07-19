@@ -13,20 +13,26 @@ on:
 
 jobs:
   changes:
-    # Classify the diff once so the rest of CI runs only what's relevant. Three outcomes:
-    #   - non-code    (docs / .claude / .github CI config / plans / reviews / root dotfiles) -> run_code=false, run_e2e=false
-    #                 no app-code impact: build + carve + unit + integration + E2E all no-op. (A CI-config change
-    #                 is validated by the workflow simply running — not by the app test suites.)
-    #   - package-only (nothing but Directory.Packages.props — e.g. platform-sync) -> run_code=true, run_e2e=false
-    #                 a dep bump can break compile/tests so those still gate, but it has ZERO runtime delta so E2E no-ops.
-    #   - anything else                                                       -> run_code=true, run_e2e=true (full CI).
-    # MANUAL OVERRIDE: a `[skip-e2e]` token in ANY commit message across the diff range forces run_e2e=false while
-    # keeping run_code=true — for a change that's provably low-risk at runtime (e.g. a shared-package rename + a
-    # lock move, no behaviour E2E would catch) so the ~20-30 min merge-queue E2E is pure waste. Grepped over the
-    # same $base..$head range as the file classification (git log, no PR API/label lookup), so it applies identically
+    # Classify the diff once so the rest of CI runs only what's relevant, via FOUR gate outputs:
+    #   run_code   -> build + carve   (the COMPILE FLOOR: the slnx compiles AND every service builds standalone)
+    #   run_tests  -> unit + integration
+    #   run_e2e    -> e2e-api-tests
+    #   run_e2e_ui -> e2e-ui-tests
+    # Automatic classification, by the changed-file set:
+    #   - non-code    (docs / .claude / .github / plans / reviews / root dotfiles) -> ALL FOUR false: nothing to
+    #                 compile or test. build + carve no-op, unit/integration skip, E2E no-op.
+    #   - package-only (nothing but Directory.Packages.props — e.g. platform-sync) -> run_code + run_tests true,
+    #                 run_e2e + run_e2e_ui false: a dep bump can break compile/tests so those gate, but it has ZERO
+    #                 runtime delta so E2E no-ops.
+    #   - anything else                                                            -> all four true (full CI).
+    # MANUAL MERGE-TIER TOKENS: a token in ANY commit message across the diff range turns gates OFF (never on).
+    # Grepped over the same $base..$head range as the classification (git log, no PR API/label lookup), so identical
     # on the PR and in the queue — the merge_group payload carries no PR label, but it does carry the commits.
-    # Runs on pull_request AND merge_group AND push so both the classification and the skip token apply on the PR
-    # too, not just in the queue.
+    # build + carve are NEVER token-skippable: a change that doesn't compile must never merge.
+    #   [skip-e2e-ui] -> run_e2e_ui=false                                (build+carve, unit+integration, e2e-api run)
+    #   [skip-e2e]    -> run_e2e=false + run_e2e_ui=false                 (build+carve, unit+integration run)
+    #   [skip-tests]  -> run_tests=false + run_e2e=false + run_e2e_ui=false   (build+carve only — the compile floor)
+    # Everything still merges through the queue, which rebuilds on current master, so a skip can never merge stale.
     # NOTE: required checks (build / carve-* / e2e-*) still RUN when gated off — they no-op their steps and report
     # success. A *skipped* required check stalls the merge queue until check_response_timeout (60 min); a green no-op
     # does not. Non-required jobs (unit-tests / integration-tests) can skip cleanly — ci-gate tolerates skipped needs
@@ -34,8 +40,10 @@ jobs:
     # which removes the PR+queue double-run. They still run on the post-merge push to master as a master-health signal.
     runs-on: ubuntu-latest
     outputs:
-      run_code: ${{ steps.detect.outputs.run_code }}
-      run_e2e: ${{ steps.detect.outputs.run_e2e }}
+      run_code:   ${{ steps.detect.outputs.run_code }}
+      run_tests:  ${{ steps.detect.outputs.run_tests }}
+      run_e2e:    ${{ steps.detect.outputs.run_e2e }}
+      run_e2e_ui: ${{ steps.detect.outputs.run_e2e_ui }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -56,8 +64,10 @@ jobs:
              || ! git rev-parse -q --verify "$base^{commit}" >/dev/null \
              || ! git rev-parse -q --verify "$head^{commit}" >/dev/null; then
             echo "-> no usable diff range; running full CI."
-            echo "run_code=true" >> "$GITHUB_OUTPUT"
-            echo "run_e2e=true"  >> "$GITHUB_OUTPUT"
+            echo "run_code=true"   >> "$GITHUB_OUTPUT"
+            echo "run_tests=true"  >> "$GITHUB_OUTPUT"
+            echo "run_e2e=true"    >> "$GITHUB_OUTPUT"
+            echo "run_e2e_ui=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           files=$(git diff --name-only "$base" "$head")
@@ -66,25 +76,37 @@ jobs:
           INERT='(\.md$|^\.claude/|^\.github/|^docs/|^plans/|^reviews/|^\.gitignore$|^\.gitattributes$|^LICENSE$)'
           PKG='(^|/)Directory\.Packages\.props$'
           run_code=true
+          run_tests=true
           run_e2e=true
+          run_e2e_ui=true
           if [ -n "$files" ] && ! printf '%s\n' "$files" | grep -qvE "$INERT"; then
-            run_code=false
-            run_e2e=false
-            echo "-> non-code change; skipping build + carve + unit + integration + E2E."
+            run_code=false; run_tests=false; run_e2e=false; run_e2e_ui=false
+            echo "-> non-code change; nothing to compile or test (build + carve no-op, unit/integration skip, E2E no-op)."
           elif [ -n "$files" ] && ! printf '%s\n' "$files" | grep -qvE "$PKG"; then
-            run_e2e=false
+            run_e2e=false; run_e2e_ui=false
             echo "-> package-only bump; build + carve + unit + integration gate, E2E no-ops."
           else
             echo "-> code change; full CI."
           fi
-          # Manual override: a [skip-e2e] token in any commit message across the range forces E2E off (code gates
-          # still run). Same $base..$head range as the classification; fixed-string + case-insensitive match.
-          if git log --format='%B' "$base..$head" | grep -qiF '[skip-e2e]'; then
-            run_e2e=false
-            echo "-> [skip-e2e] token in commit range; forcing E2E off (build + carve + unit + integration still gate)."
+          # Manual merge-tier tokens (same $base..$head range as the classification; fixed-string, case-insensitive).
+          # Each only turns gates OFF; build + carve (the compile floor) are never skippable. `[skip-e2e]` does NOT
+          # match inside `[skip-e2e-ui]` (the trailing `]` differs), so the two tokens are independent.
+          if git log --format='%B' "$base..$head" | grep -qiF '[skip-e2e-ui]'; then
+            run_e2e_ui=false
+            echo "-> [skip-e2e-ui] token; UI E2E off (build + carve + unit + integration + API E2E still run)."
           fi
-          echo "run_code=$run_code" >> "$GITHUB_OUTPUT"
-          echo "run_e2e=$run_e2e"  >> "$GITHUB_OUTPUT"
+          if git log --format='%B' "$base..$head" | grep -qiF '[skip-e2e]'; then
+            run_e2e=false; run_e2e_ui=false
+            echo "-> [skip-e2e] token; all E2E off (build + carve + unit + integration still run)."
+          fi
+          if git log --format='%B' "$base..$head" | grep -qiF '[skip-tests]'; then
+            run_tests=false; run_e2e=false; run_e2e_ui=false
+            echo "-> [skip-tests] token; test suites + E2E off (build + carve compile floor still runs)."
+          fi
+          echo "run_code=$run_code"     >> "$GITHUB_OUTPUT"
+          echo "run_tests=$run_tests"   >> "$GITHUB_OUTPUT"
+          echo "run_e2e=$run_e2e"       >> "$GITHUB_OUTPUT"
+          echo "run_e2e_ui=$run_e2e_ui" >> "$GITHUB_OUTPUT"
 
   build:
     runs-on: ubuntu-latest
@@ -445,10 +467,11 @@ jobs:
   unit-tests:
     runs-on: ubuntu-latest
     needs: [build, changes]
-    # Not a required check (ci-gate aggregates it) — so it can skip cleanly. Skips in the merge queue too:
-    # it already ran on the PR, and dropping the redundant queue run removes the PR+queue double-run. ci-gate
-    # tolerates the skipped result (stays green in the queue). Still runs on the post-merge push to master.
-    if: needs.changes.outputs.run_code == 'true' && github.event_name != 'merge_group'
+    # Gated by run_tests (off for non-code and for [skip-tests]); build + carve stay on run_code. Not a required
+    # check (ci-gate aggregates it) — so it can skip cleanly. Skips in the merge queue too: it already ran on the
+    # PR, and dropping the redundant queue run removes the PR+queue double-run. ci-gate tolerates the skipped
+    # result (stays green in the queue). Still runs on the post-merge push to master.
+    if: needs.changes.outputs.run_tests == 'true' && github.event_name != 'merge_group'
     permissions:
       contents: read
       packages: read
@@ -495,10 +518,11 @@ jobs:
   integration-tests:
     runs-on: ubuntu-latest
     needs: [build, changes]
-    # Not a required check (ci-gate aggregates it) — so it can skip cleanly. Skips in the merge queue too:
-    # it already ran on the PR, and dropping the redundant queue run removes the PR+queue double-run. ci-gate
-    # tolerates the skipped result (stays green in the queue). Still runs on the post-merge push to master.
-    if: needs.changes.outputs.run_code == 'true' && github.event_name != 'merge_group'
+    # Gated by run_tests (off for non-code and for [skip-tests]); build + carve stay on run_code. Not a required
+    # check (ci-gate aggregates it) — so it can skip cleanly. Skips in the merge queue too: it already ran on the
+    # PR, and dropping the redundant queue run removes the PR+queue double-run. ci-gate tolerates the skipped
+    # result (stays green in the queue). Still runs on the post-merge push to master.
+    if: needs.changes.outputs.run_tests == 'true' && github.event_name != 'merge_group'
     permissions:
       contents: read
       packages: read
@@ -655,21 +679,23 @@ jobs:
       ServiceAuth__AuthClientSecret: ${{ secrets.SERVICE_AUTH_AUTH_CLIENT_SECRET }}
 
     steps:
-      - name: Skip UI E2E (no runtime change)
-        if: needs.changes.outputs.run_e2e != 'true'
-        run: echo "No runtime change (non-code or package-only) -> skipping UI E2E; build + carve + unit + integration gate this."
+      # Gated on run_e2e_ui (its own tier): off for non-code, package-only, [skip-e2e-ui], [skip-e2e], [skip-tests].
+      # Required check, so it still RUNS in the queue and no-ops green when off — never `skip`ped (which would stall it).
+      - name: Skip UI E2E (no runtime change or [skip-e2e-ui])
+        if: needs.changes.outputs.run_e2e_ui != 'true'
+        run: echo "UI E2E gated off (non-code / package-only / [skip-e2e-ui] / [skip-e2e] / [skip-tests]) -> build + carve gate this."
 
       - uses: actions/checkout@v4
-        if: needs.changes.outputs.run_e2e == 'true'
+        if: needs.changes.outputs.run_e2e_ui == 'true'
 
       - name: Set up .NET
-        if: needs.changes.outputs.run_e2e == 'true'
+        if: needs.changes.outputs.run_e2e_ui == 'true'
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.x'
 
       - name: Cache NuGet packages
-        if: needs.changes.outputs.run_e2e == 'true'
+        if: needs.changes.outputs.run_e2e_ui == 'true'
         uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
@@ -677,13 +703,13 @@ jobs:
           restore-keys: nuget-${{ runner.os }}-
 
       - name: Provision HTTPS dev certificate
-        if: needs.changes.outputs.run_e2e == 'true'
+        if: needs.changes.outputs.run_e2e_ui == 'true'
         run: |
           dotnet dev-certs https --trust || true  # Linux trust exits 4, but the cert is still generated
           echo "SSL_CERT_DIR=$HOME/.aspnet/dev-certs/trust:/etc/ssl/certs:/usr/lib/ssl/certs" >> "$GITHUB_ENV"
 
       - name: Install Stripe CLI
-        if: needs.changes.outputs.run_e2e == 'true'
+        if: needs.changes.outputs.run_e2e_ui == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -694,7 +720,7 @@ jobs:
           stripe version
 
       - name: Install Azure Functions Core Tools
-        if: needs.changes.outputs.run_e2e == 'true'
+        if: needs.changes.outputs.run_e2e_ui == 'true'
         # Same as the API E2E job: the full AppHost boots the B2B Workers Azure Functions host,
         # which needs the `func` Core Tools on PATH to launch.
         run: |
@@ -702,13 +728,13 @@ jobs:
           func --version
 
       - name: Set up Node
-        if: needs.changes.outputs.run_e2e == 'true'
+        if: needs.changes.outputs.run_e2e_ui == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '22'
 
       - name: Install web SPA dependencies
-        if: needs.changes.outputs.run_e2e == 'true'
+        if: needs.changes.outputs.run_e2e_ui == 'true'
         # The UI E2E AppHost serves the venue/artist/business/customer SPAs via `npm run dev` (Vite).
         # They live in the app/ npm workspace; node_modules is gitignored, so without this the dev
         # servers never start and every scenario fails at warm-up with ERR_CONNECTION_REFUSED.
@@ -716,29 +742,29 @@ jobs:
         run: npm ci
 
       - name: Build B2B UI E2E tests
-        if: needs.changes.outputs.run_e2e == 'true'
+        if: needs.changes.outputs.run_e2e_ui == 'true'
         run: dotnet build api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui/Concertable.B2B.E2ETests.Ui.csproj --configuration Release
 
       - name: Build Customer UI E2E tests
-        if: needs.changes.outputs.run_e2e == 'true'
+        if: needs.changes.outputs.run_e2e_ui == 'true'
         run: dotnet build api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui/Concertable.Customer.E2ETests.Ui.csproj --configuration Release
 
       - name: Install Playwright browsers
-        if: needs.changes.outputs.run_e2e == 'true'
+        if: needs.changes.outputs.run_e2e_ui == 'true'
         run: pwsh api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
 
       - name: Run B2B UI E2E tests
-        if: needs.changes.outputs.run_e2e == 'true'
+        if: needs.changes.outputs.run_e2e_ui == 'true'
         run: dotnet test api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui/Concertable.B2B.E2ETests.Ui.csproj --configuration Release --no-build --settings api/Concertable.runsettings
 
       - name: Run Customer UI E2E tests
-        if: needs.changes.outputs.run_e2e == 'true'
+        if: needs.changes.outputs.run_e2e_ui == 'true'
         run: dotnet test api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui/Concertable.Customer.E2ETests.Ui.csproj --configuration Release --no-build --settings api/Concertable.runsettings
 
       - name: Upload E2E diagnostics
         # Server logs + Playwright traces/screenshots for diagnosing a UI failure. Failure-only:
         # the trace bundle is large (~hundreds of MB), so don't upload it on green runs.
-        if: failure() && needs.changes.outputs.run_e2e == 'true'
+        if: failure() && needs.changes.outputs.run_e2e_ui == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: e2e-ui-diagnostics
