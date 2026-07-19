@@ -20,10 +20,18 @@ jobs:
     #   - package-only (nothing but Directory.Packages.props — e.g. platform-sync) -> run_code=true, run_e2e=false
     #                 a dep bump can break compile/tests so those still gate, but it has ZERO runtime delta so E2E no-ops.
     #   - anything else                                                       -> run_code=true, run_e2e=true (full CI).
-    # Runs on pull_request AND merge_group AND push so the skip applies on the PR too, not just in the queue.
+    # MANUAL OVERRIDE: a `[skip-e2e]` token in ANY commit message across the diff range forces run_e2e=false while
+    # keeping run_code=true — for a change that's provably low-risk at runtime (e.g. a shared-package rename + a
+    # lock move, no behaviour E2E would catch) so the ~20-30 min merge-queue E2E is pure waste. Grepped over the
+    # same $base..$head range as the file classification (git log, no PR API/label lookup), so it applies identically
+    # on the PR and in the queue — the merge_group payload carries no PR label, but it does carry the commits.
+    # Runs on pull_request AND merge_group AND push so both the classification and the skip token apply on the PR
+    # too, not just in the queue.
     # NOTE: required checks (build / carve-* / e2e-*) still RUN when gated off — they no-op their steps and report
     # success. A *skipped* required check stalls the merge queue until check_response_timeout (60 min); a green no-op
-    # does not. Non-required jobs (unit-tests / integration-tests) can skip cleanly — ci-gate tolerates skipped needs.
+    # does not. Non-required jobs (unit-tests / integration-tests) can skip cleanly — ci-gate tolerates skipped needs
+    # — so they also skip in the merge queue (they ran on the PR; ci-gate stays green on their skipped result),
+    # which removes the PR+queue double-run. They still run on the post-merge push to master as a master-health signal.
     runs-on: ubuntu-latest
     outputs:
       run_code: ${{ steps.detect.outputs.run_code }}
@@ -68,6 +76,12 @@ jobs:
             echo "-> package-only bump; build + carve + unit + integration gate, E2E no-ops."
           else
             echo "-> code change; full CI."
+          fi
+          # Manual override: a [skip-e2e] token in any commit message across the range forces E2E off (code gates
+          # still run). Same $base..$head range as the classification; fixed-string + case-insensitive match.
+          if git log --format='%B' "$base..$head" | grep -qiF '[skip-e2e]'; then
+            run_e2e=false
+            echo "-> [skip-e2e] token in commit range; forcing E2E off (build + carve + unit + integration still gate)."
           fi
           echo "run_code=$run_code" >> "$GITHUB_OUTPUT"
           echo "run_e2e=$run_e2e"  >> "$GITHUB_OUTPUT"
@@ -431,8 +445,10 @@ jobs:
   unit-tests:
     runs-on: ubuntu-latest
     needs: [build, changes]
-    # Not a required check (ci-gate aggregates it) — so it can skip cleanly for a non-code change.
-    if: needs.changes.outputs.run_code == 'true'
+    # Not a required check (ci-gate aggregates it) — so it can skip cleanly. Skips in the merge queue too:
+    # it already ran on the PR, and dropping the redundant queue run removes the PR+queue double-run. ci-gate
+    # tolerates the skipped result (stays green in the queue). Still runs on the post-merge push to master.
+    if: needs.changes.outputs.run_code == 'true' && github.event_name != 'merge_group'
     permissions:
       contents: read
       packages: read
@@ -479,8 +495,10 @@ jobs:
   integration-tests:
     runs-on: ubuntu-latest
     needs: [build, changes]
-    # Not a required check (ci-gate aggregates it) — so it can skip cleanly for a non-code change.
-    if: needs.changes.outputs.run_code == 'true'
+    # Not a required check (ci-gate aggregates it) — so it can skip cleanly. Skips in the merge queue too:
+    # it already ran on the PR, and dropping the redundant queue run removes the PR+queue double-run. ci-gate
+    # tolerates the skipped result (stays green in the queue). Still runs on the post-merge push to master.
+    if: needs.changes.outputs.run_code == 'true' && github.event_name != 'merge_group'
     permissions:
       contents: read
       packages: read
