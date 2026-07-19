@@ -150,8 +150,16 @@ are touched once, not twice.
       — nothing to sync") suppressed the auto-bump PR, because Merge 2 rode the platform-sync branch. The
       publish still advanced to 0.591 (Merge 2 added real source), so the pins genuinely needed 0.590→0.591;
       the guard just didn't open it. Did the bump by hand.
-- **Phase 2 — B2B.** All B2B module Domain reorgs + B2B `*.Contracts` enum moves. Re-scaffold. B2B build +
-  unit + integration green.
+- **✅ Phase 2 — B2B — DONE.** All B2B module Domain reorgs (Artist/Venue/Tenant/User/Conversations entities →
+  `Entities/`; Artist/Venue `*RatingProjection`/`*Review` → `ReadModels/`; Tenant `RegisteredAddress`/`TaxCompliance`
+  + Concert `ESignature`/`InvoiceParty`/`VatBreakdown` → `ValueObjects/`) **+** B2B `*.Contracts` enum moves
+  (`Deal`: `DealType`/`PaymentMethod`; `Tenant`: `TenantType`/`TenantRole`; `Conversations`: `MessageAction` → `Enums/`).
+  ⚠️ **RESOLVED as ATOMIC — single PR, no cutover.** Verified no cross-service consumer references the moved types:
+  every consumer lives inside `Concertable.B2B` (project refs), and the only cross-service `PaymentMethod` hits are
+  Stripe's own, not `Deal`'s. Sub-namespace global usings added (project-level where broad, file-local where isolated);
+  each moved-out Contracts project got its own `.Enums` global so its interfaces/DTOs still see the enums. Re-scaffolded
+  the 7 B2B contexts (`initial-migrations` — B2B only, to keep the PR B2B-scoped). Full `Concertable.slnx` build green;
+  old-namespace grep gate = 0; **174 B2B unit + 194 B2B integration tests green** (all 5 module integration suites).
 - **✅ Phase 3 — Customer — DONE.** Customer module Domain reorgs (Preference `PreferenceEntity`/`GenrePreferenceEntity`
   → `Entities/`; User `UserEntity` → `Entities/`, keeping `Factories/UserFactory` cohesive; Artist/Concert/Review/Ticket/Venue
   already correct). **No Customer `*.Contracts` enums exist** (the Customer service declares zero enums anywhere), so that
