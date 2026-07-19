@@ -170,8 +170,27 @@ are touched once, not twice.
   the Customer User + Preference contexts only (`initial-migrations` — the sole two whose snapshots referenced the moved
   types; regenerated `InitialCreate` DDL byte-identical → zero model change). Full `Concertable.slnx` build green;
   old-namespace grep gate = 0; **73 Customer unit + 31 Customer integration tests green** (all 4 module integration suites).
-- **Phase 4 — Search + Payment.** Search `ReadModels/` consolidation; Payment Domain/Contracts/Client
-  moves. Re-scaffold. Green.
+- **Phase 4 — Search + Payment — IN PROGRESS on `Refactor/DomainStereotypeLayout-Phase4`.**
+  ⚠️ **RESOLVED as a TWO-merge package cut-over** (topology scanned 2026-07-19). Two enums move out of
+  a published-package root namespace into `Enums/`, both consumed **cross-service by `PackageReference`**
+  (B2B; Customer consumes neither): `Payment.Contracts.EscrowStatus` → `Payment.Contracts.Enums`,
+  `Payment.Client.PayoutAccountStatus` → `Payment.Client.Enums`. The owning packables (`Payment.Contracts`
+  + `Payment.Client`) republish together at one `ConcertablePlatformVersion`, and nothing re-exposes the
+  enums onward → **exactly 2 merges, no third hop.** The rest of Phase 4 is service-internal (atomic) and
+  rides the expand PR.
+  - **Merge 1 (expand — admin-merge):** ALL Phase-4 source moves — Search `Models/`+`Projections/` →
+    `ReadModels/`; Payment.Domain 7 entities → `Entities/`, enums `PayoutAccountStatus`/`TransactionStatus`/
+    `TransactionType` → `Enums/`; `Payment.Contracts.EscrowStatus` → `Enums/`; `Payment.Client.PayoutAccountStatus`
+    → `Enums/` — plus every Payment/Search **source-side** consumer + sub-namespace global usings, and re-scaffold
+    Payment + Search contexts. Full slnx builds green **except** the one structural mixed-harness red
+    (`Concertable.B2B.E2ETests` project-refs Payment source via `Payment.Seed` while the B2B stack still
+    binds the old published package → `CS7069`/`CS0433`; unfixable pre-publish, same shape as Phase 1's
+    harnesses). Merge → republish `Payment.Contracts`@new + `Payment.Client`@new.
+  - **Merge 2 (sync — normal queue):** platform-sync bumps the pin → migrate the **5 B2B consumers** to
+    `.Enums` (`StripeAccountController`, `StripeAccountProxyTests`, `MockPayoutAccountClient`,
+    `MockEscrowClient`, `ConcertCancelledTests`); re-scaffold any B2B context whose snapshot references the
+    moved types; **old-namespace grep gate → 0**; build green; B2B tests green; **UI E2E regress** (final-phase
+    safety net, Docker-health-gated). Then mark Phase 4 done; Phase 5 (Messaging) remains the sole optional item.
 - **Phase 5 (optional) — Messaging.** As above.
 
 ## Risk — shared-package namespace changes may be a breaking package cut-over
