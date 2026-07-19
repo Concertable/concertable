@@ -138,6 +138,20 @@ state is written:
 2. **Give the user a resume prompt to paste after `/clear`.** Assume zero context: name the plan file,
    the branch/PR, and the exact next step. Keep it to a few lines.
 
+   **If — and only if — the work lives in a separate git worktree, the resume prompt's first line
+   MUST be the exact directory to `cd` into, before anything else.** A `/clear` (or a brand-new
+   session) reopens in *whatever directory the last session was rooted in*. When the branch lives in a
+   separate worktree that's routinely the **wrong** one: a resume prompt naming only the plan and the
+   branch lands the paste in the wrong worktree on the wrong branch, and git then **won't** let you
+   check the right branch out (it's already checked out in its own worktree) — so the whole handoff
+   silently derails. Naming the branch is **not** enough; name the **directory**. Shape:
+
+   > `cd <absolute worktree path>` — then: read `plans/<PLAN>.md`, branch `<Type>/<Name>`, next step: …
+
+   Check first: run `git worktree list`. If the work's branch is a **separate** worktree, lead with its
+   `cd` path. If it's just the **main checkout** (the default — the session already reopens there), skip
+   the `cd` line entirely and name the plan + branch as normal; don't clutter the prompt with it.
+
 **The trigger is mechanical — not a judgment call.** The moment you finish a discrete chunk of work
 (a plan designed, a phase landed, a question fully answered) and your next sentence *would* be
 "Want me to start X?" / "Shall I do the next phase?" / "…or leave it as-is?" — **that question IS the
