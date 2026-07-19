@@ -60,15 +60,25 @@ still compile against the published package that exports `IPdfService`.
 - `AddSharedPdf()` registers the concrete once and maps both interfaces to it.
 - **Gate:** shared package builds (0/0) ✅ · full solution build green · merge → publishes a new feed version.
 
-### Phase 2 — Migrate (consumers)
-- Bump B2B + Customer `<ConcertablePlatformVersion>` to the version Phase 1 published (arrives via the
-  automated `platform-sync` PR — piggyback on it, or bump explicitly).
-- Switch `ContractPdfService`, `InvoicePdfService`, `TicketPdfService` constructor deps `IPdfService` → `IPdfRenderer`.
-- **Delete the redundant `renderLock` `SemaphoreSlim` guards** from `ContractPdfService` and
-  `InvoicePdfService` (the shared renderer now serializes). `TicketPdfService` gains protection for
-  free — no local guard existed.
-- Remove the "PDF render thread-safety" entry from `api/Concertable.B2B/TECH_DEBT.md`.
-- **Gate:** solution build green · Concert + Ticket integration green.
+### Phase 2 — Migrate (consumers) — ✅ done (`Refactor/PdfRendererPhase2`, pending merge)
+- ✅ Version bump was a **no-op** — the Phase-1 `platform-sync` PR already pinned every service at
+  `0.1.0-alpha.0.606` (the version carrying `IPdfRenderer`), so no `<ConcertablePlatformVersion>` change was needed.
+- ✅ Switched `ContractPdfService`, `InvoicePdfService`, `TicketPdfService` `IPdfService` → `IPdfRenderer`.
+- ✅ Deleted the redundant `renderLock` `SemaphoreSlim` guards from `ContractPdfService` and
+  `InvoicePdfService` (shared `PdfRenderer.Render` serializes via `System.Threading.Lock`). `TicketPdfService`
+  gained protection for free.
+- ✅ Removed the "PDF render thread-safety" entry from `api/Concertable.B2B/TECH_DEBT.md`.
+- ✅ **Folded in (B2B-internal, not the shared package):** extracted the duplicated render→check-blob→upload→serve
+  orchestration from `ContractPdfService`/`InvoicePdfService` into `IPdfBlobCache`/`PdfBlobCache` in
+  `Concertable.B2B.Concert.Infrastructure.Pdf` — resolves the LOW `TECH_DEBT` dedup note. Homed in B2B (not
+  `Concertable.Shared.Pdf`) because only B2B blob-caches PDFs (Customer renders tickets on demand) — "shared is the
+  intersection" — which is also why it wasn't boundary-blocked.
+- ✅ **Grep-gate consumer cleanup:** `InvoiceService`/`ContractService` fields `pdfService` →
+  `invoicePdfService`/`contractPdfService`; `LEGAL_REQUIREMENTS.md` prose `IPdfService` → `IPdfRenderer`.
+  Consumer side is now grep-clean; the only remaining `\bPdfService\b` hits are the 4 shared shims Phase 3 deletes.
+- ✅ **Gate:** build 0 errors · B2B Concert 128/128 · Customer Ticket 15/15 (+ Customer Concert 2/2) green.
+  (Customer integration tests need a short-drive `subst` to run in this deep worktree — native `Microsoft.Data.SqlClient.SNI.dll`
+  path overflows `MAX_PATH`; not a code issue.)
 
 ### Phase 3 — Contract (shared package)
 - Delete `IPdfService`, its `AddSharedPdf` bridge registration, and `IPdfService` from `PdfRenderer`'s
