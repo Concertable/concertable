@@ -27,13 +27,28 @@ Branches are named `<Type>/<Name>` with the type prefix **capitalized**: `Featur
 
 ## Confirming a PR merge — Bash background until-loop, never `Monitor`
 
-After enabling auto-merge (or when a merge lands async via the merge queue), confirm the merge with a **Bash `run_in_background` until-loop** that exits the instant `gh pr view <PR> --json state -q .state` is `MERGED` or `CLOSED` — that gives one immediate completion notification.
+After enabling auto-merge (or when a merge lands async via the merge queue), confirm it with a **Bash `run_in_background` until-loop** that exits the instant `gh pr view <PR> --json state -q .state` is `MERGED` or `CLOSED` — one immediate completion notification.
+
+**Also catch the silent stall — not just the merge.** A `CLEAN`, auto-merge-ON PR that GitHub never admits to the queue (`mergeQueueEntry == null`) sits `OPEN` forever: never merges, never errors, queue idle. Cause: auto-merge was enabled while a required check was still pending, then that check resolved to `skipped` (the non-code classifier skips e2e/unit/integration on the PR) and GitHub failed to re-evaluate admission. **This once burned an hour.** The loop must detect it and self-heal: `OPEN` + not-in-queue for a few polls ⇒ **toggle auto-merge** (`gh pr merge --disable-auto <PR>` then `--auto <PR>`) to force admission. (`.github/workflows/auto-merge.yml` now re-asserts on `check_suite: completed`, so it should be rare — the monitor is the backstop.)
 
 - **Never use the `Monitor` tool** for a single "tell me when it merges" — it's for streaming many events, and its detached poller silently missed merges here (it timed out instead of firing).
 - **Never swallow poll errors** (`2>/dev/null || continue`) — a broken `gh` then looks identical to "still waiting". Capture stderr into the state (`2>&1`), echo the state every poll, and **cap** the loop so a persistent failure surfaces instead of hanging forever.
 
 ```bash
-pr=<PR>; max=120; i=0; while :; do i=$((i+1)); state=$(gh pr view "$pr" --json state -q .state 2>&1); echo "poll $i: state=[$state]"; case "$state" in MERGED|CLOSED) echo ">>> PR #$pr $state"; exit 0;; esac; [ "$i" -ge "$max" ] && { echo ">>> PR #$pr still [$state] after $max polls — surfacing"; exit 1; }; sleep 30; done
+pr=<PR>; repo=$(gh repo view --json nameWithOwner -q .nameWithOwner); max=120; i=0; stuck=0
+while :; do i=$((i+1))
+  state=$(gh pr view "$pr" --json state -q .state 2>&1)
+  inq=$(gh api graphql -f query="{repository(owner:\"${repo%/*}\",name:\"${repo#*/}\"){pullRequest(number:$pr){mergeQueueEntry{state}}}}" -q '.data.repository.pullRequest.mergeQueueEntry!=null' 2>&1)
+  echo "poll $i: state=[$state] inQueue=[$inq]"
+  case "$state" in MERGED|CLOSED) echo ">>> PR #$pr $state"; exit 0;; esac
+  if [ "$state" = OPEN ] && [ "$inq" != true ]; then stuck=$((stuck+1)); else stuck=0; fi
+  if [ "$stuck" -ge 3 ]; then
+    echo ">>> PR #$pr STUCK (auto-merge on, not admitted to queue) — toggling to force admission"
+    gh pr merge --disable-auto "$pr" >/dev/null 2>&1 || true; gh pr merge --auto "$pr"; stuck=0
+  fi
+  [ "$i" -ge "$max" ] && { echo ">>> PR #$pr still [$state] after $max polls — surfacing"; exit 1; }
+  sleep 30
+done
 ```
 
 ## Platform sync is a live gate — a package merge isn't done until its sync PR is green

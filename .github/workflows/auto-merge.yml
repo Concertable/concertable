@@ -1,18 +1,30 @@
 name: Auto-merge
 
-# Marking a PR "ready for review" (or opening one non-draft) enables GitHub auto-merge, so the merge
-# queue lands it the moment its required checks go green. Drafts never auto-merge — flipping a PR to
-# ready IS the merge-intent signal; keep a PR in draft while you're still iterating on it.
+# A ready (non-draft) PR into master gets GitHub auto-merge enabled, so the merge queue lands it once
+# its required checks are green. Drafts never auto-merge — flipping a PR to ready IS the merge-intent
+# signal; keep a PR in draft while you're still iterating.
 #
 # Safety is the merge queue's, not this workflow's: a red PR is ejected and never reaches master, and
-# the PRs behind it re-base onto clean master untouched. This only SCHEDULES the merge into that queue
-# — it cannot make a red PR land. There is no required-review rule, so a green PR merges unreviewed;
-# that's the accepted trade for a queue-gated personal repo (mark ready only when you mean it).
+# the PRs behind it re-base onto clean master untouched. This only SCHEDULES the merge into the queue —
+# it cannot make a red PR land. No required-review rule, so a green PR merges unreviewed (the accepted
+# trade for a queue-gated personal repo — mark ready only when you mean it).
+#
+# WHY it also runs on `check_suite: completed`, not just PR open/ready:
+# enabling auto-merge while the PR's checks are still PENDING (the `opened` case) can leave the PR
+# CLEAN + auto-merge-ON but NEVER admitted to the queue. GitHub fails to re-evaluate admission after a
+# required check resolves to `skipped` — and our non-code classifier skips e2e/unit/integration on the
+# PR, so those required checks end `skipped`, not `success`. The PR then sits green-but-un-queued
+# forever (this once cost an hour on a docs-only PR: CLEAN, auto-merge-on, queue idle, never admitted).
+# Re-asserting auto-merge with a disable -> enable TOGGLE *after* checks have concluded forces GitHub to
+# re-evaluate and admit the PR — the exact manual step that unstuck it. So: enable early (happy path),
+# and re-assert on check-suite completion (the reliable path).
 
 on:
   pull_request:
     types: [opened, ready_for_review]
     branches: [master]
+  check_suite:
+    types: [completed]
 
 permissions:
   contents: write
@@ -20,14 +32,45 @@ permissions:
 
 jobs:
   enable-auto-merge:
-    if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       GH_REPO: ${{ github.repository }}
     steps:
-      # No strategy flag: master has a merge queue, which owns the merge method. Passing
-      # --squash/--merge/--rebase makes gh reject the command, auto-merge is never enabled, and the PR
-      # sits green-but-unmerged forever (the footgun that once stalled platform-sync).
-      - name: Enable auto-merge
-        run: gh pr merge --auto "${{ github.event.pull_request.number }}"
+      - name: Enable / re-assert auto-merge on ready PRs into master
+        run: |
+          owner="${GH_REPO%%/*}"; repo="${GH_REPO##*/}"
+
+          # Which PR(s) this event is about. A pull_request event carries one; a check_suite event
+          # carries every PR the completed suite covers (empty for pushes to a branch with no PR).
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            nums="${{ github.event.pull_request.number }}"
+          else
+            nums="$(jq -r '[.check_suite.pull_requests[].number] | unique | join(" ")' "$GITHUB_EVENT_PATH")"
+          fi
+          [ -n "$nums" ] || { echo "No associated PRs — nothing to do."; exit 0; }
+
+          for n in $nums; do
+            [ -n "$n" ] || continue
+
+            info="$(gh pr view "$n" --json state,isDraft,baseRefName -q '[.state,(.isDraft|tostring),.baseRefName]|@tsv' 2>/dev/null)" \
+              || { echo "PR #$n: not viewable — skip"; continue; }
+            IFS=$'\t' read -r state draft base <<< "$info"
+            if [ "$state" != "OPEN" ] || [ "$draft" != "false" ] || [ "$base" != "master" ]; then
+              echo "PR #$n: skip (state=$state draft=$draft base=$base)"; continue
+            fi
+
+            # Already in the queue? Leave it alone — a toggle here would DISABLE auto-merge and pull it
+            # back out of the queue (or interrupt an in-flight merge). Only act on the stuck state:
+            # ready + not queued.
+            queued="$(gh api graphql -f query="{repository(owner:\"$owner\",name:\"$repo\"){pullRequest(number:$n){mergeQueueEntry{state}}}}" \
+              -q '.data.repository.pullRequest.mergeQueueEntry != null' 2>/dev/null || echo unknown)"
+            if [ "$queued" = "true" ]; then echo "PR #$n: already queued — leave it"; continue; fi
+
+            echo "PR #$n: (re)asserting auto-merge to force queue admission"
+            # No strategy flag: the merge queue owns the method; passing --squash/--merge/--rebase makes
+            # gh reject the command. Disable first (ignore failure if it wasn't enabled), then enable —
+            # the toggle is what forces GitHub to re-evaluate admission after checks concluded.
+            gh pr merge --disable-auto "$n" >/dev/null 2>&1 || true
+            gh pr merge --auto "$n"
+          done
