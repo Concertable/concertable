@@ -97,12 +97,51 @@ This skill is **Concertable-specific**. It encodes how this repo actually merges
      and the local tip differs — confirm the PR really is `MERGED`, then it's safe to `git branch -D`.
      Don't force-delete an unmerged branch.
 
+6. **Watch the platform-sync consequence — a merge that touched a published package triggers it, and
+   nothing else watches it.**
+   Merging a change to a **published package** makes `Publish packages` republish, then `platform-sync`
+   opens a `chore/platform-sync-*` PR that bumps every service's `<ConcertablePlatformVersion>` to the
+   new version. That PR **auto-merges if green**, but goes **red** when the change broke a consumer's
+   compile against the new shape. **A red sync PR that nobody watches strands every service on a broken
+   pin and detonates on the next unrelated build** — so following it to a terminal state is part of
+   this skill, not optional.
+   - **Will a sync fire?** `Publish packages` runs on any merge that touches `api/**` (MinVer bumps
+     the platform version every time), so **almost every code merge opens a sync PR** — most are green
+     and auto-merge in minutes; only a breaking package change goes red. If the merge was
+     docs/CI/app-only (nothing under `api/**`), no sync fires — you're done.
+     ```
+     gh pr diff <n> --name-only | grep -q '^api/' && echo "sync will fire" || echo "no sync"
+     ```
+   - **If it did:** the sync PR opens within a few minutes. Wait for it, then poll ITS checks. A pin
+     bump is package-only, so E2E no-ops — the gate is `build` + `unit` + `integration`, usually a few
+     minutes (prefer the `Monitor` tool over busy-waiting):
+     ```
+     # there is only ever ONE open sync PR
+     while true; do sp=$(gh pr list --state open --json number,headRefName \
+         --jq '.[] | select(.headRefName|startswith("chore/platform-sync-")) | .number' | head -1);
+       [ -n "$sp" ] && { echo "sync PR #$sp"; break; }; sleep 30; done
+     while true; do out=$(gh pr checks "$sp" 2>&1);
+       echo "$out" | awk -F'\t' '$2=="pending"' | grep -q . || { echo "TERMINAL"; break; }; sleep 30; done
+     ```
+   - **Green** → it auto-merges; confirm `MERGED`, report the new version, done.
+   - **Red** → **do not walk away.** This is a breaking platform change surfacing at exactly the
+     consumers that must migrate. Read the failing `build` log (`gh run view --job <id> --log`), find
+     the broken consumer(s), and **migrate them IN the sync PR** — now legal, the version is on the
+     feed. Check out the sync branch, apply the fix, build `api/Concertable.slnx` against the new pins
+     to confirm **0 errors**, then push; auto-merge lands it once CI greens. (This is the sync PR
+     body's own instruction — the skill just guarantees someone actually does it instead of leaving it
+     red.) The build job may report only the first broken file; **build the whole `.slnx` locally**, a
+     namespace/shape move usually stranded several consumers, not one.
+
 ## Final summary
 
 One short report: the PR that merged (number + merge commit), whether E2E ran (queue) or was skipped
-(`--admin`, and why), that `master` is synced, and that the branch is cleaned up — i.e. **ready for the
-next task**. If you stopped early (failed check, red E2E in the queue, unpushed work), say exactly
-what's blocking and what's needed.
+(`--admin`, and why), that `master` is synced, and that the branch is cleaned up. Then the
+platform-sync outcome: **no sync (nothing published), sync merged green (new version), or sync went
+red and you migrated its consumers** (which files, now green) — never "merged, and left a red sync PR
+behind." If you stopped early (failed check, red E2E in the queue, unpushed work), say exactly what's
+blocking and what's needed.
 
-Keep it terminal: verify PR green → enqueue → wait for MERGED → sync master → summarize → stop. No
+Keep it terminal: verify PR green → enqueue → wait for MERGED → sync master → **watch the
+platform-sync PR to green/merged (or migrate its consumers if it's red)** → summarize → stop. No
 preamble. Plain `git`/`gh` only (personal repo — never the work PR/ADO skills).
