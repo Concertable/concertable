@@ -258,11 +258,21 @@ Repo read/write method signatures may land here (unused = fine). **Gate:** build
 > include `tenant.Invitations` (only the Tenant migration committed — the full `initial-migrations.ps1` re-timestamps every module identically, so
 > non-Tenant regenerations were reverted). Gate green: build 0 errors, Tenant.UnitTests 94/94, Tenant.IntegrationTests 21/21 (migration applied to real SQL).
 
-### 6.2 — Member management endpoints + last-Owner invariant *(no re-scaffold)*
+### 6.2 — Member management endpoints + last-Owner invariant *(no re-scaffold)* — ✅ DONE (verified)
 `GET members`, `PUT members/{userId}/role`, `DELETE members/{userId}`, `DELETE api/organizations`;
 `MembershipService` + repo methods; `IUserModule` batch email lookup (D4). **Gate:** build + Tenant/Venue/Artist
 integration suites (Owner-vs-Manager boundaries, last-Owner guards, self-leave). **No E2E** (new endpoints,
 not on a covered E2E flow; integration drives the real auth pipeline).
+> Landed: `IUserModule.GetEmailsByIdsAsync` (D4, additive same-service) + `ITenantRepository` membership methods
+> (`ListMembershipsByTenantAsync`/`FindMembershipAsync`/`CountOwnersAsync`/`IsMemberAsync`/`AddMembership`/`RemoveMembership`;
+> `AddMembership`/`IsMemberAsync` land unused for 6.3). New `IMembershipService` + impl beside `TenantService` (D5) with the
+> last-Owner invariant (409 on demote/remove/self-leave of the sole Owner) + `DeleteCurrentTenantAsync` (cascades memberships).
+> New `OrganizationMembersController` on `api/organizations` (per-action `[HasPermission]`, no `[TenantPersona]` — mirrors
+> `StripeAccountController`); `ChangeMemberRoleRequest` + `IsInEnum` validator; `Tenant.Infrastructure → User.Contracts`
+> ProjectReference. Gate green: build 0 errors; **Tenant 34/34, Venue 25/25, Artist 17/17** integration (real auth pipeline —
+> Owner-vs-Manager 403 boundaries, last-Owner 409, non-sole-owner self-leave, persona-agnostic venue+artist). Note: seeded
+> `*NoVenue/*NoArtist` operators own their own tenant, so a Manager acting in another tenant must send `X-Tenant-Id` or
+> resolution fails closed (403) — the permission tests name the tenant explicitly to gate on the real reason.
 
 ### 6.3 — Invitations create/revoke/accept + provisioning branch + email *(no re-scaffold)*
 `POST`/`DELETE invitations`, `POST /api/invitations/{id}/accept`, `InvitationService` + email

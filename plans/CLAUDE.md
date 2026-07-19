@@ -130,13 +130,29 @@ point where the context becomes disposable. Don't carry unwritten state across a
 
 ## Before a clear — hand off a resume prompt
 
-When the work is fully done for now, or the user says they'll clear, do two things after the durable
+When the work is fully done for now, or the user says they'll clear, do these things after the durable
 state is written:
 
-1. **Prepare for clear** — confirm the plan markdown, `CLAUDE.md`/`TECH_DEBT.md`, and commit messages
+1. **Commit the completed phase FIRST — don't leave finished, verified phase work uncommitted "for
+   review."** A completed + verified plan phase is *committed* as part of finishing it, with the plan
+   check-off in the same commit (Lifecycle 3). Committing each phase as it lands **is** the standing
+   instruction for plan work — it's what Lifecycle 2 means, and it satisfies the root/global "explicit
+   instruction to commit" rule for plan-phase commits specifically. (**Pushing is separate and still
+   needs its own explicit go-ahead** — commit ≠ push.) Both reviewing and resuming happen off the
+   commit, so the commit lands before the handoff. Leaving a green phase sitting in the working tree is
+   the mistake that makes `/code-review` unable to see it.
+2. **Prepare for clear** — confirm the plan markdown, `CLAUDE.md`/`TECH_DEBT.md`, and commit messages
    hold everything; the chat must be safe to throw away.
-2. **Give the user a resume prompt to paste after `/clear`.** Assume zero context: name the plan file,
+3. **Give the user a resume prompt to paste after `/clear`.** Assume zero context: name the plan file,
    the branch/PR, and the exact next step. Keep it to a few lines.
+4. **Hand off a ready-to-paste code-review prompt in the SAME turn whenever you say the work is ready
+   to review** — never "stopping here for your review" with no prompt (that's this section's anti-pattern
+   applied to review instead of resume). With the phase committed (step 1) the whole feature is on the
+   branch, so the prompt is normally just **`/code-review`** — it reviews `master..HEAD`, i.e. the
+   **entire feature**, which is exactly what a review should cover. Only if some work is *deliberately*
+   left uncommitted must the prompt point the reviewer at the full delta including it
+   (`git diff $(git merge-base master HEAD)` + untracked from `git status --short`) — **never**
+   `git diff HEAD` alone, which omits already-committed earlier phases.
 
 **The trigger is mechanical — not a judgment call.** The moment you finish a discrete chunk of work
 (a plan designed, a phase landed, a question fully answered) and your next sentence *would* be
