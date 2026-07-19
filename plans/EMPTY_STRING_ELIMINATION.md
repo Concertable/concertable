@@ -33,9 +33,9 @@ but **behavior-changing** → verify with an integration boot-check.
 |---|---|---|
 | `Customer.Web:78`, `Auth:84`, `B2B.Web:114`, `B2B.Workers:60` | `Auth:Authority` (has service-discovery fallback) | fail-fast: throw when explicit key AND fallback both missing; skip in env "Testing" |
 | `Customer.Web:79`, `Auth:85`, `B2B.Web:115`, `B2B.Workers:61` | `ServiceAuth:ClientId` | fail-fast (Testing-guarded) |
-| `Customer.Web:80`, `Auth:86`, `B2B.Web:116`, `B2B.Workers:62` | `ServiceAuth:ClientSecret` | **genuine optional** → explicit `string.Empty` (NOT a throw) |
+| `Customer.Web:80`, `Auth:86`, `B2B.Web:116`, `B2B.Workers:62` | `ServiceAuth:ClientSecret` | ✅ **DONE `9ecb4c0b`** — genuine optional → explicit `string.Empty` + footgun comment |
 | `Customer.Web:88`, `Auth:102`, `B2B.Web:126`, `Payment.Web:64`, `Payment.Workers:39`, `Search.Workers:26`, `B2B.Seed.Simulator:22` | asb `ConnectionString` | fail-fast (Testing-guarded) |
-| `Payment.Infrastructure/.../Webhook/WebhookService.cs:27` | Stripe `WebhookSecret` | ValidateOnStart / throw at startup (own LOW tech-debt item) |
+| `Payment.Infrastructure/.../Webhook/WebhookService.cs:27` | Stripe `WebhookSecret` | ✅ **DONE `df51206f`** — constructor throw (lazy scoped service; ValidateOnStart would break Testing boot) |
 
 ### B · gRPC wire boundary (proto3 strings can't be null) — PUBLISHED Payment package → CUTOVER
 Fix = make the proto fields `optional string` so presence survives; server mappers set conditionally,
@@ -62,11 +62,13 @@ platform-sync. Use `/package-cutover`.
 - **`ConcertResponseMappers.cs:43,44`** (`BannerUrl`, `Avatar`) → **DONE (code written)**: `ConcertDetailsResponse`
   props `string?`, mapper drops `?? string.Empty`; `app/shared/.../concerts/types.ts` fields optional
   (matches existing `Hero`/`avatar?` props, no consumer ripple).
-- **`Customer/.../Ticket/.../TicketService.cs:150,156`** (`currentUser.Email ?? string.Empty`) +
-  **`TicketPaymentProcessor.cs:50`** (`GetValueOrDefault("fromUserEmail", string.Empty)`) → the
-  `TicketDto.UserEmail` item: drop `UserEmail` from `TicketDto` (SPA reads it from auth state), make the
-  list reads queryable projections (exclude `QrCode`), fail-closed/remove the `fromUserEmail` metadata
-  fallback. Boundary-free (Customer + SPA).
+- ✅ **DONE `3327722b` (+`3831a130` mobile refine)** — **`Customer/.../Ticket/.../TicketService.cs:150,156`**
+  (`currentUser.Email ?? string.Empty`) + **`TicketPaymentProcessor.cs:50`**
+  (`GetValueOrDefault("fromUserEmail", string.Empty)`): `UserEmail` dropped from `TicketDto`, mapper no longer
+  threads email, `fromUserEmail` now `meta["fromUserEmail"]` (fail-closed). Email sourced from auth state.
+  ⚠️ Two plan errors found: mobile `TicketDetailScreen` **did** render `ticket.userEmail` (rewired to
+  `useAuthStore`); and **"exclude `QrCode`" is wrong** — both surfaces render the QR off the list DTO, so it
+  stays. NOT boundary-free (mobile too).
 
 ### Plus (rides a cutover)
 - `Messaging.AzureServiceBus/Options/AzureServiceBusOptions.cs` — `= ""` property defaults → `null!`
@@ -77,31 +79,43 @@ platform-sync. Use `/package-cutover`.
 Path: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Fix\TechDebtSweep`
 
 **Committed on this branch (builds verified green):**
-- **#3 ConcertDetailsResponse** (Cat E) — `0c033bad`. C# `string?` + mapper coercions dropped + shared
-  TS optional. B2B build + all 4 web builds green.
-- **#2 dup-app 500→400** (B2B LOW) — `f72c939c`. Guard + `ExistsForOpportunityAndArtistAsync` + unit
-  test. B2B build green; **unit-test RUN unconfirmed** (fresh test-project restore was stuck) — re-run
-  `Concert.UnitTests`. Integration test (apply-after-withdraw → 400) still TODO (Docker).
-- **#4 web buy-tickets** (app/web MED) — `02781a8c`. Single `ConcertCard` reflow. All 4 web builds
-  green. Narrow-viewport E2E scenario still TODO (Docker).
+- **#3 ConcertDetailsResponse** (Cat E) — `0c033bad`.
+- **#2 dup-app 500→400** (B2B LOW) — `f72c939c`. Integration test (apply-after-withdraw → 400) still TODO (Docker).
+- **#4 web buy-tickets** (app/web MED) — `02781a8c`. Narrow-viewport E2E scenario still TODO (Docker).
+- **ClientSecret → explicit `string.Empty`** (Cat A optional) — `9ecb4c0b`. 4 host sites + one-line footgun
+  comment; carved out of the `api/TECH_DEBT.md` `?? ""` item. No behaviour change.
+- **TicketDto.UserEmail dropped + `fromUserEmail` fail-closed** (Cat E) — `3327722b`, refined `3831a130`.
+  Email now sourced from auth state. ⚠️ **The plan's "boundary-free Customer+SPA" was wrong on two counts:**
+  (1) **mobile `TicketDetailScreen` DID render `ticket.userEmail`** — rewired to read the signed-in email from
+  `useAuthStore` (gated on the user, not on email-presence); (2) **"exclude QrCode from the list projection"
+  is wrong** — both web (`TicketCard`→`QrPopover`) and mobile (`<QRCode value={ticket.qrCode}>`) render the QR
+  straight off the list DTO, so it can't be dropped without an SPA lazy-QR-fetch rework. Kept QrCode; only the
+  empty-string masks were removed. Customer TECH_DEBT entry reworded to that residual.
+- **WebhookService fail-close** (Payment LOW) — `df51206f`. Constructor throw, NOT ValidateOnStart — the service
+  is scoped (lazy per webhook), so the throw can't break host startup or the integration "Testing" host (which
+  never hits the webhook path); ValidateOnStart would demand the secret at every boot incl. Testing.
+- **EscrowService `Result.Ok<T?>` type-arg cleanup** (Payment LOW) — `aba922af`.
 
-**Still uncommitted in the worktree:**
-- `api/Concertable.Payment/.../EscrowService.cs` — the Payment `Result.Ok<T?>` redundant-type-arg
-  cleanup (Payment LOW item). **UNVERIFIED** (Payment not built). Build Payment, then commit or discard.
-- `app/web/b2b/{artist,venue}/src/routeTree.gen.ts` + `app/web/customer/src/routeTree.gen.ts` —
-  regenerated by the vite builds, not part of any fix. Discard (`git checkout --`) or ignore.
+Verified: full `api/Concertable.slnx` build **0 errors**; web-customer build green; mobile `tsc --noEmit` clean
+(bar a pre-existing, unrelated `SearchFilterSheet` search-sort error); **Payment unit tests 30/30**.
+
+**Working tree: clean.**
 
 **Reverted / not a fake fix:** the two Payment gRPC mapper edits (Cat B) were reverted to `?? ""` —
 they belong to the proto cutover, not a cosmetic swap.
 
-**Not started:** ClientSecret → `string.Empty`; Category A fail-fast; `WebhookService`; `TicketDto.UserEmail`;
-Cat B/C cutovers; `AzureServiceBusOptions` defaults.
+**Not started:** Category A fail-fast (`Authority`/`ClientId`/`asb`) — **PR2, needs the Docker integration
+boot-check** (every host AND `WebApplicationFactory("Testing")` must still boot); Cat B cutover (Payment proto
+`optional string`); Cat C cutover (Kernel `GetId` fail-closed + `NotificationHub` guard); `AzureServiceBusOptions
+= ""` → `null!` (rides the Messaging publish).
 
 ## PR sequence (multi-PR by necessity — cutovers can't share a branch)
 
-1. **PR1 — `Fix/TechDebtSweep` (boundary-free):** #2 dup-app, #3 ConcertDetailsResponse, #4 web
-   buy-tickets, `ClientSecret` → `string.Empty`, `TicketDto.UserEmail`. One commit per fix; update the
-   nearest `TECH_DEBT.md` in the same commit. Verify: 4 web builds + touched `dotnet build` + unit tests.
+1. ✅ **PR1 — `Fix/TechDebtSweep` (boundary-free): all committed.** #2 dup-app, #3 ConcertDetailsResponse, #4 web
+   buy-tickets, `ClientSecret` → `string.Empty`, `TicketDto.UserEmail` (+ the two Payment LOW cleanups:
+   WebhookService fail-close, EscrowService type-args). Slnx build 0 errors, web-customer build, mobile typecheck,
+   Payment unit tests 30/30. **Remaining Docker-gated items in #2/#4 (integration/E2E) not yet run.** Ready to PR
+   once you want it — or push more first.
 2. **PR2 — Category A fail-fast** (`Authority`/`ClientId`/`asb` + `WebhookService`). **Verify with the
    integration suite (Docker) that every host AND `WebApplicationFactory("Testing")` still boot.** The
    `AzureServiceBusOptions = ""` → `null!` piece is a Messaging-package change → may split into the cutover.
