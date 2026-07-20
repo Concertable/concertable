@@ -135,8 +135,10 @@ state is written:
 
 1. **Prepare for clear** — confirm the plan markdown, `CLAUDE.md`/`TECH_DEBT.md`, and commit messages
    hold everything; the chat must be safe to throw away.
-2. **Give the user a resume prompt to paste after `/clear`.** Assume zero context: name the plan file,
-   the branch/PR, and the exact next step. Keep it to a few lines.
+2. **Give the user a resume prompt to paste after `/clear`.** Assume zero context: name the **working
+   directory** (this repo runs many parallel worktrees — the branch name alone doesn't say which tree to
+   `cd` into, so give the absolute path: the main checkout, or the sibling `…worktrees/<Branch>`), the
+   plan file, the branch/PR, and the exact next step. Keep it to a few lines.
 
 **The trigger is mechanical — not a judgment call.** The moment you finish a discrete chunk of work
 (a plan designed, a phase landed, a question fully answered) and your next sentence *would* be
