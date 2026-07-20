@@ -213,28 +213,28 @@ export default applicationApi;
 A `@b2b/*` api file that only re-exposes a shared one is a pure re-export
 (`export { default } from "@concertable/shared/features/concerts/api/applicationApi"`), not a copy.
 
-## One axios instance per backend service; configure in `lib`, intercept per app
+## One axios instance per backend service; create bare in core, enhance per app
 
-The multi-service backend (own-site, Payment, Search) forces one axios singleton **per backend the
-site calls** — `api`, `paymentApi`, `searchApi`, `customerApi` — each created in
-`app/shared/src/lib/*Client.ts` with the shared `qs` param serializer and a
-`configure<X>Api(baseURL)` setter.
+The multi-service backend (own-site, Payment, Search) forces one axios instance **per backend the
+site calls** — `apiClient`, `paymentClient`, `searchClient`, `customerClient` — each created bare in
+`app/shared/src/lib/*Client.ts` (`@customer/shared` for `customerClient`). Only `searchClient` carries
+the `qs` comma param serializer (it pairs with Search's `CommaDelimitedGenreArrayModelBinder`); the
+other three send no array query params.
 
 Two layers, because *which* backends a site may call and with *what* token is an app-level decision
 (see [`app/web/shared/CLAUDE.md`](./shared/CLAUDE.md) and [`app/web/b2b/shared/CLAUDE.md`](./b2b/shared/CLAUDE.md)):
 
-- **`lib/*Client.ts` (shared):** creates + configures the instance. No auth, no interceptors — it
-  can't know the site's identity.
-- **App tree (`web/shared/lib/axios.tsx`, `web/b2b/shared/lib/b2bAxios.ts`):** side-effect-imports
-  the singleton and attaches interceptors — OIDC bearer, B2B `X-Tenant-Id`, `removeUser()` on 401.
+- **`lib/*Client.ts` (core):** `axios.create()` only — the bare instance. No baseURL, no auth, no
+  interceptors: core can't know the site's identity.
+- **App tree (`web/shared/lib/{apiClient,searchClient,paymentClient}.ts`, `web/b2b/shared/lib/b2bClient.ts`,
+  and the mobile equivalents):** side-effect-imports the instance and enhances it through the shared fluent
+  builder `configureClient(instance, url).withAuth(getToken, onUnauthorized).withTenant(getTenantId, header)`
+  (`@concertable/shared/lib/client`). The interceptor bodies live once in the builder; each platform binds its
+  auth flavour once — `configureWebClient` (OIDC `userManager`) / `configureMobileClient` (token storage) —
+  and b2b chains `.withTenant(…, X-Tenant-Id)`.
 
-**Litmus:** *does this touch the user's token or tenant? → interceptor wiring, in the app tree, not
+**Litmus:** *does this touch the user's token or tenant? → the builder chain in the app tree, not
 `lib/*Client.ts`.*
-
-> **Tech debt (not a rule):** the four `*Client.ts` files are near-verbatim copies and per-app
-> interceptor wiring is copy-pasted (only `b2bAxios.ts` factors it into `attach()`). A
-> `createApiClient(name)` factory + shared `attachAuth(client)` removes the duplication without
-> changing the two-layer shape. Log in the nearest `TECH_DEBT.md`.
 
 ## TanStack Query — raw hooks carry `Query`/`Mutation`; facades take the domain name
 
@@ -333,5 +333,4 @@ schema; the parsed output, not the buffer, becomes the `XRequest`.*
 | 5 | Shared `ProblemDetails` | `web/shared/lib/queryClient.ts` | Lift into `@concertable/shared` |
 | 6 | Suffix on *raw* query/mutation hooks | dashboard hooks (~20), `useStripeAccount` | Rename `useVenueKpis` → `useVenueKpisQuery`; leave facades |
 | 7 | Per-feature query-key factory | everywhere | Adopt incrementally |
-| 8 | *(tech debt)* duplicated axios clients | `shared/lib`, app trees | Factory + `attachAuth`; log in `TECH_DEBT.md` |
-| 9 | Form buffer unvalidated before `XRequest` | `useMyVenue`/`useMyArtist`, create artist/review/preference/ticket forms | zod schema in `schemas/`; map the parsed result (concert edit + e-signature done) |
+| 8 | Form buffer unvalidated before `XRequest` | `useMyVenue`/`useMyArtist`, create artist/review/preference/ticket forms | zod schema in `schemas/`; map the parsed result (concert edit + e-signature done) |
