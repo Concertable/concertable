@@ -12,8 +12,11 @@ below; don't stop mid-category.
 
 - **`ServiceAuth:ClientSecret` is a genuine optional.** `AppHost.Shared` wires it with
   `WithOptionalEnvironment` (lines 85/107/132) — **absent in dev, E2E, and integration "Testing" by
-  design** (secret-less local client). A blanket `?? throw` here bricks dev + every test host. Fix =
-  explicit `string.Empty` (or require *only* in Production), never a hard throw.
+  design** (secret-less local client). A blanket `?? throw` here bricks dev + every test host — but
+  `?? string.Empty` is **equally wrong**: it's the exact cosmetic swap this program forbids, masking a
+  *missing* secret as an *empty* one. The honest fix: leave it **null** when absent (a public/secret-less
+  client has no secret), and have the token request **omit** `client_secret` rather than send an empty
+  value. Hosts bind null boundary-free (done); the omit-on-null is in the Kernel token service → Cat C.
 - **Integration hosts boot without auth/bus config.** `ApiFixture` (B2B, and the sibling suites) run
   `WebApplicationFactory<Program>` under env **"Testing"**, supplying only DB/blob/URL config — **no
   `Auth:Authority`, `ServiceAuth:*`, or `asb`**. So any host-side `?? throw` MUST be skipped in the
@@ -33,7 +36,7 @@ but **behavior-changing** → verify with an integration boot-check.
 |---|---|---|
 | `Customer.Web:78`, `Auth:84`, `B2B.Web:114`, `B2B.Workers:60` | `Auth:Authority` (has service-discovery fallback) | ✅ **DONE** — fail-fast throw when explicit key AND fallback both missing; `null!` in env "Testing" (Kernel `AddClientCredentials` already skips the URI when Authority is blank, so no startup throw) |
 | `Customer.Web:79`, `Auth:85`, `B2B.Web:115`, `B2B.Workers:61` | `ServiceAuth:ClientId` | ✅ **DONE** — fail-fast; `null!` in "Testing" |
-| `Customer.Web:80`, `Auth:86`, `B2B.Web:116`, `B2B.Workers:62` | `ServiceAuth:ClientSecret` | ✅ **DONE `9ecb4c0b`** — genuine optional → explicit `string.Empty` + footgun comment |
+| `Customer.Web:80`, `Auth:86`, `B2B.Web:116`, `B2B.Workers:62` | `ServiceAuth:ClientSecret` | 🟠 **PARTIAL** — hosts now bind it **null** when absent (`9ecb4c0b`'s `?? string.Empty` was a forbidden cosmetic swap; replaced with assign-only-when-present). Full fix — `TokenServiceOptions.ClientSecret` → `string?` + token service **omits** the `client_secret` param when null — is a **published Kernel change → Cat C cut-over** |
 | `Customer.Web:88`, `Auth:102`, `B2B.Web:126`, `Payment.Web:64`, `Payment.Workers:39`, `Search.Workers:26`, `B2B.Seed.Simulator:22` | asb `ConnectionString` | ✅ **DONE** — fail-fast throw. **Correction:** *not* Testing-guarded — the throw is unconditional and safe, because the transport options lambda is lazy and every integration "Testing" host mocks the bus (`AzureServiceBusReceiver` removed + `IBusTransport`→`MockBusTransport`; Search.Web has no ASB), so the asb options never resolve at Testing boot |
 | `Payment.Infrastructure/.../Webhook/WebhookService.cs:27` | Stripe `WebhookSecret` | ✅ **DONE `df51206f`** — constructor throw (lazy scoped service; ValidateOnStart would break Testing boot) |
 
@@ -46,10 +49,14 @@ platform-sync. Use `/package-cutover`.
 - `Payment.Infrastructure/Grpc/PaymentMappers.cs:19,20` — `ClientSecret`, `TransactionId`
 - `Payment.Infrastructure/Grpc/PayoutAccountGrpcService.cs:19,46` — `Url` (OnboardingLink), `ClientSecret` (SetupIntent)
 
-### C · Kernel `GetId()` fails open to `""` — PUBLISHED Kernel package → CUTOVER
-- `Shared/Concertable.Kernel/Identity/ClaimsPrincipalExtensions.cs:9` — return `string?`/throw (fail-closed);
-  fix `NotificationHub`'s guard so it actually rejects a `sub`-less principal. Publish Kernel → consumers.
-  (Own MED tech-debt item in `api/TECH_DEBT.md`.)
+### C · Kernel published changes — PUBLISHED Kernel package → CUTOVER
+- `Shared/Concertable.Kernel/Identity/ClaimsPrincipalExtensions.cs:9` — `GetId()` fails open to `""`;
+  return `string?`/throw (fail-closed); fix `NotificationHub`'s guard so it actually rejects a
+  `sub`-less principal. Publish Kernel → consumers. (Own MED tech-debt item in `api/TECH_DEBT.md`.)
+- `Shared/Concertable.Kernel/Auth/TokenServiceOptions.cs` + `ClientCredentialsTokenService.cs` —
+  `ClientSecret` → `string?`; the token request **omits** the `client_secret` form key when null
+  (correct OAuth2 for a public/secret-less client) instead of sending an empty one. Hosts already bind
+  null when absent (boundary-free, done on this branch); this Kernel change completes it. Publish Kernel.
 
 ### D · Genuine empty fallbacks — KEEP (convention permits; converting = churn, not a fix)
 - `Auth/Services/RemoteProfileClaimsProvider.cs:53` — `ex.Content ?? string.Empty` (log fragment).
@@ -82,8 +89,10 @@ Path: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Fix\TechDebtSweep`
 - **#3 ConcertDetailsResponse** (Cat E) — `0c033bad`.
 - **#2 dup-app 500→400** (B2B LOW) — `f72c939c`. Integration test (apply-after-withdraw → 400) still TODO (Docker).
 - **#4 web buy-tickets** (app/web MED) — `02781a8c`. Narrow-viewport E2E scenario still TODO (Docker).
-- **ClientSecret → explicit `string.Empty`** (Cat A optional) — `9ecb4c0b`. 4 host sites + one-line footgun
-  comment; carved out of the `api/TECH_DEBT.md` `?? ""` item. No behaviour change.
+- **ClientSecret bound null-when-absent** (Cat A optional) — `9ecb4c0b` bound it to `string.Empty`, which was
+  the forbidden cosmetic swap; a follow-up commit replaces that with assign-only-when-present across the 4 host
+  sites (null when unconfigured, no `""`). Same wire behaviour today (a null form value encodes empty). The
+  *complete* fix — token service **omits** `client_secret` when null — is a Kernel publish → **Cat C cut-over**.
 - **TicketDto.UserEmail dropped + `fromUserEmail` fail-closed** (Cat E) — `3327722b`, refined `3831a130`.
   Email now sourced from auth state. ⚠️ **The plan's "boundary-free Customer+SPA" was wrong on two counts:**
   (1) **mobile `TicketDetailScreen` DID render `ticket.userEmail`** — rewired to read the signed-in email from
