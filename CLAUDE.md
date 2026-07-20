@@ -6,6 +6,8 @@ Concertable is a monorepo (a convenience, not the architecture) with a `.NET` mi
 
 Decide and act on reversible work (doc/plan edits, isolated commits, retrying a transient failure), then report — no check-ins. Research: run end-to-end, update the relevant docs, commit in isolation. Pause only when an action is irreversible or contradicts what you find (e.g. unrelated work already staged) — flag it in one line and take the safe path, don't ask permission.
 
+**Never gate a reversible local (working-tree) change behind a "should I?" — just make it.** Editing / writing / refactoring a file, or running a plan's code steps, is the default action, never a question and never a "just report / do nothing" menu; the *only* thing that waits for an explicit instruction is `git commit` / `git push` (full rule: root `~/.claude/CLAUDE.md`).
+
 ## Per-area guidance
 
 - **Backend (.NET, `api/`)** — seeding, migrations, DTOs, module rules, C# conventions: [`api/CLAUDE.md`](./api/CLAUDE.md).
@@ -25,14 +27,53 @@ Branches are named `<Type>/<Name>` with the type prefix **capitalized**: `Featur
 
 ## Confirming a PR merge — Bash background until-loop, never `Monitor`
 
-After enabling auto-merge (or when a merge lands async via the merge queue), confirm the merge with a **Bash `run_in_background` until-loop** that exits the instant `gh pr view <PR> --json state -q .state` is `MERGED` or `CLOSED` — that gives one immediate completion notification.
+After enabling auto-merge (or when a merge lands async via the merge queue), confirm it with a **Bash `run_in_background` until-loop** that exits the instant `gh pr view <PR> --json state -q .state` is `MERGED` or `CLOSED` — one immediate completion notification.
+
+**Also catch the silent stall — not just the merge.** A `CLEAN`, auto-merge-ON PR that GitHub never admits to the queue (`mergeQueueEntry == null`) sits `OPEN` forever: never merges, never errors, queue idle. Cause: auto-merge was enabled while a required check was still pending, then that check resolved to `skipped` (the non-code classifier skips e2e/unit/integration on the PR) and GitHub failed to re-evaluate admission. **This once burned an hour.** The loop must detect it and self-heal: `OPEN` + not-in-queue for a few polls ⇒ **toggle auto-merge** (`gh pr merge --disable-auto <PR>` then `--auto <PR>`) to force admission. (`.github/workflows/auto-merge.yml` now re-asserts on `check_suite: completed`, so it should be rare — the monitor is the backstop.)
 
 - **Never use the `Monitor` tool** for a single "tell me when it merges" — it's for streaming many events, and its detached poller silently missed merges here (it timed out instead of firing).
 - **Never swallow poll errors** (`2>/dev/null || continue`) — a broken `gh` then looks identical to "still waiting". Capture stderr into the state (`2>&1`), echo the state every poll, and **cap** the loop so a persistent failure surfaces instead of hanging forever.
 
 ```bash
-pr=<PR>; max=120; i=0; while :; do i=$((i+1)); state=$(gh pr view "$pr" --json state -q .state 2>&1); echo "poll $i: state=[$state]"; case "$state" in MERGED|CLOSED) echo ">>> PR #$pr $state"; exit 0;; esac; [ "$i" -ge "$max" ] && { echo ">>> PR #$pr still [$state] after $max polls — surfacing"; exit 1; }; sleep 30; done
+pr=<PR>; repo=$(gh repo view --json nameWithOwner -q .nameWithOwner); max=120; i=0; stuck=0
+while :; do i=$((i+1))
+  state=$(gh pr view "$pr" --json state -q .state 2>&1)
+  inq=$(gh api graphql -f query="{repository(owner:\"${repo%/*}\",name:\"${repo#*/}\"){pullRequest(number:$pr){mergeQueueEntry{state}}}}" -q '.data.repository.pullRequest.mergeQueueEntry!=null' 2>&1)
+  echo "poll $i: state=[$state] inQueue=[$inq]"
+  case "$state" in MERGED|CLOSED) echo ">>> PR #$pr $state"; exit 0;; esac
+  if [ "$state" = OPEN ] && [ "$inq" != true ]; then stuck=$((stuck+1)); else stuck=0; fi
+  if [ "$stuck" -ge 3 ]; then
+    echo ">>> PR #$pr STUCK (auto-merge on, not admitted to queue) — toggling to force admission"
+    gh pr merge --disable-auto "$pr" >/dev/null 2>&1 || true; gh pr merge --auto "$pr"; stuck=0
+  fi
+  [ "$i" -ge "$max" ] && { echo ">>> PR #$pr still [$state] after $max polls — surfacing"; exit 1; }
+  sleep 30
+done
 ```
+
+## Platform sync is a live gate — a package merge isn't done until its sync PR is green
+
+Any merge that touches `api/**` makes `publish-packages` republish and `platform-sync` open a
+`chore/platform-sync-*` PR that bumps every service's `<ConcertablePlatformVersion>` to the new
+version (MinVer bumps it on every merge). **Non-breaking → the sync PR auto-merges green in minutes.
+Breaking** — a published type's shape/namespace moved and a consumer no longer compiles against the
+new pin — **→ the sync PR goes RED, and until it's fixed every service is stranded on a broken
+platform pin.** This is the failure that keeps recurring; treat it as a first-class part of merging,
+not an afterthought:
+
+- **Whoever merges owns the sync.** After merging an `api/**` change, follow its `chore/platform-sync-*`
+  PR to green/merged — or, if it's red, migrate the failing consumer(s) **in that PR** (legal now: the
+  new version is on the feed), build `api/Concertable.slnx` to 0 errors, and push. `/merge` step 6
+  automates this; do it by hand if you merged another way. **Never leave a red sync PR behind.**
+- **Before branching for new feature work, confirm no open red sync PR** — don't build on a mid-break
+  platform. This is a **branch-time** check (the cheap checkpoint), *not* a per-prompt one:
+  ```bash
+  sp=$(gh pr list --state open --json number,headRefName --jq '.[] | select(.headRefName|startswith("chore/platform-sync-")) | .number' | head -1)
+  [ -n "$sp" ] && gh pr checks "$sp" | awk -F'\t' '$2=="fail"'   # any output → clear it before starting new work
+  ```
+- **Automated backstop (no action needed):** `.github/workflows/platform-sync-alert.yml` opens a
+  tracking Issue + labels the PR `platform-sync-broken` the moment a sync goes red (and closes the
+  Issue when it greens), so a broken sync can't rot unnoticed even when the merge bypassed `/merge`.
 
 ## E2E suites — Docker health first, always
 

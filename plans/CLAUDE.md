@@ -206,6 +206,16 @@ The full E2E suites (API `Concertable.B2B.E2ETests` + the UI regress) are **expe
 Docker-gated**. Run them only when the change earns it; otherwise build + unit + integration is the
 gate, and you update the plan markdown and move on.
 
+**The PR merge queue IS the E2E gate — never run E2E locally ahead of a merge.** When the change is
+going out as a PR, the merge-queue pipeline runs the full suite (E2E included) as the gate. Running it
+locally first just burns ~25-30 min duplicating exactly what CI will do on the way in. So for anything
+headed to a PR, the local gate stops at build + unit + integration — **push it and let the queue run
+E2E.** The **only** reason to run E2E locally is when **the merge fails on failing E2E tests** — then
+run the failing scenarios via the **`e2e-ui-debug`** / **`e2e-debug`** skill to diagnose and fix, and
+push the fix (the queue re-runs E2E on the way back in). **This overrides any plan phase line or
+kickoff prompt that says "run the E2E regress"** — if a PR will run it, let the PR run it; a written
+"run E2E" step is not a reason to duplicate the queue.
+
 **Run E2E when the change is _massive_ or _risky_:**
 
 - It spans multiple services or is otherwise broadly cross-cutting.
