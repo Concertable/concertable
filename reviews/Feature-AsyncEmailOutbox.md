@@ -36,9 +36,15 @@ Checked correctness, microservice isolation, module boundaries, seeding, and C# 
 
 ## Findings
 
-- [-] **CV1 — LOW — convention (defensive default)** — `api/Concertable.Messaging/Concertable.Messaging.AzureServiceBus/Options/AzureServiceBusOptions.cs:14` — DEFERRED: human decision needed on whether to add a guard/throw on empty `ServiceName` now (vs. leaving the current `""` default, since the reviewer notes it is never hit in practice and framed the change as conditional on a future refactor); also which site the guard belongs at (throw in the computed `QueueNameFor` vs. options validation at registration).
-  With the interpolation now embedding `ServiceName`, an unset `ServiceName` (default `""`) yields a
-  malformed double-hyphen queue name `command--<type>` instead of a loud failure — a slightly sharper
-  edge than the pre-change unscoped name. Not hit in practice (all seven hosts set `ServiceName`
-  explicitly), so sub-threshold and non-blocking; noted only because the repo's "don't default away a
-  failure" rule would prefer a guard/throw on empty `ServiceName` if this is ever refactored.
+- [x] **CV1 — LOW — convention (defensive default)** — `api/Concertable.Messaging/Concertable.Messaging.AzureServiceBus/Extensions/ServiceCollectionExtensions.cs`
+  FIXED (Tommy chose fail-fast-at-registration): `AddAzureServiceBusTransport` now applies the
+  `configure` action to a probe instance and throws `InvalidOperationException` if `ServiceName` is
+  empty, so a host that forgets to set it dies at composition/boot rather than silently producing a
+  malformed `command--<type>` queue name. `ValidateOnStart` was not used — the lean transport package
+  references only `*.Abstractions` + `Options`, not `Microsoft.Extensions.Hosting`; the eager check
+  achieves the same fail-at-boot without pulling in a new dependency. Build green; 48/48 messaging unit
+  tests pass.
+
+  _Original finding: with the interpolation now embedding `ServiceName`, an unset `ServiceName` (default
+  `""`) yielded a malformed `command--<type>` queue name instead of a loud failure — never hit in
+  practice (all seven hosts set it), but the repo's "don't default away a failure" rule prefers a guard._
