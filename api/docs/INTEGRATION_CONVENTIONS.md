@@ -78,6 +78,7 @@ single axis — their endpoints — so they get **one file, a `#region` per endp
 **method/endpoint under test** (`#region Create`, `#region GetDetailsById`,
 `#region GetVatCalculationAsync`), or for the behaviour where a cluster isn't a single method
 (`#region Cancel from PaymentFailed`). That is the default and the common case (e.g. `ArtistApiTests`).
+Group with `#region` — **never** `// ---- X ----` comment dividers.
 
 A controller that varies on **two** axes is a matrix, not a list, and a single regioned file can't
 express it — one axis becomes the regions and the other becomes repeated sub-blocks inside every
