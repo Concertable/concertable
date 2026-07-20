@@ -117,6 +117,14 @@ For each candidate finding, judge whether it's real and will be hit in practice.
 - Issues deliberately silenced in code (lint-ignore, documented exception).
 - A convention "violation" the relevant doc doesn't actually state.
 
+**No hedged findings — a kept finding is one you'd fix.** Every finding that survives this filter must
+name a *concrete fix you're prepared to apply*. Do not emit conditional/hedged findings — "sub-threshold
+but noting it", "only worth it if this is ever refactored", "non-blocking, your call". That middle
+ground is a trap: it's above the bar → state the fix (and it gets applied), or below the bar → drop it
+silently. Never the hedge. A hedged finding reads downstream as "human decision needed" — `address-review`
+defers it, and a reversible, clearly-correct, repo-rule-backed fix wrongly turns into a permission
+question instead of just being made. Severity `LOW` still means "fix it", not "maybe fix it".
+
 ## Step 5 — Finalize the review markdown
 
 The file already exists (created up front in Step 1b) and findings were appended as they were
