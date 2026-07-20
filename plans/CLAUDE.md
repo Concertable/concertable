@@ -135,12 +135,10 @@ state is written:
 
 1. **Commit the completed phase FIRST — don't leave finished, verified phase work uncommitted "for
    review."** A completed + verified plan phase is *committed* as part of finishing it, with the plan
-   check-off in the same commit (Lifecycle 3). Committing each phase as it lands **is** the standing
-   instruction for plan work — it's what Lifecycle 2 means, and it satisfies the root/global "explicit
-   instruction to commit" rule for plan-phase commits specifically. (**Pushing is separate and still
-   needs its own explicit go-ahead** — commit ≠ push.) Both reviewing and resuming happen off the
-   commit, so the commit lands before the handoff. Leaving a green phase sitting in the working tree is
-   the mistake that makes `/code-review` unable to see it.
+   check-off in the same commit (Lifecycle 3). Committing at the phase boundary is the default here — do
+   it without asking; **only `push` waits for Tommy's explicit go-ahead** (commit ≠ push). Both
+   reviewing and resuming run off the commit, so it lands before the handoff. Leaving a green phase in
+   the working tree is the mistake that makes `/code-review` unable to see it.
 2. **Prepare for clear** — confirm the plan markdown, `CLAUDE.md`/`TECH_DEBT.md`, and commit messages
    hold everything; the chat must be safe to throw away.
 3. **Give the user a resume prompt to paste after `/clear`.** Assume zero context: name the plan file,

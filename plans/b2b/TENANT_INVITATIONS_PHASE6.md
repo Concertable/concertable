@@ -274,12 +274,22 @@ not on a covered E2E flow; integration drives the real auth pipeline).
 > `*NoVenue/*NoArtist` operators own their own tenant, so a Manager acting in another tenant must send `X-Tenant-Id` or
 > resolution fails closed (403) — the permission tests name the tenant explicitly to gate on the real reason.
 
-### 6.3 — Invitations create/revoke/accept + provisioning branch + email *(no re-scaffold)*
+### 6.3 — Invitations create/revoke/accept + provisioning branch + email *(no re-scaffold)* — ✅ DONE (build + integration green; merge-queue E2E pending)
 `POST`/`DELETE invitations`, `POST /api/invitations/{id}/accept`, `InvitationService` + email
 (`IEmailSender`+`IUriService`, add `Urls:Frontend`), the `TenantProvisioningHandler` invitation-first
 branch. **Gate:** build + Tenant integration (invite→accept→membership, dup/already-member 409, expiry,
-email captured in `MockEmailSender.Sent`) **+ API E2E** — invited-registration via `TestTokenMinter` with a
-fresh email (this flips the registration/provisioning flow, which E2E covers → massive/risky bar met).
+email captured in `MockEmailSender.Sent`). **E2E is the merge-queue's job, not a local step** — the
+invited-registration flow (`TestTokenMinter`, fresh email, provisioning flip) is covered by the queue's
+E2E gate on the PR, so don't burn ~25-30 min running it locally before committing.
+> Landed: top-level `InvitationsController` (accept only; `[Authorize]`, email-match gate — the accepting caller may
+> belong to no tenant yet). Invite/list/revoke on `OrganizationMembersController` under `api/organizations`
+> (`[HasPermission(MembersInvite)]`). `IInvitationService`/`InvitationService` (invite/list/revoke/accept) sending the
+> invite email via `IEmailSender`+`IUriService` with `Urls:Frontend` added to B2B `appsettings.json`. `TenantProvisioningHandler`
+> invitation-first branch: a registering email with pending, unexpired invitations joins the inviting tenant(s) as an ordinary
+> member — no personal tenant, no `Announce()` — inside the inbox-deduped transaction (idempotent over redelivery, case-insensitive
+> match). **BUG1b** from the review fixed here — accept path guards on the tenant still existing before creating the membership.
+> `InviteMemberRequest` + `InviteMemberRequestValidator`, DI registration. Gate green: build 0 errors; **Tenant integration 52/52**
+> (16 `InvitationTests` + 3 invitation-first `TenantProvisioningTests` + existing member/resolution/stripe/tax suites).
 
 ### 6.4 — Frontend switcher + members/invite/accept pages *(final)*
 FE `User.memberships` type, switcher UI, members feature + pages, accept page, per-app route injection.
