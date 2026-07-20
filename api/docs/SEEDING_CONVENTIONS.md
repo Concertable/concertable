@@ -52,6 +52,7 @@ Examples of data that must **not** be manually seeded:
 - **Stripe payout accounts** — provisioned when `CredentialRegisteredEvent` fires on user registration.
 - **Payment accounts / external service records** — anything provisioned by a handler reacting to a domain event.
 - **Invitation-derived tenant memberships** — written by the invitation-accept endpoint / `TenantProvisioningHandler`'s invitation branch. Only the **founding Owner** membership is seeded (alongside its tenant, the same documented direct-insert exception); any non-founding membership comes from an accepted invitation and is never seeded.
+- **Invitation rows** (`TenantInvitationEntity`, `tenant.Invitations`) — created only by the invite endpoint or written/consumed by the `TenantProvisioningHandler` invitation branch. There is no `SeedState.Invitations` and no `context.Invitations.AddRange(...)` in any seeder; integration tests exercise invitations through the real invite/accept endpoints.
 
 The rule: if a record exists because *something happened* (an event was raised and handled), there is no seeder for it. If you find yourself writing `context.XReadModels.AddRange(...)` in a seeder, stop — you are bypassing the event flow.
 
