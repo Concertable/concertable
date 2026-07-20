@@ -31,10 +31,10 @@ but **behavior-changing** → verify with an integration boot-check.
 
 | Site(s) | Setting | Fix |
 |---|---|---|
-| `Customer.Web:78`, `Auth:84`, `B2B.Web:114`, `B2B.Workers:60` | `Auth:Authority` (has service-discovery fallback) | fail-fast: throw when explicit key AND fallback both missing; skip in env "Testing" |
-| `Customer.Web:79`, `Auth:85`, `B2B.Web:115`, `B2B.Workers:61` | `ServiceAuth:ClientId` | fail-fast (Testing-guarded) |
+| `Customer.Web:78`, `Auth:84`, `B2B.Web:114`, `B2B.Workers:60` | `Auth:Authority` (has service-discovery fallback) | ✅ **DONE** — fail-fast throw when explicit key AND fallback both missing; `null!` in env "Testing" (Kernel `AddClientCredentials` already skips the URI when Authority is blank, so no startup throw) |
+| `Customer.Web:79`, `Auth:85`, `B2B.Web:115`, `B2B.Workers:61` | `ServiceAuth:ClientId` | ✅ **DONE** — fail-fast; `null!` in "Testing" |
 | `Customer.Web:80`, `Auth:86`, `B2B.Web:116`, `B2B.Workers:62` | `ServiceAuth:ClientSecret` | ✅ **DONE `9ecb4c0b`** — genuine optional → explicit `string.Empty` + footgun comment |
-| `Customer.Web:88`, `Auth:102`, `B2B.Web:126`, `Payment.Web:64`, `Payment.Workers:39`, `Search.Workers:26`, `B2B.Seed.Simulator:22` | asb `ConnectionString` | fail-fast (Testing-guarded) |
+| `Customer.Web:88`, `Auth:102`, `B2B.Web:126`, `Payment.Web:64`, `Payment.Workers:39`, `Search.Workers:26`, `B2B.Seed.Simulator:22` | asb `ConnectionString` | ✅ **DONE** — fail-fast throw. **Correction:** *not* Testing-guarded — the throw is unconditional and safe, because the transport options lambda is lazy and every integration "Testing" host mocks the bus (`AzureServiceBusReceiver` removed + `IBusTransport`→`MockBusTransport`; Search.Web has no ASB), so the asb options never resolve at Testing boot |
 | `Payment.Infrastructure/.../Webhook/WebhookService.cs:27` | Stripe `WebhookSecret` | ✅ **DONE `df51206f`** — constructor throw (lazy scoped service; ValidateOnStart would break Testing boot) |
 
 ### B · gRPC wire boundary (proto3 strings can't be null) — PUBLISHED Payment package → CUTOVER
@@ -95,6 +95,14 @@ Path: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Fix\TechDebtSweep`
   is scoped (lazy per webhook), so the throw can't break host startup or the integration "Testing" host (which
   never hits the webhook path); ValidateOnStart would demand the secret at every boot incl. Testing.
 - **EscrowService `Result.Ok<T?>` type-arg cleanup** (Payment LOW) — `aba922af`.
+- **Category A config fail-fast** (`Auth:Authority` / `ServiceAuth:ClientId` / asb `ConnectionString`) across all 9
+  host files + `B2B.Workers/ServiceCollectionExtensions.cs` (took a new `IHostEnvironment` param). `api/TECH_DEBT.md`
+  rewritten to the residual (`AzureServiceBusOptions = ""` → `null!`, rides the Messaging publish). Slnx build **0
+  errors**. **Docker integration gate could NOT run locally** — Testcontainers failed to reach Docker (290 identical
+  "Docker not running/misconfigured" errors, every test died at SQL-container creation before any host booted, despite
+  `docker-health.ps1` passing) → per `CLAUDE.md` a startup-failed suite is an environment problem, stopped, did not
+  rerun. Boot-safety established by code analysis instead (see the asb row above); the merge-queue runs the full
+  integration/E2E gate on the PR.
 
 Verified: full `api/Concertable.slnx` build **0 errors**; web-customer build green; mobile `tsc --noEmit` clean
 (bar a pre-existing, unrelated `SearchFilterSheet` search-sort error); **Payment unit tests 30/30**.
@@ -104,21 +112,18 @@ Verified: full `api/Concertable.slnx` build **0 errors**; web-customer build gre
 **Reverted / not a fake fix:** the two Payment gRPC mapper edits (Cat B) were reverted to `?? ""` —
 they belong to the proto cutover, not a cosmetic swap.
 
-**Not started:** Category A fail-fast (`Authority`/`ClientId`/`asb`) — **PR2, needs the Docker integration
-boot-check** (every host AND `WebApplicationFactory("Testing")` must still boot); Cat B cutover (Payment proto
-`optional string`); Cat C cutover (Kernel `GetId` fail-closed + `NotificationHub` guard); `AzureServiceBusOptions
-= ""` → `null!` (rides the Messaging publish).
+**Not started — all three are PUBLISHED-package CUTOVERS, each its own PR (can't share this branch):**
+Cat B cutover (Payment proto `optional string`); Cat C cutover (Kernel `GetId` fail-closed + `NotificationHub`
+guard); `AzureServiceBusOptions = ""` → `null!` (rides the Messaging publish). Do each via `/package-cutover`
+*after* this branch's PR merges and platform-sync is green.
 
 ## PR sequence (multi-PR by necessity — cutovers can't share a branch)
 
-1. ✅ **PR1 — `Fix/TechDebtSweep` (boundary-free): all committed.** #2 dup-app, #3 ConcertDetailsResponse, #4 web
-   buy-tickets, `ClientSecret` → `string.Empty`, `TicketDto.UserEmail` (+ the two Payment LOW cleanups:
-   WebhookService fail-close, EscrowService type-args). Slnx build 0 errors, web-customer build, mobile typecheck,
-   Payment unit tests 30/30. **Remaining Docker-gated items in #2/#4 (integration/E2E) not yet run.** Ready to PR
-   once you want it — or push more first.
-2. **PR2 — Category A fail-fast** (`Authority`/`ClientId`/`asb` + `WebhookService`). **Verify with the
-   integration suite (Docker) that every host AND `WebApplicationFactory("Testing")` still boot.** The
-   `AzureServiceBusOptions = ""` → `null!` piece is a Messaging-package change → may split into the cutover.
+1. ✅ **PR1 + PR2 — `Fix/TechDebtSweep` (all boundary-free work): committed, shipping as ONE draft PR.**
+   #2 dup-app, #3 ConcertDetailsResponse, #4 web buy-tickets, `ClientSecret` → `string.Empty`,
+   `TicketDto.UserEmail`, WebhookService fail-close, EscrowService type-args, **and Category A config fail-fast**
+   (`Authority`/`ClientId`/`asb`). Slnx build 0 errors. Docker integration gate couldn't run locally (Testcontainers
+   env failure — see worktree-state note) → merge queue runs the full gate on the PR. Opened as **draft**.
 3. **PR3 — CUTOVER: Kernel `GetId` fail-closed** + `NotificationHub` guard. Publish Kernel → platform-sync.
 4. **PR4 — CUTOVER: Payment proto `optional string`** (Cat B). Publish `Payment.Grpc`/`.Client` → platform-sync.
 
