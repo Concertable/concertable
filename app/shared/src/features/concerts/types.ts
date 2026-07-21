@@ -47,12 +47,6 @@ export interface Checkout {
 
 export type { ESignatureRequest } from "./schemas/eSignatureRequestSchema";
 
-export interface PaymentResponse {
-  requiresAction: boolean;
-  clientSecret?: string;
-  transactionId?: string;
-}
-
 export interface ConcertArtist {
   id: number;
   name: string;

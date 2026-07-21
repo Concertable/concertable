@@ -11,7 +11,6 @@ export type {
   Concert,
   ConcertArtist,
   ConcertVenue,
-  PaymentResponse,
   CheckoutSession,
   CheckoutLabels,
   PaymentAmount,
