@@ -1,6 +1,6 @@
 ---
 name: code-review
-description: Full code review of a branch diff against Concertable's conventions, module-boundary rules, and microservice-isolation rules. Reviews the diff for correctness bugs plus convention/boundary/microservice anti-patterns (B2B and Customer are separate services that must only communicate via *.Contracts integration events — never each other's runtime), filters to high-confidence findings, writes them to a per-branch review markdown, and stamps the reviewed-up-to commit SHA at the top. Use when the user wants to "code-review my changes", "review this branch", "review the PR", or "do a full review". For re-reviewing only commits added since a previous review, use the `incremental-review` skill (a thin wrapper around this one). This is Concertable's own architecture-aware review and intentionally replaces the stock built-in code-review; the plain built-in `/review` (GitHub PR review) is left untouched.
+description: Full code review of a branch diff against Concertable's conventions, module-boundary rules, and microservice-isolation rules. Reviews the diff for correctness bugs plus convention/boundary/microservice anti-patterns (B2B and Customer are separate services that must only communicate via *.Contracts integration events — never each other's runtime) plus missing test coverage on changed paths, filters to high-confidence findings, writes them to a per-branch review markdown, and stamps the reviewed-up-to commit SHA at the top. Use when the user wants to "code-review my changes", "review this branch", "review the PR", or "do a full review". For re-reviewing only commits added since a previous review, use the `incremental-review` skill (a thin wrapper around this one). This is Concertable's own architecture-aware review and intentionally replaces the stock built-in code-review; the plain built-in `/review` (GitHub PR review) is left untouched.
 ---
 
 # code-review
@@ -106,6 +106,16 @@ Concertable is a multi-service system; **B2B, Customer, and Search are data serv
 - `is { }` capture instead of `is not null`; unnecessary braces on single-statement `if`/`else`.
 - Additive EF migrations (model changes re-scaffold via `./initial-migrations.ps1`).
 
+### Lens F — Test coverage of changed behaviour
+
+A behaviour the diff **adds or alters** that nothing asserts. The fix is concrete — name the test to write — so it obeys Step 4's no-hedge rule exactly like any other finding (the fix is "add test X", not "consider more tests"). `/review` catches these; this lens is why code-review now does too.
+
+- A new or rewritten service method / handler / endpoint whose success **and** failure branches have no covering test.
+- A refactor that re-routes a path through a new collaborator (e.g. reading from a repository instead of a service) with no test exercising the new wiring — even when behaviour is *preserved*: the wiring is new and unpinned.
+- A deleted test that removed the only coverage of a path that still exists.
+
+Do **not** flag: pure renames, DI-registration-only changes, generated code, or a path an existing test still exercises unchanged. This is not "add more tests" — it is one concrete missing assertion on a path this diff touched.
+
 ## Step 4 — Confidence filter
 
 For each candidate finding, judge whether it's real and will be hit in practice. **Drop anything below ~80/100 confidence.** Discard these false positives:
@@ -157,7 +167,7 @@ File shape:
 - Group by lens or severity, whichever reads better for the count.
 - Give each finding a short stable ID (e.g. `MS1` microservice, `MB1` module-boundary, `BUG1`, `SEED1`, `CV1` convention) so `incremental-review` runs can append new IDs without renumbering.
 - If a review file already exists, **append** a new dated `## Incremental review — <date>` section rather than overwriting prior findings; preserve existing status marks.
-- No findings → write `No issues found. Checked correctness, microservice isolation, module boundaries, seeding, and C# conventions.`
+- No findings → write `No issues found. Checked correctness, microservice isolation, module boundaries, seeding, C# conventions, and test coverage of changed paths.`
 
 ## Step 6 — Stamp the marker (mandatory)
 
