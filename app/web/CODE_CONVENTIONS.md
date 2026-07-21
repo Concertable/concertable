@@ -3,6 +3,10 @@
 The web/mobile counterpart to [`api/docs/CODE_CONVENTIONS.md`](../../api/docs/CODE_CONVENTIONS.md).
 Same voice: rule first, one-line rationale, a litmus test where it helps.
 
+Sibling of [`CODE_PATTERNS.md`](./CODE_PATTERNS.md): this file is **naming and style**, that one is
+**structure** (the tiers, identity composition, one-home-for-state, central error handling, the data
+layer). A rule about *what to call a thing* lives here; a rule about *how the pieces fit* lives there.
+
 **These rules are set by what is idiomatic for a hand-written TypeScript/React client against an
 ASP.NET Core backend — not by what the current `app/` code happens to do.** The code is evidence of
 where we *conform* or *violate*, never the justification. Where a rule is contested, the source is
@@ -29,9 +33,8 @@ the prevailing convention for hand-written React is the domain noun.
 **Litmus:** *rename this TS type — does any JSON byte change? No → the name is yours; name it for the
 domain.*
 
-> **Violations (fix):** `PaymentResponse` (`shared/.../concerts/types.ts:78`) and the
-> structurally-identical `TicketPurchaseResponse` (`customer/.../tickets/api/ticketApi.ts:10`). Both
-> are payment *outcomes*. Collapse to one shared `PaymentOutcome` and delete the duplicate.
+> **Anti-pattern:** a read type named with a server suffix — `PaymentResponse`. A payment *outcome* is
+> a domain noun: one shared `PaymentOutcome`, no `Response`.
 
 ## Write inputs are `XRequest` — carrying only client-settable fields
 
@@ -79,10 +82,9 @@ export interface ESignatureRequest {
 **Litmus:** *could the client legitimately set this field on the way in? No (it's a route id, or
 server-owned) → it's not in the `Request`.*
 
-> **Violations (fix):** `CreateArtist` and (partially) `OpportunityDraft` don't carry the suffix while
-> `CreateReviewRequest` / `CreatePreferenceRequest` / `TicketPurchaseRequest` do. Rename `CreateArtist`
-> → `CreateArtistRequest`. Keep `OpportunityDraft` — `Draft` is a genuine domain noun (the pre-publish
-> shape), not a stand-in for `Request`.
+> **Note:** a write input carries the `XRequest` suffix (`CreateArtistRequest`) — but `Draft` in
+> `OpportunityDraft` is a genuine domain noun (the pre-publish shape), not a stand-in for `Request`;
+> keep it.
 
 ## Contract types live in the feature's `types.ts` — reads and `XRequest`s alike
 
@@ -96,10 +98,6 @@ Name the type (don't inline the object) once it crosses a function boundary — 
 object types only for a truly single-use, one-or-two-field body at one call site.
 
 **Litmus:** *to see everything this feature exchanges with the server, is one file enough?*
-
-> **Violations (fix):** `ESignatureRequest` (`applicationApi.ts:7`), `UpdateConcertRequest`
-> (`concertApi.ts:4`), `TicketPurchaseRequest` (`ticketApi.ts`), `CreateReviewRequest` (`reviewApi.ts`)
-> are declared inline in the `api/` file. Move to the feature `types.ts`.
 
 **We hand-write these types — no codegen**, by choice: it lets the FE name for its own domain and
 viewpoint (the rules above). The cost is silent drift from the backend, accepted while the surface is
@@ -155,8 +153,11 @@ export type PaymentAmount = FlatPayment | DoorSharePayment | GuaranteedDoorPayme
 **Litmus:** *does the backend send more than one shape under one field? → discriminated union on
 `$type`, values copied from `[JsonDerivedType]`.*
 
-> **Violation (resolve):** `User` carries two discriminants — `$type` (camelCase, polymorphism) and
-> `role` (PascalCase, used by the `isVenueManager` guards). Pick one narrowing key.
+> **Resolution (decided):** the universal `User` today carries two discriminants — `$type`
+> (camelCase, polymorphism) and `role` (PascalCase, used by the `isVenueManager` guards) — *and*
+> enumerates persona subtypes it shouldn't. Both are fixed by the composed-identity pattern
+> ([`CODE_PATTERNS.md`](./CODE_PATTERNS.md), "Identity is composed, never widened"): the base `User`
+> sheds the personas, and each product's composed identity narrows on a single key.
 
 ## Response typing — put the shape on the axios generic
 
@@ -191,8 +192,10 @@ client does.
 **Litmus:** *writing a `catch` to `toast` an API error? Stop — the query client already did. Only
 catch to change control flow (redirect, fallback).*
 
-> **Violation (fix):** `ProblemDetails` is private to `web/shared/lib/queryClient.ts` and
-> re-implemented on mobile. Lift it and the `handleError` policy into `@concertable/shared`.
+The architectural shape of this — the single seam, the `meta` opt-outs, and the anti-patterns it
+replaces — is [`CODE_PATTERNS.md`](./CODE_PATTERNS.md), "Errors are handled once." A feature-local
+`onError` / `try-catch` toast fires *on top of* the central one: a confirmed **double-toast bug**, not
+a style nit.
 
 ## API clients — one `xApi` object per resource, in `features/<feature>/api/`
 
@@ -257,10 +260,9 @@ Hooks live in `features/<feature>/hooks/`, one concern per file.
 **Litmus:** *does this hook hand back the raw TanStack object? → `…Query`/`…Mutation`. Does it hand
 back a domain shape? → plain `useX`.*
 
-> **Violations (fix):** raw `useQuery`/`useMutation` wrappers with bare names — the dashboard hooks
-> (`useVenueKpis`, `useArtistOverview`, … ~20 of them) and `useStripeAccount` return the raw query
-> yet lack the suffix. Rename to `useVenueKpisQuery` etc. The facades (`useConcert`, `useReviews`,
-> `useApply`, `useMyVenue`, …) are already correct — leave them.
+> **Note:** a raw `useQuery`/`useMutation` wrapper with a bare name is the violation (e.g. dashboard
+> hooks that return the raw query but omit `…Query`). Facades (`useConcert`, `useReviews`, `useApply`,
+> `useMyVenue`) correctly take the plain domain name — those are right, leave them.
 
 ## Query keys — arrays, generic → specific, per-feature factory
 
@@ -268,9 +270,6 @@ Keys are arrays ordered most-generic → most-specific, resource name first:
 `["applications", "opportunity", opportunityId]`; invalidate by prefix. Centralize a feature's keys
 in one exported factory object ([TkDodo, *Effective React Query Keys*](https://tkdodo.eu/blog/effective-react-query-keys)),
 so a key and its invalidations can't drift apart across files.
-
-> **Violation (adopt incrementally):** keys are inline array literals everywhere, no factory.
-> Introduce the factory per feature as each is touched.
 
 ## Mutation variables vs form state — buffer is the component's, payload is the mutation's
 
@@ -316,22 +315,4 @@ schema; the parsed output, not the buffer, becomes the `XRequest`.*
 > **Reference implementations:** the concert edit form (`useMyConcert.ts` + `updateConcertRequestSchema`,
 > which parses the draft and kills the old `draft!` bang) and the apply/accept signature
 > (`eSignatureRequestSchema` + `useESignature`, with the per-field message in `ESignaturePanel`).
-> **Adopt incrementally:** the venue/artist edit forms (`useMyVenue`/`useMyArtist`) and the remaining
-> write inputs (`CreateArtistRequest`, `CreateReviewRequest`, `CreatePreferenceRequest`,
-> `TicketPurchaseRequest`) still map buffers unchecked — add a schema as each is touched.
 
----
-
-## Violations at a glance
-
-| # | Rule broken | Location | Fix |
-|---|---|---|---|
-| 1 | No `Response` on a read | `concerts/types.ts:78`, `tickets/api/ticketApi.ts:10` | Collapse to one shared `PaymentOutcome` |
-| 2 | `XRequest` suffix on write inputs | `artists/api/artistApi.ts` | Rename `CreateArtist` → `CreateArtistRequest` |
-| 3 | Contract types live in feature `types.ts` | `applicationApi.ts:7`, `concertApi.ts:4`, `ticketApi.ts`, `reviewApi.ts` | Move inline `XRequest`s out of `api/` |
-| 4 | Single `$type` discriminant | `auth/types.ts` (`User`) | Pick one narrowing key |
-| 5 | Shared `ProblemDetails` | `web/shared/lib/queryClient.ts` | Lift into `@concertable/shared` |
-| 6 | Suffix on *raw* query/mutation hooks | dashboard hooks (~20), `useStripeAccount` | Rename `useVenueKpis` → `useVenueKpisQuery`; leave facades |
-| 7 | Per-feature query-key factory | everywhere | Adopt incrementally |
-| 8 | *(tech debt)* duplicated axios clients | `shared/lib`, app trees | Factory + `attachAuth`; log in `TECH_DEBT.md` |
-| 9 | Form buffer unvalidated before `XRequest` | `useMyVenue`/`useMyArtist`, create artist/review/preference/ticket forms | zod schema in `schemas/`; map the parsed result (concert edit + e-signature done) |
