@@ -45,7 +45,13 @@ const artistApi = {
     avatar?: ImageFile,
   ): Promise<Artist> => {
     const formData = new FormData();
-    formData.append("artist", JSON.stringify(artist));
+    formData.append("Name", artist.name);
+    formData.append("About", artist.about);
+    formData.append("Latitude", String(artist.latitude));
+    formData.append("Longitude", String(artist.longitude));
+    artist.genres.forEach((g, i) => {
+      formData.append(`Genres[${i}]`, g);
+    });
     if (banner) formData.append("Banner", banner as any);
     if (avatar) formData.append("Avatar", avatar as any);
     const { data } = await api.put<Artist>(`/artist/${artist.id}`, formData);

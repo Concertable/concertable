@@ -129,12 +129,12 @@ resolve them.
 ### Phase 5 — Naming + state hygiene
 - **Permissions:** complete the matrix to the full backend `SharedPermissions` set (13, not 4),
   backend-sourced names; document that the server is the trust boundary (FE gate is cosmetic).
-- **`useConcertStore`:** stop copying server data into the store (`draft = {...concert}`); live buffer is
-  the component's `useState`. Derive `isDirty`, don't store it. **Same for `useVenueStore` /
-  `useArtistStore` — and land their edit-form zod in this same change** (carried over from Phase 4):
-  `venueApi.updateVenue` / `artistApi.updateArtist` currently PUT the whole entity as `FormData`, so they
-  need real `UpdateVenueRequest` / `UpdateArtistRequest` shapes + schemas before a parse means anything.
-  Same for `CreateArtistPage` / `CreateVenuePage` (`draft!.name` bangs + `banner! as unknown as File`).
+- **Edit-draft stores — KEEP zustand (decided).** `useConcertStore` / `useVenueStore` / `useArtistStore`
+  stay as the store-driven draft home (setters mutate state, components read state, server syncs in), the
+  The one real defect was the artist save: `artistApi.updateArtist` PUT the whole entity as a single
+  `JSON.stringify(artist)` form field, which the backend `[FromForm] UpdateArtistRequest` can't bind
+  (→ 400, proven by `ArtistApiTests.Update_*`). Now fixed to append individual `Name`/`About`/`Latitude`/
+  `Longitude`/`Genres[i]` fields, mirroring `createArtist` + `updateVenue`.
 - Raw hook suffixes (`useVenueKpis` → `useVenueKpisQuery`, …); leave facades.
 - Per-feature query-key factories (incremental, per feature touched).
 - Read/request naming: `PaymentResponse` → shared `PaymentOutcome` (dedupe `TicketPurchaseResponse`);
