@@ -130,13 +130,29 @@ point where the context becomes disposable. Don't carry unwritten state across a
 
 ## Before a clear — hand off a resume prompt
 
-When the work is fully done for now, or the user says they'll clear, do two things after the durable
+When the work is fully done for now, or the user says they'll clear, do these things after the durable
 state is written:
 
-1. **Prepare for clear** — confirm the plan markdown, `CLAUDE.md`/`TECH_DEBT.md`, and commit messages
+1. **Commit the completed phase FIRST — don't leave finished, verified phase work uncommitted "for
+   review."** A completed + verified plan phase is *committed* as part of finishing it, with the plan
+   check-off in the same commit (Lifecycle 3). Committing at the phase boundary is the default here — do
+   it without asking; **only `push` waits for Tommy's explicit go-ahead** (commit ≠ push). Both
+   reviewing and resuming run off the commit, so it lands before the handoff. Leaving a green phase in
+   the working tree is the mistake that makes `/code-review` unable to see it.
+2. **Prepare for clear** — confirm the plan markdown, `CLAUDE.md`/`TECH_DEBT.md`, and commit messages
    hold everything; the chat must be safe to throw away.
-2. **Give the user a resume prompt to paste after `/clear`.** Assume zero context: name the plan file,
-   the branch/PR, and the exact next step. Keep it to a few lines.
+3. **Give the user a resume prompt to paste after `/clear`.** Assume zero context: name the **working
+   directory** (this repo runs many parallel worktrees — the branch name alone doesn't say which tree to
+   `cd` into, so give the absolute path: the main checkout, or the sibling `…worktrees/<Branch>`), the
+   plan file, the branch/PR, and the exact next step. Keep it to a few lines.
+4. **Hand off a ready-to-paste code-review prompt in the SAME turn whenever you say the work is ready
+   to review** — never "stopping here for your review" with no prompt (that's this section's anti-pattern
+   applied to review instead of resume). With the phase committed (step 1) the whole feature is on the
+   branch, so the prompt is normally just **`/code-review`** — it reviews `master..HEAD`, i.e. the
+   **entire feature**, which is exactly what a review should cover. Only if some work is *deliberately*
+   left uncommitted must the prompt point the reviewer at the full delta including it
+   (`git diff $(git merge-base master HEAD)` + untracked from `git status --short`) — **never**
+   `git diff HEAD` alone, which omits already-committed earlier phases.
 
    **If — and only if — the work lives in a separate git worktree, the resume prompt's first line
    MUST be the exact directory to `cd` into, before anything else.** A `/clear` (or a brand-new
@@ -230,6 +246,16 @@ kickoff prompt that says "run the E2E regress"** — if a PR will run it, let th
   nothing exercises yet).
 - It's small, isolated, or covered well by integration tests.
 - It's doc-only or comments-only.
+
+**When you skip E2E on a change headed to a PR, tell the merge queue too — `[skip-e2e]` in a commit.**
+The queue runs the full E2E suite on every code change *by default*, so your local skip-judgment is
+worthless unless it's encoded in the commit: without the token the queue still burns ~25-30 min of E2E
+on a change that didn't earn it. So for a behaviour-preserving / small / well-covered change, put
+`[skip-e2e]` in a commit message (any commit in the PR range; `[skip-tests]` for compile-floor-only on a
+trivial/mechanical change — build + carve never skip). This is the reflex-inversion: E2E-in-the-queue is
+opt-*out* for a zero-behaviour-change PR, not automatic. Retrofitting the token onto a PR already in the
+queue means closing + re-pushing (the branch is locked while queued) — so decide the tier **in the
+commit you push**, not after.
 
 When in doubt, or when a phase explicitly flips behavior on a covered flow, run E2E. **How** to run it
 safely (the mandatory `./docker-health.ps1` pre-flight, only via the `e2e-*` skills) is unchanged —
