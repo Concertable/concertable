@@ -41,18 +41,12 @@ Add/rename a route → regenerate that app's `routeTree.gen.ts` (`vite build` on
 
 ## Phases — small, reviewable, green at each step
 
-### Phase 1 — Kill the double-toast (canon #4) — low risk, isolated
-Central `MutationCache.onError` already toasts `ProblemDetails`; every feature-local error toast is a
-*second* toast (observable bug). Remove them (keep `toast.success`; `expectedErrors`/`silenceErrors`
-meta is the only opt-out):
-- `b2b/shared/features/members/pages/MembersPage.tsx` — 4 `onError` toasts (role change L122, remove
-  L130, revoke L210, invite L272).
-- `b2b/shared/features/organizations/pages/OrganizationPage.tsx:85`.
-- `b2b/artist/features/artist/hooks/useMyArtist.ts:7`; `b2b/venue/features/venue/hooks/useMyVenue.ts:30`.
-- `try/catch`→toast: artist `useWithdrawApplication.ts`, venue `useCancelApplication.ts` /
-  `useDenyApplication.ts`, `DeclareDoorRevenueButton.tsx`, `CancelBookingButton.tsx`.
-- `customer/features/reviews/components/AddReview.tsx` — `onError` (L40) removed; the "select a star
-  rating" toast (L30) becomes an inline/zod validation message.
+### Phase 1 — Kill the double-toast (canon #4) — ✅ DONE
+`MutationCache.onError` is now the only API-error toast. Every feature-local `onError` toast and
+`try/catch`→`toast.error` removed across `MembersPage`, `OrganizationPage`, `useMyVenue`/`useMyArtist`,
+and the application/booking/door-revenue confirm hooks; the confirm hooks converted from
+`mutateAsync`+`try/catch` to `mutate`+`onSuccess` (so `ConfirmActionDialog.onConfirm` is `() => void`).
+`AddReview`'s "select a star rating" toast is now an inline validation message.
 
 ### Phase 2 — Tenant/identity consolidation (patterns #2 + #3) — the headline
 Collapse the sprayed tenant domain into one composed-identity slice with one state home.
