@@ -14,8 +14,8 @@ this tree cannot know which site it's running in — so it may only do things ev
 legitimately do:
 
 - **Backend rule** — authenticated calls go only to backends every site can call with its own token:
-  the own-site `api` client, `searchAxios`, `paymentAxios`. A call only one site's token can make
-  (e.g. `customerApi` → Customer service) lives in that app, never here.
+  the own-site `apiClient`, `searchClient`, `paymentClient`. A call only one site's token can make
+  (e.g. `customerClient` → Customer service) lives in that app, never here.
 - **Identity rule** — no `role === ...` / `isVenueManager(...)` branching. Apps own
   identity-conditional composition; shared components receive variation as props/slots
   (`AppLayout({ links })`, `ConcertDetails({ addReviewSlot, onBuyTickets })`). Keep the shared UI

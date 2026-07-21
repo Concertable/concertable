@@ -4,7 +4,7 @@ using Aspire.Hosting.Testing;
 using Azure.Storage.Blobs;
 using Concertable.B2B.Artist.Infrastructure.Extensions;
 using Concertable.B2B.Concert.Infrastructure.Extensions;
-using Concertable.B2B.Contract.Infrastructure.Extensions;
+using Concertable.B2B.Deal.Infrastructure.Extensions;
 using Concertable.B2B.Conversations.Infrastructure.Extensions;
 using Concertable.B2B.Tenant.Infrastructure.Extensions;
 using Concertable.B2B.Seed.Infrastructure;
@@ -172,7 +172,7 @@ public sealed class AppFixture : IAsyncLifetime
                 services.AddTenantModule(b2bSeedConfig);
                 services.AddArtistModule(b2bSeedConfig);
                 services.AddVenueModule(b2bSeedConfig);
-                services.AddContractModule(b2bSeedConfig);
+                services.AddDealModule(b2bSeedConfig);
                 services.AddConcertModule(b2bSeedConfig);
                 services.AddConversationsModule(b2bSeedConfig);
                 services.AddBlobDevSeeder();
@@ -180,7 +180,7 @@ public sealed class AppFixture : IAsyncLifetime
                 services.AddTenantDevSeeder();
                 services.AddArtistDevSeeder();
                 services.AddVenueDevSeeder();
-                services.AddContractDevSeeder();
+                services.AddDealDevSeeder();
                 services.AddConcertDevSeeder();
                 services.AddConversationsDevSeeder();
                 services.AddScoped<IDbInitializer, B2BDevDbInitializer>();
@@ -226,6 +226,12 @@ public sealed class AppFixture : IAsyncLifetime
     }
 
     public ResourceNotificationService ResourceNotifications => app.ResourceNotifications;
+
+    // AddNpmApp has no HTTP readiness check, so Aspire reports a SPA 'Running' before its Vite dev
+    // server actually serves. UI runs must gate on real serving (polls until 200, throws on timeout)
+    // before driving a browser at it — otherwise the first navigation races Vite's startup.
+    public Task WaitForSpasServingAsync(TimeSpan timeout) =>
+        healthWaiter.WaitForAllServingAsync([VenueSpaUrl, ArtistSpaUrl, BusinessSpaUrl], timeout);
 
     private async Task ReseedAsync()
     {

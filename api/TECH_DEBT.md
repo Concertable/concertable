@@ -6,6 +6,22 @@ Debt spanning multiple services or living in shared code (`Shared/`, `Concertabl
 
 ## MED
 
+### `IEntity.DisplayName` is a soft standard (throwing default member), not a hard `static abstract`
+
+`Shared/Concertable.Kernel/IEntity.cs` carries `DisplayName` as a `static virtual` **default interface
+member** whose default *throws* `NotSupportedException`, so entities that self-name via `OrNotFound()` must
+override it; an un-overridden entity fails at runtime rather than the compiler forcing a name. The intended
+design was `static abstract` (compiler-enforced, every entity named), but that is a binary-breaking change
+that cannot land: the core libs (`DataAccess.Infrastructure`, `Messaging.Domain`) source-reference Kernel
+so integration tests load the new Kernel, while service entities compile against the Kernel *package* — a
+required static-abstract member's implementation mapping is fixed at compile time against the old interface,
+so package-compiled entities throw `TypeLoadException` against the new Kernel (two red CI runs confirmed).
+The default member is the additive workaround.
+
+**Resolves when:** the core libs stop source-referencing Kernel (or the repo builds shared source lockstep
+so entities compile against the same Kernel the tests load), at which point `DisplayName` can become
+`static abstract` and the throwing default is deleted.
+
 ### Kernel `ClaimsPrincipal.GetId()` fails open with `string.Empty`
 
 `Shared/Concertable.Kernel/Identity/ClaimsPrincipalExtensions.cs` returns `user?.FindFirst("sub")?.Value ?? string.Empty` — a principal with no `sub` claim becomes an empty-string user id instead of a failure. Its sibling `CurrentUserExtensions.GetId(ICurrentUser)` gets this right (throws `UnauthorizedAccessException`). The only consumer, `NotificationHub`, assigns the result to `string?` and null-checks it — a check that can never fire because the method never returns null, so an unauthenticated principal sails through as `""`.
@@ -14,11 +30,11 @@ Debt spanning multiple services or living in shared code (`Shared/`, `Concertabl
 
 ---
 
-### Required config bound with `?? ""` — services boot misconfigured and fail later
+### `AzureServiceBusOptions` binder defaults are `= ""` instead of `null!`
 
-Eight hosts coalesce required auth/bus settings to empty string at bind time: `Auth:Authority` / `ServiceAuth:*` `ClientId`+`ClientSecret` in `Concertable.Auth/Program.cs`, `Concertable.B2B.Web/Program.cs`, `Concertable.B2B.Workers/ServiceCollectionExtensions.cs`, `Concertable.Customer.Web/Program.cs`; the ASB `ConnectionString` additionally in `Concertable.Payment.Web`, `Concertable.Payment.Workers`, `Concertable.Search.Workers`, and `Concertable.B2B.Seed.Simulator` `Program.cs`. A missing setting silently becomes `""`, the host starts cleanly, and the failure surfaces later as a confusing auth/bus error instead of at startup. `Concertable.Messaging.AzureServiceBus/Options/AzureServiceBusOptions.cs` compounds it with `= ""` property defaults where the convention (`docs/CODE_CONVENTIONS.md`) requires `null!` for binder-populated values. All of these also use the banned `""` literal.
+`Concertable.Messaging.AzureServiceBus/Options/AzureServiceBusOptions.cs` initialises binder-populated `string` properties to `= ""`, where the convention (`docs/CODE_CONVENTIONS.md`) requires `null!` so a missing bind surfaces instead of silently becoming empty (and it uses the banned `""` literal). Deferred, not host-only: `AzureServiceBusOptions` ships in the **published** `Concertable.Messaging` package, so flipping the defaults is a cross-service package change that must ride a Messaging publish + platform-sync, not a bare edit. (The host-side `?? ""` masks that used to sit alongside this — `Auth:Authority` / `ServiceAuth:ClientId` / the ASB `ConnectionString` across the Auth, B2B.Web, B2B.Workers, Customer.Web, Payment.Web, Payment.Workers, Search.Workers, and B2B.Seed.Simulator hosts — now fail fast at startup outside the "Testing" environment, done. `ServiceAuth:ClientSecret` is a genuine optional, now bound **null** when absent — its earlier `string.Empty` was a masking cosmetic swap. The complete fix (`TokenServiceOptions.ClientSecret` → `string?` + the token service omitting the `client_secret` form param when null, correct for a secret-less/public client) is a **published Kernel change** — tracked with the `GetId()` Kernel item above as a cut-over.)
 
-**Resolves when:** required settings fail fast at startup — options validation with `ValidateOnStart` (or an explicit throw on missing key) replaces every `?? ""`, and `AzureServiceBusOptions` defaults become `null!`. Genuine optional-with-empty-default settings, if any, keep an explicit `string.Empty`.
+**Resolves when:** the `= ""` defaults become `null!` as part of a `Concertable.Messaging` package publish.
 
 ---
 
@@ -30,7 +46,47 @@ Eight hosts coalesce required auth/bus settings to empty string at bind time: `A
 
 ---
 
+### Shared test libraries are ProjectReferenced across the service-folder boundary (carve leak)
+
+`Concertable.Testing`, `Concertable.Testing.Integration`, and the shared `Concertable.E2ETests` harness
+live under `Concertable.Shared/tests/` — i.e. in the Shared "repo" — yet every consuming test project
+reaches them by a `ProjectReference` that **escapes its own service folder**
+(`api/Concertable.B2B/src/Modules/.../Tests/*.csproj → ..\..\..\..\..\..\Concertable.Shared\tests\Concertable.Testing\...`).
+That is exactly the cross-folder escape the runtime carve forbids for service projects (the
+`PackageReference, never a ProjectReference` guard in the service `.csproj`s). Runtime deps that live in
+the Shared tree (Kernel, Messaging) publish + are pinned; the shared **test** libs alone leak straight
+into every service's test projects. On a real repo split those references break. `Concertable.Testing`
+even carries `IsPackable=true` with **zero** package consumers — a half-committed intent. First flagged
+adding a shared `Money` test helper for the door-revenue UI E2E: it compiled same-PR *because* of this
+leak, where a Kernel helper needs a publish-first PR.
+
+**Resolves when:** the shared test libs are published as test-support packages consumed by pinned
+`PackageReference` like the runtime shared libs (carrying the same publish-first + pin-bump boundary) —
+OR test infra is explicitly documented as carve-exempt (dev-only, never shipped in a service runtime)
+and the misleading `IsPackable=true` is dropped. Decision + execution steps:
+[`plans/SHARED_TEST_LIBS_PACKAGING.md`](../plans/SHARED_TEST_LIBS_PACKAGING.md). Lean: publish, for
+consistency with the Shared-repo model — the cost is that every shared-test-helper edit then takes the
+publish-first cycle.
+
+---
+
 ## LOW
+
+### `initial-migrations.ps1` re-stamps every module, desyncing packaged libs from their published packages
+
+`api/initial-migrations.ps1` nukes and re-scaffolds **every** module's `InitialCreate` with a fresh
+timestamp — including libs consumed as *published packages* (`Messaging`, `Payment`, `Auth`) whose
+model didn't change. The regenerated source then carries a newer migration id than the published
+package the standalone/E2E stack actually loads, and `DevDbInitializer` blows up applying a migration
+whose table already exists (first seen while re-scaffolding on a migration-touching branch: "There is already an object named
+'Outbox'", every UI E2E scenario dead at fixture init). Workaround each time: after running the
+script, `git checkout origin/master -- <migration dirs>` for every module whose migration content is
+byte-identical to master (only the genuinely-changed module keeps its new migration). Bites every
+migration-touching branch.
+
+**Resolves when:** the script only re-scaffolds modules whose model actually changed (diff the
+generated migration content, skip re-stamp if identical), or packaged-lib migrations are excluded
+from the blanket nuke.
 
 ### Orphaned FlatFee accept-checkout holds release only by ~7-day Stripe expiry
 
@@ -51,3 +107,33 @@ When a venue runs FlatFee accept-checkout (a manual-capture PI ring-fencing the 
 `.github/workflows/test.yml` authenticates the GitHub Packages feed with `secrets.GITHUB_TOKEN` in the `build`, `carve-auth`, and merge-queue E2E jobs. A PR opened from a **fork** (or a Dependabot PR) runs with a read-only token scoped to the fork, which cannot read the `Concertable` org's private packages, so those PRs would 401 at restore regardless of the change. Not a problem for the current same-repo branch + merge-queue workflow (no fork PRs), logged in case the repo is ever opened to external contributors.
 
 **Resolves when:** the org packages are made internal-visible to the org's repos, or fork PRs are given a `read:packages` PAT (or simply aren't accepted).
+
+### Config section names are magic-string literals, not typed constants (one lone outlier)
+
+Every `Configure<XSettings>(configuration.GetSection("..."))` across the backend passes the section name as a
+bare string literal — `"Stripe"` (`Payment.Infrastructure`), `"Legal"` (`B2B.Concert`), `"Urls"` (`Kernel`),
+`"BlobStorage"` (`Shared.Blob`), `"TaxCompliance"` (`B2B.Tenant`), plus the `"Cors:AllowedOrigins"` /
+`"ExternalServices"` reads in the host `Program.cs` files. The sole exception is `Concertable.Auth`'s
+`SpaClientSettings.SectionName = "Auth:SpaClients"`, bound via `GetSection(SpaClientSettings.SectionName)` —
+the pattern the rest should follow. A renamed section silently stops binding: the literal and the appsettings
+key drift independently with no compile error.
+
+**Resolves when:** a repo-wide sweep gives each settings class a `public const string SectionName` and every
+`Configure<T>(GetSection(...))` binds through it (adopting the `SpaClientSettings` pattern). Done as one
+consistency pass, not piecemeal — a lone typed section next to magic-string neighbours is worse than uniform.
+
+### Timestamps are `DateTime` (UTC-by-naming-convention), not `DateTimeOffset`
+
+Every timestamp across the backend is stored as `DateTime` with a `…Utc` suffix — sourced from
+`TimeProvider.GetUtcNow().UtcDateTime`, mapped to SQL `datetime2` (`ContractEntity.CreatedAtUtc`,
+`ConcertEntity.Period`, `InvoiceEntity.TaxPointUtc`/`CreatedAtUtc`, and so on across every module). The
+UTC-ness is a *naming* convention, not carried by the type: nothing stops a caller assigning a `Kind=Local`
+or `Kind=Unspecified` value, and the offset the instant was recorded at is lost. `DateTimeOffset` (SQL
+`datetimeoffset`) would make "this is an absolute instant" type-enforced rather than suffix-promised. New
+entities (e.g. the Phase-2 invoice) match the existing `DateTime` convention deliberately — switching one
+entity in isolation just makes it the odd column type.
+
+**Resolves when:** a repo-wide sweep moves entity/DTO timestamps to `DateTimeOffset` in one consistency
+pass (entities, EF configs → `datetimeoffset`, DTOs, and the `TimeProvider.GetUtcNow()` call sites that
+currently `.UtcDateTime` them away). One coordinated migration-touching change, not piecemeal — a lone
+`DateTimeOffset` next to `DateTime` neighbours is worse than uniform.

@@ -1,4 +1,4 @@
-import api from "../../../lib/axiosClient";
+import { apiClient } from "../../../lib/apiClient";
 import type { Venue } from "../types";
 import type { ImageFile } from "../../../types/image";
 
@@ -13,12 +13,12 @@ export interface CreateVenue {
 
 const venueApi = {
   getVenue: async (id: number): Promise<Venue> => {
-    const { data } = await api.get<Venue>(`/venue/${id}`);
+    const { data } = await apiClient.get<Venue>(`/venue/${id}`);
     return data;
   },
 
   getMyVenue: async (): Promise<Venue | null> => {
-    const { data, status } = await api.get<Venue>("/venue/user");
+    const { data, status } = await apiClient.get<Venue>("/venue/user");
     return status === 204 ? null : data;
   },
 
@@ -30,7 +30,7 @@ const venueApi = {
     formData.append("Longitude", String(input.longitude));
     formData.append("Banner", input.banner);
     formData.append("Avatar", input.avatar);
-    const { data } = await api.post<Venue>("/venue", formData);
+    const { data } = await apiClient.post<Venue>("/venue", formData);
     return data;
   },
 
@@ -46,7 +46,7 @@ const venueApi = {
     formData.append("Longitude", String(venue.longitude));
     if (banner) formData.append("Banner", banner as any);
     if (avatar) formData.append("Avatar", avatar as any);
-    const { data } = await api.put<Venue>(`/venue/${venue.id}`, formData);
+    const { data } = await apiClient.put<Venue>(`/venue/${venue.id}`, formData);
     return data;
   },
 };

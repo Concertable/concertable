@@ -7,8 +7,8 @@ internal sealed record ConcertDetailsResponse
     public int Id { get; init; }
     public required string Name { get; init; }
     public required string About { get; init; }
-    public required string BannerUrl { get; init; }
-    public required string Avatar { get; init; }
+    public string? BannerUrl { get; init; }
+    public string? Avatar { get; init; }
     public double Rating { get; init; }
     public decimal Price { get; init; }
     public int TotalTickets { get; init; }
@@ -19,10 +19,14 @@ internal sealed record ConcertDetailsResponse
     public required ConcertArtistResponse Artist { get; init; }
     public required ConcertVenueResponse Venue { get; init; }
     public IReadOnlyList<Genre> Genres { get; init; } = [];
-    public required ConcertActions Actions { get; init; }
+    /// <summary>Venue-private; populated only by the tenant-scoped owner read, never exposed anonymously.</summary>
+    public int? TicketsSold { get; init; }
+    /// <inheritdoc cref="TicketsSold"/>
+    public decimal? DoorRevenue { get; init; }
+    public ConcertActions? Actions { get; init; }
 }
 
-internal sealed record ConcertActions(ActionLink? Cancel);
+internal sealed record ConcertActions(ActionLink? Cancel, ActionLink? Contract, ActionLink? DeclareDoorRevenue, ActionLink? Invoice);
 
 internal sealed record ConcertArtistResponse
 {

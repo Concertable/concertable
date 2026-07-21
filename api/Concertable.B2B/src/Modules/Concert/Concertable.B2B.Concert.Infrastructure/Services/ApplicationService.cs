@@ -77,23 +77,23 @@ internal sealed class ApplicationService : IApplicationService
         return await mapper.ToDtosAsync(applications);
     }
 
-    public async Task<ApplicationDto> ApplyAsync(int opportunityId)
+    public async Task<ApplicationDto> ApplyAsync(int opportunityId, ESignatureRequest eSignature)
     {
         var artistId = await ResolveArtistIdAsync();
         await ValidateCanApplyAsync(opportunityId, artistId);
 
-        var application = await applyDispatcher.ApplyAsync(opportunityId, artistId);
+        var application = await applyDispatcher.ApplyAsync(opportunityId, artistId, eSignature);
         await notifier.AppliedAsync(application.Id);
 
         return await GetByIdAsync(application.Id);
     }
 
-    public async Task<ApplicationDto> ApplyAsync(int opportunityId, string paymentMethodId)
+    public async Task<ApplicationDto> ApplyAsync(int opportunityId, string paymentMethodId, ESignatureRequest eSignature)
     {
         var artistId = await ResolveArtistIdAsync();
         await ValidateCanApplyAsync(opportunityId, artistId);
 
-        var application = await applyDispatcher.ApplyAsync(opportunityId, artistId, paymentMethodId);
+        var application = await applyDispatcher.ApplyAsync(opportunityId, artistId, paymentMethodId, eSignature);
         await notifier.AppliedAsync(application.Id);
 
         return await GetByIdAsync(application.Id);
@@ -106,7 +106,10 @@ internal sealed class ApplicationService : IApplicationService
     private async Task ValidateCanApplyAsync(int opportunityId, int artistId)
     {
         var opportunity = await opportunityRepository.GetByIdAsync(opportunityId)
-            ?? throw new NotFoundException("Concert Opportunity not found");
+            .OrNotFound();
+
+        if (await repository.ExistsForOpportunityAndArtistAsync(opportunityId, artistId))
+            throw new BadRequestException("You have already applied to this concert opportunity");
 
         var result = await applicationValidator.CanApplyAsync(opportunity, artistId);
         if (result.IsFailed)
@@ -131,14 +134,14 @@ internal sealed class ApplicationService : IApplicationService
     public Task<Checkout> AcceptCheckoutAsync(int applicationId) =>
         checkoutDispatcher.AcceptCheckoutAsync(applicationId);
 
-    public async Task AcceptAsync(int applicationId, string? paymentMethodId)
+    public async Task AcceptAsync(int applicationId, string? paymentMethodId, ESignatureRequest eSignature)
     {
         var result = await applicationValidator.CanAcceptAsync(applicationId);
 
         if (result.IsFailed)
             throw new BadRequestException(result.Errors);
 
-        await acceptanceDispatcher.AcceptAsync(applicationId, paymentMethodId);
+        await acceptanceDispatcher.AcceptAsync(applicationId, paymentMethodId, eSignature);
         await notifier.AcceptedAsync(applicationId);
     }
 
@@ -166,7 +169,7 @@ internal sealed class ApplicationService : IApplicationService
     public async Task<ApplicationDto> GetByIdAsync(int id)
     {
         var application = await repository.GetByIdAsync(id)
-            ?? throw new NotFoundException("Application not found");
+            .OrNotFound();
         return await mapper.ToDtoAsync(application);
     }
 }

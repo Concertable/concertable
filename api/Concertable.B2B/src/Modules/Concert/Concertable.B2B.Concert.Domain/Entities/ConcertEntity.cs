@@ -1,8 +1,11 @@
+using System.ComponentModel;
+using Concertable.B2B.Concert.Contracts;
 using Concertable.B2B.Concert.Domain.Events;
 using Concertable.B2B.Concert.Domain.ReadModels;
 using Concertable.B2B.DataAccess.Application;
 using Concertable.Contracts;
 using Concertable.Kernel;
+using Concertable.Kernel.Exceptions;
 
 namespace Concertable.B2B.Concert.Domain.Entities;
 
@@ -11,6 +14,7 @@ namespace Concertable.B2B.Concert.Domain.Entities;
 /// Holds denormalized <see cref="ArtistReadModel"/> and <see cref="VenueReadModel"/> references
 /// so the Concert module can satisfy queries in a single DB context without crossing module boundaries.
 /// </summary>
+[DisplayName(DisplayNames.Concert)]
 public sealed class ConcertEntity : IIdEntity, IHasName, IHasDateRange, IEventRaiser, IVenueArtistTenantScoped
 {
     public int Id { get; private set; }
@@ -26,9 +30,10 @@ public sealed class ConcertEntity : IIdEntity, IHasName, IHasDateRange, IEventRa
     public decimal Price { get; private set; }
     public int TotalTickets { get; private set; }
     public int TicketsSold { get; private set; }
+    public decimal? DoorRevenue { get; private set; }
     public DateRange Period { get; private set; } = null!;
     public DateTime? DatePosted { get; private set; }
-    public ContractType ContractType { get; private set; }
+    public DealType DealType { get; private set; }
     public BookingEntity Booking { get; set; } = null!;
     public ArtistReadModel Artist { get; set; } = null!;
     public VenueReadModel Venue { get; set; } = null!;
@@ -48,7 +53,7 @@ public sealed class ConcertEntity : IIdEntity, IHasName, IHasDateRange, IEventRa
         DateRange period,
         string name,
         string about,
-        ContractType contractType,
+        DealType dealType,
         IEnumerable<Genre> genres) => new()
         {
             BookingId = bookingId,
@@ -57,11 +62,20 @@ public sealed class ConcertEntity : IIdEntity, IHasName, IHasDateRange, IEventRa
             Period = period,
             Name = name,
             About = about,
-            ContractType = contractType,
+            DealType = dealType,
             Genres = genres.ToList()
         };
 
     public void IncrementTicketsSold(int quantity) => TicketsSold += quantity;
+
+    /* Venue-declared gross the artist's revenue share settles against (external ticketing + box
+       office + cash on the door). A dead night is a real 0m; null means "not yet declared". */
+    public void DeclareDoorRevenue(decimal doorRevenue)
+    {
+        if (doorRevenue < 0)
+            throw new DomainException("Door revenue must be zero or greater.");
+        DoorRevenue = doorRevenue;
+    }
 
     public void Update(string name, string about, decimal price, int totalTickets)
     {

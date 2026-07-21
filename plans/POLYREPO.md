@@ -9,12 +9,12 @@ regenerated on every push to `master`. Nothing flows back from a mirror into the
 
 | Source folder              | Mirror repo                      |
 | -------------------------- | -------------------------------- |
-| `api/Concertable.B2B`      | `Concertable/concertable-b2b`      |
-| `api/Concertable.Customer` | `Concertable/concertable-customer` |
-| `api/Concertable.Auth`     | `Concertable/concertable-auth`     |
-| `api/Concertable.Payment`  | `Concertable/concertable-payment`  |
-| `api/Concertable.Search`   | `Concertable/concertable-search`   |
-| `api/Shared`               | `Concertable/concertable-shared`   |
+| `api/Concertable.B2B`      | `Concertable/b2b`      |
+| `api/Concertable.Customer` | `Concertable/customer` |
+| `api/Concertable.Auth`     | `Concertable/auth`     |
+| `api/Concertable.Payment`  | `Concertable/payment`  |
+| `api/Concertable.Search`   | `Concertable/search`   |
+| `api/Shared`               | `Concertable/shared`   |
 
 ## How it works
 
@@ -53,7 +53,7 @@ Add an entry to the `matrix.include` list in `mirror.yml`:
 
 ```yaml
 - prefix: api/Concertable.Contract
-  repo: Concertable/concertable-contracts
+  repo: Concertable/contracts
 ```
 
 …then create the empty target repo and ensure `MIRROR_PAT` can push to it.
@@ -71,7 +71,7 @@ Most of it was **already delivered by the Service Build Separation effort** — 
 management, packable projects, rewiring cross-folder `ProjectReference`s → feed `PackageReference`s,
 carve CI gates (see `api/ARCHITECTURE.md` "Cross-service contract distribution"). Phases 1–4 added
 the rest: cross-repo feed-restore docs/PAT, slim standalone AppHosts for Auth/Payment/Search, the
-`concertable-shared` mirror, and the six real repos + green auto-sync.
+`shared` mirror, and the six real repos + green auto-sync.
 
 What's **still deferred** in `POLYREPO_COMPLETION.md`: the optional one-way cut to a **true polyrepo**
 where each service is independently developed. Not started — do it only when the monorepo demonstrably

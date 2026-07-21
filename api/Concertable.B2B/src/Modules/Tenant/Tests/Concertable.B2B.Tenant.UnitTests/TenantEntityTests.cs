@@ -1,5 +1,6 @@
 using Concertable.B2B.Tenant.Contracts;
-using Concertable.B2B.Tenant.Domain;
+using Concertable.B2B.Tenant.Domain.Entities;
+using Concertable.B2B.Tenant.Domain.ValueObjects;
 using Concertable.B2B.Tenant.Domain.Events;
 using Concertable.Kernel;
 
@@ -59,41 +60,39 @@ public sealed class TenantEntityTests
     }
 
     [Fact]
-    public void Create_LeavesComplianceNull()
+    public void Create_LeavesTaxComplianceNull()
     {
         var tenant = TenantEntity.Create("Acme Ltd", Guid.NewGuid(), TenantType.Venue, DateTime.UtcNow);
 
-        Assert.Null(tenant.Compliance);
+        Assert.Null(tenant.TaxCompliance);
     }
 
     [Fact]
-    public void UpdateLegalDetails_SetsLegalNameAndCompliance()
+    public void UpdateLegalDetails_SetsLegalNameAndTaxCompliance()
     {
         var tenant = TenantEntity.Create("manager@acme.com", Guid.NewGuid(), TenantType.Venue, DateTime.UtcNow);
-        var compliance = new Compliance(
-            true,
+        var taxCompliance = new TaxCompliance(
             "GB123456789",
             "12345678",
             new RegisteredAddress("1 High Street", null, "Manchester", "M1 1AA", "United Kingdom"),
             "GB00BANK1234");
 
-        tenant.UpdateLegalDetails("Acme Ltd", compliance);
+        tenant.UpdateLegalDetails("Acme Ltd", taxCompliance);
 
         Assert.Equal("Acme Ltd", tenant.LegalName);
-        Assert.Equal(compliance, tenant.Compliance);
+        Assert.Equal(taxCompliance, tenant.TaxCompliance);
     }
 
     [Fact]
     public void UpdateLegalDetails_BlankLegalName_Throws()
     {
         var tenant = TenantEntity.Create("manager@acme.com", Guid.NewGuid(), TenantType.Venue, DateTime.UtcNow);
-        var compliance = new Compliance(
-            false,
+        var taxCompliance = new TaxCompliance(
             null,
             "12345678",
             new RegisteredAddress("1 High Street", null, "Manchester", "M1 1AA", "United Kingdom"),
             "GB00BANK1234");
 
-        Assert.Throws<DomainException>(() => tenant.UpdateLegalDetails(" ", compliance));
+        Assert.Throws<DomainException>(() => tenant.UpdateLegalDetails(" ", taxCompliance));
     }
 }

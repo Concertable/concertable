@@ -21,15 +21,15 @@ export function useOpportunities(venueId: number) {
 
   const removeOpportunity = useOpportunitiesStore((s) => s.removeOpportunity);
   const setOpportunityDates = useOpportunitiesStore((s) => s.setOpportunityDates);
-  const setOpportunityContractType = useOpportunitiesStore((s) => s.setOpportunityContractType);
-  const setOpportunityContract = useOpportunitiesStore((s) => s.setOpportunityContract);
+  const setOpportunityDealType = useOpportunitiesStore((s) => s.setOpportunityDealType);
+  const setOpportunityDeal = useOpportunitiesStore((s) => s.setOpportunityDeal);
   const setOpportunityPaymentMethod = useOpportunitiesStore((s) => s.setOpportunityPaymentMethod);
   const toggleOpportunityGenre = useOpportunitiesStore((s) => s.toggleOpportunityGenre);
 
   const removeDraft = useOpportunitiesStore((s) => s.removeDraft);
   const setDraftDates = useOpportunitiesStore((s) => s.setDraftDates);
-  const setDraftContractType = useOpportunitiesStore((s) => s.setDraftContractType);
-  const setDraftContract = useOpportunitiesStore((s) => s.setDraftContract);
+  const setDraftDealType = useOpportunitiesStore((s) => s.setDraftDealType);
+  const setDraftDeal = useOpportunitiesStore((s) => s.setDraftDeal);
   const setDraftPaymentMethod = useOpportunitiesStore((s) => s.setDraftPaymentMethod);
   const toggleDraftGenre = useOpportunitiesStore((s) => s.toggleDraftGenre);
 
@@ -46,16 +46,16 @@ export function useOpportunities(venueId: number) {
     opportunityActions: {
       remove: removeOpportunity,
       setDates: setOpportunityDates,
-      setContractType: setOpportunityContractType,
-      setContract: setOpportunityContract,
+      setDealType: setOpportunityDealType,
+      setDeal: setOpportunityDeal,
       setPaymentMethod: setOpportunityPaymentMethod,
       toggleGenre: toggleOpportunityGenre,
     },
     draftActions: {
       remove: removeDraft,
       setDates: setDraftDates,
-      setContractType: setDraftContractType,
-      setContract: setDraftContract,
+      setDealType: setDraftDealType,
+      setDeal: setDraftDeal,
       setPaymentMethod: setDraftPaymentMethod,
       toggleGenre: toggleDraftGenre,
     },

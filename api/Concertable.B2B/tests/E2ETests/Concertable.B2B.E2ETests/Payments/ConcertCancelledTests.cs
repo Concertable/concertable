@@ -4,6 +4,7 @@ using Concertable.B2B.Concert.Api.Responses;
 using Concertable.B2B.Concert.Domain.Lifecycle;
 using Concertable.Payment.Client;
 using Concertable.Payment.Contracts;
+using Concertable.Payment.Contracts.Enums;
 using Concertable.Testing;
 using Xunit;
 
@@ -69,7 +70,7 @@ public sealed class ConcertCancelledTests : IAsyncLifetime
         // lags the escrow hold — poll until it exists and offers the cancel action (Booked window).
         var concert = await fixture.Polling.UntilAsync(
             () => GetConcertByApplicationAsync(appId),
-            c => c.Actions.Cancel is not null,
+            c => c.Actions!.Cancel is not null,
             timeout: TimeSpan.FromSeconds(30));
 
         var cancelResponse = await venueManagerClient.PostAsync($"/api/Concert/{concert.Id}/cancel");
@@ -95,7 +96,7 @@ public sealed class ConcertCancelledTests : IAsyncLifetime
         // Once cancelled, the cancel action is withdrawn from the concert response.
         await fixture.Polling.UntilAsync(
             () => GetConcertByApplicationAsync(appId),
-            c => c.Actions.Cancel is null,
+            c => c.Actions!.Cancel is null,
             timeout: TimeSpan.FromSeconds(30));
     }
 
@@ -110,7 +111,7 @@ public sealed class ConcertCancelledTests : IAsyncLifetime
 
     private async Task AcceptAsync(int appId)
     {
-        var response = await venueManagerClient.PostAsync($"/api/Application/{appId}/accept");
+        var response = await venueManagerClient.PostAsync($"/api/Application/{appId}/accept", new { eSignature = new { signatoryName = "Test Signatory" } });
         await response.ShouldBe(HttpStatusCode.NoContent);
     }
 

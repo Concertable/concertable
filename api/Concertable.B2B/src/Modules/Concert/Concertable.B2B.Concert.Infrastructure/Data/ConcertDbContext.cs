@@ -1,8 +1,8 @@
-using Concertable.B2B.Artist.Domain;
+using Concertable.B2B.Artist.Domain.ReadModels;
 using Concertable.B2B.Concert.Domain.Entities;
 using Concertable.B2B.Concert.Domain.ReadModels;
 using Concertable.B2B.DataAccess.Infrastructure;
-using Concertable.B2B.Venue.Domain;
+using Concertable.B2B.Venue.Domain.ReadModels;
 using Concertable.Kernel.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,6 +16,9 @@ internal sealed class ConcertDbContext(
 {
     public DbSet<ConcertEntity> Concerts => Set<ConcertEntity>();
     public DbSet<BookingEntity> Bookings => Set<BookingEntity>();
+    public DbSet<ContractEntity> Contracts => Set<ContractEntity>();
+    public DbSet<InvoiceEntity> Invoices => Set<InvoiceEntity>();
+    public DbSet<InvoiceSequenceEntity> InvoiceSequences => Set<InvoiceSequenceEntity>();
     public DbSet<ConcertImageEntity> ConcertImages => Set<ConcertImageEntity>();
     public DbSet<OpportunityEntity> Opportunities => Set<OpportunityEntity>();
     public DbSet<ApplicationEntity> Applications => Set<ApplicationEntity>();
@@ -32,5 +35,7 @@ internal sealed class ConcertDbContext(
     {
         modelBuilder.ApplyVenueArtist<ApplicationEntity>(this);
         modelBuilder.ApplyVenueArtist<BookingEntity>(this);
+        modelBuilder.ApplyVenueArtist<ContractEntity>(this);
+        modelBuilder.ApplyVenueArtist<InvoiceEntity>(this);
     }
 }

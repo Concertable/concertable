@@ -1,5 +1,6 @@
 using Concertable.B2B.Concert.Api.Responses;
 using Concertable.B2B.Concert.Domain.Lifecycle;
+using Microsoft.AspNetCore.Http;
 
 namespace Concertable.B2B.Concert.Api.Mappers;
 
@@ -39,8 +40,8 @@ internal static class ConcertResponseMappers
         Id = dto.Id,
         Name = dto.Name,
         About = dto.About,
-        BannerUrl = dto.BannerUrl ?? string.Empty,
-        Avatar = dto.Avatar ?? dto.Artist.Avatar ?? string.Empty,
+        BannerUrl = dto.BannerUrl,
+        Avatar = dto.Avatar ?? dto.Artist.Avatar,
         Rating = dto.Rating,
         Price = dto.Price,
         TotalTickets = dto.TotalTickets,
@@ -67,10 +68,30 @@ internal static class ConcertResponseMappers
             Town = dto.Venue.Town,
             Latitude = dto.Venue.Latitude,
             Longitude = dto.Venue.Longitude
-        },
-        Actions = new ConcertActions(
-            Cancel: dto.State == LifecycleState.Booked
-                ? new ActionLink($"/api/Concert/{dto.Id}/cancel", "POST")
-                : null)
+        }
     };
+
+    /// <summary>
+    /// The owner (party-scoped) read: adds the party-only action links and venue-private figures the
+    /// anonymous read omits. Cancel is offered only while Booked; the contract is frozen at accept so it
+    /// always exists; DeclareDoorRevenue shows only for an ended, still-Booked, undeclared revenue-share gig.
+    /// </summary>
+    public static ConcertDetailsResponse ToCurrentUserDetailsResponse(this ConcertDetails dto, DateTime utcNow) =>
+        dto.ToDetailsResponse() with
+        {
+            TicketsSold = dto.TicketsSold,
+            DoorRevenue = dto.DoorRevenue,
+            Actions = new ConcertActions(
+                Cancel: dto.State == LifecycleState.Booked
+                    ? new ActionLink($"/api/Concert/{dto.Id}/cancel", HttpMethods.Post)
+                    : null,
+                Contract: new ActionLink($"/api/Concert/{dto.Id}/contract/pdf", HttpMethods.Get),
+                DeclareDoorRevenue: dto.State == LifecycleState.Booked
+                    && dto.IsRevenueShare && dto.DoorRevenue is null && dto.EndDate < utcNow
+                    ? new ActionLink($"/api/Concert/{dto.Id}/door-revenue", HttpMethods.Post)
+                    : null,
+                Invoice: dto.InvoiceId is not null
+                    ? new ActionLink($"/api/Concert/{dto.Id}/invoice/pdf", HttpMethods.Get)
+                    : null)
+        };
 }

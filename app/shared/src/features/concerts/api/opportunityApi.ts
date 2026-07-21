@@ -1,4 +1,4 @@
-import api from "../../../lib/axiosClient";
+import { apiClient } from "../../../lib/apiClient";
 import type { Pagination } from "../../../types/common";
 import type { PaginationParams } from "../../../hooks/usePagination";
 import type { Opportunity, OpportunityDraft } from "../types";
@@ -8,7 +8,7 @@ const opportunityApi = {
     venueId: number,
     params: PaginationParams,
   ): Promise<Pagination<Opportunity>> => {
-    const { data } = await api.get<Pagination<Opportunity>>(
+    const { data } = await apiClient.get<Pagination<Opportunity>>(
       `/opportunity/active/venue/${venueId}`,
       { params },
     );
@@ -16,7 +16,7 @@ const opportunityApi = {
   },
 
   getAll: async (venueId: number): Promise<Opportunity[]> => {
-    const { data } = await api.get<Opportunity[]>(
+    const { data } = await apiClient.get<Opportunity[]>(
       `/venue/${venueId}/opportunities`,
     );
     return data;
@@ -26,14 +26,14 @@ const opportunityApi = {
     venueId: number,
     desired: (Opportunity | OpportunityDraft)[],
   ): Promise<Opportunity[]> => {
-    const { data } = await api.put<Opportunity[]>(
+    const { data } = await apiClient.put<Opportunity[]>(
       `/venue/${venueId}/opportunities`,
       desired.map((o) => ({
         id: "id" in o ? o.id : undefined,
         startDate: o.startDate,
         endDate: o.endDate,
         genres: o.genres,
-        contract: o.contract,
+        deal: o.deal,
       })),
     );
     return data;

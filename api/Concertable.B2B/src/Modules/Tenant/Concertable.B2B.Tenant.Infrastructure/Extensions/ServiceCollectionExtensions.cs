@@ -1,6 +1,8 @@
 using Concertable.B2B.DataAccess.Infrastructure;
 using Concertable.Auth.Contracts.Events;
 using Concertable.B2B.Tenant.Contracts;
+using Concertable.B2B.Tenant.Application;
+using Concertable.B2B.Tenant.Application.Tax;
 using Concertable.B2B.Tenant.Application.Interfaces;
 using Concertable.B2B.Tenant.Application.Validators;
 using FluentValidation;
@@ -35,8 +37,18 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<TenantConfigurationProvider>();
         services.AddSingleton<IEntityTypeConfigurationProvider>(sp => sp.GetRequiredService<TenantConfigurationProvider>());
 
+        services.Configure<UkTaxComplianceOptions>(configuration.GetSection("TaxCompliance"));
+
+        services.AddSingleton<ITaxComplianceRules, UkTaxComplianceRules>();
+
+        // VAT computation: region arithmetic + the registration policy over it; Concert consumes it only via ITenantModule.
+        services.AddSingleton<IVatCalculator, UkVatCalculator>();
+        services.AddSingleton<IVatPolicy, VatPolicy>();
+
         services.AddScoped<ITenantRepository, TenantRepository>();
         services.AddScoped<ITenantService, TenantService>();
+        services.AddScoped<IMembershipService, MembershipService>();
+        services.AddScoped<IInvitationService, InvitationService>();
         services.AddScoped<ITenantModule, TenantModule>();
 
         services.AddScoped<TenantContext>();
@@ -61,7 +73,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IIntegrationEventHandler<CredentialRegisteredEvent>, TenantProvisioningHandler>();
         services.AddScoped<IDomainEventHandler<TenantCreatedDomainEvent>, TenantCreatedDomainEventHandler>();
 
-        services.AddValidatorsFromAssemblyContaining<UpdateTenantRequestValidator>();
+        // includeInternalTypes: the Tenant validators are internal — without it they're never registered and the VAT-format rule silently doesn't run (mirrors Concert).
+        services.AddValidatorsFromAssemblyContaining<UpdateTenantRequestValidator>(includeInternalTypes: true);
 
         return services;
     }

@@ -4,6 +4,7 @@ using Concertable.Seed.Shared.Extensions;
 using Concertable.B2B.Artist.Contracts.Events;
 using Concertable.Customer.Review.Contracts.Events;
 using Concertable.B2B.Concert.Application.Mappers;
+using Concertable.B2B.Concert.Application.Renderers;
 using Concertable.B2B.Concert.Application.Resolvers;
 using Concertable.B2B.Concert.Application.Validators;
 using Concertable.B2B.Concert.Application.Workflow;
@@ -21,11 +22,14 @@ using Concertable.B2B.Concert.Infrastructure.Data;
 using Concertable.B2B.Concert.Infrastructure.Data.Seeders;
 using Concertable.B2B.Concert.Infrastructure.Events;
 using Concertable.B2B.Concert.Infrastructure.Handlers;
+using Concertable.B2B.Concert.Infrastructure.Pdf;
 using Concertable.B2B.Concert.Infrastructure.Repositories;
 using Concertable.B2B.Concert.Infrastructure.Services;
 using Concertable.B2B.Concert.Infrastructure.Services.Workflow;
+using Concertable.B2B.Concert.Infrastructure.Services.Settlement;
 using Concertable.B2B.Concert.Infrastructure.Services.Completion;
 using Concertable.B2B.Concert.Infrastructure.Services.Payment;
+using Concertable.B2B.Concert.Infrastructure.Specifications;
 using Concertable.B2B.Concert.Infrastructure.Validators;
 using Concertable.B2B.Venue.Contracts.Events;
 using FluentValidation;
@@ -73,15 +77,31 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IOpportunityService, OpportunityService>();
         services.AddScoped<IOpportunitySyncer>(sp => new Sync.OpportunitySyncer(
             sp.GetRequiredService<IOpportunityRepository>(),
-            sp.GetRequiredService<IContractModule>()));
+            sp.GetRequiredService<IDealModule>()));
         services.AddScoped<IApplicationService, ApplicationService>();
         services.AddScoped<IApplicationNotifier, ApplicationNotifier>();
-        services.AddScoped<INotifier, Notifier>();
+        services.AddScoped<IMessenger, Messenger>();
         services.AddScoped<IConcertDashboardService, ConcertDashboardService>();
 
-        services.AddScoped<ContractAccessor>();
-        services.AddScoped<IContractAccessor>(sp => sp.GetRequiredService<ContractAccessor>());
-        services.AddScoped<IContractResolver>(sp => sp.GetRequiredService<ContractAccessor>());
+        services.Configure<LegalSettings>(configuration.GetSection("Legal"));
+        services.AddScoped<IPdfBlobCache, PdfBlobCache>();
+        services.AddScoped<IContractIssuer, ContractIssuer>();
+        services.AddScoped<IContractService, ContractService>();
+        services.AddScoped<IContractPdfService, ContractPdfService>();
+        services.AddScoped<IInvoiceIssuer, InvoiceIssuer>();
+        services.AddScoped<IInvoiceService, InvoiceService>();
+        services.AddScoped<IInvoicePdfService, InvoicePdfService>();
+        services.AddScoped<IClientContext, ClientContextAccessor>();
+        services.AddSingleton<ITermsFingerprintCalculator, TermsFingerprintCalculator>();
+        services.AddSingleton<IDealTermsSerializer, DealTermsSerializer>();
+        services.AddSingleton<FlatFeeTermsSerializer>();
+        services.AddSingleton<DoorSplitTermsSerializer>();
+        services.AddSingleton<VersusTermsSerializer>();
+        services.AddSingleton<VenueHireTermsSerializer>();
+
+        services.AddScoped<DealAccessor>();
+        services.AddScoped<IDealAccessor>(sp => sp.GetRequiredService<DealAccessor>());
+        services.AddScoped<IDealResolver>(sp => sp.GetRequiredService<DealAccessor>());
 
         // Business-rule validators (interfaces in Concert.Application, impls in Concert.Infrastructure.Validators)
         services.AddSingleton<IConcertValidator, ConcertValidator>();
@@ -128,6 +148,13 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IApplicationRepository, ApplicationRepository>();
         services.AddScoped<IConcertDashboardRepository, ConcertDashboardRepository>();
         services.AddScoped<IBookingRepository, BookingRepository>();
+        services.AddScoped<IContractRepository, ContractRepository>();
+        services.AddScoped<IInvoiceRepository, InvoiceRepository>();
+        services.AddScoped(typeof(ISequenceRepository<>), typeof(SequenceRepository<>));
+
+        // Query specifications
+        services.AddScoped<IEndedAndBookedSpecification, EndedAndBookedSpecification>();
+        services.AddScoped<IDoorRevenueOutstandingSpecification, DoorRevenueOutstandingSpecification>();
 
         // Mappers
         services.AddScoped<IOpportunityMapper, OpportunityMapper>();
@@ -139,13 +166,26 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<VersusPaymentAmountMapper>();
         services.AddSingleton<VenueHirePaymentAmountMapper>();
 
-        services.AddSingleton<IPayeeResolver, PayeeResolver>();
+        services.AddSingleton<ITicketPayeeResolver, TicketPayeeResolver>();
+        services.AddSingleton<ISettlementPayeeResolver, SettlementPayeeResolver>();
         services.AddSingleton<VenuePayeeResolver>();
         services.AddSingleton<ArtistPayeeResolver>();
+
+        services.AddSingleton<IDealTermsRenderer, DealTermsRenderer>();
+        services.AddSingleton<FlatFeeTermsRenderer>();
+        services.AddSingleton<DoorSplitTermsRenderer>();
+        services.AddSingleton<VersusTermsRenderer>();
+        services.AddSingleton<VenueHireTermsRenderer>();
 
         services.AddSingleton<IArtistShareCalculator, ArtistShareCalculator>();
         services.AddSingleton<DoorSplitCalculator>();
         services.AddSingleton<VersusCalculator>();
+
+        // Single source of truth for the settlement gross — shared by the payout step and the invoice issuer
+        services.AddScoped<ISettlementAmountResolver, SettlementAmountResolver>();
+        services.AddSingleton<FlatFeeSettlementAmount>();
+        services.AddSingleton<VenueHireSettlementAmount>();
+        services.AddScoped<RevenueShareSettlementAmount>();
 
         // Module facades
         services.AddScoped<IConcertModule, ConcertModule>();
@@ -178,7 +218,7 @@ public static class ServiceCollectionExtensions
     {
         var registryBuilder = new ConcertWorkflowRegistryBuilder();
 
-        services.AddConcertWorkflow(registryBuilder, ContractType.FlatFee, p => p
+        services.AddConcertWorkflow(registryBuilder, DealType.FlatFee, p => p
             .WithApply<SimpleApplyStep>()
             .WithCheckout<HoldCheckoutStep>()
             .WithAccept<CaptureEscrowAcceptStep>()
@@ -189,7 +229,7 @@ public static class ServiceCollectionExtensions
             .WithApplicationCancel()
             .WithWorkflow<FlatFeeWorkflow>());
 
-        services.AddConcertWorkflow(registryBuilder, ContractType.DoorSplit, p => p
+        services.AddConcertWorkflow(registryBuilder, DealType.DoorSplit, p => p
             .WithApply<SimpleApplyStep>()
             .WithCheckout<VerifyCheckoutStep>()
             .WithAccept<PaidAcceptStep>()
@@ -201,7 +241,7 @@ public static class ServiceCollectionExtensions
             .WithApplicationCancel()
             .WithWorkflow<DoorSplitWorkflow>());
 
-        services.AddConcertWorkflow(registryBuilder, ContractType.Versus, p => p
+        services.AddConcertWorkflow(registryBuilder, DealType.Versus, p => p
             .WithApply<SimpleApplyStep>()
             .WithCheckout<VerifyCheckoutStep>()
             .WithAccept<PaidAcceptStep>()
@@ -213,7 +253,7 @@ public static class ServiceCollectionExtensions
             .WithApplicationCancel()
             .WithWorkflow<VersusWorkflow>());
 
-        services.AddConcertWorkflow(registryBuilder, ContractType.VenueHire, p => p
+        services.AddConcertWorkflow(registryBuilder, DealType.VenueHire, p => p
             .WithCheckout<SetupCheckoutStep>()
             .WithApply<PaidApplyStep>()
             .WithAccept<DepositEscrowAcceptStep>()
@@ -233,10 +273,10 @@ public static class ServiceCollectionExtensions
     private static void AddConcertWorkflow(
         this IServiceCollection services,
         ConcertWorkflowRegistryBuilder registryBuilder,
-        ContractType contractType,
+        DealType dealType,
         Action<ConcertWorkflowBuilder> configure)
     {
-        var builder = new ConcertWorkflowBuilder(contractType, services, registryBuilder);
+        var builder = new ConcertWorkflowBuilder(dealType, services, registryBuilder);
         configure(builder);
         builder.Build();
     }

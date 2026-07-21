@@ -1,11 +1,12 @@
 global using Concertable.Kernel;
+global using Concertable.Kernel.ValueObjects;
 global using Concertable.Contracts;
+global using Concertable.Contracts.Enums;
 global using Concertable.DataAccess.Infrastructure;
 global using Concertable.Search.Application;
 global using Concertable.Search.Application.Interfaces;
 global using Concertable.Search.Application.Params;
-global using Concertable.Search.Domain.Models;
-global using Concertable.Search.Domain.Projections;
+global using Concertable.Search.Domain.ReadModels;
 global using Concertable.Search.Infrastructure.Mappers;
 global using Concertable.Kernel.Identity;
 global using Concertable.Messaging;

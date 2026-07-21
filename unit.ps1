@@ -10,7 +10,7 @@ Set-Location $PSScriptRoot
 
 $b2bProjects = @(
     "api/Concertable.B2B/src/Modules/Concert/Tests/Concertable.B2B.Concert.UnitTests/Concertable.B2B.Concert.UnitTests.csproj",
-    "api/Concertable.B2B/src/Modules/Contract/Tests/Concertable.B2B.Contract.UnitTests/Concertable.B2B.Contract.UnitTests.csproj",
+    "api/Concertable.B2B/src/Modules/Deal/Tests/Concertable.B2B.Deal.UnitTests/Concertable.B2B.Deal.UnitTests.csproj",
     "api/Concertable.B2B/src/Modules/Tenant/Tests/Concertable.B2B.Tenant.UnitTests/Concertable.B2B.Tenant.UnitTests.csproj",
     "api/Concertable.B2B/tests/Concertable.B2B.Workers.UnitTests/Concertable.B2B.Workers.UnitTests.csproj"
 )
@@ -129,14 +129,14 @@ switch ($cmd) {
         Write-Host "    search     Run Search unit tests only"
         Write-Host "    payment    Run Payment unit tests only"
         Write-Host "    shared     Run Shared unit tests only (Kernel + Messaging)"
-        Write-Host "    <module>   Run a specific module (e.g. concert, contract, tenant, workers, user, review, ticket, kernel, messaging)"
+        Write-Host "    <module>   Run a specific module (e.g. concert, deal, tenant, workers, user, review, ticket, kernel, messaging)"
         Write-Host "    list       List all unit test projects"
         Write-Host ""
         Write-Host "  Examples:" -ForegroundColor DarkGray
         Write-Host "    ./unit.ps1 run"
         Write-Host "    ./unit.ps1 b2b"
         Write-Host "    ./unit.ps1 concert"
-        Write-Host "    ./unit.ps1 contract --filter ""FullyQualifiedName~ContractStateMachineTests"""
+        Write-Host "    ./unit.ps1 concert --filter ""FullyQualifiedName~LifecycleStateMachineTests"""
         Write-Host ""
     }
 }

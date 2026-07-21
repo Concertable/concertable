@@ -1,4 +1,4 @@
-import api from "../../../lib/searchAxiosClient";
+import { searchClient } from "../../../lib/searchClient";
 import type { Pagination } from "../../../types/common";
 import type { Header, HeaderType, SortToken } from "../types";
 import type { SearchFilters } from "../schemas/searchSchema";
@@ -8,7 +8,7 @@ const headerApi = {
     amount: number,
     headerType: HeaderType,
   ): Promise<Header[]> => {
-    const { data } = await api.get<Header[]>(`/header/amount/${amount}`, {
+    const { data } = await searchClient.get<Header[]>(`/header/amount/${amount}`, {
       params: { headerType },
     });
     return data;
@@ -32,7 +32,7 @@ const headerApi = {
       showHistory: filters.showHistory,
       showSold: filters.showSold,
     };
-    const { data } = await api.get<Pagination<Header>>("/header", { params });
+    const { data } = await searchClient.get<Pagination<Header>>("/header", { params });
     return data;
   },
 };

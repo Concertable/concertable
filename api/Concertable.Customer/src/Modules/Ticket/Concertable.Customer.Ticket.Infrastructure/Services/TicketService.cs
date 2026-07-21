@@ -50,7 +50,7 @@ internal sealed class TicketService : ITicketService
     public async Task<Result<TicketPayment>> PurchaseAsync(TicketPurchaseParams purchaseParams)
     {
         var concert = await concertModule.GetByIdAsync(purchaseParams.ConcertId)
-            ?? throw new NotFoundException("Concert not found");
+            .OrNotFound();
 
         var validationResult = ticketValidator.CanPurchaseTickets(concert, purchaseParams.Quantity);
         if (validationResult.IsFailed)
@@ -124,7 +124,7 @@ internal sealed class TicketService : ITicketService
     public async Task<Result<TicketCheckout>> CheckoutAsync(int concertId, int quantity)
     {
         var concert = await concertModule.GetByIdAsync(concertId)
-            ?? throw new NotFoundException("Concert not found");
+            .OrNotFound();
 
         var validationResult = ticketValidator.CanPurchaseTickets(concert, quantity);
         if (validationResult.IsFailed)
@@ -147,13 +147,13 @@ internal sealed class TicketService : ITicketService
     public async Task<IEnumerable<TicketDto>> GetUserUpcomingAsync()
     {
         var tickets = await ticketRepository.GetUpcomingByUserIdAsync(currentUser.GetId());
-        return tickets.ToDtos(currentUser.Email ?? string.Empty);
+        return tickets.ToDtos();
     }
 
     public async Task<IEnumerable<TicketDto>> GetUserHistoryAsync()
     {
         var tickets = await ticketRepository.GetHistoryByUserIdAsync(currentUser.GetId());
-        return tickets.ToDtos(currentUser.Email ?? string.Empty);
+        return tickets.ToDtos();
     }
 
     private TicketEntity BuildTicket(Guid userId, ConcertDto concert)

@@ -1,5 +1,5 @@
 import type { ActionLink, Genre } from "../../types/common";
-import type { Contract } from "../contracts/types";
+import type { Deal } from "../deals/types";
 import type { ArtistSummary } from "../artists/types";
 
 export interface CheckoutSession {
@@ -58,12 +58,15 @@ export type ApplicationStatus =
   | "Complete"
   | "Settled";
 
+export type { ESignatureRequest } from "./schemas/eSignatureRequestSchema";
+
 export interface ApplicationActions {
   accept: ActionLink;
   checkout?: ActionLink | null;
   withdraw?: ActionLink | null;
   reject?: ActionLink | null;
   cancel?: ActionLink | null;
+  contract?: ActionLink | null;
 }
 
 export interface Application {
@@ -88,7 +91,7 @@ export interface OpportunityDraft {
   startDate: string;
   endDate: string;
   genres: Genre[];
-  contract: Contract;
+  deal: Deal;
 }
 
 export interface Opportunity extends OpportunityDraft {
@@ -118,14 +121,16 @@ export interface ConcertVenue {
 
 export interface ConcertActions {
   cancel?: ActionLink | null;
+  contract?: ActionLink | null;
+  declareDoorRevenue?: ActionLink | null;
 }
 
 export interface Concert {
   id: number;
   name: string;
   about: string;
-  bannerUrl: string;
-  avatar: string;
+  bannerUrl?: string;
+  avatar?: string;
   rating: number;
   price: number;
   totalTickets: number;
@@ -136,5 +141,8 @@ export interface Concert {
   venue: ConcertVenue;
   artist: ConcertArtist;
   genres: Genre[];
+  // Venue-private; present only on the owner (party-scoped) read, alongside actions.
+  ticketsSold?: number | null;
+  doorRevenue?: number | null;
   actions?: ConcertActions;
 }

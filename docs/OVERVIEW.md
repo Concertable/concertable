@@ -9,7 +9,7 @@ A venue posts an **Opportunity** (an open slot tied to a **Contract** that defin
 
 ## Settlement contracts
 
-Four contract types drive who pays whom and when (see `api/Modules/Contract/Concertable.Contract.Domain/Entities/`):
+Four deal types drive who pays whom and when (see `api/Concertable.B2B/src/Modules/Deal/Concertable.B2B.Deal.Domain/Entities/`):
 
 - **FlatFee** — venue pays the artist a fixed fee.
 - **DoorSplit** — artist takes a % of ticket revenue.

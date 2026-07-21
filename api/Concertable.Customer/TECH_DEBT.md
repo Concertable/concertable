@@ -59,6 +59,21 @@ Concert and Ticket gained their `.Contracts` projects (`IConcertModule`, `ITicke
 
 ## LOW
 
+### Customer has no DataAccess layer — design-time factory base parked in Seed.Infrastructure
+
+B2B has `Concertable.B2B.DataAccess.Infrastructure` (referenced by every B2B module's Infrastructure
+project); Customer has no equivalent — its module Infrastructure projects reference the shared
+`Concertable.DataAccess.Infrastructure` package directly plus the in-closure
+`Concertable.Customer.Seed.Infrastructure`. So the design-time `DesignTimeConfiguration` +
+`CustomerDesignTimeDbContextFactory` base (single-sourcing the 7 Customer factories, and pulling a
+`Microsoft.EntityFrameworkCore.SqlServer` ref into the seed project) landed in `Seed.Infrastructure` —
+the only Customer-wide in-closure home available — which is a semantic mismatch (it's not seeding).
+
+**Resolves when:** Customer gains a `Concertable.Customer.DataAccess.Infrastructure` (mirroring B2B) and
+the design-time factory base + `DesignTimeConfiguration` move there. See `plans/CONFIG_AND_DEPLOYMENT.md`.
+
+---
+
 ### Read repositories don't default to no-tracking
 
 `ConcertReadRepository.GetDtoAsync` needed an ad-hoc `.AsNoTracking()` (EF throws when a projection carries a whole owned instance like `Period` on a tracking query), and the other read repos rely on projections happening to be untracked. Reads through a `ReadRepository<T>` should never track — the per-call opt-out is backwards.
@@ -67,8 +82,8 @@ Concert and Ticket gained their `.Contracts` projects (`IConcertModule`, `ITicke
 
 ---
 
-### `TicketDto.UserEmail` is auth-context data threaded through the mapper
+### Ticket list reads load full entities (incl. `QrCode` blobs) instead of projecting
 
-`TicketService.GetUserUpcomingAsync` / `GetUserHistoryAsync` pass `currentUser.Email ?? string.Empty` into `tickets.ToDtos(...)`, stamping the caller's own email identically onto every row. Two smells: the email isn't ticket data (the SPA already knows the signed-in user's email from its OIDC session, and `/api/ticket/*/user` endpoints only ever return the caller's tickets), and the `?? string.Empty` masks a missing email claim with empty display data (read-path sibling of the fixed BUG12). Carrying the email through the mapper also forces the load-entities-then-map-in-memory shape — including hauling `QrCode byte[]` blobs for a list view — instead of a `QueryableTicketMappers` projection. The write-path sibling lives in `TicketPaymentProcessor`: `meta.GetValueOrDefault("fromUserEmail", string.Empty)` masks missing Stripe metadata the same way.
+`TicketService.GetUserUpcomingAsync` / `GetUserHistoryAsync` materialise whole `TicketEntity` rows and map in memory (`tickets.ToDtos()`), hauling the `QrCode byte[]` blob for every ticket in a list view rather than a queryable projection. The empty-string masks that used to ride this path are gone: `UserEmail` was dropped from `TicketDto` (web reads it from nowhere; mobile `TicketDetailScreen` now reads the signed-in email from `useAuthStore`), the mapper no longer takes an email parameter, and `TicketPaymentProcessor` fail-closes on `meta["fromUserEmail"]`. What remains is pure efficiency — and it's blocked by an SPA coupling: both surfaces read `qrCode` straight off the list DTO (web `TicketCard` → `QrPopover`, mobile `<QRCode value={ticket.qrCode}>`), so `QrCode` can't simply be excluded from a projection.
 
-**Resolves when:** `UserEmail` is dropped from `TicketDto` (frontend reads it from its auth state), the list reads become queryable projections (`ToDto()` on `IQueryable<TicketEntity>`, excluding `QrCode` — it has its own fetch path via `GetQrCodeByIdAsync`), the mapper no longer takes an email parameter, and the `fromUserEmail` metadata fallback in `TicketPaymentProcessor` either fails closed or disappears with the email threading.
+**Resolves when:** the list reads become `IQueryable<TicketEntity>` projections that exclude `QrCode`, AND the SPA fetches the QR lazily per ticket (the read path already exists — `GetQrCodeByIdAsync` behind `QrCodeService`) instead of reading it from the list DTO.

@@ -10,18 +10,18 @@ internal sealed class ApplicationNotifier : IApplicationNotifier
     private readonly IApplicationRepository repository;
     private readonly IUserModule userModule;
     private readonly ICurrentUser currentUser;
-    private readonly INotifier notifier;
+    private readonly IMessenger messenger;
 
     public ApplicationNotifier(
         IApplicationRepository repository,
         IUserModule userModule,
         ICurrentUser currentUser,
-        INotifier notifier)
+        IMessenger messenger)
     {
         this.repository = repository;
         this.userModule = userModule;
         this.currentUser = currentUser;
-        this.notifier = notifier;
+        this.messenger = messenger;
     }
 
     public Task AppliedAsync(int applicationId) =>
@@ -60,20 +60,20 @@ internal sealed class ApplicationNotifier : IApplicationNotifier
     private async Task NotifyVenueAsync(int applicationId, string content, MessageAction action, string emailSubject)
     {
         var venueManagerId = await repository.GetVenueManagerIdAsync(applicationId)
-            ?? throw new NotFoundException("Concert application not found");
+            .OrNotFound(DisplayNames.Application);
         var venueManager = await userModule.GetManagerByIdAsync(venueManagerId)
             ?? throw new NotFoundException("Venue manager not found for application");
 
-        await notifier.SendAsync(currentUser.GetId(), venueManager.Id, content, action,
+        await messenger.SendAsync(currentUser.GetId(), venueManager.Id, content, action,
             new EmailCopy(venueManager.Email!, emailSubject, content));
     }
 
     private async Task NotifyArtistAsync(int applicationId, string content, MessageAction action, string emailSubject, string emailBody)
     {
         var (artist, venue) = await repository.GetArtistAndVenueByIdAsync(applicationId)
-            ?? throw new NotFoundException("Concert application not found");
+            .OrNotFound(DisplayNames.Application);
 
-        await notifier.SendAndNotifyAsync(venue.UserId, artist.UserId, content, action,
+        await messenger.SendAndNotifyAsync(venue.UserId, artist.UserId, content, action,
             new EmailCopy(artist.Email!, emailSubject, emailBody));
     }
 }

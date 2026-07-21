@@ -4,13 +4,13 @@ using Concertable.Payment.Contracts.Events;
 using Concertable.Payment.Client;
 using Concertable.B2B.User.Contracts;
 using Concertable.Kernel.Identity;
-using Concertable.B2B.User.Domain;
+using Concertable.B2B.User.Domain.Entities;
 using Concertable.Testing.Integration;
 using Concertable.Testing.Integration.Logging;
 using Concertable.Testing.Integration.Mocks;
 using Concertable.B2B.Artist.Infrastructure.Extensions;
 using Concertable.B2B.Concert.Infrastructure.Extensions;
-using Concertable.B2B.Contract.Infrastructure.Extensions;
+using Concertable.B2B.Deal.Infrastructure.Extensions;
 using Concertable.B2B.Tenant.Infrastructure.Extensions;
 using Concertable.B2B.User.Infrastructure.Extensions;
 using Concertable.B2B.Venue.Infrastructure.Extensions;
@@ -104,6 +104,8 @@ public class ApiFixture : IAsyncLifetime
                     .ToList();
                 foreach (var d in asbDescriptors)
                     services.Remove(d);
+                services.AddTransient<IStartupFilter, TestClientIpStartupFilter>();
+
                 services.Replace(ServiceDescriptor.Singleton<IBusTransport, MockBusTransport>());
                 services.AddSingleton<INotificationClient>(NotificationService);
                 services.AddSingleton(StripeApiClient);
@@ -127,7 +129,7 @@ public class ApiFixture : IAsyncLifetime
                 services.AddTenantTestSeeder();
                 services.AddArtistTestSeeder();
                 services.AddVenueTestSeeder();
-                services.AddContractTestSeeder();
+                services.AddDealTestSeeder();
                 services.AddConcertTestSeeder();
                 services.AddConversationsTestSeeder();
 

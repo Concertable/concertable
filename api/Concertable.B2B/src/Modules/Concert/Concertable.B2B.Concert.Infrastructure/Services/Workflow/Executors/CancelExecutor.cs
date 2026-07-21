@@ -12,20 +12,20 @@ internal sealed class CancelExecutor : ICancelExecutor
 {
     private readonly ILifecycleTransitioner transitioner;
     private readonly IConcertWorkflowFactory workflows;
-    private readonly IContractResolver contractResolver;
+    private readonly IDealResolver dealResolver;
     private readonly IConcertRepository concertRepository;
     private readonly ILogger<CancelExecutor> logger;
 
     public CancelExecutor(
         ILifecycleTransitioner transitioner,
         IConcertWorkflowFactory workflows,
-        IContractResolver contractResolver,
+        IDealResolver dealResolver,
         IConcertRepository concertRepository,
         ILogger<CancelExecutor> logger)
     {
         this.transitioner = transitioner;
         this.workflows = workflows;
-        this.contractResolver = contractResolver;
+        this.dealResolver = dealResolver;
         this.concertRepository = concertRepository;
         this.logger = logger;
     }
@@ -35,12 +35,12 @@ internal sealed class CancelExecutor : ICancelExecutor
         try
         {
             var concert = await concertRepository.GetByIdWithBookingAsync(concertId)
-                ?? throw new NotFoundException("Concert not found");
+                .OrNotFound();
 
             await transitioner.TransitionAsync(concert.Booking.ApplicationId, Trigger.Cancel, async app =>
             {
-                await contractResolver.ResolveByConcertIdAsync(concertId);
-                var workflow = workflows.Create(app.ContractType);
+                await dealResolver.ResolveByConcertIdAsync(concertId);
+                var workflow = workflows.Create(app.DealType);
                 await workflow.Cancel.ExecuteAsync(concertId);
                 concert.Cancel();
             });

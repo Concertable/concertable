@@ -38,6 +38,24 @@ git diff "<start>..HEAD" --stat
 
 If the range is empty, say so and stop.
 
+## Step 1b — Create the review file NOW, before reviewing (mandatory)
+
+**Create the review markdown immediately** — the moment the range is known, before loading rules or
+reviewing anything. Do not defer file creation to Step 5; a review that's interrupted mid-flight must
+still leave a file on disk.
+
+- Resolve the target path exactly as Step 5 does (`reviews/<branch-slug>.md`, or an existing/named file).
+- **If the file does not exist:** create `reviews/` if needed and write the Step-5 skeleton now — the
+  `# Code review — <branch>` header, the work-order blurb, the `**Reviewed up to commit:**` marker set
+  to current HEAD, the range line, and a `## Findings` section containing a single placeholder line
+  `- _(review in progress — findings appended as they're confirmed)_`.
+- **If the file already exists** (a prior review, an `incremental-review` run, or a legacy
+  `plans/PR_FEEDBACK.md`): leave its contents intact — you'll append per Step 5. Do not overwrite.
+
+Then review (Steps 2–4) and **append each confirmed finding to this file as you go** (replacing the
+placeholder line on the first real finding), rather than buffering them all for a single write at the
+end. Step 5 then just reconciles the final list; Step 6 finalizes the marker.
+
 ## Step 2 — Load the rules (read before flagging anything)
 
 These docs are the source of truth. Read the ones relevant to the diff — do not rely on memory, and only flag a convention issue a doc actually states:
@@ -99,14 +117,31 @@ For each candidate finding, judge whether it's real and will be hit in practice.
 - Issues deliberately silenced in code (lint-ignore, documented exception).
 - A convention "violation" the relevant doc doesn't actually state.
 
-## Step 5 — Write the review markdown
+**No hedged findings — a kept finding is one you'd fix.** Every finding that survives this filter must
+name a *concrete fix you're prepared to apply*. Do not emit conditional/hedged findings — "sub-threshold
+but noting it", "only worth it if this is ever refactored", "non-blocking, your call". That middle
+ground is a trap: it's above the bar → state the fix (and it gets applied), or below the bar → drop it
+silently. Never the hedge. A hedged finding reads downstream as "human decision needed" — `address-review`
+defers it, and a reversible, clearly-correct, repo-rule-backed fix wrongly turns into a permission
+question instead of just being made. Severity `LOW` still means "fix it", not "maybe fix it".
 
-Default location: `reviews/<branch-slug>.md` at repo root (branch `/` → `-`, e.g. `reviews/Refactor-Microservices.md`). Create the `reviews/` dir if missing. If the user named a file, or a review file for this branch already exists (including a legacy one like `plans/PR_FEEDBACK.md`), use that instead.
+## Step 5 — Finalize the review markdown
+
+The file already exists (created up front in Step 1b) and findings were appended as they were
+confirmed. Here you just reconcile the final list: ensure the placeholder line is gone, findings are
+grouped and ID'd, and the shape below is honoured.
+
+Path (same resolution as Step 1b): `reviews/<branch-slug>.md` at repo root (branch `/` → `-`, e.g. `reviews/Refactor-Microservices.md`). If the user named a file, or a review file for this branch already exists (including a legacy one like `plans/PR_FEEDBACK.md`), that file is the one you've been writing to.
 
 File shape:
 
 ```markdown
 # Code review — <branch>
+
+> **This file is a work order, not a discussion.** If you're handed this file, fix the open `[ ]`
+> findings directly and report what changed — don't re-present them as options or ask which to do.
+> Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
+> in one line, take the safe path, keep going.
 
 **Reviewed up to commit:** `<full-HEAD-sha>`  _(<today's ISO date>)_
 

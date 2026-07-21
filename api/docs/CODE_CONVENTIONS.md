@@ -89,6 +89,16 @@ The injected `DbContext` field is always named `context` (never `dbContext`) —
 field-naming rule above. Don't hand-roll a bare `IXRepository` that re-implements CRUD;
 inherit the base.
 
+## Table + schema names — the module `Schema.cs` constants
+
+Each persistence module owns a `Schema.cs` (`internal static class Schema`) holding its DB schema name and
+its table names as `const string`s — `Schema.Name` (e.g. `"concert"`) and `Schema.Tables.X` (e.g.
+`Schema.Tables.Invoices`). EF configs reference these — `builder.ToTable(Schema.Tables.Invoices, Schema.Name)` —
+never a bare string literal, so a renamed table changes one constant, not N scattered strings.
+
+Column names need no equivalent: EF names each column after its property, so a config sets one only for a
+deliberate rename (`HasColumnName("Period_Start")`) — and those few stay inline literals, not a constants class.
+
 ## Single-statement branches — no braces
 
 ```csharp
@@ -101,6 +111,20 @@ if (condition)
 {
     return;
 }
+```
+
+## Optional parameters — don't add one that callers must skip with a named argument
+
+An optional parameter earns its place only when call sites actually pass it *positionally* and naturally. The moment varying one argument forces a call site to name-skip past another —
+`ApplyAsync(opportunityId, signatoryName: name)` to hop over an unwanted `paymentMethodId` — the optional has stopped paying for itself: the signature grew, the call got noisier, and nothing reads more clearly. Prefer, in order: vary the value **inline** at the one call site that needs it (especially in tests — a self-contained Arrange beats threading a knob through a shared helper), or add a small **focused overload/helper** for that shape. Only keep the extra optional when several call sites genuinely pass it the ordinary way.
+
+```csharp
+// WRONG — the named arg exists only to skip paymentMethodId; the knob serves one caller
+private Task<int> ApplyAsync(int opportunityId, string? paymentMethodId = null, string signatoryName = "Test Signatory") ...
+var id = await ApplyAsync(opportunityId, signatoryName: "Aretha Artist");
+
+// CORRECT — the one caller that needs a distinct name just does the apply inline
+await artistClient.PostAsync($"/api/Application/{opportunityId}", new { eSignature = new { signatoryName = "Aretha Artist" } });
 ```
 
 ## Base-class members — call through `base.`
@@ -134,6 +158,8 @@ Use these **sparingly** — don't pollute the codebase with summaries on self-ex
 **Don't document both an interface and its implementation.** The contract lives on the interface — that's the one place a summary belongs. The implementing class repeats nothing; leave it bare unless the *implementation itself* has a non-obvious quirk the interface can't speak to (a specific algorithm, a workaround). Two summaries saying the same thing is just drift waiting to happen.
 
 When you *do* document a type or member, write it as an XML doc comment (`/// <summary>…</summary>`), not a `//` line comment. Reserve `//` for short inline notes *inside* method bodies. Cross-reference with `<see cref="…"/>` / `<see langword="null"/>` instead of bare prose, and use `<c>Name</c>` for a type the declaring assembly can't reference (avoids an unresolved-cref warning).
+
+**Lead with what the thing *is*, in plain words** — "A snapshot of the deal, frozen at Accept." beats terse jargon like "Columns are copies, never references to the live deal". Name the kind-of-thing ("a snapshot of X", "a cache of X", "a guard that…"), then only the constraint that matters. Don't over-explain — a good "X of Y" opener usually carries it.
 
 ```csharp
 // CORRECT — documents the member
@@ -185,6 +211,22 @@ internal static class EscrowMappers
     public static EscrowStatus ToEscrowStatus(this Proto.EscrowStatusType s) => ...;
 }
 ```
+
+## `#region` — sparingly, to group same-shaped members in an aggregating file
+
+The codebase does **not** use `#region` in ordinary classes — it hides code and usually signals a class
+that should be split. It earns its place in exactly one shape: a single file that legitimately
+**aggregates many same-shaped members**, where grouping by owner/subject is the only practical way to
+navigate.
+
+The canonical case is a project's `Log.cs` — one file holding every `[LoggerMessage]` method for the
+project — partitioned into `#region`s named for the **class/service that emits them**
+(`#region EscrowService`, `#region WebhookProcessor`). Name the region for the thing it groups, never a
+generic label. If a class *isn't* an aggregator of one member shape, don't reach for `#region` — split
+it instead.
+
+(Test classes have the analogous rule — region by method-under-test — in
+[`UNIT_CONVENTIONS.md`](./UNIT_CONVENTIONS.md) / [`INTEGRATION_CONVENTIONS.md`](./INTEGRATION_CONVENTIONS.md).)
 
 ## Logging — source-generated `Log.cs`
 

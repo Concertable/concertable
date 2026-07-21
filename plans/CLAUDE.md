@@ -5,6 +5,30 @@ archive. A finished plan kept "for reference" is rot: it misleads the next reade
 work is still pending. This file is the workflow; the root [`CLAUDE.md`](../CLAUDE.md) carries the
 short version.
 
+## Never leave the codebase out of sync — the plan isn't done until the whole thing is
+
+A refactor isn't finished when the convenient half lands. If a repo/package boundary forces it into
+multiple PRs (e.g. a Kernel change and the B2B change that depends on it), do them back-to-back —
+but the plan stays open until **all** of them land and the codebase is in sync again. Merging the
+B2B PR and calling the plan done while Kernel still speaks the old shape is the thing to never do.
+Don't `git rm` the plan (Lifecycle 4) until that final synced state is in.
+
+### Rename definition-of-done: the grep gate (mechanical, not judgement)
+
+A rename is done **only when `grep -rniE "<oldterm>"` over the entire repo returns zero** — every
+tier, no exceptions: type names, identifiers **of every case** (PascalCase, camelCase, snake, kebab),
+local vars, fields, params, comments, string literals, `data-testid`s, HTTP routes, JSON keys, blob
+paths, file/folder names, and docs. There is **no "cosmetic tier."** A field typed `IDealAccessor`
+named `contractAccessor`, or a comment still saying "the agreement", is *not done* — it's exactly the
+dishonest naming the rename exists to remove.
+
+Run the grep before claiming done. The only acceptable non-zero is an **explicit, written allowlist**
+of deliberate survivors, each justified in the plan — a term that legitimately means something else
+now (a word reused for a different concept), a shared `.Contracts` event package, a wire value kept on
+purpose. Anything not on that allowlist is outstanding work. "I renamed the types, the build's green,
+tests pass" is **not** the bar — the grep is. Don't decide by hand which occurrences "count"; the whole
+failure mode is discretion. Remove the discretion — grep, allowlist, zero.
+
 ## LAUNCH_PLAN.md is the master tracker — keep it current with every change it tracks
 
 [`plans/b2b/LAUNCH_PLAN.md`](./b2b/LAUNCH_PLAN.md) is the driving doc for the current launch
@@ -36,6 +60,22 @@ verification gate. Phases sequence so that every intermediate state builds and p
    to a later cleanup pass.
 5. A plan **superseded** by a newer plan, or describing a **rejected** design, is deleted the moment
    that's decided — no tombstones.
+
+### The trap that ships a finished plan as rot — check `git status` before the completing commit
+
+Lifecycle 4 assumes the plan is already a **tracked** file you `git rm`. The case that slips through is a
+plan **written and fully implemented in the same session** (a "fresh-context implementation plan"): it
+exists only as an **untracked** working-tree file, so a blanket `git add -A` / `git add .` before the
+completing commit **stages it as a new file** — the exact opposite of deleting it — and it ships inside
+the PR as rot. This is precisely how `DISPLAYNAME_CONST_CONSOLIDATION.md` reached `master`'s PR: born and
+completed in one commit, swept in as an addition instead of never being committed.
+
+So, **before any commit that completes plan work, run `git status --short plans/` and eyeball it:**
+- a plan finished by this commit must **not** appear as `A`/`??` (born-and-done → never stage it, or `git rm`);
+- a pre-existing tracked plan whose **last** item this commit lands must appear as `D`, not survive untouched
+  (that second miss is how `HTTP_GUARD_CONSOLIDATION.md` lingered after its arch-test shipped).
+
+The rule is mechanical: after the completing commit, no finished plan is in the tree — as an addition or a survivor.
 
 ## Doc-only close-out — never open its own PR; let it ride the next change
 
@@ -90,13 +130,64 @@ point where the context becomes disposable. Don't carry unwritten state across a
 
 ## Before a clear — hand off a resume prompt
 
-When the work is fully done for now, or the user says they'll clear, do two things after the durable
+When the work is fully done for now, or the user says they'll clear, do these things after the durable
 state is written:
 
-1. **Prepare for clear** — confirm the plan markdown, `CLAUDE.md`/`TECH_DEBT.md`, and commit messages
+1. **Commit the completed phase FIRST — don't leave finished, verified phase work uncommitted "for
+   review."** A completed + verified plan phase is *committed* as part of finishing it, with the plan
+   check-off in the same commit (Lifecycle 3). Committing at the phase boundary is the default here — do
+   it without asking; **only `push` waits for Tommy's explicit go-ahead** (commit ≠ push). Both
+   reviewing and resuming run off the commit, so it lands before the handoff. Leaving a green phase in
+   the working tree is the mistake that makes `/code-review` unable to see it.
+2. **Prepare for clear** — confirm the plan markdown, `CLAUDE.md`/`TECH_DEBT.md`, and commit messages
    hold everything; the chat must be safe to throw away.
-2. **Give the user a resume prompt to paste after `/clear`.** Assume zero context: name the plan file,
-   the branch/PR, and the exact next step. Keep it to a few lines.
+3. **Give the user a resume prompt to paste after `/clear`.** Assume zero context: name the **working
+   directory** (this repo runs many parallel worktrees — the branch name alone doesn't say which tree to
+   `cd` into, so give the absolute path: the main checkout, or the sibling `…worktrees/<Branch>`), the
+   plan file, the branch/PR, and the exact next step. Keep it to a few lines.
+4. **Hand off a ready-to-paste code-review prompt in the SAME turn whenever you say the work is ready
+   to review** — never "stopping here for your review" with no prompt (that's this section's anti-pattern
+   applied to review instead of resume). With the phase committed (step 1) the whole feature is on the
+   branch, so the prompt is normally just **`/code-review`** — it reviews `master..HEAD`, i.e. the
+   **entire feature**, which is exactly what a review should cover. Only if some work is *deliberately*
+   left uncommitted must the prompt point the reviewer at the full delta including it
+   (`git diff $(git merge-base master HEAD)` + untracked from `git status --short`) — **never**
+   `git diff HEAD` alone, which omits already-committed earlier phases.
+
+   **If — and only if — the work lives in a separate git worktree, the resume prompt's first line
+   MUST be the exact directory to `cd` into, before anything else.** A `/clear` (or a brand-new
+   session) reopens in *whatever directory the last session was rooted in*. When the branch lives in a
+   separate worktree that's routinely the **wrong** one: a resume prompt naming only the plan and the
+   branch lands the paste in the wrong worktree on the wrong branch, and git then **won't** let you
+   check the right branch out (it's already checked out in its own worktree) — so the whole handoff
+   silently derails. Naming the branch is **not** enough; name the **directory**. Shape:
+
+   > `cd <absolute worktree path>` — then: read `plans/<PLAN>.md`, branch `<Type>/<Name>`, next step: …
+
+   Check first: run `git worktree list`. If the work's branch is a **separate** worktree, lead with its
+   `cd` path. If it's just the **main checkout** (the default — the session already reopens there), skip
+   the `cd` line entirely and name the plan + branch as normal; don't clutter the prompt with it.
+
+**The trigger is mechanical — not a judgment call.** The moment you finish a discrete chunk of work
+(a plan designed, a phase landed, a question fully answered) and your next sentence *would* be
+"Want me to start X?" / "Shall I do the next phase?" / "…or leave it as-is?" — **that question IS the
+trigger.** Do not send it. Write the durable state and hand off the resume prompt in the **same
+turn**, unprompted. You do not wait for the user to say "I'll clear now" — finishing the work is the
+signal. Asking whether to continue instead of handing off is the exact anti-pattern this section
+exists to kill: the plan already records what's next, so the honest move is to hand off, not to ask.
+
+**A completed + verified phase is a HARD STOP — end the turn on the resume prompt.** After you hand off,
+do **not** begin the next phase in the same session — not even when asked — **unless the user explicitly
+names the next phase AND says to do it now, in this session.** Everything short of that is a stop:
+
+- A vague *"why are we stopping?"* / *"aren't we continuing?"* / *"keep going"* / *"yeah"* is a request
+  to **clarify or re-show the handoff**, never license to start the next phase. Re-present the resume
+  prompt; don't start coding.
+- **Never** append *"want me to continue?"* or a two-way *"continue vs. review"* fork — that reopens
+  "continue" as an option and is precisely how the stop gets skipped. The resume prompt **is** the
+  deliverable; the turn ends there. At most, one plain sentence noting the phase is done — no question.
+- When genuinely unsure whether the user authorized the next phase in-session, **stop and ask one
+  narrow question**; default to stopping, never to starting.
 
 ## Verification gate per phase
 
@@ -131,6 +222,16 @@ The full E2E suites (API `Concertable.B2B.E2ETests` + the UI regress) are **expe
 Docker-gated**. Run them only when the change earns it; otherwise build + unit + integration is the
 gate, and you update the plan markdown and move on.
 
+**The PR merge queue IS the E2E gate — never run E2E locally ahead of a merge.** When the change is
+going out as a PR, the merge-queue pipeline runs the full suite (E2E included) as the gate. Running it
+locally first just burns ~25-30 min duplicating exactly what CI will do on the way in. So for anything
+headed to a PR, the local gate stops at build + unit + integration — **push it and let the queue run
+E2E.** The **only** reason to run E2E locally is when **the merge fails on failing E2E tests** — then
+run the failing scenarios via the **`e2e-ui-debug`** / **`e2e-debug`** skill to diagnose and fix, and
+push the fix (the queue re-runs E2E on the way back in). **This overrides any plan phase line or
+kickoff prompt that says "run the E2E regress"** — if a PR will run it, let the PR run it; a written
+"run E2E" step is not a reason to duplicate the queue.
+
 **Run E2E when the change is _massive_ or _risky_:**
 
 - It spans multiple services or is otherwise broadly cross-cutting.
@@ -145,6 +246,16 @@ gate, and you update the plan markdown and move on.
   nothing exercises yet).
 - It's small, isolated, or covered well by integration tests.
 - It's doc-only or comments-only.
+
+**When you skip E2E on a change headed to a PR, tell the merge queue too — `[skip-e2e]` in a commit.**
+The queue runs the full E2E suite on every code change *by default*, so your local skip-judgment is
+worthless unless it's encoded in the commit: without the token the queue still burns ~25-30 min of E2E
+on a change that didn't earn it. So for a behaviour-preserving / small / well-covered change, put
+`[skip-e2e]` in a commit message (any commit in the PR range; `[skip-tests]` for compile-floor-only on a
+trivial/mechanical change — build + carve never skip). This is the reflex-inversion: E2E-in-the-queue is
+opt-*out* for a zero-behaviour-change PR, not automatic. Retrofitting the token onto a PR already in the
+queue means closing + re-pushing (the branch is locked while queued) — so decide the tier **in the
+commit you push**, not after.
 
 When in doubt, or when a phase explicitly flips behavior on a covered flow, run E2E. **How** to run it
 safely (the mandatory `./docker-health.ps1` pre-flight, only via the `e2e-*` skills) is unchanged —

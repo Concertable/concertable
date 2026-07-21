@@ -16,3 +16,12 @@ Things that must **never** be added here:
 The test for new code: *"would this file still compile and make sense if every data service moved to its own repo tomorrow?"* If a type, pin, or path in it names B2B, Customer, or Search, the answer is no — put it in that service's tree.
 
 This rule has been violated and reverted before. Don't relitigate it: if a suite needs something service-specific, the suite (or the owning service's helpers project) is where it goes, even if that means two suites each writing three similar lines.
+
+## Scenario-authoring rules
+
+The rules for authoring UI E2E scenarios (test one behaviour, start at the nearest already-verified
+state, fast-forward via seeded state never UI replay, what can't be seeded, baseline discipline) are
+shared across every suite and live in [`E2E_CONVENTIONS.md`](../../../docs/E2E_CONVENTIONS.md) —
+imported here so they're always in context when working in this harness:
+
+@../../../docs/E2E_CONVENTIONS.md

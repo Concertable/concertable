@@ -8,18 +8,18 @@ namespace Concertable.B2B.Concert.Infrastructure.Services.Workflow.Steps;
 internal sealed class VerifyCheckoutStep : IAcceptCheckoutStep
 {
     private readonly IApplicationRepository applicationRepository;
-    private readonly IContractAccessor contractAccessor;
+    private readonly IDealAccessor dealAccessor;
     private readonly IManagerPaymentClient managerPaymentClient;
     private readonly IPaymentAmountMapper paymentAmountMapper;
 
     public VerifyCheckoutStep(
         IApplicationRepository applicationRepository,
-        IContractAccessor contractAccessor,
+        IDealAccessor dealAccessor,
         IManagerPaymentClient managerPaymentClient,
         IPaymentAmountMapper paymentAmountMapper)
     {
         this.applicationRepository = applicationRepository;
-        this.contractAccessor = contractAccessor;
+        this.dealAccessor = dealAccessor;
         this.managerPaymentClient = managerPaymentClient;
         this.paymentAmountMapper = paymentAmountMapper;
     }
@@ -27,12 +27,12 @@ internal sealed class VerifyCheckoutStep : IAcceptCheckoutStep
     public async Task<Checkout> ExecuteAsync(int applicationId)
     {
         var artist = await applicationRepository.GetArtistPayeeAsync(applicationId)
-            ?? throw new NotFoundException("Application not found");
+            .OrNotFound(DisplayNames.Application);
         /* the user id rides the Stripe metadata so the failure webhook can notify the venue manager */
         var venueManagerId = await applicationRepository.GetVenueManagerIdAsync(applicationId)
-            ?? throw new NotFoundException("Application not found");
+            .OrNotFound(DisplayNames.Application);
         var venueTenantId = await applicationRepository.GetVenueTenantIdAsync(applicationId)
-            ?? throw new NotFoundException("Application not found");
+            .OrNotFound(DisplayNames.Application);
 
         var metadata = new Dictionary<string, string>
         {
@@ -42,7 +42,7 @@ internal sealed class VerifyCheckoutStep : IAcceptCheckoutStep
         };
 
         var session = await managerPaymentClient.CreateVerifySessionAsync(venueTenantId, metadata);
-        var amount = paymentAmountMapper.ToPaymentAmount(contractAccessor.Contract);
+        var amount = paymentAmountMapper.ToPaymentAmount(dealAccessor.Deal);
         return new Checkout(amount, artist, session, CheckoutLabels.Settlement);
     }
 }

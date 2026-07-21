@@ -3,7 +3,7 @@ using Concertable.B2B.Concert.Application.DTOs;
 using Concertable.B2B.Concert.Application.Responses;
 using Concertable.B2B.Concert.Api.Responses;
 using Concertable.B2B.Concert.Domain.Entities;
-using Concertable.B2B.Contract.Contracts;
+using Concertable.B2B.Deal.Contracts;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 using Concertable.B2B.IntegrationTests.Fixtures;
@@ -65,12 +65,12 @@ public sealed class ApplicationFlatFeeApiTests : IAsyncLifetime
         // Arrange — venue manager creates a fresh FlatFee opportunity
         var venueClient = fixture.CreateClient(fixture.SeedState.VenueManager1);
         var oppResponse = await venueClient.PostAsync("/api/Opportunity",
-            BuildRequest(new FlatFeeContract { PaymentMethod = PaymentMethod.Cash, Fee = 500 }));
+            BuildRequest(new FlatFeeDeal { PaymentMethod = PaymentMethod.Cash, Fee = 500 }));
         var opportunity = await oppResponse.Content.ReadAsync<OpportunityResponse>();
 
         // Act — artist applies directly with no payment method
         var artistClient = fixture.CreateClient(fixture.SeedState.ArtistManager1);
-        var applyResponse = await artistClient.PostAsync($"/api/Application/{opportunity!.Id}");
+        var applyResponse = await artistClient.PostAsync($"/api/Application/{opportunity!.Id}", new { eSignature = new { signatoryName = "Test Signatory" } });
 
         // Assert — 201 Created, a StandardApplication row was created
         await applyResponse.ShouldBe(HttpStatusCode.Created);
@@ -88,10 +88,10 @@ public sealed class ApplicationFlatFeeApiTests : IAsyncLifetime
         await client.PostAsync($"/api/Application/{fixture.SeedState.FlatFeeApp.Id}/checkout");
 
         // Act
-        var firstResponse = await client.PostAsync($"/api/Application/{fixture.SeedState.FlatFeeApp.Id}/accept");
+        var firstResponse = await client.PostAsync($"/api/Application/{fixture.SeedState.FlatFeeApp.Id}/accept", new { eSignature = new { signatoryName = "Test Signatory" } });
         await firstResponse.ShouldBe(HttpStatusCode.NoContent);
         await fixture.StripeClient.SendWebhookAsync();
-        var response = await client.PostAsync($"/api/Application/{fixture.SeedState.FlatFeeApp.Id}/accept");
+        var response = await client.PostAsync($"/api/Application/{fixture.SeedState.FlatFeeApp.Id}/accept", new { eSignature = new { signatoryName = "Test Signatory" } });
 
         // Assert
         await response.ShouldBe(HttpStatusCode.BadRequest);
@@ -106,7 +106,7 @@ public sealed class ApplicationFlatFeeApiTests : IAsyncLifetime
         await client.PostAsync($"/api/Application/{fixture.SeedState.FlatFeeApp.Id}/checkout");
 
         // Act
-        var acceptResponse = await client.PostAsync($"/api/Application/{fixture.SeedState.FlatFeeApp.Id}/accept");
+        var acceptResponse = await client.PostAsync($"/api/Application/{fixture.SeedState.FlatFeeApp.Id}/accept", new { eSignature = new { signatoryName = "Test Signatory" } });
         await acceptResponse.ShouldBe(HttpStatusCode.NoContent);
         await fixture.StripeClient.SendWebhookAsync();
 
@@ -133,7 +133,7 @@ public sealed class ApplicationFlatFeeApiTests : IAsyncLifetime
         var hold = Assert.Single(fixture.EscrowClient.Holds, h => h.BookingId == booking.Id); // exactly one hold — no double-charge
         Assert.Equal(venueTenantId, hold.PayerId);
         Assert.Equal(artistTenantId, hold.PayeeId);
-        Assert.Equal(fixture.SeedState.FlatFeeAppContract.Fee, hold.Amount);
+        Assert.Equal(fixture.SeedState.FlatFeeAppDeal.Fee, hold.Amount);
     }
 
     [Fact]
@@ -144,7 +144,7 @@ public sealed class ApplicationFlatFeeApiTests : IAsyncLifetime
         await client.PostAsync($"/api/Application/{fixture.SeedState.FlatFeeApp.Id}/checkout");
 
         // Act
-        var acceptResponse = await client.PostAsync($"/api/Application/{fixture.SeedState.FlatFeeApp.Id}/accept");
+        var acceptResponse = await client.PostAsync($"/api/Application/{fixture.SeedState.FlatFeeApp.Id}/accept", new { eSignature = new { signatoryName = "Test Signatory" } });
         await acceptResponse.ShouldBe(HttpStatusCode.NoContent);
         await fixture.StripeClient.SendWebhookAsync();
         await fixture.StripeClient.SendWebhookAsync();
@@ -162,7 +162,7 @@ public sealed class ApplicationFlatFeeApiTests : IAsyncLifetime
         await client.PostAsync($"/api/Application/{fixture.SeedState.FlatFeeApp.Id}/checkout");
 
         // Act
-        var acceptResponse = await client.PostAsync($"/api/Application/{fixture.SeedState.FlatFeeApp.Id}/accept");
+        var acceptResponse = await client.PostAsync($"/api/Application/{fixture.SeedState.FlatFeeApp.Id}/accept", new { eSignature = new { signatoryName = "Test Signatory" } });
         await acceptResponse.ShouldBe(HttpStatusCode.NoContent);
         await fixture.StripeClient.SendWebhookAsync();
 
@@ -181,7 +181,7 @@ public sealed class ApplicationFlatFeeApiTests : IAsyncLifetime
         var client = fixture.CreateClient(fixture.SeedState.VenueManager1, o => o.UseFailingPayment());
 
         // Act
-        var response = await client.PostAsync($"/api/Application/{fixture.SeedState.FlatFeeApp.Id}/accept");
+        var response = await client.PostAsync($"/api/Application/{fixture.SeedState.FlatFeeApp.Id}/accept", new { eSignature = new { signatoryName = "Test Signatory" } });
 
         // Assert — a failed hold rejects the accept, leaves it un-accepted, posts no concert, notifies nobody
         await response.ShouldBe(HttpStatusCode.BadRequest);

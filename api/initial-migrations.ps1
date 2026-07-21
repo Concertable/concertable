@@ -1,3 +1,9 @@
+# Scaffolding only builds the EF model — it never opens the connection — so these need only be parseable,
+# never real credentials (no user/password). Applying migrations to a real DB is a separate Aspire job
+# that resolves the live string from config/Key Vault; it never runs this script.
+$env:ConnectionStrings__B2BDb = "Server=localhost;Database=concertable-b2b;Trusted_Connection=True;TrustServerCertificate=True"
+$env:ConnectionStrings__CustomerDb = "Server=localhost;Database=concertable-customer;Trusted_Connection=True;TrustServerCertificate=True"
+
 $dirs = @(
     "Concertable.Messaging\Concertable.Messaging.Infrastructure\Data\Migrations\Outbox",
     "Concertable.Messaging\Concertable.Messaging.Infrastructure\Data\Migrations\Inbox",
@@ -7,7 +13,7 @@ $dirs = @(
     "Concertable.B2B\src\Modules\Artist\Concertable.B2B.Artist.Infrastructure\Data\Migrations",
     "Concertable.B2B\src\Modules\Venue\Concertable.B2B.Venue.Infrastructure\Data\Migrations",
     "Concertable.B2B\src\Modules\Concert\Concertable.B2B.Concert.Infrastructure\Data\Migrations",
-    "Concertable.B2B\src\Modules\Contract\Concertable.B2B.Contract.Infrastructure\Data\Migrations",
+    "Concertable.B2B\src\Modules\Deal\Concertable.B2B.Deal.Infrastructure\Data\Migrations",
     "Concertable.Payment\src\Concertable.Payment.Infrastructure\Data\Migrations",
     "Concertable.B2B\src\Modules\Conversations\Concertable.B2B.Conversations.Infrastructure\Data\Migrations",
     "Concertable.Customer\src\Modules\Preference\Concertable.Customer.Preference.Infrastructure\Data\Migrations",
@@ -21,10 +27,13 @@ $dirs = @(
 )
 foreach ($d in $dirs) { Remove-Item -Recurse -Force -ErrorAction SilentlyContinue $d }
 
-dotnet ef migrations add InitialCreate --context OutboxDbContext --project Concertable.Messaging/Concertable.Messaging.Infrastructure --startup-project Concertable.B2B/src/Concertable.B2B.Web --output-dir Data/Migrations/Outbox
+# Messaging is consumed everywhere as a published package, so a service host can't be its startup
+# project (EF would load the packaged assembly, which already contains InitialCreate). It scaffolds
+# standalone via its design-time factories.
+dotnet ef migrations add InitialCreate --context OutboxDbContext --project Concertable.Messaging/Concertable.Messaging.Infrastructure --startup-project Concertable.Messaging/Concertable.Messaging.Infrastructure --output-dir Data/Migrations/Outbox
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
-dotnet ef migrations add InitialCreate --context InboxDbContext --project Concertable.Messaging/Concertable.Messaging.Infrastructure --startup-project Concertable.B2B/src/Concertable.B2B.Web --output-dir Data/Migrations/Inbox
+dotnet ef migrations add InitialCreate --context InboxDbContext --project Concertable.Messaging/Concertable.Messaging.Infrastructure --startup-project Concertable.Messaging/Concertable.Messaging.Infrastructure --output-dir Data/Migrations/Inbox
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
 dotnet ef migrations add InitialCreate --context UserDbContext --project Concertable.B2B/src/Modules/User/Concertable.B2B.User.Infrastructure --startup-project Concertable.B2B/src/Concertable.B2B.Web --output-dir Data/Migrations
@@ -42,7 +51,7 @@ if ($LASTEXITCODE -ne 0) { exit 1 }
 dotnet ef migrations add InitialCreate --context ConcertDbContext --project Concertable.B2B/src/Modules/Concert/Concertable.B2B.Concert.Infrastructure --startup-project Concertable.B2B/src/Concertable.B2B.Web --output-dir Data/Migrations
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
-dotnet ef migrations add InitialCreate --context ContractDbContext --project Concertable.B2B/src/Modules/Contract/Concertable.B2B.Contract.Infrastructure --startup-project Concertable.B2B/src/Concertable.B2B.Web --output-dir Data/Migrations
+dotnet ef migrations add InitialCreate --context DealDbContext --project Concertable.B2B/src/Modules/Deal/Concertable.B2B.Deal.Infrastructure --startup-project Concertable.B2B/src/Concertable.B2B.Web --output-dir Data/Migrations
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
 dotnet ef migrations add InitialCreate --context PaymentDbContext --project Concertable.Payment/src/Concertable.Payment.Infrastructure --startup-project Concertable.Payment/src/Concertable.Payment.Web --output-dir Data/Migrations

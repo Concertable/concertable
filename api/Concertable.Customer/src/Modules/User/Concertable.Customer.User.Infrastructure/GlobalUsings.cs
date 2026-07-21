@@ -1,9 +1,11 @@
 global using Concertable.Kernel;
+global using Concertable.Kernel.ValueObjects;
 global using Concertable.Contracts;
+global using Concertable.Contracts.Enums;
 global using Concertable.Kernel.Identity;
 global using Concertable.Messaging;
 global using Concertable.DataAccess;
 global using Concertable.DataAccess.Infrastructure;
 global using Concertable.Customer.User.Application.Interfaces;
 global using Concertable.Customer.User.Contracts;
-global using Concertable.Customer.User.Domain;
+global using Concertable.Customer.User.Domain.Entities;

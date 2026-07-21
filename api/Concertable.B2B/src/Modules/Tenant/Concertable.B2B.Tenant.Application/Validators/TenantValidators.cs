@@ -1,42 +1,57 @@
 using Concertable.B2B.Tenant.Application.DTOs;
 using Concertable.B2B.Tenant.Application.Requests;
+using Concertable.B2B.Tenant.Application.Tax;
 using FluentValidation;
+using Microsoft.Extensions.Options;
 
 namespace Concertable.B2B.Tenant.Application.Validators;
 
 internal sealed class UpdateTenantRequestValidator : AbstractValidator<UpdateTenantRequest>
 {
-    public UpdateTenantRequestValidator()
+    public UpdateTenantRequestValidator(ITaxComplianceRules taxRules, IOptions<UkTaxComplianceOptions> taxOptions)
     {
         RuleFor(x => x.LegalName)
             .NotEmpty()
             .MaximumLength(200);
 
-        RuleFor(x => x.Compliance)
+        RuleFor(x => x.TaxCompliance)
             .NotNull()
-            .SetValidator(new ComplianceDtoValidator());
+            .SetValidator(new TaxComplianceDtoValidator(taxRules, taxOptions));
     }
 }
 
-internal sealed class ComplianceDtoValidator : AbstractValidator<ComplianceDto>
+internal sealed class ChangeMemberRoleRequestValidator : AbstractValidator<ChangeMemberRoleRequest>
 {
-    public ComplianceDtoValidator()
+    public ChangeMemberRoleRequestValidator()
     {
-        When(x => x.VatRegistered, () =>
-        {
-            RuleFor(x => x.VatNumber)
-                .NotEmpty()
-                .MaximumLength(20)
-                .Matches(@"^(GB)?(\d{9}|\d{12})$")
-                .WithMessage("VAT number must be 9 or 12 digits, optionally prefixed with GB.");
-        });
+        RuleFor(x => x.Role).IsInEnum();
+    }
+}
 
-        When(x => !x.VatRegistered, () =>
-        {
-            RuleFor(x => x.VatNumber)
-                .Empty()
-                .WithMessage("VAT number must be empty when not VAT-registered.");
-        });
+internal sealed class InviteMemberRequestValidator : AbstractValidator<InviteMemberRequest>
+{
+    public InviteMemberRequestValidator()
+    {
+        RuleFor(x => x.Email)
+            .NotEmpty()
+            .EmailAddress()
+            .MaximumLength(256);
+
+        RuleFor(x => x.Role).IsInEnum();
+    }
+}
+
+internal sealed class TaxComplianceDtoValidator : AbstractValidator<TaxComplianceDto>
+{
+    public TaxComplianceDtoValidator(ITaxComplianceRules taxRules, IOptions<UkTaxComplianceOptions> taxOptions)
+    {
+        var options = taxOptions.Value;
+
+        // VatNumber optional (blank = unregistered); when present it must match the region format — message composed here, not in the domain rules.
+        RuleFor(x => x.VatNumber)
+            .MaximumLength(20)
+            .Must(v => string.IsNullOrWhiteSpace(v) || taxRules.IsValidVatNumber(v))
+            .WithMessage($"{options.VatLabel} must be {options.VatNumberFormatHint}.");
 
         RuleFor(x => x.SellerIdentifier)
             .NotEmpty()

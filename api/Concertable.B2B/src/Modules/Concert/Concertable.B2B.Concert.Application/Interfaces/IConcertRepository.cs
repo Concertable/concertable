@@ -9,10 +9,11 @@ internal interface IConcertRepository : IRepository<ConcertEntity>
     Task<ConcertEntity?> GetByIdWithArtistAndVenueAsync(int id);
     Task<ConcertEntity?> GetByIdWithVenueAsync(int id);
     Task<ConcertEntity?> GetByIdWithBookingAsync(int id);
+    Task<ConcertDetails?> GetDetailsByIdAsync(int id);
     Task<ConcertDetails?> GetDetailsByApplicationIdAsync(int applicationId);
     Task<IEnumerable<ConcertSummary>> GetUnpostedByArtistIdAsync(int id);
     Task<IEnumerable<ConcertSummary>> GetUnpostedByVenueIdAsync(int id);
     Task<IEnumerable<int>> GetEndedConfirmedIdsAsync();
-    Task<decimal> GetTotalRevenueByConcertIdAsync(int concertId);
-    Task<int?> GetContractIdByIdAsync(int concertId);
+    Task<decimal?> GetTotalRevenueByConcertIdAsync(int concertId);
+    Task<int?> GetDealIdByIdAsync(int concertId);
 }

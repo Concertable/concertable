@@ -26,6 +26,9 @@ internal sealed class ApplicationRepository : VenueArtistTenantScopedRepository<
             .ToListAsync();
     }
 
+    public Task<bool> ExistsForOpportunityAndArtistAsync(int opportunityId, int artistId) =>
+        context.Applications.AnyAsync(a => a.OpportunityId == opportunityId && a.ArtistId == artistId);
+
     public async Task<IEnumerable<ApplicationEntity>> GetPendingByArtistIdAsync(int artistId)
     {
         return await context.Applications
@@ -68,11 +71,11 @@ internal sealed class ApplicationRepository : VenueArtistTenantScopedRepository<
             .ExecuteUpdateAsync(s => s.SetProperty(a => a.State, LifecycleState.Rejected));
     }
 
-    public Task<int?> GetContractIdByIdAsync(int applicationId)
+    public Task<int?> GetDealIdByIdAsync(int applicationId)
     {
         return context.Applications
             .Where(a => a.Id == applicationId)
-            .Select(a => (int?)a.Opportunity.ContractId)
+            .Select(a => (int?)a.Opportunity.DealId)
             .FirstOrDefaultAsync();
     }
 

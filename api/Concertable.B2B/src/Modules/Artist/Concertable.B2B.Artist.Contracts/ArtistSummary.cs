@@ -1,7 +1,9 @@
-using Concertable.Contracts;
+using System.ComponentModel;
+using Concertable.Contracts.Enums;
 
 namespace Concertable.B2B.Artist.Contracts;
 
+[DisplayName(DisplayNames.Artist)]
 public sealed record ArtistSummary
 {
     public int Id { get; init; }

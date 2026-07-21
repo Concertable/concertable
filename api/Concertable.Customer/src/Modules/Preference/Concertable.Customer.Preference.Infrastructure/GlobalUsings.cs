@@ -1,5 +1,7 @@
 global using Concertable.Kernel;
+global using Concertable.Kernel.ValueObjects;
 global using Concertable.Contracts;
+global using Concertable.Contracts.Enums;
 global using Concertable.Kernel.Identity;
 global using Concertable.Messaging;
 global using Concertable.Messaging.Domain;
@@ -12,5 +14,5 @@ global using Concertable.Customer.Preference.Application.DTOs;
 global using Concertable.Customer.Preference.Application.Interfaces;
 global using Concertable.Customer.Preference.Application.Mappers;
 global using Concertable.Customer.Preference.Application.Requests;
-global using Concertable.Customer.Preference.Domain;
+global using Concertable.Customer.Preference.Domain.Entities;
 global using Concertable.Customer.User.Contracts;

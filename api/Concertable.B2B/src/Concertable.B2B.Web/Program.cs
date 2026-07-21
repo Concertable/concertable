@@ -7,8 +7,8 @@ using Concertable.B2B.Venue.Api.Extensions;
 using Concertable.B2B.Venue.Infrastructure.Extensions;
 using Concertable.B2B.Concert.Api.Extensions;
 using Concertable.B2B.Concert.Infrastructure.Extensions;
-using Concertable.B2B.Contract.Api.Extensions;
-using Concertable.B2B.Contract.Infrastructure.Extensions;
+using Concertable.B2B.Deal.Api.Extensions;
+using Concertable.B2B.Deal.Infrastructure.Extensions;
 using Concertable.Payment.Client.Extensions;
 using Concertable.Payment.Contracts.Events;
 using Concertable.Customer.Review.Contracts.Events;
@@ -111,9 +111,14 @@ services.AddScoped<IKeyedServiceProvider>(sp => (IKeyedServiceProvider)sp);
 services.AddInfrastructure(builder.Configuration);
 services.AddClientCredentials(opts =>
 {
-    opts.Authority = builder.Configuration["Auth:Authority"] ?? builder.Configuration["services__auth__https__0"] ?? "";
-    opts.ClientId = builder.Configuration["ServiceAuth:ClientId"] ?? "";
-    opts.ClientSecret = builder.Configuration["ServiceAuth:ClientSecret"] ?? "";
+    opts.Authority = builder.Configuration["Auth:Authority"] ?? builder.Configuration["services__auth__https__0"]
+        ?? (builder.Environment.IsEnvironment("Testing") ? null!
+            : throw new InvalidOperationException("Auth:Authority is required (no explicit key and no service-discovery fallback)."));
+    opts.ClientId = builder.Configuration["ServiceAuth:ClientId"]
+        ?? (builder.Environment.IsEnvironment("Testing") ? null!
+            : throw new InvalidOperationException("ServiceAuth:ClientId is required."));
+    if (builder.Configuration["ServiceAuth:ClientSecret"] is string clientSecret)
+        opts.ClientSecret = clientSecret;
 });
 services.AddSharedBlob(builder.Configuration);
 services.AddSharedEmail(builder.Configuration);
@@ -123,7 +128,9 @@ services.AddSharedPdf();
 services.AddAzureServiceBusTransport(
     opts =>
     {
-        opts.ConnectionString = builder.Configuration.GetConnectionString("asb") ?? "";
+        opts.ConnectionString = builder.Configuration.GetConnectionString("asb")
+            ?? (builder.Environment.IsEnvironment("Testing") ? null!
+                : throw new InvalidOperationException("Connection string 'asb' is required."));
         opts.ServiceName = "concertable-b2b";
     },
     reg =>
@@ -158,7 +165,7 @@ if (!builder.Environment.IsEnvironment("Testing"))
     services.AddTenantDevSeeder();
     services.AddArtistDevSeeder();
     services.AddVenueDevSeeder();
-    services.AddContractDevSeeder();
+    services.AddDealDevSeeder();
     services.AddConcertDevSeeder();
     services.AddConversationsDevSeeder();
 }
@@ -170,7 +177,7 @@ services.AddConversationsApi(builder.Configuration);
 services.AddArtistApi(builder.Configuration);
 services.AddVenueApi(builder.Configuration);
 services.AddConcertApi(builder.Configuration);
-services.AddContractApi(builder.Configuration);
+services.AddDealApi(builder.Configuration);
 if (!builder.Environment.IsEnvironment("Testing"))
     services.AddPaymentClient(builder.Configuration);
 services.AddQueueHostedService();

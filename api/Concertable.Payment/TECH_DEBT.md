@@ -14,31 +14,21 @@ When an item is fixed, update both this file and `ARCHITECTURE.md`.
 
 ---
 
-## LOW
+### `EscrowService.RefundByBookingIdAsync` is asymmetric with `ReleaseByBookingIdAsync` — hard-fails on non-refundable escrow
 
-### Missing Stripe webhook secret masked until the first webhook arrives
+`RefundByBookingIdAsync` (`EscrowService.cs`) only no-ops on already-`Refunded` escrow; for any other non-refundable status it delegates to `RefundAsync`, which **hard-fails** (`Result.Fail`) on `Pending`/`Failed`. Its sibling `ReleaseByBookingIdAsync` instead treats any non-`Held` escrow as a benign no-op (`Result.Ok(null)`) — the point of a `ByBookingId` convenience method being that a booking-lifecycle caller can invoke it blindly without knowing escrow state. The asymmetry means cancelling a booking whose escrow never advanced past `Pending` (hold initiated, webhook not yet confirmed) or is `Failed` fails the whole refund/cancel (gRPC `FailedPrecondition` → B2B `EscrowClient` `Result.Fail`) instead of no-op'ing. Flagged reviewing PR #76 (concert-cancel + escrow-refund) and not addressed before merge; whether it bites depends on how the B2B cancel handler treats a `FailedPrecondition` from refund.
 
-`WebhookService`'s constructor takes `stripeSettings.Value.WebhookSecret ?? string.Empty`. A missing secret should fail at startup; instead the service boots and every webhook fails signature verification at request time, which reads as a Stripe-side problem rather than missing config.
-
-**Resolves when:** the options registration validates `WebhookSecret` is present (`ValidateOnStart` / throw on bind), and the `?? string.Empty` fallback in `WebhookService` is removed.
+**Resolves when:** the intended contract is decided and made symmetric — if "cancel is safe to call regardless of escrow state" (the Release precedent), `RefundByBookingIdAsync` treats `Pending`/`Failed` as `Result.Ok(null)` rather than propagating a hard failure.
 
 ---
+
+## LOW
 
 ### gRPC mappers use the `""` literal and erase value presence
 
 `Grpc/PaymentMappers.cs` (`ClientSecret = r.ClientSecret ?? ""`, `TransactionId = r.TransactionId ?? ""`) and `Grpc/EscrowMappers.cs` (`ClientSecret = r.ClientSecret ?? ""`). Proto3 strings can't be null, so a fallback at the wire boundary is genuinely required — but the `""` literal violates `docs/CODE_CONVENTIONS.md` (`string.Empty` for semantic fallbacks), and the receiver has to interpret empty string as "absent" (e.g. no client secret when `RequiresAction` is false).
 
 **Resolves when:** the literals become `string.Empty` at minimum; ideally the proto fields become `optional string` so presence survives the wire and callers test `Has*` instead of empty-string sentinels.
-
----
-
-## LOW
-
-### Redundant explicit type args on `Result.Ok<T?>(nonNullValue)`
-
-`EscrowService`'s `ByBookingId` methods spell the generic on non-null returns too — `Result.Ok<Transfer?>(release.Value)` / `Result.Ok<Refund?>(refund.Value)` / `Result.Ok<Refund?>(new Refund(...))`. For reference types `T?` and `T` are the same runtime type (annotation only), so inference already yields the right result and the `<T?>` is noise there. It's only genuinely required on the bare-`null` returns (`Result.Ok<Refund?>(null)`), where a `null` literal gives inference nothing to bind. Left as-is to avoid churning pre-existing lines; the fix is to drop the type arg wherever the argument is non-null.
-
-**Resolves when:** the redundant `<T?>` args on non-null `Result.Ok` calls in `EscrowService` are dropped, keeping them only on the `null`-literal returns.
 
 ---
 

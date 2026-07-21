@@ -16,10 +16,17 @@ internal sealed class OpportunityRepository : OpportunityRepository<ConcertDbCon
             .Select(o => (Guid?)o.Venue.UserId)
             .FirstOrDefaultAsync();
 
-    public Task<int?> GetContractIdByIdAsync(int opportunityId) =>
+    public Task<int?> GetDealIdByIdAsync(int opportunityId) =>
         context.Opportunities
             .Where(o => o.Id == opportunityId)
-            .Select(o => (int?)o.ContractId)
+            .Select(o => (int?)o.DealId)
+            .FirstOrDefaultAsync();
+
+    public Task<DateRange?> GetPeriodByIdAsync(int opportunityId) =>
+        context.Opportunities
+            .AsNoTracking()
+            .Where(o => o.Id == opportunityId)
+            .Select(o => (DateRange?)o.Period)
             .FirstOrDefaultAsync();
 
     public async Task<OpportunityEntity?> GetByApplicationIdAsync(int id) =>

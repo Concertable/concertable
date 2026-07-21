@@ -1,6 +1,6 @@
 using Concertable.B2B.Seed.Contracts.Specs;
-using Concertable.Kernel;
-using Concertable.Search.Domain.Models;
+using Concertable.Kernel.ValueObjects;
+using Concertable.Search.Domain.ReadModels;
 using NetTopologySuite.Geometries;
 
 namespace Concertable.Search.Seed.Infrastructure;

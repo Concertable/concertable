@@ -61,46 +61,48 @@ nothing to contrast, it's noise.
 `IVenueArtistTenantScoped`) means "carries the owner id," not "is filtered." If the entity's core flow
 reads it *across* tenants, leave it unfiltered and let `TenantInterceptor` guard the writes — filtering
 it fails those cross-tenant reads closed. Unfiltered by design today: **Opportunity** (the artist's
-apply reads the venue's opportunity to stamp the deal), **Contract** (an applying artist reads the
+apply reads the venue's opportunity to stamp the deal), **Deal** (an applying artist reads the
 venue's terms), **Concert** (public listing). Filtered: **Venue**, **Artist** (owner-private reads,
 with browse split off to the public stance).
 
 ## Keyed strategy resolver
 
-**When a rule varies by a closed key** (typically `ContractType`): one facade class implements the
+**When a rule varies by a closed key** (typically `DealType`): one facade class implements the
 public interface, constructor-injects the concrete strategies, maps key → strategy in a
 `FrozenDictionary`, and delegates. Consumers inject the interface and call it — they never branch on
 the key, never see the map, never touch keyed DI.
 
-Canonical example — `ContractMapper`
-(`Modules/Contract/Concertable.B2B.Contract.Application/Mappers/ContractMapper.cs`):
+Canonical example — `DealMapper`
+(`Modules/Deal/Concertable.B2B.Deal.Application/Mappers/DealMapper.cs`):
 
 ```csharp
-internal sealed class ContractMapper : IContractMapper
+internal sealed class DealMapper : IDealMapper
 {
-    private readonly FrozenDictionary<ContractType, IContractMapper> mappers;
+    private readonly FrozenDictionary<DealType, IDealMapper> mappers;
 
-    public ContractMapper(
-        FlatFeeContractMapper flatFee,
-        DoorSplitContractMapper doorSplit,
-        VersusContractMapper versus,
-        VenueHireContractMapper venueHire)
+    public DealMapper(
+        FlatFeeDealMapper flatFee,
+        DoorSplitDealMapper doorSplit,
+        VersusDealMapper versus,
+        VenueHireDealMapper venueHire)
     {
-        mappers = new Dictionary<ContractType, IContractMapper>
+        mappers = new Dictionary<DealType, IDealMapper>
         {
-            [ContractType.FlatFee] = flatFee,
-            [ContractType.DoorSplit] = doorSplit,
-            [ContractType.Versus] = versus,
-            [ContractType.VenueHire] = venueHire,
+            [DealType.FlatFee] = flatFee,
+            [DealType.DoorSplit] = doorSplit,
+            [DealType.Versus] = versus,
+            [DealType.VenueHire] = venueHire,
         }.ToFrozenDictionary();
     }
 
-    public IContract ToContract(ContractEntity entity) =>
-        mappers[entity.ContractType].ToContract(entity);
+    public IDeal ToDeal(DealEntity entity) =>
+        mappers[entity.DealType].ToDeal(entity);
 }
 ```
 
-Other instances: `PayeeResolver` (Concert module — which party receives a concert's ticket revenue).
+Other instances: `TicketPayeeResolver` / `SettlementPayeeResolver` (Concert module — which party
+receives a concert's ticket revenue vs. its settlement; inverse maps over shared leaves),
+`DealTermsRenderer`, `ArtistShareCalculator`, `DealTermsSerializer` (Concert module).
 
 Rules of the shape:
 
@@ -113,10 +115,23 @@ Rules of the shape:
   resolver's outputs; add a second method instead.
 - An unmapped key throws (`KeyNotFoundException`) — a new enum member fails loudly rather than
   silently defaulting.
+- **The dispatch is its own facade — never inlined into a consumer that also does other work.** The
+  facade's single job is key → strategy → delegate. If a type both holds the map *and* does something
+  else (e.g. `TermsFingerprintCalculator` once held the per-`DealType` dict *and* hashed), split
+  it: extract the facade, inject it, leave the consumer its own job. A giveaway you've inlined it is a
+  dict typed to a *different* interface than the thing consuming it.
+- **Name the three roles structurally, not with a mandated word** — agent-noun of the strategy's one
+  method, so the name says what it *does*: interface `IX` (shared by facade + strategies); strategies
+  `{Key}X` registered as concrete DI types; facade `X` (unprefixed) holds the dict and is the DI
+  default. `X` follows the method — `Mapper.Map`, `Resolver.Resolve`, `Calculator.Calculate`,
+  `Serializer.Serialize` (canonical string for hashing/compare), `Renderer.Render` (human-facing
+  presentation text). Do **not** force one word across families that do genuinely different things:
+  `DealTermsRenderer` (presentation) and `DealTermsSerializer` (hash input) are correctly
+  different names for correctly different jobs.
 
 ### The anti-patterns this replaces — never do these
 
-- **Branching on the key in agnostic components.** A `ContractType == VenueHire ? … : …` ternary (or
+- **Branching on the key in agnostic components.** A `DealType == VenueHire ? … : …` ternary (or
   switch) inside a handler/service/mapper that is otherwise contract-agnostic plants a business rule
   where nobody will look for it, and it WILL get copy-pasted (that's how it spreads). The rule lives
   in exactly one resolver.
@@ -138,7 +153,7 @@ it implements — it holds them, adds no behaviour of its own — assign the con
 expression-bodied property; `private readonly IX x;` + `public IX X => x;` is two members and a pointless
 double-hop for one dependency.
 
-Canonical example — the per-`ContractType` `IConcertWorkflow` implementations
+Canonical example — the per-`DealType` `IConcertWorkflow` implementations
 (`Modules/Concert/…/Services/Workflow/Workflows/`), which exist only to expose each workflow step
 (`Apply`, `Accept`, `Book`, `Finish`, `Cancel`) as a public property:
 
