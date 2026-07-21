@@ -133,13 +133,14 @@ And if a comment needs a paragraph to justify the code below it, that's usually 
 
 ## Plans (`plans/*.md`)
 
-Plans are working docs for unfinished work, **not** an archive — git history is the archive. A finished plan kept "for reference" is just rot that misleads the next reader into thinking the work is still pending. Full workflow (phases, verification gates, when to run E2E): [`plans/CLAUDE.md`](./plans/CLAUDE.md).
+Plans are working docs for unfinished work, **not** an archive — git history is the archive. A finished plan kept "for reference" is just rot that misleads the next reader into thinking the work is still pending.
+
+**Opening a `plans/*.md` to work from obliges you to read [`plans/CLAUDE.md`](./plans/CLAUDE.md) in the same breath** — phases, verification gates, when to run E2E, and how to shape the handoff all live there, and the plan's own prose is not a substitute for them. Reading only the plan is how its rules get skipped.
 
 - **When you land the commit that completes a plan's work, `git rm` the plan file in that same commit.** Completion = work committed AND its verification passed (build + the affected unit/integration tests always; E2E only when the change is massive/risky per `plans/CLAUDE.md`). Deletion belongs to that commit — never defer it to a later cleanup pass.
 - A plan **superseded** by a newer plan, or describing a design that was **rejected**, is deleted the moment that's decided — don't leave a tombstone.
 - A **partially-done** plan stays, but strike/check off the sections that shipped (in the same commit as the work) so what remains is only the outstanding work.
 - **A completed + verified phase is a HARD STOP.** Hand off the resume prompt and END THE TURN. Do **not** start the next phase in the same session unless the user explicitly names it *and* says to do it now — a vague "continue"/"why stop?"/"yeah" means re-show the handoff, not start coding. Never append "want me to continue?" or a continue-vs-review fork. Full rule: [`plans/CLAUDE.md`](./plans/CLAUDE.md) "Before a clear."
-- **Writing that resume prompt: run `git worktree list` FIRST, and put the absolute `cd` path INSIDE the prompt text.** This repo runs many parallel worktrees, so a prompt naming only the plan and branch lands in whichever tree the last session used — and git then refuses to check the branch out (already checked out elsewhere), derailing the handoff silently. The path must sit *within* the prompt the user pastes, not on a separate line above it, or it's lost on paste. **Give exactly ONE prompt — the immediate next action.** Work gated behind a merge/publish/sync is named as a gate, never handed over as a second runnable prompt (it invites running them in parallel, which is precisely what the gate forbids).
 
 ## Throwaway working markdown — in the repo, then deleted
 

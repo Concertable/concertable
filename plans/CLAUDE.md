@@ -168,6 +168,15 @@ state is written:
    `cd` path. If it's just the **main checkout** (the default — the session already reopens there), skip
    the `cd` line entirely and name the plan + branch as normal; don't clutter the prompt with it.
 
+   The `cd` must sit **inside the prompt text the user pastes**, not on a line above it — a prompt is
+   pasted as one blob, so a path parked outside it is simply lost.
+
+   **Hand over exactly ONE prompt: the immediate next action.** A later phase gated behind a merge,
+   publish, or platform-sync is named as a *gate* ("Phase 2 waits on the sync"), never handed over as a
+   second ready-to-run prompt. Two prompts read as a menu, and the obvious way to "save time" on a menu
+   is to run both at once — which for a publish-gated phase means restoring a package version that isn't
+   on the feed yet (`NU1101`). The gate exists precisely because the two can't overlap.
+
 **The trigger is mechanical — not a judgment call.** The moment you finish a discrete chunk of work
 (a plan designed, a phase landed, a question fully answered) and your next sentence *would* be
 "Want me to start X?" / "Shall I do the next phase?" / "…or leave it as-is?" — **that question IS the
