@@ -172,11 +172,15 @@ export const useChoicePending = () => useIdentityStore(selectChoicePending);    
 `ProblemDetails` ([RFC 9457](https://datatracker.ietf.org/doc/html/rfc9457): `{ title, detail,
 errors[] }`) is handled in exactly one place — `QueryCache.onError` / `MutationCache.onError` in
 `app/web/shared/src/lib/queryClient.ts`, the [TkDodo-recommended](https://tkdodo.eu/blog/react-query-error-handling)
-global seam. A feature never re-resolves or re-toasts an API error; the client already did.
+global seam. A feature never re-resolves or re-toasts an API error; the client already did. The
+platform-agnostic half — the `ProblemDetails`/`ErrorMeta` types and the `resolveApiError` policy that
+classifies an error into what to surface (or `null` to swallow) — lives in
+`@concertable/shared/lib/problemDetails.ts` so mobile reuses it; only the toast *rendering* (sonner)
+stays in the web query client.
 
 - The only opt-out is typed `meta` on the query/mutation: `silenceErrors`, or `expectedErrors: [404]`
   for a status the caller handles itself (registered via TanStack module augmentation — see the
-  `ErrorMeta` declaration in `queryClient.ts`).
+  `ErrorMeta` declaration in `@concertable/shared/lib/problemDetails.ts`).
 - The only place a feature legitimately inspects an error is to **change control flow, not to report**
   — e.g. a route guard doing `isAxiosError(e) && status === 401` to `throw redirect(...)`.
 
