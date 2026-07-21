@@ -212,6 +212,8 @@
     <Project Path="Concertable.Shared/src/Concertable.Shared.Notification/Concertable.Shared.Notification.Infrastructure/Concertable.Shared.Notification.Infrastructure.csproj" />
     <Project Path="Concertable.Shared/src/Concertable.Shared.Pdf/Concertable.Shared.Pdf.Application/Concertable.Shared.Pdf.Application.csproj" />
     <Project Path="Concertable.Shared/src/Concertable.Shared.Pdf/Concertable.Shared.Pdf.Infrastructure/Concertable.Shared.Pdf.Infrastructure.csproj" />
+    <Project Path="Concertable.Shared/src/Concertable.Shared.QrCode/Concertable.Shared.QrCode.Application/Concertable.Shared.QrCode.Application.csproj" />
+    <Project Path="Concertable.Shared/src/Concertable.Shared.QrCode/Concertable.Shared.QrCode.Infrastructure/Concertable.Shared.QrCode.Infrastructure.csproj" />
     <Project Path="Concertable.Shared/src/Seed/Concertable.Seed.Shared/Concertable.Seed.Shared.csproj" />
     <Project Path="Concertable.Shared/src/Seed/Concertable.Seed.Identity/Concertable.Seed.Identity.csproj" />
     <Project Path="Concertable.Shared/src/Seed/Concertable.Seed.Infrastructure/Concertable.Seed.Infrastructure.csproj" />

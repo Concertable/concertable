@@ -1,34 +1,10 @@
 # Concertable — cross-cutting technical debt
 
-Debt spanning multiple services or living in shared code (`Shared/`, `Concertable.Messaging`, host `Program.cs` files). Service-specific debt belongs in that service's own `TECH_DEBT.md`. When an item is fixed, update both this file and [`ARCHITECTURE.md`](./ARCHITECTURE.md).
+Debt spanning multiple services, host `Program.cs` files, or repo-wide build/CI config. Debt inside the shared platform tree (`Concertable.Kernel`, `Concertable.Shared.*`, the shared test libs) belongs in [`Concertable.Shared/TECH_DEBT.md`](./Concertable.Shared/TECH_DEBT.md); service-specific debt belongs in that service's own `TECH_DEBT.md`. When an item is fixed, update both this file and [`ARCHITECTURE.md`](./ARCHITECTURE.md).
 
 ---
 
 ## MED
-
-### `IEntity.DisplayName` is a soft standard (throwing default member), not a hard `static abstract`
-
-`Shared/Concertable.Kernel/IEntity.cs` carries `DisplayName` as a `static virtual` **default interface
-member** whose default *throws* `NotSupportedException`, so entities that self-name via `OrNotFound()` must
-override it; an un-overridden entity fails at runtime rather than the compiler forcing a name. The intended
-design was `static abstract` (compiler-enforced, every entity named), but that is a binary-breaking change
-that cannot land: the core libs (`DataAccess.Infrastructure`, `Messaging.Domain`) source-reference Kernel
-so integration tests load the new Kernel, while service entities compile against the Kernel *package* — a
-required static-abstract member's implementation mapping is fixed at compile time against the old interface,
-so package-compiled entities throw `TypeLoadException` against the new Kernel (two red CI runs confirmed).
-The default member is the additive workaround.
-
-**Resolves when:** the core libs stop source-referencing Kernel (or the repo builds shared source lockstep
-so entities compile against the same Kernel the tests load), at which point `DisplayName` can become
-`static abstract` and the throwing default is deleted.
-
-### Kernel `ClaimsPrincipal.GetId()` fails open with `string.Empty`
-
-`Shared/Concertable.Kernel/Identity/ClaimsPrincipalExtensions.cs` returns `user?.FindFirst("sub")?.Value ?? string.Empty` — a principal with no `sub` claim becomes an empty-string user id instead of a failure. Its sibling `CurrentUserExtensions.GetId(ICurrentUser)` gets this right (throws `UnauthorizedAccessException`). The only consumer, `NotificationHub`, assigns the result to `string?` and null-checks it — a check that can never fire because the method never returns null, so an unauthenticated principal sails through as `""`.
-
-**Resolves when:** the extension fails closed (returns `string?` with no empty-string coercion, or throws like its `ICurrentUser` sibling), and `NotificationHub`'s guard actually rejects principals without a `sub` claim.
-
----
 
 ### `AzureServiceBusOptions` binder defaults are `= ""` instead of `null!`
 
@@ -43,30 +19,6 @@ so entities compile against the same Kernel the tests load), at which point `Dis
 `api/Concertable.Auth/Directory.Packages.props` pins the shared platform to `ConcertablePlatformVersion` (currently `0.1.0-alpha.0.526`), so in the full `Concertable.slnx` build Auth compiles against that *published* package while B2B/Customer/Search build the same shared projects from live source. Edit shared source without re-publishing + bumping the pin and Auth silently compiles against stale code; a breaking shared-API change turns only the Auth build red with a confusing "works in source, fails as package" error. Accepted build-separation tradeoff for now (Auth.Contracts has ~0 churn and the shared platform changes infrequently), but the divergence is real the moment shared code moves without a publish.
 
 **Resolves when:** the SERVICE_BUILD_SEPARATION hybrid inner-loop toggle lands (`ProjectReference` for local multi-service dev, `PackageReference` in CI/standalone), or the platform-version pin is automated so it can't lag a shared-source change.
-
----
-
-### Shared test libraries are ProjectReferenced across the service-folder boundary (carve leak)
-
-`Concertable.Testing`, `Concertable.Testing.Integration`, and the shared `Concertable.E2ETests` harness
-live under `Concertable.Shared/tests/` — i.e. in the Shared "repo" — yet every consuming test project
-reaches them by a `ProjectReference` that **escapes its own service folder**
-(`api/Concertable.B2B/src/Modules/.../Tests/*.csproj → ..\..\..\..\..\..\Concertable.Shared\tests\Concertable.Testing\...`).
-That is exactly the cross-folder escape the runtime carve forbids for service projects (the
-`PackageReference, never a ProjectReference` guard in the service `.csproj`s). Runtime deps that live in
-the Shared tree (Kernel, Messaging) publish + are pinned; the shared **test** libs alone leak straight
-into every service's test projects. On a real repo split those references break. `Concertable.Testing`
-even carries `IsPackable=true` with **zero** package consumers — a half-committed intent. First flagged
-adding a shared `Money` test helper for the door-revenue UI E2E: it compiled same-PR *because* of this
-leak, where a Kernel helper needs a publish-first PR.
-
-**Resolves when:** the shared test libs are published as test-support packages consumed by pinned
-`PackageReference` like the runtime shared libs (carrying the same publish-first + pin-bump boundary) —
-OR test infra is explicitly documented as carve-exempt (dev-only, never shipped in a service runtime)
-and the misleading `IsPackable=true` is dropped. Decision + execution steps:
-[`plans/SHARED_TEST_LIBS_PACKAGING.md`](../plans/SHARED_TEST_LIBS_PACKAGING.md). Lean: publish, for
-consistency with the Shared-repo model — the cost is that every shared-test-helper edit then takes the
-publish-first cycle.
 
 ---
 
