@@ -61,9 +61,11 @@ platform-sync. Use `/package-cutover`.
 ### D · Genuine empty fallbacks — KEEP (convention permits; converting = churn, not a fix)
 - `Auth/Services/RemoteProfileClaimsProvider.cs:53` — `ex.Content ?? string.Empty` (log fragment).
 - `Payment.Infrastructure/Events/PaymentTransactionHandler.cs:22` and `PaymentFailureDispatcher.cs:22` —
-  `Metadata.GetValueOrDefault("type", string.Empty)` (Stripe-metadata discriminator at the webhook
-  boundary; absent → falls through the switch). Re-confirm the switch degrades gracefully; only tighten
-  if a missing `type` on OUR events must be an error.
+  `Metadata.GetValueOrDefault("type", string.Empty)` (Stripe-metadata discriminator). ✅ **Re-confirmed — keep.**
+  The empty flows into a keyed resolver that handles an unknown key *explicitly*, so it's not the silent-mask
+  anti-pattern: `TransactionHandlerFactory.Create("")` logs + throws a clear `InvalidOperationException`
+  ("No ITransactionHandler registered for transaction type ''"); `PaymentFailureDispatcher` null-guards the
+  factory result and logs a no-op. Fail-loud / deliberate-degrade, not a masked wrong path.
 
 ### E · Masks that are their own tech-debt items — boundary-free
 - **`ConcertResponseMappers.cs:43,44`** (`BannerUrl`, `Avatar`) → **DONE (code written)**: `ConcertDetailsResponse`
