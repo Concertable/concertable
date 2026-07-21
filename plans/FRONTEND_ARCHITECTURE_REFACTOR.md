@@ -48,53 +48,93 @@ and the application/booking/door-revenue confirm hooks; the confirm hooks conver
 `mutateAsync`+`try/catch` to `mutate`+`onSuccess` (so `ConfirmActionDialog.onConfirm` is `() => void`).
 `AddReview`'s "select a star rating" toast is now an inline validation message.
 
-### Phase 2 — Tenant/identity consolidation (patterns #2 + #3) — the headline
-Collapse the sprayed tenant domain into one composed-identity slice with one state home.
-- **2a. B2B identity slice.** `@b2b/features/identity` (or fold into `features/tenant`): `types`
-  (`B2bIdentity` = base user fields + `memberships: Membership[]`, matching the flat `/me` wire), `api`
-  (`getMe(): Promise<B2bIdentity>` — the typed `/me`), one **model/store** owning `activeTenantId`
-  (persisted) + selectors (memberships-for-persona, active membership, choice-pending). Expose **one
-  core** with both a `getState`-based fn (route `beforeLoad`) and hooks (render) — no dual impl.
-- **2b. Base `User` sheds personas.** `@concertable/shared/features/auth/types.ts`: `User` becomes the
-  intersection; drop `VenueManager`/`ArtistManager`/`Customer`/`Admin` subtypes + `venueId`/`artistId`.
-  Move `isVenueManager`/`isArtistManager` into the B2B identity (persona from memberships).
-  **Open sub-decision:** does `role` stay on base `User` or move to the composed identity? (Leaning:
-  move — it's persona-ish; revisit against what OIDC/`/me` actually returns.) Customer/mobile compose
-  their own identity if they need more than the base — watch their builds here.
-- **2c. Populate via typed `/me`.** B2B reads memberships from the identity store (typed), not the
-  shared `userApi.getMe` cast. Reconcile `useSyncUser` / `guards.ensureUser` with the base user +
-  B2B identity hydration.
-- **2d. Delete the duplication.** Remove `membershipsOf` cast + `lib/tenantChoice.ts` imperative
-  predicates + `hooks/useActiveMembership.ts` reactive duplicates → single core. Rewire
-  `_venue/route.tsx` + `_artist/route.tsx` (`beforeLoad` → getState form; layout → hook form).
-- **2e. `tenantPermissions.ts` stays pure** (stateless rulebook); `useHasPermission` composes it over
-  the identity store's active membership.
-- **2f.** `b2bAxios.ts` reads `activeTenantId` from the identity store for `X-Tenant-Id`.
-- **2g.** Rewire consumers: `TenantSwitcher`, `TenantChooser`, `MembersPage` gates, `useAcceptInvitation`.
+### Phase 2 — Tenant/identity consolidation (patterns #2 + #3) — ✅ DONE
+Collapsed the sprayed tenant domain into one composed-identity slice with one state home.
+- **2a. B2B identity slice** ✅ — `@b2b/features/tenant`: `types` adds `B2bIdentity` (`extends User` +
+  `memberships`, matching the flat `/me` wire); `api/identityApi.ts` is the typed `getMe(): Promise<B2bIdentity>`;
+  `model.ts` is the **one core** — pure selectors (`forPersona`/`resolveActiveMembership`/`choicePending`)
+  with a `getState`/cache entry point (`getTenantChoicePending`, `reconcileActiveTenant`) and a hook entry
+  point (`useMemberships`/`useActiveMembership`/`useTenantChoicePending`/…) over the same core. Persisted
+  `useActiveTenantStore` (client selection) unchanged; memberships stay in the `/me` query cache (not copied
+  into the store).
+- **2b. Base `User` sheds personas** ✅ — `@concertable/shared/features/auth/types.ts` is now a single
+  `interface User` = the Kernel `IUser` intersection; dropped the `VenueManager`/`ArtistManager`/`Customer`/`Admin`
+  subtypes, `$type`, `venueId`/`artistId`, `baseUrl`. **Resolved sub-decision: `role` STAYS on base `User`** —
+  the backend intersection (`Concertable.Kernel.Identity.IUser`) carries `Role`, so it's universal, not
+  persona-ish; and with the union gone `role` is no longer a second discriminant. `isVenueManager`/`isArtistManager`
+  were dead (no consumers) → deleted, not moved (persona now derives from `useActiveMembership().type`).
+- **2c. Populate via typed `/me`** ✅ — b2b `__root.tsx` calls `useSyncUser(identityApi.getMe)`; memberships
+  are read from the typed `/me` query cache (`B2bIdentity`), never a cast off the base `User`. `guards.ensureUser`
+  stays base-identity only (session/role) — memberships are now a separate, typed concern.
+- **2d. Deleted the duplication** ✅ — removed the `membershipsOf` cast, `lib/tenantChoice.ts`, and
+  `hooks/useActiveMembership.ts`; single core in `model.ts`. `_venue`/`_artist` `route.tsx` use the getState
+  form in `beforeLoad` and the hook form in the layout.
+- **2e. `tenantPermissions.ts` stays pure** ✅ (untouched rulebook); `useHasPermission` composes it over
+  the active membership in `model.ts`.
+- **2f.** ✅ `b2bAxios.ts` still reads `activeTenantId` from `useActiveTenantStore` for `X-Tenant-Id` (no change needed).
+- **2g.** ✅ Rewired `TenantSwitcher`/`TenantChooser` (import from `../model`); `MembersPage` gates + `useAcceptInvitation`
+  consume the unchanged index surface.
 
-### Phase 3 — Tier relocation (canon #2)
-Move from `app/shared` → `@b2b/*` (customer/mobile must stop compiling them):
-- `deals` (`app/shared/features/deals/types.ts` → `@b2b`; drop the b2b one-line re-export shell).
-- `opportunities` + `applications` types/hooks currently in `app/shared/features/concerts/index.ts`
-  (`Opportunity`, `OpportunityDraft`, `Application`, `ApplicationStatus`, `useOpportunities*`,
-  `useApplicationQuery` bundle) → `@b2b`; delete the `@b2b` re-export one-liners.
-- Verify the customer build now *cannot* resolve them (the gate proves the boundary).
+### Phase 3 — Tier relocation (canon #2) — ✅ DONE
+Moved the two B2B-only leaks out of `@concertable/shared`; the customer build is proven unable to
+resolve them.
+- **opportunities + applications** ✅ — `Opportunity`/`OpportunityDraft`/`Application`/`ApplicationStatus`
+  (+ `ApplicationActions`/`OpportunityActions`), the `useOpportunities*` + `useApplicationQuery` bundles,
+  `opportunityApi`/`applicationApi`, and `useOpportunitiesStore` moved into `@b2b/features/concerts` (the
+  re-export shells became the real files; new `@b2b` `concerts/types.ts`). `Checkout`/`PaymentAmount`/
+  `ESignatureRequest` + the `Concert` reads stay in shared (customer ticket checkout uses them). Dropped
+  the leaked `Opportunity`/`Application`/`ApplicationStatus` re-exports from the `app/web/shared` concerts
+  barrel. All b2b hook/api consumers already imported via `@b2b/*`, so only the type-consumers on the
+  universal `@/features/concerts` barrel were repointed.
+- **deals** ✅ — the `deals` feature (types, `defaultDeal`/`DEAL_TYPE_LABELS`, `dealSummary`) moved into
+  `@b2b/features/deals`; the four b2b dashboard widgets repointed. Deleted `app/shared/features/deals`
+  and its `package.json` export.
+- **Discovered leak (beyond the audit): the shared `dashboard` carried `Deal`.**
+  `OpportunitySummary`/`OpportunityWithCounts`/`OpportunityCard` (`app/shared/.../dashboard/deals/common.ts`)
+  each embed a `Deal`, so shared could not shed deals while still defining them. These three are consumed
+  only by venue+artist dashboards → extracted to a new `@b2b/features/dashboard` (six consumers repointed);
+  the universal dashboard types (`ProfileHealth`/`ActivityItem`/`MonthlyRevenuePoint`/`Settlement`/…) stay
+  in shared.
+- **Boundary proven** ✅ — a throwaway customer import of `@concertable/shared/features/deals` fails
+  `TS2307` (module gone) and `Opportunity`/`Application` fail `TS2305` (not exported from shared concerts);
+  all four web builds green.
 
-### Phase 4 — Hooks orchestrate; components render (+ zod at the write boundary)
-- `MembersPage.tsx`: extract `InviteForm`/`MembersRoster`/`PendingInvitations` orchestration into facade
-  hooks (`useInviteMember`, …); component keeps buffer `useState` + JSX. Split `membersApi` off the
-  cross-resource `acceptInvitation` path. Add `members/components/`.
-- `organizations`: `OrganizationForm` orchestration → `useOrganization` facade; add
-  `organizations/schemas/updateOrganizationRequestSchema.ts`; parse buffer → `UpdateOrganizationRequest`.
-- `payments/PayoutAccountSection.tsx`: window/message + refetch orchestration → a hook.
-- `DeclareDoorRevenueButton.tsx`: `safeParse` + totals → the hook.
-- Remaining zod: `useMyVenue`/`useMyArtist` edit forms; create artist/review/preference/ticket inputs.
+### Phase 4 — Hooks orchestrate; components render (+ zod at the write boundary) — ✅ DONE
+- **`DeclareDoorRevenueButton`** ✅ — `useDeclareDoorRevenue(concert, rawValue)` owns the zod parse and
+  the concertable/external/total derivation; the component keeps only its buffer `useState` + JSX.
+- **`PayoutAccountSection`** ✅ — new `usePayoutAccount` facade owns the `window` `message` listener, the
+  refetch-then-toast branching and `window.open`; the component renders status and calls `openOnboarding()`.
+- **`organizations`** ✅ — `useOrganization` facade owns the buffer → request mapping, the `safeParse` and
+  the save; added `schemas/updateOrganizationRequestSchema.ts` with `UpdateOrganizationRequest` as its
+  `z.infer` (dropped from `types.ts`, the `updateConcertRequestSchema` precedent); `OrganizationForm`
+  moved to `components/` keeping only its buffer + JSX.
+- **review** ✅ — added `schemas/createReviewRequestSchema.ts`; `useAddReview` is now a facade owning the
+  parse + submit (replacing the hand-rolled `stars === 0`); `concertId` stays a function argument, not a
+  request field.
+- **`MembersPage`** ✅ — split into `components/{MembersRoster,PendingInvitations,InviteForm,Spinner}` over
+  `useMembersRoster` / `usePendingInvitations` / `useInviteMember` facades; `membersApi` split off the
+  cross-resource accept path into `api/invitationApi.ts`; the hand-maintained `ALL_ROLES` replaced by
+  `TENANT_ROLES` in `@b2b/features/tenant`, with `TenantRole` **derived from it** so list and type can't
+  drift. **This one rides with the (still uncommitted) invitations feature — deliberately kept out of the
+  `refactor(web)` commits.**
+- **Moved to Phase 5, not skipped — `useMyVenue`/`useMyArtist` + create-artist/venue edit-form zod.**
+  Their write path PUTs the *whole entity* as `FormData` (artist literally `JSON.stringify(artist)`), so
+  parsing into a real `XRequest` changes **what the backend receives** — a request-contract change, not a
+  drop-in parse. They also sit on the same `draft = {...entity}` store-copies-cache anti-pattern Phase 5
+  already owns for `useConcertStore`. Doing them together is the only way either lands clean.
+- **N/A (no write boundary to parse):** preference — `CreatePreferencePage` is still a
+  `<div>Create Preference</div>` stub; ticket checkout — its only input is the bounded `QuantitySelector`,
+  no free-typed field.
 
 ### Phase 5 — Naming + state hygiene
 - **Permissions:** complete the matrix to the full backend `SharedPermissions` set (13, not 4),
   backend-sourced names; document that the server is the trust boundary (FE gate is cosmetic).
 - **`useConcertStore`:** stop copying server data into the store (`draft = {...concert}`); live buffer is
-  the component's `useState`. Derive `isDirty`, don't store it.
+  the component's `useState`. Derive `isDirty`, don't store it. **Same for `useVenueStore` /
+  `useArtistStore` — and land their edit-form zod in this same change** (carried over from Phase 4):
+  `venueApi.updateVenue` / `artistApi.updateArtist` currently PUT the whole entity as `FormData`, so they
+  need real `UpdateVenueRequest` / `UpdateArtistRequest` shapes + schemas before a parse means anything.
+  Same for `CreateArtistPage` / `CreateVenuePage` (`draft!.name` bangs + `banner! as unknown as File`).
 - Raw hook suffixes (`useVenueKpis` → `useVenueKpisQuery`, …); leave facades.
 - Per-feature query-key factories (incremental, per feature touched).
 - Read/request naming: `PaymentResponse` → shared `PaymentOutcome` (dedupe `TicketPurchaseResponse`);
