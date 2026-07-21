@@ -1,26 +1,26 @@
-import api from "../../../lib/paymentAxiosClient";
+import { paymentClient } from "../../../lib/paymentClient";
 import type { PayoutAccountStatus, PaymentMethod } from "../types";
 
 const stripeAccountApi = {
   getOnboardingLink: async (): Promise<string> => {
-    const { data } = await api.get<string>("/stripeaccount/onboarding-link");
+    const { data } = await paymentClient.get<string>("/stripeaccount/onboarding-link");
     return data;
   },
 
   getAccountStatus: async (): Promise<PayoutAccountStatus> => {
-    const { data } = await api.get<PayoutAccountStatus>(
+    const { data } = await paymentClient.get<PayoutAccountStatus>(
       "/stripeaccount/account-status",
     );
     return data;
   },
 
   createSetupIntent: async (): Promise<string> => {
-    const { data } = await api.post<string>("/stripeaccount/setup-intent");
+    const { data } = await paymentClient.post<string>("/stripeaccount/setup-intent");
     return data;
   },
 
   getPaymentMethod: async (): Promise<PaymentMethod | null> => {
-    const { data } = await api.get<PaymentMethod | null>(
+    const { data } = await paymentClient.get<PaymentMethod | null>(
       "/stripeaccount/payment-method",
     );
     return data;

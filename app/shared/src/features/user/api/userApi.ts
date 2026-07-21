@@ -1,9 +1,9 @@
-import api from "../../../lib/axiosClient";
+import { apiClient } from "../../../lib/apiClient";
 import type { User } from "../../auth/types";
 
 const userApi = {
   getMe: async (): Promise<User> => {
-    const { data } = await api.get<User>("/auth/me");
+    const { data } = await apiClient.get<User>("/auth/me");
     return data;
   },
 
@@ -11,7 +11,7 @@ const userApi = {
     latitude: number,
     longitude: number,
   ): Promise<User> => {
-    const { data } = await api.put<User>("/users/location", {
+    const { data } = await apiClient.put<User>("/users/location", {
       latitude,
       longitude,
     });
