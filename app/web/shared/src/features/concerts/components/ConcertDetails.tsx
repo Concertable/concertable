@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MapPin, Star, TriangleAlertIcon } from "lucide-react";
 import { VenueLocation } from "@/features/venues";
 import { GenreTags } from "@/features/search";
-import { useImageUrl } from "@concertable/shared/hooks";
+import { useImageUrlQuery } from "@concertable/shared/hooks";
 import { ConcertCard } from "./ConcertCard";
 import type { Concert } from "../types";
 
@@ -28,7 +28,7 @@ interface Props {
 }
 
 function ArtistSection({ artist }: { artist: Concert["artist"] }) {
-  const { data: src } = useImageUrl(artist.avatar);
+  const { data: src } = useImageUrlQuery(artist.avatar);
 
   return (
     <div className="flex gap-6">

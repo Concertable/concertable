@@ -1,5 +1,5 @@
 ﻿import { Button } from "@/components/ui/button";
-import { useImageUrl } from "@concertable/shared/hooks";
+import { useImageUrlQuery } from "@concertable/shared/hooks";
 import dayjs from "dayjs";
 import { CalendarDays, MapPin, Ticket } from "lucide-react";
 import type { Concert } from "../types";
@@ -10,7 +10,7 @@ interface Props {
 }
 
 export function ConcertCard({ concert, onBuyTickets }: Readonly<Props>) {
-  const { data: src } = useImageUrl(concert.avatar);
+  const { data: src } = useImageUrlQuery(concert.avatar);
 
   return (
     <div className="border-border bg-card space-y-4 rounded-xl border p-4">

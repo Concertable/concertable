@@ -2,7 +2,7 @@
 import type { ImageFile } from "@concertable/shared";
 import { useEditableContext } from "@concertable/shared/providers";
 import { useImageUpload } from "@/hooks/useImageUpload";
-import { useImageUrl } from "@concertable/shared/hooks";
+import { useImageUrlQuery } from "@concertable/shared/hooks";
 
 interface Props {
   avatar?: string;
@@ -25,7 +25,7 @@ export function AvatarUpload({
 }: Readonly<Props>) {
   const editMode = useEditableContext();
   const { inputRef, open, onChange } = useImageUpload(onAvatarChange);
-  const { data: src, isPending } = useImageUrl(avatar);
+  const { data: src, isPending } = useImageUrlQuery(avatar);
 
   return (
     <div className="relative z-0 shrink-0">

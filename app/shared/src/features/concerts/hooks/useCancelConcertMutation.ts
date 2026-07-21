@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import concertApi from "../api/concertApi";
 
-export function useCancelConcert(id: number) {
+export function useCancelConcertMutation(id: number) {
   const queryClient = useQueryClient();
 
   return useMutation({
