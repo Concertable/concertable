@@ -88,8 +88,8 @@ export function ConcertDetails({
       <ScrollspyNav sections={SECTIONS} />
 
       <div className="@container mx-auto max-w-6xl px-6 py-10">
-        <div className="flex gap-10">
-          <div className="flex-1 space-y-10">
+        <div className="flex flex-col gap-10 @3xl:flex-row">
+          <div className="order-2 flex-1 space-y-10 @3xl:order-1">
             <section id="about" className="scroll-mt-24">
               <AboutSection
                 text={concert.about}
@@ -158,8 +158,8 @@ export function ConcertDetails({
             </section>
           </div>
 
-          <div className="hidden w-72 shrink-0 @3xl:block">
-            <div className="sticky top-28">
+          <div className="order-1 w-full shrink-0 @3xl:order-2 @3xl:w-72">
+            <div className="mx-auto max-w-sm @3xl:mx-0 @3xl:max-w-none @3xl:sticky @3xl:top-28">
               <ConcertCard concert={concert} onBuyTickets={onBuyTickets} />
             </div>
           </div>
