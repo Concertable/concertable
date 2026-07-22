@@ -133,7 +133,9 @@ And if a comment needs a paragraph to justify the code below it, that's usually 
 
 ## Plans (`plans/*.md`)
 
-Plans are working docs for unfinished work, **not** an archive — git history is the archive. A finished plan kept "for reference" is just rot that misleads the next reader into thinking the work is still pending. Full workflow (phases, verification gates, when to run E2E): [`plans/CLAUDE.md`](./plans/CLAUDE.md).
+Plans are working docs for unfinished work, **not** an archive — git history is the archive. A finished plan kept "for reference" is just rot that misleads the next reader into thinking the work is still pending.
+
+**Opening a `plans/*.md` to work from obliges you to read [`plans/CLAUDE.md`](./plans/CLAUDE.md) in the same breath** — phases, verification gates, when to run E2E, and how to shape the handoff all live there, and the plan's own prose is not a substitute for them. Reading only the plan is how its rules get skipped.
 
 - **When you land the commit that completes a plan's work, `git rm` the plan file in that same commit.** Completion = work committed AND its verification passed (build + the affected unit/integration tests always; E2E only when the change is massive/risky per `plans/CLAUDE.md`). Deletion belongs to that commit — never defer it to a later cleanup pass.
 - A plan **superseded** by a newer plan, or describing a design that was **rejected**, is deleted the moment that's decided — don't leave a tombstone.

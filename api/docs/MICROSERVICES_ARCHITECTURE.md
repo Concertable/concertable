@@ -225,6 +225,7 @@ Rule: ask "does this reference data need an admin UI?" If no, it's a contract, n
 | `Concertable.Shared.Geocoding` | Geocoding abstraction + provider impl |
 | `Concertable.Shared.Imaging` | Image processing abstraction + impl |
 | `Concertable.Shared.Pdf` | PDF generation abstraction + QuestPDF impl |
+| `Concertable.Shared.QrCode` | QR generation abstraction + QRCoder impl |
 
 The two-package wire/framework rule still applies for `Concertable.Contracts` vs `Concertable.Kernel` themselves — breaking changes in Contracts = protocol changes; in Kernel = compile failures.
 
