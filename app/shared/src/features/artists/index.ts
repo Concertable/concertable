@@ -1,4 +1,4 @@
-﻿export { useArtistQuery, useMyArtistQuery } from "./hooks/useArtistQuery";
+﻿export { useArtistQuery, useMyArtistQuery, artistKeys } from "./hooks/useArtistQuery";
 export { useArtist } from "./hooks/useArtist";
 export type { UseArtistResult } from "./hooks/useArtist";
 export { useMyArtist } from "./hooks/useMyArtist";

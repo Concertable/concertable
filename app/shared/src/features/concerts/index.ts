@@ -1,4 +1,4 @@
-export { useConcertQuery } from "./hooks/useConcertQuery";
+export { useConcertQuery, concertKeys } from "./hooks/useConcertQuery";
 export { useConcert } from "./hooks/useConcert";
 export type { UseConcertResult } from "./hooks/useConcert";
 export { useCheckoutFlow } from "./hooks/useCheckoutFlow";

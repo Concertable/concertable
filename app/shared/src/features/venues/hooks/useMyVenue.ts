@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useMyVenueQuery } from "./useVenueQuery";
+import { useMyVenueQuery, venueKeys } from "./useVenueQuery";
 import { useVenueStore } from "../store/useVenueStore";
 import venueApi from "../api/venueApi";
 import type { Venue } from "../types";
@@ -45,7 +45,8 @@ export function useMyVenue(options?: UseMyVenueOptions): UseMyVenueResult {
       return saved;
     },
     onSuccess: (saved) => {
-      queryClient.setQueryData(["venue", "my"], saved);
+      queryClient.setQueryData(venueKeys.my(), saved);
+      queryClient.setQueryData(venueKeys.byId(saved.id), saved);
       storeResetDraft(saved);
       options?.onSuccess?.(saved);
     },
