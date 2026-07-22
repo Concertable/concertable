@@ -33,8 +33,27 @@ the prevailing convention for hand-written React is the domain noun.
 **Litmus:** *rename this TS type — does any JSON byte change? No → the name is yours; name it for the
 domain.*
 
-> **Anti-pattern:** a read type named with a server suffix — `PaymentResponse`. A payment *outcome* is
-> a domain noun: one shared `PaymentOutcome`, no `Response`.
+> **Anti-pattern:** a read type named with a server suffix — `PaymentResponse`, `TicketPurchaseResponse`.
+> A payment *outcome* is a domain noun: one shared `PaymentOutcome`. A ticket purchase is a
+> `TicketPurchase`.
+
+**The general rule — a suffix must distinguish two real shapes here.** The backend needs
+Entity/Dto/Response because it genuinely holds three shapes of one concept. The frontend holds *one*
+shape per concept: the thing it receives. So `Response` differentiates nothing and is pure noise.
+Before keeping any suffix, ask what the *unsuffixed* name would collide with — if the answer is
+"nothing", drop it.
+
+That test is what keeps the suffixes we do use:
+
+- **`XRequest`** — a real second shape, the write payload, sitting next to the read (`TicketPurchaseRequest`
+  beside `TicketPurchase`). See the next section.
+- **`GeocodeResponse`** — the raw Google Geocoding envelope (`{ status, results[] }`), a genuinely
+  different shape from the `Coordinates` we hand back. `AxiosResponse` likewise is third-party.
+- **`XPayload`** — event-carried data on a SignalR handler, a different axis from read/write.
+  `TicketPurchasedPayload` earns it (the event shape differs from the HTTP `TicketPurchase` — its
+  `ticketIds` are numbers, not strings); `ConcertDraftCreatedPayload = number` earns it (it names an
+  otherwise-anonymous primitive). A **pure alias** of an already-domain-named type does not — the
+  former `MessageReceivedPayload = Message` was deleted; handlers take a `Message`.
 
 ## Write inputs are `XRequest` — carrying only client-settable fields
 
