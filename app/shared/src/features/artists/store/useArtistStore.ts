@@ -10,8 +10,8 @@ interface ArtistStore {
   banner: ImageFile | undefined;
   avatar: ImageFile | undefined;
 
-  toggleEdit: (artist: Artist) => void;
-  resetDraft: (artist: Artist) => void;
+  beginEdit: (artist: Artist) => void;
+  endEdit: () => void;
 
   setName: (name: string) => void;
   setAbout: (about: string) => void;
@@ -20,33 +20,20 @@ interface ArtistStore {
   setAvatar: (file: ImageFile) => void;
 }
 
-export const useArtistStore = create<ArtistStore>((set) => ({
+const notEditing = {
   draft: undefined,
   editMode: false,
   isDirty: false,
   banner: undefined,
   avatar: undefined,
+};
 
-  toggleEdit: (artist) =>
-    set(
-      produce((state: ArtistStore) => {
-        state.editMode = !state.editMode;
-        if (state.editMode) {
-          state.draft = state.draft ?? { ...artist };
-        }
-      }),
-    ),
+export const useArtistStore = create<ArtistStore>((set) => ({
+  ...notEditing,
 
-  resetDraft: (artist) =>
-    set(
-      produce((state: ArtistStore) => {
-        state.draft = { ...artist };
-        state.editMode = false;
-        state.isDirty = false;
-        state.banner = undefined;
-        state.avatar = undefined;
-      }),
-    ),
+  beginEdit: (artist) => set({ ...notEditing, draft: { ...artist }, editMode: true }),
+
+  endEdit: () => set(notEditing),
 
   setName: (name) =>
     set(

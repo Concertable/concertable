@@ -1,1 +1,1 @@
-﻿export type { PaymentMethod, PayoutAccountStatus } from "./types";
+﻿export type { PaymentMethod, PayoutAccountStatus, PaymentOutcome } from "./types";

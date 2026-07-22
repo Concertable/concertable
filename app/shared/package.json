@@ -13,7 +13,6 @@
     "./features/artists": "./src/features/artists/index.ts",
     "./features/auth": "./src/features/auth/index.ts",
     "./features/concerts": "./src/features/concerts/index.ts",
-    "./features/deals": "./src/features/deals/index.ts",
     "./features/dashboard": "./src/features/dashboard/index.ts",
     "./features/messaging": "./src/features/messaging/index.ts",
     "./features/notifications": "./src/features/notifications/index.ts",

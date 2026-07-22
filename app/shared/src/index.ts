@@ -1,12 +1,10 @@
 ﻿export * from "./features/artists";
 export * from "./features/auth";
 export * from "./features/concerts";
-export * from "./features/deals";
 export * from "./features/dashboard";
 export * from "./features/messaging";
 export * from "./features/notifications";
 export * from "./features/payments";
-export type { PaymentMethod } from "./features/deals";
 export * from "./features/reviews";
 export * from "./features/search";
 export * from "./features/user";

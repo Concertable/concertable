@@ -4,7 +4,7 @@ import { Camera, MapPin } from "lucide-react-native";
 import * as ImagePicker from "expo-image-picker";
 import { Text } from "@/components/ui/text";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useImageUrl } from "@concertable/shared/hooks";
+import { useImageUrlQuery } from "@concertable/shared/hooks";
 import type { ImageFile } from "@concertable/shared/types";
 import { EditableText } from "./editable/EditableText";
 import { useEditableContext } from "@concertable/shared/providers";
@@ -34,8 +34,8 @@ export function HeroMobile({
   onAvatarChange,
 }: Readonly<Props>) {
   const editMode = useEditableContext();
-  const { data: bannerSrc } = useImageUrl(bannerUrl);
-  const { data: avatarSrc } = useImageUrl(avatar);
+  const { data: bannerSrc } = useImageUrlQuery(bannerUrl);
+  const { data: avatarSrc } = useImageUrlQuery(avatar);
 
   const location = [town, county].filter(Boolean).join(", ");
 

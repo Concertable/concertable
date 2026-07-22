@@ -1,5 +1,3 @@
-import type { Message } from "../messaging/types";
-
 export interface ConcertPostedPayload {
   id: number;
   name: string;
@@ -14,6 +12,5 @@ export interface ConcertPostedPayload {
   datePosted?: string;
 }
 
-export type MessageReceivedPayload = Message;
 export type ConcertDraftCreatedPayload = number;
 export type ApplicationAcceptedPayload = number;

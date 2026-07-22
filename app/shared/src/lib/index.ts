@@ -2,6 +2,8 @@
 export { searchClient } from "./searchClient";
 export { configureClient } from "./client";
 export { shouldRetry } from "./queryRetry";
+export { resolveApiError } from "./problemDetails";
+export type { ProblemDetails, ErrorMeta, ApiErrorMessage } from "./problemDetails";
 export { createNotificationConnection, HubConnectionState, LogLevel } from "./notificationConnection";
 export { default as googleGeocodingApi } from "./googleGeocodingApi";
 export { formatCurrency } from "./currency";
