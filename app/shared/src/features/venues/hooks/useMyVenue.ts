@@ -29,8 +29,8 @@ export function useMyVenue(options?: UseMyVenueOptions): UseMyVenueResult {
   const queryClient = useQueryClient();
 
   const {
-    toggleEdit: storeToggleEdit,
-    resetDraft: storeResetDraft,
+    beginEdit,
+    endEdit,
     draft,
     banner,
     avatar,
@@ -47,7 +47,7 @@ export function useMyVenue(options?: UseMyVenueOptions): UseMyVenueResult {
     onSuccess: (saved) => {
       queryClient.setQueryData(venueKeys.my(), saved);
       queryClient.setQueryData(venueKeys.byId(saved.id), saved);
-      storeResetDraft(saved);
+      endEdit();
       options?.onSuccess?.(saved);
     },
     onError: (err) => options?.onError?.(err),
@@ -63,11 +63,12 @@ export function useMyVenue(options?: UseMyVenueOptions): UseMyVenueResult {
     save: mutation.mutate,
     isSaving: mutation.isPending,
     toggleEdit: () => {
-      storeToggleEdit(query.data!);
+      if (editMode) endEdit();
+      else beginEdit(query.data!);
       options?.onToggleEdit?.();
     },
     resetDraft: () => {
-      storeResetDraft(query.data!);
+      endEdit();
       options?.onResetDraft?.();
     },
   };
