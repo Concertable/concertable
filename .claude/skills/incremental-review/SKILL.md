@@ -60,7 +60,7 @@ Read `.claude/skills/code-review/SKILL.md` and **follow it from Step 3 onward ve
 That means, on the scoped diff:
 
 - Load the rules (code-review Step 2 doc list).
-- Review through all five lenses — correctness, microservice isolation, module boundaries, seeding, C# conventions (code-review Step 3).
+- Review through all six lenses — correctness, microservice isolation, module boundaries, seeding, C# conventions, test coverage of changed paths (code-review Step 3).
 - Apply the ≥80-confidence filter (code-review Step 4).
 - **Append** a new `## Incremental review — <date>` section to the existing markdown, preserving prior findings and their status marks; continue the file's finding-ID scheme without renumbering (code-review Step 5).
 

@@ -43,10 +43,26 @@ This skill is **Concertable-specific**. It encodes how this repo actually merges
    - If on `master`, or there's no PR for the branch, **stop** and say so — there's nothing to merge.
    - If the PR is already `MERGED`, skip to step 5 (sync master). If `CLOSED`, stop and report.
 
-2. **Make sure the branch is actually pushed and current.**
+2. **Make sure the branch is pushed, current with its remote, AND not stale vs `master`.**
    - If `git status` shows uncommitted changes, or the local branch is ahead of its remote, **stop** and
      tell the user to commit/push first (or do it with the `commit` / `push` skills if they ask). Don't
      merge a PR that's missing local work.
+   - **`git status -sb` is NOT a master check.** Its `[ahead N, behind M]` compares to the branch's *own*
+     remote only — a branch can read "in sync with origin/<branch>" while being dozens of commits behind
+     `master`. Check drift vs master explicitly:
+     ```
+     git fetch origin --quiet
+     git rev-list --left-right --count origin/master...HEAD   # -> "<behind-master>\t<ahead>"
+     ```
+   - **If `behind-master` > 0, update the branch before enqueueing** — merge master in, don't rebase (the
+     PR is up for review; no force-push): `git merge origin/master`, resolve conflicts (the
+     `<ConcertablePlatformVersion>` / version file is the usual one), then `dotnet build
+     api/Concertable.slnx` to **0 errors** and `git push`. **This is non-negotiable when a
+     `chore/platform-sync-*` has merged to master since the branch's base** (`git log --oneline
+     origin/master ^HEAD | grep platform-sync`): the branch is pinned to an *older* platform version, so
+     it builds/tests against a stale platform — the queue rebuilds on master but a real pin/shape drift
+     surfaces as a queue kick-out (or worse, a green merge that's actually stale). Update, rebuild, push,
+     then continue.
 
 3. **Wait for the PR's own checks to reach a terminal state, then verify green.**
    - Poll `gh pr checks <n>` until **no** check is `pending`. Prefer the `Monitor` tool with an
@@ -66,6 +82,16 @@ This skill is **Concertable-specific**. It encodes how this repo actually merges
      the failing job's log for `build`/`carve-*`). Drive it green, push, and re-run this skill.
 
 4. **Enqueue into the merge queue (the default — this is what runs E2E).**
+   - **First decide the E2E tier via a commit token** (`CLAUDE.md` → "E2E suites"; `plans/CLAUDE.md` →
+     "When to run the E2E suites"). The queue runs the **full** E2E suite by default — ~25-30 min it
+     shouldn't spend on a behaviour-preserving change. If this PR is zero-behaviour-change (additive
+     seam, pure refactor, well-covered by unit + integration), it should carry **`[skip-e2e]`** in a
+     commit in the PR range (`[skip-tests]` drops to the compile floor — build + carve — for a
+     trivial/mechanical change; build + carve never skip). The token is read from the *pushed* commits
+     and **can't be retrofitted once queued** (the branch is locked — you'd have to dequeue + repush), so
+     if the tier applies and no commit carries it yet, add it and push **before** enqueueing. When the
+     change genuinely touches a runtime flow E2E covers (payments/settlement/event-propagation/messaging
+     routing), let the full suite run — don't skip to save minutes.
    ```
    gh pr merge <n> --merge --auto
    ```
