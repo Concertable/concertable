@@ -5,6 +5,35 @@ archive. A finished plan kept "for reference" is rot: it misleads the next reade
 work is still pending. This file is the workflow; the root [`CLAUDE.md`](../CLAUDE.md) carries the
 short version.
 
+## Commit finished work the instant its gate goes green — this is unconditional
+
+**The default is to commit, not to "leave it for review."** The moment a discrete chunk of work is
+complete and its gate has passed (build green + the affected tests), **commit it, without asking.**
+Committing is a local, reversible checkpoint; only `push` waits for Tommy's explicit go-ahead
+(**commit ≠ push**).
+
+This rule is **not** scoped to phase boundaries, to the "Before a clear" handoff below, or to any
+other ritual — it is standing and applies to *every* finished, verified chunk: a phase, a bug fix, a
+refactor, an investigation's output, a doc close-out. Reading the commit rule as conditional on
+handing off / clearing is exactly the misread that produces the failure below.
+
+**"I've left it uncommitted so you can look at it first" is the anti-pattern, not the courtesy:**
+
+- **Review runs off commits.** `/code-review` diffs `master..HEAD`; work sitting in the working tree
+  is invisible to it. Leaving it uncommitted is precisely what stops the reviewer seeing it.
+- **Uncommitted is the fragile state.** It survives no `git checkout`, no stray `git restore`, no
+  context clear. A commit is the cheapest insurance that exists.
+- **It silently wrecks PR scoping.** Finished work left loose gets swept into an unrelated PR by a
+  later `git add -A`, or stranded when the branch moves on — and a reviewer opening the PR finds the
+  feature the branch is *named after* missing from it.
+
+If finished work belongs in a **different PR** than the branch you're on, that is a reason to
+**branch and commit it there** — never a reason to leave it sitting in the working tree.
+
+**Mechanical trigger:** the gate went green → commit. If your next sentence would be *"should I
+commit this?"* or *"I've left it uncommitted for your review"*, **that sentence is the trigger** —
+don't send it, commit. The only thing you ever stop and ask about is `push`.
+
 ## Never leave the codebase out of sync — the plan isn't done until the whole thing is
 
 A refactor isn't finished when the convenient half lands. If a repo/package boundary forces it into
@@ -133,12 +162,10 @@ point where the context becomes disposable. Don't carry unwritten state across a
 When the work is fully done for now, or the user says they'll clear, do these things after the durable
 state is written:
 
-1. **Commit the completed phase FIRST — don't leave finished, verified phase work uncommitted "for
-   review."** A completed + verified plan phase is *committed* as part of finishing it, with the plan
-   check-off in the same commit (Lifecycle 3). Committing at the phase boundary is the default here — do
-   it without asking; **only `push` waits for Tommy's explicit go-ahead** (commit ≠ push). Both
-   reviewing and resuming run off the commit, so it lands before the handoff. Leaving a green phase in
-   the working tree is the mistake that makes `/code-review` unable to see it.
+1. **Commit the completed phase FIRST** — per the standing rule at the top of this file ("Commit
+   finished work the instant its gate goes green"), with the plan check-off in the same commit
+   (Lifecycle 3). By the time you reach a handoff this should already be done; if anything finished is
+   still sitting in the working tree, that rule was missed, not deferred to here.
 2. **Prepare for clear** — confirm the plan markdown, `CLAUDE.md`/`TECH_DEBT.md`, and commit messages
    hold everything; the chat must be safe to throw away.
 3. **Give the user a resume prompt to paste after `/clear`.** Assume zero context: name the **working
@@ -147,12 +174,22 @@ state is written:
    plan file, the branch/PR, and the exact next step. Keep it to a few lines.
 4. **Hand off a ready-to-paste code-review prompt in the SAME turn whenever you say the work is ready
    to review** — never "stopping here for your review" with no prompt (that's this section's anti-pattern
-   applied to review instead of resume). With the phase committed (step 1) the whole feature is on the
-   branch, so the prompt is normally just **`/code-review`** — it reviews `master..HEAD`, i.e. the
-   **entire feature**, which is exactly what a review should cover. Only if some work is *deliberately*
-   left uncommitted must the prompt point the reviewer at the full delta including it
-   (`git diff $(git merge-base master HEAD)` + untracked from `git status --short`) — **never**
-   `git diff HEAD` alone, which omits already-committed earlier phases.
+   applied to review instead of resume). **But in a multi-phase plan, "review-ready" is normally the
+   *final* phase — one review over the whole feature — NOT every phase boundary. Intermediate-phase
+   handoffs are resume-only (step 3): hand off just the next-step prompt and do NOT dangle a
+   review-vs-continue fork at each phase.** Only declare review-ready (and hand off the review prompt)
+   at the last phase, or when the user explicitly asks to review sooner — per-increment reviews use
+   `incremental-review` (scoped to `<last-reviewed-SHA>..HEAD`), not repeated `/code-review` runs that
+   re-read the whole branch each time. With the phase committed (step 1) the whole feature is on the
+   branch. **`/code-review` takes no path argument — it infers the repo/branch (`master..HEAD`) from the
+   session's working directory.** So the handoff prompt **must name the checkout to run it in, exactly
+   like the resume prompt does** — a bare `/code-review` silently reviews wherever the reader's session
+   happens to be, and when the branch lives in a *worktree* (a sibling checkout) that's the wrong
+   repo/branch or an empty range. Word it e.g. *"In the worktree at `<path>` (branch `<branch>`), run
+   `/code-review`"* — it reviews the **entire feature** (`master..HEAD`), which is what a review should
+   cover. Only if some work is *deliberately* left uncommitted must the prompt also point the reviewer
+   at the full delta including it (`git diff $(git merge-base master HEAD)` + untracked from
+   `git status --short`) — **never** `git diff HEAD` alone, which omits already-committed earlier phases.
 
    **If — and only if — the work lives in a separate git worktree, the resume prompt's first line
    MUST be the exact directory to `cd` into, before anything else.** A `/clear` (or a brand-new

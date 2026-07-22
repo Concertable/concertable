@@ -5,7 +5,7 @@ import MapView, { Marker } from "react-native-maps";
 import { Image } from "expo-image";
 import { CalendarDays, MapPin, Music, TriangleAlert } from "lucide-react-native";
 import type { Concert } from "@concertable/shared/features/concerts";
-import { useImageUrl } from "@concertable/shared/hooks";
+import { useImageUrlQuery } from "@concertable/shared/hooks";
 import { Hero } from "@/components/ui/Hero";
 import { RatingStars } from "@/components/ui/RatingStars";
 import { GenreChips } from "@/components/ui/GenreChips";
@@ -32,8 +32,8 @@ interface Props {
 export function ConcertDetails({ concert, onBuyTickets }: Readonly<Props>) {
   const [section, setSection] = useState<SectionKey>("about");
   const soldOut = concert.availableTickets === 0;
-  const { data: bannerSrc } = useImageUrl(concert.bannerUrl);
-  const { data: avatarSrc } = useImageUrl(concert.artist.avatar);
+  const { data: bannerSrc } = useImageUrlQuery(concert.bannerUrl);
+  const { data: avatarSrc } = useImageUrlQuery(concert.artist.avatar);
 
   return (
     <SafeAreaView className="flex-1 bg-background" edges={["bottom"]}>
@@ -147,7 +147,7 @@ function AboutSection({ concert }: { concert: Concert }) {
 }
 
 function ArtistSection({ concert }: { concert: Concert }) {
-  const { data: avatarSrc } = useImageUrl(concert.artist.avatar);
+  const { data: avatarSrc } = useImageUrlQuery(concert.artist.avatar);
   return (
     <View className="px-4 py-5 gap-4">
       <View className="flex-row items-center gap-4">

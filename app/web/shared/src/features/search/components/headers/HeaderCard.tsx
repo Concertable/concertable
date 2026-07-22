@@ -1,7 +1,7 @@
 ﻿import type { ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { MapPin, Star } from "lucide-react";
-import { useImageUrl } from "@concertable/shared/hooks";
+import { useImageUrlQuery } from "@concertable/shared/hooks";
 import type { Header } from "../../types";
 
 interface Props<T extends Header> {
@@ -15,7 +15,7 @@ export function HeaderCard<T extends Header>({
   to,
   children,
 }: Readonly<Props<T>>) {
-  const { data: src } = useImageUrl(data.imageUrl);
+  const { data: src } = useImageUrlQuery(data.imageUrl);
 
   const content = (
     <div className="border-border bg-card flex w-full cursor-pointer flex-col items-center gap-2 rounded-xl border p-4 text-center transition-shadow hover:shadow-lg">

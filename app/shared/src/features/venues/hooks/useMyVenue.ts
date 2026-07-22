@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useMyVenueQuery } from "./useVenueQuery";
+import { useMyVenueQuery, venueKeys } from "./useVenueQuery";
 import { useVenueStore } from "../store/useVenueStore";
 import venueApi from "../api/venueApi";
 import type { Venue } from "../types";
@@ -29,8 +29,8 @@ export function useMyVenue(options?: UseMyVenueOptions): UseMyVenueResult {
   const queryClient = useQueryClient();
 
   const {
-    toggleEdit: storeToggleEdit,
-    resetDraft: storeResetDraft,
+    beginEdit,
+    endEdit,
     draft,
     banner,
     avatar,
@@ -45,8 +45,9 @@ export function useMyVenue(options?: UseMyVenueOptions): UseMyVenueResult {
       return saved;
     },
     onSuccess: (saved) => {
-      queryClient.setQueryData(["venue", "my"], saved);
-      storeResetDraft(saved);
+      queryClient.setQueryData(venueKeys.my(), saved);
+      queryClient.setQueryData(venueKeys.byId(saved.id), saved);
+      endEdit();
       options?.onSuccess?.(saved);
     },
     onError: (err) => options?.onError?.(err),
@@ -62,11 +63,12 @@ export function useMyVenue(options?: UseMyVenueOptions): UseMyVenueResult {
     save: mutation.mutate,
     isSaving: mutation.isPending,
     toggleEdit: () => {
-      storeToggleEdit(query.data!);
+      if (editMode) endEdit();
+      else beginEdit(query.data!);
       options?.onToggleEdit?.();
     },
     resetDraft: () => {
-      storeResetDraft(query.data!);
+      endEdit();
       options?.onResetDraft?.();
     },
   };

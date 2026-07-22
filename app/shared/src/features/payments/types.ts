@@ -6,3 +6,9 @@ export interface PaymentMethod {
   expMonth: number;
   expYear: number;
 }
+
+export interface PaymentOutcome {
+  requiresAction: boolean;
+  clientSecret?: string;
+  transactionId?: string;
+}

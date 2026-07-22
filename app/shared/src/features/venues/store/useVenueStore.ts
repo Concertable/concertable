@@ -10,8 +10,8 @@ interface VenueStore {
   banner: ImageFile | undefined;
   avatar: ImageFile | undefined;
 
-  toggleEdit: (venue: Venue) => void;
-  resetDraft: (venue: Venue) => void;
+  beginEdit: (venue: Venue) => void;
+  endEdit: () => void;
 
   setName: (name: string) => void;
   setAbout: (about: string) => void;
@@ -20,33 +20,20 @@ interface VenueStore {
   setAvatar: (file: ImageFile) => void;
 }
 
-export const useVenueStore = create<VenueStore>((set) => ({
+const notEditing = {
   draft: undefined,
   editMode: false,
   isDirty: false,
   banner: undefined,
   avatar: undefined,
+};
 
-  toggleEdit: (venue) =>
-    set(
-      produce((state: VenueStore) => {
-        state.editMode = !state.editMode;
-        if (state.editMode) {
-          state.draft = state.draft ?? { ...venue };
-        }
-      }),
-    ),
+export const useVenueStore = create<VenueStore>((set) => ({
+  ...notEditing,
 
-  resetDraft: (venue) =>
-    set(
-      produce((state: VenueStore) => {
-        state.draft = { ...venue };
-        state.editMode = false;
-        state.isDirty = false;
-        state.banner = undefined;
-        state.avatar = undefined;
-      }),
-    ),
+  beginEdit: (venue) => set({ ...notEditing, draft: { ...venue }, editMode: true }),
+
+  endEdit: () => set(notEditing),
 
   setName: (name) =>
     set(

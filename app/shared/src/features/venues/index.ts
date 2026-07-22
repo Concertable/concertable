@@ -1,4 +1,4 @@
-﻿export { useVenueQuery, useMyVenueQuery } from "./hooks/useVenueQuery";
+﻿export { useVenueQuery, useMyVenueQuery, venueKeys } from "./hooks/useVenueQuery";
 export { useVenue } from "./hooks/useVenue";
 export { useMyVenue } from "./hooks/useMyVenue";
 export { useVenueStore } from "./store/useVenueStore";

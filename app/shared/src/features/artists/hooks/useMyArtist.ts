@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useMyArtistQuery } from "./useArtistQuery";
+import { useMyArtistQuery, artistKeys } from "./useArtistQuery";
 import { useArtistStore } from "../store/useArtistStore";
 import artistApi from "../api/artistApi";
 import type { Artist } from "../types";
@@ -26,14 +26,15 @@ export function useMyArtist(options?: UseMyArtistOptions): UseMyArtistResult {
   const query = useMyArtistQuery();
   const queryClient = useQueryClient();
 
-  const { toggleEdit, resetDraft, draft, banner, avatar, isDirty, editMode } =
+  const { beginEdit, endEdit, draft, banner, avatar, isDirty, editMode } =
     useArtistStore();
 
   const mutation = useMutation({
     mutationFn: () => artistApi.updateArtist(draft!, banner, avatar),
     onSuccess: (saved) => {
-      queryClient.setQueryData(["artist", "my"], saved);
-      resetDraft(saved);
+      queryClient.setQueryData(artistKeys.my(), saved);
+      queryClient.setQueryData(artistKeys.byId(saved.id), saved);
+      endEdit();
       options?.onSuccess?.(saved);
     },
     onError: (err) => options?.onError?.(err),
@@ -48,7 +49,7 @@ export function useMyArtist(options?: UseMyArtistOptions): UseMyArtistResult {
     isDirty,
     save: mutation.mutate,
     isSaving: mutation.isPending,
-    toggleEdit: () => toggleEdit(query.data!),
-    resetDraft: () => resetDraft(query.data!),
+    toggleEdit: () => (editMode ? endEdit() : beginEdit(query.data!)),
+    resetDraft: endEdit,
   };
 }

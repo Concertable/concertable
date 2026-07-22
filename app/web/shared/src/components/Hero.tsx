@@ -3,7 +3,7 @@ import type { ImageFile } from "@concertable/shared";
 import { EditableText } from "@/components/editable/EditableText";
 import { BannerUpload } from "@/components/BannerUpload";
 import { AvatarUpload } from "@/components/AvatarUpload";
-import { useImageUrl } from "@concertable/shared/hooks";
+import { useImageUrlQuery } from "@concertable/shared/hooks";
 
 interface Props {
   bannerUrl?: string;
@@ -28,7 +28,7 @@ export function Hero({
   onBannerChange,
   onAvatarChange,
 }: Readonly<Props>) {
-  const { data: bannerSrc, isPending: bannerPending } = useImageUrl(bannerUrl);
+  const { data: bannerSrc, isPending: bannerPending } = useImageUrlQuery(bannerUrl);
 
   return (
     <div className="bg-muted relative flex h-72 items-end">
