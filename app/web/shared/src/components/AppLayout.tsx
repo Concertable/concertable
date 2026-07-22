@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, type ReactNode } from "react";
 import { Outlet } from "@tanstack/react-router";
 import { Navbar, type NavLink } from "@/components/Navbar";
 import type { ProfileMenuItem } from "@/components/ProfileMenu";
@@ -9,9 +9,10 @@ import { NavbarHeightContext } from "@/context/NavbarHeightContext";
 interface Props {
   links: NavLink[];
   profileItems: ProfileMenuItem[];
+  headerSlot?: ReactNode;
 }
 
-export function AppLayout({ links, profileItems }: Readonly<Props>) {
+export function AppLayout({ links, profileItems, headerSlot }: Readonly<Props>) {
   const [navbarHeight, setNavbarHeight] = useState(0);
   const [configHeight, setConfigHeight] = useState(0);
 
@@ -28,7 +29,12 @@ export function AppLayout({ links, profileItems }: Readonly<Props>) {
       }}
     >
       <div className="flex min-h-screen flex-col">
-        <Navbar links={links} profileItems={profileItems} onHeightChange={setNavbarHeight} />
+        <Navbar
+          links={links}
+          profileItems={profileItems}
+          headerSlot={headerSlot}
+          onHeightChange={setNavbarHeight}
+        />
         <Breadcrumbs />
         <main className="flex flex-1 flex-col">
           <Outlet />
