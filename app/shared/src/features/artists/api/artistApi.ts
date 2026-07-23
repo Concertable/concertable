@@ -1,4 +1,4 @@
-import api from "../../../lib/axiosClient";
+import { apiClient } from "../../../lib/apiClient";
 import type { Artist } from "../types";
 import type { ImageFile } from "../../../types/image";
 import type { Genre } from "../../../types/common";
@@ -15,12 +15,12 @@ export interface CreateArtist {
 
 const artistApi = {
   getArtist: async (id: number): Promise<Artist> => {
-    const { data } = await api.get<Artist>(`/artist/${id}`);
+    const { data } = await apiClient.get<Artist>(`/artist/${id}`);
     return data;
   },
 
   getMyArtist: async (): Promise<Artist | null> => {
-    const { data, status } = await api.get<Artist>("/artist/user");
+    const { data, status } = await apiClient.get<Artist>("/artist/user");
     return status === 204 ? null : data;
   },
 
@@ -35,7 +35,7 @@ const artistApi = {
     input.genres.forEach((g, i) => {
       formData.append(`Genres[${i}]`, g);
     });
-    const { data } = await api.post<Artist>("/artist", formData);
+    const { data } = await apiClient.post<Artist>("/artist", formData);
     return data;
   },
 
@@ -45,10 +45,16 @@ const artistApi = {
     avatar?: ImageFile,
   ): Promise<Artist> => {
     const formData = new FormData();
-    formData.append("artist", JSON.stringify(artist));
+    formData.append("Name", artist.name);
+    formData.append("About", artist.about);
+    formData.append("Latitude", String(artist.latitude));
+    formData.append("Longitude", String(artist.longitude));
+    artist.genres.forEach((g, i) => {
+      formData.append(`Genres[${i}]`, g);
+    });
     if (banner) formData.append("Banner", banner as any);
     if (avatar) formData.append("Avatar", avatar as any);
-    const { data } = await api.put<Artist>(`/artist/${artist.id}`, formData);
+    const { data } = await apiClient.put<Artist>(`/artist/${artist.id}`, formData);
     return data;
   },
 };

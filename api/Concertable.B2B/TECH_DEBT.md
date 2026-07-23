@@ -119,6 +119,14 @@ Plan §4.5 calls for flat per-persona profile tables (`VenueManagerEntity`, `Art
 
 ---
 
+### `DELETE api/organizations` is a local hard-delete with no cross-module / cross-service teardown
+
+`TenantService.DeleteCurrentTenantAsync` deletes the tenant row and cascades only the Tenant module's own children (memberships, invitations). It emits **no `TenantDeletedEvent`** and touches nothing outside the `tenant` schema, so deleting an organization silently **orphans** everything provisioned off it: the Payment Stripe payout account (provisioned by `CredentialRegisteredHandler`), the venues/artists/concerts owned by the tenant (separate modules/contexts, no cross-schema FK — so no error, just dangling rows), and downstream Search projections. The create path deliberately re-raises `TenantCreatedEvent` via `Announce()` for exactly this cross-service reason; delete has no symmetric path. Landed as a simple synchronous endpoint in the member-management phase (Phase 6.2); the full teardown is its own design (a new integration event + a Payment consumer that deactivates the connected account + module-owned cleanup of venue/artist/concert data).
+
+**Resolves when:** tenant deletion publishes a `TenantDeletedEvent` (registered `Publishes<>`), Payment deactivates/closes the connected Stripe account on it, the Venue/Artist/Concert modules clean up (or soft-delete) their tenant-owned rows via their own handlers, and Search drops the corresponding projections — no owned data outlives the tenant.
+
+---
+
 ## RESOLVED
 
 ### ✅ Seed `TicketsSold` depends on the Payment seed simulator
@@ -169,14 +177,6 @@ names are updated to match.
 
 ---
 
-### `ConcertDetailsResponse` coerces optional images to `string.Empty`
-
-`ConcertResponseMappers.ToDetailsResponse` maps `BannerUrl = dto.BannerUrl ?? string.Empty` and `Avatar = dto.Avatar ?? dto.Artist.Avatar ?? string.Empty` because `ConcertDetailsResponse` declares both as `required string` while the underlying data is legitimately optional. The mapper flattens "absent" into "present but blank", and the SPA has to re-interpret `""` as missing. Inconsistent with `ConcertArtistResponse.Avatar` in the same response family, which is honestly `string?`.
-
-**Resolves when:** `ConcertDetailsResponse.BannerUrl`/`.Avatar` become `string?` (the avatar keeping its `dto.Avatar ?? dto.Artist.Avatar` preference chain, ending in null), the `?? string.Empty` coercions are deleted, and the SPA consumes null rather than empty string.
-
----
-
 ### `UserEntity.Avatar` models "no avatar" as empty string
 
 `Modules/User/Concertable.B2B.User.Domain/UserEntity.cs` declares `public string Avatar { get; private set; } = string.Empty;` — an empty-string placeholder pretending to be a value (the pattern `docs/CODE_CONVENTIONS.md` bans for populated-later defaults). "No avatar" is modelled as `string?` elsewhere (e.g. `ConcertArtistResponse.Avatar`).
@@ -185,11 +185,17 @@ names are updated to match.
 
 ---
 
-### Duplicate application attempt is a 500, not a 400
+### Duplicate application attempt is a 500, not a 400 — guard landed, integration test outstanding
 
-`ApplicationValidator.CanApplyAsync` never checks for an existing application by the same artist on the same opportunity, but `concert.Applications` has a unique `(OpportunityId, ArtistId)` index — so a second apply (including re-applying after a withdraw/reject, where the opportunity legitimately shows as open) passes eligibility and then blows up as a `DbUpdateException` → 500. Surfaced while testing withdraw (`Feature/ApplicationCancel`).
+Fixed on `Fix/TechDebtSweep`: `ApplicationService.ValidateCanApplyAsync` (the apply/insert path,
+used by both `ApplyAsync` overloads) rejects an existing `(opportunityId, artistId)` row via
+`IApplicationRepository.ExistsForOpportunityAndArtistAsync`, returning a clean 400. Deliberately
+*not* in the shared `ApplicationValidator.CanApplyAsync`: that validator is also reused by the
+VenueHire **pre-apply checkout** (`ApplyCheckoutAsync`), which legitimately runs while an
+application may already exist and must not be rejected. Outstanding only: an **integration test**
+for apply-after-withdraw → 400 (needs Docker).
 
-**Resolves when:** `CanApplyAsync` fails with a clear message when any application row exists for `(opportunityId, artistId)`, and an integration test covers apply-after-withdraw returning 400.
+**Resolves when:** the apply-after-withdraw integration test lands green.
 
 ---
 
@@ -208,3 +214,11 @@ Concert's read-model sync from `ArtistChangedEvent`/`VenueChangedEvent` and User
 Deliberately not done now: the launch gate is *data completeness* (hold a complete, jurisdiction-valid tax identity for everyone we pay), not live verification. Live checks are async/networked (need caching + graceful degradation) and overlap Stripe — scope this onboarding blocker doesn't take on. Naturally lands with the DAC7 verification/export hardening (first export Jan 2028).
 
 **Resolves when:** VAT (and other seller-id) validity is checked beyond format per jurisdiction — minimally an offline checksum, ideally a live authority check (HMRC / VIES) or a confirmed reuse of Stripe's tax-ID verification — implemented as the per-region `IDac7Strategy` behaviour, with the stored value staying a lenient `string?`.
+
+---
+
+### B2B portal frontend URLs have no non-local config — prod invite links would break
+
+`FrontendUriGenerator` (`Concertable.B2B.Infrastructure`) resolves the venue/artist portal base per persona from `Urls:Frontends:{Venue,Artist}`. Those keys exist only as **localhost** in `Concertable.B2B.Web/appsettings.json`; there is no per-environment (App Config / tfvars) source for the real `venue.`/`artist.concertable.co.uk` hosts — that whole cloud-config layer is still the blocked future work in [`../../plans/DOMAINS_AND_DNS.md`](../../plans/DOMAINS_AND_DNS.md). So in any non-local environment the persona dictionary binds empty and an invite send throws `KeyNotFoundException` — fails loud (not a silent bad link), but still broken.
+
+**Resolves when:** `Urls:Frontends:{Venue,Artist}` are supplied per environment from App Config, alongside `Auth:SpaClients` / `Cors:AllowedOrigins` (which key off the same hostnames), as part of the `DOMAINS_AND_DNS.md` config rollout.

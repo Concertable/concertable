@@ -1,5 +1,6 @@
 using Concertable.B2B.Artist.Infrastructure.Extensions;
 using Concertable.B2B.Tenant.Infrastructure.Extensions;
+using Concertable.B2B.Infrastructure.Extensions;
 using Concertable.B2B.Concert.Infrastructure.Extensions;
 using Concertable.B2B.Deal.Infrastructure.Extensions;
 using Concertable.B2B.Venue.Infrastructure.Extensions;
@@ -16,6 +17,7 @@ using Concertable.Shared.Notification.Infrastructure.Extensions;
 using Concertable.Payment.Client.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Concertable.DataAccess.Infrastructure.Data;
 using Concertable.DataAccess.Infrastructure.Extensions;
 using Concertable.Kernel.Extensions;
@@ -26,10 +28,11 @@ namespace Concertable.B2B.Workers;
 
 internal static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
     {
         services.AddSeedingInfrastructure();
         services.AddSharedInfrastructure(configuration);
+        services.AddUris(configuration);
         services.AddSharedBlob(configuration);
         services.AddSharedEmail(configuration);
         services.AddSharedGeocoding();
@@ -57,9 +60,14 @@ internal static class ServiceCollectionExtensions
         services.AddDealModule(configuration);
         services.AddClientCredentials(opts =>
         {
-            opts.Authority = configuration["Auth:Authority"] ?? configuration["services:auth:https:0"] ?? "";
-            opts.ClientId = configuration["ServiceAuth:ClientId"] ?? "";
-            opts.ClientSecret = configuration["ServiceAuth:ClientSecret"] ?? "";
+            opts.Authority = configuration["Auth:Authority"] ?? configuration["services:auth:https:0"]
+                ?? (environment.IsEnvironment("Testing") ? null!
+                    : throw new InvalidOperationException("Auth:Authority is required (no explicit key and no service-discovery fallback)."));
+            opts.ClientId = configuration["ServiceAuth:ClientId"]
+                ?? (environment.IsEnvironment("Testing") ? null!
+                    : throw new InvalidOperationException("ServiceAuth:ClientId is required."));
+            if (configuration["ServiceAuth:ClientSecret"] is string clientSecret)
+                opts.ClientSecret = clientSecret;
         });
         services.AddPaymentClient(configuration);
         services.AddNotificationClient();

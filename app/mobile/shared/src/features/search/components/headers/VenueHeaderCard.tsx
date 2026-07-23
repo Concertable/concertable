@@ -4,7 +4,7 @@ import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Image } from "expo-image";
 import { MapPin } from "lucide-react-native";
 import type { Header, VenueHeader } from "@concertable/shared/features/search";
-import { useImageUrl } from "@concertable/shared/hooks";
+import { useImageUrlQuery } from "@concertable/shared/hooks";
 import { RatingStars } from "@/components/ui/RatingStars";
 import { Text } from "@/components/ui/text";
 import { theme } from "../../../../lib/theme";
@@ -15,7 +15,7 @@ type SearchNav = NativeStackNavigationProp<ConcertNavParamList>;
 export function VenueHeaderCard({ data }: { data: Header }) {
   const nav = useNavigation<SearchNav>();
   const venue = data as VenueHeader;
-  const { data: src } = useImageUrl(venue.imageUrl);
+  const { data: src } = useImageUrlQuery(venue.imageUrl);
 
   return (
     <Pressable onPress={() => nav.navigate("VenueDetail", { venueId: venue.id })} style={{ flex: 1 }}>

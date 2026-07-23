@@ -7,8 +7,8 @@ interface ConcertStore {
   editMode: boolean;
   isDirty: boolean;
 
-  toggleEdit: (concert: Concert) => void;
-  resetDraft: (concert: Concert) => void;
+  beginEdit: (concert: Concert) => void;
+  endEdit: () => void;
 
   setName: (name: string) => void;
   setAbout: (about: string) => void;
@@ -16,29 +16,18 @@ interface ConcertStore {
   setTotalTickets: (totalTickets: number) => void;
 }
 
-export const useConcertStore = create<ConcertStore>((set) => ({
+const notEditing = {
   draft: undefined,
   editMode: false,
   isDirty: false,
+};
 
-  toggleEdit: (concert) =>
-    set(
-      produce((state: ConcertStore) => {
-        state.editMode = !state.editMode;
-        if (state.editMode) {
-          state.draft = state.draft ?? { ...concert };
-        }
-      }),
-    ),
+export const useConcertStore = create<ConcertStore>((set) => ({
+  ...notEditing,
 
-  resetDraft: (concert) =>
-    set(
-      produce((state: ConcertStore) => {
-        state.draft = { ...concert };
-        state.editMode = false;
-        state.isDirty = false;
-      }),
-    ),
+  beginEdit: (concert) => set({ ...notEditing, draft: { ...concert }, editMode: true }),
+
+  endEdit: () => set(notEditing),
 
   setName: (name) =>
     set(

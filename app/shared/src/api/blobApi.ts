@@ -1,8 +1,8 @@
-import api from "../lib/axiosClient";
+import { apiClient } from "../lib/apiClient";
 
 const blobApi = {
   download: async (fileName: string): Promise<string> => {
-    const response = await api.get(`/blob/download/${fileName}`, {
+    const response = await apiClient.get(`/blob/download/${fileName}`, {
       responseType: "arraybuffer",
     });
     const bytes = new Uint8Array(response.data as ArrayBuffer);

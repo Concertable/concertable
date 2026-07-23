@@ -1,5 +1,3 @@
-import type { Genre } from "../../../types/common";
-import type { Deal } from "../../deals/types";
 import type { ReviewSummary } from "../../reviews/types";
 
 export interface ProfileHealthItem {
@@ -56,37 +54,6 @@ export interface Settlement {
   amountCents: number;
   counterpartyName: string;
   direction: SettlementDirection;
-}
-
-export interface OpportunitySummary {
-  id: number;
-  venueId: number;
-  venueName: string;
-  startDate: string;
-  endDate: string;
-  genres: Genre[];
-  deal: Deal;
-}
-
-export interface OpportunityWithCounts {
-  opportunity: OpportunitySummary;
-  applicationCount: number;
-  daysUntilDeadline: number;
-}
-
-export interface OpportunityCard {
-  id: number;
-  venueId: number;
-  venueName: string;
-  venueAvatarUrl?: string;
-  county: string;
-  town: string;
-  startDate: string;
-  endDate: string;
-  genres: Genre[];
-  deal: Deal;
-  fitScore?: number;
-  href: string;
 }
 
 export interface MessageThread {

@@ -1,40 +1,16 @@
 # Concertable — cross-cutting technical debt
 
-Debt spanning multiple services or living in shared code (`Shared/`, `Concertable.Messaging`, host `Program.cs` files). Service-specific debt belongs in that service's own `TECH_DEBT.md`. When an item is fixed, update both this file and [`ARCHITECTURE.md`](./ARCHITECTURE.md).
+Debt spanning multiple services, host `Program.cs` files, or repo-wide build/CI config. Debt inside the shared platform tree (`Concertable.Kernel`, `Concertable.Shared.*`, the shared test libs) belongs in [`Concertable.Shared/TECH_DEBT.md`](./Concertable.Shared/TECH_DEBT.md); service-specific debt belongs in that service's own `TECH_DEBT.md`. When an item is fixed, update both this file and [`ARCHITECTURE.md`](./ARCHITECTURE.md).
 
 ---
 
 ## MED
 
-### `IEntity.DisplayName` is a soft standard (throwing default member), not a hard `static abstract`
+### `AzureServiceBusOptions` binder defaults are `= ""` instead of `null!`
 
-`Shared/Concertable.Kernel/IEntity.cs` carries `DisplayName` as a `static virtual` **default interface
-member** whose default *throws* `NotSupportedException`, so entities that self-name via `OrNotFound()` must
-override it; an un-overridden entity fails at runtime rather than the compiler forcing a name. The intended
-design was `static abstract` (compiler-enforced, every entity named), but that is a binary-breaking change
-that cannot land: the core libs (`DataAccess.Infrastructure`, `Messaging.Domain`) source-reference Kernel
-so integration tests load the new Kernel, while service entities compile against the Kernel *package* — a
-required static-abstract member's implementation mapping is fixed at compile time against the old interface,
-so package-compiled entities throw `TypeLoadException` against the new Kernel (two red CI runs confirmed).
-The default member is the additive workaround.
+`Concertable.Messaging.AzureServiceBus/Options/AzureServiceBusOptions.cs` initialises binder-populated `string` properties to `= ""`, where the convention (`docs/CODE_CONVENTIONS.md`) requires `null!` so a missing bind surfaces instead of silently becoming empty (and it uses the banned `""` literal). Deferred, not host-only: `AzureServiceBusOptions` ships in the **published** `Concertable.Messaging` package, so flipping the defaults is a cross-service package change that must ride a Messaging publish + platform-sync, not a bare edit. (The host-side `?? ""` masks that used to sit alongside this — `Auth:Authority` / `ServiceAuth:ClientId` / the ASB `ConnectionString` across the Auth, B2B.Web, B2B.Workers, Customer.Web, Payment.Web, Payment.Workers, Search.Workers, and B2B.Seed.Simulator hosts — now fail fast at startup outside the "Testing" environment, done. `ServiceAuth:ClientSecret` is a genuine optional, now bound **null** when absent — its earlier `string.Empty` was a masking cosmetic swap. The complete fix (`TokenServiceOptions.ClientSecret` → `string?` + the token service omitting the `client_secret` form param when null, correct for a secret-less/public client) is a **published Kernel change** — tracked with the `GetId()` Kernel item above as a cut-over.)
 
-**Resolves when:** the core libs stop source-referencing Kernel (or the repo builds shared source lockstep
-so entities compile against the same Kernel the tests load), at which point `DisplayName` can become
-`static abstract` and the throwing default is deleted.
-
-### Kernel `ClaimsPrincipal.GetId()` fails open with `string.Empty`
-
-`Shared/Concertable.Kernel/Identity/ClaimsPrincipalExtensions.cs` returns `user?.FindFirst("sub")?.Value ?? string.Empty` — a principal with no `sub` claim becomes an empty-string user id instead of a failure. Its sibling `CurrentUserExtensions.GetId(ICurrentUser)` gets this right (throws `UnauthorizedAccessException`). The only consumer, `NotificationHub`, assigns the result to `string?` and null-checks it — a check that can never fire because the method never returns null, so an unauthenticated principal sails through as `""`.
-
-**Resolves when:** the extension fails closed (returns `string?` with no empty-string coercion, or throws like its `ICurrentUser` sibling), and `NotificationHub`'s guard actually rejects principals without a `sub` claim.
-
----
-
-### Required config bound with `?? ""` — services boot misconfigured and fail later
-
-Eight hosts coalesce required auth/bus settings to empty string at bind time: `Auth:Authority` / `ServiceAuth:*` `ClientId`+`ClientSecret` in `Concertable.Auth/Program.cs`, `Concertable.B2B.Web/Program.cs`, `Concertable.B2B.Workers/ServiceCollectionExtensions.cs`, `Concertable.Customer.Web/Program.cs`; the ASB `ConnectionString` additionally in `Concertable.Payment.Web`, `Concertable.Payment.Workers`, `Concertable.Search.Workers`, and `Concertable.B2B.Seed.Simulator` `Program.cs`. A missing setting silently becomes `""`, the host starts cleanly, and the failure surfaces later as a confusing auth/bus error instead of at startup. `Concertable.Messaging.AzureServiceBus/Options/AzureServiceBusOptions.cs` compounds it with `= ""` property defaults where the convention (`docs/CODE_CONVENTIONS.md`) requires `null!` for binder-populated values. All of these also use the banned `""` literal.
-
-**Resolves when:** required settings fail fast at startup — options validation with `ValidateOnStart` (or an explicit throw on missing key) replaces every `?? ""`, and `AzureServiceBusOptions` defaults become `null!`. Genuine optional-with-empty-default settings, if any, keep an explicit `string.Empty`.
+**Resolves when:** the `= ""` defaults become `null!` as part of a `Concertable.Messaging` package publish.
 
 ---
 
@@ -43,30 +19,6 @@ Eight hosts coalesce required auth/bus settings to empty string at bind time: `A
 `api/Concertable.Auth/Directory.Packages.props` pins the shared platform to `ConcertablePlatformVersion` (currently `0.1.0-alpha.0.526`), so in the full `Concertable.slnx` build Auth compiles against that *published* package while B2B/Customer/Search build the same shared projects from live source. Edit shared source without re-publishing + bumping the pin and Auth silently compiles against stale code; a breaking shared-API change turns only the Auth build red with a confusing "works in source, fails as package" error. Accepted build-separation tradeoff for now (Auth.Contracts has ~0 churn and the shared platform changes infrequently), but the divergence is real the moment shared code moves without a publish.
 
 **Resolves when:** the SERVICE_BUILD_SEPARATION hybrid inner-loop toggle lands (`ProjectReference` for local multi-service dev, `PackageReference` in CI/standalone), or the platform-version pin is automated so it can't lag a shared-source change.
-
----
-
-### Shared test libraries are ProjectReferenced across the service-folder boundary (carve leak)
-
-`Concertable.Testing`, `Concertable.Testing.Integration`, and the shared `Concertable.E2ETests` harness
-live under `Concertable.Shared/tests/` — i.e. in the Shared "repo" — yet every consuming test project
-reaches them by a `ProjectReference` that **escapes its own service folder**
-(`api/Concertable.B2B/src/Modules/.../Tests/*.csproj → ..\..\..\..\..\..\Concertable.Shared\tests\Concertable.Testing\...`).
-That is exactly the cross-folder escape the runtime carve forbids for service projects (the
-`PackageReference, never a ProjectReference` guard in the service `.csproj`s). Runtime deps that live in
-the Shared tree (Kernel, Messaging) publish + are pinned; the shared **test** libs alone leak straight
-into every service's test projects. On a real repo split those references break. `Concertable.Testing`
-even carries `IsPackable=true` with **zero** package consumers — a half-committed intent. First flagged
-adding a shared `Money` test helper for the door-revenue UI E2E: it compiled same-PR *because* of this
-leak, where a Kernel helper needs a publish-first PR.
-
-**Resolves when:** the shared test libs are published as test-support packages consumed by pinned
-`PackageReference` like the runtime shared libs (carrying the same publish-first + pin-bump boundary) —
-OR test infra is explicitly documented as carve-exempt (dev-only, never shipped in a service runtime)
-and the misleading `IsPackable=true` is dropped. Decision + execution steps:
-[`plans/SHARED_TEST_LIBS_PACKAGING.md`](../plans/SHARED_TEST_LIBS_PACKAGING.md). Lean: publish, for
-consistency with the Shared-repo model — the cost is that every shared-test-helper edit then takes the
-publish-first cycle.
 
 ---
 
@@ -137,3 +89,36 @@ entity in isolation just makes it the odd column type.
 pass (entities, EF configs → `datetimeoffset`, DTOs, and the `TimeProvider.GetUtcNow()` call sites that
 currently `.UtcDateTime` them away). One coordinated migration-touching change, not piecemeal — a lone
 `DateTimeOffset` next to `DateTime` neighbours is worse than uniform.
+
+### `Service` is used as a catch-all suffix, hiding which collaborators are orchestrators
+
+Most `IXService` types are genuine services — they orchestrate domain logic over a repository
+(`IVenueService`, `IConcertService`, `IInvitationService`, and `ITicketPdfService`, which does inject
+`ITicketRepository`). But the suffix is also worn by types that own no persistence and are really
+value-producers or gateways, which flattens a distinction worth seeing at the injection site:
+
+- **`IContractPdfService` / `IInvoicePdfService`** (B2B Concert) — inject only `IPdfBlobCache`, no
+  repository; they render a document from data. The codebase already has `IPdfRenderer`, and
+  `CODE_PATTERNS.md` already blesses `Renderer.Render` — so these two are inconsistent with vocabulary
+  that exists here today.
+- **`IBlobStorageService`** (`Shared.Blob`) — wraps `BlobServiceClient` + options; a gateway/store.
+- **`IImageService`** (`Shared.Imaging`) — `Upload`/`Download`/`Replace`/`Delete`, sitting directly on
+  `IBlobStorageService`. Bytes in and out of a backing store, no domain logic; a store over a store.
+
+Why it matters beyond taste: "a service calling another service" is a smell worth spotting by name, and
+it only reads as a smell when *service* means orchestrator. When a pure value-producer is also called
+`Service`, every such call looks equally suspicious and the signal is lost. `CODE_PATTERNS.md` already
+states the rule this would follow — name the type as the agent-noun of its one method
+(`Renderer.Render`, `Resolver.Resolve`, `Calculator.Calculate`).
+
+Note the distinction is *shape*, not *staticness*: these are injected, config-bound collaborators, so
+`Helper`/`Utility` (which in sibling codebases denotes a `static` class of pure functions) would be the
+wrong correction — the honest names are `Factory` / `Renderer` / `Store`.
+
+**Resolves when:** a naming pass renames the non-orchestrator `*Service` types to their agent-noun,
+settling on one vocabulary — `Factory` creates values, `Renderer` produces a document, `Store` fronts a
+byte/blob backing store, and `Service` is reserved for repository-backed orchestrators:
+the two PDF ones → `*PdfRenderer` (alongside the existing `IPdfRenderer`);
+`IBlobStorageService` → `IBlobStore`; `IImageService` → `IImageStore`. Best done as one sweep — renaming
+the `Kernel` and `Shared.*` types republishes those packages and triggers a platform-sync, so batch them
+rather than paying that cost once per rename.

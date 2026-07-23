@@ -96,7 +96,7 @@ git diff <merge-base>..HEAD --diff-filter=d --find-renames -- <area-paths>   # e
 Then follow **`code-review` Steps 2–4 verbatim** on that scoped diff:
 
 - Load the rule docs relevant to the area (`code-review` Step 2).
-- Review through all five lenses — correctness, microservice isolation, module boundaries, seeding, C# conventions (`code-review` Step 3). For whichever stage holds the shared/contract code the rest of the diff depends on, the isolation/boundary lens is the headline check.
+- Review through all six lenses — correctness, microservice isolation, module boundaries, seeding, C# conventions, test coverage of changed paths (`code-review` Step 3). For whichever stage holds the shared/contract code the rest of the diff depends on, the isolation/boundary lens is the headline check.
 - Apply the ≥80-confidence filter (`code-review` Step 4).
 
 While reviewing, when you spot something whose other half lives in a **different** area (a changed contract whose consumers are in a later stage, a renamed config key, a behaviour change that some other component must absorb), don't drop it and don't review outside your paths — **add a one-line entry to Cross-area notes** naming the target area and what to verify there.

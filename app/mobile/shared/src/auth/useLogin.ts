@@ -4,9 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import { useAuthStore } from "@concertable/shared/features/auth";
 import { userApi } from "@concertable/shared/features/user";
 import { tokenStorage } from "./tokenStorage";
-import "../lib/axios";
-import "../lib/searchAxios";
-import "../lib/paymentAxios";
+import "../lib/apiClient";
+import "../lib/searchClient";
+import "../lib/paymentClient";
 import Config from "../lib/config";
 
 WebBrowser.maybeCompleteAuthSession();

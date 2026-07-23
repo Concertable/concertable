@@ -103,6 +103,11 @@ jobs:
             run_tests=false; run_e2e=false; run_e2e_ui=false
             echo "-> [skip-tests] token; test suites + E2E off (build + carve compile floor still runs)."
           fi
+          # E2E executes ONLY in the merge queue (merge_group). On the PR and on push the required e2e
+          # checks still RUN but no-op to success — never `skipped`, which is what stalls queue admission
+          # (a docs-only / package-only PR left CLEAN + auto-merge-on but never queued). The queue runs
+          # them for real on the actual merge.
+          if [ "${{ github.event_name }}" != "merge_group" ]; then run_e2e=false; run_e2e_ui=false; fi
           echo "run_code=$run_code"     >> "$GITHUB_OUTPUT"
           echo "run_tests=$run_tests"   >> "$GITHUB_OUTPUT"
           echo "run_e2e=$run_e2e"       >> "$GITHUB_OUTPUT"
@@ -580,7 +585,9 @@ jobs:
   e2e-api-tests:
     runs-on: ubuntu-latest
     needs: [build, changes]
-    if: github.event_name == 'merge_group'
+    # No job-level merge_group gate: the job also runs on the PR and no-ops green there (run_e2e is
+    # forced false off-queue in `changes`), so the required check reports success, never `skipped` —
+    # a skipped required check is what stalls queue admission. The real suite runs only in the queue.
 
     permissions:
       contents: read
@@ -663,7 +670,8 @@ jobs:
   e2e-ui-tests:
     runs-on: ubuntu-latest
     needs: [build, e2e-api-tests, changes]
-    if: github.event_name == 'merge_group'
+    # No job-level merge_group gate (see e2e-api-tests): runs on the PR too and no-ops green via
+    # run_e2e_ui (forced false off-queue), so the required check reports success, never `skipped`.
 
     permissions:
       contents: read

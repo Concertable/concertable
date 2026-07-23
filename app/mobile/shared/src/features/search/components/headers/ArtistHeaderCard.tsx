@@ -4,7 +4,7 @@ import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Image } from "expo-image";
 import { MapPin } from "lucide-react-native";
 import type { ArtistHeader, Header } from "@concertable/shared/features/search";
-import { useImageUrl } from "@concertable/shared/hooks";
+import { useImageUrlQuery } from "@concertable/shared/hooks";
 import { RatingStars } from "@/components/ui/RatingStars";
 import { GenreChips } from "@/components/ui/GenreChips";
 import { Text } from "@/components/ui/text";
@@ -16,7 +16,7 @@ type SearchNav = NativeStackNavigationProp<ConcertNavParamList>;
 export function ArtistHeaderCard({ data }: { data: Header }) {
   const nav = useNavigation<SearchNav>();
   const artist = data as ArtistHeader;
-  const { data: src } = useImageUrl(artist.imageUrl);
+  const { data: src } = useImageUrlQuery(artist.imageUrl);
 
   return (
     <Pressable onPress={() => nav.navigate("ArtistDetail", { artistId: artist.id })} style={{ flex: 1 }}>

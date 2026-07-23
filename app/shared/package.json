@@ -13,7 +13,6 @@
     "./features/artists": "./src/features/artists/index.ts",
     "./features/auth": "./src/features/auth/index.ts",
     "./features/concerts": "./src/features/concerts/index.ts",
-    "./features/deals": "./src/features/deals/index.ts",
     "./features/dashboard": "./src/features/dashboard/index.ts",
     "./features/messaging": "./src/features/messaging/index.ts",
     "./features/notifications": "./src/features/notifications/index.ts",
@@ -38,6 +37,7 @@
     "oidc-client-ts": "^3.5.0",
     "qs": "^6.15.0",
     "query-string": "^9.3.1",
+    "use-immer": "^0.11.0",
     "zod": "^4.3.6",
     "zustand": "^5.0.12"
   },

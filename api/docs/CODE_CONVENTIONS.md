@@ -174,6 +174,45 @@ Guid TenantId { get; set; }
 Guid TenantId { get; set; }
 ```
 
+## Type-name suffixes — `Service` means "orchestrates a repository", not "a class I inject"
+
+`Service` is the suffix that rots first: it gets used for anything injectable, and once a pure
+value-producer is also called `Service`, the genuinely useful smell — *a service calling another
+service* — stops being visible, because every collaborator looks the same at the injection site.
+
+Pick the suffix from the type's **shape**, not from "it's registered in DI". Almost everything here is
+DI'd; that fact carries no naming information.
+
+| Suffix | The shape it claims | Precedent |
+|---|---|---|
+| `Service` | Orchestrates domain logic **over a repository**. Stateful collaborator, owns a unit of work. | `IVenueService`, `IInvitationService` |
+| `Repository` | Domain-entity persistence via the module `DbContext`. | `ITenantRepository` |
+| `Store` | Bytes/blobs in and out of a backing store, no domain logic. | `IUserStore` (ASP.NET Identity) |
+| `Client` | A remote or third-party API. | `HttpClient`, `BlobServiceClient` |
+| `Factory` | Creates **instances/components**, usually of a type family. | `IHttpClientFactory`, `ILoggerFactory` |
+| `Generator` | Produces a **value/artifact** from inputs. | `LinkGenerator`, `RandomNumberGenerator` |
+| `Builder` | **Mutable, stepwise** accumulation, terminated by `Build()`/a final property. | `StringBuilder`, `UriBuilder`, `WebApplicationBuilder` |
+| `Provider` | Supplies a value or pluggable strategy, often one of several. | `IServiceProvider`, `IFileProvider`, `TimeProvider` |
+| `Accessor` | Exposes an ambient/current value. | `IHttpContextAccessor` |
+| `Handler` | Reacts to a message or event. | `IIntegrationEventHandler<T>` |
+| `Helper` / `Utility` | **`static class` of pure functions.** No DI, no state, no config. | `WebUtility`, `HttpUtility` |
+
+Two rules that follow from the table:
+
+- **`Helper`/`Utility` is reserved for `static`.** It is not the escape hatch for "injected but not
+  really a service" — an injected, config-bound collaborator gets a shape noun (`Generator`, `Factory`,
+  `Store`). Note .NET is itself inconsistent here (`IUrlHelper` is injected), which is exactly why we
+  pin the stricter meaning rather than inherit the ambiguity.
+- **`Builder` vs `Generator` vs `Factory` is decided by mechanics, not vibes** — mutable-then-finalize is
+  a `Builder`; one-shot value from inputs is a `Generator`; one-shot *component* is a `Factory`.
+
+For types whose whole job is a single operation, [`CODE_PATTERNS.md`](./CODE_PATTERNS.md) already governs
+the name — the agent-noun of that one method (`Mapper.Map`, `Resolver.Resolve`, `Calculator.Calculate`,
+`Renderer.Render`, `Serializer.Serialize`). This table is the same rule widened to collaborator shapes.
+
+Known violations awaiting a batched rename sweep are listed in [`../TECH_DEBT.md`](../TECH_DEBT.md);
+don't add new ones.
+
 ## DTO naming — `Response` is HTTP-only; `Result<T>` is the service wrapper; C# DTOs carry no suffix
 
 The `Response` suffix is reserved for the **HTTP-API wire layer** (`Module.Api/Responses/`, see the

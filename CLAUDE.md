@@ -81,6 +81,16 @@ This section is **how** to run E2E safely. **Whether** to run it for a given cha
 call — reserved for massive or behaviorally-risky changes, skipped for stage-1/zero-behavior-change
 work — governed by [`plans/CLAUDE.md`](./plans/CLAUDE.md). Don't run the full suites by reflex.
 
+**That same skip-judgment sets the CI merge-queue tier — via a commit token, not just local runs.**
+The merge queue runs the full E2E suite on every code change *by default*. When a change is in the
+skip category (behaviour-preserving, small/isolated, well-covered by unit + integration), put
+**`[skip-e2e]`** in a commit message so the queue skips it too — otherwise it burns ~25-30 min of E2E
+that catches nothing. This is the common case for a refactor; **default to `[skip-e2e]` for any
+zero-behaviour-change PR** — letting the queue run E2E on it is the reflex to avoid. `[skip-tests]`
+drops to the compile floor (build + carve only) for a genuinely trivial/mechanical change; build +
+carve are never skippable. Tokens are read from any commit message in the PR range — full tier table
+in [`.github/workflows/test.yml`](./.github/workflows/test.yml).
+
 Run E2E only through `./e2e.ps1` via the matching skill (`e2e-ui-regress`, `e2e-ui-debug`,
 `e2e-api-debug`) — the skill's Step 0 Docker pre-flight is mandatory, every run.
 
@@ -123,7 +133,9 @@ And if a comment needs a paragraph to justify the code below it, that's usually 
 
 ## Plans (`plans/*.md`)
 
-Plans are working docs for unfinished work, **not** an archive — git history is the archive. A finished plan kept "for reference" is just rot that misleads the next reader into thinking the work is still pending. Full workflow (phases, verification gates, when to run E2E): [`plans/CLAUDE.md`](./plans/CLAUDE.md).
+Plans are working docs for unfinished work, **not** an archive — git history is the archive. A finished plan kept "for reference" is just rot that misleads the next reader into thinking the work is still pending.
+
+**Opening a `plans/*.md` to work from obliges you to read [`plans/CLAUDE.md`](./plans/CLAUDE.md) in the same breath** — phases, verification gates, when to run E2E, and how to shape the handoff all live there, and the plan's own prose is not a substitute for them. Reading only the plan is how its rules get skipped.
 
 - **When you land the commit that completes a plan's work, `git rm` the plan file in that same commit.** Completion = work committed AND its verification passed (build + the affected unit/integration tests always; E2E only when the change is massive/risky per `plans/CLAUDE.md`). Deletion belongs to that commit — never defer it to a later cleanup pass.
 - A plan **superseded** by a newer plan, or describing a design that was **rejected**, is deleted the moment that's decided — don't leave a tombstone.

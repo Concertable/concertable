@@ -1,6 +1,6 @@
 ---
 name: code-review
-description: Full code review of a branch diff against Concertable's conventions, module-boundary rules, and microservice-isolation rules. Reviews the diff for correctness bugs plus convention/boundary/microservice anti-patterns (B2B and Customer are separate services that must only communicate via *.Contracts integration events — never each other's runtime), filters to high-confidence findings, writes them to a per-branch review markdown, and stamps the reviewed-up-to commit SHA at the top. Use when the user wants to "code-review my changes", "review this branch", "review the PR", or "do a full review". For re-reviewing only commits added since a previous review, use the `incremental-review` skill (a thin wrapper around this one). This is Concertable's own architecture-aware review and intentionally replaces the stock built-in code-review; the plain built-in `/review` (GitHub PR review) is left untouched.
+description: Full code review of a branch diff against Concertable's conventions, module-boundary rules, and microservice-isolation rules. Reviews the diff for correctness bugs plus convention/boundary/microservice anti-patterns (B2B and Customer are separate services that must only communicate via *.Contracts integration events — never each other's runtime) plus missing test coverage on changed paths, filters to high-confidence findings, writes them to a per-branch review markdown, and stamps the reviewed-up-to commit SHA at the top. Use when the user wants to "code-review my changes", "review this branch", "review the PR", or "do a full review". For re-reviewing only commits added since a previous review, use the `incremental-review` skill (a thin wrapper around this one). This is Concertable's own architecture-aware review and intentionally replaces the stock built-in code-review; the plain built-in `/review` (GitHub PR review) is left untouched.
 ---
 
 # code-review
@@ -20,23 +20,34 @@ Full code review of the current branch's diff, judged against Concertable's actu
 - A massive branch (100s/1000s of files) → `big-review` (stages this skill by area).
 - An exhaustive multi-agent pass → run a `Workflow` (ultracode).
 
-## Step 1 — Determine the review range
+## Step 1 — Confirm the checkout, then determine the review range
 
+This skill reviews the git repo **in the current working directory** — it takes no path argument and
+infers everything from CWD. When the branch lives in a git *worktree* (a sibling checkout like
+`…/<repo>.worktrees/<Branch>`), the session must already be running **inside that worktree**, or the
+diff is against the wrong repo/branch. So identify the checkout first, then the range:
+
+- **Checkout** = `git rev-parse --show-toplevel` + `git branch --show-current`. Echo both so a
+  wrong-checkout run is caught immediately, not silently reviewed.
 - **Start** = merge-base with master: `git merge-base master HEAD` (reviews the whole branch).
 - **End** = `HEAD` (`git rev-parse HEAD`).
 
 (The `incremental-review` wrapper overrides **Start** with the SHA from the review markdown's marker; do not change anything else.)
 
-Show the range to the user:
+Show the checkout + range to the user:
 
 ```powershell
+git rev-parse --show-toplevel
+git branch --show-current
 git rev-parse HEAD
 git merge-base master HEAD
 git log --oneline "<start>..HEAD"
 git diff "<start>..HEAD" --stat
 ```
 
-If the range is empty, say so and stop.
+If the range is empty **or** the current branch is `master`, that is the wrong-checkout symptom (the
+session was started in the main checkout, not the feature's worktree) — say so and stop rather than
+reviewing nothing.
 
 ## Step 1b — Create the review file NOW, before reviewing (mandatory)
 
@@ -106,6 +117,16 @@ Concertable is a multi-service system; **B2B, Customer, and Search are data serv
 - `is { }` capture instead of `is not null`; unnecessary braces on single-statement `if`/`else`.
 - Additive EF migrations (model changes re-scaffold via `./initial-migrations.ps1`).
 
+### Lens F — Test coverage of changed behaviour
+
+A behaviour the diff **adds or alters** that nothing asserts. The fix is concrete — name the test to write — so it obeys Step 4's no-hedge rule exactly like any other finding (the fix is "add test X", not "consider more tests"). `/review` catches these; this lens is why code-review now does too.
+
+- A new or rewritten service method / handler / endpoint whose success **and** failure branches have no covering test.
+- A refactor that re-routes a path through a new collaborator (e.g. reading from a repository instead of a service) with no test exercising the new wiring — even when behaviour is *preserved*: the wiring is new and unpinned.
+- A deleted test that removed the only coverage of a path that still exists.
+
+Do **not** flag: pure renames, DI-registration-only changes, generated code, or a path an existing test still exercises unchanged. This is not "add more tests" — it is one concrete missing assertion on a path this diff touched.
+
 ## Step 4 — Confidence filter
 
 For each candidate finding, judge whether it's real and will be hit in practice. **Drop anything below ~80/100 confidence.** Discard these false positives:
@@ -116,6 +137,14 @@ For each candidate finding, judge whether it's real and will be hit in practice.
 - Intentional changes that are part of the broader refactor.
 - Issues deliberately silenced in code (lint-ignore, documented exception).
 - A convention "violation" the relevant doc doesn't actually state.
+
+**No hedged findings — a kept finding is one you'd fix.** Every finding that survives this filter must
+name a *concrete fix you're prepared to apply*. Do not emit conditional/hedged findings — "sub-threshold
+but noting it", "only worth it if this is ever refactored", "non-blocking, your call". That middle
+ground is a trap: it's above the bar → state the fix (and it gets applied), or below the bar → drop it
+silently. Never the hedge. A hedged finding reads downstream as "human decision needed" — `address-review`
+defers it, and a reversible, clearly-correct, repo-rule-backed fix wrongly turns into a permission
+question instead of just being made. Severity `LOW` still means "fix it", not "maybe fix it".
 
 ## Step 5 — Finalize the review markdown
 
@@ -149,7 +178,7 @@ File shape:
 - Group by lens or severity, whichever reads better for the count.
 - Give each finding a short stable ID (e.g. `MS1` microservice, `MB1` module-boundary, `BUG1`, `SEED1`, `CV1` convention) so `incremental-review` runs can append new IDs without renumbering.
 - If a review file already exists, **append** a new dated `## Incremental review — <date>` section rather than overwriting prior findings; preserve existing status marks.
-- No findings → write `No issues found. Checked correctness, microservice isolation, module boundaries, seeding, and C# conventions.`
+- No findings → write `No issues found. Checked correctness, microservice isolation, module boundaries, seeding, C# conventions, and test coverage of changed paths.`
 
 ## Step 6 — Stamp the marker (mandatory)
 
