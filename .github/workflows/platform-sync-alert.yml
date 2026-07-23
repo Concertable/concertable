@@ -9,12 +9,12 @@ name: Platform sync alert
 # (Issue = email to watchers) instead of rotting unnoticed until it bites an unrelated build.
 #
 # Why workflow_run and not pull_request: this must run with the repo token from the DEFAULT branch so it
-# can write Issues/labels, and it keys off the Test run's own conclusion. It only ever acts on
+# can write Issues/labels, and it keys off the CI run's own conclusion. It only ever acts on
 # chore/platform-sync-* head branches; every other run is ignored.
 
 on:
   workflow_run:
-    workflows: ["Test"]
+    workflows: ["CI"]
     types: [completed]
 
 permissions:
