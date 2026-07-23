@@ -484,7 +484,7 @@ What shipped:
 >   expMonth, expYear }` regardless of the C# type name).
 > - `StripeE2EAccountResolver` already keys on `TenantSeedIds` (TS Phase 3) — unchanged.
 
-### Phase 6 — Invitations + member management + UI *(re-scaffold)*
+### Phase 6 — Invitations + member management + UI ✅ *(re-scaffold)*
 
 - `Tenant.Domain/TenantInvitationEntity` + configuration; the §6 endpoints with last-Owner
   invariants; the `TenantProvisioningHandler` invitation-first branch (the one place the
