@@ -244,7 +244,7 @@ the `qs` comma param serializer (it pairs with Search's `CommaDelimitedGenreArra
 other three send no array query params.
 
 Two layers, because *which* backends a site may call and with *what* token is an app-level decision
-(see [`app/web/shared/CLAUDE.md`](./shared/CLAUDE.md) and [`app/web/b2b/shared/CLAUDE.md`](./b2b/shared/CLAUDE.md)):
+(see [`app/web/shared/CLAUDE.md`](../web/shared/CLAUDE.md) and [`app/web/b2b/shared/CLAUDE.md`](../web/b2b/shared/CLAUDE.md)):
 
 - **`lib/*Client.ts` (core):** `axios.create()` only — the bare instance. No baseURL, no auth, no
   interceptors: core can't know the site's identity.
