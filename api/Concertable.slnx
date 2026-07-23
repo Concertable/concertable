@@ -224,6 +224,7 @@
     <Project Path="Concertable.Shared/tests/Concertable.E2ETests/Concertable.E2ETests.csproj" />
   </Folder>
   <Folder Name="/B2B/Tests/">
+    <Project Path="Concertable.B2B/tests/Concertable.B2B.ArchitectureTests/Concertable.B2B.ArchitectureTests.csproj" />
     <Project Path="Concertable.B2B/tests/Concertable.B2B.IntegrationTests.Fixtures/Concertable.B2B.IntegrationTests.Fixtures.csproj" />
     <Project Path="Concertable.B2B/tests/Concertable.B2B.Workers.UnitTests/Concertable.B2B.Workers.UnitTests.csproj" />
   </Folder>
