@@ -10,7 +10,7 @@ pattern here has a backend sibling — the two stacks are meant to read the same
 links out rather than restating it (two copies drift the day one changes).
 
 The tiers referenced throughout (`@concertable/shared` ⊃ `app/web/shared` ⊃ `@b2b/*` / `@customer/*`
-⊃ per-app `src/`) are defined in [`CLAUDE.md`](./CLAUDE.md) and the per-tier `CLAUDE.md` files. Read
+⊃ per-app `src/`) are defined in [`CLAUDE.md`](../web/CLAUDE.md) and the per-tier `CLAUDE.md` files. Read
 those first; this file assumes them.
 
 ---
@@ -53,7 +53,7 @@ function OpportunitySection({ opportunity }: { opportunity: Opportunity }) {
   `activeTenant.type === ...`) to pick behaviour. This is the disease, not the cure: it makes shared
   code know its audience. Move the branch to the app and inject the result through a slot. This has
   caused real bugs (shared review widgets firing Customer-service calls with manager tokens — see
-  [`shared/CLAUDE.md`](./shared/CLAUDE.md)).
+  [`shared/CLAUDE.md`](../web/shared/CLAUDE.md)).
 - **Parking product code in a wider tier "for now."** B2B concepts (opportunities, contracts,
   deals, payouts) in `app/web/shared` or `app/shared`; a customer route literal in `app/web/shared`.
   The wider tier compiles it into apps that can never use it, and customers gained access to B2B
