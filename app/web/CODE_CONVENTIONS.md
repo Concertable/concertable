@@ -258,6 +258,32 @@ Two layers, because *which* backends a site may call and with *what* token is an
 **Litmus:** *does this touch the user's token or tenant? → the builder chain in the app tree, not
 `lib/*Client.ts`.*
 
+## TanStack Query owns all server state — never fetch or mutate from `useEffect`
+
+Every server **read** is a `useQuery` and every server **write** is a `useMutation` (wrapped per the
+naming rule below). This is the frontend counterpart of the backend's *"Refit, not hand-rolled
+`HttpClient`"* ([`api/docs/CODE_PATTERNS.md`](../../api/docs/CODE_PATTERNS.md)): one sanctioned data
+layer, never a bespoke one. **Do not** call an `api/xApi.ts` method from a `useEffect`, and never
+hand-roll `useState` + `useEffect` + a promise to load or send server data.
+
+TanStack already owns caching, request **dedup** (including React StrictMode's dev double-mount),
+retries, routing errors to the central `QueryCache`/`MutationCache` handler, and `isPending`/`isError`
+state. A `useEffect` that fires a request re-implements all of that by hand and worse — it double-fires
+under StrictMode, drops the result when the component unmounts before the promise settles, and races on
+out-of-order responses. Those are the exact bugs the library exists to remove.
+
+This holds even for a **one-shot, fire-on-mount** action — e.g. accepting an invitation from an emailed
+link. It is a `useQuery` (which fires on mount and dedupes by key), not
+`useEffect(() => { api.accept(id).then(navigate) }, [])`. The success side-effects (set state, navigate)
+run at the tail of the `queryFn`, not in a follow-up effect reacting to the result.
+
+> **Anti-pattern:** `useEffect(() => { api.getX().then(setX) }, [])`, or an on-mount `mutate()` guarded
+> by a `useRef` to dodge the StrictMode re-fire. Both are a hand-rolled reimplementation of `useQuery` —
+> replace with the hook.
+
+**Litmus:** *reading or writing server data? → a `useQuery`/`useMutation` hook. Reaching for `useEffect`
+(or `useState`) to load or send it? → stop, that's the violation.*
+
 ## TanStack Query — raw hooks carry `Query`/`Mutation`; facades take the domain name
 
 Wrapping `useQuery`/`useMutation` in a per-feature custom hook is the
