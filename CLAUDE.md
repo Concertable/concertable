@@ -25,6 +25,27 @@ Branches are named `<Type>/<Name>` with the type prefix **capitalized**: `Featur
 
 **Docs and plans are exempt from branch hygiene.** Non-code markdown — `plans/*.md`, any `TECH_DEBT.md`, scratch notes — is non-breaking and never affects a build or another PR, so just commit it on whatever branch you're already on. Don't branch for it, don't split it into its own commit, and don't worry if `git add -A` sweeps a stray plan/doc into a feature commit — bundling doc-only changes is fine, not worth a force-push to tidy up.
 
+## Before enabling auto-merge — the branch MUST be current with base
+
+**Enabling auto-merge on a branch that's behind `master` is the miss to never repeat.** GitHub either
+holds the PR `BLOCKED`/`BEHIND` (branch protection requires it current) so it silently never merges, or
+it merges code that was never built against current `master`. **Update first, then enable — always.**
+This is a mandatory pre-step to the confirm loop below; `/merge` does it for you, so do it by hand only
+when you merged another way. Run it in the branch's **own checkout/worktree**, never the main checkout —
+a session sitting in the wrong checkout (e.g. reviewing a worktree PR from `main`) is exactly how the
+staleness goes unnoticed.
+
+```bash
+git fetch origin --quiet
+behind=$(git rev-list --count HEAD..origin/master)
+[ "$behind" -gt 0 ] && { echo ">>> $behind commits behind master — update before enabling auto-merge"; \
+  git merge origin/master --no-edit && <rebuild affected projects to 0 errors> && git push; }
+# only when $behind is 0 AND the rebuild is green → gh pr merge <PR> --auto
+```
+
+An `api/**` branch that's behind also risks a stale `<ConcertablePlatformVersion>` pin — the merge of
+`origin/master` brings the current pin with it, so updating first keeps that correct too.
+
 ## Confirming a PR merge — Bash background until-loop, never `Monitor`
 
 After enabling auto-merge (or when a merge lands async via the merge queue), confirm it with a **Bash `run_in_background` until-loop** that exits the instant `gh pr view <PR> --json state -q .state` is `MERGED` or `CLOSED` — one immediate completion notification.
