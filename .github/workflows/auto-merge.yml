@@ -65,6 +65,16 @@ jobs:
               -q '.data.repository.pullRequest.mergeQueueEntry != null' 2>/dev/null || echo unknown)"
             if [ "$queued" = "true" ]; then echo "PR #$n: already queued — leave it"; continue; fi
 
+            # Don't re-add a PR whose current head already failed in the queue, or it loops (eject -> re-add ->
+            # fail). Match by PR number; timestamp-gate because the queue branch's SHA is master's base, not the head.
+            head_time="$(gh pr view "$n" --json commits -q '.commits[-1].committedDate' 2>/dev/null)"
+            last_fail_time="$(gh run list --event merge_group -L 40 --json headBranch,conclusion,createdAt \
+              -q "[.[] | select(.headBranch | contains(\"/pr-$n-\")) | select(.conclusion==\"failure\") | .createdAt] | max // empty" 2>/dev/null)"
+            if [ -n "$last_fail_time" ] && [ -n "$head_time" ] && [[ "$last_fail_time" > "$head_time" ]]; then
+              echo "PR #$n: current head already failed a merge_group run ($last_fail_time > head $head_time) — ejected for cause, not re-adding. Push a fix to re-queue."
+              continue
+            fi
+
             state="$(gh pr view "$n" --json mergeStateStatus -q '.mergeStateStatus' 2>/dev/null || echo UNKNOWN)"
 
             # No strategy flag: the merge queue owns the method; passing --squash/--merge/--rebase makes
