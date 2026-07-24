@@ -65,6 +65,47 @@ apply reads the venue's opportunity to stamp the deal), **Deal** (an applying ar
 venue's terms), **Concert** (public listing). Filtered: **Venue**, **Artist** (owner-private reads,
 with browse split off to the public stance).
 
+## Repository naming — two orthogonal axes
+
+Two independent distinctions decide a repository's name. They look like one inconsistent scheme across
+services; they aren't. Read a name against the axis it belongs to and it stops feeling arbitrary.
+
+- **Audience — *who is this for*.** The visibility stance from the section above: unqualified
+  `XRepository` (tenant/party), `PublicXRepository` (anonymous marketplace), `AdminXRepository`
+  (platform operator). Carried by *which composed context* the repo injects, and it exists only in
+  **B2B** — the only tenant-scoped service. Name the audience, not the plumbing: `Public` says *why*
+  the filter is off and pairs with `Admin`; `Unscoped`/`CrossTenant` would name the mechanism and
+  `CrossTenant` collides with what `Admin` already does.
+- **Mutability — *can you write through it*.** The shared base surface in
+  `Concertable.DataAccess.Infrastructure`: `Repository<T>` (writable — `Add`/`Update`/`Remove`/
+  `SaveChanges`) vs `ReadRepository<T>` (read-only — `GetById`/`GetAll`/`Exists`). A read-only
+  projection of upstream events surfaces as `XReadRepository`.
+
+The axes are independent. B2B's `PublicXRepository` is read-only *and* unfiltered (read-only enforced
+at the context — `PublicDbContext.SaveChanges` throws); Customer's `XReadRepository` is read-only over
+a context that was never tenant-filtered to begin with.
+
+**The default is always unqualified.** Never prefix the safe/scoped/writable-owned case
+(`TenantXRepository` is noise). The common call site gets the filtered, owned-data repo; only the
+broader or read-only stance carries a mark — safe by default, deviation visible.
+
+**Different services name the read side with different words, and that is correct — the axis differs.**
+
+| Service | Read / unfiltered side | Axis it names |
+|---|---|---|
+| B2B | `PublicXRepository` / `AdminXRepository` | audience — marketplace vs tenant vs admin, on a composed unfiltered context |
+| Customer | `XReadRepository` | mutability — read-only replica of B2B events (written only by event handlers); no tenancy to speak of |
+| Search | `XHeaderRepository` / `XAutocompleteRepository` | neither — names the *shape* of the projection served |
+
+Forcing one word across all three would be worse: `Public` is meaningless in Customer (no marketplace
+audience, just replicas) and `Read` is too weak for B2B (it can't separate `Public` from `Admin`, both
+unfiltered). Match the word to the axis the service actually has.
+
+One deliberate exception to "only qualify with a sibling" above: Customer's `XReadRepository` set has
+no writable `XRepository` sibling for the same entity, yet keeps the `Read`. Here the suffix asserts a
+*capability* (this is an event-synced replica — you must not persist through it), not *which* of
+several audiences, so it earns its place uniformly across Customer's projection modules.
+
 ## Keyed strategy resolver
 
 **When a rule varies by a closed key** (typically `DealType`): one facade class implements the
