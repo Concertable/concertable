@@ -3,6 +3,10 @@
 # that resolves the live string from config/Key Vault; it never runs this script.
 $env:ConnectionStrings__B2BDb = "Server=localhost;Database=concertable-b2b;Trusted_Connection=True;TrustServerCertificate=True"
 $env:ConnectionStrings__CustomerDb = "Server=localhost;Database=concertable-customer;Trusted_Connection=True;TrustServerCertificate=True"
+$env:ConnectionStrings__PaymentDb = "Server=localhost;Database=concertable-payment;Trusted_Connection=True;TrustServerCertificate=True"
+# Payment.Web builds the full host at design time (unlike B2B/Customer), so it demands the Service Bus
+# connection too — never opened during scaffolding, only parsed.
+$env:ConnectionStrings__asb = "Endpoint=sb://localhost.servicebus.windows.net/;SharedAccessKeyName=x;SharedAccessKey=eA=="
 
 $dirs = @(
     "Concertable.Messaging\Concertable.Messaging.Infrastructure\Data\Migrations\Outbox",
