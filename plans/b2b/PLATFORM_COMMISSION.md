@@ -85,8 +85,8 @@ config is the live default, the persisted column is the snapshot.
 ### 1.4 A cancelled booking refunds the fee too
 
 Refund returns the **full** charged amount including the fee — no service was delivered, so Concertable
-keeps nothing. This is the behaviour `EscrowService` refund already has (`refundAmount = escrow.Amount /
-100m`) provided `Amount` remains the **total charged**; see §2.1.
+keeps nothing. This is the behaviour `EscrowService` refund already has (`refundAmount = escrow.Amount`, a
+`Money`) provided `Amount` remains the **total charged**; see §2.1.
 
 ## 2. The two money flows, and where the fee attaches
 
@@ -99,20 +99,28 @@ Under §1.2 the fee value comes from `PlatformFeeOptions` **inside Payment** at 
 | FlatFee | Escrow capture (hold ring-fenced at apply, captured at Accept) | `ManagerPaymentService.CreateHoldSessionAsync` ring-fences `gross + fee`; `EscrowService.CaptureAsync` snapshots it |
 | DoorSplit, Versus | Direct (`TransferData`) | `ManagerPaymentService.PayAsync` → charge `gross + fee`, transfer `gross` |
 
-**The arithmetic lives in ONE place — the `Money` type.** `gross + fee` is `Money.operator+`, not a
-hand-written sum smeared across call sites. The request/options carry `Money` gross + `Money` fee; the
-charge is `gross + fee`, the transfer is `gross`, the retained cut is the difference; the entity stores
-`(gross + fee).ToMinorUnits()` + the fee. No bare `(long)(x*100)` and no hand-written `+ fee` anywhere —
-that's the whole reason Money is the prerequisite (`../MONEY_VALUE_TYPE.md`).
+**The fee lives ONLY in `ManagerPaymentService`/`EscrowService`; the shared plumbing never hears the
+word.** Those two services compute `gross + fee` (`Money.operator+`) and hand absolute amounts to a
+dumb `PaymentManager`, which resolves accounts and calls Stripe. Settlement calls
+`SettleAsync(chargeAmount: gross + fee, payeeAmount: gross)` — the retained cut is the difference; the
+ticket path (no fee) calls `ChargeAsync(amount)` — one number, no fee concept. `StripeChargeOptions`
+carries `Amount` (the charge) + a nullable `TransferAmount` (`null` ⇒ forward the whole charge), never
+a `Fee`. `EscrowEntity`
+stores `Amount` (a `Money`, = `gross + fee`) and `PlatformFee` (a `Money`) as EF `ComplexProperty`
+pairs; `SettlementTransactionEntity` stores its `long` minor-unit `Amount` (= `(gross + fee).ToMinorUnits()`)
+and a `long PlatformFee` snapshot (the `Transaction` hierarchy stays `long`, per Money Phase 2). No bare
+`(long)(x*100)` and no hand-written `+ fee` anywhere — that's the whole reason Money is the prerequisite
+(`../MONEY_VALUE_TYPE.md`).
 
 ### 2.1 Escrow flow — a bigger charge/hold, an unchanged transfer
 
 No Stripe application-fee primitive is needed. Hold/charge `gross + fee`, then transfer only `gross`; the
 remainder stays on the platform balance.
 
-- `EscrowEntity` gains a **`PlatformFee`** column (pence), with `Amount` keeping its meaning as the **total
-  charged** (`gross + fee`).
-- `Release` transfers `Amount - PlatformFee`.
+- `EscrowEntity` gains a **`PlatformFee`** `Money` (mapped as a second EF `ComplexProperty` alongside
+  `Amount`), with `Amount` keeping its meaning as the **total charged** (`gross + fee`). `Create` takes
+  `gross` + `platformFee` and sets `Amount = gross + platformFee` (`Money.operator+`) internally.
+- `Release` transfers `Amount - PlatformFee` (`Money.operator-`).
 - `Refund` continues to refund `Amount` in full (§1.4) — unchanged, correct by construction.
 
 **Capture/hold-session note:** the FlatFee capture flow ring-fences `gross + fee` at *apply* time
@@ -155,9 +163,12 @@ Phase 1 changes the model → ends with `./initial-migrations.ps1` from `api/`.
   `Money(value, Currency.Gbp)` at read time.
 - `EscrowEntity.PlatformFee` (minor units) + `Create` takes it. **Re-scaffold.** `SettlementTransactionEntity`
   gains its `PlatformFee` snapshot column too (direct flow).
-- Request/options records (`HoldRequest`, `ChargeRequest`, `StripeHoldOptions`, `StripeChargeOptions`) carry
-  `Money` gross + `Money` fee (§2). Stripe intent client charges `gross + fee`, sets `TransferData.Amount =
-  gross.ToMinorUnits()` (direct); fakes mirror the arithmetic.
+- `IPaymentManager` splits into `ChargeAsync` (one amount — ticket pass-through) and
+  `SettleAsync(chargeAmount, payeeAmount)` (settlement), sharing one private account-resolution helper.
+  `ChargeRequest`/`HoldRequest` are **deleted**; `StripeChargeOptions` swaps `Fee` for a nullable
+  `TransferAmount`, `StripeHoldOptions` drops `Fee` (its `Amount` is the full hold total). Stripe intent
+  client charges `Amount`, sets `TransferData.Amount = (TransferAmount ?? Amount).ToMinorUnits()`; fakes
+  mirror it. The fee never appears below the two services (see §2).
 - `EscrowService.ReleaseAsync` transfers `Amount - PlatformFee`. Refund untouched (§2.1).
 - Apply the configured fee at the three sites in §2 (`DepositAsync`, `CreateHoldSessionAsync` + `CaptureAsync`,
   `PayAsync`), reading `IOptions<PlatformFeeOptions>`. **Customer flow is not touched** (not a settlement).
