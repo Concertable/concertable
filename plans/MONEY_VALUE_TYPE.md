@@ -61,17 +61,56 @@ Gate green: `dotnet build api/Concertable.slnx` 0 errors + Kernel unit tests pas
 **Gate:** build + `Concertable.Kernel` unit tests. `[skip-e2e]` (no behaviour). **Then:** merge → publish →
 follow `chore/platform-sync-*` to green so the new pin is on every service before Phase 2.
 
-### Phase 2 — Payment adopts `Money` internally + gRPC wire → int64 minor units
+### Phase 2 — Payment adopts `Money` internally + gRPC wire → int64 minor units ✅ CODE DONE
 
-Route all Payment money through `Money`, deleting the 6 (+fake) truncating casts. The gRPC wire moves from
-**decimal-as-invariant-string → `int64` minor units + `Currency`** (proto regenerates client *and* server
-together). **The published C# client interfaces (`IEscrowClient`/`IManagerPaymentClient`) keep their current
-`decimal` params in this phase** — the adapter owns the `Money`↔wire mapping — so **B2B needs no source
-change** and this phase carries no consumer break. Entities keep storing `long` minor units, but only ever
-via `Money.ToMinorUnits()`. EF: map money as minor-unit `long` + `Currency` (value conversion / `OwnsOne`).
+Routed all Payment money through `Money`, deleting the 6 (+fake) truncating casts (grep for
+`(long)(…*100)` / `/100m` in `Payment/src` returns zero). The gRPC wire moved from
+**decimal-as-invariant-string → a nested `Money` proto message (`int64 amount_minor` + `Currency` enum)**;
+the server maps `request.Amount.ToMoney()` → `Money.FromMinorUnits(minor, currency)`. The published C#
+client interfaces kept their `decimal` params (adapters wrap `Money.Gbp(amount).ToProtoMoney()`), so B2B
+needs **no source change** — but the **wire itself is a breaking cross-service contract** (see the gate).
+Internal service/request/Stripe-option signatures now carry `Money`.
 
-**Gate:** build + `Payment` unit + `B2B` integration + **E2E** (money movement changes representation, not
-amounts — but it's the payment path, so let the queue run it). Re-scaffold. Publish → sync.
+> **The wire IS a cross-service package boundary — this was the trap.** B2B/Customer consume the gRPC
+> client from the **published `Concertable.Payment.Client` package**, not source. So "client and server
+> regenerate together" only holds *inside* the package; across the B2B→Payment boundary the packaged
+> client lags the source server until the pin bumps. A hard wire swap therefore **cannot pass its own
+> merge-queue E2E** (new source server vs old packaged B2B client → `currency Unspecified` → 500 on every
+> escrow/settlement path) — it deadlocks: the E2E can't go green until the pin bumps, and the pin only
+> bumps after merge. This is a **package cut-over**, handled below.
+
+Decisions taken during implementation:
+- **`EscrowEntity.Amount` is now a `Money` value object mapped as an EF `ComplexProperty`** → flat
+  `Amount decimal(18,2)` + `Currency int` columns (matches the `ESignature` complex-type convention). This
+  **supersedes** the plan's original "keep the `long` minor-unit column" (M4): a proper value object beats a
+  leaked `AmountMinor`/`Currency`/computed-`Amount` triple, and re-scaffold is free (no data). `Transaction`
+  entities stay `long amount` (no currency) — they carry no casts and are reconstructed from webhook metadata
+  already in minor units; out of Phase 2's scope.
+- **`Money.Gbp(decimal)` DDD factory** to kill the repeated `new Money(x, Currency.Gbp)` — a **Kernel
+  (published-package) change**, so it shipped publish-first as its own PR (#205, merged; pin bumped to
+  `0.1.0-alpha.0.662`). This branch rebased onto that pin and now uses `Money.Gbp(x)` at every call site
+  (no whole-number `m` suffix needed — `int`→`decimal` is implicit). ✅ Done.
+- `initial-migrations.ps1` was missing Payment's `asb`/`PaymentDb` connection strings (Payment.Web builds the
+  full host at design time, unlike B2B/Customer) — added, so re-scaffold works standalone.
+- **B2B integration skipped locally**: its fixture mocks `IEscrowClient`/`IManagerPaymentClient`
+  (`ApiFixture.cs`), so it never touches the wire/server/`Money` — zero signal.
+- **The wire nested `Money` message collides with the Kernel `Money` VO** in the server request-mapper
+  files (both `Concertable.Payment.Grpc.Money` and `…Kernel.ValueObjects.Money` in scope) — resolved with a
+  `using Money = …Kernel…Money;` alias, the same collision-resolution the codebase uses for Stripe
+  `Transfer`/`Refund`.
+
+**Gate (a package cut-over, not a normal merge):**
+- build 0 errors ✅ + `Payment` unit (30) ✅ + re-scaffold ✅, on pin `0.1.0-alpha.0.662`.
+- This PR ships **`[skip-e2e]`** — the merge-queue E2E *cannot* pass here (packaged B2B client still on the
+  old wire; see the callout above). Skipping is correct, not a shortcut: E2E can only be meaningful once
+  the pin bumps and the client realigns.
+- **Sequence:** merge → `Payment.Client` republishes (new wire) → `chore/platform-sync-*` bumps every
+  consumer's pin to the new client → B2B/Customer now speak the new wire. **Then validate the realigned
+  system with a local API-E2E run (`e2e-api-debug`) on `master`** — the sync PR fast-merges without full
+  E2E, so this is the real end-to-end gate. Only after that green is Phase 2 truly done.
+
+Because the wire is now cut over in Phase 2, **Phase 5 no longer touches the wire** — it's reduced to the
+published C# `decimal → Money` signature swap (`ISettlementAmountResolver`, `IEscrowClient` params, etc.).
 
 ### Phase 3 — Platform fee, built on `Money` *(rides Phase 2; see PLATFORM_COMMISSION.md)*
 
