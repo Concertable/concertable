@@ -89,3 +89,36 @@ entity in isolation just makes it the odd column type.
 pass (entities, EF configs → `datetimeoffset`, DTOs, and the `TimeProvider.GetUtcNow()` call sites that
 currently `.UtcDateTime` them away). One coordinated migration-touching change, not piecemeal — a lone
 `DateTimeOffset` next to `DateTime` neighbours is worse than uniform.
+
+### `Service` is used as a catch-all suffix, hiding which collaborators are orchestrators
+
+Most `IXService` types are genuine services — they orchestrate domain logic over a repository
+(`IVenueService`, `IConcertService`, `IInvitationService`, and `ITicketPdfService`, which does inject
+`ITicketRepository`). But the suffix is also worn by types that own no persistence and are really
+value-producers or gateways, which flattens a distinction worth seeing at the injection site:
+
+- **`IContractPdfService` / `IInvoicePdfService`** (B2B Concert) — inject only `IPdfBlobCache`, no
+  repository; they render a document from data. The codebase already has `IPdfRenderer`, and
+  `CODE_PATTERNS.md` already blesses `Renderer.Render` — so these two are inconsistent with vocabulary
+  that exists here today.
+- **`IBlobStorageService`** (`Shared.Blob`) — wraps `BlobServiceClient` + options; a gateway/store.
+- **`IImageService`** (`Shared.Imaging`) — `Upload`/`Download`/`Replace`/`Delete`, sitting directly on
+  `IBlobStorageService`. Bytes in and out of a backing store, no domain logic; a store over a store.
+
+Why it matters beyond taste: "a service calling another service" is a smell worth spotting by name, and
+it only reads as a smell when *service* means orchestrator. When a pure value-producer is also called
+`Service`, every such call looks equally suspicious and the signal is lost. `CODE_PATTERNS.md` already
+states the rule this would follow — name the type as the agent-noun of its one method
+(`Renderer.Render`, `Resolver.Resolve`, `Calculator.Calculate`).
+
+Note the distinction is *shape*, not *staticness*: these are injected, config-bound collaborators, so
+`Helper`/`Utility` (which in sibling codebases denotes a `static` class of pure functions) would be the
+wrong correction — the honest names are `Factory` / `Renderer` / `Store`.
+
+**Resolves when:** a naming pass renames the non-orchestrator `*Service` types to their agent-noun,
+settling on one vocabulary — `Factory` creates values, `Renderer` produces a document, `Store` fronts a
+byte/blob backing store, and `Service` is reserved for repository-backed orchestrators:
+the two PDF ones → `*PdfRenderer` (alongside the existing `IPdfRenderer`);
+`IBlobStorageService` → `IBlobStore`; `IImageService` → `IImageStore`. Best done as one sweep — renaming
+the `Kernel` and `Shared.*` types republishes those packages and triggers a platform-sync, so batch them
+rather than paying that cost once per rename.

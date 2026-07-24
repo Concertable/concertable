@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, type ReactNode } from "react";
 
 import { Link } from "@tanstack/react-router";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -17,10 +17,16 @@ export interface NavLink {
 interface Props {
   links: NavLink[];
   profileItems: ProfileMenuItem[];
+  headerSlot?: ReactNode;
   onHeightChange: (height: number) => void;
 }
 
-export function Navbar({ links, profileItems, onHeightChange }: Readonly<Props>) {
+export function Navbar({
+  links,
+  profileItems,
+  headerSlot,
+  onHeightChange,
+}: Readonly<Props>) {
   const user = useAuthStore((s) => s.user);
   const ref = useRef<HTMLElement>(null);
 
@@ -76,6 +82,7 @@ export function Navbar({ links, profileItems, onHeightChange }: Readonly<Props>)
       </div>
 
       <div className="text-primary-foreground flex items-center gap-2 [&_button]:hover:bg-white/10">
+        {headerSlot}
         <NavbarSearch />
         {user && <Mailbox />}
         <ThemeToggle />

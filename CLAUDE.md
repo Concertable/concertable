@@ -19,11 +19,43 @@ Decide and act on reversible work (doc/plan edits, isolated commits, retrying a 
 
 **Before starting any work, create a relevant branch for it if you're not already on one** — never commit to `master` or an unrelated branch.
 
+**Fetch first, and branch from `origin/master` — never from local `master`.** Local `master` silently
+drifts behind, and branching off it builds and tests everything against a stale tree. That is how work
+already merged gets reinvented (a hand-rolled `IScoped` test refactor was written here against a
+13-commits-stale checkout, while `EventHandlerIntegrationTest` already existed on `master`), and how a
+PR later trips the auto-merge currency rule below — by which point the wasted work is already done.
+The staleness is invisible locally: the build is green, because it is green *against the old tree*.
+
+```bash
+git fetch origin --quiet && git checkout -b <Type>/<Name> origin/master
+```
+
 **Don't branch to refactor code from the feature you're already on.** If the code only lives on the current feature branch (not yet in `master`), the refactor is part of that feature — stay on the branch and commit there. A new `Refactor/<Name>` branch is only for code **already merged to `master`**. Branching off an in-flight feature fragments it across two PRs and orphans the original.
 
 Branches are named `<Type>/<Name>` with the type prefix **capitalized**: `Feature/`, `Refactor/`, `Bug/`, `Fix/`, etc. Never create a lowercase variant (`feature/...`). Windows' case-insensitive filesystem cannot hold two casings of the same ref, so a remote with both `feature/x` and `Feature/x` breaks `git fetch`/`git pull` for everyone ("cannot lock ref ... File exists"). Before creating a branch, match the casing of any existing branch of the same name exactly.
 
 **Docs and plans are exempt from branch hygiene.** Non-code markdown — `plans/*.md`, any `TECH_DEBT.md`, scratch notes — is non-breaking and never affects a build or another PR, so just commit it on whatever branch you're already on. Don't branch for it, don't split it into its own commit, and don't worry if `git add -A` sweeps a stray plan/doc into a feature commit — bundling doc-only changes is fine, not worth a force-push to tidy up.
+
+## Before enabling auto-merge — the branch MUST be current with base
+
+**Enabling auto-merge on a branch that's behind `master` is the miss to never repeat.** GitHub either
+holds the PR `BLOCKED`/`BEHIND` (branch protection requires it current) so it silently never merges, or
+it merges code that was never built against current `master`. **Update first, then enable — always.**
+This is a mandatory pre-step to the confirm loop below; `/merge` does it for you, so do it by hand only
+when you merged another way. Run it in the branch's **own checkout/worktree**, never the main checkout —
+a session sitting in the wrong checkout (e.g. reviewing a worktree PR from `main`) is exactly how the
+staleness goes unnoticed.
+
+```bash
+git fetch origin --quiet
+behind=$(git rev-list --count HEAD..origin/master)
+[ "$behind" -gt 0 ] && { echo ">>> $behind commits behind master — update before enabling auto-merge"; \
+  git merge origin/master --no-edit && <rebuild affected projects to 0 errors> && git push; }
+# only when $behind is 0 AND the rebuild is green → gh pr merge <PR> --auto
+```
+
+An `api/**` branch that's behind also risks a stale `<ConcertablePlatformVersion>` pin — the merge of
+`origin/master` brings the current pin with it, so updating first keeps that correct too.
 
 ## Confirming a PR merge — Bash background until-loop, never `Monitor`
 

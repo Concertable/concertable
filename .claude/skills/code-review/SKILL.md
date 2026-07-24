@@ -20,23 +20,34 @@ Full code review of the current branch's diff, judged against Concertable's actu
 - A massive branch (100s/1000s of files) → `big-review` (stages this skill by area).
 - An exhaustive multi-agent pass → run a `Workflow` (ultracode).
 
-## Step 1 — Determine the review range
+## Step 1 — Confirm the checkout, then determine the review range
 
+This skill reviews the git repo **in the current working directory** — it takes no path argument and
+infers everything from CWD. When the branch lives in a git *worktree* (a sibling checkout like
+`…/<repo>.worktrees/<Branch>`), the session must already be running **inside that worktree**, or the
+diff is against the wrong repo/branch. So identify the checkout first, then the range:
+
+- **Checkout** = `git rev-parse --show-toplevel` + `git branch --show-current`. Echo both so a
+  wrong-checkout run is caught immediately, not silently reviewed.
 - **Start** = merge-base with master: `git merge-base master HEAD` (reviews the whole branch).
 - **End** = `HEAD` (`git rev-parse HEAD`).
 
 (The `incremental-review` wrapper overrides **Start** with the SHA from the review markdown's marker; do not change anything else.)
 
-Show the range to the user:
+Show the checkout + range to the user:
 
 ```powershell
+git rev-parse --show-toplevel
+git branch --show-current
 git rev-parse HEAD
 git merge-base master HEAD
 git log --oneline "<start>..HEAD"
 git diff "<start>..HEAD" --stat
 ```
 
-If the range is empty, say so and stop.
+If the range is empty **or** the current branch is `master`, that is the wrong-checkout symptom (the
+session was started in the main checkout, not the feature's worktree) — say so and stop rather than
+reviewing nothing.
 
 ## Step 1b — Create the review file NOW, before reviewing (mandatory)
 

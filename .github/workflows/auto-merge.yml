@@ -9,68 +9,88 @@ name: Auto-merge
 # it cannot make a red PR land. No required-review rule, so a green PR merges unreviewed (the accepted
 # trade for a queue-gated personal repo — mark ready only when you mean it).
 #
-# WHY it also runs on `check_suite: completed`, not just PR open/ready:
-# enabling auto-merge while the PR's checks are still PENDING (the `opened` case) can leave the PR
-# CLEAN + auto-merge-ON but NEVER admitted to the queue. GitHub fails to re-evaluate admission after a
-# required check resolves to `skipped` — and our non-code classifier skips e2e/unit/integration on the
-# PR, so those required checks end `skipped`, not `success`. The PR then sits green-but-un-queued
-# forever (this once cost an hour on a docs-only PR: CLEAN, auto-merge-on, queue idle, never admitted).
-# Re-asserting auto-merge with a disable -> enable TOGGLE *after* checks have concluded forces GitHub to
-# re-evaluate and admit the PR — the exact manual step that unstuck it. So: enable early (happy path),
-# and re-assert on check-suite completion (the reliable path).
+# THE STALL THIS KILLS: enabling auto-merge while a required check is still PENDING can leave a PR
+# CLEAN + auto-merge-ON but NEVER admitted to the queue — GitHub stops re-evaluating admission once a
+# required check resolves to `skipped` (our non-code classifier skips e2e/unit/integration, so those
+# required checks end `skipped`, not `success`). The PR sits green-but-un-queued forever. The cure is a
+# disable -> enable TOGGLE once the PR is mergeable, which forces GitHub to re-evaluate and admit it.
+#
+# WHY NOT `check_suite: completed` (the previous, silently-dead approach): GitHub does not dispatch
+# check_suite / check_run events for suites created by GITHUB_TOKEN (recursion guard), and every check
+# here is a GITHUB_TOKEN Actions run — so that trigger fired exactly zero times. The reliable signals:
+#   - `workflow_run: completed` on CI DOES fire after a GITHUB_TOKEN workflow finishes (its purpose), so
+#     the re-assert runs promptly once a PR's checks conclude;
+#   - `schedule` fires unconditionally as a backstop, catching anything the events miss.
+# The signal we actually want ("required checks concluded") is not directly observable, so instead of
+# targeting one PR we idempotently sweep every ready PR on each trigger and nudge only the stuck ones.
 
 on:
   pull_request:
     types: [opened, ready_for_review]
     branches: [master]
-  check_suite:
+  workflow_run:
+    workflows: [CI]
     types: [completed]
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
 
 permissions:
   contents: write
   pull-requests: write
 
+concurrency:
+  group: auto-merge-reassert
+  cancel-in-progress: false
+
 jobs:
-  enable-auto-merge:
+  reassert:
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       GH_REPO: ${{ github.repository }}
     steps:
-      - name: Enable / re-assert auto-merge on ready PRs into master
+      - name: Re-assert auto-merge on ready PRs stuck outside the queue
         run: |
           owner="${GH_REPO%%/*}"; repo="${GH_REPO##*/}"
 
-          # Which PR(s) this event is about. A pull_request event carries one; a check_suite event
-          # carries every PR the completed suite covers (empty for pushes to a branch with no PR).
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            nums="${{ github.event.pull_request.number }}"
-          else
-            nums="$(jq -r '[.check_suite.pull_requests[].number] | unique | join(" ")' "$GITHUB_EVENT_PATH")"
-          fi
-          [ -n "$nums" ] || { echo "No associated PRs — nothing to do."; exit 0; }
+          nums="$(gh pr list --state open --base master --draft=false --json number -q '.[].number' 2>/dev/null)"
+          [ -n "$nums" ] || { echo "No open ready PRs into master — nothing to do."; exit 0; }
 
           for n in $nums; do
             [ -n "$n" ] || continue
 
-            info="$(gh pr view "$n" --json state,isDraft,baseRefName -q '[.state,(.isDraft|tostring),.baseRefName]|@tsv' 2>/dev/null)" \
-              || { echo "PR #$n: not viewable — skip"; continue; }
-            IFS=$'\t' read -r state draft base <<< "$info"
-            if [ "$state" != "OPEN" ] || [ "$draft" != "false" ] || [ "$base" != "master" ]; then
-              echo "PR #$n: skip (state=$state draft=$draft base=$base)"; continue
-            fi
-
-            # Already in the queue? Leave it alone — a toggle here would DISABLE auto-merge and pull it
-            # back out of the queue (or interrupt an in-flight merge). Only act on the stuck state:
-            # ready + not queued.
+            # Already queued (or mid-merge)? Never toggle — that would DISABLE auto-merge and eject it.
             queued="$(gh api graphql -f query="{repository(owner:\"$owner\",name:\"$repo\"){pullRequest(number:$n){mergeQueueEntry{state}}}}" \
               -q '.data.repository.pullRequest.mergeQueueEntry != null' 2>/dev/null || echo unknown)"
             if [ "$queued" = "true" ]; then echo "PR #$n: already queued — leave it"; continue; fi
 
-            echo "PR #$n: (re)asserting auto-merge to force queue admission"
+            # Don't re-add a PR whose current head already failed in the queue, or it loops (eject -> re-add ->
+            # fail). Match by PR number; timestamp-gate because the queue branch's SHA is master's base, not the head.
+            head_time="$(gh pr view "$n" --json commits -q '.commits[-1].committedDate' 2>/dev/null)"
+            last_fail_time="$(gh run list --event merge_group -L 40 --json headBranch,conclusion,createdAt \
+              -q "[.[] | select(.headBranch | contains(\"/pr-$n-\")) | select(.conclusion==\"failure\") | .createdAt] | max // empty" 2>/dev/null)"
+            if [ -n "$last_fail_time" ] && [ -n "$head_time" ] && [[ "$last_fail_time" > "$head_time" ]]; then
+              echo "PR #$n: current head already failed a merge_group run ($last_fail_time > head $head_time) — ejected for cause, not re-adding. Push a fix to re-queue."
+              continue
+            fi
+
+            state="$(gh pr view "$n" --json mergeStateStatus -q '.mergeStateStatus' 2>/dev/null || echo UNKNOWN)"
+
             # No strategy flag: the merge queue owns the method; passing --squash/--merge/--rebase makes
-            # gh reject the command. Disable first (ignore failure if it wasn't enabled), then enable —
-            # the toggle is what forces GitHub to re-evaluate admission after checks concluded.
-            gh pr merge --disable-auto "$n" >/dev/null 2>&1 || true
-            gh pr merge --auto "$n"
+            # gh reject the command.
+            case "$state" in
+              CLEAN|UNSTABLE)
+                # Mergeable but not queued = the stall. Toggle to force GitHub to re-evaluate admission.
+                echo "PR #$n: state=$state, not queued — toggling auto-merge to force admission"
+                gh pr merge --disable-auto "$n" >/dev/null 2>&1 || true
+                gh pr merge --auto "$n"
+                ;;
+              *)
+                # Not yet mergeable (pending / behind / blocked): just ensure auto-merge is enabled — the
+                # queue admits it when it goes green, and the next sweep toggles it if it stalls CLEAN.
+                echo "PR #$n: state=$state — ensuring auto-merge is enabled, waiting on checks"
+                gh pr merge --auto "$n" >/dev/null 2>&1 || true
+                ;;
+            esac
           done

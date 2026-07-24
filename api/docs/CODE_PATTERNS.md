@@ -8,8 +8,9 @@ pattern — don't invent a local variant. Sibling of [`CODE_CONVENTIONS.md`](./C
 
 Visibility comes from **what a context is built from**, not from disabling rules after the fact.
 Per-query `IgnoreQueryFilters` calls are banned — "add a global rule, then remove it for half the
-callers" hides the stance at every call site and is unauditable. The codebase has zero
-`IgnoreQueryFilters` calls; the building blocks (all in `B2B.DataAccess.Infrastructure`):
+callers" hides the stance at every call site and is unauditable. This is **compiler-enforced**:
+`IgnoreQueryFilters` is a banned API (`BannedApiAnalyzers`, `RS0030` = error — see `api/BannedSymbols.txt`),
+so the codebase has zero calls; the building blocks (all in `B2B.DataAccess.Infrastructure`):
 
 - **The module's `XConfigurationProvider` is the anemic core** — pure table mappings, zero tenancy.
   Both stances below compose it; neither modifies it. Both stances are **per module** — a cross-module
