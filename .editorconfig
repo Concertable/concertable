@@ -45,9 +45,11 @@ dotnet_naming_style.camel_case.capitalization = camel_case
 dotnet_naming_style.pascal_case.capitalization = pascal_case
 
 # Generated EF migrations are re-scaffolded by api/initial-migrations.ps1 — exempt from the analyzers
-# above (sealing/naming/banned-API/logging), since any edit would be wiped on the next scaffold.
+# above (sealing/naming/banned-API/logging/namespaces), since any edit would be wiped on the next scaffold.
 [**/Migrations/**.cs]
 dotnet_diagnostic.MA0053.severity = none
 dotnet_diagnostic.CA1848.severity = none
 dotnet_diagnostic.RS0030.severity = none
 dotnet_diagnostic.IDE1006.severity = none
+dotnet_diagnostic.IDE0161.severity = none
+dotnet_diagnostic.IDE0130.severity = none
