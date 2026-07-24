@@ -157,7 +157,11 @@ Both phases are independently shippable and end green. Gate for every phase:
 `dotnet build api/Concertable.slnx` (0 errors) + affected unit + integration tests via `integration-debug`.
 Phase 1 changes the model → ends with `./initial-migrations.ps1` from `api/`.
 
-### Phase 1 — Payment charges the flat fee *(the phase where money changes)*
+### Phase 1 — Payment charges the flat fee *(the phase where money changes)* ✅ DONE (local gate green; unmerged)
+
+> Landed on `Feature/PlatformCommission`: build 0 errors, `Payment` unit 39/39, `B2B.Concert` integration
+> 129/129, re-scaffold committed. Default fee **0** → behaviour-identical; E2E (no `[skip-e2e]`) runs in the
+> merge queue. Phase 2 below is unstarted.
 
 - `PlatformFeeOptions` (flat `decimal`, default **0**) bound from config in Payment, wrapped as
   `Money(value, Currency.Gbp)` at read time.
