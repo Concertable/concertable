@@ -53,9 +53,10 @@ hence this plan, so phase 2 isn't forgotten.
   `AzureServiceBusReceiver` catches every handler exception, logs it via
   `FailedProcessingEvent(messageType, ex)`, and abandons-with-backoff → retry/DLQ. The anti-pattern is
   `TryParse ? x : <default>`, which would process a malformed payment event silently.
-- [x] `TicketPurchaseCompletionTests` (Customer): `IScoped<IIntegrationEventHandler<PaymentSucceededEvent>>`
-  replaces the hand-rolled `CreateScope()`/`GetRequiredService`. **Its metadata keys stay literal** until
-  Customer's pin includes `PaymentMetadataKeys` (phase 2).
+- [x] No test change needed: `TicketPurchaseCompletionTests` on `master` already derives from
+  `EventHandlerIntegrationTest` (dispatching via `DispatchAsync`, reading back through
+  `IScoped<TicketDbContext>`) — landed by `dba3a176` / `44d02253`. Only its **metadata keys** are still
+  literal, which is phase 2 (gated on Customer's pin).
 - Gate: `dotnet build api/Concertable.slnx` = 0 errors; `Concertable.Payment.UnitTests` 30/30.
 
 ## Phase 2 — B2B + Customer sweep (BLOCKED on the platform-sync pin bump)
