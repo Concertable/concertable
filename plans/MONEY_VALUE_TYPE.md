@@ -61,7 +61,7 @@ Gate green: `dotnet build api/Concertable.slnx` 0 errors + Kernel unit tests pas
 **Gate:** build + `Concertable.Kernel` unit tests. `[skip-e2e]` (no behaviour). **Then:** merge → publish →
 follow `chore/platform-sync-*` to green so the new pin is on every service before Phase 2.
 
-### Phase 2 — Payment adopts `Money` internally + gRPC wire → int64 minor units ✅ CODE DONE
+### Phase 2 — Payment adopts `Money` internally + gRPC wire → nested `Money` message ✅ DONE (validated)
 
 Routed all Payment money through `Money`, deleting the 6 (+fake) truncating casts (grep for
 `(long)(…*100)` / `/100m` in `Payment/src` returns zero). The gRPC wire moved from
@@ -104,10 +104,11 @@ Decisions taken during implementation:
 - This PR ships **`[skip-e2e]`** — the merge-queue E2E *cannot* pass here (packaged B2B client still on the
   old wire; see the callout above). Skipping is correct, not a shortcut: E2E can only be meaningful once
   the pin bumps and the client realigns.
-- **Sequence:** merge → `Payment.Client` republishes (new wire) → `chore/platform-sync-*` bumps every
-  consumer's pin to the new client → B2B/Customer now speak the new wire. **Then validate the realigned
-  system with a local API-E2E run (`e2e-api-debug`) on `master`** — the sync PR fast-merges without full
-  E2E, so this is the real end-to-end gate. Only after that green is Phase 2 truly done.
+- **Sequence (done):** #207 merged (`[skip-e2e]`) → `Payment.Client` republished → sync PR #208 bumped
+  every pin to `0.1.0-alpha.0.664` → B2B/Customer now speak the new wire. The sync PR's merge-queue
+  skipped the real E2E (pin-bump-only classifier), so it was validated by a **local API-E2E run on
+  `master`: B2B `Concertable.B2B.E2ETests` 10/10 green** (all ConcertDraft/Cancelled/Finished escrow +
+  settlement paths — the ones that 500'd on `currency Unspecified` pre-bump). Cut-over proven end to end.
 
 Because the wire is now cut over in Phase 2, **Phase 5 no longer touches the wire** — it's reduced to the
 published C# `decimal → Money` signature swap (`ISettlementAmountResolver`, `IEscrowClient` params, etc.).
