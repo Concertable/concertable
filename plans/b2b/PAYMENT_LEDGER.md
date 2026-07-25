@@ -175,17 +175,33 @@ platform-sync break (same payoff as `PLATFORM_COMMISSION` §3).
 - ✅ **E2E DB reconciliation assertions on** (helpers already in `PaymentDb`): `ConcertFinishedTests`
   (settlement — balances, `PlatformRevenue == £10`) and `ConcertCancelledTests` (escrow — hold+refund =
   2 txns, balances, `PlatformRevenue == 0`; the `count == 2` proves the async `EscrowConfirmedHandler` post).
-- Point "platform earned" / "owed to X" reads at the ledger. **(No such product read exists yet — see
-  checkpoint note below.)**
-- **Reconciliation seam:** validate the internal ledger against Stripe. ⚠️ **The plan assumed the platform
-  cut is a Stripe `application_fee`; the implementation does not use application fees** — it holds the fee
-  back via `transfer_data.amount` (charge `gross+fee`, transfer `gross`), so the cut is
-  `charge − transfer` on the platform's `balance_transaction`, and there are **no** `application_fee`
-  objects to reconcile against. Reconciliation must derive the cut from `charge − transfer` /
-  `balance_transaction`, not `application_fee`.
-- **CHECKPOINT (from §0.3):** if this reconciliation view answers every real reporting/audit need,
-  **stop here** — do not build Phases 4–5; the columns can stay. Record the decision, close the plan.
-- **Gate:** build + integration + reconciliation tests.
+- ✅ **"Platform earned" / "owed to X" reads — N/A, nothing to repoint.** A repo-wide sweep found **no
+  aggregate revenue/owed read anywhere** (only a per-row `PlatformFee` snapshot in the transaction-list
+  DTO and the operational `EscrowService` release/refund math). Building a bespoke earnings/owed read API
+  with no consumer would be exactly the over-build §0.3 / risk L3 warns against, so it was not built.
+- ✅ **Reconciliation seam landed as the E2E correctness gate** (`ConcertFinishedTests`): the internal
+  ledger's `PlatformRevenue` for a settled booking is reconciled against Stripe's **actual money
+  movement** — `charge − transfer` on the real PaymentIntent — not a literal. ⚠️ **Plan-assumption
+  correction:** the platform cut is **not** a Stripe `application_fee` (the plan assumed it was); the
+  settlement holds the fee back via `transfer_data.amount` (charge `gross+fee`, transfer `gross`), so the
+  cut is `charge − transfer` on the platform `balance_transaction` and there are **no** `application_fee`
+  objects. Reconciliation is therefore against `charge − transfer`. A standalone *runtime* period-
+  reconciliation job was deliberately **not** built — no consumer exists, and the E2E gate already
+  satisfies risk L2 (divergence fails the check, doesn't rot silently).
+- **CHECKPOINT (from §0.3) — recommendation: STOP (do not build Phases 4–5), pending sign-off.** The
+  evidence all points one way: (1) Stripe is already an authoritative fee ledger and answers "what did we
+  earn on booking X / period Y" via `charge − transfer`, reconcilably today; (2) **no** product feature
+  reads aggregate platform-earned/owed from anywhere, so there is no reporting/audit need the current
+  ledger + Stripe reconciliation fails to meet; (3) the internal ledger is now written on every flow
+  (sync + async, exactly-once) and reconciled against Stripe in E2E. Phases 4–5's payoff (single-source
+  revenue truth + removing the harmless `PlatformFee` snapshot columns) has **no consumer demanding it**.
+  Per §0.3 this is the checkpoint firing as designed, not a failure. Because closing forecloses a
+  documented multi-phase plan on a forward-looking judgment, this is surfaced for a one-line sign-off
+  rather than closed unilaterally. **On sign-off:** `git rm` this plan + tick the `PLATFORM_COMMISSION.md`
+  §6 / `LAUNCH_PLAN.md` lines, and resume `PLATFORM_COMMISSION` Phase 2 (pricing transparency), which was
+  deferred behind this plan by §0.
+- **Gate met:** `dotnet build api/Concertable.slnx` 0 errors + 70 Payment unit tests green. E2E
+  reconciliation runs in the merge queue.
 
 ### Phase 4 — Operational entities reference the ledger *(link)*
 - `EscrowEntity` / `SettlementTransactionEntity` gain a FK/correlation to their `LedgerTransactionEntity`
