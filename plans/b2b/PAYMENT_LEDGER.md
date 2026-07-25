@@ -165,15 +165,24 @@ platform-sync break (same payoff as `PLATFORM_COMMISSION` §3).
   phase.
 
 ### Phase 3 — Read the ledger + reconcile against Stripe *(make it trustworthy)*
-- **First close the write gap from Phase 2:** post at the async settlement-completion sites (settlement
-  webhook completion; `EscrowConfirmedHandler`) so 3DS/webhook-confirmed flows are on the ledger too —
-  exactly-once via a single on-transition-to-complete post site. Then turn on the E2E DB reconciliation
-  assertions (helpers already in `PaymentDb`).
-- Point "platform earned" / "owed to X" reads at the ledger.
-- **Reconciliation seam:** validate the internal ledger against Stripe's `balance_transaction` /
-  `application_fee` (the authoritative external ledger) — a test + a runtime check that internal
-  `PlatformRevenue` matches Stripe's collected application fees for a period. This is the investigation's
-  "reconcile-from-Stripe-first" increment, landed as the correctness gate on our own ledger.
+- ✅ **Write gap from Phase 2 closed:** the completion transition is now the post site.
+  `TransactionEntity.Complete()` returns whether it actually transitioned; `TransactionService.CompleteAsync`
+  (settlement webhook) posts `DirectSettlement` iff it transitioned **and** the tx is a settlement, so a
+  webhook retry (or a sync-then-webhook double) can't double-post — exactly-once. `EscrowConfirmedHandler`
+  posts `EscrowHold` after the async confirm (its pre-existing Pending guard gives the same idempotency).
+  Sync `PayAsync` reuses the same `LedgerPostings.DirectSettlement(entity)` construction. Ticket
+  transactions still don't post (deferred — no `BookingId`).
+- ✅ **E2E DB reconciliation assertions on** (helpers already in `PaymentDb`): `ConcertFinishedTests`
+  (settlement — balances, `PlatformRevenue == £10`) and `ConcertCancelledTests` (escrow — hold+refund =
+  2 txns, balances, `PlatformRevenue == 0`; the `count == 2` proves the async `EscrowConfirmedHandler` post).
+- Point "platform earned" / "owed to X" reads at the ledger. **(No such product read exists yet — see
+  checkpoint note below.)**
+- **Reconciliation seam:** validate the internal ledger against Stripe. ⚠️ **The plan assumed the platform
+  cut is a Stripe `application_fee`; the implementation does not use application fees** — it holds the fee
+  back via `transfer_data.amount` (charge `gross+fee`, transfer `gross`), so the cut is
+  `charge − transfer` on the platform's `balance_transaction`, and there are **no** `application_fee`
+  objects to reconcile against. Reconciliation must derive the cut from `charge − transfer` /
+  `balance_transaction`, not `application_fee`.
 - **CHECKPOINT (from §0.3):** if this reconciliation view answers every real reporting/audit need,
   **stop here** — do not build Phases 4–5; the columns can stay. Record the decision, close the plan.
 - **Gate:** build + integration + reconciliation tests.
