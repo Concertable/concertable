@@ -112,17 +112,21 @@ that change the model end with `./initial-migrations.ps1` from `api/` (re-scaffo
 / `IManagerPaymentClient` signatures are untouched, so this is a sequence of ordinary single-PRs, no
 platform-sync break (same payoff as `PLATFORM_COMMISSION` §3).
 
-### Phase 1 — Ledger schema + posting engine *(foundational, zero behaviour change)*
-- New entities `LedgerAccountEntity` / `LedgerTransactionEntity` / `LedgerEntryEntity` in
-  `Concertable.Payment.Domain`; EF configs + a `ledger`-prefixed table set (extend `Schema.Tables`);
-  register on `PaymentDbContext`. Amounts are `long` minor units + `Currency` (consistent with the
-  `Transaction` hierarchy and `Money.ToMinorUnits()`).
-- A domain **posting factory** that builds a `LedgerTransactionEntity` from a set of legs and **throws if
-  they don't sum to zero** (the double-entry invariant, by construction). An `ILedger` /
-  `LedgerPostingService` façade to post one balanced transaction + resolve/create accounts on demand.
-- **Nothing calls it yet** → zero behaviour change, nothing seeded.
-- **Gate:** build + Payment unit tests (balance-or-throw invariant, immutability, account-on-demand). No
-  E2E (nothing runtime exercises it). **`[skip-e2e]`** on the PR.
+### Phase 1 — Ledger schema + posting engine *(foundational, zero behaviour change)* — ✅ DONE
+- ✅ New entities `LedgerAccountEntity` / `LedgerTransactionEntity` / `LedgerEntryEntity` in
+  `Concertable.Payment.Domain`; EF configs + a `Ledger`-prefixed table set (extended `Schema.Tables`);
+  registered on `PaymentDbContext`. Amounts are `long` minor units + `Currency`. Entries store a
+  **signed** minor-unit `Amount` (Debit `+`, Credit `−`) alongside `Direction`; the balance invariant is
+  `Sum(Amount) == 0`.
+- ✅ Domain posting factory `LedgerTransactionEntity.Post(...)` — validates ≥2 legs, single currency,
+  positive magnitudes, **balance-or-throw** by construction; `Entries` exposed as a defensive
+  `AsReadOnly()` (no post-construction mutation). Façade `ILedger`/`LedgerPostingService` posts one
+  balanced transaction and **resolves/creates accounts on demand** (per-call cache + a **non-filtered**
+  unique index on `(Type, OwnerId, Currency)` so the null-owner platform accounts fail closed on races).
+- ✅ **Nothing calls it yet** → zero behaviour change, nothing seeded.
+- ✅ **Gate met:** `dotnet build api/Concertable.slnx` 0 errors + 54 Payment unit tests green
+  (balance-or-throw, immutability, account-on-demand). Model re-scaffolded via `./initial-migrations.ps1`.
+  **`[skip-e2e]`** on the PR (nothing runtime exercises it).
 
 ### Phase 2 — Post to the ledger from every money flow *(expand: write alongside)*
 - At each settlement site, after the money moves, post the matching balanced ledger transaction:
