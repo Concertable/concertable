@@ -128,22 +128,47 @@ platform-sync break (same payoff as `PLATFORM_COMMISSION` §3).
   (balance-or-throw, immutability, account-on-demand). Model re-scaffolded via `./initial-migrations.ps1`.
   **`[skip-e2e]`** on the PR (nothing runtime exercises it).
 
-### Phase 2 — Post to the ledger from every money flow *(expand: write alongside)*
-- At each settlement site, after the money moves, post the matching balanced ledger transaction:
-  - **Direct** — `ManagerPaymentService.PayAsync` (the §2 example posting).
-  - **Escrow deposit / capture** — `EscrowService.DepositAsync` / `CaptureAsync` (hold recognised;
-    fee recognised at capture per `PLATFORM_COMMISSION` §2.1).
-  - **Escrow release** — `EscrowService.ReleaseAsync` (`Payable:{payee}` settled by the transfer).
-  - **Escrow refund** — `EscrowService.RefundAsync` (opposing transaction — full amount, incl. fee, per
-    `PLATFORM_COMMISSION` §1.4; a correction posting, never an edit).
-  - **Ticket** pass-through (`ChargeAsync`) — no fee leg; a straight payer→payee posting if in scope.
-- **Additive only** — operational entities still carry their columns; the ledger is written *alongside*
-  as the emerging source of truth. Real money movement is unchanged.
-- **Gate:** build + Payment unit + integration asserting, per flow and per contract type, that the
-  postings balance and reconcile to the money actually moved (charge total, payee amount, fee). Behaviour
-  of real money movement is unchanged, so integration covers it; let the merge queue run E2E (no token).
+### Phase 2 — Post to the ledger from every money flow *(expand: write alongside)* — ✅ DONE
+- ✅ `LedgerPostings` (Infrastructure) builds the balanced posting per flow; `ILedger` injected into
+  `ManagerPaymentService` / `EscrowService` posts it after each money-confirmed operational save. The
+  fee leg is **omitted when the fee is 0** (default fee is £0 → a zero-magnitude leg would trip the
+  domain's positive-magnitude guard). `StripeClearing` carries the escrow dwell so each transaction
+  balances on its own and the lifecycle nets to zero:
+  - ✅ **Direct** — `PayAsync` (§2 posting: `Dr Receivable / Cr Payable + Cr PlatformRevenue`).
+  - ✅ **Escrow deposit / capture** — `DepositAsync` / `CaptureAsync`: `Dr Receivable / Cr StripeClearing`
+    (payer's total captured into clearing).
+  - ✅ **Escrow release** — `ReleaseAsync`: `Dr StripeClearing / Cr Payable + Cr PlatformRevenue` (fee
+    recognised as the transfer settles the payee).
+  - ✅ **Escrow refund** — `RefundAsync`: opposing transaction, branched on `escrow.TransferId` (funds in
+    clearing vs already transferred), never an edit (§1.4 full refund incl. fee).
+- ✅ **Additive only** — operational columns untouched, real money movement unchanged, **no model
+  change** (nothing reads the ledger yet). Nothing seeded.
+- ✅ **Gate met:** `dotnet build api/Concertable.slnx` 0 errors + 62 Payment unit tests green — pure
+  per-flow balance+reconcile (`LedgerPostingsTests`, incl. fee==0 collapse) plus service-site wiring
+  (`EscrowServiceTests` / `ManagerPaymentServiceTests` capture the posted `LedgerPosting` and assert it
+  balances and reconciles to charge/share/fee). Merge queue runs E2E (behaviour-adjacent, **no token**).
+
+**Deferred to Phase 3 (the async-completion + read/reconcile increment), not gaps in Phase 2:**
+- **Async-completion posting.** Direct `PayAsync` and escrow `DepositAsync` post only on their
+  synchronous `!RequiresAction` branch — the 3DS/webhook-confirmed completion (`SettlementTransactionHandler`
+  → `TransactionService.CompleteAsync`; `EscrowConfirmedHandler`) does **not** yet post. Exactly-once
+  across the sync post and the idempotent webhook completion needs a single "on-transition-to-complete"
+  post site; folded into Phase 3 (which owns the completion/reconcile seam). Capture/Release/Refund have
+  no async branch and always post.
+- **E2E-level reconciliation.** Payment has no in-process integration harness (real flows run only in the
+  Aspire API E2E). Reconciliation is asserted at the unit tier now; the DB-side assertion (helpers already
+  added to `PaymentDb`: `GetLedgerTransactionCountAsync` / `GetLedgerSignedSumAsync` /
+  `GetLedgerPlatformRevenueAsync`) lands in Phase 3 once async-completion posting closes the timing gap.
+- **Ticket pass-through.** Deferred: a ticket has no `BookingId`, and the Phase-1 ledger correlation is a
+  non-nullable `int BookingId`. Posting tickets cleanly needs the correlation generalised (nullable
+  booking + `PaymentIntentId` as the real key) — a Phase-1 schema tweak, kept out of this no-model-change
+  phase.
 
 ### Phase 3 — Read the ledger + reconcile against Stripe *(make it trustworthy)*
+- **First close the write gap from Phase 2:** post at the async settlement-completion sites (settlement
+  webhook completion; `EscrowConfirmedHandler`) so 3DS/webhook-confirmed flows are on the ledger too —
+  exactly-once via a single on-transition-to-complete post site. Then turn on the E2E DB reconciliation
+  assertions (helpers already in `PaymentDb`).
 - Point "platform earned" / "owed to X" reads at the ledger.
 - **Reconciliation seam:** validate the internal ledger against Stripe's `balance_transaction` /
   `application_fee` (the authoritative external ledger) — a test + a runtime check that internal
