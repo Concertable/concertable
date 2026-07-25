@@ -1,97 +1,119 @@
-# Scaffolding only builds the EF model — it never opens the connection — so these need only be parseable,
+# Scaffolding only builds the EF model - it never opens the connection - so these need only be parseable,
 # never real credentials (no user/password). Applying migrations to a real DB is a separate Aspire job
 # that resolves the live string from config/Key Vault; it never runs this script.
 $env:ConnectionStrings__B2BDb = "Server=localhost;Database=concertable-b2b;Trusted_Connection=True;TrustServerCertificate=True"
 $env:ConnectionStrings__CustomerDb = "Server=localhost;Database=concertable-customer;Trusted_Connection=True;TrustServerCertificate=True"
 $env:ConnectionStrings__PaymentDb = "Server=localhost;Database=concertable-payment;Trusted_Connection=True;TrustServerCertificate=True"
 # Payment.Web builds the full host at design time (unlike B2B/Customer), so it demands the Service Bus
-# connection too — never opened during scaffolding, only parsed.
+# connection too - never opened during scaffolding, only parsed.
 $env:ConnectionStrings__asb = "Endpoint=sb://localhost.servicebus.windows.net/;SharedAccessKeyName=x;SharedAccessKey=eA=="
 
-$dirs = @(
-    "Concertable.Messaging\Concertable.Messaging.Infrastructure\Data\Migrations\Outbox",
-    "Concertable.Messaging\Concertable.Messaging.Infrastructure\Data\Migrations\Inbox",
-    "Concertable.Search\src\Concertable.Search.Infrastructure\Data\Migrations",
-    "Concertable.B2B\src\Modules\User\Concertable.B2B.User.Infrastructure\Data\Migrations",
-    "Concertable.B2B\src\Modules\Tenant\Concertable.B2B.Tenant.Infrastructure\Data\Migrations",
-    "Concertable.B2B\src\Modules\Artist\Concertable.B2B.Artist.Infrastructure\Data\Migrations",
-    "Concertable.B2B\src\Modules\Venue\Concertable.B2B.Venue.Infrastructure\Data\Migrations",
-    "Concertable.B2B\src\Modules\Concert\Concertable.B2B.Concert.Infrastructure\Data\Migrations",
-    "Concertable.B2B\src\Modules\Deal\Concertable.B2B.Deal.Infrastructure\Data\Migrations",
-    "Concertable.Payment\src\Concertable.Payment.Infrastructure\Data\Migrations",
-    "Concertable.B2B\src\Modules\Conversations\Concertable.B2B.Conversations.Infrastructure\Data\Migrations",
-    "Concertable.Customer\src\Modules\Preference\Concertable.Customer.Preference.Infrastructure\Data\Migrations",
-    "Concertable.Auth\src\Concertable.Auth\Data\Migrations",
-    "Concertable.Customer\src\Modules\Concert\Concertable.Customer.Concert.Infrastructure\Data\Migrations",
-    "Concertable.Customer\src\Modules\Ticket\Concertable.Customer.Ticket.Infrastructure\Data\Migrations",
-    "Concertable.Customer\src\Modules\Review\Concertable.Customer.Review.Infrastructure\Data\Migrations",
-    "Concertable.Customer\src\Modules\User\Concertable.Customer.User.Infrastructure\Data\Migrations",
-    "Concertable.Customer\src\Modules\Venue\Concertable.Customer.Venue.Infrastructure\Data\Migrations",
-    "Concertable.Customer\src\Modules\Artist\Concertable.Customer.Artist.Infrastructure\Data\Migrations"
-)
-foreach ($d in $dirs) { Remove-Item -Recurse -Force -ErrorAction SilentlyContinue $d }
+# A module's migration content is compared old-vs-new with its 14-digit id normalized out (filenames
+# and the Designer.cs [Migration("...")] attribute are the only places it appears). When a module's
+# model didn't change, the regenerated migration is byte-identical modulo that id, so the old
+# (already-published-package-matching) id is kept instead of re-stamping it - this is what stops a
+# packaged lib (Messaging, Payment, Auth) from drifting its source migration id away from the id
+# baked into its published NuGet package, which otherwise collides two different migration ids
+# creating the same table against one DB ("There is already an object named 'Outbox'").
+function Get-NormalizedMigrationFiles([string]$Dir) {
+    $files = @{}
+    if (-not (Test-Path $Dir)) { return $files }
+    Get-ChildItem -File $Dir | ForEach-Object {
+        $key = $_.Name -replace '^\d{14}_', ''
+        $content = (Get-Content -Raw $_.FullName) -replace '\d{14}(?=_InitialCreate)', 'TIMESTAMP'
+        $files[$key] = $content
+    }
+    return $files
+}
+
+function Test-MigrationUnchanged([string]$OldDir, [string]$NewDir) {
+    $old = Get-NormalizedMigrationFiles $OldDir
+    $new = Get-NormalizedMigrationFiles $NewDir
+    if ($old.Count -eq 0 -or $old.Count -ne $new.Count) { return $false }
+    foreach ($key in $old.Keys) {
+        if (-not $new.ContainsKey($key)) { return $false }
+        if ($old[$key] -ne $new[$key]) { return $false }
+    }
+    return $true
+}
+
+function Invoke-ScaffoldIfChanged {
+    param(
+        [string]$Context,
+        [string]$Project,
+        [string]$StartupProject,
+        [string]$OutputDir
+    )
+
+    $dir = Join-Path $Project $OutputDir
+    $backup = $null
+    if (Test-Path $dir) {
+        $backup = Join-Path ([System.IO.Path]::GetTempPath()) "initial-migrations-backup-$([guid]::NewGuid())"
+        Copy-Item -Recurse -Force $dir $backup
+        Remove-Item -Recurse -Force $dir
+    }
+
+    dotnet ef migrations add InitialCreate --context $Context --project $Project --startup-project $StartupProject --output-dir $OutputDir
+    if ($LASTEXITCODE -ne 0) {
+        if ($backup) {
+            Remove-Item -Recurse -Force -ErrorAction SilentlyContinue $dir
+            Move-Item $backup $dir
+        }
+        exit 1
+    }
+
+    if ($backup) {
+        if (Test-MigrationUnchanged -OldDir $backup -NewDir $dir) {
+            Remove-Item -Recurse -Force $dir
+            Move-Item $backup $dir
+            Write-Host "  $Context unchanged - kept existing migration id"
+        } else {
+            Remove-Item -Recurse -Force $backup
+        }
+    }
+}
 
 # Messaging is consumed everywhere as a published package, so a service host can't be its startup
 # project (EF would load the packaged assembly, which already contains InitialCreate). It scaffolds
 # standalone via its design-time factories.
-dotnet ef migrations add InitialCreate --context OutboxDbContext --project Concertable.Messaging/Concertable.Messaging.Infrastructure --startup-project Concertable.Messaging/Concertable.Messaging.Infrastructure --output-dir Data/Migrations/Outbox
-if ($LASTEXITCODE -ne 0) { exit 1 }
+Invoke-ScaffoldIfChanged -Context OutboxDbContext -Project Concertable.Messaging/Concertable.Messaging.Infrastructure -StartupProject Concertable.Messaging/Concertable.Messaging.Infrastructure -OutputDir Data/Migrations/Outbox
 
-dotnet ef migrations add InitialCreate --context InboxDbContext --project Concertable.Messaging/Concertable.Messaging.Infrastructure --startup-project Concertable.Messaging/Concertable.Messaging.Infrastructure --output-dir Data/Migrations/Inbox
-if ($LASTEXITCODE -ne 0) { exit 1 }
+Invoke-ScaffoldIfChanged -Context InboxDbContext -Project Concertable.Messaging/Concertable.Messaging.Infrastructure -StartupProject Concertable.Messaging/Concertable.Messaging.Infrastructure -OutputDir Data/Migrations/Inbox
 
-dotnet ef migrations add InitialCreate --context UserDbContext --project Concertable.B2B/src/Modules/User/Concertable.B2B.User.Infrastructure --startup-project Concertable.B2B/src/Concertable.B2B.Web --output-dir Data/Migrations
-if ($LASTEXITCODE -ne 0) { exit 1 }
+Invoke-ScaffoldIfChanged -Context UserDbContext -Project Concertable.B2B/src/Modules/User/Concertable.B2B.User.Infrastructure -StartupProject Concertable.B2B/src/Concertable.B2B.Web -OutputDir Data/Migrations
 
-dotnet ef migrations add InitialCreate --context TenantDbContext --project Concertable.B2B/src/Modules/Tenant/Concertable.B2B.Tenant.Infrastructure --startup-project Concertable.B2B/src/Concertable.B2B.Web --output-dir Data/Migrations
-if ($LASTEXITCODE -ne 0) { exit 1 }
+Invoke-ScaffoldIfChanged -Context TenantDbContext -Project Concertable.B2B/src/Modules/Tenant/Concertable.B2B.Tenant.Infrastructure -StartupProject Concertable.B2B/src/Concertable.B2B.Web -OutputDir Data/Migrations
 
-dotnet ef migrations add InitialCreate --context ArtistDbContext --project Concertable.B2B/src/Modules/Artist/Concertable.B2B.Artist.Infrastructure --startup-project Concertable.B2B/src/Concertable.B2B.Web --output-dir Data/Migrations
-if ($LASTEXITCODE -ne 0) { exit 1 }
+Invoke-ScaffoldIfChanged -Context ArtistDbContext -Project Concertable.B2B/src/Modules/Artist/Concertable.B2B.Artist.Infrastructure -StartupProject Concertable.B2B/src/Concertable.B2B.Web -OutputDir Data/Migrations
 
-dotnet ef migrations add InitialCreate --context VenueDbContext --project Concertable.B2B/src/Modules/Venue/Concertable.B2B.Venue.Infrastructure --startup-project Concertable.B2B/src/Concertable.B2B.Web --output-dir Data/Migrations
-if ($LASTEXITCODE -ne 0) { exit 1 }
+Invoke-ScaffoldIfChanged -Context VenueDbContext -Project Concertable.B2B/src/Modules/Venue/Concertable.B2B.Venue.Infrastructure -StartupProject Concertable.B2B/src/Concertable.B2B.Web -OutputDir Data/Migrations
 
-dotnet ef migrations add InitialCreate --context ConcertDbContext --project Concertable.B2B/src/Modules/Concert/Concertable.B2B.Concert.Infrastructure --startup-project Concertable.B2B/src/Concertable.B2B.Web --output-dir Data/Migrations
-if ($LASTEXITCODE -ne 0) { exit 1 }
+Invoke-ScaffoldIfChanged -Context ConcertDbContext -Project Concertable.B2B/src/Modules/Concert/Concertable.B2B.Concert.Infrastructure -StartupProject Concertable.B2B/src/Concertable.B2B.Web -OutputDir Data/Migrations
 
-dotnet ef migrations add InitialCreate --context DealDbContext --project Concertable.B2B/src/Modules/Deal/Concertable.B2B.Deal.Infrastructure --startup-project Concertable.B2B/src/Concertable.B2B.Web --output-dir Data/Migrations
-if ($LASTEXITCODE -ne 0) { exit 1 }
+Invoke-ScaffoldIfChanged -Context DealDbContext -Project Concertable.B2B/src/Modules/Deal/Concertable.B2B.Deal.Infrastructure -StartupProject Concertable.B2B/src/Concertable.B2B.Web -OutputDir Data/Migrations
 
-dotnet ef migrations add InitialCreate --context PaymentDbContext --project Concertable.Payment/src/Concertable.Payment.Infrastructure --startup-project Concertable.Payment/src/Concertable.Payment.Web --output-dir Data/Migrations
-if ($LASTEXITCODE -ne 0) { exit 1 }
+Invoke-ScaffoldIfChanged -Context PaymentDbContext -Project Concertable.Payment/src/Concertable.Payment.Infrastructure -StartupProject Concertable.Payment/src/Concertable.Payment.Web -OutputDir Data/Migrations
 
-dotnet ef migrations add InitialCreate --context ConversationsDbContext --project Concertable.B2B/src/Modules/Conversations/Concertable.B2B.Conversations.Infrastructure --startup-project Concertable.B2B/src/Concertable.B2B.Web --output-dir Data/Migrations
-if ($LASTEXITCODE -ne 0) { exit 1 }
+Invoke-ScaffoldIfChanged -Context ConversationsDbContext -Project Concertable.B2B/src/Modules/Conversations/Concertable.B2B.Conversations.Infrastructure -StartupProject Concertable.B2B/src/Concertable.B2B.Web -OutputDir Data/Migrations
 
-dotnet ef migrations add InitialCreate --context PersistedGrantDbContext --project Concertable.Auth/src/Concertable.Auth --startup-project Concertable.Auth/src/Concertable.Auth --output-dir Data/Migrations/Duende
-if ($LASTEXITCODE -ne 0) { exit 1 }
+Invoke-ScaffoldIfChanged -Context PersistedGrantDbContext -Project Concertable.Auth/src/Concertable.Auth -StartupProject Concertable.Auth/src/Concertable.Auth -OutputDir Data/Migrations/Duende
 
-dotnet ef migrations add InitialCreate --context AuthDbContext --project Concertable.Auth/src/Concertable.Auth --startup-project Concertable.Auth/src/Concertable.Auth --output-dir Data/Migrations/Auth
-if ($LASTEXITCODE -ne 0) { exit 1 }
+Invoke-ScaffoldIfChanged -Context AuthDbContext -Project Concertable.Auth/src/Concertable.Auth -StartupProject Concertable.Auth/src/Concertable.Auth -OutputDir Data/Migrations/Auth
 
-dotnet ef migrations add InitialCreate --context ConcertDbContext --project Concertable.Customer/src/Modules/Concert/Concertable.Customer.Concert.Infrastructure --startup-project Concertable.Customer/src/Concertable.Customer.Web --output-dir Data/Migrations
-if ($LASTEXITCODE -ne 0) { exit 1 }
+Invoke-ScaffoldIfChanged -Context ConcertDbContext -Project Concertable.Customer/src/Modules/Concert/Concertable.Customer.Concert.Infrastructure -StartupProject Concertable.Customer/src/Concertable.Customer.Web -OutputDir Data/Migrations
 
-dotnet ef migrations add InitialCreate --context TicketDbContext --project Concertable.Customer/src/Modules/Ticket/Concertable.Customer.Ticket.Infrastructure --startup-project Concertable.Customer/src/Concertable.Customer.Web --output-dir Data/Migrations
-if ($LASTEXITCODE -ne 0) { exit 1 }
+Invoke-ScaffoldIfChanged -Context TicketDbContext -Project Concertable.Customer/src/Modules/Ticket/Concertable.Customer.Ticket.Infrastructure -StartupProject Concertable.Customer/src/Concertable.Customer.Web -OutputDir Data/Migrations
 
-dotnet ef migrations add InitialCreate --context ReviewDbContext --project Concertable.Customer/src/Modules/Review/Concertable.Customer.Review.Infrastructure --startup-project Concertable.Customer/src/Concertable.Customer.Web --output-dir Data/Migrations
-if ($LASTEXITCODE -ne 0) { exit 1 }
+Invoke-ScaffoldIfChanged -Context ReviewDbContext -Project Concertable.Customer/src/Modules/Review/Concertable.Customer.Review.Infrastructure -StartupProject Concertable.Customer/src/Concertable.Customer.Web -OutputDir Data/Migrations
 
-dotnet ef migrations add InitialCreate --context UserDbContext --project Concertable.Customer/src/Modules/User/Concertable.Customer.User.Infrastructure --startup-project Concertable.Customer/src/Concertable.Customer.Web --output-dir Data/Migrations
-if ($LASTEXITCODE -ne 0) { exit 1 }
+Invoke-ScaffoldIfChanged -Context UserDbContext -Project Concertable.Customer/src/Modules/User/Concertable.Customer.User.Infrastructure -StartupProject Concertable.Customer/src/Concertable.Customer.Web -OutputDir Data/Migrations
 
-dotnet ef migrations add InitialCreate --context PreferenceDbContext --project Concertable.Customer/src/Modules/Preference/Concertable.Customer.Preference.Infrastructure --startup-project Concertable.Customer/src/Concertable.Customer.Web --output-dir Data/Migrations
-if ($LASTEXITCODE -ne 0) { exit 1 }
+Invoke-ScaffoldIfChanged -Context PreferenceDbContext -Project Concertable.Customer/src/Modules/Preference/Concertable.Customer.Preference.Infrastructure -StartupProject Concertable.Customer/src/Concertable.Customer.Web -OutputDir Data/Migrations
 
-dotnet ef migrations add InitialCreate --context SearchDbContext --project Concertable.Search/src/Concertable.Search.Infrastructure --startup-project Concertable.Search/src/Concertable.Search.Web --output-dir Data/Migrations
-if ($LASTEXITCODE -ne 0) { exit 1 }
+Invoke-ScaffoldIfChanged -Context SearchDbContext -Project Concertable.Search/src/Concertable.Search.Infrastructure -StartupProject Concertable.Search/src/Concertable.Search.Web -OutputDir Data/Migrations
 
-dotnet ef migrations add InitialCreate --context VenueDbContext --project Concertable.Customer/src/Modules/Venue/Concertable.Customer.Venue.Infrastructure --startup-project Concertable.Customer/src/Concertable.Customer.Web --output-dir Data/Migrations
-if ($LASTEXITCODE -ne 0) { exit 1 }
+Invoke-ScaffoldIfChanged -Context VenueDbContext -Project Concertable.Customer/src/Modules/Venue/Concertable.Customer.Venue.Infrastructure -StartupProject Concertable.Customer/src/Concertable.Customer.Web -OutputDir Data/Migrations
 
-dotnet ef migrations add InitialCreate --context ArtistDbContext --project Concertable.Customer/src/Modules/Artist/Concertable.Customer.Artist.Infrastructure --startup-project Concertable.Customer/src/Concertable.Customer.Web --output-dir Data/Migrations
-if ($LASTEXITCODE -ne 0) { exit 1 }
+Invoke-ScaffoldIfChanged -Context ArtistDbContext -Project Concertable.Customer/src/Modules/Artist/Concertable.Customer.Artist.Infrastructure -StartupProject Concertable.Customer/src/Concertable.Customer.Web -OutputDir Data/Migrations
 
 Write-Host "All migrations scaffolded successfully."
