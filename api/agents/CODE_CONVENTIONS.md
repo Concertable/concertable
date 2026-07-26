@@ -147,7 +147,7 @@ Only add a comment when the WHY is non-obvious (hidden constraint, subtle invari
 
 ## Comments — default to none; mechanics here, policy in root `CLAUDE.md`
 
-The repo-wide policy (default to zero, ≤2 lines, *why* lives in the commit message, and the disqualifiers — restating docs, citing transient artifacts, narrating the *what*) is in the root [`CLAUDE.md`](../../CLAUDE.md). The C#-mechanical part: a WHY-comment is one line where it can be → `//`; the rare genuinely-multi-line one → a single `/* */` block, never stacked `//` lines.
+The repo-wide policy (default to zero, ≤2 lines, *why* lives in the commit message, and the disqualifiers — restating docs, citing transient artifacts, narrating the *what*) is in the root [`AGENTS.md`](../../AGENTS.md). The C#-mechanical part: a WHY-comment is one line where it can be → `//`; the rare genuinely-multi-line one → a single `/* */` block, never stacked `//` lines.
 
 **Placement:** put the `//` on its own line directly above the statement, or inline after it with a single space — never pad with spaces to align comments into a column.
 
@@ -216,7 +216,7 @@ don't add new ones.
 ## DTO naming — `Response` is HTTP-only; `Result<T>` is the service wrapper; C# DTOs carry no suffix
 
 The `Response` suffix is reserved for the **HTTP-API wire layer** (`Module.Api/Responses/`, see the
-"DTOs vs Responses" section in [`../CLAUDE.md`](../CLAUDE.md)). It does **not** belong on the C#
+"DTOs vs Responses" section in [`../AGENTS.md`](../AGENTS.md)). It does **not** belong on the C#
 service/client DTOs that adapters (gRPC clients, service interfaces) pass around:
 
 - **`Result<T>`** (FluentResults) is already the service-call wrapper — the "did it succeed" envelope.

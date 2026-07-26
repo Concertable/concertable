@@ -10,14 +10,14 @@ pattern here has a backend sibling — the two stacks are meant to read the same
 links out rather than restating it (two copies drift the day one changes).
 
 The tiers referenced throughout (`@concertable/shared` ⊃ `app/web/shared` ⊃ `@b2b/*` / `@customer/*`
-⊃ per-app `src/`) are defined in [`CLAUDE.md`](../web/CLAUDE.md) and the per-tier `CLAUDE.md` files. Read
+⊃ per-app `src/`) are defined in [`AGENTS.md`](../web/AGENTS.md) and the per-tier `AGENTS.md` files. Read
 those first; this file assumes them.
 
 ---
 
 ## Shared is the intersection — vary it with slots, never with a role check
 
-The backend's "shared is the intersection, never the union" ([`api/CLAUDE.md`](../../api/CLAUDE.md))
+The backend's "shared is the intersection, never the union" ([`api/AGENTS.md`](../../api/AGENTS.md))
 is the same rule the FE lives under, enforced by four `tsc -b` builds. This section is the
 **structural technique** that keeps it true: when a shared surface must differ by product or persona,
 the shared code declares a **slot** and the owning app **injects** the variation. It never learns who
@@ -53,7 +53,7 @@ function OpportunitySection({ opportunity }: { opportunity: Opportunity }) {
   `activeTenant.type === ...`) to pick behaviour. This is the disease, not the cure: it makes shared
   code know its audience. Move the branch to the app and inject the result through a slot. This has
   caused real bugs (shared review widgets firing Customer-service calls with manager tokens — see
-  [`shared/CLAUDE.md`](../web/shared/CLAUDE.md)).
+  [`shared/AGENTS.md`](../web/shared/AGENTS.md)).
 - **Parking product code in a wider tier "for now."** B2B concepts (opportunities, contracts,
   deals, payouts) in `app/web/shared` or `app/shared`; a customer route literal in `app/web/shared`.
   The wider tier compiles it into apps that can never use it, and customers gained access to B2B
@@ -72,7 +72,7 @@ intersection: `id`, `email`, `isAuthenticated`, universal profile fields. A prod
 bolted onto the shared type.
 
 This is the direct FE mirror of the backend's identity split
-([`api/CLAUDE.md`](../../api/CLAUDE.md), "Tenancy is composed, never subtracted"): `ICurrentUser`
+([`api/AGENTS.md`](../../api/AGENTS.md), "Tenancy is composed, never subtracted"): `ICurrentUser`
 (Kernel) carries only `Id`/`Email`/`IsAuthenticated`; the tenant/owner concept lives in a **separate
 `ICurrentTenant` that only B2B depends on**. The FE does the same, one layer per product:
 
