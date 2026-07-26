@@ -1,6 +1,6 @@
 ---
 name: pr-preflight
-description: Pre-flight readiness gate — a READ-ONLY check of whether the current branch is CLEAR to open (or enqueue) a PR, run before you do. Verifies you're on a proper `<Type>/<Name>` branch (not master), your local is in sync with origin (not behind, not ahead-unpushed, not tracking a `[gone]` remote), the branch isn't badly stale vs master, all CODE is committed (docs/plans may ride uncommitted), no red/pending platform-sync gate is blocking merges, and no half-done published-package cut-over is left out of sync — then reports GREEN (clear, with the next command) or names exactly what's blocking and the fix. Use whenever Tommy says "can I PR this", "am I clear to PR", "ready to PR/merge?", "pr preflight", "check before I PR", "is this branch clean to ship", or before running `/merge` or `gh pr create`. Concertable-specific (knows this repo's merge queue + platform-sync gate + branch conventions). Changes NO state — plain read-only `git`/`gh`.
+description: Pre-flight readiness gate — a READ-ONLY check of whether the current branch is CLEAR to open (or enqueue) a PR, run before you do. Verifies you're on a proper `<Type>/<Name>` branch (not main), your local is in sync with origin (not behind, not ahead-unpushed, not tracking a `[gone]` remote), the branch isn't badly stale vs main, all CODE is committed (docs/plans may ride uncommitted), no red/pending platform-sync gate is blocking merges, and no half-done published-package cut-over is left out of sync — then reports GREEN (clear, with the next command) or names exactly what's blocking and the fix. Use whenever Tommy says "can I PR this", "am I clear to PR", "ready to PR/merge?", "pr preflight", "check before I PR", "is this branch clean to ship", or before running `/merge` or `gh pr create`. Concertable-specific (knows this repo's merge queue + platform-sync gate + branch conventions). Changes NO state — plain read-only `git`/`gh`.
 ---
 
 # pr-preflight
@@ -22,8 +22,8 @@ never changes the working tree, index, or any branch.
 
 ## Repo facts (why these checks exist)
 
-- **`master` is protected by a merge queue** that rebuilds each entry on current master — so a branch
-  that's merely *behind master* is still mergeable (the queue rebases it). What actually bites is your
+- **`main` is protected by a merge queue** that rebuilds each entry on current main — so a branch
+  that's merely *behind main* is still mergeable (the queue rebases it). What actually bites is your
   **local being out of sync with its own remote**: behind `origin/<branch>` (you'd push over newer
   work or merge a stale PR) or tracking a **`[gone]`** remote (the branch already merged + was
   deleted — you're on a dead branch). This is the exact "sync thing" that blocks a clean PR.
@@ -45,7 +45,7 @@ never changes the working tree, index, or any branch.
    ```
    git rev-parse --abbrev-ref HEAD
    ```
-   - **master** → BLOCKER (nothing to PR; branch first).
+   - **main** → BLOCKER (nothing to PR; branch first).
    - Not `<Type>/<Name>` with a **capitalized** prefix (`Feature/`, `Fix/`, `Bug/`, `Refactor/`, …) →
      warn (see `CLAUDE.md` "Git branch"; never a lowercase `feature/…`).
 
@@ -55,17 +55,17 @@ never changes the working tree, index, or any branch.
    git status -sb | head -1
    ```
    - `...origin/<branch> [gone]` → BLOCKER: remote deleted (branch already merged). `/sync` to clean
-     master; don't PR a dead branch.
+     main; don't PR a dead branch.
    - `[behind N]` → BLOCKER: local is stale. `/sync` or `/pull` first.
    - `[ahead N]` → note: N unpushed commits — `push` them (a PR needs them on origin). Not a blocker
      for `gh pr create` (it pushes), but is one for `/merge`.
 
-3. **Staleness vs master (soft).**
+3. **Staleness vs main (soft).**
    ```
-   git rev-list --left-right --count origin/master...HEAD
+   git rev-list --left-right --count origin/main...HEAD
    ```
-   - `A  B` = A commits on master you don't have, B commits of yours. Large A → note the branch is
-     well behind master; the queue rebuilds so it's not fatal, but a merge of master avoids surprises.
+   - `A  B` = A commits on main you don't have, B commits of yours. Large A → note the branch is
+     well behind main; the queue rebuilds so it's not fatal, but a merge of main avoids surprises.
 
 4. **All CODE committed (docs may ride).**
    ```

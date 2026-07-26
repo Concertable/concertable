@@ -1,11 +1,11 @@
 name: Auto-merge
 
-# A ready (non-draft) PR into master gets GitHub auto-merge enabled, so the merge queue lands it once
+# A ready (non-draft) PR into main gets GitHub auto-merge enabled, so the merge queue lands it once
 # its required checks are green. Drafts never auto-merge — flipping a PR to ready IS the merge-intent
 # signal; keep a PR in draft while you're still iterating.
 #
-# Safety is the merge queue's, not this workflow's: a red PR is ejected and never reaches master, and
-# the PRs behind it re-base onto clean master untouched. This only SCHEDULES the merge into the queue —
+# Safety is the merge queue's, not this workflow's: a red PR is ejected and never reaches main, and
+# the PRs behind it re-base onto clean main untouched. This only SCHEDULES the merge into the queue —
 # it cannot make a red PR land. No required-review rule, so a green PR merges unreviewed (the accepted
 # trade for a queue-gated personal repo — mark ready only when you mean it).
 #
@@ -48,7 +48,7 @@ name: Auto-merge
 on:
   pull_request:
     types: [opened, ready_for_review]
-    branches: [master]
+    branches: [main]
   workflow_run:
     workflows: [CI]
     types: [completed]
@@ -75,8 +75,8 @@ jobs:
         run: |
           owner="${GH_REPO%%/*}"; repo="${GH_REPO##*/}"
 
-          nums="$(gh pr list --state open --base master --draft=false --json number -q '.[].number' 2>/dev/null)"
-          [ -n "$nums" ] || { echo "No open ready PRs into master — nothing to do."; exit 0; }
+          nums="$(gh pr list --state open --base main --draft=false --json number -q '.[].number' 2>/dev/null)"
+          [ -n "$nums" ] || { echo "No open ready PRs into main — nothing to do."; exit 0; }
 
           for n in $nums; do
             [ -n "$n" ] || continue
@@ -107,7 +107,7 @@ jobs:
             fi
 
             # Don't re-add a PR whose current head already failed in the queue, or it loops (eject -> re-add ->
-            # fail). Match by PR number; timestamp-gate because the queue branch's SHA is master's base, not the head.
+            # fail). Match by PR number; timestamp-gate because the queue branch's SHA is main's base, not the head.
             head_time="$(gh pr view "$n" --json commits -q '.commits[-1].committedDate' 2>/dev/null)"
             last_fail_time="$(gh run list --event merge_group -L 40 --json headBranch,conclusion,createdAt \
               -q "[.[] | select(.headBranch | contains(\"/pr-$n-\")) | select(.conclusion==\"failure\") | .createdAt] | max // empty" 2>/dev/null)"
