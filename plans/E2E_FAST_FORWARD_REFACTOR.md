@@ -53,7 +53,7 @@ runs the real `accept + pay → cancel`. That removes the redundant half without
 - Rewrite it to open with `Given a flat fee opportunity has been applied to` (existing seeded `Given`),
   then only `accept + pay → cancel → assert cancelled + refunded`. Drops the redundant post + apply UI
   steps; keeps the real charge the refund needs.
-- **Gate:** the scenario passes headed once, then via `./e2e.ps1 ui b2b`. Reconcile `E2E_BASELINE.md`
+- **Gate:** the scenario passes headed once, then via `./scripts/e2e.ps1 ui b2b`. Reconcile `E2E_BASELINE.md`
   if timing/name changes.
 
 ### ~~Phase 2 — Trim the agreement signature scenario~~ ✅ DONE on `Feature/BookingAgreement` (2026-07-13)
@@ -79,7 +79,7 @@ runs the real `accept + pay → cancel`. That removes the redundant half without
 - Check `Concertable.Customer.E2ETests.Ui/Features` for scenarios re-driving browse/search/open to
   reach a concert/ticket state another scenario already proves; fast-forward via the Customer suite's
   seeded `Given`s.
-- **Gate:** `./e2e.ps1 ui customer` green; baseline reconciled.
+- **Gate:** `./scripts/e2e.ps1 ui customer` green; baseline reconciled.
 
 ## Not in scope
 - The four per-contract `books artist on …` happy paths — the canonical creation tests; they stay
@@ -88,6 +88,6 @@ runs the real `accept + pay → cancel`. That removes the redundant half without
 - Renaming the shared harness project — separate plan (`plans/E2E_HARNESS_RENAME.md`).
 
 ## Gate (every phase)
-`dotnet build api/Concertable.slnx` green · the touched UI suite green via `./e2e.ps1 ui <suite>`
+`dotnet build api/Concertable.slnx` green · the touched UI suite green via `./scripts/e2e.ps1 ui <suite>`
 (Docker pre-flight mandatory) · `E2E_BASELINE.md` reconciled in the same commit as any status change.
 `git rm` this plan in the commit that completes the last phase.

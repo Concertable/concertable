@@ -304,7 +304,7 @@ queue means closing + re-pushing (the branch is locked while queued) — so deci
 commit you push**, not after.
 
 When in doubt, or when a phase explicitly flips behavior on a covered flow, run E2E. **How** to run it
-safely (the mandatory `./docker-health.ps1` pre-flight, only via the `e2e-*` skills) is unchanged —
+safely (the mandatory `./scripts/docker-health.ps1` pre-flight, only via the `e2e-*` skills) is unchanged —
 see the "E2E suites — Docker health first" section in `CLAUDE.md`. This section governs **whether**,
 that one governs **how**.
 

@@ -15,33 +15,33 @@ Confidence check that a code change hasn't regressed any baseline-passing UI E2E
 
 ## When NOT to use this skill
 
-- User wants the full 30-scenario sweep -> use the **`e2e-ui-debug`** skill (`./e2e.ps1 ui run`, ~25-30 min)
+- User wants the full 30-scenario sweep -> use the **`e2e-ui-debug`** skill (`./scripts/e2e.ps1 ui run`, ~25-30 min)
 - User wants to discover scenarios that NEWLY pass (because of a real fix) -> also `e2e-ui-debug`
 - User wants to debug a specific failing scenario -> also `e2e-ui-debug` (it has Step 2 for per-scenario re-runs with enriched logs)
 
 ## Key paths
 
 - Baseline file: `api/Concertable.Shared/tests/Concertable.E2ETests/E2E_BASELINE.md`
-- Script: `./e2e.ps1 ui regress` (PowerShell)
+- Script: `./scripts/e2e.ps1 ui regress` (PowerShell)
 - B2B run log: `api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui/regress.last.log`
 - Customer run log: `api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui/regress.last.log`
-- Scratch run logs (ad-hoc captures): `api/Concertable.Shared/tests/Concertable.E2ETests/logs/` — **never the repo root**. The `regress.last.log` files above are written by `./e2e.ps1` and stay in their project dirs; any extra output you redirect for grepping goes in the scratch dir (git-ignored; `New-Item -ItemType Directory -Force` it first if missing).
+- Scratch run logs (ad-hoc captures): `api/Concertable.Shared/tests/Concertable.E2ETests/logs/` — **never the repo root**. The `regress.last.log` files above are written by `./scripts/e2e.ps1` and stay in their project dirs; any extra output you redirect for grepping goes in the scratch dir (git-ignored; `New-Item -ItemType Directory -Force` it first if missing).
 
 ## Step 0 -- Pre-flight
 
 Verify Docker with the real gate. **`docker ps` answering is NOT proof Docker is healthy** — a half-started/flapping engine keeps `docker ps` (and `docker run hello-world`, and a bare TCP connect) working while host→container forwarding of real bytes for NEW containers is dead, and the suite then dies at SQL fixture startup with `pre-login handshake` resets:
 
 ```powershell
-./docker-health.ps1   # fresh container + published port + real HTTP round-trip + stability check; exit 1 = unhealthy
+./scripts/docker-health.ps1   # fresh container + published port + real HTTP round-trip + stability check; exit 1 = unhealthy
 ```
 
-`./e2e.ps1 ui regress` runs this automatically and refuses to boot on failure. If it reports unhealthy, **STOP** — tell the user Docker is half-started/down and to wait for Docker Desktop to show **Running**, then retry. Do not rerun or debug application code for this; it's an environment failure (root `CLAUDE.md`).
+`./scripts/e2e.ps1 ui regress` runs this automatically and refuses to boot on failure. If it reports unhealthy, **STOP** — tell the user Docker is half-started/down and to wait for Docker Desktop to show **Running**, then retry. Do not rerun or debug application code for this; it's an environment failure (root `CLAUDE.md`).
 
 Then tell the user it's starting and give a rough duration scaled to the passing-baseline size (a small passing set ~3-6 min; the whole suite ~25-30 min): **"Starting regression check -- will report the verdict."** The script prints `Baseline says N scenarios must pass` early in its output; relay that count once you see it.
 
 ## Step 1 -- Run regress in background
 
-Run `./e2e.ps1 ui regress` as a **background PowerShell task** (`run_in_background: true`). Capture the output file path.
+Run `./scripts/e2e.ps1 ui regress` as a **background PowerShell task** (`run_in_background: true`). Capture the output file path.
 
 The script:
 1. Parses the `### B2B passing (N)` and `### Customer passing (N)` fenced text blocks in `E2E_BASELINE.md`
@@ -121,7 +121,7 @@ The parser found a structural issue in the baseline file (e.g. heading count doe
 
 ## Updating the baseline (the OTHER skill's job)
 
-If after `./e2e.ps1 ui run` (full suite, run by the `e2e-ui-debug` skill) the user has a scenario that newly passes or newly fails, they manually edit `E2E_BASELINE.md`:
+If after `./scripts/e2e.ps1 ui run` (full suite, run by the `e2e-ui-debug` skill) the user has a scenario that newly passes or newly fails, they manually edit `E2E_BASELINE.md`:
 
 - Move the scenario between the relevant `passing` / `failing` fenced blocks
 - Update the `(N)` counts in both affected headings
@@ -134,4 +134,4 @@ This skill (`e2e-ui-regress`) only **verifies** the baseline, never modifies it.
 
 Regress duration scales with the size of the passing baseline: a small passing set runs in ~3-6 min; if the whole suite is listed as passing it covers every scenario (~25-30 min). Either way, do not skip it just because the code change "looks safe."
 
-When the passing baseline equals the full suite, regress and `./e2e.ps1 ui run` cover the same scenarios — the difference is intent: regress fail-fasts and asserts the expected-passing set (and catches baseline drift), while `run` discovers newly-passing/failing scenarios. Size the Step 2 `Monitor` timeout to the expected run length (up to ~30 min / `timeout_ms: 1800000` when the passing set is the full suite).
+When the passing baseline equals the full suite, regress and `./scripts/e2e.ps1 ui run` cover the same scenarios — the difference is intent: regress fail-fasts and asserts the expected-passing set (and catches baseline drift), while `run` discovers newly-passing/failing scenarios. Size the Step 2 `Monitor` timeout to the expected run length (up to ~30 min / `timeout_ms: 1800000` when the passing set is the full suite).

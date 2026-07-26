@@ -133,7 +133,7 @@ drops to the compile floor (build + carve only) for a genuinely trivial/mechanic
 carve are never skippable. Tokens are read from any commit message in the PR range — full tier table
 in [`.github/workflows/test.yml`](./.github/workflows/test.yml).
 
-Run E2E only through `./e2e.ps1` via the matching skill (`e2e-ui-regress`, `e2e-ui-debug`,
+Run E2E only through `./scripts/e2e.ps1` via the matching skill (`e2e-ui-regress`, `e2e-ui-debug`,
 `e2e-api-debug`) — the skill's Step 0 Docker pre-flight is mandatory, every run.
 
 - **`docker ps` answering is NOT proof Docker is healthy.** Docker Desktop can be off, paused, or
@@ -146,11 +146,11 @@ Run E2E only through `./e2e.ps1` via the matching skill (`e2e-ui-regress`, `e2e-
   needs no port forwarding, and the host-side `docker-proxy` completes a TCP handshake *locally* even
   when forwarding into the container is dead — so a connect "succeeds" while no data flows (exactly
   the `pre-login handshake` mode). The only valid check is a real **data** round-trip to a fresh
-  container: run **`./docker-health.ps1`** (fresh container + published port + HTTP round-trip +
-  stability check; exit 1 = unhealthy). `./e2e.ps1` runs it as an automatic gate before booting.
+  container: run **`./scripts/docker-health.ps1`** (fresh container + published port + HTTP round-trip +
+  stability check; exit 1 = unhealthy). `./scripts/e2e.ps1` runs it as an automatic gate before booting.
 - **A suite that fails at startup is an environment problem until proven otherwise.** STOP after
   the first such run — do not rerun, do not debug application code. Verify Docker with
-  `./docker-health.ps1` (and Docker Desktop showing **Running**). Fix, then run once.
+  `./scripts/docker-health.ps1` (and Docker Desktop showing **Running**). Fix, then run once.
 
 ## Tech debt (`TECH_DEBT.md`)
 

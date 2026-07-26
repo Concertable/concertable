@@ -6,15 +6,16 @@ param(
     [switch]$Headed
 )
 
-Set-Location $PSScriptRoot
-[Environment]::CurrentDirectory = $PSScriptRoot
+$repoRoot = Split-Path $PSScriptRoot -Parent
+Set-Location $repoRoot
+[Environment]::CurrentDirectory = $repoRoot
 
-$b2bUi      = Join-Path $PSScriptRoot "api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui"
-$customerUi = Join-Path $PSScriptRoot "api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui"
-$b2bApi      = Join-Path $PSScriptRoot "api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests"
-$customerApi = Join-Path $PSScriptRoot "api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests"
-$runsettings = Join-Path $PSScriptRoot "api/Concertable.runsettings"
-$baselineMd = Join-Path $PSScriptRoot "api/Concertable.Shared/tests/Concertable.E2ETests/E2E_BASELINE.md"
+$b2bUi      = Join-Path $repoRoot "api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui"
+$customerUi = Join-Path $repoRoot "api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui"
+$b2bApi      = Join-Path $repoRoot "api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests"
+$customerApi = Join-Path $repoRoot "api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests"
+$runsettings = Join-Path $repoRoot "api/Concertable.runsettings"
+$baselineMd = Join-Path $repoRoot "api/Concertable.Shared/tests/Concertable.E2ETests/E2E_BASELINE.md"
 
 $quiet = @('--nologo', '--verbosity', 'quiet')
 
@@ -205,7 +206,7 @@ function Assert-DockerHealthy {
 
 function Show-Usage {
     Write-Host ""
-    Write-Host "  Usage: ./e2e.ps1 <ui|api> <command> [-Headed]" -ForegroundColor White
+    Write-Host "  Usage: ./scripts/e2e.ps1 <ui|api> <command> [-Headed]" -ForegroundColor White
     Write-Host ""
     Write-Host "  UI E2E (Reqnroll + Playwright, real browser):" -ForegroundColor DarkGray
     Write-Host "    ui run       Run all UI scenarios (B2B + Customer)"
@@ -220,7 +221,7 @@ function Show-Usage {
     Write-Host "    api b2b       Run B2B API E2E only"
     Write-Host "    api customer  Run Customer API E2E only"
     Write-Host ""
-    Write-Host "  A bare command with no domain (e.g. './e2e.ps1 run') is treated as 'ui'." -ForegroundColor DarkGray
+    Write-Host "  A bare command with no domain (e.g. './scripts/e2e.ps1 run') is treated as 'ui'." -ForegroundColor DarkGray
     Write-Host ""
 }
 
@@ -256,7 +257,7 @@ function Invoke-UiCommand([string]$cmd) {
             $r = Invoke-PrettyTest '3DS' "$b2bUi/Concertable.B2B.E2ETests.Ui.csproj" @('--filter', 'DisplayName~3DS')
             Show-Summary @($r)
         }
-        "trace" { & "api/Concertable.Shared/tests/Concertable.E2ETests/ui-trace.ps1" }
+        "trace" { & (Join-Path $repoRoot "api/Concertable.Shared/tests/Concertable.E2ETests/ui-trace.ps1") }
         default { Show-Usage }
     }
 }

@@ -5,8 +5,9 @@ param(
     [string[]]$rest
 )
 
-Set-Location $PSScriptRoot
-[Environment]::CurrentDirectory = $PSScriptRoot
+$repoRoot = Split-Path $PSScriptRoot -Parent
+Set-Location $repoRoot
+[Environment]::CurrentDirectory = $repoRoot
 
 $b2bProjects = @(
     "api/Concertable.B2B/src/Modules/Concert/Tests/Concertable.B2B.Concert.UnitTests/Concertable.B2B.Concert.UnitTests.csproj",
@@ -120,7 +121,7 @@ switch ($cmd) {
             Write-Host "Unknown command or module: '$cmd'" -ForegroundColor Red
             Write-Host ""
         }
-        Write-Host "  Usage: ./unit.ps1 <command> [-- <extra dotnet test args>]" -ForegroundColor White
+        Write-Host "  Usage: ./scripts/unit.ps1 <command> [-- <extra dotnet test args>]" -ForegroundColor White
         Write-Host ""
         Write-Host "  Commands:" -ForegroundColor DarkGray
         Write-Host "    run        Run all unit tests (B2B + Customer + Search + Payment + Shared)"
@@ -133,10 +134,10 @@ switch ($cmd) {
         Write-Host "    list       List all unit test projects"
         Write-Host ""
         Write-Host "  Examples:" -ForegroundColor DarkGray
-        Write-Host "    ./unit.ps1 run"
-        Write-Host "    ./unit.ps1 b2b"
-        Write-Host "    ./unit.ps1 concert"
-        Write-Host "    ./unit.ps1 concert --filter ""FullyQualifiedName~LifecycleStateMachineTests"""
+        Write-Host "    ./scripts/unit.ps1 run"
+        Write-Host "    ./scripts/unit.ps1 b2b"
+        Write-Host "    ./scripts/unit.ps1 concert"
+        Write-Host "    ./scripts/unit.ps1 concert --filter ""FullyQualifiedName~LifecycleStateMachineTests"""
         Write-Host ""
     }
 }

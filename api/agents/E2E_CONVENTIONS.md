@@ -24,12 +24,12 @@ reversing a real charge) must run the real paying flow; it can't be pure-seed fa
 the cheap state-transition assertion starts from seeded state, the Stripe-dependent assertion stays on
 a flow that actually paid.
 
-**Baseline discipline — `E2E_BASELINE.md`.** `./e2e.ps1 ui regress` trusts it. Two traps: (1) when a
+**Baseline discipline — `E2E_BASELINE.md`.** `./scripts/e2e.ps1 ui regress` trusts it. Two traps: (1) when a
 scenario crosses the line, move it between the `passing`/`failing` blocks AND fix both `(N)` counts and
 the summary table (the parser throws on a mismatch); (2) adding an assertion to an already-green
 scenario can silently turn it red while the baseline still lists it as passing — the name didn't
 change, but the body now fails. Re-run and reconcile; a name in `passing` is not proof the current body
 passes.
 
-**Headless by default.** Run via `./e2e.ps1 ui <cmd>` (mandatory Docker health gate); `-Headed` only
+**Headless by default.** Run via `./scripts/e2e.ps1 ui <cmd>` (mandatory Docker health gate); `-Headed` only
 when a human is watching — it changes nothing that's asserted.

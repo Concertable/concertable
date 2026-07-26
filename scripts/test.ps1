@@ -5,13 +5,14 @@ param(
     [string[]]$rest
 )
 
-Set-Location $PSScriptRoot
-[Environment]::CurrentDirectory = $PSScriptRoot
+$repoRoot = Split-Path $PSScriptRoot -Parent
+Set-Location $repoRoot
+[Environment]::CurrentDirectory = $repoRoot
 
 $trxNs = 'http://microsoft.com/schemas/VisualStudio/TeamTest/2010'
 
 function Get-TestProjects([string]$pattern, [string]$filter) {
-    $apiRoot = Join-Path $PSScriptRoot 'api'
+    $apiRoot = Join-Path $repoRoot 'api'
     Get-ChildItem -Path $apiRoot -Recurse -Filter '*.csproj' -File |
         Where-Object { $_.FullName -notmatch '\\(bin|obj)\\' } |
         Where-Object { $_.BaseName -match $pattern } |
@@ -126,7 +127,7 @@ function Show-Summary([object[]]$rows) {
 
 function Show-Usage {
     Write-Host ""
-    Write-Host "  Usage: ./test.ps1 <command> [filter]" -ForegroundColor White
+    Write-Host "  Usage: ./scripts/test.ps1 <command> [filter]" -ForegroundColor White
     Write-Host ""
     Write-Host "  Commands:" -ForegroundColor DarkGray
     Write-Host "    all           Run unit + integration + e2e, then a combined PASS/FAIL summary"
@@ -136,7 +137,7 @@ function Show-Usage {
     Write-Host "    list          Show this help"
     Write-Host ""
     Write-Host "  Output is quiet: each project prints one line; full logs go to test.last.log" -ForegroundColor DarkGray
-    Write-Host "  next to each project, and failures expand inline. For headed/trace E2E use ./e2e.ps1." -ForegroundColor DarkGray
+    Write-Host "  next to each project, and failures expand inline. For headed/trace E2E use ./scripts/e2e.ps1." -ForegroundColor DarkGray
     Write-Host ""
 }
 

@@ -5,8 +5,9 @@ param(
     [string[]]$rest
 )
 
-Set-Location $PSScriptRoot
-[Environment]::CurrentDirectory = $PSScriptRoot
+$repoRoot = Split-Path $PSScriptRoot -Parent
+Set-Location $repoRoot
+[Environment]::CurrentDirectory = $repoRoot
 
 $b2bProjects = @(
     "api/Concertable.B2B/src/Modules/Artist/Tests/Concertable.B2B.Artist.IntegrationTests/Concertable.B2B.Artist.IntegrationTests.csproj",
@@ -99,7 +100,7 @@ switch ($cmd) {
             Write-Host "Unknown command or module: '$cmd'" -ForegroundColor Red
             Write-Host ""
         }
-        Write-Host "  Usage: ./integration.ps1 <command> [-- <extra dotnet test args>]" -ForegroundColor White
+        Write-Host "  Usage: ./scripts/integration.ps1 <command> [-- <extra dotnet test args>]" -ForegroundColor White
         Write-Host ""
         Write-Host "  Commands:" -ForegroundColor DarkGray
         Write-Host "    run        Run all integration tests (B2B + Customer + Search)"
@@ -110,10 +111,10 @@ switch ($cmd) {
         Write-Host "    list       List all integration test projects"
         Write-Host ""
         Write-Host "  Examples:" -ForegroundColor DarkGray
-        Write-Host "    ./integration.ps1 run"
-        Write-Host "    ./integration.ps1 b2b"
-        Write-Host "    ./integration.ps1 concert"
-        Write-Host "    ./integration.ps1 artist --filter ""FullyQualifiedName~ArtistApiTests.Create"""
+        Write-Host "    ./scripts/integration.ps1 run"
+        Write-Host "    ./scripts/integration.ps1 b2b"
+        Write-Host "    ./scripts/integration.ps1 concert"
+        Write-Host "    ./scripts/integration.ps1 artist --filter ""FullyQualifiedName~ArtistApiTests.Create"""
         Write-Host ""
     }
 }
