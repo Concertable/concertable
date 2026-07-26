@@ -46,10 +46,26 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Split ${{ matrix.prefix }} into its own history
-        run: git subtree split --prefix=${{ matrix.prefix }} -b mirror-split
+        id: split
+        run: |
+          git subtree split --prefix=${{ matrix.prefix }} -b mirror-split
+          echo "sha=$(git rev-parse mirror-split)" >> "$GITHUB_OUTPUT"
 
       - name: Force-push to ${{ matrix.repo }}
         run: |
           git push --force \
             "https://x-access-token:${{ secrets.MIRROR_PAT }}@github.com/${{ matrix.repo }}.git" \
             mirror-split:master
+
+      - name: Verify ${{ matrix.repo }} matches the split commit
+        env:
+          EXPECTED_SHA: ${{ steps.split.outputs.sha }}
+        run: |
+          set -euo pipefail
+          remote_url="https://x-access-token:${{ secrets.MIRROR_PAT }}@github.com/${{ matrix.repo }}.git"
+          actual_sha="$(git ls-remote "$remote_url" refs/heads/master | awk '{print $1}')"
+          test -n "$actual_sha" || { echo "Mirror master was not found"; exit 1; }
+          test "$actual_sha" = "$EXPECTED_SHA" || {
+            echo "Mirror drift after push: expected $EXPECTED_SHA, found $actual_sha"
+            exit 1
+          }
