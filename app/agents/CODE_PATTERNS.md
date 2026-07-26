@@ -4,7 +4,7 @@ Recurring design patterns the web frontend commits to. When a change fits one of
 the pattern — don't invent a local variant. Sibling of
 [`CODE_CONVENTIONS.md`](./CODE_CONVENTIONS.md) (naming/style); this file is about **structure**.
 
-It is the FE analog of [`api/docs/CODE_PATTERNS.md`](../../api/docs/CODE_PATTERNS.md), and every
+It is the FE analog of [`api/agents/CODE_PATTERNS.md`](../../api/agents/CODE_PATTERNS.md), and every
 pattern here has a backend sibling — the two stacks are meant to read the same way. Where a rule about
 *where code lives* is owned by a tier's `CLAUDE.md`, this file names the **structural technique** and
 links out rather than restating it (two copies drift the day one changes).

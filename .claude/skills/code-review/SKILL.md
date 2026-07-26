@@ -73,9 +73,9 @@ These docs are the source of truth. Read the ones relevant to the diff — do no
 
 - Root `CLAUDE.md` and `api/CLAUDE.md` — top-of-context rules + pointers.
 - `api/ARCHITECTURE.md` and root `ARCHITECTURE.md` — **microservice premise** (the boundary rules below).
-- `api/docs/CODE_CONVENTIONS.md` — C# conventions (source-generated logging, field naming, ctors, etc.).
-- `api/docs/MODULAR_MONOLITH_RULES.md` — module boundaries within a service.
-- `api/docs/SEEDING_CONVENTIONS.md` — what may and may not be seeded directly.
+- `api/agents/CODE_CONVENTIONS.md` — C# conventions (source-generated logging, field naming, ctors, etc.).
+- `api/agents/MODULAR_MONOLITH_RULES.md` — module boundaries within a service.
+- `api/agents/SEEDING_CONVENTIONS.md` — what may and may not be seeded directly.
 - Any `CLAUDE.md` in directories the diff touches (each service / module may add local rules).
 
 ## Step 3 — Review the diff through these lenses
@@ -97,20 +97,20 @@ Concertable is a multi-service system; **B2B, Customer, and Search are data serv
 - A producer's `*.Seed.Contracts` **referencing a consumer's** (dependency must point downward only: consumer → producer).
 - Customer entities reaching back into B2B via nav chains instead of holding **purchase-time snapshots** of B2B fields.
 
-### Lens C — Module boundaries (`api/docs/MODULAR_MONOLITH_RULES.md`)
+### Lens C — Module boundaries (`api/agents/MODULAR_MONOLITH_RULES.md`)
 
 - Cross-module calls not going through `Contracts` / the module facade (`IXModule`).
 - EF queries inlined in a module facade (facades delegate to Application abstractions).
 - A module writing through `IUnitOfWork` (tied to `ApplicationDbContext`, silently no-ops) instead of `xRepository.SaveChangesAsync()`.
 - Impl types left `public` when an interface was extracted to `internal`.
 
-### Lens D — Seeding (`api/docs/SEEDING_CONVENTIONS.md`)
+### Lens D — Seeding (`api/agents/SEEDING_CONVENTIONS.md`)
 
 - A seeder directly writing data whose only production write path is a reaction (read-model projections, `UserEntity`, manager profiles, Stripe `PayoutAccount`, inbox/outbox rows). The fix is to drive the event, never `context.X.AddRange(...)`.
 - `IDevSeeder` vs `ITestSeeder` misuse (`ITestSeeder` never runs in dev/E2E).
 - Integration events published from a service layer instead of raised from a domain event.
 
-### Lens E — C# conventions (`api/docs/CODE_CONVENTIONS.md`)
+### Lens E — C# conventions (`api/agents/CODE_CONVENTIONS.md`)
 
 - Inline logging templates (`logger.LogInformation("...")`) instead of a source-generated `[LoggerMessage]` in the project's `Log.cs`.
 - Primary constructors on services/repos/handlers/validators (use explicit ctor + `private readonly` fields, no `_` prefix).

@@ -1,6 +1,6 @@
 # Concertable — backend (`api/`)
 
-The .NET app. C# code conventions: @./docs/CODE_CONVENTIONS.md (notably: logging is source-generated — never call `logger.LogInformation/LogWarning/LogError` with an inline template; add a `[LoggerMessage]` method to the project's `Log.cs`). Design patterns the codebase commits to (structure — keyed strategy resolvers, tenancy-composed DbContexts, dependency-holders, typed Refit clients): @./docs/CODE_PATTERNS.md — use the pattern, don't invent a local variant.
+The .NET app. C# code conventions: @./agents/CODE_CONVENTIONS.md (notably: logging is source-generated — never call `logger.LogInformation/LogWarning/LogError` with an inline template; add a `[LoggerMessage]` method to the project's `Log.cs`). Design patterns the codebase commits to (structure — keyed strategy resolvers, tenancy-composed DbContexts, dependency-holders, typed Refit clients): @./agents/CODE_PATTERNS.md — use the pattern, don't invent a local variant.
 
 ## These are microservices — read [`ARCHITECTURE.md`](./ARCHITECTURE.md) before crossing a service boundary
 
@@ -11,7 +11,7 @@ Two kinds of service, two rules (full rationale in [`ARCHITECTURE.md`](./ARCHITE
 - **Adapter services — `Auth`, `Payment`, `Notification`.** Shared runtime dependencies present in every host. A data service MAY call them synchronously (gRPC) and MAY `WaitFor` them at startup. **B2B and Customer each require Auth + Payment to be running.** So `WaitFor(auth)` / `WaitFor(paymentWeb)` belong in the shared `Concertable.AppHost.Shared` helpers and apply in every host.
 - **Data services — `B2B`, `Customer`, `Search`.** They must NEVER depend on each other's runtime. **B2B and Customer require Payment + Auth, but never each other.** Cross-data-service communication is `*.Contracts` events only; when a standalone host is missing another data service's events at seed time, a `*.Seed.Simulator` replays them — you never run the other data service to fix it. A data service `WaitFor`-ing another data service is the bug to never introduce.
 
-Note: real `Payment` only emits payment events for *live* Stripe webhooks, never for seed data. Payment is an agnostic adapter and owns no seed catalog or simulator; the seed-only payment-derived state (B2B `ConcertEntity.TicketsSold`, Customer `TicketEntity`) is inherently unreproducible historical data, reflection-seeded on each consumer's own side (see `docs/SEEDING_CONVENTIONS.md`).
+Note: real `Payment` only emits payment events for *live* Stripe webhooks, never for seed data. Payment is an agnostic adapter and owns no seed catalog or simulator; the seed-only payment-derived state (B2B `ConcertEntity.TicketsSold`, Customer `TicketEntity`) is inherently unreproducible historical data, reflection-seeded on each consumer's own side (see `agents/SEEDING_CONVENTIONS.md`).
 
 ## Shared code is the intersection, never the union
 
@@ -25,7 +25,7 @@ Anti-pattern, do not reintroduce: a tenant/owner key on the shared `ICurrentUser
 
 ## STOP — read this before any seeding work
 
-**Before writing or modifying any `IDevSeeder` / `ITestSeeder`, and before any change that would put rows into a table whose data the production app never writes directly, read [`docs/SEEDING_CONVENTIONS.md`](./docs/SEEDING_CONVENTIONS.md) in full.** Not the summary below — the full file. Every time.
+**Before writing or modifying any `IDevSeeder` / `ITestSeeder`, and before any change that would put rows into a table whose data the production app never writes directly, read [`agents/SEEDING_CONVENTIONS.md`](./agents/SEEDING_CONVENTIONS.md) in full.** Not the summary below — the full file. Every time.
 
 The rule: **a seeder may only write data that production code writes directly.** If production only creates this data as a *reaction* to something — an event, an outbox message, a handler firing, a webhook — the seeder must drive that same trigger, not bypass it and write the row.
 
@@ -87,8 +87,8 @@ Drop the `Dto` suffix when the name already says what the shape is (`AcceptCheck
 
 `IDevSeeder` runs in dev/E2E environments via `DevDbInitializer`. `ITestSeeder` runs in integration tests only — never in E2E or dev startup. Do not create an `IDevSeeder` for data that should be created via domain events (e.g. Stripe payout accounts — those are provisioned when `CredentialRegisteredEvent` fires on user registration). Fix the event flow, don't add a seeder that bypasses it.
 
-See [SEEDING_CONVENTIONS.md](./docs/SEEDING_CONVENTIONS.md) for the full rules.
+See [SEEDING_CONVENTIONS.md](./agents/SEEDING_CONVENTIONS.md) for the full rules.
 
 ## Module rules
 
-See [MODULAR_MONOLITH_RULES.md](./docs/MODULAR_MONOLITH_RULES.md).
+See [MODULAR_MONOLITH_RULES.md](./agents/MODULAR_MONOLITH_RULES.md).

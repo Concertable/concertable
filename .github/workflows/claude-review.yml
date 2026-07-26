@@ -26,7 +26,7 @@ jobs:
             Review this PR for a .NET 10 / React modular monolith called Concertable.
             Your final response will be posted verbatim as a PR comment, so write it as a review.
 
-            Follow the rules in `CLAUDE.md` and `MODULAR_MONOLITH_RULES.md` at the repo root.
+            Follow the rules in the repo-root `CLAUDE.md` and `api/agents/MODULAR_MONOLITH_RULES.md`.
             Pay particular attention to:
             - Module boundaries: cross-module calls must go through `IXModule` facades in `Module.Contracts`, never direct project references into another module's Application/Infrastructure.
             - DTO vs Response: services return DTOs from `Module.Application/DTOs`; controllers return DTOs verbatim unless a `Response` shape is genuinely needed.

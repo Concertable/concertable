@@ -163,7 +163,7 @@ and its workflow-registry/builder consumers. `ConcertStateMachine*` (a different
   `LEGAL_REQUIREMENTS.md` updated, title → "Deal Architecture", and a **staleness banner** added at the
   top (the §2+ workflow narrative still describes the pre-executor / `ConcertStage` design — a full
   narrative rewrite is pre-existing staleness, *not* created by this rename).
-- ✅ Updated references in `api/docs/CODE_PATTERNS.md`, `api/docs/MICROSERVICES_ARCHITECTURE.md`,
+- ✅ Updated references in `api/agents/CODE_PATTERNS.md`, `api/docs/MICROSERVICES_ARCHITECTURE.md`,
   `api/Concertable.B2B/ARCHITECTURE.md`, `api/Concertable.B2B/TECH_DEBT.md`.
 - ✅ Re-aligned the Rust plan → `plans/RUST_DEAL_MICROSERVICE.md` (`ContractEngine`→`DealEngine`,
   proto `concertable.contract.v1`→`concertable.deal.v1`, `message Contract`→`Deal`, scope

@@ -1,6 +1,6 @@
 # Microservice Communication
 
-> **Companion to** [MICROSERVICES_ARCHITECTURE.md](MICROSERVICES_ARCHITECTURE.md) and [MICROSERVICE_STEPS.md](/plans/MICROSERVICE_STEPS.md).
+> **Companion to** [MICROSERVICES_ARCHITECTURE.md](../docs/MICROSERVICES_ARCHITECTURE.md) and [MICROSERVICE_STEPS.md](/plans/MICROSERVICE_STEPS.md).
 > Those cover *what services exist* and *what order they extract*. This one covers *how they talk*.
 >
 > **Rule:** the protocol is chosen by the **consumer**, not by preference. If you can name who calls an endpoint, the protocol is already decided.

@@ -187,7 +187,7 @@ If a gRPC call returned an error (B2B Web logs `Status(StatusCode=...)`), the **
 
 ### When the logs still don't pinpoint it — add tracing
 
-If the resource logs, HTTP bodies, and DB/Stripe state still don't explain *why* a handler skipped/failed, add `ILogger` tracing to the server-side class rather than guessing. Read [`api/docs/DEBUGGING_CONVENTIONS.md`](../../../api/docs/DEBUGGING_CONVENTIONS.md) first and follow it: generic, future-useful logs (handler invoked/skipped/wrote, dispatcher lifecycle) get promoted to the project's `Log.cs` with `[LoggerMessage]` source-gen and **kept**; one-off probes stay inline and are removed once found. Then re-run the single test and read your new lines from the resource log in the console output.
+If the resource logs, HTTP bodies, and DB/Stripe state still don't explain *why* a handler skipped/failed, add `ILogger` tracing to the server-side class rather than guessing. Read [`api/agents/DEBUGGING_CONVENTIONS.md`](../../../api/agents/DEBUGGING_CONVENTIONS.md) first and follow it: generic, future-useful logs (handler invoked/skipped/wrote, dispatcher lifecycle) get promoted to the project's `Log.cs` with `[LoggerMessage]` source-gen and **kept**; one-off probes stay inline and are removed once found. Then re-run the single test and read your new lines from the resource log in the console output.
 
 ## Step 4 — Fix and verify
 
@@ -210,6 +210,6 @@ If the resource logs, HTTP bodies, and DB/Stripe state still don't explain *why*
 
 - These tests make **real Stripe test-mode calls** and use a **real ASB emulator** — they are not hermetic the way integration tests are. Flakiness is usually a too-tight `Polling` window on a genuinely-slow webhook, OR cross-suite contention (never run an API E2E and a UI E2E app at the same time — that's the `e2e_parallel_execution` failure root; the wrapper + `MaxCpuCount=1` serialize them).
 - The HTTP client here is a plain `new HttpClient()` against the deployed URL — there is **no** per-test `ITestOutputHelper` server-log capture like integration tests have. Server-side detail comes from the **forwarded Aspire resource logs** in the console output instead.
-- Seeding runs via `DevDbInitializer` (`IDevSeeder`, the dev/E2E path) — **not** `ITestSeeder`. If seed state is wrong, fix the dev seeders, and never seed event-sourced/read-model/payout rows directly (see `api/docs/SEEDING_CONVENTIONS.md`, memory `idevseder_not_itestseeder_for_e2e`).
+- Seeding runs via `DevDbInitializer` (`IDevSeeder`, the dev/E2E path) — **not** `ITestSeeder`. If seed state is wrong, fix the dev seeders, and never seed event-sourced/read-model/payout rows directly (see `api/agents/SEEDING_CONVENTIONS.md`, memory `idevseder_not_itestseeder_for_e2e`).
 - This suite has **no `E2E_BASELINE.md`** — that baseline is UI-only (Reqnroll DisplayNames). Every API E2E test is expected to pass; any failure is a regression, which is why `./e2e.ps1 api run` exits non-zero on failure.
 - Integration (in-process, mocked) tests are a separate suite → `integration-debug`. Browser scenarios → `e2e-ui-debug`. Both layers at once → `e2e-debug`.

@@ -1,6 +1,6 @@
 # Frontend Code Conventions
 
-The web/mobile counterpart to [`api/docs/CODE_CONVENTIONS.md`](../../api/docs/CODE_CONVENTIONS.md).
+The web/mobile counterpart to [`api/agents/CODE_CONVENTIONS.md`](../../api/agents/CODE_CONVENTIONS.md).
 Same voice: rule first, one-line rationale, a litmus test where it helps.
 
 Sibling of [`CODE_PATTERNS.md`](./CODE_PATTERNS.md): this file is **naming and style**, that one is
@@ -262,7 +262,7 @@ Two layers, because *which* backends a site may call and with *what* token is an
 
 Every server **read** is a `useQuery` and every server **write** is a `useMutation` (wrapped per the
 naming rule below). This is the frontend counterpart of the backend's *"Refit, not hand-rolled
-`HttpClient`"* ([`api/docs/CODE_PATTERNS.md`](../../api/docs/CODE_PATTERNS.md)): one sanctioned data
+`HttpClient`"* ([`api/agents/CODE_PATTERNS.md`](../../api/agents/CODE_PATTERNS.md)): one sanctioned data
 layer, never a bespoke one. **Do not** call an `api/xApi.ts` method from a `useEffect`, and never
 hand-roll `useState` + `useEffect` + a promise to load or send server data.
 

@@ -324,7 +324,7 @@ holds.
   by `TenantDevSeeder`/`TenantTestSeeder` alongside tenants — same documented direct-insert
   exception as tenants (deterministic ids; the handler re-announces idempotently over them). Only
   founding-Owner rows are ever seeded; invitation-created memberships are handler/API-written and
-  never seeded (extend `api/docs/SEEDING_CONVENTIONS.md`'s never-seed list).
+  never seeded (extend `api/agents/SEEDING_CONVENTIONS.md`'s never-seed list).
 - Exit grep: `GetByCreatedByUserIdAsync` — after this phase only the provisioning handler's
   idempotency check may use it.
 
