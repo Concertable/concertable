@@ -55,7 +55,7 @@ jobs:
         run: |
           git push --force \
             "https://x-access-token:${{ secrets.MIRROR_PAT }}@github.com/${{ matrix.repo }}.git" \
-            mirror-split:main
+            mirror-split:master
 
       - name: Verify ${{ matrix.repo }} matches the split commit
         env:
@@ -63,8 +63,8 @@ jobs:
         run: |
           set -euo pipefail
           remote_url="https://x-access-token:${{ secrets.MIRROR_PAT }}@github.com/${{ matrix.repo }}.git"
-          actual_sha="$(git ls-remote "$remote_url" refs/heads/main | awk '{print $1}')"
-          test -n "$actual_sha" || { echo "Mirror main was not found"; exit 1; }
+          actual_sha="$(git ls-remote "$remote_url" refs/heads/master | awk '{print $1}')"
+          test -n "$actual_sha" || { echo "Mirror master was not found"; exit 1; }
           test "$actual_sha" = "$EXPECTED_SHA" || {
             echo "Mirror drift after push: expected $EXPECTED_SHA, found $actual_sha"
             exit 1

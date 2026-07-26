@@ -21,7 +21,7 @@ regenerated on every push to `main`. Nothing flows back from a mirror into the m
 `.github/workflows/mirror.yml` runs on every push to `main`. For each service it runs
 `git subtree split --prefix=<folder>`, which produces a commit history containing only the
 commits that touched that folder (real dates, authors, and messages preserved), then
-force-pushes that history to the mirror repo's `main` branch.
+force-pushes that history to the mirror repo's `master` branch.
 
 `git subtree split` recomputes the history from scratch each run. That is fine at the
 current repo size. If it ever gets slow, swap the split step for
@@ -42,8 +42,8 @@ got it there, for reference / re-use:
    Actions). **Footgun:** the checkout step must set `persist-credentials: false`, or `actions/checkout`
    leaves the job `GITHUB_TOKEN` as an `extraheader` that overrides the `MIRROR_PAT` push creds and the
    cross-repo push 403s as `github-actions[bot]`.
-4. **Set each mirror's default branch to `main`** (the workflow pushes `main`), or change
-   the push target in `mirror.yml` to `main`.
+4. **Set each mirror's default branch to `master`** (the workflow pushes `master`), or change
+   the push target in `mirror.yml` to `master`.
 5. Trigger the first run: Actions → "Mirror services to standalone repos" → Run workflow
    (or just push to `main`).
 
