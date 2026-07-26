@@ -66,7 +66,7 @@ function fixPrompt(n, resolvedFile) {
     fileClause(resolvedFile),
     '',
     'Procedure:',
-    '1. Read `reviews/CLAUDE.md`, `.claude/skills/address-review/SKILL.md`, and the review file in full. Also read `CLAUDE.md` / the nearest area `CLAUDE.md`, `api/docs/CODE_PATTERNS.md`, and the relevant `CODE_CONVENTIONS.md` before changing code.',
+    '1. Read `reviews/CLAUDE.md`, `.claude/skills/address-review/SKILL.md`, and the review file in full. Also read `CLAUDE.md` / the nearest area `CLAUDE.md`, `api/agents/CODE_PATTERNS.md`, and the relevant `CODE_CONVENTIONS.md` before changing code.',
     '2. Pick the NEXT open finding: the first line matching "- [ ] **<ID>" under ## Findings. If there is none, report action="none", findingId=null, remainingOpen=0, and stop.',
     '3. Read that finding fully — file:line, description, severity, recommended fix, and ANY counter-argument it states.',
     '4. Classify it:',

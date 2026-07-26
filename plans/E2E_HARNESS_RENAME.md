@@ -52,7 +52,7 @@ a harness.)
 
 ### Phase 2 — Repoint every consumer and reference
 - Update ProjectReferences, `using`s, `InternalsVisibleTo`, `.slnx`, scripts, docs, skill paths.
-- **Gate:** `dotnet build api/Concertable.slnx` green (0 errors); `./e2e.ps1 ui regress` green (proves
+- **Gate:** `dotnet build api/Concertable.slnx` green (0 errors); `./scripts/e2e.ps1 ui regress` green (proves
   the harness still wires up and the suites resolve it); skill docs point at the new path.
 - `git rm` this plan in the completing commit.
 

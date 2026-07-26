@@ -10,7 +10,7 @@ Turn a **breaking change to a type exposed by a published, cross-boundary packag
 editing and let `dotnet build` teach you the topology one failure at a time.
 
 Read [`api/ARCHITECTURE.md`](../../../api/ARCHITECTURE.md) ("Cross-service contract distribution" +
-"the publish→sync loop") and [`plans/CLAUDE.md`](../../../plans/CLAUDE.md) ("Boundary-blocked
+"the publish→sync loop") and [`plans/AGENTS.md`](../../../plans/AGENTS.md) ("Boundary-blocked
 refactors") first — this skill is the *execution procedure* for exactly the situation those describe.
 
 ## When this applies (the diagnosis)

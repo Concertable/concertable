@@ -33,10 +33,10 @@ Both suites need Docker (SQL containers, ASB emulator, stripe-cli) and the Strip
 **Verify Docker with the real gate — `docker ps` is NOT enough.** `docker ps` answering (and even `docker run hello-world` succeeding, and a bare TCP connect to a published port) does NOT prove Docker is healthy: a half-started/flapping engine keeps `docker ps` answering and completes TCP handshakes at the host-side `docker-proxy` while host→container forwarding of real bytes for NEW containers is dead. The suite then dies later at SQL fixture startup with `pre-login handshake` resets and zero scenarios run. Use the data-round-trip probe:
 
 ```powershell
-./docker-health.ps1   # fresh container + published port + real HTTP round-trip + stability check; exit 1 = unhealthy
+./scripts/docker-health.ps1   # fresh container + published port + real HTTP round-trip + stability check; exit 1 = unhealthy
 ```
 
-`./e2e.ps1 api|ui ...` runs this gate automatically and refuses to boot on failure — but run it yourself first so you catch a bad engine before anything else. If it reports unhealthy, **STOP**: tell the user Docker is half-started/down and to wait for Docker Desktop to show **Running**, then retry. Do **not** rerun the suite or debug application code for this — it is an environment failure (see root `CLAUDE.md`). If a run dies instantly with a Stripe-auth / missing-config error, confirm the secrets are set before debugging anything else.
+`./scripts/e2e.ps1 api|ui ...` runs this gate automatically and refuses to boot on failure — but run it yourself first so you catch a bad engine before anything else. If it reports unhealthy, **STOP**: tell the user Docker is half-started/down and to wait for Docker Desktop to show **Running**, then retry. Do **not** rerun the suite or debug application code for this — it is an environment failure (see root `CLAUDE.md`). If a run dies instantly with a Stripe-auth / missing-config error, confirm the secrets are set before debugging anything else.
 
 Tell the user the plan and rough cost: **"Running the full E2E sweep — API E2E first (~5–7 min), then UI E2E (~25–30 min). I'll fix failures as I find them and report per layer."**
 
@@ -47,12 +47,12 @@ The two E2E apps must **never** run concurrently (the `e2e_parallel_execution` f
 Run and fix the API suite to green using the full **`e2e-api-debug`** flow:
 
 ```powershell
-./e2e.ps1 api run        # both services; exits non-zero on any failure
+./scripts/e2e.ps1 api run        # both services; exits non-zero on any failure
 ```
 
 - Watch startup for hangs (Step 0b in `e2e-api-debug` — ASB emulator exit 139, payout-account stall, etc.).
 - For each failure, re-run the single test with `--filter "FullyQualifiedName~<test>"` and diagnose by failure shape: synchronous `ShouldBe` body, `Polling.UntilAsync` timeout → **forwarded Aspire resource logs** (`Resources.payment-web` etc.), or Stripe value mismatch. Full mechanics: **`e2e-api-debug`** Steps 2–3.
-- Fix the root cause (service / handler / dispatcher / fixture), re-run the test, then re-run `./e2e.ps1 api run` until green.
+- Fix the root cause (service / handler / dispatcher / fixture), re-run the test, then re-run `./scripts/e2e.ps1 api run` until green.
 
 **Do not start the UI layer until the API layer is green.** A backend flow that's red here will also fail the corresponding UI scenario, and you'd be debugging it the slow way. Getting API green first means any remaining UI failure is real UI-layer work.
 
@@ -63,12 +63,12 @@ If the user scoped to `ui` only, skip this step.
 Run and fix the UI suite to green using the full **`e2e-ui-debug`** flow:
 
 ```powershell
-./e2e.ps1 ui run         # all 30 Reqnroll scenarios, headless
+./scripts/e2e.ps1 ui run         # all 30 Reqnroll scenarios, headless
 ```
 
 - Watch startup (same Aspire AppHost, same startup-hang playbook).
 - For each failed scenario, re-run it alone with `--filter "DisplayName~<scenario>"`, and diagnose **HTTP 4xx/5xx first**, then gRPC (callee resource log), then browser console / on-screen errors, then the failure screenshot. Full mechanics: **`e2e-ui-debug`** Steps 2–3.
-- Fix the real bug (service, page object, step def, or test support), re-run the scenario, then re-run `./e2e.ps1 ui run`.
+- Fix the real bug (service, page object, step def, or test support), re-run the scenario, then re-run `./scripts/e2e.ps1 ui run`.
 - If a scenario **crossed the line** (newly passes or newly fails vs `api/Concertable.Shared/tests/Concertable.E2ETests/E2E_BASELINE.md`), prompt the user to update the baseline (move it between `passing`/`failing`, bump the `(N)` counts, update the summary table). The UI baseline is the only baseline — the API suite has none.
 
 If the user scoped to `api` only, skip this step.

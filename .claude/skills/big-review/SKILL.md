@@ -20,7 +20,7 @@ Everything else — the rule docs, the five lenses, the ≥80-confidence filter 
 
 ## When NOT to use
 
-- **A review whose Coverage checklist is already fully `[x]` — the staging pass is DONE.** Don't re-invoke this skill; it only re-reports "complete" and does zero useful work. Pointing at a completed review, or "address the comments/findings", means **work the findings** and then delete the file when they're resolved — see [`reviews/CLAUDE.md`](../../../reviews/CLAUDE.md) for that convention and the delete-when-addressed lifecycle.
+- **A review whose Coverage checklist is already fully `[x]` — the staging pass is DONE.** Don't re-invoke this skill; it only re-reports "complete" and does zero useful work. Pointing at a completed review, or "address the comments/findings", means **work the findings** and then delete the file when they're resolved — see [`reviews/AGENTS.md`](../../../reviews/AGENTS.md) for that convention and the delete-when-addressed lifecycle.
 - Normal-sized branch → `code-review`.
 - Only re-review commits added since a prior review → `incremental-review`.
 - An exhaustive multi-agent pass → run a `Workflow` (ultracode).
