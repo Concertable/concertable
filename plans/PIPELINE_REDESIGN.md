@@ -89,6 +89,17 @@ Every one of these is downstream of: *required checks are not authoritative on t
 - **N9 — `[skip-e2e]` is human-intuition gating.** The `create-pr` skill decides the tier "by
   intuition"; #224 needed the token retroactively. Tier selection is a guess made per-PR by a human,
   not derived deterministically — the exact opposite of what a gate should be.
+- **N10 — Queue admits a PR but never dispatches its `merge_group` run (→ ~1h timeout → eject).**
+  (= seed #9, logged live.) PR #224 (`417d316f`) entered the queue `AWAITING_CHECKS` and sat **~53 min
+  with no `merge_group` run ever dispatched**, then GitHub ejected it on `check_response_timeout` (60
+  min). Earlier SHAs of the same PR *did* dispatch — so dispatch is **intermittent**, and the seed's
+  own note fingers the likely aggravator: **dequeue/re-queue churn from `auto-merge.yml`'s poller while
+  a prior run is in flight.** This is the strongest evidence yet that the external poller is
+  net-negative: the machinery built to un-stick the queue is churning it into a *new* stuck state. It
+  is a distinct symptom of the same root cause (unreliable admission compensated from outside), and it
+  is **cured by the same fix** — deterministic single check (Phase 1) + delete the poller (Phase 3) —
+  not by a fourth `if` branch. Immediate relief needs an escape hatch (break-glass, Phase 0) so a
+  CLEAN PR is never held hostage by the queue for an hour.
 
 ## Inventory summary (what each workflow is, and its verdict)
 
@@ -216,6 +227,21 @@ its replacement is proven.** CI-hardening (no Azure) comes first; cloud/ephemera
 behind the creds gate. Authoring artifacts (Terraform, new workflow jobs) is reversible working-tree
 work; the **irreversible steps are the `terraform apply` / ruleset change / merge** — those get an
 explicit go-ahead.
+
+### Immediate stabilization (day 0 — stop the bleeding before the full arc)
+The pain right now is that a CLEAN PR can be held hostage by the queue for ~an hour (N10) with manual
+direct-merge the only escape, and the poller may be *causing* the non-dispatch. Two reversible live
+actions give relief before Phase 0's Terraform is even written:
+- **Add a break-glass bypass actor to the ruleset** (a repo admin), so a CLEAN PR can be admin-merged
+  the instant the queue misbehaves — no more direct-merge-API scrambles, no hour-long hostage. This is
+  Phase 0's payload done by hand first (`gh api PATCH repos/Concertable/concertable/rulesets/17393335`),
+  to be replaced by the Terraform-managed version in Phase 0. Trivially reversible (remove the actor).
+- **Disable `auto-merge.yml`** (`gh workflow disable`), removing the dequeue/re-queue churn that N10
+  fingers as the non-dispatch aggravator. With the break-glass hatch in place we don't need the poller
+  to un-stick anything. Reversible (`gh workflow enable`); it's deleted for good in Phase 3.
+
+Both change live repo state, so they wait on an explicit go-ahead — but they're the fastest route to
+"merges work again," ahead of the full migration.
 
 ### Phase 0 — Rulesets-as-code + break-glass (unblocks everything). Fixes #7.
 - **What:** Stand up the Terraform `github` provider; `import` ruleset `17393335` so the code is a
