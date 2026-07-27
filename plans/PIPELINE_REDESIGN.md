@@ -232,7 +232,7 @@ stack, but *on the PR* with the quarantine lane — PR-authoritative immediately
 - ⬜ **Phase 0 (Terraform)** — remaining: author the `github` provider config that **imports the
   now-live ruleset** (bypass + `ci-complete`-only) so protection is code-managed. Doing it now imports
   the *final* desired state directly.
-- 🔶 **Phase 2** — PR-authoritative e2e + flake quarantine shipping (branch `Refactor/PipelineRearchitecture`).
+- ✅ **Phase 2** — PR-authoritative e2e + flake quarantine (merged: pr-227, pr-229).
   The classifier now runs the real e2e on `pull_request` (and the queue), skipping only the redundant
   post-merge push. The flaky Customer search-results scenario is tagged `@quarantine`; the blocking UI
   lane runs `Category!=quarantine` and a new **non-gating** `e2e-ui-quarantine` job (absent from
@@ -242,11 +242,22 @@ stack, but *on the PR* with the quarantine lane — PR-authoritative immediately
   default 5s visibility timeout. The `[skip-e2e]`/`[skip-tests]`/label tier overrides (N9) are **removed**
   — tier is now derived solely from the diff (they misfired on pr-227: a commit message that *mentioned*
   `[skip-e2e]` silently disabled the PR e2e, which is exactly the human-intuition fragility N9 called out).
-  The merge-confirm monitor guidance (`AGENTS.md`) is now a **passive watch** — the auto-merge toggle
-  self-heal is gone (it caused the N10 re-queue churn live on pr-227; Phase 1's non-skippable `ci-complete`
-  removed the stall it was compensating for). **Deferred (not blocking):** wiring `E2E_BASELINE.md` as the
-  CI quarantine source of truth (D3) — the tag is the mechanism for now. **Un-quarantine** the scenario
-  once it's green N consecutive runs.
+  A further fix landed in pr-229: every job now **no-ops to success, never skips** (unit/integration and
+  the quarantine lane matched build/carve/e2e) — a single skipped check, even a non-required one, stalls
+  GitHub's queue admission (the inert-PR N10 stall). **Correction to an earlier assumption:** Phase 1's
+  non-skippable `ci-complete` did **not** fully cure N10 — native auto-merge still intermittently fails to
+  admit a green PR (a GitHub *re-evaluation* glitch; pr-229 needed a one-time auto-merge re-assert to
+  admit). That is handled by *detection*, not automation (see Phase 3). **Deferred (not blocking):** wiring
+  `E2E_BASELINE.md` as the CI quarantine source of truth (D3) — the tag is the mechanism for now.
+  **Un-quarantine** the scenario once it's green N consecutive runs.
+- 🔶 **Phase 3** — de-padding in progress. The `auto-merge.yml` poller was already retired in Phase 1
+  (replaced by the minimal `enable-auto-merge.yml`); the dead `ci-gate` job is **deleted** (superseded by
+  `ci-complete`, which the ruleset alone requires) and `mirror.yml` is **off the hot path** (manual-only;
+  N7). The merge-confirm monitor (`AGENTS.md`) is now a **3-outcome classifier** — merged / CI-failed
+  (name the check, STOP, never retry) / green-but-unadmitted (the re-eval glitch, surfaced as its own state
+  for a one-time human nudge, never an automated poke). No retry machinery is added: a real failure is
+  surfaced to debug, the glitch is surfaced to nudge, and the two are told apart by inspecting `merge_group`
+  run results (not just PR state — seed #4: ejected-after-failure looks identical to never-admitted).
 - ⬜ **Phases 3–5** — outstanding (below).
 
 Each phase is independently shippable, ends green, and is reversible. **A gate is never removed before
