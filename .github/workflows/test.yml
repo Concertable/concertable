@@ -25,16 +25,9 @@ jobs:
     #                 run_e2e + run_e2e_ui false: a dep bump can break compile/tests so those gate, but it has ZERO
     #                 runtime delta so E2E no-ops.
     #   - anything else                                                            -> all four true (full CI).
-    # MANUAL MERGE-TIER OVERRIDES: a commit-message token in the diff range, OR a PR label of the same name,
-    # turns gates OFF (never on). Tokens live in the commits so they read identically on the PR and in the
-    # queue; labels aren't in the merge_group payload, so we resolve the PR (from the event on a PR, from the
-    # gh-readonly-queue/<base>/pr-<N>-<sha> ref in the queue) and read its labels via the API — so a label
-    # ticked in the UI also holds through the merge-queue run. build + carve are NEVER skippable: a change
-    # that doesn't compile must never merge.
-    #   [skip-e2e-ui] / label skip-e2e-ui -> run_e2e_ui=false                                  (build+carve, unit+integration, e2e-api run)
-    #   [skip-e2e]    / label skip-e2e    -> run_e2e=false + run_e2e_ui=false                   (build+carve, unit+integration run)
-    #   [skip-tests]  / label skip-tests  -> run_tests=false + run_e2e=false + run_e2e_ui=false (build+carve only — the compile floor)
-    # Everything still merges through the queue, which rebuilds on current main, so a skip can never merge stale.
+    # Tier is derived SOLELY from the changed-file set — no commit-message token or PR-label override. Gating
+    # by human intuition (the old [skip-e2e]/[skip-tests]/label tiers) was fragile — a commit message that
+    # merely *mentioned* a token disabled the gate — and non-deterministic; the diff is the single source.
     # NOTE: `ci-complete` is the single required check (see that job) and tolerates a legitimately-skipped need,
     # so a gated-off job may skip cleanly without stalling admission. build / carve / e2e keep their no-op-green
     # step guards (harmless — a green no-op reads the same as a skip to ci-complete); unit / integration skip
@@ -42,9 +35,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      pull-requests: read
-    env:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     outputs:
       run_code:   ${{ steps.detect.outputs.run_code }}
       run_tests:  ${{ steps.detect.outputs.run_tests }}
@@ -93,39 +83,6 @@ jobs:
             echo "-> package-only bump; build + carve + unit + integration gate, E2E no-ops."
           else
             echo "-> code change; full CI."
-          fi
-          # Manual merge-tier overrides: a commit-message [token] in the diff range, OR a PR label of the
-          # same name. Fixed-string, case-insensitive; each only turns gates OFF, never on. `[skip-e2e]`
-          # does NOT match inside `[skip-e2e-ui]` (the trailing `]` differs) and labels match the whole
-          # name exactly, so the three tiers stay independent.
-          # Tokens read from the commits (identical on PR and in the queue). Labels aren't in the
-          # merge_group payload, so resolve the PR number — from the event on a PR, from the
-          # gh-readonly-queue/<base>/pr-<N>-<sha> ref in the queue — and read its labels via the API.
-          prnum=""
-          case "${{ github.event_name }}" in
-            pull_request) prnum="${{ github.event.pull_request.number }}";;
-            merge_group)  prnum="$(printf '%s' '${{ github.event.merge_group.head_ref }}' | sed -nE 's#.*/pr-([0-9]+)-[0-9a-f]+$#\1#p')";;
-          esac
-          labels=""
-          if [ -n "$prnum" ]; then
-            labels="$(gh pr view "$prnum" --json labels -q '.labels[].name' 2>/dev/null || true)"
-          fi
-          echo "merge-tier source: PR #${prnum:-none}, labels: ${labels:-<none>}"
-          skip() {  # true if [$1] token is in the range OR a label named $1 is on the PR
-            git log --format='%B' "$base..$head" | grep -qiF "[$1]" && return 0
-            printf '%s\n' "$labels" | grep -qixF "$1"
-          }
-          if skip skip-e2e-ui; then
-            run_e2e_ui=false
-            echo "-> skip-e2e-ui (token/label); UI E2E off (build + carve + unit + integration + API E2E still run)."
-          fi
-          if skip skip-e2e; then
-            run_e2e=false; run_e2e_ui=false
-            echo "-> skip-e2e (token/label); all E2E off (build + carve + unit + integration still run)."
-          fi
-          if skip skip-tests; then
-            run_tests=false; run_e2e=false; run_e2e_ui=false
-            echo "-> skip-tests (token/label); test suites + E2E off (build + carve compile floor still runs)."
           fi
           # E2E runs for real on the PR (the PR is authoritative — green PR == mergeable) and again in the
           # merge queue (re-verify against live main). The post-merge push would only re-run what the queue
@@ -495,7 +452,7 @@ jobs:
   unit-tests:
     runs-on: ubuntu-latest
     needs: [build, changes]
-    # Gated by run_tests (off for non-code and for [skip-tests]); build + carve stay on run_code. Not a required
+    # Gated by run_tests (off for non-code); build + carve stay on run_code. Not a required
     # check (ci-gate aggregates it) — so it can skip cleanly. Skips in the merge queue too: it already ran on the
     # PR, and dropping the redundant queue run removes the PR+queue double-run. ci-gate tolerates the skipped
     # result (stays green in the queue). Still runs on the post-merge push to main.
@@ -546,7 +503,7 @@ jobs:
   integration-tests:
     runs-on: ubuntu-latest
     needs: [build, changes]
-    # Gated by run_tests (off for non-code and for [skip-tests]); build + carve stay on run_code. Not a required
+    # Gated by run_tests (off for non-code); build + carve stay on run_code. Not a required
     # check (ci-gate aggregates it) — so it can skip cleanly. Skips in the merge queue too: it already ran on the
     # PR, and dropping the redundant queue run removes the PR+queue double-run. ci-gate tolerates the skipped
     # result (stays green in the queue). Still runs on the post-merge push to main.
@@ -710,11 +667,11 @@ jobs:
       ServiceAuth__AuthClientSecret: ${{ secrets.SERVICE_AUTH_AUTH_CLIENT_SECRET }}
 
     steps:
-      # Gated on run_e2e_ui (its own tier): off for non-code, package-only, [skip-e2e-ui], [skip-e2e], [skip-tests].
+      # Gated on run_e2e_ui: off for non-code and package-only changes.
       # Aggregated by ci-complete, which tolerates a skipped need, so it no-ops green when off.
-      - name: Skip UI E2E (no runtime change or [skip-e2e-ui])
+      - name: Skip UI E2E (no runtime change)
         if: needs.changes.outputs.run_e2e_ui != 'true'
-        run: echo "UI E2E gated off (non-code / package-only / [skip-e2e-ui] / [skip-e2e] / [skip-tests]) -> build + carve gate this."
+        run: echo "UI E2E gated off (non-code / package-only) -> build + carve gate this."
 
       - uses: actions/checkout@v4
         if: needs.changes.outputs.run_e2e_ui == 'true'

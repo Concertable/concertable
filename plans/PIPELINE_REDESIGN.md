@@ -239,9 +239,14 @@ stack, but *on the PR* with the quarantine lane — PR-authoritative immediately
   `ci-complete`'s needs) runs `Category=quarantine` on the PR. To make the tag filterable past the
   trait-collapse tooling, `StripFeatureTraits` now preserves the `quarantine` Category. The flake fix:
   `FindPage.ApplyFiltersAsync` waits for the `/header?` search response instead of relying on the bare
-  default 5s visibility timeout. **Deferred (not blocking):** removing the `[skip-e2e]`/label tier
-  overrides (N9), and wiring `E2E_BASELINE.md` as the CI quarantine source of truth (D3) — the tag is
-  the mechanism for now. **Un-quarantine** the scenario once it's green N consecutive runs.
+  default 5s visibility timeout. The `[skip-e2e]`/`[skip-tests]`/label tier overrides (N9) are **removed**
+  — tier is now derived solely from the diff (they misfired on pr-227: a commit message that *mentioned*
+  `[skip-e2e]` silently disabled the PR e2e, which is exactly the human-intuition fragility N9 called out).
+  The merge-confirm monitor guidance (`AGENTS.md`) is now a **passive watch** — the auto-merge toggle
+  self-heal is gone (it caused the N10 re-queue churn live on pr-227; Phase 1's non-skippable `ci-complete`
+  removed the stall it was compensating for). **Deferred (not blocking):** wiring `E2E_BASELINE.md` as the
+  CI quarantine source of truth (D3) — the tag is the mechanism for now. **Un-quarantine** the scenario
+  once it's green N consecutive runs.
 - ⬜ **Phases 3–5** — outstanding (below).
 
 Each phase is independently shippable, ends green, and is reversible. **A gate is never removed before
