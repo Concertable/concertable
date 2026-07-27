@@ -222,6 +222,18 @@ stack, but *on the PR* with the quarantine lane — PR-authoritative immediately
 
 # Step 3 — Phased migration plan
 
+## STATUS (live)
+- ✅ **Immediate stabilization** — break-glass bypass applied to ruleset `17393335`
+  (`current_user_can_bypass: always`); the `Auto-merge` poller workflow `disabled_manually`.
+- ✅ **Phase 1** — `ci-complete` shipped to `main` (PR #226, merged `42e08574` via break-glass), and
+  the ruleset repointed to require **only** `ci-complete`. The multi-check + skippable surface that
+  stalled admission/dispatch is gone. `auto-merge.yml` poller replaced by the minimal
+  `enable-auto-merge.yml`. State applied imperatively (API), not yet captured in Terraform.
+- ⬜ **Phase 0 (Terraform)** — remaining: author the `github` provider config that **imports the
+  now-live ruleset** (bypass + `ci-complete`-only) so protection is code-managed. Doing it now imports
+  the *final* desired state directly.
+- ⬜ **Phases 2–5** — outstanding (below).
+
 Each phase is independently shippable, ends green, and is reversible. **A gate is never removed before
 its replacement is proven.** CI-hardening (no Azure) comes first; cloud/ephemeral-env work is last,
 behind the creds gate. Authoring artifacts (Terraform, new workflow jobs) is reversible working-tree
