@@ -452,11 +452,11 @@ jobs:
   unit-tests:
     runs-on: ubuntu-latest
     needs: [build, changes]
-    # Gated by run_tests (off for non-code); build + carve stay on run_code. Not a required
-    # check (ci-gate aggregates it) — so it can skip cleanly. Skips in the merge queue too: it already ran on the
-    # PR, and dropping the redundant queue run removes the PR+queue double-run. ci-gate tolerates the skipped
-    # result (stays green in the queue). Still runs on the post-merge push to main.
-    if: needs.changes.outputs.run_tests == 'true' && github.event_name != 'merge_group'
+    # Gated by run_tests (off for non-code); build + carve stay on run_code. The job ALWAYS runs and reports
+    # success — it NEVER skips: a skipped check (even a non-required one) can stall GitHub's merge-queue
+    # admission (the inert-PR N10 stall), so when there's nothing to run the steps no-op to green instead.
+    # The real test run is gated to the PR + post-merge push; it no-ops in the merge queue (already ran on
+    # the PR) — a green no-op, not a skip.
     permissions:
       contents: read
       packages: read
@@ -483,14 +483,21 @@ jobs:
           - api/Concertable.Shared/tests/Concertable.Kernel.UnitTests/Concertable.Kernel.UnitTests.csproj
 
     steps:
+      - name: No-op (no code changed, or merge-queue re-run)
+        if: needs.changes.outputs.run_tests != 'true' || github.event_name == 'merge_group'
+        run: echo "Nothing to run here -> reporting success WITHOUT skipping the check (a skipped check can stall queue admission)."
+
       - uses: actions/checkout@v4
+        if: needs.changes.outputs.run_tests == 'true' && github.event_name != 'merge_group'
 
       - name: Set up .NET
+        if: needs.changes.outputs.run_tests == 'true' && github.event_name != 'merge_group'
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.x'
 
       - name: Cache NuGet packages
+        if: needs.changes.outputs.run_tests == 'true' && github.event_name != 'merge_group'
         uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
@@ -498,16 +505,17 @@ jobs:
           restore-keys: nuget-${{ runner.os }}-
 
       - name: Run ${{ matrix.project }}
+        if: needs.changes.outputs.run_tests == 'true' && github.event_name != 'merge_group'
         run: dotnet test ${{ matrix.project }} --configuration Release
 
   integration-tests:
     runs-on: ubuntu-latest
     needs: [build, changes]
-    # Gated by run_tests (off for non-code); build + carve stay on run_code. Not a required
-    # check (ci-gate aggregates it) — so it can skip cleanly. Skips in the merge queue too: it already ran on the
-    # PR, and dropping the redundant queue run removes the PR+queue double-run. ci-gate tolerates the skipped
-    # result (stays green in the queue). Still runs on the post-merge push to main.
-    if: needs.changes.outputs.run_tests == 'true' && github.event_name != 'merge_group'
+    # Gated by run_tests (off for non-code); build + carve stay on run_code. The job ALWAYS runs and reports
+    # success — it NEVER skips: a skipped check (even a non-required one) can stall GitHub's merge-queue
+    # admission (the inert-PR N10 stall), so when there's nothing to run the steps no-op to green instead.
+    # The real test run is gated to the PR + post-merge push; it no-ops in the merge queue (already ran on
+    # the PR) — a green no-op, not a skip.
     permissions:
       contents: read
       packages: read
@@ -531,14 +539,21 @@ jobs:
           - api/Concertable.Search/tests/Concertable.Search.IntegrationTests/Concertable.Search.IntegrationTests.csproj
 
     steps:
+      - name: No-op (no code changed, or merge-queue re-run)
+        if: needs.changes.outputs.run_tests != 'true' || github.event_name == 'merge_group'
+        run: echo "Nothing to run here -> reporting success WITHOUT skipping the check (a skipped check can stall queue admission)."
+
       - uses: actions/checkout@v4
+        if: needs.changes.outputs.run_tests == 'true' && github.event_name != 'merge_group'
 
       - name: Set up .NET
+        if: needs.changes.outputs.run_tests == 'true' && github.event_name != 'merge_group'
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.x'
 
       - name: Cache NuGet packages
+        if: needs.changes.outputs.run_tests == 'true' && github.event_name != 'merge_group'
         uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
@@ -546,6 +561,7 @@ jobs:
           restore-keys: nuget-${{ runner.os }}-
 
       - name: Run ${{ matrix.project }}
+        if: needs.changes.outputs.run_tests == 'true' && github.event_name != 'merge_group'
         run: dotnet test ${{ matrix.project }} --configuration Release
 
   ci-gate:
