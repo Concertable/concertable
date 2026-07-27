@@ -172,7 +172,7 @@ This is not monorepo friction to delete; it is exactly what independently-deploy
 survives the repo split. Adding a *method* is safe (additive); changing *types consumers already use* is
 not (no back-compat shim for a return-type change).
 
-`platform-sync.yml` automates the second step: after `Publish packages` ships on master it opens one
+`platform-sync.yml` automates the second step: after `Publish packages` ships on main it opens one
 `chore/platform-sync-<version>` PR bumping every service's pin, set to auto-merge. **Non-breaking →
 green → merges hands-off. Breaking → red at exactly the consumers to migrate → do the migration in that
 PR** (now legal — the package exists), and it merges when CI greens. Full design + one-time repo setup:

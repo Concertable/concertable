@@ -29,7 +29,7 @@ diff is against the wrong repo/branch. So identify the checkout first, then the 
 
 - **Checkout** = `git rev-parse --show-toplevel` + `git branch --show-current`. Echo both so a
   wrong-checkout run is caught immediately, not silently reviewed.
-- **Start** = merge-base with master: `git merge-base master HEAD` (reviews the whole branch).
+- **Start** = merge-base with main: `git merge-base main HEAD` (reviews the whole branch).
 - **End** = `HEAD` (`git rev-parse HEAD`).
 
 (The `incremental-review` wrapper overrides **Start** with the SHA from the review markdown's marker; do not change anything else.)
@@ -40,12 +40,12 @@ Show the checkout + range to the user:
 git rev-parse --show-toplevel
 git branch --show-current
 git rev-parse HEAD
-git merge-base master HEAD
+git merge-base main HEAD
 git log --oneline "<start>..HEAD"
 git diff "<start>..HEAD" --stat
 ```
 
-If the range is empty **or** the current branch is `master`, that is the wrong-checkout symptom (the
+If the range is empty **or** the current branch is `main`, that is the wrong-checkout symptom (the
 session was started in the main checkout, not the feature's worktree) — say so and stop rather than
 reviewing nothing.
 

@@ -2,7 +2,7 @@
 
 > Cosmetic-but-cross-cutting rename of a shared **test harness** project. Not boundary-blocked (test
 > projects aren't published packages — everything references it by ProjectReference), so it's a single
-> PR, but it touches many files. Do it on a `Refactor/E2EHarnessRename` branch off master, after
+> PR, but it touches many files. Do it on a `Refactor/E2EHarnessRename` branch off main, after
 > `Feature/BookingAgreement` lands. Sits alongside `plans/PDF_RENDERER_RENAME.md` / `plans/b2b/DEAL_RENAME.md`.
 
 ## Why

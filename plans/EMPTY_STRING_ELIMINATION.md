@@ -37,7 +37,7 @@ but **behavior-changing** → verify with an integration boot-check.
 | `Customer.Web:78`, `Auth:84`, `B2B.Web:114`, `B2B.Workers:60` | `Auth:Authority` (has service-discovery fallback) | ✅ **DONE** — fail-fast throw when explicit key AND fallback both missing; `null!` in env "Testing" (Kernel `AddClientCredentials` already skips the URI when Authority is blank, so no startup throw) |
 | `Customer.Web:79`, `Auth:85`, `B2B.Web:115`, `B2B.Workers:61` | `ServiceAuth:ClientId` | ✅ **DONE** — fail-fast; `null!` in "Testing" |
 | `Customer.Web:80`, `Auth:86`, `B2B.Web:116`, `B2B.Workers:62` | `ServiceAuth:ClientSecret` | 🟠 **PARTIAL** — hosts now bind it **null** when absent (`9ecb4c0b`'s `?? string.Empty` was a forbidden cosmetic swap; replaced with assign-only-when-present). Full fix — `TokenServiceOptions.ClientSecret` → `string?` + token service **omits** the `client_secret` param when null — is a **published Kernel change → Cat C cut-over** |
-| `Customer.Web:88`, `Auth:102`, `B2B.Web:126`, `Payment.Web:64`, `Payment.Workers:39`, `Search.Workers:26`, `B2B.Seed.Simulator:22` | asb `ConnectionString` | ✅ **DONE** — Testing-guarded `?? (IsEnvironment("Testing") ? null! : throw)`, same shape as `Authority`/`ClientId`. (An *earlier* unconditional throw was wrong once `master` merged in: `a44a0a69` made `AddAzureServiceBusTransport` **eagerly** invoke the configure lambda to probe `ServiceName`, so the asb throw fired at integration-host **boot** — the bus-mocking in the fixtures can't prevent a throw in the app's own registration path. `null!` is safe, not a mask: the client is a lazy factory consumed only by the receiver (removed) + `AzureServiceBusTransport` (`MockBusTransport`), so it's never constructed in Testing and the `null!` is never read.) |
+| `Customer.Web:88`, `Auth:102`, `B2B.Web:126`, `Payment.Web:64`, `Payment.Workers:39`, `Search.Workers:26`, `B2B.Seed.Simulator:22` | asb `ConnectionString` | ✅ **DONE** — Testing-guarded `?? (IsEnvironment("Testing") ? null! : throw)`, same shape as `Authority`/`ClientId`. (An *earlier* unconditional throw was wrong once `main` merged in: `a44a0a69` made `AddAzureServiceBusTransport` **eagerly** invoke the configure lambda to probe `ServiceName`, so the asb throw fired at integration-host **boot** — the bus-mocking in the fixtures can't prevent a throw in the app's own registration path. `null!` is safe, not a mask: the client is a lazy factory consumed only by the receiver (removed) + `AzureServiceBusTransport` (`MockBusTransport`), so it's never constructed in Testing and the `null!` is never read.) |
 | `Payment.Infrastructure/.../Webhook/WebhookService.cs:27` | Stripe `WebhookSecret` | ✅ **DONE `df51206f`** — constructor throw (lazy scoped service; ValidateOnStart would break Testing boot) |
 
 ### B · gRPC wire boundary (proto3 strings can't be null) — PUBLISHED Payment package → CUTOVER
@@ -83,7 +83,7 @@ platform-sync. Use `/package-cutover`.
 - `Messaging.AzureServiceBus/Options/AzureServiceBusOptions.cs` — `= ""` property defaults → `null!`
   (PUBLISHED Messaging package; goes with the config/Messaging publish).
 
-## Current worktree state — `Fix/TechDebtSweep` (off `origin/master`)
+## Current worktree state — `Fix/TechDebtSweep` (off `origin/main`)
 
 Path: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Fix\TechDebtSweep`
 
