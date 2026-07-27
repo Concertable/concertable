@@ -69,27 +69,32 @@ An `api/**` branch that's behind also risks a stale `<ConcertablePlatformVersion
 
 ## Confirming a PR merge — Bash background until-loop, never `Monitor`
 
-After enabling auto-merge (or when a merge lands async via the merge queue), confirm it with a **Bash `run_in_background` until-loop** that exits the instant `gh pr view <PR> --json state -q .state` is `MERGED` or `CLOSED` — one immediate completion notification.
+After enabling auto-merge (or when a merge lands async via the merge queue), confirm it with a **Bash `run_in_background` until-loop** that exits the instant `gh pr view <PR> --json state -q .state` is `MERGED` or `CLOSED` — one immediate completion notification. **Report the merge the moment the loop fires — don't sit on the notification.**
 
-**Also catch the silent stall — not just the merge.** A `CLEAN`, auto-merge-ON PR that GitHub never admits to the queue (`mergeQueueEntry == null`) sits `OPEN` forever: never merges, never errors, queue idle. Cause: auto-merge was enabled while a required check was still pending, then that check resolved to `skipped` (the non-code classifier skips e2e/unit/integration on the PR) and GitHub failed to re-evaluate admission. **This once burned an hour.** The loop must detect it and self-heal: `OPEN` + not-in-queue for a few polls ⇒ **toggle auto-merge** (`gh pr merge --disable-auto <PR>` then `--auto <PR>`) to force admission. (`.github/workflows/auto-merge.yml` now re-asserts on `check_suite: completed`, so it should be rare — the monitor is the backstop.)
+**Watch passively — do NOT toggle auto-merge to "un-stick" the queue.** The old guidance here toggled
+auto-merge (`--disable-auto` then `--auto`) whenever a PR sat `OPEN`-and-not-queued for a few polls, to
+force admission past a stalled `skipped` required check. That stall cause is **gone** — Phase 1 made
+`ci-complete` the single required check and it *never* skips (see `plans/PIPELINE_REDESIGN.md`), so
+GitHub admits and merges natively without help. The toggle is now the *cause* of trouble, not the cure:
+a dequeue/re-queue mid-flight churns the queue into a **redundant ~27-min run** (this is N10 — it
+happened live on pr-227). **Normal queue admission takes a few minutes after a PR goes `CLEAN`; that is
+not a stall.** So the loop only *watches* and reports; it never re-queues.
 
 - **Never use the `Monitor` tool** for a single "tell me when it merges" — it's for streaming many events, and its detached poller silently missed merges here (it timed out instead of firing).
 - **Never swallow poll errors** (`2>/dev/null || continue`) — a broken `gh` then looks identical to "still waiting". Capture stderr into the state (`2>&1`), echo the state every poll, and **cap** the loop so a persistent failure surfaces instead of hanging forever.
+- **If it genuinely sits `OPEN` past the cap, surface it — don't act.** A long stall now means something
+  actually wrong (not a skipped check), so hand it back for a human/agent decision rather than blindly
+  toggling. Break-glass admin-merge is the escape hatch if the queue truly misbehaves.
 
 ```bash
-pr=<PR>; repo=$(gh repo view --json nameWithOwner -q .nameWithOwner); max=120; i=0; stuck=0
+pr=<PR>; max=90; i=0
 while :; do i=$((i+1))
-  state=$(gh pr view "$pr" --json state -q .state 2>&1)
-  inq=$(gh api graphql -f query="{repository(owner:\"${repo%/*}\",name:\"${repo#*/}\"){pullRequest(number:$pr){mergeQueueEntry{state}}}}" -q '.data.repository.pullRequest.mergeQueueEntry!=null' 2>&1)
-  echo "poll $i: state=[$state] inQueue=[$inq]"
-  case "$state" in MERGED|CLOSED) echo ">>> PR #$pr $state"; exit 0;; esac
-  if [ "$state" = OPEN ] && [ "$inq" != true ]; then stuck=$((stuck+1)); else stuck=0; fi
-  if [ "$stuck" -ge 3 ]; then
-    echo ">>> PR #$pr STUCK (auto-merge on, not admitted to queue) — toggling to force admission"
-    gh pr merge --disable-auto "$pr" >/dev/null 2>&1 || true; gh pr merge --auto "$pr"; stuck=0
-  fi
-  [ "$i" -ge "$max" ] && { echo ">>> PR #$pr still [$state] after $max polls — surfacing"; exit 1; }
-  sleep 30
+  state=$(gh pr view "$pr" --json state,mergeStateStatus -q '.state+" "+.mergeStateStatus' 2>&1)
+  fail=$(gh pr checks "$pr" 2>/dev/null | awk -F'\t' '$2=="fail"{print $1}' | paste -sd, -)
+  echo "poll $i: [$state] failing=[${fail:-none}]"
+  case "$state" in MERGED*|CLOSED*) echo ">>> PR #$pr ${state%% *}"; exit 0;; esac
+  [ "$i" -ge "$max" ] && { echo ">>> PR #$pr still [$state] after $max polls — surfacing, NOT toggling"; exit 1; }
+  sleep 60
 done
 ```
 
