@@ -564,20 +564,6 @@ jobs:
         if: needs.changes.outputs.run_tests == 'true' && github.event_name != 'merge_group'
         run: dotnet test ${{ matrix.project }} --configuration Release
 
-  ci-gate:
-    runs-on: ubuntu-latest
-    needs: [unit-tests, integration-tests]
-    if: always()
-    steps:
-      - name: Fail if any unit or integration job failed or was cancelled
-        run: |
-          echo '${{ toJSON(needs) }}'
-          if echo '${{ toJSON(needs) }}' | grep -qE '"result":[[:space:]]*"(failure|cancelled)"'; then
-            echo "A unit/integration matrix job failed or was cancelled — blocking the merge."
-            exit 1
-          fi
-          echo "All unit + integration jobs passed (or were skipped for a non-code change)."
-
   e2e-api-tests:
     runs-on: ubuntu-latest
     needs: [build, changes]
@@ -882,17 +868,12 @@ jobs:
           if-no-files-found: ignore
 
   ci-complete:
-    # THE SINGLE REQUIRED STATUS CHECK (once the ruleset points at it — see plans/PIPELINE_REDESIGN.md
-    # Phase 1). It aggregates every real CI job into one deterministic pass/fail that is NEVER `skipped`:
-    # `if: always()` guarantees the job itself runs on every event, and it passes iff nothing it needs
-    # failed or was cancelled (a legitimately-skipped need — unit/integration in the queue, e2e off-queue
-    # — is tolerated). A skipped *required* check is exactly what stalled queue admission; one required
-    # check that can only ever be success/failure removes that whole failure mode, so GitHub's native
-    # auto-merge admits and dispatches without any external poller.
-    #
-    # Supersedes ci-gate (kept in place until the ruleset stops requiring it, so nothing waits forever on
-    # a check that stopped being produced). needs EVERY gating job directly — build + all carves + unit +
-    # integration + both e2e — so it reflects the full pipeline, not just the unit/integration slice.
+    # THE SINGLE REQUIRED STATUS CHECK (see plans/PIPELINE_REDESIGN.md Phase 1). It aggregates every real
+    # CI job into one deterministic pass/fail that is NEVER `skipped`: `if: always()` runs it on every
+    # event, and it passes iff nothing it needs failed or was cancelled. No gating job skips anymore — each
+    # no-ops to success when it has nothing to do — so the whole suite is success-or-failure only, which is
+    # what keeps GitHub's queue admission from stalling on a skipped check. needs EVERY gating job directly
+    # (build + all carves + unit + integration + both e2e) so it reflects the full pipeline.
     runs-on: ubuntu-latest
     needs:
       - build
