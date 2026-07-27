@@ -96,22 +96,25 @@ run, not on the PR head's checks, so `gh pr checks <PR>` alone won't show it. Th
 ```bash
 pr=<PR>; repo=Concertable/concertable; max=90; i=0; cleanpolls=0
 while :; do i=$((i+1))
-  state=$(gh pr view "$pr" --json state,mergeStateStatus -q '.state+" "+.mergeStateStatus' 2>&1)
+  # Read state + mergeStateStatus into SEPARATE vars — never a joined string. `case "$st"` must compare
+  # the bare state ("MERGED"), or it silently never matches "MERGED UNKNOWN" and the loop times out
+  # instead of reporting the merge (the "monitored for ages, missed the merge" bug).
+  read -r st mss < <(gh pr view "$pr" --json state,mergeStateStatus -q '.state+" "+.mergeStateStatus' 2>&1)
   inq=$(gh api graphql -f query='{repository(owner:"'"${repo%/*}"'",name:"'"${repo#*/}"'"){pullRequest(number:'"$pr"'){mergeQueueEntry{state}}}}' -q '.data.repository.pullRequest.mergeQueueEntry.state // "no"' 2>&1)
   fail=$(gh pr checks "$pr" 2>/dev/null | awk -F'\t' '$2=="fail"{print $1}' | paste -sd, -)
   mgfail=$(gh run list --event merge_group -L 15 --json conclusion,headBranch --jq '.[]|select(.headBranch|contains("pr-'"$pr"'-"))|.conclusion' 2>/dev/null | grep -c failure)
-  echo "poll $i: [$state] queue=[$inq] pr-checks-failing=[${fail:-none}] merge_group-failures=[$mgfail]"
-  case "$state" in
+  echo "poll $i: [$st/$mss] queue=[$inq] pr-checks-failing=[${fail:-none}] merge_group-failures=[$mgfail]"
+  case "$st" in
     MERGED) echo ">>> #$pr ✓ MERGED"; exit 0;;
     CLOSED) echo ">>> #$pr CLOSED without merging"; exit 0;;
   esac
   if [ -n "$fail" ] || [ "$mgfail" -gt 0 ]; then
     echo ">>> #$pr ✗ CI FAILED (pr:[$fail] merge_group-failures:$mgfail) — inspect the run, do NOT retry"; exit 2; fi
   # green + mergeable + never admitted, sustained past normal latency -> the re-eval glitch (#3)
-  if [ "$state" = "OPEN CLEAN" ] && [ "$inq" = no ]; then cleanpolls=$((cleanpolls+1)); else cleanpolls=0; fi
+  if [ "$st" = OPEN ] && [ "$mss" = CLEAN ] && [ "$inq" = no ]; then cleanpolls=$((cleanpolls+1)); else cleanpolls=0; fi
   if [ "$cleanpolls" -ge 6 ]; then
     echo ">>> #$pr ⚠ GREEN but unadmitted ~6min (GitHub re-eval glitch, NOT a failure) — re-assert auto-merge once or break-glass"; exit 3; fi
-  [ "$i" -ge "$max" ] && { echo ">>> #$pr still [$state] after $max polls — surfacing"; exit 1; }
+  [ "$i" -ge "$max" ] && { echo ">>> #$pr still [$st/$mss] after $max polls — surfacing"; exit 1; }
   sleep 60
 done
 ```
