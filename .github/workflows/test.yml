@@ -25,16 +25,22 @@ jobs:
     #                 run_e2e + run_e2e_ui false: a dep bump can break compile/tests so those gate, but it has ZERO
     #                 runtime delta so E2E no-ops.
     #   - anything else                                                            -> all four true (full CI).
-    # Tier is derived SOLELY from the changed-file set — no commit-message token or PR-label override. Gating
-    # by human intuition (the old [skip-e2e]/[skip-tests]/label tiers) was fragile — a commit message that
-    # merely *mentioned* a token disabled the gate — and non-deterministic; the diff is the single source.
-    # NOTE: `ci-complete` is the single required check (see that job) and tolerates a legitimately-skipped need,
-    # so a gated-off job may skip cleanly without stalling admission. build / carve / e2e keep their no-op-green
-    # step guards (harmless — a green no-op reads the same as a skip to ci-complete); unit / integration skip
-    # cleanly and still run on the post-merge push to main as a main-health signal.
+    # OPT-OUT to turn gates OFF (never on) for a change the diff over-covers (a well-tested refactor). It is a
+    # git TRAILER on its own line — `Skip-E2E: true`, `Skip-E2E-UI: true`, or `Skip-Tests: true` — parsed
+    # structurally by git (not substring-grepped), so prose that merely mentions a token can't trip it (the
+    # pr-227 bug). A PR label of the same name (skip-e2e / skip-e2e-ui / skip-tests) works too.
+    #   Skip-E2E-UI / skip-e2e-ui -> run_e2e_ui off       (build+carve, unit+integration, api E2E still run)
+    #   Skip-E2E    / skip-e2e    -> run_e2e + run_e2e_ui off  (build+carve, unit+integration still run)
+    #   Skip-Tests  / skip-tests  -> run_tests + all E2E off   (build+carve compile floor only — NEVER skippable)
+    # Everything still merges through the queue on current main, so an opt-out can never merge something stale.
+    # NOTE: `ci-complete` is the single required check; every job no-ops to SUCCESS (never `skipped`) when it
+    # has nothing to do, so the check suite is success-or-failure only — a skipped check would stall admission.
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      pull-requests: read
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     outputs:
       run_code:   ${{ steps.detect.outputs.run_code }}
       run_tests:  ${{ steps.detect.outputs.run_tests }}
@@ -77,12 +83,40 @@ jobs:
           run_e2e_ui=true
           if [ -n "$files" ] && ! printf '%s\n' "$files" | grep -qvE "$INERT"; then
             run_code=false; run_tests=false; run_e2e=false; run_e2e_ui=false
-            echo "-> non-code change; nothing to compile or test (build + carve no-op, unit/integration skip, E2E no-op)."
+            echo "-> non-code change; nothing to compile or test (every job no-ops to success)."
           elif [ -n "$files" ] && ! printf '%s\n' "$files" | grep -qvE "$PKG"; then
             run_e2e=false; run_e2e_ui=false
             echo "-> package-only bump; build + carve + unit + integration gate, E2E no-ops."
           else
             echo "-> code change; full CI."
+          fi
+          # Opt-out: a git TRAILER (`Skip-E2E: true`) in any commit in the range, OR a same-named PR label.
+          # Trailers are parsed by git (`--format=%(trailers:...)`), never substring-grepped, so prose that
+          # mentions a token can't trigger them. Labels aren't in the merge_group payload, so resolve the PR
+          # number (from the event on a PR, from the gh-readonly-queue/<base>/pr-<N>-<sha> ref in the queue).
+          prnum=""
+          case "${{ github.event_name }}" in
+            pull_request) prnum="${{ github.event.pull_request.number }}";;
+            merge_group)  prnum="$(printf '%s' '${{ github.event.merge_group.head_ref }}' | sed -nE 's#.*/pr-([0-9]+)-[0-9a-f]+$#\1#p')";;
+          esac
+          labels=""
+          [ -n "$prnum" ] && labels="$(gh pr view "$prnum" --json labels -q '.labels[].name' 2>/dev/null || true)"
+          echo "opt-out source: PR #${prnum:-none}, labels: ${labels:-<none>}"
+          optout() {  # $1 = trailer key (e.g. Skip-E2E), $2 = label name (e.g. skip-e2e)
+            git log --format="%(trailers:key=$1,valueonly=true)" "$base..$head" | grep -qiE '^[[:space:]]*(true|yes|1|on)[[:space:]]*$' && return 0
+            printf '%s\n' "$labels" | grep -qixF "$2"
+          }
+          if optout Skip-E2E-UI skip-e2e-ui; then
+            run_e2e_ui=false
+            echo "-> opt-out Skip-E2E-UI; UI E2E off (build + carve + unit + integration + api E2E still run)."
+          fi
+          if optout Skip-E2E skip-e2e; then
+            run_e2e=false; run_e2e_ui=false
+            echo "-> opt-out Skip-E2E; all E2E off (build + carve + unit + integration still run)."
+          fi
+          if optout Skip-Tests skip-tests; then
+            run_tests=false; run_e2e=false; run_e2e_ui=false
+            echo "-> opt-out Skip-Tests; test suites + E2E off (build + carve compile floor still runs)."
           fi
           # E2E runs for real on the PR (the PR is authoritative — green PR == mergeable) and again in the
           # merge queue (re-verify against live main). The post-merge push would only re-run what the queue

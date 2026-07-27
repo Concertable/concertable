@@ -293,15 +293,17 @@ kickoff prompt that says "run the E2E regress"** — if a PR will run it, let th
 - It's small, isolated, or covered well by integration tests.
 - It's doc-only or comments-only.
 
-**When you skip E2E on a change headed to a PR, tell the merge queue too — `[skip-e2e]` in a commit.**
+**When you skip E2E on a change headed to a PR, tell the merge queue too — `Skip-E2E: true` trailer.**
 The queue runs the full E2E suite on every code change *by default*, so your local skip-judgment is
-worthless unless it's encoded in the commit: without the token the queue still burns ~25-30 min of E2E
-on a change that didn't earn it. So for a behaviour-preserving / small / well-covered change, put
-`[skip-e2e]` in a commit message (any commit in the PR range; `[skip-tests]` for compile-floor-only on a
-trivial/mechanical change — build + carve never skip). This is the reflex-inversion: E2E-in-the-queue is
-opt-*out* for a zero-behaviour-change PR, not automatic. Retrofitting the token onto a PR already in the
-queue means closing + re-pushing (the branch is locked while queued) — so decide the tier **in the
-commit you push**, not after.
+worthless unless it's encoded in the commit: without the trailer the queue still burns ~25-30 min of E2E
+on a change that didn't earn it. So for a behaviour-preserving / small / well-covered change, add the
+trailer `Skip-E2E: true` (own line, end of a commit message; any commit in the PR range — `Skip-Tests: true`
+for compile-floor-only on a trivial/mechanical change, `Skip-E2E-UI: true` for UI-only; build + carve never
+skip). It's a real git trailer parsed by git, not a `[bracketed]` token, so prose can't trip it; a same-named
+PR label (`skip-e2e`) works too. This is the reflex-inversion: E2E-in-the-queue is opt-*out* for a
+zero-behaviour-change PR, not automatic. Retrofitting the trailer onto a PR already in the queue means
+closing + re-pushing (the branch is locked while queued) — so decide the tier **in the commit you push**,
+not after.
 
 When in doubt, or when a phase explicitly flips behavior on a covered flow, run E2E. **How** to run it
 safely (the mandatory `./scripts/docker-health.ps1` pre-flight, only via the `e2e-*` skills) is unchanged —

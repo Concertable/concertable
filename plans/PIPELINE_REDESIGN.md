@@ -239,9 +239,12 @@ stack, but *on the PR* with the quarantine lane — PR-authoritative immediately
   `ci-complete`'s needs) runs `Category=quarantine` on the PR. To make the tag filterable past the
   trait-collapse tooling, `StripFeatureTraits` now preserves the `quarantine` Category. The flake fix:
   `FindPage.ApplyFiltersAsync` waits for the `/header?` search response instead of relying on the bare
-  default 5s visibility timeout. The `[skip-e2e]`/`[skip-tests]`/label tier overrides (N9) are **removed**
-  — tier is now derived solely from the diff (they misfired on pr-227: a commit message that *mentioned*
-  `[skip-e2e]` silently disabled the PR e2e, which is exactly the human-intuition fragility N9 called out).
+  default 5s visibility timeout. The fragile `[skip-e2e]` substring tokens were removed (they misfired on
+  pr-227: a commit message that merely *mentioned* `[skip-e2e]` silently disabled the PR e2e) — **but the
+  opt-out itself is kept, re-implemented robustly** (revising N9's "no opt-out at all" stance, which made
+  every trivial refactor pay full ~27-min E2E): a git **trailer** `Skip-E2E: true` / `Skip-E2E-UI: true` /
+  `Skip-Tests: true` (parsed structurally by `git --format=%(trailers:...)`, so prose can't trip it) or a
+  same-named PR label. build + carve remain never-skippable.
   A further fix landed in pr-229: every job now **no-ops to success, never skips** (unit/integration and
   the quarantine lane matched build/carve/e2e) — a single skipped check, even a non-required one, stalls
   GitHub's queue admission (the inert-PR N10 stall). **Correction to an earlier assumption:** Phase 1's
