@@ -235,3 +235,18 @@ DNS-volatile client — those stay scoped/transient so the factory rotates handl
 - **Refit against our own internal HTTP.** If both ends are ours it's gRPC (`AddGrpcClient<T>`) —
   Refit there means two contract surfaces for one service. The only standing exception is a service
   that doesn't have its gRPC surface yet (`IUserClaimsApi`).
+
+## Unit of work — which one
+
+Both run a block of writes and commit it atomically. Choose by how many `DbContext`s the block touches:
+
+- **`IUnitOfWork<T>.ExecuteAsync(block)`** — the default. Commits the block on one module's context in a
+  single transaction. Use whenever every write stays in one context (e.g. Payment's ledger: mutate the
+  escrow/settlement and stage the ledger rows, all in `PaymentDbContext`).
+- **`IUnitOfWorkBehavior<T>.ExecuteAsync(block)`** — cross-module only. Wraps the block in an ambient
+  `TransactionScope` so writes to several modules' contexts in one service all enlist in one transaction
+  (e.g. `OpportunityService.CreateAsync`: `DealDbContext` + `ConcertDbContext` together). A single-context
+  transaction can't span them.
+
+Never share a transaction across **services** — a separate service owns its own database; coordinate those
+with messages (outbox), never a unit of work.
