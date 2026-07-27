@@ -20,7 +20,7 @@ Push the current branch to its remote. The happy path is one command; the job is
      git push -u origin <current-branch>
      ```
 
-2. **If it succeeds**, report it in one line — branch, remote, and how many commits moved (e.g. `Pushed 3 commits to origin/master`). Done.
+2. **If it succeeds**, report it in one line — branch, remote, and how many commits moved (e.g. `Pushed 3 commits to origin/main`). Done.
 
 3. **If it fails**, read the error and fix the actual cause, then push again. Common cases:
    - **Rejected, remote has new commits** (`fetch first` / non-fast-forward): `git pull --rebase`, resolve any conflicts, then push. If a rebase isn't safe or conflicts are messy, stop and tell the user rather than force-pushing.

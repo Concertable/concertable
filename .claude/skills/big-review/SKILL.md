@@ -1,6 +1,6 @@
 ---
 name: big-review
-description: Review a very large branch diff in resumable area-stages, instead of one unreviewable pass. A staging wrapper around the `code-review` skill for branches too big to review at once (hundreds/thousands of changed files, e.g. `Refactor/Microservices`). Reviews the NET diff `merge-base..HEAD` (current state vs master — never walks intermediate commits, which waste time on superseded designs), sliced into area-stages. Each run reviews the next unreviewed area, appends findings, and ticks a coverage checklist in `reviews/BIG-<branch-slug>-Review.md`. Use when the user wants to "big review", "review this massive PR in stages", "stage the review", or resume a staged review ("continue the big review", "next stage"). For a normal-sized branch use `code-review`; for only-new-commits use `incremental-review`.
+description: Review a very large branch diff in resumable area-stages, instead of one unreviewable pass. A staging wrapper around the `code-review` skill for branches too big to review at once (hundreds/thousands of changed files, e.g. `Refactor/Microservices`). Reviews the NET diff `merge-base..HEAD` (current state vs main — never walks intermediate commits, which waste time on superseded designs), sliced into area-stages. Each run reviews the next unreviewed area, appends findings, and ticks a coverage checklist in `reviews/BIG-<branch-slug>-Review.md`. Use when the user wants to "big review", "review this massive PR in stages", "stage the review", or resume a staged review ("continue the big review", "next stage"). For a normal-sized branch use `code-review`; for only-new-commits use `incremental-review`.
 ---
 
 # big-review
@@ -59,7 +59,7 @@ On a resume, the very first thing — before picking an area — is to compare c
 
 ## Step 1 — First run: compute the staging plan
 
-1. Establish the range: `git merge-base master HEAD` (start) and `git rev-parse HEAD` (end). Show `git diff <start>..HEAD --stat | tail -1`.
+1. Establish the range: `git merge-base main HEAD` (start) and `git rev-parse HEAD` (end). Show `git diff <start>..HEAD --stat | tail -1`.
 2. **Derive the areas from the diff itself** — never from a preconceived map of the repo. Run `git diff <start>..HEAD --name-only`, cluster the files by component (top-level dirs, service/project roots, `app/` surfaces — whatever structure the changed files actually exhibit), and turn the clusters into stages:
    - **Only changed code gets a stage.** A component the branch didn't touch does not appear in the plan, no matter how important it is to the repo.
    - **Size stages for one sitting** — roughly 50–150 changed files or ~10k diff lines each. Split a huge component into sub-stages (by module/sub-tree); merge several small components into one stage.

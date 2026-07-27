@@ -3,13 +3,13 @@ name: CI
 on:
   push:
     branches:
-      - master
+      - main
   pull_request:
     branches:
-      - master
+      - main
   merge_group:
     branches:
-      - master
+      - main
 
 jobs:
   changes:
@@ -34,12 +34,12 @@ jobs:
     #   [skip-e2e-ui] / label skip-e2e-ui -> run_e2e_ui=false                                  (build+carve, unit+integration, e2e-api run)
     #   [skip-e2e]    / label skip-e2e    -> run_e2e=false + run_e2e_ui=false                   (build+carve, unit+integration run)
     #   [skip-tests]  / label skip-tests  -> run_tests=false + run_e2e=false + run_e2e_ui=false (build+carve only — the compile floor)
-    # Everything still merges through the queue, which rebuilds on current master, so a skip can never merge stale.
+    # Everything still merges through the queue, which rebuilds on current main, so a skip can never merge stale.
     # NOTE: required checks (build / carve-* / e2e-*) still RUN when gated off — they no-op their steps and report
     # success. A *skipped* required check stalls the merge queue until check_response_timeout (60 min); a green no-op
     # does not. Non-required jobs (unit-tests / integration-tests) can skip cleanly — ci-gate tolerates skipped needs
     # — so they also skip in the merge queue (they ran on the PR; ci-gate stays green on their skipped result),
-    # which removes the PR+queue double-run. They still run on the post-merge push to master as a master-health signal.
+    # which removes the PR+queue double-run. They still run on the post-merge push to main as a main-health signal.
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -500,7 +500,7 @@ jobs:
     # Gated by run_tests (off for non-code and for [skip-tests]); build + carve stay on run_code. Not a required
     # check (ci-gate aggregates it) — so it can skip cleanly. Skips in the merge queue too: it already ran on the
     # PR, and dropping the redundant queue run removes the PR+queue double-run. ci-gate tolerates the skipped
-    # result (stays green in the queue). Still runs on the post-merge push to master.
+    # result (stays green in the queue). Still runs on the post-merge push to main.
     if: needs.changes.outputs.run_tests == 'true' && github.event_name != 'merge_group'
     permissions:
       contents: read
@@ -551,7 +551,7 @@ jobs:
     # Gated by run_tests (off for non-code and for [skip-tests]); build + carve stay on run_code. Not a required
     # check (ci-gate aggregates it) — so it can skip cleanly. Skips in the merge queue too: it already ran on the
     # PR, and dropping the redundant queue run removes the PR+queue double-run. ci-gate tolerates the skipped
-    # result (stays green in the queue). Still runs on the post-merge push to master.
+    # result (stays green in the queue). Still runs on the post-merge push to main.
     if: needs.changes.outputs.run_tests == 'true' && github.event_name != 'merge_group'
     permissions:
       contents: read
