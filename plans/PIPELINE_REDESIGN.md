@@ -232,7 +232,17 @@ stack, but *on the PR* with the quarantine lane — PR-authoritative immediately
 - ⬜ **Phase 0 (Terraform)** — remaining: author the `github` provider config that **imports the
   now-live ruleset** (bypass + `ci-complete`-only) so protection is code-managed. Doing it now imports
   the *final* desired state directly.
-- ⬜ **Phases 2–5** — outstanding (below).
+- 🔶 **Phase 2** — PR-authoritative e2e + flake quarantine shipping (branch `Refactor/PipelineRearchitecture`).
+  The classifier now runs the real e2e on `pull_request` (and the queue), skipping only the redundant
+  post-merge push. The flaky Customer search-results scenario is tagged `@quarantine`; the blocking UI
+  lane runs `Category!=quarantine` and a new **non-gating** `e2e-ui-quarantine` job (absent from
+  `ci-complete`'s needs) runs `Category=quarantine` on the PR. To make the tag filterable past the
+  trait-collapse tooling, `StripFeatureTraits` now preserves the `quarantine` Category. The flake fix:
+  `FindPage.ApplyFiltersAsync` waits for the `/header?` search response instead of relying on the bare
+  default 5s visibility timeout. **Deferred (not blocking):** removing the `[skip-e2e]`/label tier
+  overrides (N9), and wiring `E2E_BASELINE.md` as the CI quarantine source of truth (D3) — the tag is
+  the mechanism for now. **Un-quarantine** the scenario once it's green N consecutive runs.
+- ⬜ **Phases 3–5** — outstanding (below).
 
 Each phase is independently shippable, ends green, and is reversible. **A gate is never removed before
 its replacement is proven.** CI-hardening (no Azure) comes first; cloud/ephemeral-env work is last,

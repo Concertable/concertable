@@ -35,11 +35,10 @@ jobs:
     #   [skip-e2e]    / label skip-e2e    -> run_e2e=false + run_e2e_ui=false                   (build+carve, unit+integration run)
     #   [skip-tests]  / label skip-tests  -> run_tests=false + run_e2e=false + run_e2e_ui=false (build+carve only — the compile floor)
     # Everything still merges through the queue, which rebuilds on current main, so a skip can never merge stale.
-    # NOTE: required checks (build / carve-* / e2e-*) still RUN when gated off — they no-op their steps and report
-    # success. A *skipped* required check stalls the merge queue until check_response_timeout (60 min); a green no-op
-    # does not. Non-required jobs (unit-tests / integration-tests) can skip cleanly — ci-gate tolerates skipped needs
-    # — so they also skip in the merge queue (they ran on the PR; ci-gate stays green on their skipped result),
-    # which removes the PR+queue double-run. They still run on the post-merge push to main as a main-health signal.
+    # NOTE: `ci-complete` is the single required check (see that job) and tolerates a legitimately-skipped need,
+    # so a gated-off job may skip cleanly without stalling admission. build / carve / e2e keep their no-op-green
+    # step guards (harmless — a green no-op reads the same as a skip to ci-complete); unit / integration skip
+    # cleanly and still run on the post-merge push to main as a main-health signal.
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -128,11 +127,10 @@ jobs:
             run_tests=false; run_e2e=false; run_e2e_ui=false
             echo "-> skip-tests (token/label); test suites + E2E off (build + carve compile floor still runs)."
           fi
-          # E2E executes ONLY in the merge queue (merge_group). On the PR and on push the required e2e
-          # checks still RUN but no-op to success — never `skipped`, which is what stalls queue admission
-          # (a docs-only / package-only PR left CLEAN + auto-merge-on but never queued). The queue runs
-          # them for real on the actual merge.
-          if [ "${{ github.event_name }}" != "merge_group" ]; then run_e2e=false; run_e2e_ui=false; fi
+          # E2E runs for real on the PR (the PR is authoritative — green PR == mergeable) and again in the
+          # merge queue (re-verify against live main). The post-merge push would only re-run what the queue
+          # just ran on the identical tree, so skip E2E there.
+          if [ "${{ github.event_name }}" = "push" ]; then run_e2e=false; run_e2e_ui=false; fi
           echo "run_code=$run_code"     >> "$GITHUB_OUTPUT"
           echo "run_tests=$run_tests"   >> "$GITHUB_OUTPUT"
           echo "run_e2e=$run_e2e"       >> "$GITHUB_OUTPUT"
@@ -610,9 +608,8 @@ jobs:
   e2e-api-tests:
     runs-on: ubuntu-latest
     needs: [build, changes]
-    # No job-level merge_group gate: the job also runs on the PR and no-ops green there (run_e2e is
-    # forced false off-queue in `changes`), so the required check reports success, never `skipped` —
-    # a skipped required check is what stalls queue admission. The real suite runs only in the queue.
+    # No job-level event gate: gated by run_e2e in `changes`, which runs the real suite on the PR (the PR is
+    # authoritative) and in the queue, and skips only the redundant post-merge push run.
 
     permissions:
       contents: read
@@ -695,8 +692,9 @@ jobs:
   e2e-ui-tests:
     runs-on: ubuntu-latest
     needs: [build, e2e-api-tests, changes]
-    # No job-level merge_group gate (see e2e-api-tests): runs on the PR too and no-ops green via
-    # run_e2e_ui (forced false off-queue), so the required check reports success, never `skipped`.
+    # No job-level event gate (see e2e-api-tests): the real UI suite runs on the PR and in the queue via
+    # run_e2e_ui. This is the BLOCKING lane — it excludes @quarantine (Category!=quarantine); the flaky
+    # scenario runs in the separate non-gating e2e-ui-quarantine job.
 
     permissions:
       contents: read
@@ -713,7 +711,7 @@ jobs:
 
     steps:
       # Gated on run_e2e_ui (its own tier): off for non-code, package-only, [skip-e2e-ui], [skip-e2e], [skip-tests].
-      # Required check, so it still RUNS in the queue and no-ops green when off — never `skip`ped (which would stall it).
+      # Aggregated by ci-complete, which tolerates a skipped need, so it no-ops green when off.
       - name: Skip UI E2E (no runtime change or [skip-e2e-ui])
         if: needs.changes.outputs.run_e2e_ui != 'true'
         run: echo "UI E2E gated off (non-code / package-only / [skip-e2e-ui] / [skip-e2e] / [skip-tests]) -> build + carve gate this."
@@ -788,11 +786,11 @@ jobs:
 
       - name: Run B2B UI E2E tests
         if: needs.changes.outputs.run_e2e_ui == 'true'
-        run: dotnet test api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui/Concertable.B2B.E2ETests.Ui.csproj --configuration Release --no-build --settings api/Concertable.runsettings
+        run: dotnet test api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui/Concertable.B2B.E2ETests.Ui.csproj --configuration Release --no-build --settings api/Concertable.runsettings --filter "Category!=quarantine"
 
       - name: Run Customer UI E2E tests
         if: needs.changes.outputs.run_e2e_ui == 'true'
-        run: dotnet test api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui/Concertable.Customer.E2ETests.Ui.csproj --configuration Release --no-build --settings api/Concertable.runsettings
+        run: dotnet test api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui/Concertable.Customer.E2ETests.Ui.csproj --configuration Release --no-build --settings api/Concertable.runsettings --filter "Category!=quarantine"
 
       - name: Upload E2E diagnostics
         # Server logs + Playwright traces/screenshots for diagnosing a UI failure. Failure-only:
@@ -801,6 +799,91 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: e2e-ui-diagnostics
+          path: |
+            **/e2e-diagnostics.log
+            **/playwright-traces/**
+            **/playwright-failures/**
+          if-no-files-found: ignore
+
+  e2e-ui-quarantine:
+    # The NON-GATING flake lane. Runs only @quarantine-tagged UI scenarios (Category=quarantine) and is
+    # deliberately absent from ci-complete's needs, so a red here reports on the PR but never blocks a
+    # merge. Runs on the PR only — a non-gating result in the queue would be wasted stack boot. A
+    # quarantined scenario is tracked to be fixed and returned to the blocking lane, not carried forever.
+    runs-on: ubuntu-latest
+    needs: [build, changes]
+    if: needs.changes.outputs.run_e2e_ui == 'true' && github.event_name == 'pull_request'
+
+    permissions:
+      contents: read
+      packages: read
+
+    env:
+      GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GoogleApiKey: ${{ secrets.GOOGLE_API_KEY }}
+      Stripe__SecretKey: ${{ secrets.STRIPE_SECRET_KEY }}
+      ServiceAuth__B2BClientSecret: ${{ secrets.SERVICE_AUTH_B2B_CLIENT_SECRET }}
+      ServiceAuth__CustomerClientSecret: ${{ secrets.SERVICE_AUTH_CUSTOMER_CLIENT_SECRET }}
+      ServiceAuth__AuthClientSecret: ${{ secrets.SERVICE_AUTH_AUTH_CLIENT_SECRET }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/Directory.Packages.props') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - name: Provision HTTPS dev certificate
+        run: |
+          dotnet dev-certs https --trust || true  # Linux trust exits 4, but the cert is still generated
+          echo "SSL_CERT_DIR=$HOME/.aspnet/dev-certs/trust:/etc/ssl/certs:/usr/lib/ssl/certs" >> "$GITHUB_ENV"
+
+      - name: Install Stripe CLI
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          url=$(curl -fsSL -H "Authorization: Bearer $GH_TOKEN" https://api.github.com/repos/stripe/stripe-cli/releases/latest | grep -oE 'https://[^"]+_linux_x86_64\.tar\.gz' | head -1)
+          test -n "$url" || { echo "Stripe CLI linux_x86_64 asset not found"; exit 1; }
+          curl -fsSL "$url" -o /tmp/stripe.tar.gz
+          sudo tar -xzf /tmp/stripe.tar.gz -C /usr/local/bin stripe
+          stripe version
+
+      - name: Install Azure Functions Core Tools
+        run: |
+          npm install -g azure-functions-core-tools@4 --unsafe-perm true
+          func --version
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install web SPA dependencies
+        working-directory: app
+        run: npm ci
+
+      - name: Build Customer UI E2E tests
+        run: dotnet build api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui/Concertable.Customer.E2ETests.Ui.csproj --configuration Release
+
+      - name: Install Playwright browsers
+        run: pwsh api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+
+      - name: Run quarantined Customer UI E2E scenarios
+        run: dotnet test api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui/Concertable.Customer.E2ETests.Ui.csproj --configuration Release --no-build --settings api/Concertable.runsettings --filter "Category=quarantine"
+
+      - name: Upload quarantine E2E diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-ui-quarantine-diagnostics
           path: |
             **/e2e-diagnostics.log
             **/playwright-traces/**
