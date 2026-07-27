@@ -99,7 +99,7 @@ while :; do i=$((i+1))
   state=$(gh pr view "$pr" --json state,mergeStateStatus -q '.state+" "+.mergeStateStatus' 2>&1)
   inq=$(gh api graphql -f query='{repository(owner:"'"${repo%/*}"'",name:"'"${repo#*/}"'"){pullRequest(number:'"$pr"'){mergeQueueEntry{state}}}}' -q '.data.repository.pullRequest.mergeQueueEntry.state // "no"' 2>&1)
   fail=$(gh pr checks "$pr" 2>/dev/null | awk -F'\t' '$2=="fail"{print $1}' | paste -sd, -)
-  mgfail=$(gh run list --event merge_group -L 15 --json conclusion,headBranch 2>/dev/null | jq -r --arg p "pr-$pr-" '.[]|select(.headBranch|contains($p))|.conclusion' | grep -c failure)
+  mgfail=$(gh run list --event merge_group -L 15 --json conclusion,headBranch --jq '.[]|select(.headBranch|contains("pr-'"$pr"'-"))|.conclusion' 2>/dev/null | grep -c failure)
   echo "poll $i: [$state] queue=[$inq] pr-checks-failing=[${fail:-none}] merge_group-failures=[$mgfail]"
   case "$state" in
     MERGED) echo ">>> #$pr ✓ MERGED"; exit 0;;
@@ -146,15 +146,18 @@ This section is **how** to run E2E safely. **Whether** to run it for a given cha
 call — reserved for massive or behaviorally-risky changes, skipped for stage-1/zero-behavior-change
 work — governed by [`plans/AGENTS.md`](./plans/AGENTS.md). Don't run the full suites by reflex.
 
-**That same skip-judgment sets the CI merge-queue tier — via a commit token, not just local runs.**
+**That same skip-judgment sets the CI merge-queue tier — via a git trailer, not just local runs.**
 The merge queue runs the full E2E suite on every code change *by default*. When a change is in the
-skip category (behaviour-preserving, small/isolated, well-covered by unit + integration), put
-**`[skip-e2e]`** in a commit message so the queue skips it too — otherwise it burns ~25-30 min of E2E
-that catches nothing. This is the common case for a refactor; **default to `[skip-e2e]` for any
-zero-behaviour-change PR** — letting the queue run E2E on it is the reflex to avoid. `[skip-tests]`
-drops to the compile floor (build + carve only) for a genuinely trivial/mechanical change; build +
-carve are never skippable. Tokens are read from any commit message in the PR range — full tier table
-in [`.github/workflows/test.yml`](./.github/workflows/test.yml).
+skip category (behaviour-preserving, small/isolated, well-covered by unit + integration), add the
+trailer **`Skip-E2E: true`** on its own line at the end of a commit message so the queue skips it too —
+otherwise it burns ~25-30 min of E2E that catches nothing. This is the common case for a refactor;
+**default to `Skip-E2E: true` for any zero-behaviour-change PR** — letting the queue run E2E on it is the
+reflex to avoid. `Skip-Tests: true` drops to the compile floor (build + carve only) for a genuinely
+trivial/mechanical change; `Skip-E2E-UI: true` drops only the UI suite; build + carve are never
+skippable. It's a **git trailer** (parsed structurally by git), *not* a `[bracketed]` token — prose that
+merely mentions it can't trip the gate (that was the pr-227 bug). A PR **label** of the same name
+(`skip-e2e` / `skip-e2e-ui` / `skip-tests`) works identically. Full tier table in
+[`.github/workflows/test.yml`](./.github/workflows/test.yml).
 
 Run E2E only through `./scripts/e2e.ps1` via the matching skill (`e2e-ui-regress`, `e2e-ui-debug`,
 `e2e-api-debug`) — the skill's Step 0 Docker pre-flight is mandatory, every run.

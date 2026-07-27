@@ -82,14 +82,17 @@ This skill is **Concertable-specific**. It encodes how this repo actually merges
      the failing job's log for `build`/`carve-*`). Drive it green, push, and re-run this skill.
 
 4. **Enqueue into the merge queue (the default — this is what runs E2E).**
-   - **First decide the E2E tier via a commit token** (`CLAUDE.md` → "E2E suites"; `plans/CLAUDE.md` →
+   - **First decide the E2E tier via a git trailer** (`CLAUDE.md` → "E2E suites"; `plans/CLAUDE.md` →
      "When to run the E2E suites"). The queue runs the **full** E2E suite by default — ~25-30 min it
      shouldn't spend on a behaviour-preserving change. If this PR is zero-behaviour-change (additive
-     seam, pure refactor, well-covered by unit + integration), it should carry **`[skip-e2e]`** in a
-     commit in the PR range (`[skip-tests]` drops to the compile floor — build + carve — for a
-     trivial/mechanical change; build + carve never skip). The token is read from the *pushed* commits
-     and **can't be retrofitted once queued** (the branch is locked — you'd have to dequeue + repush), so
-     if the tier applies and no commit carries it yet, add it and push **before** enqueueing. When the
+     seam, pure refactor, well-covered by unit + integration), it should carry the trailer
+     **`Skip-E2E: true`** (its own line, end of a commit message) on a commit in the PR range
+     (`Skip-Tests: true` drops to the compile floor — build + carve — for a trivial/mechanical change;
+     `Skip-E2E-UI: true` drops only the UI suite; build + carve never skip). It's a real git trailer, not
+     a `[bracketed]` token — prose can't trip it; a same-named PR label (`skip-e2e`) also works. The
+     trailer is read from the *pushed* commits and **can't be retrofitted once queued** (the branch is
+     locked — you'd have to dequeue + repush), so if the tier applies and no commit carries it yet, add it
+     and push **before** enqueueing. When the
      change genuinely touches a runtime flow E2E covers (payments/settlement/event-propagation/messaging
      routing), let the full suite run — don't skip to save minutes.
    ```
