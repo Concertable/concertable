@@ -785,13 +785,16 @@ jobs:
     # quarantined scenario is tracked to be fixed and returned to the blocking lane, not carried forever.
     runs-on: ubuntu-latest
     needs: [build, changes]
-    if: needs.changes.outputs.run_e2e_ui == 'true' && github.event_name == 'pull_request'
 
     permissions:
       contents: read
       packages: read
 
     env:
+      # No job-level `if` — the job ALWAYS runs and reports success. A skipped check (even a non-required
+      # one like this) stalls GitHub's merge-queue admission (the inert-PR N10 stall). RUN gates the real
+      # work to a PR that actually has UI changes; otherwise every step no-ops to green.
+      RUN: ${{ needs.changes.outputs.run_e2e_ui == 'true' && github.event_name == 'pull_request' }}
       GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       GoogleApiKey: ${{ secrets.GOOGLE_API_KEY }}
       Stripe__SecretKey: ${{ secrets.STRIPE_SECRET_KEY }}
@@ -800,14 +803,21 @@ jobs:
       ServiceAuth__AuthClientSecret: ${{ secrets.SERVICE_AUTH_AUTH_CLIENT_SECRET }}
 
     steps:
+      - name: No-op (no UI change, or not a PR run)
+        if: env.RUN != 'true'
+        run: echo "No @quarantine UI scenarios to run here -> reporting success WITHOUT skipping the check (a skipped check can stall queue admission)."
+
       - uses: actions/checkout@v4
+        if: env.RUN == 'true'
 
       - name: Set up .NET
+        if: env.RUN == 'true'
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.x'
 
       - name: Cache NuGet packages
+        if: env.RUN == 'true'
         uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
@@ -815,11 +825,13 @@ jobs:
           restore-keys: nuget-${{ runner.os }}-
 
       - name: Provision HTTPS dev certificate
+        if: env.RUN == 'true'
         run: |
           dotnet dev-certs https --trust || true  # Linux trust exits 4, but the cert is still generated
           echo "SSL_CERT_DIR=$HOME/.aspnet/dev-certs/trust:/etc/ssl/certs:/usr/lib/ssl/certs" >> "$GITHUB_ENV"
 
       - name: Install Stripe CLI
+        if: env.RUN == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -830,30 +842,36 @@ jobs:
           stripe version
 
       - name: Install Azure Functions Core Tools
+        if: env.RUN == 'true'
         run: |
           npm install -g azure-functions-core-tools@4 --unsafe-perm true
           func --version
 
       - name: Set up Node
+        if: env.RUN == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '22'
 
       - name: Install web SPA dependencies
+        if: env.RUN == 'true'
         working-directory: app
         run: npm ci
 
       - name: Build Customer UI E2E tests
+        if: env.RUN == 'true'
         run: dotnet build api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui/Concertable.Customer.E2ETests.Ui.csproj --configuration Release
 
       - name: Install Playwright browsers
+        if: env.RUN == 'true'
         run: pwsh api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
 
       - name: Run quarantined Customer UI E2E scenarios
+        if: env.RUN == 'true'
         run: dotnet test api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui/Concertable.Customer.E2ETests.Ui.csproj --configuration Release --no-build --settings api/Concertable.runsettings --filter "Category=quarantine"
 
       - name: Upload quarantine E2E diagnostics
-        if: failure()
+        if: env.RUN == 'true' && failure()
         uses: actions/upload-artifact@v4
         with:
           name: e2e-ui-quarantine-diagnostics
