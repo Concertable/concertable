@@ -6,22 +6,12 @@ Concertable is a monorepo (a convenience, not the architecture) with a `.NET` mi
 
 Decide and act on reversible work (doc/plan edits, isolated commits, retrying a transient failure), then report — no check-ins. Research: run end-to-end, update the relevant docs, commit in isolation. Pause only when an action is irreversible or contradicts what you find (e.g. unrelated work already staged) — flag it in one line and take the safe path, don't ask permission.
 
-**Never gate a reversible local (working-tree) change behind a "should I?" — just make it.** Editing / writing / refactoring a file, or running a plan's code steps, is the default action, never a question and never a "just report / do nothing" menu; the *only* thing that waits for an explicit instruction is `git commit` / `git push` (full rule: root `~/.claude/CLAUDE.md`).
-
-## Agent instructions vs human docs — `agents/` vs `docs/`
-
-This repo is read by more than one coding agent (Claude Code, Codex, …). `AGENTS.md` is the file both
-read; every directory's `CLAUDE.md` is a one-line `@AGENTS.md` stub kept only so Claude Code's
-auto-loader finds it — the real content always lives in `AGENTS.md`, so link to that, never to a
-`CLAUDE.md` path. Per top-level area, `agents/` (e.g. `api/agents/`, `app/agents/`) holds the
-*normative* rules any agent must obey (naming, patterns, seeding, module boundaries); `docs/` holds
-*explanatory* material for a human reader (product overview, positioning, architecture rationale,
-runbooks) — never conventions an agent is expected to follow.
+**Never gate a reversible local (working-tree) change behind a "should I?" — just make it.** Editing / writing / refactoring a file, or running a plan's code steps, is the default action, never a question and never a "just report / do nothing" menu; the *only* thing that waits for an explicit instruction is `git commit` / `git push` (full rule: root `~/.Codex/AGENTS.md`).
 
 ## Per-area guidance
 
 - **Backend (.NET, `api/`)** — seeding, migrations, DTOs, module rules, C# conventions: [`api/AGENTS.md`](./api/AGENTS.md).
-- **Design patterns the codebase commits to** (keyed strategy resolvers, and the anti-patterns they replace — branching on `DealType` in agnostic code, service location, throwaway DTOs): [`api/agents/CODE_PATTERNS.md`](./api/agents/CODE_PATTERNS.md). Read it before adding any rule that varies by a closed key.
+- **Design patterns the codebase commits to** (keyed strategy resolvers, and the anti-patterns they replace — branching on `DealType` in agnostic code, service location, throwaway DTOs): [`api/docs/CODE_PATTERNS.md`](./api/docs/CODE_PATTERNS.md). Read it before adding any rule that varies by a closed key.
 - **Web SPA (`app/web/`)** — [`app/web/AGENTS.md`](./app/web/AGENTS.md).
 - **Customer cross-platform core (`app/customer/shared`, npm `@customer/shared`)** — consumed ONLY by the customer web + mobile apps: [`app/customer/shared/AGENTS.md`](./app/customer/shared/AGENTS.md).
 
@@ -69,27 +59,53 @@ An `api/**` branch that's behind also risks a stale `<ConcertablePlatformVersion
 
 ## Confirming a PR merge — Bash background until-loop, never `Monitor`
 
-After enabling auto-merge (or when a merge lands async via the merge queue), confirm it with a **Bash `run_in_background` until-loop** that exits the instant `gh pr view <PR> --json state -q .state` is `MERGED` or `CLOSED` — one immediate completion notification.
+After enabling auto-merge, confirm the outcome with a **Bash `run_in_background` until-loop** that resolves
+to exactly ONE of three terminal states and reports it automatically — no reprompt needed. It **never
+retries and never toggles**: a failed check is a real failure to surface and debug, not something to poke.
 
-**Also catch the silent stall — not just the merge.** A `CLEAN`, auto-merge-ON PR that GitHub never admits to the queue (`mergeQueueEntry == null`) sits `OPEN` forever: never merges, never errors, queue idle. Cause: auto-merge was enabled while a required check was still pending, then that check resolved to `skipped` (the non-code classifier skips e2e/unit/integration on the PR) and GitHub failed to re-evaluate admission. **This once burned an hour.** The loop must detect it and self-heal: `OPEN` + not-in-queue for a few polls ⇒ **toggle auto-merge** (`gh pr merge --disable-auto <PR>` then `--auto <PR>`) to force admission. (`.github/workflows/auto-merge.yml` now re-asserts on `check_suite: completed`, so it should be rare — the monitor is the backstop.)
+The three outcomes:
+1. **Merged** — report `✓ landed as <sha>` and stop.
+2. **A check failed** — report `✗ CI failed: <job/check>`, point at the run/log, and **stop. Do not
+   retry** (re-running a genuinely-failing e2e just fails again). Hand off to debugging (often local).
+3. **Green but never admitted** — the PR is `CLEAN`, all checks pass, auto-merge is on, yet GitHub never
+   adds it to the queue. This is a GitHub auto-merge **re-evaluation glitch** (enable-while-pending, then
+   it never looks again — observed live on pr-229), **not** a test failure. Surface it as its own state;
+   the remedy is a **one-time** human/agent action — re-assert auto-merge once (`gh pr merge --disable-auto <PR>`
+   then `--auto <PR>`) or break-glass admin-merge — never an automated loop.
+
+**Telling #2 from #3 requires inspecting the actual run results, not just PR state** — this is the trap.
+After a `merge_group` run FAILS, GitHub ejects the PR back to `OPEN`/`CLEAN`/not-queued, which looks
+**identical** to the never-admitted glitch (#3). The failure lives on the `gh-readonly-queue/...pr-<N>-...`
+run, not on the PR head's checks, so `gh pr checks <PR>` alone won't show it. The loop must also scan
+`merge_group` run conclusions for this PR — a failed one means #2 (debug it), none-ever-dispatched means #3
+(nudge it). Conflating them is how a real failure gets mistaken for a stall (and vice versa).
 
 - **Never use the `Monitor` tool** for a single "tell me when it merges" — it's for streaming many events, and its detached poller silently missed merges here (it timed out instead of firing).
 - **Never swallow poll errors** (`2>/dev/null || continue`) — a broken `gh` then looks identical to "still waiting". Capture stderr into the state (`2>&1`), echo the state every poll, and **cap** the loop so a persistent failure surfaces instead of hanging forever.
 
 ```bash
-pr=<PR>; repo=$(gh repo view --json nameWithOwner -q .nameWithOwner); max=120; i=0; stuck=0
+pr=<PR>; repo=Concertable/concertable; max=90; i=0; cleanpolls=0
 while :; do i=$((i+1))
-  state=$(gh pr view "$pr" --json state -q .state 2>&1)
-  inq=$(gh api graphql -f query="{repository(owner:\"${repo%/*}\",name:\"${repo#*/}\"){pullRequest(number:$pr){mergeQueueEntry{state}}}}" -q '.data.repository.pullRequest.mergeQueueEntry!=null' 2>&1)
-  echo "poll $i: state=[$state] inQueue=[$inq]"
-  case "$state" in MERGED|CLOSED) echo ">>> PR #$pr $state"; exit 0;; esac
-  if [ "$state" = OPEN ] && [ "$inq" != true ]; then stuck=$((stuck+1)); else stuck=0; fi
-  if [ "$stuck" -ge 3 ]; then
-    echo ">>> PR #$pr STUCK (auto-merge on, not admitted to queue) — toggling to force admission"
-    gh pr merge --disable-auto "$pr" >/dev/null 2>&1 || true; gh pr merge --auto "$pr"; stuck=0
-  fi
-  [ "$i" -ge "$max" ] && { echo ">>> PR #$pr still [$state] after $max polls — surfacing"; exit 1; }
-  sleep 30
+  # Read state + mergeStateStatus into SEPARATE vars — never a joined string. `case "$st"` must compare
+  # the bare state ("MERGED"), or it silently never matches "MERGED UNKNOWN" and the loop times out
+  # instead of reporting the merge (the "monitored for ages, missed the merge" bug).
+  read -r st mss < <(gh pr view "$pr" --json state,mergeStateStatus -q '.state+" "+.mergeStateStatus' 2>&1)
+  inq=$(gh api graphql -f query='{repository(owner:"'"${repo%/*}"'",name:"'"${repo#*/}"'"){pullRequest(number:'"$pr"'){mergeQueueEntry{state}}}}' -q '.data.repository.pullRequest.mergeQueueEntry.state // "no"' 2>&1)
+  fail=$(gh pr checks "$pr" 2>/dev/null | awk -F'\t' '$2=="fail"{print $1}' | paste -sd, -)
+  mgfail=$(gh run list --event merge_group -L 15 --json conclusion,headBranch --jq '.[]|select(.headBranch|contains("pr-'"$pr"'-"))|.conclusion' 2>/dev/null | grep -c failure)
+  echo "poll $i: [$st/$mss] queue=[$inq] pr-checks-failing=[${fail:-none}] merge_group-failures=[$mgfail]"
+  case "$st" in
+    MERGED) echo ">>> #$pr ✓ MERGED"; exit 0;;
+    CLOSED) echo ">>> #$pr CLOSED without merging"; exit 0;;
+  esac
+  if [ -n "$fail" ] || [ "$mgfail" -gt 0 ]; then
+    echo ">>> #$pr ✗ CI FAILED (pr:[$fail] merge_group-failures:$mgfail) — inspect the run, do NOT retry"; exit 2; fi
+  # green + mergeable + never admitted, sustained past normal latency -> the re-eval glitch (#3)
+  if [ "$st" = OPEN ] && [ "$mss" = CLEAN ] && [ "$inq" = no ]; then cleanpolls=$((cleanpolls+1)); else cleanpolls=0; fi
+  if [ "$cleanpolls" -ge 6 ]; then
+    echo ">>> #$pr ⚠ GREEN but unadmitted ~6min (GitHub re-eval glitch, NOT a failure) — re-assert auto-merge once or break-glass"; exit 3; fi
+  [ "$i" -ge "$max" ] && { echo ">>> #$pr still [$st/$mss] after $max polls — surfacing"; exit 1; }
+  sleep 60
 done
 ```
 
@@ -123,17 +139,20 @@ This section is **how** to run E2E safely. **Whether** to run it for a given cha
 call — reserved for massive or behaviorally-risky changes, skipped for stage-1/zero-behavior-change
 work — governed by [`plans/AGENTS.md`](./plans/AGENTS.md). Don't run the full suites by reflex.
 
-**That same skip-judgment sets the CI merge-queue tier — via a commit token, not just local runs.**
+**That same skip-judgment sets the CI merge-queue tier — via a git trailer, not just local runs.**
 The merge queue runs the full E2E suite on every code change *by default*. When a change is in the
-skip category (behaviour-preserving, small/isolated, well-covered by unit + integration), put
-**`[skip-e2e]`** in a commit message so the queue skips it too — otherwise it burns ~25-30 min of E2E
-that catches nothing. This is the common case for a refactor; **default to `[skip-e2e]` for any
-zero-behaviour-change PR** — letting the queue run E2E on it is the reflex to avoid. `[skip-tests]`
-drops to the compile floor (build + carve only) for a genuinely trivial/mechanical change; build +
-carve are never skippable. Tokens are read from any commit message in the PR range — full tier table
-in [`.github/workflows/test.yml`](./.github/workflows/test.yml).
+skip category (behaviour-preserving, small/isolated, well-covered by unit + integration), add the
+trailer **`Skip-E2E: true`** on its own line at the end of a commit message so the queue skips it too —
+otherwise it burns ~25-30 min of E2E that catches nothing. This is the common case for a refactor;
+**default to `Skip-E2E: true` for any zero-behaviour-change PR** — letting the queue run E2E on it is the
+reflex to avoid. `Skip-Tests: true` drops to the compile floor (build + carve only) for a genuinely
+trivial/mechanical change; `Skip-E2E-UI: true` drops only the UI suite; build + carve are never
+skippable. It's a **git trailer** (parsed structurally by git), *not* a `[bracketed]` token — prose that
+merely mentions it can't trip the gate (that was the pr-227 bug). A PR **label** of the same name
+(`skip-e2e` / `skip-e2e-ui` / `skip-tests`) works identically. Full tier table in
+[`.github/workflows/test.yml`](./.github/workflows/test.yml).
 
-Run E2E only through `./scripts/e2e.ps1` via the matching skill (`e2e-ui-regress`, `e2e-ui-debug`,
+Run E2E only through `./e2e.ps1` via the matching skill (`e2e-ui-regress`, `e2e-ui-debug`,
 `e2e-api-debug`) — the skill's Step 0 Docker pre-flight is mandatory, every run.
 
 - **`docker ps` answering is NOT proof Docker is healthy.** Docker Desktop can be off, paused, or
@@ -146,11 +165,11 @@ Run E2E only through `./scripts/e2e.ps1` via the matching skill (`e2e-ui-regress
   needs no port forwarding, and the host-side `docker-proxy` completes a TCP handshake *locally* even
   when forwarding into the container is dead — so a connect "succeeds" while no data flows (exactly
   the `pre-login handshake` mode). The only valid check is a real **data** round-trip to a fresh
-  container: run **`./scripts/docker-health.ps1`** (fresh container + published port + HTTP round-trip +
-  stability check; exit 1 = unhealthy). `./scripts/e2e.ps1` runs it as an automatic gate before booting.
+  container: run **`./docker-health.ps1`** (fresh container + published port + HTTP round-trip +
+  stability check; exit 1 = unhealthy). `./e2e.ps1` runs it as an automatic gate before booting.
 - **A suite that fails at startup is an environment problem until proven otherwise.** STOP after
   the first such run — do not rerun, do not debug application code. Verify Docker with
-  `./scripts/docker-health.ps1` (and Docker Desktop showing **Running**). Fix, then run once.
+  `./docker-health.ps1` (and Docker Desktop showing **Running**). Fix, then run once.
 
 ## Tech debt (`TECH_DEBT.md`)
 
@@ -165,7 +184,7 @@ Avoid introducing tech debt wherever possible. But when a quick fix is the right
 Default to **zero** comments. The diff shows *what* changed; the commit message is where *why* lives (the incident, the root cause, the alternatives). A code comment is the exception, not the habit — **≤2 lines**, and only for a *why* a reader needs *at this line* and can't get from well-named identifiers. Anything longer belongs in the commit message, not the file; big inline explanations rot in place.
 
 A comment is **wrong**, not merely long, if it:
-- **restates reasoning already in a `CLAUDE.md`/`docs` file** — link it in a phrase, or omit it (two copies drift the day one changes);
+- **restates reasoning already in a `AGENTS.md`/`docs` file** — link it in a phrase, or omit it (two copies drift the day one changes);
 - **cites a transient artifact** (a plan filename, "Phase N", a ticket) that will be deleted — the reference is engineered to dangle;
 - **narrates the *what*** — well-named code already does that.
 
