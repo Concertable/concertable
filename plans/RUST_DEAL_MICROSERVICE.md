@@ -612,7 +612,7 @@ VenueHire reverse direction; FlatFee/VenueHire expose their fee as the escrow ch
 
 - [`api/ARCHITECTURE.md`](../api/ARCHITECTURE.md) — adapter vs data service; standalone-is-canonical; DB-per-service.
 - [`ARCHITECTURE.md`](../ARCHITECTURE.md) — system-wide monorepo-of-convenience / split-repo premise.
-- [`api/docs/MICROSERVICES_ARCHITECTURE.md`](../api/docs/MICROSERVICES_ARCHITECTURE.md), [`api/docs/MODULAR_MONOLITH_RULES.md`](../api/docs/MODULAR_MONOLITH_RULES.md).
+- [`api/docs/MICROSERVICES_ARCHITECTURE.md`](../api/docs/MICROSERVICES_ARCHITECTURE.md), [`api/agents/MODULAR_MONOLITH_RULES.md`](../api/agents/MODULAR_MONOLITH_RULES.md).
 - [`api/Concertable.B2B/Modules/Contract/ARCHITECTURE.md`](../api/Concertable.B2B/Modules/Contract/ARCHITECTURE.md) — the extraction source.
 - `api/Concertable.Payment/` — the template for a sync gRPC service (`.Client` proto, `AddCallCredentials`, `ServiceToken` auth, `payment.proto`).
 

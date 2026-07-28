@@ -8,7 +8,7 @@ Debt spanning multiple services, host `Program.cs` files, or repo-wide build/CI 
 
 ### `AzureServiceBusOptions` binder defaults are `= ""` instead of `null!`
 
-`Concertable.Messaging.AzureServiceBus/Options/AzureServiceBusOptions.cs` initialises binder-populated `string` properties to `= ""`, where the convention (`docs/CODE_CONVENTIONS.md`) requires `null!` so a missing bind surfaces instead of silently becoming empty (and it uses the banned `""` literal). Deferred, not host-only: `AzureServiceBusOptions` ships in the **published** `Concertable.Messaging` package, so flipping the defaults is a cross-service package change that must ride a Messaging publish + platform-sync, not a bare edit. (The host-side `?? ""` masks that used to sit alongside this — `Auth:Authority` / `ServiceAuth:ClientId` / the ASB `ConnectionString` across the Auth, B2B.Web, B2B.Workers, Customer.Web, Payment.Web, Payment.Workers, Search.Workers, and B2B.Seed.Simulator hosts — now fail fast at startup outside the "Testing" environment, done. `ServiceAuth:ClientSecret` is a genuine optional, now bound **null** when absent — its earlier `string.Empty` was a masking cosmetic swap. The complete fix (`TokenServiceOptions.ClientSecret` → `string?` + the token service omitting the `client_secret` form param when null, correct for a secret-less/public client) is a **published Kernel change** — tracked with the `GetId()` Kernel item above as a cut-over.)
+`Concertable.Messaging.AzureServiceBus/Options/AzureServiceBusOptions.cs` initialises binder-populated `string` properties to `= ""`, where the convention (`agents/CODE_CONVENTIONS.md`) requires `null!` so a missing bind surfaces instead of silently becoming empty (and it uses the banned `""` literal). Deferred, not host-only: `AzureServiceBusOptions` ships in the **published** `Concertable.Messaging` package, so flipping the defaults is a cross-service package change that must ride a Messaging publish + platform-sync, not a bare edit. (The host-side `?? ""` masks that used to sit alongside this — `Auth:Authority` / `ServiceAuth:ClientId` / the ASB `ConnectionString` across the Auth, B2B.Web, B2B.Workers, Customer.Web, Payment.Web, Payment.Workers, Search.Workers, and B2B.Seed.Simulator hosts — now fail fast at startup outside the "Testing" environment, done. `ServiceAuth:ClientSecret` is a genuine optional, now bound **null** when absent — its earlier `string.Empty` was a masking cosmetic swap. The complete fix (`TokenServiceOptions.ClientSecret` → `string?` + the token service omitting the `client_secret` form param when null, correct for a secret-less/public client) is a **published Kernel change** — tracked with the `GetId()` Kernel item above as a cut-over.)
 
 **Resolves when:** the `= ""` defaults become `null!` as part of a `Concertable.Messaging` package publish.
 
@@ -19,26 +19,6 @@ Debt spanning multiple services, host `Program.cs` files, or repo-wide build/CI 
 `api/Concertable.Auth/Directory.Packages.props` pins the shared platform to `ConcertablePlatformVersion` (currently `0.1.0-alpha.0.526`), so in the full `Concertable.slnx` build Auth compiles against that *published* package while B2B/Customer/Search build the same shared projects from live source. Edit shared source without re-publishing + bumping the pin and Auth silently compiles against stale code; a breaking shared-API change turns only the Auth build red with a confusing "works in source, fails as package" error. Accepted build-separation tradeoff for now (Auth.Contracts has ~0 churn and the shared platform changes infrequently), but the divergence is real the moment shared code moves without a publish.
 
 **Resolves when:** the SERVICE_BUILD_SEPARATION hybrid inner-loop toggle lands (`ProjectReference` for local multi-service dev, `PackageReference` in CI/standalone), or the platform-version pin is automated so it can't lag a shared-source change.
-
----
-
-## LOW
-
-### `initial-migrations.ps1` re-stamps every module, desyncing packaged libs from their published packages
-
-`api/initial-migrations.ps1` nukes and re-scaffolds **every** module's `InitialCreate` with a fresh
-timestamp — including libs consumed as *published packages* (`Messaging`, `Payment`, `Auth`) whose
-model didn't change. The regenerated source then carries a newer migration id than the published
-package the standalone/E2E stack actually loads, and `DevDbInitializer` blows up applying a migration
-whose table already exists (first seen while re-scaffolding on a migration-touching branch: "There is already an object named
-'Outbox'", every UI E2E scenario dead at fixture init). Workaround each time: after running the
-script, `git checkout origin/master -- <migration dirs>` for every module whose migration content is
-byte-identical to master (only the genuinely-changed module keeps its new migration). Bites every
-migration-touching branch.
-
-**Resolves when:** the script only re-scaffolds modules whose model actually changed (diff the
-generated migration content, skip re-stamp if identical), or packaged-lib migrations are excluded
-from the blanket nuke.
 
 ### Orphaned FlatFee accept-checkout holds release only by ~7-day Stripe expiry
 
@@ -122,3 +102,33 @@ the two PDF ones → `*PdfRenderer` (alongside the existing `IPdfRenderer`);
 `IBlobStorageService` → `IBlobStore`; `IImageService` → `IImageStore`. Best done as one sweep — renaming
 the `Kernel` and `Shared.*` types republishes those packages and triggers a platform-sync, so batch them
 rather than paying that cost once per rename.
+
+---
+
+### `.github/workflows/auto-merge.yml` is two bolted-on heuristics for the same unsolved problem
+
+The workflow exists to stop a green, `--auto`-enabled PR from silently sitting `OPEN` forever instead of
+landing — GitHub's merge queue has now been observed to fail two different ways with **no direct signal
+that either happened**: (1) a required check resolving to `skipped` (our non-code path classifier) stops
+GitHub re-evaluating queue admission at all, and (2) a PR can be admitted (`mergeQueueEntry` non-null,
+a real queue position) while GitHub never actually dispatches the `merge_group` CI run for it (PR #216,
+2026-07-26 — sat at position 1, `AWAITING_CHECKS`, for over an hour with zero `merge_group` runs ever
+recorded). Each fix is a heuristic bolted on after the fact: poll `mergeStateStatus` for #1, poll
+`mergeQueueEntry` + `gh run list --event merge_group` + an age threshold for #2. Every fix works by
+inferring "stuck" from the *absence* of an event over some duration, not from an actual failure signal
+— which means a third failure mode is only a matter of time, and the workflow has no principled way to
+detect it either.
+
+**Resolves when:** either (a) GitHub Actions/merge-queue ships a real "admitted but not progressing"
+webhook/event so detection stops being poll-and-guess, or (b) this repo moves off polling entirely —
+e.g. replace the sweep with a single scheduled job that asks "for every open ready PR, is its
+`mergeQueueEntry` state consistent with recent `merge_group` activity" as one designed check rather than
+accreting a new `if` branch per incident.
+
+---
+
+### Payment and Search lack a design-time `DbContext` factory, so `initial-migrations.ps1` can't scaffold them without an env shim
+
+`B2B`, `Customer`, `Auth`, and `Messaging` each ship an `IDesignTimeDbContextFactory<T>`, so `dotnet ef` builds their `DbContext` directly at design time and never boots the app host. `Payment` and `Search` have none — EF falls back to executing their `*.Web` `Program.cs`, which builds the full host and now fail-fasts on the required `ServiceBus:ServiceName` config (absent at design time, injected by Aspire at runtime). The fail-fast is correct (it replaced a silent `= ""` mask — commit `289eddba`); the gap is that Payment/Search were never given the factory their peers have, so scaffolding them requires manually setting `$env:ServiceBus__ServiceName` first. `ServiceName` doesn't affect DB schema, so it's purely a shim to get the host to build. Pre-existing on `main`, surfaced by the fail-fast sweep; not introduced by the async-email-outbox work.
+
+**Resolves when:** `Payment` and `Search` each get an `IDesignTimeDbContextFactory` (mirroring `B2BDesignTimeDbContextFactory` / `CustomerDesignTimeDbContextFactory`) so `dotnet ef` never boots their host, and the `ServiceBus__ServiceName` shim drops out of any scaffolding workflow.

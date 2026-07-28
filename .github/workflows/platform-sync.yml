@@ -2,7 +2,7 @@ name: Platform sync
 
 # Automates the cross-service publish->consume loop (see plans/PLATFORM_PACKAGE_SYNC.md).
 #
-# When 'Publish packages' ships new Concertable.* packages to the feed on master, this opens ONE PR
+# When 'Publish packages' ships new Concertable.* packages to the feed on main, this opens ONE PR
 # bumping every service's <ConcertablePlatformVersion> pin to the just-published version, and turns on
 # GitHub auto-merge for THAT PR only (scoped to this bot PR — not a repo-wide setting):
 #   - NON-breaking platform change -> the bump PR is green -> the merge queue lands it, no review.
@@ -41,7 +41,7 @@ jobs:
   sync:
     if: >-
       github.event_name == 'workflow_dispatch' ||
-      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'master')
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ secrets.PLATFORM_SYNC_TOKEN }}
@@ -124,7 +124,7 @@ jobs:
           EOF
           )
           if ! gh pr view "$branch" --json number >/dev/null 2>&1; then
-            gh pr create --base master --head "$branch" \
+            gh pr create --base main --head "$branch" \
               --title "chore(platform): sync to ${VERSION}" --body "$body"
           fi
 
@@ -154,7 +154,7 @@ jobs:
         run: |
           set -euo pipefail
           branch="chore/platform-sync-${VERSION}"
-          # Enable auto-merge with NO strategy flag. master has a merge queue, so the queue owns the merge method:
+          # Enable auto-merge with NO strategy flag. main has a merge queue, so the queue owns the merge method:
           # passing --squash/--merge makes gh reject the whole command ("merge strategy is set by the merge queue"),
           # auto-merge is then never enabled, and the PR sits green-but-unmerged forever (this is why syncs stalled
           # and piled up). A pin bump is package-only, so the queue's E2E gate no-ops and it lands in minutes with no
