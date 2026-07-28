@@ -2,7 +2,7 @@
 
 > Cosmetic-but-cross-cutting rename of a shared **test harness** project. Not boundary-blocked (test
 > projects aren't published packages — everything references it by ProjectReference), so it's a single
-> PR, but it touches many files. Do it on a `Refactor/E2EHarnessRename` branch off master, after
+> PR, but it touches many files. Do it on a `Refactor/E2EHarnessRename` branch off main, after
 > `Feature/BookingAgreement` lands. Sits alongside `plans/PDF_RENDERER_RENAME.md` / `plans/b2b/DEAL_RENAME.md`.
 
 ## Why
@@ -52,7 +52,7 @@ a harness.)
 
 ### Phase 2 — Repoint every consumer and reference
 - Update ProjectReferences, `using`s, `InternalsVisibleTo`, `.slnx`, scripts, docs, skill paths.
-- **Gate:** `dotnet build api/Concertable.slnx` green (0 errors); `./e2e.ps1 ui regress` green (proves
+- **Gate:** `dotnet build api/Concertable.slnx` green (0 errors); `./scripts/e2e.ps1 ui regress` green (proves
   the harness still wires up and the suites resolve it); skill docs point at the new path.
 - `git rm` this plan in the completing commit.
 

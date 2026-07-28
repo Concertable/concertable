@@ -98,7 +98,7 @@ Two rules people (and AIs) keep getting wrong:
    `ConcertEntity.TicketsSold` and Customer `TicketEntity` rows for *past-dated* concerts. Real Payment
    never emits for seed data (only live Stripe webhooks), and you can't buy a ticket to a concert that
    already happened, so this is **inherently unreproducible historical state**. Each consumer
-   reflection-seeds its own copy directly (a documented exception in `docs/SEEDING_CONVENTIONS.md`) —
+   reflection-seeds its own copy directly (a documented exception in `agents/SEEDING_CONVENTIONS.md`) —
    no Payment-owned simulator. (In the umbrella host, StripeCli drives real test-mode payments for
    *live* flows; seed-only historical state is still reflection-seeded.)
 
@@ -172,7 +172,7 @@ This is not monorepo friction to delete; it is exactly what independently-deploy
 survives the repo split. Adding a *method* is safe (additive); changing *types consumers already use* is
 not (no back-compat shim for a return-type change).
 
-`platform-sync.yml` automates the second step: after `Publish packages` ships on master it opens one
+`platform-sync.yml` automates the second step: after `Publish packages` ships on main it opens one
 `chore/platform-sync-<version>` PR bumping every service's pin, set to auto-merge. **Non-breaking →
 green → merges hands-off. Breaking → red at exactly the consumers to migrate → do the migration in that
 PR** (now legal — the package exists), and it merges when CI greens. Full design + one-time repo setup:
@@ -199,8 +199,8 @@ Each service folder contains its own `AppHost/`, `Web/`, `Workers/`, `Seeding/` 
 
 - Root [`ARCHITECTURE.md`](../ARCHITECTURE.md) — the system-wide, app-global premise (monorepo-of-convenience, split-repo future).
 - Root `CLAUDE.md` — top-of-context rules and pointers.
-- `api/docs/SEEDING_CONVENTIONS.md` — seeding rules (never seed event-driven data, etc.).
-- `api/docs/MODULAR_MONOLITH_RULES.md` — module boundary rules within a service.
+- `api/agents/SEEDING_CONVENTIONS.md` — seeding rules (never seed event-driven data, etc.).
+- `api/agents/MODULAR_MONOLITH_RULES.md` — module boundary rules within a service.
 - `api/Concertable.X/ARCHITECTURE.md` — per-service architecture docs.
 - `api/Concertable.B2B/src/Seed/Concertable.B2B.Seed.Simulator/CLAUDE.md` — the simulator pattern in detail.
 - `plans/PAYMENT_AGNOSTIC_AUDIT.md` — why Payment depends on no consumer.

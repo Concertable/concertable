@@ -8,7 +8,7 @@ Debt spanning multiple services, host `Program.cs` files, or repo-wide build/CI 
 
 ### `AzureServiceBusOptions` binder defaults are `= ""` instead of `null!`
 
-`Concertable.Messaging.AzureServiceBus/Options/AzureServiceBusOptions.cs` initialises binder-populated `string` properties to `= ""`, where the convention (`docs/CODE_CONVENTIONS.md`) requires `null!` so a missing bind surfaces instead of silently becoming empty (and it uses the banned `""` literal). Deferred, not host-only: `AzureServiceBusOptions` ships in the **published** `Concertable.Messaging` package, so flipping the defaults is a cross-service package change that must ride a Messaging publish + platform-sync, not a bare edit. (The host-side `?? ""` masks that used to sit alongside this — `Auth:Authority` / `ServiceAuth:ClientId` / the ASB `ConnectionString` across the Auth, B2B.Web, B2B.Workers, Customer.Web, Payment.Web, Payment.Workers, Search.Workers, and B2B.Seed.Simulator hosts — now fail fast at startup outside the "Testing" environment, done. `ServiceAuth:ClientSecret` is a genuine optional, now bound **null** when absent — its earlier `string.Empty` was a masking cosmetic swap. The complete fix (`TokenServiceOptions.ClientSecret` → `string?` + the token service omitting the `client_secret` form param when null, correct for a secret-less/public client) is a **published Kernel change** — tracked with the `GetId()` Kernel item above as a cut-over.)
+`Concertable.Messaging.AzureServiceBus/Options/AzureServiceBusOptions.cs` initialises binder-populated `string` properties to `= ""`, where the convention (`agents/CODE_CONVENTIONS.md`) requires `null!` so a missing bind surfaces instead of silently becoming empty (and it uses the banned `""` literal). Deferred, not host-only: `AzureServiceBusOptions` ships in the **published** `Concertable.Messaging` package, so flipping the defaults is a cross-service package change that must ride a Messaging publish + platform-sync, not a bare edit. (The host-side `?? ""` masks that used to sit alongside this — `Auth:Authority` / `ServiceAuth:ClientId` / the ASB `ConnectionString` across the Auth, B2B.Web, B2B.Workers, Customer.Web, Payment.Web, Payment.Workers, Search.Workers, and B2B.Seed.Simulator hosts — now fail fast at startup outside the "Testing" environment, done. `ServiceAuth:ClientSecret` is a genuine optional, now bound **null** when absent — its earlier `string.Empty` was a masking cosmetic swap. The complete fix (`TokenServiceOptions.ClientSecret` → `string?` + the token service omitting the `client_secret` form param when null, correct for a secret-less/public client) is a **published Kernel change** — tracked with the `GetId()` Kernel item above as a cut-over.)
 
 **Resolves when:** the `= ""` defaults become `null!` as part of a `Concertable.Messaging` package publish.
 
@@ -102,3 +102,25 @@ the two PDF ones → `*PdfRenderer` (alongside the existing `IPdfRenderer`);
 `IBlobStorageService` → `IBlobStore`; `IImageService` → `IImageStore`. Best done as one sweep — renaming
 the `Kernel` and `Shared.*` types republishes those packages and triggers a platform-sync, so batch them
 rather than paying that cost once per rename.
+
+---
+
+### `.github/workflows/auto-merge.yml` is two bolted-on heuristics for the same unsolved problem
+
+The workflow exists to stop a green, `--auto`-enabled PR from silently sitting `OPEN` forever instead of
+landing — GitHub's merge queue has now been observed to fail two different ways with **no direct signal
+that either happened**: (1) a required check resolving to `skipped` (our non-code path classifier) stops
+GitHub re-evaluating queue admission at all, and (2) a PR can be admitted (`mergeQueueEntry` non-null,
+a real queue position) while GitHub never actually dispatches the `merge_group` CI run for it (PR #216,
+2026-07-26 — sat at position 1, `AWAITING_CHECKS`, for over an hour with zero `merge_group` runs ever
+recorded). Each fix is a heuristic bolted on after the fact: poll `mergeStateStatus` for #1, poll
+`mergeQueueEntry` + `gh run list --event merge_group` + an age threshold for #2. Every fix works by
+inferring "stuck" from the *absence* of an event over some duration, not from an actual failure signal
+— which means a third failure mode is only a matter of time, and the workflow has no principled way to
+detect it either.
+
+**Resolves when:** either (a) GitHub Actions/merge-queue ships a real "admitted but not progressing"
+webhook/event so detection stops being poll-and-guess, or (b) this repo moves off polling entirely —
+e.g. replace the sweep with a single scheduled job that asks "for every open ready PR, is its
+`mergeQueueEntry` state consistent with recent `merge_group` activity" as one designed check rather than
+accreting a new `if` branch per incident.

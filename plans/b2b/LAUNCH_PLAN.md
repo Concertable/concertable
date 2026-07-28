@@ -238,7 +238,7 @@ These need answers but aren't urgent yet. (Two items are no longer open: the **D
 - [../../api/Concertable.B2B/src/Modules/Deal/LEGAL_REQUIREMENTS.md](../../api/Concertable.B2B/src/Modules/Deal/LEGAL_REQUIREMENTS.md) — B2B legal backlog (rewritten 2026-06-01: contract-type-centric, items 0-9, PRS corrected)
 - [../../api/Concertable.Customer/LEGAL_REQUIREMENTS.md](../../api/Concertable.Customer/LEGAL_REQUIREMENTS.md) — marketplace/fan legal leads (future, separate system)
 - [../../api/Concertable.B2B/src/Modules/Deal/ARCHITECTURE.md](../../api/Concertable.B2B/src/Modules/Deal/ARCHITECTURE.md) — deal + workflow architecture
-- [MODULAR_MONOLITH_RULES.md](../../api/docs/MODULAR_MONOLITH_RULES.md) — module boundary rules
+- [MODULAR_MONOLITH_RULES.md](../../api/agents/MODULAR_MONOLITH_RULES.md) — module boundary rules
 
 ## Decisions locked
 

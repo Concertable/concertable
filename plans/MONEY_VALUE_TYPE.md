@@ -107,7 +107,7 @@ Decisions taken during implementation:
 - **Sequence (done):** #207 merged (`[skip-e2e]`) → `Payment.Client` republished → sync PR #208 bumped
   every pin to `0.1.0-alpha.0.664` → B2B/Customer now speak the new wire. The sync PR's merge-queue
   skipped the real E2E (pin-bump-only classifier), so it was validated by a **local API-E2E run on
-  `master`: B2B `Concertable.B2B.E2ETests` 10/10 green** (all ConcertDraft/Cancelled/Finished escrow +
+  `main`: B2B `Concertable.B2B.E2ETests` 10/10 green** (all ConcertDraft/Cancelled/Finished escrow +
   settlement paths — the ones that 500'd on `currency Unspecified` pre-bump). Cut-over proven end to end.
 
 Because the wire is now cut over in Phase 2, **Phase 5 no longer touches the wire** — it's reduced to the
@@ -151,7 +151,7 @@ then rework the fee code. Not recommended, but noted.
 `Money` is a Kernel concern, not the platform-fee feature — so **its own branch** (e.g.
 `Refactor/MoneyValueType`), landed publish-first, *before* the `Feature/PlatformCommission` fee PR rebases
 onto the new pin. This plan doc can ride the current branch (docs are branch-exempt); execution starts on a
-fresh branch off `origin/master`.
+fresh branch off `origin/main`.
 
 ## Risks
 
