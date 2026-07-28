@@ -6,22 +6,12 @@ Concertable is a monorepo (a convenience, not the architecture) with a `.NET` mi
 
 Decide and act on reversible work (doc/plan edits, isolated commits, retrying a transient failure), then report — no check-ins. Research: run end-to-end, update the relevant docs, commit in isolation. Pause only when an action is irreversible or contradicts what you find (e.g. unrelated work already staged) — flag it in one line and take the safe path, don't ask permission.
 
-**Never gate a reversible local (working-tree) change behind a "should I?" — just make it.** Editing / writing / refactoring a file, or running a plan's code steps, is the default action, never a question and never a "just report / do nothing" menu; the *only* thing that waits for an explicit instruction is `git commit` / `git push` (full rule: root `~/.claude/CLAUDE.md`).
-
-## Agent instructions vs human docs — `agents/` vs `docs/`
-
-This repo is read by more than one coding agent (Claude Code, Codex, …). `AGENTS.md` is the file both
-read; every directory's `CLAUDE.md` is a one-line `@AGENTS.md` stub kept only so Claude Code's
-auto-loader finds it — the real content always lives in `AGENTS.md`, so link to that, never to a
-`CLAUDE.md` path. Per top-level area, `agents/` (e.g. `api/agents/`, `app/agents/`) holds the
-*normative* rules any agent must obey (naming, patterns, seeding, module boundaries); `docs/` holds
-*explanatory* material for a human reader (product overview, positioning, architecture rationale,
-runbooks) — never conventions an agent is expected to follow.
+**Never gate a reversible local (working-tree) change behind a "should I?" — just make it.** Editing / writing / refactoring a file, or running a plan's code steps, is the default action, never a question and never a "just report / do nothing" menu; the *only* thing that waits for an explicit instruction is `git commit` / `git push` (full rule: root `~/.Codex/AGENTS.md`).
 
 ## Per-area guidance
 
 - **Backend (.NET, `api/`)** — seeding, migrations, DTOs, module rules, C# conventions: [`api/AGENTS.md`](./api/AGENTS.md).
-- **Design patterns the codebase commits to** (keyed strategy resolvers, and the anti-patterns they replace — branching on `DealType` in agnostic code, service location, throwaway DTOs): [`api/agents/CODE_PATTERNS.md`](./api/agents/CODE_PATTERNS.md). Read it before adding any rule that varies by a closed key.
+- **Design patterns the codebase commits to** (keyed strategy resolvers, and the anti-patterns they replace — branching on `DealType` in agnostic code, service location, throwaway DTOs): [`api/docs/CODE_PATTERNS.md`](./api/docs/CODE_PATTERNS.md). Read it before adding any rule that varies by a closed key.
 - **Web SPA (`app/web/`)** — [`app/web/AGENTS.md`](./app/web/AGENTS.md).
 - **Customer cross-platform core (`app/customer/shared`, npm `@customer/shared`)** — consumed ONLY by the customer web + mobile apps: [`app/customer/shared/AGENTS.md`](./app/customer/shared/AGENTS.md).
 
@@ -162,7 +152,7 @@ merely mentions it can't trip the gate (that was the pr-227 bug). A PR **label**
 (`skip-e2e` / `skip-e2e-ui` / `skip-tests`) works identically. Full tier table in
 [`.github/workflows/test.yml`](./.github/workflows/test.yml).
 
-Run E2E only through `./scripts/e2e.ps1` via the matching skill (`e2e-ui-regress`, `e2e-ui-debug`,
+Run E2E only through `./e2e.ps1` via the matching skill (`e2e-ui-regress`, `e2e-ui-debug`,
 `e2e-api-debug`) — the skill's Step 0 Docker pre-flight is mandatory, every run.
 
 - **`docker ps` answering is NOT proof Docker is healthy.** Docker Desktop can be off, paused, or
@@ -175,11 +165,11 @@ Run E2E only through `./scripts/e2e.ps1` via the matching skill (`e2e-ui-regress
   needs no port forwarding, and the host-side `docker-proxy` completes a TCP handshake *locally* even
   when forwarding into the container is dead — so a connect "succeeds" while no data flows (exactly
   the `pre-login handshake` mode). The only valid check is a real **data** round-trip to a fresh
-  container: run **`./scripts/docker-health.ps1`** (fresh container + published port + HTTP round-trip +
-  stability check; exit 1 = unhealthy). `./scripts/e2e.ps1` runs it as an automatic gate before booting.
+  container: run **`./docker-health.ps1`** (fresh container + published port + HTTP round-trip +
+  stability check; exit 1 = unhealthy). `./e2e.ps1` runs it as an automatic gate before booting.
 - **A suite that fails at startup is an environment problem until proven otherwise.** STOP after
   the first such run — do not rerun, do not debug application code. Verify Docker with
-  `./scripts/docker-health.ps1` (and Docker Desktop showing **Running**). Fix, then run once.
+  `./docker-health.ps1` (and Docker Desktop showing **Running**). Fix, then run once.
 
 ## Tech debt (`TECH_DEBT.md`)
 
@@ -194,7 +184,7 @@ Avoid introducing tech debt wherever possible. But when a quick fix is the right
 Default to **zero** comments. The diff shows *what* changed; the commit message is where *why* lives (the incident, the root cause, the alternatives). A code comment is the exception, not the habit — **≤2 lines**, and only for a *why* a reader needs *at this line* and can't get from well-named identifiers. Anything longer belongs in the commit message, not the file; big inline explanations rot in place.
 
 A comment is **wrong**, not merely long, if it:
-- **restates reasoning already in a `CLAUDE.md`/`docs` file** — link it in a phrase, or omit it (two copies drift the day one changes);
+- **restates reasoning already in a `AGENTS.md`/`docs` file** — link it in a phrase, or omit it (two copies drift the day one changes);
 - **cites a transient artifact** (a plan filename, "Phase N", a ticket) that will be deleted — the reference is engineered to dangle;
 - **narrates the *what*** — well-named code already does that.
 
