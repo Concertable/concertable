@@ -1,8 +1,7 @@
 # Verify/Accept convergence — fix the booking race behind the flaky "a draft concert is created" E2E
 
-**Status:** designed, not started. **Branch:** Phase 1 (the fix) goes on the existing
-`Bug/DoorSplitE2ETimeout` branch — that is PR #237, which exists precisely to fix this flake and is
-otherwise green (26/27). Phases 2 and 3 are separate concerns → their own branches off `origin/main`.
+**Status:** ✅ Phase 1 landed on `Bug/DoorSplitE2ETimeout` (PR #237). Phases 2 & 3 remain — separate
+concerns, their own branches off `origin/main`.
 
 ## The bug (confirmed, with evidence)
 
@@ -105,16 +104,23 @@ not a substitute for the `TryBook` idempotency guard.)
 Each phase is independently shippable and ends green (build + affected unit/integration tests; see
 `plans/AGENTS.md`). Model changes end with `./initial-migrations.ps1` from `api/` (never additive).
 
-### Phase 1 — the join (this is THE fix; unblocks the flake)
-- Add the application-scoped payment-verification outcome + concurrency token; re-scaffold migrations.
-- Add the idempotent, concurrency-guarded `TryBook(applicationId)` convergence op (idempotent Book).
-- Rewire `VerifyPaymentProcessor`/`VerifyExecutor` to **record-then-`TryBook`** and stop throwing on
-  early arrival (success and failure paths).
-- Call `TryBook` from `AcceptExecutor` after the accept commit.
-- Remove the now-dead reliance on the `ConflictException`/`NotFound` → backoff retry for this path.
-- **Gate:** build green; Concert module unit + integration tests; then the UI E2E via `e2e-ui-debug`
-  (this is a behaviour-critical payments/booking flow — it earns an E2E run). The DoorSplit-3DS and
-  Versus "a draft concert is created" scenarios must pass on a fresh stack, repeatably.
+### ✅ Phase 1 — the join (THE fix; unblocks the flake) — DONE
+Landed as the durable join. Final design (deltas from the sketch above are deliberate — see the commit
+message for the full rationale):
+- `ApplicationEntity` carries `PaymentVerification` (`None`/`Verified`/`Failed`) + `PaymentTransactionId`.
+- Convergence is `IVerifyExecutor.ConvergeAfterAcceptAsync` + the record-then-converge entry points; the
+  early webhook now **records and returns cleanly** (no throw → no ASB backoff) and books only from a
+  booking-pending state.
+- **No RowVersion.** The double-draft hazard is already closed by the pre-existing 1:1 unique index on
+  `Concert.BookingId`; the two writers touch disjoint columns (`State` vs `PaymentVerification`), so EF's
+  modified-columns-only UPDATE means no lost update. The accept-side converge swallows the concurrent-race
+  `ConflictException` / duplicate-key.
+- Tenancy: converge runs in each writer's **own** scope (accept = venue request scope, webhook = host
+  message scope) — never a fresh `IScoped` (the fail-closed trap); `Concert`/read-models are unfiltered so
+  both scopes can read/write the draft.
+- **Gate met:** build green; Concert unit 66/66; Application DoorSplit+Versus (incl. new webhook-first &
+  webhook-fail-first join tests) 19/19; Contract 16/16; FlatFee+VenueHire+Cancel+Withdraw 38/38. UI E2E
+  (DoorSplit-3DS + Versus "a draft concert is created") runs in the **merge queue**, not locally.
 
 ### Phase 2 — frontend resilience (defense-in-depth; separate PR)
 Even with Phase 1, the SPA hangs navigation on a **single fire-and-forget SignalR push**, and
