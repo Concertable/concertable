@@ -47,8 +47,8 @@ signatures, immutable agreed terms, a formation moment and a PDF instrument *is*
 
 ## Branch / timing
 
-Most of the deal-terms surface is **already merged to master**, so this is a `Refactor/DealRename`
-branch off master — **not** part of `Feature/BookingAgreement`. Run it **after `Feature/BookingAgreement`
+Most of the deal-terms surface is **already merged to main**, so this is a `Refactor/DealRename`
+branch off main — **not** part of `Feature/BookingAgreement`. Run it **after `Feature/BookingAgreement`
 merges**, so Phase 2 (renaming the agreement surface) operates on merged code rather than racing the
 feature. (This plan file is doc-only — commit it on the current branch per `plans/CLAUDE.md`.)
 

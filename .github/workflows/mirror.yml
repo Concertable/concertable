@@ -1,9 +1,9 @@
 name: Mirror services to standalone repos
 
+# Manual-only — OFF the hot path. Mirroring is a full 6-service history rewrite for a split-repo future
+# nothing consumes yet; running it on every `main` push was per-merge cost for no current benefit (N7).
+# Run it on demand when a mirror is actually needed; `mirror-parity.yml` (nightly) still flags drift.
 on:
-  push:
-    branches:
-      - master
   workflow_dispatch:
 
 jobs:

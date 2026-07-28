@@ -1,6 +1,6 @@
-﻿---
+---
 name: big-review
-description: Review a very large branch diff in resumable area-stages, instead of one unreviewable pass. A staging wrapper around the `code-review` skill for branches too big to review at once (hundreds/thousands of changed files, e.g. `Refactor/Microservices`). Reviews the NET diff `merge-base..HEAD` (current state vs master — never walks intermediate commits, which waste time on superseded designs), sliced into area-stages. Each run reviews the next unreviewed area, appends findings, and ticks a coverage checklist in `reviews/BIG-<branch-slug>-Review.md`. Use when the user wants to "big review", "review this massive PR in stages", "stage the review", or resume a staged review ("continue the big review", "next stage"). For a normal-sized branch use `code-review`; for only-new-commits use `incremental-review`.
+description: Review a very large branch diff in resumable area-stages, instead of one unreviewable pass. A staging wrapper around the `code-review` skill for branches too big to review at once (hundreds/thousands of changed files, e.g. `Refactor/Microservices`). Reviews the NET diff `merge-base..HEAD` (current state vs main — never walks intermediate commits, which waste time on superseded designs), sliced into area-stages. Each run reviews the next unreviewed area, appends findings, and ticks a coverage checklist in `reviews/BIG-<branch-slug>-Review.md`. Use when the user wants to "big review", "review this massive PR in stages", "stage the review", or resume a staged review ("continue the big review", "next stage"). For a normal-sized branch use `code-review`; for only-new-commits use `incremental-review`.
 ---
 
 # big-review
@@ -10,7 +10,7 @@ description: Review a very large branch diff in resumable area-stages, instead o
 1. **Scope per run** — instead of reviewing the whole diff at once, each run reviews the NET diff `merge-base..HEAD` **scoped to one area's paths**. The net diff is what actually ships; intermediate commits are NOT walked (a long-lived refactor branch builds things then refactors them away — reviewing history wastes effort on code that no longer exists).
 2. **Progress contract** — a **coverage checklist** of areas at the top of `reviews/BIG-<branch-slug>-Review.md` is the source of truth for what's done. Each run picks the next `[ ]` area, reviews it, appends its findings, and ticks it `[x]`. This is the resume mechanism (the analogue of `incremental-review`'s SHA marker).
 
-Everything else — the rule docs, the five lenses, the ≥80-confidence filter — comes from `code-review` unchanged. **Read `.agents/skillsthe `code-review` skill/SKILL.md` and follow its Steps 2–4 verbatim for each area.** Keep this skill in sync with it.
+Everything else — the rule docs, the five lenses, the ≥80-confidence filter — comes from `code-review` unchanged. **Read `.agents/skills/code-review/SKILL.md` and follow its Steps 2–4 verbatim for each area.** Keep this skill in sync with it.
 
 ## When to use
 
@@ -27,15 +27,15 @@ Everything else — the rule docs, the five lenses, the ≥80-confidence filter 
 
 ## Resuming in a fresh context (the normal flow)
 
-This skill is built to run one stage per context, then a context reset and continue later. **To continue, just run the `big-review` skill again with no arguments** — nothing to tag by hand. On each run the skill:
+This skill is built to run one stage per context, then reset the context and continue later. **To continue, just run the `big-review` skill again with no arguments** — nothing to tag by hand. On each run the skill:
 
 1. derives the branch slug from the current git branch and opens `reviews/BIG-<branch-slug>-Review.md`;
 2. reads the **Coverage** checklist — the `[x]`/`[ ]` marks are the bookmark;
 3. reviews the **first `[ ]` stage**, appends its findings, and flips it to `[x]`.
 
-So the loop is: run `big-review`, reset context if needed, then run `big-review` again until every stage is `[x]`. Optional: pass a stage name, for example `big-review B2B`, to review a specific stage out of order; pass nothing for the default next-unticked behaviour. You never edit the markdown manually — the skill owns the checklist.
+So the loop is: run `big-review`, reset the context, run `big-review` again … until every stage is `[x]`. Optional: pass a stage name (e.g. `big-review B2B`) to review a specific stage out of order; pass nothing for the default next-unticked behaviour. You never edit the markdown manually — the skill owns the checklist.
 
-**Automating the whole pass (unattended):** to run every remaining stage in one go instead of stepping through manually, use the `big-review-all` skill. Each stage still gets its own fresh context. In Codex, use multi-agent tooling when available; otherwise run the stages serially with this skill. No arguments; it auto-detects the active tracking file for the current branch.
+**Automating the whole pass (unattended):** to run every remaining stage in one go instead of stepping through manually, use the **`big-review-all`** skill. Each stage still gets its own fresh context — it drives one fresh sub-agent per stage, strictly sequential (stages share the file and leave cross-area notes for later stages), until every area is `[x]`. No arguments; it auto-detects the active tracking file for the current branch.
 
 ## Step 0 — Find or create the tracking file
 
@@ -59,7 +59,7 @@ On a resume, the very first thing — before picking an area — is to compare c
 
 ## Step 1 — First run: compute the staging plan
 
-1. Establish the range: `git merge-base master HEAD` (start) and `git rev-parse HEAD` (end). Show `git diff <start>..HEAD --stat | tail -1`.
+1. Establish the range: `git merge-base main HEAD` (start) and `git rev-parse HEAD` (end). Show `git diff <start>..HEAD --stat | tail -1`.
 2. **Derive the areas from the diff itself** — never from a preconceived map of the repo. Run `git diff <start>..HEAD --name-only`, cluster the files by component (top-level dirs, service/project roots, `app/` surfaces — whatever structure the changed files actually exhibit), and turn the clusters into stages:
    - **Only changed code gets a stage.** A component the branch didn't touch does not appear in the plan, no matter how important it is to the repo.
    - **Size stages for one sitting** — roughly 50–150 changed files or ~10k diff lines each. Split a huge component into sub-stages (by module/sub-tree); merge several small components into one stage.
@@ -149,5 +149,3 @@ Status legend: `[ ]` not yet reviewed · `[x]` reviewed (date) · `[~]` in progr
 ## Findings
 <!-- appended per area; finding IDs continue across areas: MS#, MB#, BUG#, SEED#, CV# -->
 ```
-
-

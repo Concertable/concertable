@@ -2,7 +2,7 @@
 
 > Cross-suite test refactor (B2B + Customer UI). Not boundary-blocked (test projects, not published
 > packages) — but it's a distinct concern from `Feature/BookingAgreement`, so do it on a
-> `Refactor/E2EFastForward` branch off master after that feature lands. The convention this enforces
+> `Refactor/E2EFastForward` branch off main after that feature lands. The convention this enforces
 > is already written in the E2E `CLAUDE.md`s (shared + per-suite); this plan applies it to the
 > existing scenarios.
 
@@ -58,7 +58,7 @@ runs the real `accept + pay → cancel`. That removes the redundant half without
 
 ### ~~Phase 2 — Trim the agreement signature scenario~~ ✅ DONE on `Feature/BookingAgreement` (2026-07-13)
 - **Shipped there, not here.** The earlier "defer to the refactor branch" decision was reversed: since
-  the signature scenario was *created* on `Feature/BookingAgreement` and isn't in master, the root
+  the signature scenario was *created* on `Feature/BookingAgreement` and isn't in main, the root
   `CLAUDE.md` branch rule says fix it on that branch. Done.
 - **What shipped:** instead of merely dropping the redundant `And a draft concert is created` line, the
   signature assertion was **merged into** the existing `Venue manager books artist on a flat fee with a

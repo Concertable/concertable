@@ -19,7 +19,7 @@ handing off / clearing is exactly the misread that produces the failure below.
 
 **"I've left it uncommitted so you can look at it first" is the anti-pattern, not the courtesy:**
 
-- **Review runs off commits.** `/code-review` diffs `master..HEAD`; work sitting in the working tree
+- **Review runs off commits.** `/code-review` diffs `main..HEAD`; work sitting in the working tree
   is invisible to it. Leaving it uncommitted is precisely what stops the reviewer seeing it.
 - **Uncommitted is the fragile state.** It survives no `git checkout`, no stray `git restore`, no
   context clear. A commit is the cheapest insurance that exists.
@@ -70,7 +70,7 @@ it is **not** deleted as items complete — it lives until launch.
 
 ## Branch first
 
-Before any plan work, create a `Feature/<Name>` branch relevant to the plan if you're not already on one — never commit plan work to `master` or an unrelated branch.
+Before any plan work, create a `Feature/<Name>` branch relevant to the plan if you're not already on one — never commit plan work to `main` or an unrelated branch.
 
 ## Shape of a plan
 
@@ -96,7 +96,7 @@ Lifecycle 4 assumes the plan is already a **tracked** file you `git rm`. The cas
 plan **written and fully implemented in the same session** (a "fresh-context implementation plan"): it
 exists only as an **untracked** working-tree file, so a blanket `git add -A` / `git add .` before the
 completing commit **stages it as a new file** — the exact opposite of deleting it — and it ships inside
-the PR as rot. This is precisely how `DISPLAYNAME_CONST_CONSOLIDATION.md` reached `master`'s PR: born and
+the PR as rot. This is precisely how `DISPLAYNAME_CONST_CONSOLIDATION.md` reached `main`'s PR: born and
 completed in one commit, swept in as an addition instead of never being committed.
 
 So, **before any commit that completes plan work, run `git status --short plans/` and eyeball it:**
@@ -114,7 +114,7 @@ being debugged in the merge queue — so the close-out only happens *after* the 
 When that happens, **do not open a standalone PR for it.** Deleting a completed plan and ticking a
 blocker are doc-only and cannot break a build or another PR (root `CLAUDE.md`: docs are exempt from
 branch hygiene). Spinning up a branch + PR + full merge-queue **E2E cycle (~20-30 min)** for a two-file
-doc change is pure waste — and pushing straight to the protected `master` is (correctly) blocked.
+doc change is pure waste — and pushing straight to the protected `main` is (correctly) blocked.
 
 So: make the close-out edits and **leave them in the working tree** to ride along with the next PR that
 lands (or bundle them into the next commit). The same goes for any tiny, non-breaking doc/markdown
@@ -129,7 +129,7 @@ Cross-service deps go through **published packages**, not project references (th
 them in the solution. So a refactor that **changes a published contract** — renaming/removing a public
 type consumers use, changing a return type, moving a DTO between packages — is a **breaking package
 change**: it can't build/land in one PR, because the consumers won't see the new shape until the
-package republishes (on merge to master). Adding a *method* is safe (additive); changing *types
+package republishes (on merge to main). Adding a *method* is safe (additive); changing *types
 consumers already use* is not (no back-compat shim for a return-type change → expand/contract across
 merges).
 
@@ -181,14 +181,14 @@ state is written:
    at the last phase, or when the user explicitly asks to review sooner — per-increment reviews use
    `incremental-review` (scoped to `<last-reviewed-SHA>..HEAD`), not repeated `/code-review` runs that
    re-read the whole branch each time. With the phase committed (step 1) the whole feature is on the
-   branch. **`/code-review` takes no path argument — it infers the repo/branch (`master..HEAD`) from the
+   branch. **`/code-review` takes no path argument — it infers the repo/branch (`main..HEAD`) from the
    session's working directory.** So the handoff prompt **must name the checkout to run it in, exactly
    like the resume prompt does** — a bare `/code-review` silently reviews wherever the reader's session
    happens to be, and when the branch lives in a *worktree* (a sibling checkout) that's the wrong
    repo/branch or an empty range. Word it e.g. *"In the worktree at `<path>` (branch `<branch>`), run
-   `/code-review`"* — it reviews the **entire feature** (`master..HEAD`), which is what a review should
+   `/code-review`"* — it reviews the **entire feature** (`main..HEAD`), which is what a review should
    cover. Only if some work is *deliberately* left uncommitted must the prompt also point the reviewer
-   at the full delta including it (`git diff $(git merge-base master HEAD)` + untracked from
+   at the full delta including it (`git diff $(git merge-base main HEAD)` + untracked from
    `git status --short`) — **never** `git diff HEAD` alone, which omits already-committed earlier phases.
 
    **If — and only if — the work lives in a separate git worktree, the resume prompt's first line
@@ -293,15 +293,17 @@ kickoff prompt that says "run the E2E regress"** — if a PR will run it, let th
 - It's small, isolated, or covered well by integration tests.
 - It's doc-only or comments-only.
 
-**When you skip E2E on a change headed to a PR, tell the merge queue too — `[skip-e2e]` in a commit.**
+**When you skip E2E on a change headed to a PR, tell the merge queue too — `Skip-E2E: true` trailer.**
 The queue runs the full E2E suite on every code change *by default*, so your local skip-judgment is
-worthless unless it's encoded in the commit: without the token the queue still burns ~25-30 min of E2E
-on a change that didn't earn it. So for a behaviour-preserving / small / well-covered change, put
-`[skip-e2e]` in a commit message (any commit in the PR range; `[skip-tests]` for compile-floor-only on a
-trivial/mechanical change — build + carve never skip). This is the reflex-inversion: E2E-in-the-queue is
-opt-*out* for a zero-behaviour-change PR, not automatic. Retrofitting the token onto a PR already in the
-queue means closing + re-pushing (the branch is locked while queued) — so decide the tier **in the
-commit you push**, not after.
+worthless unless it's encoded in the commit: without the trailer the queue still burns ~25-30 min of E2E
+on a change that didn't earn it. So for a behaviour-preserving / small / well-covered change, add the
+trailer `Skip-E2E: true` (own line, end of a commit message; any commit in the PR range — `Skip-Tests: true`
+for compile-floor-only on a trivial/mechanical change, `Skip-E2E-UI: true` for UI-only; build + carve never
+skip). It's a real git trailer parsed by git, not a `[bracketed]` token, so prose can't trip it; a same-named
+PR label (`skip-e2e`) works too. This is the reflex-inversion: E2E-in-the-queue is opt-*out* for a
+zero-behaviour-change PR, not automatic. Retrofitting the trailer onto a PR already in the queue means
+closing + re-pushing (the branch is locked while queued) — so decide the tier **in the commit you push**,
+not after.
 
 When in doubt, or when a phase explicitly flips behavior on a covered flow, run E2E. **How** to run it
 safely (the mandatory `./scripts/docker-health.ps1` pre-flight, only via the `e2e-*` skills) is unchanged —

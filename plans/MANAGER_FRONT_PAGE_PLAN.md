@@ -2,7 +2,7 @@
 
 ## Progress (2026-05-18, post-session-3 close-out)
 
-**Branch:** `Feature/ManagerFrontPage` — **PR [#50](https://github.com/ThomasSeery/Concertable/pull/50)** open against `master`. **Head: `23c8fc4c`.** Pushed.
+**Branch:** `Feature/ManagerFrontPage` — **PR [#50](https://github.com/ThomasSeery/Concertable/pull/50)** open against `main`. **Head: `23c8fc4c`.** Pushed.
 
 **Phase A: ✅ committed (5fb54e96).** Mocks running. **Phase B partially landed** — B.9 + B.10 done; B.11 KPI endpoint shipped end-to-end; remaining B.11 endpoints (overview, activity, charts) and B.12 (tests) deferred. **Intent: merge as incomplete-but-ready-to-expand.**
 

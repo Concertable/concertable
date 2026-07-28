@@ -1,20 +1,20 @@
 ---
 name: merge
-description: Merge the current branch's PR into master through the merge queue (which runs E2E), wait for it to land, then return to a clean up-to-date master ready for the next task. Use whenever Tommy says "merge", "merge it", "merge this", "merge my branch", "land this PR", or wants the current feature branch shipped and the local repo reset to master. Concertable-specific (knows this repo's merge queue + E2E gate).
+description: Merge the current branch's PR into main through the merge queue (which runs E2E), wait for it to land, then return to a clean up-to-date main ready for the next task. Use whenever Tommy says "merge", "merge it", "merge this", "merge my branch", "land this PR", or wants the current feature branch shipped and the local repo reset to main. Concertable-specific (knows this repo's merge queue + E2E gate).
 ---
 
 # merge
 
-One command to land the current branch and reset to a clean `master`: verify the PR's own checks are
+One command to land the current branch and reset to a clean `main`: verify the PR's own checks are
 green, **enqueue it into the merge queue** (where the E2E suites run and gate the merge), wait for it
-to actually land, then switch back to `master`, pull, and delete the merged branch — so there's no
+to actually land, then switch back to `main`, pull, and delete the merged branch — so there's no
 juggling before the next task.
 
 This skill is **Concertable-specific**. It encodes how this repo actually merges (see "Repo facts").
 
 ## Repo facts (why this skill exists)
 
-- **`master` is protected by a merge queue** (ruleset `17393335`, `ALLGREEN`). Its required checks are
+- **`main` is protected by a merge queue** (ruleset `17393335`, `ALLGREEN`). Its required checks are
   `e2e-api-tests`, `e2e-ui-tests`, and the five `carve-*` jobs — i.e. **the queue is the E2E gate.**
   The whole point of merging through the queue is that E2E runs on the merge group and blocks a red merge.
 - **`e2e-api-tests` / `e2e-ui-tests` are merge-queue-only** (`if: github.event_name == 'merge_group'`).
@@ -37,30 +37,30 @@ This skill is **Concertable-specific**. It encodes how this repo actually merges
 
 1. **Find the PR for the current branch.**
    ```
-   git rev-parse --abbrev-ref HEAD                 # current branch (must not be master)
+   git rev-parse --abbrev-ref HEAD                 # current branch (must not be main)
    gh pr view --json number,state,title,url --jq '{number,state,title,url}'
    ```
-   - If on `master`, or there's no PR for the branch, **stop** and say so — there's nothing to merge.
-   - If the PR is already `MERGED`, skip to step 5 (sync master). If `CLOSED`, stop and report.
+   - If on `main`, or there's no PR for the branch, **stop** and say so — there's nothing to merge.
+   - If the PR is already `MERGED`, skip to step 5 (sync main). If `CLOSED`, stop and report.
 
-2. **Make sure the branch is pushed, current with its remote, AND not stale vs `master`.**
+2. **Make sure the branch is pushed, current with its remote, AND not stale vs `main`.**
    - If `git status` shows uncommitted changes, or the local branch is ahead of its remote, **stop** and
      tell the user to commit/push first (or do it with the `commit` / `push` skills if they ask). Don't
      merge a PR that's missing local work.
-   - **`git status -sb` is NOT a master check.** Its `[ahead N, behind M]` compares to the branch's *own*
+   - **`git status -sb` is NOT a main check.** Its `[ahead N, behind M]` compares to the branch's *own*
      remote only — a branch can read "in sync with origin/<branch>" while being dozens of commits behind
-     `master`. Check drift vs master explicitly:
+     `main`. Check drift vs main explicitly:
      ```
      git fetch origin --quiet
-     git rev-list --left-right --count origin/master...HEAD   # -> "<behind-master>\t<ahead>"
+     git rev-list --left-right --count origin/main...HEAD   # -> "<behind-main>\t<ahead>"
      ```
-   - **If `behind-master` > 0, update the branch before enqueueing** — merge master in, don't rebase (the
-     PR is up for review; no force-push): `git merge origin/master`, resolve conflicts (the
+   - **If `behind-main` > 0, update the branch before enqueueing** — merge main in, don't rebase (the
+     PR is up for review; no force-push): `git merge origin/main`, resolve conflicts (the
      `<ConcertablePlatformVersion>` / version file is the usual one), then `dotnet build
      api/Concertable.slnx` to **0 errors** and `git push`. **This is non-negotiable when a
-     `chore/platform-sync-*` has merged to master since the branch's base** (`git log --oneline
-     origin/master ^HEAD | grep platform-sync`): the branch is pinned to an *older* platform version, so
-     it builds/tests against a stale platform — the queue rebuilds on master but a real pin/shape drift
+     `chore/platform-sync-*` has merged to main since the branch's base** (`git log --oneline
+     origin/main ^HEAD | grep platform-sync`): the branch is pinned to an *older* platform version, so
+     it builds/tests against a stale platform — the queue rebuilds on main but a real pin/shape drift
      surfaces as a queue kick-out (or worse, a green merge that's actually stale). Update, rebuild, push,
      then continue.
 
@@ -82,14 +82,17 @@ This skill is **Concertable-specific**. It encodes how this repo actually merges
      the failing job's log for `build`/`carve-*`). Drive it green, push, and re-run this skill.
 
 4. **Enqueue into the merge queue (the default — this is what runs E2E).**
-   - **First decide the E2E tier via a commit token** (`AGENTS.md` → "E2E suites"; `plans/AGENTS.md` →
+   - **First decide the E2E tier via a git trailer** (`AGENTS.md` → "E2E suites"; `plans/AGENTS.md` →
      "When to run the E2E suites"). The queue runs the **full** E2E suite by default — ~25-30 min it
      shouldn't spend on a behaviour-preserving change. If this PR is zero-behaviour-change (additive
-     seam, pure refactor, well-covered by unit + integration), it should carry **`[skip-e2e]`** in a
-     commit in the PR range (`[skip-tests]` drops to the compile floor — build + carve — for a
-     trivial/mechanical change; build + carve never skip). The token is read from the *pushed* commits
-     and **can't be retrofitted once queued** (the branch is locked — you'd have to dequeue + repush), so
-     if the tier applies and no commit carries it yet, add it and push **before** enqueueing. When the
+     seam, pure refactor, well-covered by unit + integration), it should carry the trailer
+     **`Skip-E2E: true`** (its own line, end of a commit message) on a commit in the PR range
+     (`Skip-Tests: true` drops to the compile floor — build + carve — for a trivial/mechanical change;
+     `Skip-E2E-UI: true` drops only the UI suite; build + carve never skip). It's a real git trailer, not
+     a `[bracketed]` token — prose can't trip it; a same-named PR label (`skip-e2e`) also works. The
+     trailer is read from the *pushed* commits and **can't be retrofitted once queued** (the branch is
+     locked — you'd have to dequeue + repush), so if the tier applies and no commit carries it yet, add it
+     and push **before** enqueueing. When the
      change genuinely touches a runtime flow E2E covers (payments/settlement/event-propagation/messaging
      routing), let the full suite run — don't skip to save minutes.
    ```
@@ -112,10 +115,10 @@ This skill is **Concertable-specific**. It encodes how this repo actually merges
      `gh pr merge <n> --merge --admin` merges immediately with **no E2E**. Verify with
      `gh pr view <n> --json state,mergeCommit`.
 
-5. **Return to a clean, up-to-date master.**
+5. **Return to a clean, up-to-date main.**
    ```
-   git checkout master
-   git pull --ff-only origin master
+   git checkout main
+   git pull --ff-only origin main
    git branch -d <merged-branch>            # local cleanup (safe: only deletes if merged)
    git push origin --delete <merged-branch> # remote cleanup (the queue blocked gh's --delete-branch)
    ```
@@ -162,12 +165,12 @@ This skill is **Concertable-specific**. It encodes how this repo actually merges
 ## Final summary
 
 One short report: the PR that merged (number + merge commit), whether E2E ran (queue) or was skipped
-(`--admin`, and why), that `master` is synced, and that the branch is cleaned up. Then the
+(`--admin`, and why), that `main` is synced, and that the branch is cleaned up. Then the
 platform-sync outcome: **no sync (nothing published), sync merged green (new version), or sync went
 red and you migrated its consumers** (which files, now green) — never "merged, and left a red sync PR
 behind." If you stopped early (failed check, red E2E in the queue, unpushed work), say exactly what's
 blocking and what's needed.
 
-Keep it terminal: verify PR green → enqueue → wait for MERGED → sync master → **watch the
+Keep it terminal: verify PR green → enqueue → wait for MERGED → sync main → **watch the
 platform-sync PR to green/merged (or migrate its consumers if it's red)** → summarize → stop. No
 preamble. Plain `git`/`gh` only (personal repo — never the work PR/ADO skills).

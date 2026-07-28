@@ -17,20 +17,20 @@ Decide and act on reversible work (doc/plan edits, isolated commits, retrying a 
 
 ## Git branch — branch first, capitalized type prefix, always
 
-**Before starting any work, create a relevant branch for it if you're not already on one** — never commit to `master` or an unrelated branch.
+**Before starting any work, create a relevant branch for it if you're not already on one** — never commit to `main` or an unrelated branch.
 
-**Fetch first, and branch from `origin/master` — never from local `master`.** Local `master` silently
+**Fetch first, and branch from `origin/main` — never from local `main`.** Local `main` silently
 drifts behind, and branching off it builds and tests everything against a stale tree. That is how work
 already merged gets reinvented (a hand-rolled `IScoped` test refactor was written here against a
-13-commits-stale checkout, while `EventHandlerIntegrationTest` already existed on `master`), and how a
+13-commits-stale checkout, while `EventHandlerIntegrationTest` already existed on `main`), and how a
 PR later trips the auto-merge currency rule below — by which point the wasted work is already done.
 The staleness is invisible locally: the build is green, because it is green *against the old tree*.
 
 ```bash
-git fetch origin --quiet && git checkout -b <Type>/<Name> origin/master
+git fetch origin --quiet && git checkout -b <Type>/<Name> origin/main
 ```
 
-**Don't branch to refactor code from the feature you're already on.** If the code only lives on the current feature branch (not yet in `master`), the refactor is part of that feature — stay on the branch and commit there. A new `Refactor/<Name>` branch is only for code **already merged to `master`**. Branching off an in-flight feature fragments it across two PRs and orphans the original.
+**Don't branch to refactor code from the feature you're already on.** If the code only lives on the current feature branch (not yet in `main`), the refactor is part of that feature — stay on the branch and commit there. A new `Refactor/<Name>` branch is only for code **already merged to `main`**. Branching off an in-flight feature fragments it across two PRs and orphans the original.
 
 Branches are named `<Type>/<Name>` with the type prefix **capitalized**: `Feature/`, `Refactor/`, `Bug/`, `Fix/`, etc. Never create a lowercase variant (`feature/...`). Windows' case-insensitive filesystem cannot hold two casings of the same ref, so a remote with both `feature/x` and `Feature/x` breaks `git fetch`/`git pull` for everyone ("cannot lock ref ... File exists"). Before creating a branch, match the casing of any existing branch of the same name exactly.
 
@@ -38,9 +38,9 @@ Branches are named `<Type>/<Name>` with the type prefix **capitalized**: `Featur
 
 ## Before enabling auto-merge — the branch MUST be current with base
 
-**Enabling auto-merge on a branch that's behind `master` is the miss to never repeat.** GitHub either
+**Enabling auto-merge on a branch that's behind `main` is the miss to never repeat.** GitHub either
 holds the PR `BLOCKED`/`BEHIND` (branch protection requires it current) so it silently never merges, or
-it merges code that was never built against current `master`. **Update first, then enable — always.**
+it merges code that was never built against current `main`. **Update first, then enable — always.**
 This is a mandatory pre-step to the confirm loop below; `/merge` does it for you, so do it by hand only
 when you merged another way. Run it in the branch's **own checkout/worktree**, never the main checkout —
 a session sitting in the wrong checkout (e.g. reviewing a worktree PR from `main`) is exactly how the
@@ -48,38 +48,64 @@ staleness goes unnoticed.
 
 ```bash
 git fetch origin --quiet
-behind=$(git rev-list --count HEAD..origin/master)
-[ "$behind" -gt 0 ] && { echo ">>> $behind commits behind master — update before enabling auto-merge"; \
-  git merge origin/master --no-edit && <rebuild affected projects to 0 errors> && git push; }
+behind=$(git rev-list --count HEAD..origin/main)
+[ "$behind" -gt 0 ] && { echo ">>> $behind commits behind main — update before enabling auto-merge"; \
+  git merge origin/main --no-edit && <rebuild affected projects to 0 errors> && git push; }
 # only when $behind is 0 AND the rebuild is green → gh pr merge <PR> --auto
 ```
 
 An `api/**` branch that's behind also risks a stale `<ConcertablePlatformVersion>` pin — the merge of
-`origin/master` brings the current pin with it, so updating first keeps that correct too.
+`origin/main` brings the current pin with it, so updating first keeps that correct too.
 
 ## Confirming a PR merge — Bash background until-loop, never `Monitor`
 
-After enabling auto-merge (or when a merge lands async via the merge queue), confirm it with a **Bash `run_in_background` until-loop** that exits the instant `gh pr view <PR> --json state -q .state` is `MERGED` or `CLOSED` — one immediate completion notification.
+After enabling auto-merge, confirm the outcome with a **Bash `run_in_background` until-loop** that resolves
+to exactly ONE of three terminal states and reports it automatically — no reprompt needed. It **never
+retries and never toggles**: a failed check is a real failure to surface and debug, not something to poke.
 
-**Also catch the silent stall — not just the merge.** A `CLEAN`, auto-merge-ON PR that GitHub never admits to the queue (`mergeQueueEntry == null`) sits `OPEN` forever: never merges, never errors, queue idle. Cause: auto-merge was enabled while a required check was still pending, then that check resolved to `skipped` (the non-code classifier skips e2e/unit/integration on the PR) and GitHub failed to re-evaluate admission. **This once burned an hour.** The loop must detect it and self-heal: `OPEN` + not-in-queue for a few polls ⇒ **toggle auto-merge** (`gh pr merge --disable-auto <PR>` then `--auto <PR>`) to force admission. (`.github/workflows/auto-merge.yml` now re-asserts on `check_suite: completed`, so it should be rare — the monitor is the backstop.)
+The three outcomes:
+1. **Merged** — report `✓ landed as <sha>` and stop.
+2. **A check failed** — report `✗ CI failed: <job/check>`, point at the run/log, and **stop. Do not
+   retry** (re-running a genuinely-failing e2e just fails again). Hand off to debugging (often local).
+3. **Green but never admitted** — the PR is `CLEAN`, all checks pass, auto-merge is on, yet GitHub never
+   adds it to the queue. This is a GitHub auto-merge **re-evaluation glitch** (enable-while-pending, then
+   it never looks again — observed live on pr-229), **not** a test failure. Surface it as its own state;
+   the remedy is a **one-time** human/agent action — re-assert auto-merge once (`gh pr merge --disable-auto <PR>`
+   then `--auto <PR>`) or break-glass admin-merge — never an automated loop.
+
+**Telling #2 from #3 requires inspecting the actual run results, not just PR state** — this is the trap.
+After a `merge_group` run FAILS, GitHub ejects the PR back to `OPEN`/`CLEAN`/not-queued, which looks
+**identical** to the never-admitted glitch (#3). The failure lives on the `gh-readonly-queue/...pr-<N>-...`
+run, not on the PR head's checks, so `gh pr checks <PR>` alone won't show it. The loop must also scan
+`merge_group` run conclusions for this PR — a failed one means #2 (debug it), none-ever-dispatched means #3
+(nudge it). Conflating them is how a real failure gets mistaken for a stall (and vice versa).
 
 - **Never use the `Monitor` tool** for a single "tell me when it merges" — it's for streaming many events, and its detached poller silently missed merges here (it timed out instead of firing).
 - **Never swallow poll errors** (`2>/dev/null || continue`) — a broken `gh` then looks identical to "still waiting". Capture stderr into the state (`2>&1`), echo the state every poll, and **cap** the loop so a persistent failure surfaces instead of hanging forever.
 
 ```bash
-pr=<PR>; repo=$(gh repo view --json nameWithOwner -q .nameWithOwner); max=120; i=0; stuck=0
+pr=<PR>; repo=Concertable/concertable; max=90; i=0; cleanpolls=0
 while :; do i=$((i+1))
-  state=$(gh pr view "$pr" --json state -q .state 2>&1)
-  inq=$(gh api graphql -f query="{repository(owner:\"${repo%/*}\",name:\"${repo#*/}\"){pullRequest(number:$pr){mergeQueueEntry{state}}}}" -q '.data.repository.pullRequest.mergeQueueEntry!=null' 2>&1)
-  echo "poll $i: state=[$state] inQueue=[$inq]"
-  case "$state" in MERGED|CLOSED) echo ">>> PR #$pr $state"; exit 0;; esac
-  if [ "$state" = OPEN ] && [ "$inq" != true ]; then stuck=$((stuck+1)); else stuck=0; fi
-  if [ "$stuck" -ge 3 ]; then
-    echo ">>> PR #$pr STUCK (auto-merge on, not admitted to queue) — toggling to force admission"
-    gh pr merge --disable-auto "$pr" >/dev/null 2>&1 || true; gh pr merge --auto "$pr"; stuck=0
-  fi
-  [ "$i" -ge "$max" ] && { echo ">>> PR #$pr still [$state] after $max polls — surfacing"; exit 1; }
-  sleep 30
+  # Read state + mergeStateStatus into SEPARATE vars — never a joined string. `case "$st"` must compare
+  # the bare state ("MERGED"), or it silently never matches "MERGED UNKNOWN" and the loop times out
+  # instead of reporting the merge (the "monitored for ages, missed the merge" bug).
+  read -r st mss < <(gh pr view "$pr" --json state,mergeStateStatus -q '.state+" "+.mergeStateStatus' 2>&1)
+  inq=$(gh api graphql -f query='{repository(owner:"'"${repo%/*}"'",name:"'"${repo#*/}"'"){pullRequest(number:'"$pr"'){mergeQueueEntry{state}}}}' -q '.data.repository.pullRequest.mergeQueueEntry.state // "no"' 2>&1)
+  fail=$(gh pr checks "$pr" 2>/dev/null | awk -F'\t' '$2=="fail"{print $1}' | paste -sd, -)
+  mgfail=$(gh run list --event merge_group -L 15 --json conclusion,headBranch --jq '.[]|select(.headBranch|contains("pr-'"$pr"'-"))|.conclusion' 2>/dev/null | grep -c failure)
+  echo "poll $i: [$st/$mss] queue=[$inq] pr-checks-failing=[${fail:-none}] merge_group-failures=[$mgfail]"
+  case "$st" in
+    MERGED) echo ">>> #$pr ✓ MERGED"; exit 0;;
+    CLOSED) echo ">>> #$pr CLOSED without merging"; exit 0;;
+  esac
+  if [ -n "$fail" ] || [ "$mgfail" -gt 0 ]; then
+    echo ">>> #$pr ✗ CI FAILED (pr:[$fail] merge_group-failures:$mgfail) — inspect the run, do NOT retry"; exit 2; fi
+  # green + mergeable + never admitted, sustained past normal latency -> the re-eval glitch (#3)
+  if [ "$st" = OPEN ] && [ "$mss" = CLEAN ] && [ "$inq" = no ]; then cleanpolls=$((cleanpolls+1)); else cleanpolls=0; fi
+  if [ "$cleanpolls" -ge 6 ]; then
+    echo ">>> #$pr ⚠ GREEN but unadmitted ~6min (GitHub re-eval glitch, NOT a failure) — re-assert auto-merge once or break-glass"; exit 3; fi
+  [ "$i" -ge "$max" ] && { echo ">>> #$pr still [$st/$mss] after $max polls — surfacing"; exit 1; }
+  sleep 60
 done
 ```
 
@@ -113,15 +139,18 @@ This section is **how** to run E2E safely. **Whether** to run it for a given cha
 call — reserved for massive or behaviorally-risky changes, skipped for stage-1/zero-behavior-change
 work — governed by [`plans/AGENTS.md`](./plans/AGENTS.md). Don't run the full suites by reflex.
 
-**That same skip-judgment sets the CI merge-queue tier — via a commit token, not just local runs.**
+**That same skip-judgment sets the CI merge-queue tier — via a git trailer, not just local runs.**
 The merge queue runs the full E2E suite on every code change *by default*. When a change is in the
-skip category (behaviour-preserving, small/isolated, well-covered by unit + integration), put
-**`[skip-e2e]`** in a commit message so the queue skips it too — otherwise it burns ~25-30 min of E2E
-that catches nothing. This is the common case for a refactor; **default to `[skip-e2e]` for any
-zero-behaviour-change PR** — letting the queue run E2E on it is the reflex to avoid. `[skip-tests]`
-drops to the compile floor (build + carve only) for a genuinely trivial/mechanical change; build +
-carve are never skippable. Tokens are read from any commit message in the PR range — full tier table
-in [`.github/workflows/test.yml`](./.github/workflows/test.yml).
+skip category (behaviour-preserving, small/isolated, well-covered by unit + integration), add the
+trailer **`Skip-E2E: true`** on its own line at the end of a commit message so the queue skips it too —
+otherwise it burns ~25-30 min of E2E that catches nothing. This is the common case for a refactor;
+**default to `Skip-E2E: true` for any zero-behaviour-change PR** — letting the queue run E2E on it is the
+reflex to avoid. `Skip-Tests: true` drops to the compile floor (build + carve only) for a genuinely
+trivial/mechanical change; `Skip-E2E-UI: true` drops only the UI suite; build + carve are never
+skippable. It's a **git trailer** (parsed structurally by git), *not* a `[bracketed]` token — prose that
+merely mentions it can't trip the gate (that was the pr-227 bug). A PR **label** of the same name
+(`skip-e2e` / `skip-e2e-ui` / `skip-tests`) works identically. Full tier table in
+[`.github/workflows/test.yml`](./.github/workflows/test.yml).
 
 Run E2E only through `./e2e.ps1` via the matching skill (`e2e-ui-regress`, `e2e-ui-debug`,
 `e2e-api-debug`) — the skill's Step 0 Docker pre-flight is mandatory, every run.
