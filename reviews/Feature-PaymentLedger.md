@@ -12,8 +12,8 @@
 
 ## Findings
 
-- [ ] **VERIFY1 — BLOCKED — final verification** — `api/Concertable.slnx`
-  BUG1, BUG2, BUG3, and CV1 were fixed in commits `d4c8ad7c`, `74082d4c`, `2f28b17b`, and `1e97eeee`; Payment unit tests pass 75/75. The required final full-solution build reached `Concertable.Customer.E2ETests.Mobile` and failed only because C: ran out of disk while copying Aspire resource assemblies. Free sufficient disk space, rerun `dotnet build api/Concertable.slnx --no-restore`, and delete this untracked review file if it passes.
+- [x] **VERIFY1 — final verification** — `api/Concertable.slnx`
+  BUG1, BUG2, BUG3, and CV1 were fixed in commits `d4c8ad7c`, `74082d4c`, `2f28b17b`, and `1e97eeee`; Payment unit tests pass 75/75. `dotnet build api/Concertable.slnx --no-restore` passes with 0 errors.
 
 ## Incremental review — 2026-07-29
 
