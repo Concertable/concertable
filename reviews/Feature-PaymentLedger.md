@@ -27,5 +27,6 @@
   Post the amount actually refunded after release. `RefundAsync` accepts a partial `amount`, but this branch always reverses the escrow's full gross and platform fee, so a £10 refund of a released £50 escrow writes a £50 ledger reversal. Derive the payable/revenue reversal from `refundAmount` and add partial-refund tests for released escrow with zero and non-zero fees.
   Fixed by reversing the payee transfer up to the original transferred gross and reversing platform revenue only for the remainder. Stripe now receives the payee reversal separately from the total customer refund.
 
-- [ ] **TEST1 — MEDIUM — test coverage** — `api/Concertable.Payment/tests/Concertable.Payment.UnitTests/Infrastructure/FakeUnitOfWork.cs:12`
+- [x] **TEST1 — MEDIUM — test coverage** — `api/Concertable.Payment/tests/Concertable.Payment.UnitTests/Infrastructure/FakeUnitOfWork.cs:12`
   Add a real-`PaymentDbContext` transaction test for the UoW migration. `FakeUnitOfWork.ExecuteAsync` only invokes the delegate and never saves or rolls back, so tests such as `CompleteAsync_LedgerStagingFails_RetryCommitsStateAndPostingTogether` do not verify their stated atomicity claim. Assert that the operational status and ledger rows commit together and both remain unchanged when staging or saving fails.
+  Fixed with SQL-backed UoW tests covering joint commit, staging failure, and save failure through fresh verification contexts.
