@@ -1,4 +1,4 @@
-﻿---
+---
 name: address-review
 description: Automatically address the OPEN findings in a code-review file, one by one, each in its own fresh agent context - fix clear defects, defer judgment calls for a human, commit each fix separately, and delete the review if everything was fixed cleanly. Use when the user wants to "address the review", "action the findings", "fix the review comments", "work through the review", or hands over a reviews/*.md to be actioned. For producing a review use `code-review`, `big-review`, or `big-review-all`; this skill consumes one.
 ---

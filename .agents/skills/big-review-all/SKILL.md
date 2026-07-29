@@ -1,4 +1,4 @@
-﻿---
+---
 name: big-review-all
 description: Run the ENTIRE staged big-review to completion, unattended - every remaining stage, each in its own fresh agent context. Use when the user wants to "run the whole big review", "do all the stages", "big review everything", "finish the big review", or "big review all" instead of stepping through stages by hand with the `big-review` skill. For a single stage, use `big-review`; this skill drives all remaining stages in one go.
 ---
