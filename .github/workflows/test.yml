@@ -118,10 +118,11 @@ jobs:
             run_tests=false; run_e2e=false; run_e2e_ui=false
             echo "-> opt-out Skip-Tests; test suites + E2E off (build + carve compile floor still runs)."
           fi
-          # E2E runs for real on the PR (the PR is authoritative — green PR == mergeable) and again in the
-          # merge queue (re-verify against live main). The post-merge push would only re-run what the queue
-          # just ran on the identical tree, so skip E2E there.
-          if [ "${{ github.event_name }}" = "push" ]; then run_e2e=false; run_e2e_ui=false; fi
+          # E2E is the MERGE QUEUE's gate only: it runs against live main in the queue and nowhere else.
+          # Never pre-gate on the PR (a ~30-min suite shouldn't block PR feedback — build + carve + unit +
+          # integration do) nor on the post-merge push. So E2E runs iff this is a merge_group event; the
+          # Skip-E2E / Skip-E2E-UI / Skip-Tests opt-outs above still apply within the queue.
+          if [ "${{ github.event_name }}" != "merge_group" ]; then run_e2e=false; run_e2e_ui=false; fi
           echo "run_code=$run_code"     >> "$GITHUB_OUTPUT"
           echo "run_tests=$run_tests"   >> "$GITHUB_OUTPUT"
           echo "run_e2e=$run_e2e"       >> "$GITHUB_OUTPUT"
@@ -601,8 +602,9 @@ jobs:
   e2e-api-tests:
     runs-on: ubuntu-latest
     needs: [build, changes]
-    # No job-level event gate: gated by run_e2e in `changes`, which runs the real suite on the PR (the PR is
-    # authoritative) and in the queue, and skips only the redundant post-merge push run.
+    # No job-level event gate: gated by run_e2e in `changes`, which enables the real suite ONLY in the merge
+    # queue (merge_group). On the PR and the post-merge push it no-ops to success — build + carve + unit +
+    # integration gate the PR; the queue is the sole E2E gate.
 
     permissions:
       contents: read
@@ -685,9 +687,9 @@ jobs:
   e2e-ui-tests:
     runs-on: ubuntu-latest
     needs: [build, e2e-api-tests, changes]
-    # No job-level event gate (see e2e-api-tests): the real UI suite runs on the PR and in the queue via
-    # run_e2e_ui. This is the BLOCKING lane — it excludes @quarantine (Category!=quarantine); the flaky
-    # scenario runs in the separate non-gating e2e-ui-quarantine job.
+    # No job-level event gate (see e2e-api-tests): the real UI suite runs ONLY in the merge queue via
+    # run_e2e_ui, no-opping to success on the PR. This is the BLOCKING lane — it excludes @quarantine
+    # (Category!=quarantine); the flaky scenario runs in the separate non-gating e2e-ui-quarantine job.
 
     permissions:
       contents: read
