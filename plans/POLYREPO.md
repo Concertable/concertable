@@ -5,7 +5,7 @@ ever work and commit here. Each backend service is **automatically mirrored** in
 its own standalone GitHub repo so the services are also browsable as separate repos.
 
 Mirrors are **read-only outputs** — never edit, push to, or develop in them. They are
-regenerated on every push to `master`. Nothing flows back from a mirror into the monorepo.
+regenerated on every push to `main`. Nothing flows back from a mirror into the monorepo.
 
 | Source folder              | Mirror repo                      |
 | -------------------------- | -------------------------------- |
@@ -18,7 +18,7 @@ regenerated on every push to `master`. Nothing flows back from a mirror into the
 
 ## How it works
 
-`.github/workflows/mirror.yml` runs on every push to `master`. For each service it runs
+`.github/workflows/mirror.yml` runs on every push to `main`. For each service it runs
 `git subtree split --prefix=<folder>`, which produces a commit history containing only the
 commits that touched that folder (real dates, authors, and messages preserved), then
 force-pushes that history to the mirror repo's `master` branch.
@@ -30,7 +30,7 @@ much faster. The rest of the workflow stays the same.
 
 ## One-time setup — **DONE** (recorded here as the runbook for adding future orgs/mirrors)
 
-All six mirror repos exist, `MIRROR_PAT` is set, and auto-sync on `master` is green. The steps that
+All six mirror repos exist, `MIRROR_PAT` is set, and auto-sync on `main` is green. The steps that
 got it there, for reference / re-use:
 
 1. **Create the empty mirror repos** on GitHub (no README/license — the push provides everything).
@@ -43,9 +43,9 @@ got it there, for reference / re-use:
    leaves the job `GITHUB_TOKEN` as an `extraheader` that overrides the `MIRROR_PAT` push creds and the
    cross-repo push 403s as `github-actions[bot]`.
 4. **Set each mirror's default branch to `master`** (the workflow pushes `master`), or change
-   the push target in `mirror.yml` to `main`.
+   the push target in `mirror.yml` to `master`.
 5. Trigger the first run: Actions → "Mirror services to standalone repos" → Run workflow
-   (or just push to `master`).
+   (or just push to `main`).
 
 ## Adding a new mirror
 

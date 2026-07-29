@@ -2,7 +2,7 @@
 
 > Cross-suite test refactor (B2B + Customer UI). Not boundary-blocked (test projects, not published
 > packages) — but it's a distinct concern from `Feature/BookingAgreement`, so do it on a
-> `Refactor/E2EFastForward` branch off master after that feature lands. The convention this enforces
+> `Refactor/E2EFastForward` branch off main after that feature lands. The convention this enforces
 > is already written in the E2E `CLAUDE.md`s (shared + per-suite); this plan applies it to the
 > existing scenarios.
 
@@ -53,12 +53,12 @@ runs the real `accept + pay → cancel`. That removes the redundant half without
 - Rewrite it to open with `Given a flat fee opportunity has been applied to` (existing seeded `Given`),
   then only `accept + pay → cancel → assert cancelled + refunded`. Drops the redundant post + apply UI
   steps; keeps the real charge the refund needs.
-- **Gate:** the scenario passes headed once, then via `./e2e.ps1 ui b2b`. Reconcile `E2E_BASELINE.md`
+- **Gate:** the scenario passes headed once, then via `./scripts/e2e.ps1 ui b2b`. Reconcile `E2E_BASELINE.md`
   if timing/name changes.
 
 ### ~~Phase 2 — Trim the agreement signature scenario~~ ✅ DONE on `Feature/BookingAgreement` (2026-07-13)
 - **Shipped there, not here.** The earlier "defer to the refactor branch" decision was reversed: since
-  the signature scenario was *created* on `Feature/BookingAgreement` and isn't in master, the root
+  the signature scenario was *created* on `Feature/BookingAgreement` and isn't in main, the root
   `CLAUDE.md` branch rule says fix it on that branch. Done.
 - **What shipped:** instead of merely dropping the redundant `And a draft concert is created` line, the
   signature assertion was **merged into** the existing `Venue manager books artist on a flat fee with a
@@ -79,7 +79,7 @@ runs the real `accept + pay → cancel`. That removes the redundant half without
 - Check `Concertable.Customer.E2ETests.Ui/Features` for scenarios re-driving browse/search/open to
   reach a concert/ticket state another scenario already proves; fast-forward via the Customer suite's
   seeded `Given`s.
-- **Gate:** `./e2e.ps1 ui customer` green; baseline reconciled.
+- **Gate:** `./scripts/e2e.ps1 ui customer` green; baseline reconciled.
 
 ## Not in scope
 - The four per-contract `books artist on …` happy paths — the canonical creation tests; they stay
@@ -88,6 +88,6 @@ runs the real `accept + pay → cancel`. That removes the redundant half without
 - Renaming the shared harness project — separate plan (`plans/E2E_HARNESS_RENAME.md`).
 
 ## Gate (every phase)
-`dotnet build api/Concertable.slnx` green · the touched UI suite green via `./e2e.ps1 ui <suite>`
+`dotnet build api/Concertable.slnx` green · the touched UI suite green via `./scripts/e2e.ps1 ui <suite>`
 (Docker pre-flight mandatory) · `E2E_BASELINE.md` reconciled in the same commit as any status change.
 `git rm` this plan in the commit that completes the last phase.

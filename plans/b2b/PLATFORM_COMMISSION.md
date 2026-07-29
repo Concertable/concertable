@@ -181,7 +181,7 @@ Phase 1 changes the model → ends with `./initial-migrations.ps1` from `api/`.
 
 **Default fee is 0**, so with no config set the behaviour is unchanged — but a configured fee flips
 user-facing money movement on the payment + settlement flows, clearing the massive/risky bar in
-[`plans/CLAUDE.md`](../CLAUDE.md). **Gate:** build + `Payment` unit + `B2B` integration, **plus the E2E
+[`plans/AGENTS.md`](../AGENTS.md). **Gate:** build + `Payment` unit + `B2B` integration, **plus the E2E
 suites** (let the merge queue run them; don't duplicate locally). **No `[skip-e2e]`.**
 
 ### Phase 2 — Pricing transparency

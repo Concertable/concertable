@@ -26,7 +26,7 @@ suite fails at **startup** on this machine — every scenario dies with
 the shared *messaging* infra, `Concertable.Messaging` `InitialCreate`; reproduces on a freshly-reset
 volume). This is unrelated to this read-side change (no migration/model/DbContext/Outbox touched) and
 per the repo's E2E rule a startup failure is an environment problem. **To close this plan:** run
-`./e2e.ps1 ui regress` in a clean environment (keep the FlatFee agreement-download-on-concert-page
+`./scripts/e2e.ps1 ui regress` in a clean environment (keep the FlatFee agreement-download-on-concert-page
 scenario green) — the merge queue runs E2E as its gate — then `git rm` this file.
 
 ## What prompted this

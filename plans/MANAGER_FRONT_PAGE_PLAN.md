@@ -2,7 +2,7 @@
 
 ## Progress (2026-05-18, post-session-3 close-out)
 
-**Branch:** `Feature/ManagerFrontPage` — **PR [#50](https://github.com/ThomasSeery/Concertable/pull/50)** open against `master`. **Head: `23c8fc4c`.** Pushed.
+**Branch:** `Feature/ManagerFrontPage` — **PR [#50](https://github.com/ThomasSeery/Concertable/pull/50)** open against `main`. **Head: `23c8fc4c`.** Pushed.
 
 **Phase A: ✅ committed (5fb54e96).** Mocks running. **Phase B partially landed** — B.9 + B.10 done; B.11 KPI endpoint shipped end-to-end; remaining B.11 endpoints (overview, activity, charts) and B.12 (tests) deferred. **Intent: merge as incomplete-but-ready-to-expand.**
 
@@ -163,7 +163,7 @@ choice for fixed product widgets shaped by engineers.
 
 | Concern | Approach |
 |---|---|
-| **Chart data** | Backend ships pre-aggregated typed DTOs via new methods on existing `IXModule` facades. Per [CLAUDE.md](../CLAUDE.md) — `Dto` types in `Module.Application/DTOs/` (or `Module.Contracts/` if cross-module). Controllers return Dto verbatim. |
+| **Chart data** | Backend ships pre-aggregated typed DTOs via new methods on existing `IXModule` facades. Per [AGENTS.md](../AGENTS.md) — `Dto` types in `Module.Application/DTOs/` (or `Module.Contracts/` if cross-module). Controllers return Dto verbatim. |
 | **Chart rendering** | **Recharts** in the frontend. Spec lives in the widget component as JSX, not in the DB. (See "Why frontend-spec" below.) |
 | **Query composition** | **Specification pattern** — same as `ConcertHeaderRepository` ([prior art](../api/Modules/Search/Concertable.Search.Infrastructure/Repositories/ConcertHeaderRepository.cs) / [spec example](../api/Modules/Search/Concertable.Search.Infrastructure/Specifications/ConcertSearchSpecification.cs)). One `IQueryable` is composed from `IXSpecification.Apply(...)` calls and materialised once. No N+1 sub-queries. |
 | **Round-trip granularity** | **One HTTP round trip per visual section.** KPI strip = 1 call (4 numbers in one response). Each chart = 1 call (multi-series in one aggregate query). Each list = 1 call. See ["Round-trip plan"](#round-trip-plan) below. |
@@ -227,7 +227,7 @@ way `OpportunityEntity` does:
 - Replace `StartDate`/`EndDate` properties with `DateRange Period`
 - In `ConcertEntityConfiguration`: `builder.OwnsOne(c => c.Period, p => { p.Property(x => x.Start).HasColumnName("StartDate"); p.Property(x => x.End).HasColumnName("EndDate"); });`
 - Update factory methods, services, projections, and any consumers that read `c.StartDate` / `c.EndDate` to read `c.Period.Start` / `c.Period.End`
-- Re-scaffold `InitialCreate` via `./initial-migrations.ps1` per [CLAUDE.md](../CLAUDE.md)
+- Re-scaffold `InitialCreate` via `./initial-migrations.ps1` per [AGENTS.md](../AGENTS.md)
 
 After this, both range-entities share the same marker, and the generic
 specifications work uniformly.
@@ -591,7 +591,7 @@ Repo implementations compose: inline `.Where(x => x.VenueId == venueId)` /
 `ConcertEntity` `DateRange` refactor (Phase B Step 9). The owned-type
 column mapping (`StartDate`/`EndDate` under `Period`) is a schema
 *shape* change even though column names are unchanged; per
-[CLAUDE.md](../CLAUDE.md), all module `InitialCreate`s re-scaffold
+[AGENTS.md](../AGENTS.md), all module `InitialCreate`s re-scaffold
 together via `./initial-migrations.ps1`. No additive migrations.
 
 Beyond that, every dashboard widget is a *read* against existing entities
@@ -863,7 +863,7 @@ frontend already wrote.
 
 13. **Swap mock → real** — flip `VITE_USE_MOCK_DASHBOARD=false`, smoke-test each section against the seeded venue + artist managers.
 14. **Delete the mock layer** — `mockClient.ts`, `mocks/` fixtures, the env-toggle in the dispatcher. Keep the contracts (`contracts/`) — they're now living types used by both the real client and the widget components.
-15. **Build verification** — `npm -w @concertable/web-venue run build`, `npm -w @concertable/web-artist run build` (per [app/web/CLAUDE.md](./web/CLAUDE.md)).
+15. **Build verification** — `npm -w @concertable/web-venue run build`, `npm -w @concertable/web-artist run build` (per [app/web/AGENTS.md](../app/web/AGENTS.md)).
 
 ## Mock data layer
 

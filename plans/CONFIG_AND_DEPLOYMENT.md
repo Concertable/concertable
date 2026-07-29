@@ -19,7 +19,7 @@ Three parallel investigations mapped the current state. Headlines (all confirmed
   service folders, but **deploys nothing** (no `azure/login`, no Azure credentials anywhere).
 - App runs only locally: **6 Aspire AppHosts against emulators** (SQL container, ASB emulator, Azurite).
   No run-vs-publish branching to swap emulators for managed Azure.
-- Independently confirmed by the repo's own `DEEP_RESEARCH_PROMPTS.md` Prompt 2.
+- Independently confirmed by a `deep-research` pass (see Phase 0 outcome below).
 
 ### Config / secrets store — none
 - **Zero** Azure App Configuration, **zero** Key Vault. Config = layered `appsettings.*.json` +
@@ -70,7 +70,7 @@ the config/secrets consolidation work (Phases 1-3).
 > Bicep" mention in the Phase 0 outcome is azd's mechanism, superseded by this decision for provisioning.
 
 ## Phase 0 outcome — deployment research (ran 2026-07-17)
-`deep-research` on `DEEP_RESEARCH_PROMPTS.md` Prompt 2: 28 sources → 126 claims → **24 confirmed by 3-0
+`deep-research` on the deployment-target question: 28 sources → 126 claims → **24 confirmed by 3-0
 adversarial verification** against primary sources (Microsoft Learn, aspire.dev, .NET DevBlogs,
 dotnet/aspire + dotnet/efcore issues), 1 refuted. All findings high-confidence.
 
@@ -134,7 +134,7 @@ co-exists with the azd flow. Re-check against the installed Aspire version befor
 
 ## Recommended architecture — runtime + design-time + secrets + prod source (Prompt 3 outcome, 2026-07-17)
 
-`DEEP_RESEARCH_PROMPTS.md` Prompt 3, run 2026-07-17 (codebase map + official Aspire/EF/Azure docs,
+A `deep-research` pass, run 2026-07-17 (codebase map + official Aspire/EF/Azure docs,
 2025-26). Prompt 3's stated landing spot was `CONFIG_STRATEGY.md`, but that doc is now *region*-scoped
 and delegates app-wide config here (matching where Prompt 2 landed) — so the architecture lives here.
 This section is the **design** the phases below implement; it refines their "how", it doesn't add phases.
@@ -362,7 +362,7 @@ learn.microsoft.com App Configuration Key Vault references + Aspire quickstart.
 ## Phases
 
 ### Phase 0 — Deployment research ✅ DONE (2026-07-17)
-Ran `deep-research` on `DEEP_RESEARCH_PROMPTS.md` Prompt 2. Resolved the deployment target (Container Apps
+Ran `deep-research` on the deployment-target question (Prompt 2). Resolved the deployment target (Container Apps
 + azd), the prod EF-migration strategy (bundles / idempotent scripts as a separate deploy job, never
 runtime `Migrate()`), SPA hosting (Static Web Apps), and the secrets home (Key Vault + ACA secrets via
 azd). Findings, citations, gotchas, and the four gaps it left open are in the **Phase 0 outcome** section
@@ -524,5 +524,5 @@ boot/round-trip check (the `verify` skill or a deployed smoke test), not just un
 
 ## Cross-refs
 - Region config seam (stays region-scoped): [`CONFIG_STRATEGY.md`](./CONFIG_STRATEGY.md)
-- Research input: `DEEP_RESEARCH_PROMPTS.md` Prompt 2
+- Research input: `deep-research` Prompt 2 (run 2026-07-17, see Phase 0 outcome above)
 - Launch tracker: [`b2b/LAUNCH_PLAN.md`](./b2b/LAUNCH_PLAN.md) — this is a newly-surfaced launch blocker
