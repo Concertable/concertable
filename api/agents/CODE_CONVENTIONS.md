@@ -213,14 +213,48 @@ the name — the agent-noun of that one method (`Mapper.Map`, `Resolver.Resolve`
 Known violations awaiting a batched rename sweep are listed in [`../TECH_DEBT.md`](../TECH_DEBT.md);
 don't add new ones.
 
-## DTO naming — `Response` is HTTP-only; `Result<T>` is the service wrapper; C# DTOs carry no suffix
+## Typed operation Results
+
+Use `CSharpFunctionalExtensions.Result<TValue, TError>` when a command or use case can be refused
+during normal operation and its caller can act on the refusal. Use `UnitResult<TError>` when success
+has no value. Cancellation, dependency unavailability, database/serialization failures, programming
+defects, and violated internal invariants remain exceptions.
+
+`TError` is an operation-owned Dunet union named `XError`. The declaring project alone references
+Dunet; shared Kernel contains only `IError`, `ErrorDescriptor`, `ValidationErrorDescriptor`, and
+`ErrorKind`. A union implements `IError` and uses Dunet's exhaustive generated `Match` to produce its
+descriptor. Ordinary cases return `ErrorDescriptor`; only a structured validation case returns
+`ValidationErrorDescriptor`.
+
+Keep a typed Result intact until a terminal adapter:
+
+- intermediate layers compose with `Bind`, `Map`, and `MapError`;
+- they never unwrap a failure into an HTTP exception;
+- they never catch `Exception` to manufacture a failed Result;
+- `OperationCanceledException` is never converted to an error value;
+- Results and Dunet unions do not cross HTTP, protobuf, integration-event, or persistence boundaries.
+
+Controllers use the adapters in `Concertable.Shared.Api.Results`. `ToActionResult` owns the CFE
+success/failure `Match`; `ToOkActionResult`, `ToCreatedAtActionResult`, and
+`ToNoContentActionResult` are the common success policies. `IError.ToProblemActionResult` owns the
+single semantic `ErrorKind` to HTTP mapping, and the custom action result obtains request context
+only when MVC executes it. Controllers do not pass themselves into adapters or switch on operation
+cases or status codes.
+
+FluentResults remains temporary and private to aggregate policy validators while those validators
+benefit from collecting multiple failures. Do not import FluentResults and
+CSharpFunctionalExtensions in the same file. Map the aggregate once into the owning operation's
+validation case.
+
+## DTO naming — `Response` is HTTP-only; typed `Result` is the service wrapper; C# DTOs carry no suffix
 
 The `Response` suffix is reserved for the **HTTP-API wire layer** (`Module.Api/Responses/`, see the
 "DTOs vs Responses" section in [`../AGENTS.md`](../AGENTS.md)). It does **not** belong on the C#
 service/client DTOs that adapters (gRPC clients, service interfaces) pass around:
 
-- **`Result<T>`** (FluentResults) is already the service-call wrapper — the "did it succeed" envelope.
-  Naming the payload `XResponse` on top of `Result<XResponse>` double-encodes "this is a reply".
+- **`Result<TValue, TError>`** is already the service-call wrapper — the "did it succeed" envelope.
+  Naming the payload `XResponse` on top of `Result<XResponse, XError>` double-encodes "this is a
+  reply".
 - **Service and client DTOs carry no suffix.** Name them for the shape, Stripe-aligned where the
   concept mirrors Stripe: `Transfer`, `Refund`, `EscrowDeposit`, `PaymentOutcome` — not
   `TransferResponse`/`PaymentResponse`. Accept the Stripe-SDK name collision (`Stripe.Transfer`,
@@ -231,12 +265,12 @@ service/client DTOs that adapters (gRPC clients, service interfaces) pass around
   server-side `XMappers` map proto `*Response` ⇄ the suffix-free C# DTO.
 
 ```csharp
-// CORRECT — service/client DTO, no suffix; Result<T> is the wrapper
-Task<Result<EscrowDeposit>> DepositAsync(...);
-Task<Result<Transfer?>> ReleaseByBookingIdAsync(...);
+// CORRECT — service/client DTO, no suffix; Result<TValue, TError> is the wrapper
+Task<Result<EscrowDeposit, DepositError>> DepositAsync(...);
+Task<Result<Transfer?, ReleaseError>> ReleaseByBookingIdAsync(...);
 
-// WRONG — Response suffix on a non-HTTP DTO, redundant with Result<T>
-Task<Result<EscrowResponse>> DepositAsync(...);
+// WRONG — Response suffix on a non-HTTP DTO, redundant with typed Result
+Task<Result<EscrowResponse, DepositError>> DepositAsync(...);
 ```
 
 ## Mappers — `XMappers` extension methods
