@@ -1,5 +1,7 @@
 # Code Conventions
 
+Injected collaborators default to interface-typed dependencies and interface-to-implementation DI registrations; use a concrete type only when an interface adds literally no value or actively makes an established pattern worse.
+
 ## Private fields — no underscore prefix
 
 Use `this.field` disambiguation in constructors instead of `_field` prefixes.
