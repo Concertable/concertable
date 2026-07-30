@@ -372,18 +372,18 @@ unpublished Payment package source.
 
 ### Phase 1 — Payment percentage expansion
 
-1. Add immutable percentage-only configuration revisions, concurrency-safe configured-revision
-   bootstrap, calculation and authorization persistence by configuration foreign key.
-2. Add additive preview/authorize/authorized-calculation contracts and distinct authorization-aware
-   money-movement RPCs.
-3. Add transaction tax facts, multi-refund persistence and proportional refund logic.
-4. Keep the existing £10 RPCs only as the temporary expansion seam; do not model £10 as a supported
-   commission mode in new code.
-5. Re-scaffold Payment migrations.
-6. Build `api/Concertable.slnx`; run Payment unit and integration tests.
-7. Commit with `Skip-E2E: true`.
-8. **Hard stop:** merge, let packages publish, own the generated platform-sync PR to green/merged, and
-   deploy the expanded Payment runtime before starting the consumer phase.
+- [x] Add immutable percentage-only configuration revisions, concurrency-safe configured-revision
+  bootstrap, calculation and authorization persistence by configuration foreign key.
+- [x] Add additive preview/authorize/authorized-calculation contracts and distinct authorization-aware
+  money-movement RPCs.
+- [x] Add transaction tax facts, multi-refund persistence and proportional refund logic.
+- [x] Keep the existing £10 RPCs only as the temporary expansion seam; do not model £10 as a supported
+  commission mode in new code.
+- [x] Re-scaffold Payment migrations.
+- [x] Build `api/Concertable.slnx`; run Payment unit and integration tests.
+- [x] Commit with `Skip-E2E: true`.
+- [ ] **Hard stop:** merge, let packages publish, own the generated platform-sync PR to green/merged,
+  and deploy the expanded Payment runtime before starting the consumer phase.
 
 ### Phase 2 — B2B gross ownership and percentage cut-over
 

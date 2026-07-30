@@ -123,7 +123,8 @@ Codebase audit confirmed: connected accounts created with `Type = "express"` in 
 - [ ] Stripe Connect **Express** mode in use (NOT Custom). Express keeps Stripe as the regulated payment institution — your platform is still in a marketplace-facilitator posture, not a payment institution itself.
 - [ ] `OnBehalfOf` escrow holds released within **short windows** (target: ≤7 days post-event). Funds sitting on platform balance for weeks invites FCA scrutiny.
 - [x] Platform-fee money movement implemented in test mode: Payment charges gross plus a retained amount, transfers/releases gross, and records the retained amount in the ledger. The currently configured £10 amount is temporary and is not launch pricing.
-- [ ] Replace the £10 implementation with one Payment-owned percentage of B2B's final deal gross; persist each immutable percentage revision once, bind it by authorization when the payer commits, and retain actual transaction/refund/tax/ledger facts.
+- [x] Payment percentage expansion implemented and verified: persist each immutable percentage revision once, bind it by authorization, expose authorization-aware money RPCs, and retain actual transaction/refund/tax/ledger facts.
+- [ ] Cut B2B over to the Payment percentage authorization package, then remove the temporary £10 seam after all consumers migrate.
 - [ ] B2B payer surfaces disclose the deal formula or exact gross, percentage commission and total before commitment for FlatFee, VenueHire, DoorSplit and Guarantee Plus (`Versus`).
 - [ ] Production's percentage configuration ID/version, rate and GBP currency are explicitly configured; immutable-revision bootstrap and fail-closed validation are confirmed in the live environment.
 - [ ] Production Stripe account activated (Stripe reviews business; takes a few days).
