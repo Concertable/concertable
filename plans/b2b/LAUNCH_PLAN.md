@@ -8,10 +8,10 @@
 
 ## Status — what's shipped vs. what's left
 
-**Shipped — verified in code, don't rebuild:** Tenant model + membership + 6-role RBAC · payout re-keyed to `TenantId` · Stripe Connect Express with both money flows (escrow `OnBehalfOf` for FlatFee/VenueHire; `TransferData.Destination` for DoorSplit/Versus) · Payment-owned flat £10 platform fee on all four settlement types · append-only balanced Payment ledger · artist↔venue messaging · settlement for all four contract types · the 3% PRS skim is correctly absent.
+**Shipped — verified in code, don't rebuild:** Tenant model + membership + 6-role RBAC · payout re-keyed to `TenantId` · Stripe Connect Express with both money flows (escrow `OnBehalfOf` for FlatFee/VenueHire; `TransferData.Destination` for DoorSplit/Versus) · temporary Payment-owned £10 platform fee on all four settlement types · append-only balanced Payment ledger · artist↔venue messaging · settlement for all four contract types · the 3% PRS skim is correctly absent.
 
 **Decisions locked (see §9 / decision log):**
-- [x] Revenue model — **resolved in shipped code 2026-07-24/25: a flat, Payment-owned £10 fee per settled B2B contract.** Payment charges `gross + £10`, the payee receives gross, and the ledger records the retained fee. A percentage/minimum rate-card is a deferred evolution, not launch pricing. See [PLATFORM_COMMISSION.md](PLATFORM_COMMISSION.md) and the decision log.
+- [x] Revenue model — **resolved for launch 2026-07-30: one Payment-owned percentage of the final B2B-calculated deal gross.** The payer pays gross plus commission and the payee receives gross. B2B owns four deal-gross strategies; Payment owns one deal-agnostic commission calculation. The shipped £10 fee is temporary and must be removed before launch. See [PLATFORM_COMMISSION.md](PLATFORM_COMMISSION.md) and the decision log.
 - [x] DoorSplit/Versus revenue source — **resolved: manual door-takings entry + charge-the-venue** for v1 (external-ticketer import ruled out — §9). All four contract types ship in the pure-B2B MVP, no marketplace dependency. See §9 / R9.
 
 **Build — MVP blockers, in priority order:**
@@ -24,7 +24,7 @@
 - [ ] 🟡 **`holdsMusicLicence` attestation** on `Tenant.Compliance` (~0.5 day; the venue's responsibility, we just record it).
 - [ ] 🟡 **Finish Swim-lane B** — membership/invitation endpoints + auth sweep + messaging group-inbox (USER_MODEL_PLAN Phases 6-8). **Phase 6 shipped** (`Feature/TenantInvitationsFrontend`): invitation endpoints + last-Owner invariants + provisioning invitation-first branch + member-management UI + tenant switcher + UI E2E. Phases 7-8 (auth sweep + messaging group-inbox) remain.
 - [x] ✅ **Per-contract-type VAT calculation** — shipped (`Feature/VatAndSelfBilledInvoicing`): inclusive-gross decomposition branching on supply direction + supplier VAT-registration status, in the Tenant tax area, consumed by Concert via `ITenantModule` (items 1, 3).
-- [ ] 🟡 **B2B pricing transparency** — Payment already charges a real £10 flat fee; payer-facing disclosure is not yet bound to that authoritative price. [PLATFORM_COMMISSION.md](PLATFORM_COMMISSION.md) plans append-only Payment policy versions plus gross/fee/total breakdowns for FlatFee, VenueHire, DoorSplit and Versus.
+- [ ] 🟠 **Percentage commission + B2B pricing transparency** — replace the temporary £10 fee before launch. B2B calculates the final payee gross through four deal strategies; Payment binds one universal percentage at payer commitment and charges gross plus commission. Implement exact/formula disclosure, authoritative rate snapshots, deferred-gross review and durable refund/tax/ledger facts. See [PLATFORM_COMMISSION.md](PLATFORM_COMMISSION.md).
 - [ ] 🔴 **Production deployment + config/secrets** — the app has **no** deployment path, config store, or secret store (all local Aspire + emulators; secrets committed to source, incl. a plaintext Azure SQL password). Surfaced 2026-07-17. Hard launch gate. Plan: [../CONFIG_AND_DEPLOYMENT.md](../CONFIG_AND_DEPLOYMENT.md).
 
 **Verify before trusting — competitor table-stakes, not confirmed in code:** reviews/reputation end-to-end · calendar sync (Google/Apple/Outlook) · financial/settlement CSV export.
@@ -99,8 +99,8 @@ Calendar-realistic, not optimistic. Slips are flagged as risks (§6).
 Dependencies that constrain the order:
 
 ```
-Flat £10 revenue-model decision (Month 1)
-    └─→ Payment fee-policy package → platform sync → B2B pricing transparency (Month 3)
+Percentage commission decision (Month 1)
+    └─→ Payment authorization package → platform sync → B2B gross calculators + pricing transparency (Month 3)
     └─→ Solicitor T&Cs drafting (Month 1-4)
             └─→ Privacy + T&Cs page routes (Month 4)
             └─→ Cookie banner final text (Month 4)
@@ -138,7 +138,7 @@ Stripe production approval (~2-4 weeks elapsed)
 | ✅ Self-billed VAT invoice generation per settlement (sequential numbering, HMRC fields, PDF) — item 4 · self-billing *agreement* + renewal still outstanding | 2-3 days | VAT calculation, agreement PDF plumbing | done |
 | Cookie consent banner on 3 SPAs (scaffolding) | 1-2 days | – (scaffolding can land before solicitor text) | Month 2 |
 | Cookie banner text + privacy policy text from solicitor → wired into banner | 0.5 days | Solicitor draft (Month 4) | Month 4 |
-| Pricing transparency at payer commitment (fixed checkout + deferred settlement review) | 3 phases | Payment fee-policy package + platform sync | Month 3 |
+| Percentage commission + pricing transparency at payer commitment (exact checkout + deferred settlement review) | 3 phases | Payment authorization package + platform sync | Month 3 |
 | Privacy + T&Cs page routes (footer of every page) | 1 day | Solicitor draft | Month 4 |
 | Venue legal details on emails (booking confirmation, invoices) | 1 day | Phase 5 (setup UI captures legal name) | Month 4 |
 | Refund / cancellation matrix codification in `Cancelled` workflow | 3-5 days | Cancellation policy text from solicitor | Month 5 |
@@ -249,9 +249,10 @@ The settled calls that constrain the work above. Full rationale + dated history 
 - **B2B-first.** The customer ticket marketplace is deferred and additive (§8), not a v1 dependency.
 - **All four contract types ship in v1.** DoorSplit/Versus settle via **manual door-take entry +
   charge-the-venue** — external-ticketer import ruled out; own checkout is the deferred durable feed. §9
-- **Revenue model: flat £10 per settled B2B contract.** Payment owns the live fee, charges it on top
-  of gross and records it in the ledger. A percentage/minimum rate-card is deferred beyond launch.
-  [PLATFORM_COMMISSION.md](PLATFORM_COMMISSION.md)
+- **Revenue model: one percentage of final deal gross.** B2B owns four deal-specific gross
+  calculations; Payment owns the universal rate, binds it when the payer commits, charges commission
+  on top of gross and records the retained amount in the ledger. No fixed/minimum/cap model remains
+  after the launch cut-over. [PLATFORM_COMMISSION.md](PLATFORM_COMMISSION.md)
 - **Monetization principle:** the fee always rides the settlement transaction routed through our
   Stripe Connect — never invoice-only (else there's no transaction to take a cut from). §9
 - **Backend domain type is `Tenant`** (Guid PK, request-scoped filtering, compliance value object);
