@@ -4,9 +4,7 @@
 $env:ConnectionStrings__B2BDb = "Server=localhost;Database=concertable-b2b;Trusted_Connection=True;TrustServerCertificate=True"
 $env:ConnectionStrings__CustomerDb = "Server=localhost;Database=concertable-customer;Trusted_Connection=True;TrustServerCertificate=True"
 $env:ConnectionStrings__PaymentDb = "Server=localhost;Database=concertable-payment;Trusted_Connection=True;TrustServerCertificate=True"
-# Payment.Web builds the full host at design time (unlike B2B/Customer), so it demands the Service Bus
-# connection too - never opened during scaffolding, only parsed.
-$env:ConnectionStrings__asb = "Endpoint=sb://localhost.servicebus.windows.net/;SharedAccessKeyName=x;SharedAccessKey=eA=="
+$env:ConnectionStrings__SearchDb = "Server=localhost;Database=concertable-search;Trusted_Connection=True;TrustServerCertificate=True"
 
 # A module's migration content is compared old-vs-new with its 14-digit id normalized out (filenames
 # and the Designer.cs [Migration("...")] attribute are the only places it appears). When a module's
