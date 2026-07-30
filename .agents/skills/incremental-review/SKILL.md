@@ -1,4 +1,4 @@
-﻿---
+---
 name: incremental-review
 description: Re-run a code review covering only the commits added since the last review, never re-reviewing code already covered. A thin wrapper around the `code-review` skill — does everything `code-review` does (correctness bugs, microservice-isolation + module-boundary + seeding + C# convention checks, high-confidence filter), but starts the diff at the `Reviewed up to commit:` SHA marker recorded in the review markdown instead of the branch merge-base. Then appends findings and re-stamps the marker to HEAD. Use whenever the user wants to "review the new commits", "review what changed since the last review", "incremental review", "continue the review", or re-review a long-lived branch without re-covering old code.
 ---

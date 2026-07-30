@@ -1,4 +1,4 @@
-﻿---
+---
 name: package-cutover
 description: Execute a BREAKING change to a type that lives in a cross-service PUBLISHED package — a rename, a namespace/folder move, a signature change, or moving a DTO between packages — as a deterministic expand→publish→sync cut-over, instead of discovering the merge sequence by trial-and-error. Consumers compile against the published package, not source, so the change can NOT be atomic. This skill scans the package topology up front to fix the exact merge count, sequences the merges, and runs the mechanical consumer migration (global + file-local usings, EF re-scaffold, grep gate) through an automated build→fix→build loop instead of hand-iterating. Use whenever a refactor changes a type that another service consumes as a PackageReference (Concertable.Kernel / Concertable.Contracts / any *.Contracts / *.Seed.Contracts / *.Client), when a build hits `CS7069 "claims it is defined in '<pkg>' but could not be found"`, or for any "boundary-blocked" multi-merge refactor. Generic over the type and the packages — you pass it the old and new identity; it is NOT hard-coded to any one refactor.
 ---
