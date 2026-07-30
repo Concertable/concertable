@@ -20,6 +20,7 @@ using Concertable.Messaging.AzureServiceBus.Extensions;
 using Concertable.Messaging.Infrastructure.Extensions;
 using Concertable.ServiceDefaults;
 using Concertable.Shared.Blob.Infrastructure.Extensions;
+using Concertable.Shared.Email.Application;
 using Concertable.Shared.Email.Infrastructure.Extensions;
 using Concertable.Shared.Geocoding.Infrastructure.Extensions;
 using Concertable.Shared.Imaging.Infrastructure.Extensions;
@@ -94,6 +95,7 @@ builder.Services.AddClientCredentials(opts =>
 builder.Services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
 builder.Services.AddSingleton<ITokenGenerator, CryptoRandomTokenGenerator>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IOutboxUnitOfWorkBehavior, OutboxUnitOfWorkBehavior>();
 
 builder.Services.AddScoped<IDbInitializer, AuthDbInitializer>();
 if (!builder.Environment.IsProduction())
@@ -112,6 +114,8 @@ builder.Services.AddAzureServiceBusTransport(
     reg =>
     {
         reg.Publishes<CredentialRegisteredEvent>();
+        reg.HandleCommand<SendEmailCommand>();
+        reg.HandleCommand<SendVerificationEmailCommand>();
     });
 
 var migrationsAssembly = typeof(Program).Assembly.GetName().Name;
