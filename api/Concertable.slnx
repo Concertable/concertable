@@ -172,6 +172,7 @@
     <Project Path="Concertable.Payment/src/Concertable.Payment.Infrastructure/Concertable.Payment.Infrastructure.csproj" />
     <Project Path="Concertable.Payment/src/Concertable.Payment.Web/Concertable.Payment.Web.csproj" />
     <Project Path="Concertable.Payment/src/Concertable.Payment.Workers/Concertable.Payment.Workers.csproj" />
+    <Project Path="Concertable.Payment/tests/Concertable.Payment.IntegrationTests/Concertable.Payment.IntegrationTests.csproj" />
     <Project Path="Concertable.Payment/tests/Concertable.Payment.UnitTests/Concertable.Payment.UnitTests.csproj" />
   </Folder>
   <Folder Name="/Payment/Seed/">
