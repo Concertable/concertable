@@ -173,11 +173,9 @@ Run E2E only through `./e2e.ps1` via the matching skill (`e2e-ui-regress`, `e2e-
 
 ## Tech debt (`TECH_DEBT.md`)
 
-Avoid introducing tech debt wherever possible. But when a quick fix is the right call, or you notice or introduce debt the user is aware of, log a line in the `TECH_DEBT.md` nearest the area you touched (there's one per area — use the closest, not the root).
-
-**Reach for the proper fix, not a hacky workaround.** A workaround that needs a paragraph of comment to justify it — a cold-start warm-up, a sleep-to-avoid-a-race, a magic ordering, a defensive re-try papering over a root cause — is the code telling you to refactor, not to explain. Find and fix the actual cause. If a workaround is *genuinely* unavoidable (an upstream bug, a library limitation you can't route around), keep it minimal, and log a line in the nearest `TECH_DEBT.md` naming the root cause and why it couldn't be avoided — the debt entry is the record, not a long inline comment.
-
-**Don't default away a failure.** A `?? fallback`, empty `catch`, `?.` past a null that shouldn't be null, or an ignored `TryParse` that turns an absent/invalid value into a benign one hides the case that should surface — and in a test it downgrades a real failure into a false pass. If a value is genuinely optional, handle it explicitly; if it should always be present, let its absence throw.
+Always record tech debt in the `TECH_DEBT.md` belonging to the area that owns the problem. If that
+area does not have one, create it there rather than adding the entry to a broader parent file. Once
+the debt is addressed, delete the entire entry; do not retain resolved entries as an archive.
 
 ## Code comments — default to none; the commit message is the archive
 
