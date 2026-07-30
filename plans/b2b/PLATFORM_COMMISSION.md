@@ -6,9 +6,10 @@
 > gross. This plan deliberately excludes fixed-fee compatibility, minimums, caps, tenant overrides
 > and deal-type rates.
 >
-> The previously planned generic fee-policy revisions are rejected. Historical commitments are
-> represented by Payment-issued commission authorizations, while completed financial operations keep
-> their actual money, Stripe and ledger facts.
+> The previously planned generic fixed/rate/minimum/cap policy model is rejected. Payment persists one
+> immutable percentage configuration row per pricing revision, and each payer commitment receives a
+> Payment-issued commission authorization referencing that revision. Completed financial operations
+> keep their actual money, Stripe and ledger facts.
 
 ## 1. Locked product and architecture decisions
 
@@ -82,8 +83,9 @@ dispute route. A future ticketing import may strengthen the input without changi
 | generic fixed/rate/minimum/cap policies | rejected: speculative product surface and persistence |
 | resolve the live rate only when charging | rejected: delayed bookings could be charged on terms the payer never accepted |
 | copy the current rate into B2B | rejected: B2B could become a second pricing authority or submit a favourable rate |
-| immutable global policy rows plus a policy ID on every application | rejected: a rate catalogue is unnecessary when the binding financial commitment has its own authoritative snapshot |
-| Payment-issued authorization snapshot per payer commitment | selected: records the historical promise that must survive a delayed charge without duplicating pricing terms across B2B tables |
+| copy version, currency and rate into every authorization | rejected: repeats identical configuration terms and conflates a pricing revision with a payer commitment |
+| generic policy catalogue referenced directly by every application | rejected: exposes speculative pricing modes and binds pricing before the payer commitment |
+| immutable percentage configuration revision referenced by a Payment-issued authorization | selected: stores each rate once while separately recording who accepted it, for which obligation and Stripe context |
 
 ## 3. Rate selection and binding
 
@@ -93,16 +95,39 @@ Replace the flat-fee setting with one validated Payment configuration:
 
 ```text
 PlatformCommission
-  Version                 opaque deployment/audit label
+  ConfigurationId         required non-empty Guid
+  Version                 required unique deployment/audit label
   Currency                GBP
   RateBasisPoints         required, 1..10,000
 ```
 
-Changing the rate requires a new version and a coordinated Payment deployment. It does not insert a
-global policy row. During a rolling deployment, preview and commitment commands compare the version
-the payer reviewed with the instance processing commitment; a mismatch returns `pricing_changed`
-before Stripe or domain mutation, forcing a refresh. The persisted authorization is the historical
-source after commitment.
+Add one percentage-only `CommissionConfigurationEntity` per pricing revision:
+
+```text
+Id                         configured ConfigurationId
+Version                    unique deployment/audit label
+Currency                   GBP
+RateBasisPoints            required, 1..10,000
+CreatedAt                  DateTimeOffset
+```
+
+This is not a generic policy engine: there is no fixed component, minimum, cap, tenant override,
+deal-type selector, expiry or mutable status. The row is immutable and the repository exposes no
+update/delete path.
+
+Payment bootstraps the configured revision idempotently after its schema is available:
+
+1. if the configured ID and version are absent, insert the revision once;
+2. if they resolve to the same immutable terms, continue;
+3. if either already identifies different terms, fail startup;
+4. never update or delete an older revision.
+
+The bootstrap must be safe when Payment Web and Workers start concurrently. Changing the rate requires
+a new ID, new version and coordinated Payment deployment. During a rolling deployment, preview and
+commitment commands compare the configuration ID the payer reviewed with the instance processing the
+commitment; a mismatch returns `pricing_changed` before Stripe or domain mutation, forcing a refresh.
+After commitment, calculations load the authorization's referenced configuration rather than the
+current deployment setting.
 
 ### 3.2 Binding point
 
@@ -117,9 +142,9 @@ unaccepted application is created:
 | Guarantee Plus (`Versus`) | venue | booking acceptance, when the SetupIntent/future charge mandate is accepted |
 
 An unaccepted application takes the then-current rate when it reaches the binding point. A booking
-with a Payment authorization retains its snapshotted rate through settlement even if the current rate
-changes later. Reopening a checkout before commitment shows the current rate; it does not reserve an
-older rate merely because a page was visited.
+with a Payment authorization retains its referenced configuration through settlement even if the
+current rate changes later. Reopening a checkout before commitment shows the current rate; it does not
+reserve an older rate merely because a page was visited.
 
 ### 3.3 Payment authorization
 
@@ -127,11 +152,9 @@ Add `CommissionAuthorizationEntity` in Payment:
 
 ```text
 Id                         Guid, generated by Payment
+CommissionConfigurationId  required FK to immutable Payment configuration
 ExternalReference          immutable application/booking reference
 PayerReference             immutable payer/customer reference
-Currency                   GBP
-ConfigurationVersion       snapshotted audit label
-RateBasisPoints            snapshotted authoritative rate
 BoundAt                    DateTimeOffset
 StripePaymentIntentId      nullable
 StripeSetupIntentId        nullable
@@ -139,7 +162,9 @@ StripeSetupIntentId        nullable
 
 Require a unique operation identity appropriate to the existing payment journey so retries are
 idempotent. An authorization can only be consumed by a payment with the same external reference,
-payer, currency and Stripe intent/mandate. It cannot be rebound or supplied for another booking.
+payer, configured currency and Stripe intent/mandate. It cannot be rebound or supplied for another
+booking. The configuration relationship is many authorizations to one revision; the authorization
+does not duplicate version, currency or rate.
 
 B2B persists only the opaque `CommissionAuthorizationId` on the application/booking path that already
 owns the payer commitment. It does not persist a second rate, policy terms or calculated commission.
@@ -187,8 +212,8 @@ status and timestamps
 reconciliation. Commission net and VAT are accounting facts, not pricing-policy duplication. The
 ledger continues to post from transaction snapshots and never recalculates an old rate.
 
-The authorization rate explains the historical price commitment; the settlement/escrow row explains
-what was actually charged and transferred. Both are required.
+The configuration referenced by the authorization explains the historical price commitment; the
+settlement/escrow row explains what was actually charged and transferred. Both are required.
 
 ## 5. Currency, rounding and tax
 
@@ -296,26 +321,28 @@ Additive Payment client/protobuf capabilities must cover:
 
 ```text
 PreviewCommission(gross, currency)
-  -> configurationVersion, rateBasisPoints, gross, commission, payerTotal
+  -> commissionConfigurationId, configurationVersion, rateBasisPoints,
+     gross, commission, payerTotal
 
 CreateOrBindCommissionAuthorization(
   externalReference, payerReference, currency,
-  reviewedConfigurationVersion, Stripe intent context)
-  -> authorizationId, bound rate and exact amounts when gross is known
+  reviewedCommissionConfigurationId, Stripe intent context)
+  -> authorizationId, referenced configuration and exact amounts when gross is known
 
 CalculateAuthorizedCommission(authorizationId, gross, currency)
-  -> gross, bound rate, commission, payerTotal
+  -> referenced configuration, gross, commission, payerTotal
 ```
 
 The authorization-aware hold, capture, deposit and direct-pay methods accept an authorization ID and gross,
 not a rate. Payment:
 
 1. loads the authorization;
-2. verifies payer, external reference, currency and Stripe intent context;
-3. calculates from the snapshotted rate;
-4. validates any payer-reviewed expected gross/commission/total;
-5. performs the Stripe action;
-6. persists actual facts and posts the ledger atomically/idempotently.
+2. loads its immutable commission configuration;
+3. verifies payer, external reference, currency and Stripe intent context;
+4. calculates from the referenced rate;
+5. validates any payer-reviewed expected gross/commission/total;
+6. performs the Stripe action;
+7. persists actual facts and posts the ledger atomically/idempotently.
 
 Unknown, missing, mismatched or stale pricing fails before money movement. New protobuf methods must be
 distinct from legacy ones: an older Payment server must return `UNIMPLEMENTED`, not ignore a new field
@@ -345,7 +372,8 @@ unpublished Payment package source.
 
 ### Phase 1 — Payment percentage expansion
 
-1. Add the validated percentage-only configuration, calculation and authorization persistence.
+1. Add immutable percentage-only configuration revisions, concurrency-safe configured-revision
+   bootstrap, calculation and authorization persistence by configuration foreign key.
 2. Add additive preview/authorize/authorized-calculation contracts and distinct authorization-aware
    money-movement RPCs.
 3. Add transaction tax facts, multi-refund persistence and proportional refund logic.
@@ -405,11 +433,15 @@ Start after Phase 2 and its platform sync are green.
 ### Payment
 
 - configuration rejects zero/invalid rate and non-GBP currency;
+- configured-revision bootstrap is concurrency-safe and idempotent;
+- reusing an ID or version with different terms fails startup, and persisted revisions cannot be
+  updated or deleted;
 - calculation uses checked integer arithmetic and the documented half-up rule;
-- authorization creation is idempotent and snapshots the authoritative current rate;
+- authorization creation is idempotent and references the authoritative current configuration;
+- any number of authorizations can share one immutable configuration without copying its terms;
 - an authorization cannot be reused for another payer, reference, currency or Stripe intent;
 - a later current-rate change does not affect an existing authorization;
-- preview/version races fail before Stripe calls;
+- preview/configuration-ID races fail before Stripe calls;
 - all four money paths charge gross plus commission and transfer/release gross;
 - transaction, Stripe metadata and ledger values reconcile;
 - VAT decomposition posts tax separately without changing commission gross;
@@ -434,10 +466,11 @@ Tests use a representative rate; they do not set the production launch rate.
 
 ## 12. Completion criteria
 
-- the temporary £10 model and generic policy-revision proposal are absent;
+- the temporary £10 model and generic multi-mode policy proposal are absent;
 - all four B2B deal types calculate one final payee gross through deal-owned pure logic;
 - Payment applies one authoritative universal percentage to that gross;
-- every rate is Payment-issued and every delayed commitment keeps its historical snapshot;
+- each rate revision exists once as an immutable Payment configuration and authorizations reference it;
+- every delayed commitment retains its historically bound configuration;
 - unaccepted applications receive the current rate while accepted bookings retain their bound rate;
 - payer, payee and deferred-review surfaces disclose the required formula or exact amounts;
 - transaction, refund, VAT, Stripe and ledger facts are durable and reconcilable;
