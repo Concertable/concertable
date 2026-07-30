@@ -161,6 +161,12 @@ The exact names can be adjusted during Phase 1, but the shape is fixed:
 - `Kind` is transport-neutral semantic classification.
 - structured validation failures use `ValidationErrorDescriptor`; ordinary descriptors do not carry
   a validation member.
+- descriptor construction rejects blank/malformed codes, blank safe messages, unknown kinds, and
+  empty validation collections as programming defects;
+- codes use at least two lowercase dot-separated segments, with the owning operation/module as the
+  prefix, and are never renamed or reused after publication;
+- safe messages are authored explicitly for callers and never copied from an exception, provider,
+  SQL response, stack trace, or unreviewed external value.
 
 Each service or module owns its error unions. It exposes one exhaustive `Descriptor` match on the
 union. That is the single unavoidable place where business cases acquire stable codes and public
@@ -226,6 +232,28 @@ Expected 4xx Results are not logged as unhandled exceptions. Unexpected exceptio
 and return a generic production-safe 500. Development may include diagnostic detail. The handler
 must not return raw exception messages in production.
 
+Result failures and exceptions execute through the same `IProblemDetailsService` path. That path
+sets the request path as `instance`, adds `traceId` from the current Activity or HTTP trace
+identifier, supplies the exception only for exception-originated problems, and then delegates
+serialization, content negotiation, registered writers, and
+`ProblemDetailsOptions.CustomizeProblemDetails` to ASP.NET Core. No MVC `ObjectResult` serializer
+bypasses those hooks.
+
+Known infrastructure status mapping uses explicit shared exception types rather than guessing from
+provider exceptions:
+
+| Exception | HTTP | Safe code |
+|---|---:|---|
+| `DependencyUnavailableException` | 503 | `dependency.unavailable` |
+| `DependencyTimeoutException` | 504 | `dependency.timeout` |
+
+An infrastructure adapter may normalize a provider-specific availability/deadline exception into
+one of those types and retain the original as `InnerException`. Raw `HttpRequestException`,
+`RpcException`, `TimeoutException`, SQL/provider exceptions, defects, invariants, and unknown faults
+remain generic safe 500s. `OperationCanceledException` always passes through. This keeps
+infrastructure failures on the exception/observability path without over-classifying broad runtime
+types or converting them into Results.
+
 The four duplicated handlers in B2B, Customer, Payment, and Search are replaced by this one shared
 implementation. During migration it may retain compatibility mappings for the legacy
 `DomainException`/`HttpException` hierarchy, but those branches are deleted with the hierarchy in
@@ -262,10 +290,10 @@ return result.ToOkActionResult();
 The Result helper uses CFE `Match` to choose the caller-supplied success result or
 `IError.ToProblemActionResult`. That error extension uses `IError.Descriptor`, the single frozen
 `ErrorKind`-to-status table, and ASP.NET Core reason phrases to create an
-`ApplicationErrorResult`. The custom MVC result sets the request instance when it executes and emits
-the standard problem JSON media type. Controllers do not switch on error cases or status codes,
-receive `ControllerBase` as an adapter argument, or expose `ProblemDetails`; error unions contain no
-status codes or MVC types.
+`ApplicationErrorResult`. The custom MVC result and the shared exception handler both delegate to
+the same `IProblemDetailsService` writer policy described above. Controllers do not switch on error
+cases or status codes, receive `ControllerBase` as an adapter argument, or expose `ProblemDetails`;
+error unions contain no status codes or MVC types.
 
 ### gRPC
 
@@ -276,8 +304,10 @@ Payment owns both sides of its gRPC boundary:
    error detail containing the stable code, semantic kind, safe message, and optional metadata.
 3. The published Payment client adapter catches only those known application-error statuses,
    decodes the structured detail, and reconstructs the public Payment error union.
-4. `Unavailable`, `DeadlineExceeded`, cancellation, malformed responses, `Internal`, and other
-   unrecognized faults stay exceptions.
+4. `Unavailable` and `DeadlineExceeded` remain exceptions and may be normalized to
+   `DependencyUnavailableException`/`DependencyTimeoutException` for transport-independent HTTP and
+   worker policy. Cancellation, malformed responses, `Internal`, and other unrecognized faults stay
+   their original exceptions.
 
 Use a protobuf error-detail message in `payment.proto` (or the standard Google rich-error model if
 the implementation spike confirms the package fits the carve). Preserve the existing status detail
@@ -311,7 +341,8 @@ and must make an explicit policy decision:
 
 - idempotent/already-completed result: acknowledge;
 - expected business deferral: log at the appropriate level and continue;
-- transient dependency or consistency fault: throw for retry;
+- `DependencyUnavailableException`, `DependencyTimeoutException`, and other transient dependency or
+  consistency faults: throw for retry;
 - poison input: use the messaging system’s existing dead-letter policy.
 
 Do not turn an exception into a string failure merely so a loop can continue. If a batch must isolate
@@ -536,7 +567,16 @@ Scope:
 - update `api/agents/CODE_CONVENTIONS.md` with the Result rules, naming, transport rule, and
   no-catch-to-failure rule;
 - add architecture/grep tests that prohibit HTTP exception types in newly migrated typed-result
-  slices where practical.
+  slices where practical;
+- enforce descriptor invariants and the Shared production boundary against Dunet/business unions;
+- route Result and exception ProblemDetails through one ASP.NET Core writer/customization policy;
+- define explicit dependency-unavailable/deadline exceptions and safe HTTP 503/504 mappings.
+
+The foundation architecture tests intentionally enforce only rules that can be strict now: Shared
+production declares no business union or Dunet dependency, and a typed-result source file cannot use
+the legacy HTTP exception vocabulary. Broader banned-API/analyzer enforcement remains in Phase 8,
+after legacy call sites are gone; adding it now would require a large transitional allowlist that
+would weaken the final gate.
 
 Package gate:
 
@@ -776,8 +816,13 @@ the conceptual implementation order, not a claim that those three files alone co
 ## Tests that must be added, not merely rewritten
 
 - Every error union has a test that each case exposes the intended stable descriptor.
+- Kernel descriptor tests reject malformed codes, unsafe empty messages, unknown kinds, and empty
+  validation failures.
 - Shared HTTP mapping has one parameterized test per `ErrorKind`, plus structured validation and
-  production-safe 500 tests.
+  production-safe 500 tests. Result and exception execution tests prove the shared writer,
+  customization, instance, trace identifier, and exception context policy.
+- Explicit dependency exceptions map to safe 503/504 responses, while an unclassified timeout stays
+  a safe 500.
 - Ticket purchase proves not-found, aggregate validation, and Payment rejection are typed failures;
   gRPC unavailable remains an exception.
 - Cancel workflow proves repository absence, invalid lifecycle transition, unsupported deal

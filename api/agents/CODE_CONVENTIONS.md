@@ -217,17 +217,40 @@ don't add new ones.
 
 Use `CSharpFunctionalExtensions.Result<TValue, TError>` for expected, caller-actionable command
 refusals and `UnitResult<TError>` when success has no value. Faults, cancellation, and violated
-invariants remain exceptions; command Results never have nullable success payloads.
+invariants remain exceptions; command Results never have nullable success payloads. Query absence
+may remain nullable when absence is ordinary data; a command converts repository absence once into
+its own typed failure when the caller can act on it.
 
 `TError` is an operation-owned Dunet union named `XError` that implements `IError`. Business unions
 stay with their operation; shared Kernel owns only `IError`, its descriptors, and `ErrorKind`.
+Place the union in Application, `*.Contracts`, or a published client contract according to the
+widest caller that must match it. Never move a service-specific union into shared production or
+carry CFE/Dunet types through HTTP DTOs, protobuf, events, or persistence.
+
+Each union owns one exhaustive `Descriptor` match and one descriptor test per case. Codes are
+lowercase dot-separated identifiers with an owning operation/module prefix
+(`ticket.concert_not_found`); published codes are never renamed or reused for a different meaning.
+Messages are explicitly authored caller-safe text, never exception messages, provider detail, SQL,
+stack traces, or values whose disclosure has not been reviewed. Validation descriptors contain at
+least one structured field message.
 
 Compose Results with `Bind`, `Map`, and `MapError` until a terminal adapter. Never turn exceptions
 into failed Results, unwrap failures into HTTP exceptions, or carry Results/unions across transport
 or persistence boundaries.
 
-Controllers terminate through `Concertable.Shared.Api.Results`. FluentResults remains only as a
-temporary private aggregate-validation detail and is never imported alongside
+Controllers terminate through `Concertable.Shared.Api.Results`. Result failures and exceptions both
+write through `IProblemDetailsService`, so registered writers, content negotiation, request
+instance, `traceId`, and `ProblemDetailsOptions.CustomizeProblemDetails` apply consistently.
+
+Infrastructure adapters may normalize a provider-specific unavailability or deadline fault into
+`DependencyUnavailableException` or `DependencyTimeoutException`, preserving the original as the
+inner exception. Shared.Api maps only those explicit types to safe 503/504 ProblemDetails; broad
+`HttpRequestException`, `RpcException`, `TimeoutException`, database exceptions, and unknown faults
+remain safe 500s. Cancellation is never normalized or handled as a response.
+
+At gRPC and worker terminals, match typed failures according to the operation policy and leave
+dependency exceptions on the exception path for retry/dead-letter behavior. FluentResults remains
+only as a temporary private aggregate-validation detail and is never imported alongside
 CSharpFunctionalExtensions.
 
 ## DTO naming — `Response` is HTTP-only; typed `Result` is the service wrapper; C# DTOs carry no suffix
