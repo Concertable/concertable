@@ -238,11 +238,13 @@ DNS-volatile client — those stay scoped/transient so the factory rotates handl
 
 ## Unit of work — which one
 
-Both run a block of writes and commit it atomically. Choose by how many `DbContext`s the block touches:
+Choose by the number of `SaveChanges` calls and `DbContext`s involved:
 
-- **`IUnitOfWork<T>.ExecuteAsync(block)`** — the default. Commits the block on one module's context in a
-  single transaction. Use whenever every write stays in one context (e.g. Payment's ledger: mutate the
-  escrow/settlement and stage the ledger rows, all in `PaymentDbContext`).
+- **`IUnitOfWork<T>.SaveChangesAsync()`** — the default for one context and one flush. Stage every
+  entity change, then save once; EF commits that save atomically (e.g. Payment's ledger: mutate the
+  escrow/settlement, stage the ledger rows, then save `PaymentDbContext` once).
+- **`IUnitOfWork<T>.ExecuteAsync(block)`** — one context when the operation genuinely needs several
+  `SaveChanges` calls or requires its reads and writes to share one explicit transaction.
 - **`IUnitOfWorkBehavior<T>.ExecuteAsync(block)`** — cross-module only. Wraps the block in an ambient
   `TransactionScope` so writes to several modules' contexts in one service all enlist in one transaction
   (e.g. `OpportunityService.CreateAsync`: `DealDbContext` + `ConcertDbContext` together). A single-context
