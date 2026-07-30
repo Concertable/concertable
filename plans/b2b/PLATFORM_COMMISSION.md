@@ -6,6 +6,18 @@
 > deal's gross and that exact number is charged and paid out — Concertable takes **£0** on every booking.
 > `LAUNCH_CHECKLIST.md:125` ("Application fees configured if taking % cut") is unticked and accurate.
 >
+> **↳ FUTURE DIRECTION (deferred — NOT in MVP), decided 2026-07-25: move to a PERCENTAGE of the
+> settlement (GigXchange model).** MVP keeps the **flat fee, default 0** (§1.2 below) — that is what's
+> merged and what stays for launch. The chosen *evolution* is a **% of what the payer pays the payee
+> through our Stripe** — a flat £10–15 earns the same on a £5,000 booking as on a £200 one, whereas a %
+> captures the upside (and is what GigXchange/Encore/Alive charge). It is **deferred as its own separate
+> piece of work**, and it is genuinely more than a config swap: some deal types (**DoorSplit / Versus**)
+> settle on a number **derived from external ticket/door sales**, and money only earns us a cut **if it
+> actually routes through our rails** — so the hard part is the **money-flow + disintermediation** question
+> (does the door-split settlement come through us at all?), not the `% × amount` arithmetic. Chosen model,
+> per-type worked examples, and the open complexity: §7.6. When picked up it becomes its own plan; §6
+> tracks it as the promoted follow-up.
+>
 > **The fee shape changed 2026-07-24 — a flat fee per settled contract, not a percentage** (~£10–15,
 > config). The research behind that reversal is §7; the short version is that **no competitor takes a % of
 > ticket/door sales** and the only two things anyone charges on are a flat per-gig fee or a % of the
@@ -55,7 +67,12 @@ The payee's contractually-agreed number is never silently shaved. **"Payer" is c
 and `SettlementPayeeResolver` already encodes the inverse: FlatFee / DoorSplit / Versus → artist is payee,
 **venue pays**; VenueHire → venue is payee, **artist pays**. The fee follows the payer — no new branching.
 
-### 1.2 `fee = flat amount per settled contract`, owned by Payment as config
+### 1.2 `fee = flat amount per settled contract`, owned by Payment as config *(MVP — default 0)*
+
+> **The chosen future direction is a % of settlement (deferred, NOT MVP) — see the top banner and §7.6.**
+> For MVP the fee stays the flat scalar described here (default 0). The Payment-ownership argument below
+> carries to the % too (the base would be the payee's gross Payment already receives) — but the % is
+> deferred for the **money-flow / ticket-dependency** reasons in §7.6, not the arithmetic.
 
 **A single flat fee per settled contract, the same across all four contract types** — see §7 for the
 research. Indicative v1 value: **~£10–15**. It lives in a bound `PlatformFeeOptions` **in the Payment
@@ -210,10 +227,13 @@ publish gate now, §3.)*
 - **Platform-fee VAT invoice** — the fee is a supply *by Concertable to the payer*, needing its own VAT
   treatment and its own invoice/numbering. It is **not** the self-billed `InvoiceEntity` and must not reuse
   it. Required before taking real money at launch.
-- **`%-of-agreed-fee` variant for the escrowed types** — the one thing flat-per-contract gives up is upside
-  on large fixed-fee deals. If ever wanted, resolve it in B2B (which owns deal context) and pass the
-  resolved fee/basis to Payment — an additive change to the boundary at that point, *not* a rework of this
-  design. Deliberately **not** v1 (§7).
+- **`%-of-settlement` fee (the CHOSEN next model — deferred to its own plan, 2026-07-25)** — flat gives up
+  the upside on booking value; the decided evolution is a % of what settles through our Stripe (§7.6).
+  Correction to the earlier note here: the base is the payee's gross **Payment already receives**, so it
+  resolves **Payment-side, no B2B crossing** — it is *not* a B2B-resolved value. It is deferred not for the
+  arithmetic but for the **DoorSplit/Versus money-flow/disintermediation** work (§7.6): the door take is
+  collected off-platform, so making the artist's-share settlement route through us at all is the real task.
+  Pulls in the `Money` rounding rule + the rate-card config. MVP stays flat.
 - **Per-tenant fee overrides** — additive later; Payment config keyed by owner/tenant, or a resolver.
 - **Money value type / minor-unit discipline** — the raw-`decimal` + scattered `(long)(x*100)` question.
   Investigation **closed 2026-07-24**: **adopt a hand-rolled Kernel `Money(decimal, Currency)` value type**
@@ -269,7 +289,7 @@ sales."* Only two things anyone charges on: a **flat fee per gig/contract**, or 
 flows through their own rails**. Both share one rule: **you only take a cut of money that moves through your
 own payment system.**
 
-### 7.4 Why flat-per-contract, not capped-%
+### 7.4 Why flat-per-contract, not capped-% *(MVP rationale; but see §7.6 — a % is the chosen future direction, deferred to its own work)*
 
 - Our types split into "amount we control" (FlatFee/VenueHire, escrowed) and "amount we don't"
   (DoorSplit/Versus, the door). A **flat fee works identically on all four**, with no per-type branching and
@@ -293,3 +313,65 @@ own payment system.**
 
 > **Revisit at v1.1.** The flat amount is config (§1.2), so tuning it — or adding the `%-of-agreed-fee`
 > variant (§6) — is cheap once a real booking-value distribution exists.
+
+### 7.6 Chosen future direction (deferred, NOT MVP): a percentage of the settlement (2026-07-25)
+
+**MVP stays flat (default 0). This section records the _chosen next evolution_, not a current change.**
+§7.4's flat call optimised for robustness/simplicity; the chosen direction prioritises **value capture**
+— a flat £10–15 earns the same on a £5,000 booking as on a £200 one, and that upside is the point of the
+GigXchange/Encore/Alive model (a % of the agreed fee that runs through the platform's own rails). The fee
+would become **a percentage of the settlement** — the amount that settles through our Stripe Connect.
+
+**Why it's deferred as its own piece of work, not a config swap (the real complexity):** the fee
+*arithmetic* is trivial (`% × amount`), but two things are not — and one of them is the DoorSplit/Versus
+ticket dependency:
+
+- **Some deal types settle on an externally-derived number.** FlatFee/VenueHire settle on a fixed agreed
+  amount that is escrowed through us upfront — clean. **DoorSplit/Versus** settle the artist's share of a
+  **door/ticket take collected _outside_ our platform**; the settled figure is derived from that external
+  number, and it is self-declared (§7.5).
+- **We only earn a cut if the money actually routes through our rails — the disintermediation gap.** For
+  the escrowed types it always does (held before payout). For door-split, the parties *could* settle the
+  share off-platform and we'd see £0. So the real work is a **money-flow/product** problem — ensuring the
+  door-split settlement comes through us — not the percentage.
+
+These are why "% of settlement" is a proper separate effort, picked up as its own plan.
+
+> **⛔ HARD REQUIREMENT before any real fee goes live (fail-closed config):** the MVP default of `Fee = 0`
+> is safe *only* because £0 is the intended value while no fee is charged. The moment a fee is real, a
+> **missing/unbound `PlatformFee` config must throw at startup**, never silently default to 0 — an absent
+> config indistinguishable from a deliberate zero is the repo's "don't default away a failure" anti-pattern
+> (root `CLAUDE.md`) and a live revenue risk (silently collecting nothing). The rate-card must fail-closed
+> on absence, with a deliberate zero expressed **explicitly** (or a distinct "fee disabled" flag), not as a
+> fallback from an unset section. This gates the fee-go-live, not the inert-MVP merge.
+
+**The translation to our four types is uniform: our fee = `% × the gross that settles through us`.** For
+FlatFee/VenueHire the gross *is* the fixed agreed fee (pure GigXchange); for DoorSplit/Versus it is the
+artist's settled share — still a % of money we actually route. Worked at a **5% rate**:
+
+| Type | Payer → payee | Gross (settles through us) | 5% fee | Payer charged | Payee gets | We keep |
+|---|---|---|---|---|---|---|
+| **FlatFee** | venue → artist | £400 (artist's fixed fee) | £20 | £420 | £400 | £20 |
+| **VenueHire** | artist → venue | £300 (hire amount) | £15 | £315 | £300 | £15 |
+| **DoorSplit** | venue → artist | £700 (70% of a £1,000 door) | £35 | £735 | £700 | £35 |
+| **Versus** | venue → artist | £720 (greater of £500 guar. / 60%×£1,200) | £36 | £756 | £720 | £36 |
+
+**What the model keeps, changes, and costs (when built):**
+
+- **Keeps** — Payment ownership + no B2B boundary crossing (§1.2 note): the base is the gross Payment
+  already receives, so the % resolves Payment-side, uniformly, no per-type branching. **Keeps** Phase 1's
+  money-movement plumbing verbatim (charge `gross + fee`, transfer `gross`, snapshot the fee) — only the
+  fee *number* changes from a read constant to `clamp(gross × rate, min, max)`.
+- **Changes** — config: flat `Fee` scalar → `rate` (bps) + `min` + `max` rate-card (`PlatformPricingPolicy`),
+  and the resolved fee is snapshotted **with** the policy version (the hybrid from
+  `PLATFORM_FEE_STORAGE_INVESTIGATION.md`, now clearly justified because the fee is structured).
+- **Costs (accepted)** — (1) **rounding:** a % produces fractional pence, so the fee depends on **one**
+  rounding rule → the Kernel `Money` type (`../MONEY_VALUE_TYPE.md`) is a real prerequisite, not a nicety.
+  (2) **door-declaration / money-flow exposure:** on DoorSplit/Versus our cut rides a self-declared,
+  externally-collected door take (above) — bounded by a **min floor**, treated as a venue↔artist honesty
+  matter, and gated on the disintermediation work. A **cap is deliberately omitted** (or set high) —
+  capping would surrender the upside that motivates the move; a floor guards the tiny-gig case instead.
+
+**Net:** rate + floor in config, one uniform `gross × rate` calculator in Payment, snapshot fee + policy,
+plumbing untouched — **plus** the door-split money-flow work. The §6 `%-of-agreed-fee` follow-up is
+**promoted from "if ever wanted" to the chosen next model, deferred to its own plan.** MVP remains flat.
