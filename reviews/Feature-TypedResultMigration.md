@@ -17,5 +17,5 @@
 - [x] **TEST1 — HIGH — test coverage** — `api/Concertable.slnx:222`
   Add `api/Concertable.Shared/tests/Concertable.Shared.Api.UnitTests/Concertable.Shared.Api.UnitTests.csproj` to the `unit-tests` matrix in `.github/workflows/test.yml`. The workflow enumerates test projects explicitly, and PR #248's green checks contain no Shared.Api test job, so none of the new Result, ProblemDetails, exception-handler, or architecture tests execute in CI.
 
-- [ ] **TEST2 — MEDIUM — test coverage** — `api/Concertable.Shared/src/Concertable.Shared.Api/Exceptions/GlobalExceptionHandler.cs:39`
+- [x] **TEST2 — MEDIUM — test coverage** — `api/Concertable.Shared/src/Concertable.Shared.Api/Exceptions/GlobalExceptionHandler.cs:39`
   Add handler tests for the explicit `UnauthorizedAccessException` → 401 and `DomainException` → 400 compatibility branches, asserting status, title, and safe detail. This phase promises to preserve both legacy mappings, but the new handler tests cover cancellation, validation `BadRequestException`, generic `HttpException`, and 500 behavior without exercising either dedicated branch.
