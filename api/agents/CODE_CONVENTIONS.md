@@ -233,6 +233,8 @@ Keep a typed Result intact until a terminal adapter:
 - they never catch `Exception` to manufacture a failed Result;
 - `OperationCanceledException` is never converted to an error value;
 - Results and Dunet unions do not cross HTTP, protobuf, integration-event, or persistence boundaries.
+- command Results never have nullable success payloads; use an error case, `UnitResult<TError>`, or
+  an explicit success union. Nullable values are for queries where absence is ordinary data.
 
 Controllers use the adapters in `Concertable.Shared.Api.Results`. `ToActionResult` owns the CFE
 success/failure `Match`; `ToOkActionResult`, `ToCreatedAtActionResult`, and
@@ -267,7 +269,7 @@ service/client DTOs that adapters (gRPC clients, service interfaces) pass around
 ```csharp
 // CORRECT — service/client DTO, no suffix; Result<TValue, TError> is the wrapper
 Task<Result<EscrowDeposit, DepositError>> DepositAsync(...);
-Task<Result<Transfer?, ReleaseError>> ReleaseByBookingIdAsync(...);
+Task<Result<Transfer, ReleaseError>> ReleaseAsync(...);
 
 // WRONG — Response suffix on a non-HTTP DTO, redundant with typed Result
 Task<Result<EscrowResponse, DepositError>> DepositAsync(...);

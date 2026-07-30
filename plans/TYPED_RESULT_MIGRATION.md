@@ -635,6 +635,8 @@ Scope:
 - define public operation-specific Payment error unions in `Concertable.Payment.Contracts`;
 - migrate Payment Application interfaces, services, `IPaymentManager`, and Stripe adapters to
   `Result<TValue, TError>`/`UnitResult<TError>`;
+- replace nullable release/refund command outcomes with `UnitResult<TError>` or explicit success
+  unions while preserving benign no-op behavior;
 - return typed transition failures from `EscrowEntity`;
 - classify Stripe exceptions: caller-actionable decline/rejection becomes a typed failure; network,
   authentication, rate-limit/server, cancellation, and unknown faults remain exceptions;
