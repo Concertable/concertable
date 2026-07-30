@@ -10,7 +10,7 @@
 
 ## Phase 0 — Decisions that block other work
 
-- [ ] **Revenue model** picked: per-gig fee / subscription / % commission / hybrid. Drives Stripe billing setup, pricing UI, and venue onboarding copy.
+- [x] **Revenue model** picked: flat, Payment-owned £10 fee per settled B2B contract. Payment charges gross + fee and pays the counterparty gross; percentage/minimum pricing is deferred beyond launch.
 - [x] **Multi-tenant model** decided & shipped — backend domain type is `Tenant` (Guid PK, request-scoped filtering, tenant-scoping E2E green). "Organization" is retained only as the user-facing UI/API label. Remaining multi-user membership / roles / auth-sweep work is tracked in `USER_MODEL_PLAN.md`.
 - [ ] **Company name** confirmed available at https://find-and-update.company-information.service.gov.uk and as a `.com` / `.co.uk` domain.
 - [ ] **Domain** registered.
@@ -122,7 +122,9 @@ Codebase audit confirmed: connected accounts created with `Type = "express"` in 
 
 - [ ] Stripe Connect **Express** mode in use (NOT Custom). Express keeps Stripe as the regulated payment institution — your platform is still in a marketplace-facilitator posture, not a payment institution itself.
 - [ ] `OnBehalfOf` escrow holds released within **short windows** (target: ≤7 days post-event). Funds sitting on platform balance for weeks invites FCA scrutiny.
-- [ ] Application fees configured if taking % cut.
+- [x] Platform-fee money movement implemented in test mode: Payment charges gross + £10, transfers/releases gross, and the ledger records the retained £10. This does not use Stripe's Application Fee primitive.
+- [ ] B2B payer surfaces disclose gross, £10 platform fee and total before commitment for FlatFee, VenueHire, DoorSplit and Versus.
+- [ ] Production `PlatformFee:Fee` is explicitly set to £10 and fail-closed startup validation is confirmed in the live environment.
 - [ ] Production Stripe account activated (Stripe reviews business; takes a few days).
 - [ ] Webhooks live + endpoint health-checked.
 - [ ] Test mode → live mode migration plan documented.

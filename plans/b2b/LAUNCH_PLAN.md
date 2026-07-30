@@ -8,10 +8,10 @@
 
 ## Status — what's shipped vs. what's left
 
-**Shipped — verified in code, don't rebuild:** Tenant model + membership + 6-role RBAC · payout re-keyed to `TenantId` · Stripe Connect Express with both money flows (escrow `OnBehalfOf` for FlatFee/VenueHire; `TransferData.Destination` for DoorSplit/Versus) · artist↔venue messaging · settlement for all four contract types · the 3% PRS skim is correctly absent.
+**Shipped — verified in code, don't rebuild:** Tenant model + membership + 6-role RBAC · payout re-keyed to `TenantId` · Stripe Connect Express with both money flows (escrow `OnBehalfOf` for FlatFee/VenueHire; `TransferData.Destination` for DoorSplit/Versus) · Payment-owned flat £10 platform fee on all four settlement types · append-only balanced Payment ledger · artist↔venue messaging · settlement for all four contract types · the 3% PRS skim is correctly absent.
 
-**Decide first — gates everything (see §9):**
-- [x] Revenue model — **resolved 2026-07-01: % commission on the settlement transaction, ~5% headline with a small minimum floor.** Rides the settlement transaction per the locked principle; a % that only charges on completed bookings sells with zero traction (unlike an access subscription, which needs an established base). Competitor anchor: GigXchange 0–8% on settlement, agencies ~20%, Stripe cost ~1.5%+20p. Exact % revisitable at v1.1 — the *shape* is what unblocks pricing UI / T&Cs / VAT. See §9 / decision log.
+**Decisions locked (see §9 / decision log):**
+- [x] Revenue model — **resolved in shipped code 2026-07-24/25: a flat, Payment-owned £10 fee per settled B2B contract.** Payment charges `gross + £10`, the payee receives gross, and the ledger records the retained fee. A percentage/minimum rate-card is a deferred evolution, not launch pricing. See [PLATFORM_COMMISSION.md](PLATFORM_COMMISSION.md) and the decision log.
 - [x] DoorSplit/Versus revenue source — **resolved: manual door-takings entry + charge-the-venue** for v1 (external-ticketer import ruled out — §9). All four contract types ship in the pure-B2B MVP, no marketplace dependency. See §9 / R9.
 
 **Build — MVP blockers, in priority order:**
@@ -24,9 +24,10 @@
 - [ ] 🟡 **`holdsMusicLicence` attestation** on `Tenant.Compliance` (~0.5 day; the venue's responsibility, we just record it).
 - [ ] 🟡 **Finish Swim-lane B** — membership/invitation endpoints + auth sweep + messaging group-inbox (USER_MODEL_PLAN Phases 6-8). **Phase 6 shipped** (`Feature/TenantInvitationsFrontend`): invitation endpoints + last-Owner invariants + provisioning invitation-first branch + member-management UI + tenant switcher + UI E2E. Phases 7-8 (auth sweep + messaging group-inbox) remain.
 - [x] ✅ **Per-contract-type VAT calculation** — shipped (`Feature/VatAndSelfBilledInvoicing`): inclusive-gross decomposition branching on supply direction + supplier VAT-registration status, in the Tenant tax area, consumed by Concert via `ITenantModule` (items 1, 3).
+- [ ] 🟡 **B2B pricing transparency** — Payment already charges a real £10 flat fee; payer-facing disclosure is not yet bound to that authoritative price. [PLATFORM_COMMISSION.md](PLATFORM_COMMISSION.md) plans immutable Payment fee quotes plus gross/fee/total breakdowns for FlatFee, VenueHire, DoorSplit and Versus.
 - [ ] 🔴 **Production deployment + config/secrets** — the app has **no** deployment path, config store, or secret store (all local Aspire + emulators; secrets committed to source, incl. a plaintext Azure SQL password). Surfaced 2026-07-17. Hard launch gate. Plan: [../CONFIG_AND_DEPLOYMENT.md](../CONFIG_AND_DEPLOYMENT.md).
 
-**Verify before trusting — competitor table-stakes, not confirmed in code:** reviews/reputation end-to-end · calendar sync (Google/Apple/Outlook) · financial/settlement CSV export · pricing-transparency UI.
+**Verify before trusting — competitor table-stakes, not confirmed in code:** reviews/reputation end-to-end · calendar sync (Google/Apple/Outlook) · financial/settlement CSV export.
 
 The legal/business track is [LAUNCH_CHECKLIST.md](LAUNCH_CHECKLIST.md); the hard launch gates are in §7.
 
@@ -44,7 +45,7 @@ The legal/business track is [LAUNCH_CHECKLIST.md](LAUNCH_CHECKLIST.md); the hard
 - Cancellation/refund handling on the B2B path (venue or artist cancels — escrow refunds correctly)
 - Per-booking signed agreement (click-wrap e-signature, terms snapshotted at Accept) — see [LEGAL_REQUIREMENTS.md](../../api/Concertable.B2B/src/Modules/Deal/LEGAL_REQUIREMENTS.md) item 2
 - Per-contract-type VAT calculation + VAT-compliant self-billed invoices per settlement (items 1, 3, 4)
-- Per-tenant configuration surface (PRS, VAT, platform fee, payment terms, cancellation defaults)
+- Per-tenant configuration surface (PRS, VAT, payment terms, cancellation defaults). The platform fee is Payment-owned platform configuration, not a tenant override.
 
 **DoorSplit/Versus revenue source — resolved (2026-06-22):** these two settle against door/ticket revenue, which standalone B2B (no marketplace) has no automatic feed for. The confirmed v1 feed is **manual door-take entry + charge-the-venue**: the venue enters the door take at settlement, Concertable charges the venue for the artist's share (+ our fee) and pays the artist through Stripe Connect — identical to FlatFee escrow. So **all four contract types ship in the pure-B2B MVP** with no marketplace dependency. The own checkout (deferred) only *upgrades* DoorSplit/Versus later (verified number instead of self-reported, no venue credit risk). See §9.
 
@@ -88,7 +89,7 @@ Calendar-realistic, not optimistic. Slips are flagged as risks (§6).
 |---|---|---|---|
 | **Month 1 (Jun 2026)** | Company registered (Companies House, ~£12, 24hr) · ICO fee paid (~£40-60/yr) · Solicitor engaged + briefed for T&Cs · **Revenue model decided** · **DoorSplit/Versus revenue-source decision** (§9) | **Phase 0** — `Tenant` module scaffolding · **Phase 1** — `ComplianceContext` value object + tenant config surface | **Music licence attestation field** spec (= PRS self-licensed flag; wired in Phase 1) · _(PRS correction in `LEGAL_REQUIREMENTS.md` ✅ done 2026-06-01)_ |
 | **Month 2 (Jul 2026)** | Business bank account opened · Accountant engaged · Solicitor drafts circulating | **Phase 2** — Venue/Artist wired to Tenant | **Cookie banner** scaffolding on all 3 SPAs (text from solicitor still pending) |
-| **Month 3 (Aug 2026)** | Insurance arranged (Professional Indemnity + Cyber) · Stripe production application submitted | **Phase 3** — `PayoutAccountEntity` re-key to TenantId | **Pricing transparency UI** in checkout (now that revenue model is known) |
+| **Month 3 (Aug 2026)** | Insurance arranged (Professional Indemnity + Cyber) · Stripe production application submitted | **Phase 3** — `PayoutAccountEntity` re-key to TenantId | **Pricing transparency** at each payer commitment point (Payment quote package first) |
 | **Month 4 (Sep 2026)** | Solicitor T&Cs finalised · DPA signed with Stripe · ICO documentation (privacy policy, lawful basis, retention) | **Phase 4** — `ComplianceContext` snapshot on Booking · **Phase 5** — Organization setup UI | **Privacy + T&Cs page routes** wired up (solicitor text now in hand) · **Venue legal details on emails** template change · **Booking agreement + click-wrap e-sign** at Accept (PDF via `IPdfRenderer`) |
 | **Month 5 (Oct 2026)** | HMRC platform-operator registration · Stripe production approved · Marketing site live | **Phase 6** — Multi-user membership + auth sweep | **Refund / cancellation codification** in `Cancelled` workflow · **Per-contract VAT calculation** + **self-billed invoice generation** (reuses agreement PDF plumbing) · **OSA report-content flow** (button + email + policy doc) · **DAC7 export script** (defer the actual run until Jan 2028) |
 | **Month 6 (Nov 2026)** | Beta cohort recruited (~10 venues + 50 artists) · Support process live · Pricing page live | Bugfixes from beta feedback · final integration tests | Final polish · accessibility quick-pass · **LAUNCH** |
@@ -98,8 +99,8 @@ Calendar-realistic, not optimistic. Slips are flagged as risks (§6).
 Dependencies that constrain the order:
 
 ```
-Revenue model decision (Month 1)
-    └─→ Pricing transparency UI (Month 3)
+Flat £10 revenue-model decision (Month 1)
+    └─→ Payment fee-quote package → platform sync → B2B pricing transparency (Month 3)
     └─→ Solicitor T&Cs drafting (Month 1-4)
             └─→ Privacy + T&Cs page routes (Month 4)
             └─→ Cookie banner final text (Month 4)
@@ -131,13 +132,13 @@ Stripe production approval (~2-4 weeks elapsed)
 |---|---|---|---|
 | PRS correction in `LEGAL_REQUIREMENTS.md` (✅ done 2026-06-01 — was "remove 3% line"; now per-tenant pass-through, venue's liability) | – | – | done |
 | Music licence attestation field (on `Tenant.Compliance`) = PRS self-licensed flag | 0.5 days | Phase 1 | Month 1 |
-| Tenant configuration surface (PRS / VAT / platform fee / payment terms / cancellation defaults) | 1-2 days | Phase 1 | Month 1-2 |
+| Tenant configuration surface (PRS / VAT / payment terms / cancellation defaults) | 1-2 days | Phase 1 | Month 1-2 |
 | Booking agreement + click-wrap e-signature at Accept (snapshot terms, PDF via `IPdfRenderer`) — `LEGAL_REQUIREMENTS.md` item 2 | 3-5 days | Phase 4 (Booking snapshot), `IPdfRenderer` | Month 4 |
 | ✅ Per-contract-type VAT calculation (branches on supply direction + supplier VAT status) — items 1, 3 | 2-3 days | Tenant config (VAT fields) | done |
 | ✅ Self-billed VAT invoice generation per settlement (sequential numbering, HMRC fields, PDF) — item 4 · self-billing *agreement* + renewal still outstanding | 2-3 days | VAT calculation, agreement PDF plumbing | done |
 | Cookie consent banner on 3 SPAs (scaffolding) | 1-2 days | – (scaffolding can land before solicitor text) | Month 2 |
 | Cookie banner text + privacy policy text from solicitor → wired into banner | 0.5 days | Solicitor draft (Month 4) | Month 4 |
-| Pricing transparency UI in checkout (all fees pre-checkout) | 1-2 days | Revenue model decision | Month 3 |
+| Pricing transparency at payer commitment (fixed checkout + deferred settlement review) | 3 phases | Payment fee-quote package + platform sync | Month 3 |
 | Privacy + T&Cs page routes (footer of every page) | 1 day | Solicitor draft | Month 4 |
 | Venue legal details on emails (booking confirmation, invoices) | 1 day | Phase 5 (setup UI captures legal name) | Month 4 |
 | Refund / cancellation matrix codification in `Cancelled` workflow | 3-5 days | Cancellation policy text from solicitor | Month 5 |
@@ -153,7 +154,7 @@ Stripe production approval (~2-4 weeks elapsed)
 | R1 | Tenancy refactor takes longer than 24 days (EF nested owned-types surprises, migration-script issues) | Medium | High | Phase 0 scaffolding has explicit go/no-go assessment at the end. If it took >3 days, recalibrate timeline before continuing. |
 | R2 | Solicitor T&Cs drafting takes longer than 4 weeks | Medium | High | Brief solicitor in Month 1, not Month 3. Keep a parallel "draft v1" using a quality T&Cs template as backup. |
 | R3 | Stripe production approval delayed (Stripe asks for more info / rejects) | Medium | High | Submit application Month 3, not Month 5. Have ICO fee + insurance + company info ready as supporting docs. |
-| R4 | Revenue model decision keeps slipping → blocks pricing UI + solicitor work | Medium | Medium | **Hard deadline: end of Month 1.** Force a decision even if imperfect; revisit at v1.1. |
+| R4 | Pricing shown by B2B drifts from Payment's live fee before delayed settlement | Medium | High | Use the immutable Payment-owned quote and require its ID on the eventual charge; never duplicate live fee config in B2B. |
 | R5 | Beta cohort hard to recruit (no organic demand pre-launch) | Medium | Medium | Start recruitment Month 4 not Month 6. Hand-pick first 10 venues + 50 artists via warm intros, not open signups. |
 | R6 | Phase 6 auth sweep introduces regressions across 25+ controllers | Medium | Medium | Test coverage assessment in Month 4. If integration test coverage is <60%, write tests first or split Phase 6 into smaller PRs. |
 | R7 | DAC7 schema changes between now and first export (Jan 2028) | Low | Low | Defer DAC7 export *implementation* if HMRC publishes schema updates; keep onboarding field collection on-spec. |
@@ -183,13 +184,13 @@ Concrete checklist for Month 6. Don't launch without all of these green.
 - [ ] Auth checks routed through tenant membership (not legacy TPH FK)
 - [x] Booking agreement generated + click-wrap consent recorded at every Accept
 - [x] VAT calculated per contract type + self-billed invoice generated per settlement
-- [ ] Tenant config surface live (PRS / VAT / fee / payment terms read from it, not constants)
+- [ ] Tenant config surface live (PRS / VAT / payment terms read from it, not constants)
 - [ ] Pre-launch dataset cleared / fresh seeded
 
 ### Compliance UI/UX
 - [ ] Cookie consent banner live on all 3 SPAs
 - [ ] Privacy + T&Cs pages accessible from every footer
-- [ ] Pricing transparency UI in checkout (fees shown pre-checkout)
+- [ ] Pricing transparency on all four payer journeys (gross, platform fee and total shown before commitment)
 - [ ] Venue legal details on booking confirmation emails + invoices
 - [ ] Online Safety Act report-content button + email destination live
 - [ ] Music licence attestation captured in Org setup form
@@ -224,9 +225,9 @@ See [MARKETPLACE_PLAN.md](../customer/MARKETPLACE_PLAN.md) for the detail. Headl
 
 ## 9. Decision points still open
 
-These need answers but aren't urgent yet. (Two items are no longer open: the **DoorSplit/Versus revenue source** — *resolved 2026-06-22*: manual door-take entry + charge-the-venue ships all four contract types; external-ticketer import ruled out; own checkout deferred — and the **revenue model** — *resolved 2026-07-01*, below.)
+The DoorSplit/Versus revenue source and revenue model are now locked in the decision log below. These
+remaining operational choices are not urgent yet.
 
-- **Revenue model** — *resolved 2026-07-01:* **% commission on the settlement transaction, ~5% headline with a small minimum floor.** Satisfies the locked constraint (the fee must ride the *settlement transaction* routed through our Stripe Connect — charge the venue the artist's share **+ our fee**, then pay the artist — never invoice-only/GigPig-style, which leaves no transaction to cut from). A % scales with deal value and only bills on completed bookings, which sells with zero traction; subscription (GigPig's model) needs an established base, so it's parked as a possible later add-on, not the v1 path. Exact % is revisitable at v1.1. (Corollary — we never force venues onto our checkout; the marketplace is additive — is in §1 and the decision log.)
 - **Beta cohort sourcing** — warm intros via existing music industry contacts? Cold outreach? Industry events? Decide by Month 4.
 - **Support tooling** — shared inbox (Front, Helpscout) or just Gmail? Discord/Slack/WhatsApp for beta? Decide by Month 5.
 
@@ -248,8 +249,9 @@ The settled calls that constrain the work above. Full rationale + dated history 
 - **B2B-first.** The customer ticket marketplace is deferred and additive (§8), not a v1 dependency.
 - **All four contract types ship in v1.** DoorSplit/Versus settle via **manual door-take entry +
   charge-the-venue** — external-ticketer import ruled out; own checkout is the deferred durable feed. §9
-- **Revenue model: % commission on the settlement transaction** (~5% headline + small minimum floor).
-  Subscription parked as a possible later add-on. §9
+- **Revenue model: flat £10 per settled B2B contract.** Payment owns the live fee, charges it on top
+  of gross and records it in the ledger. A percentage/minimum rate-card is deferred beyond launch.
+  [PLATFORM_COMMISSION.md](PLATFORM_COMMISSION.md)
 - **Monetization principle:** the fee always rides the settlement transaction routed through our
   Stripe Connect — never invoice-only (else there's no transaction to take a cut from). §9
 - **Backend domain type is `Tenant`** (Guid PK, request-scoped filtering, compliance value object);
