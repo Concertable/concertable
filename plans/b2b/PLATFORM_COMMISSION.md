@@ -1,37 +1,25 @@
 # Pricing transparency for the Payment-owned platform fee
 
 > **Active launch plan.** PR #209 (`Feature/PlatformCommission`) and PR #223
-> (`Feature/PaymentLedger`) are merged. Payment currently charges a real, fail-closed, flat **£10**
-> platform fee on every B2B settlement and records it in the ledger. What remains is to bind that
-> Payment-owned price to the payer's pre-commitment disclosure across all four contract types.
+> (`Feature/PaymentLedger`) are merged. Payment charges a real, fail-closed, flat **£10** platform fee
+> on every B2B settlement and records the retained fee in its ledger. What remains is to version that
+> Payment-owned policy, bind the version disclosed to each application, and show the payer the charge
+> before commitment across all four contract types.
 >
-> The percentage rate-card is a deferred evolution. This work discloses and honours the flat fee the
-> product charges now; it does not implement percentage pricing.
+> The rejected design created a `PlatformFeeQuote` row per application. None of that implementation is
+> retained. A pricing revision creates one immutable policy row; any number of applications may bind it.
 
-## 1. Current truth and decision history
+## 1. Current truth and launch decision
 
-Current code is the source of truth:
-
-- `PlatformFeeOptions` is internal to Payment and is validated on startup. Both Payment Web and
-  Workers configure `Fee = 10`; a missing value does not fall back to zero.
-- `ManagerPaymentService` and `EscrowService` charge `gross + platform fee`, transfer or release
-  `gross` to the payee, and persist the fee on `SettlementTransactionEntity` or `EscrowEntity`.
+- `PlatformFeeOptions` is internal to Payment and is validated on startup. Payment Web and Workers both
+  configure `Fee = 10`; a missing value does not fall back to zero.
+- `ManagerPaymentService` and `EscrowService` charge `gross + platform fee`, transfer or release `gross`
+  to the payee, and persist the actual fee on `SettlementTransactionEntity` or `EscrowEntity`.
 - the Payment ledger posts the retained fee as platform revenue and reconciles each settlement to zero;
-- B2B has no live pricing config and no API contract for obtaining the Payment-owned fee;
-- the manager checkouts show only the deal amount or formula, and the door-takings dialog shows revenue
-  inputs but not the resulting artist settlement, platform fee, or total charge.
+- B2B has no live pricing config and no Payment contract for loading the authoritative fee;
+- manager checkout and door-takings surfaces do not yet show gross, platform fee and total together.
 
-The dated history resolves the stale tracker prose:
-
-| Date | Evidence | Decision |
-|---|---|---|
-| 2026-07-01 | `ab68fdbd`, early `LAUNCH_PLAN.md` | proposed roughly 5% plus a floor before implementation existed |
-| 2026-07-24 | `f541dc32`, Platform Commission work | changed launch pricing to a flat Payment-owned fee |
-| 2026-07-25 | `0f9e4205`, `44ec2651` | made configuration fail closed and set the real fee to £10 |
-| 2026-07-25 | `48e4f6fc` | recorded percentage pricing as a later evolution, not the launch implementation |
-| 2026-07-26 | PR #223 / `d02c825c` | completed the Payment ledger first and explicitly handed back to pricing transparency |
-
-Therefore the launch decision is:
+The launch price remains:
 
 ```text
 payer charge = gross settlement + £10 platform fee
@@ -39,203 +27,247 @@ payee receipt = gross settlement
 Concertable retention = £10 platform fee
 ```
 
-The fee follows the payer. FlatFee, DoorSplit and Versus are venue-to-artist payments; VenueHire is an
-artist-to-venue payment. No deal-type pricing calculator belongs in B2B for this flat-fee launch.
+FlatFee, DoorSplit and Versus are venue-to-artist payments. VenueHire is an artist-to-venue payment. The
+fee follows the payer; no deal-type platform-fee calculator belongs in B2B.
 
 ## 2. Scope and non-goals
 
 ### In scope
 
-- an authoritative, immutable Payment-owned fee quote which the eventual settlement must honour;
-- gross, platform-fee and total-charge disclosure at every real payer commitment point;
+- append-only immutable Payment-owned platform-fee policy versions;
+- one current flat-fee policy revision, shared by every application bound while it is current;
+- Payment-owned fee calculation with a model that can represent a fixed component, percentage,
+  minimum and cap without another persistence redesign;
+- binding the disclosed policy ID in B2B and reloading that exact policy in Payment when money moves;
+- retaining the policy ID and actual calculated fee on Payment escrow/settlement records;
+- carrying the policy ID in Stripe metadata;
+- gross, platform-fee and total disclosure at every payer commitment point;
 - exact fixed-price disclosure for FlatFee and VenueHire;
 - formula disclosure at DoorSplit/Versus acceptance and an exact reviewed charge at door declaration;
-- Payment client/proto additions, B2B persistence, API DTOs and HATEOAS actions;
-- venue-manager and artist-manager UI, failure handling, accessibility and tests;
-- correction of the launch trackers to the shipped £10 flat-fee decision.
+- additive Payment client/protobuf expansion, B2B persistence and APIs, manager UI and tests.
 
 ### Explicit non-goals
 
-- the deferred percentage/minimum/cap rate-card, policy versioning, tenant-specific rates or promotions;
-- changing the £10 amount or moving live pricing configuration into B2B;
-- customer ticket checkout or any customer marketplace pricing surface;
-- changing which party pays, the Stripe Connect money flows, refunds, ledger accounting or invoice VAT;
-- changing the Versus formula. The implemented contract is **guarantee plus door percentage**; only the
-  incorrect “whichever is greater” manager-SPA copy is corrected;
-- a platform-fee VAT invoice. The existing self-billed invoice concerns the artist/venue supply, not
-  Concertable's fee supply, and remains separate legal/accounting work;
-- removing the old Payment client overloads in the same cut-over. That would be a later breaking package
-  contraction after every consumer has migrated.
+- activating percentage/minimum/cap pricing for launch; the active revision remains flat £10;
+- a policy row per tenant, payer, application, checkout or promotion;
+- an expiry/refresh lifecycle for an application-bound policy;
+- moving pricing configuration or fee calculation into B2B;
+- customer ticket checkout or customer marketplace pricing;
+- changing payer direction, Stripe Connect flows, refunds, ledger accounting or invoice VAT;
+- changing the Versus formula: it is **guarantee plus door percentage**;
+- removing legacy Payment RPCs in the expansion. Contraction is a later breaking package cut-over.
 
-## 3. The real payer journeys and disclosure points
+## 3. Payer journeys and commitment points
 
-The existing HATEOAS actions are accurate routing signals, but “Apply/Accept” alone is not precise enough
-to identify financial commitment.
+| Contract | Payer | Last payer-present commitment point | Disclosure |
+|---|---|---|---|
+| **FlatFee** | venue | **Confirm & Pay** on `VenueAcceptCheckoutPage`, before the manual-capture hold | artist gross, policy fee, exact total held/charged |
+| **VenueHire** | artist | **Authorise & Apply** on `ArtistApplyCheckoutPage`, before the later off-session deposit | venue gross, policy fee, exact future total |
+| **DoorSplit** | venue | formula commitment at accept checkout; exact commitment before confirming door takings | artist-share formula and fee policy at accept; exact gross, fee and total at declaration |
+| **Versus** | venue | same two points as DoorSplit | guarantee-plus-percentage formula and fee policy at accept; exact gross, fee and total at declaration |
 
-| Contract | Payer | Current journey | Last payer-present commitment point | Required disclosure |
-|---|---|---|---|---|
-| **FlatFee** | venue | artist applies normally → venue selects Accept → `ApplicationActions.Checkout` routes to `VenueAcceptCheckoutPage` → Stripe manual-capture hold → `/accept` captures into escrow | immediately before **Confirm & Pay** confirms the hold; acceptance/capture follows from the same screen | artist gross fee, £10 platform fee, exact total held/charged |
-| **VenueHire** | artist | `OpportunityActions.Checkout` routes Apply to `ArtistApplyCheckoutPage` → SetupIntent saves the card → application is submitted → venue later accepts and Payment deposits off-session into escrow | immediately before **Authorise & Apply**; this is the artist's last chance to approve the later charge | venue gross hire fee, £10 platform fee, exact future total charge |
-| **DoorSplit** | venue | artist applies normally → venue accepts through `VenueAcceptCheckoutPage` → SetupIntent verifies/saves a card → after the concert the venue opens `MyConcertPage` and declares external takings → completion worker charges off-session | formula commitment before **Confirm** in accept checkout; exact monetary commitment before confirming door takings | at accept: `artist % × total takings`, £10, and formula total; at declaration: exact artist gross, £10, exact total |
-| **Versus** | venue | same deferred flow as DoorSplit | same two points | at accept: `guarantee + artist % × total takings`, £10, and formula total; at declaration: exact artist gross, £10, exact total |
-
-For DoorSplit and Versus, “total takings” means Concertable ticket sales plus the venue's declared external
-takings. The exact disclosure must use the same `IArtistShareCalculator` strategies as settlement:
+For DoorSplit and Versus, total takings are Concertable ticket sales plus declared external takings. The
+exact gross uses the existing `IArtistShareCalculator` strategies:
 
 ```text
 DoorSplit gross = total takings × artist percentage
 Versus gross = guarantee + (total takings × artist percentage)
 ```
 
-`AcceptApplicationPage` remains the review/routing page. For FlatFee, DoorSplit and Versus it must not
-pretend its **Continue** button is the charge commitment; the price is rendered on the checkout it opens.
-VenueHire acceptance is performed later by the venue without a payer present, so it uses the quote already
-approved and stored when the artist applied.
+`AcceptApplicationPage` remains a review/routing page. FlatFee, DoorSplit and Versus disclose pricing on
+the checkout it opens. VenueHire binds the policy when the artist applies because the venue later accepts
+without the payer present.
 
-## 4. Architecture decision: Payment-owned immutable fee quotes
+## 4. Architecture decision: shared immutable policy versions
 
-### Designs considered
+### 4.1 Designs considered
 
-| Design | Service carve | Price integrity | Decision |
-|---|---|---|---|
-| bind `PlatformFee` independently in B2B | no runtime call, but duplicates live pricing authority across services | split-brain config can disclose one price and charge another | rejected |
-| B2B calls a live `GetCurrentFee` RPC | Payment remains authoritative | time-of-check/time-of-charge drift remains, especially for VenueHire and post-concert settlement | rejected |
-| manager SPAs call Payment directly | exposes the adapter service and its auth/contract to browsers; bypasses B2B HATEOAS | still needs B2B binding at settlement | rejected |
-| Payment creates an immutable quote and every quoted settlement supplies its ID | respects the carve: B2B may synchronously depend on the Payment adapter through its published client package | the fee shown is the fee charged, even after config changes or service restarts | **selected** |
+| Design | Problem | Decision |
+|---|---|---|
+| duplicate a live fee in B2B | creates split-brain pricing authority | rejected |
+| call `GetCurrentFee` when charging | a revision can change after disclosure | rejected |
+| create a Payment quote row per application | duplicates identical pricing data and invents quote lifecycle/ownership for a global price | rejected |
+| persist one immutable Payment policy row per pricing revision and bind its ID in B2B | keeps one authority and makes historical charges reproducible without per-application Payment state | **selected** |
 
-Payment remains the sole owner of `PlatformFeeOptions`. B2B stores only an opaque quote ID and the
-application/settlement facts it already owns. It never stores or evaluates a second live rate card.
+Payment is an adapter service, so B2B may call it synchronously through the published
+`Concertable.Payment.Client` package. B2B stores an opaque policy ID, never Payment configuration.
 
-### 4.1 Payment model and public client contract
+### 4.2 Policy row and calculation
 
-Add a Payment-owned `PlatformFeeQuoteEntity` with:
+Add `PlatformFeePolicyEntity` in Payment with:
 
-- opaque `Guid Id`;
-- `Guid PayerTenantId`;
-- immutable Kernel `Money PlatformFee`;
+- opaque `Guid Id`, supplied by the configured revision rather than generated per request;
+- `Currency`;
+- non-negative `long FixedAmountMinor`;
+- non-negative `int RateBasisPoints`;
+- nullable non-negative `long MinimumAmountMinor`;
+- nullable non-negative `long MaximumAmountMinor`;
 - `DateTimeOffset CreatedAt`.
 
-Quotes are valid for the application lifetime and do not silently expire or refresh. A config change
-affects newly created quotes only. The quote table survives restarts and delayed settlement; unused quotes
-are harmless audit records.
-
-Add an additive `IPlatformFeeQuoteClient` to the published `Concertable.Payment.Client` package:
-
-```csharp
-Task<PlatformFeeQuote> CreateAsync(Guid payerTenantId, CancellationToken ct = default);
-Task<PlatformFeeQuote> GetAsync(Guid quoteId, Guid payerTenantId, CancellationToken ct = default);
-```
-
-`PlatformFeeQuote` contains the ID, `Money PlatformFee` and creation time. The proto adds a
-`PlatformFeeQuoteService`, create/get messages, and uses the existing minor-unit money representation.
-Register the client in `AddPaymentClient` and map the gRPC service in Payment Web.
-
-`CreateAsync` snapshots the validated `PlatformFeeOptions` value once. `GetAsync` fails for an unknown
-quote or a payer mismatch; it never substitutes the current fee.
-
-### 4.2 Bind the quote to money movement
-
-Add quote-aware overloads to `IManagerPaymentClient` and `IEscrowClient`, retaining the existing overloads
-during the package expansion:
-
-- `CreateHoldSessionAsync(..., Guid platformFeeQuoteId, ...)` for FlatFee;
-- `CaptureAsync(..., Guid platformFeeQuoteId, ...)` for FlatFee;
-- `DepositAsync(..., Guid platformFeeQuoteId, ...)` for VenueHire;
-- `PayAsync(..., Guid platformFeeQuoteId, ...)` for DoorSplit/Versus.
-
-Add the corresponding optional proto fields so the wire change is backward compatible. The quote-aware
-server paths must:
-
-1. load the quote inside Payment;
-2. require its payer and currency to match the operation;
-3. use the quoted fee rather than re-reading `PlatformFeeOptions`;
-4. persist `PlatformFeeQuoteId` beside the existing fee snapshot on `EscrowEntity` or
-   `SettlementTransactionEntity`;
-5. place the quote ID in Stripe metadata for audit correlation;
-6. fail before a Stripe hold, charge, capture or transfer on an absent, unknown or mismatched quote.
-
-Refund and release arithmetic remains unchanged: cancellation refunds the full charged amount, release
-transfers gross, and the ledger posts the snapshotted fee. Tests must prove the fee quote and the ledger's
-platform-revenue posting agree.
-
-### 4.3 Published-package sequence
-
-This is an additive package expansion, not a breaking identity/signature cut-over: old interfaces and proto
-fields stay usable while the new overloads are introduced. It still has a strict availability sequence:
-
-1. merge the Payment contract/client/server expansion while B2B remains on the old API;
-2. let `publish-packages` publish the new `Concertable.Payment.Client`;
-3. follow the generated `chore/platform-sync-*` PR to green and merged;
-4. update the consumer branch from `origin/main` so B2B compiles against the published version;
-5. only then commit B2B source that calls `IPlatformFeeQuoteClient` or quote-aware payment overloads.
-
-No Payment source project reference and no manually bumped individual package version is allowed. If a
-future cleanup removes the legacy overloads, that separate breaking contraction must use the full
-expand → publish → sync → consumer → contract sequence.
-
-## 5. B2B domain, API and HATEOAS design
-
-### 5.1 Application binds the disclosed quote
-
-Add nullable `Guid? PlatformFeeQuoteId` to `ApplicationEntity`, with domain methods that attach a quote
-once and require it at a priced transition. It is nullable only for already-existing rows and the
-intermediate deployment; every newly committed priced flow must finish with a quote.
-
-- **FlatFee:** `HoldCheckoutStep` creates and attaches the quote before creating the hold. Reopening the
-  checkout reuses the attached quote.
-- **VenueHire:** no application exists when apply checkout opens. `SetupCheckoutStep` creates a quote and
-  returns its ID; `ApplyRequest` echoes that ID; Apply validates it against the artist tenant and stores it
-  on the new prepaid application before saving the payment method.
-- **DoorSplit/Versus:** `VerifyCheckoutStep` creates and attaches the quote before returning the card
-  verification session. Reopening reuses it.
-
-Add optional `PlatformFeeQuoteId` to `ApplyRequest` and `AcceptRequest`. Workflow validation makes it
-required only where the payer used a checkout: VenueHire Apply and FlatFee/DoorSplit/Versus Accept. The
-submitted ID must equal the ID rendered on that checkout. VenueHire's later direct Accept reads the quote
-from the application.
-
-Carry the quote ID through `BookingSettlement` so `CaptureEscrowAcceptStep`,
-`DepositEscrowAcceptStep` and `PayoutFinishStep` call the quote-aware Payment overloads. A missing quote
-is a conflict/precondition failure before booking creation or money movement, never a fallback to the
-current fee.
-
-Re-scaffold the Concert EF model after adding the application field. Do not hand-edit generated
-migrations.
-
-### 5.2 Checkout DTO
-
-Keep the existing `IPaymentAmount` discriminated union for the deal amount/formula and add a separate
-pricing disclosure to `Checkout`:
+The one calculation is owned by Payment:
 
 ```text
-KnownPrice
-  platformFeeQuoteId
+raw fee = fixed amount + (gross minor × rate basis points / 10,000)
+rounded fee = round raw fee to minor units using the documented Payment rounding rule
+actual fee = apply optional minimum, then optional cap
+```
+
+Validation requires cap ≥ minimum and all policy money to use the policy currency. The launch revision
+is `fixed=1000`, `rate=0`, no minimum and no cap. A later 5%-with-£10-floor-and-cap revision is another
+row with `fixed=0`, `rate=500`, `minimum=1000` and the chosen cap. Existing rows never change.
+
+The domain exposes no mutation methods and the repository exposes add/get only. Payment rejects tracked
+updates or deletes of policy rows. Tests prove an existing ID cannot be redefined with different terms.
+
+### 4.3 Selecting and bootstrapping the current revision
+
+Replace the scalar `PlatformFee:Fee` settings with a validated current-policy definition containing the
+stable policy ID and its terms. Payment Web and Workers run an idempotent bootstrap after migration:
+
+1. if the configured ID is absent, insert that policy once;
+2. if the ID exists with identical terms, continue;
+3. if the ID exists with different terms, fail startup;
+4. never update or delete an older row.
+
+A pricing revision is therefore an explicit new ID plus new terms. Changing terms while reusing an ID
+cannot silently rewrite history. During a rolling deployment, an old and new current revision may both
+be issued briefly; either remains chargeable because charging resolves the bound ID, not the local
+process's current setting.
+
+Legacy Payment calls select the current policy internally during the expansion, preserving their current
+behaviour while removing direct fee reads from `ManagerPaymentService` and `EscrowService`.
+
+### 4.4 Public policy client
+
+Add an additive `IPlatformFeePolicyClient` to `Concertable.Payment.Client`:
+
+```csharp
+Task<PlatformFeePolicy> GetCurrentAsync(CancellationToken ct = default);
+Task<PlatformFeePolicy> GetAsync(Guid policyId, CancellationToken ct = default);
+Task<PlatformFeeCalculation> CalculateAsync(
+    Guid policyId,
+    decimal gross,
+    CancellationToken ct = default);
+```
+
+`PlatformFeePolicy` carries the immutable ID, currency, fixed minor amount, rate basis points, optional
+minimum/cap and creation time. `PlatformFeeCalculation` carries the policy ID, gross, actual fee and
+total in integer minor units plus currency. B2B never reimplements rounding, minimum or cap rules.
+
+The protobuf adds a separate `PlatformFeePolicy` service with current/get/calculate RPCs. Unknown IDs,
+invalid gross and currency incompatibility fail closed.
+
+### 4.5 Policy-aware money movement and deployment safety
+
+Add policy-aware overloads to `IManagerPaymentClient` and `IEscrowClient`, but map them to **new protobuf
+RPC methods**, not optional fields on the existing methods:
+
+- policy-aware create-hold for FlatFee;
+- policy-aware capture for FlatFee;
+- policy-aware deposit for VenueHire;
+- policy-aware direct pay for DoorSplit/Versus.
+
+An older Payment server ignores unknown protobuf fields, so adding `platform_fee_policy_id` to existing
+requests would be unsafe: it could charge the live fee after B2B believed the policy was bound. A new RPC
+is intentionally unavailable on an older server and therefore returns `UNIMPLEMENTED` before Stripe is
+called. B2B maps that deployment mismatch to pricing unavailable.
+
+Each policy-aware server path:
+
+1. requires a non-empty policy ID;
+2. reloads the immutable policy from Payment's database;
+3. calculates the fee from the operation gross through the shared Payment calculator;
+4. validates policy/gross currency;
+5. puts `PaymentMetadataKeys.PlatformFeePolicyId` in Stripe metadata;
+6. for capture, requires the supplied ID to match the ID placed on the held PaymentIntent;
+7. performs the Stripe operation for `gross + actual fee`;
+8. persists `PlatformFeePolicyId` and the existing actual-fee snapshot on `EscrowEntity` or
+   `SettlementTransactionEntity`.
+
+Setup/verify sessions do not move money; B2B adds the same policy metadata key through their existing
+metadata dictionaries. Refund and release arithmetic continues to use the persisted actual fee snapshot,
+never a policy recalculation. Ledger postings also use the snapshot.
+
+Legacy RPCs remain during migration. A later removal is a breaking expand/publish/sync/consumer/contract
+sequence and is outside this plan.
+
+### 4.6 Package and runtime sequence
+
+The Payment expansion must land before any B2B source references it:
+
+1. merge Payment policy persistence, client contracts, new RPCs and server implementation while B2B
+   remains on legacy calls;
+2. let `publish-packages` publish the new `Concertable.Payment.Client` and
+   `Concertable.Payment.Contracts`;
+3. own the generated `chore/platform-sync-*` PR until it is green and merged;
+4. deploy/start the expanded Payment server in any environment before enabling the B2B consumer there;
+5. create the B2B consumer branch from the updated `origin/main`, which now pins the published package;
+6. only then compile B2B against `IPlatformFeePolicyClient` and the policy-aware overloads.
+
+There is no Payment source project reference and no manual per-package version bump. The distinct RPCs
+make a mistaken runtime order fail closed, but they do not remove the required deployment gate.
+
+## 5. B2B binding, API and exact review
+
+### 5.1 Bind the policy to the application
+
+Add nullable `Guid? PlatformFeePolicyId` to `ApplicationEntity`. It is nullable only for the package
+expansion/intermediate model and existing rows; every new priced transition requires a value.
+
+- **FlatFee:** `HoldCheckoutStep` obtains the current policy once, attaches and saves its ID before the
+  hold, calculates the exact disclosure through Payment, and uses the new policy-aware hold RPC.
+  Reopening loads the attached policy by ID.
+- **DoorSplit/Versus:** `VerifyCheckoutStep` obtains, attaches and saves the current policy before
+  returning the verification session. Reopening loads the same policy.
+- **VenueHire:** no application exists when apply checkout opens. The checkout returns the current policy
+  ID. `ApplyRequest` echoes it; Apply requires it still to be current, then stores it on the new
+  `PrepaidApplication`. If a revision changed meanwhile, return `pricing_changed` and make the payer
+  review again. This prevents replaying an arbitrary older global policy without creating per-checkout
+  Payment state.
+
+FlatFee/DoorSplit/Versus Accept does not need a caller-supplied policy ID: the server already attached the
+policy when it produced checkout. Bypassing checkout leaves the application unbound and Accept fails
+before booking creation or money movement.
+
+Carry the ID through `BookingSettlement` and the fixed-price accept steps so capture, deposit and direct
+pay use the policy-aware Payment methods. Missing policy is a conflict/precondition failure; there is no
+fallback to Payment's current revision.
+
+Re-scaffold the Concert EF model after adding the field.
+
+### 5.2 Checkout pricing DTO
+
+Keep the existing `IPaymentAmount` union for deal gross/formula and add a separate discriminated pricing
+disclosure to `Checkout`:
+
+```text
+ExactPrice
+  platformFeePolicyId
   grossMinor
   platformFeeMinor
   totalMinor
   currency
 
 DeferredPrice
-  platformFeeQuoteId
-  platformFeeMinor
+  platformFeePolicyId
+  fixedAmountMinor
+  rateBasisPoints
+  minimumAmountMinor?
+  maximumAmountMinor?
   currency
 ```
 
-`KnownPrice` is returned for FlatFee and VenueHire. `DeferredPrice` is returned for DoorSplit and Versus;
-their existing `DoorSharePayment` / `GuaranteedDoorPayment` supplies the formula. Do not encode an unknown
-gross or total as zero or nullable “success”.
+FlatFee and VenueHire return `ExactPrice`. DoorSplit and Versus return `DeferredPrice`; their existing
+`DoorSharePayment` / `GuaranteedDoorPayment` supplies the gross formula. The launch policy renders as a
+fixed £10 addition, while the same DTO can later render percentage/minimum/cap terms.
 
-All browser-facing money is integer minor units plus an ISO currency code. B2B maps the Payment `Money`
-quote and its own gross through Kernel `Money`; there are no new `decimal * 100`, JavaScript float
-addition or hard-coded pound-string sites.
-
-`ApplicationActions.Checkout` and `OpportunityActions.Checkout` keep their current meanings and routes.
-The price payload is returned by those POST checkout actions.
+All browser-facing money is integer minor units plus ISO currency. Do not encode unknown gross/total as
+zero and do not calculate the platform fee in JavaScript.
 
 ### 5.3 Exact DoorSplit/Versus review
 
-Add a HATEOAS action `ConcertActions.QuoteDoorRevenue` beside `DeclareDoorRevenue`, available only under
-the same venue-owner, ended, revenue-share, `Booked`, not-yet-declared conditions. Add:
+Add `ConcertActions.QuoteDoorRevenue` beside `DeclareDoorRevenue`, available under the same venue-owner,
+ended, revenue-share, `Booked`, not-yet-declared conditions:
 
 ```text
 POST /api/Concert/{id}/door-revenue/quote
@@ -248,125 +280,97 @@ response:
   platformFeeMinor
   totalMinor
   currency
-  platformFeeQuoteId
+  platformFeePolicyId
 ```
 
-The quote endpoint is read-only. Refactor the existing declaration guard/context load so quote and declare
-cannot drift on tenant, deal type, end time or lifecycle rules. Resolve the gross with the existing
-`IArtistShareCalculator`; do not add controller branching on `DealType`.
+Refactor the declaration guard/context load so quote and declare share tenant, deal, end-time and lifecycle
+rules. Resolve gross with `IArtistShareCalculator`, then call Payment `CalculateAsync` with the
+application-bound policy. Do not branch on `DealType` in the controller/service.
 
-The final declaration request echoes `PlatformFeeQuoteId` and `ExpectedGrossMinor`. The server recomputes
-from the same external input and current frozen deal/ticket facts and returns `409 Conflict` if the expected
-gross is stale. On success it persists the external takings and the reviewed gross atomically.
-`RevenueShareSettlementAmount` then reads that persisted gross, so the completion worker and invoice issuer
-cannot later recompute a different charge. A second declaration remains unavailable and fails closed.
+The final declaration echoes `PlatformFeePolicyId`, `ExpectedGrossMinor` and
+`ExpectedPlatformFeeMinor`. The server requires the policy ID to match the application, recomputes gross
+and fee, and returns `409 pricing_changed` if either expected value is stale. On success it persists the
+external takings and reviewed gross atomically. `RevenueShareSettlementAmount` reads that persisted gross;
+the completion worker passes the same policy ID and gross to Payment, which persists its own actual fee
+snapshot when charging.
 
 ### 5.4 Error mapping
 
-- Payment unavailable while creating/loading a quote: B2B returns `503 Service Unavailable` with a stable
-  problem code such as `pricing_unavailable`.
-- quote absent from a required application transition: `409 Conflict` / `pricing_quote_required`;
-- unknown quote, payer mismatch or submitted ID mismatch: `409 Conflict` /
-  `pricing_quote_mismatch`;
-- stale DoorSplit/Versus gross: `409 Conflict` / `pricing_changed`, requiring a new review;
-- invalid door input remains `400 Bad Request`;
-- a quote failure during the completion worker follows the existing settlement-failure path and moves no
-  money. It must not retry with current configuration.
+- Payment unavailable or policy RPC unimplemented: `503 pricing_unavailable`;
+- missing application policy: `409 pricing_policy_required`;
+- unknown policy or submitted/bound mismatch: `409 pricing_policy_mismatch`;
+- VenueHire policy no longer current or stale door review: `409 pricing_changed`;
+- invalid door input remains `400`;
+- a worker policy failure follows the existing settlement-failure path and moves no money.
 
 ## 6. Manager-SPA design
 
-Keep B2B pricing types and components in `app/web/b2b/shared`; do not widen customer/shared types with
-manager settlement concepts. `CheckoutSession` and genuinely universal primitives may remain in
-`app/web/shared`. Move the currently B2B-only checkout amount/types out of the universal tier as needed
-rather than adding more leakage.
+Keep B2B pricing types/components in `app/web/b2b/shared`; do not widen customer/shared with manager
+settlement concepts.
 
-### 6.1 Exact surfaces and copy
-
-| App and surface | Change |
+| Surface | Change |
 |---|---|
-| venue manager — `VenueAcceptCheckoutPage` for **FlatFee** | `OrderSummaryCard` shows “Artist gross fee”, “Concertable platform fee”, and “Total charged”; **Confirm & Pay** stays disabled until the quote is loaded and bound |
-| artist manager — `ArtistApplyCheckoutPage` for **VenueHire** | show “Venue gross hire fee”, “Concertable platform fee”, and “Total charged if accepted” before **Authorise & Apply**; submit the rendered quote ID with the application |
-| venue manager — `VenueAcceptCheckoutPage` for **DoorSplit** | show “Artist settlement: N% of total takings”, “Concertable platform fee: £10.00”, and “Total charged after the concert: artist settlement + £10.00” before **Confirm** |
-| venue manager — `VenueAcceptCheckoutPage` for **Versus** | show “Artist settlement: £X guarantee + N% of total takings”, the platform fee, and the formula total; correct `AcceptDealSummary` to the implemented plus formula |
-| venue manager — `DeclareDoorRevenueButton` on owned `MyConcertPage` | replace one-step **Record takings** with input → **Review charge** → exact review → **Confirm takings & charge**; show sales-source totals followed by artist gross, platform fee and total charge |
+| venue `VenueAcceptCheckoutPage`, **FlatFee** | “Artist gross fee”, “Concertable platform fee”, “Total charged”; disable **Confirm & Pay** until exact pricing is loaded |
+| artist `ArtistApplyCheckoutPage`, **VenueHire** | “Venue gross hire fee”, “Concertable platform fee”, “Total charged if accepted”; submit the rendered policy ID |
+| venue `VenueAcceptCheckoutPage`, **DoorSplit** | artist settlement formula, policy formula, and combined charge formula before **Confirm** |
+| venue `VenueAcceptCheckoutPage`, **Versus** | guarantee-plus-percentage settlement formula, policy formula and combined charge formula; remove “whichever is greater” copy |
+| venue `DeclareDoorRevenueButton` | input → **Review charge** → exact review → **Confirm takings & charge** |
 
-Artist-manager screens for FlatFee/DoorSplit/Versus and venue-manager screens for VenueHire do not add a
-charge breakdown because those users are payees, not payers. Their existing deal/contract information
-remains unchanged.
+Payee-only surfaces do not add a payer charge breakdown.
 
-### 6.2 Loading, failure and stale-price behaviour
+Loading and failure rules:
 
-- keep the existing checkout skeleton while both checkout session and pricing quote load;
-- do not mount/enable the Stripe submit path without a valid price disclosure;
-- render an actionable, focused `role="alert"` with **Retry price** when `pricing_unavailable` occurs;
-- preserve the form/signature when retrying;
-- a rendered immutable quote is valid for that application lifetime. Refreshing an attached
-  FlatFee/DoorSplit/Versus checkout returns the same quote; the fee never changes silently in-place;
-- VenueHire submits exactly the quote visible when the artist authorised. A config change after Apply
-  cannot alter the later off-session charge;
-- editing door takings after review invalidates the review and returns to **Review charge**;
-- disable final door confirmation during quote/declaration requests. On `pricing_changed`, retain the
-  entered value, announce that the price changed, and require review again;
-- generic network or API failures never expose an enabled financial action and never display £0 as a fee.
+- keep checkout loading until both session and pricing are valid;
+- never mount/enable Stripe submission without a disclosure;
+- show a focused `role="alert"` with **Retry price** for `pricing_unavailable`;
+- preserve signature/form state on retry;
+- attached application policies never silently refresh;
+- VenueHire `pricing_changed` retains the form but requires a fresh disclosure;
+- editing door takings invalidates the review;
+- generic failures never show £0 or leave a financial action enabled.
 
-### 6.3 Accessibility and formatting
-
-- render each breakdown as a semantic `<dl>` with `dt`/`dd`; headings identify whether the total is due
-  now or after acceptance/concert;
-- announce quote loading, refreshed totals and failures through a polite live region; errors also receive
-  focus;
-- do not use colour alone for status or fee emphasis;
-- use the shared `formatCurrency(minor, { currency, fractionDigits: 2 })` for every displayed amount;
-- retain meaningful button labels and visible focus; the door review remains keyboard operable and returns
-  focus to the changed/error heading when invalidated;
-- add stable test IDs to gross, platform-fee and total rows, but keep accessible names as the primary
-  Reqnroll selectors where practical.
+Render breakdowns as semantic `<dl>` elements, announce loading/refreshed totals/errors, preserve keyboard
+focus, and use the shared `formatCurrency` for minor-unit amounts.
 
 ## 7. Tests and verification
 
-### Payment unit/integration coverage
+### Payment
 
-- quote creation snapshots the configured £10 as GBP `Money`;
-- `GetAsync` returns the immutable value after the configured option changes;
-- unknown quote and payer mismatch fail;
-- hold, capture, deposit and direct pay use the quote rather than live options;
-- charged total, payee transfer/release, persisted quote ID, persisted fee and ledger posting agree;
-- no Stripe operation occurs for a missing/mismatched quote;
-- full cancellation refund still includes the fee;
-- gRPC/client mappings preserve quote ID, minor units and currency.
+- bootstrap inserts one configured revision, is idempotent, and rejects same-ID/different-terms;
+- policy rows cannot be updated or deleted;
+- current/get return the immutable terms;
+- calculation covers fixed-only plus percentage/minimum/cap order, rounding and validation;
+- launch policy calculates £10 for different gross amounts;
+- policy-aware hold/capture/deposit/pay reload by ID and never read the current revision for the fee;
+- capture rejects a policy that differs from hold metadata;
+- unknown/missing policy and currency mismatch perform no Stripe call;
+- escrow/settlement policy ID, actual fee, charged total, payee amount and ledger posting agree;
+- refund/release use the stored snapshot;
+- client/protobuf mappings preserve IDs, minor units, basis points, optional bounds and currency;
+- legacy methods remain functional during expansion.
 
-### B2B Concert unit/integration coverage
+### B2B Concert
 
-- `HoldCheckoutStep`, `SetupCheckoutStep` and `VerifyCheckoutStep` return the correct known/deferred
-  disclosure and bind/reuse quotes as designed;
-- VenueHire Apply and all priced Accept paths reject absent or mismatched quote IDs before persistence;
-- capture, deposit and `PayoutFinishStep` pass the application quote ID;
-- application/opportunity checkout HATEOAS remains contract-type correct;
-- `QuoteDoorRevenue` and `DeclareDoorRevenue` share authorization/lifecycle gates;
-- DoorSplit uses percentage of combined Concertable plus external takings;
-- Versus uses guarantee **plus** percentage;
-- stale expected gross returns 409 and does not mutate; successful declaration persists the reviewed gross;
-- Payment unavailability maps to 503 and leaves applications/concerts unchanged.
+- FlatFee and deferred checkouts attach once and reuse the application policy;
+- VenueHire Apply binds only the policy just confirmed as current;
+- priced transitions reject a missing policy before persistence/money movement;
+- capture, deposit and payout pass the bound ID;
+- exact DTOs use Payment calculations; deferred DTOs preserve policy terms;
+- quote/declare share authorization and lifecycle gates;
+- DoorSplit and Versus compute their existing gross formulas correctly;
+- stale gross, fee or policy returns 409 without mutation;
+- successful declaration persists reviewed gross;
+- Payment unavailable/unimplemented maps to 503 and leaves domain state unchanged.
 
-Extend the four existing contract integration classes and `ConcertDoorRevenueApiTests`; update the
-integration fixture's Payment mocks with `IPlatformFeeQuoteClient` and quote-aware settlement calls.
+### Frontend/E2E examples
 
-### Frontend and E2E coverage
+- FlatFee: £500 gross + £10 = £510 before venue confirmation;
+- VenueHire: £300 gross + £10 = £310 before artist authorisation;
+- DoorSplit: 70% formula + £10 at accept; £300 takings → £210 + £10 = £220 at review;
+- Versus: £100 + 70%, never “whichever is greater”; £20 takings → £114 + £10 = £124;
+- failure/stale-review paths keep financial actions unavailable.
 
-There is no frontend unit-test runner in these workspaces; do not introduce one solely for this feature.
-The TypeScript/build gates cover component/type integration and the existing Reqnroll UI suite covers the
-rendered payer journeys:
-
-- FlatFee: £500.00 gross + £10.00 fee = £510.00 before venue confirmation;
-- VenueHire: £300.00 gross + £10.00 fee = £310.00 before artist authorisation;
-- DoorSplit: acceptance shows the 70% formula plus £10; the current £300.00 takings example reviews
-  £210.00 gross + £10.00 = £220.00 before declaration;
-- Versus: acceptance says £100 + 70%, never “whichever is greater”; the current £20.00 takings example
-  reviews £114.00 gross + £10.00 = £124.00;
-- quote failure/stale-review coverage proves the financial button remains unavailable until a valid price
-  is reviewed.
-
-Local gates for behaviour phases:
+Local behaviour-phase gates:
 
 ```powershell
 dotnet build api/Concertable.slnx
@@ -381,62 +385,56 @@ npm run build:artist
 npm run build:business
 ```
 
-Re-scaffold and verify the affected Payment/Concert migration models in the phase that changes each model.
-
-Pricing transparency changes payer-visible payment behaviour, so Phases 2 and 3 do **not** use a skip-E2E
-trailer. Per `plans/AGENTS.md`, do not duplicate the full API/UI E2E run locally before a PR: the merge
-queue is the E2E gate. If its API or UI E2E fails, reproduce once through the matching E2E debug skill,
-fix the cause, and let the queue rerun it.
+Run `api/initial-migrations.ps1` in each model-changing phase. Phase 1 has no consumer behaviour and uses
+`Skip-E2E: true`. Phases 2 and 3 change payer-visible payment behaviour and do not use that trailer.
+Per `plans/AGENTS.md`, the merge queue is the E2E gate; run local E2E only to diagnose a queue failure
+through the matching E2E debug skill.
 
 ## 8. Independently shippable phases
 
-### Phase 1 — Payment-owned immutable fee quote capability
+### Phase 1 — Payment immutable policy expansion
 
-1. Add `PlatformFeeQuoteEntity`, repository/configuration, migration and model re-scaffold.
-2. Add quote application service, gRPC service/messages, `IPlatformFeeQuoteClient`, client implementation,
-   DI registration and routing.
-3. Add quote-aware ManagerPayment/Escrow overloads and proto fields while retaining legacy overloads.
-4. Persist/audit quote IDs on escrow and settlement transactions and cover the money/ledger invariants.
-5. Build the solution and run Payment unit/integration tests.
-6. Commit with `Skip-E2E: true` because no consumer or user behaviour changes yet.
-7. **Hard stop:** merge/publish this package expansion and follow platform-sync to green before Phase 2
-   references the new client.
+1. Add policy entity/configuration/repository, immutable-write guard, current-policy options/bootstrap and
+   the shared calculator; migrate legacy fee reads to the current policy.
+2. Add policy current/get/calculate gRPC plus `IPlatformFeePolicyClient`.
+3. Add distinct policy-aware hold/capture/deposit/pay RPCs and client overloads.
+4. Persist policy IDs beside actual fee snapshots and add Stripe metadata/hold-match validation.
+5. Re-scaffold Payment migrations; build and run Payment unit/integration tests.
+6. Commit with `Skip-E2E: true`.
+7. **Hard stop:** merge/publish, follow platform-sync to green, and ensure the expanded Payment runtime is
+   available before any B2B consumer work.
 
-This phase is green and deployable with existing B2B consumers untouched.
+### Phase 2 — Fixed-price binding and disclosure
 
-### Phase 2 — Fixed-price disclosure and quote binding
+Start on a fresh consumer branch from updated `origin/main`.
 
-Start only after the new Payment package pin is on `origin/main`.
+1. Add `ApplicationEntity.PlatformFeePolicyId`, exact/deferred pricing DTOs and Concert migration.
+2. Bind FlatFee hold/capture and VenueHire setup/apply/deposit.
+3. Implement FlatFee/VenueHire breakdowns and fail-closed UI behaviour.
+4. Add Payment/B2B unit/integration coverage and FlatFee/VenueHire Reqnroll assertions.
+5. Run the local gates; leave E2E to the merge queue.
+6. **Hard stop:** commit the independently usable fixed-price slice and hand off Phase 3.
 
-1. Add `ApplicationEntity.PlatformFeeQuoteId`, request/checkout DTOs, known-price mapping and migration.
-2. Bind FlatFee hold/capture and VenueHire setup/apply/deposit to the displayed quote.
-3. Implement the venue FlatFee and artist VenueHire breakdowns, fail-closed loading/retry and currency/a11y
-   component work in the B2B frontend layer.
-4. Add Payment/B2B unit and integration coverage plus FlatFee/VenueHire Reqnroll assertions.
-5. Run all local gates in §7; leave E2E to the merge queue.
-6. **Hard stop:** commit the independently usable fixed-price transparency slice and hand off Phase 3.
+### Phase 3 — Deferred-price review and close-out
 
-### Phase 3 — Deferred-price disclosure, exact review and close-out
-
-1. Bind DoorSplit/Versus accept checkout and later direct payout to the immutable quote.
-2. Add the door-price quote endpoint/action, shared declaration guards, stale-gross check and persisted
-   reviewed gross.
-3. Implement formula disclosure and the two-step exact charge review on the venue manager SPA.
-4. Correct Versus copy to guarantee plus percentage.
-5. Add DoorSplit/Versus unit, integration and Reqnroll assertions; run all local gates and leave full E2E
-   to the merge queue.
-6. Update `LAUNCH_PLAN.md` and `LAUNCH_CHECKLIST.md` to mark B2B pricing transparency complete.
-7. Delete this completed plan in the same verified implementation commit.
-8. **Hard stop:** commit and provide the final PR handoff; do not begin percentage pricing or customer
-   marketplace work.
+1. Bind DoorSplit/Versus verify checkout and direct payout.
+2. Add door-price review, shared declaration guards, stale-review checks and persisted reviewed gross.
+3. Implement deferred policy formula disclosure and exact two-step door review.
+4. Correct Versus copy.
+5. Add DoorSplit/Versus unit, integration and Reqnroll coverage; run local gates.
+6. Update `LAUNCH_PLAN.md` and `LAUNCH_CHECKLIST.md` to mark pricing transparency complete.
+7. Delete this plan in the final verified implementation commit.
+8. **Hard stop:** final PR handoff; do not begin marketplace or activate a new pricing revision.
 
 ## 9. Completion criteria
 
-- every B2B payer sees gross, £10 platform fee and exact/formula total before the real commitment;
-- the quote shown is provably the fee Payment uses for the later hold, escrow or direct charge;
-- config changes cannot alter an already disclosed application fee;
-- exact deferred gross is reviewed and persisted before off-session settlement;
-- no unavailable/missing/stale price can fall through to a financial action;
-- all four contract tests, all four frontend builds and merge-queue E2E are green;
-- launch trackers describe flat £10 launch pricing and percentage/customer pricing only as deferred work;
+- every B2B payer sees gross/formula, the bound policy fee/formula and total before commitment;
+- one Payment policy row exists per pricing revision, never per application;
+- B2B persists the policy ID it disclosed and Payment reloads that exact immutable row when charging;
+- escrow/settlement and Stripe metadata retain the policy ID, while accounting uses the actual fee snapshot;
+- config revisions cannot alter an application already bound to an older policy;
+- unavailable, missing or stale pricing cannot fall through to a financial action;
+- the flat launch policy and percentage/minimum/cap model use the same Payment calculation path;
+- affected builds/tests and merge-queue E2E are green;
+- launch trackers describe immutable policy versions rather than per-application quotes;
 - this plan is deleted with the final verified phase.

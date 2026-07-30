@@ -24,7 +24,7 @@
 - [ ] 🟡 **`holdsMusicLicence` attestation** on `Tenant.Compliance` (~0.5 day; the venue's responsibility, we just record it).
 - [ ] 🟡 **Finish Swim-lane B** — membership/invitation endpoints + auth sweep + messaging group-inbox (USER_MODEL_PLAN Phases 6-8). **Phase 6 shipped** (`Feature/TenantInvitationsFrontend`): invitation endpoints + last-Owner invariants + provisioning invitation-first branch + member-management UI + tenant switcher + UI E2E. Phases 7-8 (auth sweep + messaging group-inbox) remain.
 - [x] ✅ **Per-contract-type VAT calculation** — shipped (`Feature/VatAndSelfBilledInvoicing`): inclusive-gross decomposition branching on supply direction + supplier VAT-registration status, in the Tenant tax area, consumed by Concert via `ITenantModule` (items 1, 3).
-- [ ] 🟡 **B2B pricing transparency** — Payment already charges a real £10 flat fee; payer-facing disclosure is not yet bound to that authoritative price. [PLATFORM_COMMISSION.md](PLATFORM_COMMISSION.md) plans immutable Payment fee quotes plus gross/fee/total breakdowns for FlatFee, VenueHire, DoorSplit and Versus.
+- [ ] 🟡 **B2B pricing transparency** — Payment already charges a real £10 flat fee; payer-facing disclosure is not yet bound to that authoritative price. [PLATFORM_COMMISSION.md](PLATFORM_COMMISSION.md) plans append-only Payment policy versions plus gross/fee/total breakdowns for FlatFee, VenueHire, DoorSplit and Versus.
 - [ ] 🔴 **Production deployment + config/secrets** — the app has **no** deployment path, config store, or secret store (all local Aspire + emulators; secrets committed to source, incl. a plaintext Azure SQL password). Surfaced 2026-07-17. Hard launch gate. Plan: [../CONFIG_AND_DEPLOYMENT.md](../CONFIG_AND_DEPLOYMENT.md).
 
 **Verify before trusting — competitor table-stakes, not confirmed in code:** reviews/reputation end-to-end · calendar sync (Google/Apple/Outlook) · financial/settlement CSV export.
@@ -100,7 +100,7 @@ Dependencies that constrain the order:
 
 ```
 Flat £10 revenue-model decision (Month 1)
-    └─→ Payment fee-quote package → platform sync → B2B pricing transparency (Month 3)
+    └─→ Payment fee-policy package → platform sync → B2B pricing transparency (Month 3)
     └─→ Solicitor T&Cs drafting (Month 1-4)
             └─→ Privacy + T&Cs page routes (Month 4)
             └─→ Cookie banner final text (Month 4)
@@ -138,7 +138,7 @@ Stripe production approval (~2-4 weeks elapsed)
 | ✅ Self-billed VAT invoice generation per settlement (sequential numbering, HMRC fields, PDF) — item 4 · self-billing *agreement* + renewal still outstanding | 2-3 days | VAT calculation, agreement PDF plumbing | done |
 | Cookie consent banner on 3 SPAs (scaffolding) | 1-2 days | – (scaffolding can land before solicitor text) | Month 2 |
 | Cookie banner text + privacy policy text from solicitor → wired into banner | 0.5 days | Solicitor draft (Month 4) | Month 4 |
-| Pricing transparency at payer commitment (fixed checkout + deferred settlement review) | 3 phases | Payment fee-quote package + platform sync | Month 3 |
+| Pricing transparency at payer commitment (fixed checkout + deferred settlement review) | 3 phases | Payment fee-policy package + platform sync | Month 3 |
 | Privacy + T&Cs page routes (footer of every page) | 1 day | Solicitor draft | Month 4 |
 | Venue legal details on emails (booking confirmation, invoices) | 1 day | Phase 5 (setup UI captures legal name) | Month 4 |
 | Refund / cancellation matrix codification in `Cancelled` workflow | 3-5 days | Cancellation policy text from solicitor | Month 5 |

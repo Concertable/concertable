@@ -124,7 +124,7 @@ Codebase audit confirmed: connected accounts created with `Type = "express"` in 
 - [ ] `OnBehalfOf` escrow holds released within **short windows** (target: ≤7 days post-event). Funds sitting on platform balance for weeks invites FCA scrutiny.
 - [x] Platform-fee money movement implemented in test mode: Payment charges gross + £10, transfers/releases gross, and the ledger records the retained £10. This does not use Stripe's Application Fee primitive.
 - [ ] B2B payer surfaces disclose gross, £10 platform fee and total before commitment for FlatFee, VenueHire, DoorSplit and Versus.
-- [ ] Production `PlatformFee:Fee` is explicitly set to £10 and fail-closed startup validation is confirmed in the live environment.
+- [ ] Production's current platform-fee policy revision is explicitly configured as flat £10, bootstrapped immutably, and fail-closed startup validation is confirmed in the live environment.
 - [ ] Production Stripe account activated (Stripe reviews business; takes a few days).
 - [ ] Webhooks live + endpoint health-checked.
 - [ ] Test mode → live mode migration plan documented.
