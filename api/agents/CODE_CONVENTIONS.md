@@ -215,38 +215,20 @@ don't add new ones.
 
 ## Typed operation Results
 
-Use `CSharpFunctionalExtensions.Result<TValue, TError>` when a command or use case can be refused
-during normal operation and its caller can act on the refusal. Use `UnitResult<TError>` when success
-has no value. Cancellation, dependency unavailability, database/serialization failures, programming
-defects, and violated internal invariants remain exceptions.
+Use `CSharpFunctionalExtensions.Result<TValue, TError>` for expected, caller-actionable command
+refusals and `UnitResult<TError>` when success has no value. Faults, cancellation, and violated
+invariants remain exceptions; command Results never have nullable success payloads.
 
-`TError` is an operation-owned Dunet union named `XError`. The declaring project alone references
-Dunet; shared Kernel contains only `IError`, `ErrorDescriptor`, `ValidationErrorDescriptor`, and
-`ErrorKind`. A union implements `IError` and uses Dunet's exhaustive generated `Match` to produce its
-descriptor. Ordinary cases return `ErrorDescriptor`; only a structured validation case returns
-`ValidationErrorDescriptor`.
+`TError` is an operation-owned Dunet union named `XError` that implements `IError`. Business unions
+stay with their operation; shared Kernel owns only `IError`, its descriptors, and `ErrorKind`.
 
-Keep a typed Result intact until a terminal adapter:
+Compose Results with `Bind`, `Map`, and `MapError` until a terminal adapter. Never turn exceptions
+into failed Results, unwrap failures into HTTP exceptions, or carry Results/unions across transport
+or persistence boundaries.
 
-- intermediate layers compose with `Bind`, `Map`, and `MapError`;
-- they never unwrap a failure into an HTTP exception;
-- they never catch `Exception` to manufacture a failed Result;
-- `OperationCanceledException` is never converted to an error value;
-- Results and Dunet unions do not cross HTTP, protobuf, integration-event, or persistence boundaries.
-- command Results never have nullable success payloads; use an error case, `UnitResult<TError>`, or
-  an explicit success union. Nullable values are for queries where absence is ordinary data.
-
-Controllers use the adapters in `Concertable.Shared.Api.Results`. `ToActionResult` owns the CFE
-success/failure `Match`; `ToOkActionResult`, `ToCreatedAtActionResult`, and
-`ToNoContentActionResult` are the common success policies. `IError.ToProblemActionResult` owns the
-single semantic `ErrorKind` to HTTP mapping, and the custom action result obtains request context
-only when MVC executes it. Controllers do not pass themselves into adapters or switch on operation
-cases or status codes.
-
-FluentResults remains temporary and private to aggregate policy validators while those validators
-benefit from collecting multiple failures. Do not import FluentResults and
-CSharpFunctionalExtensions in the same file. Map the aggregate once into the owning operation's
-validation case.
+Controllers terminate through `Concertable.Shared.Api.Results`. FluentResults remains only as a
+temporary private aggregate-validation detail and is never imported alongside
+CSharpFunctionalExtensions.
 
 ## DTO naming — `Response` is HTTP-only; typed `Result` is the service wrapper; C# DTOs carry no suffix
 
