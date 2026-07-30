@@ -2,67 +2,41 @@
 
 ## Context
 
-`Concertable.Shared.Email` sent SMTP **synchronously inline** (`EmailSender`), so every send blocked its
-caller and a transient failure lost the email. Worst case: Customer's ticket receipt was swallowed by a
-`try/catch` *after* payment + tickets committed, so a buyer could silently never get their tickets.
+Email delivery must be staged in the producer's transactional outbox so callers return without
+waiting for SMTP and delivery retries instead of being lost. The shared email infrastructure is a
+published package; Auth, B2B, and Customer consume the feed version rather than sibling source.
 
-Fix: model "send this email" as an `IIntegrationCommand` delivered through the existing transactional
-outbox (`OutboxBus` → `OutboxDispatcher` → ASB receiver, with retry + dead-lettering). Callers return
-immediately; the send commits atomically with the business change and is retried, not lost.
+PR #162 published the phase-1 commands, handlers, and `IEmailTransport` split while keeping
+`IEmailSender` synchronous for compatibility.
 
-**This is a boundary-blocked, multi-merge refactor** (`plans/CLAUDE.md` → "Boundary-blocked refactors").
-Auth/B2B/Customer compile against the **published** `Concertable.Shared.Email` package pinned by
-`ConcertablePlatformVersion`, not the sibling source — so the new public types must reach the feed
-before consumers can adopt them. Hence phase 1 (expand the package) and phase 2 (migrate consumers)
-cannot land in one PR.
+PR #172 originally tried to publish `OutboxEmailSender`, flip `AddSharedEmail`, and migrate Auth in
+one merge. Merge-queue CI #950 exposed the invalid package boundary: Auth still ran the phase-1
+package, so its synchronous fake verification callback executed before the new token was saved.
+The callback could not find the token, no verification command was staged, and signup remained
+unverified.
 
-## Phase 1 — expand the shared package ✅ DONE (PR #162, branch `Feature/AsyncEmailOutbox`)
+## Phase 2A — publish the opt-in and compatible consumer migrations
 
-Additive, no runtime behaviour change. Shipped:
+- Keep `AddSharedEmail` mapping `IEmailSender` to the synchronous transport.
+- Publish `OutboxEmailSender` behind the additive `UseOutboxEmailSender` registration.
+- Keep the Customer ticket command, B2B transport migrations, topology, and outbox unit-of-work
+  changes that compile and run against the phase-1 package.
+- Keep Auth synchronous until the opt-in exists on the feed.
 
-- `IEmailTransport` (actual SMTP/fake send) split from business-facing `IEmailSender`;
-  `EmailSender`/`FakeEmailSender` → `SmtpEmailTransport`/`FakeEmailTransport`.
-- `SendEmailCommand` / `SendVerificationEmailCommand` (`IIntegrationCommand` + `[MessageType]`) and their
-  handlers, delivering via `IEmailTransport`.
-- `AddSharedEmail` registers the handlers and **transitionally keeps `IEmailSender` pointing at the
-  synchronous transport** (both transports implement `IEmailSender` too), so unmigrated callers are
-  unchanged. `OutboxEmailSender` is intentionally **not** in this PR — it lands in phase 2 with its
-  registration + call sites.
-- `Concertable.Messaging.AzureServiceBus` `QueueNameFor` now **service-scopes** the queue
-  (`command-<ServiceName>-<type>`), because a global command queue let Auth + B2B compete on
-  `SendEmailCommand`. `PaymentTopology` declares old **and** new webhook queue names to bridge the
-  version bump.
+Gate:
 
-Gate: `dotnet build api/Concertable.slnx` = 0 errors; Messaging unit tests 48/48. No migrations (every
-context already maps `OutboxMessageEntity`).
+- `dotnet build api/Concertable.slnx` with zero errors.
+- Affected integration tests green.
+- Artist and venue signup UI scenarios green in merge-queue-equivalent local verification.
 
-## Phase 2 — migrate consumers 🔴 OUTSTANDING (blocked until PR #162 merges + its platform-sync PR is green)
+## Phase 2B — migrate Auth after publish and platform sync
 
-The new package version must be on the feed and `ConcertablePlatformVersion` bumped first. Then, in one
-branch:
+Blocked until phase 2A merges, its packages publish, and the platform-sync PR is green.
 
-- **`AddSharedEmail`**: flip `IEmailSender` → `OutboxEmailSender` (the producer that stages
-  `bus.SendAsync(...)`); stop registering the transports as `IEmailSender`. Re-add `OutboxEmailSender`.
-- **Auth** (`AuthService.SendEmailVerificationAsync`, `SendPasswordResetAsync`): inject
-  `IDbContextAccessor`, set `contextAccessor.Context = context`, enqueue before the existing
-  `SaveChangesAsync` (WebhookService pattern). Register both commands in `Program.cs`
-  (`reg.HandleCommand<…>()`).
-- **Customer tickets** (`TicketService.CompleteAsync`): new `SendTicketEmailCommand(email, ticketIds)` +
-  handler (renders PDFs via `ITicketPdfService`, sends via `IEmailTransport`); stage it in the ticket
-  save; **delete the `try/catch` swallow**. Register `HandleCommand<SendTicketEmailCommand>` in
-  Customer.Web. Remove `ITicketEmailSender`/`TicketEmailSender` + the `TicketEmailFailed` log method.
-- **B2B Messenger**: switch to `IEmailTransport` (stays synchronous — interim). Log tech debt: its real
-  transactional anchor needs the concert-lifecycle transition to raise a domain event first. Register
-  the mock as `IEmailTransport` in the B2B integration fixture (+ `IMockEmailSender : IEmailTransport`).
-- **ASB topology**: `AddAuthTopology` (new, in `Concertable.AppHost.Shared`) + email command queues in
-  `B2BTopology`/`CustomerTopology`; wire `.AddAuthTopology()` into all AppHosts that run Auth; scope
-  Payment's queue name to only the new value once repinned.
+- Call `UseOutboxEmailSender` in Auth after `AddSharedEmail`.
+- Restore Auth's outbox unit-of-work around verification and password-reset staging.
+- Add an explicit UI E2E step that polls Auth token minting until background verification completes,
+  then performs the existing single UI sign-in.
+- Run Auth integration coverage and the full UI E2E suite.
 
-All of phase-2's code was written and verified against the local source, then reverted out of PR #162 —
-it re-applies cleanly against the new package version. `git log`/this session is the reference.
-
-Gate: build + the Auth / Customer.Ticket / B2B.Concert integration suites (the existing
-`EmailSender.Sent` assertions must stay green). E2E: registration/verification + ticket-purchase now
-settle async — let the merge queue run it; watch the verification poll windows.
-
-## Delete this plan when phase 2 lands and the codebase is back in sync (not before — `plans/CLAUDE.md` §8).
+Delete this plan in the verified phase-2B completion commit.
