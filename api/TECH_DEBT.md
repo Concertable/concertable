@@ -125,10 +125,3 @@ e.g. replace the sweep with a single scheduled job that asks "for every open rea
 `mergeQueueEntry` state consistent with recent `merge_group` activity" as one designed check rather than
 accreting a new `if` branch per incident.
 
----
-
-### Payment and Search lack a design-time `DbContext` factory, so `initial-migrations.ps1` can't scaffold them without an env shim
-
-`B2B`, `Customer`, `Auth`, and `Messaging` each ship an `IDesignTimeDbContextFactory<T>`, so `dotnet ef` builds their `DbContext` directly at design time and never boots the app host. `Payment` and `Search` have none — EF falls back to executing their `*.Web` `Program.cs`, which builds the full host and now fail-fasts on the required `ServiceBus:ServiceName` config (absent at design time, injected by Aspire at runtime). The fail-fast is correct (it replaced a silent `= ""` mask — commit `289eddba`); the gap is that Payment/Search were never given the factory their peers have, so scaffolding them requires manually setting `$env:ServiceBus__ServiceName` first. `ServiceName` doesn't affect DB schema, so it's purely a shim to get the host to build. Pre-existing on `main`, surfaced by the fail-fast sweep; not introduced by the async-email-outbox work.
-
-**Resolves when:** `Payment` and `Search` each get an `IDesignTimeDbContextFactory` (mirroring `B2BDesignTimeDbContextFactory` / `CustomerDesignTimeDbContextFactory`) so `dotnet ef` never boots their host, and the `ServiceBus__ServiceName` shim drops out of any scaffolding workflow.
