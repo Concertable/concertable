@@ -135,15 +135,14 @@ This skill is **Concertable-specific**. It encodes how this repo actually merges
    - If `git branch -d` refuses ("not fully merged") — usually because the merge was a squash/merge-commit
      and the local tip differs — confirm the PR really is `MERGED`, then it's safe to `git branch -D`.
      Don't force-delete an unmerged branch.
-   - **If the branch was developed in a git worktree** (a sibling `../<repo>.worktrees/<Branch>`, per the
-     `worktree` skill), don't hand-roll the branch cleanup — **tear the worktree down once the PR is
-     `MERGED`.** A merged worktree left lingering just drifts against `main` and the platform-sync bot,
-     which is the exact pain the worktree lifecycle exists to avoid. Run the `worktree remove <Branch>`
-     skill: it removes the checkout, prunes, unlinks the `.claude` junctions, and deletes the merged
-     **local** branch in one step. Still delete the **remote** branch separately
-     (`git push origin --delete <Branch>`) if GitHub didn't auto-delete it, and sync `main` in your
-     primary checkout as above. The bare `git branch -d` / `git checkout main` dance in this step is only
-     for the non-worktree case.
+   - **Exceptions — persistent branches/worktrees, NEVER deleted. Skip the cleanup for these, leaving
+     branch and worktree in place:**
+     - `Chore/TechDebt`
+   - **Worktree-developed branches: never auto-remove the worktree or delete its branch.** Worktree
+     teardown is manual (Tommy's worktree PowerShell script), never this skill — auto-teardown is exactly
+     what destroyed an in-progress worktree. Just sync `main` and delete the **remote** branch
+     (`git push origin --delete <Branch>`) if GitHub didn't; leave the local checkout + branch for the
+     script to reclaim.
 
 6. **Watch the platform-sync consequence — a merge that touched a published package triggers it, and
    nothing else watches it.**

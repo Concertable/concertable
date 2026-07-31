@@ -91,6 +91,9 @@
     <Project Path="Concertable.Customer/src/Concertable.Customer.AppHost.Extensions/Concertable.Customer.AppHost.Extensions.csproj" />
     <Project Path="Concertable.Customer/src/Concertable.Customer.Web/Concertable.Customer.Web.csproj" />
   </Folder>
+  <Folder Name="/Customer/DataAccess/">
+    <Project Path="Concertable.Customer/src/Concertable.Customer.DataAccess/Concertable.Customer.DataAccess.Infrastructure/Concertable.Customer.DataAccess.Infrastructure.csproj" />
+  </Folder>
   <Folder Name="/Customer/Seed/">
     <Project Path="Concertable.Customer/src/Seed/Concertable.Customer.Seed.Infrastructure/Concertable.Customer.Seed.Infrastructure.csproj" />
   </Folder>
