@@ -2,6 +2,14 @@
 
 Concertable is a monorepo (a convenience, not the architecture) with a `.NET` microservices backend in `api/` and frontend surfaces in `app/`. The backend services own their runtime; cross-service deps are Contracts-only; standalone AppHosts are canonical. **Read [`api/ARCHITECTURE.md`](./api/ARCHITECTURE.md) before designing anything that crosses a service boundary.** Forgetting this leads to re-monolithing the system.
 
+## Always take the scalable, long-term approach — never the hacky quick fix
+
+**When two solutions present themselves, take the one that is correct for the long term, even when it is harder, larger, or slower to land.** Never reach for the quick hack, the shim, the special-case, or the "just make it work for now" — a workaround that unblocks today becomes the landmine someone trips on later (this very tech-debt backlog is full of exactly those). The proper, scalable fix is the default and the expectation, not a nice-to-have to weigh against effort.
+
+- **Multiple PRs, cross-package cut-overs, publish-first migrations, extra scaffolding — all fine.** Scope is never a reason to pick the worse design. If the right fix needs three PRs or crosses a package boundary, do it in three PRs; say so in one line and proceed. Splitting the *delivery* of the correct solution is encouraged; substituting a *worse* solution to fit one PR is not.
+- **A shortcut is only acceptable when it is genuinely, provably the right call** (e.g. deferring live tax-ID verification that overlaps Stripe) — and then it is *logged* in the owning `TECH_DEBT.md` with the reasoning, never left silent.
+- **If effort/complexity is pushing you toward the lesser option, surface that as a trade-off for Tommy to decide — do not quietly downgrade the solution.** The bias is always toward the durable, maintainable, architecturally-honest answer.
+
 ## Autonomy — act on reversible work, don't ask
 
 Decide and act on reversible work (doc/plan edits, isolated commits, retrying a transient failure), then report — no check-ins. Research: run end-to-end, update the relevant docs, commit in isolation. Pause only when an action is irreversible or contradicts what you find (e.g. unrelated work already staged) — flag it in one line and take the safe path, don't ask permission.
@@ -29,6 +37,8 @@ The staleness is invisible locally: the build is green, because it is green *aga
 ```bash
 git fetch origin --quiet && git checkout -b <Type>/<Name> origin/main
 ```
+
+**Reusing an existing branch/worktree?** Ensure it's synced with `origin/main` before working — never build on a stale tip.
 
 **Don't branch to refactor code from the feature you're already on.** If the code only lives on the current feature branch (not yet in `main`), the refactor is part of that feature — stay on the branch and commit there. A new `Refactor/<Name>` branch is only for code **already merged to `main`**. Branching off an in-flight feature fragments it across two PRs and orphans the original.
 
@@ -139,18 +149,23 @@ This section is **how** to run E2E safely. **Whether** to run it for a given cha
 call — reserved for massive or behaviorally-risky changes, skipped for stage-1/zero-behavior-change
 work — governed by [`plans/AGENTS.md`](./plans/AGENTS.md). Don't run the full suites by reflex.
 
-**That same skip-judgment sets the CI merge-queue tier — via a git trailer, not just local runs.**
-The merge queue runs the full E2E suite on every code change *by default*. When a change is in the
-skip category (behaviour-preserving, small/isolated, well-covered by unit + integration), add the
-trailer **`Skip-E2E: true`** on its own line at the end of a commit message so the queue skips it too —
-otherwise it burns ~25-30 min of E2E that catches nothing. This is the common case for a refactor;
-**default to `Skip-E2E: true` for any zero-behaviour-change PR** — letting the queue run E2E on it is the
-reflex to avoid. `Skip-Tests: true` drops to the compile floor (build + carve only) for a genuinely
-trivial/mechanical change; `Skip-E2E-UI: true` drops only the UI suite; build + carve are never
-skippable. It's a **git trailer** (parsed structurally by git), *not* a `[bracketed]` token — prose that
-merely mentions it can't trip the gate (that was the pr-227 bug). A PR **label** of the same name
-(`skip-e2e` / `skip-e2e-ui` / `skip-tests`) works identically. Full tier table in
-[`.github/workflows/test.yml`](./.github/workflows/test.yml).
+**That same skip-judgment sets the CI merge-queue tier — and the reliable lever is a PR label, not a
+commit trailer.** The merge queue runs the full E2E suite on every code change *by default*. When a
+change is in the skip category (behaviour-preserving, small/isolated, well-covered by unit +
+integration), **add the `skip-e2e` label to the PR** (`gh pr edit <n> --add-label skip-e2e`) so the
+queue skips it too — otherwise it burns ~25-30 min of E2E that catches nothing. This is the common case
+for a refactor; **default to skipping E2E for any zero-behaviour-change PR** — letting the queue run E2E
+on it is the reflex to avoid. The labels: `skip-e2e` drops both E2E suites; `skip-e2e-ui` drops only the
+UI suite; `skip-tests` drops to the compile floor (build + carve only) for a genuinely trivial/mechanical
+change. Build + carve are never skippable.
+
+A same-named **git trailer** (`Skip-E2E: true` on its own line) works too — parsed structurally by git,
+so prose that merely mentions it can't trip the gate (the pr-227 bug) — **but it is fragile in this repo,
+so prefer the label.** Git only parses the *last* paragraph of a commit message as trailers, and every
+commit here carries a mandated `Co-Authored-By:` trailer, so `Skip-E2E: true` must sit in the **same
+contiguous block** as `Co-Authored-By:` — a blank line between them splits the paragraph and git no
+longer sees `Skip-E2E`, so the queue silently runs E2E anyway. The label sidesteps this entirely. Full
+tier table in [`.github/workflows/test.yml`](./.github/workflows/test.yml).
 
 Run E2E only through `./e2e.ps1` via the matching skill (`e2e-ui-regress`, `e2e-ui-debug`,
 `e2e-api-debug`) — the skill's Step 0 Docker pre-flight is mandatory, every run.

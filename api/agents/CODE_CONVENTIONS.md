@@ -1,5 +1,7 @@
 # Code Conventions
 
+Injected collaborators default to interface-typed dependencies and interface-to-implementation DI registrations; use a concrete type only when an interface adds literally no value or actively makes an established pattern worse.
+
 ## Private fields — no underscore prefix
 
 Use `this.field` disambiguation in constructors instead of `_field` prefixes.
@@ -88,6 +90,12 @@ internal sealed class TenantRepository : Repository<TenantEntity>, ITenantReposi
 The injected `DbContext` field is always named `context` (never `dbContext`) — see the
 field-naming rule above. Don't hand-roll a bare `IXRepository` that re-implements CRUD;
 inherit the base.
+
+**Name a repository method for the query, a service method for the intent.** A repository
+finder says literally what it fetches and by what key — `GetByTenantIdAsync`,
+`GetUnreadCountByTenantIdAsync` — so the data access is obvious at the call site. The
+use-case name (`GetInboxAsync`, `GetInboxSummaryAsync`) belongs on the *service* that calls
+it. Don't push an intent name (`GetInbox`) down onto the repository.
 
 ## Table + schema names — the module `Schema.cs` constants
 
@@ -213,14 +221,55 @@ the name — the agent-noun of that one method (`Mapper.Map`, `Resolver.Resolve`
 Known violations awaiting a batched rename sweep are listed in [`../TECH_DEBT.md`](../TECH_DEBT.md);
 don't add new ones.
 
-## DTO naming — `Response` is HTTP-only; `Result<T>` is the service wrapper; C# DTOs carry no suffix
+## Typed operation Results
+
+Use `CSharpFunctionalExtensions.Result<TValue, TError>` for expected, caller-actionable command
+refusals and `UnitResult<TError>` when success has no value. Faults, cancellation, and violated
+invariants remain exceptions; command Results never have nullable success payloads. Query absence
+may remain nullable when absence is ordinary data; a command converts repository absence once into
+its own typed failure when the caller can act on it.
+
+`TError` is an operation-owned Dunet union named `XError` that implements `IError`. Business unions
+stay with their operation; shared Kernel owns only `IError`, its descriptors, and `ErrorKind`.
+Place the union in Application, `*.Contracts`, or a published client contract according to the
+widest caller that must match it. Never move a service-specific union into shared production or
+carry CFE/Dunet types through HTTP DTOs, protobuf, events, or persistence.
+
+Each union owns one exhaustive `Descriptor` match and one descriptor test per case. Codes are
+lowercase dot-separated identifiers with an owning operation/module prefix
+(`ticket.concert_not_found`); published codes are never renamed or reused for a different meaning.
+Messages are explicitly authored caller-safe text, never exception messages, provider detail, SQL,
+stack traces, or values whose disclosure has not been reviewed. Validation descriptors contain at
+least one structured field message.
+
+Compose Results with `Bind`, `Map`, and `MapError` until a terminal adapter. Never turn exceptions
+into failed Results, unwrap failures into HTTP exceptions, or carry Results/unions across transport
+or persistence boundaries.
+
+Controllers terminate through `Concertable.Shared.Api.Results`. Result failures and exceptions both
+write through `IProblemDetailsService`, so registered writers, content negotiation, request
+instance, `traceId`, and `ProblemDetailsOptions.CustomizeProblemDetails` apply consistently.
+
+Infrastructure adapters may normalize a provider-specific unavailability or deadline fault into
+`DependencyUnavailableException` or `DependencyTimeoutException`, preserving the original as the
+inner exception. Shared.Api maps only those explicit types to safe 503/504 ProblemDetails; broad
+`HttpRequestException`, `RpcException`, `TimeoutException`, database exceptions, and unknown faults
+remain safe 500s. Cancellation is never normalized or handled as a response.
+
+At gRPC and worker terminals, match typed failures according to the operation policy and leave
+dependency exceptions on the exception path for retry/dead-letter behavior. FluentResults remains
+only as a temporary private aggregate-validation detail and is never imported alongside
+CSharpFunctionalExtensions.
+
+## DTO naming — `Response` is HTTP-only; typed `Result` is the service wrapper; C# DTOs carry no suffix
 
 The `Response` suffix is reserved for the **HTTP-API wire layer** (`Module.Api/Responses/`, see the
 "DTOs vs Responses" section in [`../AGENTS.md`](../AGENTS.md)). It does **not** belong on the C#
 service/client DTOs that adapters (gRPC clients, service interfaces) pass around:
 
-- **`Result<T>`** (FluentResults) is already the service-call wrapper — the "did it succeed" envelope.
-  Naming the payload `XResponse` on top of `Result<XResponse>` double-encodes "this is a reply".
+- **`Result<TValue, TError>`** is already the service-call wrapper — the "did it succeed" envelope.
+  Naming the payload `XResponse` on top of `Result<XResponse, XError>` double-encodes "this is a
+  reply".
 - **Service and client DTOs carry no suffix.** Name them for the shape, Stripe-aligned where the
   concept mirrors Stripe: `Transfer`, `Refund`, `EscrowDeposit`, `PaymentOutcome` — not
   `TransferResponse`/`PaymentResponse`. Accept the Stripe-SDK name collision (`Stripe.Transfer`,
@@ -231,12 +280,12 @@ service/client DTOs that adapters (gRPC clients, service interfaces) pass around
   server-side `XMappers` map proto `*Response` ⇄ the suffix-free C# DTO.
 
 ```csharp
-// CORRECT — service/client DTO, no suffix; Result<T> is the wrapper
-Task<Result<EscrowDeposit>> DepositAsync(...);
-Task<Result<Transfer?>> ReleaseByBookingIdAsync(...);
+// CORRECT — service/client DTO, no suffix; Result<TValue, TError> is the wrapper
+Task<Result<EscrowDeposit, DepositError>> DepositAsync(...);
+Task<Result<Transfer, ReleaseError>> ReleaseAsync(...);
 
-// WRONG — Response suffix on a non-HTTP DTO, redundant with Result<T>
-Task<Result<EscrowResponse>> DepositAsync(...);
+// WRONG — Response suffix on a non-HTTP DTO, redundant with typed Result
+Task<Result<EscrowResponse, DepositError>> DepositAsync(...);
 ```
 
 ## Mappers — `XMappers` extension methods

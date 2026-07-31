@@ -527,6 +527,11 @@ The cleanup sweep over every remaining `Role` site:
 
 ### Phase 8 — Messaging group inbox *(re-scaffold)*
 
+> **Detail plan:** [`MESSAGING_GROUP_INBOX.md`](./MESSAGING_GROUP_INBOX.md) — current-state findings, the
+> Phase-7-independence answer, the data-model change + migration note, and the API/SPA/E2E phasing. Note it
+> corrects §8 below on one point: **no Conversations integration suite exists to "update" — it must be
+> created.**
+
 The §7 re-model: `MessageEntity` tenant-pair columns + `SentByUserId`; the Bucket-B two-party
 filter (TS Phase 4 mechanics); `ThreadReadStateEntity`; `MessagesRead`/`MessagesSend` gates on the
 `MessageController` endpoints (which carry no guards today); notification routing reads membership +
