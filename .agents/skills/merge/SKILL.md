@@ -35,6 +35,12 @@ This skill is **Concertable-specific**. It encodes how this repo actually merges
 
 ## Steps
 
+0. **Code review first.** Before querying, pushing or merging a PR, confirm the implementation has been
+   reviewed. If not, stop and hand off a ready-to-paste `/code-review` prompt, or `/big-review` when the
+   branch is too large for one review pass, naming the exact worktree and branch. If code commits were
+   added after the review, require `/incremental-review`. Do not proceed while review findings remain
+   open.
+
 1. **Find the PR for the current branch.**
    ```
    git rev-parse --abbrev-ref HEAD                 # current branch (must not be main)
