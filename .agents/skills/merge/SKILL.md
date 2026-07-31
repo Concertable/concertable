@@ -35,6 +35,12 @@ This skill is **Concertable-specific**. It encodes how this repo actually merges
 
 ## Steps
 
+0. **Code review first.** Before querying, pushing or merging a PR, confirm the implementation has been
+   reviewed. If not, stop and hand off a ready-to-paste `/code-review` prompt, or `/big-review` when the
+   branch is too large for one review pass, naming the exact worktree and branch. If code commits were
+   added after the review, require `/incremental-review`. Do not proceed while review findings remain
+   open.
+
 1. **Find the PR for the current branch.**
    ```
    git rev-parse --abbrev-ref HEAD                 # current branch (must not be main)
@@ -82,17 +88,21 @@ This skill is **Concertable-specific**. It encodes how this repo actually merges
      the failing job's log for `build`/`carve-*`). Drive it green, push, and re-run this skill.
 
 4. **Enqueue into the merge queue (the default — this is what runs E2E).**
-   - **First decide the E2E tier via a git trailer** (`AGENTS.md` → "E2E suites"; `plans/AGENTS.md` →
-     "When to run the E2E suites"). The queue runs the **full** E2E suite by default — ~25-30 min it
-     shouldn't spend on a behaviour-preserving change. If this PR is zero-behaviour-change (additive
-     seam, pure refactor, well-covered by unit + integration), it should carry the trailer
-     **`Skip-E2E: true`** (its own line, end of a commit message) on a commit in the PR range
-     (`Skip-Tests: true` drops to the compile floor — build + carve — for a trivial/mechanical change;
-     `Skip-E2E-UI: true` drops only the UI suite; build + carve never skip). It's a real git trailer, not
-     a `[bracketed]` token — prose can't trip it; a same-named PR label (`skip-e2e`) also works. The
-     trailer is read from the *pushed* commits and **can't be retrofitted once queued** (the branch is
-     locked — you'd have to dequeue + repush), so if the tier applies and no commit carries it yet, add it
-     and push **before** enqueueing. When the
+   - **First decide the E2E tier — and set it with the `skip-e2e` PR label, not a commit trailer**
+     (`AGENTS.md` → "E2E suites"; `plans/AGENTS.md` → "When to run the E2E suites"). The queue runs the
+     **full** E2E suite by default — ~25-30 min it shouldn't spend on a behaviour-preserving change. If
+     this PR is zero-behaviour-change (additive seam, pure refactor, well-covered by unit + integration),
+     add the label **before enqueueing**: `gh pr edit <n> --add-label skip-e2e` (`skip-e2e-ui` drops only
+     the UI suite; `skip-tests` drops to the compile floor — build + carve; build + carve never skip).
+     A label is read fresh from the PR in the merge_group, so — unlike the trailer — it can be added or
+     changed after commits are pushed.
+   - **The `Skip-E2E: true` git trailer works too but is fragile here — don't rely on it.** Git parses
+     only the *last* paragraph of a commit message as trailers, and every commit in this repo carries a
+     mandated `Co-Authored-By:` trailer; if a blank line separates `Skip-E2E: true` from `Co-Authored-By:`
+     they become two paragraphs and git no longer sees `Skip-E2E`, so **the queue silently runs E2E
+     anyway** (observed on pr-262: `skipping` on the PR — because E2E never runs on PRs — but the full
+     UI suite ran in the merge_group and flaked). `skipping` on the PR is **not** proof the skip took;
+     only the label (or a correctly-blocked trailer) skips it *in the queue*. Prefer the label. When the
      change genuinely touches a runtime flow E2E covers (payments/settlement/event-propagation/messaging
      routing), let the full suite run — don't skip to save minutes.
    ```

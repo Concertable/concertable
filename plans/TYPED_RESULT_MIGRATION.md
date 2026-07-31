@@ -1,7 +1,6 @@
 # Typed Result migration — explicit expected failures, exceptions for faults
 
-> **Status:** in progress; the Phase 1 producer core foundation is complete and the published-package
-> consumer sync remains outstanding.
+> **Status:** in progress; Phase 1 is complete and Phase 2 is next.
 >
 > **Decision:** adopt `CSharpFunctionalExtensions` for `Result<TValue, TError>` and
 > `UnitResult<TError>`, use Dunet for project-owned closed error unions on .NET 10, and replace
@@ -549,7 +548,7 @@ Progress:
 
 - [x] Producer core foundation: Kernel contracts, CFE adapters, test-only Dunet integration proof,
   shared fault handler, architecture enforcement, unit tests, and conventions.
-- [ ] Publish the Shared packages, then replace the four service-local handlers and run the
+- [x] Publish the Shared packages, then replace the four service-local handlers and run the
   cross-service ProblemDetails smoke gate in the generated platform-sync PR.
 
 Scope:

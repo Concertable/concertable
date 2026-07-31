@@ -1,0 +1,60 @@
+name: Docs instant-merge
+
+# Auto-merges a docs-only PR into main INSTANTLY, bypassing the merge queue and every required check —
+# nothing in the pipeline gates it. Fully automatic: open the PR, it lands. No command, no waiting.
+#
+# WHY a bypass token is required: GitHub will not let any automation skip branch protection with the
+# default GITHUB_TOKEN (github-actions[bot] is not a ruleset bypass actor). This is a GitHub invariant,
+# not a repo choice. So this workflow is DORMANT until the DOCS_MERGE_TOKEN secret exists — a fine-grained
+# PAT from an admin (whose account bypasses the ruleset `always`). With it set, docs PRs merge on their own.
+#
+# SCOPE: "docs-only" = every changed file is inert (markdown anywhere, or under docs/ plans/ reviews/
+# .agents/ .claude/). Anything that could affect a build takes the normal PR + merge-queue path. .github/
+# is deliberately EXCLUDED so workflow changes are never self-merged without review.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  instant-merge:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Classify — is every changed file inert?
+        id: gate
+        run: |
+          base='${{ github.event.pull_request.base.sha }}'
+          head='${{ github.event.pull_request.head.sha }}'
+          files=$(git diff --name-only "$base" "$head")
+          echo "Changed files:"; printf '%s\n' "$files"
+          INERT='(\.md$|^docs/|^plans/|^reviews/|^\.agents/|^\.claude/)'
+          if [ -n "$files" ] && ! printf '%s\n' "$files" | grep -qvE "$INERT"; then
+            echo "docs_only=true" >> "$GITHUB_OUTPUT"
+            echo "-> docs-only; eligible for instant merge."
+          else
+            echo "docs_only=false" >> "$GITHUB_OUTPUT"
+            echo "-> not docs-only; leaving it to the normal PR + queue flow."
+          fi
+
+      - name: Instant admin-merge (skips the queue entirely)
+        if: steps.gate.outputs.docs_only == 'true'
+        env:
+          TOKEN: ${{ secrets.DOCS_MERGE_TOKEN }}
+        run: |
+          if [ -z "$TOKEN" ]; then
+            echo "DOCS_MERGE_TOKEN not set — workflow is dormant. Add the secret to activate instant docs merges."
+            exit 0
+          fi
+          GH_TOKEN="$TOKEN" gh pr merge "${{ github.event.pull_request.number }}" \
+            --admin --merge --repo "${{ github.repository }}"
+          echo "Merged #${{ github.event.pull_request.number }} directly into main — no queue, no checks."

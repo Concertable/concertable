@@ -42,6 +42,13 @@ but the plan stays open until **all** of them land and the codebase is in sync a
 B2B PR and calling the plan done while Kernel still speaks the old shape is the thing to never do.
 Don't `git rm` the plan (Lifecycle 4) until that final synced state is in.
 
+## Use the fewest safe merges
+
+Complete a plan in the fewest PRs its real dependencies allow. Numbered steps, commits and phases do
+not each need their own PR; keep coherent work together. Split only where a merge, package publication,
+platform sync or runtime deployment must finish before the next work can build or run, and group all
+work possible on each side of that gate.
+
 ### Rename definition-of-done: the grep gate (mechanical, not judgement)
 
 A rename is done **only when `grep -rniE "<oldterm>"` over the entire repo returns zero** — every
@@ -172,24 +179,10 @@ state is written:
    directory** (this repo runs many parallel worktrees — the branch name alone doesn't say which tree to
    `cd` into, so give the absolute path: the main checkout, or the sibling `…worktrees/<Branch>`), the
    plan file, the branch/PR, and the exact next step. Keep it to a few lines.
-4. **Hand off a ready-to-paste code-review prompt in the SAME turn whenever you say the work is ready
-   to review** — never "stopping here for your review" with no prompt (that's this section's anti-pattern
-   applied to review instead of resume). **But in a multi-phase plan, "review-ready" is normally the
-   *final* phase — one review over the whole feature — NOT every phase boundary. Intermediate-phase
-   handoffs are resume-only (step 3): hand off just the next-step prompt and do NOT dangle a
-   review-vs-continue fork at each phase.** Only declare review-ready (and hand off the review prompt)
-   at the last phase, or when the user explicitly asks to review sooner — per-increment reviews use
-   `incremental-review` (scoped to `<last-reviewed-SHA>..HEAD`), not repeated `/code-review` runs that
-   re-read the whole branch each time. With the phase committed (step 1) the whole feature is on the
-   branch. **`/code-review` takes no path argument — it infers the repo/branch (`main..HEAD`) from the
-   session's working directory.** So the handoff prompt **must name the checkout to run it in, exactly
-   like the resume prompt does** — a bare `/code-review` silently reviews wherever the reader's session
-   happens to be, and when the branch lives in a *worktree* (a sibling checkout) that's the wrong
-   repo/branch or an empty range. Word it e.g. *"In the worktree at `<path>` (branch `<branch>`), run
-   `/code-review`"* — it reviews the **entire feature** (`main..HEAD`), which is what a review should
-   cover. Only if some work is *deliberately* left uncommitted must the prompt also point the reviewer
-   at the full delta including it (`git diff $(git merge-base main HEAD)` + untracked from
-   `git status --short`) — **never** `git diff HEAD` alone, which omits already-committed earlier phases.
+4. **Before any implementation PR is merged, hand off a ready-to-paste `/code-review` prompt in the
+   same turn, or `/big-review` when the branch is too large for one review pass.** Review once per PR,
+   not once per numbered plan step or commit. The prompt must name the exact worktree path and branch.
+   If code commits are added after review, run `/incremental-review` before merge.
 
    **If — and only if — the work lives in a separate git worktree, the resume prompt's first line
    MUST be the exact directory to `cd` into, before anything else.** A `/clear` (or a brand-new
