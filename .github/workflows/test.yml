@@ -33,8 +33,8 @@ jobs:
     #   Skip-E2E    / skip-e2e    -> run_e2e + run_e2e_ui off  (build+carve, unit+integration still run)
     #   Skip-Tests  / skip-tests  -> run_tests + all E2E off   (build+carve compile floor only — NEVER skippable)
     # Everything still merges through the queue on current main, so an opt-out can never merge something stale.
-    # NOTE: `ci-complete` is the single required check; every job no-ops to SUCCESS (never `skipped`) when it
-    # has nothing to do, so the check suite is success-or-failure only — a skipped check would stall admission.
+    # NOTE: `ci-complete` is the single required check. Jobs with no work are skipped before runner allocation;
+    # `ci-complete` accepts skipped dependencies and reports the required success result.
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -131,6 +131,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     needs: changes
+    if: needs.changes.outputs.run_code == 'true'
     permissions:
       contents: read
       packages: read
@@ -172,6 +173,7 @@ jobs:
     # far too slow for a gate; archive extracts the tracked tree at HEAD instantly (no fetch-depth: 0).
     runs-on: ubuntu-latest
     needs: [build, changes]
+    if: needs.changes.outputs.run_code == 'true'
     permissions:
       contents: read
       packages: read
@@ -224,6 +226,7 @@ jobs:
     # harness layers). The solution lists every package-clean project so each is built directly.
     runs-on: ubuntu-latest
     needs: [build, changes]
+    if: needs.changes.outputs.run_code == 'true'
     permissions:
       contents: read
       packages: read
@@ -292,6 +295,7 @@ jobs:
     # built directly. Search publishes nothing, so its folder carries no MinVer (no MinVerSkip needed).
     runs-on: ubuntu-latest
     needs: [build, changes]
+    if: needs.changes.outputs.run_code == 'true'
     permissions:
       contents: read
       packages: read
@@ -358,6 +362,7 @@ jobs:
     # a new closure project (or a leaf reached only transitively) is picked up automatically, never orphaned.
     runs-on: ubuntu-latest
     needs: [build, changes]
+    if: needs.changes.outputs.run_code == 'true'
     permissions:
       contents: read
       packages: read
@@ -427,6 +432,7 @@ jobs:
     # project (or a leaf reached only transitively) is picked up automatically, never orphaned.
     runs-on: ubuntu-latest
     needs: [build, changes]
+    if: needs.changes.outputs.run_code == 'true'
     permissions:
       contents: read
       packages: read
@@ -487,9 +493,8 @@ jobs:
   unit-tests:
     runs-on: ubuntu-latest
     needs: [build, changes]
-    # Gated by run_tests (off for non-code); build + carve stay on run_code. The job ALWAYS runs and reports
-    # success — it NEVER skips: a skipped check (even a non-required one) can stall GitHub's merge-queue
-    # admission (the inert-PR N10 stall), so when there's nothing to run the steps no-op to green instead.
+    if: needs.changes.outputs.run_tests == 'true'
+    # Gated before matrix expansion so non-code changes allocate no test runners.
     # The real test run is gated to the PR + post-merge push; it no-ops in the merge queue (already ran on
     # the PR) — a green no-op, not a skip.
     permissions:
@@ -547,9 +552,8 @@ jobs:
   integration-tests:
     runs-on: ubuntu-latest
     needs: [build, changes]
-    # Gated by run_tests (off for non-code); build + carve stay on run_code. The job ALWAYS runs and reports
-    # success — it NEVER skips: a skipped check (even a non-required one) can stall GitHub's merge-queue
-    # admission (the inert-PR N10 stall), so when there's nothing to run the steps no-op to green instead.
+    if: needs.changes.outputs.run_tests == 'true'
+    # Gated before matrix expansion so non-code changes allocate no test runners.
     # The real test run is gated to the PR + post-merge push; it no-ops in the merge queue (already ran on
     # the PR) — a green no-op, not a skip.
     permissions:
@@ -606,8 +610,8 @@ jobs:
     # Runs ONLY in the merge queue — genuinely skipped on the PR and the post-merge push (never a no-op run).
     # E2E is the queue's gate; the PR is gated by build + carve + unit + integration. Safe to skip (not
     # no-op) because ci-complete is the SOLE required check and passes on skipped needs, so a skipped E2E job
-    # can't stall queue admission. Opt-outs (Skip-E2E etc.) still no-op the steps within the queue via run_e2e.
-    if: ${{ github.event_name == 'merge_group' }}
+    # can't stall queue admission.
+    if: github.event_name == 'merge_group' && needs.changes.outputs.run_e2e == 'true'
 
     permissions:
       contents: read
@@ -693,7 +697,7 @@ jobs:
     # Merge-queue only (see e2e-api-tests): genuinely skipped on the PR, runs the real UI suite in the queue.
     # BLOCKING lane — excludes @quarantine (Category!=quarantine); the flaky scenario runs in the non-gating
     # e2e-ui-quarantine job.
-    if: ${{ github.event_name == 'merge_group' }}
+    if: github.event_name == 'merge_group' && needs.changes.outputs.run_e2e_ui == 'true'
 
     permissions:
       contents: read
@@ -811,6 +815,7 @@ jobs:
     # quarantined scenario is tracked to be fixed and returned to the blocking lane, not carried forever.
     runs-on: ubuntu-latest
     needs: [build, changes]
+    if: github.event_name == 'pull_request' && needs.changes.outputs.run_e2e_ui == 'true'
 
     permissions:
       contents: read
@@ -910,9 +915,8 @@ jobs:
   ci-complete:
     # THE SINGLE REQUIRED STATUS CHECK (see plans/PIPELINE_REDESIGN.md Phase 1). It aggregates every real
     # CI job into one deterministic pass/fail that is NEVER `skipped`: `if: always()` runs it on every
-    # event, and it passes iff nothing it needs failed or was cancelled. No gating job skips anymore — each
-    # no-ops to success when it has nothing to do — so the whole suite is success-or-failure only, which is
-    # what keeps GitHub's queue admission from stalling on a skipped check. needs EVERY gating job directly
+    # event, and it passes iff nothing it needs failed or was cancelled. Inert jobs skip before allocating
+    # runners; this aggregator turns those skipped dependencies into the required success result. needs EVERY gating job directly
     # (build + all carves + unit + integration + both e2e) so it reflects the full pipeline.
     runs-on: ubuntu-latest
     needs:
