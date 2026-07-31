@@ -17,9 +17,16 @@
 
 Verified against code, not the plan prose. Phase 8 needs only **already-shipped** work:
 
-- **Two-party tenant filter** (the Bucket-B OR-filter mechanics) — shipped in the tenant-scoping work
-  (TS Phase 4). `ArtistReadModel`/`VenueReadModel` already carry `TenantId`
-  (`api/Concertable.B2B/src/Modules/Concert/…/Domain/ReadModels/{Artist,Venue}ReadModel.cs:14`).
+- **Two-party tenant filter** — the committed primitive is `IVenueArtistTenantScoped { VenueTenantId,
+  ArtistTenantId }` + `ApplyVenueArtist` (`IsHost || VenueTenantId == me || ArtistTenantId == me`)
+  declared inside a `VenueArtistTenantDbContext`-derived context (`ConcertDbContext` is the exemplar,
+  filtering Application/Booking/Contract/Invoice). A message is always venue-tenant ↔ artist-tenant, so
+  `MessageEntity` reuses this primitive verbatim — **not** a hand-rolled From/To OR-filter in a
+  repository (`IgnoreQueryFilters` is a compiler-banned API; tenancy is composed, never subtracted).
+  The tenant pair is read from the **`ApplicationEntity`** (itself `IVenueArtistTenantScoped`, so it
+  carries `VenueTenantId`/`ArtistTenantId`) — **not** from the read models: `VenueReadModel` does **not**
+  carry a `TenantId` (only `UserId`); `ArtistReadModel` does. So the earlier "both read models carry
+  TenantId" premise is wrong, and the re-point sources the pair off the application entity instead.
 - **Membership** (`TenantMembershipEntity`) — shipped in USER_MODEL_PLAN Phase 1.
 - **`MessagesRead` / `MessagesSend` permission catalog + `[HasPermission]`** — shipped in Phase 2
   (they are already in `PermissionCatalog` / §1.3 of USER_MODEL_PLAN; the `MessageController` just never
@@ -196,22 +203,40 @@ ends green.
 > org-identity/attribution split and the UI that surfaces it then land together in Phase 2, so the DTO shape
 > and its only consumer change in one shippable step — never a half-changed wire contract between phases.
 
-### Phase 1 — Tenant-owned threads + per-member read + member fan-out *(backend; re-scaffold)*
+### ✅ Phase 1 — Tenant-owned threads + per-member read + member fan-out *(backend; re-scaffold)* — DONE
 
-**Model (`Conversations.Domain` + `Infrastructure/Data`)**
-- `MessageEntity`: drop `FromUserId`/`ToUserId`/`Read`; add `FromTenantId`, `ToTenantId`, `SentByUserId`.
-  `Create(fromTenantId, toTenantId, sentByUserId, content, sentDate, action?)`.
-- New `ThreadReadStateEntity { Id, TenantId, UserId, CounterpartTenantId, LastReadAt }` + configuration
-  (unique `(TenantId, UserId, CounterpartTenantId)`; index `(TenantId, UserId)`).
-- `MessageEntityConfiguration`: indexes on `ToTenantId`, `FromTenantId`; register the new entity in
-  `ConversationsDbContext` + `ConversationsConfigurationProvider`.
+> **Landed.** `MessageEntity` re-keyed to `IVenueArtistTenantScoped` (VenueTenantId/ArtistTenantId +
+> SenderTenantId + SentByUserId), new `ThreadReadStateEntity` read pointer, `ConversationsDbContext`
+> composed on `VenueArtistTenantDbContext` (`ApplyVenueArtist`), `IConversationsModule` + `ApplicationNotifier`
+> re-pointed to the tenant pair (off `ApplicationEntity`), member SignalR + email fan-out via new
+> `ITenantModule.GetMemberUserIdsAsync`, `[HasPermission(MessagesRead)]` on `MessageController`, seeders
+> rewritten to the tenant-pair shape, new `Conversations.UnitTests` + `IntegrationTests`. Verified: full
+> `api/Concertable.slnx` builds 0 errors; unit tests 4/4 green; `./initial-migrations.ps1` re-scaffolded the
+> Conversations `InitialCreate` to the new shape. **Integration + E2E run in the merge queue** (massive/risky
+> → no skip trailer): local integration was blocked by an environment issue only (Docker Desktop down + deep-
+> worktree MAX_PATH on the native SQL DLL), not by code.
+
+**Model (`Conversations.Domain` + `Infrastructure/Data`) — reuse the two-party primitive**
+- `MessageEntity : IVenueArtistTenantScoped`: drop `FromUserId`/`ToUserId`/`Read`; add `VenueTenantId`,
+  `ArtistTenantId` (the thread pair — drives `ApplyVenueArtist`, and *is* the thread identity),
+  `SenderTenantId` (which side authored → direction/attribution; ∈ {venue, artist}), and `SentByUserId`
+  (the authoring member). `Create(venueTenantId, artistTenantId, senderTenantId, sentByUserId, content,
+  sentDate, action?)`. (`Conversations.Domain` gains a `ProjectReference` to
+  `Concertable.B2B.DataAccess.Application` for the marker, mirroring `Concert.Domain`.)
+- New `ThreadReadStateEntity : IVenueArtistTenantScoped { Id, VenueTenantId, ArtistTenantId, UserId,
+  LastReadAt }` + configuration (unique `(VenueTenantId, ArtistTenantId, UserId)`) — keyed on the **same
+  pair** as the message, so "the thread" is one key everywhere.
+- `ConversationsDbContext` is re-based onto **`VenueArtistTenantDbContext`** (ctor gains `ITenantContext`);
+  its `ApplyTenantFilters` declares `ApplyVenueArtist<MessageEntity>(this)` and
+  `ApplyVenueArtist<ThreadReadStateEntity>(this)`. `MessageEntityConfiguration` indexes
+  `VenueTenantId`/`ArtistTenantId`; register the new entity in `ConversationsConfigurationProvider`.
 
 **Repository / service (`Infrastructure`)**
-- Inbox re-scoped to the **active tenant** (`ITenantContext.TenantId`), thread visibility = active tenant ∈
-  {`FromTenantId`, `ToTenantId`} via the TS-Phase-4 two-party OR-filter. Unread derived from the read
-  pointer (`SentDate > LastReadAt` and `SentByUserId != me`), not a boolean. `mark-read` advances the
-  pointer for `(activeTenant, currentUser, counterpartTenant)` rather than flipping message rows —
-  `MarkMessagesReadRequest` gains the counterpart tenant (or becomes "mark thread read").
+- Inbox visibility is now **composed into the context** — `context.Messages` already returns only the
+  active tenant's threads (the `ApplyVenueArtist` filter), so the repository never hand-rolls a tenant
+  `.Where`. Unread derived from the read pointer (`SentDate > LastReadAt` and `SenderTenantId != active
+  tenant`), not a boolean. `mark-read` advances the pointer for `(thread pair, currentUser)` rather than
+  flipping message rows — `MarkMessagesReadRequest` carries the counterpart tenant id (→ thread pair).
 - **Sender identity stays wire-compatible in this phase**: `MessageDto.FromUser` is populated from
   `SentByUserId` (the sending member) exactly as the current mapper does — the org/attribution split is
   Phase 2. (`MessageMappers.ToMessageUser(IUser)` unchanged for now.)
@@ -221,13 +246,19 @@ ends green.
 
 **Cross-module facade + caller (`Contracts` + Concert module)**
 - `IConversationsModule.Send/SendAndNotify` signatures change from `(fromUserId, toUserId, …)` to
-  `(fromTenantId, toTenantId, sentByUserId, …)`. **In-repo cross-module facade, not a published-package
-  contract** — Conversations is a B2B-internal module; no platform-sync gate (contrast the `Payment.Client`
-  boundary rules in `plans/AGENTS.md` "Boundary-blocked refactors").
-- `ApplicationNotifier` / `Messenger` re-pointed: use `venue.TenantId` / `artist.TenantId` (already on the
-  read models) and `currentUser.GetId()` as `sentByUserId`; replace `GetVenueManagerIdAsync` (selects
-  `Venue.UserId`) with a `GetVenueTenantIdAsync` (selects `Venue.TenantId`). Email copy fans to all member
-  addresses (`GetEmailsByIdsAsync` over the member ids).
+  `(venueTenantId, artistTenantId, senderTenantId, sentByUserId, …)`. **In-repo cross-module facade, not a
+  published-package contract** — Conversations is a B2B-internal module (its only production caller is
+  Concert's `Messenger`); no platform-sync gate (contrast the `Payment.Client` boundary rules in
+  `plans/AGENTS.md` "Boundary-blocked refactors").
+- `ApplicationNotifier` / `Messenger` re-pointed: read the tenant pair off the **`ApplicationEntity`**
+  (`VenueTenantId`/`ArtistTenantId` — guaranteed by its `IVenueArtistTenantScoped` marker, so no
+  `VenueReadModel.TenantId` is needed), `ITenantContext.TenantId` as `senderTenantId`, and
+  `currentUser.GetId()` as `sentByUserId`; add an `ApplicationRepository` projection of the pair. Email
+  copy fans to **all recipient-tenant members'** addresses (`GetMemberUserIdsAsync` →
+  `GetEmailsByIdsAsync`), so `EmailCopy` carries a recipient list.
+- **`MessagesSend` has no attachment point in Phase 1** — there is no user-facing send endpoint (messaging
+  is system-generated via `Messenger`), so only `[HasPermission(MessagesRead)]` binds, on the read
+  endpoints. Do not invent a send endpoint.
 
 **Guards + seeders**
 - Apply `[HasPermission(Permissions.MessagesRead)]` to the read endpoints and `[HasPermission(

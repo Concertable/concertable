@@ -58,6 +58,8 @@
     <Project Path="Concertable.B2B/src/Modules/Conversations/Concertable.B2B.Conversations.Contracts/Concertable.B2B.Conversations.Contracts.csproj" />
     <Project Path="Concertable.B2B/src/Modules/Conversations/Concertable.B2B.Conversations.Domain/Concertable.B2B.Conversations.Domain.csproj" />
     <Project Path="Concertable.B2B/src/Modules/Conversations/Concertable.B2B.Conversations.Infrastructure/Concertable.B2B.Conversations.Infrastructure.csproj" />
+    <Project Path="Concertable.B2B/src/Modules/Conversations/Tests/Concertable.B2B.Conversations.IntegrationTests/Concertable.B2B.Conversations.IntegrationTests.csproj" />
+    <Project Path="Concertable.B2B/src/Modules/Conversations/Tests/Concertable.B2B.Conversations.UnitTests/Concertable.B2B.Conversations.UnitTests.csproj" />
   </Folder>
   <Folder Name="/B2B/Modules/Tenant/">
     <Project Path="Concertable.B2B/src/Modules/Tenant/Concertable.B2B.Tenant.Api/Concertable.B2B.Tenant.Api.csproj" />
