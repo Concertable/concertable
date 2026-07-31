@@ -40,19 +40,25 @@ When a venue runs FlatFee accept-checkout (a manual-capture PI ring-fencing the 
 
 **Resolves when:** the org packages are made internal-visible to the org's repos, or fork PRs are given a `read:packages` PAT (or simply aren't accepted).
 
-### Config section names are magic-string literals, not typed constants (one lone outlier)
+### `Cors:AllowedOrigins` / `ExternalServices` config reads are magic-string literals with no shared home
 
-Every `Configure<XSettings>(configuration.GetSection("..."))` across the backend passes the section name as a
-bare string literal — `"Stripe"` (`Payment.Infrastructure`), `"Legal"` (`B2B.Concert`), `"Urls"` (`Kernel`),
-`"BlobStorage"` (`Shared.Blob`), `"TaxCompliance"` (`B2B.Tenant`), plus the `"Cors:AllowedOrigins"` /
-`"ExternalServices"` reads in the host `Program.cs` files. The sole exception is `Concertable.Auth`'s
-`SpaClientSettings.SectionName = "Auth:SpaClients"`, bound via `GetSection(SpaClientSettings.SectionName)` —
-the pattern the rest should follow. A renamed section silently stops binding: the literal and the appsettings
-key drift independently with no compile error.
+Every `Configure<XSettings>(GetSection(...))` binding now goes through a typed `SectionName` const (the
+`SpaClientSettings` pattern), but two magic-string reads of a different shape remain — inline
+`.Get<>()`/`.GetValue<>()`, not settings-class bindings, so `SectionName` doesn't apply directly and they're
+duplicated with no shared owner:
 
-**Resolves when:** a repo-wide sweep gives each settings class a `public const string SectionName` and every
-`Configure<T>(GetSection(...))` binds through it (adopting the `SpaClientSettings` pattern). Done as one
-consistency pass, not piecemeal — a lone typed section next to magic-string neighbours is worse than uniform.
+- `GetSection("Cors:AllowedOrigins").Get<string[]>()` — copy-pasted identically across all four host
+  `Program.cs` files (B2B, Customer, Search, Payment.Web).
+- `GetSection("ExternalServices").GetValue<bool>("UseReal…")` — read in three separate packages
+  (`Payment.Infrastructure` `UseRealStripe`, `Shared.Email.Infrastructure` `UseRealEmail`,
+  `Shared.Blob.Infrastructure` `UseRealBlob`), each reading only its own sub-key.
+
+A renamed section/key silently stops binding, with no compile error and no single place to change.
+
+**Resolves when:** CORS wiring is extracted to one shared `AddDefaultCors(configuration)` extension over a typed
+`CorsSettings.SectionName`, and the `ExternalServices` flags bind through a shared typed options type (home
+referenced by all three packages) instead of per-package literals — so neither section name lives as a
+duplicated literal.
 
 ### Timestamps are `DateTime` (UTC-by-naming-convention), not `DateTimeOffset`
 
