@@ -135,6 +135,15 @@ This skill is **Concertable-specific**. It encodes how this repo actually merges
    - If `git branch -d` refuses ("not fully merged") — usually because the merge was a squash/merge-commit
      and the local tip differs — confirm the PR really is `MERGED`, then it's safe to `git branch -D`.
      Don't force-delete an unmerged branch.
+   - **If the branch was developed in a git worktree** (a sibling `../<repo>.worktrees/<Branch>`, per the
+     `worktree` skill), don't hand-roll the branch cleanup — **tear the worktree down once the PR is
+     `MERGED`.** A merged worktree left lingering just drifts against `main` and the platform-sync bot,
+     which is the exact pain the worktree lifecycle exists to avoid. Run the `worktree remove <Branch>`
+     skill: it removes the checkout, prunes, unlinks the `.claude` junctions, and deletes the merged
+     **local** branch in one step. Still delete the **remote** branch separately
+     (`git push origin --delete <Branch>`) if GitHub didn't auto-delete it, and sync `main` in your
+     primary checkout as above. The bare `git branch -d` / `git checkout main` dance in this step is only
+     for the non-worktree case.
 
 6. **Watch the platform-sync consequence — a merge that touched a published package triggers it, and
    nothing else watches it.**
@@ -175,7 +184,8 @@ This skill is **Concertable-specific**. It encodes how this repo actually merges
 ## Final summary
 
 One short report: the PR that merged (number + merge commit), whether E2E ran (queue) or was skipped
-(`--admin`, and why), that `main` is synced, and that the branch is cleaned up. Then the
+(`--admin`, and why), that `main` is synced, and that the branch — **and its worktree, if the work was
+done in one** — is cleaned up. Then the
 platform-sync outcome: **no sync (nothing published), sync merged green (new version), or sync went
 red and you migrated its consumers** (which files, now green) — never "merged, and left a red sync PR
 behind." If you stopped early (failed check, red E2E in the queue, unpushed work), say exactly what's
