@@ -3,12 +3,12 @@ description: Pick one tech-debt item and take it all the way to a PR, in an isol
 ---
 Start a self-contained tech-debt session in an **isolated worktree** so nothing touches in-flight branches.
 
-1. **Workspace.** If a `Chore/TechDebt` worktree already exists, use it; otherwise spin one up, branching fresh from `origin/main`:
+1. **Workspace.** The branch and worktree are ALWAYS named exactly `Chore/TechDebt` — never a name derived from the item you pick. If a `Chore/TechDebt` worktree already exists, use it; otherwise create it, branching fresh from `origin/main`:
    ```bash
    git fetch origin --quiet
-   git worktree add ../Concertable.worktrees/<Branch> -b <Type>/<Name> origin/main
+   git worktree add ../Concertable.worktrees/Chore/TechDebt -b Chore/TechDebt origin/main
    ```
-   Each item gets its own branch off current `origin/main` — `Refactor/<Name>`, `Fix/<Name>`, or `Chore/<Name>` as fits. (In Claude Code the `worktree` skill does this setup.)
+   The item picked in step 2 never changes the branch name. This worktree is **persistent — do NOT delete it after the PR merges**; reuse it for the next item. This is an explicit exception to the usual post-merge worktree teardown.
 2. **Pick one item.** Survey every `TECH_DEBT.md` in the repo, then choose a **single** item that's high-value and self-contained enough to land cleanly. Say which you picked and why in a couple of lines before diving in.
 3. **Investigate.** Read the surrounding code and understand the real root cause before touching anything. If the item as written is stale or wrong, say so.
 4. **Fix it properly — the rule is absolute:** always the long-term, scalable solution, never the hacky shortcut, even when it's harder or spans **multiple PRs**. Done right beats done fast. If it genuinely needs splitting, say so in one line and start with the first PR on the current branch.
