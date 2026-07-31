@@ -91,6 +91,12 @@ The injected `DbContext` field is always named `context` (never `dbContext`) —
 field-naming rule above. Don't hand-roll a bare `IXRepository` that re-implements CRUD;
 inherit the base.
 
+**Name a repository method for the query, a service method for the intent.** A repository
+finder says literally what it fetches and by what key — `GetByTenantIdAsync`,
+`GetUnreadCountByTenantIdAsync` — so the data access is obvious at the call site. The
+use-case name (`GetInboxAsync`, `GetInboxSummaryAsync`) belongs on the *service* that calls
+it. Don't push an intent name (`GetInbox`) down onto the repository.
+
 ## Table + schema names — the module `Schema.cs` constants
 
 Each persistence module owns a `Schema.cs` (`internal static class Schema`) holding its DB schema name and
