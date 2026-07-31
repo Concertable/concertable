@@ -30,12 +30,7 @@ None of these is a reason to defer a fix you can write now — do the fix and no
 Genuine deferral (`[-]`) is reserved for a real judgment call / tradeoff needing a human decision, or a
 part with a hard blocker named. Default is: fix now.
 
-**Deferring is never dropping — every `[-]` / `[wontfix]` MUST be logged as tech debt in the same stroke.**
-Write the deferred finding into the `TECH_DEBT.md` that owns the area (create one there if absent, per the
-root [`AGENTS.md`](../AGENTS.md) tech-debt rule) — a titled entry with the reason it was deferred and a
-`**Resolves when:**` line stating the decision or condition that clears it. The review file only survives
-until its PR merges; `TECH_DEBT.md` is where a deferred item actually persists. A `[-]` with no
-corresponding tech-debt entry is a silently-dropped finding, which this rule forbids.
+**Deferring is never dropping — every `[-]` / `[wontfix]` MUST get a `TECH_DEBT.md` entry (owning area, with a `Resolves when:` line) in the same stroke.** The review dies at PR merge; tech debt is where the item persists. A `[-]` with no tech-debt entry is a silently-dropped finding.
 
 ## Lifecycle — delete once fully addressed
 
