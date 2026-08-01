@@ -224,8 +224,8 @@ don't add new ones.
 ## Typed operation Results
 
 Use `Concertable.Kernel.Functional.Result<TValue, TError>` for expected, caller-actionable operation
-failures, `Result<TError>` when success has no payload, `Result` when neither case has a payload, and
-`Option<T>` when ordinary absence has no explanation yet. A successful optional payload is
+failures, `UnitResult<TError>` when success has no payload, and `Result<TValue>` or `Result` only for
+internal string-error flows that do or do not carry a success value. Use `Option<T>` when ordinary absence has no explanation yet. A successful optional payload is
 `Result<Option<T>, TError>`; collection queries return empty read-only lists. Faults, cancellation,
 and violated invariants remain exceptions.
 
@@ -247,8 +247,8 @@ constructor directly. The factory is the stable construction seam when Dunet rec
 union structs.
 
 Build definitions through `ErrorDefinition.Invalid`, `NotFound`, `Conflict`, `Unauthenticated`,
-`Forbidden`, `PaymentRequired`, and `Validation`. Every code and safe public message is explicit;
-never infer public text from a CLR type name or `[DisplayName]`.
+`Forbidden`, `PaymentRequired`, and `Validation`. Every code and safe public message is explicit,
+except the standard generic not-found factory described below.
 
 Use Dunet's generated full `Match` whenever every business case must be handled: definitions,
 cross-operation error translations, lifecycle-to-operation mappings, and worker decisions that

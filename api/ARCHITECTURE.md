@@ -151,7 +151,7 @@ of truth). **Never set `UseLocalCore=true` in committed config** — it breaks t
 
 ### Shared functional contracts stay in process
 
-`Concertable.Kernel` publishes Concertable-owned `Result`, `Result<TError>`,
+`Concertable.Kernel` publishes Concertable-owned `Result`, `Result<TValue>`, `UnitResult<TError>`,
 `Result<TValue,TError>`, and `Option<T>` types from `Concertable.Kernel.Functional`. They are shared in-process
 vocabulary and do not depend on a third-party Result, Option, union, or error carrier. They may appear
 in application, module, and published client signatures, but never as HTTP, protobuf, event,
