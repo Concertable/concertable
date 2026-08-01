@@ -230,7 +230,7 @@ may remain nullable when absence is ordinary data; a command converts repository
 its own typed failure when the caller can act on it.
 
 `TError` is an operation-owned Dunet union named `XError` that implements `IError`. Business unions
-stay with their operation; shared Kernel owns only `IError`, its descriptors, and `ErrorKind`.
+stay with their operation; shared Kernel owns only `IError`, its definitions, and `ErrorKind`.
 Place the union in Application, `*.Contracts`, or a published client contract according to the
 widest caller that must match it. Never move a service-specific union into shared production or
 carry CFE/Dunet types through HTTP DTOs, protobuf, events, or persistence.
@@ -240,13 +240,13 @@ Outside its declaration, construct an error only through a static factory on the
 constructor directly. The factory is the stable construction seam when Dunet records become native
 union structs.
 
-Build descriptors through `ErrorDescriptor.Invalid`, `NotFound`, `Conflict`, `Unauthenticated`,
+Build definitions through `ErrorDefinition.Invalid`, `NotFound`, `Conflict`, `Unauthenticated`,
 `Forbidden`, `PaymentRequired`, and `Validation`. For an ordinary missing resource, prefer
-`ErrorDescriptor.NotFound<T>(code)`: `T` must carry `[DisplayName]`, and the factory derives the safe
+`ErrorDefinition.NotFound<T>(code)`: `T` must carry `[DisplayName]`, and the factory derives the safe
 `"X not found."` message. Use the explicit-message overload only when the operation needs genuinely
 contextual wording.
 
-Use Dunet's generated full `Match` whenever every business case must be handled: descriptors,
+Use Dunet's generated full `Match` whenever every business case must be handled: definitions,
 cross-operation error translations, lifecycle-to-operation mappings, and worker decisions that
 depend on the exact failure. Adding a case then changes the generated signature and breaks every
 exhaustive mapping until its handler is supplied. Do not replace these matches with ordinary switch
@@ -254,27 +254,36 @@ expressions on .NET 10, add a discard arm, globally promote `CS8509`, or add ana
 to simulate exhaustiveness. When logic deliberately inspects only some cases, use ordinary C# `is`
 type patterns instead of a full match.
 
-Each union owns one exhaustive `Descriptor` match and one descriptor test per case. Codes are
+Each union owns one exhaustive `Definition` match and one definition test per case. It exposes
+`ErrorKind Kind => Definition.Kind;` so callers can read the classification directly without a
+second mapping or source of truth. Codes are
 lowercase dot-separated identifiers with an owning operation/module prefix
 (`ticket.concert_not_found`); published codes are never renamed or reused for a different meaning.
 Messages are explicitly authored caller-safe text, never exception messages, provider detail, SQL,
-stack traces, or values whose disclosure has not been reviewed. Validation descriptors contain at
+stack traces, or values whose disclosure has not been reviewed. Validation definitions contain at
 least one structured field message.
 
-Compose CFE Results and Maybes with `Bind`, `Map`, `MapError`, and Kernel's `OrFailure` until a
-terminal adapter. Never introduce another Result carrier, a positional generic union, or Dunet as
-the success/failure carrier. Never turn exceptions into failed Results, unwrap failures into HTTP
-exceptions, or carry Results/unions across transport or persistence boundaries.
+Compose CFE Results and Maybes with `Bind`, `Map`, `MapError`, `Ensure`, `Tap`, and Kernel's
+`OrFailure` until a terminal adapter. Ordinary composition is fail-fast; only validation flows
+explicitly designed to collect errors accumulate them and map that collection once into their
+owning operation error. Use CFE's built-in `Task<Result<...>>` composition overloads instead of
+service-specific async Result helpers. Prefer composition or `Match` over direct `.Value` and
+`.Error` extraction; access either directly only after an obvious guard terminates the opposite
+state.
+
+Never introduce another Result carrier, a positional generic union, or Dunet as the success/failure
+carrier. Never turn exceptions into failed Results, unwrap failures into HTTP exceptions, or carry
+Results/unions across transport or persistence boundaries.
 
 Dunet appears only in error-union declaration files, generated full `Match` calls, and package
 configuration. Do not use generated `Unwrap` or case-specific `MatchX` APIs without a concrete need.
-Keep `IError`, descriptors, shared Result extensions, transports, persistence, messages, and wire
+Keep `IError`, definitions, shared Result extensions, transports, persistence, messages, and wire
 formats independent of Dunet.
 
 After the repository moves to stable .NET 11/C# 15, replace declarations with native unions and
 full Dunet matches with native exhaustive switch expressions. Handle the native union struct's
 default state with an explicit `null` arm, remove Dunet, and leave CFE Results, Maybes, composition,
-factories, descriptors, transports, and partial `is` patterns unchanged.
+factories, definitions, transports, and partial `is` patterns unchanged.
 
 Controllers terminate through `Concertable.Shared.Api.Results`. Result failures and exceptions both
 write through `IProblemDetailsService`, so registered writers, content negotiation, request

@@ -158,20 +158,21 @@ public enum ErrorKind
     PaymentRequired
 }
 
-public record ErrorDescriptor(
+public record ErrorDefinition(
     string Code,
     string Message,
     ErrorKind Kind);
 
-public sealed record ValidationErrorDescriptor(
+public sealed record ValidationErrorDefinition(
     string Code,
     string Message,
     IReadOnlyDictionary<string, string[]> Errors)
-    : ErrorDescriptor(Code, Message, ErrorKind.Invalid);
+    : ErrorDefinition(Code, Message, ErrorKind.Invalid);
 
 public interface IError
 {
-    ErrorDescriptor Descriptor { get; }
+    ErrorDefinition Definition { get; }
+    ErrorKind Kind { get; }
 }
 ```
 
@@ -180,23 +181,25 @@ The exact names can be adjusted during Phase 1, but the shape is fixed:
 - `Code` is stable and machine-readable, for example `ticket.concert_not_found`.
 - `Message` is safe to return to a caller.
 - `Kind` is transport-neutral semantic classification.
-- structured validation failures use `ValidationErrorDescriptor`; ordinary descriptors do not carry
+- structured validation failures use `ValidationErrorDefinition`; ordinary definitions do not carry
   a validation member.
-- descriptor construction rejects blank/malformed codes, blank safe messages, unknown kinds, and
+- definition construction rejects blank/malformed codes, blank safe messages, unknown kinds, and
   empty validation collections as programming defects;
 - codes use at least two lowercase dot-separated segments, with the owning operation/module as the
   prefix, and are never renamed or reused after publication;
 - safe messages are authored explicitly for callers and never copied from an exception, provider,
   SQL response, stack trace, or unreviewed external value.
 
-`ErrorDescriptor` exposes one named factory per `ErrorKind`, plus `Validation`. Its generic
+`ErrorDefinition` exposes one named factory per `ErrorKind`, plus `Validation`. Its generic
 `NotFound<T>(code)` overload resolves the caller-safe resource name from the annotated contract or
 domain type's `[DisplayName]`, producing `"X not found."` without a message string at the operation
 site. The explicit-message overload remains for genuinely contextual not-found wording.
 
-Each service or module owns its error unions. It exposes one exhaustive `Descriptor` match on the
+Each service or module owns its error unions. It exposes one exhaustive `Definition` match on the
 union. That is the single unavoidable place where business cases acquire stable codes and public
-messages. Adding a new union case then fails the build until its descriptor is supplied.
+messages. Adding a new union case then fails the build until its definition is supplied.
+`Kind` forwards to `Definition.Kind`, making the classification convenient without adding a second
+mapping or source of truth.
 
 ```csharp
 [Union]
@@ -215,16 +218,18 @@ internal partial record PurchaseError : IError
     public static PurchaseError Rejected() =>
         new PaymentRejected();
 
-    public ErrorDescriptor Descriptor => Match<ErrorDescriptor>(
-        notFound => ErrorDescriptor.NotFound<ConcertDto>(
+    public ErrorDefinition Definition => Match<ErrorDefinition>(
+        notFound => ErrorDefinition.NotFound<ConcertDto>(
             "ticket.concert_not_found"),
-        validation => ErrorDescriptor.Validation(
+        validation => ErrorDefinition.Validation(
             "ticket.purchase_invalid",
             "The ticket purchase is invalid.",
             new Dictionary<string, string[]> { ["purchase"] = validation.Messages.ToArray() }),
-        paymentRejected => ErrorDescriptor.PaymentRequired(
+        paymentRejected => ErrorDefinition.PaymentRequired(
             "ticket.payment_rejected",
             "The payment was rejected."));
+
+    public ErrorKind Kind => Definition.Kind;
 }
 ```
 
@@ -232,7 +237,7 @@ The union match answers “what does this business case mean?” once. The share
 does that semantic kind appear in HTTP or gRPC?” once. No controller, service, or client repeats the
 status mapping.
 
-On .NET 10, every mapping that must handle all cases uses Dunet's generated full `Match`: descriptors,
+On .NET 10, every mapping that must handle all cases uses Dunet's generated full `Match`: definitions,
 dependency-error translations, lifecycle-to-operation translations, and case-sensitive worker
 decisions. A new case changes the generated method signature, so omitted handlers fail compilation.
 Ordinary C# `is` patterns are reserved for intentionally partial queries. Do not use switches or a
@@ -312,7 +317,7 @@ faults; cancellation passes through and is never logged or converted to ProblemD
 | A module Application interface | that module’s Application project |
 | A public cross-module facade | that module’s `*.Contracts` project |
 | A published cross-service client | owning service’s `*.Contracts` project |
-| All services and transports | only `IError`, `ErrorDescriptor`, `ValidationErrorDescriptor`, and `ErrorKind` in Kernel |
+| All services and transports | only `IError`, `ErrorDefinition`, `ValidationErrorDefinition`, and `ErrorKind` in Kernel |
 
 Dunet is referenced only by projects declaring unions. CSharpFunctionalExtensions is referenced by
 projects declaring or consuming operation Result signatures. Because every service has an
@@ -332,7 +337,7 @@ return result.ToOkActionResult();
 ```
 
 The Result helper uses CFE `Match` to choose the caller-supplied success result or
-`IError.ToProblemActionResult`. That error extension uses `IError.Descriptor`, the single frozen
+`IError.ToProblemActionResult`. That error extension uses `IError.Definition`, the single frozen
 `ErrorKind`-to-status table, and ASP.NET Core reason phrases to create an
 `ApplicationErrorResult`. The custom MVC result and the shared exception handler both delegate to
 the same `IProblemDetailsService` writer policy described above. Controllers do not switch on error
@@ -598,11 +603,11 @@ Progress:
 
 Scope:
 
-- add `ErrorKind`, `ErrorDescriptor`, `ValidationErrorDescriptor`, and `IError` to Kernel;
+- add `ErrorKind`, `ErrorDefinition`, `ValidationErrorDefinition`, and `IError` to Kernel;
 - add CSharpFunctionalExtensions `3.7.0` to Shared package management, `Concertable.Kernel`, and
   `Concertable.Shared.Api`, including Kernel's `Maybe<T>.OrFailure` naming layer;
 - pin Dunet `1.16.2` in Shared package management for the test project that proves the complete
-  union-to-descriptor-to-CFE-to-HTTP path; Shared production projects do not reference Dunet;
+  union-to-definition-to-CFE-to-HTTP path; Shared production projects do not reference Dunet;
 - add generic MVC Result adapters and their unit tests;
 - move the common `IExceptionHandler` into `Concertable.Shared.Api`;
 - replace the four service-local handler registrations/files with the shared handler;
@@ -612,7 +617,7 @@ Scope:
   no-catch-to-failure rule;
 - add architecture/grep tests that prohibit HTTP exception types in newly migrated typed-result
   slices where practical;
-- enforce descriptor invariants and the Shared production boundary against Dunet/business unions;
+- enforce definition invariants and the Shared production boundary against Dunet/business unions;
 - route Result and exception ProblemDetails through one ASP.NET Core writer/customization policy;
 - define explicit dependency-unavailable/deadline exceptions and safe HTTP 503/504 mappings.
 
@@ -627,6 +632,16 @@ Package gate:
 - this changes published Shared packages, so merge, wait for package publication, and follow the
   platform-sync PR to green before Phase 2.
 
+API terminology follow-up (PR #284):
+
+- use definition terminology throughout the public API and expose `IError.Kind` as a forwarding
+  convenience derived from `IError.Definition`, so classification still has one source of truth;
+- Kernel and Shared.Api are the only producer packages carrying these identities and publish
+  together; Shared.Api consumes Kernel by `ProjectReference`, and no service source currently names
+  the old identities, so the producer PR remains green and is followed by one pin-only
+  platform-sync merge;
+- the superseded terminology must grep to zero before the producer PR lands.
+
 Verification:
 
 - Kernel and Shared.Api unit tests;
@@ -639,7 +654,7 @@ Scope:
 
 - add CSharpFunctionalExtensions and Dunet pins to Customer package management;
 - define `PurchaseError` and `CheckoutError` in Ticket Application with stable factories and
-  exhaustive generated `Match` descriptors;
+  exhaustive generated `Match` definitions;
 - migrate `ITicketService.PurchaseAsync` and `CheckoutAsync` to typed CFE Results;
 - keep `ITicketValidator`’s aggregate FluentResults contract private and map it once;
 - replace `.OrNotFound()` with explicit nullable-to-error conversion in the use case;
@@ -848,7 +863,7 @@ Verification:
 Phase 1 starts with these files because every later error contract depends on them:
 
 1. `api/Concertable.Shared/src/Concertable.Kernel/Errors/Error.cs` — introduce the shared
-   semantic interface, descriptor, and category without any service-specific cases.
+   semantic interface, definition, and category without any service-specific cases.
 2. `api/Concertable.Shared/src/Concertable.Shared.Api/Results/ResultHttpExtensions.cs` — prove one
    generic typed Result can map to consistent ProblemDetails without per-controller switches.
 3. `api/Concertable.Shared/src/Concertable.Shared.Api/Exceptions/GlobalExceptionHandler.cs` —
@@ -860,8 +875,8 @@ the conceptual implementation order, not a claim that those three files alone co
 
 ## Tests that must be added, not merely rewritten
 
-- Every error union has a test that each case exposes the intended stable descriptor.
-- Kernel descriptor tests reject malformed codes, unsafe empty messages, unknown kinds, and empty
+- Every error union has a test that each case exposes the intended stable definition.
+- Kernel definition tests reject malformed codes, unsafe empty messages, unknown kinds, and empty
   validation failures.
 - Shared HTTP mapping has one parameterized test per `ErrorKind`, plus structured validation and
   production-safe 500 tests. Result and exception execution tests prove the shared writer,
@@ -888,9 +903,9 @@ the conceptual implementation order, not a claim that those three files alone co
 
 | Risk | Control |
 |---|---|
-| A global error union grows into an unmaintainable pseudo-exception hierarchy | Error unions are operation-owned; Kernel contains only descriptor semantics. |
+| A global error union grows into an unmaintainable pseudo-exception hierarchy | Error unions are operation-owned; Kernel contains only definition semantics. |
 | Result colouring creates boilerplate through the Concert state machine | One operation error type flows through the slice; CFE `Bind`/`MapError` compose it; no per-layer wrapper errors. |
-| Errors gain HTTP concerns to avoid mapping code | Error cases expose semantic descriptors only; Shared.Api owns HTTP and Payment owns gRPC. |
+| Errors gain HTTP concerns to avoid mapping code | Error cases expose semantic definitions only; Shared.Api owns HTTP and Payment owns gRPC. |
 | General Stripe/SQL/gRPC faults are mislabeled as expected payment failures | Catch only documented caller-actionable conditions; rethrow cancellation and all unknown/transient faults. |
 | The Payment client signature breaks independently deployed consumers | Treat Phase 5 as a producer publish plus mandatory platform-sync consumer cutover; preserve wire compatibility throughout. |
 | Dunet becomes permanent accidental infrastructure | Error unions are project-owned, Dunet is declaration-only, and the .NET 11 replacement is isolated to those declarations plus published-package sync. |
@@ -909,7 +924,7 @@ At that point:
 2. Replace every exhaustive Dunet `Match` with a native exhaustive switch expression and add an
    explicit `null` arm for the native union struct's default/uninitialised state. This is not a
    catch-all business-case arm and does not hide newly added cases.
-3. Keep the case records, static factories, stable descriptors, CFE `Result<TValue, TError>` and
+3. Keep the case records, static factories, stable definitions, CFE `Result<TValue, TError>` and
    `UnitResult<TError>` signatures, `Maybe<T>`, composition, transports, tests, and partial `is`
    checks unchanged.
 4. Remove Dunet package references and generator output. Promote or retain `CS8509` only if the
