@@ -30,6 +30,8 @@ None of these is a reason to defer a fix you can write now — do the fix and no
 Genuine deferral (`[-]`) is reserved for a real judgment call / tradeoff needing a human decision, or a
 part with a hard blocker named. Default is: fix now.
 
+**Deferring is never dropping — every `[-]` / `[wontfix]` MUST get a `TECH_DEBT.md` entry (owning area, with a `Resolves when:` line) in the same stroke.** The review dies at PR merge; tech debt is where the item persists. A `[-]` with no tech-debt entry is a silently-dropped finding.
+
 ## Lifecycle — delete once fully addressed
 
 **Deleting a spent review is the default end state, not a later cleanup pass.** A review is spent — delete

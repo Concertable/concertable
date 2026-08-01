@@ -13,6 +13,21 @@ internal interface IManagerPaymentService
         int bookingId,
         CancellationToken ct = default);
 
+    Task<Result<PaymentOutcome>> PayBoundCommissionAsync(
+        Guid payerId,
+        Guid payeeId,
+        long grossMinor,
+        Currency currency,
+        string paymentMethodId,
+        PaymentSession session,
+        int bookingId,
+        Guid commissionBindingId,
+        string externalReference,
+        long expectedCommissionMinor,
+        long expectedPayerTotalMinor,
+        string? stripeSetupIntentId,
+        CancellationToken ct = default);
+
     /// <summary>
     /// The amount is known but cannot be charged yet — the other party hasn't accepted.
     /// Pre-authorises the card for a future off-session charge so the bank will honour it
@@ -42,8 +57,27 @@ internal interface IManagerPaymentService
         IReadOnlyDictionary<string, string> metadata,
         CancellationToken ct = default);
 
+    Task<Result<CheckoutSession>> CreateBoundCommissionHoldSessionAsync(
+        Guid payerId,
+        long grossMinor,
+        Currency currency,
+        IReadOnlyDictionary<string, string> metadata,
+        Guid commissionBindingId,
+        string externalReference,
+        long expectedCommissionMinor,
+        long expectedPayerTotalMinor,
+        string? stripeSetupIntentId,
+        CancellationToken ct = default);
+
     Task<string> FindHeldIntentAsync(
         Guid payerId,
         int applicationId,
+        CancellationToken ct = default);
+
+    Task<Result<Refund?>> RefundBoundCommissionByBookingIdAsync(
+        int bookingId,
+        long grossMinor,
+        Currency currency,
+        string? reason = null,
         CancellationToken ct = default);
 }

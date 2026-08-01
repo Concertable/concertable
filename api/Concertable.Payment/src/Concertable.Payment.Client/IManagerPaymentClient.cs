@@ -1,3 +1,4 @@
+using Concertable.Kernel.ValueObjects;
 using Concertable.Payment.Contracts;
 using FluentResults;
 
@@ -12,6 +13,21 @@ public interface IManagerPaymentClient
         string paymentMethodId,
         PaymentSession session,
         int bookingId,
+        CancellationToken ct = default);
+
+    Task<Result<PaymentOutcome>> PayBoundCommissionAsync(
+        Guid payerId,
+        Guid payeeId,
+        long grossMinor,
+        Currency currency,
+        string paymentMethodId,
+        PaymentSession session,
+        int bookingId,
+        Guid commissionBindingId,
+        string externalReference,
+        long expectedCommissionMinor,
+        long expectedPayerTotalMinor,
+        string? stripeSetupIntentId = null,
         CancellationToken ct = default);
 
     /// <summary>
@@ -41,6 +57,18 @@ public interface IManagerPaymentClient
         Guid payerId,
         decimal amount,
         IDictionary<string, string> metadata,
+        CancellationToken ct = default);
+
+    Task<Result<CheckoutSession>> CreateBoundCommissionHoldSessionAsync(
+        Guid payerId,
+        long grossMinor,
+        Currency currency,
+        IDictionary<string, string> metadata,
+        Guid commissionBindingId,
+        string externalReference,
+        long expectedCommissionMinor,
+        long expectedPayerTotalMinor,
+        string? stripeSetupIntentId = null,
         CancellationToken ct = default);
 
     Task<string> FindHeldIntentAsync(
