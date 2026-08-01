@@ -172,7 +172,6 @@ public sealed record ValidationErrorDefinition(
 public interface IError
 {
     ErrorDefinition Definition { get; }
-    ErrorKind Kind { get; }
 }
 ```
 
@@ -198,8 +197,6 @@ site. The explicit-message overload remains for genuinely contextual not-found w
 Each service or module owns its error unions. It exposes one exhaustive `Definition` match on the
 union. That is the single unavoidable place where business cases acquire stable codes and public
 messages. Adding a new union case then fails the build until its definition is supplied.
-`Kind` forwards to `Definition.Kind`, making the classification convenient without adding a second
-mapping or source of truth.
 
 ```csharp
 [Union]
@@ -228,8 +225,6 @@ internal partial record PurchaseError : IError
         paymentRejected => ErrorDefinition.PaymentRequired(
             "ticket.payment_rejected",
             "The payment was rejected."));
-
-    public ErrorKind Kind => Definition.Kind;
 }
 ```
 
@@ -634,8 +629,8 @@ Package gate:
 
 API terminology follow-up (PR #284):
 
-- use definition terminology throughout the public API and expose `IError.Kind` as a forwarding
-  convenience derived from `IError.Definition`, so classification still has one source of truth;
+- use definition terminology throughout the public API and keep `IError` limited to its atomic
+  `Definition`, so code, safe message, and semantic kind have one representation and source of truth;
 - Kernel and Shared.Api are the only producer packages carrying these identities and publish
   together; Shared.Api consumes Kernel by `ProjectReference`, and no service source currently names
   the old identities, so the producer PR remains green and is followed by one pin-only

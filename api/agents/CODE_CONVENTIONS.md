@@ -254,10 +254,9 @@ expressions on .NET 10, add a discard arm, globally promote `CS8509`, or add ana
 to simulate exhaustiveness. When logic deliberately inspects only some cases, use ordinary C# `is`
 type patterns instead of a full match.
 
-Each union owns one exhaustive `Definition` match and one definition test per case. It exposes
-`ErrorKind Kind => Definition.Kind;` so callers can read the classification directly without a
-second mapping or source of truth. Codes are
-lowercase dot-separated identifiers with an owning operation/module prefix
+Each union owns one exhaustive `Definition` match and one definition test per case. Code, safe
+message, and semantic kind are read from that definition as the single generic error representation.
+Codes are lowercase dot-separated identifiers with an owning operation/module prefix
 (`ticket.concert_not_found`); published codes are never renamed or reused for a different meaning.
 Messages are explicitly authored caller-safe text, never exception messages, provider detail, SQL,
 stack traces, or values whose disclosure has not been reviewed. Validation definitions contain at
