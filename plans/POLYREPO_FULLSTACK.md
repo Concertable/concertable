@@ -67,11 +67,13 @@ four-green FE gate): `npm -w @concertable/web-{customer,venue,artist,business} r
 builds, and a `npm pack` tarball installs + type-checks in a throwaway consumer.
 
 ### Phase 0 — Registry + PAT (unblocks everything; no code cutover)
-- Add scoped npm registry config: root `app/.npmrc` (or per-surface, mirroring the BE "no repo-root config"
+- ✅ Add scoped npm registry config: root `app/.npmrc` (or per-surface, mirroring the BE "no repo-root config"
   rule — decide with D-B) mapping `@concertable` / `@customer` / `@b2b` → `https://npm.pkg.github.com`.
-- Provision a PAT with `write:packages` (publish) + `read:packages` (restore); reuse/extend the documented
-  `GITHUB_PACKAGES_TOKEN`. **This step needs Tommy's hands** (GitHub settings + secret).
-- Gate: a dry-run `npm view @concertable/shared --registry=https://npm.pkg.github.com` authenticates (404
+- ⚠️ Provision a classic PAT with `write:packages` (publish) + `read:packages` (restore); reuse/extend the
+  documented `GITHUB_PACKAGES_TOKEN`. The configured token authenticates reads, but an
+  `npm publish @concertable/shared` attempt returns `403 permission_denied` because it lacks the expected
+  publish scope. **Replacing the token still needs Tommy's hands** (GitHub settings + environment variable).
+- ✅ Gate: a dry-run `npm view @concertable/shared --registry=https://npm.pkg.github.com` authenticates (404
   for "not yet published" is success — auth resolved).
 
 ### Phase 1 — Publish the universal core: `@concertable/shared` (publish-first, no consumer cutover yet)
@@ -80,8 +82,10 @@ builds, and a `npm pack` tarball installs + type-checks in a throwaway consumer.
   `dist`.
 - ✅ Local publish proof: the tarball installs and passes `tsc --noEmit` in a throwaway consumer across
   barrel, hook, type, and nested feature subpaths; all four web builds and both mobile typechecks are green.
-- After the Phase 0 PAT is available, add a real automated version scheme (changesets **or** a
-  MinVer-analogue), add `publish-fe-packages.yml`, authenticate, and publish to the feed.
+- ✅ Release automation: git-height versions (`0.1.0-alpha.0.<height>`) and `publish-fe-packages.yml` build,
+  pack, idempotently publish under the `alpha` tag, then type-check the exact feed artifact in a fresh consumer.
+- ⚠️ Feed publication remains blocked by the Phase 0 PAT scope. The verified
+  `@concertable/shared@0.1.0-alpha.0.2115` tarball was rejected before upload with the same 403.
 - **Do not cut consumers over yet** — like the BE, publish first; consumers still resolve the workspace copy.
 
 ### Phase 2 — Publish the remaining shared tiers + cut consumers over

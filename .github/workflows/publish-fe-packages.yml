@@ -1,0 +1,92 @@
+name: Publish frontend packages
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'app/shared/**'
+      - 'app/scripts/version-fe-packages.mjs'
+      - 'app/package.json'
+      - 'app/package-lock.json'
+      - '.github/workflows/publish-fe-packages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish-shared:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      NPM_CONFIG_USERCONFIG: ${{ github.workspace }}/app/.npmrc
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: Install dependencies
+        working-directory: app
+        run: npm ci
+
+      - name: Set package version
+        id: version
+        run: |
+          version=$(node app/scripts/version-fe-packages.mjs --write app/shared)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Pack package
+        id: pack
+        working-directory: app
+        run: |
+          mkdir -p "$RUNNER_TEMP/fe-packages"
+          npm pack --workspace @concertable/shared --pack-destination "$RUNNER_TEMP/fe-packages"
+          tarball=$(find "$RUNNER_TEMP/fe-packages" -maxdepth 1 -name '*.tgz' -print -quit)
+          test -n "$tarball"
+          echo "tarball=$tarball" >> "$GITHUB_OUTPUT"
+
+      - name: Publish package
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          TARBALL: ${{ steps.pack.outputs.tarball }}
+        run: |
+          if npm view "@concertable/shared@$VERSION" version >/dev/null 2>&1; then
+            echo "@concertable/shared@$VERSION is already published"
+          else
+            npm publish "$TARBALL" --tag alpha
+          fi
+
+      - name: Verify published package
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          consumer="$RUNNER_TEMP/shared-consumer"
+          mkdir -p "$consumer"
+          cd "$consumer"
+          npm init -y
+          npm install --save-exact "@concertable/shared@$VERSION" react@19
+          npm install --save-dev typescript@5.9 @types/react@19
+          printf '%s\n' \
+            '{"compilerOptions":{"module":"NodeNext","moduleResolution":"NodeNext","target":"ES2022","strict":true,"skipLibCheck":true},"include":["index.ts"]}' \
+            > tsconfig.json
+          printf '%s\n' \
+            'import { genreLabel, type Genre } from "@concertable/shared";' \
+            'import { useMountEffect } from "@concertable/shared/hooks/useMountEffect";' \
+            'import type { User } from "@concertable/shared/types";' \
+            'import { useAuthStore } from "@concertable/shared/features/auth";' \
+            'const genre: Genre = "Rock";' \
+            'void genreLabel(genre);' \
+            'void useMountEffect;' \
+            'void useAuthStore;' \
+            'const user = {} as User;' \
+            'void user;' \
+            > index.ts
+          npx tsc --noEmit
