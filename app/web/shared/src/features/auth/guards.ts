@@ -4,7 +4,7 @@ import { meQueryKey } from "@/features/user/hooks/useSyncUser";
 import { queryClient } from "@/lib/queryClient";
 import { userManager } from "./config/oidcConfig";
 import { useAuthStore } from "./store/useAuthStore";
-import type { Role, User } from "./types";
+import type { User } from "./types";
 
 async function hasValidSession() {
   const oidcUser = await userManager.getUser();
@@ -27,7 +27,7 @@ async function ensureUser(): Promise<User | null> {
   }
 }
 
-function redirectToBusiness(): Promise<never> {
+export function redirectToBusiness(): Promise<never> {
   window.location.href = import.meta.env.VITE_BUSINESS_URL;
   return new Promise<never>(() => {});
 }
@@ -49,16 +49,8 @@ export async function requireAuth({
   return user;
 }
 
-export async function requireRole(
-  role: Role,
-  { location }: { location?: { pathname: string } } = {},
-) {
-  const user = await requireAuth({ location });
-  if (user.role !== role) throw redirect({ to: "/" });
-}
-
-export async function requireBusinessRole(role: Role) {
+export async function requireBusinessAuth(): Promise<void> {
   if (!(await hasValidSession())) return redirectToBusiness();
   const user = await ensureUser();
-  if (!user || user.role !== role) return redirectToBusiness();
+  if (!user) return redirectToBusiness();
 }
