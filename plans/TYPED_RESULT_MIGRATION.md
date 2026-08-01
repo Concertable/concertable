@@ -59,6 +59,15 @@ Additional mechanical rules:
 - Results do not cross HTTP, protobuf, integration-event, or persisted-data boundaries. Each
   transport adapts the semantic error contract.
 - `OperationCanceledException` is never converted to a failed Result.
+- Ordinary Result composition is fail-fast. `Bind`, `Map`, `MapError`, `Ensure`, and `Tap` stop at
+  the first failure; only validation flows explicitly designed to collect errors may accumulate
+  multiple failures, and they map that collection once into the owning operation error.
+- Async workflows use CSharpFunctionalExtensions' built-in `Task<Result<...>>` composition
+  overloads. Services do not introduce their own async Result carrier or parallel set of `BindAsync`
+  and `MapAsync` helpers merely to wrap the library's existing composition API.
+- Prefer `Match`, `Bind`, `Map`, and `MapError` over direct `.Value` or `.Error` extraction. A direct
+  access is acceptable only immediately after an obvious state guard that terminates the opposite
+  branch; state-dependent extraction must not become the normal composition style.
 
 This is partial adoption with a principled boundary: a **complete use-case slice**, not a whole
 layer and not whichever method a developer happens to be editing.
