@@ -639,10 +639,18 @@ implementation order for this PR is:
    build completed with zero errors on 2026-08-01. User has no standalone unit-test project;
    container-backed User/Conversations integration verification is pending because Docker is
    currently unreliable.
-5. **Next checkpoint.** Concert core: reconcile the stale workflow-boundary work, then migrate validation, lifecycle,
-   application/module lookups, dispatchers and executors that do not consume Payment results.
-6. Concert payment workflows: migrate only after Phase 2's typed Payment client package has published
-   and its platform-sync PR is green. No temporary string bridge or adapter over FluentResults is
+5. **Complete in `refactor(b2b): migrate Concert core outcomes`.** Concert repository nullability now
+   terminates in Option-returning application/module lookups, command endpoints use operation-owned
+   errors, validation accumulates `ValidationErrors`, and lifecycle transitions compose through an
+   owned typed result. The Payment-independent apply and reject executors are typed while the keyed
+   workflow registry remains intact. The Concert unit suite passed 73/73, the B2B architecture suite
+   passed 4/4, and the full B2B Release build completed with zero errors on 2026-08-01. The build's
+   four existing warnings are outside this checkpoint. Container-backed Concert integration
+   verification is pending because Docker is currently unreliable.
+6. **Next checkpoint; dependency-blocked.** Concert payment workflows can migrate only after Phase 2's
+   typed Payment client package has published and its platform-sync PR is green. The current
+   `Concertable.Payment.Client` surface at platform version `0.1.0-alpha.0.740` still exposes
+   FluentResults-only operations. No temporary string bridge or adapter over FluentResults is
    permitted.
 7. B2B closure: remove legacy Result dependencies with no remaining consumers, run architecture and
    integration coverage, build the full B2B solution and standalone carve, then run the justified API
