@@ -149,6 +149,15 @@ cross-cutting local dev against uncommitted core changes — no publish/restore 
 implemented centrally in each folder's `Directory.Build.targets` (`ChurnyCorePackage` = id→path source
 of truth). **Never set `UseLocalCore=true` in committed config** — it breaks the carve.
 
+### Shared functional contracts stay in process
+
+`Concertable.Kernel` publishes Concertable-owned `Unit`, `Option<T>`, and
+`Result<TValue,TError>` types from `Concertable.Kernel.Functional`. They are shared in-process
+vocabulary and do not depend on a third-party Result, Option, union, or error carrier. They may appear
+in application, module, and published client signatures, but never as HTTP, protobuf, event,
+persistence, or other wire payloads. Each transport maps to an owned wire contract at its service
+edge; HTTP failures map centrally through `IError.Definition` in `Concertable.Shared.Api`.
+
 ### How separation is enforced
 
 - **Build-time guardrail (fast-fail, local + CI).** Each service folder's `Directory.Build.targets`
