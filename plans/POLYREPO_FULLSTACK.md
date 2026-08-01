@@ -75,13 +75,14 @@ builds, and a `npm pack` tarball installs + type-checks in a throwaway consumer.
   for "not yet published" is success — auth resolved).
 
 ### Phase 1 — Publish the universal core: `@concertable/shared` (publish-first, no consumer cutover yet)
-- Add a build (tsup / vite lib / `tsc -p`) emitting `dist` + `.d.ts`; flip `main`/`types`/`exports` →
-  `dist`; add `files`, `publishConfig`, and a real version scheme (changesets **or** a MinVer-analogue in CI).
-- **Dual-bundler proof (the load-bearing gate):** `npm pack`, then build **mobile-customer** and one web app
-  against the *tarball* (not the workspace symlink). Metro consuming the published shape green = de-risked.
-- Add `publish-fe-packages.yml` (counterpart of `publish-packages.yml`).
-- Publish to the feed. **Do not cut consumers over yet** — like the BE, publish first; consumers still
-  resolve the workspace copy. Standing four-green gate unchanged.
+- ✅ Build/package shape: `tsc` emits a per-file ESM + declaration tree to `dist`; `main`, `types`, and
+  conditional exact/wildcard exports resolve the built tree; the package is publishable and packs only
+  `dist`.
+- ✅ Local publish proof: the tarball installs and passes `tsc --noEmit` in a throwaway consumer across
+  barrel, hook, type, and nested feature subpaths; all four web builds and both mobile typechecks are green.
+- After the Phase 0 PAT is available, add a real automated version scheme (changesets **or** a
+  MinVer-analogue), add `publish-fe-packages.yml`, authenticate, and publish to the feed.
+- **Do not cut consumers over yet** — like the BE, publish first; consumers still resolve the workspace copy.
 
 ### Phase 2 — Publish the remaining shared tiers + cut consumers over
 - Make `web/shared` → `@concertable/web-shared`, `mobile/shared` → `@concertable/mobile-shared`,
