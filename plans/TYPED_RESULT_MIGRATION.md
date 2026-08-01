@@ -101,8 +101,8 @@ At the snapshot time:
 
 Recommendation: revise #284 in place into Phase 1 because it is the right isolated foundation branch
 and has no dependent merged consumer. Preserve the valid ErrorDefinition work, remove the CFE work,
-and make the whole diff subject to fresh review. Hold #282 until Phases 1-3 have published and synced,
-then revise it in place as Phase 4; preserve its business classification and tests, but replace every
+and make the whole diff subject to fresh review. Hold #282 until Phases 1-2 have published and synced,
+then revise it in place as Phase 3; preserve its business classification and tests, but replace every
 CFE carrier/conversion and update the plan diff. It does not need to be closed unless rebasing shows
 that the retained business diff is no longer reviewable. Do not merge either PR in its current form.
 
@@ -243,7 +243,7 @@ conversion is not.
 Do not expose public constructors, mutable setters, public storage/case fields, `Unwrap`, or throwing
 `Value`/`Error` properties.
 
-Those are the hand-written Phase 1 rules. Phase 10 intentionally adds the released compiler-generated
+Those are the hand-written Phase 1 rules. Phase 9 intentionally adds the released compiler-generated
 case/pattern surface while retaining the factory/combinator API for source-compatible consumers.
 
 ### Null semantics
@@ -254,8 +254,8 @@ case/pattern surface while retaining the factory/combinator API for source-compa
 - `Option<T?>` and `Result<TValue?,TError>` are not valid domain contracts.
 - nullable reference/value inputs are converted with `Option.FromNullable`/`ToOption` at the boundary.
 - a successful operation with an optional payload is `Result<Option<T>,TError>`.
-- wire/ORM APIs that inherently produce null may remain nullable in their private infrastructure API,
-  but the repository/client adapter converts immediately before crossing into application code.
+- wire/ORM APIs that inherently produce null remain nullable through persistence repositories; module,
+  application, and client adapters convert before exposing the value to their callers.
 
 ### Observation and safe access
 
@@ -391,8 +391,14 @@ their dependencies and then build the Result; dependency faults and cancellation
 
 ### Lookups
 
-Repository and module methods whose only ordinary alternative is “not present” return
-`Task<Option<T>>`. This includes the Customer Concert example:
+Persistence repository methods retain the provider-native nullable contract for a missing row:
+
+```csharp
+Task<Concert?> FindByIdAsync(int concertId, CancellationToken ct = default);
+```
+
+Module, application, service, and client methods whose only ordinary alternative is “not present”
+return `Task<Option<T>>`. This includes the Customer Concert module example:
 
 ```csharp
 Task<Option<ConcertDto>> GetByIdAsync(int concertId, CancellationToken ct = default);
@@ -413,14 +419,14 @@ failure. Database/network faults and cancellation are not an `E`; they propagate
 
 Final shared repository conventions:
 
-- `FindByIdAsync` returns `Task<Option<TEntity>>`;
+- single-item repository lookups return `Task<TEntity?>`;
 - list/query methods return `Task<IReadOnlyList<TEntity>>` and use an empty list;
-- scalar projections that may be absent use `Option<T>`, including nullable value types;
-- raw EF/Dapper provider methods may return nullable values inside Infrastructure only;
+- scalar repository projections that may be absent retain their nullable provider representation;
+- modules and application-facing services convert nullable repository results with `ToOption()`;
 - no application, module Contracts, or service/client interface exposes `T?` merely to mean absence.
 
-Phase 2 adds the final `FindByIdAsync`/`ListAsync` forms alongside the published legacy methods. The
-legacy nullable/`IEnumerable` members are removed only after every consumer has migrated.
+Repository contracts are not remodeled as part of this migration. Each vertical slice converts
+nullable repository results at its module or application boundary.
 
 ### Use cases and validators
 
@@ -449,9 +455,10 @@ The shared error roles are:
 - each operation error case owns its dynamic data and returns its definition;
 - error codes are public API contracts; exception messages and third-party strings are not.
 
-Keep named `ErrorDefinition.Invalid/NotFound/...` factories where they improve construction, but do
-not infer public error messages from CLR type names or `[DisplayName]`. An operation owns its code and
-safe message explicitly.
+Keep named `ErrorDefinition.Invalid/NotFound/...` factories where they improve construction.
+`ErrorDefinition.NotFound<T>(code)` may derive the standard message from an explicit `[DisplayName]`;
+types without that metadata use the explicit-message overload, and CLR type names are never a
+fallback. The operation still owns its stable code.
 
 ### HTTP and other transports
 
@@ -463,8 +470,8 @@ Controllers consume the shared `Concertable.Shared.Api` adapters:
 - the status-only non-generic Result has no HTTP adapter because a public failure must have a reason;
 - the error mapper is generic over `TError : IError`, avoiding conversion of a future struct union to
   an interface receiver;
-- the frozen mapping explicitly owns both HTTP status and title for every ErrorKind; do not infer or
-  override them in controllers;
+- the frozen mapping owns the HTTP status for every ErrorKind and titles come from the centralized
+  `HttpStatusCode.ToReasonPhrase()` helper; do not override them in controllers;
 - ordinary definitions create `ProblemDetails`; validation definitions create the concrete
   `ValidationProblemDetails` type and preserve its keyed errors;
 - both paths retain the shared ProblemDetails service customization, `application/problem+json`,
@@ -528,8 +535,8 @@ native unions.
 
 Make the Definition-to-ProblemDetails helper generic (`ToProblemActionResult<TError>` with
 `where TError : IError`) so a value-type native union uses a constrained interface call rather than
-being converted to an `IError` receiver and boxed. The frozen status/title mapping and validation
-specialization remain centralized and unchanged.
+being converted to an `IError` receiver and boxed. The frozen status mapping, centralized reason
+phrases, and validation specialization remain unchanged.
 
 ### Mandatory native-union destination
 
@@ -609,14 +616,14 @@ PR before implementation; do not touch PR #282 or the dirty ResultFoundationComp
   extensions; remove `Unit`;
 - `api/Concertable.Shared/src/Concertable.Kernel/Errors/Error.cs`: complete
   ErrorDescriptor/ValidationErrorDescriptor -> ErrorDefinition/ValidationErrorDefinition and
-  `IError.Definition`; retain validation invariants but remove generic CLR-display-name message
-  inference;
+  `IError.Definition`; retain validation invariants and the explicit `[DisplayName]`-based generic
+  NotFound factory;
 - `api/Concertable.Shared/src/Concertable.Kernel/Concertable.Kernel.csproj`: no CFE, FluentResults,
   Dunet, or OneOf dependency may support the new types;
 - `api/Concertable.Shared/src/Concertable.Shared.Api/Results/ResultHttpExtensions.cs` and error/exception
   mapping: consume the owned value-bearing and no-value Result arities; make the internal error mapper
   generic over `TError : IError` so future struct unions use a constrained call rather than boxing;
-  store explicit frozen status/title pairs; create concrete `ProblemDetails` and
+  store the frozen status mapping and derive titles with `HttpStatusCode.ToReasonPhrase()`; create concrete `ProblemDetails` and
   `ValidationProblemDetails` terminals while preserving the existing serialized policy;
 - `api/Concertable.Shared/Directory.Packages.props` and affected csproj files: remove the CFE runtime
   dependency and remove Dunet from the test-only foundation if no production union needs it yet;
@@ -659,30 +666,10 @@ PR before implementation; do not touch PR #282 or the dirty ResultFoundationComp
   Phase 2. Confirm all standalone service carves still consume packages rather than cross-service
   project references.
 
-### Phase 2 — additive repository Option/list contracts
+### Phase 2 — Payment owned-result expansion
 
-**Dependency:** Phase 1 package published and platform sync merged.
-
-**Scope and expected projects/files:**
-
-- `api/Concertable.DataAccess/Concertable.DataAccess.Application/IReadRepository.cs`: add final
-  `FindByIdAsync -> Task<Option<TEntity>>` and `ListAsync -> Task<IReadOnlyList<TEntity>>` contracts;
-  retain nullable `GetByIdAsync`/`IEnumerable` `GetAllAsync` temporarily;
-- `api/Concertable.DataAccess/Concertable.DataAccess.Infrastructure/Repository.cs`: implement both
-  forms from one query path, converting provider null at the repository edge;
-- add focused DataAccess tests for found/missing entities, empty/non-empty lists, cancellation, and
-  database fault propagation; do not turn faults into None;
-- publish the additive DataAccess packages and own the generated platform sync.
-
-**Verification:**
-
-- new DataAccess tests plus representative Customer Concert and B2B repository integration tests;
-- full Release solution build;
-- no E2E: additive behavior-preserving contract work; label `skip-e2e`.
-
-### Phase 3 — Payment owned-result expansion
-
-**Dependency:** Phases 1-2 synced. This phase must not begin on a red platform pin.
+**Dependency:** Phase 1 package published and platform sync merged. This phase must not begin on a
+red platform pin.
 
 **Scope and expected projects/files:**
 
@@ -714,16 +701,17 @@ PR before implementation; do not touch PR #282 or the dirty ResultFoundationComp
   queue run the API payment/escrow paths. UI E2E is not independently justified by the transport
   expansion.
 
-### Phase 4 — revise PR #282: Customer Ticket vertical slice
+### Phase 3 — revise PR #282: Customer Ticket vertical slice
 
-**Dependency:** additive Payment typed client package from Phase 3 is synced.
+**Dependency:** additive Payment typed client package from Phase 2 is synced.
 
 **Scope and expected projects/files:**
 
 - rebase/rebuild `Feature/TypedResultMigrationPhase2` from current main without copying its CFE package
   additions;
 - Customer Concert `IConcertModule.GetByIdAsync` and implementation return `Task<Option<ConcertDto>>`;
-- Ticket repositories and module single-item lookups use Option; collection queries use read-only lists;
+- Ticket repositories retain nullable single-item lookup results; module lookups convert them to
+  Option, and collection queries use read-only lists;
 - `PurchaseError` and `CheckoutError` remain operation-specific but implement the finalized
   `IError.Definition` contract and obey the Dunet containment rules;
 - `ITicketService.PurchaseAsync`/`CheckoutAsync` use owned Result and compose with `OrFailure`, Bind,
@@ -744,14 +732,15 @@ PR before implementation; do not touch PR #282 or the dirty ResultFoundationComp
 - API E2E ticket purchase/payment is justified for this behavior-changing vertical slice. UI E2E is
   required only if visible response behavior or the UI contract changes.
 
-### Phase 5 — B2B Concert validation and lifecycle core
+### Phase 4 — B2B Concert validation and lifecycle core
 
-**Dependency:** Phases 1-3 synced; may follow Phase 4 to keep migration learning linear.
+**Dependency:** Phases 1-2 synced; may follow Phase 3 to keep migration learning linear.
 
 **Scope and expected projects/files:**
 
-- `Concertable.B2B.Concert.Application/Domain/Infrastructure/Api/Contracts`: migrate repository and
-  module single-item lookups to Option and operation methods to owned Result;
+- `Concertable.B2B.Concert.Application/Domain/Infrastructure/Api/Contracts`: keep repository
+  single-item lookups nullable, convert module/application lookups to Option, and migrate operation
+  methods to owned Result;
 - define errors for apply, accept/reject policy, withdraw, draft creation, and lifecycle transition;
 - change `LifecycleStateMachine.Next` and `ILifecycleTransitioner` to typed composition without
   catch/rethrow;
@@ -769,9 +758,9 @@ PR before implementation; do not touch PR #282 or the dirty ResultFoundationComp
 - API E2E is justified because lifecycle behavior spans modules and deal strategies; UI E2E only for
   changed user-visible contracts.
 
-### Phase 6 — B2B Concert payment/cancel/finish workflows
+### Phase 5 — B2B Concert payment/cancel/finish workflows
 
-**Dependency:** Phase 5 plus the Phase 3 typed Payment surface.
+**Dependency:** Phase 4 plus the Phase 2 typed Payment surface.
 
 **Scope and expected projects/files:**
 
@@ -792,16 +781,16 @@ PR before implementation; do not touch PR #282 or the dirty ResultFoundationComp
 - B2B worker tests and full Release solution build;
 - API E2E for all payment workflow variants is required; UI E2E only for changed UI contracts.
 
-### Phase 7A — B2B Tenant outcomes and lookups
+### Phase 6A — B2B Tenant outcomes and lookups
 
-**Dependency:** Phase 6.
+**Dependency:** Phase 5.
 
 **Scope and expected projects/files:**
 
 - `api/Concertable.B2B/src/Modules/Tenant/{Application,Contracts,Domain,Infrastructure,Api}`:
   invitation, membership, tenant, tax-compliance, and current-tenant operations;
-- convert nullable Tenant module/repository single-item contracts to Option and lists to read-only
-  lists;
+- retain nullable Tenant repository single-item contracts, convert module/application lookups to
+  Option, and use read-only lists for collections;
 - make expected not-found, conflict, invalid, and forbidden outcomes operation-specific Results;
 - classify “not found immediately after this operation saved it” as an invariant/fault, not a normal
   NotFound Result;
@@ -814,9 +803,9 @@ PR before implementation; do not touch PR #282 or the dirty ResultFoundationComp
 - API E2E is justified for invitation/membership authorization flows; UI E2E only if their response
   contract changes.
 
-### Phase 7B — B2B Venue and Artist outcomes and lookups
+### Phase 6B — B2B Venue and Artist outcomes and lookups
 
-**Dependency:** Phase 7A.
+**Dependency:** Phase 6A.
 
 **Scope and expected projects/files:**
 
@@ -833,9 +822,9 @@ PR before implementation; do not touch PR #282 or the dirty ResultFoundationComp
 - B2B architecture tests and full Release solution build;
 - API E2E for create/update/ownership behavior is justified; UI E2E only for a changed UI contract.
 
-### Phase 7C — B2B Deal, User, and Conversations outcomes
+### Phase 6C — B2B Deal, User, and Conversations outcomes
 
-**Dependency:** Phase 7B.
+**Dependency:** Phase 6B.
 
 **Scope and expected projects/files:**
 
@@ -854,16 +843,17 @@ PR before implementation; do not touch PR #282 or the dirty ResultFoundationComp
 - API E2E only for behavior-changing deal/user/conversation flows; a mechanical lookup-contract PR
   with complete integration coverage uses `skip-e2e`.
 
-### Phase 8A — Customer Review, Preference, and User outcomes
+### Phase 7A — Customer Review, Preference, and User outcomes
 
-**Dependency:** Phase 7 establishes the final patterns; this remains Customer-owned and introduces no
+**Dependency:** Phase 6 establishes the final patterns; this remains Customer-owned and introduces no
 cross-service project reference.
 
 **Scope and expected projects/files:**
 
 - `api/Concertable.Customer/src/Modules/Review`, `Modules/Preference`, and `Modules/User` across
   Application/Contracts/Domain/Infrastructure/Api projects;
-- migrate Review/Preference command refusals to typed Results and repository/module absence to Option;
+- migrate Review/Preference command refusals to typed Results; retain nullable repository lookups and
+  convert absence to Option at module/application boundaries;
 - classify `GetMe`/authenticated-user absence explicitly as expected NotFound/Unauthenticated or an
   invariant fault according to the existing endpoint contract;
 - convert multi-user queries to empty read-only lists and keep infrastructure/cancellation exceptional.
@@ -874,15 +864,16 @@ cross-service project reference.
 - Customer architecture tests where present and full Release solution build;
 - API E2E for changed Review/Preference/User behavior; UI E2E only for changed UI responses.
 
-### Phase 8B — Customer Venue, Artist, and remaining Concert/Ticket contracts
+### Phase 7B — Customer Venue, Artist, and remaining Concert/Ticket contracts
 
-**Dependency:** Phase 8A and the Phase 4 Ticket pattern.
+**Dependency:** Phase 7A and the Phase 3 Ticket pattern.
 
 **Scope and expected projects/files:**
 
 - `api/Concertable.Customer/src/Modules/Venue`, `Modules/Artist`, and remaining
   `Modules/Concert`/`Modules/Ticket` Application/Contracts/Domain/Infrastructure/Api projects;
-- convert all remaining single-item reads to Option and collection reads to read-only lists;
+- convert all remaining module/application single-item reads to Option and collection reads to
+  read-only lists while repository lookups remain nullable;
 - migrate caller-actionable ticket availability and concert mutation outcomes to typed Results;
 - keep cross-service data flow through existing Contracts/events and synchronous Payment adapter
   boundaries from `api/ARCHITECTURE.md`.
@@ -893,9 +884,9 @@ cross-service project reference.
 - full Release solution build and Customer standalone carve;
 - API E2E for ticket/concert behavior changes; UI E2E only for a changed visible contract.
 
-### Phase 8C — Kernel value objects, Messaging, and background paths
+### Phase 7C — Kernel value objects, Messaging, and background paths
 
-**Dependency:** Phase 8B.
+**Dependency:** Phase 7B.
 
 **Scope and expected projects/files:**
 
@@ -915,26 +906,25 @@ cross-service project reference.
 - API/UI E2E is not justified for isolated value-object refactors; run API E2E only if a background
   cross-service behavior changes, otherwise label `skip-e2e`.
 
-### Phase 9 — published contract cleanup and enforcement
+### Phase 8 — published contract cleanup and enforcement
 
-**Dependency:** every consumer uses the additive DataAccess and Payment owned contracts, and repository
-search finds no legitimate legacy caller.
+**Dependency:** every consumer uses the additive Payment owned contracts and the owned Kernel
+functional types.
 
 **Scope and expected projects/files:**
 
 - remove legacy Payment FluentResults interfaces/methods, wire compatibility fields that have passed
   the agreed compatibility window, and their adapters; publish and own platform sync;
-- remove legacy nullable `IReadRepository.GetByIdAsync` and `IEnumerable` `GetAllAsync`; publish and own
-  platform sync;
 - remove remaining FluentResults/CSharpFunctionalExtensions package pins/references/usings and Kernel
   `ErrorExtensions`/legacy exception helpers once no longer used;
 - retain Dunet only for actual operation union declarations; remove its test-only/shared placement and
   enforce the containment rules;
 - add architecture checks for no third-party Result/Maybe/Option in public signatures, no nullable
-  repository/module single-item lookup contracts, no Option-wrapped collections, no Result on wire
-  DTOs, and no controller-local typed-error-to-status switches;
+  module/application/service/client single-item lookup contracts, no Option-wrapped collections, no
+  Result on wire DTOs, and no controller-local typed-error-to-status switches;
 - run a final inventory for `FluentResults`, `CSharpFunctionalExtensions`, `Maybe`, third-party
-  `Result`, nullable lookup signatures, `IError`, ErrorDefinition, and generated Dunet APIs;
+  `Result`, nullable non-persistence lookup signatures, `IError`, ErrorDefinition, and generated
+  Dunet APIs;
 - retain this plan until the mandatory native-union cutover is complete.
 
 **Verification:**
@@ -944,7 +934,7 @@ search finds no legitimate legacy caller.
 - full API E2E is justified for the final cross-service contract removal; run UI E2E only if API
   behavior/shape changed rather than solely internal type signatures.
 
-### Phase 10 — .NET 11 native-union cutover
+### Phase 9 — .NET 11 native-union cutover
 
 **Dependency:** .NET 11 and C# unions are released and Concertable is ready to move its backend SDK
 and target framework together. Begin this phase immediately when that production upgrade is available;
@@ -983,7 +973,7 @@ union declarations.
 
 ## Package and compatibility rules
 
-For every published Kernel, DataAccess, Payment, or Contracts change:
+For every published Kernel, Payment, or Contracts change:
 
 1. expand additively when old and new consumers must coexist;
 2. merge/publish from the owning project;
@@ -1005,14 +995,14 @@ code. `UseLocalCore=true` remains a local diagnostic option only.
 | Result structs silently treat default as a valid case | reserve tag zero, fail every operational access, and test default through arrays/fields/tasks |
 | Option becomes nullable with new syntax | forbid null payloads at generic and runtime boundaries and expose no throwing Value property |
 | Error unions leak Dunet and block native migration | keep generated matching owner-local; public composition depends on Result/IError/factories, not generator APIs |
-| Native-union expectations move during previews | keep production on net10/C#14 now; make factories/combinators the stable consumer API, then execute mandatory Phase 10 from the released specification |
+| Native-union expectations move during previews | keep production on net10/C#14 now; make factories/combinators the stable consumer API, then execute mandatory Phase 9 from the released specification |
 | Published package changes strand services | use expand/publish/sync/consumer/cleanup and treat every generated sync as part of its owning phase |
 | Typed Result swallows operational failures | no catch in combinators; explicit tests prove infrastructure faults and cancellation propagate |
 
 No design decision blocks Phase 1. Tommy's input is genuinely required later for the existing Payment
 `ReleaseByBookingIdAsync`/`RefundByBookingIdAsync` null-success semantics: confirm whether “nothing was
 released/refunded” is a benign `None`, a successful no-value/idempotent no-op, or an operation failure.
-That decision changes the Phase 3 public contract and must be made from product/idempotency semantics,
+That decision changes the Phase 2 public contract and must be made from product/idempotency semantics,
 not inferred from the present `Result<T?>` shape.
 
 ## Resume prompt — review Phase 1 revision

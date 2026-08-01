@@ -229,6 +229,11 @@ failures, `Result<TError>` when success has no payload, `Result` when neither ca
 `Result<Option<T>, TError>`; collection queries return empty read-only lists. Faults, cancellation,
 and violated invariants remain exceptions.
 
+Persistence repository single-item lookups return nullable values (`Task<TEntity?>`), matching the
+provider's missing-row contract. Module, application, service, and client boundaries convert that
+nullable value with `ToOption()` and expose `Option<T>` for ordinary absence. Do not push `Option`
+into repository or persistence contracts.
+
 `TError` is an operation-owned Dunet union named `XError` that implements `IError`. Business unions
 stay with their operation; shared Kernel owns only `IError`, its definitions, and `ErrorKind`.
 Place the union in Application, `*.Contracts`, or a published client contract according to the
@@ -260,6 +265,10 @@ Codes are lowercase dot-separated identifiers with an owning operation/module pr
 Messages are explicitly authored caller-safe text, never exception messages, provider detail, SQL,
 stack traces, or values whose disclosure has not been reviewed. Validation definitions contain at
 least one structured field message.
+
+For the standard "not found" message, `ErrorDefinition.NotFound<T>(code)` may derive the entity name
+from an explicit `[DisplayName]`. Types without that caller-facing metadata use the overload with an
+explicit message; the CLR type name is never used as a fallback.
 
 Compose owned Results and Options with `Bind`, `Map`, `MapError`, `Ensure`, `Tap`, `OrFailure`, and
 the Kernel Task extensions until a terminal adapter. Ordinary composition is fail-fast; only
