@@ -1,10 +1,13 @@
 # Concertable-owned Result and Option migration
 
-> **Status:** Phase 1's revised no-value Result design was completed and verified on 2026-08-01.
+> **Status:** Phase 1's revised no-value Result design merged in PR #290, published as platform
+> `0.1.0-alpha.0.740`, and synced green in PR #291 on 2026-08-01.
 > Non-generic `Result`, `Result<TValue>`, `UnitResult<TError>`, and accumulating `ValidationErrors` now replace `Unit` and
 > every `Result<Unit,TError>` API from the initial implementation.
-> Phase 2 remains blocked until the revised branch merges, the Kernel package publishes, and its
-> generated platform-sync PR lands green.
+> The B2B service migration is active on `Refactor/ConcertWorkflowDispatchers`, preserving its existing
+> workflow-boundary refactor while independent B2B modules move to the owned Kernel types. B2B paths
+> consuming Payment's typed client remain blocked until Phase 2 publishes and platform-syncs that
+> additive surface; Payment-independent B2B work is not blocked.
 >
 > **Decision:** Concertable owns string-error `Result` and `Result<TValue>`, typed-error
 > `UnitResult<TError>` and `Result<TValue, TError>`, and `Option<T>` in `Concertable.Kernel`. They are stable domain vocabulary,
@@ -594,10 +597,49 @@ not turn the required keyword migration back into an optional decision.
 
 ## Ordered implementation phases
 
-Every listed implementation phase/subphase is one independently reviewable PR unless its package
-publication creates a generated platform-sync PR, which is part of that phase's ownership. Before
-each phase, refresh `origin/main`, open PRs, and platform-sync state. A completed and verified phase is
-a hard stop under `plans/AGENTS.md`.
+Delivery is one PR per microservice, with the detailed phases below acting as independently verifiable
+workstreams inside that service PR. Payment owns Phase 2; Customer owns Phases 3 and 7A-7B; B2B owns
+Phases 4-6C; shared Kernel/Messaging cleanup owns Phases 7C-8. Coordinated workers may implement
+independent module workstreams concurrently in the active service checkout, but only the coordinator
+edits this plan or performs Git operations.
+
+Package publication remains a hard boundary. Payment-independent B2B and Customer work may start from
+the published Phase 1 Kernel, but their Payment-consuming work cannot complete or merge until the
+Phase 2 Payment package has published and its generated platform-sync PR is green. Before each service
+PR, refresh `origin/main`, open PRs, and platform-sync state. A completed and verified service PR or
+package boundary is a hard stop under `plans/AGENTS.md`.
+
+### Active B2B PR execution checkpoints
+
+`Refactor/ConcertWorkflowDispatchers` is the single B2B migration branch and PR. Its existing
+dispatcher-collapse commit is retained, and the reviewed checkout/payment-verification improvements
+from `Refactor/ConcertWorkflowBoundaries` are reconciled manually where they still apply; do not
+cherry-pick the older branch wholesale. The detailed Phase 4-6 headings below define scope, while the
+implementation order for this PR is:
+
+1. **Complete in `refactor(b2b): migrate Deal outcomes to owned results`.** Deal: nullable
+   repositories, Option-returning application/module lookups, typed create/update errors, validation
+   accumulation, controller terminals, seeds, and focused tests. The Deal unit suite passed 21/21 and
+   the full B2B Release build completed with zero errors on 2026-08-01. Container-backed integration
+   verification is pending because Docker is currently unreliable.
+2. **Next checkpoint.** Tenant: invitation, membership, tenant and tax-compliance lookups/outcomes, controllers, workers,
+   seeds, and focused tests.
+3. Venue and Artist: create/update/ownership outcomes and optional single-item lookups.
+4. User and Conversations: optional lookups and expected command outcomes.
+5. Concert core: reconcile the stale workflow-boundary work, then migrate validation, lifecycle,
+   application/module lookups, dispatchers and executors that do not consume Payment results.
+6. Concert payment workflows: migrate only after Phase 2's typed Payment client package has published
+   and its platform-sync PR is green. No temporary string bridge or adapter over FluentResults is
+   permitted.
+7. B2B closure: remove legacy Result dependencies with no remaining consumers, run architecture and
+   integration coverage, build the full B2B solution and standalone carve, then run the justified API
+   E2E paths before the PR is opened.
+
+Each numbered checkpoint is a coherent commit. Before committing it, run its affected unit tests and
+the full Release B2B solution build so cross-module callers cannot remain half-migrated. Update this
+section with the completed commit and exact next checkpoint, then stop with a fresh-context resume
+prompt. Integration tests run when the checkpoint changes a module/API boundary; service-wide E2E is
+reserved for checkpoint 7 so intermediate refactors do not repeatedly boot the full stack.
 
 ### Phase 1 — owned Kernel functional foundation and shared adapters — complete
 
@@ -742,7 +784,8 @@ red platform pin.
 
 ### Phase 4 — B2B Concert validation and lifecycle core
 
-**Dependency:** Phases 1-2 synced; may follow Phase 3 to keep migration learning linear.
+**Dependency:** Phase 1 synced. The Payment-independent core is checkpoint 5 of the active B2B PR;
+Payment-consuming workflow code belongs exclusively to Phase 5/checkpoint 6.
 
 **Scope and expected projects/files:**
 
@@ -791,7 +834,8 @@ red platform pin.
 
 ### Phase 6A — B2B Tenant outcomes and lookups
 
-**Dependency:** Phase 5.
+**Dependency:** Phase 1 synced. This is checkpoint 2 of the active B2B PR and deliberately precedes
+Concert so its module contracts are stable before Concert consumes them.
 
 **Scope and expected projects/files:**
 
@@ -813,7 +857,7 @@ red platform pin.
 
 ### Phase 6B — B2B Venue and Artist outcomes and lookups
 
-**Dependency:** Phase 6A.
+**Dependency:** B2B checkpoint 2.
 
 **Scope and expected projects/files:**
 
@@ -832,7 +876,7 @@ red platform pin.
 
 ### Phase 6C — B2B Deal, User, and Conversations outcomes
 
-**Dependency:** Phase 6B.
+**Dependency:** B2B checkpoint 3.
 
 **Scope and expected projects/files:**
 
