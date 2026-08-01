@@ -1,9 +1,8 @@
 # Concertable-owned Result and Option migration
 
-> **Status:** Phase 1's initial implementation was completed and verified on 2026-08-01, then its
-> no-value Result design was reopened before delivery. Revise the same branch to add non-generic
-> `Result` and `Result<TError>`, add the accumulating `ValidationErrors` payload, remove `Unit` from
-> the public model, and repeat the Phase 1 gate.
+> **Status:** Phase 1's revised no-value Result design was completed and verified on 2026-08-01.
+> Non-generic `Result`, `Result<TError>`, and accumulating `ValidationErrors` now replace `Unit` and
+> every `Result<Unit,TError>` API from the initial implementation.
 > Phase 2 remains blocked until the revised branch merges, the Kernel package publishes, and its
 > generated platform-sync PR lands green.
 >
@@ -585,7 +584,7 @@ publication creates a generated platform-sync PR, which is part of that phase's 
 each phase, refresh `origin/main`, open PRs, and platform-sync state. A completed and verified phase is
 a hard stop under `plans/AGENTS.md`.
 
-### Phase 1 — owned Kernel functional foundation and shared adapters — revision required
+### Phase 1 — owned Kernel functional foundation and shared adapters — complete
 
 The initial implementation on `Refactor/OwnedResultFoundation` passed 181/181 Kernel tests, 40/40
 Shared.Api tests, and the Release solution build with zero errors on 2026-08-01. Before delivery, the
@@ -593,6 +592,10 @@ no-value design was rejected. Revise the same unmerged branch to add non-generic
 `Result<TError>`, add immutable `ValidationErrors`, remove `Unit` and every `Result<Unit,TError>` API,
 then repeat the complete Phase 1 test/build gate. Phase 2 must not begin before the revised package is
 merged, published, and platform-synced green.
+
+Completed on 2026-08-01: the revised implementation passed 215/215 Kernel tests, 45/45 Shared.Api
+tests, and `dotnet build api/Concertable.slnx --configuration Release` with zero errors. Local E2E was
+not run because this remains isolated, behavior-preserving foundation work.
 
 **Dependency:** continue in the clean
 `C:\Users\TommySeery\source\repos\Concertable.worktrees\OwnedResultFoundation` worktree on
@@ -1012,26 +1015,14 @@ released/refunded” is a benign `None`, a successful no-value/idempotent no-op,
 That decision changes the Phase 3 public contract and must be made from product/idempotency semantics,
 not inferred from the present `Result<T?>` shape.
 
-## Resume prompt — Phase 1 revision
+## Resume prompt — review Phase 1 revision
 
 ```text
-Revise Phase 1 only from plans/TYPED_RESULT_MIGRATION.md on the existing
-Refactor/OwnedResultFoundation branch: add status-only Result and no-value Result<TError>, add
-ValidationErrors for accumulating policy validators, remove Unit and Result<Unit,TError>, and update
-the Shared.Api adapters. First read AGENTS.md, plans/AGENTS.md,
-api/ARCHITECTURE.md, api/AGENTS.md, and the complete plan; refresh origin/main, all relevant worktrees,
-open PRs, and the platform-sync gate. Do not start while a platform-sync PR is red.
+cd C:\Users\TommySeery\source\repos\Concertable.worktrees\OwnedResultFoundation
 
-Work only in
-C:\Users\TommySeery\source\repos\Concertable.worktrees\OwnedResultFoundation on
-Refactor/OwnedResultFoundation, whose initial foundation is committed as bd88796d. Do not touch PR
-#282, the old merged PR #284 branch, the dirty Feature/ResultFoundationComposition experiment, or
-unrelated working-tree changes. Implement the exact public API, semantics, combinators, async behavior,
-collection operations, default/null/equality rules, and complete test matrix specified in Phase 1.
-Kernel must not depend on CSharpFunctionalExtensions, FluentResults, OneOf, or Dunet for Result/Option.
-
-Run Kernel and Shared.Api unit tests and a Release build of api/Concertable.slnx. Do not run local E2E;
-use the skip-e2e PR label if the final diff remains isolated and behavior-preserving. Commit the
-completed verified phase, update this plan to mark only Phase 1 complete, then stop and provide the
-next-phase resume prompt. Do not begin Phase 2.
+Run /code-review for Refactor/OwnedResultFoundation's complete Phase 1 diff against origin/main.
+Read plans/TYPED_RESULT_MIGRATION.md and the required AGENTS/architecture files first. Review the
+owned Result/Option foundation, ValidationErrors, Shared.Api terminals, native-union compatibility,
+and expanded tests. Do not begin Phase 2; it remains blocked until this branch merges, Kernel
+publishes, and the generated platform-sync PR lands green.
 ```

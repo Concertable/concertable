@@ -224,9 +224,10 @@ don't add new ones.
 ## Typed operation Results
 
 Use `Concertable.Kernel.Functional.Result<TValue, TError>` for expected, caller-actionable operation
-failures, `Result<Unit, TError>` when success has no payload, and `Option<T>` when ordinary absence
-has no explanation yet. A successful optional payload is `Result<Option<T>, TError>`; collection
-queries return empty read-only lists. Faults, cancellation, and violated invariants remain exceptions.
+failures, `Result<TError>` when success has no payload, `Result` when neither case has a payload, and
+`Option<T>` when ordinary absence has no explanation yet. A successful optional payload is
+`Result<Option<T>, TError>`; collection queries return empty read-only lists. Faults, cancellation,
+and violated invariants remain exceptions.
 
 `TError` is an operation-owned Dunet union named `XError` that implements `IError`. Business unions
 stay with their operation; shared Kernel owns only `IError`, its definitions, and `ErrorKind`.
@@ -276,9 +277,10 @@ configuration. Do not use generated `Unwrap` or case-specific `MatchX` APIs with
 Keep `IError`, definitions, shared Result extensions, transports, persistence, messages, and wire
 formats independent of Dunet.
 
-After the repository moves to stable .NET 11/C# 15, replace operation error declarations with native
-unions and full Dunet matches with native exhaustive switch expressions. The owned Result, Option,
-Unit, composition, factories, definitions, and transport adapters remain the stable contract.
+After the repository moves to stable .NET 11/C# 15, replace operation error declarations and the
+owned Result/Option declarations with native unions, and replace full Dunet matches with native
+exhaustive switch expressions. Composition, factories, definitions, and transport adapters remain
+the stable contract.
 
 Controllers terminate through `Concertable.Shared.Api.Results`. Result failures and exceptions both
 write through `IProblemDetailsService`, so registered writers, content negotiation, request
