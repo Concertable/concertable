@@ -243,6 +243,17 @@ function useInviteMember() {
 
 ---
 
+## Don't use `useEffect` when you don't need it
+
+An Effect is only for syncing with something *outside* React (a SignalR/websocket subscription, a DOM
+listener) — mount-only ones use [`useMountEffect`](../shared/src/hooks/useMountEffect.ts). It is **not**
+how you respond to an event or compute derived data; doing that is the [*You Might Not Need an
+Effect*](https://react.dev/learn/you-might-not-need-an-effect) trap and forces `useRef` guards to stop
+re-fire loops. Route by trigger: **event (click/open) → event handler**; **derived from state → compute
+in render**; **server data → `useQuery`/`useMutation`** (see "TanStack Query owns all server state").
+
+---
+
 ## One `xApi` per resource; one axios instance per backend service
 
 The data layer has a fixed structure (naming in [`CODE_CONVENTIONS.md`](./CODE_CONVENTIONS.md); this

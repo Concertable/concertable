@@ -3,14 +3,19 @@ export type MessageAction =
   | "ApplicationAccepted"
   | "ConcertPosted";
 
+export type MessageSenderKind = "Org" | "Member";
+
 export interface MessageSender {
-  id: string;
-  email: string;
+  kind: MessageSenderKind;
+  displayName: string;
+  county: string | null;
+  town: string | null;
 }
 
 export interface Message {
   id: number;
-  fromUser: MessageSender;
+  counterpartTenantId: string;
+  sender: MessageSender;
   action?: MessageAction;
   content: string;
 }

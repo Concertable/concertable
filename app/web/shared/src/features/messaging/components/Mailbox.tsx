@@ -24,10 +24,18 @@ export function Mailbox() {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative"
+          data-testid="mailbox-trigger"
+        >
           <MailIcon />
           {unreadCount > 0 && (
-            <span className="bg-primary text-primary-foreground absolute -top-0.5 -right-0.5 flex size-4 items-center justify-center rounded-full text-[10px] font-medium">
+            <span
+              data-testid="mailbox-unread"
+              className="bg-primary text-primary-foreground absolute -top-0.5 -right-0.5 flex size-4 items-center justify-center rounded-full text-[10px] font-medium"
+            >
               {unreadCount > 99 ? "99+" : unreadCount}
             </span>
           )}
@@ -56,10 +64,14 @@ export function Mailbox() {
             </p>
           )}
           {messages?.data.map((message) => (
-            <div key={message.id} className="space-y-1 px-3 py-2.5">
+            <div
+              key={message.id}
+              data-testid="mailbox-message"
+              className="space-y-1 px-3 py-2.5"
+            >
               <div className="flex items-center justify-between gap-2">
-                <span className="text-muted-foreground text-xs">
-                  {message.fromUser.email}
+                <span className="text-foreground truncate text-xs font-medium">
+                  {message.sender.displayName}
                 </span>
                 {message.action && (
                   <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-xs">
@@ -67,6 +79,19 @@ export function Mailbox() {
                   </span>
                 )}
               </div>
+              {message.sender.kind === "Org"
+                ? message.sender.town && (
+                    <span className="text-muted-foreground text-[11px]">
+                      {[message.sender.town, message.sender.county]
+                        .filter(Boolean)
+                        .join(", ")}
+                    </span>
+                  )
+                : (
+                    <span className="text-muted-foreground text-[11px]">
+                      Sent by your team
+                    </span>
+                  )}
               <p className="text-sm">{message.content}</p>
             </div>
           ))}
