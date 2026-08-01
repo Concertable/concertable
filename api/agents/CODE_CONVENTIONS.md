@@ -223,17 +223,23 @@ don't add new ones.
 
 ## Typed operation Results
 
-Use `CSharpFunctionalExtensions.Result<TValue, TError>` for expected, caller-actionable command
-refusals and `UnitResult<TError>` when success has no value. Faults, cancellation, and violated
-invariants remain exceptions; command Results never have nullable success payloads. Query absence
-may remain nullable when absence is ordinary data; a command converts repository absence once into
-its own typed failure when the caller can act on it.
+Use `Concertable.Kernel.Functional.Result<TValue, TError>` for expected, caller-actionable operation
+failures, `UnitResult<TError>` when success has no payload, and `Result<TValue>` or `Result` only for
+internal string-error flows that do or do not carry a success value. Use `Option<T>` when ordinary absence has no explanation yet. A successful optional payload is
+`Result<Option<T>, TError>`; collection queries return empty read-only lists. Faults, cancellation,
+and violated invariants remain exceptions.
+
+Persistence repository single-item lookups return nullable values (`Task<TEntity?>`), matching the
+provider's missing-row contract. Module, application, service, and client boundaries convert that
+nullable value with `ToOption()` and expose `Option<T>` for ordinary absence. Do not push `Option`
+into repository or persistence contracts.
 
 `TError` is an operation-owned Dunet union named `XError` that implements `IError`. Business unions
 stay with their operation; shared Kernel owns only `IError`, its definitions, and `ErrorKind`.
 Place the union in Application, `*.Contracts`, or a published client contract according to the
-widest caller that must match it. Never move a service-specific union into shared production or
-carry CFE/Dunet types through HTTP DTOs, protobuf, events, or persistence.
+widest caller that must match it. Dunet may declare an operation's error cases, but it is never the
+Result or Option carrier. Never move a service-specific union into shared production or carry
+Result, Option, or Dunet types through HTTP DTOs, protobuf, events, or persistence.
 
 Outside its declaration, construct an error only through a static factory on the union
 (`PurchaseError.NotFound(id)`, `PurchaseError.Invalid(messages)`). Do not call a generated case
@@ -241,10 +247,8 @@ constructor directly. The factory is the stable construction seam when Dunet rec
 union structs.
 
 Build definitions through `ErrorDefinition.Invalid`, `NotFound`, `Conflict`, `Unauthenticated`,
-`Forbidden`, `PaymentRequired`, and `Validation`. For an ordinary missing resource, prefer
-`ErrorDefinition.NotFound<T>(code)`: `T` must carry `[DisplayName]`, and the factory derives the safe
-`"X not found."` message. Use the explicit-message overload only when the operation needs genuinely
-contextual wording.
+`Forbidden`, `PaymentRequired`, and `Validation`. Every code and safe public message is explicit,
+except the standard generic not-found factory described below.
 
 Use Dunet's generated full `Match` whenever every business case must be handled: definitions,
 cross-operation error translations, lifecycle-to-operation mappings, and worker decisions that
@@ -262,27 +266,30 @@ Messages are explicitly authored caller-safe text, never exception messages, pro
 stack traces, or values whose disclosure has not been reviewed. Validation definitions contain at
 least one structured field message.
 
-Compose CFE Results and Maybes with `Bind`, `Map`, `MapError`, `Ensure`, `Tap`, and Kernel's
-`OrFailure` until a terminal adapter. Ordinary composition is fail-fast; only validation flows
-explicitly designed to collect errors accumulate them and map that collection once into their
-owning operation error. Use CFE's built-in `Task<Result<...>>` composition overloads instead of
-service-specific async Result helpers. Prefer composition or `Match` over direct `.Value` and
-`.Error` extraction; access either directly only after an obvious guard terminates the opposite
-state.
+For the standard "not found" message, `ErrorDefinition.NotFound<T>(code)` may derive the entity name
+from an explicit `[DisplayName]`. Types without that caller-facing metadata use the overload with an
+explicit message; the CLR type name is never used as a fallback.
 
-Never introduce another Result carrier, a positional generic union, or Dunet as the success/failure
-carrier. Never turn exceptions into failed Results, unwrap failures into HTTP exceptions, or carry
-Results/unions across transport or persistence boundaries.
+Compose owned Results and Options with `Bind`, `Map`, `MapError`, `Ensure`, `Tap`, `OrFailure`, and
+the Kernel Task extensions until a terminal adapter. Ordinary composition is fail-fast; only
+validation flows explicitly designed to collect errors accumulate them and map that collection once
+into their owning operation error. Consume payloads through composition, `Match`, or `TryGetValue` /
+`TryGetError`; the owned types expose no throwing `Value`, `Error`, or `Unwrap` accessor.
+
+Never introduce another Result/Option carrier or use CSharpFunctionalExtensions, FluentResults,
+OneOf, ErrorOr, LanguageExt, or Dunet to implement the Kernel functional types. Do not add implicit
+conversions, catch exceptions in combinators, turn failures into HTTP exceptions, or carry functional
+types across transport or persistence boundaries.
 
 Dunet appears only in error-union declaration files, generated full `Match` calls, and package
 configuration. Do not use generated `Unwrap` or case-specific `MatchX` APIs without a concrete need.
 Keep `IError`, definitions, shared Result extensions, transports, persistence, messages, and wire
 formats independent of Dunet.
 
-After the repository moves to stable .NET 11/C# 15, replace declarations with native unions and
-full Dunet matches with native exhaustive switch expressions. Handle the native union struct's
-default state with an explicit `null` arm, remove Dunet, and leave CFE Results, Maybes, composition,
-factories, definitions, transports, and partial `is` patterns unchanged.
+After the repository moves to stable .NET 11/C# 15, replace operation error declarations and the
+owned Result/Option declarations with native unions, and replace full Dunet matches with native
+exhaustive switch expressions. Composition, factories, definitions, and transport adapters remain
+the stable contract.
 
 Controllers terminate through `Concertable.Shared.Api.Results`. Result failures and exceptions both
 write through `IProblemDetailsService`, so registered writers, content negotiation, request
@@ -296,8 +303,8 @@ remain safe 500s. Cancellation is never normalized or handled as a response.
 
 At gRPC and worker terminals, match typed failures according to the operation policy and leave
 dependency exceptions on the exception path for retry/dead-letter behavior. FluentResults remains
-only as a temporary private aggregate-validation detail and is never imported alongside
-CSharpFunctionalExtensions.
+only as a temporary private aggregate-validation detail in unmigrated code and never implements or
+mixes with the owned functional foundation.
 
 ## DTO naming — `Response` is HTTP-only; typed `Result` is the service wrapper; C# DTOs carry no suffix
 
