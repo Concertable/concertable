@@ -15,5 +15,5 @@
 - [x] **BUG1 — MEDIUM — Correctness** — `api/Concertable.Shared/src/Concertable.Shared.Api/Results/ErrorHttpExtensions.cs:11`
   Freeze each `ErrorKind`'s HTTP status and title together instead of deriving the title with `HttpStatusCode.ToReasonPhrase()`. The Phase 1 contract says "the frozen mapping explicitly owns both HTTP status and title" so public ProblemDetails titles do not change with framework behavior.
 
-- [ ] **TEST1 — MEDIUM — Test coverage** — `api/Concertable.Shared/tests/Concertable.Shared.Api.UnitTests/TypedResultArchitectureTests.cs:224`
+- [x] **TEST1 — MEDIUM — Test coverage** — `api/Concertable.Shared/tests/Concertable.Shared.Api.UnitTests/TypedResultArchitectureTests.cs:224`
   Extend `TypedResultPattern` to recognize the new one-arity `Result<TError>` as well as `Result<TValue,TError>`. The typed-result rule says failures must not be turned into HTTP exceptions, but after replacing the old `UnitResult<TError>` alternative this guard no longer inspects no-value result slices at all.
