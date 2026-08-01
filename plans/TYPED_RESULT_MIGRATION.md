@@ -1,11 +1,15 @@
 # Concertable-owned Result and Option migration
 
-> **Status:** Phase 1 implementation completed and verified on 2026-08-01. Phase 2 is blocked until
-> this branch merges, the Kernel package publishes, and its generated platform-sync PR lands green.
+> **Status:** Phase 1's initial implementation was completed and verified on 2026-08-01, then its
+> no-value Result design was reopened before delivery. Revise the same branch to add non-generic
+> `Result` and `Result<TError>`, add the accumulating `ValidationErrors` payload, remove `Unit` from
+> the public model, and repeat the Phase 1 gate.
+> Phase 2 remains blocked until the revised branch merges, the Kernel package publishes, and its
+> generated platform-sync PR lands green.
 >
-> **Decision:** Concertable owns `Option<T>`, `Result<TValue, TError>`, and `Unit` in
-> `Concertable.Kernel`. They are stable domain vocabulary, not adapters over
-> CSharpFunctionalExtensions, FluentResults, OneOf, Dunet, or a future runtime type.
+> **Decision:** Concertable owns status-only `Result`, no-value `Result<TError>`, value-bearing
+> `Result<TValue, TError>`, and `Option<T>` in `Concertable.Kernel`. They are stable domain vocabulary,
+> not adapters over CSharpFunctionalExtensions, FluentResults, OneOf, Dunet, or a future runtime type.
 
 This is an execution plan for unfinished work. Git history is the archive for the superseded CFE
 design.
@@ -18,7 +22,9 @@ The backend will use the following vocabulary consistently:
 | --- | --- |
 | A value may legitimately be absent and absence has no explanation yet | `Option<T>` |
 | An expected operation can succeed or fail for a typed, actionable reason | `Result<TValue, TError>` |
-| The same operation has no success payload | `Result<Unit, TError>` |
+| The same operation has no success payload and has a typed failure | `Result<TError>` |
+| Only success/failure status matters and neither case has a payload | `Result` |
+| Independent validation rules may all fail | `Result<ValidationErrors>` |
 | Both legitimate absence and another expected failure are possible | `Result<Option<T>, TError>` |
 | A query returns zero or more values | an empty `IReadOnlyList<T>`, never `Option<IReadOnlyList<T>>` |
 | Infrastructure failure, cancellation, or programmer defect | exception/cancelled task |
@@ -173,14 +179,18 @@ slice proves the readability benefit.
 The types live in `Concertable.Kernel.Functional` and are published by `Concertable.Kernel`:
 
 ```csharp
-public readonly struct Unit : IEquatable<Unit>;
+public readonly struct Result : IEquatable<Result>;
 
 public readonly struct Option<T> : IEquatable<Option<T>>
     where T : notnull;
 
+public readonly struct Result<TError> : IEquatable<Result<TError>>
+    where TError : notnull;
+
 public readonly struct Result<TValue, TError> : IEquatable<Result<TValue, TError>>
     where TValue : notnull
     where TError : notnull;
+
 ```
 
 They are closed two-case tagged values. The public contract is methods and semantics, not storage
@@ -188,16 +198,28 @@ fields, generated case classes, or a third-party interface.
 
 ### No-success-value representation
 
-Use `Result<Unit, TError>`.
+Use `Result<TError>` when failure carries a typed reason, and non-generic `Result` when neither case
+carries a payload.
 
 | Candidate | Decision |
 | --- | --- |
-| `UnitResult<TError>` | rejected: creates a second Result carrier and doubles composition/HTTP/async overloads |
-| `Result<TError>` | rejected: one generic parameter would mean “error” while the first parameter of the two-argument form means “value,” making APIs and inference misleading |
-| `Result<Unit, TError>` | selected: one algebra and one set of combinators; `Unit` states exactly that success carries one possible value |
+| `Result<Unit, TError>` | rejected: mathematically regular but exposes an implementation token throughout normal application signatures |
+| `UnitResult<TError>` | rejected name: communicates the missing payload but gives application code another carrier term |
+| `Result<TError>` | selected for no-value operations with a typed failure; its parameter is always `TError` |
+| `Result` | selected for the uncommon status-only case where neither success nor failure needs a payload |
 
-`Unit` has one observable value, `Unit.Value`; all `Unit` values are equal and format as `Unit`.
-The factory `Result.Success<TError>()` returns `Result<Unit,TError>` without adding a second carrier.
+The arity is the contract: zero parameters means status only; one means typed failure only; two mean
+success value plus typed failure. Do not add a one-parameter value-bearing Result with a universal or
+untyped error. Remove public `Unit` once every Phase 1 API and test has moved to the Result arity family.
+
+The existing non-generic static `Result` factory class becomes the non-generic readonly struct. It
+continues to host generic `Success` and `Failure` factories alongside its own parameterless factories.
+All three arities use explicit named factories; no implicit conversions are added.
+
+Status-only `Result` is available for the uncommon internal case where failure is intentionally just
+a control-flow state. It has no HTTP adapter and must not replace `Result<TError>` at a boundary where
+the caller needs an actionable reason. Capability queries may still use `bool` when that is their
+complete contract.
 
 ### Construction and conversions
 
@@ -205,11 +227,13 @@ Expose named factories:
 
 - `Option.Some<T>(T value)` and `Option.None<T>()`;
 - `Option.FromNullable<T>(T? value)` overloads for nullable references and nullable value types;
+- `Result.Success()` and `Result.Failure()` for status-only outcomes;
+- `Result<TError>.Success()` and `Result<TError>.Failure(TError error)`;
 - `Result<TValue,TError>.Success(TValue value)` and
   `Result<TValue,TError>.Failure(TError error)`;
-- non-generic `Result.Success<TValue,TError>(TValue value)`,
-  `Result.Failure<TValue,TError>(TError error)`, and
-  `Result.Success<TError>()` convenience factories where inference is sufficient.
+- generic factories hosted by non-generic `Result`: `Success<TError>()`,
+  `Failure<TError>(TError error)`, `Success<TValue,TError>(TValue value)`, and
+  `Failure<TValue,TError>(TError error)`.
 
 Do not add implicit conversions in the initial contract. They hide whether a returned value is the
 success or error case, become ambiguous when `TValue` and `TError` are the same type, and make null
@@ -219,6 +243,9 @@ conversion is not.
 
 Do not expose public constructors, mutable setters, public storage/case fields, `Unwrap`, or throwing
 `Value`/`Error` properties.
+
+Those are the hand-written Phase 1 rules. Phase 10 intentionally adds the released compiler-generated
+case/pattern surface while retaining the factory/combinator API for source-compatible consumers.
 
 ### Null semantics
 
@@ -246,6 +273,10 @@ Do not expose public constructors, mutable setters, public storage/case fields, 
 - `Match<TResult>(Func<TValue,TResult> success, Func<TError,TResult> failure)` and an action overload;
 - flow-annotated `TryGetValue(out TValue value)` and `TryGetError(out TError error)`.
 
+`Result<TError>` exposes the same two states, Match/action Match without a success value, and
+`TryGetError`. Non-generic `Result` exposes the two states and Match/action Match with no payload on
+either branch. The method names and selected-branch semantics stay consistent across all arities.
+
 There is deliberately no `Value` or `Error` property that can throw when the wrong case is accessed.
 To consume a payload, code must match, compose, or explicitly test a `TryGet` result. C# cannot force a
 caller to use any return value at all, so do not claim stronger compiler enforcement than this API
@@ -256,7 +287,8 @@ actually provides.
 Use readonly structs with a private byte tag and payload fields:
 
 - `default(Option<T>)` is `None`; this is useful and matches normal optional-value behavior;
-- `default(Result<TValue,TError>)` is an invalid, uninitialized state, not success or failure;
+- `default(Result)`, `default(Result<TError>)`, and `default(Result<TValue,TError>)` are invalid,
+  uninitialized states, not success or failure;
 - every Result state/observation/composition member throws `InvalidOperationException` for an
   uninitialized Result before invoking a delegate;
 - `ToString`, equality, and hashing remain total for an uninitialized Result so debugging and
@@ -274,8 +306,8 @@ native union representation. The invalid tag is intentional and explicit.
 - `Success(x)` is never equal to `Failure(x)`, even when value and error types are the same;
 - all `None` values of the same closed generic type are equal;
 - operators `==` and `!=` agree with `Equals`;
-- debugging strings are `Some(value)`, `None`, `Success(value)`, `Failure(error)`, and
-  `Uninitialized`;
+- debugging strings are `Some(value)`, `None`, payload-free `Success`/`Failure`,
+  `Success(value)`, `Failure(error)`, and `Uninitialized`;
 - formatting is diagnostic only and is never a serialization or error-code contract.
 
 ### Synchronous composition
@@ -284,11 +316,10 @@ The first public release includes this coherent surface:
 
 | Type | Operations | Required behavior |
 | --- | --- | --- |
-| Result | `Map`, `Bind`, `MapError` | selected branch only; preserve the untouched case |
-| Result | `Ensure` | lazy predicate/error factory on success only |
-| Result | `Tap`, `TapError` | run the selected side effect and return the original Result |
-| Result | `Recover`, `RecoverWith` | failure-only fallback to a value or another Result; fallback is lazy |
-| Result | `Match` | consume both cases explicitly |
+| `Result<TValue,TError>` | `Map`, `Bind`, `MapError`, `Ensure` | selected branch only; Bind may continue into value-bearing or no-value Result |
+| `Result<TError>` | `Bind`, `MapError` | invoke a parameterless continuation on success; continue into any Result arity |
+| `Result` | `Bind`, typed `MapError` | invoke a parameterless continuation on success; lazily attach an error when required |
+| every Result arity | `Tap`, failure/error tap, recovery, `Match` | preserve the selected case and invoke only its delegate |
 | Option | `Map`, `Bind` | selected branch only; never create nested Option through Bind |
 | Option | `Match`, `OrElse` | explicit consumption and lazy fallback |
 | Option | `OrFailure` | convert `Some` to success and `None` to a lazily created typed failure |
@@ -327,15 +358,35 @@ Add only the collection operations supported by current validators and workflows
 - `Traverse` maps and sequences in input order, stopping at the first failure;
 - `TraverseAsync` runs sequentially in input order, accepts a cancellation token, and stops at the
   first failure or cancellation;
-- `Combine` combines `Result<Unit,E>` values and returns the first failure.
+- `Combine` combines `Result<E>` values and returns the first failure.
 
 Do not add parallel traversal until a call site defines ordering, concurrency, and cancellation
 semantics. Do not add an Option sequence/traverse surface initially: Concertable collection queries
 use empty read-only lists, and no current optional collection pipeline needs it.
 
-Validation accumulation is not Result's fail-fast `Sequence`. Validators collect all field/policy
-messages into a non-empty `ValidationErrors` error value and return one
-`Result<Unit,ValidationErrors>` failure.
+Validation accumulation is not Result's fail-fast `Sequence` or `Combine`. Validators collect every
+rule violation into one non-empty `ValidationErrors` payload and return
+`Result<ValidationErrors>.Failure(errors)`; a valid input returns `Result<ValidationErrors>.Success()`.
+
+`ValidationErrors` is an immutable snapshot of keyed messages. It rejects null/blank keys,
+null/blank messages, empty collections, null arrays, and mutable-array aliasing. Multiple messages for
+the same key are preserved in rule order. It does not implement `IError`: the owning operation maps it
+with `MapError` into an operation-specific error that owns the stable public code, safe message, and
+`ErrorKind`.
+
+Repository inventory found three categories that must not be mechanically unified:
+
+- FluentValidation `AbstractValidator<TRequest>` classes validate request shape at the API boundary
+  and remain on FluentValidation;
+- DI policy validators such as Customer `TicketValidator` and B2B `ApplicationValidator` /
+  `ConcertValidator` return `Result<ValidationErrors>`;
+- capability queries such as Customer `ReviewValidator` may keep returning `bool` when the caller
+  only asks whether an action is available and no explanation is part of the contract.
+
+Overloads that currently mix lookups/authorization with policy validation must be separated during
+their vertical slice: absence, forbidden access, and other operation outcomes belong in the owning
+typed Result; only accumulated rule violations belong in `ValidationErrors`. Async validators await
+their dependencies and then build the Result; dependency faults and cancellation propagate unchanged.
 
 ## Repository, module, and application boundaries
 
@@ -377,7 +428,8 @@ legacy nullable/`IEnumerable` members are removed only after every consumer has 
 - application services, module operations, commands, and queries return operation-specific typed
   Result when they have expected refusal/failure outcomes;
 - pure reads with no expected outcome beyond absence may return Option directly;
-- validators used by application workflows return `Result<Unit,ValidationErrors>`;
+- validators used by application workflows return `Result<ValidationErrors>` when they accumulate
+  policy violations;
 - FluentValidation remains appropriate for request-shape validation at API boundaries and is not
   mechanically wrapped in Result;
 - background/event handlers return Result only when their caller has meaningful typed policy handling;
@@ -408,7 +460,7 @@ Controllers consume the shared `Concertable.Shared.Api` adapters:
 
 - `Result<T,TError> where TError : IError` maps success through a caller-provided/default success
   result and failure through one centralized Definition-to-ProblemDetails mapper;
-- `Result<Unit,TError> where TError : IError` maps success without inventing a value body;
+- `Result<TError> where TError : IError` maps success without inventing a value body;
 - validation definitions map to ValidationProblemDetails;
 - controllers do not switch on operation error cases or duplicate status mapping;
 - Option is converted to an owning typed Result before the controller boundary;
@@ -438,21 +490,51 @@ under these rules:
 - no global warning suppression, global warning-as-error change, or claim about ordinary C# switch
   exhaustiveness is introduced to compensate for Dunet.
 
-When native C# unions and the required runtime support are stable on Concertable's production SDK,
-run a dedicated package cutover:
+### Mandatory native-union destination
 
-1. verify the then-current official storage, null/default, equality, binary, and exhaustiveness rules;
-2. replace owner-local Dunet error declarations first;
-3. keep `Result<T,E>`, `Option<T>`, factories, combinators, `IError`, and controller adapters unchanged;
-4. consider using a native/custom union only as Result/Option's private representation if it preserves
-   the established no-null, no-boxing, default-state, equality, and performance contract;
-5. publish and platform-sync any binary shape change before consumers move;
-6. remove Dunet only after the last generated error declaration is gone.
+The hand-written structs are advance implementations of the native unions, not permanent competing
+abstractions. As soon as Concertable adopts the released .NET 11 SDK and stable C# union feature,
+change every owned discriminated type to a `union` declaration in the same upgrade workstream:
 
-Current C# 15 preview unions are not ready for the Kernel public declaration: their default generated
-storage boxes value cases, exposes `Value`, treats default as null, and does not supply Result methods
-or equality. The designed public API makes a later internal change mechanical without pretending the
-language will supply the abstraction itself.
+- non-generic `Result`, `Result<TError>`, and `Result<TValue,TError>`;
+- `Option<T>`;
+- operation-specific error unions then generated by Dunet or hand-written as closed cases.
+
+The intended stable shapes are success/failure case wrappers for Result and a Some case plus native
+null/default handling for Option. The exact declarations must be verified against the released syntax,
+but the target is equivalent to:
+
+```csharp
+public partial union Result(ResultSuccess, ResultFailure);
+public partial union Result<TError>(ResultSuccess, ResultFailure<TError>);
+public partial union Result<TValue, TError>(ResultSuccess<TValue>, ResultFailure<TError>);
+public partial union Option<T>(Some<T>);
+```
+
+Distinct Result case wrappers are required: using `TValue` and `TError` directly would be ambiguous
+for valid types such as `Result<string,string>`. `default(Option<T>)` continues to mean None through
+the union's null/default case; `default(Result...)` continues to be uninitialized and every operational
+member rejects it. Case constructors retain the no-null rules.
+
+Factories, `Match`, `Map`, `Bind`, task/collection composition, equality, hashing, formatting, and HTTP
+adapters are the stable application contract. Keep those methods when the declarations become unions,
+so existing consumers do not change. The native switch-pattern surface is added on cutover day and may
+be adopted incrementally; it does not force service call-site rewrites.
+
+As of the Microsoft documentation updated 2026-07-27, C# 15 unions remain a .NET 11 preview and some
+proposal features are still unimplemented. The current generated form is a struct backed by `object?`;
+it boxes value cases, exposes `Value`, adds implicit case conversions, and supplies neither Result
+composition nor record equality. Native union is therefore not currently a performance optimization
+over the hand-written byte-tagged structs. Do not move production to the preview SDK merely to use the
+keyword. Use the stable hand-written API now, then accept and test the released union representation as
+the required language cutover.
+
+The cutover is intentionally localized: rewrite Kernel declarations/storage and direct invariant tests;
+retain task extensions, collection extensions, Shared.Api adapters, validator contracts, and service
+call sites. Because these types never cross wire or persistence boundaries, there is no data migration.
+Changing a published struct's binary shape still requires a Kernel package publication and a full
+platform sync/recompile. Benchmark the released representation to record its cost, but performance does
+not turn the required keyword migration back into an optional decision.
 
 ## Ordered implementation phases
 
@@ -461,20 +543,25 @@ publication creates a generated platform-sync PR, which is part of that phase's 
 each phase, refresh `origin/main`, open PRs, and platform-sync state. A completed and verified phase is
 a hard stop under `plans/AGENTS.md`.
 
-### Phase 1 — owned Kernel functional foundation and shared adapters — implementation complete ✅
+### Phase 1 — owned Kernel functional foundation and shared adapters — revision required
 
-Completed on `Refactor/OwnedResultFoundation` on 2026-08-01. `Concertable.Kernel.UnitTests` passed
-181/181, `Concertable.Shared.Api.UnitTests` passed 40/40, and the Release solution build completed
-with zero errors. No local E2E was run. Delivery remains gated on merge, package publication, and the
-generated platform-sync PR; Phase 2 must not begin before that sync lands green.
+The initial implementation on `Refactor/OwnedResultFoundation` passed 181/181 Kernel tests, 40/40
+Shared.Api tests, and the Release solution build with zero errors on 2026-08-01. Before delivery, the
+no-value design was rejected. Revise the same unmerged branch to add non-generic `Result` and
+`Result<TError>`, add immutable `ValidationErrors`, remove `Unit` and every `Result<Unit,TError>` API,
+then repeat the complete Phase 1 test/build gate. Phase 2 must not begin before the revised package is
+merged, published, and platform-synced green.
 
-**Dependency:** current red platform-sync PR #286 is fixed/merged first. Revise PR #284; do not merge
-its present CFE-based diff.
+**Dependency:** continue in the clean
+`C:\Users\TommySeery\source\repos\Concertable.worktrees\OwnedResultFoundation` worktree on
+`Refactor/OwnedResultFoundation`. Recheck current `origin/main` and confirm no open red platform-sync
+PR before implementation; do not touch PR #282 or the dirty ResultFoundationComposition experiment.
 
 **Scope and expected projects/files:**
 
-- `api/Concertable.Shared/src/Concertable.Kernel/Functional/`: add `Unit`, `Option`, `Result`, factory
-  classes, synchronous combinators, task extensions, nullable conversions, and collection extensions;
+- `api/Concertable.Shared/src/Concertable.Kernel/Functional/`: provide `Option<T>`, all three Result
+  arities, factories, synchronous combinators, task extensions, nullable conversions, and collection
+  extensions; remove `Unit`;
 - `api/Concertable.Shared/src/Concertable.Kernel/Errors/Error.cs`: complete
   ErrorDescriptor/ValidationErrorDescriptor -> ErrorDefinition/ValidationErrorDefinition and
   `IError.Definition`; retain validation invariants but remove generic CLR-display-name message
@@ -482,7 +569,7 @@ its present CFE-based diff.
 - `api/Concertable.Shared/src/Concertable.Kernel/Concertable.Kernel.csproj`: no CFE, FluentResults,
   Dunet, or OneOf dependency may support the new types;
 - `api/Concertable.Shared/src/Concertable.Shared.Api/Results/ResultHttpExtensions.cs` and error/exception
-  mapping: replace CFE Result/UnitResult signatures with owned Result/Unit;
+  mapping: consume the owned value-bearing and no-value Result arities;
 - `api/Concertable.Shared/Directory.Packages.props` and affected csproj files: remove the CFE runtime
   dependency and remove Dunet from the test-only foundation if no production union needs it yet;
 - `api/Concertable.Shared/tests/Concertable.Kernel.UnitTests`: add focused tests for every API member;
@@ -494,13 +581,20 @@ its present CFE-based diff.
 - every factory, case property, Match/action Match, TryGet, and fallback;
 - null delegates/payloads and nullable reference/value conversions;
 - Option default-as-None and every Result operation on an uninitialized default;
-- equality, hash code, operators, Unit, and formatting for both cases/default;
+- equality, hash code, operators, and formatting for every case/default of all Result arities and
+  Option;
 - selected-branch invocation count, laziness, short-circuiting, and thrown delegate propagation for
   every combinator;
 - Result and Option functor identity/composition and monad left/right identity/associativity;
 - async success/failure/None, faulted source, cancelled source, thrown delegate, faulted/cancelled
   delegate task, and unselected async delegate;
-- Sequence/Traverse order, empty input, first-failure short circuit, and traversal cancellation.
+- Sequence/Traverse order, empty input, first-failure short circuit, and traversal cancellation;
+- every factory, case, combinator, task form, default, equality, formatting, laziness, and propagation
+  rule for non-generic `Result` and `Result<TError>`;
+- Bind interoperability from status-only to typed-error/value Results, from typed-error to
+  value-bearing Results, and from value-bearing to no-value Results;
+- `ValidationErrors` non-empty/key/message invariants, accumulation order, duplicate keys, defensive
+  copying, equality, hashing, and mapping into operation-specific errors.
 
 **Verification:**
 
@@ -552,7 +646,7 @@ its present CFE-based diff.
 - retain wire compatibility for deployed clients and continue populating legacy status detail during
   the expansion window;
 - replace nullable release/refund success payloads with the domain-selected
-  `Result<Option<Transfer>,E>`/`Result<Option<Refund>,E>` or `Result<Unit,E>` form. Confirm the benign
+  `Result<Option<Transfer>,E>`/`Result<Option<Refund>,E>` or `Result<E>` form. Confirm the benign
   no-op semantics before selecting one;
 - update Payment unit/integration tests and B2B/Customer client mocks for the additive surface;
 - publish Payment Contracts/Client and own platform sync through green.
@@ -581,8 +675,8 @@ its present CFE-based diff.
   `IError.Definition` contract and obey the Dunet containment rules;
 - `ITicketService.PurchaseAsync`/`CheckoutAsync` use owned Result and compose with `OrFailure`, Bind,
   MapError, and the new Payment typed client;
-- `ITicketValidator` returns `Result<Unit,ValidationErrors>` and preserves accumulation of all current
-  validation messages;
+- `ITicketValidator` policy methods return `Result<ValidationErrors>` and preserve accumulation of all
+  current validation messages; lookup-owning overloads move not-found into the use-case Result;
 - controllers use shared HTTP adapters; event completion/retryable faults remain exceptions;
 - remove FluentResults and CFE from the migrated Ticket/Concert contracts where no remaining local
   use requires them;
@@ -609,7 +703,8 @@ its present CFE-based diff.
 - change `LifecycleStateMachine.Next` and `ILifecycleTransitioner` to typed composition without
   catch/rethrow;
 - migrate dispatcher/executor/capability interfaces as complete vertical slices;
-- convert private FluentResults policy validators to `Result<Unit,ValidationErrors>`;
+- convert private FluentResults policy validators to `Result<ValidationErrors>`, separating lookup
+  and authorization outcomes from accumulated policy violations;
 - preserve keyed deal-strategy resolution; do not introduce DealType switches or service location;
 - update controllers, module facades, workers, mocks, and all deal-type tests.
 
@@ -787,7 +882,7 @@ search finds no legitimate legacy caller.
   DTOs, and no controller-local typed-error-to-status switches;
 - run a final inventory for `FluentResults`, `CSharpFunctionalExtensions`, `Maybe`, third-party
   `Result`, nullable lookup signatures, `IError`, ErrorDefinition, and generated Dunet APIs;
-- delete this plan in the commit that completes and verifies the migration.
+- retain this plan until the mandatory native-union cutover is complete.
 
 **Verification:**
 
@@ -795,6 +890,41 @@ search finds no legitimate legacy caller.
 - full Release solution build and all standalone carves after each published cleanup/sync;
 - full API E2E is justified for the final cross-service contract removal; run UI E2E only if API
   behavior/shape changed rather than solely internal type signatures.
+
+### Phase 10 — .NET 11 native-union cutover
+
+**Dependency:** .NET 11 and C# unions are released and Concertable is ready to move its backend SDK
+and target framework together. Begin this phase immediately when that production upgrade is available;
+do not leave the owned discriminated types on hand-written tags after the platform supports the stable
+union declarations.
+
+**Scope and expected projects/files:**
+
+- upgrade the backend SDK/toolchain and target frameworks to the released .NET 11/C# version through
+  the repository's normal platform-upgrade workstream;
+- change every owned `Result`, `Option`, and operation-error discriminated declaration to `union`;
+- replace Dunet-generated operation errors with native unions and remove Dunet after the last use;
+- use distinct guarded success/failure/some case types so equal `TValue`/`TError` types remain valid and
+  null payloads remain impossible;
+- preserve factories, combinators, task/collection extensions, HTTP adapters, error definitions,
+  equality, hashing, formatting, and exception/cancellation semantics;
+- preserve default Option as semantic None and default Result as explicitly uninitialized in every
+  operational member, accounting for the released union's native null/default pattern;
+- add native exhaustive-pattern tests for every union and a compile-time fixture that fails when a new
+  case is not handled;
+- benchmark the released native representation against the final hand-written tagged structs and
+  record the result; optimize case representation without reverting the required union declarations;
+- publish the Kernel and affected contract packages, own the generated platform-sync PR through green,
+  rebuild all consumers, and delete this plan in the final verified cutover commit.
+
+**Verification:**
+
+- all Kernel/shared/service unit and integration tests;
+- native pattern, null/default, same-type case, equality, hashing, formatting, exception, cancellation,
+  serialization-boundary, and binary/package-consumer tests;
+- full Release solution build and every standalone carve;
+- full API E2E through the merge queue because the SDK upgrade and package-wide binary cutover are
+  cross-cutting; run UI E2E if the repository-wide .NET 11 upgrade changes hosted runtime behavior.
 
 ## Package and compatibility rules
 
@@ -820,28 +950,31 @@ code. `UseLocalCore=true` remains a local diagnostic option only.
 | Result structs silently treat default as a valid case | reserve tag zero, fail every operational access, and test default through arrays/fields/tasks |
 | Option becomes nullable with new syntax | forbid null payloads at generic and runtime boundaries and expose no throwing Value property |
 | Error unions leak Dunet and block native migration | keep generated matching owner-local; public composition depends on Result/IError/factories, not generator APIs |
-| Native-union expectations move during previews | target net10/C#14 now; reassess only from stable official docs and benchmark the then-current representation |
+| Native-union expectations move during previews | keep production on net10/C#14 now; make factories/combinators the stable consumer API, then execute mandatory Phase 10 from the released specification |
 | Published package changes strand services | use expand/publish/sync/consumer/cleanup and treat every generated sync as part of its owning phase |
 | Typed Result swallows operational failures | no catch in combinators; explicit tests prove infrastructure faults and cancellation propagate |
 
 No design decision blocks Phase 1. Tommy's input is genuinely required later for the existing Payment
 `ReleaseByBookingIdAsync`/`RefundByBookingIdAsync` null-success semantics: confirm whether “nothing was
-released/refunded” is a benign `None`, a successful Unit/idempotent no-op, or an operation failure.
+released/refunded” is a benign `None`, a successful no-value/idempotent no-op, or an operation failure.
 That decision changes the Phase 3 public contract and must be made from product/idempotency semantics,
 not inferred from the present `Result<T?>` shape.
 
-## Resume prompt — Phase 1
+## Resume prompt — Phase 1 revision
 
 ```text
-Implement Phase 1 only from plans/TYPED_RESULT_MIGRATION.md: the Concertable-owned Kernel Result,
-Option, and Unit foundation plus the Shared.Api adapters. First read AGENTS.md, plans/AGENTS.md,
+Revise Phase 1 only from plans/TYPED_RESULT_MIGRATION.md on the existing
+Refactor/OwnedResultFoundation branch: add status-only Result and no-value Result<TError>, add
+ValidationErrors for accumulating policy validators, remove Unit and Result<Unit,TError>, and update
+the Shared.Api adapters. First read AGENTS.md, plans/AGENTS.md,
 api/ARCHITECTURE.md, api/AGENTS.md, and the complete plan; refresh origin/main, all relevant worktrees,
 open PRs, and the platform-sync gate. Do not start while a platform-sync PR is red.
 
-Revise the existing Feature/TypedResultKernelApi / PR #284 worktree if it is still the safe current
-foundation branch. Preserve valid ErrorDefinition work, remove its CSharpFunctionalExtensions/Maybe
-foundation, and do not touch the dirty Feature/ResultFoundationComposition experiment or unrelated
-working-tree changes. Implement the exact public API, semantics, combinators, async behavior,
+Work only in
+C:\Users\TommySeery\source\repos\Concertable.worktrees\OwnedResultFoundation on
+Refactor/OwnedResultFoundation, whose initial foundation is committed as bd88796d. Do not touch PR
+#282, the old merged PR #284 branch, the dirty Feature/ResultFoundationComposition experiment, or
+unrelated working-tree changes. Implement the exact public API, semantics, combinators, async behavior,
 collection operations, default/null/equality rules, and complete test matrix specified in Phase 1.
 Kernel must not depend on CSharpFunctionalExtensions, FluentResults, OneOf, or Dunet for Result/Option.
 
