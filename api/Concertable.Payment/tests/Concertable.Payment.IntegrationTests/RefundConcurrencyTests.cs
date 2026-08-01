@@ -1,0 +1,238 @@
+using Concertable.Kernel.ValueObjects;
+using Concertable.Payment.Application.Interfaces;
+using Concertable.Payment.Application.Requests;
+using Concertable.Payment.Contracts;
+using Concertable.Payment.Domain;
+using Concertable.Payment.Domain.Entities;
+using Concertable.Payment.Domain.Enums;
+using Concertable.Payment.Infrastructure;
+using Concertable.Payment.Infrastructure.Data;
+using Concertable.Payment.Infrastructure.Repositories;
+using Concertable.Payment.Infrastructure.Settings;
+using Concertable.Testing.Integration;
+using FluentResults;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
+using Moq;
+
+namespace Concertable.Payment.IntegrationTests;
+
+public sealed class RefundConcurrencyTests : IClassFixture<SqlFixture>
+{
+    private readonly SqlFixture sql;
+
+    public RefundConcurrencyTests(SqlFixture sql)
+    {
+        this.sql = sql;
+    }
+
+    [Fact]
+    public async Task ConcurrentEscrowPartialRefunds_OfDifferentAmounts_LoserMakesNoStripeCallAndCannotOverRefund()
+    {
+        await using (var migrate = CreateContext())
+            await migrate.Database.MigrateAsync();
+
+        int bookingId = 8_100 + Random.Shared.Next(1_000);
+        await using (var seed = CreateContext())
+        {
+            var binding = await SeedAuthorizationAsync(seed);
+            var escrow = EscrowEntity.CreateBound(
+                bookingId,
+                Guid.NewGuid(),
+                Guid.NewGuid(),
+                binding.Id,
+                new CommissionCalculation(Currency.Gbp, 5000, 1000, 800, 200, 2000, 6000),
+                $"pi_escrow_{Guid.NewGuid():N}");
+            escrow.Confirm();
+            escrow.CreatedBy = "integration";
+            escrow.CreatedAt = DateTime.UtcNow;
+            seed.Escrows.Add(escrow);
+            await seed.SaveChangesAsync();
+        }
+
+        var stripe = RecordingRefundManager();
+        var barrier = new SaveChangesBarrier(participants: 2);
+
+        async Task<Result<Refund?>> RefundAsync(long grossMinor)
+        {
+            await using var context = CreateContext();
+            var service = new EscrowService(
+                stripe.Object,
+                new EscrowRepository(context),
+                Mock.Of<IPayoutAccountRepository>(),
+                Mock.Of<ILedgerService>(),
+                new BarrierUnitOfWork(context, barrier),
+                Mock.Of<ICommissionService>(),
+                new CommissionCalculator(),
+                context,
+                Options.Create(new PlatformFeeOptions { Fee = 0m }),
+                TimeProvider.System,
+                NullLogger<EscrowService>.Instance);
+            return await service.RefundBoundCommissionByBookingIdAsync(bookingId, grossMinor, Currency.Gbp);
+        }
+
+        var results = await Task.WhenAll(RefundAsync(3000), RefundAsync(2500));
+
+        Assert.Equal(1, results.Count(r => r.IsSuccess));
+        Assert.Equal(1, results.Count(r => r.IsFailed));
+
+        stripe.Verify(
+            p => p.RefundAsync(It.IsAny<RefundRequest>(), It.IsAny<CancellationToken>()),
+            Times.Once);
+
+        await using var verification = CreateContext();
+        var rows = await verification.PaymentRefunds
+            .Where(r => r.EscrowId != null)
+            .ToListAsync();
+        var committed = Assert.Single(rows);
+        Assert.Equal(PaymentRefundStatus.Completed, committed.Status);
+        Assert.Contains(committed.GrossRefundedMinor, new long[] { 3000, 2500 });
+        Assert.True(committed.GrossRefundedMinor <= 5000);
+    }
+
+    [Fact]
+    public async Task ConcurrentSettlementPartialRefunds_OfDifferentAmounts_LoserMakesNoStripeCallAndCannotOverRefund()
+    {
+        await using (var migrate = CreateContext())
+            await migrate.Database.MigrateAsync();
+
+        int bookingId = 9_100 + Random.Shared.Next(1_000);
+        await using (var seed = CreateContext())
+        {
+            var binding = await SeedAuthorizationAsync(seed);
+            var settlement = SettlementTransactionEntity.CreateBound(
+                Guid.NewGuid(),
+                Guid.NewGuid(),
+                $"pi_settlement_{Guid.NewGuid():N}",
+                new CommissionCalculation(Currency.Gbp, 5000, 1000, 800, 200, 2000, 6000),
+                TransactionStatus.Complete,
+                bookingId,
+                binding.Id);
+            settlement.CreatedBy = "integration";
+            settlement.CreatedAt = DateTime.UtcNow;
+            seed.SettlementTransactions.Add(settlement);
+            await seed.SaveChangesAsync();
+        }
+
+        var stripe = RecordingRefundManager();
+        var barrier = new SaveChangesBarrier(participants: 2);
+
+        async Task<Result<Refund?>> RefundAsync(long grossMinor)
+        {
+            await using var context = CreateContext();
+            var service = new ManagerPaymentService(
+                stripe.Object,
+                Mock.Of<IStripeAccountClient>(),
+                Mock.Of<IStripeHoldClient>(),
+                Mock.Of<IPayoutAccountRepository>(),
+                new TransactionRepository(context),
+                Mock.Of<ICommissionService>(),
+                new CommissionCalculator(),
+                Mock.Of<ILedgerService>(),
+                new BarrierUnitOfWork(context, barrier),
+                context,
+                TimeProvider.System,
+                Options.Create(new PlatformFeeOptions { Fee = 0m }));
+            return await service.RefundBoundCommissionByBookingIdAsync(bookingId, grossMinor, Currency.Gbp);
+        }
+
+        var results = await Task.WhenAll(RefundAsync(3000), RefundAsync(2500));
+
+        Assert.Equal(1, results.Count(r => r.IsSuccess));
+        Assert.Equal(1, results.Count(r => r.IsFailed));
+
+        stripe.Verify(
+            p => p.RefundAsync(It.IsAny<RefundRequest>(), It.IsAny<CancellationToken>()),
+            Times.Once);
+
+        await using var verification = CreateContext();
+        var rows = await verification.PaymentRefunds
+            .Where(r => r.SettlementTransactionId != null)
+            .ToListAsync();
+        var committed = Assert.Single(rows);
+        Assert.Equal(PaymentRefundStatus.Completed, committed.Status);
+        Assert.Contains(committed.GrossRefundedMinor, new long[] { 3000, 2500 });
+        Assert.True(committed.GrossRefundedMinor <= 5000);
+    }
+
+    // Reserve-then-charge moves the serialization point to the reservation's SaveChanges, BEFORE Stripe.
+    // Gating that first SaveChanges until both participants have loaded the same concurrency token guarantees
+    // their read-check-write windows overlap; the loser's reservation loses the token race and throws, so it
+    // never reaches the (barrier-free) Stripe call. A plain recording mock therefore sees exactly one refund.
+    private static Mock<IPaymentManager> RecordingRefundManager()
+    {
+        var mock = new Mock<IPaymentManager>();
+        mock
+            .Setup(p => p.RefundAsync(It.IsAny<RefundRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(() => Result.Ok(new Refund($"re_{Guid.NewGuid():N}")));
+        return mock;
+    }
+
+    private sealed class SaveChangesBarrier
+    {
+        private readonly TaskCompletionSource gate = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly int participants;
+        private int arrived;
+
+        public SaveChangesBarrier(int participants) => this.participants = participants;
+
+        public async Task WaitAsync()
+        {
+            if (Interlocked.Increment(ref arrived) == participants)
+                gate.SetResult();
+            await gate.Task.WaitAsync(TimeSpan.FromSeconds(15));
+        }
+    }
+
+    private sealed class BarrierUnitOfWork : IUnitOfWork
+    {
+        private readonly UnitOfWork inner;
+        private readonly SaveChangesBarrier barrier;
+        private int saves;
+
+        public BarrierUnitOfWork(PaymentDbContext context, SaveChangesBarrier barrier)
+        {
+            inner = new UnitOfWork(context);
+            this.barrier = barrier;
+        }
+
+        public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            if (Interlocked.Increment(ref saves) == 1)
+                await barrier.WaitAsync();
+            await inner.SaveChangesAsync(cancellationToken);
+        }
+
+        public Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default) =>
+            inner.BeginTransactionAsync(cancellationToken);
+
+        public Task ExecuteAsync(Func<Task> operation, CancellationToken cancellationToken = default) =>
+            inner.ExecuteAsync(operation, cancellationToken);
+
+        public Task<TResult> ExecuteAsync<TResult>(
+            Func<Task<TResult>> operation,
+            CancellationToken cancellationToken = default) =>
+            inner.ExecuteAsync(operation, cancellationToken);
+    }
+
+    private static async Task<CommissionBindingEntity> SeedAuthorizationAsync(PaymentDbContext context)
+    {
+        var terms = new CommissionTerms(
+            Guid.NewGuid(), $"integration-{Guid.NewGuid():N}", Currency.Gbp, 500, 0);
+        var binding = CommissionBindingEntity.Create(
+            terms, $"booking:{Guid.NewGuid():N}", $"payer:{Guid.NewGuid():N}", DateTimeOffset.UtcNow);
+        context.Add(binding);
+        await context.SaveChangesAsync();
+        return binding;
+    }
+
+    private PaymentDbContext CreateContext()
+    {
+        var options = new DbContextOptionsBuilder<PaymentDbContext>()
+            .UseSqlServer(sql.ConnectionString)
+            .Options;
+        return new PaymentDbContext(options, new PaymentConfigurationProvider());
+    }
+}
