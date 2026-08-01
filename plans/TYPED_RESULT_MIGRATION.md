@@ -622,9 +622,12 @@ implementation order for this PR is:
    accumulation, controller terminals, seeds, and focused tests. The Deal unit suite passed 21/21 and
    the full B2B Release build completed with zero errors on 2026-08-01. Container-backed integration
    verification is pending because Docker is currently unreliable.
-2. **Next checkpoint.** Tenant: invitation, membership, tenant and tax-compliance lookups/outcomes, controllers, workers,
-   seeds, and focused tests.
-3. Venue and Artist: create/update/ownership outcomes and optional single-item lookups.
+2. **Complete in `refactor(b2b): migrate Tenant outcomes to owned results`.** Tenant: invitation,
+   membership, tenant and tax-compliance lookups/outcomes, controllers, and focused tests. The Tenant
+   unit suite passed 115/115 and the full B2B Release build completed with zero errors on 2026-08-01.
+   Container-backed integration verification is pending because Docker is currently unreliable.
+3. **Next checkpoint.** Venue and Artist: create/update/ownership outcomes and optional single-item
+   lookups.
 4. User and Conversations: optional lookups and expected command outcomes.
 5. Concert core: reconcile the stale workflow-boundary work, then migrate validation, lifecycle,
    application/module lookups, dispatchers and executors that do not consume Payment results.
