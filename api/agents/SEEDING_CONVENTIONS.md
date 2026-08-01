@@ -4,7 +4,7 @@
 >
 > **Never write `context.X.Add(...)` or `context.X.AddRange(...)` against a DbSet whose entity is only written by a handler in production.**
 >
-> Read-model projections and event-synced replicas (`VenueReadModel`, `ArtistReadModel`, `ConcertReadModel`, Customer's `VenueEntity` / `ArtistEntity` / `ConcertEntity`, anything in `[concert]` / `[venue]` / `[artist]` / `[search]` schemas), `UserEntity` rows, manager profile rows, Stripe `PayoutAccount` rows, inbox/outbox messages — none of these are seeded. They are written by handlers reacting to events. The seeder's job in those cases is to **drive the event**, not to write the row.
+> Read-model projections and event-synced replicas (`VenueReadModel`, `ArtistReadModel`, `ConcertReadModel`, Customer's `VenueEntity` / `ArtistEntity` / `ConcertEntity`, anything in `[concert]` / `[venue]` / `[artist]` / `[search]` schemas), `UserEntity` rows, admin profile rows, Stripe `PayoutAccount` rows, inbox/outbox messages — none of these are seeded. They are written by handlers reacting to events. The seeder's job in those cases is to **drive the event**, not to write the row.
 >
 > If standalone Customer (or any service) lacks projection data because the producing service isn't running, the answer is **not** "seed the projection table." The answer is "stand up a seeding simulator for the producing service" — see [Standalone-service seeding](#standalone-service-seeding) below.
 >
@@ -106,7 +106,7 @@ public async Task SeedAsync(CancellationToken ct)
 }
 ```
 
-Manager `User` rows are owned by `AuthDevSeeder`, which writes credentials in the Auth DB and publishes `CredentialRegisteredEvent` per credential through the outbox. The B2B/Customer `CredentialRegisteredHandler` writes the matching `User` row in its own DB. There is no separate `UserEventSeeder` in the E2E projects — `[user].[Users]` and the manager profile tables stay in each `DbFixture`'s `TablesToIgnore`, so the rows survive Respawner resets.
+Manager `User` rows are owned by `AuthDevSeeder`, which writes credentials in the Auth DB and publishes `CredentialRegisteredEvent` per credential through the outbox. The B2B/Customer `CredentialRegisteredHandler` writes the matching `User` row in its own DB. There is no separate `UserEventSeeder` in the E2E projects — `[user].[Users]` and B2B's `[user].[AdminProfiles]` stay in each `DbFixture`'s `TablesToIgnore`, so the rows survive Respawner resets.
 
 ## Idempotency
 

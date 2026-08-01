@@ -28,7 +28,7 @@ JWT Bearer validation.
   data between tests without re-running migrations.
 
 - **Authentication** — `TestAuthHandler` replaces JWT Bearer. Pass `X-Test-Sub` (user ID)
-  and `X-Test-Role` headers to authenticate a request. No token required.
+  and optionally `X-Test-Email` headers to authenticate a request. No token or role claim is required.
 
 - **ASB receiver removed** — the `AzureServiceBusReceiver` hosted service is removed from
   the DI container in B2B and Customer fixtures (no real broker in tests). The outbox
