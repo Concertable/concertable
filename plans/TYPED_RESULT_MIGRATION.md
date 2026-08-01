@@ -626,9 +626,13 @@ implementation order for this PR is:
    membership, tenant and tax-compliance lookups/outcomes, controllers, and focused tests. The Tenant
    unit suite passed 115/115 and the full B2B Release build completed with zero errors on 2026-08-01.
    Container-backed integration verification is pending because Docker is currently unreliable.
-3. **Next checkpoint.** Venue and Artist: create/update/ownership outcomes and optional single-item
-   lookups.
-4. User and Conversations: optional lookups and expected command outcomes.
+3. **Complete in `refactor(b2b): migrate Venue and Artist outcomes`.** Venue and Artist:
+   create/update/approval outcomes, optional current/public single-item lookups, dashboard absence,
+   controller terminals, and cross-module consumers. The affected Concert unit suite passed 68/68,
+   the Conversations unit suite passed 6/6, and the full B2B Release build completed with zero errors
+   on 2026-08-01. Venue and Artist have no standalone unit-test projects; their container-backed
+   integration verification is pending because Docker is currently unreliable.
+4. **Next checkpoint.** User and Conversations: optional lookups and expected command outcomes.
 5. Concert core: reconcile the stale workflow-boundary work, then migrate validation, lifecycle,
    application/module lookups, dispatchers and executors that do not consume Payment results.
 6. Concert payment workflows: migrate only after Phase 2's typed Payment client package has published
