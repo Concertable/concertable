@@ -525,17 +525,15 @@ The cleanup sweep over every remaining `Role` site:
   switch from `user.role` to persona/membership from the new `/me` shape; customer's
   `requireRole("Customer")` becomes a has-customer-profile check. All web workspace builds gate it.
 
-### Phase 8 — Messaging group inbox *(re-scaffold)*
+### ✅ Phase 8 — Messaging group inbox *(re-scaffold)* — DONE
 
-> **Detail plan:** [`MESSAGING_GROUP_INBOX.md`](./MESSAGING_GROUP_INBOX.md) — current-state findings, the
-> Phase-7-independence answer, the data-model change + migration note, and the API/SPA/E2E phasing. Note it
-> corrects §8 below on one point: **no Conversations integration suite exists to "update" — it must be
-> created.**
-
-The §7 re-model: `MessageEntity` tenant-pair columns + `SentByUserId`; the Bucket-B two-party
-filter (TS Phase 4 mechanics); `ThreadReadStateEntity`; `MessagesRead`/`MessagesSend` gates on the
-`MessageController` endpoints (which carry no guards today); notification routing reads membership +
-preferences. Update the Conversations integration suite and the messaging UI E2E scenarios.
+Shipped across two phases (detail plan `MESSAGING_GROUP_INBOX.md`, now removed): tenant-pair
+`MessageEntity` + `SentByUserId`, the two-party filter, `ThreadReadStateEntity` per-member read
+pointer, `MessagesRead` gates on `MessageController`, member SignalR + email fan-out
+(`ITenantModule.GetMemberUserIdsAsync`), the org-identity/member-attribution `MessageDto` + group-inbox
+SPA (Mailbox renders counterparty org / own member, mark-inbox-read on open, `["messages"]`
+invalidation on `MessageReceived`), a new Conversations unit + integration suite, and a net-new UI E2E
+proving shared visibility + per-member read.
 
 ## 9. Sequencing interplay
 

@@ -46,6 +46,48 @@ internal sealed class EscrowClient : IEscrowClient
         }
     }
 
+    public async Task<Result<EscrowDeposit>> DepositBoundCommissionAsync(
+        Guid payerId,
+        Guid payeeId,
+        long grossMinor,
+        Currency currency,
+        string paymentMethodId,
+        PaymentSession session,
+        int bookingId,
+        Guid commissionBindingId,
+        string externalReference,
+        long expectedCommissionMinor,
+        long expectedPayerTotalMinor,
+        string? stripeSetupIntentId = null,
+        CancellationToken ct = default)
+    {
+        try
+        {
+            var response = await client.DepositBoundCommissionAsync(
+                new Proto.BoundCommissionDepositRequest
+                {
+                    PayerId = payerId.ToString(),
+                    PayeeId = payeeId.ToString(),
+                    GrossMinor = grossMinor,
+                    Currency = currency.ToProtoCurrency(),
+                    PaymentMethodId = paymentMethodId,
+                    Session = session.ToProtoSession(),
+                    BookingId = bookingId,
+                    CommissionBindingId = commissionBindingId.ToString(),
+                    ExternalReference = externalReference,
+                    ExpectedCommissionMinor = expectedCommissionMinor,
+                    ExpectedPayerTotalMinor = expectedPayerTotalMinor,
+                    StripeSetupIntentId = stripeSetupIntentId ?? string.Empty
+                },
+                cancellationToken: ct);
+            return Result.Ok(response.ToEscrowDeposit());
+        }
+        catch (RpcException ex) when (ex.StatusCode == StatusCode.FailedPrecondition)
+        {
+            return Result.Fail(ex.Status.Detail);
+        }
+    }
+
     public async Task<Result<EscrowDeposit>> CaptureAsync(
         Guid payerId,
         Guid payeeId,
@@ -66,6 +108,44 @@ internal sealed class EscrowClient : IEscrowClient
                 BookingId = bookingId
             };
             var response = await this.client.CaptureAsync(request, cancellationToken: ct);
+            return Result.Ok(response.ToEscrowDeposit());
+        }
+        catch (RpcException ex) when (ex.StatusCode == StatusCode.FailedPrecondition)
+        {
+            return Result.Fail(ex.Status.Detail);
+        }
+    }
+
+    public async Task<Result<EscrowDeposit>> CaptureBoundCommissionAsync(
+        Guid payerId,
+        Guid payeeId,
+        long grossMinor,
+        Currency currency,
+        string paymentIntentId,
+        int bookingId,
+        Guid commissionBindingId,
+        string externalReference,
+        long expectedCommissionMinor,
+        long expectedPayerTotalMinor,
+        CancellationToken ct = default)
+    {
+        try
+        {
+            var response = await client.CaptureBoundCommissionAsync(
+                new Proto.BoundCommissionCaptureRequest
+                {
+                    PayerId = payerId.ToString(),
+                    PayeeId = payeeId.ToString(),
+                    GrossMinor = grossMinor,
+                    Currency = currency.ToProtoCurrency(),
+                    PaymentIntentId = paymentIntentId,
+                    BookingId = bookingId,
+                    CommissionBindingId = commissionBindingId.ToString(),
+                    ExternalReference = externalReference,
+                    ExpectedCommissionMinor = expectedCommissionMinor,
+                    ExpectedPayerTotalMinor = expectedPayerTotalMinor
+                },
+                cancellationToken: ct);
             return Result.Ok(response.ToEscrowDeposit());
         }
         catch (RpcException ex) when (ex.StatusCode == StatusCode.FailedPrecondition)
@@ -101,6 +181,33 @@ internal sealed class EscrowClient : IEscrowClient
         {
             var request = new Proto.RefundByBookingIdRequest { BookingId = bookingId };
             var response = await client.RefundByBookingIdAsync(request, cancellationToken: ct);
+            Refund? refund = string.IsNullOrEmpty(response.Refund?.RefundId)
+                ? null
+                : new Refund(response.Refund.RefundId);
+            return Result.Ok(refund);
+        }
+        catch (RpcException ex) when (ex.StatusCode == StatusCode.FailedPrecondition)
+        {
+            return Result.Fail(ex.Status.Detail);
+        }
+    }
+
+    public async Task<Result<Refund?>> RefundBoundCommissionByBookingIdAsync(
+        int bookingId,
+        long grossMinor,
+        Currency currency,
+        CancellationToken ct = default)
+    {
+        try
+        {
+            var response = await client.RefundBoundCommissionByBookingIdAsync(
+                new Proto.BoundCommissionRefundByBookingIdRequest
+                {
+                    BookingId = bookingId,
+                    GrossMinor = grossMinor,
+                    Currency = currency.ToProtoCurrency()
+                },
+                cancellationToken: ct);
             Refund? refund = string.IsNullOrEmpty(response.Refund?.RefundId)
                 ? null
                 : new Refund(response.Refund.RefundId);
