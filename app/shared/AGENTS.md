@@ -27,9 +27,9 @@ the cost of a per-app cast or slot.
 
 ## `User` is the flat intersection — compose personas on top, never widen it
 
-`auth/types.ts` `User` is a single interface mirroring the backend's Kernel `IUser` intersection
-(`id` / `email` / `role` / location / `isEmailVerified`) — **not** a persona union. The old
+`auth/types.ts` `User` is a single identity interface
+(`id` / `email` / location / `isEmailVerified`) — **not** a persona union. The old
 `VenueManager | ArtistManager | Customer | Admin` subtypes (with `venueId`/`artistId`/`$type`) and the
 `isVenueManager`/`isArtistManager` guards are gone; a product persona is composed in its owning tier
-(B2B's `B2bIdentity` = `User` + `memberships`). `role` stays because the backend intersection carries
-it. Don't reintroduce persona subtypes or product-specific fields on `User`.
+(B2B's `B2bIdentity` = `User` + `memberships`). The flat `role` field is gone. Don't reintroduce
+persona subtypes or product-specific fields on `User`.

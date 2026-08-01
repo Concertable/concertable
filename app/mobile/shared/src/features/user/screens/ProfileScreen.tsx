@@ -7,7 +7,6 @@ import { useAuthStore } from "@concertable/shared/features/auth";
 import { Screen } from "@/components/ui/Screen";
 import { Navbar } from "@/components/ui/Navbar";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { useLogin } from "../../../auth/useLogin";
@@ -96,11 +95,6 @@ export function ProfileScreen({ accountItems }: Readonly<Props>) {
         <View className="items-center gap-2">
           <Text className="text-xl font-bold text-foreground">{user.email}</Text>
           <View className="flex-row items-center gap-2">
-            {user.role && (
-              <Badge variant="secondary">
-                <Text>{user.role}</Text>
-              </Badge>
-            )}
             {user.isEmailVerified ? (
               <View className="flex-row items-center gap-1">
                 <CheckCircle size={14} color={theme.success} />
