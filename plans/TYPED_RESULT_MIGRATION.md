@@ -103,13 +103,26 @@ Cases do not repeat the suffix:
 
 ```csharp
 [Union]
-internal partial record PurchaseError
+internal partial record PurchaseError : IError
 {
-    internal partial record ConcertNotFound(int ConcertId);
-    internal partial record Validation(IReadOnlyList<string> Messages);
-    internal partial record PaymentRejected(string Code, string Message);
+    partial record ConcertNotFound(int ConcertId);
+    partial record Validation(IReadOnlyList<string> Messages);
+    partial record PaymentRejected;
+
+    public static PurchaseError NotFound(int concertId) =>
+        new ConcertNotFound(concertId);
+
+    public static PurchaseError Invalid(IReadOnlyList<string> messages) =>
+        new Validation(messages);
+
+    public static PurchaseError Rejected() =>
+        new PaymentRejected();
 }
 ```
+
+All construction outside the declaration goes through these factories. Generated case constructors
+are not a supported call-site API; keeping them behind the factory seam limits the later native-union
+migration to declarations and exhaustive mappings.
 
 Use `UnitResult<CancelConcertError>` for a typed command with no success payload. The earlier rejected
 `UnitResult<ValidationErrors>` shape is still rejected: validators return their normal aggregate
@@ -167,6 +180,11 @@ The exact names can be adjusted during Phase 1, but the shape is fixed:
 - safe messages are authored explicitly for callers and never copied from an exception, provider,
   SQL response, stack trace, or unreviewed external value.
 
+`ErrorDescriptor` exposes one named factory per `ErrorKind`, plus `Validation`. Its generic
+`NotFound<T>(code)` overload resolves the caller-safe resource name from the annotated contract or
+domain type's `[DisplayName]`, producing `"X not found."` without a message string at the operation
+site. The explicit-message overload remains for genuinely contextual not-found wording.
+
 Each service or module owns its error unions. It exposes one exhaustive `Descriptor` match on the
 union. That is the single unavoidable place where business cases acquire stable codes and public
 messages. Adding a new union case then fails the build until its descriptor is supplied.
@@ -177,27 +195,45 @@ internal partial record PurchaseError : IError
 {
     partial record ConcertNotFound(int ConcertId);
     partial record Validation(IReadOnlyList<string> Messages);
-    partial record PaymentRejected(string PaymentCode, string PaymentMessage);
+    partial record PaymentRejected;
+
+    public static PurchaseError NotFound(int concertId) =>
+        new ConcertNotFound(concertId);
+
+    public static PurchaseError Invalid(IReadOnlyList<string> messages) =>
+        new Validation(messages);
+
+    public static PurchaseError Rejected() =>
+        new PaymentRejected();
 
     public ErrorDescriptor Descriptor => Match<ErrorDescriptor>(
-        notFound => new ErrorDescriptor(
-            "ticket.concert_not_found",
-            $"Concert {notFound.ConcertId} was not found.",
-            ErrorKind.NotFound),
-        validation => new ValidationErrorDescriptor(
+        notFound => ErrorDescriptor.NotFound<ConcertDto>(
+            "ticket.concert_not_found"),
+        validation => ErrorDescriptor.Validation(
             "ticket.purchase_invalid",
             "The ticket purchase is invalid.",
             new Dictionary<string, string[]> { ["purchase"] = validation.Messages.ToArray() }),
-        paymentRejected => new ErrorDescriptor(
-            paymentRejected.PaymentCode,
-            paymentRejected.PaymentMessage,
-            ErrorKind.PaymentRequired));
+        paymentRejected => ErrorDescriptor.PaymentRequired(
+            "ticket.payment_rejected",
+            "The payment was rejected."));
 }
 ```
 
 The union match answers “what does this business case mean?” once. The shared adapters answer “how
 does that semantic kind appear in HTTP or gRPC?” once. No controller, service, or client repeats the
 status mapping.
+
+On .NET 10, every mapping that must handle all cases uses Dunet's generated full `Match`: descriptors,
+dependency-error translations, lifecycle-to-operation translations, and case-sensitive worker
+decisions. A new case changes the generated method signature, so omitted handlers fail compilation.
+Ordinary C# `is` patterns are reserved for intentionally partial queries. Do not use switches or a
+discard arm to imitate exhaustive Dunet handling, promote `CS8509` globally for this purpose, or add
+custom analyzer infrastructure. Dunet is limited to declarations, full exhaustive matches, and
+package configuration; `Unwrap` and case-specific `MatchX` APIs are not the default vocabulary.
+
+Kernel exposes `MaybeResultExtensions.OrFailure` as the repository naming layer over CFE
+`Maybe<T>.ToResult`; both the eager-error and lazy-factory overloads preserve the CFE carrier and
+composition semantics.
 
 Do **not** put `PurchaseError`, `ConcertWorkflowError`, `PaymentError`, generic entity-not-found
 cases, or a global mega-union in Kernel. Those are the union of service concerns, not the shared
@@ -554,8 +590,8 @@ Progress:
 Scope:
 
 - add `ErrorKind`, `ErrorDescriptor`, `ValidationErrorDescriptor`, and `IError` to Kernel;
-- add CSharpFunctionalExtensions `3.7.0` to Shared package management and
-  `Concertable.Shared.Api`;
+- add CSharpFunctionalExtensions `3.7.0` to Shared package management, `Concertable.Kernel`, and
+  `Concertable.Shared.Api`, including Kernel's `Maybe<T>.OrFailure` naming layer;
 - pin Dunet `1.16.2` in Shared package management for the test project that proves the complete
   union-to-descriptor-to-CFE-to-HTTP path; Shared production projects do not reference Dunet;
 - add generic MVC Result adapters and their unit tests;
@@ -593,7 +629,8 @@ Verification:
 Scope:
 
 - add CSharpFunctionalExtensions and Dunet pins to Customer package management;
-- define `PurchaseError` and `CheckoutError` in Ticket Application;
+- define `PurchaseError` and `CheckoutError` in Ticket Application with stable factories and
+  exhaustive generated `Match` descriptors;
 - migrate `ITicketService.PurchaseAsync` and `CheckoutAsync` to typed CFE Results;
 - keep `ITicketValidator`’s aggregate FluentResults contract private and map it once;
 - replace `.OrNotFound()` with explicit nullable-to-error conversion in the use case;
@@ -860,14 +897,18 @@ but the repository should switch only after stable .NET 11/C# 15 and its toolcha
 At that point:
 
 1. Replace each Dunet `[Union] partial record XError` declaration with a native `union XError(...)`.
-2. Keep the case records, stable descriptors, CFE `Result<TValue, TError>` signatures, HTTP/gRPC
-   adapters, tests, and use-case composition.
-3. Remove Dunet package references and generator output.
-4. Run a published-package cutover for any union exposed by `*.Contracts`; the source-level generic
+2. Replace every exhaustive Dunet `Match` with a native exhaustive switch expression and add an
+   explicit `null` arm for the native union struct's default/uninitialised state. This is not a
+   catch-all business-case arm and does not hide newly added cases.
+3. Keep the case records, static factories, stable descriptors, CFE `Result<TValue, TError>` and
+   `UnitResult<TError>` signatures, `Maybe<T>`, composition, transports, tests, and partial `is`
+   checks unchanged.
+4. Remove Dunet package references and generator output. Promote or retain `CS8509` only if the
+   repository wants missing native-union switch cases to fail the build.
+5. Run a published-package cutover for any union exposed by `*.Contracts`; the source-level generic
    signature may look unchanged, but the binary type shape changed.
-5. Reassess the outer carrier independently. .NET 11 native unions do not currently imply a BCL
-   Result type. Keep CSharpFunctionalExtensions unless a demonstrably better native-union-aware
-   carrier exists and provides enough benefit to justify a separate migration.
+6. Keep CSharpFunctionalExtensions as the permanent outer carrier and composition library; the
+   native-union migration does not replace it.
 
 Implementing now makes the .NET 11 change easier: the expensive work is identifying expected
 failures, assigning ownership and stable codes, fixing transports, and making callers compose them.
