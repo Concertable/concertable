@@ -1,377 +1,480 @@
-# Platform fee — making the settlement transaction earn
+# Percentage platform commission and pricing transparency
 
-> **Why now:** a revenue model was resolved **2026-07-01** (% on the settlement transaction) and **nothing
-> implements it**. Verified 2026-07-24 by grep across `api/` and `app/`: zero hits for `PlatformFee`,
-> `ApplicationFeeAmount`, `CommissionRate`, or any fee concept. `ISettlementAmountResolver` returns the
-> deal's gross and that exact number is charged and paid out — Concertable takes **£0** on every booking.
-> `LAUNCH_CHECKLIST.md:125` ("Application fees configured if taking % cut") is unticked and accurate.
+> **Active launch plan.** The temporary flat £10 platform fee is shipped, but it is not the launch
+> pricing model. Replace it before launch with one Payment-owned percentage applied to the final
+> deal gross calculated by B2B. The payer pays gross plus commission; the payee receives the agreed
+> gross. This plan deliberately excludes fixed-fee compatibility, minimums, caps, tenant overrides
+> and deal-type rates.
 >
-> **↳ FUTURE DIRECTION (deferred — NOT in MVP), decided 2026-07-25: move to a PERCENTAGE of the
-> settlement (GigXchange model).** MVP keeps the **flat fee, default 0** (§1.2 below) — that is what's
-> merged and what stays for launch. The chosen *evolution* is a **% of what the payer pays the payee
-> through our Stripe** — a flat £10–15 earns the same on a £5,000 booking as on a £200 one, whereas a %
-> captures the upside (and is what GigXchange/Encore/Alive charge). It is **deferred as its own separate
-> piece of work**, and it is genuinely more than a config swap: some deal types (**DoorSplit / Versus**)
-> settle on a number **derived from external ticket/door sales**, and money only earns us a cut **if it
-> actually routes through our rails** — so the hard part is the **money-flow + disintermediation** question
-> (does the door-split settlement come through us at all?), not the `% × amount` arithmetic. Chosen model,
-> per-type worked examples, and the open complexity: §7.6. When picked up it becomes its own plan; §6
-> tracks it as the promoted follow-up.
->
-> **The fee shape changed 2026-07-24 — a flat fee per settled contract, not a percentage** (~£10–15,
-> config). The research behind that reversal is §7; the short version is that **no competitor takes a % of
-> ticket/door sales** and the only two things anyone charges on are a flat per-gig fee or a % of the
-> *agreed fee on their own rails*. Flat-per-contract is the one shape immune to that across all four
-> contract types. ("Commission" survives only in the branch/file name — the thing is a flat fee.)
->
-> **Ownership decided 2026-07-24 (supersedes the earlier B2B-resolver design):** the fee is a flat,
-> platform-level **config value owned by the Payment service**, applied automatically at the charge — see
-> §1.2 and §3. It is **not** resolved in B2B and passed across the gRPC boundary. That reversal is what
-> collapses this from a publish-gated two-PR cut-over into a single PR (§3).
->
-> **Tracker:** [`LAUNCH_PLAN.md`](./LAUNCH_PLAN.md) — this plan implements the locked *Monetization
-> principle* and unblocks the tracked **pricing-transparency UI** item.
+> The previously planned generic fixed/rate/minimum/cap policy model is rejected. Payment persists one
+> immutable percentage configuration row per pricing revision, and each payer commitment receives a
+> Payment-issued commission authorization referencing that revision. Completed financial operations
+> keep their actual money, Stripe and ledger facts.
 
-## Scope
+## 1. Locked product and architecture decisions
 
-**In:** the flat-fee config (owned by Payment), its snapshot at charge time, the arithmetic, the money
-movement across both Stripe flows, and disclosure of the fee pre-commitment in both manager SPAs.
+### 1.1 Commercial model
 
-**Out (deliberate, captured as follow-ups):** Concertable's own **platform-fee VAT invoice** to the payer
-(a normal invoice, *not* self-billed — must not be conflated with `InvoiceEntity`), **per-tenant fee
-overrides**, a later **`%-of-agreed-fee` variant** for the escrowed contract types, and the **money
-value-object / minor-unit** question (raw `decimal` today; see the tech-debt note below). All noted in §6.
+- one universal platform commission rate applies to all four B2B deal types;
+- the commission base is the final gross owed to the payee, not total ticket sales;
+- the commission is a payer surcharge: payer total is gross plus commission and the payee receives
+  the full agreed gross;
+- the advertised percentage is inclusive of any VAT Concertable must account for, so a tax-status
+  change does not alter a price already accepted by the payer;
+- launch is GBP-only and all financial APIs and persistence use integer minor units;
+- the exact launch rate remains a business configuration value to set before Phase 1 is deployed. It
+  is not a reason to add multiple pricing modes.
 
-> **This fee rides the Kernel `Money` type — it does not add a new `decimal`/`*100` site.** The money
-> investigation **concluded 2026-07-24**: adopt a hand-rolled `Money(decimal, Currency)` value type in
-> Kernel that owns the pence conversion + rounding + the `gross/fee/total` arithmetic + the minor-unit gRPC
-> mapping (rationale in `api/Concertable.Shared/TECH_DEBT.md`). Its rollout is
-> [`../MONEY_VALUE_TYPE.md`](../MONEY_VALUE_TYPE.md), a publish-first Kernel cut-over, and **this feature is
-> its Phase 3**: `Money` lands first (Kernel), Payment adopts it, *then* this fee is built on top — so
-> `gross + fee` is `Money.operator+` and the snapshot is `Money.ToMinorUnits()`, never a hand-written
-> `+ fee` or `(long)(x*100)`. See MONEY_VALUE_TYPE §"Sequencing decision" for why Money-first, not
-> fee-on-`decimal`-first.
+### 1.2 Ownership boundary
 
-## 1. The decisions this plan locks
+B2B owns four pure, keyed final-gross calculations:
 
-### 1.1 Fee-on-top, borne by the payer
-
-`LAUNCH_PLAN.md` §9 already fixes the shape: *"charge the venue the artist's share **+ our fee**, then
-pay the artist"*. So:
-
-```
-charge(payer) = gross + fee        payee receives gross        platform keeps fee
+```text
+FlatFee gross       = agreed artist payment
+VenueHire gross     = agreed venue-hire payment
+DoorSplit gross     = artist percentage × eligible takings
+GuaranteePlus gross = guarantee + (artist percentage × eligible takings)
 ```
 
-The payee's contractually-agreed number is never silently shaved. **"Payer" is contract-type-dependent**,
-and `SettlementPayeeResolver` already encodes the inverse: FlatFee / DoorSplit / Versus → artist is payee,
-**venue pays**; VenueHire → venue is payee, **artist pays**. The fee follows the payer — no new branching.
+`GuaranteePlus` is the commercial formula currently carried by the `Versus` deal type. Payer-facing
+copy must say “guarantee plus percentage”, never “whichever is greater”. Renaming the published
+`DealType.Versus` wire value is not required to implement commission and would be a separate breaking
+package cut-over.
 
-### 1.2 `fee = flat amount per settled contract`, owned by Payment as config *(MVP — default 0)*
+Implement the four calculations as four strategies behind a closed-key resolver such as
+`ISettlementGrossCalculator`, following `api/agents/CODE_PATTERNS.md`. FlatFee and VenueHire remain
+separate strategies even though both currently return a fixed term: their payer, payee and deal
+semantics differ. The strategies are pure domain logic. Whether the interface is consumed by the
+application workflow or the calculation is moved onto an appropriate DDD value object can be decided
+within Phase 2; the invariants are four deal-specific calculations, one result, and no Payment concern
+inside them.
 
-> **The chosen future direction is a % of settlement (deferred, NOT MVP) — see the top banner and §7.6.**
-> For MVP the fee stays the flat scalar described here (default 0). The Payment-ownership argument below
-> carries to the % too (the base would be the payee's gross Payment already receives) — but the % is
-> deferred for the **money-flow / ticket-dependency** reasons in §7.6, not the arithmetic.
+Payment owns one deal-type-agnostic calculation:
 
-**A single flat fee per settled contract, the same across all four contract types** — see §7 for the
-research. Indicative v1 value: **~£10–15**. It lives in a bound `PlatformFeeOptions` **in the Payment
-service** (platform-level config), **not** on `TenantEntity`, and **not** resolved in B2B.
+```text
+commission minor = round-half-up(gross minor × rate basis points / 10,000)
+payer total       = gross minor + commission minor
+payee amount      = gross minor
+```
 
-**Why Payment owns it, not B2B (the 2026-07-24 reversal):** the fee is Concertable's cut of the settlement
-transaction that *Payment itself processes and moves*. The earlier design put an `IPlatformFeeCalculator`
-in B2B (mirroring `ISettlementAmountResolver`) and passed the resolved fee across gRPC — but its only
-justification was keeping deal-context in B2B for a *future* `%-of-agreed-fee` variant (§6), and §7's whole
-conclusion is that v1 is flat **precisely so it has zero deal-type dependence**. For a flat fee there is
-nothing deal-specific to resolve, so Payment reading one config value is simpler and — critically — means
-**nothing crosses the service boundary** (§3). If the `%-variant` is ever wanted, resolving it in B2B and
-passing a fee/basis becomes an additive change then; we are not painted into a corner.
+Payment must not receive a caller-supplied rate and must never branch on B2B `DealType`.
 
-The fee is expressed in **pounds (`decimal`)** in config, consistent with the rest of the service layer.
-Charged **once per contract, at the point money settles** (§2). A cancelled/never-settled booking is
-never charged (§1.4).
+### 1.3 Why the base is final deal gross
 
-### 1.3 The fee is snapshotted, never re-read
+A percentage of ticket sales is only reliable when the platform owns the ticket checkout. It also
+misprices revenue-share deals: a platform fee calculated against £1,000 of takings bears no consistent
+relationship to a payee receiving, for example, a 20% £200 share. Commissioning the £200 settlement
+charges for the payment Concertable actually facilitates.
 
-A later fee change must not retro-alter historic settlements. The fee charged is frozen at charge time
-alongside the money. Concretely the fee is persisted on `EscrowEntity.PlatformFee` (escrow flow) and on
-`SettlementTransactionEntity` (direct flow), never recomputed from live config when reading history. Payment
-reads `PlatformFeeOptions` at the charge site and **writes the resolved number onto the record** — the
-config is the live default, the persisted column is the snapshot.
+For Concertable ticket sales, B2B uses its own authoritative sales data. External takings remain
+venue-declared for launch. A false declaration changes the artist entitlement as well as Concertable's
+commission, so it is a deal-settlement dispute rather than a Payment pricing problem. The UI must label
+external takings as declared, require venue attestation, show the artist the calculation and provide a
+dispute route. A future ticketing import may strengthen the input without changing the commission model.
 
-### 1.4 A cancelled booking refunds the fee too
+## 2. Designs considered
 
-Refund returns the **full** charged amount including the fee — no service was delivered, so Concertable
-keeps nothing. This is the behaviour `EscrowService` refund already has (`refundAmount = escrow.Amount`, a
-`Money`) provided `Amount` remains the **total charged**; see §2.1.
+| Design | Result |
+|---|---|
+| keep the flat £10 fee | rejected: temporary pricing unrelated to transaction value |
+| commission total ticket/door takings | rejected: unverifiable for external sales and disproportionate to the actual settlement |
+| vary rates by deal type | rejected: adds pricing policy and Payment domain knowledge without a launch requirement |
+| deduct commission from the payee | rejected: changes the negotiated gross and weakens “what you agree is what you receive” |
+| generic fixed/rate/minimum/cap policies | rejected: speculative product surface and persistence |
+| resolve the live rate only when charging | rejected: delayed bookings could be charged on terms the payer never accepted |
+| copy the current rate into B2B | rejected: B2B could become a second pricing authority or submit a favourable rate |
+| copy version, currency and rate into every authorization | rejected: repeats identical configuration terms and conflates a pricing revision with a payer commitment |
+| generic policy catalogue referenced directly by every application | rejected: exposes speculative pricing modes and binds pricing before the payer commitment |
+| immutable percentage configuration revision referenced by a Payment-issued authorization | selected: stores each rate once while separately recording who accepted it, for which obligation and Stripe context |
 
-## 2. The two money flows, and where the fee attaches
+## 3. Rate selection and binding
 
-Escrow is charged at Accept, not at settlement — so the fee attaches at a different site per contract type.
-Under §1.2 the fee value comes from `PlatformFeeOptions` **inside Payment** at each site; B2B is unchanged.
+### 3.1 Current rate
 
-| Contract types | Flow | Charge site (Payment adds the configured fee) |
+Replace the flat-fee setting with one validated Payment configuration:
+
+```text
+PlatformCommission
+  ConfigurationId         required non-empty Guid
+  Version                 required unique deployment/audit label
+  Currency                GBP
+  RateBasisPoints         required, 1..10,000
+```
+
+Add one percentage-only `CommissionConfigurationEntity` per pricing revision:
+
+```text
+Id                         configured ConfigurationId
+Version                    unique deployment/audit label
+Currency                   GBP
+RateBasisPoints            required, 1..10,000
+CreatedAt                  DateTimeOffset
+```
+
+This is not a generic policy engine: there is no fixed component, minimum, cap, tenant override,
+deal-type selector, expiry or mutable status. The row is immutable and the repository exposes no
+update/delete path.
+
+Payment bootstraps the configured revision idempotently after its schema is available:
+
+1. if the configured ID and version are absent, insert the revision once;
+2. if they resolve to the same immutable terms, continue;
+3. if either already identifies different terms, fail startup;
+4. never update or delete an older revision.
+
+The bootstrap must be safe when Payment Web and Workers start concurrently. Changing the rate requires
+a new ID, new version and coordinated Payment deployment. During a rolling deployment, preview and
+commitment commands compare the configuration ID the payer reviewed with the instance processing the
+commitment; a mismatch returns `pricing_changed` before Stripe or domain mutation, forcing a refresh.
+After commitment, calculations load the authorization's referenced configuration rather than the
+current deployment setting.
+
+### 3.2 Binding point
+
+The rate becomes binding when the payer accepts the financial obligation, not when an opportunity or
+unaccepted application is created:
+
+| Deal | Payer | Binding point |
 |---|---|---|
-| VenueHire | Escrow deposit (fresh hold at Accept) | `EscrowService.DepositAsync` → hold `gross + fee` |
-| FlatFee | Escrow capture (hold ring-fenced at apply, captured at Accept) | `ManagerPaymentService.CreateHoldSessionAsync` ring-fences `gross + fee`; `EscrowService.CaptureAsync` snapshots it |
-| DoorSplit, Versus | Direct (`TransferData`) | `ManagerPaymentService.PayAsync` → charge `gross + fee`, transfer `gross` |
+| FlatFee | venue | Confirm & Pay, when Payment creates the manual-capture hold |
+| VenueHire | artist | Authorise & Apply, when the SetupIntent/future charge mandate is accepted |
+| DoorSplit | venue | booking acceptance, when the SetupIntent/future charge mandate is accepted |
+| Guarantee Plus (`Versus`) | venue | booking acceptance, when the SetupIntent/future charge mandate is accepted |
 
-**The fee lives ONLY in `ManagerPaymentService`/`EscrowService`; the shared plumbing never hears the
-word.** Those two services compute `gross + fee` (`Money.operator+`) and hand absolute amounts to a
-dumb `PaymentManager`, which resolves accounts and calls Stripe. Settlement calls
-`SettleAsync(chargeAmount: gross + fee, payeeAmount: gross)` — the retained cut is the difference; the
-ticket path (no fee) calls `ChargeAsync(amount)` — one number, no fee concept. `StripeChargeOptions`
-carries `Amount` (the charge) + a nullable `TransferAmount` (`null` ⇒ forward the whole charge), never
-a `Fee`. `EscrowEntity`
-stores `Amount` (a `Money`, = `gross + fee`) and `PlatformFee` (a `Money`) as EF `ComplexProperty`
-pairs; `SettlementTransactionEntity` stores its `long` minor-unit `Amount` (= `(gross + fee).ToMinorUnits()`)
-and a `long PlatformFee` snapshot (the `Transaction` hierarchy stays `long`, per Money Phase 2). No bare
-`(long)(x*100)` and no hand-written `+ fee` anywhere — that's the whole reason Money is the prerequisite
-(`../MONEY_VALUE_TYPE.md`).
+An unaccepted application takes the then-current rate when it reaches the binding point. A booking
+with a Payment authorization retains its referenced configuration through settlement even if the
+current rate changes later. Reopening a checkout before commitment shows the current rate; it does not
+reserve an older rate merely because a page was visited.
 
-### 2.1 Escrow flow — a bigger charge/hold, an unchanged transfer
+### 3.3 Payment authorization
 
-No Stripe application-fee primitive is needed. Hold/charge `gross + fee`, then transfer only `gross`; the
-remainder stays on the platform balance.
+Add `CommissionAuthorizationEntity` in Payment:
 
-- `EscrowEntity` gains a **`PlatformFee`** `Money` (mapped as a second EF `ComplexProperty` alongside
-  `Amount`), with `Amount` keeping its meaning as the **total charged** (`gross + fee`). `Create` takes
-  `gross` + `platformFee` and sets `Amount = gross + platformFee` (`Money.operator+`) internally.
-- `Release` transfers `Amount - PlatformFee` (`Money.operator-`).
-- `Refund` continues to refund `Amount` in full (§1.4) — unchanged, correct by construction.
+```text
+Id                         Guid, generated by Payment
+CommissionConfigurationId  required FK to immutable Payment configuration
+ExternalReference          immutable application/booking reference
+PayerReference             immutable payer/customer reference
+BoundAt                    DateTimeOffset
+StripePaymentIntentId      nullable
+StripeSetupIntentId        nullable
+```
 
-**Capture/hold-session note:** the FlatFee capture flow ring-fences `gross + fee` at *apply* time
-(`CreateHoldSessionAsync`) and captures it at *accept* (`CaptureAsync` snapshots `PlatformFee`). Both read
-the same flat config value; because the fee is a platform-level constant that changes rarely and only
-forward, the apply→accept window is not a material snapshot risk (and the entity snapshot at capture is the
-system of record). Logged as risk C3.
+Require a unique operation identity appropriate to the existing payment journey so retries are
+idempotent. An authorization can only be consumed by a payment with the same external reference,
+payer, configured currency and Stripe intent/mandate. It cannot be rebound or supplied for another
+booking. The configuration relationship is many authorizations to one revision; the authorization
+does not duplicate version, currency or rate.
 
-### 2.2 Direct flow — charge more, transfer the share
+B2B persists only the opaque `CommissionAuthorizationId` on the application/booking path that already
+owns the payer commitment. It does not persist a second rate, policy terms or calculated commission.
+Signed booking terms continue to own the deal formula; the Payment authorization owns the platform
+rate commitment.
 
-`ManagerPaymentService.PayAsync` charges `gross + fee` and transfers `gross` to the connected account via
-`TransferData.Amount` on the PaymentIntent, and snapshots `PlatformFee` on `SettlementTransactionEntity`.
-`ApplicationFeeAmount` is the alternative primitive; we use `TransferData.Amount` so both flows express the
-same idea — *the platform keeps the difference*.
+## 4. Values persisted and derived
 
-## 3. No published-package boundary is crossed — this is ONE PR
+### 4.1 B2B
 
-Because the fee is owned inside Payment (§1.2) and never travels from B2B, **no client interface, proto
-message, or gRPC contract changes.** `IEscrowClient` / `IManagerPaymentClient` (in the published
-`Concertable.Payment.Client` package) keep their exact signatures. B2B calls them unchanged.
+Continue to store the agreed deal terms and signed agreement snapshot. Do not duplicate them into a
+pricing table.
 
-This is the whole payoff of the ownership reversal: the earlier design changed `DepositAsync` / `CaptureAsync`
-/ `PayAsync` signatures, which was a breaking cross-service change forcing an expand→publish→sync→contract
-cut-over across **two** PRs with a platform-sync gate between them. Owning the fee in Payment deletes all of
-that — **one PR, no publish gate, no consumer migration.**
+For DoorSplit and Guarantee Plus:
 
-The only cross-service touch is **disclosure** (Phase 2): B2B needs the fee value to show it pre-commitment.
-B2B reads the same `PlatformFeeOptions` config section (a platform-level constant bound independently), or a
-cheap read off the existing Payment client — decided in Phase 2, and far cheaper than the publish gate.
+- Concertable sales remain derived from authoritative ticket records;
+- external takings remain the venue declaration;
+- after the payer reviews the exact settlement, persist the eligible-takings inputs and
+  `FinalSettlementGrossMinor` atomically;
+- the completion worker reads that frozen gross rather than recalculating against mutable sales or
+  declaration data.
 
-## 4. Phases
+The frozen gross is justified: it is the amount the payer reviewed, the artist entitlement and the
+input to an asynchronous charge. FlatFee and VenueHire gross remain safely derivable from immutable
+agreed terms and do not need another snapshot in B2B.
 
-Both phases are independently shippable and end green. Gate for every phase:
-`dotnet build api/Concertable.slnx` (0 errors) + affected unit + integration tests via `integration-debug`.
-Phase 1 changes the model → ends with `./initial-migrations.ps1` from `api/`.
+### 4.2 Payment
 
-### Phase 1 — Payment charges the flat fee *(the phase where money changes)* ✅ DONE (local gate green; unmerged)
+Keep the existing actual `PlatformFee` snapshots on escrow and settlement records, renamed to
+commission terminology where the package cut-over permits. Each money-moving record must retain:
 
-> Landed on `Feature/PlatformCommission`: build 0 errors, `Payment` unit 39/39, `B2B.Concert` integration
-> 129/129, re-scaffold committed. Default fee **0** → behaviour-identical; E2E (no `[skip-e2e]`) runs in the
-> merge queue. Phase 2 below is unstarted.
+```text
+CommissionAuthorizationId
+Currency
+PayeeGrossMinor
+CommissionGrossMinor
+CommissionNetMinor
+CommissionVatMinor
+PayerTotalMinor
+Stripe charge / PaymentIntent / transfer identifiers
+status and timestamps
+```
 
-- `PlatformFeeOptions` (flat `decimal`, default **0**) bound from config in Payment, wrapped as
-  `Money(value, Currency.Gbp)` at read time.
-- `EscrowEntity.PlatformFee` (minor units) + `Create` takes it. **Re-scaffold.** `SettlementTransactionEntity`
-  gains its `PlatformFee` snapshot column too (direct flow).
-- `IPaymentManager` splits into `ChargeAsync` (one amount — ticket pass-through) and
-  `SettleAsync(chargeAmount, payeeAmount)` (settlement), sharing one private account-resolution helper.
-  `ChargeRequest`/`HoldRequest` are **deleted**; `StripeChargeOptions` swaps `Fee` for a nullable
-  `TransferAmount`, `StripeHoldOptions` drops `Fee` (its `Amount` is the full hold total). Stripe intent
-  client charges `Amount`, sets `TransferData.Amount = (TransferAmount ?? Amount).ToMinorUnits()`; fakes
-  mirror it. The fee never appears below the two services (see §2).
-- `EscrowService.ReleaseAsync` transfers `Amount - PlatformFee`. Refund untouched (§2.1).
-- Apply the configured fee at the three sites in §2 (`DepositAsync`, `CreateHoldSessionAsync` + `CaptureAsync`,
-  `PayAsync`), reading `IOptions<PlatformFeeOptions>`. **Customer flow is not touched** (not a settlement).
-- Tests: charge/hold `gross + fee`, payee receives exactly `gross`, cancellation refunds the full charged
-  amount, across **all four** contract types; a config fee of 0 is behaviour-identical to today.
+`PayerTotalMinor` is mathematically derivable but remains an actual transaction fact for Stripe
+reconciliation. Commission net and VAT are accounting facts, not pricing-policy duplication. The
+ledger continues to post from transaction snapshots and never recalculates an old rate.
 
-**Default fee is 0**, so with no config set the behaviour is unchanged — but a configured fee flips
-user-facing money movement on the payment + settlement flows, clearing the massive/risky bar in
-[`plans/AGENTS.md`](../AGENTS.md). **Gate:** build + `Payment` unit + `B2B` integration, **plus the E2E
-suites** (let the merge queue run them; don't duplicate locally). **No `[skip-e2e]`.**
+The configuration referenced by the authorization explains the historical price commitment; the
+settlement/escrow row explains what was actually charged and transferred. Both are required.
 
-### Phase 2 — Pricing transparency
+## 5. Currency, rounding and tax
 
-The fee disclosed **before** the committing action: at Apply/Accept for the escrow types and on the
-door-takings entry screen for revenue-share. Surface the breakdown (`gross`, `fee`, `total`) on the existing
-DTOs and render it in both manager SPAs. B2B obtains the fee per §3 (shared config read).
+- GBP is the only accepted commission currency at launch; reject mismatches before Stripe calls.
+- Use checked integer arithmetic. Multiply minor-unit gross by basis points, then round once using
+  round-half-up to the nearest minor unit.
+- Each B2B strategy produces one final gross in minor units. Payment commissions that combined value
+  once; it does not separately round a guarantee and revenue-share commission.
+- The displayed rate is VAT-inclusive. When Concertable is not VAT registered,
+  `CommissionNetMinor == CommissionGrossMinor` and VAT is zero.
+- When VAT applies, decompose the already-calculated commission gross using the tax rate effective for
+  the platform-fee supply. Persist that tax rate and the exact net/VAT split on the transaction and
+  post VAT to a liability ledger account rather than platform revenue.
+- Confirm the platform-fee tax point, invoice requirements and VAT registration transition with the
+  accountant before production activation. This validation may change decomposition timing, but must
+  not silently change the payer's accepted commission gross.
+- The payee's FlatFee/VenueHire/DoorSplit/Guarantee Plus invoice and VAT treatment remain separate
+  from Concertable's own commission supply to the payer.
 
-Closes the `LAUNCH_PLAN.md` §5 *pricing transparency UI* row and the launch-ready checklist item.
+## 6. Refunds, failures, release and disputes
 
-**Gate:** build + affected integration + the web workspace builds; UI E2E via the merge queue.
+### 6.1 Refund rule
 
-## 5. Risks
+Refund commission in the same proportion as payee gross:
 
-| # | Risk | Mitigation |
-|---|---|---|
-| C2 | Fee double-counted (added at Accept *and* at settlement) for an escrow type | Escrow types charge **once**, at Accept (deposit or capture); `PayAsync` is only reached by DoorSplit/Versus. Fee applied per §2 table, one site per type. Integration tests assert the total charged per contract type. |
-| C3 | Fee change retro-alters historic settlements / apply→accept drift | Snapshot at charge time on the entity/transaction (§1.3); history never recomputes from live config. Flat forward-only config makes the apply→accept window immaterial (§2.1). |
-| C4 | Platform-fee VAT not accounted for (§6) | Out of scope by decision, but a **real HMRC obligation** once VAT-registered — tracked below. |
+```text
+cumulative commission refund
+  = round-half-up(original commission × cumulative gross refund / original gross)
 
-*(The earlier C1 — "Phase 2 merged before the Phase 1 platform-sync pin lands" — is **gone**: there is no
-publish gate now, §3.)*
+this refund's commission
+  = cumulative commission refund - commission already refunded
+```
 
-## 6. Follow-ups this plan deliberately does not build
+A full gross refund therefore returns the full commission. A partial gross refund returns the
+proportional commission without cumulative rounding drift. Reverse VAT proportionally from the stored
+commission tax snapshot.
 
-- **Platform-fee VAT invoice** — the fee is a supply *by Concertable to the payer*, needing its own VAT
-  treatment and its own invoice/numbering. It is **not** the self-billed `InvoiceEntity` and must not reuse
-  it. Required before taking real money at launch.
-- **`%-of-settlement` fee (the CHOSEN next model — deferred to its own plan, 2026-07-25)** — flat gives up
-  the upside on booking value; the decided evolution is a % of what settles through our Stripe (§7.6).
-  Correction to the earlier note here: the base is the payee's gross **Payment already receives**, so it
-  resolves **Payment-side, no B2B crossing** — it is *not* a B2B-resolved value. It is deferred not for the
-  arithmetic but for the **DoorSplit/Versus money-flow/disintermediation** work (§7.6): the door take is
-  collected off-platform, so making the artist's-share settlement route through us at all is the real task.
-  Pulls in the `Money` rounding rule + the rate-card config. MVP stays flat.
-- **Per-tenant fee overrides** — additive later; Payment config keyed by owner/tenant, or a resolver.
-- **Money value type / minor-unit discipline** — the raw-`decimal` + scattered `(long)(x*100)` question.
-  Investigation **closed 2026-07-24**: **adopt a hand-rolled Kernel `Money(decimal, Currency)` value type**
-  (carries currency; owns the pence conversion + one rounding rule + the `gross/fee/total` arithmetic + the
-  minor-unit gRPC mapping); revisit a library only if multi-region firms up. A publish-first Kernel cut-over
-  — a sequencing task, not a blocker. Decision + resolves-when recorded in
-  `api/Concertable.Shared/TECH_DEBT.md`. Not entangled with this feature (the flat fee is 2 dp,
-  conversion-safe on `decimal`).
-- **Fee terms in the T&Cs** — Swim-lane A; the solicitor needs the locked shape from §1.
+Replace the single-refund assumption with one immutable Payment refund row per Stripe refund:
 
-## 7. Why a flat fee per contract — the pricing research (2026-07-24)
+```text
+PaymentRefundEntity
+  Id
+  SettlementOrEscrowId
+  StripeRefundId
+  GrossRefundedMinor
+  CommissionRefundedMinor
+  CommissionVatReversedMinor
+  PayerTotalRefundedMinor
+  Status
+  CreatedAt / CompletedAt
+```
 
-The shape moved twice in one day: **% of settlement → capped % → flat fee per contract.** Each step was
-forced by a question, and the endpoint is the shape the whole market already uses.
+Payment accepts the gross amount to reverse, derives the commission from stored transaction facts,
+and enforces cumulative limits. B2B never submits a commission refund.
 
-### 7.1 The trigger: "what happens when they sell on DICE?"
+### 6.2 Journey behaviour
 
-The challenge: *we take a % of their ticket-sale earnings — but ticketing is external (DICE, Skiddle, …), so
-how do we even see the number?* Premise correction: we never cut ticket sales. We cut the **settlement
-transaction** — the venue→artist payment routed through our Stripe Connect — which exists regardless of who
-sold the tickets. But the challenge exposed a real flaw: for DoorSplit/Versus, a **% is a slice of a
-self-declared, externally-generated number we cannot verify.** That's the wrong thing to base revenue on.
+- a failed or abandoned payment creates no revenue posting and does not consume a different rate on
+  retry after the payer has bound an authorization;
+- an escrow refund before release refunds the payer total according to the rule above;
+- escrow release transfers the stored payee gross and recognizes the stored commission according to
+  the existing ledger timing; it never recalculates the rate;
+- a refund after transfer reverses/recoveries the relevant connected-account amount using the Stripe
+  flow's required transfer reversal;
+- a dispute is recorded against the original charged total. Payment posts dispute and recovery facts
+  from Stripe webhooks, uses the stored gross/commission allocation and does not ask B2B to reconstruct
+  pricing;
+- fees or losses Stripe does not return are separate platform costs, not silently deducted from the
+  payee's agreed gross.
 
-### 7.2 Can we just get the sales number? (No.)
+## 7. Stripe model
 
-- **No normalized/standard ticketing API exists** — each is bespoke and requires the account owner to grant
-  access.
-- **DICE** — partner API exists but is gated behind a commercial partnership (MIO console), effectively
-  closed to a small venue. ([DICE partner API](https://partners-endpoint.dice.fm/graphql/docs/index.html))
-- **Eventbrite** — clean public OAuth; the one genuinely integratable case. ([Eventbrite API](https://www.eventbrite.com/platform/api))
-- **Skiddle** — beta, non-commercial-only. ([Skiddle API](https://www.skiddle.com/api/))
-- **Fatsoma** — no public sales API found.
+Keep the existing Connect money flows:
 
-**A guaranteed sales feed is impossible.** Third-party integration can only be an opt-in, post-launch trust
-*enhancer*, never the *basis* of the model. The fee must not depend on a verified sales number at all.
+- destination-style direct payments charge payer total and transfer payee gross;
+- escrow charges payer total to the platform flow and later transfers payee gross;
+- Concertable retains the difference and records it in the Payment ledger.
 
-### 7.3 The decisive finding: nobody charges a % of sales — the market avoids it on purpose
+Do not migrate solely to Stripe `application_fee_amount` in this work. Stripe application fees provide
+useful per-charge reporting and optional proportional fee refunds for destination charges, but
+Concertable also uses separate charge/transfer escrow semantics where refunds and transfer reversals
+must be coordinated explicitly. A mixed application-fee/non-application-fee accounting model would
+not remove the need for Concertable's persisted transaction and ledger facts.
 
-([platform comparison](https://gigxchange.app/blog/uk-live-music-booking-platforms-compared-2026),
-[GigPig pricing](https://www.gigpig.uk/venues/pricing), [GigXchange](https://gigxchange.app/))
+Stripe guidance also makes the platform responsible for disputes on these indirect charge models.
+The ledger and webhook work above is therefore required regardless of whether Stripe labels the
+retained amount an application fee.
 
-| Platform | Fee | Charged **on** |
-|---|---|---|
-| **GigPig** | £10/gig, or £150–£250/mo | Flat per booking / subscription |
-| **GigXchange** | 0% or 5% (opt-in escrow) | The **agreed booking fee** through their Stripe |
-| **Encore** | 20% | The **agreed performance fee** |
-| **Alive Network** | ~20% | The **agreed performance fee** |
-| **Last Minute Musicians** | Subscription | Nothing per booking |
+Primary references:
 
-Verbatim conclusion: *"No platform takes a percentage of ticket/door sales revenue. All commission
-structures are calculated against the agreed performance/booking fee, not venue door revenue or ticket
-sales."* Only two things anyone charges on: a **flat fee per gig/contract**, or a **% of the agreed fee that
-flows through their own rails**. Both share one rule: **you only take a cut of money that moves through your
-own payment system.**
+- Stripe destination charges and application fees:
+  https://docs.stripe.com/connect/destination-charges
+- Stripe separate charges and transfers:
+  https://docs.stripe.com/connect/separate-charges-and-transfers?locale=en-GB
+- Stripe refunds:
+  https://docs.stripe.com/api/refunds/create
+- Stripe Connect disputes:
+  https://docs.stripe.com/connect/disputes?locale=en-GB
+- HMRC commission as the agent's own supply:
+  https://www.gov.uk/hmrc-internal-manuals/vat-valuation/vatval11700
 
-### 7.4 Why flat-per-contract, not capped-% *(MVP rationale; but see §7.6 — a % is the chosen future direction, deferred to its own work)*
+## 8. Payment APIs and authority enforcement
 
-- Our types split into "amount we control" (FlatFee/VenueHire, escrowed) and "amount we don't"
-  (DoorSplit/Versus, the door). A **flat fee works identically on all four**, with no per-type branching and
-  zero exposure to an unverifiable number anywhere. **This is also why Payment can own it as one config
-  value (§1.2) — there is nothing deal-specific to resolve.**
-- With a ~£15 cap, capped-% and flat **converge** above ~£300 anyway.
-- Matches **GigPig's proven £10/gig** head-on, with a better story: we actually *settle the split and issue
-  the contract*.
-- Bills only on **completed bookings**, so it sells with zero traction (subscription stays rejected).
+Additive Payment client/protobuf capabilities must cover:
 
-**What flat gives up** — upside on large fixed-fee deals; recoverable additively later via the
-`%-of-agreed-fee` variant (§6).
+```text
+PreviewCommission(gross, currency)
+  -> commissionConfigurationId, configurationVersion, rateBasisPoints,
+     gross, commission, payerTotal
 
-### 7.5 What flat does *not* solve — and why that's acceptable
+CreateOrBindCommissionAuthorization(
+  externalReference, payerReference, currency,
+  reviewedCommissionConfigurationId, Stripe intent context)
+  -> authorizationId, referenced configuration and exact amounts when gross is known
 
-- **Declaration honesty.** The venue still self-reports the door take on DoorSplit/Versus. Flat-per-contract
-  makes this a pure **venue↔artist** matter — it no longer touches our revenue. We're the settlement rail
-  and the paper trail, not the auditor.
-- **Disintermediation.** Two parties can always agree off-platform. The only defence is being worth using —
-  escrow **plus** self-billed VAT invoicing, DAC7 compliance, the e-signed agreement, automated settlement.
+CalculateAuthorizedCommission(authorizationId, gross, currency)
+  -> referenced configuration, gross, commission, payerTotal
+```
 
-> **Revisit at v1.1.** The flat amount is config (§1.2), so tuning it — or adding the `%-of-agreed-fee`
-> variant (§6) — is cheap once a real booking-value distribution exists.
+The authorization-aware hold, capture, deposit and direct-pay methods accept an authorization ID and gross,
+not a rate. Payment:
 
-### 7.6 Chosen future direction (deferred, NOT MVP): a percentage of the settlement (2026-07-25)
+1. loads the authorization;
+2. loads its immutable commission configuration;
+3. verifies payer, external reference, currency and Stripe intent context;
+4. calculates from the referenced rate;
+5. validates any payer-reviewed expected gross/commission/total;
+6. performs the Stripe action;
+7. persists actual facts and posts the ledger atomically/idempotently.
 
-**MVP stays flat (default 0). This section records the _chosen next evolution_, not a current change.**
-§7.4's flat call optimised for robustness/simplicity; the chosen direction prioritises **value capture**
-— a flat £10–15 earns the same on a £5,000 booking as on a £200 one, and that upside is the point of the
-GigXchange/Encore/Alive model (a % of the agreed fee that runs through the platform's own rails). The fee
-would become **a percentage of the settlement** — the amount that settles through our Stripe Connect.
+Unknown, missing, mismatched or stale pricing fails before money movement. New protobuf methods must be
+distinct from legacy ones: an older Payment server must return `UNIMPLEMENTED`, not ignore a new field
+and execute the £10 path.
 
-**Why it's deferred as its own piece of work, not a config swap (the real complexity):** the fee
-*arithmetic* is trivial (`% × amount`), but two things are not — and one of them is the DoorSplit/Versus
-ticket dependency:
+## 9. Checkout disclosure
 
-- **Some deal types settle on an externally-derived number.** FlatFee/VenueHire settle on a fixed agreed
-  amount that is escrowed through us upfront — clean. **DoorSplit/Versus** settle the artist's share of a
-  **door/ticket take collected _outside_ our platform**; the settled figure is derived from that external
-  number, and it is self-declared (§7.5).
-- **We only earn a cut if the money actually routes through our rails — the disintermediation gap.** For
-  the escrowed types it always does (held before payout). For door-split, the parties *could* settle the
-  share off-platform and we'd see £0. So the real work is a **money-flow/product** problem — ensuring the
-  door-split settlement comes through us — not the percentage.
+| Surface | Required disclosure |
+|---|---|
+| FlatFee venue checkout | exact artist gross, commission percentage and amount, VAT wording, exact total |
+| VenueHire artist apply checkout | exact venue gross, commission percentage and amount, VAT wording, exact future total |
+| DoorSplit venue accept checkout | artist share formula, eligible-takings definition, commission percentage applied to final artist gross, worked example, warning that exact total follows after the event |
+| Guarantee Plus venue accept checkout | guarantee-plus-share formula, eligible-takings definition, commission percentage applied to the combined final artist gross, worked example, deferred-total warning |
+| DoorSplit/Guarantee Plus final review | Concertable sales, venue-declared external takings, artist calculation, exact frozen gross, commission and payer total, followed by explicit confirmation |
 
-These are why "% of settlement" is a proper separate effort, picked up as its own plan.
+The artist must also be able to see venue-declared takings and the resulting payee gross. Editing
+takings invalidates the exact review. No financial action is enabled while pricing is unavailable or
+stale, and no error path displays an invented zero.
 
-> **⛔ HARD REQUIREMENT before any real fee goes live (fail-closed config):** the MVP default of `Fee = 0`
-> is safe *only* because £0 is the intended value while no fee is charged. The moment a fee is real, a
-> **missing/unbound `PlatformFee` config must throw at startup**, never silently default to 0 — an absent
-> config indistinguishable from a deliberate zero is the repo's "don't default away a failure" anti-pattern
-> (root `CLAUDE.md`) and a live revenue risk (silently collecting nothing). The rate-card must fail-closed
-> on absence, with a deliberate zero expressed **explicitly** (or a distinct "fee disabled" flag), not as a
-> fallback from an unset section. This gates the fee-go-live, not the inert-MVP merge.
+Browser DTOs use integer minor units and currency. JavaScript formats authoritative values but never
+calculates commission.
 
-**The translation to our four types is uniform: our fee = `% × the gross that settles through us`.** For
-FlatFee/VenueHire the gross *is* the fixed agreed fee (pure GigXchange); for DoorSplit/Versus it is the
-artist's settled share — still a % of money we actually route. Worked at a **5% rate**:
+## 10. Package, migration and deployment sequence
 
-| Type | Payer → payee | Gross (settles through us) | 5% fee | Payer charged | Payee gets | We keep |
-|---|---|---|---|---|---|---|
-| **FlatFee** | venue → artist | £400 (artist's fixed fee) | £20 | £420 | £400 | £20 |
-| **VenueHire** | artist → venue | £300 (hire amount) | £15 | £315 | £300 | £15 |
-| **DoorSplit** | venue → artist | £700 (70% of a £1,000 door) | £35 | £735 | £700 | £35 |
-| **Versus** | venue → artist | £720 (greater of £500 guar. / 60%×£1,200) | £36 | £756 | £720 | £36 |
+This is an expand → publish → sync → consume → contract cut-over. Do not attempt to compile B2B against
+unpublished Payment package source.
 
-**What the model keeps, changes, and costs (when built):**
+### Phase 1 — Payment percentage expansion
 
-- **Keeps** — Payment ownership + no B2B boundary crossing (§1.2 note): the base is the gross Payment
-  already receives, so the % resolves Payment-side, uniformly, no per-type branching. **Keeps** Phase 1's
-  money-movement plumbing verbatim (charge `gross + fee`, transfer `gross`, snapshot the fee) — only the
-  fee *number* changes from a read constant to `clamp(gross × rate, min, max)`.
-- **Changes** — config: flat `Fee` scalar → `rate` (bps) + `min` + `max` rate-card (`PlatformPricingPolicy`),
-  and the resolved fee is snapshotted **with** the policy version (the hybrid from
-  `PLATFORM_FEE_STORAGE_INVESTIGATION.md`, now clearly justified because the fee is structured).
-- **Costs (accepted)** — (1) **rounding:** a % produces fractional pence, so the fee depends on **one**
-  rounding rule → the Kernel `Money` type (`../MONEY_VALUE_TYPE.md`) is a real prerequisite, not a nicety.
-  (2) **door-declaration / money-flow exposure:** on DoorSplit/Versus our cut rides a self-declared,
-  externally-collected door take (above) — bounded by a **min floor**, treated as a venue↔artist honesty
-  matter, and gated on the disintermediation work. A **cap is deliberately omitted** (or set high) —
-  capping would surrender the upside that motivates the move; a floor guards the tiny-gig case instead.
+- [x] Add immutable percentage-only configuration revisions, concurrency-safe configured-revision
+  bootstrap, calculation and authorization persistence by configuration foreign key.
+- [x] Add additive preview/authorize/authorized-calculation contracts and distinct authorization-aware
+  money-movement RPCs.
+- [x] Add transaction tax facts, multi-refund persistence and proportional refund logic.
+- [x] Keep the existing £10 RPCs only as the temporary expansion seam; do not model £10 as a supported
+  commission mode in new code.
+- [x] Re-scaffold Payment migrations.
+- [x] Build `api/Concertable.slnx`; run Payment unit and integration tests.
+- [x] Commit with `Skip-E2E: true`.
+- [ ] **Hard stop:** merge, let packages publish, own the generated platform-sync PR to green/merged,
+  and deploy the expanded Payment runtime before starting the consumer phase.
 
-**Net:** rate + floor in config, one uniform `gross × rate` calculator in Payment, snapshot fee + policy,
-plumbing untouched — **plus** the door-split money-flow work. The §6 `%-of-agreed-fee` follow-up is
-**promoted from "if ever wanted" to the chosen next model, deferred to its own plan.** MVP remains flat.
+### Phase 2 — B2B gross ownership and percentage cut-over
+
+Start from updated `origin/main` after Phase 1's platform sync.
+
+1. Establish the four keyed pure gross strategies and exhaustive formula/rounding tests.
+2. Persist only `CommissionAuthorizationId`; add the frozen final-gross snapshot for deferred deals.
+3. Bind the rate at each payer commitment point and route all four payment journeys through the new
+   Payment methods.
+4. Add exact and deferred pricing DTOs, final takings review/attestation and fail-closed error mapping.
+5. Implement payer and artist disclosures in the manager SPAs.
+6. Re-scaffold the Concert model.
+7. Build the solution and all manager SPAs; run affected B2B and Payment unit/integration tests. This
+   phase changes payment behaviour, so the merge queue remains the E2E gate.
+8. Update this plan and launch trackers in the implementation commit.
+9. **Hard stop:** merge and own publish/platform-sync before removing legacy Payment APIs.
+
+### Phase 3 — Remove the temporary £10 model
+
+Start after Phase 2 and its platform sync are green.
+
+1. Prove no consumer calls the legacy fixed-fee RPCs or reads the old flat-fee configuration.
+2. Remove the legacy RPCs, client methods, options and fixed-fee-only tests.
+3. Rename remaining internal `PlatformFee` identifiers to percentage-commission language where that
+   can be completed as one safe package cut-over; never discard actual accounting snapshots.
+4. Re-scaffold affected Payment models if required.
+5. Build and run affected Payment/B2B unit and integration tests.
+6. Merge, publish and own the final platform-sync PR to green. Fix every consumer in that sync before
+   considering the cut-over complete.
+7. Mark pricing transparency complete in `LAUNCH_PLAN.md` and `LAUNCH_CHECKLIST.md`.
+8. Delete this plan in the final verified implementation commit.
+9. **Hard stop:** hand off the completed feature for review; do not begin marketplace work.
+
+## 11. Verification coverage
+
+### B2B
+
+- one strategy resolves for each and only each supported deal type;
+- FlatFee and VenueHire return their immutable agreed gross;
+- DoorSplit uses artist percentage × eligible takings;
+- Guarantee Plus uses guarantee + artist percentage × eligible takings;
+- external takings attestation and exact review are required before deferred settlement;
+- changing takings invalidates a prior review;
+- the frozen reviewed gross is the value sent by the completion worker;
+- no B2B request or database field can set or override a commission rate.
+
+### Payment
+
+- configuration rejects zero/invalid rate and non-GBP currency;
+- configured-revision bootstrap is concurrency-safe and idempotent;
+- reusing an ID or version with different terms fails startup, and persisted revisions cannot be
+  updated or deleted;
+- calculation uses checked integer arithmetic and the documented half-up rule;
+- authorization creation is idempotent and references the authoritative current configuration;
+- any number of authorizations can share one immutable configuration without copying its terms;
+- an authorization cannot be reused for another payer, reference, currency or Stripe intent;
+- a later current-rate change does not affect an existing authorization;
+- preview/configuration-ID races fail before Stripe calls;
+- all four money paths charge gross plus commission and transfer/release gross;
+- transaction, Stripe metadata and ledger values reconcile;
+- VAT decomposition posts tax separately without changing commission gross;
+- multiple partial refunds preserve cumulative totals and a full refund returns the remaining exact
+  gross, commission and VAT;
+- failed payments, releases, post-transfer refunds and disputes use stored facts rather than
+  recalculation;
+- legacy £10 methods are absent after Phase 3.
+
+### UI/integration examples
+
+At a representative 5% test rate:
+
+```text
+FlatFee:       £500 gross -> £25 commission -> £525 payer total
+VenueHire:     £400 gross -> £20 commission -> £420 payer total
+DoorSplit:     70% × £1,000 = £700 gross -> £35 commission -> £735 total
+GuaranteePlus: £100 + (70% × £1,000) = £800 gross -> £40 commission -> £840 total
+```
+
+Tests use a representative rate; they do not set the production launch rate.
+
+## 12. Completion criteria
+
+- the temporary £10 model and generic multi-mode policy proposal are absent;
+- all four B2B deal types calculate one final payee gross through deal-owned pure logic;
+- Payment applies one authoritative universal percentage to that gross;
+- each rate revision exists once as an immutable Payment configuration and authorizations reference it;
+- every delayed commitment retains its historically bound configuration;
+- unaccepted applications receive the current rate while accepted bookings retain their bound rate;
+- payer, payee and deferred-review surfaces disclose the required formula or exact amounts;
+- transaction, refund, VAT, Stripe and ledger facts are durable and reconcilable;
+- no speculative pricing feature or duplicated B2B rate data remains;
+- all package publish/platform-sync gates and affected verification gates are green;
+- launch trackers describe the percentage model;
+- this plan is deleted with the final verified implementation phase.

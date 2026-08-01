@@ -10,7 +10,7 @@
 
 ## Phase 0 — Decisions that block other work
 
-- [ ] **Revenue model** picked: per-gig fee / subscription / % commission / hybrid. Drives Stripe billing setup, pricing UI, and venue onboarding copy.
+- [x] **Revenue model** picked: one Payment-owned percentage of the final deal gross calculated by B2B. Payment charges gross + commission and pays the counterparty gross; all four deal types use the same rate. The shipped £10 fee is temporary and must be removed before launch.
 - [x] **Multi-tenant model** decided & shipped — backend domain type is `Tenant` (Guid PK, request-scoped filtering, tenant-scoping E2E green). "Organization" is retained only as the user-facing UI/API label. Remaining multi-user membership / roles / auth-sweep work is tracked in `USER_MODEL_PLAN.md`.
 - [ ] **Company name** confirmed available at https://find-and-update.company-information.service.gov.uk and as a `.com` / `.co.uk` domain.
 - [ ] **Domain** registered.
@@ -122,7 +122,11 @@ Codebase audit confirmed: connected accounts created with `Type = "express"` in 
 
 - [ ] Stripe Connect **Express** mode in use (NOT Custom). Express keeps Stripe as the regulated payment institution — your platform is still in a marketplace-facilitator posture, not a payment institution itself.
 - [ ] `OnBehalfOf` escrow holds released within **short windows** (target: ≤7 days post-event). Funds sitting on platform balance for weeks invites FCA scrutiny.
-- [ ] Application fees configured if taking % cut.
+- [x] Platform-fee money movement implemented in test mode: Payment charges gross plus a retained amount, transfers/releases gross, and records the retained amount in the ledger. The currently configured £10 amount is temporary and is not launch pricing.
+- [x] Payment percentage expansion implemented and verified: persist each immutable percentage revision once, bind it by authorization, expose authorization-aware money RPCs, and retain actual transaction/refund/tax/ledger facts.
+- [ ] Cut B2B over to the Payment percentage authorization package, then remove the temporary £10 seam after all consumers migrate.
+- [ ] B2B payer surfaces disclose the deal formula or exact gross, percentage commission and total before commitment for FlatFee, VenueHire, DoorSplit and Guarantee Plus (`Versus`).
+- [ ] Production's percentage configuration ID/version, rate and GBP currency are explicitly configured; immutable-revision bootstrap and fail-closed validation are confirmed in the live environment.
 - [ ] Production Stripe account activated (Stripe reviews business; takes a few days).
 - [ ] Webhooks live + endpoint health-checked.
 - [ ] Test mode → live mode migration plan documented.
