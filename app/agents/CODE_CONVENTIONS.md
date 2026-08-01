@@ -148,8 +148,8 @@ guidance, and it keeps the two roles visually distinct.
 
 - `export interface` for every object/record shape.
 - `type` for: string-literal unions (`ApplicationStatus`), discriminated-union umbrellas
-  (`PaymentAmount`, `Contract`, `User`), template-literal types (`SortToken`), utility-derived types
-  (`UserRole = Exclude<Role, "Admin">`).
+  (`PaymentAmount`, `Contract`), template-literal types (`SortToken`), utility-derived types
+  (`WritableOpportunity = Omit<Opportunity, "id">`).
 - Extend with `interface X extends Y` (`Opportunity extends OpportunityDraft`), not intersections.
 
 ## Polymorphic JSON → discriminated union on `$type`
@@ -172,11 +172,9 @@ export type PaymentAmount = FlatPayment | DoorSharePayment | GuaranteedDoorPayme
 **Litmus:** *does the backend send more than one shape under one field? → discriminated union on
 `$type`, values copied from `[JsonDerivedType]`.*
 
-> **Resolution (decided):** the universal `User` today carries two discriminants — `$type`
-> (camelCase, polymorphism) and `role` (PascalCase, used by the `isVenueManager` guards) — *and*
-> enumerates persona subtypes it shouldn't. Both are fixed by the composed-identity pattern
-> ([`CODE_PATTERNS.md`](./CODE_PATTERNS.md), "Identity is composed, never widened"): the base `User`
-> sheds the personas, and each product's composed identity narrows on a single key.
+> **Resolution (decided):** the universal `User` is flat identity data with no `$type`, flat role,
+> or persona subtypes. Product identity is composed in the owning tier
+> ([`CODE_PATTERNS.md`](./CODE_PATTERNS.md), "Identity is composed, never widened").
 
 ## Response typing — put the shape on the axios generic
 
@@ -298,7 +296,7 @@ components never call `useQuery` directly. Two tiers, named by what they return:
   takes the plain domain name *because* it's no longer a raw query — it's the app-facing API. This
   is the idiomatic "abstract TanStack away" hook, not a naming lapse.
 
-Non-data hooks (`useDebounce`, `useIsMobile`, `useRole`) are neither — they never take a suffix.
+Non-data hooks (`useDebounce`, `useIsMobile`) are neither — they never take a suffix.
 
 Hooks live in `features/<feature>/hooks/`, one concern per file.
 
