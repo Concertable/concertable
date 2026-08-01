@@ -6,7 +6,7 @@
 > in one line, take the safe path, keep going.
 
 **Plan anchored to commit:** `449e410a40f9099685c3885a868b3622115f8a2e`  _(2026-07-30)_
-**Reviewed up to commit:** `449e410a40f9099685c3885a868b3622115f8a2e`  _(2026-07-30)_
+**Reviewed up to commit:** `2683efde98381ce2a95f9f4828cc32d182457e47`  _(2026-08-01)_
 
 Net diff reviewed: `4db0194..449e410`. Move-only files skipped.
 Status legend: `[ ]` not yet reviewed · `[x]` reviewed (date) · `[~]` in progress (incomplete — re-review).
@@ -95,3 +95,19 @@ DOC1/DOC2 flag that the plan (§10 Phase 1) and both launch trackers assert this
 
 - [x] **DOC2 — MEDIUM — documentation (done-claim vs. review reality)** — resolved 2026-07-31 by fixing the underlying gaps: "verified" is now true (COV1 added `CommissionServiceTests` eabab0db; COV2 added both validator test classes b77fe15e), and "durable/actual refund facts" is now true for settlements (BUG1 d6e05528). The trackers' "implemented and verified" claims are now accurate, so no downgrade is warranted. — `plans/b2b/LAUNCH_CHECKLIST.md:126` and `plans/b2b/LAUNCH_PLAN.md`
   Both launch trackers assert the commission work is **"implemented and verified"** with **"durable / actual transaction/refund/tax/ledger facts"** (`LAUNCH_CHECKLIST.md` `[x]` "Payment percentage expansion implemented and verified: … retain actual transaction/refund/tax/ledger facts"; `LAUNCH_PLAN.md` "Payment Phase 1 is implemented and verified: … durable transaction/refund/tax/ledger facts"). Both claims are contradicted by the review: **"verified"** is false — **COV1** finds `CommissionService`, the feature's core service, has zero direct tests, and **COV2** finds neither options validator is tested; **"durable/actual refund facts"** is false for settlements per **BUG1** (escrow-only refund persistence). Fix: downgrade the wording from "implemented and verified" to "implemented; review found open HIGH bugs (BUG1/BUG2/BUG3) and coverage gaps (COV1/COV2)" and leave the checklist item unticked until those are resolved.
+
+## Incremental review — 2026-08-01
+
+> Range: `449e410a..2683efde`, branch-authored non-merge commits only (main-merge content excluded — three `origin/main` merges pulled in unrelated Conversations/TypedResult work already reviewed on `main`). Focus: the commission-config re-architecture that landed after the big review closed.
+
+Reviewed the net current state of the re-architecture (rename Authorization→Binding, fold `ServiceDtos`→`PaymentDtos`, source commission terms from `IOptions` and drop the mirror `CommissionConfiguration` table + bootstrapper, `CommissionBindingRepository.GetOrCreateAsync` atomic upsert, tech-debt log for the refund `ChangeTracker.Clear()` DbContext leak).
+
+**No new findings.** Checked correctness, microservice isolation, module boundaries, seeding, C# conventions, and Lens F coverage:
+
+- **Terms now snapshotted, not mirrored** — `CommissionBindingEntity` pins `{ConfigurationId, Version, RateBasisPoints, Currency, VatRateBasisPoints}` at bind time and exposes them via `Terms`; `ExistingBinding`/`CalculateBoundAsync` compute against the *snapshot*, not current `IOptions`, so the `pricing_changed` transparency guarantee holds against the immutable record. VAT is now pinned too.
+- **No dangling references** to any deleted type (`CommissionConfigurationEntity`/`Repository`/`Bootstrapper`, `CommissionAuthorization*`) across src or tests.
+- **Config present** — `PlatformCommission` + `PlatformCommissionTax` sections exist in both `Payment.Web` and `Payment.Workers` appsettings, so `ValidateOnStart` (wired in `ServiceCollectionExtensions`) has values to validate; validators enforce non-empty Guid / version / GBP / rate + VAT bounds. COV2 pins both validators.
+- **Migration** is a single clean `20260731151513_InitialCreate`; the only `CommissionConfiguration` token left is the `CommissionConfigurationId` snapshot column on the binding — no mirror table.
+- **GetOrCreate** upserts on the `(ExternalReference, PayerReference)` unique index with `NoUpdate()` then re-`First`s the persisted row → idempotent under concurrent binds; matches `CommissionBindingEntityConfiguration`'s unique index. Removed `PaymentDbContext`/`IUnitOfWork` from `CommissionService`.
+- **Lens F** — rewritten `CommissionServiceTests` covers the new paths: `pricing_changed` via `ConfigurationId` mismatch, GetOrCreate existing-matches / no-existing-creates / intent-differs, plus `CalculateBoundAsync` identity/intent/currency/calculation branches.
+- Refund reserve-before-Stripe concurrency path (BUG3) is consistent across `EscrowService` and `ManagerPaymentService`; the shared-context `ChangeTracker.Clear()` in the conflict branch is correctly logged as MEDIUM tech debt (own follow-up PR), not left silent.
