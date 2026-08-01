@@ -461,10 +461,21 @@ Controllers consume the shared `Concertable.Shared.Api` adapters:
 - `Result<T,TError> where TError : IError` maps success through a caller-provided/default success
   result and failure through one centralized Definition-to-ProblemDetails mapper;
 - `Result<TError> where TError : IError` maps success without inventing a value body;
-- validation definitions map to ValidationProblemDetails;
+- the status-only non-generic Result has no HTTP adapter because a public failure must have a reason;
+- the error mapper is generic over `TError : IError`, avoiding conversion of a future struct union to
+  an interface receiver;
+- the frozen mapping explicitly owns both HTTP status and title for every ErrorKind; do not infer or
+  override them in controllers;
+- ordinary definitions create `ProblemDetails`; validation definitions create the concrete
+  `ValidationProblemDetails` type and preserve its keyed errors;
+- both paths retain the shared ProblemDetails service customization, `application/problem+json`,
+  request instance, trace id, safe detail, stable code, and fallback JSON writer behavior;
 - controllers do not switch on operation error cases or duplicate status mapping;
 - Option is converted to an owning typed Result before the controller boundary;
-- exception middleware handles faults only.
+- uninitialized Results and null delegates/definitions fail explicitly rather than generating an HTTP
+  response;
+- exception middleware remains the sole terminal for infrastructure failures, cancellation policy,
+  and programmer defects; Result adapters never catch or route exceptions through typed failures.
 
 gRPC, HTTP clients, and integration-event adapters use explicit wire error codes/details and rebuild
 the receiving side's typed error. Kernel Result/Option and Dunet/native union runtime layouts never go
@@ -489,6 +500,37 @@ under these rules:
   a required cross-package programming model;
 - no global warning suppression, global warning-as-error change, or claim about ordinary C# switch
   exhaustiveness is introduced to compensate for Dunet.
+
+`IError` is permanent native-union infrastructure, not temporary scaffolding. Native unions close the
+cases of one operation; they do not give unrelated operation unions a shared member that generic HTTP
+translation can call. Every operation error union implements `IError` and computes its Definition with
+an owner-local exhaustive switch:
+
+```csharp
+public union PurchaseError(
+    ConcertNotFound,
+    PurchaseInvalid,
+    PaymentRejected) : IError
+{
+    public ErrorDefinition Definition => this switch
+    {
+        ConcertNotFound => ErrorDefinition.NotFound(...),
+        PurchaseInvalid invalid => ErrorDefinition.Validation(..., invalid.Errors),
+        PaymentRejected rejected => ErrorDefinition.PaymentRequired(...),
+    };
+}
+```
+
+`IError` lets Shared.Api retain one generic `where TError : IError` terminal for all independently
+owned unions. Removing it would require controller-local switches or one cross-service mega-union,
+both of which are rejected. Keep `ErrorKind` as the small payload-free transport-policy enum and keep
+ErrorDefinition/ValidationErrorDefinition as validated mapping values; operation alternatives are the
+native unions.
+
+Make the Definition-to-ProblemDetails helper generic (`ToProblemActionResult<TError>` with
+`where TError : IError`) so a value-type native union uses a constrained interface call rather than
+being converted to an `IError` receiver and boxed. The frozen status/title mapping and validation
+specialization remain centralized and unchanged.
 
 ### Mandatory native-union destination
 
@@ -569,7 +611,10 @@ PR before implementation; do not touch PR #282 or the dirty ResultFoundationComp
 - `api/Concertable.Shared/src/Concertable.Kernel/Concertable.Kernel.csproj`: no CFE, FluentResults,
   Dunet, or OneOf dependency may support the new types;
 - `api/Concertable.Shared/src/Concertable.Shared.Api/Results/ResultHttpExtensions.cs` and error/exception
-  mapping: consume the owned value-bearing and no-value Result arities;
+  mapping: consume the owned value-bearing and no-value Result arities; make the internal error mapper
+  generic over `TError : IError` so future struct unions use a constrained call rather than boxing;
+  store explicit frozen status/title pairs; create concrete `ProblemDetails` and
+  `ValidationProblemDetails` terminals while preserving the existing serialized policy;
 - `api/Concertable.Shared/Directory.Packages.props` and affected csproj files: remove the CFE runtime
   dependency and remove Dunet from the test-only foundation if no production union needs it yet;
 - `api/Concertable.Shared/tests/Concertable.Kernel.UnitTests`: add focused tests for every API member;
@@ -594,7 +639,12 @@ PR before implementation; do not touch PR #282 or the dirty ResultFoundationComp
 - Bind interoperability from status-only to typed-error/value Results, from typed-error to
   value-bearing Results, and from value-bearing to no-value Results;
 - `ValidationErrors` non-empty/key/message invariants, accumulation order, duplicate keys, defensive
-  copying, equality, hashing, and mapping into operation-specific errors.
+  copying, equality, hashing, and mapping into operation-specific errors;
+- Shared.Api architecture/reflection coverage proving the common terminal remains generic over
+  `TError : IError` and does not accept an `IError` receiver;
+- every ErrorKind's exact status and title, complete enum coverage, concrete ProblemDetails type,
+  validation error dictionary, code/detail/instance/trace/content type, ProblemDetails customization,
+  fallback writer, null definition/delegate, uninitialized Result, and exception/cancellation boundary.
 
 **Verification:**
 
@@ -904,6 +954,8 @@ union declarations.
   the repository's normal platform-upgrade workstream;
 - change every owned `Result`, `Option`, and operation-error discriminated declaration to `union`;
 - replace Dunet-generated operation errors with native unions and remove Dunet after the last use;
+- retain `IError` as the common generic capability implemented by each operation union, with each
+  union's `Definition` implemented through a compiler-checked exhaustive case switch;
 - use distinct guarded success/failure/some case types so equal `TValue`/`TError` types remain valid and
   null payloads remain impossible;
 - preserve factories, combinators, task/collection extensions, HTTP adapters, error definitions,
