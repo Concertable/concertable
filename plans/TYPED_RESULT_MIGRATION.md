@@ -632,8 +632,14 @@ implementation order for this PR is:
    the Conversations unit suite passed 6/6, and the full B2B Release build completed with zero errors
    on 2026-08-01. Venue and Artist have no standalone unit-test projects; their container-backed
    integration verification is pending because Docker is currently unreliable.
-4. **Next checkpoint.** User and Conversations: optional lookups and expected command outcomes.
-5. Concert core: reconcile the stale workflow-boundary work, then migrate validation, lifecycle,
+4. **Complete in `refactor(b2b): migrate User outcomes to owned results`.** User module lookups now
+   return Option, multi-user queries return read-only lists, the location command owns its expected
+   unauthenticated outcome, and Conversations retains exceptional delivery semantics. The affected
+   Concert unit suite passed 68/68, the Conversations unit suite passed 6/6, and the full B2B Release
+   build completed with zero errors on 2026-08-01. User has no standalone unit-test project;
+   container-backed User/Conversations integration verification is pending because Docker is
+   currently unreliable.
+5. **Next checkpoint.** Concert core: reconcile the stale workflow-boundary work, then migrate validation, lifecycle,
    application/module lookups, dispatchers and executors that do not consume Payment results.
 6. Concert payment workflows: migrate only after Phase 2's typed Payment client package has published
    and its platform-sync PR is green. No temporary string bridge or adapter over FluentResults is
