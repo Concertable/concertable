@@ -84,8 +84,8 @@ builds, and a `npm pack` tarball installs + type-checks in a throwaway consumer.
   barrel, hook, type, and nested feature subpaths; all four web builds and both mobile typechecks are green.
 - ✅ Release automation: git-height versions (`0.1.0-alpha.0.<height>`) and `publish-fe-packages.yml` build,
   pack, idempotently publish under the `alpha` tag, then type-check the exact feed artifact in a fresh consumer.
-- ⚠️ Feed publication remains blocked by the Phase 0 PAT scope. The verified
-  `@concertable/shared@0.1.0-alpha.0.2115` tarball was rejected before upload with the same 403.
+- ✅ Feed publication: `@concertable/shared@0.1.0-alpha.0.2129` is published under the `alpha` tag and
+  installs and type-checks from the feed in a fresh NodeNext consumer.
 - **Do not cut consumers over yet** — like the BE, publish first; consumers still resolve the workspace copy.
 
 ### Phase 2 — Publish the remaining shared tiers + cut consumers over

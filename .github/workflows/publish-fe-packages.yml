@@ -78,10 +78,10 @@ jobs:
             '{"compilerOptions":{"module":"NodeNext","moduleResolution":"NodeNext","target":"ES2022","strict":true,"skipLibCheck":true},"include":["index.ts"]}' \
             > tsconfig.json
           printf '%s\n' \
-            'import { genreLabel, type Genre } from "@concertable/shared";' \
+            'import { genreLabel } from "@concertable/shared";' \
             'import { useMountEffect } from "@concertable/shared/hooks/useMountEffect";' \
-            'import type { User } from "@concertable/shared/types";' \
-            'import { useAuthStore } from "@concertable/shared/features/auth";' \
+            'import type { Genre } from "@concertable/shared/types";' \
+            'import { useAuthStore, type User } from "@concertable/shared/features/auth";' \
             'const genre: Genre = "Rock";' \
             'void genreLabel(genre);' \
             'void useMountEffect;' \
