@@ -290,11 +290,11 @@ kickoff prompt that says "run the E2E regress"** — if a PR will run it, let th
 The queue runs the full E2E suite on every code change *by default*, so your local skip-judgment is
 worthless unless it's encoded in the commit: without the trailer the queue still burns ~25-30 min of E2E
 on a change that didn't earn it. So for a behaviour-preserving / small / well-covered change, add the
-trailer `Skip-E2E: true` (own line, end of a commit message; any commit in the PR range — `Skip-Tests: true`
-for compile-floor-only on a trivial/mechanical change, `Skip-E2E-UI: true` for UI-only; build + carve never
-skip). It's a real git trailer parsed by git, not a `[bracketed]` token, so prose can't trip it; a same-named
-PR label (`skip-e2e`) works too. This is the reflex-inversion: E2E-in-the-queue is opt-*out* for a
-zero-behaviour-change PR, not automatic. Retrofitting the trailer onto a PR already in the queue means
+trailer `Skip-E2E: true` (own line, end of a commit message; any commit in the PR range —
+`Skip-E2E-UI: true` for UI-only). Unit and integration tests never skip for code/package changes, and
+build + carve never skip. It's a real git trailer parsed by git, not a `[bracketed]` token, so prose can't
+trip it; a same-named PR label (`skip-e2e`) works too. This is the reflex-inversion: E2E-in-the-queue is
+opt-*out* for a zero-behaviour-change PR, not automatic. Retrofitting the trailer onto a PR already in the queue means
 closing + re-pushing (the branch is locked while queued) — so decide the tier **in the commit you push**,
 not after.
 

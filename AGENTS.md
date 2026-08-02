@@ -156,16 +156,16 @@ integration), **add the `skip-e2e` label to the PR** (`gh pr edit <n> --add-labe
 queue skips it too — otherwise it burns ~25-30 min of E2E that catches nothing. This is the common case
 for a refactor; **default to skipping E2E for any zero-behaviour-change PR** — letting the queue run E2E
 on it is the reflex to avoid. The labels: `skip-e2e` drops both E2E suites; `skip-e2e-ui` drops only the
-UI suite; `skip-tests` drops to the compile floor (build + carve only) for a genuinely trivial/mechanical
-change. Build + carve are never skippable.
+UI suite. Unit tests, integration tests, build, and carve are never skippable for code/package changes.
 
 A same-named **git trailer** (`Skip-E2E: true` on its own line) works too — parsed structurally by git,
 so prose that merely mentions it can't trip the gate (the pr-227 bug) — **but it is fragile in this repo,
 so prefer the label.** Git only parses the *last* paragraph of a commit message as trailers, and every
 commit here carries a mandated `Co-Authored-By:` trailer, so `Skip-E2E: true` must sit in the **same
 contiguous block** as `Co-Authored-By:` — a blank line between them splits the paragraph and git no
-longer sees `Skip-E2E`, so the queue silently runs E2E anyway. The label sidesteps this entirely. Full
-tier table in [`.github/workflows/test.yml`](./.github/workflows/test.yml).
+longer sees `Skip-E2E`, so the queue silently runs E2E anyway. Unit and integration tests always run
+for code/package changes and have no opt-out. The label sidesteps the E2E trailer fragility entirely.
+Full tier table in [`.github/workflows/test.yml`](./.github/workflows/test.yml).
 
 Run E2E only through `./e2e.ps1` via the matching skill (`e2e-ui-regress`, `e2e-ui-debug`,
 `e2e-api-debug`) — the skill's Step 0 Docker pre-flight is mandatory, every run.
