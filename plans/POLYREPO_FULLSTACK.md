@@ -69,10 +69,9 @@ builds, and a `npm pack` tarball installs + type-checks in a throwaway consumer.
 ### Phase 0 — Registry + PAT (unblocks everything; no code cutover)
 - ✅ Add scoped npm registry config: root `app/.npmrc` (or per-surface, mirroring the BE "no repo-root config"
   rule — decide with D-B) mapping `@concertable` / `@customer` / `@b2b` → `https://npm.pkg.github.com`.
-- ⚠️ Provision a classic PAT with `write:packages` (publish) + `read:packages` (restore); reuse/extend the
-  documented `GITHUB_PACKAGES_TOKEN`. The configured token authenticates reads, but an
-  `npm publish @concertable/shared` attempt returns `403 permission_denied` because it lacks the expected
-  publish scope. **Replacing the token still needs Tommy's hands** (GitHub settings + environment variable).
+- ✅ Provision a classic PAT with `write:packages` (publish) + `read:packages` (restore); reuse/extend the
+  documented `GITHUB_PACKAGES_TOKEN`. Publishing and restoring `@concertable/shared@0.1.0-alpha.0.2129`
+  proves both scopes are available.
 - ✅ Gate: a dry-run `npm view @concertable/shared --registry=https://npm.pkg.github.com` authenticates (404
   for "not yet published" is success — auth resolved).
 
