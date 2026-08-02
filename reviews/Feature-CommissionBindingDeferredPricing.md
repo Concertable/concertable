@@ -22,6 +22,6 @@
   CommissionConfigurationId foreign key plus their own currency, identity and Stripe context; bound
   calculations load the referenced historical percentage through that relationship. Version and
   currency were removed from percentage configuration, and VAT uses the same value object. Verified
-  with 141 Payment unit tests, 7 Payment SQL integration tests, regenerated initial migrations and the
-  full solution build, all with zero failures or errors. Standalone Payment carve verification follows
-  the implementation commit.
+  after merging current `origin/main` with 141 Payment unit tests, 7 Payment SQL integration tests,
+  no pending Payment model changes, regenerated initial migrations, the full solution build and the
+  standalone Payment carve, all with zero failures or errors.
