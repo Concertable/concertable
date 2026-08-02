@@ -1,31 +1,129 @@
 {
   "name": "@concertable/shared",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.1.0",
+  "private": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Concertable/concertable.git",
+    "directory": "app/shared"
+  },
   "type": "module",
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
+    "build": "npm run clean && tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json --resolve-full-paths --resolve-full-extension .js",
+    "prepack": "npm run build"
+  },
   "exports": {
-    ".": "./src/index.ts",
-    "./lib": "./src/lib/index.ts",
-    "./hooks": "./src/hooks/index.ts",
-    "./types": "./src/types/index.ts",
-    "./features/artists": "./src/features/artists/index.ts",
-    "./features/auth": "./src/features/auth/index.ts",
-    "./features/concerts": "./src/features/concerts/index.ts",
-    "./features/dashboard": "./src/features/dashboard/index.ts",
-    "./features/messaging": "./src/features/messaging/index.ts",
-    "./features/notifications": "./src/features/notifications/index.ts",
-    "./features/payments": "./src/features/payments/index.ts",
-    "./features/reviews": "./src/features/reviews/index.ts",
-    "./features/search": "./src/features/search/index.ts",
-    "./features/user": "./src/features/user/index.ts",
-    "./features/venues": "./src/features/venues/index.ts",
-    "./providers": "./src/providers/index.ts",
-    "./features/*": "./src/features/*.ts",
-    "./lib/*": "./src/lib/*.ts",
-    "./hooks/*": "./src/hooks/*.ts",
-    "./types/*": "./src/types/*.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./lib": {
+      "types": "./dist/lib/index.d.ts",
+      "import": "./dist/lib/index.js",
+      "default": "./dist/lib/index.js"
+    },
+    "./hooks": {
+      "types": "./dist/hooks/index.d.ts",
+      "import": "./dist/hooks/index.js",
+      "default": "./dist/hooks/index.js"
+    },
+    "./types": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/types/index.js",
+      "default": "./dist/types/index.js"
+    },
+    "./features/artists": {
+      "types": "./dist/features/artists/index.d.ts",
+      "import": "./dist/features/artists/index.js",
+      "default": "./dist/features/artists/index.js"
+    },
+    "./features/auth": {
+      "types": "./dist/features/auth/index.d.ts",
+      "import": "./dist/features/auth/index.js",
+      "default": "./dist/features/auth/index.js"
+    },
+    "./features/concerts": {
+      "types": "./dist/features/concerts/index.d.ts",
+      "import": "./dist/features/concerts/index.js",
+      "default": "./dist/features/concerts/index.js"
+    },
+    "./features/dashboard": {
+      "types": "./dist/features/dashboard/index.d.ts",
+      "import": "./dist/features/dashboard/index.js",
+      "default": "./dist/features/dashboard/index.js"
+    },
+    "./features/messaging": {
+      "types": "./dist/features/messaging/index.d.ts",
+      "import": "./dist/features/messaging/index.js",
+      "default": "./dist/features/messaging/index.js"
+    },
+    "./features/notifications": {
+      "types": "./dist/features/notifications/index.d.ts",
+      "import": "./dist/features/notifications/index.js",
+      "default": "./dist/features/notifications/index.js"
+    },
+    "./features/payments": {
+      "types": "./dist/features/payments/index.d.ts",
+      "import": "./dist/features/payments/index.js",
+      "default": "./dist/features/payments/index.js"
+    },
+    "./features/reviews": {
+      "types": "./dist/features/reviews/index.d.ts",
+      "import": "./dist/features/reviews/index.js",
+      "default": "./dist/features/reviews/index.js"
+    },
+    "./features/search": {
+      "types": "./dist/features/search/index.d.ts",
+      "import": "./dist/features/search/index.js",
+      "default": "./dist/features/search/index.js"
+    },
+    "./features/user": {
+      "types": "./dist/features/user/index.d.ts",
+      "import": "./dist/features/user/index.js",
+      "default": "./dist/features/user/index.js"
+    },
+    "./features/venues": {
+      "types": "./dist/features/venues/index.d.ts",
+      "import": "./dist/features/venues/index.js",
+      "default": "./dist/features/venues/index.js"
+    },
+    "./providers": {
+      "types": "./dist/providers/index.d.ts",
+      "import": "./dist/providers/index.js",
+      "default": "./dist/providers/index.js"
+    },
+    "./features/*": {
+      "types": "./dist/features/*.d.ts",
+      "import": "./dist/features/*.js",
+      "default": "./dist/features/*.js"
+    },
+    "./lib/*": {
+      "types": "./dist/lib/*.d.ts",
+      "import": "./dist/lib/*.js",
+      "default": "./dist/lib/*.js"
+    },
+    "./hooks/*": {
+      "types": "./dist/hooks/*.d.ts",
+      "import": "./dist/hooks/*.js",
+      "default": "./dist/hooks/*.js"
+    },
+    "./types/*": {
+      "types": "./dist/types/*.d.ts",
+      "import": "./dist/types/*.js",
+      "default": "./dist/types/*.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "restricted",
+    "registry": "https://npm.pkg.github.com"
   },
   "dependencies": {
     "@microsoft/signalr": "^10.0.0",
@@ -47,6 +145,7 @@
   "devDependencies": {
     "@types/node": "^24.12.0",
     "@types/react": "^19.2.14",
+    "tsc-alias": "^1.9.1",
     "typescript": "~5.9.3"
   }
 }
