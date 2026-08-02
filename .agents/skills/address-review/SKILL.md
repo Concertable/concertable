@@ -23,11 +23,27 @@ If multi-agent tooling is unavailable, work the findings yourself one at a time 
 - **Sequential, one finding per agent context.** Never parallelise fixes.
 - **Fix clear defects; defer judgment calls.** Fix only unambiguous defects: correctness, isolation/boundary, seeding, convention nits with a stated fix. Anything framed as a tradeoff, author's call, subjective point, or not high-confidence is marked `- [-] DEFERRED` with the decision needed. Code stays untouched for deferred findings.
 - **One commit per finding, never pushed.** Use pathspec-scoped staging so unrelated working-tree changes are not swept in. Verification per fix is build plus nearest unit/integration tests, not E2E. A final step runs a full solution build.
+- **Review the fix commits before deleting the watermark.** When code changed, run `incremental-review`
+  over the commits added since the recorded review SHA while the review file still exists. Any new
+  findings re-enter this same serial fix loop; rebuild and repeat until the incremental pass is clean.
 - **Delete only if all fixed cleanly.** When every finding was fixed, nothing was deferred, and the final build is green, `git rm` the review file in a final commit per `reviews/AGENTS.md`. If anything was deferred or the build failed, keep the file with just the outstanding items.
 
 ## After it finishes
 
-Report concisely: which findings were fixed, which were deferred and what decision each needs, whether the build passed, and whether the review file was deleted or kept. The per-finding commits are unpushed; remind the user to review the diffs and push when happy. Do not re-litigate the agents' fixes here.
+Resolve the next workflow state before reporting. Never stop at the generic “review the diffs and push
+when happy” handoff.
+
+1. Determine whether the review came from an implementation plan and inspect that plan's current
+   state (including whether its completing commit deleted it).
+2. If an incomplete phase remains, follow `plans/AGENTS.md`: give the one exact resume prompt for that
+   phase, including the worktree path when applicable. Do not suggest opening a PR.
+3. If the plan is complete/deleted, or there was no plan, run the read-only `pr-preflight` skill.
+   Report its verdict and the exact next action: push then plain `gh pr create` for a new personal-repo
+   PR, push to update an existing PR, or the named blocker and its fix.
+
+Then report concisely: which findings were fixed, which were deferred and what decision each needs,
+whether the build passed, whether the review file was deleted or kept, and the per-finding unpushed
+commit SHAs. Do not re-litigate the agents' fixes.
 
 ## When NOT to use
 
