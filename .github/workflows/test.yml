@@ -100,7 +100,7 @@ jobs:
           else
             echo "-> code change; full CI."
           fi
-          # Opt-out: a git TRAILER (`Skip-E2E: true`) in any commit in the range, OR a same-named PR label.
+          # E2E tier: full-e2e overrides historical opt-outs; otherwise a git trailer or same-named label opts out.
           # Trailers are parsed by git (`--format=%(trailers:...)`), never substring-grepped, so prose that
           # mentions a token can't trigger them. Labels aren't in the merge_group payload, so resolve the PR
           # number (from the event on a PR, from the gh-readonly-queue/<base>/pr-<N>-<sha> ref in the queue).
@@ -111,18 +111,22 @@ jobs:
           esac
           labels=""
           [ -n "$prnum" ] && labels="$(gh pr view "$prnum" --json labels -q '.labels[].name' 2>/dev/null || true)"
-          echo "opt-out source: PR #${prnum:-none}, labels: ${labels:-<none>}"
+          echo "E2E tier source: PR #${prnum:-none}, labels: ${labels:-<none>}"
           optout() {  # $1 = trailer key (e.g. Skip-E2E), $2 = label name (e.g. skip-e2e)
             git log --format="%(trailers:key=$1,valueonly=true)" "$base..$head" | grep -qiE '^[[:space:]]*(true|yes|1|on)[[:space:]]*$' && return 0
             printf '%s\n' "$labels" | grep -qixF "$2"
           }
-          if optout Skip-E2E-UI skip-e2e-ui; then
-            run_e2e_ui=false
-            echo "-> opt-out Skip-E2E-UI; UI E2E off (build + carve + unit + integration + api E2E still run)."
-          fi
-          if optout Skip-E2E skip-e2e; then
-            run_e2e=false; run_e2e_ui=false
-            echo "-> opt-out Skip-E2E; all E2E off (build + carve + unit + integration still run)."
+          if printf '%s\n' "$labels" | grep -qixF full-e2e; then
+            echo "-> full-e2e override; historical skip labels/trailers ignored."
+          else
+            if optout Skip-E2E-UI skip-e2e-ui; then
+              run_e2e_ui=false
+              echo "-> opt-out Skip-E2E-UI; UI E2E off (build + carve + unit + integration + api E2E still run)."
+            fi
+            if optout Skip-E2E skip-e2e; then
+              run_e2e=false; run_e2e_ui=false
+              echo "-> opt-out Skip-E2E; all E2E off (build + carve + unit + integration still run)."
+            fi
           fi
           # E2E is the MERGE QUEUE's gate only: it runs against live main in the queue and nowhere else.
           # Never pre-gate on the PR (a ~30-min suite shouldn't block PR feedback — build + carve + unit +

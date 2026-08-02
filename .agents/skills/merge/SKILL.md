@@ -101,8 +101,11 @@ This skill is **Concertable-specific**. It encodes how this repo actually merges
      and must run full E2E. When in doubt, do not skip.
    - Before enqueueing, normalize the labels to the decision: remove stale `skip-e2e` /
      `skip-e2e-ui` labels when the PR does not qualify; add the appropriate label only when all criteria
-     hold. Labels are read fresh from the PR in the merge group. `skip-tests` remains reserved for a
-     genuinely trivial mechanical change; build + carve never skip.
+     hold. If a PR must run full E2E but an earlier commit carries a true `Skip-E2E` /
+     `Skip-E2E-UI` trailer, add `full-e2e`; it is the authoritative positive override and wins over
+     every historical opt-out. Remove `full-e2e` when deliberately selecting a skip tier. Labels are
+     read fresh from the PR in the merge group. `skip-tests` remains reserved for a genuinely trivial
+     mechanical change; build + carve never skip.
    - **The `Skip-E2E: true` git trailer works too but is fragile here — don't rely on it.** Git parses
      only the *last* paragraph of a commit message as trailers, and every commit in this repo carries a
      mandated `Co-Authored-By:` trailer; if a blank line separates `Skip-E2E: true` from `Co-Authored-By:`
@@ -110,6 +113,7 @@ This skill is **Concertable-specific**. It encodes how this repo actually merges
      anyway** (observed on pr-262: `skipping` on the PR — because E2E never runs on PRs — but the full
      UI suite ran in the merge_group and flaked). `skipping` on the PR is **not** proof the skip took;
      only the label (or a correctly-blocked trailer) skips it *in the queue*. Prefer the label.
+     `full-e2e` overrides both when the current merge decision requires the full suite.
    ```
    gh pr merge <n> --merge --auto
    ```
