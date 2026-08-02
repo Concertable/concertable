@@ -205,6 +205,11 @@ The one comment that always earns its place: a **single-line footgun/invariant w
 
 And if a comment needs a paragraph to justify the code below it, that's usually the *code* telling you it's hacky — do the proper fix, or if a quick fix is genuinely right, log it in the nearest `TECH_DEBT.md` and keep the comment short.
 
+## Prompts
+
+- Every continuation, resume, handoff, review, or implementation prompt must name the exact worktree path it applies to.
+- Put `cd <absolute-worktree-path>` on the prompt's first line; never identify work only by branch, PR, phase, or plan.
+
 ## Plans (`plans/*.md`)
 
 Plans are working docs for unfinished work, **not** an archive — git history is the archive. A finished plan kept "for reference" is just rot that misleads the next reader into thinking the work is still pending.
