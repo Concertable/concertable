@@ -21,7 +21,7 @@ Decide and act on reversible work (doc/plan edits, isolated commits, retrying a 
 - **Backend (.NET, `api/`)** — seeding, migrations, DTOs, module rules, C# conventions: [`api/AGENTS.md`](./api/AGENTS.md).
 - **Design patterns the codebase commits to** (keyed strategy resolvers, and the anti-patterns they replace — branching on `DealType` in agnostic code, service location, throwaway DTOs): [`api/docs/CODE_PATTERNS.md`](./api/docs/CODE_PATTERNS.md). Read it before adding any rule that varies by a closed key.
 - **Web SPA (`app/web/`)** — [`app/web/AGENTS.md`](./app/web/AGENTS.md).
-- **Customer cross-platform core (`app/customer/shared`, npm `@customer/shared`)** — consumed ONLY by the customer web + mobile apps: [`app/customer/shared/AGENTS.md`](./app/customer/shared/AGENTS.md).
+- **Customer cross-platform core (`app/customer/shared`, npm package `@concertable/customer`, exported as `@concertable/customer/shared/*`)** — consumed ONLY by the customer web + mobile apps: [`app/customer/shared/AGENTS.md`](./app/customer/shared/AGENTS.md).
 
 ## Git branch — branch first, capitalized type prefix, always
 

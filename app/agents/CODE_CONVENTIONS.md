@@ -237,7 +237,7 @@ A `@b2b/*` api file that only re-exposes a shared one is a pure re-export
 
 The multi-service backend (own-site, Payment, Search) forces one axios instance **per backend the
 site calls** — `apiClient`, `paymentClient`, `searchClient`, `customerClient` — each created bare in
-`app/shared/src/lib/*Client.ts` (`@customer/shared` for `customerClient`). Only `searchClient` carries
+`app/shared/src/lib/*Client.ts` (`@concertable/customer/shared` for `customerClient`). Only `searchClient` carries
 the `qs` comma param serializer (it pairs with Search's `CommaDelimitedGenreArrayModelBinder`); the
 other three send no array query params.
 

@@ -88,23 +88,32 @@ This skill is **Concertable-specific**. It encodes how this repo actually merges
      the failing job's log for `build`/`carve-*`). Drive it green, push, and re-run this skill.
 
 4. **Enqueue into the merge queue (the default — this is what runs E2E).**
-   - **First decide the E2E tier — and set it with the `skip-e2e` PR label, not a commit trailer**
-     (`AGENTS.md` → "E2E suites"; `plans/AGENTS.md` → "When to run the E2E suites"). The queue runs the
-     **full** E2E suite by default — ~25-30 min it shouldn't spend on a behaviour-preserving change. If
-     this PR is zero-behaviour-change (additive seam, pure refactor, well-covered by unit + integration),
-     add the label **before enqueueing**: `gh pr edit <n> --add-label skip-e2e` (`skip-e2e-ui` drops only
-     the UI suite; `skip-tests` drops to the compile floor — build + carve; build + carve never skip).
-     A label is read fresh from the PR in the merge_group, so — unlike the trailer — it can be added or
-     changed after commits are pushed.
+   - **This skill is the single source of truth for the E2E tier. Full E2E is the default.**
+   - Add `skip-e2e` only when the PR is **both small and demonstrably low-blast-radius**. Every one of
+     these must be true:
+     - The diff and affected area are small and isolated.
+     - It touches no package/service boundary, shared infrastructure, build/publish/deployment pipeline,
+       CI workflow, or multiple application surfaces.
+     - It changes no user-facing/runtime flow covered by E2E.
+     - Unit/integration tests fully cover the affected behaviour.
+   - **Zero intended behaviour change is not sufficient.** Package renames, lockfile/workspace changes,
+     shared-library moves, broad refactors, and build/publish separation still have a broad blast radius
+     and must run full E2E. When in doubt, do not skip.
+   - Before enqueueing, normalize the labels to the decision: remove stale `skip-e2e` /
+     `skip-e2e-ui` labels when the PR does not qualify; add the appropriate label only when all criteria
+     hold. If a PR must run full E2E but an earlier commit carries a true `Skip-E2E` /
+     `Skip-E2E-UI` trailer, add `full-e2e`; it is the authoritative positive override and wins over
+     every historical opt-out. Remove `full-e2e` when deliberately selecting a skip tier. Labels are
+     read fresh from the PR in the merge group. `skip-tests` remains reserved for a genuinely trivial
+     mechanical change; build + carve never skip.
    - **The `Skip-E2E: true` git trailer works too but is fragile here — don't rely on it.** Git parses
      only the *last* paragraph of a commit message as trailers, and every commit in this repo carries a
      mandated `Co-Authored-By:` trailer; if a blank line separates `Skip-E2E: true` from `Co-Authored-By:`
      they become two paragraphs and git no longer sees `Skip-E2E`, so **the queue silently runs E2E
      anyway** (observed on pr-262: `skipping` on the PR — because E2E never runs on PRs — but the full
      UI suite ran in the merge_group and flaked). `skipping` on the PR is **not** proof the skip took;
-     only the label (or a correctly-blocked trailer) skips it *in the queue*. Prefer the label. When the
-     change genuinely touches a runtime flow E2E covers (payments/settlement/event-propagation/messaging
-     routing), let the full suite run — don't skip to save minutes.
+     only the label (or a correctly-blocked trailer) skips it *in the queue*. Prefer the label.
+     `full-e2e` overrides both when the current merge decision requires the full suite.
    ```
    gh pr merge <n> --merge --auto
    ```
