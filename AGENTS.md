@@ -209,6 +209,8 @@ And if a comment needs a paragraph to justify the code below it, that's usually 
 
 - Every continuation, resume, handoff, review, or implementation prompt must name the exact worktree path it applies to.
 - Put `cd <absolute-worktree-path>` on the prompt's first line; never identify work only by branch, PR, phase, or plan.
+- When finishing a task or phase, if a plan, review, PR, or dependency records more work, end with exactly one paste-ready prompt for the immediate actionable next stage, including any prerequisite or unblocking work; never wait for "what's next?".
+- If nothing remains, state that the work is complete and do not invent a continuation prompt.
 
 ## Plans (`plans/*.md`)
 
