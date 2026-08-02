@@ -5,7 +5,7 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `e73b30bb4b8d012d83fa62eda90285b07fcd0226`  _(2026-08-02)_
+**Reviewed up to commit:** `99ef2faacc3111c0672f5fbe18aba43b83e006e9`  _(2026-08-02)_
 
 > Range reviewed: `2ccd91567..f2e206133` (2 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -32,3 +32,11 @@
 
 No issues found. Checked correctness, microservice isolation, module boundaries, seeding, C#
 conventions, and test coverage of changed paths.
+
+## Incremental review — CI follow-up — 2026-08-02
+
+> Range reviewed: `e73b30bb4..99ef2faac`.
+
+No issues found. The GitHub-hosted integration matrix now relies on runner teardown instead of the
+Docker Hub-hosted Testcontainers resource reaper. The failed Customer User integration project
+passed 6/6 locally with the exact workflow setting.
