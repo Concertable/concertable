@@ -7,6 +7,7 @@ on:
     paths:
       - 'app/shared/**'
       - 'app/scripts/version-fe-packages.mjs'
+      - 'app/scripts/verify-fe-package.mjs'
       - 'app/package.json'
       - 'app/package-lock.json'
       - '.github/workflows/publish-fe-packages.yml'
@@ -58,6 +59,11 @@ jobs:
           test -n "$tarball"
           echo "tarball=$tarball" >> "$GITHUB_OUTPUT"
 
+      - name: Verify packed package
+        env:
+          TARBALL: ${{ steps.pack.outputs.tarball }}
+        run: node app/scripts/verify-fe-package.mjs "$TARBALL" --metro
+
       - name: Publish package
         env:
           VERSION: ${{ steps.version.outputs.version }}
@@ -72,26 +78,4 @@ jobs:
       - name: Verify published package
         env:
           VERSION: ${{ steps.version.outputs.version }}
-        run: |
-          consumer="$RUNNER_TEMP/shared-consumer"
-          mkdir -p "$consumer"
-          cd "$consumer"
-          npm init -y
-          npm install --save-exact "@concertable/shared@$VERSION" react@19
-          npm install --save-dev typescript@5.9 @types/react@19
-          printf '%s\n' \
-            '{"compilerOptions":{"module":"NodeNext","moduleResolution":"NodeNext","target":"ES2022","strict":true,"skipLibCheck":true},"include":["index.ts"]}' \
-            > tsconfig.json
-          printf '%s\n' \
-            'import { genreLabel } from "@concertable/shared";' \
-            'import { useMountEffect } from "@concertable/shared/hooks/useMountEffect";' \
-            'import type { Genre } from "@concertable/shared/types";' \
-            'import { useAuthStore, type User } from "@concertable/shared/features/auth";' \
-            'const genre: Genre = "Rock";' \
-            'void genreLabel(genre);' \
-            'void useMountEffect;' \
-            'void useAuthStore;' \
-            'const user = {} as User;' \
-            'void user;' \
-            > index.ts
-          npx tsc --noEmit
+        run: node app/scripts/verify-fe-package.mjs "@concertable/shared@$VERSION"
