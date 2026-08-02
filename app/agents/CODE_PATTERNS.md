@@ -19,7 +19,7 @@ those first; this file assumes them.
 
 The backend's "shared is the intersection, never the union" ([`api/AGENTS.md`](../../api/AGENTS.md))
 is the same rule the FE lives under, enforced by four `tsc -b` builds. This section is the
-**structural technique** that keeps it true: when a shared surface must differ by product or persona,
+**structural technique** that keeps it true: when a shared surface must differ by product or tenant type,
 the shared code declares a **slot** and the owning app **injects** the variation. It never learns who
 it's rendering for.
 
@@ -30,7 +30,7 @@ it's rendering for.
   no `onBuyTickets` is supplied); only the app-specific *behaviour or widget* is injected. Keep the
   shared UI intentional — a slot is for genuine per-app variation, not for punting every decision to
   the app.
-- Identity-conditional composition is the **app's** job. The app knows its persona; it picks which
+- Identity-conditional composition is the **app's** job. The app supplies its tenant type; it picks which
   slot contents to pass. Shared code receives the result, already decided.
 
 ```tsx
@@ -68,7 +68,7 @@ function OpportunitySection({ opportunity }: { opportunity: Opportunity }) {
 
 The universal `User` in `@concertable/shared` models only what **every** surface has — the
 intersection: `id`, `email`, `isAuthenticated`, universal profile fields. A product concept
-(persona, tenant membership, buyer state) is **composed on top** by the product that owns it, never
+(tenant type, tenant membership, buyer state) is **composed on top** by the product that owns it, never
 bolted onto the shared type.
 
 This is the direct FE mirror of the backend's identity split
@@ -76,10 +76,10 @@ This is the direct FE mirror of the backend's identity split
 (Kernel) carries only `Id`/`Email`/`IsAuthenticated`; the tenant/owner concept lives in a **separate
 `ICurrentTenant` that only B2B depends on**. The FE does the same, one layer per product:
 
-- **`@concertable/shared` — base identity.** `User` = the intersection. No persona subtypes, no
+- **`@concertable/shared` — base identity.** `User` = the intersection. No product-specific subtypes, no
   `venueId`/`artistId`, no `memberships`.
 - **`@b2b/*` — the B2B identity layer, composed on the base.** A single B2B identity module owns the
-  B2B view of the signed-in user: base user + persona + `memberships`, populated by a **B2B-owned,
+  B2B view of the signed-in user: base user + tenant type + `memberships`, populated by a **B2B-owned,
   typed `/me` query** (the payload the B2B backend actually sends). B2B code reads memberships from
   *this* module, never off the shared `User`.
 - **`@customer/*`** composes its own buyer identity the same way if/when it needs more than the base.
@@ -99,10 +99,10 @@ const b2bMeApi = { getMe: async (): Promise<B2bIdentity> => (await api.get<B2bId
 
 ### The anti-patterns this replaces — never do these
 
-- **Persona subtypes in the universal union.** `User = VenueManager | ArtistManager | Customer` with
-  `venueId?`/`artistId?` fields (`app/shared/src/features/auth/types.ts`) enumerates product personas
-  in the tier a customer/mobile bundle compiles — dead weight for everyone but one persona. Personas
-  compose in their own tier.
+- **Product-specific subtypes in the universal union.** `User = VenueManager | ArtistManager | Customer` with
+  `venueId?`/`artistId?` fields (`app/shared/src/features/auth/types.ts`) enumerates product-specific identity variants
+  in the tier a customer/mobile bundle compiles — dead weight for everyone but one product. Product identity
+  composes in its owning tier.
 - **Casting extra fields off the shared `User`.** `membershipsOf(user)` reading a `memberships` field
   the type doesn't declare (`@b2b/features/tenant/lib/tenantChoice.ts`) is the shared type lying about
   its shape. The typed B2B `/me` removes the cast — the field is *typed where it's real*.
@@ -136,22 +136,22 @@ derivation copied across disjoint owners.
   headers, and logout share one deliberate imperative object. It may use `getState()` and the query
   client internally; scattered public wrappers may not.
 - **Derived state → pure functions with explicit inputs, never stored.** "Is a choice pending", "the
-  active membership", and "can this role do X" take memberships, persona, selection, or role as
+  active membership", and "can this role do X" take memberships, tenant type, selection, or role as
   arguments. Reading a singleton makes a function an adapter/service, not a pure rule.
 - **Genuinely stateless, reusable rulebooks stay pure — wherever they naturally live.** A pure role
   lookup over a static permission matrix holds no state and does not get dragged into the store.
   Co-location is about keeping the *stateful* domain cohesive, not about banning pure helpers.
 
 ```ts
-const useTenant = (persona: TenantType) => {
+const useTenant = (tenantType: TenantType) => {
   const activeTenantId = useStore(tenantStore, (state) => state.activeTenantId);
   const { data: identity } = useQuery(identityQueryOptions);
-  return resolveTenant(identity?.memberships ?? [], persona, activeTenantId);
+  return resolveTenant(identity?.memberships ?? [], tenantType, activeTenantId);
 };
 
 const tenantSession = {
-  resolve: (persona: TenantType) =>
-    resolveTenant(cachedMemberships(), persona, tenantStore.getState().activeTenantId),
+  resolve: (tenantType: TenantType) =>
+    resolveTenant(cachedMemberships(), tenantType, tenantStore.getState().activeTenantId),
 };
 ```
 
@@ -341,7 +341,7 @@ same `switch`/ternary on the key across components and hooks.
 - Backend polymorphism (`[JsonPolymorphic]`) → a TS discriminated union on `$type`
   ([`CODE_CONVENTIONS.md`](./CODE_CONVENTIONS.md)); dispatch via `Record<X["$type"], …>`.
 - Role→permission is one stable readonly permission set per role. Consumers obtain that set through
-  `useTenant(persona).permissions` and use native `.has(permission)` with backend `SharedPermissions`
+  `useTenant(tenantType).permissions` and use native `.has(permission)` with backend `SharedPermissions`
   constant **names** (`MembersInvite`, `MembersManageRoles`, …).
 
 ```ts

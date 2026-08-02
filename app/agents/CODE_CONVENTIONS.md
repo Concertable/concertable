@@ -173,7 +173,7 @@ export type PaymentAmount = FlatPayment | DoorSharePayment | GuaranteedDoorPayme
 `$type`, values copied from `[JsonDerivedType]`.*
 
 > **Resolution (decided):** the universal `User` is flat identity data with no `$type`, flat role,
-> or persona subtypes. Product identity is composed in the owning tier
+> or product-specific subtypes. Product identity is composed in the owning tier
 > ([`CODE_PATTERNS.md`](./CODE_PATTERNS.md), "Identity is composed, never widened").
 
 ## Response typing — put the shape on the axios generic
