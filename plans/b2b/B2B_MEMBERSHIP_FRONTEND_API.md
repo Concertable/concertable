@@ -71,7 +71,7 @@ permissions.has("MembersInvite");
 
 The final barrel exports the readonly types and role list; the three primary membership/permission hooks; tenant-choice/select hooks; `isTenantChoicePending`, `reconcileActiveTenant`, and `requireBusinessPersona`; the chooser/switcher components; the root identity-sync hook; and the narrow active-tenant actions required across B2B features. It does not export a raw API object, query client, cache shape interpreter, Zustand store, or role-plus-permission predicate.
 
-## Phase 1 — Pure membership/permission model and React API
+## ✅ Phase 1 — Pure membership/permission model and React API
 
 1. Add the pure membership selectors and focused permission catalog with readonly inputs and stable set instances.
 2. Add the reader-only membership observer and the `useMemberships`, `useActiveMembership`, `usePermissions`, `useTenantChoicePending`, and `useSelectTenant` hooks.
