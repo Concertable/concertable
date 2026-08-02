@@ -739,6 +739,11 @@ jobs:
         working-directory: app
         run: npm ci
 
+      - name: Build frontend package dependencies
+        if: needs.changes.outputs.run_e2e_ui == 'true'
+        working-directory: app
+        run: npm run build --workspace @concertable/shared
+
       - name: Build B2B UI E2E tests
         if: needs.changes.outputs.run_e2e_ui == 'true'
         run: dotnet build api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui/Concertable.B2B.E2ETests.Ui.csproj --configuration Release
@@ -852,6 +857,11 @@ jobs:
         if: env.RUN == 'true'
         working-directory: app
         run: npm ci
+
+      - name: Build frontend package dependencies
+        if: env.RUN == 'true'
+        working-directory: app
+        run: npm run build --workspace @concertable/shared
 
       - name: Build Customer UI E2E tests
         if: env.RUN == 'true'
