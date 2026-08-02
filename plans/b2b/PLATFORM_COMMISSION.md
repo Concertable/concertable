@@ -258,7 +258,7 @@ and enforces cumulative limits. B2B never submits a commission refund.
 ### 6.2 Journey behaviour
 
 - a failed or abandoned payment creates no revenue posting and does not consume a different rate on
-  retry after the payer has bound a commission quote;
+  retry after the payer has bound a commission calculation;
 - an escrow refund before release refunds the payer total according to the rule above;
 - escrow release transfers the stored payee gross and recognizes the stored commission according to
   the existing ledger timing; it never recalculates the rate;
@@ -329,7 +329,7 @@ not a rate. Payment:
 6. persists actual facts and posts the ledger atomically/idempotently.
 
 `CreateOrBind` is the sole commitment boundary that accepts and validates payer-reviewed exact gross,
-commission and total. Later bound quote and money-movement calls accept the binding ID and gross, never
+commission and total. Later bound calculation and money-movement calls accept the binding ID and gross, never
 caller-supplied commission or payer-total values; Payment derives both from the immutable binding.
 
 Unknown, missing, mismatched or stale pricing fails before money movement. New protobuf methods must be
@@ -376,7 +376,7 @@ unpublished Payment package source.
 ### Phase 1b — Deferred binding consumption seam
 
 - [x] Confine payer-reviewed exact amount validation to `CreateOrBind`, the payer commitment boundary.
-- [x] Remove caller-supplied commission and payer total from every later bound quote and money-movement
+- [x] Remove caller-supplied commission and payer total from every later bound calculation and money-movement
   API; Payment calculates them internally from the immutable binding and caller-owned gross.
 - [x] Resolve review finding OWN1: keep one current {ConfigurationId, RatePercentage} in Azure
   configuration, insert each deployed percentage once into immutable Payment SQL history, and persist
