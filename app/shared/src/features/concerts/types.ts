@@ -1,4 +1,4 @@
-import type { ActionLink, Genre } from "../../types/common";
+import type { Genre } from "../../types/common";
 
 export interface CheckoutSession {
   clientSecret: string;
@@ -66,12 +66,6 @@ export interface ConcertVenue {
   longitude: number;
 }
 
-export interface ConcertActions {
-  cancel?: ActionLink | null;
-  contract?: ActionLink | null;
-  declareDoorRevenue?: ActionLink | null;
-}
-
 export interface Concert {
   id: number;
   name: string;
@@ -88,8 +82,4 @@ export interface Concert {
   venue: ConcertVenue;
   artist: ConcertArtist;
   genres: Genre[];
-  // Venue-private; present only on the owner (party-scoped) read, alongside actions.
-  ticketsSold?: number | null;
-  doorRevenue?: number | null;
-  actions?: ConcertActions;
 }
