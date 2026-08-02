@@ -144,14 +144,14 @@ derivation copied across disjoint owners.
 
 ```ts
 const useTenant = (tenantType: TenantType) => {
-  const activeTenantId = useStore(tenantStore, (state) => state.activeTenantId);
+  const activeTenantId = useTenantStore((state) => state.activeTenantId);
   const { data: identity } = useQuery(identityQueryOptions);
   return resolveTenant(identity?.memberships ?? [], tenantType, activeTenantId);
 };
 
 const tenantSession = {
   resolve: (tenantType: TenantType) =>
-    resolveTenant(cachedMemberships(), tenantType, tenantStore.getState().activeTenantId),
+    resolveTenant(cachedMemberships(), tenantType, useTenantStore.getState().activeTenantId),
 };
 ```
 

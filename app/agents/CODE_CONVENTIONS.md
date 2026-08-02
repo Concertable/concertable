@@ -335,6 +335,13 @@ store module private to that feature: do not export it from the feature barrel, 
 component, or make consumers assemble behavior from selectors and actions. Components consume a
 feature-facing facade hook that returns the domain values and actions they need.
 
+Use the repository's bound-hook form: name the store `useXStore` and create it with
+`create<XStore>()(...)`. Inside the feature facade, read it directly with
+`useXStore((state) => state.value)`. Do not introduce vanilla `createStore`,
+`useStore(store, selector)`, or a separately typed `StateCreator` merely to make the store
+testable; focused tests reset the bound store through `getState()`/`setState()`. Use a vanilla
+store only when a concrete requirement cannot be met by the bound hook, and document that exception.
+
 - Store client state and state transitions only. TanStack Query remains the owner of server state;
   never mirror query data into Zustand.
 - Put transitions in named store actions. A component must not call `setState`, and a public helper
