@@ -19,7 +19,7 @@ is the npm counterpart of a step that already exists there for .NET.
 
 ## Starting state (verified 2026-07-31)
 
-- **`@concertable/shared`** (`app/shared`) and **`@customer/shared`** (`app/customer/shared`) are workspace
+- **`@concertable/shared`** (`app/shared`) and **`@concertable/customer-shared`** (`app/customer/shared`) are workspace
   packages with a **clean `exports` map already** — but source-consumed: `main`/`types`/`exports` all point
   at `./src/*.ts`, `version: 0.0.0`, no build, no `files`, no publish config. Bundlers compile the raw TS
   through the workspace symlink. Import style is already bare subpaths (`@concertable/shared/features/auth`).
@@ -28,14 +28,14 @@ is the npm counterpart of a step that already exists there for .NET.
   ~29 files in `web/customer/src` alone still import through these aliases.
 - Dependency graph (post the shared-boundaries refactor, which is **done**):
   `@concertable/shared` ← everything (web+mobile, customer+b2b) · `web/shared`/`mobile/shared` ← both sides ·
-  `web/b2b/shared` ← b2b web only · `@customer/shared` ← customer web+mobile (and → `@concertable/shared`).
+  `web/b2b/shared` ← b2b web only · `@concertable/customer-shared` ← customer web+mobile (and → `@concertable/shared`).
 - **`@concertable/shared` is dual-target** (vite web **and** metro/RN mobile). This is the sharpest risk in
   the whole plan: a published package must build/consume correctly under **both** bundlers. It is already
   platform-agnostic by construction (the boundaries refactor removed RN/web leaks), but "agnostic source
   compiled in-tree" ≠ "published artifact metro will consume." Prove metro consumption early (Phase 1 gate).
 - Registry model to reuse: backend uses `nuget.pkg.github.com/Concertable` + a `GITHUB_PACKAGES_TOKEN` PAT
   (`read:packages`) already documented in root `README.md`. The npm counterpart is `npm.pkg.github.com`
-  with `@concertable` / `@customer` / `@b2b` scopes.
+  with the owning `@concertable` scope.
 - Toolchain: node 20, npm 10 (workspaces). `app/node_modules` is not committed — a fresh `npm install`
   from `app/` is the precondition for any build/pack gate.
 
@@ -68,10 +68,10 @@ builds, and a `npm pack` tarball installs + type-checks in a throwaway consumer.
 
 ### Phase 0 — Registry + PAT (unblocks everything; no code cutover)
 - ✅ Add scoped npm registry config: root `app/.npmrc` (or per-surface, mirroring the BE "no repo-root config"
-  rule — decide with D-B) mapping `@concertable` / `@customer` / `@b2b` → `https://npm.pkg.github.com`.
+  rule — decide with D-B) mapping `@concertable` → `https://npm.pkg.github.com`.
 - ✅ Provision a classic PAT with `write:packages` (publish) + `read:packages` (restore); reuse/extend the
   documented `GITHUB_PACKAGES_TOKEN`. Publishing and restoring `@concertable/shared@0.1.0-alpha.0.2129`
-  proves both scopes are available.
+  proves the owning scope is available.
 - ✅ Gate: a dry-run `npm view @concertable/shared --registry=https://npm.pkg.github.com` authenticates (404
   for "not yet published" is success — auth resolved).
 
@@ -89,8 +89,8 @@ builds, and a `npm pack` tarball installs + type-checks in a throwaway consumer.
 
 ### Phase 2 — Publish the remaining shared tiers + cut consumers over
 - Make `web/shared` → `@concertable/web-shared`, `mobile/shared` → `@concertable/mobile-shared`,
-  `web/b2b/shared` → `@b2b/web-shared` real packages (add `package.json` + `exports` + build + publish).
-  Give `@customer/shared` the Phase-1 treatment (it depends on `@concertable/shared` → publish order matters).
+  `web/b2b/shared` → `@concertable/b2b-web-shared` real packages (add `package.json` + `exports` + build + publish).
+  Give `@concertable/customer-shared` the Phase-1 treatment (it depends on `@concertable/shared` → publish order matters).
 - **Cut consumers over**: convert every `@/*` / `shared/*` / `@b2b/*` / `../shared/src` **path-alias** import
   to a **package** import; delete the cross-tree source aliases from every tsconfig/vite/metro config.
 - Gate: grep clean — no surface config contains a cross-tree source alias (`../shared/src`, `../../shared/src`);

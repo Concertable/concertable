@@ -9,7 +9,7 @@ pattern here has a backend sibling — the two stacks are meant to read the same
 *where code lives* is owned by a tier's `CLAUDE.md`, this file names the **structural technique** and
 links out rather than restating it (two copies drift the day one changes).
 
-The tiers referenced throughout (`@concertable/shared` ⊃ `app/web/shared` ⊃ `@b2b/*` / `@customer/*`
+The tiers referenced throughout (`@concertable/shared` ⊃ `app/web/shared` ⊃ `@b2b/*` / `@concertable/customer-shared/*`
 ⊃ per-app `src/`) are defined in [`AGENTS.md`](../web/AGENTS.md) and the per-tier `AGENTS.md` files. Read
 those first; this file assumes them.
 
@@ -82,7 +82,7 @@ This is the direct FE mirror of the backend's identity split
   B2B view of the signed-in user: base user + persona + `memberships`, populated by a **B2B-owned,
   typed `/me` query** (the payload the B2B backend actually sends). B2B code reads memberships from
   *this* module, never off the shared `User`.
-- **`@customer/*`** composes its own buyer identity the same way if/when it needs more than the base.
+- **`@concertable/customer-shared/*`** composes its own buyer identity the same way if/when it needs more than the base.
 
 Because the B2B identity module is stateful domain data (which tenant is active, what the memberships
 are, is a choice pending), it is *also* the "one home for the domain's reactive state" (next section)

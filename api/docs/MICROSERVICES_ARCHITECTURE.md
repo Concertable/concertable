@@ -373,7 +373,7 @@ Concertable/
 │   └── Shared/                                 (Concertable.Kernel, Concertable.Contracts, Concertable.Shared.* libs, Seed/, Tests/)
 ├── app/
 │   ├── web/                                    (customer SPA, b2b/{shared,venue,artist,business} SPAs, shared)
-│   ├── customer/shared                         (npm @customer/shared — customer web+mobile core)
+│   ├── customer/shared                         (npm @concertable/customer-shared — customer web+mobile core)
 │   └── mobile/
 └── ...
 ```
