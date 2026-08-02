@@ -19,7 +19,8 @@ is the npm counterpart of a step that already exists there for .NET.
 
 ## Starting state (verified 2026-07-31)
 
-- **`@concertable/shared`** (`app/shared`) and **`@concertable/customer-shared`** (`app/customer/shared`) are workspace
+- **`@concertable/shared`** (`app/shared`) and **`@concertable/customer`** (`app/customer/shared`, exported as
+  `@concertable/customer/shared/*`) are workspace
   packages with a **clean `exports` map already** — but source-consumed: `main`/`types`/`exports` all point
   at `./src/*.ts`, `version: 0.0.0`, no build, no `files`, no publish config. Bundlers compile the raw TS
   through the workspace symlink. Import style is already bare subpaths (`@concertable/shared/features/auth`).
@@ -28,7 +29,7 @@ is the npm counterpart of a step that already exists there for .NET.
   ~29 files in `web/customer/src` alone still import through these aliases.
 - Dependency graph (post the shared-boundaries refactor, which is **done**):
   `@concertable/shared` ← everything (web+mobile, customer+b2b) · `web/shared`/`mobile/shared` ← both sides ·
-  `web/b2b/shared` ← b2b web only · `@concertable/customer-shared` ← customer web+mobile (and → `@concertable/shared`).
+  `web/b2b/shared` ← b2b web only · `@concertable/customer/shared/*` ← customer web+mobile (and → `@concertable/shared`).
 - **`@concertable/shared` is dual-target** (vite web **and** metro/RN mobile). This is the sharpest risk in
   the whole plan: a published package must build/consume correctly under **both** bundlers. It is already
   platform-agnostic by construction (the boundaries refactor removed RN/web leaks), but "agnostic source
@@ -88,9 +89,11 @@ builds, and a `npm pack` tarball installs + type-checks in a throwaway consumer.
 - **Do not cut consumers over yet** — like the BE, publish first; consumers still resolve the workspace copy.
 
 ### Phase 2 — Publish the remaining shared tiers + cut consumers over
-- Make `web/shared` → `@concertable/web-shared`, `mobile/shared` → `@concertable/mobile-shared`,
-  `web/b2b/shared` → `@concertable/b2b-web-shared` real packages (add `package.json` + `exports` + build + publish).
-  Give `@concertable/customer-shared` the Phase-1 treatment (it depends on `@concertable/shared` → publish order matters).
+- Make `web/shared` → `@concertable/web/shared/*`, `mobile/shared` → `@concertable/mobile/shared/*`, and
+  `web/b2b/shared` → `@concertable/b2b/web/shared/*` published owner-package exports (add the owning
+  `package.json` + `exports` + build + publish).
+- Give `@concertable/customer/shared/*` the Phase-1 treatment (the owning `@concertable/customer` package depends on
+  `@concertable/shared` → publish order matters).
 - **Cut consumers over**: convert every `@/*` / `shared/*` / `@b2b/*` / `../shared/src` **path-alias** import
   to a **package** import; delete the cross-tree source aliases from every tsconfig/vite/metro config.
 - Gate: grep clean — no surface config contains a cross-tree source alias (`../shared/src`, `../../shared/src`);
