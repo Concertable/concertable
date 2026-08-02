@@ -15,9 +15,9 @@
 - [x] **OWN1 — HIGH — configuration ownership** — `api/Concertable.Payment/src/Concertable.Payment.Domain/Entities/CommissionBindingEntity.cs:9`
   Each payer binding copies version, currency, commission rate, and VAT rate instead of referencing one immutable configuration revision. Normalize commission configuration into its own immutable entity, make bindings store only its foreign key, load terms through that relationship, and bootstrap the configured revision once with conflict validation.
 
-  Resolved against the authoritative plan by keeping validated append-only revisions in the immutable
-  in-memory Payment catalog. Bindings persist only `CommissionConfigurationId` plus binding identity and
-  Stripe context; bound calculations resolve the referenced revision from the catalog. The obsolete SQL
+  Resolved against the authoritative plan by keeping validated append-only revisions in immutable
+  Payment configuration. Bindings persist only `CommissionConfigurationId` plus binding identity and
+  Stripe context; bound calculations resolve the referenced configured revision. The obsolete SQL
   configuration entity, repository, initializer, table and relationship were removed. Verified with 140
   Payment unit tests, 7 Payment integration tests, an exact EF model/snapshot check, the full solution
   build and standalone Payment carve, all with zero failures/errors or pending model changes. The same
