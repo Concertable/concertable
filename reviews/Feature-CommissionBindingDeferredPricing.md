@@ -20,4 +20,5 @@
   Stripe context; bound calculations resolve the referenced revision from the catalog. The obsolete SQL
   configuration entity, repository, initializer, table and relationship were removed. Verified with 140
   Payment unit tests, 7 Payment integration tests, an exact EF model/snapshot check, the full solution
-  build and standalone Payment carve, all with zero failures/errors or pending model changes.
+  build and standalone Payment carve, all with zero failures/errors or pending model changes. The same
+  gate passed again after merging current `origin/main` into the branch.

@@ -382,9 +382,10 @@ unpublished Payment package source.
   API; Payment calculates them internally from the immutable binding and caller-owned gross.
 - [x] Resolve review finding OWN1: keep the append-only configuration catalog in validated immutable
   Payment configuration, persist only its revision ID on bindings, and remove the SQL configuration mirror.
-- [x] Re-verify after OWN1: Payment unit tests (140 passed), Payment integration tests (7 passed),
-  no pending Payment model changes, `dotnet build api/Concertable.slnx` (0 errors), and the standalone
-  Payment carve (0 errors).
+- [x] Verify OWN1 before and after merging current `origin/main`: Payment unit tests (140 passed),
+  Payment integration tests (7 passed), no pending Payment model changes,
+  `dotnet build api/Concertable.slnx` (0 errors), and the standalone Payment carve (0 errors) in both
+  passes.
 - [ ] **Hard stop:** merge, publish, own platform sync to green and deploy the updated Payment runtime
   before Phase 2 consumes the corrected binding-owned surface.
 
