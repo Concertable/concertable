@@ -32,13 +32,17 @@ export function redirectToBusiness(): Promise<never> {
 
 export async function requireAuth({
   location,
-}: { location?: { pathname: string } } = {}) {
+  getMe = userApi.getMe,
+}: {
+  location?: { pathname: string };
+  getMe?: () => Promise<User>;
+} = {}) {
   if (!(await hasValidSession()))
     throw redirect({
       to: "/login",
       search: { redirect: location?.pathname ?? "" },
     });
-  const user = await ensureUser(userApi.getMe);
+  const user = await ensureUser(getMe);
   if (!user)
     throw redirect({
       to: "/login",
