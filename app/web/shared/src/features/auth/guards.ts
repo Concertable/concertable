@@ -11,13 +11,11 @@ async function hasValidSession() {
   return !!oidcUser && !oidcUser.expired;
 }
 
-async function ensureUser(): Promise<User | null> {
-  const cached = useAuthStore.getState().user;
-  if (cached) return cached;
+async function ensureUser(getMe: () => Promise<User>): Promise<User | null> {
   try {
     const user = await queryClient.ensureQueryData({
       queryKey: meQueryKey,
-      queryFn: userApi.getMe,
+      queryFn: getMe,
       meta: { expectedErrors: [404] },
     });
     useAuthStore.getState().setUser(user);
@@ -40,7 +38,7 @@ export async function requireAuth({
       to: "/login",
       search: { redirect: location?.pathname ?? "" },
     });
-  const user = await ensureUser();
+  const user = await ensureUser(userApi.getMe);
   if (!user)
     throw redirect({
       to: "/login",
@@ -49,8 +47,10 @@ export async function requireAuth({
   return user;
 }
 
-export async function requireBusinessAuth(): Promise<void> {
+export async function requireBusinessAuth(
+  getMe: () => Promise<User>,
+): Promise<void> {
   if (!(await hasValidSession())) return redirectToBusiness();
-  const user = await ensureUser();
+  const user = await ensureUser(getMe);
   if (!user) return redirectToBusiness();
 }

@@ -113,30 +113,30 @@ const b2bMeApi = { getMe: async (): Promise<B2bIdentity> => (await api.get<B2bId
 
 ---
 
-## A domain's reactive state has exactly one home — co-locate by domain
+## A domain's reactive state has explicit homes — co-locate by ownership
 
 A **feature is a slice**: everything one domain exchanges and owns lives together under
-`features/<feature>/` — `types` / `api` / `hooks` / `components` / `pages` / `schemas`, **plus exactly
-one home for the domain's reactive state** (a zustand store, the slice's `model`). This is the
+`features/<feature>/` — `types` / `api` / `hooks` / `components` / `pages` / `schemas`. This is the
 consensus modern-React structure (feature-folder colocation; the same axis Feature-Sliced Design calls
 a *slice* × *segments*), and it is the FE mirror of the modular monolith: one domain = one module,
-state and behaviour co-located, one owner.
+state and behaviour co-located with explicit owners.
 
-The rule is about **cohesion, not file count**. More files are fine; the defect is a single cohesive
-*stateful* domain sprayed across disjoint owners that each re-derive the same thing.
+The rule is about **cohesion, not file count**. More files are fine; the defect is the same state or
+derivation copied across disjoint owners.
 
-- **Reactive mutable state → the one store.** One store per domain owns the mutable truth
-  (`activeTenantId`, memberships, persona). Everything else reads *through* it.
-- **Derived state → a selector or hook off that store, never stored.** "Is a choice pending", "the
-  active membership", "can this role do X" are computed from the store, not persisted alongside it.
+- **Server state → TanStack Query.** JSON fetched from an API stays in the query cache and is observed
+  through reader hooks; do not copy it into Zustand.
+- **Client state → the feature store.** Persisted client choices such as `activeTenantId` live in one
+  internal Zustand store and are exposed through narrow reads and actions.
+- **Derived state → pure core + focused hook, never stored.** "Is a choice pending", "the active
+  membership", and "can this role do X" are computed from their source state.
 - **One core, two entry points.** When the same derivation is needed both imperatively (a route
   `beforeLoad` calling `store.getState()`) and reactively (a component via a hook), write the logic
   **once** and expose both a `getState`-based function and a hook over that single core. `beforeLoad`
   and render must never be able to disagree.
-- **Genuinely stateless, reusable rulebooks stay pure — wherever they naturally live.** A pure
-  `hasPermission(role, permission)` over a static matrix holds no state and is a *correct* pure
-  function; it does not get dragged into the store. Co-location is about keeping the *stateful* domain
-  cohesive, not about banning pure helpers.
+- **Genuinely stateless, reusable rulebooks stay pure — wherever they naturally live.** A pure role
+  lookup over a static permission matrix holds no state and does not get dragged into the store.
+  Co-location is about keeping the *stateful* domain cohesive, not about banning pure helpers.
 
 ```ts
 // CORRECT — one core, one home; hook and imperative form share it
@@ -153,10 +153,9 @@ export const useChoicePending = () => useIdentityStore(selectChoicePending);    
   `isTenantChoicePending()` in `lib/tenantChoice.ts` *and* a reactive `useTenantChoicePending()` in
   `hooks/useActiveMembership.ts`, with `_venue/route.tsx` calling both for the same question. Two
   copies, guaranteed drift. Collapse to one core.
-- **Domain state scattered across store + loose fns + hooks + a cast.** The tenant domain today:
-  `useActiveTenantStore` + `tenantChoice.ts` (imperative fns + cast) + `useActiveMembership.ts`
-  (reactive hooks) + `tenantPermissions.ts` for one concern. Consolidate into the identity slice with
-  one state home; keep only the genuinely-pure `tenantPermissions` rulebook separate.
+- **Raw state owners exported to consumers.** Components and routes must not interpret the identity
+  cache or reach into the active-tenant store directly; the tenant feature exposes focused hooks,
+  imperative route functions, and narrow actions over those owners.
 - **Server data copied into a store.** `useConcertStore.draft = { ...concert }`
   (`app/shared/src/features/concerts/store`) snapshots cache data into global state, which breaks
   background refetch ([`CODE_CONVENTIONS.md`](./CODE_CONVENTIONS.md), "Mutation variables vs form
@@ -333,9 +332,9 @@ same `switch`/ternary on the key across components and hooks.
 
 - Backend polymorphism (`[JsonPolymorphic]`) → a TS discriminated union on `$type`
   ([`CODE_CONVENTIONS.md`](./CODE_CONVENTIONS.md)); dispatch via `Record<X["$type"], …>`.
-- Role→permission is a single `hasPermission(role, permission)` over **one** matrix whose entries use
-  the backend `SharedPermissions` constant **names** (`MembersInvite`, `MembersManageRoles`, …). One
-  complete matrix, sourced from the backend's, not a hand-picked subset.
+- Role→permission is one stable readonly permission set per role. Consumers obtain that set through
+  `usePermissions(persona)` and use native `.has(permission)` with backend `SharedPermissions`
+  constant **names** (`MembersInvite`, `MembersManageRoles`, …).
 
 ```ts
 // CORRECT — one table, exhaustive; a new $type is a compile error
@@ -348,7 +347,7 @@ const render: Record<PaymentAmount["$type"], (p: PaymentAmount) => ReactNode> = 
 
 - **A `switch`/ternary on `$type` or `role` inlined across components.** The rule ends up copy-pasted
   and drifts; keep it in one table.
-- **A partial, hand-maintained permission matrix.** `tenantPermissions.byRole` modelling 4 of the 13
+- **A partial, hand-maintained permission matrix.** A role catalog modelling 4 of the 13
   backend permissions silently desyncs the gate the day the backend matrix changes. Model the full set,
   aligned to `SharedPermissions`, and treat the backend as the source (the FE gate is cosmetic; the
   server enforces).
