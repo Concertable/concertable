@@ -15,10 +15,13 @@
 - [x] **OWN1 — HIGH — configuration ownership** — `api/Concertable.Payment/src/Concertable.Payment.Domain/Entities/CommissionBindingEntity.cs:9`
   Each payer binding copies version, currency, commission rate, and VAT rate instead of referencing one immutable configuration revision. Normalize commission configuration into its own immutable entity, make bindings store only its foreign key, load terms through that relationship, and bootstrap the configured revision once with conflict validation.
 
-  Resolved with one current Azure configuration and immutable SQL configuration history. Startup inserts
-  each new configured ID and version once and rejects conflicting reuse. Bindings persist only the
-  `CommissionConfigurationId` foreign key plus binding identity and Stripe context; bound calculations
-  load the referenced historical terms through that relationship. The Azure-side revision collection
-  and `CommissionTermsProvider` were removed. Verified with 135 Payment unit tests, 7 Payment SQL
-  integration tests, an exact EF model/snapshot check, the full solution build and the standalone
-  Payment carve, all with zero failures or errors.
+  Resolved with one current Azure {ConfigurationId, RatePercentage} value and immutable SQL
+  configuration history. Percentage owns validation and half-up application while configuration,
+  contracts and protobuf expose the business percentage rather than basis points. Startup inserts each
+  new configured ID once and rejects reuse with a different percentage. Bindings persist only the
+  CommissionConfigurationId foreign key plus their own currency, identity and Stripe context; bound
+  calculations load the referenced historical percentage through that relationship. Version and
+  currency were removed from percentage configuration, and VAT uses the same value object. Verified
+  with 141 Payment unit tests, 7 Payment SQL integration tests, regenerated initial migrations and the
+  full solution build, all with zero failures or errors. Standalone Payment carve verification follows
+  the implementation commit.
