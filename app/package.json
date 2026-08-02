@@ -63,7 +63,8 @@
     }
   },
   "devDependencies": {
-    "@types/react-dom": "^19"
+    "@types/react-dom": "^19",
+    "vitest": "^4.1.10"
   },
   "dependencies": {
     "@fontsource-variable/geist": "^5",

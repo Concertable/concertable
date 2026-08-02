@@ -126,25 +126,33 @@ derivation copied across disjoint owners.
 
 - **Server state → TanStack Query.** JSON fetched from an API stays in the query cache and is observed
   through reader hooks; do not copy it into Zustand.
-- **Client state → the feature store.** Persisted client choices such as `activeTenantId` live in one
-  internal Zustand store and are exposed through narrow reads and actions.
-- **Derived state → pure core + focused hook, never stored.** "Is a choice pending", "the active
-  membership", and "can this role do X" are computed from their source state.
-- **One core, two entry points.** When the same derivation is needed both imperatively (a route
-  `beforeLoad` calling `store.getState()`) and reactively (a component via a hook), write the logic
-  **once** and expose both a `getState`-based function and a hook over that single core. `beforeLoad`
-  and render must never be able to disagree.
+- **Client state → the private feature store.** Persisted choices such as `activeTenantId` live in one
+  internal Zustand store whose actions own every state transition. The feature barrel does not export
+  the store.
+- **React consumers → a facade hook.** The hook composes Query, private store selectors, pure
+  derivation, invalidation, navigation, and effects into a domain-shaped API. Components render that
+  API; they never assemble it from raw pieces.
+- **Non-React consumers → one internal service/session boundary.** Route `beforeLoad`, request
+  headers, and logout share one deliberate imperative object. It may use `getState()` and the query
+  client internally; scattered public wrappers may not.
+- **Derived state → pure functions with explicit inputs, never stored.** "Is a choice pending", "the
+  active membership", and "can this role do X" take memberships, persona, selection, or role as
+  arguments. Reading a singleton makes a function an adapter/service, not a pure rule.
 - **Genuinely stateless, reusable rulebooks stay pure — wherever they naturally live.** A pure role
   lookup over a static permission matrix holds no state and does not get dragged into the store.
   Co-location is about keeping the *stateful* domain cohesive, not about banning pure helpers.
 
 ```ts
-// CORRECT — one core, one home; hook and imperative form share it
-// @b2b/features/identity/model.ts
-export const useIdentityStore = create<IdentityState>()(…);          // the one home
-export const selectChoicePending = (s: IdentityState) => …;          // derived selector
-export const getChoicePending = () => selectChoicePending(useIdentityStore.getState()); // beforeLoad
-export const useChoicePending = () => useIdentityStore(selectChoicePending);             // render
+const useTenant = (persona: TenantType) => {
+  const activeTenantId = useStore(tenantStore, (state) => state.activeTenantId);
+  const { data: identity } = useQuery(identityQueryOptions);
+  return resolveTenant(identity?.memberships ?? [], persona, activeTenantId);
+};
+
+const tenantSession = {
+  resolve: (persona: TenantType) =>
+    resolveTenant(cachedMemberships(), persona, tenantStore.getState().activeTenantId),
+};
 ```
 
 ### The anti-patterns this replaces — never do these
@@ -154,8 +162,8 @@ export const useChoicePending = () => useIdentityStore(selectChoicePending);    
   `hooks/useActiveMembership.ts`, with `_venue/route.tsx` calling both for the same question. Two
   copies, guaranteed drift. Collapse to one core.
 - **Raw state owners exported to consumers.** Components and routes must not interpret the identity
-  cache or reach into the active-tenant store directly; the tenant feature exposes focused hooks,
-  imperative route functions, and narrow actions over those owners.
+  cache or reach into the active-tenant store directly; the tenant feature exposes a facade hook and
+  one internal imperative session over those owners.
 - **Server data copied into a store.** `useConcertStore.draft = { ...concert }`
   (`app/shared/src/features/concerts/store`) snapshots cache data into global state, which breaks
   background refetch ([`CODE_CONVENTIONS.md`](./CODE_CONVENTIONS.md), "Mutation variables vs form
@@ -333,7 +341,7 @@ same `switch`/ternary on the key across components and hooks.
 - Backend polymorphism (`[JsonPolymorphic]`) → a TS discriminated union on `$type`
   ([`CODE_CONVENTIONS.md`](./CODE_CONVENTIONS.md)); dispatch via `Record<X["$type"], …>`.
 - Role→permission is one stable readonly permission set per role. Consumers obtain that set through
-  `usePermissions(persona)` and use native `.has(permission)` with backend `SharedPermissions`
+  `useTenant(persona).permissions` and use native `.has(permission)` with backend `SharedPermissions`
   constant **names** (`MembersInvite`, `MembersManageRoles`, …).
 
 ```ts

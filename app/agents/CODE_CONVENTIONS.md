@@ -328,6 +328,28 @@ so a key and its invalidations can't drift apart across files.
 **Litmus:** *changes per submit → mutation variable, passed to `mutate()`. Fixed for the hook's life
 → bound inside `useMutation`.*
 
+## Zustand stores are private state owners; facade hooks are the feature API
+
+A Zustand store is an implementation detail of the feature that owns the client state. Keep the
+store module private to that feature: do not export it from the feature barrel, import it from a
+component, or make consumers assemble behavior from selectors and actions. Components consume a
+feature-facing facade hook that returns the domain values and actions they need.
+
+- Store client state and state transitions only. TanStack Query remains the owner of server state;
+  never mirror query data into Zustand.
+- Put transitions in named store actions. A component must not call `setState`, and a public helper
+  must not be a thin spelling of `store.getState().setX(...)`.
+- Keep derivations pure by passing every input explicitly. A function that reads a store, query
+  client, router, persistence, or browser global is infrastructure, not a pure domain function.
+- Keep imperative access exceptional and cohesive. Route guards, request interceptors, logout, and
+  similar non-React infrastructure use one internal feature service/session object; do not export a
+  family of getter, setter, clear, and reconcile wrappers.
+- Direct `getState()` and `setState()` access belongs only inside that internal boundary or focused
+  store tests. React orchestration uses the facade hook and store selectors internally.
+
+**Litmus:** *can a consumer import the store or call a standalone `getX`/`setX` wrapper? Yes: the
+feature boundary is leaking; expose the domain operation from its facade hook or internal service.*
+
 ## Form buffers are validated by a zod schema before becoming an `XRequest`
 
 Every user-editable form validates its buffer against a **zod** schema at submit and maps the
