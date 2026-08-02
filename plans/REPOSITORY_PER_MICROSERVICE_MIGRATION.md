@@ -24,6 +24,10 @@ that service's published Contracts or purpose-built client SDK. Cross-repository
 forbidden. The system repository composes immutable container images and published test/hosting artifacts;
 it does not compile service implementations.
 
+B2B Workers remains an Azure Functions v4 isolated runtime, but its production artifact is a container and
+its production host is native Azure Functions on Azure Container Apps. Functions Consumption is not part of
+the target: it cannot run the same custom container used by standalone AppHosts, system E2E, and rollback.
+
 The current lockstep `ConcertablePlatformVersion` and platform-sync PR are replaced by independently
 versioned release trains plus Renovate PRs. Breaking package changes use an expand/publish/migrate/contract
 sequence. There is never a repository-wide forced bump that can strand every service on a red pin.
@@ -191,10 +195,12 @@ are red; on 2026-08-02 all six mirrors differed from `main`. They are therefore 
 not trusted cutover sources. A final refresh and independent history verification are mandatory.
 
 There is no active deployment workflow, tracked Terraform, or tracked Dockerfile. The existing deployment
-plans select Azure Container Apps, Azure Functions Consumption for B2B Workers, Azure Static Web Apps,
-Terraform, GHCR, Azure App Configuration, Key Vault, managed identity, and deploy-time migration jobs. The
-GitHub repository has one `Production` environment with no protection rules or branch policy. Its active
-ruleset protects `main` through merge queue and required `ci-complete`.
+plans selected Azure Container Apps, Azure Functions Consumption for B2B Workers, Azure Static Web Apps,
+Terraform, GHCR, Azure App Configuration, Key Vault, managed identity, and deploy-time migration jobs.
+Consumption cannot run a custom Functions container, so this plan supersedes that part of the deployment
+design with native Azure Functions on Azure Container Apps. The GitHub repository has one `Production`
+environment with no protection rules or branch policy. Its active ruleset protects `main` through merge
+queue and required `ci-complete`.
 
 Repository secrets currently mix CI, E2E, mirroring, package sync, and abandoned/current Azure App Service
 credentials. No secret values were read. The planning credential lacks `read:packages`, so package ACL and
@@ -221,6 +227,14 @@ system repo so desired images, infrastructure, migrations, and E2E promotion sta
 
 Tommy is bootstrap administrator. Teams and `CODEOWNERS` express the durable ownership boundary even while
 one person fills multiple roles.
+
+The current source and generated mirrors are public, and the canonical repositories preserve that public
+visibility. Temporary `*-next` repositories remain private until their history, settings, and artifacts pass
+the cutover review. `Concertable/.github` is public from creation so public repositories can call its reusable
+workflows. Canonical GHCR runtime, migration, and simulator images are public and anonymously pullable after
+image-layer secret scanning; this avoids a long-lived registry credential in Azure and in local AppHosts.
+NuGet and npm packages retain explicit package/repository access grants because they do not share GHCR's
+anonymous public-pull behavior.
 
 ### Repository layout contracts
 
@@ -296,9 +310,14 @@ workspace packages are not published merely because the repositories split.
 - Each producer tags its own releases and uses repository-local MinVer for .NET. All packages deliberately
   released together by one producer share that producer version. Frontend packages use Changesets and
   package-specific SemVer.
+- Checkpoint 0 records every published version for every retained package ID and the highest precedence
+  version in each future producer train. Each filtered repository receives a deterministic bootstrap
+  tag/version above that train's recorded high-water mark. CI evaluates MinVer/Changesets before publication
+  and rejects a version that already exists or is not greater than the recorded baseline.
 - Every main-branch package/image build produces a unique prerelease/version. A version is never overwritten.
 - Service images are published to GHCR with commit-SHA and SemVer tags; deployment and AppHosts pin image
-  digests, never mutable tags.
+  digests, never mutable tags. Canonical images are public only after provenance, vulnerability, and secret
+  scans pass; publishing still requires the owning repository's `GITHUB_TOKEN`.
 - Every package workflow produces provenance, SBOM, and a clean-consumer restore/build test before publish.
 - Renovate is installed across the organization. The shared preset groups packages by producer train,
   updates NuGet/npm/GitHub Actions and OCI digests, and uses custom managers for `fleet/*.yaml`.
@@ -398,7 +417,8 @@ updates arrive through Renovate rather than floating tags.
 Every service PR runs the owned solution build, unit tests, affected integration tests, frontend checks when
 present, package boundary checks, package pack/restore tests, and a standalone AppHost smoke test. On `main`,
 the service publishes changed boundary packages, migration artifact/image, and runtime images. It does not
-deploy itself to a shared environment.
+deploy itself to a shared environment. B2B publishes its Workers project as an Azure Functions container;
+the same digest is used by standalone/system composition and Azure Functions on Container Apps.
 
 ### System CI and deployment
 
@@ -410,7 +430,7 @@ Terraform remains the cloud owner, consistent with `CONFIG_AND_DEPLOYMENT.md` an
 
 1. GitHub OIDC authenticates to Azure; no long-lived Azure client secret is stored.
 2. Terraform applies the ACA environment, five databases, Service Bus topology, storage, Key Vault, App
-   Configuration, Static Web Apps, and Functions Consumption resources.
+   Configuration, Static Web Apps, and the native Azure Functions-on-Container-Apps B2B Workers resource.
 3. The workflow runs the owning service's migration job against only that service database and waits.
 4. The workflow rolls container revisions to the manifest digests and verifies health.
 5. SPAs deploy with environment-specific build-time public configuration.
@@ -425,6 +445,7 @@ Secrets are redistributed by least privilege:
 - service repositories receive only package credentials and their own integration-test secrets;
 - Stripe/Google/full-fleet service-auth test secrets live only in the system E2E environment unless an owned
   service test genuinely requires one;
+- canonical GHCR images are anonymous-read, so Azure and local AppHosts hold no GHCR pull credential;
 - deployment uses OIDC plus managed identity, App Configuration, and Key Vault references;
 - stale App Service publish profiles, `PLATFORM_SYNC_TOKEN`, and `MIRROR_PAT` are removed only after their
   rollback windows close; and
@@ -539,12 +560,17 @@ never merge a later letter before the earlier one is green. Tommy must explicitl
 
 - Commit a machine-readable project/package/workspace/AppHost/E2E/migration/seed graph and a drift-checking
   generator.
-- Record package IDs, visibility, linked repositories, Actions access, GHCR naming, existing repo metadata,
-  rulesets, environments, and secret names without reading secret values.
+- Record package IDs, every published version and per-producer high-water mark, visibility, linked
+  repositories, and Actions access. Record GHCR names, visibility, source linkage, Actions access, and every
+  intended pull consumer. Record existing repo metadata, rulesets, environments, and secret names without
+  reading secret values.
+- Commit the version-baseline manifest and prove the planned initial MinVer/Changesets version for every
+  future producer is unique and greater than every retained package ID's recorded high-water mark.
 - Repair or intentionally refresh the currently stale mirrors; record the final parity SHA.
 - Commit the pinned filter-repo version and source-to-target map; perform local extraction dry runs only.
 - Verification: graph regeneration has no diff; all five service carve builds, package clean-consumer restore,
-  workflow/schema validation, and mirror parity are green. E2E is skipped because behavior is unchanged.
+  version-collision validation, public GHCR anonymous-pull probe, workflow/schema validation, and mirror
+  parity are green. E2E is skipped because behavior is unchanged.
 - **Hard stop:** review the inventory, package ACL report, and extraction reports before creating target repos.
 
 ### 1. Enforce database ownership and owner-local migration commands (`concertable`)
@@ -606,19 +632,22 @@ never merge a later letter before the earlier one is green. Tommy must explicitl
 
 ### 6. Organization repository and workflow foundation (`.github` then target `*-next` repos)
 
-- 6A: create `Concertable/.github`, reusable workflows, Renovate preset, ruleset/environment templates, teams,
-  and bootstrap CODEOWNERS. Verify a disposable fixture consumes every reusable workflow.
+- 6A: create public `Concertable/.github`, reusable workflows, Renovate preset, ruleset/environment templates,
+  teams, and bootstrap CODEOWNERS. Verify a disposable public fixture consumes every reusable workflow.
 - 6B: create private `platform-dotnet-next`, `platform-web-next`, `system-next`, and five service `*-next`
   repositories. Apply least-privilege Actions/package settings and `main` merge-queue rulesets.
 - 6C: push filtered histories and reports; run secret scans and clean-clone builds. Do not rename an existing
   repository or make a target canonical.
+- Each approved canonical rename also changes the verified `*-next` repository to public and makes its
+  scanned GHCR images public. Visibility promotion never happens during preparation or implicitly on publish.
 - Verification: history audit, package-auth probe, workflow fixture, all target clean-clone builds.
 - **Hard stop:** Tommy reviews every history/ACL/repository-settings report before any canonical name swap.
 
 ### 7. Cut over the .NET platform publisher
 
 - 7A (`platform-dotnet-next`): land platform source, `Concertable.Build`, CI, and package publication under a
-  new repository release train; publish the first non-conflicting version and prove clean restore.
+  new repository release train; apply the checkpoint-0 bootstrap baseline, publish the first non-conflicting
+  version, and prove clean restore.
 - 7B (`concertable`): replace the global pin with `ConcertableDotNetPlatformVersion`, consume the new release
   in all five service closures, and stop the monorepo publishing those package IDs.
 - 7C (GitHub): rename the stale `shared` mirror to `shared-mirror-archive-<date>` and
