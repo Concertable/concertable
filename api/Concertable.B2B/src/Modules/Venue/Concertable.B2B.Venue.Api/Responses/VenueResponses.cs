@@ -1,6 +1,6 @@
-namespace Concertable.Customer.Venue.Api.Responses;
+namespace Concertable.B2B.Venue.Api.Responses;
 
-public sealed record VenueDetailsResponse
+public sealed record DetailsResponse
 {
     public int Id { get; init; }
     public required string Name { get; init; }
@@ -13,4 +13,5 @@ public sealed record VenueDetailsResponse
     public required string Email { get; init; }
     public double Latitude { get; init; }
     public double Longitude { get; init; }
+    public bool Approved { get; init; }
 }
