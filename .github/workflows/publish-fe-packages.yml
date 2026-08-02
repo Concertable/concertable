@@ -16,8 +16,13 @@ permissions:
   contents: read
   packages: write
 
+concurrency:
+  group: publish-fe-packages
+  cancel-in-progress: true
+
 jobs:
   publish-shared:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     env:
       GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
