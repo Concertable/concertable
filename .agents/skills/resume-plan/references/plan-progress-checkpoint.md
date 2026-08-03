@@ -111,11 +111,13 @@ end state; it does not replace any transition checkpoint that should already exi
 
 Report the workflow result only after the checkpoint is durable, having written the immediate next
 action into the ledger's `## Next Steps` section so it is the durable source of truth. If plan-managed
-work remains, end with exactly one prompt and no competing next-action prompt — it points to the
-ledger, it does not restate the steps. Its first line must be:
+work remains, end with exactly one prompt, and it is ONLY the pointer — nothing plan-specific. Literally:
 
-`cd <absolute-worktree-path>`
+```
+cd <absolute-worktree-path>
+Read @plans/<PLAN>.md and @plans/<PLAN>_PROGRESS.md and do what its `## Next Steps` says.
+```
 
-Name both the plan and ledger, require reading `AGENTS.md`, `plans/AGENTS.md`, the plan, and ledger,
-state the verified branch/PR, and direct the next agent to follow the ledger's `## Next Steps`. If
-the lifecycle is terminal, follow the close-out rule and do not invent a continuation prompt.
+No branch to verify, checkpoints, gates, commands, or steps in the prompt — every such specific lives in
+the ledger, never restated, so the prompt can't drift. If the lifecycle is terminal, follow the close-out
+rule and do not invent a continuation prompt.
