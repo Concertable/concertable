@@ -160,6 +160,10 @@ grep -rniE "$OLDNS\.$OLD\b" api --include=*.cs | grep -viE "[/\\](bin|obj)[/\\]|
 
 ## Scope guard
 
+Before reporting any completed, blocked, published, merged, or synchronized cut-over stage, if the
+work is plan-managed, read and apply
+[the shared plan-progress checkpoint](../resume-plan/references/plan-progress-checkpoint.md).
+
 This is for **cross-boundary published-package** identity changes. A type that is **service-internal**
 (only its own service references it, cross-service contact is Contracts-only) is a plain single-PR
 refactor — do it directly, no cut-over. Step 0's topology scan tells you which you have: if no
