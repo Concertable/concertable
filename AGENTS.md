@@ -212,6 +212,8 @@ And if a comment needs a paragraph to justify the code below it, that's usually 
 - Every continuation, resume, handoff, review, or implementation prompt must name the exact worktree path it applies to.
 - Put `cd <absolute-worktree-path>` on the prompt's first line; never identify work only by branch, PR, phase, or plan.
 - When finishing a task or phase, if a plan, review, PR, or dependency records more work, end with exactly one paste-ready prompt for the immediate actionable next stage, including any prerequisite or unblocking work; never wait for "what's next?".
+- For plan-managed work, the prompt must name and require reading both the plan and its `_PROGRESS.md` companion before acting.
+- Whenever Tommy asks to recover or resume plan-managed work, use `/resume-plan`: read the plan and its companion `_PROGRESS.md`, reconcile them against the worktree, git, review, test, PR, and package state, report the current status, then give exactly one paste-ready prompt. A referenced plan (`/resume-plan @plans/.../PLAN.md`) must work even when the session starts outside that plan's worktree.
 - If nothing remains, state that the work is complete and do not invent a continuation prompt.
 
 ## Plans (`plans/*.md`)
@@ -220,7 +222,9 @@ Plans are working docs for unfinished work, **not** an archive — git history i
 
 **Opening a `plans/*.md` to work from obliges you to read [`plans/AGENTS.md`](./plans/AGENTS.md) in the same breath** — phases, verification gates, when to run E2E, and how to shape the handoff all live there, and the plan's own prose is not a substitute for them. Reading only the plan is how its rules get skipped.
 
-- **When you land the commit that completes a plan's work, `git rm` the plan file in that same commit.** Completion = work committed AND its verification passed (build + the affected unit/integration tests always; E2E only when the change is massive/risky per `plans/AGENTS.md`). Deletion belongs to that commit — never defer it to a later cleanup pass.
+Every new plan has a same-directory `<PLAN_STEM>_PROGRESS.md` companion. The plan holds the design and outstanding phases; the progress ledger records every project action, result, and state transition plus the current operational truth. Keep both current throughout the work. Legacy plans without a ledger remain valid: reconstruct them from the plan and repository evidence, then create the ledger before recording further progress. Full rules: [`plans/AGENTS.md`](./plans/AGENTS.md) "Companion progress ledger."
+
+- **Keep the plan and its `_PROGRESS.md` companion until the entire lifecycle is terminal — not merely until the final local phase is committed and verified.** They remain the recovery anchor through every required review/fix, PR/check/merge, publication, dependency, and platform-sync gate. Record the final gate outcome, make that ledger checkpoint durable, then delete both together in the following close-out change. If no later delivery or package gate exists, the final phase commit may close them out.
 - A plan **superseded** by a newer plan, or describing a design that was **rejected**, is deleted the moment that's decided — don't leave a tombstone.
 - A **partially-done** plan stays, but strike/check off the sections that shipped (in the same commit as the work) so what remains is only the outstanding work.
 - **A completed + verified phase is a HARD STOP.** Hand off the resume prompt and END THE TURN. Do **not** start the next phase in the same session unless the user explicitly names it *and* says to do it now — a vague "continue"/"why stop?"/"yeah" means re-show the handoff, not start coding. Never append "want me to continue?" or a continue-vs-review fork. Full rule: [`plans/AGENTS.md`](./plans/AGENTS.md) "Before a clear."
