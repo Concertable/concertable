@@ -32,6 +32,17 @@ part with a hard blocker named. Default is: fix now.
 
 **Deferring is never dropping — every `[-]` / `[wontfix]` MUST get a `TECH_DEBT.md` entry (owning area, with a `Resolves when:` line) in the same stroke.** The review dies at PR merge; tech debt is where the item persists. A `[-]` with no tech-debt entry is a silently-dropped finding.
 
+## Branch ownership — findings stay with the reviewed change
+
+Fix a finding on the branch being reviewed when that branch caused it, exposed it, worsened it, or
+made the fix necessary. The finding is part of making that change reviewable; do not create a separate
+review-fix branch.
+
+Move a finding to its own branch only when it is demonstrably a pre-existing, wholly independent
+defect: it already exists on the review base, the reviewed change neither exposes nor worsens it, and
+its fix is independent of the reviewed change. Record the evidence for all three conditions in the
+review work order before moving it. If any condition is uncertain, keep the fix on the reviewed branch.
+
 ## Lifecycle — delete once fully addressed
 
 **Deleting a spent review is the default end state, not a later cleanup pass.** A review is spent — delete

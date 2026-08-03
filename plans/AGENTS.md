@@ -12,9 +12,8 @@ complete and its gate has passed (build green + the affected tests), **commit it
 Committing is a local, reversible checkpoint; only `push` waits for Tommy's explicit go-ahead
 (**commit ≠ push**).
 
-This rule is **not** scoped to phase boundaries, to the "Before a clear" handoff below, or to any
-other ritual — it is standing and applies to *every* finished, verified chunk: a phase, a bug fix, a
-refactor, an investigation's output, a doc close-out. Reading the commit rule as conditional on
+This rule is **not** scoped to phase boundaries or handoffs; it applies to *every* finished, verified
+chunk: a phase, a bug fix, a refactor, an investigation's output, a doc close-out. Reading the commit rule as conditional on
 handing off / clearing is exactly the misread that produces the failure below.
 
 **"I've left it uncommitted so you can look at it first" is the anti-pattern, not the courtesy:**
@@ -120,7 +119,10 @@ Each ledger keeps these current sections above its chronological event log:
 - completed work with commit or PR evidence;
 - verification and review state;
 - decisions, discoveries, blockers, and deviations;
-- **exact next action**, with any prerequisite that prevents it starting now.
+- **`## Next Steps`** — the paste-ready prompt for the next agent: the concrete step(s) to take now,
+  self-contained, with any prerequisite or blocking gate. This is the **single source of truth** for
+  what to do next; resume/handoff prompts point here instead of restating it, so a prompt can never
+  drift from reality. Keep it current at every checkpoint.
 
 Update the summary whenever an event changes it, then append the evidenced event to the log. Include
 enough commands, paths, identifiers, results, and reasoning to continue without the prior conversation;
@@ -232,70 +234,19 @@ Most of the time the context is then **compacted** (summarized, work continues) 
 makes it safe to **clear** (start fresh) instead. Either way, treat the end of every phase as the
 point where the context becomes disposable. Don't carry unwritten state across a phase boundary.
 
-## Before a clear — hand off a resume prompt
+## Plan handoff
 
-When the work is fully done for now, or the user says they'll clear, do these things after the durable
-state is written:
-
-1. **Commit the completed phase FIRST** — per the standing rule at the top of this file ("Commit
-   finished work the instant its gate goes green"), with the plan check-off in the same commit
-   (Lifecycle 3). By the time you reach a handoff this should already be done; if anything finished is
-   still sitting in the working tree, that rule was missed, not deferred to here.
-2. **Prepare for clear** — confirm the plan markdown, progress ledger, `CLAUDE.md`/`TECH_DEBT.md`, and commit messages
-   hold everything; the chat must be safe to throw away.
-3. **Give the user a resume prompt to paste after `/clear`.** Assume zero context: name the **working
-   directory** (this repo runs many parallel worktrees — the branch name alone doesn't say which tree to
-   `cd` into, so give the absolute path: the main checkout, or the sibling `…worktrees/<Branch>`), the
-   plan and progress files, the branch/PR, and the exact next step. Tell the next agent to read both
-   files before acting. Keep it to a few lines.
-4. **Before any implementation PR is merged, hand off a ready-to-paste `/code-review` prompt in the
-   same turn, or `/big-review` when the branch is too large for one review pass.** Review once per PR,
-   not once per numbered plan step or commit. The prompt must name the exact worktree path and branch.
-   If code commits are added after review, run `/incremental-review` before merge.
-
-   **The resume prompt's first line MUST be the exact directory to `cd` into, before anything else.**
-   This applies to the main checkout and every separate worktree. A `/clear` (or a brand-new
-   session) reopens in *whatever directory the last session was rooted in*. When the branch lives in a
-   separate worktree that's routinely the **wrong** one: a resume prompt naming only the plan and the
-   branch lands the paste in the wrong worktree on the wrong branch, and git then **won't** let you
-   check the right branch out (it's already checked out in its own worktree) — so the whole handoff
-   silently derails. Naming the branch is **not** enough; name the **directory**. Shape:
-
-   > `cd <absolute worktree path>` — then: read `plans/<PLAN>.md` and `plans/<PLAN>_PROGRESS.md`, branch `<Type>/<Name>`, next step: …
-
-   Check first: run `git worktree list`, resolve the branch's exact worktree, and lead with that absolute
-   `cd` path. Never assume a new session opens in the intended checkout.
-
-   The `cd` must sit **inside the prompt text the user pastes**, not on a line above it — a prompt is
-   pasted as one blob, so a path parked outside it is simply lost.
-
-   **Hand over exactly ONE prompt: the immediate next action.** A later phase gated behind a merge,
-   publish, or platform-sync is named as a *gate* ("Phase 2 waits on the sync"), never handed over as a
-   second ready-to-run prompt. Two prompts read as a menu, and the obvious way to "save time" on a menu
-   is to run both at once — which for a publish-gated phase means restoring a package version that isn't
-   on the feed yet (`NU1101`). The gate exists precisely because the two can't overlap.
-
-**The trigger is mechanical — not a judgment call.** The moment you finish a discrete chunk of work
-(a plan designed, a phase landed, a question fully answered) and your next sentence *would* be
-"Want me to start X?" / "Shall I do the next phase?" / "…or leave it as-is?" — **that question IS the
-trigger.** Do not send it. Write the durable state and hand off the resume prompt in the **same
-turn**, unprompted. You do not wait for the user to say "I'll clear now" — finishing the work is the
-signal. Asking whether to continue instead of handing off is the exact anti-pattern this section
-exists to kill: the plan and progress ledger already record what's next, so the honest move is to
-hand off, not to ask.
-
-**A completed + verified phase is a HARD STOP — end the turn on the resume prompt.** After you hand off,
-do **not** begin the next phase in the same session — not even when asked — **unless the user explicitly
-names the next phase AND says to do it now, in this session.** Everything short of that is a stop:
-
-- A vague *"why are we stopping?"* / *"aren't we continuing?"* / *"keep going"* / *"yeah"* is a request
-  to **clarify or re-show the handoff**, never license to start the next phase. Re-present the resume
-  prompt; don't start coding.
-- **Never** append *"want me to continue?"* or a two-way *"continue vs. review"* fork — that reopens
-  "continue" as an option and is precisely how the stop gets skipped. The resume prompt **is** the
-  deliverable; the turn ends there. At most, one plain sentence noting the phase is done — no question.
-- When genuinely unsure whether the user authorized the next phase in-session, **stop and ask one
-  narrow question**; default to stopping, never to starting.
+- Every plan `.md` carries a pointer near its top — "**Next steps live in
+  @plans/<STEM>_PROGRESS.md → `## Next Steps`**" (an `@` reference, so tagging the plan pulls the
+  ledger) — and holds no separate, drift-prone next-action prose of its own.
+- Because the steps live in the ledger, a plan resume/handoff prompt is ONLY the pointer — literally
+  `cd <worktree>` then "Read @plans/<PLAN>.md and @plans/<PLAN>_PROGRESS.md and do what `## Next Steps`
+  says." No branch to verify, checkpoints, gates, commands, or steps in the prompt — every such specific
+  lives in the ledger, never restated, so the prompt can't drift. See [`../PROMPTS.md`](../PROMPTS.md).
+- Use `/resume-plan` to recover plan-managed work, reconciling the plan and ledger against the worktree,
+  git, review, test, PR, package, and platform-sync state; it refreshes `## Next Steps` before handoff.
+- A completed and verified phase ends the turn after its handoff. Start the next phase only when Tommy
+  explicitly names it and says to do it now.
 
 ## Verification gate per phase
 
@@ -305,7 +256,8 @@ Every phase, no exceptions:
 - The **affected** module's unit + integration tests — run them via the `integration-debug` skill.
 - Phases that change the model end with `./initial-migrations.ps1` from `api/` (re-scaffold, never
   additive migrations).
-- **Final phase only:** run the UI E2E suite via the `e2e-ui-debug` skill.
+- **Final phase only:** select the merge-queue E2E tier under the criteria below. Do not duplicate the
+  queue's E2E run locally; use the matching E2E debug skill only after a queue failure.
 
 ## A failing test is never just reported — enter the matching debug skill and drive it to green
 
@@ -324,11 +276,11 @@ inflate-a-timeout to get past a failure — that's bypassing, not fixing. For E2
 does **flaky-vs-real triage**: re-run the failed scenario alone on a fresh stack — passes clean = a
 host-load blip (proven, not assumed); fails again = a real bug, so fix it.
 
-## When to run the E2E suites — judgment, not reflex
+## Merge-queue E2E tier — full by default, skip only for demonstrably low blast radius
 
 The full E2E suites (API `Concertable.B2B.E2ETests` + the UI regress) are **expensive and
-Docker-gated**. Run them only when the change earns it; otherwise build + unit + integration is the
-gate, and you update the plan markdown and move on.
+Docker-gated**. The merge queue runs them by default; the strict criteria below decide whether a PR
+qualifies to opt out. Local verification still stops at build + unit + integration before a PR.
 
 **The PR merge queue IS the E2E gate — never run E2E locally ahead of a merge.** When the change is
 going out as a PR, the merge-queue pipeline runs the full suite (E2E included) as the gate. Running it
@@ -340,37 +292,31 @@ push the fix (the queue re-runs E2E on the way back in). **This overrides any pl
 kickoff prompt that says "run the E2E regress"** — if a PR will run it, let the PR run it; a written
 "run E2E" step is not a reason to duplicate the queue.
 
-**Run E2E when the change is _massive_ or _risky_:**
+The merge skill's Step 4 is the single source of truth for this decision. **Full E2E is the default.**
+Add `skip-e2e` only when the PR is both small and demonstrably low-blast-radius, with every one of
+these true:
 
-- It spans multiple services or is otherwise broadly cross-cutting.
-- It changes **user-facing or runtime behavior** in a flow E2E covers — registration/login, payments
-  & payouts, settlement, the event/projection chain, messaging.
-- It's the kind of change that's **likely to break something and you'd want to debug it first** —
-  i.e. you're not confident unit + integration fully covers the blast radius.
+- The diff and affected area are small and isolated.
+- It touches no package/service boundary, shared infrastructure, build/publish/deployment pipeline,
+  CI workflow, or multiple application surfaces.
+- It changes no user-facing/runtime flow covered by E2E.
+- Unit/integration tests fully cover the affected behaviour.
 
-**Skip E2E (just build + unit + integration, update the markdown, continue) when:**
+**Zero intended behaviour change is not sufficient.** Package renames, lockfile/workspace changes,
+shared-library moves, broad refactors, and build/publish separation still have broad blast radius and
+must run full E2E. When in doubt, do not skip.
 
-- It's foundational / stage-1 implementation with **zero behavior change** (a new table + seam that
-  nothing exercises yet).
-- It's small, isolated, or covered well by integration tests.
-- It's doc-only or comments-only.
+Encode a qualifying skip with the `skip-e2e` PR label (`skip-e2e-ui` for UI-only); labels are the
+reliable lever and are read fresh in the merge group. Remove stale skip labels when the PR does not
+qualify. If historical `Skip-E2E` / `Skip-E2E-UI` trailers would opt out a PR that now requires the
+full tier, add `full-e2e`; it is the authoritative positive override. Unit and integration tests never
+skip for code/package changes, and build + carve never skip. A matching git trailer also works but is
+fragile because it must be in the final contiguous trailer block, so prefer the label.
 
-**When you skip E2E on a change headed to a PR, tell the merge queue too — `Skip-E2E: true` trailer.**
-The queue runs the full E2E suite on every code change *by default*, so your local skip-judgment is
-worthless unless it's encoded in the commit: without the trailer the queue still burns ~25-30 min of E2E
-on a change that didn't earn it. So for a behaviour-preserving / small / well-covered change, add the
-trailer `Skip-E2E: true` (own line, end of a commit message; any commit in the PR range —
-`Skip-E2E-UI: true` for UI-only). Unit and integration tests never skip for code/package changes, and
-build + carve never skip. It's a real git trailer parsed by git, not a `[bracketed]` token, so prose can't
-trip it; a same-named PR label (`skip-e2e`) works too. This is the reflex-inversion: E2E-in-the-queue is
-opt-*out* for a zero-behaviour-change PR, not automatic. Retrofitting the trailer onto a PR already in the queue means
-closing + re-pushing (the branch is locked while queued) — so decide the tier **in the commit you push**,
-not after.
+When E2E must run for a PR, let the merge queue run it; this tier decision does **not** authorize a
+duplicate local run. **How** to run E2E safely after a queue failure (the mandatory Docker health
+pre-flight, only via the `e2e-*` skills) is unchanged — see the "E2E suites — Docker health first"
+section in the root [`AGENTS.md`](../AGENTS.md).
 
-When in doubt, or when a phase explicitly flips behavior on a covered flow, run E2E. **How** to run it
-safely (the mandatory `./scripts/docker-health.ps1` pre-flight, only via the `e2e-*` skills) is unchanged —
-see the "E2E suites — Docker health first" section in `CLAUDE.md`. This section governs **whether**,
-that one governs **how**.
-
-A phase's own "verification gate" line may name E2E; treat that as "run E2E *if* this phase meets the
-massive/risky bar above," not as an unconditional requirement for every phase.
+A phase's own "verification gate" line may name E2E; treat that as selecting full merge-queue E2E
+when these criteria require it, not as an instruction to duplicate the queue run locally.
