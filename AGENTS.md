@@ -27,6 +27,8 @@ Decide and act on reversible work (doc/plan edits, isolated commits, retrying a 
 
 **Before starting any work, create a relevant branch for it if you're not already on one** — never commit to `main` or an unrelated branch.
 
+**Worktree identity gate — before any edit.** State whether the task matches the current branch/PR directly or is branch-local work because it changes code not yet in `main`; verify service ownership, the dirty paths, and other worktrees rather than matching on a shared refactor name. If neither basis holds or anything contradicts it, **STOP and ask**.
+
 **Fetch first, and branch from `origin/main` — never from local `main`.** Local `main` silently
 drifts behind, and branching off it builds and tests everything against a stale tree. That is how work
 already merged gets reinvented (a hand-rolled `IScoped` test refactor was written here against a
@@ -38,7 +40,7 @@ The staleness is invisible locally: the build is green, because it is green *aga
 git fetch origin --quiet && git checkout -b <Type>/<Name> origin/main
 ```
 
-**Reusing an existing branch/worktree?** Ensure it's synced with `origin/main` before working — never build on a stale tip.
+**Reusing an existing branch/worktree?** At session start, `git fetch` + check `git rev-list --count HEAD..origin/main`; sync before working — never build on a stale tip. Don't reflex-merge `origin/main` every prompt — it won't refresh already-loaded docs (only a fresh session does), and mutating a dirty tree mid-task risks conflicts; merge only when behind with a clean tree.
 
 **Don't branch to refactor code from the feature you're already on.** If the code only lives on the current feature branch (not yet in `main`), the refactor is part of that feature — stay on the branch and commit there. A new `Refactor/<Name>` branch is only for code **already merged to `main`**. Branching off an in-flight feature fragments it across two PRs and orphans the original.
 
@@ -210,6 +212,8 @@ And if a comment needs a paragraph to justify the code below it, that's usually 
 - Every continuation, resume, handoff, review, or implementation prompt must name the exact worktree path it applies to.
 - Put `cd <absolute-worktree-path>` on the prompt's first line; never identify work only by branch, PR, phase, or plan.
 - When finishing a task or phase, if a plan, review, PR, or dependency records more work, end with exactly one paste-ready prompt for the immediate actionable next stage, including any prerequisite or unblocking work; never wait for "what's next?".
+- For plan-managed work, the prompt must name and require reading both the plan and its `_PROGRESS.md` companion before acting.
+- Whenever Tommy asks to recover or resume plan-managed work, use `/resume-plan`: read the plan and its companion `_PROGRESS.md`, reconcile them against the worktree, git, review, test, PR, and package state, report the current status, then give exactly one paste-ready prompt. A referenced plan (`/resume-plan @plans/.../PLAN.md`) must work even when the session starts outside that plan's worktree.
 - If nothing remains, state that the work is complete and do not invent a continuation prompt.
 
 ## Plans (`plans/*.md`)
@@ -218,7 +222,9 @@ Plans are working docs for unfinished work, **not** an archive — git history i
 
 **Opening a `plans/*.md` to work from obliges you to read [`plans/AGENTS.md`](./plans/AGENTS.md) in the same breath** — phases, verification gates, when to run E2E, and how to shape the handoff all live there, and the plan's own prose is not a substitute for them. Reading only the plan is how its rules get skipped.
 
-- **When you land the commit that completes a plan's work, `git rm` the plan file in that same commit.** Completion = work committed AND its verification passed (build + the affected unit/integration tests always; E2E only when the change is massive/risky per `plans/AGENTS.md`). Deletion belongs to that commit — never defer it to a later cleanup pass.
+Every new plan has a same-directory `<PLAN_STEM>_PROGRESS.md` companion. The plan holds the design and outstanding phases; the progress ledger records every project action, result, and state transition plus the current operational truth. Keep both current throughout the work. Legacy plans without a ledger remain valid: reconstruct them from the plan and repository evidence, then create the ledger before recording further progress. Full rules: [`plans/AGENTS.md`](./plans/AGENTS.md) "Companion progress ledger."
+
+- **Keep the plan and its `_PROGRESS.md` companion until the entire lifecycle is terminal — not merely until the final local phase is committed and verified.** They remain the recovery anchor through every required review/fix, PR/check/merge, publication, dependency, and platform-sync gate. Record the final gate outcome, make that ledger checkpoint durable, then delete both together in the following close-out change. If no later delivery or package gate exists, the final phase commit may close them out.
 - A plan **superseded** by a newer plan, or describing a design that was **rejected**, is deleted the moment that's decided — don't leave a tombstone.
 - A **partially-done** plan stays, but strike/check off the sections that shipped (in the same commit as the work) so what remains is only the outstanding work.
 - **A completed + verified phase is a HARD STOP.** Hand off the resume prompt and END THE TURN. Do **not** start the next phase in the same session unless the user explicitly names it *and* says to do it now — a vague "continue"/"why stop?"/"yeah" means re-show the handoff, not start coding. Never append "want me to continue?" or a continue-vs-review fork. Full rule: [`plans/AGENTS.md`](./plans/AGENTS.md) "Before a clear."

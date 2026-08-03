@@ -28,6 +28,10 @@ Same hard rule as both sub-skills. "Fix" means make the failing step work, never
 
 ## Step 0 — Pre-flight (shared)
 
+Before any report or stop, including an environment or layer failure, if this workflow is
+plan-managed, read and apply
+[the shared plan-progress checkpoint](../resume-plan/references/plan-progress-checkpoint.md).
+
 Both suites need Docker (SQL containers, ASB emulator, stripe-cli) and the Stripe/Google secrets (`Stripe__SecretKey`, `GoogleApiKey`).
 
 **Verify Docker with the real gate — `docker ps` is NOT enough.** `docker ps` answering (and even `docker run hello-world` succeeding, and a bare TCP connect to a published port) does NOT prove Docker is healthy: a half-started/flapping engine keeps `docker ps` answering and completes TCP handshakes at the host-side `docker-proxy` while host→container forwarding of real bytes for NEW containers is dead. The suite then dies later at SQL fixture startup with `pre-login handshake` resets and zero scenarios run. Use the data-round-trip probe:

@@ -19,6 +19,9 @@ If multi-agent tooling is unavailable, run the `big-review` skill yourself one s
 
 ## After it finishes
 
+Before any report or stop, if this workflow is plan-managed, read and apply
+[the shared plan-progress checkpoint](../resume-plan/references/plan-progress-checkpoint.md).
+
 Report concisely:
 
 - which tracking file was driven, how many stages ran, and whether the pass is `complete`;

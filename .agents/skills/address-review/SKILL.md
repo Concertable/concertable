@@ -30,14 +30,15 @@ If multi-agent tooling is unavailable, work the findings yourself one at a time 
 
 ## After it finishes
 
+Before any report or stop, if this workflow is plan-managed, read and apply
+[the shared plan-progress checkpoint](../resume-plan/references/plan-progress-checkpoint.md).
+
 Resolve the next workflow state before reporting. Never stop at the generic “review the diffs and push
 when happy” handoff.
 
-1. Determine whether the review came from an implementation plan and inspect that plan's current
-   state (including whether its completing commit deleted it).
-2. If an incomplete phase remains, follow `plans/AGENTS.md`: give the one exact resume prompt for that
-   phase, including the worktree path when applicable. Do not suggest opening a PR.
-3. If the plan is complete/deleted, or there was no plan, run the read-only `pr-preflight` skill.
+1. Let the shared checkpoint resolve whether the review came from a uniquely identifiable plan and
+   own its ledger update, lifecycle state, and exact absolute-worktree handoff.
+2. If no plan is uniquely identifiable, run the read-only `pr-preflight` skill.
    Report its verdict and the exact next action: push then plain `gh pr create` for a new personal-repo
    PR, push to update an existing PR, or the named blocker and its fix.
 

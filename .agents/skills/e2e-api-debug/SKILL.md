@@ -65,6 +65,10 @@ The big one: in this suite a failing test usually means **the synchronous call r
 
 ## Step 0 — Pre-flight check
 
+Before any report or stop, including an environment or startup failure, if this workflow is
+plan-managed, read and apply
+[the shared plan-progress checkpoint](../resume-plan/references/plan-progress-checkpoint.md).
+
 These tests need Docker (SQL containers, ASB emulator, stripe-cli). **`docker ps` answering is NOT proof Docker is healthy** — a half-started/flapping engine keeps `docker ps` (and even `docker run hello-world`, and a bare TCP connect) working while host→container forwarding of real bytes for NEW containers is dead, and the suite then dies at SQL fixture startup with `pre-login handshake` resets. Use the data-round-trip gate:
 
 ```powershell
