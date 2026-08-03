@@ -211,7 +211,7 @@ And if a comment needs a paragraph to justify the code below it, that's usually 
 
 - Every continuation, resume, handoff, review, or implementation prompt must name the exact worktree path it applies to.
 - Put `cd <absolute-worktree-path>` on the prompt's first line; never identify work only by branch, PR, phase, or plan.
-- When finishing a task or phase, if a plan, review, PR, or dependency records more work, end with exactly one paste-ready prompt for the immediate actionable next stage, including any prerequisite or unblocking work; never wait for "what's next?".
+- When finishing a task or phase, if a plan, review, PR, or dependency records more work, end with exactly one paste-ready prompt for the immediate action that advances the work. Aim it at resolving any blocker or unmet prerequisite so running the prompt moves the recorded state forward.
 - For plan-managed work, the prompt must name and require reading both the plan and its `_PROGRESS.md` companion before acting.
 - Whenever Tommy asks to recover or resume plan-managed work, use `/resume-plan`: read the plan and its companion `_PROGRESS.md`, reconcile them against the worktree, git, review, test, PR, and package state, report the current status, then give exactly one paste-ready prompt. A referenced plan (`/resume-plan @plans/.../PLAN.md`) must work even when the session starts outside that plan's worktree.
 - If nothing remains, state that the work is complete and do not invent a continuation prompt.
