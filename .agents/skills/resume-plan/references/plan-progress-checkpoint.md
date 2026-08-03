@@ -50,6 +50,20 @@ known only after that commit or occurred remotely, stage only the plan/ledger ch
 immediate local checkpoint commit when repository rules permit. Never push merely because this
 procedure created a checkpoint; pushing remains governed by the invoking workflow and user request.
 
+### Push protocol
+
+A push closes over its own checkpoint commit. Resolve the plan and prepare one compound push event
+before mutating the remote. Record the starting remote head, local range, branch and PR when one
+exists, and `this commit` as the intended resulting remote and PR head. Do not claim success in
+advance; the event completes only when the push workflow fetches the branch and verifies the
+remote-tracking ref and any PR `headRefOid` equal that commit. Stage only the plan and ledger, create
+the checkpoint commit, then include it in the authorized push.
+
+That final synchronization is part of the recorded event, not a new push event. Do not recursively
+checkpoint it or create another success commit. If the push fails or cannot be verified after
+diagnosis, record the failed, rejected, or unknown outcome and exact known heads in a local failure
+checkpoint; do not push merely to publish that failure record.
+
 ## Report and hand off
 
 Report the workflow result only after the checkpoint is durable. If plan-managed work remains, end

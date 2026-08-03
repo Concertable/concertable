@@ -5,7 +5,7 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `c8dbc6b18c3796771f6b39edd20955a2cc68c409`  _(2026-08-03)_
+**Reviewed up to commit:** `449ed22084e30ac22adec0f86984cb3d40235791`  _(2026-08-03)_
 
 > Range reviewed: `0d72f0ed..6d339e5b` (1 commit).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -25,3 +25,12 @@
 ## Incremental review — 2026-08-03
 
 No new issues found in `6d339e5b..c8dbc6b`. The range fixes WF1 and WF2; WF3 remains open.
+
+## Incremental review — 2026-08-03 (`c8dbc6b..449ed220`)
+
+- [x] **WF4 — HIGH — correctness** — `.agents/skills/push/SKILL.md:38`
+  A successful push now runs the checkpoint afterward, and a remote event must create an immediate local checkpoint commit, but the push workflow never pushes that new commit. It can therefore report success while `HEAD` is ahead of the PR head, so the ledger evidence is absent from the PR and the merge precondition immediately fails. Make the checkpoint commit the final pushed head, verify `origin/<branch>` equals `HEAD`, and avoid recursively logging that final synchronization push.
+  Fixed by preparing one compound push checkpoint before the remote mutation, including that commit in the authorized push, and verifying remote-tracking and PR-head equality without recursively checkpointing the synchronization leg.
+
+- [ ] **WF5 — MEDIUM — correctness** — `.agents/skills/merge/SKILL.md:194`
+  The merge hook runs only immediately before the final report. Queue admission, check failure, merge completion, publication, and platform-sync are long-lived material transitions, so a lost context before the final summary still loses the exact live gate the ledger is meant to preserve. Checkpoint each material transition when it occurs, including before early stops, then reconcile once more before the final report.
