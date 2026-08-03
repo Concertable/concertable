@@ -147,18 +147,26 @@ not an afterthought:
 
 ## E2E suites — Docker health first, always
 
-This section is **how** to run E2E safely. **Whether** to run it for a given change is a judgment
-call — reserved for massive or behaviorally-risky changes, skipped for stage-1/zero-behavior-change
-work — governed by [`plans/AGENTS.md`](./plans/AGENTS.md). Don't run the full suites by reflex.
+This section is **how** to run E2E safely. For a PR, do not duplicate the merge queue's E2E run
+locally; the local gate stops at build + unit + integration unless a queue failure needs debugging.
+[`plans/AGENTS.md`](./plans/AGENTS.md) carries that local workflow. The merge skill's Step 4 is the
+single source of truth for selecting the merge-queue E2E tier.
 
-**That same skip-judgment sets the CI merge-queue tier — and the reliable lever is a PR label, not a
-commit trailer.** The merge queue runs the full E2E suite on every code change *by default*. When a
-change is in the skip category (behaviour-preserving, small/isolated, well-covered by unit +
-integration), **add the `skip-e2e` label to the PR** (`gh pr edit <n> --add-label skip-e2e`) so the
-queue skips it too — otherwise it burns ~25-30 min of E2E that catches nothing. This is the common case
-for a refactor; **default to skipping E2E for any zero-behaviour-change PR** — letting the queue run E2E
-on it is the reflex to avoid. The labels: `skip-e2e` drops both E2E suites; `skip-e2e-ui` drops only the
-UI suite. Unit tests, integration tests, build, and carve are never skippable for code/package changes.
+**Full E2E in the merge queue is the default.** Add `skip-e2e` only when the PR is both small and
+demonstrably low-blast-radius, with every one of these true:
+
+- The diff and affected area are small and isolated.
+- It touches no package/service boundary, shared infrastructure, build/publish/deployment pipeline,
+  CI workflow, or multiple application surfaces.
+- It changes no user-facing/runtime flow covered by E2E.
+- Unit/integration tests fully cover the affected behaviour.
+
+**Zero intended behaviour change is not sufficient.** Package renames, lockfile/workspace changes,
+shared-library moves, broad refactors, and build/publish separation must run full E2E. When in doubt,
+do not skip. The labels are the reliable lever: `skip-e2e` drops both E2E suites and `skip-e2e-ui`
+drops only the UI suite. Remove stale skip labels when the PR does not qualify; if historical trailers
+would opt out a PR that now requires the full tier, add `full-e2e`. Unit tests, integration tests,
+build, and carve are never skippable for code/package changes.
 
 A same-named **git trailer** (`Skip-E2E: true` on its own line) works too — parsed structurally by git,
 so prose that merely mentions it can't trip the gate (the pr-227 bug) — **but it is fragile in this repo,
@@ -209,25 +217,19 @@ And if a comment needs a paragraph to justify the code below it, that's usually 
 
 ## Prompts
 
-- Every continuation, resume, handoff, review, or implementation prompt must name the exact worktree path it applies to.
-- Put `cd <absolute-worktree-path>` on the prompt's first line; never identify work only by branch, PR, phase, or plan.
-- When finishing a task or phase, if a plan, review, PR, or dependency records more work, end with exactly one paste-ready prompt for the immediate actionable next stage, including any prerequisite or unblocking work; never wait for "what's next?".
-- For plan-managed work, the prompt must name and require reading both the plan and its `_PROGRESS.md` companion before acting.
-- Whenever Tommy asks to recover or resume plan-managed work, use `/resume-plan`: read the plan and its companion `_PROGRESS.md`, reconcile them against the worktree, git, review, test, PR, and package state, report the current status, then give exactly one paste-ready prompt. A referenced plan (`/resume-plan @plans/.../PLAN.md`) must work even when the session starts outside that plan's worktree.
-- If nothing remains, state that the work is complete and do not invent a continuation prompt.
+Follow [`PROMPTS.md`](./PROMPTS.md) for every continuation, resume, handoff, review, or implementation prompt.
 
 ## Plans (`plans/*.md`)
 
 Plans are working docs for unfinished work, **not** an archive — git history is the archive. A finished plan kept "for reference" is just rot that misleads the next reader into thinking the work is still pending.
 
-**Opening a `plans/*.md` to work from obliges you to read [`plans/AGENTS.md`](./plans/AGENTS.md) in the same breath** — phases, verification gates, when to run E2E, and how to shape the handoff all live there, and the plan's own prose is not a substitute for them. Reading only the plan is how its rules get skipped.
+**Opening a `plans/*.md` to work from obliges you to read [`plans/AGENTS.md`](./plans/AGENTS.md) in the same breath** — phases, verification gates, and when to run E2E live there, and the plan's own prose is not a substitute for them. Reading only the plan is how its rules get skipped.
 
 Every new plan has a same-directory `<PLAN_STEM>_PROGRESS.md` companion. The plan holds the design and outstanding phases; the progress ledger records every project action, result, and state transition plus the current operational truth. Keep both current throughout the work. Legacy plans without a ledger remain valid: reconstruct them from the plan and repository evidence, then create the ledger before recording further progress. Full rules: [`plans/AGENTS.md`](./plans/AGENTS.md) "Companion progress ledger."
 
 - **Keep the plan and its `_PROGRESS.md` companion until the entire lifecycle is terminal — not merely until the final local phase is committed and verified.** They remain the recovery anchor through every required review/fix, PR/check/merge, publication, dependency, and platform-sync gate. Record the final gate outcome, make that ledger checkpoint durable, then delete both together in the following close-out change. If no later delivery or package gate exists, the final phase commit may close them out.
 - A plan **superseded** by a newer plan, or describing a design that was **rejected**, is deleted the moment that's decided — don't leave a tombstone.
 - A **partially-done** plan stays, but strike/check off the sections that shipped (in the same commit as the work) so what remains is only the outstanding work.
-- **A completed + verified phase is a HARD STOP.** Hand off the resume prompt and END THE TURN. Do **not** start the next phase in the same session unless the user explicitly names it *and* says to do it now — a vague "continue"/"why stop?"/"yeah" means re-show the handoff, not start coding. Never append "want me to continue?" or a continue-vs-review fork. Full rule: [`plans/AGENTS.md`](./plans/AGENTS.md) "Before a clear."
 
 ## Throwaway working markdown — in the repo, then deleted
 

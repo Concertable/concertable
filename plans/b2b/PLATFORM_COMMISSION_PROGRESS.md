@@ -5,95 +5,82 @@
 - Branch: `Feature/CommissionBindingDeferredPricing`
 - PR: [#296 — Own deferred commission pricing in Payment](https://github.com/Concertable/concertable/pull/296)
 - Dependency/package gates: Phase 1 is recorded complete. Phase 1b is implemented on PR #296 but cannot enter the publish/platform-sync/deployment gate until the PR merges; this work stops at the PR.
-- Last reconciled: 2026-08-03 from a fresh origin fetch, the plan, git/worktree state, PRs #296 and #312, platform-sync history, `reviews/Feature-CommissionBindingDeferredPricing.md`, the preserved working tree, and the completed Payment integration gate.
+- Last reconciled: 2026-08-04 from a fresh origin fetch, PR #296, git/worktree/stash state, current main, the review artifact, and the complete fresh local verification gate.
 
 ## Current state
 
-Phase 1b's Payment-owned deferred commission binding, typed-result refactor, and review fixes are
-committed at `f693c955d` and verified on PR #296. The branch merged `origin/main` at `bd494a25f`,
-including PR #314 and Payment's atomic refund reservation work. The pre-merge dirty state remains
-recoverable from stash `76438f7cf003438a313be9049be708c1f72c6990`.
+Phase 1b's Payment-owned deferred commission binding and owned-result expansion are implemented on
+PR #296. This commit merges freshly fetched `origin/main` `37c94cd03780d940b3c827c3e2f4442a8709297e`
+into the branch and preserves main's internal Payment.Domain boundary and Application-owned payout
+status contract alongside the branch's commission configuration, percentage calculation, binding,
+refund, and typed-result behavior.
 
-The completed work replaces expected Payment failures with owned typed results across application,
-infrastructure, gRPC, and published clients. Review findings CV1, BUG1, CV2, TEST1, TEST2, and BUG2 are
-fixed by `f693c955d`. OWN1's normalized immutable configuration history remains present after the base
-merge and is freshly verified against this exact combined state.
+The worktree was clean before the merge, so there were no staged, unstaged, or untracked paths from
+which Git could create a fresh stash. Existing recovery stash
+`76438f7cf003438a313be9049be708c1f72c6990` remains intact and was verified as a three-parent stash
+containing the earlier Payment/review snapshot. The merge's only textual conflict was the resolved
+Payment.Domain-public tech-debt entry; the branch-only Domain entity/value/error declarations were
+also internalised to preserve main's completed boundary refactor.
 
-The recalled Payment-owned-result refactor is this worktree. It is intentionally branch-local to
-`Feature/CommissionBindingDeferredPricing` because it changes commission and deferred-pricing code that
-exists only on PR #296, not yet on `main`; creating a separate typed-result branch would split the
-in-flight feature. The same work also implements the Payment expansion described by Phase 2 of
-`plans/TYPED_RESULT_MIGRATION.md`.
-
-A fresh fetch found local `HEAD` `bd494a25f` 21 commits behind `origin/main` `5a84756de` and 22 commits
-ahead. The incoming range has extensive Payment overlap, including commission contracts, domain
-entities, gRPC/client adapters, escrow/refund services, migrations, and tests. PR #296 remains open and
-non-draft at remote head `357a2ca7d`; GitHub reports `DIRTY`, and its green checks verify only that old
-remote head. The current staged, unstaged, and untracked owned-result work must be preserved before a
-main merge. Existing stash `76438f7cf003438a313be9049be708c1f72c6990` predates the latest review-fix
-edits and is recovery evidence, not a complete substitute for a new snapshot.
+All requested local gates are green on the merged working tree. PR #296 remains open and non-draft;
+its remote head is still `f487ad1da7a8d52e167ee346608497bd40755d9d` because this task explicitly
+does not push.
 
 ## Exact next action
 
-Create one checkpoint commit containing only this ledger update, push it as the transport leg, and
-require local `HEAD`, the remote-tracking ref, and PR #296's `headRefOid` to equal that checkpoint.
-Then confirm PR #296 remains open and non-draft with the new head; stop at the PR without merging it.
+Run `/incremental-review` for this commit against the existing PR #296 review watermark before any
+push. Keep the work in this exact worktree and do not push or merge unless Tommy separately requests it.
 
 ## Completed work
 
 - Phase 1 is checked complete in the plan, including percentage configuration, immutable history,
   bindings, additive RPCs, transaction/refund facts, migrations, and its earlier verification gate.
 - Phase 1b implementation commits include `f93aa0c6b` (Payment-owned binding), `e1f4de726`
-  (percentage value model and normalized ownership), and `e73b30bb4` (calculation contract alignment).
-- Payment typed-result and review-fix completion: `f693c955d`.
-- OWN1 was previously resolved and reviewed through `99ef2faac`; the review records immutable SQL
-  configuration revisions referenced by bindings, with currency retained on the binding.
-- Current `origin/main` (`c7e4d97e9`, PR #314) was merged locally as `bd494a25f` while preserving and
-  restoring every pre-existing working-tree path.
+  (percentage value model and normalized ownership), `e73b30bb4` (calculation contract alignment),
+  and `f693c955d` (owned typed results and review fixes).
+- The earlier verified push checkpoint is `f487ad1da`.
+- This commit merges current `origin/main` `37c94cd0`, retains main's Payment boundary/entity changes,
+  resolves the branch-only accessibility gap, and disambiguates the independently generated Client
+  and Infrastructure proto types in the combined Payment unit project.
 
 ## Verification
 
-- Historical evidence recorded by the plan/review for OWN1: 141 Payment unit tests passed, 7 Payment
-  integration tests passed, no pending Payment model changes, full solution build at 0 errors, and
-  standalone Payment carve at 0 errors. This evidence predates the current typed-result working tree.
-- PR #296 head `357a2ca7d` previously had green CI, including Payment unit, Payment integration, solution
-  build, and Payment carve; those checks also predate the current uncommitted fixes and base merge.
-- Focused BUG1 regressions: 2 passed, 0 failed on the combined `bd494a25f` plus working tree.
-- Payment unit tests: 188 passed, 0 failed on the combined working tree.
-- `dotnet build api/Concertable.slnx`: succeeded with 0 errors and 3 warnings.
-- Standalone Payment deployable carve, copied from the current working tree and built in Release from
-  its package closure: succeeded with 0 errors.
+All results below are from `origin/main` `37c94cd0` merged with the PR #296 work and the final
+reconciliation edits:
+
+- Docker preflight: elevated `docker ps` succeeded.
+- Payment SQL integration project: 7 passed, 0 failed.
+- Focused payout-status mapper regression: 4 passed, 0 failed.
+- Complete Payment unit project in Release: 192 passed, 0 failed.
+- `dotnet build api/Concertable.slnx --configuration Release`: 0 errors, 8 warnings.
+- Standalone Payment nine-project package-closure carve in Release with `MinVerSkip=true`: 0 errors.
 - `dotnet ef migrations has-pending-model-changes` for `PaymentDbContext`: no model changes since the
-  last migration.
-- Payment integration preflight: elevated `docker ps` responded successfully.
-- `dotnet test api/Concertable.Payment/tests/Concertable.Payment.IntegrationTests/Concertable.Payment.IntegrationTests.csproj --logger console;verbosity=normal`:
-  7 passed, 0 failed on the combined `bd494a25f` plus completing working tree.
+  last migration (using the canonical parseable design-time connection string from
+  `api/initial-migrations.ps1`).
 
 ## Reviews
 
 - Review artifact: `reviews/Feature-CommissionBindingDeferredPricing.md`.
-- OWN1 — fixed and freshly verified on the combined state.
-- Incremental range `f2e206133..e73b30bb4` — no findings.
-- CI follow-up range `e73b30bb4..99ef2faac` — no findings.
-- Incremental range `99ef2faac..357a2ca7d` plus typed-result working tree:
-  CV1, BUG1, CV2, TEST1, TEST2, and BUG2 are fixed in the completing commit. Their focused, unit,
-  integration, build, carve, and model evidence is green.
+- OWN1, CV1, BUG1, CV2, TEST1, TEST2, and BUG2 are fixed and remain closed after current-main
+  reconciliation and the complete fresh verification gate.
+- The merge added main's Payment.Domain internalisation and payout-status boundary plus a focused
+  test-only extern alias required by the branch's Payment.Client reference. These post-review changes
+  require `/incremental-review` before any push.
 
 ## Decisions, discoveries, blockers, and deviations
 
-- PR #314 supplied the repository-owned `resume-plan` workflow and merged before this resume.
-- Worktree identity is valid: the owned-result changes are branch-local work over unmerged PR #296
-  commission code, so they belong in this checkout despite also satisfying Typed Result migration Phase 2.
-- The branch is 21 commits behind current main and the incoming range overlaps Payment heavily. This
-  close-out verifies and publishes the preserved PR work head; base currency remains a separate gate
-  before any later queue admission, which is outside this stop-at-the-PR task.
-- `origin/main` replaced optimistic refund concurrency tokens with atomic conditional reserved-gross
-  updates. Conflict resolution retained that implementation together with PR #296's percentage VAT
-  model and typed transition results; the obsolete concurrency-token path was not restored.
-- The generated Payment migration rename had identical competing blobs. The newer main timestamp
-  `20260802215519_InitialCreate` is the surviving filename, with its migration attribute reconciled.
-- PR #296 is open and non-draft. Push leg 1 moved its verified work head from `357a2ca7d` to
-  `f693c955d`; the plan-managed checkpoint transport remains.
+- Worktree identity remains valid: the owned-result changes operate on commission code that exists
+  only on PR #296, so they remain branch-local rather than moving to a separate typed-result branch.
+- The pre-merge working tree was clean. A synthetic empty stash was not created; the verified
+  recovery stash remains the durable pre-merge recovery artifact.
+- Main's internal-default change must cover branch-only Domain additions too. Keeping those types
+  public would silently reintroduce the tech debt main just resolved.
+- Both Payment.Client and Payment.Infrastructure generate the same protobuf CLR names by design.
+  The unit project references both only for combined coverage, so an explicit Infrastructure assembly
+  alias preserves exact enum assertions without coupling or weakening either package boundary.
+- The first EF invocation built successfully but was correctly rejected by the design-time connection
+  guard. Re-running with the exact non-secret parseable value from `initial-migrations.ps1` passed.
+- No local E2E was run: PR #296's merge queue remains the E2E gate.
 
 ## Event log
 
@@ -153,3 +140,14 @@ Then confirm PR #296 remains open and non-draft with the new head; stop at the P
 - Evidence: After fetching the branch, local `HEAD`, `origin/Feature/CommissionBindingDeferredPricing`, and PR #296 `headRefOid` all equalled `f693c955d60fd21b5e6586ec9a6f52f53dddbfd1`; the PR remained open and non-draft.
 - Outcome: Push leg 1 is verified. The work commit contains the fixed CV1, BUG1, CV2, TEST1, TEST2, and BUG2 dispositions plus the green local gate evidence.
 - Follow-up: Create and transport one plan-managed checkpoint commit, verify final local/remote/PR equality, then confirm PR #296 ready without merging.
+
+### 2026-08-04 — current-main reconciliation and complete local gate
+
+- Action: Fetched origin, verified PR #296 and the recovery stash, merged `origin/main` `37c94cd0`,
+  resolved the Payment overlap, fixed the generated-proto test collision, and ran every requested gate.
+- Evidence: PR #296 remained open/non-draft at remote head `f487ad1da`; stash `76438f7c` retained its
+  index and untracked parents; Payment integration 7/7; focused mapper 4/4; Payment unit 192/192;
+  Release solution and standalone Payment carve at 0 errors; EF reported no pending model changes.
+- Outcome: Main's newer Payment boundaries/entities and the branch's commission/owned-result behavior
+  coexist in a fully verified local merge commit. All recorded review findings remain closed.
+- Follow-up: Run `/incremental-review` for this commit before any push; do not merge PR #296.

@@ -11,9 +11,11 @@
 
 <What exists now, including partial or uncommitted work that must be preserved.>
 
-## Exact next action
+## Next Steps
 
-<One immediately actionable step, including any prerequisite or blocking gate.>
+<The paste-ready prompt for the next agent: the concrete, self-contained step(s) to take now, with any
+prerequisite or blocking gate. This is the single source of truth for what to do next — resume/handoff
+prompts point here instead of restating it, so they can never drift. Keep it current at every checkpoint.>
 
 ## Completed work
 

@@ -110,7 +110,10 @@ jobs:
             merge_group)  prnum="$(printf '%s' '${{ github.event.merge_group.head_ref }}' | sed -nE 's#.*/pr-([0-9]+)-[0-9a-f]+$#\1#p')";;
           esac
           labels=""
-          [ -n "$prnum" ] && labels="$(gh pr view "$prnum" --json labels -q '.labels[].name' 2>/dev/null || true)"
+          if [ -n "$prnum" ] && ! labels="$(gh pr view "$prnum" --json labels -q '.labels[].name')"; then
+            echo "::error::Could not retrieve labels for PR #$prnum; refusing to evaluate E2E opt-outs."
+            exit 1
+          fi
           echo "E2E tier source: PR #${prnum:-none}, labels: ${labels:-<none>}"
           optout() {  # $1 = trailer key (e.g. Skip-E2E), $2 = label name (e.g. skip-e2e)
             git log --format="%(trailers:key=$1,valueonly=true)" "$base..$head" | grep -qiE '^[[:space:]]*(true|yes|1|on)[[:space:]]*$' && return 0

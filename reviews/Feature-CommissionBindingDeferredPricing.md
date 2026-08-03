@@ -71,3 +71,16 @@ standalone Payment carve build with 0 errors, and EF reports no pending Payment 
 merging current `origin/main`. Docker responded successfully and
 `dotnet test api/Concertable.Payment/tests/Concertable.Payment.IntegrationTests/Concertable.Payment.IntegrationTests.csproj --logger "console;verbosity=normal"`
 passed all 7 tests on the same combined code state.
+
+## Post-main reconciliation — 2026-08-04
+
+OWN1, CV1, BUG1, CV2, TEST1, TEST2, and BUG2 remain closed after merging current `origin/main`
+`37c94cd03780d940b3c827c3e2f4442a8709297e`. Main's Payment.Domain internalisation and
+Application-owned payout-status boundary were preserved; branch-only commission configuration,
+percentage, and transition-error types were internalised consistently. The combined Payment unit
+project's duplicate generated proto enum was resolved with an explicit Infrastructure assembly alias.
+
+Fresh verification on the reconciled state: Payment SQL integration 7/7; focused payout mapper 4/4;
+Payment unit 192/192; Release solution build 0 errors; standalone Payment carve 0 errors; and no
+pending `PaymentDbContext` model changes. No finding was reopened. The new merge resolution and test
+alias require incremental review before any push.

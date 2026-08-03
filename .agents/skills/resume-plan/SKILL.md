@@ -24,7 +24,7 @@ Treat documentation as a lead, not proof. Inspect at least:
 
 - the absolute worktree path, current branch, upstream, `git status`, and `origin/main..HEAD` commits;
 - the plan's phase checkboxes and requirements;
-- the progress ledger's current-state summary, chronological events, reviews, verification, blockers, gates, and exact next action;
+- the progress ledger's current-state summary, chronological events, reviews, verification, blockers, gates, and `## Next Steps`;
 - review artifacts and whether their findings are open, fixed, deferred, or superseded;
 - the current PR, checks, merge state, and merge-queue history when a PR exists;
 - package publication or platform-sync state when it gates the next phase.
@@ -48,10 +48,15 @@ Give a compact status containing:
 - current blockers or external gates;
 - the immediate next actionable step.
 
-Then provide exactly one self-contained resume prompt. Its first line must be:
+Before handing off, write the immediate next action — with its prerequisite or gate — into the ledger's `## Next Steps` section so it is the durable source of truth, and confirm the plan points to it.
 
-`cd <absolute-worktree-path>`
+Then provide exactly one resume prompt, and it is ONLY the pointer — nothing plan-specific. Literally:
 
-The prompt must tell the next agent to read `AGENTS.md`, `plans/AGENTS.md`, the plan, and its progress ledger, verify the stated branch and current evidence, and perform the immediate next action. Include prerequisites or gates in that same prompt. Do not offer multiple prompts or ask whether to continue.
+```
+cd <absolute-worktree-path>
+Read @plans/<PLAN>.md and @plans/<PLAN>_PROGRESS.md and do what its `## Next Steps` says.
+```
+
+No branch to verify, checkpoints, gates, commands, or steps in the prompt — every such specific lives in the ledger (its header + `## Next Steps`), never restated, so the prompt can't drift. Do not offer multiple prompts or ask whether to continue.
 
 If all plan work is genuinely complete and verified, state that it is complete and provide no invented continuation prompt. Apply the plan lifecycle rules for removing the completed plan and progress ledger.
