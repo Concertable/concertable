@@ -85,16 +85,64 @@ A plan describes a chunk of work too big for one commit, broken into **phases th
 independently shippable and each end green**. A phase states what it changes, why, and its
 verification gate. Phases sequence so that every intermediate state builds and passes.
 
+## Companion progress ledger — record the whole operational history
+
+Every new `plans/<NAME>.md` has a same-directory companion named
+`plans/<NAME>_PROGRESS.md`, created with the plan. Keep design, intended phases, dependencies, and
+definition-of-done in the plan. Put the detailed history and current operational truth in the
+progress ledger so the plan remains readable. Start it from
+[`resume-plan/assets/progress-template.md`](../.agents/skills/resume-plan/assets/progress-template.md).
+
+The ledger must make the chat disposable at any point. Record **every project action and state
+transition as it happens**, not just phase summaries: user direction and scope changes, partial
+implementation, commits, verification commands and results, reviews and every
+finding's disposition, fixes after review, PR creation and checks, merges, publications, platform
+syncs, decisions, discoveries, deviations, blockers, failed approaches worth avoiding, and external
+gates. "A review happened" is insufficient: identify the review type and range, its artifact, whether
+findings remain open, and the commit or deferral that resolved each one. Never leave a project fact
+only in chat because it happened between phase boundaries.
+
+Every workflow that advances or evaluates plan-managed work owns this update before it ends. That
+includes implementation, `/code-review`, `/big-review`, `/incremental-review`, addressing findings,
+verification, committing, opening or updating a PR, merging, publishing, and platform sync. The fact
+that another artifact or skill records part of the event does not make the progress update someone
+else's later close-out.
+
+Each ledger keeps these current sections above its chronological event log:
+
+- plan, absolute worktree, branch, PR, and relevant dependency or package gates;
+- current state, including partial/uncommitted work that the next agent must preserve;
+- completed work with commit or PR evidence;
+- verification and review state;
+- decisions, discoveries, blockers, and deviations;
+- **exact next action**, with any prerequisite that prevents it starting now.
+
+Update the summary whenever an event changes it, then append the evidenced event to the log. Include
+enough commands, paths, identifiers, results, and reasoning to continue without the prior conversation;
+do not paste entire routine logs when their command, outcome, and durable artifact fully preserve the
+fact. Commit ledger updates with the work they describe whenever possible. Remote-only transitions
+that happen after a commit, such as a PR entering the queue or a package publishing, go into the next
+immediate ledger checkpoint.
+
+**Backward compatibility:** the absence of a progress ledger means the plan predates this rule, not
+that no work has happened. Read the plan, git history and working tree, review artifacts, test evidence,
+PR/check state, and package gates. Create `<NAME>_PROGRESS.md` with an explicitly labelled
+"reconstructed baseline" containing only verifiable facts; do not invent missing history. All future
+progress goes into that ledger.
+
+The ledger is working state, not a permanent report. Delete it with its plan when the final phase is
+complete and verified, or when the plan is superseded or rejected. Git history remains the archive.
+
 ## Lifecycle
 
-1. **Write it** when the work spans multiple commits/PRs or needs a design decided up front.
+1. **Write it** when the work spans multiple commits/PRs or needs a design decided up front, and create its `_PROGRESS.md` companion at the same time.
 2. **Branch, then work a phase** — on the plan's `Feature/<Name>` branch (see "Branch first"), land the phase's commit(s).
-3. **Check off / strike the shipped phase in the plan, in the same commit as the work.** A
+3. **Check off / strike the shipped phase in the plan and update the progress ledger, in the same commit as the work.** A
    partially-done plan stays; only the outstanding work should remain un-ticked, so the next reader
    sees exactly what's left.
-4. **Delete the plan** (`git rm`) in the commit that completes its *last* phase — never defer deletion
+4. **Delete the plan and its progress ledger** (`git rm`) in the commit that completes its *last* phase — never defer deletion
    to a later cleanup pass.
-5. A plan **superseded** by a newer plan, or describing a **rejected** design, is deleted the moment
+5. A plan **and its progress ledger** superseded by a newer plan, or describing a **rejected** design, are deleted the moment
    that's decided — no tombstones.
 
 ### The trap that ships a finished plan as rot — check `git status` before the completing commit
@@ -110,6 +158,7 @@ So, **before any commit that completes plan work, run `git status --short plans/
 - a plan finished by this commit must **not** appear as `A`/`??` (born-and-done → never stage it, or `git rm`);
 - a pre-existing tracked plan whose **last** item this commit lands must appear as `D`, not survive untouched
   (that second miss is how `HTTP_GUARD_CONSOLIDATION.md` lingered after its arch-test shipped).
+- the plan's `_PROGRESS.md` companion must also disappear; it must not survive or be added by the completing commit.
 
 The rule is mechanical: after the completing commit, no finished plan is in the tree — as an addition or a survivor.
 
@@ -155,6 +204,8 @@ the conversation can be thrown away without losing anything:
 
 - **Plan markdown** — checked off / struck per the Lifecycle above (or `git rm`'d if it was the last
   phase). The next reader should see exactly what's left and nothing that already shipped.
+- **Progress markdown** — current through the last material event, with review and verification evidence
+  plus one exact next action (or `git rm`'d with a completed plan).
 - **Memory** — if the phase changed a decision, convention, or fact worth carrying forward, update
   the relevant `CLAUDE.md` / `TECH_DEBT.md` so it survives independent of the chat.
 - Anything else you'd be annoyed to re-derive (a command that worked, a gotcha hit) belongs in the
@@ -173,30 +224,30 @@ state is written:
    finished work the instant its gate goes green"), with the plan check-off in the same commit
    (Lifecycle 3). By the time you reach a handoff this should already be done; if anything finished is
    still sitting in the working tree, that rule was missed, not deferred to here.
-2. **Prepare for clear** — confirm the plan markdown, `CLAUDE.md`/`TECH_DEBT.md`, and commit messages
+2. **Prepare for clear** — confirm the plan markdown, progress ledger, `CLAUDE.md`/`TECH_DEBT.md`, and commit messages
    hold everything; the chat must be safe to throw away.
 3. **Give the user a resume prompt to paste after `/clear`.** Assume zero context: name the **working
    directory** (this repo runs many parallel worktrees — the branch name alone doesn't say which tree to
    `cd` into, so give the absolute path: the main checkout, or the sibling `…worktrees/<Branch>`), the
-   plan file, the branch/PR, and the exact next step. Keep it to a few lines.
+   plan and progress files, the branch/PR, and the exact next step. Tell the next agent to read both
+   files before acting. Keep it to a few lines.
 4. **Before any implementation PR is merged, hand off a ready-to-paste `/code-review` prompt in the
    same turn, or `/big-review` when the branch is too large for one review pass.** Review once per PR,
    not once per numbered plan step or commit. The prompt must name the exact worktree path and branch.
    If code commits are added after review, run `/incremental-review` before merge.
 
-   **If — and only if — the work lives in a separate git worktree, the resume prompt's first line
-   MUST be the exact directory to `cd` into, before anything else.** A `/clear` (or a brand-new
+   **The resume prompt's first line MUST be the exact directory to `cd` into, before anything else.**
+   This applies to the main checkout and every separate worktree. A `/clear` (or a brand-new
    session) reopens in *whatever directory the last session was rooted in*. When the branch lives in a
    separate worktree that's routinely the **wrong** one: a resume prompt naming only the plan and the
    branch lands the paste in the wrong worktree on the wrong branch, and git then **won't** let you
    check the right branch out (it's already checked out in its own worktree) — so the whole handoff
    silently derails. Naming the branch is **not** enough; name the **directory**. Shape:
 
-   > `cd <absolute worktree path>` — then: read `plans/<PLAN>.md`, branch `<Type>/<Name>`, next step: …
+   > `cd <absolute worktree path>` — then: read `plans/<PLAN>.md` and `plans/<PLAN>_PROGRESS.md`, branch `<Type>/<Name>`, next step: …
 
-   Check first: run `git worktree list`. If the work's branch is a **separate** worktree, lead with its
-   `cd` path. If it's just the **main checkout** (the default — the session already reopens there), skip
-   the `cd` line entirely and name the plan + branch as normal; don't clutter the prompt with it.
+   Check first: run `git worktree list`, resolve the branch's exact worktree, and lead with that absolute
+   `cd` path. Never assume a new session opens in the intended checkout.
 
    The `cd` must sit **inside the prompt text the user pastes**, not on a line above it — a prompt is
    pasted as one blob, so a path parked outside it is simply lost.
@@ -213,7 +264,8 @@ state is written:
 trigger.** Do not send it. Write the durable state and hand off the resume prompt in the **same
 turn**, unprompted. You do not wait for the user to say "I'll clear now" — finishing the work is the
 signal. Asking whether to continue instead of handing off is the exact anti-pattern this section
-exists to kill: the plan already records what's next, so the honest move is to hand off, not to ask.
+exists to kill: the plan and progress ledger already record what's next, so the honest move is to
+hand off, not to ask.
 
 **A completed + verified phase is a HARD STOP — end the turn on the resume prompt.** After you hand off,
 do **not** begin the next phase in the same session — not even when asked — **unless the user explicitly
