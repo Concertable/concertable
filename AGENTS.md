@@ -149,18 +149,26 @@ not an afterthought:
 
 ## E2E suites — Docker health first, always
 
-This section is **how** to run E2E safely. **Whether** to run it for a given change is a judgment
-call — reserved for massive or behaviorally-risky changes, skipped for stage-1/zero-behavior-change
-work — governed by [`plans/AGENTS.md`](./plans/AGENTS.md). Don't run the full suites by reflex.
+This section is **how** to run E2E safely. For a PR, do not duplicate the merge queue's E2E run
+locally; the local gate stops at build + unit + integration unless a queue failure needs debugging.
+[`plans/AGENTS.md`](./plans/AGENTS.md) carries that local workflow. The merge skill's Step 4 is the
+single source of truth for selecting the merge-queue E2E tier.
 
-**That same skip-judgment sets the CI merge-queue tier — and the reliable lever is a PR label, not a
-commit trailer.** The merge queue runs the full E2E suite on every code change *by default*. When a
-change is in the skip category (behaviour-preserving, small/isolated, well-covered by unit +
-integration), **add the `skip-e2e` label to the PR** (`gh pr edit <n> --add-label skip-e2e`) so the
-queue skips it too — otherwise it burns ~25-30 min of E2E that catches nothing. This is the common case
-for a refactor; **default to skipping E2E for any zero-behaviour-change PR** — letting the queue run E2E
-on it is the reflex to avoid. The labels: `skip-e2e` drops both E2E suites; `skip-e2e-ui` drops only the
-UI suite. Unit tests, integration tests, build, and carve are never skippable for code/package changes.
+**Full E2E in the merge queue is the default.** Add `skip-e2e` only when the PR is both small and
+demonstrably low-blast-radius, with every one of these true:
+
+- The diff and affected area are small and isolated.
+- It touches no package/service boundary, shared infrastructure, build/publish/deployment pipeline,
+  CI workflow, or multiple application surfaces.
+- It changes no user-facing/runtime flow covered by E2E.
+- Unit/integration tests fully cover the affected behaviour.
+
+**Zero intended behaviour change is not sufficient.** Package renames, lockfile/workspace changes,
+shared-library moves, broad refactors, and build/publish separation must run full E2E. When in doubt,
+do not skip. The labels are the reliable lever: `skip-e2e` drops both E2E suites and `skip-e2e-ui`
+drops only the UI suite. Remove stale skip labels when the PR does not qualify; if historical trailers
+would opt out a PR that now requires the full tier, add `full-e2e`. Unit tests, integration tests,
+build, and carve are never skippable for code/package changes.
 
 A same-named **git trailer** (`Skip-E2E: true` on its own line) works too — parsed structurally by git,
 so prose that merely mentions it can't trip the gate (the pr-227 bug) — **but it is fragile in this repo,
