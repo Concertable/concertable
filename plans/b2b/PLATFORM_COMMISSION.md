@@ -384,6 +384,9 @@ unpublished Payment package source.
 - [x] Verify OWN1 on current `origin/main`: Payment unit tests (141 passed),
   Payment integration tests (7 passed), no pending Payment model changes,
   `dotnet build api/Concertable.slnx` (0 errors), and the standalone Payment carve (0 errors).
+- [x] Resolve incremental findings CV1, BUG1, CV2, TEST1, TEST2, and BUG2; verify the combined
+  typed-result and refund-reservation state with 188 Payment unit tests, 7 Payment integration tests,
+  the solution and standalone Payment carve at 0 errors, and no pending Payment model changes.
 - [ ] **Hard stop:** merge, publish, own platform sync to green and deploy the updated Payment runtime
   before Phase 2 consumes the corrected binding-owned surface.
 

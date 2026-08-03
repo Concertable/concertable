@@ -40,3 +40,34 @@ conventions, and test coverage of changed paths.
 No issues found. The GitHub-hosted integration matrix now relies on runner teardown instead of the
 Docker Hub-hosted Testcontainers resource reaper. The failed Customer User integration project
 passed 6/6 locally with the exact workflow setting.
+
+## Incremental review — 2026-08-03
+
+> Range reviewed: `99ef2faac..357a2ca7d` plus the Payment typed-result working tree.
+
+- [x] **CV1 — MEDIUM — C# conventions** — `api/Concertable.Payment/src/Concertable.Payment.Client/Adapters/CommissionClient.cs:9`
+  Thirteen changed Payment clients/services capture collaborators through primary constructors. Replace those captures with explicit constructors and `private readonly` fields, as `api/agents/CODE_CONVENTIONS.md` requires for captured state.
+
+- [x] **BUG1 — MEDIUM — correctness** — `api/Concertable.Payment/src/Concertable.Payment.Infrastructure/EscrowService.cs:525`
+  Provider-failure cleanup ignores the new typed result from `ReleaseRefund`, so a non-pending reservation would now be silently saved instead of preserving the former invariant exception. Check the transition result and throw the same invariant failure in both escrow and settlement refund paths.
+
+- [x] **CV2 — LOW — C# conventions** — `api/Concertable.Payment/src/Concertable.Payment.Infrastructure/ManagerPaymentService.cs:388`
+  `ResolveStripeCustomerAsync` adds an `is { }` capture. Replace it with the repository-standard explicit null check required by `api/agents/CODE_CONVENTIONS.md`.
+
+- [x] **TEST1 — MEDIUM — test coverage** — `api/Concertable.Payment/src/Concertable.Payment.Contracts/Errors/PaymentErrors.cs:10`
+  The new Payment and transition error unions have no definition tests. Add one data-driven definition assertion per case, as `api/agents/CODE_CONVENTIONS.md` requires for every operation-owned error union.
+
+- [x] **TEST2 — MEDIUM — test coverage** — `api/Concertable.Payment/src/Concertable.Payment.Client/Adapters/PaymentClientResults.cs:13`
+  The new binary-trailer transport seam is untested. Add focused tests for successful calls, mapped typed failures, unmapped/malformed trailers, and caller cancellation so the published client contract cannot silently regress to exceptions or swallow faults.
+
+- [x] **BUG2 — MEDIUM — correctness** — `api/Concertable.Payment/src/Concertable.Payment.Client/Adapters/PaymentClientResults.cs:38`
+  A malformed binary error trailer leaks `InvalidProtocolBufferException` because the nested `throw` rethrows the parser failure rather than the caught RPC. Treat malformed detail as an unrecognized provider response and rethrow the original `RpcException`.
+
+## Resume verification — 2026-08-03
+
+CV1, BUG1, CV2, TEST1, TEST2, and BUG2 are fixed in the completing commit. The focused BUG1
+regressions pass 2/2 and the complete Payment unit suite passes 188/188. The full solution and the
+standalone Payment carve build with 0 errors, and EF reports no pending Payment model changes after
+merging current `origin/main`. Docker responded successfully and
+`dotnet test api/Concertable.Payment/tests/Concertable.Payment.IntegrationTests/Concertable.Payment.IntegrationTests.csproj --logger "console;verbosity=normal"`
+passed all 7 tests on the same combined code state.
