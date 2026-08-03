@@ -27,6 +27,8 @@ Decide and act on reversible work (doc/plan edits, isolated commits, retrying a 
 
 **Before starting any work, create a relevant branch for it if you're not already on one** — never commit to `main` or an unrelated branch.
 
+**Worktree identity gate — before any edit.** State whether the task matches the current branch/PR directly or is branch-local work because it changes code not yet in `main`; verify service ownership, the dirty paths, and other worktrees rather than matching on a shared refactor name. If neither basis holds or anything contradicts it, **STOP and ask**.
+
 **Fetch first, and branch from `origin/main` — never from local `main`.** Local `main` silently
 drifts behind, and branching off it builds and tests everything against a stale tree. That is how work
 already merged gets reinvented (a hand-rolled `IScoped` test refactor was written here against a
@@ -38,7 +40,7 @@ The staleness is invisible locally: the build is green, because it is green *aga
 git fetch origin --quiet && git checkout -b <Type>/<Name> origin/main
 ```
 
-**Reusing an existing branch/worktree?** Ensure it's synced with `origin/main` before working — never build on a stale tip.
+**Reusing an existing branch/worktree?** At session start, `git fetch` + check `git rev-list --count HEAD..origin/main`; sync before working — never build on a stale tip. Don't reflex-merge `origin/main` every prompt — it won't refresh already-loaded docs (only a fresh session does), and mutating a dirty tree mid-task risks conflicts; merge only when behind with a clean tree.
 
 **Don't branch to refactor code from the feature you're already on.** If the code only lives on the current feature branch (not yet in `main`), the refactor is part of that feature — stay on the branch and commit there. A new `Refactor/<Name>` branch is only for code **already merged to `main`**. Branching off an in-flight feature fragments it across two PRs and orphans the original.
 
