@@ -231,6 +231,15 @@ Most of the time the context is then **compacted** (summarized, work continues) 
 makes it safe to **clear** (start fresh) instead. Either way, treat the end of every phase as the
 point where the context becomes disposable. Don't carry unwritten state across a phase boundary.
 
+## Plan handoff
+
+- Follow [`../PROMPTS.md`](../PROMPTS.md) after making the phase state durable as described above.
+- The prompt must name and require reading both the plan and its `_PROGRESS.md` companion.
+- Use `/resume-plan` to recover plan-managed work, reconciling the plan and ledger against the worktree,
+  git, review, test, PR, package, and platform-sync state before producing the next prompt.
+- A completed and verified phase ends the turn after its handoff. Start the next phase only when Tommy
+  explicitly names it and says to do it now.
+
 ## Verification gate per phase
 
 Every phase, no exceptions:
