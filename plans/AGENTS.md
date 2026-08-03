@@ -236,7 +236,8 @@ Every phase, no exceptions:
 - The **affected** module's unit + integration tests — run them via the `integration-debug` skill.
 - Phases that change the model end with `./initial-migrations.ps1` from `api/` (re-scaffold, never
   additive migrations).
-- **Final phase only:** run the UI E2E suite via the `e2e-ui-debug` skill.
+- **Final phase only:** select the merge-queue E2E tier under the criteria below. Do not duplicate the
+  queue's E2E run locally; use the matching E2E debug skill only after a queue failure.
 
 ## A failing test is never just reported — enter the matching debug skill and drive it to green
 
@@ -255,11 +256,11 @@ inflate-a-timeout to get past a failure — that's bypassing, not fixing. For E2
 does **flaky-vs-real triage**: re-run the failed scenario alone on a fresh stack — passes clean = a
 host-load blip (proven, not assumed); fails again = a real bug, so fix it.
 
-## When to run the E2E suites — judgment, not reflex
+## Merge-queue E2E tier — full by default, skip only for demonstrably low blast radius
 
 The full E2E suites (API `Concertable.B2B.E2ETests` + the UI regress) are **expensive and
-Docker-gated**. Run them only when the change earns it; otherwise build + unit + integration is the
-gate, and you update the plan markdown and move on.
+Docker-gated**. The merge queue runs them by default; the strict criteria below decide whether a PR
+qualifies to opt out. Local verification still stops at build + unit + integration before a PR.
 
 **The PR merge queue IS the E2E gate — never run E2E locally ahead of a merge.** When the change is
 going out as a PR, the merge-queue pipeline runs the full suite (E2E included) as the gate. Running it
@@ -271,37 +272,31 @@ push the fix (the queue re-runs E2E on the way back in). **This overrides any pl
 kickoff prompt that says "run the E2E regress"** — if a PR will run it, let the PR run it; a written
 "run E2E" step is not a reason to duplicate the queue.
 
-**Run E2E when the change is _massive_ or _risky_:**
+The merge skill's Step 4 is the single source of truth for this decision. **Full E2E is the default.**
+Add `skip-e2e` only when the PR is both small and demonstrably low-blast-radius, with every one of
+these true:
 
-- It spans multiple services or is otherwise broadly cross-cutting.
-- It changes **user-facing or runtime behavior** in a flow E2E covers — registration/login, payments
-  & payouts, settlement, the event/projection chain, messaging.
-- It's the kind of change that's **likely to break something and you'd want to debug it first** —
-  i.e. you're not confident unit + integration fully covers the blast radius.
+- The diff and affected area are small and isolated.
+- It touches no package/service boundary, shared infrastructure, build/publish/deployment pipeline,
+  CI workflow, or multiple application surfaces.
+- It changes no user-facing/runtime flow covered by E2E.
+- Unit/integration tests fully cover the affected behaviour.
 
-**Skip E2E (just build + unit + integration, update the markdown, continue) when:**
+**Zero intended behaviour change is not sufficient.** Package renames, lockfile/workspace changes,
+shared-library moves, broad refactors, and build/publish separation still have broad blast radius and
+must run full E2E. When in doubt, do not skip.
 
-- It's foundational / stage-1 implementation with **zero behavior change** (a new table + seam that
-  nothing exercises yet).
-- It's small, isolated, or covered well by integration tests.
-- It's doc-only or comments-only.
+Encode a qualifying skip with the `skip-e2e` PR label (`skip-e2e-ui` for UI-only); labels are the
+reliable lever and are read fresh in the merge group. Remove stale skip labels when the PR does not
+qualify. If historical `Skip-E2E` / `Skip-E2E-UI` trailers would opt out a PR that now requires the
+full tier, add `full-e2e`; it is the authoritative positive override. Unit and integration tests never
+skip for code/package changes, and build + carve never skip. A matching git trailer also works but is
+fragile because it must be in the final contiguous trailer block, so prefer the label.
 
-**When you skip E2E on a change headed to a PR, tell the merge queue too — `Skip-E2E: true` trailer.**
-The queue runs the full E2E suite on every code change *by default*, so your local skip-judgment is
-worthless unless it's encoded in the commit: without the trailer the queue still burns ~25-30 min of E2E
-on a change that didn't earn it. So for a behaviour-preserving / small / well-covered change, add the
-trailer `Skip-E2E: true` (own line, end of a commit message; any commit in the PR range —
-`Skip-E2E-UI: true` for UI-only). Unit and integration tests never skip for code/package changes, and
-build + carve never skip. It's a real git trailer parsed by git, not a `[bracketed]` token, so prose can't
-trip it; a same-named PR label (`skip-e2e`) works too. This is the reflex-inversion: E2E-in-the-queue is
-opt-*out* for a zero-behaviour-change PR, not automatic. Retrofitting the trailer onto a PR already in the queue means
-closing + re-pushing (the branch is locked while queued) — so decide the tier **in the commit you push**,
-not after.
+When E2E must run for a PR, let the merge queue run it; this tier decision does **not** authorize a
+duplicate local run. **How** to run E2E safely after a queue failure (the mandatory Docker health
+pre-flight, only via the `e2e-*` skills) is unchanged — see the "E2E suites — Docker health first"
+section in the root [`AGENTS.md`](../AGENTS.md).
 
-When in doubt, or when a phase explicitly flips behavior on a covered flow, run E2E. **How** to run it
-safely (the mandatory `./scripts/docker-health.ps1` pre-flight, only via the `e2e-*` skills) is unchanged —
-see the "E2E suites — Docker health first" section in `CLAUDE.md`. This section governs **whether**,
-that one governs **how**.
-
-A phase's own "verification gate" line may name E2E; treat that as "run E2E *if* this phase meets the
-massive/risky bar above," not as an unconditional requirement for every phase.
+A phase's own "verification gate" line may name E2E; treat that as selecting full merge-queue E2E
+when these criteria require it, not as an instruction to duplicate the queue run locally.
