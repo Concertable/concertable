@@ -188,8 +188,12 @@ Set the top-of-file marker to current HEAD — exactly one such line in the file
 **Reviewed up to commit:** `<full-HEAD-sha>`  _(<today's ISO date>)_
 ```
 
-Today's date comes from session context; get the SHA from `git rev-parse HEAD`. Do not commit unless asked.
+Today's date comes from session context; get the SHA from `git rev-parse HEAD`. Do not commit unless
+asked, except for a plan-managed checkpoint required by Step 7.
 
-## Step 7 — Report
+## Step 7 — Checkpoint and report
+
+Before any report or stop, if this workflow is plan-managed, read and apply
+[the shared plan-progress checkpoint](../resume-plan/references/plan-progress-checkpoint.md).
 
 Concise chat summary: range reviewed (`<short>..<short>`, N commits), finding counts by lens/severity (or "none"), the file written, and the stamped watermark. Point at the file; don't restate every finding in chat. No "Generated with Codex" trailers anywhere.

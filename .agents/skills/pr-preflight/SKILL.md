@@ -115,5 +115,9 @@ never changes the working tree, index, or any branch.
 
 ## Final summary
 
+Before any report or stop, if this workflow is plan-managed, read and apply
+[the shared plan-progress checkpoint](../resume-plan/references/plan-progress-checkpoint.md). The
+ledger checkpoint is the only permitted write in this otherwise read-only workflow.
+
 One short go/no-go: GREEN + the next command, or the named blockers + their fixes. Read-only
 `git`/`gh` only (personal repo — never the work PR/ADO skills). No preamble; inspect → verdict → stop.

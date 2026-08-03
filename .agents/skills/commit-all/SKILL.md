@@ -9,6 +9,11 @@ Stage everything and make one commit. This is the deliberate opposite of the `co
 
 ## The flow
 
+For plan-managed work, first read and apply
+[the shared plan-progress checkpoint](../resume-plan/references/plan-progress-checkpoint.md), recording
+the commit evidence as `this commit`. `git add -A` then includes that plan/ledger checkpoint in the one
+requested commit.
+
 ```
 git branch --show-current          # must NOT be the default branch
 git add -A
@@ -40,5 +45,8 @@ If you spot one, say so and let the user decide. Otherwise trust the instruction
 One imperative line summarizing the overall change, matched to the repo's `git log --oneline` style. If the tree genuinely spans unrelated things, a short summary line plus a 2–4 bullet body listing them is fine — but it's still ONE commit. Derive it from the actual diff, not from memory of the session.
 
 ## Report
+
+Before any report or stop, confirm the plan-managed checkpoint above landed in the commit. Do not
+create a second commit solely to replace `this commit` with its SHA.
 
 Hash + subject + file count, and confirm `git status` is clean — or name the single thing you flagged and why it was held back.
