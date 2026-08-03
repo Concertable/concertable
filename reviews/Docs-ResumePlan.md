@@ -5,7 +5,7 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `449ed22084e30ac22adec0f86984cb3d40235791`  _(2026-08-03)_
+**Reviewed up to commit:** `d96f30d1985ae1eb751e29a65f62c96e3866ed39`  _(2026-08-03)_
 
 > Range reviewed: `0d72f0ed..6d339e5b` (1 commit).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -35,3 +35,9 @@ No new issues found in `6d339e5b..c8dbc6b`. The range fixes WF1 and WF2; WF3 rem
 - [x] **WF5 — MEDIUM — correctness** — `.agents/skills/merge/SKILL.md:194`
   The merge hook runs only immediately before the final report. Queue admission, check failure, merge completion, publication, and platform-sync are long-lived material transitions, so a lost context before the final summary still loses the exact live gate the ledger is meant to preserve. Checkpoint each material transition when it occurs, including before early stops, then reconcile once more before the final report.
   Fixed by immediate merge-transition checkpoints plus a remote-transition protocol that keeps observation commits durable without mutating a queued or merged PR head.
+
+## Incremental review — 2026-08-03 (`449ed220..d96f30d`)
+
+- [x] **WF6 — HIGH — correctness** — `.agents/skills/push/SKILL.md:18`
+  The compound push event is committed before any remote mutation and explicitly cannot claim success yet, but after verification the workflow forbids updating the checkpoint again. The durable ledger therefore remains pending/stale and cannot truthfully contain the verified resulting PR head or advance its exact next action. Push and verify the work first, then create one checkpoint commit recording that evidenced result and push it as a non-recursive checkpoint-transport leg; verify the final head, and keep/amend the local checkpoint with failure evidence if that transport cannot land.
+  Fixed by separating the verified work-head push from one non-recursive checkpoint-transport leg, requiring final local/remote/PR equality, and preserving truthful failure evidence when transport cannot be verified.

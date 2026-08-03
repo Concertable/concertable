@@ -52,17 +52,27 @@ procedure created a checkpoint; pushing remains governed by the invoking workflo
 
 ### Push protocol
 
-A push closes over its own checkpoint commit. Resolve the plan and prepare one compound push event
-before mutating the remote. Record the starting remote head, local range, branch and PR when one
-exists, and `this commit` as the intended resulting remote and PR head. Do not claim success in
-advance; the event completes only when the push workflow fetches the branch and verifies the
-remote-tracking ref and any PR `headRefOid` equal that commit. Stage only the plan and ledger, create
-the checkpoint commit, then include it in the authorized push.
+A plan-managed push has two legs. Resolve the plan and record the starting remote head, actual work
+head, local range, branch, and PR when one exists. First push the actual work head without creating a
+new push checkpoint. Fetch the branch and require its remote-tracking ref and any PR `headRefOid` to
+equal that recorded work head. A successful command without those comparisons is not verified.
 
-That final synchronization is part of the recorded event, not a new push event. Do not recursively
-checkpoint it or create another success commit. If the push fails or cannot be verified after
-diagnosis, record the failed, rejected, or unknown outcome and exact known heads in a local failure
-checkpoint; do not push merely to publish that failure record.
+Only after the work head is verified, update the ledger with the evidenced pushed range, resulting
+work and PR heads, outcome, and exact post-push next action. Stage only the plan and ledger and create
+one checkpoint commit. Push that commit as a checkpoint-transport leg, then fetch and require local
+`HEAD`, the remote-tracking ref, and any PR `headRefOid` to equal the checkpoint commit. Transport is
+part of the same push event: it never invokes this procedure recursively, appends another push event,
+or creates another checkpoint commit. The ledger records the verified work push and resulting next
+action; it does not fabricate advance evidence that its own transport succeeded.
+
+If the work-head leg fails or cannot be verified after diagnosis, record the failed, rejected, or
+unknown outcome and exact known heads in one local failure checkpoint; do not push merely to publish
+that failure record. If the work head was verified but checkpoint transport fails, keep the checkpoint
+local. Amend that same commit with accurate transport failure, divergence, and prerequisite evidence
+only when refreshed remote and PR refs prove it did not land. If its remote status is unknown, do not
+rewrite a commit that may have landed: preserve its truthful work-head result, leave the corrective
+ledger update in the working tree, and report every known or unknown head. Never claim final success
+unless final local, remote-tracking, and PR equality is verified.
 
 ### Remote-transition protocol
 

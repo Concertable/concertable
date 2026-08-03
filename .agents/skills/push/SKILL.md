@@ -13,13 +13,7 @@ Push the current branch to its remote. The happy path is one command; the job is
    tip, commits to send, and any open PR/head. Resolve whether the work is plan-managed using
    [the shared plan-progress checkpoint](../resume-plan/references/plan-progress-checkpoint.md).
 
-2. **For a plan-managed push, prepare the checkpoint first.** Follow the checkpoint's push protocol:
-   record the compound push transition without claiming success in advance, stage only the plan and
-   ledger, and create its local checkpoint commit. That commit, identified in the ledger as `this
-   commit`, must be included in the push below. Do not push the work first and create the checkpoint
-   afterward.
-
-3. **Push the current branch.**
+2. **Push the actual work head first.** Record `work_head=HEAD`, then push that exact head.
 
    ```
    git push
@@ -30,11 +24,18 @@ Push the current branch to its remote. The happy path is one command; the job is
      git push -u origin <current-branch>
      ```
 
-4. **Verify the resulting remote head.** Fetch the branch, then require its remote-tracking ref to
-   equal local `HEAD`. If an open PR exists, also require the PR's `headRefOid` to equal `HEAD`. A
-   command returning success is not enough. For a plan-managed push, this is the terminal
-   synchronization leg of the already-recorded compound event: do not invoke the checkpoint again,
-   append another push event, or create another success commit.
+3. **Verify the work head landed.** Fetch the branch, then require its remote-tracking ref to equal
+   `work_head`. If an open PR exists, also require the PR's `headRefOid` to equal `work_head`. A
+   command returning success is not enough. Do not create a successful push checkpoint unless these
+   comparisons pass.
+
+4. **For a plan-managed push, checkpoint the verified result and transport it.** Follow the shared
+   checkpoint's push protocol. Update the ledger with the starting remote head, pushed range, verified
+   work and PR heads, outcome, and exact post-push next action. Stage only the plan and ledger and
+   create one checkpoint commit. Push that commit as the checkpoint-transport leg, fetch again, and
+   require local `HEAD`, the remote-tracking ref, and any PR `headRefOid` to all equal the checkpoint
+   commit. This transport does not invoke the checkpoint procedure, append another push event, or
+   create another checkpoint commit.
 
 5. **If the push or verification fails**, read the error and fix the actual cause, then retry the
    same terminal push and verification. Common cases:
@@ -44,10 +45,16 @@ Push the current branch to its remote. The happy path is one command; the job is
    - **Auth / permission failure**: report it; the user needs to fix credentials. Don't retry in a loop.
    - **Pre-push hook failed**: fix the underlying cause — never `--no-verify` unless the user explicitly asks.
 
-   If it remains blocked or the remote result cannot be verified, do not report success. For
-   plan-managed work, update the existing ledger event with the failed, rejected, or unknown outcome
-   and the exact local/remote heads, then create a local failure checkpoint without pushing merely to
-   publish that record. Report the divergence and blocker accurately.
+   If the work-head push remains blocked or cannot be verified, do not report success. For
+   plan-managed work, record the failed, rejected, or unknown outcome and exact known local, remote,
+   and PR heads in one local failure checkpoint; do not push merely to publish that record.
+
+   If the work head was verified but checkpoint transport fails, preserve the checkpoint and resolve
+   the exact local, remote, and PR heads. Amend that same checkpoint with the failure, divergence, and
+   new prerequisite only when refreshed refs prove the checkpoint commit never reached the remote or
+   PR. If it may have landed, do not rewrite it: keep its truthful work-head evidence, leave the
+   failure correction in the ledger working tree, and report the unknown or divergent heads. Never
+   create a chain of checkpoint-transport commits or claim final synchronization without equality.
 
 6. **Never force-push** (`--force` / `--force-with-lease`) unless the user explicitly asks for it.
 
