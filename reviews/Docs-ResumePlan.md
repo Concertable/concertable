@@ -15,7 +15,7 @@
 - [x] **WF1 — HIGH — correctness** — `plans/AGENTS.md:143`
   Lifecycle step 4 deletes the plan and ledger in the commit that completes the last locally verified phase, but the new ledger contract at lines 97–108 also requires recording later PR checks, merges, publications, and platform syncs as they happen. Those events necessarily occur after the completing commit, so `/resume-plan` loses its plan/ledger anchor during the delivery window and the promised exhaustive history cannot be written. Keep both artifacts until every delivery/package gate is terminal, then apply the close-out lifecycle, or define another durable post-phase ledger that the recovery skill discovers.
 
-- [ ] **WF2 — MEDIUM — correctness** — `.agents/skills/resume-plan/SKILL.md:15`
+- [x] **WF2 — MEDIUM — correctness** — `.agents/skills/resume-plan/SKILL.md:15`
   No-reference discovery enumerates all worktrees in step 2 but then inspects only the current worktree. A context-lost session reopened in the main checkout cannot discover a uniquely active plan in one of the repository's many feature worktrees; it falls back to the large set of plan files on `main` and asks for a path even when branch/PR/worktree evidence would identify the work. Inspect every listed worktree's branch, dirty plan/ledger files, branch commits, review artifacts, and PR, then select a unique candidate or report the remaining candidates with their paths.
 
 - [ ] **WF3 — MEDIUM — correctness** — `plans/AGENTS.md:105`
