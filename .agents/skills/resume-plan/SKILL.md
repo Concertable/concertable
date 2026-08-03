@@ -50,10 +50,13 @@ Give a compact status containing:
 
 Before handing off, write the immediate next action — with its prerequisite or gate — into the ledger's `## Next Steps` section so it is the durable source of truth, and confirm the plan points to it.
 
-Then provide exactly one resume prompt. Because the steps live in the ledger, the prompt is minimal — it points, it does not restate. Its first line must be:
+Then provide exactly one resume prompt, and it is ONLY the pointer — nothing plan-specific. Literally:
 
-`cd <absolute-worktree-path>`
+```
+cd <absolute-worktree-path>
+Read @plans/<PLAN>.md and @plans/<PLAN>_PROGRESS.md and do what its `## Next Steps` says.
+```
 
-The prompt must tell the next agent to read `AGENTS.md`, `plans/AGENTS.md`, the plan, and its progress ledger, verify the stated branch and current evidence, and follow the ledger's `## Next Steps`. Do not restate the steps in the prompt, offer multiple prompts, or ask whether to continue.
+No branch to verify, checkpoints, gates, commands, or steps in the prompt — every such specific lives in the ledger (its header + `## Next Steps`), never restated, so the prompt can't drift. Do not offer multiple prompts or ask whether to continue.
 
 If all plan work is genuinely complete and verified, state that it is complete and provide no invented continuation prompt. Apply the plan lifecycle rules for removing the completed plan and progress ledger.
