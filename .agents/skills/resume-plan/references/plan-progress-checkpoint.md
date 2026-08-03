@@ -21,7 +21,7 @@ current-summary section affected by the event:
 
 - worktree, branch, PR, and dependency or package gates;
 - current state and partial or uncommitted work that must be preserved;
-- exact next action, including the prerequisite that blocks it when applicable;
+- `## Next Steps` — the paste-ready next prompt (self-contained steps), including the prerequisite that blocks it when applicable;
 - completed work with commit or PR evidence;
 - verification commands and outcomes, tied to the code state they verified;
 - decisions, discoveries, blockers, and deviations.
@@ -109,11 +109,13 @@ end state; it does not replace any transition checkpoint that should already exi
 
 ## Report and hand off
 
-Report the workflow result only after the checkpoint is durable. If plan-managed work remains, end
-with exactly one self-contained prompt and no competing next-action prompt. Its first line must be:
+Report the workflow result only after the checkpoint is durable, having written the immediate next
+action into the ledger's `## Next Steps` section so it is the durable source of truth. If plan-managed
+work remains, end with exactly one prompt and no competing next-action prompt — it points to the
+ledger, it does not restate the steps. Its first line must be:
 
 `cd <absolute-worktree-path>`
 
 Name both the plan and ledger, require reading `AGENTS.md`, `plans/AGENTS.md`, the plan, and ledger,
-state the verified branch/PR, and direct the immediate next action with its prerequisite or gate. If
+state the verified branch/PR, and direct the next agent to follow the ledger's `## Next Steps`. If
 the lifecycle is terminal, follow the close-out rule and do not invent a continuation prompt.
