@@ -119,7 +119,10 @@ Each ledger keeps these current sections above its chronological event log:
 - completed work with commit or PR evidence;
 - verification and review state;
 - decisions, discoveries, blockers, and deviations;
-- **exact next action**, with any prerequisite that prevents it starting now.
+- **`## Next Steps`** — the paste-ready prompt for the next agent: the concrete step(s) to take now,
+  self-contained, with any prerequisite or blocking gate. This is the **single source of truth** for
+  what to do next; resume/handoff prompts point here instead of restating it, so a prompt can never
+  drift from reality. Keep it current at every checkpoint.
 
 Update the summary whenever an event changes it, then append the evidenced event to the log. Include
 enough commands, paths, identifiers, results, and reasoning to continue without the prior conversation;
@@ -233,10 +236,14 @@ point where the context becomes disposable. Don't carry unwritten state across a
 
 ## Plan handoff
 
-- Follow [`../PROMPTS.md`](../PROMPTS.md) after making the phase state durable as described above.
-- The prompt must name and require reading both the plan and its `_PROGRESS.md` companion.
+- Every plan `.md` carries a pointer near its top — "**Next steps live in
+  [`<STEM>_PROGRESS.md`](./<STEM>_PROGRESS.md) → `## Next Steps`**" — and holds no separate,
+  drift-prone next-action prose of its own.
+- Because the steps live in the ledger, a plan resume/handoff prompt is minimal: `cd <worktree>`, then
+  read the plan and its `_PROGRESS.md` and follow `## Next Steps`. Don't restate the steps in the
+  prompt — the ledger is the source of truth.
 - Use `/resume-plan` to recover plan-managed work, reconciling the plan and ledger against the worktree,
-  git, review, test, PR, package, and platform-sync state before producing the next prompt.
+  git, review, test, PR, package, and platform-sync state; it refreshes `## Next Steps` before handoff.
 - A completed and verified phase ends the turn after its handoff. Start the next phase only when Tommy
   explicitly names it and says to do it now.
 
