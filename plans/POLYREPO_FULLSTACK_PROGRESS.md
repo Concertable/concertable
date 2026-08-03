@@ -5,15 +5,15 @@
 - Branch: `Feature/FrontendBuildSeparation`
 - PR: review-fix PR not yet opened; Phase 1 PR [#301](https://github.com/Concertable/concertable/pull/301) merged
 - Dependency/package gates: `@concertable/shared@0.1.0-alpha.0.2129` is published and restorable; Phase 2 must not start until the review-fix PR lands
-- Last reconciled: 2026-08-03T14:15:44+01:00 from git, GitHub PR/run, and GitHub Packages evidence
+- Last reconciled: 2026-08-03 after verified work-head push to `origin/Feature/FrontendBuildSeparation`
 
 ## Current state
 
-Phases 0 and 1 are on `main` through PR #301. The existing local feature branch carried two later Phase 1 review-fix commits, `f57a4c504` and `0e3d8f5a6`, after its remote branch was deleted. Current `origin/main` at `92ee8483c` has been merged into this fresh isolated worktree. The conflict was resolved by preserving main's resume-plan/progress-ledger and worktree-identity rules while retaining the compatible E2E and review-policy changes. Against `origin/main`, the intended review-fix work changes only `.github/workflows/test.yml`, `AGENTS.md`, `plans/AGENTS.md`, and `reviews/AGENTS.md`, plus this reconstructed ledger.
+Phases 0 and 1 are on `main` through PR #301. The existing local feature branch carried two later Phase 1 review-fix commits, `f57a4c504` and `0e3d8f5a6`, after its remote branch was deleted. Current `origin/main` at `92ee8483c` has been merged into this fresh isolated worktree as `ffc7f7339`. The conflict was resolved by preserving main's resume-plan/progress-ledger and worktree-identity rules while retaining the compatible E2E and review-policy changes. Against `origin/main`, the intended review-fix work changes only `.github/workflows/test.yml`, `AGENTS.md`, `plans/AGENTS.md`, and `reviews/AGENTS.md`, plus this reconstructed ledger. The remote branch has been restored and its tip was verified equal to work head `ffc7f7339`.
 
 ## Exact next action
 
-Finish the review-fix delivery: commit the reconciled merge and ledger, push `Feature/FrontendBuildSeparation`, open a plain GitHub PR with the `full-e2e` label, and stop with Phase 2 gated on that PR landing.
+Open a plain GitHub PR from `Feature/FrontendBuildSeparation` to `main`, add the `full-e2e` label, verify the PR head, and stop with Phase 2 gated on that PR landing.
 
 ## Completed work
 
@@ -69,4 +69,11 @@ Finish the review-fix delivery: commit the reconciled merge and ledger, push `Fe
 - Action: Fetched `origin`, created the fresh isolated worktree, merged `origin/main` at `92ee8483c`, resolved the policy conflict, inspected the orphan read-only, reconstructed this ledger, and ran focused verification.
 - Evidence: worktree/branch status; merge parents `0e3d8f5a6` and `92ee8483c`; four-file intended diff; Git Bash syntax and stubbed-label checks; package and GitHub run queries.
 - Outcome: Main's resume/progress/worktree rules and the compatible review fixes coexist; verification is green.
-- Follow-up: Commit, push, open the full-E2E review-fix PR, and do not start Phase 2.
+- Follow-up: Push the reconciled work head, open the full-E2E review-fix PR, and do not start Phase 2.
+
+### 2026-08-03 — Review-fix work head pushed
+
+- Action: Pushed the reconciled work head and restored `origin/Feature/FrontendBuildSeparation` with upstream tracking.
+- Evidence: the starting remote branch did not exist; pushed range `f57a4c504..ffc7f7339`; after fetch, local `HEAD` and `origin/Feature/FrontendBuildSeparation` both resolved to `ffc7f7339ae1cdb94a8381418eb020a24e88f2f9`; no open PR existed.
+- Outcome: The verified review-fix work is published at `ffc7f7339`.
+- Follow-up: Open the plain GitHub PR, apply `full-e2e`, and verify its head before stopping.
