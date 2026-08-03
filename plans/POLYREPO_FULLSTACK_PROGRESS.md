@@ -3,17 +3,17 @@
 - Plan: `plans/POLYREPO_FULLSTACK.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\FrontendBuildSeparation`
 - Branch: `Feature/FrontendBuildSeparation`
-- PR: review-fix PR not yet opened; Phase 1 PR [#301](https://github.com/Concertable/concertable/pull/301) merged
+- PR: review-fix PR [#319](https://github.com/Concertable/concertable/pull/319) open; Phase 1 PR [#301](https://github.com/Concertable/concertable/pull/301) merged
 - Dependency/package gates: `@concertable/shared@0.1.0-alpha.0.2129` is published and restorable; Phase 2 must not start until the review-fix PR lands
-- Last reconciled: 2026-08-03 after verified work-head push to `origin/Feature/FrontendBuildSeparation`
+- Last reconciled: 2026-08-03 after PR #319 creation and fetch of `origin/main` at `d0fa851fa`
 
 ## Current state
 
-Phases 0 and 1 are on `main` through PR #301. The existing local feature branch carried two later Phase 1 review-fix commits, `f57a4c504` and `0e3d8f5a6`, after its remote branch was deleted. Current `origin/main` at `92ee8483c` has been merged into this fresh isolated worktree as `ffc7f7339`. The conflict was resolved by preserving main's resume-plan/progress-ledger and worktree-identity rules while retaining the compatible E2E and review-policy changes. Against `origin/main`, the intended review-fix work changes only `.github/workflows/test.yml`, `AGENTS.md`, `plans/AGENTS.md`, and `reviews/AGENTS.md`, plus this reconstructed ledger. The remote branch has been restored and its tip was verified equal to work head `ffc7f7339`.
+Phases 0 and 1 are on `main` through PR #301. The existing local feature branch carried two later Phase 1 review-fix commits, `f57a4c504` and `0e3d8f5a6`, after its remote branch was deleted. `origin/main` at `92ee8483c` was merged into this fresh isolated worktree as `ffc7f7339`. The conflict was resolved by preserving main's resume-plan/progress-ledger and worktree-identity rules while retaining the compatible E2E and review-policy changes. The remote branch and PR #319 were created at verified head `db92ad7f4` with `full-e2e`. A later fetch found `origin/main` advanced two commits to `d0fa851fa` through platform-sync PR #318, so PR #319 must be updated before delivery continues.
 
 ## Exact next action
 
-Open a plain GitHub PR from `Feature/FrontendBuildSeparation` to `main`, add the `full-e2e` label, verify the PR head, and stop with Phase 2 gated on that PR landing.
+Merge `origin/main` at `d0fa851fa` into `Feature/FrontendBuildSeparation`, re-run the focused verification, push and verify the updated PR #319 head, then stop with Phase 2 gated on that PR landing.
 
 ## Completed work
 
@@ -77,3 +77,10 @@ Open a plain GitHub PR from `Feature/FrontendBuildSeparation` to `main`, add the
 - Evidence: the starting remote branch did not exist; pushed range `f57a4c504..ffc7f7339`; after fetch, local `HEAD` and `origin/Feature/FrontendBuildSeparation` both resolved to `ffc7f7339ae1cdb94a8381418eb020a24e88f2f9`; no open PR existed.
 - Outcome: The verified review-fix work is published at `ffc7f7339`.
 - Follow-up: Open the plain GitHub PR, apply `full-e2e`, and verify its head before stopping.
+
+### 2026-08-03 — Review-fix PR opened; newer main observed
+
+- Action: Opened plain GitHub PR #319 and applied `full-e2e`, then fetched the base and inspected its live state.
+- Evidence: PR #319 was open at `db92ad7f47e484c2909185db09245dc2337064ed`, equal to the local and remote branch heads, with label `full-e2e`; initial `changes` and `instant-merge` checks passed while `build` was running. The subsequent fetch resolved `origin/main` to `d0fa851faad602b592e5886225941d58f6aeefc1`, two commits ahead through green platform-sync PR #318.
+- Outcome: The PR exists with the required E2E tier but is behind the newest base.
+- Follow-up: Merge the new main tip, verify, and update the PR head before handing off review/merge.
