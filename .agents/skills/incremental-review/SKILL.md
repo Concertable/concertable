@@ -74,7 +74,11 @@ Replace the existing marker line in place (exactly one in the file) with current
 **Reviewed up to commit:** `<full-HEAD-sha>`  _(<today's ISO date>)_
 ```
 
-## Step 5 — Report
+## Step 5 — Checkpoint and report
+
+Before any report or stop, including an empty or invalid range, if this workflow is plan-managed,
+read and apply
+[the shared plan-progress checkpoint](../resume-plan/references/plan-progress-checkpoint.md).
 
 Concise: range reviewed (`<short-start>..<short-head>`, N commits), new findings by lens/severity (or "none"), file appended to, new watermark stamped. Point at the file. No "Generated with Codex" trailers.
 

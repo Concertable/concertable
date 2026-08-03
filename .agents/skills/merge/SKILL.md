@@ -191,6 +191,10 @@ This skill is **Concertable-specific**. It encodes how this repo actually merges
 
 ## Final summary
 
+Before any report or stop, including a failed check or delivery gate, if this workflow is
+plan-managed, read and apply
+[the shared plan-progress checkpoint](../resume-plan/references/plan-progress-checkpoint.md).
+
 One short report: the PR that merged (number + merge commit), whether E2E ran (queue) or was skipped
 (`--admin`, and why), that `main` is synced, and that the branch — **and its worktree, if the work was
 done in one** — is cleaned up. Then the

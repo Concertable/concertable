@@ -58,3 +58,6 @@ gh pr create
 ```
 
 Personal repo — no Azure DevOps, no `AB#`, no assignee.
+
+Before any report or stop, if this work is plan-managed, read and apply
+[the shared plan-progress checkpoint](../resume-plan/references/plan-progress-checkpoint.md).

@@ -7,6 +7,9 @@ description: Recover plan-managed work after chat or session context is lost. Us
 
 Reconstruct the work from durable evidence, correct stale progress documentation, report the current state, and finish with exactly one paste-ready prompt for the next actionable step.
 
+For the mandatory checkpoint used by repository workflows, read and apply
+[the plan-progress checkpoint](references/plan-progress-checkpoint.md).
+
 ## Locate the work
 
 1. Read the repository `AGENTS.md` and `plans/AGENTS.md` completely.

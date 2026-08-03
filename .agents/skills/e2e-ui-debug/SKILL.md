@@ -72,6 +72,10 @@ If invoked with no arguments, run Step 0 then the full suite (Step 1) to discove
 
 ## Step 0 — Pre-flight check
 
+Before any report or stop, including an environment or startup failure, if this workflow is
+plan-managed, read and apply
+[the shared plan-progress checkpoint](../resume-plan/references/plan-progress-checkpoint.md).
+
 Before running anything, verify Docker with the real gate. **`docker ps` answering is NOT proof Docker is healthy** — a half-started/flapping engine keeps `docker ps` (and `docker run hello-world`, and a bare TCP connect) working while host→container forwarding of real bytes for NEW containers is dead, and the suite then dies at SQL fixture startup with `pre-login handshake` resets:
 
 ```powershell

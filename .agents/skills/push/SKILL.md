@@ -20,7 +20,8 @@ Push the current branch to its remote. The happy path is one command; the job is
      git push -u origin <current-branch>
      ```
 
-2. **If it succeeds**, report it in one line — branch, remote, and how many commits moved (e.g. `Pushed 3 commits to origin/main`). Done.
+2. **If it succeeds**, continue to Final summary, checkpoint it when plan-managed, then report it in
+   one line — branch, remote, and how many commits moved (e.g. `Pushed 3 commits to origin/main`).
 
 3. **If it fails**, read the error and fix the actual cause, then push again. Common cases:
    - **Rejected, remote has new commits** (`fetch first` / non-fast-forward): `git pull --rebase`, resolve any conflicts, then push. If a rebase isn't safe or conflicts are messy, stop and tell the user rather than force-pushing.
@@ -32,6 +33,9 @@ Push the current branch to its remote. The happy path is one command; the job is
 4. **Never force-push** (`--force` / `--force-with-lease`) unless the user explicitly asks for it.
 
 ## Final summary
+
+Before any report or stop, including a blocked push, if this workflow is plan-managed, read and apply
+[the shared plan-progress checkpoint](../resume-plan/references/plan-progress-checkpoint.md).
 
 After the push lands (or if you genuinely can't make it land), tell the user in plain terms:
 - **If it went straight through:** one line, nothing more.

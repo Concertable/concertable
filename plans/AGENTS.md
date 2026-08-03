@@ -108,6 +108,11 @@ verification, committing, opening or updating a PR, merging, publishing, and pla
 that another artifact or skill records part of the event does not make the progress update someone
 else's later close-out.
 
+The mandatory procedure is
+[`resume-plan/references/plan-progress-checkpoint.md`](../.agents/skills/resume-plan/references/plan-progress-checkpoint.md).
+Every repository workflow skill named above must invoke it before any report or stop. Apply it directly
+for plan-aware implementation or plain `gh pr create` work that has no repository skill wrapper.
+
 Each ledger keeps these current sections above its chronological event log:
 
 - plan, absolute worktree, branch, PR, and relevant dependency or package gates;
