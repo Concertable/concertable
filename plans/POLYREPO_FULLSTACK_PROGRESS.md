@@ -5,15 +5,15 @@
 - Branch: `Feature/FrontendBuildSeparation`
 - PR: review-fix PR [#319](https://github.com/Concertable/concertable/pull/319) open; Phase 1 PR [#301](https://github.com/Concertable/concertable/pull/301) merged
 - Dependency/package gates: `@concertable/shared@0.1.0-alpha.0.2129` is published and restorable; Phase 2 must not start until the review-fix PR lands
-- Last reconciled: 2026-08-03 after PR #319 creation and fetch of `origin/main` at `d0fa851fa`
+- Last reconciled: 2026-08-03 after verified latest-main work-head push to PR #319
 
 ## Current state
 
-Phases 0 and 1 are on `main` through PR #301. The existing local feature branch carried two later Phase 1 review-fix commits, `f57a4c504` and `0e3d8f5a6`, after its remote branch was deleted. `origin/main` at `92ee8483c` was merged into this fresh isolated worktree as `ffc7f7339`. The conflict was resolved by preserving main's resume-plan/progress-ledger and worktree-identity rules while retaining the compatible E2E and review-policy changes. The remote branch and PR #319 were created at verified head `db92ad7f4` with `full-e2e`. A later fetch found `origin/main` advanced two commits to `d0fa851fa` through platform-sync PR #318, so PR #319 must be updated before delivery continues.
+Phases 0 and 1 are on `main` through PR #301. The existing local feature branch carried two later Phase 1 review-fix commits, `f57a4c504` and `0e3d8f5a6`, after its remote branch was deleted. `origin/main` at `92ee8483c` was merged into this fresh isolated worktree as `ffc7f7339`; a later platform-sync advance to `d0fa851fa` was merged as work head `1ba1bb1f0`. The conflict was resolved by preserving main's resume-plan/progress-ledger and worktree-identity rules while retaining the compatible E2E and review-policy changes. PR #319 is open with `full-e2e`; after fetch, the local, remote, and PR heads were all verified at `1ba1bb1f0e684c533ad3cecb7b7bc83ccdef3ca3`.
 
 ## Exact next action
 
-Merge `origin/main` at `d0fa851fa` into `Feature/FrontendBuildSeparation`, re-run the focused verification, push and verify the updated PR #319 head, then stop with Phase 2 gated on that PR landing.
+Run `/code-review` for PR #319 against current `origin/main`. If the review is clear and required head checks pass, hand off `/merge`; Phase 2 remains blocked until PR #319 lands.
 
 ## Completed work
 
@@ -31,6 +31,7 @@ Merge `origin/main` at `d0fa851fa` into `Feature/FrontendBuildSeparation`, re-ru
 - The changed `Classify changed files` shell block from `.github/workflows/test.yml` passed Git Bash syntax validation.
 - A focused stubbed-label test proved the new failure path exits 1 and emits `Could not retrieve labels for PR #301`; a successful `full-e2e` label fetch exits 0.
 - `git diff --name-only origin/main` before adding this ledger listed only `.github/workflows/test.yml`, `AGENTS.md`, `plans/AGENTS.md`, and `reviews/AGENTS.md`.
+- After merging latest `origin/main` at `d0fa851fa`, the same diff, Git Bash syntax, fail-closed, and successful-label checks passed; the branch was zero commits behind and the PR diff remained the four review-fix files plus this ledger.
 
 ## Reviews
 
@@ -84,3 +85,10 @@ Merge `origin/main` at `d0fa851fa` into `Feature/FrontendBuildSeparation`, re-ru
 - Evidence: PR #319 was open at `db92ad7f47e484c2909185db09245dc2337064ed`, equal to the local and remote branch heads, with label `full-e2e`; initial `changes` and `instant-merge` checks passed while `build` was running. The subsequent fetch resolved `origin/main` to `d0fa851faad602b592e5886225941d58f6aeefc1`, two commits ahead through green platform-sync PR #318.
 - Outcome: The PR exists with the required E2E tier but is behind the newest base.
 - Follow-up: Merge the new main tip, verify, and update the PR head before handing off review/merge.
+
+### 2026-08-03 — PR updated to latest main
+
+- Action: Merged `origin/main` at `d0fa851fa`, re-ran focused verification, and pushed the updated work head to PR #319.
+- Evidence: starting remote and PR head `db92ad7f47e484c2909185db09245dc2337064ed`; pushed work head `1ba1bb1f0e684c533ad3cecb7b7bc83ccdef3ca3`; after fetch, local `HEAD`, `origin/Feature/FrontendBuildSeparation`, and PR `headRefOid` all equalled `1ba1bb1f0`; PR label remained `full-e2e`; `HEAD..origin/main` count was zero.
+- Outcome: PR #319 is current with the observed base and contains only the intended review fixes plus this ledger.
+- Follow-up: Review PR #319, then merge it only after review and required checks are green; Phase 2 waits for the merge.
