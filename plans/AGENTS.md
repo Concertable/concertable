@@ -237,8 +237,8 @@ point where the context becomes disposable. Don't carry unwritten state across a
 ## Plan handoff
 
 - Every plan `.md` carries a pointer near its top — "**Next steps live in
-  [`<STEM>_PROGRESS.md`](./<STEM>_PROGRESS.md) → `## Next Steps`**" — and holds no separate,
-  drift-prone next-action prose of its own.
+  @plans/<STEM>_PROGRESS.md → `## Next Steps`**" (an `@` reference, so tagging the plan pulls the
+  ledger) — and holds no separate, drift-prone next-action prose of its own.
 - Because the steps live in the ledger, a plan resume/handoff prompt is minimal: `cd <worktree>`, then
   read the plan and its `_PROGRESS.md` and follow `## Next Steps`. Don't restate the steps in the
   prompt — the ledger is the source of truth.
