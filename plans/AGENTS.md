@@ -40,7 +40,7 @@ A refactor isn't finished when the convenient half lands. If a repo/package boun
 multiple PRs (e.g. a Kernel change and the B2B change that depends on it), do them back-to-back —
 but the plan stays open until **all** of them land and the codebase is in sync again. Merging the
 B2B PR and calling the plan done while Kernel still speaks the old shape is the thing to never do.
-Don't `git rm` the plan (Lifecycle 4) until that final synced state is in.
+Don't `git rm` the plan (Lifecycle 5) until that final synced state is in.
 
 ## Use the fewest safe merges
 
@@ -130,8 +130,13 @@ PR/check state, and package gates. Create `<NAME>_PROGRESS.md` with an explicitl
 "reconstructed baseline" containing only verifiable facts; do not invent missing history. All future
 progress goes into that ledger.
 
-The ledger is working state, not a permanent report. Delete it with its plan when the final phase is
-complete and verified, or when the plan is superseded or rejected. Git history remains the archive.
+The ledger is working state, not a permanent report. Completing and verifying the final local phase
+does **not** close it while delivery is still live. Keep the plan and ledger discoverable until every
+required review and finding, commit, verification, PR/check/merge, publication, dependency, and
+platform-sync gate is terminal. Record the final gate's outcome and evidence before deleting both
+artifacts. A plan with no later delivery or package gates can become terminal in its final phase
+commit. A superseded or rejected plan closes immediately under Lifecycle 6. Git history remains the
+archive.
 
 ## Lifecycle
 
@@ -140,33 +145,40 @@ complete and verified, or when the plan is superseded or rejected. Git history r
 3. **Check off / strike the shipped phase in the plan and update the progress ledger, in the same commit as the work.** A
    partially-done plan stays; only the outstanding work should remain un-ticked, so the next reader
    sees exactly what's left.
-4. **Delete the plan and its progress ledger** (`git rm`) in the commit that completes its *last* phase — never defer deletion
-   to a later cleanup pass.
-5. A plan **and its progress ledger** superseded by a newer plan, or describing a **rejected** design, are deleted the moment
+4. **Keep both artifacts after the last local phase while delivery is live.** Check off the phase and
+   make the ledger's exact next action the review, fix, PR, merge, publication, dependency, or
+   platform-sync gate that now owns progress. Continue recording every transition; local completion
+   is not lifecycle completion.
+5. **Close out only after the entire lifecycle is terminal.** Record the final gate's outcome and
+   evidence, make that ledger checkpoint durable, then delete the plan and ledger together (`git rm`)
+   in the following close-out change. When the final phase has no later delivery or package gates,
+   that phase's completing commit may perform the close-out.
+6. A plan **and its progress ledger** superseded by a newer plan, or describing a **rejected** design, are deleted the moment
    that's decided — no tombstones.
 
-### The trap that ships a finished plan as rot — check `git status` before the completing commit
+### The trap that ships a terminal plan as rot — check `git status` before the close-out change
 
-Lifecycle 4 assumes the plan is already a **tracked** file you `git rm`. The case that slips through is a
+Lifecycle 5 assumes the plan is already a **tracked** file you `git rm`. The case that slips through is a
 plan **written and fully implemented in the same session** (a "fresh-context implementation plan"): it
 exists only as an **untracked** working-tree file, so a blanket `git add -A` / `git add .` before the
-completing commit **stages it as a new file** — the exact opposite of deleting it — and it ships inside
+close-out change **stages it as a new file** — the exact opposite of deleting it — and it ships inside
 the PR as rot. This is precisely how `DISPLAYNAME_CONST_CONSOLIDATION.md` reached `main`'s PR: born and
 completed in one commit, swept in as an addition instead of never being committed.
 
-So, **before any commit that completes plan work, run `git status --short plans/` and eyeball it:**
-- a plan finished by this commit must **not** appear as `A`/`??` (born-and-done → never stage it, or `git rm`);
-- a pre-existing tracked plan whose **last** item this commit lands must appear as `D`, not survive untouched
+So, **before any change that closes a terminal plan, run `git status --short plans/` and eyeball it:**
+- a plan closed by this change must **not** appear as `A`/`??` (born-and-done → never stage it, or `git rm`);
+- a pre-existing tracked plan whose **final lifecycle gate is terminal** must appear as `D`, not survive untouched
   (that second miss is how `HTTP_GUARD_CONSOLIDATION.md` lingered after its arch-test shipped).
-- the plan's `_PROGRESS.md` companion must also disappear; it must not survive or be added by the completing commit.
+- the plan's `_PROGRESS.md` companion must also disappear; it must not survive or be added by the close-out change.
 
-The rule is mechanical: after the completing commit, no finished plan is in the tree — as an addition or a survivor.
+The rule is mechanical: after the close-out change, no terminal plan is in the tree — as an addition or a survivor.
 
 ## Doc-only close-out — never open its own PR; let it ride the next change
 
-Ideally the plan deletion + blocker tick land **inside the feature's final commit** (Lifecycle 4). But
-sometimes the plan has to outlive the merge — e.g. it was the live working doc while the PR was still
-being debugged in the merge queue — so the close-out only happens *after* the feature already merged.
+If no later delivery or package gate exists, the plan deletion + blocker tick can land **inside the
+feature's final commit** (Lifecycle 5). Normally the plan must outlive that commit and often the merge
+itself while reviews, checks, publication, or platform sync remain live. Record the final gate outcome
+in the ledger and make that checkpoint durable before applying the close-out after the feature merged.
 When that happens, **do not open a standalone PR for it.** Deleting a completed plan and ticking a
 blocker are doc-only and cannot break a build or another PR (root `CLAUDE.md`: docs are exempt from
 branch hygiene). Spinning up a branch + PR + full merge-queue **E2E cycle (~20-30 min)** for a two-file
@@ -202,10 +214,10 @@ A phase isn't done when the code is green; it's done when **nothing important li
 context**. After the phase's commit lands and its gate passes, get all durable state written down so
 the conversation can be thrown away without losing anything:
 
-- **Plan markdown** — checked off / struck per the Lifecycle above (or `git rm`'d if it was the last
-  phase). The next reader should see exactly what's left and nothing that already shipped.
+- **Plan markdown** — checked off / struck per the Lifecycle above (or `git rm`'d only when the whole
+  lifecycle is terminal). The next reader should see exactly what's left and which delivery gate is live.
 - **Progress markdown** — current through the last material event, with review and verification evidence
-  plus one exact next action (or `git rm`'d with a completed plan).
+  plus one exact next action (or `git rm`'d with a terminal plan).
 - **Memory** — if the phase changed a decision, convention, or fact worth carrying forward, update
   the relevant `CLAUDE.md` / `TECH_DEBT.md` so it survives independent of the chat.
 - Anything else you'd be annoyed to re-derive (a command that worked, a gotcha hit) belongs in the
