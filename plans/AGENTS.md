@@ -120,7 +120,7 @@ Each ledger keeps these current sections above its chronological event log:
 - completed work with commit or PR evidence;
 - verification and review state;
 - decisions, discoveries, blockers, and deviations;
-- **exact next action that advances the work**, including resolving any unmet prerequisite.
+- **exact next action**, with any prerequisite that prevents it starting now.
 
 Update the summary whenever an event changes it, then append the evidenced event to the log. Include
 enough commands, paths, identifiers, results, and reasoning to continue without the prior conversation;
@@ -269,9 +269,7 @@ state is written:
    The `cd` must sit **inside the prompt text the user pastes**, not on a line above it — a prompt is
    pasted as one blob, so a path parked outside it is simply lost.
 
-   **Hand over exactly ONE prompt: the immediate action that advances the work.** When a gate is unmet,
-   point the prompt at resolving it in the blocker-owning worktree, and include the original worktree
-   plus the continuation it unlocks so the next handoff routes back. A later phase gated behind a merge,
+   **Hand over exactly ONE prompt: the immediate next action.** A later phase gated behind a merge,
    publish, or platform-sync is named as a *gate* ("Phase 2 waits on the sync"), never handed over as a
    second ready-to-run prompt. Two prompts read as a menu, and the obvious way to "save time" on a menu
    is to run both at once — which for a publish-gated phase means restoring a package version that isn't
