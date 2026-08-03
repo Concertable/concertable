@@ -27,6 +27,8 @@ Decide and act on reversible work (doc/plan edits, isolated commits, retrying a 
 
 **Before starting any work, create a relevant branch for it if you're not already on one** — never commit to `main` or an unrelated branch.
 
+**Worktree identity gate — before any edit.** State whether the task matches the current branch/PR directly or is branch-local work because it changes code not yet in `main`; verify service ownership, the dirty paths, and other worktrees rather than matching on a shared refactor name. If neither basis holds or anything contradicts it, **STOP and ask**.
+
 **Fetch first, and branch from `origin/main` — never from local `main`.** Local `main` silently
 drifts behind, and branching off it builds and tests everything against a stale tree. That is how work
 already merged gets reinvented (a hand-rolled `IScoped` test refactor was written here against a
