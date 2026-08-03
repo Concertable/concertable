@@ -64,6 +64,39 @@ checkpoint it or create another success commit. If the push fails or cannot be v
 diagnosis, record the failed, rejected, or unknown outcome and exact known heads in a local failure
 checkpoint; do not push merely to publish that failure record.
 
+### Remote-transition protocol
+
+Long-running delivery workflows checkpoint a material remote transition immediately after observing
+it, before the next wait, mutation, checkout, or early stop. Resolve the plan once at workflow start
+and retain its absolute worktree, source branch, PR number, and source PR `headRefOid` as the delivery
+identity. Reconcile those values at every checkpoint.
+
+When the transition does not require changing the source PR head, update the plan and ledger, stage
+only those files, and create a local recovery commit. This is an observation checkpoint:
+
+- never push it merely to publish the observation;
+- never amend, push, or otherwise mutate a source PR that is queued, locked, merged, or closed;
+- keep operating on the PR by number and verified remote `headRefOid`, not by assuming local `HEAD`
+  is still the delivery head; and
+- stack later observation checkpoints on the local branch so the original worktree remains the
+  recovery anchor through publication and platform sync.
+
+A terminal green PR-check checkpoint made immediately before queue admission is intentionally local
+only. Verify every commit after the PR's `headRefOid` changes only the active plan and ledger, verify
+the PR head still equals the checked OID, then enqueue that exact PR head. On resume, this documented
+checkpoint-only tail is not unpushed implementation work and must not be pushed, reset, or used to
+block queue monitoring. If any commit in the tail changes another path, stop and record the
+contradictory local state.
+
+If the queue ejects the PR and a code fix is required, checkpoint the failure first. Once the PR is
+confirmed open and unlocked, commit the fix after the local checkpoint tail and use the compound push
+protocol above to publish the complete new head. A platform-sync fix belongs to the sync PR's own
+branch or worktree: checkpoint its discovery and state in the source plan's original worktree, but
+never push the source plan checkpoint to the sync PR or use it to mutate the merged source PR.
+
+The final report still requires a full reconciliation checkpoint. That hook verifies and records the
+end state; it does not replace any transition checkpoint that should already exist.
+
 ## Report and hand off
 
 Report the workflow result only after the checkpoint is durable. If plan-managed work remains, end

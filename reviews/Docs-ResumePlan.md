@@ -32,5 +32,6 @@ No new issues found in `6d339e5b..c8dbc6b`. The range fixes WF1 and WF2; WF3 rem
   A successful push now runs the checkpoint afterward, and a remote event must create an immediate local checkpoint commit, but the push workflow never pushes that new commit. It can therefore report success while `HEAD` is ahead of the PR head, so the ledger evidence is absent from the PR and the merge precondition immediately fails. Make the checkpoint commit the final pushed head, verify `origin/<branch>` equals `HEAD`, and avoid recursively logging that final synchronization push.
   Fixed by preparing one compound push checkpoint before the remote mutation, including that commit in the authorized push, and verifying remote-tracking and PR-head equality without recursively checkpointing the synchronization leg.
 
-- [ ] **WF5 — MEDIUM — correctness** — `.agents/skills/merge/SKILL.md:194`
+- [x] **WF5 — MEDIUM — correctness** — `.agents/skills/merge/SKILL.md:194`
   The merge hook runs only immediately before the final report. Queue admission, check failure, merge completion, publication, and platform-sync are long-lived material transitions, so a lost context before the final summary still loses the exact live gate the ledger is meant to preserve. Checkpoint each material transition when it occurs, including before early stops, then reconcile once more before the final report.
+  Fixed by immediate merge-transition checkpoints plus a remote-transition protocol that keeps observation commits durable without mutating a queued or merged PR head.

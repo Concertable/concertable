@@ -35,6 +35,23 @@ This skill is **Concertable-specific**. It encodes how this repo actually merges
 
 ## Steps
 
+### Transition checkpoints
+
+For plan-managed work, resolve the plan and ledger before step 0 and retain their absolute worktree,
+source branch, PR number, and remote `headRefOid` as the delivery identity. Apply
+[the shared plan-progress checkpoint](../resume-plan/references/plan-progress-checkpoint.md)
+immediately after every material transition below, before the next wait, mutation, checkout, or
+early stop. Unchanged polling observations do not need new checkpoints.
+
+Checkpoint review/preflight readiness or blockers; PR discovery; dirty, uncommitted, unpushed,
+remote-divergent, or base-stale state; branch update, verification, and compound-push results;
+terminal PR checks; the E2E-tier and final labels; queue admission, rejection, ejection, check failure,
+timeout, or green-but-unadmitted state; merge completion; main sync and branch cleanup; publication
+discovery and terminal state when `api/**` changed; and platform-sync discovery, checks, fixes, pushes,
+and merge. Record cancellations, contradictions, and no-op outcomes too. Use the shared push protocol
+for an authorized source-head update and its remote-transition protocol for observations after checks
+or queueing. Never push a checkpoint-only local tail to a queued, locked, merged, or closed PR.
+
 0. **Code review first.** Before querying, pushing or merging a PR, confirm the implementation has been
    reviewed. If not, stop and hand off a ready-to-paste `/code-review` prompt, or `/big-review` when the
    branch is too large for one review pass, naming the exact worktree and branch. If code commits were
@@ -53,6 +70,9 @@ This skill is **Concertable-specific**. It encodes how this repo actually merges
    - If `git status` shows uncommitted changes, or the local branch is ahead of its remote, **stop** and
      tell the user to commit/push first (or do it with the `commit` / `push` skills if they ask). Don't
      merge a PR that's missing local work.
+     A local tail created by the shared remote-transition protocol is the sole exception: verify every
+     commit after the PR `headRefOid` changes only the active plan and ledger, preserve it, and continue
+     against the recorded remote PR head. Any other ahead or dirty state remains a blocker.
    - **`git status -sb` is NOT a main check.** Its `[ahead N, behind M]` compares to the branch's *own*
      remote only — a branch can read "in sync with origin/<branch>" while being dozens of commits behind
      `main`. Check drift vs main explicitly:
@@ -86,6 +106,9 @@ This skill is **Concertable-specific**. It encodes how this repo actually merges
    - **If any check failed:** do **not** merge. Report which job failed and route to the matching debug
      skill (`integration-debug` for unit/integration, `e2e-api-debug` / `e2e-ui-debug` for E2E, or read
      the failing job's log for `build`/`carve-*`). Drive it green, push, and re-run this skill.
+   - Checkpoint the complete terminal check set against the exact remote `headRefOid` before routing a
+     failure or enqueueing. A green observation checkpoint is local-only: verify the PR head still
+     equals the checked OID and enqueue that remote head, not the newer local checkpoint commit.
 
 4. **Enqueue into the merge queue (the default — this is what runs E2E).**
    - **This skill is the single source of truth for the E2E tier. Full E2E is the default.**
@@ -117,6 +140,9 @@ This skill is **Concertable-specific**. It encodes how this repo actually merges
    ```
    gh pr merge <n> --merge --auto
    ```
+   - Verify and checkpoint actual queue admission for the recorded PR and remote `headRefOid`. If
+     admission fails or the head changed, checkpoint the outcome and stop; do not push the local
+     observation tail or silently enqueue a different head.
    - **No `--delete-branch`** (the queue rejects it).
    - `--auto` only *enqueues*. Now **wait for it to actually land** — the queue runs `e2e-api-tests` +
      `e2e-ui-tests` + carves on the merge group and merges only if green. Poll patiently (E2E is slow;
@@ -130,9 +156,14 @@ This skill is **Concertable-specific**. It encodes how this repo actually merges
      merge-queue check fails. Treat it exactly like a red suite — enter `e2e-api-debug` / `e2e-ui-debug`,
      fix the real bug, push, and re-run this skill. Do **not** fall back to `--admin` to force it past a
      red E2E — that defeats the entire gate.
+     Checkpoint the failing merge-group run, jobs, ejected state, and follow-up before debugging. Only
+     after the PR is confirmed open and unlocked may a compound fix push create a new remote head.
    - **`--admin` override (only when the user explicitly asked to skip the queue):**
      `gh pr merge <n> --merge --admin` merges immediately with **no E2E**. Verify with
      `gh pr view <n> --json state,mergeCommit`.
+   - Checkpoint closed-without-merge, failed checks, sustained green-but-unadmitted, and timeout states
+     before stopping. On merge, immediately checkpoint the merge commit, method, E2E outcome, and
+     source PR head before switching worktrees or syncing main.
 
 5. **Return to a clean, up-to-date main.**
    ```
@@ -168,7 +199,12 @@ This skill is **Concertable-specific**. It encodes how this repo actually merges
      ```
      gh pr diff <n> --name-only | grep -q '^api/' && echo "sync will fire" || echo "no sync"
      ```
-   - **If it did:** the sync PR opens within a few minutes. Wait for it, then poll ITS checks. A pin
+   - **If `api/**` changed:** find the `Publish packages` run caused by the merge commit. Checkpoint its
+     run ID/URL when discovered and its terminal conclusion and published version. A failed, cancelled,
+     missing, or timed-out publication is a checkpointed early stop; do not wait for a sync PR that
+     cannot open. If no `api/**` path changed, checkpoint the evidenced no-publication/no-sync outcome.
+   - **If publication succeeded:** the sync PR opens within a few minutes. Checkpoint its number, URL,
+     branch, version, and initial state when discovered, then poll ITS checks. A pin
      bump is package-only, so E2E no-ops — the gate is `build` + `unit` + `integration`, usually a few
      minutes (prefer the `Monitor` tool over busy-waiting):
      ```
@@ -179,7 +215,8 @@ This skill is **Concertable-specific**. It encodes how this repo actually merges
      while true; do out=$(gh pr checks "$sp" 2>&1);
        echo "$out" | awk -F'\t' '$2=="pending"' | grep -q . || { echo "TERMINAL"; break; }; sleep 30; done
      ```
-   - **Green** → it auto-merges; confirm `MERGED`, report the new version, done.
+   - **Green** → checkpoint the terminal checks, then confirm auto-merge and immediately checkpoint
+     the sync merge commit and new version.
    - **Red** → **do not walk away.** This is a breaking platform change surfacing at exactly the
      consumers that must migrate. Read the failing `build` log (`gh run view --job <id> --log`), find
      the broken consumer(s), and **migrate them IN the sync PR** — now legal, the version is on the
@@ -188,12 +225,17 @@ This skill is **Concertable-specific**. It encodes how this repo actually merges
      body's own instruction — the skill just guarantees someone actually does it instead of leaving it
      red.) The build job may report only the first broken file; **build the whole `.slnx` locally**, a
      namespace/shape move usually stranded several consumers, not one.
+     Checkpoint the red checks and broken consumers before editing, then the fix, full build,
+     sync-branch push, replacement checks, and merge as each occurs. Work on the sync branch in its own
+     checkout; never push the source plan's recovery commits to either PR.
 
 ## Final summary
 
 Before any report or stop, including a failed check or delivery gate, if this workflow is
 plan-managed, read and apply
-[the shared plan-progress checkpoint](../resume-plan/references/plan-progress-checkpoint.md).
+[the shared plan-progress checkpoint](../resume-plan/references/plan-progress-checkpoint.md) once more
+as a final reconciliation hook. Verify the durable ledger agrees with the worktree, source PR head,
+queue/merge state, publication, and platform sync. This does not replace the immediate checkpoints.
 
 One short report: the PR that merged (number + merge commit), whether E2E ran (queue) or was skipped
 (`--admin`, and why), that `main` is synced, and that the branch — **and its worktree, if the work was
