@@ -12,9 +12,8 @@ complete and its gate has passed (build green + the affected tests), **commit it
 Committing is a local, reversible checkpoint; only `push` waits for Tommy's explicit go-ahead
 (**commit ≠ push**).
 
-This rule is **not** scoped to phase boundaries, to the "Before a clear" handoff below, or to any
-other ritual — it is standing and applies to *every* finished, verified chunk: a phase, a bug fix, a
-refactor, an investigation's output, a doc close-out. Reading the commit rule as conditional on
+This rule is **not** scoped to phase boundaries or handoffs; it applies to *every* finished, verified
+chunk: a phase, a bug fix, a refactor, an investigation's output, a doc close-out. Reading the commit rule as conditional on
 handing off / clearing is exactly the misread that produces the failure below.
 
 **"I've left it uncommitted so you can look at it first" is the anti-pattern, not the courtesy:**
@@ -231,71 +230,6 @@ the conversation can be thrown away without losing anything:
 Most of the time the context is then **compacted** (summarized, work continues) — but the same prep
 makes it safe to **clear** (start fresh) instead. Either way, treat the end of every phase as the
 point where the context becomes disposable. Don't carry unwritten state across a phase boundary.
-
-## Before a clear — hand off a resume prompt
-
-When the work is fully done for now, or the user says they'll clear, do these things after the durable
-state is written:
-
-1. **Commit the completed phase FIRST** — per the standing rule at the top of this file ("Commit
-   finished work the instant its gate goes green"), with the plan check-off in the same commit
-   (Lifecycle 3). By the time you reach a handoff this should already be done; if anything finished is
-   still sitting in the working tree, that rule was missed, not deferred to here.
-2. **Prepare for clear** — confirm the plan markdown, progress ledger, `CLAUDE.md`/`TECH_DEBT.md`, and commit messages
-   hold everything; the chat must be safe to throw away.
-3. **Give the user a resume prompt to paste after `/clear`.** Assume zero context: name the **working
-   directory** (this repo runs many parallel worktrees — the branch name alone doesn't say which tree to
-   `cd` into, so give the absolute path: the main checkout, or the sibling `…worktrees/<Branch>`), the
-   plan and progress files, the branch/PR, and the exact next step. Tell the next agent to read both
-   files before acting. Keep it to a few lines.
-4. **Before any implementation PR is merged, hand off a ready-to-paste `/code-review` prompt in the
-   same turn, or `/big-review` when the branch is too large for one review pass.** Review once per PR,
-   not once per numbered plan step or commit. The prompt must name the exact worktree path and branch.
-   If code commits are added after review, run `/incremental-review` before merge.
-
-   **The resume prompt's first line MUST be the exact directory to `cd` into, before anything else.**
-   This applies to the main checkout and every separate worktree. A `/clear` (or a brand-new
-   session) reopens in *whatever directory the last session was rooted in*. When the branch lives in a
-   separate worktree that's routinely the **wrong** one: a resume prompt naming only the plan and the
-   branch lands the paste in the wrong worktree on the wrong branch, and git then **won't** let you
-   check the right branch out (it's already checked out in its own worktree) — so the whole handoff
-   silently derails. Naming the branch is **not** enough; name the **directory**. Shape:
-
-   > `cd <absolute worktree path>` — then: read `plans/<PLAN>.md` and `plans/<PLAN>_PROGRESS.md`, branch `<Type>/<Name>`, next step: …
-
-   Check first: run `git worktree list`, resolve the branch's exact worktree, and lead with that absolute
-   `cd` path. Never assume a new session opens in the intended checkout.
-
-   The `cd` must sit **inside the prompt text the user pastes**, not on a line above it — a prompt is
-   pasted as one blob, so a path parked outside it is simply lost.
-
-   **Hand over exactly ONE prompt: the immediate next action.** A later phase gated behind a merge,
-   publish, or platform-sync is named as a *gate* ("Phase 2 waits on the sync"), never handed over as a
-   second ready-to-run prompt. Two prompts read as a menu, and the obvious way to "save time" on a menu
-   is to run both at once — which for a publish-gated phase means restoring a package version that isn't
-   on the feed yet (`NU1101`). The gate exists precisely because the two can't overlap.
-
-**The trigger is mechanical — not a judgment call.** The moment you finish a discrete chunk of work
-(a plan designed, a phase landed, a question fully answered) and your next sentence *would* be
-"Want me to start X?" / "Shall I do the next phase?" / "…or leave it as-is?" — **that question IS the
-trigger.** Do not send it. Write the durable state and hand off the resume prompt in the **same
-turn**, unprompted. You do not wait for the user to say "I'll clear now" — finishing the work is the
-signal. Asking whether to continue instead of handing off is the exact anti-pattern this section
-exists to kill: the plan and progress ledger already record what's next, so the honest move is to
-hand off, not to ask.
-
-**A completed + verified phase is a HARD STOP — end the turn on the resume prompt.** After you hand off,
-do **not** begin the next phase in the same session — not even when asked — **unless the user explicitly
-names the next phase AND says to do it now, in this session.** Everything short of that is a stop:
-
-- A vague *"why are we stopping?"* / *"aren't we continuing?"* / *"keep going"* / *"yeah"* is a request
-  to **clarify or re-show the handoff**, never license to start the next phase. Re-present the resume
-  prompt; don't start coding.
-- **Never** append *"want me to continue?"* or a two-way *"continue vs. review"* fork — that reopens
-  "continue" as an option and is precisely how the stop gets skipped. The resume prompt **is** the
-  deliverable; the turn ends there. At most, one plain sentence noting the phase is done — no question.
-- When genuinely unsure whether the user authorized the next phase in-session, **stop and ask one
-  narrow question**; default to stopping, never to starting.
 
 ## Verification gate per phase
 

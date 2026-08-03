@@ -211,23 +211,26 @@ And if a comment needs a paragraph to justify the code below it, that's usually 
 
 - Every continuation, resume, handoff, review, or implementation prompt must name the exact worktree path it applies to.
 - Put `cd <absolute-worktree-path>` on the prompt's first line; never identify work only by branch, PR, phase, or plan.
+- Make the prompt self-contained for zero context: name the branch/PR, relevant working files, and exact next action.
 - When finishing a task or phase, if more work remains, end with one paste-ready prompt that advances it. If blocked, target the resolving work and include the original worktree and continuation it unlocks so the handoff routes back.
+- Hand off immediately when a finished chunk leaves more work; the prompt replaces asking whether to continue.
 - For plan-managed work, the prompt must name and require reading both the plan and its `_PROGRESS.md` companion before acting.
 - Whenever Tommy asks to recover or resume plan-managed work, use `/resume-plan`: read the plan and its companion `_PROGRESS.md`, reconcile them against the worktree, git, review, test, PR, and package state, report the current status, then give exactly one paste-ready prompt. A referenced plan (`/resume-plan @plans/.../PLAN.md`) must work even when the session starts outside that plan's worktree.
+- Before an implementation PR merges, hand off `/code-review` (or `/big-review`); use `/incremental-review` after later code commits.
+- A completed and verified plan phase ends the turn after its handoff. Start the next phase only when Tommy explicitly names it and says to do it now.
 - If nothing remains, state that the work is complete and do not invent a continuation prompt.
 
 ## Plans (`plans/*.md`)
 
 Plans are working docs for unfinished work, **not** an archive — git history is the archive. A finished plan kept "for reference" is just rot that misleads the next reader into thinking the work is still pending.
 
-**Opening a `plans/*.md` to work from obliges you to read [`plans/AGENTS.md`](./plans/AGENTS.md) in the same breath** — phases, verification gates, when to run E2E, and how to shape the handoff all live there, and the plan's own prose is not a substitute for them. Reading only the plan is how its rules get skipped.
+**Opening a `plans/*.md` to work from obliges you to read [`plans/AGENTS.md`](./plans/AGENTS.md) in the same breath** — phases, verification gates, and when to run E2E live there, and the plan's own prose is not a substitute for them. Reading only the plan is how its rules get skipped.
 
 Every new plan has a same-directory `<PLAN_STEM>_PROGRESS.md` companion. The plan holds the design and outstanding phases; the progress ledger records every project action, result, and state transition plus the current operational truth. Keep both current throughout the work. Legacy plans without a ledger remain valid: reconstruct them from the plan and repository evidence, then create the ledger before recording further progress. Full rules: [`plans/AGENTS.md`](./plans/AGENTS.md) "Companion progress ledger."
 
 - **Keep the plan and its `_PROGRESS.md` companion until the entire lifecycle is terminal — not merely until the final local phase is committed and verified.** They remain the recovery anchor through every required review/fix, PR/check/merge, publication, dependency, and platform-sync gate. Record the final gate outcome, make that ledger checkpoint durable, then delete both together in the following close-out change. If no later delivery or package gate exists, the final phase commit may close them out.
 - A plan **superseded** by a newer plan, or describing a design that was **rejected**, is deleted the moment that's decided — don't leave a tombstone.
 - A **partially-done** plan stays, but strike/check off the sections that shipped (in the same commit as the work) so what remains is only the outstanding work.
-- **A completed + verified phase is a HARD STOP.** Hand off the resume prompt and END THE TURN. Do **not** start the next phase in the same session unless the user explicitly names it *and* says to do it now — a vague "continue"/"why stop?"/"yeah" means re-show the handoff, not start coding. Never append "want me to continue?" or a continue-vs-review fork. Full rule: [`plans/AGENTS.md`](./plans/AGENTS.md) "Before a clear."
 
 ## Throwaway working markdown — in the repo, then deleted
 
