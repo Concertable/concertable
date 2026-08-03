@@ -1,11 +1,19 @@
 # Prompts
 
 - Start with `cd <absolute-worktree-path>` and keep it inside the paste-ready prompt.
-- Make the prompt self-contained for zero context: name the branch or PR, relevant working files, and
-  exact next action.
-- For **plan-managed** work the ledger is the source of truth, not the prompt: name the worktree and tag
-  the plan `.md`, then say to read its `_PROGRESS.md` and follow `## Next Steps`. Put the actual steps in
-  the ledger's `## Next Steps`, never restated in the prompt, so they can't drift out of sync.
+- For **non-plan** work, make the prompt self-contained for zero context: name the branch or PR,
+  relevant working files, and exact next action.
+- For **plan-managed** work the prompt is ONLY the pointer — literally:
+
+  ```
+  cd <absolute-worktree-path>
+  Read @plans/<PLAN>.md and @plans/<PLAN>_PROGRESS.md and do what its `## Next Steps` says.
+  ```
+
+  Nothing plan-specific goes in the prompt — no branch to verify, no checkpoints to keep, no gates, no
+  commands, no next action. Every one of those is a specific, and specifics live in the ledger (its
+  header fields + `## Next Steps`), never in the prompt, so the prompt can't drift. A generic "read X
+  and do what it says" is the only instruction the prompt carries.
 - When work remains, end with one prompt that advances it — or, when several independent pieces remain,
   one prompt each so they run in separate contexts.
 - When blocked, first check whether the resolving work is already in flight — an open PR mid-merge, or

@@ -239,9 +239,10 @@ point where the context becomes disposable. Don't carry unwritten state across a
 - Every plan `.md` carries a pointer near its top — "**Next steps live in
   @plans/<STEM>_PROGRESS.md → `## Next Steps`**" (an `@` reference, so tagging the plan pulls the
   ledger) — and holds no separate, drift-prone next-action prose of its own.
-- Because the steps live in the ledger, a plan resume/handoff prompt is minimal: `cd <worktree>`, then
-  read the plan and its `_PROGRESS.md` and follow `## Next Steps`. Don't restate the steps in the
-  prompt — the ledger is the source of truth.
+- Because the steps live in the ledger, a plan resume/handoff prompt is ONLY the pointer — literally
+  `cd <worktree>` then "Read @plans/<PLAN>.md and @plans/<PLAN>_PROGRESS.md and do what `## Next Steps`
+  says." No branch to verify, checkpoints, gates, commands, or steps in the prompt — every such specific
+  lives in the ledger, never restated, so the prompt can't drift. See [`../PROMPTS.md`](../PROMPTS.md).
 - Use `/resume-plan` to recover plan-managed work, reconciling the plan and ledger against the worktree,
   git, review, test, PR, package, and platform-sync state; it refreshes `## Next Steps` before handoff.
 - A completed and verified phase ends the turn after its handoff. Start the next phase only when Tommy
