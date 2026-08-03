@@ -9,15 +9,15 @@
 
 ## Current state
 
-Reconstructed baseline: Phase 1b's Payment-owned deferred commission binding is committed through
-`357a2ca7d`, with additional typed-result and review-fix work restored in the working tree. The branch
-merged current `origin/main` at `bd494a25f`, including PR #314 and Payment's atomic refund reservation
-work. The pre-merge dirty state remains recoverable from stash `76438f7cf003438a313be9049be708c1f72c6990`.
+Phase 1b's Payment-owned deferred commission binding, typed-result refactor, and review fixes are
+committed at `f693c955d` and verified on PR #296. The branch merged `origin/main` at `bd494a25f`,
+including PR #314 and Payment's atomic refund reservation work. The pre-merge dirty state remains
+recoverable from stash `76438f7cf003438a313be9049be708c1f72c6990`.
 
-The restored work replaces expected Payment failures with owned typed results across application,
+The completed work replaces expected Payment failures with owned typed results across application,
 infrastructure, gRPC, and published clients. Review findings CV1, BUG1, CV2, TEST1, TEST2, and BUG2 are
-fixed in the completing commit. OWN1's normalized immutable configuration history remains present after
-the base merge and is freshly verified against this exact combined state.
+fixed by `f693c955d`. OWN1's normalized immutable configuration history remains present after the base
+merge and is freshly verified against this exact combined state.
 
 The recalled Payment-owned-result refactor is this worktree. It is intentionally branch-local to
 `Feature/CommissionBindingDeferredPricing` because it changes commission and deferred-pricing code that
@@ -35,9 +35,9 @@ edits and is recovery evidence, not a complete substitute for a new snapshot.
 
 ## Exact next action
 
-Commit the verified Payment result refactor and review fixes, then push the actual work head and verify
-the remote-tracking and PR heads equal it. Record that result in one plan-managed checkpoint commit,
-transport and verify the checkpoint head, then confirm PR #296 is ready without merging it.
+Create one checkpoint commit containing only this ledger update, push it as the transport leg, and
+require local `HEAD`, the remote-tracking ref, and PR #296's `headRefOid` to equal that checkpoint.
+Then confirm PR #296 remains open and non-draft with the new head; stop at the PR without merging it.
 
 ## Completed work
 
@@ -45,6 +45,7 @@ transport and verify the checkpoint head, then confirm PR #296 is ready without 
   bindings, additive RPCs, transaction/refund facts, migrations, and its earlier verification gate.
 - Phase 1b implementation commits include `f93aa0c6b` (Payment-owned binding), `e1f4de726`
   (percentage value model and normalized ownership), and `e73b30bb4` (calculation contract alignment).
+- Payment typed-result and review-fix completion: `f693c955d`.
 - OWN1 was previously resolved and reviewed through `99ef2faac`; the review records immutable SQL
   configuration revisions referenced by bindings, with currency retained on the binding.
 - Current `origin/main` (`c7e4d97e9`, PR #314) was merged locally as `bd494a25f` while preserving and
@@ -91,8 +92,8 @@ transport and verify the checkpoint head, then confirm PR #296 is ready without 
   model and typed transition results; the obsolete concurrency-token path was not restored.
 - The generated Payment migration rename had identical competing blobs. The newer main timestamp
   `20260802215519_InitialCreate` is the surviving filename, with its migration attribute reconciled.
-- PR #296 is open and was already non-draft before this resume. Its remote head remains `357a2ca7d`
-  until the verified work and its push checkpoint are published.
+- PR #296 is open and non-draft. Push leg 1 moved its verified work head from `357a2ca7d` to
+  `f693c955d`; the plan-managed checkpoint transport remains.
 
 ## Event log
 
@@ -145,3 +146,10 @@ transport and verify the checkpoint head, then confirm PR #296 is ready without 
 - Evidence: `dotnet test api/Concertable.Payment/tests/Concertable.Payment.IntegrationTests/Concertable.Payment.IntegrationTests.csproj --logger console;verbosity=normal` passed 7/7, including both concurrent partial-refund tests, on `bd494a25f` plus the completing working tree.
 - Outcome: OWN1 is freshly reconciled; CV1, BUG1, CV2, TEST1, TEST2, and BUG2 are fixed. All requested Phase 1b local verification gates are green without further code changes.
 - Follow-up: Commit the verified state, execute the plan-managed two-leg push with exact remote/PR head equality, and confirm PR #296 is ready without merging it.
+
+### 2026-08-03 — verified work-head push to PR #296
+
+- Action: Committed the verified Payment result/error-boundary fix as `f693c955d`, then pushed range `357a2ca7d..f693c955d` to `origin/Feature/CommissionBindingDeferredPricing`.
+- Evidence: After fetching the branch, local `HEAD`, `origin/Feature/CommissionBindingDeferredPricing`, and PR #296 `headRefOid` all equalled `f693c955d60fd21b5e6586ec9a6f52f53dddbfd1`; the PR remained open and non-draft.
+- Outcome: Push leg 1 is verified. The work commit contains the fixed CV1, BUG1, CV2, TEST1, TEST2, and BUG2 dispositions plus the green local gate evidence.
+- Follow-up: Create and transport one plan-managed checkpoint commit, verify final local/remote/PR equality, then confirm PR #296 ready without merging.
