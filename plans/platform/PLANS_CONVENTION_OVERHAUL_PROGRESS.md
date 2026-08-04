@@ -16,10 +16,28 @@ SKILL, root `AGENTS.md`, `PROMPTS.md`, and the user-global `worktree` skill (out
 
 ## Next Steps
 
-PR #346 open (`skip-e2e`). Awaiting Tommy's go-ahead to merge (do not self-merge). On merge: delete
-this plan + ledger in the close-out, then rename/resync sibling worktrees to `<Type>/<epic>_<name>` —
-NOT before merge (their branches still carry the old plan names until they pull this in; renaming
-first creates a fresh mismatch).
+**DO NOT MERGE #346 YET — unresolved cross-worktree blast radius.** This PR renames/moves ~30 plan
+files (see the rename table). There are **15 other live worktrees** (`git worktree list`), many on
+typed-result / docs-error / plan work that edits these exact files. Merging risks: (a) every in-flight
+ledger's `- Plan:` path string goes stale after it syncs `main`; (b) rename-vs-edit merge conflicts on
+branches that edited a moved plan. Also this PR's diff vs `origin/main` currently shows it **deleting**
+`plans/TYPED_RESULT_MIGRATION_ERROR_CASE_NAMES_PROGRESS.md` (owned by `Docs/NaturalErrorCaseNames`) —
+almost certainly just staleness (branch fell behind `main` again), but MUST be confirmed, not assumed.
+
+Concrete next actions, in order:
+1. In this worktree: `git merge origin/main` (behind again), rebuild nothing (docs only), and confirm
+   the `D …ERROR_CASE_NAMES_PROGRESS.md` disappears — i.e. it was staleness, not a real deletion. If it
+   still shows deleted, that file must be restored before any merge.
+2. Run the per-branch collision sweep: for each of the 15 worktrees,
+   `git diff --name-only origin/main...<branch> -- plans/` intersected with this PR's renamed/deleted
+   source paths. Zero-collision branches only need a one-line ledger `- Plan:` repoint on their next
+   sync; colliding branches (edited a moved plan) need a decision.
+3. Take the result to Tommy with a recommendation: **merge-now-and-repoint** (if collisions are only
+   stale path strings), **hold** (if several branches are mid-edit on moved plans), or **de-scope** the
+   actively-edited plan files from this PR's move. Do not self-merge.
+
+On eventual merge: delete this plan + ledger in close-out; rename/resync sibling worktrees to
+`<Type>/<epic>_<name>` (only after merge — renaming first creates a fresh mismatch).
 
 ## Completed work
 
