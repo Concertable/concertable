@@ -4,36 +4,33 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\CommissionBindingDeferredPricing`
 - Branch: `Feature/CommissionBindingDeferredPricing`
 - PR: [#296 — Own deferred commission pricing in Payment](https://github.com/Concertable/concertable/pull/296)
-- Dependency/package gates: Phase 1 is recorded complete. Phase 1b is implemented on PR #296 but cannot enter the publish/platform-sync/deployment gate until the PR merges; this work stops at the PR. PR #296 is currently `DIRTY` and the branch is behind `origin/main`, so a base update is a prerequisite to that merge gate.
-- Last reconciled: 2026-08-04 from a fresh `git fetch origin`, `git status`/`git log origin/main..HEAD`, PR #296 (`gh pr view`/`gh pr checks`), current `origin/main`, and the on-disk review artifact. This reconciliation is evidence-only; no code, verification, review, or push occurred.
+- Dependency/package gates: Phase 1 is recorded complete. Phase 1b is implemented on PR #296 but cannot enter the publish/platform-sync/deployment gate until the PR merges; this work stops at the PR. As of 2026-08-04 the branch is **current with `origin/main`** and every requested local gate is green; the remaining pre-push step is `/incremental-review` of the post-merge commit.
+- Last reconciled: 2026-08-04 after merging current `origin/main` `f05f8832d` into the branch (merge commit `b6fb56c6c`), resolving the single `plans/AGENTS.md` doc conflict, and re-running the full Payment verification gate green.
 
 ## Current state
 
 Phase 1b's Payment-owned deferred commission binding and owned-result expansion are implemented on
-PR #296. Local `HEAD` is the unpushed merge commit `4946bba27` ("merge: reconcile deferred commission
-pricing with main"), which merged `origin/main` `37c94cd0` into the branch and preserves main's
-internal Payment.Domain boundary and Application-owned payout status contract alongside the branch's
-commission configuration, percentage calculation, binding, refund, and typed-result behavior.
+PR #296 and are now reconciled with current `origin/main`. Local `HEAD` is the unpushed merge commit
+`b6fb56c6c` ("Merge remote-tracking branch 'origin/main' …"), which brought `origin/main` `f05f8832d`
+(26 commits, including the Concert-owner-response / typed-result DTO reshuffle and the scripts-into-`scripts/`
+move) onto the branch. The **only** merge conflict was `plans/AGENTS.md` (docs), resolved by taking
+main's newer parallel-worktree / multi-ledger handoff text. Every Payment source file auto-merged; the
+solution and standalone Payment carve build clean, so no Payment code overlap needed hand resolution.
 
-Working tree is **clean**. The branch is **28 commits ahead** of its remote tracking ref
-`origin/Feature/CommissionBindingDeferredPricing` (whose tip, and PR #296's head, is
-`f487ad1da` — the merge commit `4946bba27` is unpushed) and **20 commits behind** `origin/main`
-(`a22b379bf`, advanced since the recorded `37c94cd0` merge). PR #296 is OPEN, non-draft, reports
-`mergeStateStatus: DIRTY` and no checks.
+Working tree is **clean**. The branch is **0 commits behind** `origin/main` and ahead of its remote
+tracking ref `origin/Feature/CommissionBindingDeferredPricing` (whose tip, and PR #296's head, is still
+`f487ad1da` — nothing since is pushed). PR #296 is OPEN, non-draft; `mergeStateStatus` was `UNKNOWN`
+(GitHub still computing) and it carries no checks because it has never entered the queue.
 
-The recovery stash `76438f7cf003438a313be9049be708c1f72c6990` remains intact (three-parent stash of
-the earlier Payment/review snapshot). All requested local gates were green on the `4946bba27` tree
-(see Verification); that tree is now 20 commits stale relative to `origin/main` but is otherwise
-unchanged.
+The five commits between the previously recorded `4946bba27` and the merge base were all doc-only
+`docs(plan)` ledger/plan-conformance commits; no code changed between `4946bba27` and this merge.
+The recovery stash `76438f7cf003438a313be9049be708c1f72c6990` remains intact.
 
 ## Next Steps
 
-The `4946bba27` merge commit is unreviewed and unpushed, and the branch is now 20 commits behind
-`origin/main` (`a22b379bf`) with PR #296 `DIRTY`. Before any push or merge, in this worktree:
-merge current `origin/main` into the branch, resolve any Payment overlap, re-run the affected Payment
-verification gate (build `api/Concertable.slnx`, Payment unit + integration tests, standalone Payment
-carve, EF pending-model check), then run `/incremental-review` against the existing PR #296 review
-watermark on the resulting commit. Do not push or merge PR #296 unless Tommy separately requests it.
+Run `/incremental-review` against the existing PR #296 review watermark
+(`reviews/Feature-CommissionBindingDeferredPricing.md`) on merge commit `b6fb56c6c`. Address any new
+findings, then update this ledger. Do not push or merge PR #296 unless Tommy separately requests it.
 
 ## Resume prompt
 
@@ -56,18 +53,19 @@ Read @plans/b2b/PLATFORM_COMMISSION.md and @plans/b2b/PLATFORM_COMMISSION_PROGRE
 
 ## Verification
 
-All results below are from `origin/main` `37c94cd0` merged with the PR #296 work and the final
-reconciliation edits:
+All results below are from the merge commit `b6fb56c6c` (`origin/main` `f05f8832d` merged with the
+PR #296 work):
 
-- Docker preflight: elevated `docker ps` succeeded.
-- Payment SQL integration project: 7 passed, 0 failed.
-- Focused payout-status mapper regression: 4 passed, 0 failed.
+- Docker preflight: `scripts/docker-health.ps1` reported healthy (fresh-container host→container data
+  round-trip stable) — note the health/e2e scripts moved to `scripts/` on main.
+- `dotnet build api/Concertable.slnx --configuration Release`: 0 errors, 9 warnings (pre-existing
+  nullable/analyzer warnings only).
 - Complete Payment unit project in Release: 192 passed, 0 failed.
-- `dotnet build api/Concertable.slnx --configuration Release`: 0 errors, 8 warnings.
-- Standalone Payment nine-project package-closure carve in Release with `MinVerSkip=true`: 0 errors.
+- Payment SQL integration project: 7 passed, 0 failed.
+- Standalone Payment carve (`api/Concertable.Payment/Concertable.Payment.slnx`, Release,
+  `MinVerSkip=true`): 0 errors.
 - `dotnet ef migrations has-pending-model-changes` for `PaymentDbContext`: no model changes since the
-  last migration (using the canonical parseable design-time connection string from
-  `api/initial-migrations.ps1`).
+  last migration (canonical parseable design-time connection string from `api/initial-migrations.ps1`).
 
 ## Reviews
 
@@ -94,6 +92,22 @@ reconciliation edits:
 - No local E2E was run: PR #296's merge queue remains the E2E gate.
 
 ## Event log
+
+### 2026-08-04 — merged current main and re-ran the full Payment gate green
+
+- Action: In the worktree, `/resume-plan` confirmed both ledgers point at PR #296 with an identical
+  merge→verify→`/incremental-review` next action. Fetched origin, merged `origin/main` `f05f8832d` into
+  the branch, resolved the single conflict (`plans/AGENTS.md`, docs — took main's parallel-worktree
+  handoff text), completed merge commit `b6fb56c6c`, and ran the full Payment verification gate.
+- Evidence: 26 incoming commits auto-merged including main's Concert-owner-response/typed-result DTO
+  reshuffle and the `scripts/` relocation; `git grep` found no conflict markers; branch now 0 behind
+  `origin/main`. Release solution build 0 errors/9 warnings; Payment unit 192/192; Payment integration
+  7/7; standalone Payment carve 0 errors; `PaymentDbContext` reports no pending model changes; Docker
+  healthy via `scripts/docker-health.ps1`.
+- Outcome: The reviewed-and-verified Phase 1b state is now current with `origin/main` on merge commit
+  `b6fb56c6c` with every local gate green. The five commits since the old `4946bba27` HEAD were doc-only.
+- Follow-up: Run `/incremental-review` on `b6fb56c6c` against `reviews/Feature-CommissionBindingDeferredPricing.md`;
+  do not push or merge PR #296 without explicit approval.
 
 ### 2026-08-03 — reconstructed baseline
 
