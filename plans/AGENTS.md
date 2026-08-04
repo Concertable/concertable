@@ -86,11 +86,18 @@ verification gate. Phases sequence so that every intermediate state builds and p
 
 ## Companion progress ledger — record the whole operational history
 
-Every new `plans/<NAME>.md` has a same-directory companion named
-`plans/<NAME>_PROGRESS.md`, created with the plan. Keep design, intended phases, dependencies, and
-definition-of-done in the plan. Put the detailed history and current operational truth in the
-progress ledger so the plan remains readable. Start it from
+Every `plans/<NAME>.md` has at least one same-directory `_PROGRESS.md` companion, created with the
+plan. The **plan** is the shared design — phases, dependencies, definition-of-done; each **ledger** is
+the operational truth of **one worktree** working it, so the ledger (not the plan) is 1:1 with a
+worktree and owns the `Worktree`/`Branch`/`PR` identity. Keep the plan readable by putting the detailed
+history and current truth in the ledger. Start each from
 [`resume-plan/assets/progress-template.md`](../.agents/skills/resume-plan/assets/progress-template.md).
+
+**A plan may have several ledgers.** Worked in one worktree it has one `plans/<NAME>_PROGRESS.md`. When
+its phases run in **parallel worktrees** — e.g. a publish-gated prerequisite phase built on its own
+branch while a later phase waits — it has **one ledger per worktree**. Name each so it identifies its
+worktree, and set its `- Plan:` header to this plan: that header is the authoritative plan↔ledger
+grouping (`/resume-plan` greps it), not the filename.
 
 The ledger must make the chat disposable at any point. Record **every project action and state
 transition as it happens**, not just phase summaries: user direction and scope changes, partial
@@ -236,15 +243,18 @@ point where the context becomes disposable. Don't carry unwritten state across a
 
 ## Plan handoff
 
-- Every plan `.md` carries a pointer near its top — "**Next steps live in
-  @plans/<STEM>_PROGRESS.md → `## Next Steps`**" (an `@` reference, so tagging the plan pulls the
-  ledger) — and holds no separate, drift-prone next-action prose of its own.
+- Every plan `.md` carries a pointer near its top to its ledger(s) and holds no next-action prose of
+  its own. One worktree: "**Next steps live in @plans/<STEM>_PROGRESS.md → `## Next Steps`**" (the `@`
+  pulls the ledger when you tag the plan). Parallel worktrees: it lists each ledger with its worktree.
 - Because the steps live in the ledger, a plan resume/handoff prompt is ONLY the pointer — literally
-  `cd <worktree>` then "Read @plans/<PLAN>.md and @plans/<PLAN>_PROGRESS.md and do what `## Next Steps`
-  says." No branch to verify, checkpoints, gates, commands, or steps in the prompt — every such specific
-  lives in the ledger, never restated, so the prompt can't drift. See [`../PROMPTS.md`](../PROMPTS.md).
-- Use `/resume-plan` to recover plan-managed work, reconciling the plan and ledger against the worktree,
-  git, review, test, PR, package, and platform-sync state; it refreshes `## Next Steps` before handoff.
+  `cd <worktree>` then "Read @plans/<PLAN>.md and @plans/<its-worktree-ledger>_PROGRESS.md and do what
+  `## Next Steps` says." No branch to verify, checkpoints, gates, commands, or steps in the prompt —
+  every such specific lives in the ledger, never restated, so the prompt can't drift. A handoff always
+  comes from one worktree, so it names that worktree's ledger. See [`../PROMPTS.md`](../PROMPTS.md).
+- `/resume-plan` takes a **ledger**, a **plan**, or a **worktree**. A ledger — or a plan plus a named
+  worktree — resolves straight to that worktree: `cd` there and do its `## Next Steps`. A plan alone
+  resolves by the ledgers whose `- Plan:` names it: one → resume it; several → list them and ask which.
+  Always confirm the ledger still matches git/PR reality first.
 - A completed and verified phase ends the turn after its handoff. Start the next phase only when Tommy
   explicitly names it and says to do it now.
 
