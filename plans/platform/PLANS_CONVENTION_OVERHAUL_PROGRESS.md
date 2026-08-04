@@ -16,28 +16,37 @@ SKILL, root `AGENTS.md`, `PROMPTS.md`, and the user-global `worktree` skill (out
 
 ## Next Steps
 
-**DO NOT MERGE #346 YET — unresolved cross-worktree blast radius.** This PR renames/moves ~30 plan
-files (see the rename table). There are **15 other live worktrees** (`git worktree list`), many on
-typed-result / docs-error / plan work that edits these exact files. Merging risks: (a) every in-flight
-ledger's `- Plan:` path string goes stale after it syncs `main`; (b) rename-vs-edit merge conflicts on
-branches that edited a moved plan. Also this PR's diff vs `origin/main` currently shows it **deleting**
-`plans/TYPED_RESULT_MIGRATION_ERROR_CASE_NAMES_PROGRESS.md` (owned by `Docs/NaturalErrorCaseNames`) —
-almost certainly just staleness (branch fell behind `main` again), but MUST be confirmed, not assumed.
+**Strategy (per Tommy): FULL migration + consumer handling before merge — do NOT de-scope, do NOT
+merge blind.** Treat #346 as a breaking "version" bump of the plans convention: everything on `main`
+must be in the new format AND the consumers (the ~15 in-flight worktrees whose ledgers point at moved
+paths) must be handled first, exactly like the platform-sync gate handles package consumers. The
+de-scope attempt was reversed — typed-result is back in-format (links fixed).
+
+Collision sweep result (moved-plan files each branch edits): only 3 branches collide —
+`Refactor/B2BTypedResultMigration` + `Feature/TypedResultMigrationPhase2` + `Docs/TypedResultPhaseOwnership`
+on `TYPED_RESULT_MIGRATION.md` (R099, content-edited → real conflicts); `Feature/CommissionBindingDeferredPricing`
+on `PLATFORM_COMMISSION.md`/`LAUNCH_CHECKLIST.md` (R100 pure renames → git follows cleanly). The
+`ERROR_CASE_NAMES_PROGRESS.md` "deletion" was confirmed staleness.
 
 Concrete next actions, in order:
-1. In this worktree: `git merge origin/main` (behind again), rebuild nothing (docs only), and confirm
-   the `D …ERROR_CASE_NAMES_PROGRESS.md` disappears — i.e. it was staleness, not a real deletion. If it
-   still shows deleted, that file must be restored before any merge.
-2. Run the per-branch collision sweep: for each of the 15 worktrees,
-   `git diff --name-only origin/main...<branch> -- plans/` intersected with this PR's renamed/deleted
-   source paths. Zero-collision branches only need a one-line ledger `- Plan:` repoint on their next
-   sync; colliding branches (edited a moved plan) need a decision.
-3. Take the result to Tommy with a recommendation: **merge-now-and-repoint** (if collisions are only
-   stale path strings), **hold** (if several branches are mid-edit on moved plans), or **de-scope** the
-   actively-edited plan files from this PR's move. Do not self-merge.
+1. **Consolidate the 15-worktree audit** (5 background agents; batch A done). Classify each
+   LAND-FIRST / CLEAN-FOLLOW / REPOINT-AFTER / CONFLICT-RISK. Confirmed so far:
+   `Refactor/B2BTypedResultMigration` = LAND-FIRST (16 unmerged commits, real refactor, conflicts on
+   the typed-result file — land it before the bump); `Chore/TechDebt` = CLEAN-FOLLOW (PR #339);
+   `Docs/NaturalErrorCaseNames` = REPOINT-AFTER (PR #343 merged, ledger bookkeeping only).
+2. **Land the LAND-FIRST worktrees** (open/merge their PRs) so they leave the collision set.
+3. **Backfill `_PROGRESS` ledgers** for the 11 `_PLAN` files lacking one (DEAL_STRATEGY_REGISTRATION,
+   MONEY_VALUE_TYPE, PLATFORM_COMMISSION, MARKETPLACE, CONFIG_AND_DEPLOYMENT, E2E_FAST_FORWARD_REFACTOR,
+   E2E_HARNESS_RENAME, EMPTY_STRING_ELIMINATION, MICROSERVICE_STEPS, MICROSERVICE_STEPS_CONT,
+   PIPELINE_REDESIGN, RUST_DEAL_MICROSERVICE, VERIFY_ACCEPT_CONVERGENCE) — reconstructed from plan +
+   repo evidence, per the progress-template.
+4. **Verify skills + agent files** (resume-plan, continue-roadmap, plans/agents/PLAN.md, ROADMAP.md,
+   root AGENTS.md, PROMPTS.md) fully describe/enforce the format.
+5. Re-run grep + link gate; then **merge #346 promptly** (it re-conflicts with typed-result on every
+   `main` advance until merged). Do not self-merge — Tommy's go-ahead.
 
-On eventual merge: delete this plan + ledger in close-out; rename/resync sibling worktrees to
-`<Type>/<epic>_<name>` (only after merge — renaming first creates a fresh mismatch).
+On merge: delete this plan + ledger in close-out; REPOINT-AFTER worktrees fix their ledger `- Plan:`
+line on next sync; rename worktrees to `<Type>/<epic>_<name>` (only after merge).
 
 ## Completed work
 
