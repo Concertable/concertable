@@ -109,25 +109,3 @@ the two PDF ones → `*PdfRenderer` (alongside the existing `IPdfRenderer`);
 the `Kernel` and `Shared.*` types republishes those packages and triggers a platform-sync, so batch them
 rather than paying that cost once per rename.
 
----
-
-### `.github/workflows/auto-merge.yml` is two bolted-on heuristics for the same unsolved problem
-
-The workflow exists to stop a green, `--auto`-enabled PR from silently sitting `OPEN` forever instead of
-landing — GitHub's merge queue has now been observed to fail two different ways with **no direct signal
-that either happened**: (1) a required check resolving to `skipped` (our non-code path classifier) stops
-GitHub re-evaluating queue admission at all, and (2) a PR can be admitted (`mergeQueueEntry` non-null,
-a real queue position) while GitHub never actually dispatches the `merge_group` CI run for it (PR #216,
-2026-07-26 — sat at position 1, `AWAITING_CHECKS`, for over an hour with zero `merge_group` runs ever
-recorded). Each fix is a heuristic bolted on after the fact: poll `mergeStateStatus` for #1, poll
-`mergeQueueEntry` + `gh run list --event merge_group` + an age threshold for #2. Every fix works by
-inferring "stuck" from the *absence* of an event over some duration, not from an actual failure signal
-— which means a third failure mode is only a matter of time, and the workflow has no principled way to
-detect it either.
-
-**Resolves when:** either (a) GitHub Actions/merge-queue ships a real "admitted but not progressing"
-webhook/event so detection stops being poll-and-guess, or (b) this repo moves off polling entirely —
-e.g. replace the sweep with a single scheduled job that asks "for every open ready PR, is its
-`mergeQueueEntry` state consistent with recent `merge_group` activity" as one designed check rather than
-accreting a new `if` branch per incident.
-
