@@ -179,30 +179,28 @@ Build the record and both stances; nothing enforces or surfaces it yet.
   through real SQL. **Deferred to Phase 2 (need endpoints):** renewal-append-becomes-current and
   single-owner owner-reads-own/stranger-404 are HTTP-level, tested once the grant/read endpoints exist.
 
-### Phase 2 — Supplier-facing grant/renew surface (not yet enforced)
+### Phase 2 — Supplier-facing grant/renew surface (not yet enforced) — ✅ DONE (`6ee5cd3d2` backend; SPA committed)
 
 Give suppliers (and the seeder) a way to hold consent; still nothing gates settlement.
 
-- [ ] Endpoints (a `SelfBillingAgreementController`, or an existing compliance controller, reachable by
-  **both** tenant types — not `[RequiredTenantType(TenantType.Venue)]`): `GET .../self-billing-agreement`
-  (current status + `ExpiresAtUtc`), `POST .../self-billing-agreement` (grant/renew, body carries
-  `ESignatureRequest`; presence of the e-signature *is* the consent — reject with 400 if absent, mirror
-  Apply/Accept), `GET .../self-billing-agreement/pdf`. Single-owner scoped.
-- [ ] HATEOAS: a `selfBillingAgreement` action; the POST affordance labelled **grant** when none exists
-  and **renew** when the current one is absent/expired/nearing expiry (state-gated, same `ActionLink`
-  pattern as the `Invoice`/`Contract` links).
-- [ ] SPA (`app/web/b2b/shared/...`, compiled into both manager apps): reuse the existing
-  `ESignaturePanel` / `SignatureCanvas`; add the grant/renew page + a
-  `useDownloadSelfBillingAgreementMutation` mirroring `useDownloadContractMutation`; a dashboard nag when
-  the agreement is missing or within the renewal window (mirror the DAC7 tax-details nag).
-- [ ] Dev/E2E seeder grants an agreement for each seeded supplier tenant by **calling the grant service**
-  (a production write path a supplier performs — legitimate to seed, not an event-reaction bypass; see
-  [`../../api/agents/SEEDING_CONVENTIONS.md`](../../api/agents/SEEDING_CONVENTIONS.md)), so post-Phase-3
-  settlements are not all deferred.
-- [ ] **Verification gate:** solution + both manager SPAs build; Concert unit + integration green:
-  grant 400 without consent; grant records the supplier e-signature (typed name + server attribution);
-  renew before and after expiry; read-current status; **both** artist and venue tenants can grant;
-  download-own PDF / stranger 404; HATEOAS grant-vs-renew affordance flips with state.
+- [x] Endpoints (`SelfBillingAgreementController`, reachable by **both** tenant types — `[Authorize]`, no
+  `[RequiredTenantType]`): `GET .../self-billing-agreement` (status + `ExpiresAtUtc`), `POST` (grant/renew, body
+  `GrantSelfBillingAgreementRequest`; 400 without the e-signature via `GrantSelfBillingAgreementRequestValidator`,
+  mirroring Apply/Accept), `GET .../pdf`. Single-owner scoped.
+- [x] HATEOAS: `SelfBillingAgreementResponse` with status None/Active/Expired + affordance — **grant** when never
+  held, **renew** once lapsed/within the 30-day window, **pdf** only while in force (grant/renew are the same POST).
+  Backed by a new `GetLatestAsync` (latest regardless of expiry) on repo + service.
+- [x] SPA (`@b2b/features/selfBilling`, both manager apps): reused `ESignaturePanel` (minimally generalized with
+  `documentNoun`/`children`) + `SignatureCanvas`; grant/renew page + `useDownloadSelfBillingAgreementMutation`
+  mirroring `useDownloadContractMutation`; dashboard nag mirroring the tax-details banner; per-app
+  `/settings/self-billing-agreement` routes + settings-nav link.
+- [x] Dev/E2E seeder grants every seeded operator tenant a current agreement (`SeededSelfBillingAgreementGranter`,
+  mirroring `SeededApplicationSigner`: domain factory + `ITenantModule` identity + supplier e-signature — the
+  request-scoped grant service can't run in a background seeder), so post-Phase-3 settlements are not all deferred.
+- [x] **Verification gate:** `api/Concertable.slnx` builds; all four web builds green; Concert unit **79/79** +
+  integration **141/141** green — grant 400 without consent; grant records the supplier e-signature; renew before
+  and after expiry; read-current status; **both** artist and venue grant; download-own PDF / 404 without one;
+  HATEOAS grant-vs-renew affordance flips with state.
 
 ### Phase 3 — Fail-closed enforcement + roadmap tick (final)
 
