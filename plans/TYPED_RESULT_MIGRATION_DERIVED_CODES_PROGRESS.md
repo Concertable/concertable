@@ -3,7 +3,7 @@
 - Plan: `plans/TYPED_RESULT_MIGRATION.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Refactor\DerivedErrorDefinitions`
 - Branch: `Refactor/DerivedErrorDefinitions`
-- PR: not opened yet
+- PR: [#344 — feat(kernel): derive published error codes from case names](https://github.com/Concertable/concertable/pull/344), labelled `skip-e2e`
 - Dependency/package gates: publishes `Concertable.Kernel`, so this phase owns its generated
   `chore/platform-sync-*` PR through green. Phase 2 (PR #296) consumes the new factories only after
   that sync lands; PR #296 is not touched here.
@@ -22,9 +22,9 @@ under Completed work.
 
 ## Next Steps
 
-Push the branch and open the Kernel PR with the `skip-e2e` label (Kernel-only, additive, fully
-unit-covered). Merge it, then follow the generated `chore/platform-sync-*` PR to green/merged and
-record the published Kernel version here. Do not modify PR #296.
+Watch PR #344 to merged, then follow the generated `chore/platform-sync-*` PR to green/merged and
+record the published Kernel version here. Do not modify PR #296. If #343 lands first, rebase this
+branch's two doc files onto it.
 
 ## Completed work
 
@@ -97,7 +97,6 @@ diff is Kernel plus docs, with no service, seeder, facade, or cross-service refe
   `HEAD:refs/heads/Refactor/DerivedErrorDefinitions`; a lowercase push would have created the dual-casing
   ref that breaks `git fetch` for everyone. The on-disk `.git/refs/heads/refactor/` directory still
   holds four other branches in that casing, which is why `git branch --list` still prints lowercase.
-
 - **No nullable metadata record.** The inherited design cached
   `ErrorCaseMetadata(string Code, string? NotFoundDisplayName)`, carrying a not-found-only field on
   every case. Tommy rejected it outright. Codes and messages are separate concerns; only the code is
