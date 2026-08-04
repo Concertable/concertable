@@ -16,6 +16,8 @@ Decide and act on reversible work (doc/plan edits, isolated commits, retrying a 
 
 **Never gate a reversible local (working-tree) change behind a "should I?" — just make it.** Editing / writing / refactoring a file, or running a plan's code steps, is the default action, never a question and never a "just report / do nothing" menu; the *only* thing that waits for an explicit instruction is `git commit` / `git push` (full rule: root `~/.Codex/AGENTS.md`).
 
+**If requested work depends on a PR that does not exist, create it and do the work; never hand back the same blocked prompt.**
+
 ## Per-area guidance
 
 - **Backend (.NET, `api/`)** — seeding, migrations, DTOs, module rules, C# conventions: [`api/AGENTS.md`](./api/AGENTS.md).
