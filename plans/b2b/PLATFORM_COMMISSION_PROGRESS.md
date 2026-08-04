@@ -172,13 +172,3 @@ reconciliation edits:
   which is 20 commits behind current `origin/main` with PR #296 `DIRTY`. `## Next Steps` updated to require
   a base update + re-verify + `/incremental-review` before any push.
 - Follow-up: Do the base update and re-verify in this worktree per `## Next Steps`; do not push or merge PR #296 without explicit approval.
-
-## Resume prompt
-
-Per `plans/AGENTS.md` "Plan handoff", the prompt is ONLY the pointer — the action lives in
-`## Next Steps` above and is never restated here, so it can't drift:
-
-```
-cd C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\CommissionBindingDeferredPricing
-Read @plans/b2b/PLATFORM_COMMISSION.md and @plans/b2b/PLATFORM_COMMISSION_PROGRESS.md and do what its `## Next Steps` says.
-```
