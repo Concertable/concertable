@@ -9,7 +9,7 @@ shared-defaults seam + B2B BlobStorage intra-service collapse)** done + build-gr
 (Prompt 3 outcome)"** below; the phases implement it. Triggered by an investigation that found the app has **no production existence** — no
 deployment path, no config/secrets store, secrets committed to source. This is the **app-wide**
 config/secrets/deployment workstream; the *region*-scoped config seam lives separately in
-[`CONFIG_STRATEGY.md`](./CONFIG_STRATEGY.md). Branch when Phase 1 code starts (doc-only until then).
+[`CONFIG_STRATEGY.md`](CONFIG_STRATEGY.md). Branch when Phase 1 code starts (doc-only until then).
 
 ## Why — investigation findings (2026-07-17)
 Three parallel investigations mapped the current state. Headlines (all confirmed with file paths):
@@ -504,12 +504,12 @@ design rationale.
 
 **Next — custom domains:** Cloudflare + `concertable.co.uk` subdomains, which finalize the per-env
 `Auth:Authority` / `Cors:AllowedOrigins` / `Auth:SpaClients:*` values in `config`. Scheme
-decided + DNS runbook authored in [`DOMAINS_AND_DNS.md`](./DOMAINS_AND_DNS.md); apply blocked on domain
+decided + DNS runbook authored in [`DOMAINS_AND_DNS.md`](DOMAINS_AND_DNS.md); apply blocked on domain
 purchase + Cloudflare + Azure creds.
 
 ### Phase 4 — Deployment pipeline
 IaC + CD to provision + deploy per Phase 0 (target host, prod EF migrations, SPA hosting). **Designed in
-detail in [`DEPLOYMENT.md`](./DEPLOYMENT.md)** (2026-07-17) — the concrete method (Terraform + `dotnet
+detail in [`DEPLOYMENT.md`](DEPLOYMENT.md)** (2026-07-17) — the concrete method (Terraform + `dotnet
 publish` images + GitHub Actions; Aspire local-only), resource topology, scaling profile (outbox/inbox →
 which hosts can scale to zero), migrations-as-ACA-Jobs, SWA for the SPAs, the easy/consistent local story,
 and a first-deploy runbook. **Resolves Phase 0's four open gaps:** cost (honest ~£10–15/mo floor, ~£8 of it
@@ -523,6 +523,6 @@ Per phase: `dotnet build` green + affected tests. Phases that change runtime con
 boot/round-trip check (the `verify` skill or a deployed smoke test), not just unit tests.
 
 ## Cross-refs
-- Region config seam (stays region-scoped): [`CONFIG_STRATEGY.md`](./CONFIG_STRATEGY.md)
+- Region config seam (stays region-scoped): [`CONFIG_STRATEGY.md`](CONFIG_STRATEGY.md)
 - Research input: `deep-research` Prompt 2 (run 2026-07-17, see Phase 0 outcome above)
-- Launch tracker: [`b2b/LAUNCH_ROADMAP.md`](./b2b/LAUNCH_ROADMAP.md) — this is a newly-surfaced launch blocker
+- Launch tracker: [`b2b/LAUNCH_ROADMAP.md`](../launch/LAUNCH_ROADMAP.md) — this is a newly-surfaced launch blocker
