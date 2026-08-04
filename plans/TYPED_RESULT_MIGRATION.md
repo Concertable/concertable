@@ -3,15 +3,19 @@
 > **Status:** Phase 1's revised no-value Result design merged in PR #290 on 2026-08-01 and its Kernel
 > publication synced through PR #291. Non-generic `Result`, `Result<TValue>`, `UnitResult<TError>`, and
 > accumulating `ValidationErrors` replace `Unit` and every `Result<Unit,TError>` API from the initial
-> implementation. Phase 2 is owned by `Feature/CommissionBindingDeferredPricing` / PR #296 because
-> Payment's typed-result work includes that branch's unmerged commission surface. Phase 3 remains
-> blocked until #296 merges, Payment publishes, and its generated platform-sync PR lands green.
+> implementation. Phase 1B added Kernel-derived error codes on `Refactor/DerivedErrorDefinitions` and
+> owns its own Kernel publication. Phase 2 is owned by `Feature/CommissionBindingDeferredPricing` /
+> PR #296 because Payment's typed-result work includes that branch's unmerged commission surface.
+> Phase 3 remains blocked until #296 merges, Payment publishes, and its generated platform-sync PR
+> lands green.
 >
 > **Decision:** Concertable owns string-error `Result` and `Result<TValue>`, typed-error
 > `UnitResult<TError>` and `Result<TValue, TError>`, and `Option<T>` in `Concertable.Kernel`. They are stable domain vocabulary,
 > not adapters over CSharpFunctionalExtensions, FluentResults, OneOf, Dunet, or a future runtime type.
 
-Docs-convention progress lives in @plans/TYPED_RESULT_MIGRATION_CONVENTIONS_PROGRESS.md.
+Kernel derived-code progress lives in @plans/TYPED_RESULT_MIGRATION_DERIVED_CODES_PROGRESS.md
+(worktree `Concertable.worktrees\Refactor\DerivedErrorDefinitions`). Phase 2 keeps its own ledger on
+`Feature/CommissionBindingDeferredPricing`.
 
 This is an execution plan for unfinished work. Git history is the archive for the superseded CFE
 design.
@@ -473,10 +477,20 @@ The shared error roles are:
 
 Keep named `ErrorDefinition.Invalid/NotFound/...` factories where they improve construction.
 `ErrorDefinition.NotFound<T>(code)` may derive the standard message from an explicit `[DisplayName]`;
-types without that metadata use the explicit-message overload, and CLR type names are never a
-fallback. The operation still owns its stable code. Current code never derives a public code from a
-CLR case name. A future type-derived Kernel factory must pair exact contract tests with an explicit
-code override for published cases whose CLR names change.
+types without that metadata use the explicit-message overload, and CLR type names are never a fallback
+for a message.
+
+Codes are derived from case names by Kernel's `<TCase>` factories — `Invalid<TCase>`,
+`NotFound<TCase>()`, `Conflict<TCase>`, `Unauthenticated<TCase>`, `Forbidden<TCase>`,
+`PaymentRequired<TCase>`, and `Validation<TCase>` — from the union's first word as prefix, its
+remaining words as context, and the case's own words with any repeated leading word and optional
+`Case` suffix removed, so `EscrowRefundError.EscrowNotFound` publishes `escrow.refund_not_found`. A
+published code the rule would move keeps it with `[ErrorCode]` on the case, uninherited from the union
+root and validated like any other code; each case's exact contract test is what catches a rename that
+would otherwise republish a code. `NotFound<TCase>()` also derives its standard message from the case's
+`[DisplayName]` and throws without one, while the other kinds take an explicit message. The derivation
+is Kernel-owned — no service-local reflection helper, and no derivation for the payload-free
+definition-record form, which has no case type and keeps explicit codes.
 
 ### HTTP and other transports
 
@@ -523,6 +537,8 @@ data or require owner-local case matching, under these rules:
   not application conventions;
 - each Dunet root declares `Definition` abstract and every case overrides it beside its own data;
 - generated full `Match` is reserved for other owner-local mappings whose policy handles every case;
+- a case's code comes from the Kernel `<TCase>` factories unless `[ErrorCode]` pins a published code
+  the naming rule would move;
 - every case has an exact contract test with hard-coded code, message, and kind, and the explicit case
   set changes when a variant is added;
 - consumers map through owned values/cases and `Definition` and do not publish generated Match APIs as
@@ -541,28 +557,34 @@ public abstract partial record PurchaseError : IError
 {
     public abstract ErrorDefinition Definition { get; }
 
+    [DisplayName("Concert")]
+    [ErrorCode("ticket.concert_not_found")]
     public partial record ConcertNotFound
     {
-        public override ErrorDefinition Definition =>
-            ErrorDefinition.NotFound<ConcertDetails>("ticket.concert_not_found");
+        public override ErrorDefinition Definition => ErrorDefinition.NotFound<ConcertNotFound>();
     }
 
     public partial record PurchaseInvalid(ValidationErrors Errors)
     {
-        public override ErrorDefinition Definition => ErrorDefinition.Validation(
-            "ticket.purchase_invalid",
+        public override ErrorDefinition Definition => ErrorDefinition.Validation<PurchaseInvalid>(
             "The ticket purchase is invalid.",
             Errors.ToDictionary());
     }
 
     public partial record PaymentRejected
     {
-        public override ErrorDefinition Definition => ErrorDefinition.PaymentRequired(
-            "ticket.payment_rejected",
-            "The payment was rejected.");
+        public override ErrorDefinition Definition =>
+            ErrorDefinition.PaymentRequired<PaymentRejected>("The payment was rejected.");
     }
 }
 ```
+
+`PurchaseInvalid` publishes `purchase.invalid` — its leading word repeats the union and is dropped —
+and `PaymentRejected` publishes `purchase.payment_rejected`. `ConcertNotFound` keeps `[ErrorCode]`
+because its published code belongs to the `ticket` module rather than to this union's own first word.
+
+At the native-union cutover these per-case overrides become one exhaustive `switch` over the union, so
+the compiler keeps enforcing what the abstract member enforces today and no code or contract test moves.
 
 `IError` lets Shared.Api retain one generic `where TError : IError` terminal for all independently
 owned unions. Removing it would require controller-local switches or one cross-service mega-union,
@@ -706,10 +728,31 @@ PR before implementation; do not touch PR #282 or the dirty ResultFoundationComp
   Phase 2. Confirm all standalone service carves still consume packages rather than cross-service
   project references.
 
+### Phase 1B — Kernel-derived error codes — complete
+
+Progress lives in @plans/TYPED_RESULT_MIGRATION_DERIVED_CODES_PROGRESS.md.
+
+The convention above requires a case's published code without hand-repeating it beside the case name.
+This phase added that to Kernel only: `ErrorCodeAttribute`, the cached `ErrorCodeResolver`, and an
+`Invalid/NotFound/Conflict/Unauthenticated/Forbidden/PaymentRequired/Validation` factory per kind
+taking the case as `TCase`. `NotFound<TCase>()` derives its standard message from the case's
+`[DisplayName]`; no factory derives any other message, and no CLR name is ever a message fallback.
+Every explicit factory, including `NotFound<T>(code)`, is unchanged.
+
+**Scope:** `api/Concertable.Shared/src/Concertable.Kernel/Errors/` and
+`api/Concertable.Shared/tests/Concertable.Kernel.UnitTests/`, plus this plan and
+`api/agents/CODE_CONVENTIONS.md`. No service consumes the new factories in this phase.
+
+**Verification:** Kernel unit tests and the Release solution build. No local E2E — Kernel-only,
+additive, and covered by unit tests; the PR is labelled `skip-e2e`.
+
+Phase 2 (PR #296) consumes the published API **after** this phase's Kernel package publishes and its
+generated platform-sync PR lands green. That PR is not modified here.
+
 ### Phase 2 — Payment owned-result expansion
 
-**Dependency:** Phase 1 package published and platform sync merged. This phase must not begin on a
-red platform pin.
+**Dependency:** Phase 1 package published and platform sync merged, and — for the derived-code
+factories — Phase 1B's Kernel publication synced. This phase must not begin on a red platform pin.
 
 **Owning branch/PR:** `Feature/CommissionBindingDeferredPricing` / PR #296. Its Payment typed-result
 work is branch-local because it includes the same unmerged commission surface. Do not implement this

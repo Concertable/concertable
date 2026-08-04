@@ -244,8 +244,8 @@ caller that consumes it. Never carry Result, Option, or Dunet types through HTTP
 events, or persistence.
 
 Build definitions through `ErrorDefinition.Invalid`, `NotFound`, `Conflict`, `Unauthenticated`,
-`Forbidden`, `PaymentRequired`, and `Validation`. Every code and safe public message is explicit,
-except the standard generic not-found factory described below.
+`Forbidden`, `PaymentRequired`, and `Validation`. Every safe public message is explicit except the
+standard not-found one; codes are derived from case names as described below.
 
 Payload-free alternatives use the smallest representation:
 
@@ -272,18 +272,16 @@ public abstract partial record PaymentError : IError
 {
     public abstract ErrorDefinition Definition { get; }
 
+    [DisplayName("Payer payment account")]
     public partial record PayerNotFound
     {
-        public override ErrorDefinition Definition => ErrorDefinition.NotFound(
-            "payment.payer_not_found",
-            "Payer payment account not found.");
+        public override ErrorDefinition Definition => ErrorDefinition.NotFound<PayerNotFound>();
     }
 
     public partial record Declined
     {
-        public override ErrorDefinition Definition => ErrorDefinition.PaymentRequired(
-            "payment.declined",
-            "The payment was declined.");
+        public override ErrorDefinition Definition =>
+            ErrorDefinition.PaymentRequired<Declined>("The payment was declined.");
     }
 }
 ```
@@ -292,6 +290,9 @@ This makes a newly declared case fail compilation until it implements `IError`, 
 lambdas or unused parameters. Use generated full `Match` only for other owner-local logic that truly
 requires exhaustive case handling. When logic deliberately inspects only some cases, use ordinary
 C# `is` type patterns.
+
+The `<TCase>` factories need a case type, so they belong to the union form. The payload-free record
+above has no per-alternative type and keeps its codes explicit.
 
 Every union has an exact definition contract test for every case. Hard-code the expected code,
 message, and semantic kind in the test; never calculate expected values with the production helper.
@@ -306,10 +307,23 @@ When a not-found message is not explicitly supplied, use `ErrorDefinition.NotFou
 derives it from the type's required `[DisplayName]`. Types without that caller-facing metadata must
 use the explicit-message overload; the CLR type name is never a fallback. Messages that describe domain
 behaviorâ€”declines, invalid transitions, eligibility, limits, and conflictsâ€”remain explicit even
-when a future helper could manufacture grammatical text. There is currently no convention for
-deriving public codes from CLR case names: do not add a service-local reflection helper or attribute.
-Any future `ErrorCode` attribute and type-derived factory belong in Kernel and must preserve existing
-published codes through explicit overrides and exact contract tests.
+when a helper could manufacture grammatical text.
+
+Codes, unlike messages, are derived. Every kind has a `<TCase>` factory —
+`ErrorDefinition.Invalid<TCase>(message)`, `NotFound<TCase>()`, `Conflict<TCase>`,
+`Unauthenticated<TCase>`, `Forbidden<TCase>`, `PaymentRequired<TCase>`, and
+`Validation<TCase>(message, errors)` — which takes the case as `TCase` and derives its code from the
+case and union names. The union's first word is the prefix, its remaining words are context, leading
+case words that repeat the union are dropped, an optional `Case` suffix is ignored, and acronyms and
+digits split on their own, so `EscrowRefundError.EscrowNotFound` publishes `escrow.refund_not_found`.
+Deriving is Kernel's job alone; never add a service-local reflection helper for it.
+`NotFound<TCase>()` also supplies the standard message from the case's `[DisplayName]` and throws
+without one — the other kinds always take an explicit message.
+
+A published code the naming rule would move — a renamed case, or a prefix that is not the error's own
+first word — keeps its code with `[ErrorCode("...")]` on the case. The attribute is not inherited from
+the union root and its value is validated like any other code. The per-case contract test is what
+makes this safe: a rename that would silently republish a code fails the test, not production.
 
 Compose owned Results and Options with `Bind`, `Map`, `MapError`, `Ensure`, `Tap`, `OrFailure`, and
 the Kernel Task extensions until a terminal adapter. Ordinary composition is fail-fast; only
@@ -339,6 +353,9 @@ hand-written Result/Option representations in one deliberate cutover. Preserve t
 `Match`-shaped exhaustive API, factories, definitions, composition, and transport adapters so service
 call sites do not inherit preview null/default arms. Choose any additional native pattern surface
 from the released semantics at that time; do not pre-shape current code around preview switch syntax.
+At that cutover the per-case `Definition` overrides collapse into one exhaustive `switch` over the
+native union, which the compiler then checks — the same guarantee the abstract member gives today, so
+neither the codes nor their contract tests change.
 
 Controllers terminate through `Concertable.Shared.Api.Results`. Result failures and exceptions both
 write through `IProblemDetailsService`, so registered writers, content negotiation, request
