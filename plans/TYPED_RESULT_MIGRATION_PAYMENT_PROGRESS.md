@@ -26,7 +26,7 @@ calculation from the immutable bound terms and does not accept expected values. 
 transaction-time validation body and test are removed. Operation-specific errors use explicit Dunet
 case constructors with abstract-root/per-case `Definition`, leaving callers shaped for the future
 native-union cutover. Each public union root now has its own matching source file. The local
-implementation gate is green; the branch is 48 commits ahead and 0 behind current `origin/main`.
+implementation gate is green; the branch is 49 commits ahead and 0 behind current `origin/main`.
 
 The existing escrow tests establish the intended idempotency semantics: no escrow, an escrow that is
 not held, an already-refunded escrow, and a non-refundable state are successful no-ops. An operation
@@ -53,8 +53,8 @@ through green.
 - `dotnet test api/Concertable.Payment/tests/Concertable.Payment.IntegrationTests/Concertable.Payment.IntegrationTests.csproj --configuration Release --no-restore --no-build`: 7 passed, 0 failed, 0 skipped.
 - `dotnet build api/Concertable.slnx --configuration Release --no-restore`: 0 errors and 7 unrelated
   pre-existing/generated E2E warnings outside Payment.
-- Payment standalone carve from committed `a31457d48`: 0 errors; package-only restore and all nine
-  deployable-closure projects built successfully.
+- Payment standalone carve from committed `9cd162ce1`: 0 errors; package-only restore and all nine
+  deployable-closure projects built successfully, with no file/type warning for the operation unions.
 - Payment grep gate: no `FluentResults`, `ToLegacy`, obsolete published clients, parallel operation
   errors, generated union factory aliases, or stale gRPC result helpers outside `bin`/`obj`;
   `git diff --check` passed.
@@ -90,9 +90,10 @@ No Phase 2 review has run yet.
   carve exposed the file/type analyzer convention.
 - Evidence: Branch is 0 behind `origin/main`; Payment build is 0 warnings/0 errors; unit tests pass
   198/198; integration tests pass 7/7; full Release build has 0 errors; standalone carve has 0 errors;
-  dependency greps and diff hygiene are clean.
+  the final `9cd162ce1` carve has no operation-union file/type warnings; dependency greps and diff
+  hygiene are clean.
 - Outcome: The Payment owner is current, verified, package-isolated, and ready for its canonical PR.
-- Follow-up: Commit this ledger/convention checkpoint, then push/open the PR on explicit instruction.
+- Follow-up: Wait for explicit instruction to push and open the canonical PR.
 
 ### 2026-08-04 — Reconciled donor behavior and restored a green Payment owner
 
