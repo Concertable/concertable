@@ -413,7 +413,7 @@ Start after Phase 2 and its platform sync are green.
 5. Build and run affected Payment/B2B unit and integration tests.
 6. Merge, publish and own the final platform-sync PR to green. Fix every consumer in that sync before
    considering the cut-over complete.
-7. Mark pricing transparency complete in `LAUNCH_PLAN.md` and `LAUNCH_CHECKLIST.md`.
+7. Mark pricing transparency complete in `LAUNCH_ROADMAP.md` and `LAUNCH_CHECKLIST.md`.
 8. Delete this plan in the final verified implementation commit.
 9. **Hard stop:** hand off the completed feature for review; do not begin marketplace work.
 
