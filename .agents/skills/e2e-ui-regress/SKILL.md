@@ -29,6 +29,10 @@ Confidence check that a code change hasn't regressed any baseline-passing UI E2E
 
 ## Step 0 -- Pre-flight
 
+Before any report or stop, including PASS, FAIL, baseline drift, format error, or an environment
+failure, if this workflow is plan-managed, read and apply
+[the shared plan-progress checkpoint](../resume-plan/references/plan-progress-checkpoint.md).
+
 Verify Docker with the real gate. **`docker ps` answering is NOT proof Docker is healthy** — a half-started/flapping engine keeps `docker ps` (and `docker run hello-world`, and a bare TCP connect) working while host→container forwarding of real bytes for NEW containers is dead, and the suite then dies at SQL fixture startup with `pre-login handshake` resets:
 
 ```powershell

@@ -114,6 +114,10 @@ In `reviews/BIG-<branch-slug>-Review.md`:
 
 ## Step 5 — Report
 
+Before any report or stop, including the completed or drifted resume paths, if this workflow is
+plan-managed, read and apply
+[the shared plan-progress checkpoint](../resume-plan/references/plan-progress-checkpoint.md).
+
 Concise: area just reviewed, its finding counts by lens/severity (or none), remaining `[ ]` areas, and the file. Tell the user to run the `big-review` skill again for the next stage. No "Generated with Codex" trailers.
 
 ## Tracking file shape

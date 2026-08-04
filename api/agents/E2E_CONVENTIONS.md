@@ -12,10 +12,12 @@ own behaviour + assertion. Litmus test before writing a `When`/`And` setup step:
 behaviour in the scenario title, or just getting me to the starting line?* If it's the latter and
 another scenario already covers it, make it a fast-forward `Given`, not UI steps.
 
-**Fast-forward via seeded state, never UI replay.** A setup `Given` reads pre-seeded data off the
-suite's fixture (`fixture.App.SeedState…`) and sets the id on scenario state — no navigation, no clicks.
-When the starting state you need doesn't exist yet, add the seeded state + a `Given`; don't reach it by
-replaying UI steps another scenario already runs.
+**Fast-forward without UI replay.** By default, a setup `Given` reads pre-seeded data off the suite's
+fixture (`fixture.App.SeedState…`) and sets the id on scenario state — no navigation, no clicks. When the
+starting state you need doesn't exist yet, add the seeded state + a `Given`. If `SEEDING_CONVENTIONS.md`
+explicitly forbids seeding that lifecycle row (for example, an invitation), create the prerequisite
+through its real production API or handler from a non-UI `Given`; never replay browser UI or directly
+insert the row.
 
 **The one thing you cannot seed: payment/Stripe state.** Seeding obeys production's rule (a seeder only
 writes what prod writes directly), and real Payment emits only on live Stripe webhooks — so no seeder

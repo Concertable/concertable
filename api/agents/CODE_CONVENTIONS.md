@@ -234,41 +234,103 @@ provider's missing-row contract. Module, application, service, and client bounda
 nullable value with `ToOption()` and expose `Option<T>` for ordinary absence. Do not push `Option`
 into repository or persistence contracts.
 
-`TError` is an operation-owned Dunet union named `XError` that implements `IError`. Business unions
-stay with their operation; shared Kernel owns only `IError`, its definitions, and `ErrorKind`.
-Place the union in Application, `*.Contracts`, or a published client contract according to the
-widest caller that must match it. Dunet may declare an operation's error cases, but it is never the
-Result or Option carrier. Never move a service-specific union into shared production or carry
-Result, Option, or Dunet types through HTTP DTOs, protobuf, events, or persistence.
-
-Outside its declaration, construct an error only through a static factory on the union
-(`PurchaseError.NotFound(id)`, `PurchaseError.Invalid(messages)`). Do not call a generated case
-constructor directly. The factory is the stable construction seam when Dunet records become native
-union structs.
+`TError` is an operation-owned `XError` that implements `IError`. When every alternative is
+payload-free and callers do not need runtime case discrimination, use a sealed record containing an
+`ErrorDefinition` and expose the allowed values as `static readonly` members. Use Dunet only when
+alternatives carry different data or owner-local logic genuinely needs to distinguish them. Keep the
+error beside its operation; shared Kernel owns only `IError`, its definitions, and `ErrorKind`.
+Place it in Application, `*.Contracts`, or a published client contract according to the widest
+caller that consumes it. Never carry Result, Option, or Dunet types through HTTP DTOs, protobuf,
+events, or persistence.
 
 Build definitions through `ErrorDefinition.Invalid`, `NotFound`, `Conflict`, `Unauthenticated`,
-`Forbidden`, `PaymentRequired`, and `Validation`. Every code and safe public message is explicit,
-except the standard generic not-found factory described below.
+`Forbidden`, `PaymentRequired`, and `Validation`. Every safe public message is explicit except the
+standard not-found one; codes are derived from case names as described below.
 
-Use Dunet's generated full `Match` whenever every business case must be handled: definitions,
-cross-operation error translations, lifecycle-to-operation mappings, and worker decisions that
-depend on the exact failure. Adding a case then changes the generated signature and breaks every
-exhaustive mapping until its handler is supplied. Do not replace these matches with ordinary switch
-expressions on .NET 10, add a discard arm, globally promote `CS8509`, or add analyzer infrastructure
-to simulate exhaustiveness. When logic deliberately inspects only some cases, use ordinary C# `is`
-type patterns instead of a full match.
+Payload-free alternatives use the smallest representation:
 
-Each union owns one exhaustive `Definition` match and one definition test per case. Code, safe
-message, and semantic kind are read from that definition as the single generic error representation.
+```csharp
+public sealed record PaymentError(ErrorDefinition Definition) : IError
+{
+    public static readonly PaymentError PayerNotFound = new(
+        ErrorDefinition.NotFound(
+            "payment.payer_not_found",
+            "Payer payment account not found."));
+
+    public static readonly PaymentError Declined = new(
+        ErrorDefinition.PaymentRequired(
+            "payment.declined",
+            "The payment was declined."));
+}
+```
+
+When a union is necessary, declare `Definition` abstract on the root and override it on every case:
+
+```csharp
+[Union(EnableImplicitConversions = false)]
+public abstract partial record PaymentError : IError
+{
+    public abstract ErrorDefinition Definition { get; }
+
+    [DisplayName("Payer payment account")]
+    public partial record PayerNotFound
+    {
+        public override ErrorDefinition Definition => ErrorDefinition.NotFound<PayerNotFound>();
+    }
+
+    public partial record Declined
+    {
+        public override ErrorDefinition Definition =>
+            ErrorDefinition.PaymentRequired<Declined>("The payment was declined.");
+    }
+}
+```
+
+Name every static value and union case for the exact domain outcome it represents. Prefer the
+natural vocabulary (`ApplicationNotFound`, `ApplicationError`, `PayeeNotFound`,
+`RecipientUnavailable`) and use it directly; do not add a `Case` suffix or a wrapper factory that
+only renames or constructs the same case. A name and its definition must agree semantically:
+`PayerNotFound` uses an `ErrorDefinition.NotFound`, while a broader or different definition requires
+an honestly broader or different case name.
+
+This makes a newly declared case fail compilation until it implements `IError`, without positional
+lambdas or unused parameters. Use generated full `Match` only for other owner-local logic that truly
+requires exhaustive case handling. When logic deliberately inspects only some cases, use ordinary
+C# `is` type patterns.
+
+The `<TCase>` factories need a case type, so they belong to the union form. The payload-free record
+above has no per-alternative type and keeps its codes explicit.
+
+Every union has an exact definition contract test for every case. Hard-code the expected code,
+message, and semantic kind in the test; never calculate expected values with the production helper.
+The test's case set must also be explicit so adding a variant requires a deliberate contract update.
 Codes are lowercase dot-separated identifiers with an owning operation/module prefix
 (`ticket.concert_not_found`); published codes are never renamed or reused for a different meaning.
-Messages are explicitly authored caller-safe text, never exception messages, provider detail, SQL,
-stack traces, or values whose disclosure has not been reviewed. Validation definitions contain at
-least one structured field message.
+Messages are caller-safe text, never exception messages, provider detail, SQL, stack traces, or
+values whose disclosure has not been reviewed. Validation definitions contain at least one
+structured field message.
 
-For the standard "not found" message, `ErrorDefinition.NotFound<T>(code)` may derive the entity name
-from an explicit `[DisplayName]`. Types without that caller-facing metadata use the overload with an
-explicit message; the CLR type name is never used as a fallback.
+When a not-found message is not explicitly supplied, use `ErrorDefinition.NotFound<T>(code)`, which
+derives it from the type's required `[DisplayName]`. Types without that caller-facing metadata must
+use the explicit-message overload; the CLR type name is never a fallback. Messages that describe domain
+behaviorâ€”declines, invalid transitions, eligibility, limits, and conflictsâ€”remain explicit even
+when a helper could manufacture grammatical text.
+
+Codes, unlike messages, are derived. Every kind has a `<TCase>` factory —
+`ErrorDefinition.Invalid<TCase>(message)`, `NotFound<TCase>()`, `Conflict<TCase>`,
+`Unauthenticated<TCase>`, `Forbidden<TCase>`, `PaymentRequired<TCase>`, and
+`Validation<TCase>(message, errors)` — which takes the case as `TCase` and derives its code from the
+case and union names. The union's first word is the prefix, its remaining words are context, leading
+case words that repeat the union are dropped, an optional `Case` suffix is ignored, and acronyms and
+digits split on their own, so `EscrowRefundError.EscrowNotFound` publishes `escrow.refund_not_found`.
+Deriving is Kernel's job alone; never add a service-local reflection helper for it.
+`NotFound<TCase>()` also supplies the standard message from the case's `[DisplayName]` and throws
+without one — the other kinds always take an explicit message.
+
+A published code the naming rule would move — a renamed case, or a prefix that is not the error's own
+first word — keeps its code with `[ErrorCode("...")]` on the case. The attribute is not inherited from
+the union root and its value is validated like any other code. The per-case contract test is what
+makes this safe: a rename that would silently republish a code fails the test, not production.
 
 Compose owned Results and Options with `Bind`, `Map`, `MapError`, `Ensure`, `Tap`, `OrFailure`, and
 the Kernel Task extensions until a terminal adapter. Ordinary composition is fail-fast; only
@@ -276,20 +338,31 @@ validation flows explicitly designed to collect errors accumulate them and map t
 into their owning operation error. Consume payloads through composition, `Match`, or `TryGetValue` /
 `TryGetError`; the owned types expose no throwing `Value`, `Error`, or `Unwrap` accessor.
 
+`default(Option<T>)` is `None`; every default Result shape is an invalid, uninitialized value whose
+state, observation, and composition members throw `InvalidOperationException`. Never manufacture,
+return, or treat a default Result as success or failure. `Some(null)`, `Success(null)`, and
+`Failure(null)` are invalid even if nullable warnings are disabled; use `ToOption()` at nullable
+boundaries. Result and Option construction stays behind explicit factoriesâ€”no public case
+constructors or implicit conversions.
+
 Never introduce another Result/Option carrier or use CSharpFunctionalExtensions, FluentResults,
 OneOf, ErrorOr, LanguageExt, or Dunet to implement the Kernel functional types. Do not add implicit
 conversions, catch exceptions in combinators, turn failures into HTTP exceptions, or carry functional
 types across transport or persistence boundaries.
 
-Dunet appears only in error-union declaration files, generated full `Match` calls, and package
-configuration. Do not use generated `Unwrap` or case-specific `MatchX` APIs without a concrete need.
+Dunet appears only in necessary error-union declaration files, owner-local full `Match` calls, and
+package configuration. Do not use generated `Unwrap` or case-specific `MatchX` APIs without a concrete need.
 Keep `IError`, definitions, shared Result extensions, transports, persistence, messages, and wire
 formats independent of Dunet.
 
-After the repository moves to stable .NET 11/C# 15, replace operation error declarations and the
-owned Result/Option declarations with native unions, and replace full Dunet matches with native
-exhaustive switch expressions. Composition, factories, definitions, and transport adapters remain
-the stable contract.
+After the repository moves to a released .NET/C# native-union implementation, replace Dunet and the
+hand-written Result/Option representations in one deliberate cutover. Preserve the current natural
+operation-error case names, definitions, Result/Option factories, composition, transport adapters,
+codes, and contract tests so service call sites do not inherit preview null/default arms. Choose any
+additional native pattern surface from the released semantics at that time; do not pre-shape current
+code around preview switch syntax. At that cutover the per-case `Definition` overrides collapse into
+one exhaustive `switch` over the native union, which the compiler then checks — the same guarantee the
+abstract member gives today.
 
 Controllers terminate through `Concertable.Shared.Api.Results`. Result failures and exceptions both
 write through `IProblemDetailsService`, so registered writers, content negotiation, request

@@ -9,7 +9,7 @@ pattern here has a backend sibling — the two stacks are meant to read the same
 *where code lives* is owned by a tier's `CLAUDE.md`, this file names the **structural technique** and
 links out rather than restating it (two copies drift the day one changes).
 
-The tiers referenced throughout (`@concertable/shared` ⊃ `app/web/shared` ⊃ `@b2b/*` / `@customer/*`
+The tiers referenced throughout (`@concertable/shared` ⊃ `app/web/shared` ⊃ `@b2b/*` / `@concertable/customer/shared/*`
 ⊃ per-app `src/`) are defined in [`AGENTS.md`](../web/AGENTS.md) and the per-tier `AGENTS.md` files. Read
 those first; this file assumes them.
 
@@ -19,7 +19,7 @@ those first; this file assumes them.
 
 The backend's "shared is the intersection, never the union" ([`api/AGENTS.md`](../../api/AGENTS.md))
 is the same rule the FE lives under, enforced by four `tsc -b` builds. This section is the
-**structural technique** that keeps it true: when a shared surface must differ by product or persona,
+**structural technique** that keeps it true: when a shared surface must differ by product or tenant type,
 the shared code declares a **slot** and the owning app **injects** the variation. It never learns who
 it's rendering for.
 
@@ -30,7 +30,7 @@ it's rendering for.
   no `onBuyTickets` is supplied); only the app-specific *behaviour or widget* is injected. Keep the
   shared UI intentional — a slot is for genuine per-app variation, not for punting every decision to
   the app.
-- Identity-conditional composition is the **app's** job. The app knows its persona; it picks which
+- Identity-conditional composition is the **app's** job. The app supplies its tenant type; it picks which
   slot contents to pass. Shared code receives the result, already decided.
 
 ```tsx
@@ -68,7 +68,7 @@ function OpportunitySection({ opportunity }: { opportunity: Opportunity }) {
 
 The universal `User` in `@concertable/shared` models only what **every** surface has — the
 intersection: `id`, `email`, `isAuthenticated`, universal profile fields. A product concept
-(persona, tenant membership, buyer state) is **composed on top** by the product that owns it, never
+(tenant type, tenant membership, buyer state) is **composed on top** by the product that owns it, never
 bolted onto the shared type.
 
 This is the direct FE mirror of the backend's identity split
@@ -76,13 +76,13 @@ This is the direct FE mirror of the backend's identity split
 (Kernel) carries only `Id`/`Email`/`IsAuthenticated`; the tenant/owner concept lives in a **separate
 `ICurrentTenant` that only B2B depends on**. The FE does the same, one layer per product:
 
-- **`@concertable/shared` — base identity.** `User` = the intersection. No persona subtypes, no
+- **`@concertable/shared` — base identity.** `User` = the intersection. No product-specific subtypes, no
   `venueId`/`artistId`, no `memberships`.
 - **`@b2b/*` — the B2B identity layer, composed on the base.** A single B2B identity module owns the
-  B2B view of the signed-in user: base user + persona + `memberships`, populated by a **B2B-owned,
+  B2B view of the signed-in user: base user + tenant type + `memberships`, populated by a **B2B-owned,
   typed `/me` query** (the payload the B2B backend actually sends). B2B code reads memberships from
   *this* module, never off the shared `User`.
-- **`@customer/*`** composes its own buyer identity the same way if/when it needs more than the base.
+- **`@concertable/customer/shared/*`** composes its own buyer identity the same way if/when it needs more than the base.
 
 Because the B2B identity module is stateful domain data (which tenant is active, what the memberships
 are, is a choice pending), it is *also* the "one home for the domain's reactive state" (next section)
@@ -99,10 +99,10 @@ const b2bMeApi = { getMe: async (): Promise<B2bIdentity> => (await api.get<B2bId
 
 ### The anti-patterns this replaces — never do these
 
-- **Persona subtypes in the universal union.** `User = VenueManager | ArtistManager | Customer` with
-  `venueId?`/`artistId?` fields (`app/shared/src/features/auth/types.ts`) enumerates product personas
-  in the tier a customer/mobile bundle compiles — dead weight for everyone but one persona. Personas
-  compose in their own tier.
+- **Product-specific subtypes in the universal union.** `User = VenueManager | ArtistManager | Customer` with
+  `venueId?`/`artistId?` fields (`app/shared/src/features/auth/types.ts`) enumerates product-specific identity variants
+  in the tier a customer/mobile bundle compiles — dead weight for everyone but one product. Product identity
+  composes in its owning tier.
 - **Casting extra fields off the shared `User`.** `membershipsOf(user)` reading a `memberships` field
   the type doesn't declare (`@b2b/features/tenant/lib/tenantChoice.ts`) is the shared type lying about
   its shape. The typed B2B `/me` removes the cast — the field is *typed where it's real*.
@@ -113,38 +113,46 @@ const b2bMeApi = { getMe: async (): Promise<B2bIdentity> => (await api.get<B2bId
 
 ---
 
-## A domain's reactive state has exactly one home — co-locate by domain
+## A domain's reactive state has explicit homes — co-locate by ownership
 
 A **feature is a slice**: everything one domain exchanges and owns lives together under
-`features/<feature>/` — `types` / `api` / `hooks` / `components` / `pages` / `schemas`, **plus exactly
-one home for the domain's reactive state** (a zustand store, the slice's `model`). This is the
+`features/<feature>/` — `types` / `api` / `hooks` / `components` / `pages` / `schemas`. This is the
 consensus modern-React structure (feature-folder colocation; the same axis Feature-Sliced Design calls
 a *slice* × *segments*), and it is the FE mirror of the modular monolith: one domain = one module,
-state and behaviour co-located, one owner.
+state and behaviour co-located with explicit owners.
 
-The rule is about **cohesion, not file count**. More files are fine; the defect is a single cohesive
-*stateful* domain sprayed across disjoint owners that each re-derive the same thing.
+The rule is about **cohesion, not file count**. More files are fine; the defect is the same state or
+derivation copied across disjoint owners.
 
-- **Reactive mutable state → the one store.** One store per domain owns the mutable truth
-  (`activeTenantId`, memberships, persona). Everything else reads *through* it.
-- **Derived state → a selector or hook off that store, never stored.** "Is a choice pending", "the
-  active membership", "can this role do X" are computed from the store, not persisted alongside it.
-- **One core, two entry points.** When the same derivation is needed both imperatively (a route
-  `beforeLoad` calling `store.getState()`) and reactively (a component via a hook), write the logic
-  **once** and expose both a `getState`-based function and a hook over that single core. `beforeLoad`
-  and render must never be able to disagree.
-- **Genuinely stateless, reusable rulebooks stay pure — wherever they naturally live.** A pure
-  `hasPermission(role, permission)` over a static matrix holds no state and is a *correct* pure
-  function; it does not get dragged into the store. Co-location is about keeping the *stateful* domain
-  cohesive, not about banning pure helpers.
+- **Server state → TanStack Query.** JSON fetched from an API stays in the query cache and is observed
+  through reader hooks; do not copy it into Zustand.
+- **Client state → the private feature store.** Persisted choices such as `activeTenantId` live in one
+  internal Zustand store whose actions own every state transition. The feature barrel does not export
+  the store.
+- **React consumers → a facade hook.** The hook composes Query, private store selectors, pure
+  derivation, invalidation, navigation, and effects into a domain-shaped API. Components render that
+  API; they never assemble it from raw pieces.
+- **Non-React consumers → one internal service/session boundary.** Route `beforeLoad`, request
+  headers, and logout share one deliberate imperative object. It may use `getState()` and the query
+  client internally; scattered public wrappers may not.
+- **Derived state → pure functions with explicit inputs, never stored.** "Is a choice pending", "the
+  active membership", and "can this role do X" take memberships, tenant type, selection, or role as
+  arguments. Reading a singleton makes a function an adapter/service, not a pure rule.
+- **Genuinely stateless, reusable rulebooks stay pure — wherever they naturally live.** A pure role
+  lookup over a static permission matrix holds no state and does not get dragged into the store.
+  Co-location is about keeping the *stateful* domain cohesive, not about banning pure helpers.
 
 ```ts
-// CORRECT — one core, one home; hook and imperative form share it
-// @b2b/features/identity/model.ts
-export const useIdentityStore = create<IdentityState>()(…);          // the one home
-export const selectChoicePending = (s: IdentityState) => …;          // derived selector
-export const getChoicePending = () => selectChoicePending(useIdentityStore.getState()); // beforeLoad
-export const useChoicePending = () => useIdentityStore(selectChoicePending);             // render
+const useTenant = (tenantType: TenantType) => {
+  const activeTenantId = useTenantStore((state) => state.activeTenantId);
+  const { data: identity } = useQuery(identityQueryOptions);
+  return resolveTenant(identity?.memberships ?? [], tenantType, activeTenantId);
+};
+
+const tenantSession = {
+  resolve: (tenantType: TenantType) =>
+    resolveTenant(cachedMemberships(), tenantType, useTenantStore.getState().activeTenantId),
+};
 ```
 
 ### The anti-patterns this replaces — never do these
@@ -153,10 +161,9 @@ export const useChoicePending = () => useIdentityStore(selectChoicePending);    
   `isTenantChoicePending()` in `lib/tenantChoice.ts` *and* a reactive `useTenantChoicePending()` in
   `hooks/useActiveMembership.ts`, with `_venue/route.tsx` calling both for the same question. Two
   copies, guaranteed drift. Collapse to one core.
-- **Domain state scattered across store + loose fns + hooks + a cast.** The tenant domain today:
-  `useActiveTenantStore` + `tenantChoice.ts` (imperative fns + cast) + `useActiveMembership.ts`
-  (reactive hooks) + `tenantPermissions.ts` for one concern. Consolidate into the identity slice with
-  one state home; keep only the genuinely-pure `tenantPermissions` rulebook separate.
+- **Raw state owners exported to consumers.** Components and routes must not interpret the identity
+  cache or reach into the active-tenant store directly; the tenant feature exposes a facade hook and
+  one internal imperative session over those owners.
 - **Server data copied into a store.** `useConcertStore.draft = { ...concert }`
   (`app/shared/src/features/concerts/store`) snapshots cache data into global state, which breaks
   background refetch ([`CODE_CONVENTIONS.md`](./CODE_CONVENTIONS.md), "Mutation variables vs form
@@ -333,9 +340,9 @@ same `switch`/ternary on the key across components and hooks.
 
 - Backend polymorphism (`[JsonPolymorphic]`) → a TS discriminated union on `$type`
   ([`CODE_CONVENTIONS.md`](./CODE_CONVENTIONS.md)); dispatch via `Record<X["$type"], …>`.
-- Role→permission is a single `hasPermission(role, permission)` over **one** matrix whose entries use
-  the backend `SharedPermissions` constant **names** (`MembersInvite`, `MembersManageRoles`, …). One
-  complete matrix, sourced from the backend's, not a hand-picked subset.
+- Role→permission is one stable readonly permission set per role. Consumers obtain that set through
+  `useTenant(tenantType).permissions` and use native `.has(permission)` with backend `SharedPermissions`
+  constant **names** (`MembersInvite`, `MembersManageRoles`, …).
 
 ```ts
 // CORRECT — one table, exhaustive; a new $type is a compile error
@@ -348,7 +355,7 @@ const render: Record<PaymentAmount["$type"], (p: PaymentAmount) => ReactNode> = 
 
 - **A `switch`/ternary on `$type` or `role` inlined across components.** The rule ends up copy-pasted
   and drifts; keep it in one table.
-- **A partial, hand-maintained permission matrix.** `tenantPermissions.byRole` modelling 4 of the 13
+- **A partial, hand-maintained permission matrix.** A role catalog modelling 4 of the 13
   backend permissions silently desyncs the gate the day the backend matrix changes. Model the full set,
   aligned to `SharedPermissions`, and treat the backend as the source (the FE gate is cosmetic; the
   server enforces).

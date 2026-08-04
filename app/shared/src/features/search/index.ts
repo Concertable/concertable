@@ -13,6 +13,7 @@ export {
   deserializeSearch,
 } from "./utils/searchSerializer";
 export type {
+  SortField,
   HeaderType,
   Header,
   ArtistHeader,

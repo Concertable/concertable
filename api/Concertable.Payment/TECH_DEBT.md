@@ -4,14 +4,6 @@ When an item is fixed, update both this file and `ARCHITECTURE.md`.
 
 ---
 
-## MEDIUM
-
-### Refund concurrency uses `ChangeTracker.Clear()` on the shared context, leaking `DbContext` into `EscrowService`/`ManagerPaymentService` and risking outbox-message loss
-
-`EscrowService.ExecuteRefundAsync` and `ManagerPaymentService.RefundBoundCommissionByBookingIdAsync` enforce "cumulative gross refund ≤ original gross" with optimistic concurrency: reserve a `PaymentRefundEntity` (bumps the aggregate `ConcurrencyToken`) → `SaveChanges` → on `DbUpdateConcurrencyException`, `context.ChangeTracker.Clear()` → re-read → return a conflict. This forces both services to inject the raw `PaymentDbContext` **solely** to run that `Clear()` — an abstraction leak in a codebase that otherwise funnels writes through repositories + `IUnitOfWork`. Worse, the context is request-scoped and **shared with the transactional outbox** (which saves again at end-of-request), so `ChangeTracker.Clear()` also detaches any outbox/domain-event entries staged earlier in the request — a refund conflict coinciding with unsaved outbox messages silently drops them. EF's maintainers only bless `Clear()` for a dedicated retry loop on a context doing nothing else, which this is not. (`CommissionService` had the sibling insert-or-get version of this and was fixed by moving to the atomic `GetOrCreateAsync` upsert; the refund path is the remaining case.)
-
-**Resolves when:** the ceiling invariant is enforced by an **atomic conditional DB write** — a running-total `UPDATE … SET RefundedGross = RefundedGross + @amount WHERE … AND RefundedGross + @amount <= OriginalGross` (affected-rows = 0 → reject), exposed as a repository method returning success-or-conflict — mirroring the `GetOrCreateAsync` upsert. That removes the concurrency token, the `DbUpdateConcurrencyException`, the `ChangeTracker.Clear()`, and the `PaymentDbContext` injection from both services. Needs a `RefundedGross` running-total column + migration. If reservation domain events must ride the same `SaveChanges`, keep the tracked insert and put only the guard in the atomic same-transaction update; never `Clear()` the shared context.
-
 ## LOW
 
 ### A crashed two-phase refund can strand a `Pending` `PaymentRefundEntity` with no reconcile
@@ -19,18 +11,6 @@ When an item is fixed, update both this file and `ARCHITECTURE.md`.
 Refunds now reserve → charge Stripe → complete: `EscrowService.ExecuteRefundAsync` and `ManagerPaymentService.RefundCommissionAuthorizedByBookingIdAsync` first commit a `Pending` `PaymentRefundEntity` (which bumps the aggregate `ConcurrencyToken`), then call Stripe, then transition the row `Pending → Completed` (on success) or `Pending → Failed` (on Stripe failure). If the process crashes *after* the reservation commits but *before* the completion/release save, the row is left `Pending` forever. This is **fail-closed**: a `Pending` row still `CountsTowardCumulative`, so it blocks (never double-charges) subsequent refunds up to its reserved gross — a naive retry of the same amount trips the cumulative-gross limit rather than issuing a second Stripe refund, and the Stripe idempotency key (`commission:{authId}:refund:{cumulativeGross}`) would collapse a same-amount retry onto the same Stripe refund anyway. But the reserved capacity stays locked until something clears the dangling row. There is no reconcile job that inspects Stripe for a `Pending` reservation and drives it to its true terminal state.
 
 **Resolves when:** a reconcile path exists — e.g. a background sweep (or webhook handler) that, for a `Pending` `PaymentRefundEntity` older than some threshold, queries Stripe for a refund under the reservation's idempotency key and either `Complete`s it (Stripe refund exists) or `Fail`s it (none), freeing the reserved gross.
-
-### Payment.Domain entities are uniformly `public`, violating the `internal`-default rule in `MODULAR_MONOLITH_RULES.md`
-
-All 14 entities in `Concertable.Payment.Domain/Entities` (`EscrowEntity`, `SettlementTransactionEntity`, `TransactionEntity`, `PaymentRefundEntity`, `CommissionAuthorizationEntity`, `CommissionConfigurationEntity`, ledger/payout/stripe entities …) are declared `public`, but `api/agents/MODULAR_MONOLITH_RULES.md` requires Domain entities to default to `internal` with tests using `InternalsVisibleTo`. Surfaced by the Feature/PricingTransparency review (CV1): the finding asked to make the 3 new commission/refund entities `internal`, but doing so for only those would be inconsistent with every existing entity and would cascade compile breakage across Application/Infrastructure that reference them publicly. Deferred rather than singling out the new entities.
-
-**Resolves when:** the rule is applied to the **entire** Payment.Domain entity surface as one deliberate refactor — make entities `internal`, add the Payment integration-test friend assembly, and re-promote only genuinely cross-module types back to `public` — or `MODULAR_MONOLITH_RULES.md` is amended if public entities are the accepted reality here.
-
-### Concurrent *first-use* of a shared ledger account now relies on transaction-rollback + retry, not in-line reconcile
-
-Migrating ledger posting to `IUnitOfWork<PaymentDbContext>.ExecuteAsync` removed `LedgerService`'s hand-rolled `CommitPostingAsync`/`ReconcileConcurrentAccountsAsync` loop, which used to catch the account `IdentityIndex` duplicate-key violation from two postings creating the same account concurrently (e.g. the very first two settlements both minting the singleton `PlatformRevenue` account) and reconcile them onto one row so both postings still committed. Under the staged design each posting commits in its own transaction, so on that race one commit wins and the loser's whole `ExecuteAsync` block (escrow/settlement mutation + ledger staging) rolls back. The async/message paths self-heal on retry (account then exists); a synchronous gRPC caller (`EscrowService` hold/release) would surface the failure to retry itself. Duplicate-*posting* idempotency is unaffected — still enforced by the `PostingIdentityIndex` unique index (tested in `LedgerTransactionConfigurationTests`) plus the `EscrowConfirmedHandler` status guard. The old `LedgerPostingConcurrencyTests` (which drove the deleted reconcile via a real-localdb save barrier) was removed with the migration.
-
-**Resolves when:** the first-use race is decided — either accept transaction-rollback + retry as the contract (add an integration test asserting concurrent first-use converges after retry) or pre-provision the singleton platform accounts so no first-use race exists.
 
 ### Published `Payment.Client` metadata params are still `IDictionary`, not `IReadOnlyDictionary`
 

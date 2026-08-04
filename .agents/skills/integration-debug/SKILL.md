@@ -40,6 +40,10 @@ If invoked with no arguments, run Step 0 then the full suite (Step 1), then Step
 
 ## Step 0 -- Pre-flight check
 
+Before any report or stop, including an environment or startup failure, if this workflow is
+plan-managed, read and apply
+[the shared plan-progress checkpoint](../resume-plan/references/plan-progress-checkpoint.md).
+
 Integration tests use Testcontainers for SQL Server, so Docker must be running:
 
 ```powershell
