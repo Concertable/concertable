@@ -22,10 +22,9 @@ under Completed work.
 
 ## Next Steps
 
-Review the complete `origin/main..HEAD` diff, resolve every finding, then commit, push, and open the
-Kernel PR with the `skip-e2e` label (Kernel-only, additive, fully unit-covered). Merge it, then follow
-the generated `chore/platform-sync-*` PR to green/merged and record the published Kernel version here.
-Do not modify PR #296.
+Push the branch and open the Kernel PR with the `skip-e2e` label (Kernel-only, additive, fully
+unit-covered). Merge it, then follow the generated `chore/platform-sync-*` PR to green/merged and
+record the published Kernel version here. Do not modify PR #296.
 
 ## Completed work
 
@@ -53,11 +52,13 @@ Do not modify PR #296.
 
 ## Verification
 
-- `dotnet test api/Concertable.Shared/tests/Concertable.Kernel.UnitTests` — **239 passed, 0 failed**
-  (2026-08-04, after the `ErrorCodeResolver` rename).
-- `dotnet build api/Concertable.Shared/tests/Concertable.Kernel.UnitTests/...csproj` — 0 warnings,
-  0 errors.
-- `dotnet build api/Concertable.slnx --configuration Release` — see the event log entry for its result.
+- `dotnet test api/Concertable.Shared/tests/Concertable.Kernel.UnitTests` — **240 passed, 0 failed**
+  (2026-08-04, after the review fixes; 239 before the added `RefundEscrowNotFound` row).
+- `dotnet test api/Concertable.Shared/tests/Concertable.Shared.Api.UnitTests` — **51 passed, 0 failed**;
+  the `TError : IError` terminal and ProblemDetails mapping are unaffected by the new factories.
+- `dotnet build api/Concertable.slnx --configuration Release` — **0 errors**, 7 warnings, all
+  pre-existing (`CS0628` on both `UserEntity` types, `CS8604` in `AppFixture`, `CS8632` in generated
+  Reqnroll temp files) and none in a touched file.
 - Derivation is asserted against hard-coded expected codes, never recomputed with the production
   helper: `payment.invalid_request`, `payment.payer_not_found`, `payment.declined`,
   `payment.not_found`, `commission.binding_not_found`, `commission.rate_not_found`,
@@ -67,7 +68,19 @@ Do not modify PR #296.
 
 ## Reviews
 
-Pending: the complete-diff review named in `## Next Steps` has not run yet.
+`/code-review` over the complete branch diff `9dfb5e63d..c0b5802b2` (1 commit), artifact
+`reviews/Refactor-DerivedErrorDefinitions.md`. Range taken from `origin/main` because local `main` was
+4 commits stale, which would otherwise have re-reviewed merged PRs #340 and #341. Two LOW findings,
+both fixed in the follow-up commit and ticked in the artifact; no findings remain open.
+
+- CV1 (test hygiene): the underivable-shape fixtures were at namespace scope, one named exactly
+  `Error`, shadowing that name for every file in the test assembly; `PaymentError` also held the
+  malformed `Legacy_NotFound`. Both moved into an `UnderivableShapes` container.
+- TEST1 (coverage): the repeated-context loop only ever saw one repeated word, so its second iteration
+  was unasserted. Added `EscrowRefundError.RefundEscrowNotFound` → `escrow.refund_not_found`.
+
+Lenses B (microservice isolation), C (module boundaries), and D (seeding) had nothing to judge: the
+diff is Kernel plus docs, with no service, seeder, facade, or cross-service reference touched.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -115,6 +128,16 @@ Pending: the complete-diff review named in `## Next Steps` has not run yet.
 - Outcome: Kernel derives codes only, messages stay explicit or `[DisplayName]`-backed, and the
   published surface is the seven `<TCase>` factories plus `ErrorCodeAttribute`.
 - Follow-up: Release solution build, complete-diff review, then PR.
+
+### 2026-08-04 — verified, reviewed, and findings resolved
+
+- Action: ran the Release solution build and the Shared.Api suite, committed `c0b5802b2`, ran
+  `/code-review` over `9dfb5e63d..c0b5802b2`, then fixed both findings.
+- Evidence: Release build 0 errors; Kernel 240/240; Shared.Api 51/51;
+  `reviews/Refactor-DerivedErrorDefinitions.md` with both findings ticked.
+- Outcome: no review finding is open and the branch is one commit ahead of `origin/main` plus the
+  fix commit.
+- Follow-up: push, open the `skip-e2e` PR, merge, then carry Kernel publication and platform sync.
 
 ## Resume prompt
 
