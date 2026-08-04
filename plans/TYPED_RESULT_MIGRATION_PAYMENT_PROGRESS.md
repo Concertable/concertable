@@ -22,7 +22,7 @@ failure or a payload-free success.
 
 ## Next Steps
 
-Implement Plan Phase 2 as one additive Payment expansion: define operation-owned errors; migrate the
+Continue Plan Phase 2 from the green owned-error foundation: migrate the
 Payment application/domain/infrastructure paths to owned Result and Option; add structured gRPC error
 details and cleanly named typed client methods; keep the existing FluentResults client members as
 compatibility adapters; update Payment plus B2B/Customer fixtures and tests; then run the Payment unit,
@@ -36,8 +36,8 @@ phase checkpoint locally and do not push.
 
 ## Verification
 
-No Phase 2 verification has run yet. Baseline behavior was read from the existing Payment unit and
-integration tests; no green claim is made for changed code.
+- `dotnet test api/Concertable.Payment/tests/Concertable.Payment.UnitTests/Concertable.Payment.UnitTests.csproj --configuration Release --no-restore`: 161 passed, 0 failed, 0 skipped.
+- `dotnet build api/Concertable.Payment/Concertable.Payment.slnx --configuration Release --no-restore`: 0 warnings, 0 errors.
 
 ## Reviews
 
@@ -59,6 +59,13 @@ No Phase 2 review has run yet.
 - Evidence: clean `Feature/PaymentOwnedResultExpansion` at `5d06d3121`; platform pin `0.1.0-alpha.0.772`; existing release/refund tests explicitly assert successful null/no-op outcomes.
 - Outcome: Phase 2 is unblocked with `Result<Option<T>, TError>` selected for release/refund, and this ledger now owns the Payment worktree's operational state.
 - Follow-up: Execute the single implementation and verification action in `## Next Steps`.
+
+### 2026-08-04 — Added the owned-error and structured gRPC foundation
+
+- Action: Added Payment operation error unions, their stable definitions, the protobuf error detail, and the server-side gRPC mapping while preserving legacy status detail.
+- Evidence: Payment unit tests passed 161/161, including every leaf definition, composite forwarding, and structured gRPC detail; the Payment Release solution build completed with zero warnings and zero errors.
+- Outcome: The additive transport/error foundation is green and ready for the application, infrastructure, and client paths to consume.
+- Follow-up: Continue the single implementation and verification action in `## Next Steps`.
 
 ## Resume prompt
 
