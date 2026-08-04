@@ -9,8 +9,8 @@
 ## Current state
 
 Checkpoints 1-5 are complete on the single B2B migration branch. This checkpoint is merged through
-`origin/main` `02b1e7381`, including platform `0.1.0-alpha.0.785` and the final typed-error
-representation conventions.
+`origin/main` `9abdd1cb6`, including platform `0.1.0-alpha.0.790`, the natural error-case naming
+rules, and the published Kernel derived-code factories.
 
 B2B read services now own missing-resource failures for Deal, Artist, Venue, Concert, Application,
 Opportunity, Contract, and Invoice. API controllers only map successful payloads and terminate typed
@@ -20,11 +20,12 @@ Results. `ConcertService` owns the clock-dependent action capabilities; no B2B A
 The B2B errors now follow the merged representation rules. Payload-free errors and errors whose
 definition consumes all construction data are sealed definition records; Venue, Artist, Tenant, and
 Concert Application no longer reference Dunet. Deal retains Dunet only for its structured validation
-variants, with abstract root definitions and per-case overrides. `GetVatCalculationError` is now
-`VatCalculationError`.
+variants, with abstract root definitions and per-case overrides. Its cases are the direct natural
+domain outcomes `Invalid` and `DealNotFound`; published codes remain pinned by contract tests.
+`GetVatCalculationError` is now `VatCalculationError`.
 
 Checkpoint 6 remains blocked: the Payment client on current main and platform
-`0.1.0-alpha.0.785` still publicly import FluentResults and expose the legacy nullable result
+`0.1.0-alpha.0.790` still publicly imports FluentResults and exposes the legacy nullable result
 contracts. No bridge or local source dependency was introduced.
 
 Container-backed integration verification remains environment-blocked. The fresh-container Docker
@@ -66,26 +67,30 @@ and record the per-project results. Do not retry the current Docker fixture fail
 - Updated Deal's necessary validation unions to abstract root definitions with per-case overrides.
 - Renamed `GetVatCalculationError` to `VatCalculationError` and replaced status-shaped singleton
   factories with domain-named error values.
+- Merged the natural error-name and derived-code changes through `origin/main` `9abdd1cb6`, including
+  the published Kernel `0.1.0-alpha.0.790` platform sync.
+- Replaced Deal's `ValidationCase` / `NotFoundCase` names and alias factories with direct `Invalid`
+  and `DealNotFound` cases using derived definitions while preserving the published codes.
 
 ## Verification
 
 - `dotnet build api/Concertable.B2B/Concertable.B2B.slnx --configuration Release --no-restore`:
   succeeded, 0 errors (2 generated UI-test nullable warnings).
 - `dotnet build api/Concertable.slnx --configuration Release --no-restore`: succeeded, 0 errors
-  (6 pre-existing warnings outside this correction).
+  against platform `0.1.0-alpha.0.790` (5 pre-existing warnings outside this correction).
 - B2B architecture tests: 6 passed, 0 failed.
 - Deal unit tests: 21 passed, 0 failed.
 - Tenant unit tests: 115 passed, 0 failed.
 - Concert unit tests: 75 passed, 0 failed.
 - Conversations unit tests: 6 passed, 0 failed.
 - B2B API source audit: zero `.OrFailure(` calls and zero `TimeProvider` dependencies in `*.Api`.
-- Payment gate: blocked; platform `0.1.0-alpha.0.785` still exposes FluentResults from
+- Payment gate: blocked; platform `0.1.0-alpha.0.790` still exposes FluentResults from
   `Concertable.Payment.Client`, including nullable release/refund success payloads.
 - Docker health: fresh-container host-to-container HTTP data round-trip passed.
 - B2B integration suite: environment-blocked during shared fixture startup after Artist SQL
   readiness. Artist reported 17 fixture failures and Concert 136 fixture failures; no application
   result is valid, the runner was stopped before Tenant completed, and no retry was attempted.
-- Final reconciliation: merged with `origin/main` `02b1e7381`; typed-error conventions are applied
+- Final reconciliation: merged with `origin/main` `9abdd1cb6`; typed-error conventions are applied
   and all non-container verification is green.
 
 ## Decisions, discoveries, blockers, and deviations
@@ -101,6 +106,8 @@ and record the per-project results. Do not retry the current Docker fixture fail
   `ErrorDefinition.Kind` remains the centralized transport-policy source.
 - `GetVatCalculationError` became `VatCalculationError`; the redundant `Get` prefix is reserved out
   of default read errors while mutation errors keep their disambiguating verb.
+- Necessary Dunet unions expose natural cases directly. Deal call sites construct `Invalid` and
+  `DealNotFound`; they do not route through alias factories or `Case`-suffixed types.
 - Integration tests must be rerun once Docker remains stable through Testcontainers startup; the
   fixture failure is not application evidence.
 
@@ -147,6 +154,17 @@ and record the per-project results. Do not retry the current Docker fixture fail
 - Outcome: no application integration result was produced; the run is environment-blocked and was
   not retried.
 - Follow-up: stabilize Docker Desktop, rerun the health check, then run the B2B suite once.
+
+### 2026-08-04 - natural case names and derived-code publication synced
+
+- Action: merged the natural-name convention, the Kernel derived-code implementation, and its
+  `0.1.0-alpha.0.790` platform sync; then reconciled the Deal unions to the published surface.
+- Evidence: the full Release solution build passed with 0 errors; architecture 6/6, Deal 21/21,
+  Tenant 115/115, Concert 75/75, and Conversations 6/6 passed; controller and stale-case audits were
+  empty.
+- Outcome: checkpoints 1-5 are current with `origin/main` and the latest typed-result conventions.
+  Checkpoint 6 remains blocked because the published Payment client still exposes FluentResults.
+- Follow-up: wait for Payment Phase 2 publication and platform sync; do not bridge the package gate.
 
 ## Resume prompt
 
