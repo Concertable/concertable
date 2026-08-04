@@ -4,7 +4,7 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\PaymentOwnedResultExpansion`
 - Branch: `Feature/PaymentOwnedResultExpansion`
 - PR: not opened; frozen donor PR #296 remains open and DIRTY at `82d0555cd`
-- Dependency/package gates: This branch is the exclusive canonical implementation owner for Payment Phase 2. Phase 1 merged in PR #290 and platform-synced in PR #291; Payment currently consumes platform `0.1.0-alpha.0.790`. Removing the published FluentResults client surface is an intentional breaking package cutover: Payment must merge and publish before B2B/Customer can migrate on the generated platform-sync PR.
+- Dependency/package gates: This branch is the exclusive canonical implementation owner for Payment Phase 2. Phase 1 merged in PR #290 and platform-synced in PR #291; Payment currently consumes platform `0.1.0-alpha.0.792`. Removing the published FluentResults client surface is an intentional breaking package cutover: Payment must merge and publish before B2B/Customer can migrate on the generated platform-sync PR.
 - Last reconciled: 2026-08-04 from local Git, current `origin/main`, and the complete local verification gate
 
 ## Current state
@@ -25,8 +25,8 @@ any optional expected amounts supplied at binding time, while `CalculateBoundAsy
 calculation from the immutable bound terms and does not accept expected values. The stale merged
 transaction-time validation body and test are removed. Operation-specific errors use explicit Dunet
 case constructors with abstract-root/per-case `Definition`, leaving callers shaped for the future
-native-union cutover. The local implementation gate is green; the branch is 46 commits ahead and 9
-behind current `origin/main`.
+native-union cutover. Each public union root now has its own matching source file. The local
+implementation gate is green; the branch is 48 commits ahead and 0 behind current `origin/main`.
 
 The existing escrow tests establish the intended idempotency semantics: no escrow, an escrow that is
 not held, an already-refunded escrow, and a non-refundable state are successful no-ops. An operation
@@ -36,11 +36,10 @@ that executes returns its transfer or refund. The owned contract is therefore
 
 ## Next Steps
 
-Commit the green Payment checkpoint, merge current `origin/main`, repeat the Payment build/unit/
-integration and full Release gates, run the Payment standalone carve from the committed tree, and
-repeat the dependency greps. Then push/open the canonical PR and close PR #296 only after the
-canonical remote contains its head. After Payment publishes, migrate all B2B/Customer consumers in
-the generated platform-sync PR and take it through green.
+Commit the post-sync verification checkpoint, then wait for Tommy's explicit push instruction. Push
+and open the canonical PR, and close PR #296 only after the canonical remote contains its head. After
+Payment publishes, migrate all B2B/Customer consumers in the generated platform-sync PR and take it
+through green.
 
 ## Completed work
 
@@ -52,8 +51,10 @@ the generated platform-sync PR and take it through green.
 - `dotnet build api/Concertable.Payment/Concertable.Payment.slnx --configuration Release --no-restore`: 0 warnings, 0 errors.
 - `dotnet test api/Concertable.Payment/tests/Concertable.Payment.UnitTests/Concertable.Payment.UnitTests.csproj --configuration Release --no-restore`: 198 passed, 0 failed, 0 skipped.
 - `dotnet test api/Concertable.Payment/tests/Concertable.Payment.IntegrationTests/Concertable.Payment.IntegrationTests.csproj --configuration Release --no-restore --no-build`: 7 passed, 0 failed, 0 skipped.
-- `dotnet build api/Concertable.slnx --configuration Release --no-restore`: 0 errors and 6 unrelated
+- `dotnet build api/Concertable.slnx --configuration Release --no-restore`: 0 errors and 7 unrelated
   pre-existing/generated E2E warnings outside Payment.
+- Payment standalone carve from committed `a31457d48`: 0 errors; package-only restore and all nine
+  deployable-closure projects built successfully.
 - Payment grep gate: no `FluentResults`, `ToLegacy`, obsolete published clients, parallel operation
   errors, generated union factory aliases, or stale gRPC result helpers outside `bin`/`obj`;
   `git diff --check` passed.
@@ -80,6 +81,18 @@ No Phase 2 review has run yet.
   commission-branch implementation is donor evidence only; its behavior is now reconciled here.
 
 ## Event log
+
+### 2026-08-04 — Synced current main and passed the standalone package gate
+
+- Action: Committed the reconciled owner as `60fbf6b93`, merged nine current `origin/main` commits as
+  `a31457d48`, repeated the local verification gate, and built the committed Payment archive as a
+  standalone package-only closure. Split the public union roots into matching source files after the
+  carve exposed the file/type analyzer convention.
+- Evidence: Branch is 0 behind `origin/main`; Payment build is 0 warnings/0 errors; unit tests pass
+  198/198; integration tests pass 7/7; full Release build has 0 errors; standalone carve has 0 errors;
+  dependency greps and diff hygiene are clean.
+- Outcome: The Payment owner is current, verified, package-isolated, and ready for its canonical PR.
+- Follow-up: Commit this ledger/convention checkpoint, then push/open the PR on explicit instruction.
 
 ### 2026-08-04 — Reconciled donor behavior and restored a green Payment owner
 
