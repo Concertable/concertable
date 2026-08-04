@@ -52,6 +52,18 @@ pre-existing danglers) + every `plans/`/`@plans/` link resolves + `git mv` renam
 - Outcome: hit list enumerated; ready to execute the moves.
 - Follow-up: run plan §7.
 
+### 2026-08-04 — Lifecycle close-out: deleted 3 terminal docs
+
+- Action: ran a codebase-verified terminal-status triage over all 25 non-roadmap plan/reference docs
+  (per Tommy folding stale-plan deletion into this PR).
+- Result: deleted 3 (`DEAL_RENAME_PLAN`, `WORKFLOW_STEP_NAMING_PLAN`, `PLATFORM_FEE_STORAGE_INVESTIGATION`)
+  — all shipped/concluded, zero live inbound links. Trimmed one stale sibling-ref sentence in
+  `E2E_HARNESS_RENAME_PLAN.md`.
+- Kept despite reading terminal: `MICROSERVICE_STEPS_PLAN` (canonical migration-order ref for live
+  `api/docs` + active CONT plan — deleting would dangle 6 links), `POLYREPO` (live-mirror runbook).
+- Everything else has real outstanding work (triage confirmed against code). Gate re-run: no refs to
+  deleted docs, no new danglers.
+
 ### 2026-08-04 — Ran the §7 grep gate for real; fixed one miss
 
 - Action: executed the full §7 sweep (never actually recorded before). Repo-wide grep for stale

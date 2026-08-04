@@ -149,8 +149,13 @@ e2e/microservice/polyrepo/money/commission clusters, `LAUNCH_ROADMAP` → its pl
 - **`SELF_BILLING_AGREEMENT` is not on `main`** — that plan only lived on the scrapped branch (never
   merged), so it is not part of this PR. It will be (re)created under this convention as
   `plans/launch/SELF_BILLING_AGREEMENT_PLAN.md` + `_PROGRESS.md` wherever that work continues.
-- **No deletions.** Stale-looking plans (`MANAGER_FRONT_PAGE*`, `TECHNICAL_DEBT`, near-terminal
-  `DEAL_RENAME`) are renamed, not removed — lifecycle close-out is separate judgement.
+- **Lifecycle close-out (done in this PR, per direction).** A terminal-status triage was run against
+  the codebase; 3 verified-shipped/concluded docs were deleted — `DEAL_RENAME_PLAN` (names-only rename
+  shipped), `WORKFLOW_STEP_NAMING_PLAN` (consolidation shipped), `PLATFORM_FEE_STORAGE_INVESTIGATION`
+  (concluded "do nothing", absorbed into `PLATFORM_COMMISSION_PLAN`). `MICROSERVICE_STEPS_PLAN` and
+  `POLYREPO` read terminal but are kept — the former is the canonical migration-order reference for
+  live `api/docs` architecture docs + the active CONT plan; the latter is a live-mirror runbook. Every
+  other plan has real outstanding work (triage confirmed) and stays.
 - **No ledger backfill.** The ~15 plans with no `_PROGRESS` stay ledger-less; PLAN.md's backward-compat
   clause governs them.
 - **8 pre-existing dangling links** (`PLATFORM_PACKAGE_SYNC`, `PIPELINE_PROBLEMS`, `PDF_RENDERER_RENAME`,
