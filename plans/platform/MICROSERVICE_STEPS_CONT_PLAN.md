@@ -1,6 +1,6 @@
 # Microservice Migration — Continuation Steps
 
-> **Picks up where** [MICROSERVICE_STEPS.md](MICROSERVICE_STEPS.md) left off (Phases 1–5 complete).
+> **Picks up where** [MICROSERVICE_STEPS_PLAN.md](MICROSERVICE_STEPS_PLAN.md) left off (Phases 1–5 complete).
 >
 > **Status:** Phases 6–8 ✅ complete (2026-05-21). Phase 9 next.
 >

@@ -201,7 +201,7 @@ per-variant strategy (`FlatFee` vs `%-of-agreed-fee`) computes the fee, then wri
 `PricingPolicyId` and the resolved `PlatformFee` onto the row. History never recomputes: the money is
 frozen by the snapshot, and the FK is auditable proof of which policy version produced it.
 
-**Ownership note (already an open decision, not re-litigated here):** `PLATFORM_COMMISSION.md` §1.2/§6
+**Ownership note (already an open decision, not re-litigated here):** `PLATFORM_COMMISSION_PLAN.md` §1.2/§6
 keeps the flat fee Payment-owned for v1 and says the `%-variant` would be resolved in B2B (which holds
 deal context) and the resolved fee/basis passed to Payment. That boundary decision is orthogonal to this
 one: **whichever service resolves the policy writes the version id + resolved money; Payment snapshots

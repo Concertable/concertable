@@ -1,6 +1,6 @@
 # Deploying Concertable to Azure — the method + first-deploy runbook (WORKING)
 
-**Status:** design, not yet executed. This is the concrete execution of `CONFIG_AND_DEPLOYMENT.md`
+**Status:** design, not yet executed. This is the concrete execution of `CONFIG_AND_DEPLOYMENT_PLAN.md`
 Phase 4 and resolves the four gaps Phase 0 left open (cost, SPA hosting + per-env config, Key-Vault-vs-ACA
 secrets wiring, multi-DB migration ordering). Target: a **cheap, private, reproducible test environment**
 we can stand up ~a month ahead and keep testable at very low cost — not a public launch. Prod-grade knobs
@@ -26,7 +26,7 @@ are called out per section so the same IaC scales up later by changing tfvars, n
 because DbUp gives the app no orchestrator-injected connection string. Here the connection string is just an
 **env var** — Aspire injects it locally, the ACA container app injects it in cloud (value from Key Vault via
 managed identity). Deployment and "do we need a conn-string abstraction" are unrelated; the answer is still
-no (see `CONFIG_AND_DEPLOYMENT.md` → "Recommended architecture"). The *runtime* code (`GetConnectionString`
+no (see `CONFIG_AND_DEPLOYMENT_PLAN.md` → "Recommended architecture"). The *runtime* code (`GetConnectionString`
 + `EnrichSqlServerDbContext`) is identical regardless of who provisions the DB.
 
 > **Reconciliation with the Prompt 3 architecture note:** that section floated
@@ -319,7 +319,7 @@ The goal: one command to a full local stack, and the **same config keys** locall
   Functions Consumption** (single hourly `TimerTrigger`, already a Functions v4 isolated worker; ACA rejected).
   See Images section for the rationale + build note.
 - **Custom domains / OIDC — Cloudflare + `concertable.co.uk` — scheme decided + runbook authored 2026-07-17,
-  see [`DOMAINS_AND_DNS.md`](./DOMAINS_AND_DNS.md).** Per-surface subdomains: `customer.` / `venue.` /
+  see [`DOMAINS_AND_DNS.md`](DOMAINS_AND_DNS.md).** Per-surface subdomains: `customer.` / `venue.` /
   `artist.` / `business.` (SPAs on SWA), `auth.` + per-service `b2b-api.` / `customer-api.` / `search-api.` /
   `payment-api.` (backends on ACA); prod bare, non-prod nests one level (`customer.dev.`, `auth.staging.`).
   Cloudflare is authoritative DNS; app hosts **DNS-only** so Azure's per-host managed certs validate; apex +
@@ -333,8 +333,8 @@ The goal: one command to a full local stack, and the **same config keys** locall
   no azd. Revisit only if the hand-authored ACA definitions become burdensome.
 
 ## Cross-refs
-- Workstream plan + phases: [`CONFIG_AND_DEPLOYMENT.md`](./CONFIG_AND_DEPLOYMENT.md) (this is its Phase 4 +
+- Workstream plan + phases: [`CONFIG_AND_DEPLOYMENT_PLAN.md`](CONFIG_AND_DEPLOYMENT_PLAN.md) (this is its Phase 4 +
   the resolution of Phase 0's four open gaps).
-- Custom domains / Cloudflare DNS scheme + runbook: [`DOMAINS_AND_DNS.md`](./DOMAINS_AND_DNS.md).
-- Runtime/design-time/secrets architecture: `CONFIG_AND_DEPLOYMENT.md` → "Recommended architecture".
-- Region config (separate, dormant): [`CONFIG_STRATEGY.md`](./CONFIG_STRATEGY.md).
+- Custom domains / Cloudflare DNS scheme + runbook: [`DOMAINS_AND_DNS.md`](DOMAINS_AND_DNS.md).
+- Runtime/design-time/secrets architecture: `CONFIG_AND_DEPLOYMENT_PLAN.md` → "Recommended architecture".
+- Region config (separate, dormant): [`CONFIG_STRATEGY.md`](CONFIG_STRATEGY.md).

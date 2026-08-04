@@ -165,7 +165,7 @@ and its workflow-registry/builder consumers. `ConcertStateMachine*` (a different
   narrative rewrite is pre-existing staleness, *not* created by this rename).
 - ✅ Updated references in `api/agents/CODE_PATTERNS.md`, `api/docs/MICROSERVICES_ARCHITECTURE.md`,
   `api/Concertable.B2B/ARCHITECTURE.md`, `api/Concertable.B2B/TECH_DEBT.md`.
-- ✅ Re-aligned the Rust plan → `plans/RUST_DEAL_MICROSERVICE.md` (`ContractEngine`→`DealEngine`,
+- ✅ Re-aligned the Rust plan → `plans/platform/RUST_DEAL_MICROSERVICE_PLAN.md` (`ContractEngine`→`DealEngine`,
   proto `concertable.contract.v1`→`concertable.deal.v1`, `message Contract`→`Deal`, scope
   `contract:settle`→`deal:settle`, crate `concertable-contract`→`concertable-deal`, folder
   `deal-engine`). Discriminator string values kept.
@@ -230,4 +230,4 @@ comments + string literals + `data-testid`s + routes + docs):
 - No behaviour, workflow, settlement-math, or lifecycle changes — names only.
 - The `$type` discriminator string values / enum member names — already name the deal structures
   correctly, so they stay (see the Phase 6 allowlist). Everything *else* on the wire is renamed in Phase 6.
-- The Rust *implementation* — only its plan's naming is re-aligned (`plans/RUST_DEAL_MICROSERVICE.md`).
+- The Rust *implementation* — only its plan's naming is re-aligned (`plans/platform/RUST_DEAL_MICROSERVICE_PLAN.md`).

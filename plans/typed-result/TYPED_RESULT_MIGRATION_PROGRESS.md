@@ -1,6 +1,6 @@
 # Typed Result convention update progress
 
-- Plan: `plans/TYPED_RESULT_MIGRATION.md`
+- Plan: `plans/typed-result/TYPED_RESULT_MIGRATION_ROADMAP.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Docs\TypedErrorRepresentation`
 - Branch: `Docs/TypedErrorRepresentation`
 - Correction PR: [#340 — docs(api): simplify typed error representation](https://github.com/Concertable/concertable/pull/340)
@@ -25,7 +25,7 @@ Merge docs-only correction PR #340 through the `merge-docs` workflow.
   PRs #296 and #282, and the Phase 2 ledger on `Feature/CommissionBindingDeferredPricing`.
 - Updated `api/agents/CODE_CONVENTIONS.md` with the concrete Dunet declaration pattern and general
   owned Result/Option rules missing from the shorter convention.
-- Updated `plans/TYPED_RESULT_MIGRATION.md` to match the convention and identify PR #296 as the only
+- Updated `plans/typed-result/TYPED_RESULT_MIGRATION_ROADMAP.md` to match the convention and identify PR #296 as the only
   owner of Payment Phase 2.
 - Captured the docs and reconstructed baseline in commit `eb87a6225`.
 - Pushed `eb87a6225` to `origin/Docs/TypedResultConventions` and opened draft PR #335.
@@ -96,5 +96,5 @@ No code review has run yet.
 
 ```
 cd C:\Users\TommySeery\source\repos\Concertable.worktrees\Docs-TypedResultConventions
-Read @plans/TYPED_RESULT_MIGRATION.md and @plans/TYPED_RESULT_MIGRATION_CONVENTIONS_PROGRESS.md, then do what the ledger's `## Next Steps` says.
+Read @plans/typed-result/TYPED_RESULT_MIGRATION_ROADMAP.md and @plans/typed-result/TYPED_RESULT_MIGRATION_PROGRESS.md, then do what the ledger's `## Next Steps` says.
 ```

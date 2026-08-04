@@ -11,7 +11,7 @@
 > `UnitResult<TError>` and `Result<TValue, TError>`, and `Option<T>` in `Concertable.Kernel`. They are stable domain vocabulary,
 > not adapters over CSharpFunctionalExtensions, FluentResults, OneOf, Dunet, or a future runtime type.
 
-Docs-convention progress lives in @plans/TYPED_RESULT_MIGRATION_CONVENTIONS_PROGRESS.md.
+Docs-convention progress lives in @plans/typed-result/TYPED_RESULT_MIGRATION_PROGRESS.md.
 
 This is an execution plan for unfinished work. Git history is the archive for the superseded CFE
 design.
@@ -1055,7 +1055,7 @@ not inferred from the present `Result<T?>` shape.
 cd C:\Users\TommySeery\source\repos\Concertable.worktrees\OwnedResultFoundation
 
 Run /code-review for Refactor/OwnedResultFoundation's complete Phase 1 diff against origin/main.
-Read plans/TYPED_RESULT_MIGRATION.md and the required AGENTS/architecture files first. Review the
+Read plans/typed-result/TYPED_RESULT_MIGRATION_ROADMAP.md and the required AGENTS/architecture files first. Review the
 owned Result/Option foundation, ValidationErrors, Shared.Api terminals, native-union compatibility,
 and expanded tests. Do not begin Phase 2; it remains blocked until this branch merges, Kernel
 publishes, and the generated platform-sync PR lands green.
