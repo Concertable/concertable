@@ -1,6 +1,6 @@
 # Concertable Launch Roadmap
 
-> **Roadmap** for the launch epic — the living progress tracker, not a plan (no `_PROGRESS.md`, never deleted, lives until launch). Each buildable item spins off its own feature plan; see [`../AGENTS.md`](../AGENTS.md) "Roadmaps".
+> **Roadmap** for the launch epic — the living progress tracker, not a plan (no `_PROGRESS.md`, never deleted, lives until launch). Each buildable item spins off its own feature plan; see [`../agents/ROADMAP.md`](../agents/ROADMAP.md).
 >
 > **Goal:** Production launch of the B2B platform (venue↔artist booking + automated settlement) by **November 2026**.
 >

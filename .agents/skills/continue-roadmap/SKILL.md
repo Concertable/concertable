@@ -6,7 +6,7 @@ description: Pick the next feature off an epic's roadmap and hand it off to be p
 # Continue Roadmap
 
 A roadmap (`*_ROADMAP.md`) is an epic's living progress tracker: no `_PROGRESS.md`, never deleted,
-checkboxes *are* its progress (see `plans/AGENTS.md` "Roadmaps"). Each buildable item spins off its own
+checkboxes *are* its progress (see `plans/agents/ROADMAP.md`). Each buildable item spins off its own
 feature plan. This skill picks the next such item and hands it off to be planned in a fresh context — it
 does **not** design or write the plan here, and does **not** resume an existing plan (that's
 `/resume-plan`).
@@ -32,7 +32,7 @@ does **not** design or write the plan here, and does **not** resume an existing 
    - name the roadmap line and the exact source docs to read (the roadmap, the relevant
      `LEGAL_REQUIREMENTS.md` / architecture / already-shipped feature), and any dependency gate;
    - instruct: branch `Feature/<Name>` off `origin/main`, then write `plans/<area>/<STEM>.md` **and** its
-     `<STEM>_PROGRESS.md` ledger from the progress template, following `plans/AGENTS.md`;
+     `<STEM>_PROGRESS.md` ledger from the progress template, following `plans/agents/PLAN.md`;
    - state the outcome, constraints and what's out of scope — but leave the design to the plan;
    - tick the roadmap line when the feature ships (do not delete the roadmap).
    Do not open the branch or write the plan here.
