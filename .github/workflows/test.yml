@@ -548,6 +548,7 @@ jobs:
     env:
       # B2B/Customer integration tests restore Payment.Client/Contracts, now feed packages; 401 without this.
       GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      TESTCONTAINERS_RYUK_DISABLED: "true"
 
     strategy:
       matrix:
