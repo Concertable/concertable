@@ -5,10 +5,10 @@ description: Resume plan-managed work from its ledger. Use when Tommy invokes `/
 
 # Resume Plan
 
-A plan keeps one `_PROGRESS.md` ledger **per worktree** working it, whose `## Next Steps` is the
-authoritative next action kept current at every checkpoint (see `plans/AGENTS.md`). The ledger is 1:1
-with a worktree; a plan may have several. Resuming is landing in the right worktree, reading its ledger,
-and doing what it says — not reconstructing it.
+A plan keeps one `_PROGRESS.md` ledger **per worktree** working it, whose `## Next Steps` is the single
+resolved next action kept current at every checkpoint (see `plans/AGENTS.md`). The ledger is 1:1 with a
+worktree; a plan may have several. Resuming is landing in the right worktree, reading its ledger, and
+executing that action — not choosing among paths or reconstructing it.
 
 ## Steps
 
@@ -24,8 +24,9 @@ and doing what it says — not reconstructing it.
    Then `cd` to the resolved worktree before anything else — a fresh session may open elsewhere.
 2. **Read in full:** `AGENTS.md`, `plans/AGENTS.md`, the plan, and the resolved ledger.
 3. **Confirm the ledger still holds** before acting: check its header branch/PR/gates against actual
-   `git`/PR state, and if a remote transition (queued PR merged, package published, platform-sync) landed
-   since the last checkpoint, update the ledger's current-state, `## Next Steps`, and event log first.
+   `git`/PR state and confirm `## Next Steps` still names one resolved action under `AGENTS.md`. Reconcile
+   stale state or unresolved alternatives from current evidence and standing instructions, then update
+   the ledger's current-state, `## Next Steps`, and event log before acting.
 4. **Do what `## Next Steps` says,** honoring its prerequisites and gates.
 
 For the checkpoint procedure repository workflows apply when they advance plan work, see
