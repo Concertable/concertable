@@ -251,10 +251,10 @@ point where the context becomes disposable. Don't carry unwritten state across a
   `## Next Steps` says." No branch to verify, checkpoints, gates, commands, or steps in the prompt —
   every such specific lives in the ledger, never restated, so the prompt can't drift. A handoff always
   comes from one worktree, so it names that worktree's ledger. See [`../PROMPTS.md`](../PROMPTS.md).
-- `/resume-plan` takes a **ledger**, a **plan**, or a **worktree**. A ledger — or a plan plus a named
-  worktree — resolves straight to that worktree: `cd` there and do its `## Next Steps`. A plan alone
-  resolves by the ledgers whose `- Plan:` names it: one → resume it; several → list them and ask which.
-  Always confirm the ledger still matches git/PR reality first.
+- `/resume-plan` takes a **ledger**, a **plan**, and/or a **worktree** (by absolute path, partial path,
+  or branch). Any named worktree — alone or with a plan/ledger — resolves straight there: `cd` and do its
+  `## Next Steps`, no asking. A plan alone resolves by the ledgers whose `- Plan:` names it: one → resume
+  it; several → list them and ask which. Always confirm the ledger still matches git/PR reality first.
 - A completed and verified phase ends the turn after its handoff. Start the next phase only when Tommy
   explicitly names it and says to do it now.
 
