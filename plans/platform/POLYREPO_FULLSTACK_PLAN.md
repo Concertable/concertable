@@ -11,7 +11,7 @@ service mirrors stop being "separate backend, frontend left behind in the monore
 the FE a mirror could subtree-split into a standalone buildable repo. This plan builds the FE analogue of
 the backend carve. It is the mandatory prerequisite for any full-stack split shape.
 
-**This mirrors the backend effort** documented in [`api/ARCHITECTURE.md`](../api/ARCHITECTURE.md)
+**This mirrors the backend effort** documented in [`api/ARCHITECTURE.md`](../../api/ARCHITECTURE.md)
 ("Cross-service contract distribution" / "Per-folder build closures"). Read that first — every phase here
 is the npm counterpart of a step that already exists there for .NET.
 

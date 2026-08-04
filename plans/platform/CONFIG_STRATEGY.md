@@ -6,7 +6,7 @@ country). No region *machinery* is planned.
 
 > **App-wide config/secrets/deployment** (App Configuration, Key Vault, the `config` repo,
 > Azure deployment) is a *separate, bigger* workstream — see
-> [`CONFIG_AND_DEPLOYMENT.md`](./CONFIG_AND_DEPLOYMENT.md). This doc stays scoped to *region* variance.
+> [`CONFIG_AND_DEPLOYMENT_PLAN.md`](CONFIG_AND_DEPLOYMENT_PLAN.md). This doc stays scoped to *region* variance.
 
 ## Position: UK-only today; "scalable" = consolidated, not abstracted
 There is one deployment: UK. We are **not** building region machinery — no Azure App Config, no

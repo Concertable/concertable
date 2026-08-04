@@ -85,7 +85,7 @@ runs the real `accept + pay → cancel`. That removes the redundant half without
 - The four per-contract `books artist on …` happy paths — the canonical creation tests; they stay
   full-flow.
 - The payment variants — already fast-forwarded correctly.
-- Renaming the shared harness project — separate plan (`plans/E2E_HARNESS_RENAME.md`).
+- Renaming the shared harness project — separate plan (`plans/platform/E2E_HARNESS_RENAME_PLAN.md`).
 
 ## Gate (every phase)
 `dotnet build api/Concertable.slnx` green · the touched UI suite green via `./scripts/e2e.ps1 ui <suite>`

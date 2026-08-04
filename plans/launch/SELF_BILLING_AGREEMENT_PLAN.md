@@ -15,7 +15,7 @@
 > machinery (advanced-tier self-hosted e-signature, immutable snapshot, lazy PDF render, HATEOAS gating)
 > — it does not reinvent it.
 >
-> **Next steps live in @plans/b2b/SELF_BILLING_AGREEMENT_PROGRESS.md → `## Next Steps`.**
+> **Next steps live in @plans/launch/SELF_BILLING_AGREEMENT_PROGRESS.md → `## Next Steps`.**
 
 Ledger: [`SELF_BILLING_AGREEMENT_PROGRESS.md`](./SELF_BILLING_AGREEMENT_PROGRESS.md). Read
 [`../agents/PLAN.md`](../agents/PLAN.md) before working a phase.

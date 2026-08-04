@@ -1,7 +1,7 @@
 # Manager Front Page — Session Feedback & Decisions
 
 Captured during Phase A implementation. These supersede the original plan
-where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](./MANAGER_FRONT_PAGE_PLAN.md).
+where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_PAGE_PLAN.md).
 
 ## Naming & terminology
 

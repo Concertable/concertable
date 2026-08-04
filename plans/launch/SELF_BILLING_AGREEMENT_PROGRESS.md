@@ -1,8 +1,8 @@
 # Self-billing agreement + 12-month renewal consent — progress
 
-- Plan: `plans/b2b/SELF_BILLING_AGREEMENT.md`
+- Plan: `plans/launch/SELF_BILLING_AGREEMENT_PLAN.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable` (main checkout)
-- Branch: `Feature/SelfBillingAgreement`
+- Branch: `Feature/Launch_SelfBillingAgreement`
 - PR: not opened
 - Dependency/package gates: none yet. Phase 3 touches `api/**`, so on merge a
   `chore/platform-sync-*` PR will fire and must be owned to green before close-out.
@@ -122,5 +122,5 @@ None yet.
 
 ```
 cd C:\Users\TommySeery\source\repos\Concertable
-Read @plans/b2b/SELF_BILLING_AGREEMENT.md and @plans/b2b/SELF_BILLING_AGREEMENT_PROGRESS.md, then do what the ledger's `## Next Steps` says.
+Read @plans/launch/SELF_BILLING_AGREEMENT_PLAN.md and @plans/launch/SELF_BILLING_AGREEMENT_PROGRESS.md, then do what the ledger's `## Next Steps` says.
 ```
