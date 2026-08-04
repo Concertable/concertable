@@ -4,10 +4,17 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\CommissionBindingDeferredPricing`
 - Branch: `Feature/CommissionBindingDeferredPricing`
 - PR: [#296 — Own deferred commission pricing in Payment](https://github.com/Concertable/concertable/pull/296)
-- Dependency/package gates: Phase 1 is recorded complete. Phase 1b is implemented on PR #296 but cannot enter the publish/platform-sync/deployment gate until the PR merges; this work stops at the PR. As of 2026-08-04 the branch is **current with `origin/main`** and every requested local gate is green; the remaining pre-push step is `/incremental-review` of the post-merge commit.
-- Last reconciled: 2026-08-04 after merging current `origin/main` `f05f8832d` into the branch (merge commit `b6fb56c6c`), resolving the single `plans/AGENTS.md` doc conflict, and re-running the full Payment verification gate green.
+- Dependency/package gates: Phase 1 is recorded complete. Phase 1b is pushed to PR #296 at `82d0555cd`, reviewed clean, and current with `origin/main`; CI was running when last reconciled. Merge, publication, platform sync, and deployment remain gated on Tommy's explicit instruction.
+- Last reconciled: 2026-08-04 against PR #296 remote head `82d0555cd` and current GitHub checks
 
 ## Current state
+
+The reviewed work head, `origin/Feature/CommissionBindingDeferredPricing`, and PR #296's source head
+all equal `82d0555cd`. The branch is 0 commits behind `origin/main`. PR #296 is open, non-draft, and
+`BLOCKED`; `changes` is green and the CI `build` check was running when last reconciled. Any later local
+commit is an observation-only plan checkpoint and is not part of the source PR head.
+
+### Superseded pre-push snapshot
 
 Phase 1b's Payment-owned deferred commission binding and owned-result expansion are implemented on
 PR #296 and are now reconciled with current `origin/main`. Local `HEAD` is the unpushed merge commit
@@ -28,12 +35,11 @@ The recovery stash `76438f7cf003438a313be9049be708c1f72c6990` remains intact.
 
 ## Next Steps
 
-Phase 1b is locally complete, reviewed clean, and verified current with `origin/main`. The branch is
-**unpushed** — local `HEAD` (`0dab856dc`, or its ledger checkpoint) is well ahead of PR #296's remote
-head `f487ad1da`. The next action is the Phase 1b hard-stop, which is **gated on Tommy's explicit
-go-ahead**: push the branch to PR #296, then merge it, own its `chore/platform-sync-*` PR to green, and
-let the expanded Payment runtime deploy — only after which Phase 2 (B2B gross ownership) may start.
-**Do not push or merge PR #296 unless Tommy separately requests it.** Nothing further to do locally.
+Phase 1b is complete, pushed to PR #296 at `82d0555cd`, reviewed clean, and verified current with
+`origin/main`. Confirm the currently-running CI build reaches green. The next action is then the Phase
+1b hard-stop, gated on Tommy's explicit go-ahead: merge PR #296, own its `chore/platform-sync-*` PR to
+green, and let the expanded Payment runtime deploy before Phase 2 (B2B gross ownership) begins.
+**Do not merge PR #296 unless Tommy separately requests it.**
 
 ## Resume prompt
 
@@ -95,6 +101,17 @@ PR #296 work):
 - No local E2E was run: PR #296's merge queue remains the E2E gate.
 
 ## Event log
+
+### 2026-08-04 — PR head and CI reconciliation
+
+- Action: Reconciled the completed Phase 1b work with current local, remote, and GitHub state.
+- Evidence: local reviewed work head, `origin/Feature/CommissionBindingDeferredPricing`, and PR #296
+  `headRefOid` all equal `82d0555cd`; the branch is 0 behind `origin/main`; GitHub reported the PR open,
+  non-draft, `BLOCKED`, with `changes` green and `build` in progress.
+- Outcome: The ledger's former unpushed state is obsolete. Phase 1b is on PR #296; this checkpoint does
+  not mutate that source PR head.
+- Follow-up: Confirm CI green, then retain the merge/platform-sync/deploy hard stop until Tommy
+  explicitly requests it.
 
 ### 2026-08-04 — incremental review of the post-merge state — no findings
 

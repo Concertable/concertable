@@ -5,7 +5,7 @@
 - Branch: `Feature/CommissionBindingDeferredPricing`
 - PR: [#296 — Own deferred commission pricing in Payment](https://github.com/Concertable/concertable/pull/296)
 - Dependency/package gates: Phase 1 Kernel foundation is recorded complete and synced. Phase 2 is implemented locally but remains unmerged; Payment publication and platform sync cannot begin until PR #296 lands.
-- Last reconciled: 2026-08-04 after merging current `origin/main` `f05f8832d` into the branch (merge commit `b6fb56c6c`) and re-running the full Payment gate green, alongside the commission ledger.
+- Last reconciled: 2026-08-04 against PR #296 remote head `82d0555cd` and current GitHub checks
 
 ## Current state
 
@@ -15,18 +15,18 @@ surface on that same branch. The owned-result changes replace expected Payment f
 Concertable-owned typed results through application, domain transitions, infrastructure, gRPC, and
 published client adapters while preserving exception and cancellation paths.
 
-Local `HEAD` is merge commit `b6fb56c6c`, which brought current `origin/main` `f05f8832d` (26 commits,
-including main's Concert-owner-response/typed-result DTO reshuffle) onto the branch. Every Payment source
-file auto-merged; the only conflict was `plans/AGENTS.md` (docs). PR #296's remote head remains
-`f487ad1da` because no push is authorized. The branch is now 0 commits behind `origin/main`.
+The reviewed work head, `origin/Feature/CommissionBindingDeferredPricing`, and PR #296's source head
+all equal `82d0555cd`. The branch is 0 commits behind `origin/main`. GitHub CI was still running its
+build check when last reconciled. Any later local commit is an observation-only plan checkpoint and is
+not part of the source PR head.
 
 ## Next Steps
 
-Payment owned-result Phase 2 is locally complete, reviewed clean (incremental review 2026-08-04, range
-`99ef2faac..0dab856dc`, no new findings; watermark now `0dab856dc`), and current with `origin/main`.
-The branch is unpushed. Advancing depends on PR #296 merging, Payment packages publishing, and the
-generated platform-sync PR landing green — all downstream of the commission Phase 1b hard-stop, which
-awaits Tommy's explicit go-ahead. Do not begin Typed Result Phase 3 until then. Nothing further locally.
+Payment owned-result Phase 2 is complete, pushed to PR #296 at `82d0555cd`, reviewed clean
+(incremental review 2026-08-04, range `99ef2faac..0dab856dc`, no new findings), and current with
+`origin/main`. Confirm PR #296's currently-running CI reaches green. Advancing then depends on Tommy's
+explicit merge instruction, followed by Payment package publication and a green generated
+platform-sync PR. Do not begin Typed Result Phase 3 until those gates land.
 
 ## Resume prompt
 
@@ -70,6 +70,17 @@ On merge commit `b6fb56c6c` (`origin/main` `f05f8832d` merged in):
   platform-sync PR must land green before any consumer phase begins.
 
 ## Event log
+
+### 2026-08-04 — PR head and CI reconciliation
+
+- Action: Reconciled the completed Payment Phase 2 work with current local, remote, and GitHub state.
+- Evidence: local reviewed work head, `origin/Feature/CommissionBindingDeferredPricing`, and PR #296
+  `headRefOid` all equal `82d0555cd`; the branch is 0 behind `origin/main`; GitHub reported the PR open,
+  non-draft, `BLOCKED`, with `changes` green and `build` in progress.
+- Outcome: The ledger's former unpushed state is obsolete. Phase 2 is on PR #296; this checkpoint does
+  not mutate that source PR head.
+- Follow-up: Confirm CI green, then retain the merge/publish/platform-sync hard stop until Tommy
+  explicitly requests it.
 
 ### 2026-08-04 — incremental review of the post-merge state — no findings
 
