@@ -1,20 +1,28 @@
 ---
 name: resume-plan
-description: Resume plan-managed work from its ledger. Use when Tommy invokes `/resume-plan` or wants to pick a plan back up after a clear or handoff. Take an optional `plans/*.md` reference; otherwise use the current worktree's plan. `cd` to the plan's worktree, read AGENTS.md, plans/AGENTS.md, the plan and its `_PROGRESS.md` ledger, then do what the ledger's `## Next Steps` says.
+description: Resume plan-managed work from its ledger. Use when Tommy invokes `/resume-plan` or wants to pick a plan back up after a clear or handoff. Take an optional reference to a `_PROGRESS.md` ledger, a plan `.md`, or a worktree; otherwise use the current worktree's ledger. `cd` to the resolved worktree, read AGENTS.md, plans/AGENTS.md, the plan and its ledger, then do what the ledger's `## Next Steps` says.
 ---
 
 # Resume Plan
 
-Every plan keeps a companion `<PLAN_STEM>_PROGRESS.md` ledger whose `## Next Steps` is the authoritative
-next action, kept current at every checkpoint (see `plans/AGENTS.md`). Resuming is landing in the right
-worktree, reading the ledger, and doing what it says — not reconstructing it.
+A plan keeps one `_PROGRESS.md` ledger **per worktree** working it, whose `## Next Steps` is the
+authoritative next action kept current at every checkpoint (see `plans/AGENTS.md`). The ledger is 1:1
+with a worktree; a plan may have several. Resuming is landing in the right worktree, reading its ledger,
+and doing what it says — not reconstructing it.
 
 ## Steps
 
-1. **Land in the worktree.** With a plan reference (`/resume-plan @plans/.../PLAN.md`), resolve its
-   worktree from `git worktree list` and `cd` there even when the session opened elsewhere; otherwise use
-   the current worktree.
-2. **Read in full:** `AGENTS.md`, `plans/AGENTS.md`, the plan, and its `<PLAN_STEM>_PROGRESS.md`.
+1. **Resolve the ledger and its worktree.** `/resume-plan` takes a `_PROGRESS.md` ledger, a plan `.md`,
+   or a worktree:
+   - **a ledger** (`/resume-plan @plans/<X>_PROGRESS.md`) → read its `Worktree` header.
+   - **a plan** (`/resume-plan @plans/<X>.md`) → find every `plans/**/*_PROGRESS.md` whose `- Plan:`
+     header names that plan. One → use it. Several (a plan worked in parallel worktrees) → list each
+     with its worktree/branch and a one-line `## Next Steps` gist and ask which to resume — **unless the
+     invocation also named a worktree**, then pick that one directly.
+   - **nothing** → use the current worktree's ledger.
+
+   Then `cd` to the resolved worktree before anything else — a fresh session may open elsewhere.
+2. **Read in full:** `AGENTS.md`, `plans/AGENTS.md`, the plan, and the resolved ledger.
 3. **Confirm the ledger still holds** before acting: check its header branch/PR/gates against actual
    `git`/PR state, and if a remote transition (queued PR merged, package published, platform-sync) landed
    since the last checkpoint, update the ledger's current-state, `## Next Steps`, and event log first.
