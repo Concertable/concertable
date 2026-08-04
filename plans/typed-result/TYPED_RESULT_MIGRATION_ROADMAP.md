@@ -19,6 +19,9 @@ Docs-convention progress lives in @plans/typed-result/TYPED_RESULT_MIGRATION_PRO
 Kernel derived-code progress lives in @plans/TYPED_RESULT_MIGRATION_DERIVED_CODES_PROGRESS.md
 (worktree `Concertable.worktrees\Refactor\DerivedErrorDefinitions`). Phase 2 keeps its own ledger on
 `Feature/CommissionBindingDeferredPricing`.
+B2B migration (Phases 4–6C) has its own plan and ledger at @plans/typed-result/B2B_PLAN.md and
+@plans/typed-result/B2B_PROGRESS.md (worktree `Concertable\.worktrees\Refactor-B2BTypedResultMigration`,
+branch `Refactor/B2BTypedResultMigration`).
 
 This is an execution plan for unfinished work. Git history is the archive for the superseded CFE
 design.

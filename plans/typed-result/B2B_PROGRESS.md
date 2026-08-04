@@ -1,6 +1,6 @@
-# Concertable-owned Result and Option migration progress
+# B2B typed-result migration progress
 
-- Plan: `plans/TYPED_RESULT_MIGRATION.md`
+- Plan: `plans/typed-result/B2B_PLAN.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-B2BTypedResultMigration`
 - Branch: `Refactor/B2BTypedResultMigration`
 - PR: not opened
@@ -166,9 +166,27 @@ and record the per-project results. Do not retry the current Docker fixture fail
   Checkpoint 6 remains blocked because the published Payment client still exposes FluentResults.
 - Follow-up: wait for Payment Phase 2 publication and platform sync; do not bridge the package gate.
 
+### 2026-08-04 - reconciled into the typed-result epic folder (ROADMAP → PLAN → PROGRESS)
+
+- Action: brought this worktree's legacy flat B2B plan/ledger into the `plans/typed-result/` epic
+  folder per the plans convention. Created `plans/typed-result/B2B_PLAN.md` (Full PLAN tier, spun off
+  the roadmap's B2B phases as checkpoints 1-7), `git mv`d this ledger from
+  `plans/TYPED_RESULT_MIGRATION_PROGRESS.md` to `plans/typed-result/B2B_PROGRESS.md`, and repointed the
+  dangling `- Plan:` header and resume prompt (both had targeted the pre-rename
+  `plans/TYPED_RESULT_MIGRATION.md`, since promoted to the roadmap). Added the B2B plan/ledger to the
+  roadmap's pointer block. This is the "repoint/relocate on its own sync" step the plans-convention
+  overhaul (§6) deferred to each in-flight typed-result worktree.
+- Evidence: `git status` shows `R plans/TYPED_RESULT_MIGRATION_PROGRESS.md -> plans/typed-result/B2B_PROGRESS.md`;
+  repo grep leaves no B2B reference to the old paths — surviving `TYPED_RESULT_MIGRATION.md` hits belong
+  to the DERIVED_CODES/ERROR_CASE_NAMES ledgers (owned by other worktrees' syncs) and the overhaul
+  plan's own rename table.
+- Outcome: docs-only structural reconcile; no code, migration state, or checkpoint status changed —
+  checkpoints 1-5 shipped, 6-7 blocked on the Payment package gate.
+- Follow-up: none for the reconcile; the substantive next action is unchanged in `## Next Steps`.
+
 ## Resume prompt
 
 ```text
 cd C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-B2BTypedResultMigration
-Read @plans/TYPED_RESULT_MIGRATION.md and @plans/TYPED_RESULT_MIGRATION_PROGRESS.md and do what its `## Next Steps` says.
+Read @plans/typed-result/B2B_PLAN.md and @plans/typed-result/B2B_PROGRESS.md and do what its `## Next Steps` says.
 ```
