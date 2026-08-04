@@ -3,7 +3,7 @@
 - Plan: `plans/TYPED_RESULT_MIGRATION.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Docs\TypedErrorRepresentation`
 - Branch: `Docs/TypedErrorRepresentation`
-- Correction PR: not opened
+- Correction PR: [#340 — docs(api): simplify typed error representation](https://github.com/Concertable/concertable/pull/340)
 - PR: [#335 â€” docs(api): codify typed error union conventions](https://github.com/Concertable/concertable/pull/335)
 - Dependency/package gates: docs-only; no package or platform-sync consequence
 - Last reconciled: 2026-08-04 from `origin/main` `c45b33740`
@@ -17,7 +17,7 @@ and override it on every case. No runtime code or package contract is changed.
 
 ## Next Steps
 
-Commit, push, open, and merge the docs-only correction PR through the `merge-docs` workflow.
+Merge docs-only correction PR #340 through the `merge-docs` workflow.
 
 ## Completed work
 
