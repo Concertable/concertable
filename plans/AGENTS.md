@@ -243,8 +243,8 @@ point where the context becomes disposable. Don't carry unwritten state across a
   `cd <worktree>` then "Read @plans/<PLAN>.md and @plans/<PLAN>_PROGRESS.md and do what `## Next Steps`
   says." No branch to verify, checkpoints, gates, commands, or steps in the prompt — every such specific
   lives in the ledger, never restated, so the prompt can't drift. See [`../PROMPTS.md`](../PROMPTS.md).
-- Use `/resume-plan` to recover plan-managed work, reconciling the plan and ledger against the worktree,
-  git, review, test, PR, package, and platform-sync state; it refreshes `## Next Steps` before handoff.
+- Use `/resume-plan` to pick plan work back up: `cd` to the plan's worktree, read the plan and its
+  ledger, confirm the ledger still matches git/PR reality, and do what `## Next Steps` says.
 - A completed and verified phase ends the turn after its handoff. Start the next phase only when Tommy
   explicitly names it and says to do it now.
 
