@@ -525,4 +525,4 @@ boot/round-trip check (the `verify` skill or a deployed smoke test), not just un
 ## Cross-refs
 - Region config seam (stays region-scoped): [`CONFIG_STRATEGY.md`](./CONFIG_STRATEGY.md)
 - Research input: `deep-research` Prompt 2 (run 2026-07-17, see Phase 0 outcome above)
-- Launch tracker: [`b2b/LAUNCH_PLAN.md`](./b2b/LAUNCH_PLAN.md) — this is a newly-surfaced launch blocker
+- Launch tracker: [`b2b/LAUNCH_ROADMAP.md`](./b2b/LAUNCH_ROADMAP.md) — this is a newly-surfaced launch blocker

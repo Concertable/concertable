@@ -1,5 +1,7 @@
-# Concertable Launch Plan
+# Concertable Launch Roadmap
 
+> **Roadmap** for the launch epic — the living progress tracker, not a plan (no `_PROGRESS.md`, never deleted, lives until launch). Each buildable item spins off its own feature plan; see [`../agents/ROADMAP.md`](../agents/ROADMAP.md).
+>
 > **Goal:** Production launch of the B2B platform (venue↔artist booking + automated settlement) by **November 2026**.
 >
 > **Companion docs:** [LAUNCH_CHECKLIST.md](LAUNCH_CHECKLIST.md), [USER_MODEL_PLAN.md](USER_MODEL_PLAN.md), [MARKETPLACE_PLAN.md](../customer/MARKETPLACE_PLAN.md), [../../api/Concertable.B2B/src/Modules/Deal/LEGAL_REQUIREMENTS.md](../../api/Concertable.B2B/src/Modules/Deal/LEGAL_REQUIREMENTS.md).
@@ -274,7 +276,7 @@ remaining operational choices are not urgent yet.
 ## Decisions locked
 
 The settled calls that constrain the work above. Full rationale + dated history are in git
-(`git log -p plans/b2b/LAUNCH_PLAN.md`) — not duplicated here.
+(`git log -p plans/b2b/LAUNCH_ROADMAP.md`) — not duplicated here.
 
 - **B2B-first.** The customer ticket marketplace is deferred and additive (§8), not a v1 dependency.
 - **All four contract types ship in v1.** DoorSplit/Versus settle via **manual door-take entry +

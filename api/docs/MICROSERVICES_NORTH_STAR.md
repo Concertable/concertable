@@ -78,6 +78,6 @@ This doc is target-state principles. The other two docs are the path and the det
 
 ## Background framing (non-architecture)
 
-- **Learning project.** The Nov 2026 launch in `LAUNCH_PLAN.md` is aspirational, not a deadline. Skill development (event-driven architecture, transactional outbox, sagas, OpenTelemetry, Service Bus operations) is an explicit goal alongside any deployment.
+- **Learning project.** The Nov 2026 launch in `LAUNCH_ROADMAP.md` is aspirational, not a deadline. Skill development (event-driven architecture, transactional outbox, sagas, OpenTelemetry, Service Bus operations) is an explicit goal alongside any deployment.
 - **B2B SaaS deploys first** (current expectation). Customer marketplace follows once microservices separation is complete; without that separation, B2B can't ship without dragging Customer code into the production binary.
 - **Solo developer.** Mono-repo + Aspire AppHost are the load-bearing pieces that make multi-service development tractable for one person.
