@@ -29,28 +29,6 @@ branch while a later phase waits — it has **one ledger per worktree**. Name ea
 worktree, and set its `- Plan:` header to this plan: that header is the authoritative plan↔ledger
 grouping (`/resume-plan` greps it), not the filename.
 
-### One implementation owner per phase — mandatory collision gate
-
-Several ledgers may coordinate different phases or delivery gates, but **the same plan phase and code
-scope must never be implemented in more than one branch/worktree at a time**. Every active phase has
-exactly one canonical implementation owner: one ledger, worktree, branch, and PR (when opened). The
-plan names that owner next to the phase's current status; every other ledger is dependency-only,
-delivery-only, or explicitly frozen donor state.
-
-Before any implementation or resume — **including when the prompt names a specific worktree or
-ledger** — enumerate all ledgers for the plan and inspect their branch/PR/worktree state, unique
-commits, dirty paths, and `## Next Steps`. If another branch contains committed or uncommitted work for
-the requested phase, stop before editing. Continue in the canonical owner; if ownership is ambiguous,
-reconcile it with Tommy first. Never recreate the work from `main` merely because the other branch is
-unmerged, stale, blocked, or awkward to extract from.
-
-The root rule that code existing only on an in-flight feature stays on that feature does not authorize
-absorbing a separately planned phase into its PR. Either wait for the dependency to merge, or
-explicitly make that feature branch the phase's sole canonical owner. If ownership later moves, freeze
-the old branch, inventory and salvage its work first, update the plan and every ledger to name the new
-owner, and only then resume implementation. A non-canonical ledger's `## Next Steps` must prohibit
-implementation and point to the canonical ledger.
-
 The ledger must make the chat disposable at any point. Record **every project action and state
 transition as it happens**, not just phase summaries: user direction and scope changes, partial
 implementation, commits, verification commands and results, reviews and every
@@ -114,7 +92,7 @@ Don't `git rm` the plan (Lifecycle 5) until that final synced state is in.
 
 ## Lifecycle
 
-1. **Write it** when the work spans multiple commits/PRs or needs a design decided up front, and create its `_PROGRESS.md` companion at the same time.
+1. **Write it** when the work spans multiple commits/PRs or needs a design decided up front. Before creating its ledger/worktree, check existing branches, worktrees, PRs, and ledgers for the same work, then assign each phase exactly one canonical ledger/worktree/branch; never create a second implementation owner.
 2. **Branch, then work a phase** — on the plan's `Feature/<Name>` branch (see the hub's "Branch first"), land the phase's commit(s).
 3. **Check off / strike the shipped phase in the plan and update the progress ledger, in the same commit as the work.** A
    partially-done plan stays; only the outstanding work should remain un-ticked, so the next reader
