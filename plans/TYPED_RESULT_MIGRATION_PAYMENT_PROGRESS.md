@@ -26,7 +26,9 @@ calculation from the immutable bound terms and does not accept expected values. 
 transaction-time validation body and test are removed. Operation-specific errors use explicit Dunet
 case constructors with abstract-root/per-case `Definition`, leaving callers shaped for the future
 native-union cutover. Each public union root now has its own matching source file. The local
-implementation gate is green; the branch is 49 commits ahead and 0 behind current `origin/main`.
+implementation gate is green. Re-synced to current `origin/main` (platform `0.1.0-alpha.0.795`) at
+merge `4beec1c64`; tree clean, 0 behind, 51 ahead. Re-verified green on the new pin: full Release
+solution build 0 errors, Payment unit 198/198. Not pushed; no PR opened.
 
 The existing escrow tests establish the intended idempotency semantics: no escrow, an escrow that is
 not held, an already-refunded escrow, and a non-refundable state are successful no-ops. An operation
@@ -36,10 +38,26 @@ that executes returns its transfer or refund. The owned contract is therefore
 
 ## Next Steps
 
-Commit the post-sync verification checkpoint, then wait for Tommy's explicit push instruction. Push
-and open the canonical PR, and close PR #296 only after the canonical remote contains its head. After
-Payment publishes, migrate all B2B/Customer consumers in the generated platform-sync PR and take it
-through green.
+The branch is done, green, current with `origin/main`, and unpushed. Remaining is landing it:
+
+1. **First code review** of the whole Phase 2 diff (`origin/main..HEAD`) — never reviewed; it is a
+   breaking financial-contract change. Fix anything real.
+2. **Confirm the `CalculateBoundAsync` financial decision with Tommy** — transaction-time revalidation
+   was removed; expected amounts are validated only at binding (`CreateOrBindAsync`). This deviates
+   from `PLATFORM_COMMISSION_PLAN.md` §8 step 5 and freezes into the published wire contract, so it
+   must be an explicit call before publish.
+3. **On Tommy's explicit go:** push and open ONE canonical PR (Payment Phase 2: owned typed
+   Result/Option + FluentResults cutover + commission Phase 1). Full merge-queue E2E — do **not**
+   `skip-e2e` (payment/gRPC blast radius).
+4. **Merge** (Tommy's call, via the queue).
+5. **Own the platform-sync — the breaking part.** Payment publishes; the generated
+   `chore/platform-sync-*` PR goes RED because B2B + Customer no longer compile against the removed
+   FluentResults client. Migrate B2B + Customer consumers to the owned typed client **in that sync
+   PR**, build `api/Concertable.slnx` to 0 errors, push, take it green (this is B2B checkpoints 6–7 +
+   Customer).
+6. **Close donor PR #296** only after this branch's canonical PR head is on the remote.
+
+Merge/push/publish/platform-sync all remain gated on Tommy's explicit instruction.
 
 ## Completed work
 
@@ -81,6 +99,17 @@ No Phase 2 review has run yet.
   commission-branch implementation is donor evidence only; its behavior is now reconciled here.
 
 ## Event log
+
+### 2026-08-05 — Re-synced to current main and re-verified green ahead of push
+
+- Action: In the PaymentOwned worktree (delegated by Tommy this session), fetched and merged current
+  `origin/main` (2 incoming commits = the `0.1.0-alpha.0.795` platform-sync bump), then rebuilt and
+  re-tested against the new pin.
+- Evidence: clean merge `4beec1c64` (only `Directory.Packages.props` bumps, no conflicts); 0 behind /
+  51 ahead; `dotnet build api/Concertable.slnx --configuration Release` = 0 errors (5 pre-existing
+  warnings); Payment unit 198/198.
+- Outcome: branch is current, green, clean, and unpushed — ready for review then push/PR on Tommy's go.
+- Follow-up: first code review, confirm the `CalculateBoundAsync` decision, then push/open the PR.
 
 ### 2026-08-04 — Synced current main and passed the standalone package gate
 
