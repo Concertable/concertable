@@ -35,6 +35,13 @@ verification gate (build `api/Concertable.slnx`, Payment unit + integration test
 carve, EF pending-model check), then run `/incremental-review` against the existing PR #296 review
 watermark on the resulting commit. Do not push or merge PR #296 unless Tommy separately requests it.
 
+## Resume prompt
+
+```
+cd C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\CommissionBindingDeferredPricing
+Read @plans/b2b/PLATFORM_COMMISSION.md and @plans/b2b/PLATFORM_COMMISSION_PROGRESS.md and do what its `## Next Steps` says.
+```
+
 ## Completed work
 
 - Phase 1 is checked complete in the plan, including percentage configuration, immutable history,

@@ -17,6 +17,15 @@
 prerequisite or blocking gate. This is the single source of truth for what to do next — resume/handoff
 prompts point here instead of restating it, so they can never drift. Keep it current at every checkpoint.>
 
+## Resume prompt
+
+<The paste-ready handoff block — ONLY the pointer, never restating the action:>
+
+```
+cd <absolute worktree path>
+Read @plans/<PLAN>.md and @plans/<PLAN>_PROGRESS.md and do what its `## Next Steps` says.
+```
+
 ## Completed work
 
 <Completed phases and changes with commit/PR evidence.>
