@@ -7,7 +7,7 @@
 
   ```
   cd <absolute-worktree-path>
-  Read @plans/<PLAN>.md and @plans/<this-worktree-ledger>_PROGRESS.md and do what its `## Next Steps` says.
+  Read @plans/<PLAN>_PLAN.md and @plans/<this-worktree-ledger>_PROGRESS.md and do what its `## Next Steps` says.
   ```
 
   Nothing plan-specific goes in the prompt — no branch to verify, no checkpoints to keep, no gates, no

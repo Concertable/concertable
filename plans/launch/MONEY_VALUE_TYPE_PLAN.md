@@ -4,8 +4,8 @@
 > with an independent **truncating** `(long)(x*100)` at each — no owner for the conversion, the rounding
 > rule, or the `gross/fee/total` arithmetic. Decision + rationale (hand-roll, not NodaMoney; carry
 > `Currency` from day one; GBP ×100 for now) live in
-> [`api/Concertable.Shared/TECH_DEBT.md`](../api/Concertable.Shared/TECH_DEBT.md) → *"No money type"*.
-> This plan is the execution. It **enables** [`b2b/PLATFORM_COMMISSION.md`](./b2b/PLATFORM_COMMISSION.md):
+> [`api/Concertable.Shared/TECH_DEBT.md`](../../api/Concertable.Shared/TECH_DEBT.md) → *"No money type"*.
+> This plan is the execution. It **enables** [`b2b/PLATFORM_COMMISSION_PLAN.md`](PLATFORM_COMMISSION_PLAN.md):
 > the platform fee's `gross + fee` is built on `Money`, not a fourth `(long)(x*100)` site.
 
 ## The type (Kernel, additive)
@@ -113,9 +113,9 @@ Decisions taken during implementation:
 Because the wire is now cut over in Phase 2, **Phase 5 no longer touches the wire** — it's reduced to the
 published C# `decimal → Money` signature swap (`ISettlementAmountResolver`, `IEscrowClient` params, etc.).
 
-### Phase 3 — Platform fee, built on `Money` *(rides Phase 2; see PLATFORM_COMMISSION.md)*
+### Phase 3 — Platform fee, built on `Money` *(rides Phase 2; see PLATFORM_COMMISSION_PLAN.md)*
 
-Execute [`b2b/PLATFORM_COMMISSION.md`](./b2b/PLATFORM_COMMISSION.md) on top of `Money`: `gross + fee` is
+Execute [`b2b/PLATFORM_COMMISSION_PLAN.md`](PLATFORM_COMMISSION_PLAN.md) on top of `Money`: `gross + fee` is
 `Money.operator+`, the snapshot is `Money.ToMinorUnits()`, no new conversion site. This is where money
 actually changes (the fee). Kept as its own plan/PR; **this plan's Phase 2 is its prerequisite** so the fee
 never touches raw `decimal` arithmetic.

@@ -2,7 +2,7 @@
 
 **Status:** authored 2026-07-17, **not executed** — the domain isn't purchased, Cloudflare isn't wired,
 and there are no Azure creds yet. This resolves the "Custom domains / OIDC — Cloudflare" open item in
-[`DEPLOYMENT.md`](./DEPLOYMENT.md) and finalizes the placeholder subdomain values the config repo
+[`DEPLOYMENT.md`](DEPLOYMENT.md) and finalizes the placeholder subdomain values the config repo
 (`config`) already carries. It is the bridge between two other pieces of work:
 
 - **`config` (Phase 3)** owns the *config values* that key off these hostnames —
@@ -182,8 +182,8 @@ file). This doc supplied the values; the SPA-build blocker owned the wiring, and
   (RedirectUri/PostLogout/CORS), so the tracked base fallback matches the scheme. (In cloud App Config
   overrides this per env; locally `appsettings.Development.json` overrides it to localhost — so this is the
   no-App-Config fallback only, now scheme-consistent.)
-- **`plans/DEPLOYMENT.md`** — the "Custom domains / OIDC" open item now records the resolved scheme + points here.
-- **`plans/CONFIG_AND_DEPLOYMENT.md`** — Phase 3 "next up" line updated to point here.
+- **`plans/platform/DEPLOYMENT.md`** — the "Custom domains / OIDC" open item now records the resolved scheme + points here.
+- **`plans/platform/CONFIG_AND_DEPLOYMENT_PLAN.md`** — Phase 3 "next up" line updated to point here.
 
 ## Blocked on / not done (in order)
 
@@ -199,6 +199,6 @@ file). This doc supplied the values; the SPA-build blocker owned the wiring, and
    smoke test in `DEPLOYMENT.md` is the verification gate.
 
 ## Cross-refs
-- Deploy method + first-deploy runbook: [`DEPLOYMENT.md`](./DEPLOYMENT.md)
-- Config/secrets architecture + phases: [`CONFIG_AND_DEPLOYMENT.md`](./CONFIG_AND_DEPLOYMENT.md) (Phase 3)
+- Deploy method + first-deploy runbook: [`DEPLOYMENT.md`](DEPLOYMENT.md)
+- Config/secrets architecture + phases: [`CONFIG_AND_DEPLOYMENT_PLAN.md`](CONFIG_AND_DEPLOYMENT_PLAN.md) (Phase 3)
 - Config-as-code repo: `config` (sibling repo) — `environments/*.tfvars`, README

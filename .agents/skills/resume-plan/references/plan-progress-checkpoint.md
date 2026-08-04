@@ -7,10 +7,11 @@ Apply this procedure before a repository workflow reports its result.
 1. Prefer an explicit `plans/*.md` input supplied to the workflow.
 2. Otherwise inspect the current worktree's absolute root, branch, upstream, status, commits, review
    artifacts, and PR. Correlate those facts with candidate plans and `_PROGRESS.md` metadata under
-   `plans/`. Exclude `AGENTS.md` and `*_PROGRESS.md` from plan candidates.
+   `plans/`. Plan candidates are `*_PLAN.md`; exclude `AGENTS.md`, `*_PROGRESS.md`, `*_ROADMAP.md`, and
+   bare-stem reference docs.
 3. Continue only when the evidence identifies exactly one plan. If no plan or multiple plans remain,
    do not create, choose, update, or emit a handoff for one; finish the workflow normally.
-4. Use the same-directory `<PLAN_STEM>_PROGRESS.md`. If it is a legacy plan without a ledger, create
+4. Use the same-directory `<NAME>_PROGRESS.md` (the plan's `<NAME>_PLAN.md` stem). If it is a legacy plan without a ledger, create
    the ledger from `../assets/progress-template.md` with an explicitly labelled reconstructed baseline
    containing only facts supported by repository evidence.
 
@@ -115,7 +116,7 @@ work remains, end with exactly one prompt, and it is ONLY the pointer — nothin
 
 ```
 cd <absolute-worktree-path>
-Read @plans/<PLAN>.md and @plans/<PLAN>_PROGRESS.md and do what its `## Next Steps` says.
+Read @plans/<PLAN>_PLAN.md and @plans/<PLAN>_PROGRESS.md and do what its `## Next Steps` says.
 ```
 
 No branch to verify, checkpoints, gates, commands, or steps in the prompt — every such specific lives in

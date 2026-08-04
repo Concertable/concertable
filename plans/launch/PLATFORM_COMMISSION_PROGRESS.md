@@ -1,6 +1,6 @@
 # Percentage platform commission and pricing transparency progress
 
-- Plan: `plans/b2b/PLATFORM_COMMISSION.md`
+- Plan: `plans/launch/PLATFORM_COMMISSION_PLAN.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\CommissionBindingDeferredPricing`
 - Branch: `Feature/CommissionBindingDeferredPricing`
 - PR: [#296 — Own deferred commission pricing in Payment](https://github.com/Concertable/concertable/pull/296)
@@ -77,7 +77,7 @@ Merge/push/platform-sync/deploy of PR #296 remain gated on Tommy's explicit inst
 
 ```
 cd C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\CommissionBindingDeferredPricing
-Read @plans/b2b/PLATFORM_COMMISSION.md and @plans/b2b/PLATFORM_COMMISSION_PROGRESS.md and do what its `## Next Steps` says.
+Read @plans/launch/PLATFORM_COMMISSION_PLAN.md and @plans/launch/PLATFORM_COMMISSION_PROGRESS.md and do what its `## Next Steps` says.
 ```
 
 ## Completed work

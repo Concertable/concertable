@@ -891,7 +891,7 @@ jobs:
           if-no-files-found: ignore
 
   ci-complete:
-    # THE SINGLE REQUIRED STATUS CHECK (see plans/PIPELINE_REDESIGN.md Phase 1). It aggregates every real
+    # THE SINGLE REQUIRED STATUS CHECK (see plans/platform/PIPELINE_REDESIGN_PLAN.md Phase 1). It aggregates every real
     # CI job into one deterministic pass/fail that is NEVER `skipped`: `if: always()` runs it on every
     # event, and it passes iff nothing it needs failed or was cancelled. Inert jobs skip before allocating
     # runners; this aggregator turns those skipped dependencies into the required success result. needs EVERY gating job directly

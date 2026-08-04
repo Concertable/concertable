@@ -6,7 +6,7 @@
 >
 > **Constraint that changed the plan:** This is a learning side project. The Nov 2026 launch in `LAUNCH_ROADMAP.md` is aspirational, not a hard deadline. Skill development (event-driven architecture, transactional outbox, sagas, OpenTelemetry, Service Bus operations) is an explicit goal alongside any eventual deployment.
 >
-> **Companion docs:** [LAUNCH_ROADMAP.md](/plans/b2b/LAUNCH_ROADMAP.md), [MARKETPLACE_PLAN.md](/plans/customer/MARKETPLACE_PLAN.md), [LAUNCH_CHECKLIST.md](/plans/b2b/LAUNCH_CHECKLIST.md), [USER_MODEL_PLAN.md](/plans/b2b/USER_MODEL_PLAN.md).
+> **Companion docs:** [LAUNCH_ROADMAP.md](/plans/launch/LAUNCH_ROADMAP.md), [MARKETPLACE_PLAN.md](/plans/marketplace/MARKETPLACE_PLAN.md), [LAUNCH_CHECKLIST.md](/plans/launch/LAUNCH_CHECKLIST.md), [USER_MODEL_PLAN.md](/plans/launch/USER_MODEL_PLAN.md).
 
 ---
 
@@ -514,9 +514,9 @@ Roughly a year of evenings-and-weekends if taken seriously. Valuable on a CV at 
 
 ## 13. Reference
 
-- [LAUNCH_ROADMAP.md](/plans/b2b/LAUNCH_ROADMAP.md) — broader launch context (mostly applies to B2B deployment if/when it happens)
-- [MARKETPLACE_PLAN.md](/plans/customer/MARKETPLACE_PLAN.md) — original marketplace deferral plan; partially superseded by this doc since marketplace would return as a separate microservice, not as a feature flag
-- [LAUNCH_CHECKLIST.md](/plans/b2b/LAUNCH_CHECKLIST.md) — legal/business setup checklist
+- [LAUNCH_ROADMAP.md](/plans/launch/LAUNCH_ROADMAP.md) — broader launch context (mostly applies to B2B deployment if/when it happens)
+- [MARKETPLACE_PLAN.md](/plans/marketplace/MARKETPLACE_PLAN.md) — original marketplace deferral plan; partially superseded by this doc since marketplace would return as a separate microservice, not as a feature flag
+- [LAUNCH_CHECKLIST.md](/plans/launch/LAUNCH_CHECKLIST.md) — legal/business setup checklist
 - MassTransit docs — https://masstransit.io
 - *Microservices Patterns* (Chris Richardson) — outbox, sagas, CQRS, idempotency
 - *Building Microservices* (Sam Newman) — boundaries, distributed-monolith antipatterns

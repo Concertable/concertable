@@ -1,8 +1,8 @@
 # RFC / plan — shared test libraries: publish as packages, or document carve-exempt
 
-> **Status:** decision pending (architecture, root-level per [`api/ARCHITECTURE.md`](../api/ARCHITECTURE.md)).
+> **Status:** decision pending (architecture, root-level per [`api/ARCHITECTURE.md`](../../api/ARCHITECTURE.md)).
 > Captured from the door-revenue work (a shared `Money` test helper landed same-PR only because the
-> shared test libs are ProjectReferenced — a carve leak). Tracked in [`api/TECH_DEBT.md`](../api/TECH_DEBT.md).
+> shared test libs are ProjectReferenced — a carve leak). Tracked in [`api/TECH_DEBT.md`](../../api/TECH_DEBT.md).
 > **Not** to be bundled into a feature PR — its own change once decided.
 
 ## The problem

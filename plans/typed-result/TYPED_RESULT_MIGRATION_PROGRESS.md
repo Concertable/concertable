@@ -1,23 +1,24 @@
 # Typed Result convention update progress
 
-- Plan: `plans/TYPED_RESULT_MIGRATION.md`
+- Plan: `plans/typed-result/TYPED_RESULT_MIGRATION_ROADMAP.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Docs\TypedErrorRepresentation`
 - Branch: `Docs/TypedErrorRepresentation`
 - Correction PR: [#340 — docs(api): simplify typed error representation](https://github.com/Concertable/concertable/pull/340)
 - PR: [#335 â€” docs(api): codify typed error union conventions](https://github.com/Concertable/concertable/pull/335)
 - Dependency/package gates: docs-only; no package or platform-sync consequence
-- Last reconciled: 2026-08-04 from `origin/main` `c45b33740`
+- Last reconciled: 2026-08-04 from `origin/main` `9dfb5e63d`
 
 ## Current state
 
-PR #335 merged the first convention revision. This correction removes its positional `Match`
-pattern: payload-free errors are sealed definition records, and Dunet is used only when alternatives
-carry data or require case discrimination. Necessary unions declare `Definition` abstract on the root
-and override it on every case. No runtime code or package contract is changed.
+PRs #335 and #340 are merged. The completed correction removed the positional `Match` pattern:
+payload-free errors are sealed definition records, and Dunet is used only when alternatives carry
+data or require case discrimination. Necessary unions declare `Definition` abstract on the root and
+override it on every case. No runtime code or package contract changed.
 
 ## Next Steps
 
-Merge docs-only correction PR #340 through the `merge-docs` workflow.
+No further action in this worktree. The follow-up naming refinement is owned by
+`plans/TYPED_RESULT_MIGRATION_ERROR_CASE_NAMES_PROGRESS.md`.
 
 ## Completed work
 
@@ -25,7 +26,7 @@ Merge docs-only correction PR #340 through the `merge-docs` workflow.
   PRs #296 and #282, and the Phase 2 ledger on `Feature/CommissionBindingDeferredPricing`.
 - Updated `api/agents/CODE_CONVENTIONS.md` with the concrete Dunet declaration pattern and general
   owned Result/Option rules missing from the shorter convention.
-- Updated `plans/TYPED_RESULT_MIGRATION.md` to match the convention and identify PR #296 as the only
+- Updated `plans/typed-result/TYPED_RESULT_MIGRATION_ROADMAP.md` to match the convention and identify PR #296 as the only
   owner of Payment Phase 2.
 - Captured the docs and reconstructed baseline in commit `eb87a6225`.
 - Pushed `eb87a6225` to `origin/Docs/TypedResultConventions` and opened draft PR #335.
@@ -41,7 +42,7 @@ Merge docs-only correction PR #340 through the `merge-docs` workflow.
 
 ## Reviews
 
-No code review has run yet.
+GitHub review and merge gates completed for PRs #335 and #340.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -92,9 +93,17 @@ No code review has run yet.
   DisplayName-backed message-less not-found rule.
 - Follow-up: commit, push, open, and merge the docs-only correction PR.
 
+### 2026-08-04 — correction PR merged
+
+- Action: reconciled this ledger after PR #340 merged.
+- Evidence: `origin/main` contains merge commit
+  `d41b5c47ff188d6b36b51669fe4b6802206ff4ec`.
+- Outcome: the representation correction is terminal in this worktree.
+- Follow-up: use the dedicated natural error-name ledger for the naming refinement.
+
 ## Resume prompt
 
 ```
-cd C:\Users\TommySeery\source\repos\Concertable.worktrees\Docs-TypedResultConventions
-Read @plans/TYPED_RESULT_MIGRATION.md and @plans/TYPED_RESULT_MIGRATION_CONVENTIONS_PROGRESS.md, then do what the ledger's `## Next Steps` says.
+cd C:\Users\TommySeery\source\repos\Concertable.worktrees\Docs\NaturalErrorCaseNames
+Read @plans/typed-result/TYPED_RESULT_MIGRATION_ROADMAP.md and @plans/TYPED_RESULT_MIGRATION_ERROR_CASE_NAMES_PROGRESS.md and do what its `## Next Steps` says.
 ```
