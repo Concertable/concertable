@@ -4,32 +4,36 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\CommissionBindingDeferredPricing`
 - Branch: `Feature/CommissionBindingDeferredPricing`
 - PR: [#296 — Own deferred commission pricing in Payment](https://github.com/Concertable/concertable/pull/296)
-- Dependency/package gates: Phase 1 is recorded complete. Phase 1b is implemented on PR #296 but cannot enter the publish/platform-sync/deployment gate until the PR merges; this work stops at the PR.
-- Last reconciled: 2026-08-04 from a fresh origin fetch, PR #296, git/worktree/stash state, current main, the review artifact, and the complete fresh local verification gate.
+- Dependency/package gates: Phase 1 is recorded complete. Phase 1b is implemented on PR #296 but cannot enter the publish/platform-sync/deployment gate until the PR merges; this work stops at the PR. PR #296 is currently `DIRTY` and the branch is behind `origin/main`, so a base update is a prerequisite to that merge gate.
+- Last reconciled: 2026-08-04 from a fresh `git fetch origin`, `git status`/`git log origin/main..HEAD`, PR #296 (`gh pr view`/`gh pr checks`), current `origin/main`, and the on-disk review artifact. This reconciliation is evidence-only; no code, verification, review, or push occurred.
 
 ## Current state
 
 Phase 1b's Payment-owned deferred commission binding and owned-result expansion are implemented on
-PR #296. This commit merges freshly fetched `origin/main` `37c94cd03780d940b3c827c3e2f4442a8709297e`
-into the branch and preserves main's internal Payment.Domain boundary and Application-owned payout
-status contract alongside the branch's commission configuration, percentage calculation, binding,
-refund, and typed-result behavior.
+PR #296. Local `HEAD` is the unpushed merge commit `4946bba27` ("merge: reconcile deferred commission
+pricing with main"), which merged `origin/main` `37c94cd0` into the branch and preserves main's
+internal Payment.Domain boundary and Application-owned payout status contract alongside the branch's
+commission configuration, percentage calculation, binding, refund, and typed-result behavior.
 
-The worktree was clean before the merge, so there were no staged, unstaged, or untracked paths from
-which Git could create a fresh stash. Existing recovery stash
-`76438f7cf003438a313be9049be708c1f72c6990` remains intact and was verified as a three-parent stash
-containing the earlier Payment/review snapshot. The merge's only textual conflict was the resolved
-Payment.Domain-public tech-debt entry; the branch-only Domain entity/value/error declarations were
-also internalised to preserve main's completed boundary refactor.
+Working tree is **clean**. The branch is **28 commits ahead** of its remote tracking ref
+`origin/Feature/CommissionBindingDeferredPricing` (whose tip, and PR #296's head, is
+`f487ad1da` — the merge commit `4946bba27` is unpushed) and **20 commits behind** `origin/main`
+(`a22b379bf`, advanced since the recorded `37c94cd0` merge). PR #296 is OPEN, non-draft, reports
+`mergeStateStatus: DIRTY` and no checks.
 
-All requested local gates are green on the merged working tree. PR #296 remains open and non-draft;
-its remote head is still `f487ad1da7a8d52e167ee346608497bd40755d9d` because this task explicitly
-does not push.
+The recovery stash `76438f7cf003438a313be9049be708c1f72c6990` remains intact (three-parent stash of
+the earlier Payment/review snapshot). All requested local gates were green on the `4946bba27` tree
+(see Verification); that tree is now 20 commits stale relative to `origin/main` but is otherwise
+unchanged.
 
-## Exact next action
+## Next Steps
 
-Run `/incremental-review` for this commit against the existing PR #296 review watermark before any
-push. Keep the work in this exact worktree and do not push or merge unless Tommy separately requests it.
+The `4946bba27` merge commit is unreviewed and unpushed, and the branch is now 20 commits behind
+`origin/main` (`a22b379bf`) with PR #296 `DIRTY`. Before any push or merge, in this worktree:
+merge current `origin/main` into the branch, resolve any Payment overlap, re-run the affected Payment
+verification gate (build `api/Concertable.slnx`, Payment unit + integration tests, standalone Payment
+carve, EF pending-model check), then run `/incremental-review` against the existing PR #296 review
+watermark on the resulting commit. Do not push or merge PR #296 unless Tommy separately requests it.
 
 ## Completed work
 
@@ -151,3 +155,33 @@ reconciliation edits:
 - Outcome: Main's newer Payment boundaries/entities and the branch's commission/owned-result behavior
   coexist in a fully verified local merge commit. All recorded review findings remain closed.
 - Follow-up: Run `/incremental-review` for this commit before any push; do not merge PR #296.
+
+### 2026-08-04 — ledger reconciliation to companion-ledger style
+
+- Action: Brought this ledger into the current companion-ledger template (renamed `## Exact next action`
+  to `## Next Steps`) and reconciled its current-state sections against fresh durable evidence. No code,
+  verification, review, or push was performed. Confirmed this branch owns `plans/b2b/PLATFORM_COMMISSION.md`
+  (all `origin/main..HEAD` commits are commission/`payment`; the plan is tracked on `origin/main` and
+  heavily edited here) and that `plans/TYPED_RESULT_MIGRATION*` is inherited — `TYPED_RESULT_MIGRATION.md`
+  already exists on `origin/main` and its `_PROGRESS.md` arrived via merge commit `4946bba27`; left untouched.
+- Evidence: `git status` clean, ahead 28 of `origin/Feature/CommissionBindingDeferredPricing` (tip
+  `f487ad1da`); local `HEAD` `4946bba27`; `git rev-list --count HEAD..origin/main` = 20, `origin/main`
+  `a22b379bf`; `gh pr view 296` OPEN/non-draft/`DIRTY`/headRefOid `f487ad1da`; `gh pr checks 296` = "no
+  checks reported"; review artifact `reviews/Feature-CommissionBindingDeferredPricing.md` present.
+- Outcome: Ledger now reflects that the reviewed-and-verified state is the unpushed `4946bba27` merge,
+  which is 20 commits behind current `origin/main` with PR #296 `DIRTY`. `## Next Steps` updated to require
+  a base update + re-verify + `/incremental-review` before any push.
+- Follow-up: Do the base update and re-verify in this worktree per `## Next Steps`; do not push or merge PR #296 without explicit approval.
+
+## Resume prompt
+
+```
+cd C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\CommissionBindingDeferredPricing
+Read AGENTS.md, plans/AGENTS.md, plans/b2b/PLATFORM_COMMISSION.md, and plans/b2b/PLATFORM_COMMISSION_PROGRESS.md.
+Then do what the ledger's `## Next Steps` says: the branch is 20 commits behind origin/main (a22b379bf)
+with PR #296 DIRTY and an unpushed, unreviewed merge commit (4946bba27). Merge current origin/main,
+resolve any Payment overlap, re-run the affected Payment verification gate (build api/Concertable.slnx,
+Payment unit + integration tests, standalone Payment carve, EF pending-model check), then run
+/incremental-review against the existing PR #296 watermark on the resulting commit. Do not push or
+merge PR #296 unless Tommy explicitly asks.
+```
