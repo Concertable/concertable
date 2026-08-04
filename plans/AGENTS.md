@@ -1,11 +1,18 @@
 # Working in `plans/`
 
-`plans/` holds two kinds of doc, each with its own playbook in [`agents/`](agents/):
+One convention, three tiers, each with its own playbook in [`agents/`](agents/): **ROADMAP → PLAN →
+PROGRESS**.
 
-- **Plans** — working docs for unfinished, multi-step work, each with a `_PROGRESS.md` ledger, deleted
-  when the work is done. How they work → [`agents/PLAN.md`](agents/PLAN.md).
-- **Roadmaps** (`*_ROADMAP.md`) — an epic's living progress tracker: no ledger, never deleted, lives
+- **Roadmaps** (`<EPIC>_ROADMAP.md`) — an epic's living progress tracker: no ledger, never deleted, lives
   until the epic ships. Each item spins off its own plan. How they work → [`agents/ROADMAP.md`](agents/ROADMAP.md).
+- **Plans** (`<NAME>_PLAN.md`) — working docs for unfinished, multi-step work spun off a roadmap item,
+  each with a `<NAME>_PROGRESS.md` ledger, deleted when the work is done. How they work → [`agents/PLAN.md`](agents/PLAN.md).
+
+**Folder = roadmap/plan.** Each epic gets a folder under `plans/`; its roadmap and every plan it spins
+off live inside it (`plans/<epic>/<EPIC>_ROADMAP.md`, `plans/<epic>/<NAME>_PLAN.md` + `<NAME>_PROGRESS.md`).
+Standing reference/RFC docs keep a bare stem (no suffix). The `plans/` hub (this file) and `agents/`
+playbooks stay at the top. A plan's **worktree/branch is named `<Type>/<epic>_<name>`** to match its
+`_PROGRESS` stem, so branch, plan, and ledger share one identity.
 
 Git history is the archive; a finished plan kept "for reference" is rot that misleads the next reader.
 This file carries the cross-cutting rules for *doing* the work; the root [`AGENTS.md`](../AGENTS.md)

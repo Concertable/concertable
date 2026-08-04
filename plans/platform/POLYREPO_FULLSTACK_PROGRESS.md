@@ -1,6 +1,6 @@
 # Full-stack polyrepo — frontend build separation progress
 
-- Plan: `plans/POLYREPO_FULLSTACK.md`
+- Plan: `plans/platform/POLYREPO_FULLSTACK_PLAN.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\FrontendBuildSeparation`
 - Branch: `Feature/FrontendBuildSeparation`
 - PR: review-fix PR [#319](https://github.com/Concertable/concertable/pull/319) open; Phase 1 PR [#301](https://github.com/Concertable/concertable/pull/301) merged
