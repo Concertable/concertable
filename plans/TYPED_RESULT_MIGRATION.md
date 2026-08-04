@@ -505,56 +505,62 @@ gRPC, HTTP clients, and integration-event adapters use explicit wire error codes
 the receiving side's typed error. Kernel Result/Option and Dunet/native union runtime layouts never go
 on the wire.
 
-## Typed error unions: separate from Result/Option
+## Typed errors: use unions only when cases require them
 
 Dunet currently contributes only source-generated case records, implicit case conversions, and Match
 helpers. It does not provide Result/Option, and it is not required by Kernel.
 
-Retain Dunet temporarily in the application/contract projects that need closed operation errors,
-under these rules:
+Use a sealed `XError(ErrorDefinition Definition)` record with named `static readonly` values when
+every alternative is payload-free and consumers do not need runtime case discrimination. Retain
+Dunet temporarily only in application/contract projects whose error alternatives carry different
+data or require owner-local case matching, under these rules:
 
 - Result/Option never reference or wrap Dunet;
-- operation code constructs errors through owned named factories;
+- payload-free records expose their allowed definitions as named static values;
+- Dunet unions use explicit case constructors;
 - `IError.Definition` is the stable consumer-facing behavior;
 - generated `Unwrap`, case-specific Match helpers, async Match helpers, and implicit conversions are
   not application conventions;
-- each union implements `Definition` through one centralized positional generated full `Match`, in
-  declaration order, so a new case changes the signature and exposes missed handling at compile time;
-- generated full `Match` is also used for owner-local mappings whose policy handles every case;
-- keep a `Case` suffix where a natural named factory would otherwise collide with the case type;
+- each Dunet root declares `Definition` abstract and every case overrides it beside its own data;
+- generated full `Match` is reserved for other owner-local mappings whose policy handles every case;
 - every case has an exact contract test with hard-coded code, message, and kind, and the explicit case
   set changes when a variant is added;
-- consumers map through owned error factories/Definition and do not publish generated Match APIs as
+- consumers map through owned values/cases and `Definition` and do not publish generated Match APIs as
   a required cross-package programming model;
 - no global warning suppression, global warning-as-error change, or claim about ordinary C# switch
   exhaustiveness is introduced to compensate for Dunet.
 
-`IError` is permanent native-union infrastructure, not temporary scaffolding. Native unions close the
-cases of one operation; they do not give unrelated operation unions a shared member that generic HTTP
-translation can call. Every operation error union implements `IError`; the current Dunet form keeps
-the exhaustive definition behind its generated full `Match`:
+`IError` is permanent infrastructure, not temporary scaffolding. Native unions close the cases of
+one operation; they do not give unrelated operation errors a shared member that generic HTTP
+translation can call. Every operation error implements `IError`. A Dunet union keeps the definition
+on each case:
 
 ```csharp
 [Union(EnableImplicitConversions = false)]
-public partial record PurchaseError : IError
+public abstract partial record PurchaseError : IError
 {
-    public partial record ConcertNotFoundCase;
-    public partial record PurchaseInvalidCase(ValidationErrors Errors);
-    public partial record PaymentRejectedCase;
+    public abstract ErrorDefinition Definition { get; }
 
-    public ErrorDefinition Definition => Match<ErrorDefinition>(
-        _ => ErrorDefinition.NotFound("ticket.concert_not_found", "Concert not found."),
-        invalid => ErrorDefinition.Validation(
+    public partial record ConcertNotFound
+    {
+        public override ErrorDefinition Definition =>
+            ErrorDefinition.NotFound<ConcertDetails>("ticket.concert_not_found");
+    }
+
+    public partial record PurchaseInvalid(ValidationErrors Errors)
+    {
+        public override ErrorDefinition Definition => ErrorDefinition.Validation(
             "ticket.purchase_invalid",
             "The ticket purchase is invalid.",
-            invalid.Errors.ToDictionary()),
-        _ => ErrorDefinition.PaymentRequired(
-            "ticket.payment_rejected",
-            "The payment was rejected."));
+            Errors.ToDictionary());
+    }
 
-    public static PurchaseError ConcertNotFound() => new ConcertNotFoundCase();
-    public static PurchaseError Invalid(ValidationErrors errors) => new PurchaseInvalidCase(errors);
-    public static PurchaseError PaymentRejected() => new PaymentRejectedCase();
+    public partial record PaymentRejected
+    {
+        public override ErrorDefinition Definition => ErrorDefinition.PaymentRequired(
+            "ticket.payment_rejected",
+            "The payment was rejected.");
+    }
 }
 ```
 
@@ -577,7 +583,8 @@ change every owned discriminated type to a `union` declaration in the same upgra
 
 - non-generic `Result`, `Result<TValue>`, `UnitResult<TError>`, and `Result<TValue,TError>`;
 - `Option<T>`;
-- operation-specific error unions then generated by Dunet or hand-written as closed cases.
+- operation-specific errors that genuinely require closed cases; payload-free definition records
+  remain records.
 
 The intended stable shapes are success/failure case wrappers for Result and a Some case plus native
 null/default handling for Option. The exact declarations must be verified against the released syntax,

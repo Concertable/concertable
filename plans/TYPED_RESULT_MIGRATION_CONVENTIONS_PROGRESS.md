@@ -1,26 +1,23 @@
 # Typed Result convention update progress
 
 - Plan: `plans/TYPED_RESULT_MIGRATION.md`
-- Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Docs-TypedResultConventions`
-- Branch: `Docs/TypedResultConventions`
+- Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Docs\TypedErrorRepresentation`
+- Branch: `Docs/TypedErrorRepresentation`
+- Correction PR: not opened
 - PR: [#335 â€” docs(api): codify typed error union conventions](https://github.com/Concertable/concertable/pull/335)
-- Dependency/package gates: the docs change is independent; Phase 1 merged in PR #290 and synced in PR #291; Phase 2 is owned by PR #296; Phase 3 PR #282 waits for Phase 2 publication and platform sync
-- Last reconciled: 2026-08-04 after opening PR #335 and verifying its pushed work head
+- Dependency/package gates: docs-only; no package or platform-sync consequence
+- Last reconciled: 2026-08-04 from `origin/main` `c45b33740`
 
 ## Current state
 
-The docs-only branch updates the API convention and canonical migration plan. Dunet error unions use
-one centralized positional full `Match` for `Definition` and other genuinely exhaustive owner-local
-mappings. The docs also make factory/case naming, exact public-contract tests, explicit messages,
-default/null behavior, and the future native-union seam explicit.
-
-The docs change is committed as `eb87a6225`, pushed with local and remote heads equal, and open as
-draft PR #335. No runtime code or package contract is changed.
+PR #335 merged the first convention revision. This correction removes its positional `Match`
+pattern: payload-free errors are sealed definition records, and Dunet is used only when alternatives
+carry data or require case discrimination. Necessary unions declare `Definition` abstract on the root
+and override it on every case. No runtime code or package contract is changed.
 
 ## Next Steps
 
-Review PR #335 and make it ready or merge it only on Tommy's explicit instruction. After it lands,
-continue Payment Phase 2 only on PR #296 and follow that branch's own ledger.
+Commit, push, open, and merge the docs-only correction PR through the `merge-docs` workflow.
 
 ## Completed work
 
@@ -48,19 +45,17 @@ No code review has run yet.
 
 ## Decisions, discoveries, blockers, and deviations
 
-- Use Dunet's generated full `Match` now; do not replace the definition with per-case overrides or an
-  ordinary C# switch.
-- Preserve the `Match`-shaped consumer API during the eventual released native-union cutover so
-  preview null/default switch arms do not leak into service code.
-- Keep `Case` when it prevents a collision with the natural factory name; remove it only for a
-  genuinely distinct case name.
+- Use sealed definition records for payload-free alternatives and Dunet only where alternatives
+  carry data or require case discrimination.
+- Necessary Dunet unions declare `Definition` abstract on the root and override it on every case.
+- Generated full `Match` remains available only for other genuinely exhaustive owner-local logic.
 - Public codes remain explicit under today's Kernel API. A future type-derived code helper and
   `ErrorCode` override must be a shared Kernel change with exact contract tests, not a service-local
   convention.
 - Domain-behavior messages remain explicit; only the existing DisplayName-backed standard not-found
   template is derived.
 - The shared convention change belongs to this docs PR. Payment implementation remains branch-local
-  to PR #296 because its error surface includes that branch's unmerged commission work.
+  to `Feature/PaymentOwnedResultExpansion`; PR #296 is frozen donor state for that phase.
 - The first `Docs/TypedErrorConvention` worktree was removed by a concurrent cleanup before commit;
   the diff was reconstructed in the flat `Docs-TypedResultConventions` worktree without touching any
   Payment worktree.
@@ -86,6 +81,16 @@ No code review has run yet.
 - Outcome: the requested docs PR is open and contains only the convention, canonical plan, and this
   progress ledger.
 - Follow-up: review PR #335; merge only on Tommy's explicit instruction, then resume Phase 2 on #296.
+
+### 2026-08-04 — corrected error representation convention
+
+- Action: replaced the positional `Definition.Match` convention with payload-free sealed definition
+  records and abstract-root/per-case definitions for necessary Dunet unions.
+- Evidence: the branch is based on `origin/main` `c45b33740`, which contains PR #335 merge
+  `5af2bcb64`; `git diff --check` passed and every changed path is markdown.
+- Outcome: the convention now matches the verified Payment implementation shape and the
+  DisplayName-backed message-less not-found rule.
+- Follow-up: commit, push, open, and merge the docs-only correction PR.
 
 ## Resume prompt
 
