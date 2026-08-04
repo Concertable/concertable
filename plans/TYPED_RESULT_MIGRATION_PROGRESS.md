@@ -25,12 +25,18 @@ Container-backed integration verification remains pending. Docker was initially 
 became unresponsive during the first Artist Testcontainers startup; no integration test completed
 and the stuck run was stopped without retrying.
 
+After commit `ed800758a`, `origin/main` advanced by 11 commits. Those commits include the merged typed
+error representation/convention changes (`eb87a6225`, `52ad35432`), so this branch must reconcile
+against them before further implementation.
+
 ## Next Steps
 
-When Docker Desktop is healthy, run `scripts/integration.ps1 b2b` once and record the per-project
-results. Then re-check the Payment Phase 2 publication/platform-sync gate. If the published Payment
-client exposes owned typed Results, proceed with checkpoint 6 and checkpoint 7. Otherwise leave
-checkpoint 6 blocked and do not create a FluentResults adapter or string bridge.
+Merge current `origin/main` into this worktree and reconcile the B2B errors and conventions with the
+new typed error representation rules. Re-run the full Release build, architecture tests, and affected
+unit suites. When Docker Desktop is healthy, run `scripts/integration.ps1 b2b` once and record the
+per-project results. Then re-check the Payment Phase 2 publication/platform-sync gate. If the
+published Payment client exposes owned typed Results, proceed with checkpoint 6 and checkpoint 7.
+Otherwise leave checkpoint 6 blocked and do not create a FluentResults adapter or string bridge.
 
 ## Completed work
 
@@ -61,6 +67,8 @@ checkpoint 6 blocked and do not create a FluentResults adapter or string bridge.
 - B2B API source audit: zero `.OrFailure(` calls and zero `TimeProvider` dependencies in `*.Api`.
 - Payment gate: blocked; `Concertable.Payment.Client` on current main still uses FluentResults.
 - B2B integration suite: environment-blocked before a result because Docker became unresponsive.
+- Final reconciliation: branch is 11 commits behind `origin/main`; the new commits include typed
+  error representation and convention changes reserved for the next sync detour.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -85,6 +93,16 @@ checkpoint 6 blocked and do not create a FluentResults adapter or string bridge.
 - Outcome: locally verified code checkpoint; integration pending; Payment-dependent checkpoint 6
   remains blocked.
 - Follow-up: perform `## Next Steps` when Docker and the Payment package prerequisite allow it.
+
+### 2026-08-04 - post-checkpoint mainline advance discovered
+
+- Action: reconciled branch state after local commit `ed800758a`.
+- Evidence: `git rev-list --count HEAD..origin/main` returned 11; the range includes
+  `eb87a6225 docs(api): codify typed error union conventions` and
+  `52ad35432 docs(api): simplify typed error representation`.
+- Outcome: no additional merge was started in this turn; the convention-sync detour is the first
+  item in `## Next Steps`.
+- Follow-up: sync and reconcile in the next prompt.
 
 ## Resume prompt
 
