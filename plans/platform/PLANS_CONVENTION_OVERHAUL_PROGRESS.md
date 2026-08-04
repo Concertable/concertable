@@ -16,25 +16,33 @@ SKILL, root `AGENTS.md`, `PROMPTS.md`, and the user-global `worktree` skill (out
 
 ## Next Steps
 
-**DECIDED (Tommy): fork 2 — bump-in-a-window.** Merge #346; the CONFLICT-RISK/REPOINT-AFTER worktrees
-fix their (one-line ledger path / self-billing b2b→launch relocation) issues on their own next sync —
-that repoint IS the §6 consumer cost, and merging #346 into `main` cannot touch another worktree's
-working tree, so nothing is clobbered. Backfilling the 11 ledger-less `_PLAN` files is **dropped** —
-plan §6 says no backfill; the earlier "backfill 11" line contradicted it and was scope creep.
+**DECIDED (Tommy): fork 2 = ORDERING ONLY (merge #346 first), NOT skip-the-consumers.** The epic's whole
+point is ONE consistent convention across the tree, so after the bump lands every worktree gets brought
+in line — these are all Tommy's own worktrees, so repointing/renaming them is the job, not "touching
+someone else's branch." Backfilling the 11 ledger-less `_PLAN` files stays **dropped** (plan §6: no backfill).
 
-**Merge conflict against current `main` is resolved.** Merged `origin/main` (was 10 behind); the only
-two conflicts were `typed-result/TYPED_RESULT_MIGRATION_ROADMAP.md` + `_PROGRESS.md`, both the same
-shape — main referenced the pre-rename path, HEAD the renamed one; kept HEAD (the rename is the point).
-Tree clean, no markers left. `main`'s `api/**` + `CODE_CONVENTIONS.md` advance rode in cleanly.
+**Merge resolved, pushed, auto-merge ENABLED.** Merged `origin/main` (was 10 behind); the only two
+conflicts were `typed-result/TYPED_RESULT_MIGRATION_ROADMAP.md` + `_PROGRESS.md`, same shape — main had
+the pre-rename path, HEAD the renamed one; kept HEAD. Committed `8c48001a5`, pushed. #346
+`mergeable=MERGEABLE`, `--auto` enabled (queue picks strategy); `BLOCKED` = pending `build` only (`main`
+not branch-protected → no required review). Background watcher `bss0uinif` polls the land outcome.
+
+**Worktree-docs check:** only 2 of 16 have uncommitted docs — `Feature/PaymentOwnedResultExpansion`
+(`plans/TYPED_RESULT_MIGRATION_PAYMENT_PROGRESS.md`) + `Chore/TechDebt` (`reviews/Chore-TechDebt.md`);
+neither is a file #346 moves, so the bump collides with nothing.
 
 Immediate next action:
-1. Commit the merge, push → #346 goes CLEAN/mergeable.
-2. **Land #346** (enable auto-merge; docs-only, `skip-e2e`, branch now current with base). Awaiting
-   Tommy's one-word go on the actual land — everything up to it is done.
-3. On merge: delete this plan + ledger in the close-out commit; consumer worktrees repoint their ledger
-   `- Plan:` line on next sync; rename worktrees to `<Type>/<epic>_<name>` (only after merge).
+1. **Wait on watcher `bss0uinif`** → `✓ MERGED` / CI-fail / stall (docs-only; a `build` fail = pre-existing,
+   inspect not blind-retry).
+2. **Consistency sweep across ALL worktrees** (the epic's completion — owned here, all Tommy's own trees):
+   for each worktree, sync `main`, repoint its ledger `- Plan:`/path refs to the moved `plans/<folder>/…`
+   locations, and rename the worktree + branch to `<Type>/<epic>_<name>`. Hot repoints: the ~7 typed-result
+   worktrees + the `Feature/SelfBillingAgreement` b2b→launch relocation (§6: its 2 files belong at
+   `plans/launch/`). Enumerate from `git worktree list`; skip DEAD `Refactor/DerivedErrorDefinitions` (prune).
+3. **Close out** this plan — delete `PLANS_CONVENTION_OVERHAUL_PLAN.md` + `_PROGRESS.md` — only after the
+   sweep, since the sweep is the last outstanding epic work this ledger anchors.
 
-Do NOT merge any *other* PR or commit another worktree's WIP — fork 2 touches none of them.
+Do NOT merge any *other* PR or commit another branch's actual code WIP; the sweep is doc/ledger/rename only.
 
 ## Completed work
 
