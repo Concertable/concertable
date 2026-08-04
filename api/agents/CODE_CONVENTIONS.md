@@ -288,6 +288,13 @@ public abstract partial record PaymentError : IError
 }
 ```
 
+Name every static value and union case for the exact domain outcome it represents. Prefer the
+natural vocabulary (`ApplicationNotFound`, `ApplicationError`, `PayeeNotFound`,
+`RecipientUnavailable`) and use it directly; do not add a `Case` suffix or a wrapper factory that
+only renames or constructs the same case. A name and its definition must agree semantically:
+`PayerNotFound` uses an `ErrorDefinition.NotFound`, while a broader or different definition requires
+an honestly broader or different case name.
+
 This makes a newly declared case fail compilation until it implements `IError`, without positional
 lambdas or unused parameters. Use generated full `Match` only for other owner-local logic that truly
 requires exhaustive case handling. When logic deliberately inspects only some cases, use ordinary
@@ -335,10 +342,11 @@ Keep `IError`, definitions, shared Result extensions, transports, persistence, m
 formats independent of Dunet.
 
 After the repository moves to a released .NET/C# native-union implementation, replace Dunet and the
-hand-written Result/Option representations in one deliberate cutover. Preserve the current
-`Match`-shaped exhaustive API, factories, definitions, composition, and transport adapters so service
-call sites do not inherit preview null/default arms. Choose any additional native pattern surface
-from the released semantics at that time; do not pre-shape current code around preview switch syntax.
+hand-written Result/Option representations in one deliberate cutover. Preserve the current natural
+operation-error case names, definitions, Result/Option factories, composition, and transport adapters
+so service call sites do not inherit preview null/default arms. Choose any additional native pattern
+surface from the released semantics at that time; do not pre-shape current code around preview switch
+syntax.
 
 Controllers terminate through `Concertable.Shared.Api.Results`. Result failures and exceptions both
 write through `IProblemDetailsService`, so registered writers, content negotiation, request
