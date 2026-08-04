@@ -52,6 +52,19 @@ pre-existing danglers) + every `plans/`/`@plans/` link resolves + `git mv` renam
 - Outcome: hit list enumerated; ready to execute the moves.
 - Follow-up: run plan §7.
 
+### 2026-08-04 — Ran the §7 grep gate for real; fixed one miss
+
+- Action: executed the full §7 sweep (never actually recorded before). Repo-wide grep for stale
+  `plans/b2b|customer` folders, old root stems, `@plans/` old paths + a link-resolution pass over every
+  `plans/**/*.md` target.
+- Findings: one genuine miss — `api/docs/MICROSERVICES_ARCHITECTURE.md:9` had 3/4 links updated but left
+  `USER_MODEL_PLAN.md` on the dead `/plans/b2b/` folder. Fixed → `/plans/launch/` (target itself is a
+  listed pre-existing dangler).
+- Allowlisted survivors (recorded in plan §6): `reviews/*.md` historical watermarks (archival, keep old
+  paths), in-flight `TYPED_RESULT_MIGRATION_DERIVED_CODES_PROGRESS.md` (owned by another worktree).
+- Outcome: gate green — zero stale refs outside the rename table + explicit allowlist; all live
+  `plans/` links resolve.
+
 ### 2026-08-04 — Merged main, opened PR #346
 
 - Action: merged `origin/main` (was 7 behind). One conflict in

@@ -157,6 +157,16 @@ e2e/microservice/polyrepo/money/commission clusters, `LAUNCH_ROADMAP` → its pl
   `RUST_CONTRACT_MICROSERVICE`, `USER_MODEL_PLAN`, `STEP_7_PLAN`, `POLYREPO_COMPLETION`,
   `CONTRACT_LIFECYCLE_FSM`) are noted, not invented; the `platform-sync.yml` → `PLATFORM_PACKAGE_SYNC.md`
   dangler is left as-is.
+- **`reviews/*.md` historical watermarks keep their old `plans/b2b/…` paths** — allowlisted survivors,
+  not misses. These are dated, resolved review records (`BIG-Feature-PricingTransparency-Review.md`,
+  `Feature-Dac7Onboarding.md`) describing which files were reviewed on a given day; some targets
+  (`LAUNCH_PLAN.md`, `TAX_COMPLIANCE_REFACTOR.md`) aren't even in the rename map. They're the
+  git-history equivalent — rewriting them would falsify the record. Left verbatim.
+- **In-flight `plans/TYPED_RESULT_MIGRATION_DERIVED_CODES_PROGRESS.md`** (landed on `main` after this
+  branch cut) still points at the pre-rename `plans/TYPED_RESULT_MIGRATION.md` and stays loose at
+  `plans/` root — it's an active ledger owned by the `Refactor/DerivedErrorDefinitions` worktree.
+  Repointed/relocated on its own sync, per the typed-result in-flight clause above; moving it here
+  creates the fresh mismatch this plan is explicitly avoiding.
 - **User-global `worktree` skill** (`~/.agents/skills/worktree/SKILL.md`) and the **local stop hook**
   (`.claude/hooks/handoff-stop-check.py`) are outside this repo/PR. The hook needs no change (robust to
   `_PLAN`/`_ROADMAP`/folder moves; keys off `plans/**/*_PROGRESS.md` + `## Next Steps`). The worktree

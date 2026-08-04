@@ -6,7 +6,7 @@
 >
 > **Constraint that changed the plan:** This is a learning side project. The Nov 2026 launch in `LAUNCH_ROADMAP.md` is aspirational, not a hard deadline. Skill development (event-driven architecture, transactional outbox, sagas, OpenTelemetry, Service Bus operations) is an explicit goal alongside any eventual deployment.
 >
-> **Companion docs:** [LAUNCH_ROADMAP.md](/plans/launch/LAUNCH_ROADMAP.md), [MARKETPLACE_PLAN.md](/plans/marketplace/MARKETPLACE_PLAN.md), [LAUNCH_CHECKLIST.md](/plans/launch/LAUNCH_CHECKLIST.md), [USER_MODEL_PLAN.md](/plans/b2b/USER_MODEL_PLAN.md).
+> **Companion docs:** [LAUNCH_ROADMAP.md](/plans/launch/LAUNCH_ROADMAP.md), [MARKETPLACE_PLAN.md](/plans/marketplace/MARKETPLACE_PLAN.md), [LAUNCH_CHECKLIST.md](/plans/launch/LAUNCH_CHECKLIST.md), [USER_MODEL_PLAN.md](/plans/launch/USER_MODEL_PLAN.md).
 
 ---
 
