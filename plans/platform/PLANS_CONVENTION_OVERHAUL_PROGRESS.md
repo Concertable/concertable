@@ -16,46 +16,25 @@ SKILL, root `AGENTS.md`, `PROMPTS.md`, and the user-global `worktree` skill (out
 
 ## Next Steps
 
-**Strategy (per Tommy): FULL migration + consumer handling before merge — do NOT de-scope, do NOT
-merge blind.** Treat #346 as a breaking "version" bump of the plans convention: everything on `main`
-must be in the new format AND the consumers (the ~15 in-flight worktrees whose ledgers point at moved
-paths) must be handled first, exactly like the platform-sync gate handles package consumers. The
-de-scope attempt was reversed — typed-result is back in-format (links fixed).
+**DECIDED (Tommy): fork 2 — bump-in-a-window.** Merge #346; the CONFLICT-RISK/REPOINT-AFTER worktrees
+fix their (one-line ledger path / self-billing b2b→launch relocation) issues on their own next sync —
+that repoint IS the §6 consumer cost, and merging #346 into `main` cannot touch another worktree's
+working tree, so nothing is clobbered. Backfilling the 11 ledger-less `_PLAN` files is **dropped** —
+plan §6 says no backfill; the earlier "backfill 11" line contradicted it and was scope creep.
 
-Collision sweep result (moved-plan files each branch edits): only 3 branches collide —
-`Refactor/B2BTypedResultMigration` + `Feature/TypedResultMigrationPhase2` + `Docs/TypedResultPhaseOwnership`
-on `TYPED_RESULT_MIGRATION.md` (R099, content-edited → real conflicts); `Feature/CommissionBindingDeferredPricing`
-on `PLATFORM_COMMISSION.md`/`LAUNCH_CHECKLIST.md` (R100 pure renames → git follows cleanly). The
-`ERROR_CASE_NAMES_PROGRESS.md` "deletion" was confirmed staleness.
+**Merge conflict against current `main` is resolved.** Merged `origin/main` (was 10 behind); the only
+two conflicts were `typed-result/TYPED_RESULT_MIGRATION_ROADMAP.md` + `_PROGRESS.md`, both the same
+shape — main referenced the pre-rename path, HEAD the renamed one; kept HEAD (the rename is the point).
+Tree clean, no markers left. `main`'s `api/**` + `CODE_CONVENTIONS.md` advance rode in cleanly.
 
-**Worktree audit — 15/15 DONE.** Hot shared files = `TYPED_RESULT_MIGRATION.md` + `plans/AGENTS.md`
-(~7 worktrees touch them). Classifications:
-- **LAND-FIRST:** `Refactor/B2BTypedResultMigration` (16 commits, no PR), `Feature/CommissionBindingDeferredPricing`
-  (PR #296, 123-file Payment feat), `Feature/PaymentOwnedResultExpansion` (45 commits + 12 uncommitted, no PR),
-  `Docs/PlanNextStepsSinglePath` (PR #333).
-- **CONFLICT-RISK:** `Feature/TypedResultMigrationPhase2` (PR #282), `Docs/TypedResultPhaseOwnership`,
-  `Docs/TypedResultConventions`, `Feature/FrontendBuildSeparation` (unpushed `merge/SKILL.md`),
-  `Feature/SelfBillingAgreement` (main checkout — 10 commits real code, no PR; `merge-tree` dry-run: PLAN.md
-  auto-merges, but its 2 NEW `plans/b2b/SELF_BILLING_AGREEMENT*.md` files hit a b2b→launch **location**
-  conflict + 3 internal refs to repoint. Per §6 this plan should have been created at `plans/launch/` — it wasn't).
-- **REPOINT-AFTER:** `Docs/NaturalErrorCaseNames` (PR #343 merged). **CLEAN-FOLLOW:** `Chore/TechDebt` (#339),
-  `Docs/TypedErrorRepresentation` (already merged — prune), `Plan/RepositoryPerMicroserviceMigration` (188 behind),
-  `Refactor/DealStrategyCompletenessGuard` (1 unpushed test, no plan collision — own PR on its own schedule).
-- **DEAD/PRUNE:** `Refactor/DerivedErrorDefinitions` (orphan root commit, feature already merged as PR #344).
+Immediate next action:
+1. Commit the merge, push → #346 goes CLEAN/mergeable.
+2. **Land #346** (enable auto-merge; docs-only, `skip-e2e`, branch now current with base). Awaiting
+   Tommy's one-word go on the actual land — everything up to it is done.
+3. On merge: delete this plan + ledger in the close-out commit; consumer worktrees repoint their ledger
+   `- Plan:` line on next sync; rename worktrees to `<Type>/<epic>_<name>` (only after merge).
 
-**BLOCKED ON TOMMY'S DECISION — two forks presented, awaiting his pick:**
-(1) *drain-then-bump* = land the 5 LAND-FIRST branches (he merges #296/#282/#333, OKs pushing the 2 no-PR
-WIP branches), then #346 last — cleanest, most coordination, #346 re-merges after each; or
-(2) *bump-in-a-window* = merge #346 in a quiet moment, CONFLICT-RISK/REPOINT-AFTER worktrees fix their
-(mostly 1-line) ledger headers on next sync. Recommendation: fork 2 for all EXCEPT pushing/PR-ing the two
-no-PR code branches (`B2BTypedResultMigration`, `PaymentOwnedResultExpansion`) which should land regardless.
-
-Next action when he answers: execute the chosen fork. Independently still to do before #346 merges:
-backfill `_PROGRESS` ledgers for the 11 `_PLAN` files lacking one, verify skills/agent files, re-run the
-grep+link gate. Do NOT merge #346 or any other PR / commit others' WIP without his explicit go-ahead.
-
-On merge: delete this plan + ledger in close-out; REPOINT-AFTER worktrees fix their ledger `- Plan:`
-line on next sync; rename worktrees to `<Type>/<epic>_<name>` (only after merge).
+Do NOT merge any *other* PR or commit another worktree's WIP — fork 2 touches none of them.
 
 ## Completed work
 
