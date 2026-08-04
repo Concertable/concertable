@@ -3,7 +3,7 @@
 - Plan: `plans/platform/PLANS_CONVENTION_OVERHAUL_PLAN.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Docs\PlansConventionOverhaul`
 - Branch: `Docs/PlansConventionOverhaul`
-- PR: not opened
+- PR: #346 (open, `skip-e2e` labelled)
 - Dependency/package gates: none (docs + skills markdown only; no `api/**`, no build, no platform-sync).
 
 ## Current state
@@ -16,9 +16,10 @@ SKILL, root `AGENTS.md`, `PROMPTS.md`, and the user-global `worktree` skill (out
 
 ## Next Steps
 
-Open the PR (docs/skills only → `skip-e2e` eligible). Separately, once merged, existing sibling
-worktrees can be renamed to `<Type>/<epic>_<name>` and resynced — NOT before merge (their branches
-still carry the old plan names until they pull this in; renaming first creates a fresh mismatch).
+PR #346 open (`skip-e2e`). Awaiting Tommy's go-ahead to merge (do not self-merge). On merge: delete
+this plan + ledger in the close-out, then rename/resync sibling worktrees to `<Type>/<epic>_<name>` —
+NOT before merge (their branches still carry the old plan names until they pull this in; renaming
+first creates a fresh mismatch).
 
 ## Completed work
 
@@ -50,3 +51,14 @@ pre-existing danglers) + every `plans/`/`@plans/` link resolves + `git mv` renam
   this ledger in `plans/platform/`.
 - Outcome: hit list enumerated; ready to execute the moves.
 - Follow-up: run plan §7.
+
+### 2026-08-04 — Merged main, opened PR #346
+
+- Action: merged `origin/main` (was 7 behind). One conflict in
+  `typed-result/TYPED_RESULT_MIGRATION_ROADMAP.md` — main added derived-code + Phase 2 ledger pointers
+  to the same line this branch rewrote for the rename; resolved by keeping both pointers.
+- Decision: new loose `plans/TYPED_RESULT_MIGRATION_DERIVED_CODES_PROGRESS.md` (landed on main) left at
+  root — it's an in-flight ledger for the `Refactor/DerivedErrorDefinitions` worktree; moving it now
+  creates the fresh mismatch §6 warns against. Repointed on its own sync.
+- Action: pushed (current with main, 0 behind); opened PR #346 + `skip-e2e` label.
+- Outcome: PR open, awaiting merge go-ahead.
