@@ -9,15 +9,16 @@
 
 ## Current state
 
-PR #343 is open with the naming refinement. The corrected error representation convention from
-merged PR #340 remains in force. Operation-error static values and union cases use natural domain
-names directly, with no `Case` suffix or wrapper factory that merely aliases the same case. Each name
-must agree with its `ErrorDefinition`; for example, `PayerNotFound` is valid only with NotFound
-semantics.
+PR #343 is open at remote head `5b3bf3dee9e818328f66ab3541c751d384abd9bd`. Its checks are terminal
+and green/skipped for the docs-only diff, but GitHub reports `DIRTY`: the branch is nine commits
+behind `origin/main`, and merged PR #344 changed the same convention and plan area. The naming rule
+must be reconciled with current main before the PR can enter the merge queue.
 
 ## Next Steps
 
-Review PR #343. Do not merge it without Tommy's explicit instruction.
+Merge `origin/main` into `Docs/NaturalErrorCaseNames`, reconcile the PR #344 overlap without losing
+the natural, semantically accurate error-name rule, verify the markdown diff, push the updated
+branch, then re-run the merge workflow for PR #343.
 
 ## Completed work
 
@@ -69,6 +70,16 @@ GitHub review is pending on PR #343.
   `https://github.com/Concertable/concertable/pull/343`.
 - Outcome: the requested docs PR is open and the Payment implementation remains untouched.
 - Follow-up: review PR #343; merge only on Tommy's explicit instruction.
+
+### 2026-08-04 — merge preflight found stale conflicting base
+
+- Action: fetched current `origin/main` and inspected PR #343 before queue admission.
+- Evidence: `origin/main...HEAD` was `9 2`; GitHub reported `mergeStateStatus=DIRTY`; the remote PR
+  head remained `5b3bf3dee9e818328f66ab3541c751d384abd9bd`; all PR checks were terminal with `ci-complete`,
+  `changes`, and `instant-merge` passing and runtime jobs skipped for the docs-only diff.
+- Outcome: queue admission is blocked until current main is merged and the PR #344 overlap is
+  reconciled.
+- Follow-up: update, verify, and push the source branch before enqueueing.
 
 ## Resume prompt
 
