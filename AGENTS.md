@@ -201,8 +201,12 @@ Run E2E only through `./e2e.ps1` via the matching skill (`e2e-ui-regress`, `e2e-
 ## Tech debt (`TECH_DEBT.md`)
 
 Always record tech debt in the `TECH_DEBT.md` belonging to the area that owns the problem. If that
-area does not have one, create it there rather than adding the entry to a broader parent file. Once
-the debt is addressed, delete the entire entry; do not retain resolved entries as an archive.
+area does not have one, create it there rather than adding the entry to a broader parent file.
+
+**The PR that resolves a debt item deletes its entry — and any `ARCHITECTURE.md` mention — in that
+same PR.** A resolving change that leaves the entry behind is incomplete: the stale entry then lies to
+every future reader that the work is still pending (this has repeatedly sent `/techdebt` chasing
+already-done items). Never retain resolved entries as an archive — git history is the archive.
 
 ## Code comments — default to none; the commit message is the archive
 
