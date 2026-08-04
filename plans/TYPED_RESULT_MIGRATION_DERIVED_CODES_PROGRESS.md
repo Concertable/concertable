@@ -47,8 +47,11 @@ record the published Kernel version here. Do not modify PR #296.
   as collapsing into one exhaustive native-union `switch` at that cutover.
 - `plans/TYPED_RESULT_MIGRATION.md` — added Phase 1B and made Phase 2's dependency include this
   Kernel publication.
-- Deleted `plans/TYPED_RESULT_MIGRATION_CONVENTIONS_PROGRESS.md`: both PRs it tracked (#335, #340) are
-  merged and docs-only, so its lifecycle is terminal and Lifecycle 5 forbids keeping it.
+- Left `plans/TYPED_RESULT_MIGRATION_CONVENTIONS_PROGRESS.md` in place. It was briefly deleted here as
+  a terminal ledger (its PRs #335 and #340 are merged and docs-only), then restored on discovering that
+  open PR #343 is still editing it — it is the rolling docs-convention ledger, not terminal, and
+  deleting it would have made #343 a modify/delete conflict. Its close-out belongs to whoever lands the
+  last docs PR in that family.
 
 ## Verification
 
@@ -83,6 +86,17 @@ Lenses B (microservice isolation), C (module boundaries), and D (seeding) had no
 diff is Kernel plus docs, with no service, seeder, facade, or cross-service reference touched.
 
 ## Decisions, discoveries, blockers, and deviations
+
+- **Open PR #343 `Docs/NaturalErrorCaseNames` overlaps this PR's docs.** It edits
+  `api/agents/CODE_CONVENTIONS.md` and `plans/TYPED_RESULT_MIGRATION.md` in the same error-convention
+  region and prefers natural case names without a `Case` suffix. That direction is compatible with the
+  resolver — stripping an optional `Case` suffix is a tolerance, not a requirement — but whichever PR
+  merges second needs a rebase on those two files. Not resolved here; #343 is not touched.
+- **The local branch ref was lowercase `refactor/DerivedErrorDefinitions`** while the remote uses
+  `Refactor/`. Nothing had been pushed, so it was renamed and published through the explicit refspec
+  `HEAD:refs/heads/Refactor/DerivedErrorDefinitions`; a lowercase push would have created the dual-casing
+  ref that breaks `git fetch` for everyone. The on-disk `.git/refs/heads/refactor/` directory still
+  holds four other branches in that casing, which is why `git branch --list` still prints lowercase.
 
 - **No nullable metadata record.** The inherited design cached
   `ErrorCaseMetadata(string Code, string? NotFoundDisplayName)`, carrying a not-found-only field on
