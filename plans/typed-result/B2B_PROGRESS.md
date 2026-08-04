@@ -37,12 +37,19 @@ retried.
 
 ## Next Steps
 
-Wait for the Payment Phase 2 implementation to merge, publish, and platform-sync green. Then fetch
-and merge current `origin/main`, verify the pinned `Concertable.Payment.Client` exposes the owned
-typed Result surface, and proceed with checkpoints 6 and 7 only if that package gate is open. Do not
-create a FluentResults adapter, string bridge, or local source dependency. Once Docker Desktop is
-stable, run `scripts/docker-health.ps1`; only after it passes, run `scripts/integration.ps1 b2b` once
-and record the per-project results. Do not retry the current Docker fixture failure unchanged.
+The docs reconcile this turn (plan+ledger moved into `plans/typed-result/`) changed no migration
+state: checkpoints 1-5 remain shipped, 6-7 remain **blocked on Payment PR #296** (the Payment
+owned-result expansion). Nothing to implement in this worktree until #296 merges, Payment publishes,
+and its generated platform-sync PR lands green — that is the single blocker; report "waiting for #296"
+and do not re-poll it.
+
+When #296's package gate is open: fetch and merge current `origin/main` (this branch is behind), verify
+the pinned `Concertable.Payment.Client` exposes the owned typed Result surface, then implement
+checkpoint 6 (Concert payment/cancel/finish workflows) and checkpoint 7 (FluentResults removal from the
+migrated B2B projects). Do not create a FluentResults adapter, string bridge, or local source dependency
+to cross the gate. Once Docker Desktop is stable, run `scripts/docker-health.ps1`; only after it passes,
+run `scripts/integration.ps1 b2b` once and record the per-project results. Do not retry the prior Docker
+fixture failure unchanged.
 
 ## Completed work
 
