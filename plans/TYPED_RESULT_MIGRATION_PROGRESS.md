@@ -1,5 +1,9 @@
 # Concertable-owned Result and Option migration progress
 
+> **FROZEN DONOR — NOT AN IMPLEMENTATION OWNER.** Payment Phase 2 is owned exclusively by
+> `Feature/PaymentOwnedResultExpansion` and `plans/TYPED_RESULT_MIGRATION_PAYMENT_PROGRESS.md`.
+> Do not implement or resume Typed Result work in this worktree.
+
 - Plan: `plans/TYPED_RESULT_MIGRATION.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\CommissionBindingDeferredPricing`
 - Branch: `Feature/CommissionBindingDeferredPricing`
@@ -22,11 +26,9 @@ not part of the source PR head.
 
 ## Next Steps
 
-Payment owned-result Phase 2 is complete, pushed to PR #296 at `82d0555cd`, reviewed clean
-(incremental review 2026-08-04, range `99ef2faac..0dab856dc`, no new findings), and current with
-`origin/main`. Confirm PR #296's currently-running CI reaches green. Advancing then depends on Tommy's
-explicit merge instruction, followed by Payment package publication and a green generated
-platform-sync PR. Do not begin Typed Result Phase 3 until those gates land.
+Do not continue Typed Result implementation here. Preserve PR #296 and local changes as donor state;
+the canonical `Feature/PaymentOwnedResultExpansion` worktree must inventory and salvage `f693c955d`
+before writing replacement code. This worktree owns only the commission-pricing recovery.
 
 ## Resume prompt
 
