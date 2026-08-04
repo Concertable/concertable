@@ -28,22 +28,31 @@ on `TYPED_RESULT_MIGRATION.md` (R099, content-edited → real conflicts); `Featu
 on `PLATFORM_COMMISSION.md`/`LAUNCH_CHECKLIST.md` (R100 pure renames → git follows cleanly). The
 `ERROR_CASE_NAMES_PROGRESS.md` "deletion" was confirmed staleness.
 
-Concrete next actions, in order:
-1. **Consolidate the 15-worktree audit** (5 background agents; batch A done). Classify each
-   LAND-FIRST / CLEAN-FOLLOW / REPOINT-AFTER / CONFLICT-RISK. Confirmed so far:
-   `Refactor/B2BTypedResultMigration` = LAND-FIRST (16 unmerged commits, real refactor, conflicts on
-   the typed-result file — land it before the bump); `Chore/TechDebt` = CLEAN-FOLLOW (PR #339);
-   `Docs/NaturalErrorCaseNames` = REPOINT-AFTER (PR #343 merged, ledger bookkeeping only).
-2. **Land the LAND-FIRST worktrees** (open/merge their PRs) so they leave the collision set.
-3. **Backfill `_PROGRESS` ledgers** for the 11 `_PLAN` files lacking one (DEAL_STRATEGY_REGISTRATION,
-   MONEY_VALUE_TYPE, PLATFORM_COMMISSION, MARKETPLACE, CONFIG_AND_DEPLOYMENT, E2E_FAST_FORWARD_REFACTOR,
-   E2E_HARNESS_RENAME, EMPTY_STRING_ELIMINATION, MICROSERVICE_STEPS, MICROSERVICE_STEPS_CONT,
-   PIPELINE_REDESIGN, RUST_DEAL_MICROSERVICE, VERIFY_ACCEPT_CONVERGENCE) — reconstructed from plan +
-   repo evidence, per the progress-template.
-4. **Verify skills + agent files** (resume-plan, continue-roadmap, plans/agents/PLAN.md, ROADMAP.md,
-   root AGENTS.md, PROMPTS.md) fully describe/enforce the format.
-5. Re-run grep + link gate; then **merge #346 promptly** (it re-conflicts with typed-result on every
-   `main` advance until merged). Do not self-merge — Tommy's go-ahead.
+**Worktree audit — 15/15 DONE.** Hot shared files = `TYPED_RESULT_MIGRATION.md` + `plans/AGENTS.md`
+(~7 worktrees touch them). Classifications:
+- **LAND-FIRST:** `Refactor/B2BTypedResultMigration` (16 commits, no PR), `Feature/CommissionBindingDeferredPricing`
+  (PR #296, 123-file Payment feat), `Feature/PaymentOwnedResultExpansion` (45 commits + 12 uncommitted, no PR),
+  `Docs/PlanNextStepsSinglePath` (PR #333).
+- **CONFLICT-RISK:** `Feature/TypedResultMigrationPhase2` (PR #282), `Docs/TypedResultPhaseOwnership`,
+  `Docs/TypedResultConventions`, `Feature/FrontendBuildSeparation` (unpushed `merge/SKILL.md`),
+  `Feature/SelfBillingAgreement` (main checkout — 10 commits real code, no PR; `merge-tree` dry-run: PLAN.md
+  auto-merges, but its 2 NEW `plans/b2b/SELF_BILLING_AGREEMENT*.md` files hit a b2b→launch **location**
+  conflict + 3 internal refs to repoint. Per §6 this plan should have been created at `plans/launch/` — it wasn't).
+- **REPOINT-AFTER:** `Docs/NaturalErrorCaseNames` (PR #343 merged). **CLEAN-FOLLOW:** `Chore/TechDebt` (#339),
+  `Docs/TypedErrorRepresentation` (already merged — prune), `Plan/RepositoryPerMicroserviceMigration` (188 behind),
+  `Refactor/DealStrategyCompletenessGuard` (1 unpushed test, no plan collision — own PR on its own schedule).
+- **DEAD/PRUNE:** `Refactor/DerivedErrorDefinitions` (orphan root commit, feature already merged as PR #344).
+
+**BLOCKED ON TOMMY'S DECISION — two forks presented, awaiting his pick:**
+(1) *drain-then-bump* = land the 5 LAND-FIRST branches (he merges #296/#282/#333, OKs pushing the 2 no-PR
+WIP branches), then #346 last — cleanest, most coordination, #346 re-merges after each; or
+(2) *bump-in-a-window* = merge #346 in a quiet moment, CONFLICT-RISK/REPOINT-AFTER worktrees fix their
+(mostly 1-line) ledger headers on next sync. Recommendation: fork 2 for all EXCEPT pushing/PR-ing the two
+no-PR code branches (`B2BTypedResultMigration`, `PaymentOwnedResultExpansion`) which should land regardless.
+
+Next action when he answers: execute the chosen fork. Independently still to do before #346 merges:
+backfill `_PROGRESS` ledgers for the 11 `_PLAN` files lacking one, verify skills/agent files, re-run the
+grep+link gate. Do NOT merge #346 or any other PR / commit others' WIP without his explicit go-ahead.
 
 On merge: delete this plan + ledger in close-out; REPOINT-AFTER worktrees fix their ledger `- Plan:`
 line on next sync; rename worktrees to `<Type>/<epic>_<name>` (only after merge).
