@@ -96,11 +96,13 @@ def main():
 
     reason = (
         "HANDOFF INVARIANT (PROMPTS.md): an active plan ledger has outstanding "
-        "`## Next Steps`, but this turn's final message has no handoff pointer. "
-        "End the turn with it: `cd <worktree>` then \"Read @plans/<PLAN>.md and "
-        "@plans/<PLAN>_PROGRESS.md, then do what the ledger's `## Next Steps` says.\" "
-        "(If the plan is genuinely closed out, this fires because the ledger still "
-        "exists — delete it or clear its Next Steps.)"
+        "`## Next Steps`. FIRST rewrite that ledger's `## Next Steps` to the current, "
+        "specific next action — reflecting what actually changed this turn (findings, "
+        "blockers, decisions). Handing off a stale `## Next Steps` unchanged is the loop "
+        "this guards against, NOT a pass. THEN end with the pointer: `cd <worktree>` "
+        "then \"Read @plans/<PLAN>_PLAN.md and @plans/<ledger>_PROGRESS.md and do what "
+        "its `## Next Steps` says.\" (If the plan is genuinely closed out, delete the "
+        "ledger or clear its Next Steps instead.)"
     )
     print(json.dumps({"decision": "block", "reason": reason}))
 
