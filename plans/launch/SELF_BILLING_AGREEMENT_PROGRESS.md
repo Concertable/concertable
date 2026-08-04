@@ -110,7 +110,7 @@ None yet.
 
 - Action: Fetched `origin/main` (0 behind), created branch `Feature/SelfBillingAgreement` off
   `origin/main`. Mapped the shipped invoice engine and Contract/e-sign plumbing, then wrote
-  `plans/b2b/SELF_BILLING_AGREEMENT.md` and this ledger from the progress template.
+  the plan (now `plans/launch/SELF_BILLING_AGREEMENT_PLAN.md`) and this ledger from the progress template.
 - Evidence: plan + ledger files on `Feature/SelfBillingAgreement` (uncommitted at time of writing);
   code map from `Feature/VatAndSelfBilledInvoicing` / `Feature/BookingAgreement` source.
 - Outcome: design + independently-shippable phases (each with a verification gate) recorded. Build not
