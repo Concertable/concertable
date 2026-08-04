@@ -1,5 +1,7 @@
 # Percentage platform commission and pricing transparency
 
+> **Next steps live in @plans/b2b/PLATFORM_COMMISSION_PROGRESS.md → `## Next Steps`.**
+
 > **Active launch plan.** The temporary flat £10 platform fee is shipped, but it is not the launch
 > pricing model. Replace it before launch with one Payment-owned percentage applied to the final
 > deal gross calculated by B2B. The payer pays gross plus commission; the payee receives the agreed

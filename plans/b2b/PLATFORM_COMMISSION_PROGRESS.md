@@ -175,13 +175,10 @@ reconciliation edits:
 
 ## Resume prompt
 
+Per `plans/AGENTS.md` "Plan handoff", the prompt is ONLY the pointer — the action lives in
+`## Next Steps` above and is never restated here, so it can't drift:
+
 ```
 cd C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\CommissionBindingDeferredPricing
-Read AGENTS.md, plans/AGENTS.md, plans/b2b/PLATFORM_COMMISSION.md, and plans/b2b/PLATFORM_COMMISSION_PROGRESS.md.
-Then do what the ledger's `## Next Steps` says: the branch is 20 commits behind origin/main (a22b379bf)
-with PR #296 DIRTY and an unpushed, unreviewed merge commit (4946bba27). Merge current origin/main,
-resolve any Payment overlap, re-run the affected Payment verification gate (build api/Concertable.slnx,
-Payment unit + integration tests, standalone Payment carve, EF pending-model check), then run
-/incremental-review against the existing PR #296 watermark on the resulting commit. Do not push or
-merge PR #296 unless Tommy explicitly asks.
+Read @plans/b2b/PLATFORM_COMMISSION.md and @plans/b2b/PLATFORM_COMMISSION_PROGRESS.md and do what its `## Next Steps` says.
 ```
