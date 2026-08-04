@@ -64,15 +64,22 @@ purpose. Anything not on that allowlist is outstanding work. "I renamed the type
 tests pass" is **not** the bar — the grep is. Don't decide by hand which occurrences "count"; the whole
 failure mode is discretion. Remove the discretion — grep, allowlist, zero.
 
-## LAUNCH_PLAN.md is the master tracker — keep it current with every change it tracks
+## Roadmaps (`*_ROADMAP.md`) — an epic's living progress tracker, not a plan
 
-[`plans/b2b/LAUNCH_PLAN.md`](./b2b/LAUNCH_PLAN.md) is the driving doc for the current launch
-effort (a weeks-to-months horizon; most work in this period traces back to one of its items).
-Whenever landed work affects anything it tracks — a blocker shipped or partially shipped, a
-decision resolved, scope changed, a new blocker discovered — update the relevant LAUNCH_PLAN line
-**in the same commit** as the work (tick/strike/annotate in its existing ✅/🔴/🟠/🟡 style), exactly
-like ticking a phase in a feature plan. Don't defer it to a close-out pass. Unlike ordinary plans
-it is **not** deleted as items complete — it lives until launch.
+A **roadmap** tracks the progress of one **epic** (a large, multi-feature body of work). It is *not*
+a plan: it has **no `_PROGRESS.md` ledger**, is **never deleted** as items complete, and lives until
+the epic ships — its ✅/🔴/🟠/🟡 checkboxes *are* its progress. Each buildable item **spins off its own
+feature plan** (e.g. `VAT_PLAN.md` + `_PROGRESS.md`) under the normal plan lifecycle above; that plan
+ticks its roadmap line on completion, then is deleted. Don't reference a roadmap from inside a plan.
+
+[`plans/b2b/LAUNCH_ROADMAP.md`](./b2b/LAUNCH_ROADMAP.md) is the launch epic's roadmap and the driving
+doc for the current effort (most work in this period traces back to one of its items). Whenever landed
+work affects anything it tracks — a blocker shipped or partially shipped, a decision resolved, scope
+changed, a new blocker discovered — update the relevant line **in the same commit** as the work
+(tick/strike/annotate in its existing ✅/🔴/🟠/🟡 style). Don't defer it to a close-out pass.
+
+`/continue-roadmap` reads a roadmap, finds the next unblocked item against git/PR reality, and — once
+you pick one — emits a handoff prompt to write that item's feature plan in a fresh context.
 
 ## Branch first
 
