@@ -8,35 +8,40 @@
 
 ## Current state
 
-Checkpoints 1-5 are complete on the single B2B migration branch. This checkpoint merges current
-`origin/main`, resolves its Concert/Tenant conflicts, corrects the read-result boundary exposed by
-the merge, and renames the worktree/branch so its B2B ownership is explicit.
+Checkpoints 1-5 are complete on the single B2B migration branch. This checkpoint is merged through
+`origin/main` `02b1e7381`, including platform `0.1.0-alpha.0.785` and the final typed-error
+representation conventions.
 
 B2B read services now own missing-resource failures for Deal, Artist, Venue, Concert, Application,
 Opportunity, Contract, and Invoice. API controllers only map successful payloads and terminate typed
 Results. `ConcertService` owns the clock-dependent action capabilities; no B2B API project depends on
 `Option`, and no B2B controller injects `TimeProvider`.
 
-Checkpoint 6 remains blocked: the Payment client on current main still imports FluentResults, so the
-typed Payment package required by the plan has not published and platform-synced. No bridge or local
-source dependency was introduced.
+The B2B errors now follow the merged representation rules. Payload-free errors and errors whose
+definition consumes all construction data are sealed definition records; Venue, Artist, Tenant, and
+Concert Application no longer reference Dunet. Deal retains Dunet only for its structured validation
+variants, with abstract root definitions and per-case overrides. `GetVatCalculationError` is now
+`VatCalculationError`.
 
-Container-backed integration verification remains pending. Docker was initially reachable, then
-became unresponsive during the first Artist Testcontainers startup; no integration test completed
-and the stuck run was stopped without retrying.
+Checkpoint 6 remains blocked: the Payment client on current main and platform
+`0.1.0-alpha.0.785` still publicly import FluentResults and expose the legacy nullable result
+contracts. No bridge or local source dependency was introduced.
 
-After commit `ed800758a`, `origin/main` advanced by 11 commits. Those commits include the merged typed
-error representation/convention changes (`eb87a6225`, `52ad35432`), so this branch must reconcile
-against them before further implementation.
+Container-backed integration verification remains environment-blocked. The fresh-container Docker
+HTTP health check passed, and Artist reached Docker plus SQL readiness, but Testcontainers then lost
+its Docker endpoint during shared fixture startup. Artist reported 17 fixture failures and Concert
+reported 136 immediate failures from the same unavailable fixture; the suite was stopped before
+Tenant completed. No application integration test produced a valid result and the suite was not
+retried.
 
 ## Next Steps
 
-Merge current `origin/main` into this worktree and reconcile the B2B errors and conventions with the
-new typed error representation rules. Re-run the full Release build, architecture tests, and affected
-unit suites. When Docker Desktop is healthy, run `scripts/integration.ps1 b2b` once and record the
-per-project results. Then re-check the Payment Phase 2 publication/platform-sync gate. If the
-published Payment client exposes owned typed Results, proceed with checkpoint 6 and checkpoint 7.
-Otherwise leave checkpoint 6 blocked and do not create a FluentResults adapter or string bridge.
+Wait for the Payment Phase 2 implementation to merge, publish, and platform-sync green. Then fetch
+and merge current `origin/main`, verify the pinned `Concertable.Payment.Client` exposes the owned
+typed Result surface, and proceed with checkpoints 6 and 7 only if that package gate is open. Do not
+create a FluentResults adapter, string bridge, or local source dependency. Once Docker Desktop is
+stable, run `scripts/docker-health.ps1`; only after it passes, run `scripts/integration.ps1 b2b` once
+and record the per-project results. Do not retry the current Docker fixture failure unchanged.
 
 ## Completed work
 
@@ -54,21 +59,34 @@ Otherwise leave checkpoint 6 blocked and do not create a FluentResults adapter o
 - Updated `api/agents/CODE_CONVENTIONS.md` with the controller boundary and error naming rules.
 - Added architecture guards preventing B2B API dependencies on `Option` and controller dependencies
   on `TimeProvider`.
+- Merged `origin/main` through `02b1e7381`, bringing platform `0.1.0-alpha.0.785` and the final
+  typed-error representation conventions into the B2B branch.
+- Replaced unnecessary Venue, Artist, Tenant, and Concert Dunet errors with sealed definition
+  records and removed those projects' Dunet references.
+- Updated Deal's necessary validation unions to abstract root definitions with per-case overrides.
+- Renamed `GetVatCalculationError` to `VatCalculationError` and replaced status-shaped singleton
+  factories with domain-named error values.
 
 ## Verification
 
+- `dotnet build api/Concertable.B2B/Concertable.B2B.slnx --configuration Release --no-restore`:
+  succeeded, 0 errors (2 generated UI-test nullable warnings).
 - `dotnet build api/Concertable.slnx --configuration Release --no-restore`: succeeded, 0 errors
-  (5 pre-existing warnings outside this change).
+  (6 pre-existing warnings outside this correction).
 - B2B architecture tests: 6 passed, 0 failed.
 - Deal unit tests: 21 passed, 0 failed.
 - Tenant unit tests: 115 passed, 0 failed.
 - Concert unit tests: 75 passed, 0 failed.
 - Conversations unit tests: 6 passed, 0 failed.
 - B2B API source audit: zero `.OrFailure(` calls and zero `TimeProvider` dependencies in `*.Api`.
-- Payment gate: blocked; `Concertable.Payment.Client` on current main still uses FluentResults.
-- B2B integration suite: environment-blocked before a result because Docker became unresponsive.
-- Final reconciliation: branch is 11 commits behind `origin/main`; the new commits include typed
-  error representation and convention changes reserved for the next sync detour.
+- Payment gate: blocked; platform `0.1.0-alpha.0.785` still exposes FluentResults from
+  `Concertable.Payment.Client`, including nullable release/refund success payloads.
+- Docker health: fresh-container host-to-container HTTP data round-trip passed.
+- B2B integration suite: environment-blocked during shared fixture startup after Artist SQL
+  readiness. Artist reported 17 fixture failures and Concert 136 fixture failures; no application
+  result is valid, the runner was stopped before Tenant completed, and no retry was attempted.
+- Final reconciliation: merged with `origin/main` `02b1e7381`; typed-error conventions are applied
+  and all non-container verification is green.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -79,8 +97,12 @@ Otherwise leave checkpoint 6 blocked and do not create a FluentResults adapter o
   Kernel `ToOption().OrFailure(...)` API and expose typed Results.
 - A proposed direct nullable-to-Result Kernel extension was not retained: B2B consumes the published
   Kernel package, so adding and consuming it here would violate the B2B-only package boundary.
-- Integration tests must be rerun once Docker is healthy; the startup failure is not application
-  evidence.
+- Payload-free singleton errors use domain names rather than HTTP status names; their
+  `ErrorDefinition.Kind` remains the centralized transport-policy source.
+- `GetVatCalculationError` became `VatCalculationError`; the redundant `Get` prefix is reserved out
+  of default read errors while mutation errors keep their disambiguating verb.
+- Integration tests must be rerun once Docker remains stable through Testcontainers startup; the
+  fixture failure is not application evidence.
 
 ## Event log
 
@@ -103,6 +125,28 @@ Otherwise leave checkpoint 6 blocked and do not create a FluentResults adapter o
 - Outcome: no additional merge was started in this turn; the convention-sync detour is the first
   item in `## Next Steps`.
 - Follow-up: sync and reconcile in the next prompt.
+
+### 2026-08-04 - typed-error convention reconciliation
+
+- Action: merged `origin/main` `02b1e7381`, resolved the plan conflict, reconciled B2B error
+  representations and names with the merged conventions, and removed unnecessary Dunet references.
+- Evidence: B2B carve and full solution Release builds succeeded with 0 errors; architecture 6/6,
+  Deal 21/21, Tenant 115/115, Concert 75/75, and Conversations 6/6 passed.
+- Outcome: the B2B convention correction is complete and locally verified; Payment-dependent
+  checkpoint 6 remains blocked on the published typed Payment client.
+- Follow-up: wait for the Payment publish/platform-sync gate, and rerun B2B integration only after
+  Docker remains stable through the health and fixture startup gates.
+
+### 2026-08-04 - B2B integration environment failure
+
+- Action: ran the mandatory Docker data-round-trip health check, started
+  `scripts/integration.ps1 b2b`, inspected the per-project logs, and stopped the runner after the
+  shared Testcontainers fixture lost its Docker endpoint.
+- Evidence: the Docker health check passed; Artist reached SQL readiness, then all 17 Artist tests
+  and all 136 Concert tests reported the same `DockerEndpointAuthConfig` fixture failure.
+- Outcome: no application integration result was produced; the run is environment-blocked and was
+  not retried.
+- Follow-up: stabilize Docker Desktop, rerun the health check, then run the B2B suite once.
 
 ## Resume prompt
 
