@@ -4,9 +4,9 @@
 >
 > **Goal:** Migrate from the current modular monolith to an event-driven microservices architecture that separates B2B (venue ↔ artist booking + settlement) from Customer (ticket marketplace), with a centralised Payment adapter service.
 >
-> **Constraint that changed the plan:** This is a learning side project. The Nov 2026 launch in `LAUNCH_PLAN.md` is aspirational, not a hard deadline. Skill development (event-driven architecture, transactional outbox, sagas, OpenTelemetry, Service Bus operations) is an explicit goal alongside any eventual deployment.
+> **Constraint that changed the plan:** This is a learning side project. The Nov 2026 launch in `LAUNCH_ROADMAP.md` is aspirational, not a hard deadline. Skill development (event-driven architecture, transactional outbox, sagas, OpenTelemetry, Service Bus operations) is an explicit goal alongside any eventual deployment.
 >
-> **Companion docs:** [LAUNCH_PLAN.md](/plans/b2b/LAUNCH_PLAN.md), [MARKETPLACE_PLAN.md](/plans/customer/MARKETPLACE_PLAN.md), [LAUNCH_CHECKLIST.md](/plans/b2b/LAUNCH_CHECKLIST.md), [USER_MODEL_PLAN.md](/plans/b2b/USER_MODEL_PLAN.md).
+> **Companion docs:** [LAUNCH_ROADMAP.md](/plans/b2b/LAUNCH_ROADMAP.md), [MARKETPLACE_PLAN.md](/plans/customer/MARKETPLACE_PLAN.md), [LAUNCH_CHECKLIST.md](/plans/b2b/LAUNCH_CHECKLIST.md), [USER_MODEL_PLAN.md](/plans/b2b/USER_MODEL_PLAN.md).
 
 ---
 
@@ -462,7 +462,7 @@ Roughly a year of evenings-and-weekends if taken seriously. Valuable on a CV at 
 - **No shared "domain logic" service that B2B and Customer both call sync for venue/concert/artist data.** That is the distributed-monolith antipattern. Project via events instead.
 - **No shared database.** Each service has its own. Citadel (shared DB, multiple hosts) was considered and rejected because it doesn't serve the learning goals.
 - **No premature webhook fan-out service.** Single Webhook Receiver service is an option *later* if Stripe event routing gets complex. Start with each service exposing its own webhook endpoint, or Payment receiving all webhooks.
-- **No native mobile apps in launch scope** (already in LAUNCH_PLAN.md).
+- **No native mobile apps in launch scope** (already in LAUNCH_ROADMAP.md).
 
 ## 11. Risks and open questions
 
@@ -514,7 +514,7 @@ Roughly a year of evenings-and-weekends if taken seriously. Valuable on a CV at 
 
 ## 13. Reference
 
-- [LAUNCH_PLAN.md](/plans/b2b/LAUNCH_PLAN.md) — broader launch context (mostly applies to B2B deployment if/when it happens)
+- [LAUNCH_ROADMAP.md](/plans/b2b/LAUNCH_ROADMAP.md) — broader launch context (mostly applies to B2B deployment if/when it happens)
 - [MARKETPLACE_PLAN.md](/plans/customer/MARKETPLACE_PLAN.md) — original marketplace deferral plan; partially superseded by this doc since marketplace would return as a separate microservice, not as a feature flag
 - [LAUNCH_CHECKLIST.md](/plans/b2b/LAUNCH_CHECKLIST.md) — legal/business setup checklist
 - MassTransit docs — https://masstransit.io
