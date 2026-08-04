@@ -9,8 +9,9 @@ a plan ([`PLAN.md`](PLAN.md)); the hub is [`../AGENTS.md`](../AGENTS.md).
 - **No `_PROGRESS.md` ledger.** Its ✅/🔴/🟠/🟡 checkboxes *are* its progress.
 - **Never deleted as items complete** — it lives until the epic ships. (A plan, by contrast, is deleted
   when its lifecycle is terminal.)
-- **Named `<EPIC>_ROADMAP.md`**, so a second epic gets its own (`LAUNCH_ROADMAP.md`,
-  `MARKETPLACE_ROADMAP.md`), each tracking one epic.
+- **Named `<EPIC>_ROADMAP.md`** and lives in its own epic folder `plans/<epic>/`, where every plan it
+  spins off also lives (`plans/launch/LAUNCH_ROADMAP.md`, `plans/marketplace/MARKETPLACE_ROADMAP.md`),
+  each tracking one epic.
 
 ## It spins off feature plans — it does not do the work itself
 
@@ -25,7 +26,7 @@ artifact to the permanent one.
 
 ## Keep it current in the same commit as the work
 
-`plans/b2b/LAUNCH_ROADMAP.md` is the launch epic's roadmap and the driving doc for the current effort
+`plans/launch/LAUNCH_ROADMAP.md` is the launch epic's roadmap and the driving doc for the current effort
 (most work in this period traces back to one of its items). Whenever landed work affects anything it
 tracks — a blocker shipped or partially shipped, a decision resolved, scope changed, a new blocker
 discovered — update the relevant line **in the same commit** as the work (tick/strike/annotate in its

@@ -16,8 +16,9 @@ verification gate. Phases sequence so that every intermediate state builds and p
 
 ## Companion progress ledger — record the whole operational history
 
-Every `plans/<NAME>.md` has at least one same-directory `_PROGRESS.md` companion, created with the
-plan. The **plan** is the shared design — phases, dependencies, definition-of-done; each **ledger** is
+Every `plans/<epic>/<NAME>_PLAN.md` has at least one same-directory `<NAME>_PROGRESS.md` companion,
+created with the plan. Plan and ledger share the `<NAME>` stem; the plan's worktree/branch is
+`<Type>/<epic>_<name>` so branch, plan, and ledger carry one identity. The **plan** is the shared design — phases, dependencies, definition-of-done; each **ledger** is
 the operational truth of **one worktree** working it, so the ledger (not the plan) is 1:1 with a
 worktree and owns the `Worktree`/`Branch`/`PR` identity. Keep the plan readable by putting the detailed
 history and current truth in the ledger. Start each from
@@ -187,7 +188,7 @@ point where the context becomes disposable. Don't carry unwritten state across a
   its own. One worktree: "**Next steps live in @plans/<STEM>_PROGRESS.md → `## Next Steps`**" (the `@`
   pulls the ledger when you tag the plan). Parallel worktrees: it lists each ledger with its worktree.
 - Because the steps live in the ledger, a plan resume/handoff prompt is ONLY the pointer — literally
-  `cd <worktree>` then "Read @plans/<PLAN>.md and @plans/<its-worktree-ledger>_PROGRESS.md and do what
+  `cd <worktree>` then "Read @plans/<PLAN>_PLAN.md and @plans/<its-worktree-ledger>_PROGRESS.md and do what
   `## Next Steps` says." No branch to verify, checkpoints, gates, commands, or steps in the prompt —
   every such specific lives in the ledger, never restated, so the prompt can't drift. A handoff always
   comes from one worktree, so it names that worktree's ledger. See [`../../PROMPTS.md`](../../PROMPTS.md).

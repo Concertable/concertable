@@ -1,6 +1,6 @@
 ---
 name: continue-roadmap
-description: Pick the next feature off an epic's roadmap and hand it off to be planned. Use when Tommy invokes `/continue-roadmap` or asks what's next on the launch/epic. Take an optional reference to a `*_ROADMAP.md`; otherwise use `plans/b2b/LAUNCH_ROADMAP.md`. Read AGENTS.md, plans/AGENTS.md and the roadmap, classify every outstanding item against real git/PR/worktree state, let Tommy pick, then emit a handoff prompt that a fresh context uses to WRITE that item's feature plan. This creates a new plan; it does not resume one — that's `/resume-plan`.
+description: Pick the next feature off an epic's roadmap and hand it off to be planned. Use when Tommy invokes `/continue-roadmap` or asks what's next on the launch/epic. Take an optional reference to a `*_ROADMAP.md`; otherwise use `plans/launch/LAUNCH_ROADMAP.md`. Read AGENTS.md, plans/AGENTS.md and the roadmap, classify every outstanding item against real git/PR/worktree state, let Tommy pick, then emit a handoff prompt that a fresh context uses to WRITE that item's feature plan. This creates a new plan; it does not resume one — that's `/resume-plan`.
 ---
 
 # Continue Roadmap
@@ -14,7 +14,7 @@ does **not** design or write the plan here, and does **not** resume an existing 
 ## Steps
 
 1. **Resolve the roadmap.** `/continue-roadmap @plans/<X>_ROADMAP.md` → that file. Nothing → default to
-   `plans/b2b/LAUNCH_ROADMAP.md`.
+   `plans/launch/LAUNCH_ROADMAP.md`.
 2. **Read in full:** `AGENTS.md`, `plans/AGENTS.md`, and the roadmap.
 3. **Classify every outstanding item against reality — never off the roadmap text alone.** For each
    unchecked / 🔴 / 🟠 / 🟡 item and each "verify before trusting" line, check `git worktree list`, local
@@ -31,8 +31,9 @@ does **not** design or write the plan here, and does **not** resume an existing 
    pastes into a fresh context to WRITE the feature plan, and must:
    - name the roadmap line and the exact source docs to read (the roadmap, the relevant
      `LEGAL_REQUIREMENTS.md` / architecture / already-shipped feature), and any dependency gate;
-   - instruct: branch `Feature/<Name>` off `origin/main`, then write `plans/<area>/<STEM>.md` **and** its
-     `<STEM>_PROGRESS.md` ledger from the progress template, following `plans/agents/PLAN.md`;
+   - instruct: branch `Feature/<epic>_<name>` off `origin/main` (the epic is the roadmap's folder), then
+     write `plans/<epic>/<NAME>_PLAN.md` **and** its `<NAME>_PROGRESS.md` ledger from the progress
+     template, following `plans/agents/PLAN.md`;
    - state the outcome, constraints and what's out of scope — but leave the design to the plan;
    - tick the roadmap line when the feature ships (do not delete the roadmap).
    Do not open the branch or write the plan here.
