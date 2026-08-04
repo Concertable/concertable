@@ -501,30 +501,34 @@ gRPC, HTTP clients, and integration-event adapters use explicit wire error codes
 the receiving side's typed error. Kernel Result/Option and Dunet/native union runtime layouts never go
 on the wire.
 
-## Typed error unions: separate from Result/Option
+## Typed errors: use unions only when cases require them
 
 Dunet currently contributes only source-generated case records, implicit case conversions, and Match
 helpers. It does not provide Result/Option, and it is not required by Kernel.
 
-Retain Dunet temporarily in the application/contract projects that need closed operation errors,
-under these rules:
+Use a sealed `XError(ErrorDefinition Definition)` record with named `static readonly` values when
+every alternative is payload-free and consumers do not need runtime case discrimination. Retain
+Dunet temporarily only in application/contract projects whose error alternatives carry different
+data or require owner-local case matching, under these rules:
 
 - Result/Option never reference or wrap Dunet;
-- operation code constructs errors through owned named factories;
+- payload-free records expose their allowed definitions as named static values;
+- Dunet unions use explicit case constructors;
 - `IError.Definition` is the stable consumer-facing behavior;
 - generated `Unwrap`, case-specific Match helpers, async Match helpers, and implicit conversions are
   not application conventions;
-- generated full `Match` may be used inside the union declaration or an owner-local mapper, where a
-  new case changes the generated method signature and exposes missed handling at compile time;
-- consumers map through owned error factories/Definition and do not publish generated Match APIs as
+- every Dunet root declares `Definition` abstract and every case overrides it beside its own data;
+- generated full `Match` is reserved for other owner-local logic that genuinely requires exhaustive
+  case handling;
+- consumers map through owned values/cases and `Definition` and do not publish generated Match APIs as
   a required cross-package programming model;
 - no global warning suppression, global warning-as-error change, or claim about ordinary C# switch
   exhaustiveness is introduced to compensate for Dunet.
 
-`IError` is permanent native-union infrastructure, not temporary scaffolding. Native unions close the
-cases of one operation; they do not give unrelated operation unions a shared member that generic HTTP
-translation can call. Every operation error union implements `IError` and computes its Definition with
-an owner-local exhaustive switch:
+`IError` is permanent infrastructure, not temporary scaffolding. Native unions close the cases of
+one operation; they do not give unrelated operation errors a shared member that generic HTTP
+translation can call. Every operation error implements `IError`. Dunet unions implement the
+definition directly on each case; native unions may use their released exhaustive form.
 
 ```csharp
 public union PurchaseError(
@@ -686,6 +690,14 @@ PR before implementation; do not touch PR #282 or the dirty ResultFoundationComp
 **Dependency:** Phase 1 package published and platform sync merged. This phase must not begin on a
 red platform pin.
 
+**Package topology:** `Concertable.Payment.Client` and `Concertable.Payment.Contracts` publish
+together from the Payment owner merge. `Concertable.Payment.Client` is consumed directly by B2B Web,
+Workers, Concert Application/Infrastructure, Tenant Api, B2B integration fixtures, Customer Web,
+Customer Ticket Application, and Customer integration fixtures; Payment Contracts is also consumed
+by B2B Concert/fixtures and Customer Ticket Infrastructure. No consumer republishes either public
+client interface onward. Delivery is therefore exactly two merges: the Payment owner merge/publish,
+then one generated platform-sync merge containing all B2B/Customer consumer migrations.
+
 **Scope and expected projects/files:**
 
 - `api/Concertable.Payment/src/Concertable.Payment.Application`: define operation-specific errors and
@@ -695,21 +707,23 @@ red platform pin.
 - `api/Concertable.Payment/src/Concertable.Payment.Infrastructure`: classify Stripe caller-actionable
   decline/rejection as typed failure; preserve network, authentication, rate-limit/server,
   cancellation, and unknown faults as exceptions; remove catch-all Result conversion;
-- `api/Concertable.Payment/src/Concertable.Payment.Client` and `Protos/payment.proto`: add cleanly named,
-  additive typed client operations and structured wire error details. Keep old FluentResults members
-  as explicit compatibility adapters over the new behavior; do not add `V2` names as the final API;
-- retain wire compatibility for deployed clients and continue populating legacy status detail during
-  the expansion window;
+- `api/Concertable.Payment/src/Concertable.Payment.Client` and `Protos/payment.proto`: replace the
+  published FluentResults operations with cleanly named owned typed operations and structured wire
+  error details. Remove the FluentResults methods, adapters, package reference, and pin in this phase;
+  do not add `V2` names or an in-source compatibility layer;
+- execute the public client replacement as a breaking package cutover: merge and publish Payment,
+  then migrate every B2B/Customer consumer and test double on the generated platform-sync PR;
 - replace nullable release/refund success payloads with the domain-selected
   `Result<Option<Transfer>,E>`/`Result<Option<Refund>,E>` or `Result<E>` form. Confirm the benign
   no-op semantics before selecting one;
-- update Payment unit/integration tests and B2B/Customer client mocks for the additive surface;
+- update Payment unit/integration tests, then update B2B/Customer consumers and client mocks after the
+  new Payment package is published;
 - publish Payment Contracts/Client and own platform sync through green.
 
 **Verification:**
 
-- Payment unit tests for every case, Stripe classification, gRPC status/detail round trip, legacy
-  adapter parity, exception propagation, and cancellation;
+- Payment unit tests for every case, Stripe classification, gRPC status/detail round trip, exception
+  propagation, and cancellation;
 - Payment integration tests plus B2B/Customer integration fixtures against the new client surface;
 - full Release solution build and every standalone carve;
 - API E2E is justified because payment/gRPC behavior and compatibility are high risk; let the merge
@@ -718,7 +732,8 @@ red platform pin.
 
 ### Phase 3 — revise PR #282: Customer Ticket vertical slice
 
-**Dependency:** additive Payment typed client package from Phase 2 is synced.
+**Dependency:** the Payment typed client package from Phase 2 is published and its breaking consumer
+cutover is synced.
 
 **Scope and expected projects/files:**
 
@@ -923,13 +938,10 @@ cross-service project reference.
 
 ### Phase 8 — published contract cleanup and enforcement
 
-**Dependency:** every consumer uses the additive Payment owned contracts and the owned Kernel
-functional types.
+**Dependency:** every consumer uses the Payment owned contracts and the owned Kernel functional types.
 
 **Scope and expected projects/files:**
 
-- remove legacy Payment FluentResults interfaces/methods, wire compatibility fields that have passed
-  the agreed compatibility window, and their adapters; publish and own platform sync;
 - remove remaining FluentResults/CSharpFunctionalExtensions package pins/references/usings and Kernel
   `ErrorExtensions`/legacy exception helpers once no longer used;
 - retain Dunet only for actual operation union declarations; remove its test-only/shared placement and
@@ -990,13 +1002,14 @@ union declarations.
 
 For every published Kernel, Payment, or Contracts change:
 
-1. expand additively when old and new consumers must coexist;
-2. merge/publish from the owning project;
-3. wait for the generated platform-sync PR;
-4. migrate every consumer and its mocks/tests on the new pin;
-5. verify the whole solution and standalone carves;
-6. remove the compatibility path only after repository-wide proof that no consumer remains;
-7. publish/sync the cleanup and do not leave a red platform PR behind.
+1. decide from an explicit coexistence requirement whether the change is additive or breaking;
+2. for a dependency-removal migration, do not preserve the dependency through adapters or duplicate
+   public methods unless Tommy explicitly requires a compatibility window;
+3. merge/publish from the owning project;
+4. wait for the generated platform-sync PR;
+5. migrate every consumer and its mocks/tests on the new pin;
+6. verify the whole solution and standalone carves;
+7. do not leave a red platform PR behind.
 
 Never solve package ordering with a cross-service ProjectReference or `UseLocalCore` in committed
 code. `UseLocalCore=true` remains a local diagnostic option only.

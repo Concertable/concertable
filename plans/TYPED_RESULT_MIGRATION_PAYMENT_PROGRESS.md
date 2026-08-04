@@ -4,20 +4,22 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\PaymentOwnedResultExpansion`
 - Branch: `Feature/PaymentOwnedResultExpansion`
 - PR: not opened
-- Dependency/package gates: This branch is the exclusive canonical implementation owner for Payment Phase 2. Phase 1 merged in PR #290 and platform-synced in PR #291; Payment currently consumes platform `0.1.0-alpha.0.772`; no open platform-sync PR
-- Last reconciled: 2026-08-04 from `origin/main` `5d06d3121`, the Phase 3 ledger, Payment source, and Payment unit-test behavior
+- Dependency/package gates: This branch is the exclusive canonical implementation owner for Payment Phase 2. Phase 1 merged in PR #290 and platform-synced in PR #291; Payment currently consumes platform `0.1.0-alpha.0.772`. Removing the published FluentResults client surface is an intentional breaking package cutover: Payment must merge and publish before B2B/Customer can migrate on the generated platform-sync PR.
+- Last reconciled: 2026-08-04 from the current Payment working tree, user direction, and package-cutover topology
 
 ## Current state
 
-Reconstructed baseline for the Payment worktree. The branch is current with `origin/main` and had no
-unique commits before this ledger. Payment Application, Infrastructure, and Client still expose
-FluentResults. Customer and manager payment return `Result<PaymentOutcome>`; escrow release/refund
-return nullable success payloads; gRPC communicates failures through unstructured status detail.
+Payment Application, Infrastructure, Contracts, and Client have been migrated to Concertable-owned
+Result/Option and operation-specific errors in the current working tree. The Payment service closure
+now contains no FluentResults reference, using, public method, adapter, or `ToLegacy` conversion.
+Structured protobuf error details map between typed server/client failures; infrastructure,
+cancellation, authentication, rate-limit/server, and unknown Stripe faults remain exceptional.
 
 This worktree is now the sole canonical owner of Payment Phase 2. PR #296's commit `f693c955d`
 contains an earlier overlapping implementation on `Feature/CommissionBindingDeferredPricing`; that
 branch is frozen donor state for this phase and must not receive further typed-result implementation.
-Preserve the canonical worktree's current uncommitted paths while reconciling the donor implementation.
+Preserve the canonical worktree's current uncommitted Payment implementation and plan changes through
+the verification gate.
 
 The existing escrow tests establish the intended idempotency semantics: no escrow, an escrow that is
 not held, an already-refunded escrow, and a non-refundable state are successful no-ops. An operation
@@ -27,12 +29,12 @@ failure or a payload-free success.
 
 ## Next Steps
 
-Before writing more replacement code, inventory `f693c955d` and the commission branch's related tests
-against this branch's two commits and current uncommitted paths. Salvage the compatible implementation
-and verification coverage into this canonical branch, deliberately resolve the differing error-union
-and gRPC designs, and record every accepted/rejected donor piece here. Then complete Plan Phase 2,
-run the Payment unit, Payment/B2B/Customer integration, standalone carve, and Release solution-build
-gates, and commit the green phase checkpoint locally. Do not push.
+Commit the verified FluentResults-free owning-package checkpoint locally, fetch and merge the 14
+`origin/main` commits this branch was behind at the last check, and rerun the Payment and full Release
+build gates on the merged tree. Do not add B2B/Customer source work or cross-service project references
+before Payment is published. Do not push. After explicit push/PR delivery, own the breaking generated
+platform-sync PR: migrate every B2B/Customer consumer and test double to the owned client methods, run
+the full solution and affected integration/carve gates, and take the sync through green.
 
 ## Completed work
 
@@ -41,8 +43,12 @@ gates, and commit the green phase checkpoint locally. Do not push.
 
 ## Verification
 
-- `dotnet test api/Concertable.Payment/tests/Concertable.Payment.UnitTests/Concertable.Payment.UnitTests.csproj --configuration Release --no-restore`: 161 passed, 0 failed, 0 skipped.
+- `dotnet test api/Concertable.Payment/tests/Concertable.Payment.UnitTests/Concertable.Payment.UnitTests.csproj --configuration Release --no-restore --no-build`: 169 passed, 0 failed, 0 skipped.
 - `dotnet build api/Concertable.Payment/Concertable.Payment.slnx --configuration Release --no-restore`: 0 warnings, 0 errors.
+- `dotnet test api/Concertable.Payment/tests/Concertable.Payment.IntegrationTests/Concertable.Payment.IntegrationTests.csproj --configuration Release --no-restore --no-build`: 6 passed, 0 failed, 0 skipped.
+- `dotnet build api/Concertable.slnx --configuration Release --no-restore`: 0 errors and 5 unrelated
+  pre-existing/generated E2E warnings outside Payment.
+- Payment grep gate: no `FluentResults` or `ToLegacy` matches outside `bin`/`obj`; `git diff --check` passed.
 
 ## Reviews
 
@@ -52,7 +58,14 @@ No Phase 2 review has run yet.
 
 - Release/refund absence is a benign idempotent no-op represented by `Option.None`; successful execution returns `Option.Some`.
 - Owned Result/Option stay in-process. Protobuf retains an owned wire contract with explicit mapping at the gRPC boundary.
-- New client methods are additive. Existing FluentResults members remain compatibility adapters until repository consumers move.
+- Payload-free operation errors are sealed definition records with named static values. Dunet is
+  reserved for alternatives carrying distinct data; those unions declare `Definition` abstract on
+  the root and override it on each case instead of using positional `Match` lambdas.
+- A not-found definition without an explicit message uses `ErrorDefinition.NotFound<T>(code)` and
+  the type's required `[DisplayName]`; otherwise the message remains explicit.
+- Tommy rejected the additive compatibility design on 2026-08-04. Phase 2 removes FluentResults from
+  Payment completely and uses the repository's breaking publish-then-sync cutover; no in-source
+  compatibility adapter or duplicate legacy method is permitted.
 - Infrastructure, cancellation, authentication, rate-limit/server, and unknown Stripe faults remain exceptions; only caller-actionable decline/refusal becomes a typed error.
 - API E2E belongs to the merge queue after the PR is ready; no local E2E runs ahead of it.
 - `Feature/PaymentOwnedResultExpansion` is the exclusive Phase 2 implementation owner. The overlapping
@@ -83,6 +96,39 @@ No Phase 2 review has run yet.
 - Outcome: `Feature/PaymentOwnedResultExpansion` is the exclusive canonical Phase 2 owner. The
   commission branch is frozen donor state; no implementation is to continue there.
 - Follow-up: Reconcile and salvage the donor implementation before writing further Phase 2 code.
+
+### 2026-08-04 — Removed the rejected FluentResults compatibility path
+
+- Action: Replaced Phase 2's additive compatibility requirement with an intentional breaking package
+  cutover, removed every legacy FluentResults client method and adapter including `ToLegacy` and
+  `ToLegacyNullable`, removed the Payment client package reference and service-level version pin, and
+  deleted the adapter-parity tests.
+- Evidence: `rg -n --glob '!**/bin/**' --glob '!**/obj/**' "ToLegacy|FluentResults" api/Concertable.Payment`
+  returned no matches; `git diff --check` passed.
+- Outcome: Payment exposes only owned typed Result/Option operations. B2B/Customer migration is
+  intentionally deferred until the new Payment package exists on the feed.
+- Follow-up: Run the owning-package verification gate and commit the green checkpoint locally.
+
+### 2026-08-04 — Simplified operation error representation
+
+- Action: Replaced payload-free Payment error unions with sealed definition records and moved
+  `Definition` onto each case of the remaining data-bearing Dunet unions; updated every Payment call
+  site and the repository conventions.
+- Evidence: Dunet 1.16.2 compiled the abstract-root/per-case override shape; Payment unit tests passed
+  169/169 and the Payment Release solution build completed with zero warnings and zero errors.
+- Outcome: Error declarations no longer use unused positional `Match` parameters, and Dunet is used
+  only where alternatives carry distinct data.
+- Follow-up: Complete donor reconciliation and the remaining Phase 2 verification gates.
+
+### 2026-08-04 — Verified the FluentResults-free Payment owner cutover
+
+- Action: Restored and built the Payment standalone closure, ran Payment unit and integration tests,
+  ran the full Release solution build, and repeated the Payment dependency grep gate.
+- Evidence: Payment build completed with 0 warnings and 0 errors; unit tests passed 169/169;
+  integration tests passed 6/6; the full solution completed with 0 errors and 5 unrelated E2E
+  warnings; Payment contains no `FluentResults` or `ToLegacy` match outside build outputs.
+- Outcome: The owning-package side of the breaking cutover is green and ready for a local checkpoint.
+- Follow-up: Commit this checkpoint, update from `origin/main`, and repeat the build gates before any push.
 
 ## Resume prompt
 

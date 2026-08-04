@@ -234,41 +234,37 @@ provider's missing-row contract. Module, application, service, and client bounda
 nullable value with `ToOption()` and expose `Option<T>` for ordinary absence. Do not push `Option`
 into repository or persistence contracts.
 
-`TError` is an operation-owned Dunet union named `XError` that implements `IError`. Business unions
-stay with their operation; shared Kernel owns only `IError`, its definitions, and `ErrorKind`.
-Place the union in Application, `*.Contracts`, or a published client contract according to the
-widest caller that must match it. Dunet may declare an operation's error cases, but it is never the
-Result or Option carrier. Never move a service-specific union into shared production or carry
-Result, Option, or Dunet types through HTTP DTOs, protobuf, events, or persistence.
-
-Outside its declaration, construct an error only through a static factory on the union
-(`PurchaseError.NotFound(id)`, `PurchaseError.Invalid(messages)`). Do not call a generated case
-constructor directly. The factory is the stable construction seam when Dunet records become native
-union structs.
+`TError` is an operation-owned `XError` that implements `IError`. When every alternative is
+payload-free and callers never need to distinguish its runtime case, use a sealed record containing
+an `ErrorDefinition` and expose the allowed values as `static readonly` members. Use Dunet only when
+alternatives carry different data or owner-local logic genuinely needs to distinguish them. Keep the
+error beside its operation; shared Kernel owns only `IError`, its definitions, and `ErrorKind`.
+Place it in Application, `*.Contracts`, or a published client contract according to the widest
+caller that consumes it. Never carry Result, Option, or Dunet types through HTTP DTOs, protobuf,
+events, or persistence.
 
 Build definitions through `ErrorDefinition.Invalid`, `NotFound`, `Conflict`, `Unauthenticated`,
 `Forbidden`, `PaymentRequired`, and `Validation`. Every code and safe public message is explicit,
 except the standard generic not-found factory described below.
 
-Use Dunet's generated full `Match` whenever every business case must be handled: definitions,
-cross-operation error translations, lifecycle-to-operation mappings, and worker decisions that
-depend on the exact failure. Adding a case then changes the generated signature and breaks every
-exhaustive mapping until its handler is supplied. Do not replace these matches with ordinary switch
-expressions on .NET 10, add a discard arm, globally promote `CS8509`, or add analyzer infrastructure
-to simulate exhaustiveness. When logic deliberately inspects only some cases, use ordinary C# `is`
-type patterns instead of a full match.
+For a Dunet union, make the root `abstract`, declare `Definition` abstract, and override it on every
+case. This keeps each definition beside its data and makes a newly declared case fail compilation
+until it implements `IError`. Use generated full `Match` only for other owner-local logic that truly
+requires exhaustive case handling. Do not add a discard arm, global `CS8509` promotion, or analyzer
+infrastructure to simulate exhaustiveness. When logic deliberately inspects only some cases, use
+ordinary C# `is` type patterns.
 
-Each union owns one exhaustive `Definition` match and one definition test per case. Code, safe
-message, and semantic kind are read from that definition as the single generic error representation.
+Each allowed static value or union case has one definition test. Code, safe message, and semantic
+kind are read from that definition as the single generic error representation.
 Codes are lowercase dot-separated identifiers with an owning operation/module prefix
 (`ticket.concert_not_found`); published codes are never renamed or reused for a different meaning.
 Messages are explicitly authored caller-safe text, never exception messages, provider detail, SQL,
 stack traces, or values whose disclosure has not been reviewed. Validation definitions contain at
 least one structured field message.
 
-For the standard "not found" message, `ErrorDefinition.NotFound<T>(code)` may derive the entity name
-from an explicit `[DisplayName]`. Types without that caller-facing metadata use the overload with an
-explicit message; the CLR type name is never used as a fallback.
+When a not-found message is not explicitly supplied, use `ErrorDefinition.NotFound<T>(code)`, which
+derives it from the type's required `[DisplayName]`. Types without that caller-facing metadata must
+use the explicit-message overload; the CLR type name is never a fallback.
 
 Compose owned Results and Options with `Bind`, `Map`, `MapError`, `Ensure`, `Tap`, `OrFailure`, and
 the Kernel Task extensions until a terminal adapter. Ordinary composition is fail-fast; only
@@ -281,15 +277,14 @@ OneOf, ErrorOr, LanguageExt, or Dunet to implement the Kernel functional types. 
 conversions, catch exceptions in combinators, turn failures into HTTP exceptions, or carry functional
 types across transport or persistence boundaries.
 
-Dunet appears only in error-union declaration files, generated full `Match` calls, and package
-configuration. Do not use generated `Unwrap` or case-specific `MatchX` APIs without a concrete need.
+Dunet appears only in error-union declaration files, necessary owner-local full `Match` calls, and
+package configuration. Do not use generated `Unwrap` or case-specific `MatchX` APIs without a concrete need.
 Keep `IError`, definitions, shared Result extensions, transports, persistence, messages, and wire
 formats independent of Dunet.
 
-After the repository moves to stable .NET 11/C# 15, replace operation error declarations and the
-owned Result/Option declarations with native unions, and replace full Dunet matches with native
-exhaustive switch expressions. Composition, factories, definitions, and transport adapters remain
-the stable contract.
+After the repository moves to stable .NET 11/C# 15, replace only actual operation unions and the
+owned Result/Option declarations with native unions. Payload-free definition records remain records.
+Definitions and transport adapters remain the stable contract.
 
 Controllers terminate through `Concertable.Shared.Api.Results`. Result failures and exceptions both
 write through `IProblemDetailsService`, so registered writers, content negotiation, request
