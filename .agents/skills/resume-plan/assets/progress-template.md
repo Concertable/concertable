@@ -41,3 +41,14 @@ prompts point here instead of restating it, so they can never drift. Keep it cur
 - Evidence: <commit, command/result, artifact, PR/check, or package state>
 - Outcome: <what changed>
 - Follow-up: <remaining consequence or none>
+
+## Resume prompt
+
+<The single cd-first pointer to hand off after `/clear`. It ONLY points at this ledger's `## Next Steps`;
+never restate the branch, gates, checkpoints, or steps here — they live in `## Next Steps` and must not be
+duplicated where they can drift. Keep it verbatim in this fenced block:>
+
+```
+cd <absolute worktree path>
+Read @plans/<PLAN>.md and @plans/<PLAN>_PROGRESS.md, then do what the ledger's `## Next Steps` says.
+```
