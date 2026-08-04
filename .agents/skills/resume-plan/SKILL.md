@@ -27,6 +27,10 @@ and doing what it says — not reconstructing it.
    `git`/PR state, and if a remote transition (queued PR merged, package published, platform-sync) landed
    since the last checkpoint, update the ledger's current-state, `## Next Steps`, and event log first.
 4. **Do what `## Next Steps` says,** honoring its prerequisites and gates.
+5. **When `## Next Steps` is a hard stop** (next action is explicitly-authorized work you're not cleared
+   to start now), end the turn by emitting the ledger's paste-ready resume prompt **verbatim** as the
+   final block, `cd <path>` inside the paste. Never substitute a prose status report or a
+   "want me to continue?" fork — the resume prompt IS the deliverable (`plans/AGENTS.md` "Before a clear").
 
 For the checkpoint procedure repository workflows apply when they advance plan work, see
 [the plan-progress checkpoint](references/plan-progress-checkpoint.md).
