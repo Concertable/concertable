@@ -11,6 +11,11 @@ Turn whatever is in the working tree into a readable commit history. The job is 
 
 If the user signals they want ONE commit of everything — "commit all", "commit-all", "one commit", "just commit everything", "everything in one", or similar — **do not survey or slice**. It's one button press:
 
+For plan-managed work, first read and apply
+[the shared plan-progress checkpoint](../resume-plan/references/plan-progress-checkpoint.md), recording
+the commit evidence as `this commit` and including the plan/ledger paths in the all-in commit. This is
+part of the fast path, not the survey-and-slice flow below.
+
 ```
 git add -A
 git commit -m "<one-line summary of the change>"
@@ -67,6 +72,12 @@ Default: show the per-commit plan (slices, files, messages) or the staged diff s
 Skip the wait only when the user has **already** explicitly told you to commit in this exchange ("just commit it", "commit all of this") — that instruction is the approval. Re-asking after it is noise.
 
 ## Step 5 — Commit and verify
+
+- Before staging a plan-managed slice, read and apply
+  [the shared plan-progress checkpoint](../resume-plan/references/plan-progress-checkpoint.md), record
+  its commit evidence as `this commit`, and include the plan/ledger update in that slice. The resulting
+  SHA is recoverable from the commit containing the event; do not create a recursive follow-up commit
+  solely to write its own SHA.
 
 - Commit each slice; capture the hash.
 - If a pre-commit hook fails: **fix the cause, never `--no-verify`**, never bypass signing.

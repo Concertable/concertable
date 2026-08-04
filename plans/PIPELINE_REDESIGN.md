@@ -241,12 +241,13 @@ stack, but *on the PR* with the quarantine lane — PR-authoritative immediately
   `FindPage.ApplyFiltersAsync` waits for the `/header?` search response instead of relying on the bare
   default 5s visibility timeout. The fragile `[skip-e2e]` substring tokens were removed (they misfired on
   pr-227: a commit message that merely *mentioned* `[skip-e2e]` silently disabled the PR e2e) — **but the
-  opt-out itself is kept, re-implemented robustly** (revising N9's "no opt-out at all" stance, which made
-  every trivial refactor pay full ~27-min E2E): a git **trailer** `Skip-E2E: true` / `Skip-E2E-UI: true` /
-  `Skip-Tests: true` (parsed structurally by `git --format=%(trailers:...)`, so prose can't trip it) or a
-  same-named PR label. build + carve remain never-skippable.
-  A further fix landed in pr-229: every job now **no-ops to success, never skips** (unit/integration and
-  the quarantine lane matched build/carve/e2e) — a single skipped check, even a non-required one, stalls
+  E2E opt-out itself is kept, re-implemented robustly** (revising N9's "no opt-out at all" stance, which
+  made every trivial refactor pay full ~27-min E2E): a git **trailer** `Skip-E2E: true` /
+  `Skip-E2E-UI: true` (parsed structurally by `git --format=%(trailers:...)`, so prose can't trip it) or a
+  same-named PR label. Unit/integration, build, and carve remain never-skippable for code/package changes.
+  Unit and integration matrices discover every matching test project and run on both the PR and synthetic
+  merge-group commit, so the required aggregate validates the candidate against live `main`.
+  A further fix landed in pr-229: the quarantine lane no-ops to success — a single skipped check, even a non-required one, stalls
   GitHub's queue admission (the inert-PR N10 stall). **Correction to an earlier assumption:** Phase 1's
   non-skippable `ci-complete` did **not** fully cure N10 — native auto-merge still intermittently fails to
   admit a green PR (a GitHub *re-evaluation* glitch; pr-229 needed a one-time auto-merge re-assert to

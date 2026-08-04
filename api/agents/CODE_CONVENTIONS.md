@@ -230,9 +230,15 @@ internal string-error flows that do or do not carry a success value. Use `Option
 and violated invariants remain exceptions.
 
 Persistence repository single-item lookups return nullable values (`Task<TEntity?>`), matching the
-provider's missing-row contract. Module, application, service, and client boundaries convert that
-nullable value with `ToOption()` and expose `Option<T>` for ordinary absence. Do not push `Option`
-into repository or persistence contracts.
+provider's missing-row contract. Application and service reads convert caller-visible absence with
+`ToOption().OrFailure(...)` and expose `Result<TValue, TError>`. Expose `Option<T>` only when absence
+is genuinely ordinary and requires no explanation. Do not push `Result` or `Option` into repository
+or persistence contracts.
+
+Controllers are HTTP terminals, not application-policy owners. They may map a successful payload to
+an HTTP response and terminate an application-owned `Result` through `Concertable.Shared.Api.Results`.
+They do not inject `TimeProvider`, convert `Option` with `OrFailure`, choose missing-resource errors,
+or compute time-dependent/business capabilities. Those decisions belong in the application service.
 
 `TError` is an operation-owned Dunet union named `XError` that implements `IError`. Business unions
 stay with their operation; shared Kernel owns only `IError`, its definitions, and `ErrorKind`.
@@ -245,6 +251,11 @@ Outside its declaration, construct an error only through a static factory on the
 (`PurchaseError.NotFound(id)`, `PurchaseError.Invalid(messages)`). Do not call a generated case
 constructor directly. The factory is the stable construction seam when Dunet records become native
 union structs.
+
+Name the default read error for the aggregate noun (`VenueError`, `ConcertError`), not the redundant
+operation (`GetVenueError`). Prefix mutation errors when the verb disambiguates the operation
+(`CreateVenueError`, `UpdateVenueError`). For alternate lookup keys, name the missing key directly:
+`InvoiceError.ConcertNotFound(concertId)` and `ContractError.ApplicationNotFound(applicationId)`.
 
 Build definitions through `ErrorDefinition.Invalid`, `NotFound`, `Conflict`, `Unauthenticated`,
 `Forbidden`, `PaymentRequired`, and `Validation`. Every code and safe public message is explicit,

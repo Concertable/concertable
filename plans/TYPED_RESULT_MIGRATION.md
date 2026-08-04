@@ -4,7 +4,7 @@
 > `0.1.0-alpha.0.740`, and synced green in PR #291 on 2026-08-01.
 > Non-generic `Result`, `Result<TValue>`, `UnitResult<TError>`, and accumulating `ValidationErrors` now replace `Unit` and
 > every `Result<Unit,TError>` API from the initial implementation.
-> The B2B service migration is active on `Refactor/ConcertWorkflowDispatchers`, preserving its existing
+> The B2B service migration is active on `Refactor/B2BTypedResultMigration`, preserving its existing
 > workflow-boundary refactor while independent B2B modules move to the owned Kernel types. B2B paths
 > consuming Payment's typed client remain blocked until Phase 2 publishes and platform-syncs that
 > additive surface; Payment-independent B2B work is not blocked.
@@ -611,7 +611,7 @@ package boundary is a hard stop under `plans/AGENTS.md`.
 
 ### Active B2B PR execution checkpoints
 
-`Refactor/ConcertWorkflowDispatchers` is the single B2B migration branch and PR. Its existing
+`Refactor/B2BTypedResultMigration` is the single B2B migration branch and PR. Its existing
 dispatcher-collapse commit is retained, and the reviewed checkout/payment-verification improvements
 from `Refactor/ConcertWorkflowBoundaries` are reconciled manually where they still apply; do not
 cherry-pick the older branch wholesale. The detailed Phase 4-6 headings below define scope, while the

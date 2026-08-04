@@ -10,7 +10,7 @@ Turn a **breaking change to a type exposed by a published, cross-boundary packag
 editing and let `dotnet build` teach you the topology one failure at a time.
 
 Read [`api/ARCHITECTURE.md`](../../../api/ARCHITECTURE.md) ("Cross-service contract distribution" +
-"the publish→sync loop") and [`plans/AGENTS.md`](../../../plans/AGENTS.md) ("Boundary-blocked
+"the publish→sync loop") and [`plans/agents/PLAN.md`](../../../plans/agents/PLAN.md) ("Boundary-blocked
 refactors") first — this skill is the *execution procedure* for exactly the situation those describe.
 
 ## When this applies (the diagnosis)
@@ -159,6 +159,10 @@ grep -rniE "$OLDNS\.$OLD\b" api --include=*.cs | grep -viE "[/\\](bin|obj)[/\\]|
 - Re-scaffold done where the model moved.
 
 ## Scope guard
+
+Before reporting any completed, blocked, published, merged, or synchronized cut-over stage, if the
+work is plan-managed, read and apply
+[the shared plan-progress checkpoint](../resume-plan/references/plan-progress-checkpoint.md).
 
 This is for **cross-boundary published-package** identity changes. A type that is **service-internal**
 (only its own service references it, cross-service contact is Contracts-only) is a plain single-PR

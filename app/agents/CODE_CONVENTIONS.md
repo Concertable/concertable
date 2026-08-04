@@ -173,7 +173,7 @@ export type PaymentAmount = FlatPayment | DoorSharePayment | GuaranteedDoorPayme
 `$type`, values copied from `[JsonDerivedType]`.*
 
 > **Resolution (decided):** the universal `User` is flat identity data with no `$type`, flat role,
-> or persona subtypes. Product identity is composed in the owning tier
+> or product-specific subtypes. Product identity is composed in the owning tier
 > ([`CODE_PATTERNS.md`](./CODE_PATTERNS.md), "Identity is composed, never widened").
 
 ## Response typing — put the shape on the axios generic
@@ -237,7 +237,7 @@ A `@b2b/*` api file that only re-exposes a shared one is a pure re-export
 
 The multi-service backend (own-site, Payment, Search) forces one axios instance **per backend the
 site calls** — `apiClient`, `paymentClient`, `searchClient`, `customerClient` — each created bare in
-`app/shared/src/lib/*Client.ts` (`@customer/shared` for `customerClient`). Only `searchClient` carries
+`app/shared/src/lib/*Client.ts` (`@concertable/customer/shared` for `customerClient`). Only `searchClient` carries
 the `qs` comma param serializer (it pairs with Search's `CommaDelimitedGenreArrayModelBinder`); the
 other three send no array query params.
 
@@ -327,6 +327,35 @@ so a key and its invalidations can't drift apart across files.
 
 **Litmus:** *changes per submit → mutation variable, passed to `mutate()`. Fixed for the hook's life
 → bound inside `useMutation`.*
+
+## Zustand stores are private state owners; facade hooks are the feature API
+
+A Zustand store is an implementation detail of the feature that owns the client state. Keep the
+store module private to that feature: do not export it from the feature barrel, import it from a
+component, or make consumers assemble behavior from selectors and actions. Components consume a
+feature-facing facade hook that returns the domain values and actions they need.
+
+Use the repository's bound-hook form: name the store `useXStore` and create it with
+`create<XStore>()(...)`. Inside the feature facade, read it directly with
+`useXStore((state) => state.value)`. Do not introduce vanilla `createStore`,
+`useStore(store, selector)`, or a separately typed `StateCreator` merely to make the store
+testable; focused tests reset the bound store through `getState()`/`setState()`. Use a vanilla
+store only when a concrete requirement cannot be met by the bound hook, and document that exception.
+
+- Store client state and state transitions only. TanStack Query remains the owner of server state;
+  never mirror query data into Zustand.
+- Put transitions in named store actions. A component must not call `setState`, and a public helper
+  must not be a thin spelling of `store.getState().setX(...)`.
+- Keep derivations pure by passing every input explicitly. A function that reads a store, query
+  client, router, persistence, or browser global is infrastructure, not a pure domain function.
+- Keep imperative access exceptional and cohesive. Route guards, request interceptors, logout, and
+  similar non-React infrastructure use one internal feature service/session object; do not export a
+  family of getter, setter, clear, and reconcile wrappers.
+- Direct `getState()` and `setState()` access belongs only inside that internal boundary or focused
+  store tests. React orchestration uses the facade hook and store selectors internally.
+
+**Litmus:** *can a consumer import the store or call a standalone `getX`/`setX` wrapper? Yes: the
+feature boundary is leaking; expose the domain operation from its facade hook or internal service.*
 
 ## Form buffers are validated by a zod schema before becoming an `XRequest`
 

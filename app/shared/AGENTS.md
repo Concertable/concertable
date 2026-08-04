@@ -19,7 +19,7 @@ here.
   has none. They live in `@b2b/features/tenant`, and B2B composes them onto the base user as
   `B2bIdentity` (`User` + `memberships`), populated by a B2B-owned typed `/me` — never a field or cast
   on the shared `User`.
-- **Customer-only** (tickets, reviews, buyer concepts) → live in the customer app / `@customer/shared`.
+- **Customer-only** (tickets, reviews, buyer concepts) → live in the customer app / `@concertable/customer/shared`.
 
 The litmus: *could every surface — customer AND manager, web AND mobile — legitimately carry this
 member and populate it today?* If only one product or persona can, it belongs in that tree, even at

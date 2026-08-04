@@ -16,16 +16,20 @@ Decide and act on reversible work (doc/plan edits, isolated commits, retrying a 
 
 **Never gate a reversible local (working-tree) change behind a "should I?" — just make it.** Editing / writing / refactoring a file, or running a plan's code steps, is the default action, never a question and never a "just report / do nothing" menu; the *only* thing that waits for an explicit instruction is `git commit` / `git push` (full rule: root `~/.Codex/AGENTS.md`).
 
+**If requested work depends on a PR that does not exist, create it and do the work; never hand back the same blocked prompt.**
+
 ## Per-area guidance
 
 - **Backend (.NET, `api/`)** — seeding, migrations, DTOs, module rules, C# conventions: [`api/AGENTS.md`](./api/AGENTS.md).
 - **Design patterns the codebase commits to** (keyed strategy resolvers, and the anti-patterns they replace — branching on `DealType` in agnostic code, service location, throwaway DTOs): [`api/docs/CODE_PATTERNS.md`](./api/docs/CODE_PATTERNS.md). Read it before adding any rule that varies by a closed key.
 - **Web SPA (`app/web/`)** — [`app/web/AGENTS.md`](./app/web/AGENTS.md).
-- **Customer cross-platform core (`app/customer/shared`, npm `@customer/shared`)** — consumed ONLY by the customer web + mobile apps: [`app/customer/shared/AGENTS.md`](./app/customer/shared/AGENTS.md).
+- **Customer cross-platform core (`app/customer/shared`, npm package `@concertable/customer`, exported as `@concertable/customer/shared/*`)** — consumed ONLY by the customer web + mobile apps: [`app/customer/shared/AGENTS.md`](./app/customer/shared/AGENTS.md).
 
 ## Git branch — branch first, capitalized type prefix, always
 
 **Before starting any work, create a relevant branch for it if you're not already on one** — never commit to `main` or an unrelated branch.
+
+**Worktree identity gate — before any edit.** State whether the task matches the current branch/PR directly or is branch-local work because it changes code not yet in `main`; verify service ownership, the dirty paths, and other worktrees rather than matching on a shared refactor name. If neither basis holds or anything contradicts it, **STOP and ask**.
 
 **Fetch first, and branch from `origin/main` — never from local `main`.** Local `main` silently
 drifts behind, and branching off it builds and tests everything against a stale tree. That is how work
@@ -38,7 +42,7 @@ The staleness is invisible locally: the build is green, because it is green *aga
 git fetch origin --quiet && git checkout -b <Type>/<Name> origin/main
 ```
 
-**Reusing an existing branch/worktree?** Ensure it's synced with `origin/main` before working — never build on a stale tip.
+**Reusing an existing branch/worktree?** At session start, `git fetch` + check `git rev-list --count HEAD..origin/main`; sync before working — never build on a stale tip. Don't reflex-merge `origin/main` every prompt — it won't refresh already-loaded docs (only a fresh session does), and mutating a dirty tree mid-task risks conflicts; merge only when behind with a clean tree.
 
 **Don't branch to refactor code from the feature you're already on.** If the code only lives on the current feature branch (not yet in `main`), the refactor is part of that feature — stay on the branch and commit there. A new `Refactor/<Name>` branch is only for code **already merged to `main`**. Branching off an in-flight feature fragments it across two PRs and orphans the original.
 
@@ -145,27 +149,35 @@ not an afterthought:
 
 ## E2E suites — Docker health first, always
 
-This section is **how** to run E2E safely. **Whether** to run it for a given change is a judgment
-call — reserved for massive or behaviorally-risky changes, skipped for stage-1/zero-behavior-change
-work — governed by [`plans/AGENTS.md`](./plans/AGENTS.md). Don't run the full suites by reflex.
+This section is **how** to run E2E safely. For a PR, do not duplicate the merge queue's E2E run
+locally; the local gate stops at build + unit + integration unless a queue failure needs debugging.
+[`plans/AGENTS.md`](./plans/AGENTS.md) carries that local workflow. The merge skill's Step 4 is the
+single source of truth for selecting the merge-queue E2E tier.
 
-**That same skip-judgment sets the CI merge-queue tier — and the reliable lever is a PR label, not a
-commit trailer.** The merge queue runs the full E2E suite on every code change *by default*. When a
-change is in the skip category (behaviour-preserving, small/isolated, well-covered by unit +
-integration), **add the `skip-e2e` label to the PR** (`gh pr edit <n> --add-label skip-e2e`) so the
-queue skips it too — otherwise it burns ~25-30 min of E2E that catches nothing. This is the common case
-for a refactor; **default to skipping E2E for any zero-behaviour-change PR** — letting the queue run E2E
-on it is the reflex to avoid. The labels: `skip-e2e` drops both E2E suites; `skip-e2e-ui` drops only the
-UI suite; `skip-tests` drops to the compile floor (build + carve only) for a genuinely trivial/mechanical
-change. Build + carve are never skippable.
+**Full E2E in the merge queue is the default.** Add `skip-e2e` only when the PR is both small and
+demonstrably low-blast-radius, with every one of these true:
+
+- The diff and affected area are small and isolated.
+- It touches no package/service boundary, shared infrastructure, build/publish/deployment pipeline,
+  CI workflow, or multiple application surfaces.
+- It changes no user-facing/runtime flow covered by E2E.
+- Unit/integration tests fully cover the affected behaviour.
+
+**Zero intended behaviour change is not sufficient.** Package renames, lockfile/workspace changes,
+shared-library moves, broad refactors, and build/publish separation must run full E2E. When in doubt,
+do not skip. The labels are the reliable lever: `skip-e2e` drops both E2E suites and `skip-e2e-ui`
+drops only the UI suite. Remove stale skip labels when the PR does not qualify; if historical trailers
+would opt out a PR that now requires the full tier, add `full-e2e`. Unit tests, integration tests,
+build, and carve are never skippable for code/package changes.
 
 A same-named **git trailer** (`Skip-E2E: true` on its own line) works too — parsed structurally by git,
 so prose that merely mentions it can't trip the gate (the pr-227 bug) — **but it is fragile in this repo,
 so prefer the label.** Git only parses the *last* paragraph of a commit message as trailers, and every
 commit here carries a mandated `Co-Authored-By:` trailer, so `Skip-E2E: true` must sit in the **same
 contiguous block** as `Co-Authored-By:` — a blank line between them splits the paragraph and git no
-longer sees `Skip-E2E`, so the queue silently runs E2E anyway. The label sidesteps this entirely. Full
-tier table in [`.github/workflows/test.yml`](./.github/workflows/test.yml).
+longer sees `Skip-E2E`, so the queue silently runs E2E anyway. Unit and integration tests always run
+for code/package changes and have no opt-out. The label sidesteps the E2E trailer fragility entirely.
+Full tier table in [`.github/workflows/test.yml`](./.github/workflows/test.yml).
 
 Run E2E only through `./e2e.ps1` via the matching skill (`e2e-ui-regress`, `e2e-ui-debug`,
 `e2e-api-debug`) — the skill's Step 0 Docker pre-flight is mandatory, every run.
@@ -205,16 +217,21 @@ The one comment that always earns its place: a **single-line footgun/invariant w
 
 And if a comment needs a paragraph to justify the code below it, that's usually the *code* telling you it's hacky — do the proper fix, or if a quick fix is genuinely right, log it in the nearest `TECH_DEBT.md` and keep the comment short.
 
+## Prompts
+
+Follow [`PROMPTS.md`](./PROMPTS.md) for every continuation, resume, handoff, review, or implementation prompt.
+
 ## Plans (`plans/*.md`)
 
 Plans are working docs for unfinished work, **not** an archive — git history is the archive. A finished plan kept "for reference" is just rot that misleads the next reader into thinking the work is still pending.
 
-**Opening a `plans/*.md` to work from obliges you to read [`plans/AGENTS.md`](./plans/AGENTS.md) in the same breath** — phases, verification gates, when to run E2E, and how to shape the handoff all live there, and the plan's own prose is not a substitute for them. Reading only the plan is how its rules get skipped.
+**Opening a `plans/*.md` to work from obliges you to read [`plans/AGENTS.md`](./plans/AGENTS.md) in the same breath** — phases, verification gates, and when to run E2E live there, and the plan's own prose is not a substitute for them. Reading only the plan is how its rules get skipped.
 
-- **When you land the commit that completes a plan's work, `git rm` the plan file in that same commit.** Completion = work committed AND its verification passed (build + the affected unit/integration tests always; E2E only when the change is massive/risky per `plans/AGENTS.md`). Deletion belongs to that commit — never defer it to a later cleanup pass.
+Every new plan has a same-directory `<PLAN_STEM>_PROGRESS.md` companion. The plan holds the design and outstanding phases; the progress ledger records every project action, result, and state transition plus the current operational truth. Keep both current throughout the work. Legacy plans without a ledger remain valid: reconstruct them from the plan and repository evidence, then create the ledger before recording further progress. Full rules: [`plans/AGENTS.md`](./plans/AGENTS.md) "Companion progress ledger."
+
+- **Keep the plan and its `_PROGRESS.md` companion until the entire lifecycle is terminal — not merely until the final local phase is committed and verified.** They remain the recovery anchor through every required review/fix, PR/check/merge, publication, dependency, and platform-sync gate. Record the final gate outcome, make that ledger checkpoint durable, then delete both together in the following close-out change. If no later delivery or package gate exists, the final phase commit may close them out.
 - A plan **superseded** by a newer plan, or describing a design that was **rejected**, is deleted the moment that's decided — don't leave a tombstone.
 - A **partially-done** plan stays, but strike/check off the sections that shipped (in the same commit as the work) so what remains is only the outstanding work.
-- **A completed + verified phase is a HARD STOP.** Hand off the resume prompt and END THE TURN. Do **not** start the next phase in the same session unless the user explicitly names it *and* says to do it now — a vague "continue"/"why stop?"/"yeah" means re-show the handoff, not start coding. Never append "want me to continue?" or a continue-vs-review fork. Full rule: [`plans/AGENTS.md`](./plans/AGENTS.md) "Before a clear."
 
 ## Throwaway working markdown — in the repo, then deleted
 
