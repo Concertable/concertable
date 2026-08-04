@@ -29,6 +29,28 @@ branch while a later phase waits — it has **one ledger per worktree**. Name ea
 worktree, and set its `- Plan:` header to this plan: that header is the authoritative plan↔ledger
 grouping (`/resume-plan` greps it), not the filename.
 
+### One implementation owner per phase — mandatory collision gate
+
+Several ledgers may coordinate different phases or delivery gates, but **the same plan phase and code
+scope must never be implemented in more than one branch/worktree at a time**. Every active phase has
+exactly one canonical implementation owner: one ledger, worktree, branch, and PR (when opened). The
+plan names that owner next to the phase's current status; every other ledger is dependency-only,
+delivery-only, or explicitly frozen donor state.
+
+Before any implementation or resume — **including when the prompt names a specific worktree or
+ledger** — enumerate all ledgers for the plan and inspect their branch/PR/worktree state, unique
+commits, dirty paths, and `## Next Steps`. If another branch contains committed or uncommitted work for
+the requested phase, stop before editing. Continue in the canonical owner; if ownership is ambiguous,
+reconcile it with Tommy first. Never recreate the work from `main` merely because the other branch is
+unmerged, stale, blocked, or awkward to extract from.
+
+The root rule that code existing only on an in-flight feature stays on that feature does not authorize
+absorbing a separately planned phase into its PR. Either wait for the dependency to merge, or
+explicitly make that feature branch the phase's sole canonical owner. If ownership later moves, freeze
+the old branch, inventory and salvage its work first, update the plan and every ledger to name the new
+owner, and only then resume implementation. A non-canonical ledger's `## Next Steps` must prohibit
+implementation and point to the canonical ledger.
+
 The ledger must make the chat disposable at any point. Record **every project action and state
 transition as it happens**, not just phase summaries: user direction and scope changes, partial
 implementation, commits, verification commands and results, reviews and every

@@ -4,7 +4,7 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\PaymentOwnedResultExpansion`
 - Branch: `Feature/PaymentOwnedResultExpansion`
 - PR: not opened
-- Dependency/package gates: Phase 1 merged in PR #290 and platform-synced in PR #291; Payment currently consumes platform `0.1.0-alpha.0.772`; no open platform-sync PR
+- Dependency/package gates: This branch is the exclusive canonical implementation owner for Payment Phase 2. Phase 1 merged in PR #290 and platform-synced in PR #291; Payment currently consumes platform `0.1.0-alpha.0.772`; no open platform-sync PR
 - Last reconciled: 2026-08-04 from `origin/main` `5d06d3121`, the Phase 3 ledger, Payment source, and Payment unit-test behavior
 
 ## Current state
@@ -14,6 +14,11 @@ unique commits before this ledger. Payment Application, Infrastructure, and Clie
 FluentResults. Customer and manager payment return `Result<PaymentOutcome>`; escrow release/refund
 return nullable success payloads; gRPC communicates failures through unstructured status detail.
 
+This worktree is now the sole canonical owner of Payment Phase 2. PR #296's commit `f693c955d`
+contains an earlier overlapping implementation on `Feature/CommissionBindingDeferredPricing`; that
+branch is frozen donor state for this phase and must not receive further typed-result implementation.
+Preserve the canonical worktree's current uncommitted paths while reconciling the donor implementation.
+
 The existing escrow tests establish the intended idempotency semantics: no escrow, an escrow that is
 not held, an already-refunded escrow, and a non-refundable state are successful no-ops. An operation
 that executes returns its transfer or refund. The owned contract is therefore
@@ -22,12 +27,12 @@ failure or a payload-free success.
 
 ## Next Steps
 
-Continue Plan Phase 2 from the green owned-error foundation: migrate the
-Payment application/domain/infrastructure paths to owned Result and Option; add structured gRPC error
-details and cleanly named typed client methods; keep the existing FluentResults client members as
-compatibility adapters; update Payment plus B2B/Customer fixtures and tests; then run the Payment unit,
-Payment/B2B/Customer integration, standalone carve, and Release solution-build gates. Commit the green
-phase checkpoint locally and do not push.
+Before writing more replacement code, inventory `f693c955d` and the commission branch's related tests
+against this branch's two commits and current uncommitted paths. Salvage the compatible implementation
+and verification coverage into this canonical branch, deliberately resolve the differing error-union
+and gRPC designs, and record every accepted/rejected donor piece here. Then complete Plan Phase 2,
+run the Payment unit, Payment/B2B/Customer integration, standalone carve, and Release solution-build
+gates, and commit the green phase checkpoint locally. Do not push.
 
 ## Completed work
 
@@ -50,6 +55,8 @@ No Phase 2 review has run yet.
 - New client methods are additive. Existing FluentResults members remain compatibility adapters until repository consumers move.
 - Infrastructure, cancellation, authentication, rate-limit/server, and unknown Stripe faults remain exceptions; only caller-actionable decline/refusal becomes a typed error.
 - API E2E belongs to the merge queue after the PR is ready; no local E2E runs ahead of it.
+- `Feature/PaymentOwnedResultExpansion` is the exclusive Phase 2 implementation owner. The overlapping
+  commission-branch implementation is donor evidence only and must be reconciled before new code is written.
 
 ## Event log
 
@@ -66,6 +73,16 @@ No Phase 2 review has run yet.
 - Evidence: Payment unit tests passed 161/161, including every leaf definition, composite forwarding, and structured gRPC detail; the Payment Release solution build completed with zero warnings and zero errors.
 - Outcome: The additive transport/error foundation is green and ready for the application, infrastructure, and client paths to consume.
 - Follow-up: Continue the single implementation and verification action in `## Next Steps`.
+
+### 2026-08-04 — Canonical ownership assigned after duplicate-work discovery
+
+- Action: Audited every Typed Result ledger, worktree, branch, PR, unique commit, and dirty path after
+  discovering Payment Phase 2 implementation on both this branch and PR #296.
+- Evidence: PR #296 remains open at `82d0555cd`; its `f693c955d` changes 71 files for Payment typed
+  results. This branch has two unique Phase 2 commits plus overlapping uncommitted Payment paths and no PR.
+- Outcome: `Feature/PaymentOwnedResultExpansion` is the exclusive canonical Phase 2 owner. The
+  commission branch is frozen donor state; no implementation is to continue there.
+- Follow-up: Reconcile and salvage the donor implementation before writing further Phase 2 code.
 
 ## Resume prompt
 
