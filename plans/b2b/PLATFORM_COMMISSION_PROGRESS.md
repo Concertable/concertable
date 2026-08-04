@@ -35,11 +35,43 @@ The recovery stash `76438f7cf003438a313be9049be708c1f72c6990` remains intact.
 
 ## Next Steps
 
-Phase 1b is complete, pushed to PR #296 at `82d0555cd`, reviewed clean, and verified current with
-`origin/main`. Confirm the currently-running CI build reaches green. The next action is then the Phase
-1b hard-stop, gated on Tommy's explicit go-ahead: merge PR #296, own its `chore/platform-sync-*` PR to
-green, and let the expanded Payment runtime deploy before Phase 2 (B2B gross ownership) begins.
-**Do not merge PR #296 unless Tommy separately requests it.**
+**HOLD at the Kernel-convention dependency — the convention is being redefined and is NOT merged.**
+On 2026-08-04 Tommy rejected the `…Case`-suffix + rename-only-factory error-union design and set a new
+convention: natural union case names (`ApplicationNotFound`, `PayeeNotFound`, `RecipientUnavailable`),
+no `Case` suffix, remove factories that merely rename cases, **keep** the centralized exhaustive
+`Definition => Match<ErrorDefinition>(…)` arm, and every case name must honestly agree with its
+Definition arm (a case mapped to `ErrorDefinition.NotFound` is named `…NotFound`; a broader mapping
+gets an honestly broader name). That new convention is a small docs PR owned by the separate
+`Refactor/DerivedErrorDefinitions` / typed-error-representation session (aborting its half-applied
+factory conversion on `CaptureError.cs`/`CommissionError.cs`/`DepositError.cs`). It has not merged,
+published, or platform-synced.
+
+**Do not reconcile this branch yet.** This worktree stays 25 behind `origin/main` at `5c0223e52` with
+all 5 dirty files preserved untouched. The dirty `Match<ErrorDefinition>(…)` guard edits in
+`PaymentErrors.cs` / `PaymentTransitionErrors.cs` were written for the *old* convention and may be
+partially invalidated by the new one (the `DunetUnionDefinitions_UseGeneratedMatch` guard shape itself
+may change) — do not build on them until the new convention lands.
+
+**Exact next action — only after the new convention doc PR merges AND the Kernel package publishes AND
+its platform-sync PR lands green:**
+1. `git fetch origin`; merge (not rebase) current `origin/main` into this branch; resolve conflicts
+   (expect the arch-test / error files to move under the new convention).
+2. Re-audit every B2B/Payment-owned `Result`/`Option`/`IError`/Dunet union this branch introduced
+   against the **new** convention: natural case names, no rename-only factories, centralized exhaustive
+   `Definition` match, honest case↔Definition agreement.
+3. Re-decide the two arch-guard failures under the new guard shape:
+   - `DunetUnionDefinitions_UseGeneratedMatch` — re-verify the `Match<ErrorDefinition>` edits are still
+     the correct form (or drop them if the guard changed).
+   - `TypedResultSlices_DoNotUseHttpExceptions` — three files still throw `NotFoundException`
+     (`CustomerPaymentService.CreatePaymentSessionAsync` internal; `ManagerPaymentService.FindHeldIntentAsync`/
+     `EnsureStripeCustomerAsync`; `CustomerPaymentClient.CreatePaymentSessionAsync` published). The two
+     published cross-service contracts still need a publish-first multi-PR typed cut-over
+     (`TYPED_RESULT_MIGRATION` scope) — do not game the guard or regress 404→500 in one PR.
+4. Add exact hardcoded code/message/kind contract tests + exhaustive case-table coverage.
+5. Run affected B2B + Payment unit/integration tests, the Release solution build, the Payment carve;
+   run `/incremental-review` for every commit since the review watermark.
+
+Merge/push/platform-sync/deploy of PR #296 remain gated on Tommy's explicit instruction.
 
 ## Resume prompt
 
@@ -101,6 +133,25 @@ PR #296 work):
 - No local E2E was run: PR #296's merge queue remains the E2E gate.
 
 ## Event log
+
+### 2026-08-04 — Kernel-convention dependency redefined mid-flight; held at the gate
+
+- Action: Began the requested "bring 25-behind worktree up to date + audit B2B-owned Result/error code
+  to the latest convention" task. Read the plan, both ledgers, and verified worktree identity and every
+  dirty path (read-only). Mid-turn, Tommy rejected the `…Case`-suffix + rename-only-factory error-union
+  design in favour of natural case names (`ApplicationNotFound`/`PayeeNotFound`/`RecipientUnavailable`),
+  keeping the centralized exhaustive `Definition` match and requiring honest case↔Definition agreement.
+- Evidence: worktree HEAD `5c0223e52`, 25 behind `origin/main`; 5 dirty files preserved untouched
+  (`PaymentErrors.cs`, `PaymentTransitionErrors.cs`, `TypedResultArchitectureTests.cs`,
+  `UNIT_CONVENTIONS.md`, this ledger). The dirty error-file edits are old-convention
+  `Match(…)`→`Match<ErrorDefinition>(…)` guard fixes. `Refactor/DerivedErrorDefinitions` tip `9dfb5e63d`
+  sits on `origin/main`; the new natural-case-name convention is a not-yet-merged docs PR owned by a
+  separate session; open platform-sync PR #342 (`0.1.0-alpha.0.785`) is unrelated.
+- Outcome: Dependency gate **unmet** — new convention not merged/published/synced, and the audit target
+  moved off task steps 4 & 7 (which encoded the old factory/`Case`-suffix design). Stopped at the
+  dependency per the task's own gate. No merge, no error-code rework, no push; only this ledger updated.
+- Follow-up: See `## Next Steps` — resume the merge + re-audit only after the new convention doc PR
+  merges, Kernel publishes, and its platform-sync PR lands green.
 
 ### 2026-08-04 — PR head and CI reconciliation
 
