@@ -1,14 +1,17 @@
 # Concertable-owned Result and Option migration
 
-> **Status:** Phase 1's revised no-value Result design was completed and verified on 2026-08-01.
-> Non-generic `Result`, `Result<TValue>`, `UnitResult<TError>`, and accumulating `ValidationErrors` now replace `Unit` and
-> every `Result<Unit,TError>` API from the initial implementation.
-> Phase 2 remains blocked until the revised branch merges, the Kernel package publishes, and its
-> generated platform-sync PR lands green.
+> **Status:** Phase 1's revised no-value Result design merged in PR #290 on 2026-08-01 and its Kernel
+> publication synced through PR #291. Non-generic `Result`, `Result<TValue>`, `UnitResult<TError>`, and
+> accumulating `ValidationErrors` replace `Unit` and every `Result<Unit,TError>` API from the initial
+> implementation. Phase 2 is owned by `Feature/CommissionBindingDeferredPricing` / PR #296 because
+> Payment's typed-result work includes that branch's unmerged commission surface. Phase 3 remains
+> blocked until #296 merges, Payment publishes, and its generated platform-sync PR lands green.
 >
 > **Decision:** Concertable owns string-error `Result` and `Result<TValue>`, typed-error
 > `UnitResult<TError>` and `Result<TValue, TError>`, and `Option<T>` in `Concertable.Kernel`. They are stable domain vocabulary,
 > not adapters over CSharpFunctionalExtensions, FluentResults, OneOf, Dunet, or a future runtime type.
+
+Docs-convention progress lives in @plans/TYPED_RESULT_MIGRATION_CONVENTIONS_PROGRESS.md.
 
 This is an execution plan for unfinished work. Git history is the archive for the superseded CFE
 design.
@@ -112,6 +115,12 @@ its generated platform-sync PR #288 subsequently landed green. Phase 1 was there
 from that current `origin/main` on `Refactor/OwnedResultFoundation`, retaining the valid
 ErrorDefinition work and replacing the merged CFE/Maybe foundation. PR #282 and the dirty
 `Feature/ResultFoundationComposition` experiment remain untouched.
+
+Execution update on 2026-08-04: the reimplemented Phase 1 merged through PR #290 and its package
+publication synced through PR #291. Phase 2 is branch-local work in PR #296 because the Payment
+owned-result surface includes that PR's not-yet-merged commission/deferred-pricing types. Do not split
+the same Payment migration into a second implementation branch. PR #282 remains the Phase 3 owner and
+must wait for #296's Payment publication and platform sync.
 
 ## Research verdict: owning the types is justified here
 
@@ -465,7 +474,9 @@ The shared error roles are:
 Keep named `ErrorDefinition.Invalid/NotFound/...` factories where they improve construction.
 `ErrorDefinition.NotFound<T>(code)` may derive the standard message from an explicit `[DisplayName]`;
 types without that metadata use the explicit-message overload, and CLR type names are never a
-fallback. The operation still owns its stable code.
+fallback. The operation still owns its stable code. Current code never derives a public code from a
+CLR case name. A future type-derived Kernel factory must pair exact contract tests with an explicit
+code override for published cases whose CLR names change.
 
 ### HTTP and other transports
 
@@ -507,8 +518,12 @@ under these rules:
 - `IError.Definition` is the stable consumer-facing behavior;
 - generated `Unwrap`, case-specific Match helpers, async Match helpers, and implicit conversions are
   not application conventions;
-- generated full `Match` may be used inside the union declaration or an owner-local mapper, where a
-  new case changes the generated method signature and exposes missed handling at compile time;
+- each union implements `Definition` through one centralized positional generated full `Match`, in
+  declaration order, so a new case changes the signature and exposes missed handling at compile time;
+- generated full `Match` is also used for owner-local mappings whose policy handles every case;
+- keep a `Case` suffix where a natural named factory would otherwise collide with the case type;
+- every case has an exact contract test with hard-coded code, message, and kind, and the explicit case
+  set changes when a variant is added;
 - consumers map through owned error factories/Definition and do not publish generated Match APIs as
   a required cross-package programming model;
 - no global warning suppression, global warning-as-error change, or claim about ordinary C# switch
@@ -516,21 +531,30 @@ under these rules:
 
 `IError` is permanent native-union infrastructure, not temporary scaffolding. Native unions close the
 cases of one operation; they do not give unrelated operation unions a shared member that generic HTTP
-translation can call. Every operation error union implements `IError` and computes its Definition with
-an owner-local exhaustive switch:
+translation can call. Every operation error union implements `IError`; the current Dunet form keeps
+the exhaustive definition behind its generated full `Match`:
 
 ```csharp
-public union PurchaseError(
-    ConcertNotFound,
-    PurchaseInvalid,
-    PaymentRejected) : IError
+[Union(EnableImplicitConversions = false)]
+public partial record PurchaseError : IError
 {
-    public ErrorDefinition Definition => this switch
-    {
-        ConcertNotFound => ErrorDefinition.NotFound(...),
-        PurchaseInvalid invalid => ErrorDefinition.Validation(..., invalid.Errors),
-        PaymentRejected rejected => ErrorDefinition.PaymentRequired(...),
-    };
+    public partial record ConcertNotFoundCase;
+    public partial record PurchaseInvalidCase(ValidationErrors Errors);
+    public partial record PaymentRejectedCase;
+
+    public ErrorDefinition Definition => Match<ErrorDefinition>(
+        _ => ErrorDefinition.NotFound("ticket.concert_not_found", "Concert not found."),
+        invalid => ErrorDefinition.Validation(
+            "ticket.purchase_invalid",
+            "The ticket purchase is invalid.",
+            invalid.Errors.ToDictionary()),
+        _ => ErrorDefinition.PaymentRequired(
+            "ticket.payment_rejected",
+            "The payment was rejected."));
+
+    public static PurchaseError ConcertNotFound() => new ConcertNotFoundCase();
+    public static PurchaseError Invalid(ValidationErrors errors) => new PurchaseInvalidCase(errors);
+    public static PurchaseError PaymentRejected() => new PaymentRejectedCase();
 }
 ```
 
@@ -574,8 +598,9 @@ member rejects it. Case constructors retain the no-null rules.
 
 Factories, `Match`, `Map`, `Bind`, task/collection composition, equality, hashing, formatting, and HTTP
 adapters are the stable application contract. Keep those methods when the declarations become unions,
-so existing consumers do not change. The native switch-pattern surface is added on cutover day and may
-be adopted incrementally; it does not force service call-site rewrites.
+so existing consumers do not change and do not acquire preview null/default switch arms. Decide any
+additional native pattern surface from the released language semantics on cutover day; it does not
+force service call-site rewrites.
 
 As of the Microsoft documentation updated 2026-07-27, C# 15 unions remain a .NET 11 preview and some
 proposal features are still unimplemented. The current generated form is a struct backed by `object?`;
@@ -678,6 +703,10 @@ PR before implementation; do not touch PR #282 or the dirty ResultFoundationComp
 
 **Dependency:** Phase 1 package published and platform sync merged. This phase must not begin on a
 red platform pin.
+
+**Owning branch/PR:** `Feature/CommissionBindingDeferredPricing` / PR #296. Its Payment typed-result
+work is branch-local because it includes the same unmerged commission surface. Do not implement this
+phase independently on another branch.
 
 **Scope and expected projects/files:**
 
@@ -955,8 +984,8 @@ union declarations.
   the repository's normal platform-upgrade workstream;
 - change every owned `Result`, `Option`, and operation-error discriminated declaration to `union`;
 - replace Dunet-generated operation errors with native unions and remove Dunet after the last use;
-- retain `IError` as the common generic capability implemented by each operation union, with each
-  union's `Definition` implemented through a compiler-checked exhaustive case switch;
+- retain `IError` as the common generic capability implemented by each operation union and preserve
+  the Match-shaped exhaustive definition API without leaking null/default arms to consumers;
 - use distinct guarded success/failure/some case types so equal `TValue`/`TError` types remain valid and
   null payloads remain impossible;
 - preserve factories, combinators, task/collection extensions, HTTP adapters, error definitions,
@@ -1002,7 +1031,7 @@ code. `UseLocalCore=true` remains a local diagnostic option only.
 | The API grows into an unmaintainable overload catalogue | require a real Concertable call site and consistent algebra before adding an overload; add operations compatibly |
 | Result structs silently treat default as a valid case | reserve tag zero, fail every operational access, and test default through arrays/fields/tasks |
 | Option becomes nullable with new syntax | forbid null payloads at generic and runtime boundaries and expose no throwing Value property |
-| Error unions leak Dunet and block native migration | keep generated matching owner-local; public composition depends on Result/IError/factories, not generator APIs |
+| Error unions leak Dunet and block native migration | keep generated matching owner-local; public composition depends on Result/IError/factories, not generator APIs; preserve the Match-shaped seam at native cutover |
 | Native-union expectations move during previews | keep production on net10/C#14 now; make factories/combinators the stable consumer API, then execute mandatory Phase 9 from the released specification |
 | Published package changes strand services | use expand/publish/sync/consumer/cleanup and treat every generated sync as part of its owning phase |
 | Typed Result swallows operational failures | no catch in combinators; explicit tests prove infrastructure faults and cancellation propagate |
