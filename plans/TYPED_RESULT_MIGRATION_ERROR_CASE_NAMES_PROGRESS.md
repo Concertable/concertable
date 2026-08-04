@@ -9,16 +9,16 @@
 
 ## Current state
 
-PR #343 is open at remote head `5b3bf3dee9e818328f66ab3541c751d384abd9bd`. Its checks are terminal
-and green/skipped for the docs-only diff, but GitHub reports `DIRTY`: the branch is nine commits
-behind `origin/main`, and merged PR #344 changed the same convention and plan area. The naming rule
-must be reconciled with current main before the PR can enter the merge queue.
+PR #343 is open at remote head `5b3bf3dee9e818328f66ab3541c751d384abd9bd`. Current `origin/main`
+has been merged locally and the PR #344 overlap is reconciled: derived definition factories remain,
+while natural error names, semantic agreement, and the ban on alias-only factories remain explicit.
+The full Release solution build passes with zero errors. The resolved merge is not yet committed or
+pushed.
 
 ## Next Steps
 
-Merge `origin/main` into `Docs/NaturalErrorCaseNames`, reconcile the PR #344 overlap without losing
-the natural, semantically accurate error-name rule, verify the markdown diff, push the updated
-branch, then re-run the merge workflow for PR #343.
+Commit the resolved main merge, push and verify the updated PR head, wait for terminal PR checks,
+then enqueue PR #343 with the docs-only E2E tier.
 
 ## Completed work
 
@@ -36,6 +36,8 @@ branch, then re-run the merge workflow for PR #343.
 - After the work push, local HEAD and `origin/Docs/NaturalErrorCaseNames` both resolved to
   `7d2c88b38299c87d1bccc703c586dec54a7529e0`.
 - Every changed path is markdown; no build or test run is required.
+- After merging current main, `dotnet build api/Concertable.slnx --configuration Release` restored
+  the fresh worktree and passed with 0 errors and 9 pre-existing warnings.
 
 ## Reviews
 
@@ -80,6 +82,17 @@ GitHub review is pending on PR #343.
 - Outcome: queue admission is blocked until current main is merged and the PR #344 overlap is
   reconciled.
 - Follow-up: update, verify, and push the source branch before enqueueing.
+
+### 2026-08-04 — current main reconciled locally
+
+- Action: merged `origin/main`, resolved the two documentation conflicts, and built the full Release
+  solution.
+- Evidence: the only conflicts were `api/agents/CODE_CONVENTIONS.md` and
+  `plans/TYPED_RESULT_MIGRATION.md`; `dotnet build api/Concertable.slnx --configuration Release`
+  passed with 0 errors and 9 warnings after restoring the fresh worktree.
+- Outcome: PR #344's derived-code convention and this PR's natural-name rule coexist; the local
+  merge is ready to commit and push.
+- Follow-up: publish the updated source head, verify checks, and enqueue PR #343.
 
 ## Resume prompt
 
