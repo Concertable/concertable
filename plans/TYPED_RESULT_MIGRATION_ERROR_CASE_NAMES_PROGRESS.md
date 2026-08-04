@@ -9,16 +9,14 @@
 
 ## Current state
 
-PR #343 is open at remote head `5b3bf3dee9e818328f66ab3541c751d384abd9bd`. Current `origin/main`
-has been merged locally and the PR #344 overlap is reconciled: derived definition factories remain,
+PR #343 is open at verified remote head `6781ad6abfc10a0bec73e01ccf3663c90e67c594`. Current
+`origin/main` is merged and the PR #344 overlap is reconciled: derived definition factories remain,
 while natural error names, semantic agreement, and the ban on alias-only factories remain explicit.
-The full Release solution build passes with zero errors. The resolved merge is not yet committed or
-pushed.
+The full Release solution build passes with zero errors. Replacement PR checks are pending.
 
 ## Next Steps
 
-Commit the resolved main merge, push and verify the updated PR head, wait for terminal PR checks,
-then enqueue PR #343 with the docs-only E2E tier.
+Wait for terminal checks on the updated PR head, record the docs-only E2E tier, then enqueue PR #343.
 
 ## Completed work
 
@@ -38,6 +36,8 @@ then enqueue PR #343 with the docs-only E2E tier.
 - Every changed path is markdown; no build or test run is required.
 - After merging current main, `dotnet build api/Concertable.slnx --configuration Release` restored
   the fresh worktree and passed with 0 errors and 9 pre-existing warnings.
+- Local HEAD, `origin/Docs/NaturalErrorCaseNames`, and PR #343 all resolved to
+  `6781ad6abfc10a0bec73e01ccf3663c90e67c594` after the reconciliation push.
 
 ## Reviews
 
@@ -93,6 +93,14 @@ GitHub review is pending on PR #343.
 - Outcome: PR #344's derived-code convention and this PR's natural-name rule coexist; the local
   merge is ready to commit and push.
 - Follow-up: publish the updated source head, verify checks, and enqueue PR #343.
+
+### 2026-08-04 — reconciled source head pushed
+
+- Action: pushed the current-main reconciliation and verified all source-head identities.
+- Evidence: local HEAD, `origin/Docs/NaturalErrorCaseNames`, and PR #343's `headRefOid` all resolved
+  to `6781ad6abfc10a0bec73e01ccf3663c90e67c594` after a successful fetch.
+- Outcome: the conflict is cleared from the published source branch; replacement checks can run.
+- Follow-up: wait for terminal checks and enqueue the verified head with the docs-only tier.
 
 ## Resume prompt
 
