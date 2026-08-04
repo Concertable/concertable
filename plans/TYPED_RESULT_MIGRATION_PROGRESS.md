@@ -22,9 +22,11 @@ file auto-merged; the only conflict was `plans/AGENTS.md` (docs). PR #296's remo
 
 ## Next Steps
 
-Run `/incremental-review` for merge commit `b6fb56c6c` against PR #296's existing review artifact
-(`reviews/Feature-CommissionBindingDeferredPricing.md`) before any push. Do not begin Typed Result
-Phase 3; it remains gated on this Payment expansion merging, publishing, and platform-syncing green.
+Payment owned-result Phase 2 is locally complete, reviewed clean (incremental review 2026-08-04, range
+`99ef2faac..0dab856dc`, no new findings; watermark now `0dab856dc`), and current with `origin/main`.
+The branch is unpushed. Advancing depends on PR #296 merging, Payment packages publishing, and the
+generated platform-sync PR landing green — all downstream of the commission Phase 1b hard-stop, which
+awaits Tommy's explicit go-ahead. Do not begin Typed Result Phase 3 until then. Nothing further locally.
 
 ## Resume prompt
 
@@ -68,6 +70,18 @@ On merge commit `b6fb56c6c` (`origin/main` `f05f8832d` merged in):
   platform-sync PR must land green before any consumer phase begins.
 
 ## Event log
+
+### 2026-08-04 — incremental review of the post-merge state — no findings
+
+- Action: `/incremental-review` over `99ef2faac..0dab856dc` against
+  `reviews/Feature-CommissionBindingDeferredPricing.md`. See the commission ledger's matching entry for
+  full evidence; the owned-result typed-result code (`f693c955d`) was already covered by CV1–BUG2 and
+  the only unreviewed delta was the two merge reconciliations.
+- Evidence: `b6fb56c6c` no evil-merge code hunks; `4946bba27` consistently internalises branch-only
+  Payment.Domain types + test-only proto alias; green build/192 unit/7 integration/carve/EF.
+- Outcome: **No new findings.** Watermark re-stamped to `0dab856dc`; all prior findings closed.
+- Follow-up: Phase 3 stays gated on PR #296 merge/publish/platform-sync, downstream of the commission
+  Phase 1b hard-stop awaiting Tommy's go-ahead.
 
 ### 2026-08-04 — merged current main and re-verified alongside the commission ledger
 

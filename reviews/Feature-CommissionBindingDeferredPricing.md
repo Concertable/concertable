@@ -5,7 +5,7 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `99ef2faacc3111c0672f5fbe18aba43b83e006e9`  _(2026-08-02)_
+**Reviewed up to commit:** `0dab856dc708af4dd5612bf1be1d52598d717244`  _(2026-08-04)_
 
 > Range reviewed: `2ccd91567..f2e206133` (2 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -84,3 +84,29 @@ Fresh verification on the reconciled state: Payment SQL integration 7/7; focused
 Payment unit 192/192; Release solution build 0 errors; standalone Payment carve 0 errors; and no
 pending `PaymentDbContext` model changes. No finding was reopened. The new merge resolution and test
 alias require incremental review before any push.
+
+## Incremental review — 2026-08-04
+
+> Range reviewed: `99ef2faac..0dab856dc`. Substantive branch delta = the two current-main merge
+> reconciliations (`4946bba27` merging `origin/main` `37c94cd0`; `b6fb56c6c` merging `origin/main`
+> `f05f8832d`). All other commits in the range are `origin/main`'s own merged-in work (reviewed on
+> their PRs) or branch docs. `f693c955d`'s typed-result code was already covered by CV1–BUG2 above.
+
+No issues found. Checked correctness, microservice isolation, module boundaries, seeding, C#
+conventions, and test coverage of changed paths.
+
+- `b6fb56c6c` (today's merge) introduced **no** evil-merge code hunks — every `api/**` file
+  auto-merged; the only hand-resolved conflict was `plans/AGENTS.md` (docs, took main's newer
+  parallel-worktree handoff text).
+- `4946bba27`'s reconciliation internalises the branch-only Payment.Domain types (`Percentage`,
+  `CommissionTerms`, `CommissionConfigurationEntity`, the three transition-error unions, and the
+  escrow/refund/settlement/transaction entities) to match main's `267bd9d45` Domain-surface-internal
+  decision. Correct: `Payment.Domain/AssemblyInfo.cs` grants `InternalsVisibleTo` to Application,
+  Infrastructure, Seed, and the test projects, so no cross-assembly access breaks, and keeping them
+  `public` would reintroduce exactly the surface debt main just removed. Build, 192 unit tests, 7
+  integration tests, the standalone carve, and the EF model check are all green on the reconciled tree.
+- The dual generated-proto collision (Client and Infrastructure both emit `Concertable.Payment.Grpc.*`)
+  is resolved test-side only, with `Aliases="global,PaymentInfrastructure"` on the unit project's
+  Infrastructure reference and an `extern alias PaymentInfrastructure` in `PayoutAccountStatusMapperTests`.
+  This disambiguates the enum for exact assertions without coupling or weakening either published
+  package boundary — the standard C# remedy for identical CLR names from two referenced assemblies.

@@ -28,9 +28,12 @@ The recovery stash `76438f7cf003438a313be9049be708c1f72c6990` remains intact.
 
 ## Next Steps
 
-Run `/incremental-review` against the existing PR #296 review watermark
-(`reviews/Feature-CommissionBindingDeferredPricing.md`) on merge commit `b6fb56c6c`. Address any new
-findings, then update this ledger. Do not push or merge PR #296 unless Tommy separately requests it.
+Phase 1b is locally complete, reviewed clean, and verified current with `origin/main`. The branch is
+**unpushed** — local `HEAD` (`0dab856dc`, or its ledger checkpoint) is well ahead of PR #296's remote
+head `f487ad1da`. The next action is the Phase 1b hard-stop, which is **gated on Tommy's explicit
+go-ahead**: push the branch to PR #296, then merge it, own its `chore/platform-sync-*` PR to green, and
+let the expanded Payment runtime deploy — only after which Phase 2 (B2B gross ownership) may start.
+**Do not push or merge PR #296 unless Tommy separately requests it.** Nothing further to do locally.
 
 ## Resume prompt
 
@@ -92,6 +95,24 @@ PR #296 work):
 - No local E2E was run: PR #296's merge queue remains the E2E gate.
 
 ## Event log
+
+### 2026-08-04 — incremental review of the post-merge state — no findings
+
+- Action: Ran `/incremental-review` (code-review procedure over `99ef2faac..0dab856dc`) against the
+  existing artifact `reviews/Feature-CommissionBindingDeferredPricing.md`. Scoped to the branch's real
+  delta: the two current-main merge reconciliations (`4946bba27`, `b6fb56c6c`); all other range commits
+  are `origin/main`'s own merged-in work or branch docs, and `f693c955d`'s typed-result code was already
+  covered by CV1–BUG2.
+- Evidence: `git show b6fb56c6c` combined code diff empty (no evil-merge hunks; only `plans/AGENTS.md`
+  docs hand-resolved). `4946bba27` reconciliation internalises 12 branch-only Payment.Domain types to
+  match main's `267bd9d45` decision; `Payment.Domain/AssemblyInfo.cs` `InternalsVisibleTo` covers every
+  consumer; dual-proto collision resolved test-only via `Aliases="global,PaymentInfrastructure"` +
+  `extern alias`. Green build/192 unit/7 integration/carve/EF confirm accessibility and persistence.
+- Outcome: **No new findings.** Appended `## Incremental review — 2026-08-04` and re-stamped the
+  watermark to `0dab856dc708af4dd5612bf1be1d52598d717244`. OWN1, CV1, BUG1, CV2, TEST1, TEST2, BUG2
+  all remain closed.
+- Follow-up: Phase 1b hard-stop (push → merge → platform-sync → deploy) awaits Tommy's explicit
+  go-ahead; nothing further locally.
 
 ### 2026-08-04 — merged current main and re-ran the full Payment gate green
 
