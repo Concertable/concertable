@@ -1,8 +1,7 @@
 # Full-stack polyrepo — frontend build separation progress
 
 - Plan: `plans/platform/POLYREPO_FULLSTACK_PLAN.md`
-- Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\FrontendBuildSeparation`
-- Branch: `Feature/FrontendBuildSeparation`
+- Worktree: none active — the old `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\FrontendBuildSeparation` (branch `Feature/FrontendBuildSeparation`) is orphaned (PR #319 merged, remote branch deleted) and must not be reused. Phase 2 starts from a fresh worktree off `origin/main`.
 - PR: review-fix PR [#319](https://github.com/Concertable/concertable/pull/319) **merged** (`5a84756de`, 2026-08-03); Phase 1 PR [#301](https://github.com/Concertable/concertable/pull/301) merged
 - Dependency/package gates: `@concertable/shared@0.1.0-alpha.0.2129` is published and restorable; Phase 2 is now unblocked (review-fix PR #319 has landed). #319 touched only CI/docs (no `api/**`), so no platform-sync PR was triggered
 - Last reconciled: 2026-08-04 after verifying PR #319 merged into `origin/main`
@@ -11,7 +10,7 @@
 
 Phases 0 and 1 are on `main` through PR #301, and the Phase 1 review fixes are on `main` through PR #319, merged as `5a84756de` on 2026-08-03. `f57a4c504` is verified an ancestor of `origin/main`. The remote `Feature/FrontendBuildSeparation` branch was deleted on merge; the local worktree tip `ec7751f77` is an orphaned merge commit, now behind `origin/main` and no longer authoritative. No open platform-sync PR exists. Phase 1 (with review fixes) is fully terminal; Phase 2 is unblocked.
 
-## Exact next action
+## Next Steps
 
 Start **Phase 2** — publish the remaining shared tiers (`web/shared`, `mobile/shared`, `web/b2b/shared`, `@concertable/customer/shared/*`) and cut consumers over from path-alias to package imports. Create a fresh isolated worktree/branch from current `origin/main` (the old `Feature/FrontendBuildSeparation` branch is merged/deleted and orphaned — do not reuse it). Follow Phase 2 in the plan and its grep-clean gate.
 
