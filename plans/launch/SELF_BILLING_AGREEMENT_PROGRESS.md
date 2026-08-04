@@ -61,9 +61,10 @@ alternative (Tenant module) and its cost are recorded in the plan §3.
 
 ## Next Steps
 
-Phase 2 backend is committed + verified; finish the Phase 2 SPA build gate (all four web builds green —
-the `npm install` had to be re-run for a transient npm-cache EPERM), commit the SPA, then tick the plan §6
-Phase 2 boxes.
+**Phase 2 is COMPLETE, verified, and committed** — backend `6ee5cd3d2` + SPA `b3b9b05fa` on
+`Feature/SelfBillingAgreement`; `api/Concertable.slnx` builds; Concert unit 79/79 + integration 141/141 green;
+all four web builds green; plan §6 Phase 2 boxes ticked. **Nothing is pushed** (branch has no PR yet) — awaiting
+Tommy's go to push / open a PR.
 
 Then **Phase 3 — Fail-closed enforcement + roadmap tick** (plan §6, final phase) — start only on Tommy's word:
 in `FinishExecutor`, after the tax-compliance gate and using the already-resolved `supplierTenantId`, call
