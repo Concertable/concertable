@@ -1,7 +1,7 @@
 # Self-billing agreement + 12-month renewal consent — progress
 
 - Plan: `plans/b2b/SELF_BILLING_AGREEMENT.md`
-- Worktree: `C:\Users\TommySeery\source\repos\Concertable`
+- Worktree: `C:\Users\TommySeery\source\repos\Concertable` (main checkout)
 - Branch: `Feature/SelfBillingAgreement`
 - PR: not opened
 - Dependency/package gates: none yet. Phase 3 touches `api/**`, so on merge a
@@ -12,8 +12,23 @@
 
 ## Current state
 
-Plan and this ledger authored; **no code written**. Branch `Feature/SelfBillingAgreement` created off
-`origin/main` (0 commits ahead). The shipped seams the build will reuse are mapped and cited in the plan:
+**Phase 1 code written and committed as a protective WIP checkpoint** at `9d968b51d` (17 files, 443
+insertions) on `Feature/SelfBillingAgreement`. It is **not yet built/verified**, the Concert migration is
+**not yet re-scaffolded**, and Phase 1 tests are **not yet written**. Committed immediately (before build)
+because the branch was renamed out from under the session mid-work; a commit is the durable anchor.
+
+Files in the checkpoint: `SelfBillingAgreementEntity` (immutable, single-owner `ITenantScoped`, frozen
+`InvoiceParty` + `SupplierESignature`, `ExpiresAtUtc = AcceptedAtUtc + 12 months`, `ClauseText`,
+`PlatformTermsVersion`, `PdfBlobName` under `self-billing-agreements/`); `DisplayNames.SelfBillingAgreement`;
+`Schema.Tables.SelfBillingAgreements`; `SelfBillingAgreementConfiguration` (reuses
+`InvoicePartyConfiguration`/`ESignatureConfiguration`) registered in `ConcertConfigurationProvider`; DbSet +
+`ApplySingleOwner<SelfBillingAgreementEntity>` on `ConcertDbContext`; DbSet on `PublicConcertDbContext`;
+single-owner `SelfBillingAgreementRepository : TenantScopedRepository<>` (`GetCurrentAsync`); system
+filter-free `SelfBillingAgreementGate` on `PublicConcertDbContext`; `SelfBillingAgreementService`
+(grant/renew/read-current/PDF; requires tax compliance to snapshot identity); `SelfBillingAgreementDocument`;
+DI registrations. Design decisions below unchanged.
+
+Original authoring context (still accurate): The shipped seams the build will reuse are mapped and cited in the plan:
 `InvoiceEntity`/`ContractEntity` (immutable-snapshot shape), `ESignature` VO + `ESignatureRequest`
 (advanced-tier e-sign), `IPdfBlobCache` (lazy render), `IPdfRenderer` + `IDocument` (QuestPDF),
 `SettlementPayeeResolver` (supplier direction), `FinishExecutor` (the fail-closed tax gate the
@@ -27,17 +42,21 @@ alternative (Tenant module) and its cost are recorded in the plan §3.
 
 ## Next Steps
 
-Do not start until Tommy says to build. Then, on `Feature/SelfBillingAgreement`:
+On `Feature/SelfBillingAgreement` (main checkout `C:\Users\TommySeery\source\repos\Concertable`), finish
+Phase 1 — the code exists at `9d968b51d` but is unbuilt/unverified. In order:
 
-**Phase 1 — Agreement domain + persistence + gate (dormant).** Read `plans/b2b/SELF_BILLING_AGREEMENT.md`
-§4–§6 and `plans/agents/PLAN.md` first. Add `SelfBillingAgreementEntity` (immutable, single-owner
-supplier `TenantId`, frozen `InvoiceParty` identity, `ESignature Supplier`, `AcceptedAtUtc`,
-`ExpiresAtUtc = +12 months`, `PlatformTermsVersion`, `ClauseText`, `PdfBlobName` under
-`self-billing-agreements/`), `DisplayNames.SelfBillingAgreement`, `Schema.Tables.SelfBillingAgreements`,
-EF config (reuse `InvoicePartyConfiguration`/`ESignatureConfiguration`), the single-owner
-`SelfBillingAgreementRepository` and system-read `ISelfBillingAgreementGate`, `ISelfBillingAgreementService`
-(grant/renew/read-current/PDF) with `SelfBillingAgreementDocument : IDocument`. Re-scaffold with
-`./initial-migrations.ps1` from `api/`. Hit the Phase 1 verification gate, then commit.
+1. `dotnet build api/Concertable.slnx` — fix any compile errors (watch: single-owner repo stance,
+   `LegalSettings` binding, usings). Amend/extend `9d968b51d` or add a follow-up commit.
+2. Re-scaffold the Concert migration: `./initial-migrations.ps1` from `api/` (model changed —
+   `SelfBillingAgreements` table). Commit the regenerated migration.
+3. Write Phase 1 tests (plan §6 gate): unit + integration asserting `ExpiresAtUtc == AcceptedAtUtc + 12
+   months`; renewal appends a new current row; current-resolution picks latest non-expired; gate true
+   in-force / false none-or-expired; immutability; single-owner scoping (owner reads own, stranger 404);
+   PDF renders lazily under `self-billing-agreements/` with clause + supplier VAT number + signature.
+4. Run Concert unit + integration via the `integration-debug` skill; drive to green.
+5. Commit the finished Phase 1, check off the plan's Phase 1 box.
+
+Then stop — Phase 2 only when Tommy names it.
 
 ## Completed work
 
@@ -77,6 +96,12 @@ None yet.
   not be `[RequiredTenantType(TenantType.Venue)]`.
 
 ## Event log
+
+### 2026-08-04 — Phase 1 code written + committed (WIP)
+
+- All Phase 1 code written (17 files) and committed as WIP `9d968b51d` on `Feature/SelfBillingAgreement`,
+  on top of plan commit `8457690df`. **Unbuilt/unverified**; migration not re-scaffolded; tests not written.
+- Follow-up: build + migration + tests per `## Next Steps`.
 
 ### 2026-08-04 — Plan authored
 
