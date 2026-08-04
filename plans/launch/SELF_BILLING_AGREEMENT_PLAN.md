@@ -206,19 +206,23 @@ Give suppliers (and the seeder) a way to hold consent; still nothing gates settl
 
 Turn the gate on where the invoice is minted; make the invoice legend truthful.
 
-- [ ] In `FinishExecutor`, after the existing tax-compliance gate and using the already-resolved
+- [x] In `FinishExecutor`, after the existing tax-compliance gate and using the already-resolved
   `supplierTenantId`, call `ISelfBillingAgreementGate.HasCurrentAsync`. If not in force → return a new
   `SettlementOutcome.DeferredPendingSelfBillingAgreement`, mint **no** invoice, and surface the reason
-  (a deferred-reason KPI/read, mirroring `AwaitingDoorRevenue` / `DeferredPendingTaxCompliance`). The
+  (logged via `SettlementDeferredPendingSelfBillingAgreement`, mirroring `DeferredPendingTaxCompliance`). The
   hourly completion sweep re-attempts and self-heals once the supplier grants/renews; the per-supplier
   sequence number is only consumed when an invoice actually commits, so no number is skipped across a
-  deferral.
-- [ ] Supplier-facing deferred surface: the settlement/payout screen tells the supplier *why* issuance
-  is blocked and links to the grant/renew affordance.
-- [ ] Tick the roadmap **in this commit**: [`LAUNCH_ROADMAP.md`](./LAUNCH_ROADMAP.md) 🟡 "Self-billed VAT
-  invoice engine" line → ✅ (invoice engine now complete: generation + agreement + renewal), and the §7
-  "Definition of launch-ready" self-billed-invoice checklist line. The roadmap is never deleted.
-- [ ] **Verification gate:** `dotnet build api/Concertable.slnx` green; Concert unit + integration green:
+  deferral. (`588da60e9`)
+- [x] Supplier-facing deferred surface: **the shipped Phase 2 dashboard nag banner is the surface** — a
+  frontend audit found no per-settlement status screen exists and the sibling tax-compliance gate is itself
+  banner-only (no per-settlement "blocked because…" UI), so a bespoke self-billing surface would be an
+  inconsistent one-off. `SelfBillingAgreementBanner` copy sharpened so the out-of-force states (None/Expired)
+  state explicitly that completed gigs can't be invoiced or paid out until the supplier signs/renews, linking
+  to the grant/renew affordance.
+- [x] Tick the roadmap **in this commit**: [`LAUNCH_ROADMAP.md`](./LAUNCH_ROADMAP.md) 🟡 "Self-billed VAT
+  invoice engine" line → ✅ (invoice engine now complete: generation + agreement + renewal + fail-closed gate),
+  and the §7 "Definition of launch-ready" self-billed-invoice checklist line. The roadmap is never deleted.
+- [x] **Verification gate:** `dotnet build api/Concertable.slnx` green; Concert unit + integration green:
   settlement with no agreement → `DeferredPendingSelfBillingAgreement`, no invoice minted, reason
   surfaced; after a grant, the next sweep issues the invoice; gap-free per-supplier numbering preserved
   across the deferral; the invoice legend now always corresponds to an in-force agreement. **Final phase:

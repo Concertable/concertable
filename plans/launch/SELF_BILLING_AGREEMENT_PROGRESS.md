@@ -6,12 +6,31 @@
 - PR: not opened
 - Dependency/package gates: none yet. Phase 3 touches `api/**`, so on merge a
   `chore/platform-sync-*` PR will fire and must be owned to green before close-out.
-- Last reconciled: 2026-08-04 — Phase 2 (supplier-facing grant/renew surface) built + committed
-  (`6ee5cd3d2` backend; SPA to follow). Backend verified green; SPA build gate in progress.
+- Last reconciled: 2026-08-05 — **Phase 3 backend enforcement built, verified green, and committed**
+  (`588da60e9`). Remaining Phase 3: supplier-facing deferred surface + roadmap tick, then PR/merge/platform-sync.
 
 ## Current state
 
-**Phase 2 backend COMPLETE and verified green** (`6ee5cd3d2`); SPA in progress. **Phase 1 done** earlier
+**Phase 3 backend enforcement COMPLETE, verified green, committed** (`588da60e9`, unpushed): `FinishExecutor`
+now calls `ISelfBillingAgreementGate.HasCurrentAsync(supplierTenantId, now)` after the tax gate; no current
+agreement → new `SettlementOutcome.DeferredPendingSelfBillingAgreement`, mints no invoice, logs the reason
+(`SettlementDeferredPendingSelfBillingAgreement`); the hourly sweep self-heals and no per-supplier sequence
+number is consumed across the deferral. The minimal test seed grants no agreements (Phase 2 endpoint tests need
+None-start), so `FinishConcertAsync` now ensures the concert's supplier holds a current agreement — keeping every
+existing settlement/invoice test green; new `ConcertSelfBillingGateApiTests` drives finish **inline** (no grant)
+to cover defer+no-invoice (artist & venue suppliers) and self-heal-after-grant with gap-free first number
+(`INV-SEED000001-000001`). No model change → no migration. Verified: full `api/Concertable.slnx` builds; Concert
+unit **79/79** + integration **144/144** (+3) + Workers unit **4/4** green.
+
+**Phase 3 surface + roadmap tick DONE** (pending commit): a frontend audit found **no per-settlement status
+screen exists** and the sibling tax-compliance gate is itself **banner-only** (no per-settlement "blocked
+because…" UI anywhere), so building a bespoke self-billing surface would be an inconsistent one-off. Decision
+(confirmed with Tommy): **the shipped Phase 2 `SelfBillingAgreementBanner` is the deferred surface.** Its copy
+was sharpened so the out-of-force states (None/Expired) state explicitly that completed gigs can't be invoiced
+or paid out until the supplier signs/renews (Active-but-expiring stays a softer warning). `LAUNCH_ROADMAP.md`
+line 25 🟡 → ✅ and §7 launch-ready line 188 refreshed; plan §6 Phase 3 boxes ticked. All four web builds green.
+
+**Phase 2 backend COMPLETE and verified green** (`6ee5cd3d2`); SPA committed (`b3b9b05fa`). **Phase 1 done** earlier
 (`9d968b51d`, `1a50145b4`, `83609e015`).
 
 Phase 2 backend (`6ee5cd3d2`): `SelfBillingAgreementController` (`GET` status, `POST` grant/renew, `GET pdf`)
@@ -61,21 +80,19 @@ alternative (Tenant module) and its cost are recorded in the plan §3.
 
 ## Next Steps
 
-**Phase 2 is COMPLETE, verified, and committed** — backend `6ee5cd3d2` + SPA `b3b9b05fa` on
-`Feature/SelfBillingAgreement`; `api/Concertable.slnx` builds; Concert unit 79/79 + integration 141/141 green;
-all four web builds green; plan §6 Phase 2 boxes ticked. **Nothing is pushed** (branch has no PR yet) — awaiting
-Tommy's go to push / open a PR.
+**Phase 3 is COMPLETE and verified locally** — backend enforcement (`588da60e9`) + surface/roadmap commit (see
+Current state). All Phase 3 plan boxes ticked. Verified green: full `api/Concertable.slnx` build; Concert unit
+79/79 + integration 144/144 + Workers unit 4/4; all four web builds.
 
-Then **Phase 3 — Fail-closed enforcement + roadmap tick** (plan §6, final phase) — start only on Tommy's word:
-in `FinishExecutor`, after the tax-compliance gate and using the already-resolved `supplierTenantId`, call
-`ISelfBillingAgreementGate.HasCurrentAsync`; if not in force → new `SettlementOutcome.DeferredPendingSelfBillingAgreement`,
-mint no invoice, surface the reason (mirror `DeferredPendingTaxCompliance`); the hourly sweep self-heals after a
-grant, and the per-supplier sequence number is only consumed on a committed invoice. Add the supplier-facing
-deferred surface on the settlement/payout screen. Tick `LAUNCH_ROADMAP.md` 🟡 self-billed-invoice line → ✅ +
-the §7 launch-ready checklist line, **in that commit**. Phase 3 gate: `api/Concertable.slnx` builds; Concert unit
-+ integration green (no-agreement → deferred, no invoice; post-grant sweep issues it; gap-free numbering
-preserved). **Final phase → merge-queue full E2E tier (not skip-eligible).** On merge, own the
-`chore/platform-sync-*` PR to green, then delete plan + ledger together in the close-out change.
+**Immediate next action — on Tommy's go to push:** open the PR for `Feature/SelfBillingAgreement` (plain
+`gh pr create`, personal repo — no AB#/assignee). **Merge-queue full E2E tier — NOT skip-eligible** (Phase 3
+changes settlement behaviour + adds a user-facing compliance flow across both SPAs); ensure no stale skip label.
+Before enabling auto-merge, update the branch to current `origin/main` and rebuild green. On merge, **own the
+`chore/platform-sync-*` PR to green** (Phase 3 touches `api/**`). Then **delete plan + ledger together** in the
+close-out change (git history is the archive).
+
+**Nothing is pushed yet** — the branch has no PR and is ~20 commits ahead of `origin/main`. Do not push without
+Tommy's explicit go.
 
 Env note: the unrelated in-flight Deal `Dunet` NU1010 break + `Checkout.cs` move remain stashed
 (`git stash list` → `stash@{0}`); pop them back when appropriate.
@@ -84,7 +101,9 @@ Env note: the unrelated in-flight Deal `Dunet` NU1010 break + `Checkout.cs` move
 
 - **Phase 1** — agreement domain + persistence + gate (dormant): `9d968b51d`, `1a50145b4`, `83609e015`.
 - **Phase 2 backend** — supplier grant/renew endpoints + HATEOAS affordance + dev/E2E seeder grant: `6ee5cd3d2`.
-- **Phase 2 SPA** — grant/renew page, download mutation, dashboard nag, per-app routes: pending commit (build gate).
+- **Phase 2 SPA** — grant/renew page, download mutation, dashboard nag, per-app routes: `b3b9b05fa`.
+- **Phase 3 backend** — fail-closed self-billing gate in `FinishExecutor` + deferred outcome/log + gate tests: `588da60e9`.
+- **Phase 3 surface + roadmap** — banner copy sharpened as the deferred surface; `LAUNCH_ROADMAP.md` self-billed line ✅: this commit.
 
 ## Verification
 
@@ -94,7 +113,11 @@ Env note: the unrelated in-flight Deal `Dunet` NU1010 break + `Checkout.cs` move
   supplier e-signature → Active; grant 400 without consent (no row); both artist & venue grant; renew before
   expiry (nearing → renew affordance, appends a 2nd acceptance); renew after expiry (Expired→Active flip);
   own PDF download (`%PDF`); 404 for a tenant with no agreement.
-- **Phase 2 SPA:** four web builds (`customer`/`venue`/`artist`/`business`) — gate in progress.
+- **Phase 2 SPA:** four web builds (`customer`/`venue`/`artist`/`business`) green.
+- **Phase 3 backend (`588da60e9`):** full `api/Concertable.slnx` builds; Concert unit **79/79** + integration
+  **144/144** (+3 `ConcertSelfBillingGateApiTests`: defer+no-invoice for artist & venue suppliers; self-heal
+  after grant with gap-free `INV-SEED000001-000001`) + Workers unit **4/4** green. No model change → no migration.
+- **Phase 3 surface:** all four web builds green after the banner copy change.
 
 Per-phase gates in plan §6; model-changing phases re-scaffold via `./initial-migrations.ps1`; Phase 3 (final)
 uses the merge-queue full E2E tier (not skip-eligible).
@@ -141,6 +164,20 @@ None yet.
   so the self-billing page shows the self-billing clause honestly instead of contract copy.
 
 ## Event log
+
+### 2026-08-05 — Phase 3 backend enforcement built + committed (`588da60e9`)
+
+- Action: On Tommy's word, started Phase 3. Synced `origin/main` (5 behind → merged clean). Added
+  `SettlementOutcome.DeferredPendingSelfBillingAgreement` + `SettlementDeferredPendingSelfBillingAgreement` log;
+  wired `ISelfBillingAgreementGate.HasCurrentAsync` into `FinishExecutor` after the tax gate. Key integration
+  decision: the minimal test seed grants no agreements (Phase 2 endpoint tests need None-start), so extended
+  `FinishConcertAsync` to ensure the supplier holds a current agreement (keeps all existing settlement/invoice
+  tests green) and drove the new gate tests' finish **inline** to exercise the deferred path.
+- Evidence: `588da60e9` (6 files). Full `api/Concertable.slnx` builds; Concert unit 79/79 + integration 144/144
+  (+3 new: `ConcertSelfBillingGateApiTests`) + Workers unit 4/4 green. No model change → no migration.
+- Outcome: settlement is now fail-closed on a current self-billing agreement; deferral mints no invoice, burns no
+  sequence number, and self-heals on grant. Dormant→enforced.
+- Follow-up: supplier-facing deferred surface + roadmap tick (same commit); then PR / full-E2E merge / platform-sync.
 
 ### 2026-08-04 — Phase 2 built (backend committed, SPA pending)
 
