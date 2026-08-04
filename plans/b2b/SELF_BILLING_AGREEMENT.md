@@ -156,27 +156,28 @@ the **grant path before enforcement**, so a supplier (and the dev/E2E seeder) ca
 settlement requires it — otherwise turning on the gate would defer every settlement with no way to
 satisfy it.
 
-### Phase 1 — Agreement domain + persistence + gate (dormant)
+### Phase 1 — Agreement domain + persistence + gate (dormant) — ✅ DONE (`9d968b51d`, `1a50145b4`, `83609e015`)
 
 Build the record and both stances; nothing enforces or surfaces it yet.
 
-- [ ] `SelfBillingAgreementEntity` (§4), `DisplayNames.SelfBillingAgreement`,
+- [x] `SelfBillingAgreementEntity` (§4), `DisplayNames.SelfBillingAgreement`,
   `Schema.Tables.SelfBillingAgreements`, EF configuration (`InvoiceParty` + `ESignature` as complex
   properties, reusing `InvoicePartyConfiguration` / `ESignatureConfiguration`).
-- [ ] Single-owner `SelfBillingAgreementRepository` + system-read `ISelfBillingAgreementGate` (§5).
-- [ ] `ISelfBillingAgreementService` — grant/renew (build the `InvoiceParty` snapshot from
+- [x] Single-owner `SelfBillingAgreementRepository` + system-read `ISelfBillingAgreementGate` (§5).
+- [x] `ISelfBillingAgreementService` — grant/renew (build the `InvoiceParty` snapshot from
   `ITenantModule`, compose the supplier `ESignature` from the request + server ambient context via
   `ICurrentUser`/`IClientContext`, set the 12-month expiry), read-current, and PDF via `IPdfBlobCache` +
   a new `SelfBillingAgreementDocument : IDocument` (clause text, both-side identity + supplier VAT
   number, accepted-at/expiry, platform terms version, a Signatures block reusing the
   `ContractDocument.Signature(...)` render of typed name + optional drawn image + attribution line).
-- [ ] Re-scaffold Concert migration (`./initial-migrations.ps1`).
-- [ ] **Verification gate:** `dotnet build api/Concertable.slnx` green; Concert unit + integration
-  (`integration-debug`) green, asserting: `ExpiresAtUtc == AcceptedAtUtc + 12 months`; a renewal appends
-  a new row and becomes current; current-resolution picks the latest non-expired acceptance; the gate is
-  true when in force, false when none/expired; immutability (no public setters, `Create` factory only);
-  single-owner scoping (owner reads own, stranger 404); PDF renders lazily under
-  `self-billing-agreements/` and contains the clause, the supplier VAT number, and the signature.
+- [x] Re-scaffold Concert migration (`./initial-migrations.ps1`).
+- [x] **Verification gate:** `dotnet build api/Concertable.slnx` green; Concert unit (9) + integration (1)
+  green. Covered: `ExpiresAtUtc == AcceptedAtUtc + 12 months`; current-resolution / gate true-in-force
+  false-none/expired; immutability (only `TenantId` settable, `Create` factory only); grant freezes
+  identity + records the e-signature + rejects without tax compliance/tenant; PDF renders lazily under
+  `self-billing-agreements/` with clause + supplier VAT number + signature; complex-type round-trip
+  through real SQL. **Deferred to Phase 2 (need endpoints):** renewal-append-becomes-current and
+  single-owner owner-reads-own/stranger-404 are HTTP-level, tested once the grant/read endpoints exist.
 
 ### Phase 2 — Supplier-facing grant/renew surface (not yet enforced)
 

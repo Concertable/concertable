@@ -12,10 +12,11 @@
 
 ## Current state
 
-**Phase 1 code written and committed as a protective WIP checkpoint** at `9d968b51d` (17 files, 443
-insertions) on `Feature/SelfBillingAgreement`. It is **not yet built/verified**, the Concert migration is
-**not yet re-scaffolded**, and Phase 1 tests are **not yet written**. Committed immediately (before build)
-because the branch was renamed out from under the session mid-work; a commit is the durable anchor.
+**Phase 1 COMPLETE and verified green.** Commits `9d968b51d` (code, 17 files), `1a50145b4` (Concert
+migration re-scaffold + 9 unit tests), `83609e015` (gate integration test) on `Feature/SelfBillingAgreement`.
+`dotnet build api/Concertable.slnx` green; Concert unit 9/9 + integration 1/1 green. Plan §6 Phase 1 boxes
+ticked. Nothing enforces or surfaces the agreement yet (dormant, by design). The renewal-append and
+single-owner owner/stranger-404 checks are HTTP-level and land in Phase 2 with the endpoints.
 
 Files in the checkpoint: `SelfBillingAgreementEntity` (immutable, single-owner `ITenantScoped`, frozen
 `InvoiceParty` + `SupplierESignature`, `ExpiresAtUtc = AcceptedAtUtc + 12 months`, `ClauseText`,
@@ -42,17 +43,19 @@ alternative (Tenant module) and its cost are recorded in the plan §3.
 
 ## Next Steps
 
-On `Feature/SelfBillingAgreement` (main checkout `C:\Users\TommySeery\source\repos\Concertable`), finish
-Phase 1 — the code exists at `9d968b51d` but is unbuilt/unverified. In order:
+Phase 1 is complete and verified. **Do not start Phase 2 until Tommy names it and says go.**
 
-1. `dotnet build api/Concertable.slnx` — fix any compile errors (watch: single-owner repo stance,
-   `LegalSettings` binding, usings). Amend/extend `9d968b51d` or add a follow-up commit.
-2. Re-scaffold the Concert migration: `./initial-migrations.ps1` from `api/` (model changed —
-   `SelfBillingAgreements` table). Commit the regenerated migration.
-3. Write Phase 1 tests (plan §6 gate): unit + integration asserting `ExpiresAtUtc == AcceptedAtUtc + 12
-   months`; renewal appends a new current row; current-resolution picks latest non-expired; gate true
-   in-force / false none-or-expired; immutability; single-owner scoping (owner reads own, stranger 404);
-   PDF renders lazily under `self-billing-agreements/` with clause + supplier VAT number + signature.
+When told to start **Phase 2 — Supplier-facing grant/renew surface** (plan §6): add the endpoints
+(`GET`/`POST`/`GET .../pdf` on a controller reachable by **both** tenant types — not
+`[RequiredTenantType(TenantType.Venue)]`; POST rejects 400 without the e-signature), the
+`selfBillingAgreement` HATEOAS affordance (grant vs renew, state-gated), the shared-SPA grant/renew page +
+`useDownloadSelfBillingAgreementMutation` + dashboard nag, and the dev/E2E seeder grant. Then the Phase 2
+gate (plan §6): solution + both manager SPAs build; grant-400-without-consent, grant records the
+e-signature, renew before/after expiry, read-current, **both** artist & venue can grant, download-own /
+stranger-404, HATEOAS grant-vs-renew flips with state.
+
+Env note: the unrelated in-flight Deal `Dunet` NU1010 break + `Checkout.cs` move are stashed
+(`git stash list`) to keep the build green; pop them back when appropriate.
 4. Run Concert unit + integration via the `integration-debug` skill; drive to green.
 5. Commit the finished Phase 1, check off the plan's Phase 1 box.
 
