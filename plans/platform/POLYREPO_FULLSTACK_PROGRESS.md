@@ -3,17 +3,17 @@
 - Plan: `plans/platform/POLYREPO_FULLSTACK_PLAN.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\FrontendBuildSeparation`
 - Branch: `Feature/FrontendBuildSeparation`
-- PR: review-fix PR [#319](https://github.com/Concertable/concertable/pull/319) open; Phase 1 PR [#301](https://github.com/Concertable/concertable/pull/301) merged
-- Dependency/package gates: `@concertable/shared@0.1.0-alpha.0.2129` is published and restorable; Phase 2 must not start until the review-fix PR lands
-- Last reconciled: 2026-08-03 after verified latest-main work-head push to PR #319
+- PR: review-fix PR [#319](https://github.com/Concertable/concertable/pull/319) **merged** (`5a84756de`, 2026-08-03); Phase 1 PR [#301](https://github.com/Concertable/concertable/pull/301) merged
+- Dependency/package gates: `@concertable/shared@0.1.0-alpha.0.2129` is published and restorable; Phase 2 is now unblocked (review-fix PR #319 has landed). #319 touched only CI/docs (no `api/**`), so no platform-sync PR was triggered
+- Last reconciled: 2026-08-04 after verifying PR #319 merged into `origin/main`
 
 ## Current state
 
-Phases 0 and 1 are on `main` through PR #301. The existing local feature branch carried two later Phase 1 review-fix commits, `f57a4c504` and `0e3d8f5a6`, after its remote branch was deleted. `origin/main` at `92ee8483c` was merged into this fresh isolated worktree as `ffc7f7339`; a later platform-sync advance to `d0fa851fa` was merged as work head `1ba1bb1f0`. The conflict was resolved by preserving main's resume-plan/progress-ledger and worktree-identity rules while retaining the compatible E2E and review-policy changes. PR #319 is open with `full-e2e`; after fetch, the local, remote, and PR heads were all verified at `1ba1bb1f0e684c533ad3cecb7b7bc83ccdef3ca3`.
+Phases 0 and 1 are on `main` through PR #301, and the Phase 1 review fixes are on `main` through PR #319, merged as `5a84756de` on 2026-08-03. `f57a4c504` is verified an ancestor of `origin/main`. The remote `Feature/FrontendBuildSeparation` branch was deleted on merge; the local worktree tip `ec7751f77` is an orphaned merge commit, now behind `origin/main` and no longer authoritative. No open platform-sync PR exists. Phase 1 (with review fixes) is fully terminal; Phase 2 is unblocked.
 
 ## Exact next action
 
-Run `/code-review` for PR #319 against current `origin/main`. If the review is clear and required head checks pass, hand off `/merge`; Phase 2 remains blocked until PR #319 lands.
+Start **Phase 2** — publish the remaining shared tiers (`web/shared`, `mobile/shared`, `web/b2b/shared`, `@concertable/customer/shared/*`) and cut consumers over from path-alias to package imports. Create a fresh isolated worktree/branch from current `origin/main` (the old `Feature/FrontendBuildSeparation` branch is merged/deleted and orphaned — do not reuse it). Follow Phase 2 in the plan and its grep-clean gate.
 
 ## Completed work
 
@@ -92,3 +92,10 @@ Run `/code-review` for PR #319 against current `origin/main`. If the review is c
 - Evidence: starting remote and PR head `db92ad7f47e484c2909185db09245dc2337064ed`; pushed work head `1ba1bb1f0e684c533ad3cecb7b7bc83ccdef3ca3`; after fetch, local `HEAD`, `origin/Feature/FrontendBuildSeparation`, and PR `headRefOid` all equalled `1ba1bb1f0`; PR label remained `full-e2e`; `HEAD..origin/main` count was zero.
 - Outcome: PR #319 is current with the observed base and contains only the intended review fixes plus this ledger.
 - Follow-up: Review PR #319, then merge it only after review and required checks are green; Phase 2 waits for the merge.
+
+### 2026-08-04 — PR #319 confirmed merged; Phase 2 unblocked
+
+- Action: Resumed to review/merge PR #319; found it already merged and reconciled the ledger to the terminal state.
+- Evidence: `gh pr view 319` reports `state MERGED`, merge commit `5a84756de` at 2026-08-03T15:42Z; `git merge-base --is-ancestor 1152ee7cb origin/main` and `f57a4c504 origin/main` both pass; all five PR files (`.github/workflows/test.yml`, `AGENTS.md`, `plans/AGENTS.md`, `plans/POLYREPO_FULLSTACK_PROGRESS.md`, `reviews/AGENTS.md`) landed; `git ls-remote origin Feature/FrontendBuildSeparation` empty (branch deleted); no open `chore/platform-sync-*` PR.
+- Outcome: Phase 1 including its review fixes is fully terminal on `main`. The worktree tip `ec7751f77` is orphaned and behind main. Phase 2 is unblocked.
+- Follow-up: Begin Phase 2 from a fresh worktree/branch off current `origin/main`.
