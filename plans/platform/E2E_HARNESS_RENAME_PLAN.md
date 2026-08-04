@@ -3,7 +3,7 @@
 > Cosmetic-but-cross-cutting rename of a shared **test harness** project. Not boundary-blocked (test
 > projects aren't published packages — everything references it by ProjectReference), so it's a single
 > PR, but it touches many files. Do it on a `Refactor/E2EHarnessRename` branch off main, after
-> `Feature/BookingAgreement` lands. Sits alongside `plans/PDF_RENDERER_RENAME.md` / `plans/b2b/DEAL_RENAME.md`.
+> `Feature/BookingAgreement` lands.
 
 ## Why
 
@@ -60,4 +60,4 @@ a harness.)
 - The E2E **suites** (`Concertable.B2B.E2ETests`, `Concertable.Customer.E2ETests`, `.Ui`) — they hold
   real tests, their names are correct.
 - `Concertable.Kernel.UnitTests` — correctly named suite.
-- The fast-forward scenario cleanup — separate plan (`plans/E2E_FAST_FORWARD_REFACTOR.md`).
+- The fast-forward scenario cleanup — separate plan (`plans/platform/E2E_FAST_FORWARD_REFACTOR_PLAN.md`).

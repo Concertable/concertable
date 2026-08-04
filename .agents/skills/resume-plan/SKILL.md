@@ -15,7 +15,7 @@ and doing what it says — not reconstructing it.
 1. **Resolve the ledger and its worktree.** `/resume-plan` takes a `_PROGRESS.md` ledger, a plan `.md`,
    or a worktree:
    - **a ledger** (`/resume-plan @plans/<X>_PROGRESS.md`) → read its `Worktree` header.
-   - **a plan** (`/resume-plan @plans/<X>.md`) → find every `plans/**/*_PROGRESS.md` whose `- Plan:`
+   - **a plan** (`/resume-plan @plans/<X>_PLAN.md`) → find every `plans/**/*_PROGRESS.md` whose `- Plan:`
      header names that plan. One → use it. Several (a plan worked in parallel worktrees) → list each
      with its worktree/branch and a one-line `## Next Steps` gist and ask which to resume — **unless the
      invocation also named a worktree**, then pick that one directly.

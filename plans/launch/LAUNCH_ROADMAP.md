@@ -4,7 +4,7 @@
 >
 > **Goal:** Production launch of the B2B platform (venue↔artist booking + automated settlement) by **November 2026**.
 >
-> **Companion docs:** [LAUNCH_CHECKLIST.md](LAUNCH_CHECKLIST.md), [USER_MODEL_PLAN.md](USER_MODEL_PLAN.md), [MARKETPLACE_PLAN.md](../customer/MARKETPLACE_PLAN.md), [../../api/Concertable.B2B/src/Modules/Deal/LEGAL_REQUIREMENTS.md](../../api/Concertable.B2B/src/Modules/Deal/LEGAL_REQUIREMENTS.md).
+> **Companion docs:** [LAUNCH_CHECKLIST.md](LAUNCH_CHECKLIST.md), [USER_MODEL_PLAN.md](../b2b/USER_MODEL_PLAN.md), [MARKETPLACE_PLAN.md](../marketplace/MARKETPLACE_PLAN.md), [../../api/Concertable.B2B/src/Modules/Deal/LEGAL_REQUIREMENTS.md](../../api/Concertable.B2B/src/Modules/Deal/LEGAL_REQUIREMENTS.md).
 
 ---
 
@@ -13,7 +13,7 @@
 **Shipped — verified in code, don't rebuild:** Tenant model + membership + 6-role RBAC · payout re-keyed to `TenantId` · Stripe Connect Express with both money flows (escrow `OnBehalfOf` for FlatFee/VenueHire; `TransferData.Destination` for DoorSplit/Versus) · temporary Payment-owned £10 platform fee on all four settlement types · append-only balanced Payment ledger · artist↔venue messaging · settlement for all four contract types · the 3% PRS skim is correctly absent.
 
 **Decisions locked (see §9 / decision log):**
-- [x] Revenue model — **resolved for launch 2026-07-30: one Payment-owned percentage of the final B2B-calculated deal gross.** The payer pays gross plus commission and the payee receives gross. B2B owns four deal-gross strategies; Payment owns one deal-agnostic commission calculation. The shipped £10 fee is temporary and must be removed before launch. See [PLATFORM_COMMISSION.md](PLATFORM_COMMISSION.md) and the decision log.
+- [x] Revenue model — **resolved for launch 2026-07-30: one Payment-owned percentage of the final B2B-calculated deal gross.** The payer pays gross plus commission and the payee receives gross. B2B owns four deal-gross strategies; Payment owns one deal-agnostic commission calculation. The shipped £10 fee is temporary and must be removed before launch. See [PLATFORM_COMMISSION_PLAN.md](PLATFORM_COMMISSION_PLAN.md) and the decision log.
 - [x] DoorSplit/Versus revenue source — **resolved: manual door-takings entry + charge-the-venue** for v1 (external-ticketer import ruled out — §9). All four contract types ship in the pure-B2B MVP, no marketplace dependency. See §9 / R9.
 
 **Build — MVP blockers, in priority order:**
@@ -26,8 +26,8 @@
 - [ ] 🟡 **`holdsMusicLicence` attestation** on `Tenant.Compliance` (~0.5 day; the venue's responsibility, we just record it).
 - [x] ✅ **Swim-lane B complete** — membership/invitation endpoints + auth sweep + messaging group-inbox (USER_MODEL_PLAN Phases 6-8, all shipped; plan deleted). **Phase 6** (`Feature/TenantInvitationsFrontend`): invitation endpoints + last-Owner invariants + provisioning invitation-first branch + member-management UI + tenant switcher + UI E2E. **Phase 8** (`Feature/MessagingGroupInbox` + `Feature/MessagingGroupInboxPhase2`): tenant-owned conversations, per-member read pointer, member SignalR + email fan-out, org-identity/member-attribution DTO + group-inbox SPA, new Conversations unit/integration + UI E2E. **Phase 7** (`Feature/RetireRoleClaim`): retired the flat `Role` enum, manager-profile tables, and the `role` token claim — B2B tokens are identity-only; `/me` collapsed to one membership-shaped DTO; guards/persona derive from tenant memberships.
 - [x] ✅ **Per-contract-type VAT calculation** — shipped (`Feature/VatAndSelfBilledInvoicing`): inclusive-gross decomposition branching on supply direction + supplier VAT-registration status, in the Tenant tax area, consumed by Concert via `ITenantModule` (items 1, 3).
-- [ ] 🟠 **Percentage commission + B2B pricing transparency** — Payment Phase 1 is implemented and verified: immutable percentage revisions, Payment-issued authorizations, authorization-aware money RPCs, and durable transaction/refund/tax/ledger facts. Merge, package publication, Payment runtime deployment and platform sync remain the hard gate before B2B adds the four gross strategies and payer disclosure in Phase 2; the temporary £10 seam is removed only in Phase 3. See [PLATFORM_COMMISSION.md](PLATFORM_COMMISSION.md).
-- [ ] 🔴 **Production deployment + config/secrets** — the app has **no** deployment path, config store, or secret store (all local Aspire + emulators; secrets committed to source, incl. a plaintext Azure SQL password). Surfaced 2026-07-17. Hard launch gate. Plan: [../CONFIG_AND_DEPLOYMENT.md](../CONFIG_AND_DEPLOYMENT.md).
+- [ ] 🟠 **Percentage commission + B2B pricing transparency** — Payment Phase 1 is implemented and verified: immutable percentage revisions, Payment-issued authorizations, authorization-aware money RPCs, and durable transaction/refund/tax/ledger facts. Merge, package publication, Payment runtime deployment and platform sync remain the hard gate before B2B adds the four gross strategies and payer disclosure in Phase 2; the temporary £10 seam is removed only in Phase 3. See [PLATFORM_COMMISSION_PLAN.md](PLATFORM_COMMISSION_PLAN.md).
+- [ ] 🔴 **Production deployment + config/secrets** — the app has **no** deployment path, config store, or secret store (all local Aspire + emulators; secrets committed to source, incl. a plaintext Azure SQL password). Surfaced 2026-07-17. Hard launch gate. Plan: [../CONFIG_AND_DEPLOYMENT_PLAN.md](../platform/CONFIG_AND_DEPLOYMENT_PLAN.md).
 
 **Verify before trusting — competitor table-stakes, not confirmed in code:** reviews/reputation end-to-end · calendar sync (Google/Apple/Outlook) · financial/settlement CSV export.
 
@@ -52,7 +52,7 @@ The legal/business track is [LAUNCH_CHECKLIST.md](LAUNCH_CHECKLIST.md); the hard
 **DoorSplit/Versus revenue source — resolved (2026-06-22):** these two settle against door/ticket revenue, which standalone B2B (no marketplace) has no automatic feed for. The confirmed v1 feed is **manual door-take entry + charge-the-venue**: the venue enters the door take at settlement, Concertable charges the venue for the artist's share (+ our fee) and pays the artist through Stripe Connect — identical to FlatFee escrow. So **all four contract types ship in the pure-B2B MVP** with no marketplace dependency. The own checkout (deferred) only *upgrades* DoorSplit/Versus later (verified number instead of self-reported, no venue credit risk). See §9.
 
 **Out of scope for v1 (planned, not abandoned):**
-- Customer-facing ticket marketplace — see [MARKETPLACE_PLAN.md](../customer/MARKETPLACE_PLAN.md). Designed to be additive; switch-on planned Q1 2027 or later once B2B has traction.
+- Customer-facing ticket marketplace — see [MARKETPLACE_PLAN.md](../marketplace/MARKETPLACE_PLAN.md). Designed to be additive; switch-on planned Q1 2027 or later once B2B has traction.
 - Mobile app distribution to App Store / Play Store
 - Native push notifications
 - Multi-currency / international expansion
@@ -73,9 +73,9 @@ Company registration, ICO, T&Cs, insurance, accounting, HMRC platform-operator r
 
 ### Swim-lane B — Architecture
 **Owner:** you (or contractor dev)
-**Detail:** [USER_MODEL_PLAN.md](USER_MODEL_PLAN.md)
+**Detail:** [USER_MODEL_PLAN.md](../b2b/USER_MODEL_PLAN.md)
 
-The tenancy refactor — the load-bearing structural change that everything else attaches to, sequenced as the phases in the timeline below. The tenant-scoping foundation (Tenant module with a Guid PK, request-scoped tenant filtering, the compliance value object) has shipped; the outstanding work — multi-user membership, roles, and the authorization sweep — is tracked in [USER_MODEL_PLAN.md](USER_MODEL_PLAN.md).
+The tenancy refactor — the load-bearing structural change that everything else attaches to, sequenced as the phases in the timeline below. The tenant-scoping foundation (Tenant module with a Guid PK, request-scoped tenant filtering, the compliance value object) has shipped; the outstanding work — multi-user membership, roles, and the authorization sweep — is tracked in [USER_MODEL_PLAN.md](../b2b/USER_MODEL_PLAN.md).
 
 ### Swim-lane C — Compliance UI/UX + workflow polish
 **Owner:** you (or contractor dev)
@@ -217,7 +217,7 @@ Concrete checklist for Month 6. Don't launch without all of these green.
 
 The marketplace is **deliberately additive** — designed so it can be switched on later without major refactor of the B2B code paths.
 
-See [MARKETPLACE_PLAN.md](../customer/MARKETPLACE_PLAN.md) for the detail. Headline:
+See [MARKETPLACE_PLAN.md](../marketplace/MARKETPLACE_PLAN.md) for the detail. Headline:
 - Most of the marketplace infrastructure already exists (Customer SPA, Customer module, TicketEntity, ConcertEntity price/capacity fields).
 - Switch-on is primarily UI work (pricing transparency, refund UI, consumer-facing emails) + consumer-protection legal (separate customer T&Cs from solicitor + CMA secondary-ticketing review).
 - The B2B tenancy refactor doesn't change; settlement workflows don't change; Stripe Connect doesn't change.
@@ -230,7 +230,7 @@ See [MARKETPLACE_PLAN.md](../customer/MARKETPLACE_PLAN.md) for the detail. Headl
 We stay on the **monorepo** through launch and well beyond. What we have is already a *monorepo of
 independently-deployable services*, not a lazy monolith: package-clean service closures off the org
 feed, `EnforceServiceBoundary` + `carve-*` CI gates, standalone AppHosts, and six read-only mirror
-repos that already clone-and-build (see [../POLYREPO.md](../POLYREPO.md) and
+repos that already clone-and-build (see [../POLYREPO.md](../platform/POLYREPO.md) and
 [../../api/ARCHITECTURE.md](../../api/ARCHITECTURE.md)). The split to a **true polyrepo** (mirrors
 become the writable dev repos) is a **one-way door** — bias to cutting *late*, not on time.
 
@@ -266,8 +266,8 @@ remaining operational choices are not urgent yet.
 ## 10. Reference
 
 - [LAUNCH_CHECKLIST.md](LAUNCH_CHECKLIST.md) — full legal/business setup checklist
-- [USER_MODEL_PLAN.md](USER_MODEL_PLAN.md) — Swim-lane B detail: the outstanding multi-user tenant / roles / auth-sweep work
-- [MARKETPLACE_PLAN.md](../customer/MARKETPLACE_PLAN.md) — Phase 2 marketplace switch-on plan
+- [USER_MODEL_PLAN.md](../b2b/USER_MODEL_PLAN.md) — Swim-lane B detail: the outstanding multi-user tenant / roles / auth-sweep work
+- [MARKETPLACE_PLAN.md](../marketplace/MARKETPLACE_PLAN.md) — Phase 2 marketplace switch-on plan
 - [../../api/Concertable.B2B/src/Modules/Deal/LEGAL_REQUIREMENTS.md](../../api/Concertable.B2B/src/Modules/Deal/LEGAL_REQUIREMENTS.md) — B2B legal backlog (rewritten 2026-06-01: contract-type-centric, items 0-9, PRS corrected)
 - [../../api/Concertable.Customer/LEGAL_REQUIREMENTS.md](../../api/Concertable.Customer/LEGAL_REQUIREMENTS.md) — marketplace/fan legal leads (future, separate system)
 - [../../api/Concertable.B2B/src/Modules/Deal/ARCHITECTURE.md](../../api/Concertable.B2B/src/Modules/Deal/ARCHITECTURE.md) — deal + workflow architecture
@@ -276,7 +276,7 @@ remaining operational choices are not urgent yet.
 ## Decisions locked
 
 The settled calls that constrain the work above. Full rationale + dated history are in git
-(`git log -p plans/b2b/LAUNCH_ROADMAP.md`) — not duplicated here.
+(`git log -p plans/launch/LAUNCH_ROADMAP.md`) — not duplicated here.
 
 - **B2B-first.** The customer ticket marketplace is deferred and additive (§8), not a v1 dependency.
 - **All four contract types ship in v1.** DoorSplit/Versus settle via **manual door-take entry +
@@ -284,9 +284,9 @@ The settled calls that constrain the work above. Full rationale + dated history 
 - **Revenue model: one percentage of final deal gross.** B2B owns four deal-specific gross
   calculations; Payment owns the universal rate, binds it when the payer commits, charges commission
   on top of gross and records the retained amount in the ledger. No fixed/minimum/cap model remains
-  after the launch cut-over. [PLATFORM_COMMISSION.md](PLATFORM_COMMISSION.md)
+  after the launch cut-over. [PLATFORM_COMMISSION_PLAN.md](PLATFORM_COMMISSION_PLAN.md)
 - **Monetization principle:** the fee always rides the settlement transaction routed through our
   Stripe Connect — never invoice-only (else there's no transaction to take a cut from). §9
 - **Backend domain type is `Tenant`** (Guid PK, request-scoped filtering, compliance value object);
   **"Organization" is the user-facing UI/API label only.** Multi-user membership/roles/auth-sweep
-  are the outstanding Swim-lane B work — see [USER_MODEL_PLAN.md](USER_MODEL_PLAN.md).
+  are the outstanding Swim-lane B work — see [USER_MODEL_PLAN.md](../b2b/USER_MODEL_PLAN.md).

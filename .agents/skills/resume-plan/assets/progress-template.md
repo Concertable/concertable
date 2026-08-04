@@ -1,8 +1,8 @@
 # <Plan title> progress
 
-- Plan: `<repo-relative plan path>`
+- Plan: `<repo-relative plan path, plans/<epic>/<NAME>_PLAN.md>`
 - Worktree: `<absolute worktree path>`
-- Branch: `<Type/Name>`
+- Branch: `<Type/<epic>_<name>, matching the <NAME>_PROGRESS stem>`
 - PR: `<number and URL, or not opened>`
 - Dependency/package gates: `<state, or none>`
 - Last reconciled: `<date/time and evidence source>`
@@ -50,5 +50,5 @@ duplicated where they can drift. Keep it verbatim in this fenced block:>
 
 ```
 cd <absolute worktree path>
-Read @plans/<PLAN>.md and @plans/<PLAN>_PROGRESS.md, then do what the ledger's `## Next Steps` says.
+Read @plans/<PLAN>_PLAN.md and @plans/<PLAN>_PROGRESS.md, then do what the ledger's `## Next Steps` says.
 ```
