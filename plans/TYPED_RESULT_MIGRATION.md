@@ -1,10 +1,11 @@
 # Concertable-owned Result and Option migration
 
-> **Status:** Phase 1's revised no-value Result design was completed and verified on 2026-08-01.
+**Payment Phase 2 next steps live in @plans/TYPED_RESULT_MIGRATION_PAYMENT_PROGRESS.md → `## Next Steps`.**
+
+> **Status:** Phase 1's revised no-value Result design merged, published, and platform-synced green.
 > Non-generic `Result`, `Result<TValue>`, `UnitResult<TError>`, and accumulating `ValidationErrors` now replace `Unit` and
 > every `Result<Unit,TError>` API from the initial implementation.
-> Phase 2 remains blocked until the revised branch merges, the Kernel package publishes, and its
-> generated platform-sync PR lands green.
+> Phase 2's Payment owned-result expansion is in progress on `Feature/PaymentOwnedResultExpansion`.
 >
 > **Decision:** Concertable owns string-error `Result` and `Result<TValue>`, typed-error
 > `UnitResult<TError>` and `Result<TValue, TError>`, and `Option<T>` in `Concertable.Kernel`. They are stable domain vocabulary,
