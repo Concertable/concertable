@@ -3,9 +3,9 @@
 - Plan: `plans/typed-result/SEARCH_CONTRACTS_PLAN.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_search-contracts`
 - Branch: `Feature/typed-result_search-contracts`
-- PR: not opened
+- PR: #380 — https://github.com/Concertable/concertable/pull/380 — OPEN at verified head `d242b376001c26223109b795d756792ddf85ca39`
 - Dependency/package gates: owned Kernel foundation PR #290 and platform sync PR #291 merged; current platform sync PR #373 merged and Search consumes `ConcertablePlatformVersion` `0.1.0-alpha.0.814`; no Payment, B2B, or Customer migration dependency; no open platform-sync PR
-- Last reconciled: 2026-08-05 19:53 BST against fetched `origin/main` commit `6f825b3ee01351f0b5cb1ffc8d0beb760265dce8`, verified remote branch `origin/Feature/typed-result_search-contracts`, local git/worktree inventory, GitHub PR state, full review artifact `reviews/Feature-typed-result_search-contracts.md`, Phase 2 commit `657846883`, and the committed standalone carve
+- Last reconciled: 2026-08-05 19:55 BST against fetched `origin/main` commit `6f825b3ee01351f0b5cb1ffc8d0beb760265dce8`, verified remote branch `origin/Feature/typed-result_search-contracts`, GitHub PR #380, full review artifact `reviews/Feature-typed-result_search-contracts.md`, Phase 2 commit `657846883`, and the committed standalone carve
 
 ## Current state
 
@@ -21,8 +21,9 @@ The upstream changes were limited to `.github/workflows/platform-sync-alert.yml`
 documentation, so no Search code, contract, package, or verification input changed and the completed
 Search gates remain applicable.
 
-The reconciled work head `eee43a0fcc70a9fe838edf695195a271e87aa2d5` is pushed and verified equal
-to `origin/Feature/typed-result_search-contracts`. No PR existed after that work-head push.
+The reconciled work head `eee43a0fcc70a9fe838edf695195a271e87aa2d5` and ledger transport checkpoint
+`d242b376001c26223109b795d756792ddf85ca39` are pushed and verified. PR #380 is open against `main`
+at that exact checkpoint head. Its initial `BLOCKED` merge state is the expected pre-check state.
 
 The autocomplete and header repository, service, and dispatcher chains now declare materialized
 `IReadOnlyList<T>` results throughout. All existing query bodies, `ToListAsync()` terminals, ordering,
@@ -31,10 +32,10 @@ contracts, exception semantics, package boundaries, and shared Kernel contracts 
 
 ## Next Steps
 
-1. Commit and push this ledger-only checkpoint as the transport leg, then verify local and remote heads.
-2. Open the GitHub PR and record its number, URL, and verified head in this ledger.
-3. Do not run duplicate local E2E; hand the open PR to `/merge` for the final E2E-tier decision,
-   queue, merge, and generated platform-sync gate.
+Run `/merge` for PR #380. It must refresh currency, select the final merge-queue E2E tier from the
+complete diff, enqueue and monitor the exact verified PR head, then follow the generated
+`chore/platform-sync-*` PR to terminal green. Do not push the local ledger-only observation
+checkpoint created after PR opening and do not run duplicate local E2E before the queue.
 
 ## Completed work
 
@@ -57,6 +58,8 @@ contracts, exception semantics, package boundaries, and shared Kernel contracts 
   with no findings.
 - Pushed reconciled work head `eee43a0fcc70a9fe838edf695195a271e87aa2d5` to
   `origin/Feature/typed-result_search-contracts` and verified exact remote equality.
+- Pushed ledger transport checkpoint `d242b376001c26223109b795d756792ddf85ca39`, verified local and
+  remote-tracking equality, and opened GitHub PR #380 at that exact head.
 
 ## Verification
 
@@ -115,6 +118,10 @@ contracts, exception semantics, package boundaries, and shared Kernel contracts 
   `6f825b3ee01351f0b5cb1ffc8d0beb760265dce8..eee43a0fcc70a9fe838edf695195a271e87aa2d5`,
   fetched it, and verified local HEAD and the remote-tracking ref both equal
   `eee43a0fcc70a9fe838edf695195a271e87aa2d5`; no PR existed yet.
+- Plan-managed checkpoint transport: pushed `d242b376001c26223109b795d756792ddf85ca39`,
+  fetched the branch, and verified local HEAD and the remote-tracking ref equal that commit.
+- GitHub PR #380: OPEN against `main` at verified head
+  `d242b376001c26223109b795d756792ddf85ca39`; initial merge state `BLOCKED`.
 
 ## Reviews
 
@@ -272,6 +279,16 @@ contracts, exception semantics, package boundaries, and shared Kernel contracts 
   no PR for the branch.
 - Outcome: the work-head leg of the plan-managed push is verified.
 - Follow-up: transport this ledger-only checkpoint, verify final equality, and open the GitHub PR.
+
+### 2026-08-05 — PR #380 opened at verified head
+
+- Action: transported the ledger push checkpoint, verified final branch equality, opened the GitHub
+  PR, and queried its source identity.
+- Evidence: local and `origin/Feature/typed-result_search-contracts` both
+  `d242b376001c26223109b795d756792ddf85ca39`; PR #380 OPEN at the same `headRefOid`;
+  https://github.com/Concertable/concertable/pull/380.
+- Outcome: the Search contract normalization is published on its PR with no unpushed code.
+- Follow-up: run `/merge` for currency, E2E-tier selection, queue monitoring, merge, and platform sync.
 
 ## Resume prompt
 
