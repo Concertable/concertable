@@ -169,24 +169,38 @@ or queueing. Never push a checkpoint-only local tail to a queued, locked, merged
      before stopping. On merge, immediately checkpoint the merge commit, method, E2E outcome, and
      source PR head before switching worktrees or syncing main.
 
-5. **Return to a clean, up-to-date main.**
+5. **Return to a clean, up-to-date main — and remove the merged branch's worktree.**
    ```
    git checkout main
    git pull --ff-only origin main
-   git branch -d <merged-branch>            # local cleanup (safe: only deletes if merged)
-   git push origin --delete <merged-branch> # remote cleanup (the queue blocked gh's --delete-branch)
+   ```
+   Then tear down the merged branch. **A worktree-developed branch is still checked out in its worktree,
+   so the worktree must go FIRST** — `git branch -d` refuses to delete a branch checked out elsewhere. As
+   soon as the PR is `MERGED`, remove the worktree it was developed in (`<path>` from `git worktree list`;
+   if the branch was developed in the main checkout, skip straight to `git branch -d`):
+   ```
+   if [ -z "$(git -C <path> status --porcelain | grep -vE '/(bin|obj|node_modules)/')" ]; then
+     git worktree remove --force <path>       # safe: tracked tree clean, HEAD is the merged head
+   else
+     echo "worktree <path> has uncommitted source — LEFT in place, remove manually"
+   fi
+   git branch -d <merged-branch>              # local cleanup (safe: only deletes if merged; run AFTER the worktree is gone)
+   git push origin --delete <merged-branch>   # remote cleanup (the queue blocked gh's --delete-branch)
    ```
    - If `git branch -d` refuses ("not fully merged") — usually because the merge was a squash/merge-commit
      and the local tip differs — confirm the PR really is `MERGED`, then it's safe to `git branch -D`.
      Don't force-delete an unmerged branch.
-   - **Exceptions — persistent branches/worktrees, NEVER deleted. Skip the cleanup for these, leaving
-     branch and worktree in place:**
-     - `Chore/TechDebt`
-   - **Worktree-developed branches: never auto-remove the worktree or delete its branch.** Worktree
-     teardown is manual (Tommy's worktree PowerShell script), never this skill — auto-teardown is exactly
-     what destroyed an in-progress worktree. Just sync `main` and delete the **remote** branch
-     (`git push origin --delete <Branch>`) if GitHub didn't; leave the local checkout + branch for the
-     script to reclaim.
+   - **The worktree teardown is now automatic (it used to be banned).** The incident that once destroyed
+     an in-progress worktree was an *unguarded* teardown; the clean-check above is the guard. Remove ONLY
+     when that porcelain check is empty — no uncommitted or untracked *source* (`bin/`/`obj/`/
+     `node_modules/` don't count). Any real change → leave the worktree and report it; unpushed work is
+     never destroyed. Leaving merged worktrees in place is exactly what piled up and filled the disk.
+   - `--force` is required — it discards only the build output the guard already cleared; plain
+     `git worktree remove` fails on a built tree with "Directory not empty".
+   - Windows: a live `dotnet`/Playwright process can lock `bin/`/`node_modules` ("Device or resource
+     busy"); `--force` still unregisters the worktree — report any leftover directory for manual deletion.
+   - **Exception — persistent branches, NEVER auto-removed even when merged:** `Chore/TechDebt` (reused
+     every debt pass — keep its branch and worktree).
 
 6. **Watch the platform-sync consequence — a merge that touched a published package triggers it, and
    nothing else watches it.**
