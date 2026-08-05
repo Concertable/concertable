@@ -2,7 +2,7 @@
 
 > Next steps live in @plans/typed-result/AUTH_OUTCOMES_PROGRESS.md -> `## Next Steps`.
 
-**Status:** Phase 2 complete; Phase 3 is next.
+**Status:** Phase 3 complete; Phase 4 is next.
 
 ## Outcome
 
@@ -161,14 +161,14 @@ and ship in one PR.
 - [x] Cover `Some`/`None` adapter behavior and prove unknown email, wrong password, and unverified email
   remain identical at both login edges.
 
-### Phase 3 - Registration and email verification refusals
+### Phase 3 - Registration and email verification refusals (complete)
 
-- Replace `RegisterResult` with `UnitResult<RegisterError>` in the service and page caller; delete the
+- [x] Replace `RegisterResult` with `UnitResult<RegisterError>` in the service and page caller; delete the
   enum and preserve the existing duplicate-account disclosure and registration success state.
-- Replace `VerifyEmailAsync`'s boolean with `UnitResult<VerifyEmailError>`; collapse missing, expired,
+- [x] Replace `VerifyEmailAsync`'s boolean with `UnitResult<VerifyEmailError>`; collapse missing, expired,
   and orphaned token rows to the one safe refusal and preserve token consumption on success.
-- Keep `SendEmailVerificationAsync` completion-only and preserve its missing-credential no-op.
-- Prove duplicate registration does not create a second credential or send a second verification,
+- [x] Keep `SendEmailVerificationAsync` completion-only and preserve its missing-credential no-op.
+- [x] Prove duplicate registration does not create a second credential or send a second verification,
   valid verification mutates once, invalid variants do not mutate, and infrastructure/cancellation
   faults are not converted to typed failures.
 
