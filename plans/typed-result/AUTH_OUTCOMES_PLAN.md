@@ -2,7 +2,7 @@
 
 > Next steps live in @plans/typed-result/AUTH_OUTCOMES_PROGRESS.md -> `## Next Steps`.
 
-**Status:** Phase 1 complete; Phase 2 is next.
+**Status:** Phase 2 complete; Phase 3 is next.
 
 ## Outcome
 
@@ -152,13 +152,13 @@ and ship in one PR.
 
 ### Phase 2 - Login and logout ordinary absence
 
-- Change `LoginAsync` to `Task<Option<ClaimsPrincipal>>` and convert nullable EF lookup state at the
+- [x] Change `LoginAsync` to `Task<Option<ClaimsPrincipal>>` and convert nullable EF lookup state at the
   service boundary.
-- Map `Option` in `LoginModel` and `ResourceOwnerPasswordValidator` to the existing Razor cookie and
+- [x] Map `Option` in `LoginModel` and `ResourceOwnerPasswordValidator` to the existing Razor cookie and
   Duende password-grant behavior.
-- Change `LogoutAsync` to `Task<Option<string>>` and map it in `LogoutModel` to the existing redirect or
+- [x] Change `LogoutAsync` to `Task<Option<string>>` and map it in `LogoutModel` to the existing redirect or
   `/` fallback after the existing cookie sign-out and prompt rules.
-- Cover `Some`/`None` adapter behavior and prove unknown email, wrong password, and unverified email
+- [x] Cover `Some`/`None` adapter behavior and prove unknown email, wrong password, and unverified email
   remain identical at both login edges.
 
 ### Phase 3 - Registration and email verification refusals

@@ -4,42 +4,51 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_auth-outcomes`
 - Branch: `Feature/typed-result_auth-outcomes`
 - PR: not opened
-- Dependency/package gates: No prerequisite dependency gate. The owned Kernel Result/Option foundation is shipped and available through Auth's current `ConcertablePlatformVersion` (`0.1.0-alpha.0.814`). Auth is independent of the Payment, B2B, and Customer migrations. After this `api/**` change merges, this work owns its generated package publication/platform-sync gate to terminal green.
-- Last reconciled: `2026-08-05T19:22:32+01:00` from the Phase 1 implementation, Auth test runs, Release solution build, standalone Auth carve, diff/signature/model searches, and branch/package state.
+- Dependency/package gates: No prerequisite dependency gate. The owned Kernel Result/Option foundation is shipped and available through Auth's current `ConcertablePlatformVersion` (`0.1.0-alpha.0.819`). Auth is independent of the Payment, B2B, and Customer migrations. After this `api/**` change merges, this work owns its generated package publication/platform-sync gate to terminal green.
+- Last reconciled: `2026-08-05T20:44:25+01:00` from the Phase 2 implementation, targeted failure recovery, final Auth test runs, Release solution build, standalone Auth carve, signature/model searches, and fresh branch/PR/platform-sync state.
 
 ## Current state
 
-Phase 1 is complete, green, and checkpointed by this commit. The branch is current with fresh
-`origin/main` `0ed29d8f077fc9593467d6c858c6a0cbab688290`, uses Auth platform pin
-`0.1.0-alpha.0.814`, has no PR, and has no prerequisite package or platform-sync gate.
+Phase 2 is complete, green, and checkpointed by this commit. The branch is current with fresh
+`origin/main` `355f658b9d556dd07e3fa612fb1b04bcdb63a59d`, uses Auth platform pin
+`0.1.0-alpha.0.819`, and has no PR. Platform-sync PR #381 is terminally merged at that same SHA;
+there is no prerequisite package or sync gate for this work.
 
-Auth now has its direct published Kernel package dependency, operation-owned error vocabulary, unit
-test project, integration fixture/project, integration runner registration, and HTTP characterization
-coverage for every current Auth flow. No `IAuthService` signature, runtime caller, EF model, or
-migration changed in Phase 1.
+`LoginAsync` now returns `Task<Option<ClaimsPrincipal>>`; unknown email, wrong password, and
+unverified email all become `None` inside `AuthService`. `LoginModel` and
+`ResourceOwnerPasswordValidator` map `Some`/`None` back to the unchanged cookie/redirect and
+`invalid_grant` protocol behavior. `LogoutAsync` now returns `Task<Option<string>>`; `LogoutModel`
+maps `Some` to the existing client redirect and `None` to `/` after the unchanged cookie sign-out and
+prompt behavior. Nullable EF and Duende values remain inside Auth's service boundary.
 
-The complete `IAuthService` and caller surface has been audited. The target is two `Option<T>`
-operations (`LoginAsync`, `LogoutAsync`), four operation-owned `UnitResult<TError>` refusals
-(register, change password, verify email, reset password), and two intentional completion-only email
-operations. The published Kernel API is sufficient; no shared-foundation prerequisite was found.
+Focused contract tests now cover login and logout `Some`/`None` directly, while the unchanged HTTP
+characterization covers every Razor and password-grant adapter mapping. Phase 3 registration and
+email-verification signatures remain untouched; no EF model, migration, wire contract, or other
+service runtime changed.
 
 ## Next Steps
 
-Implement Phase 2 only from `plans/typed-result/AUTH_OUTCOMES_PLAN.md` in this worktree. First fetch
+Implement Phase 3 only from `plans/typed-result/AUTH_OUTCOMES_PLAN.md` in this worktree. First fetch
 and reconcile the clean branch, upstream, PR, platform-sync status, and Auth package pin; update from
-fresh `origin/main` before editing if behind. Change `LoginAsync` to `Task<Option<ClaimsPrincipal>>`
-and `LogoutAsync` to `Task<Option<string>>`, convert nullable persistence/framework results only at
-the Auth service boundary, and map `Some`/`None` at `LoginModel`, `LogoutModel`, and
-`ResourceOwnerPasswordValidator` without changing Razor, cookie, redirect, or Duende protocol
-behavior. Keep unknown email, wrong password, and unverified email identical at both login edges.
-Extend the focused unit/characterization coverage for every `Some`/`None` mapping, run the Auth unit
-and integration projects through `integration-debug`, the Release solution build, a fresh standalone
-Auth carve, `git diff --check`, and Phase 2 signature/legacy-carrier searches. Update the plan and
-this ledger with exact evidence, commit the green Phase 2 checkpoint locally, and stop with Phase 3
-as the next handoff. Do not push, open a PR, run E2E locally, or begin Phase 3 in the same context.
+fresh `origin/main` before editing if behind. Replace `RegisterResult` with
+`UnitResult<RegisterError>` in `IAuthService`, `AuthService`, and `RegisterModel`, delete the enum, and
+preserve duplicate-account disclosure and registration success behavior. Replace
+`VerifyEmailAsync`'s boolean with `UnitResult<VerifyEmailError>` and map its one safe refusal in
+`VerifyEmailModel`, while keeping `SendEmailVerificationAsync` completion-only. Extend focused and
+HTTP coverage for success/refusal, duplicate side effects, token mutation/consumption, invalid token
+variants, infrastructure exceptions, and cancellation. Run the Auth unit and integration projects
+through `integration-debug`, the Release solution build, a fresh standalone Auth carve,
+`git diff --check`, and Phase 3 signature/legacy-carrier searches. Update the plan and this ledger
+with exact evidence, commit the green Phase 3 checkpoint locally, and stop with Phase 4 as the next
+handoff. Do not push, open a PR, run E2E locally, or begin Phase 4 in the same context.
 
 ## Completed work
 
+- Completed Phase 2 in this commit: migrated login and logout ordinary absence to `Option<T>` at the
+  Auth service boundary and mapped the owned carrier back to unchanged Razor, cookie, redirect, and
+  Duende protocol behavior.
+- Added direct `Some`/`None` service-contract coverage for valid/missing login and logout outcomes;
+  the existing HTTP characterization continues to prove every Razor and password-grant adapter edge.
 - Completed Phase 1 in this commit: added Auth's direct published `Concertable.Kernel` dependency,
   four operation-owned error definitions, and exact definition contract tests without changing any
   existing `IAuthService` signature or caller.
@@ -63,6 +72,26 @@ as the next handoff. Do not push, open a PR, run E2E locally, or begin Phase 3 i
 
 ## Verification
 
+- Final reconciled `dotnet test api/Concertable.Auth/tests/Concertable.Auth.UnitTests/Concertable.Auth.UnitTests.csproj --configuration Release`:
+  4 passed, 0 failed, 0 skipped.
+- Final reconciled `./scripts/integration.ps1 auth` through `integration-debug`: 37 passed, 0 failed
+  across the Auth integration project. The first full run exposed two fixture-only logout tests that
+  lacked Duende's required ambient `HttpContext`; after the fixture was corrected, both failed tests
+  passed individually and two subsequent full Auth runs passed 37/37.
+- Final reconciled `dotnet build api/Concertable.slnx --configuration Release`: succeeded with
+  0 errors; a subsequent quiet incremental confirmation reported 0 warnings and 0 errors.
+- Final fresh standalone copy of the complete current `api/Concertable.Auth` tree, excluding build
+  outputs: `dotnet build src/Concertable.Auth/Concertable.Auth.csproj --configuration Release`
+  restored from Auth's published package closure and succeeded with 0 errors. The verified temporary
+  carve under `C:\tmp` was deleted.
+- Phase 2 searches found exactly the two `Option<T>` `IAuthService` signatures and their three runtime
+  adapters; no nullable login/logout signature, returned-principal null check, redirect `??` fallback,
+  local-Core setting, model/migration change, or transport/persistence carrier survives.
+- Final `git diff --check` passed before staging. Branch `Feature/typed-result_auth-outcomes` is zero
+  behind `origin/main` `355f658b9d556dd07e3fa612fb1b04bcdb63a59d` after four clean upstream
+  reconciliations; both incoming changes were outside Auth runtime.
+- Platform-sync PR #381 (`chore/platform-sync-0.1.0-alpha.0.819`) passed every check and merged as
+  `355f658b9d556dd07e3fa612fb1b04bcdb63a59d`; Auth now consumes the published `0.1.0-alpha.0.819` pin.
 - `dotnet test api/Concertable.Auth/tests/Concertable.Auth.UnitTests/Concertable.Auth.UnitTests.csproj --configuration Release`:
   4 passed, 0 failed, 0 skipped, with no warnings.
 - `./scripts/integration.ps1 auth` through `integration-debug`: 31 passed, 0 failed across the Auth
@@ -92,8 +121,8 @@ as the next handoff. Do not push, open a PR, run E2E locally, or begin Phase 3 i
 
 ## Reviews
 
-No formal code review has run because the plan schedules full branch review after Phase 4. Phase 1
-received a local implementation/test-foundation audit before this checkpoint; the final lifecycle must
+No formal code review has run because the plan schedules full branch review after Phase 4. Phases 1
+and 2 received local implementation/test audits before their checkpoints; the final lifecycle must
 still run full code review over the complete branch and incremental review after later code commits.
 
 ## Decisions, discoveries, blockers, and deviations
@@ -113,6 +142,9 @@ still run full code review over the complete branch and incremental review after
   `IMessageStore`; an unauthenticated `/connect/endsession` request produces no usable logout context.
 - Kernel's shipped factories and observers are sufficient: `Option<T>`, `UnitResult<TError>`,
   `TryGetValue`, `TryGetError`, `Match`, `ValueOr`, `ToOption`, and explicit success/failure factories.
+- Direct `AuthService.LogoutAsync` contract tests must supply an ambient request `HttpContext` because
+  Duende's `DefaultIdentityServerInteractionService` derives logout data through the current request.
+  The fixture scopes and restores that context around generic direct-service calls.
 - Login deliberately collapses unknown email, wrong password, and unverified email to `None` and the
   same Razor/Duende response.
 - Password-reset email remains completion-only so known and unknown accounts have the same observable
@@ -127,6 +159,22 @@ still run full code review over the complete branch and incremental review after
   amendment/separate additive shared item before implementation proceeds.
 
 ## Event log
+
+### 2026-08-05 - Phase 2 login/logout Option migration completed
+
+- Action: Migrated `LoginAsync` and `LogoutAsync` to `Option<T>`, mapped the carrier at both Razor
+  pages and the Duende resource-owner validator, added direct contract coverage, and reconciled four times
+  as `origin/main` advanced during the phase.
+- Evidence: Auth unit tests 4/4; final Auth integration tests 37/37 after both initially failing
+  fixture-only logout tests passed individually; final Release solution build 0 errors; fresh
+  standalone Auth carve 0 errors; diff, signature, legacy-null/fallback, local-Core, and model/migration
+  searches passed. Branch is zero behind `origin/main` `355f658b9d556dd07e3fa612fb1b04bcdb63a59d`;
+  platform-sync PR #381 is merged and Auth's `0.819` package-pin gate is green.
+- Outcome: Phase 2 is complete without changing Razor/cookie/redirect/OAuth behavior, EF models,
+  migrations, wire contracts, or another service's runtime. Ordinary login/logout absence is now
+  explicit at Auth's in-process service boundary.
+- Follow-up: Stop at this local checkpoint. Resume with Phase 3 registration and email-verification
+  `UnitResult<TError>` migration only; do not push or begin Phase 4 in that context.
 
 ### 2026-08-05 - Phase 1 Auth test foundation completed
 
