@@ -176,16 +176,18 @@ or queueing. Never push a checkpoint-only local tail to a queued, locked, merged
    ```
    Then tear down the merged branch. **A worktree-developed branch is still checked out in its worktree,
    so the worktree must go FIRST** — `git branch -d` refuses to delete a branch checked out elsewhere. As
-   soon as the PR is `MERGED`, remove the worktree it was developed in (`<path>` from `git worktree list`;
-   if the branch was developed in the main checkout, skip straight to `git branch -d`):
+   soon as the PR is `MERGED`, remove the worktree it was developed in (`<path>` from `git worktree list`).
+   The branch delete is gated on the worktree actually going: if it's dirty, keep BOTH so uncommitted work
+   is never orphaned. (Branch developed in the main checkout, no worktree? Skip the `if` and just run the
+   `git branch -d` + `git push origin --delete` lines.)
    ```
    if [ -z "$(git -C <path> status --porcelain | grep -vE '/(bin|obj|node_modules)/')" ]; then
      git worktree remove --force <path>       # safe: tracked tree clean, HEAD is the merged head
+     git branch -d <merged-branch>            # now free to delete; safe: -d only deletes if merged
+     git push origin --delete <merged-branch> # remote cleanup (the queue blocked gh's --delete-branch)
    else
-     echo "worktree <path> has uncommitted source — LEFT in place, remove manually"
+     echo "worktree <path> has uncommitted source — worktree AND branch LEFT in place, handle manually"
    fi
-   git branch -d <merged-branch>              # local cleanup (safe: only deletes if merged; run AFTER the worktree is gone)
-   git push origin --delete <merged-branch>   # remote cleanup (the queue blocked gh's --delete-branch)
    ```
    - If `git branch -d` refuses ("not fully merged") — usually because the merge was a squash/merge-commit
      and the local tip differs — confirm the PR really is `MERGED`, then it's safe to `git branch -D`.
