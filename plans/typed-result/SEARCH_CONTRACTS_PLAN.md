@@ -106,7 +106,7 @@ Verification gate:
   `HeaderDispatcher`, or Infrastructure repositories returns `IEnumerable<T>`.
 - Update this plan and the progress ledger, then commit the green phase before stopping.
 
-## Phase 2 — Add Search-owned contract enforcement and final local gates
+## ✅ Phase 2 — Add Search-owned contract enforcement and final local gates
 
 Add `Architecture/ContractArchitectureTests.cs` to `Concertable.Search.UnitTests`:
 

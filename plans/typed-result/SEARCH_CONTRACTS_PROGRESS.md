@@ -5,12 +5,19 @@
 - Branch: `Feature/typed-result_search-contracts`
 - PR: not opened
 - Dependency/package gates: owned Kernel foundation PR #290 and platform sync PR #291 merged; current platform sync PR #373 merged and Search consumes `ConcertablePlatformVersion` `0.1.0-alpha.0.814`; no Payment, B2B, or Customer migration dependency; no open platform-sync PR
-- Last reconciled: 2026-08-05 17:29 BST against fetched `origin/main` commit `da8730931387a85f6e459af34336bea52d34385d`, local git/worktree inventory, GitHub PR state, and the completed Phase 1 verification gate
+- Last reconciled: 2026-08-05 18:47 BST against fetched `origin/main` commit `0ed29d8f0c34afd05362749196003ac097de4b67`, local git/worktree inventory, GitHub PR state, and the completed Phase 2 pre-commit gate
 
 ## Current state
 
-The isolated branch and worktree exclusively own this Search item and are reconciled with current
-`origin/main`. Phase 1 is complete and green in this commit; Phase 2 has not started.
+The isolated branch and worktree exclusively own this Search item. Phases 1 and 2 are complete and
+green in committed checkpoints: the normalized collection contracts and Search-owned reflection
+guard passed focused architecture tests, the full Search unit and integration projects, the Release
+solution build, and the final production inventories. The committed standalone Search carve is the
+only remaining local implementation gate.
+
+The branch is two commits behind fetched `origin/main`; the net upstream change is limited to
+`.github/workflows/platform-sync-alert.yml`. It was not merged into the dirty partial Phase 2 tree and
+does not affect the completed Search verification. Reconcile it while clean after the committed carve.
 
 The autocomplete and header repository, service, and dispatcher chains now declare materialized
 `IReadOnlyList<T>` results throughout. All existing query bodies, `ToListAsync()` terminals, ordering,
@@ -19,27 +26,13 @@ contracts, exception semantics, package boundaries, and shared Kernel contracts 
 
 ## Next Steps
 
-Implement Phase 2 of `plans/typed-result/SEARCH_CONTRACTS_PLAN.md` only.
+Finish the committed standalone Search carve only.
 
-1. Before editing, fetch `origin`, confirm this worktree is on
-   `Feature/typed-result_search-contracts`, inspect dirty paths and other worktrees/PRs for conflicting
-   Search ownership, fast-forward from `origin/main` if the tree is clean and behind, and stop if any
-   open platform-sync PR has a failed check.
-2. Add `Architecture/ContractArchitectureTests.cs` to `Concertable.Search.UnitTests`. Reflect over
-   declared operation methods in Search Application interfaces/services, `HeaderDispatcher`, and
-   Infrastructure repositories; unwrap `Task<T>`, allow `IPagination<T>`, and require collection
-   payloads to be declared as `IReadOnlyList<T>`.
-3. Cover the guard with representative allowed and rejected return shapes. Keep enforcement
-   Search-owned; do not add a shared architecture-test allowlist or duplicate existing integration
-   coverage unless implementation reveals a changed endpoint branch.
-4. Run the new architecture test directly, the full Search unit project in Release, the Release
-   solution build, the full Search integration project through `integration-debug`, and the final
-   production carrier/signature inventories. Do not run local E2E before the PR.
-5. Check off Phase 2, update the ledger, and commit the final implementation. Then carve the committed
-   `api/Concertable.Search` tree from `HEAD`, create `CarveSearch.slnx` with the Web, Workers, Api,
-   Application, Infrastructure, Domain, and Seed.Infrastructure projects, and build it in Release.
-6. Record the green carve in an immediate plan/ledger checkpoint commit and stop with `## Next Steps`
-   pointing to the full `/code-review` gate.
+1. Extract `git archive HEAD:api/Concertable.Search` into a new temporary directory.
+2. Create `CarveSearch.slnx`, add the Web, Workers, Api, Application, Infrastructure, Domain, and
+   Seed.Infrastructure projects, and run `dotnet build CarveSearch.slnx --configuration Release`.
+3. Record the green carve in an immediate plan/ledger checkpoint commit and stop with `## Next Steps`
+   pointing to the full `/code-review` gate. Do not run local E2E before the PR.
 
 ## Completed work
 
@@ -53,6 +46,8 @@ Implement Phase 2 of `plans/typed-result/SEARCH_CONTRACTS_PLAN.md` only.
   `Task<IReadOnlyList<T>>` without changing implementation bodies or transport/projection contracts.
 - Reconciled the branch with `origin/main` commit `da8730931387a85f6e459af34336bea52d34385d`
   before implementation.
+- Completed Phase 2 in this commit: added the Search-owned operation-return architecture guard and
+  representative allowed/rejected shape cases without changing production or transport behavior.
 
 ## Verification
 
@@ -76,6 +71,20 @@ Implement Phase 2 of `plans/typed-result/SEARCH_CONTRACTS_PLAN.md` only.
   audited header DTO properties and two EF projection selectors.
 - `git diff --check`: passed; the Phase 1 source diff is exactly 37 signature replacements across 26
   files.
+- Phase 2 focused architecture test class: 7 passed, 0 failed, including the live reflected-contract
+  scan and six representative allowed/rejected carrier cases.
+- Phase 2 full Search unit project in Release: 21 passed, 0 failed, 0 skipped.
+- Phase 2 `dotnet build api/Concertable.slnx --configuration Release`: passed with 0 errors and the
+  same 9 existing warnings in 3:03.
+- Phase 2 Search integration through `./scripts/integration.ps1 search`: 27 passed, 0 failed; the fresh
+  SQL Testcontainer passed its real `sqlcmd SELECT 1` readiness probe.
+- Final production inventory: no third-party or owned functional carrier and no operation
+  `Task<IEnumerable<T>>` return under Search production source; the five deliberate
+  `IEnumerable<Genre>` DTO/projection occurrences are unchanged.
+- Phase 2 working-tree and untracked-file whitespace checks passed with `git diff --check` and
+  `git diff --no-index --check`.
+- Resume reconciliation: no Search PR and no open platform-sync PR; fetched `origin/main` is two
+  commits ahead with only `.github/workflows/platform-sync-alert.yml` changed upstream.
 
 ## Reviews
 
@@ -103,7 +112,8 @@ typed-result, Search, test, worktree, and progress-ledger instructions before th
 - Dependency state: the owned Kernel foundation is published and synced. Search has no dependency on
   unfinished Payment, B2B, or Customer result migrations.
 - Blockers: none.
-- Deviations: none.
+- Deviation: the ledger named a root-level `./integration.ps1`, which does not exist; the required
+  workflow ran through the repository's actual `./scripts/integration.ps1 search` wrapper.
 
 ## Event log
 
@@ -147,6 +157,30 @@ typed-result, Search, test, worktree, and progress-ledger instructions before th
   `Task<IEnumerable<T>>` survivors and only the five explicitly excluded DTO/projection occurrences.
 - Outcome: Phase 1 completed green in this commit with behavior and boundaries unchanged.
 - Follow-up: implement Phase 2 Search-owned contract architecture enforcement.
+
+### 2026-08-05 — partial Phase 2 architecture enforcement
+
+- Action: reconciled the clean branch with current `origin/main`, rechecked Search ownership and the
+  platform-sync gate, added the Search-owned reflection guard with representative carrier tests, and
+  ran the focused, full unit, build, and integration preflight gates.
+- Evidence: focused architecture tests 7/7; Search unit tests 21/21; Release solution build 0 errors
+  with 9 existing warnings; `docker ps` timed out after 34 seconds while Docker Desktop processes were
+  present; no integration test was launched.
+- Outcome: Phase 2 code is locally implemented and partially verified but remains uncommitted until
+  the required Search integration project and final inventories pass.
+- Follow-up: restart Docker Desktop, prove `docker ps` responsive, and resume at the Search integration
+  gate without repeating green gates unless code changes.
+
+### 2026-08-05 — Phase 2 Search contract enforcement complete
+
+- Action: proved Docker responsive, ran the full Search integration project, completed the production
+  carrier/signature inventories and whitespace checks, and marked Phase 2 complete.
+- Evidence: Search integration 27/27 with a fresh SQL Testcontainer and `sqlcmd SELECT 1`; no functional
+  carrier; no operation `Task<IEnumerable<T>>`; only the five planned DTO/projection
+  `IEnumerable<Genre>` occurrences; whitespace checks clean.
+- Outcome: Phase 2 is green in this commit without production, transport, projection, or exception
+  behavior changes.
+- Follow-up: build the committed standalone Search carve, then checkpoint its result for review.
 
 ## Resume prompt
 
