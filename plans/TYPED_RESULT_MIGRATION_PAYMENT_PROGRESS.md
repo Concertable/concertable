@@ -3,9 +3,9 @@
 - Plan: `plans/typed-result/TYPED_RESULT_MIGRATION_ROADMAP.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\PaymentOwnedResultExpansion`
 - Branch: `Feature/PaymentOwnedResultExpansion`
-- PR: not opened; frozen donor PR #296 remains open and DIRTY at `82d0555cd`
+- PR: not opened; frozen donor PR #296 remains open at `82d0555cd`
 - Dependency/package gates: This branch is the exclusive canonical implementation owner for Payment Phase 2. Phase 1 merged in PR #290 and platform-synced in PR #291; Payment currently consumes platform `0.1.0-alpha.0.798`. Removing the published FluentResults client surface is an intentional breaking package cutover: Payment must merge and publish before B2B/Customer can migrate on the generated platform-sync PR.
-- Last reconciled: 2026-08-05 from local Git, current `origin/main`, and GitHub PR state
+- Last reconciled: 2026-08-05 from local Git, `origin/main` at `0ed29d8f0`, and GitHub PR state
 
 ## Current state
 
@@ -34,7 +34,9 @@ solution build 0 errors, Payment unit 198/198. On 2026-08-05 the branch was refr
 are complete on this new base: composite parsers preserve their commission case across gRPC, while
 Stripe only returns typed rejection for HTTP 402, `card_error`, or an actual decline code and
 propagates invalid-request/resource faults. The complete owner gate is green. Not pushed; no PR
-opened.
+opened. A fresh fetch on 2026-08-05 found that `origin/main` has since advanced 65 commits to
+`0ed29d8f0` and platform `0.1.0-alpha.0.814`; this branch remains on the last verified platform
+`0.1.0-alpha.0.798` and must merge current main and repeat the owner gate after H1 is decided.
 
 The existing escrow tests establish the intended idempotency semantics: no escrow, an escrow that is
 not held, an already-refunded escrow, and a non-refundable state are successful no-ops. An operation
@@ -44,7 +46,8 @@ that executes returns its transfer or refund. The owned contract is therefore
 
 ## Next Steps
 
-The branch is done, green, current with `origin/main`, and unpushed. The single next action is Tommy's
+The implementation is complete and green at `581477754` on platform `0.1.0-alpha.0.798`, but it is
+65 commits behind current `origin/main` and remains unpushed. The single next action is Tommy's
 decision on review finding **H1**: transaction-time revalidation was removed; expected amounts are
 validated only at binding (`CreateOrBindAsync`) and nothing is persisted on the binding, so a deferred
 `Capture/PayBoundCommission` charges from the caller-supplied gross with no in-Payment check that it
@@ -57,9 +60,10 @@ Choose one:
 - **Add Payment defense-in-depth:** persist the reviewed gross/ceiling on the binding and re-assert it
   at money movement, changing the published contract before delivery.
 
-After the decision, update this ledger with the selected contract. Push/opening the one canonical PR,
-merge, publication, the breaking B2B/Customer platform-sync migration, and closing donor PR #296 all
-remain later explicit delivery steps; the PR must run full merge-queue E2E.
+After the decision, update this ledger with the selected contract, merge current `origin/main`, and
+repeat the complete owner verification gate before review and delivery. Push/opening the one canonical
+PR, merge, publication, the breaking B2B/Customer platform-sync migration, and closing donor PR #296
+all remain later explicit delivery steps; the PR must run full merge-queue E2E.
 
 ## Completed work
 
@@ -135,6 +139,17 @@ Clean: escrow `Result<Option<T>,E>` semantics, rounding/VAT/refund math, wire hy
   commission-branch implementation is donor evidence only; its behavior is now reconciled here.
 
 ## Event log
+
+### 2026-08-05 — Reconciled the H1 decision gate with current main
+
+- Action: Refreshed `origin` and GitHub before resuming the Payment owner.
+- Evidence: Canonical branch is clean at `581477754`, has no PR, and is 56 ahead / 65 behind
+  `origin/main` at `0ed29d8f0`; Payment's current-main platform pin is `0.1.0-alpha.0.814`. Frozen
+  donor PR #296 remains open at the unchanged `82d0555cd` head.
+- Outcome: H1 remains the single hard stop. The previously verified implementation is now stale
+  against main and must be synced and fully re-verified after the financial-contract decision.
+- Follow-up: Obtain the H1 choice recorded in `## Next Steps`, then merge current main and repeat the
+  complete owner gate before review and delivery.
 
 ### 2026-08-05 — Fixed the review findings and restored the complete green owner gate
 
