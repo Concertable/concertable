@@ -10,6 +10,7 @@
     "mobile/b2b",
     "shared",
     "web/shared",
+    "mobile/shared",
     "customer/shared"
   ],
   "scripts": {
