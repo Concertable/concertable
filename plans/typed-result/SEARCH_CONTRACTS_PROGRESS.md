@@ -36,7 +36,7 @@ one auto-merge re-assertion cleared the documented re-evaluation glitch and it m
 The clean local branch now merges that exact `origin/main` tip as `a0b8982f5001701d7c56b29bebbe5f167f2378d8`
 and is 0 commits behind. The upstream changes add the cookie-consent feature, E2E coverage, current
 platform pins, and agent guidance; no Search production or unit-test implementation changed relative
-to the verified PR head. The required Release solution rebuild remains pending before publication.
+to the verified PR head. The Release solution rebuild passed with 0 errors and 9 existing warnings.
 
 The autocomplete and header repository, service, and dispatcher chains now declare materialized
 `IReadOnlyList<T>` results throughout. All existing query bodies, `ToListAsync()` terminals, ordering,
@@ -45,11 +45,10 @@ contracts, exception semantics, package boundaries, and shared Kernel contracts 
 
 ## Next Steps
 
-Build `api/Concertable.slnx` in Release to 0 errors at local merge commit `a0b8982f5`, then publish
-the refreshed source head through the plan-managed two-leg push protocol. Wait for PR #380's
-replacement checks, select its final E2E tier, enqueue and monitor the exact verified PR head, then
-follow its generated platform-sync PR to terminal green. Do not run duplicate local E2E before the
-queue.
+Publish the refreshed source head through the plan-managed two-leg push protocol and verify exact
+remote-tracking and PR-head equality. Wait for PR #380's replacement checks, select its final E2E
+tier, enqueue and monitor the exact verified PR head, then follow its generated platform-sync PR to
+terminal green. Do not run duplicate local E2E before the queue.
 
 ## Completed work
 
@@ -145,6 +144,8 @@ queue.
   `355f658b9d556dd07e3fa612fb1b04bcdb63a59d` with source head `487864b35`.
 - Current-main reconciliation: merged `origin/main` `355f658b9` as local commit `a0b8982f5`; branch is
   0 behind, and the upstream delta makes no change under Search production or unit-test source.
+- Current-main Release rebuild: `dotnet build api/Concertable.slnx --configuration Release` passed
+  with 0 errors and 9 existing warnings in 1:35.
 
 ## Reviews
 
@@ -344,6 +345,16 @@ queue.
 - Outcome: PR #380's local source is current with the base and platform pin; the mandatory Release
   rebuild is the remaining pre-push gate.
 - Follow-up: build `api/Concertable.slnx --configuration Release` to 0 errors, then compound-push.
+
+### 2026-08-05 — current-base Release rebuild green
+
+- Action: restored and built the complete API solution in Release after the source branch absorbed
+  current `main` and platform version `0.1.0-alpha.0.819`.
+- Evidence: `dotnet build api/Concertable.slnx --configuration Release` succeeded with 0 errors and
+  9 existing warnings in 1:35.
+- Outcome: the mandatory stale-base rebuild gate is terminal green.
+- Follow-up: push the actual refreshed work head, verify remote and PR equality, then transport the
+  resulting ledger checkpoint as the second push leg.
 
 ## Resume prompt
 
