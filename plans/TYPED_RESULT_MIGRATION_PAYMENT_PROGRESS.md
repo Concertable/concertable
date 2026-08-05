@@ -4,8 +4,8 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\PaymentOwnedResultExpansion`
 - Branch: `Feature/PaymentOwnedResultExpansion`
 - PR: not opened; frozen donor PR #296 remains open and DIRTY at `82d0555cd`
-- Dependency/package gates: This branch is the exclusive canonical implementation owner for Payment Phase 2. Phase 1 merged in PR #290 and platform-synced in PR #291; Payment currently consumes platform `0.1.0-alpha.0.792`. Removing the published FluentResults client surface is an intentional breaking package cutover: Payment must merge and publish before B2B/Customer can migrate on the generated platform-sync PR.
-- Last reconciled: 2026-08-04 from local Git, current `origin/main`, and the complete local verification gate
+- Dependency/package gates: This branch is the exclusive canonical implementation owner for Payment Phase 2. Phase 1 merged in PR #290 and platform-synced in PR #291; Payment currently consumes platform `0.1.0-alpha.0.798`. Removing the published FluentResults client surface is an intentional breaking package cutover: Payment must merge and publish before B2B/Customer can migrate on the generated platform-sync PR.
+- Last reconciled: 2026-08-05 from local Git, current `origin/main`, and GitHub PR state
 
 ## Current state
 
@@ -28,7 +28,13 @@ case constructors with abstract-root/per-case `Definition`, leaving callers shap
 native-union cutover. Each public union root now has its own matching source file. The local
 implementation gate is green. Re-synced to current `origin/main` (platform `0.1.0-alpha.0.795`) at
 merge `4beec1c64`; tree clean, 0 behind, 51 ahead. Re-verified green on the new pin: full Release
-solution build 0 errors, Payment unit 198/198. Not pushed; no PR opened.
+solution build 0 errors, Payment unit 198/198. On 2026-08-05 the branch was refreshed again and merged
+32 newer `origin/main` commits as `e787dd0122`, advancing Payment to platform
+`0.1.0-alpha.0.798`; it is now clean, 0 behind, and 56 ahead. The M2/M3 fixes and verification gate
+are complete on this new base: composite parsers preserve their commission case across gRPC, while
+Stripe only returns typed rejection for HTTP 402, `card_error`, or an actual decline code and
+propagates invalid-request/resource faults. The complete owner gate is green. Not pushed; no PR
+opened.
 
 The existing escrow tests establish the intended idempotency semantics: no escrow, an escrow that is
 not held, an already-refunded escrow, and a non-refundable state are successful no-ops. An operation
@@ -38,32 +44,22 @@ that executes returns its transfer or refund. The owned contract is therefore
 
 ## Next Steps
 
-The branch is done, green, current with `origin/main`, and unpushed. Remaining is landing it:
+The branch is done, green, current with `origin/main`, and unpushed. The single next action is Tommy's
+decision on review finding **H1**: transaction-time revalidation was removed; expected amounts are
+validated only at binding (`CreateOrBindAsync`) and nothing is persisted on the binding, so a deferred
+`Capture/PayBoundCommission` charges from the caller-supplied gross with no in-Payment check that it
+equals the payer-reviewed `FinalSettlementGrossMinor`.
 
-1. **Review DONE** (2026-08-05, see `## Reviews`). Before the PR, apply the two fixes it found: **M2**
-   — composite `FromCode` must try `CommissionError.FromCode` before `PaymentError.FromCode` and drop
-   `PaymentError.FromCode`'s commission fall-through, plus a server-case→wire→client-case fidelity test;
-   **M3** — `StripeFailureClassifier` classifies only 402/`card_error` + specific decline codes as typed
-   and lets `resource_missing`/`invalid_request_error` rethrow. Then re-run the gate.
-2. **Confirm the `CalculateBoundAsync` financial decision with Tommy (review finding H1)** —
-   transaction-time revalidation was removed; expected amounts are validated only at binding
-   (`CreateOrBindAsync`) and nothing is persisted on the binding, so a deferred `Capture/PayBoundCommission`
-   charges from the caller-supplied gross with no in-Payment check it equals the payer-reviewed
-   `FinalSettlementGrossMinor`. Plan-consistent (§8); the compensating control is B2B's §4.1 gross freeze.
-   Accept that, or persist the reviewed gross/ceiling on the binding and re-assert at money-movement.
-   Freezes into the published wire contract, so it is an explicit call before publish.
-3. **On Tommy's explicit go:** push and open ONE canonical PR (Payment Phase 2: owned typed
-   Result/Option + FluentResults cutover + commission Phase 1). Full merge-queue E2E — do **not**
-   `skip-e2e` (payment/gRPC blast radius).
-4. **Merge** (Tommy's call, via the queue).
-5. **Own the platform-sync — the breaking part.** Payment publishes; the generated
-   `chore/platform-sync-*` PR goes RED because B2B + Customer no longer compile against the removed
-   FluentResults client. Migrate B2B + Customer consumers to the owned typed client **in that sync
-   PR**, build `api/Concertable.slnx` to 0 errors, push, take it green (this is B2B checkpoints 6–7 +
-   Customer).
-6. **Close donor PR #296** only after this branch's canonical PR head is on the remote.
+Choose one:
 
-Merge/push/publish/platform-sync all remain gated on Tommy's explicit instruction.
+- **Accept the plan-consistent design:** rely on B2B's §4.1 gross freeze as the primary compensating
+  control and keep `CalculateBoundAsync` pure.
+- **Add Payment defense-in-depth:** persist the reviewed gross/ceiling on the binding and re-assert it
+  at money movement, changing the published contract before delivery.
+
+After the decision, update this ledger with the selected contract. Push/opening the one canonical PR,
+merge, publication, the breaking B2B/Customer platform-sync migration, and closing donor PR #296 all
+remain later explicit delivery steps; the PR must run full merge-queue E2E.
 
 ## Completed work
 
@@ -73,10 +69,12 @@ Merge/push/publish/platform-sync all remain gated on Tommy's explicit instructio
 ## Verification
 
 - `dotnet build api/Concertable.Payment/Concertable.Payment.slnx --configuration Release --no-restore`: 0 warnings, 0 errors.
-- `dotnet test api/Concertable.Payment/tests/Concertable.Payment.UnitTests/Concertable.Payment.UnitTests.csproj --configuration Release --no-restore`: 198 passed, 0 failed, 0 skipped.
+- `dotnet test api/Concertable.Payment/tests/Concertable.Payment.UnitTests/Concertable.Payment.UnitTests.csproj --configuration Release --no-restore`: 201 passed, 0 failed, 0 skipped.
 - `dotnet test api/Concertable.Payment/tests/Concertable.Payment.IntegrationTests/Concertable.Payment.IntegrationTests.csproj --configuration Release --no-restore --no-build`: 7 passed, 0 failed, 0 skipped.
-- `dotnet build api/Concertable.slnx --configuration Release --no-restore`: 0 errors and 7 unrelated
+- `dotnet build api/Concertable.slnx --configuration Release --no-restore`: 0 errors and 9 unrelated
   pre-existing/generated E2E warnings outside Payment.
+- Payment standalone carve with M2/M3 on platform `0.1.0-alpha.0.798`: package-only restore
+  and all nine deployable-closure projects built with 0 errors; existing analyzer warnings remain.
 - Payment standalone carve from committed `9cd162ce1`: 0 errors; package-only restore and all nine
   deployable-closure projects built successfully, with no file/type warning for the operation unions.
 - Payment grep gate: no `FluentResults`, `ToLegacy`, obsolete published clients, parallel operation
@@ -100,17 +98,19 @@ normal flow today. Findings:
   removal of defense-in-depth. **This is the `CalculateBoundAsync` sign-off:** accept it (relying on the
   B2B §4.1 freeze as the compensating control), or persist the reviewed gross/ceiling on the binding and
   re-assert it at money-movement.
-- **M2 (correctness — fix before PR):** `PaymentError.FromCode` greedily claims all `payment.commission_*`
+- **M2 (correctness — FIXED in this commit):** `PaymentError.FromCode` greedily claimed all `payment.commission_*`
   codes into `CommissionFailure` via its `_ =>` fall-through, so composite unions' own `CommissionFailure`
-  arm is dead — a server `ManagerPaymentError.CommissionFailure` round-trips to a `PaymentFailure`-shaped
+  arm was dead — a server `ManagerPaymentError.CommissionFailure` round-tripped to a `PaymentFailure`-shaped
   case on the client. Code/Kind survive, but `is …CommissionFailure` matching silently never fires, and
-  it is untested. Fix: composite `FromCode` tries `CommissionError.FromCode` before `PaymentError.FromCode`;
-  drop the commission fall-through; add a server-case→wire→client-case fidelity test.
-- **M3 (fault-swallowing — fix before PR):** `StripeFailureClassifier` maps 400/404/409/422 all to a
+  it was untested. Composite `FromCode` now tries `CommissionError.FromCode` before
+  `PaymentError.FromCode`, the commission fall-through is removed, and a server-case→wire→client-case
+  test proves `ManagerPaymentError.CommissionFailure` survives.
+- **M3 (fault-swallowing — FIXED in this commit):** `StripeFailureClassifier` mapped 400/404/409/422 all to a
   benign `PaymentRejected` decline. A 404 `resource_missing` / 400 `invalid_request_error` is an infra/
   logic fault that should throw (retry/dead-letter), not report a decline — violates the convention
-  (infra/unknown Stripe faults stay exceptions). Fix: classify only 402/`card_error` + specific decline
-  codes as typed; let `resource_missing`/`invalid_request_error` rethrow.
+  (infra/unknown Stripe faults stay exceptions). Classification is now limited to HTTP 402,
+  `card_error`, or a non-empty Stripe decline code; `resource_missing` and `invalid_request_error`
+  propagation are covered directly.
 - **Lows:** L4 settlement refunds publish `escrow.refund_*` codes (wrong namespace); L5 "already refunded"
   returns `Some` not the no-op `None` (pre-existing); L6 `EnsureTransition` throws after the Stripe side
   succeeded (latent, guarded).
@@ -135,6 +135,29 @@ Clean: escrow `Result<Option<T>,E>` semantics, rounding/VAT/refund math, wire hy
   commission-branch implementation is donor evidence only; its behavior is now reconciled here.
 
 ## Event log
+
+### 2026-08-05 — Fixed the review findings and restored the complete green owner gate
+
+- Action: Fixed M2's composite error precedence and M3's over-broad Stripe classification, added
+  server-to-client commission-case fidelity plus decline/invalid-request/resource-missing regressions,
+  and ran every Payment owner verification gate.
+- Evidence: Payment build 0 warnings/0 errors; unit tests 201/201; integration tests 7/7; full Release
+  solution build 0 errors with 9 unrelated warnings; standalone package-only Payment carve 0 errors;
+  obsolete-surface/dependency/generated-API greps and `git diff --check` clean.
+- Outcome: M2 and M3 are resolved on current platform `0.1.0-alpha.0.798`; H1 is the only open review
+  item and requires Tommy's explicit financial-contract decision before delivery.
+- Follow-up: Obtain the H1 decision recorded in `## Next Steps`.
+
+### 2026-08-05 — Reconciled the resumed owner with current main
+
+- Action: Refreshed GitHub and `origin`, confirmed the canonical branch still has no PR and donor PR
+  #296 remains open/DIRTY at `82d0555cd`, then merged 32 current `origin/main` commits.
+- Evidence: Clean merge `e787dd0122`; Payment platform pin `0.1.0-alpha.0.798`; branch is 0 behind and
+  55 ahead of `origin/main`.
+- Outcome: Worktree identity and ownership still match the ledger; M2/M3 can be implemented against
+  the current platform without fragmenting the in-flight Payment phase.
+- Follow-up: Apply M2 and M3 and rerun the owner-side verification gate before requesting the H1
+  financial decision.
 
 ### 2026-08-05 — First adversarial Phase 2 review completed
 
