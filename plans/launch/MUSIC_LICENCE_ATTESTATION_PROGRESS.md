@@ -1,18 +1,19 @@
 # Music licence attestation progress
 
 - Plan: `plans/launch/MUSIC_LICENCE_ATTESTATION_PLAN.md`
-- Worktree: `C:\Users\TommySeery\source\repos\Concertable`
+- Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\launch_music-licence-attestation` (not yet created — `/worktree create` stands it up; the plan commit already sits on the branch)
 - Branch: `Feature/launch_music-licence-attestation`
 - PR: not opened
 - Dependency/package gates: none pre-merge. Post-merge: `chore/platform-sync-*` (api/** MinVer bump), expected non-breaking.
-- Last reconciled: 2026-08-05 — branch created off `origin/main` (0 behind), no open red platform-sync PR.
+- Last reconciled: 2026-08-05 — branch brought current with `origin/main` (0 behind); not checked out in the main checkout, so `/worktree create` can stand up its worktree; no open red platform-sync PR.
 
 ## Current state
 
-Plan and this ledger written; **no code changes yet.** Branch `Feature/launch_music-licence-attestation`
-is at `origin/main`. The design (one `bool HoldsMusicLicence` threaded through the shipped `TaxCompliance`
-DAC7 slice) is fully specified in the plan, including the exact files and every construction site a new
-`required` DTO member touches.
+Plan and this ledger written; **no code changes yet.** The plan commit sits on branch
+`Feature/launch_music-licence-attestation` (now current with `origin/main`); the branch is **not** checked
+out in the main checkout, so `/worktree create` can stand up its worktree. The design (one
+`bool HoldsMusicLicence` threaded through the shipped `TaxCompliance` DAC7 slice) is fully specified in the
+plan, including the exact files and every construction site a new `required` DTO member touches.
 
 ## Next Steps
 
@@ -58,9 +59,16 @@ None yet.
 - Outcome: design fixed; ready to implement Phase 1.
 - Follow-up: implement per `## Next Steps`.
 
+### 2026-08-05 — handoff correction; branch freed for a worktree
+
+- Action: `Docs/RoadmapBlockerTraversal` (PR #356) merged to `main` mid-session and the main checkout moved to `main`, freeing this branch; brought the feature branch current with `origin/main` (merge of #356 etc.); fixed the resume prompt to the `/worktree create` form (implementation runs in an isolated worktree, not the main checkout). The general `PROMPTS.md` + `plans/agents/PLAN.md` convention fix for that opener was split out to its own docs PR #358, not bundled here.
+- Evidence: `git rev-list --count HEAD..origin/main` = 0; docs PR #358 (https://github.com/Concertable/concertable/pull/358).
+- Outcome: `/worktree create Feature/launch_music-licence-attestation` will stand up the worktree carrying the plan commit.
+- Follow-up: land #358 first, then hand off implementation.
+
 ## Resume prompt
 
 ```
-cd C:\Users\TommySeery\source\repos\Concertable
+/worktree create Feature/launch_music-licence-attestation
 Read @plans/launch/MUSIC_LICENCE_ATTESTATION_PLAN.md and @plans/launch/MUSIC_LICENCE_ATTESTATION_PROGRESS.md, then do what the ledger's `## Next Steps` says.
 ```
