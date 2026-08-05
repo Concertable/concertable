@@ -87,6 +87,10 @@ platform-sync workflow run `31045825169` succeeded. Generated PR #388 is open at
 and carve check set completes. All 40 PR checks are now terminal green: build, all five carves, unit,
 and integration passed; E2E skipped as expected for the package-only pin bump.
 
+PR #388 is now admitted at unchanged head `2504318e1`. GraphQL reports queue state
+`AWAITING_CHECKS`, and merge-group run `31046429030` is in progress on
+`gh-readonly-queue/main/pr-388-55c807784470d32d1b2baf845844ed330810c10a`.
+
 The autocomplete and header repository, service, and dispatcher chains now declare materialized
 `IReadOnlyList<T>` results throughout. All existing query bodies, `ToListAsync()` terminals, ordering,
 filters, empty-list behavior, pagination, DTO/projection shapes, nullable inputs, controller/wire
@@ -94,10 +98,9 @@ contracts, exception semantics, package boundaries, and shared Kernel contracts 
 
 ## Next Steps
 
-Confirm platform-sync PR #388's auto-merge and actual queue admission at unchanged head
-`2504318e16f8046958acbd3a5d3f583c8ff7f231`, then follow it to its merge commit. If GitHub leaves the
-green PR unadmitted, apply the documented bounded confirmation and one-time re-evaluation nudge.
-Preserve the source worktree's unpushed ledger-only recovery tail.
+Monitor platform-sync PR #388 and merge-group run `31046429030` terminally, checking PR failures and
+all `pr-388-*` merge-group failures. On success, record the sync merge commit and version gate as
+terminal. Preserve the source worktree's unpushed ledger-only recovery tail.
 
 ## Completed work
 
@@ -221,6 +224,8 @@ Preserve the source worktree's unpushed ledger-only recovery tail.
   `2504318e1`; auto-merge is enabled and its check matrix is in progress with no failure.
 - Platform sync checks: CI run `31045854475` completed 40/40 terminal green at `2504318e1`; build,
   five carves, unit, and integration passed, while E2E skipped for the pin-only sync.
+- Platform sync queue: PR #388 admitted unchanged head `2504318e1`; queue state `AWAITING_CHECKS`,
+  merge-group run `31046429030` in progress.
 
 ## Reviews
 
@@ -517,6 +522,14 @@ Preserve the source worktree's unpushed ledger-only recovery tail.
   no failures, and expected E2E skips.
 - Outcome: no consumer migration is required; only queue admission and merge remain.
 - Follow-up: verify auto-merge/queue state and follow PR #388 to its merge commit.
+
+### 2026-08-05 — platform sync #388 admitted
+
+- Action: queried the green sync PR's GraphQL queue entry and current merge-group runs.
+- Evidence: PR #388 remains at `2504318e1`; queue entry `AWAITING_CHECKS`; run `31046429030`
+  in progress on a `pr-388-*` merge-group branch.
+- Outcome: the exact green pin-bump source is admitted to the queue without a re-evaluation nudge.
+- Follow-up: monitor PR and merge-group outcomes to terminal merge or failure.
 
 ## Resume prompt
 
