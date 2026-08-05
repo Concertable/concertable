@@ -4,7 +4,7 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-B2BTypedResultMigration`
 - Branch: `Refactor/B2BTypedResultMigration`
 - PR: not opened
-- Last reconciled: 2026-08-04
+- Last reconciled: 2026-08-05
 
 ## Current state
 
@@ -37,15 +37,20 @@ retried.
 
 ## Next Steps
 
-The docs reconcile this turn (plan+ledger moved into `plans/typed-result/`) changed no migration
-state: checkpoints 1-5 remain shipped, 6-7 remain **blocked on Payment PR #296** (the Payment
-owned-result expansion). Nothing to implement in this worktree until #296 merges, Payment publishes,
-and its generated platform-sync PR lands green — that is the single blocker; report "waiting for #296"
-and do not re-poll it.
+Checkpoints 1-5 remain shipped. Checkpoints 6-7 are blocked on the canonical Payment owner,
+`Feature/PaymentOwnedResultExpansion`, whose ledger is
+`C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\PaymentOwnedResultExpansion\plans\TYPED_RESULT_MIGRATION_PAYMENT_PROGRESS.md`.
+Frozen donor PR #296 is not the implementation owner. Nothing can proceed here until the canonical
+Payment branch merges, publishes `Concertable.Payment.Client`, and completes its generated
+platform-sync PR with a green result.
+The Payment owner ledger lists this B2B ledger under `## Downstream handoffs`. Do not poll the
+dependency or emit this plan's resume prompt while blocked; the Payment delivery session must update
+this ledger and surface its exact prompt when ready.
 
-When #296's package gate is open: fetch and merge current `origin/main` (this branch is behind), verify
-the pinned `Concertable.Payment.Client` exposes the owned typed Result surface, then implement
-checkpoint 6 (Concert payment/cancel/finish workflows) and checkpoint 7 (FluentResults removal from the
+When the Payment owner surfaces that the package gate is open: fetch and merge current `origin/main`
+(this branch is behind), verify the pinned `Concertable.Payment.Client` exposes the owned typed Result
+surface, then implement checkpoint 6 (Concert payment/cancel/finish workflows) and checkpoint 7
+(FluentResults removal from the
 migrated B2B projects). Do not create a FluentResults adapter, string bridge, or local source dependency
 to cross the gate. Once Docker Desktop is stable, run `scripts/docker-health.ps1`; only after it passes,
 run `scripts/integration.ps1 b2b` once and record the per-project results. Do not retry the prior Docker
@@ -119,6 +124,17 @@ fixture failure unchanged.
   fixture failure is not application evidence.
 
 ## Event log
+
+### 2026-08-05 - Registered with the canonical Payment owner's downstream handoffs
+
+- Action: Replaced the stale donor-PR blocker with the canonical Payment owner ledger and registered
+  this B2B ledger in that owner's `## Downstream handoffs`.
+- Evidence: Payment commit `059b4a6f6` names this worktree and the merge, publication, and green
+  platform-sync gate required before checkpoints 6-7.
+- Outcome: the waiting B2B plan no longer relies on a remembered prompt or repeated polling; the
+  Payment delivery session owns updating this ledger and surfacing its resume prompt when ready.
+- Follow-up: wait for the Payment owner to discharge the handoff; do not emit this plan's prompt before
+  then.
 
 ### 2026-08-04 - main sync and B2B controller-boundary correction
 
