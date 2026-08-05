@@ -93,15 +93,27 @@ but the plan stays open until **all** of them land and the codebase is in sync a
 B2B PR and calling the plan done while Kernel still speaks the old shape is the thing to never do.
 Don't `git rm` the plan (Lifecycle 5) until that final synced state is in.
 
-## A suspected cross-plan blocker — check the sibling plan's ledger before declaring blocked
+## Cross-plan blockers — establish the return path before stopping
 
 When a phase can't proceed because it depends on work owned by a **different** plan in the same epic
 (e.g. B2B's migration waiting on Payment's), don't guess the dependency's state from memory. Read the
 epic roadmap as the cross-plan dependency map, find which sibling plan owns the blocker, and open that
-plan's `_PROGRESS.md` for its live state (merged? published? platform-sync green?). Only then report
-"blocked until X" — naming the sibling plan and the exact unlanded gate — or proceed if its ledger
-shows the gate already landed. This is a runtime read of the roadmap for navigation, never a citation
-of it in your plan (see [`ROADMAP.md`](ROADMAP.md)).
+plan's `_PROGRESS.md` for its live state (merged? published? platform-sync green?). Only then proceed or
+record the exact unlanded gate.
+
+Blocking is a two-ledger state transition:
+
+1. In the waiting ledger, make `## Next Steps` name the owner ledger and the exact terminal gate. The
+   waiting worktree does not poll after that checkpoint.
+2. In the owner ledger, add a `## Downstream handoffs` entry with the waiting ledger, its worktree, and
+   the same gate. This is the durable return path.
+3. When the owner crosses the gate, update the waiting ledger's current state, `## Next Steps`, and
+   event log in that same delivery session, then surface its exact resume prompt to Tommy.
+4. Do not close or delete the owner plan/ledger while a downstream handoff remains undispatched.
+
+Reporting "waiting for X" without registering the dependent in X's ledger is incomplete: it loses the
+only reliable signal for returning to the work. The roadmap is used at runtime for navigation, never
+cited inside a plan (see [`ROADMAP.md`](ROADMAP.md)).
 
 ## Lifecycle
 

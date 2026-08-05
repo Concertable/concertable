@@ -237,6 +237,9 @@ Plans are working docs for unfinished work, **not** an archive — git history i
 
 The convention is **ROADMAP → PLAN → PROGRESS**, folder = roadmap/plan: an epic tracker at `plans/<epic>/<EPIC>_ROADMAP.md` spins off plans at `plans/<epic>/<NAME>_PLAN.md`, each with a same-directory `<NAME>_PROGRESS.md` companion and a worktree/branch named `<Type>/<epic>_<name>` to match. The plan holds the design and outstanding phases; the progress ledger records every project action, result, and state transition plus the current operational truth. Keep both current throughout the work. Legacy plans without a ledger remain valid: reconstruct them from the plan and repository evidence, then create the ledger before recording further progress. Full rules: [`plans/AGENTS.md`](./plans/AGENTS.md) "Companion progress ledger."
 
+- **Cross-plan blockers are two-way handoffs.** The blocked ledger names the owning ledger and exact
+  gate; the owning ledger lists the blocked dependent. When the gate opens, the owner updates the
+  dependent ledger and surfaces its resume prompt — the waiting plan does not poll or rely on memory.
 - **Keep the plan and its `_PROGRESS.md` companion until the entire lifecycle is terminal — not merely until the final local phase is committed and verified.** They remain the recovery anchor through every required review/fix, PR/check/merge, publication, dependency, and platform-sync gate. Record the final gate outcome, make that ledger checkpoint durable, then delete both together in the following close-out change. If no later delivery or package gate exists, the final phase commit may close them out.
 - A plan **superseded** by a newer plan, or describing a design that was **rejected**, is deleted the moment that's decided — don't leave a tombstone.
 - A **partially-done** plan stays, but strike/check off the sections that shipped (in the same commit as the work) so what remains is only the outstanding work.
