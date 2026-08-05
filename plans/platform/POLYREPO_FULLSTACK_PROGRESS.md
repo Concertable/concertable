@@ -9,17 +9,19 @@
 
 ## Current state
 
-Phases 0, 1, and **2 are on `main`**. Phase 2 landed via PR #360 (merge `a3f9535`): all four remaining tiers packaged, all six consumer surfaces cut over to package imports, publish automation extended, and `publish-fe-packages.yml` published every tier to the feed at `0.1.0-alpha.0.2401`. The merge-queue E2E passed only after a real fix — the UI E2E harness built just `@concertable/shared`, so the Phase-2 SPAs (now consuming `@concertable/web`/`b2b`/`customer` from dist) couldn't resolve their imports and every scenario timed out at auth login; fixed by `build:web-packages` in both UI E2E build steps (validated the venue Vite dev server resolves the tier dist). Phase 2 is fully terminal.
+Phases 0, 1, and **2 are on `main`**. Phase 2 landed via PR #360 (merge `a3f9535`): all four remaining tiers packaged, all six consumer surfaces cut over to package imports, publish automation extended, and `publish-fe-packages.yml` published every tier to the feed at `0.1.0-alpha.0.2401`. Phase 2 is fully terminal.
+
+**Phase 3a is committed on this branch (2 commits, NOT pushed):** `d6ac4b123` (subpath rename — dropped the redundant `/shared` / `/web/shared` from every tier specifier so imports read `@concertable/<tier>/<path>`, uniform with `@concertable/shared`; exports maps + imports rewritten in lockstep, resolutions preserved by construction) and `c4775ebf1` (surfaces self-declare their full dependency closure — `@concertable/*` tiers + third-party libs + CSS `@import` assets, previously all masked by npm workspace hoisting — plus `app/scripts/carve-fe.mjs`, the feed-restore carve harness). Verified in-monorepo: `build:packages` + four web builds + both mobile `tsc --noEmit` all green; branch 0 behind `origin/main`. (Env note: local `node_modules` was corrupted by AV-EPERM-aborted installs — `.bin` wiped, `typescript/lib` partial — and repaired with a warm-cache `npm install`; this cost several detours but is unrelated to the code.)
 
 ## Next Steps
 
-Begin **Phase 3** on this worktree (branch reset to `origin/main`, which now contains Phase 2). Per the plan:
-1. Prove each surface restores its shared deps **purely from the feed** (no monorepo-root workspace resolution).
-2. Add `carve-fe-{customer,b2b}` CI jobs (+ per web manager surface as needed) — the FE analogue of the BE `carve-*` gates — `git archive` the surface, restore from the feed, build alone.
-3. Add an FE import-boundary rule (ESLint `no-restricted-imports` / dependency-cruiser) so a surface can't reach another surface's or an unpublished tier's source.
-4. **Close the Phase-2 runtime/carve deferrals**: retarget the mobile metro `watchFolders` + nativewind `input` + tailwind `content` globs off `../shared` source onto the `@concertable/mobile` package (and prove nativewind className + tailwind generation work on the precompiled dist under metro); give the carved shared-FE package its own tailwind `content` strategy since `@concertable/web`'s `index.css` `@source` globs reference sibling surfaces that only exist in-monorepo.
+1. **Push Phase 3a** (awaiting Tommy) and open a plain GitHub PR. Broad package/workspace/build change → full merge-queue E2E (no `skip-e2e`). No `api/**` touched → no backend platform-sync. On merge, `publish-fe-packages.yml` republishes all five tiers with the new bare exports.
+2. **After that PR merges/republishes**, add the `carve-fe-web` CI job (matrix over the 4 web surfaces, each calling `node scripts/carve-fe.mjs <surface>`) + a `run_fe` change-classifier gate (non-inert `^app/` change; keeps BE-only PRs off the slow npm carves) + `ci-complete` wiring, in `.github/workflows/test.yml`. **Deferred deliberately (publish-first):** a feed-restore carve on the rename PR itself installs the OLD published tiers (old `/shared` export keys) and can't resolve the renamed imports → guaranteed red. The job + gate were written and locally proven for `web/customer` before the rename (green `tsc -b` + vite 3637 modules); re-derive from git history / this ledger.
+3. **Carved-web CSS `@source` content strategy** — carve BUILD is green, but `@concertable/web`'s `index.css` `@source` globs point at sibling-surface source (`../../customer/src`, `../../b2b/*`) that resolve only in-monorepo; a carved surface generates its own classes (Tailwind v4 auto-detect) but NOT the shared tiers' (their class strings live in `node_modules/@concertable/*/dist`, which auto-detect excludes). A single relative `@source` set can't serve both layouts (monorepo `app/{shared,web/shared,…}` ≠ node_modules `@concertable/*`). Needs a cross-context strategy proven by a carved vite build's generated CSS; tier change → effective on republish.
+4. **Mobile metro/nativewind/tailwind retarget** off `../shared` onto `@concertable/mobile` (`watchFolders`, nativewind `input`, tailwind `content`), proven by `expo export` on the precompiled dist; then add mobile to the carve matrix.
+5. **FE import-boundary rule** — no ESLint/dependency-cruiser toolchain in `app/` yet; the carve CI is the primary structural boundary today (BE parity: carve = structural gate, build-time guard = fast second layer). Standing up ESLint `no-restricted-imports` across surfaces is a separate sub-project.
 
-Gate: carve-fe jobs green in CI.
+Gate: carve-fe jobs green in CI (step 2, post-republish).
 
 ## Completed work
 
@@ -78,6 +80,13 @@ Gate: carve-fe jobs green in CI.
 - **Metro/nativewind/tailwind runtime configs left for Phase 3.** The Phase 2 gate is build + typecheck; the mobile app's metro `watchFolders`/nativewind `input`/tailwind `content` still point at `../shared` source. The app already resolves `@concertable/shared`/`customer` as symlinked packages the same way, so no in-monorepo runtime regression, but className/class-generation on the precompiled dist is unproven — a first-class Phase 3 item, not a silent gap.
 
 ## Event log
+
+### 2026-08-05 — Phase 3a: tier-subpath rename + surface dep self-declaration + carve harness
+
+- Action: A naming question surfaced the `/shared` subpath inconsistency (`@concertable/web/shared/*` vs bare `@concertable/shared/*`, and b2b's doubled `@concertable/b2b/web/shared/*`). With Tommy, chose to strip the redundant `/shared`/`/web/shared` from all tier specifiers (package names unchanged) — the package already means "shared <tier> platform," so the segment only leaked the monorepo dir layout. Scripted the repo-wide rewrite and rebuilt/verified. Separately drove the feed-restore carve for `web/customer` far enough to expose that surfaces relied on workspace hoisting for the tiers AND for third-party/CSS deps; declared each surface's full closure and wrote `app/scripts/carve-fe.mjs`.
+- Evidence: commits `d6ac4b123` (rename: 191 source files + 4 exports maps, `grep` shows 0 leftover old specifiers) and `c4775ebf1` (carve-prep). Gate green — `build:packages` exit 0, four web builds OK, both mobile `tsc --noEmit` 0 errors. carve-fe.mjs proved `web/customer` reaches green `tsc -b` + a 3637-module vite transform restoring `@concertable/*` from the feed. Local `node_modules` corruption (AV-EPERM-aborted installs wiped `.bin`, left `typescript/lib` empty) repaired via a warm-cache `npm install`.
+- Outcome: Phase 3a committed on-branch, verified in-monorepo, not pushed. The `carve-fe-web` CI job + `run_fe` gate were written and locally proven but reverted from this change (publish-first: a feed carve can't resolve the renamed imports until the tiers republish).
+- Follow-up: push + plain GitHub PR (full merge-queue E2E); after it republishes, add carve-fe-web CI; then the carved CSS `@source` strategy, mobile metro/nativewind retarget, and the ESLint boundary rule.
 
 ### 2026-08-02 — Phase 1 merged and published
 
