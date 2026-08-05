@@ -7,7 +7,7 @@
 - Dependency/package gates: This branch is the exclusive canonical implementation owner for Payment Phase 2. Phase 1 merged in PR #290 and platform-synced in PR #291; Payment currently consumes platform `0.1.0-alpha.0.814`. Removing the published FluentResults client surface is an intentional breaking package cutover: Payment must merge and publish before B2B/Customer can migrate on the generated platform-sync PR.
 - Downstream handoffs: B2B checkpoints 6-7 are waiting in `plans/typed-result/B2B_PROGRESS.md`
   (`Refactor/B2BTypedResultMigration`) for this branch to merge, publish, and platform-sync green.
-- Last reconciled: 2026-08-05 from local Git, `origin/main` at `0ed29d8f0`, and GitHub PR state
+- Last reconciled: 2026-08-05 from local Git, `origin/main` at `3e3bcce89`, and GitHub PR state
 
 ## Current state
 
@@ -65,11 +65,19 @@ Artist 17/17, then B2B Concert failed all 144 cases at fixture startup because W
 wrapper was stopped and its two Testcontainers resources removed. Payment integration independently
 passed 7/7 against Docker and the regenerated migration.
 
+A fresh fetch after the H1 checkpoint found the clean canonical branch at `951472cae`, 61 commits
+ahead and 52 behind current `origin/main` at `3e3bcce89`. No canonical PR exists; donor PR #296
+remains open and unchanged at `82d0555cd`. Repository branch-currency rules require merging current
+main before review and verification continue.
+
 ## Next Steps
 
-Run incremental review over the H1 implementation checkpoint and fix every clear finding. Then sync
-current `origin/main`, repeat the Payment owner build/unit/integration gates and standalone carve on
-the committed tree, push/open the one canonical PR, and require full merge-queue E2E.
+Merge current `origin/main` into this clean canonical branch. Then review the H1 implementation
+checkpoint, fix every clear finding, repeat the Payment owner build/unit/integration gates and
+standalone carve on the committed tree, push/open the one canonical PR, and require full merge-queue
+E2E. The prior review is recorded in this ledger but no branch-owned review markdown/watermark exists,
+so use the full `code-review` workflow to establish the canonical review artifact before future
+incremental reviews.
 
 Opening the one canonical PR, merge, publication, the breaking B2B/Customer platform-sync
 migration, and closing donor PR #296 all remain later explicit delivery steps; the PR must run full
@@ -167,6 +175,18 @@ Clean: escrow `Result<Option<T>,E>` semantics, rounding/VAT/refund math, wire hy
   commission-branch implementation is donor evidence only; its behavior is now reconciled here.
 
 ## Event log
+
+### 2026-08-05 - Reconciled H1 checkpoint with advancing main
+
+- Action: Refreshed `origin`, the canonical branch, worktree inventory, and GitHub PR state before
+  starting the requested review.
+- Evidence: clean `Feature/PaymentOwnedResultExpansion` at `951472cae`, 61 ahead / 52 behind
+  `origin/main` at `3e3bcce89`; no canonical PR; donor PR #296 still open at `82d0555cd`.
+- Outcome: branch identity and exclusive Payment ownership still match, but current main must be
+  merged before further work. The previous review has no canonical branch review markdown/watermark,
+  so a full review must establish one instead of guessing an incremental start SHA.
+- Follow-up: merge current main, run the full review and address clear findings, then repeat the
+  committed Payment owner and carve gates before push/PR delivery.
 
 ### 2026-08-05 — Implemented reviewed-Money enforcement
 
