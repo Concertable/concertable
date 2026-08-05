@@ -4,8 +4,8 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_search-contracts`
 - Branch: `Feature/typed-result_search-contracts`
 - PR: #380 — https://github.com/Concertable/concertable/pull/380 — MERGED as `55c807784470d32d1b2baf845844ed330810c10a` from verified source head `85d4dae82cc564d7bed20dc6ad0722df025f8fcd`
-- Dependency/package gates: publication run `31045652942` succeeded and fresh-consumer restore passed for `ConcertablePlatformVersion` `0.1.0-alpha.0.827`; generated platform-sync PR #388 is OPEN/BLOCKED at head `2504318e16f8046958acbd3a5d3f583c8ff7f231` with checks in progress; no Payment, B2B, or Customer migration dependency
-- Last reconciled: 2026-08-05 21:54 BST against merged PR #380, successful publication run `31045652942`, successful platform-sync workflow run `31045825169`, and open sync PR #388
+- Dependency/package gates: publication run `31045652942` succeeded and fresh-consumer restore passed for `ConcertablePlatformVersion` `0.1.0-alpha.0.827`; generated platform-sync PR #388 merged green as `3e3bcce89b7cc6c96843e2d80cb634835453a253`; no Payment, B2B, or Customer migration dependency
+- Last reconciled: 2026-08-05 22:04 BST against merged PR #380, successful publication run `31045652942`, and merged platform-sync PR #388
 
 ## Current state
 
@@ -91,6 +91,11 @@ PR #388 is now admitted at unchanged head `2504318e1`. GraphQL reports queue sta
 `AWAITING_CHECKS`, and merge-group run `31046429030` is in progress on
 `gh-readonly-queue/main/pr-388-55c807784470d32d1b2baf845844ed330810c10a`.
 
+Merge-group run `31046429030` completed successfully and platform-sync PR #388 merged at
+2026-08-05 21:03:59 UTC as `3e3bcce89b7cc6c96843e2d80cb634835453a253` from unchanged source
+head `2504318e1`. Platform version `0.1.0-alpha.0.827` is now synced across every service. The Search
+plan's implementation, review, PR, merge, publication, and platform-sync lifecycle is terminal green.
+
 The autocomplete and header repository, service, and dispatcher chains now declare materialized
 `IReadOnlyList<T>` results throughout. All existing query bodies, `ToListAsync()` terminals, ordering,
 filters, empty-list behavior, pagination, DTO/projection shapes, nullable inputs, controller/wire
@@ -98,9 +103,10 @@ contracts, exception semantics, package boundaries, and shared Kernel contracts 
 
 ## Next Steps
 
-Monitor platform-sync PR #388 and merge-group run `31046429030` terminally, checking PR failures and
-all `pr-388-*` merge-group failures. On success, record the sync merge commit and version gate as
-terminal. Preserve the source worktree's unpushed ledger-only recovery tail.
+Make this final lifecycle checkpoint durable. In the following close-out change, mark the parent
+Search roadmap item complete and delete `SEARCH_CONTRACTS_PLAN.md` and
+`SEARCH_CONTRACTS_PROGRESS.md` together. The doc-only close-out must not open its own PR; leave it in
+the working tree to ride the next appropriate change.
 
 ## Completed work
 
@@ -226,6 +232,8 @@ terminal. Preserve the source worktree's unpushed ledger-only recovery tail.
   five carves, unit, and integration passed, while E2E skipped for the pin-only sync.
 - Platform sync queue: PR #388 admitted unchanged head `2504318e1`; queue state `AWAITING_CHECKS`,
   merge-group run `31046429030` in progress.
+- Platform sync merge: merge-group run `31046429030` succeeded and PR #388 merged as `3e3bcce89` at
+  unchanged head `2504318e1`; platform version `0.1.0-alpha.0.827` is synced across all services.
 
 ## Reviews
 
@@ -530,6 +538,17 @@ terminal. Preserve the source worktree's unpushed ledger-only recovery tail.
   in progress on a `pr-388-*` merge-group branch.
 - Outcome: the exact green pin-bump source is admitted to the queue without a re-evaluation nudge.
 - Follow-up: monitor PR and merge-group outcomes to terminal merge or failure.
+
+### 2026-08-05 — Search lifecycle terminal green
+
+- Action: monitored platform-sync PR #388 and all `pr-388-*` merge-group outcomes through terminal
+  merge, then reconciled its source and merge commits.
+- Evidence: merge-group run `31046429030` success; PR #388 merged at 21:03:59 UTC from `2504318e1`
+  as `3e3bcce89b7cc6c96843e2d80cb634835453a253`; version `0.1.0-alpha.0.827`.
+- Outcome: implementation, review, source PR, merge queue, publication, fresh-feed restore, and
+  platform sync are all terminal green.
+- Follow-up: checkpoint this final state, then tick the parent roadmap item and delete this plan and
+  ledger together in the following doc-only close-out change.
 
 ## Resume prompt
 
