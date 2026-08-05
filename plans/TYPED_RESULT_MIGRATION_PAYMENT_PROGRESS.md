@@ -3,11 +3,11 @@
 - Plan: `plans/typed-result/TYPED_RESULT_MIGRATION_ROADMAP.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\PaymentOwnedResultExpansion`
 - Branch: `Feature/PaymentOwnedResultExpansion`
-- PR: not opened; frozen donor PR #296 remains open at `82d0555cd`
+- PR: #392 (`https://github.com/Concertable/concertable/pull/392`); frozen donor PR #296 remains open at `82d0555cd`
 - Dependency/package gates: This branch is the exclusive canonical implementation owner for Payment Phase 2. Phase 1 merged in PR #290 and platform-synced in PR #291; Payment currently consumes platform `0.1.0-alpha.0.814`. Removing the published FluentResults client surface is an intentional breaking package cutover: Payment must merge and publish before B2B/Customer can migrate on the generated platform-sync PR.
 - Downstream handoffs: B2B checkpoints 6-7 are waiting in `plans/typed-result/B2B_PROGRESS.md`
   (`Refactor/B2BTypedResultMigration`) for this branch to merge, publish, and platform-sync green.
-- Last reconciled: 2026-08-05 from local Git, `origin/main` at `3e3bcce89`, and GitHub PR state
+- Last reconciled: 2026-08-05 from local Git, `origin/main` at `255d81575`, and GitHub PR state
 
 ## Current state
 
@@ -70,17 +70,21 @@ The canonical full review is complete over `3e3bcce89..a4ae0081e` in
 `reviews/Feature-PaymentOwnedResultExpansion.md`. BUG1, BUG2, BUG3, CI1, TEST1, and CV1 are fixed in
 review-fix commit `d0fe18afe`. Its incremental review found no new issues. Committed-tree verification
 is green: full Release solution build 0 errors, Payment unit 219/219, Shared API unit 52/52, Payment
-SQL integration 8/8, and the nine-project standalone package carve 0 errors. No canonical PR exists;
-donor PR #296 remains open and unchanged at `82d0555cd`.
+SQL integration 8/8, and the nine-project standalone package carve 0 errors. Canonical PR #392 is open
+at verified head `1c9380726`; donor PR #296 remains open and unchanged at `82d0555cd`. `origin/main`
+advanced five commits after the verification gate, so the merge workflow must update the branch and
+rebuild before enqueueing.
 
 ## Next Steps
 
-Push the verified canonical branch, open its one canonical PR, and require full merge-queue E2E.
-Checkpoint the PR number and exact remote head in this ledger after GitHub confirms them.
+Run the `merge` workflow for PR #392: update the branch to current `origin/main`, rebuild the affected
+projects, apply `full-e2e` because historical commits contain `Skip-E2E: true` trailers, enqueue, and
+follow the merge to a terminal state. After merge, own package publication and the generated breaking
+platform-sync PR through green, update the waiting B2B ledger, and close frozen donor PR #296 only
+after the canonical package gate is complete.
 
-Opening the one canonical PR, merge, publication, the breaking B2B/Customer platform-sync
-migration, and closing donor PR #296 all remain later explicit delivery steps; the PR must run full
-merge-queue E2E.
+Merge, publication, the breaking B2B/Customer platform-sync migration, downstream handoff, and
+closing donor PR #296 remain later explicit delivery steps; PR #392 must run full merge-queue E2E.
 
 ## Downstream handoffs
 
@@ -201,6 +205,18 @@ Clean: escrow `Result<Option<T>,E>` semantics, rounding/VAT/refund math, wire hy
   commission-branch implementation is donor evidence only; its behavior is now reconciled here.
 
 ## Event log
+
+### 2026-08-05 - Opened canonical Payment PR #392
+
+- Action: Pushed the previously-unpublished canonical branch and opened GitHub PR #392 against
+  `main` with the verified owned-result cutover and its review/plan checkpoints.
+- Evidence: the remote branch did not exist before the push; local HEAD, remote head, and PR head
+  all matched `1c9380726333643be812d11a4db256141ccd3b5d` after creation. PR URL:
+  `https://github.com/Concertable/concertable/pull/392`.
+- Outcome: the one canonical Payment PR is open. Five newer `main` commits arrived after local
+  verification; the merge workflow owns the mandatory update and rebuild before enqueueing.
+- Follow-up: run `merge` for PR #392 with `full-e2e`, then own publication, the generated breaking
+  platform-sync migration, the B2B ledger handoff, and donor PR #296 closure.
 
 ### 2026-08-05 - Passed the committed-tree delivery gate
 
