@@ -80,7 +80,11 @@ retries and never toggles**: a failed check is a real failure to surface and deb
 The three outcomes:
 1. **Merged** — report `✓ landed as <sha>` and stop.
 2. **A check failed** — report `✗ CI failed: <job/check>`, point at the run/log, and **stop. Do not
-   retry** (re-running a genuinely-failing e2e just fails again). Hand off to debugging (often local).
+   retry** (re-running a genuinely-failing e2e just fails again). Hand off to debugging: for a *real*
+   E2E failure (failed again on a fresh-stack re-run, not the startup-flake signature), emit a
+   ready-to-paste `/e2e-ui-debug` | `/e2e-api-debug` **dispatch prompt** — worktree path, branch, PR,
+   failing scenario(s), and the failure signature — for a dedicated debug session, rather than driving
+   a heavy local E2E run inline in the current session.
 3. **Green but never admitted** — the PR is `CLEAN`, all checks pass, auto-merge is on, yet GitHub never
    adds it to the queue. This is a GitHub auto-merge **re-evaluation glitch** (enable-while-pending, then
    it never looks again — observed live on pr-229), **not** a test failure. Surface it as its own state;
