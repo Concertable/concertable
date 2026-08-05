@@ -208,7 +208,8 @@ Clean: escrow `Result<Option<T>,E>` semantics, rounding/VAT/refund math, wire hy
   repeated the complete owner and standalone-carve verification on the committed tree.
 - Evidence: full Release solution build 0 errors; Payment unit 219/219; Shared API unit 52/52;
   Payment integration 8/8; all nine carved deployable-closure projects built from packages with
-  0 errors. The incremental review found no new issues.
+  0 errors. The incremental review found no new issues. PR preflight found and corrected the Payment
+  architecture page's stale FluentResults sentence and pre-migration adapter names.
 - Outcome: the canonical Payment branch is review-clean and locally ready for its full-E2E PR.
 - Follow-up: push the verified branch, open the one canonical PR, and checkpoint its number and
   exact remote head.
