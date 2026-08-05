@@ -84,7 +84,8 @@ green. Publication and the generated platform-sync PR are now the live lifecycle
 fresh-consumer restore jobs both passed. It produced platform version `0.1.0-alpha.0.827`, and
 platform-sync workflow run `31045825169` succeeded. Generated PR #388 is open at source head
 `2504318e16f8046958acbd3a5d3f583c8ff7f231`, auto-merge enabled, while its build/unit/integration
-and carve check set completes. No check is currently failed.
+and carve check set completes. All 40 PR checks are now terminal green: build, all five carves, unit,
+and integration passed; E2E skipped as expected for the package-only pin bump.
 
 The autocomplete and header repository, service, and dispatcher chains now declare materialized
 `IReadOnlyList<T>` results throughout. All existing query bodies, `ToListAsync()` terminals, ordering,
@@ -93,10 +94,10 @@ contracts, exception semantics, package boundaries, and shared Kernel contracts 
 
 ## Next Steps
 
-Poll platform-sync PR #388's exact head `2504318e16f8046958acbd3a5d3f583c8ff7f231`
-until its checks are terminal. If red, inspect the failing build and migrate consumers in the sync PR;
-if green, confirm auto-merge and follow it to its merge commit. Preserve the source worktree's
-unpushed ledger-only recovery tail.
+Confirm platform-sync PR #388's auto-merge and actual queue admission at unchanged head
+`2504318e16f8046958acbd3a5d3f583c8ff7f231`, then follow it to its merge commit. If GitHub leaves the
+green PR unadmitted, apply the documented bounded confirmation and one-time re-evaluation nudge.
+Preserve the source worktree's unpushed ledger-only recovery tail.
 
 ## Completed work
 
@@ -218,6 +219,8 @@ unpushed ledger-only recovery tail.
   fresh-consumer restore jobs passed, producing platform version `0.1.0-alpha.0.827`.
 - Platform sync discovery: workflow run `31045825169` succeeded and opened PR #388 at head
   `2504318e1`; auto-merge is enabled and its check matrix is in progress with no failure.
+- Platform sync checks: CI run `31045854475` completed 40/40 terminal green at `2504318e1`; build,
+  five carves, unit, and integration passed, while E2E skipped for the pin-only sync.
 
 ## Reviews
 
@@ -506,6 +509,14 @@ unpushed ledger-only recovery tail.
   version `0.1.0-alpha.0.827`; PR #388 OPEN/BLOCKED at `2504318e1`, auto-merge enabled, no failed check.
 - Outcome: package publication is terminal green; platform-sync PR #388 is the sole live gate.
 - Follow-up: wait for PR #388's checks, migrate consumers if red, otherwise confirm its green merge.
+
+### 2026-08-05 — platform sync #388 checks terminal green
+
+- Action: polled the exact sync source head until its complete check matrix reached terminal state.
+- Evidence: PR #388 remains OPEN/CLEAN at `2504318e1`; CI run `31045854475` has 40 terminal checks,
+  no failures, and expected E2E skips.
+- Outcome: no consumer migration is required; only queue admission and merge remain.
+- Follow-up: verify auto-merge/queue state and follow PR #388 to its merge commit.
 
 ## Resume prompt
 
