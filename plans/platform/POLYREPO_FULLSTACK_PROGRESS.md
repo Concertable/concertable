@@ -13,7 +13,13 @@ Phases 0 and 1 are on `main` through PR #301, and the Phase 1 review fixes are o
 
 ## Next Steps
 
-Execute **Phase 2** in this worktree — publish the remaining shared tiers (`web/shared`, `mobile/shared`, `web/b2b/shared`, `@concertable/customer/shared/*`) using the Phase-1 `@concertable/shared` package as the template, then cut every consumer over from path-alias imports (`@/*`, `shared/*`, `@b2b/*`, `../shared/src`) to package imports and delete those cross-tree source aliases from every tsconfig/vite/metro config. Gate: grep-clean (no cross-tree source alias survives) + four web builds + both mobile typechecks green against the published packages. Follow Phase 2 in the plan.
+Execute **Phase 2** in this worktree, following the Phase-1 `@concertable/shared` package as the template.
+
+**Resolution model — decided 2026-08-05 (confirmed with Tommy): dist-only, build-first.** The tiers become installed packages consumed from `dist` in-monorepo (identical to `@concertable/shared` and the backend's consume-published-artifacts model); **no `source` export condition**. Add explicit pre-build ordering so the SPAs build against freshly-built tier `dist`.
+
+Tier→package + exports root: `web/shared`→`@concertable/web` (`./shared/*`); `mobile/shared`→`@concertable/mobile` (`./shared/*`, no barrels — wildcards only); `web/b2b/shared`→`@concertable/b2b` (`./web/shared/*`); `customer/shared`→`@concertable/customer` (repoint existing exports src→dist, flip `private`, bump version). **Dep/build order:** `@concertable/shared`→{`@concertable/web`, `@concertable/mobile`, `@concertable/customer`}; `@concertable/b2b` also depends on `@concertable/web` (build web before b2b).
+
+Steps: (1) scaffold each tier package (`package.json` exports→dist, `tsconfig.build.json`, internal alias via `tsc-alias`, `publishConfig`) + register in `app/package.json` workspaces; (2) rewrite every cross-tree alias import — in consumer surfaces **and inside the tiers themselves** — to a bare package specifier, then delete those aliases from every `tsconfig`/`vite`/`metro` config (keep each surface's own intra-package `@/*`→`./src/*`); (3) extend `version-fe-packages.mjs` / `verify-fe-package.mjs` / `publish-fe-packages.yml` to all tiers; (4) gate: grep-clean (no cross-tree source alias survives) + build all packages then four web builds + both mobile typechecks green. Follow Phase 2 in the plan.
 
 ## Completed work
 
@@ -49,6 +55,8 @@ Execute **Phase 2** in this worktree — publish the remaining shared tiers (`we
 - The review-fix PR requires full merge-queue E2E because it changes CI policy. Do not add `skip-e2e`; apply `full-e2e`.
 - Phase 2 was deliberately blocked until the review-fix PR landed; PR #319 is now merged, so Phase 2 is unblocked.
 - Ledger-drift caught at Phase 2 start: the Phase-2-unblocked closeout commits (`b11da1d38`, `2efd1647f`) were made while a prior session sat on the unrelated `Feature/SelfBillingAgreement` branch, so they never reached `origin/main` — the fresh worktree therefore started from the pre-merge ledger. Content was correct; recovered onto this branch via `git show`. Those stray doc commits are left on `SelfBillingAgreement` (per repo policy, doc commits riding a feature branch are not worth a force-push) and will reconcile when that PR merges. This is the shared-checkout hazard that motivated the dedicated `Feature/platform_polyrepo-fullstack` worktree.
+- **In-monorepo tier resolution — dist-only, build-first (confirmed with Tommy 2026-08-05).** The load-bearing finding: there is no turbo/nx and no `source` export condition anywhere; `@concertable/shared` already resolves to built `dist` in-monorepo, so editing it needs a rebuild. Phase 2 extends that from 1 tier to 5. Chose to keep the tiers dist-only (consume the built artifact both in-monorepo and when carved), matching Phase 1 and the backend's consume-published-artifacts model, rather than add a `source`/`development` condition (which would make in-monorepo dev diverge from carved reality and hide "forgot to rebuild / dist broken" bugs). Mitigation: a one-command `build:packages` + extend the CI pre-build step. Alternative (source condition + retrofit `@concertable/shared`) explicitly considered and declined.
+- **The tiers depend on each other, so cutover is not consumer-only.** `@concertable/b2b` (web/b2b/shared) imports `@/*` and `shared/*` that resolve to `@concertable/web` (web/shared), plus `@concertable/shared`; its own self-alias is `@b2b/*`. So the alias→package rewrite and the dep graph must cover intra-tier imports too, and `@concertable/web` must build before `@concertable/b2b`.
 
 ## Event log
 
