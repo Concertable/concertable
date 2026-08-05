@@ -4,8 +4,8 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_search-contracts`
 - Branch: `Feature/typed-result_search-contracts`
 - PR: #380 — https://github.com/Concertable/concertable/pull/380 — OPEN at verified head `d242b376001c26223109b795d756792ddf85ca39`
-- Dependency/package gates: owned Kernel foundation PR #290 and platform sync PR #291 merged; platform sync PR #381 for `ConcertablePlatformVersion` `0.1.0-alpha.0.819` is open with every check green but no merge-queue entry or auto-merge request; no Payment, B2B, or Customer migration dependency
-- Last reconciled: 2026-08-05 20:36 BST against fetched `origin/main` commit `10ed876b1`, verified remote branch `origin/Feature/typed-result_search-contracts`, GitHub PR #380 at remote head `d242b3760`, and platform sync PR #381
+- Dependency/package gates: owned Kernel foundation PR #290 and platform sync PR #291 merged; platform sync PR #381 merged green as `355f658b9d556dd07e3fa612fb1b04bcdb63a59d`, publishing the current `ConcertablePlatformVersion` `0.1.0-alpha.0.819` pin to `main`; no Payment, B2B, or Customer migration dependency
+- Last reconciled: 2026-08-05 20:38 BST against verified GitHub PR #380 at remote head `d242b3760` and merged platform sync PR #381
 
 ## Current state
 
@@ -29,10 +29,9 @@ six commits behind current `origin/main` and has no queue entry, so it must be r
 admission. Local commit `f73724a80` is the expected ledger-only observation checkpoint and must not
 be treated as unpushed implementation work.
 
-Platform sync PR #381 pins `0.1.0-alpha.0.819` after PR #377. Its complete PR check set is green and
-its merge state is `CLEAN`, but it has neither a merge-queue entry nor an auto-merge request after the
-normal admission window. This is the documented green-but-unadmitted re-evaluation glitch, not a test
-failure; re-assert auto-merge once and wait for it to land before reconciling PR #380 with `main`.
+Platform sync PR #381 now pins `0.1.0-alpha.0.819` after PR #377. Its complete PR check set was green;
+one auto-merge re-assertion cleared the documented re-evaluation glitch and it merged as
+`355f658b9d556dd07e3fa612fb1b04bcdb63a59d`. The platform gate is terminal green.
 
 The autocomplete and header repository, service, and dispatcher chains now declare materialized
 `IReadOnlyList<T>` results throughout. All existing query bodies, `ToListAsync()` terminals, ordering,
@@ -41,8 +40,7 @@ contracts, exception semantics, package boundaries, and shared Kernel contracts 
 
 ## Next Steps
 
-Re-assert auto-merge once on green-but-unadmitted platform sync PR #381 and wait for it to merge.
-Then fetch `origin`, merge the resulting current `origin/main` into this branch, build
+Fetch `origin`, merge the resulting current `origin/main` into this branch, build
 `api/Concertable.slnx` in Release to 0 errors, and publish the refreshed source head through the
 plan-managed two-leg push protocol. Wait for PR #380's replacement checks, select its final E2E tier,
 enqueue and monitor the exact verified PR head, then follow its generated platform-sync PR to terminal
@@ -138,6 +136,8 @@ green. Do not run duplicate local E2E before the queue.
   auto-merge is enabled. Fetched `origin/main` is six commits ahead, so the branch is not current.
 - Platform gate reconciliation: PR #381 (`chore/platform-sync-0.1.0-alpha.0.819`) is OPEN/CLEAN with
   every check green, but GraphQL confirms no merge-queue entry and the PR has no auto-merge request.
+- Platform gate recovery: re-asserted auto-merge once on PR #381; it merged green as
+  `355f658b9d556dd07e3fa612fb1b04bcdb63a59d` with source head `487864b35`.
 
 ## Reviews
 
@@ -317,6 +317,16 @@ green. Do not run duplicate local E2E before the queue.
   green-but-unadmitted sync glitch is cleared.
 - Follow-up: re-assert auto-merge once for PR #381, wait for it to land, then refresh and rebuild PR
   #380 before its compound push and queue admission.
+
+### 2026-08-05 — platform sync #381 landed green
+
+- Action: re-asserted auto-merge once on the fully green, unadmitted platform-sync PR and immediately
+  reconciled its terminal state.
+- Evidence: PR #381 changed from OPEN/CLEAN with no queue entry to MERGED at unchanged source head
+  `487864b35`; merge commit `355f658b9d556dd07e3fa612fb1b04bcdb63a59d`.
+- Outcome: `ConcertablePlatformVersion` `0.1.0-alpha.0.819` is terminal green and ready to enter the
+  source branch through current `origin/main`.
+- Follow-up: fetch, merge current `origin/main`, build the Release solution, and compound-push PR #380.
 
 ## Resume prompt
 
