@@ -1,41 +1,44 @@
 # Music licence attestation progress
 
 - Plan: `plans/launch/MUSIC_LICENCE_ATTESTATION_PLAN.md`
-- Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\launch_music-licence-attestation` (not yet created — `/worktree create` stands it up; the plan commit already sits on the branch)
+- Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\launch_music-licence-attestation` (created)
 - Branch: `Feature/launch_music-licence-attestation`
 - PR: not opened
 - Dependency/package gates: none pre-merge. Post-merge: `chore/platform-sync-*` (api/** MinVer bump), expected non-breaking.
-- Last reconciled: 2026-08-05 — branch brought current with `origin/main` (0 behind); not checked out in the main checkout, so `/worktree create` can stand up its worktree; no open red platform-sync PR.
+- Last reconciled: 2026-08-05 — worktree created off the branch, synced to `origin/main` (0 behind); Phase 1 implemented and the full local gate is green (see Verification).
 
 ## Current state
 
-Plan and this ledger written; **no code changes yet.** The plan commit sits on branch
-`Feature/launch_music-licence-attestation` (now current with `origin/main`); the branch is **not** checked
-out in the main checkout, so `/worktree create` can stand up its worktree. The design (one
-`bool HoldsMusicLicence` threaded through the shipped `TaxCompliance` DAC7 slice) is fully specified in the
-plan, including the exact files and every construction site a new `required` DTO member touches.
+**Phase 1 complete and committed; local gate green.** The `bool HoldsMusicLicence` is threaded end-to-end
+through the shipped `TaxCompliance` DAC7 slice: domain VO, migration (re-scaffolded), contracts DTO, mapper,
+the Concert cross-module compile fix, the Seed `TenantFactory`, all backend tests, and the b2b/shared org
+form (new "Music licence" checkbox). Roadmap line 26 + §7 ticked. Remaining: open the PR, `/merge` with
+**full E2E**, and own the post-merge `chore/platform-sync-*` PR to green.
 
 ## Next Steps
 
-Implement Phase 1 (the whole vertical slice — one PR) per `MUSIC_LICENCE_ATTESTATION_PLAN.md` §3, in order:
+Phase 1 is implemented, verified (full local gate green) and committed. Delivery gates remain:
 
-1. **Domain** — `Tenant/…/Domain/ValueObjects/TaxCompliance.cs`: add `public bool HoldsMusicLicence { get; private init; }` + a `bool holdsMusicLicence` ctor param (no validation).
-2. **Migration** — after the model change, run `./initial-migrations.ps1` from `api/` (re-scaffold; the Tenant `InitialCreate` gains the column). EF auto-maps the bool — no `TenantEntityConfiguration` change.
-3. **Contracts DTO** — `Tenant/…/Contracts/TaxComplianceDto.cs`: add `public required bool HoldsMusicLicence { get; init; }` (not `[JsonIgnore]`).
-4. **Mapper** — `Tenant/…/Application/Mappers/TenantMappers.cs`: carry the field in both `ToDto` and `ToTaxCompliance`. (Validator/request/service/module: no change — see plan.)
-5. **Cross-module compile fix** — `Concert/…/Concert.UnitTests/Services/SelfBillingAgreementServiceTests.cs` (~line 41): set `HoldsMusicLicence` in the `new TaxComplianceDto { … }`.
-6. **Backend tests** — add the ctor arg to every `new TaxCompliance(…)` (`TaxComplianceTests`, `TenantServiceTests`, `TenantEntityTests`) and the DTO builder in `TenantValidatorsTests`; extend `TaxComplianceRoundTripTests` (`BuildRequest` → true, replacement → false).
-7. **Web** — `app/web/b2b/shared/src/features/organizations/`: `types.ts`, `schemas/updateOrganizationRequestSchema.ts`, `hooks/useOrganization.ts`, `components/OrganizationForm.tsx` (new "Music licence" checkbox section), `taxFormLabels.ts`.
-
-Then the verification gate (plan §6): `dotnet build api/Concertable.slnx` = 0 errors; Tenant unit+integration + touched Concert unit tests green via `integration-debug`; `./initial-migrations.ps1` run; all four web builds green. Commit when green. Then open the PR, tick roadmap line 26 + §7 in the same commit as the feature, `/merge` with **full E2E** (do not skip), and own the platform-sync PR to green.
+1. **Open the PR** — plain `gh pr create` (personal repo; no `AB#`, no assignee).
+2. **`/merge` with full E2E** — do **not** skip. The change crosses the `Tenant.Contracts` boundary, touches shared web code, and a user-facing org-setup flow (plan §6).
+3. **Own the post-merge `chore/platform-sync-*` PR to green** — api/** MinVer bump; expected non-breaking (no cross-service published contract changed).
+4. **Close out** — after platform-sync is green, `git rm` this plan + `_PROGRESS.md` as a doc-only close-out riding the next change (plan §7).
 
 ## Completed work
 
-- 2026-08-05 — `Feature/launch_music-licence-attestation` created off `origin/main`; plan + this ledger authored. (commit pending)
+- 2026-08-05 — `Feature/launch_music-licence-attestation` created off `origin/main`; plan + this ledger authored.
+- 2026-08-05 — Phase 1 vertical slice implemented and committed: domain VO, re-scaffolded migration, contracts DTO, mapper, Concert cross-module fix, Seed `TenantFactory`, backend tests, b2b/shared org form; roadmap line 26 + §7 ticked.
 
 ## Verification
 
-None yet.
+Full local gate green (2026-08-05):
+- `dotnet build api/Concertable.slnx` → **0 errors** (caught + fixed one missed construction site: the Seed `TenantFactory` target-typed `new(...)`, which the plain grep didn't surface).
+- Tenant unit **96/96**, Concert unit **79/79**.
+- Tenant integration **56/56** (`TaxComplianceRoundTripTests` proves the new field round-trips `true`→`false` through a fresh EF context).
+- `./initial-migrations.ps1` re-scaffolded: only `TenantDbContext` regenerated; new `20260805105823_InitialCreate` carries the `TaxCompliance_HoldsMusicLicence` `bit` column (nullable at DB level because the owned VO is optional, consistent with the DAC7 columns).
+- All four web builds green (`web-customer`, `web-venue`, `web-artist`, `web-business`).
+
+**Worktree footgun (MAX_PATH):** the integration suite fails at startup in this deep worktree path — `Microsoft.Data.SqlClient.SNI.dll` won't native-load (`0x800700CE`, filename too long) even with `LongPathsEnabled=1`. Not a code/Docker fault (the main checkout's shorter path is fine). Workaround for a local run: `subst X: "<worktree root>"` and run tests via `X:\…`. Web builds also need the `@concertable/shared` library built first (`npm -w @concertable/shared run build`) after a fresh `npm ci` — its `exports` resolve to `dist/`.
 
 ## Reviews
 
@@ -58,6 +61,13 @@ None yet.
 - Evidence: `git rev-list --count HEAD..origin/main` = 0; no open `chore/platform-sync-*` PR; construction sites enumerated by grep (`new TaxCompliance(` ×4, `new TaxComplianceDto {` in Concert + Tenant validator tests).
 - Outcome: design fixed; ready to implement Phase 1.
 - Follow-up: implement per `## Next Steps`.
+
+### 2026-08-05 — Phase 1 implemented, verified, committed
+
+- Action: stood up the worktree, synced to `origin/main`, implemented the full vertical slice (steps 1–15), re-scaffolded migrations, and ran the whole local gate.
+- Evidence: build 0 errors; Tenant unit 96/96, Concert unit 79/79, Tenant integration 56/56; migration `20260805105823_InitialCreate` gains `TaxCompliance_HoldsMusicLicence`; 4/4 web builds green. Discovery: the Seed `TenantFactory` target-typed `new(...)` was a construction site the grep missed — the build caught it. Integration suite needed a `subst` short-path workaround (MAX_PATH on the native SQL client DLL); web builds needed `@concertable/shared` built first.
+- Outcome: Phase 1 done; roadmap line 26 + §7 ticked in the same commit.
+- Follow-up: open PR → `/merge` full E2E → own platform-sync → doc-only close-out.
 
 ### 2026-08-05 — handoff correction; branch freed for a worktree
 
