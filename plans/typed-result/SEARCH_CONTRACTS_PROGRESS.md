@@ -5,19 +5,19 @@
 - Branch: `Feature/typed-result_search-contracts`
 - PR: not opened
 - Dependency/package gates: owned Kernel foundation PR #290 and platform sync PR #291 merged; current platform sync PR #373 merged and Search consumes `ConcertablePlatformVersion` `0.1.0-alpha.0.814`; no Payment, B2B, or Customer migration dependency; no open platform-sync PR
-- Last reconciled: 2026-08-05 18:47 BST against fetched `origin/main` commit `0ed29d8f0c34afd05362749196003ac097de4b67`, local git/worktree inventory, GitHub PR state, and the completed Phase 2 pre-commit gate
+- Last reconciled: 2026-08-05 18:52 BST against fetched `origin/main` commit `0ed29d8f0c34afd05362749196003ac097de4b67`, local git/worktree inventory, GitHub PR state, Phase 2 commit `657846883`, and the committed standalone carve
 
 ## Current state
 
 The isolated branch and worktree exclusively own this Search item. Phases 1 and 2 are complete and
-green in committed checkpoints: the normalized collection contracts and Search-owned reflection
-guard passed focused architecture tests, the full Search unit and integration projects, the Release
-solution build, and the final production inventories. The committed standalone Search carve is the
-only remaining local implementation gate.
+green in commits `7b0785f90` and `657846883`: the normalized collection contracts and Search-owned
+reflection guard passed focused architecture tests, the full Search unit and integration projects,
+the Release solution build, the final production inventories, and the committed standalone Search
+carve. The full implementation review is the next lifecycle gate.
 
 The branch is two commits behind fetched `origin/main`; the net upstream change is limited to
 `.github/workflows/platform-sync-alert.yml`. It was not merged into the dirty partial Phase 2 tree and
-does not affect the completed Search verification. Reconcile it while clean after the committed carve.
+does not affect the completed Search verification. Reconcile it while clean after review, before delivery.
 
 The autocomplete and header repository, service, and dispatcher chains now declare materialized
 `IReadOnlyList<T>` results throughout. All existing query bodies, `ToListAsync()` terminals, ordering,
@@ -26,13 +26,14 @@ contracts, exception semantics, package boundaries, and shared Kernel contracts 
 
 ## Next Steps
 
-Finish the committed standalone Search carve only.
+Run the full `/code-review` gate only.
 
-1. Extract `git archive HEAD:api/Concertable.Search` into a new temporary directory.
-2. Create `CarveSearch.slnx`, add the Web, Workers, Api, Application, Infrastructure, Domain, and
-   Seed.Infrastructure projects, and run `dotnet build CarveSearch.slnx --configuration Release`.
-3. Record the green carve in an immediate plan/ledger checkpoint commit and stop with `## Next Steps`
-   pointing to the full `/code-review` gate. Do not run local E2E before the PR.
+1. Review the complete implementation range on `Feature/typed-result_search-contracts` against
+   current fetched `origin/main`, including both production normalization and Search-owned contract
+   enforcement.
+2. Record the review artifact, range, every finding and disposition in this ledger. Resolve every open
+   finding before delivery; any later code commit requires `/incremental-review`.
+3. Do not push, open a PR, merge `origin/main`, or run local E2E during this review gate.
 
 ## Completed work
 
@@ -48,6 +49,9 @@ Finish the committed standalone Search carve only.
   before implementation.
 - Completed Phase 2 in this commit: added the Search-owned operation-return architecture guard and
   representative allowed/rejected shape cases without changing production or transport behavior.
+- Phase 2 is committed as `657846883` (`test(search): enforce collection operation contracts`).
+- Reproduced the committed Search deployable closure from `657846883` and built its seven-project
+  standalone solution in Release with 0 errors.
 
 ## Verification
 
@@ -85,6 +89,9 @@ Finish the committed standalone Search carve only.
   `git diff --no-index --check`.
 - Resume reconciliation: no Search PR and no open platform-sync PR; fetched `origin/main` is two
   commits ahead with only `.github/workflows/platform-sync-alert.yml` changed upstream.
+- Committed standalone carve: archived `657846883:api/Concertable.Search`, created `CarveSearch.slnx`
+  with Web, Workers, Api, Application, Infrastructure, Domain, and Seed.Infrastructure, and built in
+  Release with 0 errors and 67 analyzer warnings in 1:07.
 
 ## Reviews
 
@@ -181,6 +188,15 @@ typed-result, Search, test, worktree, and progress-ledger instructions before th
 - Outcome: Phase 2 is green in this commit without production, transport, projection, or exception
   behavior changes.
 - Follow-up: build the committed standalone Search carve, then checkpoint its result for review.
+
+### 2026-08-05 — committed Search carve green
+
+- Action: archived committed Search source from `657846883`, generated a closure-only seven-project
+  `CarveSearch.slnx`, and built it in Release from the disposable carve.
+- Evidence: build succeeded with 0 errors and 67 analyzer warnings in 1:07; the carve contained Web,
+  Workers, Api, Application, Infrastructure, Domain, and Seed.Infrastructure only.
+- Outcome: every required local implementation and standalone-package gate is terminal and green.
+- Follow-up: run the full `/code-review` gate over the complete implementation range.
 
 ## Resume prompt
 
