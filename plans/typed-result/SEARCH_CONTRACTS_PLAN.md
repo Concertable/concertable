@@ -82,7 +82,7 @@ Out of scope:
 - `Option<T>` around collections or opportunistic operation-error/Result types.
 - Renaming services, repositories, controllers, DTOs, or unrelated cleanup.
 
-## Phase 1 — Normalize Search operation collection contracts
+## ✅ Phase 1 — Normalize Search operation collection contracts
 
 Change the complete declared return chain from `IEnumerable<T>` to `IReadOnlyList<T>`:
 
