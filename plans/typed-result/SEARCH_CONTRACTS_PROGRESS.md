@@ -3,9 +3,9 @@
 - Plan: `plans/typed-result/SEARCH_CONTRACTS_PLAN.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_search-contracts`
 - Branch: `Feature/typed-result_search-contracts`
-- PR: #380 — https://github.com/Concertable/concertable/pull/380 — OPEN at verified refreshed work head `3c74bc8fee911eaaf7ec16ffe3548ccb79f43dcb`; checkpoint transport pending in this commit
+- PR: #380 — https://github.com/Concertable/concertable/pull/380 — OPEN at verified checkpoint head `85d4dae82cc564d7bed20dc6ad0722df025f8fcd`; all 39 PR checks terminal green
 - Dependency/package gates: owned Kernel foundation PR #290 and platform sync PR #291 merged; platform sync PR #381 merged green as `355f658b9d556dd07e3fa612fb1b04bcdb63a59d`, publishing the current `ConcertablePlatformVersion` `0.1.0-alpha.0.819` pin to `main`; no Payment, B2B, or Customer migration dependency
-- Last reconciled: 2026-08-05 20:44 BST against fetched `origin/main` commit `355f658b9d556dd07e3fa612fb1b04bcdb63a59d` and GitHub PR #380 at verified refreshed work head `3c74bc8fee911eaaf7ec16ffe3548ccb79f43dcb`
+- Last reconciled: 2026-08-05 21:02 BST against fetched `origin/main` commit `355f658b9d556dd07e3fa612fb1b04bcdb63a59d` and GitHub PR #380 at verified checkpoint head `85d4dae82cc564d7bed20dc6ad0722df025f8fcd`
 
 ## Current state
 
@@ -44,6 +44,17 @@ equal that commit. The pushed range is `d242b376001c26223109b795d756792ddf85ca39
 This ledger-only checkpoint is the required transport leg and must be pushed once, then exact final
 local/remote/PR equality must be verified before waiting for replacement checks.
 
+Checkpoint transport is complete: local `HEAD`, the remote-tracking branch, and PR #380 all equalled
+`85d4dae82cc564d7bed20dc6ad0722df025f8fcd` after a fresh fetch. The replacement CI run
+`31041455818` completed with all 39 checks terminal green: build, all five service carves, all unit and
+integration projects passed; PR-level E2E jobs skipped as expected.
+
+The final net diff remains the isolated Search in-process collection signature normalization and its
+Search-owned architecture guard. It touches one service, no published/cross-service contract,
+shared infrastructure, build pipeline, or user-facing runtime flow, and Search unit/integration tests
+cover it directly. It therefore qualifies for the `skip-e2e` merge-queue tier. No historical
+`Skip-E2E` trailer exists; normalize labels to `skip-e2e` only before enqueueing the verified PR head.
+
 The autocomplete and header repository, service, and dispatcher chains now declare materialized
 `IReadOnlyList<T>` results throughout. All existing query bodies, `ToListAsync()` terminals, ordering,
 filters, empty-list behavior, pagination, DTO/projection shapes, nullable inputs, controller/wire
@@ -51,10 +62,11 @@ contracts, exception semantics, package boundaries, and shared Kernel contracts 
 
 ## Next Steps
 
-Push this ledger-only checkpoint as the second transport leg, fetch, and verify exact local,
-remote-tracking, and PR-head equality. Then wait for PR #380's replacement checks, select its final
-E2E tier, enqueue and monitor the exact verified PR head, and follow its generated platform-sync PR
-to terminal green. Do not run duplicate local E2E before the queue.
+Add the `skip-e2e` label to PR #380, remove any stale `skip-e2e-ui` or `full-e2e` label, verify the PR
+head remains `85d4dae82cc564d7bed20dc6ad0722df025f8fcd`, then enqueue that exact remote head with
+`gh pr merge 380 --merge --auto`. Verify actual queue admission and monitor to a terminal merge,
+failure, or green-unadmitted state. Do not push this local terminal-check observation checkpoint.
+After merge, follow publication and the generated platform-sync PR to terminal green.
 
 ## Completed work
 
@@ -155,6 +167,13 @@ to terminal green. Do not run duplicate local E2E before the queue.
 - Refreshed work-head push: pushed
   `d242b376001c26223109b795d756792ddf85ca39..3c74bc8fee911eaaf7ec16ffe3548ccb79f43dcb`;
   fetched and verified local, remote-tracking, and PR #380 heads all equal `3c74bc8fe`.
+- Checkpoint transport: pushed `85d4dae82`, fetched, and verified local, remote-tracking, and PR #380
+  heads all equal that commit.
+- Replacement PR checks: CI run `31041455818` completed 39/39 terminal green at `85d4dae82`; build,
+  five carves, unit, and integration passed, with PR-level E2E skipped as expected.
+- Merge-queue tier: `skip-e2e` qualifies because the final diff is isolated to Search in-process
+  signatures and Search-owned unit enforcement, crosses no package/service or runtime boundary, and
+  is directly covered by green Search unit and integration tests.
 
 ## Reviews
 
@@ -374,6 +393,17 @@ to terminal green. Do not run duplicate local E2E before the queue.
 - Outcome: the work-head leg is verified and replacement PR checks are attached to the intended
   current source.
 - Follow-up: transport this ledger-only checkpoint, verify final equality, then wait for checks.
+
+### 2026-08-05 — refreshed PR checks terminal green
+
+- Action: verified checkpoint transport equality, polled the replacement PR check set to terminal,
+  rechecked the final net diff, and selected the merge-queue E2E tier.
+- Evidence: local, remote-tracking, and PR heads equal `85d4dae82`; CI run `31041455818` has 39
+  terminal checks with no failure; final diff contains 26 Search signature-only production files,
+  one Search architecture test, and plan/ledger documentation.
+- Outcome: PR #380 is green and current; `skip-e2e` is the strict final tier because no package,
+  service, shared-infrastructure, pipeline, multi-surface, or user-facing runtime boundary changed.
+- Follow-up: normalize labels, verify the remote head is unchanged, enqueue it, and monitor terminally.
 
 ## Resume prompt
 
