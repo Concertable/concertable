@@ -1,4 +1,5 @@
 using Concertable.B2B.Tenant.Application.Interfaces;
+using Concertable.B2B.Tenant.Application.Configuration;
 using Concertable.B2B.Tenant.Application.Tax;
 using Concertable.B2B.Tenant.Contracts;
 using Concertable.B2B.Tenant.Domain.Entities;
@@ -7,6 +8,7 @@ using Concertable.B2B.Tenant.Infrastructure.Services;
 using Concertable.Kernel.Exceptions;
 using Concertable.Kernel.Identity;
 using Moq;
+using Microsoft.Extensions.Options;
 
 namespace Concertable.B2B.Tenant.UnitTests;
 
@@ -18,7 +20,18 @@ public sealed class TenantServiceTests
     public TenantServiceTests()
     {
         this.repository = new Mock<ITenantRepository>();
-        this.service = new TenantService(repository.Object, Mock.Of<ITenantContext>(), new VatPolicy(new UkVatCalculator()));
+        var resolver = new TenantConfigurationResolver(Options.Create(new TenantConfigurationDefaultsOptions
+        {
+            PrsPassThroughRate = 0.042m,
+            VatRate = 0.20m,
+            PaymentTermsDays = 0,
+            CancellationNoticeHours = 0,
+        }));
+        this.service = new TenantService(
+            repository.Object,
+            Mock.Of<ITenantContext>(),
+            new VatPolicy(new UkVatCalculator()),
+            resolver);
     }
 
     private static TenantEntity Bare() =>
@@ -32,9 +45,40 @@ public sealed class TenantServiceTests
             "SID000001",
             new RegisteredAddress("1 Main St", "Floor 2", "London", "EC1A 1AA", "United Kingdom"),
             "GB00BANK00000000000001",
-            false));
+            false), TenantConfiguration.Empty);
         return tenant;
     }
+
+    #region GetConfigurationAsync
+
+    [Fact]
+    public async Task GetConfigurationAsync_TenantWithoutOverrides_ReturnsDefaults()
+    {
+        var id = Guid.NewGuid();
+        repository.Setup(r => r.GetByIdAsync(id, It.IsAny<CancellationToken>())).ReturnsAsync(Bare());
+
+        var result = await service.GetConfigurationAsync(id);
+
+        Assert.Equal(new TenantConfigurationValues(0.042m, 0.20m, 0, 0), result);
+    }
+
+    [Fact]
+    public async Task GetConfigurationAsync_TenantWithPartialOverrides_MergesEachField()
+    {
+        var id = Guid.NewGuid();
+        var tenant = Onboarded(null);
+        tenant.UpdateLegalDetails(
+            tenant.LegalName,
+            tenant.TaxCompliance!,
+            new TenantConfiguration(null, 0.05m, 30, null));
+        repository.Setup(r => r.GetByIdAsync(id, It.IsAny<CancellationToken>())).ReturnsAsync(tenant);
+
+        var result = await service.GetConfigurationAsync(id);
+
+        Assert.Equal(new TenantConfigurationValues(0.042m, 0.05m, 30, 0), result);
+    }
+
+    #endregion
 
     #region GetVatCalculationAsync
 

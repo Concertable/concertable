@@ -17,6 +17,21 @@ internal sealed class UpdateTenantRequestValidator : AbstractValidator<UpdateTen
         RuleFor(x => x.TaxCompliance)
             .NotNull()
             .SetValidator(new TaxComplianceDtoValidator(taxRules, taxOptions));
+
+        RuleFor(x => x.Configuration)
+            .NotNull()
+            .SetValidator(new TenantConfigurationDtoValidator());
+    }
+}
+
+internal sealed class TenantConfigurationDtoValidator : AbstractValidator<TenantConfigurationDto>
+{
+    public TenantConfigurationDtoValidator()
+    {
+        RuleFor(x => x.PrsPassThroughRate).InclusiveBetween(0m, 1m);
+        RuleFor(x => x.VatRate).InclusiveBetween(0m, 1m);
+        RuleFor(x => x.PaymentTermsDays).InclusiveBetween(0, 365);
+        RuleFor(x => x.CancellationNoticeHours).InclusiveBetween(0, 8760);
     }
 }
 

@@ -16,9 +16,25 @@ export interface TaxCompliance {
   holdsMusicLicence: boolean;
 }
 
+export interface TenantConfiguration {
+  prsPassThroughRate?: number;
+  vatRate?: number;
+  paymentTermsDays?: number;
+  cancellationNoticeHours?: number;
+}
+
+export interface TenantConfigurationValues {
+  prsPassThroughRate: number;
+  vatRate: number;
+  paymentTermsDays: number;
+  cancellationNoticeHours: number;
+}
+
 export interface Organization {
   id: string;
   legalName: string;
   // Absent until setup — its presence IS completeness (the API rejects incomplete/invalid data on write).
   taxCompliance?: TaxCompliance;
+  configuration: TenantConfiguration;
+  configurationDefaults: TenantConfigurationValues;
 }

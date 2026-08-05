@@ -25,6 +25,14 @@ internal static class TenantMappers
         Country = address.Country,
     };
 
+    public static TenantConfigurationDto ToDto(this TenantConfiguration configuration) => new()
+    {
+        PrsPassThroughRate = configuration.PrsPassThroughRate,
+        VatRate = configuration.VatRate,
+        PaymentTermsDays = configuration.PaymentTermsDays,
+        CancellationNoticeHours = configuration.CancellationNoticeHours,
+    };
+
     public static TaxCompliance ToTaxCompliance(this TaxComplianceDto dto) => new(
         dto.VatNumber,
         dto.SellerIdentifier,
@@ -36,4 +44,10 @@ internal static class TenantMappers
             dto.RegisteredAddress.Country),
         dto.BankReference,
         dto.HoldsMusicLicence);
+
+    public static TenantConfiguration ToTenantConfiguration(this TenantConfigurationDto dto) => new(
+        dto.PrsPassThroughRate,
+        dto.VatRate,
+        dto.PaymentTermsDays,
+        dto.CancellationNoticeHours);
 }

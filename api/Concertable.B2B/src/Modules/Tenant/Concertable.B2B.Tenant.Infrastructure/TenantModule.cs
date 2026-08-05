@@ -24,6 +24,9 @@ internal sealed class TenantModule : ITenantModule
     public Task<TaxComplianceDto?> GetTaxComplianceAsync(Guid tenantId, CancellationToken ct = default) =>
         service.GetTaxComplianceAsync(tenantId, ct);
 
+    public Task<TenantConfigurationValues> GetConfigurationAsync(Guid tenantId, CancellationToken ct = default) =>
+        service.GetConfigurationAsync(tenantId, ct);
+
     public Task<VatCalculation> GetVatCalculationAsync(Guid tenantId, decimal gross, CancellationToken ct = default) =>
         service.GetVatCalculationAsync(tenantId, gross, ct);
 }

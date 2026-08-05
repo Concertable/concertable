@@ -47,6 +47,13 @@ public sealed class TaxComplianceRoundTripTests : IAsyncLifetime
             BankReference = "GB29NWBK60161331926819",
             HoldsMusicLicence = true,
         },
+        Configuration = new TenantConfigurationDto
+        {
+            PrsPassThroughRate = 0.05m,
+            VatRate = 0.175m,
+            PaymentTermsDays = 14,
+            CancellationNoticeHours = 48,
+        },
     };
 
     [Fact]
@@ -65,6 +72,8 @@ public sealed class TaxComplianceRoundTripTests : IAsyncLifetime
         Assert.Equal(expectedTenantId, organization!.Id);
         // No tax data yet = not complete (the nag's source of truth).
         Assert.Null(organization.TaxCompliance);
+        Assert.Equal(new TenantConfigurationDto(), organization.Configuration);
+        Assert.Equal(new TenantConfigurationValues(0.042m, 0.20m, 0, 0), organization.ConfigurationDefaults);
     }
 
     [Fact]
@@ -83,6 +92,7 @@ public sealed class TaxComplianceRoundTripTests : IAsyncLifetime
         Assert.Equal(request.LegalName, read!.LegalName);
         // Same DTO shape for read and write, so it round-trips by value; presence == complete.
         Assert.Equal(request.TaxCompliance, read.TaxCompliance);
+        Assert.Equal(request.Configuration, read.Configuration);
 
         var tenant = await fixture.Tenants.SingleOrDefaultAsync(t => t.Id == tenantId);
 
@@ -94,6 +104,7 @@ public sealed class TaxComplianceRoundTripTests : IAsyncLifetime
             holdsMusicLicence: true);
         Assert.NotNull(tenant);
         Assert.Equal(expected, tenant!.TaxCompliance);
+        Assert.Equal(new TenantConfiguration(0.05m, 0.175m, 14, 48), tenant.Configuration);
     }
 
     [Fact]
@@ -122,6 +133,10 @@ public sealed class TaxComplianceRoundTripTests : IAsyncLifetime
                 BankReference = "GB94BARC10201530093459",
                 HoldsMusicLicence = false,
             },
+            Configuration = new TenantConfigurationDto
+            {
+                PaymentTermsDays = 30,
+            },
         };
         await (await client.PutAsJsonAsync("/api/organizations", replacement)).ShouldBe(HttpStatusCode.OK);
 
@@ -129,6 +144,7 @@ public sealed class TaxComplianceRoundTripTests : IAsyncLifetime
         Assert.NotNull(read);
         Assert.Equal(replacement.LegalName, read!.LegalName);
         Assert.Equal(replacement.TaxCompliance, read.TaxCompliance);
+        Assert.Equal(replacement.Configuration, read.Configuration);
     }
 
     [Fact]
