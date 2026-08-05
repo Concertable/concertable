@@ -4,8 +4,8 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_search-contracts`
 - Branch: `Feature/typed-result_search-contracts`
 - PR: #380 — https://github.com/Concertable/concertable/pull/380 — MERGED as `55c807784470d32d1b2baf845844ed330810c10a` from verified source head `85d4dae82cc564d7bed20dc6ad0722df025f8fcd`
-- Dependency/package gates: owned Kernel foundation PR #290 and platform sync PR #291 merged; platform sync PR #381 merged green as `355f658b9d556dd07e3fa612fb1b04bcdb63a59d`, publishing the current `ConcertablePlatformVersion` `0.1.0-alpha.0.819` pin to `main`; no Payment, B2B, or Customer migration dependency
-- Last reconciled: 2026-08-05 21:46 BST against merged GitHub PR #380, successful merge-group run `31044127292`, and merge commit `55c807784470d32d1b2baf845844ed330810c10a`
+- Dependency/package gates: publication run `31045652942` succeeded and fresh-consumer restore passed for `ConcertablePlatformVersion` `0.1.0-alpha.0.827`; generated platform-sync PR #388 is OPEN/BLOCKED at head `2504318e16f8046958acbd3a5d3f583c8ff7f231` with checks in progress; no Payment, B2B, or Customer migration dependency
+- Last reconciled: 2026-08-05 21:54 BST against merged PR #380, successful publication run `31045652942`, successful platform-sync workflow run `31045825169`, and open sync PR #388
 
 ## Current state
 
@@ -80,6 +80,12 @@ as `55c807784470d32d1b2baf845844ed330810c10a` from unchanged source head `85d4da
 label suppressed both queue E2E suites as intended while build, carve, unit, and integration remained
 green. Publication and the generated platform-sync PR are now the live lifecycle gates.
 
+`Publish packages` run `31045652942` completed successfully for merge `55c807784`; its publish and
+fresh-consumer restore jobs both passed. It produced platform version `0.1.0-alpha.0.827`, and
+platform-sync workflow run `31045825169` succeeded. Generated PR #388 is open at source head
+`2504318e16f8046958acbd3a5d3f583c8ff7f231`, auto-merge enabled, while its build/unit/integration
+and carve check set completes. No check is currently failed.
+
 The autocomplete and header repository, service, and dispatcher chains now declare materialized
 `IReadOnlyList<T>` results throughout. All existing query bodies, `ToListAsync()` terminals, ordering,
 filters, empty-list behavior, pagination, DTO/projection shapes, nullable inputs, controller/wire
@@ -87,10 +93,10 @@ contracts, exception semantics, package boundaries, and shared Kernel contracts 
 
 ## Next Steps
 
-Find the `Publish packages` workflow run caused by merge commit `55c807784470d32d1b2baf845844ed330810c10a`
-and follow it to terminal success, recording the published version. Then discover the generated
-`chore/platform-sync-*` PR, follow its checks and auto-merge to terminal green, and migrate consumers
-in that sync PR if it turns red. Preserve the source worktree's unpushed ledger-only recovery tail.
+Poll platform-sync PR #388's exact head `2504318e16f8046958acbd3a5d3f583c8ff7f231`
+until its checks are terminal. If red, inspect the failing build and migrate consumers in the sync PR;
+if green, confirm auto-merge and follow it to its merge commit. Preserve the source worktree's
+unpushed ledger-only recovery tail.
 
 ## Completed work
 
@@ -208,6 +214,10 @@ in that sync PR if it turns red. Preserve the source worktree's unpushed ledger-
   queue state `AWAITING_CHECKS`, merge-group run `31044127292` queued.
 - Merge queue: run `31044127292` completed successfully and PR #380 merged as `55c807784` from
   unchanged source head `85d4dae82`; `skip-e2e` suppressed queue E2E while all remaining gates passed.
+- Publication: `Publish packages` run `31045652942` succeeded for merge `55c807784`; both publish and
+  fresh-consumer restore jobs passed, producing platform version `0.1.0-alpha.0.827`.
+- Platform sync discovery: workflow run `31045825169` succeeded and opened PR #388 at head
+  `2504318e1`; auto-merge is enabled and its check matrix is in progress with no failure.
 
 ## Reviews
 
@@ -487,6 +497,15 @@ in that sync PR if it turns red. Preserve the source worktree's unpushed ledger-
 - Outcome: Search contract normalization is landed; publication and generated platform sync remain
   live gates because the merged diff touches `api/**`.
 - Follow-up: follow the merge-triggered publication to success/version, then the sync PR to green merge.
+
+### 2026-08-05 — Search publication green and sync PR discovered
+
+- Action: resolved the merge-triggered workflow chain, verified package publication and fresh-feed
+  restore, resolved the published version, and inspected the generated sync PR's source and checks.
+- Evidence: publication run `31045652942` success; platform-sync workflow `31045825169` success;
+  version `0.1.0-alpha.0.827`; PR #388 OPEN/BLOCKED at `2504318e1`, auto-merge enabled, no failed check.
+- Outcome: package publication is terminal green; platform-sync PR #388 is the sole live gate.
+- Follow-up: wait for PR #388's checks, migrate consumers if red, otherwise confirm its green merge.
 
 ## Resume prompt
 
