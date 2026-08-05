@@ -37,8 +37,9 @@ Reconciliation findings vs the plan's Phase 4/5 text:
 
 ## Next Steps
 
-1. **Finish PR1 (this branch — Phase 4 + Phase 5 publisher side):** confirm `dotnet build api/Concertable.slnx` 0 errors (must show Payment.Client compiling with `Money` while B2B/Customer still build against the old package — the split), run affected tests via `integration-debug` (Customer Ticket + Payment unit), commit, open the PR. This PR is a **package cut-over** (breaking published `Concertable.Payment.Client` signatures) → the merge-queue E2E can't pass here (packaged consumers still on old wire) → ship `skip-e2e`, same rationale as Phase 2's #207.
-2. **Own the `chore/platform-sync-*` PR after merge** → execute the "Sync-PR (consumer/contract) migration plan" in Current state (B2B call sites + `ISettlementAmountResolver` + `deal.Fee`/`HireFee` + re-scaffold + mocks + Customer PayAsync). Build B2B+Customer 0 errors, grep gate zero, push. That green sync PR is the plan's terminal gate.
+1. **PR1 committed (`6daede3ff`) — build + unit green.** Push `Refactor/launch_money-value-type` and open the PR with `skip-e2e` (breaking published `Concertable.Payment.Client` cut-over: merge-queue E2E can't pass until the pin bumps — same rationale as Phase 2's #207; unit + integration + build still run and gate it). Personal repo → plain `gh pr create` (no AB#).
+2. **Merge via `/merge`** (currency check → auto-merge → confirm loop). On merge, `Payment.Client` republishes → `chore/platform-sync-*` sync PR opens and goes **RED** (consumers still call the old decimal shape — expected).
+3. **Own the sync PR to green** → execute the "Sync-PR (consumer/contract) migration plan" in Current state (B2B call sites + `ISettlementAmountResolver` + `deal.Fee`/`HireFee` + `./initial-migrations.ps1` re-scaffold + mocks + Customer PayAsync). Build B2B+Customer 0 errors, grep gate zero, push. **COORDINATE the VAT/settlement seam with `Feature/launch_tenant-config-surface`.** That green sync PR is the plan's terminal gate → then close out the plan + ledger.
 
 ## Completed work
 
@@ -48,6 +49,10 @@ Reconciliation findings vs the plan's Phase 4/5 text:
 ## Verification
 
 - 2026-08-05: `Money.cs` + `Money.Gbp` present on `origin/main` worktree (P1 confirmed). Grep gate run (see Current state). Customer Ticket Infrastructure `.csproj` references `Concertable.Kernel` package (Money resolvable for Phase 4).
+- 2026-08-05 (PR1, commit `6daede3ff`):
+  - **Build** — full `api/Concertable.slnx` green earlier for Phase 4 (exit 0). For the Phase 5 publisher change, targeted builds (full slnx exceeds the 10-min foreground cap and background builds get killed at turn boundaries here): `Concertable.Payment.Client` 0 err, `Concertable.Payment.E2ETests.Helpers` 0 err (publisher side compiles with `Money`), **`Concertable.B2B.Concert.Infrastructure` 0 err + `Concertable.Customer.Ticket.Infrastructure` 0 err (consumers still compile against the OLD pinned package → expand/contract split confirmed)**. B2B/Customer source is untouched by Phase 5, so their package-boundary compile is unchanged from the green Phase-4 full build.
+  - **Unit** — `Concertable.Payment.UnitTests` 138/138, `Concertable.Customer.Ticket.UnitTests` 18/18.
+  - **Integration** — BLOCKED locally: `Microsoft.Data.SqlClient.SNI.dll` `DllNotFoundException` `0x800700CE` (Windows MAX_PATH exceeded by the SNI native probe path in this deep worktree). Environmental, affects all integration tests here regardless of the change; the merge queue runs integration on normal CI paths as the authoritative gate. Change is a type refactor + GBP rounding no-op, fully covered by build + unit locally.
 
 ## Reviews
 
@@ -67,6 +72,13 @@ Reconciliation findings vs the plan's Phase 4/5 text:
 - Evidence: `git worktree add`; `Money.cs` read; grep gate; `E2EStripeAccountClient.cs` already on `Money`.
 - Outcome: Phase 4 scoped to `TicketService.cs:130`; Phase 5 contract surface mapping in progress.
 - Follow-up: execute Phase 4, then Phase 5.
+
+### 2026-08-05 — PR1 committed (Phase 4 + Phase 5 publisher)
+
+- Action: Applied Phase 4 (Customer `TicketService`) + Phase 5 publisher side (`Payment.Client` 5 interface methods `decimal`→`Money` + 3 adapters, deleted orphaned `Client/EscrowDto.cs`, `StripeFixture` 2 casts→`Money`). Committed.
+- Evidence: commit `6daede3ff`; targeted builds all 0 err (publisher + both consumers on old package); unit Payment 138/138 + Customer Ticket 18/18; integration blocked locally by worktree MAX_PATH (env, not code — see Verification).
+- Outcome: expand/contract split proven; publisher side ready to publish.
+- Follow-up: push, open PR (`skip-e2e`), merge, then own the sync PR consumer migration.
 
 ## Resume prompt
 
