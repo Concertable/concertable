@@ -3,9 +3,9 @@
 - Plan: `plans/typed-result/SEARCH_CONTRACTS_PLAN.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_search-contracts`
 - Branch: `Feature/typed-result_search-contracts`
-- PR: #380 — https://github.com/Concertable/concertable/pull/380 — OPEN at verified checkpoint head `85d4dae82cc564d7bed20dc6ad0722df025f8fcd`; all 39 PR checks terminal green
+- PR: #380 — https://github.com/Concertable/concertable/pull/380 — MERGED as `55c807784470d32d1b2baf845844ed330810c10a` from verified source head `85d4dae82cc564d7bed20dc6ad0722df025f8fcd`
 - Dependency/package gates: owned Kernel foundation PR #290 and platform sync PR #291 merged; platform sync PR #381 merged green as `355f658b9d556dd07e3fa612fb1b04bcdb63a59d`, publishing the current `ConcertablePlatformVersion` `0.1.0-alpha.0.819` pin to `main`; no Payment, B2B, or Customer migration dependency
-- Last reconciled: 2026-08-05 21:02 BST against fetched `origin/main` commit `355f658b9d556dd07e3fa612fb1b04bcdb63a59d` and GitHub PR #380 at verified checkpoint head `85d4dae82cc564d7bed20dc6ad0722df025f8fcd`
+- Last reconciled: 2026-08-05 21:46 BST against merged GitHub PR #380, successful merge-group run `31044127292`, and merge commit `55c807784470d32d1b2baf845844ed330810c10a`
 
 ## Current state
 
@@ -75,6 +75,11 @@ The one-time nudge succeeded. PR #380 remains at unchanged remote source head `8
 `31044127292` was dispatched on `gh-readonly-queue/main/pr-380-754b06e008a7a066f07ec1384f48a146330db99a`.
 The local observation tail remains ledger-only and unpushed.
 
+Merge-group run `31044127292` completed successfully. PR #380 then merged at 2026-08-05 20:46:11 UTC
+as `55c807784470d32d1b2baf845844ed330810c10a` from unchanged source head `85d4dae82`; the `skip-e2e`
+label suppressed both queue E2E suites as intended while build, carve, unit, and integration remained
+green. Publication and the generated platform-sync PR are now the live lifecycle gates.
+
 The autocomplete and header repository, service, and dispatcher chains now declare materialized
 `IReadOnlyList<T>` results throughout. All existing query bodies, `ToListAsync()` terminals, ordering,
 filters, empty-list behavior, pagination, DTO/projection shapes, nullable inputs, controller/wire
@@ -82,11 +87,10 @@ contracts, exception semantics, package boundaries, and shared Kernel contracts 
 
 ## Next Steps
 
-Monitor PR #380 and merge-group run `31044127292` terminally, scanning PR checks and all merge-group
-runs for this PR. Stop on merge, failure/ejection, closed-unmerged, sustained green-unadmitted state,
-or bounded timeout. Do not retry a failing queue run and do not push the local observation tail. On
-merge, checkpoint the merge commit immediately, then follow publication and the generated
-platform-sync PR to terminal green.
+Find the `Publish packages` workflow run caused by merge commit `55c807784470d32d1b2baf845844ed330810c10a`
+and follow it to terminal success, recording the published version. Then discover the generated
+`chore/platform-sync-*` PR, follow its checks and auto-merge to terminal green, and migrate consumers
+in that sync PR if it turns red. Preserve the source worktree's unpushed ledger-only recovery tail.
 
 ## Completed work
 
@@ -202,6 +206,8 @@ platform-sync PR to terminal green.
   after one transient `UNKNOWN`, the final six were consecutively `OPEN/CLEAN` at `85d4dae82`.
 - Queue admission recovery: the single disable/re-enable nudge admitted unchanged head `85d4dae82`;
   queue state `AWAITING_CHECKS`, merge-group run `31044127292` queued.
+- Merge queue: run `31044127292` completed successfully and PR #380 merged as `55c807784` from
+  unchanged source head `85d4dae82`; `skip-e2e` suppressed queue E2E while all remaining gates passed.
 
 ## Reviews
 
@@ -471,6 +477,16 @@ platform-sync PR to terminal green.
 - Outcome: the documented re-evaluation recovery succeeded and the exact reviewed source is now in
   the merge queue.
 - Follow-up: monitor PR and merge-group outcomes terminally without retries.
+
+### 2026-08-05 — Search PR #380 merged green
+
+- Action: monitored PR state, queue entry, PR failures, and merge-group failures through the admitted
+  run, then reconciled the terminal PR and run records.
+- Evidence: merge-group run `31044127292` completed `success`; PR #380 merged at 20:46:11 UTC as
+  `55c807784470d32d1b2baf845844ed330810c10a` from source `85d4dae82` with `skip-e2e`.
+- Outcome: Search contract normalization is landed; publication and generated platform sync remain
+  live gates because the merged diff touches `api/**`.
+- Follow-up: follow the merge-triggered publication to success/version, then the sync PR to green merge.
 
 ## Resume prompt
 
