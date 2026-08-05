@@ -1,6 +1,6 @@
 ---
 name: docs-review
-description: Full review of a branch's documentation/meta diff (**/*.md, .agents & .claude skills, plans/**, docs/**, AGENTS.md, CLAUDE.md, PROMPTS.md, README*) against the repo's own doc conventions — accuracy vs the real code/commands/paths it cites, contradiction with sibling docs, the topic-playbook "own doc, lazy pointer" convention, concision of prompt-loaded docs, and dangling references to transient artifacts. The docs counterpart to `code-review`: same review-file work-order format and confidence bar, different lenses. Use when the user wants to "docs-review", "review these docs", or before merging a docs/meta-only PR (the `/merge` docs branch and `/merge-docs` gate on it). For runtime/source changes use `code-review`.
+description: Full review of a branch's documentation/meta diff (**/*.md, .agents & .claude skills, plans/**, docs/**, AGENTS.md, CLAUDE.md, PROMPTS.md, README*) against the repo's own doc conventions — accuracy vs the real code/commands/paths it cites, contradiction with sibling docs, the topic-playbook convention, concision of harness-reloaded docs, and dangling references to transient artifacts. The docs counterpart to `code-review`: same review-file work-order format and confidence bar, different lenses. Use when the user wants to "docs-review", "review these docs", or before merging a docs/meta-only PR (the `/merge` docs branch and `/merge-docs` gate on it). For runtime/source changes use `code-review`.
 ---
 
 # docs-review
@@ -61,8 +61,9 @@ already exists, leave it intact and append. Then review and append each confirme
 
 ## Step 2 — Load the rules (read before flagging anything)
 
-The doc conventions are the source of truth; read the ones the diff touches and only flag what a
-convention actually states:
+The doc conventions are the source of truth. Read the ones the diff touches; flag a **convention**
+issue (Lens C) only when a doc actually states it, but Lens A/B/D/E/F stand on accuracy, internal
+consistency, and the observable fact of which files the harness reloads — not on a written convention:
 
 - Root `AGENTS.md` / `CLAUDE.md` — top-of-context conventions, incl. the comment/doc philosophy.
 - `plans/AGENTS.md`, `plans/agents/ROADMAP.md`, `plans/agents/PLAN.md` — the ROADMAP→PLAN→PROGRESS
@@ -95,18 +96,21 @@ places, not just one.
 
 ### Lens C — Right home & the topic-playbook convention
 
-- New guidance **bolted onto a hub** (root `AGENTS.md`/`CLAUDE.md`) that belongs in the topic's own
-  doc — the convention is "own doc, lazy pointer," not a growing hub.
+The repo keeps each topic's rules in its **own playbook** (`plans/agents/PLAN.md` / `ROADMAP.md` are
+literally "the topic playbook for …") and hubs (`AGENTS.md`) as pointers to them. Flag:
+
+- New guidance **bolted onto a hub** that belongs in the topic's own doc — grow the playbook, not the hub.
 - The **same rule stated in two places** so the copies will drift — collapse to one home + a pointer.
 - A rule added to the **wrong owner** (a service rule in a global file, or vice versa).
 
-### Lens D — Concision of prompt-loaded docs
+### Lens D — Concision of harness-reloaded docs
 
-Docs loaded every prompt — root `AGENTS.md`/`CLAUDE.md`, every skill `SKILL.md` frontmatter/body, the
-`plans/agents/*` playbooks — cost recurring tokens. Flag additions that don't carry a rule: restating a
-rule already stated, example blocks or preamble that add words without adding constraint, narration.
-The fix is concrete: tighten in place / delete the redundant lines. (Ordinary long-form docs under
-`docs/` and `plans/*_PLAN.md` are held to clarity, not word-count — don't nit their length.)
+The harness reloads some docs into **every prompt** — root `AGENTS.md`/`CLAUDE.md`, every skill
+`SKILL.md`, the `plans/agents/*` playbooks — so each added word there is a recurring cost. In those
+files flag additions that carry no rule: restating a rule already stated, example blocks or preamble
+that add words without adding constraint, narration. The fix is concrete: tighten in place / delete the
+redundant lines. (Ordinary long-form docs under `docs/` and `plans/*_PLAN.md` are held to clarity, not
+word-count — don't nit their length.)
 
 ### Lens E — Dangling / transient references
 
@@ -159,7 +163,7 @@ Give each finding a short stable ID (`ACC1` accuracy, `CON1` contradiction, `HOM
 `INST1`) so `incremental-review` can append without renumbering. If a review file already exists,
 **append** a dated `## Incremental review — <date>` section; preserve existing status marks. No
 findings → write `No issues found. Checked accuracy vs reality, cross-doc contradiction, doc home &
-convention, prompt-loaded concision, dangling references, and followable instruction.`
+convention, harness-reloaded concision, dangling references, and followable instruction.`
 
 ## Step 6 — Stamp the marker (mandatory)
 
