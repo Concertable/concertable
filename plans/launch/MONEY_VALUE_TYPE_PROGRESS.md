@@ -3,7 +3,7 @@
 - Plan: `plans/launch/MONEY_VALUE_TYPE_PLAN.md`
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable.worktrees/Refactor/launch_money-value-type`
 - Branch: `Refactor/launch_money-value-type` (off `origin/main` @ `55c807784`)
-- PR: `not opened`
+- PR: `#390 — https://github.com/Concertable/concertable/pull/390` (Phase 4 + Phase 5 publisher; full E2E)
 - Dependency/package gates: Phase 5 is a breaking published-contract change (`Concertable.Payment.Client`) → publish-first; consumers migrate in the `chore/platform-sync-*` PR. Coordinate the B2B settlement/VAT seam with `Feature/launch_tenant-config-surface` (whichever lands second rebases).
 - Last reconciled: 2026-08-05, off `origin/main` worktree evidence (grep gate + file reads).
 
@@ -37,7 +37,7 @@ Reconciliation findings vs the plan's Phase 4/5 text:
 
 ## Next Steps
 
-1. **PR1 committed (`6daede3ff`) — build + unit green.** Push `Refactor/launch_money-value-type` and open the PR with `skip-e2e` (breaking published `Concertable.Payment.Client` cut-over: merge-queue E2E can't pass until the pin bumps — same rationale as Phase 2's #207; unit + integration + build still run and gate it). Personal repo → plain `gh pr create` (no AB#).
+1. **PR1 committed (`6daede3ff`) — build + unit green, pushed.** Open the PR with **FULL E2E (no skip)**. Rationale correction: Phase 2's `skip-e2e` was because it changed the gRPC **wire** (old packaged client × new server → runtime break, un-runnable until pin bump). PR1 changes only the C# interface param **types** (`decimal`→`Money`) — the adapters emit the identical proto `Money`, consumers build against the old pinned package, so there is **zero runtime/wire change** and E2E is not blocked. Published-package-boundary changes must run full E2E per the tier rules. Personal repo → plain `gh pr create` (no AB#).
 2. **Merge via `/merge`** (currency check → auto-merge → confirm loop). On merge, `Payment.Client` republishes → `chore/platform-sync-*` sync PR opens and goes **RED** (consumers still call the old decimal shape — expected).
 3. **Own the sync PR to green** → execute the "Sync-PR (consumer/contract) migration plan" in Current state (B2B call sites + `ISettlementAmountResolver` + `deal.Fee`/`HireFee` + `./initial-migrations.ps1` re-scaffold + mocks + Customer PayAsync). Build B2B+Customer 0 errors, grep gate zero, push. **COORDINATE the VAT/settlement seam with `Feature/launch_tenant-config-surface`.** That green sync PR is the plan's terminal gate → then close out the plan + ledger.
 
@@ -78,7 +78,14 @@ Reconciliation findings vs the plan's Phase 4/5 text:
 - Action: Applied Phase 4 (Customer `TicketService`) + Phase 5 publisher side (`Payment.Client` 5 interface methods `decimal`→`Money` + 3 adapters, deleted orphaned `Client/EscrowDto.cs`, `StripeFixture` 2 casts→`Money`). Committed.
 - Evidence: commit `6daede3ff`; targeted builds all 0 err (publisher + both consumers on old package); unit Payment 138/138 + Customer Ticket 18/18; integration blocked locally by worktree MAX_PATH (env, not code — see Verification).
 - Outcome: expand/contract split proven; publisher side ready to publish.
-- Follow-up: push, open PR (`skip-e2e`), merge, then own the sync PR consumer migration.
+- Follow-up: push, open PR, merge, then own the sync PR consumer migration.
+
+### 2026-08-05 — PR1 pushed + opened (#390)
+
+- Action: Pushed `Refactor/launch_money-value-type` (via `git -C`; a bare `git push` from the reset cwd errored "cannot be resolved to branch"). Opened PR #390 against `main`, **full E2E (no skip)** — corrected the earlier skip-e2e assumption (PR1 has no wire change, unlike Phase 2).
+- Evidence: commits `6daede3ff` + `02d77d919` pushed; PR https://github.com/Concertable/concertable/pull/390.
+- Outcome: PR1 open, awaiting merge-queue checks.
+- Follow-up: verify branch currency vs `main`, enable auto-merge (`/merge`), confirm loop; then own the sync PR.
 
 ## Resume prompt
 
