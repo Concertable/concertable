@@ -56,7 +56,7 @@ Reconciliation findings vs the plan's Phase 4/5 text:
 
 ## Reviews
 
-<none yet>
+- 2026-08-05 `/code-review` on `origin/main..0ba389c06` (PR1) → **No issues found** (`reviews/Refactor-launch_money-value-type.md`, watermark `0ba389c06`). Behavior-preserving type refactor; all considered notes sub-threshold. No open findings.
 
 ## Decisions, discoveries, blockers, and deviations
 
