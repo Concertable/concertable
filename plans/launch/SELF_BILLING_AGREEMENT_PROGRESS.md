@@ -3,11 +3,12 @@
 - Plan: `plans/launch/SELF_BILLING_AGREEMENT_PLAN.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable` (main checkout)
 - Branch: `Feature/SelfBillingAgreement`
-- PR: not opened
+- PR: **#352** (https://github.com/Concertable/concertable/pull/352) — open, branch current with `origin/main`, code review clean.
 - Dependency/package gates: none yet. Phase 3 touches `api/**`, so on merge a
   `chore/platform-sync-*` PR will fire and must be owned to green before close-out.
-- Last reconciled: 2026-08-05 — **Phase 3 backend enforcement built, verified green, and committed**
-  (`588da60e9`). Remaining Phase 3: supplier-facing deferred surface + roadmap tick, then PR/merge/platform-sync.
+- Last reconciled: 2026-08-05 — **Phase 3 complete; PR #352 open, code-review clean (0 findings); enqueuing
+  full-E2E merge.** Currency merge of `origin/main` done + rebuilt green (0 errors). Remaining: land via merge
+  queue, own the `chore/platform-sync-*` PR to green, then delete plan + ledger in the close-out.
 
 ## Current state
 
@@ -80,19 +81,18 @@ alternative (Tenant module) and its cost are recorded in the plan §3.
 
 ## Next Steps
 
-**Phase 3 is COMPLETE and verified locally** — backend enforcement (`588da60e9`) + surface/roadmap commit (see
-Current state). All Phase 3 plan boxes ticked. Verified green: full `api/Concertable.slnx` build; Concert unit
-79/79 + integration 144/144 + Workers unit 4/4; all four web builds.
+**Phase 3 COMPLETE + PR #352 open + code-review clean (0 findings).** Tommy gave the go to push (2026-08-05):
+branch pushed, currency-merged to `origin/main` + rebuilt green (0 errors), PR #352 opened (plain `gh pr create`,
+personal repo — no AB#/assignee). Merge-gate Step 0 review done and clean.
 
-**Immediate next action — on Tommy's go to push:** open the PR for `Feature/SelfBillingAgreement` (plain
-`gh pr create`, personal repo — no AB#/assignee). **Merge-queue full E2E tier — NOT skip-eligible** (Phase 3
-changes settlement behaviour + adds a user-facing compliance flow across both SPAs); ensure no stale skip label.
-Before enabling auto-merge, update the branch to current `origin/main` and rebuild green. On merge, **own the
-`chore/platform-sync-*` PR to green** (Phase 3 touches `api/**`). Then **delete plan + ledger together** in the
-close-out change (git history is the archive).
+**Immediate next action — enqueue via the `merge` skill.** **Merge-queue full E2E tier — NOT skip-eligible**
+(Phase 3 changes settlement behaviour + adds a compliance flow across both SPAs); ensure no stale skip label.
+Branch is already current with `origin/main`, so enqueue: `gh pr merge 352 --merge --auto`, then confirm to a
+terminal state via the AGENTS.md background until-loop. On merge, **own the `chore/platform-sync-*` PR to green**
+(Phase 3 touches `api/**`). Then **delete plan + ledger together** in the close-out change (git history is the archive).
 
-**Nothing is pushed yet** — the branch has no PR and is ~20 commits ahead of `origin/main`. Do not push without
-Tommy's explicit go.
+**Note:** PR #352 also carries an unrelated bundled commit — a new slim Concertable `create-gh-pr` skill
+(`5070a8026`, GitHub-only, no AB#/ADO) — per Tommy's "dump all this together". Doc/skill markdown; no build/E2E impact.
 
 Env note: the unrelated in-flight Deal `Dunet` NU1010 break + `Checkout.cs` move remain stashed
 (`git stash list` → `stash@{0}`); pop them back when appropriate.
@@ -124,7 +124,17 @@ uses the merge-queue full E2E tier (not skip-eligible).
 
 ## Reviews
 
-None yet.
+- **2026-08-05 — full `/code-review` (merge-gate Step 0), PR #352 — CLEAN, 0 findings.** All six lenses
+  passed over the `main..HEAD` self-billing diff (58 code files). Verified sound: filter-free
+  `SelfBillingAgreementGate` read (explicit `TenantId == supplier && ExpiresAtUtc > now`, correct for the
+  tenant-less sweep, mirrors `ConcertAvailability`); `FinishExecutor` gate ordering (tax → self-billing,
+  both defer before any transition; `ConcertCompletionRunner` handles the new enum case); per-supplier
+  sequence not consumed on deferral (issuance inside the transition, after both gates; pinned by test);
+  entity immutability; HATEOAS affordances; defer/self-heal + endpoint + service coverage; seeding legal;
+  no cross-service leaks. One close call dropped below the bar: `SelfBillingAgreementGate` primary
+  constructor — its sibling `ConcertAvailability` (same folder, same dep) uses the identical form, so
+  flagging only the new one would be an inconsistency-creating nitpick. Review file:
+  `reviews/Feature-SelfBillingAgreement.md` (marker at HEAD).
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -164,6 +174,19 @@ None yet.
   so the self-billing page shows the self-billing clause honestly instead of contract copy.
 
 ## Event log
+
+### 2026-08-05 — PR #352 opened, code-review clean, enqueuing
+
+- Action: On Tommy's go, ran the merge sequence. Currency pre-step: merged `origin/main` (2 behind — a merged
+  platform-sync bump to `0.1.0-alpha.0.795`) into the branch, rebuilt `api/Concertable.slnx` → 0 errors. Pushed;
+  opened PR #352 (plain `gh pr create`, no AB#/assignee). Ran the mandatory merge-gate `/code-review` (delegated
+  to a background agent following the skill) over the full `main..HEAD` diff. Also bundled in, per Tommy's "dump
+  all this together": a new slim Concertable `create-gh-pr` skill (`5070a8026`).
+- Evidence: PR #352; review clean (0 findings, all six lenses) → `reviews/Feature-SelfBillingAgreement.md`;
+  build green (0 errors) after the currency merge.
+- Outcome: PR open, current with main, review-clean — ready to enqueue at full E2E tier.
+- Follow-up: `gh pr merge 352 --merge --auto`; confirm terminal state; own the `chore/platform-sync-*` PR to
+  green; then delete plan + ledger in the close-out.
 
 ### 2026-08-05 — Phase 3 backend enforcement built + committed (`588da60e9`)
 
