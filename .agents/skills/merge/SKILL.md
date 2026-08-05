@@ -63,7 +63,8 @@ or queueing. Never push a checkpoint-only local tail to a queued, locked, merged
    git rev-parse --abbrev-ref HEAD                 # current branch (must not be main)
    gh pr view --json number,state,title,url --jq '{number,state,title,url}'
    ```
-   - If on `main`, or there's no PR for the branch, **stop** and say so — there's nothing to merge.
+   - If on `main`, or there's no PR for the branch, **stop** and say so — there's nothing to merge
+     (open one with `create-gh-pr` first).
    - If the PR is already `MERGED`, skip to step 5 (sync main). If `CLOSED`, stop and report.
 
 2. **Make sure the branch is pushed, current with its remote, AND not stale vs `main`.**

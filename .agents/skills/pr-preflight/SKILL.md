@@ -1,6 +1,6 @@
 ---
 name: pr-preflight
-description: Pre-flight readiness gate — a READ-ONLY check of whether the current branch is CLEAR to open (or enqueue) a PR, run before you do. Verifies you're on a proper `<Type>/<Name>` branch (not main), your local is in sync with origin (not behind, not ahead-unpushed, not tracking a `[gone]` remote), the branch isn't badly stale vs main, all CODE is committed (docs/plans may ride uncommitted), no red/pending platform-sync gate is blocking merges, and no half-done published-package cut-over is left out of sync — then reports GREEN (clear, with the next command) or names exactly what's blocking and the fix. Use whenever Tommy says "can I PR this", "am I clear to PR", "ready to PR/merge?", "pr preflight", "check before I PR", "is this branch clean to ship", or before running `merge` or `gh pr create`. Concertable-specific (knows this repo's merge queue + platform-sync gate + branch conventions). Changes NO state — plain read-only `git`/`gh`.
+description: Pre-flight readiness gate — a READ-ONLY check of whether the current branch is CLEAR to open (or enqueue) a PR, run before you do. Verifies you're on a proper `<Type>/<Name>` branch (not main), your local is in sync with origin (not behind, not ahead-unpushed, not tracking a `[gone]` remote), the branch isn't badly stale vs main, all CODE is committed (docs/plans may ride uncommitted), no red/pending platform-sync gate is blocking merges, and no half-done published-package cut-over is left out of sync — then reports GREEN (clear, with the next command) or names exactly what's blocking and the fix. Use whenever Tommy says "can I PR this", "am I clear to PR", "ready to PR/merge?", "pr preflight", "check before I PR", "is this branch clean to ship", or before running `merge` or `create-gh-pr`. Concertable-specific (knows this repo's merge queue + platform-sync gate + branch conventions). Changes NO state — plain read-only `git`/`gh`.
 ---
 
 # pr-preflight
@@ -107,7 +107,7 @@ never changes the working tree, index, or any branch.
 
 ## Verdict
 
-- **GREEN — clear to PR.** State it plainly and give the next command: `push` (if ahead) → `gh pr create`
+- **GREEN — clear to PR.** State it plainly and give the next command: `push` (if ahead) → `create-gh-pr`
   for a new PR, or `merge` if a PR already exists.
 - **Not clear.** List each blocker on its own line with the exact fix skill (`sync`, `commit`,
   `push`, fix/wait platform-sync, finish the cut-over) — most-blocking first. Don't fix anything here;
