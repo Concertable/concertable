@@ -20,9 +20,13 @@ Each buildable roadmap item **spins off its own feature plan** (e.g. `VAT_PLAN.m
 phases and delivery; when it ships it **ticks its roadmap line**, then is deleted. The roadmap keeps the
 tick.
 
-**Don't reference a roadmap from inside a plan.** The dependency runs one way: a plan is spun off *from*
-a roadmap item and reports completion back to it. A plan that cites the roadmap couples the disposable
-artifact to the permanent one.
+**A plan's file must not cite the roadmap — but an agent working the plan may read it.** The document
+dependency runs one way: a plan is spun off *from* a roadmap item and reports completion back to it, and
+a plan that cites the roadmap couples the disposable artifact to the permanent one. Reading is different
+from citing: the roadmap is also the epic's **cross-plan dependency map**, so an agent *executing* a plan
+may read it to find which sibling plan owns a suspected blocker and check that plan's `_PROGRESS.md` for
+live status (see [`PLAN.md`](PLAN.md) "A suspected cross-plan blocker"). Navigate by reading it; never
+write a reference to it into the plan.
 
 ## Keep it current in the same commit as the work
 
