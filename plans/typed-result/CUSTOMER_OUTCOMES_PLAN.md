@@ -185,7 +185,7 @@ tier and receives no skip label.
 
 ## Phases
 
-### Phase 1 — Review create outcomes
+### Phase 1 — Review create outcomes ✅ DONE (2026-08-05)
 
 - Add `CreateReviewError`, reshape the create/eligibility contracts, compose the existing nullable
   Ticket module result into the Review-owned Result, and terminate it at `ConcertReviewsController`.

@@ -5,20 +5,22 @@
 - Branch: `Feature/typed-result_customer-outcomes`
 - PR: not opened
 - Dependency/package gates: owned Kernel foundation PR #290 and platform sync #291 are shipped; no Payment/B2B package dependency; platform-sync PR #373 shipped `0.1.0-alpha.0.814` green in merge commit `9169107c0`; PR #282 remains the exclusive open owner of Ticket/Concert/Customer Payment work and is not a dependency
-- Last reconciled: 2026-08-05T17:08:02+01:00 from fresh `origin/main`, local refs/worktrees, GitHub PR metadata/checks, PR #282 ownership, merged platform-sync PR #373, Docker, and the Phase 1 working tree
+- Last reconciled: 2026-08-05T17:49:50+01:00 from current `origin/main` `0ed29d8f0`, local refs/worktrees, GitHub PR metadata/checks, PR #282 ownership, merged platform-sync PR #373, Docker, the green Phase 1 candidate tree, and scoped inventories
 
 ## Current state
 
-Phase 1 Review create outcomes are implemented in the working tree but are not yet a green or
-committed checkpoint. The Review-owned error definitions, application contracts, eligibility
-evaluation, create composition, Shared.Api terminal, unit coverage, and HTTP integration coverage
-are present. The Review unit suite is green at 30/30 and `git diff --check` is clean.
+Phase 1 Review create outcomes are complete in this commit. Review now owns exact ticket-not-found,
+not-yet-reviewable, and already-reviewed outcomes; one Ticket lookup drives create and boolean
+eligibility; create terminates through Shared.Api while preserving 201/404/409 wire behavior; and
+expected failures, successful persistence, exception/cancellation propagation, and HTTP
+ProblemDetails have unit/integration coverage.
 
-The mandatory `docker ps` pre-flight now succeeds. No integration, Release solution, Shared.Api
-architecture, Customer carve, or scoped inventory result has been claimed, and Phase 1 remains
-unchecked and uncommitted. Fresh `origin/main` is five commits ahead; those commits contain the
-shipped platform pin plus merge-skill documentation and must be integrated while preserving the
-current Phase 1 tree before verification.
+Every Phase 1 gate is green: Review integration 11/11, Review unit 30/30, Shared.Api 51/51, Release
+solution build with 0 errors, isolated Customer carve of 36 package-clean projects with 0 errors,
+scoped carrier/ownership inventories, and `git diff --check`. The branch integrated all base advances
+through `origin/main` `0ed29d8f0`, is 0 commits behind, and contains no excluded Ticket, Concert,
+Payment, purchase, checkout, shared Kernel API, model, or migration edit. Local E2E was correctly not
+run; the final PR requires full merge-queue E2E.
 
 The implementation owns Review, Preference, User, Venue, and Artist only. PR #282 /
 `Feature/TypedResultMigrationPhase2` owns every Ticket, Concert, Customer Payment client/mock,
@@ -28,20 +30,23 @@ shared `Directory.Packages.props` version entry, so that entry stays.
 
 ## Next Steps
 
-Preserve the current Phase 1 working tree; do not discard or recreate it. Integrate the five fetched
-`origin/main` commits, restoring the Review-owned working tree over the current base and resolving
-only genuine conflicts without importing PR #282's owned paths.
+Implement **Phase 2 — Preference outcomes, Options, and lists** from the plan in this worktree.
+Before editing, fetch origin and reconcile the branch if it is behind and clean; re-check PR #282's
+exclusive Ticket/Concert/Payment ownership and the current platform-sync gate. Do not edit any
+Ticket, Concert, Customer Payment client/mock, purchase/checkout, or related coverage file.
 
-Resume the `integration-debug` workflow for the Review module. If the Review integration suite is
-red, diagnose and fix every failure and rerun it to green. Then rerun the Review unit suite and
-complete the Phase 1 gate from the plan: Release solution build, Shared.Api architecture tests,
-CI-equivalent Customer carve, and scoped ownership/carrier inventories. Do not run local E2E because
-this change is headed to a PR and the repository plan rules assign full E2E to the merge queue.
+Add the Preference-owned create/update errors and Results; convert ordinary preference absence to
+`Option<PreferenceDto>` and returned query collections to materialized `IReadOnlyList<T>` values;
+terminate the existing 204/201/200 HTTP shapes through the shared functional terminals without
+changing payloads; and preserve provider/race, cancellation, messaging, and notification failures
+as exceptions. Create Preference-owned UnitTests and IntegrationTests with their local convention
+pointers, friend assemblies, both solution entries, and `scripts/integration.ps1` discovery.
 
-Confirm the diff still contains only Review-owned source/tests plus this plan and ledger, with no
-Ticket, Concert, Customer Payment client/mock, purchase/checkout, or related coverage edit. Update
-this plan and ledger, check off Phase 1, and commit the green checkpoint locally. Do not push. End
-with the pointer-only resume prompt from this ledger.
+Run the full Phase 2 gate from the plan: Preference unit and integration suites through
+`integration-debug`, Shared.Api architecture tests, Release solution build, CI-equivalent Customer
+carve, scoped carrier/collection/ownership inventories, and `git diff --check`. Do not run local E2E.
+Update the plan and ledger, check off Phase 2, and commit the green checkpoint locally. Do not push.
+End with the pointer-only resume prompt from this ledger.
 
 ## Completed work
 
@@ -52,8 +57,8 @@ with the pointer-only resume prompt from this ledger.
 - Inspected GitHub PR #282, its remote files/head, and the further local
   `Feature/TypedResultMigrationPhase2` diff/ledger to make the Ticket/Concert/Payment exclusion exact.
 - Created the implementation-ready plan and this progress ledger in this commit.
-- Implemented the uncommitted Phase 1 Review-owned typed create outcomes and added exact error,
-  service, validator, exception/cancellation, and HTTP ProblemDetails coverage.
+- Completed Phase 1 Review-owned typed create outcomes with exact error, service, validator,
+  exception/cancellation, and HTTP ProblemDetails coverage in this commit.
 
 ## Verification
 
@@ -77,7 +82,31 @@ with the pointer-only resume prompt from this ledger.
   changed.
 - Integration pre-flight: the prior `docker ps` attempt produced no daemon response and timed out
   after 34 seconds. On resume, `docker ps` returned successfully with an empty container list, so the
-  Review integration suite may start after the branch is current with `origin/main`.
+  Review integration suite may start.
+- Base sync: stashed the exact Review working tree including untracked files, merged the five fetched
+  `origin/main` commits as `786bd3267`, restored the stash without conflicts, and verified the branch
+  is 0 commits behind with the same Review-only dirty path inventory and a clean `git diff --check`.
+- Review integration workflow: the first attempt was cancelled without a verdict after its wrapper
+  was stopped during severe unrelated host contention; its child and SQL container exited. The one
+  clean rerun through `scripts/integration.ps1 review` passed 11/11 with 0 failed and 0 skipped.
+- Review Release unit suite rerun passed 30/30 with 0 failed and 0 skipped.
+- Shared.Api Release architecture/terminal suite passed 51/51 with 0 failed and 0 skipped.
+- `dotnet build api/Concertable.slnx --configuration Release` succeeded with 0 errors and 6 warnings.
+- CI-equivalent Customer carve copied the candidate `api/Concertable.Customer` tree to an isolated
+  `C:\tmp\CarveCustomer-*` directory, discovered and built all 36 non-test/non-AppHost projects from
+  package references with `-p:MinVerSkip=true`, and succeeded with 0 errors; the verified temporary
+  directory was removed afterward.
+- Scoped inventories found functional carriers only in the Review Application interfaces and
+  Infrastructure implementations, no carrier in HTTP DTOs/events/persistence, no explicit nullable
+  or non-pagination collection return in Review, and no FluentResults, Dunet union, or HTTP exception
+  in the typed-result slice.
+- Final ownership inventory against current `origin/main` found only Review-owned production/tests
+  plus this plan/ledger, with no Ticket, Concert, Payment, purchase, checkout, shared Kernel API,
+  migration, or model path. `git diff --check` passed.
+- `origin/main` advanced during verification by workflow-only PR #374. The verified tree was stashed,
+  merge `4a13785e4` integrated those two commits, and the tree restored without conflicts; the branch
+  is 0 commits behind `0ed29d8f0`. Product/build inputs did not change, so the green gates remain valid.
+- Local E2E was not run because the plan rules assign the required full tier to the merge queue.
 
 ## Reviews
 
@@ -106,8 +135,7 @@ Phase 5 requires `/code-review` before delivery.
   here.
 - There are no blocking package dependencies. A platform-sync PR that is pending but not red does not
   block local planning; any red sync discovered before implementation must be resolved first.
-- Docker is responsive. The only immediate prerequisite is safely integrating the five fetched
-  `origin/main` commits around the preserved Phase 1 working tree before running its remaining gates.
+- Docker is responsive, Phase 1 is green, and the branch is current. Phase 2 is ready to start.
 
 ## Event log
 
@@ -157,6 +185,26 @@ Phase 5 requires `/code-review` before delivery.
   intact and must be restored over current `origin/main` before verification.
 - Follow-up: Integrate `origin/main`, then run the Review integration-debug workflow and every
   remaining Phase 1 gate.
+
+### 2026-08-05 — current-main integration completed
+
+- Action: Stashed the exact tracked and untracked Review tree, merged the five fetched `origin/main`
+  commits into the clean branch, and restored the stash.
+- Evidence: merge commit `786bd3267`; behind count 0; no stash conflicts; the restored dirty-path
+  inventory is Review-only and `git diff --check` is clean.
+- Outcome: Phase 1 is preserved on the current base and ready for integration verification.
+- Follow-up: Run the Review integration-debug workflow and every remaining Phase 1 gate.
+
+### 2026-08-05 — Phase 1 Review outcomes completed
+
+- Action: Ran the Review integration-debug workflow, reran Review unit coverage, completed the
+  Shared.Api, Release solution, isolated Customer carve, scoped carrier/ownership, and diff gates,
+  then reconciled the workflow-only base advance that landed during verification.
+- Evidence: Review integration 11/11; Review unit 30/30; Shared.Api 51/51; solution and 36-project
+  Customer carve both 0 errors; scoped inventories clean; `git diff --check` clean; branch 0 behind
+  `origin/main` `0ed29d8f0`; PR #282-owned paths absent.
+- Outcome: Phase 1 is complete in this commit with no local E2E duplication and no push.
+- Follow-up: Implement Phase 2 Preference outcomes, Options, lists, tests, and its full local gate.
 
 ## Resume prompt
 
