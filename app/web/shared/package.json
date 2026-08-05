@@ -15,6 +15,7 @@
   "scripts": {
     "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
     "build": "npm run clean && tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json --resolve-full-paths --resolve-full-extension .js",
+    "test": "vitest run",
     "prepack": "npm run build"
   },
   "exports": {
@@ -147,6 +148,7 @@
     "@types/react": "^19.2.14",
     "tsc-alias": "^1.9.1",
     "typescript": "~5.9.3",
-    "vite": "^8.0.16"
+    "vite": "^8.0.16",
+    "vitest": "^4.1.10"
   }
 }
