@@ -38,7 +38,9 @@ existing ✅/🔴/🟠/🟡 style), exactly like ticking a phase in a plan. Don'
 
 ## `/continue-roadmap` picks the next item
 
-`/continue-roadmap` reads a roadmap, classifies every outstanding item against real git/PR/worktree
-state (in-flight / blocked / ready), and — once Tommy picks one — emits a handoff prompt that a fresh
-context uses to write that item's feature plan. It is the epic-level analog of `/resume-plan`; it
-**creates** a new plan rather than resuming one.
+`/continue-roadmap [@plans/<X>_ROADMAP.md] [preferred item in natural language]` reads a roadmap and
+classifies every outstanding item against real git/PR/worktree state (in-flight / blocked / ready).
+Without a preference it lists the ready candidates for Tommy to choose. A ready preference is treated
+as the choice and goes directly to the handoff; a blocked, in-flight, or unmatched preference produces
+the ready alternatives instead. The handoff tells a fresh context to write that item's feature plan.
+This is the epic-level analog of `/resume-plan`; it **creates** a new plan rather than resuming one.
