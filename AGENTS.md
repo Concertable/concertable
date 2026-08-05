@@ -16,6 +16,9 @@ Decide and act on reversible work (doc/plan edits, isolated commits, retrying a 
 
 **Never gate a reversible local (working-tree) change behind a "should I?" — just make it.** Editing / writing / refactoring a file, or running a plan's code steps, is the default action, never a question and never a "just report / do nothing" menu; the *only* thing that waits for an explicit instruction is `git commit` / `git push` (full rule: root `~/.Codex/AGENTS.md`).
 
+**Completed docs/meta-only work is the exception to that push gate:** once reviewed, commit, push, and
+merge it through `/merge-docs` without waiting for another instruction, keeping agent-loaded guidance current via the no-E2E docs path.
+
 **If requested work depends on a PR that does not exist, create it and do the work; never hand back the same blocked prompt.**
 
 ## Per-area guidance
@@ -80,7 +83,12 @@ retries and never toggles**: a failed check is a real failure to surface and deb
 The three outcomes:
 1. **Merged** — report `✓ landed as <sha>` and stop.
 2. **A check failed** — report `✗ CI failed: <job/check>`, point at the run/log, and **stop. Do not
-   retry** (re-running a genuinely-failing e2e just fails again). Hand off to debugging (often local).
+   retry** (re-running a genuinely-failing e2e just fails again). Hand off to debugging by emitting a
+   ready-to-paste `/e2e-ui-debug` | `/e2e-api-debug` **dispatch prompt** — worktree path, branch, PR,
+   failing scenario(s), and the failure signature — for a dedicated debug session, rather than driving
+   a heavy local E2E run inline. Emit it **as soon as the failure is obviously genuine** (a targeted or
+   deterministic failure in the changed area); only a *flake-signature* failure (the whole suite dead
+   at startup/auth) waits for a fresh-stack re-run to fail again before you dispatch.
 3. **Green but never admitted** — the PR is `CLEAN`, all checks pass, auto-merge is on, yet GitHub never
    adds it to the queue. This is a GitHub auto-merge **re-evaluation glitch** (enable-while-pending, then
    it never looks again — observed live on pr-229), **not** a test failure. Surface it as its own state;

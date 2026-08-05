@@ -223,11 +223,23 @@ don't add new ones.
 
 ## Typed operation Results
 
-Use `Concertable.Kernel.Functional.Result<TValue, TError>` for expected, caller-actionable operation
-failures, `UnitResult<TError>` when success has no payload, and `Result<TValue>` or `Result` only for
-internal string-error flows that do or do not carry a success value. Use `Option<T>` when ordinary absence has no explanation yet. A successful optional payload is
-`Result<Option<T>, TError>`; collection queries return empty read-only lists. Faults, cancellation,
-and violated invariants remain exceptions.
+All new and changed in-process operation contracts follow this decision rule. When a contract needs
+to represent an expected failure or ordinary absence, its outcome vocabulary comes from
+`Concertable.Kernel.Functional`. Existing unmigrated nullable, boolean, enum, void, or third-party
+signatures that encode those semantics are migration debt, not precedent for new work. Choose the
+smallest shape that preserves the caller's real decisions:
+
+- Expected, caller-actionable failure with a success payload: `Result<TValue, TError>`.
+- Expected, caller-actionable failure without a success payload: `UnitResult<TError>`.
+- Ordinary absence with no failure explanation: `Option<T>`.
+- A fallible operation whose successful payload is optional: `Result<Option<T>, TError>`.
+- Collection query: `IReadOnlyList<T>`, with no matches represented by an empty list.
+- No actionable failure or absence: return the plain value, capability boolean, or completion type;
+  do not manufacture a Result solely for uniformity.
+
+Use `Result<TValue>` or `Result` only for genuinely internal string-error flows that do or do not
+carry a success value; new module, application, service, and client contracts with expected failures
+use an operation-owned `TError`. Faults, cancellation, and violated invariants remain exceptions.
 
 Persistence repository single-item lookups return nullable values (`Task<TEntity?>`), matching the
 provider's missing-row contract. Module, application, service, and client boundaries convert that

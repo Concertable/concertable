@@ -5,6 +5,8 @@
 - Branch: `Feature/PaymentOwnedResultExpansion`
 - PR: not opened; frozen donor PR #296 remains open at `82d0555cd`
 - Dependency/package gates: This branch is the exclusive canonical implementation owner for Payment Phase 2. Phase 1 merged in PR #290 and platform-synced in PR #291; Payment currently consumes platform `0.1.0-alpha.0.798`. Removing the published FluentResults client surface is an intentional breaking package cutover: Payment must merge and publish before B2B/Customer can migrate on the generated platform-sync PR.
+- Downstream handoffs: B2B checkpoints 6-7 are waiting in `plans/typed-result/B2B_PROGRESS.md`
+  (`Refactor/B2BTypedResultMigration`) for this branch to merge, publish, and platform-sync green.
 - Last reconciled: 2026-08-05 from local Git, `origin/main` at `0ed29d8f0`, and GitHub PR state
 
 ## Current state
@@ -34,9 +36,9 @@ solution build 0 errors, Payment unit 198/198. On 2026-08-05 the branch was refr
 are complete on this new base: composite parsers preserve their commission case across gRPC, while
 Stripe only returns typed rejection for HTTP 402, `card_error`, or an actual decline code and
 propagates invalid-request/resource faults. The complete owner gate is green. Not pushed; no PR
-opened. A fresh fetch on 2026-08-05 found that `origin/main` has since advanced 65 commits to
-`0ed29d8f0` and platform `0.1.0-alpha.0.814`; this branch remains on the last verified platform
-`0.1.0-alpha.0.798` and must merge current main and repeat the owner gate after H1 is decided.
+opened. A fresh fetch on 2026-08-05 found that `origin/main` had advanced 65 commits to `0ed29d8f0`
+and platform `0.1.0-alpha.0.814`. That mainline is now merged into this branch; the combined branch
+has not been re-verified and must repeat the owner gate after H1 is decided.
 
 The existing escrow tests establish the intended idempotency semantics: no escrow, an escrow that is
 not held, an already-refunded escrow, and a non-refundable state are successful no-ops. An operation
@@ -46,12 +48,12 @@ that executes returns its transfer or refund. The owned contract is therefore
 
 ## Next Steps
 
-The implementation is complete and green at `581477754` on platform `0.1.0-alpha.0.798`, but it is
-65 commits behind current `origin/main` and remains unpushed. The single next action is Tommy's
-decision on review finding **H1**: transaction-time revalidation was removed; expected amounts are
-validated only at binding (`CreateOrBindAsync`) and nothing is persisted on the binding, so a deferred
-`Capture/PayBoundCommission` charges from the caller-supplied gross with no in-Payment check that it
-equals the payer-reviewed `FinalSettlementGrossMinor`.
+The implementation was complete and green at `581477754` on platform `0.1.0-alpha.0.798`; current
+`origin/main` at `0ed29d8f0` is now merged, but the combined branch remains unpushed and unverified.
+The single next action is Tommy's decision on review finding **H1**: transaction-time revalidation was
+removed; expected amounts are validated only at binding (`CreateOrBindAsync`) and nothing is persisted
+on the binding, so a deferred `Capture/PayBoundCommission` charges from the caller-supplied gross with
+no in-Payment check that it equals the payer-reviewed `FinalSettlementGrossMinor`.
 
 Choose one:
 
@@ -60,10 +62,19 @@ Choose one:
 - **Add Payment defense-in-depth:** persist the reviewed gross/ceiling on the binding and re-assert it
   at money movement, changing the published contract before delivery.
 
-After the decision, update this ledger with the selected contract, merge current `origin/main`, and
-repeat the complete owner verification gate before review and delivery. Push/opening the one canonical
-PR, merge, publication, the breaking B2B/Customer platform-sync migration, and closing donor PR #296
-all remain later explicit delivery steps; the PR must run full merge-queue E2E.
+After the decision, update this ledger with the selected contract and repeat the complete owner
+verification gate before review and delivery. Push/opening the one canonical PR, merge, publication,
+the breaking B2B/Customer platform-sync migration, and closing donor PR #296 all remain later explicit
+delivery steps; the PR must run full merge-queue E2E.
+
+## Downstream handoffs
+
+- **B2B typed-result migration:** `plans/typed-result/B2B_PROGRESS.md` in
+  `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-B2BTypedResultMigration` is waiting
+  for this canonical Payment branch to merge, publish `Concertable.Payment.Client`, and complete its
+  generated platform-sync PR green. When that gate opens, the Payment delivery session must update the
+  B2B ledger's current state, `## Next Steps`, and event log, then surface its exact resume prompt.
+  The B2B worktree must not poll this dependency or rely on Tommy remembering to revisit it.
 
 ## Completed work
 
@@ -139,6 +150,17 @@ Clean: escrow `Result<Option<T>,E>` semantics, rounding/VAT/refund math, wire hy
   commission-branch implementation is donor evidence only; its behavior is now reconciled here.
 
 ## Event log
+
+### 2026-08-05 — Registered the blocked B2B downstream handoff
+
+- Action: Added B2B checkpoints 6-7 to this dependency-owning ledger and reconciled the canonical
+  Payment branch with current `origin/main` at `0ed29d8f0`.
+- Evidence: `plans/typed-result/B2B_PROGRESS.md` names the Payment merge, publication, and green
+  platform-sync as its single gate; the typed-result roadmap maps that dependency to this worktree.
+- Outcome: the Payment delivery session now owns waking B2B when the package gate opens; B2B no longer
+  depends on a remembered prompt or repeated polling.
+- Follow-up: after Payment's publish/platform-sync gate is green, update the B2B ledger and surface its
+  resume prompt before closing the Payment plan lifecycle.
 
 ### 2026-08-05 — Reconciled the H1 decision gate with current main
 

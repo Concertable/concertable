@@ -9,6 +9,9 @@
     "mobile/customer",
     "mobile/b2b",
     "shared",
+    "web/shared",
+    "web/b2b/shared",
+    "mobile/shared",
     "customer/shared"
   ],
   "scripts": {
@@ -22,6 +25,8 @@
     "build:venue": "npm -w @concertable/web-venue run build",
     "build:artist": "npm -w @concertable/web-artist run build",
     "build:business": "npm -w @concertable/web-business run build",
+    "build:packages": "npm -w @concertable/shared run build && npm -w @concertable/web run build && npm -w @concertable/mobile run build && npm -w @concertable/customer run build && npm -w @concertable/b2b run build",
+    "build:web-packages": "npm -w @concertable/shared run build && npm -w @concertable/web run build && npm -w @concertable/customer run build && npm -w @concertable/b2b run build",
     "postinstall": "node scripts/patch-nativewind.js"
   },
   "overrides": {

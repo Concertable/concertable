@@ -52,11 +52,14 @@ and merge. Record cancellations, contradictions, and no-op outcomes too. Use the
 for an authorized source-head update and its remote-transition protocol for observations after checks
 or queueing. Never push a checkpoint-only local tail to a queued, locked, merged, or closed PR.
 
-0. **Code review first.** Before querying, pushing or merging a PR, confirm the implementation has been
-   reviewed. If not, stop and hand off a ready-to-paste `/code-review` prompt, or `/big-review` when the
-   branch is too large for one review pass, naming the exact worktree and branch. If code commits were
-   added after the review, require `/incremental-review`. Do not proceed while review findings remain
-   open.
+0. **Review first — code or docs by PR type.** Before querying, pushing or merging a PR, confirm it has
+   been reviewed. **Which review depends on the diff:** a **docs/meta-only** PR (every path under
+   `**/*.md`, `.agents/**` & `.claude/**` skills, `plans/**`, `docs/**`, `AGENTS.md`, `CLAUDE.md`,
+   `PROMPTS.md`, `README*`) requires a clean **`/docs-review`**, not a code review — and such a PR
+   normally lands via `/merge-docs`, not this skill. Any runtime/product/package/CI-test-selection path
+   makes it a code PR: require **`/code-review`** (`/big-review` when too large for one pass). If commits
+   were added after the review, require `/incremental-review`. Do not proceed while review findings
+   remain open.
 
 1. **Find the PR for the current branch.**
    ```
@@ -166,24 +169,40 @@ or queueing. Never push a checkpoint-only local tail to a queued, locked, merged
      before stopping. On merge, immediately checkpoint the merge commit, method, E2E outcome, and
      source PR head before switching worktrees or syncing main.
 
-5. **Return to a clean, up-to-date main.**
+5. **Return to a clean, up-to-date main — and remove the merged branch's worktree.**
    ```
    git checkout main
    git pull --ff-only origin main
-   git branch -d <merged-branch>            # local cleanup (safe: only deletes if merged)
-   git push origin --delete <merged-branch> # remote cleanup (the queue blocked gh's --delete-branch)
+   ```
+   Then tear down the merged branch. **A worktree-developed branch is still checked out in its worktree,
+   so the worktree must go FIRST** — `git branch -d` refuses to delete a branch checked out elsewhere. As
+   soon as the PR is `MERGED`, remove the worktree it was developed in (`<path>` from `git worktree list`).
+   The branch delete is gated on the worktree actually going: if it's dirty, keep BOTH so uncommitted work
+   is never orphaned. (Branch developed in the main checkout, no worktree? Skip the `if` and just run the
+   `git branch -d` + `git push origin --delete` lines.)
+   ```
+   if [ -z "$(git -C <path> status --porcelain | grep -vE '/(bin|obj|node_modules)/')" ]; then
+     git worktree remove --force <path>       # safe: tracked tree clean, HEAD is the merged head
+     git branch -d <merged-branch>            # now free to delete; safe: -d only deletes if merged
+     git push origin --delete <merged-branch> # remote cleanup (the queue blocked gh's --delete-branch)
+   else
+     echo "worktree <path> has uncommitted source — worktree AND branch LEFT in place, handle manually"
+   fi
    ```
    - If `git branch -d` refuses ("not fully merged") — usually because the merge was a squash/merge-commit
      and the local tip differs — confirm the PR really is `MERGED`, then it's safe to `git branch -D`.
      Don't force-delete an unmerged branch.
-   - **Exceptions — persistent branches/worktrees, NEVER deleted. Skip the cleanup for these, leaving
-     branch and worktree in place:**
-     - `Chore/TechDebt`
-   - **Worktree-developed branches: never auto-remove the worktree or delete its branch.** Worktree
-     teardown is manual (Tommy's worktree PowerShell script), never this skill — auto-teardown is exactly
-     what destroyed an in-progress worktree. Just sync `main` and delete the **remote** branch
-     (`git push origin --delete <Branch>`) if GitHub didn't; leave the local checkout + branch for the
-     script to reclaim.
+   - **The worktree teardown is now automatic (it used to be banned).** The incident that once destroyed
+     an in-progress worktree was an *unguarded* teardown; the clean-check above is the guard. Remove ONLY
+     when that porcelain check is empty — no uncommitted or untracked *source* (`bin/`/`obj/`/
+     `node_modules/` don't count). Any real change → leave the worktree and report it; unpushed work is
+     never destroyed. Leaving merged worktrees in place is exactly what piled up and filled the disk.
+   - `--force` is required — it discards only the build output the guard already cleared; plain
+     `git worktree remove` fails on a built tree with "Directory not empty".
+   - Windows: a live `dotnet`/Playwright process can lock `bin/`/`node_modules` ("Device or resource
+     busy"); `--force` still unregisters the worktree — report any leftover directory for manual deletion.
+   - **Exception — persistent branches, NEVER auto-removed even when merged:** `Chore/TechDebt` (reused
+     every debt pass — keep its branch and worktree).
 
 6. **Watch the platform-sync consequence — a merge that touched a published package triggers it, and
    nothing else watches it.**

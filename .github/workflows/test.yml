@@ -745,8 +745,12 @@ jobs:
 
       - name: Build frontend package dependencies
         if: needs.changes.outputs.run_e2e_ui == 'true'
+        # The SPAs consume the shared FE tiers from their built dist (@concertable/web, /b2b,
+        # /customer), so all of them must be built before the Vite dev servers start — not just
+        # @concertable/shared, or the dev server can't resolve the tier imports and every scenario
+        # times out at warm-up.
         working-directory: app
-        run: npm run build --workspace @concertable/shared
+        run: npm run build:web-packages
 
       - name: Build B2B UI E2E tests
         if: needs.changes.outputs.run_e2e_ui == 'true'
@@ -865,7 +869,7 @@ jobs:
       - name: Build frontend package dependencies
         if: env.RUN == 'true'
         working-directory: app
-        run: npm run build --workspace @concertable/shared
+        run: npm run build:web-packages
 
       - name: Build Customer UI E2E tests
         if: env.RUN == 'true'
