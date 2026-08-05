@@ -32,11 +32,23 @@ def git(*args):
     ).stdout.strip()
 
 
+_ENABLE_TOKENS = ("--auto", "--admin", "--merge", "--squash", "--rebase")
+
+
 def is_merge_enable(command):
     if "gh pr merge" not in command:
         return False
-    # Turning auto-merge OFF is the safe direction — never gate it.
-    return "--disable-auto" not in command
+    # An enabling form anywhere gates — even in a compound that disables
+    # auto-merge FIRST (`--disable-auto && ... --auto`, the documented re-assert
+    # remedy). A whole-command "--disable-auto is present" test would fail open
+    # on exactly that compound, so check for an enabling token independently.
+    if any(tok in command for tok in _ENABLE_TOKENS):
+        return True
+    # A pure --disable-auto (no enabling token) is the safe direction — allow.
+    if "--disable-auto" in command:
+        return False
+    # Bare `gh pr merge` with neither is still a merge attempt — gate it.
+    return True
 
 
 def block(reason):
