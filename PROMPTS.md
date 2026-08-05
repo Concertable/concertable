@@ -1,6 +1,7 @@
 # Prompts
 
-- Start with `cd <absolute-worktree-path>` and keep it inside the paste-ready prompt.
+- Start with the worktree opener — `cd <absolute-worktree-path>`, or `/worktree create <Type>/<Name>`
+  when the worktree doesn't exist yet — and keep it inside the paste-ready prompt.
 - For **non-plan** work, make the prompt self-contained for zero context: name the branch or PR,
   relevant working files, and exact next action.
 - For **plan-managed** work the prompt is ONLY the pointer — an opener line then the read line:
