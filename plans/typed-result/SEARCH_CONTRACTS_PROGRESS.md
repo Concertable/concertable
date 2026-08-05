@@ -3,9 +3,9 @@
 - Plan: `plans/typed-result/SEARCH_CONTRACTS_PLAN.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_search-contracts`
 - Branch: `Feature/typed-result_search-contracts`
-- PR: #380 — https://github.com/Concertable/concertable/pull/380 — OPEN at verified head `d242b376001c26223109b795d756792ddf85ca39`
+- PR: #380 — https://github.com/Concertable/concertable/pull/380 — OPEN at verified refreshed work head `3c74bc8fee911eaaf7ec16ffe3548ccb79f43dcb`; checkpoint transport pending in this commit
 - Dependency/package gates: owned Kernel foundation PR #290 and platform sync PR #291 merged; platform sync PR #381 merged green as `355f658b9d556dd07e3fa612fb1b04bcdb63a59d`, publishing the current `ConcertablePlatformVersion` `0.1.0-alpha.0.819` pin to `main`; no Payment, B2B, or Customer migration dependency
-- Last reconciled: 2026-08-05 20:40 BST against fetched `origin/main` commit `355f658b9d556dd07e3fa612fb1b04bcdb63a59d`, local merge commit `a0b8982f5001701d7c56b29bebbe5f167f2378d8`, and GitHub PR #380 at remote head `d242b3760`
+- Last reconciled: 2026-08-05 20:44 BST against fetched `origin/main` commit `355f658b9d556dd07e3fa612fb1b04bcdb63a59d` and GitHub PR #380 at verified refreshed work head `3c74bc8fee911eaaf7ec16ffe3548ccb79f43dcb`
 
 ## Current state
 
@@ -38,6 +38,12 @@ and is 0 commits behind. The upstream changes add the cookie-consent feature, E2
 platform pins, and agent guidance; no Search production or unit-test implementation changed relative
 to the verified PR head. The Release solution rebuild passed with 0 errors and 9 existing warnings.
 
+The refreshed work head `3c74bc8fee911eaaf7ec16ffe3548ccb79f43dcb` is pushed. A post-push fetch
+verified local `HEAD`, `origin/Feature/typed-result_search-contracts`, and PR #380 `headRefOid` all
+equal that commit. The pushed range is `d242b376001c26223109b795d756792ddf85ca39..3c74bc8fee911eaaf7ec16ffe3548ccb79f43dcb`.
+This ledger-only checkpoint is the required transport leg and must be pushed once, then exact final
+local/remote/PR equality must be verified before waiting for replacement checks.
+
 The autocomplete and header repository, service, and dispatcher chains now declare materialized
 `IReadOnlyList<T>` results throughout. All existing query bodies, `ToListAsync()` terminals, ordering,
 filters, empty-list behavior, pagination, DTO/projection shapes, nullable inputs, controller/wire
@@ -45,10 +51,10 @@ contracts, exception semantics, package boundaries, and shared Kernel contracts 
 
 ## Next Steps
 
-Publish the refreshed source head through the plan-managed two-leg push protocol and verify exact
-remote-tracking and PR-head equality. Wait for PR #380's replacement checks, select its final E2E
-tier, enqueue and monitor the exact verified PR head, then follow its generated platform-sync PR to
-terminal green. Do not run duplicate local E2E before the queue.
+Push this ledger-only checkpoint as the second transport leg, fetch, and verify exact local,
+remote-tracking, and PR-head equality. Then wait for PR #380's replacement checks, select its final
+E2E tier, enqueue and monitor the exact verified PR head, and follow its generated platform-sync PR
+to terminal green. Do not run duplicate local E2E before the queue.
 
 ## Completed work
 
@@ -146,6 +152,9 @@ terminal green. Do not run duplicate local E2E before the queue.
   0 behind, and the upstream delta makes no change under Search production or unit-test source.
 - Current-main Release rebuild: `dotnet build api/Concertable.slnx --configuration Release` passed
   with 0 errors and 9 existing warnings in 1:35.
+- Refreshed work-head push: pushed
+  `d242b376001c26223109b795d756792ddf85ca39..3c74bc8fee911eaaf7ec16ffe3548ccb79f43dcb`;
+  fetched and verified local, remote-tracking, and PR #380 heads all equal `3c74bc8fe`.
 
 ## Reviews
 
@@ -355,6 +364,16 @@ terminal green. Do not run duplicate local E2E before the queue.
 - Outcome: the mandatory stale-base rebuild gate is terminal green.
 - Follow-up: push the actual refreshed work head, verify remote and PR equality, then transport the
   resulting ledger checkpoint as the second push leg.
+
+### 2026-08-05 — refreshed Search work head pushed and verified
+
+- Action: pushed the current-main reconciliation, platform pin, observation tail, and green build
+  checkpoint to PR #380's existing branch, then fetched and compared all delivery heads.
+- Evidence: pushed range `d242b3760..3c74bc8fe`; local `HEAD`, remote-tracking ref, and PR #380
+  `headRefOid` all equal `3c74bc8fee911eaaf7ec16ffe3548ccb79f43dcb`.
+- Outcome: the work-head leg is verified and replacement PR checks are attached to the intended
+  current source.
+- Follow-up: transport this ledger-only checkpoint, verify final equality, then wait for checks.
 
 ## Resume prompt
 
