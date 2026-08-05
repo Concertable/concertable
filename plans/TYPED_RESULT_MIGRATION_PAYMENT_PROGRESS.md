@@ -40,12 +40,18 @@ that executes returns its transfer or refund. The owned contract is therefore
 
 The branch is done, green, current with `origin/main`, and unpushed. Remaining is landing it:
 
-1. **First code review** of the whole Phase 2 diff (`origin/main..HEAD`) — never reviewed; it is a
-   breaking financial-contract change. Fix anything real.
-2. **Confirm the `CalculateBoundAsync` financial decision with Tommy** — transaction-time revalidation
-   was removed; expected amounts are validated only at binding (`CreateOrBindAsync`). This deviates
-   from `PLATFORM_COMMISSION_PLAN.md` §8 step 5 and freezes into the published wire contract, so it
-   must be an explicit call before publish.
+1. **Review DONE** (2026-08-05, see `## Reviews`). Before the PR, apply the two fixes it found: **M2**
+   — composite `FromCode` must try `CommissionError.FromCode` before `PaymentError.FromCode` and drop
+   `PaymentError.FromCode`'s commission fall-through, plus a server-case→wire→client-case fidelity test;
+   **M3** — `StripeFailureClassifier` classifies only 402/`card_error` + specific decline codes as typed
+   and lets `resource_missing`/`invalid_request_error` rethrow. Then re-run the gate.
+2. **Confirm the `CalculateBoundAsync` financial decision with Tommy (review finding H1)** —
+   transaction-time revalidation was removed; expected amounts are validated only at binding
+   (`CreateOrBindAsync`) and nothing is persisted on the binding, so a deferred `Capture/PayBoundCommission`
+   charges from the caller-supplied gross with no in-Payment check it equals the payer-reviewed
+   `FinalSettlementGrossMinor`. Plan-consistent (§8); the compensating control is B2B's §4.1 gross freeze.
+   Accept that, or persist the reviewed gross/ceiling on the binding and re-assert at money-movement.
+   Freezes into the published wire contract, so it is an explicit call before publish.
 3. **On Tommy's explicit go:** push and open ONE canonical PR (Payment Phase 2: owned typed
    Result/Option + FluentResults cutover + commission Phase 1). Full merge-queue E2E — do **not**
    `skip-e2e` (payment/gRPC blast radius).
@@ -79,7 +85,37 @@ Merge/push/publish/platform-sync all remain gated on Tommy's explicit instructio
 
 ## Reviews
 
-No Phase 2 review has run yet.
+### 2026-08-05 — first adversarial review of the Phase 2 diff (`origin/main...HEAD`)
+
+Verdict: careful, mostly-correct migration — cancellation preserved, no provider-message leak, unknown
+wire codes fail loudly, rounding/VAT/cumulative-refund math sound. No defect mischarges a payer in the
+normal flow today. Findings:
+
+- **H1 (financial — DECISION NEEDED):** the cutover removed Payment's in-service cross-check that a
+  deferred charge's gross was payer-reviewed. `CalculateBoundAsync` is now pure `rate × caller gross`;
+  the binding persists no gross/reviewed amount, and a deferred bind happens with `gross=null`, so
+  nothing is validated at bind. `CaptureBoundCommissionAsync(gross=G)` then charges from `G` with no
+  check that `G` equals the payer-reviewed `FinalSettlementGrossMinor`. Plan-consistent (§8); the primary
+  control now lives in B2B's §4.1 gross freeze (out of this diff). Not "charges wrong today" — it is the
+  removal of defense-in-depth. **This is the `CalculateBoundAsync` sign-off:** accept it (relying on the
+  B2B §4.1 freeze as the compensating control), or persist the reviewed gross/ceiling on the binding and
+  re-assert it at money-movement.
+- **M2 (correctness — fix before PR):** `PaymentError.FromCode` greedily claims all `payment.commission_*`
+  codes into `CommissionFailure` via its `_ =>` fall-through, so composite unions' own `CommissionFailure`
+  arm is dead — a server `ManagerPaymentError.CommissionFailure` round-trips to a `PaymentFailure`-shaped
+  case on the client. Code/Kind survive, but `is …CommissionFailure` matching silently never fires, and
+  it is untested. Fix: composite `FromCode` tries `CommissionError.FromCode` before `PaymentError.FromCode`;
+  drop the commission fall-through; add a server-case→wire→client-case fidelity test.
+- **M3 (fault-swallowing — fix before PR):** `StripeFailureClassifier` maps 400/404/409/422 all to a
+  benign `PaymentRejected` decline. A 404 `resource_missing` / 400 `invalid_request_error` is an infra/
+  logic fault that should throw (retry/dead-letter), not report a decline — violates the convention
+  (infra/unknown Stripe faults stay exceptions). Fix: classify only 402/`card_error` + specific decline
+  codes as typed; let `resource_missing`/`invalid_request_error` rethrow.
+- **Lows:** L4 settlement refunds publish `escrow.refund_*` codes (wrong namespace); L5 "already refunded"
+  returns `Some` not the no-op `None` (pre-existing); L6 `EnsureTransition` throws after the Stripe side
+  succeeded (latent, guarded).
+
+Clean: escrow `Result<Option<T>,E>` semantics, rounding/VAT/refund math, wire hygiene/cancellation, owned-error conventions.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -99,6 +135,16 @@ No Phase 2 review has run yet.
   commission-branch implementation is donor evidence only; its behavior is now reconciled here.
 
 ## Event log
+
+### 2026-08-05 — First adversarial Phase 2 review completed
+
+- Action: Ran the first-ever adversarial code review of the whole Phase 2 diff (`origin/main...HEAD`).
+- Evidence: findings recorded in `## Reviews` — H1 (deferred-charge defense-in-depth removed; the
+  `CalculateBoundAsync` decision), M2 (dead `CommissionFailure` wire round-trip), M3 (Stripe
+  400/404/409/422 mis-classified as declines), plus lows L4–L6. Money math, escrow Option semantics,
+  wire hygiene, and conventions confirmed clean.
+- Outcome: two fixes (M2, M3) required before the PR; H1 is an explicit financial sign-off for Tommy.
+- Follow-up: apply M2 + M3, get the H1 decision, then push/PR per `## Next Steps`.
 
 ### 2026-08-05 — Re-synced to current main and re-verified green ahead of push
 
