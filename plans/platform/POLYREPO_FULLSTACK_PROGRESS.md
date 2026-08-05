@@ -13,6 +13,8 @@ Phases 0 and 1 are on `main` through PR #301, and the Phase 1 review fixes are o
 
 ## Next Steps
 
+**Progress (2026-08-05):** Tier 1 of 4 packaged — `@concertable/web` (web/shared) builds to `dist` green and is committed (`0fa7ce511`). Recipe proven: `package.json` with `./shared/*` dist exports + `publishConfig`; `tsconfig.json` (internal `@/*`→src, `lib` incl. `ES2022`, a `vite-env.d.ts` for `import.meta.env`); `tsconfig.build.json`; `tsc` + `tsc-alias`. **Next: replicate to `@concertable/mobile`, `@concertable/customer`, then `@concertable/b2b`** (b2b builds after web; mobile differs — RN types not DOM `lib`, no barrels so a single `./shared/*` wildcard, and the metro `watchFolders` + nativewind `global.css` input need retargeting to the package). Then step 2 (cutover), step 3 (publish automation), step 4 (gate).
+
 Execute **Phase 2** in this worktree, following the Phase-1 `@concertable/shared` package as the template.
 
 **Resolution model — decided 2026-08-05 (confirmed with Tommy): dist-only, build-first.** The tiers become installed packages consumed from `dist` in-monorepo (identical to `@concertable/shared` and the backend's consume-published-artifacts model); **no `source` export condition**. Add explicit pre-build ordering so the SPAs build against freshly-built tier `dist`.
@@ -115,3 +117,10 @@ Steps: (1) scaffold each tier package (`package.json` exports→dist, `tsconfig.
 - Evidence: `git worktree add … -b Feature/platform_polyrepo-fullstack origin/main` at `b92bf0b49`; main checkout verified still on `Feature/SelfBillingAgreement` with only unrelated untracked paths (its HEAD advanced `3174d7f59 → 5070a8026` under another live session); `gh pr view 319` = MERGED `5a84756de`; branch-time platform-sync gate returned no open sync PR; `git rev-list --count origin/main..Feature/SelfBillingAgreement -- <ledger>` = 3 (two are the stray polyrepo closeout commits).
 - Outcome: Phase 2 has a clean, isolated worktree; the branch ledger now reflects the true post-#319 state.
 - Follow-up: Scope the four shared tiers against the Phase-1 `@concertable/shared` template and begin publishing + consumer cutover.
+
+### 2026-08-05 — Resolution model confirmed; first tier packaged (`@concertable/web`)
+
+- Action: Mapped the full Phase 2 cutover surface (6 consumer surfaces, 148 files, per-tier structure, build-order finding); confirmed the dist-only/build-first resolution model with Tommy; packaged `web/shared` as `@concertable/web` end-to-end and verified its `dist` build.
+- Evidence: `@concertable/shared` dist prebuilt (exit 0); `@concertable/web` build real exit 0 after fixing 14 standalone-build errors (13× `import.meta.env` → added `vite-env.d.ts`; 1× `.at()` → ES2022 `lib`); `dist` emitted across all subdirs, `tsc-alias` left zero `@/` specifiers, external `@concertable/shared/*` specifiers intact; committed `0fa7ce511`; `node_modules` primed via `npm ci` (exit 0) and `npm install` registered the new workspace with a clean prior lockfile.
+- Outcome: The tier-packaging recipe is proven and one of four tiers is done and committed on the isolated branch.
+- Follow-up: Replicate the recipe to `@concertable/mobile`, `@concertable/customer`, `@concertable/b2b`, then the consumer/intra-tier import cutover, publish-automation extension, and the build gate.
