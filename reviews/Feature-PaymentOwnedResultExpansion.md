@@ -5,7 +5,7 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `d0fe18afe0d3c9c23642c4e1d2938238f5564d33`  _(2026-08-05)_
+**Reviewed up to commit:** `ee8dbdd5725904c489cb9fe34de9ca71a47c53a2`  _(2026-08-05)_
 
 > Range reviewed: `3e3bcce89..a4ae0081e` (63 commits).
 > Status legend: `[ ]` todo - `[~]` in progress - `[x]` done - `[wontfix]` (note why).
@@ -48,3 +48,5 @@
 
 No issues found. Checked the six finding fixes for correctness, microservice isolation, module
 boundaries, seeding, C# conventions, and test coverage of changed paths.
+
+The docs-only delivery follow-up through `ee8dbdd57` was also checked; no issues found.
