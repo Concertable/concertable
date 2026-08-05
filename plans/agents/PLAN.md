@@ -93,6 +93,16 @@ but the plan stays open until **all** of them land and the codebase is in sync a
 B2B PR and calling the plan done while Kernel still speaks the old shape is the thing to never do.
 Don't `git rm` the plan (Lifecycle 5) until that final synced state is in.
 
+## A suspected cross-plan blocker — check the sibling plan's ledger before declaring blocked
+
+When a phase can't proceed because it depends on work owned by a **different** plan in the same epic
+(e.g. B2B's migration waiting on Payment's), don't guess the dependency's state from memory. Read the
+epic roadmap as the cross-plan dependency map, find which sibling plan owns the blocker, and open that
+plan's `_PROGRESS.md` for its live state (merged? published? platform-sync green?). Only then report
+"blocked until X" — naming the sibling plan and the exact unlanded gate — or proceed if its ledger
+shows the gate already landed. This is a runtime read of the roadmap for navigation, never a citation
+of it in your plan (see [`ROADMAP.md`](ROADMAP.md)).
+
 ## Lifecycle
 
 1. **Write it** when the work spans multiple commits/PRs or needs a design decided up front, and create its `_PROGRESS.md` companion at the same time.
@@ -187,11 +197,13 @@ point where the context becomes disposable. Don't carry unwritten state across a
 - Every plan `.md` carries a pointer near its top to its ledger(s) and holds no next-action prose of
   its own. One worktree: "**Next steps live in @plans/<STEM>_PROGRESS.md → `## Next Steps`**" (the `@`
   pulls the ledger when you tag the plan). Parallel worktrees: it lists each ledger with its worktree.
-- Because the steps live in the ledger, a plan resume/handoff prompt is ONLY the pointer — literally
-  `cd <worktree>` then "Read @plans/<PLAN>_PLAN.md and @plans/<its-worktree-ledger>_PROGRESS.md and do what
-  `## Next Steps` says." No branch to verify, checkpoints, gates, commands, or steps in the prompt —
-  every such specific lives in the ledger, never restated, so the prompt can't drift. A handoff always
-  comes from one worktree, so it names that worktree's ledger. See [`../../PROMPTS.md`](../../PROMPTS.md).
+- Because the steps live in the ledger, a plan resume/handoff prompt is ONLY the pointer — an opener line
+  then "Read @plans/<PLAN>_PLAN.md and @plans/<its-worktree-ledger>_PROGRESS.md and do what `## Next Steps`
+  says", naming one worktree's ledger. The opener is `/worktree create <Type>/<epic>_<name>` when that
+  worktree doesn't exist yet — a freshly-written plan, or a clear with no live worktree — so implementation
+  runs in an isolated worktree, never the main checkout; it's `cd <worktree>` once the worktree exists. No
+  branch to verify, checkpoints, gates, commands, or steps in the prompt — every such specific lives in the
+  ledger, never restated, so the prompt can't drift. See [`../../PROMPTS.md`](../../PROMPTS.md).
 - `/resume-plan` takes a **ledger**, a **plan**, or a **worktree**. A ledger — or a plan plus a named
   worktree — resolves straight to that worktree: `cd` there and do its `## Next Steps`. A plan alone
   resolves by the ledgers whose `- Plan:` names it: one → resume it; several → list them and ask which.

@@ -80,16 +80,17 @@ currently `.UtcDateTime` them away). One coordinated migration-touching change, 
 
 Most `IXService` types are genuine services — they orchestrate domain logic over a repository
 (`IVenueService`, `IConcertService`, `IInvitationService`, and `ITicketPdfService`, which does inject
-`ITicketRepository`). But the suffix is also worn by types that own no persistence and are really
-value-producers or gateways, which flattens a distinction worth seeing at the injection site:
+`ITicketRepository`). But the suffix is also worn by two shared types that own no persistence and are
+really byte/blob gateways, which flattens a distinction worth seeing at the injection site:
 
-- **`IContractPdfService` / `IInvoicePdfService`** (B2B Concert) — inject only `IPdfBlobCache`, no
-  repository; they render a document from data. The codebase already has `IPdfRenderer`, and
-  `CODE_PATTERNS.md` already blesses `Renderer.Render` — so these two are inconsistent with vocabulary
-  that exists here today.
 - **`IBlobStorageService`** (`Shared.Blob`) — wraps `BlobServiceClient` + options; a gateway/store.
 - **`IImageService`** (`Shared.Imaging`) — `Upload`/`Download`/`Replace`/`Delete`, sitting directly on
   `IBlobStorageService`. Bytes in and out of a backing store, no domain logic; a store over a store.
+
+The module-internal half of this is **done**: the B2B Concert `IContractPdfService` / `IInvoicePdfService`
+— pure `IPdfBlobCache`-backed document renderers with no repository — are renamed to
+`IContractPdfRenderer` / `IInvoicePdfRenderer`, alongside the existing `IPdfRenderer`. Only the two
+shared store types remain, and they're boundary-blocked (published packages).
 
 Why it matters beyond taste: "a service calling another service" is a smell worth spotting by name, and
 it only reads as a smell when *service* means orchestrator. When a pure value-producer is also called
@@ -99,13 +100,12 @@ states the rule this would follow — name the type as the agent-noun of its one
 
 Note the distinction is *shape*, not *staticness*: these are injected, config-bound collaborators, so
 `Helper`/`Utility` (which in sibling codebases denotes a `static` class of pure functions) would be the
-wrong correction — the honest names are `Factory` / `Renderer` / `Store`.
+wrong correction — the honest name here is `Store`.
 
-**Resolves when:** a naming pass renames the non-orchestrator `*Service` types to their agent-noun,
-settling on one vocabulary — `Factory` creates values, `Renderer` produces a document, `Store` fronts a
-byte/blob backing store, and `Service` is reserved for repository-backed orchestrators:
-the two PDF ones → `*PdfRenderer` (alongside the existing `IPdfRenderer`);
-`IBlobStorageService` → `IBlobStore`; `IImageService` → `IImageStore`. Best done as one sweep — renaming
-the `Kernel` and `Shared.*` types republishes those packages and triggers a platform-sync, so batch them
-rather than paying that cost once per rename.
+**Resolves when:** the two shared byte/blob gateways are renamed to their agent-noun as a publish-first
+package cut-over — `IBlobStorageService` → `IBlobStore` (`Shared.Blob`), `IImageService` → `IImageStore`
+(`Shared.Imaging`) — reserving `Service` for repository-backed orchestrators. Both ship in published
+packages consumed cross-service (Auth/B2B/Customer call `AddSharedBlob` / imaging), so a rename reds
+`platform-sync` and can't be atomic: rename in the package, publish, migrate consumers in the sync PR.
+Do the pair in one sweep so the store vocabulary doesn't land half-applied.
 
