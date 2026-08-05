@@ -53,6 +53,13 @@ not each need their own PR; keep coherent work together. Split only where a merg
 platform sync or runtime deployment must finish before the next work can build or run, and group all
 work possible on each side of that gate.
 
+## Cross-plan blockers are two-way handoffs
+
+A waiting plan never relies on Tommy remembering its prompt or polls another branch. Register the
+blocked ledger in the dependency owner's `## Downstream handoffs`; that owner updates the dependent
+ledger and surfaces its resume prompt when the gate opens. Full mechanics:
+[`agents/PLAN.md`](agents/PLAN.md) "Cross-plan blockers."
+
 ### Rename definition-of-done: the grep gate (mechanical, not judgement)
 
 A rename is done **only when `grep -rniE "<oldterm>"` over the entire repo returns zero** — every

@@ -25,7 +25,7 @@ dependency runs one way: a plan is spun off *from* a roadmap item and reports co
 a plan that cites the roadmap couples the disposable artifact to the permanent one. Reading is different
 from citing: the roadmap is also the epic's **cross-plan dependency map**, so an agent *executing* a plan
 may read it to find which sibling plan owns a suspected blocker and check that plan's `_PROGRESS.md` for
-live status (see [`PLAN.md`](PLAN.md) "A suspected cross-plan blocker"). Navigate by reading it; never
+live status (see [`PLAN.md`](PLAN.md) "Cross-plan blockers"). Navigate by reading it; never
 write a reference to it into the plan.
 
 ## Keep it current in the same commit as the work
