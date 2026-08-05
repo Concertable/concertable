@@ -23,8 +23,10 @@ merge it through `/merge-docs` without waiting for another instruction, keeping 
 
 ## Per-area guidance
 
+**Doc locality — a guidance/architecture doc lives at the lowest node that fully contains its concern:** single-service → that service's own folder (thin, inheriting root + `api/` upward, never restating — e.g. [`api/Concertable.Payment/AGENTS.md`](./api/Concertable.Payment/AGENTS.md)); cross-service or orchestration → root. Create one only where genuine service-specific content exists.
+
 - **Backend (.NET, `api/`)** — seeding, migrations, DTOs, module rules, C# conventions: [`api/AGENTS.md`](./api/AGENTS.md).
-- **Design patterns the codebase commits to** (keyed strategy resolvers, and the anti-patterns they replace — branching on `DealType` in agnostic code, service location, throwaway DTOs): [`api/docs/CODE_PATTERNS.md`](./api/docs/CODE_PATTERNS.md). Read it before adding any rule that varies by a closed key.
+- **Design patterns the codebase commits to** (keyed strategy resolvers, and the anti-patterns they replace — branching on `DealType` in agnostic code, service location, throwaway DTOs): [`api/agents/CODE_PATTERNS.md`](./api/agents/CODE_PATTERNS.md). Read it before adding any rule that varies by a closed key.
 - **Web SPA (`app/web/`)** — [`app/web/AGENTS.md`](./app/web/AGENTS.md).
 - **Customer cross-platform core (`app/customer/shared`, npm package `@concertable/customer`, exported as `@concertable/customer/shared/*`)** — consumed ONLY by the customer web + mobile apps: [`app/customer/shared/AGENTS.md`](./app/customer/shared/AGENTS.md).
 
