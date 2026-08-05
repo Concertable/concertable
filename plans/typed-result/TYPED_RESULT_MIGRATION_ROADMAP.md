@@ -60,9 +60,9 @@ their current branch and worktree rather than fragmenting in-flight work.
 - [ ] 🟠 **Payment owned-result migration.** Exclusive owner:
   `Feature/PaymentOwnedResultExpansion` at
   `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\PaymentOwnedResultExpansion`.
-  The implementation and local verification are complete; delivery is waiting on the recorded
-  transaction-time gross-revalidation decision, then a current-main sync and re-verification before
-  review/push/PR, package publication, and the generated platform-sync PR.
+  The reviewed-`Money` decision is implemented and Payment's local owner gates are green. Delivery is
+  waiting on incremental review, a current-main sync and committed-tree re-verification before
+  push/PR, package publication, and the generated platform-sync PR.
   `Feature/CommissionBindingDeferredPricing` / PR #296 is frozen donor history, not a second owner. No
   other workstream may recreate Payment contracts or bridge the unpublished package with local source
   references.

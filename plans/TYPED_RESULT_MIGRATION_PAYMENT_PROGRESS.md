@@ -46,22 +46,32 @@ that executes returns its transfer or refund. The owned contract is therefore
 `Result<Option<Transfer>, EscrowReleaseError>` and
 `Result<Option<Refund>, EscrowRefundError>` rather than a typed failure or a payload-free success.
 
+H1 is implemented in this checkpoint. Commission bindings persist nullable `ReviewedGrossMinor`,
+but every caller-facing monetary boundary added or changed in this slice uses `Money`. Binding and
+review are now separate operations: `CreateOrBindAsync` fixes identity and pricing terms, then
+`ConfirmReviewedGrossAsync` atomically confirms one reviewed gross and returns Payment's calculation.
+Bound calculation, manager pay/hold/refund, and escrow deposit/capture/refund all reject an
+unconfirmed or different gross before Stripe. Payment calculates commission and payer total itself;
+the expected-value inputs and error are removed from the client, protobuf, application, and service
+contracts. Remaining primitive monetary DTOs are recorded in Payment's `TECH_DEBT.md`.
+
+The regenerated Payment initial migration contains the nullable `ReviewedGrossMinor` column and no
+unrelated migration changes remain. The required all-context `initial-migrations.ps1` was attempted
+three times; it regenerated Payment correctly but twice exceeded command caps and the final pass
+hung in later unchanged Customer contexts. Interrupted Customer migration artifacts were restored or
+removed exactly. Payment's owner gates are green. A diagnostic full integration run passed B2B
+Artist 17/17, then B2B Concert failed all 144 cases at fixture startup because Windows could not load
+`Microsoft.Data.SqlClient.SNI.dll` from the deep worktree path (`ERROR_FILENAME_EXCED_RANGE`); the
+wrapper was stopped and its two Testcontainers resources removed. Payment integration independently
+passed 7/7 against Docker and the regenerated migration.
+
 ## Next Steps
 
-Implement H1 defense-in-depth on the current-main merge `059b4a6f6`:
+Run incremental review over the H1 implementation checkpoint and fix every clear finding. Then sync
+current `origin/main`, repeat the Payment owner build/unit/integration gates and standalone carve on
+the committed tree, push/open the one canonical PR, and require full merge-queue E2E.
 
-- use `Money` at Payment client/application boundaries and the owned protobuf `Money` message on the
-  wire; remove caller-supplied expected commission/payer-total fields;
-- add an explicit reviewed-gross confirmation operation that atomically commits the exact `Money`
-  value to the binding and is idempotent only for the same amount;
-- require every bound commission calculation and money-moving operation to receive the confirmed
-  `Money`, rejecting an unconfirmed or different gross before Stripe;
-- record the broader primitive-money inventory in `api/Concertable.Payment/TECH_DEBT.md` for any
-  persistence/internal contracts that cannot honestly be converted in this slice;
-- regenerate Payment's initial migration, run the complete owner verification gate, and checkpoint
-  the implementation before incremental review and delivery.
-
-Push/opening the one canonical PR, merge, publication, the breaking B2B/Customer platform-sync
+Opening the one canonical PR, merge, publication, the breaking B2B/Customer platform-sync
 migration, and closing donor PR #296 all remain later explicit delivery steps; the PR must run full
 merge-queue E2E.
 
@@ -93,6 +103,10 @@ merge-queue E2E.
 - Payment grep gate: no `FluentResults`, `ToLegacy`, obsolete published clients, parallel operation
   errors, generated union factory aliases, or stale gRPC result helpers outside `bin`/`obj`;
   `git diff --check` passed.
+- H1 working-tree gate on platform `0.1.0-alpha.0.814`: Payment build 0 warnings/0 errors; Payment unit
+  209/209; Payment integration 7/7; `git diff --check` clean; no expected commission/payer-total
+  parameters remain. B2B Artist integration passed 17/17 before the diagnostic full suite hit the
+  unrelated B2B Concert long-path SQL native-DLL startup failure described in `## Current state`.
 
 ## Reviews
 
@@ -102,7 +116,7 @@ Verdict: careful, mostly-correct migration — cancellation preserved, no provid
 wire codes fail loudly, rounding/VAT/cumulative-refund math sound. No defect mischarges a payer in the
 normal flow today. Findings:
 
-- **H1 (financial — IN PROGRESS, defense-in-depth selected 2026-08-05):** the cutover removed Payment's in-service cross-check that a
+- **H1 (financial — FIXED in this commit):** the cutover removed Payment's in-service cross-check that a
   deferred charge's gross was payer-reviewed. `CalculateBoundAsync` is now pure `rate × caller gross`;
   the binding persists no gross/reviewed amount, and a deferred bind happens with `gross=null`, so
   nothing is validated at bind. `CaptureBoundCommissionAsync(gross=G)` then charges from `G` with no
@@ -111,7 +125,8 @@ normal flow today. Findings:
   removal of defense-in-depth. **This is the `CalculateBoundAsync` sign-off:** accept it (relying on the
   B2B §4.1 freeze as the compensating control), or persist the reviewed gross/ceiling on the binding and
   re-assert it at money-movement. Tommy selected exact reviewed-`Money` persistence and rejected
-  caller-supplied expected calculation fields; implementation evidence is still required.
+  caller-supplied expected calculation fields. Implemented by atomically persisting the reviewed gross
+  on the binding and rejecting unconfirmed or different bound money movement before Stripe.
 - **M2 (correctness — FIXED in this commit):** `PaymentError.FromCode` greedily claimed all `payment.commission_*`
   codes into `CommissionFailure` via its `_ =>` fall-through, so composite unions' own `CommissionFailure`
   arm was dead — a server `ManagerPaymentError.CommissionFailure` round-tripped to a `PaymentFailure`-shaped
@@ -152,6 +167,20 @@ Clean: escrow `Result<Option<T>,E>` semantics, rounding/VAT/refund math, wire hy
   commission-branch implementation is donor evidence only; its behavior is now reconciled here.
 
 ## Event log
+
+### 2026-08-05 — Implemented reviewed-Money enforcement
+
+- Action: Removed caller-supplied expected calculation values, converted changed Payment monetary
+  boundaries to `Money`, added atomic reviewed-gross confirmation, enforced it on every bound money
+  movement, regenerated Payment's initial migration, and added invariant/concurrency coverage.
+- Evidence: Payment build 0 warnings/0 errors; unit tests 209/209; Payment integration tests 7/7;
+  `git diff --check` clean; Payment migration contains nullable `ReviewedGrossMinor`. The diagnostic
+  full integration suite passed B2B Artist 17/17 before B2B Concert's 144 tests failed at fixture
+  startup with Windows `ERROR_FILENAME_EXCED_RANGE` loading `Microsoft.Data.SqlClient.SNI.dll`.
+- Outcome: H1 is fixed in this implementation checkpoint. No expected commission/payer-total input
+  survives; Payment owns calculation and refuses unconfirmed or mismatched gross before Stripe.
+- Follow-up: Run incremental review, fix findings, sync current main, repeat the committed owner/carve
+  gates, then push and open the canonical full-E2E PR.
 
 ### 2026-08-05 — Selected Money-based H1 defense-in-depth
 
