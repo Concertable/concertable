@@ -16,6 +16,9 @@ Decide and act on reversible work (doc/plan edits, isolated commits, retrying a 
 
 **Never gate a reversible local (working-tree) change behind a "should I?" — just make it.** Editing / writing / refactoring a file, or running a plan's code steps, is the default action, never a question and never a "just report / do nothing" menu; the *only* thing that waits for an explicit instruction is `git commit` / `git push` (full rule: root `~/.Codex/AGENTS.md`).
 
+**Completed docs/meta-only work is the exception to that push gate:** once reviewed, commit, push, and
+merge it through `/merge-docs` without waiting for another instruction, keeping agent-loaded guidance current via the no-E2E docs path.
+
 **If requested work depends on a PR that does not exist, create it and do the work; never hand back the same blocked prompt.**
 
 ## Per-area guidance
