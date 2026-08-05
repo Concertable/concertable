@@ -5,7 +5,7 @@
 - Branch: `Feature/typed-result_search-contracts`
 - PR: not opened
 - Dependency/package gates: owned Kernel foundation PR #290 and platform sync PR #291 merged; current platform sync PR #373 merged and Search consumes `ConcertablePlatformVersion` `0.1.0-alpha.0.814`; no Payment, B2B, or Customer migration dependency; no open platform-sync PR
-- Last reconciled: 2026-08-05 19:42 BST against fetched `origin/main` commit `0ed29d8f077fc9593467d6c858c6a0cbab688290`, local git/worktree inventory, GitHub PR state, full review artifact `reviews/Feature-typed-result_search-contracts.md`, Phase 2 commit `657846883`, and the committed standalone carve
+- Last reconciled: 2026-08-05 19:51 BST against fetched `origin/main` commit `6f825b3ee01351f0b5cb1ffc8d0beb760265dce8`, local git/worktree inventory, GitHub PR state, full review artifact `reviews/Feature-typed-result_search-contracts.md`, Phase 2 commit `657846883`, and the committed standalone carve
 
 ## Current state
 
@@ -16,9 +16,10 @@ the Release solution build, the final production inventories, and the committed 
 carve. The full implementation review of `da8730931387a85f6e459af34336bea52d34385d..26cefae27e5bf53a82b9c02ad3992afdce56643e`
 is complete with no findings. Tommy authorized delivery through the plan resume instruction.
 
-The clean branch is reconciled with fetched `origin/main` at merge commit `dee61e298dc2ba7d821fe4e58dc93260ca87683c`.
-The two upstream commits changed only `.github/workflows/platform-sync-alert.yml`, so no Search code,
-contract, package, or verification input changed and the completed Search gates remain applicable.
+The clean branch is reconciled with fetched `origin/main` at merge commit `88b9822877f842254be07279ad23751efba02770`.
+The upstream changes were limited to `.github/workflows/platform-sync-alert.yml` and plan-workflow
+documentation, so no Search code, contract, package, or verification input changed and the completed
+Search gates remain applicable.
 
 The autocomplete and header repository, service, and dispatcher chains now declare materialized
 `IReadOnlyList<T>` results throughout. All existing query bodies, `ToListAsync()` terminals, ordering,
@@ -102,6 +103,9 @@ contracts, exception semantics, package boundaries, and shared Kernel contracts 
   `0ed29d8f077fc9593467d6c858c6a0cbab688290` as `dee61e298dc2ba7d821fe4e58dc93260ca87683c`;
   the merge changed only `.github/workflows/platform-sync-alert.yml`, left Search implementation and
   verification inputs unchanged, and brought the branch to 0 commits behind main.
+- Final pre-push reconciliation: after main advanced again, merged `6f825b3ee01351f0b5cb1ffc8d0beb760265dce8`
+  as `88b9822877f842254be07279ad23751efba02770`; its only changes were plan-workflow documentation,
+  leaving Search implementation and verification inputs unchanged and the branch 0 commits behind main.
 
 ## Reviews
 
@@ -237,6 +241,17 @@ contracts, exception semantics, package boundaries, and shared Kernel contracts 
   `.github/workflows/platform-sync-alert.yml`.
 - Outcome: delivery prerequisites are current without changing Search code or invalidating its green
   build, unit, integration, inventory, carve, or review evidence.
+- Follow-up: push the reconciled work head through the plan-managed two-leg protocol and open the PR.
+
+### 2026-08-05 — final pre-push reconciliation
+
+- Action: reran PR preflight, detected that main advanced during delivery, refreshed origin, and merged
+  the new main tip before publishing.
+- Evidence: `origin/main` `6f825b3ee01351f0b5cb1ffc8d0beb760265dce8`; merge commit
+  `88b9822877f842254be07279ad23751efba02770`; upstream changes only in plan-workflow documentation;
+  branch 0 commits behind main.
+- Outcome: the branch is current and Search verification remains valid because no Search code,
+  contract, package, build input, or test input changed.
 - Follow-up: push the reconciled work head through the plan-managed two-leg protocol and open the PR.
 
 ## Resume prompt
