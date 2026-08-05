@@ -2,7 +2,7 @@
 
 > Next steps live in @plans/typed-result/AUTH_OUTCOMES_PROGRESS.md -> `## Next Steps`.
 
-**Status:** Planning complete; implementation has not started.
+**Status:** Phase 1 complete; Phase 2 is next.
 
 ## Outcome
 
@@ -137,18 +137,18 @@ update this plan and the ledger in the same commit, commit without asking, and s
 next handoff. There is no package or deployment boundary between phases, so they stay on this branch
 and ship in one PR.
 
-### Phase 1 - Auth test foundation and owned error vocabulary
+### Phase 1 - Auth test foundation and owned error vocabulary (complete)
 
-- Add a direct `Concertable.Kernel` package reference and central package version to Auth's published
+- [x] Add a direct `Concertable.Kernel` package reference and central package version to Auth's published
   package closure; use the existing `ConcertablePlatformVersion` and do not enable local-core mode.
-- Add the Auth unit, integration-fixture, and integration test projects described above, including
+- [x] Add the Auth unit, integration-fixture, and integration test projects described above, including
   only the package/tooling entries they require.
-- Add the four operation-owned definition records and exact unit contract tests without changing
+- [x] Add the four operation-owned definition records and exact unit contract tests without changing
   `IAuthService` signatures or runtime callers yet.
-- Add HTTP characterization coverage for the current successful and refused login, logout,
+- [x] Add HTTP characterization coverage for the current successful and refused login, logout,
   registration, email verification, password change, forgot-password, and password-reset behavior,
   including account-disclosure parity and exception/cancellation paths.
-- Update `api/Concertable.slnx`. Do not change models or migrations.
+- [x] Update `api/Concertable.slnx`. Do not change models or migrations.
 
 ### Phase 2 - Login and logout ordinary absence
 
