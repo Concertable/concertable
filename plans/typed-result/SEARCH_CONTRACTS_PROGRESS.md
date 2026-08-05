@@ -70,6 +70,11 @@ transient `UNKNOWN`; the final six observations were consecutive `OPEN/CLEAN` at
 `85d4dae82`, with no queue entry, PR failure, or failed merge-group run. This proves the documented
 green-but-unadmitted re-evaluation glitch. The one-time disable/re-enable nudge is now authorized.
 
+The one-time nudge succeeded. PR #380 remains at unchanged remote source head `85d4dae82` with only
+`skip-e2e`, GraphQL now reports merge-queue state `AWAITING_CHECKS`, and merge-group run
+`31044127292` was dispatched on `gh-readonly-queue/main/pr-380-754b06e008a7a066f07ec1384f48a146330db99a`.
+The local observation tail remains ledger-only and unpushed.
+
 The autocomplete and header repository, service, and dispatcher chains now declare materialized
 `IReadOnlyList<T>` results throughout. All existing query bodies, `ToListAsync()` terminals, ordering,
 filters, empty-list behavior, pagination, DTO/projection shapes, nullable inputs, controller/wire
@@ -77,11 +82,11 @@ contracts, exception semantics, package boundaries, and shared Kernel contracts 
 
 ## Next Steps
 
-Perform the one-time documented nudge: `gh pr merge --disable-auto 380`, then
-`gh pr merge 380 --merge --auto`. Verify the unchanged remote head and actual queue admission, then
-monitor terminally while scanning both PR checks and merge-group runs. Do not push the local
-observation-checkpoint tail. After merge, follow publication and the generated platform-sync PR to
-terminal green.
+Monitor PR #380 and merge-group run `31044127292` terminally, scanning PR checks and all merge-group
+runs for this PR. Stop on merge, failure/ejection, closed-unmerged, sustained green-unadmitted state,
+or bounded timeout. Do not retry a failing queue run and do not push the local observation tail. On
+merge, checkpoint the merge commit immediately, then follow publication and the generated
+platform-sync PR to terminal green.
 
 ## Completed work
 
@@ -195,6 +200,8 @@ terminal green.
   entry; PR remained `OPEN/CLEAN`, green, and unchanged, with the pre-existing auto-merge request.
 - Sustained admission result: ten bounded polls found no PR or merge-group failure and no queue entry;
   after one transient `UNKNOWN`, the final six were consecutively `OPEN/CLEAN` at `85d4dae82`.
+- Queue admission recovery: the single disable/re-enable nudge admitted unchanged head `85d4dae82`;
+  queue state `AWAITING_CHECKS`, merge-group run `31044127292` queued.
 
 ## Reviews
 
@@ -454,6 +461,16 @@ terminal green.
 - Outcome: PR #380 is green but never admitted; this is the documented GitHub re-evaluation glitch,
   not a failed or ejected queue run.
 - Follow-up: disable auto-merge once, re-enable once on the same head, and verify actual admission.
+
+### 2026-08-05 — Search PR admitted after one-time nudge
+
+- Action: disabled and re-enabled auto-merge once on the verified green source, then queried PR,
+  GraphQL queue, and merge-group run state.
+- Evidence: PR source head remains `85d4dae82` with `skip-e2e`; queue entry state
+  `AWAITING_CHECKS`; merge-group run `31044127292` queued on the `pr-380-*` branch.
+- Outcome: the documented re-evaluation recovery succeeded and the exact reviewed source is now in
+  the merge queue.
+- Follow-up: monitor PR and merge-group outcomes terminally without retries.
 
 ## Resume prompt
 
