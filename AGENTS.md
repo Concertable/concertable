@@ -4,7 +4,7 @@ Concertable is a monorepo (a convenience, not the architecture) with a `.NET` mi
 
 ## Always take the scalable, long-term approach — never the hacky quick fix
 
-**When two solutions present themselves, take the one that is correct for the long term, even when it is harder, larger, or slower to land.** Never reach for the quick hack, the shim, the special-case, or the "just make it work for now" — a workaround that unblocks today becomes the landmine someone trips on later (this very tech-debt backlog is full of exactly those). The proper, scalable fix is the default and the expectation, not a nice-to-have to weigh against effort.
+**When two solutions present themselves, take the one that is correct for the long term, even when it is harder, larger, or slower to land.** Never reach for the quick hack, the shim, the special-case, the timeout/retry bumped to ride out a flake, or the "just make it work for now" — a workaround that unblocks today becomes the landmine someone trips on later (this very tech-debt backlog is full of exactly those). The proper, scalable fix is the default and the expectation, not a nice-to-have to weigh against effort.
 
 - **Multiple PRs, cross-package cut-overs, publish-first migrations, extra scaffolding — all fine.** Scope is never a reason to pick the worse design. If the right fix needs three PRs or crosses a package boundary, do it in three PRs; say so in one line and proceed. Splitting the *delivery* of the correct solution is encouraged; substituting a *worse* solution to fit one PR is not.
 - **A shortcut is only acceptable when it is genuinely, provably the right call** (e.g. deferring live tax-ID verification that overlaps Stripe) — and then it is *logged* in the owning `TECH_DEBT.md` with the reasoning, never left silent.
@@ -23,8 +23,10 @@ merge it through `/merge-docs` without waiting for another instruction, keeping 
 
 ## Per-area guidance
 
+**Doc locality — a guidance/architecture doc lives at the lowest node that fully contains its concern:** single-service → that service's own folder (thin, inheriting root + `api/` upward, never restating — e.g. [`api/Concertable.Payment/AGENTS.md`](./api/Concertable.Payment/AGENTS.md)); cross-service or orchestration → root. Create one only where genuine service-specific content exists.
+
 - **Backend (.NET, `api/`)** — seeding, migrations, DTOs, module rules, C# conventions: [`api/AGENTS.md`](./api/AGENTS.md).
-- **Design patterns the codebase commits to** (keyed strategy resolvers, and the anti-patterns they replace — branching on `DealType` in agnostic code, service location, throwaway DTOs): [`api/docs/CODE_PATTERNS.md`](./api/docs/CODE_PATTERNS.md). Read it before adding any rule that varies by a closed key.
+- **Design patterns the codebase commits to** (keyed strategy resolvers, and the anti-patterns they replace — branching on `DealType` in agnostic code, service location, throwaway DTOs): [`api/agents/CODE_PATTERNS.md`](./api/agents/CODE_PATTERNS.md). Read it before adding any rule that varies by a closed key.
 - **Web SPA (`app/web/`)** — [`app/web/AGENTS.md`](./app/web/AGENTS.md).
 - **Customer cross-platform core (`app/customer/shared`, npm package `@concertable/customer`, exported as `@concertable/customer/shared/*`)** — consumed ONLY by the customer web + mobile apps: [`app/customer/shared/AGENTS.md`](./app/customer/shared/AGENTS.md).
 
