@@ -12,4 +12,6 @@ internal sealed record TenantDetails
     /// the wire when absent (not serialized as null), so the client sees an optional field, not a null.</summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public TaxComplianceDto? TaxCompliance { get; init; }
+    public required TenantConfigurationDto Configuration { get; init; }
+    public required TenantConfigurationValues ConfigurationDefaults { get; init; }
 }

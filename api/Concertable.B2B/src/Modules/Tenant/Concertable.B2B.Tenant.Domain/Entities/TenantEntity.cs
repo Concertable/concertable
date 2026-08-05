@@ -21,6 +21,7 @@ public sealed class TenantEntity : IGuidEntity, IEventRaiser
     /// Null until the operator completes organization setup — provisioning creates the tenant bare.
     /// </summary>
     public TaxCompliance? TaxCompliance { get; private set; }
+    public TenantConfiguration Configuration { get; private set; } = TenantConfiguration.Empty;
 
     private readonly EventRaiser events = new();
     public IReadOnlyList<IDomainEvent> DomainEvents => events.DomainEvents;
@@ -61,11 +62,16 @@ public sealed class TenantEntity : IGuidEntity, IEventRaiser
     /// Tenant setup: replaces the provisioning placeholder legal name (the registration email)
     /// and the tax-compliance details in one transition — the <c>/organizations</c> form submits them together.
     /// </summary>
-    public void UpdateLegalDetails(string legalName, TaxCompliance taxCompliance)
+    public void UpdateLegalDetails(
+        string legalName,
+        TaxCompliance taxCompliance,
+        TenantConfiguration configuration)
     {
         DomainException.ThrowIfNullOrWhiteSpace(legalName, "Legal name");
         DomainException.ThrowIfNull(taxCompliance, "Tax compliance");
+        DomainException.ThrowIfNull(configuration, "Tenant configuration");
         LegalName = legalName;
         TaxCompliance = taxCompliance;
+        Configuration = configuration;
     }
 }

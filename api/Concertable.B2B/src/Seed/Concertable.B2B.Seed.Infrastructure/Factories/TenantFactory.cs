@@ -14,7 +14,7 @@ public static class TenantFactory
         if (taxComplianceComplete)
             // Onboarded seller — tax details complete so the fail-closed payout gate lets settlement through. Pass the
             // email as the legal name so LegalName still carries it to Announce()'s event (Stripe provisioning).
-            tenant.UpdateLegalDetails(email, SeedTaxCompliance);
+            tenant.UpdateLegalDetails(email, SeedTaxCompliance, TenantConfiguration.Empty);
         return tenant;
     }
 

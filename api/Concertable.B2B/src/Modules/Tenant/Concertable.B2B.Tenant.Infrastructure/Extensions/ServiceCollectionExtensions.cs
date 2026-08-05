@@ -2,6 +2,7 @@ using Concertable.B2B.DataAccess.Infrastructure;
 using Concertable.Auth.Contracts.Events;
 using Concertable.B2B.Tenant.Contracts;
 using Concertable.B2B.Tenant.Application;
+using Concertable.B2B.Tenant.Application.Configuration;
 using Concertable.B2B.Tenant.Application.Tax;
 using Concertable.B2B.Tenant.Application.Interfaces;
 using Concertable.B2B.Tenant.Application.Validators;
@@ -38,8 +39,18 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IEntityTypeConfigurationProvider>(sp => sp.GetRequiredService<TenantConfigurationProvider>());
 
         services.Configure<UkTaxComplianceOptions>(configuration.GetSection(UkTaxComplianceOptions.SectionName));
+        services.AddOptions<TenantConfigurationDefaultsOptions>()
+            .Bind(configuration.GetSection(TenantConfigurationDefaultsOptions.SectionName))
+            .Validate(
+                options => options.PrsPassThroughRate is >= 0m and <= 1m
+                    && options.VatRate is >= 0m and <= 1m
+                    && options.PaymentTermsDays is >= 0 and <= 365
+                    && options.CancellationNoticeHours is >= 0 and <= 8760,
+                "Tenant configuration defaults are outside their supported ranges.")
+            .ValidateOnStart();
 
         services.AddSingleton<ITaxComplianceRules, UkTaxComplianceRules>();
+        services.AddSingleton<ITenantConfigurationResolver, TenantConfigurationResolver>();
 
         // VAT computation: region arithmetic + the registration policy over it; Concert consumes it only via ITenantModule.
         services.AddSingleton<IVatCalculator, UkVatCalculator>();

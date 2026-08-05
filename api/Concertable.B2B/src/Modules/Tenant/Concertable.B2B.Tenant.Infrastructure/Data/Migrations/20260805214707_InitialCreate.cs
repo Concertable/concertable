@@ -70,7 +70,11 @@ namespace Concertable.B2B.Tenant.Infrastructure.Data.Migrations
                     TaxCompliance_RegisteredAddress_Postcode = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
                     TaxCompliance_RegisteredAddress_Country = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     TaxCompliance_BankReference = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
-                    TaxCompliance_HoldsMusicLicence = table.Column<bool>(type: "bit", nullable: true)
+                    TaxCompliance_HoldsMusicLicence = table.Column<bool>(type: "bit", nullable: true),
+                    Configuration_CancellationNoticeHours = table.Column<int>(type: "int", nullable: true),
+                    Configuration_PaymentTermsDays = table.Column<int>(type: "int", nullable: true),
+                    Configuration_PrsPassThroughRate = table.Column<decimal>(type: "decimal(5,4)", precision: 5, scale: 4, nullable: true),
+                    Configuration_VatRate = table.Column<decimal>(type: "decimal(5,4)", precision: 5, scale: 4, nullable: true)
                 },
                 constraints: table =>
                 {

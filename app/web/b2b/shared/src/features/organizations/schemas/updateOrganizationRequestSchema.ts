@@ -37,6 +37,13 @@ const taxComplianceSchema = z.object({
   holdsMusicLicence: z.boolean(),
 });
 
+const tenantConfigurationSchema = z.object({
+  prsPassThroughRate: z.number().min(0).max(1).optional(),
+  vatRate: z.number().min(0).max(1).optional(),
+  paymentTermsDays: z.number().int().min(0).max(365).optional(),
+  cancellationNoticeHours: z.number().int().min(0).max(8760).optional(),
+});
+
 export const updateOrganizationRequestSchema = z.object({
   legalName: z
     .string()
@@ -44,6 +51,7 @@ export const updateOrganizationRequestSchema = z.object({
     .min(1, "Legal name is required")
     .max(200, "Legal name must be 200 characters or fewer"),
   taxCompliance: taxComplianceSchema,
+  configuration: tenantConfigurationSchema,
 });
 
 export type UpdateOrganizationRequest = z.infer<typeof updateOrganizationRequestSchema>;

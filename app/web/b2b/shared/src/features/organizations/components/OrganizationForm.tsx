@@ -13,6 +13,7 @@ import type { Organization } from "../types";
 
 function initialBuffer(organization: Organization): OrganizationBuffer {
   const tax = organization.taxCompliance;
+  const configuration = organization.configuration;
   return {
     legalName: organization.legalName,
     vatRegistered: tax?.vatNumber != null,
@@ -25,6 +26,22 @@ function initialBuffer(organization: Organization): OrganizationBuffer {
     country: tax?.registeredAddress.country ?? "United Kingdom",
     bankReference: tax?.bankReference ?? "",
     holdsMusicLicence: tax?.holdsMusicLicence ?? false,
+    prsPassThroughPercent:
+      configuration.prsPassThroughRate == null
+        ? ""
+        : String(configuration.prsPassThroughRate * 100),
+    vatPercent:
+      configuration.vatRate == null
+        ? ""
+        : String(configuration.vatRate * 100),
+    paymentTermsDays:
+      configuration.paymentTermsDays == null
+        ? ""
+        : String(configuration.paymentTermsDays),
+    cancellationNoticeHours:
+      configuration.cancellationNoticeHours == null
+        ? ""
+        : String(configuration.cancellationNoticeHours),
   };
 }
 
@@ -175,6 +192,69 @@ export function OrganizationForm({
             maxLength={50}
             placeholder="IBAN or account reference"
           />
+        </div>
+      </div>
+
+      <Separator />
+
+      <div className="space-y-4">
+        <h3 className="font-medium">Booking and settlement defaults</h3>
+        <p className="text-muted-foreground text-xs">
+          Leave a field blank to use the platform default shown in the placeholder.
+        </p>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-1">
+            <Label htmlFor="prsPassThroughPercent">PRS pass-through (%)</Label>
+            <Input
+              id="prsPassThroughPercent"
+              type="number"
+              min={0}
+              max={100}
+              step="0.01"
+              value={buffer.prsPassThroughPercent}
+              onChange={(e) => set("prsPassThroughPercent", e.target.value)}
+              placeholder={`Platform default: ${organization.configurationDefaults.prsPassThroughRate * 100}%`}
+            />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="vatPercent">VAT rate (%)</Label>
+            <Input
+              id="vatPercent"
+              type="number"
+              min={0}
+              max={100}
+              step="0.01"
+              value={buffer.vatPercent}
+              onChange={(e) => set("vatPercent", e.target.value)}
+              placeholder={`Platform default: ${organization.configurationDefaults.vatRate * 100}%`}
+            />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="paymentTermsDays">Payment terms (days)</Label>
+            <Input
+              id="paymentTermsDays"
+              type="number"
+              min={0}
+              max={365}
+              step={1}
+              value={buffer.paymentTermsDays}
+              onChange={(e) => set("paymentTermsDays", e.target.value)}
+              placeholder={`Platform default: ${organization.configurationDefaults.paymentTermsDays}`}
+            />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="cancellationNoticeHours">Cancellation notice (hours)</Label>
+            <Input
+              id="cancellationNoticeHours"
+              type="number"
+              min={0}
+              max={8760}
+              step={1}
+              value={buffer.cancellationNoticeHours}
+              onChange={(e) => set("cancellationNoticeHours", e.target.value)}
+              placeholder={`Platform default: ${organization.configurationDefaults.cancellationNoticeHours}`}
+            />
+          </div>
         </div>
       </div>
 

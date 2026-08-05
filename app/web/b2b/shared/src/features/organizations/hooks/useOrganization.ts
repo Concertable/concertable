@@ -15,6 +15,10 @@ export interface OrganizationBuffer {
   country: string;
   bankReference: string;
   holdsMusicLicence: boolean;
+  prsPassThroughPercent: string;
+  vatPercent: string;
+  paymentTermsDays: string;
+  cancellationNoticeHours: string;
 }
 
 export function useOrganization() {
@@ -36,6 +40,18 @@ export function useOrganization() {
         },
         bankReference: buffer.bankReference,
         holdsMusicLicence: buffer.holdsMusicLicence,
+      },
+      configuration: {
+        prsPassThroughRate: buffer.prsPassThroughPercent
+          ? Number(buffer.prsPassThroughPercent) / 100
+          : undefined,
+        vatRate: buffer.vatPercent ? Number(buffer.vatPercent) / 100 : undefined,
+        paymentTermsDays: buffer.paymentTermsDays
+          ? Number(buffer.paymentTermsDays)
+          : undefined,
+        cancellationNoticeHours: buffer.cancellationNoticeHours
+          ? Number(buffer.cancellationNoticeHours)
+          : undefined,
       },
     });
     if (parsed.success)

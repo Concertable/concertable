@@ -1,3 +1,4 @@
+using Concertable.B2B.Tenant.Application.Configuration;
 using Concertable.B2B.Tenant.Application.DTOs;
 using Concertable.B2B.Tenant.Application.Tax;
 using Concertable.B2B.Tenant.Application.Requests;
@@ -12,12 +13,18 @@ internal sealed class TenantService : ITenantService
     private readonly ITenantRepository repository;
     private readonly ITenantContext tenantContext;
     private readonly IVatPolicy vatPolicy;
+    private readonly ITenantConfigurationResolver configurationResolver;
 
-    public TenantService(ITenantRepository repository, ITenantContext tenantContext, IVatPolicy vatPolicy)
+    public TenantService(
+        ITenantRepository repository,
+        ITenantContext tenantContext,
+        IVatPolicy vatPolicy,
+        ITenantConfigurationResolver configurationResolver)
     {
         this.repository = repository;
         this.tenantContext = tenantContext;
         this.vatPolicy = vatPolicy;
+        this.configurationResolver = configurationResolver;
     }
 
     public async Task<TenantDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
@@ -58,7 +65,10 @@ internal sealed class TenantService : ITenantService
             ?? throw new NotFoundException($"Tenant {tenantId} not found.");
 
         // VAT-number format is enforced by UpdateTenantRequestValidator in the write pipeline, so the request is valid here.
-        tenant.UpdateLegalDetails(request.LegalName, request.TaxCompliance.ToTaxCompliance());
+        tenant.UpdateLegalDetails(
+            request.LegalName,
+            request.TaxCompliance.ToTaxCompliance(),
+            request.Configuration.ToTenantConfiguration());
         await repository.SaveChangesAsync(ct);
 
         return ToDetails(tenant);
@@ -94,6 +104,13 @@ internal sealed class TenantService : ITenantService
         return tenant?.TaxCompliance?.ToDto();
     }
 
+    public async Task<TenantConfigurationValues> GetConfigurationAsync(Guid tenantId, CancellationToken ct = default)
+    {
+        var tenant = await repository.GetByIdAsync(tenantId, ct)
+            ?? throw new NotFoundException($"Tenant {tenantId} not found.");
+        return configurationResolver.Resolve(tenant.Configuration);
+    }
+
     public async Task<VatCalculation> GetVatCalculationAsync(Guid tenantId, decimal gross, CancellationToken ct = default)
     {
         // Fail-closed: settlement's tax-gate guarantees tenant + compliance by invoice time; a null VatNumber (unregistered) is the only valid absence.
@@ -111,5 +128,7 @@ internal sealed class TenantService : ITenantService
         Id = tenant.Id,
         LegalName = tenant.LegalName,
         TaxCompliance = tenant.TaxCompliance?.ToDto(),
+        Configuration = tenant.Configuration.ToDto(),
+        ConfigurationDefaults = configurationResolver.Defaults,
     };
 }

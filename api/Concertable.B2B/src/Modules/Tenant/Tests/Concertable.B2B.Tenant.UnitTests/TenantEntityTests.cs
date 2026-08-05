@@ -21,6 +21,7 @@ public sealed class TenantEntityTests
         Assert.Equal(TenantType.Venue, tenant.Type);
         Assert.Equal(userId, tenant.CreatedByUserId);
         Assert.Equal(now, tenant.CreatedAt);
+        Assert.Equal(TenantConfiguration.Empty, tenant.Configuration);
     }
 
     [Fact]
@@ -78,10 +79,13 @@ public sealed class TenantEntityTests
             "GB00BANK1234",
             true);
 
-        tenant.UpdateLegalDetails("Acme Ltd", taxCompliance);
+        var configuration = new TenantConfiguration(0.05m, 0.20m, 14, 48);
+
+        tenant.UpdateLegalDetails("Acme Ltd", taxCompliance, configuration);
 
         Assert.Equal("Acme Ltd", tenant.LegalName);
         Assert.Equal(taxCompliance, tenant.TaxCompliance);
+        Assert.Equal(configuration, tenant.Configuration);
     }
 
     [Fact]
@@ -95,6 +99,6 @@ public sealed class TenantEntityTests
             "GB00BANK1234",
             false);
 
-        Assert.Throws<DomainException>(() => tenant.UpdateLegalDetails(" ", taxCompliance));
+        Assert.Throws<DomainException>(() => tenant.UpdateLegalDetails(" ", taxCompliance, TenantConfiguration.Empty));
     }
 }

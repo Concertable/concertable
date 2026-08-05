@@ -33,6 +33,7 @@ public sealed class TenantValidatorsTests
                 Country = "United Kingdom",
             },
         },
+        Configuration = new TenantConfigurationDto(),
     };
 
     [Fact]
@@ -51,4 +52,17 @@ public sealed class TenantValidatorsTests
     [InlineData(null)]            // unregistered — absence is valid
     public void ValidOrAbsentVatNumber_Passes(string? vatNumber) =>
         Assert.True(Validator().Validate(Request(vatNumber)).IsValid);
+
+    [Fact]
+    public void ConfigurationOutsideSupportedRange_Fails()
+    {
+        var request = Request(null) with
+        {
+            Configuration = new TenantConfigurationDto { VatRate = 1.01m },
+        };
+
+        var result = Validator().Validate(request);
+
+        Assert.Contains(result.Errors, e => e.PropertyName == "Configuration.VatRate");
+    }
 }
