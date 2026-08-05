@@ -4,7 +4,7 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\PaymentOwnedResultExpansion`
 - Branch: `Feature/PaymentOwnedResultExpansion`
 - PR: not opened; frozen donor PR #296 remains open at `82d0555cd`
-- Dependency/package gates: This branch is the exclusive canonical implementation owner for Payment Phase 2. Phase 1 merged in PR #290 and platform-synced in PR #291; Payment currently consumes platform `0.1.0-alpha.0.798`. Removing the published FluentResults client surface is an intentional breaking package cutover: Payment must merge and publish before B2B/Customer can migrate on the generated platform-sync PR.
+- Dependency/package gates: This branch is the exclusive canonical implementation owner for Payment Phase 2. Phase 1 merged in PR #290 and platform-synced in PR #291; Payment currently consumes platform `0.1.0-alpha.0.814`. Removing the published FluentResults client surface is an intentional breaking package cutover: Payment must merge and publish before B2B/Customer can migrate on the generated platform-sync PR.
 - Downstream handoffs: B2B checkpoints 6-7 are waiting in `plans/typed-result/B2B_PROGRESS.md`
   (`Refactor/B2BTypedResultMigration`) for this branch to merge, publish, and platform-sync green.
 - Last reconciled: 2026-08-05 from local Git, `origin/main` at `0ed29d8f0`, and GitHub PR state
@@ -22,10 +22,10 @@ operation errors, and superseded RPC/result helpers are removed while the five o
 interfaces remain. Metadata contracts are narrowed to `IReadOnlyDictionary`; adapters copy into
 protobuf's mutable map at the wire boundary, and the resolved Payment tech-debt entry is deleted.
 
-The donor behavior is now authoritative: `CreateOrBindAsync` validates the reviewed configuration and
-any optional expected amounts supplied at binding time, while `CalculateBoundAsync` is a pure later
-calculation from the immutable bound terms and does not accept expected values. The stale merged
-transaction-time validation body and test are removed. Operation-specific errors use explicit Dunet
+The donor behavior remains the baseline, but H1's contract is now decided: Payment must persist the
+payer-reviewed gross as `Money` on the binding and reject money movement whose gross is unconfirmed or
+different. Caller-supplied expected commission and payer-total values are rejected as redundant;
+Payment calculates those amounts itself. Operation-specific errors use explicit Dunet
 case constructors with abstract-root/per-case `Definition`, leaving callers shaped for the future
 native-union cutover. Each public union root now has its own matching source file. The local
 implementation gate is green. Re-synced to current `origin/main` (platform `0.1.0-alpha.0.795`) at
@@ -48,24 +48,22 @@ that executes returns its transfer or refund. The owned contract is therefore
 
 ## Next Steps
 
-The implementation was complete and green at `581477754` on platform `0.1.0-alpha.0.798`; current
-`origin/main` at `0ed29d8f0` is now merged, but the combined branch remains unpushed and unverified.
-The single next action is Tommy's decision on review finding **H1**: transaction-time revalidation was
-removed; expected amounts are validated only at binding (`CreateOrBindAsync`) and nothing is persisted
-on the binding, so a deferred `Capture/PayBoundCommission` charges from the caller-supplied gross with
-no in-Payment check that it equals the payer-reviewed `FinalSettlementGrossMinor`.
+Implement H1 defense-in-depth on the current-main merge `059b4a6f6`:
 
-Choose one:
+- use `Money` at Payment client/application boundaries and the owned protobuf `Money` message on the
+  wire; remove caller-supplied expected commission/payer-total fields;
+- add an explicit reviewed-gross confirmation operation that atomically commits the exact `Money`
+  value to the binding and is idempotent only for the same amount;
+- require every bound commission calculation and money-moving operation to receive the confirmed
+  `Money`, rejecting an unconfirmed or different gross before Stripe;
+- record the broader primitive-money inventory in `api/Concertable.Payment/TECH_DEBT.md` for any
+  persistence/internal contracts that cannot honestly be converted in this slice;
+- regenerate Payment's initial migration, run the complete owner verification gate, and checkpoint
+  the implementation before incremental review and delivery.
 
-- **Accept the plan-consistent design:** rely on B2B's §4.1 gross freeze as the primary compensating
-  control and keep `CalculateBoundAsync` pure.
-- **Add Payment defense-in-depth:** persist the reviewed gross/ceiling on the binding and re-assert it
-  at money movement, changing the published contract before delivery.
-
-After the decision, update this ledger with the selected contract and repeat the complete owner
-verification gate before review and delivery. Push/opening the one canonical PR, merge, publication,
-the breaking B2B/Customer platform-sync migration, and closing donor PR #296 all remain later explicit
-delivery steps; the PR must run full merge-queue E2E.
+Push/opening the one canonical PR, merge, publication, the breaking B2B/Customer platform-sync
+migration, and closing donor PR #296 all remain later explicit delivery steps; the PR must run full
+merge-queue E2E.
 
 ## Downstream handoffs
 
@@ -104,7 +102,7 @@ Verdict: careful, mostly-correct migration — cancellation preserved, no provid
 wire codes fail loudly, rounding/VAT/cumulative-refund math sound. No defect mischarges a payer in the
 normal flow today. Findings:
 
-- **H1 (financial — DECISION NEEDED):** the cutover removed Payment's in-service cross-check that a
+- **H1 (financial — IN PROGRESS, defense-in-depth selected 2026-08-05):** the cutover removed Payment's in-service cross-check that a
   deferred charge's gross was payer-reviewed. `CalculateBoundAsync` is now pure `rate × caller gross`;
   the binding persists no gross/reviewed amount, and a deferred bind happens with `gross=null`, so
   nothing is validated at bind. `CaptureBoundCommissionAsync(gross=G)` then charges from `G` with no
@@ -112,7 +110,8 @@ normal flow today. Findings:
   control now lives in B2B's §4.1 gross freeze (out of this diff). Not "charges wrong today" — it is the
   removal of defense-in-depth. **This is the `CalculateBoundAsync` sign-off:** accept it (relying on the
   B2B §4.1 freeze as the compensating control), or persist the reviewed gross/ceiling on the binding and
-  re-assert it at money-movement.
+  re-assert it at money-movement. Tommy selected exact reviewed-`Money` persistence and rejected
+  caller-supplied expected calculation fields; implementation evidence is still required.
 - **M2 (correctness — FIXED in this commit):** `PaymentError.FromCode` greedily claimed all `payment.commission_*`
   codes into `CommissionFailure` via its `_ =>` fall-through, so composite unions' own `CommissionFailure`
   arm was dead — a server `ManagerPaymentError.CommissionFailure` round-tripped to a `PaymentFailure`-shaped
@@ -134,6 +133,9 @@ Clean: escrow `Result<Option<T>,E>` semantics, rounding/VAT/refund math, wire hy
 
 ## Decisions, discoveries, blockers, and deviations
 
+- H1 uses exact `Money`, not a ceiling: Payment atomically confirms the payer-reviewed gross on the
+  binding, calculates commission and payer total itself, and rejects unconfirmed or different money
+  movement before Stripe. Caller-supplied expected commission/payer-total parameters are removed.
 - Release/refund absence is a benign idempotent no-op represented by `Option.None`; successful execution returns `Option.Some`.
 - Owned Result/Option stay in-process. Protobuf retains an owned wire contract with explicit mapping at the gRPC boundary.
 - Payload-free operation errors are sealed definition records with named static values. Dunet is
@@ -150,6 +152,18 @@ Clean: escrow `Result<Option<T>,E>` semantics, rounding/VAT/refund math, wire hy
   commission-branch implementation is donor evidence only; its behavior is now reconciled here.
 
 ## Event log
+
+### 2026-08-05 — Selected Money-based H1 defense-in-depth
+
+- Action: Tommy selected Payment-owned reviewed-gross enforcement and required `Money` at monetary
+  boundaries; caller-supplied expected calculation fields were rejected as redundant.
+- Evidence: Current branch is clean at merge `059b4a6f6`, 0 behind `origin/main`, on platform
+  `0.1.0-alpha.0.814`; existing Payment client/application commission and bound-payment contracts
+  still expose primitive decimal or minor-unit/currency pairs.
+- Outcome: H1 is unblocked for implementation. Payment will confirm one exact reviewed `Money` value
+  per binding and reject unconfirmed or mismatched money movement before Stripe.
+- Follow-up: Implement the `## Next Steps` contract, log the remaining primitive-money debt, and run
+  the complete owner verification gate.
 
 ### 2026-08-05 — Registered the blocked B2B downstream handoff
 
