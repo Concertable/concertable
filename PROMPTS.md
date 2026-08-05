@@ -3,17 +3,18 @@
 - Start with `cd <absolute-worktree-path>` and keep it inside the paste-ready prompt.
 - For **non-plan** work, make the prompt self-contained for zero context: name the branch or PR,
   relevant working files, and exact next action.
-- For **plan-managed** work the prompt is ONLY the pointer — literally:
+- For **plan-managed** work the prompt is ONLY the pointer — an opener line then the read line:
 
   ```
-  cd <absolute-worktree-path>
+  <opener>
   Read @plans/<PLAN>_PLAN.md and @plans/<this-worktree-ledger>_PROGRESS.md and do what its `## Next Steps` says.
   ```
 
-  Nothing plan-specific goes in the prompt — no branch to verify, no checkpoints to keep, no gates, no
-  commands, no next action. Every one of those is a specific, and specifics live in the ledger (its
-  header fields + `## Next Steps`), never in the prompt, so the prompt can't drift. A generic "read X
-  and do what it says" is the only instruction the prompt carries.
+  The `<opener>` is `/worktree create <Type>/<epic>_<name>` when the plan's worktree doesn't exist yet — a
+  freshly-written plan, or after a clear with no live worktree — so implementation runs in an isolated
+  worktree, never the main checkout; it's `cd <absolute-worktree-path>` once that worktree exists. Nothing
+  else plan-specific goes in the prompt — no branch to verify, checkpoints, gates, commands, or next action;
+  every such specific lives in the ledger (its header + `## Next Steps`), so the prompt can't drift.
 - When work remains, end with one prompt that advances it — or, when several independent pieces remain,
   one prompt each so they run in separate contexts.
 - When blocked, first check whether the resolving work is already in flight — an open PR mid-merge, or
