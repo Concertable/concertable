@@ -5,7 +5,7 @@
 - Branch: `Feature/typed-result_search-contracts`
 - PR: #380 — https://github.com/Concertable/concertable/pull/380 — OPEN at verified head `d242b376001c26223109b795d756792ddf85ca39`
 - Dependency/package gates: owned Kernel foundation PR #290 and platform sync PR #291 merged; platform sync PR #381 merged green as `355f658b9d556dd07e3fa612fb1b04bcdb63a59d`, publishing the current `ConcertablePlatformVersion` `0.1.0-alpha.0.819` pin to `main`; no Payment, B2B, or Customer migration dependency
-- Last reconciled: 2026-08-05 20:38 BST against verified GitHub PR #380 at remote head `d242b3760` and merged platform sync PR #381
+- Last reconciled: 2026-08-05 20:40 BST against fetched `origin/main` commit `355f658b9d556dd07e3fa612fb1b04bcdb63a59d`, local merge commit `a0b8982f5001701d7c56b29bebbe5f167f2378d8`, and GitHub PR #380 at remote head `d242b3760`
 
 ## Current state
 
@@ -33,6 +33,11 @@ Platform sync PR #381 now pins `0.1.0-alpha.0.819` after PR #377. Its complete P
 one auto-merge re-assertion cleared the documented re-evaluation glitch and it merged as
 `355f658b9d556dd07e3fa612fb1b04bcdb63a59d`. The platform gate is terminal green.
 
+The clean local branch now merges that exact `origin/main` tip as `a0b8982f5001701d7c56b29bebbe5f167f2378d8`
+and is 0 commits behind. The upstream changes add the cookie-consent feature, E2E coverage, current
+platform pins, and agent guidance; no Search production or unit-test implementation changed relative
+to the verified PR head. The required Release solution rebuild remains pending before publication.
+
 The autocomplete and header repository, service, and dispatcher chains now declare materialized
 `IReadOnlyList<T>` results throughout. All existing query bodies, `ToListAsync()` terminals, ordering,
 filters, empty-list behavior, pagination, DTO/projection shapes, nullable inputs, controller/wire
@@ -40,11 +45,11 @@ contracts, exception semantics, package boundaries, and shared Kernel contracts 
 
 ## Next Steps
 
-Fetch `origin`, merge the resulting current `origin/main` into this branch, build
-`api/Concertable.slnx` in Release to 0 errors, and publish the refreshed source head through the
-plan-managed two-leg push protocol. Wait for PR #380's replacement checks, select its final E2E tier,
-enqueue and monitor the exact verified PR head, then follow its generated platform-sync PR to terminal
-green. Do not run duplicate local E2E before the queue.
+Build `api/Concertable.slnx` in Release to 0 errors at local merge commit `a0b8982f5`, then publish
+the refreshed source head through the plan-managed two-leg push protocol. Wait for PR #380's
+replacement checks, select its final E2E tier, enqueue and monitor the exact verified PR head, then
+follow its generated platform-sync PR to terminal green. Do not run duplicate local E2E before the
+queue.
 
 ## Completed work
 
@@ -138,6 +143,8 @@ green. Do not run duplicate local E2E before the queue.
   every check green, but GraphQL confirms no merge-queue entry and the PR has no auto-merge request.
 - Platform gate recovery: re-asserted auto-merge once on PR #381; it merged green as
   `355f658b9d556dd07e3fa612fb1b04bcdb63a59d` with source head `487864b35`.
+- Current-main reconciliation: merged `origin/main` `355f658b9` as local commit `a0b8982f5`; branch is
+  0 behind, and the upstream delta makes no change under Search production or unit-test source.
 
 ## Reviews
 
@@ -327,6 +334,16 @@ green. Do not run duplicate local E2E before the queue.
 - Outcome: `ConcertablePlatformVersion` `0.1.0-alpha.0.819` is terminal green and ready to enter the
   source branch through current `origin/main`.
 - Follow-up: fetch, merge current `origin/main`, build the Release solution, and compound-push PR #380.
+
+### 2026-08-05 — source branch reconciled with current platform
+
+- Action: fetched the merged sync result and merged current `origin/main` into the clean local Search
+  branch while preserving its observation-checkpoint tail.
+- Evidence: `origin/main` `355f658b9`; local merge commit `a0b8982f5`; drift `0 behind / 15 ahead`;
+  no delta from remote PR head under Search production or Search unit-test source.
+- Outcome: PR #380's local source is current with the base and platform pin; the mandatory Release
+  rebuild is the remaining pre-push gate.
+- Follow-up: build `api/Concertable.slnx --configuration Release` to 0 errors, then compound-push.
 
 ## Resume prompt
 
