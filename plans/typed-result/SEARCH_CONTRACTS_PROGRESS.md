@@ -5,7 +5,7 @@
 - Branch: `Feature/typed-result_search-contracts`
 - PR: not opened
 - Dependency/package gates: owned Kernel foundation PR #290 and platform sync PR #291 merged; current platform sync PR #373 merged and Search consumes `ConcertablePlatformVersion` `0.1.0-alpha.0.814`; no Payment, B2B, or Customer migration dependency; no open platform-sync PR
-- Last reconciled: 2026-08-05 19:51 BST against fetched `origin/main` commit `6f825b3ee01351f0b5cb1ffc8d0beb760265dce8`, local git/worktree inventory, GitHub PR state, full review artifact `reviews/Feature-typed-result_search-contracts.md`, Phase 2 commit `657846883`, and the committed standalone carve
+- Last reconciled: 2026-08-05 19:53 BST against fetched `origin/main` commit `6f825b3ee01351f0b5cb1ffc8d0beb760265dce8`, verified remote branch `origin/Feature/typed-result_search-contracts`, local git/worktree inventory, GitHub PR state, full review artifact `reviews/Feature-typed-result_search-contracts.md`, Phase 2 commit `657846883`, and the committed standalone carve
 
 ## Current state
 
@@ -21,6 +21,9 @@ The upstream changes were limited to `.github/workflows/platform-sync-alert.yml`
 documentation, so no Search code, contract, package, or verification input changed and the completed
 Search gates remain applicable.
 
+The reconciled work head `eee43a0fcc70a9fe838edf695195a271e87aa2d5` is pushed and verified equal
+to `origin/Feature/typed-result_search-contracts`. No PR existed after that work-head push.
+
 The autocomplete and header repository, service, and dispatcher chains now declare materialized
 `IReadOnlyList<T>` results throughout. All existing query bodies, `ToListAsync()` terminals, ordering,
 filters, empty-list behavior, pagination, DTO/projection shapes, nullable inputs, controller/wire
@@ -28,7 +31,7 @@ contracts, exception semantics, package boundaries, and shared Kernel contracts 
 
 ## Next Steps
 
-1. Push the reconciled work head with the plan-managed two-leg protocol and verify the remote branch.
+1. Commit and push this ledger-only checkpoint as the transport leg, then verify local and remote heads.
 2. Open the GitHub PR and record its number, URL, and verified head in this ledger.
 3. Do not run duplicate local E2E; hand the open PR to `/merge` for the final E2E-tier decision,
    queue, merge, and generated platform-sync gate.
@@ -52,6 +55,8 @@ contracts, exception semantics, package boundaries, and shared Kernel contracts 
   standalone solution in Release with 0 errors.
 - Completed the full implementation review through `26cefae27e5bf53a82b9c02ad3992afdce56643e`
   with no findings.
+- Pushed reconciled work head `eee43a0fcc70a9fe838edf695195a271e87aa2d5` to
+  `origin/Feature/typed-result_search-contracts` and verified exact remote equality.
 
 ## Verification
 
@@ -106,6 +111,10 @@ contracts, exception semantics, package boundaries, and shared Kernel contracts 
 - Final pre-push reconciliation: after main advanced again, merged `6f825b3ee01351f0b5cb1ffc8d0beb760265dce8`
   as `88b9822877f842254be07279ad23751efba02770`; its only changes were plan-workflow documentation,
   leaving Search implementation and verification inputs unchanged and the branch 0 commits behind main.
+- Plan-managed work-head push: the remote branch did not exist before delivery; pushed local range
+  `6f825b3ee01351f0b5cb1ffc8d0beb760265dce8..eee43a0fcc70a9fe838edf695195a271e87aa2d5`,
+  fetched it, and verified local HEAD and the remote-tracking ref both equal
+  `eee43a0fcc70a9fe838edf695195a271e87aa2d5`; no PR existed yet.
 
 ## Reviews
 
@@ -253,6 +262,16 @@ contracts, exception semantics, package boundaries, and shared Kernel contracts 
 - Outcome: the branch is current and Search verification remains valid because no Search code,
   contract, package, build input, or test input changed.
 - Follow-up: push the reconciled work head through the plan-managed two-leg protocol and open the PR.
+
+### 2026-08-05 — work-head push verified
+
+- Action: pushed the reconciled work head to the new feature remote and fetched it for verification.
+- Evidence: starting remote branch absent; pushed range
+  `6f825b3ee01351f0b5cb1ffc8d0beb760265dce8..eee43a0fcc70a9fe838edf695195a271e87aa2d5`;
+  local and remote-tracking heads both `eee43a0fcc70a9fe838edf695195a271e87aa2d5`;
+  no PR for the branch.
+- Outcome: the work-head leg of the plan-managed push is verified.
+- Follow-up: transport this ledger-only checkpoint, verify final equality, and open the GitHub PR.
 
 ## Resume prompt
 
