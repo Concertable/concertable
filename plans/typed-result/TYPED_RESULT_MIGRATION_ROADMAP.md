@@ -52,10 +52,11 @@ their current branch and worktree rather than fragmenting in-flight work.
   `Feature/PaymentOwnedResultExpansion` at
   `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\PaymentOwnedResultExpansion`.
   The implementation and local verification are complete; delivery is waiting on the recorded
-  transaction-time gross-revalidation decision, then review/push/PR, package publication, and the
-  generated platform-sync PR. `Feature/CommissionBindingDeferredPricing` / PR #296 is frozen donor
-  history, not a second owner. No other workstream may recreate Payment contracts or bridge the
-  unpublished package with local source references.
+  transaction-time gross-revalidation decision, then a current-main sync and re-verification before
+  review/push/PR, package publication, and the generated platform-sync PR.
+  `Feature/CommissionBindingDeferredPricing` / PR #296 is frozen donor history, not a second owner. No
+  other workstream may recreate Payment contracts or bridge the unpublished package with local source
+  references.
 - [ ] 🟠 **B2B typed-result migration.** Exclusive owner: `Refactor/B2BTypedResultMigration` at
   `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-B2BTypedResultMigration`.
   Payment-independent Deal, Tenant, Venue, Artist, User, and Concert-core checkpoints are complete.
@@ -81,7 +82,9 @@ their current branch and worktree rather than fragmenting in-flight work.
   - Preserve: repository nullability, infrastructure/cancellation exceptions, existing integration
     event boundaries, and Customer’s standalone build closure.
   - Out of scope: Ticket, Concert, Payment clients/mocks, purchase/checkout flows, shared Kernel API
-    changes, and cross-service runtime references.
+    changes, cross-service runtime references, and Customer-wide FluentResults pin/package cleanup.
+    The existing Ticket owner or final repository cleanup removes the shared package entry after the
+    last Customer consumer is gone.
   - Planning sources: this roadmap, [`../../api/AGENTS.md`](../../api/AGENTS.md),
     [`../../api/ARCHITECTURE.md`](../../api/ARCHITECTURE.md),
     [`../../api/Concertable.Customer/ARCHITECTURE.md`](../../api/Concertable.Customer/ARCHITECTURE.md),
@@ -125,12 +128,6 @@ their current branch and worktree rather than fragmenting in-flight work.
 
 ### Blocked follow-ups
 
-- [ ] 🔴 **Customer Ticket Payment cutover and delivery.** Resume the existing
-  `Feature/TypedResultMigrationPhase2` owner only after Payment merges, publishes, and its generated
-  platform-sync PR lands green. Do not use `$continue-roadmap` to create a replacement.
-- [ ] 🔴 **B2B Payment workflows and delivery.** Resume `Refactor/B2BTypedResultMigration` only after
-  the same Payment package gate. Do not bridge the gate with FluentResults adapters, string failures,
-  cross-service `ProjectReference`s, or committed `UseLocalCore=true`.
 - [ ] 🔴 **Shared Kernel, Messaging, and background-path audit.** Plan only after the service tracks
   establish concrete remaining call sites. Service plans consume the published Kernel API as-is; a
   genuinely missing shared operation becomes its own additive Kernel publish/sync item rather than
@@ -190,12 +187,12 @@ cannot silently become the integration branch for another.
 
 ## Epic definition of done
 
-- [ ] Every backend service uses the owned Kernel vocabulary consistently at in-process boundaries.
-- [ ] Every service’s unit/integration gates, Release solution build, architecture tests, and standalone
+- Every backend service uses the owned Kernel vocabulary consistently at in-process boundaries.
+- Every service’s unit/integration gates, Release solution build, architecture tests, and standalone
   carve pass on the published package closure.
-- [ ] Payment, B2B, and Customer package cutovers and platform-sync PRs are terminal and green.
-- [ ] Repository-wide inventories find no FluentResults/CSharpFunctionalExtensions production use,
+- Payment, B2B, and Customer package cutovers and platform-sync PRs are terminal and green.
+- Repository-wide inventories find no FluentResults/CSharpFunctionalExtensions production use,
   third-party Result/Option public signatures, nullable non-persistence single-item lookup contracts,
   Option-wrapped collections, or Result-bearing wire DTOs.
-- [ ] Architecture enforcement prevents those contracts from returning.
-- [ ] The released native-union cutover is complete and Dunet is removed.
+- Architecture enforcement prevents those contracts from returning.
+- The released native-union cutover is complete and Dunet is removed.
