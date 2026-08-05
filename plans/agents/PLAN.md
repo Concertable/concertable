@@ -35,9 +35,11 @@ transition as it happens**, not just phase summaries: user direction and scope c
 implementation, commits, verification commands and results, reviews and every
 finding's disposition, fixes after review, PR creation and checks, merges, publications, platform
 syncs, decisions, discoveries, deviations, blockers, failed approaches worth avoiding, and external
-gates. "A review happened" is insufficient: identify the review type and range, its artifact, whether
-findings remain open, and the commit or deferral that resolved each one. Never leave a project fact
-only in chat because it happened between phase boundaries.
+gates — all scoped to the plan's substance (code, design, delivery, gate state). Not tooling,
+environment or git mishaps, or incident narration; record the durable fact ("committed as `<sha>`"),
+never the drama. "A review happened" is insufficient: identify the review type and range, its artifact,
+whether findings remain open, and the commit or deferral that resolved each one. Never leave a project
+fact only in chat because it happened between phase boundaries.
 
 Every workflow that advances or evaluates plan-managed work owns this update before it ends. That
 includes implementation, `/code-review`, `/big-review`, `/incremental-review`, addressing findings,
