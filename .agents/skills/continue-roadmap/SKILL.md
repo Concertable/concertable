@@ -1,6 +1,6 @@
 ---
 name: continue-roadmap
-description: Pick the next feature off an epic's roadmap and hand it off to be planned. Use when Tommy invokes `/continue-roadmap` or asks what's next on the launch/epic. Take an optional reference to a `*_ROADMAP.md`; otherwise use `plans/launch/LAUNCH_ROADMAP.md`. Read AGENTS.md, plans/AGENTS.md and the roadmap, classify every outstanding item against real git/PR/worktree state, let Tommy pick, then emit a handoff prompt that a fresh context uses to WRITE that item's feature plan. This creates a new plan; it does not resume one — that's `/resume-plan`.
+description: Pick the next feature off an epic's roadmap and hand it off to be planned. Use when Tommy invokes `/continue-roadmap` or asks what's next on the launch/epic. Accept an optional `*_ROADMAP.md` reference and an optional natural-language preferred item; without a preference, list the ready candidates for Tommy to choose. Read AGENTS.md, plans/AGENTS.md and the roadmap, classify every outstanding item against real git/PR/worktree state, then emit a handoff prompt that a fresh context uses to WRITE the chosen item's feature plan. This creates a new plan; it does not resume one — that's `/resume-plan`.
 ---
 
 # Continue Roadmap
@@ -13,8 +13,13 @@ does **not** design or write the plan here, and does **not** resume an existing 
 
 ## Steps
 
-1. **Resolve the roadmap.** `/continue-roadmap @plans/<X>_ROADMAP.md` → that file. Nothing → default to
-   `plans/launch/LAUNCH_ROADMAP.md`.
+1. **Resolve the roadmap and optional preference.** Usage is
+   `/continue-roadmap [@plans/<X>_ROADMAP.md] [preferred item in natural language]`.
+   - A roadmap reference selects that roadmap; without one, use `plans/launch/LAUNCH_ROADMAP.md`.
+   - Text after the roadmap reference is a natural-language selection hint. Match it by meaning; do not
+     require an exact roadmap title.
+   - A preference preselects an item only if the reality check below finds it ready. It never bypasses
+     ownership or dependency checks.
 2. **Read in full:** `AGENTS.md`, `plans/AGENTS.md`, and the roadmap.
 3. **Classify every outstanding item against reality — never off the roadmap text alone.** For each
    unchecked / 🔴 / 🟠 / 🟡 item and each "verify before trusting" line, check `git worktree list`, local
@@ -25,8 +30,13 @@ does **not** design or write the plan here, and does **not** resume an existing 
    - **ready** — unblocked and unowned.
    Enumerate the whole outstanding set before concluding an item is ready; a name scan can't see an
    in-flight worktree, so verify against `git`/PR state, not the roadmap's own status marks.
-4. **Present the ready candidates with a recommendation and let Tommy pick.** One line each: the item, its
-   size/blast radius, and why it's ready. The pick is his.
+4. **Resolve the choice.**
+   - With no preference, present every ready candidate with a recommendation and stop for Tommy to pick.
+     Use one line each: the item, its size/blast radius, and why it's ready.
+   - When the preferred item is ready, identify the match and treat it as Tommy's pick; continue directly
+     to the handoff.
+   - When the preferred item is in flight, blocked, or not found, explain that status, present the ready
+     alternatives, and stop for Tommy to pick. Never force an unavailable item.
 5. **Emit the handoff prompt** for the chosen item — the deliverable. It is self-contained text Tommy
    pastes into a fresh context to WRITE the feature plan, and must:
    - name the roadmap line and the exact source docs to read (the roadmap, the relevant
