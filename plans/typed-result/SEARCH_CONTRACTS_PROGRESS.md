@@ -4,8 +4,8 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_search-contracts`
 - Branch: `Feature/typed-result_search-contracts`
 - PR: #380 — https://github.com/Concertable/concertable/pull/380 — OPEN at verified head `d242b376001c26223109b795d756792ddf85ca39`
-- Dependency/package gates: owned Kernel foundation PR #290 and platform sync PR #291 merged; current platform sync PR #373 merged and Search consumes `ConcertablePlatformVersion` `0.1.0-alpha.0.814`; no Payment, B2B, or Customer migration dependency; no open platform-sync PR
-- Last reconciled: 2026-08-05 19:55 BST against fetched `origin/main` commit `6f825b3ee01351f0b5cb1ffc8d0beb760265dce8`, verified remote branch `origin/Feature/typed-result_search-contracts`, GitHub PR #380, full review artifact `reviews/Feature-typed-result_search-contracts.md`, Phase 2 commit `657846883`, and the committed standalone carve
+- Dependency/package gates: owned Kernel foundation PR #290 and platform sync PR #291 merged; platform sync PR #381 for `ConcertablePlatformVersion` `0.1.0-alpha.0.819` is open with every check green but no merge-queue entry or auto-merge request; no Payment, B2B, or Customer migration dependency
+- Last reconciled: 2026-08-05 20:36 BST against fetched `origin/main` commit `10ed876b1`, verified remote branch `origin/Feature/typed-result_search-contracts`, GitHub PR #380 at remote head `d242b3760`, and platform sync PR #381
 
 ## Current state
 
@@ -23,7 +23,16 @@ Search gates remain applicable.
 
 The reconciled work head `eee43a0fcc70a9fe838edf695195a271e87aa2d5` and ledger transport checkpoint
 `d242b376001c26223109b795d756792ddf85ca39` are pushed and verified. PR #380 is open against `main`
-at that exact checkpoint head. Its initial `BLOCKED` merge state is the expected pre-check state.
+at that exact checkpoint head. Its own build, unit, integration, and carve checks are terminal and
+green; PR-level E2E is correctly skipped. GitHub auto-merge is enabled, but the remote source head is
+six commits behind current `origin/main` and has no queue entry, so it must be refreshed before queue
+admission. Local commit `f73724a80` is the expected ledger-only observation checkpoint and must not
+be treated as unpushed implementation work.
+
+Platform sync PR #381 pins `0.1.0-alpha.0.819` after PR #377. Its complete PR check set is green and
+its merge state is `CLEAN`, but it has neither a merge-queue entry nor an auto-merge request after the
+normal admission window. This is the documented green-but-unadmitted re-evaluation glitch, not a test
+failure; re-assert auto-merge once and wait for it to land before reconciling PR #380 with `main`.
 
 The autocomplete and header repository, service, and dispatcher chains now declare materialized
 `IReadOnlyList<T>` results throughout. All existing query bodies, `ToListAsync()` terminals, ordering,
@@ -32,10 +41,12 @@ contracts, exception semantics, package boundaries, and shared Kernel contracts 
 
 ## Next Steps
 
-Run `/merge` for PR #380. It must refresh currency, select the final merge-queue E2E tier from the
-complete diff, enqueue and monitor the exact verified PR head, then follow the generated
-`chore/platform-sync-*` PR to terminal green. Do not push the local ledger-only observation
-checkpoint created after PR opening and do not run duplicate local E2E before the queue.
+Re-assert auto-merge once on green-but-unadmitted platform sync PR #381 and wait for it to merge.
+Then fetch `origin`, merge the resulting current `origin/main` into this branch, build
+`api/Concertable.slnx` in Release to 0 errors, and publish the refreshed source head through the
+plan-managed two-leg push protocol. Wait for PR #380's replacement checks, select its final E2E tier,
+enqueue and monitor the exact verified PR head, then follow its generated platform-sync PR to terminal
+green. Do not run duplicate local E2E before the queue.
 
 ## Completed work
 
@@ -122,6 +133,11 @@ checkpoint created after PR opening and do not run duplicate local E2E before th
   fetched the branch, and verified local HEAD and the remote-tracking ref equal that commit.
 - GitHub PR #380: OPEN against `main` at verified head
   `d242b376001c26223109b795d756792ddf85ca39`; initial merge state `BLOCKED`.
+- Merge-workflow reconciliation: PR #380 remains OPEN at remote head `d242b3760`; every PR-level
+  build, unit, integration, and carve check is green, E2E is correctly skipped at PR level, and
+  auto-merge is enabled. Fetched `origin/main` is six commits ahead, so the branch is not current.
+- Platform gate reconciliation: PR #381 (`chore/platform-sync-0.1.0-alpha.0.819`) is OPEN/CLEAN with
+  every check green, but GraphQL confirms no merge-queue entry and the PR has no auto-merge request.
 
 ## Reviews
 
@@ -289,6 +305,18 @@ checkpoint created after PR opening and do not run duplicate local E2E before th
   https://github.com/Concertable/concertable/pull/380.
 - Outcome: the Search contract normalization is published on its PR with no unpushed code.
 - Follow-up: run `/merge` for currency, E2E-tier selection, queue monitoring, merge, and platform sync.
+
+### 2026-08-05 — merge preflight found stale source and unadmitted platform sync
+
+- Action: fetched `origin`, reconciled the local observation tail and PR identity, inspected PR #380's
+  terminal checks, and checked the live platform-sync gate and both merge-queue entries.
+- Evidence: PR #380 remains at verified remote head `d242b3760` with all PR-level checks green and no
+  queue entry; current `origin/main` `10ed876b1` is six commits ahead; platform sync PR #381 for
+  `0.1.0-alpha.0.819` is OPEN/CLEAN with all checks green, no auto-merge request, and no queue entry.
+- Outcome: the source PR cannot be refreshed against the current platform until the documented
+  green-but-unadmitted sync glitch is cleared.
+- Follow-up: re-assert auto-merge once for PR #381, wait for it to land, then refresh and rebuild PR
+  #380 before its compound push and queue admission.
 
 ## Resume prompt
 
