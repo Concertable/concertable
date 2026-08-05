@@ -19,7 +19,7 @@
     "prepack": "npm run build"
   },
   "exports": {
-    "./shared/*": {
+    "./*": {
       "types": "./dist/*.d.ts",
       "import": "./dist/*.js",
       "react-native": "./dist/*.js",

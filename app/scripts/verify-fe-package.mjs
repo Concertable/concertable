@@ -57,19 +57,19 @@ const CHECKS = {
   },
   "@concertable/web": {
     node: [
-      'import { cn } from "@concertable/web/shared/lib/utils";',
+      'import { cn } from "@concertable/web/lib/utils";',
       'if (typeof cn !== "function") throw new Error("Missing @concertable/web cn export");',
     ],
   },
   "@concertable/customer": {
     node: [
-      'import { customerClient } from "@concertable/customer/shared/lib/customerClient";',
+      'import { customerClient } from "@concertable/customer/lib/customerClient";',
       'if (!customerClient) throw new Error("Missing @concertable/customer customerClient export");',
     ],
   },
   "@concertable/b2b": {
     node: [
-      'import { TENANT_HEADER } from "@concertable/b2b/web/shared/features/tenant/constants";',
+      'import { TENANT_HEADER } from "@concertable/b2b/features/tenant/constants";',
       'if (TENANT_HEADER !== "X-Tenant-Id") throw new Error("Unexpected @concertable/b2b TENANT_HEADER");',
     ],
   },
@@ -78,7 +78,7 @@ const CHECKS = {
       'import { registerRootComponent } from "expo";',
       'import React from "react";',
       'import { Text } from "react-native";',
-      'import { cn } from "@concertable/mobile/shared/lib/utils";',
+      'import { cn } from "@concertable/mobile/lib/utils";',
       'function App() {',
       '  return React.createElement(Text, null, cn("a", "b"));',
       "}",
