@@ -192,7 +192,7 @@ tier and receives no skip label.
 - Add exact error, service/validator, and HTTP coverage without editing any Ticket/Concert-owned file.
 - Run the full per-phase verification contract and commit the phase with its plan/ledger checkpoint.
 
-### Phase 2 — Preference outcomes, Options, and lists
+### Phase 2 — Preference outcomes, Options, and lists ✅ DONE (2026-08-05)
 
 - Add Preference create/update error contracts and Results.
 - Convert user-preference absence to Option, collection outputs to `IReadOnlyList<T>`, and make the

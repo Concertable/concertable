@@ -5,22 +5,22 @@
 - Branch: `Feature/typed-result_customer-outcomes`
 - PR: not opened
 - Dependency/package gates: owned Kernel foundation PR #290 and platform sync #291 are shipped; no Payment/B2B package dependency; platform-sync PR #373 shipped `0.1.0-alpha.0.814` green in merge commit `9169107c0`; PR #282 remains the exclusive open owner of Ticket/Concert/Customer Payment work and is not a dependency
-- Last reconciled: 2026-08-05T17:49:50+01:00 from current `origin/main` `0ed29d8f0`, local refs/worktrees, GitHub PR metadata/checks, PR #282 ownership, merged platform-sync PR #373, Docker, the green Phase 1 candidate tree, and scoped inventories
+- Last reconciled: 2026-08-05T19:09:24+01:00 from current `origin/main` `0ed29d8f0`, local refs/worktrees, GitHub PR metadata/checks, PR #282 ownership, the absence of an open platform-sync PR, Docker, the green Phase 2 candidate tree, and scoped inventories
 
 ## Current state
 
-Phase 1 Review create outcomes are complete in this commit. Review now owns exact ticket-not-found,
-not-yet-reviewable, and already-reviewed outcomes; one Ticket lookup drives create and boolean
-eligibility; create terminates through Shared.Api while preserving 201/404/409 wire behavior; and
-expected failures, successful persistence, exception/cancellation propagation, and HTTP
-ProblemDetails have unit/integration coverage.
+Phases 1 and 2 are complete in local commits. Preference now owns exact duplicate-create,
+missing-update, and foreign-update outcomes; ordinary user-preference absence is `Option`; returned
+queries and mappers are materialized `IReadOnlyList` values; and successful updates return the
+tracked entity without a nullable re-read. The HTTP terminal preserves 200/204 reads, 201 create with
+no body, 200 update, and typed 403/404/409 ProblemDetails.
 
-Every Phase 1 gate is green: Review integration 11/11, Review unit 30/30, Shared.Api 51/51, Release
-solution build with 0 errors, isolated Customer carve of 36 package-clean projects with 0 errors,
-scoped carrier/ownership inventories, and `git diff --check`. The branch integrated all base advances
-through `origin/main` `0ed29d8f0`, is 0 commits behind, and contains no excluded Ticket, Concert,
-Payment, purchase, checkout, shared Kernel API, model, or migration edit. Local E2E was correctly not
-run; the final PR requires full merge-queue E2E.
+Every Phase 2 gate is green: Preference unit 19/19, Preference integration 7/7, Shared.Api 51/51,
+Release solution build with 0 errors, isolated Customer carve of 36 package-clean projects with 0
+errors, scoped carrier/collection/ownership inventories, and `git diff --check`. The branch remains
+0 commits behind `origin/main` `0ed29d8f0` and contains no excluded Ticket, Concert, Payment,
+purchase, checkout, shared Kernel API, model, or migration edit. Local E2E was correctly not run; the
+final PR requires full merge-queue E2E.
 
 The implementation owns Review, Preference, User, Venue, and Artist only. PR #282 /
 `Feature/TypedResultMigrationPhase2` owns every Ticket, Concert, Customer Payment client/mock,
@@ -30,22 +30,22 @@ shared `Directory.Packages.props` version entry, so that entry stays.
 
 ## Next Steps
 
-Implement **Phase 2 — Preference outcomes, Options, and lists** from the plan in this worktree.
+Implement **Phase 3 — User Option and module-list normalization** from the plan in this worktree.
 Before editing, fetch origin and reconcile the branch if it is behind and clean; re-check PR #282's
 exclusive Ticket/Concert/Payment ownership and the current platform-sync gate. Do not edit any
 Ticket, Concert, Customer Payment client/mock, purchase/checkout, or related coverage file.
 
-Add the Preference-owned create/update errors and Results; convert ordinary preference absence to
-`Option<PreferenceDto>` and returned query collections to materialized `IReadOnlyList<T>` values;
-terminate the existing 204/201/200 HTTP shapes through the shared functional terminals without
-changing payloads; and preserve provider/race, cancellation, messaging, and notification failures
-as exceptions. Create Preference-owned UnitTests and IntegrationTests with their local convention
-pointers, friend assemblies, both solution entries, and `scripts/integration.ps1` discovery.
+Convert `IUserService.GetMeAsync` to `Option<CustomerDto>` at the application boundary; normalize
+`IUserRepository.GetByIdsAsync`, `IUserModule.GetByIdsAsync`, and `UserModule` to materialized
+`IReadOnlyList<T>` results; and update the Preference and UserClaims consumers without changing
+their HTTP behavior. Keep `SaveLocationAsync` plain and preserve authorization, geocoding,
+cancellation, and persistence faults as exceptions. Extend User-owned unit/integration coverage for
+Some/None, populated/empty lists, authorization, and successful location/profile flows.
 
-Run the full Phase 2 gate from the plan: Preference unit and integration suites through
+Run the full Phase 3 gate from the plan: User unit and integration suites through
 `integration-debug`, Shared.Api architecture tests, Release solution build, CI-equivalent Customer
 carve, scoped carrier/collection/ownership inventories, and `git diff --check`. Do not run local E2E.
-Update the plan and ledger, check off Phase 2, and commit the green checkpoint locally. Do not push.
+Update the plan and ledger, check off Phase 3, and commit the green checkpoint locally. Do not push.
 End with the pointer-only resume prompt from this ledger.
 
 ## Completed work
@@ -59,6 +59,9 @@ End with the pointer-only resume prompt from this ledger.
 - Created the implementation-ready plan and this progress ledger in this commit.
 - Completed Phase 1 Review-owned typed create outcomes with exact error, service, validator,
   exception/cancellation, and HTTP ProblemDetails coverage in this commit.
+- Completed Phase 2 Preference-owned create/update Results, user-preference Options, materialized
+  query lists, unchanged HTTP terminals, owned unit/integration projects, solution wiring, and
+  integration-runner discovery in this commit.
 
 ## Verification
 
@@ -107,6 +110,33 @@ End with the pointer-only resume prompt from this ledger.
   merge `4a13785e4` integrated those two commits, and the tree restored without conflicts; the branch
   is 0 commits behind `0ed29d8f0`. Product/build inputs did not change, so the green gates remain valid.
 - Local E2E was not run because the plan rules assign the required full tier to the merge queue.
+- Phase 2 Preference unit suite first compiled all new projects and ran 19 cases; two assertions
+  expected the opposite enum sort order while production returned the correct values. After fixing
+  only those expectations and tightening provider-fault coverage, the final Release run passed 19/19
+  with 0 failed and 0 skipped.
+- Preference integration pre-flight: `docker ps` returned successfully. The background workflow's
+  diagnostic relaunch collided with the already-active per-project log and exited before tests; the
+  original `scripts/integration.ps1 preference` run continued normally and passed 7/7 with 0 failed
+  and 0 skipped against Testcontainers SQL.
+- Preference integration coverage preserves 200/204 reads, 201 create with no response body, 409
+  duplicate create, 404 missing update, 403 foreign update, and 200 successful update.
+- Shared.Api Release architecture/terminal suite passed 51/51 with 0 failed and 0 skipped.
+- `dotnet build api/Concertable.slnx --configuration Release` succeeded with 0 errors and 6
+  pre-existing warnings.
+- The CI-equivalent Customer carve copied the final production candidate to isolated
+  `C:\tmp\CarveCustomer-2965ff86879c4181bc753dffb36fb0a0`, discovered and built all 36
+  non-test/non-AppHost projects from package references with `-p:MinVerSkip=true`, and succeeded
+  with 0 errors; the temporary directory was removed afterward.
+- Scoped inventories found Results/Options only in Preference's application interface and
+  infrastructure service, no functional carrier in DTOs/requests/events/domain/persistence, only the
+  allowed nullable repository single-item lookups and inherited `GetAllAsync` enumerable, and no
+  FluentResults, Dunet, or HTTP exception in the typed slice.
+- Final ownership inventory against current `origin/main` contains only Review and Preference-owned
+  production/tests plus solution discovery, `scripts/integration.ps1`, and this plan/ledger. No
+  Ticket, Concert, Payment, purchase, checkout, shared Kernel API, migration, or model path is
+  changed; `git diff --check` passed.
+- Final `git fetch origin --quiet` left the branch 0 commits behind `origin/main` `0ed29d8f0`.
+- Local E2E was not run because the final behavior-changing PR requires the full merge-queue tier.
 
 ## Reviews
 
@@ -130,12 +160,18 @@ Phase 5 requires `/code-review` before delivery.
   support them.
 - No model change or migration is needed. The final PR is multi-module and behavior-changing, so the
   merge queue must run full E2E.
+- Preference create checks the normal existing-row path before persistence while leaving the unique
+  index authoritative for races; add/save provider failures still propagate.
+- Preference update returns the tracked entity after save. The former nullable re-read and null
+  suppression were removed instead of translating a post-save invariant violation into an outcome.
+- The create controller uses the shared Result HTTP terminal with a 201 success arm that deliberately
+  drops the service payload, preserving the existing empty response body.
 - PR #282 is open at remote head `26ed63b8` and owns the excluded Ticket/Concert/Payment slice. Its
   local branch contains substantial unpushed owned-result work; none of it may be copied or modified
   here.
 - There are no blocking package dependencies. A platform-sync PR that is pending but not red does not
   block local planning; any red sync discovered before implementation must be resolved first.
-- Docker is responsive, Phase 1 is green, and the branch is current. Phase 2 is ready to start.
+- Docker is responsive, Phase 2 is green, and the branch is current. Phase 3 is ready to start.
 
 ## Event log
 
@@ -205,6 +241,18 @@ Phase 5 requires `/code-review` before delivery.
   `origin/main` `0ed29d8f0`; PR #282-owned paths absent.
 - Outcome: Phase 1 is complete in this commit with no local E2E duplication and no push.
 - Follow-up: Implement Phase 2 Preference outcomes, Options, lists, tests, and its full local gate.
+
+### 2026-08-05 — Phase 2 Preference outcomes completed
+
+- Action: Implemented Preference create/update Results, user-preference Options, materialized query
+  lists, Shared.Api HTTP termination, owned unit/integration projects, and solution/script discovery;
+  then ran the complete Phase 2 local gate through the integration-debug workflow.
+- Evidence: Preference unit 19/19; Preference integration 7/7; Shared.Api 51/51; Release solution and
+  36-project Customer carve both 0 errors; scoped carrier/collection/ownership inventories and
+  `git diff --check` clean; branch 0 behind `origin/main` `0ed29d8f0`; PR #282-owned paths absent.
+- Outcome: Phase 2 is complete in this commit with provider/cancellation faults still exception-based,
+  unchanged 201/200/204 success payloads, no local E2E duplication, and no push.
+- Follow-up: Implement Phase 3 User Option and module-list normalization with its full local gate.
 
 ## Resume prompt
 

@@ -137,6 +137,8 @@
     <Project Path="Concertable.Customer/src/Modules/Preference/Concertable.Customer.Preference.Contracts/Concertable.Customer.Preference.Contracts.csproj" />
     <Project Path="Concertable.Customer/src/Modules/Preference/Concertable.Customer.Preference.Domain/Concertable.Customer.Preference.Domain.csproj" />
     <Project Path="Concertable.Customer/src/Modules/Preference/Concertable.Customer.Preference.Infrastructure/Concertable.Customer.Preference.Infrastructure.csproj" />
+    <Project Path="Concertable.Customer/src/Modules/Preference/Tests/Concertable.Customer.Preference.IntegrationTests/Concertable.Customer.Preference.IntegrationTests.csproj" />
+    <Project Path="Concertable.Customer/src/Modules/Preference/Tests/Concertable.Customer.Preference.UnitTests/Concertable.Customer.Preference.UnitTests.csproj" />
   </Folder>
   <Folder Name="/Customer/Modules/Ticket/">
     <Project Path="Concertable.Customer/src/Modules/Ticket/Concertable.Customer.Ticket.Api/Concertable.Customer.Ticket.Api.csproj" />
