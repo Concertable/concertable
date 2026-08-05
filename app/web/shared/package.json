@@ -9,7 +9,8 @@
   },
   "type": "module",
   "files": [
-    "dist"
+    "dist",
+    "src/index.css"
   ],
   "scripts": {
     "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
@@ -107,6 +108,7 @@
       "import": "./dist/types/*.js",
       "default": "./dist/types/*.js"
     },
+    "./shared/index.css": "./src/index.css",
     "./package.json": "./package.json"
   },
   "publishConfig": {
