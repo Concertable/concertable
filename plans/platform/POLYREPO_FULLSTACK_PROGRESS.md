@@ -1,21 +1,27 @@
 # Full-stack polyrepo — frontend build separation progress
 
 - Plan: `plans/platform/POLYREPO_FULLSTACK_PLAN.md`
-- Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\platform_polyrepo-fullstack` (off `origin/main` @ `b92bf0b49`). The old `Feature/FrontendBuildSeparation` worktree/branch is orphaned (PR #319 merged, remote branch deleted) and must not be reused.
+- Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\platform_polyrepo-fullstack` — reclaimed off `origin/main` for Phase 3 after Phase 2 merged (branch reset to `origin/main`).
 - Branch: `Feature/platform_polyrepo-fullstack`
-- PR: none yet — Phase 2 complete on-branch, not pushed. Review-fix PR [#319](https://github.com/Concertable/concertable/pull/319) **merged** (`5a84756de`, 2026-08-03); Phase 1 PR [#301](https://github.com/Concertable/concertable/pull/301) merged
-- Dependency/package gates: `@concertable/shared@0.1.0-alpha.0.2129` is published and restorable. Phase 2 publishes all five tiers via `publish-fe-packages.yml` on merge (no feed publish happens pre-merge). No `api/**` touched → no backend platform-sync
-- Last reconciled: 2026-08-05 — Phase 2 finished: synced to `origin/main` (`47612a6d6`), all four tiers packaged, consumers cut over, publish automation extended; full build/typecheck gate green
+- PR: Phase 3a PR [#378](https://github.com/Concertable/concertable/pull/378) **OPEN** (head `4f3f65621`, base `main`, no skip labels, gate green). Phase 2 PR [#360](https://github.com/Concertable/concertable/pull/360) **MERGED** (`a3f9535`, 2026-08-05); Phase 1 PR [#301] + review-fix [#319] merged earlier. Docs convention PR [#364] (dispatch-prompt on real E2E merge failure) **open**.
+- Dependency/package gates: **all five FE tiers published at `0.1.0-alpha.0.2401`** (`publish-fe-packages.yml` run [31009601005] green, including its from-feed verify of every tier). No `api/**` in the #360 diff → no backend platform-sync.
+- Last reconciled: 2026-08-05 (resume) — re-synced the branch to `origin/main` (was 19 behind; merge `4f3f65621`, 0 behind now), re-ran the full FE gate green, **pushed Phase 3a and opened PR [#378](https://github.com/Concertable/concertable/pull/378)**. Phase 3b (carve-fe-web CI + `run_fe` gate) stays blocked until #378 merges + republishes.
 
 ## Current state
 
-Phases 0 and 1 are on `main`. **Phase 2 is complete on this branch** (`Feature/platform_polyrepo-fullstack`), five commits past the `origin/main` merge: all four remaining tiers packaged (`@concertable/web` `0fa7ce511`, `@concertable/mobile` `5275b6664`, `@concertable/customer` `c14895d97`, `@concertable/b2b` `ab11c3977`), consumers cut over (`4d8fdbaa1`), publish automation extended (`d974e724d`). The branch merged `origin/main` cleanly (`47612a6d6`) and is 0 behind. Full Phase 2 gate is green (see Verification). No open platform-sync PR. **Not yet pushed; no PR opened.**
+Phases 0, 1, and **2 are on `main`**. Phase 2 landed via PR #360 (merge `a3f9535`): all four remaining tiers packaged, all six consumer surfaces cut over to package imports, publish automation extended, and `publish-fe-packages.yml` published every tier to the feed at `0.1.0-alpha.0.2401`. Phase 2 is fully terminal.
+
+**Phase 3a is PUSHED as PR [#378](https://github.com/Concertable/concertable/pull/378) (OPEN).** Two code commits: `d6ac4b123` (subpath rename — dropped the redundant `/shared` / `/web/shared` from every tier specifier so imports read `@concertable/<tier>/<path>`, uniform with `@concertable/shared`; exports maps + imports rewritten in lockstep, resolutions preserved by construction) and `c4775ebf1` (surfaces self-declare their full dependency closure — `@concertable/*` tiers + third-party libs + CSS `@import` assets, previously all masked by npm workspace hoisting — plus `app/scripts/carve-fe.mjs`, the feed-restore carve harness). Re-synced to `origin/main` (was 19 behind; clean merge `4f3f65621`, 0 behind) and re-ran the full FE gate green: `build:packages` exit 0, four web builds exit 0, both mobile `tsc --noEmit` 0 errors. PR head `4f3f65621`, base `main`, no skip labels; net diff is FE-only (0 `api/**`) so no backend platform-sync; broad package/workspace change → the CI classifier auto-runs full merge-queue E2E. `test.yml` deliberately untouched (carve-fe deferred).
 
 ## Next Steps
 
-Phase 2 is done and committed. Immediate: **push the branch and (when Tommy asks) open a plain GitHub PR** for Phase 2 — six tier/cutover/CI commits on top of the `origin/main` merge. This PR touches no `api/**`, so no backend platform-sync is triggered; it is a broad package/workspace/build change, so it must run **full merge-queue E2E** (do not add `skip-e2e`).
+1. **Phase 3a PR [#378](https://github.com/Concertable/concertable/pull/378) is code-reviewed clean** (`reviews/Feature-platform_polyrepo-fullstack.md`, no findings) **and current with `main`; being merged via the queue** (full E2E auto-runs; no `skip-e2e`; no backend platform-sync). In flight: waiting on the PR's own checks (build/carve/unit/integration) to go green, then `gh pr merge 378 --merge --auto` and poll to MERGED. On merge, `publish-fe-packages.yml` republishes all five tiers with the new bare exports — **this republish is the gate that unblocks step 2.**
+2. **After that PR merges/republishes**, add the `carve-fe-web` CI job (matrix over the 4 web surfaces, each calling `node scripts/carve-fe.mjs <surface>`) + a `run_fe` change-classifier gate (non-inert `^app/` change; keeps BE-only PRs off the slow npm carves) + `ci-complete` wiring, in `.github/workflows/test.yml`. **Deferred deliberately (publish-first):** a feed-restore carve on the rename PR itself installs the OLD published tiers (old `/shared` export keys) and can't resolve the renamed imports → guaranteed red. The job + gate were written and locally proven for `web/customer` before the rename (green `tsc -b` + vite 3637 modules); re-derive from git history / this ledger.
+3. **Carved-web CSS `@source` content strategy** — carve BUILD is green, but `@concertable/web`'s `index.css` `@source` globs point at sibling-surface source (`../../customer/src`, `../../b2b/*`) that resolve only in-monorepo; a carved surface generates its own classes (Tailwind v4 auto-detect) but NOT the shared tiers' (their class strings live in `node_modules/@concertable/*/dist`, which auto-detect excludes). A single relative `@source` set can't serve both layouts (monorepo `app/{shared,web/shared,…}` ≠ node_modules `@concertable/*`). Needs a cross-context strategy proven by a carved vite build's generated CSS; tier change → effective on republish.
+4. **Mobile metro/nativewind/tailwind retarget** off `../shared` onto `@concertable/mobile` (`watchFolders`, nativewind `input`, tailwind `content`), proven by `expo export` on the precompiled dist; then add mobile to the carve matrix.
+5. **FE import-boundary rule** — no ESLint/dependency-cruiser toolchain in `app/` yet; the carve CI is the primary structural boundary today (BE parity: carve = structural gate, build-time guard = fast second layer). Standing up ESLint `no-restricted-imports` across surfaces is a separate sub-project.
 
-Then **Phase 3** (per the plan): prove each surface restores its shared deps purely from the feed, add `carve-fe-{customer,b2b}` CI jobs, and add the FE import-boundary rule. **Phase 3 must also close the Phase-2 runtime/carve deferrals** logged below: retarget the mobile metro `watchFolders` + nativewind `input` + tailwind `content` globs off `../shared` source onto the `@concertable/mobile` package (and prove nativewind className + tailwind generation work on the precompiled dist under metro), and give the carved shared-FE package its own tailwind `content` strategy since `@concertable/web`'s `index.css` `@source` globs reference sibling surfaces that only exist in-monorepo.
+Gate: carve-fe jobs green in CI (step 2, post-republish).
 
 ## Completed work
 
@@ -75,6 +81,27 @@ Then **Phase 3** (per the plan): prove each surface restores its shared deps pur
 
 ## Event log
 
+### 2026-08-05 — PR #378 code-reviewed clean; updated to current main; enqueuing
+
+- Action: Ran `/code-review` on PR #378 (`6f825b3ee..22959ea5c`). Merged current `origin/main` first (was 2 behind — docs-only PR #379, 0 `app/` files, so the FE gate stands) and pushed `22959ea5c`. Reviewed `carve-fe.mjs`, `verify-fe-package.mjs`, all 11 tier/surface `package.json` (exports maps + closures), and the rename.
+- Evidence: `reviews/Feature-platform_polyrepo-fullstack.md` — **no findings**. Diff is 100% frontend (backend lenses N/A); grep confirms 0 stale `/shared` specifiers; green gate proves imports resolve against renamed exports; `carve-fe.mjs` sound and intentionally not yet CI-wired.
+- Outcome: #378 is review-clean and current with `main`. Enqueuing via the merge queue (full E2E, no skip-e2e).
+- Follow-up: poll to MERGED; then follow `publish-fe-packages.yml` republish to green (unblocks Phase 3b). Worktree branch — no auto-teardown.
+
+### 2026-08-05 — Phase 3a re-synced, re-gated, pushed; PR #378 opened
+
+- Action: Resumed in the dedicated worktree. `git fetch` + merged `origin/main` (was 19 behind, all `api/**`/skills/docs — none touched `app/`; clean merge `4f3f65621`, 0 behind). Fresh `npm ci` in `app/` (first attempt hit the known AV-EPERM npm-cache flake; retried clean, exit 0). Re-ran the full FE gate, then pushed and opened the plain GitHub PR.
+- Evidence: gate all exit 0 — `build:packages` (5 tiers), `npm -w @concertable/web-{customer,venue,artist,business} run build` (3708/4399/4389/15 modules), `tsc --noEmit` in `mobile/{customer,b2b}`; `GATE_FAIL=0`. Net diff vs `origin/main` = 206 files, all `app/**`/`plans/**` except a one-line dead-comment removal in `.github/workflows/mirror.yml`; **0 `api/**`**; `test.yml` untouched (carve-fe deferred); no `Skip-E2E` trailer in the commit range. PR #378 OPEN, base `main`, head `4f3f65621`, labels `[]`, 0 behind base.
+- Outcome: Phase 3a is delivered as PR #378 with a green in-monorepo gate; full merge-queue E2E will run automatically; no backend platform-sync.
+- Follow-up: review + merge #378; its `publish-fe-packages.yml` republish (bare exports) is the gate that unblocks Phase 3b (carve-fe-web CI + `run_fe` gate).
+
+### 2026-08-05 — Phase 3a: tier-subpath rename + surface dep self-declaration + carve harness
+
+- Action: A naming question surfaced the `/shared` subpath inconsistency (`@concertable/web/shared/*` vs bare `@concertable/shared/*`, and b2b's doubled `@concertable/b2b/web/shared/*`). With Tommy, chose to strip the redundant `/shared`/`/web/shared` from all tier specifiers (package names unchanged) — the package already means "shared <tier> platform," so the segment only leaked the monorepo dir layout. Scripted the repo-wide rewrite and rebuilt/verified. Separately drove the feed-restore carve for `web/customer` far enough to expose that surfaces relied on workspace hoisting for the tiers AND for third-party/CSS deps; declared each surface's full closure and wrote `app/scripts/carve-fe.mjs`.
+- Evidence: commits `d6ac4b123` (rename: 191 source files + 4 exports maps, `grep` shows 0 leftover old specifiers) and `c4775ebf1` (carve-prep). Gate green — `build:packages` exit 0, four web builds OK, both mobile `tsc --noEmit` 0 errors. carve-fe.mjs proved `web/customer` reaches green `tsc -b` + a 3637-module vite transform restoring `@concertable/*` from the feed. Local `node_modules` corruption (AV-EPERM-aborted installs wiped `.bin`, left `typescript/lib` empty) repaired via a warm-cache `npm install`.
+- Outcome: Phase 3a committed on-branch, verified in-monorepo, not pushed. The `carve-fe-web` CI job + `run_fe` gate were written and locally proven but reverted from this change (publish-first: a feed carve can't resolve the renamed imports until the tiers republish).
+- Follow-up: push + plain GitHub PR (full merge-queue E2E); after it republishes, add carve-fe-web CI; then the carved CSS `@source` strategy, mobile metro/nativewind retarget, and the ESLint boundary rule.
+
 ### 2026-08-02 — Phase 1 merged and published
 
 - Action: Delivered the universal shared frontend package and its publication/verification automation.
@@ -130,6 +157,13 @@ Then **Phase 3** (per the plan): prove each surface restores its shared deps pur
 - Evidence: `git worktree add … -b Feature/platform_polyrepo-fullstack origin/main` at `b92bf0b49`; main checkout verified still on `Feature/SelfBillingAgreement` with only unrelated untracked paths (its HEAD advanced `3174d7f59 → 5070a8026` under another live session); `gh pr view 319` = MERGED `5a84756de`; branch-time platform-sync gate returned no open sync PR; `git rev-list --count origin/main..Feature/SelfBillingAgreement -- <ledger>` = 3 (two are the stray polyrepo closeout commits).
 - Outcome: Phase 2 has a clean, isolated worktree; the branch ledger now reflects the true post-#319 state.
 - Follow-up: Scope the four shared tiers against the Phase-1 `@concertable/shared` template and begin publishing + consumer cutover.
+
+### 2026-08-05 — Phase 2 merged and published; real E2E harness bug fixed en route
+
+- Action: Opened PR #360, code-reviewed (no blocking findings), enqueued full-E2E. The merge-group `e2e-ui-tests` failed twice on fresh stacks — confirmed real, not flake. Root-caused by inspecting `test.yml`: the UI E2E harness serves the SPAs via `npm run dev` (Vite) but built only `@concertable/shared`, so the Phase-2 SPAs couldn't resolve `@concertable/web`/`b2b`/`customer` from dist → every scenario timed out at auth login. Fixed with a `build:web-packages` script wired into both UI E2E build steps; validated the venue Vite dev server resolves the tier dist. Synced to latest `origin/main`, dequeued the stuck auto-requeue via the GraphQL `dequeuePullRequest` mutation, re-enqueued.
+- Evidence: PR #360 MERGED `a3f9535` at 13:18Z; winning merge-group run 31007161355 success; fix commit `21daabecd`; `publish-fe-packages.yml` run 31009601005 green, publishing `@concertable/{shared,web,mobile,customer,b2b}@0.1.0-alpha.0.2401` and passing its from-feed verify of every tier. No `api/**` in the diff → no backend sync. Also opened docs PR #364 for the dispatch-prompt convention.
+- Outcome: Phase 2 fully terminal on `main`; all five FE tiers on the feed.
+- Follow-up: Phase 3 (feed-restore carve CI + import-boundary rule + close the runtime/carve deferrals). Land docs PR #364.
 
 ### 2026-08-05 — Phase 2 completed end-to-end
 
