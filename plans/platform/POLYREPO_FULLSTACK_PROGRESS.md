@@ -81,6 +81,13 @@ Gate: carve-fe jobs green in CI (step 2, post-republish).
 
 ## Event log
 
+### 2026-08-05 — PR #378 code-reviewed clean; updated to current main; enqueuing
+
+- Action: Ran `/code-review` on PR #378 (`6f825b3ee..22959ea5c`). Merged current `origin/main` first (was 2 behind — docs-only PR #379, 0 `app/` files, so the FE gate stands) and pushed `22959ea5c`. Reviewed `carve-fe.mjs`, `verify-fe-package.mjs`, all 11 tier/surface `package.json` (exports maps + closures), and the rename.
+- Evidence: `reviews/Feature-platform_polyrepo-fullstack.md` — **no findings**. Diff is 100% frontend (backend lenses N/A); grep confirms 0 stale `/shared` specifiers; green gate proves imports resolve against renamed exports; `carve-fe.mjs` sound and intentionally not yet CI-wired.
+- Outcome: #378 is review-clean and current with `main`. Enqueuing via the merge queue (full E2E, no skip-e2e).
+- Follow-up: poll to MERGED; then follow `publish-fe-packages.yml` republish to green (unblocks Phase 3b). Worktree branch — no auto-teardown.
+
 ### 2026-08-05 — Phase 3a re-synced, re-gated, pushed; PR #378 opened
 
 - Action: Resumed in the dedicated worktree. `git fetch` + merged `origin/main` (was 19 behind, all `api/**`/skills/docs — none touched `app/`; clean merge `4f3f65621`, 0 behind). Fresh `npm ci` in `app/` (first attempt hit the known AV-EPERM npm-cache flake; retried clean, exit 0). Re-ran the full FE gate, then pushed and opened the plain GitHub PR.
