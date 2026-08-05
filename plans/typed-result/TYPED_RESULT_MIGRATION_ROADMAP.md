@@ -16,15 +16,24 @@
 
 ## How to continue this roadmap
 
-Run:
+Run with an optional preferred item after the roadmap path:
 
 ```text
-$continue-roadmap @plans/typed-result/TYPED_RESULT_MIGRATION_ROADMAP.md
+$continue-roadmap @plans/typed-result/TYPED_RESULT_MIGRATION_ROADMAP.md [preferred item in natural language]
 ```
 
-The skill classifies every item below against branches, worktrees, PRs, and package gates, then offers
-only unblocked and unowned items. It emits a handoff for a fresh context to write that item’s plan and
-progress ledger; it does not create or implement the plan itself.
+For example, this one-shot invocation selects Customer when it remains ready:
+
+```text
+$continue-roadmap @plans/typed-result/TYPED_RESULT_MIGRATION_ROADMAP.md Customer non-Payment outcomes and lookups
+```
+
+The skill always classifies every item below against branches, worktrees, PRs, and package gates.
+Omit the preference to receive the full list of unblocked and unowned choices. When a supplied
+preference is ready, the skill treats it as the choice and directly emits the handoff; when it is
+blocked, in flight, or not found, the skill explains why and offers the ready alternatives instead.
+The handoff tells a fresh context to write the item's plan and progress ledger; it does not create or
+implement the plan itself.
 
 For parallel work, reserve the ready items sequentially: run `$continue-roadmap`, choose one item, and
 let its handoff create the worktree/plan before selecting the next item. Once the distinct worktrees
