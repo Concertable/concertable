@@ -197,11 +197,13 @@ point where the context becomes disposable. Don't carry unwritten state across a
 - Every plan `.md` carries a pointer near its top to its ledger(s) and holds no next-action prose of
   its own. One worktree: "**Next steps live in @plans/<STEM>_PROGRESS.md → `## Next Steps`**" (the `@`
   pulls the ledger when you tag the plan). Parallel worktrees: it lists each ledger with its worktree.
-- Because the steps live in the ledger, a plan resume/handoff prompt is ONLY the pointer — literally
-  `cd <worktree>` then "Read @plans/<PLAN>_PLAN.md and @plans/<its-worktree-ledger>_PROGRESS.md and do what
-  `## Next Steps` says." No branch to verify, checkpoints, gates, commands, or steps in the prompt —
-  every such specific lives in the ledger, never restated, so the prompt can't drift. A handoff always
-  comes from one worktree, so it names that worktree's ledger. See [`../../PROMPTS.md`](../../PROMPTS.md).
+- Because the steps live in the ledger, a plan resume/handoff prompt is ONLY the pointer — an opener line
+  then "Read @plans/<PLAN>_PLAN.md and @plans/<its-worktree-ledger>_PROGRESS.md and do what `## Next Steps`
+  says", naming one worktree's ledger. The opener is `/worktree create <Type>/<epic>_<name>` when that
+  worktree doesn't exist yet — a freshly-written plan, or a clear with no live worktree — so implementation
+  runs in an isolated worktree, never the main checkout; it's `cd <worktree>` once the worktree exists. No
+  branch to verify, checkpoints, gates, commands, or steps in the prompt — every such specific lives in the
+  ledger, never restated, so the prompt can't drift. See [`../../PROMPTS.md`](../../PROMPTS.md).
 - `/resume-plan` takes a **ledger**, a **plan**, or a **worktree**. A ledger — or a plan plus a named
   worktree — resolves straight to that worktree: `cd` there and do its `## Next Steps`. A plan alone
   resolves by the ledgers whose `- Plan:` names it: one → resume it; several → list them and ask which.
