@@ -93,6 +93,16 @@ but the plan stays open until **all** of them land and the codebase is in sync a
 B2B PR and calling the plan done while Kernel still speaks the old shape is the thing to never do.
 Don't `git rm` the plan (Lifecycle 5) until that final synced state is in.
 
+## A suspected cross-plan blocker — check the sibling plan's ledger before declaring blocked
+
+When a phase can't proceed because it depends on work owned by a **different** plan in the same epic
+(e.g. B2B's migration waiting on Payment's), don't guess the dependency's state from memory. Read the
+epic roadmap as the cross-plan dependency map, find which sibling plan owns the blocker, and open that
+plan's `_PROGRESS.md` for its live state (merged? published? platform-sync green?). Only then report
+"blocked until X" — naming the sibling plan and the exact unlanded gate — or proceed if its ledger
+shows the gate already landed. This is a runtime read of the roadmap for navigation, never a citation
+of it in your plan (see [`ROADMAP.md`](ROADMAP.md)).
+
 ## Lifecycle
 
 1. **Write it** when the work spans multiple commits/PRs or needs a design decided up front, and create its `_PROGRESS.md` companion at the same time.
