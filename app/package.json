@@ -10,6 +10,7 @@
     "mobile/b2b",
     "shared",
     "web/shared",
+    "web/b2b/shared",
     "mobile/shared",
     "customer/shared"
   ],
