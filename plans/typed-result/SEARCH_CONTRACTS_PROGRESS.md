@@ -5,7 +5,7 @@
 - Branch: `Feature/typed-result_search-contracts`
 - PR: not opened
 - Dependency/package gates: owned Kernel foundation PR #290 and platform sync PR #291 merged; current platform sync PR #373 merged and Search consumes `ConcertablePlatformVersion` `0.1.0-alpha.0.814`; no Payment, B2B, or Customer migration dependency; no open platform-sync PR
-- Last reconciled: 2026-08-05 19:03 BST against fetched `origin/main` commit `0ed29d8f0c34afd05362749196003ac097de4b67`, local git/worktree inventory, GitHub PR state, full review artifact `reviews/Feature-typed-result_search-contracts.md`, Phase 2 commit `657846883`, and the committed standalone carve
+- Last reconciled: 2026-08-05 19:42 BST against fetched `origin/main` commit `0ed29d8f077fc9593467d6c858c6a0cbab688290`, local git/worktree inventory, GitHub PR state, full review artifact `reviews/Feature-typed-result_search-contracts.md`, Phase 2 commit `657846883`, and the committed standalone carve
 
 ## Current state
 
@@ -14,11 +14,11 @@ green in commits `7b0785f90` and `657846883`: the normalized collection contract
 reflection guard passed focused architecture tests, the full Search unit and integration projects,
 the Release solution build, the final production inventories, and the committed standalone Search
 carve. The full implementation review of `da8730931387a85f6e459af34336bea52d34385d..26cefae27e5bf53a82b9c02ad3992afdce56643e`
-is complete with no findings. Delivery remains explicitly unauthorized.
+is complete with no findings. Tommy authorized delivery through the plan resume instruction.
 
-The branch is two commits behind fetched `origin/main`; the net upstream change is limited to
-`.github/workflows/platform-sync-alert.yml`. It was not merged into the dirty partial Phase 2 tree and
-does not affect the completed Search verification. Reconcile it while clean after review, before delivery.
+The clean branch is reconciled with fetched `origin/main` at merge commit `dee61e298dc2ba7d821fe4e58dc93260ca87683c`.
+The two upstream commits changed only `.github/workflows/platform-sync-alert.yml`, so no Search code,
+contract, package, or verification input changed and the completed Search gates remain applicable.
 
 The autocomplete and header repository, service, and dispatcher chains now declare materialized
 `IReadOnlyList<T>` results throughout. All existing query bodies, `ToListAsync()` terminals, ordering,
@@ -27,19 +27,10 @@ contracts, exception semantics, package boundaries, and shared Kernel contracts 
 
 ## Next Steps
 
-Hard stop: wait for Tommy to authorize delivery. Do not push, open a PR, merge `origin/main`, or run
-local E2E before that instruction.
-
-Once delivery is explicitly authorized:
-
-1. Reconcile the clean branch with fetched `origin/main`; it is currently two commits behind and the
-   upstream-only diff is `.github/workflows/platform-sync-alert.yml`.
-2. Recheck the affected Release build, Search unit tests, Search integration project, production
-   contract inventory, and committed Search carve if reconciliation changes any relevant code.
-3. Any code commit after reviewed commit `26cefae27e5bf53a82b9c02ad3992afdce56643e` requires
-   `/incremental-review` before delivery.
-4. Push with the plan-managed two-leg protocol, open the GitHub PR, and record the verified remote and
-   PR heads in this ledger. Do not run duplicate local E2E; let the merge workflow select the final tier.
+1. Push the reconciled work head with the plan-managed two-leg protocol and verify the remote branch.
+2. Open the GitHub PR and record its number, URL, and verified head in this ledger.
+3. Do not run duplicate local E2E; hand the open PR to `/merge` for the final E2E-tier decision,
+   queue, merge, and generated platform-sync gate.
 
 ## Completed work
 
@@ -107,6 +98,10 @@ Once delivery is explicitly authorized:
 - Review reconciliation: fetched `origin/main` remains `0ed29d8f0c34afd05362749196003ac097de4b67`;
   its two upstream-only commits change only `.github/workflows/platform-sync-alert.yml`; GitHub has no
   PR for this branch and no open platform-sync PR.
+- Delivery reconciliation: merged fetched `origin/main` commit
+  `0ed29d8f077fc9593467d6c858c6a0cbab688290` as `dee61e298dc2ba7d821fe4e58dc93260ca87683c`;
+  the merge changed only `.github/workflows/platform-sync-alert.yml`, left Search implementation and
+  verification inputs unchanged, and brought the branch to 0 commits behind main.
 
 ## Reviews
 
@@ -232,6 +227,17 @@ Once delivery is explicitly authorized:
   conventions, or changed-path test coverage. The full review gate is terminal and green.
 - Follow-up: hard stop until Tommy explicitly authorizes delivery; then reconcile `origin/main`,
   revalidate any relevant changes, push with the plan-managed protocol, and open the GitHub PR.
+
+### 2026-08-05 — delivery authorized and branch reconciled
+
+- Action: treated Tommy's plan-resume instruction as delivery authorization, fetched `origin`,
+  rechecked branch/PR/platform-sync ownership, and merged current `origin/main` into the clean branch.
+- Evidence: no PR for this branch and no open platform-sync PR; merge commit
+  `dee61e298dc2ba7d821fe4e58dc93260ca87683c`; branch 0 commits behind main; upstream-only change
+  `.github/workflows/platform-sync-alert.yml`.
+- Outcome: delivery prerequisites are current without changing Search code or invalidating its green
+  build, unit, integration, inventory, carve, or review evidence.
+- Follow-up: push the reconciled work head through the plan-managed two-leg protocol and open the PR.
 
 ## Resume prompt
 
