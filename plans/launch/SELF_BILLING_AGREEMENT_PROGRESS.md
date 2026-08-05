@@ -85,11 +85,12 @@ alternative (Tenant module) and its cost are recorded in the plan §3.
 branch pushed, currency-merged to `origin/main` + rebuilt green (0 errors), PR #352 opened (plain `gh pr create`,
 personal repo — no AB#/assignee). Merge-gate Step 0 review done and clean.
 
-**Immediate next action — enqueue via the `merge` skill.** **Merge-queue full E2E tier — NOT skip-eligible**
-(Phase 3 changes settlement behaviour + adds a compliance flow across both SPAs); ensure no stale skip label.
-Branch is already current with `origin/main`, so enqueue: `gh pr merge 352 --merge --auto`, then confirm to a
-terminal state via the AGENTS.md background until-loop. On merge, **own the `chore/platform-sync-*` PR to green**
-(Phase 3 touches `api/**`). Then **delete plan + ledger together** in the close-out change (git history is the archive).
+**Immediate next action — re-enqueue after the E2E seeder fix.** First queue run FAILED on `e2e-api-tests`
+(NULL `PlatformTermsVersion` — real seeder config gap, root-caused + fixed in `AppFixture` in-memory seed config;
+see event log). Once the E2E project build is green: commit the fix, push, and re-enqueue `gh pr merge 352 --merge
+--auto`, then confirm to a terminal state via the AGENTS.md background until-loop. **Full E2E tier — NOT skip-eligible.**
+On merge, **own the `chore/platform-sync-*` PR to green** (Phase 3 touches `api/**`). Then **delete plan + ledger
+together** in the close-out change (git history is the archive).
 
 **Note:** PR #352 also carries an unrelated bundled commit — a new slim Concertable `create-gh-pr` skill
 (`5070a8026`, GitHub-only, no AB#/ADO) — per Tommy's "dump all this together". Doc/skill markdown; no build/E2E impact.
@@ -174,6 +175,24 @@ uses the merge-queue full E2E tier (not skip-eligible).
   so the self-billing page shows the self-billing clause honestly instead of contract copy.
 
 ## Event log
+
+### 2026-08-05 — Merge-queue E2E failed (seeder config gap), root-caused + fixed
+
+- Trigger: after re-asserting auto-merge (see below), PR #352 entered the queue; the `merge_group`
+  `e2e-api-tests` job FAILED (10 Payments tests) — all with the same SQL error: `Cannot insert the value
+  NULL into column 'PlatformTermsVersion', table 'concert.SelfBillingAgreements'`. Deterministic, not flaky.
+- Root cause: the E2E fixture (`AppFixture`) seeds through a **separate `IHost` built with a hand-rolled
+  in-memory `b2bSeedConfig`** (only the B2B connection string + `BlobStorage:ContainerName` +
+  `ExternalServices:UseRealBlob`) — it does **not** load `appsettings.json`. So `AddConcertModule(b2bSeedConfig)`
+  → `Configure<LegalSettings>(GetSection("Legal"))` bound `PlatformTermsVersion` to **null**, and the new
+  `SeededSelfBillingAgreementGranter` inserted NULL. Integration tests passed because they run `ITestSeeder`
+  (no dev grant) with full config; the sibling `ContractIssuer` uses the same value but only at Accept, which
+  seeded concerts bypass — so the gap was latent until this seeder read it unconditionally at startup.
+- Fix: add `["Legal:PlatformTermsVersion"] = "2026-07"` to the `b2bSeedConfig` in-memory dict in `AppFixture`
+  (E2E test infra), beside `BlobStorage:ContainerName` — the established pattern for keys the seeding host needs.
+  Not switched to load `appsettings.E2E.json` (that would flip `UseRealBlob` to true and break seeding). One
+  fix covers API + UI E2E (UI suite reuses this fixture). No production code changed.
+- Follow-up: build E2E project green, commit, push, re-enqueue (queue re-runs E2E).
 
 ### 2026-08-05 — PR #352 opened, code-review clean, enqueuing
 
