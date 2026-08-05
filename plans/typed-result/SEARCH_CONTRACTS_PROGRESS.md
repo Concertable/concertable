@@ -59,6 +59,12 @@ The `skip-e2e` label is now applied to PR #380. Before the label change, the PR 
 `85d4dae82cc564d7bed20dc6ad0722df025f8fcd`, state `OPEN/CLEAN`, with no stale skip or `full-e2e`
 label. The local commits after that remote head change only this active ledger and remain unpushed.
 
+The first exact-head enqueue attempt did not create a queue entry. `gh pr merge 380 --merge --auto`
+accepted the queue-controlled merge strategy, but PR #380 remained `OPEN/CLEAN` at unchanged head
+`85d4dae82` with only `skip-e2e`; GraphQL returned a null `mergeQueueEntry`, and the auto-merge request
+still carries its original 2026-08-05 18:55 UTC enablement. Confirm the unadmitted state is sustained,
+then apply the documented one-time disable/re-enable nudge; this is not a test failure or queue ejection.
+
 The autocomplete and header repository, service, and dispatcher chains now declare materialized
 `IReadOnlyList<T>` results throughout. All existing query bodies, `ToListAsync()` terminals, ordering,
 filters, empty-list behavior, pagination, DTO/projection shapes, nullable inputs, controller/wire
@@ -66,11 +72,12 @@ contracts, exception semantics, package boundaries, and shared Kernel contracts 
 
 ## Next Steps
 
-Verify PR #380 still has only the `skip-e2e` tier label and remote head
-`85d4dae82cc564d7bed20dc6ad0722df025f8fcd`, then enqueue that exact head with
-`gh pr merge 380 --merge --auto`. Verify actual queue admission and monitor to a terminal merge,
-failure, or green-unadmitted state. Do not push the local observation-checkpoint tail. After merge,
-follow publication and the generated platform-sync PR to terminal green.
+Poll PR #380's state, queue entry, PR failures, and merge-group failures for six one-minute clean
+observations. If it remains `OPEN/CLEAN`, green, and unadmitted with no merge-group failure, perform
+the one-time documented nudge: `gh pr merge --disable-auto 380`, then
+`gh pr merge 380 --merge --auto`. Verify actual queue admission and monitor terminally. Do not push
+the local observation-checkpoint tail. After merge, follow publication and the generated
+platform-sync PR to terminal green.
 
 ## Completed work
 
@@ -180,6 +187,8 @@ follow publication and the generated platform-sync PR to terminal green.
   is directly covered by green Search unit and integration tests.
 - Label normalization: PR #380 had no tier labels; added only `skip-e2e` after re-verifying its
   remote head `85d4dae82` and `OPEN/CLEAN` state.
+- Initial enqueue result: exact-head `gh pr merge 380 --merge --auto` did not create a merge-queue
+  entry; PR remained `OPEN/CLEAN`, green, and unchanged, with the pre-existing auto-merge request.
 
 ## Reviews
 
@@ -419,6 +428,16 @@ follow publication and the generated platform-sync PR to terminal green.
   --add-label skip-e2e` completed successfully.
 - Outcome: the merge group will read the intended isolated-change tier directly from the PR label.
 - Follow-up: reverify head and labels, enqueue the exact remote head, and confirm queue admission.
+
+### 2026-08-05 — initial Search queue admission did not occur
+
+- Action: reverified the immutable PR head and sole `skip-e2e` label, invoked the normal merge-queue
+  command, then queried both PR state and GraphQL queue state.
+- Evidence: command reported that `main` uses the merge queue; PR remained `OPEN/CLEAN` at
+  `85d4dae82`; `mergeQueueEntry` is null; auto-merge retains its original 18:55 UTC enablement.
+- Outcome: no queue admission, failure, ejection, or head change occurred; this matches the known
+  green re-evaluation glitch if sustained.
+- Follow-up: run the six-poll confirmation loop, then re-assert auto-merge once if still unadmitted.
 
 ## Resume prompt
 
