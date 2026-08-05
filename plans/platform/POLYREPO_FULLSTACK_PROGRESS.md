@@ -1,19 +1,19 @@
 # Full-stack polyrepo — frontend build separation progress
 
 - Plan: `plans/platform/POLYREPO_FULLSTACK_PLAN.md`
-- Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\FrontendBuildSeparation`
-- Branch: `Feature/FrontendBuildSeparation`
-- PR: review-fix PR [#319](https://github.com/Concertable/concertable/pull/319) open; Phase 1 PR [#301](https://github.com/Concertable/concertable/pull/301) merged
-- Dependency/package gates: `@concertable/shared@0.1.0-alpha.0.2129` is published and restorable; Phase 2 must not start until the review-fix PR lands
-- Last reconciled: 2026-08-03 after verified latest-main work-head push to PR #319
+- Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\platform_polyrepo-fullstack` (off `origin/main` @ `b92bf0b49`). The old `Feature/FrontendBuildSeparation` worktree/branch is orphaned (PR #319 merged, remote branch deleted) and must not be reused.
+- Branch: `Feature/platform_polyrepo-fullstack`
+- PR: none yet (Phase 2). Review-fix PR [#319](https://github.com/Concertable/concertable/pull/319) **merged** (`5a84756de`, 2026-08-03); Phase 1 PR [#301](https://github.com/Concertable/concertable/pull/301) merged
+- Dependency/package gates: `@concertable/shared@0.1.0-alpha.0.2129` is published and restorable; Phase 2 is now unblocked (review-fix PR #319 has landed). #319 touched only CI/docs (no `api/**`), so no platform-sync PR was triggered
+- Last reconciled: 2026-08-05 — created the dedicated Phase 2 worktree and pulled the authoritative ledger onto its branch (the Phase-2-unblocked closeout had been committed onto the unrelated `Feature/SelfBillingAgreement` branch, so `origin/main` still held the pre-merge ledger)
 
 ## Current state
 
-Phases 0 and 1 are on `main` through PR #301. The existing local feature branch carried two later Phase 1 review-fix commits, `f57a4c504` and `0e3d8f5a6`, after its remote branch was deleted. `origin/main` at `92ee8483c` was merged into this fresh isolated worktree as `ffc7f7339`; a later platform-sync advance to `d0fa851fa` was merged as work head `1ba1bb1f0`. The conflict was resolved by preserving main's resume-plan/progress-ledger and worktree-identity rules while retaining the compatible E2E and review-policy changes. PR #319 is open with `full-e2e`; after fetch, the local, remote, and PR heads were all verified at `1ba1bb1f0e684c533ad3cecb7b7bc83ccdef3ca3`.
+Phases 0 and 1 are on `main` through PR #301, and the Phase 1 review fixes are on `main` through PR #319, merged as `5a84756de` on 2026-08-03. `f57a4c504` is verified an ancestor of `origin/main`. The remote `Feature/FrontendBuildSeparation` branch was deleted on merge; the local worktree tip `ec7751f77` is an orphaned merge commit, now behind `origin/main` and no longer authoritative. No open platform-sync PR exists. Phase 1 (with review fixes) is fully terminal; Phase 2 is unblocked.
 
-## Exact next action
+## Next Steps
 
-Run `/code-review` for PR #319 against current `origin/main`. If the review is clear and required head checks pass, hand off `/merge`; Phase 2 remains blocked until PR #319 lands.
+Execute **Phase 2** in this worktree — publish the remaining shared tiers (`web/shared`, `mobile/shared`, `web/b2b/shared`, `@concertable/customer/shared/*`) using the Phase-1 `@concertable/shared` package as the template, then cut every consumer over from path-alias imports (`@/*`, `shared/*`, `@b2b/*`, `../shared/src`) to package imports and delete those cross-tree source aliases from every tsconfig/vite/metro config. Gate: grep-clean (no cross-tree source alias survives) + four web builds + both mobile typechecks green against the published packages. Follow Phase 2 in the plan.
 
 ## Completed work
 
@@ -47,7 +47,8 @@ Run `/code-review` for PR #319 against current `origin/main`. If the review is c
 - `origin/Feature/FrontendBuildSeparation` was gone at recovery time; the existing local branch is the authoritative source of the two review-fix commits.
 - Main's newer plan lifecycle, progress-ledger checkpoint, resume-plan skill, and worktree-identity rules take precedence over obsolete plan-deletion wording from `0e3d8f5a6`.
 - The review-fix PR requires full merge-queue E2E because it changes CI policy. Do not add `skip-e2e`; apply `full-e2e`.
-- Phase 2 is deliberately blocked until the review-fix PR lands.
+- Phase 2 was deliberately blocked until the review-fix PR landed; PR #319 is now merged, so Phase 2 is unblocked.
+- Ledger-drift caught at Phase 2 start: the Phase-2-unblocked closeout commits (`b11da1d38`, `2efd1647f`) were made while a prior session sat on the unrelated `Feature/SelfBillingAgreement` branch, so they never reached `origin/main` — the fresh worktree therefore started from the pre-merge ledger. Content was correct; recovered onto this branch via `git show`. Those stray doc commits are left on `SelfBillingAgreement` (per repo policy, doc commits riding a feature branch are not worth a force-push) and will reconcile when that PR merges. This is the shared-checkout hazard that motivated the dedicated `Feature/platform_polyrepo-fullstack` worktree.
 
 ## Event log
 
@@ -92,3 +93,17 @@ Run `/code-review` for PR #319 against current `origin/main`. If the review is c
 - Evidence: starting remote and PR head `db92ad7f47e484c2909185db09245dc2337064ed`; pushed work head `1ba1bb1f0e684c533ad3cecb7b7bc83ccdef3ca3`; after fetch, local `HEAD`, `origin/Feature/FrontendBuildSeparation`, and PR `headRefOid` all equalled `1ba1bb1f0`; PR label remained `full-e2e`; `HEAD..origin/main` count was zero.
 - Outcome: PR #319 is current with the observed base and contains only the intended review fixes plus this ledger.
 - Follow-up: Review PR #319, then merge it only after review and required checks are green; Phase 2 waits for the merge.
+
+### 2026-08-04 — PR #319 confirmed merged; Phase 2 unblocked
+
+- Action: Resumed to review/merge PR #319; found it already merged and reconciled the ledger to the terminal state.
+- Evidence: `gh pr view 319` reports `state MERGED`, merge commit `5a84756de` at 2026-08-03T15:42Z; `git merge-base --is-ancestor 1152ee7cb origin/main` and `f57a4c504 origin/main` both pass; all five PR files (`.github/workflows/test.yml`, `AGENTS.md`, `plans/AGENTS.md`, `plans/POLYREPO_FULLSTACK_PROGRESS.md`, `reviews/AGENTS.md`) landed; `git ls-remote origin Feature/FrontendBuildSeparation` empty (branch deleted); no open `chore/platform-sync-*` PR.
+- Outcome: Phase 1 including its review fixes is fully terminal on `main`. The worktree tip `ec7751f77` is orphaned and behind main. Phase 2 is unblocked.
+- Follow-up: Begin Phase 2 from a fresh worktree/branch off current `origin/main`.
+
+### 2026-08-05 — Dedicated Phase 2 worktree created; ledger reconciled onto its branch
+
+- Action: Created the isolated worktree/branch `Feature/platform_polyrepo-fullstack` off `origin/main` (the resume prompt had been launched from the main checkout while it sat on the unrelated `Feature/SelfBillingAgreement` branch — no Phase 2 work was done there). Discovered the Phase-2-unblocked ledger closeout was stranded on `SelfBillingAgreement`; recovered the authoritative ledger onto this branch.
+- Evidence: `git worktree add … -b Feature/platform_polyrepo-fullstack origin/main` at `b92bf0b49`; main checkout verified still on `Feature/SelfBillingAgreement` with only unrelated untracked paths (its HEAD advanced `3174d7f59 → 5070a8026` under another live session); `gh pr view 319` = MERGED `5a84756de`; branch-time platform-sync gate returned no open sync PR; `git rev-list --count origin/main..Feature/SelfBillingAgreement -- <ledger>` = 3 (two are the stray polyrepo closeout commits).
+- Outcome: Phase 2 has a clean, isolated worktree; the branch ledger now reflects the true post-#319 state.
+- Follow-up: Scope the four shared tiers against the Phase-1 `@concertable/shared` template and begin publishing + consumer cutover.
