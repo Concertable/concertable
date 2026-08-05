@@ -18,7 +18,7 @@ The user is delegating the **entire** run → diagnose → fix → verify loop f
 
 ## NEVER disable or bypass a step to get past its failure
 
-Same hard rule as both sub-skills. "Fix" means make the failing step work, never make it stop running. **No** `--no-build`/`SuppressBuild` for a slow/hung build; **no** inflating `Polling`/`WaitFor`/Playwright timeouts to outlast a hang; **no** disabling a resource/handler/scenario to go green. If something hangs with no output, reproduce and observe it live (resource states, Docker, process trees) — don't remove it. Bypass only on explicit user request after they've seen the diagnosis.
+Same hard rule as both sub-skills. "Fix" means make the failing step work, never make it stop running. **No** `--no-build`/`SuppressBuild` for a slow/hung build; **no** raising `Polling`/`WaitFor`/Playwright timeouts to make a flaky wait pass (not for a "hang", "slow webhook", or "CI load" — a blown bound is a real failure to fix (or, for a *proven* UI flake, quarantine into the non-gating lane), never a number to widen); **no** disabling a resource/handler/scenario to go green. If something hangs with no output, reproduce and observe it live (resource states, Docker, process trees) — don't remove it. Bypass only on explicit user request after they've seen the diagnosis.
 
 ## Input
 

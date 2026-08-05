@@ -138,7 +138,7 @@ Stripe production approval (~2-4 weeks elapsed)
 | Booking agreement + click-wrap e-signature at Accept (snapshot terms, PDF via `IPdfRenderer`) — `LEGAL_REQUIREMENTS.md` item 2 | 3-5 days | Phase 4 (Booking snapshot), `IPdfRenderer` | Month 4 |
 | ✅ Per-contract-type VAT calculation (branches on supply direction + supplier VAT status) — items 1, 3 | 2-3 days | Tenant config (VAT fields) | done |
 | ✅ Self-billed VAT invoice generation per settlement (sequential numbering, HMRC fields, PDF) — item 4 · self-billing *agreement* + renewal still outstanding | 2-3 days | VAT calculation, agreement PDF plumbing | done |
-| Cookie consent banner on 3 SPAs (scaffolding) | 1-2 days | – (scaffolding can land before solicitor text) | Month 2 |
+| ✅ Cookie consent banner on all four web SPAs (customer/venue/artist/business) — scaffolding, placeholder copy | 1-2 days | – (scaffolding can land before solicitor text) | done |
 | Cookie banner text + privacy policy text from solicitor → wired into banner | 0.5 days | Solicitor draft (Month 4) | Month 4 |
 | Percentage commission + pricing transparency at payer commitment (exact checkout + deferred settlement review) | 3 phases | Payment authorization package + platform sync | Month 3 |
 | Privacy + T&Cs page routes (footer of every page) | 1 day | Solicitor draft | Month 4 |
@@ -190,7 +190,7 @@ Concrete checklist for Month 6. Don't launch without all of these green.
 - [ ] Pre-launch dataset cleared / fresh seeded
 
 ### Compliance UI/UX
-- [ ] Cookie consent banner live on all 3 SPAs
+- [x] Cookie consent banner live on all four web SPAs (customer/venue/artist/business)
 - [ ] Privacy + T&Cs pages accessible from every footer
 - [ ] Pricing transparency on all four payer journeys (gross, platform fee and total shown before commitment)
 - [ ] Venue legal details on booking confirmation emails + invoices
