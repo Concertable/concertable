@@ -16,7 +16,7 @@ When the user invokes this skill, they are delegating the **entire** run → dia
 The suite exists to test the CURRENT state of the code. If something is failing — a scenario, a build, a service startup — that failure is the thing to debug. "Fix" means make the failing step work — never make it stop running. If a build hangs, debug the build. If a service won't start, debug the service. If a health check times out, find out why the thing behind it isn't healthy. Concretely banned moves:
 
 - **Never suppress builds** (`--no-build`, `SuppressBuild`, skip-build flags) because a build step hung or was slow — that swaps the failure for silently running stale binaries, which is worse than the failure.
-- Never inflate timeouts to outlast a hang instead of finding what's hanging.
+- **Never raise a timeout/wait to make a flaky step pass** — not for a "hang", not for a "slow dependency/webhook", not for "CI load". Relabeling a slow wait as "not a hang" to justify a bigger number is the exact rationalization this bans. A wait that blows its bound is either a real failure (the awaited thing is broken/slow — fix *that*) or a *proven* non-deterministic flake (passes and fails on identical code) — which you **quarantine into the non-gating `Category=quarantine` lane** and log in the owning `TECH_DEBT.md`. Padding the number is neither; it only hides the signal.
 - Never disable, skip, or stub the failing resource/step/check so the rest goes green.
 
 If a step hangs with no useful output, the next move is **reproduce it and observe it live** (process trees, what the child processes are doing, file locks, CPU) — not to remove the step. A bypass is only acceptable when the user explicitly asks for it after seeing the diagnosis.
