@@ -68,15 +68,15 @@ passed 7/7 against Docker and the regenerated migration.
 Current `origin/main` at `3e3bcce89` is merged as `a4ae0081e`; the canonical branch is 0 behind.
 The canonical full review is complete over `3e3bcce89..a4ae0081e` in
 `reviews/Feature-PaymentOwnedResultExpansion.md`. BUG1, BUG2, BUG3, CI1, TEST1, and CV1 are fixed in
-the review-fix checkpoint. Focused verification is green: typed-result architecture 16/16, Payment
-unit 219/219, and Payment SQL integration 8/8. No canonical PR exists; donor PR #296 remains open and
-unchanged at `82d0555cd`.
+review-fix commit `d0fe18afe`. Its incremental review found no new issues. Committed-tree verification
+is green: full Release solution build 0 errors, Payment unit 219/219, Shared API unit 52/52, Payment
+SQL integration 8/8, and the nine-project standalone package carve 0 errors. No canonical PR exists;
+donor PR #296 remains open and unchanged at `82d0555cd`.
 
 ## Next Steps
 
-Commit the completed review fixes, then repeat the Payment owner build/unit/integration gates and
-standalone carve on that committed tree. If green, push/open the one canonical PR and require full
-merge-queue E2E.
+Push the verified canonical branch, open its one canonical PR, and require full merge-queue E2E.
+Checkpoint the PR number and exact remote head in this ledger after GitHub confirms them.
 
 Opening the one canonical PR, merge, publication, the breaking B2B/Customer platform-sync
 migration, and closing donor PR #296 all remain later explicit delivery steps; the PR must run full
@@ -114,6 +114,10 @@ merge-queue E2E.
   209/209; Payment integration 7/7; `git diff --check` clean; no expected commission/payer-total
   parameters remain. B2B Artist integration passed 17/17 before the diagnostic full suite hit the
   unrelated B2B Concert long-path SQL native-DLL startup failure described in `## Current state`.
+- Committed review-fix gate at `d0fe18afe`: full Release solution build 0 errors (6 generated E2E
+  nullable warnings); Payment unit 219/219; Shared API unit 52/52; Payment integration 8/8; standalone
+  package-only carve built all nine deployable-closure projects with 0 errors (existing analyzer
+  warnings remain).
 
 ## Reviews
 
@@ -136,6 +140,9 @@ threshold and are fixed in the review-fix commit:
 
 Review-fix verification: typed-result architecture tests 16/16; Payment unit tests 219/219; Payment
 integration tests 8/8; `git diff --check` clean.
+
+Incremental review of `a4ae0081e..d0fe18afe` found no additional issues across correctness,
+microservice isolation, module boundaries, seeding, C# conventions, or changed-path coverage.
 
 ### 2026-08-05 — first adversarial review of the Phase 2 diff (`origin/main...HEAD`)
 
@@ -194,6 +201,17 @@ Clean: escrow `Result<Option<T>,E>` semantics, rounding/VAT/refund math, wire hy
   commission-branch implementation is donor evidence only; its behavior is now reconciled here.
 
 ## Event log
+
+### 2026-08-05 - Passed the committed-tree delivery gate
+
+- Action: Committed the six review fixes as `d0fe18afe`, incrementally reviewed that commit, and
+  repeated the complete owner and standalone-carve verification on the committed tree.
+- Evidence: full Release solution build 0 errors; Payment unit 219/219; Shared API unit 52/52;
+  Payment integration 8/8; all nine carved deployable-closure projects built from packages with
+  0 errors. The incremental review found no new issues.
+- Outcome: the canonical Payment branch is review-clean and locally ready for its full-E2E PR.
+- Follow-up: push the verified branch, open the one canonical PR, and checkpoint its number and
+  exact remote head.
 
 ### 2026-08-05 - Completed canonical H1 review and fixes
 

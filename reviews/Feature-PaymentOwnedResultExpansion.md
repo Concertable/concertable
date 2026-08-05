@@ -5,7 +5,7 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `a4ae0081e31492692b98980a50df4284344f170d`  _(2026-08-05)_
+**Reviewed up to commit:** `d0fe18afe0d3c9c23642c4e1d2938238f5564d33`  _(2026-08-05)_
 
 > Range reviewed: `3e3bcce89..a4ae0081e` (63 commits).
 > Status legend: `[ ]` todo - `[~]` in progress - `[x]` done - `[wontfix]` (note why).
@@ -41,3 +41,10 @@
   Replace the new `is { }` capture with the repository-standard explicit null check required by `api/agents/CODE_CONVENTIONS.md`.
 
   Fixed in the review-fix commit with an explicit nullable `Money` check.
+
+## Incremental review - 2026-08-05
+
+> Range reviewed: `a4ae0081e..d0fe18afe` (1 commit).
+
+No issues found. Checked the six finding fixes for correctness, microservice isolation, module
+boundaries, seeding, C# conventions, and test coverage of changed paths.
