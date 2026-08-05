@@ -3,28 +3,28 @@
 - Plan: `plans/platform/POLYREPO_FULLSTACK_PLAN.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\platform_polyrepo-fullstack` (off `origin/main` @ `b92bf0b49`). The old `Feature/FrontendBuildSeparation` worktree/branch is orphaned (PR #319 merged, remote branch deleted) and must not be reused.
 - Branch: `Feature/platform_polyrepo-fullstack`
-- PR: none yet (Phase 2). Review-fix PR [#319](https://github.com/Concertable/concertable/pull/319) **merged** (`5a84756de`, 2026-08-03); Phase 1 PR [#301](https://github.com/Concertable/concertable/pull/301) merged
-- Dependency/package gates: `@concertable/shared@0.1.0-alpha.0.2129` is published and restorable; Phase 2 is now unblocked (review-fix PR #319 has landed). #319 touched only CI/docs (no `api/**`), so no platform-sync PR was triggered
-- Last reconciled: 2026-08-05 — created the dedicated Phase 2 worktree and pulled the authoritative ledger onto its branch (the Phase-2-unblocked closeout had been committed onto the unrelated `Feature/SelfBillingAgreement` branch, so `origin/main` still held the pre-merge ledger)
+- PR: none yet — Phase 2 complete on-branch, not pushed. Review-fix PR [#319](https://github.com/Concertable/concertable/pull/319) **merged** (`5a84756de`, 2026-08-03); Phase 1 PR [#301](https://github.com/Concertable/concertable/pull/301) merged
+- Dependency/package gates: `@concertable/shared@0.1.0-alpha.0.2129` is published and restorable. Phase 2 publishes all five tiers via `publish-fe-packages.yml` on merge (no feed publish happens pre-merge). No `api/**` touched → no backend platform-sync
+- Last reconciled: 2026-08-05 — Phase 2 finished: synced to `origin/main` (`47612a6d6`), all four tiers packaged, consumers cut over, publish automation extended; full build/typecheck gate green
 
 ## Current state
 
-Phases 0 and 1 are on `main` through PR #301, and the Phase 1 review fixes are on `main` through PR #319, merged as `5a84756de` on 2026-08-03. `f57a4c504` is verified an ancestor of `origin/main`. The remote `Feature/FrontendBuildSeparation` branch was deleted on merge; the local worktree tip `ec7751f77` is an orphaned merge commit, now behind `origin/main` and no longer authoritative. No open platform-sync PR exists. Phase 1 (with review fixes) is fully terminal; Phase 2 is unblocked.
+Phases 0 and 1 are on `main`. **Phase 2 is complete on this branch** (`Feature/platform_polyrepo-fullstack`), five commits past the `origin/main` merge: all four remaining tiers packaged (`@concertable/web` `0fa7ce511`, `@concertable/mobile` `5275b6664`, `@concertable/customer` `c14895d97`, `@concertable/b2b` `ab11c3977`), consumers cut over (`4d8fdbaa1`), publish automation extended (`d974e724d`). The branch merged `origin/main` cleanly (`47612a6d6`) and is 0 behind. Full Phase 2 gate is green (see Verification). No open platform-sync PR. **Not yet pushed; no PR opened.**
 
 ## Next Steps
 
-**Progress (2026-08-05):** Tier 1 of 4 packaged — `@concertable/web` (web/shared) builds to `dist` green and is committed (`0fa7ce511`). Recipe proven: `package.json` with `./shared/*` dist exports + `publishConfig`; `tsconfig.json` (internal `@/*`→src, `lib` incl. `ES2022`, a `vite-env.d.ts` for `import.meta.env`); `tsconfig.build.json`; `tsc` + `tsc-alias`. **Next: replicate to `@concertable/mobile`, `@concertable/customer`, then `@concertable/b2b`** (b2b builds after web; mobile differs — RN types not DOM `lib`, no barrels so a single `./shared/*` wildcard, and the metro `watchFolders` + nativewind `global.css` input need retargeting to the package). Then step 2 (cutover), step 3 (publish automation), step 4 (gate).
+Phase 2 is done and committed. Immediate: **push the branch and (when Tommy asks) open a plain GitHub PR** for Phase 2 — six tier/cutover/CI commits on top of the `origin/main` merge. This PR touches no `api/**`, so no backend platform-sync is triggered; it is a broad package/workspace/build change, so it must run **full merge-queue E2E** (do not add `skip-e2e`).
 
-Execute **Phase 2** in this worktree, following the Phase-1 `@concertable/shared` package as the template.
-
-**Resolution model — decided 2026-08-05 (confirmed with Tommy): dist-only, build-first.** The tiers become installed packages consumed from `dist` in-monorepo (identical to `@concertable/shared` and the backend's consume-published-artifacts model); **no `source` export condition**. Add explicit pre-build ordering so the SPAs build against freshly-built tier `dist`.
-
-Tier→package + exports root: `web/shared`→`@concertable/web` (`./shared/*`); `mobile/shared`→`@concertable/mobile` (`./shared/*`, no barrels — wildcards only); `web/b2b/shared`→`@concertable/b2b` (`./web/shared/*`); `customer/shared`→`@concertable/customer` (repoint existing exports src→dist, flip `private`, bump version). **Dep/build order:** `@concertable/shared`→{`@concertable/web`, `@concertable/mobile`, `@concertable/customer`}; `@concertable/b2b` also depends on `@concertable/web` (build web before b2b).
-
-Steps: (1) scaffold each tier package (`package.json` exports→dist, `tsconfig.build.json`, internal alias via `tsc-alias`, `publishConfig`) + register in `app/package.json` workspaces; (2) rewrite every cross-tree alias import — in consumer surfaces **and inside the tiers themselves** — to a bare package specifier, then delete those aliases from every `tsconfig`/`vite`/`metro` config (keep each surface's own intra-package `@/*`→`./src/*`); (3) extend `version-fe-packages.mjs` / `verify-fe-package.mjs` / `publish-fe-packages.yml` to all tiers; (4) gate: grep-clean (no cross-tree source alias survives) + build all packages then four web builds + both mobile typechecks green. Follow Phase 2 in the plan.
+Then **Phase 3** (per the plan): prove each surface restores its shared deps purely from the feed, add `carve-fe-{customer,b2b}` CI jobs, and add the FE import-boundary rule. **Phase 3 must also close the Phase-2 runtime/carve deferrals** logged below: retarget the mobile metro `watchFolders` + nativewind `input` + tailwind `content` globs off `../shared` source onto the `@concertable/mobile` package (and prove nativewind className + tailwind generation work on the precompiled dist under metro), and give the carved shared-FE package its own tailwind `content` strategy since `@concertable/web`'s `index.css` `@source` globs reference sibling surfaces that only exist in-monorepo.
 
 ## Completed work
 
+- **Phase 2 (this branch):** `@concertable/web` (`0fa7ce511`), `@concertable/mobile` (`5275b6664`),
+  `@concertable/customer` src→dist (`c14895d97`), `@concertable/b2b` + its intra-tier import rewrite
+  (`ab11c3977`); consumer cutover across all six surfaces + config alias removal + `build:packages` +
+  `@concertable/web` `index.css` export + per-surface lucide ambient d.ts (`4d8fdbaa1`); publish
+  automation extended to all five tiers with intra-dep pinning (`d974e724d`). Merge of `origin/main`:
+  `47612a6d6`.
 - Phase 0 registry/PAT setup is complete as recorded by `e0513bac0` and the plan.
 - Phase 1 implementation and publication automation landed through PR #301 at feature head `7c9a64a3e`; GitHub merged it as `19be13d330` on 2026-08-02.
 - Material Phase 1 commits include `7f8e75d57` (per-file ESM/declarations), `90f4baa8a` (versioning and publish automation), `369f39918` (Node/NodeNext-resolvable emitted imports), `ca1e398ed` (packed-artifact Node and Expo/Metro verification), and `5f9863654` (customer owner-package alignment without starting Phase 2).
@@ -33,6 +33,15 @@ Steps: (1) scaffold each tier package (`package.json` exports→dist, `tsconfig.
 
 ## Verification
 
+- **Phase 2 gate (2026-08-05, this branch):** `npm run build:packages` builds all five tiers to dist
+  (exit 0). All four web builds green (`npm -w @concertable/web-{customer,venue,artist,business} run
+  build` = `tsc -b && vite build`). Both mobile `tsc --noEmit` = 0 errors. Grep-clean: no `../shared/src`
+  cross-tree alias in any surface tsconfig/vite config; no surviving `@/`→tier / `shared/` / `@b2b/`
+  cross-tree import in any surface or tier source (the 19 `@b2b/` inside `@concertable/b2b` are its own
+  intra-package self-alias). `npm install --package-lock-only` reports the lockfile in sync (CI `npm ci`).
+- `version-fe-packages.mjs` computes one lockstep version across all five dirs and `--write` pins every
+  intra-`@concertable` dep to it (verified `0.1.0-alpha.0.2373`, reverted). `verify-fe-package.mjs`
+  passes node-profile on the packed `@concertable/shared` tarball (exit 0).
 - `npm view @concertable/shared@0.1.0-alpha.0.2129 version --registry=https://npm.pkg.github.com` returned `0.1.0-alpha.0.2129` on 2026-08-03.
 - PR #301's final merge-group run [30766521292](https://github.com/Concertable/concertable/actions/runs/30766521292) completed successfully; `build`, `e2e-api-tests`, `e2e-ui-tests`, and `ci-complete` all passed.
 - On the post-merge review-fix tree, `git diff --check origin/main` passed.
@@ -59,6 +68,10 @@ Steps: (1) scaffold each tier package (`package.json` exports→dist, `tsconfig.
 - Ledger-drift caught at Phase 2 start: the Phase-2-unblocked closeout commits (`b11da1d38`, `2efd1647f`) were made while a prior session sat on the unrelated `Feature/SelfBillingAgreement` branch, so they never reached `origin/main` — the fresh worktree therefore started from the pre-merge ledger. Content was correct; recovered onto this branch via `git show`. Those stray doc commits are left on `SelfBillingAgreement` (per repo policy, doc commits riding a feature branch are not worth a force-push) and will reconcile when that PR merges. This is the shared-checkout hazard that motivated the dedicated `Feature/platform_polyrepo-fullstack` worktree.
 - **In-monorepo tier resolution — dist-only, build-first (confirmed with Tommy 2026-08-05).** The load-bearing finding: there is no turbo/nx and no `source` export condition anywhere; `@concertable/shared` already resolves to built `dist` in-monorepo, so editing it needs a rebuild. Phase 2 extends that from 1 tier to 5. Chose to keep the tiers dist-only (consume the built artifact both in-monorepo and when carved), matching Phase 1 and the backend's consume-published-artifacts model, rather than add a `source`/`development` condition (which would make in-monorepo dev diverge from carved reality and hide "forgot to rebuild / dist broken" bugs). Mitigation: a one-command `build:packages` + extend the CI pre-build step. Alternative (source condition + retrofit `@concertable/shared`) explicitly considered and declined.
 - **The tiers depend on each other, so cutover is not consumer-only.** `@concertable/b2b` (web/b2b/shared) imports `@/*` and `shared/*` that resolve to `@concertable/web` (web/shared), plus `@concertable/shared`; its own self-alias is `@b2b/*`. So the alias→package rewrite and the dep graph must cover intra-tier imports too, and `@concertable/web` must build before `@concertable/b2b`.
+- **The web-surface `@/*` alias is a fallback, not a straight cross-tree map.** `web/customer` (and the b2b surfaces) map `@/components|features|hooks|lib|...` → the web tier *and* a generic `@/*` → `./src/*`, and the trees have overlapping feature names (`concerts`, `user`, `reviews`, …). A blanket rewrite would misroute own-src imports. Cutover resolved each import by checking whether the target file exists in the tier `src`; only then rewrite to the package. Result: 0 own-src imports misrouted (`leftAsOwnSrc: 0` — every rewritten specifier genuinely lived in the tier, matching TS's longest-prefix-wins).
+- **CSS can't ride the tsc dist.** The tailwind entry `index.css` (imported as `@concertable/web/shared/index.css` by all four web surfaces) is emitted by no tsc build, so `@concertable/web` exports it directly from `./src/index.css` (added to `files`). Its `@source` globs are relative to that physical file and resolve in-monorepo; carve needs a different content strategy (deferred to Phase 3).
+- **lucide-react-native prop augmentation is per-surface now.** `mobile/shared/src/types/lucide.d.ts` (adds `color`/`size`/`strokeWidth`/`className` to `LucideProps`) was previously in surface scope only because the surfaces `include`d the whole tier `src`. After the cutover drops that include, each mobile surface carries its own `lucide-env.d.ts` (its own icon usage needs it regardless of the tier — carve-correct), mirroring the existing per-surface generated `nativewind-env.d.ts`. The tier keeps its own copy for its own build.
+- **Metro/nativewind/tailwind runtime configs left for Phase 3.** The Phase 2 gate is build + typecheck; the mobile app's metro `watchFolders`/nativewind `input`/tailwind `content` still point at `../shared` source. The app already resolves `@concertable/shared`/`customer` as symlinked packages the same way, so no in-monorepo runtime regression, but className/class-generation on the precompiled dist is unproven — a first-class Phase 3 item, not a silent gap.
 
 ## Event log
 
@@ -117,6 +130,13 @@ Steps: (1) scaffold each tier package (`package.json` exports→dist, `tsconfig.
 - Evidence: `git worktree add … -b Feature/platform_polyrepo-fullstack origin/main` at `b92bf0b49`; main checkout verified still on `Feature/SelfBillingAgreement` with only unrelated untracked paths (its HEAD advanced `3174d7f59 → 5070a8026` under another live session); `gh pr view 319` = MERGED `5a84756de`; branch-time platform-sync gate returned no open sync PR; `git rev-list --count origin/main..Feature/SelfBillingAgreement -- <ledger>` = 3 (two are the stray polyrepo closeout commits).
 - Outcome: Phase 2 has a clean, isolated worktree; the branch ledger now reflects the true post-#319 state.
 - Follow-up: Scope the four shared tiers against the Phase-1 `@concertable/shared` template and begin publishing + consumer cutover.
+
+### 2026-08-05 — Phase 2 completed end-to-end
+
+- Action: Synced the branch to `origin/main` (was 32 behind; merged `47612a6d6`, resolved the ledger conflict in our favour), packaged the three remaining tiers (`@concertable/mobile`, `@concertable/customer` src→dist, `@concertable/b2b` incl. its intra-tier import rewrite), cut all six consumer surfaces over from path aliases to package specifiers (existence-checked resolver), stripped cross-tree aliases from every surface tsconfig/vite config, added `build:packages`, the `@concertable/web` `index.css` export, and per-surface lucide ambient d.ts, then extended the FE publish automation (version dep-pinning, package-driven verify, five-tier ordered publish workflow).
+- Evidence: commits `5275b6664`, `c14895d97`, `ab11c3977`, `4d8fdbaa1`, `d974e724d` on `47612a6d6`. Gate green — `build:packages` exit 0, four web builds OK, both mobile `tsc --noEmit` 0 errors, grep-clean, lockfile in sync. Version script emits lockstep `0.1.0-alpha.0.2373` with intra-deps pinned (reverted); shared-tarball node verify exit 0.
+- Outcome: Phase 2 is complete and committed on the branch; base merge clean; 0 behind `origin/main`.
+- Follow-up: Push the branch; open the full-E2E Phase 2 PR when Tommy asks; then Phase 3 (feed-restore carve CI + import-boundary rule) which also closes the metro/nativewind/tailwind + carve-CSS runtime deferrals.
 
 ### 2026-08-05 — Resolution model confirmed; first tier packaged (`@concertable/web`)
 

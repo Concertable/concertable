@@ -88,17 +88,28 @@ builds, and a `npm pack` tarball installs + type-checks in a throwaway consumer.
   installs and type-checks from the feed in a fresh NodeNext consumer.
 - **Do not cut consumers over yet** — like the BE, publish first; consumers still resolve the workspace copy.
 
-### Phase 2 — Publish the remaining shared tiers + cut consumers over
-- Make `web/shared` → `@concertable/web/shared/*`, `mobile/shared` → `@concertable/mobile/shared/*`, and
-  `web/b2b/shared` → `@concertable/b2b/web/shared/*` published owner-package exports (add the owning
-  `package.json` + `exports` + build + publish).
-- Give `@concertable/customer/shared/*` the Phase-1 treatment (the owning `@concertable/customer` package depends on
-  `@concertable/shared` → publish order matters).
-- **Cut consumers over**: convert every `@/*` / `shared/*` / `@b2b/*` / `../shared/src` **path-alias** import
-  to a **package** import; delete the cross-tree source aliases from every tsconfig/vite/metro config.
-- Gate: grep clean — no surface config contains a cross-tree source alias (`../shared/src`, `../../shared/src`);
-  no `from "@/..."`→shared or `from "shared/..."` source import survives. Four web + two mobile green **against
-  the published packages**.
+### Phase 2 — Publish the remaining shared tiers + cut consumers over ✅ DONE
+- ✅ `web/shared` → `@concertable/web` (`./shared/*`), `mobile/shared` → `@concertable/mobile` (`./shared/*`,
+  no barrels — single dist wildcard + `react-native` export condition), and `web/b2b/shared` →
+  `@concertable/b2b` (`./web/shared/*`, 8 feature barrels + wildcards) are owner packages (own
+  `package.json` + `exports` + `tsconfig.build.json` + `tsc-alias` + `publishConfig`, dist-only).
+- ✅ `@concertable/customer` repointed src→dist (Phase-1 treatment); depends on `@concertable/shared`.
+  `@concertable/b2b` depends on `@concertable/web` → `build:packages` builds in order shared →
+  {web, mobile, customer} → b2b.
+- ✅ **Consumers cut over**: every `@/*` / `shared/*` / `@b2b/*` path-alias import across the six
+  surfaces (and the intra-tier imports inside `@concertable/b2b`) rewritten to package specifiers,
+  existence-checked so web-surface own-src `@/*` fallbacks were never misrouted. Cross-tree aliases
+  deleted from every surface tsconfig/vite config; each surface keeps only `@/*` → `./src/*`.
+- ✅ Gate met: grep-clean (no cross-tree source alias in any config; no surviving `@/`→tier or
+  `shared/`/`@b2b/` cross-tree import — `@b2b/*` inside `@concertable/b2b` is its own intra-package
+  self-alias, resolved by tsc-alias); all five packages build to dist; four web builds + both mobile
+  `tsc --noEmit` green against the built packages. Publish automation extended to all five tiers.
+- **Deferred to Phase 3 (runtime/carve, not covered by the typecheck gate):** the mobile metro
+  `watchFolders`/nativewind `input`/tailwind `content` globs still point at `../shared` source and must
+  be retargeted at the package (nativewind className + tailwind class generation on precompiled dist is
+  unproven); `@concertable/web`'s `index.css` carries `@source` globs relative to sibling surfaces
+  (`../../customer/src`, `../../b2b/*`) that only resolve in-monorepo — a carved shared-FE package needs
+  its own content strategy.
 
 ### Phase 3 — Per-surface standalone build closure + carve CI + boundary enforcement
 - Prove each surface restores its shared deps **purely from the feed** (no monorepo-root workspace resolution).
