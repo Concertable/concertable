@@ -6,6 +6,10 @@ on:
       - main
     paths:
       - 'app/shared/**'
+      - 'app/web/shared/**'
+      - 'app/mobile/shared/**'
+      - 'app/customer/shared/**'
+      - 'app/web/b2b/shared/**'
       - 'app/scripts/version-fe-packages.mjs'
       - 'app/scripts/verify-fe-package.mjs'
       - 'app/package.json'
@@ -22,7 +26,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  publish-shared:
+  publish-fe-packages:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     env:
@@ -43,39 +47,53 @@ jobs:
         working-directory: app
         run: npm ci
 
-      - name: Set package version
+      # One lockstep version for every tier; --write also pins intra-@concertable deps to it.
+      - name: Set package versions
         id: version
         run: |
-          version=$(node app/scripts/version-fe-packages.mjs --write app/shared)
+          version=$(node app/scripts/version-fe-packages.mjs --write \
+            app/shared app/web/shared app/mobile/shared app/customer/shared app/web/b2b/shared)
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
-      - name: Pack package
-        id: pack
-        working-directory: app
+      # Dependency order: shared -> web/mobile/customer -> b2b. Each tier's prepack build leaves its
+      # dist in place, so a later tier that imports an earlier one resolves it. Verify runs against the
+      # packed tarball (pulling already-published deps from the feed), then publish idempotently.
+      - name: Pack, verify, and publish tiers
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
+          set -euo pipefail
           mkdir -p "$RUNNER_TEMP/fe-packages"
-          npm pack --workspace @concertable/shared --pack-destination "$RUNNER_TEMP/fe-packages"
-          tarball=$(find "$RUNNER_TEMP/fe-packages" -maxdepth 1 -name '*.tgz' -print -quit)
-          test -n "$tarball"
-          echo "tarball=$tarball" >> "$GITHUB_OUTPUT"
+          names=(@concertable/shared @concertable/web @concertable/mobile @concertable/customer @concertable/b2b)
+          declare -A flags=(
+            [@concertable/shared]="--metro"
+            [@concertable/web]=""
+            [@concertable/mobile]="--metro-only"
+            [@concertable/customer]=""
+            [@concertable/b2b]=""
+          )
+          for name in "${names[@]}"; do
+            echo "::group::$name@$VERSION"
+            ( cd app && npm pack --workspace "$name" --pack-destination "$RUNNER_TEMP/fe-packages" )
+            tarball=$(ls -t "$RUNNER_TEMP/fe-packages"/*.tgz | head -n1)
+            test -n "$tarball"
+            node app/scripts/verify-fe-package.mjs "$tarball" "$name" ${flags[$name]}
+            if npm view "$name@$VERSION" version >/dev/null 2>&1; then
+              echo "$name@$VERSION is already published"
+            else
+              npm publish "$tarball" --tag alpha
+            fi
+            echo "::endgroup::"
+          done
 
-      - name: Verify packed package
-        env:
-          TARBALL: ${{ steps.pack.outputs.tarball }}
-        run: node app/scripts/verify-fe-package.mjs "$TARBALL" --metro
-
-      - name: Publish package
+      # Feed sanity: confirm each tier resolves from the registry (not just the local tarball).
+      - name: Verify published tiers from the feed
         env:
           VERSION: ${{ steps.version.outputs.version }}
-          TARBALL: ${{ steps.pack.outputs.tarball }}
         run: |
-          if npm view "@concertable/shared@$VERSION" version >/dev/null 2>&1; then
-            echo "@concertable/shared@$VERSION is already published"
-          else
-            npm publish "$TARBALL" --tag alpha
-          fi
-
-      - name: Verify published package
-        env:
-          VERSION: ${{ steps.version.outputs.version }}
-        run: node app/scripts/verify-fe-package.mjs "@concertable/shared@$VERSION"
+          set -euo pipefail
+          node app/scripts/verify-fe-package.mjs "@concertable/shared@$VERSION" @concertable/shared --metro
+          node app/scripts/verify-fe-package.mjs "@concertable/web@$VERSION" @concertable/web
+          node app/scripts/verify-fe-package.mjs "@concertable/mobile@$VERSION" @concertable/mobile --metro-only
+          node app/scripts/verify-fe-package.mjs "@concertable/customer@$VERSION" @concertable/customer
+          node app/scripts/verify-fe-package.mjs "@concertable/b2b@$VERSION" @concertable/b2b
