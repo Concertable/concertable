@@ -34,7 +34,8 @@ mechanism (prefix `git subtree split`) is proven.
 **In flight:** the **frontend full-stack carve** (`POLYREPO_FULLSTACK_PLAN`, Phase 2 done on branch, Phase
 3 left).
 
-**Not started — the gap this roadmap was created to track:** per-service **doc & guidance locality** (§4).
+**Partly shipped:** per-service **doc & guidance locality** (§4) — the ownership rule + per-service
+`AGENTS.md`/`ARCHITECTURE.md` gaps landed (PR #383); only **4c** (plans-tree relocation, gated on §6) remains.
 
 **Deferred by decision:** mirror automation is off the hot path (manual `workflow_dispatch`); the
 end-state shape (buildable mirrors vs. a true cut) is undecided.
@@ -80,14 +81,14 @@ feed — the npm analogue of the backend carve.
 - [ ] 🟡 **Phase 3** — prove each surface feed-restores its shared deps, `carve-fe-{customer,b2b}` CI, FE
   import-boundary rule, and close the Phase-2 metro/nativewind/tailwind + carve-CSS runtime deferrals.
 
-## 4. Per-service doc & guidance locality — 🔴 not started
+## 4. Per-service doc & guidance locality — 🟠 4a + 4b shipped; 4c deferred
 
-**The stream this roadmap was created to drive.** Right now guidance and plans are only partly co-located
-with the service that owns them, so a mirror of a service folder is *not* a self-describing repo and an
-agent working one service loads root-level noise instead of that service's own rules. Owned by
-[`SERVICE_DOC_LOCALITY_PLAN.md`](SERVICE_DOC_LOCALITY_PLAN.md) /
-[`SERVICE_DOC_LOCALITY_PROGRESS.md`](SERVICE_DOC_LOCALITY_PROGRESS.md) (branch
-`<Type>/platform_service-doc-locality`).
+**The stream this roadmap was created to drive.** Guidance was only partly co-located with the service that
+owns it, so a mirror of a service folder was *not* a self-describing repo and an agent working one service
+loaded root-level noise instead of that service's own rules. **4a + 4b shipped in PR #383** (ownership rule
++ per-service `AGENTS.md`/`ARCHITECTURE.md` gaps); their plan (`SERVICE_DOC_LOCALITY_*`) is deleted, git
+history is the archive. **4c** (relocating the cross-cutting `plans/` tree) remains — gated on the §6
+end-state decision.
 
 **Ownership rule to establish first (the design decision):** *each artifact lives at the lowest node that
 fully contains its concern.* Single-service → the service folder (and it rides the mirror when run);
@@ -102,16 +103,15 @@ Gap map (verified 2026-08-05):
 |---|---|---|
 | `TECH_DEBT.md` | ✅ per-service | — |
 | `README.md` | ✅ per-service | — |
-| `ARCHITECTURE.md` | 🟠 B2B, Customer, Auth, AppHost | add **Payment, Search, Messaging** where a service-local architecture exists |
-| service-root `AGENTS.md` | 🔴 only Payment | add thin `CLAUDE.md → @AGENTS.md` for **B2B, Customer, Auth, Search, Messaging** |
+| `ARCHITECTURE.md` | ✅ B2B, Customer, Auth, AppHost, **Payment, Search** | Messaging skipped (shared library, not a data/adapter service) |
+| service-root `AGENTS.md` | ✅ Payment, **B2B, Customer, Auth** | Search + Messaging skipped (nothing beyond upward guidance) |
 | `plans/` | 🔴 centralized by *initiative* | see the seam decision below |
 
-- [ ] 🔴 **4a — Ownership rule.** Write "lowest fully-containing node" into root + `api/` `AGENTS.md`; single-source, don't duplicate per service (thin service files defer upward, never restate).
-- [ ] 🔴 **4b — Fill the cheap gaps** (unambiguous, low-risk): the missing service-root `AGENTS.md` and `ARCHITECTURE.md` files above.
+- [x] ✅ **4a — Ownership rule.** "Lowest fully-containing node" written into root + `api/` `AGENTS.md`, single-sourced; `Concertable.Payment` named as the thin-file template.
+- [x] ✅ **4b — Fill the cheap gaps.** Thin `CLAUDE.md`/`AGENTS.md` for B2B, Customer, Auth; `ARCHITECTURE.md` for Payment + Search. Search + Messaging `AGENTS.md` and Messaging `ARCHITECTURE.md` skipped (lazy creation — nothing service-specific).
 - [ ] 🔴 **4c — Plans locality (the contentious part).** `plans/` is organized by *initiative*, and many initiatives (`launch`, `typed-result`, `marketplace`) span every service and **cannot** live in one service folder. So this is not "push everything down": a single-service plan moves into its service; a cross-service/orchestration plan stays at root. Settle this seam **with §6** before moving live plans, and never relocate an in-flight plan with a live worktree/ledger (e.g. `POLYREPO_FULLSTACK`) mid-flight.
 
-**Recommended sequencing:** do 4a + 4b first (cheap, finishes an already-emerging pattern — see the ✅
-rows), hold 4c until the end-state seam (§6) is decided.
+**Sequencing:** 4a + 4b are done (PR #383); 4c holds until the end-state seam (§6) is decided.
 
 ## 5. Mirror automation — ⏸ deferred by decision
 
@@ -142,3 +142,8 @@ This gate governs how much to invest in §5, and whether §4c's plan-locality mo
   (`MICROSERVICE_STEPS`, backend carve, `POLYREPO_FULLSTACK`, deferred mirroring); this roadmap unifies it
   and adds per-service doc & guidance locality (§4) as a tracked stream. Anchor for the doc-locality work
   Tommy raised.
+- **2026-08-05 — §4 4a + 4b shipped (PR #383).** Ownership rule ("lowest fully-containing node") written
+  into root + `api/` `AGENTS.md`; thin service-root `AGENTS.md`/`CLAUDE.md` added for B2B, Customer, Auth
+  and `ARCHITECTURE.md` for Payment + Search (Search + Messaging `AGENTS.md` and Messaging `ARCHITECTURE.md`
+  skipped — nothing service-specific). Docs-reviewed (3 accuracy findings fixed). Owning plan
+  `SERVICE_DOC_LOCALITY_*` deleted; git history is the archive. **4c** (plans-tree relocation) remains, gated on §6.
