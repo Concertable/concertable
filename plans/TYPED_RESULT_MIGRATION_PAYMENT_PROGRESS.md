@@ -65,19 +65,18 @@ Artist 17/17, then B2B Concert failed all 144 cases at fixture startup because W
 wrapper was stopped and its two Testcontainers resources removed. Payment integration independently
 passed 7/7 against Docker and the regenerated migration.
 
-A fresh fetch after the H1 checkpoint found the clean canonical branch at `951472cae`, 61 commits
-ahead and 52 behind current `origin/main` at `3e3bcce89`. No canonical PR exists; donor PR #296
-remains open and unchanged at `82d0555cd`. Repository branch-currency rules require merging current
-main before review and verification continue.
+Current `origin/main` at `3e3bcce89` is merged as `a4ae0081e`; the canonical branch is 0 behind.
+The canonical full review is complete over `3e3bcce89..a4ae0081e` in
+`reviews/Feature-PaymentOwnedResultExpansion.md`. BUG1, BUG2, BUG3, CI1, TEST1, and CV1 are fixed in
+the review-fix checkpoint. Focused verification is green: typed-result architecture 16/16, Payment
+unit 219/219, and Payment SQL integration 8/8. No canonical PR exists; donor PR #296 remains open and
+unchanged at `82d0555cd`.
 
 ## Next Steps
 
-Merge current `origin/main` into this clean canonical branch. Then review the H1 implementation
-checkpoint, fix every clear finding, repeat the Payment owner build/unit/integration gates and
-standalone carve on the committed tree, push/open the one canonical PR, and require full merge-queue
-E2E. The prior review is recorded in this ledger but no branch-owned review markdown/watermark exists,
-so use the full `code-review` workflow to establish the canonical review artifact before future
-incremental reviews.
+Commit the completed review fixes, then repeat the Payment owner build/unit/integration gates and
+standalone carve on that committed tree. If green, push/open the one canonical PR and require full
+merge-queue E2E.
 
 Opening the one canonical PR, merge, publication, the breaking B2B/Customer platform-sync
 migration, and closing donor PR #296 all remain later explicit delivery steps; the PR must run full
@@ -117,6 +116,26 @@ merge-queue E2E.
   unrelated B2B Concert long-path SQL native-DLL startup failure described in `## Current state`.
 
 ## Reviews
+
+### 2026-08-05 - canonical full review after H1 (`3e3bcce89..a4ae0081e`)
+
+Artifact: `reviews/Feature-PaymentOwnedResultExpansion.md`. The missing branch-owned incremental
+watermark required a full review to establish the canonical artifact. Six findings met the confidence
+threshold and are fixed in the review-fix commit:
+
+- **BUG1 (fixed):** bound deposit, capture, and settlement retries now revalidate identity, intent,
+  and reviewed gross before returning an existing operation; regressions cover all three.
+- **BUG2 (fixed):** an already-refunded booking returns the no-op `Option.None`.
+- **BUG3 (fixed):** internal settlement refunds own `SettlementRefundError` and
+  `settlement.refund_*` definitions instead of escrow codes.
+- **CI1 (fixed):** the typed-result architecture guard matches the current explicit-case convention
+  and no longer allowlists the completed client adapter.
+- **TEST1 (fixed):** real SQL coverage proves a different second reviewed gross cannot overwrite the
+  first.
+- **CV1 (fixed):** the new `is { }` capture is replaced with an explicit null check.
+
+Review-fix verification: typed-result architecture tests 16/16; Payment unit tests 219/219; Payment
+integration tests 8/8; `git diff --check` clean.
 
 ### 2026-08-05 — first adversarial review of the Phase 2 diff (`origin/main...HEAD`)
 
@@ -175,6 +194,18 @@ Clean: escrow `Result<Option<T>,E>` semantics, rounding/VAT/refund math, wire hy
   commission-branch implementation is donor evidence only; its behavior is now reconciled here.
 
 ## Event log
+
+### 2026-08-05 - Completed canonical H1 review and fixes
+
+- Action: Established the missing branch-owned full review artifact, reviewed
+  `3e3bcce89..a4ae0081e` through all six lenses, and fixed all six confirmed findings.
+- Evidence: `reviews/Feature-PaymentOwnedResultExpansion.md`; BUG1, BUG2, BUG3, CI1, TEST1, and CV1
+  are all closed. Typed-result architecture tests pass 16/16, Payment unit tests 219/219, Payment SQL
+  integration tests 8/8, and `git diff --check` is clean.
+- Outcome: no review finding remains open. The next gate is committed-tree owner verification and
+  standalone carve before canonical PR delivery.
+- Follow-up: commit this review-fix checkpoint, repeat the complete committed-tree owner/carve gate,
+  then push and open the full-E2E PR.
 
 ### 2026-08-05 - Reconciled H1 checkpoint with advancing main
 
