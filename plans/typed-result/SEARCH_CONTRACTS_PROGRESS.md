@@ -55,6 +55,10 @@ shared infrastructure, build pipeline, or user-facing runtime flow, and Search u
 cover it directly. It therefore qualifies for the `skip-e2e` merge-queue tier. No historical
 `Skip-E2E` trailer exists; normalize labels to `skip-e2e` only before enqueueing the verified PR head.
 
+The `skip-e2e` label is now applied to PR #380. Before the label change, the PR head was reverified as
+`85d4dae82cc564d7bed20dc6ad0722df025f8fcd`, state `OPEN/CLEAN`, with no stale skip or `full-e2e`
+label. The local commits after that remote head change only this active ledger and remain unpushed.
+
 The autocomplete and header repository, service, and dispatcher chains now declare materialized
 `IReadOnlyList<T>` results throughout. All existing query bodies, `ToListAsync()` terminals, ordering,
 filters, empty-list behavior, pagination, DTO/projection shapes, nullable inputs, controller/wire
@@ -62,11 +66,11 @@ contracts, exception semantics, package boundaries, and shared Kernel contracts 
 
 ## Next Steps
 
-Add the `skip-e2e` label to PR #380, remove any stale `skip-e2e-ui` or `full-e2e` label, verify the PR
-head remains `85d4dae82cc564d7bed20dc6ad0722df025f8fcd`, then enqueue that exact remote head with
+Verify PR #380 still has only the `skip-e2e` tier label and remote head
+`85d4dae82cc564d7bed20dc6ad0722df025f8fcd`, then enqueue that exact head with
 `gh pr merge 380 --merge --auto`. Verify actual queue admission and monitor to a terminal merge,
-failure, or green-unadmitted state. Do not push this local terminal-check observation checkpoint.
-After merge, follow publication and the generated platform-sync PR to terminal green.
+failure, or green-unadmitted state. Do not push the local observation-checkpoint tail. After merge,
+follow publication and the generated platform-sync PR to terminal green.
 
 ## Completed work
 
@@ -174,6 +178,8 @@ After merge, follow publication and the generated platform-sync PR to terminal g
 - Merge-queue tier: `skip-e2e` qualifies because the final diff is isolated to Search in-process
   signatures and Search-owned unit enforcement, crosses no package/service or runtime boundary, and
   is directly covered by green Search unit and integration tests.
+- Label normalization: PR #380 had no tier labels; added only `skip-e2e` after re-verifying its
+  remote head `85d4dae82` and `OPEN/CLEAN` state.
 
 ## Reviews
 
@@ -404,6 +410,15 @@ After merge, follow publication and the generated platform-sync PR to terminal g
 - Outcome: PR #380 is green and current; `skip-e2e` is the strict final tier because no package,
   service, shared-infrastructure, pipeline, multi-surface, or user-facing runtime boundary changed.
 - Follow-up: normalize labels, verify the remote head is unchanged, enqueue it, and monitor terminally.
+
+### 2026-08-05 — Search queue tier label normalized
+
+- Action: verified the remote head and clean state, confirmed no stale tier labels, and applied
+  `skip-e2e` to PR #380.
+- Evidence: pre-label PR state `OPEN/CLEAN`, head `85d4dae82`, labels empty; `gh pr edit 380
+  --add-label skip-e2e` completed successfully.
+- Outcome: the merge group will read the intended isolated-change tier directly from the PR label.
+- Follow-up: reverify head and labels, enqueue the exact remote head, and confirm queue admission.
 
 ## Resume prompt
 
