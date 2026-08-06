@@ -9,15 +9,14 @@
 
 ## Current state
 
-Both implementation phases are complete and all local gates are green. The Tenant aggregate and
+Both implementation phases are committed and all local gates are green. The Tenant aggregate and
 Organization surface own the nullable overrides and platform-default fallback; Concert consumes
 effective values for PRS, supplier VAT, supplier payment terms, and venue cancellation notice.
 
 ## Next Steps
 
-Review the Phase 2 diff and commit the verified consumer/roadmap checkpoint. Then run the repository
-code-review workflow before opening a PR; the PR must use full merge-queue E2E and the post-merge
-platform-sync gate.
+Run the repository code-review workflow against the committed branch and address any clear findings.
+Then open the PR with full merge-queue E2E and own the post-merge platform-sync gate.
 
 ## Completed work
 
@@ -25,10 +24,11 @@ platform-sync gate.
   implementation design.
 - Phase 1 implemented: Tenant configuration value object and EF complex mapping, appsettings options
   and field-wise resolver, Tenant contracts/module/service/API mapping, Organization UI controls,
-  regenerated initial migration, seed/test plumbing, and focused tests.
+  regenerated initial migration, seed/test plumbing, and focused tests; committed as `d9cb98260`.
 - Phase 2 implemented: venue PRS is licence-aware and deducted before the artist split; supplier VAT
   uses the resolved tenant rate; supplier payment terms defer settlement; venue cancellation notice
-  rejects late cancellation; all four have focused unit/integration coverage.
+  rejects late cancellation; all four have focused unit/integration coverage; committed with the
+  roadmap gates as `a9ca579a9`.
 - Launch roadmap §5 row and §7 gate ticked; the separate solicitor-owned cancellation/refund matrix
   remains open.
 
@@ -112,7 +112,7 @@ platform-sync gate.
 - Action: reran the full solution build after clearing only feature-worktree generated artifacts.
 - Evidence: `dotnet build api/Concertable.slnx` succeeded with 0 errors and 5 existing warnings.
 - Outcome: every local Phase 2 verification gate is green.
-- Follow-up: review and commit the Phase 2 checkpoint.
+- Follow-up: Phase 2 committed as `a9ca579a9`; run the formal branch review before PR delivery.
 
 ## Resume prompt
 
