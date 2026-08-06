@@ -2,10 +2,10 @@
 
 - Plan: `plans/platform/POLYREPO_FULLSTACK_PLAN.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\platform_polyrepo-fullstack` — after Phase 3a merged, checked out a fresh branch off `origin/main` for Phase 3b (non-destructive; the merged 3a branch left in place).
-- Branch: `Feature/platform_polyrepo_carve-fe-ci` (Phase 3b), off `origin/main` @ `55c807784`.
-- PR: **Phase 3b PR [#389](https://github.com/Concertable/concertable/pull/389) OPEN** (head `5ae8f1cc4`, base `main`, no skip labels) — `carve-fe-web` self-validating on it; `web/b2b/artist` already **green** against the republished feed, other 3 surfaces running. **Phase 3a PR [#378](https://github.com/Concertable/concertable/pull/378) MERGED** (`fba490e25`) — full merge-queue E2E green; remote branch auto-deleted. Phase 2 [#360] MERGED (`a3f9535`); Phase 1 [#301] + review-fix [#319] merged earlier.
-- Dependency/package gates: after #378, `publish-fe-packages.yml` run [31045651556] **republished all five tiers with the new bare exports (green, from-feed verify of every tier passed)**. No `api/**` in the #378 diff → no backend platform-sync.
-- Last reconciled: 2026-08-05 (resume) — Phase 3a merged (`fba490e25`) + tiers republished green; **Phase 3b authored, pushed, and opened as PR [#389](https://github.com/Concertable/concertable/pull/389)**; its `carve-fe-web` gate is self-validating on the PR (1/4 surfaces already green). Next: review + merge #389.
+- Branch: `Feature/platform_polyrepo_carve-fe-ci` (Phase 3b), off `origin/main`; re-synced to `origin/main` @ `6586122b8` on 2026-08-06 (was 13 behind; clean merge, no `test.yml` conflict — main never touched it).
+- PR: **Phase 3b PR [#389](https://github.com/Concertable/concertable/pull/389) OPEN** (base `main`, no skip labels) — before the re-sync all **four** `carve-fe-web` surfaces were **green** against the republished feed (build/unit/integration also green; E2E auto-skipped — CI+doc-only diff, no runtime delta, matching the documented no-skip-e2e/no-full-e2e call). **Phase 3a PR [#378](https://github.com/Concertable/concertable/pull/378) MERGED** (`fba490e25`) — full merge-queue E2E green; remote branch auto-deleted. Phase 2 [#360] MERGED (`a3f9535`); Phase 1 [#301] + review-fix [#319] merged earlier.
+- Dependency/package gates: after #378, `publish-fe-packages.yml` run [31045651556] **republished all five tiers with the new bare exports (green, from-feed verify of every tier passed)**. No `api/**` on the #389 branch diff → no backend platform-sync; no FE republish (test.yml-only).
+- Last reconciled: 2026-08-06 (resume) — re-synced #389 to current `origin/main` (0 behind), verified the `test.yml` change intact + YAML valid + net diff still `test.yml`+ledger. Next: `/code-review` #389, then merge via the queue.
 
 ## Current state
 
@@ -79,6 +79,13 @@ Gate: `carve-fe-web` green in CI on the Phase 3b PR (step 1).
 - **Metro/nativewind/tailwind runtime configs left for Phase 3.** The Phase 2 gate is build + typecheck; the mobile app's metro `watchFolders`/nativewind `input`/tailwind `content` still point at `../shared` source. The app already resolves `@concertable/shared`/`customer` as symlinked packages the same way, so no in-monorepo runtime regression, but className/class-generation on the precompiled dist is unproven — a first-class Phase 3 item, not a silent gap.
 
 ## Event log
+
+### 2026-08-06 — Phase 3b PR #389 re-synced to current main; reviewing + enqueuing
+
+- Action: Resumed in the dedicated worktree. #389's four `carve-fe-web` surfaces + build/unit/integration were already green (E2E auto-skipped as a CI+doc-only diff). Branch was 13 behind `origin/main`; per the pre-auto-merge currency rule, `git merge origin/main --no-edit` (clean — main never touched `test.yml`), 0 behind. Verified the change survived: net 3-dot diff = `test.yml`+ledger only, `carve-fe-web`/`run_fe` intact, `python -c yaml.safe_load` OK.
+- Evidence: merge commit; `git rev-list --count HEAD..origin/main` = 0; `origin/main` @ `6586122b8`; the merge pulled 13 commits (money-value-type refactor, merge-review-gate hook, review-authz) — all `api/**`/`.claude`/docs, none touching the FE packages or `test.yml`.
+- E2E-tier decision: **no skip-e2e, no full-e2e.** The diff is `test.yml`+doc with zero app/package/lockfile/E2E-job/E2E-gating change; the classifier correctly skips E2E, and the thing at risk (the carve gate) self-validates via `carve-fe-web` on the PR. Unlike #319 (which changed E2E *policy* → full-e2e), this changes *carve* policy only.
+- Outcome: #389 current with `main`, change intact. Next: `/code-review` (merge-review-gate hook now requires `reviews/Feature-platform_polyrepo_carve-fe-ci.md` stamped at HEAD), then `gh pr merge 389 --merge --auto` + poll to MERGED.
 
 ### 2026-08-05 — Phase 3a MERGED + republished green; Phase 3b (carve-fe CI) authored
 
