@@ -5,12 +5,16 @@
 - Branch: `Feature/typed-result_auth-outcomes`
 - PR: not opened
 - Dependency/package gates: No prerequisite dependency gate. The owned Kernel Result/Option foundation is shipped and available through Auth's current `ConcertablePlatformVersion` (`0.1.0-alpha.0.827`). Auth is independent of the Payment, B2B, and Customer migrations. Platform-sync PR #393 for `0.1.0-alpha.0.830` is green and open at pushed consumer-fix head `6064e1f97df7a3fe386c26ea286755a0e28c9a2c`; it does not change Auth and is no longer a broken platform gate. Reconcile its eventual merge before delivery. After this `api/**` change merges, this work owns its generated package publication/platform-sync gate to terminal green.
-- Last reconciled: `2026-08-06T10:34:48+01:00` from the complete Phase 4 implementation, Auth tests, Release solution build, standalone Auth carve, exhaustive cleanup searches, and fresh origin/PR/platform-sync state.
+- Last reconciled: `2026-08-06T10:41:36+01:00` from the committed Phase 4 implementation and its green gate, followed by the clean docs/meta-only reconciliation to fresh `origin/main`.
 
 ## Current state
 
-Phase 4 is complete, green, and checkpointed by this commit. The branch is zero behind fresh
-`origin/main` `6586122b82f1cca835db2537656ec96f40e9aaa7`, has no PR, and remains on Auth's stable
+Phase 4 is complete and green at commit `d4ebf1c9d33a367fb642c013daa542c7d267a6b8`. After that
+checkpoint, fresh `origin/main` advanced by 12 docs/meta-only commits with no Auth, solution, or
+integration-runner change. The clean branch merged them as
+`d5ac70605eac829afac7d71c547520dc950b3fe9` and is zero behind
+`origin/main` `48bd0eaf5e8079d07302ec4e07dfdc78167427d2`, with no PR. The docs-only merge does not
+invalidate the Phase 4 Auth tests, Release build, carve, or searches. Auth remains on its stable
 `0.1.0-alpha.0.827` platform pin. Platform-sync PR #393's Payment/Money consumer migration is green
 and open at remote head `6064e1f97df7a3fe386c26ea286755a0e28c9a2c`; its eventual merge must be
 reconciled before delivery but does not block the scheduled full branch review.
@@ -49,7 +53,7 @@ handoff; otherwise make PR preflight/reconciliation the next action.
 
 ## Completed work
 
-- Completed Phase 4 in this commit: migrated password-change and password-reset refusals to their
+- Completed Phase 4 in `d4ebf1c9d33a367fb642c013daa542c7d267a6b8`: migrated password-change and password-reset refusals to their
   operation-owned `UnitResult<TError>` contracts, mapped both Razor callers, and completed the
   `IAuthService` carrier cleanup while leaving reset-email requests completion-only.
 - Added direct service coverage for successful/refused change/reset operations, cancellation,
@@ -102,8 +106,9 @@ handoff; otherwise make PR preflight/reconciliation the next action.
   command-success boolean, functional carrier in Razor/Data shapes, active local-Core mode, runtime
   project reference, model/migration change, or non-Auth working-tree code path. `git diff --check`
   passed.
-- Fresh origin reconciliation found the branch zero behind
-  `6586122b82f1cca835db2537656ec96f40e9aaa7` with no PR. Platform-sync PR #393 is green and open at
+- Final origin reconciliation found the branch zero behind
+  `48bd0eaf5e8079d07302ec4e07dfdc78167427d2` after a docs/meta-only merge that did not invalidate
+  the Phase 4 gate, with no PR. Platform-sync PR #393 is green and open at
   remote head `6064e1f97df7a3fe386c26ea286755a0e28c9a2c`; Auth remains on the stable
   `0.1.0-alpha.0.827` pin until that sync lands.
 - No API/UI E2E was run locally because the merge queue owns the required full E2E gate.
@@ -215,6 +220,20 @@ action is full code review over the complete branch and incremental review after
 
 ## Event log
 
+### 2026-08-06 - Post-Phase 4 docs-only main transition reconciled
+
+- Action: Refetched origin after the Phase 4 commit exposed a new 12-commit base advance, verified the
+  incoming range, merged it cleanly, and reread the changed plan/checkpoint guidance before handoff.
+- Evidence: the incoming range changed only agent/plan documentation and closed Search plan artifacts;
+  it contained no Auth, solution, or integration-runner path. Merge commit
+  `d5ac70605eac829afac7d71c547520dc950b3fe9` is zero behind
+  `origin/main` `48bd0eaf5e8079d07302ec4e07dfdc78167427d2`; the tree was clean before
+  this ledger-only checkpoint.
+- Outcome: The Phase 4 evidence at `d4ebf1c9d33a367fb642c013daa542c7d267a6b8` remains valid, and
+  full branch review will start from the current base and updated plan lifecycle rules.
+- Follow-up: Run full code review over `origin/main..HEAD` only; do not push, open a PR, run E2E
+  locally, or begin delivery in that context.
+
 ### 2026-08-06 - Phase 4 password Result migration and exhaustive cleanup completed
 
 - Action: Migrated change-password and reset-password outcomes to operation-owned
@@ -225,7 +244,8 @@ action is full code review over the complete branch and incremental review after
   project-reference, and model/migration searches passed. The branch is zero behind fresh
   `origin/main` `6586122b82f1cca835db2537656ec96f40e9aaa7`; platform-sync PR #393 is green at
   `6064e1f97df7a3fe386c26ea286755a0e28c9a2c` and Auth remains on stable pin `0.827`.
-- Outcome: All four local implementation phases are complete without changing Razor disclosure or
+- Outcome: Commit `d4ebf1c9d33a367fb642c013daa542c7d267a6b8` completes all four local
+  implementation phases without changing Razor disclosure or
   success behavior, reset-email privacy/no-op behavior, EF models, migrations, wire contracts, or
   another service's runtime. Every caller-actionable Auth refusal and ordinary absence now uses the
   planned smallest owned in-process carrier.
