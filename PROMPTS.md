@@ -4,7 +4,8 @@
   ledger and its `## Next Steps` remains non-terminal, the response is incomplete until it ends with
   the exact two-line pointer below. “Implementation complete” is not “nothing remains” while review,
   PR, merge, publication, dependency, or platform-sync gates remain. A summary or paraphrased next
-  action does not substitute for the pointer. Repository Stop hooks enforce this invariant.
+  action does not substitute for the pointer. The registered in-flight owner wait described below is
+  the only exception. Trusted repository Stop hooks enforce this invariant.
 
 - Start with the worktree opener — `cd <absolute-worktree-path>`, or `/worktree create <Type>/<Name>`
   when the worktree doesn't exist yet — and keep it inside the paste-ready prompt.

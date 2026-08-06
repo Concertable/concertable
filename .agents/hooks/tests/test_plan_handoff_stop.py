@@ -3,6 +3,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -23,7 +24,28 @@ class PlanHandoffStopTests(unittest.TestCase):
     def tearDown(self):
         self.temp.cleanup()
 
-    def write_ledger(self, next_steps):
+    def write_ledger(self, next_steps, worktree=None):
+        declared_worktree = worktree or self.root
+        self.ledger.write_text(
+            "\n".join(
+                [
+                    "# Progress",
+                    "",
+                    f"- Worktree: `{declared_worktree}`",
+                    "- Branch: `Feature/launch_example`",
+                    "",
+                    "## Next Steps",
+                    "",
+                    next_steps,
+                    "",
+                    "## Completed work",
+                    "",
+                ]
+            ),
+            encoding="utf-8",
+        )
+
+    def write_ledger_without_next_steps(self):
         self.ledger.write_text(
             "\n".join(
                 [
@@ -31,10 +53,6 @@ class PlanHandoffStopTests(unittest.TestCase):
                     "",
                     f"- Worktree: `{self.root}`",
                     "- Branch: `Feature/launch_example`",
-                    "",
-                    "## Next Steps",
-                    "",
-                    next_steps,
                     "",
                     "## Completed work",
                     "",
@@ -100,6 +118,16 @@ class PlanHandoffStopTests(unittest.TestCase):
             "and do what its `## Next Steps` says."
         )
 
+    def input_without_ledger_reference(self, message):
+        transcript = self.root / "unrelated-transcript.jsonl"
+        record = {"type": "response_item", "payload": {"type": "message", "role": "user"}}
+        transcript.write_text(json.dumps(record), encoding="utf-8")
+        return {
+            "cwd": str(self.root),
+            "transcript_path": str(transcript),
+            "last_assistant_message": message,
+        }
+
     def test_blocks_local_completion_without_pointer(self):
         self.write_ledger("Run the repository code-review workflow, then open the PR.")
         result = evaluate(self.input_with_codex_transcript("Implementation is complete and committed."))
@@ -116,6 +144,17 @@ class PlanHandoffStopTests(unittest.TestCase):
         result = evaluate(self.input_with_codex_transcript("Next steps are code review and a PR."))
         self.assertEqual("block", result["decision"])
 
+    def test_pointer_followed_by_prose_does_not_pass(self):
+        self.write_ledger("Run the repository code-review workflow, then open the PR.")
+        result = evaluate(self.input_with_codex_transcript(f"{self.pointer()}\n\nLet me know."))
+        self.assertEqual("block", result["decision"])
+
+    def test_missing_next_steps_fails_closed(self):
+        self.write_ledger_without_next_steps()
+        result = evaluate(self.input_with_codex_transcript("Everything is complete."))
+        self.assertEqual("block", result["decision"])
+        self.assertIn("missing its required `## Next Steps`", result["reason"])
+
     def test_claude_transcript_blocks_missing_pointer(self):
         self.write_ledger("Run the repository code-review workflow, then open the PR.")
         result = evaluate(self.input_with_claude_transcript("Implementation is complete."))
@@ -130,6 +169,20 @@ class PlanHandoffStopTests(unittest.TestCase):
         self.write_ledger("Waiting for PR #123 to merge; its owner will surface this plan when ready.")
         result = evaluate(self.input_with_codex_transcript("Waiting for PR #123."))
         self.assertEqual({}, result)
+
+    def test_unrelated_turn_in_plan_worktree_needs_no_pointer(self):
+        self.write_ledger("Run the repository code-review workflow, then open the PR.")
+        with patch("plan_handoff_stop.branch_ledgers", return_value={self.ledger}) as fallback:
+            result = evaluate(self.input_without_ledger_reference("The answer is 42."))
+        self.assertEqual({}, result)
+        fallback.assert_not_called()
+
+    def test_missing_worktree_uses_create_opener(self):
+        missing = self.root.parent / "launch_not_created"
+        self.write_ledger("Implement the plan.", worktree=missing)
+        result = evaluate(self.input_with_codex_transcript("The plan is ready."))
+        self.assertEqual("block", result["decision"])
+        self.assertIn("/worktree create Feature/launch_example", result["reason"])
 
 
 if __name__ == "__main__":

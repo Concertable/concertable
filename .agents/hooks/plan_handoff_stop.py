@@ -195,8 +195,17 @@ def expected_pointer(path):
     plan = path.with_name(path.name.removesuffix("_PROGRESS.md") + "_PLAN.md")
     if not plan.is_file():
         raise ValueError(f"Missing companion plan for {path}")
-    opener_path = str(root)
-    opener = f'cd "{opener_path}"' if " " in opener_path else f"cd {opener_path}"
+    text = path.read_text(encoding="utf-8")
+    declared_worktree = metadata(text, "Worktree")
+    owner_branch = metadata(text, "Branch")
+    if declared_worktree and Path(declared_worktree).is_dir():
+        opener_path = str(Path(declared_worktree).resolve())
+        opener = f'cd "{opener_path}"' if " " in opener_path else f"cd {opener_path}"
+    elif owner_branch:
+        opener = f"/worktree create {owner_branch}"
+    else:
+        opener_path = str(root)
+        opener = f'cd "{opener_path}"' if " " in opener_path else f"cd {opener_path}"
     plan_relative = plan.relative_to(root).as_posix()
     ledger_relative = path.relative_to(root).as_posix()
     return (
@@ -208,10 +217,17 @@ def expected_pointer(path):
 def evaluate(data):
     cwd = Path(data.get("cwd") or ".").resolve()
     records = transcript_turn(data.get("transcript_path") or data.get("transcriptPath"))
-    ledgers = transcript_ledgers(records, cwd) | branch_ledgers(git_root(cwd))
+    ledgers = transcript_ledgers(records, cwd)
+    if not records:
+        ledgers |= branch_ledgers(git_root(cwd))
     active = []
     for path in sorted(ledgers):
         body = next_steps(path.read_text(encoding="utf-8"))
+        if body is None:
+            return {
+                "decision": "block",
+                "reason": f"HANDOFF GATE: {path.name} is missing its required `## Next Steps` section.",
+            }
         if not is_terminal(body):
             active.append((path, expected_pointer(path)))
     if not active:
@@ -220,8 +236,14 @@ def evaluate(data):
         "\r\n", "\n"
     )
     missing = [(path, pointer) for path, pointer in active if pointer not in message]
-    if not missing:
+    ending = message.rstrip()
+    ends_with_pointer = any(
+        ending.endswith(pointer) or ending.endswith(f"{pointer}\n```") for _, pointer in active
+    )
+    if not missing and ends_with_pointer:
         return {}
+    if not missing:
+        missing = active
     pointers = "\n\n".join(f"```text\n{pointer}\n```" for _, pointer in missing)
     names = ", ".join(path.name for path, _ in missing)
     return {
