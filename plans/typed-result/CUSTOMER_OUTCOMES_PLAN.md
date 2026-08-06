@@ -200,7 +200,7 @@ tier and receives no skip label.
 - Create Preference-owned UnitTests/IntegrationTests, wire their solution/script discovery, run the
   full per-phase verification contract, and commit the checkpoint.
 
-### Phase 3 — User Option and module-list normalization
+### Phase 3 — User Option and module-list normalization ✅ DONE (2026-08-06)
 
 - Convert `GetMeAsync` to Option and `GetByIdsAsync` repository/module contracts to
   `IReadOnlyList<T>`; update Preference and UserClaims consumers without changing their wire behavior.

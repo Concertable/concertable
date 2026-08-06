@@ -5,11 +5,25 @@
 - Branch: `Feature/typed-result_customer-outcomes`
 - PR: not opened
 - Dependency/package gates: owned Kernel foundation PR #290 and platform sync #291 are shipped; no Payment/B2B package dependency; platform-sync PR #373 shipped `0.1.0-alpha.0.814` green in merge commit `9169107c0`; PR #282 remains the exclusive open owner of Ticket/Concert/Customer Payment work and is not a dependency
-- Last reconciled: 2026-08-05T19:09:24+01:00 from current `origin/main` `0ed29d8f0`, local refs/worktrees, GitHub PR metadata/checks, PR #282 ownership, the absence of an open platform-sync PR, Docker, the green Phase 2 candidate tree, and scoped inventories
+- Last reconciled: 2026-08-06T10:52:00+01:00 from current `origin/main` `48bd0eaf5e`, local refs/worktrees, GitHub PR metadata, PR #282 ownership, green platform-sync PR #393, merge commit `9a3a947b7`, and the complete Phase 3 verification gate
 
 ## Current state
 
-Phases 1 and 2 are complete in local commits. Preference now owns exact duplicate-create,
+Phases 1 through 3 are complete in local commits after this checkpoint. User profile absence is
+`Option<CustomerDto>` at the application boundary; repository and module multi-user lookups are
+materialized `IReadOnlyList` values; the existing Preference and UserClaims consumers remain
+wire-compatible; and `SaveLocationAsync` remains plain. User unit coverage passed 14/14, direct
+Customer User integration passed 6/6, and the `user` integration wrapper passed both discovered
+projects: B2B User 3/3 and Customer User 6/6.
+
+Every Phase 3 gate is green: User unit 14/14, User integration 6/6 through the module wrapper,
+Shared.Api 51/51, Release solution build with 0 errors, isolated Customer carve of 36 package-clean
+projects with 0 errors, scoped carrier/collection/ownership inventories, and `git diff --check`.
+The long worktree's default Debug native-output path reaches 259 characters and prevents Windows
+from loading `Microsoft.Data.SqlClient.SNI.dll`; the supported short `--artifacts-path
+C:\tmp\CustomerUserIntegrationArtifacts` route passed the isolated reproduction and full wrapper.
+
+Preference now owns exact duplicate-create,
 missing-update, and foreign-update outcomes; ordinary user-preference absence is `Option`; returned
 queries and mappers are materialized `IReadOnlyList` values; and successful updates return the
 tracked entity without a nullable re-read. The HTTP terminal preserves 200/204 reads, 201 create with
@@ -17,8 +31,8 @@ no body, 200 update, and typed 403/404/409 ProblemDetails.
 
 Every Phase 2 gate is green: Preference unit 19/19, Preference integration 7/7, Shared.Api 51/51,
 Release solution build with 0 errors, isolated Customer carve of 36 package-clean projects with 0
-errors, scoped carrier/collection/ownership inventories, and `git diff --check`. The branch remains
-0 commits behind `origin/main` `0ed29d8f0` and contains no excluded Ticket, Concert, Payment,
+errors, scoped carrier/collection/ownership inventories, and `git diff --check`. The branch is 0
+commits behind `origin/main` `48bd0eaf5e` and contains no excluded Ticket, Concert, Payment,
 purchase, checkout, shared Kernel API, model, or migration edit. Local E2E was correctly not run; the
 final PR requires full merge-queue E2E.
 
@@ -30,23 +44,17 @@ shared `Directory.Packages.props` version entry, so that entry stays.
 
 ## Next Steps
 
-Implement **Phase 3 — User Option and module-list normalization** from the plan in this worktree.
-Before editing, fetch origin and reconcile the branch if it is behind and clean; re-check PR #282's
-exclusive Ticket/Concert/Payment ownership and the current platform-sync gate. Do not edit any
-Ticket, Concert, Customer Payment client/mock, purchase/checkout, or related coverage file.
+Implement Phase 4 — Venue and Artist detail Options. Convert only the application services to Option,
+preserving nullable repositories and the existing 200/404 HTTP endpoints. Add the owned Venue and
+Artist unit/integration test projects, solution wiring, and integration-runner discovery described by
+the plan.
 
-Convert `IUserService.GetMeAsync` to `Option<CustomerDto>` at the application boundary; normalize
-`IUserRepository.GetByIdsAsync`, `IUserModule.GetByIdsAsync`, and `UserModule` to materialized
-`IReadOnlyList<T>` results; and update the Preference and UserClaims consumers without changing
-their HTTP behavior. Keep `SaveLocationAsync` plain and preserve authorization, geocoding,
-cancellation, and persistence faults as exceptions. Extend User-owned unit/integration coverage for
-Some/None, populated/empty lists, authorization, and successful location/profile flows.
-
-Run the full Phase 3 gate from the plan: User unit and integration suites through
-`integration-debug`, Shared.Api architecture tests, Release solution build, CI-equivalent Customer
-carve, scoped carrier/collection/ownership inventories, and `git diff --check`. Do not run local E2E.
-Update the plan and ledger, check off Phase 3, and commit the green checkpoint locally. Do not push.
-End with the pointer-only resume prompt from this ledger.
+Run the affected unit and integration suites through the `integration-debug` workflow, Shared.Api,
+Release solution build, the CI-equivalent Customer carve, scoped carrier/collection/ownership
+inventories, and `git diff --check`. Re-fetch and reconcile only if the branch is behind and the tree
+can be preserved safely; re-check PR #282 ownership and platform sync. Do not run local E2E. Update
+the plan and ledger, check off Phase 4, and commit the green checkpoint locally. Do not push. End with
+the pointer-only resume prompt from this ledger.
 
 ## Completed work
 
@@ -62,6 +70,8 @@ End with the pointer-only resume prompt from this ledger.
 - Completed Phase 2 Preference-owned create/update Results, user-preference Options, materialized
   query lists, unchanged HTTP terminals, owned unit/integration projects, solution wiring, and
   integration-runner discovery in this commit.
+- Completed Phase 3 User profile Option, materialized repository/module lists, existing-consumer
+  compatibility, HTTP coverage, and owned unit coverage in this commit.
 
 ## Verification
 
@@ -137,6 +147,39 @@ End with the pointer-only resume prompt from this ledger.
   changed; `git diff --check` passed.
 - Final `git fetch origin --quiet` left the branch 0 commits behind `origin/main` `0ed29d8f0`.
 - Local E2E was not run because the final behavior-changing PR requires the full merge-queue tier.
+- Phase 3 User unit suite passed 14/14 with 0 failed and 0 skipped, covering profile Some/None,
+  populated/empty materialized module lists, successful location/profile mapping, and the
+  missing-user invariant.
+- The first `scripts/integration.ps1 user` run passed the incidental B2B User project 3/3, then the
+  Customer project exposed controller compile errors because MVC method groups did not convert both
+  `Option.Match` arms to `ActionResult<CustomerDto>`. Explicit context-typed lambdas fixed the
+  compile defect.
+- The direct Customer User integration retry compiled the corrected candidate, then all six tests
+  stopped before fixture startup when the default Debug native-output path reached 259 characters.
+  Windows returned `0x800700CE` while loading `Microsoft.Data.SqlClient.SNI.dll`; an isolated Debug
+  reproduction confirmed the same native-loader failure.
+- Direct Customer User integration in Release passed 6/6. The isolated Debug reproduction passed
+  1/1 with `--artifacts-path C:\tmp\CustomerUserIntegrationArtifacts`, and the full wrapper through
+  the same short root passed B2B User 3/3 and Customer User 6/6.
+- Shared.Api Release architecture/terminal tests passed 51/51 with 0 failed and 0 skipped.
+- `dotnet build api/Concertable.slnx --configuration Release` succeeded with 0 errors and 8
+  pre-existing warnings.
+- The CI-equivalent Customer carve copied the final production candidate to an isolated
+  `C:\tmp\CarveCustomer-*` directory, discovered and built all 36 non-test/non-AppHost projects from
+  package references with `-p:MinVerSkip=true`, and succeeded with 0 errors; the verified temporary
+  directory was removed afterward.
+- Scoped inventories found User Option only at the application/service/HTTP terminal, only the
+  preserved nullable repository single-item lookup, materialized multi-item list contracts, and the
+  planned `SaveLocationAsync` missing-user invariant exception. No excluded PR #282-owned path is in
+  the branch diff, and `git diff --check` passed.
+- The dirty Phase 3 tree was preserved across the 65-commit base advance and a later 12-commit
+  documentation-only advance. Merge commits `6aa81a8130` and `9a3a947b7` leave the branch 0 commits
+  behind `origin/main` `48bd0eaf5e`; the Review conflict preserves current authorization attributes
+  and the typed create terminal.
+- PR #282 remains open at head `26ed63b896` and exclusively owns Ticket/Concert/Customer Payment.
+  Platform-sync PR #393 is open with every build, carve, unit, and integration check green. This
+  branch has no PR and has not been pushed.
+- Local E2E was not run because the final behavior-changing PR requires the full merge-queue tier.
 
 ## Reviews
 
@@ -171,7 +214,9 @@ Phase 5 requires `/code-review` before delivery.
   here.
 - There are no blocking package dependencies. A platform-sync PR that is pending but not red does not
   block local planning; any red sync discovered before implementation must be resolved first.
-- Docker is responsive, Phase 2 is green, and the branch is current. Phase 3 is ready to start.
+- In this long worktree, default Debug output puts the x64 SqlClient SNI DLL at a 259-character path,
+  which Windows rejects with `ERROR_FILENAME_EXCED_RANGE`. Use a short supported `--artifacts-path`
+  for integration runs from this worktree; the binaries and application behavior are otherwise green.
 
 ## Event log
 
@@ -253,6 +298,32 @@ Phase 5 requires `/code-review` before delivery.
 - Outcome: Phase 2 is complete in this commit with provider/cancellation faults still exception-based,
   unchanged 201/200/204 success payloads, no local E2E duplication, and no push.
 - Follow-up: Implement Phase 3 User Option and module-list normalization with its full local gate.
+
+### 2026-08-05 — Phase 3 implemented; verification paused at Docker
+
+- Action: Implemented User profile Option and eager multi-user lists, added service/module unit
+  coverage, strengthened existing profile/location HTTP assertions, and entered the
+  `integration-debug` workflow.
+- Evidence: User unit tests passed 14/14; the incidental B2B User integration project passed 3/3;
+  the Customer project compile defect in the MVC Option terminal was diagnosed and fixed; the
+  corrected project compiled before all six cases stopped at fixture startup with the same
+  Testcontainers Docker-endpoint error; `docker ps` then timed out.
+- Outcome: Phase 3 code is implemented and unit-green but remains uncommitted and incomplete. No
+  Customer integration scenario executed, and the broader build/carve/inventory gates have not run.
+- Follow-up: Start Docker Desktop, resume the exact integration and remaining Phase 3 gates from
+  `## Next Steps`, then check off and commit only when every gate is green.
+
+### 2026-08-06 — Phase 3 User outcomes completed
+
+- Action: Reconciled the branch with current main, diagnosed the Windows native-loader failure in
+  the long Debug output path, reran the User integration wrapper through a short artifacts root, and
+  completed every remaining Phase 3 gate.
+- Evidence: User unit 14/14; direct Customer User integration 6/6; wrapper B2B User 3/3 and Customer
+  User 6/6; Shared.Api 51/51; Release solution and 36-project Customer carve both 0 errors; scoped
+  inventories and `git diff --check` clean; branch 0 behind `origin/main` `48bd0eaf5e`; PR #282-owned
+  paths absent; platform-sync PR #393 green.
+- Outcome: Phase 3 is complete in this commit with no local E2E duplication and no push.
+- Follow-up: Implement Phase 4 Venue and Artist Options, owned tests, and its full local gate.
 
 ## Resume prompt
 
