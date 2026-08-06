@@ -4,7 +4,7 @@ The .NET app. C# code conventions: @./agents/CODE_CONVENTIONS.md (notably: loggi
 
 ## These are microservices — read [`ARCHITECTURE.md`](./ARCHITECTURE.md) before crossing a service boundary
 
-The monorepo is a convenience only. Each service is independently owned and will split into its own repo with its own developers. Design every change as if that split already happened: *would this still work if this service lived alone?*
+The monorepo is a convenience only. Each service is independently owned and will split into its own repo with its own developers. Design every change as if that split already happened: *would this still work if this service lived alone?* So a service's own rules belong in its own `AGENTS.md`/`ARCHITECTURE.md` (thin, inheriting upward), not here — root [`AGENTS.md`](../AGENTS.md) "Doc locality".
 
 Two kinds of service, two rules (full rationale in [`ARCHITECTURE.md`](./ARCHITECTURE.md)):
 

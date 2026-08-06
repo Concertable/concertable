@@ -35,9 +35,11 @@ transition as it happens**, not just phase summaries: user direction and scope c
 implementation, commits, verification commands and results, reviews and every
 finding's disposition, fixes after review, PR creation and checks, merges, publications, platform
 syncs, decisions, discoveries, deviations, blockers, failed approaches worth avoiding, and external
-gates. "A review happened" is insufficient: identify the review type and range, its artifact, whether
-findings remain open, and the commit or deferral that resolved each one. Never leave a project fact
-only in chat because it happened between phase boundaries.
+gates — all scoped to the plan's substance (code, design, delivery, gate state). Not tooling,
+environment or git mishaps, or incident narration; record the durable fact ("committed as `<sha>`"),
+never the drama. "A review happened" is insufficient: identify the review type and range, its artifact,
+whether findings remain open, and the commit or deferral that resolved each one. Never leave a project
+fact only in chat because it happened between phase boundaries.
 
 Every workflow that advances or evaluates plan-managed work owns this update before it ends. That
 includes implementation, `/code-review`, `/big-review`, `/incremental-review`, addressing findings,
@@ -92,6 +94,28 @@ multiple PRs (e.g. a Kernel change and the B2B change that depends on it), do th
 but the plan stays open until **all** of them land and the codebase is in sync again. Merging the
 B2B PR and calling the plan done while Kernel still speaks the old shape is the thing to never do.
 Don't `git rm` the plan (Lifecycle 5) until that final synced state is in.
+
+## Cross-plan blockers — establish the return path before stopping
+
+When a phase can't proceed because it depends on work owned by a **different** plan in the same epic
+(e.g. B2B's migration waiting on Payment's), don't guess the dependency's state from memory. Read the
+epic roadmap as the cross-plan dependency map, find which sibling plan owns the blocker, and open that
+plan's `_PROGRESS.md` for its live state (merged? published? platform-sync green?). Only then proceed or
+record the exact unlanded gate.
+
+Blocking is a two-ledger state transition:
+
+1. In the waiting ledger, make `## Next Steps` name the owner ledger and the exact terminal gate. The
+   waiting worktree does not poll after that checkpoint.
+2. In the owner ledger, add a `## Downstream handoffs` entry with the waiting ledger, its worktree, and
+   the same gate. This is the durable return path.
+3. When the owner crosses the gate, update the waiting ledger's current state, `## Next Steps`, and
+   event log in that same delivery session, then surface its exact resume prompt to Tommy.
+4. Do not close or delete the owner plan/ledger while a downstream handoff remains undispatched.
+
+Reporting "waiting for X" without registering the dependent in X's ledger is incomplete: it loses the
+only reliable signal for returning to the work. The roadmap is used at runtime for navigation, never
+cited inside a plan (see [`ROADMAP.md`](ROADMAP.md)).
 
 ## Lifecycle
 
@@ -187,11 +211,13 @@ point where the context becomes disposable. Don't carry unwritten state across a
 - Every plan `.md` carries a pointer near its top to its ledger(s) and holds no next-action prose of
   its own. One worktree: "**Next steps live in @plans/<STEM>_PROGRESS.md → `## Next Steps`**" (the `@`
   pulls the ledger when you tag the plan). Parallel worktrees: it lists each ledger with its worktree.
-- Because the steps live in the ledger, a plan resume/handoff prompt is ONLY the pointer — literally
-  `cd <worktree>` then "Read @plans/<PLAN>_PLAN.md and @plans/<its-worktree-ledger>_PROGRESS.md and do what
-  `## Next Steps` says." No branch to verify, checkpoints, gates, commands, or steps in the prompt —
-  every such specific lives in the ledger, never restated, so the prompt can't drift. A handoff always
-  comes from one worktree, so it names that worktree's ledger. See [`../../PROMPTS.md`](../../PROMPTS.md).
+- Because the steps live in the ledger, a plan resume/handoff prompt is ONLY the pointer — an opener line
+  then "Read @plans/<PLAN>_PLAN.md and @plans/<its-worktree-ledger>_PROGRESS.md and do what `## Next Steps`
+  says", naming one worktree's ledger. The opener is `/worktree create <Type>/<epic>_<name>` when that
+  worktree doesn't exist yet — a freshly-written plan, or a clear with no live worktree — so implementation
+  runs in an isolated worktree, never the main checkout; it's `cd <worktree>` once the worktree exists. No
+  branch to verify, checkpoints, gates, commands, or steps in the prompt — every such specific lives in the
+  ledger, never restated, so the prompt can't drift. See [`../../PROMPTS.md`](../../PROMPTS.md).
 - `/resume-plan` takes a **ledger**, a **plan**, or a **worktree**. A ledger — or a plan plus a named
   worktree — resolves straight to that worktree: `cd` there and do its `## Next Steps`. A plan alone
   resolves by the ledgers whose `- Plan:` names it: one → resume it; several → list them and ask which.

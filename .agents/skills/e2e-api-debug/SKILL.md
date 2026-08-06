@@ -16,7 +16,7 @@ When the user invokes this skill they are delegating the **entire** run → diag
 The suite tests the CURRENT state of the code. If something is failing — a test, a build, a service startup, a health check — that failure is the thing to debug. "Fix" means make the failing step work, never make it stop running. Concretely banned moves:
 
 - **Never suppress builds** (`--no-build`, `SuppressBuild`, skip-build flags) because a build hung — that swaps the failure for silently running stale binaries.
-- Never inflate `Polling.UntilAsync` / `WaitFor*` timeouts to outlast a hang instead of finding what's hanging. A polling timeout is a *signal that the async chain didn't complete* — chase the chain, don't widen the window.
+- **Never raise `Polling.UntilAsync` / `WaitFor*` timeouts to make a flaky wait pass** — not for a "hang", a "genuinely-slow webhook", or "CI load". A blown polling window is a *signal the async chain didn't complete* — chase the chain and fix the slow/broken thing. This suite has **no quarantine lane or baseline** (every API E2E test must pass), so a genuine flake is a determinism bug to fix or surface, never a window to widen.
 - Never disable, skip, or stub the failing resource / handler / check so the rest goes green.
 
 If a step hangs with no useful output, reproduce it and observe it live (process trees, Aspire resource states, Docker containers) — do not remove the step. A bypass is only acceptable when the user explicitly asks for it after seeing the diagnosis.
@@ -212,7 +212,7 @@ If the resource logs, HTTP bodies, and DB/Stripe state still don't explain *why*
 
 ## Notes
 
-- These tests make **real Stripe test-mode calls** and use a **real ASB emulator** — they are not hermetic the way integration tests are. Flakiness is usually a too-tight `Polling` window on a genuinely-slow webhook, OR cross-suite contention (never run an API E2E and a UI E2E app at the same time — that's the `e2e_parallel_execution` failure root; the wrapper + `MaxCpuCount=1` serialize them).
+- These tests make **real Stripe test-mode calls** and use a **real ASB emulator** — they are not hermetic the way integration tests are. Flakiness is usually a genuinely-slow/unreliable dependency (e.g. a webhook that occasionally lands late), OR cross-suite contention (never run an API E2E and a UI E2E app at the same time — that's the `e2e_parallel_execution` failure root; the wrapper + `MaxCpuCount=1` serialize them). The fix is to make the dependency reliable (or serialize the suites) — **not** to widen the `Polling` window to ride it out.
 - The HTTP client here is a plain `new HttpClient()` against the deployed URL — there is **no** per-test `ITestOutputHelper` server-log capture like integration tests have. Server-side detail comes from the **forwarded Aspire resource logs** in the console output instead.
 - Seeding runs via `DevDbInitializer` (`IDevSeeder`, the dev/E2E path) — **not** `ITestSeeder`. If seed state is wrong, fix the dev seeders, and never seed event-sourced/read-model/payout rows directly (see `api/docs/SEEDING_CONVENTIONS.md`, memory `idevseder_not_itestseeder_for_e2e`).
 - This suite has **no `E2E_BASELINE.md`** — that baseline is UI-only (Reqnroll DisplayNames). Every API E2E test is expected to pass; any failure is a regression, which is why `./e2e.ps1 api run` exits non-zero on failure.

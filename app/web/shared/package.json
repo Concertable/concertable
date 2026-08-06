@@ -1,0 +1,154 @@
+{
+  "name": "@concertable/web",
+  "version": "0.1.0",
+  "private": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Concertable/concertable.git",
+    "directory": "app/web/shared"
+  },
+  "type": "module",
+  "files": [
+    "dist",
+    "src/index.css"
+  ],
+  "scripts": {
+    "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
+    "build": "npm run clean && tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json --resolve-full-paths --resolve-full-extension .js",
+    "test": "vitest run",
+    "prepack": "npm run build"
+  },
+  "exports": {
+    "./features/artists": {
+      "types": "./dist/features/artists/index.d.ts",
+      "import": "./dist/features/artists/index.js",
+      "default": "./dist/features/artists/index.js"
+    },
+    "./features/auth": {
+      "types": "./dist/features/auth/index.d.ts",
+      "import": "./dist/features/auth/index.js",
+      "default": "./dist/features/auth/index.js"
+    },
+    "./features/concerts": {
+      "types": "./dist/features/concerts/index.d.ts",
+      "import": "./dist/features/concerts/index.js",
+      "default": "./dist/features/concerts/index.js"
+    },
+    "./features/dashboard": {
+      "types": "./dist/features/dashboard/index.d.ts",
+      "import": "./dist/features/dashboard/index.js",
+      "default": "./dist/features/dashboard/index.js"
+    },
+    "./features/messaging": {
+      "types": "./dist/features/messaging/index.d.ts",
+      "import": "./dist/features/messaging/index.js",
+      "default": "./dist/features/messaging/index.js"
+    },
+    "./features/notifications": {
+      "types": "./dist/features/notifications/index.d.ts",
+      "import": "./dist/features/notifications/index.js",
+      "default": "./dist/features/notifications/index.js"
+    },
+    "./features/payments": {
+      "types": "./dist/features/payments/index.d.ts",
+      "import": "./dist/features/payments/index.js",
+      "default": "./dist/features/payments/index.js"
+    },
+    "./features/reviews": {
+      "types": "./dist/features/reviews/index.d.ts",
+      "import": "./dist/features/reviews/index.js",
+      "default": "./dist/features/reviews/index.js"
+    },
+    "./features/search": {
+      "types": "./dist/features/search/index.d.ts",
+      "import": "./dist/features/search/index.js",
+      "default": "./dist/features/search/index.js"
+    },
+    "./features/user": {
+      "types": "./dist/features/user/index.d.ts",
+      "import": "./dist/features/user/index.js",
+      "default": "./dist/features/user/index.js"
+    },
+    "./features/venues": {
+      "types": "./dist/features/venues/index.d.ts",
+      "import": "./dist/features/venues/index.js",
+      "default": "./dist/features/venues/index.js"
+    },
+    "./features/*": {
+      "types": "./dist/features/*.d.ts",
+      "import": "./dist/features/*.js",
+      "default": "./dist/features/*.js"
+    },
+    "./components/*": {
+      "types": "./dist/components/*.d.ts",
+      "import": "./dist/components/*.js",
+      "default": "./dist/components/*.js"
+    },
+    "./context/*": {
+      "types": "./dist/context/*.d.ts",
+      "import": "./dist/context/*.js",
+      "default": "./dist/context/*.js"
+    },
+    "./hooks/*": {
+      "types": "./dist/hooks/*.d.ts",
+      "import": "./dist/hooks/*.js",
+      "default": "./dist/hooks/*.js"
+    },
+    "./lib/*": {
+      "types": "./dist/lib/*.d.ts",
+      "import": "./dist/lib/*.js",
+      "default": "./dist/lib/*.js"
+    },
+    "./providers/*": {
+      "types": "./dist/providers/*.d.ts",
+      "import": "./dist/providers/*.js",
+      "default": "./dist/providers/*.js"
+    },
+    "./types/*": {
+      "types": "./dist/types/*.d.ts",
+      "import": "./dist/types/*.js",
+      "default": "./dist/types/*.js"
+    },
+    "./index.css": "./src/index.css",
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "restricted",
+    "registry": "https://npm.pkg.github.com"
+  },
+  "dependencies": {
+    "@concertable/shared": "*",
+    "@stripe/react-stripe-js": "^3",
+    "@stripe/stripe-js": "^4",
+    "@tanstack/react-query": "^5.90.21",
+    "@tanstack/react-router": "^1",
+    "@tanstack/react-table": "^8.21.3",
+    "@vis.gl/react-google-maps": "^1",
+    "axios": "^1.13.6",
+    "class-variance-authority": "^0.7",
+    "clsx": "^2",
+    "dayjs": "^1.11.20",
+    "embla-carousel-react": "^8",
+    "framer-motion": "^12",
+    "lucide-react": "^0.468",
+    "oidc-client-ts": "^3.5.0",
+    "radix-ui": "^1",
+    "react-day-picker": "^9",
+    "react-oidc-context": "^3",
+    "recharts": "^3.2.1",
+    "sonner": "^2",
+    "tailwind-merge": "^3",
+    "use-places-autocomplete": "^4"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.12.0",
+    "@types/react": "^19.2.14",
+    "tsc-alias": "^1.9.1",
+    "typescript": "~5.9.3",
+    "vite": "^8.0.16",
+    "vitest": "^4.1.10"
+  }
+}
