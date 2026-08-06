@@ -22,7 +22,7 @@ current-summary section affected by the event:
 
 - worktree, branch, PR, and dependency or package gates;
 - current state and partial or uncommitted work that must be preserved;
-- `## Next Steps` — the paste-ready next prompt (self-contained steps), including the prerequisite that blocks it when applicable;
+- `## Next Steps` — the single resolved next action as self-contained steps, including the prerequisite that blocks it when applicable;
 - completed work with commit or PR evidence;
 - verification commands and outcomes, tied to the code state they verified;
 - decisions, discoveries, blockers, and deviations.

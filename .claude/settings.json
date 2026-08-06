@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/handoff-stop-check.py\"",
+            "command": "python \"${CLAUDE_PROJECT_DIR:-.}/.agents/hooks/plan_handoff_stop.py\"",
             "timeout": 15
           }
         ]
