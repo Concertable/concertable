@@ -5,13 +5,14 @@
 - Branch: `Feature/launch_tenant-config-surface`
 - PR: not opened
 - Dependency/package gates: no implementation dependency; full merge-queue E2E and post-merge platform sync required
-- Last reconciled: 2026-08-05 against branch `Feature/launch_tenant-config-surface` at `origin/main`
+- Last reconciled: 2026-08-06 against branch `Feature/launch_tenant-config-surface` after merging current `origin/main`
 
 ## Current state
 
-Both implementation phases are committed and all local gates are green. The Tenant aggregate and
-Organization surface own the nullable overrides and platform-default fallback; Concert consumes
-effective values for PRS, supplier VAT, supplier payment terms, and venue cancellation notice.
+Both implementation phases are committed and the branch is current with `origin/main`, including the
+landed money-value refactor. The Tenant aggregate and Organization surface own the nullable overrides
+and platform-default fallback; Concert consumes effective values for PRS, supplier VAT, supplier
+payment terms, and venue cancellation notice.
 
 ## Next Steps
 
@@ -51,6 +52,12 @@ Then open the PR with full merge-queue E2E and own the post-merge platform-sync 
 - Supplier payment-terms ownership correction: Concert unit 82/82 and targeted B2B integration 1/1
   passed.
 - Final `dotnet build api/Concertable.slnx`: succeeded with 0 errors (5 existing warnings).
+- Post-sync `dotnet build api/Concertable.slnx`: succeeded with 0 errors (9 existing warnings).
+- Post-sync Tenant unit tests: 106/106 passed.
+- Post-sync Concert unit tests: 82/82 passed.
+- Post-sync SQL integration rerun did not start because both `docker ps` and
+  `docker desktop status` timed out against the non-responsive local Docker Desktop control plane;
+  the pre-sync B2B Concert 146/146 result remains green.
 
 ## Reviews
 
@@ -64,8 +71,8 @@ Then open the PR with full merge-queue E2E and own the post-merge platform-sync 
   sibling worktree above.
 - `TaxCompliance` carries the music-licence attestation and the Organization form already round-trips
   it; the new configuration extends this path rather than creating another subsystem.
-- The parallel money-value-type branch may overlap settlement/VAT seams; whichever lands second must
-  rebase there.
+- The money-value-type branch landed on `origin/main`; merging it produced no textual conflicts, and
+  the post-sync full solution build plus affected unit suites remained green.
 - Payment terms are supplier-owned: artist for FlatFee/DoorSplit/Versus and venue for VenueHire,
   matching the existing settlement-payee and VAT supply direction.
 - The long sibling worktree path exceeded the Windows native-loader limit for
@@ -75,7 +82,8 @@ Then open the PR with full merge-queue E2E and own the post-merge platform-sync 
 - Two full-build attempts reached Playwright asset copies without compiler errors but exhausted C:.
   Removing every generated `bin`/`obj` beside a project recovered the missing nested outputs; the
   third exact build then passed without deleting shared Docker images or caches.
-- No code, test, or environment blocker remains.
+- No code or test blocker remains. A non-responsive local Docker Desktop control plane blocks only a
+  repeat of the already-green SQL integration suite; full E2E remains assigned to the merge queue.
 
 ## Event log
 
@@ -113,6 +121,18 @@ Then open the PR with full merge-queue E2E and own the post-merge platform-sync 
 - Evidence: `dotnet build api/Concertable.slnx` succeeded with 0 errors and 5 existing warnings.
 - Outcome: every local Phase 2 verification gate is green.
 - Follow-up: Phase 2 committed as `a9ca579a9`; run the formal branch review before PR delivery.
+
+### 2026-08-06 — synchronized with current main
+
+- Action: merged current `origin/main`, including PR #390's money-value refactor, then rebuilt the
+  full solution and reran the affected Tenant and Concert unit suites.
+- Evidence: merge completed without conflicts; `dotnet build api/Concertable.slnx` succeeded with
+  0 errors and 9 existing warnings; Tenant unit 106/106 and Concert unit 82/82 passed.
+- Outcome: the tenant-configuration settlement/VAT seam compiles and behaves correctly against the
+  landed payment contract. The SQL integration rerun did not start because the local Docker Desktop
+  control plane timed out; the earlier B2B Concert integration result is 146/146 green.
+- Follow-up: run the formal branch review before PR delivery; full E2E remains required in the merge
+  queue.
 
 ## Resume prompt
 
