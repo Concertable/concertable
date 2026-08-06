@@ -3,13 +3,14 @@
 - Plan: `plans/launch/MONEY_VALUE_TYPE_PLAN.md`
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable.worktrees/Refactor/launch_money-value-type`
 - Branch: `Refactor/launch_money-value-type` (off `origin/main` @ `55c807784`)
-- PR: `#390 — https://github.com/Concertable/concertable/pull/390` (Phase 4 + Phase 5 publisher; full E2E)
+- PR1: `#390` (Phase 4 + Phase 5 publisher; full E2E) — **MERGED**, published `0.1.0-alpha.0.830`.
+- Sync PR: `#393 — chore/platform-sync-0.1.0-alpha.0.830` (Phase 5 consumer migration). Worktree: `C:/Users/TommySeery/source/repos/Concertable.worktrees/chore/platform-sync-0.1.0-alpha.0.830`.
 - Dependency/package gates: Phase 5 is a breaking published-contract change (`Concertable.Payment.Client`) → publish-first; consumers migrate in the `chore/platform-sync-*` PR. Coordinate the B2B settlement/VAT seam with `Feature/launch_tenant-config-surface` (whichever lands second rebases).
 - Last reconciled: 2026-08-05, off `origin/main` worktree evidence (grep gate + file reads).
 
 ## Current state
 
-Fresh worktree off `origin/main`. Phases 1 & 2 already merged (see reconstructed baseline below). Phase 3 (platform fee) is out of scope here — owned by `PLATFORM_COMMISSION_PLAN.md` / PR #296. Remaining: Phase 4 (Customer, done in-tree) and Phase 5 (Contract signature swap — publisher side done in-tree, consumer side deferred to the sync PR).
+PR1 (#390) **merged** and published `Concertable.Platform 0.1.0-alpha.0.830`. Sync PR **#393** migrates the B2B `Concert` + Customer `Ticket` consumers (call sites, `ISettlementAmountResolver.ResolveGrossAsync`, `InvoiceIssuer` VAT seam, mocks, Moq tests) to the `Money` client/resolver signatures — **applied in the sync worktree, all affected projects build green, pushed** (see event log). `deal.Fee`/`HireFee` → `Money` is **deferred** to a follow-up: it needs an EF ComplexProperty schema change + DB re-scaffold that couldn't be verified in the disk/MAX_PATH-constrained env — the field stays `decimal`, lifted via `Money.Gbp(deal.Fee)` at the boundary (Phase-4 precedent), logged in `api/Concertable.B2B/TECH_DEBT.md`. The payment boundary is fully money-typed and the **DoD grep gate passes**. Remaining lifecycle: sync PR #393 → green/merged, then close out plan + ledger. Phases 1 & 2 merged earlier; Phase 3 (platform fee) is out of scope (owned by `PLATFORM_COMMISSION_PLAN.md` / PR #296).
 
 **PR1 edits applied in-tree (uncommitted, pending build/test):**
 - Phase 4: `TicketService.cs:130` → `Money.Gbp(concert.Price * quantity).ToMinorUnits()` (+ using).
@@ -87,9 +88,27 @@ Reconciliation findings vs the plan's Phase 4/5 text:
 - Outcome: PR1 open, awaiting merge-queue checks.
 - Follow-up: verify branch currency vs `main`, enable auto-merge (`/merge`), confirm loop; then own the sync PR.
 
+### 2026-08-06 — PR1 merged + 0.830 published
+
+- Action: `/merge` on #390 (updated current with `main`, full E2E, auto-merge); merge-queue green → landed. `publish-packages` republished `Concertable.Platform 0.1.0-alpha.0.830`; `platform-sync` opened `chore/platform-sync-0.1.0-alpha.0.830` PR #393 — RED (expected: consumers still on `decimal`).
+- Evidence: #390 MERGED; `0.830` on the feed (a consumer build against it produced the 4 expected `decimal`→`Money` CS1503 errors at `PayoutFinishStep`/`HoldCheckoutStep`/`Capture`/`DepositEscrowAcceptStep`).
+- Outcome: publisher side live; consumer migration owed on #393.
+
+### 2026-08-06 — Sync PR #393 consumer migration (Phase 5 consumer side)
+
+- Action: In the #393 worktree, migrated all consumers to the `Money` signatures — B2B `Concert`: `ResolveGrossAsync`→`Money` (+3 impls, resolver-boundary `Money.Gbp`), the 4 client call sites (`PayoutFinishStep` via the now-`Money` resolver; `Hold`/`Capture`/`Deposit` via `Money.Gbp(deal.Fee/HireFee)`), `InvoiceIssuer` VAT seam via `gross.Amount`, loggers via `.Amount`; mocks (`decimal`→`Money`, `(long)(x*100)`→`amount.ToMinorUnits()`, capture tuples via `.Amount`); Moq tests (`It.IsAny<Money>()`, verify `Money.Gbp(deal.Fee)`); Customer `TicketService` PayAsync via `Money.Gbp(...)` + `MockCustomerPaymentClient`.
+- Evidence: affected projects all build 0-err — B2B `Concert.Infrastructure` + `Concert.UnitTests` + `IntegrationTests.Fixtures`; Customer `Ticket.UnitTests` + `IntegrationTests.Fixtures`. DoD grep gate: only `Money.cs` + the percentage/comment allowlist survive; completeness sweep confirms every non-Payment-service call site now passes `Money`.
+- Deviation: `deal.Fee`/`HireFee` → `Money` **deferred** (DB re-scaffold unverifiable in the constrained env; boundary `Money.Gbp` matches Phase-4; logged in B2B `TECH_DEBT.md`). DoD met without it — `deal.Fee` is a domain property, not a resolver/client signature.
+- Env: full-solution build/integration not run locally (disk hit 100% → reclaimed ~10 GB `bin`/`obj`; MAX_PATH blocks integration in the deep worktree). CI merge queue is the full gate.
+- Outcome: migration pushed to #393.
+- Follow-up: watch #393 → green/merged, then close out plan + ledger.
+
 ## Resume prompt
 
 ```
-cd C:/Users/TommySeery/source/repos/Concertable.worktrees/Refactor/launch_money-value-type
-Read @plans/launch/MONEY_VALUE_TYPE_PLAN.md and @plans/launch/MONEY_VALUE_TYPE_PROGRESS.md, then do what the ledger's `## Next Steps` says.
+cd C:/Users/TommySeery/source/repos/Concertable.worktrees/chore/platform-sync-0.1.0-alpha.0.830
+Read @plans/launch/MONEY_VALUE_TYPE_PLAN.md and @plans/launch/MONEY_VALUE_TYPE_PROGRESS.md.
+Sync PR #393 carries the Phase-5 consumer migration. Watch it to green/merged (per AGENTS.md "Confirming a
+PR merge" loop); if a check is red, debug that check. Once #393 merges, delete this plan + ledger (lifecycle
+terminal). `deal.Fee`→`Money` remains as a logged follow-up in api/Concertable.B2B/TECH_DEBT.md.
 ```
