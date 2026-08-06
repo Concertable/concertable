@@ -4,6 +4,12 @@ import axios, {
   type AxiosResponse,
 } from "axios";
 
+declare module "axios" {
+  interface AxiosRequestConfig {
+    notFoundAsNull?: boolean;
+  }
+}
+
 export type ApiClient = AxiosInstance & {
   getOptional<T = unknown, D = unknown>(
     url: string,
@@ -20,7 +26,7 @@ export function createApiClient(): ApiClient {
     client.get<T | null, AxiosResponse<T | null, D>, D>(url, {
       ...config,
       notFoundAsNull: true,
-    } as AxiosRequestConfig<D>);
+    });
   return client;
 }
 

@@ -1,9 +1,5 @@
 import { isAxiosError, type AxiosInstance } from "axios";
 
-type ApiRequestConfig = {
-  notFoundAsNull?: boolean;
-};
-
 export function configureClient(instance: AxiosInstance, baseURL: string) {
   instance.defaults.baseURL = baseURL;
   const builder = {
@@ -22,8 +18,7 @@ export function configureClient(instance: AxiosInstance, baseURL: string) {
           if (!isAxiosError(error)) return Promise.reject(error);
 
           const status = error.response?.status ?? null;
-          const config = error.config as ApiRequestConfig | undefined;
-          if (status === 404 && config?.notFoundAsNull && error.response)
+          if (status === 404 && error.config?.notFoundAsNull && error.response)
             return { ...error.response, data: null };
 
           if (status === 401) await onUnauthorized();
