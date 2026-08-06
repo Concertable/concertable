@@ -51,9 +51,11 @@ their current branch and worktree rather than fragmenting in-flight work.
 - [x] ✅ **Owned Kernel Result/Option foundation and Shared.Api terminals.** PR #290 published
   `Result`, `Result<TValue>`, `UnitResult<TError>`, `Result<TValue,TError>`, `Option<T>`, and
   `ValidationErrors`; platform-sync PR #291 delivered them to every service.
-- [x] ✅ **Kernel-derived error definitions and natural error-case conventions.** Published and synced.
-  Payload-free errors use sealed definition records; Dunet remains only where alternatives carry data
-  or require case discrimination. The canonical form is in `api/agents/CODE_CONVENTIONS.md`.
+- [x] ✅ **Kernel-derived error definitions and natural error-case conventions.** Kernel derives the
+  stable code and default humanized message from each named case, with `[ErrorCode]` reserved for
+  published-code compatibility. The current convention uses Dunet and one exhaustive `Definition`
+  switch for payload-free, payload-carrying, validation, and composite cases. Its canonical form is
+  in `api/agents/CODE_CONVENTIONS.md`.
 
 ### Service tracks — shipped
 
@@ -137,10 +139,21 @@ their current branch and worktree rather than fragmenting in-flight work.
   single-item application/module/client lookups, no `Option`-wrapped collections, no Result on wire
   DTOs, and no controller-local typed-error status switches.
 - [ ] 🔴 **Released .NET native-union cutover.** Blocked until the released .NET/C# toolchain supports
-  the required union semantics and Concertable is ready to upgrade. Replace Dunet and the hand-written
-  tagged Result/Option representation deliberately while preserving the factories, combinators,
-  natural case identities, definitions, default/null behavior, transport adapters, and package
-  compatibility.
+  the required union semantics and Concertable is ready to upgrade.
+  - Replace each Dunet error declaration with the idiomatic released native declaration; retain the
+    exhaustive `Definition` switch and preserve case names, payloads, definitions, published
+    codes/messages/kinds, transport mappers, and contract tests. Keep `Definition` as a computed
+    instance member when the released union syntax permits it; use an extension only if the final
+    language design requires one.
+  - Remove Dunet attributes, generated inheritance, and package references only after every error
+    union compiles natively. The open-string wire reverse map remains a dictionary because no closed
+    union can make a future transport string exhaustive.
+  - Measure the released representation before changing generic constraints: Dunet cases are
+    reference records today, while converting a native value union to `IError` or `object` may box.
+    Keep operation and transport paths concretely typed as `TError` and use `IError` primarily as a
+    definition constraint.
+  - Decide separately whether the released native semantics improve on Kernel's owned Result/Option
+    carriers. Replacing those carriers is not a prerequisite for migrating error unions.
 
 ## Parallel dependency map
 
