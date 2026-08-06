@@ -60,12 +60,12 @@ Add an entry to the `matrix.include` list in `mirror.yml`:
 
 ---
 
-# Clone-and-build mirrors — **DONE**; true polyrepo → see `plans/POLYREPO_COMPLETION.md`
+# Clone-and-build mirrors — **DONE**; true polyrepo → see `POLYREPO_FULLSTACK_PLAN.md`
 
 This file documents the **live, browsable** read-only mirror system above. Those mirrors now also
 **clone-and-`dotnet build` on their own** — a standalone clone restores the deployable closure from
 the private org feed with a `read:packages` PAT (`GITHUB_PACKAGES_TOKEN`) and builds with 0 errors.
-That "buildable mirror" effort (Phases 1–4 of `POLYREPO_COMPLETION.md`) is complete.
+That "buildable mirror" effort is complete.
 
 Most of it was **already delivered by the Service Build Separation effort** — central package
 management, packable projects, rewiring cross-folder `ProjectReference`s → feed `PackageReference`s,
@@ -73,6 +73,6 @@ carve CI gates (see `api/ARCHITECTURE.md` "Cross-service contract distribution")
 the rest: cross-repo feed-restore docs/PAT, slim standalone AppHosts for Auth/Payment/Search, the
 `shared` mirror, and the six real repos + green auto-sync.
 
-What's **still deferred** in `POLYREPO_COMPLETION.md`: the optional one-way cut to a **true polyrepo**
+What's **still deferred** (see `POLYREPO_FULLSTACK_PLAN.md`): the optional one-way cut to a **true polyrepo**
 where each service is independently developed. Not started — do it only when the monorepo demonstrably
 holds you back.

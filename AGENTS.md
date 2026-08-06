@@ -4,7 +4,7 @@ Concertable is a monorepo (a convenience, not the architecture) with a `.NET` mi
 
 ## Always take the scalable, long-term approach — never the hacky quick fix
 
-**When two solutions present themselves, take the one that is correct for the long term, even when it is harder, larger, or slower to land.** Never reach for the quick hack, the shim, the special-case, or the "just make it work for now" — a workaround that unblocks today becomes the landmine someone trips on later (this very tech-debt backlog is full of exactly those). The proper, scalable fix is the default and the expectation, not a nice-to-have to weigh against effort.
+**When two solutions present themselves, take the one that is correct for the long term, even when it is harder, larger, or slower to land.** Never reach for the quick hack, the shim, the special-case, the timeout/retry bumped to ride out a flake, or the "just make it work for now" — a workaround that unblocks today becomes the landmine someone trips on later (this very tech-debt backlog is full of exactly those). The proper, scalable fix is the default and the expectation, not a nice-to-have to weigh against effort.
 
 - **Multiple PRs, cross-package cut-overs, publish-first migrations, extra scaffolding — all fine.** Scope is never a reason to pick the worse design. If the right fix needs three PRs or crosses a package boundary, do it in three PRs; say so in one line and proceed. Splitting the *delivery* of the correct solution is encouraged; substituting a *worse* solution to fit one PR is not.
 - **A shortcut is only acceptable when it is genuinely, provably the right call** (e.g. deferring live tax-ID verification that overlaps Stripe) — and then it is *logged* in the owning `TECH_DEBT.md` with the reasoning, never left silent.
@@ -23,8 +23,10 @@ merge it through `/merge-docs` without waiting for another instruction, keeping 
 
 ## Per-area guidance
 
+**Doc locality — a guidance/architecture doc lives at the lowest node that fully contains its concern:** single-service → that service's own folder (thin, inheriting root + `api/` upward, never restating — e.g. [`api/Concertable.Payment/AGENTS.md`](./api/Concertable.Payment/AGENTS.md)); cross-service or orchestration → root. Create one only where genuine service-specific content exists.
+
 - **Backend (.NET, `api/`)** — seeding, migrations, DTOs, module rules, C# conventions: [`api/AGENTS.md`](./api/AGENTS.md).
-- **Design patterns the codebase commits to** (keyed strategy resolvers, and the anti-patterns they replace — branching on `DealType` in agnostic code, service location, throwaway DTOs): [`api/docs/CODE_PATTERNS.md`](./api/docs/CODE_PATTERNS.md). Read it before adding any rule that varies by a closed key.
+- **Design patterns the codebase commits to** (keyed strategy resolvers, and the anti-patterns they replace — branching on `DealType` in agnostic code, service location, throwaway DTOs): [`api/agents/CODE_PATTERNS.md`](./api/agents/CODE_PATTERNS.md). Read it before adding any rule that varies by a closed key.
 - **Web SPA (`app/web/`)** — [`app/web/AGENTS.md`](./app/web/AGENTS.md).
 - **Customer cross-platform core (`app/customer/shared`, npm package `@concertable/customer`, exported as `@concertable/customer/shared/*`)** — consumed ONLY by the customer web + mobile apps: [`app/customer/shared/AGENTS.md`](./app/customer/shared/AGENTS.md).
 
@@ -237,6 +239,9 @@ Plans are working docs for unfinished work, **not** an archive — git history i
 
 The convention is **ROADMAP → PLAN → PROGRESS**, folder = roadmap/plan: an epic tracker at `plans/<epic>/<EPIC>_ROADMAP.md` spins off plans at `plans/<epic>/<NAME>_PLAN.md`, each with a same-directory `<NAME>_PROGRESS.md` companion and a worktree/branch named `<Type>/<epic>_<name>` to match. The plan holds the design and outstanding phases; the progress ledger records every project action, result, and state transition plus the current operational truth. Keep both current throughout the work. Legacy plans without a ledger remain valid: reconstruct them from the plan and repository evidence, then create the ledger before recording further progress. Full rules: [`plans/AGENTS.md`](./plans/AGENTS.md) "Companion progress ledger."
 
+- **Cross-plan blockers are two-way handoffs.** The blocked ledger names the owning ledger and exact
+  gate; the owning ledger lists the blocked dependent. When the gate opens, the owner updates the
+  dependent ledger and surfaces its resume prompt — the waiting plan does not poll or rely on memory.
 - **Keep the plan and its `_PROGRESS.md` companion until the entire lifecycle is terminal — not merely until the final local phase is committed and verified.** They remain the recovery anchor through every required review/fix, PR/check/merge, publication, dependency, and platform-sync gate. Record the final gate outcome, make that ledger checkpoint durable, then delete both together in the following close-out change. If no later delivery or package gate exists, the final phase commit may close them out.
 - A plan **superseded** by a newer plan, or describing a design that was **rejected**, is deleted the moment that's decided — don't leave a tombstone.
 - A **partially-done** plan stays, but strike/check off the sections that shipped (in the same commit as the work) so what remains is only the outstanding work.
