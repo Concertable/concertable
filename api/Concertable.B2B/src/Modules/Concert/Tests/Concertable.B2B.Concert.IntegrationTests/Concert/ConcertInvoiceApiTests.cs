@@ -55,6 +55,14 @@ public sealed class ConcertInvoiceApiTests : IAsyncLifetime
         fixture.ConcertReads.Database.ExecuteSqlRawAsync(
             "UPDATE [tenant].[Tenants] SET TaxCompliance_VatNumber = {0} WHERE Id = {1}", vatNumber, tenantId);
 
+    private Task SetVatRateAsync(Guid tenantId, decimal rate) =>
+        fixture.ConcertReads.Database.ExecuteSqlRawAsync(
+            "UPDATE [tenant].[Tenants] SET Configuration_VatRate = {0} WHERE Id = {1}", rate, tenantId);
+
+    private Task SetPaymentTermsAsync(Guid tenantId, int days) =>
+        fixture.ConcertReads.Database.ExecuteSqlRawAsync(
+            "UPDATE [tenant].[Tenants] SET Configuration_PaymentTermsDays = {0} WHERE Id = {1}", days, tenantId);
+
     // --- Direction + no-VAT (unregistered seed suppliers) ---
 
     [Fact]
@@ -139,21 +147,35 @@ public sealed class ConcertInvoiceApiTests : IAsyncLifetime
     // --- VAT decomposition when the supplier is registered ---
 
     [Fact]
-    public async Task Finish_FlatFee_RegisteredArtist_DecomposesInclusiveVat()
+    public async Task Finish_FlatFee_RegisteredArtist_UsesConfiguredVatRate()
     {
         var booking = fixture.SeedState.PastFlatFeeBooking;
         var concert = booking.Concert!;
         await SetVatNumberAsync(concert.ArtistTenantId, "GB123456789");
+        await SetVatRateAsync(concert.ArtistTenantId, 0.05m);
 
         await fixture.FinishConcertAsync(concert.Id);
 
         var invoice = await InvoiceForBookingAsync(booking.Id);
         Assert.NotNull(invoice);
         Assert.Equal(200m, invoice!.Amounts.Gross);   // £200 inclusive, decomposed (not inflated)
-        Assert.Equal(166.67m, invoice.Amounts.Net);   // round(200 / 1.20, 2)
-        Assert.Equal(33.33m, invoice.Amounts.Vat);    // gross - net
-        Assert.Equal(0.20m, invoice.Amounts.Rate);
+        Assert.Equal(190.48m, invoice.Amounts.Net);
+        Assert.Equal(9.52m, invoice.Amounts.Vat);
+        Assert.Equal(0.05m, invoice.Amounts.Rate);
         Assert.Equal("GB123456789", invoice.Supplier.VatNumber);
+    }
+
+    [Fact]
+    public async Task Finish_SupplierPaymentTermsHaveNotElapsed_MintsNoInvoice()
+    {
+        var booking = fixture.SeedState.PastFlatFeeBooking;
+        var concert = booking.Concert!;
+        await SetPaymentTermsAsync(concert.ArtistTenantId, 365);
+
+        await fixture.FinishConcertAsync(concert.Id);
+
+        Assert.Null(await InvoiceForBookingAsync(booking.Id));
+        Assert.Empty(fixture.ManagerPaymentClient.Payments);
     }
 
     // --- Fail-closed: a deferred settlement mints nothing ---

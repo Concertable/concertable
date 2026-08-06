@@ -1,5 +1,5 @@
-using Concertable.B2B.Tenant.Application.Interfaces;
 using Concertable.B2B.Tenant.Application.Configuration;
+using Concertable.B2B.Tenant.Application.Interfaces;
 using Concertable.B2B.Tenant.Application.Tax;
 using Concertable.B2B.Tenant.Contracts;
 using Concertable.B2B.Tenant.Domain.Entities;
@@ -7,8 +7,8 @@ using Concertable.B2B.Tenant.Domain.ValueObjects;
 using Concertable.B2B.Tenant.Infrastructure.Services;
 using Concertable.Kernel.Exceptions;
 using Concertable.Kernel.Identity;
-using Moq;
 using Microsoft.Extensions.Options;
+using Moq;
 
 namespace Concertable.B2B.Tenant.UnitTests;
 
@@ -19,7 +19,7 @@ public sealed class TenantServiceTests
 
     public TenantServiceTests()
     {
-        this.repository = new Mock<ITenantRepository>();
+        repository = new Mock<ITenantRepository>();
         var resolver = new TenantConfigurationResolver(Options.Create(new TenantConfigurationDefaultsOptions
         {
             PrsPassThroughRate = 0.042m,
@@ -27,7 +27,7 @@ public sealed class TenantServiceTests
             PaymentTermsDays = 0,
             CancellationNoticeHours = 0,
         }));
-        this.service = new TenantService(
+        service = new TenantService(
             repository.Object,
             Mock.Of<ITenantContext>(),
             new VatPolicy(new UkVatCalculator()),
@@ -48,8 +48,6 @@ public sealed class TenantServiceTests
             false), TenantConfiguration.Empty);
         return tenant;
     }
-
-    #region GetConfigurationAsync
 
     [Fact]
     public async Task GetConfigurationAsync_TenantWithoutOverrides_ReturnsDefaults()
@@ -78,9 +76,35 @@ public sealed class TenantServiceTests
         Assert.Equal(new TenantConfigurationValues(0.042m, 0.05m, 30, 0), result);
     }
 
-    #endregion
+    [Fact]
+    public async Task GetPrsPassThroughRateAsync_UnlicensedTenant_ReturnsConfiguredRate()
+    {
+        var id = Guid.NewGuid();
+        var tenant = Onboarded(null);
+        tenant.UpdateLegalDetails(
+            tenant.LegalName,
+            tenant.TaxCompliance!,
+            new TenantConfiguration(0.06m, null, null, null));
+        repository.Setup(r => r.GetByIdAsync(id, It.IsAny<CancellationToken>())).ReturnsAsync(tenant);
 
-    #region GetVatCalculationAsync
+        Assert.Equal(0.06m, await service.GetPrsPassThroughRateAsync(id));
+    }
+
+    [Fact]
+    public async Task GetPrsPassThroughRateAsync_LicensedTenant_ReturnsZero()
+    {
+        var id = Guid.NewGuid();
+        var tenant = Bare();
+        tenant.UpdateLegalDetails("Acme Ltd", new TaxCompliance(
+            null,
+            "SID000001",
+            new RegisteredAddress("1 Main St", null, "London", "EC1A 1AA", "United Kingdom"),
+            "GB00BANK00000000000001",
+            true), new TenantConfiguration(0.06m, null, null, null));
+        repository.Setup(r => r.GetByIdAsync(id, It.IsAny<CancellationToken>())).ReturnsAsync(tenant);
+
+        Assert.Equal(0m, await service.GetPrsPassThroughRateAsync(id));
+    }
 
     [Fact]
     public async Task GetVatCalculationAsync_RegisteredSupplier_DecomposesInclusiveGross()
@@ -109,6 +133,24 @@ public sealed class TenantServiceTests
     }
 
     [Fact]
+    public async Task GetVatCalculationAsync_RegisteredSupplier_UsesTenantOverride()
+    {
+        var id = Guid.NewGuid();
+        var tenant = Onboarded("GB123456789");
+        tenant.UpdateLegalDetails(
+            tenant.LegalName,
+            tenant.TaxCompliance!,
+            new TenantConfiguration(null, 0.05m, null, null));
+        repository.Setup(r => r.GetByIdAsync(id, It.IsAny<CancellationToken>())).ReturnsAsync(tenant);
+
+        var result = await service.GetVatCalculationAsync(id, 105m);
+
+        Assert.Equal(100m, result.Net);
+        Assert.Equal(5m, result.Vat);
+        Assert.Equal(0.05m, result.Rate);
+    }
+
+    [Fact]
     public async Task GetVatCalculationAsync_UnknownTenant_ThrowsNotFound()
     {
         var id = Guid.NewGuid();
@@ -125,10 +167,6 @@ public sealed class TenantServiceTests
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => service.GetVatCalculationAsync(id, 120m));
     }
-
-    #endregion
-
-    #region GetTaxComplianceAsync
 
     [Fact]
     public async Task GetTaxComplianceAsync_OnboardedTenant_MapsAllFields()
@@ -167,10 +205,6 @@ public sealed class TenantServiceTests
         Assert.Null(await service.GetTaxComplianceAsync(id));
     }
 
-    #endregion
-
-    #region IsTaxComplianceCompleteAsync
-
     [Fact]
     public async Task IsTaxComplianceCompleteAsync_OnboardedTenant_ReturnsTrue()
     {
@@ -197,6 +231,4 @@ public sealed class TenantServiceTests
 
         Assert.False(await service.IsTaxComplianceCompleteAsync(id));
     }
-
-    #endregion
 }

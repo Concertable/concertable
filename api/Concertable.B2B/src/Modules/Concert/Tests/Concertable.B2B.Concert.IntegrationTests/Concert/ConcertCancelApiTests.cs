@@ -24,6 +24,10 @@ public sealed class ConcertCancelApiTests : IAsyncLifetime
     public Task InitializeAsync() => fixture.ResetAsync();
     public Task DisposeAsync() { fixture.DetachOutput(); return Task.CompletedTask; }
 
+    private Task SetCancellationNoticeAsync(Guid tenantId, int hours) =>
+        fixture.ConcertReads.Database.ExecuteSqlRawAsync(
+            "UPDATE [tenant].[Tenants] SET Configuration_CancellationNoticeHours = {0} WHERE Id = {1}", hours, tenantId);
+
     [Fact]
     public async Task Cancel_ShouldRefundEscrowAndMarkCancelled_ForFlatFee()
     {
@@ -122,6 +126,27 @@ public sealed class ConcertCancelApiTests : IAsyncLifetime
 
         // Assert — cancelling is a venue decision; the artist lacks the permission.
         await response.ShouldBe(HttpStatusCode.Forbidden);
+        var application = await fixture.ConcertReads.Set<ApplicationEntity>().FirstAsync(a => a.Id == appId);
+        Assert.Equal(LifecycleState.Booked, application.State);
+    }
+
+    [Fact]
+    public async Task Cancel_ShouldReturn400_WhenVenueNoticeDeadlineHasPassed()
+    {
+        var client = fixture.CreateClient(fixture.SeedState.VenueManager1);
+        var appId = fixture.SeedState.FlatFeeApp.Id;
+        await client.PostAsync($"/api/Application/{appId}/checkout");
+        await client.PostAsync($"/api/Application/{appId}/accept", new { eSignature = new { signatoryName = "Test Signatory" } });
+        await fixture.StripeClient.SendWebhookAsync();
+        var concert = await (await client.GetAsync($"/api/Concert/application/{appId}")).Content.ReadAsync<MyDetailsResponse>();
+        Assert.NotNull(concert);
+        var storedConcert = await fixture.ConcertReads.Set<ConcertEntity>().SingleAsync(c => c.Id == concert.Id);
+        await SetCancellationNoticeAsync(storedConcert.VenueTenantId, 8760);
+
+        var response = await client.PostAsync($"/api/Concert/{concert.Id}/cancel");
+
+        await response.ShouldBe(HttpStatusCode.BadRequest);
+        Assert.Empty(fixture.EscrowClient.Refunds);
         var application = await fixture.ConcertReads.Set<ApplicationEntity>().FirstAsync(a => a.Id == appId);
         Assert.Equal(LifecycleState.Booked, application.State);
     }

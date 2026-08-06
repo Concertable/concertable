@@ -14,7 +14,7 @@ public sealed class VatPolicyTests
     [Fact]
     public void Apply_RegisteredSupplier_DecomposesInclusiveGross()
     {
-        var result = policy.Apply(120m, "GB123456789");
+        var result = policy.Apply(120m, "GB123456789", 0.20m);
 
         Assert.Equal(100m, result.Net);
         Assert.Equal(20m, result.Vat);
@@ -27,7 +27,7 @@ public sealed class VatPolicyTests
     [InlineData("   ")]
     public void Apply_UnregisteredSupplier_ReturnsNone(string? supplierVatNumber)
     {
-        var result = policy.Apply(120m, supplierVatNumber);
+        var result = policy.Apply(120m, supplierVatNumber, 0.20m);
 
         Assert.Equal(120m, result.Net);
         Assert.Equal(0m, result.Vat);

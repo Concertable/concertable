@@ -126,8 +126,8 @@ reversed supply direction remains correct.
 
 ### 4.3 Payment terms
 
-The settlement customer/payer is the existing `ITicketPayeeResolver` result: venue for FlatFee,
-DoorSplit, and Versus; artist for VenueHire. `FinishExecutor` reads that tenant's effective
+The settlement supplier/payee is the existing `ISettlementPayeeResolver` result: artist for FlatFee,
+DoorSplit, and Versus; venue for VenueHire. `FinishExecutor` reads that tenant's effective
 `PaymentTermsDays` and defers the transition until `concert.Period.End + days`. The hourly completion
 sweep naturally retries the still-booked concert. Add an explicit deferred outcome and structured log
 path so payment-term deferral is distinguishable from tax/self-billing gates.
@@ -176,7 +176,7 @@ form fields. Re-scaffold all initial migrations.
 - `./initial-migrations.ps1` run from `api/`.
 - All four web builds green (`web-customer`, `web-venue`, `web-artist`, `web-business`).
 
-## 7. Phase 2 — Settlement, VAT, and cancellation consumers
+## 7. [x] Phase 2 — Settlement, VAT, and cancellation consumers
 
 Wire the effective configuration into PRS-adjusted revenue-share settlement, supplier VAT
 decomposition, payer payment-term deferral, and venue cancellation timing. Add focused Tenant and
