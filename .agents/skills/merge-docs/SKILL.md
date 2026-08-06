@@ -53,8 +53,8 @@ Plain `git`/`gh` only (personal repo — never the work PR/ADO skills).
 6. **Return to clean main** (in the main checkout) and clean up:
    ```
    git checkout main && git pull --ff-only origin main
-   git branch -D Docs/<Name>; git push origin --delete Docs/<Name>
    git worktree remove --force <path>         # if you created one in step 1 — --force clears leftover build output so the worktree can't linger and fill the disk (plain remove fails with "Directory not empty")
+   git branch -D Docs/<Name>; git push origin --delete Docs/<Name>
    ```
 7. **No platform-sync** — a docs-only diff touches no `api/**`, so nothing republishes. Confirm and stop:
    `gh pr diff <n> --name-only | grep -q '^api/' && echo unexpected || echo "no sync (docs-only)"`.
