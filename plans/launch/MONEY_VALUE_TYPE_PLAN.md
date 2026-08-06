@@ -128,14 +128,21 @@ Same internal treatment for the remaining pounds↔pence sites outside Payment. 
 
 **Gate:** build + `Customer` unit + integration + E2E (ticketing path). Re-scaffold if a model changes.
 
-### Phase 5 — Contract: published signatures `decimal` → `Money` (breaking; publish-first)
+### Phase 5 — Contract: published signatures `decimal` → `Money` (breaking; publish-first) ✅ DONE
 
 The final half of expand/contract — remove the last raw-`decimal` money signatures:
-- `ISettlementAmountResolver.ResolveGrossAsync` → `Money`, `deal.Fee` → `Money` (B2B-internal, same-PR).
-- `Concertable.Payment.Client` interfaces `decimal` → `Money` (**breaking** — B2B migrates in the sync PR).
+- `ISettlementAmountResolver.ResolveGrossAsync` → `Money` ✅; `Concertable.Payment.Client` interfaces
+  `decimal` → `Money` ✅ (**breaking** — published in PR1 #390 as `0.830`; B2B `Concert` + Customer `Ticket`
+  consumers + mocks/tests migrated in sync PR #393).
+- `deal.Fee`/`HireFee` → `Money` **deferred** to a follow-up: it needs an EF ComplexProperty schema change
+  + DB re-scaffold, unverifiable in the current disk/MAX_PATH-constrained env. The payment *boundary* is
+  fully money-typed; `deal.Fee` stays `decimal` and is lifted via `Money.Gbp(deal.Fee)` at the call sites
+  (same boundary pattern as Phase-4 `Money.Gbp(concert.Price * qty)`). B2B-internal + non-breaking → a clean
+  follow-up PR. Logged in `api/Concertable.B2B/TECH_DEBT.md`.
 
-**Grep gate (definition of done):** `rg -nE "\(long\)\(.*\* 100|/ 100m?\b" api` returns **zero** outside
-`Money` itself; no money-typed `decimal` parameter remains on a resolver/client signature. Publish → sync.
+**Grep gate (definition of done):** ✅ met — `rg` for `(long)(x*100)` / `/100m` returns zero outside
+`Money.cs`; no money-typed `decimal` parameter remains on a resolver/client signature. (Survivors:
+door-percent `/ 100` = percentage math, a VAT test comment — both deliberate.)
 
 ## Sequencing decision (the one call to make)
 
