@@ -1,5 +1,7 @@
 # Money value type — a Kernel `Money(decimal, Currency)`, publish-first
 
+**Next steps live in @plans/launch/MONEY_VALUE_TYPE_PROGRESS.md → `## Next Steps`.**
+
 > **Why:** money is raw `decimal` in the domain/service layer and hand-cast to `long` pence at **8+ sites**
 > with an independent **truncating** `(long)(x*100)` at each — no owner for the conversion, the rounding
 > rule, or the `gross/fee/total` arithmetic. Decision + rationale (hand-roll, not NodaMoney; carry
