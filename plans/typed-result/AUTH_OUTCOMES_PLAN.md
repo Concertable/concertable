@@ -2,7 +2,7 @@
 
 > Next steps live in @plans/typed-result/AUTH_OUTCOMES_PROGRESS.md -> `## Next Steps`.
 
-**Status:** Phase 3 complete; Phase 4 is next.
+**Status:** Phase 4 complete; full branch review is next.
 
 ## Outcome
 
@@ -172,18 +172,18 @@ and ship in one PR.
   valid verification mutates once, invalid variants do not mutate, and infrastructure/cancellation
   faults are not converted to typed failures.
 
-### Phase 4 - Password changes, reset privacy, and exhaustive cleanup
+### Phase 4 - Password changes, reset privacy, and exhaustive cleanup (complete)
 
-- Replace `ChangePasswordAsync`'s boolean with `UnitResult<ChangePasswordError>`; preserve the same
+- [x] Replace `ChangePasswordAsync`'s boolean with `UnitResult<ChangePasswordError>`; preserve the same
   failure for missing credential and incorrect current password and the same success UI.
-- Keep `SendPasswordResetAsync` completion-only. Prove known and unknown emails return the identical
+- [x] Keep `SendPasswordResetAsync` completion-only. Prove known and unknown emails return the identical
   forgot-password page while only the known account gains a reset token/email command.
-- Replace `ResetPasswordAsync`'s boolean with `UnitResult<ResetPasswordError>`; collapse missing,
+- [x] Replace `ResetPasswordAsync`'s boolean with `UnitResult<ResetPasswordError>`; collapse missing,
   expired, and orphaned token rows to one safe refusal and preserve one-time token consumption.
-- Complete the caller inventory and require no surviving `RegisterResult`, nullable login/logout
+- [x] Complete the caller inventory and require no surviving `RegisterResult`, nullable login/logout
   return, or command-success boolean in `IAuthService`; allow only the two intentional completion-only
   email operations and ordinary nullable input parameters.
-- Re-run every Auth test plus the unchanged cross-surface coverage inventory before entering review.
+- [x] Re-run every Auth test plus the unchanged cross-surface coverage inventory before entering review.
 
 ## Verification gate for every phase
 

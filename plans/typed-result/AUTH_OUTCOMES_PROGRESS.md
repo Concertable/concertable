@@ -4,16 +4,16 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_auth-outcomes`
 - Branch: `Feature/typed-result_auth-outcomes`
 - PR: not opened
-- Dependency/package gates: No prerequisite dependency gate. The owned Kernel Result/Option foundation is shipped and available through Auth's current `ConcertablePlatformVersion` (`0.1.0-alpha.0.827`). Auth is independent of the Payment, B2B, and Customer migrations. Platform-sync PR #388 is merged; after this `api/**` change merges, this work owns its generated package publication/platform-sync gate to terminal green.
-- Last reconciled: `2026-08-05T22:34:15+01:00` from the Phase 3 implementation, final reconciled Auth tests, Release solution build, standalone Auth carve, signature/boundary/model searches, and fresh branch/PR/platform-sync state.
+- Dependency/package gates: No prerequisite dependency gate. The owned Kernel Result/Option foundation is shipped and available through Auth's current `ConcertablePlatformVersion` (`0.1.0-alpha.0.827`). Auth is independent of the Payment, B2B, and Customer migrations. Platform-sync PR #393 for `0.1.0-alpha.0.830` is green and open at pushed consumer-fix head `6064e1f97df7a3fe386c26ea286755a0e28c9a2c`; it does not change Auth and is no longer a broken platform gate. Reconcile its eventual merge before delivery. After this `api/**` change merges, this work owns its generated package publication/platform-sync gate to terminal green.
+- Last reconciled: `2026-08-06T10:34:48+01:00` from the complete Phase 4 implementation, Auth tests, Release solution build, standalone Auth carve, exhaustive cleanup searches, and fresh origin/PR/platform-sync state.
 
 ## Current state
 
-Phase 3 is complete, green, and checkpointed by this commit. The branch is zero behind fresh
-`origin/main` `3e3bcce89b7cc6c96843e2d80cb634835453a253`, uses Auth platform pin
-`0.1.0-alpha.0.827`, and has no PR. Platform-sync PR #388 is terminally merged as
-`3e3bcce89b7cc6c96843e2d80cb634835453a253`; there is no prerequisite package or sync gate for this
-work.
+Phase 4 is complete, green, and checkpointed by this commit. The branch is zero behind fresh
+`origin/main` `6586122b82f1cca835db2537656ec96f40e9aaa7`, has no PR, and remains on Auth's stable
+`0.1.0-alpha.0.827` platform pin. Platform-sync PR #393's Payment/Money consumer migration is green
+and open at remote head `6064e1f97df7a3fe386c26ea286755a0e28c9a2c`; its eventual merge must be
+reconciled before delivery but does not block the scheduled full branch review.
 
 `RegisterAsync` now returns `UnitResult<RegisterError>` and the obsolete `RegisterResult` enum is
 deleted. Duplicate email becomes `RegisterError.EmailAlreadyExists`; `RegisterModel` maps the owned
@@ -29,24 +29,32 @@ no-mutation, missing-user email completion, infrastructure exception propagation
 propagation. Phase 4 password signatures remain untouched; no EF model, migration, wire contract,
 or other service runtime changed.
 
+`ChangePasswordAsync` now returns `UnitResult<ChangePasswordError>` and collapses missing credentials
+and incorrect current passwords to `CurrentPasswordIncorrect`; `ChangePasswordModel` maps the owned
+safe message and preserves its existing success state. `ResetPasswordAsync` now returns
+`UnitResult<ResetPasswordError>` and collapses unknown, expired, and orphaned token rows to
+`InvalidOrExpiredToken`; `ResetPasswordModel` preserves its success/failure page behavior.
+`SendPasswordResetAsync` remains completion-only, and known/unknown email response parity is unchanged.
+Direct and HTTP coverage prove success, owned refusals, cancellation propagation, reset-request
+privacy/no-op behavior, invalid-token no-mutation, and one-time token consumption. The final
+`IAuthService` surface contains no command-success boolean or nullable login/logout return.
+
 ## Next Steps
 
-Implement Phase 4 only from `plans/typed-result/AUTH_OUTCOMES_PLAN.md` in this worktree. First fetch
-and reconcile the clean branch, upstream, PR, platform-sync status, and Auth package pin; update from
-fresh `origin/main` before editing if behind. Replace `ChangePasswordAsync`'s boolean with
-`UnitResult<ChangePasswordError>` and map the one owned refusal in `ChangePasswordModel`. Keep
-`SendPasswordResetAsync` completion-only and preserve known/unknown email response parity. Replace
-`ResetPasswordAsync`'s boolean with `UnitResult<ResetPasswordError>` and map its one safe refusal in
-`ResetPasswordModel`; preserve one-time token consumption and all existing page behavior. Complete
-the exhaustive caller/signature cleanup and coverage inventory. Run the Auth unit and integration
-projects through `integration-debug`, the Release solution build, a fresh standalone Auth carve,
-`git diff --check`, and final signature/legacy-carrier/boundary/model searches. Update the plan and
-this ledger with exact evidence, commit the green Phase 4 checkpoint locally, and stop with the full
-branch code review as the next handoff. Do not push, open a PR, run E2E locally, begin review, or start
-delivery in the same context.
+Run the full branch `code-review` over `origin/main..HEAD` in this worktree, covering the complete Auth
+expected-outcome migration and repository conventions. Record the review range and artifact plus every
+finding and disposition in this ledger. Do not push, open a PR, run E2E locally, or begin delivery in
+the review context. If review finds clear defects, leave them open for the dedicated address-review
+handoff; otherwise make PR preflight/reconciliation the next action.
 
 ## Completed work
 
+- Completed Phase 4 in this commit: migrated password-change and password-reset refusals to their
+  operation-owned `UnitResult<TError>` contracts, mapped both Razor callers, and completed the
+  `IAuthService` carrier cleanup while leaving reset-email requests completion-only.
+- Added direct service coverage for successful/refused change/reset operations, cancellation,
+  missing-account reset requests, invalid-token non-mutation, and token consumption; the unchanged
+  HTTP characterization proves page behavior and account-disclosure parity.
 - Completed Phase 3 in this commit: migrated registration and email-verification refusals to their
   operation-owned `UnitResult<TError>` contracts, deleted `RegisterResult`, and mapped both carriers
   back to unchanged Razor behavior.
@@ -80,6 +88,25 @@ delivery in the same context.
 
 ## Verification
 
+- Phase 4 `dotnet test api/Concertable.Auth/tests/Concertable.Auth.UnitTests/Concertable.Auth.UnitTests.csproj --configuration Release`: 4 passed, 0 failed, 0 skipped.
+- Phase 4 `./scripts/integration.ps1 auth` through `integration-debug`: 54 passed, 0 failed across the
+  Auth integration project, including all direct service and unchanged Razor/Duende contracts.
+- Phase 4 `dotnet build api/Concertable.slnx --configuration Release`: succeeded with 0 errors and 9
+  existing warnings outside the Auth outcome migration.
+- Fresh standalone copy of the complete current `api/Concertable.Auth` tree, excluding build outputs:
+  `dotnet build src/Concertable.Auth/Concertable.Auth.csproj --configuration Release` restored from
+  Auth's published `0.1.0-alpha.0.827` package closure and succeeded with 0 errors. The verified
+  temporary carve under `C:\tmp` was deleted.
+- Final Phase 4 searches found all eight intended `IAuthService` signatures, exactly the two
+  completion-only email methods, and no `RegisterResult`, nullable login/logout return, password
+  command-success boolean, functional carrier in Razor/Data shapes, active local-Core mode, runtime
+  project reference, model/migration change, or non-Auth working-tree code path. `git diff --check`
+  passed.
+- Fresh origin reconciliation found the branch zero behind
+  `6586122b82f1cca835db2537656ec96f40e9aaa7` with no PR. Platform-sync PR #393 is green and open at
+  remote head `6064e1f97df7a3fe386c26ea286755a0e28c9a2c`; Auth remains on the stable
+  `0.1.0-alpha.0.827` pin until that sync lands.
+- No API/UI E2E was run locally because the merge queue owns the required full E2E gate.
 - Final reconciled `dotnet test api/Concertable.Auth/tests/Concertable.Auth.UnitTests/Concertable.Auth.UnitTests.csproj --configuration Release --no-restore`: 4 passed, 0 failed, 0 skipped.
 - Final reconciled `./scripts/integration.ps1 auth` through `integration-debug`: 44 passed, 0 failed
   across the Auth integration project, including all seven new Phase 3 direct and HTTP contracts.
@@ -147,8 +174,8 @@ delivery in the same context.
 ## Reviews
 
 No formal code review has run because the plan schedules full branch review after Phase 4. Phases 1,
-2, and 3 received local implementation/test audits before their checkpoints; the final lifecycle must
-still run full code review over the complete branch and incremental review after later code commits.
+2, 3, and 4 received local implementation/test audits before their checkpoints; the next lifecycle
+action is full code review over the complete branch and incremental review after later code commits.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -187,6 +214,37 @@ still run full code review over the complete branch and incremental review after
   amendment/separate additive shared item before implementation proceeds.
 
 ## Event log
+
+### 2026-08-06 - Phase 4 password Result migration and exhaustive cleanup completed
+
+- Action: Migrated change-password and reset-password outcomes to operation-owned
+  `UnitResult<TError>` contracts, mapped both Razor callers, retained completion-only password-reset
+  email semantics, and expanded direct/HTTP contracts for every Phase 4 outcome and privacy rule.
+- Evidence: Auth unit tests 4/4; Auth integration tests 54/54; Release solution build 0 errors; fresh
+  standalone Auth carve 0 errors; diff, signature, legacy-carrier, boundary, local-Core,
+  project-reference, and model/migration searches passed. The branch is zero behind fresh
+  `origin/main` `6586122b82f1cca835db2537656ec96f40e9aaa7`; platform-sync PR #393 is green at
+  `6064e1f97df7a3fe386c26ea286755a0e28c9a2c` and Auth remains on stable pin `0.827`.
+- Outcome: All four local implementation phases are complete without changing Razor disclosure or
+  success behavior, reset-email privacy/no-op behavior, EF models, migrations, wire contracts, or
+  another service's runtime. Every caller-actionable Auth refusal and ordinary absence now uses the
+  planned smallest owned in-process carrier.
+- Follow-up: Stop at this local checkpoint. Resume with full code review over `origin/main..HEAD` only;
+  do not push, open a PR, run E2E locally, or begin delivery in that context.
+
+### 2026-08-06 - Phase 4 resume and upstream gate reconciled
+
+- Action: Fetched origin, verified the requested clean worktree/branch and absent branch PR, inspected
+  the open platform sync and its dedicated worktree, and merged fresh `origin/main` before editing.
+- Evidence: pre-merge branch was 11 behind and 13 ahead; incoming main had no Auth change since the
+  merge base. Merge commit `f122ccb34fff25b7a296e77af8dc5eb26f9905ef` is zero behind
+  `origin/main` `6586122b82f1cca835db2537656ec96f40e9aaa7`; Auth remains pinned to
+  `0.1.0-alpha.0.827`; no Auth PR exists. Platform-sync PR #393 is red, while its isolated worktree
+  contains only the Payment/Money consumer migration and no Auth path.
+- Outcome: Phase 4 can proceed on current main without consuming the broken `0.830` pin or overlapping
+  the sync worktree. The sync remains a mandatory recheck before the final Phase 4 verification gate.
+- Follow-up: Implement and verify Phase 4 only, then commit the green checkpoint and hand off to full
+  branch review.
 
 ### 2026-08-05 - Phase 3 registration/email-verification Result migration completed
 
