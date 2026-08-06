@@ -55,6 +55,13 @@ their current branch and worktree rather than fragmenting in-flight work.
   Payload-free errors use sealed definition records; Dunet remains only where alternatives carry data
   or require case discrimination. The canonical form is in `api/agents/CODE_CONVENTIONS.md`.
 
+### Service tracks — shipped
+
+- [x] ✅ **Search contract audit and normalization.** PR #380 normalized Search's in-process collection
+  contracts to `IReadOnlyList<T>` and added Search-owned architecture enforcement without changing
+  transport, projection, failure, or empty-result behavior. Publication and platform-sync PR #388
+  delivered `ConcertablePlatformVersion` `0.1.0-alpha.0.827` to every service.
+
 ### In flight — existing owners, do not offer or duplicate
 
 - [ ] 🟠 **Payment owned-result migration.** Exclusive owner:
@@ -98,23 +105,6 @@ their current branch and worktree rather than fragmenting in-flight work.
     [`../../api/ARCHITECTURE.md`](../../api/ARCHITECTURE.md),
     [`../../api/Concertable.Customer/ARCHITECTURE.md`](../../api/Concertable.Customer/ARCHITECTURE.md),
     and `api/agents/CODE_CONVENTIONS.md`.
-
-- [ ] 🟡 **Search contract audit and normalization.** Ready now and independent of every other service
-  track. Spin off `SEARCH_CONTRACTS_PLAN.md` / `SEARCH_CONTRACTS_PROGRESS.md` on
-  `Feature/typed-result_search-contracts`.
-  - Scope: audit Search application/services/controllers for expected failures and ambiguous absence;
-    normalize collection contracts from `IEnumerable<T>` to empty `IReadOnlyList<T>`; use typed Result
-    only where the caller can act on a real failure.
-  - Preserve: empty search/autocomplete results as successful empty collections, nullable query/filter
-    inputs as ordinary input vocabulary, projection/event boundaries, infrastructure/cancellation
-    exceptions, and the standalone Search carve.
-  - Current evidence: Search has no production FluentResults/CSharpFunctionalExtensions usage and no
-    nullable single-item application result. The plan may therefore be a focused contract-normalization
-    and enforcement slice rather than manufacturing Result types without a domain need.
-  - Out of scope: changing B2B/Customer producer contracts, projection seeding/event flow, shared Kernel
-    API changes, and wrapping collections in `Option<T>`.
-  - Planning sources: this roadmap, `api/AGENTS.md`, `api/ARCHITECTURE.md`,
-    `api/agents/CODE_CONVENTIONS.md`, and Search’s Application/API interfaces plus integration tests.
 
 - [ ] 🟡 **Auth expected-outcome migration.** Ready now and independent of every other service track.
   Spin off `AUTH_OUTCOMES_PLAN.md` / `AUTH_OUTCOMES_PROGRESS.md` on

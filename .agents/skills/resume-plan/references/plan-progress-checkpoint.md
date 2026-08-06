@@ -89,8 +89,7 @@ only those files, and create a local recovery commit. This is an observation che
 - never amend, push, or otherwise mutate a source PR that is queued, locked, merged, or closed;
 - keep operating on the PR by number and verified remote `headRefOid`, not by assuming local `HEAD`
   is still the delivery head; and
-- stack later observation checkpoints on the local branch so the original worktree remains the
-  recovery anchor through publication and platform sync.
+- until the source PR merges, stack later observation checkpoints on its local branch.
 
 A terminal green PR-check checkpoint made immediately before queue admission is intentionally local
 only. Verify every commit after the PR's `headRefOid` changes only the active plan and ledger, verify
@@ -99,11 +98,28 @@ checkpoint-only tail is not unpushed implementation work and must not be pushed,
 block queue monitoring. If any commit in the tail changes another path, stop and record the
 contradictory local state.
 
+As soon as the source PR is `MERGED`, record its merge checkpoint, then move recovery ownership before
+any publication or platform-sync wait:
+
+1. Fetch `origin/main` and create `Docs/<epic>_<name>_closeout` in a clean sibling worktree.
+2. Verify every commit after the recorded source `headRefOid` changes only the active plan and ledger,
+   then cherry-pick those commits in order onto the close-out branch. Apply no runtime/source change.
+3. Update the ledger's worktree and branch identity to the close-out worktree, and verify its plan and
+   ledger content match the source worktree's latest committed state.
+4. Remove the merged feature worktree and its local/remote branch immediately. Continue publication,
+   dependency, and platform-sync checkpoints only in the close-out worktree.
+
+If any post-source-head commit or dirty path is not the active plan/ledger, stop: the transfer is not
+safe and the contradictory work must be resolved before teardown. The transfer itself is local-only;
+do not push the close-out branch until its terminal net meta-only change passes `/docs-review` and is
+landed through `/merge-docs`.
+
 If the queue ejects the PR and a code fix is required, checkpoint the failure first. Once the PR is
 confirmed open and unlocked, commit the fix after the local checkpoint tail and use the compound push
 protocol above to publish the complete new head. A platform-sync fix belongs to the sync PR's own
-branch or worktree: checkpoint its discovery and state in the source plan's original worktree, but
-never push the source plan checkpoint to the sync PR or use it to mutate the merged source PR.
+branch or worktree: checkpoint its discovery and state in the active plan worktree (the close-out
+worktree after source merge), but never push plan checkpoints to the sync PR or use them to mutate the
+merged source PR.
 
 The final report still requires a full reconciliation checkpoint. That hook verifies and records the
 end state; it does not replace any transition checkpoint that should already exist.
