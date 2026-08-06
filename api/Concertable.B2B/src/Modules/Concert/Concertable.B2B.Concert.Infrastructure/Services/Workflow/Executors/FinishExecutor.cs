@@ -56,14 +56,23 @@ internal sealed class FinishExecutor : IFinishExecutor
         {
             var concert = await concertRepository.GetByIdWithBookingAsync(concertId, ct)
                 .OrNotFound();
-            if (timeProvider.GetUtcNow().UtcDateTime < concert.Period.End)
+            var now = timeProvider.GetUtcNow().UtcDateTime;
+            if (now < concert.Period.End)
                 throw new BadRequestException("Concert cannot be finished before it has ended");
+
+            var supplierTenantId = settlementPayeeResolver.ResolveTenantId(concert);
+            var configuration = await tenantModule.GetConfigurationAsync(supplierTenantId, ct);
+            var eligibleAt = concert.Period.End.AddDays(configuration.PaymentTermsDays);
+            if (now < eligibleAt)
+            {
+                logger.SettlementDeferredPendingPaymentTerms(concertId, supplierTenantId, eligibleAt);
+                return Result.Ok(SettlementOutcome.DeferredPendingPaymentTerms);
+            }
 
             // Fail-closed tax gate: both parties' tax identities must be complete for their jurisdiction — the
             // payee's so we can settle, and the counterparty's so the self-billed invoice minted in the same
             // transaction carries both parties' legally-required VAT details. If either is incomplete, don't
             // transition, don't pay, don't invoice; the hourly sweep self-heals once the missing details land.
-            var supplierTenantId = settlementPayeeResolver.ResolveTenantId(concert);
             var customerTenantId = ticketPayeeResolver.ResolveTenantId(concert);
             var supplierComplete = await tenantModule.IsTaxComplianceCompleteAsync(supplierTenantId);
             var customerComplete = await tenantModule.IsTaxComplianceCompleteAsync(customerTenantId);
@@ -76,7 +85,7 @@ internal sealed class FinishExecutor : IFinishExecutor
             // Fail-closed self-billing gate: the invoice minted below prints that it is raised by Concertable on the
             // supplier's behalf under a self-billing agreement, so that agreement must actually be in force. Without a
             // current one, defer rather than assert a document we do not hold; the sweep self-heals once consent lands.
-            if (!await selfBillingAgreementGate.HasCurrentAsync(supplierTenantId, timeProvider.GetUtcNow().UtcDateTime, ct))
+            if (!await selfBillingAgreementGate.HasCurrentAsync(supplierTenantId, now, ct))
             {
                 logger.SettlementDeferredPendingSelfBillingAgreement(concertId, supplierTenantId);
                 return Result.Ok(SettlementOutcome.DeferredPendingSelfBillingAgreement);

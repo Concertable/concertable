@@ -53,6 +53,9 @@ internal static partial class Log
     [LoggerMessage(Level = LogLevel.Information, Message = "Settlement of concert {ConcertId} deferred: supplier tenant {SupplierTenantId} holds no current self-billing agreement, so no self-billed invoice may be raised in their name; will retry on the next completion sweep once the supplier grants or renews consent")]
     internal static partial void SettlementDeferredPendingSelfBillingAgreement(this ILogger logger, int concertId, Guid supplierTenantId);
 
+    [LoggerMessage(Level = LogLevel.Information, Message = "Settlement of concert {ConcertId} deferred until {EligibleAt}: supplier tenant {SupplierTenantId} payment terms have not elapsed")]
+    internal static partial void SettlementDeferredPendingPaymentTerms(this ILogger logger, int concertId, Guid supplierTenantId, DateTime eligibleAt);
+
     [LoggerMessage(Level = LogLevel.Error, Message = "Failed to cancel concert {ConcertId}")]
     internal static partial void FailedToCancelConcert(this ILogger logger, int concertId, Exception ex);
 

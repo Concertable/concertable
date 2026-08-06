@@ -111,6 +111,15 @@ internal sealed class TenantService : ITenantService
         return configurationResolver.Resolve(tenant.Configuration);
     }
 
+    public async Task<decimal> GetPrsPassThroughRateAsync(Guid tenantId, CancellationToken ct = default)
+    {
+        var tenant = await repository.GetByIdAsync(tenantId, ct)
+            ?? throw new NotFoundException($"Tenant {tenantId} not found.");
+        return tenant.TaxCompliance?.HoldsMusicLicence == true
+            ? 0m
+            : configurationResolver.Resolve(tenant.Configuration).PrsPassThroughRate;
+    }
+
     public async Task<VatCalculation> GetVatCalculationAsync(Guid tenantId, decimal gross, CancellationToken ct = default)
     {
         // Fail-closed: settlement's tax-gate guarantees tenant + compliance by invoice time; a null VatNumber (unregistered) is the only valid absence.
@@ -120,7 +129,8 @@ internal sealed class TenantService : ITenantService
             ?? throw new InvalidOperationException(
                 $"Tenant {tenantId} has no tax compliance; the settlement tax-gate should guarantee it by invoice time.");
 
-        return vatPolicy.Apply(gross, compliance.VatNumber);
+        var vatRate = configurationResolver.Resolve(tenant.Configuration).VatRate;
+        return vatPolicy.Apply(gross, compliance.VatNumber, vatRate);
     }
 
     private TenantDetails ToDetails(TenantEntity tenant) => new()

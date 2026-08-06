@@ -106,10 +106,19 @@ internal sealed class ConcertRepository : Repository<ConcertEntity>, IConcertRep
     /* The gross the artist's revenue share settles against: Concertable's own ticket sales
        (TicketsSold * Price, known) plus the venue-declared external/box-office/cash take
        (DoorRevenue). Null until the venue has declared — DoorRevenue null propagates to null. */
-    public Task<decimal?> GetTotalRevenueByConcertIdAsync(int concertId) =>
-        context.Concerts
+    public async Task<(decimal? TotalRevenue, Guid VenueTenantId)?> GetRevenueSettlementByConcertIdAsync(
+        int concertId,
+        CancellationToken ct = default)
+    {
+        var row = await context.Concerts
             .Where(c => c.Id == concertId)
-            .Select(c => c.TicketsSold * c.Price + c.DoorRevenue)
-            .FirstOrDefaultAsync();
+            .Select(c => new
+            {
+                TotalRevenue = c.TicketsSold * c.Price + c.DoorRevenue,
+                c.VenueTenantId,
+            })
+            .FirstOrDefaultAsync(ct);
+        return row is null ? null : (row.TotalRevenue, row.VenueTenantId);
+    }
 
 }

@@ -134,7 +134,7 @@ Stripe production approval (~2-4 weeks elapsed)
 |---|---|---|---|
 | PRS correction in `LEGAL_REQUIREMENTS.md` (✅ done 2026-06-01 — was "remove 3% line"; now per-tenant pass-through, venue's liability) | – | – | done |
 | Music licence attestation field (on `Tenant.Compliance`) = PRS self-licensed flag | 0.5 days | Phase 1 | Month 1 |
-| Tenant configuration surface (PRS / VAT / payment terms / cancellation defaults) | 1-2 days | Phase 1 | Month 1-2 |
+| ✅ Tenant configuration surface (PRS / VAT / payment terms / cancellation defaults) | 1-2 days | Phase 1 | done |
 | Booking agreement + click-wrap e-signature at Accept (snapshot terms, PDF via `IPdfRenderer`) — `LEGAL_REQUIREMENTS.md` item 2 | 3-5 days | Phase 4 (Booking snapshot), `IPdfRenderer` | Month 4 |
 | ✅ Per-contract-type VAT calculation (branches on supply direction + supplier VAT status) — items 1, 3 | 2-3 days | Tenant config (VAT fields) | done |
 | ✅ Self-billed VAT invoice generation per settlement (sequential numbering, HMRC fields, PDF) — item 4 · self-billing *agreement* + renewal still outstanding | 2-3 days | VAT calculation, agreement PDF plumbing | done |
@@ -186,7 +186,7 @@ Concrete checklist for Month 6. Don't launch without all of these green.
 - [ ] Auth checks routed through tenant membership (not legacy TPH FK)
 - [x] Booking agreement generated + click-wrap consent recorded at every Accept
 - [x] VAT calculated per contract type + self-billed invoice generated per settlement, gated on a current e-signed self-billing agreement (12-month renewal)
-- [ ] Tenant config surface live (PRS / VAT / payment terms read from it, not constants)
+- [x] Tenant config surface live (PRS / VAT / payment terms read from it, not constants)
 - [ ] Pre-launch dataset cleared / fresh seeded
 
 ### Compliance UI/UX

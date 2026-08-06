@@ -9,10 +9,10 @@ internal sealed class VatPolicy : IVatPolicy
         this.calculator = calculator;
     }
 
-    public VatCalculation Apply(decimal gross, string? supplierVatNumber)
+    public VatCalculation Apply(decimal gross, string? supplierVatNumber, decimal rate)
     {
         if (string.IsNullOrWhiteSpace(supplierVatNumber)) return VatCalculation.None(gross);
-        var vat = calculator.Calculate(gross);
-        return new VatCalculation(gross - vat, vat, calculator.Rate);
+        var vat = calculator.Calculate(gross, rate);
+        return new VatCalculation(gross - vat, vat, rate);
     }
 }

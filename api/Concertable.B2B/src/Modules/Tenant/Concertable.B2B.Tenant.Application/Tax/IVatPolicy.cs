@@ -6,5 +6,5 @@ internal interface IVatPolicy
 {
     /// <summary>Decompose a VAT-inclusive <paramref name="gross"/> for a supplier with <paramref name="supplierVatNumber"/>
     /// (null/blank ⇒ not registered ⇒ <see cref="VatCalculation.None"/>).</summary>
-    VatCalculation Apply(decimal gross, string? supplierVatNumber);
+    VatCalculation Apply(decimal gross, string? supplierVatNumber, decimal rate);
 }

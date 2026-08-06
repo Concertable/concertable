@@ -24,5 +24,7 @@ internal interface ITenantService
 
     Task<TenantConfigurationValues> GetConfigurationAsync(Guid tenantId, CancellationToken ct = default);
 
+    Task<decimal> GetPrsPassThroughRateAsync(Guid tenantId, CancellationToken ct = default);
+
     Task<VatCalculation> GetVatCalculationAsync(Guid tenantId, decimal gross, CancellationToken ct = default);
 }

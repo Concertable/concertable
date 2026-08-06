@@ -27,6 +27,9 @@ internal sealed class TenantModule : ITenantModule
     public Task<TenantConfigurationValues> GetConfigurationAsync(Guid tenantId, CancellationToken ct = default) =>
         service.GetConfigurationAsync(tenantId, ct);
 
+    public Task<decimal> GetPrsPassThroughRateAsync(Guid tenantId, CancellationToken ct = default) =>
+        service.GetPrsPassThroughRateAsync(tenantId, ct);
+
     public Task<VatCalculation> GetVatCalculationAsync(Guid tenantId, decimal gross, CancellationToken ct = default) =>
         service.GetVatCalculationAsync(tenantId, gross, ct);
 }

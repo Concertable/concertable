@@ -24,6 +24,10 @@ public sealed class ConcertDoorSplitApiTests : IAsyncLifetime
     public Task InitializeAsync() => fixture.ResetAsync();
     public Task DisposeAsync() { fixture.DetachOutput(); return Task.CompletedTask; }
 
+    private Task SetPrsAsync(Guid tenantId, decimal rate) =>
+        fixture.ConcertReads.Database.ExecuteSqlRawAsync(
+            "UPDATE [tenant].[Tenants] SET Configuration_PrsPassThroughRate = {0}, TaxCompliance_HoldsMusicLicence = 0 WHERE Id = {1}", rate, tenantId);
+
     [Fact]
     public async Task Finish_ShouldChargeArtistDoorShareOffSession_AfterDoorRevenueDeclared()
     {
@@ -32,6 +36,7 @@ public sealed class ConcertDoorSplitApiTests : IAsyncLifetime
         var deal = fixture.SeedState.PastDoorSplitAppDeal;
         var deferred = (DeferredBooking)fixture.SeedState.PastDoorSplitBooking;
         await fixture.DeclareDoorRevenueAsync(concert.Id, DoorRevenue);
+        await SetPrsAsync(concert.VenueTenantId, 0.10m);
 
         // Act
         await fixture.FinishConcertAsync(concert.Id);
@@ -42,7 +47,9 @@ public sealed class ConcertDoorSplitApiTests : IAsyncLifetime
         var artistTenantId = fixture.SeedState.Tenants.Single(t => t.CreatedByUserId == fixture.SeedState.ArtistManager1.Id).Id;
         Assert.Equal(venueTenantId, payment.PayerId);
         Assert.Equal(artistTenantId, payment.PayeeId);
-        Assert.Equal(deal.CalculateArtistShare(concert.TicketsSold * concert.Price + DoorRevenue), payment.Amount);
+        var totalRevenue = concert.TicketsSold * concert.Price + DoorRevenue;
+        var revenueAfterPrs = totalRevenue - Math.Round(totalRevenue * 0.10m, 2, MidpointRounding.AwayFromZero);
+        Assert.Equal(deal.CalculateArtistShare(revenueAfterPrs), payment.Amount);
         Assert.Equal(deferred.PaymentMethodId, payment.PaymentMethodId);
         Assert.Equal(deferred.Id, payment.BookingId);
 

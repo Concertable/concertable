@@ -14,9 +14,6 @@ public sealed class UkVatCalculatorTests
 
     private static decimal D(string value) => decimal.Parse(value, CultureInfo.InvariantCulture);
 
-    [Fact]
-    public void Rate_IsUkStandardRate() => Assert.Equal(0.20m, calculator.Rate);
-
     [Theory]
     [InlineData("120", "20")]      // 100.00 net + 20.00 VAT
     [InlineData("100", "16.67")]   // 83.33 net + 16.67 VAT
@@ -24,7 +21,11 @@ public sealed class UkVatCalculatorTests
     [InlineData("0.15", "0.02")]   // 0.13 net + 0.02 VAT — 0.125 rounds away from zero to 0.13
     [InlineData("0", "0")]
     public void Calculate_DecomposesInclusiveGross_IntoTheVatPortion(string gross, string expectedVat) =>
-        Assert.Equal(D(expectedVat), calculator.Calculate(D(gross)));
+        Assert.Equal(D(expectedVat), calculator.Calculate(D(gross), 0.20m));
+
+    [Fact]
+    public void Calculate_UsesSuppliedRate() =>
+        Assert.Equal(5m, calculator.Calculate(105m, 0.05m));
 
     [Theory]
     [InlineData("120")]
@@ -36,7 +37,7 @@ public sealed class UkVatCalculatorTests
     {
         var gross = D(grossText);
 
-        var vat = calculator.Calculate(gross);
+        var vat = calculator.Calculate(gross, 0.20m);
         var net = gross - vat;
 
         Assert.Equal(gross, net + vat);                                                  // exact — no lost pennies
