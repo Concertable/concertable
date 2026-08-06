@@ -1,4 +1,8 @@
-import type { AxiosInstance } from "axios";
+import { isAxiosError, type AxiosInstance } from "axios";
+
+type ApiRequestConfig = {
+  notFoundAsNull?: boolean;
+};
 
 export function configureClient(instance: AxiosInstance, baseURL: string) {
   instance.defaults.baseURL = baseURL;
@@ -14,8 +18,15 @@ export function configureClient(instance: AxiosInstance, baseURL: string) {
       });
       instance.interceptors.response.use(
         (res) => res,
-        async (error) => {
-          if (error.response?.status === 401) await onUnauthorized();
+        async (error: unknown) => {
+          if (!isAxiosError(error)) return Promise.reject(error);
+
+          const status = error.response?.status ?? null;
+          const config = error.config as ApiRequestConfig | undefined;
+          if (status === 404 && config?.notFoundAsNull && error.response)
+            return { ...error.response, data: null };
+
+          if (status === 401) await onUnauthorized();
           return Promise.reject(error);
         },
       );
