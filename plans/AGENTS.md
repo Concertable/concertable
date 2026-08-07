@@ -60,6 +60,17 @@ blocked ledger in the dependency owner's `## Downstream handoffs`; that owner up
 ledger and surfaces its resume prompt when the gate opens. Full mechanics:
 [`agents/PLAN.md`](agents/PLAN.md) "Cross-plan blockers."
 
+## A non-terminal plan handoff must end with its exact continuation pointer
+
+If a turn reads or edits a `_PROGRESS.md` ledger whose `## Next Steps` is non-terminal, the final
+response must end with the exact two-line plan pointer from [`../PROMPTS.md`](../PROMPTS.md). Local
+implementation completion is not lifecycle completion while review, PR, merge, publication,
+dependency, or platform-sync work remains. A summary, a prose “next steps” sentence, or an offer to
+continue does not satisfy this gate. The exception is a registered in-flight owner wait under the
+cross-plan blocker rule above; that owner surfaces the dependent prompt when its gate opens. Trusted
+repository Stop hooks enforce the invariant for Claude and Codex; if a hook blocks, add the pointer
+rather than weakening or bypassing the hook.
+
 ### Rename definition-of-done: the grep gate (mechanical, not judgement)
 
 A rename is done **only when `grep -rniE "<oldterm>"` over the entire repo returns zero** — every

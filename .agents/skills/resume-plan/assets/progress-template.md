@@ -13,9 +13,11 @@
 
 ## Next Steps
 
-<The paste-ready prompt for the next agent: the concrete, self-contained step(s) to take now, with any
-prerequisite or blocking gate. This is the single source of truth for what to do next — resume/handoff
-prompts point here instead of restating it, so they can never drift. Keep it current at every checkpoint.>
+<The single resolved action for the next agent, expressed as concrete, self-contained steps with any
+prerequisite or blocking gate. Apply the repository's standing instructions and current evidence before
+writing it, so it directs execution instead of presenting alternatives. This is the single source of
+truth for what to do next — resume/handoff prompts point here instead of restating it, so they can never
+drift. Keep it current at every checkpoint.>
 
 ## Completed work
 

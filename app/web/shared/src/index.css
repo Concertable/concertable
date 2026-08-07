@@ -3,12 +3,16 @@
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/geist";
 
+/* Both layouts scanned: sibling src under app/web in-monorepo; each tier's own dist under
+   node_modules/@concertable/* when a surface is carved. A non-matching @source is ignored, so keep both sets. */
 @source "../../shared/src/**/*.{ts,tsx}";
 @source "../../customer/src/**/*.{ts,tsx}";
 @source "../../b2b/shared/src/**/*.{ts,tsx}";
 @source "../../b2b/venue/src/**/*.{ts,tsx}";
 @source "../../b2b/artist/src/**/*.{ts,tsx}";
 @source "../../b2b/business/src/**/*.{ts,tsx}";
+@source "../dist/**/*.js";
+@source "../../b2b/dist/**/*.js";
 
 /* dark: utility applies when an ancestor has the .dark class (toggled by ThemeProvider) */
 @custom-variant dark (&:is(.dark *));

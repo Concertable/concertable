@@ -3,6 +3,26 @@
 Captured during Phase A implementation. These supersede the original plan
 where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_PAGE_PLAN.md).
 
+## Next Steps
+
+Reconstructed from the pending items this ledger already records (a legacy feedback/decisions ledger
+predating the `## Next Steps` convention). Current truth: Phase A (items 1–10) + Phase B (B.9–B.11) are
+committed on `Feature/ManagerFrontPage`; the FE runs on the fixture-backed `dashboardApi` mock tier.
+Outstanding:
+
+1. **Phase A.8 — UX freeze** (never done; independent of Phase B): run the dev server, eyeball
+   `/_venue/` and `/_artist/` across `?persona=empty|mid|thriving`, verify tablet/mobile responsive
+   collapse. Detail: "Open Phase A todo" §11 + "Phase A.8 still pending".
+2. **Wire-shape stubs → real data** (KPI DTO fields hard-stubbed at 0, each with a code TODO):
+   `MtdRevenueCents` / `MtdPayoutsCents` need `IManagerPaymentModule.GetVenueTicketRevenueMtdAsync` /
+   `GetArtistPayoutsMtdAsync` (not built); `AcceptedAwaitingCheckout` needs the
+   `IConcertWorkflowCapabilityRegistry` / `IAcceptsCheckout` aggregate count. Detail: "Wire-shape stubs
+   at merge time".
+3. **Deferred migration re-scaffold**: `./initial-migrations.ps1` for the `ConcertEntity.Period` change,
+   deferred to end of Phase B code work (column names unchanged → no schema drift meanwhile). Detail: B.9.
+4. **Phase C — delete the mock tier** when real BE lands: fixtures, `persona.ts`, `PersonaSwitcher.tsx`
+   (keep `dashboardApi.ts`, swap method bodies to real `api.get`). Detail: "Mock-tier infrastructure".
+
 ## Naming & terminology
 
 - **`Header` → `Overview`** everywhere. The dashboard top strip is named

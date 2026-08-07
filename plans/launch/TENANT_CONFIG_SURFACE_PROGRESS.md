@@ -5,20 +5,20 @@
 - Branch: `Feature/launch_tenant-config-surface`
 - PR: not opened
 - Dependency/package gates: no implementation dependency; full merge-queue E2E and post-merge platform sync required
-- Last reconciled: 2026-08-07 against branch `Feature/launch_tenant-config-surface` at `696adad2b`; no PR exists and the clean branch is 59 commits behind `origin/main`
+- Last reconciled: 2026-08-07 against the pending merge of current `origin/main`; no PR exists
 
 ## Current state
 
-Both implementation phases are committed. The Tenant aggregate and Organization surface own the
-nullable overrides and platform-default fallback; Concert consumes effective values for PRS,
-supplier VAT, supplier payment terms, and venue cancellation notice. The clean branch has no PR and
-must be synchronized because it is 59 commits behind current `origin/main`.
+Both implementation phases are committed and reconciled with current `origin/main`. The Tenant
+aggregate and Organization surface own the nullable overrides and platform-default fallback; Concert
+consumes effective values for PRS, supplier VAT, supplier payment terms, and venue cancellation
+notice. The synchronized tree builds with zero errors and both affected unit suites are green. The
+Concert integration rerun could not start because Docker Desktop failed the repository health check.
 
 ## Next Steps
 
-Merge current `origin/main` into the clean feature branch, reconcile any conflicts, and rerun the
-affected build and test gates. Then run the repository code-review workflow, address every clear
-finding, open the PR with full merge-queue E2E, and own the post-merge platform-sync gate.
+Complete the current-main merge checkpoint, then run the repository code-review workflow and address
+every clear finding. Open the PR with full merge-queue E2E and own the post-merge platform-sync gate.
 
 ## Completed work
 
@@ -31,6 +31,9 @@ finding, open the PR with full merge-queue E2E, and own the post-merge platform-
   uses the resolved tenant rate; supplier payment terms defer settlement; venue cancellation notice
   rejects late cancellation; all four have focused unit/integration coverage; committed with the
   roadmap gates as `a9ca579a9`.
+- Current `origin/main` reconciled in this commit; the revenue-share resolver preserves the PRS
+  deduction while returning the landed `Money` value type, and its unit assertion uses the typed
+  amount.
 - Launch roadmap §5 row and §7 gate ticked; the separate solicitor-owned cancellation/refund matrix
   remains open.
 
@@ -56,6 +59,13 @@ finding, open the PR with full merge-queue E2E, and own the post-merge platform-
 - Post-sync `dotnet build api/Concertable.slnx`: succeeded with 0 errors (9 existing warnings).
 - Post-sync Tenant unit tests: 106/106 passed.
 - Post-sync Concert unit tests: 82/82 passed.
+- Current-main reconciliation `dotnet build api/Concertable.slnx --no-restore`: succeeded with 0
+  errors and 9 existing warnings.
+- Current-main reconciliation Tenant unit tests: 106/106 passed.
+- Current-main reconciliation Concert unit tests: 82/82 passed.
+- Current-main reconciliation Concert integration run: no tests executed because Testcontainers
+  could not resolve a healthy Docker endpoint; `scripts/docker-health.ps1` confirmed Docker Desktop's
+  Linux engine was unhealthy with a 500 response.
 - Post-sync SQL integration rerun did not start because both `docker ps` and
   `docker desktop status` timed out against the non-responsive local Docker Desktop control plane;
   the pre-sync B2B Concert 146/146 result remains green.
@@ -85,6 +95,9 @@ finding, open the PR with full merge-queue E2E, and own the post-merge platform-
   third exact build then passed without deleting shared Docker images or caches.
 - No code or test blocker remains. A non-responsive local Docker Desktop control plane blocks only a
   repeat of the already-green SQL integration suite; full E2E remains assigned to the merge queue.
+- The current-main merge changed `ISettlementAmountResolver` from `decimal` to `Money`; the single
+  revenue-share conflict was resolved by retaining the venue PRS deduction and wrapping the computed
+  artist share in `Money.Gbp`.
 
 ## Event log
 
@@ -144,6 +157,19 @@ finding, open the PR with full merge-queue E2E, and own the post-merge platform-
 - Outcome: the implementation remains committed on the correct isolated feature branch, but the
   recorded current-base claim is stale and review is blocked until the branch is synchronized.
 - Follow-up: merge current `origin/main`, revalidate the affected gates, then run the formal review.
+
+### 2026-08-07 — synchronized with current main and revalidated
+
+- Action: merged current `origin/main`, resolved the revenue-share settlement conflict at the landed
+  `Money` seam, updated the focused unit assertion, and reran the affected local gates.
+- Evidence: full solution build succeeded with 0 errors and 9 existing warnings; Tenant unit 106/106
+  and Concert unit 82/82 passed. Both Concert integration projects failed before executing tests
+  because Testcontainers could not resolve Docker; `scripts/docker-health.ps1` independently failed
+  against the Docker Desktop Linux engine with HTTP 500.
+- Outcome: the synchronized implementation compiles and its affected unit behavior is green; the SQL
+  integration rerun remains environment-blocked, with the previously green B2B Concert 146/146 and
+  Customer Concert 11/11 results still the last executed integration evidence.
+- Follow-up: complete the merge commit, run the formal branch review, and fix every confirmed finding.
 
 ## Resume prompt
 
