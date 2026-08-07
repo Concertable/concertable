@@ -2,7 +2,7 @@
 
 - Roadmap: `plans/typed-result/TYPED_RESULT_MIGRATION_ROADMAP.md`
 - Progress ledger: `plans/TYPED_RESULT_MIGRATION_PAYMENT_PROGRESS.md`
-- Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Docs\payment-closeout`
+- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-payment-owned-closeout`
 - Branch: `Docs/typed-result_payment-owned-result-expansion_closeout`
 - Status: delivery in progress
 

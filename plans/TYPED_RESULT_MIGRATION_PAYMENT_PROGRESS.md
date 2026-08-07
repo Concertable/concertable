@@ -2,7 +2,7 @@
 
 - Plan: `plans/TYPED_RESULT_MIGRATION_PAYMENT_PLAN.md`
 - Roadmap: `plans/typed-result/TYPED_RESULT_MIGRATION_ROADMAP.md`
-- Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Docs\payment-closeout`
+- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-payment-owned-closeout`
 - Branch: `Docs/typed-result_payment-owned-result-expansion_closeout`
 - PR: #392 (`https://github.com/Concertable/concertable/pull/392`); frozen donor PR #296 remains open at `82d0555cd`
 - Dependency/package gates: This branch is the exclusive canonical implementation owner for Payment Phase 2. Phase 1 merged in PR #290 and platform-synced in PR #291; Payment currently consumes platform `0.1.0-alpha.0.847`. Removing the published FluentResults client surface is an intentional breaking package cutover: Payment must merge and publish before B2B/Customer can migrate on the generated platform-sync PR.
@@ -112,16 +112,15 @@ Merge-group run `31209734022` passed full API and UI E2E; PR #392 merged as `b66
 The four plan-only commits after source PR head `a40761eba` are transferred onto the clean docs
 closeout branch at current merged `origin/main`; normalized plan and ledger content matched the
 source worktree before identity changed.
+The merged Payment feature worktree is removed, its local branch is deleted, and the remote branch
+was already absent. The closeout recovery anchor now lives at the worktree recorded above.
 
 ## Next Steps
 
-Remove the merged Payment feature worktree and delete its local and remote source branch. Then own
-package publication and the generated breaking platform-sync PR through green from this closeout
-worktree, update the waiting B2B ledger, and close frozen donor PR #296 only after the canonical
-package gate is complete.
-
-Merge, publication, the breaking B2B/Customer platform-sync migration, downstream handoff, and
-closing donor PR #296 remain later explicit delivery steps; PR #392 must run full merge-queue E2E.
+Find the `Publish packages` run caused by merge commit `b66325acd` and follow it to its terminal
+result and published version. If it is green, find the generated breaking platform-sync PR and own
+the B2B/Customer consumer migration through green. Then update the waiting B2B ledger and close
+frozen donor PR #296 only after the canonical package gate is complete.
 
 ## Downstream handoffs
 
@@ -278,6 +277,16 @@ Clean: escrow `Result<Option<T>,E>` semantics, rounding/VAT/refund math, wire hy
   commission-branch implementation is donor evidence only; its behavior is now reconciled here.
 
 ## Event log
+
+### 2026-08-07 - Removed the merged Payment source checkout
+
+- Action: Removed the merged `Feature/PaymentOwnedResultExpansion` worktree and deleted its local
+  branch after transferring all post-source-head plan state to this closeout branch.
+- Evidence: Git no longer registers the feature worktree; its exact long-path residue is absent; the
+  local branch is deleted; the remote branch was already absent.
+- Outcome: No merged feature checkout or branch remains, and this docs worktree is the sole recovery
+  anchor for the live package and downstream delivery gates.
+- Follow-up: Follow the package publication caused by merge commit `b66325acd`.
 
 ### 2026-08-07 - Transferred recovery state to the docs closeout worktree
 
@@ -721,6 +730,6 @@ Clean: escrow `Result<Option<T>,E>` semantics, rounding/VAT/refund math, wire hy
 ## Resume prompt
 
 ```
-cd C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\PaymentOwnedResultExpansion
+cd C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-payment-owned-closeout
 Read @plans/typed-result/TYPED_RESULT_MIGRATION_ROADMAP.md and @plans/TYPED_RESULT_MIGRATION_PAYMENT_PROGRESS.md and do what its `## Next Steps` says.
 ```
