@@ -63,38 +63,31 @@ their current branch and worktree rather than fragmenting in-flight work.
   contracts to `IReadOnlyList<T>` and added Search-owned architecture enforcement without changing
   transport, projection, failure, or empty-result behavior. Publication and platform-sync PR #388
   delivered `ConcertablePlatformVersion` `0.1.0-alpha.0.827` to every service.
+- [x] ✅ **Payment owned-result migration.** PR #392 replaced Payment's published FluentResults client
+  surface with Concertable-owned typed Result/Option contracts and preserved reviewed-gross money
+  invariants. Platform-sync PR #420 migrated B2B and Customer consumers, merged as `372be1041`, and
+  post-merge publication delivered platform `0.1.0-alpha.0.857`. B2B and Auth handoffs are dispatched.
 
 ### In flight — existing owners, do not offer or duplicate
 
-- [ ] 🟠 **Payment owned-result migration.** Exclusive owner:
-  `Feature/PaymentOwnedResultExpansion` at
-  `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\PaymentOwnedResultExpansion`.
-  The reviewed-`Money` decision and current Dunet error convention are implemented. Payment build,
-  unit, and full-solution gates are green on platform `0.1.0-alpha.0.847`; delivery is waiting for
-  Payment SQL integration after Docker Desktop is restored, followed by incremental review and PR
-  delivery, package publication, and the generated platform-sync PR.
-  `Feature/CommissionBindingDeferredPricing` / PR #296 is frozen donor history, not a second owner. No
-  other workstream may recreate Payment contracts or bridge the unpublished package with local source
-  references.
 - [ ] 🟠 **B2B typed-result migration.** Exclusive owner: `Refactor/B2BTypedResultMigration` at
   `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-B2BTypedResultMigration`.
-  Payment-independent Deal, Tenant, Venue, Artist, User, and Concert-core checkpoints are complete.
-  Concert payment/cancel/finish workflows and final FluentResults removal remain blocked on the
-  published Payment package and green platform sync. Resume the existing plan; do not spin off a new
-  B2B plan.
+  Payment-independent checkpoints 1-5 are complete. Payment PR #392, platform-sync PR #420, and
+  platform `0.1.0-alpha.0.857` discharged the package gate; checkpoints 6-7 can now migrate Concert
+  payment/cancel/finish workflows and remove final B2B FluentResults use. Resume the existing plan.
 - [ ] 🟠 **Customer Ticket purchase/checkout slice.** Exclusive owner:
   `Feature/TypedResultMigrationPhase2` at
   `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\TypedResultMigrationPhase2`.
-  Its local Ticket/Concert owned-result core and validation boundary coverage are complete. The final
-  Payment-client swap remains blocked on Payment publication and platform sync. This owner includes
-  Ticket, Concert, Customer Payment clients/mocks, purchase, checkout, and their integration/API
-  coverage; parallel Customer work must not touch those surfaces.
+  Its local Ticket/Concert owned-result core and validation boundary coverage are complete. The
+  Payment client and consumer migration is now published and landed through PR #420; this owner must
+  merge current main and reconcile the final slice. Ticket, Concert, Customer Payment clients/mocks,
+  purchase, checkout, and their integration/API coverage remain exclusive to this worktree.
 
-### Ready — may be planned and implemented in parallel
-
-- [ ] 🟡 **Customer non-Payment outcomes and lookups.** Ready now and independent of B2B and Payment.
-  Spin off `CUSTOMER_OUTCOMES_PLAN.md` / `CUSTOMER_OUTCOMES_PROGRESS.md` on
-  `Feature/typed-result_customer-outcomes`.
+- [ ] 🟠 **Customer non-Payment outcomes and lookups.** Exclusive owner:
+  `Feature/typed-result_customer-outcomes` at
+  `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_customer-outcomes`.
+  Local implementation, review fixes, current-main verification, and full-E2E tier selection are
+  complete; PR preflight and delivery are next.
   - Scope: Customer Review, Preference, User, Venue, and Artist application/module contracts;
     operation-specific expected failures; nullable persistence lookups converted to `Option<T>` at
     application/module boundaries; collection contracts normalized to empty `IReadOnlyList<T>`.
@@ -109,9 +102,11 @@ their current branch and worktree rather than fragmenting in-flight work.
     [`../../api/Concertable.Customer/ARCHITECTURE.md`](../../api/Concertable.Customer/ARCHITECTURE.md),
     and `api/agents/CODE_CONVENTIONS.md`.
 
-- [ ] 🟡 **Auth expected-outcome migration.** Ready now and independent of every other service track.
-  Spin off `AUTH_OUTCOMES_PLAN.md` / `AUTH_OUTCOMES_PROGRESS.md` on
-  `Feature/typed-result_auth-outcomes`.
+- [ ] 🟠 **Auth expected-outcome migration.** Exclusive owner:
+  `Feature/typed-result_auth-outcomes` at
+  `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_auth-outcomes`.
+  Local implementation and review are complete; the Payment platform gate is discharged, so
+  current-main reconciliation, verification, preflight, and PR delivery are next.
   - Scope: audit `IAuthService` null/bool/enum/void outcomes; model ordinary absence with `Option<T>`
     and caller-actionable refusal with operation-specific Result contracts where that distinction is
     useful; map owned in-process results to Duende/Razor/protocol behavior at the Auth edge.
@@ -127,6 +122,10 @@ their current branch and worktree rather than fragmenting in-flight work.
     [`../../api/Concertable.Auth/ARCHITECTURE.md`](../../api/Concertable.Auth/ARCHITECTURE.md),
     `api/agents/CODE_CONVENTIONS.md`, Auth’s Pages/Services, and the coverage inventory established by
     the plan.
+
+### Ready — may be planned and implemented in parallel
+
+No unowned service track is ready while the existing B2B, Customer, and Auth owners remain in flight.
 
 ### Blocked follow-ups
 
