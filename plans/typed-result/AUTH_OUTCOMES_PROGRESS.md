@@ -4,39 +4,28 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_auth-outcomes`
 - Branch: `Feature/typed-result_auth-outcomes`
 - PR: not opened
-- Dependency/package gates: No prerequisite dependency gate. Auth now consumes the shipped owned Kernel foundation through `ConcertablePlatformVersion` `0.1.0-alpha.0.842`. Platform-sync PR #393 merged green as `c85bc04051f8aa02ff6bcc8e22a775455ba9c41b`; no platform-sync PR is open. Auth remains independent of the Payment, B2B, and Customer migrations. After this `api/**` change merges, this work owns its generated package publication/platform-sync gate to terminal green.
-- Last reconciled: `2026-08-07` from fresh `origin/main` `529dba9dde0776e058a168d4ce137e482194a9ed`, the post-review convention audit, and current platform-sync/PR checks.
+- Dependency/package gates: No prerequisite dependency gate. Auth consumes the shipped owned Kernel foundation through `ConcertablePlatformVersion` `0.1.0-alpha.0.847`; no platform-sync PR is open. Auth remains independent of the Payment, B2B, and Customer migrations. After this `api/**` change merges, this work owns its generated package publication/platform-sync gate to terminal green.
+- Last reconciled: `2026-08-07` from fresh `origin/main` `83a3f49a194c5faff60b7912d7c9b8452679f6f0`, current branch head `e196f13e19f70285d103c5fe1d5db1066f133fb3`, terminal local verification, incremental review, and PR preflight.
 
 ## Current state
 
-The clean branch merged fresh `origin/main` as `d8cceed2a1874f74103121375d403e1a576c7ec4`
-and is zero behind. That base includes typed-error convention PR #407, DI/HTTP boundary convention PR
-#408, platform package `0.842`, and docs closeout PR #411. The convention audit found the four Auth
-errors still used the superseded sealed-record/static-catalog form. Commit
-`c5e22a05b66c151497d7737d1db992ef7d66d222` converts them to operation-owned Dunet unions with natural cases, exhaustive `Definition` switches,
-derived codes, direct case construction, and explicit per-case contract tests. It also updates the
-stale Shared typed-result architecture guard from generated `Match`/factory enforcement to the
-current exhaustive-switch convention. No Auth wire, Razor state, persistence model, migration, or
+The clean branch is zero behind fresh `origin/main` after merge commits
+`ecb9351608d7a5b7ac3eb06f2342041cfa7bc492` and
+`e196f13e19f70285d103c5fe1d5db1066f133fb3`. The first range added Auth AppHost extension wiring and
+platform package `0.847`; the second changed only mobile CI and documentation. Neither changed the
+Auth outcome implementation. No PR exists and nothing has been pushed.
+
+Commit `c5e22a05b66c151497d7737d1db992ef7d66d222` converts the four Auth errors to operation-owned Dunet
+unions with natural cases, exhaustive `Definition` switches, derived codes, direct case construction,
+and explicit per-case contract tests. It also aligns the Shared typed-result architecture guard with
+the exhaustive-switch convention. No Auth wire, Razor state, persistence model, migration, or
 cross-service runtime contract changed.
 
-Auth unit tests pass 4/4, the typed-result architecture slice passes 14/14, the complete affected Auth
-integration project closure builds with 0 warnings and 0 errors, and a fresh standalone Auth carve
-builds from published packages with 0 errors. Signature, legacy-carrier, model/migration, and diff
-checks pass. The Docker-backed Auth integration run is blocked because Docker Desktop's daemon did
-not answer `docker ps` within two 30-second preflight windows. The required Release solution build is
-also still unverified: two capped single-node attempts produced no terminal result while stale build
-processes contended for the machine; the exact affected closure and carve are green. No PR exists and
-nothing has been pushed.
-
-Phase 4 is complete and green at commit `d4ebf1c9d33a367fb642c013daa542c7d267a6b8`. After that
-checkpoint, fresh `origin/main` advanced by 12 docs/meta-only commits with no Auth, solution, or
-integration-runner change. The clean branch merged them as
-`d5ac70605eac829afac7d71c547520dc950b3fe9` and is zero behind
-`origin/main` `48bd0eaf5e8079d07302ec4e07dfdc78167427d2`, with no PR. The docs-only merge does not
-invalidate the Phase 4 Auth tests, Release build, carve, or searches. Auth remains on its stable
-`0.1.0-alpha.0.827` platform pin. Platform-sync PR #393's Payment/Money consumer migration is green
-and open at remote head `6064e1f97df7a3fe386c26ea286755a0e28c9a2c`; its eventual merge must be
-reconciled before delivery but does not block the scheduled full branch review.
+Docker is responsive and the Auth integration suite passes 54/54. Auth unit contracts pass 4/4, the
+typed-result architecture slice passes 14/14, and the full Release solution build terminates with 0
+errors and 5 unrelated existing warnings. Signature, legacy-carrier, local-core, model/migration, and
+diff checks pass. The earlier standalone Auth carve remains valid because the later main ranges changed
+only AppHost composition, package pinning, mobile CI, and documentation.
 
 `RegisterAsync` now returns `UnitResult<RegisterError>` and the obsolete `RegisterResult` enum is
 deleted. Duplicate email becomes `RegisterError.EmailAlreadyExists`; `RegisterModel` maps the owned
@@ -62,27 +51,26 @@ Direct and HTTP coverage prove success, owned refusals, cancellation propagation
 privacy/no-op behavior, invalid-token no-mutation, and one-time token consumption. The final
 `IAuthService` surface contains no command-success boolean or nullable login/logout return.
 
-Full code review of `origin/main..HEAD` completed over
-`48bd0eaf5e8079d07302ec4e07dfdc78167427d2..2a6fb0069c20491c5f1da6a21ce0aa3bf6e56508`
-(17 commits) with no findings across correctness, microservice isolation, module boundaries, seeding,
-C# conventions, or changed-path test coverage. The stamped review artifact was
-`reviews/Feature-typed-result_auth-outcomes.md`; it was removed after the clean result because a
-no-findings review has no remaining work-order lifecycle. The branch remains zero behind fresh
-`origin/main`, has no PR, and platform-sync PR #393 remains open with every check passing at
-`6064e1f97df7a3fe386c26ea286755a0e28c9a2c`.
+Full review through `2a6fb0069c20491c5f1da6a21ce0aa3bf6e56508` and incremental review of the
+three post-watermark branch-owned commits both completed with no findings. The incremental review
+also checked the package/solution merge resolutions; later merge `e196f13e1` contains only already-
+merged mobile CI/docs changes. The clean review artifact was deleted under the review lifecycle rule.
+
+PR preflight is GREEN: the feature branch is valid, the working tree and code are clean, the branch is
+zero behind current main and 24 commits ahead, no Auth PR exists, no platform-sync PR is open, no
+published-package cut-over is in flight, and the terminal Release build is green.
 
 ## Next Steps
 
-Restore Docker Desktop to a responsive state and require `docker ps` to complete, then run the Auth
-integration suite through `integration-debug`. Run `dotnet build api/Concertable.slnx --configuration
-Release` to a terminal result, and repeat the signature/legacy-carrier and `git diff --check` gates.
-If verification finds a defect, fix and commit it. Run incremental code review over the post-review
-convention commit and resolve every clear finding. Only after those gates are green, run the
-`pr-preflight` workflow and record its evidence and exact next action here. Do not push, open a PR,
-run E2E locally, or begin delivery in that context.
+Push the Auth branch using the plan-aware two-leg push protocol, verifying the work head and checkpoint
+head against the remote branch. Then open a plain GitHub PR for the verified branch. Require full
+merge-queue API and UI E2E: add no skip label or trailer. Record the remote heads, PR number, URL, and
+exact next delivery action here; do not run E2E locally.
 
 ## Completed work
 
+- Completed the post-review verification, incremental review, and PR preflight on current main; the
+  branch is locally green and ready for push/PR delivery.
 - Reconciled the completed Auth migration with typed-error convention PR #407: four operation-owned
   Dunet unions now derive their definitions from exhaustive switches, callers construct natural
   cases directly, and exact tests pin every code, message, and kind. Committed as
@@ -129,6 +117,16 @@ run E2E locally, or begin delivery in that context.
 
 ## Verification
 
+- Fresh `docker ps` succeeded; `./scripts/integration.ps1 auth` through `integration-debug`: 54 passed,
+  0 failed across the one Auth integration project.
+- `dotnet build api/Concertable.slnx --configuration Release --disable-build-servers -m:1 -nr:false
+  -p:UseSharedCompilation=false`: succeeded with 0 errors and 5 unrelated existing warnings.
+- Current-branch Auth unit definition contracts: 4 passed, 0 failed. Current typed-result architecture
+  slice: 14 passed, 0 failed.
+- Current signature, legacy-carrier, Razor/Data boundary, local-core, model/migration, and branch/worktree
+  `git diff --check` gates passed. Branch is zero behind `origin/main`.
+- `pr-preflight`: GREEN; valid feature branch, clean code/tree, 0 behind and 24 ahead, no existing Auth
+  PR, no open platform-sync PR, and no package cut-over.
 - Post-review convention checkpoint `dotnet test api/Concertable.Auth/tests/Concertable.Auth.UnitTests/Concertable.Auth.UnitTests.csproj --configuration Release`: 4 passed, 0 failed, 0 skipped.
 - Targeted `TypedResultArchitectureTests`: 14 passed, 0 failed, 0 skipped.
 - `dotnet build api/Concertable.Auth/tests/Concertable.Auth.IntegrationTests/Concertable.Auth.IntegrationTests.csproj --configuration Release --no-restore -m:1 -nr:false -p:UseSharedCompilation=false`: succeeded with 0 warnings and 0 errors.
@@ -230,6 +228,12 @@ and was deleted under the clean-review lifecycle rule. No finding IDs or disposi
 code commit requires incremental review from watermark
 `2a6fb0069c20491c5f1da6a21ce0aa3bf6e56508`.
 
+Incremental code review completed on 2026-08-07 from that watermark over the branch-owned commits
+`1bd00115c`, `c5e22a05b`, and `28a586a75`, plus the package/solution merge resolutions, through
+`ecb9351608d7a5b7ac3eb06f2342041cfa7bc492`. No findings survived the correctness, isolation,
+boundary, seeding, C# convention, or changed-path test lenses. The clean artifact was deleted; no
+finding IDs or dispositions exist. Later merge `e196f13e1` contains only already-merged mobile CI/docs.
+
 ## Decisions, discoveries, blockers, and deviations
 
 - Origin: the permanent typed-result epic item is **Auth expected-outcome migration** in
@@ -267,6 +271,21 @@ code commit requires incremental review from watermark
   amendment/separate additive shared item before implementation proceeds.
 
 ## Event log
+
+### 2026-08-07 - Verification, incremental review, and PR preflight completed
+
+- Action: Reconciled two fresh main ranges, restored Docker-backed verification, completed the
+  terminal Release solution build and mechanical gates, reviewed every post-watermark branch-owned
+  change, and ran the read-only PR preflight.
+- Evidence: current branch `e196f13e19f70285d103c5fe1d5db1066f133fb3` is zero behind
+  `origin/main` `83a3f49a194c5faff60b7912d7c9b8452679f6f0`; Auth integration 54/54; Auth unit 4/4;
+  typed-result architecture 14/14; Release solution build 0 errors; carrier/model/diff searches
+  green; incremental review through `ecb9351608d7a5b7ac3eb06f2342041cfa7bc492` found no issues;
+  preflight found no PR or open platform-sync gate.
+- Outcome: Local implementation, verification, and review are terminal and the branch is GREEN to
+  publish. Full API/UI E2E remains owned by the merge queue.
+- Follow-up: Push with verified plan checkpoints, open the plain GitHub PR without skip labels, then
+  continue normal queue delivery.
 
 ### 2026-08-07 - Typed-error convention reconciliation implemented
 

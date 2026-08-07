@@ -2,7 +2,7 @@
 
 > Next steps live in @plans/typed-result/AUTH_OUTCOMES_PROGRESS.md -> `## Next Steps`.
 
-**Status:** Phase 4 and the full branch review are complete; post-review convention reconciliation is in progress.
+**Status:** Local implementation, verification, and review are complete; PR preflight is green and delivery is next.
 
 ## Outcome
 
