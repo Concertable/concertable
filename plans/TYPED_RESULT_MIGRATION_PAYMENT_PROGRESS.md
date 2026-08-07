@@ -104,11 +104,14 @@ Replacement work head `40695a4b3` is verified across local, remote-tracking, and
 checkpoint-transport head `a40761eba` is verified across all three heads. Replacement run
 `31208576213` is terminal green across build, carves, unit, and integration checks; `full-e2e`
 remains applied and queue-only E2E correctly skipped at PR level.
+An initial `gh pr merge --auto` left the green/CLEAN PR with no `mergeQueueEntry`; its auto-merge
+request still dates from 2026-08-05, confirming the documented GitHub re-evaluation glitch.
 
 ## Next Steps
 
-Verify PR #392 still points to remote head `a40761eba`, then enqueue it with merge-queue auto-merge.
-Preserve `full-e2e` and follow the queue's API and UI E2E to a terminal result. After merge, own
+Perform the one-time auto-merge disable/re-enable nudge for PR #392, verify exact remote head
+`a40761eba` gains a real merge-queue entry, then preserve `full-e2e` and follow the queue's API and UI
+E2E to a terminal result. After merge, own
 package publication and the generated breaking platform-sync PR through green, update the waiting
 B2B ledger, and close frozen donor PR #296 only after the canonical package gate is complete.
 
@@ -270,6 +273,16 @@ Clean: escrow `Result<Option<T>,E>` semantics, rounding/VAT/refund math, wire hy
   commission-branch implementation is donor evidence only; its behavior is now reconciled here.
 
 ## Event log
+
+### 2026-08-07 - Green PR was not admitted to the merge queue
+
+- Action: Enabled merge-queue auto-merge on exact green head `a40761eba` and queried its GraphQL
+  queue entry.
+- Evidence: PR #392 remains open/CLEAN with `[full-e2e]`, but `mergeQueueEntry` is null and the
+  auto-merge request still carries its stale 2026-08-05 timestamp.
+- Outcome: This is the documented GitHub re-evaluation glitch, not a CI failure. One explicit
+  disable/re-enable nudge is required before queue monitoring.
+- Follow-up: Execute the one-time queue-admission nudge in `## Next Steps`.
 
 ### 2026-08-07 - Replacement PR checks passed green
 
