@@ -100,10 +100,12 @@ fail-fast cancellations. The guard does not recognize the new exhaustive root `t
 definition shape used by all ten Payment unions. The guard now recognizes that documented shape;
 Shared.Api unit tests pass 52/52 and the full Release solution builds with 0 errors.
 Incremental review through `2e120cb40` confirms CI2 fixed with no additional findings.
+Replacement work head `40695a4b3` is verified across local, remote-tracking, and PR #392 heads;
+replacement checks are running and `full-e2e` remains applied.
 
 ## Next Steps
 
-Compound-push the replacement PR head, preserving `full-e2e`, then wait for green PR
+Wait for the exact replacement PR head's checks to reach terminal green, then
 checks, enqueue, and follow the merge to a terminal state. After merge, own package publication and
 the generated breaking platform-sync PR through green, update the waiting B2B ledger, and close
 frozen donor PR #296 only after the canonical package gate is complete.
@@ -266,6 +268,16 @@ Clean: escrow `Result<Option<T>,E>` semantics, rounding/VAT/refund math, wire hy
   commission-branch implementation is donor evidence only; its behavior is now reconciled here.
 
 ## Event log
+
+### 2026-08-07 - Pushed the verified PR-check fix
+
+- Action: Compound-pushed the verified, review-clean recovery range to PR #392 after confirming it
+  was open and unlocked.
+- Evidence: The starting PR head was `bbe9a3522`; local `HEAD`,
+  `origin/Feature/PaymentOwnedResultExpansion`, and PR `headRefOid` all matched replacement work head
+  `40695a4b3` after fetch.
+- Outcome: Replacement PR checks are running on the exact fixed head; `full-e2e` remains applied.
+- Follow-up: Wait for the replacement checks and execute `## Next Steps` when terminal green.
 
 ### 2026-08-07 - Incremental review cleared the PR-check fix
 
