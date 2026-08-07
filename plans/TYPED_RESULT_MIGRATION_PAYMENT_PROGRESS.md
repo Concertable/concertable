@@ -94,15 +94,19 @@ integration 8/8 on a healthy Docker data path. The incremental review through `d
 issues. The verified work head `d6ab44540` is pushed: local, remote-tracking, and PR #392 heads match.
 The checkpoint-transport head `bbe9a3522` is also verified across local, remote-tracking, and PR
 heads. PR checks are running and the exact head carries the required `full-e2e` override; it has not
-been enqueued.
+been enqueued. PR run `31206320776` failed before queue admission: the primary failure is Shared.Api
+unit test `DunetUnionDefinitions_UseSupportedDefinitionShape`; the other reported unit failures are
+fail-fast cancellations. The guard does not recognize the new exhaustive root `this switch` error
+definition shape used by all ten Payment unions.
 
 ## Next Steps
 
-Wait for PR #392's checks to reach a green terminal state on the exact pushed head, apply `full-e2e`
-because historical commits contain `Skip-E2E: true` trailers, enqueue, and follow the merge to a
-terminal state. After merge, own package publication and the generated breaking platform-sync PR
-through green, update the waiting B2B ledger, and close frozen donor PR #296 only after the canonical
-package gate is complete.
+Update `TypedResultArchitectureTests` to recognize the documented exhaustive root `this switch`
+definition shape, run the focused Shared.Api unit suite and full Release solution gate, incrementally
+review the fix, then compound-push the replacement PR head. Preserve `full-e2e`, wait for green PR
+checks, enqueue, and follow the merge to a terminal state. After merge, own package publication and
+the generated breaking platform-sync PR through green, update the waiting B2B ledger, and close
+frozen donor PR #296 only after the canonical package gate is complete.
 
 Merge, publication, the breaking B2B/Customer platform-sync migration, downstream handoff, and
 closing donor PR #296 remain later explicit delivery steps; PR #392 must run full merge-queue E2E.
@@ -249,6 +253,19 @@ Clean: escrow `Result<Option<T>,E>` semantics, rounding/VAT/refund math, wire hy
   commission-branch implementation is donor evidence only; its behavior is now reconciled here.
 
 ## Event log
+
+### 2026-08-07 - PR checks exposed a stale typed-result architecture guard
+
+- Action: Followed PR #392's exact pushed head through its first CI run and reproduced the one
+  primary failed unit project locally.
+- Evidence: Run `31206320776`; `Concertable.Shared.Api.UnitTests` failed
+  `DunetUnionDefinitions_UseSupportedDefinitionShape` 51 passed / 1 failed. Ten Payment unions use
+  the documented exhaustive root `Definition => this switch` shape, while the guard accepts only
+  legacy generated-`Match` and abstract/per-case definitions. Other red unit jobs were cancelled by
+  fail-fast; Payment unit passed in CI.
+- Outcome: PR #392 was not enqueued. The failure is deterministic and owned by this branch's error
+  convention migration, so the architecture guard must be corrected before a replacement push.
+- Follow-up: Execute the fix-and-verification action in `## Next Steps`.
 
 ### 2026-08-07 - Selected full merge-queue E2E for PR #392
 
