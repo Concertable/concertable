@@ -5,7 +5,7 @@
 - Branch: `Docs/platform_polyrepo_mobile-carve_closeout` — carries only the verified post-PR ledger observation tail for recovery and handoff.
 - PR: **mobile-carve PR [#416](https://github.com/Concertable/concertable/pull/416) MERGED as `83a3f49a1`** from reviewed remote head `74b9743d8`; exact full-E2E merge-group run [31204805838](https://github.com/Concertable/concertable/actions/runs/31204805838) completed successfully. Prior publish-first mobile-retarget PR [#413](https://github.com/Concertable/concertable/pull/413) merged as `62646f4cd` and republished `@concertable/mobile@0.1.0-alpha.0.2571`; carved-web CSS [#405] (`d9c62e2c5`); Phase 3b [#389] (`1cbeb2175`); Phase 3a [#378] (`fba490e25`); Phase 2 [#360] (`a3f9535`); Phase 1 [#301]+[#319].
 - Dependency/package gates: **#413 FE publication DONE** — successful descendant run [31197751649](https://github.com/Concertable/concertable/actions/runs/31197751649) published and feed-verified `@concertable/mobile@0.1.0-alpha.0.2571` with the brand assets. This unblocks the follow-up mobile carve gate. No `api/**` → no backend platform-sync.
-- Last reconciled: 2026-08-07 — the three ledger-only post-PR commits were transferred to this clean closeout worktree and their resulting ledger blob was verified identical to source commit `288ad3335`. Next: remove the merged feature worktree/branch, then hand off the separate Phase 3 ESLint import-boundary sub-project.
+- Last reconciled: 2026-08-07 — the three ledger-only post-PR commits were transferred and verified; the clean merged feature worktree and local branch were removed, and fetch-prune confirmed GitHub had already removed the remote branch. Next: start the separate Phase 3 FE import-boundary sub-project on a fresh feature worktree.
 
 ## Current state
 
@@ -24,9 +24,7 @@ from `app/mobile/TECH_DEBT.md`.
 
 ## Next Steps
 
-**1. Finish #416 worktree cleanup.** Remove the clean merged feature worktree and its local/remote branch after verifying it has no uncommitted state. No FE republish follows because #416 changed only CI/docs/debt state; no `api/**` means no backend platform-sync.
-
-**2. FE import-boundary rule** — no ESLint/dependency-cruiser toolchain in `app/` yet; the carve CI is the primary structural boundary today (BE parity: carve = structural gate, build-time guard = fast second layer). Standing up ESLint `no-restricted-imports` across surfaces is a separate sub-project.
+**1. FE import-boundary rule.** In a fresh `Feature/platform_polyrepo_import-boundary` worktree from current `origin/main`, first confirm no red platform-sync PR, then implement the Phase 3 rule preventing any FE surface from importing another surface's or an unpublished tier's source. There is no ESLint/dependency-cruiser toolchain in `app/` yet; select and establish the durable repository-wide enforcement layer, cover all web and mobile surfaces, and prove the rule plus all six carve jobs/builds without weakening the existing structural gate.
 
 Then Phase 4 (FE platform-sync) and Phase 5 (produce full-stack repos, D-A/D-B) per the plan.
 Gate: each item ends with its own green carve/build proof on its PR.
@@ -100,6 +98,13 @@ Gate: each item ends with its own green carve/build proof on its PR.
 - **Metro/nativewind/tailwind runtime configs left for Phase 3.** The Phase 2 gate is build + typecheck; the mobile app's metro `watchFolders`/nativewind `input`/tailwind `content` still point at `../shared` source. The app already resolves `@concertable/shared`/`customer` as symlinked packages the same way, so no in-monorepo runtime regression, but className/class-generation on the precompiled dist is unproven — a first-class Phase 3 item, not a silent gap.
 
 ## Event log
+
+### 2026-08-07 — merged #416 feature worktree and branches removed
+
+- Action: Verified the source checkout was clean and its post-PR range changed only the transferred ledger, removed the exact feature worktree, and deleted its local branch.
+- Evidence: source HEAD `288ad3335`; `74b9743d8..288ad3335` named only `plans/platform/POLYREPO_FULLSTACK_PROGRESS.md`. Remote deletion reported the ref already absent; `git fetch origin --prune` removed the stale tracking ref.
+- Outcome: #416 is fully closed out with recovery anchored solely in this docs worktree; its CI/docs-only merge has no FE publication or backend platform-sync consequence.
+- Follow-up: end this completed sub-project at its handoff; next invocation starts the Phase 3 FE import-boundary sub-project on a fresh feature worktree.
 
 ### 2026-08-07 — #416 recovery transferred to the closeout worktree
 
