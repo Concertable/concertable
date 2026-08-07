@@ -5,7 +5,7 @@
 - Branch: `Feature/platform_polyrepo_mobile-carve`; contains the transferred ledger-only recovery history and will add `mobile/{customer,b2b}` to the existing `carve-fe` matrix against the now-published fixed tier.
 - PR: **mobile-retarget PR [#413](https://github.com/Concertable/concertable/pull/413) MERGED as `62646f4cdd6933a695fc790e1329588fce3f928a`** — reviewed source head `a8296d51b`; full merge-group run [31195035539](https://github.com/Concertable/concertable/actions/runs/31195035539) completed successfully. Prior: carved-web CSS **[#405](https://github.com/Concertable/concertable/pull/405) MERGED** (`d9c62e2c5`) + [#411]; Phase 3b [#389] (`1cbeb2175`) + [#398]; Phase 3a [#378] (`fba490e25`); Phase 2 [#360] (`a3f9535`); Phase 1 [#301]+[#319].
 - Dependency/package gates: **#413 FE publication DONE** — successful descendant run [31197751649](https://github.com/Concertable/concertable/actions/runs/31197751649) published and feed-verified `@concertable/mobile@0.1.0-alpha.0.2571` with the brand assets. This unblocks the follow-up mobile carve gate. No `api/**` → no backend platform-sync.
-- Last reconciled: 2026-08-07 — the fresh `Feature/platform_polyrepo_mobile-carve` worktree exists from current `origin/main`, with the ledger recovery history transferred intact. `@concertable/mobile@0.1.0-alpha.0.2571` is live. Next: remove the superseded closeout worktree/branch, add both mobile surfaces to the `carve-fe` matrix, and open the self-validating PR.
+- Last reconciled: 2026-08-07 — the fresh `Feature/platform_polyrepo_mobile-carve` worktree is the sole recovery anchor; the superseded closeout worktree/branch are gone. `@concertable/mobile@0.1.0-alpha.0.2571` is live. Next: add both mobile surfaces to the `carve-fe` matrix, verify, and open the self-validating PR.
 
 ## Current state
 
@@ -19,7 +19,7 @@ Phases 0, 1, 2, **3a, and 3b are on `main`**. Phase 3a (PR #378, merge `fba490e2
 
 ## Next Steps
 
-**1. Remove the superseded closeout worktree, then turn on the mobile carve gate.** Remove `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-polyrepo-mobile-closeout` and delete local `Docs/platform_polyrepo_mobile-retarget_closeout`; recovery is now on this feature branch. Add `mobile/{customer,b2b}` to the existing `carve-fe` matrix, verify the YAML and changed-file classifier locally, commit, push, and open the PR so each surface restores `@concertable/mobile@0.1.0-alpha.0.2571` from the feed and runs `expo export`. Follow both mobile matrix jobs to green; if either exposes another latent bundle bug, fix the real bug without weakening the gate (surface bug on this branch; published-tier bug through another publish-first cycle). (Also logged in `app/mobile/TECH_DEBT.md`.)
+**1. Turn on the mobile carve gate.** Add `mobile/{customer,b2b}` to the existing `carve-fe` matrix, verify the YAML and changed-file classifier locally, commit, push, and open the PR so each surface restores `@concertable/mobile@0.1.0-alpha.0.2571` from the feed and runs `expo export`. Follow both mobile matrix jobs to green; if either exposes another latent bundle bug, fix the real bug without weakening the gate (surface bug on this branch; published-tier bug through another publish-first cycle). (Also logged in `app/mobile/TECH_DEBT.md`.)
 
 **2. FE import-boundary rule** — no ESLint/dependency-cruiser toolchain in `app/` yet; the carve CI is the primary structural boundary today (BE parity: carve = structural gate, build-time guard = fast second layer). Standing up ESLint `no-restricted-imports` across surfaces is a separate sub-project.
 
@@ -83,6 +83,13 @@ Gate: each item ends with its own green carve/build proof on its PR.
 - **Metro/nativewind/tailwind runtime configs left for Phase 3.** The Phase 2 gate is build + typecheck; the mobile app's metro `watchFolders`/nativewind `input`/tailwind `content` still point at `../shared` source. The app already resolves `@concertable/shared`/`customer` as symlinked packages the same way, so no in-monorepo runtime regression, but className/class-generation on the precompiled dist is unproven — a first-class Phase 3 item, not a silent gap.
 
 ## Event log
+
+### 2026-08-07 — superseded closeout worktree removed
+
+- Action: Verified the closeout worktree was clean and contained only the active ledger tail, then removed it and deleted its local branch.
+- Evidence: closeout `status --porcelain` empty; `origin/main..HEAD` path set = `plans/platform/POLYREPO_FULLSTACK_PROGRESS.md`; worktree path no longer exists; `Docs/platform_polyrepo_mobile-retarget_closeout` deleted.
+- Outcome: `Feature/platform_polyrepo_mobile-carve` is the sole recovery anchor and is ready for implementation.
+- Follow-up: add the two mobile matrix entries and deliver the self-validating carve PR.
 
 ### 2026-08-07 — recovery transferred to fresh mobile-carve worktree
 
