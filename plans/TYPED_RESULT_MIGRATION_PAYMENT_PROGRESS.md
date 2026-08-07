@@ -114,13 +114,19 @@ closeout branch at current merged `origin/main`; normalized plan and ledger cont
 source worktree before identity changed.
 The merged Payment feature worktree is removed, its local branch is deleted, and the remote branch
 was already absent. The closeout recovery anchor now lives at the worktree recorded above.
+Package publication run `31212157110` succeeded and published platform
+`0.1.0-alpha.0.853`. Generated platform-sync PR #420 is open and red at build with 24 expected
+consumer compile errors: B2B and Customer still reference the five intentionally removed legacy
+Payment client interfaces.
 
 ## Next Steps
 
-Find the `Publish packages` run caused by merge commit `b66325acd` and follow it to its terminal
-result and published version. If it is green, find the generated breaking platform-sync PR and own
-the B2B/Customer consumer migration through green. Then update the waiting B2B ledger and close
-frozen donor PR #296 only after the canonical package gate is complete.
+In `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Platform-sync-853`, migrate every
+B2B/Customer consumer from the five removed legacy Payment clients to the published owned-result
+interfaces, drive `api/Concertable.slnx` to zero errors, run the affected unit and integration
+tests, push `chore/platform-sync-0.1.0-alpha.0.853`, and follow PR #420 through green/merged. Then
+update the waiting B2B ledger and close frozen donor PR #296 only after the canonical package gate
+is complete.
 
 ## Downstream handoffs
 
@@ -277,6 +283,17 @@ Clean: escrow `Result<Option<T>,E>` semantics, rounding/VAT/refund math, wire hy
   commission-branch implementation is donor evidence only; its behavior is now reconciled here.
 
 ## Event log
+
+### 2026-08-07 - Payment package published and opened the breaking sync gate
+
+- Action: Followed the source merge's package publication and generated platform-sync workflow to
+  terminal results, then inspected PR #420's failed build.
+- Evidence: `Publish packages` run `31212157110` succeeded with version
+  `0.1.0-alpha.0.853`; platform-sync workflow `31212305398` succeeded; PR #420 build job
+  `92977870685` failed with 24 missing-type errors across the five removed legacy clients.
+- Outcome: The new Payment client is available on the feed and the publish-first consumer migration
+  is now legal in the generated sync PR.
+- Follow-up: Migrate B2B and Customer consumers in the isolated PR #420 worktree and drive it green.
 
 ### 2026-08-07 - Removed the merged Payment source checkout
 
