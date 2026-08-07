@@ -3,9 +3,9 @@
 - Plan: `plans/platform/POLYREPO_FULLSTACK_PLAN.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\platform_polyrepo_mobile-retarget` — created off `origin/main` @ `529dba9dd` for the Phase 3 **mobile retarget**. (The `platform_polyrepo_carved-css` worktree was pruned after #405 merged.)
 - Branch: `Feature/platform_polyrepo_mobile-retarget`; reviewed remote source head `a8296d51b`, off `origin/main` @ `529dba9dd`. Carries the mobile bundler retarget, the App.tsx CSS-import fix, and the `@concertable/mobile` brand-asset packaging fix. **Publish-first**: mobile is intentionally NOT in the `carve-fe` matrix on this PR. Local commits after `a8296d51b` are plan/ledger observation checkpoints only and must not be pushed to the source PR.
-- PR: **mobile-retarget PR [#413](https://github.com/Concertable/concertable/pull/413) QUEUED at reviewed head `a8296d51b`** — GraphQL reports merge-queue state `AWAITING_CHECKS`, position 1. The queue owns the merge method and has consumed the auto-merge request, so `autoMergeRequest=null` is expected after admission. Prior: carved-web CSS **[#405](https://github.com/Concertable/concertable/pull/405) MERGED** (`d9c62e2c5`) + [#411]; Phase 3b [#389] (`1cbeb2175`) + [#398]; Phase 3a [#378] (`fba490e25`); Phase 2 [#360] (`a3f9535`); Phase 1 [#301]+[#319].
+- PR: **mobile-retarget PR [#413](https://github.com/Concertable/concertable/pull/413) MERGED as `62646f4cdd6933a695fc790e1329588fce3f928a`** — reviewed source head `a8296d51b`; full merge-group run [31195035539](https://github.com/Concertable/concertable/actions/runs/31195035539) completed successfully. Prior: carved-web CSS **[#405](https://github.com/Concertable/concertable/pull/405) MERGED** (`d9c62e2c5`) + [#411]; Phase 3b [#389] (`1cbeb2175`) + [#398]; Phase 3a [#378] (`fba490e25`); Phase 2 [#360] (`a3f9535`); Phase 1 [#301]+[#319].
 - Dependency/package gates: **#413 changes `@concertable/mobile` source** (moves `brand/` into the tier + `files` += `assets`) → on merge `publish-fe-packages` republishes it WITH the brand assets. That republish is the prerequisite for the follow-up mobile carve gate (the carve restores the tier from the feed). No `api/**` → no backend platform-sync.
-- Last reconciled: 2026-08-07 — PR #413 source head `a8296d51b` is admitted to the merge queue at position 1 (`AWAITING_CHECKS`) after the one-time re-assertion. Next: follow its merge-group checks to `MERGED` or a terminal failure; then republish and turn on the mobile carve gate.
+- Last reconciled: 2026-08-07 — PR #413 merged as `62646f4cd` after full merge-group run 31195035539 passed. Next: transfer the observation-only ledger tail to a clean docs closeout worktree, remove the merged feature worktree/branch, and follow `publish-fe-packages` until the fixed `@concertable/mobile` package is live; then turn on the mobile carve gate.
 
 ## Current state
 
@@ -19,7 +19,7 @@ Phases 0, 1, 2, **3a, and 3b are on `main`**. Phase 3a (PR #378, merge `fba490e2
 
 ## Next Steps
 
-**1. Follow #413's admitted merge-group run, then turn on the mobile carve gate.** Poll queue state, PR state, PR-head failures, and the specific `pr-413-*` merge-group run until #413 is `MERGED` or a check fails; do not retry a failure. On merge, transfer this observation tail into a fresh docs closeout worktree and remove the feature worktree/branch before waiting. Follow the resulting `publish-fe-packages` run until it republishes `@concertable/mobile` WITH the brand assets. After that gate is green, create a fresh branch/worktree off current `origin/main` and open a follow-up PR that adds `mobile/{customer,b2b}` back to the `carve-fe` matrix. That carve restores the fixed published tier and runs `expo export` per surface — the definitive proof of the retarget. **Because mobile has never been bundled, expect the carve may surface further latent bundle bugs (fonts/native/etc.) past the asset one; fix each (on-branch if surface, or another publish-first cycle if tier) — never weaken the gate.** (Also logged in `app/mobile/TECH_DEBT.md`.)
+**1. Transfer post-merge recovery state, follow the FE publication, then turn on the mobile carve gate.** Create `Docs/platform_polyrepo_mobile-retarget_closeout` from fetched `origin/main`; verify and cherry-pick every commit after source head `a8296d51b` (active ledger only), update the ledger's worktree/branch identity, and remove the merged feature worktree plus local/remote source branch. From the closeout worktree, follow the #413-triggered `publish-fe-packages` run until it republishes `@concertable/mobile` WITH the brand assets. After that gate is green, create a fresh branch/worktree off current `origin/main` and open a follow-up PR that adds `mobile/{customer,b2b}` back to the `carve-fe` matrix. That carve restores the fixed published tier and runs `expo export` per surface — the definitive proof of the retarget. **Because mobile has never been bundled, expect the carve may surface further latent bundle bugs (fonts/native/etc.) past the asset one; fix each (on-branch if surface, or another publish-first cycle if tier) — never weaken the gate.** (Also logged in `app/mobile/TECH_DEBT.md`.)
 
 **2. FE import-boundary rule** — no ESLint/dependency-cruiser toolchain in `app/` yet; the carve CI is the primary structural boundary today (BE parity: carve = structural gate, build-time guard = fast second layer). Standing up ESLint `no-restricted-imports` across surfaces is a separate sub-project.
 
@@ -83,6 +83,13 @@ Gate: each item ends with its own green carve/build proof on its PR.
 - **Metro/nativewind/tailwind runtime configs left for Phase 3.** The Phase 2 gate is build + typecheck; the mobile app's metro `watchFolders`/nativewind `input`/tailwind `content` still point at `../shared` source. The app already resolves `@concertable/shared`/`customer` as symlinked packages the same way, so no in-monorepo runtime regression, but className/class-generation on the precompiled dist is unproven — a first-class Phase 3 item, not a silent gap.
 
 ## Event log
+
+### 2026-08-07 — #413 merged through the full-E2E merge queue
+
+- Action: Monitored the exact merge-group formation for #413 to a terminal result without retrying or mutating the queue.
+- Evidence: merge-group run [31195035539](https://github.com/Concertable/concertable/actions/runs/31195035539), branch `gh-readonly-queue/main/pr-413-68f6383487538cf631787d9afc1c03f107c0af2a`, completed `success`; the next PR poll reported `MERGED` with merge commit `62646f4cdd6933a695fc790e1329588fce3f928a`.
+- Outcome: the mobile retarget and `@concertable/mobile` brand-asset packaging fix are on `main`, with full queue E2E green.
+- Follow-up: move the observation tail to a docs closeout worktree, delete the merged feature worktree/branch, and follow the resulting FE package publication to success.
 
 ### 2026-08-07 — #413 admitted to the merge queue at position 1
 
