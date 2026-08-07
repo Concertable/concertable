@@ -92,7 +92,9 @@ no issues. Current `origin/main` at `b46d10ec8` is merged locally as `17c8bb2b3`
 verification is green: full Release solution build 0 errors, Payment unit 222/222, and Payment SQL
 integration 8/8 on a healthy Docker data path. The incremental review through `df76074c4` found no
 issues. The verified work head `d6ab44540` is pushed: local, remote-tracking, and PR #392 heads match.
-PR checks are running; it has not been enqueued.
+The checkpoint-transport head `bbe9a3522` is also verified across local, remote-tracking, and PR
+heads. PR checks are running and the exact head carries the required `full-e2e` override; it has not
+been enqueued.
 
 ## Next Steps
 
@@ -247,6 +249,15 @@ Clean: escrow `Result<Option<T>,E>` semantics, rounding/VAT/refund math, wire hy
   commission-branch implementation is donor evidence only; its behavior is now reconciled here.
 
 ## Event log
+
+### 2026-08-07 - Selected full merge-queue E2E for PR #392
+
+- Action: Verified two branch commits carry `Skip-E2E: true` trailers and applied the authoritative
+  `full-e2e` label to PR #392.
+- Evidence: PR head `bbe9a3522` has labels `[full-e2e]`, remains open, and its PR checks are running.
+- Outcome: The breaking Payment package cutover cannot inherit a historical E2E opt-out; both queue
+  E2E suites will run after admission.
+- Follow-up: Wait for the exact PR head's checks and execute `## Next Steps` when terminal green.
 
 ### 2026-08-07 - Pushed the verified compound Payment head
 
