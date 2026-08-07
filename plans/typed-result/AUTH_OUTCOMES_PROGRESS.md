@@ -4,17 +4,17 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_auth-outcomes`
 - Branch: `Feature/typed-result_auth-outcomes`
 - PR: not opened
-- Dependency/package gates: Auth's implementation remains independent of the Payment contract migration, but PR delivery is blocked by the repository-wide platform gate. Payment owned-result publication produced platform `0.1.0-alpha.0.853`; generated platform-sync PR #420 is red because B2B and Customer still consume removed Payment client interfaces. The owning ledger is `plans/TYPED_RESULT_MIGRATION_PAYMENT_PROGRESS.md` in `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-payment-owned-closeout`; it must complete PR #420 green and update this ledger before Auth resumes. After the Auth `api/**` change merges, this work still owns its own generated package publication/platform-sync gate to terminal green.
-- Last reconciled: `2026-08-07` from fresh `origin/main` `b66325acdee7979bb3771e4c28248364b769d402`, current branch head `8c6b2c320b4b345812fa98c39fcd3ac5f54c6f15`, GitHub PR/platform-sync state, and the registered Payment-owner handoff.
+- Dependency/package gates: Payment's repository-wide platform gate is complete: PR #420 merged as `372be1041` and post-merge platform `0.1.0-alpha.0.857` published successfully. Auth may resume delivery after syncing current `origin/main`. After the Auth `api/**` change merges, this work still owns its own generated package publication/platform-sync gate to terminal green.
+- Last reconciled: `2026-08-08` from fresh `origin/main` `372be1041b2050d8f62eea2435005a981ec222b4`, current branch head `8c6b2c320b4b345812fa98c39fcd3ac5f54c6f15`, GitHub PR/platform-sync state, and the discharged Payment-owner handoff.
 
 ## Current state
 
 The task directly matches branch `Feature/typed-result_auth-outcomes`: its committed diff is confined
 to Auth-owned runtime/tests, the Shared typed-result architecture guard, solution/integration-runner
 registration, and this plan pair. The worktree is clean, no branch PR or remote branch exists, and no
-other worktree owns overlapping Auth implementation. Fresh `origin/main` advanced to
-`b66325acdee7979bb3771e4c28248364b769d402`, leaving this branch 88 commits behind and 25 ahead.
-Current main is deliberately not merged while its generated platform-sync gate is red.
+other worktree owns overlapping Auth implementation. Fresh `origin/main` is `372be1041`, leaving this
+branch 101 commits behind and 26 ahead. The prior red platform gate is resolved; current main must be
+merged before the delivery verification is repeated.
 
 Before that advance, the clean branch was zero behind fresh `origin/main` after merge commits
 `ecb9351608d7a5b7ac3eb06f2342041cfa7bc492` and
@@ -63,23 +63,16 @@ three post-watermark branch-owned commits both completed with no findings. The i
 also checked the package/solution merge resolutions; later merge `e196f13e1` contains only already-
 merged mobile CI/docs changes. The clean review artifact was deleted under the review lifecycle rule.
 
-PR preflight is GREEN: the feature branch is valid, the working tree and code are clean, the branch is
-zero behind current main and 24 commits ahead, no Auth PR exists, no platform-sync PR is open, no
-published-package cut-over is in flight, and the terminal Release build is green.
+The earlier PR preflight was green at its recorded mainline checkpoint, but that result is now stale
+because `origin/main` advanced. Repeat it only after merging current main and rerunning the full Auth
+verification and incremental review gates.
 
 ## Next Steps
 
-Hard stop on the Payment owner recorded in
-`C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-payment-owned-closeout\plans\TYPED_RESULT_MIGRATION_PAYMENT_PROGRESS.md`:
-generated platform-sync PR #420 must merge green after its B2B/Customer consumer migration. That
-delivery session owns updating this ledger and surfacing this plan's resume prompt when the gate opens;
-this Auth worktree must not poll it.
-
-After that owner dispatch, fetch and merge fresh `origin/main`, reconcile the incoming Auth/package
-changes, repeat the affected Auth unit/integration, Release solution build, carve, mechanical gates,
-incremental review, and PR preflight, then use the plan-aware two-leg push protocol and open the plain
-GitHub PR. Require full merge-queue API and UI E2E: add no skip label or trailer and do not run E2E
-locally.
+Fetch and merge fresh `origin/main`, reconcile the incoming Auth/package changes, repeat the affected
+Auth unit/integration, Release solution build, carve, mechanical gates, incremental review, and PR
+preflight, then use the plan-aware two-leg push protocol and open the plain GitHub PR. Require full
+merge-queue API and UI E2E: add no skip label or trailer and do not run E2E locally.
 
 ## Completed work
 
@@ -137,10 +130,11 @@ locally.
   -p:UseSharedCompilation=false`: succeeded with 0 errors and 5 unrelated existing warnings.
 - Current-branch Auth unit definition contracts: 4 passed, 0 failed. Current typed-result architecture
   slice: 14 passed, 0 failed.
-- Current signature, legacy-carrier, Razor/Data boundary, local-core, model/migration, and branch/worktree
-  `git diff --check` gates passed. Branch is zero behind `origin/main`.
-- `pr-preflight`: GREEN; valid feature branch, clean code/tree, 0 behind and 24 ahead, no existing Auth
-  PR, no open platform-sync PR, and no package cut-over.
+- At the verified checkpoint, signature, legacy-carrier, Razor/Data boundary, local-core,
+  model/migration, and branch/worktree `git diff --check` gates passed; repeat them after the required
+  current-main merge.
+- Historical `pr-preflight`: GREEN at the prior current-main checkpoint; repeat after merging fresh
+  `origin/main` because the branch is now 101 commits behind.
 - Post-review convention checkpoint `dotnet test api/Concertable.Auth/tests/Concertable.Auth.UnitTests/Concertable.Auth.UnitTests.csproj --configuration Release`: 4 passed, 0 failed, 0 skipped.
 - Targeted `TypedResultArchitectureTests`: 14 passed, 0 failed, 0 skipped.
 - `dotnet build api/Concertable.Auth/tests/Concertable.Auth.IntegrationTests/Concertable.Auth.IntegrationTests.csproj --configuration Release --no-restore -m:1 -nr:false -p:UseSharedCompilation=false`: succeeded with 0 warnings and 0 errors.
@@ -285,6 +279,16 @@ finding IDs or dispositions exist. Later merge `e196f13e1` contains only already
   amendment/separate additive shared item before implementation proceeds.
 
 ## Event log
+
+### 2026-08-08 - Payment platform gate discharged
+
+- Action: Recorded the Payment owner's completed package and generated consumer-sync delivery.
+- Evidence: Payment PR #392 merged as `b66325ac`; platform-sync PR #420 merged as `372be1041` after
+  migrating B2B/Customer consumers; publish run `31225852815` produced platform
+  `0.1.0-alpha.0.857`, and sync run `31225952562` passed with no recursive follow-on PR.
+- Outcome: Auth delivery is no longer blocked by repository platform state. Fresh `origin/main` is
+  `372be1041`; this clean branch is 101 behind and 26 ahead.
+- Follow-up: execute `## Next Steps` in this worktree, beginning with the current-main merge.
 
 ### 2026-08-07 - Auth delivery blocked by Payment platform sync
 
