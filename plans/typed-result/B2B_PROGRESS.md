@@ -4,7 +4,7 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-B2BTypedResultMigration`
 - Branch: `Refactor/B2BTypedResultMigration`
 - PR: not opened
-- Last reconciled: 2026-08-07
+- Last reconciled: 2026-08-08
 
 ## Current state
 
@@ -29,29 +29,21 @@ and Venue 25/25. The migration exposed two stale transport assertions: polymorph
 now preserve their declared interface metadata, and revoked invitation acceptance asserts the typed
 `InvitationNotPending` Conflict contract.
 
-Checkpoint 6 remains blocked. Payment implementation PR #392 merged as
-`b66325acdee7979bb3771e4c28248364b769d402` and published platform `0.1.0-alpha.0.853`, but generated
-platform-sync PR #420 is red at its build check. B2B remains pinned to `0.1.0-alpha.0.847`; no adapter,
-string bridge, or local source dependency was introduced.
+The Payment dependency gate is open. Payment implementation PR #392 merged as `b66325ac`, generated
+platform-sync PR #420 landed the B2B/Customer owned-result consumer migration as `372be1041`, and the
+post-merge feed contains platform `0.1.0-alpha.0.857`. This branch remains on its earlier mainline
+checkpoint until the next session fetches and merges current `origin/main`; no adapter, string bridge,
+or local source dependency was introduced while waiting.
 
 ## Next Steps
 
-Checkpoints 1-5 remain shipped. Payment PR #392 has merged and published, but checkpoints 6-7 remain
-blocked on its red generated platform-sync PR #420. The canonical Payment owner ledger is
-`C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\PaymentOwnedResultExpansion\plans\TYPED_RESULT_MIGRATION_PAYMENT_PROGRESS.md`.
-Nothing can proceed here until the Payment delivery session repairs #420 and it lands green.
-The Payment owner ledger lists this B2B ledger under `## Downstream handoffs`. Do not poll the
-dependency or emit this plan's resume prompt while blocked; the Payment delivery session must update
-this ledger and surface its exact prompt when ready.
-
-When the Payment owner surfaces that #420 is green and merged: fetch and merge current `origin/main`
-in this worktree, verify the `0.1.0-alpha.0.853` or newer pinned `Concertable.Payment.Client` exposes
-the owned typed Result surface,
-then implement checkpoint 6 (Concert payment/cancel/finish workflows) and checkpoint 7 (FluentResults
-removal from the migrated B2B projects). Do not create a FluentResults adapter, string bridge, or local
-source dependency to cross the gate. Run the normal build, unit, architecture, and integration gates
-after the Payment-dependent implementation; reserve E2E for the merge queue unless a queue failure
-needs diagnosis.
+Checkpoints 1-5 remain shipped and the Payment dependency is discharged. Fetch and merge current
+`origin/main` in this worktree, verify the current platform pin exposes the owned
+`Concertable.Payment.Client` Result surface, then implement checkpoint 6 (Concert
+payment/cancel/finish workflows) and checkpoint 7 (FluentResults removal from the migrated B2B
+projects). Do not create a FluentResults adapter, string bridge, or local source dependency. Run the
+normal build, unit, architecture, and integration gates after the Payment-dependent implementation;
+reserve E2E for the merge queue unless a queue failure needs diagnosis.
 
 ## Completed work
 
@@ -100,8 +92,9 @@ needs diagnosis.
 - Shared API unit tests: 52 passed; the single remaining architecture failure is the pre-existing
   typed-Result/HTTP-exception guard, whose genuine B2B hit is the checkpoint-6 lifecycle bridge blocked
   on Payment. The new exhaustive-switch and disabled-implicit-conversion guards pass.
-- Payment gate: implementation PR #392 merged and published `0.1.0-alpha.0.853`; generated
-  platform-sync PR #420 is red at `build`, so B2B remains pinned to `0.1.0-alpha.0.847` and blocked.
+- Payment gate: implementation PR #392 merged; generated platform-sync PR #420 merged as
+  `372be1041`; post-merge platform `0.1.0-alpha.0.857` published successfully. Checkpoints 6-7 are
+  unblocked after this branch syncs current `origin/main`.
 - Docker health: fresh-container host-to-container HTTP data round-trip passed.
 - B2B integration suite: Artist 17/17, Concert 148/148, Tenant 56/56, User 3/3, Venue 25/25;
   249/249 effective passes. Tenant's first complete run was 55/56 because one stale HTTP assertion
@@ -133,6 +126,16 @@ needs diagnosis.
   integration expectation was corrected from Bad Request to Conflict.
 
 ## Event log
+
+### 2026-08-08 - Payment dependency gate discharged
+
+- Action: Recorded the canonical Payment delivery session's merged package and consumer-sync result.
+- Evidence: Payment PR #392 merged as `b66325ac`; platform-sync PR #420 merged as `372be1041` after
+  migrating B2B/Customer to the owned Payment clients; post-merge publish run `31225852815` produced
+  platform `0.1.0-alpha.0.857` and sync run `31225952562` passed with no follow-on PR.
+- Outcome: checkpoints 6-7 are no longer blocked; this worktree can sync current `origin/main` and
+  continue the Payment-dependent B2B migration without a compatibility bridge.
+- Follow-up: execute `## Next Steps` from this worktree.
 
 ### 2026-08-07 - current-main sync and exhaustive error-union reconciliation
 
