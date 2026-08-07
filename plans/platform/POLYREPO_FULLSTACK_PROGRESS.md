@@ -3,9 +3,9 @@
 - Plan: `plans/platform/POLYREPO_FULLSTACK_PLAN.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\platform_polyrepo_mobile-retarget` — created off `origin/main` @ `529dba9dd` for the Phase 3 **mobile retarget**. (The `platform_polyrepo_carved-css` worktree was pruned after #405 merged.)
 - Branch: `Feature/platform_polyrepo_mobile-retarget`; reviewed remote source head `a8296d51b`, off `origin/main` @ `529dba9dd`. Carries the mobile bundler retarget, the App.tsx CSS-import fix, and the `@concertable/mobile` brand-asset packaging fix. **Publish-first**: mobile is intentionally NOT in the `carve-fe` matrix on this PR. Local commits after `a8296d51b` are plan/ledger observation checkpoints only and must not be pushed to the source PR.
-- PR: **mobile-retarget PR [#413](https://github.com/Concertable/concertable/pull/413) OPEN/CLEAN at reviewed head `a8296d51b`; auto-merge currently disabled** — the one-time re-assertion's disable half succeeded, but `gh pr merge 413 --merge --auto` was rejected because the merge queue now selects the strategy. No source-head change or test failure occurred; enable-only remains to be issued with the queue-selected method. Prior: carved-web CSS **[#405](https://github.com/Concertable/concertable/pull/405) MERGED** (`d9c62e2c5`) + [#411]; Phase 3b [#389] (`1cbeb2175`) + [#398]; Phase 3a [#378] (`fba490e25`); Phase 2 [#360] (`a3f9535`); Phase 1 [#301]+[#319].
+- PR: **mobile-retarget PR [#413](https://github.com/Concertable/concertable/pull/413) QUEUED at reviewed head `a8296d51b`** — GraphQL reports merge-queue state `AWAITING_CHECKS`, position 1. The queue owns the merge method and has consumed the auto-merge request, so `autoMergeRequest=null` is expected after admission. Prior: carved-web CSS **[#405](https://github.com/Concertable/concertable/pull/405) MERGED** (`d9c62e2c5`) + [#411]; Phase 3b [#389] (`1cbeb2175`) + [#398]; Phase 3a [#378] (`fba490e25`); Phase 2 [#360] (`a3f9535`); Phase 1 [#301]+[#319].
 - Dependency/package gates: **#413 changes `@concertable/mobile` source** (moves `brand/` into the tier + `files` += `assets`) → on merge `publish-fe-packages` republishes it WITH the brand assets. That republish is the prerequisite for the follow-up mobile carve gate (the carve restores the tier from the feed). No `api/**` → no backend platform-sync.
-- Last reconciled: 2026-08-07 — PR #413 source head `a8296d51b` remains review-clean, current, and green. The one-time queue re-assertion disabled auto-merge, but the CLI rejected the old explicit merge-method syntax and left it disabled. Next: enable auto-merge without specifying a merge method, verify admission, and follow full merge-group E2E to merge; then republish and turn on the mobile carve gate.
+- Last reconciled: 2026-08-07 — PR #413 source head `a8296d51b` is admitted to the merge queue at position 1 (`AWAITING_CHECKS`) after the one-time re-assertion. Next: follow its merge-group checks to `MERGED` or a terminal failure; then republish and turn on the mobile carve gate.
 
 ## Current state
 
@@ -19,7 +19,7 @@ Phases 0, 1, 2, **3a, and 3b are on `main`**. Phase 3a (PR #378, merge `fba490e2
 
 ## Next Steps
 
-**1. Finish enabling #413 auto-merge, then complete its queue run and turn on the mobile carve gate.** Run the enable-only command without an explicit merge method for reviewed source head `a8296d51b`, verify actual queue admission, then follow the merge-group carves + build + unit + integration + full E2E to `MERGED`. Follow the resulting `publish-fe-packages` run until it republishes `@concertable/mobile` WITH the brand assets. After that gate is green, create a fresh branch/worktree off current `origin/main` and open a follow-up PR that adds `mobile/{customer,b2b}` back to the `carve-fe` matrix. That carve restores the fixed published tier and runs `expo export` per surface — the definitive proof of the retarget. **Because mobile has never been bundled, expect the carve may surface further latent bundle bugs (fonts/native/etc.) past the asset one; fix each (on-branch if surface, or another publish-first cycle if tier) — never weaken the gate.** (Also logged in `app/mobile/TECH_DEBT.md`.)
+**1. Follow #413's admitted merge-group run, then turn on the mobile carve gate.** Poll queue state, PR state, PR-head failures, and the specific `pr-413-*` merge-group run until #413 is `MERGED` or a check fails; do not retry a failure. On merge, transfer this observation tail into a fresh docs closeout worktree and remove the feature worktree/branch before waiting. Follow the resulting `publish-fe-packages` run until it republishes `@concertable/mobile` WITH the brand assets. After that gate is green, create a fresh branch/worktree off current `origin/main` and open a follow-up PR that adds `mobile/{customer,b2b}` back to the `carve-fe` matrix. That carve restores the fixed published tier and runs `expo export` per surface — the definitive proof of the retarget. **Because mobile has never been bundled, expect the carve may surface further latent bundle bugs (fonts/native/etc.) past the asset one; fix each (on-branch if surface, or another publish-first cycle if tier) — never weaken the gate.** (Also logged in `app/mobile/TECH_DEBT.md`.)
 
 **2. FE import-boundary rule** — no ESLint/dependency-cruiser toolchain in `app/` yet; the carve CI is the primary structural boundary today (BE parity: carve = structural gate, build-time guard = fast second layer). Standing up ESLint `no-restricted-imports` across surfaces is a separate sub-project.
 
@@ -83,6 +83,13 @@ Gate: each item ends with its own green carve/build proof on its PR.
 - **Metro/nativewind/tailwind runtime configs left for Phase 3.** The Phase 2 gate is build + typecheck; the mobile app's metro `watchFolders`/nativewind `input`/tailwind `content` still point at `../shared` source. The app already resolves `@concertable/shared`/`customer` as symlinked packages the same way, so no in-monorepo runtime regression, but className/class-generation on the precompiled dist is unproven — a first-class Phase 3 item, not a silent gap.
 
 ## Event log
+
+### 2026-08-07 — #413 admitted to the merge queue at position 1
+
+- Action: Issued the enable-only queue command after the explicit-method form was rejected, then verified admission directly through GraphQL.
+- Evidence: `gh pr merge 413 --auto` reported `already queued to merge`; the authoritative follow-up query reports PR `OPEN`, source head `a8296d51b`, `mergeQueueEntry.state=AWAITING_CHECKS`, `position=1`, and no source-head change. A transient 401 affected only the same command's follow-up display; the independent GraphQL retry succeeded.
+- Outcome: the one-time re-evaluation remedy worked and #413 is now in the full-E2E merge queue.
+- Follow-up: monitor the specific merge-group run to merge or a terminal failure; never retry a failing run.
 
 ### 2026-08-07 — #413 auto-merge disable succeeded; explicit-method re-enable rejected
 
