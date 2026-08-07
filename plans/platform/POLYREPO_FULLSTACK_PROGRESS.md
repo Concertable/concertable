@@ -1,11 +1,11 @@
 # Full-stack polyrepo — frontend build separation progress
 
 - Plan: `plans/platform/POLYREPO_FULLSTACK_PLAN.md`
-- Worktree: `C:\tmp\Concertable-polyrepo-mobile-closeout` — clean post-merge recovery anchor created from `origin/main` @ `59bdd7a8a` after #413 merged. The merged feature worktree has been removed.
+- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-polyrepo-mobile-closeout` — clean post-merge recovery anchor created from `origin/main` @ `59bdd7a8a` after #413 merged. The merged feature worktree has been removed.
 - Branch: `Docs/platform_polyrepo_mobile-retarget_closeout`; contains only the five ledger observation checkpoints transferred from the source branch plus this closeout-identity checkpoint. It must remain local until the current mobile-retarget lifecycle reaches its next durable handoff.
 - PR: **mobile-retarget PR [#413](https://github.com/Concertable/concertable/pull/413) MERGED as `62646f4cdd6933a695fc790e1329588fce3f928a`** — reviewed source head `a8296d51b`; full merge-group run [31195035539](https://github.com/Concertable/concertable/actions/runs/31195035539) completed successfully. Prior: carved-web CSS **[#405](https://github.com/Concertable/concertable/pull/405) MERGED** (`d9c62e2c5`) + [#411]; Phase 3b [#389] (`1cbeb2175`) + [#398]; Phase 3a [#378] (`fba490e25`); Phase 2 [#360] (`a3f9535`); Phase 1 [#301]+[#319].
-- Dependency/package gates: **#413 changes `@concertable/mobile` source** (moves `brand/` into the tier + `files` += `assets`) → on merge `publish-fe-packages` republishes it WITH the brand assets. That republish is the prerequisite for the follow-up mobile carve gate (the carve restores the tier from the feed). No `api/**` → no backend platform-sync.
-- Last reconciled: 2026-08-07 — PR #413 merged as `62646f4cd`; recovery is in the clean docs closeout worktree, and the merged feature worktree plus local/remote source branch are gone. Next: follow `publish-fe-packages` until the fixed `@concertable/mobile` package is live; then turn on the mobile carve gate.
+- Dependency/package gates: **#413 FE publication DONE** — successful descendant run [31197751649](https://github.com/Concertable/concertable/actions/runs/31197751649) published and feed-verified `@concertable/mobile@0.1.0-alpha.0.2571` with the brand assets. This unblocks the follow-up mobile carve gate. No `api/**` → no backend platform-sync.
+- Last reconciled: 2026-08-07 — PR #413 merged as `62646f4cd`; `@concertable/mobile@0.1.0-alpha.0.2571` is published and feed-verified; the merged source worktree/branch are gone and recovery is in this closeout worktree. Next: create the fresh mobile-carve branch/worktree off current `origin/main`, transfer the ledger recovery state, and add both mobile surfaces to the `carve-fe` matrix.
 
 ## Current state
 
@@ -19,7 +19,7 @@ Phases 0, 1, 2, **3a, and 3b are on `main`**. Phase 3a (PR #378, merge `fba490e2
 
 ## Next Steps
 
-**1. Follow the FE publication, then turn on the mobile carve gate.** Find the #413-triggered `publish-fe-packages` run by merge SHA `62646f4cdd6933a695fc790e1329588fce3f928a` and follow it to terminal success, confirming the published version includes `@concertable/mobile` WITH the brand assets. After that gate is green, create a fresh branch/worktree off current `origin/main` and open a follow-up PR that adds `mobile/{customer,b2b}` back to the `carve-fe` matrix. That carve restores the fixed published tier and runs `expo export` per surface — the definitive proof of the retarget. **Because mobile has never been bundled, expect the carve may surface further latent bundle bugs (fonts/native/etc.) past the asset one; fix each (on-branch if surface, or another publish-first cycle if tier) — never weaken the gate.** (Also logged in `app/mobile/TECH_DEBT.md`.)
+**1. Turn on the mobile carve gate from a fresh branch/worktree.** Fetch current `origin/main`, create `Feature/platform_polyrepo_mobile-carve`, transfer this ledger-only recovery tail into it, update the ledger identity, and remove this closeout worktree/branch. Add `mobile/{customer,b2b}` to the `carve-fe` matrix and open the PR so each surface restores `@concertable/mobile@0.1.0-alpha.0.2571` from the feed and runs `expo export` — the definitive proof of the retarget. **Because mobile has never been bundled, expect the carve may surface further latent bundle bugs (fonts/native/etc.) past the asset one; fix each (on-branch if surface, or another publish-first cycle if tier) — never weaken the gate.** (Also logged in `app/mobile/TECH_DEBT.md`.)
 
 **2. FE import-boundary rule** — no ESLint/dependency-cruiser toolchain in `app/` yet; the carve CI is the primary structural boundary today (BE parity: carve = structural gate, build-time guard = fast second layer). Standing up ESLint `no-restricted-imports` across surfaces is a separate sub-project.
 
@@ -83,6 +83,13 @@ Gate: each item ends with its own green carve/build proof on its PR.
 - **Metro/nativewind/tailwind runtime configs left for Phase 3.** The Phase 2 gate is build + typecheck; the mobile app's metro `watchFolders`/nativewind `input`/tailwind `content` still point at `../shared` source. The app already resolves `@concertable/shared`/`customer` as symlinked packages the same way, so no in-monorepo runtime regression, but className/class-generation on the precompiled dist is unproven — a first-class Phase 3 item, not a silent gap.
 
 ## Event log
+
+### 2026-08-07 — `@concertable/mobile@0.1.0-alpha.0.2571` published and feed-verified
+
+- Action: Located the first successful frontend-package publication whose head contains #413's merge, then inspected its job and package logs for the mobile tier and feed-verification result.
+- Evidence: run [31197751649](https://github.com/Concertable/concertable/actions/runs/31197751649) at `59bdd7a8a` is a descendant of #413 merge `62646f4cd`, completed `success`, and published all five tiers at `0.1.0-alpha.0.2571`; the log records `+ @concertable/mobile@0.1.0-alpha.0.2571` and the subsequent `verify-fe-package.mjs "@concertable/mobile@$VERSION" @concertable/mobile --metro-only` feed verification inside the successful job.
+- Outcome: the fixed mobile tier, including its packaged brand assets, is live on the GitHub npm feed; the publish-first prerequisite for mobile carve CI is terminal green. The closeout worktree now lives at the shorter writable `.worktrees\Docs-polyrepo-mobile-closeout` path.
+- Follow-up: start the fresh mobile-carve branch/worktree and add `mobile/customer` plus `mobile/b2b` to the `carve-fe` matrix.
 
 ### 2026-08-07 — merged mobile-retarget worktree and branch removed
 
