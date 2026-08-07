@@ -59,10 +59,12 @@ Each ledger keeps these current sections above its chronological event log:
 - completed work with commit or PR evidence;
 - verification and review state;
 - decisions, discoveries, blockers, and deviations;
-- **`## Next Steps`** — the paste-ready prompt for the next agent: the concrete step(s) to take now,
-  self-contained, with any prerequisite or blocking gate. This is the **single source of truth** for
-  what to do next; resume/handoff prompts point here instead of restating it, so a prompt can never
-  drift from reality. Keep it current at every checkpoint.
+- **`## Next Steps`** — the single resolved action for the next agent, expressed as concrete,
+  self-contained steps with any prerequisite or blocking gate. Apply the repository's standing
+  instructions and current evidence before writing it, so it directs execution instead of presenting
+  alternative paths. This is the **single source of truth** for what to do next; resume/handoff prompts
+  point here instead of restating it, so a prompt can never drift from reality. Keep it current at every
+  checkpoint.
 
 Update the summary whenever an event changes it, then append the evidenced event to the log. Include
 enough commands, paths, identifiers, results, and reasoning to continue without the prior conversation;
