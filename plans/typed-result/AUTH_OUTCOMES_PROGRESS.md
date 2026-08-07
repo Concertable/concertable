@@ -4,12 +4,19 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_auth-outcomes`
 - Branch: `Feature/typed-result_auth-outcomes`
 - PR: not opened
-- Dependency/package gates: No prerequisite dependency gate. Auth consumes the shipped owned Kernel foundation through `ConcertablePlatformVersion` `0.1.0-alpha.0.847`; no platform-sync PR is open. Auth remains independent of the Payment, B2B, and Customer migrations. After this `api/**` change merges, this work owns its generated package publication/platform-sync gate to terminal green.
-- Last reconciled: `2026-08-07` from fresh `origin/main` `83a3f49a194c5faff60b7912d7c9b8452679f6f0`, current branch head `e196f13e19f70285d103c5fe1d5db1066f133fb3`, terminal local verification, incremental review, and PR preflight.
+- Dependency/package gates: Auth's implementation remains independent of the Payment contract migration, but PR delivery is blocked by the repository-wide platform gate. Payment owned-result publication produced platform `0.1.0-alpha.0.853`; generated platform-sync PR #420 is red because B2B and Customer still consume removed Payment client interfaces. The owning ledger is `plans/TYPED_RESULT_MIGRATION_PAYMENT_PROGRESS.md` in `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-payment-owned-closeout`; it must complete PR #420 green and update this ledger before Auth resumes. After the Auth `api/**` change merges, this work still owns its own generated package publication/platform-sync gate to terminal green.
+- Last reconciled: `2026-08-07` from fresh `origin/main` `b66325acdee7979bb3771e4c28248364b769d402`, current branch head `8c6b2c320b4b345812fa98c39fcd3ac5f54c6f15`, GitHub PR/platform-sync state, and the registered Payment-owner handoff.
 
 ## Current state
 
-The clean branch is zero behind fresh `origin/main` after merge commits
+The task directly matches branch `Feature/typed-result_auth-outcomes`: its committed diff is confined
+to Auth-owned runtime/tests, the Shared typed-result architecture guard, solution/integration-runner
+registration, and this plan pair. The worktree is clean, no branch PR or remote branch exists, and no
+other worktree owns overlapping Auth implementation. Fresh `origin/main` advanced to
+`b66325acdee7979bb3771e4c28248364b769d402`, leaving this branch 88 commits behind and 25 ahead.
+Current main is deliberately not merged while its generated platform-sync gate is red.
+
+Before that advance, the clean branch was zero behind fresh `origin/main` after merge commits
 `ecb9351608d7a5b7ac3eb06f2342041cfa7bc492` and
 `e196f13e19f70285d103c5fe1d5db1066f133fb3`. The first range added Auth AppHost extension wiring and
 platform package `0.847`; the second changed only mobile CI and documentation. Neither changed the
@@ -62,10 +69,17 @@ published-package cut-over is in flight, and the terminal Release build is green
 
 ## Next Steps
 
-Push the Auth branch using the plan-aware two-leg push protocol, verifying the work head and checkpoint
-head against the remote branch. Then open a plain GitHub PR for the verified branch. Require full
-merge-queue API and UI E2E: add no skip label or trailer. Record the remote heads, PR number, URL, and
-exact next delivery action here; do not run E2E locally.
+Hard stop on the Payment owner recorded in
+`C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-payment-owned-closeout\plans\TYPED_RESULT_MIGRATION_PAYMENT_PROGRESS.md`:
+generated platform-sync PR #420 must merge green after its B2B/Customer consumer migration. That
+delivery session owns updating this ledger and surfacing this plan's resume prompt when the gate opens;
+this Auth worktree must not poll it.
+
+After that owner dispatch, fetch and merge fresh `origin/main`, reconcile the incoming Auth/package
+changes, repeat the affected Auth unit/integration, Release solution build, carve, mechanical gates,
+incremental review, and PR preflight, then use the plan-aware two-leg push protocol and open the plain
+GitHub PR. Require full merge-queue API and UI E2E: add no skip label or trailer and do not run E2E
+locally.
 
 ## Completed work
 
@@ -271,6 +285,19 @@ finding IDs or dispositions exist. Later merge `e196f13e1` contains only already
   amendment/separate additive shared item before implementation proceeds.
 
 ## Event log
+
+### 2026-08-07 - Auth delivery blocked by Payment platform sync
+
+- Action: Refetched origin and GitHub before the planned push, revalidated worktree/branch ownership,
+  and traced the open repository platform gate to Payment owned-result publication.
+- Evidence: clean Auth branch `8c6b2c320b4b345812fa98c39fcd3ac5f54c6f15`; no branch PR or remote
+  branch; fresh `origin/main` `b66325acdee7979bb3771e4c28248364b769d402`; branch 88 behind and 25
+  ahead. Platform-sync PR #420 at `c2679d1ad6e0d245d0aa8b7f830083b22aee2247` is open/red: build run
+  `31212334407` reports 24 missing Payment client-interface errors across B2B and Customer.
+- Outcome: Push/PR preflight is blocked by a genuine red platform-sync gate. Auth is registered as a
+  downstream handoff in the Payment owner ledger and will not merge the mid-cutover mainline or poll.
+- Follow-up: The Payment owner must migrate PR #420 to terminal green, update this ledger, and surface
+  the Auth resume prompt.
 
 ### 2026-08-07 - Verification, incremental review, and PR preflight completed
 
