@@ -54,7 +54,7 @@ Customer through the generated platform-sync PR.
 - [x] Complete Payment SQL integration on a healthy Docker engine.
 - [x] Incrementally review and push the current verified branch to PR #392.
 - [x] Run full merge-queue E2E and follow PR #392 to a terminal state.
-- [ ] Own package publication and the generated breaking platform-sync PR through green.
+- [x] Own package publication and the generated breaking platform-sync PR through green.
 - [ ] Wake the blocked B2B ledger, close donor PR #296, and close out this plan and ledger together.
 
 ## Verification gates

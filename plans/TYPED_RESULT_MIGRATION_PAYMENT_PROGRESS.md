@@ -8,7 +8,7 @@
 - Dependency/package gates: This branch is the exclusive canonical implementation owner for Payment Phase 2. Phase 1 merged in PR #290 and platform-synced in PR #291; Payment currently consumes platform `0.1.0-alpha.0.847`. Removing the published FluentResults client surface is an intentional breaking package cutover: Payment must merge and publish before B2B/Customer can migrate on the generated platform-sync PR.
 - Downstream handoffs: B2B checkpoints 6-7 are waiting in `plans/typed-result/B2B_PROGRESS.md`
   (`Refactor/B2BTypedResultMigration`) for this branch to merge, publish, and platform-sync green.
-- Last reconciled: 2026-08-07 from local Git, `origin/main` at `59bdd7a8a`, and GitHub PR state
+- Last reconciled: 2026-08-08 from local Git, `origin/main`, GitHub PR state, and workflow runs
 
 ## Current state
 
@@ -125,11 +125,24 @@ solution builds with 0 errors; legacy-client grep is empty; Concert 79/79, Tenan
 5/5 projects and Customer passed 4/4 projects. Replacement CI is pending and the existing
 `platform-sync-broken` label still reflects the superseded red head.
 
+Replacement PR CI run `31220241305` passed. Merge-group run `31220911252` then passed the complete
+build, unit, integration, API E2E, and UI E2E gate. Two later merge groups ran concurrently after
+docs-only admin merges advanced `main`; both hit the same shared Stripe hold collision. GitHub's
+subsequent isolated #420 group `31223601869` passed build, unit, integration, API E2E, and B2B UI but
+its Customer UI run timed out waiting for Stripe's card iframe in `Customer completes 3DS challenge`.
+GitHub nevertheless merged PR #420 as `372be1041` on 2026-08-07 at 23:02 UTC. The consumer migration
+is present on `main`, the queue entry is gone, and no code remains stranded on the sync branch.
+
+Post-merge package publication run `31225852815` passed and published platform
+`0.1.0-alpha.0.857`, including the migrated `Concertable.Payment.Client`. Platform-sync run
+`31225952562` also passed and correctly created no recursive follow-on sync PR. The Payment package
+and consumer cutover gate is terminal; the B2B and Auth dependency ledgers can now be woken.
+
 ## Next Steps
 
-Follow replacement CI for exact PR #420 head `d67416546` to a terminal result and, if green, confirm
-its existing auto-merge request lands the platform sync. Then update the waiting B2B ledger and close
-frozen donor PR #296 only after PR #420 is merged and the canonical package gate is complete.
+Update the waiting B2B and Auth ledgers with the merged #420 / published `0.1.0-alpha.0.857` gate and
+their exact resume actions. Close frozen donor PR #296, remove the merged sync worktree, then complete
+the Payment terminal checkpoint and delete this plan/ledger together through the docs closeout flow.
 
 ## Downstream handoffs
 
@@ -291,6 +304,19 @@ Clean: escrow `Result<Option<T>,E>` semantics, rounding/VAT/refund math, wire hy
   commission-branch implementation is donor evidence only; its behavior is now reconciled here.
 
 ## Event log
+
+### 2026-08-08 - Platform sync and post-merge publication completed
+
+- Action: Followed generated PR #420 through replacement CI and merge-queue runs, diagnosed the
+  concurrent Stripe-fixture collision, and confirmed GitHub's final merge plus post-merge workflows.
+- Evidence: PR #420 merged as `372be1041`; isolated merge-group run `31223601869` passed every gate
+  except Customer UI scenario `Customer completes 3DS challenge`, which timed out waiting for Stripe's
+  card iframe. Publish run `31225852815` and platform-sync run `31225952562` both passed; platform
+  `0.1.0-alpha.0.857` restored successfully from the feed and no recursive sync PR remains open.
+- Outcome: Payment's breaking package cutover and B2B/Customer consumer migration are landed on
+  `main`; the B2B and Auth dependency gates are open.
+- Follow-up: Update both waiting ledgers, close donor PR #296, clean the sync worktree, and finish the
+  docs-only Payment closeout.
 
 ### 2026-08-07 - Repaired and pushed platform-sync PR #420
 
