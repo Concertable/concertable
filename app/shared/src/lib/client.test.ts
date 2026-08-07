@@ -63,24 +63,22 @@ describe("configureClient", () => {
     expect(response.data).toBeNull();
   });
 
-  it("preserves unexpected errors during the additive rollout", async () => {
+  it("maps unexpected responses to ApiError", async () => {
     const { client } = createConfiguredClient();
 
     await expect(client.get("/missing")).rejects.toMatchObject({
-      isAxiosError: true,
-      response: {
-        status: 404,
-        data: { title: "Not found", detail: "Not ready" },
-      },
+      name: "ApiError",
+      status: 404,
+      details: { title: "Not found", detail: "Not ready" },
     });
   });
 
-  it("runs unauthorized handling before preserving the error", async () => {
+  it("runs unauthorized handling before mapping the error", async () => {
     const { client, onUnauthorized } = createConfiguredClient();
 
     await expect(client.get("/unauthorized")).rejects.toMatchObject({
-      isAxiosError: true,
-      response: { status: 401 },
+      name: "ApiError",
+      status: 401,
     });
     expect(onUnauthorized).toHaveBeenCalledOnce();
   });
