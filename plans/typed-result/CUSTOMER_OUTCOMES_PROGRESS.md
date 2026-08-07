@@ -5,11 +5,11 @@
 - Branch: `Feature/typed-result_customer-outcomes`
 - PR: not opened
 - Dependency/package gates: owned Kernel foundation PR #290 and platform sync #291 are shipped; no Payment/B2B package dependency; platform-sync PR #373 shipped `0.1.0-alpha.0.814` green in merge commit `9169107c0`; PR #282 remains the exclusive open owner of Ticket/Concert/Customer Payment work and is not a dependency
-- Last reconciled: 2026-08-06T10:52:00+01:00 from current `origin/main` `48bd0eaf5e`, local refs/worktrees, GitHub PR metadata, PR #282 ownership, green platform-sync PR #393, merge commit `9a3a947b7`, and the complete Phase 3 verification gate
+- Last reconciled: 2026-08-07T19:09:21+01:00 from current `origin/main` `b46d10ec8`, local refs/worktrees, GitHub PR metadata, open PR #282 ownership, no open platform-sync PR, the current branch head, the current typed-error conventions, and the complete Phase 4 verification gate
 
 ## Current state
 
-Phases 1 through 3 are complete in local commits after this checkpoint. User profile absence is
+Phases 1 through 4 are complete through this checkpoint. User profile absence is
 `Option<CustomerDto>` at the application boundary; repository and module multi-user lookups are
 materialized `IReadOnlyList` values; the existing Preference and UserClaims consumers remain
 wire-compatible; and `SaveLocationAsync` remains plain. User unit coverage passed 14/14, direct
@@ -22,6 +22,20 @@ projects with 0 errors, scoped carrier/collection/ownership inventories, and `gi
 The long worktree's default Debug native-output path reaches 259 characters and prevents Windows
 from loading `Microsoft.Data.SqlClient.SNI.dll`; the supported short `--artifacts-path
 C:\tmp\CustomerUserIntegrationArtifacts` route passed the isolated reproduction and full wrapper.
+
+The branch is current with `origin/main` `b46d10ec8`. Review and Preference use named Dunet cases,
+one exhaustive root `Definition` switch, generic definition factories, direct case construction, and
+per-case `[ErrorCode]` attributes only where the established wire code differs from current name
+derivation. Exact definition tests preserve every published code, message, and kind, and Shared.Api's
+architecture guard enforces the current union shape.
+
+Venue and Artist expose `Option` only at their application/service boundaries, keep repository
+lookups nullable, and match back to their existing anonymous 200/404 responses. Both modules own new
+unit/integration projects with solution and runner discovery. Their unit suites pass 2/2 each; the
+module integration wrappers pass B2B Venue 25/25 plus Customer Venue 2/2, and B2B Artist 17/17 plus
+Customer Artist 2/2. Review remains 30/30 and Preference 19/19 against the current platform pin.
+Shared.Api passes 50/50, the Release solution builds with 0 errors, and the isolated 36-project
+Customer package carve builds with 0 errors.
 
 Preference now owns exact duplicate-create,
 missing-update, and foreign-update outcomes; ordinary user-preference absence is `Option`; returned
@@ -44,17 +58,12 @@ shared `Directory.Packages.props` version entry, so that entry stays.
 
 ## Next Steps
 
-Implement Phase 4 — Venue and Artist detail Options. Convert only the application services to Option,
-preserving nullable repositories and the existing 200/404 HTTP endpoints. Add the owned Venue and
-Artist unit/integration test projects, solution wiring, and integration-runner discovery described by
-the plan.
-
-Run the affected unit and integration suites through the `integration-debug` workflow, Shared.Api,
-Release solution build, the CI-equivalent Customer carve, scoped carrier/collection/ownership
-inventories, and `git diff --check`. Re-fetch and reconcile only if the branch is behind and the tree
-can be preserved safely; re-check PR #282 ownership and platform sync. Do not run local E2E. Update
-the plan and ledger, check off Phase 4, and commit the green checkpoint locally. Do not push. End with
-the pointer-only resume prompt from this ledger.
+Execute Phase 5's five-module scope audit and delivery gate on the current branch. Run the combined
+Review, Preference, User, Venue, Artist, Shared.Api, Release solution, Customer carve, nullable/list/
+carrier, ownership, and `git diff --check` gates; keep local E2E deferred to the full merge-queue tier.
+Then run `/code-review`, address every fixable finding in separate commits with incremental review,
+and stop at the push/PR boundary unless a delivery instruction authorizes it. Keep this plan and
+ledger live through PR, merge, publication, and platform sync.
 
 ## Completed work
 
@@ -72,6 +81,9 @@ the pointer-only resume prompt from this ledger.
   integration-runner discovery in this commit.
 - Completed Phase 3 User profile Option, materialized repository/module lists, existing-consumer
   compatibility, HTTP coverage, and owned unit coverage in this commit.
+- Completed Phase 4's current-convention Review/Preference error migration, Venue/Artist service
+  Options and unchanged HTTP terminals, owned tests, solution/runner discovery, and full local gate
+  in this commit.
 
 ## Verification
 
@@ -180,6 +192,32 @@ the pointer-only resume prompt from this ledger.
   Platform-sync PR #393 is open with every build, carve, unit, and integration check green. This
   branch has no PR and has not been pushed.
 - Local E2E was not run because the final behavior-changing PR requires the full merge-queue tier.
+- Current convention/Phase 4 unit gate passed: Review 30/30, Preference 19/19, Venue 2/2, and Artist
+  2/2 in Release with separate short artifacts roots.
+- Phase 4 integration pre-flight: `docker ps` returned HTTP 500 from the Docker Desktop Linux engine;
+  no Venue or Artist integration test process or SQL container started.
+- Current-main reconciliation: preserved the complete dirty Phase 4 tree across 18 product/workflow
+  commits through merge `63924a67a`, then across two agent-hook-only commits through merge
+  `4730b4d8e`; the branch is 0 behind `origin/main` `b46d10ec8`. None of the 20 base commits changed
+  `api/agents/CODE_CONVENTIONS.md` or the typed-error rules.
+- Live ownership/package gates: PR #282 remains open at `26ed63b896` and owns only Ticket/Concert/
+  Customer Payment paths; no platform-sync PR is open. The final branch diff contains no excluded
+  Ticket, Concert, Payment, checkout/purchase, shared Kernel source, model, or migration path.
+- Phase 4 integration pre-flight recovered: `docker ps` succeeded. `scripts/integration.ps1 venue
+  --artifacts-path C:\tmp\CustomerVenueIntegrationArtifacts` passed B2B Venue 25/25 and Customer
+  Venue 2/2; the equivalent Artist run passed B2B Artist 17/17 and Customer Artist 2/2.
+- Current-pin unit gate passed Review 30/30, Preference 19/19, Venue 2/2, and Artist 2/2 in Release.
+  Shared.Api passed 50/50 in its repository-local output layout, including exact error-definition and
+  Dunet architecture checks. Its repository-root discovery intentionally cannot run from an external
+  `--artifacts-path`, so only integration projects use the short-root workaround.
+- `dotnet build api/Concertable.slnx --configuration Release` succeeded with 0 errors and 9 existing
+  warnings. The CI-equivalent isolated Customer carve discovered and built all 36 non-test/non-AppHost
+  projects from package references with `-p:MinVerSkip=true`, with 0 errors; its verified temporary
+  directory was removed.
+- Final inventories place Results/Options only at owned application/service terminals, keep
+  single-item nullability in repository contracts, use successful empty `IReadOnlyList` query returns,
+  construct every Dunet case directly, and find no typed-slice HTTP exception. The Customer package
+  diff adds Dunet only and leaves the existing FluentResults pin unchanged; `git diff --check` passed.
 
 ## Reviews
 
@@ -217,6 +255,9 @@ Phase 5 requires `/code-review` before delivery.
 - In this long worktree, default Debug output puts the x64 SqlClient SNI DLL at a 259-character path,
   which Windows rejects with `ERROR_FILENAME_EXCED_RANGE`. Use a short supported `--artifacts-path`
   for integration runs from this worktree; the binaries and application behavior are otherwise green.
+- The 2026-08-07 typed-error convention replaces payload-free static error catalogs with named Dunet
+  cases and replaces generated `Match`/per-case definitions with one exhaustive root switch. Existing
+  wire contracts remain stable through per-case `[ErrorCode]` attributes and exact definition tests.
 
 ## Event log
 
@@ -324,6 +365,47 @@ Phase 5 requires `/code-review` before delivery.
   paths absent; platform-sync PR #393 green.
 - Outcome: Phase 3 is complete in this commit with no local E2E duplication and no push.
 - Follow-up: Implement Phase 4 Venue and Artist Options, owned tests, and its full local gate.
+
+### 2026-08-07 — current conventions and Phase 4 gate reconciled
+
+- Action: Fetched and merged the two docs-only `origin/main` commits, verified the worktree identity,
+  ownership diff, PR #282 boundary, and absence of an open platform-sync PR, then audited every
+  branch-owned Result/Option/error implementation against the updated typed-error conventions.
+- Evidence: branch 0 behind `origin/main` `529dba9dd`; clean pre-edit tree; PR #282 remains open at
+  `26ed63b896`; the three Review/Preference errors use static sealed records while the convention now
+  requires Dunet cases and an exhaustive definition switch; the Shared.Api guard still asserts the
+  superseded construction shape.
+- Outcome: The exact convention reconciliation is resolved and precedes Phase 4 implementation; no
+  shared runtime API or excluded Ticket/Concert/Payment path is in scope.
+- Follow-up: Execute the updated `## Next Steps`, verify the combined checkpoint, and commit locally
+  without pushing.
+
+### 2026-08-07 — convention migration and Phase 4 implemented; Docker gate blocked
+
+- Action: Migrated all branch-owned Review/Preference errors to current named Dunet unions, updated
+  the Shared.Api architecture guard, implemented Venue/Artist service Options and HTTP terminals,
+  added both modules' owned unit/integration projects, and wired solution/runner discovery.
+- Evidence: exact error contract tests remain pinned; repository lookups alone remain nullable; Review
+  unit 30/30, Preference unit 19/19, Venue unit 2/2, and Artist unit 2/2 passed in Release;
+  `docker ps` failed with an HTTP 500 response from the Docker Desktop Linux engine before tests.
+- Outcome: Implementation and unit verification are complete but uncommitted. Phase 4 remains open;
+  integration, Shared.Api, solution, carve, inventory, and final diff gates have not run.
+- Follow-up: Restore Docker Desktop health and execute the current `## Next Steps` without changing
+  or discarding the working tree.
+
+### 2026-08-07 — Phase 4 completed on current main
+
+- Action: Reconciled the implementation with current main and typed-error conventions, restored
+  Docker health, ran the Venue/Artist integration workflow, and completed the current-pin unit,
+  Shared.Api, solution, isolated Customer carve, carrier/ownership, and diff gates.
+- Evidence: Review 30/30, Preference 19/19, Venue 2/2, Artist 2/2, Shared.Api 50/50; Venue integration
+  27/27 and Artist integration 19/19 across B2B plus Customer; solution and 36-project carve both 0
+  errors; branch 0 behind `b46d10ec8`; PR #282 boundary and no-open-platform-sync gate rechecked.
+- Outcome: Phase 4 is complete in this commit. The current error records follow the latest named-case,
+  exhaustive-switch, generic-factory, direct-construction, and stable-code conventions; the public
+  Venue/Artist 200/404 contracts remain unchanged.
+- Follow-up: Resume Phase 5's final scope audit and code-review gate; do not push without a delivery
+  instruction and do not run local E2E ahead of the merge queue.
 
 ## Resume prompt
 

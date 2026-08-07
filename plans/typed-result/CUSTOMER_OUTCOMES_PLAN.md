@@ -74,8 +74,8 @@ entry.
 
 ### Review
 
-- Add `CreateReviewError` beside the create operation as a sealed definition record with static
-  payload-free outcomes and exact contract tests:
+- Add `CreateReviewError` beside the create operation as a Dunet union with named payload-free cases,
+  one exhaustive definition switch, and exact contract tests:
   - ticket absent → `NotFound`, code `review.ticket_not_found`;
   - concert not yet reviewable → `Conflict`, code `review.concert_not_reviewable_yet`;
   - ticket already reviewed → `Conflict`, code `review.already_exists`.
@@ -94,8 +94,8 @@ entry.
 
 ### Preference
 
-- Add payload-free `CreatePreferenceError.PreferenceAlreadyExists` (`Conflict`,
-  `preference.already_exists`) and `UpdatePreferenceError` outcomes for a missing preference
+- Add a payload-free `CreatePreferenceError.PreferenceAlreadyExists` union case (`Conflict`,
+  `preference.already_exists`) and `UpdatePreferenceError` union cases for a missing preference
   (`NotFound`, `preference.not_found`) and a preference owned by another user (`Forbidden`,
   `preference.not_owned`). Keep the database unique index authoritative; the normal pre-existing
   preference path becomes the typed conflict, while a provider/race failure still propagates.
@@ -208,13 +208,16 @@ tier and receives no skip label.
   location/profile flows.
 - Run the full per-phase verification contract and commit the checkpoint.
 
-### Phase 4 — Venue and Artist detail Options
+### Phase 4 — Venue and Artist detail Options ✅ DONE (2026-08-07)
 
+- Reconcile the Review and Preference operation errors plus the Shared.Api architecture guard with
+  the current typed-error union, definition-switch, generic-factory, and case-construction conventions.
 - Convert both application services to Option while preserving nullable repositories and public
   200/404 detail responses.
 - Create Venue- and Artist-owned UnitTests/IntegrationTests, wire their solution/script discovery,
   and cover Some/None plus 200/404.
-- Run the full per-phase verification contract and commit the checkpoint.
+- Run the full per-phase verification contract, including the affected Review and Preference unit
+  suites, and commit the checkpoint.
 
 ### Phase 5 — Scope audit and delivery
 
