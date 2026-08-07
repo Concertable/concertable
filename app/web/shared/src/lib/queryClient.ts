@@ -1,7 +1,7 @@
 import { QueryClient, QueryCache, MutationCache } from "@tanstack/react-query";
+import { isAxiosError } from "axios";
 import { toast } from "sonner";
 import { createElement } from "react";
-import { isApiError } from "@concertable/shared/lib/apiError";
 import { shouldRetry } from "@concertable/shared/lib/queryRetry";
 import { resolveApiError, type ErrorMeta } from "@concertable/shared/lib/problemDetails";
 
@@ -9,8 +9,8 @@ function handleError(error: unknown, meta: ErrorMeta | undefined) {
   const resolved = resolveApiError(error, meta);
   if (!resolved) return;
 
-  if (import.meta.env.DEV && isApiError(error))
-    console.warn("[toast]", error.status, error.url);
+  if (import.meta.env.DEV && isAxiosError(error))
+    console.warn("[toast]", error.response?.status, error.config?.url);
 
   if ("errors" in resolved) {
     toast.error(resolved.title, {

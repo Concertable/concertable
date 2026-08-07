@@ -1,5 +1,4 @@
 import { isAxiosError, type AxiosInstance } from "axios";
-import { ApiError, type ProblemDetails } from "./apiError";
 
 export function configureClient(instance: AxiosInstance, baseURL: string) {
   instance.defaults.baseURL = baseURL;
@@ -23,20 +22,7 @@ export function configureClient(instance: AxiosInstance, baseURL: string) {
             return { ...error.response, data: null };
 
           if (status === 401) await onUnauthorized();
-          const responseData = error.response?.data;
-          const details =
-            typeof responseData === "object" && responseData !== null
-              ? (responseData as ProblemDetails)
-              : {};
-          return Promise.reject(
-            new ApiError(
-              status,
-              details,
-              error.config?.method,
-              error.config?.url,
-              error,
-            ),
-          );
+          return Promise.reject(error);
         },
       );
       return builder;
