@@ -4,8 +4,8 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_customer-outcomes`
 - Branch: `Feature/typed-result_customer-outcomes`
 - PR: not opened
-- Dependency/package gates: owned Kernel foundation PR #290 and platform sync #291 are shipped; no Payment/B2B package dependency; platform-sync PR #373 shipped `0.1.0-alpha.0.814` green in merge commit `9169107c0`; PR #282 remains the exclusive open owner of Ticket/Concert/Customer Payment work and is not a dependency
-- Last reconciled: 2026-08-07T20:38:57+01:00 from `origin/main` `b66325acd`, local refs/worktrees, the current branch head `de2b8c163`, the complete Phase 5 execution gate, and full code review `06071872b..de2b8c163`
+- Dependency/package gates: owned Kernel foundation PR #290 and platform sync #291 are shipped; no Payment/B2B package dependency; platform-sync PR #373 shipped `0.1.0-alpha.0.814` green in merge commit `9169107c0`; PR #282 remains the exclusive open owner of Ticket/Concert/Customer Payment work and is not a dependency; platform-sync PR #420 is open with a failed build and blocks PR preflight until its owning worktree restores it to green
+- Last reconciled: 2026-08-07T21:38:38+01:00 from `origin/main` `b66325acd`, local refs/worktrees, current branch head `fc9f69407`, the clean working tree, review checkpoint `23461784c`, current-main merge `fc9f69407`, review artifact, and platform-sync PR #420
 
 ## Current state
 
@@ -67,17 +67,17 @@ inventories are clean.
 Full code review `06071872b..de2b8c163` is recorded in
 `reviews/Feature-typed-result_customer-outcomes.md` with two open convention findings: `CV1` converts
 new and changed Customer integration assertions to Shouldly, and `CV2` makes the Dunet definition
-architecture guard reject discard/default arms. During that review `origin/main` advanced to
-`b66325acd` through Payment PR #392; its only overlap with this branch is the Shared.Api architecture
-test, so the branch must reconcile that file before fixing and incrementally reviewing the findings.
+architecture guard reject discard/default arms. The review and ledger checkpoint is committed as
+`23461784c`; `origin/main` `b66325acd` is merged as `fc9f69407`, including the overlapping Shared.Api
+guard without weakening either branch. The working tree is clean and the branch is current with main.
 
 ## Next Steps
 
-Commit this review checkpoint, merge current `origin/main` `b66325acd`, and resolve the overlapping
-Shared.Api architecture guard without weakening either branch. Fix `CV1` and `CV2` in a separate code
-commit, rerun the affected Customer integration projects plus Shared.Api and the Release solution,
-then run `/incremental-review` from watermark `de2b8c163`. When all findings are fixed and the current-
-main gate is green, execute `/pr-preflight`, use the plan-managed two-leg push protocol, and open the
+Fix `CV1` and `CV2` serially in their own review-finding commits, rerun the affected Customer
+integration projects plus Shared.Api and the Release solution, then run `/incremental-review` from
+watermark `de2b8c163`. Resolve any new finding through the same serial loop. When every finding is
+fixed, the review artifact is removed, and the current-main gate is green, wait for platform-sync PR
+#420 to become green, execute `/pr-preflight`, use the plan-managed two-leg push protocol, and open the
 authorized GitHub PR with the full merge-queue E2E tier and no skip label. Keep this plan and ledger
 live through PR, merge, publication, and platform sync.
 
@@ -100,6 +100,8 @@ live through PR, merge, publication, and platform sync.
 - Completed Phase 4's current-convention Review/Preference error migration, Venue/Artist service
   Options and unchanged HTTP terminals, owned tests, solution/runner discovery, and full local gate
   in this commit.
+- Committed the Phase 5 execution and full-review checkpoint as `23461784c`, then merged current
+  `origin/main` `b66325acd` as `fc9f69407` while preserving both branches' Shared.Api guards.
 
 ## Verification
 
@@ -439,6 +441,18 @@ Phase 5 requires `/code-review` before delivery.
   review ran, Payment PR #392 advanced `origin/main` to `b66325acd`; only the Shared.Api guard overlaps.
 - Follow-up: Commit this checkpoint, reconcile current main, fix `CV1`/`CV2`, verify, run incremental
   review, then preflight/push/open the authorized PR.
+
+### 2026-08-07 - review checkpoint and current-main reconciliation confirmed
+
+- Action: Refetched origin and reconciled the ledger with the clean branch, current main, review
+  artifact, PR state, and live platform-sync gate before applying the review findings.
+- Evidence: review checkpoint `23461784c`; merge commit `fc9f69407`; branch head is 0 behind
+  `origin/main` `b66325acd`; no source PR exists; `CV1` and `CV2` remain open; platform-sync PR
+  #420 has failed `build` and `ci-complete` checks.
+- Outcome: The ledger's first two actions were already complete and are now recorded. Finding fixes
+  can proceed from the clean current-main tree; PR preflight remains gated on platform-sync #420.
+- Follow-up: Address `CV1` and `CV2` serially, verify, incrementally review, then preflight when #420
+  is green.
 
 ## Resume prompt
 
