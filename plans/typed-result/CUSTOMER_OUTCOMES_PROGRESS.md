@@ -4,8 +4,8 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_customer-outcomes`
 - Branch: `Feature/typed-result_customer-outcomes`
 - PR: not opened
-- Dependency/package gates: owned Kernel foundation PR #290 and platform sync #291 are shipped; no Payment/B2B package dependency; platform-sync PR #373 shipped `0.1.0-alpha.0.814` green in merge commit `9169107c0`; PR #282 remains the exclusive open owner of Ticket/Concert/Customer Payment work and is not a dependency; platform-sync PR #420 is open with a failed build and blocks PR preflight until its owning worktree restores it to green
-- Last reconciled: 2026-08-07T22:34:02+01:00 from local branch head `ca3b99419`, the verified CV3 candidate tree, and the review artifact
+- Dependency/package gates: owned Kernel foundation PR #290 and platform sync #291 are shipped; no Payment/B2B package dependency; platform-sync PR #373 shipped `0.1.0-alpha.0.814` green in merge commit `9169107c0`; PR #282 remains the exclusive open owner of Ticket/Concert/Customer Payment work and is not a dependency; platform-sync PR #420 is open with its build/carves green and remaining unit/integration checks pending, so PR preflight waits for its terminal green result
+- Last reconciled: 2026-08-07T22:37:20+01:00 from `origin/main` `fb7255b20`, local refs/worktrees, branch head `b8e13b3ff`, clean incremental review `312400220..b8e13b3ff`, review artifact, and platform-sync PR #420
 
 ## Current state
 
@@ -71,17 +71,21 @@ new or changed Customer integration assertions to Shouldly; the five affected pr
 definition switch expressions while retaining the merged Match, abstract, and exhaustive-switch
 definition shapes. Shared.Api passes 56/56 and the Release solution build has 0 errors. Incremental
 review `de2b8c163..312400220` found `CV3`: the guard still accepts exhaustive `var _` and named
-`var` arms. `CV3` is fixed in this commit by recognizing both forms only within the bounded
+`var` arms. `CV3` is fixed in `b8e13b3ff` by recognizing both forms only within the bounded
 definition switch; Shared.Api passes 60/60 and the Release solution builds with 0 errors and 7
-existing warnings. The review artifact remains live for the required clean incremental pass.
+existing warnings. Incremental review `312400220..b8e13b3ff` is clean. The review artifact remains
+because `origin/main` advanced to `fb7255b20` during the review and must be merged and incrementally
+reviewed before delivery.
 
 ## Next Steps
 
-Run `/incremental-review` from watermark `312400220` over the committed CV3 fix. Resolve any new
-finding through the same serial loop. When the incremental pass is clean and the current-main gate is green,
-wait for platform-sync PR #420 to become green, execute `/pr-preflight`, use the plan-managed two-leg
-push protocol, and open the authorized GitHub PR with the full merge-queue E2E tier and no skip label.
-Keep this plan and ledger live through PR, merge, publication, and platform sync.
+Merge current `origin/main` `fb7255b20` into the clean branch, resolve any overlap without weakening
+either side, rerun the affected Customer integration projects plus Shared.Api and the Release solution,
+then run `/incremental-review` from watermark `b8e13b3ff`. Resolve any new finding through the same
+serial loop. When the current-main review is clean, remove the spent review artifact, wait for
+platform-sync PR #420 to become green, execute `/pr-preflight`, use the plan-managed two-leg push
+protocol, and open the authorized GitHub PR with the full merge-queue E2E tier and no skip label. Keep
+this plan and ledger live through PR, merge, publication, and platform sync.
 
 ## Completed work
 
@@ -110,6 +114,7 @@ Keep this plan and ledger live through PR, merge, publication, and platform sync
   unchanged from `origin/main` outside its resolved Shared.Api guard conflict, and `CV3` is open.
 - Fixed `CV3` in this commit by rejecting discard and named `var` catch-all arms only within the
   bounded Dunet definition switch, with focused unrelated-switch coverage.
+- Incrementally reviewed `312400220..b8e13b3ff` across two commits with no new finding.
 
 ## Verification
 
@@ -258,8 +263,9 @@ Keep this plan and ledger live through PR, merge, publication, and platform sync
 Full code review `06071872b..de2b8c163` produced
 `reviews/Feature-typed-result_customer-outcomes.md`. `CV1` is fixed in `3ab6604c4`; `CV2` is fixed in
 `312400220`. Incremental review `de2b8c163..312400220` covered 91 commits and found `CV3` open:
-the definition-switch guard still accepted exhaustive `var` arms. `CV3` is fixed in this commit;
-the review artifact remains for the clean incremental pass from watermark `312400220`.
+the definition-switch guard still accepted exhaustive `var` arms. `CV3` is fixed in `b8e13b3ff`;
+incremental review `312400220..b8e13b3ff` is clean. The artifact remains for the new current-main
+merge.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -521,6 +527,17 @@ the review artifact remains for the clean incremental pass from watermark `31240
 - Outcome: `CV3` is fixed and verified in its own unpushed commit. The review artifact remains for
   the required clean incremental review.
 - Follow-up: Run the incremental review gate from watermark `312400220`.
+
+### 2026-08-07 - CV3 incremental review clean; current-main gate reopened
+
+- Action: Incrementally reviewed `312400220..b8e13b3ff`, then refreshed origin and platform-sync #420.
+- Evidence: two commits reviewed with no new finding; Shared.Api 60/60 and Release solution 0 errors
+  remain the verified candidate gate; `origin/main` advanced to `fb7255b20`, 22 commits ahead of the
+  branch; platform-sync #420 has green build/carves with remaining unit/integration checks pending.
+- Outcome: All review findings are fixed and the CV3 follow-up review is clean, but the review artifact
+  stays live until current main is merged and incrementally reviewed.
+- Follow-up: Merge `origin/main`, rerun the affected local gate, and incrementally review from
+  `b8e13b3ff`.
 
 ## Resume prompt
 
