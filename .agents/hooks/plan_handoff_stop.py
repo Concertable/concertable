@@ -35,6 +35,15 @@ SUPPRESS_RESUME_PROMPT = re.compile(
     r"\b(?:resume|continuation|handoff)(?:\s+prompt)?\b",
     re.IGNORECASE | re.DOTALL,
 )
+MUTATING_TOOL_NAMES = {
+    "apply_patch",
+    "edit",
+    "edit_file",
+    "multiedit",
+    "multi_edit",
+    "write",
+    "write_file",
+}
 
 
 def next_steps(text):
@@ -128,6 +137,15 @@ def genuine_user_message(value):
     return not any("<hook_prompt" in text for text in user_content(content))
 
 
+def mutating_tool_input(name, tool_input):
+    normalized = (name or "").casefold().replace("-", "_")
+    if normalized.rsplit(".", 1)[-1] in MUTATING_TOOL_NAMES:
+        return tool_input
+    if any("*** Begin Patch" in text for text in strings(tool_input)):
+        return tool_input
+    return None
+
+
 def intentional_contexts(record):
     candidate = payload(record)
     if candidate is None:
@@ -136,12 +154,17 @@ def intentional_contexts(record):
         yield from user_content(candidate.get("content"))
     if candidate.get("type") in {"custom_tool_call", "function_call"}:
         tool_input = candidate.get("input", candidate.get("arguments"))
-        yield tool_input
+        context = mutating_tool_input(candidate.get("name"), tool_input)
+        if context is not None:
+            yield context
     content = candidate.get("content")
     if isinstance(content, list):
         for item in content:
             if isinstance(item, dict) and item.get("type") in {"tool_use", "function_call"}:
-                yield item.get("input", item.get("arguments"))
+                tool_input = item.get("input", item.get("arguments"))
+                context = mutating_tool_input(item.get("name"), tool_input)
+                if context is not None:
+                    yield context
 
 
 def transcript_turn(path):

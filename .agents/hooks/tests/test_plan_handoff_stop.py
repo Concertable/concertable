@@ -94,10 +94,11 @@ class PlanHandoffStopTests(unittest.TestCase):
                     "type": "custom_tool_call",
                     "name": "exec",
                     "input": (
-                        'const r = await tools.shell_command({command: "Get-Content '
-                        'plans\\launch\\EXAMPLE_PROGRESS.md", workdir: "'
+                        'const patch = "*** Begin Patch\\n*** Update File: '
+                        'plans\\launch\\EXAMPLE_PROGRESS.md\\n*** End Patch"; '
+                        'await tools.apply_patch(patch); const options = {workdir: "'
                         + str(self.root)
-                        + '"});'
+                        + '"};'
                     ),
                 },
             },
@@ -120,7 +121,7 @@ class PlanHandoffStopTests(unittest.TestCase):
                     "content": [
                         {
                             "type": "tool_use",
-                            "name": "Read",
+                            "name": "Edit",
                             "input": {"file_path": str(self.ledger)},
                         }
                     ],
@@ -273,10 +274,11 @@ class PlanHandoffStopTests(unittest.TestCase):
                     "type": "custom_tool_call",
                     "name": "exec",
                     "input": (
-                        'const r = await tools.shell_command({command: "Get-Content '
-                        'plans\\launch\\EXAMPLE_PROGRESS.md", workdir: "'
+                        'const patch = "*** Begin Patch\\n*** Update File: '
+                        'plans\\launch\\EXAMPLE_PROGRESS.md\\n*** End Patch"; '
+                        'await tools.apply_patch(patch); const options = {workdir: "'
                         + str(self.root)
-                        + '"});'
+                        + '"};'
                     ),
                 },
             }
@@ -294,7 +296,7 @@ class PlanHandoffStopTests(unittest.TestCase):
                 "type": "response_item",
                 "payload": {
                     "type": "function_call",
-                    "name": "read_file",
+                    "name": "write_file",
                     "arguments": {
                         "path": "plans/launch/EXAMPLE_PROGRESS.md",
                         "workdir": str(self.root),
@@ -315,7 +317,10 @@ class PlanHandoffStopTests(unittest.TestCase):
                 "payload": {
                     "type": "custom_tool_call",
                     "name": "exec",
-                    "input": f'Get-Content "{self.ledger}"',
+                    "input": (
+                        f'const patch = "*** Begin Patch\\n*** Update File: {self.ledger}'
+                        '\\n*** End Patch"; await tools.apply_patch(patch);'
+                    ),
                 },
             }
         ]
