@@ -5,89 +5,34 @@
 - Branch: `Feature/typed-result_customer-outcomes`
 - PR: not opened
 - Dependency/package gates: owned Kernel foundation PR #290 and platform sync #291 are shipped; no Payment/B2B package dependency; platform-sync PR #373 shipped `0.1.0-alpha.0.814` green in merge commit `9169107c0`; PR #282 remains the exclusive open owner of Ticket/Concert/Customer Payment work and is not a dependency; platform-sync PR #420 shipped `0.1.0-alpha.0.853` green in merge commit `372be1041b20`
-- Last reconciled: 2026-08-08T00:17:24+01:00 from local branch head `510e4a079`, platform-sync PR #420 terminal state, merge commit `372be1041b20`, and its green source/merge-group checks
+- Last reconciled: 2026-08-08 from local branch head `bf20d17ce`, `origin/main` `372be1041b20`, the post-sync Customer/Shared.Api test gates, and the Release solution build
 
 ## Current state
 
-Phases 1 through 4 are complete through this checkpoint. User profile absence is
-`Option<CustomerDto>` at the application boundary; repository and module multi-user lookups are
-materialized `IReadOnlyList` values; the existing Preference and UserClaims consumers remain
-wire-compatible; and `SaveLocationAsync` remains plain. User unit coverage passed 14/14, direct
-Customer User integration passed 6/6, and the `user` integration wrapper passed both discovered
-projects: B2B User 3/3 and Customer User 6/6.
+Phases 1 through 4 and Phase 5's implementation, verification, review, and finding-fix gates are
+complete. The branch owns only Review, Preference, User, Venue, and Artist outcomes/lookups; PR #282's
+Ticket, Concert, Customer Payment, purchase, and checkout slice remains excluded. Review and
+Preference use named Dunet cases with exact stable definitions, application absence terminates as
+`Option<T>`, and scoped multi-item outputs are materialized `IReadOnlyList<T>` values. Existing HTTP
+status and payload contracts remain unchanged.
 
-Every Phase 3 gate is green: User unit 14/14, User integration 6/6 through the module wrapper,
-Shared.Api 51/51, Release solution build with 0 errors, isolated Customer carve of 36 package-clean
-projects with 0 errors, scoped carrier/collection/ownership inventories, and `git diff --check`.
-The long worktree's default Debug native-output path reaches 259 characters and prevents Windows
-from loading `Microsoft.Data.SqlClient.SNI.dll`; the supported short `--artifacts-path
-C:\tmp\CustomerUserIntegrationArtifacts` route passed the isolated reproduction and full wrapper.
+All three review findings are fixed in separate commits: `CV1` in `3ab6604c4`, `CV2` in
+`312400220`, and `CV3` in `b8e13b3ff`. The incremental reviews through `6d994b78c` are clean and the
+spent review artifact is removed.
 
-The branch is current with `origin/main` `b46d10ec8`. Review and Preference use named Dunet cases,
-one exhaustive root `Definition` switch, generic definition factories, direct case construction, and
-per-case `[ErrorCode]` attributes only where the established wire code differs from current name
-derivation. Exact definition tests preserve every published code, message, and kind, and Shared.Api's
-architecture guard enforces the current union shape.
-
-Venue and Artist expose `Option` only at their application/service boundaries, keep repository
-lookups nullable, and match back to their existing anonymous 200/404 responses. Both modules own new
-unit/integration projects with solution and runner discovery. Their unit suites pass 2/2 each; the
-module integration wrappers pass B2B Venue 25/25 plus Customer Venue 2/2, and B2B Artist 17/17 plus
-Customer Artist 2/2. Review remains 30/30 and Preference 19/19 against the current platform pin.
-Shared.Api passes 50/50, the Release solution builds with 0 errors, and the isolated 36-project
-Customer package carve builds with 0 errors.
-
-Preference now owns exact duplicate-create,
-missing-update, and foreign-update outcomes; ordinary user-preference absence is `Option`; returned
-queries and mappers are materialized `IReadOnlyList` values; and successful updates return the
-tracked entity without a nullable re-read. The HTTP terminal preserves 200/204 reads, 201 create with
-no body, 200 update, and typed 403/404/409 ProblemDetails.
-
-Every Phase 2 gate is green: Preference unit 19/19, Preference integration 7/7, Shared.Api 51/51,
-Release solution build with 0 errors, isolated Customer carve of 36 package-clean projects with 0
-errors, scoped carrier/collection/ownership inventories, and `git diff --check`. The branch is 0
-commits behind `origin/main` `48bd0eaf5e` and contains no excluded Ticket, Concert, Payment,
-purchase, checkout, shared Kernel API, model, or migration edit. Local E2E was correctly not run; the
-final PR requires full merge-queue E2E.
-
-The implementation owns Review, Preference, User, Venue, and Artist only. PR #282 /
-`Feature/TypedResultMigrationPhase2` owns every Ticket, Concert, Customer Payment client/mock,
-purchase/checkout, and related coverage path; those paths must remain absent from this branch's diff.
-The scoped modules have no production FluentResults reference, while Ticket/Concert still require the
-shared `Directory.Packages.props` version entry, so that entry stays.
-
-Phase 5's combined execution gate is green on `de2b8c163`: 117 targeted unit/architecture tests,
-Customer Review 12/12, Preference 7/7, User 6/6, Venue 2/2, and Artist 2/2 integration tests, plus
-matching B2B User 3/3, Venue 25/25, and Artist 17/17 integration coverage. The Release solution build
-completed with 0 errors and 6 existing warnings. The previously green isolated 36-project Customer
-carve remains applicable because the subsequent current-main merge changed no `api/**` path; the
-nullable/list/carrier, ownership, package, model/migration/event, comment, and `git diff --check`
-inventories are clean.
-
-Full code review `06071872b..de2b8c163` is recorded in
-`reviews/Feature-typed-result_customer-outcomes.md`. `CV1` is fixed in `3ab6604c4` by moving all 33
-new or changed Customer integration assertions to Shouldly; the five affected projects pass 29/29.
-`CV2` is fixed in `312400220` by rejecting literal discard/default arms only within Dunet
-definition switch expressions while retaining the merged Match, abstract, and exhaustive-switch
-definition shapes. Shared.Api passes 56/56 and the Release solution build has 0 errors. Incremental
-review `de2b8c163..312400220` found `CV3`: the guard still accepts exhaustive `var _` and named
-`var` arms. `CV3` is fixed in `b8e13b3ff` by recognizing both forms only within the bounded
-definition switch; Shared.Api passes 60/60 and the Release solution builds with 0 errors and 7
-existing warnings. Incremental review `312400220..b8e13b3ff` is clean. Current `origin/main`
-`fb7255b20` is merged as `6d994b78c`; it changed only a platform progress document, so the green
-code/test/build evidence still applies to an identical code tree. Incremental review
-`b8e13b3ff..6d994b78c` is clean and the spent review artifact is removed in this checkpoint.
-Platform-sync PR #420 subsequently passed its source checks and fresh merge-group run and merged as
-`372be1041b20`; the branch must now refresh and reconcile the resulting base advance.
+Platform-sync PR #420 shipped `0.1.0-alpha.0.853` as `372be1041b20`. That exact `origin/main` is
+merged into the branch as `bf20d17ce`, leaving the branch 0 commits behind. Because the base changed
+Customer package and integration-fixture inputs, the final current-main gate was rerun: Docker's
+fresh-container data path is healthy; Customer Review 12/12, Preference 7/7, User 6/6, Venue 2/2,
+and Artist 2/2 integration tests pass (29/29 total); Shared.Api passes 60/60; and the Release solution
+build succeeds with 0 errors and 8 current-base warnings. Local E2E remains intentionally deferred to
+the full merge-queue tier.
 
 ## Next Steps
 
-Fetch `origin/main`, merge the post-platform-sync base into the clean branch, inspect the merged paths,
-and rerun the affected Customer integration projects plus Shared.Api and the Release solution when
-the base changes any API/package/build input. When the current-main gate is green, execute
-`/pr-preflight`, use the plan-managed two-leg push protocol, and open the authorized GitHub PR with
-the full merge-queue E2E tier and no skip label. Keep this plan and ledger live through PR, merge,
-publication, and platform sync.
+Execute `/pr-preflight`. When green, use the plan-managed two-leg push protocol and open the
+authorized GitHub PR with the full merge-queue E2E tier and no skip label. Record the PR observation
+locally and keep this plan and ledger live through PR, merge, publication, and platform sync.
 
 ## Completed work
 
@@ -121,6 +66,8 @@ publication, and platform sync.
   incremental review is clean, and the spent review artifact is removed in this checkpoint.
 - Observed platform-sync PR #420 merge green as `372be1041b20`, completing the live prerequisite to
   final current-main reconciliation and PR preflight.
+- Merged post-sync `origin/main` `372be1041b20` as `bf20d17ce`, then passed Customer integration
+  29/29, Shared.Api 60/60, and the Release solution build with 0 errors on that exact base.
 
 ## Verification
 
