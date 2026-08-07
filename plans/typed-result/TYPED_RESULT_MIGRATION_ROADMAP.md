@@ -86,8 +86,9 @@ their current branch and worktree rather than fragmenting in-flight work.
 - [ ] 🟠 **Customer non-Payment outcomes and lookups.** Exclusive owner:
   `Feature/typed-result_customer-outcomes` at
   `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_customer-outcomes`.
-  Local implementation, review fixes, current-main verification, and full-E2E tier selection are
-  complete; PR preflight and delivery are next.
+  Local implementation, review fixes, current-main verification, and PR preflight are complete.
+  Non-draft PR #425 is open at `e60219f7d` with the full-E2E tier; merge and its generated platform
+  sync are next.
   - Scope: Customer Review, Preference, User, Venue, and Artist application/module contracts;
     operation-specific expected failures; nullable persistence lookups converted to `Option<T>` at
     application/module boundaries; collection contracts normalized to empty `IReadOnlyList<T>`.
