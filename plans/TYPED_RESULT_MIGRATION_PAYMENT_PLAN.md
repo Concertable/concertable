@@ -4,7 +4,7 @@
 - Progress ledger: `plans/TYPED_RESULT_MIGRATION_PAYMENT_PROGRESS.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-payment-owned-closeout`
 - Branch: `Docs/typed-result_payment-owned-result-expansion_closeout`
-- Status: delivery in progress
+- Status: complete; pending artifact deletion
 
 ## Objective
 
@@ -55,7 +55,7 @@ Customer through the generated platform-sync PR.
 - [x] Incrementally review and push the current verified branch to PR #392.
 - [x] Run full merge-queue E2E and follow PR #392 to a terminal state.
 - [x] Own package publication and the generated breaking platform-sync PR through green.
-- [ ] Wake the blocked B2B ledger, close donor PR #296, and close out this plan and ledger together.
+- [x] Wake the blocked B2B ledger, close donor PR #296, and close out this plan and ledger together.
 
 ## Verification gates
 
