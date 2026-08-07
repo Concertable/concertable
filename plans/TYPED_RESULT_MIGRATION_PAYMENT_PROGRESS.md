@@ -97,13 +97,13 @@ heads. PR checks are running and the exact head carries the required `full-e2e` 
 been enqueued. PR run `31206320776` failed before queue admission: the primary failure is Shared.Api
 unit test `DunetUnionDefinitions_UseSupportedDefinitionShape`; the other reported unit failures are
 fail-fast cancellations. The guard does not recognize the new exhaustive root `this switch` error
-definition shape used by all ten Payment unions.
+definition shape used by all ten Payment unions. The guard now recognizes that documented shape;
+Shared.Api unit tests pass 52/52 and the full Release solution builds with 0 errors.
 
 ## Next Steps
 
-Update `TypedResultArchitectureTests` to recognize the documented exhaustive root `this switch`
-definition shape, run the focused Shared.Api unit suite and full Release solution gate, incrementally
-review the fix, then compound-push the replacement PR head. Preserve `full-e2e`, wait for green PR
+Incrementally review the architecture-guard fix, then compound-push the replacement PR head.
+Preserve `full-e2e`, wait for green PR
 checks, enqueue, and follow the merge to a terminal state. After merge, own package publication and
 the generated breaking platform-sync PR through green, update the waiting B2B ledger, and close
 frozen donor PR #296 only after the canonical package gate is complete.
@@ -155,8 +155,15 @@ closing donor PR #296 remain later explicit delivery steps; PR #392 must run ful
 - Final current-main gate after `b46d10ec8`: full Release API solution build 0 errors with seven
   existing warnings outside Payment; Payment unit 222/222; repository Docker data-round-trip
   preflight healthy; Payment SQL integration 8/8.
+- Architecture-guard CI fix: Shared.Api unit tests 52/52; full Release API solution build 0 errors
+  with seven existing warnings outside the changed test.
 
 ## Reviews
+
+- **CI2 (fixed in this commit):** the typed-result architecture guard recognized only legacy
+  generated-`Match` and abstract/per-case definitions, so it rejected the documented exhaustive root
+  `this switch` shape used by all ten Payment unions. The guard now recognizes that exact shape and
+  its 52-test project is green.
 
 ### 2026-08-07 - final current-main incremental review (`842b9c332..df76074c4`)
 
@@ -253,6 +260,16 @@ Clean: escrow `Result<Option<T>,E>` semantics, rounding/VAT/refund math, wire hy
   commission-branch implementation is donor evidence only; its behavior is now reconciled here.
 
 ## Event log
+
+### 2026-08-07 - Fixed the typed-result architecture guard
+
+- Action: Added the documented exhaustive root `Definition => this switch` shape to the supported
+  Dunet definition forms in `TypedResultArchitectureTests`.
+- Evidence: Shared.Api unit tests pass 52/52; the full Release API solution builds with 0 errors and
+  seven existing warnings outside the changed test.
+- Outcome: The deterministic PR-head failure is fixed locally and the branch is ready for incremental
+  review before its replacement compound push.
+- Follow-up: Execute the review-and-push action in `## Next Steps`.
 
 ### 2026-08-07 - PR checks exposed a stale typed-result architecture guard
 
