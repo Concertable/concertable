@@ -51,7 +51,7 @@ Customer through the generated platform-sync PR.
 - [x] Persist and enforce the reviewed gross at bound money-movement boundaries.
 - [x] Reconcile donor behavior, review findings, migrations, and standalone package isolation.
 - [x] Align every Payment error and reverse mapper with the current repository convention.
-- [ ] Complete Payment SQL integration on a healthy Docker engine.
+- [x] Complete Payment SQL integration on a healthy Docker engine.
 - [ ] Incrementally review and push the current verified branch to PR #392.
 - [ ] Run full merge-queue E2E and follow PR #392 to a terminal state.
 - [ ] Own package publication and the generated breaking platform-sync PR through green.

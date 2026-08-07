@@ -85,17 +85,14 @@ throws `PaymentContractMismatchException` for an unknown or changed wire contrac
 codes are preserved with explicit `[ErrorCode]` attributes where natural case naming differs.
 
 The refreshed source gate is green: Payment Release build 0 warnings/0 errors, Payment unit 222/222,
-and the full Release API solution build 0 errors (seven existing warnings outside Payment). Payment
-SQL integration is the only unfinished pre-push gate: Docker Desktop's API did not
-answer the required preflight and timed out, so the integration suite was not started. The merge and
+the full Release API solution build 0 errors (seven existing warnings outside Payment), and Payment
+SQL integration 8/8 after the repository Docker data-round-trip preflight passed. The merge and
 error-convention changes are committed locally; PR #392 has not been updated or enqueued.
 
 ## Next Steps
 
-Restore Docker Desktop health, confirm `docker ps` responds, then run
-`dotnet test api/Concertable.Payment/tests/Concertable.Payment.IntegrationTests/Concertable.Payment.IntegrationTests.csproj --configuration Release --no-build --no-restore`.
-If green, run an incremental review of the local merge checkpoint and complete the `merge` workflow
-for PR #392: push the verified compound head, apply
+Run an incremental review of the local merge and error-convention checkpoint, address every clear
+finding, then complete the `merge` workflow for PR #392: push the verified compound head, apply
 `full-e2e` because historical commits contain `Skip-E2E: true` trailers, enqueue, and follow the merge
 to a terminal state. After merge, own package publication and the generated breaking platform-sync PR
 through green, update the waiting B2B ledger, and close frozen donor PR #296 only after the canonical
@@ -143,8 +140,8 @@ closing donor PR #296 remain later explicit delivery steps; PR #392 must run ful
 - Current-main/error-convention gate on platform `0.1.0-alpha.0.847`: Payment Release build 0
   warnings/0 errors; Payment unit 222/222; full Release API solution build 0 errors with seven
   existing warnings outside Payment; `git diff --check` clean; no `FromCode`,
-  static error catalog, or per-case `Definition` override remains in Payment. Payment integration was
-  not started because the Docker API preflight timed out.
+  static error catalog, or per-case `Definition` override remains in Payment; the repository Docker
+  data-round-trip preflight passed and Payment SQL integration passed 8/8.
 
 ## Reviews
 
@@ -229,6 +226,16 @@ Clean: escrow `Result<Option<T>,E>` semantics, rounding/VAT/refund math, wire hy
   commission-branch implementation is donor evidence only; its behavior is now reconciled here.
 
 ## Event log
+
+### 2026-08-07 - Cleared the Payment SQL integration gate
+
+- Action: Reconciled the canonical worktree and PR state, passed the repository Docker
+  data-round-trip health check, and ran the committed Payment SQL integration project.
+- Evidence: Local `HEAD` `0f614bbbe` is clean and 0 behind `origin/main` at `59bdd7a8a`; PR #392
+  remains open at the older remote head `bcac5261d`; Payment SQL integration passed 8/8.
+- Outcome: Every local build, unit, grep, and SQL integration gate is green. The local merge and
+  error-convention commits are ready for the required incremental review before compound push.
+- Follow-up: Execute the incremental review and delivery action in `## Next Steps`.
 
 ### 2026-08-07 - Restored the required companion plan
 
