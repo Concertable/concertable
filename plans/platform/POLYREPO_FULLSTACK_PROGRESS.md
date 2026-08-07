@@ -3,9 +3,9 @@
 - Plan: `plans/platform/POLYREPO_FULLSTACK_PLAN.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-platform_polyrepo_mobile-carve` — created from current `origin/main` @ `59bdd7a8a` for the definitive Phase 3 mobile carve gate.
 - Branch: `Feature/platform_polyrepo_mobile-carve` @ work head `098d4c3a5`; contains the transferred ledger recovery history plus the two mobile `carve-fe` matrix entries against the now-published fixed tier. Local ledger-only checkpoints after `098d4c3a5` describe delivery transitions.
-- PR: **mobile-retarget PR [#413](https://github.com/Concertable/concertable/pull/413) MERGED as `62646f4cdd6933a695fc790e1329588fce3f928a`** — reviewed source head `a8296d51b`; full merge-group run [31195035539](https://github.com/Concertable/concertable/actions/runs/31195035539) completed successfully. Prior: carved-web CSS **[#405](https://github.com/Concertable/concertable/pull/405) MERGED** (`d9c62e2c5`) + [#411]; Phase 3b [#389] (`1cbeb2175`) + [#398]; Phase 3a [#378] (`fba490e25`); Phase 2 [#360] (`a3f9535`); Phase 1 [#301]+[#319].
+- PR: **mobile-carve PR [#416](https://github.com/Concertable/concertable/pull/416) OPEN at remote head `f0fbd4e6a`** — self-validates `mobile/customer` and `mobile/b2b` with feed restore + `tsc` + `expo export`. Prior publish-first mobile-retarget PR [#413](https://github.com/Concertable/concertable/pull/413) merged as `62646f4cd` and republished `@concertable/mobile@0.1.0-alpha.0.2571`; carved-web CSS [#405] (`d9c62e2c5`); Phase 3b [#389] (`1cbeb2175`); Phase 3a [#378] (`fba490e25`); Phase 2 [#360] (`a3f9535`); Phase 1 [#301]+[#319].
 - Dependency/package gates: **#413 FE publication DONE** — successful descendant run [31197751649](https://github.com/Concertable/concertable/actions/runs/31197751649) published and feed-verified `@concertable/mobile@0.1.0-alpha.0.2571` with the brand assets. This unblocks the follow-up mobile carve gate. No `api/**` → no backend platform-sync.
-- Last reconciled: 2026-08-07 — work head `098d4c3a5` is pushed and verified at `origin/Feature/platform_polyrepo_mobile-carve`; PR-preflight remains green. Next: transport this push checkpoint, open the self-validating PR, and follow both mobile carve jobs.
+- Last reconciled: 2026-08-07 — PR #416 is open at verified remote head `f0fbd4e6a`; the local tail after that head is ledger-only and must not be pushed while checks run. Next: follow both mobile carve jobs to green or diagnose and fix a real failure.
 
 ## Current state
 
@@ -19,7 +19,7 @@ Phases 0, 1, 2, **3a, and 3b are on `main`**. Phase 3a (PR #378, merge `fba490e2
 
 ## Next Steps
 
-**1. Transport the push checkpoint, then open and follow the mobile carve gate PR.** Push this ledger checkpoint to `origin/Feature/platform_polyrepo_mobile-carve`, verify local/remote equality, and open the plain GitHub PR. Follow `carve-fe (mobile/customer)` and `carve-fe (mobile/b2b)` to green; if either exposes another latent bundle bug, fix the real bug without weakening the gate (surface bug on this branch; published-tier bug through another publish-first cycle). No E2E label is set at PR creation; the merge workflow owns the full-E2E decision. (Also logged in `app/mobile/TECH_DEBT.md`.)
+**1. Follow PR #416's mobile carve jobs.** Monitor the exact PR head `f0fbd4e6a` until `carve-fe (mobile/customer)` and `carve-fe (mobile/b2b)` are terminal. If either fails, inspect its Actions log and fix the real bug without weakening the gate (surface bug on this branch; published-tier bug through another publish-first cycle), then use the compound push protocol. When both are green, update/remove the resolved `app/mobile/TECH_DEBT.md` entry, run the required code review, and prepare #416 for merge; the merge workflow owns the full-E2E label decision.
 
 **2. FE import-boundary rule** — no ESLint/dependency-cruiser toolchain in `app/` yet; the carve CI is the primary structural boundary today (BE parity: carve = structural gate, build-time guard = fast second layer). Standing up ESLint `no-restricted-imports` across surfaces is a separate sub-project.
 
@@ -89,6 +89,13 @@ Gate: each item ends with its own green carve/build proof on its PR.
 - **Metro/nativewind/tailwind runtime configs left for Phase 3.** The Phase 2 gate is build + typecheck; the mobile app's metro `watchFolders`/nativewind `input`/tailwind `content` still point at `../shared` source. The app already resolves `@concertable/shared`/`customer` as symlinked packages the same way, so no in-monorepo runtime regression, but className/class-generation on the precompiled dist is unproven — a first-class Phase 3 item, not a silent gap.
 
 ## Event log
+
+### 2026-08-07 — mobile carve gate PR #416 opened
+
+- Action: Transported the verified push checkpoint, confirmed local/remote equality, and opened the plain GitHub PR from `Feature/platform_polyrepo_mobile-carve` to `main`.
+- Evidence: local HEAD and `origin/Feature/platform_polyrepo_mobile-carve` both `f0fbd4e6a8ed1629075113c4a21f0694a028a0dc`; PR [#416](https://github.com/Concertable/concertable/pull/416) is `OPEN`, base `main`, head `f0fbd4e6a`, title `ci(mobile): gate carved apps with Expo exports`.
+- Outcome: CI now owns the definitive feed-restored Expo export proof for both mobile surfaces. No E2E label was set at creation.
+- Follow-up: follow both new mobile matrix jobs to green; diagnose and fix any real bundle failure without weakening the gate.
 
 ### 2026-08-07 — mobile carve work head pushed and verified
 
