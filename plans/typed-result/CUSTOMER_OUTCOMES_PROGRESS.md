@@ -4,8 +4,8 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_customer-outcomes`
 - Branch: `Feature/typed-result_customer-outcomes`
 - PR: not opened
-- Dependency/package gates: owned Kernel foundation PR #290 and platform sync #291 are shipped; no Payment/B2B package dependency; platform-sync PR #373 shipped `0.1.0-alpha.0.814` green in merge commit `9169107c0`; PR #282 remains the exclusive open owner of Ticket/Concert/Customer Payment work and is not a dependency; platform-sync PR #420 is open with its build/carves green and remaining unit/integration checks pending, so PR preflight waits for its terminal green result
-- Last reconciled: 2026-08-07T22:40:08+01:00 from `origin/main` `fb7255b20`, local refs/worktrees, branch head `6d994b78c`, clean incremental review `b8e13b3ff..6d994b78c`, and platform-sync PR #420
+- Dependency/package gates: owned Kernel foundation PR #290 and platform sync #291 are shipped; no Payment/B2B package dependency; platform-sync PR #373 shipped `0.1.0-alpha.0.814` green in merge commit `9169107c0`; PR #282 remains the exclusive open owner of Ticket/Concert/Customer Payment work and is not a dependency; platform-sync PR #420 shipped `0.1.0-alpha.0.853` green in merge commit `372be1041b20`
+- Last reconciled: 2026-08-08T00:17:24+01:00 from local branch head `510e4a079`, platform-sync PR #420 terminal state, merge commit `372be1041b20`, and its green source/merge-group checks
 
 ## Current state
 
@@ -77,13 +77,17 @@ existing warnings. Incremental review `312400220..b8e13b3ff` is clean. Current `
 `fb7255b20` is merged as `6d994b78c`; it changed only a platform progress document, so the green
 code/test/build evidence still applies to an identical code tree. Incremental review
 `b8e13b3ff..6d994b78c` is clean and the spent review artifact is removed in this checkpoint.
+Platform-sync PR #420 subsequently passed its source checks and fresh merge-group run and merged as
+`372be1041b20`; the branch must now refresh and reconcile the resulting base advance.
 
 ## Next Steps
 
-Wait for platform-sync PR #420 to reach terminal green/merged state, refresh `origin/main`, and
-reconcile any resulting base advance. Then execute `/pr-preflight`, use the plan-managed two-leg push
-protocol, and open the authorized GitHub PR with the full merge-queue E2E tier and no skip label. Keep
-this plan and ledger live through PR, merge, publication, and platform sync.
+Fetch `origin/main`, merge the post-platform-sync base into the clean branch, inspect the merged paths,
+and rerun the affected Customer integration projects plus Shared.Api and the Release solution when
+the base changes any API/package/build input. When the current-main gate is green, execute
+`/pr-preflight`, use the plan-managed two-leg push protocol, and open the authorized GitHub PR with
+the full merge-queue E2E tier and no skip label. Keep this plan and ledger live through PR, merge,
+publication, and platform sync.
 
 ## Completed work
 
@@ -115,6 +119,8 @@ this plan and ledger live through PR, merge, publication, and platform sync.
 - Incrementally reviewed `312400220..b8e13b3ff` across two commits with no new finding.
 - Merged current `origin/main` `fb7255b20` as `6d994b78c`; the merge was documentation-only, its
   incremental review is clean, and the spent review artifact is removed in this checkpoint.
+- Observed platform-sync PR #420 merge green as `372be1041b20`, completing the live prerequisite to
+  final current-main reconciliation and PR preflight.
 
 ## Verification
 
@@ -549,6 +555,18 @@ build green, and current main reviewed, the spent artifact is removed in this ch
 - Outcome: The current-main gate and all review gates are green. The spent review artifact is removed
   in this checkpoint. Platform-sync #420 remains the only prerequisite before PR preflight.
 - Follow-up: Wait for #420 to finish green, refresh main, then preflight, push, and open the PR.
+
+### 2026-08-08 - platform-sync #420 merged green
+
+- Action: Followed platform-sync PR #420 through its green source checks and merge queue to terminal
+  merged state.
+- Evidence: every source check passed; the fresh #420-only merge-group API/UI E2E run completed;
+  PR #420 merged at 2026-08-07T23:02:33Z as `372be1041b2050d8f62eea2435005a981ec222b4`.
+  The earlier combined batch failure belonged to ejected PR #418 and was not retried by this work.
+- Outcome: The platform prerequisite is terminal green. Final current-main reconciliation now owns
+  progress.
+- Follow-up: Fetch and merge current main, inspect the base delta, run any affected local gate, then
+  preflight, push, and open the PR.
 
 ## Resume prompt
 
