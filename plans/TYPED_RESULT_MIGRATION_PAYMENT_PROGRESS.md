@@ -1,6 +1,7 @@
 # Payment owned-result expansion progress
 
-- Plan: `plans/typed-result/TYPED_RESULT_MIGRATION_ROADMAP.md`
+- Plan: `plans/TYPED_RESULT_MIGRATION_PAYMENT_PLAN.md`
+- Roadmap: `plans/typed-result/TYPED_RESULT_MIGRATION_ROADMAP.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\PaymentOwnedResultExpansion`
 - Branch: `Feature/PaymentOwnedResultExpansion`
 - PR: #392 (`https://github.com/Concertable/concertable/pull/392`); frozen donor PR #296 remains open at `82d0555cd`
@@ -228,6 +229,16 @@ Clean: escrow `Result<Option<T>,E>` semantics, rounding/VAT/refund math, wire hy
   commission-branch implementation is donor evidence only; its behavior is now reconciled here.
 
 ## Event log
+
+### 2026-08-07 - Restored the required companion plan
+
+- Action: Added `plans/TYPED_RESULT_MIGRATION_PAYMENT_PLAN.md`, changed this ledger's `Plan` metadata
+  from the epic roadmap to that companion, and refreshed the roadmap's Payment delivery state.
+- Evidence: The handoff hook's 10 unit tests pass, and `expected_pointer` resolves this ledger to the
+  companion plan and the exact worktree continuation command without error.
+- Outcome: The active Payment lifecycle now satisfies the repository's ROADMAP -> PLAN -> PROGRESS
+  contract and can be handed off safely.
+- Follow-up: Execute the Docker integration and delivery action in `## Next Steps`.
 
 ### 2026-08-07 - Updated Payment errors to the current convention
 
