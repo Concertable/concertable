@@ -5,7 +5,7 @@
 - Branch: `Feature/typed-result_customer-outcomes`
 - PR: not opened
 - Dependency/package gates: owned Kernel foundation PR #290 and platform sync #291 are shipped; no Payment/B2B package dependency; platform-sync PR #373 shipped `0.1.0-alpha.0.814` green in merge commit `9169107c0`; PR #282 remains the exclusive open owner of Ticket/Concert/Customer Payment work and is not a dependency
-- Last reconciled: 2026-08-07T19:09:21+01:00 from current `origin/main` `b46d10ec8`, local refs/worktrees, GitHub PR metadata, open PR #282 ownership, no open platform-sync PR, the current branch head, the current typed-error conventions, and the complete Phase 4 verification gate
+- Last reconciled: 2026-08-07T20:38:57+01:00 from `origin/main` `b66325acd`, local refs/worktrees, the current branch head `de2b8c163`, the complete Phase 5 execution gate, and full code review `06071872b..de2b8c163`
 
 ## Current state
 
@@ -56,14 +56,30 @@ purchase/checkout, and related coverage path; those paths must remain absent fro
 The scoped modules have no production FluentResults reference, while Ticket/Concert still require the
 shared `Directory.Packages.props` version entry, so that entry stays.
 
+Phase 5's combined execution gate is green on `de2b8c163`: 117 targeted unit/architecture tests,
+Customer Review 12/12, Preference 7/7, User 6/6, Venue 2/2, and Artist 2/2 integration tests, plus
+matching B2B User 3/3, Venue 25/25, and Artist 17/17 integration coverage. The Release solution build
+completed with 0 errors and 6 existing warnings. The previously green isolated 36-project Customer
+carve remains applicable because the subsequent current-main merge changed no `api/**` path; the
+nullable/list/carrier, ownership, package, model/migration/event, comment, and `git diff --check`
+inventories are clean.
+
+Full code review `06071872b..de2b8c163` is recorded in
+`reviews/Feature-typed-result_customer-outcomes.md` with two open convention findings: `CV1` converts
+new and changed Customer integration assertions to Shouldly, and `CV2` makes the Dunet definition
+architecture guard reject discard/default arms. During that review `origin/main` advanced to
+`b66325acd` through Payment PR #392; its only overlap with this branch is the Shared.Api architecture
+test, so the branch must reconcile that file before fixing and incrementally reviewing the findings.
+
 ## Next Steps
 
-Execute Phase 5's five-module scope audit and delivery gate on the current branch. Run the combined
-Review, Preference, User, Venue, Artist, Shared.Api, Release solution, Customer carve, nullable/list/
-carrier, ownership, and `git diff --check` gates; keep local E2E deferred to the full merge-queue tier.
-Then run `/code-review`, address every fixable finding in separate commits with incremental review,
-and stop at the push/PR boundary unless a delivery instruction authorizes it. Keep this plan and
-ledger live through PR, merge, publication, and platform sync.
+Commit this review checkpoint, merge current `origin/main` `b66325acd`, and resolve the overlapping
+Shared.Api architecture guard without weakening either branch. Fix `CV1` and `CV2` in a separate code
+commit, rerun the affected Customer integration projects plus Shared.Api and the Release solution,
+then run `/incremental-review` from watermark `de2b8c163`. When all findings are fixed and the current-
+main gate is green, execute `/pr-preflight`, use the plan-managed two-leg push protocol, and open the
+authorized GitHub PR with the full merge-queue E2E tier and no skip label. Keep this plan and ledger
+live through PR, merge, publication, and platform sync.
 
 ## Completed work
 
@@ -406,6 +422,23 @@ Phase 5 requires `/code-review` before delivery.
   Venue/Artist 200/404 contracts remain unchanged.
 - Follow-up: Resume Phase 5's final scope audit and code-review gate; do not push without a delivery
   instruction and do not run local E2E ahead of the merge queue.
+
+### 2026-08-07 — Phase 5 execution gate and full code review completed
+
+- Action: Merged current main through `de2b8c163`, ran the combined five-module unit/integration,
+  Shared.Api, Release solution, carve-validity, scope/inventory, and diff gates, then completed the
+  architecture-aware full code review.
+- Evidence: Review watermark `de2b8c16395a38f1264b2a7c3a51e6103750bec6`; range
+  `06071872b..de2b8c163`; artifact `reviews/Feature-typed-result_customer-outcomes.md`; `CV1` open
+  (integration assertions must use Shouldly), `CV2` open (definition-switch guard must reject
+  discard/default arms). Targeted unit/architecture 117/117; Customer integration Review 12/12,
+  Preference 7/7, User 6/6, Venue 2/2, Artist 2/2; matching B2B User 3/3, Venue 25/25, Artist 17/17;
+  Release solution 0 errors; prior 36-project Customer carve remains valid because the merge changed
+  no `api/**` path; scoped inventories and `git diff --check` clean.
+- Outcome: The implementation gate is green and the review has two concrete fixable findings. While
+  review ran, Payment PR #392 advanced `origin/main` to `b66325acd`; only the Shared.Api guard overlaps.
+- Follow-up: Commit this checkpoint, reconcile current main, fix `CV1`/`CV2`, verify, run incremental
+  review, then preflight/push/open the authorized PR.
 
 ## Resume prompt
 
