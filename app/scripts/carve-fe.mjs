@@ -112,7 +112,14 @@ try {
   if (spec.kind === "web") {
     run(npm, [...npmPrefix, "run", "build"], { cwd: dir, env: { ...process.env, ...spec.env } });
   } else {
+    // Mobile: typecheck, then bundle with `expo export`. tsc alone can't see metro/NativeWind/Tailwind
+    // config, so only the export proves those resolve @concertable/mobile from the feed dist (not the
+    // ../shared sibling, which the carved tree does not contain).
     run(npm, [...npmPrefix, "exec", "--", "tsc", "--noEmit", "-p", "tsconfig.json"], { cwd: dir });
+    run(npm, [...npmPrefix, "exec", "--", "expo", "export", "--platform", "android"], {
+      cwd: dir,
+      env: { ...process.env, EXPO_NO_TELEMETRY: "1", CI: "1" },
+    });
   }
 
   console.log(`\n>>> carve-fe ${surface}: standalone restore + build OK`);
