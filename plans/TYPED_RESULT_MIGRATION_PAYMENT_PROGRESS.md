@@ -108,13 +108,16 @@ An initial `gh pr merge --auto` left the green/CLEAN PR with no `mergeQueueEntry
 request still dates from 2026-08-05, confirming the documented GitHub re-evaluation glitch.
 The one-time disable/re-enable nudge admitted exact remote head `a40761eba`; its queue entry is
 `QUEUED` and `full-e2e` remains applied.
+Merge-group run `31209734022` passed full API and UI E2E; PR #392 merged as `b66325acd`.
 
 ## Next Steps
 
-Follow PR #392's merge-group API and UI E2E to a terminal result without retrying or toggling queue
-state. After merge, own
-package publication and the generated breaking platform-sync PR through green, update the waiting
-B2B ledger, and close frozen donor PR #296 only after the canonical package gate is complete.
+Transfer the plan-only observation tail after source PR head `a40761eba` to a clean
+`Docs/typed-result_payment-owned-result-expansion_closeout` worktree from current `origin/main`,
+update this ledger's worktree/branch identity there, verify the transferred plan and ledger, then
+remove the merged feature worktree and source branch. From the closeout worktree, own package
+publication and the generated breaking platform-sync PR through green, update the waiting B2B
+ledger, and close frozen donor PR #296 only after the canonical package gate is complete.
 
 Merge, publication, the breaking B2B/Customer platform-sync migration, downstream handoff, and
 closing donor PR #296 remain later explicit delivery steps; PR #392 must run full merge-queue E2E.
@@ -274,6 +277,16 @@ Clean: escrow `Result<Option<T>,E>` semantics, rounding/VAT/refund math, wire hy
   commission-branch implementation is donor evidence only; its behavior is now reconciled here.
 
 ## Event log
+
+### 2026-08-07 - PR #392 merged with full E2E green
+
+- Action: Monitored merge-group run `31209734022` and PR #392 to a terminal result without retrying
+  or toggling queue state.
+- Evidence: API E2E passed; B2B and Customer UI E2E passed; no merge-group failure occurred; PR #392
+  merged exact source head `a40761eba` as merge commit `b66325acd`.
+- Outcome: The canonical Payment source PR is terminal green. Recovery ownership must now move to
+  the docs closeout worktree before publication and platform-sync monitoring.
+- Follow-up: Execute the closeout-transfer action in `## Next Steps`.
 
 ### 2026-08-07 - PR #392 entered the merge queue
 
