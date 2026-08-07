@@ -19,7 +19,7 @@ public sealed class TenantServiceTests
 
     public TenantServiceTests()
     {
-        repository = new Mock<ITenantRepository>();
+        this.repository = new Mock<ITenantRepository>();
         var resolver = new TenantConfigurationResolver(Options.Create(new TenantConfigurationDefaultsOptions
         {
             PrsPassThroughRate = 0.042m,
@@ -27,8 +27,8 @@ public sealed class TenantServiceTests
             PaymentTermsDays = 0,
             CancellationNoticeHours = 0,
         }));
-        service = new TenantService(
-            repository.Object,
+        this.service = new TenantService(
+            this.repository.Object,
             Mock.Of<ITenantContext>(),
             new VatPolicy(new UkVatCalculator()),
             resolver);
@@ -48,6 +48,8 @@ public sealed class TenantServiceTests
             false), TenantConfiguration.Empty);
         return tenant;
     }
+
+    #region GetConfigurationAsync
 
     [Fact]
     public async Task GetConfigurationAsync_TenantWithoutOverrides_ReturnsDefaults()
@@ -75,6 +77,10 @@ public sealed class TenantServiceTests
 
         Assert.Equal(new TenantConfigurationValues(0.042m, 0.05m, 30, 0), result);
     }
+
+    #endregion
+
+    #region GetPrsPassThroughRateAsync
 
     [Fact]
     public async Task GetPrsPassThroughRateAsync_UnlicensedTenant_ReturnsConfiguredRate()
@@ -105,6 +111,10 @@ public sealed class TenantServiceTests
 
         Assert.Equal(0m, await service.GetPrsPassThroughRateAsync(id));
     }
+
+    #endregion
+
+    #region GetVatCalculationAsync
 
     [Fact]
     public async Task GetVatCalculationAsync_RegisteredSupplier_DecomposesInclusiveGross()
@@ -168,6 +178,10 @@ public sealed class TenantServiceTests
         await Assert.ThrowsAsync<InvalidOperationException>(() => service.GetVatCalculationAsync(id, 120m));
     }
 
+    #endregion
+
+    #region GetTaxComplianceAsync
+
     [Fact]
     public async Task GetTaxComplianceAsync_OnboardedTenant_MapsAllFields()
     {
@@ -205,6 +219,10 @@ public sealed class TenantServiceTests
         Assert.Null(await service.GetTaxComplianceAsync(id));
     }
 
+    #endregion
+
+    #region IsTaxComplianceCompleteAsync
+
     [Fact]
     public async Task IsTaxComplianceCompleteAsync_OnboardedTenant_ReturnsTrue()
     {
@@ -231,4 +249,6 @@ public sealed class TenantServiceTests
 
         Assert.False(await service.IsTaxComplianceCompleteAsync(id));
     }
+
+    #endregion
 }

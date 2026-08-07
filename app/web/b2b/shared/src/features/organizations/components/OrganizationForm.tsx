@@ -11,6 +11,10 @@ import {
 import { taxFormLabels } from "../taxFormLabels";
 import type { Organization } from "../types";
 
+function formatPercent(rate: number): string {
+  return String(Number((rate * 100).toFixed(2)));
+}
+
 function initialBuffer(organization: Organization): OrganizationBuffer {
   const tax = organization.taxCompliance;
   const configuration = organization.configuration;
@@ -29,11 +33,11 @@ function initialBuffer(organization: Organization): OrganizationBuffer {
     prsPassThroughPercent:
       configuration.prsPassThroughRate == null
         ? ""
-        : String(configuration.prsPassThroughRate * 100),
+        : formatPercent(configuration.prsPassThroughRate),
     vatPercent:
       configuration.vatRate == null
         ? ""
-        : String(configuration.vatRate * 100),
+        : formatPercent(configuration.vatRate),
     paymentTermsDays:
       configuration.paymentTermsDays == null
         ? ""
@@ -213,7 +217,7 @@ export function OrganizationForm({
               step="0.01"
               value={buffer.prsPassThroughPercent}
               onChange={(e) => set("prsPassThroughPercent", e.target.value)}
-              placeholder={`Platform default: ${organization.configurationDefaults.prsPassThroughRate * 100}%`}
+              placeholder={`Platform default: ${formatPercent(organization.configurationDefaults.prsPassThroughRate)}%`}
             />
           </div>
           <div className="space-y-1">
@@ -226,7 +230,7 @@ export function OrganizationForm({
               step="0.01"
               value={buffer.vatPercent}
               onChange={(e) => set("vatPercent", e.target.value)}
-              placeholder={`Platform default: ${organization.configurationDefaults.vatRate * 100}%`}
+              placeholder={`Platform default: ${formatPercent(organization.configurationDefaults.vatRate)}%`}
             />
           </div>
           <div className="space-y-1">
