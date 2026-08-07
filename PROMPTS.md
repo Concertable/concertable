@@ -1,8 +1,10 @@
 # Prompts
 
-- **Hard final-response gate for plan-managed work:** if this turn reads or edits a `_PROGRESS.md`
-  ledger and its `## Next Steps` remains non-terminal, the response is incomplete until it ends with
-  the exact two-line pointer below. “Implementation complete” is not “nothing remains” while review,
+- **Hard final-response gate for plan-managed work:** if a `_PROGRESS.md` ledger with non-terminal
+  `## Next Steps` is explicitly named by path in the user request or edited during the turn, the
+  response is incomplete until it ends with the exact two-line pointer below. Read-only inspection of
+  a dependency owner's ledger does not claim its handoff. “Implementation complete” is not “nothing
+  remains” while review,
   PR, merge, publication, dependency, or platform-sync gates remain. A summary or paraphrased next
   action does not substitute for the pointer. The registered in-flight owner wait described below is
   the only exception. Trusted repository Stop hooks enforce this invariant.
