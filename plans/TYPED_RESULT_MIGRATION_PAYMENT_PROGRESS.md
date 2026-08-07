@@ -90,13 +90,12 @@ SQL integration 8/8 after the repository Docker data-round-trip preflight passed
 error-convention changes are committed locally and the incremental review through `842b9c332` found
 no issues. Current `origin/main` at `b46d10ec8` is merged locally as `17c8bb2b3`; the post-merge
 verification is green: full Release solution build 0 errors, Payment unit 222/222, and Payment SQL
-integration 8/8 on a healthy Docker data path. The incremental review is pending. PR #392 has not
-been updated or enqueued.
+integration 8/8 on a healthy Docker data path. The incremental review through `df76074c4` found no
+issues. PR #392 has not been updated or enqueued.
 
 ## Next Steps
 
-Incrementally review the current-main merge and verification checkpoint. If review-clean, continue
-the `merge` workflow for PR #392: push the verified compound head, apply
+Continue the `merge` workflow for PR #392: push the verified compound head, apply
 `full-e2e` because historical commits contain `Skip-E2E: true` trailers, enqueue, and follow the merge
 to a terminal state. After merge, own package publication and the generated breaking platform-sync PR
 through green, update the waiting B2B ledger, and close frozen donor PR #296 only after the canonical
@@ -151,6 +150,13 @@ closing donor PR #296 remain later explicit delivery steps; PR #392 must run ful
   preflight healthy; Payment SQL integration 8/8.
 
 ## Reviews
+
+### 2026-08-07 - final current-main incremental review (`842b9c332..df76074c4`)
+
+Artifact: `reviews/Feature-PaymentOwnedResultExpansion.md`. The six-commit range contains plan/review
+checkpoints plus the already-landed plan-handoff session-scoping fix and its focused tests. No new
+finding met the confidence threshold across all six repository lenses. The watermark is
+`df76074c4`.
 
 ### 2026-08-07 - incremental delivery review (`ee8dbdd57..842b9c332`)
 
@@ -240,6 +246,16 @@ Clean: escrow `Result<Option<T>,E>` semantics, rounding/VAT/refund math, wire hy
   commission-branch implementation is donor evidence only; its behavior is now reconciled here.
 
 ## Event log
+
+### 2026-08-07 - Final current-main incremental review found no issues
+
+- Action: Reviewed `842b9c332..df76074c4`, including the last current-main merge and verification
+  checkpoints, through all six repository lenses.
+- Evidence: `reviews/Feature-PaymentOwnedResultExpansion.md` records no new findings and is stamped
+  through `df76074c4`; `git diff --check` is clean.
+- Outcome: The current, fully verified branch is review-clean and ready for its two-leg verified
+  push to PR #392.
+- Follow-up: Execute the PR delivery action in `## Next Steps`.
 
 ### 2026-08-07 - Passed the final current-main verification gate
 

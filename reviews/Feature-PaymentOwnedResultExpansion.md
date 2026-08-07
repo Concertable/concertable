@@ -5,7 +5,7 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `842b9c3325272e9db361bede9b4e1c6dbb7ee2d9`  _(2026-08-07)_
+**Reviewed up to commit:** `df76074c46fb7e55570049abad377323bac3114b`  _(2026-08-07)_
 
 > Range reviewed: `3e3bcce89..a4ae0081e` (63 commits).
 > Status legend: `[ ]` todo - `[~]` in progress - `[x]` done - `[wontfix]` (note why).
@@ -58,3 +58,11 @@ The docs-only delivery follow-up through `ee8dbdd57` was also checked; no issues
 No issues found. Checked correctness, microservice isolation, module boundaries, seeding, C#
 conventions, and test coverage of changed paths. The range includes the current-main merges; the
 branch-owned Payment error-convention and conflict-resolution changes were reviewed in full.
+
+## Incremental review - 2026-08-07 (final current-main merge)
+
+> Range reviewed: `842b9c332..df76074c4` (6 commits).
+
+No issues found. Checked correctness, microservice isolation, module boundaries, seeding, C#
+conventions, and test coverage of changed paths. The only non-ledger changes are the already-landed
+plan-handoff session-scoping fix and its focused regressions.
