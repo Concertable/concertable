@@ -223,77 +223,57 @@ don't add new ones.
 
 ## Typed operation Results
 
-Use `Concertable.Kernel.Functional.Result<TValue, TError>` for expected, caller-actionable operation
-failures, `UnitResult<TError>` when success has no payload, and `Result<TValue>` or `Result` only for
-internal string-error flows that do or do not carry a success value. Use `Option<T>` when ordinary absence has no explanation yet. A successful optional payload is
-`Result<Option<T>, TError>`; collection queries return empty read-only lists. Faults, cancellation,
-and violated invariants remain exceptions.
+All new and changed in-process operation contracts follow this decision rule. When a contract needs
+to represent an expected failure or ordinary absence, its outcome vocabulary comes from
+`Concertable.Kernel.Functional`. Existing unmigrated nullable, boolean, enum, void, or third-party
+signatures that encode those semantics are migration debt, not precedent for new work. Choose the
+smallest shape that preserves the caller's real decisions:
+
+- Expected, caller-actionable failure with a success payload: `Result<TValue, TError>`.
+- Expected, caller-actionable failure without a success payload: `UnitResult<TError>`.
+- Ordinary absence with no failure explanation: `Option<T>`.
+- A fallible operation whose successful payload is optional: `Result<Option<T>, TError>`.
+- Collection query: `IReadOnlyList<T>`, with no matches represented by an empty list.
+- No actionable failure or absence: return the plain value, capability boolean, or completion type;
+  do not manufacture a Result solely for uniformity.
+
+Use `Result<TValue>` or `Result` only for genuinely internal string-error flows that do or do not
+carry a success value; new module, application, service, and client contracts with expected failures
+use an operation-owned `TError`. Faults, cancellation, and violated invariants remain exceptions.
 
 Persistence repository single-item lookups return nullable values (`Task<TEntity?>`), matching the
-provider's missing-row contract. Application and service reads convert caller-visible absence with
-`ToOption().OrFailure(...)` and expose `Result<TValue, TError>`. Expose `Option<T>` only when absence
-is genuinely ordinary and requires no explanation. Do not push `Result` or `Option` into repository
-or persistence contracts.
+provider's missing-row contract. Module, application, service, and client boundaries convert that
+nullable value with `ToOption()` and expose `Option<T>` for ordinary absence. Do not push `Option`
+into repository or persistence contracts.
 
-Controllers are HTTP terminals, not application-policy owners. They may map a successful payload to
-an HTTP response and terminate an application-owned `Result` through `Concertable.Shared.Api.Results`.
-They do not inject `TimeProvider`, convert `Option` with `OrFailure`, choose missing-resource errors,
-or compute time-dependent/business capabilities. Those decisions belong in the application service.
+`TError` is an operation-owned `XError` union that implements `IError`. Each expected outcome has a
+natural named case, whether it carries a payload or not; callers match domain outcomes rather than
+comparing catalog values. Keep the error beside its operation and place it in Application,
+`*.Contracts`, or a published client contract according to the widest caller that consumes it.
+Shared Kernel owns only `IError`, `ErrorDefinition`, `ErrorKind`, and the generic definition
+factories. Never carry Result, Option, Dunet, or service-owned error unions through HTTP DTOs,
+protobuf, events, or persistence.
 
-`TError` is an operation-owned `XError` that implements `IError`. When every alternative is
-payload-free and callers do not need runtime case discrimination, use a sealed record containing an
-`ErrorDefinition` and expose the allowed values as `static readonly` members. Use Dunet only when
-alternatives carry different data or owner-local logic genuinely needs to distinguish them. Keep the
-error beside its operation; shared Kernel owns only `IError`, its definitions, and `ErrorKind`.
-Place it in Application, `*.Contracts`, or a published client contract according to the widest
-caller that consumes it. Never carry Result, Option, or Dunet types through HTTP DTOs, protobuf,
-events, or persistence.
-
-Name the default read error for the aggregate noun (`VenueError`, `ConcertError`), not the redundant
-operation (`GetVenueError`). Prefix mutation errors when the verb disambiguates the operation
-(`CreateVenueError`, `UpdateVenueError`). For alternate lookup keys, name the missing key directly:
-`InvoiceError.ConcertNotFound(concertId)` and `ContractError.ApplicationNotFound(applicationId)`.
-
-Build definitions through `ErrorDefinition.Invalid`, `NotFound`, `Conflict`, `Unauthenticated`,
-`Forbidden`, `PaymentRequired`, and `Validation`. Every safe public message is explicit except the
-standard not-found one; codes are derived from case names as described below.
-
-Payload-free alternatives use the smallest representation:
-
-```csharp
-public sealed record PaymentError(ErrorDefinition Definition) : IError
-{
-    public static readonly PaymentError PayerNotFound = new(
-        ErrorDefinition.NotFound(
-            "payment.payer_not_found",
-            "Payer payment account not found."));
-
-    public static readonly PaymentError Declined = new(
-        ErrorDefinition.PaymentRequired(
-            "payment.declined",
-            "The payment was declined."));
-}
-```
-
-When a union is necessary, declare `Definition` abstract on the root and override it on every case:
+With Dunet, derive `Definition` in one exhaustive switch on the union. The case name is the source of
+the default published code and message, so the ordinary declaration repeats neither:
 
 ```csharp
 [Union(EnableImplicitConversions = false)]
 public abstract partial record PaymentError : IError
 {
-    public abstract ErrorDefinition Definition { get; }
-
-    [DisplayName("Payer payment account")]
-    public partial record PayerNotFound
+    public ErrorDefinition Definition => this switch
     {
-        public override ErrorDefinition Definition => ErrorDefinition.NotFound<PayerNotFound>();
-    }
+        PayerNotFound => ErrorDefinition.NotFound<PayerNotFound>(),
+        Declined => ErrorDefinition.PaymentRequired<Declined>("The payment was declined."),
+        ProviderFailure =>
+            ErrorDefinition.Invalid<ProviderFailure>("The payment provider rejected the request.")
+    };
 
-    public partial record Declined
-    {
-        public override ErrorDefinition Definition =>
-            ErrorDefinition.PaymentRequired<Declined>("The payment was declined.");
-    }
+    public partial record PayerNotFound;
+
+    public partial record Declined;
+
+    public partial record ProviderFailure(string Code);
 }
 ```
 
@@ -304,13 +284,46 @@ only renames or constructs the same case. A name and its definition must agree s
 `PayerNotFound` uses an `ErrorDefinition.NotFound`, while a broader or different definition requires
 an honestly broader or different case name.
 
-This makes a newly declared case fail compilation until it implements `IError`, without positional
-lambdas or unused parameters. Use generated full `Match` only for other owner-local logic that truly
-requires exhaustive case handling. When logic deliberately inspects only some cases, use ordinary
-C# `is` type patterns.
+The switch is the complete case-to-definition map without positional `Match` lambdas or unused
+parameters. A composite case deconstructs and forwards the nested definition:
 
-The `<TCase>` factories need a case type, so they belong to the union form. The payload-free record
-above has no per-alternative type and keeps its codes explicit.
+```csharp
+[Union(EnableImplicitConversions = false)]
+public abstract partial record EscrowRefundError : IError
+{
+    public ErrorDefinition Definition => this switch
+    {
+        EscrowNotFound => ErrorDefinition.NotFound<EscrowNotFound>(),
+        PaymentFailure(var error) => error.Definition
+    };
+
+    public partial record EscrowNotFound;
+
+    public partial record PaymentFailure(PaymentError Error);
+}
+```
+
+A validation case carries `ValidationErrors` and uses the same switch; convert its payload only at
+the definition boundary:
+
+```csharp
+[Union(EnableImplicitConversions = false)]
+public abstract partial record CreateDealError : IError
+{
+    public ErrorDefinition Definition => this switch
+    {
+        Invalid(var errors) =>
+            ErrorDefinition.Validation<Invalid>(errors.ToDictionary())
+    };
+
+    public partial record Invalid(ValidationErrors Errors);
+}
+```
+
+Do not add a discard/default arm. Dunet suppresses compiler warning `CS8509` only when the switch
+covers every declared variant; an omitted variant keeps the warning and must never suppress it
+locally. Use generated full `Match` only when delegates are the natural API for the behavior. When
+logic deliberately inspects only some cases, use ordinary C# `is` type patterns.
 
 Every union has an exact definition contract test for every case. Hard-code the expected code,
 message, and semantic kind in the test; never calculate expected values with the production helper.
@@ -321,27 +334,103 @@ Messages are caller-safe text, never exception messages, provider detail, SQL, s
 values whose disclosure has not been reviewed. Validation definitions contain at least one
 structured field message.
 
-When a not-found message is not explicitly supplied, use `ErrorDefinition.NotFound<T>(code)`, which
-derives it from the type's required `[DisplayName]`. Types without that caller-facing metadata must
-use the explicit-message overload; the CLR type name is never a fallback. Messages that describe domain
-behaviorâ€”declines, invalid transitions, eligibility, limits, and conflictsâ€”remain explicit even
-when a helper could manufacture grammatical text.
+Every kind has generic factories with and without an explicit message:
+`Invalid<TCase>()`, `NotFound<TCase>()`, `Conflict<TCase>()`, `Unauthenticated<TCase>()`,
+`Forbidden<TCase>()`, `PaymentRequired<TCase>()`, and `Validation<TCase>(errors)`. The no-message
+factory humanizes the case name, so `PayerNotFound` publishes `Payer not found.`. Use the
+explicit-message overload when the natural case name is not the complete safe caller-facing text,
+as with provider failures or declined payments. Typed error cases never use `[DisplayName]`;
+repository entity lookup remains a separate concern, where `OrNotFound<TEntity>()` may use the
+entity type's `[DisplayName]`.
 
-Codes, unlike messages, are derived. Every kind has a `<TCase>` factory —
-`ErrorDefinition.Invalid<TCase>(message)`, `NotFound<TCase>()`, `Conflict<TCase>`,
-`Unauthenticated<TCase>`, `Forbidden<TCase>`, `PaymentRequired<TCase>`, and
-`Validation<TCase>(message, errors)` — which takes the case as `TCase` and derives its code from the
-case and union names. The union's first word is the prefix, its remaining words are context, leading
-case words that repeat the union are dropped, an optional `Case` suffix is ignored, and acronyms and
-digits split on their own, so `EscrowRefundError.EscrowNotFound` publishes `escrow.refund_not_found`.
-Deriving is Kernel's job alone; never add a service-local reflection helper for it.
-`NotFound<TCase>()` also supplies the standard message from the case's `[DisplayName]` and throws
-without one — the other kinds always take an explicit message.
+The same case name derives its code. The union's first word is the prefix, its remaining words are
+context, leading case words that repeat the union are dropped, an optional `Case` suffix is ignored,
+and acronyms and digits split on their own, so `EscrowRefundError.EscrowNotFound` publishes
+`escrow.refund_not_found`. Deriving codes and default messages is Kernel's job alone; never add a
+service-local reflection helper for either.
 
 A published code the naming rule would move — a renamed case, or a prefix that is not the error's own
 first word — keeps its code with `[ErrorCode("...")]` on the case. The attribute is not inherited from
 the union root and its value is validated like any other code. The per-case contract test is what
 makes this safe: a rename that would silently republish a code fails the test, not production.
+
+Do not add an `ErrorCase` base-class hierarchy, `NotFound<T>` case inheritance, `IErrorSet<T>`, or
+another marker/catalog abstraction. None adds information beyond the union and `IError`. Do not put
+an attribute on every case, discover cases with runtime reflection, or generate code merely to hide a
+lookup. A generator is justified only if it removes a demonstrated manual case inventory while
+reporting missing, duplicate, or non-reconstructible wire cases at compile time.
+
+### Typed errors at gRPC boundaries
+
+The wire carries an open-ended string code plus its published message and kind; it never carries a
+Dunet type. A client maps an application-error `RpcException` to its operation-owned error through a
+total `ToXError()` extension. Keep the indexed instances private so callers see neither `Try`,
+nullable, nor `Option` parsing:
+
+```csharp
+internal static class PaymentErrorMappers
+{
+    private static readonly FrozenDictionary<string, PaymentError> errors =
+        new PaymentError[]
+        {
+            new PaymentError.PayerNotFound(),
+            new PaymentError.Declined()
+        }
+        .ToFrozenDictionary(error => error.Definition.Code);
+
+    internal static PaymentError ToPaymentError(this RpcException exception)
+    {
+        var detail = exception.ToOperationErrorDetail();
+
+        if (!errors.TryGetValue(detail.Code, out var error)
+            || detail.Message != error.Definition.Message
+            || detail.Kind != error.Definition.Kind)
+        {
+            throw new PaymentContractMismatchException(detail.Code, exception);
+        }
+
+        return error;
+    }
+}
+```
+
+The dictionary is the reverse map from an open wire string to a closed case set; arbitrary future
+input cannot be exhaustively matched. Do not replace it with `FromCode` switches,
+parser-precedence chains, a public `TryToXError`, a nullable `ToXError`, or a catalog that merely moves
+the same parsing elsewhere. Duplicate codes must fail a mapper contract test before merge; a future
+generator, if justified, must report them at compile time. Do not use runtime assembly discovery.
+
+Only cases reconstructible from the operation-error envelope belong in this instance dictionary. A
+payload-carrying case must have an explicit structured wire detail and a mapper that reconstructs the
+payload; if the transport does not carry that data, the case remains in-process. Never discard a
+payload merely to force it through code-only lookup.
+
+Catch caller cancellation before application errors. The reusable gRPC-only predicate belongs to
+`Concertable.Grpc`, not Kernel or a service; generic operation-detail extraction belongs there once
+the envelope is shared. `Concertable.Grpc` remains independently packable and service-agnostic; the
+concrete error map and mismatch exception stay in the owning client so every service/package closure
+builds without a sibling runtime reference:
+
+```csharp
+catch (RpcException ex) when (ex.IsClientCancellation(ct))
+{
+    throw new OperationCanceledException(
+        "The payment operation was cancelled.",
+        ex,
+        ct);
+}
+catch (RpcException ex) when (ex.HasOperationErrorDetail())
+{
+    return Result<PaymentOutcome, PaymentError>.Failure(ex.ToPaymentError());
+}
+```
+
+Unrelated network, availability, and protocol failures remain their original `RpcException`. An
+application-error detail with an unknown code, or a known code whose message or kind changed, throws
+the operation's contract-mismatch exception with the original `RpcException` as its inner exception.
+It never becomes a domain `Unknown` case: adding one would weaken exhaustive domain handling and let
+an old client pretend it understands a new server outcome. Publish and deploy the updated contract
+and clients before a server starts emitting a new code.
 
 Compose owned Results and Options with `Bind`, `Map`, `MapError`, `Ensure`, `Tap`, `OrFailure`, and
 the Kernel Task extensions until a terminal adapter. Ordinary composition is fail-fast; only
@@ -361,19 +450,10 @@ OneOf, ErrorOr, LanguageExt, or Dunet to implement the Kernel functional types. 
 conversions, catch exceptions in combinators, turn failures into HTTP exceptions, or carry functional
 types across transport or persistence boundaries.
 
-Dunet appears only in necessary error-union declaration files, owner-local full `Match` calls, and
-package configuration. Do not use generated `Unwrap` or case-specific `MatchX` APIs without a concrete need.
-Keep `IError`, definitions, shared Result extensions, transports, persistence, messages, and wire
-formats independent of Dunet.
-
-After the repository moves to a released .NET/C# native-union implementation, replace Dunet and the
-hand-written Result/Option representations in one deliberate cutover. Preserve the current natural
-operation-error case names, definitions, Result/Option factories, composition, transport adapters,
-codes, and contract tests so service call sites do not inherit preview null/default arms. Choose any
-additional native pattern surface from the released semantics at that time; do not pre-shape current
-code around preview switch syntax. At that cutover the per-case `Definition` overrides collapse into
-one exhaustive `switch` over the native union, which the compiler then checks — the same guarantee the
-abstract member gives today.
+Dunet appears only in error-union declarations, their exhaustive case handling, genuinely useful
+full `Match` calls, and package configuration. Do not use generated `Unwrap` or case-specific
+`MatchX` APIs without a concrete need. Keep `IError`, definitions, Result extensions, transports,
+persistence, messages, and wire formats independent of Dunet.
 
 Controllers terminate through `Concertable.Shared.Api.Results`. Result failures and exceptions both
 write through `IProblemDetailsService`, so registered writers, content negotiation, request

@@ -31,7 +31,7 @@ internal static class DistributedApplicationBuilderExtensions
     {
         var auth = builder.Resources
             .OfType<ProjectResource>()
-            .Single(r => r.Name == AppHostConstants.ResourceNames.Auth);
+            .Single(r => r.Name == AuthConstants.Resource);
 
         auth.Annotations.Add(new EnvironmentCallbackAnnotation(context =>
         {
@@ -47,7 +47,7 @@ internal static class DistributedApplicationBuilderExtensions
     {
         var customerWeb = builder.Resources
             .OfType<ProjectResource>()
-            .Single(r => r.Name == AppHostConstants.ResourceNames.CustomerWeb);
+            .Single(r => r.Name == CustomerConstants.WebResource);
 
         customerWeb.Annotations.Add(new EnvironmentCallbackAnnotation(context =>
         {

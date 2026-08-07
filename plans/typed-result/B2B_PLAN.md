@@ -12,13 +12,13 @@ payloads and terminate typed Results.
 ## Checkpoints
 
 Checkpoints 1–5 are Payment-independent and shipped on the branch. Checkpoints 6–7 consume the
-published typed Payment client and are **blocked** until the Payment owned-result expansion (PR #296)
+published typed Payment client and are **blocked** until the Payment owned-result expansion (PR #392)
 merges, Payment publishes, and its platform-sync PR lands green — no FluentResults adapter, string
 bridge, or local source dependency may be introduced to cross that gate.
 
-- [x] **Checkpoint 1 — Deal.** Deal module outcomes → owned Results; Deal keeps Dunet only for its
-  structured validation variants (`Invalid`, `DealNotFound`) with an abstract root `Definition` and
-  per-case overrides; published codes pinned by contract tests.
+- [x] **Checkpoint 1 — Deal.** Deal module outcomes → owned Results; operation errors use explicit
+  Dunet cases with disabled implicit conversions and one exhaustive root `Definition` switch;
+  published codes, messages, kinds, and structured validation payloads pinned by contract tests.
 - [x] **Checkpoint 2 — Tenant.** Invitation, membership, tenant, tax-compliance, and current-tenant
   operations; expected not-found / conflict / invalid / forbidden become operation-specific Results;
   "missing immediately after this operation saved it" stays an invariant fault; framework
@@ -48,9 +48,13 @@ bridge, or local source dependency may be introduced to cross that gate.
   `ConcertError`, `ApplicationError`, `OpportunityError`, `ContractError`, `InvoiceError`); mutation
   errors keep a disambiguating verb prefix; alternate lookups name the missing key
   (`InvoiceError.ConcertNotFound(concertId)`). `VatCalculationError` drops the redundant `Get` prefix.
-- Payload-free errors are sealed definition records; Dunet is retained only where alternatives carry
-  data or need runtime case discrimination (Deal validation), with `Definition` abstract on the root
-  and overridden per case. Cases use natural domain names, not `Case`-suffixed aliases.
+- Every operation-error root is a Dunet union with
+  `[Union(EnableImplicitConversions = false)]`, explicit naturally named cases, and one exhaustive
+  `Definition => this switch`. Call sites construct cases directly and cast explicitly to the root;
+  no singleton factories, alias factories, abstract root definition, or per-case override remains.
+- `[ErrorCode]` is reserved for preserving an already-published code; explicit messages remain where
+  the derived default is not the existing contract. Contract tests pin every case's code, message,
+  kind, and payload-bearing values.
 - No B2B `*.Api` project depends on `Option`; no controller injects `TimeProvider`. Architecture guards
   enforce both.
 - B2B consumes the published Kernel package only; a nullable-to-Result Kernel extension is not added

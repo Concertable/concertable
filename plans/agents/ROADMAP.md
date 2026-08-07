@@ -20,9 +20,13 @@ Each buildable roadmap item **spins off its own feature plan** (e.g. `VAT_PLAN.m
 phases and delivery; when it ships it **ticks its roadmap line**, then is deleted. The roadmap keeps the
 tick.
 
-**Don't reference a roadmap from inside a plan.** The dependency runs one way: a plan is spun off *from*
-a roadmap item and reports completion back to it. A plan that cites the roadmap couples the disposable
-artifact to the permanent one.
+**A plan's file must not cite the roadmap — but an agent working the plan may read it.** The document
+dependency runs one way: a plan is spun off *from* a roadmap item and reports completion back to it, and
+a plan that cites the roadmap couples the disposable artifact to the permanent one. Reading is different
+from citing: the roadmap is also the epic's **cross-plan dependency map**, so an agent *executing* a plan
+may read it to find which sibling plan owns a suspected blocker and check that plan's `_PROGRESS.md` for
+live status (see [`PLAN.md`](PLAN.md) "Cross-plan blockers"). Navigate by reading it; never
+write a reference to it into the plan.
 
 ## Keep it current in the same commit as the work
 
@@ -34,7 +38,9 @@ existing ✅/🔴/🟠/🟡 style), exactly like ticking a phase in a plan. Don'
 
 ## `/continue-roadmap` picks the next item
 
-`/continue-roadmap` reads a roadmap, classifies every outstanding item against real git/PR/worktree
-state (in-flight / blocked / ready), and — once Tommy picks one — emits a handoff prompt that a fresh
-context uses to write that item's feature plan. It is the epic-level analog of `/resume-plan`; it
-**creates** a new plan rather than resuming one.
+`/continue-roadmap [@plans/<X>_ROADMAP.md] [preferred item in natural language]` reads a roadmap and
+classifies every outstanding item against real git/PR/worktree state (in-flight / blocked / ready).
+Without a preference it lists the ready candidates for Tommy to choose. A ready preference is treated
+as the choice and goes directly to the handoff; a blocked, in-flight, or unmatched preference produces
+the ready alternatives instead. The handoff tells a fresh context to write that item's feature plan.
+This is the epic-level analog of `/resume-plan`; it **creates** a new plan rather than resuming one.

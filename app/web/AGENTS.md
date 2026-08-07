@@ -22,3 +22,8 @@ The business app uses `vite build` only (no `tsc -b`) — it's a minimal app tha
 
 If you add or rename a route file, regenerate that app's `routeTree.gen.ts` before `tsc -b` can see
 it (`npm -w <app> exec -- vite build` once, or run the dev server).
+
+## HTTP errors
+
+Axios is confined to the shared HTTP client and interceptor. Feature APIs, guards, and components use
+the shared client contract; they never import `AxiosError`/`isAxiosError` or inspect `error.response`.

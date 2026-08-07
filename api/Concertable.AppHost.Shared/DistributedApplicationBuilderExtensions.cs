@@ -32,33 +32,6 @@ public static class DistributedApplicationBuilderExtensions
         return (storage, blobs);
     }
 
-    public static IResourceBuilder<ProjectResource> AddAuth<TProject>(
-        this IDistributedApplicationBuilder builder,
-        IResourceBuilder<SqlServerDatabaseResource> authDb,
-        IResourceBuilder<SqlServerDatabaseResource> b2bDb,
-        IResourceBuilder<AzureServiceBusResource> asb)
-        where TProject : IProjectMetadata, new()
-    {
-        var auth = builder.AddProject<TProject>(AppHostConstants.ResourceNames.Auth)
-                          .WithReference(authDb)
-                          .WaitFor(authDb)
-                          .WithReference(b2bDb)
-                          .WithReference(asb)
-                          .WaitFor(asb)
-                          .AddSecrets(builder, "ServiceAuth:B2BClientSecret", "ServiceAuth:CustomerClientSecret", "ServiceAuth:AuthClientSecret");
-
-        auth.WithEnvironment("Auth__Authority", auth.GetEndpoint("https"));
-
-        var lanIp = builder.Configuration["MobileLanIp"];
-        if (!string.IsNullOrEmpty(lanIp))
-        {
-            auth.WithEnvironment("Auth__ExpoGoRedirectUri__Customer", $"exp://{lanIp}:8082");
-            auth.WithEnvironment("Auth__ExpoGoRedirectUri__Business", $"exp://{lanIp}:8083");
-        }
-
-        return auth;
-    }
-
     public static IResourceBuilder<ProjectResource> AddApi<TProject>(
         this IDistributedApplicationBuilder builder,
         IResourceBuilder<SqlServerDatabaseResource> sql,
@@ -109,58 +82,6 @@ public static class DistributedApplicationBuilderExtensions
                              .WithOptionalEnvironment("ServiceAuth__ClientSecret", builder.Configuration["ServiceAuth:B2BClientSecret"]);
 
         return workers;
-    }
-
-    public static IResourceBuilder<ProjectResource> AddCustomerWeb<TProject>(
-        this IDistributedApplicationBuilder builder,
-        IResourceBuilder<ProjectResource> auth,
-        IResourceBuilder<SqlServerDatabaseResource> customerDb,
-        IResourceBuilder<AzureServiceBusResource> asb,
-        IResourceBuilder<ProjectResource> paymentWeb)
-        where TProject : IProjectMetadata, new()
-    {
-        var customerSecret = builder.Configuration["ServiceAuth:CustomerClientSecret"];
-        return builder.AddProject<TProject>(AppHostConstants.ResourceNames.CustomerWeb)
-                      .WithReference(auth)
-                      .WaitFor(auth)
-                      .WithReference(customerDb)
-                      .WaitFor(customerDb)
-                      .WithReference(asb)
-                      .WaitFor(asb)
-                      .WithReference(paymentWeb)
-                      .WaitFor(paymentWeb)
-                      .WithEnvironment("Auth__Authority", auth.GetEndpoint("https"))
-                      .WithEnvironment(AzureServiceBusOptions.ServiceNameEnvVar, AppHostConstants.ServiceNames.Customer)
-                      .WithEnvironment("ServiceAuth__ClientId", "concertable-customer")
-                      .WithOptionalEnvironment("ServiceAuth__ClientSecret", customerSecret);
-    }
-
-    public static IResourceBuilder<ProjectResource> AddSearchWeb<TProject>(
-        this IDistributedApplicationBuilder builder,
-        IResourceBuilder<ProjectResource> auth,
-        IResourceBuilder<SqlServerDatabaseResource> searchDb)
-        where TProject : IProjectMetadata, new()
-    {
-        return builder.AddProject<TProject>(AppHostConstants.ResourceNames.SearchWeb)
-                      .WithReference(auth)
-                      .WaitFor(auth)
-                      .WithReference(searchDb)
-                      .WaitFor(searchDb)
-                      .WithEnvironment("Auth__Authority", auth.GetEndpoint("https"));
-    }
-
-    public static IResourceBuilder<ProjectResource> AddSearchWorkers<TProject>(
-        this IDistributedApplicationBuilder builder,
-        IResourceBuilder<SqlServerDatabaseResource> searchDb,
-        IResourceBuilder<AzureServiceBusResource> asb)
-        where TProject : IProjectMetadata, new()
-    {
-        return builder.AddProject<TProject>(AppHostConstants.ResourceNames.SearchWorkers)
-                      .WithReference(searchDb)
-                      .WaitFor(searchDb)
-                      .WithReference(asb)
-                      .WaitFor(asb)
-                      .WithEnvironment(AzureServiceBusOptions.ServiceNameEnvVar, AppHostConstants.ServiceNames.Search);
     }
 
     public static IResourceBuilder<ProjectResource> AddB2BSeedingSimulator<TProject>(
@@ -474,7 +395,7 @@ public static class DistributedApplicationBuilderExtensions
                 yield return line;
     }
 
-    private static IResourceBuilder<T> WithOptionalEnvironment<T>(
+    public static IResourceBuilder<T> WithOptionalEnvironment<T>(
         this IResourceBuilder<T> resource,
         string name,
         string? value)
@@ -485,7 +406,7 @@ public static class DistributedApplicationBuilderExtensions
         return resource;
     }
 
-    private static IResourceBuilder<ProjectResource> AddSecrets(
+    public static IResourceBuilder<ProjectResource> AddSecrets(
         this IResourceBuilder<ProjectResource> resource,
         IDistributedApplicationBuilder builder,
         params string[] keys)

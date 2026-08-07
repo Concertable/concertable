@@ -7,6 +7,7 @@
   <Project Path="Concertable.ServiceDefaults/Concertable.ServiceDefaults.csproj" />
   <Folder Name="/Auth/">
     <Project Path="Concertable.Auth/src/Concertable.Auth.AppHost/Concertable.Auth.AppHost.csproj" />
+    <Project Path="Concertable.Auth/src/Concertable.Auth.AppHost.Extensions/Concertable.Auth.AppHost.Extensions.csproj" />
     <Project Path="Concertable.Auth/src/Concertable.Auth/Concertable.Auth.csproj" />
     <Project Path="Concertable.Auth.Contracts/Concertable.Auth.Contracts.csproj" />
   </Folder>
@@ -206,6 +207,7 @@
   </Folder>
   <Folder Name="/Shared/">
     <Project Path="Concertable.Shared/src/Concertable.Contracts/Concertable.Contracts.csproj" />
+    <Project Path="Concertable.Shared/src/Concertable.Grpc/Concertable.Grpc.csproj" />
     <Project Path="Concertable.Shared/src/Concertable.Shared.Api/Concertable.Shared.Api.csproj" />
     <Project Path="Concertable.Shared/src/Concertable.Kernel/Concertable.Kernel.csproj" />
     <Project Path="Concertable.Shared/src/Concertable.Shared.Blob/Concertable.Shared.Blob.Application/Concertable.Shared.Blob.Application.csproj" />
@@ -224,6 +226,7 @@
     <Project Path="Concertable.Shared/src/Seed/Concertable.Seed.Shared/Concertable.Seed.Shared.csproj" />
     <Project Path="Concertable.Shared/src/Seed/Concertable.Seed.Identity/Concertable.Seed.Identity.csproj" />
     <Project Path="Concertable.Shared/src/Seed/Concertable.Seed.Infrastructure/Concertable.Seed.Infrastructure.csproj" />
+    <Project Path="Concertable.Shared/tests/Concertable.Grpc.UnitTests/Concertable.Grpc.UnitTests.csproj" />
     <Project Path="Concertable.Shared/tests/Concertable.Kernel.UnitTests/Concertable.Kernel.UnitTests.csproj" />
     <Project Path="Concertable.Shared/tests/Concertable.Shared.Api.UnitTests/Concertable.Shared.Api.UnitTests.csproj" />
     <Project Path="Concertable.Shared/tests/Concertable.Testing/Concertable.Testing.csproj" />

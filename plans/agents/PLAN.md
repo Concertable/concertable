@@ -35,9 +35,11 @@ transition as it happens**, not just phase summaries: user direction and scope c
 implementation, commits, verification commands and results, reviews and every
 finding's disposition, fixes after review, PR creation and checks, merges, publications, platform
 syncs, decisions, discoveries, deviations, blockers, failed approaches worth avoiding, and external
-gates. "A review happened" is insufficient: identify the review type and range, its artifact, whether
-findings remain open, and the commit or deferral that resolved each one. Never leave a project fact
-only in chat because it happened between phase boundaries.
+gates — all scoped to the plan's substance (code, design, delivery, gate state). Not tooling,
+environment or git mishaps, or incident narration; record the durable fact ("committed as `<sha>`"),
+never the drama. "A review happened" is insufficient: identify the review type and range, its artifact,
+whether findings remain open, and the commit or deferral that resolved each one. Never leave a project
+fact only in chat because it happened between phase boundaries.
 
 Every workflow that advances or evaluates plan-managed work owns this update before it ends. That
 includes implementation, `/code-review`, `/big-review`, `/incremental-review`, addressing findings,
@@ -57,10 +59,12 @@ Each ledger keeps these current sections above its chronological event log:
 - completed work with commit or PR evidence;
 - verification and review state;
 - decisions, discoveries, blockers, and deviations;
-- **`## Next Steps`** — the paste-ready prompt for the next agent: the concrete step(s) to take now,
-  self-contained, with any prerequisite or blocking gate. This is the **single source of truth** for
-  what to do next; resume/handoff prompts point here instead of restating it, so a prompt can never
-  drift from reality. Keep it current at every checkpoint.
+- **`## Next Steps`** — the single resolved action for the next agent, expressed as concrete,
+  self-contained steps with any prerequisite or blocking gate. Apply the repository's standing
+  instructions and current evidence before writing it, so it directs execution instead of presenting
+  alternative paths. This is the **single source of truth** for what to do next; resume/handoff prompts
+  point here instead of restating it, so a prompt can never drift from reality. Keep it current at every
+  checkpoint.
 
 Update the summary whenever an event changes it, then append the evidenced event to the log. Include
 enough commands, paths, identifiers, results, and reasoning to continue without the prior conversation;
@@ -91,6 +95,28 @@ but the plan stays open until **all** of them land and the codebase is in sync a
 B2B PR and calling the plan done while Kernel still speaks the old shape is the thing to never do.
 Don't `git rm` the plan (Lifecycle 5) until that final synced state is in.
 
+## Cross-plan blockers — establish the return path before stopping
+
+When a phase can't proceed because it depends on work owned by a **different** plan in the same epic
+(e.g. B2B's migration waiting on Payment's), don't guess the dependency's state from memory. Read the
+epic roadmap as the cross-plan dependency map, find which sibling plan owns the blocker, and open that
+plan's `_PROGRESS.md` for its live state (merged? published? platform-sync green?). Only then proceed or
+record the exact unlanded gate.
+
+Blocking is a two-ledger state transition:
+
+1. In the waiting ledger, make `## Next Steps` name the owner ledger and the exact terminal gate. The
+   waiting worktree does not poll after that checkpoint.
+2. In the owner ledger, add a `## Downstream handoffs` entry with the waiting ledger, its worktree, and
+   the same gate. This is the durable return path.
+3. When the owner crosses the gate, update the waiting ledger's current state, `## Next Steps`, and
+   event log in that same delivery session, then surface its exact resume prompt to Tommy.
+4. Do not close or delete the owner plan/ledger while a downstream handoff remains undispatched.
+
+Reporting "waiting for X" without registering the dependent in X's ledger is incomplete: it loses the
+only reliable signal for returning to the work. The roadmap is used at runtime for navigation, never
+cited inside a plan (see [`ROADMAP.md`](ROADMAP.md)).
+
 ## Lifecycle
 
 1. **Write it** when the work spans multiple commits/PRs or needs a design decided up front, and create its `_PROGRESS.md` companion at the same time.
@@ -101,11 +127,13 @@ Don't `git rm` the plan (Lifecycle 5) until that final synced state is in.
 4. **Keep both artifacts after the last local phase while delivery is live.** Check off the phase and
    make the ledger's exact next action the review, fix, PR, merge, publication, dependency, or
    platform-sync gate that now owns progress. Continue recording every transition; local completion
-   is not lifecycle completion.
+   is not lifecycle completion. Once the source PR merges, transfer the recovery commits to a clean
+   `Docs/<epic>_<name>_closeout` worktree and remove the feature worktree immediately.
 5. **Close out only after the entire lifecycle is terminal.** Record the final gate's outcome and
    evidence, make that ledger checkpoint durable, then delete the plan and ledger together (`git rm`)
-   in the following close-out change. When the final phase has no later delivery or package gates,
-   that phase's completing commit may perform the close-out.
+   in the following close-out commit. Land that commit through `/merge-docs`, then remove the close-out
+   worktree. When the final phase has no later delivery or package gates, that phase's completing
+   commit may perform the close-out.
 6. A plan **and its progress ledger** superseded by a newer plan, or describing a **rejected** design, are deleted the moment
    that's decided — no tombstones.
 
@@ -126,21 +154,20 @@ So, **before any change that closes a terminal plan, run `git status --short pla
 
 The rule is mechanical: after the close-out change, no terminal plan is in the tree — as an addition or a survivor.
 
-### Doc-only close-out — never open its own PR; let it ride the next change
+### Post-merge close-out — move state, delete the feature worktree, use `/merge-docs`
 
-If no later delivery or package gate exists, the plan deletion + blocker tick can land **inside the
-feature's final commit** (Lifecycle 5). Normally the plan must outlive that commit and often the merge
-itself while reviews, checks, publication, or platform sync remain live. Record the final gate outcome
-in the ledger and make that checkpoint durable before applying the close-out after the feature merged.
-When that happens, **do not open a standalone PR for it.** Deleting a completed plan and ticking a
-blocker are doc-only and cannot break a build or another PR (root `CLAUDE.md`: docs are exempt from
-branch hygiene). Spinning up a branch + PR + full merge-queue **E2E cycle (~20-30 min)** for a two-file
-doc change is pure waste — and pushing straight to the protected `main` is (correctly) blocked.
+If no later delivery or package gate exists, the plan deletion + roadmap tick can land inside the
+feature's final commit. Otherwise the source PR merges while the plan remains live. Immediately after
+recording that merge, create `Docs/<epic>_<name>_closeout` from current `origin/main`, transfer every
+ledger-only observation commit after the verified source PR head, update the ledger's worktree/branch
+identity, and verify the transferred plan and ledger match the source worktree. Then delete the merged
+feature worktree and branch before watching publication or platform sync.
 
-So: make the close-out edits and **leave them in the working tree** to ride along with the next PR that
-lands (or bundle them into the next commit). The same goes for any tiny, non-breaking doc/markdown
-tweak — `TECH_DEBT.md` lines, scratch notes, blocker ticks: never a dedicated PR, just let it travel
-with the next real change.
+The close-out worktree is the recovery anchor for the remaining remote gates. Once they are terminal,
+commit the final ledger checkpoint, delete the plan and ledger together in the following commit, and
+tick the owning roadmap item. Run `/docs-review`, land the net meta-only change through `/merge-docs`,
+and remove the close-out worktree. Never leave close-out edits in a merged feature worktree or an
+unrelated checkout; the fast docs path exists so no merged worktree needs to linger.
 
 ### Boundary-blocked refactors — capture in a plan, don't force into this PR
 
@@ -185,11 +212,13 @@ point where the context becomes disposable. Don't carry unwritten state across a
 - Every plan `.md` carries a pointer near its top to its ledger(s) and holds no next-action prose of
   its own. One worktree: "**Next steps live in @plans/<STEM>_PROGRESS.md → `## Next Steps`**" (the `@`
   pulls the ledger when you tag the plan). Parallel worktrees: it lists each ledger with its worktree.
-- Because the steps live in the ledger, a plan resume/handoff prompt is ONLY the pointer — literally
-  `cd <worktree>` then "Read @plans/<PLAN>_PLAN.md and @plans/<its-worktree-ledger>_PROGRESS.md and do what
-  `## Next Steps` says." No branch to verify, checkpoints, gates, commands, or steps in the prompt —
-  every such specific lives in the ledger, never restated, so the prompt can't drift. A handoff always
-  comes from one worktree, so it names that worktree's ledger. See [`../../PROMPTS.md`](../../PROMPTS.md).
+- Because the steps live in the ledger, a plan resume/handoff prompt is ONLY the pointer — an opener line
+  then "Read @plans/<PLAN>_PLAN.md and @plans/<its-worktree-ledger>_PROGRESS.md and do what `## Next Steps`
+  says", naming one worktree's ledger. The opener is `/worktree create <Type>/<epic>_<name>` when that
+  worktree doesn't exist yet — a freshly-written plan, or a clear with no live worktree — so implementation
+  runs in an isolated worktree, never the main checkout; it's `cd <worktree>` once the worktree exists. No
+  branch to verify, checkpoints, gates, commands, or steps in the prompt — every such specific lives in the
+  ledger, never restated, so the prompt can't drift. See [`../../PROMPTS.md`](../../PROMPTS.md).
 - `/resume-plan` takes a **ledger**, a **plan**, or a **worktree**. A ledger — or a plan plus a named
   worktree — resolves straight to that worktree: `cd` there and do its `## Next Steps`. A plan alone
   resolves by the ledgers whose `- Plan:` names it: one → resume it; several → list them and ask which.

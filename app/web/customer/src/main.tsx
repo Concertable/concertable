@@ -4,21 +4,23 @@ import { createRouter, RouterProvider } from "@tanstack/react-router";
 import {
   serializeSearch,
   deserializeSearch,
-} from "shared/features/search";
+} from "@concertable/web/features/search";
 import { APIProvider as MapsProvider } from "@vis.gl/react-google-maps";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "react-oidc-context";
-import { userManager, onSigninCallback } from "shared/features/auth";
-import { queryClient } from "shared/lib/queryClient";
+import { userManager, onSigninCallback } from "@concertable/web/features/auth";
+import { queryClient } from "@concertable/web/lib/queryClient";
 import { routeTree } from "./routeTree.gen";
-import { ThemeProvider } from "shared/providers/ThemeProvider";
-import { TooltipProvider } from "shared/components/ui/tooltip";
-import "shared/lib/apiClient";
-import "shared/lib/searchClient";
+import { ThemeProvider } from "@concertable/web/providers/ThemeProvider";
+import { TooltipProvider } from "@concertable/web/components/ui/tooltip";
+import { ConsentProvider } from "@concertable/web/providers/ConsentProvider";
+import { CookieConsentBanner } from "@concertable/web/components/CookieConsentBanner";
+import "@concertable/web/lib/apiClient";
+import "@concertable/web/lib/searchClient";
 import "./lib/customerClient";
-import "shared/lib/paymentClient";
-import "shared/lib/geocoding";
-import "shared/index.css";
+import "@concertable/web/lib/paymentClient";
+import "@concertable/web/lib/geocoding";
+import "@concertable/web/index.css";
 
 const router = createRouter({
   routeTree,
@@ -42,9 +44,12 @@ createRoot(document.getElementById("root")!).render(
           libraries={["places"]}
         >
           <ThemeProvider>
-            <TooltipProvider>
-              <RouterProvider router={router} />
-            </TooltipProvider>
+            <ConsentProvider>
+              <TooltipProvider>
+                <RouterProvider router={router} />
+              </TooltipProvider>
+              <CookieConsentBanner />
+            </ConsentProvider>
           </ThemeProvider>
         </MapsProvider>
       </QueryClientProvider>
