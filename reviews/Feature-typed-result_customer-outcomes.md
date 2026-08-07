@@ -12,7 +12,7 @@
 
 ## Findings
 
-- [ ] **CV1 — LOW — C# conventions** — `api/Concertable.Customer/src/Modules/Preference/Tests/Concertable.Customer.Preference.IntegrationTests/PreferenceApiTests.cs:44`
+- [x] **CV1 — LOW — C# conventions** — `api/Concertable.Customer/src/Modules/Preference/Tests/Concertable.Customer.Preference.IntegrationTests/PreferenceApiTests.cs:44`
   New and changed Customer integration assertions use xUnit `Assert.*`; `api/agents/INTEGRATION_CONVENTIONS.md` requires integration assertions to use Shouldly. Convert the added assertions across the Review, Preference, User, Venue, and Artist integration tests to Shouldly.
 
 - [ ] **CV2 — MEDIUM — C# conventions** — `api/Concertable.Shared/tests/Concertable.Shared.Api.UnitTests/TypedResultArchitectureTests.cs:200`
