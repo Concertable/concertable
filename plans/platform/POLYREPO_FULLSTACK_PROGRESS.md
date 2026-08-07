@@ -15,11 +15,15 @@ Phases 0, 1, 2, **3a, and 3b are on `main`**. Phase 3a (PR #378, merge `fba490e2
 
 **Mobile retarget + asset fix — IMPLEMENTED on `Feature/platform_polyrepo_mobile-retarget` (`1d29804a9`), PR #413 OPEN (publish-first).** (a) Both `app/mobile/{customer,b2b}` `metro.config.js` (`watchFolders` + NativeWind `input`) and `tailwind.config.js` (`content`) now `require.resolve("@concertable/mobile/…")` + scan the package's compiled `dist/**/*.js` instead of the `../shared` sibling; `App.tsx` imports `@concertable/mobile/global.css`. `@concertable/mobile` is the only className-bearing mobile tier (208 vs 0). (b) **Pre-existing tier bug fixed:** `@concertable/mobile`'s `Logo` `require`d `assets/brand/logo*.png` that the package never shipped (`files` lacked `assets`) and that physically lived outside the package (`app/mobile/assets/`), so the path resolved nowhere in-monorepo OR carved — the mobile app had never actually been bundled, only `tsc`'d. Moved `brand/` into the tier (`app/mobile/shared/assets/`, making the existing `../../../assets/brand` path correct) + `files` += `assets`; app-icon assets (icon/splash/adaptive/favicon) stay at `app/mobile/assets/` (surface `app.json`). (c) `carve-fe.mjs`'s mobile branch runs `expo export` after `tsc --noEmit`; the carve job is renamed `carve-fe-web` → `carve-fe`. **Mobile is deliberately OUT of the `carve-fe` matrix here** (the carve restores the tier from the feed, so the asset fix must republish first).
 
-**Phase 3 remaining:** (1) the mobile carve **gate** follow-up (below); (2) the ESLint import-boundary rule.
+**Mobile carve gate — GREEN on PR #416.** At remote head `f0fbd4e6a`, both `mobile/customer` and
+`mobile/b2b` restored the published tiers from the feed, type-checked, and completed `expo export` in
+run 31202906691. The resolved mobile bundling entry has been removed from `app/mobile/TECH_DEBT.md`.
+
+**Phase 3 remaining after #416 merges:** the ESLint import-boundary rule.
 
 ## Next Steps
 
-**1. Close the resolved mobile debt and review PR #416.** Delete the now-resolved `app/mobile/TECH_DEBT.md` entry (the file contains no other debt), update this ledger in the same work commit, and use the compound push protocol to publish the new PR head. Wait for the replacement mobile carves to stay green, then run the required code review and prepare #416 for merge; the merge workflow owns the full-E2E label decision.
+**1. Publish the resolved-debt closeout and review PR #416.** Commit the deletion of `app/mobile/TECH_DEBT.md` with this ledger update, then use the compound push protocol to publish the new PR head. Wait for the replacement mobile carves to stay green, run the required code review, and prepare #416 for merge; the merge workflow owns the full-E2E label decision.
 
 **2. FE import-boundary rule** — no ESLint/dependency-cruiser toolchain in `app/` yet; the carve CI is the primary structural boundary today (BE parity: carve = structural gate, build-time guard = fast second layer). Standing up ESLint `no-restricted-imports` across surfaces is a separate sub-project.
 
@@ -90,6 +94,13 @@ Gate: each item ends with its own green carve/build proof on its PR.
 - **Metro/nativewind/tailwind runtime configs left for Phase 3.** The Phase 2 gate is build + typecheck; the mobile app's metro `watchFolders`/nativewind `input`/tailwind `content` still point at `../shared` source. The app already resolves `@concertable/shared`/`customer` as symlinked packages the same way, so no in-monorepo runtime regression, but className/class-generation on the precompiled dist is unproven — a first-class Phase 3 item, not a silent gap.
 
 ## Event log
+
+### 2026-08-07 — resolved mobile bundling tech debt removed
+
+- Action: Deleted the sole entry in `app/mobile/TECH_DEBT.md` after its exact resolution gate passed; because no other entries remain, the whole area debt file is removed.
+- Evidence: PR #416 run 31202906691 has both mobile carve jobs `completed/success`, satisfying the entry's `Resolves when` condition verbatim.
+- Outcome: no resolved mobile-bundling debt remains in the working tree; Phase 3's only outstanding implementation item after #416 is the separate ESLint import-boundary sub-project.
+- Follow-up: commit and push this closeout through the compound plan push protocol, confirm replacement carves, then code-review #416.
 
 ### 2026-08-07 — both definitive mobile carve jobs passed on PR #416
 
