@@ -5,7 +5,7 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `de2b8c16395a38f1264b2a7c3a51e6103750bec6`  _(2026-08-07)_
+**Reviewed up to commit:** `312400220bff550abc7abd4442abc1523a8ab22d`  _(2026-08-07)_
 
 > Range reviewed: `06071872b..de2b8c163` (15 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -17,3 +17,13 @@
 
 - [x] **CV2 — MEDIUM — C# conventions** — `api/Concertable.Shared/tests/Concertable.Shared.Api.UnitTests/TypedResultArchitectureTests.cs:200`
   `DunetUnionDefinitions_UseExhaustiveSwitch` only checks for `Definition => this switch`, so a discard/default arm passes even though `api/agents/CODE_CONVENTIONS.md` forbids it because it defeats closed-case exhaustiveness. Extend the architecture guard to reject discard/default arms in Dunet `IError` definition switches.
+
+## Incremental review - 2026-08-07
+
+> Range reviewed: `de2b8c163..312400220` (91 commits).
+
+- [ ] **CV3 - MEDIUM - C# conventions** - `api/Concertable.Shared/tests/Concertable.Shared.Api.UnitTests/TypedResultArchitectureTests.cs:388`
+  `DefinitionSwitchCatchAllArmPattern` rejects literal `_` but accepts valid exhaustive `var _ =>`
+  and `var ignored =>` arms, so a Dunet definition switch can still bypass the closed-case
+  exhaustiveness rule in `api/agents/CODE_CONVENTIONS.md`. Reject catch-all `var` patterns within
+  the bounded definition switch and cover both discard and named forms.

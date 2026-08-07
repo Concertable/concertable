@@ -5,7 +5,7 @@
 - Branch: `Feature/typed-result_customer-outcomes`
 - PR: not opened
 - Dependency/package gates: owned Kernel foundation PR #290 and platform sync #291 are shipped; no Payment/B2B package dependency; platform-sync PR #373 shipped `0.1.0-alpha.0.814` green in merge commit `9169107c0`; PR #282 remains the exclusive open owner of Ticket/Concert/Customer Payment work and is not a dependency; platform-sync PR #420 is open with a failed build and blocks PR preflight until its owning worktree restores it to green
-- Last reconciled: 2026-08-07T22:18:38+01:00 from `origin/main` `b66325acd`, local refs/worktrees, pre-fix branch head `3ab6604c4`, the verified `CV2` fix carried by this commit, review checkpoint `23461784c`, current-main merge `fc9f69407`, review artifact, and platform-sync PR #420
+- Last reconciled: 2026-08-07T22:28:04+01:00 from `origin/main` `b66325acd`, local refs/worktrees, branch head `312400220`, incremental review `de2b8c163..312400220`, the review artifact, and platform-sync PR #420
 
 ## Current state
 
@@ -67,18 +67,20 @@ inventories are clean.
 Full code review `06071872b..de2b8c163` is recorded in
 `reviews/Feature-typed-result_customer-outcomes.md`. `CV1` is fixed in `3ab6604c4` by moving all 33
 new or changed Customer integration assertions to Shouldly; the five affected projects pass 29/29.
-`CV2` is fixed in this commit by rejecting discard/default arms only within Dunet definition switch
-expressions while retaining the merged Match, abstract, and exhaustive-switch definition shapes.
-Shared.Api passes 56/56 and the Release solution build has 0 errors. Incremental review remains
-outstanding before the review artifact can be removed.
+`CV2` is fixed in `312400220` by rejecting literal discard/default arms only within Dunet
+definition switch expressions while retaining the merged Match, abstract, and exhaustive-switch
+definition shapes. Shared.Api passes 56/56 and the Release solution build has 0 errors. Incremental
+review `de2b8c163..312400220` found `CV3`: the guard still accepts exhaustive `var _` and named
+`var` arms, so the review artifact remains live.
 
 ## Next Steps
 
-Run `/incremental-review` from watermark `de2b8c163` over the committed `CV1` and `CV2` fixes while
-the review artifact still exists. Resolve any new finding through the same serial loop. When every
-finding is fixed, the review artifact is removed, and the current-main gate is green, wait for
-platform-sync PR #420 to become green, execute `/pr-preflight`, use the plan-managed two-leg push
-protocol, and open the authorized GitHub PR with the full merge-queue E2E tier and no skip label.
+Fix `CV3` in its own review-finding commit by rejecting exhaustive `var` arms within the bounded
+Dunet definition switch and covering discard and named forms. Run Shared.Api Release tests and the
+Release solution build, then rerun `/incremental-review` from watermark `312400220`. Resolve any new
+finding through the same serial loop. When every finding is fixed and the current-main gate is green,
+wait for platform-sync PR #420 to become green, execute `/pr-preflight`, use the plan-managed two-leg
+push protocol, and open the authorized GitHub PR with the full merge-queue E2E tier and no skip label.
 Keep this plan and ledger live through PR, merge, publication, and platform sync.
 
 ## Completed work
@@ -104,6 +106,8 @@ Keep this plan and ledger live through PR, merge, publication, and platform sync
   `origin/main` `b66325acd` as `fc9f69407` while preserving both branches' Shared.Api guards.
 - Fixed `CV1` in `3ab6604c4` and fixed `CV2` in this commit without weakening the merged Shared.Api
   definition-shape guard.
+- Incrementally reviewed `de2b8c163..312400220` across 91 commits; the current-main merge is
+  unchanged from `origin/main` outside its resolved Shared.Api guard conflict, and `CV3` is open.
 
 ## Verification
 
@@ -247,7 +251,8 @@ Keep this plan and ledger live through PR, merge, publication, and platform sync
 
 Full code review `06071872b..de2b8c163` produced
 `reviews/Feature-typed-result_customer-outcomes.md`. `CV1` is fixed in `3ab6604c4`; `CV2` is fixed in
-this commit. Incremental review over both fix commits remains required before delivery.
+`312400220`. Incremental review `de2b8c163..312400220` covered 91 commits and found `CV3` open:
+the definition-switch guard still accepts exhaustive `var` arms.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -485,6 +490,19 @@ this commit. Incremental review over both fix commits remains required before de
 - Outcome: `CV2` is fixed and verified in its own unpushed commit. Both original findings are fixed;
   the review artifact remains for the required incremental review.
 - Follow-up: Run the incremental review gate over the committed `CV1` and `CV2` fixes.
+
+### 2026-08-07 - incremental review found CV3
+
+- Action: Reviewed `de2b8c163..312400220` through correctness, microservice isolation, module
+  boundaries, seeding, C# conventions, and changed-path coverage.
+- Evidence: 91 commits reviewed; the Payment/current-main paths equal `origin/main`; the Shared.Api
+  merge resolution preserves both definition-shape families; the committed `CV1` conversions are
+  green; and direct scanner probes show `DefinitionSwitchCatchAllArmPattern` rejects `_` but accepts
+  exhaustive `var _` and `var ignored` arms.
+- Outcome: `CV3` is open in `reviews/Feature-typed-result_customer-outcomes.md`; the review watermark
+  is advanced to `312400220`. No other high-confidence finding survived the review.
+- Follow-up: Fix `CV3` in its own commit, verify Shared.Api and the Release solution, then
+  incrementally review from `312400220`.
 
 ## Resume prompt
 
