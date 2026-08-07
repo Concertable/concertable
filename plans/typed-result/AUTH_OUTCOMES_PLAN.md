@@ -2,7 +2,7 @@
 
 > Next steps live in @plans/typed-result/AUTH_OUTCOMES_PROGRESS.md -> `## Next Steps`.
 
-**Status:** Phase 4 complete; full branch review is next.
+**Status:** Phase 4 and the full branch review are complete; post-review convention reconciliation is in progress.
 
 ## Outcome
 
@@ -43,8 +43,10 @@ wire behavior does not carry `Result` or `Option` values.
 - Auth remains credential-only: email, password hash, verification state, IdentityServer, sign-in/
   sign-up pages, token issuance, and identity claims. No role, tenant, customer, or downstream user
   projection concept enters the service.
-- This work changes Auth runtime and Auth-owned tests only. Payment, B2B, Customer, and Search runtime
-  code is not an integration surface for this migration.
+- This work changes Auth runtime and Auth-owned tests. Its only cross-area change aligns the Shared.Api
+  typed-result architecture guard with the merged exhaustive-switch convention; no shared or sibling
+  service runtime changes. Payment, B2B, Customer, and Search runtime code is not an integration
+  surface for this migration.
 - Existing client IDs, claims, cookies, authorization contexts, return URLs, logout prompts, token
   endpoint errors, page messages, and redirects remain framework-owned edge behavior.
 - The current Kernel package already supplies every required factory and observer. This plan adds no
@@ -69,15 +71,16 @@ boolean.
 
 ## Operation-owned errors
 
-All alternatives are payload-free and callers do not need runtime case discrimination. Use sealed
-definition records with `static readonly` values; do not add Dunet unions or wrapper factories.
+All alternatives are payload-free and callers do not need runtime case discrimination. Use
+operation-owned Dunet unions with one natural case per outcome, one exhaustive `Definition` switch,
+and direct case construction. Do not add wrapper factories or static error catalogs.
 
 | Type/value | Definition | Preserved caller-safe message |
 |---|---|---|
-| `RegisterError.EmailAlreadyExists` | `Conflict`, code `auth.email_already_exists` | `An account with that email already exists.` |
-| `ChangePasswordError.CurrentPasswordIncorrect` | `Unauthenticated`, code `auth.current_password_incorrect` | `Current password is incorrect.` |
-| `VerifyEmailError.InvalidOrExpiredToken` | `Invalid`, code `auth.verification_link_invalid_or_expired` | `This verification link is invalid or has expired.` |
-| `ResetPasswordError.InvalidOrExpiredToken` | `Invalid`, code `auth.reset_link_invalid_or_expired` | `Invalid or expired reset link.` |
+| `RegisterError.EmailAlreadyExists` | `Conflict`, code `register.email_already_exists` | `An account with that email already exists.` |
+| `ChangePasswordError.CurrentPasswordIncorrect` | `Unauthenticated`, code `change.password_current_password_incorrect` | `Current password is incorrect.` |
+| `VerifyEmailError.InvalidOrExpiredToken` | `Invalid`, code `verify.email_invalid_or_expired_token` | `This verification link is invalid or has expired.` |
+| `ResetPasswordError.InvalidOrExpiredToken` | `Invalid`, code `reset.password_invalid_or_expired_token` | `Invalid or expired reset link.` |
 
 Keep the definitions beside the Auth operation contract. Unit tests hard-code each value, code,
 message, and `ErrorKind`; expected values must not be calculated with production helpers.
@@ -143,7 +146,7 @@ and ship in one PR.
   package closure; use the existing `ConcertablePlatformVersion` and do not enable local-core mode.
 - [x] Add the Auth unit, integration-fixture, and integration test projects described above, including
   only the package/tooling entries they require.
-- [x] Add the four operation-owned definition records and exact unit contract tests without changing
+- [x] Add the four operation-owned error unions and exact unit contract tests without changing
   `IAuthService` signatures or runtime callers yet.
 - [x] Add HTTP characterization coverage for the current successful and refused login, logout,
   registration, email verification, password change, forgot-password, and password-reset behavior,
