@@ -5,7 +5,7 @@
 - Branch: `Feature/typed-result_customer-outcomes`
 - PR: not opened
 - Dependency/package gates: owned Kernel foundation PR #290 and platform sync #291 are shipped; no Payment/B2B package dependency; platform-sync PR #373 shipped `0.1.0-alpha.0.814` green in merge commit `9169107c0`; PR #282 remains the exclusive open owner of Ticket/Concert/Customer Payment work and is not a dependency; platform-sync PR #420 is open with its build/carves green and remaining unit/integration checks pending, so PR preflight waits for its terminal green result
-- Last reconciled: 2026-08-07T22:37:20+01:00 from `origin/main` `fb7255b20`, local refs/worktrees, branch head `b8e13b3ff`, clean incremental review `312400220..b8e13b3ff`, review artifact, and platform-sync PR #420
+- Last reconciled: 2026-08-07T22:40:08+01:00 from `origin/main` `fb7255b20`, local refs/worktrees, branch head `6d994b78c`, clean incremental review `b8e13b3ff..6d994b78c`, and platform-sync PR #420
 
 ## Current state
 
@@ -73,17 +73,15 @@ definition shapes. Shared.Api passes 56/56 and the Release solution build has 0 
 review `de2b8c163..312400220` found `CV3`: the guard still accepts exhaustive `var _` and named
 `var` arms. `CV3` is fixed in `b8e13b3ff` by recognizing both forms only within the bounded
 definition switch; Shared.Api passes 60/60 and the Release solution builds with 0 errors and 7
-existing warnings. Incremental review `312400220..b8e13b3ff` is clean. The review artifact remains
-because `origin/main` advanced to `fb7255b20` during the review and must be merged and incrementally
-reviewed before delivery.
+existing warnings. Incremental review `312400220..b8e13b3ff` is clean. Current `origin/main`
+`fb7255b20` is merged as `6d994b78c`; it changed only a platform progress document, so the green
+code/test/build evidence still applies to an identical code tree. Incremental review
+`b8e13b3ff..6d994b78c` is clean and the spent review artifact is removed in this checkpoint.
 
 ## Next Steps
 
-Merge current `origin/main` `fb7255b20` into the clean branch, resolve any overlap without weakening
-either side, rerun the affected Customer integration projects plus Shared.Api and the Release solution,
-then run `/incremental-review` from watermark `b8e13b3ff`. Resolve any new finding through the same
-serial loop. When the current-main review is clean, remove the spent review artifact, wait for
-platform-sync PR #420 to become green, execute `/pr-preflight`, use the plan-managed two-leg push
+Wait for platform-sync PR #420 to reach terminal green/merged state, refresh `origin/main`, and
+reconcile any resulting base advance. Then execute `/pr-preflight`, use the plan-managed two-leg push
 protocol, and open the authorized GitHub PR with the full merge-queue E2E tier and no skip label. Keep
 this plan and ledger live through PR, merge, publication, and platform sync.
 
@@ -115,6 +113,8 @@ this plan and ledger live through PR, merge, publication, and platform sync.
 - Fixed `CV3` in this commit by rejecting discard and named `var` catch-all arms only within the
   bounded Dunet definition switch, with focused unrelated-switch coverage.
 - Incrementally reviewed `312400220..b8e13b3ff` across two commits with no new finding.
+- Merged current `origin/main` `fb7255b20` as `6d994b78c`; the merge was documentation-only, its
+  incremental review is clean, and the spent review artifact is removed in this checkpoint.
 
 ## Verification
 
@@ -262,10 +262,9 @@ this plan and ledger live through PR, merge, publication, and platform sync.
 
 Full code review `06071872b..de2b8c163` produced
 `reviews/Feature-typed-result_customer-outcomes.md`. `CV1` is fixed in `3ab6604c4`; `CV2` is fixed in
-`312400220`. Incremental review `de2b8c163..312400220` covered 91 commits and found `CV3` open:
-the definition-switch guard still accepted exhaustive `var` arms. `CV3` is fixed in `b8e13b3ff`;
-incremental review `312400220..b8e13b3ff` is clean. The artifact remains for the new current-main
-merge.
+`312400220`; `CV3` is fixed in `b8e13b3ff`. Incremental reviews
+`312400220..b8e13b3ff` and `b8e13b3ff..6d994b78c` are clean. With every finding fixed, the Release
+build green, and current main reviewed, the spent artifact is removed in this checkpoint.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -538,6 +537,18 @@ merge.
   stays live until current main is merged and incrementally reviewed.
 - Follow-up: Merge `origin/main`, rerun the affected local gate, and incrementally review from
   `b8e13b3ff`.
+
+### 2026-08-07 - current-main review clean and review artifact spent
+
+- Action: Merged current `origin/main` `fb7255b20` and incrementally reviewed
+  `b8e13b3ff..6d994b78c`.
+- Evidence: the merge changed only `plans/platform/POLYREPO_FULLSTACK_PROGRESS.md`; no API, test,
+  project, package, or build input changed; the branch is 0 behind main; eight documentation commits
+  were reviewed with no finding; all `CV1`-`CV3` findings are fixed and their last code gates remain
+  Customer integration 29/29, Shared.Api 60/60, and Release solution 0 errors.
+- Outcome: The current-main gate and all review gates are green. The spent review artifact is removed
+  in this checkpoint. Platform-sync #420 remains the only prerequisite before PR preflight.
+- Follow-up: Wait for #420 to finish green, refresh main, then preflight, push, and open the PR.
 
 ## Resume prompt
 
