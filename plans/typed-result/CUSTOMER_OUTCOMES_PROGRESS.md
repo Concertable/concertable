@@ -3,9 +3,9 @@
 - Plan: `plans/typed-result/CUSTOMER_OUTCOMES_PLAN.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_customer-outcomes`
 - Branch: `Feature/typed-result_customer-outcomes`
-- PR: not opened
+- PR: [#425](https://github.com/Concertable/concertable/pull/425) — open, non-draft, head `e60219f7d`
 - Dependency/package gates: owned Kernel foundation PR #290 and platform sync #291 are shipped; no Payment/B2B package dependency; platform-sync PR #373 shipped `0.1.0-alpha.0.814` green in merge commit `9169107c0`; PR #282 remains the exclusive open owner of Ticket/Concert/Customer Payment work and is not a dependency; platform-sync PR #420 shipped `0.1.0-alpha.0.853` green in merge commit `372be1041b20`
-- Last reconciled: 2026-08-08 from pushed work head `75263c0b8`, matching `origin/Feature/typed-result_customer-outcomes`, and no source PR
+- Last reconciled: 2026-08-08 from GitHub PR #425, pushed head `e60219f7d`, and its empty label set
 
 ## Current state
 
@@ -33,12 +33,17 @@ open platform-sync PR exists, and no package cut-over is incomplete. The feature
 previously exist remotely. Push leg one published the 28-commit `origin/main..75263c0b8` work range,
 and the fetched remote-tracking head exactly matches `75263c0b8`.
 
+Push leg two published the isolated ledger transport checkpoint `e60219f7d`, and the fetched remote
+branch exactly matches local HEAD. GitHub PR #425 is open and non-draft against `main` at that exact
+head. Its label set is empty, so the required full merge-queue E2E tier has no skip override.
+
 ## Next Steps
 
-Commit and push this ledger transport checkpoint, fetch the remote branch, and require local HEAD to
-equal the remote-tracking head. Then open the authorized GitHub PR with the full merge-queue E2E tier
-and no skip label, record the PR observation locally, and keep this plan and ledger live through PR,
-merge, publication, and platform sync.
+Run `/merge` for PR #425 from this worktree. Keep the full merge-queue E2E tier, follow the feature PR
+to its terminal merged state, then own the generated platform-sync PR through green/merged. Move the
+remaining recovery state to the required docs close-out worktree after the feature merges, update the
+typed-result roadmap only when the complete delivery lifecycle is terminal, and delete this plan and
+ledger together in that close-out.
 
 ## Completed work
 
@@ -74,6 +79,8 @@ merge, publication, and platform sync.
   final current-main reconciliation and PR preflight.
 - Merged post-sync `origin/main` `372be1041b20` as `bf20d17ce`, then passed Customer integration
   29/29, Shared.Api 60/60, and the Release solution build with 0 errors on that exact base.
+- Passed PR preflight, completed the two-leg push through `e60219f7d`, and opened non-draft PR #425
+  against `main` with no E2E skip label.
 
 ## Verification
 
