@@ -5,7 +5,7 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `df76074c46fb7e55570049abad377323bac3114b`  _(2026-08-07)_
+**Reviewed up to commit:** `2e120cb40798e0e93cfc12efeed37e14b621b20e`  _(2026-08-07)_
 
 > Range reviewed: `3e3bcce89..a4ae0081e` (63 commits).
 > Status legend: `[ ]` todo - `[~]` in progress - `[x]` done - `[wontfix]` (note why).
@@ -66,3 +66,15 @@ branch-owned Payment error-convention and conflict-resolution changes were revie
 No issues found. Checked correctness, microservice isolation, module boundaries, seeding, C#
 conventions, and test coverage of changed paths. The only non-ledger changes are the already-landed
 plan-handoff session-scoping fix and its focused regressions.
+
+## Incremental review - 2026-08-07 (PR-check fix)
+
+> Range reviewed: `df76074c4..2e120cb40` (5 commits).
+
+- [x] **CI2 - HIGH - test coverage** - `api/Concertable.Shared/tests/Concertable.Shared.Api.UnitTests/TypedResultArchitectureTests.cs:219`
+  The typed-result architecture guard rejected the documented exhaustive root `Definition => this switch` convention used by Payment. Add that exact supported shape to the guard so the architecture test enforces the current convention without rejecting every migrated Payment union.
+
+  Fixed in `2e120cb40`; Shared.Api unit tests pass 52/52 and the full Release solution builds with 0 errors.
+
+No additional issues found across correctness, microservice isolation, module boundaries, seeding,
+C# conventions, or changed-path test coverage.

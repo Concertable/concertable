@@ -99,11 +99,11 @@ unit test `DunetUnionDefinitions_UseSupportedDefinitionShape`; the other reporte
 fail-fast cancellations. The guard does not recognize the new exhaustive root `this switch` error
 definition shape used by all ten Payment unions. The guard now recognizes that documented shape;
 Shared.Api unit tests pass 52/52 and the full Release solution builds with 0 errors.
+Incremental review through `2e120cb40` confirms CI2 fixed with no additional findings.
 
 ## Next Steps
 
-Incrementally review the architecture-guard fix, then compound-push the replacement PR head.
-Preserve `full-e2e`, wait for green PR
+Compound-push the replacement PR head, preserving `full-e2e`, then wait for green PR
 checks, enqueue, and follow the merge to a terminal state. After merge, own package publication and
 the generated breaking platform-sync PR through green, update the waiting B2B ledger, and close
 frozen donor PR #296 only after the canonical package gate is complete.
@@ -159,6 +159,12 @@ closing donor PR #296 remain later explicit delivery steps; PR #392 must run ful
   with seven existing warnings outside the changed test.
 
 ## Reviews
+
+### 2026-08-07 - PR-check fix incremental review (`df76074c4..2e120cb40`)
+
+Artifact: `reviews/Feature-PaymentOwnedResultExpansion.md`. CI2 is fixed in `2e120cb40`; no additional
+finding met the confidence threshold across all six repository lenses. The watermark is
+`2e120cb40`.
 
 - **CI2 (fixed in this commit):** the typed-result architecture guard recognized only legacy
   generated-`Match` and abstract/per-case definitions, so it rejected the documented exhaustive root
@@ -260,6 +266,15 @@ Clean: escrow `Result<Option<T>,E>` semantics, rounding/VAT/refund math, wire hy
   commission-branch implementation is donor evidence only; its behavior is now reconciled here.
 
 ## Event log
+
+### 2026-08-07 - Incremental review cleared the PR-check fix
+
+- Action: Reviewed `df76074c4..2e120cb40`, including the architecture-guard fix and its recovery
+  checkpoints, through all six repository lenses.
+- Evidence: CI2 is fixed in `2e120cb40`; `reviews/Feature-PaymentOwnedResultExpansion.md` is stamped
+  through that commit and records no additional findings.
+- Outcome: The replacement branch head is verified and review-clean for its compound push.
+- Follow-up: Execute the replacement push action in `## Next Steps`.
 
 ### 2026-08-07 - Fixed the typed-result architecture guard
 
