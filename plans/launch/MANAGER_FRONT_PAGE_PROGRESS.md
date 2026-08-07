@@ -5,23 +5,36 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
 
 ## Next Steps
 
-Reconstructed from the pending items this ledger already records (a legacy feedback/decisions ledger
-predating the `## Next Steps` convention). Current truth: Phase A (items 1–10) + Phase B (B.9–B.11) are
-committed on `Feature/ManagerFrontPage`; the FE runs on the fixture-backed `dashboardApi` mock tier.
-Outstanding:
+**Update (2026-08-07):** PR [#50](https://github.com/Concertable/concertable/pull/50) **merged** (2026-05-19)
+— Phase A + B.9–B.11 are on `main`. The repo has since **carved** into `Concertable.B2B` /
+`Concertable.Customer` / `Concertable.Payment` services; dashboard FE now lives under
+`app/web/b2b/{venue,artist,shared}/`. Reconciled outstanding work:
 
-1. **Phase A.8 — UX freeze** (never done; independent of Phase B): run the dev server, eyeball
-   `/_venue/` and `/_artist/` across `?persona=empty|mid|thriving`, verify tablet/mobile responsive
-   collapse. Detail: "Open Phase A todo" §11 + "Phase A.8 still pending".
-2. **Wire-shape stubs → real data** (KPI DTO fields hard-stubbed at 0, each with a code TODO):
-   `MtdRevenueCents` / `MtdPayoutsCents` need `IManagerPaymentModule.GetVenueTicketRevenueMtdAsync` /
-   `GetArtistPayoutsMtdAsync` (not built); `AcceptedAwaitingCheckout` needs the
-   `IConcertWorkflowCapabilityRegistry` / `IAcceptsCheckout` aggregate count. Detail: "Wire-shape stubs
-   at merge time".
-3. **Deferred migration re-scaffold**: `./initial-migrations.ps1` for the `ConcertEntity.Period` change,
-   deferred to end of Phase B code work (column names unchanged → no schema drift meanwhile). Detail: B.9.
-4. **Phase C — delete the mock tier** when real BE lands: fixtures, `persona.ts`, `PersonaSwitcher.tsx`
-   (keep `dashboardApi.ts`, swap method bodies to real `api.get`). Detail: "Mock-tier infrastructure".
+1. ✅ **Migration re-scaffold (was item 3) — DONE.** The carve re-ran `api/initial-migrations.ps1`; the
+   B2B `Concerts` table already carries the owned `Period_Start`/`Period_End` columns. No drift; nothing
+   to run.
+2. ✅ **`AcceptedAwaitingCheckout` KPI (was item 2, artist slice) — DONE** on branch
+   `Feature/launch_dashboard-accepted-checkout`. Added `IConcertWorkflowCapabilityRegistry.DealTypesWith<T>()`,
+   a third `Accepted` + checkout-capable + upcoming applications query in `ConcertDashboardRepository`, the
+   `ArtistDashboardCounts.AcceptedAwaitingCheckout` field + projection, and wired `ArtistDashboardService`.
+   Unit test (registry) + integration test (count delta on accept) added. Build + unit green; integration
+   runs in the merge queue (local Docker was down).
+3. ⏳ **MTD revenue/payouts (was item 2, money slices).** `MtdRevenueCents` / `MtdPayoutsCents` still
+   stubbed at 0. NOT a simple method add: `IManagerPaymentModule` does not exist and **Payment is a
+   separate gRPC microservice**, so this is a cross-service build — Payment repo query (`TicketTransaction`
+   / `SettlementTransaction`, `Status=Complete`, `PayeeId`, MTD `CreatedAt`) → internal service → proto RPC
+   → `ManagerPaymentGrpcService` → `IManagerPaymentClient` → a B2B-side facade → the dashboard services —
+   plus an int `venueId`/`artistId` → `Guid` payout-owner-id resolution. **Collides with in-flight Payment
+   PRs #392 / #296 (typed-Result migration); sequence after those land.**
+4. ⏳ **Phase C — swap FE mock tier → real (was item 4).** Blocked: only
+   `/api/{Venue,Artist}Dashboard/kpis` exist server-side; the other 17 FE `dashboardApi` methods (overview,
+   inbox, upcoming-concerts, revenue/payouts, opportunities, activity, settlements, applications, reviews)
+   have **no endpoint**. Needs the B.11 pickup endpoints built first (never previously listed as a step).
+   Only then delete `app/shared/.../persona.ts`, `PersonaSwitcher.tsx`, and the per-SPA `fixtures/`,
+   swapping each `dashboardApi.ts` body to real `api.get`.
+5. ⏳ **Phase A.8 — UX freeze (was item 1).** Manual browser QA of the fixture-backed dashboard across
+   `?persona=empty|mid|thriving` + tablet/mobile responsive collapse. Independent; needs the running
+   authenticated B2B stack.
 
 ## Naming & terminology
 
