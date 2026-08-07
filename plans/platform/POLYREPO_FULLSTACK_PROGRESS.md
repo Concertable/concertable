@@ -3,9 +3,9 @@
 - Plan: `plans/platform/POLYREPO_FULLSTACK_PLAN.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-platform_polyrepo_mobile-carve` — created from current `origin/main` @ `59bdd7a8a` for the definitive Phase 3 mobile carve gate.
 - Branch: `Feature/platform_polyrepo_mobile-carve` @ work head `098d4c3a5`; contains the transferred ledger recovery history plus the two mobile `carve-fe` matrix entries against the now-published fixed tier. Local ledger-only checkpoints after `098d4c3a5` describe delivery transitions.
-- PR: **mobile-carve PR [#416](https://github.com/Concertable/concertable/pull/416) OPEN at remote checkpoint head `b1107da10`** — implementation/debt-closeout work head `7223c1c6a`; both mobile carves passed again on the transported checkpoint head. Prior publish-first mobile-retarget PR [#413](https://github.com/Concertable/concertable/pull/413) merged as `62646f4cd` and republished `@concertable/mobile@0.1.0-alpha.0.2571`; carved-web CSS [#405] (`d9c62e2c5`); Phase 3b [#389] (`1cbeb2175`); Phase 3a [#378] (`fba490e25`); Phase 2 [#360] (`a3f9535`); Phase 1 [#301]+[#319].
+- PR: **mobile-carve PR [#416](https://github.com/Concertable/concertable/pull/416) OPEN at review head `6433eae77`** — implementation/debt-closeout work is review-clean; both mobile carves passed on the prior checkpoint head and the review-only update re-runs inert CI. Prior publish-first mobile-retarget PR [#413](https://github.com/Concertable/concertable/pull/413) merged as `62646f4cd` and republished `@concertable/mobile@0.1.0-alpha.0.2571`; carved-web CSS [#405] (`d9c62e2c5`); Phase 3b [#389] (`1cbeb2175`); Phase 3a [#378] (`fba490e25`); Phase 2 [#360] (`a3f9535`); Phase 1 [#301]+[#319].
 - Dependency/package gates: **#413 FE publication DONE** — successful descendant run [31197751649](https://github.com/Concertable/concertable/actions/runs/31197751649) published and feed-verified `@concertable/mobile@0.1.0-alpha.0.2571` with the brand assets. This unblocks the follow-up mobile carve gate. No `api/**` → no backend platform-sync.
-- Last reconciled: 2026-08-07 — full code review of `59bdd7a8a..e64245e51` is complete with no findings in `reviews/Feature-platform_polyrepo_mobile-carve.md`; both replacement mobile carves remain green. Next: commit and push the review checkpoint, then run the merge workflow for #416.
+- Last reconciled: 2026-08-07 — clean review head `6433eae77` is pushed and verified equal across local, remote, and PR #416. Next: transport this review-push checkpoint, then run the merge workflow for #416.
 
 ## Current state
 
@@ -23,7 +23,7 @@ run 31202906691. The resolved mobile bundling entry has been removed from `app/m
 
 ## Next Steps
 
-**1. Publish the clean review and merge PR #416.** Commit `reviews/Feature-platform_polyrepo_mobile-carve.md` with this ledger checkpoint, push and verify the PR head through the plan push protocol, then run the merge workflow. It owns base currency, the full-E2E label decision, queue admission, merge confirmation, and closeout transfer.
+**1. Transport the review-push checkpoint, then merge PR #416.** Push this ledger checkpoint, verify local/remote/PR equality, then run the merge workflow. It owns base currency, the full-E2E label decision, queue admission, merge confirmation, and closeout transfer.
 
 **2. FE import-boundary rule** — no ESLint/dependency-cruiser toolchain in `app/` yet; the carve CI is the primary structural boundary today (BE parity: carve = structural gate, build-time guard = fast second layer). Standing up ESLint `no-restricted-imports` across surfaces is a separate sub-project.
 
@@ -99,6 +99,13 @@ Gate: each item ends with its own green carve/build proof on its PR.
 - **Metro/nativewind/tailwind runtime configs left for Phase 3.** The Phase 2 gate is build + typecheck; the mobile app's metro `watchFolders`/nativewind `input`/tailwind `content` still point at `../shared` source. The app already resolves `@concertable/shared`/`customer` as symlinked packages the same way, so no in-monorepo runtime regression, but className/class-generation on the precompiled dist is unproven — a first-class Phase 3 item, not a silent gap.
 
 ## Event log
+
+### 2026-08-07 — clean review head pushed and verified
+
+- Action: Pushed the committed review artifact and its plan review record to PR #416.
+- Evidence: local HEAD, `origin/Feature/platform_polyrepo_mobile-carve`, and PR #416 `headRefOid` all equal `6433eae7784ab0d8595b041c35252a47d72dfd88` after fetch.
+- Outcome: the remote PR contains the clean review artifact; this ledger checkpoint is the sole local tail.
+- Follow-up: transport this checkpoint, verify equality, then execute the merge workflow.
 
 ### 2026-08-07 — PR #416 full code review completed with no findings
 
