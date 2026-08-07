@@ -3,6 +3,7 @@ using Concertable.B2B.Concert.Application.Workflow;
 using Concertable.B2B.Concert.Infrastructure.Services.Settlement;
 using Concertable.B2B.Deal.Contracts;
 using Concertable.B2B.Tenant.Contracts;
+using Concertable.Kernel.ValueObjects;
 using Moq;
 
 namespace Concertable.B2B.Concert.UnitTests.Services;
@@ -28,7 +29,7 @@ public sealed class RevenueShareSettlementAmountTests
 
         var result = await resolver.ResolveGrossAsync(42, deal);
 
-        Assert.Equal(47.90m, result);
+        Assert.Equal(Money.Gbp(47.90m), result);
         calculator.Verify(c => c.Calculate(deal, 95.79m), Times.Once);
     }
 }
