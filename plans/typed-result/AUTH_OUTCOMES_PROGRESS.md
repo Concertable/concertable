@@ -12,8 +12,8 @@
 The clean branch merged fresh `origin/main` as `d8cceed2a1874f74103121375d403e1a576c7ec4`
 and is zero behind. That base includes typed-error convention PR #407, DI/HTTP boundary convention PR
 #408, platform package `0.842`, and docs closeout PR #411. The convention audit found the four Auth
-errors still used the superseded sealed-record/static-catalog form. The current working checkpoint
-converts them to operation-owned Dunet unions with natural cases, exhaustive `Definition` switches,
+errors still used the superseded sealed-record/static-catalog form. Commit
+`c5e22a05b66c151497d7737d1db992ef7d66d222` converts them to operation-owned Dunet unions with natural cases, exhaustive `Definition` switches,
 derived codes, direct case construction, and explicit per-case contract tests. It also updates the
 stale Shared typed-result architecture guard from generated `Match`/factory enforcement to the
 current exhaustive-switch convention. No Auth wire, Razor state, persistence model, migration, or
@@ -75,8 +75,8 @@ no-findings review has no remaining work-order lifecycle. The branch remains zer
 
 Restore Docker Desktop to a responsive state and require `docker ps` to complete, then run the Auth
 integration suite through `integration-debug`. Run `dotnet build api/Concertable.slnx --configuration
-Release` to a terminal result, repeat the signature/legacy-carrier and `git diff --check` gates, and
-commit any resulting fix with this checkpoint. Run incremental code review over the post-review
+Release` to a terminal result, and repeat the signature/legacy-carrier and `git diff --check` gates.
+If verification finds a defect, fix and commit it. Run incremental code review over the post-review
 convention commit and resolve every clear finding. Only after those gates are green, run the
 `pr-preflight` workflow and record its evidence and exact next action here. Do not push, open a PR,
 run E2E locally, or begin delivery in that context.
@@ -85,7 +85,8 @@ run E2E locally, or begin delivery in that context.
 
 - Reconciled the completed Auth migration with typed-error convention PR #407: four operation-owned
   Dunet unions now derive their definitions from exhaustive switches, callers construct natural
-  cases directly, and exact tests pin every code, message, and kind.
+  cases directly, and exact tests pin every code, message, and kind. Committed as
+  `c5e22a05b66c151497d7737d1db992ef7d66d222`.
 - Updated the stale Shared typed-result architecture guard so repository enforcement matches the
   merged exhaustive-switch/direct-construction convention.
 
@@ -277,7 +278,8 @@ code commit requires incremental review from watermark
   `origin/main` `529dba9dde0776e058a168d4ce137e482194a9ed`; platform-sync PR #393 is
   merged green and no sync PR is open; Auth unit tests 4/4; typed-result architecture tests 14/14;
   affected Auth integration closure build 0 warnings/0 errors; fresh Auth carve 0 errors; carrier,
-  model/migration, and diff checks passed.
+  model/migration, and diff checks passed; reconciliation commit
+  `c5e22a05b66c151497d7737d1db992ef7d66d222`.
 - Outcome: The Auth migration now follows the merged natural-case, derived-definition,
   exhaustive-switch convention without changing externally observable Auth behavior. Docker-backed
   integration and the full Release solution build remain non-terminal environment gates.
