@@ -1,11 +1,11 @@
 # Full-stack polyrepo — frontend build separation progress
 
 - Plan: `plans/platform/POLYREPO_FULLSTACK_PLAN.md`
-- Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\platform_polyrepo_mobile-retarget` — created off `origin/main` @ `529dba9dd` for the Phase 3 **mobile retarget**. (The `platform_polyrepo_carved-css` worktree was pruned after #405 merged.)
-- Branch: `Feature/platform_polyrepo_mobile-retarget`; reviewed remote source head `a8296d51b`, off `origin/main` @ `529dba9dd`. Carries the mobile bundler retarget, the App.tsx CSS-import fix, and the `@concertable/mobile` brand-asset packaging fix. **Publish-first**: mobile is intentionally NOT in the `carve-fe` matrix on this PR. Local commits after `a8296d51b` are plan/ledger observation checkpoints only and must not be pushed to the source PR.
+- Worktree: `C:\tmp\Concertable-polyrepo-mobile-closeout` — clean post-merge recovery anchor created from `origin/main` @ `59bdd7a8a` after #413 merged. The merged feature worktree is ready for removal.
+- Branch: `Docs/platform_polyrepo_mobile-retarget_closeout`; contains only the five ledger observation checkpoints transferred from the source branch plus this closeout-identity checkpoint. It must remain local until the current mobile-retarget lifecycle reaches its next durable handoff.
 - PR: **mobile-retarget PR [#413](https://github.com/Concertable/concertable/pull/413) MERGED as `62646f4cdd6933a695fc790e1329588fce3f928a`** — reviewed source head `a8296d51b`; full merge-group run [31195035539](https://github.com/Concertable/concertable/actions/runs/31195035539) completed successfully. Prior: carved-web CSS **[#405](https://github.com/Concertable/concertable/pull/405) MERGED** (`d9c62e2c5`) + [#411]; Phase 3b [#389] (`1cbeb2175`) + [#398]; Phase 3a [#378] (`fba490e25`); Phase 2 [#360] (`a3f9535`); Phase 1 [#301]+[#319].
 - Dependency/package gates: **#413 changes `@concertable/mobile` source** (moves `brand/` into the tier + `files` += `assets`) → on merge `publish-fe-packages` republishes it WITH the brand assets. That republish is the prerequisite for the follow-up mobile carve gate (the carve restores the tier from the feed). No `api/**` → no backend platform-sync.
-- Last reconciled: 2026-08-07 — PR #413 merged as `62646f4cd` after full merge-group run 31195035539 passed. Next: transfer the observation-only ledger tail to a clean docs closeout worktree, remove the merged feature worktree/branch, and follow `publish-fe-packages` until the fixed `@concertable/mobile` package is live; then turn on the mobile carve gate.
+- Last reconciled: 2026-08-07 — PR #413 merged as `62646f4cd`; its observation-only ledger tail is transferred to the clean docs closeout worktree at `C:\tmp\Concertable-polyrepo-mobile-closeout`, based on current `origin/main` containing the merge. Next: remove the merged feature worktree/branch and follow `publish-fe-packages` until the fixed `@concertable/mobile` package is live; then turn on the mobile carve gate.
 
 ## Current state
 
@@ -19,7 +19,7 @@ Phases 0, 1, 2, **3a, and 3b are on `main`**. Phase 3a (PR #378, merge `fba490e2
 
 ## Next Steps
 
-**1. Transfer post-merge recovery state, follow the FE publication, then turn on the mobile carve gate.** Create `Docs/platform_polyrepo_mobile-retarget_closeout` from fetched `origin/main`; verify and cherry-pick every commit after source head `a8296d51b` (active ledger only), update the ledger's worktree/branch identity, and remove the merged feature worktree plus local/remote source branch. From the closeout worktree, follow the #413-triggered `publish-fe-packages` run until it republishes `@concertable/mobile` WITH the brand assets. After that gate is green, create a fresh branch/worktree off current `origin/main` and open a follow-up PR that adds `mobile/{customer,b2b}` back to the `carve-fe` matrix. That carve restores the fixed published tier and runs `expo export` per surface — the definitive proof of the retarget. **Because mobile has never been bundled, expect the carve may surface further latent bundle bugs (fonts/native/etc.) past the asset one; fix each (on-branch if surface, or another publish-first cycle if tier) — never weaken the gate.** (Also logged in `app/mobile/TECH_DEBT.md`.)
+**1. Remove the merged source worktree, follow the FE publication, then turn on the mobile carve gate.** Remove `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\platform_polyrepo_mobile-retarget` and delete local/remote `Feature/platform_polyrepo_mobile-retarget`; the transferred recovery anchor is this closeout worktree. Then follow the #413-triggered `publish-fe-packages` run until it republishes `@concertable/mobile` WITH the brand assets. After that gate is green, create a fresh branch/worktree off current `origin/main` and open a follow-up PR that adds `mobile/{customer,b2b}` back to the `carve-fe` matrix. That carve restores the fixed published tier and runs `expo export` per surface — the definitive proof of the retarget. **Because mobile has never been bundled, expect the carve may surface further latent bundle bugs (fonts/native/etc.) past the asset one; fix each (on-branch if surface, or another publish-first cycle if tier) — never weaken the gate.** (Also logged in `app/mobile/TECH_DEBT.md`.)
 
 **2. FE import-boundary rule** — no ESLint/dependency-cruiser toolchain in `app/` yet; the carve CI is the primary structural boundary today (BE parity: carve = structural gate, build-time guard = fast second layer). Standing up ESLint `no-restricted-imports` across surfaces is a separate sub-project.
 
@@ -83,6 +83,13 @@ Gate: each item ends with its own green carve/build proof on its PR.
 - **Metro/nativewind/tailwind runtime configs left for Phase 3.** The Phase 2 gate is build + typecheck; the mobile app's metro `watchFolders`/nativewind `input`/tailwind `content` still point at `../shared` source. The app already resolves `@concertable/shared`/`customer` as symlinked packages the same way, so no in-monorepo runtime regression, but className/class-generation on the precompiled dist is unproven — a first-class Phase 3 item, not a silent gap.
 
 ## Event log
+
+### 2026-08-07 — post-merge recovery state transferred to the closeout worktree
+
+- Action: Fetched current `origin/main`, created `Docs/platform_polyrepo_mobile-retarget_closeout` from `59bdd7a8a` at the shorter `C:\tmp\Concertable-polyrepo-mobile-closeout` path, and cherry-picked the five observation checkpoints after reviewed source head `a8296d51b` in order.
+- Evidence: every source-tail commit (`e479a2e7c`, `74aac0b3a`, `a611d4b7a`, `8a0ee4458`, `d26dd0f11`) changes only `plans/platform/POLYREPO_FULLSTACK_PROGRESS.md`; the final source and closeout ledger blobs are identical (`23adc093ce0eb1e053cfe2585352a3afb86c554b`); `62646f4cd` is an ancestor of current `origin/main`; closeout worktree is clean before this identity edit.
+- Outcome: recovery ownership has moved to the clean docs closeout branch; no runtime/source change was transferred.
+- Follow-up: remove the merged feature worktree and both source-branch refs, then monitor the FE package publication from this closeout worktree.
 
 ### 2026-08-07 — #413 merged through the full-E2E merge queue
 
