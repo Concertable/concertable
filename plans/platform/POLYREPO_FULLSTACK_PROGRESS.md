@@ -1,11 +1,11 @@
 # Full-stack polyrepo — frontend build separation progress
 
 - Plan: `plans/platform/POLYREPO_FULLSTACK_PLAN.md`
-- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-platform_polyrepo_mobile-carve` — created from current `origin/main` @ `59bdd7a8a` for the definitive Phase 3 mobile carve gate.
-- Branch: `Feature/platform_polyrepo_mobile-carve` @ work head `098d4c3a5`; contains the transferred ledger recovery history plus the two mobile `carve-fe` matrix entries against the now-published fixed tier. Local ledger-only checkpoints after `098d4c3a5` describe delivery transitions.
+- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-polyrepo-mobile-carve-closeout` — clean closeout checkout created from `origin/main` @ #416 merge `83a3f49a1`.
+- Branch: `Docs/platform_polyrepo_mobile-carve_closeout` — carries only the verified post-PR ledger observation tail for recovery and handoff.
 - PR: **mobile-carve PR [#416](https://github.com/Concertable/concertable/pull/416) MERGED as `83a3f49a1`** from reviewed remote head `74b9743d8`; exact full-E2E merge-group run [31204805838](https://github.com/Concertable/concertable/actions/runs/31204805838) completed successfully. Prior publish-first mobile-retarget PR [#413](https://github.com/Concertable/concertable/pull/413) merged as `62646f4cd` and republished `@concertable/mobile@0.1.0-alpha.0.2571`; carved-web CSS [#405] (`d9c62e2c5`); Phase 3b [#389] (`1cbeb2175`); Phase 3a [#378] (`fba490e25`); Phase 2 [#360] (`a3f9535`); Phase 1 [#301]+[#319].
 - Dependency/package gates: **#413 FE publication DONE** — successful descendant run [31197751649](https://github.com/Concertable/concertable/actions/runs/31197751649) published and feed-verified `@concertable/mobile@0.1.0-alpha.0.2571` with the brand assets. This unblocks the follow-up mobile carve gate. No `api/**` → no backend platform-sync.
-- Last reconciled: 2026-08-07 — PR #416 merged as `83a3f49a1` after exact full-E2E merge-group run 31204805838 completed successfully. Next: transfer the observation tail to a clean docs closeout worktree, remove the merged feature worktree/branch, then hand off the separate Phase 3 ESLint import-boundary sub-project.
+- Last reconciled: 2026-08-07 — the three ledger-only post-PR commits were transferred to this clean closeout worktree and their resulting ledger blob was verified identical to source commit `288ad3335`. Next: remove the merged feature worktree/branch, then hand off the separate Phase 3 ESLint import-boundary sub-project.
 
 ## Current state
 
@@ -24,7 +24,7 @@ from `app/mobile/TECH_DEBT.md`.
 
 ## Next Steps
 
-**1. Close out merged #416.** Transfer the local observation tail to a clean docs closeout worktree, verify the recovery state, and remove the merged feature worktree/branch. No FE republish follows because #416 changed only CI/docs/debt state; no `api/**` means no backend platform-sync.
+**1. Finish #416 worktree cleanup.** Remove the clean merged feature worktree and its local/remote branch after verifying it has no uncommitted state. No FE republish follows because #416 changed only CI/docs/debt state; no `api/**` means no backend platform-sync.
 
 **2. FE import-boundary rule** — no ESLint/dependency-cruiser toolchain in `app/` yet; the carve CI is the primary structural boundary today (BE parity: carve = structural gate, build-time guard = fast second layer). Standing up ESLint `no-restricted-imports` across surfaces is a separate sub-project.
 
@@ -100,6 +100,13 @@ Gate: each item ends with its own green carve/build proof on its PR.
 - **Metro/nativewind/tailwind runtime configs left for Phase 3.** The Phase 2 gate is build + typecheck; the mobile app's metro `watchFolders`/nativewind `input`/tailwind `content` still point at `../shared` source. The app already resolves `@concertable/shared`/`customer` as symlinked packages the same way, so no in-monorepo runtime regression, but className/class-generation on the precompiled dist is unproven — a first-class Phase 3 item, not a silent gap.
 
 ## Event log
+
+### 2026-08-07 — #416 recovery transferred to the closeout worktree
+
+- Action: Created this clean docs closeout branch from current `origin/main` at merge `83a3f49a1` and cherry-picked the three post-PR observation commits in order.
+- Evidence: source range `74b9743d8..288ad3335` changes only `plans/platform/POLYREPO_FULLSTACK_PROGRESS.md`; source commit `288ad3335` and transferred head `12565ddec` resolve that ledger to the identical blob `53f7f59201765c6965491fe108331e18fd71f4b2` before this identity update.
+- Outcome: the plan recovery state now lives independently of the merged feature worktree.
+- Follow-up: remove the clean merged feature worktree and branch, checkpoint the cleanup here, then hand off the ESLint import-boundary sub-project.
 
 ### 2026-08-07 — #416 merged through the full-E2E merge queue
 
