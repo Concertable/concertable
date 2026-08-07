@@ -5,7 +5,7 @@
 - Branch: `Feature/platform_polyrepo_mobile-carve`; contains the transferred ledger-only recovery history and will add `mobile/{customer,b2b}` to the existing `carve-fe` matrix against the now-published fixed tier.
 - PR: **mobile-retarget PR [#413](https://github.com/Concertable/concertable/pull/413) MERGED as `62646f4cdd6933a695fc790e1329588fce3f928a`** — reviewed source head `a8296d51b`; full merge-group run [31195035539](https://github.com/Concertable/concertable/actions/runs/31195035539) completed successfully. Prior: carved-web CSS **[#405](https://github.com/Concertable/concertable/pull/405) MERGED** (`d9c62e2c5`) + [#411]; Phase 3b [#389] (`1cbeb2175`) + [#398]; Phase 3a [#378] (`fba490e25`); Phase 2 [#360] (`a3f9535`); Phase 1 [#301]+[#319].
 - Dependency/package gates: **#413 FE publication DONE** — successful descendant run [31197751649](https://github.com/Concertable/concertable/actions/runs/31197751649) published and feed-verified `@concertable/mobile@0.1.0-alpha.0.2571` with the brand assets. This unblocks the follow-up mobile carve gate. No `api/**` → no backend platform-sync.
-- Last reconciled: 2026-08-07 — the fresh `Feature/platform_polyrepo_mobile-carve` worktree is the sole recovery anchor; the superseded closeout worktree/branch are gone. `@concertable/mobile@0.1.0-alpha.0.2571` is live. Next: add both mobile surfaces to the `carve-fe` matrix, verify, and open the self-validating PR.
+- Last reconciled: 2026-08-07 — `mobile/customer` and `mobile/b2b` are added to the `carve-fe` matrix on `Feature/platform_polyrepo_mobile-carve`; the gate restores the live `@concertable/mobile@0.1.0-alpha.0.2571` tier and executes the already-landed mobile `tsc` + `expo export` path. Local structural checks are green. Next: commit, push, open the self-validating PR, and follow both mobile carve jobs.
 
 ## Current state
 
@@ -19,7 +19,7 @@ Phases 0, 1, 2, **3a, and 3b are on `main`**. Phase 3a (PR #378, merge `fba490e2
 
 ## Next Steps
 
-**1. Turn on the mobile carve gate.** Add `mobile/{customer,b2b}` to the existing `carve-fe` matrix, verify the YAML and changed-file classifier locally, commit, push, and open the PR so each surface restores `@concertable/mobile@0.1.0-alpha.0.2571` from the feed and runs `expo export`. Follow both mobile matrix jobs to green; if either exposes another latent bundle bug, fix the real bug without weakening the gate (surface bug on this branch; published-tier bug through another publish-first cycle). (Also logged in `app/mobile/TECH_DEBT.md`.)
+**1. Deliver and follow the mobile carve gate PR.** Commit the `carve-fe` matrix change with this ledger checkpoint, push `Feature/platform_polyrepo_mobile-carve`, and open the plain GitHub PR with full E2E (no skip labels). Follow `carve-fe (mobile/customer)` and `carve-fe (mobile/b2b)` to green; if either exposes another latent bundle bug, fix the real bug without weakening the gate (surface bug on this branch; published-tier bug through another publish-first cycle). (Also logged in `app/mobile/TECH_DEBT.md`.)
 
 **2. FE import-boundary rule** — no ESLint/dependency-cruiser toolchain in `app/` yet; the carve CI is the primary structural boundary today (BE parity: carve = structural gate, build-time guard = fast second layer). Standing up ESLint `no-restricted-imports` across surfaces is a separate sub-project.
 
@@ -41,6 +41,12 @@ Gate: each item ends with its own green carve/build proof on its PR.
 - `0e3d8f5a6` makes full merge-queue E2E the strict default, preserves the no-duplicate-local-E2E workflow, and keeps findings on the reviewed branch unless they are proven independent.
 
 ## Verification
+
+- **Mobile carve matrix implementation (2026-08-07):** `.github/workflows/test.yml` now lists all six
+  surfaces, including `mobile/customer` and `mobile/b2b`; the existing classifier self-triggers
+  `run_fe=true` when `test.yml` changes; `git diff --check` passes. The local shell has neither PyYAML
+  nor Node on `PATH`, so the PR's own workflow parse plus its two new matrix jobs are the authoritative
+  executable proof.
 
 - **Phase 2 gate (2026-08-05, this branch):** `npm run build:packages` builds all five tiers to dist
   (exit 0). All four web builds green (`npm -w @concertable/web-{customer,venue,artist,business} run
@@ -83,6 +89,13 @@ Gate: each item ends with its own green carve/build proof on its PR.
 - **Metro/nativewind/tailwind runtime configs left for Phase 3.** The Phase 2 gate is build + typecheck; the mobile app's metro `watchFolders`/nativewind `input`/tailwind `content` still point at `../shared` source. The app already resolves `@concertable/shared`/`customer` as symlinked packages the same way, so no in-monorepo runtime regression, but className/class-generation on the precompiled dist is unproven — a first-class Phase 3 item, not a silent gap.
 
 ## Event log
+
+### 2026-08-07 — mobile carve matrix enabled locally
+
+- Action: Removed the now-stale publish-first deferral text and added `mobile/customer` plus `mobile/b2b` to the existing `carve-fe` surface matrix.
+- Evidence: matrix assertion finds the exact six-surface list; the unchanged classifier contains its explicit `.github/workflows/test.yml` self-trigger; `git diff --check` passes. `carve-fe.mjs` already maps both mobile surfaces and runs `tsc --noEmit` followed by `expo export --platform android`.
+- Outcome: the definitive feed-restored mobile bundling gate is implemented locally; the PR will execute both new matrix jobs against `@concertable/mobile@0.1.0-alpha.0.2571`.
+- Follow-up: commit, push, open the PR, and follow both mobile carves to green without weakening the gate.
 
 ### 2026-08-07 — superseded closeout worktree removed
 
