@@ -87,12 +87,12 @@ codes are preserved with explicit `[ErrorCode]` attributes where natural case na
 The refreshed source gate is green: Payment Release build 0 warnings/0 errors, Payment unit 222/222,
 the full Release API solution build 0 errors (seven existing warnings outside Payment), and Payment
 SQL integration 8/8 after the repository Docker data-round-trip preflight passed. The merge and
-error-convention changes are committed locally; PR #392 has not been updated or enqueued.
+error-convention changes are committed locally and the incremental review through `842b9c332` found
+no issues. PR #392 has not been updated or enqueued.
 
 ## Next Steps
 
-Run an incremental review of the local merge and error-convention checkpoint, address every clear
-finding, then complete the `merge` workflow for PR #392: push the verified compound head, apply
+Complete the `merge` workflow for PR #392: push the verified compound head, apply
 `full-e2e` because historical commits contain `Skip-E2E: true` trailers, enqueue, and follow the merge
 to a terminal state. After merge, own package publication and the generated breaking platform-sync PR
 through green, update the waiting B2B ledger, and close frozen donor PR #296 only after the canonical
@@ -144,6 +144,13 @@ closing donor PR #296 remain later explicit delivery steps; PR #392 must run ful
   data-round-trip preflight passed and Payment SQL integration passed 8/8.
 
 ## Reviews
+
+### 2026-08-07 - incremental delivery review (`ee8dbdd57..842b9c332`)
+
+Artifact: `reviews/Feature-PaymentOwnedResultExpansion.md`. The 96-commit range includes the
+current-main merges and the branch-owned Payment error-convention/conflict-resolution work. No new
+finding met the confidence threshold across correctness, microservice isolation, module boundaries,
+seeding, C# conventions, or changed-path test coverage. The watermark is `842b9c332`.
 
 ### 2026-08-05 - canonical full review after H1 (`3e3bcce89..a4ae0081e`)
 
@@ -226,6 +233,16 @@ Clean: escrow `Result<Option<T>,E>` semantics, rounding/VAT/refund math, wire hy
   commission-branch implementation is donor evidence only; its behavior is now reconciled here.
 
 ## Event log
+
+### 2026-08-07 - Incremental delivery review found no issues
+
+- Action: Reviewed `ee8dbdd57..842b9c332`, including the current-main merges and the branch-owned
+  Payment error-convention and conflict-resolution changes, through all six repository lenses.
+- Evidence: `reviews/Feature-PaymentOwnedResultExpansion.md` records no new findings and is stamped
+  through `842b9c332`; `git diff --check` is clean.
+- Outcome: The verified local branch is review-clean and ready for the compound push and merge-queue
+  delivery workflow.
+- Follow-up: Execute the PR #392 delivery action in `## Next Steps`.
 
 ### 2026-08-07 - Cleared the Payment SQL integration gate
 
