@@ -59,10 +59,12 @@ Each ledger keeps these current sections above its chronological event log:
 - completed work with commit or PR evidence;
 - verification and review state;
 - decisions, discoveries, blockers, and deviations;
-- **`## Next Steps`** — the paste-ready prompt for the next agent: the concrete step(s) to take now,
-  self-contained, with any prerequisite or blocking gate. This is the **single source of truth** for
-  what to do next; resume/handoff prompts point here instead of restating it, so a prompt can never
-  drift from reality. Keep it current at every checkpoint.
+- **`## Next Steps`** — the single resolved action for the next agent, expressed as concrete,
+  self-contained steps with any prerequisite or blocking gate. Apply the repository's standing
+  instructions and current evidence before writing it, so it directs execution instead of presenting
+  alternative paths. This is the **single source of truth** for what to do next; resume/handoff prompts
+  point here instead of restating it, so a prompt can never drift from reality. Keep it current at every
+  checkpoint.
 
 Update the summary whenever an event changes it, then append the evidenced event to the log. Include
 enough commands, paths, identifiers, results, and reasoning to continue without the prior conversation;
@@ -125,11 +127,13 @@ cited inside a plan (see [`ROADMAP.md`](ROADMAP.md)).
 4. **Keep both artifacts after the last local phase while delivery is live.** Check off the phase and
    make the ledger's exact next action the review, fix, PR, merge, publication, dependency, or
    platform-sync gate that now owns progress. Continue recording every transition; local completion
-   is not lifecycle completion.
+   is not lifecycle completion. Once the source PR merges, transfer the recovery commits to a clean
+   `Docs/<epic>_<name>_closeout` worktree and remove the feature worktree immediately.
 5. **Close out only after the entire lifecycle is terminal.** Record the final gate's outcome and
    evidence, make that ledger checkpoint durable, then delete the plan and ledger together (`git rm`)
-   in the following close-out change. When the final phase has no later delivery or package gates,
-   that phase's completing commit may perform the close-out.
+   in the following close-out commit. Land that commit through `/merge-docs`, then remove the close-out
+   worktree. When the final phase has no later delivery or package gates, that phase's completing
+   commit may perform the close-out.
 6. A plan **and its progress ledger** superseded by a newer plan, or describing a **rejected** design, are deleted the moment
    that's decided — no tombstones.
 
@@ -150,21 +154,20 @@ So, **before any change that closes a terminal plan, run `git status --short pla
 
 The rule is mechanical: after the close-out change, no terminal plan is in the tree — as an addition or a survivor.
 
-### Doc-only close-out — never open its own PR; let it ride the next change
+### Post-merge close-out — move state, delete the feature worktree, use `/merge-docs`
 
-If no later delivery or package gate exists, the plan deletion + blocker tick can land **inside the
-feature's final commit** (Lifecycle 5). Normally the plan must outlive that commit and often the merge
-itself while reviews, checks, publication, or platform sync remain live. Record the final gate outcome
-in the ledger and make that checkpoint durable before applying the close-out after the feature merged.
-When that happens, **do not open a standalone PR for it.** Deleting a completed plan and ticking a
-blocker are doc-only and cannot break a build or another PR (root `CLAUDE.md`: docs are exempt from
-branch hygiene). Spinning up a branch + PR + full merge-queue **E2E cycle (~20-30 min)** for a two-file
-doc change is pure waste — and pushing straight to the protected `main` is (correctly) blocked.
+If no later delivery or package gate exists, the plan deletion + roadmap tick can land inside the
+feature's final commit. Otherwise the source PR merges while the plan remains live. Immediately after
+recording that merge, create `Docs/<epic>_<name>_closeout` from current `origin/main`, transfer every
+ledger-only observation commit after the verified source PR head, update the ledger's worktree/branch
+identity, and verify the transferred plan and ledger match the source worktree. Then delete the merged
+feature worktree and branch before watching publication or platform sync.
 
-So: make the close-out edits and **leave them in the working tree** to ride along with the next PR that
-lands (or bundle them into the next commit). The same goes for any tiny, non-breaking doc/markdown
-tweak — `TECH_DEBT.md` lines, scratch notes, blocker ticks: never a dedicated PR, just let it travel
-with the next real change.
+The close-out worktree is the recovery anchor for the remaining remote gates. Once they are terminal,
+commit the final ledger checkpoint, delete the plan and ledger together in the following commit, and
+tick the owning roadmap item. Run `/docs-review`, land the net meta-only change through `/merge-docs`,
+and remove the close-out worktree. Never leave close-out edits in a merged feature worktree or an
+unrelated checkout; the fast docs path exists so no merged worktree needs to linger.
 
 ### Boundary-blocked refactors — capture in a plan, don't force into this PR
 
