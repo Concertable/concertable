@@ -4,10 +4,9 @@
 - Roadmap: `plans/typed-result/TYPED_RESULT_MIGRATION_ROADMAP.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-payment-owned-closeout`
 - Branch: `Docs/typed-result_payment-owned-result-expansion_closeout`
-- PR: #392 (`https://github.com/Concertable/concertable/pull/392`); frozen donor PR #296 remains open at `82d0555cd`
-- Dependency/package gates: This branch is the exclusive canonical implementation owner for Payment Phase 2. Phase 1 merged in PR #290 and platform-synced in PR #291; Payment currently consumes platform `0.1.0-alpha.0.847`. Removing the published FluentResults client surface is an intentional breaking package cutover: Payment must merge and publish before B2B/Customer can migrate on the generated platform-sync PR.
-- Downstream handoffs: B2B checkpoints 6-7 are waiting in `plans/typed-result/B2B_PROGRESS.md`
-  (`Refactor/B2BTypedResultMigration`) for this branch to merge, publish, and platform-sync green.
+- PR: #392 merged as `b66325acdee7979bb3771e4c28248364b769d402`; frozen donor PR #296 is terminal at `82d0555cd9ecd5f53ca4c62f22d955a7015ecdb0`
+- Dependency/package gates: Terminal. Phase 1 shipped through PRs #290/#291. Canonical PR #392 merged, platform `0.1.0-alpha.0.853` published, breaking platform-sync PR #420 migrated B2B/Customer and merged as `372be1041b2050d8f62eea2435005a981ec222b4`, and post-merge platform `0.1.0-alpha.0.857` published with no recursive sync PR.
+- Downstream handoffs: Dispatched. B2B resumed in commit `ba5791268831e9b5071ecce824990a82c80c07bf`; Auth resumed in commit `98599413adca3364ef7d3613850b66d69caf2f69`.
 - Last reconciled: 2026-08-08 from local Git, `origin/main`, GitHub PR state, and workflow runs
 
 ## Current state
@@ -138,25 +137,21 @@ Post-merge package publication run `31225852815` passed and published platform
 `31225952562` also passed and correctly created no recursive follow-on sync PR. The Payment package
 and consumer cutover gate is terminal; the B2B and Auth dependency ledgers can now be woken.
 
+Both registered downstream handoffs are now durable: B2B's ledger resumes Payment-dependent
+checkpoints 6-7 at `ba5791268`, and Auth's ledger resumes delivery at `98599413a`. GitHub records donor
+PR #296 terminal at its frozen head `82d0555cd`; no separate donor change remains to close. The merged
+`Platform-sync-853` worktree, local branch, and leftover directory are removed. This Payment lifecycle
+is terminal and only its plan/ledger deletion, roadmap tick, docs review, and docs-only landing remain.
+
 ## Next Steps
 
-Update the waiting B2B and Auth ledgers with the merged #420 / published `0.1.0-alpha.0.857` gate and
-their exact resume actions. Close frozen donor PR #296, remove the merged sync worktree, then complete
-the Payment terminal checkpoint and delete this plan/ledger together through the docs closeout flow.
+Delete this terminal plan and ledger together in the following closeout commit, move Payment to the
+roadmap's shipped service tracks, run the full docs review, and land the net meta-only closeout through
+`merge-docs`. Then remove this docs closeout worktree.
 
 ## Downstream handoffs
 
-- **B2B typed-result migration:** `plans/typed-result/B2B_PROGRESS.md` in
-  `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-B2BTypedResultMigration` is waiting
-  for this canonical Payment branch to merge, publish `Concertable.Payment.Client`, and complete its
-  generated platform-sync PR green. When that gate opens, the Payment delivery session must update the
-  B2B ledger's current state, `## Next Steps`, and event log, then surface its exact resume prompt.
-  The B2B worktree must not poll this dependency or rely on Tommy remembering to revisit it.
-- **Auth expected-outcome delivery:** `plans/typed-result/AUTH_OUTCOMES_PROGRESS.md` in
-  `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_auth-outcomes` is
-  locally verified and review-clean but blocked from pushing and opening its PR while platform-sync
-  PR #420 is red. When #420 merges green, update the Auth ledger's current state, `## Next Steps`, and
-  event log, then surface its exact resume prompt. The Auth worktree must not poll this dependency.
+- None outstanding. B2B and Auth were updated and committed after the `0.857` gate opened.
 
 ## Completed work
 
@@ -304,6 +299,19 @@ Clean: escrow `Result<Option<T>,E>` semantics, rounding/VAT/refund math, wire hy
   commission-branch implementation is donor evidence only; its behavior is now reconciled here.
 
 ## Event log
+
+### 2026-08-08 - Downstream handoffs dispatched and recovery cleanup completed
+
+- Action: Reconciled the already-committed B2B/Auth wake-ups, verified donor PR #296's terminal state,
+  merged current `origin/main`, and removed the merged platform-sync worktree, branch, and directory.
+- Evidence: B2B commit `ba5791268` names checkpoints 6-7 as unblocked; Auth commit `98599413a` names
+  current-main reconciliation and PR delivery; GitHub records #296 merged at frozen head `82d0555cd`;
+  `git worktree list` and the filesystem contain no `Platform-sync-853` checkout; this branch is zero
+  behind `origin/main` after the clean current-main merge.
+- Outcome: Payment's implementation, review, PR, E2E, publication, platform sync, consumer migration,
+  donor disposition, downstream dispatch, and recovery cleanup are terminal.
+- Follow-up: Delete this plan/ledger, mark Payment shipped on the roadmap, review the docs-only diff,
+  and land it through `merge-docs`.
 
 ### 2026-08-08 - Platform sync and post-merge publication completed
 
