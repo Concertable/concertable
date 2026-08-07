@@ -5,7 +5,7 @@
 - Branch: `Feature/typed-result_customer-outcomes`
 - PR: not opened
 - Dependency/package gates: owned Kernel foundation PR #290 and platform sync #291 are shipped; no Payment/B2B package dependency; platform-sync PR #373 shipped `0.1.0-alpha.0.814` green in merge commit `9169107c0`; PR #282 remains the exclusive open owner of Ticket/Concert/Customer Payment work and is not a dependency; platform-sync PR #420 shipped `0.1.0-alpha.0.853` green in merge commit `372be1041b20`
-- Last reconciled: 2026-08-08 from local branch head `bf20d17ce`, `origin/main` `372be1041b20`, the post-sync Customer/Shared.Api test gates, and the Release solution build
+- Last reconciled: 2026-08-08 from pushed work head `75263c0b8`, matching `origin/Feature/typed-result_customer-outcomes`, and no source PR
 
 ## Current state
 
@@ -28,11 +28,17 @@ and Artist 2/2 integration tests pass (29/29 total); Shared.Api passes 60/60; an
 build succeeds with 0 errors and 8 current-base warnings. Local E2E remains intentionally deferred to
 the full merge-queue tier.
 
+PR preflight is green: the worktree is clean, the branch is 0 behind `origin/main`, no source PR or
+open platform-sync PR exists, and no package cut-over is incomplete. The feature branch did not
+previously exist remotely. Push leg one published the 28-commit `origin/main..75263c0b8` work range,
+and the fetched remote-tracking head exactly matches `75263c0b8`.
+
 ## Next Steps
 
-Execute `/pr-preflight`. When green, use the plan-managed two-leg push protocol and open the
-authorized GitHub PR with the full merge-queue E2E tier and no skip label. Record the PR observation
-locally and keep this plan and ledger live through PR, merge, publication, and platform sync.
+Commit and push this ledger transport checkpoint, fetch the remote branch, and require local HEAD to
+equal the remote-tracking head. Then open the authorized GitHub PR with the full merge-queue E2E tier
+and no skip label, record the PR observation locally, and keep this plan and ledger live through PR,
+merge, publication, and platform sync.
 
 ## Completed work
 
