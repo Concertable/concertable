@@ -4,10 +4,10 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\PaymentOwnedResultExpansion`
 - Branch: `Feature/PaymentOwnedResultExpansion`
 - PR: #392 (`https://github.com/Concertable/concertable/pull/392`); frozen donor PR #296 remains open at `82d0555cd`
-- Dependency/package gates: This branch is the exclusive canonical implementation owner for Payment Phase 2. Phase 1 merged in PR #290 and platform-synced in PR #291; Payment currently consumes platform `0.1.0-alpha.0.842`. Removing the published FluentResults client surface is an intentional breaking package cutover: Payment must merge and publish before B2B/Customer can migrate on the generated platform-sync PR.
+- Dependency/package gates: This branch is the exclusive canonical implementation owner for Payment Phase 2. Phase 1 merged in PR #290 and platform-synced in PR #291; Payment currently consumes platform `0.1.0-alpha.0.847`. Removing the published FluentResults client surface is an intentional breaking package cutover: Payment must merge and publish before B2B/Customer can migrate on the generated platform-sync PR.
 - Downstream handoffs: B2B checkpoints 6-7 are waiting in `plans/typed-result/B2B_PROGRESS.md`
   (`Refactor/B2BTypedResultMigration`) for this branch to merge, publish, and platform-sync green.
-- Last reconciled: 2026-08-07 from local Git, `origin/main` at `529dba9dd`, and GitHub PR state
+- Last reconciled: 2026-08-07 from local Git, `origin/main` at `59bdd7a8a`, and GitHub PR state
 
 ## Current state
 
@@ -75,7 +75,7 @@ at verified head `1c9380726`; donor PR #296 remains open and unchanged at `82d05
 advanced five commits after the verification gate, so the merge workflow must update the branch and
 rebuild before enqueueing.
 
-The merge workflow has now brought `origin/main` at `529dba9dd` into the worktree and resolved the
+The merge workflow has now brought `origin/main` at `59bdd7a8a` into the worktree and resolved the
 Payment client conflicts in favour of the branch-owned Result API. Payment has also been migrated to
 the current error convention before delivery: every operation error is a named Dunet union with one
 exhaustive root `Definition` switch; the old static catalogs, per-case overrides, and every `FromCode`
@@ -84,8 +84,8 @@ throws `PaymentContractMismatchException` for an unknown or changed wire contrac
 codes are preserved with explicit `[ErrorCode]` attributes where natural case naming differs.
 
 The refreshed source gate is green: Payment Release build 0 warnings/0 errors, Payment unit 222/222,
-and the full Release API solution build 0 errors (six existing generated E2E nullable warnings outside
-Payment). Payment SQL integration is the only unfinished pre-push gate: Docker Desktop's API did not
+and the full Release API solution build 0 errors (seven existing warnings outside Payment). Payment
+SQL integration is the only unfinished pre-push gate: Docker Desktop's API did not
 answer the required preflight and timed out, so the integration suite was not started. The merge and
 error-convention changes are committed locally; PR #392 has not been updated or enqueued.
 
@@ -139,9 +139,9 @@ closing donor PR #296 remain later explicit delivery steps; PR #392 must run ful
   nullable warnings); Payment unit 219/219; Shared API unit 52/52; Payment integration 8/8; standalone
   package-only carve built all nine deployable-closure projects with 0 errors (existing analyzer
   warnings remain).
-- Current-main/error-convention working-tree gate on platform `0.1.0-alpha.0.842`: Payment Release
-  build 0 warnings/0 errors; Payment unit 222/222; full Release API solution build 0 errors with six
-  existing generated E2E nullable warnings outside Payment; `git diff --check` clean; no `FromCode`,
+- Current-main/error-convention gate on platform `0.1.0-alpha.0.847`: Payment Release build 0
+  warnings/0 errors; Payment unit 222/222; full Release API solution build 0 errors with seven
+  existing warnings outside Payment; `git diff --check` clean; no `FromCode`,
   static error catalog, or per-case `Definition` override remains in Payment. Payment integration was
   not started because the Docker API preflight timed out.
 
@@ -235,10 +235,10 @@ Clean: escrow `Result<Option<T>,E>` semantics, rounding/VAT/refund math, wire hy
   for the branch-owned API, replaced the obsolete static/per-case/`FromCode` error design with named
   Dunet unions and closed operation-specific gRPC reverse maps, and repeated the source build gates.
 - Evidence: Payment Release build 0 warnings/0 errors; Payment unit 222/222; full Release API solution
-  build 0 errors with six existing generated E2E nullable warnings outside Payment; error-convention
+  build 0 errors with seven existing warnings outside Payment; error-convention
   and conflict-marker greps clean. Docker's API timed out during the integration preflight.
 - Outcome: The merge and convention migration are locally checkpointed with source and unit/build
-  verification green on platform `0.1.0-alpha.0.842`; Payment SQL integration is the sole local
+  verification green on platform `0.1.0-alpha.0.847`; Payment SQL integration is the sole local
   blocker before review, push, and merge-queue delivery.
 - Follow-up: Restore Docker health and execute the exact integration-and-delivery action in
   `## Next Steps`.
