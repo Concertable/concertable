@@ -1,5 +1,7 @@
 # Percentage platform commission and pricing transparency
 
+> **Next steps live in @plans/b2b/PLATFORM_COMMISSION_PROGRESS.md → `## Next Steps`.**
+
 > **Active launch plan.** The temporary flat £10 platform fee is shipped, but it is not the launch
 > pricing model. Replace it before launch with one Payment-owned percentage applied to the final
 > deal gross calculated by B2B. The payer pays gross plus commission; the payee receives the agreed
@@ -8,7 +10,7 @@
 >
 > The previously planned generic fixed/rate/minimum/cap policy model is rejected. Payment persists one
 > immutable percentage configuration row per pricing revision, and each payer commitment receives a
-> Payment-issued commission authorization referencing that revision. Completed financial operations
+> Payment-issued commission binding referencing that revision. Completed financial operations
 > keep their actual money, Stripe and ledger facts.
 
 ## 1. Locked product and architecture decisions
@@ -52,7 +54,7 @@ inside them.
 Payment owns one deal-type-agnostic calculation:
 
 ```text
-commission minor = round-half-up(gross minor × rate basis points / 10,000)
+commission minor = rate percentage applied to gross minor with round-half-up
 payer total       = gross minor + commission minor
 payee amount      = gross minor
 ```
@@ -83,51 +85,34 @@ dispute route. A future ticketing import may strengthen the input without changi
 | generic fixed/rate/minimum/cap policies | rejected: speculative product surface and persistence |
 | resolve the live rate only when charging | rejected: delayed bookings could be charged on terms the payer never accepted |
 | copy the current rate into B2B | rejected: B2B could become a second pricing authority or submit a favourable rate |
-| copy version, currency and rate into every authorization | rejected: repeats identical configuration terms and conflates a pricing revision with a payer commitment |
+| copy the percentage into every binding | rejected: repeats identical configuration terms and conflates a pricing revision with a payer commitment |
 | generic policy catalogue referenced directly by every application | rejected: exposes speculative pricing modes and binds pricing before the payer commitment |
-| immutable percentage configuration revision referenced by a Payment-issued authorization | selected: stores each rate once while separately recording who accepted it, for which obligation and Stripe context |
+| immutable percentage configuration revision referenced by a Payment-issued binding | selected: declares each rate once while separately recording who accepted it, for which obligation and Stripe context |
 
 ## 3. Rate selection and binding
 
 ### 3.1 Current rate
 
-Replace the flat-fee setting with one validated Payment configuration:
+Replace the flat-fee setting with one validated current Payment configuration:
 
 ```text
 PlatformCommission
-  ConfigurationId         required non-empty Guid
-  Version                 required unique deployment/audit label
-  Currency                GBP
-  RateBasisPoints         required, 1..10,000
-```
-
-Add one percentage-only `CommissionConfigurationEntity` per pricing revision:
-
-```text
-Id                         configured ConfigurationId
-Version                    unique deployment/audit label
-Currency                   GBP
-RateBasisPoints            required, 1..10,000
-CreatedAt                  DateTimeOffset
+  ConfigurationId  required unique non-empty Guid
+  RatePercentage   required decimal, greater than 0 and no more than 100, up to 4 decimal places
 ```
 
 This is not a generic policy engine: there is no fixed component, minimum, cap, tenant override,
-deal-type selector, expiry or mutable status. The row is immutable and the repository exposes no
-update/delete path.
+deal-type selector, expiry or mutable status. Local appsettings and deployed Azure App Configuration
+contain only the current values. Payment validates them on startup and inserts the configuration into
+its immutable SQL history if the ID is new. Reusing an existing ID with a different percentage fails
+startup.
 
-Payment bootstraps the configured revision idempotently after its schema is available:
-
-1. if the configured ID and version are absent, insert the revision once;
-2. if they resolve to the same immutable terms, continue;
-3. if either already identifies different terms, fail startup;
-4. never update or delete an older revision.
-
-The bootstrap must be safe when Payment Web and Workers start concurrently. Changing the rate requires
-a new ID, new version and coordinated Payment deployment. During a rolling deployment, preview and
-commitment commands compare the configuration ID the payer reviewed with the instance processing the
-commitment; a mismatch returns `pricing_changed` before Stripe or domain mutation, forcing a refresh.
-After commitment, calculations load the authorization's referenced configuration rather than the
-current deployment setting.
+Changing the rate deploys one new ID and percentage in Azure configuration. The previous Azure
+values are replaced while their immutable SQL rows remain for existing bindings. During a rolling
+deployment, preview and commitment commands compare the configuration ID the payer reviewed with the
+instance processing the commitment; a mismatch returns `pricing_changed` before Stripe or domain
+mutation, forcing a refresh. After commitment, calculations load the binding's referenced SQL
+configuration rather than the current Azure configuration.
 
 ### 3.2 Binding point
 
@@ -142,17 +127,18 @@ unaccepted application is created:
 | Guarantee Plus (`Versus`) | venue | booking acceptance, when the SetupIntent/future charge mandate is accepted |
 
 An unaccepted application takes the then-current rate when it reaches the binding point. A booking
-with a Payment authorization retains its referenced configuration through settlement even if the
+with a Payment binding retains its referenced configuration through settlement even if the
 current rate changes later. Reopening a checkout before commitment shows the current rate; it does not
 reserve an older rate merely because a page was visited.
 
-### 3.3 Payment authorization
+### 3.3 Payment commission binding
 
-Add `CommissionAuthorizationEntity` in Payment:
+Add `CommissionBindingEntity` in Payment:
 
 ```text
 Id                         Guid, generated by Payment
-CommissionConfigurationId  required FK to immutable Payment configuration
+CommissionConfigurationId  required foreign key to an immutable Payment configuration row
+Currency                   immutable payment currency
 ExternalReference          immutable application/booking reference
 PayerReference             immutable payer/customer reference
 BoundAt                    DateTimeOffset
@@ -161,14 +147,16 @@ StripeSetupIntentId        nullable
 ```
 
 Require a unique operation identity appropriate to the existing payment journey so retries are
-idempotent. An authorization can only be consumed by a payment with the same external reference,
-payer, configured currency and Stripe intent/mandate. It cannot be rebound or supplied for another
-booking. The configuration relationship is many authorizations to one revision; the authorization
-does not duplicate version, currency or rate.
+idempotent. A binding can only be consumed by a payment with the same external reference,
+payer, bound currency and Stripe intent/mandate. It cannot be rebound or supplied for another
+booking. Many bindings can reference one revision; the binding stores its payment currency but does
+not duplicate the percentage. Payment stores each deployed configuration once in SQL so historical
+bindings remain
+resolvable after Azure configuration moves to the next value.
 
-B2B persists only the opaque `CommissionAuthorizationId` on the application/booking path that already
+B2B persists only the opaque `CommissionBindingId` on the application/booking path that already
 owns the payer commitment. It does not persist a second rate, policy terms or calculated commission.
-Signed booking terms continue to own the deal formula; the Payment authorization owns the platform
+Signed booking terms continue to own the deal formula; the Payment binding owns the platform
 rate commitment.
 
 ## 4. Values persisted and derived
@@ -197,7 +185,7 @@ Keep the existing actual `PlatformFee` snapshots on escrow and settlement record
 commission terminology where the package cut-over permits. Each money-moving record must retain:
 
 ```text
-CommissionAuthorizationId
+CommissionBindingId
 Currency
 PayeeGrossMinor
 CommissionGrossMinor
@@ -212,14 +200,14 @@ status and timestamps
 reconciliation. Commission net and VAT are accounting facts, not pricing-policy duplication. The
 ledger continues to post from transaction snapshots and never recalculates an old rate.
 
-The configuration referenced by the authorization explains the historical price commitment; the
+The configuration referenced by the binding explains the historical price commitment; the
 settlement/escrow row explains what was actually charged and transferred. Both are required.
 
 ## 5. Currency, rounding and tax
 
 - GBP is the only accepted commission currency at launch; reject mismatches before Stripe calls.
-- Use checked integer arithmetic. Multiply minor-unit gross by basis points, then round once using
-  round-half-up to the nearest minor unit.
+- Represent rates as validated decimal Percentage value objects. Apply the percentage to integer
+  minor-unit gross and round once using round-half-up to the nearest minor unit.
 - Each B2B strategy produces one final gross in minor units. Payment commissions that combined value
   once; it does not separately round a guarantee and revenue-share commission.
 - The displayed rate is VAT-inclusive. When Concertable is not VAT registered,
@@ -272,7 +260,7 @@ and enforces cumulative limits. B2B never submits a commission refund.
 ### 6.2 Journey behaviour
 
 - a failed or abandoned payment creates no revenue posting and does not consume a different rate on
-  retry after the payer has bound an authorization;
+  retry after the payer has bound a commission calculation;
 - an escrow refund before release refunds the payer total according to the rule above;
 - escrow release transfers the stored payee gross and recognizes the stored commission according to
   the existing ledger timing; it never recalculates the rate;
@@ -321,28 +309,30 @@ Additive Payment client/protobuf capabilities must cover:
 
 ```text
 PreviewCommission(gross, currency)
-  -> commissionConfigurationId, configurationVersion, rateBasisPoints,
-     gross, commission, payerTotal
+  -> commissionConfigurationId, ratePercentage, gross, commission, payerTotal
 
-CreateOrBindCommissionAuthorization(
+CreateOrBindCommission(
   externalReference, payerReference, currency,
   reviewedCommissionConfigurationId, Stripe intent context)
-  -> authorizationId, referenced configuration and exact amounts when gross is known
+  -> bindingId, referenced configuration and exact amounts when gross is known
 
-CalculateAuthorizedCommission(authorizationId, gross, currency)
+CalculateBoundCommission(bindingId, gross, currency)
   -> referenced configuration, gross, commission, payerTotal
 ```
 
-The authorization-aware hold, capture, deposit and direct-pay methods accept an authorization ID and gross,
+The binding-aware hold, capture, deposit and direct-pay methods accept a binding ID and gross,
 not a rate. Payment:
 
-1. loads the authorization;
+1. loads the binding;
 2. loads its immutable commission configuration;
 3. verifies payer, external reference, currency and Stripe intent context;
 4. calculates from the referenced rate;
-5. validates any payer-reviewed expected gross/commission/total;
-6. performs the Stripe action;
-7. persists actual facts and posts the ledger atomically/idempotently.
+5. performs the Stripe action;
+6. persists actual facts and posts the ledger atomically/idempotently.
+
+`CreateOrBind` is the sole commitment boundary that accepts and validates payer-reviewed exact gross,
+commission and total. Later bound calculation and money-movement calls accept the binding ID and gross, never
+caller-supplied commission or payer-total values; Payment derives both from the immutable binding.
 
 Unknown, missing, mismatched or stale pricing fails before money movement. New protobuf methods must be
 distinct from legacy ones: an older Payment server must return `UNIMPLEMENTED`, not ignore a new field
@@ -372,9 +362,9 @@ unpublished Payment package source.
 
 ### Phase 1 — Payment percentage expansion
 
-- [x] Add immutable percentage-only configuration revisions, concurrency-safe configured-revision
-  bootstrap, calculation and authorization persistence by configuration foreign key.
-- [x] Add additive preview/authorize/authorized-calculation contracts and distinct authorization-aware
+- [x] Add one validated current percentage configuration, immutable SQL configuration history,
+  calculation and binding persistence by configuration ID only.
+- [x] Add additive preview/bind/bound-calculation contracts and distinct binding-aware
   money-movement RPCs.
 - [x] Add transaction tax facts, multi-refund persistence and proportional refund logic.
 - [x] Keep the existing £10 RPCs only as the temporary expansion seam; do not model £10 as a supported
@@ -382,15 +372,32 @@ unpublished Payment package source.
 - [x] Re-scaffold Payment migrations.
 - [x] Build `api/Concertable.slnx`; run Payment unit and integration tests.
 - [x] Commit with `Skip-E2E: true`.
-- [ ] **Hard stop:** merge, let packages publish, own the generated platform-sync PR to green/merged,
+- [x] **Hard stop:** merge, let packages publish, own the generated platform-sync PR to green/merged,
   and deploy the expanded Payment runtime before starting the consumer phase.
+
+### Phase 1b — Deferred binding consumption seam
+
+- [x] Confine payer-reviewed exact amount validation to `CreateOrBind`, the payer commitment boundary.
+- [x] Remove caller-supplied commission and payer total from every later bound calculation and money-movement
+  API; Payment calculates them internally from the immutable binding and caller-owned gross.
+- [x] Resolve review finding OWN1: keep one current {ConfigurationId, RatePercentage} in Azure
+  configuration, insert each deployed percentage once into immutable Payment SQL history, and persist
+  only its foreign key on bindings. Currency belongs to the binding, not the percentage configuration.
+- [x] Verify OWN1 on current `origin/main`: Payment unit tests (141 passed),
+  Payment integration tests (7 passed), no pending Payment model changes,
+  `dotnet build api/Concertable.slnx` (0 errors), and the standalone Payment carve (0 errors).
+- [x] Resolve incremental findings CV1, BUG1, CV2, TEST1, TEST2, and BUG2; verify the combined
+  typed-result and refund-reservation state with 188 Payment unit tests, 7 Payment integration tests,
+  the solution and standalone Payment carve at 0 errors, and no pending Payment model changes.
+- [ ] **Hard stop:** merge, publish, own platform sync to green and deploy the updated Payment runtime
+  before Phase 2 consumes the corrected binding-owned surface.
 
 ### Phase 2 — B2B gross ownership and percentage cut-over
 
-Start from updated `origin/main` after Phase 1's platform sync.
+Start from updated `origin/main` after Phase 1b's platform sync.
 
 1. Establish the four keyed pure gross strategies and exhaustive formula/rounding tests.
-2. Persist only `CommissionAuthorizationId`; add the frozen final-gross snapshot for deferred deals.
+2. Persist only `CommissionBindingId`; add the frozen final-gross snapshot for deferred deals.
 3. Bind the rate at each payer commitment point and route all four payment journeys through the new
    Payment methods.
 4. Add exact and deferred pricing DTOs, final takings review/attestation and fail-closed error mapping.
@@ -432,15 +439,16 @@ Start after Phase 2 and its platform sync are green.
 
 ### Payment
 
-- configuration rejects zero/invalid rate and non-GBP currency;
-- configured-revision bootstrap is concurrency-safe and idempotent;
-- reusing an ID or version with different terms fails startup, and persisted revisions cannot be
-  updated or deleted;
-- calculation uses checked integer arithmetic and the documented half-up rule;
-- authorization creation is idempotent and references the authoritative current configuration;
-- any number of authorizations can share one immutable configuration without copying its terms;
-- an authorization cannot be reused for another payer, reference, currency or Stripe intent;
-- a later current-rate change does not affect an existing authorization;
+- configuration rejects zero, out-of-range or over-precision percentages;
+- commission APIs reject non-GBP currency before Stripe calls;
+- the current Azure configuration is validated and inserted into immutable SQL history at startup;
+- reusing an ID with a different percentage fails startup, and referenced SQL revisions remain
+  available after Azure configuration changes;
+- calculation applies the decimal Percentage value object to integer minor units with the documented half-up rule;
+- binding creation is idempotent and references the authoritative current configuration;
+- any number of bindings can reference one immutable configuration without copying its terms into SQL;
+- a binding cannot be reused for another payer, reference, currency or Stripe intent;
+- a later current-rate change does not affect an existing binding;
 - preview/configuration-ID races fail before Stripe calls;
 - all four money paths charge gross plus commission and transfer/release gross;
 - transaction, Stripe metadata and ledger values reconcile;
@@ -469,7 +477,7 @@ Tests use a representative rate; they do not set the production launch rate.
 - the temporary £10 model and generic multi-mode policy proposal are absent;
 - all four B2B deal types calculate one final payee gross through deal-owned pure logic;
 - Payment applies one authoritative universal percentage to that gross;
-- each rate revision exists once as an immutable Payment configuration and authorizations reference it;
+- each rate revision exists once as an immutable Payment configuration and bindings reference it;
 - every delayed commitment retains its historically bound configuration;
 - unaccepted applications receive the current rate while accepted bookings retain their bound rate;
 - payer, payee and deferred-review surfaces disclose the required formula or exact amounts;
