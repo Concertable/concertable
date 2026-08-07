@@ -5,7 +5,7 @@
 - Branch: `Feature/typed-result_customer-outcomes`
 - PR: not opened
 - Dependency/package gates: owned Kernel foundation PR #290 and platform sync #291 are shipped; no Payment/B2B package dependency; platform-sync PR #373 shipped `0.1.0-alpha.0.814` green in merge commit `9169107c0`; PR #282 remains the exclusive open owner of Ticket/Concert/Customer Payment work and is not a dependency; platform-sync PR #420 is open with a failed build and blocks PR preflight until its owning worktree restores it to green
-- Last reconciled: 2026-08-07T22:28:04+01:00 from `origin/main` `b66325acd`, local refs/worktrees, branch head `312400220`, incremental review `de2b8c163..312400220`, the review artifact, and platform-sync PR #420
+- Last reconciled: 2026-08-07T22:34:02+01:00 from local branch head `ca3b99419`, the verified CV3 candidate tree, and the review artifact
 
 ## Current state
 
@@ -71,14 +71,14 @@ new or changed Customer integration assertions to Shouldly; the five affected pr
 definition switch expressions while retaining the merged Match, abstract, and exhaustive-switch
 definition shapes. Shared.Api passes 56/56 and the Release solution build has 0 errors. Incremental
 review `de2b8c163..312400220` found `CV3`: the guard still accepts exhaustive `var _` and named
-`var` arms, so the review artifact remains live.
+`var` arms. `CV3` is fixed in this commit by recognizing both forms only within the bounded
+definition switch; Shared.Api passes 60/60 and the Release solution builds with 0 errors and 7
+existing warnings. The review artifact remains live for the required clean incremental pass.
 
 ## Next Steps
 
-Fix `CV3` in its own review-finding commit by rejecting exhaustive `var` arms within the bounded
-Dunet definition switch and covering discard and named forms. Run Shared.Api Release tests and the
-Release solution build, then rerun `/incremental-review` from watermark `312400220`. Resolve any new
-finding through the same serial loop. When every finding is fixed and the current-main gate is green,
+Run `/incremental-review` from watermark `312400220` over the committed CV3 fix. Resolve any new
+finding through the same serial loop. When the incremental pass is clean and the current-main gate is green,
 wait for platform-sync PR #420 to become green, execute `/pr-preflight`, use the plan-managed two-leg
 push protocol, and open the authorized GitHub PR with the full merge-queue E2E tier and no skip label.
 Keep this plan and ledger live through PR, merge, publication, and platform sync.
@@ -108,6 +108,8 @@ Keep this plan and ledger live through PR, merge, publication, and platform sync
   definition-shape guard.
 - Incrementally reviewed `de2b8c163..312400220` across 91 commits; the current-main merge is
   unchanged from `origin/main` outside its resolved Shared.Api guard conflict, and `CV3` is open.
+- Fixed `CV3` in this commit by rejecting discard and named `var` catch-all arms only within the
+  bounded Dunet definition switch, with focused unrelated-switch coverage.
 
 ## Verification
 
@@ -246,13 +248,18 @@ Keep this plan and ledger live through PR, merge, publication, and platform sync
   discard/default-arm, and unrelated-switch coverage.
 - `dotnet build api/Concertable.slnx --configuration Release` succeeded for the `CV2` candidate with
   0 errors and 7 existing warnings.
+- `CV3` Shared.Api Release verification passed 60/60, including bounded `var _` and named `var`
+  rejection plus unrelated-switch acceptance.
+- `dotnet build api/Concertable.slnx --configuration Release` succeeded for the `CV3` candidate with
+  0 errors and 7 existing warnings.
 
 ## Reviews
 
 Full code review `06071872b..de2b8c163` produced
 `reviews/Feature-typed-result_customer-outcomes.md`. `CV1` is fixed in `3ab6604c4`; `CV2` is fixed in
 `312400220`. Incremental review `de2b8c163..312400220` covered 91 commits and found `CV3` open:
-the definition-switch guard still accepts exhaustive `var` arms.
+the definition-switch guard still accepted exhaustive `var` arms. `CV3` is fixed in this commit;
+the review artifact remains for the clean incremental pass from watermark `312400220`.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -503,6 +510,17 @@ the definition-switch guard still accepts exhaustive `var` arms.
   is advanced to `312400220`. No other high-confidence finding survived the review.
 - Follow-up: Fix `CV3` in its own commit, verify Shared.Api and the Release solution, then
   incrementally review from `312400220`.
+
+### 2026-08-07 - review finding CV3 fixed
+
+- Action: Extended the bounded Shared.Api definition-switch scanner to reject discard and named
+  `var` catch-all arms and added focused rejection plus unrelated-switch acceptance coverage.
+- Evidence: `CV3` is fixed in `reviews/Feature-typed-result_customer-outcomes.md` by this commit;
+  Shared.Api Release tests passed 60/60, the Release solution built with 0 errors and 7 existing
+  warnings, and `git diff --check` is clean.
+- Outcome: `CV3` is fixed and verified in its own unpushed commit. The review artifact remains for
+  the required clean incremental review.
+- Follow-up: Run the incremental review gate from watermark `312400220`.
 
 ## Resume prompt
 

@@ -22,7 +22,7 @@
 
 > Range reviewed: `de2b8c163..312400220` (91 commits).
 
-- [ ] **CV3 - MEDIUM - C# conventions** - `api/Concertable.Shared/tests/Concertable.Shared.Api.UnitTests/TypedResultArchitectureTests.cs:388`
+- [x] **CV3 - MEDIUM - C# conventions** - `api/Concertable.Shared/tests/Concertable.Shared.Api.UnitTests/TypedResultArchitectureTests.cs:388`
   `DefinitionSwitchCatchAllArmPattern` rejects literal `_` but accepts valid exhaustive `var _ =>`
   and `var ignored =>` arms, so a Dunet definition switch can still bypass the closed-case
   exhaustiveness rule in `api/agents/CODE_CONVENTIONS.md`. Reject catch-all `var` patterns within
