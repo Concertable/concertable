@@ -146,6 +146,14 @@ Rules of the shape:
 - **Discard-tuple calls.** `var (thing, _) = await GetPairAsync(...)` means the API is the wrong
   shape for the caller — add the single-value method to the interface instead.
 
+## Dependency injection
+
+- **Our services:** register the interface and implementation in the owning composition-root extension;
+  use constructor injection. Don't use `IServiceProvider` or factory lambdas for an ordinary dependency graph.
+- **Third-party SDKs:** use the vendor's DI extension or root client when available; otherwise directly
+  register only consumed service types. Keep them behind Infrastructure adapters — never rebuild the
+  vendor's service graph with `IServiceProvider` factory lambdas.
+
 ## Dependency-holders — public get-only auto-properties, not mirrored fields
 
 When a type's whole job is to **surface its injected dependencies as public members** of an interface
