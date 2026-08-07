@@ -15,5 +15,5 @@
 - [x] **CV1 — LOW — C# conventions** — `api/Concertable.Customer/src/Modules/Preference/Tests/Concertable.Customer.Preference.IntegrationTests/PreferenceApiTests.cs:44`
   New and changed Customer integration assertions use xUnit `Assert.*`; `api/agents/INTEGRATION_CONVENTIONS.md` requires integration assertions to use Shouldly. Convert the added assertions across the Review, Preference, User, Venue, and Artist integration tests to Shouldly.
 
-- [ ] **CV2 — MEDIUM — C# conventions** — `api/Concertable.Shared/tests/Concertable.Shared.Api.UnitTests/TypedResultArchitectureTests.cs:200`
+- [x] **CV2 — MEDIUM — C# conventions** — `api/Concertable.Shared/tests/Concertable.Shared.Api.UnitTests/TypedResultArchitectureTests.cs:200`
   `DunetUnionDefinitions_UseExhaustiveSwitch` only checks for `Definition => this switch`, so a discard/default arm passes even though `api/agents/CODE_CONVENTIONS.md` forbids it because it defeats closed-case exhaustiveness. Extend the architecture guard to reject discard/default arms in Dunet `IError` definition switches.

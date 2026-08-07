@@ -5,7 +5,7 @@
 - Branch: `Feature/typed-result_customer-outcomes`
 - PR: not opened
 - Dependency/package gates: owned Kernel foundation PR #290 and platform sync #291 are shipped; no Payment/B2B package dependency; platform-sync PR #373 shipped `0.1.0-alpha.0.814` green in merge commit `9169107c0`; PR #282 remains the exclusive open owner of Ticket/Concert/Customer Payment work and is not a dependency; platform-sync PR #420 is open with a failed build and blocks PR preflight until its owning worktree restores it to green
-- Last reconciled: 2026-08-07T22:05:41+01:00 from `origin/main` `b66325acd`, local refs/worktrees, pre-fix branch head `04930a438`, the verified `CV1` fix carried by this commit, review checkpoint `23461784c`, current-main merge `fc9f69407`, review artifact, and platform-sync PR #420
+- Last reconciled: 2026-08-07T22:18:38+01:00 from `origin/main` `b66325acd`, local refs/worktrees, pre-fix branch head `3ab6604c4`, the verified `CV2` fix carried by this commit, review checkpoint `23461784c`, current-main merge `fc9f69407`, review artifact, and platform-sync PR #420
 
 ## Current state
 
@@ -65,21 +65,21 @@ nullable/list/carrier, ownership, package, model/migration/event, comment, and `
 inventories are clean.
 
 Full code review `06071872b..de2b8c163` is recorded in
-`reviews/Feature-typed-result_customer-outcomes.md`. `CV1` is fixed in this commit by moving all 33
+`reviews/Feature-typed-result_customer-outcomes.md`. `CV1` is fixed in `3ab6604c4` by moving all 33
 new or changed Customer integration assertions to Shouldly; the five affected projects pass 29/29.
-`CV2` remains open to make the Dunet definition architecture guard reject discard/default arms. The
-review and ledger checkpoint is committed as `23461784c`; `origin/main` `b66325acd` is merged as
-`fc9f69407`, including the overlapping Shared.Api guard without weakening either branch.
+`CV2` is fixed in this commit by rejecting discard/default arms only within Dunet definition switch
+expressions while retaining the merged Match, abstract, and exhaustive-switch definition shapes.
+Shared.Api passes 56/56 and the Release solution build has 0 errors. Incremental review remains
+outstanding before the review artifact can be removed.
 
 ## Next Steps
 
-Fix `CV2` in its own review-finding commit, run the affected Shared.Api tests and Release solution
-build, then run `/incremental-review` from watermark `de2b8c163`. Resolve any new finding through the
-same serial loop. When every finding is fixed, the review artifact is removed, and the current-main
-gate is green, wait for platform-sync PR #420 to become green, execute `/pr-preflight`, use the
-plan-managed two-leg push protocol, and open the authorized GitHub PR with the full merge-queue E2E
-tier and no skip label. Keep this plan and ledger live through PR, merge, publication, and platform
-sync.
+Run `/incremental-review` from watermark `de2b8c163` over the committed `CV1` and `CV2` fixes while
+the review artifact still exists. Resolve any new finding through the same serial loop. When every
+finding is fixed, the review artifact is removed, and the current-main gate is green, wait for
+platform-sync PR #420 to become green, execute `/pr-preflight`, use the plan-managed two-leg push
+protocol, and open the authorized GitHub PR with the full merge-queue E2E tier and no skip label.
+Keep this plan and ledger live through PR, merge, publication, and platform sync.
 
 ## Completed work
 
@@ -102,6 +102,8 @@ sync.
   in this commit.
 - Committed the Phase 5 execution and full-review checkpoint as `23461784c`, then merged current
   `origin/main` `b66325acd` as `fc9f69407` while preserving both branches' Shared.Api guards.
+- Fixed `CV1` in `3ab6604c4` and fixed `CV2` in this commit without weakening the merged Shared.Api
+  definition-shape guard.
 
 ## Verification
 
@@ -236,11 +238,16 @@ sync.
   single-item nullability in repository contracts, use successful empty `IReadOnlyList` query returns,
   construct every Dunet case directly, and find no typed-slice HTTP exception. The Customer package
   diff adds Dunet only and leaves the existing FluentResults pin unchanged; `git diff --check` passed.
+- `CV2` Shared.Api Release verification passed 56/56, including focused accepted-shape,
+  discard/default-arm, and unrelated-switch coverage.
+- `dotnet build api/Concertable.slnx --configuration Release` succeeded for the `CV2` candidate with
+  0 errors and 7 existing warnings.
 
 ## Reviews
 
-No implementation review has run. The completed plan is based on direct repository and PR evidence;
-Phase 5 requires `/code-review` before delivery.
+Full code review `06071872b..de2b8c163` produced
+`reviews/Feature-typed-result_customer-outcomes.md`. `CV1` is fixed in `3ab6604c4`; `CV2` is fixed in
+this commit. Incremental review over both fix commits remains required before delivery.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -466,6 +473,18 @@ Phase 5 requires `/code-review` before delivery.
 - Outcome: `CV1` is fixed and verified in its own unpushed commit. `CV2` remains open, so the review
   artifact and plan lifecycle stay live.
 - Follow-up: Fix and verify `CV2` in its own commit, then run the incremental review gate.
+
+### 2026-08-07 - review finding CV2 fixed
+
+- Action: Extended the Shared.Api Dunet definition guard to reject discard/default arms inside
+  definition switches while retaining the merged Match, abstract, and exhaustive-switch shapes; added
+  focused scanner coverage.
+- Evidence: `CV2` is fixed in `reviews/Feature-typed-result_customer-outcomes.md` by this commit;
+  Shared.Api Release tests passed 56/56, the Release solution built with 0 errors and 7 existing
+  warnings, and `git diff --check` is clean.
+- Outcome: `CV2` is fixed and verified in its own unpushed commit. Both original findings are fixed;
+  the review artifact remains for the required incremental review.
+- Follow-up: Run the incremental review gate over the committed `CV1` and `CV2` fixes.
 
 ## Resume prompt
 
