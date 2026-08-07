@@ -29,24 +29,24 @@ and Venue 25/25. The migration exposed two stale transport assertions: polymorph
 now preserve their declared interface metadata, and revoked invitation acceptance asserts the typed
 `InvitationNotPending` Conflict contract.
 
-Checkpoint 6 remains blocked on the canonical Payment owner, `Feature/PaymentOwnedResultExpansion`
-(PR #392). The published Payment client at platform `0.1.0-alpha.0.847` still exposes the legacy
-FluentResults surface; no adapter, string bridge, or local source dependency was introduced.
+Checkpoint 6 remains blocked. Payment implementation PR #392 merged as
+`b66325acdee7979bb3771e4c28248364b769d402` and published platform `0.1.0-alpha.0.853`, but generated
+platform-sync PR #420 is red at its build check. B2B remains pinned to `0.1.0-alpha.0.847`; no adapter,
+string bridge, or local source dependency was introduced.
 
 ## Next Steps
 
-Checkpoints 1-5 remain shipped. Checkpoints 6-7 are blocked on the canonical Payment owner,
-`Feature/PaymentOwnedResultExpansion`, whose ledger is
+Checkpoints 1-5 remain shipped. Payment PR #392 has merged and published, but checkpoints 6-7 remain
+blocked on its red generated platform-sync PR #420. The canonical Payment owner ledger is
 `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\PaymentOwnedResultExpansion\plans\TYPED_RESULT_MIGRATION_PAYMENT_PROGRESS.md`.
-PR #392 is the implementation owner. Nothing can proceed here until it merges, publishes
-`Concertable.Payment.Client`, and completes its generated
-platform-sync PR with a green result.
+Nothing can proceed here until the Payment delivery session repairs #420 and it lands green.
 The Payment owner ledger lists this B2B ledger under `## Downstream handoffs`. Do not poll the
 dependency or emit this plan's resume prompt while blocked; the Payment delivery session must update
 this ledger and surface its exact prompt when ready.
 
-When the Payment owner surfaces that the package gate is open: fetch and merge current `origin/main`
-in this worktree, verify the pinned `Concertable.Payment.Client` exposes the owned typed Result surface,
+When the Payment owner surfaces that #420 is green and merged: fetch and merge current `origin/main`
+in this worktree, verify the `0.1.0-alpha.0.853` or newer pinned `Concertable.Payment.Client` exposes
+the owned typed Result surface,
 then implement checkpoint 6 (Concert payment/cancel/finish workflows) and checkpoint 7 (FluentResults
 removal from the migrated B2B projects). Do not create a FluentResults adapter, string bridge, or local
 source dependency to cross the gate. Run the normal build, unit, architecture, and integration gates
@@ -87,9 +87,9 @@ needs diagnosis.
 ## Verification
 
 - `dotnet build api/Concertable.B2B/Concertable.B2B.slnx --configuration Release`: succeeded,
-  0 errors (3 pre-existing warnings).
+  0 errors (1 pre-existing nullable warning).
 - `dotnet build api/Concertable.slnx --configuration Release`: succeeded, 0 errors against platform
-  `0.1.0-alpha.0.847` (7 pre-existing/generated nullable warnings).
+  `0.1.0-alpha.0.847` (8 pre-existing/generated warnings).
 - B2B architecture tests: 6 passed, 0 failed.
 - Error contract/unit suites: Artist 4/4, Venue 5/5, User 1/1, Deal 22/22, Tenant 117/117,
   Concert 121/121; 70/70 explicit error cases are covered.
@@ -97,11 +97,11 @@ needs diagnosis.
 - Error-source audit: 33 unions, 70 cases, zero missing union attributes, zero enabled implicit
   conversions, zero legacy catalogs/factories/per-case definitions, and zero comments in error files.
 - B2B API source audit: zero `.OrFailure(` calls and zero `TimeProvider` dependencies in `*.Api`.
-- Shared API unit tests: 50 passed; the single remaining architecture failure is the pre-existing
+- Shared API unit tests: 52 passed; the single remaining architecture failure is the pre-existing
   typed-Result/HTTP-exception guard, whose genuine B2B hit is the checkpoint-6 lifecycle bridge blocked
   on Payment. The new exhaustive-switch and disabled-implicit-conversion guards pass.
-- Payment gate: blocked; platform `0.1.0-alpha.0.847` still exposes FluentResults from
-  `Concertable.Payment.Client`.
+- Payment gate: implementation PR #392 merged and published `0.1.0-alpha.0.853`; generated
+  platform-sync PR #420 is red at `build`, so B2B remains pinned to `0.1.0-alpha.0.847` and blocked.
 - Docker health: fresh-container host-to-container HTTP data round-trip passed.
 - B2B integration suite: Artist 17/17, Concert 148/148, Tenant 56/56, User 3/3, Venue 25/25;
   249/249 effective passes. Tenant's first complete run was 55/56 because one stale HTTP assertion
@@ -143,7 +143,7 @@ needs diagnosis.
   errors; architecture is 6/6; affected unit suites are green; Docker health passed; all five B2B
   integration projects account for 249/249 effective passes.
 - Outcome: the Payment-independent work is current, convention-complete, and locally verified.
-  Checkpoints 6-7 remain blocked on Payment PR #392 publication and green platform sync.
+  Payment PR #392 merged during verification, but checkpoints 6-7 remain blocked on red sync PR #420.
 - Follow-up: the Payment delivery session must discharge the registered downstream handoff; do not
   poll or begin the blocked workflows locally.
 

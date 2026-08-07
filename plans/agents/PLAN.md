@@ -119,7 +119,7 @@ cited inside a plan (see [`ROADMAP.md`](ROADMAP.md)).
 
 ## Lifecycle
 
-1. **Write it** when the work spans multiple commits/PRs or needs a design decided up front, and create its `_PROGRESS.md` companion at the same time.
+1. **Write it** when the work spans multiple commits/PRs or needs a design decided up front. Before creating its ledger/worktree, check existing branches, worktrees, PRs, and ledgers for the same work, then assign each phase exactly one canonical ledger/worktree/branch; never create a second implementation owner.
 2. **Branch, then work a phase** — on the plan's `Feature/<Name>` branch (see the hub's "Branch first"), land the phase's commit(s).
 3. **Check off / strike the shipped phase in the plan and update the progress ledger, in the same commit as the work.** A
    partially-done plan stays; only the outstanding work should remain un-ticked, so the next reader

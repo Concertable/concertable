@@ -12,9 +12,10 @@ payloads and terminate typed Results.
 ## Checkpoints
 
 Checkpoints 1–5 are Payment-independent and shipped on the branch. Checkpoints 6–7 consume the
-published typed Payment client and are **blocked** until the Payment owned-result expansion (PR #392)
-merges, Payment publishes, and its platform-sync PR lands green — no FluentResults adapter, string
-bridge, or local source dependency may be introduced to cross that gate.
+published typed Payment client and are **blocked** until generated platform-sync PR #420 is repaired
+and lands green — no FluentResults adapter, string bridge, or local source dependency may be
+introduced to cross that gate. Payment implementation PR #392 has merged and published version
+`0.1.0-alpha.0.853`, but the red sync means B2B cannot consume it yet.
 
 - [x] **Checkpoint 1 — Deal.** Deal module outcomes → owned Results; operation errors use explicit
   Dunet cases with disabled implicit conversions and one exhaustive root `Definition` switch;
@@ -71,4 +72,5 @@ bridge, or local source dependency may be introduced to cross that gate.
 ## Dependency gate
 
 Checkpoints 6–7 must not begin on a red platform pin or before the Payment owned-result client is
-published and platform-synced green (owned by PR #296). Do not bridge the package gate.
+published and platform-synced green. Payment PR #392 is merged; generated platform-sync PR #420 owns
+the remaining red gate. Do not bridge the package gate.

@@ -39,6 +39,14 @@ public sealed class VatPolicyTests
 }
 ```
 
+## Architecture-guard allowlists
+
+A repo-wide guard (e.g. an arch test that scans every source file) sometimes needs a temporary
+allowlist for files mid-migration. Express the allowlist as a **`public static TheoryData<>`** feeding
+a self-verifying `[Theory]` that asserts each allowlisted item **still** violates the rule — so a stale
+entry fails the theory and forces its removal. The guard `[Fact]` excludes that same `TheoryData` (one
+source of truth). Never a silently-suppressing exclusion list that can rot.
+
 ## Naming
 
 `Method_Scenario_ExpectedBehaviour` — `Apply_RegisteredSupplier_DecomposesInclusiveGross`,
