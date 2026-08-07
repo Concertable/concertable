@@ -5,19 +5,20 @@
 - Branch: `Feature/launch_tenant-config-surface`
 - PR: not opened
 - Dependency/package gates: no implementation dependency; full merge-queue E2E and post-merge platform sync required
-- Last reconciled: 2026-08-06 against branch `Feature/launch_tenant-config-surface` after merging current `origin/main`
+- Last reconciled: 2026-08-07 against branch `Feature/launch_tenant-config-surface` at `696adad2b`; no PR exists and the clean branch is 59 commits behind `origin/main`
 
 ## Current state
 
-Both implementation phases are committed and the branch is current with `origin/main`, including the
-landed money-value refactor. The Tenant aggregate and Organization surface own the nullable overrides
-and platform-default fallback; Concert consumes effective values for PRS, supplier VAT, supplier
-payment terms, and venue cancellation notice.
+Both implementation phases are committed. The Tenant aggregate and Organization surface own the
+nullable overrides and platform-default fallback; Concert consumes effective values for PRS,
+supplier VAT, supplier payment terms, and venue cancellation notice. The clean branch has no PR and
+must be synchronized because it is 59 commits behind current `origin/main`.
 
 ## Next Steps
 
-Run the repository code-review workflow against the committed branch and address any clear findings.
-Then open the PR with full merge-queue E2E and own the post-merge platform-sync gate.
+Merge current `origin/main` into the clean feature branch, reconcile any conflicts, and rerun the
+affected build and test gates. Then run the repository code-review workflow, address every clear
+finding, open the PR with full merge-queue E2E, and own the post-merge platform-sync gate.
 
 ## Completed work
 
@@ -133,6 +134,16 @@ Then open the PR with full merge-queue E2E and own the post-merge platform-sync 
   control plane timed out; the earlier B2B Concert integration result is 146/146 green.
 - Follow-up: run the formal branch review before PR delivery; full E2E remains required in the merge
   queue.
+
+### 2026-08-07 — resume reconciliation found stale base
+
+- Action: fetched origin and reconciled the ledger against the feature worktree, branch, working tree,
+  other worktrees, and GitHub PR state before starting the formal review.
+- Evidence: `HEAD` is `696adad2b`; the working tree is clean; no PR exists; `git rev-list --count
+  HEAD..origin/main` returned 59.
+- Outcome: the implementation remains committed on the correct isolated feature branch, but the
+  recorded current-base claim is stale and review is blocked until the branch is synchronized.
+- Follow-up: merge current `origin/main`, revalidate the affected gates, then run the formal review.
 
 ## Resume prompt
 
