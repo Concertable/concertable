@@ -89,13 +89,14 @@ the full Release API solution build 0 errors (seven existing warnings outside Pa
 SQL integration 8/8 after the repository Docker data-round-trip preflight passed. The merge and
 error-convention changes are committed locally and the incremental review through `842b9c332` found
 no issues. Current `origin/main` at `b46d10ec8` is merged locally as `17c8bb2b3`; the post-merge
-verification and incremental review are pending. PR #392 has not been updated or enqueued.
+verification is green: full Release solution build 0 errors, Payment unit 222/222, and Payment SQL
+integration 8/8 on a healthy Docker data path. The incremental review is pending. PR #392 has not
+been updated or enqueued.
 
 ## Next Steps
 
-Rebuild `api/Concertable.slnx` in Release, rerun Payment unit and SQL integration tests, and
-incrementally review the current-main merge. If green and review-clean, continue the `merge`
-workflow for PR #392: push the verified compound head, apply
+Incrementally review the current-main merge and verification checkpoint. If review-clean, continue
+the `merge` workflow for PR #392: push the verified compound head, apply
 `full-e2e` because historical commits contain `Skip-E2E: true` trailers, enqueue, and follow the merge
 to a terminal state. After merge, own package publication and the generated breaking platform-sync PR
 through green, update the waiting B2B ledger, and close frozen donor PR #296 only after the canonical
@@ -145,6 +146,9 @@ closing donor PR #296 remain later explicit delivery steps; PR #392 must run ful
   existing warnings outside Payment; `git diff --check` clean; no `FromCode`,
   static error catalog, or per-case `Definition` override remains in Payment; the repository Docker
   data-round-trip preflight passed and Payment SQL integration passed 8/8.
+- Final current-main gate after `b46d10ec8`: full Release API solution build 0 errors with seven
+  existing warnings outside Payment; Payment unit 222/222; repository Docker data-round-trip
+  preflight healthy; Payment SQL integration 8/8.
 
 ## Reviews
 
@@ -236,6 +240,16 @@ Clean: escrow `Result<Option<T>,E>` semantics, rounding/VAT/refund math, wire hy
   commission-branch implementation is donor evidence only; its behavior is now reconciled here.
 
 ## Event log
+
+### 2026-08-07 - Passed the final current-main verification gate
+
+- Action: Rebuilt the full Release API solution after merging `b46d10ec8`, reran Payment unit tests,
+  passed the repository Docker data-round-trip preflight, and reran Payment SQL integration.
+- Evidence: Full solution build 0 errors with seven existing warnings outside Payment; Payment unit
+  222/222; Payment SQL integration 8/8.
+- Outcome: The current local branch is fully verified; only the incremental review remains before
+  the authorized compound push.
+- Follow-up: Execute the review-and-delivery action in `## Next Steps`.
 
 ### 2026-08-07 - Merged the final current-main update before delivery
 
