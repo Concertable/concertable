@@ -101,14 +101,16 @@ definition shape used by all ten Payment unions. The guard now recognizes that d
 Shared.Api unit tests pass 52/52 and the full Release solution builds with 0 errors.
 Incremental review through `2e120cb40` confirms CI2 fixed with no additional findings.
 Replacement work head `40695a4b3` is verified across local, remote-tracking, and PR #392 heads;
-replacement checks are running and `full-e2e` remains applied.
+checkpoint-transport head `a40761eba` is verified across all three heads. Replacement run
+`31208576213` is terminal green across build, carves, unit, and integration checks; `full-e2e`
+remains applied and queue-only E2E correctly skipped at PR level.
 
 ## Next Steps
 
-Wait for the exact replacement PR head's checks to reach terminal green, then
-checks, enqueue, and follow the merge to a terminal state. After merge, own package publication and
-the generated breaking platform-sync PR through green, update the waiting B2B ledger, and close
-frozen donor PR #296 only after the canonical package gate is complete.
+Verify PR #392 still points to remote head `a40761eba`, then enqueue it with merge-queue auto-merge.
+Preserve `full-e2e` and follow the queue's API and UI E2E to a terminal result. After merge, own
+package publication and the generated breaking platform-sync PR through green, update the waiting
+B2B ledger, and close frozen donor PR #296 only after the canonical package gate is complete.
 
 Merge, publication, the breaking B2B/Customer platform-sync migration, downstream handoff, and
 closing donor PR #296 remain later explicit delivery steps; PR #392 must run full merge-queue E2E.
@@ -268,6 +270,15 @@ Clean: escrow `Result<Option<T>,E>` semantics, rounding/VAT/refund math, wire hy
   commission-branch implementation is donor evidence only; its behavior is now reconciled here.
 
 ## Event log
+
+### 2026-08-07 - Replacement PR checks passed green
+
+- Action: Followed replacement run `31208576213` to a terminal result on exact PR head
+  `a40761eba`.
+- Evidence: Build, every backend/frontend carve, every unit project, and every integration project
+  passed; PR-level API/UI E2E skipped as designed; PR is open/CLEAN with `[full-e2e]`.
+- Outcome: PR #392 is ready for merge-queue admission on its unchanged verified remote head.
+- Follow-up: Execute the queue-admission action in `## Next Steps`.
 
 ### 2026-08-07 - Pushed the verified PR-check fix
 
