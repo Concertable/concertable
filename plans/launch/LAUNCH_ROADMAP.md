@@ -26,7 +26,7 @@
 - [x] ✅ **`holdsMusicLicence` attestation** on `Tenant.Compliance` — shipped (`Feature/launch_music-licence-attestation`): one `bool` on the shipped `TaxCompliance` VO, threaded through the org read/update DTO + mapper and the b2b/shared Org setup form (new "Music licence" checkbox). Record-only — the venue's responsibility; no verification, no payout/booking gate.
 - [x] ✅ **Swim-lane B complete** — membership/invitation endpoints + auth sweep + messaging group-inbox (USER_MODEL_PLAN Phases 6-8, all shipped; plan deleted). **Phase 6** (`Feature/TenantInvitationsFrontend`): invitation endpoints + last-Owner invariants + provisioning invitation-first branch + member-management UI + tenant switcher + UI E2E. **Phase 8** (`Feature/MessagingGroupInbox` + `Feature/MessagingGroupInboxPhase2`): tenant-owned conversations, per-member read pointer, member SignalR + email fan-out, org-identity/member-attribution DTO + group-inbox SPA, new Conversations unit/integration + UI E2E. **Phase 7** (`Feature/RetireRoleClaim`): retired the flat `Role` enum, manager-profile tables, and the `role` token claim — B2B tokens are identity-only; `/me` collapsed to one membership-shaped DTO; guards/persona derive from tenant memberships.
 - [x] ✅ **Per-contract-type VAT calculation** — shipped (`Feature/VatAndSelfBilledInvoicing`): inclusive-gross decomposition branching on supply direction + supplier VAT-registration status, in the Tenant tax area, consumed by Concert via `ITenantModule` (items 1, 3).
-- [ ] 🟠 **Percentage commission + B2B pricing transparency** — Payment Phase 1 is implemented and verified: immutable percentage revisions, Payment-issued authorizations, authorization-aware money RPCs, and durable transaction/refund/tax/ledger facts. Merge, package publication, Payment runtime deployment and platform sync remain the hard gate before B2B adds the four gross strategies and payer disclosure in Phase 2; the temporary £10 seam is removed only in Phase 3. See [PLATFORM_COMMISSION_PLAN.md](PLATFORM_COMMISSION_PLAN.md).
+- [ ] 🟠 **Percentage commission + B2B pricing transparency** — Payment Phase 1 is merged, published and synced: immutable percentage revisions, Payment-issued bindings, binding-aware money RPCs, and durable transaction/refund/tax/ledger facts. Phase 1b now removes caller-supplied commission and total from post-binding actions so B2B retains only the binding ID and frozen gross; its package publication, Payment deployment and platform sync are the hard gate before the four gross strategies and payer disclosure in Phase 2. The temporary £10 seam is removed only in Phase 3. See [PLATFORM_COMMISSION_PLAN.md](PLATFORM_COMMISSION_PLAN.md).
 - [ ] 🔴 **Production deployment + config/secrets** — the app has **no** deployment path, config store, or secret store (all local Aspire + emulators; secrets committed to source, incl. a plaintext Azure SQL password). Surfaced 2026-07-17. Hard launch gate. Plan: [../CONFIG_AND_DEPLOYMENT_PLAN.md](../platform/CONFIG_AND_DEPLOYMENT_PLAN.md).
 
 **Verify before trusting — competitor table-stakes, not confirmed in code:** reviews/reputation end-to-end · calendar sync (Google/Apple/Outlook) · financial/settlement CSV export.
@@ -102,7 +102,7 @@ Dependencies that constrain the order:
 
 ```
 Percentage commission decision (Month 1)
-    └─→ Payment authorization package → platform sync → B2B gross calculators + pricing transparency (Month 3)
+    └─→ Payment binding package → platform sync → B2B gross calculators + pricing transparency (Month 3)
     └─→ Solicitor T&Cs drafting (Month 1-4)
             └─→ Privacy + T&Cs page routes (Month 4)
             └─→ Cookie banner final text (Month 4)
@@ -140,7 +140,7 @@ Stripe production approval (~2-4 weeks elapsed)
 | ✅ Self-billed VAT invoice generation per settlement (sequential numbering, HMRC fields, PDF) — item 4 · self-billing *agreement* + renewal still outstanding | 2-3 days | VAT calculation, agreement PDF plumbing | done |
 | ✅ Cookie consent banner on all four web SPAs (customer/venue/artist/business) — scaffolding, placeholder copy | 1-2 days | – (scaffolding can land before solicitor text) | done |
 | Cookie banner text + privacy policy text from solicitor → wired into banner | 0.5 days | Solicitor draft (Month 4) | Month 4 |
-| Percentage commission + pricing transparency at payer commitment (exact checkout + deferred settlement review) | 3 phases | Payment authorization package + platform sync | Month 3 |
+| Percentage commission + pricing transparency at payer commitment (exact checkout + deferred settlement review) | 3 phases | Payment binding package + platform sync | Month 3 |
 | Privacy + T&Cs page routes (footer of every page) | 1 day | Solicitor draft | Month 4 |
 | Venue legal details on emails (booking confirmation, invoices) | 1 day | Phase 5 (setup UI captures legal name) | Month 4 |
 | Refund / cancellation matrix codification in `Cancelled` workflow | 3-5 days | Cancellation policy text from solicitor | Month 5 |
@@ -156,7 +156,7 @@ Stripe production approval (~2-4 weeks elapsed)
 | R1 | Tenancy refactor takes longer than 24 days (EF nested owned-types surprises, migration-script issues) | Medium | High | Phase 0 scaffolding has explicit go/no-go assessment at the end. If it took >3 days, recalibrate timeline before continuing. |
 | R2 | Solicitor T&Cs drafting takes longer than 4 weeks | Medium | High | Brief solicitor in Month 1, not Month 3. Keep a parallel "draft v1" using a quality T&Cs template as backup. |
 | R3 | Stripe production approval delayed (Stripe asks for more info / rejects) | Medium | High | Submit application Month 3, not Month 5. Have ICO fee + insurance + company info ready as supporting docs. |
-| R4 | Pricing shown by B2B drifts from Payment's live fee before delayed settlement | Medium | High | Bind a Payment-issued authorization to an immutable Payment configuration revision and require that authorization on the eventual charge; never duplicate live fee config in B2B. |
+| R4 | Pricing shown by B2B drifts from Payment's live fee before delayed settlement | Medium | High | Require a Payment-issued binding to an immutable Payment configuration revision on the eventual charge; never duplicate live fee config in B2B. |
 | R5 | Beta cohort hard to recruit (no organic demand pre-launch) | Medium | Medium | Start recruitment Month 4 not Month 6. Hand-pick first 10 venues + 50 artists via warm intros, not open signups. |
 | R6 | Phase 6 auth sweep introduces regressions across 25+ controllers | Medium | Medium | Test coverage assessment in Month 4. If integration test coverage is <60%, write tests first or split Phase 6 into smaller PRs. |
 | R7 | DAC7 schema changes between now and first export (Jan 2028) | Low | Low | Defer DAC7 export *implementation* if HMRC publishes schema updates; keep onboarding field collection on-spec. |

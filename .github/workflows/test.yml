@@ -521,8 +521,7 @@ jobs:
     # (masked in-monorepo by workspace hoisting) fails at install; a build that only resolves via the
     # monorepo-root workspace fails standalone. scripts/carve-fe.mjs archives the surface, repoints its
     # intra-@concertable deps at the alpha feed tag, restores from the feed only, and builds it (web:
-    # vite build; mobile: tsc + expo export). The mobile surfaces join this matrix in a follow-up once
-    # @concertable/mobile republishes with its brand assets (the carve restores the tier from the feed).
+    # vite build; mobile: tsc + expo export).
     # Gated on run_fe so a BE-only PR never pays for the slow feed restores. Same git-archive technique
     # as the backend carves; no fetch-depth needed (archives HEAD).
     runs-on: ubuntu-latest
@@ -534,7 +533,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        surface: [web/customer, web/b2b/venue, web/b2b/artist, web/b2b/business]
+        surface: [web/customer, web/b2b/venue, web/b2b/artist, web/b2b/business, mobile/customer, mobile/b2b]
     env:
       GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
@@ -591,6 +590,7 @@ jobs:
     env:
       # B2B/Customer integration tests restore Payment.Client/Contracts, now feed packages; 401 without this.
       GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      TESTCONTAINERS_RYUK_DISABLED: "true"
 
     strategy:
       matrix:
