@@ -91,13 +91,14 @@ error-convention changes are committed locally and the incremental review throug
 no issues. Current `origin/main` at `b46d10ec8` is merged locally as `17c8bb2b3`; the post-merge
 verification is green: full Release solution build 0 errors, Payment unit 222/222, and Payment SQL
 integration 8/8 on a healthy Docker data path. The incremental review through `df76074c4` found no
-issues. PR #392 has not been updated or enqueued.
+issues. The verified work head `d6ab44540` is pushed: local, remote-tracking, and PR #392 heads match.
+PR checks are running; it has not been enqueued.
 
 ## Next Steps
 
-Continue the `merge` workflow for PR #392: push the verified compound head, apply
-`full-e2e` because historical commits contain `Skip-E2E: true` trailers, enqueue, and follow the merge
-to a terminal state. After merge, own package publication and the generated breaking platform-sync PR
+Wait for PR #392's checks to reach a green terminal state on the exact pushed head, apply `full-e2e`
+because historical commits contain `Skip-E2E: true` trailers, enqueue, and follow the merge to a
+terminal state. After merge, own package publication and the generated breaking platform-sync PR
 through green, update the waiting B2B ledger, and close frozen donor PR #296 only after the canonical
 package gate is complete.
 
@@ -246,6 +247,16 @@ Clean: escrow `Result<Option<T>,E>` semantics, rounding/VAT/refund math, wire hy
   commission-branch implementation is donor evidence only; its behavior is now reconciled here.
 
 ## Event log
+
+### 2026-08-07 - Pushed the verified compound Payment head
+
+- Action: Pushed the current, verified, review-clean branch head to PR #392.
+- Evidence: The starting remote/PR head was `bcac5261d`; 101 commits were pushed through work head
+  `d6ab44540`; local `HEAD`, `origin/Feature/PaymentOwnedResultExpansion`, and PR `headRefOid` all
+  matched `d6ab44540` after fetch.
+- Outcome: The canonical PR now carries the current Payment implementation and its complete local
+  delivery checkpoints. PR checks are running on the exact verified head.
+- Follow-up: Execute the check-and-queue action in `## Next Steps`.
 
 ### 2026-08-07 - Final current-main incremental review found no issues
 
