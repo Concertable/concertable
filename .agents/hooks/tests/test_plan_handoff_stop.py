@@ -7,7 +7,7 @@ from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from plan_handoff_stop import evaluate
+from plan_handoff_stop import evaluate, transcript_ledgers
 
 
 class PlanHandoffStopTests(unittest.TestCase):
@@ -61,6 +61,29 @@ class PlanHandoffStopTests(unittest.TestCase):
             encoding="utf-8",
         )
 
+    def write_plan_pair(self, root, next_steps, worktree, branch="Feature/launch_example"):
+        ledger = root / "plans" / "launch" / "EXAMPLE_PROGRESS.md"
+        plan = root / "plans" / "launch" / "EXAMPLE_PLAN.md"
+        plan.parent.mkdir(parents=True, exist_ok=True)
+        plan.write_text("# Plan\n", encoding="utf-8")
+        ledger.write_text(
+            "\n".join(
+                [
+                    "# Progress",
+                    "",
+                    f"- Worktree: `{worktree}`",
+                    f"- Branch: `{branch}`",
+                    "",
+                    "## Next Steps",
+                    "",
+                    next_steps,
+                    "",
+                ]
+            ),
+            encoding="utf-8",
+        )
+        return ledger.resolve()
+
     def input_with_codex_transcript(self, message):
         transcript = self.root / "transcript.jsonl"
         records = [
@@ -71,10 +94,11 @@ class PlanHandoffStopTests(unittest.TestCase):
                     "type": "custom_tool_call",
                     "name": "exec",
                     "input": (
-                        'const r = await tools.shell_command({command: "Get-Content '
-                        'plans\\launch\\EXAMPLE_PROGRESS.md", workdir: "'
+                        'const patch = "*** Begin Patch\\n*** Update File: '
+                        'plans\\launch\\EXAMPLE_PROGRESS.md\\n*** End Patch"; '
+                        'await tools.apply_patch(patch); const options = {workdir: "'
                         + str(self.root)
-                        + '"});'
+                        + '"};'
                     ),
                 },
             },
@@ -97,7 +121,7 @@ class PlanHandoffStopTests(unittest.TestCase):
                     "content": [
                         {
                             "type": "tool_use",
-                            "name": "Read",
+                            "name": "Edit",
                             "input": {"file_path": str(self.ledger)},
                         }
                     ],
@@ -217,6 +241,157 @@ class PlanHandoffStopTests(unittest.TestCase):
         self.write_ledger("Waiting for PR #123 to merge; its owner will surface this plan when ready.")
         result = evaluate(self.input_with_codex_transcript("Waiting for PR #123."))
         self.assertEqual({}, result)
+
+    def test_registered_downstream_wait_needs_no_pointer(self):
+        self.write_ledger(
+            "Checkpoints 6-7 remain blocked on the owner's platform-sync PR. The owner ledger lists "
+            "this ledger under `## Downstream handoffs`. Do not poll the dependency or emit this "
+            "plan's resume prompt while blocked; the owner must surface it when ready.\n\n"
+            "When the owner surfaces the green gate, implement checkpoints 6-7."
+        )
+        result = evaluate(self.input_with_codex_transcript("The dependent plan is still blocked."))
+        self.assertEqual({}, result)
+
+    def test_blocked_work_without_registered_suppression_still_needs_pointer(self):
+        self.write_ledger(
+            "Checkpoint 6 is blocked, but update the error records and their contract tests now."
+        )
+        result = evaluate(self.input_with_codex_transcript("Checkpoint 6 is blocked."))
+        self.assertEqual("block", result["decision"])
+
+    def test_relative_reference_resolves_only_against_its_tool_workdir(self):
+        alternate_root = (Path(self.temp.name) / "unrelated-main-checkout").resolve()
+        alternate_ledger = self.write_plan_pair(
+            alternate_root,
+            "Open the alternate PR.",
+            alternate_root,
+        )
+        self.write_ledger("Open the owner PR.")
+        records = [
+            {
+                "type": "response_item",
+                "payload": {
+                    "type": "custom_tool_call",
+                    "name": "exec",
+                    "input": (
+                        'const patch = "*** Begin Patch\\n*** Update File: '
+                        'plans\\launch\\EXAMPLE_PROGRESS.md\\n*** End Patch"; '
+                        'await tools.apply_patch(patch); const options = {workdir: "'
+                        + str(self.root)
+                        + '"};'
+                    ),
+                },
+            }
+        ]
+        self.assertEqual(
+            {self.ledger.resolve()},
+            transcript_ledgers(records, alternate_root),
+        )
+        self.assertNotIn(alternate_ledger, transcript_ledgers(records, alternate_root))
+
+    def test_structured_tool_workdir_resolves_relative_reference(self):
+        self.write_ledger("Open the owner PR.")
+        records = [
+            {
+                "type": "response_item",
+                "payload": {
+                    "type": "function_call",
+                    "name": "write_file",
+                    "arguments": {
+                        "path": "plans/launch/EXAMPLE_PROGRESS.md",
+                        "workdir": str(self.root),
+                    },
+                },
+            }
+        ]
+        unrelated = Path(self.temp.name) / "unrelated-main-checkout"
+        self.assertEqual({self.ledger.resolve()}, transcript_ledgers(records, unrelated))
+
+    def test_absolute_reference_is_not_resolved_again_as_relative(self):
+        alternate_root = (Path(self.temp.name) / "unrelated-main-checkout").resolve()
+        self.write_plan_pair(alternate_root, "Open the alternate PR.", alternate_root)
+        self.write_ledger("Open the owner PR.")
+        records = [
+            {
+                "type": "response_item",
+                "payload": {
+                    "type": "custom_tool_call",
+                    "name": "exec",
+                    "input": (
+                        f'const patch = "*** Begin Patch\\n*** Update File: {self.ledger}'
+                        '\\n*** End Patch"; await tools.apply_patch(patch);'
+                    ),
+                },
+            }
+        ]
+        self.assertEqual({self.ledger.resolve()}, transcript_ledgers(records, alternate_root))
+
+    def test_owner_copy_wins_over_stale_worktree_copy(self):
+        self.write_ledger("Open the owner PR.")
+        stale_root = (Path(self.temp.name) / "stale-checkout").resolve()
+        stale_ledger = self.write_plan_pair(
+            stale_root,
+            "Open the stale PR.",
+            stale_root / "missing-owner",
+        )
+        transcript = self.root / "duplicate-transcript.jsonl"
+        record = {
+            "type": "response_item",
+            "payload": {
+                "type": "message",
+                "role": "user",
+                "content": [
+                    {"type": "input_text", "text": str(stale_ledger)},
+                    {"type": "input_text", "text": str(self.ledger)},
+                ],
+            },
+        }
+        transcript.write_text(json.dumps(record), encoding="utf-8")
+        result = evaluate(
+            {
+                "cwd": str(self.root),
+                "transcript_path": str(transcript),
+                "last_assistant_message": "Implementation is complete.",
+            }
+        )
+        self.assertEqual("block", result["decision"])
+        self.assertIn(self.pointer(), result["reason"])
+        self.assertNotIn("missing-owner", result["reason"])
+
+    def test_duplicate_logical_ledgers_emit_one_pointer(self):
+        missing_owner = Path(self.temp.name) / "missing-owner"
+        first = self.write_plan_pair(
+            (Path(self.temp.name) / "copy-one").resolve(),
+            "Open the PR.",
+            missing_owner,
+        )
+        second = self.write_plan_pair(
+            (Path(self.temp.name) / "copy-two").resolve(),
+            "Open the PR.",
+            missing_owner,
+        )
+        transcript = self.root / "logical-duplicate-transcript.jsonl"
+        record = {
+            "type": "response_item",
+            "payload": {
+                "type": "message",
+                "role": "user",
+                "content": [
+                    {"type": "input_text", "text": str(first)},
+                    {"type": "input_text", "text": str(second)},
+                ],
+            },
+        }
+        transcript.write_text(json.dumps(record), encoding="utf-8")
+        result = evaluate(
+            {
+                "cwd": str(self.root),
+                "transcript_path": str(transcript),
+                "last_assistant_message": "Implementation is complete.",
+            }
+        )
+        self.assertEqual("block", result["decision"])
+        self.assertEqual(1, result["reason"].count("/worktree create Feature/launch_example"))
 
     def test_unrelated_turn_in_plan_worktree_needs_no_pointer(self):
         self.write_ledger("Run the repository code-review workflow, then open the PR.")
