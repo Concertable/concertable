@@ -18,7 +18,7 @@ jobs:
     #   run_tests  -> unit + integration
     #   run_e2e    -> e2e-api-tests
     #   run_e2e_ui -> e2e-ui-tests
-    #   run_fe     -> carve-fe-web    (the FE COMPILE FLOOR: each web surface builds standalone from the feed)
+    #   run_fe     -> carve-fe        (the FE COMPILE FLOOR: each surface builds standalone from the feed)
     # Automatic classification, by the changed-file set:
     #   - non-code    (docs / .claude / plans / reviews / root dotfiles) -> ALL FOUR false: nothing to
     #                 compile or test. build + carve no-op, unit/integration skip, E2E no-op.
@@ -515,12 +515,14 @@ jobs:
           dotnet sln CarveCustomer.slnx add "${PROJS[@]}"
           dotnet build CarveCustomer.slnx --configuration Release -p:MinVerSkip=true
 
-  carve-fe-web:
-    # FE analogue of the backend carve-* gates: each web surface must restore its shared @concertable
-    # tiers PURELY from the npm feed and build standalone. A surface importing a tier it doesn't declare
+  carve-fe:
+    # FE analogue of the backend carve-* gates: each surface must restore its shared @concertable tiers
+    # PURELY from the npm feed and build standalone. A surface importing a tier it doesn't declare
     # (masked in-monorepo by workspace hoisting) fails at install; a build that only resolves via the
     # monorepo-root workspace fails standalone. scripts/carve-fe.mjs archives the surface, repoints its
-    # intra-@concertable deps at the alpha feed tag, restores from the feed only, and builds it.
+    # intra-@concertable deps at the alpha feed tag, restores from the feed only, and builds it (web:
+    # vite build; mobile: tsc + expo export). The mobile surfaces join this matrix in a follow-up once
+    # @concertable/mobile republishes with its brand assets (the carve restores the tier from the feed).
     # Gated on run_fe so a BE-only PR never pays for the slow feed restores. Same git-archive technique
     # as the backend carves; no fetch-depth needed (archives HEAD).
     runs-on: ubuntu-latest
@@ -949,7 +951,7 @@ jobs:
       - carve-search
       - carve-b2b
       - carve-customer
-      - carve-fe-web
+      - carve-fe
       - unit-tests
       - integration-tests
       - e2e-api-tests
