@@ -1,6 +1,6 @@
 ---
 name: docs-review
-description: Full review of a branch's documentation/meta diff (**/*.md, .agents & .claude skills, plans/**, docs/**, AGENTS.md, CLAUDE.md, PROMPTS.md, README*) against the repo's own doc conventions — accuracy vs the real code/commands/paths it cites, contradiction with sibling docs, the topic-playbook convention, concision of harness-reloaded docs, and dangling references to transient artifacts. The docs counterpart to `code-review`: same review-file work-order format and confidence bar, different lenses. Use when the user wants to "docs-review", "review these docs", or before merging a docs/meta-only PR (the `/merge` docs branch and `/merge-docs` gate on it). For runtime/source changes use `code-review`.
+description: Full review of a branch's documentation/meta diff (**/*.md, .agents/.claude/.codex agent metadata, plans/**, docs/**, AGENTS.md, CLAUDE.md, PROMPTS.md, README*) against the repo's own doc conventions — accuracy vs the real code/commands/paths it cites, contradiction with sibling docs, the topic-playbook convention, concision of harness-reloaded docs, and dangling references to transient artifacts. The docs counterpart to `code-review`: same review-file work-order format and confidence bar, different lenses. Use when the user wants to "docs-review", "review these docs", or before merging a docs/meta-only PR (the `/merge` docs branch and `/merge-docs` gate on it). For runtime/source changes use `code-review`.
 ---
 
 # docs-review
@@ -47,7 +47,7 @@ If the range is empty or the branch is `main`, that's the wrong-checkout symptom
 **Scope guard:** list changed paths (`git diff --name-only "<start>..HEAD"`). If any is a
 runtime/product/package/CI-test-selection path (`api/**`, `app/**` source, `*.csproj`/CPM,
 `package.json`/lockfiles, `.github/workflows/**`, migrations), this is **not** a docs-only diff — stop
-and route to `code-review`. In-scope meta paths: `**/*.md`, `.agents/**` & `.claude/**` skill files,
+and route to `code-review`. In-scope meta paths: `**/*.md`, `.agents/**`, `.claude/**`, `.codex/**`,
 `plans/**`, `docs/**`, `AGENTS.md`, `CLAUDE.md`, `README*`, `PROMPTS.md`.
 
 ## Step 1b — Create the review file NOW, before reviewing (mandatory)

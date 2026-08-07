@@ -13,11 +13,12 @@ on:
 
 jobs:
   changes:
-    # Classify the diff once so the rest of CI runs only what's relevant, via FOUR gate outputs:
+    # Classify the diff once so the rest of CI runs only what's relevant, via FIVE gate outputs:
     #   run_code   -> build + carve   (the COMPILE FLOOR: the slnx compiles AND every service builds standalone)
     #   run_tests  -> unit + integration
     #   run_e2e    -> e2e-api-tests
     #   run_e2e_ui -> e2e-ui-tests
+    #   run_fe     -> carve-fe-web    (the FE COMPILE FLOOR: each web surface builds standalone from the feed)
     # Automatic classification, by the changed-file set:
     #   - non-code    (docs / .claude / plans / reviews / root dotfiles) -> ALL FOUR false: nothing to
     #                 compile or test. build + carve no-op, unit/integration skip, E2E no-op.
@@ -45,6 +46,7 @@ jobs:
       run_tests:  ${{ steps.detect.outputs.run_tests }}
       run_e2e:    ${{ steps.detect.outputs.run_e2e }}
       run_e2e_ui: ${{ steps.detect.outputs.run_e2e_ui }}
+      run_fe:     ${{ steps.detect.outputs.run_fe }}
       unit_projects: ${{ steps.test-projects.outputs.unit_projects }}
       integration_projects: ${{ steps.test-projects.outputs.integration_projects }}
     steps:
@@ -80,6 +82,7 @@ jobs:
             echo "run_tests=true"  >> "$GITHUB_OUTPUT"
             echo "run_e2e=true"    >> "$GITHUB_OUTPUT"
             echo "run_e2e_ui=true" >> "$GITHUB_OUTPUT"
+            echo "run_fe=true"     >> "$GITHUB_OUTPUT"
             exit 0
           fi
           files=$(git diff --name-only "$base" "$head")
@@ -100,6 +103,14 @@ jobs:
           else
             echo "-> code change; full CI."
           fi
+          # run_fe: FE carve gate (the npm analogue of run_code's carve-* jobs). True iff a NON-INERT change
+          # touches app/, OR the carve mechanism itself changes (scripts/carve-fe.mjs or this workflow) so a
+          # change to the gate re-validates it on its own PR. A BE-only PR never triggers the slow feed-restore
+          # FE carves; a docs-only app/ change (app/**/*.md) is inert and also skips.
+          if printf '%s\n' "$files" | grep -vE "$INERT" | grep -qE '^app/'; then run_fe=true
+          elif printf '%s\n' "$files" | grep -qE '^app/scripts/carve-fe\.mjs$|^\.github/workflows/test\.yml$'; then run_fe=true
+          else run_fe=false; fi
+          echo "-> run_fe=$run_fe (FE feed-restore carves)."
           # E2E tier: full-e2e overrides historical opt-outs; otherwise a git trailer or same-named label opts out.
           # Trailers are parsed by git (`--format=%(trailers:...)`), never substring-grepped, so prose that
           # mentions a token can't trigger them. Labels aren't in the merge_group payload, so resolve the PR
@@ -140,6 +151,7 @@ jobs:
           echo "run_tests=$run_tests"   >> "$GITHUB_OUTPUT"
           echo "run_e2e=$run_e2e"       >> "$GITHUB_OUTPUT"
           echo "run_e2e_ui=$run_e2e_ui" >> "$GITHUB_OUTPUT"
+          echo "run_fe=$run_fe"         >> "$GITHUB_OUTPUT"
 
   build:
     runs-on: ubuntu-latest
@@ -502,6 +514,35 @@ jobs:
           printf '%s\n' "${PROJS[@]}"
           dotnet sln CarveCustomer.slnx add "${PROJS[@]}"
           dotnet build CarveCustomer.slnx --configuration Release -p:MinVerSkip=true
+
+  carve-fe-web:
+    # FE analogue of the backend carve-* gates: each web surface must restore its shared @concertable
+    # tiers PURELY from the npm feed and build standalone. A surface importing a tier it doesn't declare
+    # (masked in-monorepo by workspace hoisting) fails at install; a build that only resolves via the
+    # monorepo-root workspace fails standalone. scripts/carve-fe.mjs archives the surface, repoints its
+    # intra-@concertable deps at the alpha feed tag, restores from the feed only, and builds it.
+    # Gated on run_fe so a BE-only PR never pays for the slow feed restores. Same git-archive technique
+    # as the backend carves; no fetch-depth needed (archives HEAD).
+    runs-on: ubuntu-latest
+    needs: [changes]
+    if: needs.changes.outputs.run_fe == 'true'
+    permissions:
+      contents: read
+      packages: read
+    strategy:
+      fail-fast: false
+      matrix:
+        surface: [web/customer, web/b2b/venue, web/b2b/artist, web/b2b/business]
+    env:
+      GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Carve ${{ matrix.surface }} and build it standalone from the feed
+        working-directory: app
+        run: node scripts/carve-fe.mjs ${{ matrix.surface }}
 
   unit-tests:
     runs-on: ubuntu-latest
@@ -908,6 +949,7 @@ jobs:
       - carve-search
       - carve-b2b
       - carve-customer
+      - carve-fe-web
       - unit-tests
       - integration-tests
       - e2e-api-tests
