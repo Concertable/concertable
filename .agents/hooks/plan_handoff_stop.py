@@ -63,24 +63,57 @@ def strings(value):
             yield from strings(item)
 
 
-def genuine_user_message(value):
+def user_content(value):
+    if isinstance(value, str):
+        yield value
+    elif isinstance(value, list):
+        for item in value:
+            if isinstance(item, str):
+                yield item
+            elif isinstance(item, dict) and item.get("type") in {"text", "input_text"}:
+                text = item.get("text")
+                if isinstance(text, str):
+                    yield text
+
+
+def payload(value):
     if not isinstance(value, dict):
-        return False
+        return None
     if isinstance(value.get("payload"), dict):
-        payload = value["payload"]
-    elif value.get("type") == "user" and isinstance(value.get("message"), dict):
-        payload = value["message"]
-    else:
-        payload = value
-    if payload.get("role") != "user":
+        return value["payload"]
+    if value.get("type") in {"user", "assistant"} and isinstance(value.get("message"), dict):
+        return value["message"]
+    return value
+
+
+def genuine_user_message(value):
+    candidate = payload(value)
+    if candidate is None or candidate.get("role") != "user":
         return False
-    content = payload.get("content")
+    content = candidate.get("content")
     if isinstance(content, list):
-        return not any(
+        if any(
             isinstance(item, dict) and item.get("type") in {"tool_result", "function_call_output"}
             for item in content
-        )
-    return True
+        ):
+            return False
+    return not any("<hook_prompt" in text for text in user_content(content))
+
+
+def intentional_values(record):
+    candidate = payload(record)
+    if candidate is None:
+        return
+    if genuine_user_message(record):
+        yield from user_content(candidate.get("content"))
+    if candidate.get("type") in {"custom_tool_call", "function_call"}:
+        tool_input = candidate.get("input", candidate.get("arguments"))
+        yield from strings(tool_input)
+    content = candidate.get("content")
+    if isinstance(content, list):
+        for item in content:
+            if isinstance(item, dict) and item.get("type") in {"tool_use", "function_call"}:
+                yield from strings(item.get("input", item.get("arguments")))
 
 
 def transcript_turn(path):
@@ -145,7 +178,7 @@ def add_if_ledger(paths, candidate):
 
 def transcript_ledgers(records, cwd):
     paths = set()
-    values = list(strings(records))
+    values = [value for record in records for value in intentional_values(record)]
     bases = {Path(cwd).resolve()}
     for value in values:
         for match in WORKDIR.finditer(value):
