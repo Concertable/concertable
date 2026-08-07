@@ -118,15 +118,18 @@ Package publication run `31212157110` succeeded and published platform
 `0.1.0-alpha.0.853`. Generated platform-sync PR #420 is open and red at build with 24 expected
 consumer compile errors: B2B and Customer still reference the five intentionally removed legacy
 Payment client interfaces.
+Repair commit `d67416546` replaces all B2B/Customer legacy Payment clients with the published
+owned-result interfaces and is the exact local, remote-tracking, and PR #420 head. The full Release
+solution builds with 0 errors; legacy-client grep is empty; Concert 79/79, Tenant 96/96, and Ticket
+18/18 unit tests pass. Fresh-container Docker health passed before each integration layer; B2B passed
+5/5 projects and Customer passed 4/4 projects. Replacement CI is pending and the existing
+`platform-sync-broken` label still reflects the superseded red head.
 
 ## Next Steps
 
-In `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Platform-sync-853`, migrate every
-B2B/Customer consumer from the five removed legacy Payment clients to the published owned-result
-interfaces, drive `api/Concertable.slnx` to zero errors, run the affected unit and integration
-tests, push `chore/platform-sync-0.1.0-alpha.0.853`, and follow PR #420 through green/merged. Then
-update the waiting B2B ledger and close frozen donor PR #296 only after the canonical package gate
-is complete.
+Follow replacement CI for exact PR #420 head `d67416546` to a terminal result and, if green, confirm
+its existing auto-merge request lands the platform sync. Then update the waiting B2B ledger and close
+frozen donor PR #296 only after PR #420 is merged and the canonical package gate is complete.
 
 ## Downstream handoffs
 
@@ -136,6 +139,11 @@ is complete.
   generated platform-sync PR green. When that gate opens, the Payment delivery session must update the
   B2B ledger's current state, `## Next Steps`, and event log, then surface its exact resume prompt.
   The B2B worktree must not poll this dependency or rely on Tommy remembering to revisit it.
+- **Auth expected-outcome delivery:** `plans/typed-result/AUTH_OUTCOMES_PROGRESS.md` in
+  `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_auth-outcomes` is
+  locally verified and review-clean but blocked from pushing and opening its PR while platform-sync
+  PR #420 is red. When #420 merges green, update the Auth ledger's current state, `## Next Steps`, and
+  event log, then surface its exact resume prompt. The Auth worktree must not poll this dependency.
 
 ## Completed work
 
@@ -283,6 +291,17 @@ Clean: escrow `Result<Option<T>,E>` semantics, rounding/VAT/refund math, wire hy
   commission-branch implementation is donor evidence only; its behavior is now reconciled here.
 
 ## Event log
+
+### 2026-08-07 - Repaired and pushed platform-sync PR #420
+
+- Action: Migrated B2B and Customer production consumers, unit tests, integration fixtures, and
+  mocks to the five published owned-result Payment interfaces; committed and pushed `d67416546`.
+- Evidence: full Release solution build 0 errors; legacy-client grep zero; affected unit tests
+  79/79, 96/96, and 18/18; Docker health green before B2B 5/5 and Customer 4/4 integration projects;
+  local, remote-tracking, and PR heads all equal `d67416546`.
+- Outcome: The breaking consumer migration is locally green and replacement CI now owns the live
+  platform-sync gate.
+- Follow-up: Monitor exact PR #420 head `d67416546` through green and merged.
 
 ### 2026-08-07 - Payment package published and opened the breaking sync gate
 
