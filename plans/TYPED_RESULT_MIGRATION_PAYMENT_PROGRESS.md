@@ -106,12 +106,13 @@ checkpoint-transport head `a40761eba` is verified across all three heads. Replac
 remains applied and queue-only E2E correctly skipped at PR level.
 An initial `gh pr merge --auto` left the green/CLEAN PR with no `mergeQueueEntry`; its auto-merge
 request still dates from 2026-08-05, confirming the documented GitHub re-evaluation glitch.
+The one-time disable/re-enable nudge admitted exact remote head `a40761eba`; its queue entry is
+`QUEUED` and `full-e2e` remains applied.
 
 ## Next Steps
 
-Perform the one-time auto-merge disable/re-enable nudge for PR #392, verify exact remote head
-`a40761eba` gains a real merge-queue entry, then preserve `full-e2e` and follow the queue's API and UI
-E2E to a terminal result. After merge, own
+Follow PR #392's merge-group API and UI E2E to a terminal result without retrying or toggling queue
+state. After merge, own
 package publication and the generated breaking platform-sync PR through green, update the waiting
 B2B ledger, and close frozen donor PR #296 only after the canonical package gate is complete.
 
@@ -273,6 +274,15 @@ Clean: escrow `Result<Option<T>,E>` semantics, rounding/VAT/refund math, wire hy
   commission-branch implementation is donor evidence only; its behavior is now reconciled here.
 
 ## Event log
+
+### 2026-08-07 - PR #392 entered the merge queue
+
+- Action: Performed the single documented auto-merge disable/re-enable nudge on exact remote head
+  `a40761eba` after the green-but-unadmitted state.
+- Evidence: GraphQL reports `mergeQueueEntry.state = QUEUED`; PR #392 remains open at
+  `a40761eba` with `[full-e2e]`.
+- Outcome: The queue now owns delivery and will run the full API/UI E2E gate.
+- Follow-up: Monitor the queue to the terminal result in `## Next Steps`.
 
 ### 2026-08-07 - Green PR was not admitted to the merge queue
 
