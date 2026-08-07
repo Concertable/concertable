@@ -1,11 +1,11 @@
 # Full-stack polyrepo — frontend build separation progress
 
 - Plan: `plans/platform/POLYREPO_FULLSTACK_PLAN.md`
-- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-polyrepo-mobile-closeout` — clean post-merge recovery anchor created from `origin/main` @ `59bdd7a8a` after #413 merged. The merged feature worktree has been removed.
-- Branch: `Docs/platform_polyrepo_mobile-retarget_closeout`; contains only the five ledger observation checkpoints transferred from the source branch plus this closeout-identity checkpoint. It must remain local until the current mobile-retarget lifecycle reaches its next durable handoff.
+- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-platform_polyrepo_mobile-carve` — created from current `origin/main` @ `59bdd7a8a` for the definitive Phase 3 mobile carve gate.
+- Branch: `Feature/platform_polyrepo_mobile-carve`; contains the transferred ledger-only recovery history and will add `mobile/{customer,b2b}` to the existing `carve-fe` matrix against the now-published fixed tier.
 - PR: **mobile-retarget PR [#413](https://github.com/Concertable/concertable/pull/413) MERGED as `62646f4cdd6933a695fc790e1329588fce3f928a`** — reviewed source head `a8296d51b`; full merge-group run [31195035539](https://github.com/Concertable/concertable/actions/runs/31195035539) completed successfully. Prior: carved-web CSS **[#405](https://github.com/Concertable/concertable/pull/405) MERGED** (`d9c62e2c5`) + [#411]; Phase 3b [#389] (`1cbeb2175`) + [#398]; Phase 3a [#378] (`fba490e25`); Phase 2 [#360] (`a3f9535`); Phase 1 [#301]+[#319].
 - Dependency/package gates: **#413 FE publication DONE** — successful descendant run [31197751649](https://github.com/Concertable/concertable/actions/runs/31197751649) published and feed-verified `@concertable/mobile@0.1.0-alpha.0.2571` with the brand assets. This unblocks the follow-up mobile carve gate. No `api/**` → no backend platform-sync.
-- Last reconciled: 2026-08-07 — PR #413 merged as `62646f4cd`; `@concertable/mobile@0.1.0-alpha.0.2571` is published and feed-verified; the merged source worktree/branch are gone and recovery is in this closeout worktree. Next: create the fresh mobile-carve branch/worktree off current `origin/main`, transfer the ledger recovery state, and add both mobile surfaces to the `carve-fe` matrix.
+- Last reconciled: 2026-08-07 — the fresh `Feature/platform_polyrepo_mobile-carve` worktree exists from current `origin/main`, with the ledger recovery history transferred intact. `@concertable/mobile@0.1.0-alpha.0.2571` is live. Next: remove the superseded closeout worktree/branch, add both mobile surfaces to the `carve-fe` matrix, and open the self-validating PR.
 
 ## Current state
 
@@ -19,7 +19,7 @@ Phases 0, 1, 2, **3a, and 3b are on `main`**. Phase 3a (PR #378, merge `fba490e2
 
 ## Next Steps
 
-**1. Turn on the mobile carve gate from a fresh branch/worktree.** Fetch current `origin/main`, create `Feature/platform_polyrepo_mobile-carve`, transfer this ledger-only recovery tail into it, update the ledger identity, and remove this closeout worktree/branch. Add `mobile/{customer,b2b}` to the `carve-fe` matrix and open the PR so each surface restores `@concertable/mobile@0.1.0-alpha.0.2571` from the feed and runs `expo export` — the definitive proof of the retarget. **Because mobile has never been bundled, expect the carve may surface further latent bundle bugs (fonts/native/etc.) past the asset one; fix each (on-branch if surface, or another publish-first cycle if tier) — never weaken the gate.** (Also logged in `app/mobile/TECH_DEBT.md`.)
+**1. Remove the superseded closeout worktree, then turn on the mobile carve gate.** Remove `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-polyrepo-mobile-closeout` and delete local `Docs/platform_polyrepo_mobile-retarget_closeout`; recovery is now on this feature branch. Add `mobile/{customer,b2b}` to the existing `carve-fe` matrix, verify the YAML and changed-file classifier locally, commit, push, and open the PR so each surface restores `@concertable/mobile@0.1.0-alpha.0.2571` from the feed and runs `expo export`. Follow both mobile matrix jobs to green; if either exposes another latent bundle bug, fix the real bug without weakening the gate (surface bug on this branch; published-tier bug through another publish-first cycle). (Also logged in `app/mobile/TECH_DEBT.md`.)
 
 **2. FE import-boundary rule** — no ESLint/dependency-cruiser toolchain in `app/` yet; the carve CI is the primary structural boundary today (BE parity: carve = structural gate, build-time guard = fast second layer). Standing up ESLint `no-restricted-imports` across surfaces is a separate sub-project.
 
@@ -83,6 +83,13 @@ Gate: each item ends with its own green carve/build proof on its PR.
 - **Metro/nativewind/tailwind runtime configs left for Phase 3.** The Phase 2 gate is build + typecheck; the mobile app's metro `watchFolders`/nativewind `input`/tailwind `content` still point at `../shared` source. The app already resolves `@concertable/shared`/`customer` as symlinked packages the same way, so no in-monorepo runtime regression, but className/class-generation on the precompiled dist is unproven — a first-class Phase 3 item, not a silent gap.
 
 ## Event log
+
+### 2026-08-07 — recovery transferred to fresh mobile-carve worktree
+
+- Action: Confirmed no open red platform-sync PR, created `Feature/platform_polyrepo_mobile-carve` from current `origin/main` @ `59bdd7a8a`, and cherry-picked the eight ledger-only closeout commits in order.
+- Evidence: every transferred commit changes only `plans/platform/POLYREPO_FULLSTACK_PROGRESS.md`; source closeout and destination feature ledger blobs match exactly at `e99282b00f954541a89ae0215a074b433ae89705`; new feature worktree is clean before this identity edit.
+- Outcome: the fresh feature worktree is the recovery anchor and is ready for the two-line CI matrix change; no runtime/source change was transferred.
+- Follow-up: remove the superseded closeout worktree/branch, then implement and deliver the mobile carve matrix entries.
 
 ### 2026-08-07 — `@concertable/mobile@0.1.0-alpha.0.2571` published and feed-verified
 
