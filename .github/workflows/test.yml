@@ -533,7 +533,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        surface: [web/customer, web/b2b/venue, web/b2b/artist, web/b2b/business, mobile/customer, mobile/b2b]
+        surface: [web/customer, web/b2b/venue, web/b2b/artist, web/b2b/business]
     env:
       GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
