@@ -21,3 +21,13 @@
 
 No issues found in the interceptor request-config typing change. The remaining commits in the range are
 merges from `origin/main` and were not authored by this branch.
+
+## Pre-merge review — 2026-08-08
+
+- [x] **NAT3 — MEDIUM — type-safety** — `app/shared/src/lib/apiClient.ts`
+  `notFoundAsNull` was declared via ambient module augmentation on `AxiosRequestConfig`, so it was settable on any `.get()`/`.post()` call on any axios instance, not just through `getOptional` — a type-unsound path where `data` was typed `T` but could resolve `null` at runtime. Replaced the interceptor-flag mechanism with `getOptional` catching its own 404 directly; no global config flag, no module augmentation.
+- [x] **NAT4 — MEDIUM — correctness** — `app/shared/src/lib/client.ts`
+  The 404-to-null handling was registered only inside `withAuth()`, so a client configured without `.withAuth()` (or an unconfigured `createApiClient()` instance) silently lost `getOptional`'s null-on-404 contract. Fixed by the same change as NAT3 — `getOptional` no longer depends on any interceptor being registered.
+- [wontfix] **NAT1 — dead `ApiError` export** / **NAT2 — duplicate `ProblemDetails`** — both already resolved by the next commit in the stack (`refactor: migrate frontend HTTP error consumers`), which wires `ApiError` into the interceptor's reject path and re-exports `ProblemDetails` from `apiError.ts` instead of redeclaring it. Intentional publish-first split, not a gap in this PR.
+- [x] **NAT5 — LOW — test coverage** — `app/shared/src/lib/client.test.ts`
+  Added a case exercising the plain pass-through (non-404/401) rejection path.

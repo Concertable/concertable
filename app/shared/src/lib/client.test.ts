@@ -84,4 +84,13 @@ describe("configureClient", () => {
     });
     expect(onUnauthorized).toHaveBeenCalledOnce();
   });
+
+  it("passes through non-404/401 errors unchanged", async () => {
+    const { client } = createConfiguredClient();
+
+    await expect(client.get("/other")).rejects.toMatchObject({
+      isAxiosError: true,
+      response: { status: 503, data: { detail: "Unavailable" } },
+    });
+  });
 });

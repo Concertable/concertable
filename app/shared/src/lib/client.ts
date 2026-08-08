@@ -17,11 +17,7 @@ export function configureClient(instance: AxiosInstance, baseURL: string) {
         async (error: unknown) => {
           if (!isAxiosError(error)) return Promise.reject(error);
 
-          const status = error.response?.status ?? null;
-          if (status === 404 && error.config?.notFoundAsNull && error.response)
-            return { ...error.response, data: null };
-
-          if (status === 401) await onUnauthorized();
+          if (error.response?.status === 401) await onUnauthorized();
           return Promise.reject(error);
         },
       );
