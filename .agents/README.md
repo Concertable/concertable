@@ -1,8 +1,8 @@
-# Agent skills
+# Agent configuration
 
-This folder holds Concertable's repo-local agent skills. They are written against `AGENTS.md`
-instructions and should stay agent-agnostic: no Claude-specific tool names, no missing workflow
-surfaces, and no runtime-only slash command assumptions.
+This folder holds Concertable's repo-local agent skills and canonical command instructions. They are
+written against `AGENTS.md` and should stay agent-agnostic: no Claude-specific tool names and no
+missing workflow surfaces.
 
 ## Adding or updating skills
 
@@ -33,9 +33,11 @@ branch update flow.
 
 ## Repository slash commands
 
-Codex slash commands live in the repo's `concertable` plugin under
-`plugins/concertable/commands/`; a bare `.agents/commands/` directory is not a registered command
-surface. Install the repo marketplace once, then install the plugin:
+Canonical command instructions live under `.agents/commands/`. Claude and Codex command entry points
+must be thin wrappers that reference the matching canonical file so their behavior cannot drift.
+
+Codex discovers those wrappers through the repo's `concertable` plugin under
+`plugins/concertable/commands/`. Install the repo marketplace once, then install the plugin:
 
 ```powershell
 codex plugin marketplace add <repo-root>
