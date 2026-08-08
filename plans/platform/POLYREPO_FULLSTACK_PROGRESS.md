@@ -3,9 +3,9 @@
 - Plan: `plans/platform/POLYREPO_FULLSTACK_PLAN.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-platform_polyrepo_import-boundary` — dedicated Phase 3 import-boundary checkout, current with `origin/main` at `9a18371a0`.
 - Branch: `Feature/platform_polyrepo_import-boundary` — direct owner of the remaining Phase 3 import-boundary work.
-- PR: **import-boundary PR [#428](https://github.com/Concertable/concertable/pull/428) OPEN** at verified remote head `7f49fbcdd`, base `main`, not draft, no labels; inert replacement CI is running. Prior mobile-carve PR [#416](https://github.com/Concertable/concertable/pull/416) merged as `83a3f49a1`; publish-first mobile-retarget PR [#413](https://github.com/Concertable/concertable/pull/413) merged as `62646f4cd` and republished `@concertable/mobile@0.1.0-alpha.0.2571`; carved-web CSS [#405] (`d9c62e2c5`); Phase 3b [#389] (`1cbeb2175`); Phase 3a [#378] (`fba490e25`); Phase 2 [#360] (`a3f9535`); Phase 1 [#301]+[#319].
+- PR: **import-boundary PR [#428](https://github.com/Concertable/concertable/pull/428) OPEN** at verified remote head `2024e110f`, base `main`, not draft, no labels; replacement CI is running. Prior mobile-carve PR [#416](https://github.com/Concertable/concertable/pull/416) merged as `83a3f49a1`; publish-first mobile-retarget PR [#413](https://github.com/Concertable/concertable/pull/413) merged as `62646f4cd` and republished `@concertable/mobile@0.1.0-alpha.0.2571`; carved-web CSS [#405] (`d9c62e2c5`); Phase 3b [#389] (`1cbeb2175`); Phase 3a [#378] (`fba490e25`); Phase 2 [#360] (`a3f9535`); Phase 1 [#301]+[#319].
 - Dependency/package gates: **#413 FE publication DONE** — successful descendant run [31197751649](https://github.com/Concertable/concertable/actions/runs/31197751649) published and feed-verified `@concertable/mobile@0.1.0-alpha.0.2571` with the brand assets. This unblocks the follow-up mobile carve gate. No `api/**` → no backend platform-sync.
-- Last reconciled: 2026-08-08 — merged `origin/main` at `0514fe25b` as `0e4009ff8`; branch is 0 behind and `dotnet build api/Concertable.slnx` succeeded with 0 errors. The merge did not touch the PR's boundary/workflow net diff. Incremental review is clean through `0e4009ff8`; the replacement reviewed head must now be pushed through the compound protocol.
+- Last reconciled: 2026-08-08 — replacement reviewed head `2024e110f` was pushed and verified equal across local, remote-tracking, and PR refs. Replacement CI is running; this push checkpoint must be transported before the terminal check wait.
 
 ## Current state
 
@@ -24,7 +24,7 @@ from `app/mobile/TECH_DEBT.md`.
 
 ## Next Steps
 
-**1. Finish and land import-boundary PR #428.** Commit the incremental review/build checkpoint, use the compound push protocol to publish the current reviewed head, and require the replacement PR gate. Recheck base currency immediately before queue admission, then run full E2E through the queue without weakening a failure. Phase 3 becomes terminal only after the merge is recorded and its recovery state is transferred to a closeout worktree.
+**1. Finish and land import-boundary PR #428.** Transport this verified push checkpoint and confirm local/remote/PR equality, then require the complete replacement PR gate. Recheck base currency immediately before queue admission, then run full E2E through the queue without weakening a failure. Phase 3 becomes terminal only after the merge is recorded and its recovery state is transferred to a closeout worktree.
 
 Then Phase 4 (FE platform-sync) and Phase 5 (produce full-stack repos, D-A/D-B) per the plan.
 Gate: each item ends with its own green carve/build proof on its PR.
@@ -112,6 +112,13 @@ Gate: each item ends with its own green carve/build proof on its PR.
 - **Metro/nativewind/tailwind runtime configs left for Phase 3.** The Phase 2 gate is build + typecheck; the mobile app's metro `watchFolders`/nativewind `input`/tailwind `content` still point at `../shared` source. The app already resolves `@concertable/shared`/`customer` as symlinked packages the same way, so no in-monorepo runtime regression, but className/class-generation on the precompiled dist is unproven — a first-class Phase 3 item, not a silent gap.
 
 ## Event log
+
+### 2026-08-08 — current-main reviewed head pushed and verified
+
+- Action: Pushed the complete branch after merging current main, rebuilding, and incrementally reviewing it.
+- Evidence: pushed `b483f8ac4..2024e110f`; local `HEAD`, `origin/Feature/platform_polyrepo_import-boundary`, and PR #428 `headRefOid` all equal `2024e110f9fdcb568c800578daea34e73a8d1d73` after fetch.
+- Outcome: the current reviewed implementation is published and replacement CI is running. This checkpoint is the sole local tail.
+- Follow-up: transport this checkpoint, verify equality, wait for replacement checks, then recheck base currency and enqueue.
 
 ### 2026-08-08 — current main merged, built, and incrementally reviewed
 
