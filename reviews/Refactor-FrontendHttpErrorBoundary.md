@@ -5,7 +5,7 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `835d3da4939b375fd71e172a3ddbf338bc559085`  _(2026-08-08)_
+**Reviewed up to commit:** `a5571245e20de750ac83064b69cf6aecb0948661`  _(2026-08-08)_
 
 > Range reviewed: `66ef2c7d..d8aa5950` (4 commits), plus the 2026-08-08 pre-merge pass below.
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -43,3 +43,9 @@ isolation, module boundaries, seeding, C# conventions, and test coverage of chan
 No issues found. The additional merge from `origin/main` updated the platform package pin and API
 guidance without conflict or branch-authored runtime resolution. Checked correctness, microservice
 isolation, module boundaries, seeding, C# conventions, and test coverage of changed paths.
+
+## Incremental review — 2026-08-08 (review-tooling refresh)
+
+No issues found. The additional merge from `origin/main` updated only review tooling and resolved
+without branch-authored changes. Checked correctness, microservice isolation, module boundaries,
+seeding, C# conventions, and test coverage of changed paths.
