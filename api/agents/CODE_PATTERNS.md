@@ -36,18 +36,18 @@ so the codebase has zero calls; the building blocks (all in `B2B.DataAccess.Infr
   doesn't own; the `TenantInterceptor` write-guard no-ops for a tenant-less admin. One subclass per
   module that has an admin write flow, e.g. `AdminVenueDbContext` (venue approval).
 
-Query classes then split by **visibility stance**, one stance per class (mixing them in one class is
+Query classes then split by **data-access stance**, one stance per class (mixing them in one class is
 the LSP violation — callers can't know which contract a method honors):
 
-- **`XRepository`** — party/host reads on the module's filtered context. The default.
-- **`PublicXRepository`** — the public marketplace surface (anonymous browse: details pages,
-  listings) on `IPublicDbContext`. Never returns private contents. Examples:
-  `PublicOpportunityRepository`, `PublicConcertRepository` (Concert module).
+- **`XRepository`** — the regular module context, including whichever tenant filters that entity
+  declares. The default.
+- **`PublicXRepository`** — read-only, unfiltered access through `PublicDbContext`. Most serve
+  anonymous marketplace reads; a narrow cross-tenant fact may instead expose only a boolean/scalar,
+  e.g. `PublicBookingRepository.ExistsAsync`. Never returns private contents.
 - **`AdminXRepository`** — privileged cross-tenant read/write (e.g. admin approval) on the writable
   `AdminDbContext`. Only where an admin write flow exists, e.g. `AdminVenueRepository`.
-- **Cross-tenant *facts* that aren't browse** (e.g. "is this slot taken?") get their own named
-  abstraction returning only booleans/scalars on `IPublicDbContext` — e.g. `IConcertAvailability` —
-  so the name carries the why and nothing needs an apologetic comment.
+- **Domain facts that aren't naturally entity repositories** get their own named boolean/scalar
+  abstraction on `PublicDbContext`, e.g. `IConcertAvailability`.
 
 The injection site is then self-documenting: a service holding `repository` + `publicRepository`
 (the codebase convention when a service injects both stances of its own aggregate) states exactly
@@ -71,10 +71,10 @@ with browse split off to the public stance).
 Repository qualifiers describe the contract that differs from a service's unqualified default; they
 are not one vocabulary to impose across every service:
 
-- **B2B audience/visibility:** `XRepository` is the tenant/party default, `PublicXRepository` is the
-  anonymous marketplace stance on read-only `PublicDbContext`, and `AdminXRepository` is the
-  cross-tenant operator stance on writable `AdminDbContext`. Name the audience, not the filtering
-  mechanism: never substitute `Unscoped` or `CrossTenant`.
+- **B2B data-access stance:** `XRepository` uses the regular module context, `PublicXRepository` uses
+  unfiltered/read-only `PublicDbContext`, and `AdminXRepository` uses unfiltered/writable
+  `AdminDbContext`. Name the composed contract, never the filtering mechanism: do not substitute
+  `Unscoped` or `CrossTenant`.
 - **Mutability:** the shared `Repository<...>` surface permits writes; `ReadRepository<...>` exposes
   queries only. Customer's event-synced replicas therefore use `XReadRepository` even without a
   writable sibling — `Read` states a capability, not an audience.
