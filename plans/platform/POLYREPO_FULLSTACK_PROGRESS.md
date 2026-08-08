@@ -5,7 +5,7 @@
 - Branch: `Feature/platform_polyrepo_import-boundary` — direct owner of the remaining Phase 3 import-boundary work.
 - PR: **not yet opened for `Feature/platform_polyrepo_import-boundary`**. Prior mobile-carve PR [#416](https://github.com/Concertable/concertable/pull/416) merged as `83a3f49a1`; publish-first mobile-retarget PR [#413](https://github.com/Concertable/concertable/pull/413) merged as `62646f4cd` and republished `@concertable/mobile@0.1.0-alpha.0.2571`; carved-web CSS [#405] (`d9c62e2c5`); Phase 3b [#389] (`1cbeb2175`); Phase 3a [#378] (`fba490e25`); Phase 2 [#360] (`a3f9535`); Phase 1 [#301]+[#319].
 - Dependency/package gates: **#413 FE publication DONE** — successful descendant run [31197751649](https://github.com/Concertable/concertable/actions/runs/31197751649) published and feed-verified `@concertable/mobile@0.1.0-alpha.0.2571` with the brand assets. This unblocks the follow-up mobile carve gate. No `api/**` → no backend platform-sync.
-- Last reconciled: 2026-08-08 — the import-boundary implementation and its dedicated CI gate are locally complete; clean Node 20 boundary, YAML, package, web, and mobile gates are green. Next: commit, push, open the self-validating PR, and follow `fe-boundaries` plus all six `carve-fe` matrix jobs to green.
+- Last reconciled: 2026-08-08 — implementation commit `69e686841` was merged with the intervening docs-only `origin/main` tip as `087c59691`, leaving the branch zero behind; the exact work head was pushed and verified at `origin/Feature/platform_polyrepo_import-boundary`. No PR exists yet.
 
 ## Current state
 
@@ -24,7 +24,7 @@ from `app/mobile/TECH_DEBT.md`.
 
 ## Next Steps
 
-**1. Deliver the FE import-boundary rule.** Commit the verified implementation, push `Feature/platform_polyrepo_import-boundary`, open its plain GitHub PR, and follow `fe-boundaries` plus all six `carve-fe` matrix jobs to green without weakening either gate. Then code-review and merge the current branch through full merge-queue E2E; Phase 3 becomes terminal only after that merge.
+**1. Deliver the FE import-boundary rule.** Open the plain GitHub PR from verified remote head `087c59691`, then follow `fe-boundaries` plus all six `carve-fe` matrix jobs to green without weakening either gate. Then code-review and merge the current branch through full merge-queue E2E; Phase 3 becomes terminal only after that merge.
 
 Then Phase 4 (FE platform-sync) and Phase 5 (produce full-stack repos, D-A/D-B) per the plan.
 Gate: each item ends with its own green carve/build proof on its PR.
@@ -106,6 +106,13 @@ Gate: each item ends with its own green carve/build proof on its PR.
 - **Metro/nativewind/tailwind runtime configs left for Phase 3.** The Phase 2 gate is build + typecheck; the mobile app's metro `watchFolders`/nativewind `input`/tailwind `content` still point at `../shared` source. The app already resolves `@concertable/shared`/`customer` as symlinked packages the same way, so no in-monorepo runtime regression, but className/class-generation on the precompiled dist is unproven — a first-class Phase 3 item, not a silent gap.
 
 ## Event log
+
+### 2026-08-08 — import-boundary work head pushed and verified
+
+- Action: Refreshed the base before delivery, merged the 17 intervening docs-only commits with zero path overlap, and pushed the exact current work head to the new remote feature branch.
+- Evidence: implementation commit `69e686841`; currency merge/work head `087c5969144c56a83d627f2bb3aaf655d2d5f9a4`; `HEAD..origin/main` = 0; starting remote branch absent; fetched `origin/Feature/platform_polyrepo_import-boundary` = `087c59691`; no open PR.
+- Outcome: the verified implementation is published on a current branch; this ledger checkpoint is the sole local tail.
+- Follow-up: transport this checkpoint with full local/remote equality, then open the plain GitHub PR and follow its boundary and six-carve gates.
 
 ### 2026-08-08 — Phase 3 import-boundary implementation locally complete
 
