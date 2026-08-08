@@ -3,9 +3,9 @@
 - Plan: `plans/platform/POLYREPO_FULLSTACK_PLAN.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-platform_polyrepo_import-boundary` — dedicated Phase 3 import-boundary checkout, current with `origin/main` at `cf4737b4f`.
 - Branch: `Feature/platform_polyrepo_import-boundary` — direct owner of the remaining Phase 3 import-boundary work.
-- PR: **import-boundary PR [#428](https://github.com/Concertable/concertable/pull/428) OPEN** at verified remote head `c876796f3`, base `main`, not draft, no labels. Current main `cf4737b4f` is merged, rebuilt, review-clean, and published; the sole local tail is this transport checkpoint. Prior mobile-carve PR [#416](https://github.com/Concertable/concertable/pull/416) merged as `83a3f49a1`; publish-first mobile-retarget PR [#413](https://github.com/Concertable/concertable/pull/413) merged as `62646f4cd` and republished `@concertable/mobile@0.1.0-alpha.0.2571`; carved-web CSS [#405] (`d9c62e2c5`); Phase 3b [#389] (`1cbeb2175`); Phase 3a [#378] (`fba490e25`); Phase 2 [#360] (`a3f9535`); Phase 1 [#301]+[#319].
+- PR: **import-boundary PR [#428](https://github.com/Concertable/concertable/pull/428) OPEN** at verified remote head `270676f25`, base `main`, not draft, no labels. Complete replacement run 31283793063 passed, but the immediate currency check found it six commits behind new main `9a54efd58`; those commits are techdebt command/plugin docs only. Prior mobile-carve PR [#416](https://github.com/Concertable/concertable/pull/416) merged as `83a3f49a1`; publish-first mobile-retarget PR [#413](https://github.com/Concertable/concertable/pull/413) merged as `62646f4cd` and republished `@concertable/mobile@0.1.0-alpha.0.2571`; carved-web CSS [#405] (`d9c62e2c5`); Phase 3b [#389] (`1cbeb2175`); Phase 3a [#378] (`fba490e25`); Phase 2 [#360] (`a3f9535`); Phase 1 [#301]+[#319].
 - Dependency/package gates: **#413 FE publication DONE** — successful descendant run [31197751649](https://github.com/Concertable/concertable/actions/runs/31197751649) published and feed-verified `@concertable/mobile@0.1.0-alpha.0.2571` with the brand assets. This unblocks the follow-up mobile carve gate. No `api/**` → no backend platform-sync.
-- Last reconciled: 2026-08-09 — pushed reviewed head `c876796f3`; local, remote branch, and PR `headRefOid` were exactly equal. This checkpoint is the sole local tail and must be transported before replacement checks are accepted.
+- Last reconciled: 2026-08-09 — transported head `270676f25` passed complete replacement run 31283793063, including `fe-boundaries`, all six `carve-fe` jobs, build, unit/integration, and `ci-complete`. The immediate fetch found `origin/main` advanced six docs/meta commits to `9a54efd58`; queue admission is blocked until that base is merged and the head is republished.
 
 ## Current state
 
@@ -24,7 +24,7 @@ from `app/mobile/TECH_DEBT.md`.
 
 ## Next Steps
 
-**1. Finish and land import-boundary PR #428.** Commit and push this transport checkpoint, verify exact head equality, and require replacement checks. Recheck currency immediately at terminal green and enqueue full E2E if current. Phase 3 becomes terminal only after the merge is recorded and its recovery state is transferred to a closeout worktree.
+**1. Finish and land import-boundary PR #428.** Commit this third base-drift checkpoint, merge `origin/main` at `9a54efd58`, rebuild and incrementally review, then republish through the compound protocol and require replacement checks. Recheck currency immediately at terminal green and enqueue full E2E if current. Phase 3 becomes terminal only after the merge is recorded and its recovery state is transferred to a closeout worktree.
 
 Then Phase 4 (FE platform-sync) and Phase 5 (produce full-stack repos, D-A/D-B) per the plan.
 Gate: each item ends with its own green carve/build proof on its PR.
@@ -114,6 +114,13 @@ Gate: each item ends with its own green carve/build proof on its PR.
 - **Metro/nativewind/tailwind runtime configs left for Phase 3.** The Phase 2 gate is build + typecheck; the mobile app's metro `watchFolders`/nativewind `input`/tailwind `content` still point at `../shared` source. The app already resolves `@concertable/shared`/`customer` as symlinked packages the same way, so no in-monorepo runtime regression, but className/class-generation on the precompiled dist is unproven — a first-class Phase 3 item, not a silent gap.
 
 ## Event log
+
+### 2026-08-09 — replacement green; third base drift blocks queueing
+
+- Action: Followed replacement run 31283793063 to terminal green, then performed the mandatory immediate fetch and base-currency check.
+- Evidence: at PR head `270676f2583eb95a67c076cb6219521788117079`, `fe-boundaries`, all six `carve-fe` jobs, build, all unit/integration jobs, `instant-merge`, and `ci-complete` passed. `origin/main...HEAD` then reported 6 behind / 19 ahead; new base `9a54efd58` contains only techdebt command/plugin documentation and metadata changes from PRs #436/#437.
+- Outcome: the complete PR gate is green, but the head cannot enter the merge queue while stale.
+- Follow-up: merge current main, rebuild/review, and publish another exact replacement head.
 
 ### 2026-08-09 — second current-main reviewed head pushed and verified
 
