@@ -3,9 +3,9 @@
 - Plan: `plans/platform/POLYREPO_FULLSTACK_PLAN.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-platform_polyrepo_import-boundary` — dedicated Phase 3 import-boundary checkout, current with `origin/main` at `9a54efd58`.
 - Branch: `Feature/platform_polyrepo_import-boundary` — direct owner of the remaining Phase 3 import-boundary work.
-- PR: **import-boundary PR [#428](https://github.com/Concertable/concertable/pull/428) OPEN** at verified remote head `270676f25`, base `main`, not draft, no labels. New main `9a54efd58` is merged locally as `92e5be5df`, rebuilt, and review-clean; the reviewed replacement head awaits compound publication. Prior mobile-carve PR [#416](https://github.com/Concertable/concertable/pull/416) merged as `83a3f49a1`; publish-first mobile-retarget PR [#413](https://github.com/Concertable/concertable/pull/413) merged as `62646f4cd` and republished `@concertable/mobile@0.1.0-alpha.0.2571`; carved-web CSS [#405] (`d9c62e2c5`); Phase 3b [#389] (`1cbeb2175`); Phase 3a [#378] (`fba490e25`); Phase 2 [#360] (`a3f9535`); Phase 1 [#301]+[#319].
+- PR: **import-boundary PR [#428](https://github.com/Concertable/concertable/pull/428) OPEN** at verified remote head `c928d34c4`, base `main`, not draft, no labels. New main `9a54efd58` is merged, rebuilt, review-clean, and published; this transport checkpoint is the sole local tail. Prior mobile-carve PR [#416](https://github.com/Concertable/concertable/pull/416) merged as `83a3f49a1`; publish-first mobile-retarget PR [#413](https://github.com/Concertable/concertable/pull/413) merged as `62646f4cd` and republished `@concertable/mobile@0.1.0-alpha.0.2571`; carved-web CSS [#405] (`d9c62e2c5`); Phase 3b [#389] (`1cbeb2175`); Phase 3a [#378] (`fba490e25`); Phase 2 [#360] (`a3f9535`); Phase 1 [#301]+[#319].
 - Dependency/package gates: **#413 FE publication DONE** — successful descendant run [31197751649](https://github.com/Concertable/concertable/actions/runs/31197751649) published and feed-verified `@concertable/mobile@0.1.0-alpha.0.2571` with the brand assets. This unblocks the follow-up mobile carve gate. No `api/**` → no backend platform-sync.
-- Last reconciled: 2026-08-09 — merged `origin/main` `9a54efd58` as `92e5be5df`; `origin/main...HEAD` is 0 behind / 21 ahead. The single-threaded full-solution build passed with 0 errors after a transient parallel Windows output-handle failure, and incremental review found no issues. The reviewed replacement head is local only.
+- Last reconciled: 2026-08-09 — pushed reviewed head `c928d34c4`; local, remote branch, and PR `headRefOid` were exactly equal. This transport checkpoint is the sole local tail and must be pushed before replacement checks are accepted.
 
 ## Current state
 
@@ -24,7 +24,7 @@ from `app/mobile/TECH_DEBT.md`.
 
 ## Next Steps
 
-**1. Finish and land import-boundary PR #428.** Commit and republish the third current-main review/ledger checkpoint through the compound protocol, then require replacement checks. Recheck currency immediately at terminal green and enqueue full E2E if current. Phase 3 becomes terminal only after the merge is recorded and its recovery state is transferred to a closeout worktree.
+**1. Finish and land import-boundary PR #428.** Commit and push this transport checkpoint, verify exact head equality, then require replacement checks. Recheck currency immediately at terminal green and enqueue full E2E if current. Phase 3 becomes terminal only after the merge is recorded and its recovery state is transferred to a closeout worktree.
 
 Then Phase 4 (FE platform-sync) and Phase 5 (produce full-stack repos, D-A/D-B) per the plan.
 Gate: each item ends with its own green carve/build proof on its PR.
@@ -116,6 +116,13 @@ Gate: each item ends with its own green carve/build proof on its PR.
 - **Metro/nativewind/tailwind runtime configs left for Phase 3.** The Phase 2 gate is build + typecheck; the mobile app's metro `watchFolders`/nativewind `input`/tailwind `content` still point at `../shared` source. The app already resolves `@concertable/shared`/`customer` as symlinked packages the same way, so no in-monorepo runtime regression, but className/class-generation on the precompiled dist is unproven — a first-class Phase 3 item, not a silent gap.
 
 ## Event log
+
+### 2026-08-09 — third current-main reviewed head pushed and verified
+
+- Action: Published the reviewed branch after the third current-main merge/build/review checkpoint.
+- Evidence: pushed `270676f25..c928d34c4`; after fetch, local `HEAD`, `origin/Feature/platform_polyrepo_import-boundary`, and PR #428 `headRefOid` all equalled `c928d34c4f0c40198ddbb45a2328792276f0d45a`.
+- Outcome: the reviewed implementation is published; this transport checkpoint is the sole local tail.
+- Follow-up: commit and push the checkpoint, verify equality, then require a complete replacement gate before the final currency check and full-E2E queue admission.
 
 ### 2026-08-09 — third current-main merge built and reviewed
 
