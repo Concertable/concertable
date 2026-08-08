@@ -81,7 +81,7 @@ also asks "is this branch even still needed?" and "am I looking at a stale defau
    `[gone]` but aren't the current one are just noted, not deleted — deleting a branch you're not
    sitting on wasn't asked for:
    ```
-   git for-each-branch 2>/dev/null; git branch -vv | grep ': gone]'
+   git branch -vv | grep ': gone]'
    ```
 
 ## Notes
