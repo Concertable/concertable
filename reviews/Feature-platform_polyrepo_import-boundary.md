@@ -2,7 +2,7 @@
 
 > **This file is a work order, not a discussion.** If you're handed this file, fix the open `[ ]` findings directly and report what changed — don't re-present them as options or ask which to do. Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `0e4009ff81950c283396e07fe5f75ef31d409530`  _(2026-08-08)_
+**Reviewed up to commit:** `b9425e5da6d1f752804accc166dc34727ae084fe`  _(2026-08-09)_
 
 **Security-reviewed up to commit:** `da3b75a77d771e94bac76df65b1ed6eb135c3772`  _(2026-08-08)_
 
@@ -27,3 +27,9 @@ No issues found. The range contains only the review artifact and plan-ledger del
 > Range reviewed: `f353a70b..0e4009ff`.
 
 No issues found. Branch-authored changes after the prior watermark are plan/review checkpoints only; merge `0e4009ff8` imports already-landed `origin/main` and leaves the PR's boundary/workflow net diff unchanged.
+
+## Incremental review — 2026-08-09 (second current-main merge)
+
+> Range reviewed: `0e4009ff..b9425e5d`.
+
+No issues found. Branch-authored changes are plan/review delivery checkpoints only; merge `b9425e5da` imports the already-landed platform-version sync and skill documentation from `origin/main`. It changes no PR-owned frontend boundary, workflow, package, or test-selection path.
