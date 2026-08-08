@@ -1,12 +1,12 @@
 ---
-name: refresh
-description: Bring the local checkout fully up to date — fetch + prune, fix a stale origin/HEAD, detect if the current branch's PR already merged (and if so switch back to a clean main), or fast-forward main directly. For a still-open branch, report drift vs origin/main and merge it in when behind and the tree is clean. Use whenever the user wants to "refresh", "sync with main", "pull the latest changes and PRs", "get up to date", or start a session on a clean, current checkout.
+name: sync
+description: Bring the local checkout fully up to date — fetch + prune, fix a stale origin/HEAD, detect if the current branch's PR already merged (and if so switch back to a clean main), or fast-forward main directly. For a still-open branch, report drift vs origin/main and merge it in when behind and the tree is clean. Use whenever the user wants to "sync", "sync with main", "refresh", "pull the latest changes and PRs", "get up to date", or start a session on a clean, current checkout.
 ---
 
-# refresh
+# sync
 
 One command to make the local repo match reality: what's on the remote, and whether the branch
-you're sitting on is still live or already shipped. `pull` only updates the current branch; `refresh`
+you're sitting on is still live or already shipped. `pull` only updates the current branch; `sync`
 also asks "is this branch even still needed?" and "am I looking at a stale default-branch pointer?"
 
 ## Steps
