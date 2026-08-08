@@ -1,7 +1,7 @@
 # Deal-type strategy registration refactor progress
 
 - Plan: `plans/launch/DEAL_STRATEGY_REGISTRATION_PLAN.md`
-- Worktree: `C:\Users\tommy\source\repos\Concertable`
+- Worktree: `C:\Users\tommy\source\repos\Concertable.worktrees\Refactor\launch_deal_strategy_registration`
 - Branch: `Refactor/launch_deal_strategy_registration`
 - PR: not opened
 - Dependency/package gates: none; this is an internal B2B refactor
@@ -11,7 +11,8 @@
 
 The design investigation is complete and the implementation plan has been rewritten around a
 module-local strategy factory plus one vertical registration builder. No runtime code has changed.
-The plan, ledger, and owning roadmap entry are committed at `4dc7b9faf`; Phase 1 is ready to implement.
+The plan, ledger, and owning roadmap entry are committed at `4dc7b9faf`; the implementation branch is
+assigned to its dedicated worktree and Phase 1 is ready to implement there.
 
 ## Next Steps
 
@@ -82,9 +83,18 @@ Do not begin Phase 2 in the same turn; hand back after the Phase 1 commit and le
 - Outcome: The implementation branch has a durable, resumable planning baseline.
 - Follow-up: Implement Phase 1 only.
 
+### 2026-08-08 — dedicated implementation worktree assigned
+
+- Action: Assigned the refactor branch to
+  `C:\Users\tommy\source\repos\Concertable.worktrees\Refactor\launch_deal_strategy_registration` and
+  returned the primary checkout to `main`.
+- Evidence: ledger worktree/branch identity and `git worktree list`.
+- Outcome: Plan implementation runs in an isolated worktree rather than occupying the main checkout.
+- Follow-up: Implement Phase 1 only in the dedicated worktree.
+
 ## Resume prompt
 
 ```
-cd C:\Users\tommy\source\repos\Concertable
+cd C:\Users\tommy\source\repos\Concertable.worktrees\Refactor\launch_deal_strategy_registration
 Read @plans/launch/DEAL_STRATEGY_REGISTRATION_PLAN.md and @plans/launch/DEAL_STRATEGY_REGISTRATION_PROGRESS.md, then do what the ledger's `## Next Steps` says.
 ```
