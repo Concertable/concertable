@@ -145,7 +145,12 @@ def main():
     # Detection failure fails OPEN (the primary review gate already fired) so an
     # unresolvable base can't wedge every merge; a resolvable sensitive path fails CLOSED.
     try:
-        base = git("merge-base", "main", "HEAD")
+        # origin/main not local main: local main drifts stale and would false-positive
+        # the security check by dragging unrelated commits into the range.
+        try:
+            base = git("merge-base", "origin/main", "HEAD")
+        except Exception:  # noqa: BLE001
+            base = git("merge-base", "main", "HEAD")
         changed = git("diff", "--name-only", base + "..HEAD").splitlines()
     except Exception:  # noqa: BLE001 — can't classify → don't block on the security sub-check
         changed = []
