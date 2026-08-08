@@ -5,7 +5,7 @@
 - Branch: `Feature/platform_polyrepo_import-boundary` — direct owner of the remaining Phase 3 import-boundary work.
 - PR: **import-boundary PR [#428](https://github.com/Concertable/concertable/pull/428) OPEN** at verified remote head `e4d3bc97f`, base `main`, not draft, no labels; CI classifier is running. Prior mobile-carve PR [#416](https://github.com/Concertable/concertable/pull/416) merged as `83a3f49a1`; publish-first mobile-retarget PR [#413](https://github.com/Concertable/concertable/pull/413) merged as `62646f4cd` and republished `@concertable/mobile@0.1.0-alpha.0.2571`; carved-web CSS [#405] (`d9c62e2c5`); Phase 3b [#389] (`1cbeb2175`); Phase 3a [#378] (`fba490e25`); Phase 2 [#360] (`a3f9535`); Phase 1 [#301]+[#319].
 - Dependency/package gates: **#413 FE publication DONE** — successful descendant run [31197751649](https://github.com/Concertable/concertable/actions/runs/31197751649) published and feed-verified `@concertable/mobile@0.1.0-alpha.0.2571` with the brand assets. This unblocks the follow-up mobile carve gate. No `api/**` → no backend platform-sync.
-- Last reconciled: 2026-08-08 — PR #428's original head `e4d3bc97f` passed `fe-boundaries`, all six `carve-fe` jobs, build, unit, and integration checks. The local branch merged current `origin/main` and built the full solution with 0 errors. Review found and fixed a Windows-only boundary-runner launch defect; the clean Node 20 container proof is green. The updated reviewed head still needs to be committed and pushed before replacement checks and queue admission.
+- Last reconciled: 2026-08-08 — PR #428's original head `e4d3bc97f` passed `fe-boundaries`, all six `carve-fe` jobs, build, unit, and integration checks. The local branch is current with `origin/main`, the full solution builds with 0 errors, and code/security review is clean through fix commit `da3b75a77` with `NAT1` resolved. The reviewed local head now needs compound-protocol push verification before replacement checks and queue admission.
 
 ## Current state
 
@@ -24,7 +24,7 @@ from `app/mobile/TECH_DEBT.md`.
 
 ## Next Steps
 
-**1. Finish and land import-boundary PR #428.** Commit the cross-platform runner fix with this checkpoint, finalize the code-review artifact at that code head, then use the compound push protocol to update PR #428. Require replacement `fe-boundaries`, all six `carve-fe` matrix jobs, build, unit, and integration checks; keep full E2E selected and merge through the queue without weakening a failing gate. Phase 3 becomes terminal only after the merge is recorded and its recovery state is transferred to a closeout worktree.
+**1. Finish and land import-boundary PR #428.** Use the compound push protocol to update PR #428 from remote head `e4d3bc97f` to the current reviewed branch head, then require replacement `fe-boundaries`, all six `carve-fe` matrix jobs, build, unit, and integration checks. Keep full E2E selected and merge through the queue without weakening a failing gate. Phase 3 becomes terminal only after the merge is recorded and its recovery state is transferred to a closeout worktree.
 
 Then Phase 4 (FE platform-sync) and Phase 5 (produce full-stack repos, D-A/D-B) per the plan.
 Gate: each item ends with its own green carve/build proof on its PR.
@@ -109,6 +109,13 @@ Gate: each item ends with its own green carve/build proof on its PR.
 - **Metro/nativewind/tailwind runtime configs left for Phase 3.** The Phase 2 gate is build + typecheck; the mobile app's metro `watchFolders`/nativewind `input`/tailwind `content` still point at `../shared` source. The app already resolves `@concertable/shared`/`customer` as symlinked packages the same way, so no in-monorepo runtime regression, but className/class-generation on the precompiled dist is unproven — a first-class Phase 3 item, not a silent gap.
 
 ## Event log
+
+### 2026-08-08 — import-boundary code/security review finalized
+
+- Action: Completed the full review after committing the cross-platform runner fix and reconciled the workflow-security lens because `.github/workflows/test.yml` is in scope.
+- Evidence: `reviews/Feature-platform_polyrepo_import-boundary.md`; reviewed and security-reviewed through `da3b75a77d771e94bac76df65b1ed6eb135c3772`; range `9a18371a..da3b75a7` (6 commits). `NAT1` is fixed; no other findings remain.
+- Outcome: the current code head is review-clean and ready for the compound push protocol.
+- Follow-up: push and verify the reviewed branch head, transport the push checkpoint, then reconcile replacement PR checks before queueing.
 
 ### 2026-08-08 — import-boundary branch updated; review finding fixed and re-proved
 
