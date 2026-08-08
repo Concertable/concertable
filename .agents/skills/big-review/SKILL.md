@@ -95,6 +95,7 @@ git diff <merge-base>..HEAD --diff-filter=d --find-renames -- <area-paths>   # e
 
 Then follow **`code-review` Steps 2–4 verbatim** on that scoped diff:
 
+- Run the native review layer (`code-review` Step 1c) over the area's scoped diff (`NAT#` IDs continue across areas); the security layer (`code-review` Step 1d) runs on whichever stage holds security-sensitive paths, stamping the shared security marker once.
 - Load the rule docs relevant to the area (`code-review` Step 2).
 - Review through all six lenses — correctness, microservice isolation, module boundaries, seeding, C# conventions, test coverage of changed paths (`code-review` Step 3). For whichever stage holds the shared/contract code the rest of the diff depends on, the isolation/boundary lens is the headline check.
 - Apply the ≥80-confidence filter (`code-review` Step 4).
