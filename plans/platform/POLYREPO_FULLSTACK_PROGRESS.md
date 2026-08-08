@@ -1,11 +1,11 @@
 # Full-stack polyrepo — frontend build separation progress
 
 - Plan: `plans/platform/POLYREPO_FULLSTACK_PLAN.md`
-- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-polyrepo-mobile-carve-closeout` — clean closeout checkout created from `origin/main` @ #416 merge `83a3f49a1`.
-- Branch: `Docs/platform_polyrepo_mobile-carve_closeout` — carries only the verified post-PR ledger observation tail for recovery and handoff.
-- PR: **mobile-carve PR [#416](https://github.com/Concertable/concertable/pull/416) MERGED as `83a3f49a1`** from reviewed remote head `74b9743d8`; exact full-E2E merge-group run [31204805838](https://github.com/Concertable/concertable/actions/runs/31204805838) completed successfully. Prior publish-first mobile-retarget PR [#413](https://github.com/Concertable/concertable/pull/413) merged as `62646f4cd` and republished `@concertable/mobile@0.1.0-alpha.0.2571`; carved-web CSS [#405] (`d9c62e2c5`); Phase 3b [#389] (`1cbeb2175`); Phase 3a [#378] (`fba490e25`); Phase 2 [#360] (`a3f9535`); Phase 1 [#301]+[#319].
+- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-platform_polyrepo_import-boundary` — dedicated Phase 3 import-boundary checkout, current with `origin/main` at `372be1041`.
+- Branch: `Feature/platform_polyrepo_import-boundary` — direct owner of the remaining Phase 3 import-boundary work.
+- PR: **not yet opened for `Feature/platform_polyrepo_import-boundary`**. Prior mobile-carve PR [#416](https://github.com/Concertable/concertable/pull/416) merged as `83a3f49a1`; publish-first mobile-retarget PR [#413](https://github.com/Concertable/concertable/pull/413) merged as `62646f4cd` and republished `@concertable/mobile@0.1.0-alpha.0.2571`; carved-web CSS [#405] (`d9c62e2c5`); Phase 3b [#389] (`1cbeb2175`); Phase 3a [#378] (`fba490e25`); Phase 2 [#360] (`a3f9535`); Phase 1 [#301]+[#319].
 - Dependency/package gates: **#413 FE publication DONE** — successful descendant run [31197751649](https://github.com/Concertable/concertable/actions/runs/31197751649) published and feed-verified `@concertable/mobile@0.1.0-alpha.0.2571` with the brand assets. This unblocks the follow-up mobile carve gate. No `api/**` → no backend platform-sync.
-- Last reconciled: 2026-08-07 — the three ledger-only post-PR commits were transferred and verified; the clean merged feature worktree and local branch were removed, and fetch-prune confirmed GitHub had already removed the remote branch. Next: start the separate Phase 3 FE import-boundary sub-project on a fresh feature worktree.
+- Last reconciled: 2026-08-08 — the import-boundary implementation and its dedicated CI gate are locally complete; clean Node 20 boundary, YAML, package, web, and mobile gates are green. Next: commit, push, open the self-validating PR, and follow `fe-boundaries` plus all six `carve-fe` matrix jobs to green.
 
 ## Current state
 
@@ -20,16 +20,18 @@ the published tiers from the feed, type-checked, and completed `expo export` on 
 successful full-E2E merge-group run 31204805838. The resolved mobile bundling entry has been removed
 from `app/mobile/TECH_DEBT.md`.
 
-**Phase 3 remaining:** the ESLint import-boundary rule.
+**Phase 3 import-boundary implementation is locally complete.** `dependency-cruiser` now enforces that each of the 11 frontend workspaces can reach another workspace only through its published `@concertable/*` package. The runner loads every workspace's own tsconfig, so relative and alias-based source reaches are both covered. A negative test injects one cross-surface and one tier-source import and requires both violations; CI runs that proof plus the clean scan as the independent `fe-boundaries` job, and `ci-complete` requires it. Delivery remains live until the PR's boundary job and all six existing feed-restored carve jobs pass and the PR merges.
 
 ## Next Steps
 
-**1. FE import-boundary rule.** In a fresh `Feature/platform_polyrepo_import-boundary` worktree from current `origin/main`, first confirm no red platform-sync PR, then implement the Phase 3 rule preventing any FE surface from importing another surface's or an unpublished tier's source. There is no ESLint/dependency-cruiser toolchain in `app/` yet; select and establish the durable repository-wide enforcement layer, cover all web and mobile surfaces, and prove the rule plus all six carve jobs/builds without weakening the existing structural gate.
+**1. Deliver the FE import-boundary rule.** Commit the verified implementation, push `Feature/platform_polyrepo_import-boundary`, open its plain GitHub PR, and follow `fe-boundaries` plus all six `carve-fe` matrix jobs to green without weakening either gate. Then code-review and merge the current branch through full merge-queue E2E; Phase 3 becomes terminal only after that merge.
 
 Then Phase 4 (FE platform-sync) and Phase 5 (produce full-stack repos, D-A/D-B) per the plan.
 Gate: each item ends with its own green carve/build proof on its PR.
 
 ## Completed work
+
+- **Phase 3 import-boundary implementation (local):** workspace-wide `dependency-cruiser` rule, per-workspace tsconfig runner, two-violation negative proof, Node-20-compatible locked tool version, and required `fe-boundaries` CI job aggregated by `ci-complete`.
 
 - **Phase 2 (this branch):** `@concertable/web` (`0fa7ce511`), `@concertable/mobile` (`5275b6664`),
   `@concertable/customer` src→dist (`c14895d97`), `@concertable/b2b` + its intra-tier import rewrite
@@ -44,6 +46,9 @@ Gate: each item ends with its own green carve/build proof on its PR.
 - `0e3d8f5a6` makes full merge-queue E2E the strict default, preserves the no-duplicate-local-E2E workflow, and keeps findings on the reviewed branch unless they are proven independent.
 
 ## Verification
+
+- **Import-boundary gate (2026-08-08):** clean official Node 20 container; workflow YAML parsed; `npm run test:boundaries` passed and proved exactly two `not-to-foreign-workspace` violations; `npm run lint:boundaries` passed all 11 tsconfig-aware scans with zero violations (53/85/77/2 web-surface modules, 28/18 mobile-surface modules, and 83/203/98/64/17 tier modules).
+- **Standing frontend gate (2026-08-08):** clean official Node 20 container; `npm ci` green; `npm run build:packages` built all five tiers; all four web builds green (3713 customer, 4404 venue, 4394 artist, 1757 business modules); `tsc --noEmit` green for `mobile/customer` and `mobile/b2b`; `git diff --check` green.
 
 - **Mobile carve matrix implementation (2026-08-07):** `.github/workflows/test.yml` now lists all six
   surfaces, including `mobile/customer` and `mobile/b2b`; the existing classifier self-triggers
@@ -83,6 +88,9 @@ Gate: each item ends with its own green carve/build proof on its PR.
 
 ## Decisions, discoveries, blockers, and deviations
 
+- **Architecture enforcement:** selected `dependency-cruiser` over a style linter or bespoke import parser because the rule is a resolved dependency/ownership invariant across TypeScript and JavaScript modules. `preserveSymlinks` keeps legitimate workspace package imports under `node_modules`; the single rule rejects direct paths between all 11 workspace roots. The runner supplies absolute per-workspace tsconfig paths so each surface's own alias map participates in resolution.
+- **Tool version:** pinned `dependency-cruiser ^17.4.3`, the newest release compatible with CI's Node 20 (`^20.12||^22||>=24`). Current `18.1.1` requires Node 22 and cannot be used without a repository-wide runtime upgrade.
+
 - The dirty main checkout is unrelated and must not be edited.
 - `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\FrontendBuildSeparationReview` exists but is not a registered git worktree and has no usable `.git` metadata. It was inspected read-only and must not be deleted.
 - `origin/Feature/FrontendBuildSeparation` was gone at recovery time; the existing local branch is the authoritative source of the two review-fix commits.
@@ -98,6 +106,20 @@ Gate: each item ends with its own green carve/build proof on its PR.
 - **Metro/nativewind/tailwind runtime configs left for Phase 3.** The Phase 2 gate is build + typecheck; the mobile app's metro `watchFolders`/nativewind `input`/tailwind `content` still point at `../shared` source. The app already resolves `@concertable/shared`/`customer` as symlinked packages the same way, so no in-monorepo runtime regression, but className/class-generation on the precompiled dist is unproven — a first-class Phase 3 item, not a silent gap.
 
 ## Event log
+
+### 2026-08-08 — Phase 3 import-boundary implementation locally complete
+
+- Action: Established dependency-cruiser as the frontend architecture gate, covered all six surfaces and five published tiers with their own tsconfigs, added a two-violation negative proof, and wired a required `fe-boundaries` CI job beside the existing six-surface carve matrix.
+- Evidence: Node 20 clean-container boundary proof and 11-workspace scan green; workflow YAML parsed; all five tier builds, four web builds, and two mobile typechecks green; lockfile resolves `dependency-cruiser 17.4.3` with a Node-20-compatible engine.
+- Outcome: the durable FE import-boundary implementation is complete and locally verified; the PR remains the authoritative six-carve proof.
+- Follow-up: commit, push, open the PR, follow `fe-boundaries` and all six carve jobs to green, then review and merge through full E2E.
+
+### 2026-08-08 — import-boundary worktree activated and base reconciled
+
+- Action: Resumed the Phase 3 import-boundary handoff in its dedicated worktree, refreshed remote state, and reconciled the stale closeout identity before implementation.
+- Evidence: branch `Feature/platform_polyrepo_import-boundary`; clean starting tree; no branch-only commits; fast-forward `fb7255b20..372be1041`; `origin/main...HEAD` = `0 0`; no open `chore/platform-sync-*` PR.
+- Outcome: the branch directly matches the requested plan work, is current with the base, and has no platform-sync blocker.
+- Follow-up: establish the repository-wide FE import-boundary enforcement layer and prove it against all six surfaces and the existing carve/build gates.
 
 ### 2026-08-07 — merged #416 feature worktree and branches removed
 
