@@ -1,9 +1,6 @@
----
-name: techdebt
-description: Pick one repository tech-debt item and take it all the way to a pull request from the persistent isolated Chore/TechDebt worktree. Use whenever the user invokes $techdebt, says "techdebt", asks to pick or resolve a TECH_DEBT.md item, or wants one self-contained tech-debt task completed end to end.
----
+# /techdebt
 
-# Tech debt
+Run only in the Concertable repository. If the current workspace is not Concertable, stop and say so.
 
 Start a self-contained tech-debt session in an **isolated worktree** so nothing touches in-flight branches.
 
