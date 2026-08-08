@@ -3,9 +3,9 @@
 - Plan: `plans/platform/POLYREPO_FULLSTACK_PLAN.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-platform_polyrepo_import-boundary` — dedicated Phase 3 import-boundary checkout, current with `origin/main` at `372be1041`.
 - Branch: `Feature/platform_polyrepo_import-boundary` — direct owner of the remaining Phase 3 import-boundary work.
-- PR: **not yet opened for `Feature/platform_polyrepo_import-boundary`**. Prior mobile-carve PR [#416](https://github.com/Concertable/concertable/pull/416) merged as `83a3f49a1`; publish-first mobile-retarget PR [#413](https://github.com/Concertable/concertable/pull/413) merged as `62646f4cd` and republished `@concertable/mobile@0.1.0-alpha.0.2571`; carved-web CSS [#405] (`d9c62e2c5`); Phase 3b [#389] (`1cbeb2175`); Phase 3a [#378] (`fba490e25`); Phase 2 [#360] (`a3f9535`); Phase 1 [#301]+[#319].
+- PR: **import-boundary PR [#428](https://github.com/Concertable/concertable/pull/428) OPEN** at verified remote head `e4d3bc97f`, base `main`, not draft, no labels; CI classifier is running. Prior mobile-carve PR [#416](https://github.com/Concertable/concertable/pull/416) merged as `83a3f49a1`; publish-first mobile-retarget PR [#413](https://github.com/Concertable/concertable/pull/413) merged as `62646f4cd` and republished `@concertable/mobile@0.1.0-alpha.0.2571`; carved-web CSS [#405] (`d9c62e2c5`); Phase 3b [#389] (`1cbeb2175`); Phase 3a [#378] (`fba490e25`); Phase 2 [#360] (`a3f9535`); Phase 1 [#301]+[#319].
 - Dependency/package gates: **#413 FE publication DONE** — successful descendant run [31197751649](https://github.com/Concertable/concertable/actions/runs/31197751649) published and feed-verified `@concertable/mobile@0.1.0-alpha.0.2571` with the brand assets. This unblocks the follow-up mobile carve gate. No `api/**` → no backend platform-sync.
-- Last reconciled: 2026-08-08 — implementation commit `69e686841` was merged with the intervening docs-only `origin/main` tip as `087c59691`, leaving the branch zero behind; the exact work head was pushed and verified at `origin/Feature/platform_polyrepo_import-boundary`. No PR exists yet.
+- Last reconciled: 2026-08-08 — PR #428 opened from the verified plan checkpoint `e4d3bc97f`; the initial `instant-merge` and `enable` checks succeeded while `changes` remained in progress. Delivery ownership now passes to the merge workflow.
 
 ## Current state
 
@@ -24,7 +24,7 @@ from `app/mobile/TECH_DEBT.md`.
 
 ## Next Steps
 
-**1. Deliver the FE import-boundary rule.** Open the plain GitHub PR from verified remote head `087c59691`, then follow `fe-boundaries` plus all six `carve-fe` matrix jobs to green without weakening either gate. Then code-review and merge the current branch through full merge-queue E2E; Phase 3 becomes terminal only after that merge.
+**1. Land import-boundary PR #428.** Run the merge workflow from this worktree. It must keep the branch current, select the required E2E tier, require `fe-boundaries` plus all six `carve-fe` matrix jobs, and merge through the queue without weakening a failing gate. Phase 3 becomes terminal only after the merge is recorded and its recovery state is transferred to a closeout worktree.
 
 Then Phase 4 (FE platform-sync) and Phase 5 (produce full-stack repos, D-A/D-B) per the plan.
 Gate: each item ends with its own green carve/build proof on its PR.
@@ -106,6 +106,13 @@ Gate: each item ends with its own green carve/build proof on its PR.
 - **Metro/nativewind/tailwind runtime configs left for Phase 3.** The Phase 2 gate is build + typecheck; the mobile app's metro `watchFolders`/nativewind `input`/tailwind `content` still point at `../shared` source. The app already resolves `@concertable/shared`/`customer` as symlinked packages the same way, so no in-monorepo runtime regression, but className/class-generation on the precompiled dist is unproven — a first-class Phase 3 item, not a silent gap.
 
 ## Event log
+
+### 2026-08-08 — import-boundary PR #428 opened
+
+- Action: Re-ran the live preflight, confirmed local/remote equality and zero base drift, and opened the plain GitHub PR without setting an E2E label.
+- Evidence: PR [#428](https://github.com/Concertable/concertable/pull/428), base `main`, head `Feature/platform_polyrepo_import-boundary` at `e4d3bc97fe932cf6d7cf81db744a908f35efe754`, `OPEN`, not draft, labels `[]`; no open platform-sync PR; initial `instant-merge` and `enable` checks successful, `changes` in progress.
+- Outcome: CI now owns the authoritative boundary and six-surface carve proof; PR creation did not mutate the verified source head.
+- Follow-up: run the merge workflow for #428; it owns check reconciliation, E2E-tier selection, queue admission, merge confirmation, and closeout transfer.
 
 ### 2026-08-08 — import-boundary work head pushed and verified
 
