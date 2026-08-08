@@ -2,7 +2,7 @@
 
 > **This file is a work order, not a discussion.** If you're handed this file, fix the open `[ ]` findings directly and report what changed — don't re-present them as options or ask which to do. Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `da3b75a77d771e94bac76df65b1ed6eb135c3772`  _(2026-08-08)_
+**Reviewed up to commit:** `f353a70b6841f03c6339a7b2590dd7126b480499`  _(2026-08-08)_
 
 **Security-reviewed up to commit:** `da3b75a77d771e94bac76df65b1ed6eb135c3772`  _(2026-08-08)_
 
@@ -15,3 +15,9 @@
   Spawning the Windows `.cmd` shim directly returns `EINVAL`, so the negative test can pass its non-zero assertion without dependency-cruiser running and then fails only on the missing diagnostic. Invoke the package's JavaScript entrypoint through `process.execPath` so both the positive and negative gates execute the actual analyzer on every supported platform.
 
 No other issues found. Checked correctness, workflow security, microservice isolation, module boundaries, seeding, C# conventions, and test coverage of changed paths.
+
+## Incremental review — 2026-08-08
+
+> Range reviewed: `da3b75a7..f353a70b` (2 commits).
+
+No issues found. The range contains only the review artifact and plan-ledger delivery checkpoints; no runtime, package, workflow, or test-selection behavior changed.

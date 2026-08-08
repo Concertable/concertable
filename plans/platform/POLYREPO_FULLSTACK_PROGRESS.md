@@ -5,7 +5,7 @@
 - Branch: `Feature/platform_polyrepo_import-boundary` — direct owner of the remaining Phase 3 import-boundary work.
 - PR: **import-boundary PR [#428](https://github.com/Concertable/concertable/pull/428) OPEN** at verified remote head `96f88e8a1`, base `main`, not draft, no labels; replacement CI is running. Prior mobile-carve PR [#416](https://github.com/Concertable/concertable/pull/416) merged as `83a3f49a1`; publish-first mobile-retarget PR [#413](https://github.com/Concertable/concertable/pull/413) merged as `62646f4cd` and republished `@concertable/mobile@0.1.0-alpha.0.2571`; carved-web CSS [#405] (`d9c62e2c5`); Phase 3b [#389] (`1cbeb2175`); Phase 3a [#378] (`fba490e25`); Phase 2 [#360] (`a3f9535`); Phase 1 [#301]+[#319].
 - Dependency/package gates: **#413 FE publication DONE** — successful descendant run [31197751649](https://github.com/Concertable/concertable/actions/runs/31197751649) published and feed-verified `@concertable/mobile@0.1.0-alpha.0.2571` with the brand assets. This unblocks the follow-up mobile carve gate. No `api/**` → no backend platform-sync.
-- Last reconciled: 2026-08-08 — the reviewed work head `96f88e8a1` was pushed from prior remote head `e4d3bc97f`; local, remote-tracking, and PR `headRefOid` equality was verified. Replacement CI is now the live prerequisite before queue admission.
+- Last reconciled: 2026-08-08 — PR head `f353a70b6` passed the complete replacement gate: `fe-boundaries`, all six `carve-fe` jobs, build, unit, integration, and `ci-complete`. The review/ledger-only tail after the code watermark was incrementally reviewed with no findings. That review checkpoint must be pushed and rechecked before queue admission.
 
 ## Current state
 
@@ -24,7 +24,7 @@ from `app/mobile/TECH_DEBT.md`.
 
 ## Next Steps
 
-**1. Finish and land import-boundary PR #428.** Transport this push checkpoint and verify local/remote/PR equality, then require replacement `fe-boundaries`, all six `carve-fe` matrix jobs, build, unit, and integration checks at the resulting head. Keep full E2E selected and merge through the queue without weakening a failing gate. Phase 3 becomes terminal only after the merge is recorded and its recovery state is transferred to a closeout worktree.
+**1. Finish and land import-boundary PR #428.** Commit and push the incremental review checkpoint, verify local/remote/PR equality, and reconcile the resulting inert-head checks. Keep full E2E selected, verify exact queue admission, and merge through the queue without weakening a failing gate. Phase 3 becomes terminal only after the merge is recorded and its recovery state is transferred to a closeout worktree.
 
 Then Phase 4 (FE platform-sync) and Phase 5 (produce full-stack repos, D-A/D-B) per the plan.
 Gate: each item ends with its own green carve/build proof on its PR.
@@ -78,6 +78,7 @@ Gate: each item ends with its own green carve/build proof on its PR.
 ## Reviews
 
 - **Import-boundary full code/security review:** `reviews/Feature-platform_polyrepo_import-boundary.md`, range `9a18371a0..8a80bd3a` plus the cross-platform runner fix. Finding `NAT1` (MEDIUM correctness) identified direct `.cmd` spawning as Windows-incompatible; fixed by invoking dependency-cruiser's JavaScript entrypoint through `process.execPath` and verified in the clean Node 20 container. No other correctness, workflow-security, architecture-boundary, convention, or changed-behaviour coverage findings remain.
+- **Import-boundary incremental review:** range `da3b75a7..f353a70b` (2 commits), covering only the review artifact and plan-ledger delivery checkpoints. No findings; watermark advanced to `f353a70b6841f03c6339a7b2590dd7126b480499`.
 
 - **Mobile carve gate full code review:** `reviews/Feature-platform_polyrepo_mobile-carve.md`, range
   `59bdd7a8a..e64245e51` (18 commits), watermark `e64245e5192ccbccb30a5fd54d687ca05170c321`.
@@ -109,6 +110,13 @@ Gate: each item ends with its own green carve/build proof on its PR.
 - **Metro/nativewind/tailwind runtime configs left for Phase 3.** The Phase 2 gate is build + typecheck; the mobile app's metro `watchFolders`/nativewind `input`/tailwind `content` still point at `../shared` source. The app already resolves `@concertable/shared`/`customer` as symlinked packages the same way, so no in-monorepo runtime regression, but className/class-generation on the precompiled dist is unproven — a first-class Phase 3 item, not a silent gap.
 
 ## Event log
+
+### 2026-08-08 — replacement PR gate green; meta tail incrementally reviewed
+
+- Action: Followed the complete replacement check set to terminal green at the transported PR head, then incrementally reviewed the two commits after the code-review watermark.
+- Evidence: PR run 31280106976 at `f353a70b6`: `fe-boundaries`, six `carve-fe` jobs, build, all unit/integration jobs, and `ci-complete` passed; PR-level E2E skipped as designed. Incremental review `da3b75a7..f353a70b` contains only `reviews/Feature-platform_polyrepo_import-boundary.md` and `plans/platform/POLYREPO_FULLSTACK_PROGRESS.md`; no findings.
+- Outcome: the exact remote source head is fully green and the full branch history is reviewed. The local incremental-review checkpoint is the only unpublished tail.
+- Follow-up: commit and push the review checkpoint, verify equality and inert replacement checks, then enqueue full E2E.
 
 ### 2026-08-08 — reviewed import-boundary work head pushed and verified
 
