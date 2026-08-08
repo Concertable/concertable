@@ -26,7 +26,24 @@ RELATIVE_LEDGER = re.compile(
     r"plans[\\/][A-Za-z0-9_.() \\/-]+?_PROGRESS\.md",
     re.IGNORECASE,
 )
-WORKDIR = re.compile(r"(?:workdir|cwd)\s*:\s*[\"']([^\"']+)", re.IGNORECASE)
+WORKDIR = re.compile(r"[\"']?(?:workdir|cwd)[\"']?\s*:\s*[\"']([^\"']+)", re.IGNORECASE)
+REGISTERED_OWNER_WAIT = re.compile(r"\bdownstream handoffs\b", re.IGNORECASE)
+BLOCKED_OR_WAITING = re.compile(r"\b(?:blocked|waiting)\b", re.IGNORECASE)
+SUPPRESS_RESUME_PROMPT = re.compile(
+    r"\bdo not\b(?:(?![.!?](?:\s|$)).){0,240}"
+    r"\b(?:emit|include|surface)\b(?:(?![.!?](?:\s|$)).){0,120}"
+    r"\b(?:resume|continuation|handoff)(?:\s+prompt)?\b",
+    re.IGNORECASE | re.DOTALL,
+)
+MUTATING_TOOL_NAMES = {
+    "apply_patch",
+    "edit",
+    "edit_file",
+    "multiedit",
+    "multi_edit",
+    "write",
+    "write_file",
+}
 
 
 def next_steps(text):
@@ -49,6 +66,11 @@ def is_terminal(body):
         or plain in TERMINAL
         or first_line.startswith("waiting for ")
         or first_line.startswith("blocked: waiting for ")
+        or (
+            BLOCKED_OR_WAITING.search(body)
+            and REGISTERED_OWNER_WAIT.search(body)
+            and SUPPRESS_RESUME_PROMPT.search(body)
+        )
     )
 
 
@@ -63,24 +85,86 @@ def strings(value):
             yield from strings(item)
 
 
-def genuine_user_message(value):
+def workdirs(value):
+    if isinstance(value, str):
+        for match in WORKDIR.finditer(value):
+            yield match.group(1)
+    elif isinstance(value, dict):
+        for name, item in value.items():
+            if name.lower() in {"cwd", "workdir"} and isinstance(item, str):
+                yield item
+            else:
+                yield from workdirs(item)
+    elif isinstance(value, list):
+        for item in value:
+            yield from workdirs(item)
+
+
+def user_content(value):
+    if isinstance(value, str):
+        yield value
+    elif isinstance(value, list):
+        for item in value:
+            if isinstance(item, str):
+                yield item
+            elif isinstance(item, dict) and item.get("type") in {"text", "input_text"}:
+                text = item.get("text")
+                if isinstance(text, str):
+                    yield text
+
+
+def payload(value):
     if not isinstance(value, dict):
-        return False
+        return None
     if isinstance(value.get("payload"), dict):
-        payload = value["payload"]
-    elif value.get("type") == "user" and isinstance(value.get("message"), dict):
-        payload = value["message"]
-    else:
-        payload = value
-    if payload.get("role") != "user":
+        return value["payload"]
+    if value.get("type") in {"user", "assistant"} and isinstance(value.get("message"), dict):
+        return value["message"]
+    return value
+
+
+def genuine_user_message(value):
+    candidate = payload(value)
+    if candidate is None or candidate.get("role") != "user":
         return False
-    content = payload.get("content")
+    content = candidate.get("content")
     if isinstance(content, list):
-        return not any(
+        if any(
             isinstance(item, dict) and item.get("type") in {"tool_result", "function_call_output"}
             for item in content
-        )
-    return True
+        ):
+            return False
+    return not any("<hook_prompt" in text for text in user_content(content))
+
+
+def mutating_tool_input(name, tool_input):
+    normalized = (name or "").casefold().replace("-", "_")
+    if normalized.rsplit(".", 1)[-1] in MUTATING_TOOL_NAMES:
+        return tool_input
+    if any("*** Begin Patch" in text for text in strings(tool_input)):
+        return tool_input
+    return None
+
+
+def intentional_contexts(record):
+    candidate = payload(record)
+    if candidate is None:
+        return
+    if genuine_user_message(record):
+        yield from user_content(candidate.get("content"))
+    if candidate.get("type") in {"custom_tool_call", "function_call"}:
+        tool_input = candidate.get("input", candidate.get("arguments"))
+        context = mutating_tool_input(candidate.get("name"), tool_input)
+        if context is not None:
+            yield context
+    content = candidate.get("content")
+    if isinstance(content, list):
+        for item in content:
+            if isinstance(item, dict) and item.get("type") in {"tool_use", "function_call"}:
+                tool_input = item.get("input", item.get("arguments"))
+                context = mutating_tool_input(item.get("name"), tool_input)
+                if context is not None:
+                    yield context
 
 
 def transcript_turn(path):
@@ -145,18 +229,22 @@ def add_if_ledger(paths, candidate):
 
 def transcript_ledgers(records, cwd):
     paths = set()
-    values = list(strings(records))
-    bases = {Path(cwd).resolve()}
-    for value in values:
-        for match in WORKDIR.finditer(value):
-            bases.add(Path(match.group(1)).resolve())
-        for match in ABSOLUTE_LEDGER.finditer(value):
-            add_if_ledger(paths, Path(match.group(0).rstrip("`),.;")))
-    for value in values:
-        for match in RELATIVE_LEDGER.finditer(value):
-            relative = Path(match.group(0).replace("\\", "/").rstrip("`),.;"))
-            for base in bases:
-                add_if_ledger(paths, base / relative)
+    contexts = [context for record in records for context in intentional_contexts(record)]
+    for context in contexts:
+        values = list(strings(context))
+        explicit_bases = {Path(path).resolve() for path in workdirs(context)}
+        bases = explicit_bases or {Path(cwd).resolve()}
+        for value in values:
+            absolute_matches = list(ABSOLUTE_LEDGER.finditer(value))
+            for match in absolute_matches:
+                add_if_ledger(paths, Path(match.group(0).rstrip("`),.;")))
+            for match in RELATIVE_LEDGER.finditer(value):
+                absolute_spans = (item.span() for item in absolute_matches)
+                if any(start <= match.start() < end for start, end in absolute_spans):
+                    continue
+                relative = Path(match.group(0).replace("\\", "/").rstrip("`),.;"))
+                for base in bases:
+                    add_if_ledger(paths, base / relative)
     return paths
 
 
@@ -190,6 +278,31 @@ def ledger_root(path):
     raise ValueError(f"Ledger is not below plans/: {path}")
 
 
+def logical_ledger_key(path):
+    return path.relative_to(ledger_root(path)).as_posix().casefold()
+
+
+def owner_copy_score(path):
+    text = path.read_text(encoding="utf-8")
+    declared_worktree = metadata(text, "Worktree")
+    if not declared_worktree:
+        return 1
+    try:
+        return 0 if Path(declared_worktree).resolve() == ledger_root(path) else 1
+    except OSError:
+        return 1
+
+
+def canonical_ledgers(paths):
+    grouped = {}
+    for path in paths:
+        grouped.setdefault(logical_ledger_key(path), []).append(path)
+    return {
+        min(candidates, key=lambda path: (owner_copy_score(path), str(path).casefold()))
+        for candidates in grouped.values()
+    }
+
+
 def expected_pointer(path):
     root = ledger_root(path)
     plan = path.with_name(path.name.removesuffix("_PROGRESS.md") + "_PLAN.md")
@@ -220,6 +333,7 @@ def evaluate(data):
     ledgers = transcript_ledgers(records, cwd)
     if not records:
         ledgers |= branch_ledgers(git_root(cwd))
+    ledgers = canonical_ledgers(ledgers)
     active = []
     for path in sorted(ledgers):
         body = next_steps(path.read_text(encoding="utf-8"))
@@ -230,6 +344,7 @@ def evaluate(data):
             }
         if not is_terminal(body):
             active.append((path, expected_pointer(path)))
+    active = list({pointer: (path, pointer) for path, pointer in active}.values())
     if not active:
         return {}
     message = (data.get("last_assistant_message") or data.get("lastAssistantMessage") or "").replace(
