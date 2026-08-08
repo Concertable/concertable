@@ -29,6 +29,10 @@
 - [ ] 🟠 **Percentage commission + B2B pricing transparency** — Payment Phase 1 is merged, published and synced: immutable percentage revisions, Payment-issued bindings, binding-aware money RPCs, and durable transaction/refund/tax/ledger facts. Phase 1b now removes caller-supplied commission and total from post-binding actions so B2B retains only the binding ID and frozen gross; its package publication, Payment deployment and platform sync are the hard gate before the four gross strategies and payer disclosure in Phase 2. The temporary £10 seam is removed only in Phase 3. See [PLATFORM_COMMISSION_PLAN.md](PLATFORM_COMMISSION_PLAN.md).
 - [ ] 🔴 **Production deployment + config/secrets** — the app has **no** deployment path, config store, or secret store (all local Aspire + emulators; secrets committed to source, incl. a plaintext Azure SQL password). Surfaced 2026-07-17. Hard launch gate. Plan: [../CONFIG_AND_DEPLOYMENT_PLAN.md](../platform/CONFIG_AND_DEPLOYMENT_PLAN.md).
 
+**Architecture refactors — ready, not launch gates:**
+
+- [ ] 🟡 **Deal-type strategy registration** — replace nine hand-written `DealType → strategy` dictionaries with module-local factories and one vertically declared registration source, while preserving named business facades and the existing Deal/Concert boundary. Compatible with the planned .NET 11 Accept/Apply/Checkout union migration. Plan: [DEAL_STRATEGY_REGISTRATION_PLAN.md](DEAL_STRATEGY_REGISTRATION_PLAN.md).
+
 **Verify before trusting — competitor table-stakes, not confirmed in code:** reviews/reputation end-to-end · calendar sync (Google/Apple/Outlook) · financial/settlement CSV export.
 
 The legal/business track is [LAUNCH_CHECKLIST.md](LAUNCH_CHECKLIST.md); the hard launch gates are in §7.
