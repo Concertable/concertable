@@ -3,9 +3,9 @@
 - Plan: `plans/platform/POLYREPO_FULLSTACK_PLAN.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-platform_polyrepo_import-boundary` — dedicated Phase 3 import-boundary checkout, current with `origin/main` at `9a18371a0`.
 - Branch: `Feature/platform_polyrepo_import-boundary` — direct owner of the remaining Phase 3 import-boundary work.
-- PR: **import-boundary PR [#428](https://github.com/Concertable/concertable/pull/428) OPEN** at verified remote head `96f88e8a1`, base `main`, not draft, no labels; replacement CI is running. Prior mobile-carve PR [#416](https://github.com/Concertable/concertable/pull/416) merged as `83a3f49a1`; publish-first mobile-retarget PR [#413](https://github.com/Concertable/concertable/pull/413) merged as `62646f4cd` and republished `@concertable/mobile@0.1.0-alpha.0.2571`; carved-web CSS [#405] (`d9c62e2c5`); Phase 3b [#389] (`1cbeb2175`); Phase 3a [#378] (`fba490e25`); Phase 2 [#360] (`a3f9535`); Phase 1 [#301]+[#319].
+- PR: **import-boundary PR [#428](https://github.com/Concertable/concertable/pull/428) OPEN** at verified remote head `7f49fbcdd`, base `main`, not draft, no labels; inert replacement CI is running. Prior mobile-carve PR [#416](https://github.com/Concertable/concertable/pull/416) merged as `83a3f49a1`; publish-first mobile-retarget PR [#413](https://github.com/Concertable/concertable/pull/413) merged as `62646f4cd` and republished `@concertable/mobile@0.1.0-alpha.0.2571`; carved-web CSS [#405] (`d9c62e2c5`); Phase 3b [#389] (`1cbeb2175`); Phase 3a [#378] (`fba490e25`); Phase 2 [#360] (`a3f9535`); Phase 1 [#301]+[#319].
 - Dependency/package gates: **#413 FE publication DONE** — successful descendant run [31197751649](https://github.com/Concertable/concertable/actions/runs/31197751649) published and feed-verified `@concertable/mobile@0.1.0-alpha.0.2571` with the brand assets. This unblocks the follow-up mobile carve gate. No `api/**` → no backend platform-sync.
-- Last reconciled: 2026-08-08 — PR head `f353a70b6` passed the complete replacement gate: `fe-boundaries`, all six `carve-fe` jobs, build, unit, integration, and `ci-complete`. The review/ledger-only tail after the code watermark was incrementally reviewed with no findings. That review checkpoint must be pushed and rechecked before queue admission.
+- Last reconciled: 2026-08-08 — incremental-review head `7f49fbcdd` was pushed and verified equal across local, remote-tracking, and PR refs. Its delta after the fully green source head is meta-only; inert replacement checks are the final prerequisite before queue admission.
 
 ## Current state
 
@@ -24,7 +24,7 @@ from `app/mobile/TECH_DEBT.md`.
 
 ## Next Steps
 
-**1. Finish and land import-boundary PR #428.** Commit and push the incremental review checkpoint, verify local/remote/PR equality, and reconcile the resulting inert-head checks. Keep full E2E selected, verify exact queue admission, and merge through the queue without weakening a failing gate. Phase 3 becomes terminal only after the merge is recorded and its recovery state is transferred to a closeout worktree.
+**1. Finish and land import-boundary PR #428.** Transport this verified push checkpoint, confirm local/remote/PR equality and terminal inert-head checks, then keep full E2E selected, verify exact queue admission, and merge through the queue without weakening a failing gate. Phase 3 becomes terminal only after the merge is recorded and its recovery state is transferred to a closeout worktree.
 
 Then Phase 4 (FE platform-sync) and Phase 5 (produce full-stack repos, D-A/D-B) per the plan.
 Gate: each item ends with its own green carve/build proof on its PR.
@@ -110,6 +110,13 @@ Gate: each item ends with its own green carve/build proof on its PR.
 - **Metro/nativewind/tailwind runtime configs left for Phase 3.** The Phase 2 gate is build + typecheck; the mobile app's metro `watchFolders`/nativewind `input`/tailwind `content` still point at `../shared` source. The app already resolves `@concertable/shared`/`customer` as symlinked packages the same way, so no in-monorepo runtime regression, but className/class-generation on the precompiled dist is unproven — a first-class Phase 3 item, not a silent gap.
 
 ## Event log
+
+### 2026-08-08 — incremental-review head pushed and verified
+
+- Action: Pushed the review/check checkpoint and reconciled the delivery refs.
+- Evidence: pushed `f353a70b6..7f49fbcdd`; local `HEAD`, `origin/Feature/platform_polyrepo_import-boundary`, and PR #428 `headRefOid` all equal `7f49fbcddd61cd312969abac5e2f14cf28a2378a` after fetch.
+- Outcome: the PR now contains the complete review record; only inert replacement checks remain before queue admission. This checkpoint is the sole local tail.
+- Follow-up: transport this checkpoint, verify equality, reconcile inert checks, then enqueue full E2E.
 
 ### 2026-08-08 — replacement PR gate green; meta tail incrementally reviewed
 
