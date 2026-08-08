@@ -5,7 +5,7 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `91833d0f2`  _(2026-08-08)_
+**Reviewed up to commit:** `c3eb789906932d194811aac9b1dcd87b953238e0`  _(2026-08-08)_
 
 > Range reviewed: `66ef2c7d..d8aa5950` (4 commits), plus the 2026-08-08 pre-merge pass below.
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -31,3 +31,9 @@ merges from `origin/main` and were not authored by this branch.
 - [wontfix] **NAT1 — dead `ApiError` export** / **NAT2 — duplicate `ProblemDetails`** — both already resolved by the next commit in the stack (`refactor: migrate frontend HTTP error consumers`), which wires `ApiError` into the interceptor's reject path and re-exports `ProblemDetails` from `apiError.ts` instead of redeclaring it. Intentional publish-first split, not a gap in this PR.
 - [x] **NAT5 — LOW — test coverage** — `app/shared/src/lib/client.test.ts`
   Added a case exercising the plain pass-through (non-404/401) rejection path.
+
+## Incremental review — 2026-08-08
+
+No issues found. The post-watermark branch change was the prior review stamp, and the merge from
+`origin/main` resolved without branch-authored runtime changes. Checked correctness, microservice
+isolation, module boundaries, seeding, C# conventions, and test coverage of changed paths.
