@@ -5,7 +5,7 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `c3eb789906932d194811aac9b1dcd87b953238e0`  _(2026-08-08)_
+**Reviewed up to commit:** `835d3da4939b375fd71e172a3ddbf338bc559085`  _(2026-08-08)_
 
 > Range reviewed: `66ef2c7d..d8aa5950` (4 commits), plus the 2026-08-08 pre-merge pass below.
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -36,4 +36,10 @@ merges from `origin/main` and were not authored by this branch.
 
 No issues found. The post-watermark branch change was the prior review stamp, and the merge from
 `origin/main` resolved without branch-authored runtime changes. Checked correctness, microservice
+isolation, module boundaries, seeding, C# conventions, and test coverage of changed paths.
+
+## Incremental review — 2026-08-08 (current-main refresh)
+
+No issues found. The additional merge from `origin/main` updated the platform package pin and API
+guidance without conflict or branch-authored runtime resolution. Checked correctness, microservice
 isolation, module boundaries, seeding, C# conventions, and test coverage of changed paths.
