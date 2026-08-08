@@ -4,8 +4,8 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_customer-outcomes`
 - Branch: `Feature/typed-result_customer-outcomes`
 - PR: [#425](https://github.com/Concertable/concertable/pull/425) — open, non-draft, head `e60219f7d`
-- Dependency/package gates: owned Kernel foundation PR #290 and platform sync #291 are shipped; no Payment/B2B package dependency; platform-sync PR #373 shipped `0.1.0-alpha.0.814` green in merge commit `9169107c0`; PR #282 remains the exclusive open owner of Ticket/Concert/Customer Payment work and is not a dependency; platform-sync PR #420 shipped `0.1.0-alpha.0.853` green in merge commit `372be1041b20`
-- Last reconciled: 2026-08-08 from GitHub PR #425, pushed head `e60219f7d`, and its empty label set
+- Dependency/package gates: owned Kernel foundation PR #290 and platform sync #291 are shipped; no Payment/B2B package dependency; platform-sync PR #373 shipped `0.1.0-alpha.0.814` green in merge commit `9169107c0`; PR #282 remains the exclusive open owner of Ticket/Concert/Customer Payment work and is not a dependency; `Refactor/typed-result_http-terminals` owns the published Shared.Api semantic-terminal cutover before this PR can migrate; platform-sync PR #420 shipped `0.1.0-alpha.0.853` green in merge commit `372be1041b20`
+- Last reconciled: 2026-08-08 from Customer PR #425 and package-owner commit `1d261e3ce`
 
 ## Current state
 
@@ -37,13 +37,19 @@ Push leg two published the isolated ledger transport checkpoint `e60219f7d`, and
 branch exactly matches local HEAD. GitHub PR #425 is open and non-draft against `main` at that exact
 head. Its label set is empty, so the required full merge-queue E2E tier has no skip override.
 
+Before PR #425 merges, it must consume the published semantic Shared.Api terminal package. The owner
+is `plans/typed-result/HTTP_RESULT_TERMINALS_PROGRESS.md` in
+`C:\Users\TommySeery\source\repos\Concertable.worktrees\Refactor\typed-result_http-terminals`.
+Its Phase 1 package source is committed as `1d261e3ce`; this branch waits for that owner PR and its
+generated platform-sync PR to merge, then migrates its Result and Option controller terminals.
+
 ## Next Steps
 
-Run `/merge` for PR #425 from this worktree. Keep the full merge-queue E2E tier, follow the feature PR
-to its terminal merged state, then own the generated platform-sync PR through green/merged. Move the
-remaining recovery state to the required docs close-out worktree after the feature merges, update the
-typed-result roadmap only when the complete delivery lifecycle is terminal, and delete this plan and
-ledger together in that close-out.
+Wait for `plans/typed-result/HTTP_RESULT_TERMINALS_PROGRESS.md` to publish its Shared.Api terminal
+package and for its generated platform-sync PR to merge. Then fetch and merge current main, migrate
+this branch's Result and Option controller terminals to the published semantic API, verify the affected
+Customer integration tests, Shared.Api suite, and Release solution, incrementally review the change,
+and update PR #425. Do not enqueue PR #425 before that consumer migration is complete.
 
 ## Completed work
 
@@ -81,6 +87,8 @@ ledger together in that close-out.
   29/29, Shared.Api 60/60, and the Release solution build with 0 errors on that exact base.
 - Passed PR preflight, completed the two-leg push through `e60219f7d`, and opened non-draft PR #425
   against `main` with no E2E skip label.
+- Registered the published Shared.Api terminal cutover as a blocking predecessor to PR #425; its owner
+  is `Refactor/typed-result_http-terminals` at package-source commit `1d261e3ce`.
 
 ## Verification
 
