@@ -1,13 +1,13 @@
 ---
 name: code-review
-description: Full code review of a branch diff against Concertable's conventions, module-boundary rules, and microservice-isolation rules. Runs the host tool's NATIVE general review FIRST (Claude's built-in catalog via the `code-reviewer` subagent, or Codex's native `/review`), then layers Concertable's architecture-aware lenses on top — correctness bugs plus convention/boundary/microservice anti-patterns (B2B and Customer are separate services that must only communicate via *.Contracts integration events — never each other's runtime) plus missing test coverage on changed paths — filters to high-confidence findings, merges both layers into one per-branch review markdown, and stamps the reviewed-up-to commit SHA at the top. It is a SUPERSET of the built-in review, never a replacement. Use when the user wants to "code-review my changes", "review this branch", "review the PR", or "do a full review". For re-reviewing only commits added since a previous review, use the `incremental-review` skill (a thin wrapper around this one). The GitHub PR `/review` is unrelated and untouched.
+description: Full code review of a branch diff against Concertable's conventions, module-boundary rules, and microservice-isolation rules. Runs the host tool's NATIVE general review FIRST (Claude's built-in catalog via the `code-reviewer` subagent, or Codex's native code review), then layers Concertable's architecture-aware lenses on top — correctness bugs plus convention/boundary/microservice anti-patterns (B2B and Customer are separate services that must only communicate via *.Contracts integration events — never each other's runtime) plus missing test coverage on changed paths — filters to high-confidence findings, merges both layers into one per-branch review markdown, and stamps the reviewed-up-to commit SHA at the top. It is a SUPERSET of the built-in review, never a replacement. Use when the user wants to "code-review my changes", "review this branch", "review the PR", or "do a full review". For re-reviewing only commits added since a previous review, use the `incremental-review` skill (a thin wrapper around this one). The GitHub PR `/review` is unrelated and untouched.
 ---
 
 # code-review
 
 Full code review of the current branch's diff in **two layers, both mandatory**: **Layer 1** is the host tool's *native* general review (correctness, reuse, simplification, efficiency, error handling — Step 1c), run first and captured; **Layer 2** is Concertable's architecture-aware lenses (Steps 2–4), the checks no native review can know. Both land in one per-branch review markdown with a `Reviewed up to commit:` SHA marker at the top, so a later `incremental-review` run knows exactly where this review stopped.
 
-Layer 1 exists because a project skill named `code-review` shadows the built-in `/code-review`, and the built-in is non-sub-invocable — so this skill *reproduces* it (via the `code-reviewer` subagent on Claude, or Codex's own `/review`) instead of losing it. That loss is exactly what this skill previously caused by "replacing" the built-in.
+Layer 1 exists because a project skill named `code-review` shadows the built-in `/code-review` — so this skill reproduces the native pass (Step 1c) instead of losing it, which is exactly what "replacing" the built-in previously did.
 
 `incremental-review` is this skill with one input changed: it starts the diff at a recorded SHA instead of the branch's merge-base. Everything else — the lenses, the confidence filter, the output file, the marker — is identical. Keep them in sync: a change to the review procedure here is inherited by `incremental-review`.
 
@@ -74,7 +74,7 @@ end. Step 5 then just reconciles the final list; Step 6 finalizes the marker.
 Before loading Concertable's rules, run the host tool's native general review over the same `<start>..HEAD` range and fold its findings into the work-order as `NAT#`:
 
 - **Claude Code:** spawn the `code-reviewer` subagent (Agent tool) with the range; it returns the built-in catalog's findings (correctness, reuse, simplification, efficiency, error handling) as markdown. Direct `/code-review` is unavailable here — this skill shadows that name and the built-in is non-sub-invocable — so the subagent is the supported capture path.
-- **Codex:** run Codex's native `/review` over the range and capture its findings.
+- **Codex:** run Codex's native code review over the range and capture its findings.
 
 Append the returned findings under `## Findings` immediately (as `- [ ] **NAT# — <SEVERITY> — native** — file:line`), so an interrupted run still records them. They pass through Step 4's confidence bar during Step 5's reconcile.
 
@@ -86,7 +86,7 @@ Run `git diff --name-only <start>..HEAD`. If any path hits Auth, Payment, `*.Con
 **Security-reviewed up to commit:** `<full-HEAD-sha>`  _(<today's ISO date>)_
 ```
 
-The merge gate refuses to merge a security-sensitive branch without this marker current at HEAD. No sensitive paths → skip this step, no marker.
+The merge gate's `_SECURITY_PATTERNS` (in `merge-review-gate.py`) is the source of truth for which paths count; it refuses to merge a security-sensitive branch without this marker current at HEAD. No sensitive paths → skip this step, no marker.
 
 ## Step 2 — Load the rules (read before flagging anything)
 
