@@ -31,15 +31,18 @@ agent-starter-kit/
 `pull-main` is intentionally not part of the global set anymore. `sync` covers the useful default
 branch update flow.
 
-## Repository slash commands
+## Repository workflows
 
-Canonical command instructions live under `.agents/commands/`. Claude and Codex command entry points
-must be thin wrappers that reference the matching canonical file so their behavior cannot drift.
+Canonical workflow instructions live under `.agents/commands/`. Claude command and Codex skill entry
+points must be thin wrappers that reference the matching canonical file so their behavior cannot drift.
 
-Codex discovers those wrappers through the repo's `concertable` plugin under
-`plugins/concertable/commands/`. Install the repo marketplace once, then install the plugin:
+Codex discovers its wrappers through the repo's `concertable` plugin under
+`plugins/concertable/skills/`. Install the repo marketplace once, then install the plugin:
 
 ```powershell
 codex plugin marketplace add <repo-root>
 codex plugin add concertable@concertable
 ```
+
+In the ChatGPT desktop app, type `@` and select the `techdebt` skill. In Codex CLI, type `$` or use
+`/skills`. Plugin workflows are skills; plugin-defined custom slash commands are not supported.
