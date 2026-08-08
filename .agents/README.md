@@ -30,3 +30,14 @@ agent-starter-kit/
 
 `pull-main` is intentionally not part of the global set anymore. `sync` covers the useful default
 branch update flow.
+
+## Repository slash commands
+
+Codex slash commands live in the repo's `concertable` plugin under
+`plugins/concertable/commands/`; a bare `.agents/commands/` directory is not a registered command
+surface. Install the repo marketplace once, then install the plugin:
+
+```powershell
+codex plugin marketplace add <repo-root>
+codex plugin add concertable@concertable
+```
