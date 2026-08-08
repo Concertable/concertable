@@ -1,9 +1,4 @@
----
-name: techdebt
-description: Pick one repository tech-debt item and take it all the way to a pull request from the persistent isolated Chore/TechDebt worktree. Use whenever the user invokes $techdebt, says "techdebt", asks to pick or resolve a TECH_DEBT.md item, or wants one self-contained tech-debt task completed end to end.
----
-
-# Tech debt
+# /techdebt
 
 Start a self-contained tech-debt session in an **isolated worktree** so nothing touches in-flight branches.
 
