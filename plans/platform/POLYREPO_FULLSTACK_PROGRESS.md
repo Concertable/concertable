@@ -1,11 +1,11 @@
 # Full-stack polyrepo — frontend build separation progress
 
 - Plan: `plans/platform/POLYREPO_FULLSTACK_PLAN.md`
-- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-platform_polyrepo_import-boundary` — dedicated Phase 3 import-boundary checkout, current with `origin/main` at `cf4737b4f`.
+- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-platform_polyrepo_import-boundary` — dedicated Phase 3 import-boundary checkout, current with `origin/main` at `9a54efd58`.
 - Branch: `Feature/platform_polyrepo_import-boundary` — direct owner of the remaining Phase 3 import-boundary work.
-- PR: **import-boundary PR [#428](https://github.com/Concertable/concertable/pull/428) OPEN** at verified remote head `270676f25`, base `main`, not draft, no labels. Complete replacement run 31283793063 passed, but the immediate currency check found it six commits behind new main `9a54efd58`; those commits are techdebt command/plugin docs only. Prior mobile-carve PR [#416](https://github.com/Concertable/concertable/pull/416) merged as `83a3f49a1`; publish-first mobile-retarget PR [#413](https://github.com/Concertable/concertable/pull/413) merged as `62646f4cd` and republished `@concertable/mobile@0.1.0-alpha.0.2571`; carved-web CSS [#405] (`d9c62e2c5`); Phase 3b [#389] (`1cbeb2175`); Phase 3a [#378] (`fba490e25`); Phase 2 [#360] (`a3f9535`); Phase 1 [#301]+[#319].
+- PR: **import-boundary PR [#428](https://github.com/Concertable/concertable/pull/428) OPEN** at verified remote head `270676f25`, base `main`, not draft, no labels. New main `9a54efd58` is merged locally as `92e5be5df`, rebuilt, and review-clean; the reviewed replacement head awaits compound publication. Prior mobile-carve PR [#416](https://github.com/Concertable/concertable/pull/416) merged as `83a3f49a1`; publish-first mobile-retarget PR [#413](https://github.com/Concertable/concertable/pull/413) merged as `62646f4cd` and republished `@concertable/mobile@0.1.0-alpha.0.2571`; carved-web CSS [#405] (`d9c62e2c5`); Phase 3b [#389] (`1cbeb2175`); Phase 3a [#378] (`fba490e25`); Phase 2 [#360] (`a3f9535`); Phase 1 [#301]+[#319].
 - Dependency/package gates: **#413 FE publication DONE** — successful descendant run [31197751649](https://github.com/Concertable/concertable/actions/runs/31197751649) published and feed-verified `@concertable/mobile@0.1.0-alpha.0.2571` with the brand assets. This unblocks the follow-up mobile carve gate. No `api/**` → no backend platform-sync.
-- Last reconciled: 2026-08-09 — transported head `270676f25` passed complete replacement run 31283793063, including `fe-boundaries`, all six `carve-fe` jobs, build, unit/integration, and `ci-complete`. The immediate fetch found `origin/main` advanced six docs/meta commits to `9a54efd58`; queue admission is blocked until that base is merged and the head is republished.
+- Last reconciled: 2026-08-09 — merged `origin/main` `9a54efd58` as `92e5be5df`; `origin/main...HEAD` is 0 behind / 21 ahead. The single-threaded full-solution build passed with 0 errors after a transient parallel Windows output-handle failure, and incremental review found no issues. The reviewed replacement head is local only.
 
 ## Current state
 
@@ -24,7 +24,7 @@ from `app/mobile/TECH_DEBT.md`.
 
 ## Next Steps
 
-**1. Finish and land import-boundary PR #428.** Commit this third base-drift checkpoint, merge `origin/main` at `9a54efd58`, rebuild and incrementally review, then republish through the compound protocol and require replacement checks. Recheck currency immediately at terminal green and enqueue full E2E if current. Phase 3 becomes terminal only after the merge is recorded and its recovery state is transferred to a closeout worktree.
+**1. Finish and land import-boundary PR #428.** Commit and republish the third current-main review/ledger checkpoint through the compound protocol, then require replacement checks. Recheck currency immediately at terminal green and enqueue full E2E if current. Phase 3 becomes terminal only after the merge is recorded and its recovery state is transferred to a closeout worktree.
 
 Then Phase 4 (FE platform-sync) and Phase 5 (produce full-stack repos, D-A/D-B) per the plan.
 Gate: each item ends with its own green carve/build proof on its PR.
@@ -51,6 +51,7 @@ Gate: each item ends with its own green carve/build proof on its PR.
 - **Review-fix gate (2026-08-08):** after merging `origin/main`, `dotnet build api/Concertable.slnx` succeeded with 0 errors. A clean `node:20-bookworm` container installed from `package-lock.json`; `npm run test:boundaries` passed and proved both violations; `npm run lint:boundaries` passed all 11 workspaces with zero violations. The host `npm ci` remained subject to the documented Windows antivirus partial-extraction failure and was not used as product evidence.
 - **Current-main gate (2026-08-08):** after merging base `0514fe25b`, `dotnet build api/Concertable.slnx` succeeded with 0 errors. The merge changed no PR-owned frontend boundary or workflow path, so the existing clean Node 20 boundary proof remains applicable.
 - **Second current-main gate (2026-08-09):** after merging base `cf4737b4f` as `b9425e5da`, `dotnet build api/Concertable.slnx --no-restore` succeeded with 0 errors (six existing nullable-context warnings). The merge imports only the platform-version sync and skill documentation; it changes no PR-owned frontend boundary or workflow path, so the existing clean Node 20 boundary proof remains applicable.
+- **Third current-main gate (2026-08-09):** after merging base `9a54efd58` as `92e5be5df`, the initial parallel `dotnet build api/Concertable.slnx --no-restore` hit a transient Windows `CS0016` invalid output-handle failure in `Concertable.Payment.Api`; the single-threaded retry passed with 0 errors. The merge changes only techdebt command/plugin metadata, so the existing clean Node 20 boundary proof remains applicable.
 - **Standing frontend gate (2026-08-08):** clean official Node 20 container; `npm ci` green; `npm run build:packages` built all five tiers; all four web builds green (3713 customer, 4404 venue, 4394 artist, 1757 business modules); `tsc --noEmit` green for `mobile/customer` and `mobile/b2b`; `git diff --check` green.
 
 - **Mobile carve matrix implementation (2026-08-07):** `.github/workflows/test.yml` now lists all six
@@ -83,6 +84,7 @@ Gate: each item ends with its own green carve/build proof on its PR.
 - **Import-boundary incremental review:** range `da3b75a7..f353a70b` (2 commits), covering only the review artifact and plan-ledger delivery checkpoints. No findings; watermark advanced to `f353a70b6841f03c6339a7b2590dd7126b480499`.
 - **Import-boundary current-main incremental review:** range `f353a70b..0e4009ff`; branch-authored delta is plan/review checkpoints only and merge `0e4009ff8` imports already-landed main without changing the PR net boundary/workflow diff. No findings; watermark advanced to `0e4009ff81950c283396e07fe5f75ef31d409530`.
 - **Import-boundary second current-main incremental review:** range `0e4009ff..b9425e5d`; branch-authored delta is plan/review checkpoints only and merge `b9425e5da` imports already-landed platform pins and skill docs without changing the PR net boundary/workflow diff. No findings; watermark advanced to `b9425e5da6d1f752804accc166dc34727ae084fe`.
+- **Import-boundary third current-main incremental review:** range `b9425e5d..92e5be5d`; branch-authored delta is plan delivery checkpoints only and merge `92e5be5df` imports already-landed techdebt command/plugin metadata without changing the PR net boundary/workflow diff. No findings; watermark advanced to `92e5be5df58d0f2deaba600387fba1b8b1cfaaab`.
 
 - **Mobile carve gate full code review:** `reviews/Feature-platform_polyrepo_mobile-carve.md`, range
   `59bdd7a8a..e64245e51` (18 commits), watermark `e64245e5192ccbccb30a5fd54d687ca05170c321`.
@@ -114,6 +116,13 @@ Gate: each item ends with its own green carve/build proof on its PR.
 - **Metro/nativewind/tailwind runtime configs left for Phase 3.** The Phase 2 gate is build + typecheck; the mobile app's metro `watchFolders`/nativewind `input`/tailwind `content` still point at `../shared` source. The app already resolves `@concertable/shared`/`customer` as symlinked packages the same way, so no in-monorepo runtime regression, but className/class-generation on the precompiled dist is unproven — a first-class Phase 3 item, not a silent gap.
 
 ## Event log
+
+### 2026-08-09 — third current-main merge built and reviewed
+
+- Action: Merged the docs/meta base that advanced during replacement CI, rebuilt the full solution, and incrementally reviewed the resulting range.
+- Evidence: merge `92e5be5df58d0f2deaba600387fba1b8b1cfaaab` contains base `9a54efd58636ee1a97aa27a86b166d575d07c327`; `origin/main...HEAD` = 0 behind / 21 ahead. The parallel build hit transient Windows `CS0016` output-handle failure; `dotnet build api/Concertable.slnx --no-restore --maxcpucount:1` then succeeded with 0 errors. Incremental review `b9425e5d..92e5be5d` has no findings.
+- Outcome: the branch is current, builds, and is review-clean. Its replacement head is local only.
+- Follow-up: publish through the compound protocol, require replacement checks, then recheck currency and enqueue full E2E.
 
 ### 2026-08-09 — replacement green; third base drift blocks queueing
 
