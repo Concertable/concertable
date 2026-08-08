@@ -3,7 +3,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const appRoot = dirname(dirname(fileURLToPath(import.meta.url)));
-const executable = join(appRoot, "node_modules", ".bin", process.platform === "win32" ? "depcruise.cmd" : "depcruise");
+const executable = join(appRoot, "node_modules", "dependency-cruiser", "bin", "dependency-cruise.mjs");
 const workspaces = [
   ["web/customer", "web/customer/tsconfig.app.json"],
   ["web/b2b/venue", "web/b2b/venue/tsconfig.app.json"],
@@ -21,8 +21,8 @@ const workspaces = [
 let failed = false;
 for (const [workspace, tsConfig] of workspaces) {
   const result = spawnSync(
-    executable,
-    [workspace, "--config", ".dependency-cruiser.cjs", "--ts-config", join(appRoot, tsConfig), "--output-type", "err"],
+    process.execPath,
+    [executable, workspace, "--config", ".dependency-cruiser.cjs", "--ts-config", join(appRoot, tsConfig), "--output-type", "err"],
     { cwd: appRoot, encoding: "utf8" },
   );
   process.stdout.write(result.stdout ?? "");

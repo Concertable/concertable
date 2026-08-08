@@ -1,11 +1,11 @@
 # Full-stack polyrepo — frontend build separation progress
 
 - Plan: `plans/platform/POLYREPO_FULLSTACK_PLAN.md`
-- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-platform_polyrepo_import-boundary` — dedicated Phase 3 import-boundary checkout, current with `origin/main` at `372be1041`.
+- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-platform_polyrepo_import-boundary` — dedicated Phase 3 import-boundary checkout, current with `origin/main` at `9a18371a0`.
 - Branch: `Feature/platform_polyrepo_import-boundary` — direct owner of the remaining Phase 3 import-boundary work.
 - PR: **import-boundary PR [#428](https://github.com/Concertable/concertable/pull/428) OPEN** at verified remote head `e4d3bc97f`, base `main`, not draft, no labels; CI classifier is running. Prior mobile-carve PR [#416](https://github.com/Concertable/concertable/pull/416) merged as `83a3f49a1`; publish-first mobile-retarget PR [#413](https://github.com/Concertable/concertable/pull/413) merged as `62646f4cd` and republished `@concertable/mobile@0.1.0-alpha.0.2571`; carved-web CSS [#405] (`d9c62e2c5`); Phase 3b [#389] (`1cbeb2175`); Phase 3a [#378] (`fba490e25`); Phase 2 [#360] (`a3f9535`); Phase 1 [#301]+[#319].
 - Dependency/package gates: **#413 FE publication DONE** — successful descendant run [31197751649](https://github.com/Concertable/concertable/actions/runs/31197751649) published and feed-verified `@concertable/mobile@0.1.0-alpha.0.2571` with the brand assets. This unblocks the follow-up mobile carve gate. No `api/**` → no backend platform-sync.
-- Last reconciled: 2026-08-08 — PR #428 opened from the verified plan checkpoint `e4d3bc97f`; the initial `instant-merge` and `enable` checks succeeded while `changes` remained in progress. Delivery ownership now passes to the merge workflow.
+- Last reconciled: 2026-08-08 — PR #428's original head `e4d3bc97f` passed `fe-boundaries`, all six `carve-fe` jobs, build, unit, and integration checks. The local branch merged current `origin/main` and built the full solution with 0 errors. Review found and fixed a Windows-only boundary-runner launch defect; the clean Node 20 container proof is green. The updated reviewed head still needs to be committed and pushed before replacement checks and queue admission.
 
 ## Current state
 
@@ -20,11 +20,11 @@ the published tiers from the feed, type-checked, and completed `expo export` on 
 successful full-E2E merge-group run 31204805838. The resolved mobile bundling entry has been removed
 from `app/mobile/TECH_DEBT.md`.
 
-**Phase 3 import-boundary implementation is locally complete.** `dependency-cruiser` now enforces that each of the 11 frontend workspaces can reach another workspace only through its published `@concertable/*` package. The runner loads every workspace's own tsconfig, so relative and alias-based source reaches are both covered. A negative test injects one cross-surface and one tier-source import and requires both violations; CI runs that proof plus the clean scan as the independent `fe-boundaries` job, and `ci-complete` requires it. Delivery remains live until the PR's boundary job and all six existing feed-restored carve jobs pass and the PR merges.
+**Phase 3 import-boundary implementation is locally complete and review-fixed.** `dependency-cruiser` now enforces that each of the 11 frontend workspaces can reach another workspace only through its published `@concertable/*` package. The runner loads every workspace's own tsconfig, so relative and alias-based source reaches are both covered. A negative test injects one cross-surface and one tier-source import and requires both violations; CI runs that proof plus the clean scan as the independent `fe-boundaries` job, and `ci-complete` requires it. Review exposed that directly spawning the npm `.cmd` shim fails with `EINVAL` on Windows; the runner now invokes dependency-cruiser's JavaScript entrypoint through Node. Delivery remains live until the updated reviewed head passes replacement checks and merges through the full-E2E queue.
 
 ## Next Steps
 
-**1. Land import-boundary PR #428.** Run the merge workflow from this worktree. It must keep the branch current, select the required E2E tier, require `fe-boundaries` plus all six `carve-fe` matrix jobs, and merge through the queue without weakening a failing gate. Phase 3 becomes terminal only after the merge is recorded and its recovery state is transferred to a closeout worktree.
+**1. Finish and land import-boundary PR #428.** Commit the cross-platform runner fix with this checkpoint, finalize the code-review artifact at that code head, then use the compound push protocol to update PR #428. Require replacement `fe-boundaries`, all six `carve-fe` matrix jobs, build, unit, and integration checks; keep full E2E selected and merge through the queue without weakening a failing gate. Phase 3 becomes terminal only after the merge is recorded and its recovery state is transferred to a closeout worktree.
 
 Then Phase 4 (FE platform-sync) and Phase 5 (produce full-stack repos, D-A/D-B) per the plan.
 Gate: each item ends with its own green carve/build proof on its PR.
@@ -48,6 +48,7 @@ Gate: each item ends with its own green carve/build proof on its PR.
 ## Verification
 
 - **Import-boundary gate (2026-08-08):** clean official Node 20 container; workflow YAML parsed; `npm run test:boundaries` passed and proved exactly two `not-to-foreign-workspace` violations; `npm run lint:boundaries` passed all 11 tsconfig-aware scans with zero violations (53/85/77/2 web-surface modules, 28/18 mobile-surface modules, and 83/203/98/64/17 tier modules).
+- **Review-fix gate (2026-08-08):** after merging `origin/main`, `dotnet build api/Concertable.slnx` succeeded with 0 errors. A clean `node:20-bookworm` container installed from `package-lock.json`; `npm run test:boundaries` passed and proved both violations; `npm run lint:boundaries` passed all 11 workspaces with zero violations. The host `npm ci` remained subject to the documented Windows antivirus partial-extraction failure and was not used as product evidence.
 - **Standing frontend gate (2026-08-08):** clean official Node 20 container; `npm ci` green; `npm run build:packages` built all five tiers; all four web builds green (3713 customer, 4404 venue, 4394 artist, 1757 business modules); `tsc --noEmit` green for `mobile/customer` and `mobile/b2b`; `git diff --check` green.
 
 - **Mobile carve matrix implementation (2026-08-07):** `.github/workflows/test.yml` now lists all six
@@ -75,6 +76,8 @@ Gate: each item ends with its own green carve/build proof on its PR.
 - After merging latest `origin/main` at `d0fa851fa`, the same diff, Git Bash syntax, fail-closed, and successful-label checks passed; the branch was zero commits behind and the PR diff remained the four review-fix files plus this ledger.
 
 ## Reviews
+
+- **Import-boundary full code/security review:** `reviews/Feature-platform_polyrepo_import-boundary.md`, range `9a18371a0..8a80bd3a` plus the cross-platform runner fix. Finding `NAT1` (MEDIUM correctness) identified direct `.cmd` spawning as Windows-incompatible; fixed by invoking dependency-cruiser's JavaScript entrypoint through `process.execPath` and verified in the clean Node 20 container. No other correctness, workflow-security, architecture-boundary, convention, or changed-behaviour coverage findings remain.
 
 - **Mobile carve gate full code review:** `reviews/Feature-platform_polyrepo_mobile-carve.md`, range
   `59bdd7a8a..e64245e51` (18 commits), watermark `e64245e5192ccbccb30a5fd54d687ca05170c321`.
@@ -106,6 +109,13 @@ Gate: each item ends with its own green carve/build proof on its PR.
 - **Metro/nativewind/tailwind runtime configs left for Phase 3.** The Phase 2 gate is build + typecheck; the mobile app's metro `watchFolders`/nativewind `input`/tailwind `content` still point at `../shared` source. The app already resolves `@concertable/shared`/`customer` as symlinked packages the same way, so no in-monorepo runtime regression, but className/class-generation on the precompiled dist is unproven — a first-class Phase 3 item, not a silent gap.
 
 ## Event log
+
+### 2026-08-08 — import-boundary branch updated; review finding fixed and re-proved
+
+- Action: Merged current `origin/main`, ran the mandatory full solution build, then reviewed the complete frontend boundary and CI diff. Reproduced a Windows-only runner launch failure and changed the runner to execute dependency-cruiser's JavaScript entrypoint through Node.
+- Evidence: merge commit `8a80bd3ad` brings base `9a18371a0`; `dotnet build api/Concertable.slnx` succeeded with 0 errors. Review finding `NAT1` in `reviews/Feature-platform_polyrepo_import-boundary.md`; direct `.cmd` spawn returned `EINVAL`. Clean `node:20-bookworm` verification passed `npm run test:boundaries` and all 11 `npm run lint:boundaries` scans with zero violations.
+- Outcome: the updated branch is current, builds, and the boundary gate is cross-platform. The review finding is fixed locally; replacement PR checks have not run yet.
+- Follow-up: commit the fix and checkpoint, finalize the review watermark, push through the compound protocol, then require the full replacement PR gate before merge-queue admission.
 
 ### 2026-08-08 — import-boundary PR #428 opened
 
