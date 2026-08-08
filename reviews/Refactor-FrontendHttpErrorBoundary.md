@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `f1450cba9b292d8644a9ffcef94c57076c99862f`  _(2026-08-08)_
-**Security-reviewed up to commit:** `f1450cba9b292d8644a9ffcef94c57076c99862f`  _(2026-08-08)_
+**Reviewed up to commit:** `19379c9e7bd3a8eabc9b4d43aa79aaccf62239a5`  _(2026-08-09)_
+**Security-reviewed up to commit:** `19379c9e7bd3a8eabc9b4d43aa79aaccf62239a5`  _(2026-08-09)_
 
 > Range reviewed: `66ef2c7d..d8aa5950` (4 commits), plus the 2026-08-08 pre-merge pass below.
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -62,3 +62,9 @@ boundaries, seeding, C# conventions, and test coverage of changed paths.
 No issues found. The additional merge from `origin/main` uniformly updated service platform package
 pins to `0.1.0-alpha.0.864` without conflict or branch-authored resolution. The Auth and Payment path
 changes were also security-reviewed; they contain no credential, authorization, or policy change.
+
+## Incremental review — 2026-08-09 (TechDebt-command refresh)
+
+No issues found. The additional merge from `origin/main` registered the TechDebt command and plugin
+metadata without conflict or branch-authored changes. Checked correctness, microservice isolation,
+module boundaries, seeding, C# conventions, test coverage, and the prior security-sensitive range.
