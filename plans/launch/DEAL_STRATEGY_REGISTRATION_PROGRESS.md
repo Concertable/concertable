@@ -11,7 +11,7 @@
 
 The design investigation is complete and the implementation plan has been rewritten around a
 module-local strategy factory plus one vertical registration builder. No runtime code has changed.
-The branch contains only the plan, this ledger, and the owning roadmap entry.
+The plan, ledger, and owning roadmap entry are committed at `4dc7b9faf`; Phase 1 is ready to implement.
 
 ## Next Steps
 
@@ -37,6 +37,7 @@ Do not begin Phase 2 in the same turn; hand back after the Phase 1 commit and le
 - Design decisions locked: factory semantics, vertical registration, cohesive terms/party combinations,
   explicit `IDealAccessor` separation, module-local ownership, and .NET 11 union compatibility.
 - Existing investigation plan revised rather than duplicated.
+- Planning baseline committed as `4dc7b9faf` (`docs(plan): define deal strategy registration refactor`).
 
 ## Verification
 
@@ -72,6 +73,13 @@ Do not begin Phase 2 in the same turn; hand back after the Phase 1 commit and le
   verified official .NET 11/C# 15 union documentation, and rewrote the existing plan.
 - Evidence: `plans/launch/DEAL_STRATEGY_REGISTRATION_PLAN.md`; repository searches recorded above.
 - Outcome: The implementation has one decided architecture and five independently green phases.
+- Follow-up: Implement Phase 1 only.
+
+### 2026-08-08 — planning baseline committed
+
+- Action: Committed the reviewed plan, progress ledger, and launch-roadmap ownership entry.
+- Evidence: commit `4dc7b9faf` (`docs(plan): define deal strategy registration refactor`).
+- Outcome: The implementation branch has a durable, resumable planning baseline.
 - Follow-up: Implement Phase 1 only.
 
 ## Resume prompt
