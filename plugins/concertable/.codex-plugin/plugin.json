@@ -1,6 +1,6 @@
 {
   "name": "concertable",
-  "version": "0.1.0+codex.20260808223752",
+  "version": "0.1.0+codex.20260808231748",
   "description": "Repository-local commands for Concertable development workflows.",
   "author": {
     "name": "Concertable"
