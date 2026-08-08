@@ -5,7 +5,7 @@
 - Branch: `Feature/platform_polyrepo_import-boundary` — direct owner of the remaining Phase 3 import-boundary work.
 - PR: **import-boundary PR [#428](https://github.com/Concertable/concertable/pull/428) OPEN** at verified remote head `7f49fbcdd`, base `main`, not draft, no labels; inert replacement CI is running. Prior mobile-carve PR [#416](https://github.com/Concertable/concertable/pull/416) merged as `83a3f49a1`; publish-first mobile-retarget PR [#413](https://github.com/Concertable/concertable/pull/413) merged as `62646f4cd` and republished `@concertable/mobile@0.1.0-alpha.0.2571`; carved-web CSS [#405] (`d9c62e2c5`); Phase 3b [#389] (`1cbeb2175`); Phase 3a [#378] (`fba490e25`); Phase 2 [#360] (`a3f9535`); Phase 1 [#301]+[#319].
 - Dependency/package gates: **#413 FE publication DONE** — successful descendant run [31197751649](https://github.com/Concertable/concertable/actions/runs/31197751649) published and feed-verified `@concertable/mobile@0.1.0-alpha.0.2571` with the brand assets. This unblocks the follow-up mobile carve gate. No `api/**` → no backend platform-sync.
-- Last reconciled: 2026-08-08 — incremental-review head `7f49fbcdd` was pushed and verified equal across local, remote-tracking, and PR refs. Its delta after the fully green source head is meta-only; inert replacement checks are the final prerequisite before queue admission.
+- Last reconciled: 2026-08-08 — final PR head `b483f8ac4` passed the complete gate in run 31280806389, including `fe-boundaries`, all six `carve-fe` jobs, build, unit, integration, and `ci-complete`. Full E2E remains selected with no skip labels. Queue admission of this exact remote head is next; this observation checkpoint must stay local.
 
 ## Current state
 
@@ -24,7 +24,7 @@ from `app/mobile/TECH_DEBT.md`.
 
 ## Next Steps
 
-**1. Finish and land import-boundary PR #428.** Transport this verified push checkpoint, confirm local/remote/PR equality and terminal inert-head checks, then keep full E2E selected, verify exact queue admission, and merge through the queue without weakening a failing gate. Phase 3 becomes terminal only after the merge is recorded and its recovery state is transferred to a closeout worktree.
+**1. Finish and land import-boundary PR #428.** Verify the local tail after remote head `b483f8ac4` changes only this ledger, confirm no hidden merge-group failure or queue entry exists, then enqueue that exact head with full E2E and follow it to merge or terminal failure without weakening a gate. Phase 3 becomes terminal only after the merge is recorded and its recovery state is transferred to a closeout worktree.
 
 Then Phase 4 (FE platform-sync) and Phase 5 (produce full-stack repos, D-A/D-B) per the plan.
 Gate: each item ends with its own green carve/build proof on its PR.
@@ -110,6 +110,13 @@ Gate: each item ends with its own green carve/build proof on its PR.
 - **Metro/nativewind/tailwind runtime configs left for Phase 3.** The Phase 2 gate is build + typecheck; the mobile app's metro `watchFolders`/nativewind `input`/tailwind `content` still point at `../shared` source. The app already resolves `@concertable/shared`/`customer` as symlinked packages the same way, so no in-monorepo runtime regression, but className/class-generation on the precompiled dist is unproven — a first-class Phase 3 item, not a silent gap.
 
 ## Event log
+
+### 2026-08-08 — final PR head gate terminal green
+
+- Action: Reconciled the replacement run triggered by the transported review checkpoint through every terminal job.
+- Evidence: PR #428 head `b483f8ac4394959f459fcb1f6cd29a2b596fc953`; run 31280806389 passed `fe-boundaries`, all six `carve-fe` surfaces, build, all unit/integration jobs, and `ci-complete`. PR-level API/UI E2E jobs skipped as designed; labels remain empty, so full E2E is selected for the merge group.
+- Outcome: the exact remote head is fully green and ready for queue admission. This observation checkpoint is local-only.
+- Follow-up: verify the checkpoint-only tail and current queue/merge-group state, enqueue the exact remote head, and monitor it to a terminal outcome.
 
 ### 2026-08-08 — incremental-review head pushed and verified
 
