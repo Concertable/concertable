@@ -41,10 +41,23 @@ public static class ServiceCollectionExtensions
                 metadata.Add("Authorization", $"Bearer {token}");
             });
 
-        services.AddScoped<IManagerPaymentClient, ManagerPaymentClient>();
-        services.AddScoped<ICustomerPaymentClient, CustomerPaymentClient>();
-        services.AddScoped<IEscrowClient, EscrowClient>();
-        services.AddScoped<IPayoutAccountClient, PayoutAccountClient>();
+        services.AddGrpcClient<Proto.CommissionPricing.CommissionPricingClient>(o => o.Address = new Uri(address))
+            .AddCallCredentials(async (_, metadata, sp) =>
+            {
+                var token = await sp.GetRequiredService<ITokenService>().GetTokenAsync("payment:write");
+                metadata.Add("Authorization", $"Bearer {token}");
+            });
+
+        services.AddScoped<ManagerPaymentClient>();
+        services.AddScoped<IManagerPaymentOperationsClient>(sp => sp.GetRequiredService<ManagerPaymentClient>());
+        services.AddScoped<CustomerPaymentClient>();
+        services.AddScoped<ICustomerPaymentOperationsClient>(sp => sp.GetRequiredService<CustomerPaymentClient>());
+        services.AddScoped<EscrowClient>();
+        services.AddScoped<IEscrowOperationsClient>(sp => sp.GetRequiredService<EscrowClient>());
+        services.AddScoped<PayoutAccountClient>();
+        services.AddScoped<IPayoutAccountOperationsClient>(sp => sp.GetRequiredService<PayoutAccountClient>());
+        services.AddScoped<CommissionClient>();
+        services.AddScoped<ICommissionPricingClient>(sp => sp.GetRequiredService<CommissionClient>());
 
         return services;
     }

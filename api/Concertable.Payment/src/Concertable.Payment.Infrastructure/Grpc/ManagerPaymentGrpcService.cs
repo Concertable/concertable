@@ -16,7 +16,6 @@ internal sealed class ManagerPaymentGrpcService : ManagerPayment.ManagerPaymentB
     public override async Task<PaymentResponse> Pay(ManagerPayRequest request, ServerCallContext context)
     {
         var command = request.ToCommand();
-
         var result = await managerPaymentService.PayAsync(
             command.PayerId,
             command.PayeeId,
@@ -26,58 +25,89 @@ internal sealed class ManagerPaymentGrpcService : ManagerPayment.ManagerPaymentB
             command.BookingId,
             context.CancellationToken);
 
-        if (result.IsFailed)
-            throw new RpcException(new Status(StatusCode.FailedPrecondition, result.Errors[0].Message));
-
-        return result.Value.ToProtoPaymentResponse();
+        return result.ValueOrRpcException().ToProtoPaymentResponse();
     }
 
-    public override async Task<CheckoutSessionResponse> CreateSetupSession(CreateSetupSessionRequest request, ServerCallContext context)
+    public override async Task<PaymentResponse> PayBoundCommission(
+        BoundCommissionManagerPayRequest request,
+        ServerCallContext context)
     {
         var command = request.ToCommand();
-
-        var session = await managerPaymentService.CreateSetupSessionAsync(
+        var result = await managerPaymentService.PayBoundCommissionAsync(
             command.PayerId,
-            command.Metadata,
+            command.PayeeId,
+            command.Gross,
+            command.PaymentMethodId,
+            command.Session,
+            command.BookingId,
+            command.CommissionBindingId,
+            command.ExternalReference,
+            command.StripeSetupIntentId,
             context.CancellationToken);
 
-        return session.ToProtoCheckoutSession();
+        return result.ValueOrRpcException().ToProtoPaymentResponse();
     }
 
-    public override async Task<CheckoutSessionResponse> CreateVerifySession(CreateVerifySessionRequest request, ServerCallContext context)
+    public override async Task<CheckoutSessionResponse> CreateSetupSession(
+        CreateSetupSessionRequest request,
+        ServerCallContext context)
     {
         var command = request.ToCommand();
-
-        var session = await managerPaymentService.CreateVerifySessionAsync(
+        return (await managerPaymentService.CreateSetupSessionAsync(
             command.PayerId,
             command.Metadata,
-            context.CancellationToken);
-
-        return session.ToProtoCheckoutSession();
+            context.CancellationToken)).ToProtoCheckoutSession();
     }
 
-    public override async Task<CheckoutSessionResponse> CreateHoldSession(CreateHoldSessionRequest request, ServerCallContext context)
+    public override async Task<CheckoutSessionResponse> CreateVerifySession(
+        CreateVerifySessionRequest request,
+        ServerCallContext context)
     {
         var command = request.ToCommand();
+        return (await managerPaymentService.CreateVerifySessionAsync(
+            command.PayerId,
+            command.Metadata,
+            context.CancellationToken)).ToProtoCheckoutSession();
+    }
 
-        var session = await managerPaymentService.CreateHoldSessionAsync(
+    public override async Task<CheckoutSessionResponse> CreateHoldSession(
+        CreateHoldSessionRequest request,
+        ServerCallContext context)
+    {
+        var command = request.ToCommand();
+        return (await managerPaymentService.CreateHoldSessionAsync(
             command.PayerId,
             command.Amount,
             command.Metadata,
-            context.CancellationToken);
-
-        return session.ToProtoCheckoutSession();
+            context.CancellationToken)).ToProtoCheckoutSession();
     }
 
-    public override async Task<FindHeldIntentResponse> FindHeldIntent(FindHeldIntentRequest request, ServerCallContext context)
+    public override async Task<CheckoutSessionResponse> CreateBoundCommissionHoldSession(
+        CreateBoundCommissionHoldSessionRequest request,
+        ServerCallContext context)
     {
         var command = request.ToCommand();
+        var result = await managerPaymentService.CreateBoundCommissionHoldSessionAsync(
+            command.PayerId,
+            command.Gross,
+            command.Metadata,
+            command.CommissionBindingId,
+            command.ExternalReference,
+            command.StripeSetupIntentId,
+            context.CancellationToken);
 
+        return result.ValueOrRpcException().ToProtoCheckoutSession();
+    }
+
+    public override async Task<FindHeldIntentResponse> FindHeldIntent(
+        FindHeldIntentRequest request,
+        ServerCallContext context)
+    {
+        var command = request.ToCommand();
         var intentId = await managerPaymentService.FindHeldIntentAsync(
             command.PayerId,
             command.ApplicationId,
             context.CancellationToken);
-
         return new FindHeldIntentResponse { PaymentIntentId = intentId };
     }
 }

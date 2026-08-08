@@ -47,7 +47,7 @@ excludes segment 1.
 | | GigPig | GigXchange | Concertable |
 |---|---|---|---|
 | **Marketplace** | Yes — venues post, artists apply | Yes — any role can initiate | Yes |
-| **Contract / settlement model** | Booking confirmation, flat fee only | Digital contract + Stripe escrow, flat fee only | Four typed deals: FlatFee, DoorSplit, VenueHire, Versus (see [`ARCHITECTURE.md`](../api/Concertable.B2B/Modules/Deal/ARCHITECTURE.md)) |
+| **Contract / settlement model** | Booking confirmation, flat fee only | Digital contract + Stripe escrow, flat fee only | Four typed deals: FlatFee, DoorSplit, VenueHire, Versus (see [`ARCHITECTURE.md`](../api/Concertable.B2B/src/Modules/Deal/ARCHITECTURE.md)) |
 | **Door split / revenue share** | No | No | Yes |
 | **Artist-pays-venue direction (VenueHire)** | No | No | Yes |
 | **Guarantee + split (Versus)** | No | No | Yes |

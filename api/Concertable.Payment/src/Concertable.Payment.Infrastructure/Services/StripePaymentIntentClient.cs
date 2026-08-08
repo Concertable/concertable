@@ -2,7 +2,6 @@ using Concertable.Payment.Application.DTOs;
 using Concertable.Payment.Application.Requests;
 using Concertable.Payment.Infrastructure;
 using Concertable.Payment.Infrastructure.Mappers;
-using FluentResults;
 using Microsoft.Extensions.Logging;
 using Stripe;
 
@@ -27,19 +26,21 @@ internal sealed class StripePaymentIntentClient : IStripePaymentIntentClient
         this.logger = logger;
     }
 
-    public async Task<Result<PaymentOutcome>> ChargeAsync(StripeChargeOptions opts)
+    public async Task<Result<PaymentOutcome, PaymentError>> ChargeAsync(
+        StripeChargeOptions opts,
+        CancellationToken ct = default)
     {
         try
         {
             if (string.IsNullOrEmpty(opts.DestinationStripeId))
-                return Result.Fail("Recipient does not have a Stripe account");
+                return Result<PaymentOutcome, PaymentError>.Failure(new PaymentError.RecipientUnavailable());
 
             if (await stripeAccountClient.GetAccountStatusAsync(opts.DestinationStripeId) != PayoutAccountStatus.Verified)
-                return Result.Fail("Recipient is not eligible for payouts");
+                return Result<PaymentOutcome, PaymentError>.Failure(new PaymentError.RecipientUnavailable());
 
             var options = new PaymentIntentCreateOptions
             {
-                Amount = (long)(opts.Amount * 100),
+                Amount = opts.Amount.ToMinorUnits(),
                 Currency = "GBP",
                 PaymentMethod = opts.PaymentMethodId,
                 Customer = opts.StripeCustomerId,
@@ -49,13 +50,17 @@ internal sealed class StripePaymentIntentClient : IStripePaymentIntentClient
                 Metadata = opts.Metadata,
                 TransferData = new PaymentIntentTransferDataOptions
                 {
-                    Destination = opts.DestinationStripeId
+                    Destination = opts.DestinationStripeId,
+                    Amount = (opts.TransferAmount ?? opts.Amount).ToMinorUnits()
                 }
             };
 
             configurator.Configure(options);
 
-            var paymentIntent = await stripeClient.CreatePaymentIntentAsync(options);
+            var paymentIntent = await stripeClient.CreatePaymentIntentAsync(
+                options,
+                StripeIdempotency.FromMetadata(opts.Metadata, "charge"),
+                ct);
 
             if (paymentIntent.Status == "succeeded")
                 logger.StripePaymentIntentSucceeded(paymentIntent.Id, paymentIntent.Amount, options.TransferData.Destination);
@@ -66,29 +71,28 @@ internal sealed class StripePaymentIntentClient : IStripePaymentIntentClient
         }
         catch (StripeException ex)
         {
-            logger.StripeChargeFailed((long)(opts.Amount * 100), opts.DestinationStripeId, ex.StripeError?.Code, ex);
-            return Result.Fail($"Stripe Error: {ex.Message}");
-        }
-        catch (Exception ex)
-        {
-            logger.PaymentProcessingFailed((long)(opts.Amount * 100), opts.DestinationStripeId, ex);
-            return Result.Fail($"General Error: {ex.Message}");
+            logger.StripeChargeFailed(opts.Amount.ToMinorUnits(), opts.DestinationStripeId, ex.StripeError?.Code, ex);
+            if (StripeFailureClassifier.Classify(ex).TryGetValue(out var error))
+                return Result<PaymentOutcome, PaymentError>.Failure(error);
+            throw;
         }
     }
 
-    public async Task<Result<PaymentOutcome>> HoldAsync(StripeHoldOptions opts)
+    public async Task<Result<PaymentOutcome, PaymentError>> HoldAsync(
+        StripeHoldOptions opts,
+        CancellationToken ct = default)
     {
         try
         {
             if (string.IsNullOrEmpty(opts.DestinationStripeId))
-                return Result.Fail("Recipient does not have a Stripe account");
+                return Result<PaymentOutcome, PaymentError>.Failure(new PaymentError.RecipientUnavailable());
 
             if (await stripeAccountClient.GetAccountStatusAsync(opts.DestinationStripeId) != PayoutAccountStatus.Verified)
-                return Result.Fail("Recipient is not eligible for payouts");
+                return Result<PaymentOutcome, PaymentError>.Failure(new PaymentError.RecipientUnavailable());
 
             var options = new PaymentIntentCreateOptions
             {
-                Amount = (long)(opts.Amount * 100),
+                Amount = opts.Amount.ToMinorUnits(),
                 Currency = "GBP",
                 PaymentMethod = opts.PaymentMethodId,
                 Customer = opts.StripeCustomerId,
@@ -101,7 +105,10 @@ internal sealed class StripePaymentIntentClient : IStripePaymentIntentClient
 
             configurator.Configure(options);
 
-            var paymentIntent = await stripeClient.CreatePaymentIntentAsync(options);
+            var paymentIntent = await stripeClient.CreatePaymentIntentAsync(
+                options,
+                StripeIdempotency.FromMetadata(opts.Metadata, "hold"),
+                ct);
 
             if (paymentIntent.Status == "succeeded")
                 logger.StripeEscrowHoldSucceeded(paymentIntent.Id, paymentIntent.Amount, options.OnBehalfOf);
@@ -112,13 +119,10 @@ internal sealed class StripePaymentIntentClient : IStripePaymentIntentClient
         }
         catch (StripeException ex)
         {
-            logger.StripeHoldFailed((long)(opts.Amount * 100), opts.DestinationStripeId, ex.StripeError?.Code, ex);
-            return Result.Fail($"Stripe Error: {ex.Message}");
-        }
-        catch (Exception ex)
-        {
-            logger.HoldProcessingFailed((long)(opts.Amount * 100), opts.DestinationStripeId, ex);
-            return Result.Fail($"General Error: {ex.Message}");
+            logger.StripeHoldFailed(opts.Amount.ToMinorUnits(), opts.DestinationStripeId, ex.StripeError?.Code, ex);
+            if (StripeFailureClassifier.Classify(ex).TryGetValue(out var error))
+                return Result<PaymentOutcome, PaymentError>.Failure(error);
+            throw;
         }
     }
 }

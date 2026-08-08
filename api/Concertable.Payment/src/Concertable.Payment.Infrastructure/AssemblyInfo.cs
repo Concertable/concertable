@@ -1,9 +1,11 @@
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("Concertable.Payment.Api")]
+[assembly: InternalsVisibleTo("Concertable.Payment.Seed")]
 [assembly: InternalsVisibleTo("Concertable.Payment.Web")]
 [assembly: InternalsVisibleTo("Concertable.Payment.Testing")]
 [assembly: InternalsVisibleTo("Concertable.Testing.Integration")]
 [assembly: InternalsVisibleTo("Concertable.B2B.IntegrationTests.Fixtures")]
 [assembly: InternalsVisibleTo("Concertable.Payment.UnitTests")]
+[assembly: InternalsVisibleTo("Concertable.Payment.IntegrationTests")]
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]

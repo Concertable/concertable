@@ -1,4 +1,5 @@
 using Concertable.Payment.Grpc;
+using Money = Concertable.Kernel.ValueObjects.Money;
 
 namespace Concertable.Payment.Infrastructure.Grpc;
 
@@ -6,15 +7,15 @@ internal sealed record CustomerPayCommand(
     Guid PayerId,
     int ConcertId,
     Guid PayeeId,
-    decimal Amount,
-    IDictionary<string, string> Metadata,
+    Money Amount,
+    IReadOnlyDictionary<string, string> Metadata,
     string PaymentMethodId);
 
 internal sealed record CreatePaymentSessionCommand(
     Guid PayerId,
     int ConcertId,
     Guid PayeeId,
-    IDictionary<string, string> Metadata);
+    IReadOnlyDictionary<string, string> Metadata);
 
 internal static class CustomerPaymentRequestMappers
 {
@@ -22,7 +23,7 @@ internal static class CustomerPaymentRequestMappers
         request.PayerId.ParseOrThrow<Guid>(nameof(request.PayerId)),
         request.ConcertId,
         request.PayeeId.ParseOrThrow<Guid>(nameof(request.PayeeId)),
-        request.Amount.ParseOrThrow<decimal>(nameof(request.Amount)),
+        request.Amount.ToMoney(),
         request.Metadata,
         request.PaymentMethodId);
 

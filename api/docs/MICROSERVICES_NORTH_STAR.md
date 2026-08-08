@@ -1,6 +1,6 @@
 # Microservices North Star
 
-> **The canonical vision.** What we're building toward, principle-first. Companion to [MICROSERVICES_ARCHITECTURE.md](MICROSERVICES_ARCHITECTURE.md) (the implementation detail) and [MICROSERVICE_STEPS.md](/plans/MICROSERVICE_STEPS.md) (the migration order). Read this first — the others fill in the *how* and the *when*.
+> **The canonical vision.** What we're building toward, principle-first. Companion to [MICROSERVICES_ARCHITECTURE.md](MICROSERVICES_ARCHITECTURE.md) (the implementation detail) and [MICROSERVICE_STEPS.md](/plans/platform/MICROSERVICE_STEPS_PLAN.md) (the migration order). Read this first — the others fill in the *how* and the *when*.
 
 ## 1. The vision in one paragraph
 
@@ -31,7 +31,7 @@ The whole architecture is this rule. **A read projection that ever owns a write 
 2. **Canonical owner publishes; consumers project.** Direction follows ownership, not "B2B-first." B2B publishes venue/concert events that Customer and Search project. Customer publishes ticket/review events that B2B and Search project. The bus is bidirectional.
 3. **Transactional outbox + inbox idempotency.** Each publishing service has its own outbox in its own DB; each consuming service has its own inbox in its own DB. No shared outbox infrastructure. Exactly-once *effects* from at-least-once *delivery*.
 4. **Per-service database.** No shared schemas, no shared connection strings, no cross-DB joins. Migrations are per service.
-5. **Auth issues identity, not roles.** Tokens carry `sub` + audience only. Each service derives operational role from token audience + its own profile-table membership. Roles never leak into the Auth tier.
+5. **Auth issues identity, not B2B authority.** B2B tokens carry identity only, and B2B derives authority from the active tenant membership. Customer's transitional claims remain Customer-owned.
 6. **Service-to-service auth via OAuth2 `client_credentials`.** Same Duende, same JWT plumbing as user tokens — just a different grant type. No mTLS, no API keys, no "trust the network."
 7. **Shared code lives in two csprojs only.** `Concertable.Contracts` (the wire — event types, cross-service DTOs, `ICurrentUser`, static lookups like Genre) and `Concertable.Kernel` (the framework — `BaseEntity`, `Period`, `IUnitOfWork<TContext>`, `DbContextBase`, validation helpers). No shared DB, no shared service, no third package.
 8. **Each microservice is internally a modular monolith.** The discipline that got us here (`IXModule` facades, per-module logical boundaries, in-process domain events, module-owned EF configs, `MODULAR_MONOLITH_RULES.md`) stays inside each service. Inside B2B, `Concert` and `Booking` and `Contract` remain separate modules with their own DbContext schemas and facades — they just happen to share a process and a DB. The pattern shrinks to the scope of each service; it doesn't go away. Future sub-extraction (e.g., Contract becoming its own service) stays a packaging change rather than a refactor.
@@ -69,7 +69,7 @@ If those four rules hold, mono-repo → poly-repo is a folder move + replacing `
 ## 7. What this doc deliberately does not cover
 
 - **Entity migration map**, communication-pattern tables, event-flow diagrams, decision log → **[MICROSERVICES_ARCHITECTURE.md](MICROSERVICES_ARCHITECTURE.md)**
-- **Phase ordering, what-to-do-when, exit criteria, calendar estimates** → **[MICROSERVICE_STEPS.md](/plans/MICROSERVICE_STEPS.md)**
+- **Phase ordering, what-to-do-when, exit criteria, calendar estimates** → **[MICROSERVICE_STEPS.md](/plans/platform/MICROSERVICE_STEPS_PLAN.md)**
 - **Risks and open questions** → ARCHITECTURE.md §11
 
 This doc is target-state principles. The other two docs are the path and the detail.
@@ -78,6 +78,6 @@ This doc is target-state principles. The other two docs are the path and the det
 
 ## Background framing (non-architecture)
 
-- **Learning project.** The Nov 2026 launch in `LAUNCH_PLAN.md` is aspirational, not a deadline. Skill development (event-driven architecture, transactional outbox, sagas, OpenTelemetry, Service Bus operations) is an explicit goal alongside any deployment.
+- **Learning project.** The Nov 2026 launch in `LAUNCH_ROADMAP.md` is aspirational, not a deadline. Skill development (event-driven architecture, transactional outbox, sagas, OpenTelemetry, Service Bus operations) is an explicit goal alongside any deployment.
 - **B2B SaaS deploys first** (current expectation). Customer marketplace follows once microservices separation is complete; without that separation, B2B can't ship without dragging Customer code into the production binary.
 - **Solo developer.** Mono-repo + Aspire AppHost are the load-bearing pieces that make multi-service development tractable for one person.

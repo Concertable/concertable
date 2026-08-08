@@ -2,7 +2,8 @@ using Concertable.Payment.Application.DTOs;
 using Concertable.Payment.Application.Interfaces;
 using Concertable.Payment.Application.Requests;
 using Concertable.Kernel.Exceptions;
-using FluentResults;
+using Concertable.Kernel.Functional;
+using Concertable.Payment.Contracts.Errors;
 
 namespace Concertable.Payment.Infrastructure;
 
@@ -22,35 +23,30 @@ internal sealed class CustomerPaymentService : ICustomerPaymentService
         this.payoutAccountRepository = payoutAccountRepository;
     }
 
-    public async Task<Result<PaymentOutcome>> PayAsync(
+    public async Task<Result<PaymentOutcome, PaymentError>> PayAsync(
         Guid payerId,
         int concertId,
         Guid payeeId,
-        decimal amount,
-        IDictionary<string, string> metadata,
+        Money amount,
+        IReadOnlyDictionary<string, string> metadata,
         string paymentMethodId,
         CancellationToken ct = default)
     {
-        var account = await payoutAccountRepository.GetByOwnerIdAsync(payerId, ct)
-            ?? throw new NotFoundException($"Payout account not found for payer {payerId}");
-
-        return await paymentManager.ChargeAsync(new ChargeRequest
-        {
-            PayerId = payerId,
-            PayerEmail = account.Email,
-            PayeeId = payeeId,
-            Amount = amount,
-            PaymentMethodId = paymentMethodId,
-            Metadata = metadata,
-            Session = PaymentSession.OnSession
-        }, ct);
+        return await paymentManager.ChargeAsync(
+            payerId,
+            payeeId,
+            amount,
+            paymentMethodId,
+            PaymentSession.OnSession,
+            metadata,
+            ct);
     }
 
     public async Task<CheckoutSession> CreatePaymentSessionAsync(
         Guid payerId,
         int concertId,
         Guid payeeId,
-        IDictionary<string, string> metadata,
+        IReadOnlyDictionary<string, string> metadata,
         CancellationToken ct = default)
     {
         var account = await payoutAccountRepository.GetByOwnerIdAsync(payerId, ct)
@@ -60,9 +56,9 @@ internal sealed class CustomerPaymentService : ICustomerPaymentService
 
         var mergedMetadata = new Dictionary<string, string>
         {
-            ["fromUserId"] = payerId.ToString(),
-            ["fromUserEmail"] = account.Email,
-            ["toUserId"] = payeeId.ToString()
+            [PaymentMetadataKeys.FromUserId] = payerId.ToString(),
+            [PaymentMetadataKeys.FromUserEmail] = account.Email,
+            [PaymentMetadataKeys.ToUserId] = payeeId.ToString()
         }
         .Merge(metadata);
 

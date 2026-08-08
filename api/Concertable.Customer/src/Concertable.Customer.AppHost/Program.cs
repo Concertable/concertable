@@ -1,8 +1,8 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
 var sql = builder.AddSqlServerContainer("concertable-customer-sql-data");
-var authDb = sql.AddDatabase("AuthDb");
-var customerDb = sql.AddDatabase("CustomerDb");
+var authDb = sql.AddDatabase(AuthConstants.Database);
+var customerDb = sql.AddDatabase(CustomerConstants.Database);
 var paymentDb = sql.AddDatabase("PaymentDb");
 var b2bDb = sql.AddDatabase("B2BDb");
 
@@ -11,7 +11,8 @@ var asb = builder.AddServiceBus();
 asb.Topology()
    .AddCustomerTopology()
    .AddSearchTopology()
-   .AddPaymentTopology();
+   .AddPaymentTopology()
+   .AddAuthTopology();
 
 var auth = builder.AddAuth<Projects.Concertable_Auth>(authDb, b2bDb, asb);
 auth.WithEndpoint("https", endpoint => endpoint.Port = 7093);

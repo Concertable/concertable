@@ -1,0 +1,50 @@
+name: Verify service mirror parity
+
+on:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  parity:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - prefix: api/Concertable.B2B
+            repo: Concertable/b2b
+          - prefix: api/Concertable.Customer
+            repo: Concertable/customer
+          - prefix: api/Concertable.Auth
+            repo: Concertable/auth
+          - prefix: api/Concertable.Payment
+            repo: Concertable/payment
+          - prefix: api/Concertable.Search
+            repo: Concertable/search
+          - prefix: api/Concertable.Shared
+            repo: Concertable/shared
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Compare ${{ matrix.repo }} with main
+        env:
+          MIRROR_PAT: ${{ secrets.MIRROR_PAT }}
+        run: |
+          set -euo pipefail
+          expected_sha="$(git subtree split --prefix=${{ matrix.prefix }})"
+          remote_url="https://x-access-token:${MIRROR_PAT}@github.com/${{ matrix.repo }}.git"
+          actual_sha="$(git ls-remote "$remote_url" refs/heads/master | awk '{print $1}')"
+          test -n "$actual_sha" || { echo "Mirror master was not found"; exit 1; }
+          test "$actual_sha" = "$expected_sha" || {
+            echo "Mirror drift: ${{ matrix.repo }} is $actual_sha; expected $expected_sha from main"
+            exit 1
+          }

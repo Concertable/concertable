@@ -20,7 +20,7 @@
       shared.AddJsonStream(envStream);
   }
   ```
-  `docs/CODE_CONVENTIONS.md` "Single-statement branches — no braces" mandates no braces here — drop
+  `agents/CODE_CONVENTIONS.md` "Single-statement branches — no braces" mandates no braces here — drop
   them (`if (envStream is not null)\n    shared.AddJsonStream(envStream);`). Not enforced by
   `.editorconfig`, so it won't be auto-formatted. Everything else in the diff is clean.
 

@@ -1,13 +1,14 @@
 using Concertable.Customer.Concert.Contracts;
+using Concertable.Customer.Ticket.Application.Commands;
 using Concertable.Customer.Ticket.Application.DTOs;
 using Concertable.Customer.Ticket.Application.Requests;
 using Concertable.Customer.Ticket.Domain.Entities;
-using Concertable.Customer.Ticket.Infrastructure;
 using Concertable.Kernel.Identity;
 using Concertable.Kernel.Exceptions;
+using Concertable.Kernel.ValueObjects;
+using Concertable.Messaging.Contracts;
 using Concertable.Shared.QrCode.Application;
 using FluentResults;
-using Microsoft.Extensions.Logging;
 
 namespace Concertable.Customer.Ticket.Infrastructure.Services;
 
@@ -15,37 +16,34 @@ internal sealed class TicketService : ITicketService
 {
     private readonly ITicketRepository ticketRepository;
     private readonly ITicketValidator ticketValidator;
-    private readonly ITicketEmailSender ticketEmailSender;
     private readonly IQrCodeGenerator qrCodeGenerator;
     private readonly ICurrentUser currentUser;
     private readonly IConcertModule concertModule;
-    private readonly ICustomerPaymentClient customerPaymentClient;
-    private readonly IUnitOfWork unitOfWork;
+    private readonly ICustomerPaymentOperationsClient customerPaymentClient;
+    private readonly IOutboxUnitOfWorkBehavior outboxBehavior;
+    private readonly IBus bus;
     private readonly TimeProvider timeProvider;
-    private readonly ILogger<TicketService> logger;
 
     public TicketService(
         ITicketRepository ticketRepository,
         ITicketValidator ticketValidator,
-        ITicketEmailSender ticketEmailSender,
         IQrCodeGenerator qrCodeGenerator,
         ICurrentUser currentUser,
         IConcertModule concertModule,
-        ICustomerPaymentClient customerPaymentClient,
-        IUnitOfWork unitOfWork,
-        TimeProvider timeProvider,
-        ILogger<TicketService> logger)
+        ICustomerPaymentOperationsClient customerPaymentClient,
+        IOutboxUnitOfWorkBehavior outboxBehavior,
+        IBus bus,
+        TimeProvider timeProvider)
     {
         this.ticketRepository = ticketRepository;
         this.ticketValidator = ticketValidator;
-        this.ticketEmailSender = ticketEmailSender;
         this.qrCodeGenerator = qrCodeGenerator;
         this.currentUser = currentUser;
         this.concertModule = concertModule;
         this.customerPaymentClient = customerPaymentClient;
-        this.unitOfWork = unitOfWork;
+        this.outboxBehavior = outboxBehavior;
+        this.bus = bus;
         this.timeProvider = timeProvider;
-        this.logger = logger;
     }
 
     public async Task<Result<TicketPayment>> PurchaseAsync(TicketPurchaseParams purchaseParams)
@@ -59,25 +57,28 @@ internal sealed class TicketService : ITicketService
 
         var metadata = new Dictionary<string, string>
         {
-            ["type"] = TransactionTypes.Ticket,
-            ["concertId"] = concert.Id.ToString(),
-            ["quantity"] = purchaseParams.Quantity.ToString()
+            [PaymentMetadataKeys.Type] = TransactionTypes.Ticket,
+            [PaymentMetadataKeys.ConcertId] = concert.Id.ToString(),
+            [PaymentMetadataKeys.Quantity] = purchaseParams.Quantity.ToString()
         };
 
         var paymentResult = await customerPaymentClient.PayAsync(
             currentUser.GetId(), concert.Id, concert.PayeeOwnerId,
-            concert.Price * purchaseParams.Quantity,
+            Money.Gbp(concert.Price * purchaseParams.Quantity),
             metadata,
             purchaseParams.PaymentMethodId);
 
-        if (paymentResult.IsFailed)
-            return Result.Fail(paymentResult.Errors);
+        if (!paymentResult.TryGetValue(out var payment))
+        {
+            paymentResult.TryGetError(out var error);
+            return Result.Fail(error!.Definition.Message);
+        }
 
         return Result.Ok(new TicketPayment
         {
-            RequiresAction = paymentResult.Value.RequiresAction,
-            TransactionId = paymentResult.Value.TransactionId,
-            ClientSecret = paymentResult.Value.ClientSecret,
+            RequiresAction = payment.RequiresAction,
+            TransactionId = payment.TransactionId,
+            ClientSecret = payment.ClientSecret,
             UserEmail = currentUser.Email
         });
     }
@@ -91,25 +92,19 @@ internal sealed class TicketService : ITicketService
         int quantity = purchaseCompleteDto.Quantity ?? 1;
         var tickets = new List<TicketEntity>();
 
-        for (int i = 0; i < quantity; i++)
+        var ticketIds = await outboxBehavior.ExecuteAsync(async () =>
         {
-            var ticket = BuildTicket(purchaseCompleteDto.FromUserId, concert);
-            await ticketRepository.AddAsync(ticket);
-            tickets.Add(ticket);
-        }
+            for (int i = 0; i < quantity; i++)
+            {
+                var ticket = BuildTicket(purchaseCompleteDto.FromUserId, concert);
+                await ticketRepository.AddAsync(ticket);
+                tickets.Add(ticket);
+            }
 
-        await unitOfWork.SaveChangesAsync();
-
-        var ticketIds = tickets.Select(t => t.Id).ToList();
-
-        try
-        {
-            await ticketEmailSender.SendTicketsAsync(purchaseCompleteDto.FromEmail, ticketIds);
-        }
-        catch (Exception ex)
-        {
-            logger.TicketEmailFailed(ex, purchaseCompleteDto.FromEmail, ticketIds);
-        }
+            var ids = tickets.Select(t => t.Id).ToList();
+            await bus.SendAsync(new SendTicketEmailCommand(purchaseCompleteDto.FromEmail, ids));
+            return ids;
+        });
 
         return Result.Ok(new TicketPayment
         {
@@ -133,11 +128,11 @@ internal sealed class TicketService : ITicketService
 
         var metadata = new Dictionary<string, string>
         {
-            ["type"] = TransactionTypes.Ticket,
-            ["concertId"] = concert.Id.ToString(),
-            ["quantity"] = quantity.ToString(),
-            ["amount"] = ((long)(concert.Price * quantity * 100)).ToString(),
-            ["currency"] = "gbp"
+            [PaymentMetadataKeys.Type] = TransactionTypes.Ticket,
+            [PaymentMetadataKeys.ConcertId] = concert.Id.ToString(),
+            [PaymentMetadataKeys.Quantity] = quantity.ToString(),
+            [PaymentMetadataKeys.Amount] = Money.Gbp(concert.Price * quantity).ToMinorUnits().ToString(),
+            [PaymentMetadataKeys.Currency] = "gbp"
         };
 
         var session = await customerPaymentClient.CreatePaymentSessionAsync(currentUser.GetId(), concert.Id, concert.PayeeOwnerId, metadata);

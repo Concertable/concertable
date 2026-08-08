@@ -1,6 +1,6 @@
 # E2E Baseline
 
-The contract for which scenarios are **expected** to pass vs fail. `./e2e.ps1 regress` reads this file to know which scenarios to run; PR review reads it to see what changed.
+The contract for which scenarios are **expected** to pass vs fail. `./scripts/e2e.ps1 regress` reads this file to know which scenarios to run; PR review reads it to see what changed.
 
 <!-- ============================================================
      EDITING RULES — the regress script parser depends on these
@@ -30,7 +30,7 @@ The contract for which scenarios are **expected** to pass vs fail. `./e2e.ps1 re
        (= the Scenario line in the .feature file, no decorations)
 
      UPDATE FLOW
-     When `./e2e.ps1 run` shows a scenario crossing the line (now
+     When `./scripts/e2e.ps1 run` shows a scenario crossing the line (now
      passes that didn't, or now fails that did), move it between
      the passing and failing fenced blocks below AND update both
      (N) counts in the headings AND update the summary table.
@@ -42,17 +42,17 @@ Last reconciled: 2026-06-01 / Stripe new-card flows fixed (card-entry viewport +
 
 | Suite | Total | Passing | Failing |
 |---|---|---|---|
-| B2B | 26 | 26 | 0 |
+| B2B | 29 | 29 | 0 |
 | Customer | 7 | 7 | 0 |
-| **Total** | **33** | **33** | **0** |
+| **Total** | **36** | **36** | **0** |
 
 Entire suite green. The previously-failing Stripe payment flows (3DS challenge, "new card" variants, declined-card variants) are fixed: new-card entry now fills the Stripe iframe reliably (tall viewport), and the Customer E2E AppHost now forwards Stripe webhooks via stripe-cli so ticket-purchase confirmation completes.
 
 <!-- BASELINE-DATA-START -->
 
-## B2B (26 total)
+## B2B (29 total)
 
-### B2B passing (26)
+### B2B passing (29)
 
 ```text
 New artist manager registers, signs in, creates their artist profile
@@ -81,6 +81,9 @@ Artist completes 3DS challenge on venue hire
 Artist venue hire attempt is declined
 Owner invites a member who accepts and is then managed
 Switching organization scopes member management to the chosen tenant
+A venue's members share one inbox with independent read state
+A visitor rejects all cookies and the choice persists
+A visitor accepts all cookies
 ```
 
 ### B2B failing (0)

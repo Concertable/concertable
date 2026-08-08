@@ -2,6 +2,7 @@ using Concertable.B2B.Artist.Contracts.Events;
 using Concertable.B2B.Concert.Contracts.Events;
 using Concertable.B2B.Seed.Contracts;
 using Concertable.Customer.Review.Contracts.Events;
+using Concertable.Customer.Ticket.Application.Commands;
 using Concertable.Customer.Ticket.Contracts.Events;
 using Concertable.Customer.Web;
 using Concertable.Customer.Artist.Infrastructure.Data;
@@ -31,6 +32,7 @@ using Concertable.Shared.Email.Infrastructure.Extensions;
 using Concertable.Shared.Geocoding.Infrastructure.Extensions;
 using Concertable.Shared.Pdf.Infrastructure.Extensions;
 using Concertable.Shared.QrCode.Infrastructure.Extensions;
+using Concertable.Shared.Api.Exceptions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -51,6 +53,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 builder.Configuration.AddEnvironmentVariables();
 
+builder.Services.AddProblemDetails();
 builder.Services.AddControllers()
     .AddApplicationPart(typeof(Concertable.Shared.Api.Controllers.GenreController).Assembly)
     .AddJsonOptions(opts => opts.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter()));
@@ -95,7 +98,9 @@ services.AddAzureServiceBusTransport(
         opts.ConnectionString = builder.Configuration.GetConnectionString("asb")
             ?? (builder.Environment.IsEnvironment("Testing") ? null!
                 : throw new InvalidOperationException("Connection string 'asb' is required."));
-        opts.ServiceName = "concertable-customer";
+        opts.ServiceName = builder.Configuration["ServiceBus:ServiceName"]
+            ?? (builder.Environment.IsEnvironment("Testing") ? "concertable-customer"
+                : throw new InvalidOperationException("Configuration 'ServiceBus:ServiceName' is required."));
     },
     reg =>
     {
@@ -104,6 +109,8 @@ services.AddAzureServiceBusTransport(
 
         reg.Publishes<TicketPurchasedEvent>();
         reg.SubscribeTo<TicketPurchasedEvent>();
+
+        reg.HandleCommand<SendTicketEmailCommand>();
 
         reg.SubscribeTo<ConcertChangedEvent>();
         reg.SubscribeTo<ConcertPostedEvent>();
@@ -146,7 +153,6 @@ if (!builder.Environment.IsEnvironment("Testing"))
     services.AddPaymentClient(builder.Configuration);
 
 services.AddExceptionHandler<GlobalExceptionHandler>();
-services.AddProblemDetails();
 
 services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(opts =>

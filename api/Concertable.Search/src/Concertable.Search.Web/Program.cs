@@ -1,5 +1,6 @@
 using Concertable.Search.Api.Extensions;
 using Concertable.Search.Infrastructure.Data;
+using Concertable.Shared.Api.Exceptions;
 using Concertable.ServiceDefaults;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -25,6 +26,7 @@ builder.Services.AddCors(options =>
 
 var services = builder.Services;
 
+services.AddProblemDetails();
 services.AddControllers()
     .AddApplicationPart(typeof(Concertable.Shared.Api.Controllers.GenreController).Assembly);
 services.AddSearchApi(builder.Configuration);
@@ -44,7 +46,6 @@ services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 services.AddAuthorization();
 
 services.AddExceptionHandler<GlobalExceptionHandler>();
-services.AddProblemDetails();
 
 var app = builder.Build();
 

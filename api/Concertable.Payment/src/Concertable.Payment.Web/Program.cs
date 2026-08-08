@@ -15,6 +15,7 @@ using Concertable.Messaging.Application.Extensions;
 using Concertable.Messaging.AzureServiceBus.Extensions;
 using Concertable.Kernel.Extensions;
 using Concertable.Seed.Shared.Extensions;
+using Concertable.Shared.Api.Exceptions;
 using Concertable.Payment.Web;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -56,6 +57,7 @@ if (builder.Environment.EnvironmentName == "E2E")
 
 services.AddScoped<GrpcExceptionInterceptor>();
 services.AddGrpc(options => options.Interceptors.Add<GrpcExceptionInterceptor>());
+services.AddProblemDetails();
 services.AddPaymentControllers();
 
 services.AddAzureServiceBusTransport(
@@ -64,7 +66,9 @@ services.AddAzureServiceBusTransport(
         opts.ConnectionString = builder.Configuration.GetConnectionString("asb")
             ?? (builder.Environment.IsEnvironment("Testing") ? null!
                 : throw new InvalidOperationException("Connection string 'asb' is required."));
-        opts.ServiceName = "concertable-payment";
+        opts.ServiceName = builder.Configuration["ServiceBus:ServiceName"]
+            ?? (builder.Environment.IsEnvironment("Testing") ? "concertable-payment"
+                : throw new InvalidOperationException("Configuration 'ServiceBus:ServiceName' is required."));
     },
     reg =>
     {
@@ -93,7 +97,6 @@ services.AddAuthorization(opts =>
 });
 
 services.AddExceptionHandler<GlobalExceptionHandler>();
-services.AddProblemDetails();
 
 var app = builder.Build();
 

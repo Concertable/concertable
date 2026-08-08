@@ -27,7 +27,7 @@ Concertable runs as two separate sites:
 
 ## Architecture
 
-- **Backend** — .NET services split across `api/Concertable.B2B/` and `api/Concertable.Customer/`, each a modular host with modules under its own `Modules/` folder (Artist, Venue, Concert, Contract, Payment, Notification, Search, Identity/User, etc.). Cross-module calls go through `IXModule` facades in `Module.Contracts`; rules in [`MODULAR_MONOLITH_RULES.md`](./MODULAR_MONOLITH_RULES.md).
+- **Backend** — .NET services split across `api/Concertable.B2B/` and `api/Concertable.Customer/`, each a modular host with modules under its own `Modules/` folder (Artist, Venue, Concert, Contract, Payment, Notification, Search, Identity/User, etc.). Cross-module calls go through `IXModule` facades in `Module.Contracts`; rules in [`MODULAR_MONOLITH_RULES.md`](../api/agents/MODULAR_MONOLITH_RULES.md).
 - **Frontend** — React SPA in `app/web/` split by audience (customer / venue / artist / business / shared); Expo mobile in `app/mobile/` (three apps + shared).
 - **Payments** — Stripe Connect; Payment module is stateless money-movement, Concert orchestrates ticket purchase and settlement.
 - **Infra** — Aspire AppHost (`api/Concertable.AppHost`) wires SQL Server, the API, the Workers host, and dev tunnels for mobile.

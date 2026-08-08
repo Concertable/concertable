@@ -1,0 +1,32 @@
+name: Enable auto-merge
+
+# Marks a ready (non-draft) PR into main for GitHub's NATIVE auto-merge, so the merge queue lands it
+# once its required checks are green. That's the whole job — no polling, no toggle, no dequeue/re-queue.
+#
+# This deliberately replaces the old auto-merge.yml poller, which tried to compensate from the outside
+# for GitHub failing to admit/dispatch queued PRs (the CLEAN-but-unadmitted stall and the
+# admitted-but-never-dispatched stall). That machinery churned the queue and is retired: the fix for
+# those stalls is a deterministic single required check (`ci-complete`) + a code-declared break-glass
+# bypass, not an external nudger. See plans/platform/PIPELINE_REDESIGN_PLAN.md.
+#
+# No merge strategy flag: main has a merge queue, so the queue owns the merge method — passing
+# --squash/--merge makes `gh pr merge` reject the command.
+
+on:
+  pull_request:
+    types: [opened, ready_for_review]
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  enable:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Enable native auto-merge on the ready PR
+        run: gh pr merge --auto "${{ github.event.pull_request.number }}" --repo "${{ github.repository }}"

@@ -2,9 +2,10 @@ namespace Concertable.Payment.Application.Requests;
 
 internal sealed record RefundRequest
 {
-    public required decimal Amount { get; init; }
+    public required Money Amount { get; init; }
     public required string PaymentIntentId { get; init; }
-    public string? TransferId { get; init; }
+    public TransferReversal? TransferReversal { get; init; }
+    public bool ReverseTransfer { get; init; }
     public string? Reason { get; init; }
-    public required IDictionary<string, string> Metadata { get; init; }
+    public required IReadOnlyDictionary<string, string> Metadata { get; init; }
 }

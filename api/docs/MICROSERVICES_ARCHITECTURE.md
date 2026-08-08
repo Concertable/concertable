@@ -4,9 +4,9 @@
 >
 > **Goal:** Migrate from the current modular monolith to an event-driven microservices architecture that separates B2B (venue ↔ artist booking + settlement) from Customer (ticket marketplace), with a centralised Payment adapter service.
 >
-> **Constraint that changed the plan:** This is a learning side project. The Nov 2026 launch in `LAUNCH_PLAN.md` is aspirational, not a hard deadline. Skill development (event-driven architecture, transactional outbox, sagas, OpenTelemetry, Service Bus operations) is an explicit goal alongside any eventual deployment.
+> **Constraint that changed the plan:** This is a learning side project. The Nov 2026 launch in `LAUNCH_ROADMAP.md` is aspirational, not a hard deadline. Skill development (event-driven architecture, transactional outbox, sagas, OpenTelemetry, Service Bus operations) is an explicit goal alongside any eventual deployment.
 >
-> **Companion docs:** [LAUNCH_PLAN.md](/plans/b2b/LAUNCH_PLAN.md), [MARKETPLACE_PLAN.md](/plans/customer/MARKETPLACE_PLAN.md), [LAUNCH_CHECKLIST.md](/plans/b2b/LAUNCH_CHECKLIST.md), [USER_MODEL_PLAN.md](/plans/b2b/USER_MODEL_PLAN.md).
+> **Companion docs:** [LAUNCH_ROADMAP.md](/plans/launch/LAUNCH_ROADMAP.md), [MARKETPLACE_PLAN.md](/plans/marketplace/MARKETPLACE_PLAN.md), [LAUNCH_CHECKLIST.md](/plans/launch/LAUNCH_CHECKLIST.md), [USER_MODEL_PLAN.md](/plans/launch/USER_MODEL_PLAN.md).
 
 ---
 
@@ -33,7 +33,7 @@ The modular monolith already enforces the *internal* boundary correctly. The mic
 | **Customer** | Data | `Concertable.Customer.Web` | Customer SQL | Tickets (with `AvailableTickets`), Preferences, Reviews, `UserEntity` (customer profile). Single deployable — service is write-light; ASB consumers run in-process. No Workers host needed. |
 | **Search** | Read projection | `Concertable.Search.Web` + `Concertable.Search.Workers` | Search SQL | `ArtistSearchModel`, `VenueSearchModel`, `ConcertSearchModel`. Browse/autocomplete/header/detail reads. Web host read-only, sync-callable from B2B and Customer SPAs. Workers consume events from B2B and Customer to populate projections. |
 | **Payment** | Adapter | `Concertable.Payment.Web` + `Concertable.Payment.Workers` | Payment SQL | PayoutAccount, StripeCustomer refs, payment intent / transfer / refund ledger. Sole receiver of Stripe webhooks. Workers process webhooks and reconciliation. |
-| **Auth** | Adapter | `Concertable.Auth` (Duende IS, single host) | Duende DB | OIDC issuer. Identity authority (`sub`, password hash, email-verification). No role claims. Also issues service tokens for service-to-service auth (§5.5). |
+| **Auth** | Adapter | `Concertable.Auth` (Duende IS, single host) | Duende DB | OIDC issuer. Identity authority (`sub`, password hash, email-verification). B2B tokens are identity-only; Customer still supplies its own transitional claims. Also issues service tokens for service-to-service auth (§5.5). |
 **Non-deployables:**
 
 | | | |
@@ -72,8 +72,8 @@ This is the rule the rest of the architecture hangs on. **A read projection serv
 | Customer→concert Review | Customer DB (`ReviewEntity`) | B2B DB (`ConcertRatingProjection`: artist/venue rating aggregates) — feeds Search rating display via re-publication | `ReviewSubmittedEvent`, `ReviewUpdatedEvent` via bus |
 | Venue↔artist Review *(future)* | B2B DB — separate table from customer reviews | Not projected to Customer | — |
 | Customer profile, Preferences | Customer DB (`CustomerProfileEntity`) | Not projected to B2B | — |
-| Manager/Admin profile | B2B DB (`VenueManagerEntity`, `ArtistManagerEntity`, `AdminEntity` — flat tables post-TPH unwind, each carrying Auth `sub`) | Not projected to Customer | — |
-| **Identity** (`sub`, email, password hash, email-verification state) | Auth DB (Duende IS) | Each service stores `sub` on its own profile row | Sync token validation only; no role claim in token |
+| B2B membership/Admin profile | B2B DB (`TenantMembershipEntity` for venue/artist authority; `AdminProfileEntity` for platform admin) | Not projected to Customer | — |
+| **Identity** (`sub`, email, password hash, email-verification state) | Auth DB (Duende IS) | Each service stores `sub` on its local user projection | Sync token validation; B2B carries no role claim |
 | `PayoutAccountEntity` (Stripe Connect refs for venues + artists) | Payment DB | Neither — accessed via Payment sync API | Sync call |
 | `StripeCustomerEntity` (Stripe Customer refs for venues + artists + customers) | Payment DB | Neither — accessed via Payment sync API | Sync call |
 | Payment intent / transfer / refund ledger | Payment DB | Status events published to bus | `PaymentSucceededEvent`, `TransferCompletedEvent`, etc. |
@@ -82,7 +82,7 @@ This is the rule the rest of the architecture hangs on. **A read projection serv
 
 - `PayoutAccountEntity` and `StripeCustomerEntity` are **not** partitioned between B2B and Customer. Venues and artists are both payers (FlatFee, VenueHire) and payees (DoorSplit, ticket revenue) depending on contract type, so they need both Connect accounts and Stripe Customer refs. Both live in the Payment service.
 - **Inverse-direction projections.** Most events flow B2B → Search/Customer for browse. `TicketPurchasedEvent`, `TicketRefundedEvent`, `ReviewSubmittedEvent` flow Customer → B2B for analytics and settlement math. The bus is bidirectional; the canonical-owner rule is what's fixed.
-- **Authentication vs authorization.** Auth (Duende) issues tokens with `sub` + audience only — no role claim. Each service derives the persona's role from its own data: B2B inspects the manager-profile subtype/membership for the `sub`; Customer treats any token from its audience as `Customer`. This separates "who are you" (Auth) from "what can you do here" (per-service authorization). `ICurrentUser` and the claim helpers live in `Concertable.Kernel` (`Identity/`), consumed per-service.
+- **Authentication vs authorization.** B2B tokens carry identity only (`sub` + `email`); B2B resolves the active `TenantMembershipEntity` per request and derives permissions from its tenant type and `TenantRole`. Customer retains its own transitional claims. This separates "who are you" (Auth) from "what can you do here" (per-service authorization). `ICurrentUser` and the claim helpers live in `Concertable.Kernel` (`Identity/`), consumed per-service.
 - **Customer/Search projection split.** Customer DB only needs to project what *Customer's own write paths* require (e.g., `TotalTickets` to compute remaining). Browse/detail reads route through Search. This avoids duplicating projections across Customer and Search.
 
 ## 4.5 Entity migration map
@@ -151,9 +151,9 @@ public class ConcertEntity : BaseEntity<int> {
 | Today | Post-split |
 |---|---|
 | `UserEntity` base (email, password hash, email-verification) | **Auth** — Duende IS owns the identity record |
-| `VenueManagerEntity`, `ArtistManagerEntity`, `AdminEntity` | **B2B** — flat tables (no TPH), each carrying Auth `sub` + B2B-specific fields (`VenueId`, `ArtistId`, etc.) |
+| Venue/artist manager profiles | **Deleted** — tenant memberships and tenant-owned Venue/Artist rows carry authority and ownership; `AdminProfileEntity` survives separately |
 | `CustomerEntity` | **Customer** — becomes `CustomerProfileEntity` (no TPH), carries Auth `sub` + customer-side fields (location, avatar, preferences) |
-| `Role` enum on `UserEntity` | **Deleted** — role inferred from token audience + service-side profile-table membership |
+| `Role` enum on `UserEntity` | **Deleted** — B2B authorization derives from the active tenant membership's `TenantRole` |
 | `Modules/Authorization/` (`ICurrentUser`, claim extensions) | Stays as cross-cutting framework code in `Concertable.Kernel` (`Identity/`), consumed per-service |
 
 ### Search module extraction
@@ -266,7 +266,7 @@ This works because Auth is already there for user tokens — Duende IS supports 
 
 **Local dev:** Aspire AppHost wires the same client_credentials flow against the local Duende instance. No "skip auth in dev" mode — keeps the path tested.
 
-**Note on roles:** Service tokens carry **scope** (e.g., `payment:write`, `auth:read`), not roles. User tokens carry **`sub` + audience**, also no role claim. Roles are derived per-service from token audience + service-side profile-table membership (§4 Identity row). Auth never emits a role claim into either type of token.
+**Note on roles:** Service tokens carry **scope** (e.g., `payment:write`, `auth:read`), not roles. B2B user tokens carry identity only; B2B authority comes from the active tenant membership (§4 Identity row). Customer's transitional claims remain Customer-owned and are fetched during issuance.
 
 ## 6. Event-driven CQRS pattern
 
@@ -373,7 +373,7 @@ Concertable/
 │   └── Shared/                                 (Concertable.Kernel, Concertable.Contracts, Concertable.Shared.* libs, Seed/, Tests/)
 ├── app/
 │   ├── web/                                    (customer SPA, b2b/{shared,venue,artist,business} SPAs, shared)
-│   ├── customer/shared                         (npm @customer/shared — customer web+mobile core)
+│   ├── customer/shared                         (npm @concertable/customer, exports @concertable/customer/shared/* — customer web+mobile core)
 │   └── mobile/
 └── ...
 ```
@@ -440,7 +440,7 @@ Same shape inside `Concertable.Customer` (modules: Concert, Preference, Review, 
 The architecture is the *what*; this is the *how to build it as a learning project*. Each step teaches a specific concept. Steps 0–2 happen *in the monolith* before any process split — the lesson "shrink the boundary in-process first" is itself the point.
 
 0. **Decompose `ConcertEntity` in-place.** While still in one process, split B2B workflow fields from customer-display fields per §4.5. Move `TicketEntity` and `ReviewEntity` out of `Concert.Domain` into `Customer.Domain`. Move ticket QR/PDF infrastructure (QRCoder, QuestPDF) with them. Migrate `ConcertController` read endpoints into Search's existing controllers. Result: the monolith already has the *internal* boundary the future split will materialize.
-1. **Dismantle the `Modules/User/` TPH.** Replace with flat per-persona profile entities owned by their respective modules; move identity authority into Auth (Duende). Strip role claims from issued tokens; derive role per-service from token audience + profile-table membership.
+1. **Dismantle the `Modules/User/` TPH.** Move identity authority into Auth (Duende), then replace B2B's flat role/profile model with tenant memberships and identity-only B2B tokens.
 2. **Clean Search's upstream refs.** Remove `Search.Infrastructure` references to `Artist.Infrastructure` / `Venue.Infrastructure`. Search consumes domain events only.
 3. **Extract Customer to its own service.** New solution folder, own `Program.cs`, own DbContext on its own SQL Server (or separate DB on same instance — same lesson). References only `Concertable.Contracts`.
 4. **Bus on in-memory transport** between B2B and Customer. Skip cloud broker latency while learning publish/subscribe semantics. Bus client choice (MassTransit vs Azure Service Bus SDK vs other) **open** — decide at the start of this step.
@@ -462,7 +462,7 @@ Roughly a year of evenings-and-weekends if taken seriously. Valuable on a CV at 
 - **No shared "domain logic" service that B2B and Customer both call sync for venue/concert/artist data.** That is the distributed-monolith antipattern. Project via events instead.
 - **No shared database.** Each service has its own. Citadel (shared DB, multiple hosts) was considered and rejected because it doesn't serve the learning goals.
 - **No premature webhook fan-out service.** Single Webhook Receiver service is an option *later* if Stripe event routing gets complex. Start with each service exposing its own webhook endpoint, or Payment receiving all webhooks.
-- **No native mobile apps in launch scope** (already in LAUNCH_PLAN.md).
+- **No native mobile apps in launch scope** (already in LAUNCH_ROADMAP.md).
 
 ## 11. Risks and open questions
 
@@ -473,7 +473,7 @@ Roughly a year of evenings-and-weekends if taken seriously. Valuable on a CV at 
 | R3 | Solo dev maintenance overhead of N services. | Mitigation: mono-repo + Aspire AppHost keeps local-dev friction low. Production deploy complexity is real if it ever ships. |
 | R4 | Stripe webhook routing — does Payment handle all of them, or per-service endpoints? | Open. Default: Payment handles all (PCI scope reasons), fans out via bus. Revisit if it gets noisy. |
 | R5 | Ticket purchase is the highest-write event. Per-event projection scales fine for normal load but a flash sale will pin the inbox handler on the B2B + Search consumers. | Mitigation: defer until measured. Options when it bites: batched/windowed projection, dedicated consumer scaling, summary events instead of per-ticket. |
-| R6 | `Modules/User/` TPH unwind (§4.5) touches every B2B controller that reads `ICurrentUser` for role/persona checks. Sequence carefully so the monolith builds at each step. | Mitigation: do the role-claim removal in Auth first, derive role from token audience + DB lookup per controller, *then* delete the TPH. |
+| R6 | `Modules/User/` TPH unwind (§4.5) touches every B2B controller that reads `ICurrentUser` for role/tenant-type checks. Sequence carefully so the monolith builds at each step. | Mitigation: do the role-claim removal in Auth first, derive role from token audience + DB lookup per controller, *then* delete the TPH. |
 | R7 | `ConcertEntity` decomposition (Step 0) is the biggest in-monolith refactor on the path. Touches Concert + Customer + Search projections + every read path. | Mitigation: explicit migration step (§4.5) sequences the field moves; ship in small PRs; integration tests cover both old and new shapes during transition. |
 | ~~Q1~~ R8 *(was Q1)* | **Resolved 2026-05-19** — Search is its own service, sync-callable from both B2B and Customer SPAs. Single projection serves both audiences; no duplicate browse-projection tables in B2B and Customer. Updates stay with canonical owners. | — |
 | ~~Q2~~ R9 *(was Q2)* | **Re-resolved 2026-05-19** — Email/Notification is a *shared library* (`Concertable.Email`), not a service. Both B2B and Customer import it in-process. `IEmailSender` is the cross-service abstraction in `Concertable.Kernel`. See §4.7. | — |
@@ -490,7 +490,7 @@ Roughly a year of evenings-and-weekends if taken seriously. Valuable on a CV at 
 - Event-driven microservices over Citadel (shared DB). Reason: learning goals + B2B/Customer are genuinely separate bounded contexts.
 - Adapter vs data service rule: Payment and Auth accept sync calls; B2B and Customer do not (§3).
 - No gRPC. No shared DB. No sync between B2B and Customer.
-- Auth issues `sub` + audience only — no role claims. Role derived per-service from profile-table membership (§5.5).
+- B2B tokens are identity-only; B2B authority derives from active tenant membership (§5.5). Customer's transitional claims remain Customer-owned.
 - Service-to-service: `client_credentials` via Duende. Rejected mTLS and API keys.
 - Customer owns `TicketEntity`, `ReviewEntity`, `AvailableTickets`. B2B owns `TotalTickets` capacity.
 - Search is a sync-callable read projection service, not a data service.
@@ -514,10 +514,9 @@ Roughly a year of evenings-and-weekends if taken seriously. Valuable on a CV at 
 
 ## 13. Reference
 
-- [LAUNCH_PLAN.md](/plans/b2b/LAUNCH_PLAN.md) — broader launch context (mostly applies to B2B deployment if/when it happens)
-- [MARKETPLACE_PLAN.md](/plans/customer/MARKETPLACE_PLAN.md) — original marketplace deferral plan; partially superseded by this doc since marketplace would return as a separate microservice, not as a feature flag
-- [LAUNCH_CHECKLIST.md](/plans/b2b/LAUNCH_CHECKLIST.md) — legal/business setup checklist
-- [USER_MODEL_PLAN.md](/plans/b2b/USER_MODEL_PLAN.md) — multi-user tenants, roles, permissions, the auth sweep (B2B-internal; the tenancy foundation has shipped)
+- [LAUNCH_ROADMAP.md](/plans/launch/LAUNCH_ROADMAP.md) — broader launch context (mostly applies to B2B deployment if/when it happens)
+- [MARKETPLACE_PLAN.md](/plans/marketplace/MARKETPLACE_PLAN.md) — original marketplace deferral plan; partially superseded by this doc since marketplace would return as a separate microservice, not as a feature flag
+- [LAUNCH_CHECKLIST.md](/plans/launch/LAUNCH_CHECKLIST.md) — legal/business setup checklist
 - MassTransit docs — https://masstransit.io
 - *Microservices Patterns* (Chris Richardson) — outbox, sagas, CQRS, idempotency
 - *Building Microservices* (Sam Newman) — boundaries, distributed-monolith antipatterns

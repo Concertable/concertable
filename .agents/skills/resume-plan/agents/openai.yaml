@@ -1,0 +1,4 @@
+interface:
+  display_name: "Resume Plan"
+  short_description: "Recover plan status and the exact next step"
+  default_prompt: "Use $resume-plan to reconstruct this plan's current status and give me one resume prompt."

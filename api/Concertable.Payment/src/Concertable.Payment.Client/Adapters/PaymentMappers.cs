@@ -1,3 +1,4 @@
+using Concertable.Kernel.ValueObjects;
 using Concertable.Payment.Contracts;
 using Concertable.Payment.Client.Enums;
 using Proto = Concertable.Payment.Grpc;
@@ -6,6 +7,27 @@ namespace Concertable.Payment.Client.Adapters;
 
 internal static class PaymentMappers
 {
+    public static Proto.Money ToProtoMoney(this Money money) => new()
+    {
+        AmountMinor = money.ToMinorUnits(),
+        Currency = money.Currency.ToProtoCurrency()
+    };
+
+    public static Money ToMoney(this Proto.Money money) =>
+        Money.FromMinorUnits(money.AmountMinor, money.Currency.ToCurrency());
+
+    public static Proto.Currency ToProtoCurrency(this Currency currency) => currency switch
+    {
+        Currency.Gbp => Proto.Currency.Gbp,
+        _ => throw new ArgumentOutOfRangeException(nameof(currency), currency, null)
+    };
+
+    private static Currency ToCurrency(this Proto.Currency currency) => currency switch
+    {
+        Proto.Currency.Gbp => Currency.Gbp,
+        _ => throw new ArgumentOutOfRangeException(nameof(currency), currency, null)
+    };
+
     public static PaymentOutcome ToPaymentOutcome(this Proto.PaymentResponse r) =>
         new()
         {

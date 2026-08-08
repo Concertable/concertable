@@ -2,8 +2,8 @@ using Concertable.DataAccess;
 using Concertable.Seed.Shared;
 using Concertable.Seed.Shared.Extensions;
 using Concertable.Auth.Contracts.Events;
-using Concertable.B2B.Tenant.Contracts.Events;
 using Concertable.Payment.Application.Commands;
+using Concertable.Payment.Contracts.Events;
 using Concertable.Messaging.Infrastructure.Outbox;
 using Concertable.Payment.Application.Interfaces;
 using Concertable.Payment.Infrastructure.Data;
@@ -14,10 +14,12 @@ using Concertable.Payment.Infrastructure.Repositories;
 using Concertable.Payment.Infrastructure.Services;
 using Concertable.Payment.Infrastructure.Services.Webhook;
 using Concertable.Payment.Infrastructure.Settings;
+using Concertable.Payment.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Concertable.DataAccess.Infrastructure.Data;
 using Concertable.Messaging.Contracts;
 
@@ -37,19 +39,42 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<PaymentConfigurationProvider>();
         services.AddSingleton<IEntityTypeConfigurationProvider>(sp => sp.GetRequiredService<PaymentConfigurationProvider>());
 
-        services.Configure<StripeSettings>(configuration.GetSection("Stripe"));
+        services.Configure<StripeSettings>(configuration.GetSection(StripeSettings.SectionName));
 
-        // Repositories + mappers
+        services.AddScoped<IOutboxUnitOfWorkBehavior, OutboxUnitOfWorkBehavior>();
+
+        services.AddOptions<PlatformFeeOptions>()
+            .Bind(configuration.GetSection(PlatformFeeOptions.SectionName))
+            .ValidateOnStart();
+        services.AddSingleton<IValidateOptions<PlatformFeeOptions>, PlatformFeeOptionsValidator>();
+
+        services.AddOptions<PlatformCommissionOptions>()
+            .Bind(configuration.GetSection(PlatformCommissionOptions.SectionName))
+            .ValidateOnStart();
+        services.AddSingleton<IValidateOptions<PlatformCommissionOptions>, PlatformCommissionOptionsValidator>();
+        services.AddOptions<PlatformCommissionTaxOptions>()
+            .Bind(configuration.GetSection(PlatformCommissionTaxOptions.SectionName))
+            .ValidateOnStart();
+        services.AddSingleton<IValidateOptions<PlatformCommissionTaxOptions>, PlatformCommissionTaxOptionsValidator>();
+
         services.AddScoped<ITransactionRepository, TransactionRepository>();
         services.AddScoped<IStripeEventRepository, StripeEventRepository>();
         services.AddScoped<IPayoutAccountRepository, PayoutAccountRepository>();
         services.AddScoped<IEscrowRepository, EscrowRepository>();
+        services.AddScoped<ICommissionConfigurationRepository, CommissionConfigurationRepository>();
+        services.AddScoped<ICommissionBindingRepository, CommissionBindingRepository>();
+        services.AddScoped<ILedgerAccountRepository, LedgerAccountRepository>();
+        services.AddScoped<ILedgerTransactionRepository, LedgerTransactionRepository>();
+        services.AddScoped<ILedgerService, LedgerService>();
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddSingleton<ITransactionMapper, TransactionMapper>();
+        services.AddSingleton<CommissionCalculator>();
+        services.AddScoped<ICommissionService, CommissionService>();
+        services.AddScoped<CommissionConfigurationInitializer>();
+        services.AddHostedService<CommissionConfigurationHostedService>();
 
-        // Transaction service
         services.AddScoped<ITransactionService, TransactionService>();
 
-        // Stripe real/fake toggle
         var useRealStripe = configuration.GetSection("ExternalServices").GetValue<bool>("UseRealStripe");
         if (useRealStripe)
         {
@@ -96,7 +121,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IStripePaymentIntentClientFactory, StripePaymentIntentClientFactory>();
         services.AddScoped<IPaymentManager, PaymentManager>();
 
-        // Webhook infrastructure
+        services.AddScoped<IStripeWebhookHandler<Stripe.PaymentIntent>, PaymentIntentWebhookHandler>();
+        services.AddScoped<IStripeWebhookHandler<Stripe.SetupIntent>, SetupIntentWebhookHandler>();
         services.AddScoped<IWebhookProcessor, WebhookProcessor>();
         services.AddScoped<IWebhookQueue, WebhookQueue>();
         services.AddScoped<IIntegrationCommandHandler<ProcessStripeWebhookCommand>, ProcessStripeWebhookHandler>();
@@ -106,9 +132,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IEscrowService, EscrowService>();
         services.AddScoped<IPayoutAccountService, PayoutAccountService>();
 
-        // Integration event handlers
         services.AddScoped<IIntegrationEventHandler<CredentialRegisteredEvent>, CustomerRegisteredHandler>();
-        services.AddScoped<IIntegrationEventHandler<TenantCreatedEvent>, TenantCreatedHandler>();
+        services.AddScoped<IIntegrationEventHandler<PayoutOwnerRegisteredEvent>, PayoutOwnerRegisteredHandler>();
         services.AddScoped<IIntegrationEventHandler<PaymentSucceededEvent>, PaymentTransactionHandler>();
         services.AddScoped<IIntegrationEventHandler<PaymentFailedEvent>, PaymentFailureDispatcher>();
         services.AddScoped<ITransactionHandlerFactory, TransactionHandlerFactory>();

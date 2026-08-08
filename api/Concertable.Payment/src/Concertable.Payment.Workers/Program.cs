@@ -5,7 +5,6 @@ using Concertable.Payment.Contracts.Events;
 using Concertable.Payment.Infrastructure.Extensions;
 using Concertable.Payment.Seed;
 using Concertable.Auth.Contracts.Events;
-using Concertable.B2B.Tenant.Contracts.Events;
 using Microsoft.EntityFrameworkCore;
 using Concertable.ServiceDefaults;
 using Concertable.DataAccess.Infrastructure.Data;
@@ -39,11 +38,13 @@ services.AddAzureServiceBusTransport(
         opts.ConnectionString = builder.Configuration.GetConnectionString("asb")
             ?? (builder.Environment.IsEnvironment("Testing") ? null!
                 : throw new InvalidOperationException("Connection string 'asb' is required."));
-        opts.ServiceName = "concertable-payment";
+        opts.ServiceName = builder.Configuration["ServiceBus:ServiceName"]
+            ?? (builder.Environment.IsEnvironment("Testing") ? "concertable-payment"
+                : throw new InvalidOperationException("Configuration 'ServiceBus:ServiceName' is required."));
     },
     reg => reg
         .SubscribeTo<CredentialRegisteredEvent>()
-        .SubscribeTo<TenantCreatedEvent>()
+        .SubscribeTo<PayoutOwnerRegisteredEvent>()
         .SubscribeTo<PaymentSucceededEvent>()
         .SubscribeTo<PaymentFailedEvent>());
 

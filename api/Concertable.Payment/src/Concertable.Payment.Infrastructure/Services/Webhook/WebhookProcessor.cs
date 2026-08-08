@@ -1,7 +1,4 @@
-using Concertable.Messaging.Contracts;
-using Concertable.Messaging.Infrastructure.Outbox;
 using Concertable.Payment.Infrastructure;
-using Concertable.Payment.Infrastructure.Data;
 using Microsoft.Extensions.Logging;
 using Stripe;
 
@@ -9,29 +6,26 @@ namespace Concertable.Payment.Infrastructure.Services.Webhook;
 
 internal sealed class WebhookProcessor : IWebhookProcessor
 {
-    private readonly PaymentDbContext context;
     private readonly IStripeEventRepository stripeEventRepository;
-    private readonly IBus integrationEventBus;
-    private readonly IDbContextAccessor contextAccessor;
-    private readonly IStripeHoldClient stripeHoldClient;
+    private readonly IOutboxUnitOfWorkBehavior outboxBehavior;
     private readonly TimeProvider timeProvider;
+    private readonly IStripeWebhookHandler<PaymentIntent> paymentIntentHandler;
+    private readonly IStripeWebhookHandler<SetupIntent> setupIntentHandler;
     private readonly ILogger<WebhookProcessor> logger;
 
     public WebhookProcessor(
-        PaymentDbContext context,
         IStripeEventRepository stripeEventRepository,
-        IBus integrationEventBus,
-        IDbContextAccessor contextAccessor,
-        IStripeHoldClient stripeHoldClient,
+        IOutboxUnitOfWorkBehavior outboxBehavior,
         TimeProvider timeProvider,
+        IStripeWebhookHandler<PaymentIntent> paymentIntentHandler,
+        IStripeWebhookHandler<SetupIntent> setupIntentHandler,
         ILogger<WebhookProcessor> logger)
     {
-        this.context = context;
         this.stripeEventRepository = stripeEventRepository;
-        this.integrationEventBus = integrationEventBus;
-        this.contextAccessor = contextAccessor;
-        this.stripeHoldClient = stripeHoldClient;
+        this.outboxBehavior = outboxBehavior;
         this.timeProvider = timeProvider;
+        this.paymentIntentHandler = paymentIntentHandler;
+        this.setupIntentHandler = setupIntentHandler;
         this.logger = logger;
     }
 
@@ -41,9 +35,10 @@ internal sealed class WebhookProcessor : IWebhookProcessor
         {
             logger.ProcessingStripeEvent(stripeEvent.Id, stripeEvent.Type);
 
-            if (stripeEvent.Data.Object is not PaymentIntent intent)
+            var dataObject = stripeEvent.Data.Object;
+            if (dataObject is not (PaymentIntent or SetupIntent))
             {
-                logger.SkippingStripeEventNotPaymentIntent(stripeEvent.Id, stripeEvent.Data.Object?.GetType().Name ?? "null");
+                logger.SkippingStripeEventUnhandledObject(stripeEvent.Id, dataObject?.GetType().Name ?? "null");
                 return;
             }
 
@@ -53,52 +48,26 @@ internal sealed class WebhookProcessor : IWebhookProcessor
                 return;
             }
 
-            stripeEventRepository.AddEvent(StripeEventEntity.Create(stripeEvent.Id, timeProvider.GetUtcNow().DateTime));
-            contextAccessor.Context = context;
-
-            switch (stripeEvent.Type)
+            await outboxBehavior.ExecuteAsync(async () =>
             {
-                case "payment_intent.succeeded":
-                    logger.PublishingPaymentSucceededEvent(intent.Id, stripeEvent.Id, intent.Metadata.GetValueOrDefault("type", "unknown"));
-                    await integrationEventBus.PublishAsync(new PaymentSucceededEvent(intent.Id, intent.Metadata), cancellationToken);
-                    break;
+                stripeEventRepository.AddEvent(StripeEventEntity.Create(stripeEvent.Id, timeProvider.GetUtcNow().DateTime));
 
-                case "payment_intent.amount_capturable_updated":
-                    if (intent.Metadata.TryGetValue("type", out var capturedType) && capturedType == TransactionTypes.Verify)
-                    {
-                        logger.CancellingVerifyPaymentIntent(intent.Id, stripeEvent.Id);
-                        await stripeHoldClient.CancelAsync(intent.Id, cancellationToken);
-                        var enrichedMetadata = new Dictionary<string, string>(intent.Metadata)
-                        {
-                            ["paymentMethodId"] = intent.PaymentMethodId
-                        };
-                        logger.PublishingVerifyPaymentSucceededEvent(intent.Id, stripeEvent.Id);
-                        await integrationEventBus.PublishAsync(new PaymentSucceededEvent(intent.Id, enrichedMetadata), cancellationToken);
-                    }
-                    break;
+                switch (dataObject)
+                {
+                    case PaymentIntent intent:
+                        await paymentIntentHandler.HandleAsync(stripeEvent, intent, cancellationToken);
+                        break;
 
-                case "payment_intent.payment_failed":
-                    var failureCode = intent.LastPaymentError?.Code;
-                    var failureMessage = intent.LastPaymentError?.Message;
-                    logger.PublishingPaymentFailedEvent(intent.Id, stripeEvent.Id, intent.Metadata.GetValueOrDefault("type", "unknown"), failureCode, failureMessage);
-                    await integrationEventBus.PublishAsync(new PaymentFailedEvent(intent.Id, failureCode, failureMessage, intent.Metadata), cancellationToken);
-                    break;
-
-                default:
-                    logger.SkippingStripeEventNotHandled(stripeEvent.Id, stripeEvent.Type);
-                    break;
-            }
-
-            await context.SaveChangesAsync(cancellationToken);
+                    case SetupIntent intent:
+                        await setupIntentHandler.HandleAsync(stripeEvent, intent, cancellationToken);
+                        break;
+                }
+            }, cancellationToken);
         }
         catch (Exception ex)
         {
             logger.StripeWebhookProcessingError(stripeEvent.Id, ex);
             throw;
-        }
-        finally
-        {
-            contextAccessor.Context = null;
         }
     }
 }

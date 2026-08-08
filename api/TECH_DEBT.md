@@ -8,7 +8,7 @@ Debt spanning multiple services, host `Program.cs` files, or repo-wide build/CI 
 
 ### `AzureServiceBusOptions` binder defaults are `= ""` instead of `null!`
 
-`Concertable.Messaging.AzureServiceBus/Options/AzureServiceBusOptions.cs` initialises binder-populated `string` properties to `= ""`, where the convention (`docs/CODE_CONVENTIONS.md`) requires `null!` so a missing bind surfaces instead of silently becoming empty (and it uses the banned `""` literal). Deferred, not host-only: `AzureServiceBusOptions` ships in the **published** `Concertable.Messaging` package, so flipping the defaults is a cross-service package change that must ride a Messaging publish + platform-sync, not a bare edit. (The host-side `?? ""` masks that used to sit alongside this — `Auth:Authority` / `ServiceAuth:ClientId` / the ASB `ConnectionString` across the Auth, B2B.Web, B2B.Workers, Customer.Web, Payment.Web, Payment.Workers, Search.Workers, and B2B.Seed.Simulator hosts — now fail fast at startup outside the "Testing" environment, done. `ServiceAuth:ClientSecret` is a genuine optional, now bound **null** when absent — its earlier `string.Empty` was a masking cosmetic swap. The complete fix (`TokenServiceOptions.ClientSecret` → `string?` + the token service omitting the `client_secret` form param when null, correct for a secret-less/public client) is a **published Kernel change** — tracked with the `GetId()` Kernel item above as a cut-over.)
+`Concertable.Messaging.AzureServiceBus/Options/AzureServiceBusOptions.cs` initialises binder-populated `string` properties to `= ""`, where the convention (`agents/CODE_CONVENTIONS.md`) requires `null!` so a missing bind surfaces instead of silently becoming empty (and it uses the banned `""` literal). Deferred, not host-only: `AzureServiceBusOptions` ships in the **published** `Concertable.Messaging` package, so flipping the defaults is a cross-service package change that must ride a Messaging publish + platform-sync, not a bare edit. (The host-side `?? ""` masks that used to sit alongside this — `Auth:Authority` / `ServiceAuth:ClientId` / the ASB `ConnectionString` across the Auth, B2B.Web, B2B.Workers, Customer.Web, Payment.Web, Payment.Workers, Search.Workers, and B2B.Seed.Simulator hosts — now fail fast at startup outside the "Testing" environment, done. `ServiceAuth:ClientSecret` is a genuine optional, now bound **null** when absent — its earlier `string.Empty` was a masking cosmetic swap. The complete fix (`TokenServiceOptions.ClientSecret` → `string?` + the token service omitting the `client_secret` form param when null, correct for a secret-less/public client) is a **published Kernel change** — tracked with the `GetId()` Kernel item above as a cut-over.)
 
 **Resolves when:** the `= ""` defaults become `null!` as part of a `Concertable.Messaging` package publish.
 
@@ -20,29 +20,9 @@ Debt spanning multiple services, host `Program.cs` files, or repo-wide build/CI 
 
 **Resolves when:** the SERVICE_BUILD_SEPARATION hybrid inner-loop toggle lands (`ProjectReference` for local multi-service dev, `PackageReference` in CI/standalone), or the platform-version pin is automated so it can't lag a shared-source change.
 
----
-
-## LOW
-
-### `initial-migrations.ps1` re-stamps every module, desyncing packaged libs from their published packages
-
-`api/initial-migrations.ps1` nukes and re-scaffolds **every** module's `InitialCreate` with a fresh
-timestamp — including libs consumed as *published packages* (`Messaging`, `Payment`, `Auth`) whose
-model didn't change. The regenerated source then carries a newer migration id than the published
-package the standalone/E2E stack actually loads, and `DevDbInitializer` blows up applying a migration
-whose table already exists (first seen while re-scaffolding on a migration-touching branch: "There is already an object named
-'Outbox'", every UI E2E scenario dead at fixture init). Workaround each time: after running the
-script, `git checkout origin/master -- <migration dirs>` for every module whose migration content is
-byte-identical to master (only the genuinely-changed module keeps its new migration). Bites every
-migration-touching branch.
-
-**Resolves when:** the script only re-scaffolds modules whose model actually changed (diff the
-generated migration content, skip re-stamp if identical), or packaged-lib migrations are excluded
-from the blanket nuke.
-
 ### Orphaned FlatFee accept-checkout holds release only by ~7-day Stripe expiry
 
-When a venue runs FlatFee accept-checkout (a manual-capture PI ring-fencing the venue's own funds) and the application is then withdrawn/rejected/cancelled instead of accepted, nothing cancels the hold: Payment exposes no cancel RPC (`ManagerPayment` has `FindHeldIntent` but no cancel; `IStripeHoldClient.CancelAsync` is Payment-internal), so the funds stay ring-fenced until Stripe auto-expires the intent (~7 days). Money-safe, just slow to release. This was the deliberately-skipped optional Phase 5 of the delivered application-cancel plan — it needs a Payment-first two-PR cycle across the package boundary.
+When a venue runs FlatFee accept-checkout (a manual-capture PI ring-fencing the venue's own funds) and the application is then withdrawn/rejected/cancelled instead of accepted, nothing cancels the hold: Payment exposes no cancel anywhere (`ManagerPayment` has `FindHeldIntent` but no cancel RPC, and there is no internal hold-cancel — `IStripeHoldClient` has only `FindHeldIntent`/`Capture`), so the funds stay ring-fenced until Stripe auto-expires the intent (~7 days). Money-safe, just slow to release. This was the deliberately-skipped optional Phase 5 of the delivered application-cancel plan — it needs a Payment-first two-PR cycle across the package boundary.
 
 **Resolves when:** `ManagerPayment` gains a `CancelHeldIntent(payer_id, application_id)` RPC (+ `IManagerPaymentClient.CancelHeldIntentAsync` and fake/mock impls, published as `Payment.Client`), and B2B best-effort releases the hold on FlatFee withdraw/reject/cancel.
 
@@ -60,19 +40,25 @@ When a venue runs FlatFee accept-checkout (a manual-capture PI ring-fencing the 
 
 **Resolves when:** the org packages are made internal-visible to the org's repos, or fork PRs are given a `read:packages` PAT (or simply aren't accepted).
 
-### Config section names are magic-string literals, not typed constants (one lone outlier)
+### `Cors:AllowedOrigins` / `ExternalServices` config reads are magic-string literals with no shared home
 
-Every `Configure<XSettings>(configuration.GetSection("..."))` across the backend passes the section name as a
-bare string literal — `"Stripe"` (`Payment.Infrastructure`), `"Legal"` (`B2B.Concert`), `"Urls"` (`Kernel`),
-`"BlobStorage"` (`Shared.Blob`), `"TaxCompliance"` (`B2B.Tenant`), plus the `"Cors:AllowedOrigins"` /
-`"ExternalServices"` reads in the host `Program.cs` files. The sole exception is `Concertable.Auth`'s
-`SpaClientSettings.SectionName = "Auth:SpaClients"`, bound via `GetSection(SpaClientSettings.SectionName)` —
-the pattern the rest should follow. A renamed section silently stops binding: the literal and the appsettings
-key drift independently with no compile error.
+Every `Configure<XSettings>(GetSection(...))` binding now goes through a typed `SectionName` const (the
+`SpaClientSettings` pattern), but two magic-string reads of a different shape remain — inline
+`.Get<>()`/`.GetValue<>()`, not settings-class bindings, so `SectionName` doesn't apply directly and they're
+duplicated with no shared owner:
 
-**Resolves when:** a repo-wide sweep gives each settings class a `public const string SectionName` and every
-`Configure<T>(GetSection(...))` binds through it (adopting the `SpaClientSettings` pattern). Done as one
-consistency pass, not piecemeal — a lone typed section next to magic-string neighbours is worse than uniform.
+- `GetSection("Cors:AllowedOrigins").Get<string[]>()` — copy-pasted identically across all four host
+  `Program.cs` files (B2B, Customer, Search, Payment.Web).
+- `GetSection("ExternalServices").GetValue<bool>("UseReal…")` — read in three separate packages
+  (`Payment.Infrastructure` `UseRealStripe`, `Shared.Email.Infrastructure` `UseRealEmail`,
+  `Shared.Blob.Infrastructure` `UseRealBlob`), each reading only its own sub-key.
+
+A renamed section/key silently stops binding, with no compile error and no single place to change.
+
+**Resolves when:** CORS wiring is extracted to one shared `AddDefaultCors(configuration)` extension over a typed
+`CorsSettings.SectionName`, and the `ExternalServices` flags bind through a shared typed options type (home
+referenced by all three packages) instead of per-package literals — so neither section name lives as a
+duplicated literal.
 
 ### Timestamps are `DateTime` (UTC-by-naming-convention), not `DateTimeOffset`
 
@@ -94,16 +80,17 @@ currently `.UtcDateTime` them away). One coordinated migration-touching change, 
 
 Most `IXService` types are genuine services — they orchestrate domain logic over a repository
 (`IVenueService`, `IConcertService`, `IInvitationService`, and `ITicketPdfService`, which does inject
-`ITicketRepository`). But the suffix is also worn by types that own no persistence and are really
-value-producers or gateways, which flattens a distinction worth seeing at the injection site:
+`ITicketRepository`). But the suffix is also worn by two shared types that own no persistence and are
+really byte/blob gateways, which flattens a distinction worth seeing at the injection site:
 
-- **`IContractPdfService` / `IInvoicePdfService`** (B2B Concert) — inject only `IPdfBlobCache`, no
-  repository; they render a document from data. The codebase already has `IPdfRenderer`, and
-  `CODE_PATTERNS.md` already blesses `Renderer.Render` — so these two are inconsistent with vocabulary
-  that exists here today.
 - **`IBlobStorageService`** (`Shared.Blob`) — wraps `BlobServiceClient` + options; a gateway/store.
 - **`IImageService`** (`Shared.Imaging`) — `Upload`/`Download`/`Replace`/`Delete`, sitting directly on
   `IBlobStorageService`. Bytes in and out of a backing store, no domain logic; a store over a store.
+
+The module-internal half of this is **done**: the B2B Concert `IContractPdfService` / `IInvoicePdfService`
+— pure `IPdfBlobCache`-backed document renderers with no repository — are renamed to
+`IContractPdfRenderer` / `IInvoicePdfRenderer`, alongside the existing `IPdfRenderer`. Only the two
+shared store types remain, and they're boundary-blocked (published packages).
 
 Why it matters beyond taste: "a service calling another service" is a smell worth spotting by name, and
 it only reads as a smell when *service* means orchestrator. When a pure value-producer is also called
@@ -113,12 +100,12 @@ states the rule this would follow — name the type as the agent-noun of its one
 
 Note the distinction is *shape*, not *staticness*: these are injected, config-bound collaborators, so
 `Helper`/`Utility` (which in sibling codebases denotes a `static` class of pure functions) would be the
-wrong correction — the honest names are `Factory` / `Renderer` / `Store`.
+wrong correction — the honest name here is `Store`.
 
-**Resolves when:** a naming pass renames the non-orchestrator `*Service` types to their agent-noun,
-settling on one vocabulary — `Factory` creates values, `Renderer` produces a document, `Store` fronts a
-byte/blob backing store, and `Service` is reserved for repository-backed orchestrators:
-the two PDF ones → `*PdfRenderer` (alongside the existing `IPdfRenderer`);
-`IBlobStorageService` → `IBlobStore`; `IImageService` → `IImageStore`. Best done as one sweep — renaming
-the `Kernel` and `Shared.*` types republishes those packages and triggers a platform-sync, so batch them
-rather than paying that cost once per rename.
+**Resolves when:** the two shared byte/blob gateways are renamed to their agent-noun as a publish-first
+package cut-over — `IBlobStorageService` → `IBlobStore` (`Shared.Blob`), `IImageService` → `IImageStore`
+(`Shared.Imaging`) — reserving `Service` for repository-backed orchestrators. Both ship in published
+packages consumed cross-service (Auth/B2B/Customer call `AddSharedBlob` / imaging), so a rename reds
+`platform-sync` and can't be atomic: rename in the package, publish, migrate consumers in the sync PR.
+Do the pair in one sweep so the store vocabulary doesn't land half-applied.
+

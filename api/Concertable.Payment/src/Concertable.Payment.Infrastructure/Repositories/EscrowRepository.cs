@@ -9,9 +9,46 @@ internal sealed class EscrowRepository
     public EscrowRepository(PaymentDbContext context)
         : base(context) { }
 
+    public Task<EscrowEntity?> GetWithRefundsByIdAsync(int id, CancellationToken ct = default) =>
+        context.Escrows
+            .Include(e => e.Refunds)
+            .FirstOrDefaultAsync(e => e.Id == id, ct);
+
     public Task<EscrowEntity?> GetByBookingIdAsync(int bookingId, CancellationToken ct = default) =>
-        context.Escrows.FirstOrDefaultAsync(e => e.BookingId == bookingId, ct);
+        context.Escrows
+            .Include(e => e.Refunds)
+            .FirstOrDefaultAsync(e => e.BookingId == bookingId, ct);
 
     public Task<EscrowEntity?> GetByChargeIdAsync(string chargeId, CancellationToken ct = default) =>
-        context.Escrows.FirstOrDefaultAsync(e => e.ChargeId == chargeId, ct);
+        context.Escrows
+            .Include(e => e.Refunds)
+            .FirstOrDefaultAsync(e => e.ChargeId == chargeId, ct);
+
+    public Task<EscrowEntity?> GetByCommissionBindingIdAsync(
+        Guid commissionBindingId,
+        CancellationToken ct = default) =>
+        context.Escrows
+            .Include(e => e.Refunds)
+            .FirstOrDefaultAsync(
+            e => e.CommissionBindingId == commissionBindingId,
+            ct);
+
+    public async Task<bool> TryReserveRefundGrossAsync(int escrowId, long grossMinor, CancellationToken ct = default)
+    {
+        var affected = await context.Escrows
+            .Where(e => e.Id == escrowId
+                && (e.Status == EscrowStatus.Held || e.Status == EscrowStatus.Released || e.Status == EscrowStatus.Disputed)
+                && e.RefundedGrossMinor + grossMinor <= e.PayeeGrossMinor)
+            .ExecuteUpdateAsync(
+                s => s.SetProperty(e => e.RefundedGrossMinor, e => e.RefundedGrossMinor + grossMinor),
+                ct);
+        return affected == 1;
+    }
+
+    public Task ReleaseReservedRefundGrossAsync(int escrowId, long grossMinor, CancellationToken ct = default) =>
+        context.Escrows
+            .Where(e => e.Id == escrowId)
+            .ExecuteUpdateAsync(
+                s => s.SetProperty(e => e.RefundedGrossMinor, e => e.RefundedGrossMinor - grossMinor),
+                ct);
 }

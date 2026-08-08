@@ -21,7 +21,7 @@ export function configureClient(instance: AxiosInstance, baseURL: string) {
       );
       return builder;
     },
-    withTenant(getTenantId: () => string | null, headerName: string) {
+    withTenant(getTenantId: () => string | undefined, headerName: string) {
       instance.interceptors.request.use((config) => {
         const tenantId = getTenantId();
         if (tenantId) config.headers[headerName] = tenantId;

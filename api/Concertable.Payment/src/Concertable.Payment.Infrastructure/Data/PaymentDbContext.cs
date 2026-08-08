@@ -13,6 +13,12 @@ internal sealed class PaymentDbContext(
     public DbSet<StripeEventEntity> StripeEvents => Set<StripeEventEntity>();
     public DbSet<PayoutAccountEntity> PayoutAccounts => Set<PayoutAccountEntity>();
     public DbSet<EscrowEntity> Escrows => Set<EscrowEntity>();
+    public DbSet<LedgerAccountEntity> LedgerAccounts => Set<LedgerAccountEntity>();
+    public DbSet<LedgerTransactionEntity> LedgerTransactions => Set<LedgerTransactionEntity>();
+    public DbSet<LedgerEntryEntity> LedgerEntries => Set<LedgerEntryEntity>();
+    public DbSet<CommissionConfigurationEntity> CommissionConfigurations => Set<CommissionConfigurationEntity>();
+    public DbSet<CommissionBindingEntity> CommissionBindings => Set<CommissionBindingEntity>();
+    public DbSet<PaymentRefundEntity> PaymentRefunds => Set<PaymentRefundEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

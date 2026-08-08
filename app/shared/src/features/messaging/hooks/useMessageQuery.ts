@@ -23,11 +23,11 @@ export function useMessagesQuery(params: PaginationParams, enabled = true) {
   });
 }
 
-export function useMarkAsReadMutation() {
+export function useMarkInboxReadMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: messageApi.markAsRead,
+    mutationFn: messageApi.markInboxRead,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["messages"] });
     },

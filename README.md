@@ -2,7 +2,8 @@
 
 ### Prerequisites
 - Docker Desktop (running)
-- A `GITHUB_PACKAGES_TOKEN` environment variable set to a GitHub PAT with the `read:packages` scope.
+- A `GITHUB_PACKAGES_TOKEN` environment variable set to a GitHub PAT with the `read:packages` scope
+  (`write:packages` is also required when publishing frontend packages locally).
   The AppHosts (root/B2B/Customer) build `Concertable.Auth`, which now restores its shared-platform
   dependencies as packages from the org's private GitHub Packages feed — without the token, restore
   fails (401 / NU1101) before the app starts. (Auth is the first service migrated to feed packages;

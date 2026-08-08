@@ -1,9 +1,6 @@
 using Concertable.Payment.Application.DTOs;
 using Concertable.Payment.Application.Requests;
-using FluentResults;
 using Stripe;
-using Transfer = Concertable.Payment.Contracts.Transfer;
-using Refund = Concertable.Payment.Contracts.Refund;
 
 namespace Concertable.Payment.Infrastructure.Services;
 
@@ -16,63 +13,42 @@ internal sealed class FakeStripePaymentIntentClient : IStripePaymentIntentClient
         this.webhookQueue = webhookQueue;
     }
 
-    public async Task<Result<PaymentOutcome>> ChargeAsync(StripeChargeOptions opts)
+    public Task<Result<PaymentOutcome, PaymentError>> ChargeAsync(
+        StripeChargeOptions options,
+        CancellationToken ct = default) =>
+        CompleteAsync(options.Amount, options.Metadata, ct);
+
+    public Task<Result<PaymentOutcome, PaymentError>> HoldAsync(
+        StripeHoldOptions options,
+        CancellationToken ct = default) =>
+        CompleteAsync(options.Amount, options.Metadata, ct);
+
+    private async Task<Result<PaymentOutcome, PaymentError>> CompleteAsync(
+        Money amount,
+        Dictionary<string, string> metadata,
+        CancellationToken ct)
     {
         var transactionId = $"pi_fake_{Guid.NewGuid():N}";
-
         await webhookQueue.EnqueueAsync(new Event
         {
             Id = $"evt_fake_{Guid.NewGuid():N}",
-            Type = "payment_intent.succeeded",
+            Type = EventTypes.PaymentIntentSucceeded,
             Data = new EventData
             {
                 Object = new PaymentIntent
                 {
                     Id = transactionId,
                     Status = "succeeded",
-                    AmountReceived = (long)(opts.Amount * 100),
-                    Metadata = opts.Metadata
+                    AmountReceived = amount.ToMinorUnits(),
+                    Metadata = metadata
                 }
             }
         });
 
-        return Result.Ok(new PaymentOutcome
+        return Result<PaymentOutcome, PaymentError>.Success(new PaymentOutcome
         {
             RequiresAction = false,
             TransactionId = transactionId
         });
     }
-
-    public async Task<Result<PaymentOutcome>> HoldAsync(StripeHoldOptions opts)
-    {
-        var transactionId = $"pi_fake_{Guid.NewGuid():N}";
-
-        await webhookQueue.EnqueueAsync(new Event
-        {
-            Id = $"evt_fake_{Guid.NewGuid():N}",
-            Type = "payment_intent.succeeded",
-            Data = new EventData
-            {
-                Object = new PaymentIntent
-                {
-                    Id = transactionId,
-                    Status = "succeeded",
-                    AmountReceived = (long)(opts.Amount * 100),
-                    Metadata = opts.Metadata
-                }
-            }
-        });
-
-        return Result.Ok(new PaymentOutcome
-        {
-            RequiresAction = false,
-            TransactionId = transactionId
-        });
-    }
-
-    public Task<Result<Transfer>> ReleaseAsync(StripeReleaseOptions opts) =>
-        Task.FromResult(Result.Ok(new Transfer($"tr_fake_{Guid.NewGuid():N}")));
-
-    public Task<Result<Refund>> RefundAsync(StripeRefundOptions opts) =>
-        Task.FromResult(Result.Ok(new Refund($"re_fake_{Guid.NewGuid():N}")));
 }

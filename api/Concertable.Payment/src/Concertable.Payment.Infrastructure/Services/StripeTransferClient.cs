@@ -1,7 +1,6 @@
 using Concertable.Payment.Application.DTOs;
 using Concertable.Payment.Application.Requests;
 using Concertable.Payment.Infrastructure;
-using FluentResults;
 using Microsoft.Extensions.Logging;
 using Stripe;
 using Transfer = Concertable.Payment.Contracts.Transfer;
@@ -20,74 +19,89 @@ internal sealed class StripeTransferClient : IStripeTransferClient
         this.logger = logger;
     }
 
-    public async Task<Result<Transfer>> ReleaseAsync(StripeReleaseOptions opts)
+    public async Task<Result<Transfer, PaymentError>> ReleaseAsync(
+        StripeReleaseOptions opts,
+        CancellationToken ct = default)
     {
         try
         {
             if (string.IsNullOrEmpty(opts.DestinationStripeId))
-                return Result.Fail("Recipient does not have a Stripe account");
+                return Result<Transfer, PaymentError>.Failure(new PaymentError.RecipientUnavailable());
 
-            var transfer = await stripeClient.CreateTransferAsync(new TransferCreateOptions
-            {
-                Amount = (long)(opts.Amount * 100),
-                Currency = "GBP",
-                Destination = opts.DestinationStripeId,
-                SourceTransaction = opts.ChargeId,
-                Metadata = opts.Metadata
-            });
+            var transfer = await stripeClient.CreateTransferAsync(
+                new TransferCreateOptions
+                {
+                    Amount = opts.Amount.ToMinorUnits(),
+                    Currency = "GBP",
+                    Destination = opts.DestinationStripeId,
+                    SourceTransaction = opts.ChargeId,
+                    Metadata = opts.Metadata
+                },
+                StripeIdempotency.FromMetadata(opts.Metadata, "release"),
+                ct);
 
             logger.StripeEscrowReleaseSucceeded(transfer.Id, transfer.Amount, opts.DestinationStripeId, opts.ChargeId);
 
-            return Result.Ok(new Transfer(transfer.Id));
+            return Result<Transfer, PaymentError>.Success(new Transfer(transfer.Id));
         }
         catch (StripeException ex)
         {
-            logger.StripeReleaseFailed((long)(opts.Amount * 100), opts.DestinationStripeId, opts.ChargeId, ex.StripeError?.Code, ex);
-            return Result.Fail($"Stripe Error: {ex.Message}");
-        }
-        catch (Exception ex)
-        {
-            logger.ReleaseProcessingFailed((long)(opts.Amount * 100), opts.DestinationStripeId, ex);
-            return Result.Fail($"General Error: {ex.Message}");
+            logger.StripeReleaseFailed(opts.Amount.ToMinorUnits(), opts.DestinationStripeId, opts.ChargeId, ex.StripeError?.Code, ex);
+            if (StripeFailureClassifier.Classify(ex).TryGetValue(out var error))
+                return Result<Transfer, PaymentError>.Failure(error);
+            throw;
         }
     }
 
-    public async Task<Result<Refund>> RefundAsync(StripeRefundOptions opts)
+    public async Task<Result<Refund, PaymentError>> RefundAsync(
+        StripeRefundOptions opts,
+        CancellationToken ct = default)
     {
         try
         {
-            if (!string.IsNullOrEmpty(opts.TransferId))
+            if (opts.TransferReversal is not null)
             {
-                await stripeClient.CreateTransferReversalAsync(opts.TransferId, new TransferReversalCreateOptions
-                {
-                    Amount = (long)(opts.Amount * 100),
-                    Metadata = opts.Metadata
-                });
+                await stripeClient.CreateTransferReversalAsync(
+                    opts.TransferReversal.TransferId,
+                    new TransferReversalCreateOptions
+                    {
+                        Amount = opts.TransferReversal.Amount.ToMinorUnits(),
+                        Metadata = opts.Metadata
+                    },
+                    StripeIdempotency.FromMetadata(
+                        opts.Metadata,
+                        $"refund-reversal:{opts.Metadata.GetValue(PaymentMetadataKeys.CumulativeGrossRefundMinor)}"),
+                    ct);
 
-                logger.StripeTransferReversalSucceeded(opts.TransferId, (long)(opts.Amount * 100));
+                logger.StripeTransferReversalSucceeded(
+                    opts.TransferReversal.TransferId,
+                    opts.TransferReversal.Amount.ToMinorUnits());
             }
 
-            var refund = await stripeClient.CreateRefundAsync(new RefundCreateOptions
-            {
-                PaymentIntent = opts.PaymentIntentId,
-                Amount = (long)(opts.Amount * 100),
-                Reason = opts.Reason,
-                Metadata = opts.Metadata
-            });
+            var refund = await stripeClient.CreateRefundAsync(
+                new RefundCreateOptions
+                {
+                    PaymentIntent = opts.PaymentIntentId,
+                    Amount = opts.Amount.ToMinorUnits(),
+                    ReverseTransfer = opts.ReverseTransfer ? true : null,
+                    Reason = opts.Reason,
+                    Metadata = opts.Metadata
+                },
+                StripeIdempotency.FromMetadata(
+                    opts.Metadata,
+                    $"refund:{opts.Metadata.GetValue(PaymentMetadataKeys.CumulativeGrossRefundMinor)}"),
+                ct);
 
             logger.StripeRefundSucceeded(refund.Id, opts.PaymentIntentId, refund.Amount);
 
-            return Result.Ok(new Refund(refund.Id));
+            return Result<Refund, PaymentError>.Success(new Refund(refund.Id));
         }
         catch (StripeException ex)
         {
             logger.StripeRefundFailed(opts.PaymentIntentId, ex.StripeError?.Code, ex);
-            return Result.Fail($"Stripe Error: {ex.Message}");
-        }
-        catch (Exception ex)
-        {
-            logger.RefundProcessingFailed(opts.PaymentIntentId, ex);
-            return Result.Fail($"General Error: {ex.Message}");
+            if (StripeFailureClassifier.Classify(ex).TryGetValue(out var error))
+                return Result<Refund, PaymentError>.Failure(error);
+            throw;
         }
     }
 }

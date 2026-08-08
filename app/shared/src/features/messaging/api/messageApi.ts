@@ -18,10 +18,8 @@ const messageApi = {
     return data;
   },
 
-  markAsRead: async (messageIds: number[]): Promise<number> => {
-    const { data } = await apiClient.post<number>("/message/mark-read", {
-      messageIds,
-    });
+  markInboxRead: async (): Promise<number> => {
+    const { data } = await apiClient.post<number>("/message/mark-read");
     return data;
   },
 };

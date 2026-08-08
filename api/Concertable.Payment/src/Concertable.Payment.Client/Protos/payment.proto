@@ -4,6 +4,31 @@ package payment;
 
 option csharp_namespace = "Concertable.Payment.Grpc";
 
+enum Currency {
+  CURRENCY_UNSPECIFIED = 0;
+  CURRENCY_GBP = 826;
+}
+
+enum OperationErrorKind {
+  OPERATION_ERROR_INVALID = 0;
+  OPERATION_ERROR_NOT_FOUND = 1;
+  OPERATION_ERROR_CONFLICT = 2;
+  OPERATION_ERROR_UNAUTHENTICATED = 3;
+  OPERATION_ERROR_FORBIDDEN = 4;
+  OPERATION_ERROR_PAYMENT_REQUIRED = 5;
+}
+
+message OperationErrorDetail {
+  string code = 1;
+  string message = 2;
+  OperationErrorKind kind = 3;
+}
+
+message Money {
+  int64 amount_minor = 1;
+  Currency currency = 2;
+}
+
 enum PaymentSessionType {
   ON_SESSION = 0;
   OFF_SESSION = 1;
@@ -41,21 +66,104 @@ message TransferResponse {
   string transfer_id = 1;
 }
 
+message CommissionCalculationResponse {
+  string commission_configuration_id = 1;
+  reserved 2;
+  reserved "configuration_version";
+  string rate_percentage = 3;
+  reserved 4;
+  reserved "currency";
+  Money gross = 5;
+  Money commission = 6;
+  Money payer_total = 7;
+}
+
+message CommissionBindingResponse {
+  string binding_id = 1;
+  string commission_configuration_id = 2;
+  reserved 3;
+  reserved "configuration_version";
+  string rate_percentage = 4;
+  Currency currency = 5;
+  reserved 6;
+  reserved "calculation";
+}
+
+service CommissionPricing {
+  rpc PreviewCommission(PreviewCommissionRequest) returns (CommissionCalculationResponse);
+  rpc CreateOrBindCommission(CreateOrBindCommissionRequest) returns (CommissionBindingResponse);
+  rpc ConfirmReviewedGross(ConfirmReviewedGrossRequest) returns (CommissionCalculationResponse);
+  rpc CalculateBoundCommission(CalculateBoundCommissionRequest) returns (CommissionCalculationResponse);
+}
+
+message PreviewCommissionRequest {
+  Money gross = 1;
+  reserved 2;
+  reserved "currency";
+}
+
+message CreateOrBindCommissionRequest {
+  string external_reference = 1;
+  string payer_reference = 2;
+  Currency currency = 3;
+  string reviewed_commission_configuration_id = 4;
+  string stripe_payment_intent_id = 5;
+  string stripe_setup_intent_id = 6;
+  reserved 7, 8, 9;
+  reserved "gross_minor", "expected_commission_minor", "expected_payer_total_minor";
+}
+
+message ConfirmReviewedGrossRequest {
+  string binding_id = 1;
+  string external_reference = 2;
+  string payer_reference = 3;
+  Money reviewed_gross = 4;
+}
+
+message CalculateBoundCommissionRequest {
+  string binding_id = 1;
+  string external_reference = 2;
+  string payer_reference = 3;
+  Money gross = 4;
+  reserved 5, 6, 7;
+  reserved "gross_minor", "expected_commission_minor", "expected_payer_total_minor";
+  string stripe_payment_intent_id = 8;
+  string stripe_setup_intent_id = 9;
+}
+
 service ManagerPayment {
   rpc Pay(ManagerPayRequest) returns (PaymentResponse);
+  rpc PayBoundCommission(BoundCommissionManagerPayRequest) returns (PaymentResponse);
   rpc CreateSetupSession(CreateSetupSessionRequest) returns (CheckoutSessionResponse);
   rpc CreateVerifySession(CreateVerifySessionRequest) returns (CheckoutSessionResponse);
   rpc CreateHoldSession(CreateHoldSessionRequest) returns (CheckoutSessionResponse);
+  rpc CreateBoundCommissionHoldSession(CreateBoundCommissionHoldSessionRequest) returns (CheckoutSessionResponse);
   rpc FindHeldIntent(FindHeldIntentRequest) returns (FindHeldIntentResponse);
 }
 
 message ManagerPayRequest {
   string payer_id = 1;
   string payee_id = 2;
-  string amount = 3;
+  Money amount = 3;
   string payment_method_id = 4;
   PaymentSessionType session = 5;
   int32 booking_id = 6;
+}
+
+message BoundCommissionManagerPayRequest {
+  string payer_id = 1;
+  string payee_id = 2;
+  Money gross = 3;
+  reserved 4;
+  reserved "currency";
+  string payment_method_id = 5;
+  PaymentSessionType session = 6;
+  int32 booking_id = 7;
+  string commission_binding_id = 8;
+  string external_reference = 9;
+  reserved 10, 11;
+  reserved "expected_commission_minor", "expected_payer_total_minor";
+  string stripe_setup_intent_id = 12;
 }
 
 message CreateSetupSessionRequest {
@@ -70,8 +178,21 @@ message CreateVerifySessionRequest {
 
 message CreateHoldSessionRequest {
   string payer_id = 1;
-  string amount = 2;
+  Money amount = 2;
   map<string, string> metadata = 3;
+}
+
+message CreateBoundCommissionHoldSessionRequest {
+  string payer_id = 1;
+  Money gross = 2;
+  reserved 3;
+  reserved "currency";
+  map<string, string> metadata = 4;
+  string commission_binding_id = 5;
+  string external_reference = 6;
+  reserved 7, 8;
+  reserved "expected_commission_minor", "expected_payer_total_minor";
+  string stripe_setup_intent_id = 9;
 }
 
 message FindHeldIntentRequest {
@@ -91,7 +212,7 @@ service CustomerPayment {
 message CustomerPayRequest {
   string payer_id = 1;
   int32 concert_id = 2;
-  string amount = 3;
+  Money amount = 3;
   map<string, string> metadata = 4;
   string payment_method_id = 5;
   string payee_id = 6;
@@ -106,9 +227,12 @@ message CreatePaymentSessionRequest {
 
 service Escrow {
   rpc Deposit(DepositRequest) returns (EscrowResponse);
+  rpc DepositBoundCommission(BoundCommissionDepositRequest) returns (EscrowResponse);
   rpc Capture(CaptureRequest) returns (EscrowResponse);
+  rpc CaptureBoundCommission(BoundCommissionCaptureRequest) returns (EscrowResponse);
   rpc ReleaseByBookingId(ReleaseByBookingIdRequest) returns (ReleaseByBookingIdResponse);
   rpc RefundByBookingId(RefundByBookingIdRequest) returns (RefundByBookingIdResponse);
+  rpc RefundBoundCommissionByBookingId(BoundCommissionRefundByBookingIdRequest) returns (RefundByBookingIdResponse);
 }
 
 // Payout-account operations a consumer fronts for its own users (B2B's payouts proxy). The
@@ -155,18 +279,48 @@ message SetupIntentResponse {
 message DepositRequest {
   string payer_id = 1;
   string payee_id = 2;
-  string amount = 3;
+  Money amount = 3;
   string payment_method_id = 4;
   PaymentSessionType session = 5;
   int32 booking_id = 6;
 }
 
+message BoundCommissionDepositRequest {
+  string payer_id = 1;
+  string payee_id = 2;
+  Money gross = 3;
+  reserved 4;
+  reserved "currency";
+  string payment_method_id = 5;
+  PaymentSessionType session = 6;
+  int32 booking_id = 7;
+  string commission_binding_id = 8;
+  string external_reference = 9;
+  reserved 10, 11;
+  reserved "expected_commission_minor", "expected_payer_total_minor";
+  string stripe_setup_intent_id = 12;
+}
+
 message CaptureRequest {
   string payer_id = 1;
   string payee_id = 2;
-  string amount = 3;
+  Money amount = 3;
   string payment_intent_id = 4;
   int32 booking_id = 5;
+}
+
+message BoundCommissionCaptureRequest {
+  string payer_id = 1;
+  string payee_id = 2;
+  Money gross = 3;
+  reserved 4;
+  reserved "currency";
+  string payment_intent_id = 5;
+  int32 booking_id = 6;
+  string commission_binding_id = 7;
+  string external_reference = 8;
+  reserved 9, 10;
+  reserved "expected_commission_minor", "expected_payer_total_minor";
 }
 
 message ReleaseByBookingIdRequest {
@@ -183,6 +337,13 @@ message RefundResponse {
 
 message RefundByBookingIdRequest {
   int32 booking_id = 1;
+}
+
+message BoundCommissionRefundByBookingIdRequest {
+  int32 booking_id = 1;
+  Money gross = 2;
+  reserved 3;
+  reserved "currency";
 }
 
 message RefundByBookingIdResponse {

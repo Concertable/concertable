@@ -1,15 +1,16 @@
-using FluentResults;
+using Concertable.Kernel.Functional;
+using Concertable.Payment.Contracts.Errors;
 
 namespace Concertable.Payment.Application.Interfaces;
 
 internal interface ICustomerPaymentService
 {
-    Task<Result<PaymentOutcome>> PayAsync(
+    Task<Result<PaymentOutcome, PaymentError>> PayAsync(
         Guid payerId,
         int concertId,
         Guid payeeId,
-        decimal amount,
-        IDictionary<string, string> metadata,
+        Money amount,
+        IReadOnlyDictionary<string, string> metadata,
         string paymentMethodId,
         CancellationToken ct = default);
 
@@ -17,6 +18,6 @@ internal interface ICustomerPaymentService
         Guid payerId,
         int concertId,
         Guid payeeId,
-        IDictionary<string, string> metadata,
+        IReadOnlyDictionary<string, string> metadata,
         CancellationToken ct = default);
 }

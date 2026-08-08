@@ -1,4 +1,4 @@
 export { useAuthStore } from "./store/useAuthStore";
 export { userManager, onSigninCallback } from "./config/oidcConfig";
-export { requireAuth, requireRole, requireBusinessRole } from "./guards";
-export type { Role, UserRole, User } from "./types";
+export { requireAuth, requireBusinessAuth, redirectToBusiness } from "./guards";
+export type { User } from "./types";

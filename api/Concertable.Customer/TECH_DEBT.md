@@ -35,7 +35,7 @@ stub Payment (stubbing defeats E2E); the fix is to split tiers by *where they ru
   `AddContainer("payment", "<registry>/payment:<version>")`), and moves out of Customer's repo into a
   system/deployment pipeline.
 
-Mirror of the B2B item in `api/Concertable.B2B/TECH_DEBT.md`. See [`plans/SPLIT_TIME_E2E_STRATEGY.md`](../../plans/SPLIT_TIME_E2E_STRATEGY.md).
+Mirror of the B2B item in `api/Concertable.B2B/TECH_DEBT.md`. See [`plans/platform/SPLIT_TIME_E2E_STRATEGY.md`](../../plans/platform/SPLIT_TIME_E2E_STRATEGY.md).
 
 ---
 
@@ -59,18 +59,23 @@ Concert and Ticket gained their `.Contracts` projects (`IConcertModule`, `ITicke
 
 ## LOW
 
-### Customer has no DataAccess layer — design-time factory base parked in Seed.Infrastructure
+### `DateRange` mapped as `ComplexProperty` on Ticket but `OwnsOne` elsewhere
 
-B2B has `Concertable.B2B.DataAccess.Infrastructure` (referenced by every B2B module's Infrastructure
-project); Customer has no equivalent — its module Infrastructure projects reference the shared
-`Concertable.DataAccess.Infrastructure` package directly plus the in-closure
-`Concertable.Customer.Seed.Infrastructure`. So the design-time `DesignTimeConfiguration` +
-`CustomerDesignTimeDbContextFactory` base (single-sourcing the 7 Customer factories, and pulling a
-`Microsoft.EntityFrameworkCore.SqlServer` ref into the seed project) landed in `Seed.Infrastructure` —
-the only Customer-wide in-closure home available — which is a semantic mismatch (it's not seeding).
+`DateRange` is a value object (no identity), so it belongs as a `ComplexProperty` — as the repo already
+maps its other value objects (`ESignature`, `InvoiceAmounts`, `InvoiceParty`). `TicketEntity.Period`
+was moved to `ComplexProperty` to fix a real bug: `OwnsOne` models it as an owned *entity*, and
+`TicketService.CompleteAsync` hands the same `concert.Period` instance to every ticket in a
+multi-ticket purchase — EF forbids one owned instance having N owners, so the 2nd+ ticket saved with
+NULL `Period_Start` and the purchase 500'd. The other four `DateRange` mappings (B2B
+Concert/Contract/Opportunity, Customer Concert) stay `OwnsOne`: they never share an instance so they
+don't hit the bug, and converting them breaks their projection-handler unit tests, which use the EF
+**InMemory** provider — it can't materialize a complex type (`KeyNotFoundException` on
+`Period#DateRange.Start` in its query shaper).
 
-**Resolves when:** Customer gains a `Concertable.Customer.DataAccess.Infrastructure` (mirroring B2B) and
-the design-time factory base + `DesignTimeConfiguration` move there. See `plans/CONFIG_AND_DEPLOYMENT.md`.
+**Resolves when:** the InMemory-based projection-handler unit tests (Customer Concert, B2B Concert)
+move to a provider that supports complex types (SQLite in-memory); then all `DateRange` mappings become
+`ComplexProperty` and no value object is mapped as an owned entity. Same root cause as the `AsNoTracking`
+item below.
 
 ---
 

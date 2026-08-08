@@ -3,43 +3,38 @@ name: CI
 on:
   push:
     branches:
-      - master
+      - main
   pull_request:
     branches:
-      - master
+      - main
   merge_group:
     branches:
-      - master
+      - main
 
 jobs:
   changes:
-    # Classify the diff once so the rest of CI runs only what's relevant, via FOUR gate outputs:
+    # Classify the diff once so the rest of CI runs only what's relevant, via FIVE gate outputs:
     #   run_code   -> build + carve   (the COMPILE FLOOR: the slnx compiles AND every service builds standalone)
     #   run_tests  -> unit + integration
     #   run_e2e    -> e2e-api-tests
     #   run_e2e_ui -> e2e-ui-tests
+    #   run_fe     -> carve-fe        (the FE COMPILE FLOOR: each surface builds standalone from the feed)
     # Automatic classification, by the changed-file set:
-    #   - non-code    (docs / .claude / .github / plans / reviews / root dotfiles) -> ALL FOUR false: nothing to
+    #   - non-code    (docs / .claude / plans / reviews / root dotfiles) -> ALL FOUR false: nothing to
     #                 compile or test. build + carve no-op, unit/integration skip, E2E no-op.
     #   - package-only (nothing but Directory.Packages.props — e.g. platform-sync) -> run_code + run_tests true,
     #                 run_e2e + run_e2e_ui false: a dep bump can break compile/tests so those gate, but it has ZERO
     #                 runtime delta so E2E no-ops.
     #   - anything else                                                            -> all four true (full CI).
-    # MANUAL MERGE-TIER OVERRIDES: a commit-message token in the diff range, OR a PR label of the same name,
-    # turns gates OFF (never on). Tokens live in the commits so they read identically on the PR and in the
-    # queue; labels aren't in the merge_group payload, so we resolve the PR (from the event on a PR, from the
-    # gh-readonly-queue/<base>/pr-<N>-<sha> ref in the queue) and read its labels via the API — so a label
-    # ticked in the UI also holds through the merge-queue run. build + carve are NEVER skippable: a change
-    # that doesn't compile must never merge.
-    #   [skip-e2e-ui] / label skip-e2e-ui -> run_e2e_ui=false                                  (build+carve, unit+integration, e2e-api run)
-    #   [skip-e2e]    / label skip-e2e    -> run_e2e=false + run_e2e_ui=false                   (build+carve, unit+integration run)
-    #   [skip-tests]  / label skip-tests  -> run_tests=false + run_e2e=false + run_e2e_ui=false (build+carve only — the compile floor)
-    # Everything still merges through the queue, which rebuilds on current master, so a skip can never merge stale.
-    # NOTE: required checks (build / carve-* / e2e-*) still RUN when gated off — they no-op their steps and report
-    # success. A *skipped* required check stalls the merge queue until check_response_timeout (60 min); a green no-op
-    # does not. Non-required jobs (unit-tests / integration-tests) can skip cleanly — ci-gate tolerates skipped needs
-    # — so they also skip in the merge queue (they ran on the PR; ci-gate stays green on their skipped result),
-    # which removes the PR+queue double-run. They still run on the post-merge push to master as a master-health signal.
+    # OPT-OUT to turn E2E gates OFF (never unit/integration) for a change the diff over-covers. It is a git
+    # TRAILER on its own line — `Skip-E2E: true` or `Skip-E2E-UI: true` — parsed structurally by git (not
+    # substring-grepped), so prose that merely mentions a token can't trip it (the pr-227 bug). A PR label of
+    # the same name (skip-e2e / skip-e2e-ui) works too.
+    #   Skip-E2E-UI / skip-e2e-ui -> run_e2e_ui off       (build+carve, unit+integration, api E2E still run)
+    #   Skip-E2E    / skip-e2e    -> run_e2e + run_e2e_ui off  (build+carve, unit+integration still run)
+    # Everything still merges through the queue on current main, so an opt-out can never merge something stale.
+    # NOTE: `ci-complete` is the single required check. Jobs with no work are skipped before runner allocation;
+    # `ci-complete` accepts skipped dependencies and reports the required success result.
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -51,10 +46,22 @@ jobs:
       run_tests:  ${{ steps.detect.outputs.run_tests }}
       run_e2e:    ${{ steps.detect.outputs.run_e2e }}
       run_e2e_ui: ${{ steps.detect.outputs.run_e2e_ui }}
+      run_fe:     ${{ steps.detect.outputs.run_fe }}
+      unit_projects: ${{ steps.test-projects.outputs.unit_projects }}
+      integration_projects: ${{ steps.test-projects.outputs.integration_projects }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: Discover test projects
+        id: test-projects
+        run: |
+          unit_projects=$(find api -type f -name '*.UnitTests.csproj' -print | sort | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          integration_projects=$(find api -type f -name '*.IntegrationTests.csproj' -print | sort | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          [ "$unit_projects" != '[]' ] || { echo "No unit test projects found."; exit 1; }
+          [ "$integration_projects" != '[]' ] || { echo "No integration test projects found."; exit 1; }
+          echo "unit_projects=$unit_projects" >> "$GITHUB_OUTPUT"
+          echo "integration_projects=$integration_projects" >> "$GITHUB_OUTPUT"
       - name: Classify changed files
         id: detect
         run: |
@@ -75,12 +82,13 @@ jobs:
             echo "run_tests=true"  >> "$GITHUB_OUTPUT"
             echo "run_e2e=true"    >> "$GITHUB_OUTPUT"
             echo "run_e2e_ui=true" >> "$GITHUB_OUTPUT"
+            echo "run_fe=true"     >> "$GITHUB_OUTPUT"
             exit 0
           fi
           files=$(git diff --name-only "$base" "$head")
           echo "Changed files:"; printf '%s\n' "$files"
           # Inert = cannot affect any build or test: markdown anywhere, and the doc/tooling trees.
-          INERT='(\.md$|^\.claude/|^\.github/|^docs/|^plans/|^reviews/|^\.gitignore$|^\.gitattributes$|^LICENSE$)'
+          INERT='(\.md$|^\.claude/|^docs/|^plans/|^reviews/|^\.gitignore$|^\.gitattributes$|^LICENSE$)'
           PKG='(^|/)Directory\.Packages\.props$'
           run_code=true
           run_tests=true
@@ -88,59 +96,67 @@ jobs:
           run_e2e_ui=true
           if [ -n "$files" ] && ! printf '%s\n' "$files" | grep -qvE "$INERT"; then
             run_code=false; run_tests=false; run_e2e=false; run_e2e_ui=false
-            echo "-> non-code change; nothing to compile or test (build + carve no-op, unit/integration skip, E2E no-op)."
+            echo "-> non-code change; nothing to compile or test (every job no-ops to success)."
           elif [ -n "$files" ] && ! printf '%s\n' "$files" | grep -qvE "$PKG"; then
             run_e2e=false; run_e2e_ui=false
             echo "-> package-only bump; build + carve + unit + integration gate, E2E no-ops."
           else
             echo "-> code change; full CI."
           fi
-          # Manual merge-tier overrides: a commit-message [token] in the diff range, OR a PR label of the
-          # same name. Fixed-string, case-insensitive; each only turns gates OFF, never on. `[skip-e2e]`
-          # does NOT match inside `[skip-e2e-ui]` (the trailing `]` differs) and labels match the whole
-          # name exactly, so the three tiers stay independent.
-          # Tokens read from the commits (identical on PR and in the queue). Labels aren't in the
-          # merge_group payload, so resolve the PR number — from the event on a PR, from the
-          # gh-readonly-queue/<base>/pr-<N>-<sha> ref in the queue — and read its labels via the API.
+          # run_fe: FE carve gate (the npm analogue of run_code's carve-* jobs). True iff a NON-INERT change
+          # touches app/, OR the carve mechanism itself changes (scripts/carve-fe.mjs or this workflow) so a
+          # change to the gate re-validates it on its own PR. A BE-only PR never triggers the slow feed-restore
+          # FE carves; a docs-only app/ change (app/**/*.md) is inert and also skips.
+          if printf '%s\n' "$files" | grep -vE "$INERT" | grep -qE '^app/'; then run_fe=true
+          elif printf '%s\n' "$files" | grep -qE '^app/scripts/carve-fe\.mjs$|^\.github/workflows/test\.yml$'; then run_fe=true
+          else run_fe=false; fi
+          echo "-> run_fe=$run_fe (FE feed-restore carves)."
+          # E2E tier: full-e2e overrides historical opt-outs; otherwise a git trailer or same-named label opts out.
+          # Trailers are parsed by git (`--format=%(trailers:...)`), never substring-grepped, so prose that
+          # mentions a token can't trigger them. Labels aren't in the merge_group payload, so resolve the PR
+          # number (from the event on a PR, from the gh-readonly-queue/<base>/pr-<N>-<sha> ref in the queue).
           prnum=""
           case "${{ github.event_name }}" in
             pull_request) prnum="${{ github.event.pull_request.number }}";;
             merge_group)  prnum="$(printf '%s' '${{ github.event.merge_group.head_ref }}' | sed -nE 's#.*/pr-([0-9]+)-[0-9a-f]+$#\1#p')";;
           esac
           labels=""
-          if [ -n "$prnum" ]; then
-            labels="$(gh pr view "$prnum" --json labels -q '.labels[].name' 2>/dev/null || true)"
+          if [ -n "$prnum" ] && ! labels="$(gh pr view "$prnum" --json labels -q '.labels[].name')"; then
+            echo "::error::Could not retrieve labels for PR #$prnum; refusing to evaluate E2E opt-outs."
+            exit 1
           fi
-          echo "merge-tier source: PR #${prnum:-none}, labels: ${labels:-<none>}"
-          skip() {  # true if [$1] token is in the range OR a label named $1 is on the PR
-            git log --format='%B' "$base..$head" | grep -qiF "[$1]" && return 0
-            printf '%s\n' "$labels" | grep -qixF "$1"
+          echo "E2E tier source: PR #${prnum:-none}, labels: ${labels:-<none>}"
+          optout() {  # $1 = trailer key (e.g. Skip-E2E), $2 = label name (e.g. skip-e2e)
+            git log --format="%(trailers:key=$1,valueonly=true)" "$base..$head" | grep -qiE '^[[:space:]]*(true|yes|1|on)[[:space:]]*$' && return 0
+            printf '%s\n' "$labels" | grep -qixF "$2"
           }
-          if skip skip-e2e-ui; then
-            run_e2e_ui=false
-            echo "-> skip-e2e-ui (token/label); UI E2E off (build + carve + unit + integration + API E2E still run)."
+          if printf '%s\n' "$labels" | grep -qixF full-e2e; then
+            echo "-> full-e2e override; historical skip labels/trailers ignored."
+          else
+            if optout Skip-E2E-UI skip-e2e-ui; then
+              run_e2e_ui=false
+              echo "-> opt-out Skip-E2E-UI; UI E2E off (build + carve + unit + integration + api E2E still run)."
+            fi
+            if optout Skip-E2E skip-e2e; then
+              run_e2e=false; run_e2e_ui=false
+              echo "-> opt-out Skip-E2E; all E2E off (build + carve + unit + integration still run)."
+            fi
           fi
-          if skip skip-e2e; then
-            run_e2e=false; run_e2e_ui=false
-            echo "-> skip-e2e (token/label); all E2E off (build + carve + unit + integration still run)."
-          fi
-          if skip skip-tests; then
-            run_tests=false; run_e2e=false; run_e2e_ui=false
-            echo "-> skip-tests (token/label); test suites + E2E off (build + carve compile floor still runs)."
-          fi
-          # E2E executes ONLY in the merge queue (merge_group). On the PR and on push the required e2e
-          # checks still RUN but no-op to success — never `skipped`, which is what stalls queue admission
-          # (a docs-only / package-only PR left CLEAN + auto-merge-on but never queued). The queue runs
-          # them for real on the actual merge.
+          # E2E is the MERGE QUEUE's gate only: it runs against live main in the queue and nowhere else.
+          # Never pre-gate on the PR (a ~30-min suite shouldn't block PR feedback — build + carve + unit +
+          # integration do) nor on the post-merge push. So E2E runs iff this is a merge_group event; the
+          # Skip-E2E / Skip-E2E-UI opt-outs above still apply within the queue.
           if [ "${{ github.event_name }}" != "merge_group" ]; then run_e2e=false; run_e2e_ui=false; fi
           echo "run_code=$run_code"     >> "$GITHUB_OUTPUT"
           echo "run_tests=$run_tests"   >> "$GITHUB_OUTPUT"
           echo "run_e2e=$run_e2e"       >> "$GITHUB_OUTPUT"
           echo "run_e2e_ui=$run_e2e_ui" >> "$GITHUB_OUTPUT"
+          echo "run_fe=$run_fe"         >> "$GITHUB_OUTPUT"
 
   build:
     runs-on: ubuntu-latest
     needs: changes
+    if: needs.changes.outputs.run_code == 'true'
     permissions:
       contents: read
       packages: read
@@ -182,6 +198,7 @@ jobs:
     # far too slow for a gate; archive extracts the tracked tree at HEAD instantly (no fetch-depth: 0).
     runs-on: ubuntu-latest
     needs: [build, changes]
+    if: needs.changes.outputs.run_code == 'true'
     permissions:
       contents: read
       packages: read
@@ -234,6 +251,7 @@ jobs:
     # harness layers). The solution lists every package-clean project so each is built directly.
     runs-on: ubuntu-latest
     needs: [build, changes]
+    if: needs.changes.outputs.run_code == 'true'
     permissions:
       contents: read
       packages: read
@@ -302,6 +320,7 @@ jobs:
     # built directly. Search publishes nothing, so its folder carries no MinVer (no MinVerSkip needed).
     runs-on: ubuntu-latest
     needs: [build, changes]
+    if: needs.changes.outputs.run_code == 'true'
     permissions:
       contents: read
       packages: read
@@ -368,6 +387,7 @@ jobs:
     # a new closure project (or a leaf reached only transitively) is picked up automatically, never orphaned.
     runs-on: ubuntu-latest
     needs: [build, changes]
+    if: needs.changes.outputs.run_code == 'true'
     permissions:
       contents: read
       packages: read
@@ -437,6 +457,7 @@ jobs:
     # project (or a leaf reached only transitively) is picked up automatically, never orphaned.
     runs-on: ubuntu-latest
     needs: [build, changes]
+    if: needs.changes.outputs.run_code == 'true'
     permissions:
       contents: read
       packages: read
@@ -494,14 +515,40 @@ jobs:
           dotnet sln CarveCustomer.slnx add "${PROJS[@]}"
           dotnet build CarveCustomer.slnx --configuration Release -p:MinVerSkip=true
 
+  carve-fe:
+    # FE analogue of the backend carve-* gates: each surface must restore its shared @concertable tiers
+    # PURELY from the npm feed and build standalone. A surface importing a tier it doesn't declare
+    # (masked in-monorepo by workspace hoisting) fails at install; a build that only resolves via the
+    # monorepo-root workspace fails standalone. scripts/carve-fe.mjs archives the surface, repoints its
+    # intra-@concertable deps at the alpha feed tag, restores from the feed only, and builds it (web:
+    # vite build; mobile: tsc + expo export).
+    # Gated on run_fe so a BE-only PR never pays for the slow feed restores. Same git-archive technique
+    # as the backend carves; no fetch-depth needed (archives HEAD).
+    runs-on: ubuntu-latest
+    needs: [changes]
+    if: needs.changes.outputs.run_fe == 'true'
+    permissions:
+      contents: read
+      packages: read
+    strategy:
+      fail-fast: false
+      matrix:
+        surface: [web/customer, web/b2b/venue, web/b2b/artist, web/b2b/business, mobile/customer, mobile/b2b]
+    env:
+      GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Carve ${{ matrix.surface }} and build it standalone from the feed
+        working-directory: app
+        run: node scripts/carve-fe.mjs ${{ matrix.surface }}
+
   unit-tests:
     runs-on: ubuntu-latest
     needs: [build, changes]
-    # Gated by run_tests (off for non-code and for [skip-tests]); build + carve stay on run_code. Not a required
-    # check (ci-gate aggregates it) — so it can skip cleanly. Skips in the merge queue too: it already ran on the
-    # PR, and dropping the redundant queue run removes the PR+queue double-run. ci-gate tolerates the skipped
-    # result (stays green in the queue). Still runs on the post-merge push to master.
-    if: needs.changes.outputs.run_tests == 'true' && github.event_name != 'merge_group'
+    if: needs.changes.outputs.run_tests == 'true'
     permissions:
       contents: read
       packages: read
@@ -512,20 +559,7 @@ jobs:
 
     strategy:
       matrix:
-        project:
-          - api/Concertable.B2B/src/Modules/Concert/Tests/Concertable.B2B.Concert.UnitTests/Concertable.B2B.Concert.UnitTests.csproj
-          - api/Concertable.B2B/src/Modules/Deal/Tests/Concertable.B2B.Deal.UnitTests/Concertable.B2B.Deal.UnitTests.csproj
-          - api/Concertable.B2B/src/Modules/Tenant/Tests/Concertable.B2B.Tenant.UnitTests/Concertable.B2B.Tenant.UnitTests.csproj
-          - api/Concertable.B2B/tests/Concertable.B2B.Workers.UnitTests/Concertable.B2B.Workers.UnitTests.csproj
-          - api/Concertable.Customer/src/Modules/Concert/Tests/Concertable.Customer.Concert.UnitTests/Concertable.Customer.Concert.UnitTests.csproj
-          - api/Concertable.Customer/src/Modules/Review/Tests/Concertable.Customer.Review.UnitTests/Concertable.Customer.Review.UnitTests.csproj
-          - api/Concertable.Customer/src/Modules/Ticket/Tests/Concertable.Customer.Ticket.UnitTests/Concertable.Customer.Ticket.UnitTests.csproj
-          - api/Concertable.Customer/src/Modules/User/Tests/Concertable.Customer.User.UnitTests/Concertable.Customer.User.UnitTests.csproj
-          - api/Concertable.Messaging/Tests/Concertable.Messaging.UnitTests/Concertable.Messaging.UnitTests.csproj
-          - api/Concertable.Messaging/Tests/Concertable.Messaging.AzureServiceBus.UnitTests/Concertable.Messaging.AzureServiceBus.UnitTests.csproj
-          - api/Concertable.Payment/tests/Concertable.Payment.UnitTests/Concertable.Payment.UnitTests.csproj
-          - api/Concertable.Search/tests/Concertable.Search.UnitTests/Concertable.Search.UnitTests.csproj
-          - api/Concertable.Shared/tests/Concertable.Kernel.UnitTests/Concertable.Kernel.UnitTests.csproj
+        project: ${{ fromJSON(needs.changes.outputs.unit_projects) }}
 
     steps:
       - uses: actions/checkout@v4
@@ -548,11 +582,7 @@ jobs:
   integration-tests:
     runs-on: ubuntu-latest
     needs: [build, changes]
-    # Gated by run_tests (off for non-code and for [skip-tests]); build + carve stay on run_code. Not a required
-    # check (ci-gate aggregates it) — so it can skip cleanly. Skips in the merge queue too: it already ran on the
-    # PR, and dropping the redundant queue run removes the PR+queue double-run. ci-gate tolerates the skipped
-    # result (stays green in the queue). Still runs on the post-merge push to master.
-    if: needs.changes.outputs.run_tests == 'true' && github.event_name != 'merge_group'
+    if: needs.changes.outputs.run_tests == 'true'
     permissions:
       contents: read
       packages: read
@@ -560,20 +590,11 @@ jobs:
     env:
       # B2B/Customer integration tests restore Payment.Client/Contracts, now feed packages; 401 without this.
       GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      TESTCONTAINERS_RYUK_DISABLED: "true"
 
     strategy:
       matrix:
-        project:
-          - api/Concertable.B2B/src/Modules/Artist/Tests/Concertable.B2B.Artist.IntegrationTests/Concertable.B2B.Artist.IntegrationTests.csproj
-          - api/Concertable.B2B/src/Modules/Concert/Tests/Concertable.B2B.Concert.IntegrationTests/Concertable.B2B.Concert.IntegrationTests.csproj
-          - api/Concertable.B2B/src/Modules/Tenant/Tests/Concertable.B2B.Tenant.IntegrationTests/Concertable.B2B.Tenant.IntegrationTests.csproj
-          - api/Concertable.B2B/src/Modules/User/Tests/Concertable.B2B.User.IntegrationTests/Concertable.B2B.User.IntegrationTests.csproj
-          - api/Concertable.B2B/src/Modules/Venue/Tests/Concertable.B2B.Venue.IntegrationTests/Concertable.B2B.Venue.IntegrationTests.csproj
-          - api/Concertable.Customer/src/Modules/Concert/Tests/Concertable.Customer.Concert.IntegrationTests/Concertable.Customer.Concert.IntegrationTests.csproj
-          - api/Concertable.Customer/src/Modules/Review/Tests/Concertable.Customer.Review.IntegrationTests/Concertable.Customer.Review.IntegrationTests.csproj
-          - api/Concertable.Customer/src/Modules/Ticket/Tests/Concertable.Customer.Ticket.IntegrationTests/Concertable.Customer.Ticket.IntegrationTests.csproj
-          - api/Concertable.Customer/src/Modules/User/Tests/Concertable.Customer.User.IntegrationTests/Concertable.Customer.User.IntegrationTests.csproj
-          - api/Concertable.Search/tests/Concertable.Search.IntegrationTests/Concertable.Search.IntegrationTests.csproj
+        project: ${{ fromJSON(needs.changes.outputs.integration_projects) }}
 
     steps:
       - uses: actions/checkout@v4
@@ -593,26 +614,14 @@ jobs:
       - name: Run ${{ matrix.project }}
         run: dotnet test ${{ matrix.project }} --configuration Release
 
-  ci-gate:
-    runs-on: ubuntu-latest
-    needs: [unit-tests, integration-tests]
-    if: always()
-    steps:
-      - name: Fail if any unit or integration job failed or was cancelled
-        run: |
-          echo '${{ toJSON(needs) }}'
-          if echo '${{ toJSON(needs) }}' | grep -qE '"result":[[:space:]]*"(failure|cancelled)"'; then
-            echo "A unit/integration matrix job failed or was cancelled — blocking the merge."
-            exit 1
-          fi
-          echo "All unit + integration jobs passed (or were skipped for a non-code change)."
-
   e2e-api-tests:
     runs-on: ubuntu-latest
     needs: [build, changes]
-    # No job-level merge_group gate: the job also runs on the PR and no-ops green there (run_e2e is
-    # forced false off-queue in `changes`), so the required check reports success, never `skipped` —
-    # a skipped required check is what stalls queue admission. The real suite runs only in the queue.
+    # Runs ONLY in the merge queue — genuinely skipped on the PR and the post-merge push (never a no-op run).
+    # E2E is the queue's gate; the PR is gated by build + carve + unit + integration. Safe to skip (not
+    # no-op) because ci-complete is the SOLE required check and passes on skipped needs, so a skipped E2E job
+    # can't stall queue admission.
+    if: github.event_name == 'merge_group' && needs.changes.outputs.run_e2e == 'true'
 
     permissions:
       contents: read
@@ -673,7 +682,7 @@ jobs:
         # which shells out to the `func` Core Tools. Without them the host never binds, so the
         # ConcertFinished* tests get "Connection refused (localhost:7078)" when triggering the timer.
         run: |
-          npm install -g azure-functions-core-tools@4 --unsafe-perm true
+          npm install -g azure-functions-core-tools@4.12.1 --unsafe-perm true
           func --version
 
       - name: Run B2B API E2E tests
@@ -695,8 +704,10 @@ jobs:
   e2e-ui-tests:
     runs-on: ubuntu-latest
     needs: [build, e2e-api-tests, changes]
-    # No job-level merge_group gate (see e2e-api-tests): runs on the PR too and no-ops green via
-    # run_e2e_ui (forced false off-queue), so the required check reports success, never `skipped`.
+    # Merge-queue only (see e2e-api-tests): genuinely skipped on the PR, runs the real UI suite in the queue.
+    # BLOCKING lane — excludes @quarantine (Category!=quarantine); the flaky scenario runs in the non-gating
+    # e2e-ui-quarantine job.
+    if: github.event_name == 'merge_group' && needs.changes.outputs.run_e2e_ui == 'true'
 
     permissions:
       contents: read
@@ -712,11 +723,11 @@ jobs:
       ServiceAuth__AuthClientSecret: ${{ secrets.SERVICE_AUTH_AUTH_CLIENT_SECRET }}
 
     steps:
-      # Gated on run_e2e_ui (its own tier): off for non-code, package-only, [skip-e2e-ui], [skip-e2e], [skip-tests].
-      # Required check, so it still RUNS in the queue and no-ops green when off — never `skip`ped (which would stall it).
-      - name: Skip UI E2E (no runtime change or [skip-e2e-ui])
+      # Gated on run_e2e_ui: off for non-code and package-only changes.
+      # Aggregated by ci-complete, which tolerates a skipped need, so it no-ops green when off.
+      - name: Skip UI E2E (no runtime change)
         if: needs.changes.outputs.run_e2e_ui != 'true'
-        run: echo "UI E2E gated off (non-code / package-only / [skip-e2e-ui] / [skip-e2e] / [skip-tests]) -> build + carve gate this."
+        run: echo "UI E2E gated off (non-code / package-only) -> build + carve gate this."
 
       - uses: actions/checkout@v4
         if: needs.changes.outputs.run_e2e_ui == 'true'
@@ -757,7 +768,7 @@ jobs:
         # Same as the API E2E job: the full AppHost boots the B2B Workers Azure Functions host,
         # which needs the `func` Core Tools on PATH to launch.
         run: |
-          npm install -g azure-functions-core-tools@4 --unsafe-perm true
+          npm install -g azure-functions-core-tools@4.12.1 --unsafe-perm true
           func --version
 
       - name: Set up Node
@@ -774,6 +785,15 @@ jobs:
         working-directory: app
         run: npm ci
 
+      - name: Build frontend package dependencies
+        if: needs.changes.outputs.run_e2e_ui == 'true'
+        # The SPAs consume the shared FE tiers from their built dist (@concertable/web, /b2b,
+        # /customer), so all of them must be built before the Vite dev servers start — not just
+        # @concertable/shared, or the dev server can't resolve the tier imports and every scenario
+        # times out at warm-up.
+        working-directory: app
+        run: npm run build:web-packages
+
       - name: Build B2B UI E2E tests
         if: needs.changes.outputs.run_e2e_ui == 'true'
         run: dotnet build api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui/Concertable.B2B.E2ETests.Ui.csproj --configuration Release
@@ -788,11 +808,11 @@ jobs:
 
       - name: Run B2B UI E2E tests
         if: needs.changes.outputs.run_e2e_ui == 'true'
-        run: dotnet test api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui/Concertable.B2B.E2ETests.Ui.csproj --configuration Release --no-build --settings api/Concertable.runsettings
+        run: dotnet test api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui/Concertable.B2B.E2ETests.Ui.csproj --configuration Release --no-build --settings api/Concertable.runsettings --filter "Category!=quarantine"
 
       - name: Run Customer UI E2E tests
         if: needs.changes.outputs.run_e2e_ui == 'true'
-        run: dotnet test api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui/Concertable.Customer.E2ETests.Ui.csproj --configuration Release --no-build --settings api/Concertable.runsettings
+        run: dotnet test api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui/Concertable.Customer.E2ETests.Ui.csproj --configuration Release --no-build --settings api/Concertable.runsettings --filter "Category!=quarantine"
 
       - name: Upload E2E diagnostics
         # Server logs + Playwright traces/screenshots for diagnosing a UI failure. Failure-only:
@@ -806,3 +826,142 @@ jobs:
             **/playwright-traces/**
             **/playwright-failures/**
           if-no-files-found: ignore
+
+  e2e-ui-quarantine:
+    # The NON-GATING flake lane. Runs only @quarantine-tagged UI scenarios (Category=quarantine) and is
+    # deliberately absent from ci-complete's needs, so a red here reports on the PR but never blocks a
+    # merge. Runs on the PR only — a non-gating result in the queue would be wasted stack boot. A
+    # quarantined scenario is tracked to be fixed and returned to the blocking lane, not carried forever.
+    runs-on: ubuntu-latest
+    needs: [build, changes]
+    if: github.event_name == 'pull_request' && needs.changes.outputs.run_e2e_ui == 'true'
+
+    permissions:
+      contents: read
+      packages: read
+
+    env:
+      # No job-level `if` — the job ALWAYS runs and reports success. A skipped check (even a non-required
+      # one like this) stalls GitHub's merge-queue admission (the inert-PR N10 stall). RUN gates the real
+      # work to a PR that actually has UI changes; otherwise every step no-ops to green.
+      RUN: ${{ needs.changes.outputs.run_e2e_ui == 'true' && github.event_name == 'pull_request' }}
+      GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GoogleApiKey: ${{ secrets.GOOGLE_API_KEY }}
+      Stripe__SecretKey: ${{ secrets.STRIPE_SECRET_KEY }}
+      ServiceAuth__B2BClientSecret: ${{ secrets.SERVICE_AUTH_B2B_CLIENT_SECRET }}
+      ServiceAuth__CustomerClientSecret: ${{ secrets.SERVICE_AUTH_CUSTOMER_CLIENT_SECRET }}
+      ServiceAuth__AuthClientSecret: ${{ secrets.SERVICE_AUTH_AUTH_CLIENT_SECRET }}
+
+    steps:
+      - name: No-op (no UI change, or not a PR run)
+        if: env.RUN != 'true'
+        run: echo "No @quarantine UI scenarios to run here -> reporting success WITHOUT skipping the check (a skipped check can stall queue admission)."
+
+      - uses: actions/checkout@v4
+        if: env.RUN == 'true'
+
+      - name: Set up .NET
+        if: env.RUN == 'true'
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+
+      - name: Cache NuGet packages
+        if: env.RUN == 'true'
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/Directory.Packages.props') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - name: Provision HTTPS dev certificate
+        if: env.RUN == 'true'
+        run: |
+          dotnet dev-certs https --trust || true  # Linux trust exits 4, but the cert is still generated
+          echo "SSL_CERT_DIR=$HOME/.aspnet/dev-certs/trust:/etc/ssl/certs:/usr/lib/ssl/certs" >> "$GITHUB_ENV"
+
+      - name: Install Stripe CLI
+        if: env.RUN == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          url=$(curl -fsSL -H "Authorization: Bearer $GH_TOKEN" https://api.github.com/repos/stripe/stripe-cli/releases/latest | grep -oE 'https://[^"]+_linux_x86_64\.tar\.gz' | head -1)
+          test -n "$url" || { echo "Stripe CLI linux_x86_64 asset not found"; exit 1; }
+          curl -fsSL "$url" -o /tmp/stripe.tar.gz
+          sudo tar -xzf /tmp/stripe.tar.gz -C /usr/local/bin stripe
+          stripe version
+
+      - name: Install Azure Functions Core Tools
+        if: env.RUN == 'true'
+        run: |
+          npm install -g azure-functions-core-tools@4.12.1 --unsafe-perm true
+          func --version
+
+      - name: Set up Node
+        if: env.RUN == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install web SPA dependencies
+        if: env.RUN == 'true'
+        working-directory: app
+        run: npm ci
+
+      - name: Build frontend package dependencies
+        if: env.RUN == 'true'
+        working-directory: app
+        run: npm run build:web-packages
+
+      - name: Build Customer UI E2E tests
+        if: env.RUN == 'true'
+        run: dotnet build api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui/Concertable.Customer.E2ETests.Ui.csproj --configuration Release
+
+      - name: Install Playwright browsers
+        if: env.RUN == 'true'
+        run: pwsh api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+
+      - name: Run quarantined Customer UI E2E scenarios
+        if: env.RUN == 'true'
+        run: dotnet test api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui/Concertable.Customer.E2ETests.Ui.csproj --configuration Release --no-build --settings api/Concertable.runsettings --filter "Category=quarantine"
+
+      - name: Upload quarantine E2E diagnostics
+        if: env.RUN == 'true' && failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-ui-quarantine-diagnostics
+          path: |
+            **/e2e-diagnostics.log
+            **/playwright-traces/**
+            **/playwright-failures/**
+          if-no-files-found: ignore
+
+  ci-complete:
+    # THE SINGLE REQUIRED STATUS CHECK (see plans/platform/PIPELINE_REDESIGN_PLAN.md Phase 1). It aggregates every real
+    # CI job into one deterministic pass/fail that is NEVER `skipped`: `if: always()` runs it on every
+    # event, and it passes iff nothing it needs failed or was cancelled. Inert jobs skip before allocating
+    # runners; this aggregator turns those skipped dependencies into the required success result. needs EVERY gating job directly
+    # (build + all carves + unit + integration + both e2e) so it reflects the full pipeline.
+    runs-on: ubuntu-latest
+    needs:
+      - build
+      - carve-auth
+      - carve-payment
+      - carve-search
+      - carve-b2b
+      - carve-customer
+      - carve-fe
+      - unit-tests
+      - integration-tests
+      - e2e-api-tests
+      - e2e-ui-tests
+    if: always()
+    steps:
+      - name: Fail if any CI job failed or was cancelled
+        run: |
+          echo '${{ toJSON(needs) }}'
+          if echo '${{ toJSON(needs) }}' | grep -qE '"result":[[:space:]]*"(failure|cancelled)"'; then
+            echo "A CI job failed or was cancelled — blocking the merge."
+            exit 1
+          fi
+          echo "All CI jobs passed (or were legitimately skipped) — ci-complete is green."

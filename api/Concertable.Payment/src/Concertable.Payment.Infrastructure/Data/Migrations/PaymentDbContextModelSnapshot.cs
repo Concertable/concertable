@@ -92,6 +92,82 @@ namespace Concertable.Payment.Infrastructure.Data.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Concertable.Payment.Domain.Entities.CommissionBindingEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("BoundAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("CommissionConfigurationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("nvarchar(3)");
+
+                    b.Property<string>("ExternalReference")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("PayerReference")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<long?>("ReviewedGrossMinor")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("StripePaymentIntentId")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("StripeSetupIntentId")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CommissionConfigurationId");
+
+                    b.HasIndex("StripePaymentIntentId")
+                        .IsUnique()
+                        .HasFilter("[StripePaymentIntentId] IS NOT NULL");
+
+                    b.HasIndex("StripeSetupIntentId")
+                        .IsUnique()
+                        .HasFilter("[StripeSetupIntentId] IS NOT NULL");
+
+                    b.HasIndex("ExternalReference", "PayerReference")
+                        .IsUnique();
+
+                    b.ToTable("CommissionBindings", "payment");
+                });
+
+            modelBuilder.Entity("Concertable.Payment.Domain.Entities.CommissionConfigurationEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<decimal>("Rate")
+                        .HasPrecision(7, 4)
+                        .HasColumnType("decimal(7,4)")
+                        .HasColumnName("RatePercentage");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CommissionConfigurations", "payment", t =>
+                        {
+                            t.HasCheckConstraint("CK_CommissionConfigurations_RatePercentage", "[RatePercentage] > 0 AND [RatePercentage] <= 100");
+                        });
+                });
+
             modelBuilder.Entity("Concertable.Payment.Domain.Entities.EscrowEntity", b =>
                 {
                     b.Property<int>("Id")
@@ -100,9 +176,6 @@ namespace Concertable.Payment.Infrastructure.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<long>("Amount")
-                        .HasColumnType("bigint");
-
                     b.Property<int>("BookingId")
                         .HasColumnType("int");
 
@@ -110,12 +183,34 @@ namespace Concertable.Payment.Infrastructure.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<Guid?>("CommissionBindingId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<long>("CommissionGrossMinor")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("CommissionNetMinor")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("CommissionVatMinor")
+                        .HasColumnType("bigint");
+
+                    b.Property<decimal>("CommissionVatRate")
+                        .HasPrecision(7, 4)
+                        .HasColumnType("decimal(7,4)")
+                        .HasColumnName("CommissionVatRatePercentage");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("nvarchar(3)");
 
                     b.Property<Guid>("FromOwnerId")
                         .HasColumnType("uniqueidentifier");
@@ -126,11 +221,14 @@ namespace Concertable.Payment.Infrastructure.Data.Migrations
                     b.Property<string>("LastModifiedBy")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("RefundId")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<long>("PayeeGrossMinor")
+                        .HasColumnType("bigint");
 
-                    b.Property<DateTime?>("RefundedAt")
-                        .HasColumnType("datetime2");
+                    b.Property<long>("PayerTotalMinor")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("RefundedGrossMinor")
+                        .HasColumnType("bigint");
 
                     b.Property<DateTime?>("ReleasedAt")
                         .HasColumnType("datetime2");
@@ -152,9 +250,161 @@ namespace Concertable.Payment.Infrastructure.Data.Migrations
                     b.HasIndex("ChargeId")
                         .IsUnique();
 
+                    b.HasIndex("CommissionBindingId")
+                        .IsUnique()
+                        .HasFilter("[CommissionBindingId] IS NOT NULL");
+
                     b.HasIndex("Status");
 
                     b.ToTable("Escrows", "payment");
+                });
+
+            modelBuilder.Entity("Concertable.Payment.Domain.Entities.LedgerAccountEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Currency")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("OwnerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Type", "OwnerId", "Currency")
+                        .IsUnique()
+                        .HasDatabaseName("IX_LedgerAccounts_Type_OwnerId_Currency");
+
+                    b.ToTable("LedgerAccounts", "payment");
+                });
+
+            modelBuilder.Entity("Concertable.Payment.Domain.Entities.LedgerEntryEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<long>("Amount")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Currency")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Direction")
+                        .HasColumnType("int");
+
+                    b.Property<int>("LedgerAccountId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("LedgerTransactionId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LedgerAccountId");
+
+                    b.HasIndex("LedgerTransactionId");
+
+                    b.ToTable("LedgerEntries", "payment");
+                });
+
+            modelBuilder.Entity("Concertable.Payment.Domain.Entities.LedgerTransactionEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BookingId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ExternalId")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTime>("OccurredAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PaymentIntentId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("PostingType")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BookingId");
+
+                    b.HasIndex("PaymentIntentId");
+
+                    b.HasIndex("PostingType", "ExternalId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_LedgerTransactions_PostingType_ExternalId");
+
+                    b.ToTable("LedgerTransactions", "payment");
+                });
+
+            modelBuilder.Entity("Concertable.Payment.Domain.Entities.PaymentRefundEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<long>("CommissionRefundedMinor")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("CommissionVatReversedMinor")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTimeOffset?>("CompletedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int?>("EscrowId")
+                        .HasColumnType("int");
+
+                    b.Property<long>("GrossRefundedMinor")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("PayerTotalRefundedMinor")
+                        .HasColumnType("bigint");
+
+                    b.Property<int?>("SettlementTransactionId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("StripeRefundId")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EscrowId");
+
+                    b.HasIndex("SettlementTransactionId");
+
+                    b.HasIndex("StripeRefundId")
+                        .IsUnique()
+                        .HasFilter("[StripeRefundId] IS NOT NULL");
+
+                    b.ToTable("PaymentRefunds", "payment", t =>
+                        {
+                            t.HasCheckConstraint("CK_PaymentRefunds_Owner", "([EscrowId] IS NULL AND [SettlementTransactionId] IS NOT NULL) OR ([EscrowId] IS NOT NULL AND [SettlementTransactionId] IS NULL)");
+                        });
                 });
 
             modelBuilder.Entity("Concertable.Payment.Domain.Entities.PayoutAccountEntity", b =>
@@ -273,6 +523,41 @@ namespace Concertable.Payment.Infrastructure.Data.Migrations
                         .HasColumnType("int")
                         .HasColumnName("ContextId");
 
+                    b.Property<Guid?>("CommissionBindingId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<long>("CommissionGrossMinor")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("CommissionNetMinor")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("CommissionVatMinor")
+                        .HasColumnType("bigint");
+
+                    b.Property<decimal>("CommissionVatRate")
+                        .HasPrecision(7, 4)
+                        .HasColumnType("decimal(7,4)")
+                        .HasColumnName("CommissionVatRatePercentage");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("nvarchar(3)");
+
+                    b.Property<long>("PayeeGrossMinor")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("PayerTotalMinor")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("RefundedGrossMinor")
+                        .HasColumnType("bigint");
+
+                    b.HasIndex("CommissionBindingId")
+                        .IsUnique()
+                        .HasFilter("[CommissionBindingId] IS NOT NULL");
+
                     b.HasDiscriminator().HasValue("SettlementTransactionEntity");
                 });
 
@@ -298,6 +583,86 @@ namespace Concertable.Payment.Infrastructure.Data.Migrations
                         .HasColumnName("ContextId");
 
                     b.HasDiscriminator().HasValue("VerifyTransactionEntity");
+                });
+
+            modelBuilder.Entity("Concertable.Payment.Domain.Entities.CommissionBindingEntity", b =>
+                {
+                    b.HasOne("Concertable.Payment.Domain.Entities.CommissionConfigurationEntity", "CommissionConfiguration")
+                        .WithMany()
+                        .HasForeignKey("CommissionConfigurationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CommissionConfiguration");
+                });
+
+            modelBuilder.Entity("Concertable.Payment.Domain.Entities.EscrowEntity", b =>
+                {
+                    b.HasOne("Concertable.Payment.Domain.Entities.CommissionBindingEntity", "CommissionBinding")
+                        .WithMany()
+                        .HasForeignKey("CommissionBindingId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("CommissionBinding");
+                });
+
+            modelBuilder.Entity("Concertable.Payment.Domain.Entities.LedgerEntryEntity", b =>
+                {
+                    b.HasOne("Concertable.Payment.Domain.Entities.LedgerAccountEntity", "Account")
+                        .WithMany()
+                        .HasForeignKey("LedgerAccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Concertable.Payment.Domain.Entities.LedgerTransactionEntity", null)
+                        .WithMany("Entries")
+                        .HasForeignKey("LedgerTransactionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Account");
+                });
+
+            modelBuilder.Entity("Concertable.Payment.Domain.Entities.PaymentRefundEntity", b =>
+                {
+                    b.HasOne("Concertable.Payment.Domain.Entities.EscrowEntity", "Escrow")
+                        .WithMany("Refunds")
+                        .HasForeignKey("EscrowId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Concertable.Payment.Domain.Entities.SettlementTransactionEntity", "SettlementTransaction")
+                        .WithMany("Refunds")
+                        .HasForeignKey("SettlementTransactionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Escrow");
+
+                    b.Navigation("SettlementTransaction");
+                });
+
+            modelBuilder.Entity("Concertable.Payment.Domain.Entities.SettlementTransactionEntity", b =>
+                {
+                    b.HasOne("Concertable.Payment.Domain.Entities.CommissionBindingEntity", "CommissionBinding")
+                        .WithMany()
+                        .HasForeignKey("CommissionBindingId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("CommissionBinding");
+                });
+
+            modelBuilder.Entity("Concertable.Payment.Domain.Entities.EscrowEntity", b =>
+                {
+                    b.Navigation("Refunds");
+                });
+
+            modelBuilder.Entity("Concertable.Payment.Domain.Entities.LedgerTransactionEntity", b =>
+                {
+                    b.Navigation("Entries");
+                });
+
+            modelBuilder.Entity("Concertable.Payment.Domain.Entities.SettlementTransactionEntity", b =>
+                {
+                    b.Navigation("Refunds");
                 });
 #pragma warning restore 612, 618
         }

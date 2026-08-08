@@ -20,6 +20,7 @@ using Concertable.Messaging.AzureServiceBus.Extensions;
 using Concertable.Messaging.Infrastructure.Extensions;
 using Concertable.ServiceDefaults;
 using Concertable.Shared.Blob.Infrastructure.Extensions;
+using Concertable.Shared.Email.Application;
 using Concertable.Shared.Email.Infrastructure.Extensions;
 using Concertable.Shared.Geocoding.Infrastructure.Extensions;
 using Concertable.Shared.Imaging.Infrastructure.Extensions;
@@ -44,7 +45,7 @@ if (builder.Environment.IsDevelopment())
     builder.Services.Configure<ForwardedHeadersOptions>(options =>
     {
         options.ForwardedHeaders = ForwardedHeaders.XForwardedHost | ForwardedHeaders.XForwardedProto;
-        options.KnownNetworks.Clear();
+        options.KnownIPNetworks.Clear();
         options.KnownProxies.Clear();
     });
 
@@ -56,6 +57,7 @@ builder.Services.AddKeyedSingleton<IGeometryProvider, MetricGeometryProvider>(Ge
 builder.Services.AddSharedInfrastructure(builder.Configuration);
 builder.Services.AddSharedBlob(builder.Configuration);
 builder.Services.AddSharedEmail(builder.Configuration);
+builder.Services.UseOutboxEmailSender();
 builder.Services.AddSharedGeocoding();
 builder.Services.AddSharedImaging();
 builder.Services.AddSharedPdf();
@@ -76,7 +78,6 @@ builder.Services.AddDbContext<AuthDbContext>((sp, opt) =>
 
 builder.Services.AddScoped<IDomainEventHandler<CredentialCreatedDomainEvent>, CredentialCreatedDomainEventHandler>();
 builder.Services.AddScoped<IProfileClaimsProvider, LocalProfileClaimsProvider>();
-builder.Services.AddRemoteProfileClaimsProvider<IB2BUserClaimsApi>("B2B", builder.Configuration["Services:B2BApiUrl"]);
 builder.Services.AddRemoteProfileClaimsProvider<ICustomerUserClaimsApi>("Customer", builder.Configuration["Services:CustomerApiUrl"]);
 builder.Services.AddMemoryCache();
 builder.Services.AddClientCredentials(opts =>
@@ -94,6 +95,7 @@ builder.Services.AddClientCredentials(opts =>
 builder.Services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
 builder.Services.AddSingleton<ITokenGenerator, CryptoRandomTokenGenerator>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IOutboxUnitOfWorkBehavior, OutboxUnitOfWorkBehavior>();
 
 builder.Services.AddScoped<IDbInitializer, AuthDbInitializer>();
 if (!builder.Environment.IsProduction())
@@ -112,9 +114,14 @@ builder.Services.AddAzureServiceBusTransport(
     reg =>
     {
         reg.Publishes<CredentialRegisteredEvent>();
+        reg.HandleCommand<SendEmailCommand>();
+        reg.HandleCommand<SendVerificationEmailCommand>();
     });
 
 var migrationsAssembly = typeof(Program).Assembly.GetName().Name;
+
+string RequireSecret(string key) => builder.Configuration[key]
+    ?? throw new InvalidOperationException($"Configuration '{key}' is required.");
 
 var clients = new List<Client>(Config.WebClients(spaClient))
 {
@@ -122,13 +129,13 @@ var clients = new List<Client>(Config.WebClients(spaClient))
     Config.VenueMobileClient(builder.Configuration["Auth:ExpoGoRedirectUri:Business"]),
     Config.ArtistMobileClient(builder.Configuration["Auth:ExpoGoRedirectUri:Business"]),
     Config.ServiceClient("concertable-b2b",
-        builder.Configuration["ServiceAuth:B2BClientSecret"]!,
+        RequireSecret("ServiceAuth:B2BClientSecret"),
         "payment:write"),
     Config.ServiceClient("concertable-customer",
-        builder.Configuration["ServiceAuth:CustomerClientSecret"]!,
+        RequireSecret("ServiceAuth:CustomerClientSecret"),
         "payment:write"),
     Config.ServiceClient("concertable-auth",
-        builder.Configuration["ServiceAuth:AuthClientSecret"]!,
+        RequireSecret("ServiceAuth:AuthClientSecret"),
         "user:claims"),
 };
 if (builder.Environment.IsEnvironment("E2E"))
