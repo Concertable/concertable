@@ -26,7 +26,8 @@
   complete; merged Reunion PR #4 replaces the builder API used by Phase 4, and PR #453 now uses only
   its direct factories. Exact `Reunion.Errors` `0.1.0-alpha.2` is published, indexed, repository-
   signature verified, catalog-hash verified, and byte-matched to the local candidate payload. A
-  refreshed reusable key remains in Windows user scope until revoked or expired. Merge-queue E2E,
+  refreshed reusable key remains in Windows user scope until revoked or expired. PR-level checks are
+  green; auto-merge is disabled and no queue entry exists per explicit user pause. Merge-queue E2E,
   Payment publication, and generated platform sync remain pending
 - Last reconciled: 2026-08-10 against current Concertable `origin/main` `6f4a5cc3e`, implementation
   head `da78980b7`, current-main merge `282b3c957`, reviewed production checkpoint `372f72866`, merged
@@ -125,9 +126,11 @@ implementation without changing the Payment delivery order.
 
 ## Next Steps
 
-Enqueue exact remote PR head `b4e7731a6` into the merge queue with the selected full-E2E tier. After
-the source PR lands, move the recovery state to the required docs closeout worktree and own Payment
-package publication plus the generated platform-sync PR through green and merged.
+Wait for explicit instruction to merge. PR #453 is open, clean, fully reviewed, PR-check green, and
+prepared for full E2E at exact remote head `b4e7731a6`; auto-merge is disabled and it is not queued.
+When authorized, revalidate currency/check state, enqueue it, then after the source PR lands move the
+recovery state to the required docs closeout worktree and own Payment package publication plus the
+generated platform-sync PR through green and merged.
 
 ## Completed work
 
@@ -438,6 +441,16 @@ package publication plus the generated platform-sync PR through green and merged
   delivery-ready and provide the exact remaining-call-site inventory.
 
 ## Event log
+
+### 2026-08-10 — merge paused before queue admission
+
+- Action: Stopped the admission monitor on the user's instruction not to merge, disabled auto-merge,
+  and queried both PR state and the GraphQL merge-queue entry.
+- Evidence: PR #453 remains `OPEN/CLEAN` at exact remote head
+  `b4e7731a6a4a69af7c93b6eb90cfab7dfb265c3c`; `autoMergeRequest` is null and `mergeQueueEntry` is
+  null. No merge-group run was admitted.
+- Outcome: Nothing merged. The reviewed PR is ready but deliberately paused outside the queue.
+- Follow-up: Wait for explicit merge instruction, then revalidate and enqueue with full E2E.
 
 ### 2026-08-10 — full-E2E tier confirmed
 
