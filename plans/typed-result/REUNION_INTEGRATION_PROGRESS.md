@@ -9,9 +9,10 @@
   earlier `origin/main`; implementation head `da78980b7` adopts the merged direct-factory API and its
   package pin; currency merge `282b3c957` brings platform pin `.892`; incremental code/security
   review is clean through production checkpoint `372f72866`
-- PR: implementation PR #453 remains open remotely at `53aa0a3`; reviewed code head is `a779fe041`;
-  local source-owner head is ahead for current-main and Reunion API reconciliation; docs design PR
-  #443 merged as `fd0b666b9`; sub-plan reconciliation PR #445 merged as `d6a572e0d`
+- PR: implementation PR #453 remains open; its verified first-leg branch and PR head is `ccb839c48`,
+  containing reviewed code head `da78980b7`, current-main merge `282b3c957`, production evidence, and
+  the completed incremental-review checkpoint; docs design PR #443 merged as `fd0b666b9`; sub-plan
+  reconciliation PR #445 merged as `d6a572e0d`
 - Dependency/package gates: docs design merged; reviewed Reunion carrier commit `7bf5f66` is contained
   in merged PR #1 head `e52129d241711f2e1498ac166e2c510b167606a3`; corrective PR #2 removed the
   mistaken `Reunion.Errors.Extensions` package and merged as release head
@@ -36,9 +37,9 @@
 
 The repository-wide audit and Reunion publication are complete. The reserved integration worktree is
 current with `origin/main` `6f4a5cc3e`. Remote branch
-`Feature/typed-result_reunion-integration` and implementation PR #453 are open at `53aa0a3`; their
-remote code range ends at `a779fe041`; local reviewed implementation head is `da78980b7`, followed
-only by current-main and ledger checkpoints. The current Phase 3 retirement
+`Feature/typed-result_reunion-integration` and implementation PR #453 are open at verified first-leg
+head `ccb839c48`; reviewed implementation head `da78980b7` is followed only by current-main and
+ledger checkpoints. The current Phase 3 retirement
 returns every `api/Concertable.Shared` source, project, and test path exactly to `origin/main`, deletes
 the obsolete HTTP-terminal plan pair, and leaves no Reunion package or overload from the discarded
 Shared rehearsal.
@@ -54,8 +55,9 @@ whose source actually calls it.
 
 The full code and security review of `162b8412a..a779fe041` found no issues. Incremental native,
 security, and Concertable reviews through implementation head `da78980b7`, current-main merge
-`282b3c957`, and production checkpoint `372f72866` also found no issues. Remote source-owner head
-`53aa0a3` remains unchanged while the reviewed local checkpoints await the two-leg push.
+`282b3c957`, and production checkpoint `372f72866` also found no issues. The first push leg verified
+local, remote branch, and PR head equal at `ccb839c48`; only this transport ledger checkpoint remains
+for the second leg.
 
 Docs design PR #443 merged the roadmap, plan, and this recovery ledger as `fd0b666b9`; closeout PR
 #444 advanced main to `c72b058af`. No Concertable or Reunion runtime file, package reference,
@@ -123,9 +125,10 @@ implementation without changing the Payment delivery order.
 
 ## Next Steps
 
-Push PR #453 with the two-leg remote/PR-head verification, then run `/merge` with full E2E. After the
-source PR lands, move the recovery state to the required docs closeout worktree and own Payment
-package publication plus the generated platform-sync PR through green and merged.
+Push this transport ledger checkpoint as the second leg and verify local, remote branch, and PR head
+equality, then run `/merge` with full E2E. After the source PR lands, move the recovery state to the
+required docs closeout worktree and own Payment package publication plus the generated platform-sync
+PR through green and merged.
 
 ## Completed work
 
@@ -436,6 +439,18 @@ package publication plus the generated platform-sync PR through green and merged
   delivery-ready and provide the exact remaining-call-site inventory.
 
 ## Event log
+
+### 2026-08-10 — implementation first push leg verified
+
+- Action: Fetched current main, confirmed the branch is zero commits behind and no platform-sync PR
+  is open, then pushed the reviewed implementation and publication checkpoints to PR #453.
+- Evidence: Starting remote and PR head `53aa0a3ae4b51a5bbca324f7cfab02459fa83cd8`; reviewed work
+  head `ccb839c48559b9254ad4c5a9f1c768e5c6710fbf`; post-push local, fetched remote branch, and GitHub PR
+  head all equal the reviewed work head.
+- Outcome: The implementation transport is verified; only this ledger-only checkpoint requires the
+  second push leg before merge.
+- Follow-up: Commit and push this checkpoint, re-fetch and prove three-way head equality, then run
+  `/merge` with full E2E.
 
 ### 2026-08-10 — production delta incremental review completed
 
