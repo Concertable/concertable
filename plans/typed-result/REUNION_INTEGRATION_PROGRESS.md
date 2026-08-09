@@ -9,10 +9,10 @@
   earlier `origin/main`; implementation head `da78980b7` adopts the merged direct-factory API and its
   package pin; currency merge `282b3c957` brings platform pin `.892`; incremental code/security
   review is clean through Payment cleanup head `47aaf1b43`
-- PR: implementation PR #453 remains open; its verified first-leg branch and PR head is `ccb839c48`,
-  containing reviewed code head `da78980b7`, current-main merge `282b3c957`, production evidence, and
-  the completed incremental-review checkpoint; docs design PR #443 merged as `fd0b666b9`; sub-plan
-  reconciliation PR #445 merged as `d6a572e0d`
+- PR: implementation PR #453 remains open; its cleanup first-leg branch and PR head is verified at
+  `a5932ae05`, containing cleanup code head `47aaf1b43` and its completed incremental-review
+  checkpoint; docs design PR #443 merged as `fd0b666b9`; sub-plan reconciliation PR #445 merged as
+  `d6a572e0d`
 - Dependency/package gates: docs design merged; reviewed Reunion carrier commit `7bf5f66` is contained
   in merged PR #1 head `e52129d241711f2e1498ac166e2c510b167606a3`; corrective PR #2 removed the
   mistaken `Reunion.Errors.Extensions` package and merged as release head
@@ -127,10 +127,10 @@ implementation without changing the Payment delivery order.
 
 ## Next Steps
 
-Push reviewed cleanup head `47aaf1b43` to PR #453 with the two-leg remote/PR-head protocol. Revalidate
-currency and PR checks, then enqueue with full E2E. After the source PR lands, move recovery state to
-the required docs closeout worktree and own Payment package publication plus the generated
-platform-sync PR through green and merged.
+Push this cleanup transport checkpoint as the second leg and verify local, remote branch, and PR head
+equality. Revalidate currency and PR checks, then enqueue with full E2E. After the source PR lands,
+move recovery state to the required docs closeout worktree and own Payment package publication plus
+the generated platform-sync PR through green and merged.
 
 ## Completed work
 
@@ -461,6 +461,18 @@ platform-sync PR through green and merged.
   delivery-ready and provide the exact remaining-call-site inventory.
 
 ## Event log
+
+### 2026-08-10 — Payment cleanup first push leg verified
+
+- Action: Fetched current main, confirmed zero behind and no open platform-sync PR, then pushed the
+  reviewed cleanup range to PR #453.
+- Evidence: Starting remote/PR head `b4e7731a6a4a69af7c93b6eb90cfab7dfb265c3c`; work head
+  `a5932ae052bf8326020a35d7704eea4eebb1b259`; post-push local, fetched remote branch, and GitHub PR
+  head all equal the work head.
+- Outcome: Cleanup implementation transport is verified; only this ledger checkpoint requires the
+  second push leg.
+- Follow-up: Commit and push this checkpoint, re-fetch and prove three-way head equality, then wait
+  for the replacement PR checks before full-E2E queue admission.
 
 ### 2026-08-10 — Payment cleanup incremental review completed
 
