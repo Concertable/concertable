@@ -2,9 +2,10 @@
 
 - Plan: `plans/typed-result/REUNION_INTEGRATION_PLAN.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_reunion-integration`
-- Branch: `Feature/typed-result_reunion-integration`, current with `origin/main` `162b8412a`; prior
-  code head `26b9c10e7` removes shared adapter distribution, and the current verified checkpoint
-  retires the discarded Shared rehearsal and migrates Payment/Payment.Client to Reunion
+- Branch: `Feature/typed-result_reunion-integration`, current with `origin/main` `162b8412a`; code
+  head `a779fe041` retires the discarded Shared rehearsal and migrates Payment/Payment.Client to
+  Reunion; full code and security review are clean through that exact head; current HEAD is the
+  ledger-only review checkpoint in `this commit`
 - PR: not opened for implementation; docs design PR #443 merged as `fd0b666b9`; sub-plan
   reconciliation PR #445 merged as `d6a572e0d`
 - Dependency/package gates: docs design merged; reviewed Reunion carrier commit `7bf5f66` is contained
@@ -20,7 +21,8 @@
   complete and the Phase 4 code, test, and isolated package-consumer gates are green, while source
   PR, merge-queue E2E, publication, and generated platform sync remain pending
 - Last reconciled: 2026-08-09 against current Concertable `origin/main` `162b8412a`, Concertable code
-  head `26b9c10e7`, published Reunion release head `e33b40f`, current fetched Reunion
+  and reviewed implementation head `a779fe041`, ledger checkpoint `this commit`, published Reunion
+  release head `e33b40f`, current fetched Reunion
   `origin/master` `a837ecb`, live owner worktrees, NuGet.org package availability, and no open
   platform-sync PR
 
@@ -38,6 +40,10 @@ package APIs it uses, and architecture tests enforce both the direct-owner graph
 old Kernel functional/error namespaces. Payment API/Web currently maps no Result or Option carrier,
 so it does not receive an unused `Reunion.AspNetCore` reference; that adapter remains required only
 at HTTP edges whose source actually calls it.
+
+The full code and security review of `162b8412a..a779fe041` found no issues.
+Current HEAD adds only this review-result ledger checkpoint; the review artifact is restamped through
+`this commit` after checking that docs-only delta.
 
 Docs design PR #443 merged the roadmap, plan, and this recovery ledger as `fd0b666b9`; closeout PR
 #444 advanced main to `c72b058af`. No Concertable or Reunion runtime file, package reference,
@@ -97,14 +103,18 @@ detached Reunion release worktree was removed.
 
 ## Next Steps
 
-Commit the verified Phase 3 retirement and Phase 4 local code checkpoint, then run `/code-review`
-against that committed range and resolve every open finding before delivery. Do not push, open the
-source PR, publish Payment.Client, or begin the final consumer contraction until the review is clean
-and the delivery step is explicitly requested. Do not create or copy any Concertable Result/Option
-HTTP extension.
+Blocked: Source delivery cannot proceed without Tommy's explicit push/PR instruction.
+
+Unblock action: Tommy asks to push this branch and open its implementation PR.
+
+Resume when: That instruction is given; then push reviewed head `a779fe041`, verify remote equality,
+open the source PR, select full merge-queue E2E, and carry the Payment.Client publication and
+generated platform sync through their terminal gates before Phase 5.
 
 ## Completed work
 
+- Completed full code and security review of `162b8412a..a779fe041` with no findings; review watermark
+  and security watermark both identify exact committed head `a779fe041`.
 - Completed Phase 3 retirement: removed the superseded Shared Reunion rehearsal, restored all Shared
   paths to exact `origin/main` content, and deleted the obsolete HTTP-terminal plan/ledger.
 - Migrated Payment and the published Payment.Client API directly to `Reunion`/`Reunion.Errors`
@@ -174,6 +184,9 @@ HTTP extension.
 
 ## Verification
 
+- Full code/security review: `reviews/Feature-typed-result_reunion-integration.md`; implementation
+  range `162b8412a..a779fe041` (32 commits), no findings. The artifact is restamped through the
+  ledger-only `this commit` after verifying its plan-progress delta.
 - Payment standalone Release build: 0 warnings, 0 errors.
 - Payment Release unit tests: 224 passed, 0 failed; integration tests: 8 passed, 0 failed.
 - Full `api/Concertable.slnx` Release build: 0 errors and 4 existing generated nullable warnings.
@@ -311,6 +324,9 @@ HTTP extension.
 
 ## Reviews
 
+- Full code and security review: implementation range `162b8412a..a779fe041` (32 commits), artifact
+  `reviews/Feature-typed-result_reunion-integration.md`, no findings; the artifact is restamped
+  through the ledger-only `this commit` after verifying that checkpoint delta.
 - Full docs review: `2eb8bc476..38f11e6eb` (1 commit), artifact
   `reviews/Docs-typed-result_reunion-integration.md`, watermark `38f11e6eb`.
 - `ACC1` fixed in `b9cc525c2`: narrowed the no-mutation claim to existing migration branches.
@@ -371,6 +387,18 @@ HTTP extension.
   waits for the Phase 4 Payment.Client publication/sync before PR #425 is updated once.
 
 ## Event log
+
+### 2026-08-09 — Phase 4 committed review gate passed
+
+- Action: Committed the verified Phase 3/4 checkpoint and ran the mandatory full native, security,
+  and Concertable architecture-aware review over its complete net branch diff.
+- Evidence: commit `a779fe041`; range `162b8412a..a779fe041` (32 commits); review artifact
+  `reviews/Feature-typed-result_reunion-integration.md`; no findings; both review markers are
+  restamped through the ledger-only `this commit` after checking its plan-progress delta.
+- Outcome: The local Phase 4 checkpoint is clean and ready for source delivery. No remote branch, PR,
+  publication, platform sync, or Phase 5 mutation occurred.
+- Follow-up: Wait for explicit push/PR instruction, then deliver exact reviewed head `a779fe041` and
+  own its publication/platform-sync gates.
 
 ### 2026-08-09 — Phase 3 retired and Phase 4 local Payment gate completed
 
