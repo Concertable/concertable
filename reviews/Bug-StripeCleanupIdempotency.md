@@ -5,7 +5,7 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `b376131f73933849f6af44111d84a1b69eaf9c78`  _(2026-08-09)_
+**Reviewed up to commit:** `ccb40138e4070dd27d5150fee192069fd449964a`  _(2026-08-09)_
 **Security-reviewed up to commit:** `b376131f73933849f6af44111d84a1b69eaf9c78`  _(2026-08-09)_
 
 > Range reviewed: `dc0da93..abcc9be` (2 commits).
@@ -85,3 +85,15 @@ Verified after merging current `origin/main`: Payment unit tests 232/232, E2E St
 and both B2B and Customer UI E2E project builds succeed with zero errors. Checked correctness,
 security and secret handling, microservice isolation, module boundaries, seeding, C# conventions,
 and changed-path test coverage.
+
+## Incremental review — 2026-08-09 (fixture contract and naming)
+
+> Range reviewed: `b376131..ccb4013` (7 commits).
+
+No issues found. The attempted Payment resolver rename is fully reversed in the final tree, retaining
+`StripeE2EAccountResolver` because `Concertable.Payment.Seed` is not an E2E-specific namespace. The
+fixture-facing property now matches its `StripeCustomerResolver` type, and B2B `UiFixture` restores
+the established non-null Playwright lifecycle. Failure-continuing fixture teardown remains separately
+recorded in shared E2E technical debt. Payment unit tests pass 232/232 and the B2B UI E2E project
+builds with zero errors. Checked correctness, microservice isolation, module boundaries, seeding, C#
+conventions, and changed-path test coverage; the net range introduces no security-sensitive change.
