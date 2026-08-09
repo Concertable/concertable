@@ -4,6 +4,7 @@ import axios, {
   type AxiosRequestConfig,
   type AxiosResponse,
 } from "axios";
+import { isApiError } from "./apiError";
 
 export type ApiClient = AxiosInstance & {
   getOptional<T = unknown, D = unknown>(
@@ -21,8 +22,9 @@ export function createApiClient(): ApiClient {
     try {
       return await client.get<T, AxiosResponse<T, D>, D>(url, config);
     } catch (error) {
-      if (isAxiosError(error) && error.response?.status === 404)
-        return { ...error.response, data: null };
+      const requestError = isApiError(error) ? error.cause : error;
+      if (isAxiosError(requestError) && requestError.response?.status === 404)
+        return { ...requestError.response, data: null };
       throw error;
     }
   };
