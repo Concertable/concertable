@@ -3,9 +3,10 @@
 - Plan: `plans/typed-result/REUNION_INTEGRATION_PLAN.md`
 - Worktree: not created
 - Branch: `Feature/typed-result_reunion-integration` (reserved; not created)
-- PR: not opened
-- Dependency/package gates: docs design must merge; Reunion `7bf5f66` is available but unpublished;
-  B2B and Auth authoritative work is active and unpushed on Tommy's other workstation
+- PR: #443, `https://github.com/Concertable/concertable/pull/443`
+- Dependency/package gates: docs PR #443 is open/clean with `skip-e2e`; Reunion `7bf5f66` is
+  available but unpublished; B2B and Auth authoritative work is active and unpushed on Tommy's other
+  workstation
 - Last reconciled: 2026-08-09 against Concertable `origin/main` `ab5bea7af`, GitHub PR metadata, local
   worktree inventory, and Reunion commit `7bf5f66`
 
@@ -14,8 +15,8 @@
 The repository-wide read-only audit and integration design are complete and approved. No Concertable
 or Reunion runtime file, package reference, existing migration branch, or existing PR has been
 changed. This docs-only branch adds the design, roadmap reconciliation, and this recovery ledger.
-Its work head `ed35cd474` is pushed and verified equal to the remote docs branch; the push-checkpoint
-transport and PR creation are in progress.
+Its push-checkpoint head `c4021dff0` is verified equal locally, remotely, and on PR #443. The PR is
+ready, clean, labelled `skip-e2e`, and contains only the roadmap, plan, and ledger.
 
 GitHub has two open migration PRs: #425 contains unique Customer non-Payment work and must be
 preserved; #282 contains one obsolete-baseline Ticket commit whose semantics must later be recreated.
@@ -68,6 +69,8 @@ publish packages, or start the Concertable producer cutover in that phase.
   `origin/main` `ab5bea7af`; the PR diff remains the same three docs paths.
 - First push leg verified local and remote docs heads equal at `ed35cd474`; no PR existed at that
   comparison point.
+- Push-checkpoint transport verified local, remote, and PR heads equal at `c4021dff0`. PR #443 is
+  ready/clean, targets `main`, carries `skip-e2e`, and its diff has only the three planned docs paths.
 
 ## Reviews
 
@@ -156,6 +159,17 @@ publish packages, or start the Concertable producer cutover in that phase.
 - Outcome: The approved roadmap/plan/ledger range is durably published; no existing PR was mutated.
 - Follow-up: transport this ledger checkpoint, verify equality again, then open and merge the
   docs-only PR.
+
+### 2026-08-09 — docs PR opened and verified
+
+- Action: Transported the push checkpoint, opened ready PR #443, added `skip-e2e`, and verified PR
+  identity and paths.
+- Evidence: local, remote, and initial PR head `c4021dff05a274513ba6ef5c76651edf092b11aa`;
+  `OPEN`, `CLEAN`, base `main`, head `Docs/typed-result_reunion-integration`; PR diff lists only the
+  roadmap, plan, and ledger.
+- Outcome: The docs-only admin-merge preconditions are satisfied and no existing migration PR was
+  modified.
+- Follow-up: transport this PR-state checkpoint, reverify all heads, then admin-merge PR #443.
 
 ## Resume prompt
 
