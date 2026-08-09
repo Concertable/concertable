@@ -3,29 +3,49 @@
 - Plan: `plans/typed-result/REUNION_INTEGRATION_PLAN.md`
 - Worktree: not created
 - Branch: `Feature/typed-result_reunion-integration` (reserved; not created)
-- PR: not opened for implementation; docs design PR #443 merged as `fd0b666b9`
-- Dependency/package gates: docs design merged; Reunion `7bf5f66` is available but unpublished; B2B
-  and Auth authoritative work is active and unpushed on Tommy's other workstation
-- Last reconciled: 2026-08-09 against Concertable `origin/main` `fd0b666b9`, GitHub PR metadata, local
-  worktree inventory, and Reunion commit `7bf5f66`
+- PR: not opened for implementation; docs design PR #443 merged as `fd0b666b9`; sub-plan
+  reconciliation PR #445 merged as `d6a572e0d`
+- Dependency/package gates: docs design merged; Reunion `7bf5f66` is available but unpublished; the
+  B2B, Auth, Customer, Customer Ticket, and semantic HTTP-terminal owners are inventoried and must
+  consume the one generated platform-sync baseline rather than perform local carrier cutovers
+- Last reconciled: 2026-08-09 against the five typed-result worktrees at Concertable `origin/main`
+  `c72b058af`, sub-plan delivery on current main `d6a572e0d`, GitHub PR metadata, and Reunion commit
+  `7bf5f66`
 
 ## Current state
 
-The repository-wide read-only audit and integration design are complete and approved. No Concertable
-or Reunion runtime file, package reference, existing migration branch, or existing PR has been
-changed. Docs design PR #443 merged the roadmap, plan, and this recovery ledger as `fd0b666b9` without
-E2E or platform sync. The implementation worktree, branch, packages, and PR do not exist yet.
+The repository-wide audit and integration design are complete and approved. Docs design PR #443
+merged the roadmap, plan, and this recovery ledger as `fd0b666b9`; closeout PR #444 advanced main to
+`c72b058af`. No Concertable or Reunion runtime file, package reference, existing migration branch, or
+existing PR was changed by either docs PR. The implementation worktree, branch, packages, and PR do
+not exist yet.
+
+Docs-only PR #445 published the reconciled B2B, Auth, Customer, and HTTP-terminal plan pairs plus the
+central dependency map as `d6a572e0d`. It contained only eleven Markdown files, passed a clean docs
+review, bypassed E2E through the sanctioned admin path, and triggered no package or platform sync.
 
 GitHub has two open migration PRs: #425 contains unique Customer non-Payment work and must be
 preserved; #282 contains one obsolete-baseline Ticket commit whose semantics must later be recreated.
-B2B and Auth also have authoritative active work on Tommy's other workstation that is not yet pushed,
-so remote state is deliberately not treated as complete.
+B2B and Auth also have authoritative active work that is not pushed, so remote state is deliberately
+not treated as complete; their local worktrees are included in the inventory below.
+
+The authoritative worktrees are now locally visible and reconciled without mutation:
+
+| Owner | Local state against `origin/main` `c72b058af` | Delivery state |
+|---|---|---|
+| B2B `Refactor/B2BTypedResultMigration` | clean at `ba5791268`; 130 behind / 25 ahead | no branch PR or remote branch; checkpoints 1-5 complete |
+| Auth `Feature/typed-result_auth-outcomes` | clean at `98599413a`; 218 behind / 27 ahead | no branch PR or remote branch; implementation/review complete |
+| Customer non-Payment `Feature/typed-result_customer-outcomes` | clean at `e7c44f5b3`; 117 behind / 31 ahead | PR #425 is open at `e60219f7d`; two later local commits are ledger-only |
+| Customer Ticket `Feature/TypedResultMigrationPhase2` | clean at `b6a671ef9`; 480 behind / 29 ahead of main | PR #282 is open at `26ed63b896`; recreate its unique semantics after integration |
+| HTTP terminals `Refactor/typed-result_http-terminals` | `1d261e3ce`; 100 behind / 1 ahead, with five modified source/docs paths and an in-progress review artifact | preserve as local Phase 3 input; do not publish it independently |
+
+The HTTP-terminal work changes the same published `Concertable.Shared.Api` surface as Reunion Phase 3.
+Its verified semantic naming work will be completed as a local checkpoint and incorporated into the
+single Shared producer cutover, avoiding a second package publication and generated sync.
 
 ## Next Steps
 
-After this docs-only PR merges and Tommy syncs its `main` on the other workstation, create the reserved
-`Feature/typed-result_reunion-integration` worktree from fresh `origin/main`. Before editing code,
-inventory the synced B2B/Auth heads, dirty paths, plans, and PR ownership and record them here. Then
+Create the reserved `Feature/typed-result_reunion-integration` worktree from fresh `origin/main`, then
 execute Phase 1 only: pack `Reunion` and `Reunion.AspNetCore` from `7bf5f66` at the same disposable
 version into the local feed, inspect the AspNetCore dependency, apply the package/carrier substitution
 only on the reserved integration branch, and run the Phase 1 provenance, parity, Shared.Api, and
@@ -41,6 +61,10 @@ publish packages, or start the Concertable producer cutover in that phase.
   docs land first.
 - B2B and Auth correction recorded: their unpushed other-workstation changes are active authoritative
   owners, not missing or superseded work.
+- Reconciled the exact B2B, Auth, Customer, Ticket, and HTTP-terminal local heads, divergence, dirty
+  state, PR ownership, and Reunion dependency gates after the docs merge.
+- Published the reconciled parent/roadmap/sub-plan state on main through docs-only PR #445 as
+  `d6a572e0d`.
 - Roadmap reconciliation, this implementation plan, and its companion ledger are created in
   `this commit` on the isolated docs branch based on current `origin/main`.
 - Docs design PR #443 merged as `fd0b666b9`; its source worktree and local branch were removed, and
@@ -75,6 +99,8 @@ publish packages, or start the Concertable producer cutover in that phase.
   `api/**` path, so it triggered no package publication or platform-sync PR.
 - Closeout docs review of `fd0b666b9..1679726ab` found no issues; PR #443 paths were reconfirmed
   meta-only and GitHub reported no open platform-sync PR.
+- Full docs review of `c72b058af..8386fe1fe` found no issues across all eleven reconciliation paths;
+  PR #445 merged from that exact head as `d6a572e0d` with no `api/**` path.
 
 ## Reviews
 
@@ -101,7 +127,25 @@ publish packages, or start the Concertable producer cutover in that phase.
   parity tests remain mandatory before deleting duplicates.
 - `Concertable.Kernel` has a pre-existing ASP.NET framework reference. This plan neither expands nor
   relies on it; only Shared.Api receives Reunion.AspNetCore.
-- No implementation blocker exists. Package publication is intentionally gated on Phase 1 evidence.
+- No implementation blocker exists for the Reunion Phase 1 battle test or the local HTTP-terminal
+  checkpoint. Package publication is intentionally gated on Phase 1 evidence. B2B, Auth, Customer,
+  and Ticket delivery wait for the generated Phase 4 platform-sync PR to merge.
+
+## Downstream handoffs
+
+- `plans/typed-result/HTTP_RESULT_TERMINALS_PROGRESS.md` in
+  `C:\Users\TommySeery\source\repos\Concertable.worktrees\Refactor\typed-result_http-terminals`
+  waits for matching Reunion packages to be published at the Phase 2 gate; its verified local
+  checkpoint is then incorporated into this plan's single Shared producer PR.
+- `plans/typed-result/B2B_PROGRESS.md` in
+  `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-B2BTypedResultMigration`
+  waits for the Phase 4 generated platform-sync PR to merge before its one current-main reconciliation.
+- `plans/typed-result/AUTH_OUTCOMES_PROGRESS.md` in
+  `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_auth-outcomes`
+  waits for the Phase 4 generated platform-sync PR to merge before delivery reconciliation.
+- `plans/typed-result/CUSTOMER_OUTCOMES_PROGRESS.md` in
+  `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_customer-outcomes`
+  waits for the Phase 4 generated platform-sync PR to merge before PR #425 is updated once.
 
 ## Event log
 
@@ -196,6 +240,28 @@ publish packages, or start the Concertable producer cutover in that phase.
 - Outcome: No findings; the one-file bookkeeping closeout is ready for `/merge-docs`.
 - Follow-up: checkpoint the review, publish the closeout PR, admin-merge it, then remove its worktree
   and branch.
+
+### 2026-08-09 — active owner and sub-plan reconciliation
+
+- Action: Re-read merged PRs #443/#444, inventoried the five active typed-result worktrees and PRs,
+  and reconciled their plans with the centralized publish-gated Reunion strategy.
+- Evidence: `origin/main` `c72b058af`; local heads and status recorded in `## Current state`; PR #425
+  open/clean at `e60219f7d`; PR #282 open/dirty at `26ed63b896`; no open platform-sync PR.
+- Outcome: Reunion remains the sole carrier/package cutover owner. HTTP-terminal preparation may
+  finish locally in parallel with Phase 1 but will not publish independently; B2B, Auth, Customer,
+  and Ticket wait for the generated Phase 4 platform-sync baseline.
+- Follow-up: land this docs reconciliation, then execute the Reunion and HTTP-terminal local
+  checkpoints in parallel.
+
+### 2026-08-09 — sub-plan reconciliation delivered
+
+- Action: Pushed reviewed head `8386fe1fe`, opened PR #445, added `skip-e2e`, verified its eleven
+  Markdown-only paths, and admin-merged it through `/merge-docs`.
+- Evidence: PR #445 state `MERGED`; merge commit `d6a572e0dbffa958e11b057b06d2f24d6922b868`;
+  no `api/**`, package, workflow, or runtime path; source worktree and branch removed.
+- Outcome: every active typed-result owner now has its plan and exact Reunion dependency on main. No
+  package publication, platform sync, implementation PR mutation, or E2E run occurred.
+- Follow-up: start the Reunion Phase 1 and HTTP-terminal local checkpoints in parallel.
 
 ## Resume prompt
 
