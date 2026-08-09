@@ -76,14 +76,15 @@ The corrected release worktree
 `C:\Users\TommySeery\source\repos\Reunion.worktrees\concertable-e33b40f` is detached cleanly at
 `e33b40f` and holds the three verified `0.1.0-alpha.1` artifacts under `artifacts\packages`. The
 complete current-source gate is green. NuGet.org still exposes only historical `Reunion` `0.0.1`;
-the three target versions remain unpublished. A 46-character user-scoped `NUGET_API_KEY` is present;
-its value was not displayed or recorded.
+`Reunion` `0.1.0-alpha.1` has been accepted by NuGet.org and awaits production-feed indexing;
+`Reunion.Errors` and `Reunion.AspNetCore` remain unpublished. A 46-character user-scoped
+`NUGET_API_KEY` is present; its value was not displayed or recorded.
 
 ## Next Steps
 
-Publish exact `Reunion` `0.1.0-alpha.1` hash
-`8320AC619FFDA82B7A9F0F89905A53B9C332D196D3DA466EE308FFB1D2224CE9` to NuGet.org, checkpoint its
-accepted publication before the next mutation, then publish and checkpoint `Reunion.Errors` hash
+Wait for exact `Reunion` `0.1.0-alpha.1` hash
+`8320AC619FFDA82B7A9F0F89905A53B9C332D196D3DA466EE308FFB1D2224CE9` to become available from the
+NuGet.org production feed, checkpoint that indexed state, then publish and checkpoint `Reunion.Errors` hash
 `1B2F829BEB80CAF73F98F63686962D15FBC1827EA2524D1B6FC640FDC0FDA582` and `Reunion.AspNetCore` hash
 `B2166ECB6451F5B9038A9F8224D6C3AC7EA49385BAFA5C5E376728A364A91260` in dependency order. Wait for
 all three packages to become restorable from clean isolated caches, verify their production metadata
@@ -100,6 +101,8 @@ begin Phase 3 in this turn.
 - Completed the corrected three-package release gate at `e33b40f`: full dual-target build, 376 tests,
   public-API comparisons, formatting, package inspection, isolated provenance restores, and all four
   package consumers are green; exact `0.1.0-alpha.1` artifacts are ready for authenticated push.
+- NuGet.org accepted `Reunion` `0.1.0-alpha.1` from the verified artifact; production indexing and
+  clean-cache restore remain pending.
 - Added the safe additive Shared expansion checkpoint: Kernel owns Reunion, Shared.Api owns
   Reunion.AspNetCore, Reunion parity tests cover the named-case conversion contract, and Reunion
   carriers can traverse the existing Concertable MVC error/CreatedAt boundary without deleting the
@@ -293,6 +296,16 @@ begin Phase 3 in this turn.
   waits for the Phase 4 Payment.Client publication/sync before PR #425 is updated once.
 
 ## Event log
+
+### 2026-08-09 — Reunion core package accepted by NuGet.org
+
+- Action: Pushed the exact prepared `Reunion.0.1.0-alpha.1.nupkg` using the scoped session key.
+- Evidence: NuGet.org package endpoint returned HTTP `201 Created`; local artifact SHA-256 is
+  `8320AC619FFDA82B7A9F0F89905A53B9C332D196D3DA466EE308FFB1D2224CE9` from source `e33b40f`.
+- Outcome: The immutable core package publication is accepted; indexing and production restore are
+  not yet claimed.
+- Follow-up: Wait for production-feed availability, verify the downloaded artifact, then publish
+  Reunion.Errors.
 
 ### 2026-08-09 — NuGet.org publication credential supplied
 
