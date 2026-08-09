@@ -8,7 +8,7 @@
   `53aa0a3` adds only the review and delivery ledger checkpoints; merge head `88dbd1460` brings
   earlier `origin/main`; implementation head `da78980b7` adopts the merged direct-factory API and its
   package pin; currency merge `282b3c957` brings platform pin `.892`; incremental code/security
-  review is clean through production checkpoint `372f72866`
+  review is clean through Payment cleanup head `47aaf1b43`
 - PR: implementation PR #453 remains open; its verified first-leg branch and PR head is `ccb839c48`,
   containing reviewed code head `da78980b7`, current-main merge `282b3c957`, production evidence, and
   the completed incremental-review checkpoint; docs design PR #443 merged as `fd0b666b9`; sub-plan
@@ -127,10 +127,10 @@ implementation without changing the Payment delivery order.
 
 ## Next Steps
 
-Commit the verified Payment cleanup, incrementally review the new local range, and push PR #453 with
-the two-leg remote/PR-head protocol. Revalidate currency and PR checks, then enqueue with full E2E.
-After the source PR lands, move recovery state to the required docs closeout worktree and own Payment
-package publication plus the generated platform-sync PR through green and merged.
+Push reviewed cleanup head `47aaf1b43` to PR #453 with the two-leg remote/PR-head protocol. Revalidate
+currency and PR checks, then enqueue with full E2E. After the source PR lands, move recovery state to
+the required docs closeout worktree and own Payment package publication plus the generated
+platform-sync PR through green and merged.
 
 ## Completed work
 
@@ -138,6 +138,8 @@ package publication plus the generated platform-sync PR through green and merged
   `FluentValidation` package/version/documentation claim after confirming Payment has no
   FluentValidation validators; retained all three startup option validators and behavioral Reunion
   error-definition tests.
+- Incrementally reviewed `b4e7731a6..47aaf1b43` across native correctness, Payment security,
+  Concertable architecture, conventions, and test coverage; no findings remain.
 
 - Published exact `Reunion.Errors` `0.1.0-alpha.2`; NuGet.org indexed it with repository commit
   `1500270`, valid repository signature, catalog SHA-512 match, production SHA-256
@@ -389,6 +391,10 @@ package publication plus the generated platform-sync PR through green and merged
 
 ## Reviews
 
+- Incremental code and security review: `b4e7731a6..47aaf1b43` (5 commits), artifact
+  `reviews/Feature-typed-result_reunion-integration.md`, no findings; both watermarks identify exact
+  cleanup head `47aaf1b43d8c4587c5a968b1e8686839f8f9d046`.
+
 - Full code and security review: implementation range `162b8412a..a779fe041` (32 commits), artifact
   `reviews/Feature-typed-result_reunion-integration.md`, no findings; the artifact is restamped
   through production checkpoint `372f72866`; the ledger-only review checkpoint is verified before
@@ -455,6 +461,15 @@ package publication plus the generated platform-sync PR through green and merged
   delivery-ready and provide the exact remaining-call-site inventory.
 
 ## Event log
+
+### 2026-08-10 — Payment cleanup incremental review completed
+
+- Action: Reviewed `b4e7731a6..47aaf1b43` through native correctness, Payment security, and every
+  Concertable architecture/convention/test-coverage lens.
+- Evidence: Review and security watermarks both identify
+  `47aaf1b43d8c4587c5a968b1e8686839f8f9d046`; no findings survived the confidence filter.
+- Outcome: The cleanup and its local delivery checkpoints are fully reviewed and ready for transport.
+- Follow-up: Execute the two-leg verified push, then revalidate PR checks and merge with full E2E.
 
 ### 2026-08-10 — Payment validation and architecture-test cleanup completed
 
