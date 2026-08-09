@@ -8,7 +8,7 @@
   `53aa0a3` adds only the review and delivery ledger checkpoints; merge head `88dbd1460` brings
   earlier `origin/main`; implementation head `da78980b7` adopts the merged direct-factory API and its
   package pin; currency merge `282b3c957` brings platform pin `.892`; incremental code/security
-  review is clean through prior merge head `cbcfda10e` and must cover the current-main delta
+  review is clean through production checkpoint `372f72866`
 - PR: implementation PR #453 remains open remotely at `53aa0a3`; reviewed code head is `a779fe041`;
   local source-owner head is ahead for current-main and Reunion API reconciliation; docs design PR
   #443 merged as `fd0b666b9`; sub-plan reconciliation PR #445 merged as `d6a572e0d`
@@ -28,8 +28,9 @@
   refreshed reusable key remains in Windows user scope until revoked or expired. Merge-queue E2E,
   Payment publication, and generated platform sync remain pending
 - Last reconciled: 2026-08-10 against current Concertable `origin/main` `6f4a5cc3e`, implementation
-  head `da78980b7`, current-main merge `282b3c957`, merged Reunion PR #4 head `1500270`, production
-  NuGet.org package evidence, fresh-cache Payment verification, and the live PR #453 delivery gate
+  head `da78980b7`, current-main merge `282b3c957`, reviewed production checkpoint `372f72866`, merged
+  Reunion PR #4 head `1500270`, production NuGet.org package evidence, fresh-cache Payment
+  verification, and the live PR #453 delivery gate
 
 ## Current state
 
@@ -52,9 +53,9 @@ receive an unused `Reunion.AspNetCore` reference; that adapter remains required 
 whose source actually calls it.
 
 The full code and security review of `162b8412a..a779fe041` found no issues. Incremental native,
-security, and Concertable reviews through implementation head `da78980b7` and prior current-main
-merge `cbcfda10e` also found no issues. Remote source-owner head `53aa0a3` remains unchanged while
-the current-main and publication checkpoints await the final incremental review and push.
+security, and Concertable reviews through implementation head `da78980b7`, current-main merge
+`282b3c957`, and production checkpoint `372f72866` also found no issues. Remote source-owner head
+`53aa0a3` remains unchanged while the reviewed local checkpoints await the two-leg push.
 
 Docs design PR #443 merged the roadmap, plan, and this recovery ledger as `fd0b666b9`; closeout PR
 #444 advanced main to `c72b058af`. No Concertable or Reunion runtime file, package reference,
@@ -122,11 +123,9 @@ implementation without changing the Payment delivery order.
 
 ## Next Steps
 
-Run the incremental native, security, and Concertable architecture review from the existing review
-watermark through current head. Resolve any findings, checkpoint the ledger, push PR #453 with the
-two-leg remote/PR-head verification, then run `/merge` with full E2E. After the source PR lands, move
-the recovery state to the required docs closeout worktree and own Payment package publication plus
-the generated platform-sync PR through green and merged.
+Push PR #453 with the two-leg remote/PR-head verification, then run `/merge` with full E2E. After the
+source PR lands, move the recovery state to the required docs closeout worktree and own Payment
+package publication plus the generated platform-sync PR through green and merged.
 
 ## Completed work
 
@@ -145,6 +144,9 @@ the generated platform-sync PR through green and merged.
 - Incrementally reviewed through implementation head `da78980b7` and current-main merge `cbcfda10e`
   across the native, security, and Concertable lenses; no findings remain and both review watermarks
   identify exact merge head `cbcfda10e`.
+- Incrementally reviewed `cbcfda10e..372f72866` across native correctness, security-sensitive
+  metadata, and Concertable architecture lenses; no findings remain and both review watermarks
+  identify exact production checkpoint `372f72866`.
 - Pushed reviewed implementation head `a779fe041`, verified exact remote equality, and opened
   implementation PR #453 against `main`.
 - Completed full code and security review of `162b8412a..a779fe041` with no findings; review watermark
@@ -375,7 +377,8 @@ the generated platform-sync PR through green and merged.
 
 - Full code and security review: implementation range `162b8412a..a779fe041` (32 commits), artifact
   `reviews/Feature-typed-result_reunion-integration.md`, no findings; the artifact is restamped
-  through the ledger-only `this commit` after verifying that checkpoint delta.
+  through production checkpoint `372f72866`; the ledger-only review checkpoint is verified before
+  transport.
 - Full docs review: `2eb8bc476..38f11e6eb` (1 commit), artifact
   `reviews/Docs-typed-result_reunion-integration.md`, watermark `38f11e6eb`.
 - `ACC1` fixed in `b9cc525c2`: narrowed the no-mutation claim to existing migration branches.
@@ -433,6 +436,17 @@ the generated platform-sync PR through green and merged.
   delivery-ready and provide the exact remaining-call-site inventory.
 
 ## Event log
+
+### 2026-08-10 — production delta incremental review completed
+
+- Action: Reviewed `cbcfda10e..372f72866` through the native correctness, security, and Concertable
+  architecture lenses after the production package and current-main gates completed.
+- Evidence: Both review watermarks identify `372f72866fc67d95ffcede56c3bedc97189d26bd`; the 11-commit
+  delta contains current-main platform pins and tech-debt documentation plus publication checkpoints.
+  No implementation defect, architecture violation, test gap, or committed credential was found.
+- Outcome: PR #453 is ready for its two-leg verified push and full-E2E merge path.
+- Follow-up: Commit this ledger-only checkpoint, verify it as the review tail, then execute the two-leg
+  push protocol.
 
 ### 2026-08-10 — Reunion.Errors alpha.2 published and production gate completed
 
