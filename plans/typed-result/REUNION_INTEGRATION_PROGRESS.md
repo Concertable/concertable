@@ -56,8 +56,8 @@ whose source actually calls it.
 The full code and security review of `162b8412a..a779fe041` found no issues. Incremental native,
 security, and Concertable reviews through implementation head `da78980b7`, current-main merge
 `282b3c957`, and production checkpoint `372f72866` also found no issues. The first push leg verified
-local, remote branch, and PR head equal at `ccb839c48`; only this transport ledger checkpoint remains
-for the second leg.
+local, remote branch, and PR head equal at `ccb839c48`; the second leg verified all three at
+`b4e7731a6`. This post-transport observation is retained only in the local plan ledger tail.
 
 Docs design PR #443 merged the roadmap, plan, and this recovery ledger as `fd0b666b9`; closeout PR
 #444 advanced main to `c72b058af`. No Concertable or Reunion runtime file, package reference,
@@ -125,10 +125,9 @@ implementation without changing the Payment delivery order.
 
 ## Next Steps
 
-Push this transport ledger checkpoint as the second leg and verify local, remote branch, and PR head
-equality, then run `/merge` with full E2E. After the source PR lands, move the recovery state to the
-required docs closeout worktree and own Payment package publication plus the generated platform-sync
-PR through green and merged.
+Run `/merge` for exact remote PR head `b4e7731a6` with full E2E. After the source PR lands, move the
+recovery state to the required docs closeout worktree and own Payment package publication plus the
+generated platform-sync PR through green and merged.
 
 ## Completed work
 
@@ -439,6 +438,16 @@ PR through green and merged.
   delivery-ready and provide the exact remaining-call-site inventory.
 
 ## Event log
+
+### 2026-08-10 — implementation second push leg verified
+
+- Action: Pushed the first-leg transport ledger checkpoint, fetched the remote branch, and queried
+  GitHub's PR head independently.
+- Evidence: Local head, fetched remote branch, and PR #453 `headRefOid` all equal
+  `b4e7731a6a4a69af7c93b6eb90cfab7dfb265c3c`.
+- Outcome: The two-leg source transport is terminal. This observation is a local plan-only tail and
+  must not change the remote PR head before queueing.
+- Follow-up: Run `/merge` against exact remote head `b4e7731a6` with full E2E.
 
 ### 2026-08-10 — implementation first push leg verified
 
