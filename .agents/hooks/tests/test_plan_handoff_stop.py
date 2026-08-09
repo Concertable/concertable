@@ -237,20 +237,68 @@ class PlanHandoffStopTests(unittest.TestCase):
         result = evaluate(self.input_with_codex_transcript("Everything is complete."))
         self.assertEqual({}, result)
 
-    def test_inflight_owner_wait_needs_no_pointer(self):
-        self.write_ledger("Waiting for PR #123 to merge; its owner will surface this plan when ready.")
-        result = evaluate(self.input_with_codex_transcript("Waiting for PR #123."))
+    def test_inflight_owner_wait_reports_blocker_without_pointer(self):
+        self.write_ledger(
+            "Blocked: PR #123 has not merged.\n"
+            "Unblock action: The PR #123 owner must follow it to a terminal merge.\n"
+            "Resume when: GitHub reports PR #123 merged."
+        )
+        result = evaluate(
+            self.input_with_codex_transcript(
+                "Blocked: PR #123 has not merged.\n"
+                "Unblock action: The PR #123 owner must follow it to a terminal merge.\n"
+                "Resume when: GitHub reports PR #123 merged."
+            )
+        )
         self.assertEqual({}, result)
 
-    def test_registered_downstream_wait_needs_no_pointer(self):
+    def test_registered_downstream_wait_reports_blocker_without_pointer(self):
         self.write_ledger(
-            "Checkpoints 6-7 remain blocked on the owner's platform-sync PR. The owner ledger lists "
-            "this ledger under `## Downstream handoffs`. Do not poll the dependency or emit this "
-            "plan's resume prompt while blocked; the owner must surface it when ready.\n\n"
-            "When the owner surfaces the green gate, implement checkpoints 6-7."
+            "Blocked: Checkpoints 6-7 require the owner's platform-sync PR to merge.\n"
+            "Unblock action: The owner ledger must follow the sync and dispatch this dependent.\n"
+            "Resume when: The owner records the merged sync in this ledger.\n\n"
+            "The owner ledger lists this ledger under `## Downstream handoffs`."
         )
-        result = evaluate(self.input_with_codex_transcript("The dependent plan is still blocked."))
+        result = evaluate(
+            self.input_with_codex_transcript(
+                "Blocked: Checkpoints 6-7 require the owner's platform-sync PR to merge.\n"
+                "Unblock action: The owner ledger must follow the sync and dispatch this dependent.\n"
+                "Resume when: The owner records the merged sync in this ledger."
+            )
+        )
         self.assertEqual({}, result)
+
+    def test_blocker_report_must_include_every_actionable_value(self):
+        self.write_ledger(
+            "Blocked: Commit abc is unavailable.\n"
+            "Unblock action: Push a branch containing commit abc.\n"
+            "Resume when: git cat-file resolves commit abc."
+        )
+        result = evaluate(self.input_with_codex_transcript("Commit abc is unavailable."))
+        self.assertEqual("block", result["decision"])
+        self.assertIn("Push a branch containing commit abc.", result["reason"])
+        self.assertIn("git cat-file resolves commit abc.", result["reason"])
+
+    def test_blocked_plan_pointer_is_rejected(self):
+        self.write_ledger(
+            "Blocked: Commit abc is unavailable.\n"
+            "Unblock action: Push a branch containing commit abc.\n"
+            "Resume when: git cat-file resolves commit abc."
+        )
+        message = (
+            "Blocked: Commit abc is unavailable.\n"
+            "Unblock action: Push a branch containing commit abc.\n"
+            f"Resume when: git cat-file resolves commit abc.\n\n{self.pointer()}"
+        )
+        result = evaluate(self.input_with_codex_transcript(message))
+        self.assertEqual("block", result["decision"])
+        self.assertIn("remove the blocked plan's continuation pointer", result["reason"])
+
+    def test_legacy_blocker_requires_structured_contract(self):
+        self.write_ledger("Waiting for PR #123 to merge; its owner will surface this plan when ready.")
+        result = evaluate(self.input_with_codex_transcript("Waiting for PR #123."))
+        self.assertEqual("block", result["decision"])
+        self.assertIn("`Unblock action:`", result["reason"])
 
     def test_blocked_work_without_registered_suppression_still_needs_pointer(self):
         self.write_ledger(

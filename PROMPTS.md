@@ -6,8 +6,9 @@
   a dependency owner's ledger does not claim its handoff. “Implementation complete” is not “nothing
   remains” while review,
   PR, merge, publication, dependency, or platform-sync gates remain. A summary or paraphrased next
-  action does not substitute for the pointer. The registered in-flight owner wait described below is
-  the only exception. Trusted repository Stop hooks enforce this invariant.
+  action does not substitute for the pointer. A structured blocked state described below is the
+  exception. Trusted repository Stop hooks enforce both sides of this invariant: actionable work
+  requires its pointer, while blocked work forbids that pointer.
 
 - Start with the worktree opener — `cd <absolute-worktree-path>`, or `/worktree create <Type>/<Name>`
   when the worktree doesn't exist yet — and keep it inside the paste-ready prompt.
@@ -27,13 +28,21 @@
   every such specific lives in the ledger (its header + `## Next Steps`), so the prompt can't drift.
 - When work remains, end with one prompt that advances it — or, when several independent pieces remain,
   one prompt each so they run in separate contexts.
-- When blocked, first check whether the resolving work is already in flight — an open PR mid-merge, or
-  another session via the `search`/`recents` skills. If so, register this plan in the owner's
-  `## Downstream handoffs`, report "waiting for X" (name it), and stop without emitting this plan's
-  resume prompt; the owner surfaces it when the gate opens. Never re-poll a blocker into repeated
-  "still blocked" recheck commits. If nobody is on it, hand off one prompt per blocker targeting the
-  resolving work, each naming the worktree and the continuation it unlocks so the handoff routes back,
-  and push any finished part meanwhile rather than parking it.
+- A blocked plan never emits its own continuation pointer. First do any safe, authorized work that can
+  remove the blocker in the current session. If the gate still cannot move, record the three-line hard
+  blocker schema from [`plans/agents/PLAN.md`](plans/agents/PLAN.md) at the start of `## Next Steps` and
+  report those lines verbatim to Tommy. Then route the unblock action instead of routing back into the
+  blocked plan:
+  - resolving work already in flight — register the waiting ledger in the owner's
+    `## Downstream handoffs`, name that owner, and emit no prompt; the owner surfaces the waiting
+    plan's pointer when the gate opens;
+  - separate agent/context required and nobody owns it — emit one paste-ready dispatch prompt for the
+    resolving work, including its return path to the waiting ledger;
+  - user or external-system action required — give the exact command/action and the observable
+    `Resume when` condition, with no prompt.
+
+  Never re-poll an unchanged blocker into repeated "still blocked" commits. The Stop hook rejects the
+  blocked plan's pointer and rejects a blocker report that omits any of the three exact lines.
 - Use the handoff instead of asking whether to continue.
 - Before an implementation PR merges, route through `/code-review` or `/big-review`; use
   `/incremental-review` after later code commits.

@@ -60,12 +60,35 @@ def is_terminal(body):
         return True
     normalized = re.sub(r"[`*_#>\-\s.]", "", body).lower()
     plain = body.strip().lower()
+    return not normalized or plain in TERMINAL
+
+
+def blocker_details(body):
+    if body is None:
+        return None
+    lines = [line.strip() for line in body.splitlines() if line.strip()]
+    names = ("Blocked", "Unblock action", "Resume when")
+    if len(lines) < len(names):
+        return None
+    values = []
+    for line, name in zip(lines, names):
+        prefix = f"{name}:"
+        if not line.startswith(prefix):
+            return None
+        value = line.removeprefix(prefix).strip()
+        if not value:
+            return None
+        values.append(value)
+    return tuple(values)
+
+
+def looks_like_legacy_blocker(body):
+    if body is None:
+        return False
     first_line = next((line.strip().lower() for line in body.splitlines() if line.strip()), "")
     return (
-        not normalized
-        or plain in TERMINAL
-        or first_line.startswith("waiting for ")
-        or first_line.startswith("blocked: waiting for ")
+        first_line.startswith("waiting for ")
+        or first_line.startswith("blocked:")
         or (
             BLOCKED_OR_WAITING.search(body)
             and REGISTERED_OWNER_WAIT.search(body)
@@ -335,6 +358,8 @@ def evaluate(data):
         ledgers |= branch_ledgers(git_root(cwd))
     ledgers = canonical_ledgers(ledgers)
     active = []
+    blocked = []
+    malformed_blockers = []
     for path in sorted(ledgers):
         body = next_steps(path.read_text(encoding="utf-8"))
         if body is None:
@@ -342,14 +367,50 @@ def evaluate(data):
                 "decision": "block",
                 "reason": f"HANDOFF GATE: {path.name} is missing its required `## Next Steps` section.",
             }
-        if not is_terminal(body):
+        details = blocker_details(body)
+        if details:
+            blocked.append((path, expected_pointer(path), details))
+        elif looks_like_legacy_blocker(body):
+            malformed_blockers.append(path)
+        elif not is_terminal(body):
             active.append((path, expected_pointer(path)))
+    if malformed_blockers:
+        names = ", ".join(path.name for path in malformed_blockers)
+        return {
+            "decision": "block",
+            "reason": (
+                f"BLOCKER HANDOFF GATE: {names} describes blocked work without the required "
+                "three-line contract. Start `## Next Steps` with non-empty `Blocked:`, "
+                "`Unblock action:`, and `Resume when:` lines. Do not emit the blocked plan's "
+                "continuation pointer."
+            ),
+        }
     active = list({pointer: (path, pointer) for path, pointer in active}.values())
-    if not active:
-        return {}
     message = (data.get("last_assistant_message") or data.get("lastAssistantMessage") or "").replace(
         "\r\n", "\n"
     )
+    blocked_failures = []
+    for path, pointer, details in blocked:
+        if pointer in message:
+            blocked_failures.append(
+                f"{path.name}: remove the blocked plan's continuation pointer"
+            )
+        required = tuple(
+            f"{name}: {value}"
+            for name, value in zip(("Blocked", "Unblock action", "Resume when"), details)
+        )
+        missing = [line for line in required if line not in message]
+        if missing:
+            blocked_failures.append(
+                f"{path.name}: report these exact lines: " + "; ".join(missing)
+            )
+    if blocked_failures:
+        return {
+            "decision": "block",
+            "reason": "BLOCKER HANDOFF GATE: " + " | ".join(blocked_failures),
+        }
+    if not active:
+        return {}
     missing = [(path, pointer) for path, pointer in active if pointer not in message]
     ending = message.rstrip()
     ends_with_pointer = any(
