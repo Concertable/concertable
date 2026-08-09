@@ -2,14 +2,14 @@
 
 - Plan: `plans/typed-result/REUNION_INTEGRATION_PLAN.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_reunion-integration`
-- Branch: `Feature/typed-result_reunion-integration`, current with `origin/main` `162b8412a`; Phase 1
-  code checkpoint `ef4c09baa` plus the current-main reconciliation are carried locally
+- Branch: `Feature/typed-result_reunion-integration`, current with `origin/main` `162b8412a`; the
+  merged-head Phase 1 checkpoint is carried by `this commit`
 - PR: not opened for implementation; docs design PR #443 merged as `fd0b666b9`; sub-plan
   reconciliation PR #445 merged as `d6a572e0d`
-- Dependency/package gates: docs design merged; Reunion source commit
-  `7bf5f66317b58d09af322d296a95044f4da32b1e` is fetched from `origin/master` and merged through
-  Reunion PR #1 as `e52129d241711f2e1498ac166e2c510b167606a3`; Phase 1 is complete;
-  publication of both exact `0.1.0-alpha.1` packages is the next gate; the B2B, Auth, Customer,
+- Dependency/package gates: docs design merged; reviewed Reunion carrier commit `7bf5f66` is contained
+  in merged PR #1 head `e52129d241711f2e1498ac166e2c510b167606a3`; Phase 1 is complete against
+  that actual four-package release head; publication of all four exact `0.1.0-alpha.1` packages is
+  the next gate; the B2B, Auth, Customer,
   Customer Ticket, and semantic HTTP-terminal owners remain inventoried and must consume the staged
   Shared-expansion and Payment.Client publications rather than perform local carrier cutovers
 - Last reconciled: 2026-08-09 against current Concertable `origin/main` `162b8412a`, verified
@@ -50,15 +50,17 @@ Its verified semantic naming checkpoint is complete at `c593150e4`: Shared.Api R
 solution build 0 errors, old-terminal grep zero, and full code review clean after TEST1 was fixed. It
 will be incorporated into the final Shared contraction after Payment.Client is republished on Reunion.
 
-The Reunion source gate is open. The exact plan-pinned commit
-`7bf5f66317b58d09af322d296a95044f4da32b1e` is present on fetched `origin/master`; Reunion PR #1
-merged it as `e52129d241711f2e1498ac166e2c510b167606a3`. Its project metadata contains both
-`Reunion` and `Reunion.AspNetCore` at `0.1.0-alpha.1`, targeting `net10.0;net11.0`, and pins SDK
-`11.0.100-preview.6.26359.118`. That exact SDK is installed in `C:\Users\TommySeery\.dotnet`.
+The Reunion source gate is open. Reviewed carrier commit `7bf5f66` is contained in fetched
+`origin/master`; Reunion PR #1 merged as release head
+`e52129d241711f2e1498ac166e2c510b167606a3`. That head contains `Reunion`, `Reunion.Errors`,
+`Reunion.Errors.Extensions`, and `Reunion.AspNetCore` at `0.1.0-alpha.1`, all targeting
+`net10.0;net11.0`, and pins SDK `11.0.100-preview.6.26359.118`. That exact SDK is installed in
+`C:\Users\TommySeery\.dotnet`.
 
 Phase 1 began from Concertable `origin/main` `dc0da9360` and the integration branch then merged
-current `origin/main` `162b8412a` after checkpoint `ef4c09baa`. Phase 1
-packed exact local version `0.1.0-local.concertable.1`, added it only to Kernel and Shared.Api, retained
+current `origin/main` `162b8412a` after checkpoint `ef4c09baa`. The final provenance correction
+packed actual merged Reunion head `e52129d` as `0.1.0-local.concertable.2`, added only Reunion and
+Reunion.AspNetCore directly to Kernel and Shared.Api, retained
 the old carrier surface for a compatible expansion, and proved the complete Release solution builds.
 The attempted destructive substitution exposed `Concertable.Payment.Client` as a second published
 package boundary: B2B and Customer consuming the old client cannot compile against a source-only
@@ -67,17 +69,18 @@ additive Shared expansion, Payment/Payment.Client migration, then final consumer
 
 ## Next Steps
 
-Execute Phase 2 in the Reunion repository: publish the exact `Reunion` and `Reunion.AspNetCore`
-`0.1.0-alpha.1` packages built from commit `7bf5f66`, verify their SHA/provenance, matching dependency
-version, `net10.0`/`net11.0` assets, and clean-cache restore from the production feed, then record the
-immutable package URLs and hashes here. Do not push this Concertable branch or begin Phase 3 until
-both production packages restore at the same exact version.
+Execute Phase 2 in the Reunion repository: publish exact `Reunion`, `Reunion.Errors`,
+`Reunion.Errors.Extensions`, and `Reunion.AspNetCore` `0.1.0-alpha.1` packages built from merged head
+`e52129d`, verify their SHA/provenance, exact dependency groups, `net10.0`/`net11.0` assets, and
+clean-cache restore from the production feed, then record the immutable package URLs and hashes here.
+Do not push this Concertable branch or begin Phase 3 until all four production packages restore at
+the same exact version.
 
 ## Completed work
 
-- Completed the exact-source local package battle test: both packages packed from `7bf5f66` at
-  `0.1.0-local.concertable.1`, matching dependency metadata and both framework assets inspected, and
-  a clean net10 consumer restored the AspNetCore package plus its exact Reunion dependency.
+- Completed the merged-release local package battle test: all four packages packed from `e52129d` at
+  `0.1.0-local.concertable.2`, matching dependency metadata and both framework assets inspected, and
+  a clean net10 consumer restored the complete graph from the isolated feed.
 - Added the safe additive Shared expansion checkpoint: Kernel owns Reunion, Shared.Api owns
   Reunion.AspNetCore, Reunion parity tests cover the named-case conversion contract, and Reunion
   carriers can traverse the existing Concertable MVC error/CreatedAt boundary without deleting the
@@ -107,17 +110,24 @@ both production packages restore at the same exact version.
 
 ## Verification
 
-- Exact package source: detached `7bf5f66317b58d09af322d296a95044f4da32b1e`; local version
-  `0.1.0-local.concertable.1`; `Reunion` SHA-256
-  `D7C7B37B710D84AC7E226EDD0981D39D3B9B22F1D6FA1FD210A0E9D5DF3C233B`;
-  `Reunion.AspNetCore` SHA-256
-  `98E040F1717F06FEF438351A1A79D700FC04784BB05207F98B5DB5A0BF4C5F00`.
-- Package inspection found `lib/net10.0` and `lib/net11.0` in Reunion and matching exact-version
-  dependency groups in Reunion.AspNetCore. A clean temporary net10 consumer installed
-  Reunion.AspNetCore directly and Reunion transitively from only the local feed.
+- Exact package source: detached merged head `e52129d241711f2e1498ac166e2c510b167606a3`;
+  local version `0.1.0-local.concertable.2`; SHA-256 values are Reunion
+  `DF56DB378E6A67EA8635D364C511EE292DFB71DBDDB4BE140AB1FCDA9996106A`, Reunion.Errors
+  `ACCD45940C6EE12EC52E2FD9AEC27D4482901746F605532920D0D4D877101549`,
+  Reunion.Errors.Extensions `67679A79F2FB3F56E25FF040BDC3874A2A70A5F290346C14E0D0187ADBE9D6F5`,
+  and Reunion.AspNetCore `CDD4ADD2DE852D8BCD42D24E6ECF13A34B779F7EE2BF99764F0A3F0532416AEB`.
+- All four packages contain `lib/net10.0` and `lib/net11.0`. AspNetCore depends exactly on Reunion and
+  Reunion.Errors; Errors.Extensions depends exactly on Reunion and Reunion.Errors in both groups. A
+  clean temporary net10 consumer restored the full graph only from the isolated feed.
+- Reunion merged-head tests passed on net10: core 132, Errors 14, Errors.Extensions 8, AspNetCore 35;
+  and net11: core 146, Errors 14, Errors.Extensions 8, AspNetCore 35. The private preview SDK lacks the
+  net10 runtime, so compiled net10 assemblies ran through the installed 10.0.301 VSTest host.
+- The repository package-inspection scripts require PowerShell 7; Windows PowerShell 5 could not load
+  `System.IO.Compression.ZipFile`. Direct nuspec/archive inspection established the same identities,
+  dependencies, repository commit, and framework assets locally.
 - Full Concertable restore with the local source succeeded; package graphs and `dotnet nuget why`
-  show Kernel → Reunion and Shared.Api → Reunion.AspNetCore → Reunion.
-- Release `api/Concertable.slnx` build succeeded with 0 errors and 10 pre-existing/generated warnings.
+  show Kernel → Reunion and Shared.Api → Reunion.AspNetCore → Reunion + Reunion.Errors.
+- Release `api/Concertable.slnx` build succeeded with 0 errors and 9 pre-existing/generated warnings.
 - Release Kernel unit/parity tests: 241 passed, 0 failed. Release Shared.Api unit/architecture tests:
   53 passed, 0 failed.
 - The initial destructive rehearsal produced five stale implicit-conversion assertion failures. The
@@ -207,8 +217,9 @@ both production packages restore at the same exact version.
 - Reunion stays prerelease while its `net11.0` asset depends on preview .NET 11/C# functionality.
   Concertable targets `net10.0` and will consume the matching shipping-runtime asset from the same
   alpha package while exercising this owner-controlled integration before general release.
-- The Phase 1 source blocker is resolved by exact fetched commit `7bf5f66` and merged Reunion PR #1;
-  no substitute or reconstructed source is used.
+- The Phase 1 source blocker is resolved by fetched carrier base `7bf5f66` and actual merged Reunion
+  PR #1 head `e52129d`; the release rehearsal uses the merged head, not a reconstructed source or the
+  stale two-package intermediate tree.
 - Phase 1 is complete and validates the intended prerelease model: Reunion remains alpha while its
   net11 asset uses preview tooling; Concertable consumes its shipping net10 asset from that package.
 - `Concertable.Payment.Client` is a published API layer between Shared and B2B/Customer. The original
@@ -244,6 +255,19 @@ both production packages restore at the same exact version.
   waits for the Phase 4 Payment.Client publication/sync before PR #425 is updated once.
 
 ## Event log
+
+### 2026-08-09 — release provenance advanced to the actual merged Reunion head
+
+- Action: Detected that PR #1 merged two commits after `7bf5f66`, packed all four packages from merge
+  head `e52129d`, inspected their dependency graph/assets/hashes, restored a clean net10 consumer,
+  and reran both Reunion and Concertable verification matrices.
+- Evidence: local version `0.1.0-local.concertable.2`; four SHA-256 values recorded above; Reunion
+  net10 189/189 and net11 203/203; Concertable Release build 0 errors, Kernel 241/241, Shared.Api
+  53/53.
+- Outcome: Phase 1 now validates the immutable artifacts that should actually become
+  `0.1.0-alpha.1`. Publishing the older two-package intermediate tree is explicitly forbidden.
+- Follow-up: Publish all four matching packages from `e52129d`, verify production-feed restore, then
+  replace the local Concertable versions during Phase 3.
 
 ### 2026-08-09 — Phase 1 reconciled with current main
 

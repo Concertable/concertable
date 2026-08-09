@@ -4,10 +4,10 @@
 
 ## Objective
 
-Replace Concertable's temporary owned Result/Option carriers with the real `Reunion` and
-`Reunion.AspNetCore` packages, beginning from Reunion commit `7bf5f66`, without changing domain error
-ownership, controller signatures, MVC behavior, published transport contracts, or service package
-boundaries.
+Replace Concertable's temporary owned Result/Option carriers with the real Reunion package family,
+using reviewed carrier base `7bf5f66` through merged release head `e52129d`, without changing domain
+error ownership, controller signatures, MVC behavior, published transport contracts, or service
+package boundaries.
 
 This is a publish-gated cross-package cutover. It is not a request to redesign Reunion, remove a
 Result family, retain permanent compatibility shims, or convert MVC controllers to Minimal API
@@ -71,7 +71,7 @@ operational state lives in the owning ledgers; the dependency-relevant snapshot 
 | Concertable project/category | Direct package | Reason |
 |---|---|---|
 | `api/Concertable.Shared/src/Concertable.Kernel/Concertable.Kernel.csproj` | `Reunion` | Owns the shared in-process carrier vocabulary and publishes APIs containing those types. |
-| `api/Concertable.Shared/src/Concertable.Shared.Api/Concertable.Shared.Api.csproj` | `Reunion.AspNetCore` | Owns MVC/ProblemDetails boundary behavior; the package brings the matching `Reunion` dependency. |
+| `api/Concertable.Shared/src/Concertable.Shared.Api/Concertable.Shared.Api.csproj` | `Reunion.AspNetCore` | Owns MVC/ProblemDetails boundary behavior; the package brings matching `Reunion` and `Reunion.Errors` dependencies. |
 | Kernel and Shared.Api unit/architecture tests | Neither directly | Consume through their tested project references unless a clean package-consumer test deliberately verifies NuGet assets. |
 | Service Web/API projects and controllers | Neither directly | Consume the Concertable-owned Shared.Api boundary; do not spread adapter-package ownership across services. |
 | `api/Concertable.Payment/src/Concertable.Payment.Client/Concertable.Payment.Client.csproj` | Neither during expansion; `Reunion` after its own migration | This published package re-exposes Kernel Result/Option types and is therefore a second publication layer, not an ordinary final consumer. |
@@ -262,9 +262,9 @@ types, while B2B and Customer compile against its published package rather than 
 Delivery therefore crosses three Concertable code merges after the Reunion publication:
 
 1. Land this docs-only design first so every active branch shares the same owner and dependency map.
-2. In the reserved `Feature/typed-result_reunion-integration` worktree, pack commit `7bf5f66`,
-   substitute the two real NuGet packages, and prove source/API/HTTP parity. Do not distribute those
-   edits across service PRs.
+2. In the reserved `Feature/typed-result_reunion-integration` worktree, pack merged PR head
+   `e52129d`, restore its four-package dependency graph, and prove source/API/HTTP parity. Do not
+   distribute those edits across service PRs.
 3. In parallel, finish and review the existing semantic HTTP-terminal work as a local-only checkpoint.
    Do not push or publish its Shared.Api package independently.
 4. Publish matching `Reunion` and `Reunion.AspNetCore` versions only after the battle-test gate passes.
@@ -299,16 +299,20 @@ Run from PowerShell. The Reunion repository must have SDK
 ```powershell
 $reunionRepo = 'C:\Users\tommy\source\repos\Reunion'
 $concertableWorktree = 'C:\Users\tommy\source\repos\Concertable.worktrees\Feature\typed-result_reunion-integration'
-$reunionWorktree = 'C:\Users\tommy\source\repos\Reunion.worktrees\concertable-7bf5f66'
+$reunionWorktree = 'C:\Users\tommy\source\repos\Reunion.worktrees\concertable-e52129d'
 $feed = Join-Path $env:LOCALAPPDATA 'NuGet\Reunion-Concertable'
-$version = '0.1.0-local.concertable.1'
+$version = '0.1.0-local.concertable.2'
 
 New-Item -ItemType Directory -Force -Path $feed | Out-Null
 git -C $reunionRepo fetch origin --quiet
-git -C $reunionRepo worktree add --detach $reunionWorktree 7bf5f66
+git -C $reunionRepo worktree add --detach $reunionWorktree e52129d
 
 dotnet restore "$reunionWorktree\Reunion.slnx"
 dotnet pack "$reunionWorktree\src\Reunion\Reunion.csproj" `
+  -c Release --no-restore -p:Version=$version -p:PackageVersion=$version -o $feed
+dotnet pack "$reunionWorktree\src\Reunion.Errors\Reunion.Errors.csproj" `
+  -c Release --no-restore -p:Version=$version -p:PackageVersion=$version -o $feed
+dotnet pack "$reunionWorktree\src\Reunion.Errors.Extensions\Reunion.Errors.Extensions.csproj" `
   -c Release --no-restore -p:Version=$version -p:PackageVersion=$version -o $feed
 dotnet pack "$reunionWorktree\src\Reunion.AspNetCore\Reunion.AspNetCore.csproj" `
   -c Release --no-restore -p:Version=$version -p:PackageVersion=$version -o $feed
@@ -336,8 +340,9 @@ dotnet nuget why "$concertableWorktree\api\Concertable.Shared\src\Concertable.Ke
 dotnet nuget why "$concertableWorktree\api\Concertable.Shared\src\Concertable.Shared.Api\Concertable.Shared.Api.csproj" Reunion.AspNetCore
 ```
 
-The restore log must show the local feed supplying both exact packages; the AspNetCore `.nuspec` and
-`dotnet nuget why` output must show its dependency on the same Reunion version. Before any production
+The restore log must show the local feed supplying all four exact packages; the AspNetCore `.nuspec`
+must show exact dependencies on Reunion and Reunion.Errors, while Errors.Extensions must show exact
+dependencies on Reunion and Reunion.Errors. Before any production
 PR, replace the local version with the published version and restore without
 `RestoreAdditionalProjectSources`. A temporary committed battle-test pin may live locally on the
 reserved integration branch. It is not pushed; after Reunion publication, Phase 3 replaces it with
@@ -419,11 +424,11 @@ Use real B2B/Customer flows after the automated gate:
 
 ## Phases and verification gates
 
-### Phase 1 — Reconcile owners and battle-test packed commit `7bf5f66`
+### Phase 1 — Reconcile owners and battle-test merged release head `e52129d`
 
 - Confirm the recorded B2B/Auth/Customer/Ticket/HTTP owner inventory still matches the live worktrees
   before the first code edit; update the ledger if any head or dirty path changed.
-- Create the isolated integration worktree and local feed; pack and inspect both matching packages.
+- Create the isolated integration worktree and local feed; pack and inspect all four matching packages.
 - Add the local Reunion packages and additive Shared.Api overloads on the reserved integration branch;
   retain the old carriers so the complete published-package closure remains buildable, then run
   carrier plus Shared.Api parity tests.
@@ -432,14 +437,16 @@ Gate: local package provenance proven, Kernel 241/241 and Shared.Api 53/53 green
 build green, no machine-local configuration staged, and the published-package topology recorded as
 Shared expansion → Payment.Client migration → final consumer contraction.
 
-### Phase 2 — Publish Reunion packages
+### Phase 2 — Publish the Reunion package family
 
-- Publish matching `Reunion` and `Reunion.AspNetCore` version `0.1.0-alpha.1` packages built from the
-  reviewed Reunion commit `7bf5f66`; do not silently substitute later `origin/master` contents.
+- Publish matching `Reunion`, `Reunion.Errors`, `Reunion.Errors.Extensions`, and
+  `Reunion.AspNetCore` version `0.1.0-alpha.1` packages built from merged head `e52129d`; do not
+  publish the older two-package `7bf5f66` tree under the immutable release version.
 - Verify package contents, dependency version, both TFMs, clean package consumers, and feed
   availability from a clean cache.
 
-Gate: both packages are immutable and restorable from the production feed at the exact same version.
+Gate: all four packages are immutable and restorable from the production feed at the exact same
+version, with their dependency groups resolving only that version.
 
 ### Phase 3 — Additive Concertable Shared expansion
 
