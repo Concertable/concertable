@@ -3,7 +3,7 @@
 - Plan: `plans/dotnet-11/B2B_WORKFLOW_UNIONS_PLAN.md`
 - Worktree: not created
 - Branch: `Refactor/dotnet-11_b2b-workflow-unions` (reserved; not created)
-- PR: not opened
+- PR: #448 — https://github.com/Concertable/concertable/pull/448
 - Dependency/package gates: blocked on the terminal B2B typed-result lifecycle recorded in
   `plans/typed-result/B2B_PROGRESS.md`
 - Last reconciled: 2026-08-09 against `origin/main` `43fe1caf4`, the current typed-result/ReUnion
@@ -12,12 +12,12 @@
 ## Current state
 
 The roadmap, implementation plan, and this recovery ledger exist on the isolated docs-planning branch.
-The reviewed docs work head `85ab55794` is pushed and verified equal to
-`origin/Docs/dotnet-11_b2b-workflow-unions-plan`; no PR exists yet. The full docs review found three
+Docs-only PR #448 is open from verified head `cc2f7becf`; it targets `main`, carries `skip-e2e`, and its
+diff contains only the roadmap, plan, new ledger, and B2B owner ledger. The full docs review found three
 issues, all fixed in `44b435779`; the blocked-ledger reconciliation review found two more, all fixed in
-`0a7b0d181`; both incremental reviews were clean. The review watermark's full SHA was corrected during
-push verification. No implementation worktree, SDK installation, `global.json`, target-framework edit,
-workflow refactor, test run, package publication, or runtime deployment has occurred.
+`0a7b0d181`; both incremental reviews were clean. No implementation worktree, SDK installation,
+`global.json`, target-framework edit, workflow refactor, test run, package publication, or runtime
+deployment has occurred.
 
 The current design uses native unions only after ReUnion and the existing B2B typed-result work have
 landed. Published B2B contracts stay net10-compatible; the net11 boundary is the B2B runtime and its
@@ -27,10 +27,9 @@ does not introduce `IAcceptStep` or place step interfaces inside union cases.
 
 ## Next Steps
 
-Push this verified-work-head checkpoint to `origin/Docs/dotnet-11_b2b-workflow-unions-plan`, fetch and
-require local/remote equality, open the docs-only PR, add `skip-e2e`, and verify the PR head and four
-Markdown-only paths. Then checkpoint the PR identity and restore the structured B2B blocker before the
-admin merge.
+Blocked: The B2B typed-result checkpoints 6-7 source PR and every resulting publication/platform-sync gate are not yet terminal and green.
+Unblock action: The owner at `plans/typed-result/B2B_PROGRESS.md` must finish checkpoints 6-7, merge the source PR, follow every resulting publication/platform-sync gate to terminal green, then update this ledger.
+Resume when: Current main contains the merged B2B work and `plans/typed-result/B2B_PROGRESS.md` records the source PR and every resulting publication/platform-sync gate as terminal and green.
 
 ## Completed work
 
@@ -155,9 +154,17 @@ admin merge.
 - Follow-up: transport this checkpoint, open and verify the docs PR, then restore the implementation
   blocker before admin merge.
 
+### 2026-08-09 — docs PR opened and verified
+
+- Action: transported the push checkpoint, opened PR #448, added `skip-e2e`, and verified its identity
+  and diff.
+- Evidence: local, remote, and initial PR head `cc2f7becfcd7a66be755e9e2a1f85ec56afbb924`;
+  base `main`; head `Docs/dotnet-11_b2b-workflow-unions-plan`; exactly four Markdown paths.
+- Outcome: the reviewed docs-only PR is ready for the sanctioned admin merge, and the durable ledger
+  has returned to the implementation blocker that remains after delivery.
+- Follow-up: transport this PR-state checkpoint, reverify all heads/paths, and admin-merge PR #448.
+
 ## Resume prompt
 
-```text
-cd C:\Users\tommy\source\repos\Concertable.worktrees\Docs\dotnet-11_b2b-workflow-unions-plan
-Read @plans/dotnet-11/B2B_WORKFLOW_UNIONS_PLAN.md and @plans/dotnet-11/B2B_WORKFLOW_UNIONS_PROGRESS.md and do what its `## Next Steps` says.
-```
+Not emitted while `## Next Steps` carries the hard-blocker fields. When the gate opens, the B2B owner
+replaces the blocked state with an actionable Phase 0/1 handoff and restores the implementation pointer.
