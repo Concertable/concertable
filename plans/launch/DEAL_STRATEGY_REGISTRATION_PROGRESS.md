@@ -6,8 +6,8 @@
 - PR: not opened
 - Dependency/package gates: none; this is an internal B2B refactor
 - Last reconciled: 2026-08-09; all five implementation phases and the complete implementation code
-  review are complete; reviewed through `fb34f37b1` against `origin/main` at `43fe1caf4`; the branch
-  is 0 commits behind and this review checkpoint is the 22nd local commit ahead
+  review are complete; reviewed through `fb34f37b1` against base `43fe1caf4`; `origin/main` advanced
+  after the review to `98f5cc637`, leaving this drift checkpoint 16 commits behind and 23 ahead
 
 ## Current state
 
@@ -35,14 +35,18 @@ The implementation is committed as `4d4f44e0a`. The complete `code-review` range
 is recorded in `reviews/Refactor-launch_deal_strategy_registration.md`; native, security, correctness,
 microservice, module-boundary, seeding, convention, strategy-registration, architecture-gate, and
 changed-path test-coverage lenses found no issues. No PR exists and no package gate applies. The branch
-is current with `origin/main`; the review artifact and this ledger update are the only checkpoint paths.
+contains the clean review checkpoint `75001d1d1`. During final reconciliation, `origin/main` advanced to
+`98f5cc637` through 16 docs/plans-only commits with no path overlap against the reviewed branch diff.
+The implementation review remains valid, but the branch must merge that base drift before PR creation.
 
 ## Next Steps
 
 Open the reviewed implementation PR only:
 
-1. Fetch `origin`, confirm the review artifact is stamped through `fb34f37b17387dd398a3d1a8d6e3e31dfb0a2719`,
-   the branch remains current with `origin/main`, and no unrelated dirty path exists.
+1. Fetch `origin`, confirm no unrelated dirty path exists, merge current `origin/main` into this branch,
+   and verify it is 0 behind. The observed `43fe1caf4..98f5cc637` drift is docs/plans-only with no
+   reviewed-path overlap, so verify the merge preserves the reviewed implementation diff; no runtime
+   rebuild is required unless that evidence changes or the merge conflicts.
 2. Use `create-gh-pr` to push `Refactor/launch_deal_strategy_registration` and open its GitHub PR. This
    broad booking/payment/settlement refactor requires full merge-queue E2E; do not add a skip label or
    trailer.
@@ -174,6 +178,9 @@ Open the reviewed implementation PR only:
   added deal-type branch or inline logger, confined keyed lookup/frozen maps to their explicit
   allowlists, and found only same-service unit-test project references. No tests were rerun because the
   implementation state had not changed since its terminal green gates.
+- 2026-08-09: final post-review reconciliation found `origin/main` at `98f5cc637`, 16 commits ahead of
+  the branch. Those commits change only `plans/dotnet-11/**` and `plans/typed-result/B2B_PROGRESS.md`;
+  their path set has no overlap with `43fe1caf4..fb34f37b1`. No PR exists.
 
 ## Reviews
 
@@ -538,6 +545,18 @@ Open the reviewed implementation PR only:
 - Outcome: The implementation review gate is terminal green. No fixes are required, and PR creation is
   now the single resolved delivery action.
 - Follow-up: Push the reviewed branch and open its full-E2E implementation PR only.
+
+### 2026-08-09 — post-review base drift checkpointed
+
+- Action: Reconciled the local review checkpoint against refreshed remote-tracking and GitHub PR state
+  before handoff.
+- Evidence: review checkpoint `75001d1d1`; `origin/main` at `98f5cc637`; branch 16 commits behind and
+  22 commits ahead before this ledger checkpoint; no PR; clean worktree before this ledger update. The
+  new base commits are docs/plans-only and have no changed-path overlap with the reviewed branch range.
+- Outcome: The implementation review remains terminal green, but current-main reconciliation is now a
+  prerequisite of PR creation.
+- Follow-up: Merge current `origin/main`, verify the reviewed implementation diff is preserved, then
+  push and open the full-E2E implementation PR only.
 
 ## Resume prompt
 
