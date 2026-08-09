@@ -5,14 +5,14 @@
 - Branch: `Refactor/launch_deal_strategy_registration`
 - PR: not opened
 - Dependency/package gates: none; this is an internal B2B refactor
-- Last reconciled: 2026-08-09; Phase 3 is complete and verified in this commit after merging
-  `origin/main` at `2eb8bc4764` through merge commit `e929b46f15`
+- Last reconciled: 2026-08-09; Phase 3 is complete in commit `0a8320289`; post-commit fetch found
+  `origin/main` at `c72b058afe`, with the branch 13 commits behind and 12 commits ahead
 
 ## Current state
 
 Phases 1, 2, and 3 are complete. Phase 1 is in commit `506bc35e4`; Phase 2 is in commit
-`4a741fa50`; Phase 3 is in this commit after merging `origin/main` at `2eb8bc4764` through merge
-commit `e929b46f15`.
+`4a741fa50`; Phase 3 is in commit `0a8320289` after merging `origin/main` at `2eb8bc4764` through
+merge commit `e929b46f15`.
 
 The Concert module now registers terms, cohesive payee direction, payment projection, and settlement
 calculation vertically per `DealType`. `SettlementAmountResolver` delegates through the scoped generic
@@ -22,13 +22,16 @@ over a shared revenue-loading base and own their formulas directly. The duplicat
 
 Phase 3's Deal and Concert unit gates, Concert integration gate, and full-solution build are terminal
 green. No PR exists and no package gate applies. The work is verified against the branch after it
-merged `origin/main` at `2eb8bc4764` through merge commit `e929b46f15`.
+merged `origin/main` at `2eb8bc4764` through merge commit `e929b46f15`. A post-commit fetch found
+current `origin/main` at `c72b058afe`; the clean branch is now 13 commits behind and 12 commits ahead,
+so Phase 4 must merge that base drift before editing. No PR or open platform-sync PR exists.
 
 ## Next Steps
 
 Implement Phase 4 only — workflow composition convergence:
 
-1. Fetch `origin` and reconcile clean base drift before editing.
+1. Merge current `origin/main` at `c72b058afe` into the clean branch and rebuild the affected Concert
+   project graph before editing.
 2. Make the vertical builder the sole source for workflow keyed registration, workflow-type metadata,
    lifecycle state machines, and the migrated Concert strategy families.
 3. Retain `IConcertWorkflowFactory` as the named factory used by executors and checkout dispatch.
@@ -63,7 +66,7 @@ Do not begin Phase 5 in the same turn; hand back after the Phase 4 commit and le
 - Phase 3 migrated settlement calculation to four vertically registered leaves, collapsed the nested
   artist-share dispatch into DoorSplit and Versus leaves over one revenue-loading base, removed the
   duplicate Deal-entity formulae, and pinned all four gross amounts through unit and integration tests
-  in this commit.
+  in commit `0a8320289` (`refactor(concert): register settlement strategies`).
 
 ## Verification
 
@@ -338,8 +341,19 @@ Do not begin Phase 5 in the same turn; hand back after the Phase 4 commit and le
 - Evidence: Concert unit 117/117; Deal unit 9/9; B2B Concert integration 144/144; Customer Concert
   integration 11/11; full `api/Concertable.slnx` build 0 errors; removed symbols absent from `api/`;
   `git diff --check` clean.
-- Outcome: Phase 3 is complete in this commit with no open findings and no Phase 4 source changes.
+- Outcome: Phase 3 is complete in commit `0a8320289` with no open findings and no Phase 4 source
+  changes.
 - Follow-up: Implement Phase 4 only.
+
+### 2026-08-09 — post-commit base drift checkpointed
+
+- Action: Verified the Phase 3 commit and clean worktree, then fetched `origin` to reconcile delivery
+  identity before handoff.
+- Evidence: Phase 3 commit `0a8320289`; `origin/main` at `c72b058afe`; branch 13 commits behind and
+  12 commits ahead; no PR and no open platform-sync PR.
+- Outcome: Phase 3 remains complete and verified against its merged base; Phase 4 must first merge the
+  newly advanced `origin/main` and rebuild affected projects.
+- Follow-up: Reconcile the clean branch with current `origin/main`, then implement Phase 4 only.
 
 ## Resume prompt
 
