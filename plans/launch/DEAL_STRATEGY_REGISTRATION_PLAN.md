@@ -120,10 +120,9 @@ Nine hand-written frozen maps currently repeat the same dispatch mechanism:
 | Concert | `ArtistShareCalculator` | DoorSplit/Versus only |
 | Concert | `SettlementAmountResolver` | all four → three implementations |
 
-Workflow selection adds keyed DI, a workflow CLR-type registry, and a state-machine registry, but these
-are already derived from the single `AddConcertWorkflows` builder. The refactor extends that
-single-declaration property to the remaining Concert strategies instead of replacing it with another
-parallel mechanism.
+Workflow selection uses keyed DI, a workflow CLR-type registry, and a state-machine registry. These and
+the remaining Concert strategies are now derived from the same vertical per-`DealType` registration
+block rather than parallel builders.
 
 There are no production `switch (dealType)` or `DealType == ...` business rules to preserve or migrate.
 Runtime type/union matching inside a selected workflow is a different dispatch axis and remains legal.
@@ -404,7 +403,7 @@ Verification gate:
 - `dotnet build api/Concertable.slnx` — 0 errors.
 - Deal and Concert unit/integration tests via `integration-debug`.
 
-### Phase 4 — Workflow composition convergence
+### Phase 4 — Workflow composition convergence ✅
 
 - Make the vertical builder the sole source for workflow keyed registration, workflow-type metadata,
   lifecycle state machines, and the migrated Concert strategy families.

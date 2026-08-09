@@ -5,43 +5,45 @@
 - Branch: `Refactor/launch_deal_strategy_registration`
 - PR: not opened
 - Dependency/package gates: none; this is an internal B2B refactor
-- Last reconciled: 2026-08-09; Phase 3 is complete in commit `0a8320289`; post-commit fetch found
-  `origin/main` at `c72b058afe`, with the branch 13 commits behind and 12 commits ahead
+- Last reconciled: 2026-08-09; Phase 4 is complete in this commit after merging current
+  `origin/main` at `c72b058afe` through merge commit `dff81e44e`; the branch is 0 commits behind
 
 ## Current state
 
-Phases 1, 2, and 3 are complete. Phase 1 is in commit `506bc35e4`; Phase 2 is in commit
-`4a741fa50`; Phase 3 is in commit `0a8320289` after merging `origin/main` at `2eb8bc4764` through
-merge commit `e929b46f15`.
+Phases 1, 2, 3, and 4 are complete. Phase 1 is in commit `506bc35e4`; Phase 2 is in commit
+`4a741fa50`; Phase 3 is in commit `0a8320289`; Phase 4 is in this commit after merging
+`origin/main` at `c72b058afe` through merge commit `dff81e44e`.
 
 The Concert module now registers terms, cohesive payee direction, payment projection, and settlement
-calculation vertically per `DealType`. `SettlementAmountResolver` delegates through the scoped generic
-factory. FlatFee and VenueHire retain stateless singleton leaves; DoorSplit and Versus use scoped leaves
-over a shared revenue-loading base and own their formulas directly. The duplicate
-`ArtistShareCalculator` dispatch and Deal-entity calculation methods are gone.
+calculation, workflows, workflow CLR metadata, lifecycle state machines, and workflow capabilities
+vertically per `DealType`. The strategy builder validates the complete graph before mutating DI;
+workflow steps are registered once, and both registries are derived from the same workflow definitions.
+`IConcertWorkflowFactory` remains the named business factory and delegates through the generic strategy
+factory, leaving the module-local generic factory as the only keyed-service lookup.
 
-Phase 3's Deal and Concert unit gates, Concert integration gate, and full-solution build are terminal
-green. No PR exists and no package gate applies. The work is verified against the branch after it
-merged `origin/main` at `2eb8bc4764` through merge commit `e929b46f15`. A post-commit fetch found
-current `origin/main` at `c72b058afe`; the clean branch is now 13 commits behind and 12 commits ahead,
-so Phase 4 must merge that base drift before editing. No PR or open platform-sync PR exists.
+Phase 4's Concert unit gate, Concert integration gate, and full-solution build are terminal green.
+No PR exists and no package gate applies. The work is verified against the branch after it merged
+current `origin/main` through `dff81e44e`; no unrelated dirty paths were present before Phase 4.
 
 ## Next Steps
 
-Implement Phase 4 only — workflow composition convergence:
+Implement Phase 5 only — Deal-module families and convention cleanup:
 
-1. Merge current `origin/main` at `c72b058afe` into the clean branch and rebuild the affected Concert
-   project graph before editing.
-2. Make the vertical builder the sole source for workflow keyed registration, workflow-type metadata,
-   lifecycle state machines, and the migrated Concert strategy families.
-3. Retain `IConcertWorkflowFactory` as the named factory used by executors and checkout dispatch.
-4. Keep the capability registry operational until the separate union migration replaces it.
-5. Add startup/architecture tests proving every `DealType` has exactly one workflow and state machine.
-6. Run the Phase 4 Concert unit/integration gates and `dotnet build api/Concertable.slnx` using short
-   artifacts roots.
-7. Review the final diff, update this ledger, check off Phase 4, and commit that verified phase.
+1. Add the Deal-local strategy factory and validated vertical builder, then migrate `DealMapper` and
+   `DealUpdater` without introducing a Concert runtime reference or cross-module registry.
+2. Preserve EF TPH creation/update validation and JSON-polymorphic contract shapes.
+3. Delete the unused `IDealStrategy` marker and correct the stale Deal architecture claim that Payment
+   still provides `IStripeValidationStrategy`.
+4. Update `api/agents/CODE_PATTERNS.md` with the module-local factory/builder pattern and the established
+   factory/resolver/mapper/renderer/serializer/calculator suffix distinctions.
+5. Add the planned architecture gate for frozen maps, direct keyed-service use, exact family coverage,
+   and the module-local factory lookup allowlist.
+6. Run Deal and Concert unit/integration gates plus `dotnet build api/Concertable.slnx` with short
+   artifact roots; the merge queue, not local execution, owns the required full E2E tier.
+7. Review the final diff, update this ledger, check off Phase 5, and commit that verified phase.
 
-Do not begin Phase 5 in the same turn; hand back after the Phase 4 commit and ledger checkpoint.
+Do not begin review or delivery in the same turn; hand back after the Phase 5 commit and ledger
+checkpoint.
 
 ## Completed work
 
@@ -67,6 +69,10 @@ Do not begin Phase 5 in the same turn; hand back after the Phase 4 commit and le
   artist-share dispatch into DoorSplit and Versus leaves over one revenue-loading base, removed the
   duplicate Deal-entity formulae, and pinned all four gross amounts through unit and integration tests
   in commit `0a8320289` (`refactor(concert): register settlement strategies`).
+- Phase 4 folded keyed workflow registration, workflow CLR metadata, lifecycle state machines, steps,
+  and capability metadata into the same validated per-`DealType` builder as the migrated Concert
+  strategy families. The obsolete parallel registry builder and `AddConcertWorkflows` composition path
+  are gone, and the named workflow factory delegates through the generic strategy factory.
 
 ## Verification
 
@@ -124,6 +130,19 @@ Do not begin Phase 5 in the same turn; hand back after the Phase 4 commit and le
 - 2026-08-09: `git diff --check` passed; removed settlement calculator/type names and
   `CalculateArtistShare` have no remaining `api/` references; the final Phase 3 diff review found no
   open findings.
+- 2026-08-09: after merging `origin/main` at `c72b058afe` through `dff81e44e`, both affected Concert
+  unit and integration project graphs built with 0 errors before Phase 4 edits.
+- 2026-08-09: `dotnet test` for `Concertable.B2B.Concert.UnitTests` passed 132/132 on the final Phase 4
+  source.
+- 2026-08-09: `./scripts/integration.ps1 concert --artifacts-path
+  C:\Users\tommy\AppData\Local\Temp\Concertable\launch-deal-strategy-phase4-integration-final`
+  passed both projects on the final source: B2B Concert 144/144 and Customer Concert 11/11.
+- 2026-08-09: `dotnet build api/Concertable.slnx --artifacts-path
+  C:\Users\tommy\AppData\Local\Temp\Concertable\launch-deal-strategy-phase4-solution-final`
+  succeeded with 0 errors and 9 existing nullable/generated-code warnings.
+- 2026-08-09: `git diff --check` passed; the removed workflow composition API has no remaining
+  `api/` references; direct keyed lookup remains confined to the generic strategy factory and its
+  focused tests; the final Phase 4 diff review found no open findings.
 
 ## Reviews
 
@@ -137,6 +156,10 @@ Do not begin Phase 5 in the same turn; hand back after the Phase 4 commit and le
 - Phase 3 implementation self-review covered exact keyed coverage, scoped repository dependencies,
   shared revenue loading, formula ownership, independent amount assertions, removed-symbol coverage,
   and documentation accuracy; no open findings remain.
+- Phase 4 implementation self-review covered atomic DI mutation, exact workflow/state-machine coverage,
+  workflow lifetime and named-factory semantics, immutable capability metadata, preserved capability
+  behavior, removed parallel registration paths, test-fixture scope validation, and documentation
+  accuracy; no open findings remain.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -180,6 +203,13 @@ Do not begin Phase 5 in the same turn; hand back after the Phase 4 commit and le
   terminated after eight hours. An immediate full-module diagnostic rerun crossed the same boundary
   and passed 155/155 with a five-minute blame-hang detector; this was a non-reproducing host/test-runner
   hang, so no product, retry, or timeout change was justified.
+- Workflow definitions now accumulate transitions and step types without touching `IServiceCollection`;
+  the enclosing strategy builder validates exact coverage and lifetimes before emitting keyed workflows,
+  deduplicated scoped steps, frozen workflow metadata, and state-machine registries.
+- Targeted strategy unit fixtures intentionally retain scope validation but no longer request whole-graph
+  `ValidateOnBuild`: the production registration now includes workflows whose unrelated runtime
+  dependencies are absent from those partial fixtures. The composition tests prove exact declarations,
+  and the real integration host validates the complete startup graph.
 
 ## Event log
 
@@ -354,6 +384,40 @@ Do not begin Phase 5 in the same turn; hand back after the Phase 4 commit and le
 - Outcome: Phase 3 remains complete and verified against its merged base; Phase 4 must first merge the
   newly advanced `origin/main` and rebuild affected projects.
 - Follow-up: Reconcile the clean branch with current `origin/main`, then implement Phase 4 only.
+
+### 2026-08-09 — Phase 4 base reconciled
+
+- Action: Fetched `origin`, verified the dedicated worktree was clean and correctly owned by the plan
+  branch, confirmed no PR or open platform-sync PR existed, merged current `origin/main`, and rebuilt
+  the affected Concert unit and integration project graphs.
+- Evidence: merge commit `dff81e44e`; `origin/main` at `c72b058afe`; both affected builds completed
+  with 0 errors; no unrelated dirty paths existed before Phase 4 edits.
+- Outcome: Phase 4 started against the current base with the requested worktree and Concert ownership
+  confirmed.
+- Follow-up: Implement and verify workflow composition convergence only.
+
+### 2026-08-09 — Phase 4 partial-DI unit fixtures corrected
+
+- Action: Ran the Concert unit gate, traced the failures to partial strategy fixtures asking
+  `ValidateOnBuild` to construct the newly included workflow graph without its runtime dependencies,
+  retained scoped-provider validation in those fixtures, and reran the full project.
+- Evidence: the initial run failed only during service-provider construction; the final exact-tree run
+  passed 132/132. Production integration startup subsequently resolved the complete workflow graph.
+- Outcome: Targeted unit fixtures validate the scope behavior they own, while composition tests and the
+  real host retain full workflow registration coverage.
+- Follow-up: Complete integration, solution-build, and final review gates.
+
+### 2026-08-09 — Phase 4 verified and checkpointed
+
+- Action: Converged workflow keyed registration, CLR metadata, state machines, capabilities, and steps
+  into the validated vertical strategy builder; routed the named workflow factory through the generic
+  factory; removed the parallel registry builder; added exact-coverage/capability tests; updated the
+  workflow architecture; and completed the final review.
+- Evidence: Concert unit 132/132; B2B Concert integration 144/144; Customer Concert integration 11/11;
+  full `api/Concertable.slnx` build 0 errors; removed workflow composition names absent from `api/`;
+  direct keyed lookup confined to the generic factory and focused tests; `git diff --check` clean.
+- Outcome: Phase 4 is complete in this commit with no open findings and no Phase 5 source changes.
+- Follow-up: Implement Phase 5 only.
 
 ## Resume prompt
 
