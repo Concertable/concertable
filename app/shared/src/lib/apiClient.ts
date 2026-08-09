@@ -1,14 +1,10 @@
 import axios, {
+  isAxiosError,
   type AxiosInstance,
   type AxiosRequestConfig,
   type AxiosResponse,
 } from "axios";
-
-declare module "axios" {
-  interface AxiosRequestConfig {
-    notFoundAsNull?: boolean;
-  }
-}
+import { isApiError } from "./apiError";
 
 export type ApiClient = AxiosInstance & {
   getOptional<T = unknown, D = unknown>(
@@ -19,14 +15,19 @@ export type ApiClient = AxiosInstance & {
 
 export function createApiClient(): ApiClient {
   const client = axios.create() as ApiClient;
-  client.getOptional = <T = unknown, D = unknown>(
+  client.getOptional = async <T = unknown, D = unknown>(
     url: string,
     config?: AxiosRequestConfig<D>,
-  ) =>
-    client.get<T | null, AxiosResponse<T | null, D>, D>(url, {
-      ...config,
-      notFoundAsNull: true,
-    });
+  ): Promise<AxiosResponse<T | null, D>> => {
+    try {
+      return await client.get<T, AxiosResponse<T, D>, D>(url, config);
+    } catch (error) {
+      const requestError = isApiError(error) ? error.cause : error;
+      if (isAxiosError(requestError) && requestError.response?.status === 404)
+        return { ...requestError.response, data: null };
+      throw error;
+    }
+  };
   return client;
 }
 

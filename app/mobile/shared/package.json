@@ -11,7 +11,8 @@
   "files": [
     "dist",
     "global.css",
-    "nativewind-env.d.ts"
+    "nativewind-env.d.ts",
+    "assets"
   ],
   "scripts": {
     "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",

@@ -54,8 +54,18 @@ describe("configureClient", () => {
     expect(error.message).toBe("Unavailable");
   });
 
-  it("resolves an optional 404 as null", async () => {
+  it("resolves an optional 404 as null after client configuration", async () => {
     const { client } = createConfiguredClient();
+
+    const response = await client.getOptional<{ id: number }>("/missing");
+
+    expect(response.status).toBe(404);
+    expect(response.data).toBeNull();
+  });
+
+  it("resolves an optional 404 as null without auth configuration", async () => {
+    const client = createApiClient();
+    configureClient(client, baseURL);
 
     const response = await client.getOptional<{ id: number }>("/missing");
 
@@ -81,5 +91,15 @@ describe("configureClient", () => {
       status: 401,
     });
     expect(onUnauthorized).toHaveBeenCalledOnce();
+  });
+
+  it("maps non-404/401 errors to ApiError", async () => {
+    const { client } = createConfiguredClient();
+
+    await expect(client.get("/other")).rejects.toMatchObject({
+      name: "ApiError",
+      status: 503,
+      details: { detail: "Unavailable" },
+    });
   });
 });

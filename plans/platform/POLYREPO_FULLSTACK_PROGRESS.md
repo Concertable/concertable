@@ -1,11 +1,11 @@
 # Full-stack polyrepo — frontend build separation progress
 
 - Plan: `plans/platform/POLYREPO_FULLSTACK_PLAN.md`
-- Worktree: the `Feature/platform_polyrepo_carved-css` worktree is **pruned** (its PR #405 merged); this closeout ran in `Docs/polyrepo_carved-css_closeout`. The remaining Phase 3 items (mobile retarget, ESLint boundary) each start on their own fresh branch/worktree off `origin/main`.
-- Branch: `Feature/platform_polyrepo_carved-css` **MERGED** into `main` as `d9c62e2c5`. Stale; do not build on it.
-- PR: **carved-web CSS PR [#405](https://github.com/Concertable/concertable/pull/405) MERGED** (`d9c62e2c5`, 2026-08-06). Rode out a ~1h **GitHub Actions platform outage** (`Service Unavailable` resolving action-download info) that failed 4 merge_group formations at the `changes` gate; once GitHub recovered the queue re-formed clean and merged (16:42Z). **Phase 3b [#389](https://github.com/Concertable/concertable/pull/389) MERGED** (`1cbeb2175`) + closeout [#398]; Phase 3a [#378] (`fba490e25`); Phase 2 [#360] (`a3f9535`); Phase 1 [#301]+[#319].
-- Dependency/package gates: **DONE** — `publish-fe-packages` run [31120764923] (2026-08-06T16:42Z, on the #405 merge) **republished all 5 FE tiers with the fixed `index.css` (success)**, so the fix is now effective in carved surfaces. No `api/**` → no backend platform-sync (open `chore/platform-sync-0.1.0-alpha.0.841` #409 is another PR's api sync, not ours).
-- Last reconciled: 2026-08-07 — carved-web CSS item **fully terminal** (merged + republished green); feature worktree pruned. Remaining: Phase 3 mobile retarget + ESLint boundary, each on a fresh branch.
+- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-polyrepo-mobile-carve-closeout` — clean closeout checkout created from `origin/main` @ #416 merge `83a3f49a1`.
+- Branch: `Docs/platform_polyrepo_mobile-carve_closeout` — carries only the verified post-PR ledger observation tail for recovery and handoff.
+- PR: **mobile-carve PR [#416](https://github.com/Concertable/concertable/pull/416) MERGED as `83a3f49a1`** from reviewed remote head `74b9743d8`; exact full-E2E merge-group run [31204805838](https://github.com/Concertable/concertable/actions/runs/31204805838) completed successfully. Prior publish-first mobile-retarget PR [#413](https://github.com/Concertable/concertable/pull/413) merged as `62646f4cd` and republished `@concertable/mobile@0.1.0-alpha.0.2571`; carved-web CSS [#405] (`d9c62e2c5`); Phase 3b [#389] (`1cbeb2175`); Phase 3a [#378] (`fba490e25`); Phase 2 [#360] (`a3f9535`); Phase 1 [#301]+[#319].
+- Dependency/package gates: **#413 FE publication DONE** — successful descendant run [31197751649](https://github.com/Concertable/concertable/actions/runs/31197751649) published and feed-verified `@concertable/mobile@0.1.0-alpha.0.2571` with the brand assets. This unblocks the follow-up mobile carve gate. No `api/**` → no backend platform-sync.
+- Last reconciled: 2026-08-07 — the three ledger-only post-PR commits were transferred and verified; the clean merged feature worktree and local branch were removed, and fetch-prune confirmed GitHub had already removed the remote branch. Next: start the separate Phase 3 FE import-boundary sub-project on a fresh feature worktree.
 
 ## Current state
 
@@ -13,14 +13,18 @@ Phases 0, 1, 2, **3a, and 3b are on `main`**. Phase 3a (PR #378, merge `fba490e2
 
 **Carved-web CSS `@source` strategy — MERGED (#405, `d9c62e2c5`) + republished. TERMINAL.** `app/web/shared/src/index.css` adds two dist-scanning `@source` globs (`../dist/**/*.js` for the `@concertable/web` tier — same offset from the file in both layouts; `../../b2b/dist/**/*.js` for `@concertable/b2b`). The existing sibling-`src` globs are kept: each is inert in the layout it doesn't belong to, and Tailwind silently ignores an `@source` matching nothing, so both sets coexist. Only `@concertable/{web,b2b}` carry web class strings (shared/customer tier dists have 0 classNames — logic-only). Proven by a local carved-layout vite build (tiers packed into `node_modules`): the tier canary classes go from **absent (baseline) → present (fixed)** for customer (`@concertable/web`) and venue (`@concertable/web` + `@concertable/b2b`).
 
-**Phase 3 remaining (runtime/carve deferrals — see Next Steps):** mobile metro/nativewind/tailwind retarget (+ a mobile carve), and the ESLint import-boundary rule. Neither is blocked; each starts on a fresh branch off `origin/main`.
+**Mobile retarget + asset fix — MERGED (#413, `62646f4cd`) + republished.** (a) Both `app/mobile/{customer,b2b}` `metro.config.js` (`watchFolders` + NativeWind `input`) and `tailwind.config.js` (`content`) now `require.resolve("@concertable/mobile/…")` + scan the package's compiled `dist/**/*.js` instead of the `../shared` sibling; `App.tsx` imports `@concertable/mobile/global.css`. `@concertable/mobile` is the only className-bearing mobile tier (208 vs 0). (b) **Pre-existing tier bug fixed:** `@concertable/mobile`'s `Logo` `require`d `assets/brand/logo*.png` that the package never shipped (`files` lacked `assets`) and that physically lived outside the package (`app/mobile/assets/`), so the path resolved nowhere in-monorepo OR carved — the mobile app had never actually been bundled, only `tsc`'d. Moved `brand/` into the tier (`app/mobile/shared/assets/`, making the existing `../../../assets/brand` path correct) + `files` += `assets`; app-icon assets (icon/splash/adaptive/favicon) stay at `app/mobile/assets/` (surface `app.json`). (c) `carve-fe.mjs`'s mobile branch runs `expo export` after `tsc --noEmit`; the carve job is renamed `carve-fe-web` → `carve-fe`. The published fixed tier is feed-verified at `@concertable/mobile@0.1.0-alpha.0.2571`.
+
+**Mobile carve gate — MERGED (#416, `83a3f49a1`).** Both `mobile/customer` and `mobile/b2b` restored
+the published tiers from the feed, type-checked, and completed `expo export` on the PR head and in the
+successful full-E2E merge-group run 31204805838. The resolved mobile bundling entry has been removed
+from `app/mobile/TECH_DEBT.md`.
+
+**Phase 3 remaining:** the ESLint import-boundary rule.
 
 ## Next Steps
 
-The carved-web CSS strategy is **merged and republished** (#405 → `d9c62e2c5`; see Current state). Remaining Phase 3 items — start each on a **fresh branch off current `origin/main`** (fetch first):
-
-1. **Mobile metro/nativewind/tailwind retarget** off `../shared` onto `@concertable/mobile` (`watchFolders`, nativewind `input`, tailwind `content`), proven by `expo export` on the precompiled dist; then add `mobile/{customer,b2b}` to the `carve-fe-web` matrix (or a sibling `carve-fe-mobile`).
-2. **FE import-boundary rule** — no ESLint/dependency-cruiser toolchain in `app/` yet; the carve CI is the primary structural boundary today (BE parity: carve = structural gate, build-time guard = fast second layer). Standing up ESLint `no-restricted-imports` across surfaces is a separate sub-project.
+**1. FE import-boundary rule.** In a fresh `Feature/platform_polyrepo_import-boundary` worktree from current `origin/main`, first confirm no red platform-sync PR, then implement the Phase 3 rule preventing any FE surface from importing another surface's or an unpublished tier's source. There is no ESLint/dependency-cruiser toolchain in `app/` yet; select and establish the durable repository-wide enforcement layer, cover all web and mobile surfaces, and prove the rule plus all six carve jobs/builds without weakening the existing structural gate.
 
 Then Phase 4 (FE platform-sync) and Phase 5 (produce full-stack repos, D-A/D-B) per the plan.
 Gate: each item ends with its own green carve/build proof on its PR.
@@ -41,6 +45,13 @@ Gate: each item ends with its own green carve/build proof on its PR.
 
 ## Verification
 
+- **Mobile carve matrix implementation (2026-08-07):** `.github/workflows/test.yml` now lists all six
+  surfaces, including `mobile/customer` and `mobile/b2b`; the existing classifier self-triggers
+  `run_fe=true` when `test.yml` changes; `git diff --check` passes. The local shell has neither PyYAML
+  nor Node on `PATH`, so the PR's own workflow parse plus its two new matrix jobs are the authoritative
+  executable proof. On PR #416 run 31202906691, both `carve-fe (mobile/customer)` and
+  `carve-fe (mobile/b2b)` completed successfully at remote head `f0fbd4e6a`.
+
 - **Phase 2 gate (2026-08-05, this branch):** `npm run build:packages` builds all five tiers to dist
   (exit 0). All four web builds green (`npm -w @concertable/web-{customer,venue,artist,business} run
   build` = `tsc -b && vite build`). Both mobile `tsc --noEmit` = 0 errors. Grep-clean: no `../shared/src`
@@ -59,6 +70,11 @@ Gate: each item ends with its own green carve/build proof on its PR.
 - After merging latest `origin/main` at `d0fa851fa`, the same diff, Git Bash syntax, fail-closed, and successful-label checks passed; the branch was zero commits behind and the PR diff remained the four review-fix files plus this ledger.
 
 ## Reviews
+
+- **Mobile carve gate full code review:** `reviews/Feature-platform_polyrepo_mobile-carve.md`, range
+  `59bdd7a8a..e64245e51` (18 commits), watermark `e64245e5192ccbccb30a5fd54d687ca05170c321`.
+  No findings; the changed runtime path is CI-only, both new matrix keys are implemented by the existing
+  harness, and PR #416 proved both feed-restored Expo exports. Backend lenses are N/A (no `api/**`).
 
 - Review: Phase 1 post-merge review of the work delivered by PR #301 at `7c9a64a3e`. The exact review artifact, original finding identifiers, and narrower review range are not present in git, GitHub PR comments, or the preserved orphaned directory, so they are not fabricated here.
 - Finding reference unavailable — fail-open PR-label lookup: fixed by `f57a4c504`.
@@ -82,6 +98,196 @@ Gate: each item ends with its own green carve/build proof on its PR.
 - **Metro/nativewind/tailwind runtime configs left for Phase 3.** The Phase 2 gate is build + typecheck; the mobile app's metro `watchFolders`/nativewind `input`/tailwind `content` still point at `../shared` source. The app already resolves `@concertable/shared`/`customer` as symlinked packages the same way, so no in-monorepo runtime regression, but className/class-generation on the precompiled dist is unproven — a first-class Phase 3 item, not a silent gap.
 
 ## Event log
+
+### 2026-08-07 — merged #416 feature worktree and branches removed
+
+- Action: Verified the source checkout was clean and its post-PR range changed only the transferred ledger, removed the exact feature worktree, and deleted its local branch.
+- Evidence: source HEAD `288ad3335`; `74b9743d8..288ad3335` named only `plans/platform/POLYREPO_FULLSTACK_PROGRESS.md`. Remote deletion reported the ref already absent; `git fetch origin --prune` removed the stale tracking ref.
+- Outcome: #416 is fully closed out with recovery anchored solely in this docs worktree; its CI/docs-only merge has no FE publication or backend platform-sync consequence.
+- Follow-up: end this completed sub-project at its handoff; next invocation starts the Phase 3 FE import-boundary sub-project on a fresh feature worktree.
+
+### 2026-08-07 — #416 recovery transferred to the closeout worktree
+
+- Action: Created this clean docs closeout branch from current `origin/main` at merge `83a3f49a1` and cherry-picked the three post-PR observation commits in order.
+- Evidence: source range `74b9743d8..288ad3335` changes only `plans/platform/POLYREPO_FULLSTACK_PROGRESS.md`; source commit `288ad3335` and transferred head `12565ddec` resolve that ledger to the identical blob `53f7f59201765c6965491fe108331e18fd71f4b2` before this identity update.
+- Outcome: the plan recovery state now lives independently of the merged feature worktree.
+- Follow-up: remove the clean merged feature worktree and branch, checkpoint the cleanup here, then hand off the ESLint import-boundary sub-project.
+
+### 2026-08-07 — #416 merged through the full-E2E merge queue
+
+- Action: Followed the exact merge-group run through its terminal result without retrying or weakening the gate.
+- Evidence: run [31204805838](https://github.com/Concertable/concertable/actions/runs/31204805838), branch `gh-readonly-queue/main/pr-416-b46d10ec873cada34e62083d8c9cedbda080160b`, completed `success`; PR #416 then reported `MERGED` with merge commit `83a3f49a194c5faff60b7912d7c9b8452679f6f0`.
+- Outcome: the definitive customer and B2B mobile carve gates are on `main`; no publication or platform-sync gate follows this CI/docs-only merge.
+- Follow-up: transfer the ledger-only observation tail to a docs closeout worktree, remove the merged feature worktree/branch, and hand off the separate ESLint import-boundary sub-project.
+
+### 2026-08-07 — #416 admitted to the merge queue at position 1
+
+- Action: Applied the sanctioned one-time auto-merge disable/re-enable using the repository-selected queue method, then queried GraphQL directly.
+- Evidence: PR remains at reviewed remote head `74b9743d8`; `mergeQueueEntry.state=QUEUED`, `position=1`; `autoMergeRequest=null` after queue consumption.
+- Outcome: #416 is admitted to the full-E2E merge queue with no source-head mutation.
+- Follow-up: monitor the exact merge-group formation to merge or terminal failure without retrying a failed run.
+
+### 2026-08-07 — #416 terminal green but never admitted to the merge queue
+
+- Action: Waited for every PR-head check to become terminal, then reconciled PR state, queue entry, labels, and merge-group history for the exact reviewed remote head.
+- Evidence: PR #416 `OPEN/CLEAN`, head `74b9743d8`, all PR checks green; branch 0 behind `origin/main`; no `skip-e2e`/`skip-e2e-ui` labels or trailers; auto-merge enabled at `2026-08-07T17:34:20Z`; GraphQL `mergeQueueEntry=null`; no recent merge-group branch matching `/pr-416-`.
+- Outcome: sustained green-but-unadmitted GitHub re-evaluation glitch confirmed. Full queue E2E remains required; no CI failure exists.
+- Follow-up: apply the sanctioned one-time disable/re-enable and verify actual queue admission before waiting.
+
+### 2026-08-07 — clean review head pushed and verified
+
+- Action: Pushed the committed review artifact and its plan review record to PR #416.
+- Evidence: local HEAD, `origin/Feature/platform_polyrepo_mobile-carve`, and PR #416 `headRefOid` all equal `6433eae7784ab0d8595b041c35252a47d72dfd88` after fetch.
+- Outcome: the remote PR contains the clean review artifact; this ledger checkpoint is the sole local tail.
+- Follow-up: transport this checkpoint, verify equality, then execute the merge workflow.
+
+### 2026-08-07 — PR #416 full code review completed with no findings
+
+- Action: Reviewed the complete branch diff through correctness, service/module boundaries, seeding, C# convention, and changed-behaviour coverage lenses.
+- Evidence: `reviews/Feature-platform_polyrepo_mobile-carve.md`; range `59bdd7a8a..e64245e51` (18 commits); stamped watermark `e64245e5192ccbccb30a5fd54d687ca05170c321`; no findings. The CI matrix keys map to existing harness entries, `run_fe` self-triggers, `ci-complete` requires `carve-fe`, and both new jobs are green.
+- Outcome: PR #416 is review-clean and ready for the merge workflow after the review checkpoint is pushed.
+- Follow-up: commit and push the review checkpoint with verified PR-head equality, then merge #416 through the queue.
+
+### 2026-08-07 — checkpoint transport verified; replacement mobile carves green
+
+- Action: Transported the resolved-debt push checkpoint, verified all branch/PR refs, and monitored the two replacement mobile matrix jobs on the resulting PR head.
+- Evidence: local HEAD, remote branch, and PR #416 `headRefOid` all `b1107da10369b28137b179e17040a80678557e93`; run 31203455635 completed `carve-fe (mobile/customer)` and `carve-fe (mobile/b2b)` successfully.
+- Outcome: the final remote PR content is green for both definitive mobile Expo exports and ready for code review.
+- Follow-up: finalize the branch review, checkpoint it, and hand the reviewed PR to the merge workflow.
+
+### 2026-08-07 — resolved-debt work head pushed and verified
+
+- Action: Pushed the compound branch head containing the PR observation checkpoints plus the resolved debt deletion.
+- Evidence: local HEAD, `origin/Feature/platform_polyrepo_mobile-carve`, and PR #416 `headRefOid` all equal `7223c1c6a7fa2df2aeb7510e04f147446e2322fd` after fetch.
+- Outcome: PR #416 now contains the mobile carve gate and the mechanically justified removal of its resolved tech-debt entry; this ledger checkpoint is the sole local tail.
+- Follow-up: transport this checkpoint, verify equality again, then follow replacement mobile checks and code-review the final head.
+
+### 2026-08-07 — resolved mobile bundling tech debt removed
+
+- Action: Deleted the sole entry in `app/mobile/TECH_DEBT.md` after its exact resolution gate passed; because no other entries remain, the whole area debt file is removed.
+- Evidence: PR #416 run 31202906691 has both mobile carve jobs `completed/success`, satisfying the entry's `Resolves when` condition verbatim.
+- Outcome: no resolved mobile-bundling debt remains in the working tree; Phase 3's only outstanding implementation item after #416 is the separate ESLint import-boundary sub-project.
+- Follow-up: commit and push this closeout through the compound plan push protocol, confirm replacement carves, then code-review #416.
+
+### 2026-08-07 — both definitive mobile carve jobs passed on PR #416
+
+- Action: Monitored the two exact mobile matrix jobs on Actions run 31202906691 at recorded PR head `f0fbd4e6a`.
+- Evidence: `carve-fe (mobile/customer)` job 92946961325 = `completed/success`; `carve-fe (mobile/b2b)` job 92946961363 = `completed/success`. The containing run remained in progress only because other jobs were still executing, so job logs were not yet available for extraction.
+- Outcome: both mobile surfaces have restored their dependencies from the feed, type-checked, and completed `expo export`; the mobile bundling tech debt's mechanical resolution gate is met.
+- Follow-up: delete the resolved debt entry, push the compound docs/checkpoint update, confirm replacement checks, and code-review the final PR head.
+
+### 2026-08-07 — mobile carve gate PR #416 opened
+
+- Action: Transported the verified push checkpoint, confirmed local/remote equality, and opened the plain GitHub PR from `Feature/platform_polyrepo_mobile-carve` to `main`.
+- Evidence: local HEAD and `origin/Feature/platform_polyrepo_mobile-carve` both `f0fbd4e6a8ed1629075113c4a21f0694a028a0dc`; PR [#416](https://github.com/Concertable/concertable/pull/416) is `OPEN`, base `main`, head `f0fbd4e6a`, title `ci(mobile): gate carved apps with Expo exports`.
+- Outcome: CI now owns the definitive feed-restored Expo export proof for both mobile surfaces. No E2E label was set at creation.
+- Follow-up: follow both new mobile matrix jobs to green; diagnose and fix any real bundle failure without weakening the gate.
+
+### 2026-08-07 — mobile carve work head pushed and verified
+
+- Action: Pushed the actual implementation work head before transporting any later plan checkpoint.
+- Evidence: pushed `098d4c3a5` to new remote branch `Feature/platform_polyrepo_mobile-carve`; after fetch, `origin/Feature/platform_polyrepo_mobile-carve` equals full work SHA `098d4c3a57fc2ad67185b646befe2892b0096988`.
+- Outcome: the committed mobile matrix change is published on the remote branch; this ledger checkpoint is the sole remaining local tail.
+- Follow-up: transport this checkpoint, verify local/remote equality, then create the PR.
+
+### 2026-08-07 — mobile-carve PR preflight green
+
+- Action: Refreshed `origin`, checked branch identity, tree state, base drift, existing PRs, platform-sync gates, and the net branch paths before publication.
+- Evidence: branch `Feature/platform_polyrepo_mobile-carve`; `origin/main...098d4c3a5` = `0 behind / 11 ahead`; working tree clean; no existing PR; no open `chore/platform-sync-*`; net paths are only `.github/workflows/test.yml` and the active ledger; no `api/**` or published-package cut-over.
+- Outcome: preflight is GREEN. Work head `098d4c3a5` is clear to push and open as a plain GitHub PR.
+- Follow-up: push the work head, verify remote equality, transport the push checkpoint, then create the PR.
+
+### 2026-08-07 — mobile carve matrix enabled locally
+
+- Action: Removed the now-stale publish-first deferral text and added `mobile/customer` plus `mobile/b2b` to the existing `carve-fe` surface matrix.
+- Evidence: matrix assertion finds the exact six-surface list; the unchanged classifier contains its explicit `.github/workflows/test.yml` self-trigger; `git diff --check` passes. `carve-fe.mjs` already maps both mobile surfaces and runs `tsc --noEmit` followed by `expo export --platform android`.
+- Outcome: the definitive feed-restored mobile bundling gate is implemented locally; the PR will execute both new matrix jobs against `@concertable/mobile@0.1.0-alpha.0.2571`.
+- Follow-up: commit, push, open the PR, and follow both mobile carves to green without weakening the gate.
+
+### 2026-08-07 — superseded closeout worktree removed
+
+- Action: Verified the closeout worktree was clean and contained only the active ledger tail, then removed it and deleted its local branch.
+- Evidence: closeout `status --porcelain` empty; `origin/main..HEAD` path set = `plans/platform/POLYREPO_FULLSTACK_PROGRESS.md`; worktree path no longer exists; `Docs/platform_polyrepo_mobile-retarget_closeout` deleted.
+- Outcome: `Feature/platform_polyrepo_mobile-carve` is the sole recovery anchor and is ready for implementation.
+- Follow-up: add the two mobile matrix entries and deliver the self-validating carve PR.
+
+### 2026-08-07 — recovery transferred to fresh mobile-carve worktree
+
+- Action: Confirmed no open red platform-sync PR, created `Feature/platform_polyrepo_mobile-carve` from current `origin/main` @ `59bdd7a8a`, and cherry-picked the eight ledger-only closeout commits in order.
+- Evidence: every transferred commit changes only `plans/platform/POLYREPO_FULLSTACK_PROGRESS.md`; source closeout and destination feature ledger blobs match exactly at `e99282b00f954541a89ae0215a074b433ae89705`; new feature worktree is clean before this identity edit.
+- Outcome: the fresh feature worktree is the recovery anchor and is ready for the two-line CI matrix change; no runtime/source change was transferred.
+- Follow-up: remove the superseded closeout worktree/branch, then implement and deliver the mobile carve matrix entries.
+
+### 2026-08-07 — `@concertable/mobile@0.1.0-alpha.0.2571` published and feed-verified
+
+- Action: Located the first successful frontend-package publication whose head contains #413's merge, then inspected its job and package logs for the mobile tier and feed-verification result.
+- Evidence: run [31197751649](https://github.com/Concertable/concertable/actions/runs/31197751649) at `59bdd7a8a` is a descendant of #413 merge `62646f4cd`, completed `success`, and published all five tiers at `0.1.0-alpha.0.2571`; the log records `+ @concertable/mobile@0.1.0-alpha.0.2571` and the subsequent `verify-fe-package.mjs "@concertable/mobile@$VERSION" @concertable/mobile --metro-only` feed verification inside the successful job.
+- Outcome: the fixed mobile tier, including its packaged brand assets, is live on the GitHub npm feed; the publish-first prerequisite for mobile carve CI is terminal green. The closeout worktree now lives at the shorter writable `.worktrees\Docs-polyrepo-mobile-closeout` path.
+- Follow-up: start the fresh mobile-carve branch/worktree and add `mobile/customer` plus `mobile/b2b` to the `carve-fe` matrix.
+
+### 2026-08-07 — merged mobile-retarget worktree and branch removed
+
+- Action: Verified the source worktree was clean and that every commit after reviewed PR head `a8296d51b` changed only the active ledger, then removed the merged worktree and deleted the local source branch.
+- Evidence: source `status --porcelain` empty; tail path set = `plans/platform/POLYREPO_FULLSTACK_PROGRESS.md`; `git worktree remove --force` succeeded; local `Feature/platform_polyrepo_mobile-retarget` deleted. The remote-delete command reported the ref already absent; `git fetch --prune`, `git ls-remote --heads`, worktree listing, and branch listing confirm no source worktree or local/remote source branch remains.
+- Outcome: the closeout worktree is the sole recovery anchor for the remaining FE publication gate.
+- Follow-up: identify the `publish-fe-packages` run for merge `62646f4cd` and follow it to terminal success.
+
+### 2026-08-07 — post-merge recovery state transferred to the closeout worktree
+
+- Action: Fetched current `origin/main`, created `Docs/platform_polyrepo_mobile-retarget_closeout` from `59bdd7a8a` at the shorter `C:\tmp\Concertable-polyrepo-mobile-closeout` path, and cherry-picked the five observation checkpoints after reviewed source head `a8296d51b` in order.
+- Evidence: every source-tail commit (`e479a2e7c`, `74aac0b3a`, `a611d4b7a`, `8a0ee4458`, `d26dd0f11`) changes only `plans/platform/POLYREPO_FULLSTACK_PROGRESS.md`; the final source and closeout ledger blobs are identical (`23adc093ce0eb1e053cfe2585352a3afb86c554b`); `62646f4cd` is an ancestor of current `origin/main`; closeout worktree is clean before this identity edit.
+- Outcome: recovery ownership has moved to the clean docs closeout branch; no runtime/source change was transferred.
+- Follow-up: remove the merged feature worktree and both source-branch refs, then monitor the FE package publication from this closeout worktree.
+
+### 2026-08-07 — #413 merged through the full-E2E merge queue
+
+- Action: Monitored the exact merge-group formation for #413 to a terminal result without retrying or mutating the queue.
+- Evidence: merge-group run [31195035539](https://github.com/Concertable/concertable/actions/runs/31195035539), branch `gh-readonly-queue/main/pr-413-68f6383487538cf631787d9afc1c03f107c0af2a`, completed `success`; the next PR poll reported `MERGED` with merge commit `62646f4cdd6933a695fc790e1329588fce3f928a`.
+- Outcome: the mobile retarget and `@concertable/mobile` brand-asset packaging fix are on `main`, with full queue E2E green.
+- Follow-up: move the observation tail to a docs closeout worktree, delete the merged feature worktree/branch, and follow the resulting FE package publication to success.
+
+### 2026-08-07 — #413 admitted to the merge queue at position 1
+
+- Action: Issued the enable-only queue command after the explicit-method form was rejected, then verified admission directly through GraphQL.
+- Evidence: `gh pr merge 413 --auto` reported `already queued to merge`; the authoritative follow-up query reports PR `OPEN`, source head `a8296d51b`, `mergeQueueEntry.state=AWAITING_CHECKS`, `position=1`, and no source-head change. A transient 401 affected only the same command's follow-up display; the independent GraphQL retry succeeded.
+- Outcome: the one-time re-evaluation remedy worked and #413 is now in the full-E2E merge queue.
+- Follow-up: monitor the specific merge-group run to merge or a terminal failure; never retry a failing run.
+
+### 2026-08-07 — #413 auto-merge disable succeeded; explicit-method re-enable rejected
+
+- Action: Confirmed the source range has no `Skip-E2E`/`Skip-E2E-UI` trailers, then applied the sanctioned one-time disable/re-enable sequence.
+- Evidence: `SKIP_TRAILERS=none`; `gh pr merge 413 --disable-auto` succeeded; `gh pr merge 413 --merge --auto` returned `The merge strategy for main is set by the merge queue`; the follow-up PR query shows `OPEN/CLEAN`, head `a8296d51b`, `autoMergeRequest=null`.
+- Outcome: the reviewed source head is unchanged and green, but auto-merge is disabled because the current CLI/repository combination rejects an explicit method when the queue owns it. This is a command-shape failure, not a check retry or queue failure.
+- Follow-up: issue the enable-only command without an explicit merge method, then verify the GraphQL queue entry.
+
+### 2026-08-07 — #413 green but never admitted to the merge queue
+
+- Action: Queried the merge-queue entry and recent merge-group runs for #413 after confirming its terminal green PR-head checks.
+- Evidence: PR remains `OPEN/CLEAN` at `a8296d51b`; auto-merge was enabled at `2026-08-07T14:27:09Z`; GraphQL reports no `mergeQueueEntry`; the recent `merge_group` run list contains no branch for `pr-413-`; therefore no hidden merge-group failure exists.
+- Outcome: GitHub's sustained green-but-unadmitted re-evaluation glitch is confirmed. The sanctioned one-time remedy is to disable and re-enable auto-merge; this is not a retry of a failed check.
+- Follow-up: re-assert auto-merge once and verify admission before waiting for the queue result.
+
+### 2026-08-07 — PR #413 review-clean, current, and PR-head green; auto-merge enabled
+
+- Action: Resolved the existing mobile-retarget worktree instead of creating a duplicate, fetched current remote state, confirmed the code review, and reconciled the PR's complete head-check set before the merge-queue gate.
+- Evidence: worktree clean; local/remote source head and PR `headRefOid` all `a8296d51b`; `HEAD..origin/main` = 0; code review `529dba9dd..ce49f788` in `reviews/Feature-platform_polyrepo_mobile-retarget.md` reports no issues, with `a8296d51b` adding only that review artifact; PR #413 is `OPEN/CLEAN`, auto-merge enabled, no labels, and every build/web-carve/backend-carve/unit/integration/`ci-complete` check is `SUCCESS`. PR-level E2E checks are `SKIPPED` as designed because full E2E runs on the merge group.
+- Outcome: reviewed source head `a8296d51b` is ready for full merge-queue execution. This local checkpoint is observation-only and must not be pushed to the source PR.
+- Follow-up: verify queue admission and merge-group results; on merge, transfer the observation tail to a docs closeout worktree before watching the FE publication gate.
+
+### 2026-08-07 — carve-fe exposed a pre-existing mobile-bundling bug; asset fix + publish-first restructure
+
+- Action: The mobile carve (added to the `carve-fe` matrix, run in CI on #413) failed. First failure: `App.tsx` imported `../shared/global.css` (fixed → `@concertable/mobile/global.css`, `c44a0b9a5`). Second failure (after that): `@concertable/mobile/dist/components/ui/Logo.js` `require`d `../../../assets/brand/logo-long.png` — but the tier shipped no `assets/` (`files` lacked it) and the brand images physically lived at `app/mobile/assets/` (outside the tier). That path resolves nowhere in-monorepo either → the mobile app had **never been bundled**, only `tsc`'d. Fixed by `git mv app/mobile/assets/brand → app/mobile/shared/assets/brand` (existing `../../../assets/brand` path now correct) + `files` += `assets` (`1d29804a9`). Restructured #413 **publish-first**: removed `mobile/{customer,b2b}` from the `carve-fe` matrix, because the carve restores the tier from the feed and the asset fix isn't effective until republish.
+- Evidence: CI run 31188407992 mobile/customer carve bundled **4325 modules** (proving the retargeted metro/NativeWind/tailwind config resolves `@concertable/mobile` from the feed) before failing on the Logo asset. `@concertable/mobile` `files` now `["dist","global.css","nativewind-env.d.ts","assets"]`. App-icon assets (icon/splash/adaptive/favicon) left at `app/mobile/assets/` (surface `app.json` refs `../assets/*` unchanged). Logged the "mobile never bundled → more latent bugs likely" debt in `app/mobile/TECH_DEBT.md`. Local verification remains impossible (Windows AV blocks heavy `app/` npm).
+- Outcome: #413 is a coherent publish-first PR — retarget + tier asset fix; web-only carve matrix so it can merge + republish the fixed tier.
+- Follow-up: merge #413 → republish `@concertable/mobile` (with assets) → follow-up PR re-adds `mobile/{customer,b2b}` to the `carve-fe` matrix; chase any further latent bundle bugs the now-runnable carve surfaces.
+
+### 2026-08-07 — Mobile metro/nativewind/tailwind retarget implemented + carve-wired; PR #413 open
+
+- Action: Reconciled a stale ledger (its `## Next Steps` preamble still read "carved-web CSS PR being opened" — actually terminal: #405 merged `d9c62e2c5`, republished, closeout #411 merged 09:33Z). Created worktree `Feature/platform_polyrepo_mobile-retarget` off `origin/main` @ `529dba9dd` and did Phase 3 item 1: retargeted both mobile surfaces' `metro.config.js` (`watchFolders` + NativeWind `input` via `require.resolve("@concertable/mobile/…")`) and `tailwind.config.js` (`content` → `@concertable/mobile/dist/**/*.js`, path-normalized to POSIX for fast-glob); upgraded `carve-fe.mjs`'s mobile branch to `tsc --noEmit` + `expo export`; renamed the CI carve job `carve-fe-web` → `carve-fe` and added `mobile/{customer,b2b}` to its matrix + `ci-complete`.
+- Evidence: commit `92d48f6db` (6 files). Empirically scoped: `@concertable/mobile` src has 208 `className=` across 39 files; `@concertable/customer` and `@concertable/shared` src have 0 — so `@concertable/mobile` is the only className-bearing mobile tier and the `../shared`→package swap is complete. All 5 edited files pass `node --check`; `test.yml` passes `yaml.safe_load`; no stale `carve-fe-web` refs remain; `run_fe` (line 110/111) fires on both the `app/` config changes and the `test.yml` change, so #413 runs the full `carve-fe` matrix incl. the two mobile surfaces. PR #413 OPEN, base `main`, no skip labels (full E2E — CI-workflow + multi-surface bundler-config change = broad blast radius).
+- Environment blocker: could **not** run the local `expo export`/carve pre-proof. Every heavy `app/` npm `install`/`rm` here is stalled or killed by Windows AV file-locking (repeated `ENOTEMPTY` on rmdir during reconcile, `Permission denied` on `mv node_modules`, and long installs terminated) — the exact condition the ledger documents for Phase 3a/3b ("local carve couldn't finish in the shell window — so CI is the validation"). Correctness rests on: the change mirrors the proven web #405 fix; `@concertable/mobile` exports `./package.json`, `./global.css`, and `./*`→`dist/*.js`, so both `require.resolve` calls resolve in-monorepo (symlink→`app/mobile/shared`, identical to the old `../shared`) and when carved (`node_modules/@concertable/mobile`); className string literals survive tsc (`jsx: react-jsx`), the same mechanism the web dist-scan relies on.
+- Outcome: mobile retarget implemented, committed, pushed; PR #413 open. The Linux `carve-fe` mobile `expo export` job is the definitive proof.
+- Follow-up: follow #413 to merged + green `carve-fe`; if the mobile carve is red, debug on-branch (fix the config/harness, never weaken the gate) and push. Then Phase 3 item 2 (ESLint import-boundary) on a fresh branch, then Phase 4/5.
 
 ### 2026-08-07 — Carved-web CSS PR #405 MERGED (rode out a GitHub Actions outage) + republished
 
