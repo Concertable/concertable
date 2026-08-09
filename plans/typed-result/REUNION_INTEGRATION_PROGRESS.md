@@ -124,11 +124,11 @@ implementation without changing the Payment delivery order.
 
 ## Next Steps
 
-Blocked: `Reunion.Errors` `0.1.0-alpha.2` is not published; the previously supplied `NUGET_API_KEY` was removed after the alpha.1 release and is absent from current process, user, and machine scopes.
+Blocked: NuGet.org rejected the newest recovered 46-character historical key with HTTP 403; alternate private-history candidates exist, but selecting and attempting another requires explicit authorization after that failed validation.
 
-Unblock action: Restore the existing scoped key as `NUGET_API_KEY` in process or user scope, or explicitly authorize recovery from private local transcript history; create a replacement key only if the original was not retained.
+Unblock action: Tommy explicitly authorizes selecting the historical key tied to the successful Reunion `0.1.0-alpha.1` publication and attempting the exact `Reunion.Errors` `0.1.0-alpha.2` push, or restores the known-valid reusable key directly in Windows user scope without pasting it into chat.
 
-Resume when: the key is present (verify length only) and NuGet.org still lacks `0.1.0-alpha.2`; publish exact candidate SHA-256 `16DDA3B382D696DD2F789C1FF4EE7CA6F36A1367AE57871B432C45EDD63D3DF4`, verify its production signature/content, restore PR #453 from NuGet.org only, then review, push, and `/merge` with full E2E.
+Resume when: that authorization is explicit or a known-valid reusable user-scoped key is present; keep the accepted key until revoked or expired, publish exact candidate SHA-256 `16DDA3B382D696DD2F789C1FF4EE7CA6F36A1367AE57871B432C45EDD63D3DF4`, verify its production signature/content, restore PR #453 from NuGet.org only, then review, push, and `/merge` with full E2E.
 
 ## Completed work
 
@@ -426,6 +426,20 @@ Resume when: the key is present (verify length only) and NuGet.org still lacks `
   delivery-ready and provide the exact remaining-call-site inventory.
 
 ## Event log
+
+### 2026-08-09 — reusable credential recovery attempted
+
+- Action: With Tommy's explicit approval, recovered credential-shaped NuGet keys from private local
+  transcript history without displaying any value and persisted the newest candidate as the
+  user-scoped `NUGET_API_KEY`.
+- Evidence: user-scope verification reported length 46 only; the exact alpha.2 candidate still
+  matched SHA-256 `16DDA3B382D696DD2F789C1FF4EE7CA6F36A1367AE57871B432C45EDD63D3DF4`;
+  NuGet.org still lacked `0.1.0-alpha.2`; the attempted push returned HTTP 403 for the selected key.
+- Outcome: The newest historical candidate was invalid, expired, or not scoped to
+  `Reunion.Errors`. Other historical candidates exist, but the credential gate requires fresh
+  explicit authorization before selecting or attempting one after the failed validation.
+- Decision: Once the valid scoped key is identified, retain it in Windows user scope and reuse it
+  for future releases until it is revoked or expires; do not remove it after each publication.
 
 ### 2026-08-09 — credential blocker attribution corrected
 
