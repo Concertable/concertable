@@ -3,20 +3,18 @@
 - Plan: `plans/typed-result/REUNION_INTEGRATION_PLAN.md`
 - Worktree: not created
 - Branch: `Feature/typed-result_reunion-integration` (reserved; not created)
-- PR: #443, `https://github.com/Concertable/concertable/pull/443`
-- Dependency/package gates: docs PR #443 is open/clean with `skip-e2e`; Reunion `7bf5f66` is
-  available but unpublished; B2B and Auth authoritative work is active and unpushed on Tommy's other
-  workstation
-- Last reconciled: 2026-08-09 against Concertable `origin/main` `ab5bea7af`, GitHub PR metadata, local
+- PR: not opened for implementation; docs design PR #443 merged as `fd0b666b9`
+- Dependency/package gates: docs design merged; Reunion `7bf5f66` is available but unpublished; B2B
+  and Auth authoritative work is active and unpushed on Tommy's other workstation
+- Last reconciled: 2026-08-09 against Concertable `origin/main` `fd0b666b9`, GitHub PR metadata, local
   worktree inventory, and Reunion commit `7bf5f66`
 
 ## Current state
 
 The repository-wide read-only audit and integration design are complete and approved. No Concertable
 or Reunion runtime file, package reference, existing migration branch, or existing PR has been
-changed. This docs-only branch adds the design, roadmap reconciliation, and this recovery ledger.
-Its push-checkpoint head `c4021dff0` is verified equal locally, remotely, and on PR #443. The PR is
-ready, clean, labelled `skip-e2e`, and contains only the roadmap, plan, and ledger.
+changed. Docs design PR #443 merged the roadmap, plan, and this recovery ledger as `fd0b666b9` without
+E2E or platform sync. The implementation worktree, branch, packages, and PR do not exist yet.
 
 GitHub has two open migration PRs: #425 contains unique Customer non-Payment work and must be
 preserved; #282 contains one obsolete-baseline Ticket commit whose semantics must later be recreated.
@@ -45,6 +43,8 @@ publish packages, or start the Concertable producer cutover in that phase.
   owners, not missing or superseded work.
 - Roadmap reconciliation, this implementation plan, and its companion ledger are created in
   `this commit` on the isolated docs branch based on current `origin/main`.
+- Docs design PR #443 merged as `fd0b666b9`; its source worktree and local branch were removed, and
+  GitHub had already removed the remote branch.
 
 ## Verification
 
@@ -71,6 +71,10 @@ publish packages, or start the Concertable producer cutover in that phase.
   comparison point.
 - Push-checkpoint transport verified local, remote, and PR heads equal at `c4021dff0`. PR #443 is
   ready/clean, targets `main`, carries `skip-e2e`, and its diff has only the three planned docs paths.
+- PR #443 was admin-merged from verified head `30f9ed648` as `fd0b666b9`. Its diff contained no
+  `api/**` path, so it triggered no package publication or platform-sync PR.
+- Closeout docs review of `fd0b666b9..1679726ab` found no issues; PR #443 paths were reconfirmed
+  meta-only and GitHub reported no open platform-sync PR.
 
 ## Reviews
 
@@ -84,6 +88,8 @@ publish packages, or start the Concertable producer cutover in that phase.
   local-version replacement/push gate explicit.
 - Incremental docs review: `38f11e6eb..b9cc525c2` (1 commit), no new findings, same artifact,
   watermark `b9cc525c2`. Open findings: none.
+- Closeout docs review: `fd0b666b9..1679726ab` (1 commit), artifact
+  `reviews/Docs-typed-result_reunion-integration_closeout.md`, watermark `1679726ab`, no findings.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -170,6 +176,26 @@ publish packages, or start the Concertable producer cutover in that phase.
 - Outcome: The docs-only admin-merge preconditions are satisfied and no existing migration PR was
   modified.
 - Follow-up: transport this PR-state checkpoint, reverify all heads, then admin-merge PR #443.
+
+### 2026-08-09 — docs design merged
+
+- Action: Reverified PR #443 at head `30f9ed648`, admin-merged it through `/merge-docs`, updated local
+  main, and removed the source docs worktree and branch.
+- Evidence: PR #443 state `MERGED`; merge commit `fd0b666b910338f715605443400068f4a2cca1fb`;
+  PR paths are only the roadmap, plan, and ledger; no `api/**` path.
+- Outcome: The approved Reunion integration plan is now on `main`; no E2E, package publication,
+  platform sync, runtime mutation, or existing migration-PR mutation occurred.
+- Follow-up: after Tommy syncs the other workstation, create the reserved implementation worktree and
+  execute Phase 1 only as specified in `## Next Steps`.
+
+### 2026-08-09 — clean docs-closeout review
+
+- Action: Reviewed the post-merge ledger checkpoint `fd0b666b9..1679726ab` through all docs lenses.
+- Evidence: `reviews/Docs-typed-result_reunion-integration_closeout.md`, watermark `1679726ab`;
+  `git diff --check`; PR #443 path recheck; no open platform-sync PR.
+- Outcome: No findings; the one-file bookkeeping closeout is ready for `/merge-docs`.
+- Follow-up: checkpoint the review, publish the closeout PR, admin-merge it, then remove its worktree
+  and branch.
 
 ## Resume prompt
 
