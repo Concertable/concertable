@@ -22,7 +22,9 @@ current-summary section affected by the event:
 
 - worktree, branch, PR, and dependency or package gates;
 - current state and partial or uncommitted work that must be preserved;
-- `## Next Steps` — the single resolved next action as self-contained steps, including the prerequisite that blocks it when applicable;
+- `## Next Steps` — the single resolved next action as self-contained steps; when no action can
+  proceed, the exact `Blocked:`, `Unblock action:`, and `Resume when:` fields from
+  `plans/agents/PLAN.md`;
 - completed work with commit or PR evidence;
 - verification commands and outcomes, tied to the code state they verified;
 - decisions, discoveries, blockers, and deviations.
@@ -127,8 +129,10 @@ end state; it does not replace any transition checkpoint that should already exi
 ## Report and hand off
 
 Report the workflow result only after the checkpoint is durable, having written the immediate next
-action into the ledger's `## Next Steps` section so it is the durable source of truth. If plan-managed
-work remains, end with exactly one prompt, and it is ONLY the pointer — nothing plan-specific. Literally:
+action into the ledger's `## Next Steps` section so it is the durable source of truth. If actionable
+plan-managed work remains, end with one pointer per independently executable ledger, and each prompt is
+ONLY the pointer — nothing plan-specific. Delivery-gated local preparation is actionable; an
+implementation-blocked ledger gets no pointer. Literally:
 
 ```
 cd <absolute-worktree-path>
@@ -137,4 +141,6 @@ Read @plans/<PLAN>_PLAN.md and @plans/<PLAN>_PROGRESS.md and do what its `## Nex
 
 No branch to verify, checkpoints, gates, commands, or steps in the prompt — every such specific lives in
 the ledger, never restated, so the prompt can't drift. If the lifecycle is terminal, follow the close-out
-rule and do not invent a continuation prompt.
+rule and do not invent a continuation prompt. If the plan is hard-blocked, do not emit this pointer:
+report the ledger's three blocker lines verbatim, then emit a resolver dispatch
+prompt only when a separate unowned task can open the gate.

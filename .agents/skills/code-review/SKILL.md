@@ -1,11 +1,13 @@
 ---
 name: code-review
-description: Full code review of a branch diff against Concertable's conventions, module-boundary rules, and microservice-isolation rules. Reviews the diff for correctness bugs plus convention/boundary/microservice anti-patterns (B2B and Customer are separate services that must only communicate via *.Contracts integration events — never each other's runtime) plus missing test coverage on changed paths, filters to high-confidence findings, writes them to a per-branch review markdown, and stamps the reviewed-up-to commit SHA at the top. Use when the user wants to "code-review my changes", "review this branch", "review the PR", or "do a full review". For re-reviewing only commits added since a previous review, use the `incremental-review` skill (a thin wrapper around this one). This is Concertable's own architecture-aware review and intentionally replaces the stock built-in code-review; the plain built-in `/review` (GitHub PR review) is left untouched.
+description: Full code review of a branch diff against Concertable's conventions, module-boundary rules, and microservice-isolation rules. Runs the host tool's NATIVE general review FIRST (Claude's built-in catalog via the `code-reviewer` subagent, or Codex's native code review), then layers Concertable's architecture-aware lenses on top — correctness bugs plus convention/boundary/microservice anti-patterns (B2B and Customer are separate services that must only communicate via *.Contracts integration events — never each other's runtime) plus missing test coverage on changed paths — filters to high-confidence findings, merges both layers into one per-branch review markdown, and stamps the reviewed-up-to commit SHA at the top. It is a SUPERSET of the built-in review, never a replacement. Use when the user wants to "code-review my changes", "review this branch", "review the PR", or "do a full review". For re-reviewing only commits added since a previous review, use the `incremental-review` skill (a thin wrapper around this one). The GitHub PR `/review` is unrelated and untouched.
 ---
 
 # code-review
 
-Full code review of the current branch's diff, judged against Concertable's actual documented rules — not generic best practice. The output is a per-branch review markdown with a `Reviewed up to commit:` SHA marker at the top, so a later `incremental-review` run knows exactly where this review stopped.
+Full code review of the current branch's diff in **two layers, both mandatory**: **Layer 1** is the host tool's *native* general review (correctness, reuse, simplification, efficiency, error handling — Step 1c), run first and captured; **Layer 2** is Concertable's architecture-aware lenses (Steps 2–4), the checks no native review can know. Both land in one per-branch review markdown with a `Reviewed up to commit:` SHA marker at the top, so a later `incremental-review` run knows exactly where this review stopped.
+
+Layer 1 exists because a project skill named `code-review` shadows the built-in `/code-review` — so this skill reproduces the native pass (Step 1c) instead of losing it, which is exactly what "replacing" the built-in previously did.
 
 `incremental-review` is this skill with one input changed: it starts the diff at a recorded SHA instead of the branch's merge-base. Everything else — the lenses, the confidence filter, the output file, the marker — is identical. Keep them in sync: a change to the review procedure here is inherited by `incremental-review`.
 
@@ -66,6 +68,25 @@ still leave a file on disk.
 Then review (Steps 2–4) and **append each confirmed finding to this file as you go** (replacing the
 placeholder line on the first real finding), rather than buffering them all for a single write at the
 end. Step 5 then just reconciles the final list; Step 6 finalizes the marker.
+
+## Step 1c — Native review layer (Layer 1 — run FIRST, capture findings)
+
+Before loading Concertable's rules, run the host tool's native general review over the same `<start>..HEAD` range and fold its findings into the work-order as `NAT#`:
+
+- **Claude Code:** spawn the `code-reviewer` subagent (Agent tool) with the range; it returns the built-in catalog's findings (correctness, reuse, simplification, efficiency, error handling) as markdown. Direct `/code-review` is unavailable here — this skill shadows that name and the built-in is non-sub-invocable — so the subagent is the supported capture path.
+- **Codex:** run Codex's native code review over the range and capture its findings.
+
+Append the returned findings under `## Findings` immediately (as `- [ ] **NAT# — <SEVERITY> — native** — file:line`), so an interrupted run still records them. They pass through Step 4's confidence bar during Step 5's reconcile.
+
+## Step 1d — Security layer (only when the range touches security-sensitive paths)
+
+Run `git diff --name-only <start>..HEAD`. If any path hits Auth, Payment, `*.Contracts`, a `*Controller*.cs`, auth/authz middleware, a secret/credential/config file, or `.github/workflows/**`, also run the host's security review (Claude `/security-review`; Codex's equivalent) over the range, fold any findings in as `SEC#`, and stamp a second marker at the top of the work-order:
+
+```
+**Security-reviewed up to commit:** `<full-HEAD-sha>`  _(<today's ISO date>)_
+```
+
+The merge gate's `_SECURITY_PATTERNS` (in `merge-review-gate.py`) is the source of truth for which paths count; it refuses to merge a security-sensitive branch without this marker current at HEAD. No sensitive paths → skip this step, no marker.
 
 ## Step 2 — Load the rules (read before flagging anything)
 
@@ -176,7 +197,8 @@ File shape:
 ```
 
 - Group by lens or severity, whichever reads better for the count.
-- Give each finding a short stable ID (e.g. `MS1` microservice, `MB1` module-boundary, `BUG1`, `SEED1`, `CV1` convention) so `incremental-review` runs can append new IDs without renumbering.
+- **Merge both layers into the one list.** Native findings (Step 1c) keep `NAT#` IDs; security findings (Step 1d) keep `SEC#`; the architecture lenses use `MS1` microservice, `MB1` module-boundary, `BUG1`, `SEED1`, `CV1` convention. Stable IDs so `incremental-review` runs append without renumbering.
+- **Dedup across layers:** when a native correctness finding (`NAT#`) is the same defect as a Lens-A finding, keep one entry and note both lenses — don't list it twice. Native findings still pass Step 4's confidence bar and the no-hedge rule; drop any that don't clear it.
 - If a review file already exists, **append** a new dated `## Incremental review — <date>` section rather than overwriting prior findings; preserve existing status marks.
 - No findings → write `No issues found. Checked correctness, microservice isolation, module boundaries, seeding, C# conventions, and test coverage of changed paths.`
 
@@ -188,8 +210,9 @@ Set the top-of-file marker to current HEAD — exactly one such line in the file
 **Reviewed up to commit:** `<full-HEAD-sha>`  _(<today's ISO date>)_
 ```
 
-Today's date comes from session context; get the SHA from `git rev-parse HEAD`. Do not commit unless
-asked, except for a plan-managed checkpoint required by Step 7.
+Today's date comes from session context; get the SHA from `git rev-parse HEAD`. If Step 1d ran, its
+`Security-reviewed up to commit:` marker is stamped at HEAD too. Do not commit unless asked, except for
+a plan-managed checkpoint required by Step 7.
 
 ## Step 7 — Checkpoint and report
 

@@ -1,16 +1,21 @@
 # Typed Result migration roadmap
 
-> **Roadmap** for adopting Concertable-owned `Result` and `Option` contracts across every backend
-> microservice. This is the living cross-workstream dependency map, not an implementation plan. Each
+> **Roadmap** for adopting one Reunion-backed `Result` and `Option` vocabulary across every backend
+> microservice while keeping Concertable's error unions and HTTP policy application-owned. This is
+> the living cross-workstream dependency map, not an implementation plan. Each
 > buildable item spins off its own `_PLAN.md` and `_PROGRESS.md`; see
 > [`../agents/ROADMAP.md`](../agents/ROADMAP.md).
 >
-> **Goal:** remove third-party Result carriers and ambiguous application/module lookup contracts while
-> keeping every service independently buildable, deployable, and package-clean.
+> **Goal:** replace the temporary Concertable-owned carriers with Reunion, remove third-party Result
+> carriers and ambiguous application/module lookup contracts, and keep every service independently
+> buildable, deployable, and package-clean.
 >
 > **Canonical conventions:** [`../../api/agents/CODE_CONVENTIONS.md`](../../api/agents/CODE_CONVENTIONS.md)
 > “Typed operation Results.” Backend ownership and package rules live in
 > [`../../api/ARCHITECTURE.md`](../../api/ARCHITECTURE.md).
+> Those conventions remain the current code contract until the Reunion producer and generated
+> platform-sync consumer cutover land; the selected cutover design lives in
+> [`REUNION_INTEGRATION_PLAN.md`](REUNION_INTEGRATION_PLAN.md).
 
 ---
 
@@ -62,39 +67,41 @@ their current branch and worktree rather than fragmenting in-flight work.
 - [x] ✅ **Search contract audit and normalization.** PR #380 normalized Search's in-process collection
   contracts to `IReadOnlyList<T>` and added Search-owned architecture enforcement without changing
   transport, projection, failure, or empty-result behavior. Publication and platform-sync PR #388
-  delivered `ConcertablePlatformVersion` `0.1.0-alpha.0.827` to every service.
+  delivered `ConcertablePlatformVersion` `0.1.0-alpha.0.827` to every service. A current source audit
+  finds no Search functional carrier/error import to convert; do not create invented Search work.
+- [x] ✅ **Payment owned-result migration.** PR #392 replaced Payment's published FluentResults client
+  surface with Concertable-owned typed Result/Option contracts and preserved reviewed-gross money
+  invariants. Platform-sync PR #420 migrated B2B and Customer consumers, merged as `372be1041`, and
+  post-merge publication delivered platform `0.1.0-alpha.0.857`. B2B and Auth handoffs are dispatched.
 
 ### In flight — existing owners, do not offer or duplicate
 
-- [ ] 🟠 **Payment owned-result migration.** Exclusive owner:
-  `Feature/PaymentOwnedResultExpansion` at
-  `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\PaymentOwnedResultExpansion`.
-  The reviewed-`Money` decision and current Dunet error convention are implemented. Payment build,
-  unit, and full-solution gates are green on platform `0.1.0-alpha.0.847`; delivery is waiting for
-  Payment SQL integration after Docker Desktop is restored, followed by incremental review and PR
-  delivery, package publication, and the generated platform-sync PR.
-  `Feature/CommissionBindingDeferredPricing` / PR #296 is frozen donor history, not a second owner. No
-  other workstream may recreate Payment contracts or bridge the unpublished package with local source
-  references.
 - [ ] 🟠 **B2B typed-result migration.** Exclusive owner: `Refactor/B2BTypedResultMigration` at
   `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-B2BTypedResultMigration`.
-  Payment-independent Deal, Tenant, Venue, Artist, User, and Concert-core checkpoints are complete.
-  Concert payment/cancel/finish workflows and final FluentResults removal remain blocked on the
-  published Payment package and green platform sync. Resume the existing plan; do not spin off a new
-  B2B plan.
-- [ ] 🟠 **Customer Ticket purchase/checkout slice.** Exclusive owner:
-  `Feature/TypedResultMigrationPhase2` at
-  `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\TypedResultMigrationPhase2`.
-  Its local Ticket/Concert owned-result core and validation boundary coverage are complete. The final
-  Payment-client swap remains blocked on Payment publication and platform sync. This owner includes
-  Ticket, Concert, Customer Payment clients/mocks, purchase, checkout, and their integration/API
-  coverage; parallel Customer work must not touch those surfaces.
+  **Authoritative work is active and unpushed in the recorded local worktree as of 2026-08-09.**
+  GitHub remains an incomplete inventory because no branch PR or remote branch exists.
+  Payment-independent checkpoints 1-5 are complete. Payment PR #392, platform-sync PR #420, and
+  platform `0.1.0-alpha.0.857` discharged the old package gate; checkpoints 6-7 own Concert
+  payment/cancel/finish workflows and final B2B FluentResults removal. Those checkpoints are
+  implementable now against exact Payment packages from `a779fe041`; publication and generated sync
+  gate delivery and final revalidation, not local preparation.
+- [ ] 🟠 **Customer Ticket purchase/checkout slice.** Replacement owner:
+  `Feature/typed-result_customer-ticket-reunion`, planned in
+  [`CUSTOMER_TICKET_REUNION_PLAN.md`](CUSTOMER_TICKET_REUNION_PLAN.md).
+  PR #282 contains one unique commit and is 776 commits behind current `origin/main` at the
+  2026-08-09 reconciliation.
+  Its Ticket/Concert semantics remain exclusive, but its old carrier and CFE composition should not
+  be revived wholesale. Recreate the slice now from current main against exact Payment packages from
+  `a779fe041`, recovering behavior and tests deliberately rather than rebasing the historical branch.
+  Do not close or mutate PR #282 until that replacement is ready and approved.
 
-### Ready — may be planned and implemented in parallel
-
-- [ ] 🟡 **Customer non-Payment outcomes and lookups.** Ready now and independent of B2B and Payment.
-  Spin off `CUSTOMER_OUTCOMES_PLAN.md` / `CUSTOMER_OUTCOMES_PROGRESS.md` on
-  `Feature/typed-result_customer-outcomes`.
+- [ ] 🟠 **Customer non-Payment outcomes and lookups.** Exclusive owner:
+  `Feature/typed-result_customer-outcomes` at
+  `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_customer-outcomes`.
+  Non-draft PR #425 is open at `e60219f7d`. It contains 29 unique commits and is 117 commits behind
+  current `origin/main` at the 2026-08-09 reconciliation. Its semantic work does not exist elsewhere;
+  preserve it and convert it locally against published Reunion now, then update the PR once after the
+  current-main verification and review gates establish its delivery state.
   - Scope: Customer Review, Preference, User, Venue, and Artist application/module contracts;
     operation-specific expected failures; nullable persistence lookups converted to `Option<T>` at
     application/module boundaries; collection contracts normalized to empty `IReadOnlyList<T>`.
@@ -109,9 +116,13 @@ their current branch and worktree rather than fragmenting in-flight work.
     [`../../api/Concertable.Customer/ARCHITECTURE.md`](../../api/Concertable.Customer/ARCHITECTURE.md),
     and `api/agents/CODE_CONVENTIONS.md`.
 
-- [ ] 🟡 **Auth expected-outcome migration.** Ready now and independent of every other service track.
-  Spin off `AUTH_OUTCOMES_PLAN.md` / `AUTH_OUTCOMES_PROGRESS.md` on
-  `Feature/typed-result_auth-outcomes`.
+- [ ] 🟠 **Auth expected-outcome migration.** Exclusive owner:
+  `Feature/typed-result_auth-outcomes` at
+  `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_auth-outcomes`.
+  **Authoritative work is active and unpushed in the recorded local worktree as of 2026-08-09.**
+  GitHub remains an incomplete inventory because no branch PR or remote branch exists.
+  The semantic work is complete. Auth has no Payment/B2B/Customer dependency, so reconcile and convert
+  it directly to published Reunion now; determine delivery from Auth's actual package topology.
   - Scope: audit `IAuthService` null/bool/enum/void outcomes; model ordinary absence with `Option<T>`
     and caller-actionable refusal with operation-specific Result contracts where that distinction is
     useful; map owned in-process results to Duende/Razor/protocol behavior at the Auth edge.
@@ -128,6 +139,27 @@ their current branch and worktree rather than fragmenting in-flight work.
     `api/agents/CODE_CONVENTIONS.md`, Auth’s Pages/Services, and the coverage inventory established by
     the plan.
 
+### Selected cross-cutting track — one owner, never duplicated on service PRs
+
+- [ ] 🟡 **Reunion package integration and carrier cutover.** The design and operational state are in
+  [`REUNION_INTEGRATION_PLAN.md`](REUNION_INTEGRATION_PLAN.md) and
+  [`REUNION_INTEGRATION_PROGRESS.md`](REUNION_INTEGRATION_PROGRESS.md). Use Reunion commit `7bf5f66`
+  for the initial package battle test. The Reunion package family is published; migrate
+  Payment/Payment.Client first in the delivery DAG. In parallel, Auth and Customer non-Payment convert
+  against published Reunion, while B2B and Ticket prepare against exact local Payment packages. The
+  final Shared contraction waits until those consumers are delivery-ready.
+
+- [x] 🟢 **HTTP terminal ownership resolved upstream.** `Reunion.AspNetCore` already publishes the MVC
+  and Minimal API Result/Option terminals, generic success mappers, ProblemDetails execution, and
+  structured validation mapping. Retire `Refactor/typed-result_http-terminals` without publication;
+  each service HTTP edge consumes the Reunion adapter directly during its carrier migration.
+
+### Parallel preparation dispatched
+
+B2B, Auth, Customer non-Payment, and Customer Ticket each have independently executable ledgers.
+`REUNION_SHARED_CONTRACTION_PLAN.md` owns the final contraction but remains implementation-blocked
+until the prepared consumer set and exact remaining-call-site inventory exist.
+
 ### Blocked follow-ups
 
 - [ ] 🔴 **Shared Kernel, Messaging, and background-path audit.** Plan only after the service tracks
@@ -139,8 +171,10 @@ their current branch and worktree rather than fragmenting in-flight work.
   surfaces, then enforce: no third-party Result/Option in public signatures, no nullable non-persistence
   single-item application/module/client lookups, no `Option`-wrapped collections, no Result on wire
   DTOs, and no controller-local typed-error status switches.
-- [ ] 🔴 **Released .NET native-union cutover.** Blocked until the released .NET/C# toolchain supports
-  the required union semantics and Concertable is ready to upgrade.
+- [ ] 🔴 **Released .NET native-union error cutover.** Blocked until Concertable upgrades from net10.0
+  to the released .NET/C# toolchain that supports the required union semantics. Reunion already
+  supplies conventional union-compatible net10 assets and native net11 carrier support; this item is
+  about Concertable-owned domain error unions, not replacing Reunion's Result family.
   - Replace each Dunet error declaration with the idiomatic released native declaration; retain the
     exhaustive `Definition` switch and preserve case names, payloads, definitions, published
     codes/messages/kinds, transport mappers, and contract tests. Keep `Definition` as a computed
@@ -159,30 +193,37 @@ their current branch and worktree rather than fragmenting in-flight work.
 ## Parallel dependency map
 
 ```text
-Published Kernel foundation
-├── Payment migration ──publish/sync──┬── B2B Payment workflows
-│                                    └── Customer Ticket Payment cutover
-├── B2B Payment-independent migration (already in flight)
-├── Customer non-Payment outcomes (ready)
-├── Search contract normalization (ready)
-└── Auth expected outcomes (ready)
+Implementation DAG
+├── published Reunion .1 ── Auth conversion
+├── published Reunion .1 ── Customer non-Payment conversion
+├── Payment packages from a779fe041 ── B2B preparation
+└── Payment packages from a779fe041 ── Customer Ticket replacement preparation
+    └── prepared consumer inventory ── Shared contraction
 
-All service tracks complete
-└── Shared/background audit
-    └── Repository cleanup and enforcement
+Delivery DAG
+Payment source PR ── publish Payment.Client ── generated sync
+    ├── B2B published-package revalidation/merge
+    └── Customer Ticket published-package revalidation/merge
+Auth and Customer non-Payment deliver when their own topology and gates prove them merge-ready
+All consumers terminal ── Shared/background cleanup and enforcement
 
 Released .NET native unions
-└── Native-union cutover
+└── Concertable-owned error-union cutover
 ```
 
-Customer non-Payment, Search, and Auth have no dependency on B2B or the unpublished Payment package
-and may run concurrently in isolated worktrees. Their diffs must remain service-owned so one branch
-cannot silently become the integration branch for another.
+B2B and Auth have authoritative unpushed local work that is now inventoried. Preserve both worktrees;
+remote state alone remains insufficient. Service diffs remain service-owned, and temporary package
+inputs never become committed delivery configuration.
 
 ## Shared migration rules
 
-- `Result` and `Option` are in-process contracts only. HTTP, protobuf, events, persistence, and other
-  wire boundaries retain owned transport contracts and map at the service edge.
+- Reunion `Result` and `Option` are in-process contracts only. HTTP, protobuf, events, persistence,
+  and other wire boundaries retain owned transport contracts and map at the service edge.
+- Every project directly owns the Reunion package whose API its source compiles against. Core and
+  typed-error use takes direct `Reunion`/`Reunion.Errors` references; each service API/Web project
+  mapping carriers takes `Reunion.AspNetCore`. Shared.Api neither distributes the adapter nor defines
+  duplicate Result/Option HTTP terminals. Domain error unions and published semantics remain
+  application-owned.
 - Expected caller-actionable refusals use typed Results. Infrastructure failures, cancellation, and
   programmer/invariant defects remain exceptions. Do not catch them in Result combinators.
 - Repository single-item lookups may remain nullable as a persistence concern. Application, module,
@@ -195,12 +236,16 @@ cannot silently become the integration branch for another.
   consuming it.
 - Every published Kernel, Payment, or Contracts change owns the complete merge → publish → platform
   sync → consumer migration sequence. Never leave a red platform-sync PR behind.
+- Reunion package/carrier changes land once in their owning integration branches. Existing service
+  migration PRs merge the integrated baseline and resolve semantic conflicts; they do not carry
+  duplicate package pins, copied carriers, or HTTP adapter replacements.
 - The final cleanup is the only removal point for compatibility surfaces still needed by another
   branch. Parallel service branches remove dependencies only from their own completed closures.
 
 ## Epic definition of done
 
-- Every backend service uses the owned Kernel vocabulary consistently at in-process boundaries.
+- Every backend service uses Reunion's complete Result/Option family consistently at in-process
+  boundaries, without removing or collapsing any Result family.
 - Every service’s unit/integration gates, Release solution build, architecture tests, and standalone
   carve pass on the published package closure.
 - Payment, B2B, and Customer package cutovers and platform-sync PRs are terminal and green.
@@ -208,4 +253,4 @@ cannot silently become the integration branch for another.
   third-party Result/Option public signatures, nullable non-persistence single-item lookup contracts,
   Option-wrapped collections, or Result-bearing wire DTOs.
 - Architecture enforcement prevents those contracts from returning.
-- The released native-union cutover is complete and Dunet is removed.
+- The released native-union error cutover is complete and Dunet is removed.

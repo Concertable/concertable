@@ -4,13 +4,17 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-B2BTypedResultMigration`
 - Branch: `Refactor/B2BTypedResultMigration`
 - PR: not opened
-- Last reconciled: 2026-08-08
+- Dependency/package gates: implementation is open against exact local Payment packages from
+  `a779fe041`; Payment source PR, publication, and generated sync gate delivery and final revalidation
+- Last reconciled: 2026-08-09 against `origin/main` `1043a9178`, the current-main merge checkpoint,
+  Reunion integration PR #453, and live worktree/PR inventory
 
 ## Current state
 
 Checkpoints 1-5 remain complete on the single B2B migration branch. The branch is reconciled with
-`origin/main` `b66325acdee7979bb3771e4c28248364b769d402` and platform
-`0.1.0-alpha.0.847`; the merge checkpoint is locally verified.
+`origin/main` `1043a917876cbed48b3c1f873cdcfcc7aadf9b80` and platform
+`0.1.0-alpha.0.890`; the merge checkpoint preserves both the typed Apply outcomes and mainline's
+venue/artist tenant snapshot construction.
 
 All 33 B2B operation-error roots now follow the current convention: Dunet unions with disabled
 implicit conversions, 70 explicit naturally named cases, direct case construction, and one exhaustive
@@ -31,19 +35,23 @@ now preserve their declared interface metadata, and revoked invitation acceptanc
 
 The Payment dependency gate is open. Payment implementation PR #392 merged as `b66325ac`, generated
 platform-sync PR #420 landed the B2B/Customer owned-result consumer migration as `372be1041`, and the
-post-merge feed contains platform `0.1.0-alpha.0.857`. This branch remains on its earlier mainline
-checkpoint until the next session fetches and merges current `origin/main`; no adapter, string bridge,
-or local source dependency was introduced while waiting.
+post-merge feed contains platform `0.1.0-alpha.0.857`. Current `origin/main` is now `1043a9178`; this
+branch has merged that exact base, with no PR or remote branch.
+
+Exact local packages make checkpoints 6-7 independently implementable without changing delivery order.
+`Concertable.Payment.Contracts` and `Concertable.Payment.Client` `0.1.0-alpha.0.911` were packed from
+repository commit `a779fe04139e8e33fca7f294a26c41e44c89dda7` into
+`%LOCALAPPDATA%\NuGet\Concertable-Reunion-Parallel\a779fe041`. Their SHA-256 hashes
+are `7DDA02F542F606F6707D8305E8524E4227A7F2222F28113F8226D0AD239D3DA8` and
+`A52EA0562FA36EA123450BE2DC022E9F33AE9510FB100E4309F245DEFCC14D14` respectively. The manifests name
+that exact commit; Client depends on Contracts `.911`, Reunion `.1`, and Reunion.Errors `.1`.
 
 ## Next Steps
 
-Checkpoints 1-5 remain shipped and the Payment dependency is discharged. Fetch and merge current
-`origin/main` in this worktree, verify the current platform pin exposes the owned
-`Concertable.Payment.Client` Result surface, then implement checkpoint 6 (Concert
-payment/cancel/finish workflows) and checkpoint 7 (FluentResults removal from the migrated B2B
-projects). Do not create a FluentResults adapter, string bridge, or local source dependency. Run the
-normal build, unit, architecture, and integration gates after the Payment-dependent implementation;
-reserve E2E for the merge queue unless a queue failure needs diagnosis.
+Complete checkpoints 6-7 against the recorded `.911` local packages. Use only temporary restore source
+and package-version inputs; commit no local feed/path/pin. Run the B2B verification gates and full code
+review, restore the published-package configuration, and leave the branch delivery-ready with exact
+published Payment.Client revalidation as its next gate. Do not push or merge until separately instructed.
 
 ## Completed work
 
@@ -102,6 +110,9 @@ reserve E2E for the merge queue unless a queue failure needs diagnosis.
   the targeted case passed.
 - Final reconciliation: merged with `origin/main` `b66325acdee7979bb3771e4c28248364b769d402`;
   checkpoints 1-5 and the current error-record conventions are locally verified.
+- Current-main sync gate: B2B Release solution build succeeded with 0 errors; Concert unit tests
+  passed 124/124; `scripts/integration.ps1 concert` passed B2B Concert 148/148 and Customer Concert
+  11/11.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -122,10 +133,63 @@ reserve E2E for the merge queue unless a queue failure needs diagnosis.
   polymorphic interfaces emit their discriminator. B2B cannot consume that local Shared API source
   change before publication, so `DealController` uses the already-published generic `ToActionResult`
   with an explicit `ActionResult<IDeal>` value.
+
 - Revoked invitation acceptance is `InvitationNotPending`, an explicit Conflict outcome; the stale
   integration expectation was corrected from Bad Request to Conflict.
+- B2B remains the exclusive semantic owner. Exact local Payment packages open implementation now;
+  publication and generated sync remain the final delivery/revalidation gate.
+
+## Downstream handoffs
+
+- Waiting ledger: `plans/dotnet-11/B2B_WORKFLOW_UNIONS_PROGRESS.md`.
+  Worktree: not created; reserved branch `Refactor/dotnet-11_b2b-workflow-unions`.
+  Gate: the B2B typed-result checkpoints 6-7 source PR and every resulting publication/platform-sync
+  gate must be terminal and green. At that gate, update the dependent ledger on current main and
+  surface its implementation pointer; do not let the dependent poll or copy this worktree's
+  overlapping Concert workflow changes.
 
 ## Event log
+
+### 2026-08-09 — current-main sync for checkpoints 6-7
+
+- Action: Fetched and merged current `origin/main`, reconciled the plan pair from main, and resolved
+  Apply workflow overlap between typed outcomes and mainline tenant inheritance. Reconciled five
+  branch test call sites with mainline's current date, tenant-pair, and booking-owned draft factories.
+- Evidence: base `1043a917876cbed48b3c1f873cdcfcc7aadf9b80`; clean pre-merge branch
+  `ba5791268`; no B2B PR or remote branch; Reunion integration PR #453 is open with auto-merge enabled
+  and its PR checks green.
+- Outcome: checkpoints 1-5 are preserved on the current mainline baseline; checkpoints 6-7 remain
+  locally implementable against the recorded exact Payment `.911` packages. The B2B Release build,
+  Concert unit suite, and both Concert integration projects are green.
+- Follow-up: execute `## Next Steps`.
+
+### 2026-08-09 — Reunion preparation unblocked
+
+- Action: Separated the implementation and delivery DAGs and recorded exact local Payment packages.
+- Evidence: producer `a779fe041`; `.911` manifests and SHA-256 values in `## Current state`.
+- Outcome: checkpoints 6-7 can be implemented, tested, committed, and reviewed now; published-package
+  revalidation remains a delivery gate.
+- Follow-up: execute `## Next Steps`.
+
+### 2026-08-09 - registered downstream .NET 11 workflow-union handoff
+
+- Action: registered the B2B .NET 11/workflow-union plan as a downstream owner and reconciled this
+  ledger's own ReUnion wait to the three-line hard-blocker contract.
+- Evidence: `plans/dotnet-11/B2B_WORKFLOW_UNIONS_PLAN.md` and its companion ledger merged to main in
+  docs-only PR #448 as `fcc6935f4`.
+- Outcome: the dependent plan waits for this B2B implementation plan's future source PR and every
+  resulting publication/platform-sync gate to become terminal and green.
+- Follow-up: at that gate, update the dependent ledger and surface its reserved implementation prompt.
+
+### 2026-08-09 - Reunion integration dependency registered
+
+- Action: Reconciled the clean B2B worktree with merged Reunion planning PRs #443/#444 and registered
+  this ledger in the Reunion owner's downstream handoffs.
+- Evidence: local head `ba5791268`; fresh `origin/main` `c72b058af`; 130 behind / 25 ahead; no B2B PR
+  or remote branch; Payment PR #392 and platform-sync PR #420 remain terminal green.
+- Outcome: checkpoints 1-5 remain preserved. Checkpoints 6-7 wait for the single Reunion Phase 4
+  generated platform-sync baseline rather than performing a duplicate carrier/package cutover.
+- Follow-up: the Reunion owner updates this ledger and surfaces its resume prompt after Phase 4 merges.
 
 ### 2026-08-08 - Payment dependency gate discharged
 

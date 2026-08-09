@@ -21,6 +21,20 @@ The suite exists to test the CURRENT state of the code. If something is failing 
 
 If a step hangs with no useful output, the next move is **reproduce it and observe it live** (process trees, what the child processes are doing, file locks, CPU) — not to remove the step. A bypass is only acceptable when the user explicitly asks for it after seeing the diagnosis.
 
+## Diagnostics must preserve scenario semantics
+
+Before changing a shared fixture, page object, or test helper, enumerate every call site and classify
+its success, expected-failure, and challenge flows. A diagnostic improvement must not change which
+outcomes those callers accept. If it does, it is a regression, not a debugging aid.
+
+- Keep transport plumbing generic: click, await, capture, and return the response.
+- Keep outcome validation explicit at the test DSL boundary. Prefer a named operation such as
+  `PayWithDeclinedCardAsync` over a boolean/enum mode passed through a generic confirm helper.
+- Put reusable response validation in a focused extension/helper, not a private copy in one page
+  object. Never special-case an expected HTTP status inside generic browser plumbing.
+- When a diagnostic change breaks previously-passing scenarios, remove or redesign that diagnostic
+  change before touching the scenarios. Do not patch each caller around the altered helper semantics.
+
 ## Input
 
 If the skill is invoked with arguments, treat them as the full scenario names as they appear in the test output (e.g. `"Venue manager accepts a venue hire application on a flat fee", "Customer purchases a ticket and completes 3DS challenge"`). Run Step 0, then skip Step 1 and go straight to Step 2, running each one individually using `DisplayName~` with the full name as the filter value.
