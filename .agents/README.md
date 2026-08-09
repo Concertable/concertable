@@ -31,20 +31,10 @@ agent-starter-kit/
 `pull-main` is intentionally not part of the global set anymore. `sync` covers the useful default
 branch update flow.
 
-## Repository slash commands
+## Repository commands
 
 Canonical command instructions live under `.agents/commands/`. Agent-specific command entry points
 must be thin wrappers that reference the matching canonical file so their behavior cannot drift.
 
-Claude discovers its wrapper under `.claude/commands/`. Codex plugin commands are not a command
-surface: the plugin loader migrates them into `source-command-*` skills. Keep Codex command wrappers
-under `.codex/prompts/` and copy them into the user prompt directory:
-
-```powershell
-New-Item -ItemType Directory -Force "$env:USERPROFILE\.codex\prompts" | Out-Null
-Copy-Item ".codex\prompts\*.md" "$env:USERPROFILE\.codex\prompts\" -Force
-```
-
-Codex CLI and the IDE extension expose these custom commands under the `/prompts:` namespace;
-`techdebt.md` is invoked as `/prompts:techdebt`. Start a new Codex session after copying a prompt so
-the command list reloads it.
+Claude discovers command wrappers under `.claude/commands/` and invokes `techdebt.md` as `/techdebt`.
+Codex discovers skill wrappers under `.agents/skills/` and invokes the matching skill as `$techdebt`.
