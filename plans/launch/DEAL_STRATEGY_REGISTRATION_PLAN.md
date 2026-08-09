@@ -360,7 +360,7 @@ One implementation PR is sufficient: no package or service boundary changes. Kee
 commit it independently so review can verify the migration incrementally. The merge queue must run full
 E2E because this is a broad refactor of booking, checkout, payment, and settlement dispatch.
 
-### Phase 1 — Factory infrastructure and terms pilot
+### Phase 1 — Factory infrastructure and terms pilot ✅
 
 - Add characterization tests for current rendering and canonical serialization across all four types.
 - Add `IConcertDealStrategyFactory<TStrategy>`, its scoped Infrastructure implementation, and the

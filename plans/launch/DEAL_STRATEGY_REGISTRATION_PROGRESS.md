@@ -5,31 +5,35 @@
 - Branch: `Refactor/launch_deal_strategy_registration`
 - PR: not opened
 - Dependency/package gates: none; this is an internal B2B refactor
-- Last reconciled: 2026-08-08 against `origin/main` at `9a18371a0`
+- Last reconciled: 2026-08-09 against `origin/main` at `0fa7f6460`
 
 ## Current state
 
-The design investigation is complete and the implementation plan has been rewritten around a
-module-local strategy factory plus one vertical registration builder. No runtime code has changed.
-The plan, ledger, and owning roadmap entry are committed at `4dc7b9faf`; the implementation branch is
-assigned to its dedicated worktree and Phase 1 is ready to implement there.
+Phase 1 is complete and included in the current checkpoint. The Concert module now has a scoped
+generic strategy factory, an atomic vertical registration builder with duplicate/exact-coverage/
+lifetime validation, four cohesive `IDealTerms` leaves, scoped renderer/serializer/fingerprint
+facades, and characterization plus DI composition tests. The scoped `IKeyedServiceProvider` adapter
+resolves from the active request scope, and composition fails before registration when any strategy
+family omits an explicit coverage declaration. No Phase 2 family has been changed.
+
+The branch is current with `origin/main` at `0fa7f6460`; no PR exists and no package gate applies.
+Phase 1's unit, Concert integration, and full-solution build gates are terminal green.
 
 ## Next Steps
 
-Implement Phase 1 from the plan on this branch:
+Implement Phase 2 only — party direction and payment projection:
 
-1. Reconcile the branch with current `origin/main` and confirm the worktree contains no unrelated paths.
-2. Add characterization tests that pin human terms rendering and canonical terms serialization for all
-   four deal types.
-3. Add the Concert-local generic strategy factory and vertical registration builder with duplicate,
-   exact-coverage, and lifetime tests.
-4. Combine the terms renderer/serializer leaves behind `IDealTerms`, migrate only that family, and keep
-   fingerprints byte-for-byte stable.
-5. Run `dotnet build api/Concertable.slnx` and the affected Concert unit/integration tests through the
-   `integration-debug` skill. Fix every failure, update this ledger and check off Phase 1 in the plan,
-   then commit the verified phase.
+1. Replace `TicketPayeeResolver`, `SettlementPayeeResolver`, `VenuePayeeResolver`, and
+   `ArtistPayeeResolver` with the cohesive `IDealPartyResolver` facade and its directional leaves.
+2. Migrate `PaymentAmountMapper` to the generic strategy factory without changing its response union
+   or wire shapes.
+3. Register both families in the existing vertical per-`DealType` composition block and add
+   table-driven coverage for ticket user, ticket tenant, and settlement tenant across all deal types.
+4. Run the Phase 2 Concert unit/integration gates and `dotnet build api/Concertable.slnx`; use the
+   short artifacts roots recorded below when working from this deep Windows worktree.
+5. Review the final diff, update this ledger, check off Phase 2, and commit that verified phase.
 
-Do not begin Phase 2 in the same turn; hand back after the Phase 1 commit and ledger checkpoint.
+Do not begin Phase 3 in the same turn; hand back after the Phase 2 commit and ledger checkpoint.
 
 ## Completed work
 
@@ -39,6 +43,11 @@ Do not begin Phase 2 in the same turn; hand back after the Phase 1 commit and le
   explicit `IDealAccessor` separation, module-local ownership, and .NET 11 union compatibility.
 - Existing investigation plan revised rather than duplicated.
 - Planning baseline committed as `4dc7b9faf` (`docs(plan): define deal strategy registration refactor`).
+- Phase 1 implemented the scoped generic factory and atomic vertical builder, migrated terms to four
+  cohesive keyed `IDealTerms` leaves, retained operation-specific facades, and pinned rendering,
+  canonical serialization, fingerprints, keyed coverage, and lifetime semantics with tests.
+- The factory keeps its narrow `IKeyedServiceProvider` dependency through a scoped adapter that maps
+  to the current DI scope; root resolution of scoped keyed leaves remains invalid.
 
 ## Verification
 
@@ -46,6 +55,30 @@ Do not begin Phase 2 in the same turn; hand back after the Phase 1 commit and le
   branches in Deal/Concert.
 - Confirmed `main` was aligned with `origin/main` before creating the plan branch.
 - Documentation-only planning changes require no build or test run.
+- 2026-08-08: `git fetch origin --quiet` plus branch/worktree checks confirmed the dedicated worktree
+  is clean at its planning baseline, 0 commits behind `origin/main`, and contains no unrelated
+  branch-local paths.
+- 2026-08-08: full-solution build attempts compiled the changed Concert Application, Infrastructure,
+  UnitTests, API, Web, and IntegrationTests projects. The solution result remained red on unrelated
+  `MSB3030` copy failures for Customer DataAccess Infrastructure, shared Notification Infrastructure,
+  and B2B Conversations IntegrationTests after the interrupted first build; no green solution result
+  is claimed.
+- 2026-08-08: `docker ps` failed because the Docker Desktop Linux engine pipe did not exist.
+  Integration-debug stopped at its mandatory pre-flight; unit and integration tests were not run.
+- 2026-08-08: after Docker Desktop started, the Concert unit project ran 105 tests: 86 passed and 19
+  failed. Every failure shared the missing `IKeyedServiceProvider` DI registration; no green unit result
+  is claimed after the rejected diagnostic change was reverted. The integration run was stopped before
+  a terminal result.
+- 2026-08-09: `dotnet test` for `Concertable.B2B.Concert.UnitTests` passed 107/107 on the final Phase 1
+  source.
+- 2026-08-09: `./scripts/integration.ps1 concert --artifacts-path
+  C:\Users\tommy\AppData\Local\Temp\Concertable\launch-deal-strategy-integration` passed both projects:
+  B2B Concert 144/144 and Customer Concert 11/11.
+- 2026-08-09: `dotnet build api/Concertable.slnx --artifacts-path
+  C:\Users\tommy\AppData\Local\Temp\Concertable\launch-deal-strategy-build` succeeded with 0 errors
+  and 7 existing E2E nullable/generated-code warnings.
+- 2026-08-09: `git diff --check` passed and the final diff review found no Phase 2 paths or open Phase 1
+  findings.
 
 ## Reviews
 
@@ -64,7 +97,23 @@ Do not begin Phase 2 in the same turn; hand back after the Phase 1 commit and le
   a compatible later change to workflow internals, not a prerequisite for this plan.
 - The old plan's recommendation to expose a generic strategy map to consumers was superseded by named
   facades backed by a module-local factory.
-- No blocker is active.
+- Active prerequisite: Docker Desktop must be running before the Concert integration test gate.
+- Phase 1 intentionally leaves `DealTermsRenderer` and `DealTermsSerializer` as operation-specific
+  facades; only the four per-type leaves combine rendering and canonical serialization through
+  `IDealTerms`.
+- The builder accumulates registrations and validates them before mutating `IServiceCollection`, so
+  invalid duplicate, coverage, or conflicting-lifetime composition cannot leave partial keyed
+  registrations behind.
+- Every registered strategy family must explicitly declare its supported `DealType` coverage; the
+  builder rejects a family with no declaration before it mutates the service collection.
+- This deep Windows worktree pushes several normal `obj`/native-test paths to 260-269 characters.
+  Plain build/test commands can therefore fail with `MSB3030` or `0x800700CE` in untouched projects;
+  the supported SDK `--artifacts-path` option with the short roots recorded under Verification avoids
+  the path limit without changing source or weakening a test.
+- Two non-terminal integration attempts exhibited host-load/reset flakes: one SQL command timeout and
+  one cluster of date-conflict responses in `ContractApiTests`. The exact timeout test and the whole
+  contract class passed in isolation; after shutting down stale SDK build servers, the clean canonical
+  module run passed 155/155. No product or fixture change was justified by the non-reproducing failures.
 
 ## Event log
 
@@ -91,6 +140,61 @@ Do not begin Phase 2 in the same turn; hand back after the Phase 1 commit and le
 - Evidence: ledger worktree/branch identity and `git worktree list`.
 - Outcome: Plan implementation runs in an isolated worktree rather than occupying the main checkout.
 - Follow-up: Implement Phase 1 only in the dedicated worktree.
+
+### 2026-08-08 — Phase 1 implemented; verification blocked at Docker pre-flight
+
+- Action: Added the Concert-local generic strategy factory and vertical builder, migrated the terms
+  family to four cohesive keyed leaves, converted all factory-capturing facades to scoped, and added
+  pinned rendering/serialization/fingerprint plus composition/lifetime tests.
+- Evidence: uncommitted Concert Application, Infrastructure, and UnitTests paths in this worktree;
+  solution build output compiled every changed Concert project before unrelated generated-output copy
+  failures; `docker ps` could not connect to Docker Desktop.
+- Outcome: Runtime and test implementation is ready for verification, but Phase 1 is not complete and
+  must not be committed until the solution, unit, and integration gates are green.
+- Follow-up: Start Docker Desktop, complete the exact verification steps above, fix any failures, and
+  commit Phase 1 without beginning Phase 2.
+
+### 2026-08-08 — implementation rebased onto current main
+
+- Action: Fetched `origin`, verified the worktree/branch identity and dirty paths, preserved the
+  recorded Phase 1 work, merged current `origin/main`, and restored the work without conflicts.
+- Evidence: merge commit `c984c96a9`; branch is 0 commits behind `origin/main` at `b4cb18e88`; no PR;
+  dirty paths remain limited to the recorded Concert Phase 1 implementation and this ledger.
+- Outcome: The Phase 1 gate will run against current main while preserving the implementation state.
+- Follow-up: Complete the Docker, unit, integration, and full-solution build gates.
+
+### 2026-08-08 — Phase 1 verification stopped on keyed-provider composition
+
+- Action: Started Docker Desktop, ran the Concert unit project, isolated the common DI construction
+  failure, and stopped before completing integration verification.
+- Evidence: 105 Concert unit tests executed: 86 passed and 19 failed because
+  `IKeyedServiceProvider` was not registered for constructor injection. Replacing the dependency with
+  `IServiceProvider` made the representative and full unit runs green, proving the cause, but that
+  design change was rejected and reverted; the factory still depends on `IKeyedServiceProvider`.
+- Outcome: Phase 1 remains uncommitted and unverified. No integration or full-solution green result is
+  claimed.
+- Follow-up: Register the scoped keyed-provider abstraction correctly, then resume the Phase 1 gates.
+
+### 2026-08-08 — branch refreshed before Phase 1 verification resumed
+
+- Action: Fetched `origin`, preserved the recorded dirty Phase 1 tree, merged current `origin/main`,
+  and restored the work without conflicts.
+- Evidence: merge commit `3824aa4fd`; branch is 0 commits behind `origin/main` at `0fa7f6460`; no PR;
+  dirty paths remain limited to the recorded Concert Phase 1 implementation and this ledger.
+- Outcome: Phase 1 verification resumes against current main without changing its scope.
+- Follow-up: Add the scoped keyed-provider registration and scope-isolation test, then complete the
+  unit, integration, and solution-build gates.
+
+### 2026-08-09 — Phase 1 verified and checkpointed
+
+- Action: Added the scoped keyed-provider adapter and scope-isolation test, strengthened the builder
+  to require explicit coverage declarations, completed the unit/integration/build gates, and reviewed
+  the final Phase 1 diff.
+- Evidence: Concert unit tests 107/107; B2B Concert integration tests 144/144; Customer Concert
+  integration tests 11/11; full `api/Concertable.slnx` build 0 errors; `git diff --check` clean.
+- Outcome: Phase 1 is complete in this checkpoint; the terms pilot proves the reusable strategy
+  registration model without changing any Phase 2 family.
+- Follow-up: Implement and verify Phase 2 only.
 
 ## Resume prompt
 
