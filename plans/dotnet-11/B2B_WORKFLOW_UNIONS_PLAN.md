@@ -179,7 +179,8 @@ publication or external dependency requires a merge between the platform and uni
 4. Inventory SDK pins, `actions/setup-dotnet` inputs, Dockerfiles, deployment manifests, test scripts,
    and hard-coded `bin/.../net10.0` paths.
 5. Confirm the B2B Workers hosted-deployment restriction still applies. This does not block local/CI
-   implementation, but it blocks deploying that worker until the roadmap's GA/readiness item clears it.
+   implementation, but it blocks deploying that worker until a later GA/deployment-readiness effort
+   verifies hosted support.
 
 Gate: evidence and exact project matrix are recorded in the ledger; no runtime edit yet.
 
@@ -282,8 +283,8 @@ healthy Docker stack and drive the genuine failure to green.
   not a migration dependency.
 - Treat compiler exhaustiveness warnings as build failures in the affected projects so a new case
   cannot silently bypass dispatch.
-- The roadmap's GA follow-up owns the final SDK pin, Azure Functions host proof, and removal of the
-  deployment restriction; it does not repeat the workflow design.
+- Final GA SDK pinning, Azure Functions host proof, and removal of the deployment restriction are
+  outside this preview slice; they do not require repeating the workflow design.
 
 ## Definition of done
 
@@ -295,4 +296,3 @@ healthy Docker stack and drive the genuine failure to green.
 - The existing endpoint and domain behaviour are preserved with focused tests plus the full merge-queue
   E2E gate.
 - The source PR, publication, and generated platform-sync PR are terminal and green.
-- The roadmap accurately records the remaining GA/Azure Functions deployment-readiness follow-up.

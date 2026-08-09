@@ -12,8 +12,9 @@
 ## Current state
 
 The roadmap, implementation plan, and this recovery ledger exist on the isolated docs-planning branch.
-No implementation worktree, SDK installation, `global.json`, target-framework edit, workflow refactor,
-test run, package publication, or runtime deployment has occurred.
+The full docs review found three issues; all are fixed in this review-fix checkpoint and await
+incremental review. No implementation worktree, SDK installation, `global.json`, target-framework
+edit, workflow refactor, test run, package publication, or runtime deployment has occurred.
 
 The current design uses native unions only after ReUnion and the existing B2B typed-result work have
 landed. Published B2B contracts stay net10-compatible; the net11 boundary is the B2B runtime and its
@@ -53,7 +54,12 @@ native unions before the owner opens the gate.
 
 ## Reviews
 
-Pending docs review of the planning branch.
+- Full docs review: `b5af92fdc..9f4993214` (1 commit), artifact
+  `reviews/Docs-dotnet-11_b2b-workflow-unions-plan.md`, watermark `9f4993214`.
+- `HOME1` fixed in this commit: removed plan-to-roadmap coupling.
+- `INST1` fixed in this commit: corrected the roadmap invocation to `/resume-plan`.
+- `ACC1` fixed in this commit: corrected the B2B owner's premature “on current main” claim.
+- Incremental docs review of the fix commit is pending. Open findings: none.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -88,6 +94,15 @@ Pending docs review of the planning branch.
 - Outcome: selected a net11 B2B runtime boundary with net10 contracts and one coherent concrete-case
   native-union workflow model, blocked behind the existing B2B owner.
 - Follow-up: docs review and docs-only delivery; then wait for the registered owner handoff.
+
+### 2026-08-09 — full docs review fixes
+
+- Action: reviewed the committed plan through accuracy, contradiction, doc-home, concision, dangling
+  reference, and followable-instruction lenses; fixed all three findings.
+- Evidence: `reviews/Docs-dotnet-11_b2b-workflow-unions-plan.md`; `HOME1`, `INST1`, and `ACC1`.
+- Outcome: the plan is decoupled from its roadmap, its resume command is followable, and the owner
+  ledger reports the actual unmerged docs-branch state.
+- Follow-up: commit the fixes, run incremental docs review, then deliver through `/merge-docs`.
 
 ## Resume prompt
 

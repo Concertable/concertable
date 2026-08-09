@@ -149,7 +149,8 @@ the normal build, unit, architecture, and integration gates afterward; reserve E
 
 - Action: registered the B2B .NET 11/workflow-union plan as a downstream owner rather than allowing it
   to overlap this branch's Concert payment/cancel/finish checkpoints.
-- Evidence: `plans/dotnet-11/B2B_WORKFLOW_UNIONS_PLAN.md` and its companion ledger on current main.
+- Evidence: `plans/dotnet-11/B2B_WORKFLOW_UNIONS_PLAN.md` and its companion ledger on the isolated
+  docs-planning branch based on current `origin/main`.
 - Outcome: the dependent plan waits for this source PR and every resulting publication/platform-sync
   gate to become terminal and green.
 - Follow-up: at that gate, update the dependent ledger and surface its reserved implementation prompt.

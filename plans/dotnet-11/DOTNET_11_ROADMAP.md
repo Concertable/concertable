@@ -12,7 +12,7 @@
 Use the plan and ledger for the selected item:
 
 ```text
-$resume-plan @plans/dotnet-11/B2B_WORKFLOW_UNIONS_PROGRESS.md
+/resume-plan @plans/dotnet-11/B2B_WORKFLOW_UNIONS_PROGRESS.md
 ```
 
 Do not start another .NET 11 service slice until this one establishes the package, CI, hosting, and
