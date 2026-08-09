@@ -9,8 +9,8 @@
   PR is open. After the Auth `api/**` change merges, this work owns its generated publication and
   platform-sync gates to terminal green.
 - Last reconciled: `2026-08-09` from fresh `origin/main` `1043a917876cbed48b3c1f873cdcfcc7aadf9b80`,
-  pre-merge branch head `98599413adca3364ef7d3613850b66d69caf2f69`, the current mainline plan,
-  published Reunion `0.1.0-alpha.1`, and live local/GitHub state.
+  local branch head `754939891b25577a3047badef751a166e62db8cb`, the current mainline plan,
+  published Reunion `0.1.0-alpha.1`, and live local/GitHub preflight state.
 
 ## Current state
 
@@ -70,20 +70,18 @@ Direct and HTTP coverage prove success, owned refusals, cancellation propagation
 privacy/no-op behavior, invalid-token no-mutation, and one-time token consumption. The final
 `IAuthService` surface contains no command-success boolean or nullable login/logout return.
 
-Full review through `2a6fb0069c20491c5f1da6a21ce0aa3bf6e56508` and incremental review of the
-three post-watermark branch-owned commits both completed with no findings. The incremental review
-also checked the package/solution merge resolutions; later merge `e196f13e1` contains only already-
-merged mobile CI/docs changes. The clean review artifact was deleted under the review lifecycle rule.
-
-The earlier PR preflight is stale. Published Reunion `.1` and Auth's isolated topology make the direct
-carrier conversion implementable now; Payment delivery is not an Auth implementation prerequisite.
+Fresh full code and security review over base `1043a917876cbed48b3c1f873cdcfcc7aadf9b80`
+through head `754939891b25577a3047badef751a166e62db8cb` completed with no findings. The current review work order
+is stamped at the verified code head for the merge gate. A fresh fetch left `origin/main` unchanged,
+the branch zero behind / 29 ahead, with no remote branch, branch PR, or open platform-sync PR. The
+read-only PR preflight is GREEN; its only delivery note is that the 29 local commits remain unpushed.
 
 ## Next Steps
 
-Commit the verified published-Reunion conversion checkpoint, run incremental review from the recorded
-watermark through that code commit, fetch and reconcile fresh `origin/main`, and run PR preflight.
-Repeat affected verification only if the current-base reconciliation changes relevant Auth/package
-inputs. Do not push without instruction; when delivered, require full merge-queue API and UI E2E.
+Do not push without instruction. On explicit delivery instruction, push the committed branch
+changes, open the plain GitHub PR, add no E2E skip label or trailer, and continue the normal merge
+workflow with full merge-queue API and UI E2E plus publication/platform-sync ownership to terminal
+green.
 
 ## Completed work
 
@@ -252,6 +250,12 @@ inputs. Do not push without instruction; when delivered, require full merge-queu
 
 ## Reviews
 
+Fresh full code and security review completed on 2026-08-09 over
+`1043a917876cbed48b3c1f873cdcfcc7aadf9b80..754939891b25577a3047badef751a166e62db8cb`
+(29 commits). No finding survived the correctness, security, isolation, boundary, seeding, C#
+convention, or changed-path coverage lenses. The current work order is stamped at the reviewed code
+head for the merge gate; no finding IDs or dispositions exist.
+
 Full code review completed on 2026-08-06 over
 `48bd0eaf5e8079d07302ec4e07dfdc78167427d2..2a6fb0069c20491c5f1da6a21ce0aa3bf6e56508`
 (17 commits). The stamped artifact `reviews/Feature-typed-result_auth-outcomes.md` recorded no findings
@@ -302,6 +306,18 @@ finding IDs or dispositions exist. Later merge `e196f13e1` contains only already
   amendment/separate additive shared item before implementation proceeds.
 
 ## Event log
+
+### 2026-08-09 - Review and PR preflight completed
+
+- Action: Ran a fresh full code/security review of the net Auth branch, refreshed origin, and executed
+  the repository's read-only PR readiness checks.
+- Evidence: reviewed `1043a9178..754939891` (29 commits) with no findings; review and security markers
+  are stamped at `754939891`; fresh `origin/main` remains `1043a9178`; branch is zero behind / 29
+  ahead; code is committed; no remote branch, branch PR, or open platform-sync PR exists.
+- Outcome: The branch is GREEN to publish. The review work order is the only uncommitted markdown and
+  the merge queue owns full API/UI E2E.
+- Follow-up: wait for explicit delivery instruction, then push and open the plain GitHub PR without
+  skip labels or trailers.
 
 ### 2026-08-09 - Published Reunion conversion completed
 
