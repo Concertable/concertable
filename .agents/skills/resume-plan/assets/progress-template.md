@@ -13,11 +13,11 @@
 
 ## Next Steps
 
-<The single resolved action for the next agent, expressed as concrete, self-contained steps with any
-prerequisite or blocking gate. Apply the repository's standing instructions and current evidence before
-writing it, so it directs execution instead of presenting alternatives. This is the single source of
-truth for what to do next — resume/handoff prompts point here instead of restating it, so they can never
-drift. Keep it current at every checkpoint.>
+<The single resolved action for the next agent, expressed as concrete, self-contained steps. If no
+action can proceed, start with three single-line fields: `Blocked: <exact unmet gate>`,
+`Unblock action: <what must be done, by whom or where>`, and `Resume when: <objective evidence>`.
+Apply the repository's standing instructions and current evidence before writing it. Actionable
+resume/handoff prompts point here instead of restating it; blocked plans never emit their own pointer.>
 
 ## Completed work
 
@@ -46,9 +46,10 @@ drift. Keep it current at every checkpoint.>
 
 ## Resume prompt
 
-<The single cd-first pointer to hand off after `/clear`. It ONLY points at this ledger's `## Next Steps`;
-never restate the branch, gates, checkpoints, or steps here — they live in `## Next Steps` and must not be
-duplicated where they can drift. Keep it verbatim in this fenced block:>
+<The single cd-first pointer to hand off after `/clear` when `## Next Steps` is actionable. Never emit
+it while the ledger carries the blocked-state fields. It ONLY points at this ledger's `## Next Steps`;
+never restate the branch, gates, checkpoints, or steps here — they live in `## Next Steps` and must not
+be duplicated where they can drift. Keep it verbatim in this fenced block:>
 
 ```
 cd <absolute worktree path>
