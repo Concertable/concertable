@@ -5,9 +5,9 @@
 - Branch: `Feature/typed-result_reunion-integration`, current with `origin/main` `162b8412a`; code
   head `a779fe041` retires the discarded Shared rehearsal and migrates Payment/Payment.Client to
   Reunion; full code and security review are clean through that exact head; current HEAD is the
-  ledger-only review checkpoint in `this commit`
-- PR: not opened for implementation; docs design PR #443 merged as `fd0b666b9`; sub-plan
-  reconciliation PR #445 merged as `d6a572e0d`
+  ledger-only review checkpoint plus this delivery checkpoint
+- PR: implementation PR #453 is open at reviewed work head `a779fe041`; docs design PR #443 merged
+  as `fd0b666b9`; sub-plan reconciliation PR #445 merged as `d6a572e0d`
 - Dependency/package gates: docs design merged; reviewed Reunion carrier commit `7bf5f66` is contained
   in merged PR #1 head `e52129d241711f2e1498ac166e2c510b167606a3`; corrective PR #2 removed the
   mistaken `Reunion.Errors.Extensions` package and merged as release head
@@ -18,8 +18,8 @@
   validation mapping, and generic success mappers; the obsolete Concertable HTTP-terminal checkpoint
   is not an input; B2B, Auth, Customer, and Customer Ticket remain inventoried and must consume the
   Payment.Client publication rather than perform independent package cutovers; Phase 3 is locally
-  complete and the Phase 4 code, test, and isolated package-consumer gates are green, while source
-  PR, merge-queue E2E, publication, and generated platform sync remain pending
+  complete and the Phase 4 code, test, and isolated package-consumer gates are green; source PR #453
+  is open, while merge-queue E2E, publication, and generated platform sync remain pending
 - Last reconciled: 2026-08-09 against current Concertable `origin/main` `162b8412a`, Concertable code
   and reviewed implementation head `a779fe041`, ledger checkpoint `this commit`, published Reunion
   release head `e33b40f`, current fetched Reunion
@@ -29,7 +29,9 @@
 ## Current state
 
 The repository-wide audit and Reunion publication are complete. The reserved integration worktree is
-current with `origin/main` `162b8412a` and has no remote branch or PR. The current Phase 3 retirement
+current with `origin/main` `162b8412a`. Remote branch
+`Feature/typed-result_reunion-integration` and implementation PR #453 are open at exact reviewed
+work head `a779fe041`; this ledger-only delivery checkpoint follows it. The current Phase 3 retirement
 returns every `api/Concertable.Shared` source, project, and test path exactly to `origin/main`, deletes
 the obsolete HTTP-terminal plan pair, and leaves no Reunion package or overload from the discarded
 Shared rehearsal.
@@ -103,16 +105,13 @@ detached Reunion release worktree was removed.
 
 ## Next Steps
 
-Blocked: Source delivery cannot proceed without Tommy's explicit push/PR instruction.
-
-Unblock action: Tommy asks to push this branch and open its implementation PR.
-
-Resume when: That instruction is given; then push reviewed head `a779fe041`, verify remote equality,
-open the source PR, select full merge-queue E2E, and carry the Payment.Client publication and
-generated platform sync through their terminal gates before Phase 5.
+Run `/merge` for implementation PR #453. Select full merge-queue E2E, then carry the
+Payment.Client publication and generated platform sync through their terminal gates before Phase 5.
 
 ## Completed work
 
+- Pushed reviewed implementation head `a779fe041`, verified exact remote equality, and opened
+  implementation PR #453 against `main`.
 - Completed full code and security review of `162b8412a..a779fe041` with no findings; review watermark
   and security watermark both identify exact committed head `a779fe041`.
 - Completed Phase 3 retirement: removed the superseded Shared Reunion rehearsal, restored all Shared
@@ -184,6 +183,8 @@ generated platform sync through their terminal gates before Phase 5.
 
 ## Verification
 
+- GitHub PR #453 is `OPEN` against `main`; its initial `headRefOid` and the fetched remote branch
+  both equal reviewed implementation head `a779fe04139e8e33fca7f294a26c41e44c89dda7`.
 - Full code/security review: `reviews/Feature-typed-result_reunion-integration.md`; implementation
   range `162b8412a..a779fe041` (32 commits), no findings. The artifact is restamped through the
   ledger-only `this commit` after verifying its plan-progress delta.
@@ -387,6 +388,18 @@ generated platform sync through their terminal gates before Phase 5.
   waits for the Phase 4 Payment.Client publication/sync before PR #425 is updated once.
 
 ## Event log
+
+### 2026-08-09 — implementation PR opened and work head verified
+
+- Action: Pushed reviewed implementation head `a779fe041`, fetched the remote branch, and opened
+  implementation PR #453 against `main`.
+- Evidence: remote `Feature/typed-result_reunion-integration` and initial PR `headRefOid` both equal
+  `a779fe04139e8e33fca7f294a26c41e44c89dda7`; PR URL
+  `https://github.com/Concertable/concertable/pull/453`.
+- Outcome: Source delivery is open with the reviewed work head intact; merge-queue E2E, publication,
+  and generated platform sync remain pending.
+- Follow-up: Run `/merge` for PR #453 with full E2E and carry its downstream package gates to their
+  terminal states before Phase 5.
 
 ### 2026-08-09 — Phase 4 committed review gate passed
 
