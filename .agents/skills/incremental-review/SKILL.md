@@ -59,6 +59,7 @@ Read `.agents/skillsthe `code-review` skill/SKILL.md` and **follow it from Step 
 
 That means, on the scoped diff:
 
+- Run the native review layer (code-review Step 1c) over `<start>..HEAD`, and the security layer (Step 1d) when the delta touches security-sensitive paths; `NAT#`/`SEC#` IDs continue without renumbering.
 - Load the rules (code-review Step 2 doc list).
 - Review through all six lenses — correctness, microservice isolation, module boundaries, seeding, C# conventions, test coverage of changed paths (code-review Step 3).
 - Apply the ≥80-confidence filter (code-review Step 4).
