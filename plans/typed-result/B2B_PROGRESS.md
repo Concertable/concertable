@@ -4,9 +4,8 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-B2BTypedResultMigration`
 - Branch: `Refactor/B2BTypedResultMigration`
 - PR: not opened
-- Dependency/package gates: Payment PR #392 and platform-sync PR #420 are terminal; this worktree now
-  waits for `plans/typed-result/REUNION_INTEGRATION_PROGRESS.md` to merge its Phase 4 generated
-  platform-sync PR before checkpoints 6-7 resume
+- Dependency/package gates: implementation is open against exact local Payment packages from
+  `a779fe041`; Payment source PR, publication, and generated sync gate delivery and final revalidation
 - Last reconciled: 2026-08-09 against `origin/main` `c72b058af`, local head `ba5791268`, the merged
   Reunion plan, and live worktree/PR inventory
 
@@ -38,17 +37,21 @@ platform-sync PR #420 landed the B2B/Customer owned-result consumer migration as
 post-merge feed contains platform `0.1.0-alpha.0.857`. Fresh `origin/main` is now `c72b058af`; the
 clean branch is at `ba5791268`, 130 commits behind and 25 ahead, with no PR or remote branch.
 
-The merged Reunion plan centralizes the carrier and Shared.Api substitutions in one producer PR plus
-one generated platform-sync consumer migration. Repeatedly merging pre-cutover main into this branch
-would create avoidable reconciliation and verification work, so checkpoints 6-7 remain preserved on
-the clean branch until that Phase 4 sync is merged. B2B then consumes the published Reunion-backed
-Payment/Kernel/Shared.Api closure and resolves only its service-owned semantics.
+Exact local packages make checkpoints 6-7 independently implementable without changing delivery order.
+`Concertable.Payment.Contracts` and `Concertable.Payment.Client` `0.1.0-alpha.0.911` were packed from
+repository commit `a779fe04139e8e33fca7f294a26c41e44c89dda7` into
+`%LOCALAPPDATA%\NuGet\Concertable-Reunion-Parallel\a779fe041`. Their SHA-256 hashes
+are `7DDA02F542F606F6707D8305E8524E4227A7F2222F28113F8226D0AD239D3DA8` and
+`A52EA0562FA36EA123450BE2DC022E9F33AE9510FB100E4309F245DEFCC14D14` respectively. The manifests name
+that exact commit; Client depends on Contracts `.911`, Reunion `.1`, and Reunion.Errors `.1`.
 
 ## Next Steps
 
-Blocked: The ReUnion integration Phase 4 generated platform-sync PR is not yet merged.
-Unblock action: The owner at `plans/typed-result/REUNION_INTEGRATION_PROGRESS.md` must finish the shared producer cutover, merge its generated platform-sync PR, then update this ledger.
-Resume when: Current main contains the published Reunion-backed platform pin and `plans/typed-result/REUNION_INTEGRATION_PROGRESS.md` records its Phase 4 generated platform-sync PR as merged.
+Sync this worktree with current `origin/main`, preserving the authoritative checkpoints 1-5, then
+complete checkpoints 6-7 against the recorded `.911` local packages. Use only temporary restore source
+and package-version inputs; commit no local feed/path/pin. Run the B2B verification gates and full code
+review, restore the published-package configuration, and leave the branch delivery-ready with exact
+published Payment.Client revalidation as its next gate. Do not push or merge until separately instructed.
 
 ## Completed work
 
@@ -130,8 +133,8 @@ Resume when: Current main contains the published Reunion-backed platform pin and
 
 - Revoked invitation acceptance is `InvitationNotPending`, an explicit Conflict outcome; the stale
   integration expectation was corrected from Bad Request to Conflict.
-- The Reunion integration is now the exclusive cross-cutting carrier/package owner. B2B remains the
-  exclusive semantic owner and waits for its generated Phase 4 platform baseline before one final sync.
+- B2B remains the exclusive semantic owner. Exact local Payment packages open implementation now;
+  publication and generated sync remain the final delivery/revalidation gate.
 
 ## Downstream handoffs
 
@@ -143,6 +146,14 @@ Resume when: Current main contains the published Reunion-backed platform pin and
   overlapping Concert workflow changes.
 
 ## Event log
+
+### 2026-08-09 — Reunion preparation unblocked
+
+- Action: Separated the implementation and delivery DAGs and recorded exact local Payment packages.
+- Evidence: producer `a779fe041`; `.911` manifests and SHA-256 values in `## Current state`.
+- Outcome: checkpoints 6-7 can be implemented, tested, committed, and reviewed now; published-package
+  revalidation remains a delivery gate.
+- Follow-up: execute `## Next Steps`.
 
 ### 2026-08-09 - registered downstream .NET 11 workflow-union handoff
 
