@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `ff7be0f82c2d2e07fe936eb7ec067a769b3831b9`  _(2026-08-09)_
-**Security-reviewed up to commit:** `ff7be0f82c2d2e07fe936eb7ec067a769b3831b9`  _(2026-08-09)_
+**Reviewed up to commit:** `b376131f73933849f6af44111d84a1b69eaf9c78`  _(2026-08-09)_
+**Security-reviewed up to commit:** `b376131f73933849f6af44111d84a1b69eaf9c78`  _(2026-08-09)_
 
 > Range reviewed: `dc0da93..abcc9be` (2 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -63,3 +63,25 @@ guardrails from PR #454; they do not alter runtime behavior. After the merge, th
 
 No issues found. The imported PR #456 change only simplifies the already-reviewed empty-block
 convention wording; the runtime tree and verification results are unchanged.
+
+## Incremental review — 2026-08-09 (E2E isolation correction)
+
+> Range reviewed: `ff7be0f..b376131` (10 commits; 4 first-parent commits).
+
+One architecture issue was found and fixed in `b376131`: the standalone B2B AppHost imported
+`Concertable.Customer.AppHost.Extensions` only to provision Customer's unused ASB subscriptions.
+The reference and `AddCustomerTopology()` call are removed; Search topology already provisions the
+B2B event topics used by this stack.
+
+No open issues remain. `3f9d954` removes the E2E filter seam from production `WebhookProcessor`,
+places account-wide Stripe event isolation in a `Payment.Seed` decorator, restores the ordinary
+declined-card operation plus downstream UI assertion, renames the harness resource to
+`StripeCustomerResolver`, and exposes Payment's partial owner mappings as `Option<string>`. This
+supersedes the earlier declined-card review description above. Fixture teardown remains unchanged and
+its duplication is recorded in the shared E2E technical-debt file instead of introducing a cleanup
+callback registry.
+
+Verified after merging current `origin/main`: Payment unit tests 232/232, E2E Stripe helper tests 5/5,
+and both B2B and Customer UI E2E project builds succeed with zero errors. Checked correctness,
+security and secret handling, microservice isolation, module boundaries, seeding, C# conventions,
+and changed-path test coverage.
