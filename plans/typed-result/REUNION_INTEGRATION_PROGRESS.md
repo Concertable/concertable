@@ -11,7 +11,8 @@
   the B2B, Auth, Customer, Customer Ticket, and semantic HTTP-terminal owners remain inventoried and
   must consume the one generated platform-sync baseline rather than perform local carrier cutovers
 - Last reconciled: 2026-08-09 against the five typed-result worktrees at Concertable `origin/main`
-  `82644721f`, GitHub PR metadata, and Reunion commit `7bf5f66`
+  `82644721f`, verified HTTP-terminal checkpoint `c593150e4`, GitHub PR metadata, and Reunion commit
+  `7bf5f66`
 
 ## Current state
 
@@ -39,11 +40,13 @@ The authoritative worktrees are now locally visible and reconciled without mutat
 | Auth `Feature/typed-result_auth-outcomes` | clean at `98599413a`; 222 behind / 27 ahead | no branch PR or remote branch; implementation/review complete |
 | Customer non-Payment `Feature/typed-result_customer-outcomes` | clean at `e7c44f5b3`; 121 behind / 31 ahead | PR #425 remains open at `e60219f7d`; two later local commits are ledger-only |
 | Customer Ticket `Feature/TypedResultMigrationPhase2` | clean at `b6a671ef9`; 484 behind / 29 ahead of main | PR #282 remains open at `26ed63b896`; recreate its unique semantics after integration |
-| HTTP terminals `Refactor/typed-result_http-terminals` | `1d261e3ce`; 104 behind / 1 ahead, with the same five modified source/docs paths and untracked review artifact | preserve as local Phase 3 input; do not publish it independently |
+| HTTP terminals `Refactor/typed-result_http-terminals` | clean code/test checkpoint `c593150e4`; 104 behind / 3 ahead | verified Phase 3 input; do not publish it independently |
 
 The HTTP-terminal work changes the same published `Concertable.Shared.Api` surface as Reunion Phase 3.
-Its verified semantic naming work will be completed as a local checkpoint and incorporated into the
-single Shared producer cutover, avoiding a second package publication and generated sync.
+Its verified semantic naming checkpoint is complete at `c593150e4`: Shared.Api Release 63/63, Release
+solution build 0 errors, old-terminal grep zero, and full code review clean after TEST1 was fixed. It
+will be incorporated into the single Shared producer cutover, avoiding a second package publication
+and generated sync.
 
 Phase 1 stopped before any package or carrier edit because the plan-pinned Reunion commit is absent.
 The newly cloned `tomjseery/Reunion` repository has `master` at `ab2e959` and open PR #1 at
@@ -75,6 +78,8 @@ package/carrier substitution, run the complete Phase 1 gate, and commit without 
 - Created the reserved implementation worktree from current `origin/main` `82644721f`, reconfirmed
   every authoritative typed-result owner before the first Phase 1 source edit, and recorded the
   verified external blocker in `this commit`.
+- Registered the reviewed semantic HTTP-terminal checkpoint `c593150e4` as the Phase 3 input without
+  pushing or publishing its branch.
 - Roadmap reconciliation, this implementation plan, and its companion ledger are created in
   `this commit` on the isolated docs branch based on current `origin/main`.
 - Docs design PR #443 merged as `fd0b666b9`; its source worktree and local branch were removed, and
@@ -87,6 +92,9 @@ package/carrier substitution, run the complete Phase 1 gate, and commit without 
   no commit for that SHA.
 - `git ls-tree` of PR #1 confirms its source tree contains `src/Reunion` but no
   `src/Reunion.AspNetCore`, so the remote PR head cannot satisfy the planned two-package battle test.
+- HTTP-terminal checkpoint `c593150e4`: Shared.Api Release 63/63, Release solution build 0 errors and
+  6 existing warnings, old-terminal content/path grep zero, and full code review TEST1 fixed with no
+  remaining findings.
 
 - Read-only source inspection covered all Concertable functional carrier files, task and collection
   extensions, `IError`/definition types, Shared.Api terminals, `ApplicationProblemDetails`, controller
@@ -156,7 +164,7 @@ package/carrier substitution, run the complete Phase 1 gate, and commit without 
 - `plans/typed-result/HTTP_RESULT_TERMINALS_PROGRESS.md` in
   `C:\Users\TommySeery\source\repos\Concertable.worktrees\Refactor\typed-result_http-terminals`
   waits for matching Reunion packages to be published at the Phase 2 gate; its verified local
-  checkpoint is then incorporated into this plan's single Shared producer PR.
+  checkpoint `c593150e4` is then incorporated into this plan's single Shared producer PR.
 - `plans/typed-result/B2B_PROGRESS.md` in
   `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-B2BTypedResultMigration`
   waits for the Phase 4 generated platform-sync PR to merge before its one current-main reconciliation.
@@ -168,6 +176,16 @@ package/carrier substitution, run the complete Phase 1 gate, and commit without 
   waits for the Phase 4 generated platform-sync PR to merge before PR #425 is updated once.
 
 ## Event log
+
+### 2026-08-09 — semantic HTTP-terminal checkpoint registered
+
+- Action: Registered the completed local HTTP-terminal checkpoint with the Reunion producer owner.
+- Evidence: `Refactor/typed-result_http-terminals` code/test head `c593150e4`; Shared.Api Release 63/63;
+  Release solution build 0 errors and 6 existing warnings; old-terminal grep zero; full code review
+  TEST1 fixed with no remaining findings.
+- Outcome: Phase 3 has one exact semantic-terminal input and no competing Shared.Api publication.
+- Follow-up: Keep the HTTP-terminal owner waiting until the Phase 2 matching-package publication gate
+  opens, then incorporate `c593150e4` into the single Shared producer cutover.
 
 ### 2026-08-09 — Phase 1 worktree and owner reconciliation
 
