@@ -29,16 +29,9 @@
 - When work remains, end with one prompt that advances it — or, when several independent pieces remain,
   one prompt each so they run in separate contexts.
 - A blocked plan never emits its own continuation pointer. First do any safe, authorized work that can
-  remove the blocker in the current session. If the gate still cannot move, write these exact
-  single-line fields at the start of its `## Next Steps`:
-
-  ```text
-  Blocked: <the exact unmet gate>
-  Unblock action: <what must be done, by whom or where>
-  Resume when: <the objective evidence that proves the gate opened>
-  ```
-
-  Report all three lines verbatim to Tommy. Then route the unblock action instead of routing back into the
+  remove the blocker in the current session. If the gate still cannot move, record the three-line hard
+  blocker schema from [`plans/agents/PLAN.md`](plans/agents/PLAN.md) at the start of `## Next Steps` and
+  report those lines verbatim to Tommy. Then route the unblock action instead of routing back into the
   blocked plan:
   - resolving work already in flight — register the waiting ledger in the owner's
     `## Downstream handoffs`, name that owner, and emit no prompt; the owner surfaces the waiting

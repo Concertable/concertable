@@ -70,7 +70,7 @@ implementation completion is not lifecycle completion while review, PR, merge, p
 dependency, or platform-sync work remains. A summary, a prose “next steps” sentence, or an offer to
 continue does not satisfy this gate. The exception is a registered in-flight owner wait under the
 cross-plan blocker rule above or any hard stop recorded with the exact `Blocked:`, `Unblock action:`,
-and `Resume when:` fields from [`../PROMPTS.md`](../PROMPTS.md). A blocked plan's own pointer is
+and `Resume when:` fields from [`agents/PLAN.md`](agents/PLAN.md). A blocked plan's own pointer is
 forbidden: report those three lines verbatim and route the resolver instead. Trusted repository Stop hooks
 enforce the invariant for Claude and Codex; follow the hook's actionable-versus-blocked instruction
 rather than weakening or bypassing it.
