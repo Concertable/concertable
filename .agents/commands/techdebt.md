@@ -1,9 +1,8 @@
 ---
-name: techdebt
-description: Pick one Concertable tech-debt item and take it through investigation, durable implementation, verification, commit, push, and PR from the persistent isolated Chore/TechDebt worktree. Use when Tommy invokes $techdebt or /techdebt, asks to work through TECH_DEBT.md, or requests one self-contained debt item end to end.
+description: Pick one tech-debt item and take it all the way to a PR, in an isolated worktree
 ---
 
-# Tech debt
+# /techdebt
 
 Start a self-contained tech-debt session in an **isolated worktree** so nothing touches in-flight branches.
 
