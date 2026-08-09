@@ -1,7 +1,8 @@
 # Agent configuration
 
-This folder holds Concertable's repo-local agent skills. They are written against `AGENTS.md` and
-should stay agent-agnostic: no Claude-specific tool names and no missing workflow surfaces.
+This folder holds Concertable's repo-local agent skills and canonical command instructions. They are
+written against `AGENTS.md` and should stay agent-agnostic: no Claude-specific tool names and no
+missing workflow surfaces.
 
 ## Adding or updating skills
 
@@ -30,10 +31,15 @@ agent-starter-kit/
 `pull-main` is intentionally not part of the global set anymore. `sync` covers the useful default
 branch update flow.
 
-## Invoking repository skills
+## Repository slash commands
 
-Codex discovers `.agents/skills/` automatically; repository skills do not need a plugin or marketplace.
-In the ChatGPT desktop app, type `@` and select the skill. In Codex CLI, type `$` or use `/skills`.
+Canonical command instructions live under `.agents/commands/`. Claude and Codex command entry points
+must be thin wrappers that reference the matching canonical file so their behavior cannot drift.
 
-Claude slash-command wrappers under `.claude/commands/` must remain thin references to the canonical
-skill so the workflow cannot drift between agents.
+Codex discovers those wrappers through the repo's `concertable` plugin under
+`plugins/concertable/commands/`. Install the repo marketplace once, then install the plugin:
+
+```powershell
+codex plugin marketplace add <repo-root>
+codex plugin add concertable@concertable
+```

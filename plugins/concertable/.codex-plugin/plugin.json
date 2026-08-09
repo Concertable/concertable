@@ -1,0 +1,23 @@
+{
+  "name": "concertable",
+  "version": "0.1.0+codex.20260808231748",
+  "description": "Repository-local commands for Concertable development workflows.",
+  "author": {
+    "name": "Concertable"
+  },
+  "interface": {
+    "displayName": "Concertable",
+    "shortDescription": "Run Concertable repository workflows.",
+    "longDescription": "Concertable development commands that operate against the repository's own guidance and workflow conventions.",
+    "developerName": "Concertable",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Run a Concertable repository workflow."
+    ]
+  }
+}
