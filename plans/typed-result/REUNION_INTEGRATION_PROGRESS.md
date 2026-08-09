@@ -1,24 +1,26 @@
 # Reunion integration progress
 
 - Plan: `plans/typed-result/REUNION_INTEGRATION_PLAN.md`
-- Worktree: not created
-- Branch: `Feature/typed-result_reunion-integration` (reserved; not created)
+- Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_reunion-integration`
+- Branch: `Feature/typed-result_reunion-integration`, created from `origin/main` `82644721f`; the
+  local-only blocker checkpoint is carried by `this commit`
 - PR: not opened for implementation; docs design PR #443 merged as `fd0b666b9`; sub-plan
   reconciliation PR #445 merged as `d6a572e0d`
-- Dependency/package gates: docs design merged; Reunion `7bf5f66` is available but unpublished; the
-  B2B, Auth, Customer, Customer Ticket, and semantic HTTP-terminal owners are inventoried and must
-  consume the one generated platform-sync baseline rather than perform local carrier cutovers
+- Dependency/package gates: docs design merged; Phase 1 is blocked because Reunion `7bf5f66` is not
+  present locally or on GitHub and must be synced from its source workstation before it can be packed;
+  the B2B, Auth, Customer, Customer Ticket, and semantic HTTP-terminal owners remain inventoried and
+  must consume the one generated platform-sync baseline rather than perform local carrier cutovers
 - Last reconciled: 2026-08-09 against the five typed-result worktrees at Concertable `origin/main`
-  `c72b058af`, sub-plan delivery on current main `d6a572e0d`, GitHub PR metadata, and Reunion commit
-  `7bf5f66`
+  `82644721f`, GitHub PR metadata, and Reunion commit `7bf5f66`
 
 ## Current state
 
-The repository-wide audit and integration design are complete and approved. Docs design PR #443
+The repository-wide audit and integration design are complete and approved. The reserved integration
+worktree now exists from `origin/main` `82644721f`, has no remote branch or PR, and contains only this
+local blocker checkpoint. Docs design PR #443
 merged the roadmap, plan, and this recovery ledger as `fd0b666b9`; closeout PR #444 advanced main to
 `c72b058af`. No Concertable or Reunion runtime file, package reference, existing migration branch, or
-existing PR was changed by either docs PR. The implementation worktree, branch, packages, and PR do
-not exist yet.
+existing PR was changed by either docs PR. No Phase 1 package or source edit has started yet.
 
 Docs-only PR #445 published the reconciled B2B, Auth, Customer, and HTTP-terminal plan pairs plus the
 central dependency map as `d6a572e0d`. It contained only eleven Markdown files, passed a clean docs
@@ -31,26 +33,31 @@ not treated as complete; their local worktrees are included in the inventory bel
 
 The authoritative worktrees are now locally visible and reconciled without mutation:
 
-| Owner | Local state against `origin/main` `c72b058af` | Delivery state |
+| Owner | Local state against `origin/main` `82644721f` | Delivery state |
 |---|---|---|
-| B2B `Refactor/B2BTypedResultMigration` | clean at `ba5791268`; 130 behind / 25 ahead | no branch PR or remote branch; checkpoints 1-5 complete |
-| Auth `Feature/typed-result_auth-outcomes` | clean at `98599413a`; 218 behind / 27 ahead | no branch PR or remote branch; implementation/review complete |
-| Customer non-Payment `Feature/typed-result_customer-outcomes` | clean at `e7c44f5b3`; 117 behind / 31 ahead | PR #425 is open at `e60219f7d`; two later local commits are ledger-only |
-| Customer Ticket `Feature/TypedResultMigrationPhase2` | clean at `b6a671ef9`; 480 behind / 29 ahead of main | PR #282 is open at `26ed63b896`; recreate its unique semantics after integration |
-| HTTP terminals `Refactor/typed-result_http-terminals` | `1d261e3ce`; 100 behind / 1 ahead, with five modified source/docs paths and an in-progress review artifact | preserve as local Phase 3 input; do not publish it independently |
+| B2B `Refactor/B2BTypedResultMigration` | clean at `ba5791268`; 134 behind / 25 ahead | no branch PR or remote branch; checkpoints 1-5 complete |
+| Auth `Feature/typed-result_auth-outcomes` | clean at `98599413a`; 222 behind / 27 ahead | no branch PR or remote branch; implementation/review complete |
+| Customer non-Payment `Feature/typed-result_customer-outcomes` | clean at `e7c44f5b3`; 121 behind / 31 ahead | PR #425 remains open at `e60219f7d`; two later local commits are ledger-only |
+| Customer Ticket `Feature/TypedResultMigrationPhase2` | clean at `b6a671ef9`; 484 behind / 29 ahead of main | PR #282 remains open at `26ed63b896`; recreate its unique semantics after integration |
+| HTTP terminals `Refactor/typed-result_http-terminals` | `1d261e3ce`; 104 behind / 1 ahead, with the same five modified source/docs paths and untracked review artifact | preserve as local Phase 3 input; do not publish it independently |
 
 The HTTP-terminal work changes the same published `Concertable.Shared.Api` surface as Reunion Phase 3.
 Its verified semantic naming work will be completed as a local checkpoint and incorporated into the
 single Shared producer cutover, avoiding a second package publication and generated sync.
 
+Phase 1 stopped before any package or carrier edit because the plan-pinned Reunion commit is absent.
+The newly cloned `tomjseery/Reunion` repository has `master` at `ab2e959` and open PR #1 at
+`03fefaa`; neither contains `7bf5f66`, and PR #1 has no `Reunion.AspNetCore` project. A direct Git
+fetch and GitHub commit lookup both confirm that the exact object was never pushed. Substituting PR #1
+would fail the required AspNetCore dependency/provenance gate.
+
 ## Next Steps
 
-Create the reserved `Feature/typed-result_reunion-integration` worktree from fresh `origin/main`, then
-execute Phase 1 only: pack `Reunion` and `Reunion.AspNetCore` from `7bf5f66` at the same disposable
-version into the local feed, inspect the AspNetCore dependency, apply the package/carrier substitution
-only on the reserved integration branch, and run the Phase 1 provenance, parity, Shared.Api, and
-Release build gates. Stop after committing the verified local-only Phase 1 checkpoint; do not push it,
-publish packages, or start the Concertable producer cutover in that phase.
+Make the exact Reunion commit `7bf5f66` available at
+`C:\Users\TommySeery\source\repos\Reunion` by syncing the source workstation or pushing a branch that
+contains it to `tomjseery/Reunion`. Then verify the full commit identity and execute the remainder of
+Phase 1 only: pack both matching packages, inspect the AspNetCore dependency, perform the local-only
+package/carrier substitution, run the complete Phase 1 gate, and commit without pushing or publishing.
 
 ## Completed work
 
@@ -65,12 +72,21 @@ publish packages, or start the Concertable producer cutover in that phase.
   state, PR ownership, and Reunion dependency gates after the docs merge.
 - Published the reconciled parent/roadmap/sub-plan state on main through docs-only PR #445 as
   `d6a572e0d`.
+- Created the reserved implementation worktree from current `origin/main` `82644721f`, reconfirmed
+  every authoritative typed-result owner before the first Phase 1 source edit, and recorded the
+  verified external blocker in `this commit`.
 - Roadmap reconciliation, this implementation plan, and its companion ledger are created in
   `this commit` on the isolated docs branch based on current `origin/main`.
 - Docs design PR #443 merged as `fd0b666b9`; its source worktree and local branch were removed, and
   GitHub had already removed the remote branch.
 
 ## Verification
+
+- The fresh `tomjseery/Reunion` clone resolves `master` to `ab2e959` and open PR #1 to `03fefaa`;
+  `git fetch origin 7bf5f66` returns `couldn't find remote ref`, and GitHub's commit endpoint returns
+  no commit for that SHA.
+- `git ls-tree` of PR #1 confirms its source tree contains `src/Reunion` but no
+  `src/Reunion.AspNetCore`, so the remote PR head cannot satisfy the planned two-package battle test.
 
 - Read-only source inspection covered all Concertable functional carrier files, task and collection
   extensions, `IError`/definition types, Shared.Api terminals, `ApplicationProblemDetails`, controller
@@ -119,6 +135,10 @@ publish packages, or start the Concertable producer cutover in that phase.
 
 ## Decisions, discoveries, blockers, and deviations
 
+- Phase 1 is externally blocked before implementation on the missing, unpushed Reunion `7bf5f66`
+  object. Do not substitute `03fefaa` or reconstruct a different commit because the battle test and
+  later publication require exact reviewed-source provenance.
+
 - Direct Reunion MVC typed-error mapping is not behavior-equivalent because it bypasses Concertable's
   `IProblemDetailsService` execution path. Keep a Concertable terminal over Reunion carriers.
 - Reunion Created returns a literal-location `CreatedResult`; Concertable requires route-generated
@@ -148,6 +168,34 @@ publish packages, or start the Concertable producer cutover in that phase.
   waits for the Phase 4 generated platform-sync PR to merge before PR #425 is updated once.
 
 ## Event log
+
+### 2026-08-09 — Phase 1 worktree and owner reconciliation
+
+- Action: Created the reserved integration worktree from fresh `origin/main` and refreshed the five
+  authoritative typed-result worktrees plus PRs #425 and #282 before any carrier edit.
+- Evidence: integration head `82644721f`, clean and 0 behind/0 ahead; B2B `ba5791268`, Auth
+  `98599413a`, Customer `e7c44f5b3`, Ticket `b6a671ef9`, HTTP terminals `1d261e3ce`; the owner table
+  records current divergence and the unchanged HTTP-terminal dirty paths. PR heads remain
+  `e60219f7d` and `26ed63b896`; the integration branch has no remote or PR. B2B contains 17 service
+  `OrFailure` call sites while Auth contains none outside the shared carrier definitions.
+- Outcome: The worktree identity and single-owner package/carrier boundary still match the approved
+  plan; Phase 1 may proceed without mutating any semantic-owner branch.
+- Follow-up: pack and inspect Reunion `7bf5f66`, perform the local-only substitution, run the complete
+  Phase 1 gate, and commit the verified checkpoint without pushing.
+
+### 2026-08-09 — Phase 1 blocked on unsynced Reunion source
+
+- Action: Cloned `tomjseery/Reunion` into the planned local path and attempted to resolve the exact
+  Phase 1 source commit from every advertised branch, direct Git fetch, GitHub commit metadata, and
+  open PR state.
+- Evidence: local/remote `master` is `ab2e959`; open Reunion PR #1 is `03fefaa`; neither repository
+  object database nor GitHub resolves `7bf5f66`. PR #1's tree contains only `src/Reunion` and no
+  `src/Reunion.AspNetCore`.
+- Outcome: The required two-package battle test cannot begin with reviewed provenance. No Reunion
+  package, local feed, Concertable package reference, carrier source, or semantic-owner branch was
+  changed.
+- Follow-up: sync or push the exact `7bf5f66` object from its source workstation, then resume the
+  Phase 1 package and parity workflow from this worktree.
 
 ### 2026-08-09 — reconstructed audit baseline and approved design
 
