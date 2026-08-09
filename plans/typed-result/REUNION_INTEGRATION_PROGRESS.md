@@ -2,7 +2,7 @@
 
 - Plan: `plans/typed-result/REUNION_INTEGRATION_PLAN.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_reunion-integration`
-- Branch: `Feature/typed-result_reunion-integration`, current with `origin/main` `b5af92fdc`; the
+- Branch: `Feature/typed-result_reunion-integration`, current with `origin/main` `43fe1caf4`; the
   current local-only blocker checkpoint is carried by `this commit`
 - PR: not opened for implementation; docs design PR #443 merged as `fd0b666b9`; sub-plan
   reconciliation PR #445 merged as `d6a572e0d`
@@ -11,14 +11,14 @@
   source workstation before it can be packed;
   the B2B, Auth, Customer, Customer Ticket, and semantic HTTP-terminal owners remain inventoried and
   must consume the one generated platform-sync baseline rather than perform local carrier cutovers
-- Last reconciled: 2026-08-09 against current Concertable `origin/main` `b5af92fdc`, verified
+- Last reconciled: 2026-08-09 against current Concertable `origin/main` `43fe1caf4`, verified
   HTTP-terminal code/test checkpoint `c593150e4`, freshly fetched Reunion refs, GitHub PR state,
   and the absence of any open platform-sync PR
 
 ## Current state
 
 The repository-wide audit and integration design are complete and approved. The reserved integration
-worktree is current with `origin/main` `b5af92fdc`, has no remote branch or PR, and contains only the
+worktree is current with `origin/main` `43fe1caf4`, has no remote branch or PR, and contains only the
 local blocker checkpoints plus the required current-main merge. Docs design PR #443
 merged the roadmap, plan, and this recovery ledger as `fd0b666b9`; closeout PR #444 advanced main to
 `c72b058af`. No Concertable or Reunion runtime file, package reference, existing migration branch, or
@@ -114,6 +114,9 @@ the complete Phase 1 gate, and commit without pushing or publishing.
   unreachable-object inspection still found no `7bf5f66`. Concertable is 0 behind / 5 ahead of
   `origin/main` `b5af92fdc`; PRs #425 and #282 remain open at `e60219f7d` and `26ed63b896`, both
   `DIRTY`, and no open platform-sync PR exists.
+- Docs/meta PR #447 merged as `43fe1caf4`; the integration branch merged that exact `origin/main`
+  and now carries the actionable blocked-state guidance, updated `resume-plan` skill, and Stop-hook
+  enforcement. The Reunion object gate is unchanged.
 - `git ls-tree` of PR #1 confirms its source tree contains `src/Reunion` but no
   `src/Reunion.AspNetCore`, so the remote PR head cannot satisfy the planned two-package battle test.
 - HTTP-terminal checkpoint `c593150e4`: Shared.Api Release 63/63, Release solution build 0 errors and
@@ -201,6 +204,18 @@ the complete Phase 1 gate, and commit without pushing or publishing.
   waits for the Phase 4 generated platform-sync PR to merge before PR #425 is updated once.
 
 ## Event log
+
+### 2026-08-09 — actionable blocker workflow adopted
+
+- Action: Merged docs/meta PR #447 into the clean integration branch and reconciled the ledger's
+  current-main identity without re-polling the unchanged external source gate.
+- Evidence: PR #447 merged as `43fe1caf4`; integration merge `5f29618db`; branch is 0 behind
+  `origin/main`; the merged hook tests reject a blocked plan's own pointer and require the exact
+  blocker, unblock action, and resume condition.
+- Outcome: A future resume now loads the corrected blocked-plan workflow from this worktree. Phase 1
+  remains untouched and blocked only until Reunion `7bf5f66` becomes fetchable.
+- Follow-up: Execute the exact other-workstation push in `## Next Steps`; resume only after its local
+  `git cat-file` condition succeeds.
 
 ### 2026-08-09 — blocker handoff made actionable
 
