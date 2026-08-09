@@ -1,4 +1,4 @@
-import type { AxiosInstance } from "axios";
+import { isAxiosError, type AxiosInstance } from "axios";
 
 export function configureClient(instance: AxiosInstance, baseURL: string) {
   instance.defaults.baseURL = baseURL;
@@ -14,7 +14,9 @@ export function configureClient(instance: AxiosInstance, baseURL: string) {
       });
       instance.interceptors.response.use(
         (res) => res,
-        async (error) => {
+        async (error: unknown) => {
+          if (!isAxiosError(error)) return Promise.reject(error);
+
           if (error.response?.status === 401) await onUnauthorized();
           return Promise.reject(error);
         },

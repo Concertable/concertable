@@ -1,3 +1,7 @@
+---
+description: Pick one tech-debt item and take it all the way to a PR, in an isolated worktree
+---
+
 # /techdebt
 
 Start a self-contained tech-debt session in an **isolated worktree** so nothing touches in-flight branches.

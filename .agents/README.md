@@ -31,15 +31,10 @@ agent-starter-kit/
 `pull-main` is intentionally not part of the global set anymore. `sync` covers the useful default
 branch update flow.
 
-## Repository slash commands
+## Repository commands
 
-Canonical command instructions live under `.agents/commands/`. Claude and Codex command entry points
+Canonical command instructions live under `.agents/commands/`. Agent-specific command entry points
 must be thin wrappers that reference the matching canonical file so their behavior cannot drift.
 
-Codex discovers those wrappers through the repo's `concertable` plugin under
-`plugins/concertable/commands/`. Install the repo marketplace once, then install the plugin:
-
-```powershell
-codex plugin marketplace add <repo-root>
-codex plugin add concertable@concertable
-```
+Claude discovers command wrappers under `.claude/commands/` and invokes `techdebt.md` as `/techdebt`.
+Codex discovers skill wrappers under `.agents/skills/` and invokes the matching skill as `$techdebt`.
