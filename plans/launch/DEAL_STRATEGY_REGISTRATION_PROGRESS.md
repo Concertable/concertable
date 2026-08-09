@@ -7,8 +7,8 @@
 - Dependency/package gates: no pre-merge package dependency; generated platform-sync observation is
   required after the `api/**` source PR merges
 - Last reconciled: 2026-08-09; all five implementation phases and the complete implementation code
-  review are complete; current `origin/main` at `dc0da9360` is merged through `eda6dbaa6`; work head
-  `14e97cabf` is verified equal across local, remote-tracking, and PR #451 before this checkpoint
+  review are complete; current `origin/main` at `dc0da9360` is merged through `eda6dbaa6`; PR #451
+  head `36375ffdf` has a clean incremental review through that exact remote state
 
 ## Current state
 
@@ -42,14 +42,15 @@ changed-path test-coverage lenses found no issues. The branch contains the clean
 `F8C1A1E3A5FA8CD5329DDDFA7361B39F12B695EC8BCAC3E0CBBA57FD71A43582`, proving the merge did not
 change the reviewed implementation. PR #451 is now open against `main`. Its `headRefOid` and
 `origin/Refactor/launch_deal_strategy_registration` were both verified at the pushed work head
-`14e97cabfb215c7b430d13e133cad8296d02eb31`; no implementation commit is unpushed.
+`36375ffdffe23c0a69e59958a1afc4588ff86e13`; no implementation commit is unpushed. The incremental
+review of `fb34f37b1..36375ffdf` found no issues and advanced the review watermark to the exact PR head.
 
 ## Next Steps
 
 Land PR #451 through the repository merge workflow only:
 
-1. Run `merge` for PR #451 from this worktree. Reconcile current main and any stale review watermark
-   before queue admission.
+1. Wait for PR #451's checks to become terminal, verify the checked `headRefOid`, and enqueue that
+   exact remote head through `merge`.
 2. This broad booking/payment/settlement refactor requires full API + UI merge-queue E2E; remove any
    skip label or trailer and use the full tier.
 3. Follow the PR to a terminal merge result and then own the generated `chore/platform-sync-*` PR to
@@ -93,6 +94,8 @@ Land PR #451 through the repository merge workflow only:
 - Complete implementation `code-review` covered `43fe1caf4..fb34f37b1` (21 commits) and wrote
   `reviews/Refactor-launch_deal_strategy_registration.md`; no finding survived the confidence filter.
 - Pushed reviewed work head `14e97cabf` and opened GitHub PR #451 against `main`.
+- Incremental review covered `fb34f37b1..36375ffdf` (23 commits) after base reconciliation and PR
+  checkpointing; no finding survived the confidence filter.
 
 ## Verification
 
@@ -192,6 +195,9 @@ Land PR #451 through the repository merge workflow only:
   `origin/Refactor/launch_deal_strategy_registration`, and PR #451 `headRefOid` all equal
   `14e97cabfb215c7b430d13e133cad8296d02eb31`. The pushed range was new branch
   `dc0da9360..14e97cabf`; PR #451 is open against `main`.
+- 2026-08-09: incremental code review covered `fb34f37b1..36375ffdf` (23 commits) and appended its
+  result to `reviews/Refactor-launch_deal_strategy_registration.md`. No new finding survived the
+  confidence filter; the review watermark is now `36375ffdffe23c0a69e59958a1afc4588ff86e13`.
 
 ## Reviews
 
@@ -591,6 +597,18 @@ Land PR #451 through the repository merge workflow only:
 - Outcome: The work-head leg and PR creation are verified; this checkpoint is the transport leg for the
   durable PR identity and landing action.
 - Follow-up: Land PR #451 through `merge` with full API + UI E2E and own its generated platform sync.
+
+### 2026-08-09 — incremental review reconciled to PR head
+
+- Action: Reviewed every commit after the original implementation watermark through the verified PR
+  head, including the main reconciliation and durable PR checkpoint.
+- Evidence: incremental range `fb34f37b1..36375ffdf` (23 commits); artifact
+  `reviews/Refactor-launch_deal_strategy_registration.md`; no finding IDs were opened, fixed, deferred,
+  or superseded; the merged hook regression suite remained 23/23 green.
+- Outcome: The reviewed feature implementation is unchanged and the review watermark now matches PR
+  #451 head `36375ffdffe23c0a69e59958a1afc4588ff86e13`.
+- Follow-up: Transport this review checkpoint, wait for terminal PR checks, then enqueue the verified
+  remote head with full API + UI E2E.
 
 ## Resume prompt
 
