@@ -6,7 +6,7 @@
 - PR: [#425](https://github.com/Concertable/concertable/pull/425) — open, non-draft, head `e60219f7d`
 - Dependency/package gates: no implementation gate; this non-Payment scope can convert against
   published Reunion `.1` now. PR #282 remains excluded and Payment delivery is tracked separately.
-- Last reconciled: 2026-08-09 against `origin/main` `1043a9178`, local merge head `c7ff8c474`,
+- Last reconciled: 2026-08-10 against `origin/main` `6f4a5cc3e`, local merge head `7a854cd4c`,
   PR #425 head `e60219f7d`, and the current Reunion owner ledger
 
 ## Current state
@@ -79,13 +79,23 @@ and 5 existing warnings; the scoped unit suites pass 67/67; Shared.Api passes 60
 36-project Customer carve builds with 0 errors; and the direct-package, carrier, nullability,
 collection, terminal, excluded-path, and whitespace audits all pass.
 
+The committed conversion at `d4a5bb502` passed a fresh full code review. Its only finding, `NAT1`,
+was fixed in `7a7e07e86` by removing stale direct Kernel references from Preference.Application and
+User.Application. The incremental review of that fix is clean. Fresh platform-sync main
+`6f4a5cc3e` was then merged as `7a854cd4c`; its only incoming change advances the five service pins
+from `.890` to `.892`, and the incremental review of that merge is clean.
+
+The exact `.892` head is green: the Release solution builds with 0 errors and 9 existing warnings;
+the five scoped unit suites plus Shared.Api pass 127/127; the five integration wrappers pass 74/74
+across eight projects; and the isolated 36-project Customer carve builds with 0 errors. The spent
+review work order is removed in the work-head checkpoint before the PR update.
+
 ## Next Steps
 
-Commit the verified Reunion conversion and this ledger as one coherent checkpoint. The prior review
-artifact was deliberately removed after its clean watermark, so run a fresh full code review of the
-committed branch instead of fabricating an incremental watermark; address every fixable finding and
-re-review fixes. When clean, update PR #425 once through the plan-managed two-leg push. Do not enqueue
-it until the updated PR gates are green.
+Commit the review closeout and spent-work-order deletion as the actual work head, then update PR #425
+through the plan-managed two-leg push. Verify the fetched remote branch and PR head after the work
+leg, record that evidence and the exact checks-wait action in a ledger-only transport checkpoint,
+then push and verify that checkpoint. Do not enqueue the PR; wait for its updated gates to turn green.
 
 ## Completed work
 
@@ -129,6 +139,8 @@ it until the updated PR gates are green.
   publishes once and PR #425 consumes one generated platform baseline.
 - Merged current `origin/main` as `c7ff8c474` and implemented the direct published Reunion package,
   namespace, error-definition, and HTTP-terminal conversion for the five owned Customer modules.
+- Committed the conversion as `d4a5bb502`, fixed the fresh full review's only finding (`NAT1`) in
+  `7a7e07e86`, merged platform-sync main as `7a854cd4c`, and completed both incremental reviews clean.
 
 ## Verification
 
@@ -149,6 +161,9 @@ it until the updated PR gates are green.
   Review 12/12, Preference 7/7, User 6/6, Venue 2/2, Artist 2/2; matching B2B User 3/3, Venue 25/25,
   Artist 17/17. All 74 tests passed across eight projects with no failed or skipped test, and every
   Testcontainers SQL container was removed.
+- Current `.892` platform-pin gate: Release solution 0 errors and 9 existing warnings; scoped unit
+  67/67; Shared.Api 60/60; integration 74/74 across the same eight projects; isolated 36-project
+  Customer carve 0 errors and 183 existing warnings; `git diff --check` clean.
 
 - `git fetch origin --quiet`: refreshed origin before branch creation and again before the plan edit.
 - Branch/worktree/PR audit: no pre-existing branch, worktree, or PR owned this slice.
@@ -338,6 +353,21 @@ watermark from ledger prose. A fresh full `code-review` of the committed branch 
   wire contracts remain stable through per-case `[ErrorCode]` attributes and exact definition tests.
 
 ## Event log
+
+### 2026-08-10 — review clean and current platform pin verified
+
+- Action: Completed the fresh full review, fixed `NAT1` in `7a7e07e86`, incrementally reviewed the
+  fix, merged platform-sync main `6f4a5cc3e` as `7a854cd4c`, incrementally reviewed that merge, and
+  reran the affected local gate on platform pin `.892`.
+- Evidence: review range `d66b780cd..d4a5bb502` with `NAT1` fixed; clean incremental ranges
+  `d4a5bb502..7a7e07e86` and `7a7e07e86..7a854cd4c`; Release solution 0 errors; focused tests
+  127/127; integration 74/74 across eight projects; 36-project Customer carve 0 errors.
+- Outcome: The committed candidate is current-main, review-clean, and fully locally verified. The
+  invalid `--no-restore` artifacts-root attempt ran no test; the later ten-minute shell cap preserved
+  six green projects but interrupted B2B Artist during fixture startup, and the focused Artist rerun
+  completed both missing projects green. The spent review artifact is removed in this checkpoint.
+- Follow-up: Perform the authorized two-leg PR #425 update, verify both remote transitions, then wait
+  for the updated PR gates without enqueueing it.
 
 ### 2026-08-09 — current-main local gate green
 
