@@ -12,12 +12,12 @@
 ## Current state
 
 The roadmap, implementation plan, and this recovery ledger exist on the isolated docs-planning branch.
-The full docs review found three issues; all are fixed in `44b435779`, and the incremental review of
-that fix commit found no new issues. The branch then merged current main's blocked-ledger schema. Its
-reconciliation review found two followable-instruction defects; both are fixed in `0a7b0d181`, and the
-incremental review of that commit found no new issues. No implementation worktree, SDK installation,
-`global.json`, target-framework edit, workflow refactor, test run, package publication, or runtime
-deployment has occurred.
+The reviewed docs work head `85ab55794` is pushed and verified equal to
+`origin/Docs/dotnet-11_b2b-workflow-unions-plan`; no PR exists yet. The full docs review found three
+issues, all fixed in `44b435779`; the blocked-ledger reconciliation review found two more, all fixed in
+`0a7b0d181`; both incremental reviews were clean. The review watermark's full SHA was corrected during
+push verification. No implementation worktree, SDK installation, `global.json`, target-framework edit,
+workflow refactor, test run, package publication, or runtime deployment has occurred.
 
 The current design uses native unions only after ReUnion and the existing B2B typed-result work have
 landed. Published B2B contracts stay net10-compatible; the net11 boundary is the B2B runtime and its
@@ -27,9 +27,10 @@ does not introduce `IAcceptStep` or place step interfaces inside union cases.
 
 ## Next Steps
 
-Blocked: The B2B typed-result checkpoints 6-7 source PR and every resulting publication/platform-sync gate are not yet terminal and green.
-Unblock action: The owner at `plans/typed-result/B2B_PROGRESS.md` must finish checkpoints 6-7, merge the source PR, follow every resulting publication/platform-sync gate to terminal green, then update this ledger.
-Resume when: Current main contains the merged B2B work and `plans/typed-result/B2B_PROGRESS.md` records the source PR and every resulting publication/platform-sync gate as terminal and green.
+Push this verified-work-head checkpoint to `origin/Docs/dotnet-11_b2b-workflow-unions-plan`, fetch and
+require local/remote equality, open the docs-only PR, add `skip-e2e`, and verify the PR head and four
+Markdown-only paths. Then checkpoint the PR identity and restore the structured B2B blocker before the
+admin merge.
 
 ## Completed work
 
@@ -144,7 +145,19 @@ Resume when: Current main contains the merged B2B work and `plans/typed-result/B
 - Outcome: no new findings; all five findings across the planning lifecycle are resolved.
 - Follow-up: checkpoint this result, publish the docs branch, and land it through `/merge-docs`.
 
+### 2026-08-09 — verified docs work-head push
+
+- Action: pushed the reviewed docs work head and fetched its remote-tracking ref for equality.
+- Evidence: local and remote `Docs/dotnet-11_b2b-workflow-unions-plan` both
+  `85ab55794ff870b7d8ae434746a1089eeb246afd`; no PR existed; branch was current with `origin/main`.
+- Outcome: the four-path Markdown-only plan diff is durably published. Review watermark corrected to
+  resolvable full SHA `0a7b0d181d44213cfcb942336d34310cdea50156`.
+- Follow-up: transport this checkpoint, open and verify the docs PR, then restore the implementation
+  blocker before admin merge.
+
 ## Resume prompt
 
-Not emitted while `## Next Steps` carries the hard-blocker fields. When the gate opens, the B2B owner
-replaces the blocked state with an actionable Phase 0/1 handoff and restores the implementation pointer.
+```text
+cd C:\Users\tommy\source\repos\Concertable.worktrees\Docs\dotnet-11_b2b-workflow-unions-plan
+Read @plans/dotnet-11/B2B_WORKFLOW_UNIONS_PLAN.md and @plans/dotnet-11/B2B_WORKFLOW_UNIONS_PROGRESS.md and do what its `## Next Steps` says.
+```
