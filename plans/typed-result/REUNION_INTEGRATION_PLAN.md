@@ -434,7 +434,7 @@ Gate: local package provenance proven, Kernel 241/241 and Shared.Api 53/53 green
 build green, no machine-local configuration staged, and the published-package topology recorded as
 Shared expansion → Payment.Client migration → final consumer contraction.
 
-### Phase 2 — Publish the Reunion package family
+### Phase 2 — Publish the Reunion package family ✅
 
 - Publish matching `Reunion`, `Reunion.Errors`, and `Reunion.AspNetCore` version
   `0.1.0-alpha.1` packages built from corrected merged head `e33b40f`; do not publish the superseded

@@ -10,8 +10,9 @@
   in merged PR #1 head `e52129d241711f2e1498ac166e2c510b167606a3`; corrective PR #2 removed the
   mistaken `Reunion.Errors.Extensions` package and merged as release head
   `e33b40fe6daef64fd69536170d583e3ddd603ee4`; the corrected three-package Phase 1 gate is green and
-  exact production-version artifacts are prepared; a scoped NuGet.org publication key is now
-  available to this session and Phase 2 publication is actionable; the B2B, Auth, Customer,
+  all three exact `0.1.0-alpha.1` packages are published, indexed, repository-signature verified,
+  and restored from NuGet.org-only clean caches; Phase 2 is terminal and Phase 3 Shared expansion is
+  next; the B2B, Auth, Customer,
   Customer Ticket, and semantic HTTP-terminal owners remain inventoried and must consume the staged
   Shared-expansion and Payment.Client publications rather than perform local carrier cutovers
 - Last reconciled: 2026-08-09 against current Concertable `origin/main` `162b8412a`, verified
@@ -72,23 +73,20 @@ package boundary: B2B and Customer consuming the old client cannot compile again
 carrier replacement. The plan now requires three green Concertable merges after Reunion publication:
 additive Shared expansion, Payment/Payment.Client migration, then final consumer contraction.
 
-The corrected release worktree
-`C:\Users\TommySeery\source\repos\Reunion.worktrees\concertable-e33b40f` is detached cleanly at
-`e33b40f` and holds the three verified `0.1.0-alpha.1` artifacts under `artifacts\packages`. The
-complete current-source gate is green. NuGet.org still exposes only historical `Reunion` `0.0.1`;
-`Reunion` `0.1.0-alpha.1` has been accepted, indexed, downloaded, inspected, and repository-signature
-verified from NuGet.org;
-`Reunion.Errors` `0.1.0-alpha.1` has been accepted, indexed, downloaded, inspected, and
-repository-signature verified; `Reunion.AspNetCore` has been accepted, indexed, downloaded,
-inspected, and repository-signature verified. A 46-character user-scoped
-`NUGET_API_KEY` is present; its value was not displayed or recorded.
+Corrected source head `e33b40f` produced the immutable package family now published at
+`Reunion`, `Reunion.Errors`, and `Reunion.AspNetCore` `0.1.0-alpha.1`. Every package is indexed,
+downloadable, metadata/asset/dependency inspected, and NuGet.org repository-signature verified.
+Fresh isolated net10/net11 consumers restored only from NuGet.org and ran successfully. The scoped
+`NUGET_API_KEY` was removed from the user environment after verification, and the spent clean
+detached Reunion release worktree was removed.
 
 ## Next Steps
 
-Restore and run all four net10/net11 package consumers from NuGet.org only into new isolated caches,
-verify the resolved graph contains exactly `Reunion`, `Reunion.Errors`, and `Reunion.AspNetCore`
-`0.1.0-alpha.1`, remove the user-scoped `NUGET_API_KEY`, then checkpoint the terminal Phase 2 gate.
-Do not begin Phase 3 in this turn.
+Execute Phase 3 additive Concertable Shared expansion: replace the local Reunion version with exact
+published `0.1.0-alpha.1`, restore without any local source, keep Reunion owned only by Kernel and
+Reunion.AspNetCore owned only by Shared.Api, retain every owned carrier and old terminal signature,
+and rerun the Shared unit/architecture/package tests plus full Release solution build. Then run code
+review and deliver the source PR through its generated platform-sync gate before beginning Phase 4.
 
 ## Completed work
 
@@ -100,24 +98,27 @@ Do not begin Phase 3 in this turn.
 - Completed the corrected three-package release gate at `e33b40f`: full dual-target build, 376 tests,
   public-API comparisons, formatting, package inspection, isolated provenance restores, and all four
   package consumers are green; exact `0.1.0-alpha.1` artifacts are ready for authenticated push.
-- NuGet.org accepted `Reunion` `0.1.0-alpha.1` from the verified artifact; production indexing and
-  clean-cache restore remain pending; the flat-container index now exposes the version.
+- NuGet.org accepted and indexed `Reunion` `0.1.0-alpha.1` from the verified artifact; production
+  verification and the clean-cache restore completed below.
 - Downloaded `Reunion` `0.1.0-alpha.1` from the production flat container, re-ran package inspection,
   and verified its valid NuGet.org repository signature. Repository signing changed the archive
   SHA-256 to `04FF09CCE6C2097928F0CC673B9A00C07A02D84ACB2A7505988EC495A33DCC1E`; verified NuGet content
   hash is `XeJO3nDfFqQmtUqY0gZld/fNtgNbpog1CmPPmC2xHrZanJfpFCVQtqS9YINnuj8j9w51il/SlXKU9i8dO0PK+Q==`.
-- NuGet.org accepted exact `Reunion.Errors` `0.1.0-alpha.1`; indexing and production verification
-  remain pending; the flat-container index now exposes the version.
+- NuGet.org accepted and indexed exact `Reunion.Errors` `0.1.0-alpha.1`; production verification
+  completed below.
 - Downloaded and inspected `Reunion.Errors` from production and verified its valid NuGet.org
   repository signature. Repository-signed production SHA-256 is
   `A1B2039CDC30F9D557FB1005F4F5B6785B065191FFBFFBA59D0878CFEF029090`; NuGet content hash is
   `eqBtB99AZigqEyNGx7yNVwfE2INseb9ALPlSRYkw6XhfLWa0L+2EwjtcL+ioATjCUOTnxBZkNUzWrwlRrfAg/A==`.
-- NuGet.org accepted exact `Reunion.AspNetCore` `0.1.0-alpha.1`; indexing and production verification
-  remain pending; the flat-container index now exposes the version.
+- NuGet.org accepted and indexed exact `Reunion.AspNetCore` `0.1.0-alpha.1`; production verification
+  completed below.
 - Downloaded and inspected `Reunion.AspNetCore` from production and verified its valid NuGet.org
   repository signature. Repository-signed production SHA-256 is
   `2BC3E0C557007E18832231C7D4C71BB1E18B3031190AE9BC5592EBAA5F579395`; NuGet content hash is
   `TZ2EM4XyNFuunUyQAXnrlqV/cOY8pXQ64YBzu/lFV8Xp9BxPGxgfOikaYKa068CSrJOplFRiPjnXnLymvhJBZQ==`.
+- Completed Phase 2: all three packages are published and indexed at the exact matching version;
+  four clean consumers restored only the intended graph from NuGet.org and passed on net10/net11;
+  the temporary user-scoped key and detached release worktree were removed.
 - Added the safe additive Shared expansion checkpoint: Kernel owns Reunion, Shared.Api owns
   Reunion.AspNetCore, Reunion parity tests cover the named-case conversion contract, and Reunion
   carriers can traverse the existing Concertable MVC error/CreatedAt boundary without deleting the
@@ -179,6 +180,17 @@ Do not begin Phase 3 in this turn.
   `8320AC619FFDA82B7A9F0F89905A53B9C332D196D3DA466EE308FFB1D2224CE9`, Reunion.Errors
   `1B2F829BEB80CAF73F98F63686962D15FBC1827EA2524D1B6FC640FDC0FDA582`, and Reunion.AspNetCore
   `B2166ECB6451F5B9038A9F8224D6C3AC7EA49385BAFA5C5E376728A364A91260`.
+- Immutable package URLs:
+  `https://api.nuget.org/v3-flatcontainer/reunion/0.1.0-alpha.1/reunion.0.1.0-alpha.1.nupkg`,
+  `https://api.nuget.org/v3-flatcontainer/reunion.errors/0.1.0-alpha.1/reunion.errors.0.1.0-alpha.1.nupkg`,
+  and
+  `https://api.nuget.org/v3-flatcontainer/reunion.aspnetcore/0.1.0-alpha.1/reunion.aspnetcore.0.1.0-alpha.1.nupkg`.
+- Clean production restore used only `https://api.nuget.org/v3/index.json` with four isolated caches.
+  Core consumers resolved only `Reunion/0.1.0-alpha.1`; ASP.NET Core consumers resolved exactly
+  `Reunion/0.1.0-alpha.1`, `Reunion.Errors/0.1.0-alpha.1`, and
+  `Reunion.AspNetCore/0.1.0-alpha.1`. All four consumers built and ran successfully.
+- User-scoped `NUGET_API_KEY` removal verified `True`. Git unregistered the detached `e33b40f`
+  worktree; its long-path directory residue was removed through the verified exact path.
 - Full Concertable restore with the local source succeeded; package graphs and `dotnet nuget why`
   show Kernel → Reunion and Shared.Api → Reunion.AspNetCore → Reunion + Reunion.Errors.
 - Release `api/Concertable.slnx` build succeeded with 0 errors and 9 pre-existing/generated warnings.
@@ -290,16 +302,17 @@ Do not begin Phase 3 in this turn.
   parity tests remain mandatory before deleting duplicates.
 - `Concertable.Kernel` has a pre-existing ASP.NET framework reference. This plan neither expands nor
   relies on it; only Shared.Api receives Reunion.AspNetCore.
-- The Reunion Phase 1 battle test and local HTTP-terminal checkpoint are complete. Phase 2 package
-  publication is now actionable. B2B, Auth, Customer, and Ticket delivery waits until the Phase 4
+- The Reunion Phase 1 battle test, Phase 2 three-package publication, and local HTTP-terminal
+  checkpoint are complete. B2B, Auth, Customer, and Ticket delivery waits until the Phase 4
   Payment.Client publication/sync opens the final Phase 5 consumer contraction.
 
 ## Downstream handoffs
 
 - `plans/typed-result/HTTP_RESULT_TERMINALS_PROGRESS.md` in
   `C:\Users\TommySeery\source\repos\Concertable.worktrees\Refactor\typed-result_http-terminals`
-  waits for matching Reunion packages to be published at the Phase 2 gate; its verified local
-  checkpoint `c593150e4` is then incorporated into this plan's Phase 5 Shared contraction.
+  crossed its matching-package Phase 2 gate; its verified local checkpoint `c593150e4` remains
+  preserved for incorporation by this plan's Shared producer sequence and must not publish
+  independently.
 - `plans/typed-result/B2B_PROGRESS.md` in
   `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-B2BTypedResultMigration`
   waits for the Phase 4 Payment.Client publication/sync before its Phase 5 integration.
@@ -311,6 +324,20 @@ Do not begin Phase 3 in this turn.
   waits for the Phase 4 Payment.Client publication/sync before PR #425 is updated once.
 
 ## Event log
+
+### 2026-08-09 — Phase 2 production publication gate completed
+
+- Action: Restored all four clean consumers into new isolated caches from NuGet.org only, verified
+  their exact package graphs and source metadata, ran both net10 and net11 consumers, removed the
+  scoped publication key, and removed the spent detached release worktree.
+- Evidence: all restores succeeded from `https://api.nuget.org/v3/index.json`; both core consumers
+  resolved only Reunion, both ASP.NET Core consumers resolved the exact three-package graph, and all
+  four executables passed. Key removal returned `True`; only the main Reunion worktree remains
+  registered.
+- Outcome: Phase 2 is terminal. The immutable three-package `0.1.0-alpha.1` production graph is green
+  and Phase 3 Shared expansion is unblocked.
+- Follow-up: Replace the local package pin with published `0.1.0-alpha.1` and execute the additive
+  Shared expansion without deleting owned identities.
 
 ### 2026-08-09 — Reunion.AspNetCore production artifact verified
 
