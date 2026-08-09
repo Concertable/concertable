@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `a797e2bcd2c3018ae5af197a4f94dd5222352fdc`  _(2026-08-09)_
-**Security-reviewed up to commit:** `a797e2bcd2c3018ae5af197a4f94dd5222352fdc`  _(2026-08-09)_
+**Reviewed up to commit:** `42a9639c3208c2c05c5cff4989ba0205f5d28617`  _(2026-08-09)_
+**Security-reviewed up to commit:** `42a9639c3208c2c05c5cff4989ba0205f5d28617`  _(2026-08-09)_
 
 > Range reviewed: `dc0da93..abcc9be` (2 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -48,3 +48,11 @@ named operation and retain their existing UI rejection assertions; the generic c
 contains no outcome enum, boolean mode, or status-code exception. Error extraction is centralized in
 one E2E response extension and catches only malformed JSON using the repository's compact empty-block
 form. The E2E helper tests pass 5/5 and both B2B and Customer UI E2E projects build with zero errors.
+
+## Incremental review — 2026-08-09 (current-main sync)
+
+> Range reviewed: `a797e2b..42a9639` (3 commits).
+
+No issues found. The only imported changes are the separately reviewed and merged E2E diagnostic
+guardrails from PR #454; they do not alter runtime behavior. After the merge, the helper tests pass
+5/5 and both affected UI E2E projects build with zero errors.
