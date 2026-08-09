@@ -7,23 +7,25 @@
 - PR: not opened for implementation; docs design PR #443 merged as `fd0b666b9`; sub-plan
   reconciliation PR #445 merged as `d6a572e0d`
 - Dependency/package gates: docs design merged; reviewed Reunion carrier commit `7bf5f66` is contained
-  in merged PR #1 head `e52129d241711f2e1498ac166e2c510b167606a3`; Phase 1 is complete against
-  that actual four-package release head; publication of all four exact `0.1.0-alpha.1` packages is
-  the next gate; the B2B, Auth, Customer,
+  in merged PR #1 head `e52129d241711f2e1498ac166e2c510b167606a3`; corrective PR #2 removed the
+  mistaken `Reunion.Errors.Extensions` package and merged as release head
+  `e33b40fe6daef64fd69536170d583e3ddd603ee4`; the corrected three-package Phase 1 gate must be rerun
+  before publication; the B2B, Auth, Customer,
   Customer Ticket, and semantic HTTP-terminal owners remain inventoried and must consume the staged
   Shared-expansion and Payment.Client publications rather than perform local carrier cutovers
 - Last reconciled: 2026-08-09 against current Concertable `origin/main` `162b8412a`, verified
-  HTTP-terminal code/test checkpoint `c593150e4`, exact Reunion source and merged PR #1, live owner
-  worktrees, GitHub PR state, the pinned .NET 11 preview SDK, and no open platform-sync PR
+  HTTP-terminal code/test checkpoint `c593150e4`, corrected Reunion release head `e33b40f` and merged
+  PRs #1/#2, live owner worktrees, GitHub PR state, the pinned .NET 11 preview SDK, NuGet.org package
+  availability, and no open platform-sync PR
 
 ## Current state
 
 The repository-wide audit and integration design are complete and approved. The reserved integration
-worktree is current with `origin/main` `162b8412a`, has no remote branch or PR, and now contains the
-committed local-only Phase 1 package battle test. Docs design PR #443
+worktree is current with `origin/main` `162b8412a`, has no remote branch or PR, and contains the
+committed local-only Phase 1 package battle test against superseded Reunion head `e52129d`. Docs design PR #443
 merged the roadmap, plan, and this recovery ledger as `fd0b666b9`; closeout PR #444 advanced main to
 `c72b058af`. No Concertable or Reunion runtime file, package reference, existing migration branch, or
-existing PR was changed by either docs PR. No Phase 1 package or source edit has started yet.
+existing PR was changed by either docs PR.
 
 Docs-only PR #445 published the reconciled B2B, Auth, Customer, and HTTP-terminal plan pairs plus the
 central dependency map as `d6a572e0d`. It contained only eleven Markdown files, passed a clean docs
@@ -51,14 +53,16 @@ solution build 0 errors, old-terminal grep zero, and full code review clean afte
 will be incorporated into the final Shared contraction after Payment.Client is republished on Reunion.
 
 The Reunion source gate is open. Reviewed carrier commit `7bf5f66` is contained in fetched
-`origin/master`; Reunion PR #1 merged as release head
-`e52129d241711f2e1498ac166e2c510b167606a3`. That head contains `Reunion`, `Reunion.Errors`,
-`Reunion.Errors.Extensions`, and `Reunion.AspNetCore` at `0.1.0-alpha.1`, all targeting
-`net10.0;net11.0`, and pins SDK `11.0.100-preview.6.26359.118`. That exact SDK is installed in
+`origin/master`; Reunion PR #1 merged as `e52129d241711f2e1498ac166e2c510b167606a3` and corrective PR
+#2 merged as current release head `e33b40fe6daef64fd69536170d583e3ddd603ee4`. PR #2 removed
+`Reunion.Errors.Extensions` because its `OrNotFound` aliases added no behavior beyond core
+`OrFailure`. The intended `0.1.0-alpha.1` family is now `Reunion`, `Reunion.Errors`, and
+`Reunion.AspNetCore`, all targeting `net10.0;net11.0`, with SDK
+`11.0.100-preview.6.26359.118` pinned. That exact SDK is installed in
 `C:\Users\TommySeery\.dotnet`.
 
 Phase 1 began from Concertable `origin/main` `dc0da9360` and the integration branch then merged
-current `origin/main` `162b8412a` after checkpoint `ef4c09baa`. The final provenance correction
+current `origin/main` `162b8412a` after checkpoint `ef4c09baa`. The earlier provenance correction
 packed actual merged Reunion head `e52129d` as `0.1.0-local.concertable.2`, added only Reunion and
 Reunion.AspNetCore directly to Kernel and Shared.Api, retained
 the old carrier surface for a compatible expansion, and proved the complete Release solution builds.
@@ -69,18 +73,21 @@ additive Shared expansion, Payment/Payment.Client migration, then final consumer
 
 ## Next Steps
 
-Execute Phase 2 in the Reunion repository: publish exact `Reunion`, `Reunion.Errors`,
-`Reunion.Errors.Extensions`, and `Reunion.AspNetCore` `0.1.0-alpha.1` packages built from merged head
-`e52129d`, verify their SHA/provenance, exact dependency groups, `net10.0`/`net11.0` assets, and
-clean-cache restore from the production feed, then record the immutable package URLs and hashes here.
-Do not push this Concertable branch or begin Phase 3 until all four production packages restore at
-the same exact version.
+Re-run the Phase 1 package gate against corrected Reunion release head `e33b40f`: pack and inspect
+exact `Reunion`, `Reunion.Errors`, and `Reunion.AspNetCore` `0.1.0-alpha.1`, run the current net10/net11
+tests and clean isolated package consumers, and verify the current three-package dependency graph.
+Then publish those three exact artifacts to NuGet.org, verify SHA/provenance, both framework assets,
+exact dependency groups, and clean-cache production-feed restore, and record the immutable package
+URLs and hashes here. Do not publish removed `Reunion.Errors.Extensions`, push this Concertable
+branch, or begin Phase 3 until all three production packages restore at the same exact version.
 
 ## Completed work
 
 - Completed the merged-release local package battle test: all four packages packed from `e52129d` at
   `0.1.0-local.concertable.2`, matching dependency metadata and both framework assets inspected, and
   a clean net10 consumer restored the complete graph from the isolated feed.
+- Reconciled merged Reunion PR #2: `Reunion.Errors.Extensions` was removed before publication because
+  it duplicated core `OrFailure`; the release owner is now the three-package head `e33b40f`.
 - Added the safe additive Shared expansion checkpoint: Kernel owns Reunion, Shared.Api owns
   Reunion.AspNetCore, Reunion parity tests cover the named-case conversion contract, and Reunion
   carriers can traverse the existing Concertable MVC error/CreatedAt boundary without deleting the
@@ -110,21 +117,27 @@ the same exact version.
 
 ## Verification
 
-- Exact package source: detached merged head `e52129d241711f2e1498ac166e2c510b167606a3`;
+- Superseded four-package rehearsal source: detached merged head
+  `e52129d241711f2e1498ac166e2c510b167606a3`;
   local version `0.1.0-local.concertable.2`; SHA-256 values are Reunion
   `DF56DB378E6A67EA8635D364C511EE292DFB71DBDDB4BE140AB1FCDA9996106A`, Reunion.Errors
   `ACCD45940C6EE12EC52E2FD9AEC27D4482901746F605532920D0D4D877101549`,
   Reunion.Errors.Extensions `67679A79F2FB3F56E25FF040BDC3874A2A70A5F290346C14E0D0187ADBE9D6F5`,
   and Reunion.AspNetCore `CDD4ADD2DE852D8BCD42D24E6ECF13A34B779F7EE2BF99764F0A3F0532416AEB`.
-- All four packages contain `lib/net10.0` and `lib/net11.0`. AspNetCore depends exactly on Reunion and
+- At the superseded head, all four packages contained `lib/net10.0` and `lib/net11.0`.
+  AspNetCore depended exactly on Reunion and
   Reunion.Errors; Errors.Extensions depends exactly on Reunion and Reunion.Errors in both groups. A
   clean temporary net10 consumer restored the full graph only from the isolated feed.
-- Reunion merged-head tests passed on net10: core 132, Errors 14, Errors.Extensions 8, AspNetCore 35;
+- Reunion tests at the superseded head passed on net10: core 132, Errors 14, Errors.Extensions 8, AspNetCore 35;
   and net11: core 146, Errors 14, Errors.Extensions 8, AspNetCore 35. The private preview SDK lacks the
   net10 runtime, so compiled net10 assemblies ran through the installed 10.0.301 VSTest host.
 - The repository package-inspection scripts require PowerShell 7; Windows PowerShell 5 could not load
   `System.IO.Compression.ZipFile`. Direct nuspec/archive inspection established the same identities,
   dependencies, repository commit, and framework assets locally.
+- Fresh NuGet.org flat-container checks found only historical `Reunion` `0.0.1`; none of
+  `Reunion`, `Reunion.Errors`, or `Reunion.AspNetCore` has `0.1.0-alpha.1`, and the removed
+  `Reunion.Errors.Extensions` package has never been published. The user NuGet configuration has no
+  stored API key, and no NuGet.org API-key environment variable is present.
 - Full Concertable restore with the local source succeeded; package graphs and `dotnet nuget why`
   show Kernel → Reunion and Shared.Api → Reunion.AspNetCore → Reunion + Reunion.Errors.
 - Release `api/Concertable.slnx` build succeeded with 0 errors and 9 pre-existing/generated warnings.
@@ -217,11 +230,13 @@ the same exact version.
 - Reunion stays prerelease while its `net11.0` asset depends on preview .NET 11/C# functionality.
   Concertable targets `net10.0` and will consume the matching shipping-runtime asset from the same
   alpha package while exercising this owner-controlled integration before general release.
-- The Phase 1 source blocker is resolved by fetched carrier base `7bf5f66` and actual merged Reunion
-  PR #1 head `e52129d`; the release rehearsal uses the merged head, not a reconstructed source or the
-  stale two-package intermediate tree.
-- Phase 1 is complete and validates the intended prerelease model: Reunion remains alpha while its
-  net11 asset uses preview tooling; Concertable consumes its shipping net10 asset from that package.
+- The Phase 1 source blocker is resolved by fetched carrier base `7bf5f66`. Reunion PR #1 head
+  `e52129d` supplied the first complete rehearsal, but corrective PR #2 removed the behavior-free
+  `Reunion.Errors.Extensions` bridge before publication. The release rehearsal and immutable package
+  provenance must use current merged head `e33b40f`.
+- The earlier four-package Phase 1 test validated the prerelease runtime model but is superseded as a
+  release-artifact gate. Phase 1 becomes complete again only after the current three-package head
+  passes the same tests, inspection, and clean-consumer checks.
 - `Concertable.Payment.Client` is a published API layer between Shared and B2B/Customer. The original
   single producer/sync cutover was impossible without CS7069. The mandatory sequence is additive
   Shared publish/sync, Payment.Client migration publish/sync, then final consumer contraction.
@@ -255,6 +270,18 @@ the same exact version.
   waits for the Phase 4 Payment.Client publication/sync before PR #425 is updated once.
 
 ## Event log
+
+### 2026-08-09 — corrected Reunion package family reconciled before publication
+
+- Action: Fetched Reunion, detected merged corrective PR #2, inspected its removal rationale and
+  current implementation plan, and checked NuGet.org plus local credential state before any push.
+- Evidence: current `origin/master` `e33b40f`; PR #2 merged from `d518096` and removes only the
+  mistaken Errors.Extensions project/package and its tests/docs/CI; `0.1.0-alpha.1` is unpublished
+  for every intended package; no stored NuGet API key or NuGet.org API-key environment variable.
+- Outcome: The stale four-package publication instruction was stopped before an immutable mistake.
+  The release family is `Reunion`, `Reunion.Errors`, and `Reunion.AspNetCore` from `e33b40f`.
+- Follow-up: Rerun the full package gate on `e33b40f`, prepare the exact three artifacts, then obtain
+  NuGet.org publish credentials and push only those verified files.
 
 ### 2026-08-09 — release provenance advanced to the actual merged Reunion head
 

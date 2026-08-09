@@ -5,7 +5,7 @@
 ## Objective
 
 Replace Concertable's temporary owned Result/Option carriers with the real Reunion package family,
-using reviewed carrier base `7bf5f66` through merged release head `e52129d`, without changing domain
+using reviewed carrier base `7bf5f66` through corrected merged release head `e33b40f`, without changing domain
 error ownership, controller signatures, MVC behavior, published transport contracts, or service
 package boundaries.
 
@@ -263,7 +263,7 @@ Delivery therefore crosses three Concertable code merges after the Reunion publi
 
 1. Land this docs-only design first so every active branch shares the same owner and dependency map.
 2. In the reserved `Feature/typed-result_reunion-integration` worktree, pack merged PR head
-   `e52129d`, restore its four-package dependency graph, and prove source/API/HTTP parity. Do not
+   `e33b40f`, restore its three-package dependency graph, and prove source/API/HTTP parity. Do not
    distribute those edits across service PRs.
 3. In parallel, finish and review the existing semantic HTTP-terminal work as a local-only checkpoint.
    Do not push or publish its Shared.Api package independently.
@@ -299,20 +299,18 @@ Run from PowerShell. The Reunion repository must have SDK
 ```powershell
 $reunionRepo = 'C:\Users\tommy\source\repos\Reunion'
 $concertableWorktree = 'C:\Users\tommy\source\repos\Concertable.worktrees\Feature\typed-result_reunion-integration'
-$reunionWorktree = 'C:\Users\tommy\source\repos\Reunion.worktrees\concertable-e52129d'
+$reunionWorktree = 'C:\Users\tommy\source\repos\Reunion.worktrees\concertable-e33b40f'
 $feed = Join-Path $env:LOCALAPPDATA 'NuGet\Reunion-Concertable'
 $version = '0.1.0-local.concertable.2'
 
 New-Item -ItemType Directory -Force -Path $feed | Out-Null
 git -C $reunionRepo fetch origin --quiet
-git -C $reunionRepo worktree add --detach $reunionWorktree e52129d
+git -C $reunionRepo worktree add --detach $reunionWorktree e33b40f
 
 dotnet restore "$reunionWorktree\Reunion.slnx"
 dotnet pack "$reunionWorktree\src\Reunion\Reunion.csproj" `
   -c Release --no-restore -p:Version=$version -p:PackageVersion=$version -o $feed
 dotnet pack "$reunionWorktree\src\Reunion.Errors\Reunion.Errors.csproj" `
-  -c Release --no-restore -p:Version=$version -p:PackageVersion=$version -o $feed
-dotnet pack "$reunionWorktree\src\Reunion.Errors.Extensions\Reunion.Errors.Extensions.csproj" `
   -c Release --no-restore -p:Version=$version -p:PackageVersion=$version -o $feed
 dotnet pack "$reunionWorktree\src\Reunion.AspNetCore\Reunion.AspNetCore.csproj" `
   -c Release --no-restore -p:Version=$version -p:PackageVersion=$version -o $feed
@@ -340,9 +338,8 @@ dotnet nuget why "$concertableWorktree\api\Concertable.Shared\src\Concertable.Ke
 dotnet nuget why "$concertableWorktree\api\Concertable.Shared\src\Concertable.Shared.Api\Concertable.Shared.Api.csproj" Reunion.AspNetCore
 ```
 
-The restore log must show the local feed supplying all four exact packages; the AspNetCore `.nuspec`
-must show exact dependencies on Reunion and Reunion.Errors, while Errors.Extensions must show exact
-dependencies on Reunion and Reunion.Errors. Before any production
+The restore log must show the local feed supplying all three exact packages; the AspNetCore `.nuspec`
+must show exact dependencies on Reunion and Reunion.Errors. Before any production
 PR, replace the local version with the published version and restore without
 `RestoreAdditionalProjectSources`. A temporary committed battle-test pin may live locally on the
 reserved integration branch. It is not pushed; after Reunion publication, Phase 3 replaces it with
@@ -424,11 +421,11 @@ Use real B2B/Customer flows after the automated gate:
 
 ## Phases and verification gates
 
-### Phase 1 — Reconcile owners and battle-test merged release head `e52129d`
+### Phase 1 — Reconcile owners and battle-test corrected merged release head `e33b40f`
 
 - Confirm the recorded B2B/Auth/Customer/Ticket/HTTP owner inventory still matches the live worktrees
   before the first code edit; update the ledger if any head or dirty path changed.
-- Create the isolated integration worktree and local feed; pack and inspect all four matching packages.
+- Create the isolated integration worktree and local feed; pack and inspect all three matching packages.
 - Add the local Reunion packages and additive Shared.Api overloads on the reserved integration branch;
   retain the old carriers so the complete published-package closure remains buildable, then run
   carrier plus Shared.Api parity tests.
@@ -439,13 +436,14 @@ Shared expansion → Payment.Client migration → final consumer contraction.
 
 ### Phase 2 — Publish the Reunion package family
 
-- Publish matching `Reunion`, `Reunion.Errors`, `Reunion.Errors.Extensions`, and
-  `Reunion.AspNetCore` version `0.1.0-alpha.1` packages built from merged head `e52129d`; do not
-  publish the older two-package `7bf5f66` tree under the immutable release version.
+- Publish matching `Reunion`, `Reunion.Errors`, and `Reunion.AspNetCore` version
+  `0.1.0-alpha.1` packages built from corrected merged head `e33b40f`; do not publish the superseded
+  four-package `e52129d` tree or the removed `Reunion.Errors.Extensions` package under the immutable
+  release version.
 - Verify package contents, dependency version, both TFMs, clean package consumers, and feed
   availability from a clean cache.
 
-Gate: all four packages are immutable and restorable from the production feed at the exact same
+Gate: all three packages are immutable and restorable from the production feed at the exact same
 version, with their dependency groups resolving only that version.
 
 ### Phase 3 — Additive Concertable Shared expansion
