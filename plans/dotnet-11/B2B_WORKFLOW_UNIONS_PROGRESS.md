@@ -12,9 +12,10 @@
 ## Current state
 
 The roadmap, implementation plan, and this recovery ledger exist on the isolated docs-planning branch.
-The full docs review found three issues; all are fixed in this review-fix checkpoint and await
-incremental review. No implementation worktree, SDK installation, `global.json`, target-framework
-edit, workflow refactor, test run, package publication, or runtime deployment has occurred.
+The full docs review found three issues; all are fixed in `44b435779`, and the incremental review of
+that fix commit found no new issues. No implementation worktree, SDK installation, `global.json`,
+target-framework edit, workflow refactor, test run, package publication, or runtime deployment has
+occurred.
 
 The current design uses native unions only after ReUnion and the existing B2B typed-result work have
 landed. Published B2B contracts stay net10-compatible; the net11 boundary is the B2B runtime and its
@@ -56,10 +57,11 @@ native unions before the owner opens the gate.
 
 - Full docs review: `b5af92fdc..9f4993214` (1 commit), artifact
   `reviews/Docs-dotnet-11_b2b-workflow-unions-plan.md`, watermark `9f4993214`.
-- `HOME1` fixed in this commit: removed plan-to-roadmap coupling.
-- `INST1` fixed in this commit: corrected the roadmap invocation to `/resume-plan`.
-- `ACC1` fixed in this commit: corrected the B2B owner's premature “on current main” claim.
-- Incremental docs review of the fix commit is pending. Open findings: none.
+- `HOME1` fixed in `44b435779`: removed plan-to-roadmap coupling.
+- `INST1` fixed in `44b435779`: corrected the roadmap invocation to `/resume-plan`.
+- `ACC1` fixed in `44b435779`: corrected the B2B owner's premature “on current main” claim.
+- Incremental docs review: `9f4993214..44b435779` (1 commit), no new findings, same artifact,
+  watermark `44b435779`. Open findings: none.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -103,6 +105,14 @@ native unions before the owner opens the gate.
 - Outcome: the plan is decoupled from its roadmap, its resume command is followable, and the owner
   ledger reports the actual unmerged docs-branch state.
 - Follow-up: commit the fixes, run incremental docs review, then deliver through `/merge-docs`.
+
+### 2026-08-09 — clean incremental docs review
+
+- Action: reviewed only the committed docs-review fixes after the recorded watermark.
+- Evidence: `9f4993214..44b435779`; review watermark `44b435779`; relative-link, plan/roadmap
+  decoupling, official-source, repository-path, and `git diff --check` verification.
+- Outcome: no new findings; all three original findings remain resolved.
+- Follow-up: checkpoint this review result and deliver the docs-only branch through `/merge-docs`.
 
 ## Resume prompt
 
