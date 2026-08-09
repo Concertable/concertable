@@ -6,12 +6,12 @@
 - PR: not opened
 - Dependency/package gates: none; this is an internal B2B refactor
 - Last reconciled: 2026-08-09; Phase 2 was implemented and verified after merging
-  `origin/main` at `d57e0c2a6`
+  `origin/main` at `d57e0c2a6`; latest observed `origin/main` is `51c8d15b5`
 
 ## Current state
 
-Phases 1 and 2 are complete. Phase 1 is in commit `506bc35e4`; Phase 2 is checkpointed by this
-commit after merging `origin/main` at `d57e0c2a6` through merge commit `cadd3c7da`.
+Phases 1 and 2 are complete. Phase 1 is in commit `506bc35e4`; Phase 2 is in commit
+`4a741fa50` after merging `origin/main` at `d57e0c2a6` through merge commit `cadd3c7da`.
 
 The Concert module now registers terms, cohesive payee direction, and payment projection vertically
 per `DealType`. `DealPayeeResolver` exposes ticket user, ticket tenant, and settlement tenant
@@ -20,7 +20,9 @@ response-producing leaves through the scoped generic factory. All unkeyed factor
 are scoped and all stateless keyed leaves remain singleton.
 
 Phase 2's unit, Concert integration, and full-solution build gates are terminal green. No PR exists
-and no package gate applies. Phase 3 has not begun.
+and no package gate applies. Phase 3 has not begun. After the Phase 2 commit, the latest observed
+`origin/main` advanced to `51c8d15b5`; the clean branch is 6 commits behind and must reconcile that
+drift before Phase 3 edits.
 
 ## Next Steps
 
@@ -55,7 +57,8 @@ Do not begin Phase 4 in the same turn; hand back after the Phase 3 commit and le
 - Phase 1 committed as `506bc35e4` (`refactor(concert): introduce deal strategy registration`).
 - Phase 2 merged current `origin/main`, replaced the inverse payee maps with one cohesive
   `IDealPayeeResolver` family, migrated `PaymentAmountMapper` to the generic factory, and moved both
-  families into the existing vertical registration block.
+  families into the existing vertical registration block in commit `4a741fa50`
+  (`refactor(concert): register payee and payment strategies`).
 - Phase 2 added table-driven recipient coverage for all four deal types and composition tests for the
   payee and payment strategy registrations.
 
@@ -263,8 +266,18 @@ Do not begin Phase 4 in the same turn; hand back after the Phase 3 commit and le
 - Evidence: Concert unit 121/121; B2B Concert integration 144/144; Customer Concert integration 11/11;
   full `api/Concertable.slnx` build 0 errors; removed type names absent from `api/`;
   `git diff --check` clean.
-- Outcome: Phase 2 is complete in this checkpoint with no open findings and no Phase 3 source changes.
+- Outcome: Phase 2 is complete in commit `4a741fa50` with no open findings and no Phase 3 source changes.
 - Follow-up: Implement Phase 3 only.
+
+### 2026-08-09 — post-commit base drift checkpointed
+
+- Action: Verified the Phase 2 commit and clean worktree, then reconciled the delivery identity against
+  the latest observed remote-tracking base.
+- Evidence: Phase 2 commit `4a741fa50`; `origin/main` at `51c8d15b5`; branch 6 commits behind and
+  9 commits ahead; no PR.
+- Outcome: Phase 2 remains complete and verified against its merged base; Phase 3 must first merge the
+  newly advanced `origin/main`.
+- Follow-up: Reconcile the clean branch with current `origin/main`, then implement Phase 3 only.
 
 ## Resume prompt
 
