@@ -6,7 +6,8 @@
   head `a779fe041` retires the discarded Shared rehearsal and migrates Payment/Payment.Client to
   Reunion; full code and security review are clean through that exact head; branch and PR head
   `53aa0a3` adds only the review and delivery ledger checkpoints; merge head `88dbd1460` brings
-  current `origin/main`; `this commit` adopts the merged direct-factory API and its package pin
+  current `origin/main`; implementation head `da78980b7` adopts the merged direct-factory API and its
+  package pin; incremental code/security review is clean through that head
 - PR: implementation PR #453 remains open remotely at `53aa0a3`; reviewed code head is `a779fe041`;
   local source-owner head is ahead for current-main and Reunion API reconciliation; docs design PR
   #443 merged as `fd0b666b9`; sub-plan reconciliation PR #445 merged as `d6a572e0d`
@@ -49,8 +50,9 @@ the package APIs it uses. Payment API/Web currently maps no Result or Option car
 receive an unused `Reunion.AspNetCore` reference; that adapter remains required only at HTTP edges
 whose source actually calls it.
 
-The full code and security review of `162b8412a..a779fe041` found no issues. Source-owner head
-`53aa0a3` adds only review and delivery ledger checkpoints.
+The full code and security review of `162b8412a..a779fe041` found no issues. The incremental native,
+security, and Concertable review of `53aa0a3..da78980b7` also found no issues. Remote source-owner
+head `53aa0a3` remains unchanged while the unpublished dependency blocks delivery.
 
 Docs design PR #443 merged the roadmap, plan, and this recovery ledger as `fd0b666b9`; closeout PR
 #444 advanced main to `c72b058af`. No Concertable or Reunion runtime file, package reference,
@@ -129,6 +131,8 @@ Resume when: the key is present (verify length only) and NuGet.org still lacks `
 - Packed and inspected exact `Reunion.Errors` `0.1.0-alpha.2` from merged Reunion head `1500270`,
   migrated all Payment definitions to direct nested-case factories, removed the temporary source
   scan, and completed the Payment, full-solution, and isolated package-consumer gates locally.
+- Incrementally reviewed `53aa0a3ae..da78980b7` through the native, security, and Concertable lenses;
+  no findings remain and both review watermarks identify exact implementation head `da78980b7`.
 - Pushed reviewed implementation head `a779fe041`, verified exact remote equality, and opened
   implementation PR #453 against `main`.
 - Completed full code and security review of `162b8412a..a779fe041` with no findings; review watermark
@@ -204,9 +208,9 @@ Resume when: the key is present (verify length only) and NuGet.org still lacks `
 
 - GitHub PR #453 is `OPEN` against `main`; its initial `headRefOid` and the fetched remote branch
   both equal reviewed implementation head `a779fe04139e8e33fca7f294a26c41e44c89dda7`.
-- Full code/security review: `reviews/Feature-typed-result_reunion-integration.md`; implementation
-  range `162b8412a..a779fe041` (32 commits), no findings. The artifact is restamped through the
-  ledger-only `this commit` after verifying its plan-progress delta.
+- Full and incremental code/security review: `reviews/Feature-typed-result_reunion-integration.md`;
+  latest range `53aa0a3ae..da78980b7` (15 commits), no findings; reviewed and security-reviewed
+  watermarks both equal `da78980b717fc3513749e5b526069828f1c886d2`.
 - Payment standalone Release build against exact local `Reunion.Errors` `0.1.0-alpha.2`: 0 warnings,
   0 errors.
 - Payment Release unit tests: 223 passed, 0 failed; integration tests: 8 passed, 0 failed.
@@ -417,6 +421,19 @@ Resume when: the key is present (verify length only) and NuGet.org still lacks `
   delivery-ready and provide the exact remaining-call-site inventory.
 
 ## Event log
+
+### 2026-08-09 — direct-factory incremental review completed
+
+- Action: Ran the mandatory incremental native, security, and Concertable architecture-aware review
+  after committing the corrected factory migration.
+- Evidence: range `53aa0a3ae..da78980b7` (15 commits); review artifact
+  `reviews/Feature-typed-result_reunion-integration.md`; reviewed/security watermarks
+  `da78980b717fc3513749e5b526069828f1c886d2`; no finding IDs because no issue cleared the confidence
+  threshold.
+- Outcome: Implementation head `da78980b7` is locally verified and reviewed. Publication remains the
+  sole delivery blocker; remote PR #453 was not changed.
+- Follow-up: Preserve the exact local artifact and branch until a scoped NuGet.org key opens the
+  immutable publication gate.
 
 ### 2026-08-09 — direct-factory local gate completed
 
