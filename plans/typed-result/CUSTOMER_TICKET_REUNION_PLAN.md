@@ -28,14 +28,14 @@ before PR #282 is superseded.
 
 ## Phases
 
-1. Audit PR #282 against current Customer Ticket/Concert/checkout code and record the unique behavior
+1. [x] Audit PR #282 against current Customer Ticket/Concert/checkout code and record the unique behavior
    and test inventory. Recreate only still-valid semantics.
-2. Migrate Ticket and checkout application/module contracts to direct `Reunion` / `Reunion.Errors`
+2. [x] Migrate Ticket and checkout application/module contracts to direct `Reunion` / `Reunion.Errors`
    ownership and use `Reunion.AspNetCore` only at actual Customer HTTP edges.
-3. Integrate the exact local Payment packages through temporary restore inputs, update Customer-owned
+3. [x] Integrate the exact local Payment packages through temporary restore inputs, update Customer-owned
    Payment callers/mocks, and run affected unit/integration, Customer Release build, carve, and
    mechanical legacy-carrier gates.
-4. Restore all published-package configuration, commit and review the source as delivery-ready, then
+4. [x] Restore all published-package configuration, commit and review the source as delivery-ready, then
    wait for published Payment revalidation before delivery or PR #282 supersession.
 
 ## Definition of done

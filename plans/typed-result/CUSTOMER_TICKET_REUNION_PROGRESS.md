@@ -8,7 +8,8 @@
   the exact Reunion.Errors `.2` candidate; their publication and generated platform sync gate
   delivery and final clean-feed revalidation
 - Last reconciled: 2026-08-09 against `origin/main` `1043a9178`, Payment package source
-  `a2497e3e8`, the active Reunion integration owner, and historical PR #282 head `26ed63b8`
+  `a2497e3e8`, implementation commit `acaec615b`, the active Reunion integration owner, and
+  historical PR #282 head `26ed63b8`
 
 ## Current state
 
@@ -34,13 +35,22 @@ commit `a2497e3e8a4f81ab550d564d0353c0683e4e44ec` and exact artifacts:
 The `.915` manifests require Reunion `.1` and Reunion.Errors `.2`. The replacement uses the `.2`
 direct error-definition factories and has restored the normal platform Payment pins and repository
 NuGet sources; no local feed or disposable Payment version remains in source configuration.
+Implementation commit `acaec615b` passed native, security, and every Concertable review lens with no
+findings. The branch has not been pushed and no PR has been opened.
 
 ## Next Steps
 
-Commit the verified implementation checkpoint, run the complete code and security review, address
-every open finding, and then stop delivery-ready behind the Reunion.Errors `.2` and Payment package
-publication/platform-sync gate. Do not push, mutate, close, or supersede PR #282 without a later
-explicit instruction.
+Blocked: the producer owner in `plans/typed-result/REUNION_INTEGRATION_PROGRESS.md` has not yet
+published Reunion.Errors `0.1.0-alpha.2`, merged Payment PR #453, published matching Payment packages,
+or delivered the generated Customer platform pin.
+
+Unblock action: the Reunion integration owner publishes and verifies exact Reunion.Errors `.2`, lands
+Payment PR #453 with full E2E, follows its package publication and generated platform-sync PR to green,
+and updates this dependent ledger with the published version.
+
+Resume when: Customer can restore the published Reunion.Errors and Payment graph from normal feeds at
+the generated platform pin with no temporary source or disposable version; then revalidate the exact
+commit, refresh review watermarks, and request the explicit PR #282 supersession/delivery decision.
 
 ## Completed work
 
@@ -52,6 +62,8 @@ explicit instruction.
   MVC terminals; removed Customer's final FluentResults references.
 - Reconciled the implementation from superseded Payment `.911` / Reunion.Errors `.1` to current
   Payment `.915` / Reunion.Errors `.2` before checkpointing it.
+- Committed locally as `acaec615b` and completed native, security, correctness, isolation, boundary,
+  seeding, convention, and changed-path test-coverage review with no findings.
 
 ## Verification
 
@@ -64,6 +76,7 @@ explicit instruction.
 - Standalone Customer deployable-closure carve: 0 errors and 1 existing UserEntity warning.
 - `git diff --check` and legacy carrier/terminal scans pass; normal Payment pins and NuGet sources are
   restored after verification.
+- Code/security review range `1043a9178..acaec615b`: one implementation commit, no findings.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -73,6 +86,17 @@ explicit instruction.
   direct nested-case factories now avoids landing a replacement against another obsolete rehearsal.
 
 ## Event log
+
+### 2026-08-09 â€” implementation checkpoint reviewed delivery-ready
+
+- Action: Committed the verified source and reviewed the exact one-commit branch delta through the
+  native, security, and Concertable architecture-aware lenses.
+- Evidence: implementation `acaec615b`; review range `1043a9178..acaec615b`; no findings; no local
+  feed, disposable Payment pin, push, new PR, or PR #282 mutation.
+- Outcome: All local phases are complete and reviewed. Only the external publication, Payment merge,
+  generated sync, and clean-feed revalidation lifecycle remains.
+- Follow-up: the Reunion integration owner clears the exact blocker in `## Next Steps` and updates
+  this ledger when the normal-feed resume condition is true.
 
 ### 2026-08-09 â€” current producer gate reconciled and implementation verified
 
