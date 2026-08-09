@@ -137,11 +137,12 @@ the normal build, unit, architecture, and integration gates afterward; reserve E
 
 ## Downstream handoffs
 
-- `plans/dotnet-11/B2B_WORKFLOW_UNIONS_PROGRESS.md` waits for this plan's checkpoints 6-7 source PR
-  and every resulting publication/platform-sync gate to become terminal and green. At that gate,
-  update the dependent ledger on current main and surface its reserved
-  `Refactor/dotnet-11_b2b-workflow-unions` resume prompt; do not let the dependent poll or copy this
-  worktree's overlapping Concert workflow changes.
+- Waiting ledger: `plans/dotnet-11/B2B_WORKFLOW_UNIONS_PROGRESS.md`.
+  Worktree: not created; reserved branch `Refactor/dotnet-11_b2b-workflow-unions`.
+  Gate: the B2B typed-result checkpoints 6-7 source PR and every resulting publication/platform-sync
+  gate must be terminal and green. At that gate, update the dependent ledger on current main and
+  surface its implementation pointer; do not let the dependent poll or copy this worktree's
+  overlapping Concert workflow changes.
 
 ## Event log
 

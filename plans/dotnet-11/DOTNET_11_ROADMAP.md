@@ -9,14 +9,15 @@
 
 ## How to continue this roadmap
 
-Use the plan and ledger for the selected item:
+The selected item is blocked behind the existing B2B typed-result owner. Continue that resolver:
 
 ```text
-/resume-plan @plans/dotnet-11/B2B_WORKFLOW_UNIONS_PROGRESS.md
+/resume-plan @plans/typed-result/B2B_PROGRESS.md
 ```
 
-Do not start another .NET 11 service slice until this one establishes the package, CI, hosting, and
-toolchain conventions.
+That owner will update the blocked .NET 11 ledger and surface its implementation pointer when the
+terminal gate opens. Do not resume the blocked ledger directly, and do not start another .NET 11
+service slice until this one establishes the package, CI, hosting, and toolchain conventions.
 
 ## Status
 

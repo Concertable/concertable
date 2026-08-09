@@ -6,14 +6,15 @@
 - PR: not opened
 - Dependency/package gates: blocked on the terminal B2B typed-result lifecycle recorded in
   `plans/typed-result/B2B_PROGRESS.md`
-- Last reconciled: 2026-08-09 against `origin/main` `b5af92fdc`, the current typed-result/ReUnion
+- Last reconciled: 2026-08-09 against `origin/main` `43fe1caf4`, the current typed-result/ReUnion
   ledgers, B2B project references, workflow source, CI pins, and official .NET/Functions guidance
 
 ## Current state
 
 The roadmap, implementation plan, and this recovery ledger exist on the isolated docs-planning branch.
 The full docs review found three issues; all are fixed in `44b435779`, and the incremental review of
-that fix commit found no new issues. No implementation worktree, SDK installation, `global.json`,
+that fix commit found no new issues. The branch has since merged current main's blocked-ledger schema
+and reconciled this plan to it. No implementation worktree, SDK installation, `global.json`,
 target-framework edit, workflow refactor, test run, package publication, or runtime deployment has
 occurred.
 
@@ -25,12 +26,9 @@ does not introduce `IAcceptStep` or place step interfaces inside union cases.
 
 ## Next Steps
 
-Wait for `plans/typed-result/B2B_PROGRESS.md` to record that its checkpoints 6-7 source PR and every
-resulting publication/platform-sync gate are terminal and green. That owner will update this ledger and
-surface the resume prompt. Then create `Refactor/dotnet-11_b2b-workflow-unions` from fresh
-`origin/main`, execute Phase 0, and stop after committing the independently green Phase 1 platform-only
-.NET 11 checkpoint. Do not create the worktree, copy the overlapping Concert workflow changes, or begin
-native unions before the owner opens the gate.
+Blocked: The B2B typed-result checkpoints 6-7 source PR and every resulting publication/platform-sync gate are not yet terminal and green.
+Unblock action: The owner at `plans/typed-result/B2B_PROGRESS.md` must finish checkpoints 6-7, merge the source PR, follow every resulting publication/platform-sync gate to terminal green, then update this ledger.
+Resume when: Current main contains the merged B2B work and `plans/typed-result/B2B_PROGRESS.md` records the source PR and every resulting publication/platform-sync gate as terminal and green.
 
 ## Completed work
 
@@ -62,6 +60,7 @@ native unions before the owner opens the gate.
 - `ACC1` fixed in `44b435779`: corrected the B2B owner's premature “on current main” claim.
 - Incremental docs review: `9f4993214..44b435779` (1 commit), no new findings, same artifact,
   watermark `44b435779`. Open findings: none.
+- Delivery-base schema reconciliation after merging `origin/main` `43fe1caf4` is pending review.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -114,9 +113,17 @@ native unions before the owner opens the gate.
 - Outcome: no new findings; all three original findings remain resolved.
 - Follow-up: checkpoint this review result and deliver the docs-only branch through `/merge-docs`.
 
+### 2026-08-09 — current-main blocked-ledger reconciliation
+
+- Action: merged current `origin/main` and applied its new three-line hard-blocker contract to this
+  waiting ledger, the resolver roadmap instruction, and the B2B owner's downstream entry.
+- Evidence: `origin/main` `43fe1caf4`; plan-handoff framework PR #447; the structured `## Next Steps`
+  fields and matching owner gate.
+- Outcome: resuming the blocked ledger is now explicitly forbidden; the existing B2B owner remains the
+  only route that can open and surface this plan.
+- Follow-up: review and checkpoint this reconciliation, then deliver through `/merge-docs`.
+
 ## Resume prompt
 
-```text
-/worktree create Refactor/dotnet-11_b2b-workflow-unions
-Read @plans/dotnet-11/B2B_WORKFLOW_UNIONS_PLAN.md and @plans/dotnet-11/B2B_WORKFLOW_UNIONS_PROGRESS.md and do what its `## Next Steps` says.
-```
+Not emitted while `## Next Steps` carries the hard-blocker fields. When the gate opens, the B2B owner
+replaces the blocked state with an actionable Phase 0/1 handoff and restores the implementation pointer.
