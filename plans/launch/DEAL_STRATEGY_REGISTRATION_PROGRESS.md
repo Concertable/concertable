@@ -5,13 +5,13 @@
 - Branch: `Refactor/launch_deal_strategy_registration`
 - PR: not opened
 - Dependency/package gates: none; this is an internal B2B refactor
-- Last reconciled: 2026-08-09; Phase 4 is complete in this commit after merging current
-  `origin/main` at `c72b058afe` through merge commit `dff81e44e`; the branch is 0 commits behind
+- Last reconciled: 2026-08-09; Phase 4 is complete in commit `02730b0da`; post-commit fetch found
+  `origin/main` at `82644721f`, with the branch 4 commits behind and 15 commits ahead
 
 ## Current state
 
 Phases 1, 2, 3, and 4 are complete. Phase 1 is in commit `506bc35e4`; Phase 2 is in commit
-`4a741fa50`; Phase 3 is in commit `0a8320289`; Phase 4 is in this commit after merging
+`4a741fa50`; Phase 3 is in commit `0a8320289`; Phase 4 is in commit `02730b0da` after merging
 `origin/main` at `c72b058afe` through merge commit `dff81e44e`.
 
 The Concert module now registers terms, cohesive payee direction, payment projection, and settlement
@@ -22,25 +22,28 @@ workflow steps are registered once, and both registries are derived from the sam
 factory, leaving the module-local generic factory as the only keyed-service lookup.
 
 Phase 4's Concert unit gate, Concert integration gate, and full-solution build are terminal green.
-No PR exists and no package gate applies. The work is verified against the branch after it merged
-current `origin/main` through `dff81e44e`; no unrelated dirty paths were present before Phase 4.
+No PR exists and no package gate applies. A post-commit fetch found current `origin/main` at
+`82644721f`; the clean branch is 4 commits behind and 15 commits ahead, so Phase 5 must merge that
+base drift before editing. No open platform-sync PR exists.
 
 ## Next Steps
 
 Implement Phase 5 only — Deal-module families and convention cleanup:
 
-1. Add the Deal-local strategy factory and validated vertical builder, then migrate `DealMapper` and
+1. Merge current `origin/main` at `82644721f` into the clean branch and rebuild the affected Deal and
+   Concert project graphs before editing.
+2. Add the Deal-local strategy factory and validated vertical builder, then migrate `DealMapper` and
    `DealUpdater` without introducing a Concert runtime reference or cross-module registry.
-2. Preserve EF TPH creation/update validation and JSON-polymorphic contract shapes.
-3. Delete the unused `IDealStrategy` marker and correct the stale Deal architecture claim that Payment
+3. Preserve EF TPH creation/update validation and JSON-polymorphic contract shapes.
+4. Delete the unused `IDealStrategy` marker and correct the stale Deal architecture claim that Payment
    still provides `IStripeValidationStrategy`.
-4. Update `api/agents/CODE_PATTERNS.md` with the module-local factory/builder pattern and the established
+5. Update `api/agents/CODE_PATTERNS.md` with the module-local factory/builder pattern and the established
    factory/resolver/mapper/renderer/serializer/calculator suffix distinctions.
-5. Add the planned architecture gate for frozen maps, direct keyed-service use, exact family coverage,
+6. Add the planned architecture gate for frozen maps, direct keyed-service use, exact family coverage,
    and the module-local factory lookup allowlist.
-6. Run Deal and Concert unit/integration gates plus `dotnet build api/Concertable.slnx` with short
+7. Run Deal and Concert unit/integration gates plus `dotnet build api/Concertable.slnx` with short
    artifact roots; the merge queue, not local execution, owns the required full E2E tier.
-7. Review the final diff, update this ledger, check off Phase 5, and commit that verified phase.
+8. Review the final diff, update this ledger, check off Phase 5, and commit that verified phase.
 
 Do not begin review or delivery in the same turn; hand back after the Phase 5 commit and ledger
 checkpoint.
@@ -72,7 +75,8 @@ checkpoint.
 - Phase 4 folded keyed workflow registration, workflow CLR metadata, lifecycle state machines, steps,
   and capability metadata into the same validated per-`DealType` builder as the migrated Concert
   strategy families. The obsolete parallel registry builder and `AddConcertWorkflows` composition path
-  are gone, and the named workflow factory delegates through the generic strategy factory.
+  are gone, and the named workflow factory delegates through the generic strategy factory in commit
+  `02730b0da` (`refactor(concert): converge workflow registration`).
 
 ## Verification
 
@@ -416,8 +420,19 @@ checkpoint.
 - Evidence: Concert unit 132/132; B2B Concert integration 144/144; Customer Concert integration 11/11;
   full `api/Concertable.slnx` build 0 errors; removed workflow composition names absent from `api/`;
   direct keyed lookup confined to the generic factory and focused tests; `git diff --check` clean.
-- Outcome: Phase 4 is complete in this commit with no open findings and no Phase 5 source changes.
+- Outcome: Phase 4 is complete in commit `02730b0da` with no open findings and no Phase 5 source
+  changes.
 - Follow-up: Implement Phase 5 only.
+
+### 2026-08-09 — post-commit base drift checkpointed
+
+- Action: Verified the Phase 4 commit and clean worktree, then fetched `origin` to reconcile delivery
+  identity before handoff.
+- Evidence: Phase 4 commit `02730b0da`; `origin/main` at `82644721f`; branch 4 commits behind and
+  15 commits ahead; no PR and no open platform-sync PR.
+- Outcome: Phase 4 remains complete and verified against its merged base; Phase 5 must first merge the
+  newly advanced `origin/main` and rebuild the affected Deal/Concert projects.
+- Follow-up: Reconcile the clean branch with current `origin/main`, then implement Phase 5 only.
 
 ## Resume prompt
 
