@@ -6,8 +6,8 @@
 - PR: not opened
 - Dependency/package gates: none; this is an internal B2B refactor
 - Last reconciled: 2026-08-09; all five implementation phases and the complete implementation code
-  review are complete; reviewed through `fb34f37b1` against base `43fe1caf4`; `origin/main` advanced
-  after the review to `98f5cc637`, leaving this drift checkpoint 16 commits behind and 23 ahead
+  review are complete; current `origin/main` at `dc0da9360` is merged through `eda6dbaa6`; this
+  checkpoint leaves the branch 0 commits behind and 25 ahead
 
 ## Current state
 
@@ -36,17 +36,16 @@ is recorded in `reviews/Refactor-launch_deal_strategy_registration.md`; native, 
 microservice, module-boundary, seeding, convention, strategy-registration, architecture-gate, and
 changed-path test-coverage lenses found no issues. No PR exists and no package gate applies. The branch
 contains the clean review checkpoint `75001d1d1`. During final reconciliation, `origin/main` advanced to
-`98f5cc637` through 16 docs/plans-only commits with no path overlap against the reviewed branch diff.
-The implementation review remains valid, but the branch must merge that base drift before PR creation.
+`dc0da9360` through docs/plans-only commits plus the recursive-handoff hook fix. Merge commit
+`eda6dbaa6` brought that base current without conflicts. The reviewed API diff's SHA-256 remained
+`F8C1A1E3A5FA8CD5329DDDFA7361B39F12B695EC8BCAC3E0CBBA57FD71A43582`, proving the merge did not
+change the reviewed implementation. No PR exists and the worktree is clean before this checkpoint.
 
 ## Next Steps
 
 Open the reviewed implementation PR only:
 
-1. Fetch `origin`, confirm no unrelated dirty path exists, merge current `origin/main` into this branch,
-   and verify it is 0 behind. The observed `43fe1caf4..98f5cc637` drift is docs/plans-only with no
-   reviewed-path overlap, so verify the merge preserves the reviewed implementation diff; no runtime
-   rebuild is required unless that evidence changes or the merge conflicts.
+1. Fetch `origin`, confirm the branch remains 0 behind and has no unrelated dirty path.
 2. Use `create-gh-pr` to push `Refactor/launch_deal_strategy_registration` and open its GitHub PR. This
    broad booking/payment/settlement refactor requires full merge-queue E2E; do not add a skip label or
    trailer.
@@ -181,6 +180,10 @@ Open the reviewed implementation PR only:
 - 2026-08-09: final post-review reconciliation found `origin/main` at `98f5cc637`, 16 commits ahead of
   the branch. Those commits change only `plans/dotnet-11/**` and `plans/typed-result/B2B_PROGRESS.md`;
   their path set has no overlap with `43fe1caf4..fb34f37b1`. No PR exists.
+- 2026-08-09: merged current `origin/main` at `dc0da9360` through `eda6dbaa6` with no conflicts and
+  verified the branch 0 behind. The reviewed API diff SHA-256 was identical before and after the merge;
+  the newly merged hook regression suite passed 23/23, including the exact recursive dependency-ledger
+  handoff case. No runtime rebuild was required because the reviewed implementation patch did not change.
 
 ## Reviews
 
@@ -557,6 +560,17 @@ Open the reviewed implementation PR only:
   prerequisite of PR creation.
 - Follow-up: Merge current `origin/main`, verify the reviewed implementation diff is preserved, then
   push and open the full-E2E implementation PR only.
+
+### 2026-08-09 — post-review base reconciled
+
+- Action: Merged current `origin/main`, including PR #450's recursive-handoff hook fix, into the clean
+  feature worktree before PR creation.
+- Evidence: base `dc0da9360`; merge commit `eda6dbaa6`; branch 0 commits behind and 24 ahead before this
+  ledger checkpoint; no conflicts; reviewed API diff SHA-256 unchanged at
+  `F8C1A1E3A5FA8CD5329DDDFA7361B39F12B695EC8BCAC3E0CBBA57FD71A43582`; hook tests 23/23.
+- Outcome: The branch is current, the reviewed implementation is unchanged, and the fixed handoff hook
+  now scopes claims to actual mutation targets.
+- Follow-up: Push the reviewed branch and open its full-E2E implementation PR only.
 
 ## Resume prompt
 
