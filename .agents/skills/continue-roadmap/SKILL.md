@@ -1,6 +1,6 @@
 ---
 name: continue-roadmap
-description: Pick the next feature off an epic's roadmap and hand it off to be planned. Use when Tommy invokes `/continue-roadmap` or asks what's next on the launch/epic. Accept an optional `*_ROADMAP.md` reference and an optional natural-language preferred item; without a preference, list the ready candidates for Tommy to choose. Read AGENTS.md, plans/AGENTS.md and the roadmap, classify every outstanding item against real git/PR/worktree state, then emit a handoff prompt that a fresh context uses to WRITE the chosen item's feature plan. This creates a new plan; it does not resume one — that's `/resume-plan`.
+description: Pick the next implementable feature off an epic's roadmap and hand it off to be planned. Use when Tommy invokes `/continue-roadmap` or asks what's next on the launch/epic. Accept an optional `*_ROADMAP.md` reference and optional natural-language preference; without one, list candidates that are ready or delivery-gated but locally implementable. Read AGENTS.md, plans/AGENTS.md and the roadmap, verify real git/PR/worktree and dependency state, and emit a handoff prompt that writes the chosen feature plan. This creates a new plan; it does not resume one — that's `/resume-plan`.
 ---
 
 # Continue Roadmap
@@ -25,22 +25,28 @@ does **not** design or write the plan here, and does **not** resume an existing 
    unchecked / 🔴 / 🟠 / 🟡 item and each "verify before trusting" line, check `git worktree list`, local
    branches, and `gh pr list` for a branch/PR/worktree already working it, and read its named dependency
    docs for an unlanded gate. Sort each into:
-   - **in-flight** — a branch/PR/worktree already owns it (name it; don't offer it);
-   - **blocked** — waits on an unlanded PR, platform sync, or other work (name the blocker);
-   - **ready** — unblocked and unowned.
+   - **in-flight** — a branch/PR/worktree already owns it (name it; resume its ledger instead of creating
+     another owner);
+   - **implementation-blocked** — required source/API/design or a trustworthy exact artifact is
+     unavailable (name the blocker and owner);
+   - **delivery-gated but implementable** — safe local implementation can proceed now, with later
+     published-baseline validation before merge;
+   - **ready and unowned** — no implementation or delivery gate prevents normal work.
    Enumerate the whole outstanding set before concluding an item is ready; a name scan can't see an
    in-flight worktree, so verify against `git`/PR state, not the roadmap's own status marks.
 4. **Resolve the choice.**
-   - With no preference, present every ready candidate with a recommendation and stop for Tommy to pick.
-     Use one line each: the item, its size/blast radius, and why it's ready.
-   - When the preferred item is ready, identify the match and treat it as Tommy's pick; continue directly
-     to the handoff.
-   - When the preferred item is in flight, blocked, or not found, explain that status, present the ready
-     alternatives, and stop for Tommy to pick. Never force an unavailable item.
+   - With no preference, present every ready and delivery-gated-but-implementable candidate with a
+     recommendation and stop for Tommy to pick. Use one line each: the item, its size/blast radius, and
+     its implementation and delivery state.
+   - When the preferred item is ready or delivery-gated but implementable, identify the match and treat
+     it as Tommy's pick; continue directly to the handoff.
+   - When the preferred item is in flight, implementation-blocked, or not found, explain that status,
+     present the implementable alternatives, and stop for Tommy to pick.
 5. **Emit the handoff prompt** for the chosen item — the deliverable. It is self-contained text Tommy
    pastes into a fresh context to WRITE the feature plan, and must:
-   - name the roadmap line and the exact source docs to read (the roadmap, the relevant
-     `LEGAL_REQUIREMENTS.md` / architecture / already-shipped feature), and any dependency gate;
+   - name the roadmap line and exact source docs to read (the roadmap, relevant
+     `LEGAL_REQUIREMENTS.md` / architecture / already-shipped feature), plus separate implementation
+     and delivery dependencies;
    - instruct: branch `Feature/<epic>_<name>` off `origin/main` (the epic is the roadmap's folder), then
      write `plans/<epic>/<NAME>_PLAN.md` **and** its `<NAME>_PROGRESS.md` ledger from the progress
      template, following `plans/agents/PLAN.md`;

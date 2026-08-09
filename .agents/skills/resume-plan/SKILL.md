@@ -27,11 +27,14 @@ executing that action — not choosing among paths or reconstructing it.
 3. **Confirm the ledger still holds** before acting: check its header branch/PR/gates against actual
    `git`/PR state and confirm `## Next Steps` still names one resolved action under `AGENTS.md`. Reconcile
    stale state or unresolved alternatives from current evidence and standing instructions, then update
-   the ledger's current-state, `## Next Steps`, and event log before acting.
+   the ledger's current-state, `## Next Steps`, and event log before acting. For every package, PR,
+   publication, or sync dependency, classify implementation and delivery separately. Do not preserve a
+   stale hard blocker when source or an exact producer artifact now permits safe local preparation.
 4. **Do what `## Next Steps` says,** honoring its prerequisites and gates.
 5. **When `## Next Steps` is a hard stop:**
-   - Do any safe, authorized work in the current scope that can remove it. If that advances the plan,
-     reconcile the ledger and continue normally.
+   - Do any safe, authorized work in the current scope that can remove it. Also check whether the gate
+     blocks only delivery: if local implementation, tests, or review can proceed against an exact
+     producer artifact, reconcile the ledger to actionable delivery-gated work and continue normally.
    - If it cannot move, make `## Next Steps` start with the exact single-line `Blocked:`,
      `Unblock action:`, and `Resume when:` fields from `plans/agents/PLAN.md`. If the same fields and
      evidence were already recorded, do not create another no-change blocker checkpoint.

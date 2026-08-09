@@ -10,6 +10,13 @@ Concertable is a monorepo (a convenience, not the architecture) with a `.NET` mi
 - **A shortcut is only acceptable when it is genuinely, provably the right call** (e.g. deferring live tax-ID verification that overlaps Stripe) — and then it is *logged* in the owning `TECH_DEBT.md` with the reasoning, never left silent.
 - **If effort/complexity is pushing you toward the lesser option, surface that as a trade-off for Tommy to decide — do not quietly downgrade the solution.** The bias is always toward the durable, maintainable, architecturally-honest answer.
 
+## Questions come before actions
+
+When Tommy asks a question, answer it directly before taking any action. Discussion of possible work,
+numbered options, prompts, branches, or plans is not authorization to execute it. If one message both
+asks a question and explicitly requests an action, answer the question first, then perform only the
+explicitly requested action.
+
 ## Autonomy — act on reversible work, don't ask
 
 Decide and act on reversible work (doc/plan edits, isolated commits, retrying a transient failure), then report — no check-ins. Research: run end-to-end, update the relevant docs, commit in isolation. Pause only when an action is irreversible or contradicts what you find (e.g. unrelated work already staged) — flag it in one line and take the safe path, don't ask permission.

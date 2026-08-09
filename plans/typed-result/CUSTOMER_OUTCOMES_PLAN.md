@@ -219,9 +219,9 @@ tier and receives no skip label.
 
 ### Phase 5 — Scope audit and delivery
 
-- Wait for the Reunion integration owner to merge its generated Phase 4 platform-sync PR. Reconcile
-  this branch once against that integrated main and migrate only Customer-owned imports, terminal
-  calls, and semantic conflicts; do not duplicate shared package or adapter work.
+- Reconcile with current main now and migrate only Customer-owned imports and HTTP-edge terminals to
+  directly owned published Reunion packages. Audit the resulting package topology separately from the
+  Payment delivery chain; this scope excludes Payment.Client and may be independently deliverable.
 - Run the five-module nullable/collection/carrier inventories and the combined Review, Preference,
   User, Venue, Artist, Shared.Api architecture, Release solution, and Customer carve gates.
 - Confirm the diff contains no Ticket, Concert, Customer Payment client/mock, checkout/purchase,

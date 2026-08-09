@@ -1,3 +1,4 @@
+
 # Reunion integration plan
 
 > **Next steps live in @plans/typed-result/REUNION_INTEGRATION_PROGRESS.md → `## Next Steps`.**
@@ -238,11 +239,11 @@ as merged; #336 is the only listed closed-unmerged PR.
 | #404 Establish typed-error transport foundations | Merged; Shared branch | `IError` transport metadata and mapping foundation. | Migrate its reusable primitives to `Reunion.Errors`; preserve application-owned unions and published semantics; medium. |
 | #407 Codify typed error mapping | Merged; docs branch | Mapping convention. | Update only if names/imports change; low. |
 | #420 Platform sync `.853` | Merged; platform sync | Migrated Payment consumers and unblocked B2B/Auth/Customer. | No action; dependency of active semantic owners; low. |
-| #425 Model Customer non-Payment outcomes | Open; `main` ← `Feature/typed-result_customer-outcomes` | 29 unique reviewed commits; not elsewhere. | Preserve and update once against integrated main; do not duplicate package cutover; high (117 behind). |
+| #425 Model Customer non-Payment outcomes | Open; `main` ← `Feature/typed-result_customer-outcomes` | 29 unique reviewed commits; not elsewhere. | Convert locally against published Reunion now; update the PR once after current-main verification; high. |
 | #426 Close Payment owned-result migration | Merged; docs closeout | Lifecycle closeout. | No action; low. |
 | #427 Finish Payment closeout review fixes | Merged; same docs closeout branch | Review fixes for #426. | No action; low. |
-| B2B local-only work | Active, unpushed; recorded owner `Refactor/B2BTypedResultMigration` | Authoritative semantic migration exists locally at `ba5791268`. | Preserve owner and reconcile in Phase 6 after the final contraction; high conflict risk. |
-| Auth local-only work | Active, unpushed; recorded owner `Feature/typed-result_auth-outcomes` | Authoritative semantic migration exists locally at `98599413a`. | Preserve owner and reconcile in Phase 6 after the final contraction; high conflict risk. |
+| B2B local-only work | Active, unpushed; recorded owner `Refactor/B2BTypedResultMigration` | Authoritative semantic migration exists locally at `ba5791268`. | Prepare now against exact local Payment.Client; published revalidation gates delivery. |
+| Auth local-only work | Active, unpushed; recorded owner `Feature/typed-result_auth-outcomes` | Authoritative semantic migration exists locally at `98599413a`. | Convert now against published Reunion; no Payment dependency. |
 | HTTP-terminal local work | Obsolete local checkpoint `c593150e4` | Reunion already publishes the MVC and Minimal API terminals plus generic success mappers. | Retire the branch/worktree without publication; do not copy any implementation into Concertable. |
 
 ## Safest integration strategy
@@ -265,14 +266,12 @@ Delivery therefore crosses two Concertable package layers after the Reunion publ
    ownership, and keep `Reunion.AspNetCore` at any Payment HTTP edge that actually maps Reunion
    carriers. Publish the repacked client and drive its generated platform sync green. Do not remove
    old Shared identities yet.
-6. Merge the final consumer contraction: migrate B2B, Auth, Customer, Ticket, Search, and remaining
-   callers against the newly published Payment.Client, add direct Reunion package references to every
-   project whose source uses those APIs, replace Concertable terminals with service-owned Reunion MVC
-   terminals, then delete the owned carriers, error primitives, HTTP response executor, and extensions.
-   Publish and drive the final platform sync green.
-7. Reconcile each semantic owner against that integrated `main`: update PR #425 once; sync and update
-   the active local B2B/Auth worktrees; recreate #282's Ticket semantics rather than rebasing its
-   obsolete carrier implementation.
+6. In parallel with Payment delivery, prepare Auth and Customer non-Payment against published Reunion;
+   prepare B2B and the Ticket replacement against exact local Payment packages from `a779fe041`.
+   Commit, test, and review each owner independently without committing temporary package inputs.
+7. After those consumers are delivery-ready, inventory and execute the final Shared contraction.
+   Revalidate Payment consumers against the published client, deliver each owner in the required order,
+   publish, and drive every generated platform sync green.
 8. Run the final shared/background inventory and remove leftover third-party surfaces only when all
    semantic owners are terminal.
 
@@ -462,29 +461,24 @@ Gate: Payment build/unit/integration/package-consumer verification and merge-que
 PR merged; generated platform sync green and merged; the Reunion-based Payment.Client package is
 available. Never remove the old Shared identities before this gate.
 
-### Phase 5 — Final consumer migration and Shared contraction
+### Phase 5 — Parallel consumer preparation
 
-- Migrate every remaining service import/call site against published Shared and Payment.Client
-  packages, adding direct Reunion references to each project whose source uses its carriers.
-- Replace every remaining Shared.Api Result/Option terminal with the service-owned
-  `Reunion.AspNetCore.Mvc` surface; keep Option absence terminals limited to NotFound and NoContent,
-  with caller-actionable failures represented by typed Results.
-- Remove the owned carrier/extensions, error primitives, and Shared.Api HTTP result executor only
-  after the repository inventory proves no production caller or published package still exposes
-  their assembly identity.
-- Preserve controller signatures, CreatedAtAction, HTTP behavior, domain errors, exceptions, and
-  service carve boundaries.
+- Convert Auth and Customer non-Payment in their existing owners against published Reunion.
+- Complete B2B and recreate Customer Ticket in separate owners against the exact local Payment
+  packages from `a779fe041`; restore every temporary input before review completion.
+- Record each branch as delivery-ready only after its normal build/test/carve and review gates pass.
+- Search has no carrier conversion work; retain it only in the final inventory.
 
-Gate: all standalone builds, unit/integration suites, package consumers, architecture tests, and
-merge-queue E2E green; source PR and generated platform sync merged. Never leave a sync red.
+Gate: all four owner ledgers are delivery-ready with immutable producer provenance and no committed
+local feed/path/version.
 
-### Phase 6 — Reconcile active semantic migration owners
+### Phase 6 — Shared contraction and consumer delivery
 
-- Update PR #425 exactly once against integrated main and preserve its 29 unique commits.
-- Merge integrated main into the authoritative B2B/Auth owners after their other-workstation state is
-  synced; resolve only semantic conflicts there.
-- Recreate #282's Ticket/Concert behavior and tests on the integrated baseline, then request approval
-  before superseding the old PR.
+- Execute `REUNION_SHARED_CONTRACTION_PLAN.md` from the prepared-consumer inventory.
+- Revalidate B2B and Ticket against the published Payment packages after the producer and generated
+  sync land; update PR #425 once and preserve its unique commits.
+- Deliver each service owner only when its own topology and full gates make it merge-ready. Request
+  approval before superseding PR #282 with the Ticket replacement.
 
 Gate: every owner has one authoritative branch/PR, no duplicate carrier/package changes, normal
 service verification green, and each generated platform sync terminal.

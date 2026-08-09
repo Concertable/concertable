@@ -95,15 +95,40 @@ but the plan stays open until **all** of them land and the codebase is in sync a
 B2B PR and calling the plan done while Kernel still speaks the old shape is the thing to never do.
 Don't `git rm` the plan (Lifecycle 5) until that final synced state is in.
 
+## Model implementation and delivery separately
+
+Any plan spanning PR, package, publication, deployment, or platform-sync boundaries maintains two
+dependency graphs:
+
+- the **implementation DAG** records the source, API, design, and exact producer artifact needed to
+  implement, test, review, and commit each independently owned branch;
+- the **delivery DAG** records the merge, publication, generated sync, deployment, and final published-
+  baseline revalidation order.
+
+Use these states consistently in roadmaps, plans, ledgers, reports, and handoffs:
+
+- **implementation-blocked** — a required source/API/design or trustworthy exact artifact is unavailable;
+- **implementable, delivery-gated** — local implementation can proceed, but the branch cannot merge yet;
+- **delivery-ready** — implementation, tests, and review are green against the recorded exact producer
+  artifact; published-baseline revalidation remains;
+- **merge-ready** — temporary inputs are gone and the branch is green against the real published baseline;
+- **terminal** — all required merge, publication, sync, and closeout gates are complete.
+
+An unlanded PR, unpublished package, or pending platform sync belongs in the delivery DAG unless evidence
+shows it prevents safe local work. When an exact local package is sufficient, record its producer commit,
+package version, hashes, and reproducible location; never commit a machine-specific feed path, temporary
+version pin, or local-only configuration. Revalidate against the published package before calling the
+consumer merge-ready.
+
 ## Cross-plan blockers — establish the return path before stopping
 
-When a phase can't proceed because it depends on work owned by a **different** plan in the same epic
-(e.g. B2B's migration waiting on Payment's), don't guess the dependency's state from memory. Read the
-epic roadmap as the cross-plan dependency map, find which sibling plan owns the blocker, and open that
-plan's `_PROGRESS.md` for its live state (merged? published? platform-sync green?). Only then proceed or
-record the exact unlanded gate.
+When a phase depends on work owned by a **different** plan in the same epic, don't guess the dependency's
+state from memory. Read the epic roadmap as the cross-plan dependency map, find which sibling plan owns
+the dependency, and open that plan's `_PROGRESS.md` for its live state. First classify the edge in both
+DAGs: dispatch safe local preparation immediately and reserve the blocker protocol below for an
+implementation-blocked edge.
 
-Blocking is a two-ledger state transition:
+An implementation blocker is a two-ledger state transition:
 
 1. In the waiting ledger, record the exact terminal gate, owner-ledger action, and objective green
    evidence with the blocked-state fields below. The waiting worktree does not poll after that
@@ -114,14 +139,16 @@ Blocking is a two-ledger state transition:
    event log in that same delivery session, then surface its exact resume prompt to Tommy.
 4. Do not close or delete the owner plan/ledger while a downstream handoff remains undispatched.
 
-Reporting "waiting for X" without registering the dependent in X's ledger is incomplete: it loses the
+Reporting "waiting for X" without first proving that X blocks implementation is incomplete. Reporting
+a genuine implementation blocker without registering the dependent in X's ledger also loses the
 only reliable signal for returning to the work. The roadmap is used at runtime for navigation, never
 cited inside a plan (see [`ROADMAP.md`](ROADMAP.md)).
 
 ## Hard blockers — hand off the resolver, never the blocked plan
 
-If safe, authorized work in the current session can remove the obstacle, do that work; it is not a
-hard blocker. Otherwise `## Next Steps` must begin with three single-line fields:
+If safe, authorized work in the current session can remove the obstacle—or if local implementation can
+proceed while delivery waits—do that work; it is not a hard blocker. Otherwise `## Next Steps` must
+begin with three single-line fields:
 
 ```text
 Blocked: <the exact unmet gate>
@@ -207,7 +234,8 @@ merges).
 
 When you hit one of these mid-feature: **don't force it into the current PR, and don't derail the
 feature to do it.** Capture it in a dedicated plan (design + the expand/contract steps + why it's
-multi-merge), do the safe/additive part the feature needs now, and reference the plan from your commit.
+multi-merge), record both DAGs, and do every consumer preparation step supported by an exact local
+producer artifact. Keep those consumers delivery-gated until the published-package revalidation.
 
 (If the boundary friction itself is being questioned — "is the polyrepo sim worth it yet?" — that's an
 architecture decision for the root, not something to resolve inside a feature PR either.)
@@ -253,6 +281,9 @@ point where the context becomes disposable. Don't carry unwritten state across a
   actionable next step.
 - A completed and verified phase ends the turn after its handoff. Start the next phase only when Tommy
   explicitly names it and says to do it now.
+- When several ledgers have independently executable `## Next Steps`, surface one exact pointer per
+  ledger. A delivery-gated ledger remains actionable until its local preparation reaches
+  `delivery-ready`; only an implementation-blocked ledger suppresses its pointer.
 
 ## Verification gate per phase
 
