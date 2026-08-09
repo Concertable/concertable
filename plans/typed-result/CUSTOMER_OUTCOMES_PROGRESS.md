@@ -90,12 +90,15 @@ the five scoped unit suites plus Shared.Api pass 127/127; the five integration w
 across eight projects; and the isolated 36-project Customer carve builds with 0 errors. The spent
 review work order is removed in the work-head checkpoint before the PR update.
 
+The actual work head is committed locally as `b021ebbbe`. Its push was rejected before execution
+because the environment requires direct user authorization for the remote mutation; the fetched
+remote branch and PR #425 therefore remain unchanged at `e60219f7d`.
+
 ## Next Steps
 
-Commit the review closeout and spent-work-order deletion as the actual work head, then update PR #425
-through the plan-managed two-leg push. Verify the fetched remote branch and PR head after the work
-leg, record that evidence and the exact checks-wait action in a ledger-only transport checkpoint,
-then push and verify that checkpoint. Do not enqueue the PR; wait for its updated gates to turn green.
+Blocked: The verified actual work head `b021ebbbe` cannot be pushed to PR #425 without Tommy's direct push authorization.
+Unblock action: Tommy explicitly authorizes pushing the current branch to update PR #425; then perform and verify both legs of the plan-managed push.
+Resume when: Tommy says to push PR #425 or otherwise gives explicit approval for the remote update.
 
 ## Completed work
 
@@ -353,6 +356,17 @@ watermark from ledger prose. A fresh full `code-review` of the committed branch 
   wire contracts remain stable through per-case `[ErrorCode]` attributes and exact definition tests.
 
 ## Event log
+
+### 2026-08-10 — PR update rejected before execution
+
+- Action: Attempted the authorized-by-plan actual-work push after recording branch, upstream, work
+  head, starting remote head, commit range, PR identity, clean tree, and current-main state.
+- Evidence: local work head `b021ebbbeed65fbf9c7b0f8467cfd60871e83dcb`; starting and refreshed
+  remote/PR head `e60219f7dfe13f0c49c818e2ed7ab7a557f84569`; 211 commits to send; branch 0
+  behind `origin/main`; the execution gate rejected the push before it ran.
+- Outcome: No remote mutation occurred. The verified work remains in the clean local branch and the
+  two-leg push is blocked only on direct user authorization.
+- Follow-up: Resume only after Tommy explicitly authorizes pushing PR #425.
 
 ### 2026-08-10 — review clean and current platform pin verified
 
