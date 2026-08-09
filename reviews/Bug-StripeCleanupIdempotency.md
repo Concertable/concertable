@@ -37,3 +37,8 @@ No issues found. The merge preserves the remote exact-PaymentIntent hold correla
 its sole overlap by removing the now-obsolete customer-and-amount lookup. The reconciled tree passes
 the E2E helper tests 5/5, Payment unit tests 228/228, and the B2B UI E2E project build with zero
 errors. No new secret, service-boundary, webhook, or runtime behavior was introduced by the merge.
+
+## Incremental review — 2026-08-09 (merge-queue regression)
+
+- [ ] **NAT1 — HIGH — correctness (expected card declines fail the scenario before its assertion)** — `api/Concertable.Payment/tests/E2ETests/Concertable.Payment.E2ETests.Helpers/Support/StripeCardEntry.cs:60`
+  `ConfirmAsync` throws for every non-2xx Stripe confirmation response, but four negative scenarios intentionally submit a declined card and then assert the application's rejection UI. Merge-group run 31328570590 therefore failed all four at the `When` step on the expected Stripe 402, skipping `Then the payment is rejected`; 27 other B2B UI scenarios passed. Preserve the response wait, but let expected decline responses return to the scenario so its UI assertion remains the source of truth. Add focused coverage for successful and declined confirmation handling.
