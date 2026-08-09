@@ -2,11 +2,13 @@
 
 - Plan: `plans/typed-result/REUNION_INTEGRATION_PLAN.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_reunion-integration`
-- Branch: `Feature/typed-result_reunion-integration`, current with `origin/main` `162b8412a`; code
+- Branch: `Feature/typed-result_reunion-integration`, current with `origin/main` `5a4a23066`; code
   head `a779fe041` retires the discarded Shared rehearsal and migrates Payment/Payment.Client to
   Reunion; full code and security review are clean through that exact head; branch and PR head
-  `53aa0a3` adds only the review and delivery ledger checkpoints
-- PR: implementation PR #453 is open at `53aa0a3`; reviewed code head is `a779fe041`; docs design PR
+  `53aa0a3` adds only the review and delivery ledger checkpoints; merge head `88dbd1460` brings
+  current `origin/main`, and this reconciliation checkpoint follows it
+- PR: implementation PR #453 remains open remotely at `53aa0a3`; reviewed code head is `a779fe041`;
+  local source-owner head is ahead for current-main and Reunion API reconciliation; docs design PR
   #443 merged as `fd0b666b9`; sub-plan reconciliation PR #445 merged as `d6a572e0d`
 - Dependency/package gates: docs design merged; reviewed Reunion carrier commit `7bf5f66` is contained
   in merged PR #1 head `e52129d241711f2e1498ac166e2c510b167606a3`; corrective PR #2 removed the
@@ -18,18 +20,17 @@
   validation mapping, and generic success mappers; the obsolete Concertable HTTP-terminal checkpoint
   is not an input; Auth and Customer non-Payment can convert against published Reunion now, while B2B
   and Customer Ticket can prepare against exact local Payment packages; Phase 3 is locally
-  complete and the Phase 4 code, test, and isolated package-consumer gates are green; source PR #453
-  is open, while merge-queue E2E, publication, and generated platform sync remain pending
-- Last reconciled: 2026-08-09 against current Concertable `origin/main` `162b8412a`, Concertable code
-  and reviewed implementation head `a779fe041`, ledger checkpoint `53aa0a3`, published Reunion
-  release head `e33b40f`, current fetched Reunion
-  `origin/master` `a837ecb`, live owner worktrees, NuGet.org package availability, and no open
-  platform-sync PR
+  complete; merged Reunion PR #4 replaces the builder API used by Phase 4, so PR #453 must adopt its
+  direct factories and remove the temporary old-namespace source scan before delivery; merge-queue
+  E2E, Payment publication, and generated platform sync remain pending
+- Last reconciled: 2026-08-09 against current Concertable `origin/main` `5a4a23066`, Concertable code
+  and reviewed implementation head `a779fe041`, current-main merge `88dbd1460`, merged Reunion PR #4
+  head `1500270`, NuGet.org package availability, live owner worktrees, and no open platform-sync PR
 
 ## Current state
 
 The repository-wide audit and Reunion publication are complete. The reserved integration worktree is
-current with `origin/main` `162b8412a`. Remote branch
+current with `origin/main` `5a4a23066`. Remote branch
 `Feature/typed-result_reunion-integration` and implementation PR #453 are open at `53aa0a3`; their
 reviewed code range ends at `a779fe041` and later commits are ledger-only. The current Phase 3 retirement
 returns every `api/Concertable.Shared` source, project, and test path exactly to `origin/main`, deletes
@@ -37,9 +38,11 @@ the obsolete HTTP-terminal plan pair, and leaves no Reunion package or overload 
 Shared rehearsal.
 
 The Phase 4 local checkpoint migrates Payment source and the public `Concertable.Payment.Client` API
-to published `Reunion`/`Reunion.Errors` `0.1.0-alpha.1`. Every compiling project directly owns the
-package APIs it uses, and architecture tests enforce both the direct-owner graph and absence of the
-old Kernel functional/error namespaces. Payment API/Web currently maps no Result or Option carrier,
+to published `Reunion`/`Reunion.Errors` `0.1.0-alpha.1`. Merged Reunion PR #4 at `1500270` removes
+`ErrorDefinition.For<TError>()` and replaces it with direct nested-case factories; no corrected
+prerelease is published yet and the user-scoped NuGet.org key is absent. Every compiling project
+directly owns the package APIs it uses. The direct-owner architecture guard remains; Tommy approved
+removing the temporary source-text scan for old Kernel namespaces. Payment API/Web currently maps no Result or Option carrier,
 so it does not receive an unused `Reunion.AspNetCore` reference; that adapter remains required only
 at HTTP edges whose source actually calls it.
 
@@ -112,9 +115,11 @@ implementation without changing the Payment delivery order.
 
 ## Next Steps
 
-Run `/merge` for implementation PR #453. Select full merge-queue E2E, then carry the
-Payment.Client publication and generated platform sync through their terminal gates while the
-independent Phase 5 owners prepare.
+Pack and inspect `Reunion.Errors` `0.1.0-alpha.2` from merged head `1500270`, migrate Payment to the
+direct nested-case factories, remove the temporary old-Kernel namespace source scan, and rerun the
+Payment build/unit/integration plus isolated package-consumer and full-solution gates against that
+local artifact. Do not push PR #453 again until `Reunion.Errors` `0.1.0-alpha.2` is published and a
+clean NuGet.org-only restore proves the immutable dependency.
 
 ## Completed work
 
@@ -395,6 +400,18 @@ independent Phase 5 owners prepare.
   delivery-ready and provide the exact remaining-call-site inventory.
 
 ## Event log
+
+### 2026-08-09 — Reunion factory correction and current main reconciled
+
+- Action: Fetched both repositories, verified merged Reunion PR #4, confirmed NuGet.org still exposes
+  only `Reunion.Errors` `0.1.0-alpha.1`, and merged current Concertable `origin/main`.
+- Evidence: Reunion merge `1500270cc323fe43b9eaf57dad9698b24f6dfb37`; Concertable main
+  `5a4a230661929778626a58a0402ffb3e7fb29ac6`; source-owner merge `88dbd1460`; no user-scoped
+  `NUGET_API_KEY`; PR #453 remains open remotely at `53aa0a3`.
+- Outcome: `/merge` is superseded until Payment adopts the corrected upstream API and its immutable
+  prerelease exists. Tommy approved removal of the temporary old-Kernel namespace source scan.
+- Follow-up: Battle-test `Reunion.Errors` `.2` locally, update and verify Payment, then publish and
+  production-restore `.2` before refreshing PR #453.
 
 ### 2026-08-09 — parallel readiness corrected
 
