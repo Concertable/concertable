@@ -3,21 +3,21 @@
 - Plan: `plans/dotnet-11/B2B_WORKFLOW_UNIONS_PLAN.md`
 - Worktree: not created
 - Branch: `Refactor/dotnet-11_b2b-workflow-unions` (reserved; not created)
-- PR: #448 — https://github.com/Concertable/concertable/pull/448
+- PR: #448 merged — https://github.com/Concertable/concertable/pull/448
 - Dependency/package gates: blocked on the terminal B2B typed-result lifecycle recorded in
   `plans/typed-result/B2B_PROGRESS.md`
-- Last reconciled: 2026-08-09 against `origin/main` `43fe1caf4`, the current typed-result/ReUnion
+- Last reconciled: 2026-08-09 against `origin/main` `fcc6935f4`, the current typed-result/ReUnion
   ledgers, B2B project references, workflow source, CI pins, and official .NET/Functions guidance
 
 ## Current state
 
 The roadmap, implementation plan, and this recovery ledger exist on the isolated docs-planning branch.
-Docs-only PR #448 is open from verified head `cc2f7becf`; it targets `main`, carries `skip-e2e`, and its
-diff contains only the roadmap, plan, new ledger, and B2B owner ledger. The full docs review found three
-issues, all fixed in `44b435779`; the blocked-ledger reconciliation review found two more, all fixed in
-`0a7b0d181`; both incremental reviews were clean. No implementation worktree, SDK installation,
-`global.json`, target-framework edit, workflow refactor, test run, package publication, or runtime
-deployment has occurred.
+Docs-only PR #448 merged from verified head `b2ba0e6c1` as `fcc6935f4`; E2E was bypassed because its
+diff contains only the roadmap, plan, new ledger, and B2B owner ledger. Recovery ownership is now this
+clean docs closeout worktree until the merge observation lands. The full docs review found five issues
+across the draft and blocked-ledger reconciliation; all were fixed and both fix-commit incremental
+reviews were clean. No implementation worktree, SDK installation, `global.json`, target-framework
+edit, workflow refactor, test run, package publication, or runtime deployment has occurred.
 
 The current design uses native unions only after ReUnion and the existing B2B typed-result work have
 landed. Published B2B contracts stay net10-compatible; the net11 boundary is the B2B runtime and its
@@ -65,6 +65,7 @@ Resume when: Current main contains the merged B2B work and `plans/typed-result/B
   `0a7b0d181`.
 - Incremental docs review: `abddcf39b..0a7b0d181` (1 commit), no new findings, same artifact,
   watermark `0a7b0d181`. Open findings: none.
+- PR #448 merged from reviewed/verified head `b2ba0e6c1` as `fcc6935f4`; closeout docs review pending.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -163,6 +164,17 @@ Resume when: Current main contains the merged B2B work and `plans/typed-result/B
 - Outcome: the reviewed docs-only PR is ready for the sanctioned admin merge, and the durable ledger
   has returned to the implementation blocker that remains after delivery.
 - Follow-up: transport this PR-state checkpoint, reverify all heads/paths, and admin-merge PR #448.
+
+### 2026-08-09 — docs plan merged and recovery transferred
+
+- Action: admin-merged PR #448, fast-forwarded local main, and transferred recovery ownership to the
+  clean `Docs/dotnet-11_b2b-workflow-unions-plan_closeout` worktree.
+- Evidence: PR head `b2ba0e6c1decaac1740d28abdc0c1d5136feccc8`; merge commit
+  `fcc6935f4b0ef80f3dd2e8c04330eaed9eca6fa6`; four Markdown-only paths; no `api/**` path.
+- Outcome: the plan and two-ledger return path are durable on main, with no E2E, package publication,
+  platform sync, runtime mutation, or implementation-worktree creation.
+- Follow-up: remove the spent source worktree/branch, review this closeout, and land it through
+  `/merge-docs`; the implementation remains blocked behind the recorded B2B owner.
 
 ## Resume prompt
 
