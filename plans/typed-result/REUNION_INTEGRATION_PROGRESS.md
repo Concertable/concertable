@@ -79,13 +79,13 @@ complete current-source gate is green. NuGet.org still exposes only historical `
 `Reunion` `0.1.0-alpha.1` has been accepted, indexed, downloaded, inspected, and repository-signature
 verified from NuGet.org;
 `Reunion.Errors` `0.1.0-alpha.1` has been accepted, indexed, downloaded, inspected, and
-repository-signature verified; `Reunion.AspNetCore` remains unpublished. A 46-character user-scoped
+repository-signature verified; `Reunion.AspNetCore` has been accepted and awaits indexing. A 46-character user-scoped
 `NUGET_API_KEY` is present; its value was not displayed or recorded.
 
 ## Next Steps
 
-Publish exact `Reunion.AspNetCore` hash
-`B2166ECB6451F5B9038A9F8224D6C3AC7EA49385BAFA5C5E376728A364A91260`. Wait for
+Wait for exact `Reunion.AspNetCore` hash
+`B2166ECB6451F5B9038A9F8224D6C3AC7EA49385BAFA5C5E376728A364A91260` to index. Then wait for
 all three packages to become restorable from clean isolated caches, verify their production metadata
 and hashes, remove the user-scoped `NUGET_API_KEY`, then checkpoint the terminal Phase 2 gate. Do not
 begin Phase 3 in this turn.
@@ -112,6 +112,8 @@ begin Phase 3 in this turn.
   repository signature. Repository-signed production SHA-256 is
   `A1B2039CDC30F9D557FB1005F4F5B6785B065191FFBFFBA59D0878CFEF029090`; NuGet content hash is
   `eqBtB99AZigqEyNGx7yNVwfE2INseb9ALPlSRYkw6XhfLWa0L+2EwjtcL+ioATjCUOTnxBZkNUzWrwlRrfAg/A==`.
+- NuGet.org accepted exact `Reunion.AspNetCore` `0.1.0-alpha.1`; indexing and production verification
+  remain pending.
 - Added the safe additive Shared expansion checkpoint: Kernel owns Reunion, Shared.Api owns
   Reunion.AspNetCore, Reunion parity tests cover the named-case conversion contract, and Reunion
   carriers can traverse the existing Concertable MVC error/CreatedAt boundary without deleting the
@@ -305,6 +307,16 @@ begin Phase 3 in this turn.
   waits for the Phase 4 Payment.Client publication/sync before PR #425 is updated once.
 
 ## Event log
+
+### 2026-08-09 — Reunion.AspNetCore package accepted by NuGet.org
+
+- Action: Pushed exact prepared `Reunion.AspNetCore.0.1.0-alpha.1.nupkg` after both dependencies were
+  indexed and production-verified.
+- Evidence: NuGet.org returned HTTP `201 Created`; upload SHA-256 is
+  `B2166ECB6451F5B9038A9F8224D6C3AC7EA49385BAFA5C5E376728A364A91260` from source `e33b40f`.
+- Outcome: The final package publication is accepted; indexing and complete production restore are
+  not yet claimed.
+- Follow-up: Wait for indexing, verify the production artifact and complete graph, then remove the key.
 
 ### 2026-08-09 — Reunion.Errors production artifact verified
 
