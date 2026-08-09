@@ -129,12 +129,30 @@ the normal build, unit, architecture, and integration gates afterward; reserve E
   polymorphic interfaces emit their discriminator. B2B cannot consume that local Shared API source
   change before publication, so `DealController` uses the already-published generic `ToActionResult`
   with an explicit `ActionResult<IDeal>` value.
+
 - Revoked invitation acceptance is `InvitationNotPending`, an explicit Conflict outcome; the stale
   integration expectation was corrected from Bad Request to Conflict.
 - The Reunion integration is now the exclusive cross-cutting carrier/package owner. B2B remains the
   exclusive semantic owner and waits for its generated Phase 4 platform baseline before one final sync.
 
+## Downstream handoffs
+
+- `plans/dotnet-11/B2B_WORKFLOW_UNIONS_PROGRESS.md` waits for this plan's checkpoints 6-7 source PR
+  and every resulting publication/platform-sync gate to become terminal and green. At that gate,
+  update the dependent ledger on current main and surface its reserved
+  `Refactor/dotnet-11_b2b-workflow-unions` resume prompt; do not let the dependent poll or copy this
+  worktree's overlapping Concert workflow changes.
+
 ## Event log
+
+### 2026-08-09 - registered downstream .NET 11 workflow-union handoff
+
+- Action: registered the B2B .NET 11/workflow-union plan as a downstream owner rather than allowing it
+  to overlap this branch's Concert payment/cancel/finish checkpoints.
+- Evidence: `plans/dotnet-11/B2B_WORKFLOW_UNIONS_PLAN.md` and its companion ledger on current main.
+- Outcome: the dependent plan waits for this source PR and every resulting publication/platform-sync
+  gate to become terminal and green.
+- Follow-up: at that gate, update the dependent ledger and surface its reserved implementation prompt.
 
 ### 2026-08-09 - Reunion integration dependency registered
 
