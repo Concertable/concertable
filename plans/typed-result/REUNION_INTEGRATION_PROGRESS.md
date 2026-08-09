@@ -2,8 +2,9 @@
 
 - Plan: `plans/typed-result/REUNION_INTEGRATION_PLAN.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_reunion-integration`
-- Branch: `Feature/typed-result_reunion-integration`, current with `origin/main` `162b8412a`; the
-  published-package Phase 3 local gate is carried by `this commit`
+- Branch: `Feature/typed-result_reunion-integration`, current with `origin/main` `162b8412a`; prior
+  code head `26b9c10e7` removes shared adapter distribution, and the current verified checkpoint
+  retires the discarded Shared rehearsal and migrates Payment/Payment.Client to Reunion
 - PR: not opened for implementation; docs design PR #443 merged as `fd0b666b9`; sub-plan
   reconciliation PR #445 merged as `d6a572e0d`
 - Dependency/package gates: docs design merged; reviewed Reunion carrier commit `7bf5f66` is contained
@@ -11,26 +12,36 @@
   mistaken `Reunion.Errors.Extensions` package and merged as release head
   `e33b40fe6daef64fd69536170d583e3ddd603ee4`; the corrected three-package Phase 1 gate is green and
   all three exact `0.1.0-alpha.1` packages are published, indexed, repository-signature verified,
-  and restored from NuGet.org-only clean caches; Phase 2 is terminal and the Phase 3 Shared expansion
-  is locally green against the production packages, pending code review, source delivery, and its
-  generated platform sync; the B2B, Auth, Customer,
-  Customer Ticket, and semantic HTTP-terminal owners remain inventoried and must consume the staged
-  Shared-expansion and Payment.Client publications rather than perform local carrier cutovers
-- Last reconciled: 2026-08-09 against current Concertable `origin/main` `162b8412a`, verified
-  HTTP-terminal code/test checkpoint `c593150e4`, corrected Reunion release head `e33b40f` and merged
-  PRs #1/#2, live owner worktrees, GitHub PR state, the pinned .NET 11 preview SDK, NuGet.org package
-availability, and no open platform-sync PR
+  and restored from NuGet.org-only clean caches; Phase 2 is terminal; current Reunion source and the
+  published adapter already own the required MVC/Minimal API terminals, ProblemDetails execution,
+  validation mapping, and generic success mappers; the obsolete Concertable HTTP-terminal checkpoint
+  is not an input; B2B, Auth, Customer, and Customer Ticket remain inventoried and must consume the
+  Payment.Client publication rather than perform independent package cutovers; Phase 3 is locally
+  complete and the Phase 4 code, test, and isolated package-consumer gates are green, while source
+  PR, merge-queue E2E, publication, and generated platform sync remain pending
+- Last reconciled: 2026-08-09 against current Concertable `origin/main` `162b8412a`, Concertable code
+  head `26b9c10e7`, published Reunion release head `e33b40f`, current fetched Reunion
+  `origin/master` `a837ecb`, live owner worktrees, NuGet.org package availability, and no open
+  platform-sync PR
 
 ## Current state
 
-The repository-wide audit and integration design are complete and approved. The reserved integration
-worktree is current with `origin/main` `162b8412a`, has no remote branch or PR, and contains the
-locally verified additive Shared expansion against published Reunion `0.1.0-alpha.1`. It retains all
-owned carriers and old terminal signatures while adding the two planned direct package owners and
-Reunion-backed Shared.Api terminals. Docs design PR #443
-merged the roadmap, plan, and this recovery ledger as `fd0b666b9`; closeout PR #444 advanced main to
-`c72b058af`. No Concertable or Reunion runtime file, package reference, existing migration branch, or
-existing PR was changed by either docs PR.
+The repository-wide audit and Reunion publication are complete. The reserved integration worktree is
+current with `origin/main` `162b8412a` and has no remote branch or PR. The current Phase 3 retirement
+returns every `api/Concertable.Shared` source, project, and test path exactly to `origin/main`, deletes
+the obsolete HTTP-terminal plan pair, and leaves no Reunion package or overload from the discarded
+Shared rehearsal.
+
+The Phase 4 local checkpoint migrates Payment source and the public `Concertable.Payment.Client` API
+to published `Reunion`/`Reunion.Errors` `0.1.0-alpha.1`. Every compiling project directly owns the
+package APIs it uses, and architecture tests enforce both the direct-owner graph and absence of the
+old Kernel functional/error namespaces. Payment API/Web currently maps no Result or Option carrier,
+so it does not receive an unused `Reunion.AspNetCore` reference; that adapter remains required only
+at HTTP edges whose source actually calls it.
+
+Docs design PR #443 merged the roadmap, plan, and this recovery ledger as `fd0b666b9`; closeout PR
+#444 advanced main to `c72b058af`. No Concertable or Reunion runtime file, package reference,
+existing migration branch, or existing PR was changed by either docs PR.
 
 Docs-only PR #445 published the reconciled B2B, Auth, Customer, and HTTP-terminal plan pairs plus the
 central dependency map as `d6a572e0d`. It contained only eleven Markdown files, passed a clean docs
@@ -50,12 +61,13 @@ The authoritative worktrees are now locally visible and reconciled without mutat
 | Auth `Feature/typed-result_auth-outcomes` | clean at `98599413a`; 286 behind / 27 ahead | no branch PR or remote branch; implementation/review complete |
 | Customer non-Payment `Feature/typed-result_customer-outcomes` | clean at `e7c44f5b3`; 185 behind / 31 ahead | PR #425 remains open at `e60219f7d`; two later local commits are ledger-only |
 | Customer Ticket `Feature/TypedResultMigrationPhase2` | clean at `b6a671ef9`; 548 behind / 29 ahead of main | PR #282 remains open at `26ed63b896`; recreate its unique semantics after integration |
-| HTTP terminals `Refactor/typed-result_http-terminals` | clean at `fecd46c11`; code/test checkpoint `c593150e4`; 168 behind / 4 ahead | verified Phase 5 input; do not publish it independently |
+| HTTP terminals `Refactor/typed-result_http-terminals` | obsolete local checkpoint `c593150e4` | retire without publication; Reunion owns this surface |
 
-The HTTP-terminal work changes the same published `Concertable.Shared.Api` surface as Reunion Phase 5.
-Its verified semantic naming checkpoint is complete at `c593150e4`: Shared.Api Release 63/63, Release
-solution build 0 errors, old-terminal grep zero, and full code review clean after TEST1 was fixed. It
-will be incorporated into the final Shared contraction after Payment.Client is republished on Reunion.
+The HTTP-terminal checkpoint `c593150e4` is superseded. Fetched Reunion `origin/master` `a837ecb` and
+published release source `e33b40f` contain MVC and Minimal API Result/Option terminals, generic
+success mappers for application-specific CreatedAt/Accepted results, `IProblemDetailsService`
+execution, request instance/trace ID handling, validation details, and fallback serialization.
+Concertable does not incorporate or publish any terminal implementation from that branch.
 
 The Reunion source gate is open. Reviewed carrier commit `7bf5f66` is contained in fetched
 `origin/master`; Reunion PR #1 merged as `e52129d241711f2e1498ac166e2c510b167606a3` and corrective PR
@@ -73,8 +85,8 @@ Reunion.AspNetCore directly to Kernel and Shared.Api, retained
 the old carrier surface for a compatible expansion, and proved the complete Release solution builds.
 The attempted destructive substitution exposed `Concertable.Payment.Client` as a second published
 package boundary: B2B and Customer consuming the old client cannot compile against a source-only
-carrier replacement. The plan now requires three green Concertable merges after Reunion publication:
-additive Shared expansion, Payment/Payment.Client migration, then final consumer contraction.
+carrier replacement. The corrected plan requires two Concertable package layers after Reunion
+publication: Payment/Payment.Client migration, then final consumer contraction.
 
 Corrected source head `e33b40f` produced the immutable package family now published at
 `Reunion`, `Reunion.Errors`, and `Reunion.AspNetCore` `0.1.0-alpha.1`. Every package is indexed,
@@ -85,13 +97,22 @@ detached Reunion release worktree was removed.
 
 ## Next Steps
 
-Run `/code-review` over the committed Phase 3 additive Shared expansion against `origin/main`, fix
-every clear finding, and repeat the affected Release tests/build for any code change. Once the review
-is clean, push the verified work head, open the source PR with full merge-queue E2E, and deliver it
-through merge plus the generated platform-sync PR before beginning Phase 4.
+Commit the verified Phase 3 retirement and Phase 4 local code checkpoint, then run `/code-review`
+against that committed range and resolve every open finding before delivery. Do not push, open the
+source PR, publish Payment.Client, or begin the final consumer contraction until the review is clean
+and the delivery step is explicitly requested. Do not create or copy any Concertable Result/Option
+HTTP extension.
 
 ## Completed work
 
+- Completed Phase 3 retirement: removed the superseded Shared Reunion rehearsal, restored all Shared
+  paths to exact `origin/main` content, and deleted the obsolete HTTP-terminal plan/ledger.
+- Migrated Payment and the published Payment.Client API directly to `Reunion`/`Reunion.Errors`
+  `0.1.0-alpha.1`, updated error-definition factories, tests, and direct package ownership, and added
+  architecture guards for old namespaces and dependency placement.
+- Packed Payment.Contracts and Payment.Client as local version `0.1.0-alpha.0.910`, inspected their
+  net10 assets and exact dependency metadata, then compiled an isolated clean-cache consumer against
+  Payment.Client with transitive Reunion and Reunion.Errors `0.1.0-alpha.1`.
 - Completed the merged-release local package battle test: all four packages packed from `e52129d` at
   `0.1.0-local.concertable.2`, matching dependency metadata and both framework assets inspected, and
   a clean net10 consumer restored the complete graph from the isolated feed.
@@ -121,24 +142,20 @@ through merge plus the generated platform-sync PR before beginning Phase 4.
 - Completed Phase 2: all three packages are published and indexed at the exact matching version;
   four clean consumers restored only the intended graph from NuGet.org and passed on net10/net11;
   the temporary user-scoped key and detached release worktree were removed.
-- Updated the registered HTTP-terminal dependent in commit `86563a04a`: its Phase 2 package gate is
-  green, checkpoint `c593150e4` remains preserved, and this central owner now owns Phase 3
-  incorporation without an independent Shared.Api publication.
-- Completed the Phase 3 local production-package gate: replaced the rehearsal versions with exact
-  `0.1.0-alpha.1`, restored without a local source, preserved every owned carrier and old terminal,
-  and verified the planned Kernel and Shared.Api package ownership, parity, architecture, and full
-  solution build in `this commit`.
-- Added the safe additive Shared expansion checkpoint: Kernel owns Reunion, Shared.Api owns
-  Reunion.AspNetCore, Reunion parity tests cover the named-case conversion contract, and Reunion
-  carriers can traverse the existing Concertable MVC error/CreatedAt boundary without deleting the
-  old published identities.
-- Proved the real package graph and corrected the plan from one destructive producer cutover to three
-  compatible Concertable merges: Shared expansion, Payment.Client migration, consumer contraction.
+- Reclassified HTTP checkpoint `c593150e4` as obsolete after verifying the published Reunion adapter
+  already owns its entire terminal and response-execution surface; it has no delivery path.
+- Completed the original Phase 3 production-package rehearsal against exact `0.1.0-alpha.1`; its
+  package-resolution evidence remains useful, but its Shared.Api adapter/terminal design is discarded.
+- Committed service-owned adapter topology at `26b9c10e7`: Shared.Api no longer distributes
+  `Reunion.AspNetCore`, and its architecture test requires direct core ownership only for the
+  temporary rehearsal overloads that Phase 3 now removes.
+- Proved the real package graph and corrected the plan from one destructive producer cutover to two
+  compatible Concertable package layers: Payment.Client migration and consumer contraction.
 - Repository, branch, worktree, Result/Option, HTTP adapter, error hierarchy, controller, test, package,
   and PR-history audit completed on 2026-08-09.
-- Integration choices approved: MVC remains, Concertable owns error mapping, package boundaries remain
-  strict, and the carrier cutover advances through compatible Shared, Payment.Client, and final
-  consumer publication layers.
+- Integration choices approved: MVC remains, Reunion owns reusable error/HTTP mapping, Concertable
+  owns domain error unions and response contracts, package boundaries remain strict, and the carrier
+  cutover advances through Payment.Client and final consumer publication layers.
 - B2B and Auth correction recorded: their unpushed other-workstation changes are active authoritative
   owners, not missing or superseded work.
 - Reconciled the exact B2B, Auth, Customer, Ticket, and HTTP-terminal local heads, divergence, dirty
@@ -148,8 +165,8 @@ through merge plus the generated platform-sync PR before beginning Phase 4.
 - Created the reserved implementation worktree from current `origin/main` `82644721f`, reconfirmed
   every authoritative typed-result owner before the first Phase 1 source edit, and recorded the
   verified external blocker in `this commit`.
-- Registered the reviewed semantic HTTP-terminal checkpoint `c593150e4` as the Phase 5 input without
-  pushing or publishing its branch.
+- Registered HTTP checkpoint `c593150e4` historically, then superseded it when current Reunion source
+  proved the upstream adapter already supplies the complete terminal behavior.
 - Roadmap reconciliation, this implementation plan, and its companion ledger are created in
   `this commit` on the isolated docs branch based on current `origin/main`.
 - Docs design PR #443 merged as `fd0b666b9`; its source worktree and local branch were removed, and
@@ -157,6 +174,16 @@ through merge plus the generated platform-sync PR before beginning Phase 4.
 
 ## Verification
 
+- Payment standalone Release build: 0 warnings, 0 errors.
+- Payment Release unit tests: 224 passed, 0 failed; integration tests: 8 passed, 0 failed.
+- Full `api/Concertable.slnx` Release build: 0 errors and 4 existing generated nullable warnings.
+- Payment.Contracts `0.1.0-alpha.0.910` depends directly on Reunion.Errors `0.1.0-alpha.1`;
+  Payment.Client `0.1.0-alpha.0.910` depends directly on Reunion and Reunion.Errors `0.1.0-alpha.1`
+  plus the matching local Payment.Contracts package. An isolated net10 consumer restored into a new
+  package cache and compiled public `Option<T>`, `IError`, and `ErrorDefinition` identities.
+- Repository scans find no old Kernel functional/error namespace in Payment, no machine-local Reunion
+  source/version under `api/`, and no Shared working-tree delta from `origin/main`; `git diff --check`
+  passes.
 - Superseded four-package rehearsal source: detached merged head
   `e52129d241711f2e1498ac166e2c510b167606a3`;
   local version `0.1.0-local.concertable.2`; SHA-256 values are Reunion
@@ -200,17 +227,16 @@ through merge plus the generated platform-sync PR before beginning Phase 4.
   `Reunion.AspNetCore/0.1.0-alpha.1`. All four consumers built and ran successfully.
 - User-scoped `NUGET_API_KEY` removal verified `True`. Git unregistered the detached `e33b40f`
   worktree; its long-path directory residue was removed through the verified exact path.
-- Downstream return-path checkpoint `86563a04a` records the green package gate and blocks the
-  HTTP-terminal worktree from independent delivery until this plan incorporates `c593150e4`.
+- Downstream return-path checkpoint `86563a04a` historically blocked independent HTTP-terminal
+  delivery; current Reunion evidence supersedes the checkpoint and the branch is retired instead.
 - Full Concertable restore with the local source succeeded; package graphs and `dotnet nuget why`
   show Kernel → Reunion and Shared.Api → Reunion.AspNetCore → Reunion + Reunion.Errors.
 - Release `api/Concertable.slnx` build succeeded with 0 errors and 9 pre-existing/generated warnings.
 - Release Kernel unit/parity tests: 241 passed, 0 failed. Release Shared.Api unit/architecture tests:
   53 passed, 0 failed.
-- Production-source `dotnet restore api/Concertable.slnx --force --no-cache -v normal` succeeded with
-  0 warnings and 0 errors. Resolved graphs show Kernel directly owns Reunion `0.1.0-alpha.1`, while
-  Shared.Api directly owns Reunion.AspNetCore `0.1.0-alpha.1` and transitively resolves matching
-  Reunion plus Reunion.Errors.
+- The superseded Phase 3 restore proved the production packages resolve, but its graph placed
+  Reunion.AspNetCore in Shared.Api. Commit `26b9c10e7` removes that distribution; the remaining
+  Shared.Api core reference exists only for discarded rehearsal overloads and is removed with them.
 - Phase 3 Release tests passed against the production packages: Kernel/parity 241/241 and Shared.Api
   unit/architecture 53/53. The Release `api/Concertable.slnx` build succeeded with 0 errors and 9
   existing/generated warnings.
@@ -311,28 +337,29 @@ through merge plus the generated platform-sync PR before beginning Phase 4.
   release-artifact gate. Phase 1 becomes complete again only after the current three-package head
   passes the same tests, inspection, and clean-consumer checks.
 - `Concertable.Payment.Client` is a published API layer between Shared and B2B/Customer. The original
-  single producer/sync cutover was impossible without CS7069. The mandatory sequence is additive
-  Shared publish/sync, Payment.Client migration publish/sync, then final consumer contraction.
-
-- Direct Reunion MVC typed-error mapping is not behavior-equivalent because it bypasses Concertable's
-  `IProblemDetailsService` execution path. Keep a Concertable terminal over Reunion carriers.
-- Reunion Created returns a literal-location `CreatedResult`; Concertable requires route-generated
-  `CreatedAtActionResult`. Keep the Concertable helper.
+  single producer/sync cutover was impossible without CS7069. With upstream HTTP terminals, the
+  mandatory sequence is Payment.Client migration publish/sync, then final consumer contraction.
+- Published Reunion MVC typed-error mapping executes through `IProblemDetailsService`, preserves
+  validation details, instance/trace identifiers, and fallback serialization. Concertable does not
+  keep a parallel terminal or response executor.
+- Reunion's generic `ToActionResult(successMapper)` preserves route-generated
+  `CreatedAtActionResult` and Accepted responses; the literal-location convenience is optional.
 - Reunion's `OrFailure` eager/lazy/task/async names and intended branch semantics match Concertable's;
   parity tests remain mandatory before deleting duplicates.
 - `Concertable.Kernel` has a pre-existing ASP.NET framework reference. This plan neither expands nor
-  relies on it; only Shared.Api receives Reunion.AspNetCore.
-- The Reunion Phase 1 battle test, Phase 2 three-package publication, and local HTTP-terminal
-  checkpoint are complete. B2B, Auth, Customer, and Ticket delivery waits until the Phase 4
+  relies on it. Shared.Api does not receive Reunion.AspNetCore; every service HTTP edge mapping
+  Reunion carriers owns that adapter independently.
+- The Reunion Phase 1 battle test and Phase 2 three-package publication are complete; the local HTTP
+  checkpoint is superseded. B2B, Auth, Customer, and Ticket delivery waits until the Phase 4
   Payment.Client publication/sync opens the final Phase 5 consumer contraction.
+- Payment API/Web currently exposes conventional ActionResult endpoints but maps no Result or Option
+  carrier. Direct adapter ownership therefore remains conditional on an actual Reunion MVC call site;
+  adding Reunion.AspNetCore to Payment now would be an unused dependency rather than ownership.
 
 ## Downstream handoffs
 
-- `plans/typed-result/HTTP_RESULT_TERMINALS_PROGRESS.md` in
-  `C:\Users\TommySeery\source\repos\Concertable.worktrees\Refactor\typed-result_http-terminals`
-  crossed its matching-package Phase 2 gate; its verified local checkpoint `c593150e4` remains
-  preserved for incorporation by this plan's Shared producer sequence and must not publish
-  independently.
+- The former HTTP-terminal dependent has no return path: delete its plan/ledger and retire
+  `Refactor/typed-result_http-terminals` without publication because Reunion owns that surface.
 - `plans/typed-result/B2B_PROGRESS.md` in
   `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-B2BTypedResultMigration`
   waits for the Phase 4 Payment.Client publication/sync before its Phase 5 integration.
@@ -345,17 +372,57 @@ through merge plus the generated platform-sync PR before beginning Phase 4.
 
 ## Event log
 
-### 2026-08-09 — Phase 3 local Shared expansion gate completed
+### 2026-08-09 — Phase 3 retired and Phase 4 local Payment gate completed
+
+- Action: Removed the discarded Shared rehearsal, deleted the obsolete HTTP-terminal plan pair,
+  migrated Payment and Payment.Client to the published Reunion family, enforced direct package
+  ownership, and completed the focused, solution, and isolated package-consumer gates.
+- Evidence: Shared matches `origin/main`; Payment build 0 errors; unit 224/224; integration 8/8; full
+  solution build 0 errors; local Payment packages `0.1.0-alpha.0.910`; clean-cache net10 consumer
+  resolves Reunion/Reunion.Errors `0.1.0-alpha.1`; namespace/local-source scans and diff check clean.
+- Outcome: Phase 3 is terminal locally and Phase 4 is ready for its mandatory committed code review.
+  Source PR, merge-queue E2E, Payment.Client publication, and generated platform sync are not claimed.
+- Follow-up: Commit this checkpoint, run `/code-review`, and resolve every open finding before any
+  delivery or Phase 5 consumer contraction.
+
+### 2026-08-09 — upstream HTTP terminal ownership verified
+
+- Action: Fetched current Reunion `origin/master`, inspected the published release lineage and the
+  complete MVC/Minimal API adapter source, and reconciled the integration after Tommy confirmed
+  Concertable must not manufacture its own HTTP extensions.
+- Evidence: current upstream head `a837ecb`; published adapter lineage `e33b40f`; MVC
+  `ResultActionResultExtensions` and `OptionActionResultExtensions`; Minimal API
+  `ResultHttpResultExtensions` and `OptionHttpResultExtensions`; upstream
+  `ApplicationProblemDetailsResult` execution through `IProblemDetailsService`; Concertable cleanup
+  head `26b9c10e7`.
+- Outcome: HTTP checkpoint `c593150e4` and its plan are superseded. Shared.Api owns no Reunion
+  terminal surface; each service HTTP edge directly owns `Reunion.AspNetCore`, while projects directly
+  own core/error packages wherever their source compiles against those APIs.
+- Follow-up: finish removing the discarded Shared rehearsal and obsolete HTTP plan pair, then migrate
+  Payment/Payment.Client directly to the published Reunion family.
+
+### 2026-08-09 — service-owned Reunion dependency topology corrected
+
+- Action: Reconciled the Phase 3 design after Tommy rejected distributing Reunion.AspNetCore through
+  a shared platform package and confirmed Shared.Api currently calls no API from that adapter.
+- Evidence: Shared.Api's production terminals compile only against core Reunion carriers and
+  Microsoft MVC types; repository search found the sole Reunion.AspNetCore use to be its package
+  reference and the architecture assertion enforcing that reference.
+- Outcome: The prior Phase 3 local gate is superseded before review or publication. This intermediate
+  decision correctly removed shared adapter distribution but still assumed a Concertable terminal;
+  the later upstream-surface audit supersedes that assumption too.
+- Follow-up: Apply the upstream HTTP terminal ownership decision recorded above.
+
+### 2026-08-09 — initial Phase 3 Shared expansion rehearsal completed (superseded)
 
 - Action: Replaced both local Reunion rehearsal versions with published `0.1.0-alpha.1`, restored the
   complete solution from configured production feeds, verified direct/transitive package ownership,
   and reran the affected Release tests plus full solution build.
 - Evidence: restore 0 warnings/errors; Kernel/parity 241/241; Shared.Api unit/architecture 53/53;
   Release solution build 0 errors and 9 existing/generated warnings; machine-local source scan zero.
-- Outcome: The additive Shared expansion is locally green without deleting any owned carrier or old
-  terminal signature. Code review and source delivery remain before the Phase 3 publication gate.
-- Follow-up: Review the committed `origin/main..HEAD` change, resolve findings, then deliver the source
-  PR and generated platform sync.
+- Outcome: The additive behavior is proven without deleting any owned carrier or old terminal
+  signature, but the shared Reunion.AspNetCore dependency was later rejected before review or delivery.
+- Follow-up: Apply the service-owned dependency correction recorded above and rerun the local gate.
 
 ### 2026-08-09 — Phase 2 production publication gate completed
 

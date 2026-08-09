@@ -10,18 +10,22 @@ error ownership, controller signatures, MVC behavior, published transport contra
 package boundaries.
 
 This is a publish-gated cross-package cutover. It is not a request to redesign Reunion, remove a
-Result family, retain permanent compatibility shims, or convert MVC controllers to Minimal API
-results. Temporary additive overloads and the owned carriers remain only while the published
-package graph advances one compatible layer at a time.
+Result family, retain permanent compatibility shims, recreate upstream HTTP terminals, or convert MVC
+controllers to Minimal API results. Owned carriers remain only while the published package graph
+advances one compatible layer at a time.
 
 ## Non-negotiable boundaries
 
 - Keep all five Reunion functional types: `Result`, `Result<T>`, `Result<T,TError>`,
   `UnitResult<TError>`, and `Option<T>`.
-- `Reunion` remains dependency-free. Concertable's `IError`, `ErrorDefinition`, error cases, status
-  policy, and ProblemDetails customization remain Concertable-owned.
-- Only `Concertable.Shared.Api` directly references `Reunion.AspNetCore`. Domain and application
-  projects never acquire that package or a new ASP.NET Core dependency.
+- `Reunion` remains dependency-free. `Reunion.Errors` owns the reusable typed-error definitions and
+  `Reunion.AspNetCore` owns Result/Option-to-HTTP mapping; Concertable owns only its domain error
+  unions, published codes/messages, and application-specific response contracts.
+- Every project whose source compiles against Reunion carriers directly references core `Reunion`;
+  do not hide that dependency behind `Concertable.Kernel` or another transitive platform package.
+- `Concertable.Shared.Api` does not recreate or distribute Reunion HTTP terminals. Each service
+  API/Web project that maps Reunion carriers references `Reunion.AspNetCore` directly, so adapter
+  versions and upgrades remain independently owned by that microservice.
 - Keep conventional MVC `ActionResult`/`ActionResult<T>` controller signatures and observable
   responses. Do not import `Reunion.AspNetCore.HttpResults` or migrate endpoints to Minimal API
   `Results<T1,T2>` in this work.
@@ -29,8 +33,8 @@ package graph advances one compatible layer at a time.
   temporary NuGet configuration may merge.
 - Existing B2B and Auth migrations contain authoritative unpushed work. Preserve those local owners
   and do not infer their state solely from GitHub.
-- Preserve the existing `Refactor/typed-result_http-terminals` semantic-terminal work as local input
-  to the final Shared contraction. It must not publish a competing Shared.Api package or generated sync.
+- Retire `Refactor/typed-result_http-terminals`. Reunion already publishes the MVC and Minimal API
+  Result/Option terminals, including generic success mappers; Concertable must not ship duplicates.
 
 ## Current-state inventory (2026-08-09)
 
@@ -64,18 +68,18 @@ operational state lives in the owning ledgers; the dependency-relevant snapshot 
 | `Feature/typed-result_auth-outcomes` | Clean at `98599413a`; no PR/remote; 286 behind / 27 ahead. |
 | `Feature/typed-result_customer-outcomes` | Clean at `e7c44f5b3`; PR #425 at `e60219f7d`; 185 behind / 31 ahead. |
 | `Feature/TypedResultMigrationPhase2` | Clean at `b6a671ef9`; PR #282 at `26ed63b896`; 548 behind / 29 ahead. |
-| `Refactor/typed-result_http-terminals` | Clean at `fecd46c11`; verified code/test checkpoint `c593150e4`; 168 behind / 4 ahead. |
+| `Refactor/typed-result_http-terminals` | Obsolete local experiment at `c593150e4`; retire without publication because Reunion supplies the terminal surface. |
 
 ### Package boundaries
 
 | Concertable project/category | Direct package | Reason |
 |---|---|---|
-| `api/Concertable.Shared/src/Concertable.Kernel/Concertable.Kernel.csproj` | `Reunion` | Owns the shared in-process carrier vocabulary and publishes APIs containing those types. |
-| `api/Concertable.Shared/src/Concertable.Shared.Api/Concertable.Shared.Api.csproj` | `Reunion.AspNetCore` | Owns MVC/ProblemDetails boundary behavior; the package brings matching `Reunion` and `Reunion.Errors` dependencies. |
+| `api/Concertable.Shared/src/Concertable.Kernel/Concertable.Kernel.csproj` | `Reunion` and `Reunion.Errors` only while its source compiles against or exposes their types | Owns its compile dependencies during migration; remove each reference after contraction if Kernel no longer uses it. |
+| `api/Concertable.Shared/src/Concertable.Shared.Api/Concertable.Shared.Api.csproj` | None for Reunion HTTP mapping after contraction | Delete the duplicate Result/Option HTTP terminal and typed-error response layer; do not distribute an adapter to every service. |
 | Kernel and Shared.Api unit/architecture tests | Neither directly | Consume through their tested project references unless a clean package-consumer test deliberately verifies NuGet assets. |
-| Service Web/API projects and controllers | Neither directly | Consume the Concertable-owned Shared.Api boundary; do not spread adapter-package ownership across services. |
-| `api/Concertable.Payment/src/Concertable.Payment.Client/Concertable.Payment.Client.csproj` | Neither during expansion; `Reunion` after its own migration | This published package re-exposes Kernel Result/Option types and is therefore a second publication layer, not an ordinary final consumer. |
-| Domain, application, contracts, other clients, infrastructure, messaging, worker, seed, and AppHost projects | Neither directly | Receive Reunion transitively where a published Concertable API exposes it. Never reference `Reunion.AspNetCore`. |
+| Service Web/API projects and controllers | `Reunion` wherever source uses its carriers; `Reunion.Errors` wherever source owns typed errors; `Reunion.AspNetCore` wherever endpoints map carriers | Keeps carrier, error, and HTTP-adapter upgrades explicit and independently owned within each service closure. |
+| `api/Concertable.Payment/src/Concertable.Payment.Client/Concertable.Payment.Client.csproj` | Neither during expansion; `Reunion` after its own migration | This published package exposes Reunion types and therefore directly owns the compile asset as a second publication layer. |
+| Domain, application, contracts, other clients, infrastructure, messaging, worker, seed, and AppHost projects | `Reunion` and/or `Reunion.Errors` only where source compiles against those APIs; never implicit through Kernel | Each project declares the third-party API it uses. `Reunion.AspNetCore` remains limited to service HTTP-edge projects. |
 
 `Concertable.Kernel` already has a pre-existing `Microsoft.AspNetCore.App` framework reference for
 unrelated legacy reasons. This migration must not use that fact to add `Reunion.AspNetCore` or new HTTP
@@ -83,32 +87,28 @@ policy to Kernel; removing the legacy framework reference is separate work.
 
 ## MVC compatibility decision
 
-Concertable can keep its controller signatures while consuming the MVC adapter namespace, but direct
-replacement is safe only where Reunion exactly matches existing behavior:
+Concertable keeps its controller signatures by consuming `Reunion.AspNetCore.Mvc` directly in each
+service API/Web project. Current Reunion `origin/master` and published `0.1.0-alpha.1` provide the
+complete endpoint surface required by Concertable:
 
 - `Option<T>.ToOkOrNotFound()` and `Option<T>.ToOkOrNoContent()` produce the required MVC
   `ActionResult<T>` and exact 200/404 or 200/204 cases.
 - Reunion's generic-error overloads accept a caller-supplied `Func<TError, ProblemDetails>`, so the
   carrier is compatible with Concertable's error hierarchy without Reunion knowing `IError`.
-- Direct generic-error use is not initially behavior-equivalent: Reunion returns an ordinary
-  `ObjectResult`, while Concertable's `ApplicationErrorResult` executes through
-  `IProblemDetailsService`, supplies request instance and trace ID, respects customizers/writers, and
-  preserves its JSON fallback.
-- Reunion `ToCreatedOrProblem` creates `CreatedResult` from a literal Location string. Concertable's
-  `ToCreatedAtActionResult` uses MVC route generation through `CreatedAtActionResult`. Those have
-  observably different Location behavior and are not interchangeable.
+- Reunion's MVC problem result executes through `IProblemDetailsService`, supplies request instance
+  and trace ID, preserves structured validation errors, and retains a JSON fallback.
+- `ToActionResult(successMapper)` preserves application-specific MVC results such as
+  `CreatedAtActionResult` and Accepted; the literal-location `ToCreatedOrProblem` convenience is used
+  only where that is the existing contract.
 
-Therefore the first cutover keeps a thin Concertable Shared.Api terminal over Reunion carriers. It may
-delegate exact Option success/absence cases to `Reunion.AspNetCore.Mvc`, but typed failures and
-CreatedAtAction stay Concertable-owned until separately proven equivalent. No controller signature or
-response contract changes are intended.
+Therefore Concertable deletes its duplicate Result/Option HTTP extensions and response executor.
+Service endpoints import `Reunion.AspNetCore.Mvc` and call the upstream terminal directly. No
+controller signature or observable response-contract change is intended.
 
-The semantic terminal vocabulary remains explicit: Result terminals name success plus ProblemDetails
-(`ToOkOrProblem`, `ToCreatedOrProblem`, `ToCreatedAtOrProblem`, `ToAcceptedOrProblem`, and
-`ToNoContentOrProblem`); Option terminals name Some plus ordinary absence (`ToOkOrNotFound` and
-`ToOkOrNoContent`). Option does not encode unauthenticated/forbidden/conflict outcomes. Those remain
-operation-owned typed Results. The existing local HTTP-terminal implementation is completed and
-reviewed as a local checkpoint, then incorporated into the final consumer contraction in Phase 5.
+The upstream semantic vocabulary remains explicit: Result terminals name success plus ProblemDetails;
+Option terminals name Some plus ordinary absence (`ToOkOrNotFound` and `ToOkOrNoContent`). Option does
+not encode unauthenticated/forbidden/conflict outcomes. Those remain operation-owned typed Results.
+The local Concertable terminal experiment is superseded and is not an integration input.
 
 ## Old-to-new API mapping
 
@@ -124,15 +124,15 @@ reviewed as a local checkpoint, then incorporated into the final consumer contra
 | Task receiver `OrFailure` / async factory `OrFailureAsync` | Reunion task extensions | Same names and shapes; verify null tasks, cancellation, exception identity, and laziness. |
 | `Map`/`Bind`, task variants, collection traversal | Reunion combinators | Replace imports and call sites mechanically only after parity tests; do not retain duplicate extensions. |
 | Query syntax over Result/Option | Reunion `Select`/`SelectMany` | Supported; compile representative queries on net10 and later net11. |
-| `ToOkActionResult` | Concertable terminal over Reunion `Result<T,TError>` | Carrier plumbing becomes redundant; keep Concertable ProblemDetails execution. |
-| `ToNoContentActionResult` | Concertable terminal over Reunion `UnitResult<TError>` | Keep 204 and Concertable failure writer behavior. |
-| `ToCreatedAtActionResult` | No direct Reunion replacement | Keep application-specific MVC route generation and body behavior. |
-| Manual Option `Match` to 200/404 or 200/204 | `Reunion.AspNetCore.Mvc` Option methods | Replace when the exact response contract matches. |
-| `ToActionResult` callback core | Reunion `Match` plus Concertable boundary wrapper | Remove only after all application-specific wrappers no longer depend on it. |
+| `ToOkActionResult` | Reunion MVC `ToOkOrProblem` | Replace at the owning service endpoint. |
+| `ToNoContentActionResult` | Reunion MVC `ToNoContentOrProblem` | Replace at the owning service endpoint. |
+| `ToCreatedAtActionResult` | Reunion MVC `ToActionResult(value => CreatedAtAction(...))` | Preserve MVC route generation and body behavior with the generic upstream terminal. |
+| Manual Option `Match` to 200/404 or 200/204 | Reunion MVC `ToOkOrNotFound` / `ToOkOrNoContent` | Replace directly at the owning service endpoint. |
+| `ToActionResult` callback core | Reunion MVC `ToActionResult` | Replace directly; no Concertable boundary wrapper remains. |
 
-The final cleanup removes Concertable's duplicate functional implementation and task/collection
-extensions only after repository-wide symbol inventory proves every caller is on Reunion. Application
-error and HTTP policy code remains.
+The final cleanup removes Concertable's duplicate functional, error-definition, and HTTP integration
+implementations only after repository-wide symbol inventory proves every caller is on Reunion.
+Domain error unions and published error codes/messages remain application-owned.
 
 ### Option-to-Result conversion inventory
 
@@ -156,15 +156,10 @@ behavioral contract also matches by design—Some returns success without invoki
 None creates one failure, and null results/tasks are rejected—but the parity suite remains the removal
 gate for Concertable's duplicate extensions.
 
-## Concertable error adapter
+## Reunion typed-error and HTTP adapter
 
-Expose a pure web-layer mapper in `Concertable.Shared.Api`, not Reunion:
-
-```csharp
-public static ProblemDetails ToProblemDetails(this IError error)
-```
-
-The mapper validates `error` and `error.Definition`, then preserves the existing policy exactly:
+Migrate the reusable error primitives to `Reunion.Errors` while retaining Concertable's domain error
+unions and their published definitions. `Reunion.AspNetCore` preserves the existing policy:
 
 | `ErrorKind` | HTTP status |
 |---|---:|
@@ -176,14 +171,11 @@ The mapper validates `error` and `error.Definition`, then preserves the existing
 | `PaymentRequired` | 402 |
 
 It sets `Status`, the status reason phrase as `Title`, `ErrorDefinition.Message` as `Detail`, and the
-stable definition code in the `code` extension. A `ValidationErrorDefinition` becomes
-`ValidationProblemDetails` with the exact key-to-message-array map. It must not add request state.
-
-The terminal result then passes that mapped instance to Concertable's existing
-`ApplicationErrorResult`/`ApplicationProblemDetails.WriteAsync` path, which remains responsible for
+stable definition code in the `code` extension. A `ValidationError` becomes
+`ValidationProblemDetails` with the exact key-to-message-array map. Its MVC result also owns
 `instance`, `traceId`, `IProblemDetailsService`, configured customization, content type, response
-status, cancellation, and serialization fallback. Tests cover both the pure mapper and executed MVC
-response. Reunion receives only the caller-supplied mapper delegate and never references `IError`.
+status, cancellation, and serialization fallback. Concertable deletes the duplicate mapper/result
+implementation after the callers migrate.
 
 ## Compatibility risk register
 
@@ -198,7 +190,7 @@ response. Reunion receives only the caller-supplied mapper delegate and never re
 | Equality/hash/default text | Preserve case-sensitive structural equality/hash behavior and explicitly approve any `ToString` text differences before replacement. |
 | Serialization | Keep Result/Option out of DTO/event/protobuf/HTTP payload shapes; add architecture scans and formatter tests because Reunion provides no application wire contract. |
 | MVC negotiation | Execute results through the real MVC pipeline and verify `application/problem+json`, configured customizers/writers, fallback JSON, and Accept handling. |
-| Created Location | Keep `CreatedAtActionResult`; verify route values, generated Location header, status 201, and response body. Do not substitute literal-location `CreatedResult`. |
+| Created Location | Keep `CreatedAtActionResult` through Reunion's generic success mapper; verify route values, generated Location header, status 201, and response body. |
 | Status mapping | Contract-test every `ErrorKind`, validation shape, title, detail, code, instance, trace ID, and custom extensions. Unknown kinds remain rejected, not silently mapped. |
 | TFM difference | Concertable initially tests Reunion net10 conventional cases. Add net11 compile/runtime coverage only when Concertable multi-targets or upgrades; Reunion package consumers still verify both assets upstream. |
 
@@ -212,13 +204,12 @@ response. Reunion receives only the caller-supplied mapper delegate and never re
                               └──#404 transport + #407 conventions
 
 local package battle test ──Reunion publish
-                └──additive Shared expansion ──publish/sync
-                     └──Payment + Payment.Client migration ──publish/sync
-                          └──final consumer contraction + HTTP terminals ──publish/sync
-                               ├── preserve/reconcile B2B local-only owner
-                               ├── preserve/reconcile Auth local-only owner
-                               ├── update PR #425 once
-                               └── recreate PR #282 semantics on the integrated baseline
+                └──Payment + Payment.Client migration ──publish/sync
+                     └──final consumer contraction + Reunion endpoint migration ──publish/sync
+                          ├── preserve/reconcile B2B local-only owner
+                          ├── preserve/reconcile Auth local-only owner
+                          ├── update PR #425 once
+                          └── recreate PR #282 semantics on the integrated baseline
 ```
 
 State is from GitHub plus local repository evidence on 2026-08-09. `closed + merged date` is reported
@@ -230,7 +221,7 @@ as merged; #336 is the only listed closed-unmerged PR.
 | #261 Use the published shared exception handler | Merged; `main` ← platform sync `.710` | Published Shared exception boundary adoption. | No action; depends #248 publication; low. |
 | #282 Migrate Customer Ticket to typed results | Open; `main` ← `Feature/TypedResultMigrationPhase2` | One unique Ticket/Concert/checkout commit; old CFE/carrier assumptions; not elsewhere. | Recreate semantics/tests after shared integration, then supersede old PR with approval; depends Payment sync and Reunion consumer cutover; very high (776 behind). |
 | #284 Define typed result error API | Merged; `main` ← `Feature/TypedResultKernelApi` | Concertable error model prerequisite. | No action; preserve under adapter; low. |
-| #290 Add owned Result and Option foundation | Merged; `main` ← `Refactor/OwnedResultFoundation` | Current temporary carriers and tests. | Replace once in Shared producer after package publish; foundational/high public-API risk. |
+| #290 Add owned Result and Option foundation | Merged; `main` ← `Refactor/OwnedResultFoundation` | Current temporary carriers and tests. | Remove in the final consumer contraction after Payment.Client publication; foundational/high public-API risk. |
 | #291 Platform sync `.740` | Merged; `main` ← platform sync `.740` | Delivered #290 types. | No action; historical dependency; low. |
 | #296 Own deferred commission pricing in Payment | Merged; `main` ← commission branch | Payment prerequisite used by later migration. | No action; dependency of #392; low. |
 | #312 Preserve validation errors through ProblemDetails writer | Merged; `main` ← `Fix/ProblemDetailsValidationWriter` | Validation writer/fallback contract. | No action; must be retained by adapter; medium regression risk. |
@@ -244,7 +235,7 @@ as merged; #336 is the only listed closed-unmerged PR.
 | #380 Normalize Search collection operation contracts | Merged; Search branch | Search empty-list/result contract work. | No action; consumer migration handles namespace/package change; medium. |
 | #388 Platform sync `.827` | Merged; platform sync | Delivered Search changes. | No action; low. |
 | #392 Own typed operation results in Payment | Merged; Payment branch | Payment typed outcomes. | No action; generated consumer migration updates Reunion types; high public-API consumer risk. |
-| #404 Establish typed-error transport foundations | Merged; Shared branch | `IError` transport metadata and mapping foundation. | Keep in Concertable; adapter builds on it; medium. |
+| #404 Establish typed-error transport foundations | Merged; Shared branch | `IError` transport metadata and mapping foundation. | Migrate its reusable primitives to `Reunion.Errors`; preserve application-owned unions and published semantics; medium. |
 | #407 Codify typed error mapping | Merged; docs branch | Mapping convention. | Update only if names/imports change; low. |
 | #420 Platform sync `.853` | Merged; platform sync | Migrated Payment consumers and unblocked B2B/Auth/Customer. | No action; dependency of active semantic owners; low. |
 | #425 Model Customer non-Payment outcomes | Open; `main` ← `Feature/typed-result_customer-outcomes` | 29 unique reviewed commits; not elsewhere. | Preserve and update once against integrated main; do not duplicate package cutover; high (117 behind). |
@@ -252,43 +243,44 @@ as merged; #336 is the only listed closed-unmerged PR.
 | #427 Finish Payment closeout review fixes | Merged; same docs closeout branch | Review fixes for #426. | No action; low. |
 | B2B local-only work | Active, unpushed; recorded owner `Refactor/B2BTypedResultMigration` | Authoritative semantic migration exists locally at `ba5791268`. | Preserve owner and reconcile in Phase 6 after the final contraction; high conflict risk. |
 | Auth local-only work | Active, unpushed; recorded owner `Feature/typed-result_auth-outcomes` | Authoritative semantic migration exists locally at `98599413a`. | Preserve owner and reconcile in Phase 6 after the final contraction; high conflict risk. |
-| HTTP-terminal local work | Active, unpushed; verified code/test checkpoint `c593150e4` | Semantic Shared.Api terminal rename and Option absence terminals overlap the Reunion contraction surface. | Do not publish independently; incorporate once in Phase 5 after Payment.Client is published on Reunion. |
+| HTTP-terminal local work | Obsolete local checkpoint `c593150e4` | Reunion already publishes the MVC and Minimal API terminals plus generic success mappers. | Retire the branch/worktree without publication; do not copy any implementation into Concertable. |
 
 ## Safest integration strategy
 
 Use strategy D: a publish-gated centralized integration. The Phase 1 rehearsal proved the original
 two-hop graph incomplete: `Concertable.Payment.Client` publicly re-exposes Kernel Result/Option
 types, while B2B and Customer compile against its published package rather than its source project.
-Delivery therefore crosses three Concertable code merges after the Reunion publication:
+Delivery therefore crosses two Concertable package layers after the Reunion publication:
 
 1. Land this docs-only design first so every active branch shares the same owner and dependency map.
 2. In the reserved `Feature/typed-result_reunion-integration` worktree, pack merged PR head
    `e33b40f`, restore its three-package dependency graph, and prove source/API/HTTP parity. Do not
    distribute those edits across service PRs.
-3. In parallel, finish and review the existing semantic HTTP-terminal work as a local-only checkpoint.
-   Do not push or publish its Shared.Api package independently.
-4. Publish matching `Reunion` and `Reunion.AspNetCore` versions only after the battle-test gate passes.
-5. Merge an additive Shared expansion: reference Reunion from Kernel and Reunion.AspNetCore from
-   Shared.Api, add Reunion-backed terminal overloads, and retain every owned carrier and old terminal
-   signature. Publish and drive its generated platform sync green.
-6. Merge the Payment layer against that published expansion: migrate Payment source and the public
-   `Concertable.Payment.Client` API to Reunion. Publish the repacked client and drive its generated
-   platform sync green. Do not remove the old Shared identities yet.
-7. Merge the final consumer contraction: migrate B2B, Auth, Customer, Ticket, Search, and remaining
-   callers against the newly published Payment.Client, incorporate the reviewed semantic HTTP
-   terminals, then delete the owned carriers, duplicate extensions, and old terminal overloads.
+3. Publish matching `Reunion`, `Reunion.Errors`, and `Reunion.AspNetCore` versions only after the
+   battle-test gate passes.
+4. Retire the Concertable HTTP-terminal experiment and the superseded Shared rehearsal. No Shared.Api
+   terminal or adapter package is published from that work.
+5. Merge the Payment layer directly against the published Reunion family: migrate Payment source and
+   the public `Concertable.Payment.Client` API, give each compiling project direct core/error package
+   ownership, and keep `Reunion.AspNetCore` at any Payment HTTP edge that actually maps Reunion
+   carriers. Publish the repacked client and drive its generated platform sync green. Do not remove
+   old Shared identities yet.
+6. Merge the final consumer contraction: migrate B2B, Auth, Customer, Ticket, Search, and remaining
+   callers against the newly published Payment.Client, add direct Reunion package references to every
+   project whose source uses those APIs, replace Concertable terminals with service-owned Reunion MVC
+   terminals, then delete the owned carriers, error primitives, HTTP response executor, and extensions.
    Publish and drive the final platform sync green.
-8. Reconcile each semantic owner against that integrated `main`: update PR #425 once; sync and update
+7. Reconcile each semantic owner against that integrated `main`: update PR #425 once; sync and update
    the active local B2B/Auth worktrees; recreate #282's Ticket semantics rather than rebasing its
    obsolete carrier implementation.
-9. Run the final shared/background inventory and remove leftover third-party surfaces only when all
+8. Run the final shared/background inventory and remove leftover third-party surfaces only when all
    semantic owners are terminal.
 
 Updating every PR independently (A) duplicates package pins, carrier renames, and adapter fixes and
 guarantees divergent conflict resolutions. A single ordinary mega-integration branch (plain B) cannot
 cross either NuGet publication boundary safely. Landing every semantic migration first (C) delays the
-common baseline and increases later churn. Strategy D's local battle test → Reunion publish → additive
-Shared expansion → Payment.Client migration → final consumer contraction sequence keeps every
+common baseline and increases later churn. Strategy D's local battle test → Reunion publish →
+Payment.Client migration → final consumer contraction sequence keeps every
 published graph buildable while centralizing each mechanical layer exactly once.
 
 ## Local package battle-test workflow
@@ -319,10 +311,10 @@ Get-ChildItem $feed -Filter "Reunion*$version.nupkg"
 tar -xOf "$feed\Reunion.AspNetCore.$version.nupkg" Reunion.AspNetCore.nuspec
 ```
 
-On the reserved Concertable integration branch only, add both exact versions to
-`api/Concertable.Shared/Directory.Packages.props`, add `Reunion` only to `Concertable.Kernel.csproj`,
-and add `Reunion.AspNetCore` only to `Concertable.Shared.Api.csproj`. Then restore without creating or
-committing a machine-specific NuGet configuration:
+For the completed local battle test only, the integration worktree may restore the exact packages
+from the isolated feed without creating or committing a machine-specific NuGet configuration.
+Production migration adds `Reunion`, `Reunion.Errors`, and `Reunion.AspNetCore` only to the projects
+whose source uses each API; it does not add Reunion packages to Shared.Api as a distribution point:
 
 ```powershell
 dotnet restore "$concertableWorktree\api\Concertable.slnx" `
@@ -332,18 +324,14 @@ dotnet restore "$concertableWorktree\api\Concertable.slnx" `
 
 dotnet list "$concertableWorktree\api\Concertable.Shared\src\Concertable.Kernel\Concertable.Kernel.csproj" `
   package --include-transitive
-dotnet list "$concertableWorktree\api\Concertable.Shared\src\Concertable.Shared.Api\Concertable.Shared.Api.csproj" `
-  package --include-transitive
 dotnet nuget why "$concertableWorktree\api\Concertable.Shared\src\Concertable.Kernel\Concertable.Kernel.csproj" Reunion
-dotnet nuget why "$concertableWorktree\api\Concertable.Shared\src\Concertable.Shared.Api\Concertable.Shared.Api.csproj" Reunion.AspNetCore
 ```
 
-The restore log must show the local feed supplying all three exact packages; the AspNetCore `.nuspec`
-must show exact dependencies on Reunion and Reunion.Errors. Before any production
-PR, replace the local version with the published version and restore without
+The upstream package-consumer verification proves the published AspNetCore dependency graph. Before
+any production PR, replace every local version with the published version and restore without
 `RestoreAdditionalProjectSources`. A temporary committed battle-test pin may live locally on the
-reserved integration branch. It is not pushed; after Reunion publication, Phase 3 replaces it with
-the exact production version in a later commit before the first producer push/PR. The merge gate is:
+reserved integration branch. It is not pushed; production migration uses only the exact published
+version before the first producer push/PR. The merge gate is:
 
 ```powershell
 rg -n 'local\.concertable|Reunion\.worktrees|Reunion-Concertable|RestoreAdditionalProjectSources' `
@@ -385,7 +373,7 @@ git -C $reunionRepo worktree remove $reunionWorktree
 - Success controller responses: 200 body, 404 NotFound, 204 NoContent, and existing formatter/content
   negotiation behavior under representative Accept headers.
 - Created controller response: 201, exact body, MVC-generated Location from action and route values,
-  and typed failure behavior. Assert Reunion's literal-location helper is not used for this path.
+  and typed failure behavior through Reunion's generic `ToActionResult` success mapper.
 - Async services/controllers preserve cancellation and infrastructure exceptions and do not convert
   them into expected failures.
 
@@ -395,12 +383,12 @@ git -C $reunionRepo worktree remove $reunionWorktree
   and integration suites through the repository integration-debug workflow.
 - Build `api/Concertable.slnx` Release with zero errors and build each standalone Payment, B2B,
   Customer, and Search `.slnx` against its published package closure.
-- Run architecture scans proving no Result/Option wire DTOs, no `Reunion.AspNetCore` dependency in
-  domain/application projects, no remaining duplicate Concertable carriers/extensions after cleanup,
-  and no Minimal API result migration.
-- Verify clean package consumers restore `Reunion` transitively from `Concertable.Kernel` and the
-  matching `Reunion.AspNetCore`/`Reunion` pair from `Concertable.Shared.Api`; capture restore
-  provenance and package graph.
+- Run architecture scans proving no Result/Option wire DTOs, no shared-platform
+  `Reunion.AspNetCore` dependency, no remaining duplicate Concertable carriers/error primitives/HTTP
+  terminals after cleanup, and no accidental Minimal API result migration.
+- Verify every project whose source compiles against Reunion carriers or errors directly references
+  `Reunion` or `Reunion.Errors` respectively; verify every service HTTP-edge project mapping those
+  carriers owns `Reunion.AspNetCore` within its service closure. Capture restore provenance and graphs.
 - Concertable currently targets net10 only. Upstream Reunion gates both net10 and net11 packages. When
   Concertable adopts net11, rerun the same behavioral suite against native union cases plus exhaustive
   switching, native case conversions, positional patterns, `Result<T,T>`, and Option None/default.
@@ -423,16 +411,15 @@ Use real B2B/Customer flows after the automated gate:
 
 ### Phase 1 — Reconcile owners and battle-test corrected merged release head `e33b40f` ✅
 
-- Confirm the recorded B2B/Auth/Customer/Ticket/HTTP owner inventory still matches the live worktrees
+- Confirm the recorded B2B/Auth/Customer/Ticket owner inventory still matches the live worktrees
   before the first code edit; update the ledger if any head or dirty path changed.
 - Create the isolated integration worktree and local feed; pack and inspect all three matching packages.
-- Add the local Reunion packages and additive Shared.Api overloads on the reserved integration branch;
-  retain the old carriers so the complete published-package closure remains buildable, then run
-  carrier plus Shared.Api parity tests.
+- Add the local Reunion packages for the isolated compatibility rehearsal and retain the old carriers
+  so the complete published-package closure remains buildable, then run carrier plus HTTP parity tests.
 
 Gate: local package provenance proven, Kernel 241/241 and Shared.Api 53/53 green, Release solution
 build green, no machine-local configuration staged, and the published-package topology recorded as
-Shared expansion → Payment.Client migration → final consumer contraction.
+Payment.Client migration → final consumer contraction.
 
 ### Phase 2 — Publish the Reunion package family ✅
 
@@ -446,25 +433,28 @@ Shared expansion → Payment.Client migration → final consumer contraction.
 Gate: all three packages are immutable and restorable from the production feed at the exact same
 version, with their dependency groups resolving only that version.
 
-### Phase 3 — Additive Concertable Shared expansion
+### Phase 3 — Retire the duplicate HTTP-terminal and Shared rehearsals ✅
 
-- Replace the local package version with the exact published Reunion version; reference Reunion only
-  from Kernel and Reunion.AspNetCore only from Shared.Api.
-- Add Reunion-backed Shared.Api terminal overloads while retaining the nine owned functional source
-  files and every old public terminal signature. This is a temporary binary/source-compatible expand
-  step, not a permanent compatibility layer.
-- Keep Concertable errors, MVC execution, controller signatures, and existing call sites unchanged.
+- Remove the unpushed Shared.Api Reunion package/reference rehearsal and do not incorporate checkpoint
+  `c593150e4`; Reunion already owns the complete terminal behavior.
+- Delete the obsolete HTTP-terminal plan/ledger and retire its branch/worktree without publication.
+- Record the corrected direct-ownership graph, then continue directly to Payment migration.
 
-Gate: Shared unit/architecture/package tests and the full Release solution build green; code review
-clean; source PR merged; the generated platform sync green and merged; expanded Concertable Shared
-packages available. Do not contract the public surface on an unpublished expansion.
+Gate: the integration branch has no Concertable-owned Reunion HTTP extension or shared adapter
+distribution; the obsolete terminal checkpoint has no delivery path; plan and ledger name Payment as
+the next code layer. No source PR or platform sync is created for the discarded rehearsal.
 
-### Phase 4 — Payment and Payment.Client migration
+### Phase 4 — Payment and Payment.Client migration (local code gate complete; delivery pending)
 
 - Migrate Payment source and the published `Concertable.Payment.Client` public API from
-  `Concertable.Kernel.Functional` to Reunion against the published Shared expansion.
+  `Concertable.Kernel.Functional` to the published Reunion family.
 - Preserve Payment contracts, exceptions, HTTP behavior, and client call semantics; add direct
-  Reunion ownership to Payment.Client only if its public API requires the compile asset explicitly.
+  `Reunion` and `Reunion.Errors` references wherever source uses those APIs, including Payment.Client
+  because its public API exposes carriers. Add `Reunion.AspNetCore` only to a Payment HTTP-edge
+  project whose source maps those carriers.
+- The current Payment API/Web source maps no Result or Option carrier, so this layer adds no unused
+  `Reunion.AspNetCore` dependency. If that changes, use `Reunion.AspNetCore.Mvc` directly and its
+  generic `ToActionResult` for CreatedAtAction/Accepted contracts rather than adding local extensions.
 - Own the generated platform sync and prove B2B/Customer consumers compile against the republished
   client before the next contraction.
 
@@ -475,11 +465,13 @@ available. Never remove the old Shared identities before this gate.
 ### Phase 5 — Final consumer migration and Shared contraction
 
 - Migrate every remaining service import/call site against published Shared and Payment.Client
-  packages, making package restore provenance explicit.
-- Incorporate the reviewed semantic HTTP-terminal checkpoint; keep Option absence terminals limited
-  to NotFound and NoContent, with caller-actionable failures represented by typed Results.
-- Remove the nine owned carrier/extension files and old Shared.Api overloads only after the repository
-  inventory proves no production caller or published package still exposes their assembly identity.
+  packages, adding direct Reunion references to each project whose source uses its carriers.
+- Replace every remaining Shared.Api Result/Option terminal with the service-owned
+  `Reunion.AspNetCore.Mvc` surface; keep Option absence terminals limited to NotFound and NoContent,
+  with caller-actionable failures represented by typed Results.
+- Remove the owned carrier/extensions, error primitives, and Shared.Api HTTP result executor only
+  after the repository inventory proves no production caller or published package still exposes
+  their assembly identity.
 - Preserve controller signatures, CreatedAtAction, HTTP behavior, domain errors, exceptions, and
   service carve boundaries.
 
@@ -511,9 +503,12 @@ this plan and ledger together through the documented docs closeout.
 
 - Concertable consumes published, matching Reunion packages; no local feed/version/path remains.
 - All five Reunion types remain available and all production Result/Option call sites use them.
-- Only Kernel directly owns `Reunion`; only Shared.Api directly owns `Reunion.AspNetCore`; no domain or
-  application ASP.NET dependency was introduced.
-- `IError` and every error union remain Concertable-owned.
+- Every project compiling against Reunion carriers or typed-error APIs directly owns `Reunion` or
+  `Reunion.Errors`; no project relies on Kernel to smuggle those dependencies transitively.
+- Shared.Api defines no Result/Option HTTP terminals and does not reference `Reunion.AspNetCore`;
+  every service HTTP edge using Reunion owns and upgrades the adapter inside its service closure.
+- Domain error unions and their published codes/messages remain Concertable-owned; reusable
+  `IError`, definition, validation, and HTTP-mapping infrastructure comes from Reunion.
 - Controller signatures and observable MVC status/body/header/ProblemDetails behavior are preserved.
 - Existing semantic migration work is preserved under one owner per scope; #282 is superseded only
   after its replacement is ready and approved.

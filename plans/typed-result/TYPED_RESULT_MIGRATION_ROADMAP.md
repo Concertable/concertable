@@ -145,18 +145,15 @@ their current branch and worktree rather than fragmenting in-flight work.
 - [ ] 🟡 **Reunion package integration and carrier cutover.** The design and operational state are in
   [`REUNION_INTEGRATION_PLAN.md`](REUNION_INTEGRATION_PLAN.md) and
   [`REUNION_INTEGRATION_PROGRESS.md`](REUNION_INTEGRATION_PROGRESS.md). Use Reunion commit `7bf5f66`
-  for the initial package battle test. Land one Shared producer PR, wait for publication, then perform
-  the repository-wide consumer migration in the generated platform-sync PR. B2B, Auth, Customer, and
-  any other semantic owner consume that integrated baseline; they do not repeat package or carrier
-  substitutions independently.
+  for the initial package battle test. The Reunion package family is published; migrate
+  Payment/Payment.Client first, then perform the repository-wide consumer contraction against its
+  published package. B2B, Auth, Customer, and any other semantic owner consume that integrated
+  baseline; they do not repeat package or carrier substitutions independently.
 
-- [ ] 🟠 **Semantic Shared.Api HTTP terminals.** Existing owner:
-  `Refactor/typed-result_http-terminals` at
-  `C:\Users\TommySeery\source\repos\Concertable.worktrees\Refactor\typed-result_http-terminals`.
-  Its semantic `*OrProblem`, `ToOkOrNotFound`, and `ToOkOrNoContent` implementation is preserved as a
-  local checkpoint, not a competing package PR. Finish and review it in parallel with Reunion Phase 1,
-  then incorporate it into the one Reunion Shared producer PR and generated platform-sync migration.
-  Customer PR #425 waits on that integrated Phase 4 baseline rather than a separate terminal package.
+- [x] 🟢 **HTTP terminal ownership resolved upstream.** `Reunion.AspNetCore` already publishes the MVC
+  and Minimal API Result/Option terminals, generic success mappers, ProblemDetails execution, and
+  structured validation mapping. Retire `Refactor/typed-result_http-terminals` without publication;
+  each service HTTP edge consumes the Reunion adapter directly during its carrier migration.
 
 ### Ready — may be planned and implemented in parallel
 
@@ -196,8 +193,7 @@ and Auth owners remain in flight.
 ## Parallel dependency map
 
 ```text
-Reunion 7bf5f66 battle test ──Reunion publication──┐
-semantic HTTP-terminal local checkpoint ──────────┴──Shared producer cutover
+Reunion 7bf5f66 battle test ──Reunion publication──Payment.Client migration
                                                       └──publish── generated platform-sync consumer migration
                                                                   ├── B2B active owner reconciliation
                                                                   ├── Auth active owner reconciliation
@@ -214,16 +210,18 @@ Released .NET native unions
 
 B2B and Auth have authoritative unpushed local work that is now inventoried. Preserve both worktrees
 until the integrated platform baseline lands; remote state alone remains insufficient. Service diffs
-remain service-owned; the cross-cutting Reunion substitution happens once through the Shared producer
-and generated platform-sync consumer path.
+remain service-owned; the cross-cutting Reunion substitution happens once through Payment.Client and
+the generated platform-sync consumer path.
 
 ## Shared migration rules
 
 - Reunion `Result` and `Option` are in-process contracts only. HTTP, protobuf, events, persistence,
   and other wire boundaries retain owned transport contracts and map at the service edge.
-- `Reunion` belongs at the carrier-owning Shared Kernel boundary. `Reunion.AspNetCore` belongs only in
-  `Concertable.Shared.Api`; domain and application projects never reference it. Reunion never learns
-  Concertable's `IError`, `ErrorDefinition`, or error unions.
+- Every project directly owns the Reunion package whose API its source compiles against. Core and
+  typed-error use takes direct `Reunion`/`Reunion.Errors` references; each service API/Web project
+  mapping carriers takes `Reunion.AspNetCore`. Shared.Api neither distributes the adapter nor defines
+  duplicate Result/Option HTTP terminals. Domain error unions and published semantics remain
+  application-owned.
 - Expected caller-actionable refusals use typed Results. Infrastructure failures, cancellation, and
   programmer/invariant defects remain exceptions. Do not catch them in Result combinators.
 - Repository single-item lookups may remain nullable as a persistence concern. Application, module,
