@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `42a9639c3208c2c05c5cff4989ba0205f5d28617`  _(2026-08-09)_
-**Security-reviewed up to commit:** `42a9639c3208c2c05c5cff4989ba0205f5d28617`  _(2026-08-09)_
+**Reviewed up to commit:** `ff7be0f82c2d2e07fe936eb7ec067a769b3831b9`  _(2026-08-09)_
+**Security-reviewed up to commit:** `ff7be0f82c2d2e07fe936eb7ec067a769b3831b9`  _(2026-08-09)_
 
 > Range reviewed: `dc0da93..abcc9be` (2 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -56,3 +56,10 @@ form. The E2E helper tests pass 5/5 and both B2B and Customer UI E2E projects bu
 No issues found. The only imported changes are the separately reviewed and merged E2E diagnostic
 guardrails from PR #454; they do not alter runtime behavior. After the merge, the helper tests pass
 5/5 and both affected UI E2E projects build with zero errors.
+
+## Incremental review — 2026-08-09 (convention wording sync)
+
+> Range reviewed: `42a9639..ff7be0f` (3 commits).
+
+No issues found. The imported PR #456 change only simplifies the already-reviewed empty-block
+convention wording; the runtime tree and verification results are unchanged.
