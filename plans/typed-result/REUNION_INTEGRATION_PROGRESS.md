@@ -59,20 +59,22 @@ publish packages, or start the Concertable producer cutover in that phase.
   counts or forbidden plan-to-roadmap reference.
 - All changed-document relative links and documented Concertable paths resolve. The installed .NET 10
   SDK accepts `dotnet nuget why`, and Windows bsdtar accepts the documented nuspec inspection shape.
-- Full docs review of `2eb8bc476..38f11e6eb` found four issues; all are fixed in `this commit`.
-  Incremental review of this fix commit and merge evidence remain pending.
+- Full docs review of `2eb8bc476..38f11e6eb` found four issues; all were fixed in `b9cc525c2`.
+- Incremental docs review of `38f11e6eb..b9cc525c2` found no new issues and stamped watermark
+  `b9cc525c2`. Merge evidence remains pending.
 
 ## Reviews
 
 - Full docs review: `2eb8bc476..38f11e6eb` (1 commit), artifact
   `reviews/Docs-typed-result_reunion-integration.md`, watermark `38f11e6eb`.
-- `ACC1` fixed in `this commit`: narrowed the no-mutation claim to existing migration branches.
-- `ACC2` fixed in `this commit`: recorded local main's final fast-forward to the audited remote tip.
-- `INST1` fixed in `this commit`: classified the recommendation as publish-gated strategy D and
+- `ACC1` fixed in `b9cc525c2`: narrowed the no-mutation claim to existing migration branches.
+- `ACC2` fixed in `b9cc525c2`: recorded local main's final fast-forward to the audited remote tip.
+- `INST1` fixed in `b9cc525c2`: classified the recommendation as publish-gated strategy D and
   compared it accurately with A, B, and C.
-- `INST2` fixed in `this commit`: unified Phase 1 on the reserved integration branch and made the
+- `INST2` fixed in `b9cc525c2`: unified Phase 1 on the reserved integration branch and made the
   local-version replacement/push gate explicit.
-- Open findings: none. Incremental review of the fix commit is pending.
+- Incremental docs review: `38f11e6eb..b9cc525c2` (1 commit), no new findings, same artifact,
+  watermark `b9cc525c2`. Open findings: none.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -117,6 +119,17 @@ publish packages, or start the Concertable producer cutover in that phase.
 - Outcome: The plan now reports current git state accurately, names strategy D correctly, and has one
   unambiguous integration branch/local-pin lifecycle. No finding remains open.
 - Follow-up: commit these fixes, run incremental docs review through that commit, then `/merge-docs`.
+
+### 2026-08-09 — clean incremental docs review
+
+- Action: Incrementally reviewed the docs-review fix commit `38f11e6eb..b9cc525c2`.
+- Evidence: `reviews/Docs-typed-result_reunion-integration.md`, watermark `b9cc525c2`; exact diff,
+  relative-link and repository-path checks; verified `dotnet nuget why` help and bsdtar nuspec
+  extraction syntax; `git diff --check`.
+- Outcome: No new findings; all four original findings remain resolved and the substantive branch
+  head is clean for `/merge-docs`.
+- Follow-up: checkpoint this review observation, push/open the docs PR, and land it through
+  `/merge-docs`.
 
 ## Resume prompt
 
