@@ -48,11 +48,12 @@ Shared rehearsal.
 The Phase 4 local checkpoint migrates Payment source and the public `Concertable.Payment.Client` API
 to published `Reunion` `0.1.0-alpha.1` and candidate `Reunion.Errors` `0.1.0-alpha.2`. Merged Reunion
 PR #4 at `1500270` removes `ErrorDefinition.For<TError>()`; Payment now uses only the replacement
-direct nested-case factories. The temporary source-text scan for old Kernel namespaces is removed,
-while the permanent direct-owner architecture guard remains. Every compiling project directly owns
-the package APIs it uses. Payment API/Web currently maps no Result or Option carrier, so it does not
-receive an unused `Reunion.AspNetCore` reference; that adapter remains required only at HTTP edges
-whose source actually calls it.
+direct nested-case factories. Both source-scanning/package-allowlist architecture tests are removed;
+they duplicated project state without proving ownership. Every compiling project still directly owns
+the package APIs it uses. Payment has no FluentValidation request or command validators, so its stale
+package/version entries and architecture claim are removed; the three Microsoft `IValidateOptions<T>`
+startup validators remain. Payment API/Web currently maps no Result or Option carrier, so it does not
+receive an unused `Reunion.AspNetCore` reference.
 
 The full code and security review of `162b8412a..a779fe041` found no issues. Incremental native,
 security, and Concertable reviews through implementation head `da78980b7`, current-main merge
@@ -126,13 +127,17 @@ implementation without changing the Payment delivery order.
 
 ## Next Steps
 
-Wait for explicit instruction to merge. PR #453 is open, clean, fully reviewed, PR-check green, and
-prepared for full E2E at exact remote head `b4e7731a6`; auto-merge is disabled and it is not queued.
-When authorized, revalidate currency/check state, enqueue it, then after the source PR lands move the
-recovery state to the required docs closeout worktree and own Payment package publication plus the
-generated platform-sync PR through green and merged.
+Commit the verified Payment cleanup, incrementally review the new local range, and push PR #453 with
+the two-leg remote/PR-head protocol. Revalidate currency and PR checks, then enqueue with full E2E.
+After the source PR lands, move recovery state to the required docs closeout worktree and own Payment
+package publication plus the generated platform-sync PR through green and merged.
 
 ## Completed work
+
+- Removed the brittle Reunion package-reference allowlist test and the unused Payment
+  `FluentValidation` package/version/documentation claim after confirming Payment has no
+  FluentValidation validators; retained all three startup option validators and behavioral Reunion
+  error-definition tests.
 
 - Published exact `Reunion.Errors` `0.1.0-alpha.2`; NuGet.org indexed it with repository commit
   `1500270`, valid repository signature, catalog SHA-512 match, production SHA-256
@@ -224,6 +229,10 @@ generated platform-sync PR through green and merged.
   GitHub had already removed the remote branch.
 
 ## Verification
+
+- Cleanup working tree: Payment standalone Release build passed with 0 warnings/0 errors; Payment
+  unit suite passed 222/222 after deleting the single architecture snapshot test; repository scan
+  finds no remaining `FluentValidation` or `ReunionArchitectureTests` reference under Payment.
 
 - GitHub PR #453 is `OPEN` against `main`; its initial `headRefOid` and the fetched remote branch
   both equal reviewed implementation head `a779fe04139e8e33fca7f294a26c41e44c89dda7`.
@@ -399,6 +408,11 @@ generated platform-sync PR through green and merged.
 
 ## Decisions, discoveries, blockers, and deviations
 
+- Payment exposes gRPC operations but has no FluentValidation pipeline or validators. Transport does
+  not eliminate validation; Payment enforces its input/business rules through application/domain
+  logic and typed failures. Its three configuration validators use Microsoft `IValidateOptions<T>`
+  and do not justify a FluentValidation dependency.
+
 - Reunion stays prerelease while its `net11.0` asset depends on preview .NET 11/C# functionality.
   Concertable targets `net10.0` and will consume the matching shipping-runtime asset from the same
   alpha package while exercising this owner-controlled integration before general release.
@@ -441,6 +455,18 @@ generated platform-sync PR through green and merged.
   delivery-ready and provide the exact remaining-call-site inventory.
 
 ## Event log
+
+### 2026-08-10 — Payment validation and architecture-test cleanup completed
+
+- Action: Removed `ReunionArchitectureTests`, inventoried every Payment validator and validation
+  registration, then removed the unused FluentValidation package reference, central version, and
+  stale architecture claim.
+- Evidence: No `AbstractValidator<T>`, `IValidator<T>`, `RuleFor`, or FluentValidation registration
+  exists in Payment or its history. The only validators are three registered `IValidateOptions<T>`
+  startup checks. Payment Release build passed 0/0 and unit tests passed 222/222.
+- Outcome: Behavioral Reunion tests remain; Payment no longer carries a brittle project-file snapshot
+  or an unused validation dependency.
+- Follow-up: Commit, incrementally review, execute the two-leg PR push, then merge through full E2E.
 
 ### 2026-08-10 — merge paused before queue admission
 
