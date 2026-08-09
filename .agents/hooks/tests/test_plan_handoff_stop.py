@@ -307,6 +307,95 @@ class PlanHandoffStopTests(unittest.TestCase):
         result = evaluate(self.input_with_codex_transcript("Checkpoint 6 is blocked."))
         self.assertEqual("block", result["decision"])
 
+    def test_patch_claims_targets_without_claiming_referenced_dependency_ledgers(self):
+        typed_result = self.root / "plans" / "typed-result"
+        unions = self.root / "plans" / "dotnet-11"
+        owner = typed_result / "REUNION_INTEGRATION_PROGRESS.md"
+        b2b = typed_result / "B2B_PROGRESS.md"
+        workflow_unions = unions / "B2B_WORKFLOW_UNIONS_PROGRESS.md"
+        for ledger in (owner, b2b, workflow_unions):
+            ledger.parent.mkdir(parents=True, exist_ok=True)
+            ledger.with_name(ledger.name.replace("_PROGRESS.md", "_PLAN.md")).write_text(
+                "# Plan\n", encoding="utf-8"
+            )
+        owner.write_text(
+            "## Next Steps\n\nCreate the integration worktree.\n",
+            encoding="utf-8",
+        )
+        b2b_steps = (
+            "Blocked: ReUnion platform sync has not merged.\n"
+            "Unblock action: The owner at `plans/typed-result/REUNION_INTEGRATION_PROGRESS.md` "
+            "must merge it.\n"
+            "Resume when: Main contains the ReUnion platform pin."
+        )
+        b2b.write_text(f"## Next Steps\n\n{b2b_steps}\n", encoding="utf-8")
+        union_steps = (
+            "Blocked: B2B delivery is not terminal.\n"
+            "Unblock action: The owner at `plans/typed-result/B2B_PROGRESS.md` must finish it.\n"
+            "Resume when: Main contains the B2B work."
+        )
+        workflow_unions.write_text(
+            f"## Next Steps\n\n{union_steps}\n",
+            encoding="utf-8",
+        )
+        transcript = self.root / "dependency-chain-transcript.jsonl"
+        records = [
+            {
+                "type": "response_item",
+                "payload": {
+                    "type": "message",
+                    "role": "user",
+                    "content": "Create the workflow-unions plan.",
+                },
+            },
+            {
+                "type": "response_item",
+                "payload": {
+                    "type": "custom_tool_call",
+                    "name": "exec",
+                    "input": (
+                        'const patch = "*** Begin Patch\\n*** Update File: '
+                        'plans/typed-result/B2B_PROGRESS.md\\n'
+                        '+Unblock action: The owner at '
+                        '`plans/typed-result/REUNION_INTEGRATION_PROGRESS.md` must merge it.\\n'
+                        '*** End Patch"; const options = {workdir: "'
+                        + str(self.root)
+                        + '"};'
+                    ),
+                },
+            },
+            {
+                "type": "response_item",
+                "payload": {
+                    "type": "custom_tool_call",
+                    "name": "exec",
+                    "input": (
+                        'const patch = "*** Begin Patch\\n*** Update File: '
+                        'plans/dotnet-11/B2B_WORKFLOW_UNIONS_PROGRESS.md\\n'
+                        '+Unblock action: The owner at `plans/typed-result/B2B_PROGRESS.md` '
+                        'must finish it.\\n*** End Patch"; const options = {workdir: "'
+                        + str(self.root)
+                        + '"};'
+                    ),
+                },
+            },
+        ]
+        transcript.write_text(
+            "\n".join(json.dumps(record) for record in records),
+            encoding="utf-8",
+        )
+        claimed = transcript_ledgers(records, self.root)
+        self.assertEqual({b2b.resolve(), workflow_unions.resolve()}, claimed)
+
+        result = evaluate(
+            {
+                "cwd": str(self.root),
+                "transcript_path": str(transcript),
+                "last_assistant_message": f"{union_steps}\n\n{b2b_steps}",
+            }
+        )
+        self.assertEqual({}, result)
+
     def test_relative_reference_resolves_only_against_its_tool_workdir(self):
         alternate_root = (Path(self.temp.name) / "unrelated-main-checkout").resolve()
         alternate_ledger = self.write_plan_pair(
