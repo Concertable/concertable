@@ -33,13 +33,17 @@ branch update flow.
 
 ## Repository slash commands
 
-Canonical command instructions live under `.agents/commands/`. Claude and Codex command entry points
+Canonical command instructions live under `.agents/commands/`. Agent-specific command entry points
 must be thin wrappers that reference the matching canonical file so their behavior cannot drift.
 
-Codex discovers those wrappers through the repo's `concertable` plugin under
-`plugins/concertable/commands/`. Install the repo marketplace once, then install the plugin:
+Claude discovers its wrapper under `.claude/commands/`. Codex plugin commands are not a command
+surface: the plugin loader migrates them into `source-command-*` skills. Keep Codex command wrappers
+under `.codex/prompts/` and copy them into the user prompt directory:
 
 ```powershell
-codex plugin marketplace add <repo-root>
-codex plugin add concertable@concertable
+New-Item -ItemType Directory -Force "$env:USERPROFILE\.codex\prompts" | Out-Null
+Copy-Item ".codex\prompts\*.md" "$env:USERPROFILE\.codex\prompts\" -Force
 ```
+
+Codex exposes these custom commands under the `/prompts:` namespace; `techdebt.md` is invoked as
+`/prompts:techdebt`.
