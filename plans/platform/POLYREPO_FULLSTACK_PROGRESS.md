@@ -3,9 +3,9 @@
 - Plan: `plans/platform/POLYREPO_FULLSTACK_PLAN.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-platform_polyrepo_import-boundary` — dedicated Phase 3 import-boundary checkout, current with `origin/main` at `c72b058af` through merge `26d84f69d`.
 - Branch: `Feature/platform_polyrepo_import-boundary` — direct owner of the remaining Phase 3 import-boundary work.
-- PR: **import-boundary PR [#428](https://github.com/Concertable/concertable/pull/428) OPEN** at verified remote head `15b74a2cf`, base `main`, not draft, no labels. Current main `c72b058af` is merged, rebuilt, boundary-proved, review-clean, and published; this transport checkpoint is the sole local tail. Prior mobile-carve PR [#416](https://github.com/Concertable/concertable/pull/416) merged as `83a3f49a1`; publish-first mobile-retarget PR [#413](https://github.com/Concertable/concertable/pull/413) merged as `62646f4cd` and republished `@concertable/mobile@0.1.0-alpha.0.2571`; carved-web CSS [#405] (`d9c62e2c5`); Phase 3b [#389] (`1cbeb2175`); Phase 3a [#378] (`fba490e25`); Phase 2 [#360] (`a3f9535`); Phase 1 [#301]+[#319].
+- PR: **import-boundary PR [#428](https://github.com/Concertable/concertable/pull/428) OPEN** at verified remote head `149f7a4db`, base `main`, not draft, no labels. Replacement run 31308852277 completed 45/46 jobs green but its final B2B Venue integration runner remains stuck; the same exact head passed the Venue module locally 25/25 in 1.4 minutes. This diagnostic checkpoint is the sole local tail. Prior mobile-carve PR [#416](https://github.com/Concertable/concertable/pull/416) merged as `83a3f49a1`; publish-first mobile-retarget PR [#413](https://github.com/Concertable/concertable/pull/413) merged as `62646f4cd` and republished `@concertable/mobile@0.1.0-alpha.0.2571`; carved-web CSS [#405] (`d9c62e2c5`); Phase 3b [#389] (`1cbeb2175`); Phase 3a [#378] (`fba490e25`); Phase 2 [#360] (`a3f9535`); Phase 1 [#301]+[#319].
 - Dependency/package gates: **#413 FE publication DONE** — successful descendant run [31197751649](https://github.com/Concertable/concertable/actions/runs/31197751649) published and feed-verified `@concertable/mobile@0.1.0-alpha.0.2571` with the brand assets. This unblocks the follow-up mobile carve gate. No `api/**` → no backend platform-sync.
-- Last reconciled: 2026-08-09 — pushed reviewed head `15b74a2cf`; local, remote branch, and PR `headRefOid` were exactly equal. This transport checkpoint is the sole local tail and must be pushed before replacement checks are accepted.
+- Last reconciled: 2026-08-09 — exact-head run 31308852277 reached 45 completed green jobs, then its B2B Venue integration job remained in-progress abnormally long. A short detached worktree at `149f7a4db` ran `scripts/integration.ps1 venue` green (25/25, 1.4 minutes) and was removed; this proves a runner-specific hang rather than a branch regression.
 
 ## Current state
 
@@ -24,7 +24,7 @@ from `app/mobile/TECH_DEBT.md`.
 
 ## Next Steps
 
-**1. Finish and land import-boundary PR #428.** Commit and push this transport checkpoint, verify exact head equality, then require replacement checks. Recheck currency immediately at terminal green and enqueue full E2E if current. Phase 3 becomes terminal only after the merge is recorded and its recovery state is transferred to a closeout worktree.
+**1. Finish and land import-boundary PR #428.** Commit and push this exact-head Venue diagnostic checkpoint, verify equality, and require the resulting independent replacement run; do not cancel or retry stuck run 31308852277. Recheck currency immediately at terminal green and enqueue full E2E if current. Phase 3 becomes terminal only after the merge is recorded and its recovery state is transferred to a closeout worktree.
 
 Then Phase 4 (FE platform-sync) and Phase 5 (produce full-stack repos, D-A/D-B) per the plan.
 Gate: each item ends with its own green carve/build proof on its PR.
@@ -54,6 +54,7 @@ Gate: each item ends with its own green carve/build proof on its PR.
 - **Third current-main gate (2026-08-09):** after merging base `9a54efd58` as `92e5be5df`, the initial parallel `dotnet build api/Concertable.slnx --no-restore` hit a transient Windows `CS0016` invalid output-handle failure in `Concertable.Payment.Api`; the single-threaded retry passed with 0 errors. The merge changes only techdebt command/plugin metadata, so the existing clean Node 20 boundary proof remains applicable.
 - **Midnight integration blocker fix (2026-08-09):** CI run 31284847017 failed 11 `ContractApiTests` after the test host crossed UTC midnight: `SeedCatalog` retained the prior day's captured clock while `OpportunityRequestBuilders` recomputed `DateTime.UtcNow.AddMonths(1)`, colliding with seeded concert 45. Isolated fix PR #440 made every generated opportunity use the fixture seed clock. `scripts/integration.ps1 concert` passed B2B Concert 144/144 and Customer Concert 11/11; PR-head run 31287014734 and merge-group runs 31287569394/31287815716 passed. Publication/restore run 31288225192 and sync PR #442 completed green.
 - **Post-blocker current-main gate (2026-08-09):** after merging `origin/main` `c72b058af` as `26d84f69d`, `dotnet build api/Concertable.slnx --no-restore --maxcpucount:1` passed with 0 errors. In a clean disposable `node:20-bookworm` container, `npm ci`, `npm run test:boundaries`, and `npm run lint:boundaries` passed; all 11 workspace scans reported zero violations (53/85/77/2 web surfaces, 28/18 mobile surfaces, and 85/203/98/64/17 tier modules).
+- **Exact-head Venue diagnostic (2026-08-09):** after replacement run 31308852277 stalled with 45/46 jobs green and only the B2B Venue integration job still live, a short detached worktree at exact PR head `149f7a4db` ran `scripts/integration.ps1 venue`. Docker/Testcontainers started normally and all 25 Venue integration tests passed in 1.4 minutes with clean teardown. The diagnostic worktree was removed; the GitHub runner was left untouched for its own terminal classification.
 - **Standing frontend gate (2026-08-08):** clean official Node 20 container; `npm ci` green; `npm run build:packages` built all five tiers; all four web builds green (3713 customer, 4404 venue, 4394 artist, 1757 business modules); `tsc --noEmit` green for `mobile/customer` and `mobile/b2b`; `git diff --check` green.
 
 - **Mobile carve matrix implementation (2026-08-07):** `.github/workflows/test.yml` now lists all six
@@ -119,6 +120,13 @@ Gate: each item ends with its own green carve/build proof on its PR.
 - **Metro/nativewind/tailwind runtime configs left for Phase 3.** The Phase 2 gate is build + typecheck; the mobile app's metro `watchFolders`/nativewind `input`/tailwind `content` still point at `../shared` source. The app already resolves `@concertable/shared`/`customer` as symlinked packages the same way, so no in-monorepo runtime regression, but className/class-generation on the precompiled dist is unproven — a first-class Phase 3 item, not a silent gap.
 
 ## Event log
+
+### 2026-08-09 — exact-head Venue runner hang disproved locally
+
+- Action: Investigated an abnormally long final job in replacement run 31308852277 without cancelling or retrying it. Created a short detached worktree at exact head `149f7a4db`, ran the affected module through the integration-debug workflow, then removed the clean diagnostic worktree.
+- Evidence: GitHub completed 45/46 jobs green and left only B2B Venue integration running; the local exact-head `scripts/integration.ps1 venue` run passed 25/25 in 1.4 minutes with healthy Testcontainers startup and teardown.
+- Outcome: the outstanding GitHub job is a runner-specific hang, not a code regression. This evidence checkpoint creates an independently classified replacement head without changing product code or manually retrying the hung run.
+- Follow-up: commit/push this checkpoint, require its complete replacement run, then perform the final currency check and enqueue full E2E.
 
 ### 2026-08-09 — post-blocker reviewed head pushed and verified
 
