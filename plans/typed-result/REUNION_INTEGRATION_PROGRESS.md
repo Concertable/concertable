@@ -125,7 +125,7 @@ implementation without changing the Payment delivery order.
 
 ## Next Steps
 
-Normalize PR #453 to full E2E and enqueue exact remote head `b4e7731a6` into the merge queue. After
+Enqueue exact remote PR head `b4e7731a6` into the merge queue with the selected full-E2E tier. After
 the source PR lands, move the recovery state to the required docs closeout worktree and own Payment
 package publication plus the generated platform-sync PR through green and merged.
 
@@ -438,6 +438,15 @@ package publication plus the generated platform-sync PR through green and merged
   delivery-ready and provide the exact remaining-call-site inventory.
 
 ## Event log
+
+### 2026-08-10 — full-E2E tier confirmed
+
+- Action: Inspected PR #453's live labels and every commit trailer in the remote PR range before queue
+  admission.
+- Evidence: No `skip-e2e`, `skip-e2e-ui`, or `full-e2e` label is present; no `Skip-E2E` or
+  `Skip-E2E-UI` trailer is present. The default full-E2E tier therefore applies without an override.
+- Outcome: PR #453 is normalized for both API and UI E2E suites in the merge group.
+- Follow-up: Enqueue exact remote head `b4e7731a6` and verify queue admission.
 
 ### 2026-08-10 — implementation PR checks passed
 
