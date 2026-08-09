@@ -77,17 +77,18 @@ their current branch and worktree rather than fragmenting in-flight work.
 
 - [ ] 🟠 **B2B typed-result migration.** Exclusive owner: `Refactor/B2BTypedResultMigration` at
   `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-B2BTypedResultMigration`.
-  **Authoritative additional work is active but unpushed on Tommy's other workstation as of
-  2026-08-09.** The recorded branch/worktree above is therefore not a complete remote inventory.
+  **Authoritative work is active and unpushed in the recorded local worktree as of 2026-08-09.**
+  GitHub remains an incomplete inventory because no branch PR or remote branch exists.
   Payment-independent checkpoints 1-5 are complete. Payment PR #392, platform-sync PR #420, and
-  platform `0.1.0-alpha.0.857` discharged the package gate; checkpoints 6-7 own Concert
-  payment/cancel/finish workflows and final B2B FluentResults removal. After this docs change lands,
-  sync the other workstation and resume that owner. Do not recreate, supersede, or independently
-  apply the Reunion carrier cutover to B2B.
+  platform `0.1.0-alpha.0.857` discharged the old package gate; checkpoints 6-7 own Concert
+  payment/cancel/finish workflows and final B2B FluentResults removal. Preserve the branch unchanged
+  until the Reunion Phase 4 generated platform-sync PR merges, then reconcile it once against that
+  integrated baseline. Do not recreate, supersede, or independently apply the Reunion carrier cutover.
 - [ ] 🟠 **Customer Ticket purchase/checkout slice.** Exclusive owner:
   `Feature/TypedResultMigrationPhase2` at
   `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\TypedResultMigrationPhase2`.
-  PR #282 contains one unique commit but was 763 commits behind `origin/main` at the 2026-08-09 audit.
+  PR #282 contains one unique commit and is 776 commits behind current `origin/main` at the
+  2026-08-09 reconciliation.
   Its Ticket/Concert semantics remain exclusive, but its old carrier and CFE composition should not
   be revived wholesale. Recreate the slice from the post-Reunion integration baseline, recovering
   behavior and tests deliberately rather than rebasing the historical branch. Do not close or mutate
@@ -96,8 +97,8 @@ their current branch and worktree rather than fragmenting in-flight work.
 - [ ] 🟠 **Customer non-Payment outcomes and lookups.** Exclusive owner:
   `Feature/typed-result_customer-outcomes` at
   `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_customer-outcomes`.
-  Non-draft PR #425 is open at `e60219f7d`. It contains 29 unique commits and was 104 commits behind
-  `origin/main` at the 2026-08-09 audit. Its semantic work does not exist elsewhere; preserve it,
+  Non-draft PR #425 is open at `e60219f7d`. It contains 29 unique commits and is 117 commits behind
+  current `origin/main` at the 2026-08-09 reconciliation. Its semantic work does not exist elsewhere; preserve it,
   update it once against the shared integration baseline, rerun its normal delivery gates, then land
   it and its generated platform sync. Do not duplicate Reunion package or carrier edits on this PR.
   - Scope: Customer Review, Preference, User, Venue, and Artist application/module contracts;
@@ -117,12 +118,12 @@ their current branch and worktree rather than fragmenting in-flight work.
 - [ ] 🟠 **Auth expected-outcome migration.** Exclusive owner:
   `Feature/typed-result_auth-outcomes` at
   `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_auth-outcomes`.
-  **Authoritative additional work is active but unpushed on Tommy's other workstation as of
-  2026-08-09.** The recorded branch/worktree above is therefore not a complete remote inventory.
-  The Payment platform gate is discharged. After this docs change lands, sync the other workstation,
-  reconcile its exact local state with the shared Reunion integration baseline, then continue its
-  verification, preflight, and delivery. Do not recreate, supersede, or independently apply the
-  Reunion carrier cutover to Auth.
+  **Authoritative work is active and unpushed in the recorded local worktree as of 2026-08-09.**
+  GitHub remains an incomplete inventory because no branch PR or remote branch exists.
+  The Payment platform gate is discharged. Preserve the branch unchanged until the Reunion Phase 4
+  generated platform-sync PR merges, then reconcile it once against that integrated baseline and
+  continue verification, preflight, and delivery. Do not recreate, supersede, or independently apply
+  the Reunion carrier cutover to Auth.
   - Scope: audit `IAuthService` null/bool/enum/void outcomes; model ordinary absence with `Option<T>`
     and caller-actionable refusal with operation-specific Result contracts where that distinction is
     useful; map owned in-process results to Duende/Razor/protocol behavior at the Auth edge.
@@ -148,6 +149,14 @@ their current branch and worktree rather than fragmenting in-flight work.
   the repository-wide consumer migration in the generated platform-sync PR. B2B, Auth, Customer, and
   any other semantic owner consume that integrated baseline; they do not repeat package or carrier
   substitutions independently.
+
+- [ ] 🟠 **Semantic Shared.Api HTTP terminals.** Existing owner:
+  `Refactor/typed-result_http-terminals` at
+  `C:\Users\TommySeery\source\repos\Concertable.worktrees\Refactor\typed-result_http-terminals`.
+  Its semantic `*OrProblem`, `ToOkOrNotFound`, and `ToOkOrNoContent` implementation is preserved as a
+  local checkpoint, not a competing package PR. Finish and review it in parallel with Reunion Phase 1,
+  then incorporate it into the one Reunion Shared producer PR and generated platform-sync migration.
+  Customer PR #425 waits on that integrated Phase 4 baseline rather than a separate terminal package.
 
 ### Ready — may be planned and implemented in parallel
 
@@ -187,13 +196,13 @@ and Auth owners remain in flight.
 ## Parallel dependency map
 
 ```text
-Reunion 7bf5f66 local package battle test
-└── Reunion package publication
-    └── Shared producer cutover ──publish── generated platform-sync consumer migration
-        ├── B2B active owner reconciliation
-        ├── Auth active owner reconciliation
-        ├── Customer non-Payment PR #425 reconciliation
-        └── Customer Ticket PR #282 semantic recreation
+Reunion 7bf5f66 battle test ──Reunion publication──┐
+semantic HTTP-terminal local checkpoint ──────────┴──Shared producer cutover
+                                                      └──publish── generated platform-sync consumer migration
+                                                                  ├── B2B active owner reconciliation
+                                                                  ├── Auth active owner reconciliation
+                                                                  ├── Customer non-Payment PR #425 reconciliation
+                                                                  └── Customer Ticket PR #282 semantic recreation
 
 All service tracks complete
 └── Shared/background audit
@@ -203,10 +212,10 @@ Released .NET native unions
 └── Concertable-owned error-union cutover
 ```
 
-B2B and Auth have authoritative unpushed work on another workstation. After this docs change lands,
-that workstation must sync before either owner is classified from remote state. Service diffs remain
-service-owned; the cross-cutting Reunion substitution happens once through the Shared producer and
-generated platform-sync consumer path.
+B2B and Auth have authoritative unpushed local work that is now inventoried. Preserve both worktrees
+until the integrated platform baseline lands; remote state alone remains insufficient. Service diffs
+remain service-owned; the cross-cutting Reunion substitution happens once through the Shared producer
+and generated platform-sync consumer path.
 
 ## Shared migration rules
 
