@@ -63,11 +63,13 @@ SHA. No Phase 1 edit is safe until the source workstation supplies that exact co
 
 ## Next Steps
 
-Make the exact Reunion commit `7bf5f66` available at
-`C:\Users\TommySeery\source\repos\Reunion` by syncing the source workstation or pushing a branch that
-contains it to `tomjseery/Reunion`. Then verify the full commit identity and execute the remainder of
-Phase 1 only: pack both matching packages, inspect the AspNetCore dependency, perform the local-only
-package/carrier substitution, run the complete Phase 1 gate, and commit without pushing or publishing.
+Blocked: Reunion commit `7bf5f66` is absent from the local repository and every fetched `tomjseery/Reunion` ref.
+Unblock action: On the workstation that contains it, run `git -C C:\Users\TommySeery\source\repos\Reunion push origin 7bf5f66:refs/heads/concertable-7bf5f66`.
+Resume when: After `git -C C:\Users\TommySeery\source\repos\Reunion fetch origin`, `git -C C:\Users\TommySeery\source\repos\Reunion cat-file -e "7bf5f66^{commit}"` exits 0.
+
+Then verify the full commit identity and execute the remainder of Phase 1 only: pack both matching
+packages, inspect the AspNetCore dependency, perform the local-only package/carrier substitution, run
+the complete Phase 1 gate, and commit without pushing or publishing.
 
 ## Completed work
 
@@ -199,6 +201,17 @@ package/carrier substitution, run the complete Phase 1 gate, and commit without 
   waits for the Phase 4 generated platform-sync PR to merge before PR #425 is updated once.
 
 ## Event log
+
+### 2026-08-09 — blocker handoff made actionable
+
+- Action: Replaced the self-referential blocked-plan continuation with an exact other-workstation
+  push action and an objective local resume condition.
+- Evidence: Reunion `7bf5f66` remains absent after the latest fetch and object audit; the target
+  `concertable-7bf5f66` remote branch does not exist locally or among fetched refs.
+- Outcome: The ledger no longer sends a future session back into an unchanged blocker audit. Phase 1
+  remains untouched until the exact commit becomes fetchable.
+- Follow-up: Push the exact object from the workstation that owns it, then resume only after the local
+  `git cat-file` gate succeeds.
 
 ### 2026-08-09 — Reunion source blocker reconfirmed on resume
 
