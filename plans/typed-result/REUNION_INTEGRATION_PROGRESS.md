@@ -3,12 +3,14 @@
 - Plan: `plans/typed-result/REUNION_INTEGRATION_PLAN.md`
 - Worktree: not created
 - Branch: `Feature/typed-result_reunion-integration` (reserved; not created)
-- PR: not opened for implementation; docs design PR #443 merged as `fd0b666b9`
+- PR: not opened for implementation; docs design PR #443 merged as `fd0b666b9`; sub-plan
+  reconciliation PR #445 merged as `d6a572e0d`
 - Dependency/package gates: docs design merged; Reunion `7bf5f66` is available but unpublished; the
   B2B, Auth, Customer, Customer Ticket, and semantic HTTP-terminal owners are inventoried and must
   consume the one generated platform-sync baseline rather than perform local carrier cutovers
-- Last reconciled: 2026-08-09 against Concertable `origin/main` `c72b058af`, GitHub PR metadata, all
-  five local typed-result worktrees, and Reunion commit `7bf5f66`
+- Last reconciled: 2026-08-09 against the five typed-result worktrees at Concertable `origin/main`
+  `c72b058af`, sub-plan delivery on current main `d6a572e0d`, GitHub PR metadata, and Reunion commit
+  `7bf5f66`
 
 ## Current state
 
@@ -17,6 +19,10 @@ merged the roadmap, plan, and this recovery ledger as `fd0b666b9`; closeout PR #
 `c72b058af`. No Concertable or Reunion runtime file, package reference, existing migration branch, or
 existing PR was changed by either docs PR. The implementation worktree, branch, packages, and PR do
 not exist yet.
+
+Docs-only PR #445 published the reconciled B2B, Auth, Customer, and HTTP-terminal plan pairs plus the
+central dependency map as `d6a572e0d`. It contained only eleven Markdown files, passed a clean docs
+review, bypassed E2E through the sanctioned admin path, and triggered no package or platform sync.
 
 GitHub has two open migration PRs: #425 contains unique Customer non-Payment work and must be
 preserved; #282 contains one obsolete-baseline Ticket commit whose semantics must later be recreated.
@@ -57,6 +63,8 @@ publish packages, or start the Concertable producer cutover in that phase.
   owners, not missing or superseded work.
 - Reconciled the exact B2B, Auth, Customer, Ticket, and HTTP-terminal local heads, divergence, dirty
   state, PR ownership, and Reunion dependency gates after the docs merge.
+- Published the reconciled parent/roadmap/sub-plan state on main through docs-only PR #445 as
+  `d6a572e0d`.
 - Roadmap reconciliation, this implementation plan, and its companion ledger are created in
   `this commit` on the isolated docs branch based on current `origin/main`.
 - Docs design PR #443 merged as `fd0b666b9`; its source worktree and local branch were removed, and
@@ -91,6 +99,8 @@ publish packages, or start the Concertable producer cutover in that phase.
   `api/**` path, so it triggered no package publication or platform-sync PR.
 - Closeout docs review of `fd0b666b9..1679726ab` found no issues; PR #443 paths were reconfirmed
   meta-only and GitHub reported no open platform-sync PR.
+- Full docs review of `c72b058af..8386fe1fe` found no issues across all eleven reconciliation paths;
+  PR #445 merged from that exact head as `d6a572e0d` with no `api/**` path.
 
 ## Reviews
 
@@ -242,6 +252,16 @@ publish packages, or start the Concertable producer cutover in that phase.
   and Ticket wait for the generated Phase 4 platform-sync baseline.
 - Follow-up: land this docs reconciliation, then execute the Reunion and HTTP-terminal local
   checkpoints in parallel.
+
+### 2026-08-09 — sub-plan reconciliation delivered
+
+- Action: Pushed reviewed head `8386fe1fe`, opened PR #445, added `skip-e2e`, verified its eleven
+  Markdown-only paths, and admin-merged it through `/merge-docs`.
+- Evidence: PR #445 state `MERGED`; merge commit `d6a572e0dbffa958e11b057b06d2f24d6922b868`;
+  no `api/**`, package, workflow, or runtime path; source worktree and branch removed.
+- Outcome: every active typed-result owner now has its plan and exact Reunion dependency on main. No
+  package publication, platform sync, implementation PR mutation, or E2E run occurred.
+- Follow-up: start the Reunion Phase 1 and HTTP-terminal local checkpoints in parallel.
 
 ## Resume prompt
 
