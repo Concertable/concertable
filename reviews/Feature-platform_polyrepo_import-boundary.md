@@ -2,7 +2,7 @@
 
 > **This file is a work order, not a discussion.** If you're handed this file, fix the open `[ ]` findings directly and report what changed — don't re-present them as options or ask which to do. Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `92e5be5df58d0f2deaba600387fba1b8b1cfaaab`  _(2026-08-09)_
+**Reviewed up to commit:** `26d84f69dcb6d5615a1a4fe30c34dd22fc70d982`  _(2026-08-09)_
 
 **Security-reviewed up to commit:** `da3b75a77d771e94bac76df65b1ed6eb135c3772`  _(2026-08-08)_
 
@@ -39,3 +39,9 @@ No issues found. Branch-authored changes are plan/review delivery checkpoints on
 > Range reviewed: `b9425e5d..92e5be5d`.
 
 No issues found. Branch-authored changes are plan delivery checkpoints only; merge `92e5be5df` imports already-landed techdebt command/plugin documentation and metadata from `origin/main`. It changes no PR-owned frontend boundary, workflow, package, or test-selection path.
+
+## Incremental review — 2026-08-09 (post-blocker current-main merge)
+
+> Range reviewed: `92e5be5d..26d84f69`.
+
+No issues found. Branch-authored changes are delivery-ledger checkpoints only; merge `26d84f69d` imports already-landed, separately reviewed changes, including the midnight integration fix/platform sync and frontend error-boundary work. The merge was conflict-free apart from Git's automatic lockfile reconciliation, the PR net diff remains limited to its boundary/workflow implementation plus plan/review artifacts, and the merged-tree solution and clean Node 20 boundary gates pass.
