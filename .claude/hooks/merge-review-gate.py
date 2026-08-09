@@ -18,6 +18,11 @@ exact failure this guard exists to prevent. Non-merge commands always exit 0.
 The review file is what `code-review` / `docs-review` write:
 `reviews/<branch-with-slashes-as-dashes>.md`, carrying a top-of-file
 `**Reviewed up to commit:** \`<sha>\`` marker and `- [ ]` / `- [x]` findings.
+
+Security layer: when the reviewed range touches security-sensitive paths (Auth,
+Payment, *.Contracts, controllers, auth/authz/secret/credential files, CI
+workflows), the merge also requires a current `**Security-reviewed up to commit:**
+\`<sha>\`` marker — stamped by `code-review` Step 1d after it runs `/security-review`.
 """
 
 import json
@@ -33,6 +38,26 @@ def git(*args):
 
 
 _ENABLE_TOKENS = ("--auto", "--admin", "--merge", "--squash", "--rebase")
+
+# Paths whose change makes a diff security-sensitive — a merge touching any of
+# these needs a current `Security-reviewed up to commit:` marker too. Kept
+# targeted (concrete high-value areas) so unrelated merges are never blocked.
+_SECURITY_PATTERNS = (
+    re.compile(r"(^|/)Concertable\.Auth"),
+    re.compile(r"(^|/)Concertable\.Payment"),
+    re.compile(r"\.Contracts(/|\.)"),
+    re.compile(r"Controller[A-Za-z]*\.cs$"),
+    re.compile(r"^\.github/workflows/"),
+    re.compile(r"(?i)(authoriz|authentic|credential|\bsecret|password|apikey|api_key)"),
+)
+
+
+def touches_security(changed_paths):
+    for path in changed_paths:
+        for pat in _SECURITY_PATTERNS:
+            if pat.search(path):
+                return path
+    return None
 
 
 def is_merge_enable(command):
@@ -115,6 +140,38 @@ def main():
             "in reviews/" + slug + ".md. Address (or explicitly [wontfix]) every "
             "`- [ ]` item, then merge. First: " + open_findings[0][:120]
         )
+
+    # Security layer: a security-sensitive range also needs a current security marker.
+    # Detection failure fails OPEN (the primary review gate already fired) so an
+    # unresolvable base can't wedge every merge; a resolvable sensitive path fails CLOSED.
+    try:
+        # origin/main not local main: local main drifts stale and would false-positive
+        # the security check by dragging unrelated commits into the range.
+        try:
+            base = git("merge-base", "origin/main", "HEAD")
+        except Exception:  # noqa: BLE001
+            base = git("merge-base", "main", "HEAD")
+        changed = git("diff", "--name-only", base + "..HEAD").splitlines()
+    except Exception:  # noqa: BLE001 — can't classify → don't block on the security sub-check
+        changed = []
+
+    sensitive = touches_security(changed)
+    if sensitive:
+        sm = re.search(r"Security-reviewed up to commit:.*?`([0-9a-fA-F]{7,40})`", review)
+        if not sm:
+            block(
+                "MERGE GATE (security layer): '" + sensitive + "' is security-sensitive but "
+                "reviews/" + slug + ".md has no `Security-reviewed up to commit:` marker. Run "
+                "/security-review (or re-run /code-review, which runs it on sensitive paths and "
+                "stamps the marker), THEN merge."
+            )
+        sreviewed = sm.group(1).lower()
+        if not (head.lower().startswith(sreviewed) or sreviewed.startswith(head.lower())):
+            block(
+                "MERGE GATE (security layer): security review is STALE — reviews/" + slug + ".md "
+                "security marker is at " + sreviewed + " but HEAD is " + head[:12] + ". Commits "
+                "landed since the security review. Re-run /security-review, then merge."
+            )
 
     sys.exit(0)  # reviewed, current, clean → allow the merge
 

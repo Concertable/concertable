@@ -1,14 +1,11 @@
 # Customer non-Payment outcomes and lookups
 
-> Roadmap item: **Customer non-Payment outcomes and lookups** in
-> [`TYPED_RESULT_MIGRATION_ROADMAP.md`](./TYPED_RESULT_MIGRATION_ROADMAP.md).
->
 > **Next steps live in @plans/typed-result/CUSTOMER_OUTCOMES_PROGRESS.md → `## Next Steps`.**
 
 ## Objective
 
 Migrate the Customer-owned Review, Preference, User, Venue, and Artist in-process contracts to the
-smallest owned functional shape that represents their real outcomes:
+smallest Reunion-backed functional shape that represents their real outcomes:
 
 - operation-specific `Result<TValue, TError>` only for expected failures a caller can act on;
 - `Option<T>` for ordinary absence at application and module boundaries;
@@ -60,7 +57,7 @@ it must not change `ITicketModule`, `TicketSummary`, Ticket tests, or Concert te
 
 Also out of scope:
 
-- shared Kernel or Shared.Api API changes;
+- shared Kernel or Shared.Api source/API changes or local carrier/terminal implementations;
 - cross-service runtime references or changes to integration-event payloads/handlers;
 - persistence/model changes and migrations;
 - Customer-wide FluentResults cleanup.
@@ -221,6 +218,9 @@ tier and receives no skip label.
 
 ### Phase 5 — Scope audit and delivery
 
+- Reconcile with current main now and migrate only Customer-owned imports and HTTP-edge terminals to
+  directly owned published Reunion packages. Audit the resulting package topology separately from the
+  Payment delivery chain; this scope excludes Payment.Client and may be independently deliverable.
 - Run the five-module nullable/collection/carrier inventories and the combined Review, Preference,
   User, Venue, Artist, Shared.Api architecture, Release solution, and Customer carve gates.
 - Confirm the diff contains no Ticket, Concert, Customer Payment client/mock, checkout/purchase,
@@ -231,14 +231,13 @@ tier and receives no skip label.
   full merge-queue E2E tier, and follow the generated platform-sync PR to green/merged. A red sync is
   part of this feature's delivery and must be fixed before close-out.
 - Only after the feature PR and its publication/platform-sync lifecycle are terminal: record the final
-  evidence in the ledger, tick **Customer non-Payment outcomes and lookups** in
-  `TYPED_RESULT_MIGRATION_ROADMAP.md`, and never delete the roadmap. Delete this plan and ledger
-  together in the following close-out change under the repository lifecycle rules.
+  evidence in the ledger, then delete this plan and ledger together in the following close-out change
+  under the repository lifecycle rules.
 
 ## Definition of done
 
 - Review create and Preference create/update expose only operation-owned expected failures with exact,
-  stable definitions and central HTTP terminals.
+  stable definitions and the published Reunion-backed central HTTP terminals.
 - All ordinary single-item application/module absence in the five scoped modules is `Option<T>`;
   persistence lookup contracts remain nullable.
 - All scoped returned collection contracts are successful empty `IReadOnlyList<T>` values, except

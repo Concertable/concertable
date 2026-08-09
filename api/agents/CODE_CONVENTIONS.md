@@ -121,6 +121,14 @@ if (condition)
 }
 ```
 
+## Empty blocks — compact braces
+
+Write deliberately empty blocks with `{ }` on the same line:
+
+```csharp
+catch (OperationCanceledException) { }
+```
+
 ## Optional parameters — don't add one that callers must skip with a named argument
 
 An optional parameter earns its place only when call sites actually pass it *positionally* and naturally. The moment varying one argument forces a call site to name-skip past another —
