@@ -5,12 +5,12 @@
 - Branch: `Refactor/launch_deal_strategy_registration`
 - PR: not opened
 - Dependency/package gates: none; this is an internal B2B refactor
-- Last reconciled: 2026-08-09; Phase 4 is complete in commit `02730b0da`; post-commit fetch found
-  `origin/main` at `82644721f`, with the branch 4 commits behind and 15 commits ahead
+- Last reconciled: 2026-08-09; all five implementation phases are complete; Phase 5 merged
+  `origin/main` at `b5af92fdc` through `514d5a0e5` and is verified in this checkpoint
 
 ## Current state
 
-Phases 1, 2, 3, and 4 are complete. Phase 1 is in commit `506bc35e4`; Phase 2 is in commit
+All five implementation phases are complete. Phase 1 is in commit `506bc35e4`; Phase 2 is in commit
 `4a741fa50`; Phase 3 is in commit `0a8320289`; Phase 4 is in commit `02730b0da` after merging
 `origin/main` at `c72b058afe` through merge commit `dff81e44e`.
 
@@ -21,32 +21,27 @@ workflow steps are registered once, and both registries are derived from the sam
 `IConcertWorkflowFactory` remains the named business factory and delegates through the generic strategy
 factory, leaving the module-local generic factory as the only keyed-service lookup.
 
-Phase 4's Concert unit gate, Concert integration gate, and full-solution build are terminal green.
-No PR exists and no package gate applies. A post-commit fetch found current `origin/main` at
-`82644721f`; the clean branch is 4 commits behind and 15 commits ahead, so Phase 5 must merge that
-base drift before editing. No open platform-sync PR exists.
+The Deal module now owns an equivalent scoped generic strategy factory and validated vertical builder
+for `IDealMapper` and `IDealUpdater`; both named facades delegate through the factory, all eight leaves
+are keyed singleton registrations, and exact coverage is required before DI mutates. The unused
+`IDealStrategy` marker and stale Payment strategy claim are gone. A self-verifying architecture gate
+confines frozen deal-type maps to workflow registries, keyed-provider access to module composition and
+factories, and keyed lookup to the two module-local factory implementations.
+
+Phase 5's Deal/Concert unit gates, Concert integration gate, and full-solution build are terminal green.
+The final Phase 5 diff review found no open findings. No PR exists and no package gate applies. The
+branch is based on current `origin/main` at `b5af92fdc`; implementation code review is the next gate.
 
 ## Next Steps
 
-Implement Phase 5 only — Deal-module families and convention cleanup:
+Run the implementation code review only:
 
-1. Merge current `origin/main` at `82644721f` into the clean branch and rebuild the affected Deal and
-   Concert project graphs before editing.
-2. Add the Deal-local strategy factory and validated vertical builder, then migrate `DealMapper` and
-   `DealUpdater` without introducing a Concert runtime reference or cross-module registry.
-3. Preserve EF TPH creation/update validation and JSON-polymorphic contract shapes.
-4. Delete the unused `IDealStrategy` marker and correct the stale Deal architecture claim that Payment
-   still provides `IStripeValidationStrategy`.
-5. Update `api/agents/CODE_PATTERNS.md` with the module-local factory/builder pattern and the established
-   factory/resolver/mapper/renderer/serializer/calculator suffix distinctions.
-6. Add the planned architecture gate for frozen maps, direct keyed-service use, exact family coverage,
-   and the module-local factory lookup allowlist.
-7. Run Deal and Concert unit/integration gates plus `dotnet build api/Concertable.slnx` with short
-   artifact roots; the merge queue, not local execution, owns the required full E2E tier.
-8. Review the final diff, update this ledger, check off Phase 5, and commit that verified phase.
-
-Do not begin review or delivery in the same turn; hand back after the Phase 5 commit and ledger
-checkpoint.
+1. Verify the Phase 5 checkpoint is committed and the worktree has no unrelated dirty paths.
+2. Run `code-review` for the complete branch diff against `origin/main`, including correctness,
+   module-boundary, strategy-registration, architecture-gate, and missing-test lenses.
+3. Record the review range, artifact, watermark, and every finding/disposition in this ledger.
+4. Do not address findings or begin PR delivery in the same turn; hand back after the review
+   checkpoint.
 
 ## Completed work
 
@@ -77,6 +72,10 @@ checkpoint.
   strategy families. The obsolete parallel registry builder and `AddConcertWorkflows` composition path
   are gone, and the named workflow factory delegates through the generic strategy factory in commit
   `02730b0da` (`refactor(concert): converge workflow registration`).
+- Phase 5 added the Deal-local scoped generic strategy factory and atomic validated builder, migrated
+  `DealMapper` and `DealUpdater` to exact vertical registrations, removed the unused marker and stale
+  Payment claim, documented the pattern and suffix semantics, and added a self-verifying architecture
+  gate in this checkpoint.
 
 ## Verification
 
@@ -147,6 +146,19 @@ checkpoint.
 - 2026-08-09: `git diff --check` passed; the removed workflow composition API has no remaining
   `api/` references; direct keyed lookup remains confined to the generic strategy factory and its
   focused tests; the final Phase 4 diff review found no open findings.
+- 2026-08-09: after merging `origin/main` at `b5af92fdc` through `514d5a0e5`, the affected Deal and
+  Concert unit-test project graphs built with 0 errors before Phase 5 edits.
+- 2026-08-09: `dotnet test` for `Concertable.B2B.Deal.UnitTests` passed 41/41 and
+  `Concertable.B2B.Concert.UnitTests` passed 132/132 on the final Phase 5 source.
+- 2026-08-09: `./scripts/integration.ps1 concert --artifacts-path
+  C:\Users\tommy\AppData\Local\Temp\Concertable\launch-deal-strategy-phase5-integration-final`
+  passed both projects: B2B Concert 144/144 and Customer Concert 11/11.
+- 2026-08-09: `dotnet build api/Concertable.slnx --artifacts-path
+  C:\Users\tommy\AppData\Local\Temp\Concertable\launch-deal-strategy-phase5-solution` succeeded with
+  0 errors and 9 existing nullable/generated-code warnings.
+- 2026-08-09: `git diff --check` passed; `IDealStrategy` and `IStripeValidationStrategy` have no
+  remaining `api/` references; the only Deal/Concert keyed lookups are the two module-local factories;
+  the final Phase 5 diff review found no open findings.
 
 ## Reviews
 
@@ -164,6 +176,10 @@ checkpoint.
   workflow lifetime and named-factory semantics, immutable capability metadata, preserved capability
   behavior, removed parallel registration paths, test-fixture scope validation, and documentation
   accuracy; no open findings remain.
+- Phase 5 implementation self-review covered module ownership, atomic DI mutation, exact mapper/updater
+  coverage, facade/factory lifetimes, keyed-lookup confinement, TPH and wire-shape preservation,
+  self-verifying architecture allowlists, removed-symbol coverage, and documentation accuracy; no open
+  findings remain.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -214,6 +230,10 @@ checkpoint.
   `ValidateOnBuild`: the production registration now includes workflows whose unrelated runtime
   dependencies are absent from those partial fixtures. The composition tests prove exact declarations,
   and the real integration host validates the complete startup graph.
+- Deal mirrors Concert with its own Application factory contract and Infrastructure factory/builder;
+  there is no runtime reference between the modules and no strategy type in Deal.Contracts.
+- The architecture source scanner anchors itself with `CallerFilePath` because short SDK artifact roots
+  move both the test process base directory and current directory outside the repository.
 
 ## Event log
 
@@ -433,6 +453,38 @@ checkpoint.
 - Outcome: Phase 4 remains complete and verified against its merged base; Phase 5 must first merge the
   newly advanced `origin/main` and rebuild the affected Deal/Concert projects.
 - Follow-up: Reconcile the clean branch with current `origin/main`, then implement Phase 5 only.
+
+### 2026-08-09 — Phase 5 base reconciled
+
+- Action: Fetched `origin`, verified the dedicated worktree was clean and correctly owned by the plan
+  branch, confirmed no PR or platform-sync blocker existed, checked the other active Deal-adjacent
+  worktree for path overlap, merged current `origin/main`, and rebuilt the affected project graphs.
+- Evidence: merge commit `514d5a0e5`; `origin/main` at `b5af92fdc`; branch 0 commits behind before
+  edits; Deal and Concert affected builds completed with 0 errors.
+- Outcome: Phase 5 started against the current base without overlapping unrelated in-flight work.
+- Follow-up: Implement and verify Deal-module strategy registration and convention cleanup only.
+
+### 2026-08-09 — Phase 5 architecture gate rooted to source
+
+- Action: Ran the Deal unit gate, traced all failures to the architecture scanner resolving from the
+  short artifact output, anchored repository discovery to the compile-time source path, and reran the
+  complete project.
+- Evidence: initial result 23/41 with 18 identical repository-root failures; final result 41/41.
+- Outcome: The architecture guard remains portable when SDK outputs live outside the repository; no
+  production behavior changed in response to the harness failure.
+- Follow-up: Complete the Concert unit, integration, solution-build, and final-review gates.
+
+### 2026-08-09 — Phase 5 verified and checkpointed
+
+- Action: Added the Deal-local factory and validated vertical builder, migrated mapper/updater
+  selection, removed the unused marker and stale Payment claim, documented the committed pattern,
+  added architecture enforcement, and completed the final local review.
+- Evidence: Deal unit 41/41; Concert unit 132/132; B2B Concert integration 144/144; Customer Concert
+  integration 11/11; full `api/Concertable.slnx` build 0 errors; removed symbols absent from `api/`;
+  `git diff --check` clean.
+- Outcome: All five implementation phases are complete in this checkpoint with no open self-review
+  findings; full merge-queue E2E remains the delivery gate, not a duplicate local run.
+- Follow-up: Run the implementation code review only.
 
 ## Resume prompt
 

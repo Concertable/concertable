@@ -416,7 +416,7 @@ Verification gate:
 - `dotnet build api/Concertable.slnx` — 0 errors.
 - Concert unit and integration tests via `integration-debug`.
 
-### Phase 5 — Deal-module families and convention cleanup
+### Phase 5 — Deal-module families and convention cleanup ✅
 
 - Add the Deal-local strategy factory/builder and migrate `DealMapper` and `DealUpdater` without allowing
   Concert to reference Deal runtime projects.
