@@ -2,13 +2,13 @@
 
 - Plan: `plans/typed-result/REUNION_INTEGRATION_PLAN.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_reunion-integration`
-- Branch: `Feature/typed-result_reunion-integration`, current with `origin/main` `1043a9178`; code
+- Branch: `Feature/typed-result_reunion-integration`, current with `origin/main` `6f4a5cc3e`; code
   head `a779fe041` retires the discarded Shared rehearsal and migrates Payment/Payment.Client to
   Reunion; full code and security review are clean through that exact head; branch and PR head
   `53aa0a3` adds only the review and delivery ledger checkpoints; merge head `88dbd1460` brings
   earlier `origin/main`; implementation head `da78980b7` adopts the merged direct-factory API and its
-  package pin; currency merge `cbcfda10e` brings platform pin `.890`; incremental code/security
-  review is clean through that merge head
+  package pin; currency merge `282b3c957` brings platform pin `.892`; incremental code/security
+  review is clean through prior merge head `cbcfda10e` and must cover the current-main delta
 - PR: implementation PR #453 remains open remotely at `53aa0a3`; reviewed code head is `a779fe041`;
   local source-owner head is ahead for current-main and Reunion API reconciliation; docs design PR
   #443 merged as `fd0b666b9`; sub-plan reconciliation PR #445 merged as `d6a572e0d`
@@ -22,21 +22,19 @@
   validation mapping, and generic success mappers; the obsolete Concertable HTTP-terminal checkpoint
   is not an input; Auth and Customer non-Payment can convert against published Reunion now, while B2B
   and Customer Ticket can prepare against exact local Payment packages; Phase 3 is locally
-  complete; merged Reunion PR #4 replaces the builder API used by Phase 4, so PR #453 must adopt its
-  direct factories and remove the temporary old-namespace source scan before delivery; that local
-  gate is now green against the exact inspected `Reunion.Errors` `0.1.0-alpha.2` candidate, but the
-  package is not published; the previously supplied scoped NuGet.org key was deliberately removed
-  after the alpha.1 release and is no longer present in process, user, or machine scope; merge-queue
-  E2E, Payment publication, and generated platform sync remain pending
-- Last reconciled: 2026-08-09 against current Concertable `origin/main` `1043a9178`, reviewed
-  implementation head `da78980b7`, current-main merge `cbcfda10e`, merged Reunion PR #4 head
-  `1500270`, exact local package/consumer evidence, NuGet.org package availability, live owner
-  worktrees, and no open platform-sync PR
+  complete; merged Reunion PR #4 replaces the builder API used by Phase 4, and PR #453 now uses only
+  its direct factories. Exact `Reunion.Errors` `0.1.0-alpha.2` is published, indexed, repository-
+  signature verified, catalog-hash verified, and byte-matched to the local candidate payload. A
+  refreshed reusable key remains in Windows user scope until revoked or expired. Merge-queue E2E,
+  Payment publication, and generated platform sync remain pending
+- Last reconciled: 2026-08-10 against current Concertable `origin/main` `6f4a5cc3e`, implementation
+  head `da78980b7`, current-main merge `282b3c957`, merged Reunion PR #4 head `1500270`, production
+  NuGet.org package evidence, fresh-cache Payment verification, and the live PR #453 delivery gate
 
 ## Current state
 
 The repository-wide audit and Reunion publication are complete. The reserved integration worktree is
-current with `origin/main` `1043a9178`. Remote branch
+current with `origin/main` `6f4a5cc3e`. Remote branch
 `Feature/typed-result_reunion-integration` and implementation PR #453 are open at `53aa0a3`; their
 remote code range ends at `a779fe041`; local reviewed implementation head is `da78980b7`, followed
 only by current-main and ledger checkpoints. The current Phase 3 retirement
@@ -54,9 +52,9 @@ receive an unused `Reunion.AspNetCore` reference; that adapter remains required 
 whose source actually calls it.
 
 The full code and security review of `162b8412a..a779fe041` found no issues. Incremental native,
-security, and Concertable reviews through implementation head `da78980b7` and current-main merge
-`cbcfda10e` also found no issues. Remote source-owner head `53aa0a3` remains unchanged while the
-unpublished dependency blocks delivery.
+security, and Concertable reviews through implementation head `da78980b7` and prior current-main
+merge `cbcfda10e` also found no issues. Remote source-owner head `53aa0a3` remains unchanged while
+the current-main and publication checkpoints await the final incremental review and push.
 
 Docs design PR #443 merged the roadmap, plan, and this recovery ledger as `fd0b666b9`; closeout PR
 #444 advanced main to `c72b058af`. No Concertable or Reunion runtime file, package reference,
@@ -124,13 +122,22 @@ implementation without changing the Payment delivery order.
 
 ## Next Steps
 
-Blocked: `Reunion.Errors` `0.1.0-alpha.2` is unpublished and no valid NuGet.org key is recoverable locally; the alpha.1 workflow deliberately verified only key length, never recorded the value, then removed the sole user-scoped copy.
-
-Unblock action: If the original key was saved elsewhere, restore it directly as the Windows user-scoped `NUGET_API_KEY` without pasting it into chat. Otherwise refresh the existing scoped key on nuget.org's API Keys page, copy the newly issued secret, and store it in that user scope; retain it until revoked or expired rather than removing it after publication.
-
-Resume when: a known-valid reusable key is present in user scope and NuGet.org still lacks `0.1.0-alpha.2`; publish exact candidate SHA-256 `16DDA3B382D696DD2F789C1FF4EE7CA6F36A1367AE57871B432C45EDD63D3DF4`, verify production signature/content, restore PR #453 from NuGet.org only, then review, push, and `/merge` with full E2E.
+Run the incremental native, security, and Concertable architecture review from the existing review
+watermark through current head. Resolve any findings, checkpoint the ledger, push PR #453 with the
+two-leg remote/PR-head verification, then run `/merge` with full E2E. After the source PR lands, move
+the recovery state to the required docs closeout worktree and own Payment package publication plus
+the generated platform-sync PR through green and merged.
 
 ## Completed work
+
+- Published exact `Reunion.Errors` `0.1.0-alpha.2`; NuGet.org indexed it with repository commit
+  `1500270`, valid repository signature, catalog SHA-512 match, production SHA-256
+  `899E864169C67D181E4731BACF1086055644B9EF70DC3035B09487ED26ADD926`, both framework assets,
+  and all seven non-signing payload entries byte-identical to the local candidate.
+- Restored Payment from NuGet.org into a fresh cache: 14 assets resolve exact
+  `Reunion.Errors/0.1.0-alpha.2` and zero resolve alpha.1; Payment Release build passed with zero
+  warnings/errors, unit 223/223 and integration 8/8 passed, full Release solution build passed with
+  zero errors and five existing warnings, and the forbidden API/source scan returned zero.
 
 - Packed and inspected exact `Reunion.Errors` `0.1.0-alpha.2` from merged Reunion head `1500270`,
   migrated all Payment definitions to direct nested-case factories, removed the temporary source
@@ -426,6 +433,24 @@ Resume when: a known-valid reusable key is present in user scope and NuGet.org s
   delivery-ready and provide the exact remaining-call-site inventory.
 
 ## Event log
+
+### 2026-08-10 — Reunion.Errors alpha.2 published and production gate completed
+
+- Action: Published the exact locally verified `Reunion.Errors` `0.1.0-alpha.2` candidate with the
+  refreshed reusable NuGet.org key, waited for indexing, downloaded the production artifact, and
+  restored Payment from NuGet.org into a fresh isolated cache after merging current main.
+- Evidence: local candidate SHA-256
+  `16DDA3B382D696DD2F789C1FF4EE7CA6F36A1367AE57871B432C45EDD63D3DF4`; valid NuGet.org
+  repository signature; production SHA-256
+  `899E864169C67D181E4731BACF1086055644B9EF70DC3035B09487ED26ADD926`; catalog SHA-512 match;
+  repository commit `1500270`; net10/net11 assets; all seven non-signing payload entries matched.
+  Fresh restore found alpha.2 in 14 Payment asset graphs and alpha.1 in zero; Payment build 0/0,
+  unit 223/223, integration 8/8; full solution build 0 errors/5 existing warnings; forbidden scan zero.
+- Outcome: The immutable upstream package gate is terminal. Branch merge `282b3c957` is current with
+  `origin/main` `6f4a5cc3e`; PR #453 can proceed through final review, push, and full-E2E merge.
+- Decision: Reunion's checked-in alpha.1 value is its documented development default and release
+  packs override it. Concertable must consume alpha.2 because NuGet's published alpha.1 is immutable
+  and predates the direct-factory API. Retain the user-scoped key until revoked or expired.
 
 ### 2026-08-09 — local credential recovery exhausted
 
