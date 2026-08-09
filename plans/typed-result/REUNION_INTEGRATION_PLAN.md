@@ -25,15 +25,16 @@ Result family, add compatibility shims, or convert MVC controllers to Minimal AP
   `Results<T1,T2>` in this work.
 - No permanent machine-specific `ProjectReference`, absolute feed path, local package version, or
   temporary NuGet configuration may merge.
-- Existing B2B and Auth migrations include authoritative unpushed work on Tommy's other workstation.
-  Preserve those owners and reconcile them after the docs merge; do not infer their state solely from
-  GitHub.
+- Existing B2B and Auth migrations contain authoritative unpushed work. Preserve those local owners
+  and do not infer their state solely from GitHub.
+- Preserve the existing `Refactor/typed-result_http-terminals` semantic-terminal work as local input
+  to the Shared producer phase. It must not publish a competing Shared.Api package or generated sync.
 
 ## Current-state inventory (2026-08-09)
 
 ### Repository and carrier state
 
-- Concertable `origin/main` was `2eb8bc4764ee1303dc77ced9149b1e7a5f093583` at the final docs audit.
+- Concertable `origin/main` is `c72b058afe43742854b765838bf43f179e7ed92a` after docs PRs #443/#444.
 - `Concertable.Kernel.Functional` currently defines all five temporary carriers plus synchronous,
   task-aware, collection, and Option conversion extensions. Its behavior intentionally already
   resembles Reunion: non-null payloads, non-empty string failures, uninitialized default Results,
@@ -51,19 +52,16 @@ Result family, add compatibility shims, or convert MVC controllers to Minimal AP
 
 ### Local worktree state
 
-The primary `main` checkout was clean at `51c8d15b5` and became five commits behind after
-`origin/main` advanced to `2eb8bc476`; it was fast-forwarded to that remote tip before docs review.
-This docs branch is based on the same tip. The other visible local worktrees are unrelated and must
-remain untouched:
+The active typed-result worktrees were reconciled read-only after the docs merge. Their exact
+operational state lives in the owning ledgers; the dependency-relevant snapshot is:
 
 | Worktree branch | State at audit |
 |---|---|
-| `Chore/TechDebt` | 117 behind/2 ahead with one modified agent-command file. |
-| `Refactor/ContractCreationInvariant` | 83 behind with two modified B2B Concert files. |
-| `Refactor/launch_deal_strategy_registration` | Current with main/11 ahead and active modified, deleted, and untracked B2B/plan files. |
-
-The separate B2B/Auth Result migrations on Tommy's other workstation are additional authoritative
-owners and are not represented by this machine's worktree list.
+| `Refactor/B2BTypedResultMigration` | Clean at `ba5791268`; no PR/remote; 130 behind / 25 ahead. |
+| `Feature/typed-result_auth-outcomes` | Clean at `98599413a`; no PR/remote; 218 behind / 27 ahead. |
+| `Feature/typed-result_customer-outcomes` | Clean at `e7c44f5b3`; PR #425 at `e60219f7d`; 117 behind / 31 ahead. |
+| `Feature/TypedResultMigrationPhase2` | Clean at `b6a671ef9`; PR #282 at `26ed63b896`; 480 behind / 29 ahead. |
+| `Refactor/typed-result_http-terminals` | Head `1d261e3ce`; preserved five-path dirty correction set and in-progress review; 100 behind / 1 ahead. |
 
 ### Package boundaries
 
@@ -100,6 +98,13 @@ Therefore the first cutover keeps a thin Concertable Shared.Api terminal over Re
 delegate exact Option success/absence cases to `Reunion.AspNetCore.Mvc`, but typed failures and
 CreatedAtAction stay Concertable-owned until separately proven equivalent. No controller signature or
 response contract changes are intended.
+
+The semantic terminal vocabulary remains explicit: Result terminals name success plus ProblemDetails
+(`ToOkOrProblem`, `ToCreatedOrProblem`, `ToCreatedAtOrProblem`, `ToAcceptedOrProblem`, and
+`ToNoContentOrProblem`); Option terminals name Some plus ordinary absence (`ToOkOrNotFound` and
+`ToOkOrNoContent`). Option does not encode unauthenticated/forbidden/conflict outcomes. Those remain
+operation-owned typed Results. The existing local HTTP-terminal implementation is completed and
+reviewed as a local checkpoint, then incorporated into the one Shared producer PR in Phase 3.
 
 ## Old-to-new API mapping
 
@@ -138,9 +143,9 @@ error and HTTP policy code remains.
   missing Concert in `PurchaseAsync` becomes `PurchaseError.ConcertNotFound`, and missing Concert in
   `CheckoutAsync` becomes `CheckoutError.ConcertNotFound`. Recreate both with Reunion
   `Option.FromNullable(...).OrFailure(...)`; do not retain CFE or its throwing wrong-case accessors.
-- B2B and Auth may contain additional unpushed conversions on Tommy's other workstation. Their exact
-  inventory is the first mandatory reconciliation step after this docs merge; no carrier edit begins
-  until those heads are available and recorded in the ledger.
+- B2B and Auth may contain additional unpushed conversions in their local worktrees. Their exact
+  call-site inventory remains a mandatory Phase 1 check before any carrier edit; the heads and dirty
+  state are recorded in the ledger.
 
 Reunion's eager, lazy, Task-receiver, and async-factory names match Concertable's current API. The
 behavioral contract also matches by design—Some returns success without invoking the error factory,
@@ -202,11 +207,9 @@ response. Reunion receives only the caller-supplied mapper delegate and never re
                               ├──#380 Search ──#388 sync
                               └──#404 transport + #407 conventions
 
-Reunion docs plan
-└── local package battle test
-    └── Reunion publish
-        └── Shared producer PR
-            └── generated platform-sync consumer migration
+local package battle test ──Reunion publish──┐
+semantic HTTP-terminal local checkpoint ─────┴──one Shared producer PR
+                                                  └──generated platform-sync consumer migration
                 ├── preserve/reconcile B2B local-only owner
                 ├── preserve/reconcile Auth local-only owner
                 ├── update PR #425 once
@@ -220,7 +223,7 @@ as merged; #336 is the only listed closed-unmerged PR.
 |---|---|---|---|
 | #248 Add typed result core foundation | Merged; `main` ← `Feature/TypedResultMigration` | Initial foundation; historical content evolved through later Kernel PRs. | No action; ancestor of #261/#290; low. |
 | #261 Use the published shared exception handler | Merged; `main` ← platform sync `.710` | Published Shared exception boundary adoption. | No action; depends #248 publication; low. |
-| #282 Migrate Customer Ticket to typed results | Open; `main` ← `Feature/TypedResultMigrationPhase2` | One unique Ticket/Concert/checkout commit; old CFE/carrier assumptions; not elsewhere. | Recreate semantics/tests after shared integration, then supersede old PR with approval; depends Payment sync and Reunion consumer cutover; very high (763 behind). |
+| #282 Migrate Customer Ticket to typed results | Open; `main` ← `Feature/TypedResultMigrationPhase2` | One unique Ticket/Concert/checkout commit; old CFE/carrier assumptions; not elsewhere. | Recreate semantics/tests after shared integration, then supersede old PR with approval; depends Payment sync and Reunion consumer cutover; very high (776 behind). |
 | #284 Define typed result error API | Merged; `main` ← `Feature/TypedResultKernelApi` | Concertable error model prerequisite. | No action; preserve under adapter; low. |
 | #290 Add owned Result and Option foundation | Merged; `main` ← `Refactor/OwnedResultFoundation` | Current temporary carriers and tests. | Replace once in Shared producer after package publish; foundational/high public-API risk. |
 | #291 Platform sync `.740` | Merged; `main` ← platform sync `.740` | Delivered #290 types. | No action; historical dependency; low. |
@@ -239,11 +242,12 @@ as merged; #336 is the only listed closed-unmerged PR.
 | #404 Establish typed-error transport foundations | Merged; Shared branch | `IError` transport metadata and mapping foundation. | Keep in Concertable; adapter builds on it; medium. |
 | #407 Codify typed error mapping | Merged; docs branch | Mapping convention. | Update only if names/imports change; low. |
 | #420 Platform sync `.853` | Merged; platform sync | Migrated Payment consumers and unblocked B2B/Auth/Customer. | No action; dependency of active semantic owners; low. |
-| #425 Model Customer non-Payment outcomes | Open; `main` ← `Feature/typed-result_customer-outcomes` | 29 unique reviewed commits; not elsewhere. | Preserve and update once against integrated main; do not duplicate package cutover; high (104 behind). |
+| #425 Model Customer non-Payment outcomes | Open; `main` ← `Feature/typed-result_customer-outcomes` | 29 unique reviewed commits; not elsewhere. | Preserve and update once against integrated main; do not duplicate package cutover; high (117 behind). |
 | #426 Close Payment owned-result migration | Merged; docs closeout | Lifecycle closeout. | No action; low. |
 | #427 Finish Payment closeout review fixes | Merged; same docs closeout branch | Review fixes for #426. | No action; low. |
-| B2B local-only work | Active, unpushed; recorded owner `Refactor/B2BTypedResultMigration` | Authoritative semantic migration exists on other workstation. | Sync after docs merge, preserve owner, reconcile once after integration; high until inventoried. |
-| Auth local-only work | Active, unpushed; recorded owner `Feature/typed-result_auth-outcomes` | Authoritative semantic migration exists on other workstation. | Sync after docs merge, preserve owner, reconcile once after integration; high until inventoried. |
+| B2B local-only work | Active, unpushed; recorded owner `Refactor/B2BTypedResultMigration` | Authoritative semantic migration exists locally at `ba5791268`. | Preserve owner and reconcile once after Phase 4; high conflict risk. |
+| Auth local-only work | Active, unpushed; recorded owner `Feature/typed-result_auth-outcomes` | Authoritative semantic migration exists locally at `98599413a`. | Preserve owner and reconcile once after Phase 4; high conflict risk. |
+| HTTP-terminal local work | Active, unpushed; `Refactor/typed-result_http-terminals` at `1d261e3ce` plus a preserved dirty correction set | Semantic Shared.Api terminal rename and Option absence terminals overlap the Reunion Shared producer surface. | Finish, verify, review, and commit locally; do not publish independently; incorporate once in Phase 3. |
 
 ## Safest integration strategy
 
@@ -251,21 +255,23 @@ Use strategy D: a publish-gated centralized integration. It keeps strategy B's s
 shared mechanical change, but splits delivery at the real Reunion and Concertable package-publication
 boundaries:
 
-1. Land this docs-only design first so both workstations and every active branch share the same owner
-   and dependency map.
+1. Land this docs-only design first so every active branch shares the same owner and dependency map.
 2. In the reserved `Feature/typed-result_reunion-integration` worktree, pack commit `7bf5f66`,
    substitute the two real NuGet packages, and prove source/API/HTTP parity. Do not distribute those
    edits across service PRs.
-3. Publish matching `Reunion` and `Reunion.AspNetCore` versions only after the battle-test gate passes.
-4. Land one Concertable Shared producer PR: package references, carrier removal/substitution,
-   Concertable error terminal, tests, public package surface, and conventions. Follow its publication.
-5. Own the resulting generated platform-sync PR. Bump every service to the published Shared packages,
+3. In parallel, finish and review the existing semantic HTTP-terminal work as a local-only checkpoint.
+   Do not push or publish its Shared.Api package independently.
+4. Publish matching `Reunion` and `Reunion.AspNetCore` versions only after the battle-test gate passes.
+5. Land one Concertable Shared producer PR: package references, carrier removal/substitution,
+   Concertable error terminal, semantic terminal checkpoint, tests, public package surface, and
+   conventions. Follow its publication.
+6. Own the resulting generated platform-sync PR. Bump every service to the published Shared packages,
    migrate consumer namespaces/call sites once in that PR, build every standalone solution, and drive
    it green before doing more service migration work.
-6. Reconcile each semantic owner against that integrated `main`: update PR #425 once; sync and update
-   the active B2B/Auth work from the other workstation; recreate #282's Ticket semantics rather than
+7. Reconcile each semantic owner against that integrated `main`: update PR #425 once; sync and update
+   the active local B2B/Auth worktrees; recreate #282's Ticket semantics rather than
    rebasing its obsolete carrier implementation.
-7. Run the final shared/background inventory and remove leftover third-party and duplicate carrier
+8. Run the final shared/background inventory and remove leftover third-party and duplicate carrier
    surfaces only when all semantic owners are terminal.
 
 Updating every PR independently (A) duplicates package pins, carrier renames, and adapter fixes and
@@ -405,8 +411,8 @@ Use real B2B/Customer flows after the automated gate:
 
 ### Phase 1 — Reconcile owners and battle-test packed commit `7bf5f66`
 
-- Sync the other workstation after this docs PR merges and record the exact B2B/Auth heads, dirty
-  paths, plans, and dependencies without mutating them.
+- Confirm the recorded B2B/Auth/Customer/Ticket/HTTP owner inventory still matches the live worktrees
+  before the first code edit; update the ledger if any head or dirty path changed.
 - Create the isolated integration worktree and local feed; pack and inspect both matching packages.
 - Substitute Reunion on the reserved integration branch and run carrier plus Shared.Api parity tests.
 
@@ -427,6 +433,8 @@ Gate: both packages are immutable and restorable from the production feed at the
 - Reference Reunion only from Kernel and Reunion.AspNetCore only from Shared.Api.
 - Replace temporary carriers/extensions with Reunion; retain Concertable errors and MVC terminal.
 - Add the pure `IError -> ProblemDetails` mapper and preserve executed ProblemDetails behavior.
+- Incorporate the reviewed semantic HTTP-terminal checkpoint; keep Option absence terminals limited
+  to NotFound and NoContent, with caller-actionable failures represented by typed Results.
 - Update public API/conventions/tests and remove only duplicate carrier code whose consumers are
   migrated in this producer closure.
 
