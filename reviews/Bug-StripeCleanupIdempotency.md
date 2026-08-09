@@ -5,7 +5,7 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `ccb40138e4070dd27d5150fee192069fd449964a`  _(2026-08-09)_
+**Reviewed up to commit:** `05ca100f19c74494bf25d4850a4842b2642d0e61`  _(2026-08-10)_
 **Security-reviewed up to commit:** `b376131f73933849f6af44111d84a1b69eaf9c78`  _(2026-08-09)_
 
 > Range reviewed: `dc0da93..abcc9be` (2 commits).
@@ -97,3 +97,17 @@ the established non-null Playwright lifecycle. Failure-continuing fixture teardo
 recorded in shared E2E technical debt. Payment unit tests pass 232/232 and the B2B UI E2E project
 builds with zero errors. Checked correctness, microservice isolation, module boundaries, seeding, C#
 conventions, and changed-path test coverage; the net range introduces no security-sensitive change.
+
+## Incremental review — 2026-08-10 (Customer card-tab navigation)
+
+> Range reviewed: `ccb4013..05ca100` (3 commits).
+
+No issues found. The merge-group trace proves the Customer Payment Element already had Card selected,
+then the old nested-text click landed on the sticky application header's Find link at the same page
+coordinates. The helper now targets Stripe's accessible tab, preserves an already-selected tab, and
+uses keyboard activation only when selection is required. Saved-card confirmation is unchanged, and
+all new-card success, decline, and 3DS callers retain their existing outcome semantics. The shared
+helper tests pass 5/5 and both Customer and B2B UI E2E projects build with zero errors. The local
+browser rerun was discarded after Docker developed SQL pre-login resets during stack startup; full
+runtime verification remains with the merge queue. Checked correctness, shared-caller behavior, C#
+conventions, and changed-path coverage; the range introduces no security-sensitive change.
