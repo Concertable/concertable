@@ -3,7 +3,7 @@
 - Plan: `plans/typed-result/REUNION_INTEGRATION_PLAN.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_reunion-integration`
 - Branch: `Feature/typed-result_reunion-integration`, current with `origin/main` `162b8412a`; the
-  merged-head Phase 1 checkpoint is carried by `this commit`
+  published-package Phase 3 local gate is carried by `this commit`
 - PR: not opened for implementation; docs design PR #443 merged as `fd0b666b9`; sub-plan
   reconciliation PR #445 merged as `d6a572e0d`
 - Dependency/package gates: docs design merged; reviewed Reunion carrier commit `7bf5f66` is contained
@@ -11,8 +11,9 @@
   mistaken `Reunion.Errors.Extensions` package and merged as release head
   `e33b40fe6daef64fd69536170d583e3ddd603ee4`; the corrected three-package Phase 1 gate is green and
   all three exact `0.1.0-alpha.1` packages are published, indexed, repository-signature verified,
-  and restored from NuGet.org-only clean caches; Phase 2 is terminal and Phase 3 Shared expansion is
-  next; the B2B, Auth, Customer,
+  and restored from NuGet.org-only clean caches; Phase 2 is terminal and the Phase 3 Shared expansion
+  is locally green against the production packages, pending code review, source delivery, and its
+  generated platform sync; the B2B, Auth, Customer,
   Customer Ticket, and semantic HTTP-terminal owners remain inventoried and must consume the staged
   Shared-expansion and Payment.Client publications rather than perform local carrier cutovers
 - Last reconciled: 2026-08-09 against current Concertable `origin/main` `162b8412a`, verified
@@ -24,7 +25,9 @@ availability, and no open platform-sync PR
 
 The repository-wide audit and integration design are complete and approved. The reserved integration
 worktree is current with `origin/main` `162b8412a`, has no remote branch or PR, and contains the
-committed local-only Phase 1 package battle test against superseded Reunion head `e52129d`. Docs design PR #443
+locally verified additive Shared expansion against published Reunion `0.1.0-alpha.1`. It retains all
+owned carriers and old terminal signatures while adding the two planned direct package owners and
+Reunion-backed Shared.Api terminals. Docs design PR #443
 merged the roadmap, plan, and this recovery ledger as `fd0b666b9`; closeout PR #444 advanced main to
 `c72b058af`. No Concertable or Reunion runtime file, package reference, existing migration branch, or
 existing PR was changed by either docs PR.
@@ -82,11 +85,10 @@ detached Reunion release worktree was removed.
 
 ## Next Steps
 
-Execute Phase 3 additive Concertable Shared expansion: replace the local Reunion version with exact
-published `0.1.0-alpha.1`, restore without any local source, keep Reunion owned only by Kernel and
-Reunion.AspNetCore owned only by Shared.Api, retain every owned carrier and old terminal signature,
-and rerun the Shared unit/architecture/package tests plus full Release solution build. Then run code
-review and deliver the source PR through its generated platform-sync gate before beginning Phase 4.
+Run `/code-review` over the committed Phase 3 additive Shared expansion against `origin/main`, fix
+every clear finding, and repeat the affected Release tests/build for any code change. Once the review
+is clean, push the verified work head, open the source PR with full merge-queue E2E, and deliver it
+through merge plus the generated platform-sync PR before beginning Phase 4.
 
 ## Completed work
 
@@ -122,6 +124,10 @@ review and deliver the source PR through its generated platform-sync gate before
 - Updated the registered HTTP-terminal dependent in commit `86563a04a`: its Phase 2 package gate is
   green, checkpoint `c593150e4` remains preserved, and this central owner now owns Phase 3
   incorporation without an independent Shared.Api publication.
+- Completed the Phase 3 local production-package gate: replaced the rehearsal versions with exact
+  `0.1.0-alpha.1`, restored without a local source, preserved every owned carrier and old terminal,
+  and verified the planned Kernel and Shared.Api package ownership, parity, architecture, and full
+  solution build in `this commit`.
 - Added the safe additive Shared expansion checkpoint: Kernel owns Reunion, Shared.Api owns
   Reunion.AspNetCore, Reunion parity tests cover the named-case conversion contract, and Reunion
   carriers can traverse the existing Concertable MVC error/CreatedAt boundary without deleting the
@@ -201,6 +207,15 @@ review and deliver the source PR through its generated platform-sync gate before
 - Release `api/Concertable.slnx` build succeeded with 0 errors and 9 pre-existing/generated warnings.
 - Release Kernel unit/parity tests: 241 passed, 0 failed. Release Shared.Api unit/architecture tests:
   53 passed, 0 failed.
+- Production-source `dotnet restore api/Concertable.slnx --force --no-cache -v normal` succeeded with
+  0 warnings and 0 errors. Resolved graphs show Kernel directly owns Reunion `0.1.0-alpha.1`, while
+  Shared.Api directly owns Reunion.AspNetCore `0.1.0-alpha.1` and transitively resolves matching
+  Reunion plus Reunion.Errors.
+- Phase 3 Release tests passed against the production packages: Kernel/parity 241/241 and Shared.Api
+  unit/architecture 53/53. The Release `api/Concertable.slnx` build succeeded with 0 errors and 9
+  existing/generated warnings.
+- The merge-source scan has zero `local.concertable`, `Reunion-Concertable`, or
+  `RestoreAdditionalProjectSources` matches under `api/`.
 - The initial destructive rehearsal produced five stale implicit-conversion assertion failures. The
   tests now accept only Reunion's named `Success`/`Failure`/`Some`/`None` case conversions, and the
   complete parity suite is green.
@@ -329,6 +344,18 @@ review and deliver the source PR through its generated platform-sync gate before
   waits for the Phase 4 Payment.Client publication/sync before PR #425 is updated once.
 
 ## Event log
+
+### 2026-08-09 — Phase 3 local Shared expansion gate completed
+
+- Action: Replaced both local Reunion rehearsal versions with published `0.1.0-alpha.1`, restored the
+  complete solution from configured production feeds, verified direct/transitive package ownership,
+  and reran the affected Release tests plus full solution build.
+- Evidence: restore 0 warnings/errors; Kernel/parity 241/241; Shared.Api unit/architecture 53/53;
+  Release solution build 0 errors and 9 existing/generated warnings; machine-local source scan zero.
+- Outcome: The additive Shared expansion is locally green without deleting any owned carrier or old
+  terminal signature. Code review and source delivery remain before the Phase 3 publication gate.
+- Follow-up: Review the committed `origin/main..HEAD` change, resolve findings, then deliver the source
+  PR and generated platform sync.
 
 ### 2026-08-09 — Phase 2 production publication gate completed
 
