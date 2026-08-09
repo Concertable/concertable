@@ -46,11 +46,9 @@ Payment/Kernel/Shared.Api closure and resolves only its service-owned semantics.
 
 ## Next Steps
 
-Wait for `plans/typed-result/REUNION_INTEGRATION_PROGRESS.md` to merge its Phase 4 generated
-platform-sync PR. That owner will update this ledger and surface the resume prompt. Then fetch and
-merge current main once, verify the published Reunion-backed Payment/Kernel/Shared.Api closure, and
-implement checkpoints 6-7 without any branch-local carrier, package, or terminal substitution. Run
-the normal build, unit, architecture, and integration gates afterward; reserve E2E for the merge queue.
+Blocked: The ReUnion integration Phase 4 generated platform-sync PR is not yet merged.
+Unblock action: The owner at `plans/typed-result/REUNION_INTEGRATION_PROGRESS.md` must finish the shared producer cutover, merge its generated platform-sync PR, then update this ledger.
+Resume when: Current main contains the published Reunion-backed platform pin and `plans/typed-result/REUNION_INTEGRATION_PROGRESS.md` records its Phase 4 generated platform-sync PR as merged.
 
 ## Completed work
 
@@ -129,12 +127,32 @@ the normal build, unit, architecture, and integration gates afterward; reserve E
   polymorphic interfaces emit their discriminator. B2B cannot consume that local Shared API source
   change before publication, so `DealController` uses the already-published generic `ToActionResult`
   with an explicit `ActionResult<IDeal>` value.
+
 - Revoked invitation acceptance is `InvitationNotPending`, an explicit Conflict outcome; the stale
   integration expectation was corrected from Bad Request to Conflict.
 - The Reunion integration is now the exclusive cross-cutting carrier/package owner. B2B remains the
   exclusive semantic owner and waits for its generated Phase 4 platform baseline before one final sync.
 
+## Downstream handoffs
+
+- Waiting ledger: `plans/dotnet-11/B2B_WORKFLOW_UNIONS_PROGRESS.md`.
+  Worktree: not created; reserved branch `Refactor/dotnet-11_b2b-workflow-unions`.
+  Gate: the B2B typed-result checkpoints 6-7 source PR and every resulting publication/platform-sync
+  gate must be terminal and green. At that gate, update the dependent ledger on current main and
+  surface its implementation pointer; do not let the dependent poll or copy this worktree's
+  overlapping Concert workflow changes.
+
 ## Event log
+
+### 2026-08-09 - registered downstream .NET 11 workflow-union handoff
+
+- Action: registered the B2B .NET 11/workflow-union plan as a downstream owner and reconciled this
+  ledger's own ReUnion wait to the three-line hard-blocker contract.
+- Evidence: `plans/dotnet-11/B2B_WORKFLOW_UNIONS_PLAN.md` and its companion ledger merged to main in
+  docs-only PR #448 as `fcc6935f4`.
+- Outcome: the dependent plan waits for this B2B implementation plan's future source PR and every
+  resulting publication/platform-sync gate to become terminal and green.
+- Follow-up: at that gate, update the dependent ledger and surface its reserved implementation prompt.
 
 ### 2026-08-09 - Reunion integration dependency registered
 
@@ -253,7 +271,5 @@ the normal build, unit, architecture, and integration gates afterward; reserve E
 
 ## Resume prompt
 
-```text
-cd C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-B2BTypedResultMigration
-Read @plans/typed-result/B2B_PLAN.md and @plans/typed-result/B2B_PROGRESS.md and do what its `## Next Steps` says.
-```
+Not emitted while `## Next Steps` carries the hard-blocker fields. The ReUnion owner restores and
+surfaces this plan's actionable worktree pointer when its Phase 4 gate opens.

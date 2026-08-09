@@ -44,6 +44,12 @@ MUTATING_TOOL_NAMES = {
     "write",
     "write_file",
 }
+MUTATING_PATH_KEYS = {"path", "filepath"}
+PATCH_FILE_TARGET = re.compile(
+    r"\*\*\*\s+(?:Add|Update|Delete)\s+File:\s*"
+    r"((?:[A-Za-z]:[\\/])?[^\"'\r\n<>|]*?_PROGRESS\.md)",
+    re.IGNORECASE,
+)
 
 
 def next_steps(text):
@@ -160,13 +166,35 @@ def genuine_user_message(value):
     return not any("<hook_prompt" in text for text in user_content(content))
 
 
+def structured_mutation_targets(value):
+    if isinstance(value, dict):
+        for name, item in value.items():
+            normalized = name.casefold().replace("-", "").replace("_", "")
+            if normalized in MUTATING_PATH_KEYS and isinstance(item, str):
+                yield item
+            elif isinstance(item, (dict, list)):
+                yield from structured_mutation_targets(item)
+    elif isinstance(value, list):
+        for item in value:
+            yield from structured_mutation_targets(item)
+
+
+def patch_mutation_targets(value):
+    for item in strings(value):
+        yield from (match.group(1) for match in PATCH_FILE_TARGET.finditer(item))
+
+
 def mutating_tool_input(name, tool_input):
     normalized = (name or "").casefold().replace("-", "_")
+    targets = list(patch_mutation_targets(tool_input))
     if normalized.rsplit(".", 1)[-1] in MUTATING_TOOL_NAMES:
-        return tool_input
-    if any("*** Begin Patch" in text for text in strings(tool_input)):
-        return tool_input
-    return None
+        targets.extend(structured_mutation_targets(tool_input))
+    if not targets:
+        return None
+    return {
+        "targets": list(dict.fromkeys(targets)),
+        "workdirs": [{"workdir": item} for item in workdirs(tool_input)],
+    }
 
 
 def intentional_contexts(record):
