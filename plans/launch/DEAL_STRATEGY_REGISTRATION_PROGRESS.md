@@ -5,8 +5,9 @@
 - Branch: `Refactor/launch_deal_strategy_registration`
 - PR: not opened
 - Dependency/package gates: none; this is an internal B2B refactor
-- Last reconciled: 2026-08-09; all five implementation phases are complete; Phase 5 merged
-  `origin/main` at `b5af92fdc` through `514d5a0e5` and is verified in this checkpoint
+- Last reconciled: 2026-08-09; all five implementation phases are complete; Phase 5 is in commit
+  `4d4f44e0a`; post-commit fetch found `origin/main` at `43fe1caf4`, with the branch 3 commits behind
+  and 18 commits ahead
 
 ## Current state
 
@@ -29,18 +30,24 @@ confines frozen deal-type maps to workflow registries, keyed-provider access to 
 factories, and keyed lookup to the two module-local factory implementations.
 
 Phase 5's Deal/Concert unit gates, Concert integration gate, and full-solution build are terminal green.
-The final Phase 5 diff review found no open findings. No PR exists and no package gate applies. The
-branch is based on current `origin/main` at `b5af92fdc`; implementation code review is the next gate.
+The final Phase 5 diff review found no open findings, and the implementation is committed as
+`4d4f44e0a`. No PR exists and no package gate applies. A post-commit fetch found `origin/main` at
+`43fe1caf4`; the clean branch is 3 docs/meta commits behind and 18 commits ahead, so implementation
+code review must first reconcile that base and reload the changed repository/plan guidance.
 
 ## Next Steps
 
 Run the implementation code review only:
 
-1. Verify the Phase 5 checkpoint is committed and the worktree has no unrelated dirty paths.
-2. Run `code-review` for the complete branch diff against `origin/main`, including correctness,
+1. Merge current `origin/main` at `43fe1caf4` into the clean branch, then re-read the changed root and
+   planning guidance before starting the review; no runtime rebuild is required because the three base
+   commits are docs/meta-only.
+2. Verify the Phase 5 checkpoint `4d4f44e0a` remains intact and the worktree has no unrelated dirty
+   paths.
+3. Run `code-review` for the complete branch diff against `origin/main`, including correctness,
    module-boundary, strategy-registration, architecture-gate, and missing-test lenses.
-3. Record the review range, artifact, watermark, and every finding/disposition in this ledger.
-4. Do not address findings or begin PR delivery in the same turn; hand back after the review
+4. Record the review range, artifact, watermark, and every finding/disposition in this ledger.
+5. Do not address findings or begin PR delivery in the same turn; hand back after the review
    checkpoint.
 
 ## Completed work
@@ -485,6 +492,16 @@ Run the implementation code review only:
 - Outcome: All five implementation phases are complete in this checkpoint with no open self-review
   findings; full merge-queue E2E remains the delivery gate, not a duplicate local run.
 - Follow-up: Run the implementation code review only.
+
+### 2026-08-09 — post-commit base drift checkpointed
+
+- Action: Verified the Phase 5 commit and clean worktree, then fetched `origin` to reconcile the
+  review identity before handoff.
+- Evidence: Phase 5 commit `4d4f44e0a`; `origin/main` at `43fe1caf4`; branch 3 commits behind and
+  18 commits ahead; no PR. The three new base commits change only repository and plan guidance.
+- Outcome: Phase 5 remains complete and verified against its merged base; code review must first
+  merge the docs/meta-only base drift and reload the changed guidance.
+- Follow-up: Reconcile current `origin/main`, then run the implementation code review only.
 
 ## Resume prompt
 
