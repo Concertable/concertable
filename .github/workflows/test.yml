@@ -682,7 +682,7 @@ jobs:
         # which shells out to the `func` Core Tools. Without them the host never binds, so the
         # ConcertFinished* tests get "Connection refused (localhost:7078)" when triggering the timer.
         run: |
-          npm install -g azure-functions-core-tools@4 --unsafe-perm true
+          npm install -g azure-functions-core-tools@4.12.1 --unsafe-perm true
           func --version
 
       - name: Run B2B API E2E tests
@@ -768,7 +768,7 @@ jobs:
         # Same as the API E2E job: the full AppHost boots the B2B Workers Azure Functions host,
         # which needs the `func` Core Tools on PATH to launch.
         run: |
-          npm install -g azure-functions-core-tools@4 --unsafe-perm true
+          npm install -g azure-functions-core-tools@4.12.1 --unsafe-perm true
           func --version
 
       - name: Set up Node
@@ -894,7 +894,7 @@ jobs:
       - name: Install Azure Functions Core Tools
         if: env.RUN == 'true'
         run: |
-          npm install -g azure-functions-core-tools@4 --unsafe-perm true
+          npm install -g azure-functions-core-tools@4.12.1 --unsafe-perm true
           func --version
 
       - name: Set up Node
