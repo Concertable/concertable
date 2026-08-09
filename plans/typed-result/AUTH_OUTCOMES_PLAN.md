@@ -2,8 +2,9 @@
 
 > Next steps live in @plans/typed-result/AUTH_OUTCOMES_PROGRESS.md -> `## Next Steps`.
 
-**Status:** Local implementation and review are complete; delivery waits for the Reunion integration
-Phase 4 generated platform-sync baseline, then performs one current-main reconciliation and re-verification.
+**Status:** The semantic migration is complete and Reunion conversion is independently implementable
+now. Auth has no Payment, B2B, or Customer runtime/package dependency; its delivery order is determined
+from the current topology after conversion, not assumed from the Payment publication sequence.
 
 ## Outcome
 
@@ -50,9 +51,9 @@ wire behavior does not carry `Result` or `Option` values.
   surface for this migration.
 - Existing client IDs, claims, cookies, authorization contexts, return URLs, logout prompts, token
   endpoint errors, page messages, and redirects remain framework-owned edge behavior.
-- The current Kernel package supplies every required factory and observer. The Reunion integration
-  plan replaces the shared carrier implementation centrally; this branch adds no shared Kernel API,
-  direct Reunion package, compatibility shim, or alternative carrier.
+- Auth projects whose source uses functional carriers or errors own direct `Reunion` / `Reunion.Errors`
+  references. Auth HTTP edges own `Reunion.AspNetCore` only where they map those carriers. No shared
+  Kernel API, compatibility shim, or alternative carrier is added.
 
 ## Caller and outcome audit
 
@@ -208,9 +209,10 @@ a genuine model change, stop and amend the plan before touching migrations.
 
 1. After Phase 4, run a full code review over `origin/main..HEAD`; resolve every clear finding and use
    incremental review for later code commits.
-2. Wait for `plans/typed-result/REUNION_INTEGRATION_PROGRESS.md` to merge its Phase 4 generated
-   platform-sync PR. Reconcile once with that fresh `origin/main`, migrate only Auth-owned imports and
-   semantic conflicts, rebuild/retest/re-carve, incrementally review, and run PR preflight.
+2. Reconcile with current `origin/main`, audit Auth's actual package/HTTP topology, replace old carrier
+   imports and terminals with directly owned Reunion packages at their real edges, then rebuild,
+   retest, re-carve, incrementally review, and run PR preflight. If topology proves no unpublished
+   package dependency, Auth may deliver independently of Payment.
 3. Push the single Auth branch and open a plain GitHub PR. Do not add `skip-e2e`, `skip-e2e-ui`, or a
    skip trailer: this changes user-facing Auth and protocol flows, so full merge-queue API and UI E2E
    are required.

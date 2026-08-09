@@ -66,6 +66,20 @@ API carries the type** and who consumes each. Then:
 Record the plan (which merge does what, what is expected-red in each) in the feature's plan file so a
 a context reset can't lose it.
 
+## Prepare independent consumers in parallel
+
+The publish→sync order is the delivery DAG, not automatically the implementation DAG. After the
+topology scan, dispatch every consumer whose source can be migrated and verified against an exact local
+producer package. Record the producer commit, package version, package hashes, and reproducible feed
+location in the owning ledgers. Use temporary command-line restore inputs or temporary pins only; never
+commit a machine-specific path, local-only NuGet source, or disposable version.
+
+A prepared consumer is **delivery-ready**, not merge-ready: commit and review its real source changes,
+restore all temporary inputs, and retain the published-package revalidation as its next delivery gate.
+After publication and generated sync, update to the real version, rerun the full affected verification,
+and only then mark it merge-ready. A consumer is implementation-blocked only when no exact artifact or
+required API/design exists—not merely because the producer PR has not merged.
+
 ## The cut-over pattern (expand → publish → sync, repeated per layer)
 
 1. **Expand merge** — change the source in the *owning* package(s) **only**; touch nothing that
