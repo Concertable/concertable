@@ -6,7 +6,7 @@
 - PR: not opened
 - Dependency/package gates: docs design must merge; Reunion `7bf5f66` is available but unpublished;
   B2B and Auth authoritative work is active and unpushed on Tommy's other workstation
-- Last reconciled: 2026-08-09 against Concertable `origin/main` `2eb8bc476`, GitHub PR metadata, local
+- Last reconciled: 2026-08-09 against Concertable `origin/main` `ab5bea7af`, GitHub PR metadata, local
   worktree inventory, and Reunion commit `7bf5f66`
 
 ## Current state
@@ -62,6 +62,8 @@ publish packages, or start the Concertable producer cutover in that phase.
 - Full docs review of `2eb8bc476..38f11e6eb` found four issues; all were fixed in `b9cc525c2`.
 - Incremental docs review of `38f11e6eb..b9cc525c2` found no new issues and stamped watermark
   `b9cc525c2`. Merge evidence remains pending.
+- Before delivery, the branch merged non-overlapping platform-sync PR #442 and is current with
+  `origin/main` `ab5bea7af`; the PR diff remains the same three docs paths.
 
 ## Reviews
 
@@ -129,6 +131,16 @@ publish packages, or start the Concertable producer cutover in that phase.
 - Outcome: No new findings; all four original findings remain resolved and the substantive branch
   head is clean for `/merge-docs`.
 - Follow-up: checkpoint this review observation, push/open the docs PR, and land it through
+  `/merge-docs`.
+
+### 2026-08-09 — delivery-base reconciliation
+
+- Action: Fetched current `origin/main`, inspected platform-sync PR #442, and merged it before push.
+- Evidence: `origin/main` `ab5bea7af`; the intervening commit changes only the five service
+  `Directory.Packages.props` pins; `git diff --name-only origin/main...HEAD` remains the roadmap, plan,
+  and ledger.
+- Outcome: The docs branch is current with its base and has no source/package delta of its own.
+- Follow-up: commit this delivery checkpoint, verify the push heads, open the docs PR, and
   `/merge-docs`.
 
 ## Resume prompt
