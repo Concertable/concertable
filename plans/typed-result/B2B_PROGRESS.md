@@ -148,10 +148,10 @@ Resume when: Current main contains the published Reunion-backed platform pin and
 
 - Action: registered the B2B .NET 11/workflow-union plan as a downstream owner and reconciled this
   ledger's own ReUnion wait to the three-line hard-blocker contract.
-- Evidence: `plans/dotnet-11/B2B_WORKFLOW_UNIONS_PLAN.md` and its companion ledger on the isolated
-  docs-planning branch based on current `origin/main`.
-- Outcome: the dependent plan waits for this source PR and every resulting publication/platform-sync
-  gate to become terminal and green.
+- Evidence: `plans/dotnet-11/B2B_WORKFLOW_UNIONS_PLAN.md` and its companion ledger merged to main in
+  docs-only PR #448 as `fcc6935f4`.
+- Outcome: the dependent plan waits for this B2B implementation plan's future source PR and every
+  resulting publication/platform-sync gate to become terminal and green.
 - Follow-up: at that gate, update the dependent ledger and surface its reserved implementation prompt.
 
 ### 2026-08-09 - Reunion integration dependency registered

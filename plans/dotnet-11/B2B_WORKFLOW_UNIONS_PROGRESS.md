@@ -3,19 +3,22 @@
 - Plan: `plans/dotnet-11/B2B_WORKFLOW_UNIONS_PLAN.md`
 - Worktree: not created
 - Branch: `Refactor/dotnet-11_b2b-workflow-unions` (reserved; not created)
-- PR: #448 — https://github.com/Concertable/concertable/pull/448
+- Plan PR: #448 merged — https://github.com/Concertable/concertable/pull/448
+- Closeout PR: #449 open — https://github.com/Concertable/concertable/pull/449
 - Dependency/package gates: blocked on the terminal B2B typed-result lifecycle recorded in
   `plans/typed-result/B2B_PROGRESS.md`
-- Last reconciled: 2026-08-09 against `origin/main` `43fe1caf4`, the current typed-result/ReUnion
+- Last reconciled: 2026-08-09 against `origin/main` `fcc6935f4`, the current typed-result/ReUnion
   ledgers, B2B project references, workflow source, CI pins, and official .NET/Functions guidance
 
 ## Current state
 
-The roadmap, implementation plan, and this recovery ledger exist on the isolated docs-planning branch.
-Docs-only PR #448 is open from verified head `cc2f7becf`; it targets `main`, carries `skip-e2e`, and its
-diff contains only the roadmap, plan, new ledger, and B2B owner ledger. The full docs review found three
-issues, all fixed in `44b435779`; the blocked-ledger reconciliation review found two more, all fixed in
-`0a7b0d181`; both incremental reviews were clean. No implementation worktree, SDK installation,
+The roadmap, implementation plan, recovery ledger, and two-ledger return path are durable on main.
+Docs-only PR #448 merged from verified head `b2ba0e6c1` as `fcc6935f4`; E2E was bypassed because its
+diff contains only the roadmap, plan, new ledger, and B2B owner ledger. Recovery ownership is now the
+clean `Docs/dotnet-11_b2b-workflow-unions-plan_closeout` worktree; the spent source worktree and branch
+are removed. The full docs reviews found five issues across the draft and blocked-ledger reconciliation
+plus two closeout accuracy issues; all were fixed, the closeout fixes landed in `f015df3db`, and all
+three fix-commit incremental reviews were clean. No implementation worktree, SDK installation,
 `global.json`, target-framework edit, workflow refactor, test run, package publication, or runtime
 deployment has occurred.
 
@@ -65,6 +68,12 @@ Resume when: Current main contains the merged B2B work and `plans/typed-result/B
   `0a7b0d181`.
 - Incremental docs review: `abddcf39b..0a7b0d181` (1 commit), no new findings, same artifact,
   watermark `0a7b0d181`. Open findings: none.
+- PR #448 merged from reviewed/verified head `b2ba0e6c1` as `fcc6935f4`.
+- Closeout docs review: `fcc6935f4..f89ae7669` (1 commit), artifact
+  `reviews/Docs-dotnet-11_b2b-workflow-unions-plan_closeout.md`; `ACC1` and `ACC2` fixed in
+  `f015df3db`.
+- Incremental closeout docs review: `f89ae7669..f015df3db` (1 commit), no new findings, same artifact,
+  watermark `f015df3dbc1cc5ec14f2836a8b01224b20e64601`. Open findings: none.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -163,6 +172,54 @@ Resume when: Current main contains the merged B2B work and `plans/typed-result/B
 - Outcome: the reviewed docs-only PR is ready for the sanctioned admin merge, and the durable ledger
   has returned to the implementation blocker that remains after delivery.
 - Follow-up: transport this PR-state checkpoint, reverify all heads/paths, and admin-merge PR #448.
+
+### 2026-08-09 — docs plan merged and recovery transferred
+
+- Action: admin-merged PR #448, fast-forwarded local main, and transferred recovery ownership to the
+  clean `Docs/dotnet-11_b2b-workflow-unions-plan_closeout` worktree.
+- Evidence: PR head `b2ba0e6c1decaac1740d28abdc0c1d5136feccc8`; merge commit
+  `fcc6935f4b0ef80f3dd2e8c04330eaed9eca6fa6`; four Markdown-only paths; no `api/**` path.
+- Outcome: the plan and two-ledger return path are durable on main, with no E2E, package publication,
+  platform sync, runtime mutation, or implementation-worktree creation.
+- Follow-up: remove the spent source worktree/branch, review this closeout, and land it through
+  `/merge-docs`; the implementation remains blocked behind the recorded B2B owner.
+
+### 2026-08-09 — closeout docs review fixes
+
+- Action: reviewed the merge/transfer checkpoint and fixed both accuracy/followability findings.
+- Evidence: `reviews/Docs-dotnet-11_b2b-workflow-unions-plan_closeout.md`; `ACC1` and `ACC2`.
+- Outcome: current state now names main and the closeout owner accurately, and the downstream gate
+  distinguishes the future B2B implementation PR from docs PR #448.
+- Follow-up: commit the fixes, run incremental closeout review, then land through `/merge-docs`.
+
+### 2026-08-09 — clean closeout incremental review
+
+- Action: reviewed only the committed closeout accuracy fixes after the recorded watermark.
+- Evidence: `f89ae7669..f015df3db`; review watermark
+  `f015df3dbc1cc5ec14f2836a8b01224b20e64601`; state, ownership, downstream-gate, and
+  `git diff --check` verification.
+- Outcome: no new findings; both closeout findings remain resolved.
+- Follow-up: checkpoint this review result and land the Markdown-only closeout through `/merge-docs`.
+
+### 2026-08-09 — verified closeout work-head push
+
+- Action: pushed the reviewed closeout work head and fetched its remote-tracking ref for equality.
+- Evidence: local and remote `Docs/dotnet-11_b2b-workflow-unions-plan_closeout` both
+  `59e1e3d66fefc3aef7b3ef2bcdd4a85fd32b032a`; branch is current with `origin/main`; diff is exactly
+  two Markdown paths.
+- Outcome: the closeout review fixes and clean incremental-review checkpoint are durably published.
+- Follow-up: transport this checkpoint, open and verify the docs PR, then restore the implementation
+  blocker before admin merge.
+
+### 2026-08-09 — closeout docs PR opened and verified
+
+- Action: opened closeout PR #449, added `skip-e2e`, and verified its identity and diff.
+- Evidence: initial PR head `205429cd8463673e5be93c77649cea4783a942a1`; base `main`; head
+  `Docs/dotnet-11_b2b-workflow-unions-plan_closeout`; exactly two Markdown paths.
+- Outcome: the reviewed docs-only closeout is ready for the sanctioned admin merge, and the durable
+  ledger has returned to the implementation blocker that remains after delivery.
+- Follow-up: transport this PR-state checkpoint, reverify all heads and paths, then admin-merge PR
+  #449.
 
 ## Resume prompt
 
