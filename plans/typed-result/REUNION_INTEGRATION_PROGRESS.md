@@ -124,11 +124,11 @@ implementation without changing the Payment delivery order.
 
 ## Next Steps
 
-Blocked: NuGet.org rejected the newest recovered 46-character historical key with HTTP 403; alternate private-history candidates exist, but selecting and attempting another requires explicit authorization after that failed validation.
-
-Unblock action: Tommy explicitly authorizes selecting the historical key tied to the successful Reunion `0.1.0-alpha.1` publication and attempting the exact `Reunion.Errors` `0.1.0-alpha.2` push, or restores the known-valid reusable key directly in Windows user scope without pasting it into chat.
-
-Resume when: that authorization is explicit or a known-valid reusable user-scoped key is present; keep the accepted key until revoked or expired, publish exact candidate SHA-256 `16DDA3B382D696DD2F789C1FF4EE7CA6F36A1367AE57871B432C45EDD63D3DF4`, verify its production signature/content, restore PR #453 from NuGet.org only, then review, push, and `/merge` with full E2E.
+Select only historical key candidates tied to the successful Reunion `0.1.0-alpha.1` publication,
+exclude the rejected candidate, and attempt the exact `Reunion.Errors` `0.1.0-alpha.2` publication in
+ranked order, stopping at the first success. Persist only the accepted key in Windows user scope and
+retain it until revoked or expired. Verify production signature/content, restore PR #453 from
+NuGet.org only, then review, push, and `/merge` with full E2E.
 
 ## Completed work
 
@@ -426,6 +426,13 @@ Resume when: that authorization is explicit or a known-valid reusable user-scope
   delivery-ready and provide the exact remaining-call-site inventory.
 
 ## Event log
+
+### 2026-08-09 — alternate historical key attempt authorized
+
+- Action: Tommy explicitly authorized selecting the historical key tied to the successful Reunion
+  `0.1.0-alpha.1` publication and attempting the exact alpha.2 push, stopping at the first success.
+- Outcome: The credential blocker is actionable. Candidate selection remains private, excludes the
+  rejected value, displays no credential material, and persists only the accepted reusable key.
 
 ### 2026-08-09 — reusable credential recovery attempted
 
