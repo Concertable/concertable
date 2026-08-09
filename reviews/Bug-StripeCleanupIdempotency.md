@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `67d958bba`  _(2026-08-09)_
-**Security-reviewed up to commit:** `67d958bba`  _(2026-08-09)_
+**Reviewed up to commit:** `a797e2bcd2c3018ae5af197a4f94dd5222352fdc`  _(2026-08-09)_
+**Security-reviewed up to commit:** `a797e2bcd2c3018ae5af197a4f94dd5222352fdc`  _(2026-08-09)_
 
 > Range reviewed: `dc0da93..abcc9be` (2 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -37,3 +37,14 @@ No issues found. The merge preserves the remote exact-PaymentIntent hold correla
 its sole overlap by removing the now-obsolete customer-and-amount lookup. The reconciled tree passes
 the E2E helper tests 5/5, Payment unit tests 228/228, and the B2B UI E2E project build with zero
 errors. No new secret, service-boundary, webhook, or runtime behavior was introduced by the merge.
+
+## Incremental review — 2026-08-09 (declined-card semantics)
+
+> Range reviewed: `67d958b..a797e2b` (2 commits).
+
+No issues found. Stripe confirmation transport is now synchronized for every card submission while
+success validation remains limited to successful-flow operations. Expected-decline scenarios use a
+named operation and retain their existing UI rejection assertions; the generic confirmation helper
+contains no outcome enum, boolean mode, or status-code exception. Error extraction is centralized in
+one E2E response extension and catches only malformed JSON using the repository's compact empty-block
+form. The E2E helper tests pass 5/5 and both B2B and Customer UI E2E projects build with zero errors.
