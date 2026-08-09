@@ -1,11 +1,11 @@
 # Full-stack polyrepo — frontend build separation progress
 
 - Plan: `plans/platform/POLYREPO_FULLSTACK_PLAN.md`
-- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-platform_polyrepo_import-boundary` — dedicated Phase 3 import-boundary checkout, current with `origin/main` at `9a54efd58`.
+- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-platform_polyrepo_import-boundary` — dedicated Phase 3 import-boundary checkout, currently 64 commits behind `origin/main` at `c72b058af` after resolving a pre-existing midnight integration-test blocker through its own PR.
 - Branch: `Feature/platform_polyrepo_import-boundary` — direct owner of the remaining Phase 3 import-boundary work.
-- PR: **import-boundary PR [#428](https://github.com/Concertable/concertable/pull/428) OPEN** at verified remote head `c928d34c4`, base `main`, not draft, no labels. New main `9a54efd58` is merged, rebuilt, review-clean, and published; this transport checkpoint is the sole local tail. Prior mobile-carve PR [#416](https://github.com/Concertable/concertable/pull/416) merged as `83a3f49a1`; publish-first mobile-retarget PR [#413](https://github.com/Concertable/concertable/pull/413) merged as `62646f4cd` and republished `@concertable/mobile@0.1.0-alpha.0.2571`; carved-web CSS [#405] (`d9c62e2c5`); Phase 3b [#389] (`1cbeb2175`); Phase 3a [#378] (`fba490e25`); Phase 2 [#360] (`a3f9535`); Phase 1 [#301]+[#319].
+- PR: **import-boundary PR [#428](https://github.com/Concertable/concertable/pull/428) OPEN** at verified remote head `1e91e4ed6`, base `main`, not draft, no labels. Replacement run 31284847017 exposed the pre-existing B2B Concert UTC-midnight fixture defect; dependency fix PR #440 and its platform-sync PR #442 are now terminal on main. Prior mobile-carve PR [#416](https://github.com/Concertable/concertable/pull/416) merged as `83a3f49a1`; publish-first mobile-retarget PR [#413](https://github.com/Concertable/concertable/pull/413) merged as `62646f4cd` and republished `@concertable/mobile@0.1.0-alpha.0.2571`; carved-web CSS [#405] (`d9c62e2c5`); Phase 3b [#389] (`1cbeb2175`); Phase 3a [#378] (`fba490e25`); Phase 2 [#360] (`a3f9535`); Phase 1 [#301]+[#319].
 - Dependency/package gates: **#413 FE publication DONE** — successful descendant run [31197751649](https://github.com/Concertable/concertable/actions/runs/31197751649) published and feed-verified `@concertable/mobile@0.1.0-alpha.0.2571` with the brand assets. This unblocks the follow-up mobile carve gate. No `api/**` → no backend platform-sync.
-- Last reconciled: 2026-08-09 — pushed reviewed head `c928d34c4`; local, remote branch, and PR `headRefOid` were exactly equal. This transport checkpoint is the sole local tail and must be pushed before replacement checks are accepted.
+- Last reconciled: 2026-08-09 — the midnight blocker is terminal: fix PR #440 merged as `2eb8bc476`, package publish/restore run 31288225192 passed, and platform-sync PR #442 merged as `ab5bea7af`. Current `origin/main` is `c72b058af`; PR #428 is 64 commits behind and must absorb that base before replacement verification.
 
 ## Current state
 
@@ -24,7 +24,7 @@ from `app/mobile/TECH_DEBT.md`.
 
 ## Next Steps
 
-**1. Finish and land import-boundary PR #428.** Commit and push this transport checkpoint, verify exact head equality, then require replacement checks. Recheck currency immediately at terminal green and enqueue full E2E if current. Phase 3 becomes terminal only after the merge is recorded and its recovery state is transferred to a closeout worktree.
+**1. Finish and land import-boundary PR #428.** Commit this resolved-blocker checkpoint, merge `origin/main` at `c72b058af`, rebuild and incrementally review the current-main range, then publish through the compound protocol and require replacement checks. Recheck currency immediately at terminal green and enqueue full E2E if current. Phase 3 becomes terminal only after the merge is recorded and its recovery state is transferred to a closeout worktree.
 
 Then Phase 4 (FE platform-sync) and Phase 5 (produce full-stack repos, D-A/D-B) per the plan.
 Gate: each item ends with its own green carve/build proof on its PR.
@@ -52,6 +52,7 @@ Gate: each item ends with its own green carve/build proof on its PR.
 - **Current-main gate (2026-08-08):** after merging base `0514fe25b`, `dotnet build api/Concertable.slnx` succeeded with 0 errors. The merge changed no PR-owned frontend boundary or workflow path, so the existing clean Node 20 boundary proof remains applicable.
 - **Second current-main gate (2026-08-09):** after merging base `cf4737b4f` as `b9425e5da`, `dotnet build api/Concertable.slnx --no-restore` succeeded with 0 errors (six existing nullable-context warnings). The merge imports only the platform-version sync and skill documentation; it changes no PR-owned frontend boundary or workflow path, so the existing clean Node 20 boundary proof remains applicable.
 - **Third current-main gate (2026-08-09):** after merging base `9a54efd58` as `92e5be5df`, the initial parallel `dotnet build api/Concertable.slnx --no-restore` hit a transient Windows `CS0016` invalid output-handle failure in `Concertable.Payment.Api`; the single-threaded retry passed with 0 errors. The merge changes only techdebt command/plugin metadata, so the existing clean Node 20 boundary proof remains applicable.
+- **Midnight integration blocker fix (2026-08-09):** CI run 31284847017 failed 11 `ContractApiTests` after the test host crossed UTC midnight: `SeedCatalog` retained the prior day's captured clock while `OpportunityRequestBuilders` recomputed `DateTime.UtcNow.AddMonths(1)`, colliding with seeded concert 45. Isolated fix PR #440 made every generated opportunity use the fixture seed clock. `scripts/integration.ps1 concert` passed B2B Concert 144/144 and Customer Concert 11/11; PR-head run 31287014734 and merge-group runs 31287569394/31287815716 passed. Publication/restore run 31288225192 and sync PR #442 completed green.
 - **Standing frontend gate (2026-08-08):** clean official Node 20 container; `npm ci` green; `npm run build:packages` built all five tiers; all four web builds green (3713 customer, 4404 venue, 4394 artist, 1757 business modules); `tsc --noEmit` green for `mobile/customer` and `mobile/b2b`; `git diff --check` green.
 
 - **Mobile carve matrix implementation (2026-08-07):** `.github/workflows/test.yml` now lists all six
@@ -116,6 +117,13 @@ Gate: each item ends with its own green carve/build proof on its PR.
 - **Metro/nativewind/tailwind runtime configs left for Phase 3.** The Phase 2 gate is build + typecheck; the mobile app's metro `watchFolders`/nativewind `input`/tailwind `content` still point at `../shared` source. The app already resolves `@concertable/shared`/`customer` as symlinked packages the same way, so no in-monorepo runtime regression, but className/class-generation on the precompiled dist is unproven — a first-class Phase 3 item, not a silent gap.
 
 ## Event log
+
+### 2026-08-09 — midnight integration blocker fixed, published, and synced
+
+- Action: Diagnosed PR #428 replacement run 31284847017 instead of retrying it. Eleven B2B `ContractApiTests` all failed just after UTC midnight with `400 "You already have a concert on this day"`; the immediately preceding same-code head had passed before midnight. Created isolated short-path branch/worktree `Fix/IntegrationMidnightClock`, made generated opportunity dates share the fixture's captured seed clock, verified and reviewed it, then landed the dependency through its own PR and platform-sync lifecycle.
+- Evidence: root cause was the host-captured `SeedCatalog.Now` from August 8 plus seeded concert 45 at +32 days versus request-builder `DateTime.UtcNow.AddMonths(1)` after the clock rolled to August 9—both resolved to September 9. Targeted integration verification passed B2B Concert 144/144 and Customer Concert 11/11. PR #440 merged as `2eb8bc4764ee1303dc77ced9149b1e7a5f093583`; package publish/restore run 31288225192 succeeded; platform-sync PR #442 merged as `ab5bea7aff3153bc5095d07c6b918a8aeeae286a`. The clean fix worktree/branch was removed.
+- Outcome: the unrelated main-line test defect is fixed and fully synced; PR #428 can resume. Main advanced to `c72b058af` during the dependency lifecycle.
+- Follow-up: merge current main into #428, rebuild/review, republish, and require a fresh exact-head gate before queue admission.
 
 ### 2026-08-09 — third current-main reviewed head pushed and verified
 
