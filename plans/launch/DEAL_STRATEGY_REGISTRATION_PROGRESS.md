@@ -5,33 +5,37 @@
 - Branch: `Refactor/launch_deal_strategy_registration`
 - PR: not opened
 - Dependency/package gates: none; this is an internal B2B refactor
-- Last reconciled: 2026-08-09 against `origin/main` at `0fa7f6460`
+- Last reconciled: 2026-08-09; Phase 1 was verified against `origin/main` at `0fa7f6460`, and the
+  latest observed `origin/main` is `d57e0c2a6`
 
 ## Current state
 
-Phase 1 is complete and included in the current checkpoint. The Concert module now has a scoped
+Phase 1 is complete in commit `506bc35e4`. The Concert module now has a scoped
 generic strategy factory, an atomic vertical registration builder with duplicate/exact-coverage/
 lifetime validation, four cohesive `IDealTerms` leaves, scoped renderer/serializer/fingerprint
 facades, and characterization plus DI composition tests. The scoped `IKeyedServiceProvider` adapter
 resolves from the active request scope, and composition fails before registration when any strategy
 family omits an explicit coverage declaration. No Phase 2 family has been changed.
 
-The branch is current with `origin/main` at `0fa7f6460`; no PR exists and no package gate applies.
-Phase 1's unit, Concert integration, and full-solution build gates are terminal green.
+Phase 1's unit, Concert integration, and full-solution build gates are terminal green. No PR exists
+and no package gate applies. A post-commit fetch found the branch 48 commits behind the newly advanced
+`origin/main` at `d57e0c2a6`; reconciling that clean drift is the prerequisite to Phase 2.
 
 ## Next Steps
 
 Implement Phase 2 only — party direction and payment projection:
 
-1. Replace `TicketPayeeResolver`, `SettlementPayeeResolver`, `VenuePayeeResolver`, and
+1. Fetch `origin`, merge current `origin/main` into this clean branch, and rebuild the affected
+   projects before editing Phase 2.
+2. Replace `TicketPayeeResolver`, `SettlementPayeeResolver`, `VenuePayeeResolver`, and
    `ArtistPayeeResolver` with the cohesive `IDealPartyResolver` facade and its directional leaves.
-2. Migrate `PaymentAmountMapper` to the generic strategy factory without changing its response union
+3. Migrate `PaymentAmountMapper` to the generic strategy factory without changing its response union
    or wire shapes.
-3. Register both families in the existing vertical per-`DealType` composition block and add
+4. Register both families in the existing vertical per-`DealType` composition block and add
    table-driven coverage for ticket user, ticket tenant, and settlement tenant across all deal types.
-4. Run the Phase 2 Concert unit/integration gates and `dotnet build api/Concertable.slnx`; use the
+5. Run the Phase 2 Concert unit/integration gates and `dotnet build api/Concertable.slnx`; use the
    short artifacts roots recorded below when working from this deep Windows worktree.
-5. Review the final diff, update this ledger, check off Phase 2, and commit that verified phase.
+6. Review the final diff, update this ledger, check off Phase 2, and commit that verified phase.
 
 Do not begin Phase 3 in the same turn; hand back after the Phase 2 commit and ledger checkpoint.
 
@@ -48,6 +52,7 @@ Do not begin Phase 3 in the same turn; hand back after the Phase 2 commit and le
   canonical serialization, fingerprints, keyed coverage, and lifetime semantics with tests.
 - The factory keeps its narrow `IKeyedServiceProvider` dependency through a scoped adapter that maps
   to the current DI scope; root resolution of scoped keyed leaves remains invalid.
+- Phase 1 committed as `506bc35e4` (`refactor(concert): introduce deal strategy registration`).
 
 ## Verification
 
@@ -195,6 +200,16 @@ Do not begin Phase 3 in the same turn; hand back after the Phase 2 commit and le
 - Outcome: Phase 1 is complete in this checkpoint; the terms pilot proves the reusable strategy
   registration model without changing any Phase 2 family.
 - Follow-up: Implement and verify Phase 2 only.
+
+### 2026-08-09 — post-commit base drift checkpointed
+
+- Action: Verified the Phase 1 commit and clean worktree, then fetched `origin` to reconcile the
+  delivery identity before handoff.
+- Evidence: commit `506bc35e4`; clean status; `origin/main` at `d57e0c2a6`; branch 48 commits behind
+  and 6 commits ahead; no PR.
+- Outcome: Phase 1 remains complete and verified against the session-start base, but Phase 2 must
+  first merge the newly advanced `origin/main` and rebuild affected projects.
+- Follow-up: Reconcile the clean branch with current `origin/main`, then implement Phase 2 only.
 
 ## Resume prompt
 
