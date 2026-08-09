@@ -1,6 +1,6 @@
 ---
 name: techdebt
-description: Pick one repository tech-debt item and take it all the way to a pull request from the persistent isolated Chore/TechDebt worktree. Use whenever the user invokes $techdebt, says "techdebt", asks to pick or resolve a TECH_DEBT.md item, or wants one self-contained tech-debt task completed end to end.
+description: Pick one Concertable tech-debt item and take it through investigation, durable implementation, verification, commit, push, and PR from the persistent isolated Chore/TechDebt worktree. Use when Tommy invokes $techdebt or /techdebt, asks to work through TECH_DEBT.md, or requests one self-contained debt item end to end.
 ---
 
 # Tech debt

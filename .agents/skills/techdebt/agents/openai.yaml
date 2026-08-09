@@ -1,4 +1,4 @@
 interface:
   display_name: "Tech Debt"
   short_description: "Resolve one tech-debt item through a PR"
-  default_prompt: "Use $techdebt to pick and properly resolve one repository tech-debt item."
+  default_prompt: "Use $techdebt to pick and properly resolve one Concertable tech-debt item."
