@@ -54,7 +54,7 @@ describe("configureClient", () => {
     expect(error.message).toBe("Unavailable");
   });
 
-  it("resolves an optional 404 as null", async () => {
+  it("resolves an optional 404 as null after client configuration", async () => {
     const { client } = createConfiguredClient();
 
     const response = await client.getOptional<{ id: number }>("/missing");
@@ -63,34 +63,43 @@ describe("configureClient", () => {
     expect(response.data).toBeNull();
   });
 
-  it("preserves unexpected errors during the additive rollout", async () => {
+  it("resolves an optional 404 as null without auth configuration", async () => {
+    const client = createApiClient();
+    configureClient(client, baseURL);
+
+    const response = await client.getOptional<{ id: number }>("/missing");
+
+    expect(response.status).toBe(404);
+    expect(response.data).toBeNull();
+  });
+
+  it("maps unexpected responses to ApiError", async () => {
     const { client } = createConfiguredClient();
 
     await expect(client.get("/missing")).rejects.toMatchObject({
-      isAxiosError: true,
-      response: {
-        status: 404,
-        data: { title: "Not found", detail: "Not ready" },
-      },
+      name: "ApiError",
+      status: 404,
+      details: { title: "Not found", detail: "Not ready" },
     });
   });
 
-  it("runs unauthorized handling before preserving the error", async () => {
+  it("runs unauthorized handling before mapping the error", async () => {
     const { client, onUnauthorized } = createConfiguredClient();
 
     await expect(client.get("/unauthorized")).rejects.toMatchObject({
-      isAxiosError: true,
-      response: { status: 401 },
+      name: "ApiError",
+      status: 401,
     });
     expect(onUnauthorized).toHaveBeenCalledOnce();
   });
 
-  it("passes through non-404/401 errors unchanged", async () => {
+  it("maps non-404/401 errors to ApiError", async () => {
     const { client } = createConfiguredClient();
 
     await expect(client.get("/other")).rejects.toMatchObject({
-      isAxiosError: true,
-      response: { status: 503, data: { detail: "Unavailable" } },
+      name: "ApiError",
+      status: 503,
+      details: { detail: "Unavailable" },
     });
   });
 });
