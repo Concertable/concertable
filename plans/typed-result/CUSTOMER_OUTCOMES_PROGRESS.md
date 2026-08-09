@@ -6,7 +6,7 @@
 - PR: [#425](https://github.com/Concertable/concertable/pull/425) — open, non-draft, head `e60219f7d`
 - Dependency/package gates: no implementation gate; this non-Payment scope can convert against
   published Reunion `.1` now. PR #282 remains excluded and Payment delivery is tracked separately.
-- Last reconciled: 2026-08-09 against `origin/main` `1043a9178`, pre-merge local head `e7c44f5b3`,
+- Last reconciled: 2026-08-09 against `origin/main` `1043a9178`, local merge head `c7ff8c474`,
   PR #425 head `e60219f7d`, and the current Reunion owner ledger
 
 ## Current state
@@ -47,13 +47,45 @@ PR #425 can be prepared locally now against published Reunion `.1` because its s
 Payment.Client. Preserve its existing review history and remote head; update the PR once after the
 current-main conversion, verification, and incremental review are complete.
 
+The direct Reunion conversion is implemented in the working tree across Review, Preference, User,
+Venue, and Artist. All 20 compiling projects that consume Reunion APIs directly own the matching
+`Reunion`, `Reunion.Errors`, or `Reunion.AspNetCore` package; the scoped source contains no legacy
+Kernel functional/error or Shared.Api terminal namespace. Existing HTTP statuses, bodies, and
+Review's `CreatedAtAction` location are preserved.
+
+Docker-independent verification is green: the Customer Release solution builds with 0 errors and 3
+existing warnings; the five scoped unit suites pass 67/67; Shared.Api passes 60/60; and the isolated
+36-project Customer carve builds with 0 errors. The ownership/scope audit and `git diff --check` also
+pass. The mandatory integration pre-flight timed out without a Docker daemon response, so no current
+candidate integration suite started. The conversion remains uncommitted and PR #425 remains
+unchanged until Docker recovers and the integration plus incremental-review gates pass.
+
+On resume, `docker ps` succeeds against Docker Desktop with no running containers. The integration
+gate is actionable again. Fresh `origin/main` `d66b780cd` is two documentation-only commits ahead;
+those commits change only three `TECH_DEBT.md` files outside this scope, so the preserved candidate
+can complete integration verification before its required current-main reconciliation.
+
+The resumed integration gate is green. Customer Review 12/12, Preference 7/7, User 6/6, Venue 2/2,
+and Artist 2/2 pass (29/29 total); the module wrappers also pass B2B User 3/3, Venue 25/25, and Artist
+17/17 (45/45). Each project used a fresh Testcontainers SQL container and every container was removed.
+
+The complete 45-path candidate was stashed, `origin/main` `d66b780cd` merged as `2180c19c0`, and the
+stash restored without conflict. The branch is 0 behind current main and the exact 45 dirty paths are
+present again; the merge itself changed only the three unrelated `TECH_DEBT.md` files identified in
+the pre-merge audit.
+
+The current-main local gate is fully green: the complete API Release solution builds with 0 errors
+and 5 existing warnings; the scoped unit suites pass 67/67; Shared.Api passes 60/60; the isolated
+36-project Customer carve builds with 0 errors; and the direct-package, carrier, nullability,
+collection, terminal, excluded-path, and whitespace audits all pass.
+
 ## Next Steps
 
-Audit this scope's package and HTTP-edge topology, and migrate the existing Review/Preference/User/
-Venue/Artist work to direct published Reunion packages without
-touching Ticket, Concert, Payment clients/mocks, purchase, or checkout. Verify the affected Customer
-integration tests, Release solution, and carve; incrementally review; then update PR #425 once. Do not
-enqueue it until the topology audit proves it merge-ready and the updated PR gates are green.
+Commit the verified Reunion conversion and this ledger as one coherent checkpoint. The prior review
+artifact was deliberately removed after its clean watermark, so run a fresh full code review of the
+committed branch instead of fabricating an incremental watermark; address every fixable finding and
+re-review fixes. When clean, update PR #425 once through the plan-managed two-leg push. Do not enqueue
+it until the updated PR gates are green.
 
 ## Completed work
 
@@ -95,8 +127,28 @@ enqueue it until the topology audit proves it merge-ready and the updated PR gat
   is `Refactor/typed-result_http-terminals` at package-source commit `1d261e3ce`.
 - Re-routed that terminal dependency through the merged Reunion integration owner so Shared.Api
   publishes once and PR #425 consumes one generated platform baseline.
+- Merged current `origin/main` as `c7ff8c474` and implemented the direct published Reunion package,
+  namespace, error-definition, and HTTP-terminal conversion for the five owned Customer modules.
 
 ## Verification
+
+- Current Reunion candidate: Customer Release solution 0 errors and 3 existing warnings; Review
+  30/30, Preference 19/19, User 14/14, Venue 2/2, Artist 2/2; Shared.Api 60/60.
+- Current-main final rerun: complete `api/Concertable.slnx` Release build 0 errors and 5 existing
+  warnings; Review 30/30, Preference 19/19, User 14/14, Venue 2/2, Artist 2/2; Shared.Api 60/60.
+- Current CI-equivalent Customer carve copied the working candidate's tracked files to a validated
+  temporary directory, built all 36 non-test/non-AppHost projects from package references with
+  `-p:MinVerSkip=true`, and completed with 0 errors before the directory was removed.
+- Direct package ownership passed for all 20 scoped compiling projects. No legacy
+  `Concertable.Kernel.Functional`, `Concertable.Kernel.Errors`, or
+  `Concertable.Shared.Api.Results` import remains in the five modules; no Ticket, Concert, Payment,
+  shared Kernel, event, model, or migration path is changed; `git diff --check` passes.
+- Integration pre-flight: the escalated `docker ps` call timed out after 34 seconds with no daemon
+  response. No current-candidate Customer integration project or SQL container started.
+- Resumed integration gate through `scripts/integration.ps1` with short artifacts roots: Customer
+  Review 12/12, Preference 7/7, User 6/6, Venue 2/2, Artist 2/2; matching B2B User 3/3, Venue 25/25,
+  Artist 17/17. All 74 tests passed across eight projects with no failed or skipped test, and every
+  Testcontainers SQL container was removed.
 
 - `git fetch origin --quiet`: refreshed origin before branch creation and again before the plan edit.
 - Branch/worktree/PR audit: no pre-existing branch, worktree, or PR owned this slice.
@@ -246,6 +298,10 @@ Full code review `06071872b..de2b8c163` produced
 `312400220..b8e13b3ff` and `b8e13b3ff..6d994b78c` are clean. With every finding fixed, the Release
 build green, and current main reviewed, the spent artifact is removed in this checkpoint.
 
+The Reunion conversion cannot use `incremental-review` directly: the prior artifact and its mandatory
+marker were intentionally removed after that clean review, and the skill forbids reconstructing a
+watermark from ledger prose. A fresh full `code-review` of the committed branch is the resolved gate.
+
 ## Decisions, discoveries, blockers, and deviations
 
 - The current conventions explicitly forbid manufacturing Results for uniformity. Review create and
@@ -282,6 +338,65 @@ build green, and current main reviewed, the spent artifact is removed in this ch
   wire contracts remain stable through per-case `[ErrorCode]` attributes and exact definition tests.
 
 ## Event log
+
+### 2026-08-09 — current-main local gate green
+
+- Action: Reran the complete API Release build, five scoped unit suites, Shared.Api architecture
+  suite, isolated Customer carve, and all package/carrier/scope inventories after current-main merge.
+- Evidence: Release build 0 errors and 5 existing warnings; scoped unit 67/67; Shared.Api 60/60;
+  36-project carve 0 errors; direct ownership across 20 projects; carrier, nullable repository,
+  materialized collection, published terminal, excluded-path, FluentResults, and diff checks clean.
+- Outcome: All implementation and local verification gates are green. This commit makes the Reunion
+  conversion and ledger checkpoint durable before the required fresh full review.
+- Follow-up: Run the fresh full code review, fix and re-review any finding, then update PR #425 once.
+
+### 2026-08-09 — current-main reconciliation restored the candidate
+
+- Action: Stashed the complete 45-path candidate, merged the two documentation-only main commits,
+  and restored the stash.
+- Evidence: merge commit `2180c19c0`; branch 0 behind `origin/main` `d66b780cd`; restore completed
+  without conflict; the same 45 dirty paths are present and the merge changed only three unrelated
+  `TECH_DEBT.md` files.
+- Outcome: The Reunion candidate is preserved on current main. Its Docker-independent verification
+  rerun now owns progress; the green integration evidence remains valid because the base delta did
+  not change any runtime, package, build, test, or fixture input.
+- Follow-up: Execute the current `## Next Steps` verification set.
+
+### 2026-08-09 — Reunion candidate integration gate green
+
+- Action: Ran the five scoped module wrappers through `scripts/integration.ps1` with short artifacts
+  roots after Docker recovered; monitored each Testcontainers startup and cleanup.
+- Evidence: Customer Review 12/12, Preference 7/7, User 6/6, Venue 2/2, Artist 2/2; B2B User 3/3,
+  Venue 25/25, Artist 17/17; 74/74 total across eight projects with no failed or skipped test.
+- Outcome: The required five Customer integration suites are green on the preserved Reunion
+  candidate. Current-main reconciliation and its Docker-independent rerun gates now own progress.
+- Follow-up: Stash the exact dirty tree, merge documentation-only `origin/main` `d66b780cd`, restore
+  it, and execute `## Next Steps`.
+
+### 2026-08-09 — Docker gate reopened
+
+- Action: Re-ran the mandatory integration pre-flight and refreshed origin/PR state without changing
+  the preserved candidate.
+- Evidence: `docker ps` succeeded with no running containers; PR #425 remains open and non-draft at
+  `e60219f7d`; `origin/main` advanced by two commits to `d66b780cd`, changing only three unrelated
+  `TECH_DEBT.md` files.
+- Outcome: The external blocker is removed and the five-module integration gate can run against the
+  preserved candidate before its documentation-only current-main reconciliation.
+- Follow-up: Execute the five module wrappers with short artifacts roots, then continue `## Next
+  Steps` if all five Customer projects pass.
+
+### 2026-08-09 — Reunion conversion implemented; Docker blocks integration gate
+
+- Action: Migrated the five owned Customer modules to direct published Reunion `.1` packages and
+  terminals, then ran every Docker-independent verification and ownership gate.
+- Evidence: local merge head `c7ff8c474`; branch 0 behind `origin/main` `1043a9178`; Customer Release
+  build 0 errors; scoped unit suites 67/67; Shared.Api 60/60; isolated 36-project carve 0 errors;
+  direct package ownership and excluded-path inventories clean. `docker ps` timed out after 34
+  seconds without a daemon response.
+- Outcome: The uncommitted candidate is build-, unit-, architecture-, carve-, and scope-green, but
+  the required five integration suites, incremental review, commit, and one-time PR #425 update are
+  blocked on Docker Desktop health.
+- Follow-up: Start or restart Docker Desktop; resume only after `docker ps` succeeds.
 
 ### 2026-08-09 — current-main merge completed and Customer migration opened
 
@@ -568,10 +683,3 @@ build green, and current main reviewed, the spent artifact is removed in this ch
   progress.
 - Follow-up: Fetch and merge current main, inspect the base delta, run any affected local gate, then
   preflight, push, and open the PR.
-
-## Resume prompt
-
-```
-cd C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_customer-outcomes
-Read @plans/typed-result/CUSTOMER_OUTCOMES_PLAN.md and @plans/typed-result/CUSTOMER_OUTCOMES_PROGRESS.md and do what its `## Next Steps` says.
-```
