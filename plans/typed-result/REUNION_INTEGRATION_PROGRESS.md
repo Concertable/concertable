@@ -25,8 +25,9 @@
   complete; merged Reunion PR #4 replaces the builder API used by Phase 4, so PR #453 must adopt its
   direct factories and remove the temporary old-namespace source scan before delivery; that local
   gate is now green against the exact inspected `Reunion.Errors` `0.1.0-alpha.2` candidate, but the
-  package is not published and no user-scoped NuGet.org key is available; merge-queue E2E, Payment
-  publication, and generated platform sync remain pending
+  package is not published; the previously supplied scoped NuGet.org key was deliberately removed
+  after the alpha.1 release and is no longer present in process, user, or machine scope; merge-queue
+  E2E, Payment publication, and generated platform sync remain pending
 - Last reconciled: 2026-08-09 against current Concertable `origin/main` `1043a9178`, reviewed
   implementation head `da78980b7`, current-main merge `cbcfda10e`, merged Reunion PR #4 head
   `1500270`, exact local package/consumer evidence, NuGet.org package availability, live owner
@@ -37,7 +38,8 @@
 The repository-wide audit and Reunion publication are complete. The reserved integration worktree is
 current with `origin/main` `1043a9178`. Remote branch
 `Feature/typed-result_reunion-integration` and implementation PR #453 are open at `53aa0a3`; their
-reviewed code range ends at `a779fe041` and later commits are ledger-only. The current Phase 3 retirement
+remote code range ends at `a779fe041`; local reviewed implementation head is `da78980b7`, followed
+only by current-main and ledger checkpoints. The current Phase 3 retirement
 returns every `api/Concertable.Shared` source, project, and test path exactly to `origin/main`, deletes
 the obsolete HTTP-terminal plan pair, and leaves no Reunion package or overload from the discarded
 Shared rehearsal.
@@ -122,9 +124,9 @@ implementation without changing the Payment delivery order.
 
 ## Next Steps
 
-Blocked: `Reunion.Errors` `0.1.0-alpha.2` is not published and no user-scoped `NUGET_API_KEY` is available.
+Blocked: `Reunion.Errors` `0.1.0-alpha.2` is not published; the previously supplied `NUGET_API_KEY` was removed after the alpha.1 release and is absent from current process, user, and machine scopes.
 
-Unblock action: Tommy creates a NuGet.org key scoped to push `Reunion.Errors` and sets it as the user-scoped `NUGET_API_KEY` environment variable.
+Unblock action: Restore the existing scoped key as `NUGET_API_KEY` in process or user scope, or explicitly authorize recovery from private local transcript history; create a replacement key only if the original was not retained.
 
 Resume when: the key is present (verify length only) and NuGet.org still lacks `0.1.0-alpha.2`; publish exact candidate SHA-256 `16DDA3B382D696DD2F789C1FF4EE7CA6F36A1367AE57871B432C45EDD63D3DF4`, verify its production signature/content, restore PR #453 from NuGet.org only, then review, push, and `/merge` with full E2E.
 
@@ -424,6 +426,20 @@ Resume when: the key is present (verify length only) and NuGet.org still lacks `
   delivery-ready and provide the exact remaining-call-site inventory.
 
 ## Event log
+
+### 2026-08-09 — credential blocker attribution corrected
+
+- Action: Rechecked all environment scopes after Tommy correctly challenged the claim that no key had
+  been supplied, and traced the credential lifecycle recorded by the completed alpha.1 release.
+- Evidence: the earlier release ledger records deliberate post-publication key removal; current
+  process exposes only `GITHUB_NUGET_PASSWORD`; `NUGET_API_KEY`, `NUGET_KEY`, and `NUGET_TOKEN` are
+  absent in process/user/machine scopes. Transcript metadata contains prior key references, but secret
+  extraction was not authorized and no credential value was read or displayed.
+- Outcome: Tommy had supplied the key; the workflow removed it and the later report incorrectly
+  attributed its absence to him. The publication gate remains technically closed only because that
+  previously supplied credential is no longer loaded.
+- Follow-up: Restore the existing key or explicitly authorize private transcript recovery, then
+  publish the already verified immutable artifact immediately.
 
 ### 2026-08-09 — platform `.890` currency gate completed
 
