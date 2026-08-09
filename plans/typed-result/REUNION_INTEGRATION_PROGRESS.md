@@ -78,15 +78,14 @@ The corrected release worktree
 complete current-source gate is green. NuGet.org still exposes only historical `Reunion` `0.0.1`;
 `Reunion` `0.1.0-alpha.1` has been accepted, indexed, downloaded, inspected, and repository-signature
 verified from NuGet.org;
-`Reunion.Errors` `0.1.0-alpha.1` has been accepted and indexed; production artifact verification
-remains pending and `Reunion.AspNetCore` remains unpublished. A 46-character user-scoped
+`Reunion.Errors` `0.1.0-alpha.1` has been accepted, indexed, downloaded, inspected, and
+repository-signature verified; `Reunion.AspNetCore` remains unpublished. A 46-character user-scoped
 `NUGET_API_KEY` is present; its value was not displayed or recorded.
 
 ## Next Steps
 
-Download and verify indexed `Reunion.Errors` against prepared hash
-`1B2F829BEB80CAF73F98F63686962D15FBC1827EA2524D1B6FC640FDC0FDA582`, then publish `Reunion.AspNetCore` hash
-`B2166ECB6451F5B9038A9F8224D6C3AC7EA49385BAFA5C5E376728A364A91260` in dependency order. Wait for
+Publish exact `Reunion.AspNetCore` hash
+`B2166ECB6451F5B9038A9F8224D6C3AC7EA49385BAFA5C5E376728A364A91260`. Wait for
 all three packages to become restorable from clean isolated caches, verify their production metadata
 and hashes, remove the user-scoped `NUGET_API_KEY`, then checkpoint the terminal Phase 2 gate. Do not
 begin Phase 3 in this turn.
@@ -109,6 +108,10 @@ begin Phase 3 in this turn.
   hash is `XeJO3nDfFqQmtUqY0gZld/fNtgNbpog1CmPPmC2xHrZanJfpFCVQtqS9YINnuj8j9w51il/SlXKU9i8dO0PK+Q==`.
 - NuGet.org accepted exact `Reunion.Errors` `0.1.0-alpha.1`; indexing and production verification
   remain pending; the flat-container index now exposes the version.
+- Downloaded and inspected `Reunion.Errors` from production and verified its valid NuGet.org
+  repository signature. Repository-signed production SHA-256 is
+  `A1B2039CDC30F9D557FB1005F4F5B6785B065191FFBFFBA59D0878CFEF029090`; NuGet content hash is
+  `eqBtB99AZigqEyNGx7yNVwfE2INseb9ALPlSRYkw6XhfLWa0L+2EwjtcL+ioATjCUOTnxBZkNUzWrwlRrfAg/A==`.
 - Added the safe additive Shared expansion checkpoint: Kernel owns Reunion, Shared.Api owns
   Reunion.AspNetCore, Reunion parity tests cover the named-case conversion contract, and Reunion
   carriers can traverse the existing Concertable MVC error/CreatedAt boundary without deleting the
@@ -302,6 +305,15 @@ begin Phase 3 in this turn.
   waits for the Phase 4 Payment.Client publication/sync before PR #425 is updated once.
 
 ## Event log
+
+### 2026-08-09 — Reunion.Errors production artifact verified
+
+- Action: Downloaded the indexed Errors package, inspected its metadata/framework/dependency
+  contract, and ran `dotnet nuget verify --all`.
+- Evidence: package inspection and NuGet.org repository signature verification passed; production
+  SHA-256 and NuGet content hash are recorded above.
+- Outcome: Both dependencies are published and verified; Reunion.AspNetCore may publish.
+- Follow-up: Push exact Reunion.AspNetCore, then verify indexing and the complete production graph.
 
 ### 2026-08-09 — Reunion.Errors package indexed
 
