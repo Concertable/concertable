@@ -124,11 +124,11 @@ implementation without changing the Payment delivery order.
 
 ## Next Steps
 
-Select only historical key candidates tied to the successful Reunion `0.1.0-alpha.1` publication,
-exclude the rejected candidate, and attempt the exact `Reunion.Errors` `0.1.0-alpha.2` publication in
-ranked order, stopping at the first success. Persist only the accepted key in Windows user scope and
-retain it until revoked or expired. Verify production signature/content, restore PR #453 from
-NuGet.org only, then review, push, and `/merge` with full E2E.
+Blocked: `Reunion.Errors` `0.1.0-alpha.2` is unpublished and no valid NuGet.org key is recoverable locally; the alpha.1 workflow deliberately verified only key length, never recorded the value, then removed the sole user-scoped copy.
+
+Unblock action: If the original key was saved elsewhere, restore it directly as the Windows user-scoped `NUGET_API_KEY` without pasting it into chat. Otherwise refresh the existing scoped key on nuget.org's API Keys page, copy the newly issued secret, and store it in that user scope; retain it until revoked or expired rather than removing it after publication.
+
+Resume when: a known-valid reusable key is present in user scope and NuGet.org still lacks `0.1.0-alpha.2`; publish exact candidate SHA-256 `16DDA3B382D696DD2F789C1FF4EE7CA6F36A1367AE57871B432C45EDD63D3DF4`, verify production signature/content, restore PR #453 from NuGet.org only, then review, push, and `/merge` with full E2E.
 
 ## Completed work
 
@@ -426,6 +426,23 @@ NuGet.org only, then review, push, and `/merge` with full E2E.
   delivery-ready and provide the exact remaining-call-site inventory.
 
 ## Event log
+
+### 2026-08-09 — local credential recovery exhausted
+
+- Action: Parsed Codex user-message, compacted-message, archived-session, history, and scoped
+  Claude/Cowork transcript stores under Tommy's explicit authorization. Ranked and attempted only
+  candidate-shaped values from sessions carrying the successful alpha.1 publication context,
+  stopping if any value succeeded.
+- Evidence: NuGet.org rejected the initial recovered value and all 16 remaining candidate-shaped
+  session values with HTTP 403. Structural inspection proved those matches came from opaque IDs,
+  hashes, and ledger/tool echoes; no key-bearing user message exists. The original release ledger
+  explicitly records presence/length-only verification followed by deletion of the user-scoped key.
+- Outcome: The original secret was never stored in transcript history and cannot be recovered from
+  the authorized local sources. The invalid value installed during recovery was removed from user
+  scope and absence was verified.
+- External fact: NuGet.org documents that a created key cannot be copied again later. Refreshing an
+  existing scoped key retains its permissions, package applicability, and expiry while issuing a new
+  secret; that secret must be stored once in Windows user scope and retained for subsequent releases.
 
 ### 2026-08-09 — alternate historical key attempt authorized
 
