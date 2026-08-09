@@ -15,10 +15,11 @@ The roadmap, implementation plan, recovery ledger, and two-ledger return path ar
 Docs-only PR #448 merged from verified head `b2ba0e6c1` as `fcc6935f4`; E2E was bypassed because its
 diff contains only the roadmap, plan, new ledger, and B2B owner ledger. Recovery ownership is now the
 clean `Docs/dotnet-11_b2b-workflow-unions-plan_closeout` worktree; the spent source worktree and branch
-are removed. The full docs review found five issues across the draft and blocked-ledger reconciliation;
-all were fixed and both fix-commit incremental reviews were clean. No implementation worktree, SDK
-installation, `global.json`, target-framework edit, workflow refactor, test run, package publication,
-or runtime deployment has occurred.
+are removed. The full docs reviews found five issues across the draft and blocked-ledger reconciliation
+plus two closeout accuracy issues; all were fixed, the closeout fixes landed in `f015df3db`, and all
+three fix-commit incremental reviews were clean. No implementation worktree, SDK installation,
+`global.json`, target-framework edit, workflow refactor, test run, package publication, or runtime
+deployment has occurred.
 
 The current design uses native unions only after ReUnion and the existing B2B typed-result work have
 landed. Published B2B contracts stay net10-compatible; the net11 boundary is the B2B runtime and its
@@ -66,10 +67,12 @@ Resume when: Current main contains the merged B2B work and `plans/typed-result/B
   `0a7b0d181`.
 - Incremental docs review: `abddcf39b..0a7b0d181` (1 commit), no new findings, same artifact,
   watermark `0a7b0d181`. Open findings: none.
-- PR #448 merged from reviewed/verified head `b2ba0e6c1` as `fcc6935f4`; closeout docs review pending.
+- PR #448 merged from reviewed/verified head `b2ba0e6c1` as `fcc6935f4`.
 - Closeout docs review: `fcc6935f4..f89ae7669` (1 commit), artifact
-  `reviews/Docs-dotnet-11_b2b-workflow-unions-plan_closeout.md`; `ACC1` and `ACC2` fixed in the current
-  working tree; incremental review pending.
+  `reviews/Docs-dotnet-11_b2b-workflow-unions-plan_closeout.md`; `ACC1` and `ACC2` fixed in
+  `f015df3db`.
+- Incremental closeout docs review: `f89ae7669..f015df3db` (1 commit), no new findings, same artifact,
+  watermark `f015df3dbc1cc5ec14f2836a8b01224b20e64601`. Open findings: none.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -187,6 +190,15 @@ Resume when: Current main contains the merged B2B work and `plans/typed-result/B
 - Outcome: current state now names main and the closeout owner accurately, and the downstream gate
   distinguishes the future B2B implementation PR from docs PR #448.
 - Follow-up: commit the fixes, run incremental closeout review, then land through `/merge-docs`.
+
+### 2026-08-09 — clean closeout incremental review
+
+- Action: reviewed only the committed closeout accuracy fixes after the recorded watermark.
+- Evidence: `f89ae7669..f015df3db`; review watermark
+  `f015df3dbc1cc5ec14f2836a8b01224b20e64601`; state, ownership, downstream-gate, and
+  `git diff --check` verification.
+- Outcome: no new findings; both closeout findings remain resolved.
+- Follow-up: checkpoint this review result and land the Markdown-only closeout through `/merge-docs`.
 
 ## Resume prompt
 
