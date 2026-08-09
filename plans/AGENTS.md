@@ -53,6 +53,16 @@ not each need their own PR; keep coherent work together. Split only where a merg
 platform sync or runtime deployment must finish before the next work can build or run, and group all
 work possible on each side of that gate.
 
+## Delivery gates do not automatically block implementation
+
+For work spanning branches, packages, or generated syncs, keep two dependency graphs: what must exist
+to implement and verify locally, and what must land before delivery. A PR, publication, or platform-sync
+gate blocks local implementation only when the required source, API, design, or exact test artifact is
+unavailable. Otherwise prepare the consumer in its own worktree, test and review it against the exact
+producer artifact, and leave it delivery-gated until it passes again against the published baseline.
+Actively hand off every independent implementation path; parallel means independently owned work made
+ready for its eventual merge order, not branches that are already mergeable today.
+
 ## Cross-plan blockers are two-way handoffs
 
 A waiting plan never relies on Tommy remembering its prompt or polls another branch. Register the
@@ -60,16 +70,20 @@ blocked ledger in the dependency owner's `## Downstream handoffs`; that owner up
 ledger and surfaces its resume prompt when the gate opens. Full mechanics:
 [`agents/PLAN.md`](agents/PLAN.md) "Cross-plan blockers."
 
-## A non-terminal plan handoff must end with its exact continuation pointer
+## An actionable non-terminal plan handoff must end with its exact continuation pointer
 
-If a turn reads or edits a `_PROGRESS.md` ledger whose `## Next Steps` is non-terminal, the final
-response must end with the exact two-line plan pointer from [`../PROMPTS.md`](../PROMPTS.md). Local
+If a `_PROGRESS.md` ledger with actionable non-terminal `## Next Steps` is explicitly named by path in
+the user request or edited during the turn, the final response must end with the exact two-line plan
+pointer from [`../PROMPTS.md`](../PROMPTS.md). Read-only inspection of a dependency owner's ledger
+under the cross-plan blocker rule does not claim that owner's handoff. Local
 implementation completion is not lifecycle completion while review, PR, merge, publication,
 dependency, or platform-sync work remains. A summary, a prose “next steps” sentence, or an offer to
 continue does not satisfy this gate. The exception is a registered in-flight owner wait under the
-cross-plan blocker rule above; that owner surfaces the dependent prompt when its gate opens. Trusted
-repository Stop hooks enforce the invariant for Claude and Codex; if a hook blocks, add the pointer
-rather than weakening or bypassing the hook.
+cross-plan blocker rule above or any hard stop recorded with the exact `Blocked:`, `Unblock action:`,
+and `Resume when:` fields from [`agents/PLAN.md`](agents/PLAN.md). A blocked plan's own pointer is
+forbidden: report those three lines verbatim and route the resolver instead. Trusted repository Stop hooks
+enforce the invariant for Claude and Codex; follow the hook's actionable-versus-blocked instruction
+rather than weakening or bypassing it.
 
 ### Rename definition-of-done: the grep gate (mechanical, not judgement)
 

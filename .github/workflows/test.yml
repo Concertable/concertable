@@ -18,7 +18,7 @@ jobs:
     #   run_tests  -> unit + integration
     #   run_e2e    -> e2e-api-tests
     #   run_e2e_ui -> e2e-ui-tests
-    #   run_fe     -> carve-fe        (the FE COMPILE FLOOR: each surface builds standalone from the feed)
+    #   run_fe     -> fe-boundaries + carve-fe (the FE COMPILE FLOOR: ownership holds and each surface builds from the feed)
     # Automatic classification, by the changed-file set:
     #   - non-code    (docs / .claude / plans / reviews / root dotfiles) -> ALL FOUR false: nothing to
     #                 compile or test. build + carve no-op, unit/integration skip, E2E no-op.
@@ -515,6 +515,27 @@ jobs:
           dotnet sln CarveCustomer.slnx add "${PROJS[@]}"
           dotnet build CarveCustomer.slnx --configuration Release -p:MinVerSkip=true
 
+  fe-boundaries:
+    runs-on: ubuntu-latest
+    needs: [changes]
+    if: needs.changes.outputs.run_fe == 'true'
+    permissions:
+      contents: read
+      packages: read
+    env:
+      GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install frontend dependencies
+        working-directory: app
+        run: npm ci
+      - name: Prove and enforce frontend workspace boundaries
+        working-directory: app
+        run: npm run test:boundaries && npm run lint:boundaries
+
   carve-fe:
     # FE analogue of the backend carve-* gates: each surface must restore its shared @concertable tiers
     # PURELY from the npm feed and build standalone. A surface importing a tier it doesn't declare
@@ -590,6 +611,7 @@ jobs:
     env:
       # B2B/Customer integration tests restore Payment.Client/Contracts, now feed packages; 401 without this.
       GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      TESTCONTAINERS_RYUK_DISABLED: "true"
 
     strategy:
       matrix:
@@ -681,7 +703,7 @@ jobs:
         # which shells out to the `func` Core Tools. Without them the host never binds, so the
         # ConcertFinished* tests get "Connection refused (localhost:7078)" when triggering the timer.
         run: |
-          npm install -g azure-functions-core-tools@4 --unsafe-perm true
+          npm install -g azure-functions-core-tools@4.12.1 --unsafe-perm true
           func --version
 
       - name: Run B2B API E2E tests
@@ -767,7 +789,7 @@ jobs:
         # Same as the API E2E job: the full AppHost boots the B2B Workers Azure Functions host,
         # which needs the `func` Core Tools on PATH to launch.
         run: |
-          npm install -g azure-functions-core-tools@4 --unsafe-perm true
+          npm install -g azure-functions-core-tools@4.12.1 --unsafe-perm true
           func --version
 
       - name: Set up Node
@@ -893,7 +915,7 @@ jobs:
       - name: Install Azure Functions Core Tools
         if: env.RUN == 'true'
         run: |
-          npm install -g azure-functions-core-tools@4 --unsafe-perm true
+          npm install -g azure-functions-core-tools@4.12.1 --unsafe-perm true
           func --version
 
       - name: Set up Node
@@ -949,6 +971,7 @@ jobs:
       - carve-search
       - carve-b2b
       - carve-customer
+      - fe-boundaries
       - carve-fe
       - unit-tests
       - integration-tests

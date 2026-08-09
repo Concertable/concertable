@@ -2,12 +2,14 @@
 
 > Next steps live in @plans/typed-result/AUTH_OUTCOMES_PROGRESS.md -> `## Next Steps`.
 
-**Status:** Local implementation, verification, and review are complete; PR preflight is green and delivery is next.
+**Status:** The semantic migration is complete and Reunion conversion is independently implementable
+now. Auth has no Payment, B2B, or Customer runtime/package dependency; its delivery order is determined
+from the current topology after conversion, not assumed from the Payment publication sequence.
 
 ## Outcome
 
 Replace ambiguous `IAuthService` null, boolean, enum, and completion outcomes with the smallest
-Concertable-owned in-process contract that preserves each caller's real decisions. Ordinary absence
+Reunion-backed in-process contract that preserves each caller's real decisions. Ordinary absence
 becomes `Option<T>`. Expected refusals that a Razor or Duende caller must act on become
 operation-owned typed Results. Completion-only operations remain `Task` when exposing a distinction
 would disclose account state or give the caller no useful action.
@@ -31,8 +33,8 @@ wire behavior does not carry `Result` or `Option` values.
 - Database, Duende, email/outbox, cancellation, and invariant failures remain exceptions.
 - No Result/Option/error carrier crosses Razor, HTTP, OAuth/OIDC, Duende, event, or persistence wire
   shapes.
-- Auth builds from its own published package closure, including a direct `Concertable.Kernel` package
-  reference at the service's current platform pin, and passes the standalone carve.
+- Auth builds from its own published package closure, including the Reunion-backed Kernel package at
+  the service's integrated platform pin, and passes the standalone carve.
 - The new Auth unit and integration suites cover the migrated contracts and the previously uncovered
   edge behavior.
 - The final PR passes review, build, unit/integration tests, Auth carve, full merge-queue API and UI
@@ -49,8 +51,9 @@ wire behavior does not carry `Result` or `Option` values.
   surface for this migration.
 - Existing client IDs, claims, cookies, authorization contexts, return URLs, logout prompts, token
   endpoint errors, page messages, and redirects remain framework-owned edge behavior.
-- The current Kernel package already supplies every required factory and observer. This plan adds no
-  shared Kernel API and introduces no alternative carrier.
+- Auth projects whose source uses functional carriers or errors own direct `Reunion` / `Reunion.Errors`
+  references. Auth HTTP edges own `Reunion.AspNetCore` only where they map those carriers. No shared
+  Kernel API, compatibility shim, or alternative carrier is added.
 
 ## Caller and outcome audit
 
@@ -206,8 +209,10 @@ a genuine model change, stop and amend the plan before touching migrations.
 
 1. After Phase 4, run a full code review over `origin/main..HEAD`; resolve every clear finding and use
    incremental review for later code commits.
-2. Reconcile with fresh `origin/main`, rebuild/retest/re-carve if the branch was behind, and run the
-   PR preflight.
+2. Reconcile with current `origin/main`, audit Auth's actual package/HTTP topology, replace old carrier
+   imports and terminals with directly owned Reunion packages at their real edges, then rebuild,
+   retest, re-carve, incrementally review, and run PR preflight. If topology proves no unpublished
+   package dependency, Auth may deliver independently of Payment.
 3. Push the single Auth branch and open a plain GitHub PR. Do not add `skip-e2e`, `skip-e2e-ui`, or a
    skip trailer: this changes user-facing Auth and protocol flows, so full merge-queue API and UI E2E
    are required.
@@ -224,8 +229,8 @@ a genuine model change, stop and amend the plan before touching migrations.
 - Roles, user kinds, tenant/customer concepts, business profiles, downstream projections, or claims
   beyond Auth's existing credential identity responsibility.
 - Payment, B2B, Customer, or Search runtime changes, or cross-service runtime references.
-- New shared Kernel operations, alternative Result/Option carriers, implicit conversions, or local
-  functional helpers.
+- New shared Kernel operations, direct Reunion package references, alternative Result/Option carriers,
+  implicit conversions, or local functional helpers.
 - Result types for silent email/no-op operations or any other outcome that gives callers no meaningful
   distinction.
 - Result/Option values in HTTP, Razor form models, Duende protocol models, events, persistence entities,

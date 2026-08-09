@@ -1,5 +1,8 @@
 ﻿export { apiClient } from "./apiClient";
 export { searchClient } from "./searchClient";
+export { createApiClient } from "./apiClient";
+export type { ApiClient } from "./apiClient";
+export { ApiError, isApiError } from "./apiError";
 export { configureClient } from "./client";
 export { shouldRetry } from "./queryRetry";
 export { resolveApiError } from "./problemDetails";

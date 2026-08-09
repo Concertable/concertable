@@ -1,11 +1,11 @@
 # Full-stack polyrepo — frontend build separation progress
 
 - Plan: `plans/platform/POLYREPO_FULLSTACK_PLAN.md`
-- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-platform_polyrepo_mobile-carve` — created from current `origin/main` @ `59bdd7a8a` for the definitive Phase 3 mobile carve gate.
-- Branch: `Feature/platform_polyrepo_mobile-carve` @ work head `098d4c3a5`; contains the transferred ledger recovery history plus the two mobile `carve-fe` matrix entries against the now-published fixed tier. Local ledger-only checkpoints after `098d4c3a5` describe delivery transitions.
-- PR: **mobile-carve PR [#416](https://github.com/Concertable/concertable/pull/416) OPEN at review head `6433eae77`** — implementation/debt-closeout work is review-clean; both mobile carves passed on the prior checkpoint head and the review-only update re-runs inert CI. Prior publish-first mobile-retarget PR [#413](https://github.com/Concertable/concertable/pull/413) merged as `62646f4cd` and republished `@concertable/mobile@0.1.0-alpha.0.2571`; carved-web CSS [#405] (`d9c62e2c5`); Phase 3b [#389] (`1cbeb2175`); Phase 3a [#378] (`fba490e25`); Phase 2 [#360] (`a3f9535`); Phase 1 [#301]+[#319].
+- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-platform_polyrepo_import-boundary` — dedicated Phase 3 import-boundary checkout, current with `origin/main` at `b5af92fdc` through this merge.
+- Branch: `Feature/platform_polyrepo_import-boundary` — direct owner of the remaining Phase 3 import-boundary work.
+- PR: **import-boundary PR [#428](https://github.com/Concertable/concertable/pull/428) OPEN** at verified work head `0da4186e5`, base `main`, not draft, no labels. Exact-head run 31312792051 is queued; this verified-push checkpoint is the sole local tail. Prior mobile-carve PR [#416](https://github.com/Concertable/concertable/pull/416) merged as `83a3f49a1`; publish-first mobile-retarget PR [#413](https://github.com/Concertable/concertable/pull/413) merged as `62646f4cd` and republished `@concertable/mobile@0.1.0-alpha.0.2571`; carved-web CSS [#405] (`d9c62e2c5`); Phase 3b [#389] (`1cbeb2175`); Phase 3a [#378] (`fba490e25`); Phase 2 [#360] (`a3f9535`); Phase 1 [#301]+[#319].
 - Dependency/package gates: **#413 FE publication DONE** — successful descendant run [31197751649](https://github.com/Concertable/concertable/actions/runs/31197751649) published and feed-verified `@concertable/mobile@0.1.0-alpha.0.2571` with the brand assets. This unblocks the follow-up mobile carve gate. No `api/**` → no backend platform-sync.
-- Last reconciled: 2026-08-07 — clean review head `6433eae77` is pushed and verified equal across local, remote, and PR #416. Next: transport this review-push checkpoint, then run the merge workflow for #416.
+- Last reconciled: 2026-08-09 — pushed verified current-main merge `0da4186e5` from starting remote `cda144bd6`; local, remote-tracking, and PR heads were exactly equal at `0da4186e5`. Exact-head run 31312792051 is queued.
 
 ## Current state
 
@@ -13,24 +13,25 @@ Phases 0, 1, 2, **3a, and 3b are on `main`**. Phase 3a (PR #378, merge `fba490e2
 
 **Carved-web CSS `@source` strategy — MERGED (#405, `d9c62e2c5`) + republished. TERMINAL.** `app/web/shared/src/index.css` adds two dist-scanning `@source` globs (`../dist/**/*.js` for the `@concertable/web` tier — same offset from the file in both layouts; `../../b2b/dist/**/*.js` for `@concertable/b2b`). The existing sibling-`src` globs are kept: each is inert in the layout it doesn't belong to, and Tailwind silently ignores an `@source` matching nothing, so both sets coexist. Only `@concertable/{web,b2b}` carry web class strings (shared/customer tier dists have 0 classNames — logic-only). Proven by a local carved-layout vite build (tiers packed into `node_modules`): the tier canary classes go from **absent (baseline) → present (fixed)** for customer (`@concertable/web`) and venue (`@concertable/web` + `@concertable/b2b`).
 
-**Mobile retarget + asset fix — IMPLEMENTED on `Feature/platform_polyrepo_mobile-retarget` (`1d29804a9`), PR #413 OPEN (publish-first).** (a) Both `app/mobile/{customer,b2b}` `metro.config.js` (`watchFolders` + NativeWind `input`) and `tailwind.config.js` (`content`) now `require.resolve("@concertable/mobile/…")` + scan the package's compiled `dist/**/*.js` instead of the `../shared` sibling; `App.tsx` imports `@concertable/mobile/global.css`. `@concertable/mobile` is the only className-bearing mobile tier (208 vs 0). (b) **Pre-existing tier bug fixed:** `@concertable/mobile`'s `Logo` `require`d `assets/brand/logo*.png` that the package never shipped (`files` lacked `assets`) and that physically lived outside the package (`app/mobile/assets/`), so the path resolved nowhere in-monorepo OR carved — the mobile app had never actually been bundled, only `tsc`'d. Moved `brand/` into the tier (`app/mobile/shared/assets/`, making the existing `../../../assets/brand` path correct) + `files` += `assets`; app-icon assets (icon/splash/adaptive/favicon) stay at `app/mobile/assets/` (surface `app.json`). (c) `carve-fe.mjs`'s mobile branch runs `expo export` after `tsc --noEmit`; the carve job is renamed `carve-fe-web` → `carve-fe`. **Mobile is deliberately OUT of the `carve-fe` matrix here** (the carve restores the tier from the feed, so the asset fix must republish first).
+**Mobile retarget + asset fix — MERGED (#413, `62646f4cd`) + republished.** (a) Both `app/mobile/{customer,b2b}` `metro.config.js` (`watchFolders` + NativeWind `input`) and `tailwind.config.js` (`content`) now `require.resolve("@concertable/mobile/…")` + scan the package's compiled `dist/**/*.js` instead of the `../shared` sibling; `App.tsx` imports `@concertable/mobile/global.css`. `@concertable/mobile` is the only className-bearing mobile tier (208 vs 0). (b) **Pre-existing tier bug fixed:** `@concertable/mobile`'s `Logo` `require`d `assets/brand/logo*.png` that the package never shipped (`files` lacked `assets`) and that physically lived outside the package (`app/mobile/assets/`), so the path resolved nowhere in-monorepo OR carved — the mobile app had never actually been bundled, only `tsc`'d. Moved `brand/` into the tier (`app/mobile/shared/assets/`, making the existing `../../../assets/brand` path correct) + `files` += `assets`; app-icon assets (icon/splash/adaptive/favicon) stay at `app/mobile/assets/` (surface `app.json`). (c) `carve-fe.mjs`'s mobile branch runs `expo export` after `tsc --noEmit`; the carve job is renamed `carve-fe-web` → `carve-fe`. The published fixed tier is feed-verified at `@concertable/mobile@0.1.0-alpha.0.2571`.
 
-**Mobile carve gate — GREEN on PR #416.** At remote head `f0fbd4e6a`, both `mobile/customer` and
-`mobile/b2b` restored the published tiers from the feed, type-checked, and completed `expo export` in
-run 31202906691. The resolved mobile bundling entry has been removed from `app/mobile/TECH_DEBT.md`.
+**Mobile carve gate — MERGED (#416, `83a3f49a1`).** Both `mobile/customer` and `mobile/b2b` restored
+the published tiers from the feed, type-checked, and completed `expo export` on the PR head and in the
+successful full-E2E merge-group run 31204805838. The resolved mobile bundling entry has been removed
+from `app/mobile/TECH_DEBT.md`.
 
-**Phase 3 remaining after #416 merges:** the ESLint import-boundary rule.
+**Phase 3 import-boundary implementation is locally complete and review-fixed.** `dependency-cruiser` now enforces that each of the 11 frontend workspaces can reach another workspace only through its published `@concertable/*` package. The runner loads every workspace's own tsconfig, so relative and alias-based source reaches are both covered. A negative test injects one cross-surface and one tier-source import and requires both violations; CI runs that proof plus the clean scan as the independent `fe-boundaries` job, and `ci-complete` requires it. Review exposed that directly spawning the npm `.cmd` shim fails with `EINVAL` on Windows; the runner now invokes dependency-cruiser's JavaScript entrypoint through Node. Delivery remains live until the updated reviewed head passes replacement checks and merges through the full-E2E queue.
 
 ## Next Steps
 
-**1. Transport the review-push checkpoint, then merge PR #416.** Push this ledger checkpoint, verify local/remote/PR equality, then run the merge workflow. It owns base currency, the full-E2E label decision, queue admission, merge confirmation, and closeout transfer.
-
-**2. FE import-boundary rule** — no ESLint/dependency-cruiser toolchain in `app/` yet; the carve CI is the primary structural boundary today (BE parity: carve = structural gate, build-time guard = fast second layer). Standing up ESLint `no-restricted-imports` across surfaces is a separate sub-project.
+**1. Finish and land import-boundary PR #428.** Push this verified current-main transport checkpoint, require exact local/remote/PR equality, and require the resulting exact-final-head replacement run green. Recheck currency immediately at terminal green and enqueue full E2E if current. Phase 3 becomes terminal only after the merge is recorded and its recovery state is transferred to a closeout worktree.
 
 Then Phase 4 (FE platform-sync) and Phase 5 (produce full-stack repos, D-A/D-B) per the plan.
 Gate: each item ends with its own green carve/build proof on its PR.
 
 ## Completed work
+
+- **Phase 3 import-boundary implementation (local):** workspace-wide `dependency-cruiser` rule, per-workspace tsconfig runner, two-violation negative proof, Node-20-compatible locked tool version, and required `fe-boundaries` CI job aggregated by `ci-complete`.
 
 - **Phase 2 (this branch):** `@concertable/web` (`0fa7ce511`), `@concertable/mobile` (`5275b6664`),
   `@concertable/customer` src→dist (`c14895d97`), `@concertable/b2b` + its intra-tier import rewrite
@@ -45,6 +46,16 @@ Gate: each item ends with its own green carve/build proof on its PR.
 - `0e3d8f5a6` makes full merge-queue E2E the strict default, preserves the no-duplicate-local-E2E workflow, and keeps findings on the reviewed branch unless they are proven independent.
 
 ## Verification
+
+- **Import-boundary gate (2026-08-08):** clean official Node 20 container; workflow YAML parsed; `npm run test:boundaries` passed and proved exactly two `not-to-foreign-workspace` violations; `npm run lint:boundaries` passed all 11 tsconfig-aware scans with zero violations (53/85/77/2 web-surface modules, 28/18 mobile-surface modules, and 83/203/98/64/17 tier modules).
+- **Review-fix gate (2026-08-08):** after merging `origin/main`, `dotnet build api/Concertable.slnx` succeeded with 0 errors. A clean `node:20-bookworm` container installed from `package-lock.json`; `npm run test:boundaries` passed and proved both violations; `npm run lint:boundaries` passed all 11 workspaces with zero violations. The host `npm ci` remained subject to the documented Windows antivirus partial-extraction failure and was not used as product evidence.
+- **Current-main gate (2026-08-08):** after merging base `0514fe25b`, `dotnet build api/Concertable.slnx` succeeded with 0 errors. The merge changed no PR-owned frontend boundary or workflow path, so the existing clean Node 20 boundary proof remains applicable.
+- **Second current-main gate (2026-08-09):** after merging base `cf4737b4f` as `b9425e5da`, `dotnet build api/Concertable.slnx --no-restore` succeeded with 0 errors (six existing nullable-context warnings). The merge imports only the platform-version sync and skill documentation; it changes no PR-owned frontend boundary or workflow path, so the existing clean Node 20 boundary proof remains applicable.
+- **Third current-main gate (2026-08-09):** after merging base `9a54efd58` as `92e5be5df`, the initial parallel `dotnet build api/Concertable.slnx --no-restore` hit a transient Windows `CS0016` invalid output-handle failure in `Concertable.Payment.Api`; the single-threaded retry passed with 0 errors. The merge changes only techdebt command/plugin metadata, so the existing clean Node 20 boundary proof remains applicable.
+- **Midnight integration blocker fix (2026-08-09):** CI run 31284847017 failed 11 `ContractApiTests` after the test host crossed UTC midnight: `SeedCatalog` retained the prior day's captured clock while `OpportunityRequestBuilders` recomputed `DateTime.UtcNow.AddMonths(1)`, colliding with seeded concert 45. Isolated fix PR #440 made every generated opportunity use the fixture seed clock. `scripts/integration.ps1 concert` passed B2B Concert 144/144 and Customer Concert 11/11; PR-head run 31287014734 and merge-group runs 31287569394/31287815716 passed. Publication/restore run 31288225192 and sync PR #442 completed green.
+- **Post-blocker current-main gate (2026-08-09):** after merging `origin/main` `c72b058af` as `26d84f69d`, `dotnet build api/Concertable.slnx --no-restore --maxcpucount:1` passed with 0 errors. In a clean disposable `node:20-bookworm` container, `npm ci`, `npm run test:boundaries`, and `npm run lint:boundaries` passed; all 11 workspace scans reported zero violations (53/85/77/2 web surfaces, 28/18 mobile surfaces, and 85/203/98/64/17 tier modules).
+- **Exact-head Venue diagnostic (2026-08-09):** after replacement run 31308852277 stalled with 45/46 jobs green and only the B2B Venue integration job still live, a short detached worktree at exact PR head `149f7a4db` ran `scripts/integration.ps1 venue`. Docker/Testcontainers started normally and all 25 Venue integration tests passed in 1.4 minutes with clean teardown. The diagnostic worktree was removed; the GitHub runner was left untouched for its own terminal classification.
+- **Standing frontend gate (2026-08-08):** clean official Node 20 container; `npm ci` green; `npm run build:packages` built all five tiers; all four web builds green (3713 customer, 4404 venue, 4394 artist, 1757 business modules); `tsc --noEmit` green for `mobile/customer` and `mobile/b2b`; `git diff --check` green.
 
 - **Mobile carve matrix implementation (2026-08-07):** `.github/workflows/test.yml` now lists all six
   surfaces, including `mobile/customer` and `mobile/b2b`; the existing classifier self-triggers
@@ -72,6 +83,13 @@ Gate: each item ends with its own green carve/build proof on its PR.
 
 ## Reviews
 
+- **Import-boundary full code/security review:** `reviews/Feature-platform_polyrepo_import-boundary.md`, range `9a18371a0..8a80bd3a` plus the cross-platform runner fix. Finding `NAT1` (MEDIUM correctness) identified direct `.cmd` spawning as Windows-incompatible; fixed by invoking dependency-cruiser's JavaScript entrypoint through `process.execPath` and verified in the clean Node 20 container. No other correctness, workflow-security, architecture-boundary, convention, or changed-behaviour coverage findings remain.
+- **Import-boundary incremental review:** range `da3b75a7..f353a70b` (2 commits), covering only the review artifact and plan-ledger delivery checkpoints. No findings; watermark advanced to `f353a70b6841f03c6339a7b2590dd7126b480499`.
+- **Import-boundary current-main incremental review:** range `f353a70b..0e4009ff`; branch-authored delta is plan/review checkpoints only and merge `0e4009ff8` imports already-landed main without changing the PR net boundary/workflow diff. No findings; watermark advanced to `0e4009ff81950c283396e07fe5f75ef31d409530`.
+- **Import-boundary second current-main incremental review:** range `0e4009ff..b9425e5d`; branch-authored delta is plan/review checkpoints only and merge `b9425e5da` imports already-landed platform pins and skill docs without changing the PR net boundary/workflow diff. No findings; watermark advanced to `b9425e5da6d1f752804accc166dc34727ae084fe`.
+- **Import-boundary third current-main incremental review:** range `b9425e5d..92e5be5d`; branch-authored delta is plan delivery checkpoints only and merge `92e5be5df` imports already-landed techdebt command/plugin metadata without changing the PR net boundary/workflow diff. No findings; watermark advanced to `92e5be5df58d0f2deaba600387fba1b8b1cfaaab`.
+- **Import-boundary post-blocker current-main incremental review:** range `92e5be5d..26d84f69`; branch-authored delta is delivery-ledger checkpoints only and merge `26d84f69d` imports already-landed reviewed work without changing the PR net boundary/workflow diff. No findings; watermark advanced to `26d84f69dcb6d5615a1a4fe30c34dd22fc70d982`.
+
 - **Mobile carve gate full code review:** `reviews/Feature-platform_polyrepo_mobile-carve.md`, range
   `59bdd7a8a..e64245e51` (18 commits), watermark `e64245e5192ccbccb30a5fd54d687ca05170c321`.
   No findings; the changed runtime path is CI-only, both new matrix keys are implemented by the existing
@@ -83,6 +101,9 @@ Gate: each item ends with its own green carve/build proof on its PR.
 - No open finding is evidenced. Delivery of the two fixed findings remains gated on the new review-fix PR.
 
 ## Decisions, discoveries, blockers, and deviations
+
+- **Architecture enforcement:** selected `dependency-cruiser` over a style linter or bespoke import parser because the rule is a resolved dependency/ownership invariant across TypeScript and JavaScript modules. `preserveSymlinks` keeps legitimate workspace package imports under `node_modules`; the single rule rejects direct paths between all 11 workspace roots. The runner supplies absolute per-workspace tsconfig paths so each surface's own alias map participates in resolution.
+- **Tool version:** pinned `dependency-cruiser ^17.4.3`, the newest release compatible with CI's Node 20 (`^20.12||^22||>=24`). Current `18.1.1` requires Node 22 and cannot be used without a repository-wide runtime upgrade.
 
 - The dirty main checkout is unrelated and must not be edited.
 - `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\FrontendBuildSeparationReview` exists but is not a registered git worktree and has no usable `.git` metadata. It was inspected read-only and must not be deleted.
@@ -99,6 +120,237 @@ Gate: each item ends with its own green carve/build proof on its PR.
 - **Metro/nativewind/tailwind runtime configs left for Phase 3.** The Phase 2 gate is build + typecheck; the mobile app's metro `watchFolders`/nativewind `input`/tailwind `content` still point at `../shared` source. The app already resolves `@concertable/shared`/`customer` as symlinked packages the same way, so no in-monorepo runtime regression, but className/class-generation on the precompiled dist is unproven — a first-class Phase 3 item, not a silent gap.
 
 ## Event log
+
+### 2026-08-09 — verified frontend reconciliation pushed
+
+- Action: Pushed merge head `0da4186e5` from starting remote/PR head `cda144bd6` after the clean combined-head boundary proof.
+- Evidence: `git fetch` and `gh pr view 428` confirmed local `HEAD`, `origin/Feature/platform_polyrepo_import-boundary`, and PR `headRefOid` were exactly `0da4186e5`; exact-head run 31312792051 was dispatched.
+- Outcome: the verified combined frontend state is published on the current base.
+- Follow-up: transport this checkpoint, verify equality at the transport head, require its complete CI run, then repeat the zero-behind admission check and enqueue full E2E.
+
+### 2026-08-09 — frontend main advancement merged and boundary-proved
+
+- Action: Required exact-head run 31311049439 green, then fetched before queue admission and found nine new commits through `b5af92fdc`. Merged them conflict-free and ran the combined-head boundary gate in clean Node 20.
+- Evidence: the incoming venue-acceptance/frontend error-boundary changes touch 15 frontend files. The first disposable command timed out while copying the entire checkout and its build artifacts, before `npm ci`; its exact container was removed. A corrected frontend-only read-only copy completed `npm ci`, passed the negative boundary test 1/1, and reported zero violations for all 11 workspaces (53/87/77/2 web surfaces, 28/18 mobile surfaces, 85/203/99/64/17 tiers).
+- Outcome: the latest frontend runtime changes are compatible with the import boundary on the exact combined state; no platform-sync PR is open.
+- Follow-up: commit and push this merge with its verified transport checkpoint, require exact-final-head CI, then repeat the zero-behind queue-admission check.
+
+### 2026-08-09 — current-main reconciliation pushed and verified
+
+- Action: Pushed merge head `9469aff46` from starting remote/PR head `f1fe4915b` after reconciling docs-only main `82644721f`.
+- Evidence: `git fetch` and `gh pr view 428` confirmed local `HEAD`, `origin/Feature/platform_polyrepo_import-boundary`, and PR `headRefOid` were exactly `9469aff46`; current-main run 31310996239 was dispatched for that SHA.
+- Outcome: the PR is published on the current base with no platform-sync blocker.
+- Follow-up: transport this checkpoint, verify equality at the transport head, require its complete CI run, then repeat the zero-behind admission check and enqueue full E2E.
+
+### 2026-08-09 — final-head gate green; docs-only main advancement reconciled
+
+- Action: Required the transport head's complete replacement gate, then fetched `origin/main` immediately before queue admission.
+- Evidence: run 31310329474 passed at exact head `f1fe4915b`. The branch was four commits behind current main `82644721f`; all four commits only reconcile typed-result plan documents, no platform-sync PR was open, and the merge was conflict-free.
+- Outcome: full-E2E admission correctly paused for base currency. The current-main reconciliation changes no runtime or boundary implementation.
+- Follow-up: commit and push this merge with the verified transport checkpoint, require its exact-final-head CI run, then repeat the zero-behind admission check.
+
+### 2026-08-09 — exact-head Venue diagnostic pushed and verified
+
+- Action: Pushed work head `288573bba` from starting remote/PR head `149f7a4db` after recording the Venue diagnostic.
+- Evidence: `git fetch` and `gh pr view 428` confirmed local `HEAD`, `origin/Feature/platform_polyrepo_import-boundary`, and PR `headRefOid` were exactly `288573bba`; replacement run 31310260263 was dispatched for that SHA. Prior run 31308852277 completed green without cancellation or retry.
+- Outcome: the diagnostic evidence is published and the fresh CI run is independently attributable to the verified work head.
+- Follow-up: transport this checkpoint, verify equality at the transport head, require run 31310260263 green, then perform the final base-currency check and enqueue full E2E.
+
+### 2026-08-09 — exact-head Venue runner hang disproved locally
+
+- Action: Investigated an abnormally long final job in replacement run 31308852277 without cancelling or retrying it. Created a short detached worktree at exact head `149f7a4db`, ran the affected module through the integration-debug workflow, then removed the clean diagnostic worktree.
+- Evidence: GitHub completed 45/46 jobs green and left only B2B Venue integration running; the local exact-head `scripts/integration.ps1 venue` run passed 25/25 in 1.4 minutes with healthy Testcontainers startup and teardown.
+- Outcome: the outstanding GitHub job is a runner-specific hang, not a code regression. This evidence checkpoint creates an independently classified replacement head without changing product code or manually retrying the hung run.
+- Follow-up: commit/push this checkpoint, require its complete replacement run, then perform the final currency check and enqueue full E2E.
+
+### 2026-08-09 — post-blocker reviewed head pushed and verified
+
+- Action: Published the reviewed branch after the blocker fix and 64-commit current-main reconciliation.
+- Evidence: pushed `1e91e4ed6..15b74a2cf`; after fetch, local `HEAD`, `origin/Feature/platform_polyrepo_import-boundary`, and PR #428 `headRefOid` all equalled `15b74a2cf6e44f886cfc55e8823c81329fd9eaf8`.
+- Outcome: the reviewed implementation is published; this transport checkpoint is the sole local tail.
+- Follow-up: commit and push the checkpoint, verify equality, then require a complete replacement gate before the final currency check and full-E2E queue admission.
+
+### 2026-08-09 — post-blocker current main merged, gated, and reviewed
+
+- Action: Merged the 64-commit base advance accumulated while the integration blocker was fixed, then rebuilt and re-proved the boundary gate against the merged frontend lockfile/shared-tier changes.
+- Evidence: merge `26d84f69dcb6d5615a1a4fe30c34dd22fc70d982` contains base `c72b058afe43742854b765838bf43f179e7ed92a`; `origin/main...HEAD` = 0 behind / 25 ahead. Full-solution build passed with 0 errors. Clean Node 20 `npm ci` + negative proof + all 11 clean scans passed. The PR net diff remains `.github/workflows/test.yml`, dependency-cruiser config/runner/test, `app/package*.json`, and plan/review artifacts.
+- Outcome: the branch is current, builds, boundary-proves, and is review-clean. Its replacement head is local only.
+- Follow-up: publish through the compound protocol, require replacement checks, then perform the final currency check and enqueue full E2E.
+
+### 2026-08-09 — midnight integration blocker fixed, published, and synced
+
+- Action: Diagnosed PR #428 replacement run 31284847017 instead of retrying it. Eleven B2B `ContractApiTests` all failed just after UTC midnight with `400 "You already have a concert on this day"`; the immediately preceding same-code head had passed before midnight. Created isolated short-path branch/worktree `Fix/IntegrationMidnightClock`, made generated opportunity dates share the fixture's captured seed clock, verified and reviewed it, then landed the dependency through its own PR and platform-sync lifecycle.
+- Evidence: root cause was the host-captured `SeedCatalog.Now` from August 8 plus seeded concert 45 at +32 days versus request-builder `DateTime.UtcNow.AddMonths(1)` after the clock rolled to August 9—both resolved to September 9. Targeted integration verification passed B2B Concert 144/144 and Customer Concert 11/11. PR #440 merged as `2eb8bc4764ee1303dc77ced9149b1e7a5f093583`; package publish/restore run 31288225192 succeeded; platform-sync PR #442 merged as `ab5bea7aff3153bc5095d07c6b918a8aeeae286a`. The clean fix worktree/branch was removed.
+- Outcome: the unrelated main-line test defect is fixed and fully synced; PR #428 can resume. Main advanced to `c72b058af` during the dependency lifecycle.
+- Follow-up: merge current main into #428, rebuild/review, republish, and require a fresh exact-head gate before queue admission.
+
+### 2026-08-09 — third current-main reviewed head pushed and verified
+
+- Action: Published the reviewed branch after the third current-main merge/build/review checkpoint.
+- Evidence: pushed `270676f25..c928d34c4`; after fetch, local `HEAD`, `origin/Feature/platform_polyrepo_import-boundary`, and PR #428 `headRefOid` all equalled `c928d34c4f0c40198ddbb45a2328792276f0d45a`.
+- Outcome: the reviewed implementation is published; this transport checkpoint is the sole local tail.
+- Follow-up: commit and push the checkpoint, verify equality, then require a complete replacement gate before the final currency check and full-E2E queue admission.
+
+### 2026-08-09 — third current-main merge built and reviewed
+
+- Action: Merged the docs/meta base that advanced during replacement CI, rebuilt the full solution, and incrementally reviewed the resulting range.
+- Evidence: merge `92e5be5df58d0f2deaba600387fba1b8b1cfaaab` contains base `9a54efd58636ee1a97aa27a86b166d575d07c327`; `origin/main...HEAD` = 0 behind / 21 ahead. The parallel build hit transient Windows `CS0016` output-handle failure; `dotnet build api/Concertable.slnx --no-restore --maxcpucount:1` then succeeded with 0 errors. Incremental review `b9425e5d..92e5be5d` has no findings.
+- Outcome: the branch is current, builds, and is review-clean. Its replacement head is local only.
+- Follow-up: publish through the compound protocol, require replacement checks, then recheck currency and enqueue full E2E.
+
+### 2026-08-09 — replacement green; third base drift blocks queueing
+
+- Action: Followed replacement run 31283793063 to terminal green, then performed the mandatory immediate fetch and base-currency check.
+- Evidence: at PR head `270676f2583eb95a67c076cb6219521788117079`, `fe-boundaries`, all six `carve-fe` jobs, build, all unit/integration jobs, `instant-merge`, and `ci-complete` passed. `origin/main...HEAD` then reported 6 behind / 19 ahead; new base `9a54efd58` contains only techdebt command/plugin documentation and metadata changes from PRs #436/#437.
+- Outcome: the complete PR gate is green, but the head cannot enter the merge queue while stale.
+- Follow-up: merge current main, rebuild/review, and publish another exact replacement head.
+
+### 2026-08-09 — second current-main reviewed head pushed and verified
+
+- Action: Published the reviewed branch after the second current-main merge/build/review checkpoint.
+- Evidence: pushed `8a8450014..c876796f3`; after fetch, local `HEAD`, `origin/Feature/platform_polyrepo_import-boundary`, and PR #428 `headRefOid` all equalled `c876796f3f9ecda0531bdf996c1ae7209aa2e626`.
+- Outcome: the reviewed implementation is published; this transport checkpoint is the sole local tail.
+- Follow-up: commit and push the checkpoint, verify equality, then require a complete replacement gate before the final currency check and full-E2E queue admission.
+
+### 2026-08-09 — second current-main merge built and reviewed
+
+- Action: Merged the base that advanced during replacement CI, rebuilt the full solution, and incrementally reviewed the resulting range.
+- Evidence: merge `b9425e5da6d1f752804accc166dc34727ae084fe` contains base `cf4737b4fa438b34394491fb07951675f2417d1f`; `origin/main...HEAD` = 0 behind / 17 ahead; `dotnet build api/Concertable.slnx --no-restore` succeeded with 0 errors. Incremental review `0e4009ff..b9425e5d` has no findings; the imported main changes are platform pins and skill docs, with no PR-owned boundary/workflow path changed.
+- Outcome: the branch is current, builds, and is review-clean. Its replacement head is local only.
+- Follow-up: commit and push through the compound protocol, require replacement checks, then recheck currency and enqueue full E2E.
+
+### 2026-08-08 — replacement green; second base drift blocks queueing
+
+- Action: Followed the delayed replacement run to terminal green, then immediately refreshed and checked base currency.
+- Evidence: run 31281728324 at PR head `8a84500141ee4a54d3e5e6692d5ccb60701248ed` passed `fe-boundaries`, all six `carve-fe` jobs, build, all unit/integration jobs, and `ci-complete`. `origin/main...8a8450014` then reported 6 behind / 15 ahead; new base `cf4737b4f` includes platform-sync #434 and docs/skill PR #435.
+- Outcome: the PR head is fully green but cannot be admitted while stale under the repository currency gate.
+- Follow-up: checkpoint the second drift, merge current main, rebuild/review, and publish the replacement head.
+
+### 2026-08-08 — current-main reviewed head pushed and verified
+
+- Action: Pushed the complete branch after merging current main, rebuilding, and incrementally reviewing it.
+- Evidence: pushed `b483f8ac4..2024e110f`; local `HEAD`, `origin/Feature/platform_polyrepo_import-boundary`, and PR #428 `headRefOid` all equal `2024e110f9fdcb568c800578daea34e73a8d1d73` after fetch.
+- Outcome: the current reviewed implementation is published and replacement CI is running. This checkpoint is the sole local tail.
+- Follow-up: transport this checkpoint, verify equality, wait for replacement checks, then recheck base currency and enqueue.
+
+### 2026-08-08 — current main merged, built, and incrementally reviewed
+
+- Action: Merged `origin/main` after the final currency gate blocked queue admission, rebuilt the full solution, and incrementally reviewed the resulting range.
+- Evidence: merge `0e4009ff81950c283396e07fe5f75ef31d409530` contains base `0514fe25b`; `origin/main...HEAD` = 0 behind / 13 ahead; `dotnet build api/Concertable.slnx` succeeded with 0 errors. The merge output contains no PR-owned boundary/workflow path. Incremental review `f353a70b..0e4009ff` has no findings.
+- Outcome: the branch is current, builds, and is review-clean. Its replacement head is local only.
+- Follow-up: commit and push through the compound protocol, require replacement checks, then recheck currency and enqueue full E2E.
+
+### 2026-08-08 — queue admission blocked by new base drift
+
+- Action: Performed the mandatory final base-currency check after the final PR-head gate passed, then inspected the intervening commits and net paths.
+- Evidence: `origin/main` advanced to `0514fe25b`; `origin/main...b483f8ac4` reports 16 behind / 10 ahead. The new base includes platform-sync #433, runtime PR #431, and review tooling/docs changes; PR #428 remains `OPEN/CLEAN` at `b483f8ac4`, with no queue entry and no prior `pr-428-*` merge-group run.
+- Outcome: the green PR head cannot be queued while stale. The local post-PR tail still changes only this ledger, so the branch is safe to update through the compound protocol.
+- Follow-up: checkpoint the stale-base finding, merge current main, rebuild and verify, incrementally review, then push the replacement head.
+
+### 2026-08-08 — final PR head gate terminal green
+
+- Action: Reconciled the replacement run triggered by the transported review checkpoint through every terminal job.
+- Evidence: PR #428 head `b483f8ac4394959f459fcb1f6cd29a2b596fc953`; run 31280806389 passed `fe-boundaries`, all six `carve-fe` surfaces, build, all unit/integration jobs, and `ci-complete`. PR-level API/UI E2E jobs skipped as designed; labels remain empty, so full E2E is selected for the merge group.
+- Outcome: the exact remote head is fully green and ready for queue admission. This observation checkpoint is local-only.
+- Follow-up: verify the checkpoint-only tail and current queue/merge-group state, enqueue the exact remote head, and monitor it to a terminal outcome.
+
+### 2026-08-08 — incremental-review head pushed and verified
+
+- Action: Pushed the review/check checkpoint and reconciled the delivery refs.
+- Evidence: pushed `f353a70b6..7f49fbcdd`; local `HEAD`, `origin/Feature/platform_polyrepo_import-boundary`, and PR #428 `headRefOid` all equal `7f49fbcddd61cd312969abac5e2f14cf28a2378a` after fetch.
+- Outcome: the PR now contains the complete review record; only inert replacement checks remain before queue admission. This checkpoint is the sole local tail.
+- Follow-up: transport this checkpoint, verify equality, reconcile inert checks, then enqueue full E2E.
+
+### 2026-08-08 — replacement PR gate green; meta tail incrementally reviewed
+
+- Action: Followed the complete replacement check set to terminal green at the transported PR head, then incrementally reviewed the two commits after the code-review watermark.
+- Evidence: PR run 31280106976 at `f353a70b6`: `fe-boundaries`, six `carve-fe` jobs, build, all unit/integration jobs, and `ci-complete` passed; PR-level E2E skipped as designed. Incremental review `da3b75a7..f353a70b` contains only `reviews/Feature-platform_polyrepo_import-boundary.md` and `plans/platform/POLYREPO_FULLSTACK_PROGRESS.md`; no findings.
+- Outcome: the exact remote source head is fully green and the full branch history is reviewed. The local incremental-review checkpoint is the only unpublished tail.
+- Follow-up: commit and push the review checkpoint, verify equality and inert replacement checks, then enqueue full E2E.
+
+### 2026-08-08 — reviewed import-boundary work head pushed and verified
+
+- Action: Pushed the complete updated branch from the prior PR head and reconciled all delivery refs.
+- Evidence: pushed `e4d3bc97f..96f88e8a1`; local `HEAD`, `origin/Feature/platform_polyrepo_import-boundary`, and PR #428 `headRefOid` all equal `96f88e8a1c2bfdda279dbcd70f6a24744bab2258` after fetch.
+- Outcome: the reviewed and locally verified implementation is published; replacement CI is running. This checkpoint is the sole local tail.
+- Follow-up: transport this checkpoint, verify equality again, then wait for the full replacement PR gate before queue admission.
+
+### 2026-08-08 — import-boundary code/security review finalized
+
+- Action: Completed the full review after committing the cross-platform runner fix and reconciled the workflow-security lens because `.github/workflows/test.yml` is in scope.
+- Evidence: `reviews/Feature-platform_polyrepo_import-boundary.md`; reviewed and security-reviewed through `da3b75a77d771e94bac76df65b1ed6eb135c3772`; range `9a18371a..da3b75a7` (6 commits). `NAT1` is fixed; no other findings remain.
+- Outcome: the current code head is review-clean and ready for the compound push protocol.
+- Follow-up: push and verify the reviewed branch head, transport the push checkpoint, then reconcile replacement PR checks before queueing.
+
+### 2026-08-08 — import-boundary branch updated; review finding fixed and re-proved
+
+- Action: Merged current `origin/main`, ran the mandatory full solution build, then reviewed the complete frontend boundary and CI diff. Reproduced a Windows-only runner launch failure and changed the runner to execute dependency-cruiser's JavaScript entrypoint through Node.
+- Evidence: merge commit `8a80bd3ad` brings base `9a18371a0`; `dotnet build api/Concertable.slnx` succeeded with 0 errors. Review finding `NAT1` in `reviews/Feature-platform_polyrepo_import-boundary.md`; direct `.cmd` spawn returned `EINVAL`. Clean `node:20-bookworm` verification passed `npm run test:boundaries` and all 11 `npm run lint:boundaries` scans with zero violations.
+- Outcome: the updated branch is current, builds, and the boundary gate is cross-platform. The review finding is fixed locally; replacement PR checks have not run yet.
+- Follow-up: commit the fix and checkpoint, finalize the review watermark, push through the compound protocol, then require the full replacement PR gate before merge-queue admission.
+
+### 2026-08-08 — import-boundary PR #428 opened
+
+- Action: Re-ran the live preflight, confirmed local/remote equality and zero base drift, and opened the plain GitHub PR without setting an E2E label.
+- Evidence: PR [#428](https://github.com/Concertable/concertable/pull/428), base `main`, head `Feature/platform_polyrepo_import-boundary` at `e4d3bc97fe932cf6d7cf81db744a908f35efe754`, `OPEN`, not draft, labels `[]`; no open platform-sync PR; initial `instant-merge` and `enable` checks successful, `changes` in progress.
+- Outcome: CI now owns the authoritative boundary and six-surface carve proof; PR creation did not mutate the verified source head.
+- Follow-up: run the merge workflow for #428; it owns check reconciliation, E2E-tier selection, queue admission, merge confirmation, and closeout transfer.
+
+### 2026-08-08 — import-boundary work head pushed and verified
+
+- Action: Refreshed the base before delivery, merged the 17 intervening docs-only commits with zero path overlap, and pushed the exact current work head to the new remote feature branch.
+- Evidence: implementation commit `69e686841`; currency merge/work head `087c5969144c56a83d627f2bb3aaf655d2d5f9a4`; `HEAD..origin/main` = 0; starting remote branch absent; fetched `origin/Feature/platform_polyrepo_import-boundary` = `087c59691`; no open PR.
+- Outcome: the verified implementation is published on a current branch; this ledger checkpoint is the sole local tail.
+- Follow-up: transport this checkpoint with full local/remote equality, then open the plain GitHub PR and follow its boundary and six-carve gates.
+
+### 2026-08-08 — Phase 3 import-boundary implementation locally complete
+
+- Action: Established dependency-cruiser as the frontend architecture gate, covered all six surfaces and five published tiers with their own tsconfigs, added a two-violation negative proof, and wired a required `fe-boundaries` CI job beside the existing six-surface carve matrix.
+- Evidence: Node 20 clean-container boundary proof and 11-workspace scan green; workflow YAML parsed; all five tier builds, four web builds, and two mobile typechecks green; lockfile resolves `dependency-cruiser 17.4.3` with a Node-20-compatible engine.
+- Outcome: the durable FE import-boundary implementation is complete and locally verified; the PR remains the authoritative six-carve proof.
+- Follow-up: commit, push, open the PR, follow `fe-boundaries` and all six carve jobs to green, then review and merge through full E2E.
+
+### 2026-08-08 — import-boundary worktree activated and base reconciled
+
+- Action: Resumed the Phase 3 import-boundary handoff in its dedicated worktree, refreshed remote state, and reconciled the stale closeout identity before implementation.
+- Evidence: branch `Feature/platform_polyrepo_import-boundary`; clean starting tree; no branch-only commits; fast-forward `fb7255b20..372be1041`; `origin/main...HEAD` = `0 0`; no open `chore/platform-sync-*` PR.
+- Outcome: the branch directly matches the requested plan work, is current with the base, and has no platform-sync blocker.
+- Follow-up: establish the repository-wide FE import-boundary enforcement layer and prove it against all six surfaces and the existing carve/build gates.
+
+### 2026-08-07 — merged #416 feature worktree and branches removed
+
+- Action: Verified the source checkout was clean and its post-PR range changed only the transferred ledger, removed the exact feature worktree, and deleted its local branch.
+- Evidence: source HEAD `288ad3335`; `74b9743d8..288ad3335` named only `plans/platform/POLYREPO_FULLSTACK_PROGRESS.md`. Remote deletion reported the ref already absent; `git fetch origin --prune` removed the stale tracking ref.
+- Outcome: #416 is fully closed out with recovery anchored solely in this docs worktree; its CI/docs-only merge has no FE publication or backend platform-sync consequence.
+- Follow-up: end this completed sub-project at its handoff; next invocation starts the Phase 3 FE import-boundary sub-project on a fresh feature worktree.
+
+### 2026-08-07 — #416 recovery transferred to the closeout worktree
+
+- Action: Created this clean docs closeout branch from current `origin/main` at merge `83a3f49a1` and cherry-picked the three post-PR observation commits in order.
+- Evidence: source range `74b9743d8..288ad3335` changes only `plans/platform/POLYREPO_FULLSTACK_PROGRESS.md`; source commit `288ad3335` and transferred head `12565ddec` resolve that ledger to the identical blob `53f7f59201765c6965491fe108331e18fd71f4b2` before this identity update.
+- Outcome: the plan recovery state now lives independently of the merged feature worktree.
+- Follow-up: remove the clean merged feature worktree and branch, checkpoint the cleanup here, then hand off the ESLint import-boundary sub-project.
+
+### 2026-08-07 — #416 merged through the full-E2E merge queue
+
+- Action: Followed the exact merge-group run through its terminal result without retrying or weakening the gate.
+- Evidence: run [31204805838](https://github.com/Concertable/concertable/actions/runs/31204805838), branch `gh-readonly-queue/main/pr-416-b46d10ec873cada34e62083d8c9cedbda080160b`, completed `success`; PR #416 then reported `MERGED` with merge commit `83a3f49a194c5faff60b7912d7c9b8452679f6f0`.
+- Outcome: the definitive customer and B2B mobile carve gates are on `main`; no publication or platform-sync gate follows this CI/docs-only merge.
+- Follow-up: transfer the ledger-only observation tail to a docs closeout worktree, remove the merged feature worktree/branch, and hand off the separate ESLint import-boundary sub-project.
+
+### 2026-08-07 — #416 admitted to the merge queue at position 1
+
+- Action: Applied the sanctioned one-time auto-merge disable/re-enable using the repository-selected queue method, then queried GraphQL directly.
+- Evidence: PR remains at reviewed remote head `74b9743d8`; `mergeQueueEntry.state=QUEUED`, `position=1`; `autoMergeRequest=null` after queue consumption.
+- Outcome: #416 is admitted to the full-E2E merge queue with no source-head mutation.
+- Follow-up: monitor the exact merge-group formation to merge or terminal failure without retrying a failed run.
+
+### 2026-08-07 — #416 terminal green but never admitted to the merge queue
+
+- Action: Waited for every PR-head check to become terminal, then reconciled PR state, queue entry, labels, and merge-group history for the exact reviewed remote head.
+- Evidence: PR #416 `OPEN/CLEAN`, head `74b9743d8`, all PR checks green; branch 0 behind `origin/main`; no `skip-e2e`/`skip-e2e-ui` labels or trailers; auto-merge enabled at `2026-08-07T17:34:20Z`; GraphQL `mergeQueueEntry=null`; no recent merge-group branch matching `/pr-416-`.
+- Outcome: sustained green-but-unadmitted GitHub re-evaluation glitch confirmed. Full queue E2E remains required; no CI failure exists.
+- Follow-up: apply the sanctioned one-time disable/re-enable and verify actual queue admission before waiting.
 
 ### 2026-08-07 — clean review head pushed and verified
 

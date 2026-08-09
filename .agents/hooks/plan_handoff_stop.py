@@ -26,7 +26,30 @@ RELATIVE_LEDGER = re.compile(
     r"plans[\\/][A-Za-z0-9_.() \\/-]+?_PROGRESS\.md",
     re.IGNORECASE,
 )
-WORKDIR = re.compile(r"(?:workdir|cwd)\s*:\s*[\"']([^\"']+)", re.IGNORECASE)
+WORKDIR = re.compile(r"[\"']?(?:workdir|cwd)[\"']?\s*:\s*[\"']([^\"']+)", re.IGNORECASE)
+REGISTERED_OWNER_WAIT = re.compile(r"\bdownstream handoffs\b", re.IGNORECASE)
+BLOCKED_OR_WAITING = re.compile(r"\b(?:blocked|waiting)\b", re.IGNORECASE)
+SUPPRESS_RESUME_PROMPT = re.compile(
+    r"\bdo not\b(?:(?![.!?](?:\s|$)).){0,240}"
+    r"\b(?:emit|include|surface)\b(?:(?![.!?](?:\s|$)).){0,120}"
+    r"\b(?:resume|continuation|handoff)(?:\s+prompt)?\b",
+    re.IGNORECASE | re.DOTALL,
+)
+MUTATING_TOOL_NAMES = {
+    "apply_patch",
+    "edit",
+    "edit_file",
+    "multiedit",
+    "multi_edit",
+    "write",
+    "write_file",
+}
+MUTATING_PATH_KEYS = {"path", "filepath"}
+PATCH_FILE_TARGET = re.compile(
+    r"\*\*\*\s+(?:Add|Update|Delete)\s+File:\s*"
+    r"((?:[A-Za-z]:[\\/])?[^\"'\r\n<>|]*?_PROGRESS\.md)",
+    re.IGNORECASE,
+)
 
 
 def next_steps(text):
@@ -43,12 +66,40 @@ def is_terminal(body):
         return True
     normalized = re.sub(r"[`*_#>\-\s.]", "", body).lower()
     plain = body.strip().lower()
+    return not normalized or plain in TERMINAL
+
+
+def blocker_details(body):
+    if body is None:
+        return None
+    lines = [line.strip() for line in body.splitlines() if line.strip()]
+    names = ("Blocked", "Unblock action", "Resume when")
+    if len(lines) < len(names):
+        return None
+    values = []
+    for line, name in zip(lines, names):
+        prefix = f"{name}:"
+        if not line.startswith(prefix):
+            return None
+        value = line.removeprefix(prefix).strip()
+        if not value:
+            return None
+        values.append(value)
+    return tuple(values)
+
+
+def looks_like_legacy_blocker(body):
+    if body is None:
+        return False
     first_line = next((line.strip().lower() for line in body.splitlines() if line.strip()), "")
     return (
-        not normalized
-        or plain in TERMINAL
-        or first_line.startswith("waiting for ")
-        or first_line.startswith("blocked: waiting for ")
+        first_line.startswith("waiting for ")
+        or first_line.startswith("blocked:")
+        or (
+            BLOCKED_OR_WAITING.search(body)
+            and REGISTERED_OWNER_WAIT.search(body)
+            and SUPPRESS_RESUME_PROMPT.search(body)
+        )
     )
 
 
@@ -61,6 +112,21 @@ def strings(value):
     elif isinstance(value, list):
         for item in value:
             yield from strings(item)
+
+
+def workdirs(value):
+    if isinstance(value, str):
+        for match in WORKDIR.finditer(value):
+            yield match.group(1)
+    elif isinstance(value, dict):
+        for name, item in value.items():
+            if name.lower() in {"cwd", "workdir"} and isinstance(item, str):
+                yield item
+            else:
+                yield from workdirs(item)
+    elif isinstance(value, list):
+        for item in value:
+            yield from workdirs(item)
 
 
 def user_content(value):
@@ -100,7 +166,38 @@ def genuine_user_message(value):
     return not any("<hook_prompt" in text for text in user_content(content))
 
 
-def intentional_values(record):
+def structured_mutation_targets(value):
+    if isinstance(value, dict):
+        for name, item in value.items():
+            normalized = name.casefold().replace("-", "").replace("_", "")
+            if normalized in MUTATING_PATH_KEYS and isinstance(item, str):
+                yield item
+            elif isinstance(item, (dict, list)):
+                yield from structured_mutation_targets(item)
+    elif isinstance(value, list):
+        for item in value:
+            yield from structured_mutation_targets(item)
+
+
+def patch_mutation_targets(value):
+    for item in strings(value):
+        yield from (match.group(1) for match in PATCH_FILE_TARGET.finditer(item))
+
+
+def mutating_tool_input(name, tool_input):
+    normalized = (name or "").casefold().replace("-", "_")
+    targets = list(patch_mutation_targets(tool_input))
+    if normalized.rsplit(".", 1)[-1] in MUTATING_TOOL_NAMES:
+        targets.extend(structured_mutation_targets(tool_input))
+    if not targets:
+        return None
+    return {
+        "targets": list(dict.fromkeys(targets)),
+        "workdirs": [{"workdir": item} for item in workdirs(tool_input)],
+    }
+
+
+def intentional_contexts(record):
     candidate = payload(record)
     if candidate is None:
         return
@@ -108,12 +205,17 @@ def intentional_values(record):
         yield from user_content(candidate.get("content"))
     if candidate.get("type") in {"custom_tool_call", "function_call"}:
         tool_input = candidate.get("input", candidate.get("arguments"))
-        yield from strings(tool_input)
+        context = mutating_tool_input(candidate.get("name"), tool_input)
+        if context is not None:
+            yield context
     content = candidate.get("content")
     if isinstance(content, list):
         for item in content:
             if isinstance(item, dict) and item.get("type") in {"tool_use", "function_call"}:
-                yield from strings(item.get("input", item.get("arguments")))
+                tool_input = item.get("input", item.get("arguments"))
+                context = mutating_tool_input(item.get("name"), tool_input)
+                if context is not None:
+                    yield context
 
 
 def transcript_turn(path):
@@ -178,18 +280,22 @@ def add_if_ledger(paths, candidate):
 
 def transcript_ledgers(records, cwd):
     paths = set()
-    values = [value for record in records for value in intentional_values(record)]
-    bases = {Path(cwd).resolve()}
-    for value in values:
-        for match in WORKDIR.finditer(value):
-            bases.add(Path(match.group(1)).resolve())
-        for match in ABSOLUTE_LEDGER.finditer(value):
-            add_if_ledger(paths, Path(match.group(0).rstrip("`),.;")))
-    for value in values:
-        for match in RELATIVE_LEDGER.finditer(value):
-            relative = Path(match.group(0).replace("\\", "/").rstrip("`),.;"))
-            for base in bases:
-                add_if_ledger(paths, base / relative)
+    contexts = [context for record in records for context in intentional_contexts(record)]
+    for context in contexts:
+        values = list(strings(context))
+        explicit_bases = {Path(path).resolve() for path in workdirs(context)}
+        bases = explicit_bases or {Path(cwd).resolve()}
+        for value in values:
+            absolute_matches = list(ABSOLUTE_LEDGER.finditer(value))
+            for match in absolute_matches:
+                add_if_ledger(paths, Path(match.group(0).rstrip("`),.;")))
+            for match in RELATIVE_LEDGER.finditer(value):
+                absolute_spans = (item.span() for item in absolute_matches)
+                if any(start <= match.start() < end for start, end in absolute_spans):
+                    continue
+                relative = Path(match.group(0).replace("\\", "/").rstrip("`),.;"))
+                for base in bases:
+                    add_if_ledger(paths, base / relative)
     return paths
 
 
@@ -223,6 +329,31 @@ def ledger_root(path):
     raise ValueError(f"Ledger is not below plans/: {path}")
 
 
+def logical_ledger_key(path):
+    return path.relative_to(ledger_root(path)).as_posix().casefold()
+
+
+def owner_copy_score(path):
+    text = path.read_text(encoding="utf-8")
+    declared_worktree = metadata(text, "Worktree")
+    if not declared_worktree:
+        return 1
+    try:
+        return 0 if Path(declared_worktree).resolve() == ledger_root(path) else 1
+    except OSError:
+        return 1
+
+
+def canonical_ledgers(paths):
+    grouped = {}
+    for path in paths:
+        grouped.setdefault(logical_ledger_key(path), []).append(path)
+    return {
+        min(candidates, key=lambda path: (owner_copy_score(path), str(path).casefold()))
+        for candidates in grouped.values()
+    }
+
+
 def expected_pointer(path):
     root = ledger_root(path)
     plan = path.with_name(path.name.removesuffix("_PROGRESS.md") + "_PLAN.md")
@@ -253,7 +384,10 @@ def evaluate(data):
     ledgers = transcript_ledgers(records, cwd)
     if not records:
         ledgers |= branch_ledgers(git_root(cwd))
+    ledgers = canonical_ledgers(ledgers)
     active = []
+    blocked = []
+    malformed_blockers = []
     for path in sorted(ledgers):
         body = next_steps(path.read_text(encoding="utf-8"))
         if body is None:
@@ -261,13 +395,50 @@ def evaluate(data):
                 "decision": "block",
                 "reason": f"HANDOFF GATE: {path.name} is missing its required `## Next Steps` section.",
             }
-        if not is_terminal(body):
+        details = blocker_details(body)
+        if details:
+            blocked.append((path, expected_pointer(path), details))
+        elif looks_like_legacy_blocker(body):
+            malformed_blockers.append(path)
+        elif not is_terminal(body):
             active.append((path, expected_pointer(path)))
-    if not active:
-        return {}
+    if malformed_blockers:
+        names = ", ".join(path.name for path in malformed_blockers)
+        return {
+            "decision": "block",
+            "reason": (
+                f"BLOCKER HANDOFF GATE: {names} describes blocked work without the required "
+                "three-line contract. Start `## Next Steps` with non-empty `Blocked:`, "
+                "`Unblock action:`, and `Resume when:` lines. Do not emit the blocked plan's "
+                "continuation pointer."
+            ),
+        }
+    active = list({pointer: (path, pointer) for path, pointer in active}.values())
     message = (data.get("last_assistant_message") or data.get("lastAssistantMessage") or "").replace(
         "\r\n", "\n"
     )
+    blocked_failures = []
+    for path, pointer, details in blocked:
+        if pointer in message:
+            blocked_failures.append(
+                f"{path.name}: remove the blocked plan's continuation pointer"
+            )
+        required = tuple(
+            f"{name}: {value}"
+            for name, value in zip(("Blocked", "Unblock action", "Resume when"), details)
+        )
+        missing = [line for line in required if line not in message]
+        if missing:
+            blocked_failures.append(
+                f"{path.name}: report these exact lines: " + "; ".join(missing)
+            )
+    if blocked_failures:
+        return {
+            "decision": "block",
+            "reason": "BLOCKER HANDOFF GATE: " + " | ".join(blocked_failures),
+        }
+    if not active:
+        return {}
     missing = [(path, pointer) for path, pointer in active if pointer not in message]
     ending = message.rstrip()
     ends_with_pointer = any(
