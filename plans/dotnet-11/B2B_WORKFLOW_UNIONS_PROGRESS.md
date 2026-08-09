@@ -3,7 +3,8 @@
 - Plan: `plans/dotnet-11/B2B_WORKFLOW_UNIONS_PLAN.md`
 - Worktree: not created
 - Branch: `Refactor/dotnet-11_b2b-workflow-unions` (reserved; not created)
-- PR: #448 merged — https://github.com/Concertable/concertable/pull/448
+- Plan PR: #448 merged — https://github.com/Concertable/concertable/pull/448
+- Closeout PR: #449 open — https://github.com/Concertable/concertable/pull/449
 - Dependency/package gates: blocked on the terminal B2B typed-result lifecycle recorded in
   `plans/typed-result/B2B_PROGRESS.md`
 - Last reconciled: 2026-08-09 against `origin/main` `fcc6935f4`, the current typed-result/ReUnion
@@ -29,9 +30,9 @@ does not introduce `IAcceptStep` or place step interfaces inside union cases.
 
 ## Next Steps
 
-Open and verify the Markdown-only closeout PR from reviewed/verified work head
-`59e1e3d66fefc3aef7b3ef2bcdd4a85fd32b032a`, then restore the implementation blocker before the
-sanctioned docs-only admin merge.
+Blocked: The B2B typed-result checkpoints 6-7 source PR and every resulting publication/platform-sync gate are not yet terminal and green.
+Unblock action: The owner at `plans/typed-result/B2B_PROGRESS.md` must finish checkpoints 6-7, merge the source PR, follow every resulting publication/platform-sync gate to terminal green, then update this ledger.
+Resume when: Current main contains the merged B2B work and `plans/typed-result/B2B_PROGRESS.md` records the source PR and every resulting publication/platform-sync gate as terminal and green.
 
 ## Completed work
 
@@ -209,6 +210,16 @@ sanctioned docs-only admin merge.
 - Outcome: the closeout review fixes and clean incremental-review checkpoint are durably published.
 - Follow-up: transport this checkpoint, open and verify the docs PR, then restore the implementation
   blocker before admin merge.
+
+### 2026-08-09 — closeout docs PR opened and verified
+
+- Action: opened closeout PR #449, added `skip-e2e`, and verified its identity and diff.
+- Evidence: initial PR head `205429cd8463673e5be93c77649cea4783a942a1`; base `main`; head
+  `Docs/dotnet-11_b2b-workflow-unions-plan_closeout`; exactly two Markdown paths.
+- Outcome: the reviewed docs-only closeout is ready for the sanctioned admin merge, and the durable
+  ledger has returned to the implementation blocker that remains after delivery.
+- Follow-up: transport this PR-state checkpoint, reverify all heads and paths, then admin-merge PR
+  #449.
 
 ## Resume prompt
 
