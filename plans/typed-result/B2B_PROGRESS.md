@@ -4,17 +4,29 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-B2BTypedResultMigration`
 - Branch: `Refactor/B2BTypedResultMigration`
 - PR: not opened
-- Dependency/package gates: implementation is open against exact local Payment packages from
-  `a779fe041`; Payment source PR, publication, and generated sync gate delivery and final revalidation
-- Last reconciled: 2026-08-09 against `origin/main` `1043a9178`, the current-main merge checkpoint,
-  Reunion integration PR #453, and live worktree/PR inventory
+- Dependency/package gates: checkpoints 6-7 are locally complete against exact Payment packages from
+  `a779fe041`; Reunion integration PR #453, Payment publication, generated platform sync, and exact
+  published-package revalidation gate delivery
+- Last reconciled: 2026-08-10 against merged base `1043a9178`, implementation head pending this
+  checkpoint, live Reunion integration PR #453, and the final delivery-safe package configuration
 
 ## Current state
 
-Checkpoints 1-5 remain complete on the single B2B migration branch. The branch is reconciled with
+All seven checkpoints are locally complete on the single B2B migration branch. The branch is reconciled with
 `origin/main` `1043a917876cbed48b3c1f873cdcfcc7aadf9b80` and platform
 `0.1.0-alpha.0.890`; the merge checkpoint preserves both the typed Apply outcomes and mainline's
 venue/artist tenant snapshot construction.
+
+Concert accept, cancel, application-cancel, and finish workflows now expose operation-owned Reunion
+results. Payment and lifecycle failures compose through `MapError`; no string or HTTP-exception bridge
+remains. The completion runner continues after expected refusal/deferral results and propagates
+infrastructure exceptions so the worker invocation remains retryable.
+
+Every B2B carrier and HTTP terminal now uses Reunion directly with package ownership enforced by the
+B2B architecture suite. `FluentResults`, `Concertable.Kernel.Functional`, and
+`Concertable.Shared.Api.Results` are absent from B2B source and project files. Concertable-owned
+`ValidationErrors` remains the application validation vocabulary and is converted only at the
+Reunion error-definition boundary.
 
 All 33 B2B operation-error roots now follow the current convention: Dunet unions with disabled
 implicit conversions, 70 explicit naturally named cases, direct case construction, and one exhaustive
@@ -48,15 +60,17 @@ that exact commit; Client depends on Contracts `.911`, Reunion `.1`, and Reunion
 
 ## Next Steps
 
-Complete checkpoints 6-7 against the recorded `.911` local packages. Use only temporary restore source
-and package-version inputs; commit no local feed/path/pin. Run the B2B verification gates and full code
-review, restore the published-package configuration, and leave the branch delivery-ready with exact
-published Payment.Client revalidation as its next gate. Do not push or merge until separately instructed.
+Commit the verified checkpoints 6-7 implementation, run the full code and security review over the
+committed branch range, address every high-confidence finding, and checkpoint the review. Then record
+the registered Reunion owner wait for PR #453, Payment publication, generated platform sync, and exact
+published Payment.Client revalidation. Do not push or merge until separately instructed.
 
 ## Completed work
 
 - Checkpoints 1-5: Deal, Tenant, Venue/Artist, User, and Payment-independent Concert owned-result
   migrations, preserved from the branch's existing commits.
+- Checkpoints 6-7: Concert payment/cancel/finish owned outcomes, retryable completion faults, direct
+  Reunion carrier/terminal ownership, and complete B2B FluentResults removal.
 - Synced current `origin/main` into the branch and resolved ConcertController and Tenant GlobalUsings.
 - Renamed branch from `Refactor/ConcertWorkflowDispatchers` to `Refactor/B2BTypedResultMigration`.
 - Renamed worktree to
@@ -85,6 +99,20 @@ published Payment.Client revalidation as its next gate. Do not push or merge unt
   `TimeProvider` and business decisions.
 
 ## Verification
+
+- Exact-package Release build: `api/Concertable.B2B/Concertable.B2B.slnx` succeeded with 0 warnings
+  and 0 errors against Payment.Contracts/Client `.911` from reviewed producer `a779fe041`.
+- B2B unit wrapper: all four projects green; Concert 124/124, Deal 22/22, Tenant 117/117, Workers 5/5.
+- B2B architecture tests: 8/8, including direct Reunion package ownership and legacy-carrier absence.
+- Docker health: fresh-container host-to-container HTTP data round-trip passed and remained stable.
+- B2B integration: Artist 17/17, Concert 148/148, Tenant 56/56, User 3/3, Venue 25/25. The deep
+  worktree required a temporary `R:` mapping for Windows SNI native-DLL path length; the mapping was
+  removed after each run. Six stale transport/exception assertions were corrected and passed 6/6
+  before the complete Concert project passed 148/148.
+- Changed-file formatting: scoped `dotnet format --verify-no-changes` passed. The solution-wide
+  verifier remains red on unrelated pre-existing whitespace and namespace diagnostics.
+- Final source/config audit: no B2B FluentResults, old Kernel functional namespace, old Shared API
+  result terminals, local feed path, `.911` package pin, or `BadRequestException(result.Errors)` bridge.
 
 - `dotnet build api/Concertable.B2B/Concertable.B2B.slnx --configuration Release`: succeeded,
   0 errors (1 pre-existing nullable warning).
@@ -138,6 +166,11 @@ published Payment.Client revalidation as its next gate. Do not push or merge unt
   integration expectation was corrected from Bad Request to Conflict.
 - B2B remains the exclusive semantic owner. Exact local Payment packages open implementation now;
   publication and generated sync remain the final delivery/revalidation gate.
+- Payment rejection now preserves its typed `PaymentRequired` contract at the HTTP boundary; a
+  cross-tenant accept lookup remains fail-closed as Not Found. Direct executor integration tests assert
+  owned finish errors rather than manufacturing HTTP exceptions below the controller boundary.
+- PR #453 remains open and green. Temporary package inputs were removed after verification; committed
+  Payment package versions again use `$(ConcertablePlatformVersion)`.
 
 ## Downstream handoffs
 
@@ -149,6 +182,18 @@ published Payment.Client revalidation as its next gate. Do not push or merge unt
   overlapping Concert workflow changes.
 
 ## Event log
+
+### 2026-08-10 — checkpoints 6-7 implemented and verified
+
+- Action: Migrated every remaining B2B result carrier and Concert payment/cancel/finish workflow to
+  Reunion, removed FluentResults, added direct package-ownership/legacy-identity architecture guards,
+  restored delivery-safe package configuration, and updated stale boundary assertions.
+- Evidence: exact reviewed Payment `.911` packages from `a779fe041`; Release build 0/0; unit projects
+  all green; architecture 8/8; Docker data round-trip green; all five integration projects 249/249;
+  source/config audit empty; changed-file formatter clean; live PR #453 open with green checks.
+- Outcome: checkpoints 6-7 are locally complete and verified. No local feed, machine path, disposable
+  package pin, remote branch, push, PR, or merge was created for B2B.
+- Follow-up: commit this implementation checkpoint and execute the mandatory full code/security review.
 
 ### 2026-08-09 — current-main sync for checkpoints 6-7
 

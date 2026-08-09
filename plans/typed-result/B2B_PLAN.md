@@ -34,12 +34,12 @@ committed local source, feed path, or disposable package pin may be introduced.
   without catch/rethrow; dispatcher / executor / capability interfaces migrated as vertical slices;
   owner-concert action capabilities moved into `ConcertService` (no `TimeProvider` in any controller);
   keyed deal-strategy resolution preserved (no `DealType` switches, no service location).
-- [ ] **Checkpoint 6 — Concert payment / cancel / finish workflows.** Migrate `IConcertWorkflowModule`,
+- [x] **Checkpoint 6 — Concert payment / cancel / finish workflows.** Migrate `IConcertWorkflowModule`,
   cancellation/completion dispatchers, and every
   keyed cancel / finish / accept / payment step to owned Results; compose Payment failures with
   `MapError` (no `BadRequestException(result.Errors)` bridge); `ConcertCompletionRunner` distinguishes
   expected deferral/refusal from retryable faults; remove catch-all conversions.
-- [ ] **Checkpoint 7 — B2B FluentResults removal.** Remove FluentResults
+- [x] **Checkpoint 7 — B2B FluentResults removal.** Remove FluentResults
   from the migrated B2B projects once their last local use is gone and every migrated signature uses
   the published Reunion-backed surface.
 
