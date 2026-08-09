@@ -12,7 +12,8 @@
   the B2B, Auth, Customer, Customer Ticket, and semantic HTTP-terminal owners remain inventoried and
   must consume the one generated platform-sync baseline rather than perform local carrier cutovers
 - Last reconciled: 2026-08-09 against current Concertable `origin/main` `b5af92fdc`, verified
-  HTTP-terminal code/test checkpoint `c593150e4`, freshly fetched Reunion refs, and GitHub PR state
+  HTTP-terminal code/test checkpoint `c593150e4`, freshly fetched Reunion refs, GitHub PR state,
+  and the absence of any open platform-sync PR
 
 ## Current state
 
@@ -29,6 +30,7 @@ review, bypassed E2E through the sanctioned admin path, and triggered no package
 
 GitHub has two open migration PRs: #425 contains unique Customer non-Payment work and must be
 preserved; #282 contains one obsolete-baseline Ticket commit whose semantics must later be recreated.
+Both PRs remain open at their recorded heads and currently report `DIRTY` against `main`.
 B2B and Auth also have authoritative active work that is not pushed, so remote state is deliberately
 not treated as complete; their local worktrees are included in the inventory below.
 
@@ -105,6 +107,11 @@ package/carrier substitution, run the complete Phase 1 gate, and commit without 
 - The fresh `tomjseery/Reunion` clone resolves `master` to `ab2e959` and open PR #1 to `03fefaa`;
   `git fetch origin 7bf5f66` returns `couldn't find remote ref`, and GitHub's commit endpoint returns
   no commit for that SHA.
+- A later resume fetch again left Reunion at `ab2e959` with only `origin/master` and
+  `origin/agent/implement-result-option-unions`; `git cat-file`, fetched refs, worktree inventory, and
+  unreachable-object inspection still found no `7bf5f66`. Concertable is 0 behind / 5 ahead of
+  `origin/main` `b5af92fdc`; PRs #425 and #282 remain open at `e60219f7d` and `26ed63b896`, both
+  `DIRTY`, and no open platform-sync PR exists.
 - `git ls-tree` of PR #1 confirms its source tree contains `src/Reunion` but no
   `src/Reunion.AspNetCore`, so the remote PR head cannot satisfy the planned two-package battle test.
 - HTTP-terminal checkpoint `c593150e4`: Shared.Api Release 63/63, Release solution build 0 errors and
@@ -192,6 +199,21 @@ package/carrier substitution, run the complete Phase 1 gate, and commit without 
   waits for the Phase 4 generated platform-sync PR to merge before PR #425 is updated once.
 
 ## Event log
+
+### 2026-08-09 — Reunion source blocker reconfirmed on resume
+
+- Action: Re-read the plan and ledger, fetched Concertable and Reunion, and reconciled the exact
+  commit prerequisite, integration branch, five owner worktrees, migration PRs, and platform-sync
+  gate before any Phase 1 edit.
+- Evidence: integration branch 0 behind / 5 ahead of `origin/main` `b5af92fdc`; all five owner
+  worktrees clean at their recorded heads; PRs #425 and #282 open at `e60219f7d` and `26ed63b896`,
+  both `DIRTY`; no open platform-sync PR; Reunion remains `ab2e959`, its only fetched remote branches
+  are `master` and `agent/implement-result-option-unions`, and no ref, worktree, reachable object, or
+  unreachable object contains `7bf5f66`.
+- Outcome: The exact reviewed source required to pack both Phase 1 packages is still unavailable.
+  No package, local feed, carrier, test, semantic-owner branch, remote branch, or PR was changed.
+- Follow-up: Sync or push the exact `7bf5f66` object from its source workstation, then execute the
+  remainder of Phase 1 only.
 
 ### 2026-08-09 — Reunion source blocker reconfirmed after current-main sync
 
