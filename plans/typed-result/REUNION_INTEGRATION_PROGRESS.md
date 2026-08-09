@@ -2,12 +2,13 @@
 
 - Plan: `plans/typed-result/REUNION_INTEGRATION_PLAN.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_reunion-integration`
-- Branch: `Feature/typed-result_reunion-integration`, current with `origin/main` `5a4a23066`; code
+- Branch: `Feature/typed-result_reunion-integration`, current with `origin/main` `1043a9178`; code
   head `a779fe041` retires the discarded Shared rehearsal and migrates Payment/Payment.Client to
   Reunion; full code and security review are clean through that exact head; branch and PR head
   `53aa0a3` adds only the review and delivery ledger checkpoints; merge head `88dbd1460` brings
-  current `origin/main`; implementation head `da78980b7` adopts the merged direct-factory API and its
-  package pin; incremental code/security review is clean through that head
+  earlier `origin/main`; implementation head `da78980b7` adopts the merged direct-factory API and its
+  package pin; currency merge `cbcfda10e` brings platform pin `.890`; incremental code/security
+  review is clean through that merge head
 - PR: implementation PR #453 remains open remotely at `53aa0a3`; reviewed code head is `a779fe041`;
   local source-owner head is ahead for current-main and Reunion API reconciliation; docs design PR
   #443 merged as `fd0b666b9`; sub-plan reconciliation PR #445 merged as `d6a572e0d`
@@ -26,15 +27,15 @@
   gate is now green against the exact inspected `Reunion.Errors` `0.1.0-alpha.2` candidate, but the
   package is not published and no user-scoped NuGet.org key is available; merge-queue E2E, Payment
   publication, and generated platform sync remain pending
-- Last reconciled: 2026-08-09 against current Concertable `origin/main` `5a4a23066`, Concertable code
-  and reviewed implementation head `a779fe041`, current-main merge `88dbd1460`, merged Reunion PR #4
-  head `1500270`, exact local package/consumer evidence, NuGet.org package availability, live owner
+- Last reconciled: 2026-08-09 against current Concertable `origin/main` `1043a9178`, reviewed
+  implementation head `da78980b7`, current-main merge `cbcfda10e`, merged Reunion PR #4 head
+  `1500270`, exact local package/consumer evidence, NuGet.org package availability, live owner
   worktrees, and no open platform-sync PR
 
 ## Current state
 
 The repository-wide audit and Reunion publication are complete. The reserved integration worktree is
-current with `origin/main` `5a4a23066`. Remote branch
+current with `origin/main` `1043a9178`. Remote branch
 `Feature/typed-result_reunion-integration` and implementation PR #453 are open at `53aa0a3`; their
 reviewed code range ends at `a779fe041` and later commits are ledger-only. The current Phase 3 retirement
 returns every `api/Concertable.Shared` source, project, and test path exactly to `origin/main`, deletes
@@ -50,9 +51,10 @@ the package APIs it uses. Payment API/Web currently maps no Result or Option car
 receive an unused `Reunion.AspNetCore` reference; that adapter remains required only at HTTP edges
 whose source actually calls it.
 
-The full code and security review of `162b8412a..a779fe041` found no issues. The incremental native,
-security, and Concertable review of `53aa0a3..da78980b7` also found no issues. Remote source-owner
-head `53aa0a3` remains unchanged while the unpublished dependency blocks delivery.
+The full code and security review of `162b8412a..a779fe041` found no issues. Incremental native,
+security, and Concertable reviews through implementation head `da78980b7` and current-main merge
+`cbcfda10e` also found no issues. Remote source-owner head `53aa0a3` remains unchanged while the
+unpublished dependency blocks delivery.
 
 Docs design PR #443 merged the roadmap, plan, and this recovery ledger as `fd0b666b9`; closeout PR
 #444 advanced main to `c72b058af`. No Concertable or Reunion runtime file, package reference,
@@ -131,8 +133,9 @@ Resume when: the key is present (verify length only) and NuGet.org still lacks `
 - Packed and inspected exact `Reunion.Errors` `0.1.0-alpha.2` from merged Reunion head `1500270`,
   migrated all Payment definitions to direct nested-case factories, removed the temporary source
   scan, and completed the Payment, full-solution, and isolated package-consumer gates locally.
-- Incrementally reviewed `53aa0a3ae..da78980b7` through the native, security, and Concertable lenses;
-  no findings remain and both review watermarks identify exact implementation head `da78980b7`.
+- Incrementally reviewed through implementation head `da78980b7` and current-main merge `cbcfda10e`
+  across the native, security, and Concertable lenses; no findings remain and both review watermarks
+  identify exact merge head `cbcfda10e`.
 - Pushed reviewed implementation head `a779fe041`, verified exact remote equality, and opened
   implementation PR #453 against `main`.
 - Completed full code and security review of `162b8412a..a779fe041` with no findings; review watermark
@@ -209,8 +212,8 @@ Resume when: the key is present (verify length only) and NuGet.org still lacks `
 - GitHub PR #453 is `OPEN` against `main`; its initial `headRefOid` and the fetched remote branch
   both equal reviewed implementation head `a779fe04139e8e33fca7f294a26c41e44c89dda7`.
 - Full and incremental code/security review: `reviews/Feature-typed-result_reunion-integration.md`;
-  latest range `53aa0a3ae..da78980b7` (15 commits), no findings; reviewed and security-reviewed
-  watermarks both equal `da78980b717fc3513749e5b526069828f1c886d2`.
+  latest range `da78980b7..cbcfda10e` (4 commits), no findings; reviewed and security-reviewed
+  watermarks both equal `cbcfda10ede61d8fa052167184f7502ff876fc72`.
 - Payment standalone Release build against exact local `Reunion.Errors` `0.1.0-alpha.2`: 0 warnings,
   0 errors.
 - Payment Release unit tests: 223 passed, 0 failed; integration tests: 8 passed, 0 failed.
@@ -421,6 +424,18 @@ Resume when: the key is present (verify length only) and NuGet.org still lacks `
   delivery-ready and provide the exact remaining-call-site inventory.
 
 ## Event log
+
+### 2026-08-09 — platform `.890` currency gate completed
+
+- Action: Detected main advancing during verification, merged platform-sync PR #460, restored the
+  exact local Reunion candidate through source mapping, reran the full solution plus Payment tests,
+  and incrementally reviewed the resulting delta.
+- Evidence: `origin/main` `1043a9178`; merge `cbcfda10e`; full solution 0 errors/9 existing warnings;
+  Payment unit 223/223; Payment integration 8/8; exact `Reunion.Errors` `.2` resolution; review range
+  `da78980b7..cbcfda10e` with no findings and both review markers at the merge head.
+- Outcome: The branch is current and green on platform `.890`. NuGet.org publication remains the only
+  blocker, and PR #453 is still intentionally unchanged at `53aa0a3`.
+- Follow-up: Preserve this current reviewed state until the scoped NuGet.org key is available.
 
 ### 2026-08-09 — direct-factory incremental review completed
 
