@@ -78,15 +78,14 @@ The corrected release worktree
 complete current-source gate is green. NuGet.org still exposes only historical `Reunion` `0.0.1`;
 `Reunion` `0.1.0-alpha.1` has been accepted, indexed, downloaded, inspected, and repository-signature
 verified from NuGet.org;
-`Reunion.Errors` `0.1.0-alpha.1` has been accepted and awaits indexing; `Reunion.AspNetCore` remains
-unpublished. A 46-character user-scoped
+`Reunion.Errors` `0.1.0-alpha.1` has been accepted and indexed; production artifact verification
+remains pending and `Reunion.AspNetCore` remains unpublished. A 46-character user-scoped
 `NUGET_API_KEY` is present; its value was not displayed or recorded.
 
 ## Next Steps
 
-Wait for `Reunion.Errors` hash
-`1B2F829BEB80CAF73F98F63686962D15FBC1827EA2524D1B6FC640FDC0FDA582` to index and verify its
-production artifact, then publish `Reunion.AspNetCore` hash
+Download and verify indexed `Reunion.Errors` against prepared hash
+`1B2F829BEB80CAF73F98F63686962D15FBC1827EA2524D1B6FC640FDC0FDA582`, then publish `Reunion.AspNetCore` hash
 `B2166ECB6451F5B9038A9F8224D6C3AC7EA49385BAFA5C5E376728A364A91260` in dependency order. Wait for
 all three packages to become restorable from clean isolated caches, verify their production metadata
 and hashes, remove the user-scoped `NUGET_API_KEY`, then checkpoint the terminal Phase 2 gate. Do not
@@ -109,7 +108,7 @@ begin Phase 3 in this turn.
   SHA-256 to `04FF09CCE6C2097928F0CC673B9A00C07A02D84ACB2A7505988EC495A33DCC1E`; verified NuGet content
   hash is `XeJO3nDfFqQmtUqY0gZld/fNtgNbpog1CmPPmC2xHrZanJfpFCVQtqS9YINnuj8j9w51il/SlXKU9i8dO0PK+Q==`.
 - NuGet.org accepted exact `Reunion.Errors` `0.1.0-alpha.1`; indexing and production verification
-  remain pending.
+  remain pending; the flat-container index now exposes the version.
 - Added the safe additive Shared expansion checkpoint: Kernel owns Reunion, Shared.Api owns
   Reunion.AspNetCore, Reunion parity tests cover the named-case conversion contract, and Reunion
   carriers can traverse the existing Concertable MVC error/CreatedAt boundary without deleting the
@@ -303,6 +302,15 @@ begin Phase 3 in this turn.
   waits for the Phase 4 Payment.Client publication/sync before PR #425 is updated once.
 
 ## Event log
+
+### 2026-08-09 — Reunion.Errors package indexed
+
+- Action: Polled the NuGet.org flat-container index after acceptance without repushing.
+- Evidence: `reunion.errors/index.json` exposed `0.1.0-alpha.1` on bounded poll 19 after approximately
+  three minutes.
+- Outcome: The Errors package is publicly addressable; production artifact verification remains.
+- Follow-up: Download, inspect, and signature-verify the production artifact, then publish
+  Reunion.AspNetCore.
 
 ### 2026-08-09 — Reunion.Errors package accepted by NuGet.org
 
