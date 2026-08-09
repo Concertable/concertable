@@ -4,10 +4,10 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_reunion-integration`
 - Branch: `Feature/typed-result_reunion-integration`, current with `origin/main` `162b8412a`; code
   head `a779fe041` retires the discarded Shared rehearsal and migrates Payment/Payment.Client to
-  Reunion; full code and security review are clean through that exact head; current HEAD is the
-  ledger-only review checkpoint in `this commit`
-- PR: not opened for implementation; docs design PR #443 merged as `fd0b666b9`; sub-plan
-  reconciliation PR #445 merged as `d6a572e0d`
+  Reunion; full code and security review are clean through that exact head; branch and PR head
+  `53aa0a3` adds only the review and delivery ledger checkpoints
+- PR: implementation PR #453 is open at `53aa0a3`; reviewed code head is `a779fe041`; docs design PR
+  #443 merged as `fd0b666b9`; sub-plan reconciliation PR #445 merged as `d6a572e0d`
 - Dependency/package gates: docs design merged; reviewed Reunion carrier commit `7bf5f66` is contained
   in merged PR #1 head `e52129d241711f2e1498ac166e2c510b167606a3`; corrective PR #2 removed the
   mistaken `Reunion.Errors.Extensions` package and merged as release head
@@ -18,10 +18,10 @@
   validation mapping, and generic success mappers; the obsolete Concertable HTTP-terminal checkpoint
   is not an input; Auth and Customer non-Payment can convert against published Reunion now, while B2B
   and Customer Ticket can prepare against exact local Payment packages; Phase 3 is locally
-  complete and the Phase 4 code, test, and isolated package-consumer gates are green, while source
-  PR, merge-queue E2E, publication, and generated platform sync remain pending
+  complete and the Phase 4 code, test, and isolated package-consumer gates are green; source PR #453
+  is open, while merge-queue E2E, publication, and generated platform sync remain pending
 - Last reconciled: 2026-08-09 against current Concertable `origin/main` `162b8412a`, Concertable code
-  and reviewed implementation head `a779fe041`, ledger checkpoint `this commit`, published Reunion
+  and reviewed implementation head `a779fe041`, ledger checkpoint `53aa0a3`, published Reunion
   release head `e33b40f`, current fetched Reunion
   `origin/master` `a837ecb`, live owner worktrees, NuGet.org package availability, and no open
   platform-sync PR
@@ -29,7 +29,9 @@
 ## Current state
 
 The repository-wide audit and Reunion publication are complete. The reserved integration worktree is
-current with `origin/main` `162b8412a` and has no remote branch or PR. The current Phase 3 retirement
+current with `origin/main` `162b8412a`. Remote branch
+`Feature/typed-result_reunion-integration` and implementation PR #453 are open at `53aa0a3`; their
+reviewed code range ends at `a779fe041` and later commits are ledger-only. The current Phase 3 retirement
 returns every `api/Concertable.Shared` source, project, and test path exactly to `origin/main`, deletes
 the obsolete HTTP-terminal plan pair, and leaves no Reunion package or overload from the discarded
 Shared rehearsal.
@@ -41,9 +43,8 @@ old Kernel functional/error namespaces. Payment API/Web currently maps no Result
 so it does not receive an unused `Reunion.AspNetCore` reference; that adapter remains required only
 at HTTP edges whose source actually calls it.
 
-The full code and security review of `162b8412a..a779fe041` found no issues.
-Current HEAD adds only this review-result ledger checkpoint; the review artifact is restamped through
-`this commit` after checking that docs-only delta.
+The full code and security review of `162b8412a..a779fe041` found no issues. Source-owner head
+`53aa0a3` adds only review and delivery ledger checkpoints.
 
 Docs design PR #443 merged the roadmap, plan, and this recovery ledger as `fd0b666b9`; closeout PR
 #444 advanced main to `c72b058af`. No Concertable or Reunion runtime file, package reference,
@@ -96,6 +97,7 @@ publication: Payment/Payment.Client migration, then final consumer contraction.
 
 Corrected source head `e33b40f` produced the immutable package family now published at
 `Reunion`, `Reunion.Errors`, and `Reunion.AspNetCore` `0.1.0-alpha.1`. Every package is indexed,
+
 downloadable, metadata/asset/dependency inspected, and NuGet.org repository-signature verified.
 Fresh isolated net10/net11 consumers restored only from NuGet.org and ran successfully. The scoped
 `NUGET_API_KEY` was removed from the user environment after verification, and the spent clean
@@ -103,23 +105,21 @@ detached Reunion release worktree was removed.
 
 Exact `Payment.Contracts` and `Payment.Client` `0.1.0-alpha.0.911` packages were reproduced from
 reviewed commit `a779fe04139e8e33fca7f294a26c41e44c89dda7` at
-`%LOCALAPPDATA%\NuGet\Concertable-Reunion-Parallel\a779fe041`. Their SHA-256 hashes
-are `7DDA02F542F606F6707D8305E8524E4227A7F2222F28113F8226D0AD239D3DA8` and
+`%LOCALAPPDATA%\NuGet\Concertable-Reunion-Parallel\a779fe041`. Their SHA-256 hashes are
+`7DDA02F542F606F6707D8305E8524E4227A7F2222F28113F8226D0AD239D3DA8` and
 `A52EA0562FA36EA123450BE2DC022E9F33AE9510FB100E4309F245DEFCC14D14`. This opens B2B and Ticket local
 implementation without changing the Payment delivery order.
 
 ## Next Steps
 
-Blocked: Source delivery cannot proceed without Tommy's explicit push/PR instruction.
-
-Unblock action: Tommy asks to push this branch and open its implementation PR.
-
-Resume when: That instruction is given; then push reviewed head `a779fe041`, verify remote equality,
-open the source PR, select full merge-queue E2E, and carry the Payment.Client publication and
-generated platform sync through their terminal gates while the independent Phase 5 owners prepare.
+Run `/merge` for implementation PR #453. Select full merge-queue E2E, then carry the
+Payment.Client publication and generated platform sync through their terminal gates while the
+independent Phase 5 owners prepare.
 
 ## Completed work
 
+- Pushed reviewed implementation head `a779fe041`, verified exact remote equality, and opened
+  implementation PR #453 against `main`.
 - Completed full code and security review of `162b8412a..a779fe041` with no findings; review watermark
   and security watermark both identify exact committed head `a779fe041`.
 - Completed Phase 3 retirement: removed the superseded Shared Reunion rehearsal, restored all Shared
@@ -191,6 +191,8 @@ generated platform sync through their terminal gates while the independent Phase
 
 ## Verification
 
+- GitHub PR #453 is `OPEN` against `main`; its initial `headRefOid` and the fetched remote branch
+  both equal reviewed implementation head `a779fe04139e8e33fca7f294a26c41e44c89dda7`.
 - Full code/security review: `reviews/Feature-typed-result_reunion-integration.md`; implementation
   range `162b8412a..a779fe041` (32 commits), no findings. The artifact is restamped through the
   ledger-only `this commit` after verifying its plan-progress delta.
@@ -204,6 +206,7 @@ generated platform sync through their terminal gates while the independent Phase
 - Repository scans find no old Kernel functional/error namespace in Payment, no machine-local Reunion
   source/version under `api/`, and no Shared working-tree delta from `origin/main`; `git diff --check`
   passes.
+
 - Superseded four-package rehearsal source: detached merged head
   `e52129d241711f2e1498ac166e2c510b167606a3`;
   local version `0.1.0-local.concertable.2`; SHA-256 values are Reunion
@@ -256,7 +259,342 @@ generated platform sync through their terminal gates while the independent Phase
   53 passed, 0 failed.
 - The superseded Phase 3 restore proved the production packages resolve, but its graph placed
   Reunion.AspNetCore in Shared.Api. Commit `26b9c10e7` removes that distribution; the remaining
-  Shared.Api core reference exists only for discarded rehearsal overloads and is removed wit…5498 tokens truncated…publication is actionable.
+  Shared.Api core reference exists only for discarded rehearsal overloads and is removed with them.
+- Phase 3 Release tests passed against the production packages: Kernel/parity 241/241 and Shared.Api
+  unit/architecture 53/53. The Release `api/Concertable.slnx` build succeeded with 0 errors and 9
+  existing/generated warnings.
+- The merge-source scan has zero `local.concertable`, `Reunion-Concertable`, or
+  `RestoreAdditionalProjectSources` matches under `api/`.
+- The initial destructive rehearsal produced five stale implicit-conversion assertion failures. The
+  tests now accept only Reunion's named `Success`/`Failure`/`Some`/`None` case conversions, and the
+  complete parity suite is green.
+- A destructive full-solution rehearsal failed with CS7069 because published
+  `Concertable.Payment.Client` exposes the old Kernel assembly identity to B2B/Customer. Restoring
+  the owned carriers and using additive Reunion overloads made the complete package closure green,
+  proving the required three-layer cutover rather than an upstream Reunion defect.
+- After Phase 1 checkpoint `ef4c09baa`, current `origin/main` `162b8412a` merged cleanly. Its delta
+  from the tested base contains no `api/**` path; post-merge Kernel 241/241 and Shared.Api 53/53 both
+  passed again, and the branch is 0 behind main.
+- Fresh `git fetch origin --quiet` completed for both repositories; before this ledger-only
+  checkpoint, Concertable was 0 behind / 4 ahead of `origin/main` `b5af92fdc`, while Reunion remained
+  at `ab2e959` with only `origin/master` and `origin/agent/implement-result-option-unions` fetched.
+  `git cat-file` still cannot resolve `7bf5f66`, and GitHub's commit endpoint returns HTTP 422 with
+  `No commit found for SHA: 7bf5f66`.
+- The integration worktree matched the plan owner, was clean before the current-main merge, and has
+  no remote branch or PR. PR #425 remains open at `e60219f7d`; PR #282 remains open at `26ed63b896`;
+  no open platform-sync PR exists.
+- The five authoritative typed-result worktrees remain clean at the heads recorded in `## Current
+  state`; the HTTP-terminal branch has one ledger-only commit after code/test checkpoint `c593150e4`.
+- The fresh `tomjseery/Reunion` clone resolves `master` to `ab2e959` and open PR #1 to `03fefaa`;
+  `git fetch origin 7bf5f66` returns `couldn't find remote ref`, and GitHub's commit endpoint returns
+  no commit for that SHA.
+- A later resume fetch again left Reunion at `ab2e959` with only `origin/master` and
+  `origin/agent/implement-result-option-unions`; `git cat-file`, fetched refs, worktree inventory, and
+  unreachable-object inspection still found no `7bf5f66`. Concertable is 0 behind / 5 ahead of
+  `origin/main` `b5af92fdc`; PRs #425 and #282 remain open at `e60219f7d` and `26ed63b896`, both
+  `DIRTY`, and no open platform-sync PR exists.
+- Docs/meta PR #447 merged as `43fe1caf4`; the integration branch merged that exact `origin/main`
+  and now carries the actionable blocked-state guidance, updated `resume-plan` skill, and Stop-hook
+  enforcement. The Reunion object gate is unchanged.
+- `git ls-tree` of PR #1 confirms its source tree contains `src/Reunion` but no
+  `src/Reunion.AspNetCore`, so the remote PR head cannot satisfy the planned two-package battle test.
+- HTTP-terminal checkpoint `c593150e4`: Shared.Api Release 63/63, Release solution build 0 errors and
+  6 existing warnings, old-terminal content/path grep zero, and full code review TEST1 fixed with no
+  remaining findings.
+
+- Read-only source inspection covered all Concertable functional carrier files, task and collection
+  extensions, `IError`/definition types, Shared.Api terminals, `ApplicationProblemDetails`, controller
+  return patterns, unit/architecture tests, central package files, and solution boundaries.
+- GitHub metadata was refreshed for PRs #248, #261, #282, #284, #290, #291, #296, #312, #335, #336,
+  #340, #343, #344, #362, #370, #380, #388, #392, #404, #407, #420, #425, #426, and #427.
+
+- At the final audit, #282 was 763 behind/1 ahead and #425 was 104 behind/29 ahead of `origin/main`.
+- Reunion `7bf5f66` project metadata and exact OrFailure/MVC public surfaces were inspected directly.
+- Option-to-Result search found no production conversions on `origin/main` or PR #425 and exactly two
+  CFE `Maybe.ToResult` conversions in PR #282's Ticket service; B2B/Auth remain an explicit
+  other-workstation reconciliation gate.
+- `git diff --check` passed for the complete docs change; focused scans found no stale divergence
+  counts or forbidden plan-to-roadmap reference.
+- All changed-document relative links and documented Concertable paths resolve. The installed .NET 10
+  SDK accepts `dotnet nuget why`, and Windows bsdtar accepts the documented nuspec inspection shape.
+- Full docs review of `2eb8bc476..38f11e6eb` found four issues; all were fixed in `b9cc525c2`.
+- Incremental docs review of `38f11e6eb..b9cc525c2` found no new issues and stamped watermark
+  `b9cc525c2`. Merge evidence remains pending.
+- Before delivery, the branch merged non-overlapping platform-sync PR #442 and is current with
+  `origin/main` `ab5bea7af`; the PR diff remains the same three docs paths.
+- First push leg verified local and remote docs heads equal at `ed35cd474`; no PR existed at that
+  comparison point.
+- Push-checkpoint transport verified local, remote, and PR heads equal at `c4021dff0`. PR #443 is
+  ready/clean, targets `main`, carries `skip-e2e`, and its diff has only the three planned docs paths.
+- PR #443 was admin-merged from verified head `30f9ed648` as `fd0b666b9`. Its diff contained no
+  `api/**` path, so it triggered no package publication or platform-sync PR.
+- Closeout docs review of `fd0b666b9..1679726ab` found no issues; PR #443 paths were reconfirmed
+  meta-only and GitHub reported no open platform-sync PR.
+- Full docs review of `c72b058af..8386fe1fe` found no issues across all eleven reconciliation paths;
+  PR #445 merged from that exact head as `d6a572e0d` with no `api/**` path.
+
+## Reviews
+
+- Full code and security review: implementation range `162b8412a..a779fe041` (32 commits), artifact
+  `reviews/Feature-typed-result_reunion-integration.md`, no findings; the artifact is restamped
+  through the ledger-only `this commit` after verifying that checkpoint delta.
+- Full docs review: `2eb8bc476..38f11e6eb` (1 commit), artifact
+  `reviews/Docs-typed-result_reunion-integration.md`, watermark `38f11e6eb`.
+- `ACC1` fixed in `b9cc525c2`: narrowed the no-mutation claim to existing migration branches.
+- `ACC2` fixed in `b9cc525c2`: recorded local main's final fast-forward to the audited remote tip.
+- `INST1` fixed in `b9cc525c2`: classified the recommendation as publish-gated strategy D and
+  compared it accurately with A, B, and C.
+- `INST2` fixed in `b9cc525c2`: unified Phase 1 on the reserved integration branch and made the
+  local-version replacement/push gate explicit.
+- Incremental docs review: `38f11e6eb..b9cc525c2` (1 commit), no new findings, same artifact,
+  watermark `b9cc525c2`. Open findings: none.
+- Closeout docs review: `fd0b666b9..1679726ab` (1 commit), artifact
+  `reviews/Docs-typed-result_reunion-integration_closeout.md`, watermark `1679726ab`, no findings.
+
+## Decisions, discoveries, blockers, and deviations
+
+- Reunion stays prerelease while its `net11.0` asset depends on preview .NET 11/C# functionality.
+  Concertable targets `net10.0` and will consume the matching shipping-runtime asset from the same
+  alpha package while exercising this owner-controlled integration before general release.
+- The Phase 1 source blocker is resolved by fetched carrier base `7bf5f66`. Reunion PR #1 head
+  `e52129d` supplied the first complete rehearsal, but corrective PR #2 removed the behavior-free
+  `Reunion.Errors.Extensions` bridge before publication. The release rehearsal and immutable package
+  provenance must use current merged head `e33b40f`.
+- The earlier four-package Phase 1 test validated the prerelease runtime model but is superseded as a
+  release-artifact gate. Phase 1 becomes complete again only after the current three-package head
+  passes the same tests, inspection, and clean-consumer checks.
+- `Concertable.Payment.Client` is a published API layer between Shared and B2B/Customer. The original
+  single producer/sync cutover was impossible without CS7069. With upstream HTTP terminals, the
+  mandatory sequence is Payment.Client migration publish/sync, then final consumer contraction.
+- Published Reunion MVC typed-error mapping executes through `IProblemDetailsService`, preserves
+  validation details, instance/trace identifiers, and fallback serialization. Concertable does not
+  keep a parallel terminal or response executor.
+- Reunion's generic `ToActionResult(successMapper)` preserves route-generated
+  `CreatedAtActionResult` and Accepted responses; the literal-location convenience is optional.
+- Reunion's `OrFailure` eager/lazy/task/async names and intended branch semantics match Concertable's;
+  parity tests remain mandatory before deleting duplicates.
+- `Concertable.Kernel` has a pre-existing ASP.NET framework reference. This plan neither expands nor
+  relies on it. Shared.Api does not receive Reunion.AspNetCore; every service HTTP edge mapping
+  Reunion carriers owns that adapter independently.
+- The Reunion Phase 1 battle test and Phase 2 three-package publication are complete; the local HTTP
+  checkpoint is superseded. Auth and Customer non-Payment can convert now; exact local Payment
+  packages open B2B and Ticket preparation while Payment publication still gates their delivery.
+- Payment API/Web currently exposes conventional ActionResult endpoints but maps no Result or Option
+  carrier. Direct adapter ownership therefore remains conditional on an actual Reunion MVC call site;
+  adding Reunion.AspNetCore to Payment now would be an unused dependency rather than ownership.
+
+## Downstream handoffs
+
+- The former HTTP-terminal dependent has no return path: delete its plan/ledger and retire
+  `Refactor/typed-result_http-terminals` without publication because Reunion owns that surface.
+- B2B and Customer Ticket use the exact `.911` local packages now and return here only for published
+  Payment revalidation after PR #453, publication, and generated sync are terminal.
+- Auth and Customer non-Payment proceed independently against published Reunion `.1`; their delivery
+  depends on their own topology and gates, not PR #453.
+- `REUNION_SHARED_CONTRACTION_PROGRESS.md` remains implementation-blocked until all four consumers are
+  delivery-ready and provide the exact remaining-call-site inventory.
+
+## Event log
+
+### 2026-08-09 — parallel readiness corrected
+
+- Action: Split implementation and delivery DAGs, produced exact Payment `.911` artifacts, and
+  dispatched B2B, Auth, Customer non-Payment, and Customer Ticket to separate owner ledgers.
+- Evidence: producer commit and package hashes recorded above; Search carrier audit is empty.
+- Outcome: PR #453 delivery remains sequential, but independent consumer preparation no longer waits
+  for its merge.
+- Follow-up: run `/merge` for PR #453 while the four preparation ledgers proceed independently.
+
+### 2026-08-09 — implementation PR opened and work head verified
+
+- Action: Pushed reviewed implementation head `a779fe041`, fetched the remote branch, and opened
+  implementation PR #453 against `main`.
+- Evidence: remote `Feature/typed-result_reunion-integration` and initial PR `headRefOid` both equal
+  `a779fe04139e8e33fca7f294a26c41e44c89dda7`; PR URL
+  `https://github.com/Concertable/concertable/pull/453`.
+- Outcome: Source delivery is open with the reviewed work head intact; merge-queue E2E, publication,
+  and generated platform sync remain pending.
+
+- Follow-up: Run `/merge` for PR #453 with full E2E and carry its downstream package gates to their
+  terminal states before Phase 5.
+
+### 2026-08-09 — Phase 4 committed review gate passed
+
+- Action: Committed the verified Phase 3/4 checkpoint and ran the mandatory full native, security,
+  and Concertable architecture-aware review over its complete net branch diff.
+- Evidence: commit `a779fe041`; range `162b8412a..a779fe041` (32 commits); review artifact
+  `reviews/Feature-typed-result_reunion-integration.md`; no findings; both review markers are
+  restamped through the ledger-only `this commit` after checking its plan-progress delta.
+- Outcome: The local Phase 4 checkpoint is clean and ready for source delivery. No remote branch, PR,
+  publication, platform sync, or Phase 5 mutation occurred.
+- Follow-up: Wait for explicit push/PR instruction, then deliver exact reviewed head `a779fe041` and
+  own its publication/platform-sync gates.
+
+### 2026-08-09 — Phase 3 retired and Phase 4 local Payment gate completed
+
+- Action: Removed the discarded Shared rehearsal, deleted the obsolete HTTP-terminal plan pair,
+  migrated Payment and Payment.Client to the published Reunion family, enforced direct package
+  ownership, and completed the focused, solution, and isolated package-consumer gates.
+- Evidence: Shared matches `origin/main`; Payment build 0 errors; unit 224/224; integration 8/8; full
+  solution build 0 errors; local Payment packages `0.1.0-alpha.0.910`; clean-cache net10 consumer
+  resolves Reunion/Reunion.Errors `0.1.0-alpha.1`; namespace/local-source scans and diff check clean.
+- Outcome: Phase 3 is terminal locally and Phase 4 is ready for its mandatory committed code review.
+  Source PR, merge-queue E2E, Payment.Client publication, and generated platform sync are not claimed.
+- Follow-up: Commit this checkpoint, run `/code-review`, and resolve every open finding before any
+  delivery or Phase 5 consumer contraction.
+
+### 2026-08-09 — upstream HTTP terminal ownership verified
+
+- Action: Fetched current Reunion `origin/master`, inspected the published release lineage and the
+  complete MVC/Minimal API adapter source, and reconciled the integration after Tommy confirmed
+  Concertable must not manufacture its own HTTP extensions.
+- Evidence: current upstream head `a837ecb`; published adapter lineage `e33b40f`; MVC
+  `ResultActionResultExtensions` and `OptionActionResultExtensions`; Minimal API
+  `ResultHttpResultExtensions` and `OptionHttpResultExtensions`; upstream
+  `ApplicationProblemDetailsResult` execution through `IProblemDetailsService`; Concertable cleanup
+  head `26b9c10e7`.
+- Outcome: HTTP checkpoint `c593150e4` and its plan are superseded. Shared.Api owns no Reunion
+  terminal surface; each service HTTP edge directly owns `Reunion.AspNetCore`, while projects directly
+  own core/error packages wherever their source compiles against those APIs.
+- Follow-up: finish removing the discarded Shared rehearsal and obsolete HTTP plan pair, then migrate
+  Payment/Payment.Client directly to the published Reunion family.
+
+### 2026-08-09 — service-owned Reunion dependency topology corrected
+
+- Action: Reconciled the Phase 3 design after Tommy rejected distributing Reunion.AspNetCore through
+  a shared platform package and confirmed Shared.Api currently calls no API from that adapter.
+- Evidence: Shared.Api's production terminals compile only against core Reunion carriers and
+  Microsoft MVC types; repository search found the sole Reunion.AspNetCore use to be its package
+  reference and the architecture assertion enforcing that reference.
+- Outcome: The prior Phase 3 local gate is superseded before review or publication. This intermediate
+  decision correctly removed shared adapter distribution but still assumed a Concertable terminal;
+  the later upstream-surface audit supersedes that assumption too.
+- Follow-up: Apply the upstream HTTP terminal ownership decision recorded above.
+
+### 2026-08-09 — initial Phase 3 Shared expansion rehearsal completed (superseded)
+
+- Action: Replaced both local Reunion rehearsal versions with published `0.1.0-alpha.1`, restored the
+  complete solution from configured production feeds, verified direct/transitive package ownership,
+  and reran the affected Release tests plus full solution build.
+- Evidence: restore 0 warnings/errors; Kernel/parity 241/241; Shared.Api unit/architecture 53/53;
+  Release solution build 0 errors and 9 existing/generated warnings; machine-local source scan zero.
+- Outcome: The additive behavior is proven without deleting any owned carrier or old terminal
+  signature, but the shared Reunion.AspNetCore dependency was later rejected before review or delivery.
+- Follow-up: Apply the service-owned dependency correction recorded above and rerun the local gate.
+
+### 2026-08-09 — Phase 2 production publication gate completed
+
+- Action: Restored all four clean consumers into new isolated caches from NuGet.org only, verified
+  their exact package graphs and source metadata, ran both net10 and net11 consumers, removed the
+  scoped publication key, removed the spent detached release worktree, and updated the registered
+  HTTP-terminal dependent ledger.
+- Evidence: all restores succeeded from `https://api.nuget.org/v3/index.json`; both core consumers
+  resolved only Reunion, both ASP.NET Core consumers resolved the exact three-package graph, and all
+  four executables passed. Key removal returned `True`; only the main Reunion worktree remains
+  registered; dependent checkpoint `86563a04a` returns Phase 3 incorporation to this owner.
+- Outcome: Phase 2 is terminal. The immutable three-package `0.1.0-alpha.1` production graph is green
+  and Phase 3 Shared expansion is unblocked.
+- Follow-up: Replace the local package pin with published `0.1.0-alpha.1` and execute the additive
+  Shared expansion without deleting owned identities.
+
+### 2026-08-09 — Reunion.AspNetCore production artifact verified
+
+- Action: Downloaded the indexed ASP.NET Core package, inspected its metadata, dual-TFM assets,
+  framework reference, and exact Reunion/Reunion.Errors dependency groups, then ran
+  `dotnet nuget verify --all`.
+- Evidence: package inspection and NuGet.org repository signature verification passed; production
+  SHA-256 and NuGet content hash are recorded above.
+- Outcome: All three immutable production artifacts are individually verified.
+- Follow-up: Prove clean NuGet.org-only restore and execution for all four consumers, then remove the
+  temporary key and close Phase 2.
+
+### 2026-08-09 — Reunion.AspNetCore package indexed
+
+- Action: Polled the NuGet.org flat-container index after acceptance without repushing.
+- Evidence: `reunion.aspnetcore/index.json` exposed `0.1.0-alpha.1` on bounded poll 22 after
+  approximately three and a half minutes.
+- Outcome: The final package is publicly addressable; production artifact and complete-graph
+  verification remain.
+
+- Follow-up: Download, inspect, and signature-verify the production artifact, then run clean
+  NuGet.org-only consumers for both target frameworks.
+
+### 2026-08-09 — Reunion.AspNetCore package accepted by NuGet.org
+
+- Action: Pushed exact prepared `Reunion.AspNetCore.0.1.0-alpha.1.nupkg` after both dependencies were
+  indexed and production-verified.
+- Evidence: NuGet.org returned HTTP `201 Created`; upload SHA-256 is
+  `B2166ECB6451F5B9038A9F8224D6C3AC7EA49385BAFA5C5E376728A364A91260` from source `e33b40f`.
+- Outcome: The final package publication is accepted; indexing and complete production restore are
+  not yet claimed.
+- Follow-up: Wait for indexing, verify the production artifact and complete graph, then remove the key.
+
+### 2026-08-09 — Reunion.Errors production artifact verified
+
+- Action: Downloaded the indexed Errors package, inspected its metadata/framework/dependency
+  contract, and ran `dotnet nuget verify --all`.
+- Evidence: package inspection and NuGet.org repository signature verification passed; production
+  SHA-256 and NuGet content hash are recorded above.
+- Outcome: Both dependencies are published and verified; Reunion.AspNetCore may publish.
+- Follow-up: Push exact Reunion.AspNetCore, then verify indexing and the complete production graph.
+
+### 2026-08-09 — Reunion.Errors package indexed
+
+- Action: Polled the NuGet.org flat-container index after acceptance without repushing.
+- Evidence: `reunion.errors/index.json` exposed `0.1.0-alpha.1` on bounded poll 19 after approximately
+  three minutes.
+- Outcome: The Errors package is publicly addressable; production artifact verification remains.
+- Follow-up: Download, inspect, and signature-verify the production artifact, then publish
+  Reunion.AspNetCore.
+
+### 2026-08-09 — Reunion.Errors package accepted by NuGet.org
+
+- Action: Pushed exact prepared `Reunion.Errors.0.1.0-alpha.1.nupkg` after core production
+  verification.
+- Evidence: NuGet.org returned HTTP `201 Created`; upload SHA-256 is
+  `1B2F829BEB80CAF73F98F63686962D15FBC1827EA2524D1B6FC640FDC0FDA582` from source `e33b40f`.
+- Outcome: The immutable Errors package publication is accepted; indexing and production restore
+  are not yet claimed.
+- Follow-up: Wait for indexing, verify the production artifact, then publish Reunion.AspNetCore.
+
+### 2026-08-09 — Reunion core production artifact verified
+
+- Action: Downloaded the indexed package from NuGet.org, inspected its metadata/framework/dependency
+  contract, and ran `dotnet nuget verify --all`.
+- Evidence: package inspection passed; NuGet.org repository signature is valid; production SHA-256
+  and NuGet content hash are recorded above. The archive hash differs from the upload candidate
+  because NuGet.org repository-signed the package after acceptance.
+- Outcome: The core production artifact is verified and the independent Errors package may publish.
+- Follow-up: Push exact Reunion.Errors, checkpoint acceptance/indexing/verification, then publish
+  Reunion.AspNetCore.
+
+### 2026-08-09 — Reunion core package indexed
+
+- Action: Polled the NuGet.org flat-container index after acceptance without repushing.
+- Evidence: `reunion/index.json` exposed `0.1.0-alpha.1` on bounded poll 19 after approximately three
+  minutes.
+- Outcome: The core package is publicly addressable; artifact/hash verification remains before the
+  dependent publication.
+- Follow-up: Download the production artifact, compare its hash and metadata, then publish
+  Reunion.Errors.
+
+### 2026-08-09 — Reunion core package accepted by NuGet.org
+
+- Action: Pushed the exact prepared `Reunion.0.1.0-alpha.1.nupkg` using the scoped session key.
+- Evidence: NuGet.org package endpoint returned HTTP `201 Created`; local artifact SHA-256 is
+  `8320AC619FFDA82B7A9F0F89905A53B9C332D196D3DA466EE308FFB1D2224CE9` from source `e33b40f`.
+- Outcome: The immutable core package publication is accepted; indexing and production restore are
+  not yet claimed.
+- Follow-up: Wait for production-feed availability, verify the downloaded artifact, then publish
+  Reunion.Errors.
+
+### 2026-08-09 — NuGet.org publication credential supplied
+
+- Action: Verified the newly created user-scoped NuGet.org key by presence and length only, without
+  reading, displaying, or recording its value.
+- Evidence: `NUGET_API_KEY` is present with length 46; the prepared head and artifact hashes remain
+  unchanged and the three target versions remain absent from NuGet.org.
+- Outcome: The Phase 2 credential blocker is closed and publication is actionable.
 - Follow-up: Push and checkpoint each verified package in dependency order, then prove clean
   production-feed restore and remove the key.
 
@@ -278,6 +616,7 @@ generated platform sync through their terminal gates while the independent Phase
   current implementation plan, and checked NuGet.org plus local credential state before any push.
 - Evidence: current `origin/master` `e33b40f`; PR #2 merged from `d518096` and removes only the
   mistaken Errors.Extensions project/package and its tests/docs/CI; `0.1.0-alpha.1` is unpublished
+
   for every intended package; no stored NuGet API key or NuGet.org API-key environment variable.
 - Outcome: The stale four-package publication instruction was stopped before an immutable mistake.
   The release family is `Reunion`, `Reunion.Errors`, and `Reunion.AspNetCore` from `e33b40f`.
@@ -378,6 +717,7 @@ generated platform sync through their terminal gates while the independent Phase
 - Action: Fetched Concertable and Reunion, reconciled the integration and five semantic-owner
   worktrees plus PRs #425/#282, and merged current `origin/main` into the clean integration branch.
 - Evidence: integration merge head `11cecdd3a`, 0 behind / 4 ahead of `origin/main` `b5af92fdc` before
+
   this checkpoint; all five owner worktrees clean at their recorded heads; PR heads unchanged; no
   open platform-sync PR; Reunion local/remote `master` `ab2e959`, fetched refs exclude `7bf5f66`, and
   GitHub reports no commit for that SHA.
@@ -479,6 +819,7 @@ generated platform sync through their terminal gates while the independent Phase
 - Follow-up: checkpoint this review observation, push/open the docs PR, and land it through
   `/merge-docs`.
 
+
 ### 2026-08-09 — delivery-base reconciliation
 
 - Action: Fetched current `origin/main`, inspected platform-sync PR #442, and merged it before push.
@@ -551,26 +892,6 @@ generated platform sync through their terminal gates while the independent Phase
 - Outcome: every active typed-result owner now has its plan and exact Reunion dependency on main. No
   package publication, platform sync, implementation PR mutation, or E2E run occurred.
 - Follow-up: start the Reunion Phase 1 and HTTP-terminal local checkpoints in parallel.
-
-## Downstream handoffs
-
-- B2B and Customer Ticket use the exact `.911` local packages now and return here only for published
-  Payment revalidation after the source PR, publication, and generated sync are terminal.
-- Auth and Customer non-Payment proceed independently against published Reunion `.1`; their delivery
-  depends on their own topology and gates, not this Payment PR.
-- `REUNION_SHARED_CONTRACTION_PROGRESS.md` remains implementation-blocked until all four consumers are
-  delivery-ready and provide the exact remaining-call-site inventory.
-
-## Event log
-
-### 2026-08-09 — parallel readiness corrected
-
-- Action: Split implementation and delivery DAGs, produced exact Payment `.911` artifacts, and
-  dispatched B2B, Auth, Customer non-Payment, and Customer Ticket to separate owner ledgers.
-- Evidence: producer commit and package hashes recorded above; Search carrier audit is empty.
-- Outcome: Payment delivery remains permission-gated, but independent consumer preparation no longer
-  waits for its merge.
-- Follow-up: push/open the Payment source PR only after Tommy explicitly instructs it.
 
 ## Resume prompt
 
