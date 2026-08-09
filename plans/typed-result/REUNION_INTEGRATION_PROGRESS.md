@@ -3,16 +3,16 @@
 - Plan: `plans/typed-result/REUNION_INTEGRATION_PLAN.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_reunion-integration`
 - Branch: `Feature/typed-result_reunion-integration`, created from `origin/main` `82644721f`; the
-  local-only blocker checkpoint is carried by `this commit`
+  current local-only blocker checkpoint is carried by `this commit`
 - PR: not opened for implementation; docs design PR #443 merged as `fd0b666b9`; sub-plan
   reconciliation PR #445 merged as `d6a572e0d`
-- Dependency/package gates: docs design merged; Phase 1 is blocked because Reunion `7bf5f66` is not
-  present locally or on GitHub and must be synced from its source workstation before it can be packed;
+- Dependency/package gates: docs design merged; Phase 1 remains blocked after a fresh fetch because
+  Reunion `7bf5f66` is not present locally or on any fetched remote ref and must be synced from its
+  source workstation before it can be packed;
   the B2B, Auth, Customer, Customer Ticket, and semantic HTTP-terminal owners remain inventoried and
   must consume the one generated platform-sync baseline rather than perform local carrier cutovers
-- Last reconciled: 2026-08-09 against the five typed-result worktrees at Concertable `origin/main`
-  `82644721f`, verified HTTP-terminal checkpoint `c593150e4`, GitHub PR metadata, and Reunion commit
-  `7bf5f66`
+- Last reconciled: 2026-08-09 against current Concertable `origin/main` `82644721f`, verified
+  HTTP-terminal checkpoint `c593150e4`, and freshly fetched Reunion refs
 
 ## Current state
 
@@ -54,6 +54,11 @@ The newly cloned `tomjseery/Reunion` repository has `master` at `ab2e959` and op
 fetch and GitHub commit lookup both confirm that the exact object was never pushed. Substituting PR #1
 would fail the required AspNetCore dependency/provenance gate.
 
+A fresh fetch on 2026-08-09 left Concertable current with `origin/main` and Reunion unchanged at
+`ab2e959`; the only other local Reunion-named checkout search result is this same clone, and
+`git cat-file -e '7bf5f66^{commit}'` still reports that the object is absent. No Phase 1 edit is safe
+until the source workstation supplies that exact commit.
+
 ## Next Steps
 
 Make the exact Reunion commit `7bf5f66` available at
@@ -87,6 +92,11 @@ package/carrier substitution, run the complete Phase 1 gate, and commit without 
 
 ## Verification
 
+- Fresh `git fetch origin --quiet` completed for both repositories; before this ledger-only
+  checkpoint, Concertable was 0 behind / 2 ahead of `origin/main` `82644721f`, while Reunion remained
+  at `ab2e959` with only `origin/master` and `origin/agent/implement-result-option-unions` fetched.
+  `git cat-file` still cannot resolve `7bf5f66`, and no second local Reunion clone or worktree exists
+  under `source/repos`.
 - The fresh `tomjseery/Reunion` clone resolves `master` to `ab2e959` and open PR #1 to `03fefaa`;
   `git fetch origin 7bf5f66` returns `couldn't find remote ref`, and GitHub's commit endpoint returns
   no commit for that SHA.
@@ -176,6 +186,19 @@ package/carrier substitution, run the complete Phase 1 gate, and commit without 
   waits for the Phase 4 generated platform-sync PR to merge before PR #425 is updated once.
 
 ## Event log
+
+### 2026-08-09 — Reunion source blocker reconfirmed
+
+- Action: Fetched both repositories and searched the local repository root for another Reunion clone
+  or worktree containing the pinned source object.
+- Evidence: Concertable `origin/main` remains `82644721f` and the integration branch was clean at
+  `fcf17f6a9` before this checkpoint; Reunion local/remote `master` remains `ab2e959`, its fetched refs
+  still exclude `7bf5f66`, `git cat-file` cannot resolve the commit, and the only Reunion-named local
+  repository is `C:\Users\TommySeery\source\repos\Reunion`.
+- Outcome: The exact reviewed source required for both Phase 1 packages is still unavailable. No
+  package, local feed, carrier, test, semantic-owner branch, remote branch, or PR was changed.
+- Follow-up: Sync or push the exact `7bf5f66` object from its source workstation, then execute the
+  remainder of Phase 1 only.
 
 ### 2026-08-09 — semantic HTTP-terminal checkpoint registered
 
@@ -332,6 +355,6 @@ package/carrier substitution, run the complete Phase 1 gate, and commit without 
 ## Resume prompt
 
 ```
-/worktree create Feature/typed-result_reunion-integration
+cd C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_reunion-integration
 Read @plans/typed-result/REUNION_INTEGRATION_PLAN.md and @plans/typed-result/REUNION_INTEGRATION_PROGRESS.md and do what its `## Next Steps` says.
 ```
