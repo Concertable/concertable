@@ -14,6 +14,8 @@
 The repository-wide read-only audit and integration design are complete and approved. No Concertable
 or Reunion runtime file, package reference, existing migration branch, or existing PR has been
 changed. This docs-only branch adds the design, roadmap reconciliation, and this recovery ledger.
+Its work head `ed35cd474` is pushed and verified equal to the remote docs branch; the push-checkpoint
+transport and PR creation are in progress.
 
 GitHub has two open migration PRs: #425 contains unique Customer non-Payment work and must be
 preserved; #282 contains one obsolete-baseline Ticket commit whose semantics must later be recreated.
@@ -64,6 +66,8 @@ publish packages, or start the Concertable producer cutover in that phase.
   `b9cc525c2`. Merge evidence remains pending.
 - Before delivery, the branch merged non-overlapping platform-sync PR #442 and is current with
   `origin/main` `ab5bea7af`; the PR diff remains the same three docs paths.
+- First push leg verified local and remote docs heads equal at `ed35cd474`; no PR existed at that
+  comparison point.
 
 ## Reviews
 
@@ -142,6 +146,16 @@ publish packages, or start the Concertable producer cutover in that phase.
 - Outcome: The docs branch is current with its base and has no source/package delta of its own.
 - Follow-up: commit this delivery checkpoint, verify the push heads, open the docs PR, and
   `/merge-docs`.
+
+### 2026-08-09 — verified first push leg
+
+- Action: Pushed the docs work head and fetched the remote branch for an equality check.
+- Evidence: local `HEAD` and `origin/Docs/typed-result_reunion-integration` both
+  `ed35cd47498ae9e3eb105036be7e8625b8bc9887`; the only untracked path is the spent review work order,
+  which is excluded from the PR.
+- Outcome: The approved roadmap/plan/ledger range is durably published; no existing PR was mutated.
+- Follow-up: transport this ledger checkpoint, verify equality again, then open and merge the
+  docs-only PR.
 
 ## Resume prompt
 
