@@ -10,7 +10,9 @@ ownership, controller signatures, MVC behavior, published transport contracts, o
 boundaries.
 
 This is a publish-gated cross-package cutover. It is not a request to redesign Reunion, remove a
-Result family, add compatibility shims, or convert MVC controllers to Minimal API results.
+Result family, retain permanent compatibility shims, or convert MVC controllers to Minimal API
+results. Temporary additive overloads and the owned carriers remain only while the published
+package graph advances one compatible layer at a time.
 
 ## Non-negotiable boundaries
 
@@ -34,7 +36,7 @@ Result family, add compatibility shims, or convert MVC controllers to Minimal AP
 
 ### Repository and carrier state
 
-- Concertable `origin/main` is `c72b058afe43742854b765838bf43f179e7ed92a` after docs PRs #443/#444.
+- Concertable `origin/main` was `dc0da9360370e188b27f8e8bda775beac7c65de5` when Phase 1 began.
 - `Concertable.Kernel.Functional` currently defines all five temporary carriers plus synchronous,
   task-aware, collection, and Option conversion extensions. Its behavior intentionally already
   resembles Reunion: non-null payloads, non-empty string failures, uninitialized default Results,
@@ -71,7 +73,8 @@ operational state lives in the owning ledgers; the dependency-relevant snapshot 
 | `api/Concertable.Shared/src/Concertable.Shared.Api/Concertable.Shared.Api.csproj` | `Reunion.AspNetCore` | Owns MVC/ProblemDetails boundary behavior; the package brings the matching `Reunion` dependency. |
 | Kernel and Shared.Api unit/architecture tests | Neither directly | Consume through their tested project references unless a clean package-consumer test deliberately verifies NuGet assets. |
 | Service Web/API projects and controllers | Neither directly | Consume the Concertable-owned Shared.Api boundary; do not spread adapter-package ownership across services. |
-| Domain, application, contracts, client, infrastructure, messaging, worker, seed, and AppHost projects | Neither directly | Receive Reunion transitively where a published Concertable API exposes it. Never reference `Reunion.AspNetCore`. |
+| `api/Concertable.Payment/src/Concertable.Payment.Client/Concertable.Payment.Client.csproj` | Neither during expansion; `Reunion` after its own migration | This published package re-exposes Kernel Result/Option types and is therefore a second publication layer, not an ordinary final consumer. |
+| Domain, application, contracts, other clients, infrastructure, messaging, worker, seed, and AppHost projects | Neither directly | Receive Reunion transitively where a published Concertable API exposes it. Never reference `Reunion.AspNetCore`. |
 
 `Concertable.Kernel` already has a pre-existing `Microsoft.AspNetCore.App` framework reference for
 unrelated legacy reasons. This migration must not use that fact to add `Reunion.AspNetCore` or new HTTP
@@ -104,7 +107,7 @@ The semantic terminal vocabulary remains explicit: Result terminals name success
 `ToNoContentOrProblem`); Option terminals name Some plus ordinary absence (`ToOkOrNotFound` and
 `ToOkOrNoContent`). Option does not encode unauthenticated/forbidden/conflict outcomes. Those remain
 operation-owned typed Results. The existing local HTTP-terminal implementation is completed and
-reviewed as a local checkpoint, then incorporated into the one Shared producer PR in Phase 3.
+reviewed as a local checkpoint, then incorporated into the final consumer contraction in Phase 5.
 
 ## Old-to-new API mapping
 
@@ -207,13 +210,14 @@ response. Reunion receives only the caller-supplied mapper delegate and never re
                               ├──#380 Search ──#388 sync
                               └──#404 transport + #407 conventions
 
-local package battle test ──Reunion publish──┐
-semantic HTTP-terminal local checkpoint ─────┴──one Shared producer PR
-                                                  └──generated platform-sync consumer migration
-                ├── preserve/reconcile B2B local-only owner
-                ├── preserve/reconcile Auth local-only owner
-                ├── update PR #425 once
-                └── recreate PR #282 semantics on the integrated baseline
+local package battle test ──Reunion publish
+                └──additive Shared expansion ──publish/sync
+                     └──Payment + Payment.Client migration ──publish/sync
+                          └──final consumer contraction + HTTP terminals ──publish/sync
+                               ├── preserve/reconcile B2B local-only owner
+                               ├── preserve/reconcile Auth local-only owner
+                               ├── update PR #425 once
+                               └── recreate PR #282 semantics on the integrated baseline
 ```
 
 State is from GitHub plus local repository evidence on 2026-08-09. `closed + merged date` is reported
@@ -245,15 +249,16 @@ as merged; #336 is the only listed closed-unmerged PR.
 | #425 Model Customer non-Payment outcomes | Open; `main` ← `Feature/typed-result_customer-outcomes` | 29 unique reviewed commits; not elsewhere. | Preserve and update once against integrated main; do not duplicate package cutover; high (117 behind). |
 | #426 Close Payment owned-result migration | Merged; docs closeout | Lifecycle closeout. | No action; low. |
 | #427 Finish Payment closeout review fixes | Merged; same docs closeout branch | Review fixes for #426. | No action; low. |
-| B2B local-only work | Active, unpushed; recorded owner `Refactor/B2BTypedResultMigration` | Authoritative semantic migration exists locally at `ba5791268`. | Preserve owner and reconcile once after Phase 4; high conflict risk. |
-| Auth local-only work | Active, unpushed; recorded owner `Feature/typed-result_auth-outcomes` | Authoritative semantic migration exists locally at `98599413a`. | Preserve owner and reconcile once after Phase 4; high conflict risk. |
-| HTTP-terminal local work | Active, unpushed; `Refactor/typed-result_http-terminals` at `1d261e3ce` plus a preserved dirty correction set | Semantic Shared.Api terminal rename and Option absence terminals overlap the Reunion Shared producer surface. | Finish, verify, review, and commit locally; do not publish independently; incorporate once in Phase 3. |
+| B2B local-only work | Active, unpushed; recorded owner `Refactor/B2BTypedResultMigration` | Authoritative semantic migration exists locally at `ba5791268`. | Preserve owner and reconcile in Phase 6 after the final contraction; high conflict risk. |
+| Auth local-only work | Active, unpushed; recorded owner `Feature/typed-result_auth-outcomes` | Authoritative semantic migration exists locally at `98599413a`. | Preserve owner and reconcile in Phase 6 after the final contraction; high conflict risk. |
+| HTTP-terminal local work | Active, unpushed; verified code/test checkpoint `c593150e4` | Semantic Shared.Api terminal rename and Option absence terminals overlap the Reunion contraction surface. | Do not publish independently; incorporate once in Phase 5 after Payment.Client is published on Reunion. |
 
 ## Safest integration strategy
 
-Use strategy D: a publish-gated centralized integration. It keeps strategy B's single owner for the
-shared mechanical change, but splits delivery at the real Reunion and Concertable package-publication
-boundaries:
+Use strategy D: a publish-gated centralized integration. The Phase 1 rehearsal proved the original
+two-hop graph incomplete: `Concertable.Payment.Client` publicly re-exposes Kernel Result/Option
+types, while B2B and Customer compile against its published package rather than its source project.
+Delivery therefore crosses three Concertable code merges after the Reunion publication:
 
 1. Land this docs-only design first so every active branch shares the same owner and dependency map.
 2. In the reserved `Feature/typed-result_reunion-integration` worktree, pack commit `7bf5f66`,
@@ -262,24 +267,28 @@ boundaries:
 3. In parallel, finish and review the existing semantic HTTP-terminal work as a local-only checkpoint.
    Do not push or publish its Shared.Api package independently.
 4. Publish matching `Reunion` and `Reunion.AspNetCore` versions only after the battle-test gate passes.
-5. Land one Concertable Shared producer PR: package references, carrier removal/substitution,
-   Concertable error terminal, semantic terminal checkpoint, tests, public package surface, and
-   conventions. Follow its publication.
-6. Own the resulting generated platform-sync PR. Bump every service to the published Shared packages,
-   migrate consumer namespaces/call sites once in that PR, build every standalone solution, and drive
-   it green before doing more service migration work.
-7. Reconcile each semantic owner against that integrated `main`: update PR #425 once; sync and update
-   the active local B2B/Auth worktrees; recreate #282's Ticket semantics rather than
-   rebasing its obsolete carrier implementation.
-8. Run the final shared/background inventory and remove leftover third-party and duplicate carrier
-   surfaces only when all semantic owners are terminal.
+5. Merge an additive Shared expansion: reference Reunion from Kernel and Reunion.AspNetCore from
+   Shared.Api, add Reunion-backed terminal overloads, and retain every owned carrier and old terminal
+   signature. Publish and drive its generated platform sync green.
+6. Merge the Payment layer against that published expansion: migrate Payment source and the public
+   `Concertable.Payment.Client` API to Reunion. Publish the repacked client and drive its generated
+   platform sync green. Do not remove the old Shared identities yet.
+7. Merge the final consumer contraction: migrate B2B, Auth, Customer, Ticket, Search, and remaining
+   callers against the newly published Payment.Client, incorporate the reviewed semantic HTTP
+   terminals, then delete the owned carriers, duplicate extensions, and old terminal overloads.
+   Publish and drive the final platform sync green.
+8. Reconcile each semantic owner against that integrated `main`: update PR #425 once; sync and update
+   the active local B2B/Auth worktrees; recreate #282's Ticket semantics rather than rebasing its
+   obsolete carrier implementation.
+9. Run the final shared/background inventory and remove leftover third-party surfaces only when all
+   semantic owners are terminal.
 
 Updating every PR independently (A) duplicates package pins, carrier renames, and adapter fixes and
 guarantees divergent conflict resolutions. A single ordinary mega-integration branch (plain B) cannot
-cross the NuGet publication boundary safely. Landing every semantic migration first (C) delays the
-common baseline and increases later churn. Strategy D's local battle test → Reunion publish → Shared
-producer → Concertable publish → generated-sync sequence keeps the package carve honest while
-centralizing the mechanical change exactly once.
+cross either NuGet publication boundary safely. Landing every semantic migration first (C) delays the
+common baseline and increases later churn. Strategy D's local battle test → Reunion publish → additive
+Shared expansion → Payment.Client migration → final consumer contraction sequence keeps every
+published graph buildable while centralizing each mechanical layer exactly once.
 
 ## Local package battle-test workflow
 
@@ -414,44 +423,64 @@ Use real B2B/Customer flows after the automated gate:
 - Confirm the recorded B2B/Auth/Customer/Ticket/HTTP owner inventory still matches the live worktrees
   before the first code edit; update the ledger if any head or dirty path changed.
 - Create the isolated integration worktree and local feed; pack and inspect both matching packages.
-- Substitute Reunion on the reserved integration branch and run carrier plus Shared.Api parity tests.
+- Add the local Reunion packages and additive Shared.Api overloads on the reserved integration branch;
+  retain the old carriers so the complete published-package closure remains buildable, then run
+  carrier plus Shared.Api parity tests.
 
-Gate: local package provenance proven, affected tests green, Release solution build green, no
-machine-local configuration staged, and every compatibility risk either passed or explicitly returned
-to Reunion before package publication.
+Gate: local package provenance proven, Kernel 241/241 and Shared.Api 53/53 green, Release solution
+build green, no machine-local configuration staged, and the published-package topology recorded as
+Shared expansion → Payment.Client migration → final consumer contraction.
 
 ### Phase 2 — Publish Reunion packages
 
-- Publish matching `Reunion` and `Reunion.AspNetCore` versions from the reviewed Reunion commit.
+- Publish matching `Reunion` and `Reunion.AspNetCore` version `0.1.0-alpha.1` packages built from the
+  reviewed Reunion commit `7bf5f66`; do not silently substitute later `origin/master` contents.
 - Verify package contents, dependency version, both TFMs, clean package consumers, and feed
   availability from a clean cache.
 
 Gate: both packages are immutable and restorable from the production feed at the exact same version.
 
-### Phase 3 — Concertable Shared producer cutover
+### Phase 3 — Additive Concertable Shared expansion
 
-- Reference Reunion only from Kernel and Reunion.AspNetCore only from Shared.Api.
-- Replace temporary carriers/extensions with Reunion; retain Concertable errors and MVC terminal.
-- Add the pure `IError -> ProblemDetails` mapper and preserve executed ProblemDetails behavior.
+- Replace the local package version with the exact published Reunion version; reference Reunion only
+  from Kernel and Reunion.AspNetCore only from Shared.Api.
+- Add Reunion-backed Shared.Api terminal overloads while retaining the nine owned functional source
+  files and every old public terminal signature. This is a temporary binary/source-compatible expand
+  step, not a permanent compatibility layer.
+- Keep Concertable errors, MVC execution, controller signatures, and existing call sites unchanged.
+
+Gate: Shared unit/architecture/package tests and the full Release solution build green; code review
+clean; source PR merged; the generated platform sync green and merged; expanded Concertable Shared
+packages available. Do not contract the public surface on an unpublished expansion.
+
+### Phase 4 — Payment and Payment.Client migration
+
+- Migrate Payment source and the published `Concertable.Payment.Client` public API from
+  `Concertable.Kernel.Functional` to Reunion against the published Shared expansion.
+- Preserve Payment contracts, exceptions, HTTP behavior, and client call semantics; add direct
+  Reunion ownership to Payment.Client only if its public API requires the compile asset explicitly.
+- Own the generated platform sync and prove B2B/Customer consumers compile against the republished
+  client before the next contraction.
+
+Gate: Payment build/unit/integration/package-consumer verification and merge-queue E2E green; source
+PR merged; generated platform sync green and merged; the Reunion-based Payment.Client package is
+available. Never remove the old Shared identities before this gate.
+
+### Phase 5 — Final consumer migration and Shared contraction
+
+- Migrate every remaining service import/call site against published Shared and Payment.Client
+  packages, making package restore provenance explicit.
 - Incorporate the reviewed semantic HTTP-terminal checkpoint; keep Option absence terminals limited
   to NotFound and NoContent, with caller-actionable failures represented by typed Results.
-- Update public API/conventions/tests and remove only duplicate carrier code whose consumers are
-  migrated in this producer closure.
-
-Gate: Shared unit/architecture/package tests and Release build green; code review clean; source PR
-merged; published Concertable Shared packages available. Do not proceed on an unpublished producer.
-
-### Phase 4 — Generated platform-sync consumer migration
-
-- Own the generated sync PR, migrate every service import/call site against published packages, and
-  make package restore provenance explicit.
+- Remove the nine owned carrier/extension files and old Shared.Api overloads only after the repository
+  inventory proves no production caller or published package still exposes their assembly identity.
 - Preserve controller signatures, CreatedAtAction, HTTP behavior, domain errors, exceptions, and
   service carve boundaries.
 
 Gate: all standalone builds, unit/integration suites, package consumers, architecture tests, and
-merge-queue E2E tier green; sync PR merged. Never leave it red.
+merge-queue E2E green; source PR and generated platform sync merged. Never leave a sync red.
 
-### Phase 5 — Reconcile active semantic migration owners
+### Phase 6 — Reconcile active semantic migration owners
 
 - Update PR #425 exactly once against integrated main and preserve its 29 unique commits.
 - Merge integrated main into the authoritative B2B/Auth owners after their other-workstation state is
@@ -462,7 +491,7 @@ merge-queue E2E tier green; sync PR merged. Never leave it red.
 Gate: every owner has one authoritative branch/PR, no duplicate carrier/package changes, normal
 service verification green, and each generated platform sync terminal.
 
-### Phase 6 — Repository cleanup and closeout
+### Phase 7 — Repository cleanup and closeout
 
 - Inventory and remove remaining FluentResults/CFE production use and duplicate Concertable carrier
   code only after the last semantic owner no longer needs it.
