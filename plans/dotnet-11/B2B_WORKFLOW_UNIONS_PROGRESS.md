@@ -14,10 +14,10 @@
 The roadmap, implementation plan, and this recovery ledger exist on the isolated docs-planning branch.
 The full docs review found three issues; all are fixed in `44b435779`, and the incremental review of
 that fix commit found no new issues. The branch then merged current main's blocked-ledger schema. Its
-reconciliation review found two followable-instruction defects; both are fixed in the current working
-tree and await their checkpoint plus a clean incremental review. No implementation worktree, SDK
-installation, `global.json`, target-framework edit, workflow refactor, test run, package publication,
-or runtime deployment has occurred.
+reconciliation review found two followable-instruction defects; both are fixed in `0a7b0d181`, and the
+incremental review of that commit found no new issues. No implementation worktree, SDK installation,
+`global.json`, target-framework edit, workflow refactor, test run, package publication, or runtime
+deployment has occurred.
 
 The current design uses native unions only after ReUnion and the existing B2B typed-result work have
 landed. Published B2B contracts stay net10-compatible; the net11 boundary is the B2B runtime and its
@@ -61,8 +61,10 @@ Resume when: Current main contains the merged B2B work and `plans/typed-result/B
 - `ACC1` fixed in `44b435779`: corrected the B2B owner's premature “on current main” claim.
 - Incremental docs review: `9f4993214..44b435779` (1 commit), no new findings, same artifact,
   watermark `44b435779`. Open findings: none.
-- Delivery-base schema reconciliation review: `44b435779..abddcf39b`; `INST2` and `INST3` are fixed
-  in the current working tree; fix-commit incremental review is pending.
+- Delivery-base schema reconciliation review: `44b435779..abddcf39b`; `INST2` and `INST3` fixed in
+  `0a7b0d181`.
+- Incremental docs review: `abddcf39b..0a7b0d181` (1 commit), no new findings, same artifact,
+  watermark `0a7b0d181`. Open findings: none.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -133,6 +135,14 @@ Resume when: Current main contains the merged B2B work and `plans/typed-result/B
 - Outcome: the roadmap now routes to the actionable ReUnion resolver, while both waiting ledgers carry
   structured blocker state and suppress their own pointers.
 - Follow-up: commit the fixes, run incremental review, then deliver through `/merge-docs`.
+
+### 2026-08-09 — clean blocked-handoff incremental review
+
+- Action: reviewed only the committed `INST2`/`INST3` fixes after the reconciliation watermark.
+- Evidence: `abddcf39b..0a7b0d181`; review watermark `0a7b0d181`; structured-blocker, suppressed-pointer,
+  relative-link, resolver-routing, and `git diff --check` verification.
+- Outcome: no new findings; all five findings across the planning lifecycle are resolved.
+- Follow-up: checkpoint this result, publish the docs branch, and land it through `/merge-docs`.
 
 ## Resume prompt
 
