@@ -45,5 +45,6 @@ New-Item -ItemType Directory -Force "$env:USERPROFILE\.codex\prompts" | Out-Null
 Copy-Item ".codex\prompts\*.md" "$env:USERPROFILE\.codex\prompts\" -Force
 ```
 
-Codex exposes these custom commands under the `/prompts:` namespace; `techdebt.md` is invoked as
-`/prompts:techdebt`.
+Codex CLI and the IDE extension expose these custom commands under the `/prompts:` namespace;
+`techdebt.md` is invoked as `/prompts:techdebt`. Start a new Codex session after copying a prompt so
+the command list reloads it.
