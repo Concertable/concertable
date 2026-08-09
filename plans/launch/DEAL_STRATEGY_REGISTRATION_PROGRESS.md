@@ -3,11 +3,12 @@
 - Plan: `plans/launch/DEAL_STRATEGY_REGISTRATION_PLAN.md`
 - Worktree: `C:\Users\tommy\source\repos\Concertable.worktrees\Refactor\launch_deal_strategy_registration`
 - Branch: `Refactor/launch_deal_strategy_registration`
-- PR: not opened
-- Dependency/package gates: none; this is an internal B2B refactor
+- PR: [#451](https://github.com/Concertable/concertable/pull/451) — open; verified work head `14e97cabf`
+- Dependency/package gates: no pre-merge package dependency; generated platform-sync observation is
+  required after the `api/**` source PR merges
 - Last reconciled: 2026-08-09; all five implementation phases and the complete implementation code
-  review are complete; current `origin/main` at `dc0da9360` is merged through `eda6dbaa6`; this
-  checkpoint leaves the branch 0 commits behind and 25 ahead
+  review are complete; current `origin/main` at `dc0da9360` is merged through `eda6dbaa6`; work head
+  `14e97cabf` is verified equal across local, remote-tracking, and PR #451 before this checkpoint
 
 ## Current state
 
@@ -34,25 +35,27 @@ The implementation is committed as `4d4f44e0a`. The complete `code-review` range
 `43fe1caf4aa2c8e808c79821b3cf6d66c7b48574..fb34f37b17387dd398a3d1a8d6e3e31dfb0a2719`
 is recorded in `reviews/Refactor-launch_deal_strategy_registration.md`; native, security, correctness,
 microservice, module-boundary, seeding, convention, strategy-registration, architecture-gate, and
-changed-path test-coverage lenses found no issues. No PR exists and no package gate applies. The branch
-contains the clean review checkpoint `75001d1d1`. During final reconciliation, `origin/main` advanced to
+changed-path test-coverage lenses found no issues. The branch contains the clean review checkpoint
+`75001d1d1`. During final reconciliation, `origin/main` advanced to
 `dc0da9360` through docs/plans-only commits plus the recursive-handoff hook fix. Merge commit
 `eda6dbaa6` brought that base current without conflicts. The reviewed API diff's SHA-256 remained
 `F8C1A1E3A5FA8CD5329DDDFA7361B39F12B695EC8BCAC3E0CBBA57FD71A43582`, proving the merge did not
-change the reviewed implementation. No PR exists and the worktree is clean before this checkpoint.
+change the reviewed implementation. PR #451 is now open against `main`. Its `headRefOid` and
+`origin/Refactor/launch_deal_strategy_registration` were both verified at the pushed work head
+`14e97cabfb215c7b430d13e133cad8296d02eb31`; no implementation commit is unpushed.
 
 ## Next Steps
 
-Open the reviewed implementation PR only:
+Land PR #451 through the repository merge workflow only:
 
-1. Fetch `origin`, confirm the branch remains 0 behind and has no unrelated dirty path.
-2. Use `create-gh-pr` to push `Refactor/launch_deal_strategy_registration` and open its GitHub PR. This
-   broad booking/payment/settlement refactor requires full merge-queue E2E; do not add a skip label or
-   trailer.
-3. Apply the plan-managed push checkpoint protocol: verify the remote and PR heads, record the pushed
-   range and PR identity here, then transport that ledger checkpoint and verify local/remote/PR head
-   equality.
-4. Do not enqueue or merge the PR in the same turn; hand back after the PR checkpoint.
+1. Run `merge` for PR #451 from this worktree. Reconcile current main and any stale review watermark
+   before queue admission.
+2. This broad booking/payment/settlement refactor requires full API + UI merge-queue E2E; remove any
+   skip label or trailer and use the full tier.
+3. Follow the PR to a terminal merge result and then own the generated `chore/platform-sync-*` PR to
+   green/merged because the source change touches `api/**`.
+4. On source merge, transfer recovery state to the required clean close-out worktree and complete the
+   plan lifecycle there.
 
 ## Completed work
 
@@ -89,6 +92,7 @@ Open the reviewed implementation PR only:
   gate in this checkpoint.
 - Complete implementation `code-review` covered `43fe1caf4..fb34f37b1` (21 commits) and wrote
   `reviews/Refactor-launch_deal_strategy_registration.md`; no finding survived the confidence filter.
+- Pushed reviewed work head `14e97cabf` and opened GitHub PR #451 against `main`.
 
 ## Verification
 
@@ -184,6 +188,10 @@ Open the reviewed implementation PR only:
   verified the branch 0 behind. The reviewed API diff SHA-256 was identical before and after the merge;
   the newly merged hook regression suite passed 23/23, including the exact recursive dependency-ledger
   handoff case. No runtime rebuild was required because the reviewed implementation patch did not change.
+- 2026-08-09: plan-managed work-head push verified local HEAD,
+  `origin/Refactor/launch_deal_strategy_registration`, and PR #451 `headRefOid` all equal
+  `14e97cabfb215c7b430d13e133cad8296d02eb31`. The pushed range was new branch
+  `dc0da9360..14e97cabf`; PR #451 is open against `main`.
 
 ## Reviews
 
@@ -571,6 +579,18 @@ Open the reviewed implementation PR only:
 - Outcome: The branch is current, the reviewed implementation is unchanged, and the fixed handoff hook
   now scopes claims to actual mutation targets.
 - Follow-up: Push the reviewed branch and open its full-E2E implementation PR only.
+
+### 2026-08-09 — reviewed implementation PR opened
+
+- Action: Passed PR preflight, pushed the reviewed work head, verified the remote-tracking ref, opened
+  GitHub PR #451, and verified its source head.
+- Evidence: preflight GREEN; no existing PR or platform-sync gate; pushed range
+  `dc0da9360..14e97cabf`; local, remote-tracking, and PR `headRefOid` all
+  `14e97cabfb215c7b430d13e133cad8296d02eb31`; PR
+  https://github.com/Concertable/concertable/pull/451 is OPEN against `main`.
+- Outcome: The work-head leg and PR creation are verified; this checkpoint is the transport leg for the
+  durable PR identity and landing action.
+- Follow-up: Land PR #451 through `merge` with full API + UI E2E and own its generated platform sync.
 
 ## Resume prompt
 
