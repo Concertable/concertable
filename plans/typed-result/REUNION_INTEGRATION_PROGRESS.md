@@ -119,6 +119,9 @@ review and deliver the source PR through its generated platform-sync gate before
 - Completed Phase 2: all three packages are published and indexed at the exact matching version;
   four clean consumers restored only the intended graph from NuGet.org and passed on net10/net11;
   the temporary user-scoped key and detached release worktree were removed.
+- Updated the registered HTTP-terminal dependent in commit `86563a04a`: its Phase 2 package gate is
+  green, checkpoint `c593150e4` remains preserved, and this central owner now owns Phase 3
+  incorporation without an independent Shared.Api publication.
 - Added the safe additive Shared expansion checkpoint: Kernel owns Reunion, Shared.Api owns
   Reunion.AspNetCore, Reunion parity tests cover the named-case conversion contract, and Reunion
   carriers can traverse the existing Concertable MVC error/CreatedAt boundary without deleting the
@@ -191,6 +194,8 @@ review and deliver the source PR through its generated platform-sync gate before
   `Reunion.AspNetCore/0.1.0-alpha.1`. All four consumers built and ran successfully.
 - User-scoped `NUGET_API_KEY` removal verified `True`. Git unregistered the detached `e33b40f`
   worktree; its long-path directory residue was removed through the verified exact path.
+- Downstream return-path checkpoint `86563a04a` records the green package gate and blocks the
+  HTTP-terminal worktree from independent delivery until this plan incorporates `c593150e4`.
 - Full Concertable restore with the local source succeeded; package graphs and `dotnet nuget why`
   show Kernel → Reunion and Shared.Api → Reunion.AspNetCore → Reunion + Reunion.Errors.
 - Release `api/Concertable.slnx` build succeeded with 0 errors and 9 pre-existing/generated warnings.
@@ -329,11 +334,12 @@ review and deliver the source PR through its generated platform-sync gate before
 
 - Action: Restored all four clean consumers into new isolated caches from NuGet.org only, verified
   their exact package graphs and source metadata, ran both net10 and net11 consumers, removed the
-  scoped publication key, and removed the spent detached release worktree.
+  scoped publication key, removed the spent detached release worktree, and updated the registered
+  HTTP-terminal dependent ledger.
 - Evidence: all restores succeeded from `https://api.nuget.org/v3/index.json`; both core consumers
   resolved only Reunion, both ASP.NET Core consumers resolved the exact three-package graph, and all
   four executables passed. Key removal returned `True`; only the main Reunion worktree remains
-  registered.
+  registered; dependent checkpoint `86563a04a` returns Phase 3 incorporation to this owner.
 - Outcome: Phase 2 is terminal. The immutable three-package `0.1.0-alpha.1` production graph is green
   and Phase 3 Shared expansion is unblocked.
 - Follow-up: Replace the local package pin with published `0.1.0-alpha.1` and execute the additive
