@@ -30,13 +30,14 @@ package graph advances one compatible layer at a time.
 - Existing B2B and Auth migrations contain authoritative unpushed work. Preserve those local owners
   and do not infer their state solely from GitHub.
 - Preserve the existing `Refactor/typed-result_http-terminals` semantic-terminal work as local input
-  to the Shared producer phase. It must not publish a competing Shared.Api package or generated sync.
+  to the final Shared contraction. It must not publish a competing Shared.Api package or generated sync.
 
 ## Current-state inventory (2026-08-09)
 
 ### Repository and carrier state
 
-- Concertable `origin/main` was `dc0da9360370e188b27f8e8bda775beac7c65de5` when Phase 1 began.
+- Concertable `origin/main` was `dc0da9360370e188b27f8e8bda775beac7c65de5` when Phase 1 began;
+  the verified checkpoint is reconciled with current `origin/main` `162b8412a1941c765f2c2b2c5c1db5b7f0549928`.
 - `Concertable.Kernel.Functional` currently defines all five temporary carriers plus synchronous,
   task-aware, collection, and Option conversion extensions. Its behavior intentionally already
   resembles Reunion: non-null payloads, non-empty string failures, uninitialized default Results,
@@ -59,11 +60,11 @@ operational state lives in the owning ledgers; the dependency-relevant snapshot 
 
 | Worktree branch | State at audit |
 |---|---|
-| `Refactor/B2BTypedResultMigration` | Clean at `ba5791268`; no PR/remote; 130 behind / 25 ahead. |
-| `Feature/typed-result_auth-outcomes` | Clean at `98599413a`; no PR/remote; 218 behind / 27 ahead. |
-| `Feature/typed-result_customer-outcomes` | Clean at `e7c44f5b3`; PR #425 at `e60219f7d`; 117 behind / 31 ahead. |
-| `Feature/TypedResultMigrationPhase2` | Clean at `b6a671ef9`; PR #282 at `26ed63b896`; 480 behind / 29 ahead. |
-| `Refactor/typed-result_http-terminals` | Head `1d261e3ce`; preserved five-path dirty correction set and in-progress review; 100 behind / 1 ahead. |
+| `Refactor/B2BTypedResultMigration` | Clean at `ba5791268`; no PR/remote; 198 behind / 25 ahead. |
+| `Feature/typed-result_auth-outcomes` | Clean at `98599413a`; no PR/remote; 286 behind / 27 ahead. |
+| `Feature/typed-result_customer-outcomes` | Clean at `e7c44f5b3`; PR #425 at `e60219f7d`; 185 behind / 31 ahead. |
+| `Feature/TypedResultMigrationPhase2` | Clean at `b6a671ef9`; PR #282 at `26ed63b896`; 548 behind / 29 ahead. |
+| `Refactor/typed-result_http-terminals` | Clean at `fecd46c11`; verified code/test checkpoint `c593150e4`; 168 behind / 4 ahead. |
 
 ### Package boundaries
 

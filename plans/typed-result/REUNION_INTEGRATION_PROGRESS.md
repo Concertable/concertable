@@ -2,8 +2,8 @@
 
 - Plan: `plans/typed-result/REUNION_INTEGRATION_PLAN.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_reunion-integration`
-- Branch: `Feature/typed-result_reunion-integration`, current with `origin/main` `dc0da9360`; the
-  current local-only Phase 1 checkpoint is carried by `this commit`
+- Branch: `Feature/typed-result_reunion-integration`, current with `origin/main` `162b8412a`; Phase 1
+  code checkpoint `ef4c09baa` plus the current-main reconciliation are carried locally
 - PR: not opened for implementation; docs design PR #443 merged as `fd0b666b9`; sub-plan
   reconciliation PR #445 merged as `d6a572e0d`
 - Dependency/package gates: docs design merged; Reunion source commit
@@ -12,14 +12,14 @@
   publication of both exact `0.1.0-alpha.1` packages is the next gate; the B2B, Auth, Customer,
   Customer Ticket, and semantic HTTP-terminal owners remain inventoried and must consume the staged
   Shared-expansion and Payment.Client publications rather than perform local carrier cutovers
-- Last reconciled: 2026-08-09 against current Concertable `origin/main` `dc0da9360`, verified
+- Last reconciled: 2026-08-09 against current Concertable `origin/main` `162b8412a`, verified
   HTTP-terminal code/test checkpoint `c593150e4`, exact Reunion source and merged PR #1, live owner
   worktrees, GitHub PR state, the pinned .NET 11 preview SDK, and no open platform-sync PR
 
 ## Current state
 
 The repository-wide audit and integration design are complete and approved. The reserved integration
-worktree is current with `origin/main` `dc0da9360`, has no remote branch or PR, and now contains the
+worktree is current with `origin/main` `162b8412a`, has no remote branch or PR, and now contains the
 committed local-only Phase 1 package battle test. Docs design PR #443
 merged the roadmap, plan, and this recovery ledger as `fd0b666b9`; closeout PR #444 advanced main to
 `c72b058af`. No Concertable or Reunion runtime file, package reference, existing migration branch, or
@@ -37,13 +37,13 @@ not treated as complete; their local worktrees are included in the inventory bel
 
 The authoritative worktrees are now locally visible and reconciled without mutation:
 
-| Owner | Local state against `origin/main` `dc0da9360` | Delivery state |
+| Owner | Local state against `origin/main` `162b8412a` | Delivery state |
 |---|---|---|
-| B2B `Refactor/B2BTypedResultMigration` | clean at `ba5791268`; registered at `Concertable\.worktrees\Refactor-B2BTypedResultMigration`; 164 behind / 25 ahead | no branch PR or remote branch; checkpoints 1-5 complete |
-| Auth `Feature/typed-result_auth-outcomes` | clean at `98599413a`; 252 behind / 27 ahead | no branch PR or remote branch; implementation/review complete |
-| Customer non-Payment `Feature/typed-result_customer-outcomes` | clean at `e7c44f5b3`; 151 behind / 31 ahead | PR #425 remains open at `e60219f7d`; two later local commits are ledger-only |
-| Customer Ticket `Feature/TypedResultMigrationPhase2` | clean at `b6a671ef9`; 514 behind / 29 ahead of main | PR #282 remains open at `26ed63b896`; recreate its unique semantics after integration |
-| HTTP terminals `Refactor/typed-result_http-terminals` | clean at `fecd46c11`; code/test checkpoint `c593150e4`; 134 behind / 4 ahead | verified Phase 5 input; do not publish it independently |
+| B2B `Refactor/B2BTypedResultMigration` | clean at `ba5791268`; registered at `Concertable\.worktrees\Refactor-B2BTypedResultMigration`; 198 behind / 25 ahead | no branch PR or remote branch; checkpoints 1-5 complete |
+| Auth `Feature/typed-result_auth-outcomes` | clean at `98599413a`; 286 behind / 27 ahead | no branch PR or remote branch; implementation/review complete |
+| Customer non-Payment `Feature/typed-result_customer-outcomes` | clean at `e7c44f5b3`; 185 behind / 31 ahead | PR #425 remains open at `e60219f7d`; two later local commits are ledger-only |
+| Customer Ticket `Feature/TypedResultMigrationPhase2` | clean at `b6a671ef9`; 548 behind / 29 ahead of main | PR #282 remains open at `26ed63b896`; recreate its unique semantics after integration |
+| HTTP terminals `Refactor/typed-result_http-terminals` | clean at `fecd46c11`; code/test checkpoint `c593150e4`; 168 behind / 4 ahead | verified Phase 5 input; do not publish it independently |
 
 The HTTP-terminal work changes the same published `Concertable.Shared.Api` surface as Reunion Phase 5.
 Its verified semantic naming checkpoint is complete at `c593150e4`: Shared.Api Release 63/63, Release
@@ -56,7 +56,8 @@ merged it as `e52129d241711f2e1498ac166e2c510b167606a3`. Its project metadata co
 `Reunion` and `Reunion.AspNetCore` at `0.1.0-alpha.1`, targeting `net10.0;net11.0`, and pins SDK
 `11.0.100-preview.6.26359.118`. That exact SDK is installed in `C:\Users\TommySeery\.dotnet`.
 
-Concertable `origin/main` is `dc0da9360`; the integration branch merged it as `2d503810b`. Phase 1
+Phase 1 began from Concertable `origin/main` `dc0da9360` and the integration branch then merged
+current `origin/main` `162b8412a` after checkpoint `ef4c09baa`. Phase 1
 packed exact local version `0.1.0-local.concertable.1`, added it only to Kernel and Shared.Api, retained
 the old carrier surface for a compatible expansion, and proved the complete Release solution builds.
 The attempted destructive substitution exposed `Concertable.Payment.Client` as a second published
@@ -126,6 +127,9 @@ both production packages restore at the same exact version.
   `Concertable.Payment.Client` exposes the old Kernel assembly identity to B2B/Customer. Restoring
   the owned carriers and using additive Reunion overloads made the complete package closure green,
   proving the required three-layer cutover rather than an upstream Reunion defect.
+- After Phase 1 checkpoint `ef4c09baa`, current `origin/main` `162b8412a` merged cleanly. Its delta
+  from the tested base contains no `api/**` path; post-merge Kernel 241/241 and Shared.Api 53/53 both
+  passed again, and the branch is 0 behind main.
 - Fresh `git fetch origin --quiet` completed for both repositories; before this ledger-only
   checkpoint, Concertable was 0 behind / 4 ahead of `origin/main` `b5af92fdc`, while Reunion remained
   at `ab2e959` with only `origin/master` and `origin/agent/implement-result-option-unions` fetched.
@@ -240,6 +244,15 @@ both production packages restore at the same exact version.
   waits for the Phase 4 Payment.Client publication/sync before PR #425 is updated once.
 
 ## Event log
+
+### 2026-08-09 — Phase 1 reconciled with current main
+
+- Action: Committed the green battle-test checkpoint, merged current `origin/main` `162b8412a`,
+  reconciled owner divergence, and reran both affected Release test projects.
+- Evidence: code checkpoint `ef4c09baa`; main delta contains no `api/**` path; branch 0 behind main;
+  Kernel 241/241 and Shared.Api 53/53 after the merge.
+- Outcome: Phase 1 remains green against current main and Phase 2 publication is the only next gate.
+- Follow-up: Publish and verify exact matching `0.1.0-alpha.1` Reunion packages.
 
 ### 2026-08-09 — Phase 1 package battle test completed and cutover topology corrected
 
