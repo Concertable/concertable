@@ -9,14 +9,15 @@
 - Dependency/package gates: docs design merged; reviewed Reunion carrier commit `7bf5f66` is contained
   in merged PR #1 head `e52129d241711f2e1498ac166e2c510b167606a3`; corrective PR #2 removed the
   mistaken `Reunion.Errors.Extensions` package and merged as release head
-  `e33b40fe6daef64fd69536170d583e3ddd603ee4`; the corrected three-package Phase 1 gate must be rerun
-  before publication; the B2B, Auth, Customer,
+  `e33b40fe6daef64fd69536170d583e3ddd603ee4`; the corrected three-package Phase 1 gate is green and
+  exact production-version artifacts are prepared; NuGet.org publication credentials are the only
+  open Phase 2 prerequisite; the B2B, Auth, Customer,
   Customer Ticket, and semantic HTTP-terminal owners remain inventoried and must consume the staged
   Shared-expansion and Payment.Client publications rather than perform local carrier cutovers
 - Last reconciled: 2026-08-09 against current Concertable `origin/main` `162b8412a`, verified
   HTTP-terminal code/test checkpoint `c593150e4`, corrected Reunion release head `e33b40f` and merged
   PRs #1/#2, live owner worktrees, GitHub PR state, the pinned .NET 11 preview SDK, NuGet.org package
-  availability, and no open platform-sync PR
+availability, and no open platform-sync PR
 
 ## Current state
 
@@ -71,15 +72,18 @@ package boundary: B2B and Customer consuming the old client cannot compile again
 carrier replacement. The plan now requires three green Concertable merges after Reunion publication:
 additive Shared expansion, Payment/Payment.Client migration, then final consumer contraction.
 
+The corrected release worktree
+`C:\Users\TommySeery\source\repos\Reunion.worktrees\concertable-e33b40f` is detached cleanly at
+`e33b40f` and holds the three verified `0.1.0-alpha.1` artifacts under `artifacts\packages`. The
+complete current-source gate is green. NuGet.org still exposes only historical `Reunion` `0.0.1`;
+the three target versions remain unpublished. No local API key, repository secret, or trusted
+publishing environment is configured, so an authenticated push cannot proceed in this session.
+
 ## Next Steps
 
-Re-run the Phase 1 package gate against corrected Reunion release head `e33b40f`: pack and inspect
-exact `Reunion`, `Reunion.Errors`, and `Reunion.AspNetCore` `0.1.0-alpha.1`, run the current net10/net11
-tests and clean isolated package consumers, and verify the current three-package dependency graph.
-Then publish those three exact artifacts to NuGet.org, verify SHA/provenance, both framework assets,
-exact dependency groups, and clean-cache production-feed restore, and record the immutable package
-URLs and hashes here. Do not publish removed `Reunion.Errors.Extensions`, push this Concertable
-branch, or begin Phase 3 until all three production packages restore at the same exact version.
+Blocked: NuGet.org publication of the three verified `0.1.0-alpha.1` artifacts cannot authenticate because no NuGet.org API key, repository secret, or trusted-publishing environment is configured.
+Unblock action: Create a NuGet.org API key scoped to push new `Reunion`, `Reunion.Errors`, and `Reunion.AspNetCore` versions and expose it as `NUGET_API_KEY` to the next Codex session without pasting the secret into chat.
+Resume when: `NUGET_API_KEY` is present in the session environment, all three target versions remain absent from NuGet.org, and the prepared artifact hashes still match `8320AC619FFDA82B7A9F0F89905A53B9C332D196D3DA466EE308FFB1D2224CE9`, `1B2F829BEB80CAF73F98F63686962D15FBC1827EA2524D1B6FC640FDC0FDA582`, and `B2166ECB6451F5B9038A9F8224D6C3AC7EA49385BAFA5C5E376728A364A91260`.
 
 ## Completed work
 
@@ -88,6 +92,9 @@ branch, or begin Phase 3 until all three production packages restore at the same
   a clean net10 consumer restored the complete graph from the isolated feed.
 - Reconciled merged Reunion PR #2: `Reunion.Errors.Extensions` was removed before publication because
   it duplicated core `OrFailure`; the release owner is now the three-package head `e33b40f`.
+- Completed the corrected three-package release gate at `e33b40f`: full dual-target build, 376 tests,
+  public-API comparisons, formatting, package inspection, isolated provenance restores, and all four
+  package consumers are green; exact `0.1.0-alpha.1` artifacts are ready for authenticated push.
 - Added the safe additive Shared expansion checkpoint: Kernel owns Reunion, Shared.Api owns
   Reunion.AspNetCore, Reunion parity tests cover the named-case conversion contract, and Reunion
   carriers can traverse the existing Concertable MVC error/CreatedAt boundary without deleting the
@@ -138,6 +145,17 @@ branch, or begin Phase 3 until all three production packages restore at the same
   `Reunion`, `Reunion.Errors`, or `Reunion.AspNetCore` has `0.1.0-alpha.1`, and the removed
   `Reunion.Errors.Extensions` package has never been published. The user NuGet configuration has no
   stored API key, and no NuGet.org API-key environment variable is present.
+- Corrected-head Release build: 0 warnings and 0 errors. Net10 tests: core 132, Errors 14,
+  AspNetCore 35; net11 tests: core 146, Errors 14, AspNetCore 35. Core APIs match semantically across
+  TFMs; Errors and AspNetCore APIs match exactly; solution and package-consumer formatting checks pass.
+- Current package inspection proves both `lib/net10.0` and `lib/net11.0` assets, empty dependency
+  groups for Reunion and Reunion.Errors, and exact `Reunion` plus `Reunion.Errors` dependencies for
+  Reunion.AspNetCore. All four isolated consumers restored every expected Reunion package from the
+  prepared local source, then built and ran successfully with `--no-restore`.
+- Prepared production hashes from `e33b40f`: Reunion
+  `8320AC619FFDA82B7A9F0F89905A53B9C332D196D3DA466EE308FFB1D2224CE9`, Reunion.Errors
+  `1B2F829BEB80CAF73F98F63686962D15FBC1827EA2524D1B6FC640FDC0FDA582`, and Reunion.AspNetCore
+  `B2166ECB6451F5B9038A9F8224D6C3AC7EA49385BAFA5C5E376728A364A91260`.
 - Full Concertable restore with the local source succeeded; package graphs and `dotnet nuget why`
   show Kernel → Reunion and Shared.Api → Reunion.AspNetCore → Reunion + Reunion.Errors.
 - Release `api/Concertable.slnx` build succeeded with 0 errors and 9 pre-existing/generated warnings.
@@ -270,6 +288,18 @@ branch, or begin Phase 3 until all three production packages restore at the same
   waits for the Phase 4 Payment.Client publication/sync before PR #425 is updated once.
 
 ## Event log
+
+### 2026-08-09 — corrected three-package release gate passed
+
+- Action: Created a detached `e33b40f` release worktree, restored and built both TFMs, ran the full
+  current test/API/format suite, packed and inspected the three production-version artifacts, and
+  restored, provenance-checked, built, and ran every isolated package consumer.
+- Evidence: Release build 0 warnings/errors; net10 181/181 and net11 195/195; all API comparisons and
+  formatting green; package hashes recorded above; all four consumers passed from isolated caches.
+- Outcome: Phase 1 is complete again against the corrected release head. The exact artifacts are
+  ready, and no package has been pushed.
+- Follow-up: Provide a scoped NuGet.org API key through the session environment, recheck target
+  absence and hashes, publish only the three prepared files, then verify clean production restores.
 
 ### 2026-08-09 — corrected Reunion package family reconciled before publication
 

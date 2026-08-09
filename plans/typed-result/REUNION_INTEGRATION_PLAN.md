@@ -421,7 +421,7 @@ Use real B2B/Customer flows after the automated gate:
 
 ## Phases and verification gates
 
-### Phase 1 — Reconcile owners and battle-test corrected merged release head `e33b40f`
+### Phase 1 — Reconcile owners and battle-test corrected merged release head `e33b40f` ✅
 
 - Confirm the recorded B2B/Auth/Customer/Ticket/HTTP owner inventory still matches the live worktrees
   before the first code edit; update the ledger if any head or dirty path changed.
