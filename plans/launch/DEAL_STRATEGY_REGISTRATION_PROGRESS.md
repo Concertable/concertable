@@ -5,41 +5,40 @@
 - Branch: `Refactor/launch_deal_strategy_registration`
 - PR: not opened
 - Dependency/package gates: none; this is an internal B2B refactor
-- Last reconciled: 2026-08-09; Phase 2 was implemented and verified after merging
-  `origin/main` at `d57e0c2a6`; latest observed `origin/main` is `51c8d15b5`
+- Last reconciled: 2026-08-09; Phase 3 is complete and verified in this commit after merging
+  `origin/main` at `2eb8bc4764` through merge commit `e929b46f15`
 
 ## Current state
 
-Phases 1 and 2 are complete. Phase 1 is in commit `506bc35e4`; Phase 2 is in commit
-`4a741fa50` after merging `origin/main` at `d57e0c2a6` through merge commit `cadd3c7da`.
+Phases 1, 2, and 3 are complete. Phase 1 is in commit `506bc35e4`; Phase 2 is in commit
+`4a741fa50`; Phase 3 is in this commit after merging `origin/main` at `2eb8bc4764` through merge
+commit `e929b46f15`.
 
-The Concert module now registers terms, cohesive payee direction, and payment projection vertically
-per `DealType`. `DealPayeeResolver` exposes ticket user, ticket tenant, and settlement tenant
-directly through two directional leaves, while `PaymentAmountMapper` delegates to its four existing
-response-producing leaves through the scoped generic factory. All unkeyed factory-capturing facades
-are scoped and all stateless keyed leaves remain singleton.
+The Concert module now registers terms, cohesive payee direction, payment projection, and settlement
+calculation vertically per `DealType`. `SettlementAmountResolver` delegates through the scoped generic
+factory. FlatFee and VenueHire retain stateless singleton leaves; DoorSplit and Versus use scoped leaves
+over a shared revenue-loading base and own their formulas directly. The duplicate
+`ArtistShareCalculator` dispatch and Deal-entity calculation methods are gone.
 
-Phase 2's unit, Concert integration, and full-solution build gates are terminal green. No PR exists
-and no package gate applies. Phase 3 has not begun. After the Phase 2 commit, the latest observed
-`origin/main` advanced to `51c8d15b5`; the clean branch is 6 commits behind and must reconcile that
-drift before Phase 3 edits.
+Phase 3's Deal and Concert unit gates, Concert integration gate, and full-solution build are terminal
+green. No PR exists and no package gate applies. The work is verified against the branch after it
+merged `origin/main` at `2eb8bc4764` through merge commit `e929b46f15`.
 
 ## Next Steps
 
-Implement Phase 3 only — settlement calculation:
+Implement Phase 4 only — workflow composition convergence:
 
-1. Fetch `origin` and reconcile any clean base drift before editing.
-2. Migrate `ISettlementAmountResolver` to the generic strategy factory.
-3. Replace the nested `RevenueShareSettlementAmount → ArtistShareCalculator` dispatch with
-   DoorSplit- and Versus-specific settlement leaves over one shared revenue-loading seam.
-4. Remove duplicate Deal-entity share formulae after replacing tests that use them as a second oracle.
-5. Verify exact gross values for all four deal types, including ticket plus declared door revenue for
-   revenue-share deals.
-6. Run the Phase 3 Deal and Concert unit/integration gates and
-   `dotnet build api/Concertable.slnx` using short artifacts roots.
-7. Review the final diff, update this ledger, check off Phase 3, and commit that verified phase.
+1. Fetch `origin` and reconcile clean base drift before editing.
+2. Make the vertical builder the sole source for workflow keyed registration, workflow-type metadata,
+   lifecycle state machines, and the migrated Concert strategy families.
+3. Retain `IConcertWorkflowFactory` as the named factory used by executors and checkout dispatch.
+4. Keep the capability registry operational until the separate union migration replaces it.
+5. Add startup/architecture tests proving every `DealType` has exactly one workflow and state machine.
+6. Run the Phase 4 Concert unit/integration gates and `dotnet build api/Concertable.slnx` using short
+   artifacts roots.
+7. Review the final diff, update this ledger, check off Phase 4, and commit that verified phase.
 
-Do not begin Phase 4 in the same turn; hand back after the Phase 3 commit and ledger checkpoint.
+Do not begin Phase 5 in the same turn; hand back after the Phase 4 commit and ledger checkpoint.
 
 ## Completed work
 
@@ -61,6 +60,10 @@ Do not begin Phase 4 in the same turn; hand back after the Phase 3 commit and le
   (`refactor(concert): register payee and payment strategies`).
 - Phase 2 added table-driven recipient coverage for all four deal types and composition tests for the
   payee and payment strategy registrations.
+- Phase 3 migrated settlement calculation to four vertically registered leaves, collapsed the nested
+  artist-share dispatch into DoorSplit and Versus leaves over one revenue-loading base, removed the
+  duplicate Deal-entity formulae, and pinned all four gross amounts through unit and integration tests
+  in this commit.
 
 ## Verification
 
@@ -104,6 +107,20 @@ Do not begin Phase 4 in the same turn; hand back after the Phase 3 commit and le
   with 0 errors and 9 existing nullable/generated-code warnings.
 - 2026-08-09: `git diff --check` passed, removed Phase 2 type names have no remaining `api/`
   references, and the final diff review found no open Phase 2 findings.
+- 2026-08-09: the post-merge affected Concert and Deal unit-test project builds both succeeded with
+  0 errors before Phase 3 edits.
+- 2026-08-09: `dotnet test` for `Concertable.B2B.Concert.UnitTests` passed 117/117 and
+  `Concertable.B2B.Deal.UnitTests` passed 9/9 on the final Phase 3 source.
+- 2026-08-09: `./scripts/integration.ps1 concert --artifacts-path
+  C:\Users\tommy\AppData\Local\Temp\Concertable\launch-deal-strategy-phase3-integration-diagnostic
+  --blame-hang --blame-hang-timeout 5m --blame-hang-dump-type none` passed both projects: B2B Concert
+  144/144 and Customer Concert 11/11.
+- 2026-08-09: `dotnet build api/Concertable.slnx --artifacts-path
+  C:\Users\tommy\AppData\Local\Temp\Concertable\launch-deal-strategy-phase3-solution` succeeded with
+  0 errors and 9 existing nullable/generated-code warnings.
+- 2026-08-09: `git diff --check` passed; removed settlement calculator/type names and
+  `CalculateArtistShare` have no remaining `api/` references; the final Phase 3 diff review found no
+  open findings.
 
 ## Reviews
 
@@ -114,6 +131,9 @@ Do not begin Phase 4 in the same turn; hand back after the Phase 3 commit and le
 - Phase 2 implementation self-review covered payee direction, response-shape preservation, keyed
   coverage, facade lifetimes, consumer migration, test construction, and documentation accuracy; no
   open findings remain.
+- Phase 3 implementation self-review covered exact keyed coverage, scoped repository dependencies,
+  shared revenue loading, formula ownership, independent amount assertions, removed-symbol coverage,
+  and documentation accuracy; no open findings remain.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -148,6 +168,15 @@ Do not begin Phase 4 in the same turn; hand back after the Phase 3 commit and le
 - Because keyed leaves and their unkeyed facade intentionally share the same service interface,
   lifetime tests must select the unkeyed descriptor explicitly rather than count keyed descriptors as
   duplicate facade registrations.
+- Settlement leaves follow their real dependencies: stateless FlatFee and VenueHire are singleton;
+  repository-backed DoorSplit and Versus are scoped, as is the factory-capturing unkeyed resolver.
+- DoorSplit and Versus settlement formulas now have one runtime home in their Concert settlement
+  leaves. Deal entities retain validation and mutation invariants but no longer provide a second
+  calculation oracle.
+- The first Phase 3 Concert integration attempt stopped making progress after 37 passing tests and was
+  terminated after eight hours. An immediate full-module diagnostic rerun crossed the same boundary
+  and passed 155/155 with a five-minute blame-hang detector; this was a non-reproducing host/test-runner
+  hang, so no product, retry, or timeout change was justified.
 
 ## Event log
 
@@ -279,9 +308,42 @@ Do not begin Phase 4 in the same turn; hand back after the Phase 3 commit and le
   newly advanced `origin/main`.
 - Follow-up: Reconcile the clean branch with current `origin/main`, then implement Phase 3 only.
 
+### 2026-08-09 — Phase 3 base reconciled
+
+- Action: Fetched `origin`, verified the dedicated worktree was clean and correctly owned by the
+  plan branch, confirmed the open platform-sync PR was pending rather than failed, and merged current
+  `origin/main` before Phase 3 edits.
+- Evidence: merge commit `e929b46f15`; `origin/main` at `2eb8bc4764`; branch 0 commits behind; no PR;
+  no unrelated dirty paths before this ledger checkpoint.
+- Outcome: Phase 3 starts against the current base with the requested worktree and service ownership
+  confirmed.
+- Follow-up: Rebuild the affected Deal/Concert graph, then implement and verify settlement calculation
+  only.
+
+### 2026-08-09 — Phase 3 integration host hang diagnosed
+
+- Action: Terminated the exact orphaned test process tree and containers from the stalled canonical
+  integration run, then reran the complete Concert module with a five-minute blame-hang detector.
+- Evidence: the original run stopped after 37 passing tests with no test failure; the diagnostic rerun
+  passed B2B Concert 144/144 and Customer Concert 11/11 without producing a hang sequence.
+- Outcome: The stall did not reproduce and is classified as a host/test-runner hang; no source or
+  timeout workaround was added.
+- Follow-up: Complete the remaining Phase 3 gates and final diff review.
+
+### 2026-08-09 — Phase 3 verified and checkpointed
+
+- Action: Migrated settlement resolution to the generic strategy factory, gave DoorSplit and Versus
+  settlement leaves direct formula ownership over shared revenue loading, removed the duplicate
+  calculator/entity formulae, strengthened exact-value coverage, and completed the final review.
+- Evidence: Concert unit 117/117; Deal unit 9/9; B2B Concert integration 144/144; Customer Concert
+  integration 11/11; full `api/Concertable.slnx` build 0 errors; removed symbols absent from `api/`;
+  `git diff --check` clean.
+- Outcome: Phase 3 is complete in this commit with no open findings and no Phase 4 source changes.
+- Follow-up: Implement Phase 4 only.
+
 ## Resume prompt
 
 ```
 cd C:\Users\tommy\source\repos\Concertable.worktrees\Refactor\launch_deal_strategy_registration
-Read @plans/launch/DEAL_STRATEGY_REGISTRATION_PLAN.md and @plans/launch/DEAL_STRATEGY_REGISTRATION_PROGRESS.md, then do what the ledger's `## Next Steps` says.
+Read @plans/launch/DEAL_STRATEGY_REGISTRATION_PLAN.md and @plans/launch/DEAL_STRATEGY_REGISTRATION_PROGRESS.md and do what its `## Next Steps` says.
 ```

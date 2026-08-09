@@ -122,8 +122,7 @@ internal sealed class DealMapper : IDealMapper
 }
 ```
 
-Other current instances: `DealUpdater` (Deal module), plus `ArtistShareCalculator` and
-`SettlementAmountResolver` (Concert module).
+The other current instance is `DealUpdater` in the Deal module.
 
 Rules of the shape:
 

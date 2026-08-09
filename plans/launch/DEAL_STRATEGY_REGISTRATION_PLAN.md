@@ -390,7 +390,7 @@ Verification gate:
 - `dotnet build api/Concertable.slnx` — 0 errors.
 - Concert unit and integration tests via `integration-debug`.
 
-### Phase 3 — Settlement calculation
+### Phase 3 — Settlement calculation ✅
 
 - Migrate `ISettlementAmountResolver` to the factory.
 - Remove the second `ArtistShareCalculator` dispatch by giving DoorSplit and Versus settlement leaves
