@@ -13,10 +13,11 @@
 
 The roadmap, implementation plan, and this recovery ledger exist on the isolated docs-planning branch.
 The full docs review found three issues; all are fixed in `44b435779`, and the incremental review of
-that fix commit found no new issues. The branch has since merged current main's blocked-ledger schema
-and reconciled this plan to it. No implementation worktree, SDK installation, `global.json`,
-target-framework edit, workflow refactor, test run, package publication, or runtime deployment has
-occurred.
+that fix commit found no new issues. The branch then merged current main's blocked-ledger schema. Its
+reconciliation review found two followable-instruction defects; both are fixed in the current working
+tree and await their checkpoint plus a clean incremental review. No implementation worktree, SDK
+installation, `global.json`, target-framework edit, workflow refactor, test run, package publication,
+or runtime deployment has occurred.
 
 The current design uses native unions only after ReUnion and the existing B2B typed-result work have
 landed. Published B2B contracts stay net10-compatible; the net11 boundary is the B2B runtime and its
@@ -60,7 +61,8 @@ Resume when: Current main contains the merged B2B work and `plans/typed-result/B
 - `ACC1` fixed in `44b435779`: corrected the B2B owner's premature “on current main” claim.
 - Incremental docs review: `9f4993214..44b435779` (1 commit), no new findings, same artifact,
   watermark `44b435779`. Open findings: none.
-- Delivery-base schema reconciliation after merging `origin/main` `43fe1caf4` is pending review.
+- Delivery-base schema reconciliation review: `44b435779..abddcf39b`; `INST2` and `INST3` are fixed
+  in the current working tree; fix-commit incremental review is pending.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -122,6 +124,15 @@ Resume when: Current main contains the merged B2B work and `plans/typed-result/B
 - Outcome: resuming the blocked ledger is now explicitly forbidden; the existing B2B owner remains the
   only route that can open and surface this plan.
 - Follow-up: review and checkpoint this reconciliation, then deliver through `/merge-docs`.
+
+### 2026-08-09 — blocked-ledger reconciliation review fixes
+
+- Action: reviewed the reconciliation against the newly merged hard-blocker rules and fixed both
+  followable-instruction defects.
+- Evidence: `reviews/Docs-dotnet-11_b2b-workflow-unions-plan.md`; `INST2` and `INST3`.
+- Outcome: the roadmap now routes to the actionable ReUnion resolver, while both waiting ledgers carry
+  structured blocker state and suppress their own pointers.
+- Follow-up: commit the fixes, run incremental review, then deliver through `/merge-docs`.
 
 ## Resume prompt
 

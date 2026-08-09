@@ -46,11 +46,9 @@ Payment/Kernel/Shared.Api closure and resolves only its service-owned semantics.
 
 ## Next Steps
 
-Wait for `plans/typed-result/REUNION_INTEGRATION_PROGRESS.md` to merge its Phase 4 generated
-platform-sync PR. That owner will update this ledger and surface the resume prompt. Then fetch and
-merge current main once, verify the published Reunion-backed Payment/Kernel/Shared.Api closure, and
-implement checkpoints 6-7 without any branch-local carrier, package, or terminal substitution. Run
-the normal build, unit, architecture, and integration gates afterward; reserve E2E for the merge queue.
+Blocked: The ReUnion integration Phase 4 generated platform-sync PR is not yet merged.
+Unblock action: The owner at `plans/typed-result/REUNION_INTEGRATION_PROGRESS.md` must finish the shared producer cutover, merge its generated platform-sync PR, then update this ledger.
+Resume when: Current main contains the published Reunion-backed platform pin and `plans/typed-result/REUNION_INTEGRATION_PROGRESS.md` records its Phase 4 generated platform-sync PR as merged.
 
 ## Completed work
 
@@ -148,8 +146,8 @@ the normal build, unit, architecture, and integration gates afterward; reserve E
 
 ### 2026-08-09 - registered downstream .NET 11 workflow-union handoff
 
-- Action: registered the B2B .NET 11/workflow-union plan as a downstream owner rather than allowing it
-  to overlap this branch's Concert payment/cancel/finish checkpoints.
+- Action: registered the B2B .NET 11/workflow-union plan as a downstream owner and reconciled this
+  ledger's own ReUnion wait to the three-line hard-blocker contract.
 - Evidence: `plans/dotnet-11/B2B_WORKFLOW_UNIONS_PLAN.md` and its companion ledger on the isolated
   docs-planning branch based on current `origin/main`.
 - Outcome: the dependent plan waits for this source PR and every resulting publication/platform-sync
@@ -273,7 +271,5 @@ the normal build, unit, architecture, and integration gates afterward; reserve E
 
 ## Resume prompt
 
-```text
-cd C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-B2BTypedResultMigration
-Read @plans/typed-result/B2B_PLAN.md and @plans/typed-result/B2B_PROGRESS.md and do what its `## Next Steps` says.
-```
+Not emitted while `## Next Steps` carries the hard-blocker fields. The ReUnion owner restores and
+surfaces this plan's actionable worktree pointer when its Phase 4 gate opens.

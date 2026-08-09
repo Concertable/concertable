@@ -9,15 +9,16 @@
 
 ## How to continue this roadmap
 
-The selected item is blocked behind the existing B2B typed-result owner. Continue that resolver:
+The selected item is blocked behind B2B, which is itself blocked behind the ReUnion integration.
+Continue the actionable resolver at the head of that chain:
 
 ```text
-/resume-plan @plans/typed-result/B2B_PROGRESS.md
+/resume-plan @plans/typed-result/REUNION_INTEGRATION_PROGRESS.md
 ```
 
-That owner will update the blocked .NET 11 ledger and surface its implementation pointer when the
-terminal gate opens. Do not resume the blocked ledger directly, and do not start another .NET 11
-service slice until this one establishes the package, CI, hosting, and toolchain conventions.
+The ReUnion owner will open and surface B2B; B2B will then open and surface the blocked .NET 11 ledger.
+Do not resume either blocked ledger directly, and do not start another .NET 11 service slice until this
+one establishes the package, CI, hosting, and toolchain conventions.
 
 ## Status
 
