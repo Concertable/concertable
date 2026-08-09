@@ -40,17 +40,9 @@ findings. The branch has not been pushed and no PR has been opened.
 
 ## Next Steps
 
-Blocked: the producer owner in `plans/typed-result/REUNION_INTEGRATION_PROGRESS.md` has not yet
-published Reunion.Errors `0.1.0-alpha.2`, merged Payment PR #453, published matching Payment packages,
-or delivered the generated Customer platform pin.
-
-Unblock action: the Reunion integration owner publishes and verifies exact Reunion.Errors `.2`, lands
-Payment PR #453 with full E2E, follows its package publication and generated platform-sync PR to green,
-and updates this dependent ledger with the published version.
-
-Resume when: Customer can restore the published Reunion.Errors and Payment graph from normal feeds at
-the generated platform pin with no temporary source or disposable version; then revalidate the exact
-commit, refresh review watermarks, and request the explicit PR #282 supersession/delivery decision.
+Blocked: `plans/typed-result/REUNION_INTEGRATION_PROGRESS.md` has not yet delivered published Reunion.Errors `0.1.0-alpha.2`, merged Payment PR #453, matching Payment packages, and the generated Customer platform pin.
+Unblock action: The Reunion integration owner publishes and verifies exact Reunion.Errors `.2`, lands Payment PR #453 with full E2E, follows package publication and generated platform sync to green, and updates this dependent ledger with the published version.
+Resume when: Customer can restore the published Reunion.Errors and Payment graph from normal feeds at the generated platform pin with no temporary source or disposable version; then revalidate the exact commit, refresh review watermarks, and request the explicit PR #282 supersession/delivery decision.
 
 ## Completed work
 
