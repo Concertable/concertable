@@ -10,8 +10,8 @@
   in merged PR #1 head `e52129d241711f2e1498ac166e2c510b167606a3`; corrective PR #2 removed the
   mistaken `Reunion.Errors.Extensions` package and merged as release head
   `e33b40fe6daef64fd69536170d583e3ddd603ee4`; the corrected three-package Phase 1 gate is green and
-  exact production-version artifacts are prepared; NuGet.org publication credentials are the only
-  open Phase 2 prerequisite; the B2B, Auth, Customer,
+  exact production-version artifacts are prepared; a scoped NuGet.org publication key is now
+  available to this session and Phase 2 publication is actionable; the B2B, Auth, Customer,
   Customer Ticket, and semantic HTTP-terminal owners remain inventoried and must consume the staged
   Shared-expansion and Payment.Client publications rather than perform local carrier cutovers
 - Last reconciled: 2026-08-09 against current Concertable `origin/main` `162b8412a`, verified
@@ -76,14 +76,19 @@ The corrected release worktree
 `C:\Users\TommySeery\source\repos\Reunion.worktrees\concertable-e33b40f` is detached cleanly at
 `e33b40f` and holds the three verified `0.1.0-alpha.1` artifacts under `artifacts\packages`. The
 complete current-source gate is green. NuGet.org still exposes only historical `Reunion` `0.0.1`;
-the three target versions remain unpublished. No local API key, repository secret, or trusted
-publishing environment is configured, so an authenticated push cannot proceed in this session.
+the three target versions remain unpublished. A 46-character user-scoped `NUGET_API_KEY` is present;
+its value was not displayed or recorded.
 
 ## Next Steps
 
-Blocked: NuGet.org publication of the three verified `0.1.0-alpha.1` artifacts cannot authenticate because no NuGet.org API key, repository secret, or trusted-publishing environment is configured.
-Unblock action: Create a NuGet.org API key scoped to push new `Reunion`, `Reunion.Errors`, and `Reunion.AspNetCore` versions and expose it as `NUGET_API_KEY` to the next Codex session without pasting the secret into chat.
-Resume when: `NUGET_API_KEY` is present in the session environment, all three target versions remain absent from NuGet.org, and the prepared artifact hashes still match `8320AC619FFDA82B7A9F0F89905A53B9C332D196D3DA466EE308FFB1D2224CE9`, `1B2F829BEB80CAF73F98F63686962D15FBC1827EA2524D1B6FC640FDC0FDA582`, and `B2166ECB6451F5B9038A9F8224D6C3AC7EA49385BAFA5C5E376728A364A91260`.
+Publish exact `Reunion` `0.1.0-alpha.1` hash
+`8320AC619FFDA82B7A9F0F89905A53B9C332D196D3DA466EE308FFB1D2224CE9` to NuGet.org, checkpoint its
+accepted publication before the next mutation, then publish and checkpoint `Reunion.Errors` hash
+`1B2F829BEB80CAF73F98F63686962D15FBC1827EA2524D1B6FC640FDC0FDA582` and `Reunion.AspNetCore` hash
+`B2166ECB6451F5B9038A9F8224D6C3AC7EA49385BAFA5C5E376728A364A91260` in dependency order. Wait for
+all three packages to become restorable from clean isolated caches, verify their production metadata
+and hashes, remove the user-scoped `NUGET_API_KEY`, then checkpoint the terminal Phase 2 gate. Do not
+begin Phase 3 in this turn.
 
 ## Completed work
 
@@ -288,6 +293,16 @@ Resume when: `NUGET_API_KEY` is present in the session environment, all three ta
   waits for the Phase 4 Payment.Client publication/sync before PR #425 is updated once.
 
 ## Event log
+
+### 2026-08-09 — NuGet.org publication credential supplied
+
+- Action: Verified the newly created user-scoped NuGet.org key by presence and length only, without
+  reading, displaying, or recording its value.
+- Evidence: `NUGET_API_KEY` is present with length 46; the prepared head and artifact hashes remain
+  unchanged and the three target versions remain absent from NuGet.org.
+- Outcome: The Phase 2 credential blocker is closed and publication is actionable.
+- Follow-up: Push and checkpoint each verified package in dependency order, then prove clean
+  production-feed restore and remove the key.
 
 ### 2026-08-09 — corrected three-package release gate passed
 
