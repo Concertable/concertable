@@ -52,8 +52,9 @@ Result family, add compatibility shims, or convert MVC controllers to Minimal AP
 ### Local worktree state
 
 The primary `main` checkout was clean at `51c8d15b5` and became five commits behind after
-`origin/main` advanced to `2eb8bc476`. This docs branch is updated from that newer remote tip before
-review. The other visible local worktrees are unrelated and must remain untouched:
+`origin/main` advanced to `2eb8bc476`; it was fast-forwarded to that remote tip before docs review.
+This docs branch is based on the same tip. The other visible local worktrees are unrelated and must
+remain untouched:
 
 | Worktree branch | State at audit |
 |---|---|
@@ -246,12 +247,15 @@ as merged; #336 is the only listed closed-unmerged PR.
 
 ## Safest integration strategy
 
-Use a publish-gated hybrid of strategies B and C:
+Use strategy D: a publish-gated centralized integration. It keeps strategy B's single owner for the
+shared mechanical change, but splits delivery at the real Reunion and Concertable package-publication
+boundaries:
 
 1. Land this docs-only design first so both workstations and every active branch share the same owner
    and dependency map.
-2. In one isolated battle-test branch, pack commit `7bf5f66`, substitute the two real NuGet packages,
-   and prove source/API/HTTP parity. Do not distribute those edits across service PRs.
+2. In the reserved `Feature/typed-result_reunion-integration` worktree, pack commit `7bf5f66`,
+   substitute the two real NuGet packages, and prove source/API/HTTP parity. Do not distribute those
+   edits across service PRs.
 3. Publish matching `Reunion` and `Reunion.AspNetCore` versions only after the battle-test gate passes.
 4. Land one Concertable Shared producer PR: package references, carrier removal/substitution,
    Concertable error terminal, tests, public package surface, and conventions. Follow its publication.
@@ -266,9 +270,10 @@ Use a publish-gated hybrid of strategies B and C:
 
 Updating every PR independently (A) duplicates package pins, carrier renames, and adapter fixes and
 guarantees divergent conflict resolutions. A single ordinary mega-integration branch (plain B) cannot
-cross the NuGet publication boundary safely. Landing every semantic migration first (plain C) delays
-the common baseline and increases later churn. The producer → publish → generated-sync sequence keeps
-the package carve honest while centralizing the mechanical change exactly once.
+cross the NuGet publication boundary safely. Landing every semantic migration first (C) delays the
+common baseline and increases later churn. Strategy D's local battle test → Reunion publish → Shared
+producer → Concertable publish → generated-sync sequence keeps the package carve honest while
+centralizing the mechanical change exactly once.
 
 ## Local package battle-test workflow
 
@@ -296,7 +301,7 @@ Get-ChildItem $feed -Filter "Reunion*$version.nupkg"
 tar -xOf "$feed\Reunion.AspNetCore.$version.nupkg" Reunion.AspNetCore.nuspec
 ```
 
-On the dedicated Concertable battle-test branch only, add both exact versions to
+On the reserved Concertable integration branch only, add both exact versions to
 `api/Concertable.Shared/Directory.Packages.props`, add `Reunion` only to `Concertable.Kernel.csproj`,
 and add `Reunion.AspNetCore` only to `Concertable.Shared.Api.csproj`. Then restore without creating or
 committing a machine-specific NuGet configuration:
@@ -318,8 +323,9 @@ dotnet nuget why "$concertableWorktree\api\Concertable.Shared\src\Concertable.Sh
 The restore log must show the local feed supplying both exact packages; the AspNetCore `.nuspec` and
 `dotnet nuget why` output must show its dependency on the same Reunion version. Before any production
 PR, replace the local version with the published version and restore without
-`RestoreAdditionalProjectSources`. A temporary committed battle-test pin may live only on the
-dedicated disposable branch. The merge gate is:
+`RestoreAdditionalProjectSources`. A temporary committed battle-test pin may live locally on the
+reserved integration branch. It is not pushed; after Reunion publication, Phase 3 replaces it with
+the exact production version in a later commit before the first producer push/PR. The merge gate is:
 
 ```powershell
 rg -n 'local\.concertable|Reunion\.worktrees|Reunion-Concertable|RestoreAdditionalProjectSources' `
@@ -402,7 +408,7 @@ Use real B2B/Customer flows after the automated gate:
 - Sync the other workstation after this docs PR merges and record the exact B2B/Auth heads, dirty
   paths, plans, and dependencies without mutating them.
 - Create the isolated integration worktree and local feed; pack and inspect both matching packages.
-- Substitute Reunion on a dedicated battle-test branch and run carrier plus Shared.Api parity tests.
+- Substitute Reunion on the reserved integration branch and run carrier plus Shared.Api parity tests.
 
 Gate: local package provenance proven, affected tests green, Release solution build green, no
 machine-local configuration staged, and every compatibility risk either passed or explicitly returned

@@ -12,8 +12,8 @@
 ## Current state
 
 The repository-wide read-only audit and integration design are complete and approved. No Concertable
-or Reunion runtime file, package reference, branch, or existing PR has been changed. This docs-only
-branch adds the design, roadmap reconciliation, and this recovery ledger.
+or Reunion runtime file, package reference, existing migration branch, or existing PR has been
+changed. This docs-only branch adds the design, roadmap reconciliation, and this recovery ledger.
 
 GitHub has two open migration PRs: #425 contains unique Customer non-Payment work and must be
 preserved; #282 contains one obsolete-baseline Ticket commit whose semantics must later be recreated.
@@ -27,9 +27,9 @@ After this docs-only PR merges and Tommy syncs its `main` on the other workstati
 inventory the synced B2B/Auth heads, dirty paths, plans, and PR ownership and record them here. Then
 execute Phase 1 only: pack `Reunion` and `Reunion.AspNetCore` from `7bf5f66` at the same disposable
 version into the local feed, inspect the AspNetCore dependency, apply the package/carrier substitution
-only on the isolated battle-test branch, and run the Phase 1 provenance, parity, Shared.Api, and Release
-build gates. Stop after committing the verified Phase 1 checkpoint; do not publish packages or start
-the Concertable producer cutover in that phase.
+only on the reserved integration branch, and run the Phase 1 provenance, parity, Shared.Api, and
+Release build gates. Stop after committing the verified local-only Phase 1 checkpoint; do not push it,
+publish packages, or start the Concertable producer cutover in that phase.
 
 ## Completed work
 
@@ -40,8 +40,8 @@ the Concertable producer cutover in that phase.
   docs land first.
 - B2B and Auth correction recorded: their unpushed other-workstation changes are active authoritative
   owners, not missing or superseded work.
-- Roadmap reconciliation, this implementation plan, and its companion ledger are created in `this
-  commit` on the isolated docs branch based on current `origin/main`.
+- Roadmap reconciliation, this implementation plan, and its companion ledger are created in
+  `this commit` on the isolated docs branch based on current `origin/main`.
 
 ## Verification
 
@@ -57,11 +57,22 @@ the Concertable producer cutover in that phase.
   other-workstation reconciliation gate.
 - `git diff --check` passed for the complete docs change; focused scans found no stale divergence
   counts or forbidden plan-to-roadmap reference.
-- Documentation review and merge evidence are pending on this docs branch.
+- All changed-document relative links and documented Concertable paths resolve. The installed .NET 10
+  SDK accepts `dotnet nuget why`, and Windows bsdtar accepts the documented nuspec inspection shape.
+- Full docs review of `2eb8bc476..38f11e6eb` found four issues; all are fixed in `this commit`.
+  Incremental review of this fix commit and merge evidence remain pending.
 
 ## Reviews
 
-No review has run yet. A clean repository docs-review is required before `/merge-docs`.
+- Full docs review: `2eb8bc476..38f11e6eb` (1 commit), artifact
+  `reviews/Docs-typed-result_reunion-integration.md`, watermark `38f11e6eb`.
+- `ACC1` fixed in `this commit`: narrowed the no-mutation claim to existing migration branches.
+- `ACC2` fixed in `this commit`: recorded local main's final fast-forward to the audited remote tip.
+- `INST1` fixed in `this commit`: classified the recommendation as publish-gated strategy D and
+  compared it accurately with A, B, and C.
+- `INST2` fixed in `this commit`: unified Phase 1 on the reserved integration branch and made the
+  local-version replacement/push gate explicit.
+- Open findings: none. Incremental review of the fix commit is pending.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -96,6 +107,16 @@ No review has run yet. A clean repository docs-review is required before `/merge
 - Outcome: The approved design, branch graph, package commands, compatibility gates, test plan, and
   active local-only B2B/Auth ownership are durable and ready for repository docs review.
 - Follow-up: run `/docs-review`, checkpoint its outcome, then land through `/merge-docs`.
+
+### 2026-08-09 — full docs review fixes
+
+- Action: Reviewed `2eb8bc476..38f11e6eb` through the repository accuracy, contradiction, doc-home,
+  concision, dangling-reference, and followable-instruction lenses and fixed all findings.
+- Evidence: `reviews/Docs-typed-result_reunion-integration.md`; resolved `ACC1`, `ACC2`, `INST1`, and
+  `INST2`; link/path checks; `dotnet nuget why --help`; bsdtar availability; `git diff --check`.
+- Outcome: The plan now reports current git state accurately, names strategy D correctly, and has one
+  unambiguous integration branch/local-pin lifecycle. No finding remains open.
+- Follow-up: commit these fixes, run incremental docs review through that commit, then `/merge-docs`.
 
 ## Resume prompt
 
