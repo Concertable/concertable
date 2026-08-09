@@ -122,9 +122,8 @@ internal sealed class DealMapper : IDealMapper
 }
 ```
 
-Other instances: `TicketPayeeResolver` / `SettlementPayeeResolver` (Concert module — which party
-receives a concert's ticket revenue vs. its settlement; inverse maps over shared leaves),
-`DealTermsRenderer`, `ArtistShareCalculator`, `DealTermsSerializer` (Concert module).
+Other current instances: `DealUpdater` (Deal module), plus `ArtistShareCalculator` and
+`SettlementAmountResolver` (Concert module).
 
 Rules of the shape:
 

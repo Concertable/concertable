@@ -5,39 +5,39 @@
 - Branch: `Refactor/launch_deal_strategy_registration`
 - PR: not opened
 - Dependency/package gates: none; this is an internal B2B refactor
-- Last reconciled: 2026-08-09; Phase 1 was verified against `origin/main` at `0fa7f6460`, and the
-  latest observed `origin/main` is `d57e0c2a6`
+- Last reconciled: 2026-08-09; Phase 2 was implemented and verified after merging
+  `origin/main` at `d57e0c2a6`
 
 ## Current state
 
-Phase 1 is complete in commit `506bc35e4`. The Concert module now has a scoped
-generic strategy factory, an atomic vertical registration builder with duplicate/exact-coverage/
-lifetime validation, four cohesive `IDealTerms` leaves, scoped renderer/serializer/fingerprint
-facades, and characterization plus DI composition tests. The scoped `IKeyedServiceProvider` adapter
-resolves from the active request scope, and composition fails before registration when any strategy
-family omits an explicit coverage declaration. No Phase 2 family has been changed.
+Phases 1 and 2 are complete. Phase 1 is in commit `506bc35e4`; Phase 2 is checkpointed by this
+commit after merging `origin/main` at `d57e0c2a6` through merge commit `cadd3c7da`.
 
-Phase 1's unit, Concert integration, and full-solution build gates are terminal green. No PR exists
-and no package gate applies. A post-commit fetch found the branch 48 commits behind the newly advanced
-`origin/main` at `d57e0c2a6`; reconciling that clean drift is the prerequisite to Phase 2.
+The Concert module now registers terms, cohesive payee direction, and payment projection vertically
+per `DealType`. `DealPayeeResolver` exposes ticket user, ticket tenant, and settlement tenant
+directly through two directional leaves, while `PaymentAmountMapper` delegates to its four existing
+response-producing leaves through the scoped generic factory. All unkeyed factory-capturing facades
+are scoped and all stateless keyed leaves remain singleton.
+
+Phase 2's unit, Concert integration, and full-solution build gates are terminal green. No PR exists
+and no package gate applies. Phase 3 has not begun.
 
 ## Next Steps
 
-Implement Phase 2 only — party direction and payment projection:
+Implement Phase 3 only — settlement calculation:
 
-1. Fetch `origin`, merge current `origin/main` into this clean branch, and rebuild the affected
-   projects before editing Phase 2.
-2. Replace `TicketPayeeResolver`, `SettlementPayeeResolver`, `VenuePayeeResolver`, and
-   `ArtistPayeeResolver` with the cohesive `IDealPartyResolver` facade and its directional leaves.
-3. Migrate `PaymentAmountMapper` to the generic strategy factory without changing its response union
-   or wire shapes.
-4. Register both families in the existing vertical per-`DealType` composition block and add
-   table-driven coverage for ticket user, ticket tenant, and settlement tenant across all deal types.
-5. Run the Phase 2 Concert unit/integration gates and `dotnet build api/Concertable.slnx`; use the
-   short artifacts roots recorded below when working from this deep Windows worktree.
-6. Review the final diff, update this ledger, check off Phase 2, and commit that verified phase.
+1. Fetch `origin` and reconcile any clean base drift before editing.
+2. Migrate `ISettlementAmountResolver` to the generic strategy factory.
+3. Replace the nested `RevenueShareSettlementAmount → ArtistShareCalculator` dispatch with
+   DoorSplit- and Versus-specific settlement leaves over one shared revenue-loading seam.
+4. Remove duplicate Deal-entity share formulae after replacing tests that use them as a second oracle.
+5. Verify exact gross values for all four deal types, including ticket plus declared door revenue for
+   revenue-share deals.
+6. Run the Phase 3 Deal and Concert unit/integration gates and
+   `dotnet build api/Concertable.slnx` using short artifacts roots.
+7. Review the final diff, update this ledger, check off Phase 3, and commit that verified phase.
 
-Do not begin Phase 3 in the same turn; hand back after the Phase 2 commit and ledger checkpoint.
+Do not begin Phase 4 in the same turn; hand back after the Phase 3 commit and ledger checkpoint.
 
 ## Completed work
 
@@ -53,6 +53,11 @@ Do not begin Phase 3 in the same turn; hand back after the Phase 2 commit and le
 - The factory keeps its narrow `IKeyedServiceProvider` dependency through a scoped adapter that maps
   to the current DI scope; root resolution of scoped keyed leaves remains invalid.
 - Phase 1 committed as `506bc35e4` (`refactor(concert): introduce deal strategy registration`).
+- Phase 2 merged current `origin/main`, replaced the inverse payee maps with one cohesive
+  `IDealPayeeResolver` family, migrated `PaymentAmountMapper` to the generic factory, and moved both
+  families into the existing vertical registration block.
+- Phase 2 added table-driven recipient coverage for all four deal types and composition tests for the
+  payee and payment strategy registrations.
 
 ## Verification
 
@@ -84,6 +89,18 @@ Do not begin Phase 3 in the same turn; hand back after the Phase 2 commit and le
   and 7 existing E2E nullable/generated-code warnings.
 - 2026-08-09: `git diff --check` passed and the final diff review found no Phase 2 paths or open Phase 1
   findings.
+- 2026-08-09: after merging `origin/main` at `d57e0c2a6`, the affected Concert unit-test project
+  built with 0 errors before Phase 2 edits.
+- 2026-08-09: `dotnet test` for `Concertable.B2B.Concert.UnitTests` passed 121/121 on the final
+  Phase 2 source.
+- 2026-08-09: `./scripts/integration.ps1 concert --artifacts-path
+  C:\Users\tommy\AppData\Local\Temp\Concertable\launch-deal-strategy-phase2-integration` passed
+  both projects: B2B Concert 144/144 and Customer Concert 11/11.
+- 2026-08-09: `dotnet build api/Concertable.slnx --artifacts-path
+  C:\Users\tommy\AppData\Local\Temp\Concertable\launch-deal-strategy-phase2-solution` succeeded
+  with 0 errors and 9 existing nullable/generated-code warnings.
+- 2026-08-09: `git diff --check` passed, removed Phase 2 type names have no remaining `api/`
+  references, and the final diff review found no open Phase 2 findings.
 
 ## Reviews
 
@@ -91,6 +108,9 @@ Do not begin Phase 3 in the same turn; hand back after the Phase 2 commit and le
   coverage validation, accessor separation, union compatibility, and phase verification gates; no open
   planning findings remain.
 - Implementation code review pending after the code phases complete.
+- Phase 2 implementation self-review covered payee direction, response-shape preservation, keyed
+  coverage, facade lifetimes, consumer migration, test construction, and documentation accuracy; no
+  open findings remain.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -119,6 +139,12 @@ Do not begin Phase 3 in the same turn; hand back after the Phase 2 commit and le
   one cluster of date-conflict responses in `ContractApiTests`. The exact timeout test and the whole
   contract class passed in isolation; after shutting down stale SDK build servers, the clean canonical
   module run passed 155/155. No product or fixture change was justified by the non-reproducing failures.
+- The planned `IDealPartyResolver` name conflicted with the Concert module's standing vocabulary,
+  which reserves `Party` for the invoice snapshot value object. Phase 2 uses
+  `IDealPayeeResolver` instead; the cohesive methods and directional semantics are unchanged.
+- Because keyed leaves and their unkeyed facade intentionally share the same service interface,
+  lifetime tests must select the unkeyed descriptor explicitly rather than count keyed descriptors as
+  duplicate facade registrations.
 
 ## Event log
 
@@ -210,6 +236,35 @@ Do not begin Phase 3 in the same turn; hand back after the Phase 2 commit and le
 - Outcome: Phase 1 remains complete and verified against the session-start base, but Phase 2 must
   first merge the newly advanced `origin/main` and rebuild affected projects.
 - Follow-up: Reconcile the clean branch with current `origin/main`, then implement Phase 2 only.
+
+### 2026-08-09 — Phase 2 base reconciled
+
+- Action: Fetched `origin`, verified the dedicated worktree was clean and the platform-sync gate was
+  clear, merged current `origin/main`, and rebuilt the affected Concert project graph.
+- Evidence: merge commit `cadd3c7da`; `origin/main` at `d57e0c2a6`; affected build 0 errors.
+- Outcome: Phase 2 started against the current base with no unrelated dirty paths.
+- Follow-up: Implement and verify payee direction and payment projection only.
+
+### 2026-08-09 — Phase 2 unit assertion corrected
+
+- Action: Ran the Concert unit gate, diagnosed the two failures, and narrowed the lifetime assertion
+  to the unkeyed facade descriptor before rerunning the full project.
+- Evidence: initial result 119/121; both failures were the same test counting four keyed leaves plus
+  the unkeyed facade. Final result 121/121.
+- Outcome: The production registrations were correct; the composition test now distinguishes keyed
+  strategies from the unkeyed facade.
+- Follow-up: Complete the Concert integration and full-solution build gates.
+
+### 2026-08-09 — Phase 2 verified and checkpointed
+
+- Action: Replaced the inverse ticket/settlement payee maps with one cohesive strategy family,
+  migrated payment projection to the generic factory, registered both families vertically, updated
+  affected consumers and docs, and completed the Phase 2 verification and diff review.
+- Evidence: Concert unit 121/121; B2B Concert integration 144/144; Customer Concert integration 11/11;
+  full `api/Concertable.slnx` build 0 errors; removed type names absent from `api/`;
+  `git diff --check` clean.
+- Outcome: Phase 2 is complete in this checkpoint with no open findings and no Phase 3 source changes.
+- Follow-up: Implement Phase 3 only.
 
 ## Resume prompt
 

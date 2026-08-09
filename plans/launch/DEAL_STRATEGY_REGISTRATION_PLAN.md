@@ -50,7 +50,7 @@ Proposed locations:
 Concertable.B2B.Concert.Application/
 ├─ Strategies/IConcertDealStrategyFactory.cs
 ├─ Interfaces/IDealTerms.cs
-├─ Interfaces/IDealPartyResolver.cs
+├─ Interfaces/IDealPayeeResolver.cs
 └─ existing operation-specific interfaces
 
 Concertable.B2B.Concert.Infrastructure/
@@ -174,7 +174,7 @@ services.AddConcertDealStrategies(strategies =>
 {
     strategies.For(DealType.FlatFee)
         .AddSingleton<IDealTerms, FlatFeeDealTerms>()
-        .AddSingleton<IDealPartyResolver, VenuePaysArtistPartyResolver>()
+        .AddSingleton<IDealPayeeResolver, VenuePaysArtistDealPayeeResolver>()
         .AddSingleton<IPaymentAmountMapper, FlatFeePaymentAmountMapper>()
         .AddScoped<ISettlementAmountResolver, FlatFeeSettlementAmount>()
         .AddWorkflow<FlatFeeWorkflow>(workflow => workflow
@@ -189,7 +189,7 @@ services.AddConcertDealStrategies(strategies =>
 
     strategies.For(DealType.DoorSplit)
         .AddSingleton<IDealTerms, DoorSplitDealTerms>()
-        .AddSingleton<IDealPartyResolver, VenuePaysArtistPartyResolver>()
+        .AddSingleton<IDealPayeeResolver, VenuePaysArtistDealPayeeResolver>()
         .AddSingleton<IPaymentAmountMapper, DoorSplitPaymentAmountMapper>()
         .AddScoped<ISettlementAmountResolver, DoorSplitSettlementAmount>()
         .AddWorkflow<DoorSplitWorkflow>(workflow => workflow
@@ -206,7 +206,7 @@ services.AddConcertDealStrategies(strategies =>
     // Versus and VenueHire follow in the same block.
 
     strategies.RequireAll<IDealTerms>();
-    strategies.RequireAll<IDealPartyResolver>();
+    strategies.RequireAll<IDealPayeeResolver>();
     strategies.RequireAll<IPaymentAmountMapper>();
     strategies.RequireAll<ISettlementAmountResolver>();
     strategies.RequireAll<IConcertWorkflow>();
@@ -272,13 +272,13 @@ internal interface IDealTerms
 Rendering and canonical serialization remain separate methods with separate formatting rules. Combining
 their selection does not permit rendered presentation text to become fingerprint input.
 
-### Party direction
+### Payee direction
 
 Replace the inverse ticket/settlement payee maps with one resolver family whose per-type strategy owns
 the coherent supply/payment direction:
 
 ```csharp
-internal interface IDealPartyResolver
+internal interface IDealPayeeResolver
 {
     Guid ResolveTicketUserId(ConcertEntity concert);
     Guid ResolveTicketTenantId(ConcertEntity concert);
@@ -377,10 +377,10 @@ Verification gate:
 - `dotnet build api/Concertable.slnx` — 0 errors.
 - Concert unit and integration tests via `integration-debug`.
 
-### Phase 2 — Party direction and payment projection
+### Phase 2 — Payee direction and payment projection ✅
 
 - Replace `TicketPayeeResolver`, `SettlementPayeeResolver`, `VenuePayeeResolver`, and
-  `ArtistPayeeResolver` with the cohesive `IDealPartyResolver` facade plus two directional leaves.
+  `ArtistPayeeResolver` with the cohesive `IDealPayeeResolver` facade plus two directional leaves.
 - Migrate `PaymentAmountMapper` to the factory without changing its response union/wire shapes.
 - Move these registrations into the same vertical per-`DealType` composition block.
 - Add table-driven tests covering ticket user, ticket tenant, and settlement tenant for all four types.
