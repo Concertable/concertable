@@ -29,9 +29,9 @@ does not introduce `IAcceptStep` or place step interfaces inside union cases.
 
 ## Next Steps
 
-Blocked: The B2B typed-result checkpoints 6-7 source PR and every resulting publication/platform-sync gate are not yet terminal and green.
-Unblock action: The owner at `plans/typed-result/B2B_PROGRESS.md` must finish checkpoints 6-7, merge the source PR, follow every resulting publication/platform-sync gate to terminal green, then update this ledger.
-Resume when: Current main contains the merged B2B work and `plans/typed-result/B2B_PROGRESS.md` records the source PR and every resulting publication/platform-sync gate as terminal and green.
+Open and verify the Markdown-only closeout PR from reviewed/verified work head
+`59e1e3d66fefc3aef7b3ef2bcdd4a85fd32b032a`, then restore the implementation blocker before the
+sanctioned docs-only admin merge.
 
 ## Completed work
 
@@ -199,6 +199,16 @@ Resume when: Current main contains the merged B2B work and `plans/typed-result/B
   `git diff --check` verification.
 - Outcome: no new findings; both closeout findings remain resolved.
 - Follow-up: checkpoint this review result and land the Markdown-only closeout through `/merge-docs`.
+
+### 2026-08-09 — verified closeout work-head push
+
+- Action: pushed the reviewed closeout work head and fetched its remote-tracking ref for equality.
+- Evidence: local and remote `Docs/dotnet-11_b2b-workflow-unions-plan_closeout` both
+  `59e1e3d66fefc3aef7b3ef2bcdd4a85fd32b032a`; branch is current with `origin/main`; diff is exactly
+  two Markdown paths.
+- Outcome: the closeout review fixes and clean incremental-review checkpoint are durably published.
+- Follow-up: transport this checkpoint, open and verify the docs PR, then restore the implementation
+  blocker before admin merge.
 
 ## Resume prompt
 
