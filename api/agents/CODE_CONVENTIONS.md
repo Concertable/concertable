@@ -121,6 +121,22 @@ if (condition)
 }
 ```
 
+## Empty blocks — compact braces
+
+Format a deliberately empty block as `{ }` on the same line. Do not expand an empty body across
+three lines. Catch the narrow exception being intentionally ignored; this formatting rule does not
+license a bare `catch`.
+
+```csharp
+// CORRECT
+catch (OperationCanceledException) { }
+
+// WRONG
+catch (OperationCanceledException)
+{
+}
+```
+
 ## Optional parameters — don't add one that callers must skip with a named argument
 
 An optional parameter earns its place only when call sites actually pass it *positionally* and naturally. The moment varying one argument forces a call site to name-skip past another —
