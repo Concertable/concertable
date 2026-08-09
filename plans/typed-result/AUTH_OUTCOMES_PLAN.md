@@ -2,9 +2,9 @@
 
 > Next steps live in @plans/typed-result/AUTH_OUTCOMES_PROGRESS.md -> `## Next Steps`.
 
-**Status:** The semantic migration is complete and Reunion conversion is independently implementable
-now. Auth has no Payment, B2B, or Customer runtime/package dependency; its delivery order is determined
-from the current topology after conversion, not assumed from the Payment publication sequence.
+**Status:** The semantic migration and published Reunion conversion are locally complete and green.
+Incremental review and current-base PR preflight are next; Auth has no Payment, B2B, or Customer
+runtime/package dependency.
 
 ## Outcome
 

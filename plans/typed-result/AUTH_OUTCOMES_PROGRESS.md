@@ -16,12 +16,17 @@
 
 The task directly matches branch `Feature/typed-result_auth-outcomes`: its committed diff is confined
 to Auth-owned runtime/tests, the Shared typed-result architecture guard, solution/integration-runner
-registration, and this plan pair. No branch PR or remote branch exists, no platform-sync PR is open,
-and no other worktree owns overlapping Auth implementation. This merge checkpoint integrates fresh
-`origin/main` `1043a9178`, including platform `0.1.0-alpha.0.890` and the authoritative Reunion
-conversion plan. The completed Auth semantics remain intact. Auth still imports the old Kernel
-functional/error namespaces and directly references no Reunion package; that conversion is the next
-branch-owned implementation step.
+registration, and this plan pair. No branch PR or remote branch exists, no platform-sync PR was open
+at the implementation gate, and no other worktree owns overlapping Auth implementation. Merge commit
+`1a6c6d670` integrates `origin/main` `1043a9178`, including platform `0.1.0-alpha.0.890` and the
+authoritative Reunion conversion plan.
+
+The completed Auth semantics now compile directly against published `Reunion` and `Reunion.Errors`
+`0.1.0-alpha.1`. Auth runtime owns both packages, its unit project owns `Reunion.Errors`, and its
+integration project owns `Reunion`. Razor pages continue to map carriers manually and call no
+Reunion HTTP terminal, so `Reunion.AspNetCore` is intentionally absent. `Concertable.Kernel` remains
+for unrelated Auth identity, geometry, entity, and extension APIs. No wire, persistence, model,
+migration, or cross-service runtime contract changed.
 
 Before that advance, the clean branch was zero behind fresh `origin/main` after merge commits
 `ecb9351608d7a5b7ac3eb06f2342041cfa7bc492` and
@@ -75,14 +80,16 @@ carrier conversion implementable now; Payment delivery is not an Auth implementa
 
 ## Next Steps
 
-Audit the merged Auth package and HTTP-edge topology, then migrate the completed Auth semantic work
-from old Kernel carriers/errors to direct published `Reunion` and `Reunion.Errors` packages. Do not
-add `Reunion.AspNetCore` unless Auth source actually uses its HTTP terminal API. Keep changes
-Auth-owned, repeat Auth unit/integration, Release solution build, carve, mechanical gates,
-incremental review, and PR preflight, and classify delivery from the resulting topology. Do not push
-without instruction; require full merge-queue API and UI E2E when delivered.
+Commit the verified published-Reunion conversion checkpoint, run incremental review from the recorded
+watermark through that code commit, fetch and reconcile fresh `origin/main`, and run PR preflight.
+Repeat affected verification only if the current-base reconciliation changes relevant Auth/package
+inputs. Do not push without instruction; when delivered, require full merge-queue API and UI E2E.
 
 ## Completed work
+
+- Converted the completed Auth semantic migration from old Kernel functional/error namespaces to
+  direct published `Reunion` and `Reunion.Errors` `0.1.0-alpha.1` ownership without adding the unused
+  ASP.NET adapter or changing observable behavior.
 
 - Completed the post-review verification, incremental review, and PR preflight on current main; the
   branch is locally green and ready for push/PR delivery.
@@ -131,6 +138,14 @@ without instruction; require full merge-queue API and UI E2E when delivered.
 - Added the plan and this initialized ledger in this commit. No migration code was implemented.
 
 ## Verification
+
+- Published-Reunion conversion checkpoint: Auth unit tests 4/4; Auth integration tests 54/54; typed-
+  result architecture tests 16/16; full Release solution build 0 errors and 5 unrelated existing
+  warnings; fresh standalone Auth carve 0 errors. The temporary carve was removed.
+- Conversion searches found the intended two `Option<T>`, four `UnitResult<TError>`, and two
+  completion-only `IAuthService` signatures; no old Kernel functional/error namespace, unused
+  Reunion ASP.NET package, legacy carrier signature, transport/persistence carrier, local-Core mode,
+  model/migration change, or out-of-scope working-tree path. `git diff --check` passed.
 
 - Fresh `docker ps` succeeded; `./scripts/integration.ps1 auth` through `integration-debug`: 54 passed,
   0 failed across the one Auth integration project.
@@ -287,6 +302,18 @@ finding IDs or dispositions exist. Later merge `e196f13e1` contains only already
   amendment/separate additive shared item before implementation proceeds.
 
 ## Event log
+
+### 2026-08-09 - Published Reunion conversion completed
+
+- Action: Audited Auth's merged package and Razor topology, migrated its completed semantic contracts
+  to direct published Reunion ownership, and ran the complete local verification gate.
+- Evidence: runtime references `Reunion` and `Reunion.Errors` `0.1.0-alpha.1`; unit tests 4/4; Auth
+  integration 54/54; typed-result architecture 16/16; Release solution build 0 errors with 5 unrelated
+  existing warnings; fresh standalone Auth carve 0 errors; package, namespace, signature, boundary,
+  model/migration, scope, and diff checks passed.
+- Outcome: Auth is locally green on the published Reunion baseline without `Reunion.AspNetCore`,
+  behavioral change, transport leakage, model change, or another service runtime dependency.
+- Follow-up: commit this checkpoint, run incremental review, reconcile fresh main, and run PR preflight.
 
 ### 2026-08-09 - Current main and Reunion baseline reconciled
 
