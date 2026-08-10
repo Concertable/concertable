@@ -45,8 +45,8 @@ No issues found in this area. Checked the native review catalog, security-sensit
 - [x] **NAT2 — LOW — test coverage** — `api/Concertable.B2B/src/Modules/User/Concertable.B2B.User.Infrastructure/Services/UserService.cs:32`
   Resolved: an authenticated test principal absent from the User projection now receives the typed 401 ProblemDetails response, and the test verifies no user/location projection is written.
 
-- [ ] **NAT3 — LOW — native** — `api/Concertable.B2B/src/Modules/Tenant/Concertable.B2B.Tenant.Contracts/ITenantModule.cs:20`
-  The changed contract still documents `GetTaxComplianceAsync` as returning null and `GetVatCalculationAsync` as throwing for every missing tenant/compliance case, contradicting its `Option` and typed `TenantNotFound` result; update the summaries to distinguish `None`, the typed failure, and the remaining missing-compliance invariant exception.
+- [x] **NAT3 — LOW — native** — `api/Concertable.B2B/src/Modules/Tenant/Concertable.B2B.Tenant.Contracts/ITenantModule.cs:20`
+  Resolved: the summaries now distinguish `Option.None` for missing tax-compliance data, the typed `TenantNotFound` VAT failure, and the missing-compliance invariant exception.
 
 ## Concert — reviewed 2026-08-10
 
