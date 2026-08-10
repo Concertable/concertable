@@ -7,15 +7,16 @@
 - Dependency/package gates: checkpoints 6-7 are locally complete against exact Payment packages from
   `a779fe041`; Reunion integration PR #453, Payment publication, generated platform sync, and exact
   published-package revalidation gate delivery
-- Last reconciled: 2026-08-10 against merged base `1043a9178`, implementation head pending this
-  checkpoint, live Reunion integration PR #453, and the final delivery-safe package configuration
+- Last reconciled: 2026-08-10 against implementation commit `e229afb58`, review-fix head `92cd03a25`,
+  merged mainline baseline `6f4a5cc3e`, and the staged review artifact
+  `reviews/BIG-Refactor-B2BTypedResultMigration-Review.md`
 
 ## Current state
 
-All seven checkpoints are locally complete on the single B2B migration branch. The branch is reconciled with
-`origin/main` `1043a917876cbed48b3c1f873cdcfcc7aadf9b80` and platform
-`0.1.0-alpha.0.890`; the merge checkpoint preserves both the typed Apply outcomes and mainline's
-venue/artist tenant snapshot construction.
+All seven checkpoints are locally complete on the single B2B migration branch as implementation commit
+`e229afb581c829279ca821b0a85729c4c4f0f441`. During review fixes the branch merged `origin/main`
+through `6f4a5cc3ee953ea3971df464823da7f5b9b100c6`, including platform `0.1.0-alpha.0.892`; the
+review-fix code head is `92cd03a25f48bcee4f6c5e69010bf04be9477500`.
 
 Concert accept, cancel, application-cancel, and finish workflows now expose operation-owned Reunion
 results. Payment and lifecycle failures compose through `MapError`; no string or HTTP-exception bridge
@@ -40,10 +41,12 @@ Opportunity, Contract, and Invoice. API controllers only map successful payloads
 Results. `ConcertService` and `SelfBillingAgreementService` own clock-dependent decisions; no B2B API
 project depends on `Option`, and no B2B controller injects `TimeProvider`.
 
-The complete B2B integration surface is green: Artist 17/17, Concert 148/148, Tenant 56/56, User 3/3,
-and Venue 25/25. The migration exposed two stale transport assertions: polymorphic `IDeal` responses
-now preserve their declared interface metadata, and revoked invitation acceptance asserts the typed
-`InvitationNotPending` Conflict contract.
+The implementation checkpoint's complete B2B integration surface is green: Artist 17/17, Concert
+148/148, Tenant 56/56, User 3/3, and Venue 25/25. The migration exposed two stale transport
+assertions: polymorphic `IDeal` responses now preserve their declared interface metadata, and revoked
+invitation acceptance asserts the typed `InvitationNotPending` Conflict contract. NAT1 and NAT2 added
+integration regressions after that run; both projects build, but Docker became unavailable before those
+new tests could execute.
 
 The Payment dependency gate is open. Payment implementation PR #392 merged as `b66325ac`, generated
 platform-sync PR #420 landed the B2B/Customer owned-result consumer migration as `372be1041`, and the
@@ -58,12 +61,33 @@ are `7DDA02F542F606F6707D8305E8524E4227A7F2222F28113F8226D0AD239D3DA8` and
 `A52EA0562FA36EA123450BE2DC022E9F33AE9510FB100E4309F245DEFCC14D14` respectively. The manifests name
 that exact commit; Client depends on Contracts `.911`, Reunion `.1`, and Reunion.Errors `.1`.
 
+The full staged code/security review covered `1043a9178..e229afb58`; both stored watermarks remain
+`e229afb581c829279ca821b0a85729c4c4f0f441` until the mandatory incremental review covers every later
+commit. NAT1, NAT2, NAT3, NAT4, SEC2, and CV1 are fixed. SEC1 is consciously deferred because the
+durable correction requires a cross-service B2B + Payment saga/package cut-over; the unresolved risk
+and decision are owned by `api/Concertable.B2B/src/Modules/Concert/TECH_DEBT.md`. NAT5 is reconciled in
+this checkpoint. The review artifact stays because SEC1 remains deferred and the incremental review is
+not complete.
+
 ## Next Steps
 
-Commit the verified checkpoints 6-7 implementation, run the full code and security review over the
-committed branch range, address every high-confidence finding, and checkpoint the review. Then record
-the registered Reunion owner wait for PR #453, Payment publication, generated platform sync, and exact
-published Payment.Client revalidation. Do not push or merge until separately instructed.
+Run the mandatory incremental code/security review over `e229afb581c829279ca821b0a85729c4c4f0f441..HEAD`
+while `reviews/BIG-Refactor-B2BTypedResultMigration-Review.md` still exists, address any new
+high-confidence findings serially, and update both review watermarks. Re-run the full solution build;
+when Docker is healthy, execute the NAT1 Tenant and NAT2 User integration regressions that have only
+been build-verified. Do not push or merge B2B until separately instructed.
+
+The delivery gate after that local review/verification is:
+
+Blocked: Reunion integration PR #453, Payment.Client publication, and the generated platform-sync PR are not terminal and green, so exact published-package revalidation cannot run.
+Unblock action: The owner session for plans/typed-result/REUNION_INTEGRATION_PROGRESS.md must merge PR #453 with full E2E, carry Payment publication and generated platform sync green, then update this ledger.
+Resume when: PR #453 is merged, the new Payment.Client/Contracts version is published, the generated platform-sync PR is merged green, and origin/main pins that version.
+
+Outstanding review blocker: SEC1 needs a human decision to authorize the separately planned B2B +
+Payment durable financial-lifecycle saga/package cut-over or explicitly accept the unresolved
+financial/state inconsistency risk recorded in
+`api/Concertable.B2B/src/Modules/Concert/TECH_DEBT.md`. The lifecycle is not terminal, and this plan
+must not emit a resume pointer while either blocker remains.
 
 ## Completed work
 
@@ -71,6 +95,17 @@ published Payment.Client revalidation. Do not push or merge until separately ins
   migrations, preserved from the branch's existing commits.
 - Checkpoints 6-7: Concert payment/cancel/finish owned outcomes, retryable completion faults, direct
   Reunion carrier/terminal ownership, and complete B2B FluentResults removal.
+- Committed checkpoints 6-7 as `e229afb581c829279ca821b0a85729c4c4f0f441`.
+- Completed the staged big review over `1043a9178..e229afb58`; the artifact's code and security
+  watermarks are `e229afb581c829279ca821b0a85729c4c4f0f441` pending incremental review of the fixes.
+- Fixed NAT1 in `9ef412e82799cfba62742e12ed5eb8164c7b6a80`, NAT2 in
+  `c6701ae0b0b9dd923b7fbb63caa41458887ed28a`, NAT3 in
+  `a465cd313511a00e53d4dccfc1a01502e1f2616f`, NAT4 in
+  `ef500fed8c74356b3586c3a9626d59b117b5f477`, SEC2 in
+  `c36892991cf6c6d1aa828bf9e60cdd93e6b0ddd6`, and CV1 in
+  `92cd03a25f48bcee4f6c5e69010bf04be9477500`.
+- Deferred SEC1 in `05ab7ecfe9e31edd9f9aa266c9fba6d32087575b`; its human decision and durable
+  cross-service design are preserved in the owning Concert `TECH_DEBT.md`.
 - Synced current `origin/main` into the branch and resolved ConcertController and Tenant GlobalUsings.
 - Renamed branch from `Refactor/ConcertWorkflowDispatchers` to `Refactor/B2BTypedResultMigration`.
 - Renamed worktree to
@@ -113,6 +148,20 @@ published Payment.Client revalidation. Do not push or merge until separately ins
   verifier remains red on unrelated pre-existing whitespace and namespace diagnostics.
 - Final source/config audit: no B2B FluentResults, old Kernel functional namespace, old Shared API
   result terminals, local feed path, `.911` package pin, or `BadRequestException(result.Errors)` bridge.
+- Review NAT1: Tenant integration project build passed; the two new integration regressions were not
+  executed because Docker's named pipe was unavailable.
+- Review NAT2: User integration project build and focused unit test 1/1 passed; the new integration
+  regression was not executed because Docker's named pipe was unavailable.
+- Review NAT3: Tenant Contracts Release build and scoped diff check passed.
+- Review NAT4: focused `EscrowExecutor`/`WithdrawExecutor` failure tests passed 2/2, the full Concert
+  unit suite passed 126/126, and the B2B Release solution build passed with 0 errors and 1 pre-existing
+  nullable warning. No integration run was performed.
+- Review SEC1: documentation-only deferral; the partial code experiment was reverted and no build was
+  claimed.
+- Review SEC2: Concert API Release build passed with 0 warnings and 0 errors. No endpoint test was
+  added because the controller-test contract excludes the dev-only endpoint.
+- Review CV1: `ErrorDefinitionContractTests` passed 55/55, the full Concert unit suite passed 144/144,
+  and the scoped diff check passed.
 
 - `dotnet build api/Concertable.B2B/Concertable.B2B.slnx --configuration Release`: succeeded,
   0 errors (1 pre-existing nullable warning).
@@ -171,6 +220,11 @@ published Payment.Client revalidation. Do not push or merge until separately ins
   owned finish errors rather than manufacturing HTTP exceptions below the controller boundary.
 - PR #453 remains open and green. Temporary package inputs were removed after verification; committed
   Payment package versions again use `$(ConcertablePlatformVersion)`.
+- The staged big review found NAT1-NAT5, SEC1-SEC2, and CV1. NAT1-NAT4, SEC2, and CV1 are fixed;
+  NAT5 is fixed by this ledger checkpoint. SEC1 remains deferred for the explicit human architecture
+  decision recorded in Concert `TECH_DEBT.md`.
+- The stored code/security review watermarks intentionally remain at `e229afb58`; the fix commits and
+  intervening mainline merge require an incremental review before the branch can be called reviewed.
 
 ## Downstream handoffs
 
@@ -182,6 +236,22 @@ published Payment.Client revalidation. Do not push or merge until separately ins
   overlapping Concert workflow changes.
 
 ## Event log
+
+### 2026-08-10 — staged review addressed and ledger reconciled
+
+- Action: Reconciled the completed big review and serial finding fixes, recorded the deferred durable
+  financial-lifecycle finding in its owning tech-debt file, and corrected the implementation/review
+  state and next action.
+- Evidence: big review range `1043a9178..e229afb58`; artifact
+  `reviews/BIG-Refactor-B2BTypedResultMigration-Review.md`; code/security watermarks `e229afb58`;
+  NAT1 fixed by `9ef412e82`, NAT2 by `c6701ae0b`, NAT3 by `a465cd313`, NAT4 by `ef500fed8`, SEC1
+  deferred by `05ab7ecfe`, SEC2 fixed by `c36892991`, CV1 fixed by `92cd03a25`, and NAT5 fixed in
+  this checkpoint.
+- Outcome: the initial staged review is fully addressed, with SEC1 consciously deferred and tracked;
+  the review artifact remains because the fix range has not yet received its mandatory incremental
+  review. Publication revalidation remains externally blocked on PR #453 and its package/platform-sync
+  delivery chain.
+- Follow-up: execute `## Next Steps`; do not emit this plan's resume pointer while either blocker remains.
 
 ### 2026-08-10 — checkpoints 6-7 implemented and verified
 

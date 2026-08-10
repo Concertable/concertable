@@ -64,5 +64,7 @@ No issues found in this area. Checked the native review catalog, security-sensit
 
 ## Plan and progress — reviewed 2026-08-10
 
-- [ ] **NAT5 — MEDIUM — native/documentation** — `plans/typed-result/B2B_PROGRESS.md:10`
-  The changed current summary still says the implementation head is pending, and `## Next Steps` tells the next agent to commit checkpoints 6-7 and start the full review, but HEAD `e229afb58` is already that implementation commit and this staged review has completed. Reconcile the summary and `## Next Steps`, and append the review range, watermark, and every finding disposition before handing off the Reunion wait, as required by `plans/agents/PLAN.md`.
+- [x] **NAT5 — MEDIUM — native/documentation** — `plans/typed-result/B2B_PROGRESS.md:10`
+  Resolved: the ledger now records implementation `e229afb58`, review range and watermarks, every
+  finding disposition and verification result, the mandatory incremental review, and both the
+  publication and deferred SEC1 blockers without claiming terminal lifecycle state.
