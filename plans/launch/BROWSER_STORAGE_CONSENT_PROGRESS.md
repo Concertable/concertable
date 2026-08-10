@@ -9,84 +9,66 @@
   non-breaking and auto-merges. **Legal input (non-blocking):** solicitor-drafted cookie/storage
   **policy copy** is a Month-4 input and gates ONLY the final policy-wording wire (Phase 4 tail), not
   the audit/removal/correction/inventory work.
-- Last reconciled: 2026-08-10 — **Phase 1 COMPLETE**: static sweep + anonymous runtime capture across
-  all four SPAs (real headless Chromium, storage dumped per journey). Synced to `origin/main` at start
-  (was 2 behind; merged, clean). Worktree at branch tip; tree clean (no code changed).
+- Last reconciled: 2026-08-10 — **Phases 1–4 engineering COMPLETE.** Synced to `origin/main` (was 3
+  behind; clean merge). Shipped the consent gating primitive, lazy Stripe (prior), on-use Maps, the
+  storage manifest + drift-guard test, and the `BROWSER_STORAGE.md` inventory. Four SPA builds green;
+  shared vitest 19/19 green. Pushed to the feature branch; PR not yet opened (opt-in).
 
 ## Current state
 
-**Phase 1 is complete and the decision gate is open (recorded below).** Static inventory + the
-anonymous runtime capture are both done; the capture **overturned a static assumption** (Stripe is
-*not* lazy — see the discovery below), which is exactly why the audit-first ordering mattered. Per the
-agreed capture scope (Tommy, this session), the authenticated + Stripe-checkout journeys were **not**
-booted: they need the full Aspire/Docker backend + seeded accounts and would only refine exact
-third-party key strings that are classified necessary/exempt by *purpose* regardless — their storage
-is documented from authoritative library behaviour and flagged as documented-not-observed. No `app/web`
-or test code changed — the four SPA builds remain at the `origin/main` baseline. **Phase 2 (removal)
-is now unblocked.**
+**Engineering for the whole plan is complete (Phases 1–4).** The banner is retained and its
+Analytics/Marketing toggles now genuinely gate loading via the new primitive; the two boot-time third
+parties (Stripe, Maps) load on use only; every stored item is classified in a drift-guarded manifest
+and documented in the engineering inventory. Four SPA builds green, shared vitest 19/19 green, tree
+clean, commits pushed to `Feature/launch_browser-storage-consent`.
+
+Delivered this session (all committed + pushed):
+- `lib/consentGate.ts` — `registerConsentGated` + `registerConsentGatedScript` (7 unit tests). The
+  integration point future GA4/pixels register against; makes `hasConsent` actually gate.
+- On-use Maps — root `APIProvider` removed from all three `main.tsx`; scoped
+  `providers/MapsProvider.tsx` mounted around `FindPage` (search/autocomplete) and `GoogleMap`
+  (detail maps). Maps no longer contacts Google on landing/home/b2b find lists.
+- `lib/storageManifest.ts` + `storageManifest.test.ts` — classified single source of truth + a
+  drift-guard that fails the build on any unclassified `localStorage`/`sessionStorage`/cookie/
+  IndexedDB write in `app/web`.
+- `app/web/shared/BROWSER_STORAGE.md` — the engineering inventory the solicitor drafts policy from.
+- Lazy Stripe (`getStripe()`) shipped last session (`de4cda25f`).
+
+**Remaining is delivery + legal, not engineering:** review → PR → merge (full E2E tier) → follow the
+`chore/platform-sync-*` PR to green; then the solicitor policy-copy wire (Month-4, gated on legal
+input) and the Maps consent-gate variant (solicitor call). Roadmap line + §7 checklist ticks land at
+merge close-out (they signal launch-readiness, which needs the merge + legal tail).
 
 Branch-time gate at creation: 0 open red `chore/platform-sync-*` PRs; `origin/main` carried the
 reopened roadmap line and the merged `Docs/launch_cookie-storage-audit` PR #469.
 
 ## Next Steps
 
-> **DECISION CORRECTED (2026-08-10, Tommy) — the banner is RETAINED, not removed.** The Phase-1
-> decision gate concluded "consent machinery is decorative → remove," but that rested on a false
-> premise: it read "no analytics/marketing tech exists *today*" as "none is *coming*." It is coming —
-> analytics + marketing/advertising tracking is on the commercial roadmap, and the closest comparable
-> (GigPig, a UK venue↔artist booking marketplace) ships the exact analytics+marketing banner; Ticketmaster
-> runs a full OneTrust preference centre. So the banner is **infrastructure ahead of planned tech**, not
-> dead code. Under UK PECR it is *required* the moment that tech loads. The real defect is that the
-> toggles currently **gate nothing** (`hasConsent`/`onConsentChange` have zero consumers) — the fix is to
-> make them actually gate, not to delete them.
->
-> **The banner removal was applied and then fully reverted** — the working tree is back to the banner +
-> all consent machinery intact, plus only the one genuinely-dead removal kept (the `sidebar_state`
-> cookie). See the event log entry below.
+All engineering is done, committed, and pushed. What remains is delivery + a documented legal tail.
 
-**Now (Phase 2, reduced):** the only audit-confirmed-dead item is done — the write-only `sidebar_state`
-cookie write is removed from `app/web/shared/src/components/ui/sidebar.tsx` (never read; static-definitive;
-persistence dropped, no reason to re-add). That single change is in the tree, verified against all four
-SPA builds. **The consent machinery is kept.**
+1. **Review the branch** — run `/big-review` (or `/review`) over `main..HEAD`; address any findings and
+   re-commit. This is the pre-merge gate (PROMPTS.md).
+2. **Open the PR + merge** (awaits Tommy's go-ahead — PR creation is opt-in). Use `/merge` at the
+   **full E2E tier** — this changes a first-visit flow across all SPAs (banner + boot-time script
+   loading), so do **not** `skip-e2e`. Let the merge queue run E2E; don't duplicate it locally.
+3. **Follow the platform-sync PR** — the `api/**` edits are E2E-test-only, so the
+   `chore/platform-sync-*` PR is non-breaking and auto-merges; confirm it greens.
+4. **At merge close-out:** tick the roadmap line (`plans/launch/LAUNCH_ROADMAP.md:30`, `:197`) and the
+   §7 checklist items (`plans/launch/LAUNCH_CHECKLIST.md:41`, `:42` — the `[CODE]` parts) in the
+   close-out commit; move recovery state to a `Docs/*_closeout` worktree and delete this plan + ledger.
 
-**Research DONE → `plans/launch/CONSENT_RESEARCH.md`** (competitor scan + UK legal baseline, all three
-passes compiled). Key outcomes: the law moved (DUAA 2025 amended PECR reg 6, in force 5 Feb 2026; ICO
-fine ceiling now £17.5m; GA4 still needs consent as it shares with Google); ICO actively reprimands the
-exact "loads-before-consent" defect we have (Sky Betting, Sept 2024); our closest peers (GigPig,
-GigXchange) run **custom** banners, big incumbents (Ticketmaster Business, Universe, AXS) run **OneTrust**.
-**Recommendation: keep the banner and make it a real custom gate** in `app/web/shared` (we control all
-script loading, so blocking-until-consent is cheap here), with a lightweight CMP as the only fallback.
-**Open decision for Tommy: custom real-gate (recommended) vs lightweight CMP vs enterprise OneTrust** —
-this gates the start of Phase 3. The production-ready work is then:
-1. **Make the banner actually gate** — a consent-before-load primitive keyed off `hasConsent(category)` /
-   `onConsentChange`, so analytics/marketing scripts load only after consent and react to later changes.
-   Decide custom-vs-CMP and exact categories from the research.
-2. **Make Stripe + Google Maps load lazily** (the real PECR fix — both load at *boot*, before consent/
-   checkout today): Stripe only when a checkout/payment component mounts (then its cookies are
-   strictly-necessary/exempt, not gated); Maps only on the routes that use it. Independent of the banner.
-3. **Durable storage manifest + drift-guard test** so new storage must be classified to compile-green.
-4. **Phase 4** — engineering inventory doc generated from the manifest.
+**Legal-gated tail (not blocking the above):**
+- Solicitor drafts cookie/storage policy copy from `app/web/shared/BROWSER_STORAGE.md`; wiring it into
+  the `/cookies` page is the only remaining step (that route is the separate Month-4 launch item).
+- Whether Google Maps must sit behind a `functional` consent category off its core-search pages — a
+  solicitor/product call. Maps already loads on-use; the gate variant just wraps the `MapsProvider`
+  mount points with `registerConsentGated`, no re-architecture.
 
-Reject-all parity, no pre-ticked boxes, and consent records are compliance requirements to verify against
-the legal-research output. (Banner already renders Reject-all + Accept-all at equal prominence — parity OK.)
-
-**Phase 3 progress (this session):**
-- ✅ **Lazy Stripe** — `lib/stripe.ts` now exports `getStripe()` (memoised), called only by `StripePaymentForm`
-  (on mount) and `handle3ds`; no more module-top `loadStripe`. Four SPA builds green. Committed.
-- ⬜ **Consent gating primitive** — a category-keyed loader keyed off `hasConsent`/`onConsentChange` so the
-  Analytics/Marketing toggles actually govern loading; the integration point for future GA4/pixels + Consent
-  Mode v2. (Banner/dialog UI + `consent.ts` record already exist and are retained.)
-- ⬜ **Maps → on-use, off boot** — remove `APIProvider` from the three `main.tsx`; mount it only around the
-  map/search components. **Open UX decision:** treat Maps as *functional-necessary-on-use* (load on its own
-  pages, no banner gate — preserves find-page conversion) vs *hard-gate under a new `functional` category*
-  (degrade to manual entry when refused). Recommend the former; the latter is a solicitor/product call.
-- ⬜ **Storage manifest + drift-guard test**, then **Phase 4** `BROWSER_STORAGE.md` inventory.
-
-**Re-running the runtime capture** (for Phase 2/3 verification): `npm install` in `app/`, then
-`npm run build:web-packages`, then `npm run dev:customer|venue|artist|business` from `app/`; drive with
-headless Chromium (`ms-playwright/chromium_headless_shell-1228`, launch args `--no-sandbox --disable-gpu
---disable-dev-shm-usage`, `ignoreHTTPSErrors`, block `localhost:7083/7087/7088/7090` so the SPA can't
-hang on the dead OIDC/API hosts). The capture script + method are captured in this session's evidence.
+**Re-running the runtime capture** (optional verification of the on-use Maps / lazy-Stripe fixes): from
+`app/`, `npm install` → `npm run build:web-packages` → `npm run dev:customer|venue|artist|business`;
+drive with headless Chromium (`ms-playwright/chromium_headless_shell-1228`, args `--no-sandbox
+--disable-gpu --disable-dev-shm-usage`, `ignoreHTTPSErrors`, block `localhost:7083/7087/7088/7090`).
+Expect: customer `/` and b2b find lists contact **neither** `maps.googleapis.com` nor `js.stripe.com`.
 
 ## Completed work
 
@@ -99,6 +81,11 @@ hang on the dead OIDC/API hosts). The capture script + method are captured in th
   `build:web-packages`) and drove customer `/` + `/find`, venue `/`, artist `/`, business `/` through a
   real headless Chromium, dumping cookies + localStorage + sessionStorage + IndexedDB per journey
   (evidence + decision gate below). Overturned the static "Stripe is lazy" assumption.
+- **Phase 2 (reduced)** — dead `sidebar_state` cookie removed (`2c31f44da`); consent machinery retained.
+- **Phase 3** — lazy Stripe `getStripe()` (`de4cda25f`); consent gating primitive `lib/consentGate.ts`
+  + 7 tests (`909af3791`); on-use Maps via scoped `providers/MapsProvider.tsx`, root `APIProvider`
+  removed from all three `main.tsx` (`a43e334cc`); storage manifest + drift-guard test (`86e4fba78`).
+- **Phase 4** — `app/web/shared/BROWSER_STORAGE.md` engineering inventory (mirrors the manifest).
 
 ## Phase 1 audit — static inventory (evidence, from code)
 
@@ -328,6 +315,28 @@ None yet.
   manifest, Phase 4 inventory doc.
 - Follow-up: consent gating primitive next; Maps handling pending the on-use-vs-hard-gate UX decision (see
   Next Steps). Nothing pushed.
+
+### 2026-08-10 — Phase 3 finished + Phase 4 done; engineering complete; pushed
+
+- Action: Synced to `origin/main` (3 behind; clean merge). Built the **consent gating primitive**
+  (`lib/consentGate.ts`: `registerConsentGated` + `registerConsentGatedScript`, 7 unit tests) — the
+  integration point future GA4/pixels register against. Made **Maps load on-use**: removed the root
+  `APIProvider` from all three `main.tsx` and added a scoped `providers/MapsProvider.tsx` mounted around
+  `FindPage` and `GoogleMap` only. Added the **storage manifest** (`lib/storageManifest.ts`) + a
+  **drift-guard test** that fails on any unclassified storage write in `app/web`. Wrote the Phase 4
+  engineering inventory `app/web/shared/BROWSER_STORAGE.md`. Committed each as a discrete change and
+  pushed the branch.
+- Evidence: four SPA builds green after each change; shared vitest 19/19 green; commits `909af3791`
+  (primitive), `a43e334cc` (on-use Maps), `86e4fba78` (manifest + drift guard), plus the Phase 4 doc +
+  this ledger. Maps consumers confirmed as only `FindPage` (customer) + `GoogleMap` (detail pages, all
+  apps); b2b find lists and landing/home render no Maps component, so they no longer contact Google.
+- Outcome: **Engineering for Phases 1–4 complete.** Banner retained and now genuinely gating; both
+  boot-time third parties (Stripe, Maps) load on use; every stored item classified + drift-guarded +
+  documented. Remaining is delivery (review → PR → merge → platform-sync) + the legal-gated tail.
+- Follow-up: `## Next Steps` — review, then PR/merge (full E2E tier) awaiting Tommy's go-ahead.
+- Decision (no block): implemented Maps as **functional-necessary-on-use** (the plan/research-preferred
+  durable shape, required in every branch); the additional `functional`-category consent gate is a
+  solicitor call, documented as a superset that wraps the same mount points — not asked, not blocking.
 
 ## Resume prompt
 

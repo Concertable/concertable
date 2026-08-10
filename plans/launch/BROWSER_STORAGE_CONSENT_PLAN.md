@@ -160,6 +160,10 @@ removed symbols.
 
 ### Phase 3 — Consent only where a real non-exempt optional technology exists, and it must gate loading
 
+**Status: COMPLETE.** Consent gating primitive (`lib/consentGate.ts`), lazy Stripe, on-use Maps
+(`providers/MapsProvider.tsx`), and the storage manifest + drift-guard test all shipped and green
+(see the ledger). The banner is retained and its toggles now gate via the primitive.
+
 Phase 1's runtime capture found **two** genuine non-exempt technologies loading at app boot, so this
 phase is live:
 
@@ -196,6 +200,9 @@ it changes a first-visit flow, by an E2E scenario that asserts the gated technol
 before consent and **does** after.
 
 ### Phase 4 — Engineering-owned storage inventory doc (feeds the solicitor policy)
+
+**Status: COMPLETE.** [`app/web/shared/BROWSER_STORAGE.md`](../../app/web/shared/BROWSER_STORAGE.md)
+ships, mirroring `storageManifest.ts` (its drift-guarded source of truth).
 
 Write the necessary/functional storage inventory as an engineering doc (generated from or checked
 against the Phase 3 manifest) at `app/web/shared/BROWSER_STORAGE.md` (or the lowest node that fully
