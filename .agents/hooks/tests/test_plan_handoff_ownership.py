@@ -131,6 +131,26 @@ class PlanHandoffOwnershipTests(unittest.TestCase):
 
         self.assertEqual({external.resolve()}, transcript_ledgers(records, self.root))
 
+    def test_user_cd_explicitly_targets_external_owner(self):
+        external_root = (self.root / "active-external-worktree").resolve()
+        external_root.mkdir()
+        external = external_root / "plans" / "EXTERNAL_PROGRESS.md"
+        external.parent.mkdir()
+        external.write_text(
+            f"- Worktree: `{external_root}`\n\n## Next Steps\n\nContinue external work.\n",
+            encoding="utf-8",
+        )
+        records = [{
+            "type": "response_item",
+            "payload": {
+                "type": "message",
+                "role": "user",
+                "content": f"cd {external_root}\nRead {external} and continue the plan.",
+            },
+        }]
+
+        self.assertEqual({external.resolve()}, transcript_ledgers(records, self.root))
+
 
 if __name__ == "__main__":
     unittest.main()
