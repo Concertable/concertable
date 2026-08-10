@@ -9,8 +9,8 @@
   do not need `Reunion.AspNetCore`. After the Auth `api/**` change merges, this work owns publication
   and platform-sync to terminal green.
 - Last reconciled: `2026-08-10` through merged `origin/main`
-  `b17fb07fe`, local merge `3574c04c3`, and platform pin `0.1.0-alpha.0.910`, plus the
-  domain-ownership correction described below. The worktree's plan-handoff hook matches current main.
+  `01561c093`, including the rendered-handoff matcher fix, and platform pin `0.1.0-alpha.0.910`, plus
+  the domain-ownership correction described below. The worktree's plan-handoff hook matches current main.
 
 ## Current state
 
@@ -329,6 +329,18 @@ finding IDs or dispositions exist. Later merge `e196f13e1` contains only already
   service tracks are terminal.
 
 ## Event log
+
+### 2026-08-10 - Rendered-handoff matcher fixed and landed
+
+- Action: Reproduced the repeated false rejection, replaced opaque byte-for-byte Markdown matching
+  with ordered semantic validation of the reason, collision guard, worktree, and final pointer, added
+  renderer-normalization regressions, and landed docs-only PR #481 before merging it into this worktree.
+- Evidence: 43/43 hook tests passed; docs/meta review found no issues; PR #481 merged as
+  `01561c093`; Auth is zero behind current `origin/main`; its review work order remains unchanged.
+- Outcome: Correct handoffs survive removed backticks/fences, whitespace normalization, full versus
+  truncated reason text, and terminal wrapping after a path hyphen, while bare, wrong, or non-final
+  pointers still fail closed.
+- Follow-up: run incremental review and PR preflight as `## Next Steps`.
 
 ### 2026-08-10 - Session-root handoff launcher unblocked
 
