@@ -211,6 +211,12 @@ class PlanHandoffStopTests(unittest.TestCase):
         result = evaluate(self.input_with_codex_transcript(f"Ready.\n\n```text\n{self.pointer()}\n```"))
         self.assertEqual({}, result)
 
+    def test_allows_markdown_hard_break_whitespace_in_pointer(self):
+        self.write_ledger("Run the repository code-review workflow, then open the PR.")
+        pointer = self.pointer().replace("\n", "  \n")
+        result = evaluate(self.input_with_codex_transcript(f"Ready.\n\n```text\n{pointer}\n```"))
+        self.assertEqual({}, result)
+
     def test_paraphrased_next_steps_does_not_pass(self):
         self.write_ledger("Run the repository code-review workflow, then open the PR.")
         result = evaluate(self.input_with_codex_transcript("Next steps are code review and a PR."))
@@ -237,20 +243,128 @@ class PlanHandoffStopTests(unittest.TestCase):
         result = evaluate(self.input_with_codex_transcript("Everything is complete."))
         self.assertEqual({}, result)
 
-    def test_inflight_owner_wait_needs_no_pointer(self):
-        self.write_ledger("Waiting for PR #123 to merge; its owner will surface this plan when ready.")
-        result = evaluate(self.input_with_codex_transcript("Waiting for PR #123."))
+    def test_inflight_owner_wait_reports_blocker_without_pointer(self):
+        self.write_ledger(
+            "Blocked: PR #123 has not merged.\n"
+            "Unblock action: The PR #123 owner must follow it to a terminal merge.\n"
+            "Resume when: GitHub reports PR #123 merged."
+        )
+        result = evaluate(
+            self.input_with_codex_transcript(
+                "Blocked: PR #123 has not merged.\n"
+                "Unblock action: The PR #123 owner must follow it to a terminal merge.\n"
+                "Resume when: GitHub reports PR #123 merged."
+            )
+        )
         self.assertEqual({}, result)
 
-    def test_registered_downstream_wait_needs_no_pointer(self):
+    def test_registered_downstream_wait_reports_blocker_without_pointer(self):
         self.write_ledger(
-            "Checkpoints 6-7 remain blocked on the owner's platform-sync PR. The owner ledger lists "
-            "this ledger under `## Downstream handoffs`. Do not poll the dependency or emit this "
-            "plan's resume prompt while blocked; the owner must surface it when ready.\n\n"
-            "When the owner surfaces the green gate, implement checkpoints 6-7."
+            "Blocked: Checkpoints 6-7 require the owner's platform-sync PR to merge.\n"
+            "Unblock action: The owner ledger must follow the sync and dispatch this dependent.\n"
+            "Resume when: The owner records the merged sync in this ledger.\n\n"
+            "The owner ledger lists this ledger under `## Downstream handoffs`."
         )
-        result = evaluate(self.input_with_codex_transcript("The dependent plan is still blocked."))
+        result = evaluate(
+            self.input_with_codex_transcript(
+                "Blocked: Checkpoints 6-7 require the owner's platform-sync PR to merge.\n"
+                "Unblock action: The owner ledger must follow the sync and dispatch this dependent.\n"
+                "Resume when: The owner records the merged sync in this ledger."
+            )
+        )
         self.assertEqual({}, result)
+
+    def test_blocker_report_must_include_every_actionable_value(self):
+        self.write_ledger(
+            "Blocked: Commit abc is unavailable.\n"
+            "Unblock action: Push a branch containing commit abc.\n"
+            "Resume when: git cat-file resolves commit abc."
+        )
+        result = evaluate(self.input_with_codex_transcript("Commit abc is unavailable."))
+        self.assertEqual("block", result["decision"])
+        self.assertIn("Push a branch containing commit abc.", result["reason"])
+        self.assertIn("git cat-file resolves commit abc.", result["reason"])
+
+    def test_blocked_plan_pointer_is_rejected(self):
+        self.write_ledger(
+            "Blocked: Commit abc is unavailable.\n"
+            "Unblock action: Push a branch containing commit abc.\n"
+            "Resume when: git cat-file resolves commit abc."
+        )
+        message = (
+            "Blocked: Commit abc is unavailable.\n"
+            "Unblock action: Push a branch containing commit abc.\n"
+            f"Resume when: git cat-file resolves commit abc.\n\n{self.pointer()}"
+        )
+        result = evaluate(self.input_with_codex_transcript(message))
+        self.assertEqual("block", result["decision"])
+        self.assertIn("remove the blocked plan's continuation pointer", result["reason"])
+
+    def test_reports_blocker_contract_and_actionable_pointer_together(self):
+        blocked = self.root / "plans" / "launch" / "OWNER_PROGRESS.md"
+        blocked_plan = blocked.with_name("OWNER_PLAN.md")
+        active = self.root / "plans" / "launch" / "DEPENDENT_PROGRESS.md"
+        active_plan = active.with_name("DEPENDENT_PLAN.md")
+        blocked_plan.write_text("# Plan\n", encoding="utf-8")
+        active_plan.write_text("# Plan\n", encoding="utf-8")
+        blocker = (
+            "Blocked: The package is not published.\n"
+            "Unblock action: Publish and verify the package.\n"
+            "Resume when: The production feed restores it."
+        )
+        blocked.write_text(
+            f"- Worktree: `{self.root}`\n\n## Next Steps\n\n{blocker}\n",
+            encoding="utf-8",
+        )
+        active.write_text(
+            f"- Worktree: `{self.root}`\n\n## Next Steps\n\nOpen the dependent PR.\n",
+            encoding="utf-8",
+        )
+        active_pointer = (
+            f"cd {self.root}\n"
+            "Read @plans/launch/DEPENDENT_PLAN.md and "
+            "@plans/launch/DEPENDENT_PROGRESS.md and do what its `## Next Steps` says."
+        )
+        transcript = self.root / "mixed-handoff-transcript.jsonl"
+        records = [
+            {
+                "type": "response_item",
+                "payload": {
+                    "type": "custom_tool_call",
+                    "name": "exec",
+                    "input": (
+                        'const patch = "*** Begin Patch\\n*** Update File: '
+                        'plans/launch/OWNER_PROGRESS.md\\n*** Update File: '
+                        'plans/launch/DEPENDENT_PROGRESS.md\\n*** End Patch"; '
+                        f'const options = {{workdir: "{self.root}"}};'
+                    ),
+                },
+            }
+        ]
+        transcript.write_text(
+            "\n".join(json.dumps(record) for record in records),
+            encoding="utf-8",
+        )
+        data = {
+            "cwd": str(self.root),
+            "transcript_path": str(transcript),
+            "last_assistant_message": "Implementation is complete.",
+        }
+
+        result = evaluate(data)
+
+        self.assertEqual("block", result["decision"])
+        self.assertIn("Blocked: The package is not published.", result["reason"])
+        self.assertIn(active_pointer, result["reason"])
+
+        data["last_assistant_message"] = f"{blocker}\n\n```text\n{active_pointer}\n```"
+        self.assertEqual({}, evaluate(data))
+
+    def test_legacy_blocker_requires_structured_contract(self):
+        self.write_ledger("Waiting for PR #123 to merge; its owner will surface this plan when ready.")
+        result = evaluate(self.input_with_codex_transcript("Waiting for PR #123."))
+        self.assertEqual("block", result["decision"])
+        self.assertIn("`Unblock action:`", result["reason"])
 
     def test_blocked_work_without_registered_suppression_still_needs_pointer(self):
         self.write_ledger(
@@ -258,6 +372,95 @@ class PlanHandoffStopTests(unittest.TestCase):
         )
         result = evaluate(self.input_with_codex_transcript("Checkpoint 6 is blocked."))
         self.assertEqual("block", result["decision"])
+
+    def test_patch_claims_targets_without_claiming_referenced_dependency_ledgers(self):
+        typed_result = self.root / "plans" / "typed-result"
+        unions = self.root / "plans" / "dotnet-11"
+        owner = typed_result / "REUNION_INTEGRATION_PROGRESS.md"
+        b2b = typed_result / "B2B_PROGRESS.md"
+        workflow_unions = unions / "B2B_WORKFLOW_UNIONS_PROGRESS.md"
+        for ledger in (owner, b2b, workflow_unions):
+            ledger.parent.mkdir(parents=True, exist_ok=True)
+            ledger.with_name(ledger.name.replace("_PROGRESS.md", "_PLAN.md")).write_text(
+                "# Plan\n", encoding="utf-8"
+            )
+        owner.write_text(
+            "## Next Steps\n\nCreate the integration worktree.\n",
+            encoding="utf-8",
+        )
+        b2b_steps = (
+            "Blocked: ReUnion platform sync has not merged.\n"
+            "Unblock action: The owner at `plans/typed-result/REUNION_INTEGRATION_PROGRESS.md` "
+            "must merge it.\n"
+            "Resume when: Main contains the ReUnion platform pin."
+        )
+        b2b.write_text(f"## Next Steps\n\n{b2b_steps}\n", encoding="utf-8")
+        union_steps = (
+            "Blocked: B2B delivery is not terminal.\n"
+            "Unblock action: The owner at `plans/typed-result/B2B_PROGRESS.md` must finish it.\n"
+            "Resume when: Main contains the B2B work."
+        )
+        workflow_unions.write_text(
+            f"## Next Steps\n\n{union_steps}\n",
+            encoding="utf-8",
+        )
+        transcript = self.root / "dependency-chain-transcript.jsonl"
+        records = [
+            {
+                "type": "response_item",
+                "payload": {
+                    "type": "message",
+                    "role": "user",
+                    "content": "Create the workflow-unions plan.",
+                },
+            },
+            {
+                "type": "response_item",
+                "payload": {
+                    "type": "custom_tool_call",
+                    "name": "exec",
+                    "input": (
+                        'const patch = "*** Begin Patch\\n*** Update File: '
+                        'plans/typed-result/B2B_PROGRESS.md\\n'
+                        '+Unblock action: The owner at '
+                        '`plans/typed-result/REUNION_INTEGRATION_PROGRESS.md` must merge it.\\n'
+                        '*** End Patch"; const options = {workdir: "'
+                        + str(self.root)
+                        + '"};'
+                    ),
+                },
+            },
+            {
+                "type": "response_item",
+                "payload": {
+                    "type": "custom_tool_call",
+                    "name": "exec",
+                    "input": (
+                        'const patch = "*** Begin Patch\\n*** Update File: '
+                        'plans/dotnet-11/B2B_WORKFLOW_UNIONS_PROGRESS.md\\n'
+                        '+Unblock action: The owner at `plans/typed-result/B2B_PROGRESS.md` '
+                        'must finish it.\\n*** End Patch"; const options = {workdir: "'
+                        + str(self.root)
+                        + '"};'
+                    ),
+                },
+            },
+        ]
+        transcript.write_text(
+            "\n".join(json.dumps(record) for record in records),
+            encoding="utf-8",
+        )
+        claimed = transcript_ledgers(records, self.root)
+        self.assertEqual({b2b.resolve(), workflow_unions.resolve()}, claimed)
+
+        result = evaluate(
+            {
+                "cwd": str(self.root),
+                "transcript_path": str(transcript),
+                "last_assistant_message": f"{union_steps}\n\n{b2b_steps}",
+            }
+        )
+        self.assertEqual({}, result)
 
     def test_relative_reference_resolves_only_against_its_tool_workdir(self):
         alternate_root = (Path(self.temp.name) / "unrelated-main-checkout").resolve()
