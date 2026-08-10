@@ -5,9 +5,9 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `958c05c5a3f51d312b25e1570b36e06a577615de`  _(2026-08-10)_
+**Reviewed up to commit:** `c021d26c9de0f65f291b319e38668c40844bc984`  _(2026-08-10)_
 
-**Security-reviewed up to commit:** `5cfdb9427f1896351c72b5e829d105b637fcd390`  _(2026-08-10)_
+**Security-reviewed up to commit:** `c021d26c9de0f65f291b319e38668c40844bc984`  _(2026-08-10)_
 
 > Range reviewed: `d916e95cf..5cfdb9427` (43 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -29,3 +29,12 @@ No new findings. The three finding fixes preserve repository exception semantics
 duplicate-key races to the existing typed conflicts, discard rejected tracked inserts, and cover
 success, conflict, fault, and cancellation paths. The focused Preference and Review integration
 wrappers pass against fresh SQL containers.
+
+## Incremental review — 2026-08-10 (current-main reconciliation)
+
+> Range reviewed: `958c05c5a..c021d26c9` (39 commits).
+
+No issues found. Checked correctness, security-sensitive paths, microservice isolation, module
+boundaries, seeding, C# conventions, and test coverage of changed paths. The only merge conflict was
+Customer central package management; the resolution takes platform `.910`, preserves the branch's
+required `Shouldly` ownership, and accepts main's removal of unused `FluentResults`.

@@ -159,12 +159,27 @@ and their verification checkpoints; no correctness, isolation, boundary, seeding
 changed-path coverage, or security-sensitive-path finding was added. The review watermark now names
 the exact verified work head.
 
+Current `origin/main` `aab321bd2` is merged as `c021d26c9`, leaving the branch 0 commits behind while
+PR #425 remains unchanged at `e60219f7d`. The incoming product delta is the terminal Ticket slice,
+platform `.910`, and AppHost/Search hosting updates. The sole conflict was Customer central package
+management; its resolution uses `.910`, retains the scoped integration projects' `Shouldly` version,
+and accepts main's removal of unused `FluentResults`. The incremental native, security, architecture,
+and coverage review of `958c05c5a..c021d26c9` is clean and both review watermarks name that merge
+head.
+
+The deterministic current-main gate is green: the Release solution builds with 0 errors and 8
+existing warnings; the five scoped unit suites pass 80/80; Shared.Api passes 60/60; the isolated
+36-project Customer package-consumer carve builds with 0 errors and its temporary directory was
+removed; scoped carrier, validation, excluded Ticket/Concert/Payment, legacy namespace, and
+whitespace inventories pass. The mandatory fresh-container Docker health check timed out after five
+minutes and a subsequent read-only `docker ps` also timed out. Docker Desktop has one non-responding
+process, so no current-main integration suite was started and the two-leg PR update remains blocked.
+
 ## Next Steps
 
-Fetch and reconcile the branch with current `origin/main`, inspect the incoming delta, and rerun every
-affected local gate. Incrementally review the reconciliation from watermark `958c05c5a`, address any
-new finding serially until clean, and update PR #425 through the plan-managed two-leg push only when
-the exact final work head is current and green.
+Blocked: Docker Desktop's daemon does not answer the mandatory fresh-container data-path check or `docker ps`, so the current-main integration gate cannot run and PR #425 must remain at `e60219f7d`.
+Unblock action: Restart Docker Desktop and require `scripts/docker-health.ps1` to pass once; then run the five Release integration wrappers, confirm 74/74 and an empty Docker inventory, reconcile any new base advance, incrementally review it, and perform the plan-managed two-leg push.
+Resume when: Docker Desktop shows Running and the fresh-container HTTP data round trip is stable.
 
 ## Completed work
 
@@ -960,3 +975,20 @@ watermark from ledger prose. A fresh full `code-review` of the committed branch 
 - Outcome: The review work order has no open finding and is stamped at the exact verified work head.
 - Follow-up: Commit this review checkpoint, then fetch and reconcile current `origin/main` before the
   final affected-gate run.
+
+### 2026-08-10 - current-main gate review-clean but Docker-blocked
+
+- Action: Fetched and merged current `origin/main`, resolved Customer central package management,
+  ran every Docker-independent affected gate, attempted the mandatory Docker preflight, and
+  incrementally reviewed the full reconciliation range including security-sensitive incoming paths.
+- Evidence: main `aab321bd2` merged as `c021d26c9`; branch 0 behind; Release solution 0 errors and 8
+  existing warnings; scoped units 80/80; Shared.Api 60/60; isolated 36-project carve 0 errors;
+  inventories and whitespace clean. Review range `958c05c5a..c021d26c9` spans 39 commits and adds no
+  finding; both review markers are `c021d26c9de0f65f291b319e38668c40844bc984`. The five-minute
+  fresh-container health check and a 60-second `docker ps` both timed out; one Docker Desktop process
+  reports non-responsive; no integration suite started.
+- Outcome: The exact current-main head is build-, unit-, carve-, audit-, and review-clean, but final
+  integration verification is environment-blocked. PR #425 remains open and unchanged at
+  `e60219f7d` and no push was attempted.
+- Follow-up: Restart Docker Desktop, require one green data-path preflight, complete the five Release
+  integration wrappers, then recheck base currency and perform the verified two-leg PR update.
