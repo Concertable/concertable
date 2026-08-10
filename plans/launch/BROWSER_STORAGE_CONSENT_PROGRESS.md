@@ -30,30 +30,45 @@ reopened roadmap line and the merged `Docs/launch_cookie-storage-audit` PR #469.
 
 ## Next Steps
 
-Phase 1 is done and the decision gate (below) is set. Start **Phase 2 — remove what the audit shows
-is unjustified**, each removal citing its inventory line in the commit message:
+> **DECISION CORRECTED (2026-08-10, Tommy) — the banner is RETAINED, not removed.** The Phase-1
+> decision gate concluded "consent machinery is decorative → remove," but that rested on a false
+> premise: it read "no analytics/marketing tech exists *today*" as "none is *coming*." It is coming —
+> analytics + marketing/advertising tracking is on the commercial roadmap, and the closest comparable
+> (GigPig, a UK venue↔artist booking marketplace) ships the exact analytics+marketing banner; Ticketmaster
+> runs a full OneTrust preference centre. So the banner is **infrastructure ahead of planned tech**, not
+> dead code. Under UK PECR it is *required* the moment that tech loads. The real defect is that the
+> toggles currently **gate nothing** (`hasConsent`/`onConsentChange` have zero consumers) — the fix is to
+> make them actually gate, not to delete them.
+>
+> **The banner removal was applied and then fully reverted** — the working tree is back to the banner +
+> all consent machinery intact, plus only the one genuinely-dead removal kept (the `sidebar_state`
+> cookie). See the event log entry below.
 
-1. **Remove the write-only `sidebar_state` cookie** — delete the `document.cookie` write in
-   `app/web/shared/src/components/ui/sidebar.tsx:85` (never read; static-definitive). Decide from
-   evidence whether sidebar-open persistence is even wanted; the runtime capture gives no reason to
-   re-add it, so drop persistence unless Tommy wants it.
-2. **Remove the decorative consent machinery** — the analytics/marketing banner gates nothing and no
-   such technology loads anywhere (runtime-confirmed: accepting set no new storage; zero analytics
-   hosts). Remove `consent.ts` + `consent.test.ts`, `ConsentProvider.tsx`, `CookieConsentBanner.tsx`,
-   `CookiePreferencesDialog.tsx`, `ManageCookiesButton.tsx`, the wiring in all four `main.tsx`, the
-   `Footer.tsx` "Manage cookies" affordance, **and** the E2E/test scaffold that exists only to
-   suppress it (`CookieConsent.feature`, `CookieConsentPage.cs`, `CookieConsentSteps.cs`,
-   `CookieConsentState.cs`, and the `establishDeniedCookieConsent` plumbing in both B2B + Customer
-   `Browser.cs`). **Precondition:** this is correct **only because Phase 3 replaces consent with
-   lazy/functional-on-use loading** (see decision gate) — the real non-exempt boot-time third parties
-   (Stripe, Maps) are handled by not-loading-until-used, not by a banner. If the solicitor later rules
-   lazy Stripe/Maps still need a consent gate, that gate is built fresh in Phase 3 against the manifest
-   (it must gate *those* technologies, never phantom analytics/marketing) — so keep the removal and the
-   Phase 3 gate design separate.
-3. Gate each removal on: four SPA builds green; shared vitest green (with `consent.test.ts` gone); the
-   B2B + Customer UI E2E projects compile and their fixtures no longer reference removed symbols.
-4. Then **Phase 3** (lazy Stripe init + lazy Maps + the durable storage manifest/drift-guard) and
-   **Phase 4** (engineering inventory doc). Phase 3 scope now includes **Stripe** — see the discovery.
+**Now (Phase 2, reduced):** the only audit-confirmed-dead item is done — the write-only `sidebar_state`
+cookie write is removed from `app/web/shared/src/components/ui/sidebar.tsx` (never read; static-definitive;
+persistence dropped, no reason to re-add). That single change is in the tree, verified against all four
+SPA builds. **The consent machinery is kept.**
+
+**Research DONE → `plans/launch/CONSENT_RESEARCH.md`** (competitor scan + UK legal baseline, all three
+passes compiled). Key outcomes: the law moved (DUAA 2025 amended PECR reg 6, in force 5 Feb 2026; ICO
+fine ceiling now £17.5m; GA4 still needs consent as it shares with Google); ICO actively reprimands the
+exact "loads-before-consent" defect we have (Sky Betting, Sept 2024); our closest peers (GigPig,
+GigXchange) run **custom** banners, big incumbents (Ticketmaster Business, Universe, AXS) run **OneTrust**.
+**Recommendation: keep the banner and make it a real custom gate** in `app/web/shared` (we control all
+script loading, so blocking-until-consent is cheap here), with a lightweight CMP as the only fallback.
+**Open decision for Tommy: custom real-gate (recommended) vs lightweight CMP vs enterprise OneTrust** —
+this gates the start of Phase 3. The production-ready work is then:
+1. **Make the banner actually gate** — a consent-before-load primitive keyed off `hasConsent(category)` /
+   `onConsentChange`, so analytics/marketing scripts load only after consent and react to later changes.
+   Decide custom-vs-CMP and exact categories from the research.
+2. **Make Stripe + Google Maps load lazily** (the real PECR fix — both load at *boot*, before consent/
+   checkout today): Stripe only when a checkout/payment component mounts (then its cookies are
+   strictly-necessary/exempt, not gated); Maps only on the routes that use it. Independent of the banner.
+3. **Durable storage manifest + drift-guard test** so new storage must be classified to compile-green.
+4. **Phase 4** — engineering inventory doc generated from the manifest.
+
+Reject-all parity, no pre-ticked boxes, and consent records are compliance requirements to verify against
+the legal-research output.
 
 **Re-running the runtime capture** (for Phase 2/3 verification): `npm install` in `app/`, then
 `npm run build:web-packages`, then `npm run dev:customer|venue|artist|business` from `app/`; drive with
@@ -175,7 +190,7 @@ clicking **Accept all**. Scope: anonymous journey only (per agreed capture scope
 | Item | Owner | Final class | Phase | Basis |
 |---|---|---|---|---|
 | `sidebar_state` cookie | first-party | **Unused** (write-only, never read) | **2 — remove** | static: no read path in a client SPA |
-| consent machinery + analytics/marketing categories (`consent.ts`, provider, banner, dialog, `ManageCookiesButton`, all `main.tsx` wiring, `Footer` affordance, E2E suppression scaffold) | first-party | **Gates nothing / decorative** | **2 — remove** | runtime: accept set no storage; zero analytics tech |
+| consent machinery + analytics/marketing categories (`consent.ts`, provider, banner, dialog, `ManageCookiesButton`, all `main.tsx` wiring, `Footer` affordance, E2E suppression scaffold) | first-party | **RETAIN — infra ahead of roadmapped analytics/marketing** (was "decorative → remove"; corrected — see Next Steps) | **3 — make it actually gate** | analytics/marketing tracking is on the commercial roadmap; UK PECR requires the banner once it loads; peer marketplaces ship the same |
 | Stripe.js eager `loadStripe` at module top-level → `__stripe_mid`/`__stripe_sid`/`m` | third-party (Stripe) | **Non-exempt at boot** (loads before any payment) | **3 — make lazy** (init at checkout only) | runtime: cookies set on anonymous landing |
 | Google Maps JS at boot (`maps.googleapis.com`) | third-party (Google) | **Non-exempt optional, loads at boot** (no stored data) | **3 — lazy-load / functional-on-use** | runtime: contacted at boot, sets no storage |
 | durable storage manifest + drift-guard test | first-party (new) | governance | **3 — build** | plan's real deliverable |
@@ -184,15 +199,17 @@ clicking **Accept all**. Scope: anonymous journey only (per agreed capture scope
 | Stripe cookies **once lazy + checkout-scoped** | third-party (Stripe) | **Necessary (exempt)** — payment/fraud | **4 — document** | after Phase 3 makes them fire only at checkout |
 | `cookie-consent` record | first-party | consent record itself | n/a | removed with the banner in Phase 2 (no consent decision to store once the decorative banner is gone) |
 
-**Decision gate summary.** The real non-exempt, boot-time third parties are **Stripe and Google Maps**
-— *not* the analytics/marketing the banner asks about. The durable, plan-preferred fix is
-**functional-on-use / lazy loading** for both (load Stripe only at checkout; load Maps only on the
-find/autocomplete routes), which removes all non-essential boot-time third-party contact and makes the
-decorative banner removable outright (Phase 2). The **only** question left for the solicitor is narrow:
-whether lazy-loaded, use-scoped Stripe/Maps still require a consent gate on top of being loaded only
-on use — if yes, Phase 3 builds that gate fresh against the manifest, gating *those* technologies
-(never phantom analytics/marketing). This is a narrowing of the Month-4 legal input, not a blocker on
-Phases 2–4.
+**Decision gate summary (CORRECTED).** Two independent things were conflated in the first draft:
+(1) the boot-time third parties **Stripe and Google Maps** load before consent/use — the durable fix is
+**lazy / functional-on-use loading** (Stripe only at checkout; Maps only on find/autocomplete routes),
+which is unchanged and correct; and (2) the **analytics/marketing consent banner**, which the first draft
+wrongly concluded should be deleted. It is **retained**: analytics/marketing tracking is roadmapped, peer
+UK marketplaces ship the same banner, and UK PECR mandates it once that tech loads. The banner's genuine
+defect is that its toggles gate nothing — Phase 3 makes them **actually gate** (consent-before-load keyed
+off `hasConsent`), and decides custom-banner-vs-CMP + exact categories from the competitor/legal research
+now in flight. Neither the solicitor input nor the tracking-vendor choice blocks the engineering: the
+gating primitive + lazy Stripe/Maps + manifest are built now; wiring a specific analytics vendor and the
+final policy copy are the tail.
 
 ## Verification
 
@@ -267,6 +284,25 @@ None yet.
   2 remove; eager Stripe + boot-time Maps → Phase 3 lazy/on-use; OIDC/theme/lazy-Stripe → Phase 4
   document. Tree clean (dev-server route-tree regenerations reverted); builds at baseline.
 - Follow-up: Phase 2 removal per the updated `## Next Steps`.
+
+### 2026-08-10 — Phase 2 removal applied then reverted; banner-removal decision corrected; research launched
+
+- Action: Synced worktree to `origin/main` (was 8 behind / 3 ahead; clean merge). Applied the Phase-2
+  removal as written (deleted consent machinery across `app/web` + the E2E suppression scaffold; rewired
+  all four `main.tsx` + `Footer`; removed the `sidebar_state` cookie), verified green — four SPA builds ✓,
+  `@concertable/web` vitest ✓ (empty-suite handled), both UI E2E projects compile ✓. Tommy then flagged
+  that analytics/marketing tracking IS on the commercial roadmap, which invalidates the "decorative →
+  remove" premise. **Reverted every consent-machinery deletion/edit** (`git checkout HEAD --` on all of
+  them) and the incidental `routeTree.gen.ts` regens; **kept only** the dead `sidebar_state` cookie
+  removal. Launched three background research agents (UK gig marketplaces; ticketing platforms + CMPs; UK
+  PECR/ICO legal baseline + Consent-Mode + build-vs-buy) to ground the production-ready design.
+- Evidence: `git status` after revert shows only `app/web/shared/src/components/ui/sidebar.tsx` modified;
+  `CookieConsentBanner.tsx`/`consent.ts` back in `git ls-files`. Early findings: GigPig ships an
+  analytics+marketing banner; Ticketmaster runs OneTrust (Necessary/Analytics/Advertising/Functional).
+- Outcome: **Banner retained.** Phase 2 reduced to the single dead-cookie removal. The banner's real
+  defect (toggles gate nothing) moves to Phase 3 "make it actually gate," design pending research.
+- Follow-up: compile the three research reports into a repo doc + recommendation, then implement Phase 3
+  (gating primitive + lazy Stripe/Maps + storage manifest).
 
 ## Resume prompt
 
