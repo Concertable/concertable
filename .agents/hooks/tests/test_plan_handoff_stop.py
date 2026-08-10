@@ -224,6 +224,45 @@ class PlanHandoffStopTests(unittest.TestCase):
         result = evaluate(self.input_with_codex_transcript(f"Ready.\n\n{handoff}"))
         self.assertEqual({}, result)
 
+    def test_allows_rendered_plain_text_handoff_with_full_untruncated_reason(self):
+        next_steps_body = (
+            "Run incremental code review over the commits after the existing review watermark, "
+            "including the domain-ownership correction. Address every clear finding, refresh "
+            "current-main state, and run the read-only PR preflight. Do not push or open a PR "
+            "without instruction."
+        )
+        self.write_ledger(next_steps_body)
+        rendered_pointer = self.pointer().replace("`", "")
+        message = (
+            f"Why: {self.ledger.name} owns unfinished work from this turn: {next_steps_body}\n\n"
+            "Only run this continuation if no agent or session is already working in "
+            f"{self.root}.\n\n{rendered_pointer}"
+        )
+        result = evaluate(self.input_with_codex_transcript(message))
+        self.assertEqual({}, result)
+
+    def test_normalized_handoff_still_must_end_with_pointer(self):
+        self.write_ledger("Run the repository code-review workflow, then open the PR.")
+        rendered_handoff = self.handoff().replace("`", "").replace("text\n", "").replace("\n", " ")
+        result = evaluate(
+            self.input_with_codex_transcript(f"{rendered_handoff}\n\nLet me know.")
+        )
+        self.assertEqual("block", result["decision"])
+
+    def test_allows_renderer_line_wrap_after_path_hyphen(self):
+        declared_worktree = self.root.parent / "typed-result_auth-outcomes"
+        declared_worktree.mkdir()
+        self.write_ledger("Run the repository code-review workflow, then open the PR.", declared_worktree)
+        rendered_handoff = (
+            self.handoff()
+            .replace("`", "")
+            .replace("```text\n", "")
+            .replace("\n```", "")
+            .replace("auth-outcomes", "auth-\noutcomes")
+        )
+        result = evaluate(self.input_with_codex_transcript(rendered_handoff))
+        self.assertEqual({}, result)
+
     def test_bare_pointer_does_not_pass_without_reason_and_collision_warning(self):
         self.write_ledger("Open the PR after review.")
         result = evaluate(
