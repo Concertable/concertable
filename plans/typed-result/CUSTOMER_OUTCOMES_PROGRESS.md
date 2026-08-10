@@ -119,16 +119,32 @@ absence, persistence, and collection semantics. Missing User after its owning sa
 provider, cancellation, and identity faults remain exceptions. Shared HTTP exception policy and
 other Customer modules stay with their owners or the future global audit.
 
+Phase 6 is implemented and locally verified in this commit. Review owns the Ticket lookup once,
+maps missing/period/reviewed/star-range outcomes to its operation error, and keeps collaborator,
+provider, identity, and cancellation faults exceptional. All four custom `IReviewValidator` methods
+return structured `ValidationResult`; Artist/Venue capability endpoints collapse those results to
+their existing booleans. `ReviewEntity.Create` returns structured star validation, with the seed
+factory explicitly enforcing its valid-data invariant. The exact public HTTP contracts remain
+unchanged.
+
+The current candidate passes Review unit 40/40, all five scoped unit suites 77/77, Shared.Api 60/60,
+and all five integration wrappers 74/74 across eight projects. The Release solution builds with 0
+errors and 7 existing warnings, and the isolated 36-project Customer carve builds with 0 errors.
+Direct-package, DI-validator, carrier, nullability, collection, terminal, excluded-path, domain-
+exception, whitespace, and Docker-cleanup inventories pass. The first Review integration attempt
+exposed current platform `.903` loading `Reunion.Errors` `.2` beside branch-owned `.1`; direct `.2`
+ownership plus migration of the three branch-owned unions to the `.2` definition factories fixed the
+runtime incompatibility, and the complete integration gate then passed. PR #425 remains unchanged at
+`e60219f7d`; the freshly observed `origin/main` is nine commits ahead and is intentionally reserved
+for the required post-review reconciliation.
+
 ## Next Steps
 
-Implement Phase 6 without changing PR #425's remote head: add direct `Reunion.Validation` ownership,
-convert every `IReviewValidator` validation method to `ValidationResult`, make
-`ReviewEntity.Create` own its typed star-range validation, map it to `CreateReviewError.Invalid`,
-preserve the single Ticket lookup, public booleans, and exact HTTP contracts, and add the planned
-domain, structured-payload, short-circuit, query-count, and scoped-inventory coverage. Run the complete
-Phase 6 unit/integration/Shared.Api/Release/carve/scope gate, commit it, complete fresh code review plus
-any finding fixes and incremental review, then update PR #425 through the plan-managed two-leg push
-only after a final current-main reconciliation.
+Run a fresh full `/review` over the committed Phase 6 candidate, record and fix every actionable
+finding in its own verified commit, and run incremental review until clean. Then fetch and reconcile
+the branch with current `origin/main`, inspect the incoming delta, rerun every affected local gate,
+incrementally review the reconciliation, and update PR #425 through the plan-managed two-leg push only
+when the exact final work head is current and green.
 
 ## Completed work
 
@@ -819,3 +835,22 @@ watermark from ledger prose. A fresh full `code-review` of the committed branch 
   progress.
 - Follow-up: Fetch and merge current main, inspect the base delta, run any affected local gate, then
   preflight, push, and open the PR.
+
+### 2026-08-10 - Phase 6 Review validation outcomes implemented and verified
+
+- Action: Added direct `Reunion.Validation` ownership; converted every custom Review DI validator to
+  structured validation; moved Ticket lookup composition into `ConcertReviewService`; made
+  `ReviewEntity.Create` return star-range validation; mapped it to `CreateReviewError.Invalid`; and
+  added domain, definition, short-circuit, query-count, capability, fault, and cancellation coverage.
+- Evidence: This commit passes Review unit 40/40, the five scoped unit suites 77/77, Shared.Api 60/60,
+  the five integration wrappers 74/74 across eight projects, the Release solution build with 0
+  errors and 7 existing warnings, the 36-project isolated Customer carve with 0 errors, all scoped
+  architecture/ownership inventories, `git diff --check`, and an empty post-test Docker inventory.
+  The initial Review integration failure was a deterministic `.1`/`.2` `Reunion.Errors` runtime
+  mismatch; direct `.2` ownership and migration of the three branch-owned union definitions fixed it.
+- Outcome: Phase 6 implementation and its complete local verification contract are green in this
+  unpushed checkpoint. PR #425 remains at `e60219f7d`; `origin/main` is nine commits ahead and awaits
+  the required post-review reconciliation.
+- Follow-up: Run fresh full `/review`, fix and incrementally review any findings, then reconcile
+  current main, rerun affected gates, incrementally review the merge, and perform the verified two-leg
+  PR update.
