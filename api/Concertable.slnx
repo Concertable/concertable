@@ -90,7 +90,7 @@
   </Folder>
   <Folder Name="/Customer/">
     <Project Path="Concertable.Customer/src/Concertable.Customer.AppHost/Concertable.Customer.AppHost.csproj" />
-    <Project Path="Concertable.Customer/src/Concertable.Customer.AppHost.Extensions/Concertable.Customer.AppHost.Extensions.csproj" />
+    <Project Path="Concertable.Customer/src/Concertable.Customer.Hosting/Concertable.Customer.Hosting.csproj" />
     <Project Path="Concertable.Customer/src/Concertable.Customer.Web/Concertable.Customer.Web.csproj" />
   </Folder>
   <Folder Name="/Customer/DataAccess/">
