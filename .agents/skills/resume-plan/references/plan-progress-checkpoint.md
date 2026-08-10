@@ -130,8 +130,9 @@ end state; it does not replace any transition checkpoint that should already exi
 
 Report the workflow result only after the checkpoint is durable, having written the immediate next
 action into the ledger's `## Next Steps` section so it is the durable source of truth. If actionable
-plan-managed work remains, end with exactly one prompt, and it is ONLY the pointer — nothing
-plan-specific. Literally:
+plan-managed work remains, end with one pointer per independently executable ledger, and each prompt is
+ONLY the pointer — nothing plan-specific. Delivery-gated local preparation is actionable; an
+implementation-blocked ledger gets no pointer. Literally:
 
 ```
 cd <absolute-worktree-path>
