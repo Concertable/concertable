@@ -8,8 +8,8 @@
   repository-signature and payload-provenance verified, and clean-restored with `Reunion` and
   `Reunion.Errors` `.1` from NuGet.org only. Payment `0.1.0-alpha.0.894` publication and platform-sync
   PR #463 are terminal. PR #282 remains excluded.
-- Last reconciled: 2026-08-10 against `origin/main` `483350124`, local head `dcb5946e2`, PR #425 head
-  `e60219f7d`, and terminal production evidence from the Reunion integration owner
+- Last reconciled: 2026-08-10 against `origin/main` `d916e95cf`, this current-main merge, PR #425
+  head `e60219f7d`, and terminal production evidence from the Reunion integration owner
 
 ## Current state
 
@@ -105,8 +105,9 @@ Review request validator is FluentValidation and remains outside this conversion
 The Phase 6 package gate is open. Production `Reunion.Validation` `0.1.0-alpha.1` comes from merged
 source `1500270`, carries a valid NuGet.org repository signature, byte-matches the verified candidate
 across all nine non-signature entries, and clean-restores with exact `Reunion` and `Reunion.Errors`
-`.1`. The clean worktree is 59 commits behind current `origin/main` `483350124`; those incoming
-commits include the terminal Payment publication/platform sync and must be merged before Phase 6 code.
+`.1`. Current `origin/main` `d916e95cf` is merged in this checkpoint. The only conflict was Customer
+central package management; its resolution keeps platform pin `.903`, the branch's direct Reunion and
+Shouldly ownership, and one entry per package. PR #425 remains unchanged at `e60219f7d`.
 
 The PR #470 domain-outcome audit found one branch-owned classification correction. The only
 production `DomainException` in the five-module scope is `ReviewEntity.Create` rejecting stars outside
@@ -120,9 +121,8 @@ other Customer modules stay with their owners or the future global audit.
 
 ## Next Steps
 
-Fetch and merge current `origin/main` into the clean branch and reconcile the owned Review paths
-without changing PR #425's remote head. Then implement Phase 6: add direct `Reunion.Validation`
-ownership, convert every `IReviewValidator` validation method to `ValidationResult`, make
+Implement Phase 6 without changing PR #425's remote head: add direct `Reunion.Validation` ownership,
+convert every `IReviewValidator` validation method to `ValidationResult`, make
 `ReviewEntity.Create` own its typed star-range validation, map it to `CreateReviewError.Invalid`,
 preserve the single Ticket lookup, public booleans, and exact HTTP contracts, and add the planned
 domain, structured-payload, short-circuit, query-count, and scoped-inventory coverage. Run the complete
@@ -399,6 +399,16 @@ watermark from ledger prose. A fresh full `code-review` of the committed branch 
   wire contracts remain stable through per-case `[ErrorCode]` attributes and exact definition tests.
 
 ## Event log
+
+### 2026-08-10 - Phase 6 current-main reconciliation
+
+- Action: Fetched origin and merged current `origin/main` into the clean Customer outcomes branch
+  while preserving PR #425's remote head.
+- Evidence: incoming main `d916e95cf`; PR #425 remains open at `e60219f7d`; the sole conflict was
+  `api/Concertable.Customer/Directory.Packages.props`, resolved with platform pin `.903`, one entry
+  per existing Reunion package, and the branch's Shouldly ownership.
+- Outcome: The branch is current with main and Phase 6 implementation is now the resolved action.
+- Follow-up: Implement and verify the Phase 6 Review validation and domain-outcome migration.
 
 ### 2026-08-10 — PR #470 domain-outcome reconciliation
 
