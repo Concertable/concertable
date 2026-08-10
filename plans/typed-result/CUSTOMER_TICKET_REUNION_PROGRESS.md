@@ -4,12 +4,12 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_customer-ticket-reunion`
 - Branch: `Feature/typed-result_customer-ticket-reunion`
 - PR: not opened; historical PR #282 remains open and untouched
-- Dependency/package gates: implementation complete against exact local Payment `.915` packages and
-  the exact Reunion.Errors `.2` candidate; their publication and generated platform sync gate
-  delivery and final clean-feed revalidation
-- Last reconciled: 2026-08-09 against `origin/main` `1043a9178`, Payment package source
-  `a2497e3e8`, implementation commit `acaec615b`, the active Reunion integration owner, and
-  historical PR #282 head `26ed63b8`
+- Dependency/package gates: validator implementation reopened against merged Reunion.Validation
+  source; Reunion.Errors `.2`, Reunion.Validation `.1`, Payment publication, and generated platform
+  sync gate delivery and final clean-feed revalidation
+- Last reconciled: 2026-08-10 against `origin/main` `6f4a5cc3e`, branch merge `103da45a7`, Payment
+  package source `a2497e3e8`, Reunion source `1500270`, implementation commit `acaec615b`, the active
+  Reunion integration owner, and historical PR #282 head `26ed63b8`
 
 ## Current state
 
@@ -38,11 +38,27 @@ NuGet sources; no local feed or disposable Payment version remains in source con
 Implementation commit `acaec615b` passed native, security, and every Concertable review lens with no
 findings. The branch has not been pushed and no PR has been opened.
 
+The Ticket DI validator is not yet on Reunion's validation-specific carrier. `ITicketValidator`
+currently returns `bool`, `Result<bool, EligibilityError>`, and
+`UnitResult<IReadOnlyList<string>>`. Reunion source commit
+`a837ecb60416c44eda1c87b0c858a9be7658c74b`, contained in current merged source
+`1500270cc323fe43b9eaf57dad9698b24f6dfb37`, provides the intended
+`Reunion.Validation.ValidationResult = Valid | Invalid(ValidationErrors)` contract, accumulation,
+and explicit Result conversions. `Reunion.Validation` `0.1.0-alpha.1` is not yet published;
+NuGet.org's official flat-container index returned HTTP 404 on 2026-08-10.
+
 ## Next Steps
 
-Blocked: `plans/typed-result/REUNION_INTEGRATION_PROGRESS.md` has not yet delivered published Reunion.Errors `0.1.0-alpha.2`, merged Payment PR #453, matching Payment packages, and the generated Customer platform pin.
-Unblock action: The Reunion integration owner publishes and verifies exact Reunion.Errors `.2`, lands Payment PR #453 with full E2E, follows package publication and generated platform sync to green, and updates this dependent ledger with the published version.
-Resume when: Customer can restore the published Reunion.Errors and Payment graph from normal feeds at the generated platform pin with no temporary source or disposable version; then revalidate the exact commit, refresh review watermarks, and request the explicit PR #282 supersession/delivery decision.
+Pack and inspect exact `Reunion.Validation` `0.1.0-alpha.1` from merged Reunion source `1500270`,
+record its immutable hash and dependencies, and expose it only through a temporary local feed. Add
+direct package ownership wherever Ticket source or tests use the validation API, then change
+`ITicketValidator` / `TicketValidator` so synchronous validation returns `ValidationResult` and
+concert lookup returns `Result<ValidationResult, EligibilityError>`. Map invalid results into the
+existing `PurchaseError.Invalid` / `CheckoutError.Invalid` contracts without changing their public
+field keys, update unit and integration coverage, and run Ticket unit/integration, Shared.Api
+architecture, Customer/full Release builds, standalone Customer carve, legacy-carrier scans,
+`git diff --check`, and complete code/security review. Restore every temporary feed input before the
+commit, then stop delivery-ready behind publication and platform sync; do not push or mutate PR #282.
 
 ## Completed work
 
@@ -76,8 +92,26 @@ Resume when: Customer can restore the published Reunion.Errors and Payment graph
 - Payment publication gates delivery only; exact artifacts opened and completed local implementation.
 - The producer's move to Reunion.Errors `.2` removed `ErrorDefinition.For<TError>()`; reconciling to
   direct nested-case factories now avoids landing a replacement against another obsolete rehearsal.
+- `ValidationResult` is the correct validator boundary: it permanently fixes the invalid payload to
+  structured `ValidationErrors` and supports accumulation. Missing concert remains a separate
+  `EligibilityError`, so the async lookup contract becomes
+  `Result<ValidationResult, EligibilityError>` rather than misclassifying absence as validation.
+- Existing `purchase` and `checkout` validation field keys are observable wire contracts and remain
+  stable when the validator's internal carrier changes.
 
 ## Event log
+
+### 2026-08-10 â€” Reunion.Validation phase added
+
+- Action: Audited the completed Ticket validator contracts against Reunion's merged validation
+  package and added a fifth implementation phase.
+- Evidence: current `ITicketValidator` signatures; Reunion commits `a837ecb` / `1500270`; package
+  project version `0.1.0-alpha.1`; official NuGet.org flat-container response HTTP 404; clean branch
+  merged to current `origin/main` `6f4a5cc3e` as `103da45a7`.
+- Outcome: The earlier implementation is not the final validator design. Local preparation is
+  actionable from exact merged source even though Reunion.Validation publication still gates
+  delivery.
+- Follow-up: execute the new `## Next Steps` through a verified, reviewed local Phase 5 checkpoint.
 
 ### 2026-08-09 â€” implementation checkpoint reviewed delivery-ready
 
