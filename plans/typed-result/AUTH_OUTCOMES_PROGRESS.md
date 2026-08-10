@@ -8,18 +8,24 @@
   `Reunion`, `Reunion.Errors`, and `Reunion.AspNetCore` `0.1.0-alpha.1` are published. No platform-sync
   PR is open. After the Auth `api/**` change merges, this work owns its generated publication and
   platform-sync gates to terminal green.
-- Last reconciled: `2026-08-09` from fresh `origin/main` `1043a917876cbed48b3c1f873cdcfcc7aadf9b80`,
-  local branch head `754939891b25577a3047badef751a166e62db8cb`, the current mainline plan,
-  published Reunion `0.1.0-alpha.1`, and live local/GitHub preflight state.
+- Last reconciled: `2026-08-10` from fresh `origin/main` `d916e95cfc5fbcc13a581e6d34bc211a4dfa639c`,
+  local branch head `56ef28241d10f6c7da4cfab4d616572a79178cf3`, and live local/GitHub delivery
+  state.
 
 ## Current state
 
 The task directly matches branch `Feature/typed-result_auth-outcomes`: its committed diff is confined
 to Auth-owned runtime/tests, the Shared typed-result architecture guard, solution/integration-runner
-registration, and this plan pair. No branch PR or remote branch exists, no platform-sync PR was open
-at the implementation gate, and no other worktree owns overlapping Auth implementation. Merge commit
-`1a6c6d670` integrates `origin/main` `1043a9178`, including platform `0.1.0-alpha.0.890` and the
-authoritative Reunion conversion plan.
+registration, and this plan pair. No branch PR or remote branch exists, no platform-sync PR is open,
+and no other worktree owns overlapping Auth implementation. Fresh `origin/main` is
+`d916e95cfc5fbcc13a581e6d34bc211a4dfa639c`; the local head
+`56ef28241d10f6c7da4cfab4d616572a79178cf3` is 31 commits ahead and 123 behind. The only dirty path is
+the untracked clean-review work order `reviews/Feature-typed-result_auth-outcomes.md`. The prior green
+verification, review, and preflight evidence therefore requires current-main reconciliation and a
+fresh gate after delivery is authorized; no merge, verification, push, or PR action is authorized yet.
+
+At the prior green checkpoint, merge commit `1a6c6d670` integrated `origin/main` `1043a9178`, including
+platform `0.1.0-alpha.0.890` and the authoritative Reunion conversion plan.
 
 The completed Auth semantics now compile directly against published `Reunion` and `Reunion.Errors`
 `0.1.0-alpha.1`. Auth runtime owns both packages, its unit project owns `Reunion.Errors`, and its
@@ -90,9 +96,12 @@ Blocked: Auth publication and PR delivery require Tommy's explicit push instruct
 Unblock action: Tommy authorizes pushing `Feature/typed-result_auth-outcomes` and opening its plain GitHub PR.
 Resume when: Tommy explicitly authorizes Auth delivery.
 
-After authorization, push the committed branch changes, open the plain GitHub PR, add no E2E skip
-label or trailer, and continue the normal merge workflow with full merge-queue API and UI E2E plus
-publication/platform-sync ownership to terminal green.
+After authorization, preserve the review work order, inspect and merge fresh `origin/main`, reconcile
+any Auth/package/convention changes, and repeat the Auth unit/integration, typed-result architecture,
+Release solution build, standalone carve, mechanical search, incremental review, and PR-preflight
+gates. Then push the committed branch changes, open the plain GitHub PR, add no E2E skip label or
+trailer, and continue the normal merge workflow with full merge-queue API and UI E2E plus publication/
+platform-sync ownership to terminal green.
 
 ## Completed work
 
@@ -320,6 +329,19 @@ finding IDs or dispositions exist. Later merge `e196f13e1` contains only already
   terminal.
 
 ## Event log
+
+### 2026-08-10 - Explicit delivery gate and current-main drift revalidated
+
+- Action: Resumed the recorded worktree, read the plan lifecycle sources in full, fetched origin, and
+  checked branch, worktree, review-artifact, GitHub PR, and platform-sync state without publishing or
+  changing runtime code.
+- Evidence: local head `56ef28241d10f6c7da4cfab4d616572a79178cf3`; fresh `origin/main`
+  `d916e95cfc5fbcc13a581e6d34bc211a4dfa639c`; branch 31 ahead / 123 behind; no Auth PR or remote branch;
+  no open platform-sync PR; the sole dirty path is the untracked clean-review work order.
+- Outcome: The explicit-delivery blocker remains in force. The old preflight result is no longer
+  current because main advanced, so authorization now resumes with current-main reconciliation and a
+  complete local gate before push/PR delivery.
+- Follow-up: wait for Tommy's explicit Auth delivery authorization in `## Next Steps`.
 
 ### 2026-08-10 - PR #470 domain-outcome reconciliation
 

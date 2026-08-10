@@ -2,9 +2,10 @@
 
 > Next steps live in @plans/typed-result/AUTH_OUTCOMES_PROGRESS.md -> `## Next Steps`.
 
-**Status:** The semantic migration and published Reunion conversion are locally complete, verified,
-reviewed, and preflight-green. Delivery awaits explicit push/PR instruction; Auth has no Payment,
-B2B, or Customer runtime/package dependency.
+**Status:** The semantic migration and published Reunion conversion are locally complete. Delivery
+awaits explicit push/PR instruction; after authorization the branch must first reconcile current
+`origin/main` and repeat verification, review, and preflight. Auth has no Payment, B2B, or Customer
+runtime/package dependency.
 
 ## Outcome
 
