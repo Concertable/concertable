@@ -4,11 +4,12 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_customer-outcomes`
 - Branch: `Feature/typed-result_customer-outcomes`
 - PR: [#425](https://github.com/Concertable/concertable/pull/425) — open, non-draft, head `e60219f7d`
-- Dependency/package gates: the Result/Option conversion uses published Reunion `.1`, but Phase 6
-  requires `Reunion.Validation` `0.1.0-alpha.1`, which is merged upstream and not yet published on
-  NuGet.org. PR #282 remains excluded and Payment delivery is tracked separately.
-- Last reconciled: 2026-08-10 against `origin/main` `6f4a5cc3e`, local merge head `7a854cd4c`,
-  PR #425 head `e60219f7d`, and the current Reunion owner ledger
+- Dependency/package gates: exact `Reunion.Validation` `0.1.0-alpha.1` is published, indexed,
+  repository-signature and payload-provenance verified, and clean-restored with `Reunion` and
+  `Reunion.Errors` `.1` from NuGet.org only. Payment `0.1.0-alpha.0.894` publication and platform-sync
+  PR #463 are terminal. PR #282 remains excluded.
+- Last reconciled: 2026-08-10 against `origin/main` `483350124`, local head `dcb5946e2`, PR #425 head
+  `e60219f7d`, and terminal production evidence from the Reunion integration owner
 
 ## Current state
 
@@ -99,15 +100,24 @@ remote branch and PR #425 therefore remain unchanged at `e60219f7d`.
 The push checkpoint is superseded by the new Phase 6 requirement: PR #425 must not be updated with
 the pre-validation candidate. The scoped audit found one custom DI validator in this plan,
 `IReviewValidator`; it still returns `Result<TicketSummary, CreateReviewError>` and booleans. The
-Review request validator is FluentValidation and remains outside this conversion. Upstream Reunion
-commit `a837ecb` adds `ValidationResult` in the separate `Reunion.Validation` package, unchanged
-through `1500270`, but NuGet.org currently exposes no version of that package.
+Review request validator is FluentValidation and remains outside this conversion.
+
+The Phase 6 package gate is open. Production `Reunion.Validation` `0.1.0-alpha.1` comes from merged
+source `1500270`, carries a valid NuGet.org repository signature, byte-matches the verified candidate
+across all nine non-signature entries, and clean-restores with exact `Reunion` and `Reunion.Errors`
+`.1`. The clean worktree is 59 commits behind current `origin/main` `483350124`; those incoming
+commits include the terminal Payment publication/platform sync and must be merged before Phase 6 code.
 
 ## Next Steps
 
-Blocked: Phase 6 cannot restore from production because `Reunion.Validation` is not published on NuGet.org.
-Unblock action: Publish and production-verify exact `Reunion.Validation` `0.1.0-alpha.1` from merged upstream source `a837ecb` (unchanged through `1500270`), including indexing, repository-signature verification, and a clean net10 restore of its Reunion dependency graph.
-Resume when: NuGet.org exposes `Reunion.Validation` `0.1.0-alpha.1` and the clean restore resolves it with published `Reunion` and `Reunion.Errors` dependencies.
+Merge current `origin/main` `483350124` into the clean branch and reconcile the owned Review paths
+without changing PR #425's remote head. Then implement Phase 6: add direct `Reunion.Validation`
+ownership, convert every `IReviewValidator` validation method to `ValidationResult`, preserve the
+single Ticket lookup, typed create-error mappings, public booleans, and exact HTTP contracts, and add
+the planned structured-payload, short-circuit, query-count, and scoped-inventory coverage. Run the
+complete Phase 6 unit/integration/Shared.Api/Release/carve/scope gate, commit it, complete fresh code
+review plus any finding fixes and incremental review, then update PR #425 through the plan-managed
+two-leg push only after a final current-main reconciliation.
 
 ## Completed work
 
@@ -155,6 +165,8 @@ Resume when: NuGet.org exposes `Reunion.Validation` `0.1.0-alpha.1` and the clea
   `7a7e07e86`, merged platform-sync main as `7a854cd4c`, and completed both incremental reviews clean.
 - Audited validator contracts and added Phase 6 for Review's injected validator; Ticket and B2B
   validator migrations remain with their existing owners.
+- Production `Reunion.Validation` `0.1.0-alpha.1` completed its publication gate and returned this
+  ledger from the Reunion integration owner.
 
 ## Verification
 
@@ -182,6 +194,11 @@ Resume when: NuGet.org exposes `Reunion.Validation` `0.1.0-alpha.1` and the clea
   owned modules and still exposes one Reunion Result plus three booleans; `Reunion.Validation` source
   is merged at `a837ecb`, its validation paths are unchanged through `1500270`, and an exact
   prerelease NuGet.org search returns no package.
+- Production validation package: SHA-256
+  `0947D93220F585F8AD6E8617F5268807B4C05B120DF01970D49E036302010790`; valid NuGet.org repository
+  signature; nine non-signature entries byte-match the candidate; a new NuGet.org-only net10 cache
+  restored exact `Reunion.Validation`, `Reunion`, and `Reunion.Errors` `0.1.0-alpha.1`, built with
+  zero errors, and ran the package consumer successfully.
 
 - `git fetch origin --quiet`: refreshed origin before branch creation and again before the plan edit.
 - Branch/worktree/PR audit: no pre-existing branch, worktree, or PR owned this slice.
@@ -371,6 +388,17 @@ watermark from ledger prose. A fresh full `code-review` of the committed branch 
   wire contracts remain stable through per-case `[ErrorCode]` attributes and exact definition tests.
 
 ## Event log
+
+### 2026-08-10 — Phase 6 package gate opened
+
+- Action: Received the terminal validation-package handoff from the Reunion integration owner and
+  reconciled it with the clean Customer branch, PR #425, current main, and terminal Payment sync.
+- Evidence: production `Reunion.Validation` `0.1.0-alpha.1`; merged source `1500270`; valid repository
+  signature and exact payload provenance; clean NuGet.org-only net10 consumer; PR #463 merged as
+  `483350124`; PR #425 remains open at `e60219f7d`; local branch is 59 commits behind current main.
+- Outcome: The hard blocker is removed. Phase 6 is actionable after current-main reconciliation.
+- Follow-up: Execute `## Next Steps` and preserve the existing PR head until the verified phase is
+  ready for its single update.
 
 ### 2026-08-10 — DI validation follow-up planned
 
