@@ -62,6 +62,16 @@ issues, so its spent review work order was deleted. Read-only PR preflight finds
 with main, all code committed, no existing replacement PR, and no open platform-sync PR. The branch
 remains unpushed and PR #282 remains open and untouched.
 
+The PR #470 audit found no Ticket-local runtime correction. Purchase, checkout, and eligibility
+refusals already originate as typed `ValidationResult`/operation Results and map at the Ticket HTTP
+edge. The two production-scope `DomainException` guards are in `ConcertEntity`: the
+`TicketPurchasedHandler` calls `DecrementAvailability(1)` only after a paid event, so insufficient
+stock is a background consistency/corruption fault that must remain exceptional; `RestoreAvailability`
+has no production caller and rejects only impossible internal input/capacity. `CompleteAsync` missing
+concert remains the existing asynchronous consistency exception. Customer Review's star-range guard
+belongs to `CUSTOMER_OUTCOMES_PLAN.md`. Shared blanket exception handling remains deferred to the
+roadmap's future global audit.
+
 ## Next Steps
 
 Blocked: Replacement PR publication and historical PR #282 supersession require Tommy's explicit approval.
@@ -138,8 +148,22 @@ Resume when: Tommy explicitly authorizes the replacement PR and supersession of 
   that maps every invalid message to the existing public `purchase` / `checkout` field.
 - The Reunion integration owner recorded this waiting ledger and exact publication/sync return gate
   in owner checkpoint `8d6cd0cfc`.
+- The PR #470 classification preserves Ticket's background exceptions so workers retry/dead-letter
+  faults instead of converting them into successful Result control flow. There is no duplicated
+  application pre-check/domain throw in the Ticket branch's net diff.
 
 ## Event log
+
+### 2026-08-10 — PR #470 domain-outcome reconciliation
+
+- Action: Audited the replacement branch's net diff, Ticket/Concert production guards, validator and
+  service outcomes, background handlers, HTTP mapping, and test/architecture evidence.
+- Evidence: caller-actionable purchase/checkout alternatives are already typed; the only Concert
+  guards in scope protect paid-event stock consistency or an unused impossible restore path and must
+  remain exceptions. Review's unrelated guard is assigned to its active owner.
+- Outcome: The replacement is classification-clean and delivery-gated; no runtime or PR mutation was
+  made.
+- Follow-up: retain the exact authorization blocker in `## Next Steps`.
 
 ### 2026-08-10 — replacement branch locally ready
 

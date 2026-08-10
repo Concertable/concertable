@@ -17,6 +17,11 @@ behavior and tests; do not rebase or revive the obsolete carrier/CFE implementat
   explicit supersession decision.
 - No shared Kernel carrier, Shared.Api terminal, cross-service runtime reference, committed local feed,
   disposable version pin, or machine-specific configuration is introduced.
+- `ConcertEntity.DecrementAvailability` remains an invariant exception when the paid-ticket background
+  handler applies one event to insufficient stock; returning a Result there would hide a
+  consistency/corruption fault from retry/dead-letter handling. `RestoreAvailability` has no
+  production caller and its non-positive/over-capacity guards remain impossible-state exceptions.
+  Review's star-range guard belongs to the Customer non-Payment plan, not this branch.
 
 ## Implementation and delivery DAGs
 
@@ -54,3 +59,5 @@ superseded.
 - No temporary package input is committed.
 - Review is clean; published Payment revalidation, PR delivery, supersession, merge, publication, and
   generated sync are terminal before closeout.
+- Direct purchase/checkout validation stays typed and caller-actionable, while background consistency
+  and malformed internal construction remain exceptions and are never exposed as public 4xx contracts.
