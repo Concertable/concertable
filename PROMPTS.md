@@ -53,6 +53,6 @@
   Never re-poll an unchanged blocker into repeated "still blocked" commits. The Stop hook rejects the
   blocked plan's pointer and rejects a blocker report that omits any of the three exact lines.
 - Use the handoff instead of asking whether to continue.
-- Before an implementation PR merges, route through `/code-review` or `/big-review`; use
+- Before an implementation PR merges, route through `/review` or `/big-review`; use
   `/incremental-review` after later code commits.
 - When nothing remains, state that the work is complete without a continuation prompt.
