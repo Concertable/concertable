@@ -59,8 +59,8 @@ No issues found in this area. Checked the native review catalog, security-sensit
 - [x] **SEC2 — MEDIUM — security** — `api/Concertable.B2B/src/Modules/Concert/Concertable.B2B.Concert.Api/Controllers/DevController.cs:36`
   Resolved: the dev completion endpoint discards every successful `SettlementOutcome` and returns 204 No Content while retaining the typed ProblemDetails failure mapping.
 
-- [ ] **CV1 — LOW — C# conventions/test coverage** — `api/Concertable.B2B/src/Modules/Concert/Tests/Concertable.B2B.Concert.UnitTests/ErrorDefinitionContractTests.cs:13`
-  The explicit definition inventory omits every case from `AcceptApplicationError`, `CancelApplicationError`, `CancelConcertError`, and `FinishConcertError`, despite `CODE_CONVENTIONS.md` requiring an exact hard-coded code, message, and kind test for every error-union case. Add all omitted direct and wrapper cases to the contract theories.
+- [x] **CV1 — LOW — C# conventions/test coverage** — `api/Concertable.B2B/src/Modules/Concert/Tests/Concertable.B2B.Concert.UnitTests/ErrorDefinitionContractTests.cs:13`
+  Resolved: the definition inventory now hard-codes the code, message, and kind for every direct and wrapper case in `AcceptApplicationError`, `CancelApplicationError`, `CancelConcertError`, and `FinishConcertError`.
 
 ## Plan and progress — reviewed 2026-08-10
 
