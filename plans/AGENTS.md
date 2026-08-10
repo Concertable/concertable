@@ -31,7 +31,7 @@ handing off / clearing is exactly the misread that produces the failure below.
 
 **"I've left it uncommitted so you can look at it first" is the anti-pattern, not the courtesy:**
 
-- **Review runs off commits.** `/code-review` diffs `main..HEAD`; work sitting in the working tree
+- **Review runs off commits.** `/review` diffs `main..HEAD`; work sitting in the working tree
   is invisible to it. Leaving it uncommitted is precisely what stops the reviewer seeing it.
 - **Uncommitted is the fragile state.** It survives no `git checkout`, no stray `git restore`, no
   context clear. A commit is the cheapest insurance that exists.

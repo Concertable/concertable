@@ -1,6 +1,6 @@
 ---
 name: address-review
-description: Automatically address the OPEN findings in a code-review file, one by one, each in its own fresh agent context - fix clear defects, defer judgment calls for a human, commit each fix separately, and delete the review if everything was fixed cleanly. Use when the user wants to "address the review", "action the findings", "fix the review comments", "work through the review", or hands over a reviews/*.md to be actioned. For producing a review use `code-review`, `big-review`, or `big-review-all`; this skill consumes one.
+description: Automatically address the OPEN findings in a review file, one by one, each in its own fresh agent context - fix clear defects, defer judgment calls for a human, commit each fix separately, and delete the review if everything was fixed cleanly. Use when the user wants to "address the review", "action the findings", "fix the review comments", "work through the review", or hands over a reviews/*.md to be actioned. For producing a review use `review`, `big-review`, or `big-review-all`; this skill consumes one.
 ---
 
 # address-review
@@ -48,6 +48,6 @@ commit SHAs. Do not re-litigate the agents' fixes.
 
 ## When NOT to use
 
-- Producing a review -> `code-review`, `big-review`, or `big-review-all`.
+- Producing a review -> `review`, `big-review`, or `big-review-all`.
 - A `BIG-*` review whose Coverage checklist still has `[ ]` or `[~]` stages -> finish the review first with `big-review-all`; its findings are not complete yet.
 - The user wants to hand-fix or discuss findings rather than auto-apply -> work the file directly, no multi-agent loop.
