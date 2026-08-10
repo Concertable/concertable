@@ -7,9 +7,8 @@
 - Dependency/package gates: checkpoints 6-7 are locally complete against exact Payment packages from
   `a779fe041`; Reunion integration PR #453, Payment publication, generated platform sync, and exact
   published-package revalidation gate delivery
-- Last reconciled: 2026-08-10 against implementation commit `e229afb58`, clean incremental-review
-  watermark `3d50d321c62fc7b9bc302aa9b2cbb93d77aa28b0`, merged mainline baseline `6f4a5cc3e`, and review artifact
-  `reviews/BIG-Refactor-B2BTypedResultMigration-Review.md`
+- Last reconciled: 2026-08-10 against reviewed checkpoint `924c5fa39`, merged mainline baseline
+  `6f4a5cc3e`, and the environment-inconclusive final build/Docker gate attempts
 
 ## Current state
 
@@ -69,11 +68,21 @@ unresolved risk and decision are owned by
 `api/Concertable.B2B/src/Modules/Concert/TECH_DEBT.md`. The review artifact stays because SEC1 remains
 deferred.
 
+The final full-solution build and the NAT1/NAT2 integration regressions are environment-pending. The
+sandbox could not read the user NuGet configuration needed to resolve the Aspire SDK; the approved
+full-solution build emitted no compiler or package result before its 10-minute timeout. The sandboxed
+Docker check could not access Docker configuration or its named pipe, and the approved health script
+produced no result before its 3-minute timeout. Neither attempt establishes a code failure or a healthy
+Docker engine. Per the Docker startup-failure rule, the integration regressions were not started and
+must not be retried again this turn.
+
 ## Next Steps
 
-Run the final full solution build. When Docker is healthy, execute the NAT1 Tenant and NAT2 User
-integration regressions that have only been build-verified. Record those exact outcomes in this ledger.
-Do not push or merge B2B until separately instructed.
+Environment-pending local gates: obtain a conclusive final Release build with user NuGet/Aspire SDK
+access, then require `scripts/docker-health.ps1` to pass before running the NAT1 Tenant and NAT2 User
+integration regressions that have only been build-verified. Record the exact outcomes in this ledger.
+Do not retry Docker or the integration regressions again this turn. Do not push or merge B2B until
+separately instructed.
 
 The delivery gate after that local review/verification is:
 
@@ -165,6 +174,16 @@ must not emit a resume pointer while either blocker remains.
   `e229afb581c829279ca821b0a85729c4c4f0f441..3d50d321c62fc7b9bc302aa9b2cbb93d77aa28b0`
   produced no new findings after native correctness/test-coverage, security-sensitive controller and
   Contracts, microservice-isolation, module-boundary, seeding, C# convention, and documentation lenses.
+- Final full-solution build gate: sandboxed
+  `dotnet build api/Concertable.slnx --configuration Release --no-restore` could not read the user
+  NuGet configuration and therefore failed Aspire SDK resolution before compilation. The approved
+  rerun with user NuGet access emitted no compiler or package result and timed out after 10 minutes.
+  No valid build result or code failure was produced.
+- Final Docker gate: the sandboxed health check could not access Docker configuration or the named
+  pipe. The approved
+  `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\docker-health.ps1` produced no result
+  and timed out after 3 minutes. Docker health remains unknown; NAT1/NAT2 integration tests were not
+  run.
 
 - `dotnet build api/Concertable.B2B/Concertable.B2B.slnx --configuration Release`: succeeded,
   0 errors (1 pre-existing nullable warning).
@@ -228,6 +247,10 @@ must not emit a resume pointer while either blocker remains.
   decision recorded in Concert `TECH_DEBT.md`.
 - The clean incremental review covers every fix commit and the intervening mainline merge through
   `3d50d321c`; both code/security watermarks equal that commit and no new findings were opened.
+- The final solution build is environment-inconclusive, not red: neither attempt reached a reported
+  compiler/package outcome. A conclusive build remains required.
+- Docker health is also environment-inconclusive. The mandatory data-round-trip did not return a
+  result, so the NAT1/NAT2 integration regressions remain gated and were not retried this turn.
 
 ## Downstream handoffs
 
@@ -239,6 +262,21 @@ must not emit a resume pointer while either blocker remains.
   overlapping Concert workflow changes.
 
 ## Event log
+
+### 2026-08-10 — final local gates environment-inconclusive
+
+- Action: Attempted the final full-solution Release build and mandatory Docker health check in the
+  sandbox and with approved user-environment access; did not start the gated NAT1/NAT2 integration
+  regressions.
+- Evidence: the sandboxed `dotnet build api/Concertable.slnx --configuration Release --no-restore`
+  could not access the user NuGet configuration and failed Aspire SDK resolution; the approved rerun
+  emitted no compiler/package result before timing out at 10 minutes. The sandboxed Docker check could
+  not access Docker configuration/named pipe; the approved `scripts/docker-health.ps1` returned no
+  result before timing out at 3 minutes.
+- Outcome: neither local gate produced a valid pass or code failure. Final build verification and the
+  Docker-gated NAT1/NAT2 integration regressions remain environment-pending; no Docker retry is allowed
+  again this turn.
+- Follow-up: execute `## Next Steps`; do not push or merge B2B.
 
 ### 2026-08-10 — incremental review clean
 
