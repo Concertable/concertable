@@ -138,13 +138,20 @@ runtime incompatibility, and the complete integration gate then passed. PR #425 
 `e60219f7d`; the freshly observed `origin/main` is nine commits ahead and is intentionally reserved
 for the required post-review reconciliation.
 
+The fresh full review and security pass cover `d916e95cf..5cfdb9427` across 43 commits and the full
+net branch diff. `reviews/Feature-typed-result_customer-outcomes.md` is stamped at the exact work head.
+The service/module-boundary, seeding, C# convention, changed-path coverage, and security lenses are
+clean. Three medium native findings are open: `NAT1` adds Review.Infrastructure's missing direct
+`Reunion.Errors` ownership; `NAT2` translates Preference's unique-`UserId` create race into its typed
+conflict; and `NAT3` does the same for Review's unique-`TicketId` create race.
+
 ## Next Steps
 
-Run a fresh full `/review` over the committed Phase 6 candidate, record and fix every actionable
-finding in its own verified commit, and run incremental review until clean. Then fetch and reconcile
-the branch with current `origin/main`, inspect the incoming delta, rerun every affected local gate,
-incrementally review the reconciliation, and update PR #425 through the plan-managed two-leg push only
-when the exact final work head is current and green.
+Fix `NAT1`, `NAT2`, and `NAT3` serially in their own commits, updating the review work order and this
+ledger with focused verification for each. Run incremental review from `5cfdb9427` until clean. Then
+fetch and reconcile the branch with current `origin/main`, inspect the incoming delta, rerun every
+affected local gate, incrementally review the reconciliation, and update PR #425 through the plan-
+managed two-leg push only when the exact final work head is current and green.
 
 ## Completed work
 
@@ -854,3 +861,16 @@ watermark from ledger prose. A fresh full `code-review` of the committed branch 
 - Follow-up: Run fresh full `/review`, fix and incrementally review any findings, then reconcile
   current main, rerun affected gates, incrementally review the merge, and perform the verified two-leg
   PR update.
+
+### 2026-08-10 - fresh full Phase 6 delivery review found three issues
+
+- Action: Ran the mandatory native, security, correctness, microservice-isolation, module-boundary,
+  seeding, C# convention, and changed-path coverage passes over the complete net branch diff.
+- Evidence: Review range `d916e95cf..5cfdb9427` spans 43 commits; both review watermarks are
+  `5cfdb9427f1896351c72b5e829d105b637fcd390`; the work order is
+  `reviews/Feature-typed-result_customer-outcomes.md`. `NAT1`, `NAT2`, and `NAT3` are open medium
+  findings; no architecture, seeding, test-coverage, or security finding survived the confidence bar.
+- Outcome: The implementation checkpoint is review-blocked on one direct-package correction and two
+  duplicate-key race translations. PR #425 remains unchanged.
+- Follow-up: Fix and verify `NAT1`, `NAT2`, and `NAT3` in separate commits, then run incremental
+  review from `5cfdb9427`.
