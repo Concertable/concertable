@@ -9,7 +9,7 @@ Run the Concertable **API** E2E suite and analyse failures using the `ShouldBe(H
 
 ## The point of this skill: run autonomously — FIX failing tests yourself, do not ask
 
-When the user invokes this skill they are delegating the **entire** run → diagnose → fix → verify loop to you, to run autonomously end to end. **Any failing test is something you fix in code yourself**, without stopping to ask permission, then re-run and keep going until the suite is green. Diagnose the root cause, write the code change (in the service, handler, dispatcher, fixture, or test — wherever the real bug is), and re-run to confirm green. The only time you pause is a genuine product-behaviour ambiguity you cannot resolve from the code (per the "Test vs prod code — ask first" convention). Otherwise: run, fix every failure you can, verify, report what you changed — in one pass.
+When the user invokes this skill, they are delegating the entire run → diagnose → fix → verify loop to you. Fix each failing test without stopping for permission, then re-run only that test until it is green. Pause only for a genuine product-behaviour ambiguity that the code cannot resolve.
 
 ## NEVER disable or bypass a step to get past its failure
 
@@ -38,7 +38,7 @@ The big one: in this suite a failing test usually means **the synchronous call r
 
 - **Fully-qualified test name** (e.g. `Concertable.B2B.E2ETests.Payments.ConcertDraftTests.ShouldCreateDraft_WhenDoorSplitApplicationAccepted`) — run Step 0, then jump to Step 2 for that single test.
 - **A service** (`b2b` / `customer`) — run Step 0 then `./e2e.ps1 api b2b` (or `customer`).
-- **No arguments** — run Step 0 then the full API suite (Step 1), then Step 2 for each failure.
+- **No arguments and no failures already reported by CI or the merge queue** — run Step 0 then the full API suite once to discover failures, then Step 2 for each failure.
 
 ## Key paths
 
@@ -79,7 +79,7 @@ These tests need Docker (SQL containers, ASB emulator, stripe-cli). **`docker ps
 
 The suite also needs Stripe + Google secrets in the environment (`Stripe__SecretKey`, `GoogleApiKey`) — the same ones CI injects. If a run dies immediately with a Stripe auth error or missing-config exception, confirm those are set before debugging anything else.
 
-Then tell the user: **"Starting API E2E suite — full Aspire stack boot, ~5–7 min. I'll report back when done."**
+Tell the user whether this is a targeted test run or a full discovery run. Give the full-suite estimate only for discovery.
 
 ## Step 0b — Watch for startup hangs
 
@@ -197,9 +197,7 @@ If the resource logs, HTTP bodies, and DB/Stripe state still don't explain *why*
 
 1. Make the fix in the relevant service / handler / fixture / test.
 2. Re-run the specific test (`--filter "FullyQualifiedName~<test>"`) to confirm green.
-3. Re-run the affected service suite (`./e2e.ps1 api b2b` or `api customer`) to catch siblings.
-4. If the change touched shared infra (Kernel, messaging, seeding, a fixture, the AppHost), run the **full** API suite (`./e2e.ps1 api run`).
-5. **Then run the UI E2E regression check** (`e2e-ui-regress`, `./e2e.ps1 ui regress`). The UI suite drives the same backend through the browser; a backend event-flow fix should be confirmed there too. To debug both layers in one pass, use the `e2e-debug` skill.
+3. Do not run a broader E2E suite locally afterward. Once every originally failing test passes in isolation, return to the PR merge workflow; the merge queue is the single full-suite verification.
 
 ## Useful filter patterns
 
