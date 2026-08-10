@@ -170,7 +170,7 @@
   </Folder>
   <Folder Name="/Payment/">
     <Project Path="Concertable.Payment/src/Concertable.Payment.AppHost/Concertable.Payment.AppHost.csproj" />
-    <Project Path="Concertable.Payment/src/Concertable.Payment.AppHost.Extensions/Concertable.Payment.AppHost.Extensions.csproj" />
+    <Project Path="Concertable.Payment/src/Concertable.Payment.Hosting/Concertable.Payment.Hosting.csproj" />
     <Project Path="Concertable.Payment/src/Concertable.Payment.Api/Concertable.Payment.Api.csproj" />
     <Project Path="Concertable.Payment/src/Concertable.Payment.Application/Concertable.Payment.Application.csproj" />
     <Project Path="Concertable.Payment/src/Concertable.Payment.Client/Concertable.Payment.Client.csproj" />

@@ -21,6 +21,7 @@ using Concertable.Kernel.Identity;
 using Concertable.Messaging.Infrastructure.Extensions;
 using Concertable.Messaging.Infrastructure.Inbox;
 using Concertable.Messaging.Infrastructure.Outbox;
+using Concertable.Payment.Hosting;
 using Concertable.Seed.Shared;
 using Concertable.Seed.Infrastructure;
 using Concertable.Seed.Shared.Extensions;
@@ -129,7 +130,7 @@ public sealed class AppFixture : IAsyncLifetime
             [B2BWebUrl, SearchWebUrl, PaymentWebUrl],
             TimeSpan.FromMinutes(12));
 
-        var paymentConnectionString = await app.GetConnectionStringAsync(AppHostConstants.Databases.Payment)
+        var paymentConnectionString = await app.GetConnectionStringAsync(PaymentConstants.Database)
             ?? throw new InvalidOperationException("Payment connection string is missing.");
         await healthWaiter.WaitForPayoutAccountsAsync(paymentConnectionString, 4, TimeSpan.FromMinutes(3));
 
