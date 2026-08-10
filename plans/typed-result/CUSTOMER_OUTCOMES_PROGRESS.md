@@ -108,16 +108,27 @@ across all nine non-signature entries, and clean-restores with exact `Reunion` a
 `.1`. The clean worktree is 59 commits behind current `origin/main` `483350124`; those incoming
 commits include the terminal Payment publication/platform sync and must be merged before Phase 6 code.
 
+The PR #470 domain-outcome audit found one branch-owned classification correction. The only
+production `DomainException` in the five-module scope is `ReviewEntity.Create` rejecting stars outside
+1–5, while `CreateReviewRequestValidator` duplicates that rule at HTTP and direct service callers can
+still reach the throw. Phase 6 now makes the domain factory return structured validation and maps it
+to an operation-owned `CreateReviewError.Invalid`. Preference, User, Venue, and Artist domain methods
+have no rejecting transition; their bool/Option/nullable/list outcomes already match capability,
+absence, persistence, and collection semantics. Missing User after its owning save plus repository,
+provider, cancellation, and identity faults remain exceptions. Shared HTTP exception policy and
+other Customer modules stay with their owners or the future global audit.
+
 ## Next Steps
 
-Merge current `origin/main` `483350124` into the clean branch and reconcile the owned Review paths
+Fetch and merge current `origin/main` into the clean branch and reconcile the owned Review paths
 without changing PR #425's remote head. Then implement Phase 6: add direct `Reunion.Validation`
-ownership, convert every `IReviewValidator` validation method to `ValidationResult`, preserve the
-single Ticket lookup, typed create-error mappings, public booleans, and exact HTTP contracts, and add
-the planned structured-payload, short-circuit, query-count, and scoped-inventory coverage. Run the
-complete Phase 6 unit/integration/Shared.Api/Release/carve/scope gate, commit it, complete fresh code
-review plus any finding fixes and incremental review, then update PR #425 through the plan-managed
-two-leg push only after a final current-main reconciliation.
+ownership, convert every `IReviewValidator` validation method to `ValidationResult`, make
+`ReviewEntity.Create` own its typed star-range validation, map it to `CreateReviewError.Invalid`,
+preserve the single Ticket lookup, public booleans, and exact HTTP contracts, and add the planned
+domain, structured-payload, short-circuit, query-count, and scoped-inventory coverage. Run the complete
+Phase 6 unit/integration/Shared.Api/Release/carve/scope gate, commit it, complete fresh code review plus
+any finding fixes and incremental review, then update PR #425 through the plan-managed two-leg push
+only after a final current-main reconciliation.
 
 ## Completed work
 
@@ -388,6 +399,19 @@ watermark from ledger prose. A fresh full `code-review` of the committed branch 
   wire contracts remain stable through per-case `[ErrorCode]` attributes and exact definition tests.
 
 ## Event log
+
+### 2026-08-10 — PR #470 domain-outcome reconciliation
+
+- Action: Audited the net branch scope, all production domain guards and state outcomes in Review,
+  Preference, User, Venue, and Artist, duplicated service/request validation, HTTP behavior, and test
+  and architecture coverage.
+- Evidence: `ReviewEntity.Create` is the sole scoped production `DomainException` and its star range is
+  caller-actionable; the HTTP request validator duplicates it while the service relies on the throw.
+  The other scoped methods expose capabilities, absence, lists, or unconditional mutations without an
+  expected rejecting guard.
+- Outcome: Customer non-Payment remains active/actionable; the Review correction is inside Phase 6,
+  and repository-wide Shared/invariant cleanup is explicitly deferred.
+- Follow-up: execute the amended `## Next Steps` without changing Ticket/Concert/Payment-owned paths.
 
 ### 2026-08-10 — Phase 6 package gate opened
 

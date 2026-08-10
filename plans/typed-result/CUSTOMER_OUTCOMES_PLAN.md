@@ -77,7 +77,9 @@ entry.
   one exhaustive definition switch, and exact contract tests:
   - ticket absent → `NotFound`, code `review.ticket_not_found`;
   - concert not yet reviewable → `Conflict`, code `review.concert_not_reviewable_yet`;
-  - ticket already reviewed → `Conflict`, code `review.already_exists`.
+  - ticket already reviewed → `Conflict`, code `review.already_exists`;
+  - stars outside 1–5 → `Invalid(ValidationErrors)`, code `review.invalid`, preserving the `Stars`
+    field and caller-safe range message.
 - Change `IConcertReviewService.CreateAsync` to
   `Task<Result<ReviewDto, CreateReviewError>>`.
 - Reshape every `IReviewValidator` validation method to return `Reunion.Validation.ValidationResult`.
@@ -96,6 +98,11 @@ entry.
   contracts and are not converted by this phase.
 - Keep absent authentication/identity claims and repository/database races on their existing exception
   paths. Do not catch unique-index, cancellation, or provider failures into `CreateReviewError`.
+- Change `ReviewEntity.Create` to return the typed validation outcome it owns. The request validator
+  may retain wire-level range validation, but `ConcertReviewService` must map the domain result and
+  must remain correct for direct/internal callers without an equivalent pre-check that exists only to
+  avoid the current throwing guard. Other scoped entity mutations are unconditional; missing User
+  immediately after its owning save remains an invariant fault.
 - Terminate create through `Concertable.Shared.Api.Results` as the existing 201 response, with typed
   ProblemDetails for the expected failures. Leave review DTOs, pagination, summaries, and
   `CustomerReviewSubmittedEvent` unchanged.
@@ -157,6 +164,9 @@ Coverage required by the phases:
 - Review service/validator tests for exact Valid/Invalid structured payloads, missing ticket,
   not-yet-reviewable concert, existing review, success, one Ticket lookup, boolean eligibility
   collapse, rule-order short-circuiting, and propagation of thrown collaborator/cancellation faults;
+- Review domain/service tests for out-of-range stars at `ReviewEntity.Create`, the operation-owned
+  `review.invalid` definition, direct-service mapping without the HTTP validator, and no duplicate
+  application range guard or caught invariant exception;
 - Review HTTP tests for the same expected status/code outcomes plus unchanged 201 and eligibility
   behavior;
 - Preference unit tests for Some/None, duplicate create, missing/foreign/successful update, eager empty
@@ -189,6 +199,10 @@ Every implementation phase ends with all of the following green against that pha
    in typed-result slices, or Ticket/Concert/Payment edits.
 7. A scoped DI-validator inventory proving `IReviewValidator` exposes only `ValidationResult`-bearing
    validation methods, with FluentValidation/framework validators explicitly excluded.
+8. A scoped production `DomainException` inventory proving Review's caller-actionable star rejection
+   is typed at `ReviewEntity.Create`, no equivalent application pre-check shields a throwing domain
+   guard, and invariant/infrastructure/cancellation faults still propagate and do not become public
+   4xx contracts.
 
 No phase changes the EF model, so `api/initial-migrations.ps1` is not required. Local E2E is not part
 of a pre-PR phase gate; the final behavior-changing, multi-module PR requires the full merge-queue E2E
@@ -250,7 +264,8 @@ tier and receives no skip label.
   resolving its `Reunion`/`Reunion.Errors` dependency graph.
 - Implement the Review contract design above: keep Ticket lookup/typed domain-error mapping in the
   service, make every custom DI validator method return `ValidationResult`, preserve the public
-  booleans and exact create 201/404/409 ProblemDetails contracts, and make no Ticket-owned edit.
+  booleans and exact create 201/400/404/409 ProblemDetails contracts, make `ReviewEntity.Create` own
+  the typed star-range alternative, and make no Ticket-owned edit.
 - Add direct package ownership, validator/service unit coverage, the scoped DI-validator inventory,
   and rerun Review integration plus the complete per-phase verification contract.
 - Commit and review the phase, address every fixable finding with incremental review, then update PR
@@ -266,6 +281,8 @@ tier and receives no skip label.
 
 - Review create and Preference create/update expose only operation-owned expected failures with exact,
   stable definitions and the published Reunion-backed central HTTP terminals.
+- Review star-range rejection originates as a typed domain-factory result and is mapped by the
+  application service; request validation is not the only protection against the throwing guard.
 - Every custom Review validator resolved through DI returns Reunion `ValidationResult`; application
   services map it to operation-owned Results or capability booleans without leaking it onto the wire.
 - All ordinary single-item application/module absence in the five scoped modules is `Option<T>`;
