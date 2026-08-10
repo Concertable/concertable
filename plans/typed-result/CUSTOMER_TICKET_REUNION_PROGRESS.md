@@ -4,13 +4,12 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_customer-ticket-reunion`
 - Branch: `Feature/typed-result_customer-ticket-reunion`
 - PR: not opened; historical PR #282 remains open and untouched
-- Dependency/package gates: validator implementation verified against merged Reunion.Validation
-  source; unpublished Reunion.Validation `.1`, Payment publication, and generated platform sync gate
-  delivery and final clean-feed revalidation; Reunion.Errors `.2` is published
-- Last reconciled: 2026-08-10 against `origin/main` `6f4a5cc3e`, implementation head
-  `d3b6d6b90`, Payment
-  package source `a2497e3e8`, Reunion source `1500270`, implementation commit `acaec615b`, the active
-  Reunion integration owner, and historical PR #282 head `26ed63b8`
+- Dependency/package gates: exact `Reunion.Validation` `.1` is published, indexed, repository-
+  signature and payload-provenance verified; Payment `0.1.0-alpha.0.894` is published and verified;
+  generated platform-sync PR #463 merged as `483350124`. Final normal-feed revalidation remains.
+- Last reconciled: 2026-08-10 against `origin/main` `483350124`, implementation head `d3b6d6b90`,
+  production Reunion/Payment evidence from the integration owner, and historical PR #282 head
+  `26ed63b8`
 
 ## Current state
 
@@ -49,17 +48,24 @@ The exact locally packed `Reunion.Validation` `0.1.0-alpha.1` artifact from merg
 `1500270cc323fe43b9eaf57dad9698b24f6dfb37` has SHA-256
 `2521531696EE7A470BF6D6F1550A496DC9B843602C70A61B1589BB97F22CEF6E` and declares net10.0
 dependencies on `Reunion` `0.1.0-alpha.1` and `Reunion.Errors` `0.1.0-alpha.1`; Customer's direct
-`Reunion.Errors` `.2` pin wins resolution. The validation package remains unpublished. Every
+`Reunion.Errors` `.2` pin wins resolution. The matching production package is now published and
+verified from NuGet.org. Every
 temporary feed entry and Payment `.915` verification pin has been removed from source configuration.
 The Phase 5 source is verified and committed at `d3b6d6b90`. Native, security, correctness,
 isolation, boundary, seeding, convention, and changed-path test-coverage review found no issues in
-`27607208f..d3b6d6b90`. The branch remains unpushed and PR #282 remains untouched.
+`27607208f..d3b6d6b90`. The branch remains unpushed and PR #282 remains untouched. It is 59 commits
+behind current `origin/main`, whose incoming range contains the published Payment `.894` pin and
+terminal platform sync required for final clean-feed revalidation.
 
 ## Next Steps
 
-Blocked: `Reunion.Validation` `0.1.0-alpha.1` is not published, Payment PR #453 remains open, its `.915` packages are not published, and the generated platform sync therefore does not exist.
-Unblock action: the Reunion integration owner must publish and verify Reunion.Validation `.1`, land PR #453, verify the Payment publication, and land the generated platform-sync PR.
-Resume when: normal configured feeds resolve Reunion.Validation `.1` and the published Payment packages, the generated platform-sync PR is merged, and this branch restores, builds, and passes its targeted tests without a temporary source or disposable version pin.
+Merge current `origin/main` `483350124` into the clean branch, restore through normal configured feeds,
+and prove the branch resolves published `Reunion.Validation` `.1`, `Reunion.Errors` `.2`, and the
+platform-pinned Payment `.894` packages without a temporary source or disposable version. Rerun
+Ticket unit/integration, Shared.Api, Customer/full Release builds, the Customer carve, package/source
+inventories, and `git diff --check`; review the current-main delta and resolve any finding. Then
+prepare the replacement PR delivery while keeping historical PR #282 untouched until explicit
+approval to supersede it.
 
 ## Completed work
 
@@ -78,6 +84,8 @@ Resume when: normal configured feeds resolve Reunion.Validation `.1` and the pub
   ownership and coverage.
 - Committed Phase 5 as `d3b6d6b90` and reviewed `27607208f..d3b6d6b90` across every required native,
   security, architecture, convention, seeding, and changed-path coverage lens with no findings.
+- The Reunion integration owner completed the validation publication, Payment publication, and
+  generated platform-sync gates and returned this ledger for final normal-feed revalidation.
 
 ## Verification
 
@@ -94,6 +102,10 @@ Resume when: normal configured feeds resolve Reunion.Validation `.1` and the pub
   restored after verification.
 - Code/security review range `1043a9178..acaec615b`: one implementation commit, no findings.
 - Phase 5 code/security review range `27607208f..d3b6d6b90`: one implementation commit, no findings.
+- Production validation package SHA-256
+  `0947D93220F585F8AD6E8617F5268807B4C05B120DF01970D49E036302010790`; valid NuGet.org repository
+  signature; nine non-signature entries byte-match the release candidate; clean NuGet.org-only net10
+  restore/build/run resolves `Reunion.Validation`, `Reunion`, and `Reunion.Errors` `.1` exactly.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -113,6 +125,17 @@ Resume when: normal configured feeds resolve Reunion.Validation `.1` and the pub
   in owner checkpoint `8d6cd0cfc`.
 
 ## Event log
+
+### 2026-08-10 — delivery package gates opened
+
+- Action: Received the terminal validation, Payment publication, and generated-sync handoff from the
+  Reunion integration owner and reconciled it with the clean local Ticket replacement.
+- Evidence: production `Reunion.Validation` `.1` signature/payload/clean-restore proof; Payment
+  `0.1.0-alpha.0.894` publication verification; PR #463 merged as `483350124`; implementation head
+  `d3b6d6b90`; branch 59 commits behind current main; historical PR #282 unchanged.
+- Outcome: The external delivery blocker is removed. Final normal-feed revalidation is actionable
+  after merging current main.
+- Follow-up: Execute `## Next Steps`; do not supersede PR #282 without explicit approval.
 
 ### 2026-08-10 — Reunion.Validation phase reviewed and delivery-gated
 
