@@ -18,5 +18,5 @@
   Fixed in this commit by adding direct `Reunion.Errors` ownership; the focused Release build succeeds with 0 errors.
 - [x] **NAT2 — MEDIUM — native/correctness** — `api/Concertable.Customer/src/Modules/Preference/Concertable.Customer.Preference.Infrastructure/Services/PreferenceService.cs:37`
   Fixed in this commit with an atomic repository `TryAddAsync` backed by the unique `UserId` index; duplicate-key failures discard the rejected insert and return the typed conflict.
-- [ ] **NAT3 — MEDIUM — native/correctness** — `api/Concertable.Customer/src/Modules/Review/Concertable.Customer.Review.Infrastructure/Services/ConcertReviewService.cs:90`
-  The new `ReviewAlreadyExists` result has the same check-then-insert race: concurrent submissions for one ticket can both pass `HasReviewForTicketAsync`, after which the unique-`TicketId` loser becomes a 500; translate that duplicate-key persistence failure into `ReviewAlreadyExists` and discard the failed tracked review.
+- [x] **NAT3 — MEDIUM — native/correctness** — `api/Concertable.Customer/src/Modules/Review/Concertable.Customer.Review.Infrastructure/Services/ConcertReviewService.cs:90`
+  Fixed in this commit with an atomic repository `TryAddAsync` backed by the unique `TicketId` index; duplicate-key failures discard the rejected review and return `ReviewAlreadyExists`.

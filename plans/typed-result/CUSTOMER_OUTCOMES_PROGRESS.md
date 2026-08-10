@@ -145,20 +145,20 @@ net branch diff. `reviews/Feature-typed-result_customer-outcomes.md` is stamped 
 The service/module-boundary, seeding, C# convention, changed-path coverage, and security lenses are
 clean. `NAT1` is fixed in this commit by adding Review.Infrastructure's missing direct
 `Reunion.Errors` ownership; its focused Release build succeeds with 0 errors and one existing warning.
-`NAT2` is fixed in this commit by replacing Preference's check-then-insert with an atomic repository
-insert that translates the unique-`UserId` constraint into the typed conflict; Preference unit tests
-pass 19/19. `NAT3`, the equivalent Review unique-`TicketId` race, remains open. Docker became
-unresponsive before `NAT2`'s integration rerun: the mandatory data-path preflight and a direct
-`docker ps` both timed out, so the integration-debug rule correctly prevented a suite start.
+`NAT2` is fixed by replacing Preference's check-then-insert with an atomic repository insert that
+translates the unique-`UserId` constraint into the typed conflict; Preference unit tests pass 19/19.
+`NAT3` is fixed in this commit with the equivalent atomic Review insert and unique-`TicketId`
+translation; Review unit tests pass 43/43, including duplicate, fault, and cancellation paths. Docker
+became unresponsive before the focused integration reruns: the mandatory data-path preflight and a
+direct `docker ps` both timed out, so the integration-debug rule correctly prevented a suite start.
 
 ## Next Steps
 
-Fix `NAT3` in its own commit with deterministic unit coverage. Then rerun the mandatory Docker data-
-path preflight once; when healthy, run the Preference and Review integration wrappers to close the
-two persistence gates, followed by incremental review from `5cfdb9427` until clean. Then fetch and
-reconcile the branch with current `origin/main`, inspect the incoming delta, rerun every affected local
-gate, incrementally review the reconciliation, and update PR #425 through the plan-managed two-leg
-push only when the exact final work head is current and green.
+Rerun the mandatory Docker data-path preflight once; when healthy, run the Preference and Review
+integration wrappers to close the two persistence gates, followed by incremental review from
+`5cfdb9427` until clean. Then fetch and reconcile the branch with current `origin/main`, inspect the
+incoming delta, rerun every affected local gate, incrementally review the reconciliation, and update
+PR #425 through the plan-managed two-leg push only when the exact final work head is current and green.
 
 ## Completed work
 
@@ -916,3 +916,17 @@ watermark from ledger prose. A fresh full `code-review` of the committed branch 
   existing integration conflict scenario pending a healthy Docker engine. `NAT3` remains open.
 - Follow-up: Fix `NAT3`, then require one healthy Docker preflight before running the focused
   Preference and Review integration wrappers and the incremental review.
+
+### 2026-08-10 - review finding NAT3 fixed
+
+- Action: Replaced Review's check-then-insert persistence with repository `TryAddAsync`, using the
+  existing unique `TicketId` index as the atomic authority and mapping duplicate rejection to
+  `ReviewAlreadyExists` after discarding the failed tracked review.
+- Evidence: `NAT3` is fixed in the review work order by this commit; Review unit tests pass 43/43,
+  including atomic success, duplicate conflict, persistence fault, and persistence cancellation;
+  `git diff --check` is clean.
+- Outcome: All three fresh-review findings are fixed in separate unpushed commits. The focused
+  Preference and Review persistence integration gates still require a healthy Docker engine before
+  incremental review.
+- Follow-up: Require one healthy Docker data-path preflight, run the Preference and Review integration
+  wrappers, then incrementally review from `5cfdb9427`.
