@@ -3,7 +3,7 @@
 - Plan: `plans/typed-result/CUSTOMER_TICKET_REUNION_PLAN.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_customer-ticket-reunion`
 - Branch: `Feature/typed-result_customer-ticket-reunion`
-- PR: #475 open; historical PR #282 closed as superseded
+- PR: #475 merged as `2b05ed110`; historical PR #282 closed as superseded
 - Dependency/package gates: exact `Reunion.Validation` `.1`, `Reunion.Errors` `.2`, and Payment
   `0.1.0-alpha.0.894` restore from the normal NuGet.org/GitHub feed graph; generated platform-sync
   PR #463 is present in current main. The local production-baseline gate is complete.
@@ -76,14 +76,34 @@ solution, Customer, Ticket unit/integration, Shared.Api architecture, standalone
 mechanical carrier/package, temporary-input, and whitespace gates are green. Final native, security,
 correctness, isolation, boundary, seeding, convention, and changed-path coverage review of
 `d916e95cf..c891dfabb` found no issues. The spent no-findings review work order was deleted under
-`reviews/AGENTS.md`. Both publication legs were pushed and verified, replacement PR #475 is open on
-the exact branch, and historical PR #282 is closed as superseded.
+`reviews/AGENTS.md`. Both publication legs and the PR-transition checkpoint were pushed and verified;
+replacement PR #475 is open at `ecaf0de2b`, and historical PR #282 is closed as superseded. The
+plan-only tail after the code review was incrementally reviewed with no findings. PR workflow run
+`31403666851` is terminal green at that exact head: build, all backend unit/integration jobs, and all
+five backend carves passed; merge-queue-only E2E jobs skipped as expected.
+The PR has no skip labels or opt-out trailers, so the default full-E2E tier is selected.
+Auto-merge is enabled with merge method `MERGE` for exact head `ecaf0de2b`; the first post-enable
+observation remained `OPEN/CLEAN` with no queue entry for six consecutive minute polls. No PR or
+merge-group failure exists, so this is the documented GitHub re-evaluation glitch rather than CI.
+The one-time re-assertion succeeded: PR #475 is admitted at queue position 2 in `AWAITING_CHECKS`
+with an estimated merge time of 2,347 seconds.
+Merge-group run `31405842757` is queued for #475. One monitor poll stopped on a surfaced transient
+GitHub API `401`; immediate authentication and state verification succeeded, with the PR still
+`OPEN/CLEAN`, admitted at position 2, and no CI failure.
+Merge-group run `31405842757` completed successfully and PR #475 merged as `2b05ed110`. Full API and
+UI E2E ran for both B2B and Customer, all carves/build/unit/integration jobs passed, and `ci-complete`
+was green.
+Publish run `31411531962` successfully packed and pushed platform version `0.1.0-alpha.0.910`, then
+verified a fresh full-closure restore from the feed. Platform-sync workflow `31411705236` opened PR
+#479; its build/unit/integration/carve gate passed and it merged as `b17fb07fe` at
+`0.1.0-alpha.0.910`. Current `origin/main` is that sync merge and contains both source and sync commits.
 
 ## Next Steps
 
-Push this PR-transition checkpoint, wait for PR #475's checks, select the full-E2E tier, and carry the
-replacement through the merge queue, publication, generated platform sync, and terminal plan
-closeout.
+Transfer this terminal recovery state to `Docs/typed-result_customer-ticket-reunion_closeout` from
+current `origin/main`, retire the merged feature worktree/branch, delete this completed plan pair,
+tick its owning typed-result roadmap item, review the docs/meta-only closeout, and land it through the
+sanctioned docs merge path.
 
 ## Completed work
 
@@ -116,6 +136,14 @@ closeout.
   equality before writing this independent evidence checkpoint.
 - Pushed and verified evidence head `b51d087d2`, opened replacement PR #475 against `main`, verified
   its exact head/base, and closed historical PR #282 as superseded.
+- Pushed and verified PR-transition head `ecaf0de2b`; incrementally reviewed its plan-only tail with
+  no findings and retained this subsequent observation as a local-only transition checkpoint.
+- Observed PR run `31403666851` terminal green at `ecaf0de2b`: build, all selected backend unit and
+  integration tests, and all five backend carves passed; E2E skipped at PR level as designed.
+- Followed merge-group run `31405842757` to success and confirmed PR #475 merged as `2b05ed110` after
+  full B2B/Customer API and UI E2E, carves, build, unit, and integration gates passed.
+- Verified publish run `31411531962` produced and fresh-restored platform `.910`, then followed
+  generated platform-sync PR #479 through green checks to merge `b17fb07fe`.
 
 ## Verification
 
@@ -174,6 +202,89 @@ closeout.
   application pre-check/domain throw in the Ticket branch's net diff.
 
 ## Event log
+
+### 2026-08-10 — publication and platform sync terminal green
+
+- Action: Located the publish and platform-sync workflows by source merge SHA, verified publication
+  and feed restore, identified generated PR #479, and verified its complete terminal check set and
+  merge.
+- Evidence: publish run `31411531962` success; platform version `0.1.0-alpha.0.910`; platform-sync
+  workflow `31411705236` success; PR #479 merged as
+  `b17fb07fe5bf6f150996acbc19b8354f3e6dc293`; sync CI run `31411726801` green; both source and sync
+  commits are ancestors of current `origin/main`.
+- Outcome: The Customer Ticket replacement lifecycle is terminal. No package or platform-sync gate
+  remains.
+- Follow-up: transfer this recovery state and execute terminal docs closeout.
+
+### 2026-08-10 — replacement merged through full E2E
+
+- Action: Restored authoritative GitHub observation after the long-lived poll host expired, verified
+  the merge-group's terminal job set, and confirmed the PR merge commit.
+- Evidence: PR #475 `MERGED` as `2b05ed1105e00d82b7e9532ce8c5fdedf80f56fe`; merge-group run
+  `31405842757` conclusion `success`; API E2E passed for B2B and Customer; UI E2E passed for B2B and
+  Customer; `ci-complete` passed.
+- Outcome: The Ticket replacement is landed on main through the protected full-E2E queue.
+- Follow-up: discover package publication for `2b05ed110`, then own generated platform sync and
+  terminal closeout.
+
+### 2026-08-10 — merge-group run discovered after transient poll error
+
+- Action: Surfaced a GitHub API `401` from the queue monitor, then verified authentication, PR state,
+  queue state, and merge-group runs directly before resuming.
+- Evidence: `gh auth status` healthy; PR #475 `OPEN/CLEAN`; queue `AWAITING_CHECKS` position 2;
+  merge-group run `31405842757` queued for branch `gh-readonly-queue/main/pr-475-*`.
+- Outcome: The polling transport recovered and no CI failure occurred. Full E2E remains queued.
+- Follow-up: resume bounded monitoring of run `31405842757` and PR #475.
+
+### 2026-08-10 — replacement admitted to merge queue
+
+- Action: Disabled and re-enabled auto-merge exactly once after the confirmed re-evaluation glitch,
+  then queried the merge-queue entry directly.
+- Evidence: exact head `ecaf0de2b`; queue state `AWAITING_CHECKS`, position 2, estimated time to merge
+  2,347 seconds.
+- Outcome: PR #475 is admitted to the protected full-E2E merge queue.
+- Follow-up: monitor the merge group and terminal PR state; do not re-toggle or retry.
+
+### 2026-08-10 — queue re-evaluation glitch confirmed
+
+- Action: Monitored PR state, queue entry, PR failures, and merge-group failures through the bounded
+  post-enable admission window.
+- Evidence: six consecutive `OPEN/CLEAN`, queue=`no` observations; zero PR check failures and zero
+  merge-group failures for #475.
+- Outcome: GitHub did not re-evaluate the green PR into the queue. This is an admission glitch, not a
+  test failure.
+- Follow-up: disable and re-enable auto-merge once, then resume the bounded queue monitor.
+
+### 2026-08-10 — replacement queued for full E2E
+
+- Action: Confirmed the empty E2E-label set and absence of opt-out trailers, then enabled merge-queue
+  auto-merge for PR #475 using the repository-mandated merge method.
+- Evidence: exact PR head `ecaf0de2b`; auto-merge enabled at `2026-08-10T15:25:55Z`; initial state
+  `OPEN/CLEAN` with no queue entry during normal admission latency.
+- Outcome: Full E2E is selected and queue admission is pending.
+- Follow-up: monitor admission, merge-group checks, and terminal PR state without moving the PR head.
+
+### 2026-08-10 — replacement PR checks green
+
+- Action: Waited for every PR-level check on #475 to reach a terminal state and verified the checked
+  head remained the recorded delivery head.
+- Evidence: run `31403666851`; `ci-complete`, build, backend unit/integration matrix, and
+  carve-auth/payment/search/b2b/customer all passed at `ecaf0de2b`; E2E jobs skipped at PR level as
+  designed.
+- Outcome: The PR-level gate is green. The Ticket runtime/API/package change requires the full E2E
+  merge-queue tier.
+- Follow-up: normalize labels and enqueue exact remote head `ecaf0de2b`.
+
+### 2026-08-10 — PR transition checkpoint published
+
+- Action: Pushed the PR-transition checkpoint, proved local/remote/PR-head equality, and reviewed the
+  plan-only commits added after the final code review.
+- Evidence: local, remote, and PR #475 head all resolved to
+  `ecaf0de2b6d2a912e171e76ee3f819ff224a5152`; incremental range `c891dfabb..ecaf0de2b` changes only
+  this ledger and has no findings.
+- Outcome: PR #475 is ready for terminal checks and queue selection. This observation is local-only so
+  the reviewed remote head remains stable.
+- Follow-up: execute `## Next Steps` against recorded PR head `ecaf0de2b`.
 
 ### 2026-08-10 — replacement PR opened and historical PR superseded
 
