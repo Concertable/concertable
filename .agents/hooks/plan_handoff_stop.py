@@ -420,10 +420,15 @@ def expected_pointer(path):
     )
 
 
-def handoff_reason(path, body):
+def handoff_summary(body):
     summary = re.sub(r"\s+", " ", body.split("\n\n", 1)[0]).strip()
     if len(summary) > 240:
         summary = summary[:237].rstrip() + "..."
+    return summary
+
+
+def handoff_reason(path, body):
+    summary = handoff_summary(body)
     text = path.read_text(encoding="utf-8")
     worktree = metadata(text, "Worktree") or str(ledger_root(path))
     return (
@@ -434,6 +439,37 @@ def handoff_reason(path, body):
 
 def expected_handoff(path, pointer, body):
     return f"{handoff_reason(path, body)}\n\n```text\n{pointer}\n```"
+
+
+def normalized_handoff_text(value):
+    value = re.sub(r"```(?:text)?", "", value, flags=re.IGNORECASE)
+    value = value.replace("`", "")
+    value = re.sub(r"(?<=\S)-\s+(?=\S)", "-", value)
+    return re.sub(r"\s+", " ", value).strip()
+
+
+def handoff_present(message, path, pointer, body):
+    text = path.read_text(encoding="utf-8")
+    worktree = metadata(text, "Worktree") or str(ledger_root(path))
+    parts = (
+        f"Why: {path.name} owns unfinished work from this turn:",
+        handoff_summary(body).removesuffix("..."),
+        f"Only run this continuation if no agent or session is already working in {worktree}.",
+        pointer,
+    )
+    normalized_message = normalized_handoff_text(message)
+    position = 0
+    for part in parts:
+        normalized_part = normalized_handoff_text(part)
+        match = normalized_message.find(normalized_part, position)
+        if match < 0:
+            return False
+        position = match + len(normalized_part)
+    return True
+
+
+def ends_with_pointer(message, pointer):
+    return normalized_handoff_text(message).endswith(normalized_handoff_text(pointer))
 
 
 def evaluate(data):
@@ -460,7 +496,7 @@ def evaluate(data):
             malformed_blockers.append(path)
         elif not is_terminal(body):
             pointer = expected_pointer(path)
-            active.append((path, pointer, expected_handoff(path, pointer, body)))
+            active.append((path, pointer, body, expected_handoff(path, pointer, body)))
     if malformed_blockers:
         names = ", ".join(path.name for path in malformed_blockers)
         return {
@@ -472,7 +508,12 @@ def evaluate(data):
                 "continuation pointer."
             ),
         }
-    active = list({pointer: (path, pointer, handoff) for path, pointer, handoff in active}.values())
+    active = list(
+        {
+            pointer: (path, pointer, body, handoff)
+            for path, pointer, body, handoff in active
+        }.values()
+    )
     message = (data.get("last_assistant_message") or data.get("lastAssistantMessage") or "").replace(
         "\r\n", "\n"
     )
@@ -497,17 +538,16 @@ def evaluate(data):
         failures.append("BLOCKER HANDOFF GATE: " + " | ".join(blocked_failures))
     if active:
         missing = [
-            (path, pointer, handoff)
-            for path, pointer, handoff in active
-            if handoff not in message
+            (path, pointer, body, handoff)
+            for path, pointer, body, handoff in active
+            if not handoff_present(message, path, pointer, body)
         ]
-        ending = message.rstrip()
-        ends_with_handoff = any(ending.endswith(handoff) for _, _, handoff in active)
+        ends_with_handoff = any(ends_with_pointer(message, pointer) for _, pointer, _, _ in active)
         if missing or not ends_with_handoff:
             if not missing:
                 missing = active
-            handoffs = "\n\n".join(handoff for _, _, handoff in missing)
-            names = ", ".join(path.name for path, _, _ in missing)
+            handoffs = "\n\n".join(handoff for _, _, _, handoff in missing)
+            names = ", ".join(path.name for path, _, _, _ in missing)
             failures.append(
                 f"HANDOFF GATE: {names} has non-terminal `## Next Steps`, but the final response "
                 "omitted its explained, collision-safe continuation. Local implementation completion "
