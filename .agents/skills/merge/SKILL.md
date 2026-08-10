@@ -60,7 +60,7 @@ or queueing. Never push a checkpoint-only local tail to a queued, locked, merged
    `**/*.md`, `.agents/**`, `.claude/**`, `.codex/**`, `plans/**`, `docs/**`, `AGENTS.md`, `CLAUDE.md`,
    `PROMPTS.md`, `README*`) requires a clean **`/docs-review`**, not a code review — and such a PR
    normally lands via `/merge-docs`, not this skill. Any runtime/product/package/CI-test-selection path
-   makes it a code PR: require **`/code-review`** (`/big-review` when too large for one pass). If commits
+   makes it a code PR: require **`/review`** (`/big-review` when too large for one pass). If commits
    were added after the review, require `/incremental-review`. Do not proceed while review findings
    remain open.
 
