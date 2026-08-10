@@ -15,7 +15,8 @@ this service branch owns only B2B semantics and consumes the integrated publishe
 ## Checkpoints
 
 Checkpoints 1–7 are complete on the branch. Checkpoint 8 is actionable against published
-`Reunion.Validation` `0.1.0-alpha.1` and the published Payment/platform baseline. No FluentResults
+`Reunion.Validation` `0.1.0-alpha.1`, `Reunion.Errors` `0.1.0-alpha.2`, and the published
+Payment/platform baseline. No FluentResults
 adapter, string bridge, committed local source, feed path, or disposable package pin may be introduced.
 
 - [x] **Checkpoint 1 — Deal.** Deal module outcomes → owned Results; operation errors use explicit
@@ -88,8 +89,8 @@ adapter, string bridge, committed local source, feed path, or disposable package
 
 ## Dependency gate
 
-The dependency gate is open. `Reunion.Validation` `0.1.0-alpha.1` is published, indexed,
-repository-signature and payload-provenance verified, and clean-restored from NuGet.org with its
-published Reunion dependency graph. Payment `0.1.0-alpha.0.894` and generated platform-sync PR #463
-are terminal on the merged main baseline. Checkpoint 8 must use only normal configured feeds and the
+The dependency gate is open. `Reunion.Validation` `0.1.0-alpha.1` and `Reunion.Errors`
+`0.1.0-alpha.2` are published, indexed, repository-signature and payload-provenance verified, and
+clean-restored from NuGet.org with their published dependency graph. The merged platform `.897`
+baseline is the implementation baseline. Checkpoint 8 must use only normal configured feeds and the
 published versions; temporary package inputs remain forbidden.

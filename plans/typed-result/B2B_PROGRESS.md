@@ -4,11 +4,10 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-B2BTypedResultMigration`
 - Branch: `Refactor/B2BTypedResultMigration`
 - PR: not opened
-- Dependency/package gates: Payment `0.1.0-alpha.0.894`, platform-sync PR #463, and production-verified
-  `Reunion.Validation` `0.1.0-alpha.1` are terminal on the merged main baseline; Checkpoint 8 is
-  actionable from normal configured feeds
-- Last reconciled: 2026-08-10 against origin/main `3a94cc547`, required sync merge `92643964e`,
-  production validation-package evidence, and the new Checkpoint 8 DI-validator scope
+- Dependency/package gates: platform `0.1.0-alpha.0.897`, `Reunion.Errors` `0.1.0-alpha.2`, and
+  production-verified `Reunion.Validation` `0.1.0-alpha.1` resolve from normal configured feeds
+- Last reconciled: 2026-08-10 against origin/main `5f39b9d76`, merged as `f108a83fd`; origin/main
+  advanced to `0509c6dfd` during verification and has not been merged into the dirty worktree
 
 ## Current state
 
@@ -17,14 +16,13 @@ Checkpoints 1–7 are locally complete on the single B2B migration branch as imp
 through `6f4a5cc3ee953ea3971df464823da7f5b9b100c6`, including platform `0.1.0-alpha.0.892`; the
 review-fix code head is `92cd03a25f48bcee4f6c5e69010bf04be9477500`.
 
-Checkpoint 8 is newly outstanding. The scoped custom DI-validator inventory contains
-`IApplicationValidator` and `IConcertValidator`; both still expose
-`UnitResult<Concertable.Kernel.Errors.ValidationErrors>` on validation-only methods, while
-`IApplicationValidator` also owns ID-based resource lookup and operation-error mapping that belong in
-the application service. Checkpoint 8 replaces those validation-only contracts with
-`Reunion.Validation.ValidationResult`, preserves the existing capability booleans and validation
-ProblemDetails payloads, and leaves FluentValidation `AbstractValidator<T>` request validators plus
-non-DI Deal/domain validation out of scope.
+Checkpoint 8 is implemented but uncommitted pending its Docker-backed integration gate. The scoped
+custom DI-validator inventory contains only `IApplicationValidator` and `IConcertValidator`; every
+validation-only method now returns `Reunion.Validation.ValidationResult`. `ApplicationService` owns
+ID lookup, operation-error mapping, and reduction to the existing public capability booleans.
+Structured validator, service, and HTTP coverage preserves the `application`, `totalTickets`,
+`booking`, and `datePosted` fields and messages. FluentValidation `AbstractValidator<T>` request
+validators plus non-DI Deal/domain validation remain unchanged and out of scope.
 
 Concert accept, cancel, application-cancel, and finish workflows now expose operation-owned Reunion
 results. Payment and lifecycle failures compose through `MapError`; no string or HTTP-exception bridge
@@ -56,11 +54,12 @@ invitation acceptance asserts the typed `InvitationNotPending` Conflict contract
 integration regressions after that run; both projects build, but Docker became unavailable before those
 new tests could execute.
 
-The current dependency gate is open. PR #453 merged through full E2E as `9d43428c1`, Payment packages
-`0.1.0-alpha.0.894` were published and verified, and generated platform-sync PR #463 merged as
-`483350124`. `Reunion.Validation` `0.1.0-alpha.1` is published, indexed, repository-signature and
-payload-provenance verified, and clean-restored from NuGet.org with its published dependency graph.
-This branch merged current origin/main `3a94cc547` as `92643964e`; no B2B PR or remote branch exists.
+The current dependency gate is open. `Reunion.Validation` `0.1.0-alpha.1` is published, indexed,
+repository-signature and payload-provenance verified. The merged platform `.897` baseline requires
+`Reunion.Errors` `0.1.0-alpha.2`; Checkpoint 8 therefore upgraded B2B's direct pin and mechanically
+replaced the removed `ErrorDefinition.For<TError>()` builder with the supported direct nested-case
+factories. The resolved Concert graph is Reunion `.1`, Reunion.Errors `.2`, and Reunion.Validation
+`.1`. This branch merged origin/main `5f39b9d76` as `f108a83fd`; no B2B PR or remote branch exists.
 
 Exact local packages made checkpoints 6-7 independently implementable without changing delivery order.
 `Concertable.Payment.Contracts` and `Concertable.Payment.Client` `0.1.0-alpha.0.911` were packed from
@@ -69,8 +68,8 @@ repository commit `a779fe04139e8e33fca7f294a26c41e44c89dda7` into
 are `7DDA02F542F606F6707D8305E8524E4227A7F2222F28113F8226D0AD239D3DA8` and
 `A52EA0562FA36EA123450BE2DC022E9F33AE9510FB100E4309F245DEFCC14D14` respectively. The manifests name
 that exact commit; Client depends on Contracts `.911`, Reunion `.1`, and Reunion.Errors `.1`. Those
-artifacts are historical provenance only; Checkpoint 8 uses the normal published `.894`/Validation
-`.1` baseline and must not restore from the temporary feed.
+artifacts are historical provenance only; Checkpoint 8 uses the normal published `.897` platform,
+Errors `.2`, and Validation `.1` baseline and does not restore from the temporary feed.
 
 The full staged code/security review covered `1043a9178..e229afb58`; the clean incremental review then
 covered all 13 later commits through `3d50d321c62fc7b9bc302aa9b2cbb93d77aa28b0`. Both review
@@ -80,29 +79,24 @@ unresolved risk and decision are owned by
 `api/Concertable.B2B/src/Modules/Concert/TECH_DEBT.md`. The review artifact stays because SEC1 remains
 deferred.
 
-The final full-solution build and the NAT1/NAT2 integration regressions are environment-pending. The
-sandbox could not read the user NuGet configuration needed to resolve the Aspire SDK; the approved
-full-solution build emitted no compiler or package result before its 10-minute timeout. The sandboxed
-Docker check could not access Docker configuration or its named pipe, and the approved health script
-produced no result before its 3-minute timeout. Neither attempt establishes a code failure or a healthy
-Docker engine. Per the Docker startup-failure rule, the integration regressions were not started and
-must not be retried again this turn.
+The B2B and full-solution Release builds, Concert unit tests, architecture tests, formatting, package
+resolution, and source/config audits are conclusive and green on the uncommitted Checkpoint 8 tree.
+Docker remains environment-blocked: `docker ps` timed out after 34 seconds and the required
+fresh-container HTTP round-trip produced no result before its 3-minute timeout. Concert integration
+and the pending NAT1 Tenant/NAT2 User regressions were not started. Per the Docker startup-failure
+rule, Docker-backed tests must not be retried again this turn.
 
 ## Next Steps
 
-Implement Checkpoint 8 against published `Reunion.Validation` `0.1.0-alpha.1`: add direct package
-ownership wherever the API is named, convert every validation-only `IApplicationValidator` and
-`IConcertValidator` method to `ValidationResult`, move ID lookup and operation-error mapping from the
-validator into the application service, and preserve capability booleans plus the exact existing
-validation ProblemDetails fields/messages. Do not convert FluentValidation request validators or
-non-DI Deal/domain validation.
+Blocked: Checkpoint 8 cannot pass its required Concert, NAT1 Tenant, and NAT2 User integration gates because Docker did not complete either the daemon check or the mandatory fresh-container HTTP round-trip.
+Unblock action: Tommy must start or restart Docker Desktop and leave it in the Running state, then resume this worktree without discarding its uncommitted Checkpoint 8 code.
+Resume when: `scripts/docker-health.ps1` completes successfully with a stable host-to-container HTTP data round-trip.
 
-Add structured validator/service/HTTP coverage and a scoped DI-validator inventory, then run the
-B2B/full Release builds, Concert unit/integration and architecture gates, the pending NAT1 Tenant and
-NAT2 User integration regressions after `scripts/docker-health.ps1` passes, and source/config audits.
-Commit Checkpoint 8, run incremental code/security review from the stored review watermark, address
-every new finding serially, and update this ledger. Do not push or merge B2B until separately
-instructed.
+After the health gate passes, run `scripts/integration.ps1 concert`, the Tenant integration project,
+and the User integration project through the `integration-debug` workflow. If green, commit
+Checkpoint 8 with this plan pair, fetch and reconcile the newer origin/main, repeat affected build/test
+gates, then run incremental code/security review from watermark `3d50d321c`, address every new finding
+serially, and update this ledger. Do not push or merge B2B until separately instructed.
 
 Before delivery, SEC1 still needs Tommy's decision to authorize the separately planned B2B + Payment
 durable financial-lifecycle saga/package cut-over or explicitly accept the unresolved
@@ -115,6 +109,9 @@ financial/state inconsistency risk recorded in
   migrations, preserved from the branch's existing commits.
 - Checkpoints 6-7: Concert payment/cancel/finish owned outcomes, retryable completion faults, direct
   Reunion carrier/terminal ownership, and complete B2B FluentResults removal.
+- Checkpoint 8 implementation is present in the working tree: DI validation carriers, service-owned
+  lookup/error mapping, capability booleans, structured coverage, direct package ownership, and the
+  Reunion.Errors alpha.2 direct-factory compatibility migration. Its integration gate is pending.
 - Committed checkpoints 6-7 as `e229afb581c829279ca821b0a85729c4c4f0f441`.
 - Completed the staged big review over `1043a9178..e229afb58`, then the clean incremental code/security
   review over `e229afb581c829279ca821b0a85729c4c4f0f441..3d50d321c62fc7b9bc302aa9b2cbb93d77aa28b0`.
@@ -158,6 +155,20 @@ financial/state inconsistency risk recorded in
 
 ## Verification
 
+- Checkpoint 8 B2B Release build: 0 errors and 2 existing generated Reqnroll nullable warnings.
+- Checkpoint 8 full Release solution build after full restore: 0 errors and 3 existing warnings.
+- Checkpoint 8 Concert unit tests: 146/146; B2B architecture tests: 8/8, both rerun green after
+  changed-file formatting.
+- Checkpoint 8 package audit: Concert resolves Reunion `.1`, Reunion.Errors `.2`, and
+  Reunion.Validation `.1`; no temporary feed, `.911` pin, restore-source override, or obsolete
+  `ErrorDefinition.For<TError>()` remains under B2B.
+- Checkpoint 8 validator inventory: exactly two custom validator interfaces are registered in DI,
+  `IApplicationValidator` and `IConcertValidator`; their validation-only methods return
+  `ValidationResult`. Remaining `UnitResult<ValidationErrors>` uses are the explicitly excluded
+  Deal/domain validation surface.
+- Checkpoint 8 Docker gate: `docker ps` timed out after 34 seconds; the approved
+  `scripts/docker-health.ps1` fresh-container HTTP probe produced no result before its 3-minute
+  timeout. Concert, NAT1 Tenant, and NAT2 User integration tests were not started.
 - Exact-package Release build: `api/Concertable.B2B/Concertable.B2B.slnx` succeeded with 0 warnings
   and 0 errors against Payment.Contracts/Client `.911` from reviewed producer `a779fe041`.
 - B2B unit wrapper: all four projects green; Concert 124/124, Deal 22/22, Tenant 117/117, Workers 5/5.
@@ -186,10 +197,10 @@ financial/state inconsistency risk recorded in
 - Review CV1: `ErrorDefinitionContractTests` passed 55/55, the full Concert unit suite passed 144/144,
   and the scoped diff check passed.
 - Checkpoint 8 planning audit: `IApplicationValidator` and `IConcertValidator` are the only custom
-  B2B validator interfaces registered directly in DI; their validation-only methods still return
-  `UnitResult<Concertable.Kernel.Errors.ValidationErrors>`. FluentValidation request validators are
-  framework contracts and are explicitly excluded. Production `Reunion.Validation` `.1`, Payment
-  `.894`, and platform-sync PR #463 are terminal and normal-feed ready.
+  B2B validator interfaces registered directly in DI; their validation-only methods now return
+  `ValidationResult`. FluentValidation request validators and Deal/domain validation are explicitly
+  excluded. Production Reunion `.1`, Reunion.Errors `.2`, and Reunion.Validation `.1` resolve from
+  normal feeds.
 - Incremental code/security review: the 13 commits in
   `e229afb581c829279ca821b0a85729c4c4f0f441..3d50d321c62fc7b9bc302aa9b2cbb93d77aa28b0`
   produced no new findings after native correctness/test-coverage, security-sensitive controller and
@@ -271,10 +282,11 @@ financial/state inconsistency risk recorded in
   decision recorded in Concert `TECH_DEBT.md`.
 - The clean incremental review covers every fix commit and the intervening mainline merge through
   `3d50d321c`; both code/security watermarks equal that commit and no new findings were opened.
-- The final solution build is environment-inconclusive, not red: neither attempt reached a reported
-  compiler/package outcome. A conclusive build remains required.
-- Docker health is also environment-inconclusive. The mandatory data-round-trip did not return a
-  result, so the NAT1/NAT2 integration regressions remain gated and were not retried this turn.
+- The prior full-solution environment uncertainty is discharged: after restoring all 181 projects,
+  the Release build completed with 0 errors and 3 existing warnings.
+- Docker is a hard local verification blocker. Both the daemon query and mandatory data-round-trip
+  failed to return a healthy result, so Concert plus NAT1/NAT2 integration remain gated and were not
+  retried after the bounded probe.
 
 ## Downstream handoffs
 
@@ -286,6 +298,23 @@ financial/state inconsistency risk recorded in
   overlapping Concert workflow changes.
 
 ## Event log
+
+### 2026-08-10 — Checkpoint 8 implemented; integration blocked on Docker
+
+- Action: Merged origin/main `5f39b9d76`, implemented DI `ValidationResult` boundaries and
+  application-service eligibility ownership, added structured validator/service/HTTP coverage,
+  reconciled B2B to Reunion.Errors alpha.2 direct factories, formatted changed files, and ran every
+  non-Docker verification gate.
+- Evidence: merge `f108a83fd`; B2B build 0 errors; full-solution build 0 errors/3 existing warnings;
+  Concert unit 146/146; architecture 8/8; exact resolved Reunion `.1`/Errors `.2`/Validation `.1`;
+  scoped inventory finds only `IApplicationValidator` and `IConcertValidator`. `docker ps` timed out
+  after 34 seconds and `scripts/docker-health.ps1` timed out after 3 minutes without a successful
+  HTTP round-trip. Origin/main advanced to `0509c6dfd` during verification and was not merged into the
+  dirty tree.
+- Outcome: Checkpoint 8 code is implemented and all non-Docker gates are green, but it remains
+  uncommitted and unreviewed until Concert, NAT1 Tenant, and NAT2 User integration pass. No push, PR,
+  or merge was created.
+- Follow-up: start or restart Docker Desktop; resume only after `scripts/docker-health.ps1` passes.
 
 ### 2026-08-10 — DI validation checkpoint added
 
