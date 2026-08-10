@@ -7,8 +7,8 @@
 - Dependency/package gates: exact `Reunion.Validation` `.1`, `Reunion.Errors` `.2`, and Payment
   `0.1.0-alpha.0.894` restore from the normal NuGet.org/GitHub feed graph; generated platform-sync
   PR #463 is present in current main. The local production-baseline gate is complete.
-- Last reconciled: 2026-08-10 against `origin/main` `ddb6017ca`, verified local head `82e56eefa`,
-  and historical PR #282 head `26ed63b8`
+- Last reconciled: 2026-08-10 against `origin/main` `d916e95cf`, clean local head `a626d5c0d`,
+  historical PR #282 head `26ed63b8`, and Tommy's explicit replacement/supersession authorization
 
 ## Current state
 
@@ -70,13 +70,17 @@ stock is a background consistency/corruption fault that must remain exceptional;
 has no production caller and rejects only impossible internal input/capacity. `CompleteAsync` missing
 concert remains the existing asynchronous consistency exception. Customer Review's star-range guard
 belongs to `CUSTOMER_OUTCOMES_PLAN.md`. Shared blanket exception handling remains deferred to the
-roadmap's future global audit.
+roadmap's future global audit. Tommy has explicitly authorized publishing this replacement and
+closing PR #282 as superseded. The clean branch is 58 commits behind current main and must be updated,
+rebuilt, retested, and reviewed before publication.
 
 ## Next Steps
 
-Blocked: Replacement PR publication and historical PR #282 supersession require Tommy's explicit approval.
-Unblock action: Tommy approves superseding PR #282; then push this verified branch, open the replacement PR, close PR #282 as superseded, and continue its checks and merge lifecycle.
-Resume when: Tommy explicitly authorizes the replacement PR and supersession of PR #282.
+Merge current `origin/main` into this clean branch, resolve any overlap without weakening the Ticket
+semantics, and re-run the full Release build, Ticket unit/integration, Shared.Api architecture, carve,
+mechanical, and review gates. When green, execute the plan-aware two-leg push, open and verify the
+replacement PR, close PR #282 as superseded, then carry the replacement through PR checks, full-E2E
+merge queue, publication, generated platform sync, and terminal plan closeout.
 
 ## Completed work
 
@@ -153,6 +157,16 @@ Resume when: Tommy explicitly authorizes the replacement PR and supersession of 
   application pre-check/domain throw in the Ticket branch's net diff.
 
 ## Event log
+
+### 2026-08-10 — replacement delivery authorized
+
+- Action: Received Tommy's explicit authorization to publish the verified replacement and supersede
+  historical PR #282, then refreshed Git and GitHub delivery state.
+- Evidence: clean local head `a626d5c0d`; current `origin/main` `d916e95cf`; divergence 58 behind / 12
+  ahead; no replacement PR; PR #282 remains open at `26ed63b8`; no open platform-sync PR.
+- Outcome: The authorization blocker is cleared. Current-main reconciliation and the complete local
+  verification/review gate are required before publication.
+- Follow-up: execute `## Next Steps` through replacement PR delivery and terminal closeout.
 
 ### 2026-08-10 — PR #470 domain-outcome reconciliation
 
