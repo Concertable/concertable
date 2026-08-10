@@ -330,6 +330,19 @@ finding IDs or dispositions exist. Later merge `e196f13e1` contains only already
 
 ## Event log
 
+### 2026-08-10 - Session-root handoff launcher unblocked
+
+- Action: Preserved only the session root checkout's unrelated in-flight
+  `.agents/hooks/plan_handoff_stop.py` edit in named stash
+  `root-hook-before-origin-sync-2026-08-10`, then installed the current `origin/main` hook in that
+  working tree without touching its other dirty work.
+- Evidence: root working-hook and `origin/main` blob hashes both
+  `f76c2aca15e6baaa7f15615f955c522196c7f0ca`; direct launcher execution returned `{}`; Auth remains
+  zero behind `origin/main` with only its review work order untracked.
+- Outcome: The session-root launcher no longer rejects Auth's valid plan handoff, while the displaced
+  root hook edit remains recoverable from the named stash.
+- Follow-up: run incremental review and PR preflight as `## Next Steps`.
+
 ### 2026-08-10 - Ticket migration and platform `0.910` reconciled
 
 - Action: Fetched/pruned origin again, preserved the untracked review work order, and merged the
