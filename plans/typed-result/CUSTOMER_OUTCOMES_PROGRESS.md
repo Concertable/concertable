@@ -154,13 +154,17 @@ correctly prevented a suite start. The single planned retry then proved a stable
 path; Preference passes 7/7 and Review passes 12/12 through their integration wrappers, including the
 existing duplicate-conflict scenarios, and the post-run Docker inventory is empty.
 
+The incremental review of `5cfdb9427..958c05c5a` is clean. It covers all three finding-fix commits
+and their verification checkpoints; no correctness, isolation, boundary, seeding, convention,
+changed-path coverage, or security-sensitive-path finding was added. The review watermark now names
+the exact verified work head.
+
 ## Next Steps
 
-Run incremental `/incremental-review` from watermark `5cfdb9427` over the three finding-fix commits and
-this ledger-only verification checkpoint. Address any new finding serially until clean. Then fetch and
-reconcile the branch with current `origin/main`, inspect the incoming delta, rerun every affected local
-gate, incrementally review the reconciliation, and update PR #425 through the plan-managed two-leg push
-only when the exact final work head is current and green.
+Fetch and reconcile the branch with current `origin/main`, inspect the incoming delta, and rerun every
+affected local gate. Incrementally review the reconciliation from watermark `958c05c5a`, address any
+new finding serially until clean, and update PR #425 through the plan-managed two-leg push only when
+the exact final work head is current and green.
 
 ## Completed work
 
@@ -945,3 +949,14 @@ watermark from ledger prose. A fresh full `code-review` of the committed branch 
   findings are fixed; incremental review is actionable.
 - Follow-up: Incrementally review `5cfdb9427..HEAD`, address any new finding, then reconcile current
   main and complete the final delivery gate.
+
+### 2026-08-10 - finding-fix incremental review clean
+
+- Action: Incrementally reviewed the three finding fixes and their plan-managed verification
+  checkpoints from the full-review watermark.
+- Evidence: Range `5cfdb9427..958c05c5a` spans six commits; the native, correctness,
+  microservice-isolation, module-boundary, seeding, C# convention, and changed-path coverage lenses
+  found no new issue. No security-sensitive production path changed in the incremental range.
+- Outcome: The review work order has no open finding and is stamped at the exact verified work head.
+- Follow-up: Commit this review checkpoint, then fetch and reconcile current `origin/main` before the
+  final affected-gate run.
