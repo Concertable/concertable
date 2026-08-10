@@ -9,38 +9,57 @@
   non-breaking and auto-merges. **Legal input (non-blocking):** solicitor-drafted cookie/storage
   **policy copy** is a Month-4 input and gates ONLY the final policy-wording wire (Phase 4 tail), not
   the audit/removal/correction/inventory work.
-- Last reconciled: 2026-08-10 — static code sweep of `app/web/**` + E2E test projects; branch created
-  off `origin/main` (HEAD `c7968828e`).
+- Last reconciled: 2026-08-10 — **Phase 1 COMPLETE**: static sweep + anonymous runtime capture across
+  all four SPAs (real headless Chromium, storage dumped per journey). Synced to `origin/main` at start
+  (was 2 behind; merged, clean). Worktree at branch tip; tree clean (no code changed).
 
 ## Current state
 
-Worktree created off `origin/main`. Plan + this ledger authored. **Phase 1 static inventory is
-substantially complete** (recorded below) and already yields a decisive picture; the **runtime capture
-(Phase 1 step 2) is the remaining Phase 1 work** and must run before any Phase 2 removal. No `app/web`
-or test code has been changed yet — the four SPA builds are at their `origin/main` baseline.
+**Phase 1 is complete and the decision gate is open (recorded below).** Static inventory + the
+anonymous runtime capture are both done; the capture **overturned a static assumption** (Stripe is
+*not* lazy — see the discovery below), which is exactly why the audit-first ordering mattered. Per the
+agreed capture scope (Tommy, this session), the authenticated + Stripe-checkout journeys were **not**
+booted: they need the full Aspire/Docker backend + seeded accounts and would only refine exact
+third-party key strings that are classified necessary/exempt by *purpose* regardless — their storage
+is documented from authoritative library behaviour and flagged as documented-not-observed. No `app/web`
+or test code changed — the four SPA builds remain at the `origin/main` baseline. **Phase 2 (removal)
+is now unblocked.**
 
 Branch-time gate at creation: 0 open red `chore/platform-sync-*` PRs; `origin/main` carried the
 reopened roadmap line and the merged `Docs/launch_cookie-storage-audit` PR #469.
 
 ## Next Steps
 
-Complete Phase 1 by running the runtime capture, then classify and open the decision gate:
+Phase 1 is done and the decision gate (below) is set. Start **Phase 2 — remove what the audit shows
+is unjustified**, each removal citing its inventory line in the commit message:
 
-1. Boot the stack (Aspire AppHost + the four SPAs) per the repo's run workflow. If any browser
-   automation is used, honour the Docker-health pre-flight (`./docker-health.ps1`) only if a fixture
-   stack is involved; a plain `npm run dev` of the SPAs plus a real Chrome session needs no Docker.
-2. For each affected SPA (customer, venue, artist; business is static/no-auth), drive the three
-   journeys and dump **cookies + localStorage + sessionStorage + IndexedDB** after each:
-   (a) anonymous landing/find; (b) authenticated session (manager + customer); (c) Stripe payer
-   checkout (customer ticket checkout, venue accept-checkout, artist apply-checkout). Use the DevTools
-   Application panel or a Playwright `context.cookies()` + `context.storageState()` dump per journey.
-3. Confirm/extend the static inventory tables below with the **actual** items observed — especially
-   third-party storage our code never names (Stripe `__stripe_mid`/`__stripe_sid`; anything Google
-   Maps sets at boot; the exact `oidc.*` localStorage keys).
-4. Classify every observed item (necessary / functional / optional-consent-requiring / unused) and
-   record the **decision gate** outcome in this ledger: which items go to Phase 2 (remove), Phase 3
-   (consent-before-load / functional-on-use), Phase 4 (document).
-5. Only then start Phase 2, each removal citing its inventory line.
+1. **Remove the write-only `sidebar_state` cookie** — delete the `document.cookie` write in
+   `app/web/shared/src/components/ui/sidebar.tsx:85` (never read; static-definitive). Decide from
+   evidence whether sidebar-open persistence is even wanted; the runtime capture gives no reason to
+   re-add it, so drop persistence unless Tommy wants it.
+2. **Remove the decorative consent machinery** — the analytics/marketing banner gates nothing and no
+   such technology loads anywhere (runtime-confirmed: accepting set no new storage; zero analytics
+   hosts). Remove `consent.ts` + `consent.test.ts`, `ConsentProvider.tsx`, `CookieConsentBanner.tsx`,
+   `CookiePreferencesDialog.tsx`, `ManageCookiesButton.tsx`, the wiring in all four `main.tsx`, the
+   `Footer.tsx` "Manage cookies" affordance, **and** the E2E/test scaffold that exists only to
+   suppress it (`CookieConsent.feature`, `CookieConsentPage.cs`, `CookieConsentSteps.cs`,
+   `CookieConsentState.cs`, and the `establishDeniedCookieConsent` plumbing in both B2B + Customer
+   `Browser.cs`). **Precondition:** this is correct **only because Phase 3 replaces consent with
+   lazy/functional-on-use loading** (see decision gate) — the real non-exempt boot-time third parties
+   (Stripe, Maps) are handled by not-loading-until-used, not by a banner. If the solicitor later rules
+   lazy Stripe/Maps still need a consent gate, that gate is built fresh in Phase 3 against the manifest
+   (it must gate *those* technologies, never phantom analytics/marketing) — so keep the removal and the
+   Phase 3 gate design separate.
+3. Gate each removal on: four SPA builds green; shared vitest green (with `consent.test.ts` gone); the
+   B2B + Customer UI E2E projects compile and their fixtures no longer reference removed symbols.
+4. Then **Phase 3** (lazy Stripe init + lazy Maps + the durable storage manifest/drift-guard) and
+   **Phase 4** (engineering inventory doc). Phase 3 scope now includes **Stripe** — see the discovery.
+
+**Re-running the runtime capture** (for Phase 2/3 verification): `npm install` in `app/`, then
+`npm run build:web-packages`, then `npm run dev:customer|venue|artist|business` from `app/`; drive with
+headless Chromium (`ms-playwright/chromium_headless_shell-1228`, launch args `--no-sandbox --disable-gpu
+--disable-dev-shm-usage`, `ignoreHTTPSErrors`, block `localhost:7083/7087/7088/7090` so the SPA can't
+hang on the dead OIDC/API hosts). The capture script + method are captured in this session's evidence.
 
 ## Completed work
 
@@ -49,6 +68,10 @@ Complete Phase 1 by running the runtime capture, then classify and open the deci
   with this ledger update).
 - **Phase 1 static inventory** — complete code sweep of `app/web/**` and the E2E consent machinery
   (evidence below).
+- **Phase 1 runtime capture (anonymous)** — booted all four SPAs (`npm run dev:*` after
+  `build:web-packages`) and drove customer `/` + `/find`, venue `/`, artist `/`, business `/` through a
+  real headless Chromium, dumping cookies + localStorage + sessionStorage + IndexedDB per journey
+  (evidence + decision gate below). Overturned the static "Stripe is lazy" assumption.
 
 ## Phase 1 audit — static inventory (evidence, from code)
 
@@ -105,10 +128,78 @@ Complete Phase 1 by running the runtime capture, then classify and open the deci
 - customer / venue / artist `main.tsx`: `ThemeProvider > ConsentProvider > (RouterProvider + CookieConsentBanner)`, inside `AuthProvider` (OIDC) + `MapsProvider` (Google Maps).
 - business `main.tsx`: static marketing gateway — `ConsentProvider > (App + CookieConsentBanner)` only; **no** auth, router, theme, Maps, or Stripe. Its hand-rolled footer shows `ManageCookiesButton` + `/cookies` + `/privacy` links (those routes don't exist yet — separate Month-4 item). So on business the banner asks for analytics/marketing consent while the site stores only its own `cookie-consent` record.
 
+## Phase 1 audit — runtime capture (evidence, from a real browser)
+
+Method: headless Chromium (`ms-playwright/chromium_headless_shell-1228`, `--no-sandbox --disable-gpu
+--disable-dev-shm-usage`, `ignoreHTTPSErrors`), one fresh context per journey, requests to the
+non-running OIDC/API hosts (`localhost:7083/7087/7088/7090`) aborted so the SPA renders its boot state
+instead of hanging on a dead redirect. Google + Stripe were **not** blocked. Dumped
+cookies + localStorage + sessionStorage + IndexedDB after each load; on customer `/` also after
+clicking **Accept all**. Scope: anonymous journey only (per agreed capture scope — see Current state).
+
+### What actually loaded / was stored
+
+| Journey | Third-party hosts contacted **at boot** | Device storage set (observed) |
+|---|---|---|
+| customer `/` (anon, pre-consent) | `js.stripe.com`, `m.stripe.com`, `m.stripe.network`, `r.stripe.com`, `maps.googleapis.com` | **Stripe cookies, set immediately:** `__stripe_mid` (localhost, ~5 yr, Strict), `__stripe_sid` (localhost, ~30 min, Strict), `m` (m.stripe.com, ~5 yr, httpOnly). **No** localStorage, sessionStorage, or IndexedDB. |
+| customer `/find` (anon) | same as above | same Stripe cookies; **no** Maps/OIDC/other storage |
+| customer `/` **after Accept-all** | (no new hosts) | **only** `cookie-consent` localStorage appears: `{"version":1,…,"categories":{"analytics":true,"marketing":true}}`. **No new cookies/storage** — accepting gated nothing. |
+| venue `/` (anon, manager) | `js.stripe.com`, `maps.googleapis.com` | **none** (Stripe host contacted at boot but no cookie observed pre-redirect) |
+| artist `/` (anon, manager) | `js.stripe.com`, `maps.googleapis.com` | **none** |
+| business `/` (static) | **none** | **none** — loads zero third parties; banner is present but stores nothing on load |
+
+### Runtime findings (what the capture proved that static analysis could not)
+
+1. **Stripe.js is eager, not lazy — and this overturns the static inventory.** On the **anonymous**
+   customer landing page, before any consent and with no checkout in sight, Stripe.js loads and sets
+   `__stripe_mid`/`__stripe_sid`/`m`. Root cause is code-confirmed: `app/web/shared/src/lib/stripe.ts`
+   calls `loadStripe(...)` at **module top-level** (`export const stripePromise = loadStripe(...)`), so
+   Stripe.js fires the instant any importing module enters the boot graph (it does, on customer/venue/
+   artist). A persistent `__stripe_mid` (~5 yr) set during anonymous browsing **weakens the "strictly
+   necessary for a payment the user requested" exemption**, because at boot no payment is requested.
+2. **Google Maps loads at boot but sets no observed device storage.** `maps.googleapis.com` is
+   contacted at app boot (via `MapsProvider`), but the capture found **no** Maps cookie/localStorage/
+   sessionStorage/IndexedDB. The PECR concern for Maps is therefore the **third-party script contact at
+   boot**, not stored data — lower storage-impact than assumed, still a lazy-load candidate.
+3. **The consent banner gates nothing — confirmed at runtime.** Accepting analytics+marketing wrote
+   only the `cookie-consent` record and loaded/stored nothing else; the Stripe cookies were already
+   set regardless of the decision. Decorative, as the static grep suggested.
+4. **No analytics/marketing technology exists — confirmed.** Across every SPA the only third-party
+   hosts are Stripe and Google Maps. Zero analytics/tag hosts.
+5. **IndexedDB and sessionStorage are unused everywhere.** Nothing set them in any journey.
+6. **No OIDC localStorage keys anonymously.** `oidc.user:*` is written only after a real login (not
+   exercised in this anonymous capture); documented from `oidc-client-ts` behaviour as necessary/exempt.
+
+## Phase 1 decision gate (classified inventory → phase assignment)
+
+| Item | Owner | Final class | Phase | Basis |
+|---|---|---|---|---|
+| `sidebar_state` cookie | first-party | **Unused** (write-only, never read) | **2 — remove** | static: no read path in a client SPA |
+| consent machinery + analytics/marketing categories (`consent.ts`, provider, banner, dialog, `ManageCookiesButton`, all `main.tsx` wiring, `Footer` affordance, E2E suppression scaffold) | first-party | **Gates nothing / decorative** | **2 — remove** | runtime: accept set no storage; zero analytics tech |
+| Stripe.js eager `loadStripe` at module top-level → `__stripe_mid`/`__stripe_sid`/`m` | third-party (Stripe) | **Non-exempt at boot** (loads before any payment) | **3 — make lazy** (init at checkout only) | runtime: cookies set on anonymous landing |
+| Google Maps JS at boot (`maps.googleapis.com`) | third-party (Google) | **Non-exempt optional, loads at boot** (no stored data) | **3 — lazy-load / functional-on-use** | runtime: contacted at boot, sets no storage |
+| durable storage manifest + drift-guard test | first-party (new) | governance | **3 — build** | plan's real deliverable |
+| `oidc.user:*` + OIDC state (localStorage) | first-party (oidc-client-ts) | **Necessary (exempt)** — auth | **4 — document** | purpose; documented-not-observed (no login exercised) |
+| `theme` (localStorage) | first-party | **Functional** | **4 — document** (retain) | user preference, no PII |
+| Stripe cookies **once lazy + checkout-scoped** | third-party (Stripe) | **Necessary (exempt)** — payment/fraud | **4 — document** | after Phase 3 makes them fire only at checkout |
+| `cookie-consent` record | first-party | consent record itself | n/a | removed with the banner in Phase 2 (no consent decision to store once the decorative banner is gone) |
+
+**Decision gate summary.** The real non-exempt, boot-time third parties are **Stripe and Google Maps**
+— *not* the analytics/marketing the banner asks about. The durable, plan-preferred fix is
+**functional-on-use / lazy loading** for both (load Stripe only at checkout; load Maps only on the
+find/autocomplete routes), which removes all non-essential boot-time third-party contact and makes the
+decorative banner removable outright (Phase 2). The **only** question left for the solicitor is narrow:
+whether lazy-loaded, use-scoped Stripe/Maps still require a consent gate on top of being loaded only
+on use — if yes, Phase 3 builds that gate fresh against the manifest, gating *those* technologies
+(never phantom analytics/marketing). This is a narrowing of the Month-4 legal input, not a blocker on
+Phases 2–4.
+
 ## Verification
 
-None yet — no `app/web` or test code changed. Four SPA builds are at the `origin/main` baseline
-(`c7968828e`). Verification begins with Phase 2's first change.
+Runtime capture ran green (all five journeys, no page errors). **No `app/web` or test code changed** —
+the four SPA builds remain at the `origin/main` baseline; the worktree tree is clean (dev-server route
+tree regenerations were reverted). Build/test verification of code changes begins with Phase 2's first
+change.
 
 ## Reviews
 
@@ -116,9 +207,23 @@ None yet.
 
 ## Decisions, discoveries, blockers, and deviations
 
-- **Discovery — banner gates nothing.** The strongest audit signal: consent decision has no consumer
-  and no analytics/marketing tech exists. Removal of the generic machinery is the leading Phase-2
-  branch, pending runtime confirmation. (Recorded, not yet executed — audit-first ordering.)
+- **Discovery (runtime, headline) — Stripe.js is eager, not lazy.** `lib/stripe.ts` calls `loadStripe`
+  at module top-level, so Stripe.js loads and sets `__stripe_mid`/`__stripe_sid`/`m` on the **anonymous
+  customer landing page**, before any consent or checkout. This **overturns the static inventory's
+  "Stripe is lazy / exempt" line** and promotes eager Stripe to a **Phase 3** lazy-init task, not just a
+  Phase 4 "document as necessary" item. The single most valuable thing the runtime capture found.
+- **Discovery — banner gates nothing (runtime-confirmed).** Accepting analytics+marketing wrote only
+  the `cookie-consent` record and loaded/stored nothing else; zero analytics hosts anywhere. The static
+  hypothesis is now proven. Removal is the Phase-2 branch (safe because Phase 3 replaces it with
+  lazy/on-use loading of the real third parties).
+- **Refinement — Google Maps sets no device storage (runtime).** Maps is contacted at boot but stored
+  nothing observable; the PECR concern is the boot-time script contact, not stored data. Still a
+  lazy-load candidate.
+- **Deviation — capture scope (Tommy, this session).** Only the **anonymous** journey was booted with a
+  real browser; the authenticated + Stripe-checkout journeys were not (they need the full Aspire/Docker
+  backend + seeded accounts and would only refine exact key strings classified necessary/exempt by
+  purpose regardless). Their third-party storage (`oidc.*`, checkout-time Stripe cookies) is documented
+  from library behaviour, flagged documented-not-observed. Rationale recorded in Current state.
 - **Discovery — `theme` localStorage** not named in the kickoff brief; folded into the inventory as
   functional storage.
 - **Discovery — Google Maps at boot** is the only real non-exempt optional candidate, and it is
@@ -145,6 +250,23 @@ None yet.
   necessary Auth/Stripe storage; Google Maps as the one real consent candidate. Runtime capture
   remains to confirm third-party storage and finalise classification.
 - Follow-up: Phase 1 step 2 (runtime capture) per `## Next Steps`, then the decision gate.
+
+### 2026-08-10 — Phase 1 runtime capture done; decision gate opened
+
+- Action: Synced worktree to `origin/main` (was 2 behind; clean merge). Installed the `app/` web
+  workspace, built the web packages (`build:web-packages`), booted all four SPA dev servers, and drove
+  the **anonymous** journeys (customer `/` + `/find`, venue `/`, artist `/`, business `/`) through a
+  real headless Chromium, dumping cookies + localStorage + sessionStorage + IndexedDB per journey (plus
+  a post-"Accept all" dump on customer `/`).
+- Evidence: capture table + runtime findings above; `lib/stripe.ts` read to confirm the eager
+  `loadStripe` root cause. Anonymous journey only, per agreed scope.
+- Outcome: **Phase 1 complete.** Key discovery — Stripe.js is eager (loads on anonymous landing, sets
+  `__stripe_mid`/`__stripe_sid`/`m`), overturning the static "lazy" assumption. Maps loads at boot but
+  stores nothing. Banner gates nothing (accept set no new storage); zero analytics anywhere; IndexedDB/
+  sessionStorage unused. Decision gate recorded: sidebar cookie + decorative consent machinery → Phase
+  2 remove; eager Stripe + boot-time Maps → Phase 3 lazy/on-use; OIDC/theme/lazy-Stripe → Phase 4
+  document. Tree clean (dev-server route-tree regenerations reverted); builds at baseline.
+- Follow-up: Phase 2 removal per the updated `## Next Steps`.
 
 ## Resume prompt
 

@@ -118,9 +118,16 @@ static code and a real browser, across three journeys on every affected SPA.
      or make-functional-on-use (Phase 3);
    - **necessary/functional** storage → **document** in the engineering inventory (Phase 4).
 
-**Gate:** the inventory + classification table is complete for all three journeys on every affected
-SPA, and each subsequent phase's work list is derived line-by-line from it. No code changes in this
-phase; four builds remain green trivially (nothing changed).
+**Gate:** the inventory + classification table is complete, and each subsequent phase's work list is
+derived line-by-line from it. No code changes in this phase; four builds remain green trivially
+(nothing changed).
+
+**Status: COMPLETE.** Static inventory + the **anonymous** runtime capture are done and the decision
+gate is recorded in the ledger. The authenticated + Stripe-checkout journeys were deliberately not
+booted (agreed scope — they need the full Aspire/Docker backend + seeded accounts and would only
+refine exact key strings classified necessary/exempt by purpose regardless); their third-party storage
+is documented from library behaviour, flagged documented-not-observed. The capture overturned the
+static "Stripe is lazy" assumption — see Phase 3 and the ledger.
 
 ### Phase 2 — Remove what the audit shows is unjustified
 
@@ -153,12 +160,20 @@ removed symbols.
 
 ### Phase 3 — Consent only where a real non-exempt optional technology exists, and it must gate loading
 
-If — and only if — Phase 1 finds a genuine non-exempt optional technology the SPAs load, design a
-consent mechanism that **actually gates that technology's loading** (consent-before-load), not a
-decorative banner. The static inventory's leading candidate is **Google Maps JS API**, loaded
-unconditionally at app boot via `MapsProvider` in `main.tsx` on customer/venue/artist (used by
-`SearchBar` places autocomplete and the `GoogleMap` component). Two durable options, chosen from what
-the runtime capture shows Maps actually stores and with solicitor input on Maps' status:
+Phase 1's runtime capture found **two** genuine non-exempt technologies loading at app boot, so this
+phase is live:
+
+- **Stripe.js (the headline runtime finding).** `app/web/shared/src/lib/stripe.ts` calls `loadStripe`
+  at **module top-level** (`export const stripePromise = loadStripe(...)`), so Stripe.js loads and sets
+  `__stripe_mid`/`__stripe_sid`/`m` on the **anonymous** customer landing page — before any consent or
+  checkout. **Fix: make Stripe init lazy** — resolve `stripePromise` on demand when a checkout/payment
+  component mounts (a lazy getter or a `<Elements>`-scoped loader), never at module eval. Once Stripe
+  fires only at the checkout the user requested, its cookies are genuinely strictly-necessary/exempt.
+  This is a functional-on-use fix, not a consent gate.
+- **Google Maps JS API**, loaded unconditionally at app boot via `MapsProvider` in `main.tsx` on
+  customer/venue/artist (used by `SearchBar` places autocomplete and the `GoogleMap` component). The
+  runtime capture showed Maps sets **no** device storage, so the concern is the boot-time script
+  contact itself. Two durable options, with solicitor input on Maps' status:
 
 - **Make it functional-on-use** — load Maps lazily only on the routes/components that need it (find
   pages, address autocomplete) instead of at boot. If it only loads when the user invokes a
