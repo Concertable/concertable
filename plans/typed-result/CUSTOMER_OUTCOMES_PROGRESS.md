@@ -4,15 +4,17 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_customer-outcomes`
 - Branch: `Feature/typed-result_customer-outcomes`
 - PR: [#425](https://github.com/Concertable/concertable/pull/425) — open, non-draft, head `e60219f7d`
-- Dependency/package gates: no implementation gate; this non-Payment scope can convert against
-  published Reunion `.1` now. PR #282 remains excluded and Payment delivery is tracked separately.
+- Dependency/package gates: the Result/Option conversion uses published Reunion `.1`, but Phase 6
+  requires `Reunion.Validation` `0.1.0-alpha.1`, which is merged upstream and not yet published on
+  NuGet.org. PR #282 remains excluded and Payment delivery is tracked separately.
 - Last reconciled: 2026-08-10 against `origin/main` `6f4a5cc3e`, local merge head `7a854cd4c`,
   PR #425 head `e60219f7d`, and the current Reunion owner ledger
 
 ## Current state
 
 Phases 1 through 4 and Phase 5's implementation, verification, review, and finding-fix gates are
-complete. The branch owns only Review, Preference, User, Venue, and Artist outcomes/lookups; PR #282's
+complete. Phase 6 now owns the requested DI-validator migration before delivery. The branch owns only
+Review, Preference, User, Venue, and Artist outcomes/lookups; PR #282's
 Ticket, Concert, Customer Payment, purchase, and checkout slice remains excluded. Review and
 Preference use named Dunet cases with exact stable definitions, application absence terminates as
 `Option<T>`, and scoped multi-item outputs are materialized `IReadOnlyList<T>` values. Existing HTTP
@@ -94,11 +96,18 @@ The actual work head is committed locally as `b021ebbbe`. Its push was rejected 
 because the environment requires direct user authorization for the remote mutation; the fetched
 remote branch and PR #425 therefore remain unchanged at `e60219f7d`.
 
+The push checkpoint is superseded by the new Phase 6 requirement: PR #425 must not be updated with
+the pre-validation candidate. The scoped audit found one custom DI validator in this plan,
+`IReviewValidator`; it still returns `Result<TicketSummary, CreateReviewError>` and booleans. The
+Review request validator is FluentValidation and remains outside this conversion. Upstream Reunion
+commit `a837ecb` adds `ValidationResult` in the separate `Reunion.Validation` package, unchanged
+through `1500270`, but NuGet.org currently exposes no version of that package.
+
 ## Next Steps
 
-Blocked: The verified actual work head `b021ebbbe` cannot be pushed to PR #425 without Tommy's direct push authorization.
-Unblock action: Tommy explicitly authorizes pushing the current branch to update PR #425; then perform and verify both legs of the plan-managed push.
-Resume when: Tommy says to push PR #425 or otherwise gives explicit approval for the remote update.
+Blocked: Phase 6 cannot restore from production because `Reunion.Validation` is not published on NuGet.org.
+Unblock action: Publish and production-verify exact `Reunion.Validation` `0.1.0-alpha.1` from merged upstream source `a837ecb` (unchanged through `1500270`), including indexing, repository-signature verification, and a clean net10 restore of its Reunion dependency graph.
+Resume when: NuGet.org exposes `Reunion.Validation` `0.1.0-alpha.1` and the clean restore resolves it with published `Reunion` and `Reunion.Errors` dependencies.
 
 ## Completed work
 
@@ -144,6 +153,8 @@ Resume when: Tommy says to push PR #425 or otherwise gives explicit approval for
   namespace, error-definition, and HTTP-terminal conversion for the five owned Customer modules.
 - Committed the conversion as `d4a5bb502`, fixed the fresh full review's only finding (`NAT1`) in
   `7a7e07e86`, merged platform-sync main as `7a854cd4c`, and completed both incremental reviews clean.
+- Audited validator contracts and added Phase 6 for Review's injected validator; Ticket and B2B
+  validator migrations remain with their existing owners.
 
 ## Verification
 
@@ -167,6 +178,10 @@ Resume when: Tommy says to push PR #425 or otherwise gives explicit approval for
 - Current `.892` platform-pin gate: Release solution 0 errors and 9 existing warnings; scoped unit
   67/67; Shared.Api 60/60; integration 74/74 across the same eight projects; isolated 36-project
   Customer carve 0 errors and 183 existing warnings; `git diff --check` clean.
+- DI-validator/package audit: `IReviewValidator` is the only custom injected validator in the five
+  owned modules and still exposes one Reunion Result plus three booleans; `Reunion.Validation` source
+  is merged at `a837ecb`, its validation paths are unchanged through `1500270`, and an exact
+  prerelease NuGet.org search returns no package.
 
 - `git fetch origin --quiet`: refreshed origin before branch creation and again before the plan edit.
 - Branch/worktree/PR audit: no pre-existing branch, worktree, or PR owned this slice.
@@ -356,6 +371,21 @@ watermark from ledger prose. A fresh full `code-review` of the committed branch 
   wire contracts remain stable through per-case `[ErrorCode]` attributes and exact definition tests.
 
 ## Event log
+
+### 2026-08-10 — DI validation follow-up planned
+
+- Action: Audited every validator in the five owned modules, the repository's other custom DI
+  validators, Reunion's validation API/source lineage, and production package availability; then
+  added Phase 6 to the plan.
+- Evidence: only `IReviewValidator` is custom and DI-resolved in this scope; its current methods return
+  `Result<TicketSummary, CreateReviewError>`/`bool`; upstream `a837ecb` supplies
+  `ValidationResult = Valid | Invalid(ValidationErrors)` in a separate package; NuGet.org has no
+  `Reunion.Validation` version.
+- Outcome: The previous push action is superseded. Phase 6 preserves the one Ticket lookup, existing
+  typed create errors and exact 201/404/409 contracts, and public capability booleans while changing
+  the internal validator contract to `ValidationResult`. Ticket/B2B validators stay with their owners.
+- Follow-up: The Reunion package owner publishes and verifies `Reunion.Validation` `.1`, then returns
+  this ledger for Phase 6 implementation and final delivery.
 
 ### 2026-08-10 — PR update rejected before execution
 

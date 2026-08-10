@@ -8,6 +8,7 @@ Migrate the Customer-owned Review, Preference, User, Venue, and Artist in-proces
 smallest Reunion-backed functional shape that represents their real outcomes:
 
 - operation-specific `Result<TValue, TError>` only for expected failures a caller can act on;
+- `ValidationResult` for validation-only contracts implemented behind dependency injection;
 - `Option<T>` for ordinary absence at application and module boundaries;
 - successful empty `IReadOnlyList<T>` values for collection queries;
 - plain values and capability booleans where no actionable failure or absence exists.
@@ -23,16 +24,17 @@ commit is the sole branch commit above that base. The scoped production inventor
 
 | Area | Current in-process contract/problem | Planned contract |
 |---|---|---|
-| Review | `IConcertReviewService.CreateAsync` throws `NotFoundException` for no ticket; eligibility is a boolean and creation does not reject a future or already-reviewed ticket before the unique constraint | `Result<ReviewDto, CreateReviewError>` with caller-safe not-found/conflict outcomes; capability endpoints remain booleans |
+| Review | `IConcertReviewService.CreateAsync` throws `NotFoundException` for no ticket; eligibility is a boolean and creation does not reject a future or already-reviewed ticket before the unique constraint | `Result<ReviewDto, CreateReviewError>` with caller-safe not-found/conflict outcomes; the injected validator returns `ValidationResult`; capability endpoints remain booleans |
 | Preference | nullable `GetByUser*`, lazy `IEnumerable` collections, `OrNotFound`, ownership exception, and a unique-per-user create invariant exposed only by the database | `Option<PreferenceDto>`, materialized `IReadOnlyList<T>`, `Result<PreferenceDto, CreatePreferenceError>`, and `Result<PreferenceDto, UpdatePreferenceError>` |
 | User | nullable `GetMeAsync`; `IUserModule` and repository collections return `IReadOnlyCollection<T>` | `Option<CustomerDto>` and successful empty `IReadOnlyList<T>`; `SaveLocationAsync` stays a plain success because its missing-row path is an invariant behind the `Customer` authorization policy |
 | Venue | nullable repository and service detail lookup; controller maps null to 404 | nullable repository contract preserved; service returns `Option<VenueDetails>` and the controller preserves 200/404 |
 | Artist | nullable repository and service detail lookup; controller maps null to 404 | nullable repository contract preserved; service returns `Option<ArtistDetails>` and the controller preserves 200/404 |
 
-Review pagination and summaries already model successful empty results correctly. Eligibility methods
-are capability queries whose complete caller decision is boolean; wrapping them in `Result` would
-manufacture an outcome the caller does not need. Preference collection inputs remain `IEnumerable<T>`;
-only returned query results are normalized.
+Review pagination and summaries already model successful empty results correctly. Eligibility service
+methods are capability queries whose complete caller decision is boolean, but their injected
+validation dependency uses Reunion's validation-specific `Valid | Invalid(ValidationErrors)` shape
+and the service reduces it to the public boolean. Preference collection inputs remain
+`IEnumerable<T>`; only returned query results are normalized.
 
 There are existing Review and User unit/integration projects. Preference, Venue, and Artist have
 friend-assembly names reserved but no test projects or HTTP coverage. The shared Customer integration
@@ -78,11 +80,20 @@ entry.
   - ticket already reviewed → `Conflict`, code `review.already_exists`.
 - Change `IConcertReviewService.CreateAsync` to
   `Task<Result<ReviewDto, CreateReviewError>>`.
-- Reshape `IReviewValidator` so one Ticket lookup returns
-  `Result<TicketSummary, CreateReviewError>` for the create path. Reuse that evaluation to collapse
-  the concert eligibility endpoint to its existing boolean instead of duplicating policy or querying
-  Ticket twice. The Review Application project may reference the existing Ticket Contracts project;
-  no Ticket-owned file changes.
+- Reshape every `IReviewValidator` validation method to return `Reunion.Validation.ValidationResult`.
+  `ConcertReviewService` owns the single `ITicketModule.GetByUserAndConcertAsync` lookup, maps null to
+  `CreateReviewError.TicketNotFound`, then calls distinct review-period and already-reviewed validator
+  methods in the existing short-circuit order. Because each validation call owns one rule, the service
+  maps an invalid result directly to the existing `ConcertNotReviewableYet` or `ReviewAlreadyExists`
+  case without parsing human messages. Reuse that private service evaluation for create and concert
+  eligibility so Ticket is still queried once per operation.
+- Return `ValidationResult` from the Artist and Venue validator methods too; their services reduce
+  `IsValid` to the existing capability booleans. Pin the structured field/message payloads in unit
+  tests even though these eligibility endpoints intentionally expose only true/false.
+- Add direct `Reunion.Validation` ownership to every compiling Review project whose source names its
+  API, and add its exact version to Customer central package management. FluentValidation request
+  validators, Duende protocol validators, and Microsoft `IValidateOptions<T>` are separate framework
+  contracts and are not converted by this phase.
 - Keep absent authentication/identity claims and repository/database races on their existing exception
   paths. Do not catch unique-index, cancellation, or provider failures into `CreateReviewError`.
 - Terminate create through `Concertable.Shared.Api.Results` as the existing 201 response, with typed
@@ -143,8 +154,9 @@ these cases in another module's test project.
 Coverage required by the phases:
 
 - exact code/message/kind tests for every Review and Preference error value;
-- Review service/validator tests for missing ticket, not-yet-reviewable concert, existing review,
-  success, boolean eligibility collapse, and propagation of thrown collaborator/cancellation faults;
+- Review service/validator tests for exact Valid/Invalid structured payloads, missing ticket,
+  not-yet-reviewable concert, existing review, success, one Ticket lookup, boolean eligibility
+  collapse, rule-order short-circuiting, and propagation of thrown collaborator/cancellation faults;
 - Review HTTP tests for the same expected status/code outcomes plus unchanged 201 and eligibility
   behavior;
 - Preference unit tests for Some/None, duplicate create, missing/foreign/successful update, eager empty
@@ -175,6 +187,8 @@ Every implementation phase ends with all of the following green against that pha
    nullability is the only allowed single-item nullable return, returned collections are
    `IReadOnlyList<T>`, and no scoped production file introduces FluentResults, Dunet, HTTP exceptions
    in typed-result slices, or Ticket/Concert/Payment edits.
+7. A scoped DI-validator inventory proving `IReviewValidator` exposes only `ValidationResult`-bearing
+   validation methods, with FluentValidation/framework validators explicitly excluded.
 
 No phase changes the EF model, so `api/initial-migrations.ps1` is not required. Local E2E is not part
 of a pre-PR phase gate; the final behavior-changing, multi-module PR requires the full merge-queue E2E
@@ -216,7 +230,7 @@ tier and receives no skip label.
 - Run the full per-phase verification contract, including the affected Review and Preference unit
   suites, and commit the checkpoint.
 
-### Phase 5 — Scope audit and delivery
+### Phase 5 — Scope audit and direct Reunion conversion ✅ LOCAL COMPLETE (2026-08-10)
 
 - Reconcile with current main now and migrate only Customer-owned imports and HTTP-edge terminals to
   directly owned published Reunion packages. Audit the resulting package topology separately from the
@@ -226,7 +240,21 @@ tier and receives no skip label.
 - Confirm the diff contains no Ticket, Concert, Customer Payment client/mock, checkout/purchase,
   shared Kernel API, event-contract, model/migration, or FluentResults package-entry change.
 - Complete `/code-review`, address every fixable finding in separate commits with incremental review,
-  then push/open the PR only under the active delivery instruction.
+  and retain the verified local work until the validation follow-up below is complete.
+
+### Phase 6 — Review DI validation results and delivery
+
+- Publish and production-verify exact `Reunion.Validation` `0.1.0-alpha.1` from merged upstream
+  validation source `a837ecb` (unchanged through `1500270`) before any Concertable commit depends on
+  it. Require NuGet.org indexing, repository-signature verification, and a clean net10 package restore
+  resolving its `Reunion`/`Reunion.Errors` dependency graph.
+- Implement the Review contract design above: keep Ticket lookup/typed domain-error mapping in the
+  service, make every custom DI validator method return `ValidationResult`, preserve the public
+  booleans and exact create 201/404/409 ProblemDetails contracts, and make no Ticket-owned edit.
+- Add direct package ownership, validator/service unit coverage, the scoped DI-validator inventory,
+  and rerun Review integration plus the complete per-phase verification contract.
+- Commit and review the phase, address every fixable finding with incremental review, then update PR
+  #425 through the plan-managed two-leg push only after the branch is current with main.
 - Before merge, update the branch to current `origin/main`, rebuild/retest affected areas, require the
   full merge-queue E2E tier, and follow the generated platform-sync PR to green/merged. A red sync is
   part of this feature's delivery and must be fixed before close-out.
@@ -238,6 +266,8 @@ tier and receives no skip label.
 
 - Review create and Preference create/update expose only operation-owned expected failures with exact,
   stable definitions and the published Reunion-backed central HTTP terminals.
+- Every custom Review validator resolved through DI returns Reunion `ValidationResult`; application
+  services map it to operation-owned Results or capability booleans without leaking it onto the wire.
 - All ordinary single-item application/module absence in the five scoped modules is `Option<T>`;
   persistence lookup contracts remain nullable.
 - All scoped returned collection contracts are successful empty `IReadOnlyList<T>` values, except
