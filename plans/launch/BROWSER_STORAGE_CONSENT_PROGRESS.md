@@ -3,7 +3,7 @@
 - Plan: `plans/launch/BROWSER_STORAGE_CONSENT_PLAN.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\launch_browser-storage-consent`
 - Branch: `Feature/launch_browser-storage-consent`
-- PR: not opened
+- PR: [#482](https://github.com/Concertable/concertable/pull/482) — open, **not merged** (awaiting go-ahead to `/merge`)
 - Dependency/package gates: **no hard platform-sync gate** — the only `api/**` edits will be E2E test
   projects, so no published `Concertable.*` package changes shape; any `chore/platform-sync-*` PR is
   non-breaking and auto-merges. **Legal input (non-blocking):** solicitor-drafted cookie/storage
@@ -48,11 +48,13 @@ All engineering is done, committed, and pushed. What remains is delivery + a doc
 
 1. ✅ **Review the branch — DONE (2026-08-10).** Full code review over `origin/main..HEAD`; one finding
    (NAT1 — drift guard blind to zustand `persist()`) found and fixed + verified (vitest 19/19, four
-   builds green). Work-order: `reviews/Feature-launch_browser-storage-consent.md`. Fix committed; branch
-   synced to `origin/main`. **Not yet pushed** (push awaits go-ahead per repo rule).
-2. **Open the PR + merge** (awaits Tommy's go-ahead — PR creation is opt-in). Use `/merge` at the
-   **full E2E tier** — this changes a first-visit flow across all SPAs (banner + boot-time script
-   loading), so do **not** `skip-e2e`. Let the merge queue run E2E; don't duplicate it locally.
+   builds green). Work-order: `reviews/Feature-launch_browser-storage-consent.md`. Fix committed **and
+   pushed** (`d82059cd6`). Branch is now 28 behind `origin/main` — `/merge` syncs before enabling auto-merge.
+2. ✅ **PR opened — [#482](https://github.com/Concertable/concertable/pull/482) (2026-08-10).** Not
+   merged (Tommy: "just open for now"). **Merge awaits go-ahead** — then `/merge` at the **full E2E
+   tier**: this changes a first-visit flow across all SPAs (banner + boot-time script loading), so do
+   **not** `skip-e2e`. `/merge` resyncs to `origin/main` (28 behind) before enabling auto-merge; let
+   the merge queue run E2E, don't duplicate it locally.
 3. **Follow the platform-sync PR** — the `api/**` edits are E2E-test-only, so the
    `chore/platform-sync-*` PR is non-breaking and auto-merges; confirm it greens.
 4. **At merge close-out:** tick the roadmap line (`plans/launch/LAUNCH_ROADMAP.md:30`, `:197`) and the
@@ -366,6 +368,15 @@ change.
 - Outcome: Review complete, one real defect fixed, all gates green. Layer-2 lenses found nothing else
   (lazy Stripe, on-use Maps coverage, consentGate edges, `app/web/shared` boundary all clean).
 - Follow-up: `## Next Steps` 2 — PR + `/merge` at full E2E tier, awaiting Tommy's go-ahead. Nothing pushed.
+
+### 2026-08-10 — NAT1 fix pushed; PR #482 opened (not merged)
+
+- Action: Pushed the branch (`3bbd4be2e..d82059cd6`) so the reviewed, verified NAT1 fix is on the
+  remote. Then opened PR [#482](https://github.com/Concertable/concertable/pull/482) against `main`
+  (Tommy: "just open for now" — **not merged**, auto-merge not enabled). No code change this turn.
+- Outcome: `origin/Feature/launch_browser-storage-consent` at `d82059cd6`; PR #482 open. Branch 28
+  behind `origin/main` (main moved on since last sync — `/merge` will resync before enabling auto-merge).
+- Follow-up: `## Next Steps` 2 — `/merge` at full E2E tier when Tommy gives the go-ahead.
 
 ## Resume prompt
 
