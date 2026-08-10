@@ -7,7 +7,7 @@
 - Dependency/package gates: exact `Reunion.Validation` `.1`, `Reunion.Errors` `.2`, and Payment
   `0.1.0-alpha.0.894` restore from the normal NuGet.org/GitHub feed graph; generated platform-sync
   PR #463 is present in current main. The local production-baseline gate is complete.
-- Last reconciled: 2026-08-10 against `origin/main` `d916e95cf`, clean local head `a626d5c0d`,
+- Last reconciled: 2026-08-10 against `origin/main` `d916e95cf`, current-main merge `3c51b3df0`,
   historical PR #282 head `26ed63b8`, and Tommy's explicit replacement/supersession authorization
 
 ## Current state
@@ -71,16 +71,18 @@ has no production caller and rejects only impossible internal input/capacity. `C
 concert remains the existing asynchronous consistency exception. Customer Review's star-range guard
 belongs to `CUSTOMER_OUTCOMES_PLAN.md`. Shared blanket exception handling remains deferred to the
 roadmap's future global audit. Tommy has explicitly authorized publishing this replacement and
-closing PR #282 as superseded. The clean branch is 58 commits behind current main and must be updated,
-rebuilt, retested, and reviewed before publication.
+closing PR #282 as superseded. Current `origin/main` `d916e95cf` is merged as `3c51b3df0`; the full
+solution, Customer, Ticket unit/integration, Shared.Api architecture, standalone Customer carve,
+mechanical carrier/package, temporary-input, and whitespace gates are green. Final current-main code
+and security review remains before publication.
 
 ## Next Steps
 
-Merge current `origin/main` into this clean branch, resolve any overlap without weakening the Ticket
-semantics, and re-run the full Release build, Ticket unit/integration, Shared.Api architecture, carve,
-mechanical, and review gates. When green, execute the plan-aware two-leg push, open and verify the
-replacement PR, close PR #282 as superseded, then carry the replacement through PR checks, full-E2E
-merge queue, publication, generated platform sync, and terminal plan closeout.
+Review the complete current-main branch diff through native correctness, security, microservice
+isolation, module boundaries, seeding, conventions, and changed-path test coverage; fix and reverify
+every finding. When clean, execute the plan-aware two-leg push, open and verify the replacement PR,
+close PR #282 as superseded, then carry the replacement through PR checks, full-E2E merge queue,
+publication, generated platform sync, and terminal plan closeout.
 
 ## Completed work
 
@@ -105,6 +107,8 @@ merge queue, publication, generated platform sync, and terminal plan closeout.
   the overlapping merge, and completed production-baseline revalidation through normal feeds.
 - Committed the verified current-main merge as `82e56eefa`, reviewed the complete 10-commit branch
   delta with no findings, and completed a green local-readiness preflight without publishing it.
+- Merged current `origin/main` `d916e95cf` as `3c51b3df0` after authorization and reran the complete
+  production-baseline verification gate with no failures.
 
 ## Verification
 
@@ -135,6 +139,10 @@ merge queue, publication, generated platform sync, and terminal plan closeout.
   work order was deleted under `reviews/AGENTS.md`.
 - PR preflight after fetch: 0 commits behind current main, 10 local commits ahead, all code committed,
   no replacement PR, no open platform-sync PR; historical PR #282 remains open at `26ed63b8`.
+- Authorized current-main rerun at `3c51b3df0`: full Release solution and Customer Release builds at
+  0 errors; Ticket unit 33/33; Ticket integration 25/25; Shared.Api 52/52; standalone Customer carve
+  0 errors across 36 package-clean projects; legacy-carrier, direct-package, temporary-input, and
+  `git diff --check` gates clean.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -157,6 +165,17 @@ merge queue, publication, generated platform sync, and terminal plan closeout.
   application pre-check/domain throw in the Ticket branch's net diff.
 
 ## Event log
+
+### 2026-08-10 — authorized current-main gate completed
+
+- Action: Merged current `origin/main`, restored from normal feeds, and reran the complete Ticket
+  replacement verification gate before publication.
+- Evidence: merge `3c51b3df0` includes `origin/main` `d916e95cf`; full solution and Customer Release
+  builds 0 errors; Ticket unit 33/33; Ticket integration 25/25; Shared.Api 52/52; standalone carve 0
+  errors across 36 projects; mechanical and temporary-input scans clean.
+- Outcome: The authorized replacement is current and locally green. Final code/security review is the
+  sole remaining local gate before the plan-aware push and PR transition.
+- Follow-up: execute `## Next Steps`.
 
 ### 2026-08-10 — replacement delivery authorized
 
