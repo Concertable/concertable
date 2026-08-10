@@ -57,15 +57,9 @@ isolation, boundary, seeding, convention, and changed-path test-coverage review 
 
 ## Next Steps
 
-Blocked: `Reunion.Validation` `0.1.0-alpha.1` is not published, Payment PR #453 remains open, its
-`.915` packages are not published, and the generated platform sync therefore does not exist.
-
-Unblock action: the Reunion integration owner must publish and verify Reunion.Validation `.1`, land
-PR #453, verify the Payment publication, and land the generated platform-sync PR.
-
-Resume when: normal configured feeds resolve Reunion.Validation `.1` and the published Payment
-packages, the generated platform-sync PR is merged, and this branch restores, builds, and passes its
-targeted tests without a temporary source or disposable version pin.
+Blocked: `Reunion.Validation` `0.1.0-alpha.1` is not published, Payment PR #453 remains open, its `.915` packages are not published, and the generated platform sync therefore does not exist.
+Unblock action: the Reunion integration owner must publish and verify Reunion.Validation `.1`, land PR #453, verify the Payment publication, and land the generated platform-sync PR.
+Resume when: normal configured feeds resolve Reunion.Validation `.1` and the published Payment packages, the generated platform-sync PR is merged, and this branch restores, builds, and passes its targeted tests without a temporary source or disposable version pin.
 
 ## Completed work
 
