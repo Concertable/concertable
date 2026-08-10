@@ -4,12 +4,11 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_customer-ticket-reunion`
 - Branch: `Feature/typed-result_customer-ticket-reunion`
 - PR: not opened; historical PR #282 remains open and untouched
-- Dependency/package gates: exact `Reunion.Validation` `.1` is published, indexed, repository-
-  signature and payload-provenance verified; Payment `0.1.0-alpha.0.894` is published and verified;
-  generated platform-sync PR #463 merged as `483350124`. Final normal-feed revalidation remains.
-- Last reconciled: 2026-08-10 against `origin/main` `483350124`, implementation head `d3b6d6b90`,
-  production Reunion/Payment evidence from the integration owner, and historical PR #282 head
-  `26ed63b8`
+- Dependency/package gates: exact `Reunion.Validation` `.1`, `Reunion.Errors` `.2`, and Payment
+  `0.1.0-alpha.0.894` restore from the normal NuGet.org/GitHub feed graph; generated platform-sync
+  PR #463 is present in current main. The local production-baseline gate is complete.
+- Last reconciled: 2026-08-10 against `origin/main` `ddb6017ca`, implementation head `d3b6d6b90`,
+  the verified merge candidate, and historical PR #282 head `26ed63b8`
 
 ## Current state
 
@@ -53,19 +52,17 @@ verified from NuGet.org. Every
 temporary feed entry and Payment `.915` verification pin has been removed from source configuration.
 The Phase 5 source is verified and committed at `d3b6d6b90`. Native, security, correctness,
 isolation, boundary, seeding, convention, and changed-path test-coverage review found no issues in
-`27607208f..d3b6d6b90`. The branch remains unpushed and PR #282 remains untouched. It is 59 commits
-behind current `origin/main`, whose incoming range contains the published Payment `.894` pin and
-terminal platform sync required for final clean-feed revalidation.
+`27607208f..d3b6d6b90`. Current `origin/main` `ddb6017ca` has now been merged into the branch candidate.
+Normal-feed restore resolves `Reunion.Validation` `.1`, `Reunion.Errors` `.2`, and Payment
+Contracts/Client `.894` exactly from NuGet.org and GitHub Packages. The production-baseline unit,
+integration, architecture, Customer/full Release, carve, inventory, and whitespace gates are green.
+The branch remains unpushed and PR #282 remains untouched.
 
 ## Next Steps
 
-Merge current `origin/main` `483350124` into the clean branch, restore through normal configured feeds,
-and prove the branch resolves published `Reunion.Validation` `.1`, `Reunion.Errors` `.2`, and the
-platform-pinned Payment `.894` packages without a temporary source or disposable version. Rerun
-Ticket unit/integration, Shared.Api, Customer/full Release builds, the Customer carve, package/source
-inventories, and `git diff --check`; review the current-main delta and resolve any finding. Then
-prepare the replacement PR delivery while keeping historical PR #282 untouched until explicit
-approval to supersede it.
+Commit the verified current-main merge, review the resulting branch delta against current main, and
+resolve every finding. Then leave the clean local branch ready for replacement-PR delivery while
+keeping historical PR #282 untouched until explicit approval to supersede it.
 
 ## Completed work
 
@@ -86,6 +83,8 @@ approval to supersede it.
   security, architecture, convention, seeding, and changed-path coverage lens with no findings.
 - The Reunion integration owner completed the validation publication, Payment publication, and
   generated platform-sync gates and returned this ledger for final normal-feed revalidation.
+- Merged current main into the replacement candidate, removed duplicate package items introduced by
+  the overlapping merge, and completed production-baseline revalidation through normal feeds.
 
 ## Verification
 
@@ -106,6 +105,12 @@ approval to supersede it.
   `0947D93220F585F8AD6E8617F5268807B4C05B120DF01970D49E036302010790`; valid NuGet.org repository
   signature; nine non-signature entries byte-match the release candidate; clean NuGet.org-only net10
   restore/build/run resolves `Reunion.Validation`, `Reunion`, and `Reunion.Errors` `.1` exactly.
+- Normal-feed Customer restore resolves `Reunion.Validation` `.1`, `Reunion.Errors` `.2`, and
+  `Concertable.Payment.Contracts` / `Concertable.Payment.Client` `.894` from only NuGet.org and
+  GitHub Packages.
+- Production-baseline rerun: Ticket unit 33/33, Ticket integration 25/25, Shared.Api 52/52; Customer
+  Release and single-node full Release builds at 0 errors; staged standalone Customer carve at 0
+  errors; temporary-input, legacy-carrier, validator-signature, and `git diff --check` gates clean.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -125,6 +130,19 @@ approval to supersede it.
   in owner checkpoint `8d6cd0cfc`.
 
 ## Event log
+
+### 2026-08-10 — current-main production revalidation completed
+
+- Action: Merged current `origin/main` `ddb6017ca` into the Ticket replacement candidate, resolved the
+  overlapping Customer package entries, restored only through configured production feeds, and reran
+  the complete local gate.
+- Evidence: resolved graph `Reunion.Validation` `.1`, `Reunion.Errors` `.2`, and Payment
+  Contracts/Client `.894`; Ticket unit 33/33; Ticket integration 25/25; Shared.Api 52/52; Customer and
+  full Release builds at 0 errors; standalone staged Customer carve at 0 errors; package/source,
+  legacy-carrier, validator-signature, and whitespace inventories clean.
+- Outcome: The local production-baseline gate is complete. No package or Docker blocker remains; the
+  merge checkpoint and current-main review remain before replacement-PR readiness.
+- Follow-up: Commit the verified merge and review the branch delta without touching PR #282.
 
 ### 2026-08-10 — delivery package gates opened
 
