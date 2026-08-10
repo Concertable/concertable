@@ -53,5 +53,5 @@ be duplicated where they can drift. Keep it verbatim in this fenced block:>
 
 ```
 cd <absolute worktree path>
-Read @plans/<PLAN>_PLAN.md and @plans/<PLAN>_PROGRESS.md, then do what the ledger's `## Next Steps` says.
+Read @plans/<PLAN>_PLAN.md and @plans/<PLAN>_PROGRESS.md and do what its `## Next Steps` says.
 ```

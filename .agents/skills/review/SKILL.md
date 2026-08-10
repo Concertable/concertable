@@ -1,6 +1,6 @@
 ---
 name: review
-description: Full code review of a branch diff against Concertable's conventions, module-boundary rules, and microservice-isolation rules. Runs the host tool's NATIVE general review FIRST (Claude's built-in catalog via the `code-reviewer` subagent, or Codex's native code review), then layers Concertable's architecture-aware lenses on top — correctness bugs plus convention/boundary/microservice anti-patterns (B2B and Customer are separate services that must only communicate via *.Contracts integration events — never each other's runtime) plus missing test coverage on changed paths — filters to high-confidence findings, merges both layers into one per-branch review markdown, and stamps the reviewed-up-to commit SHA at the top. It is a SUPERSET of the built-in review, never a replacement. Use when the user wants to "code-review my changes", "review this branch", "review the PR", or "do a full review". For re-reviewing only commits added since a previous review, use the `incremental-review` skill (a thin wrapper around this one).
+description: Full code review of a branch diff against Concertable's conventions, module-boundary rules, and microservice-isolation rules. Runs the host tool's NATIVE general review FIRST (Claude's built-in catalog via the `code-reviewer` subagent, or Codex's native code review), then layers Concertable's architecture-aware lenses on top — correctness bugs plus convention/boundary/microservice anti-patterns (B2B and Customer are separate services that must only communicate via *.Contracts integration events — never each other's runtime) plus missing test coverage on changed paths — filters to high-confidence findings, merges both layers into one per-branch review markdown, and stamps the reviewed-up-to commit SHA at the top. It is a SUPERSET of the built-in review, never a replacement, and takes the built-in's own arguments — effort level (low/medium/high/max, reuse-last), a PR-number/branch/path target, and --comment/--fix. Use when the user wants to "code-review my changes", "review this branch", "review the PR", or "do a full review". For re-reviewing only commits added since a previous review, use the `incremental-review` skill (a thin wrapper around this one).
 ---
 
 # review
@@ -11,9 +11,20 @@ Layer 1 exists because the built-in `/code-review` slash command cannot be invok
 
 `incremental-review` is this skill with one input changed: it starts the diff at a recorded SHA instead of the branch's merge-base. Everything else — the lenses, the confidence filter, the output file, the marker — is identical. Keep them in sync: a change to the review procedure here is inherited by `incremental-review`.
 
-## Optional argument — review size (default: standard)
+## Arguments — the built-in review's interface, plus Concertable's lenses
 
-`/review [quick]` (alias `small`) scales the pass down for a small, mechanical diff — a rename/move, DI-registration, or config/string-value change of ≤~15 files with no new or changed runtime logic. `quick` **skips the Layer-1 `code-reviewer` subagent** (Step 1c) and does one inline pass applying only the lenses the diff actually touches, then still writes and stamps the review file (the merge gate requires it) and honours Step 4's no-hedge bar. Anything with new/changed runtime logic, or a broad diff, ignores `quick` and runs the full two-layer flow (massive branch → `big-review`; exhaustive → a `Workflow`). With no argument, infer the size from the diff: purely-mechanical and small → `quick`, otherwise `standard`.
+This skill **is** the built-in `/code-review` (that's Layer 1, Step 1c) with Concertable's architecture lenses on top (Layer 2), so it takes the **same arguments** as the built-in and applies each to both layers:
+
+```
+/review [low|medium|high|max] [<pr-number>|<branch>|<path>] [--comment] [--fix]
+```
+
+- **Effort** `low|medium|high|max` — identical meaning to the built-in: `low`/`medium` surface fewer, high-confidence findings; `high`→`max` broaden coverage and may include uncertain ones. It scales **both** layers — passed to the Layer-1 `code-reviewer` subagent (Step 1c) *and* it sets Step 4's confidence bar (see there). **No level given → reuse the level from the last `/review` / `/code-review` run.** A small mechanical diff (rename/move, DI-registration, config) is simply `low` — no separate vocabulary.
+- **Target** — none → the current branch's diff (CWD; Step 1). Otherwise a **PR number** (that PR's `base..head`, resolved via `gh` from *any* checkout — you need not be in its worktree), a **branch** (`merge-base(main, <branch>)..<branch>`), or a **path** (the CWD range scoped to that path). Mirrors the built-in's `current diff | PR | branch | path`.
+- **`--comment`** — after reviewing, post the surviving findings as inline PR review comments (needs a PR target, or a branch with an open PR) via `gh pr review`; without it, findings land only in the review markdown.
+- **`--fix`** — after reviewing, apply the findings to the working tree by handing the finalized review file to `address-review` (the built-in's `--fix`).
+
+Massive branch → `big-review`; exhaustive multi-agent pass → a `Workflow`.
 
 ## When to use
 
@@ -26,10 +37,19 @@ Layer 1 exists because the built-in `/code-review` slash command cannot be invok
 - A massive branch (100s/1000s of files) → `big-review` (stages this skill by area).
 - An exhaustive multi-agent pass → run a `Workflow` (ultracode).
 
-## Step 1 — Confirm the checkout, then determine the review range
+## Step 1 — Resolve the target, then determine the review range
 
-This skill reviews the git repo **in the current working directory** — it takes no path argument and
-infers everything from CWD. When the branch lives in a git *worktree* (a sibling checkout like
+**With a target argument** (Arguments above), resolve it first — the target, not CWD, sets the range:
+
+- **PR number** — `gh pr view <n> --json headRefName,headRefOid,baseRefName,url`. If a worktree/checkout
+  for its head branch exists, review from there; otherwise `git fetch origin` and set the range to
+  `origin/<base>..origin/<head>` (`gh pr diff <n>` for the diff), slugging the review file by the PR's
+  head branch. This is how `/review <n>` works from **any** checkout — you need not sit in the PR's worktree.
+- **Branch** — range is `merge-base(main, <branch>)..<branch>`.
+- **Path** — the CWD range below, additionally scoped with `-- <path>`.
+
+**With no target**, this skill reviews the git repo **in the current working directory** and infers the
+range from CWD. When the branch lives in a git *worktree* (a sibling checkout like
 `…/<repo>.worktrees/<Branch>`), the session must already be running **inside that worktree**, or the
 diff is against the wrong repo/branch. So identify the checkout first, then the range:
 
@@ -51,9 +71,10 @@ git log --oneline "<start>..HEAD"
 git diff "<start>..HEAD" --stat
 ```
 
-If the range is empty **or** the current branch is `main`, that is the wrong-checkout symptom (the
-session was started in the main checkout, not the feature's worktree) — say so and stop rather than
-reviewing nothing.
+**With no target given**, an empty range or being on `main` is the wrong-checkout symptom (the session
+was started in the main checkout, not the feature's worktree) — say so and stop rather than reviewing
+nothing. With an explicit PR/branch target this is expected and fine: you're reviewing the target, so
+any CWD (including `main`) is allowed.
 
 ## Step 1b — Create the review file NOW, before reviewing (mandatory)
 
@@ -77,7 +98,7 @@ end. Step 5 then just reconciles the final list; Step 6 finalizes the marker.
 
 Before loading Concertable's rules, run the host tool's native general review over the same `<start>..HEAD` range and fold its findings into the work-order as `NAT#`:
 
-- **Claude Code:** spawn the `code-reviewer` subagent (Agent tool) with the range; it returns the built-in catalog's findings (correctness, reuse, simplification, efficiency, error handling) as markdown. The built-in `/code-review` slash command cannot be invoked from within a skill, so the `code-reviewer` subagent is the supported capture path.
+- **Claude Code:** spawn the `code-reviewer` subagent (Agent tool) with the range; it returns the built-in catalog's findings (correctness, reuse, simplification, efficiency, error handling) as markdown. The built-in `/code-review` slash command cannot be invoked from within a skill, so the `code-reviewer` subagent is the supported capture path. **Pass the resolved effort level in the subagent prompt** so its breadth matches the argument: `low`/`medium` → only high-confidence findings; `high`/`max` → broaden coverage, may include uncertain ones.
 - **Codex:** run Codex's native code review over the range and capture its findings.
 
 Append the returned findings under `## Findings` immediately (as `- [ ] **NAT# — <SEVERITY> — native** — file:line`), so an interrupted run still records them. They pass through Step 4's confidence bar during Step 5's reconcile.
@@ -154,7 +175,7 @@ Do **not** flag: pure renames, DI-registration-only changes, generated code, or 
 
 ## Step 4 — Confidence filter
 
-For each candidate finding, judge whether it's real and will be hit in practice. **Drop anything below ~80/100 confidence.** Discard these false positives:
+For each candidate finding, judge whether it's real and will be hit in practice. **Drop anything below ~80/100 confidence.** **The effort argument sets this bar:** `low`/`medium` keep the ~80 bar (fewer, high-confidence findings); `high`/`max` lower it to surface additional, less-certain findings — each still stated as a concrete fix (the no-hedge rule below holds *within* the chosen bar), tagged with its lower confidence. Discard these false positives:
 
 - Pre-existing issues on lines not changed in this range.
 - Things a compiler / linter / CI catches (type errors, imports, formatting).
@@ -217,6 +238,17 @@ Set the top-of-file marker to current HEAD — exactly one such line in the file
 Today's date comes from session context; get the SHA from `git rev-parse HEAD`. If Step 1d ran, its
 `Security-reviewed up to commit:` marker is stamped at HEAD too. Do not commit unless asked, except for
 a plan-managed checkpoint required by Step 7.
+
+## Step 6b — Apply `--comment` / `--fix` (only when those flags were passed)
+
+Run this only after Step 6 stamped the marker, so it acts on a recorded review.
+
+- **`--comment`** — post each surviving finding as an inline PR review comment at its `file:line`
+  (`gh pr review <pr> --comment` with per-line comments, or `gh api` for a review carrying `comments[]`).
+  Requires a PR target, or a branch with an open PR; if there is no PR, say so and skip — the review
+  markdown is written either way.
+- **`--fix`** — hand the finalized review file to `address-review`, which applies each open `[ ]`
+  finding to the working tree and ticks it (the built-in's `--fix`).
 
 ## Step 7 — Checkpoint and report
 
