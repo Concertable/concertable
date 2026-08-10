@@ -11,6 +11,10 @@ Layer 1 exists because the built-in `/code-review` slash command cannot be invok
 
 `incremental-review` is this skill with one input changed: it starts the diff at a recorded SHA instead of the branch's merge-base. Everything else — the lenses, the confidence filter, the output file, the marker — is identical. Keep them in sync: a change to the review procedure here is inherited by `incremental-review`.
 
+## Optional argument — review size (default: standard)
+
+`/review [quick]` (alias `small`) scales the pass down for a small, mechanical diff — a rename/move, DI-registration, or config/string-value change of ≤~15 files with no new or changed runtime logic. `quick` **skips the Layer-1 `code-reviewer` subagent** (Step 1c) and does one inline pass applying only the lenses the diff actually touches, then still writes and stamps the review file (the merge gate requires it) and honours Step 4's no-hedge bar. Anything with new/changed runtime logic, or a broad diff, ignores `quick` and runs the full two-layer flow (massive branch → `big-review`; exhaustive → a `Workflow`). With no argument, infer the size from the diff: purely-mechanical and small → `quick`, otherwise `standard`.
+
 ## When to use
 
 - "review this branch", "code review my changes", "review the PR", "do a full review"
@@ -140,7 +144,7 @@ Concertable is a multi-service system; **B2B, Customer, and Search are data serv
 
 ### Lens F — Test coverage of changed behaviour
 
-A behaviour the diff **adds or alters** that nothing asserts. The fix is concrete — name the test to write — so it obeys Step 4's no-hedge rule exactly like any other finding (the fix is "add test X", not "consider more tests"). `/review` catches these; this lens is why code-review now does too.
+A behaviour the diff **adds or alters** that nothing asserts. The fix is concrete — name the test to write — so it obeys Step 4's no-hedge rule exactly like any other finding (the fix is "add test X", not "consider more tests"). GitHub's PR review catches these; this lens is why `review` now does too.
 
 - A new or rewritten service method / handler / endpoint whose success **and** failure branches have no covering test.
 - A refactor that re-routes a path through a new collaborator (e.g. reading from a repository instead of a service) with no test exercising the new wiring — even when behaviour is *preserved*: the wiring is new and unpinned.
