@@ -27,6 +27,10 @@ RELATIVE_LEDGER = re.compile(
     re.IGNORECASE,
 )
 WORKDIR = re.compile(r"[\"']?(?:workdir|cwd)[\"']?\s*:\s*[\"']([^\"']+)", re.IGNORECASE)
+CD_WORKDIR = re.compile(
+    r"^\s*cd\s+(?:\"([^\"]+)\"|'([^']+)'|([^\r\n]+?))\s*$",
+    re.IGNORECASE | re.MULTILINE,
+)
 REGISTERED_OWNER_WAIT = re.compile(r"\bdownstream handoffs\b", re.IGNORECASE)
 BLOCKED_OR_WAITING = re.compile(r"\b(?:blocked|waiting)\b", re.IGNORECASE)
 SUPPRESS_RESUME_PROMPT = re.compile(
@@ -118,6 +122,8 @@ def workdirs(value):
     if isinstance(value, str):
         for match in WORKDIR.finditer(value):
             yield match.group(1)
+        for match in CD_WORKDIR.finditer(value):
+            yield next(item for item in match.groups() if item is not None).strip()
     elif isinstance(value, dict):
         for name, item in value.items():
             if name.lower() in {"cwd", "workdir"} and isinstance(item, str):
@@ -202,11 +208,15 @@ def intentional_contexts(record):
     if candidate is None:
         return
     if genuine_user_message(record):
-        yield from user_content(candidate.get("content"))
+        yield {
+            "source": "user",
+            "values": list(user_content(candidate.get("content"))),
+        }
     if candidate.get("type") in {"custom_tool_call", "function_call"}:
         tool_input = candidate.get("input", candidate.get("arguments"))
         context = mutating_tool_input(candidate.get("name"), tool_input)
         if context is not None:
+            context["source"] = "mutation"
             yield context
     content = candidate.get("content")
     if isinstance(content, list):
@@ -215,6 +225,7 @@ def intentional_contexts(record):
                 tool_input = item.get("input", item.get("arguments"))
                 context = mutating_tool_input(item.get("name"), tool_input)
                 if context is not None:
+                    context["source"] = "mutation"
                     yield context
 
 
@@ -278,6 +289,26 @@ def add_if_ledger(paths, candidate):
         paths.add(resolved)
 
 
+def context_root(path):
+    candidate = Path(path).resolve()
+    return git_root(candidate) or candidate
+
+
+def context_owns_ledger(path, bases, allow_missing_owner=False):
+    text = path.read_text(encoding="utf-8")
+    declared_worktree = metadata(text, "Worktree")
+    roots = {context_root(base) for base in bases}
+    if declared_worktree:
+        owner = Path(declared_worktree).resolve()
+        if owner.is_dir():
+            return owner in roots
+        return allow_missing_owner
+    owner_branch = metadata(text, "Branch")
+    if owner_branch:
+        return any(git_branch(root) == owner_branch for root in roots)
+    return ledger_root(path) in roots
+
+
 def transcript_ledgers(records, cwd):
     paths = set()
     contexts = [context for record in records for context in intentional_contexts(record)]
@@ -285,17 +316,28 @@ def transcript_ledgers(records, cwd):
         values = list(strings(context))
         explicit_bases = {Path(path).resolve() for path in workdirs(context)}
         bases = explicit_bases or {Path(cwd).resolve()}
+        candidates = set()
         for value in values:
             absolute_matches = list(ABSOLUTE_LEDGER.finditer(value))
             for match in absolute_matches:
-                add_if_ledger(paths, Path(match.group(0).rstrip("`),.;")))
+                add_if_ledger(candidates, Path(match.group(0).rstrip("`),.;")))
             for match in RELATIVE_LEDGER.finditer(value):
                 absolute_spans = (item.span() for item in absolute_matches)
                 if any(start <= match.start() < end for start, end in absolute_spans):
                     continue
                 relative = Path(match.group(0).replace("\\", "/").rstrip("`),.;"))
                 for base in bases:
-                    add_if_ledger(paths, base / relative)
+                    add_if_ledger(candidates, base / relative)
+        for path in candidates:
+            ownership_bases = bases
+            if context.get("source") == "mutation" and not explicit_bases:
+                ownership_bases = {ledger_root(path)}
+            if context_owns_ledger(
+                path,
+                ownership_bases,
+                allow_missing_owner=context.get("source") == "mutation",
+            ):
+                paths.add(path)
     return paths
 
 
@@ -378,6 +420,22 @@ def expected_pointer(path):
     )
 
 
+def handoff_reason(path, body):
+    summary = re.sub(r"\s+", " ", body.split("\n\n", 1)[0]).strip()
+    if len(summary) > 240:
+        summary = summary[:237].rstrip() + "..."
+    text = path.read_text(encoding="utf-8")
+    worktree = metadata(text, "Worktree") or str(ledger_root(path))
+    return (
+        f"Why: `{path.name}` owns unfinished work from this turn: {summary}\n"
+        f"Only run this continuation if no agent or session is already working in `{worktree}`."
+    )
+
+
+def expected_handoff(path, pointer, body):
+    return f"{handoff_reason(path, body)}\n\n```text\n{pointer}\n```"
+
+
 def evaluate(data):
     cwd = Path(data.get("cwd") or ".").resolve()
     records = transcript_turn(data.get("transcript_path") or data.get("transcriptPath"))
@@ -401,7 +459,8 @@ def evaluate(data):
         elif looks_like_legacy_blocker(body):
             malformed_blockers.append(path)
         elif not is_terminal(body):
-            active.append((path, expected_pointer(path)))
+            pointer = expected_pointer(path)
+            active.append((path, pointer, expected_handoff(path, pointer, body)))
     if malformed_blockers:
         names = ", ".join(path.name for path in malformed_blockers)
         return {
@@ -413,7 +472,7 @@ def evaluate(data):
                 "continuation pointer."
             ),
         }
-    active = list({pointer: (path, pointer) for path, pointer in active}.values())
+    active = list({pointer: (path, pointer, handoff) for path, pointer, handoff in active}.values())
     message = (data.get("last_assistant_message") or data.get("lastAssistantMessage") or "").replace(
         "\r\n", "\n"
     )
@@ -437,20 +496,22 @@ def evaluate(data):
     if blocked_failures:
         failures.append("BLOCKER HANDOFF GATE: " + " | ".join(blocked_failures))
     if active:
-        missing = [(path, pointer) for path, pointer in active if pointer not in message]
+        missing = [
+            (path, pointer, handoff)
+            for path, pointer, handoff in active
+            if handoff not in message
+        ]
         ending = message.rstrip()
-        ends_with_pointer = any(
-            ending.endswith(pointer) or ending.endswith(f"{pointer}\n```") for _, pointer in active
-        )
-        if missing or not ends_with_pointer:
+        ends_with_handoff = any(ending.endswith(handoff) for _, _, handoff in active)
+        if missing or not ends_with_handoff:
             if not missing:
                 missing = active
-            pointers = "\n\n".join(f"```text\n{pointer}\n```" for _, pointer in missing)
-            names = ", ".join(path.name for path, _ in missing)
+            handoffs = "\n\n".join(handoff for _, _, handoff in missing)
+            names = ", ".join(path.name for path, _, _ in missing)
             failures.append(
                 f"HANDOFF GATE: {names} has non-terminal `## Next Steps`, but the final response "
-                "omitted its exact continuation pointer. Local implementation completion is not "
-                f"lifecycle completion. End the response with:\n\n{pointers}"
+                "omitted its explained, collision-safe continuation. Local implementation completion "
+                f"is not lifecycle completion. End the response with:\n\n{handoffs}"
             )
     if failures:
         return {"decision": "block", "reason": "\n\n".join(failures)}
