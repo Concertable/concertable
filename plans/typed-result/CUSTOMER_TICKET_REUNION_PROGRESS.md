@@ -4,10 +4,11 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_customer-ticket-reunion`
 - Branch: `Feature/typed-result_customer-ticket-reunion`
 - PR: not opened; historical PR #282 remains open and untouched
-- Dependency/package gates: validator implementation reopened against merged Reunion.Validation
+- Dependency/package gates: validator implementation verified against merged Reunion.Validation
   source; Reunion.Errors `.2`, Reunion.Validation `.1`, Payment publication, and generated platform
   sync gate delivery and final clean-feed revalidation
-- Last reconciled: 2026-08-10 against `origin/main` `6f4a5cc3e`, branch merge `103da45a7`, Payment
+- Last reconciled: 2026-08-10 against `origin/main` `6f4a5cc3e`, branch head this commit with parent
+  `27607208f`, Payment
   package source `a2497e3e8`, Reunion source `1500270`, implementation commit `acaec615b`, the active
   Reunion integration owner, and historical PR #282 head `26ed63b8`
 
@@ -38,27 +39,28 @@ NuGet sources; no local feed or disposable Payment version remains in source con
 Implementation commit `acaec615b` passed native, security, and every Concertable review lens with no
 findings. The branch has not been pushed and no PR has been opened.
 
-The Ticket DI validator is not yet on Reunion's validation-specific carrier. `ITicketValidator`
-currently returns `bool`, `Result<bool, EligibilityError>`, and
-`UnitResult<IReadOnlyList<string>>`. Reunion source commit
-`a837ecb60416c44eda1c87b0c858a9be7658c74b`, contained in current merged source
-`1500270cc323fe43b9eaf57dad9698b24f6dfb37`, provides the intended
-`Reunion.Validation.ValidationResult = Valid | Invalid(ValidationErrors)` contract, accumulation,
-and explicit Result conversions. `Reunion.Validation` `0.1.0-alpha.1` is not yet published;
-NuGet.org's official flat-container index returned HTTP 404 on 2026-08-10.
+Phase 5 now changes `ITicketValidator` to return `ValidationResult` synchronously and
+`Result<ValidationResult, EligibilityError>` for concert lookup. The validator accumulates structured
+`concert` validation messages, uses a distinct `quantity` field for stock validation, and Ticket
+operations deliberately re-key invalid results to the existing public `purchase` / `checkout`
+ProblemDetails fields. The eligibility HTTP edge still returns the existing boolean payload.
+
+The exact locally packed `Reunion.Validation` `0.1.0-alpha.1` artifact from merged source
+`1500270cc323fe43b9eaf57dad9698b24f6dfb37` has SHA-256
+`2521531696EE7A470BF6D6F1550A496DC9B843602C70A61B1589BB97F22CEF6E` and declares net10.0
+dependencies on `Reunion` `0.1.0-alpha.1` and `Reunion.Errors` `0.1.0-alpha.1`; Customer's direct
+`Reunion.Errors` `.2` pin wins resolution. The validation package remains unpublished. Every
+temporary feed entry and Payment `.915` verification pin has been removed from source configuration.
+The Phase 5 source is verified and committed with this ledger as this commit; review is pending. The
+branch remains unpushed and PR #282 remains untouched.
 
 ## Next Steps
 
-Pack and inspect exact `Reunion.Validation` `0.1.0-alpha.1` from merged Reunion source `1500270`,
-record its immutable hash and dependencies, and expose it only through a temporary local feed. Add
-direct package ownership wherever Ticket source or tests use the validation API, then change
-`ITicketValidator` / `TicketValidator` so synchronous validation returns `ValidationResult` and
-concert lookup returns `Result<ValidationResult, EligibilityError>`. Map invalid results into the
-existing `PurchaseError.Invalid` / `CheckoutError.Invalid` contracts without changing their public
-field keys, update unit and integration coverage, and run Ticket unit/integration, Shared.Api
-architecture, Customer/full Release builds, standalone Customer carve, legacy-carrier scans,
-`git diff --check`, and complete code/security review. Restore every temporary feed input before the
-commit, then stop delivery-ready behind publication and platform sync; do not push or mutate PR #282.
+Review the Phase 5 commit range after `27607208fe2196129b757120d750b481da0df544` through the native,
+security, correctness, isolation, boundary, seeding, convention, and changed-path test-coverage lenses.
+Fix and reverify every finding,
+then mark Phase 5 delivery-ready behind Reunion.Errors `.2`, Reunion.Validation `.1`, Payment
+publication, and generated platform sync. Do not push or mutate PR #282.
 
 ## Completed work
 
@@ -72,16 +74,21 @@ commit, then stop delivery-ready behind publication and platform sync; do not pu
   Payment `.915` / Reunion.Errors `.2` before checkpointing it.
 - Committed locally as `acaec615b` and completed native, security, correctness, isolation, boundary,
   seeding, convention, and changed-path test-coverage review with no findings.
+- Replaced Ticket's interim boolean/list validator carriers with validation-specific Reunion contracts,
+  preserved the eligibility boolean and public validation fields, and added direct validation package
+  ownership and coverage.
 
 ## Verification
 
-- Package manifests and SHA-256 hashes verified from the stable local feed.
+- Payment and Reunion.Validation package manifests and SHA-256 hashes verified from exact local
+  artifacts.
 - Search audit found no separate Search Reunion migration work.
 - Ticket unit tests: 33 passed; Ticket integration tests: 25 passed; Shared.Api architecture tests:
   52 passed.
-- Customer Release build: 0 warnings, 0 errors; full Release solution build: 0 errors and 2 existing
-  generated E2E nullable warnings.
-- Standalone Customer deployable-closure carve: 0 errors and 1 existing UserEntity warning.
+- Customer Release build and full Release solution build: 0 errors; only existing generated E2E and
+  unrelated nullable warnings.
+- Standalone Customer deployable-closure carve: 0 errors; analyzer warnings are pre-existing in the
+  carved configuration.
 - `git diff --check` and legacy carrier/terminal scans pass; normal Payment pins and NuGet sources are
   restored after verification.
 - Code/security review range `1043a9178..acaec615b`: one implementation commit, no findings.
@@ -98,8 +105,24 @@ commit, then stop delivery-ready behind publication and platform sync; do not pu
   `Result<ValidationResult, EligibilityError>` rather than misclassifying absence as validation.
 - Existing `purchase` and `checkout` validation field keys are observable wire contracts and remain
   stable when the validator's internal carrier changes.
+- Validator-owned `concert` / `quantity` fields stay internal; TicketService is the operation boundary
+  that maps every invalid message to the existing public `purchase` / `checkout` field.
 
 ## Event log
+
+### 2026-08-10 — Reunion.Validation implementation verified
+
+- Action: Packed and inspected Reunion.Validation `.1` from exact merged source, migrated Ticket's DI
+  validator contracts and callers, added direct package ownership, and extended unit/integration
+  coverage for structured validation and stable HTTP fields.
+- Evidence: Reunion source `1500270`; Validation package SHA-256
+  `2521531696EE7A470BF6D6F1550A496DC9B843602C70A61B1589BB97F22CEF6E`; exact Payment `.915`
+  hashes already recorded above; Ticket unit 33/33; Ticket integration 25/25; Shared.Api 52/52;
+  Customer and full Release builds at 0 errors; standalone Customer carve at 0 errors; legacy-carrier,
+  direct-package, temporary-input, and `git diff --check` gates clean.
+- Outcome: Phase 5 implementation is locally green against exact producer artifacts with normal source
+  configuration restored. Review and the external publication/sync gates remain.
+- Follow-up: execute the review in `## Next Steps`.
 
 ### 2026-08-10 â€” Reunion.Validation phase added
 
