@@ -62,6 +62,22 @@ export const STORAGE_MANIFEST: readonly StorageItem[] = [
     writeSites: ["shared/src/providers/ThemeProvider.tsx"],
   },
   {
+    key: "concertable.active-tenant",
+    api: "localStorage",
+    owner: "first-party",
+    firstParty: true,
+    purpose:
+      "Remembers the manager's selected active tenant so it persists across sessions.",
+    duration: "Persistent until cleared",
+    classification: "functional",
+    apps: ["venue", "artist"],
+    writeSites: [
+      "b2b/shared/src/features/tenant/store/useTenantStore.ts",
+    ],
+    notes:
+      "Written by the zustand persist middleware (default localStorage); key set via its name option.",
+  },
+  {
     key: "oidc.user:*, oidc.* state",
     api: "localStorage",
     owner: "oidc-client-ts (store configured by first-party)",

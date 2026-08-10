@@ -46,8 +46,10 @@ reopened roadmap line and the merged `Docs/launch_cookie-storage-audit` PR #469.
 
 All engineering is done, committed, and pushed. What remains is delivery + a documented legal tail.
 
-1. **Review the branch** — run `/big-review` (or `/review`) over `main..HEAD`; address any findings and
-   re-commit. This is the pre-merge gate (PROMPTS.md).
+1. ✅ **Review the branch — DONE (2026-08-10).** Full code review over `origin/main..HEAD`; one finding
+   (NAT1 — drift guard blind to zustand `persist()`) found and fixed + verified (vitest 19/19, four
+   builds green). Work-order: `reviews/Feature-launch_browser-storage-consent.md`. Fix committed; branch
+   synced to `origin/main`. **Not yet pushed** (push awaits go-ahead per repo rule).
 2. **Open the PR + merge** (awaits Tommy's go-ahead — PR creation is opt-in). Use `/merge` at the
    **full E2E tier** — this changes a first-visit flow across all SPAs (banner + boot-time script
    loading), so do **not** `skip-e2e`. Let the merge queue run E2E; don't duplicate it locally.
@@ -219,7 +221,15 @@ change.
 
 ## Reviews
 
-None yet.
+- **2026-08-10 — full code review** (`reviews/Feature-launch_browser-storage-consent.md`), two layers
+  (native `code-reviewer` subagent + architecture lenses) over `origin/main..HEAD`. Security layer
+  skipped — no path matches the merge gate's `_SECURITY_PATTERNS` (pure frontend). **One finding, fixed:**
+  **NAT1 (MEDIUM)** — the drift guard was blind to zustand `persist()` stores, so
+  `concertable.active-tenant` (persisted by `b2b/shared/…/useTenantStore.ts` in venue+artist) was
+  unclassified and undetectable, falsifying the "new storage can't ship unclassified" guarantee. Fixed:
+  added a `persist(` write-pattern + the manifest item + the `BROWSER_STORAGE.md` row. Verified — shared
+  vitest 19/19 green, four SPA builds green. No other issues (lazy Stripe, on-use Maps coverage,
+  consentGate edges, `app/web/shared` boundary all verified clean).
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -337,6 +347,25 @@ None yet.
 - Decision (no block): implemented Maps as **functional-necessary-on-use** (the plan/research-preferred
   durable shape, required in every branch); the additional `functional`-category consent gate is a
   solicitor call, documented as a superset that wraps the same mount points — not asked, not blocking.
+
+### 2026-08-10 — code review; NAT1 fixed (drift guard blind to zustand persist)
+
+- Action: Synced worktree to `origin/main` (was 9 behind / 12 ahead; clean merge — incoming commits
+  all `api/**`, no `app/web` overlap). Ran a full two-layer code review over `origin/main..HEAD` (native
+  `code-reviewer` subagent + architecture lenses); security layer skipped (no `_SECURITY_PATTERNS` path).
+  Native layer surfaced **NAT1**: the storage drift-guard regex-matched only literal `setItem`/`[..]=`/
+  `document.cookie=`/`indexedDB.open(`, so it was blind to zustand `persist()` — and `useTenantStore.ts`
+  (`b2b/shared`, venue+artist) persists localStorage `concertable.active-tenant`, which was therefore
+  both missing from `STORAGE_MANIFEST` and undetectable, making the "new storage can't ship
+  unclassified" guarantee false. Verified against the real store, then fixed: added a `persist(` →
+  localStorage `WRITE_PATTERN`, the `concertable.active-tenant` manifest item, and the `BROWSER_STORAGE.md`
+  row (reworded the manifest note to avoid the scanner self-matching `persist(` in its own prose).
+- Evidence: `reviews/Feature-launch_browser-storage-consent.md`; shared vitest **19/19 green** (drift
+  guard now emits + matches the persist token); four SPA builds green (exit 0). Incidental
+  `routeTree.gen.ts` line-ending regens reverted.
+- Outcome: Review complete, one real defect fixed, all gates green. Layer-2 lenses found nothing else
+  (lazy Stripe, on-use Maps coverage, consentGate edges, `app/web/shared` boundary all clean).
+- Follow-up: `## Next Steps` 2 — PR + `/merge` at full E2E tier, awaiting Tommy's go-ahead. Nothing pushed.
 
 ## Resume prompt
 

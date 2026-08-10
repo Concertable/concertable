@@ -6,9 +6,9 @@ cookie/storage policy — it is not the policy itself, and not legal advice.
 
 **Source of truth:** [`src/lib/storageManifest.ts`](./src/lib/storageManifest.ts). This
 document mirrors it. A drift-guard test (`src/lib/storageManifest.test.ts`) scans
-`app/web` for `localStorage` / `sessionStorage` / cookie / IndexedDB writes and fails the
-build when one is not classified in the manifest, so new storage cannot ship unclassified
-and this inventory cannot silently fall out of date.
+`app/web` for `localStorage` / `sessionStorage` / cookie / IndexedDB writes — including
+zustand `persist()` stores — and fails the build when one is not classified in the manifest,
+so new storage cannot ship unclassified and this inventory cannot silently fall out of date.
 
 ## Classification (post-DUAA UK PECR, from `plans/launch/CONSENT_RESEARCH.md`)
 
@@ -28,6 +28,7 @@ PECR reg. 6 requires consent before storing or reading anything on the device, u
 |---|---|---|---|---|---|---|
 | `cookie-consent` | localStorage | first-party | Records the cookie-consent decision so the banner shows once | Persistent until cleared | Necessary | customer, venue, artist, business |
 | `theme` | localStorage | first-party | Light/dark UI preference | Persistent until cleared | Functional | customer, venue, artist |
+| `concertable.active-tenant` | localStorage | first-party | Remembers the manager's selected active tenant across sessions | Persistent until cleared | Functional | venue, artist |
 | `oidc.user:*`, `oidc.*` state | localStorage | oidc-client-ts (store configured by us) | Auth tokens + sign-in / silent-renew state | Session / token lifetime | Necessary | customer, venue, artist |
 | `__stripe_mid` | cookie | Stripe | Fraud prevention (Radar) machine id during payment | ~1 year | Necessary | customer, venue, artist |
 | `__stripe_sid` | cookie | Stripe | Fraud prevention (Radar) session id during payment | ~30 minutes | Necessary | customer, venue, artist |

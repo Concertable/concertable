@@ -37,6 +37,8 @@ const WRITE_PATTERNS: { api: StorageApi; regex: RegExp }[] = [
   },
   { api: "cookie", regex: /\bdocument\s*\.\s*cookie\s*=(?!=)/g },
   { api: "indexedDB", regex: /\bindexedDB\s*\.\s*open\s*\(/g },
+  // zustand persist() middleware writes localStorage by default — no explicit setItem call.
+  { api: "localStorage", regex: /\bpersist\s*\(/g },
 ];
 
 function sourceFiles(dir: string): string[] {
