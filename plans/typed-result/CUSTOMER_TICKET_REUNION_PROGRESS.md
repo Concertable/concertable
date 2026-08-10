@@ -3,7 +3,7 @@
 - Plan: `plans/typed-result/CUSTOMER_TICKET_REUNION_PLAN.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_customer-ticket-reunion`
 - Branch: `Feature/typed-result_customer-ticket-reunion`
-- PR: not opened; historical PR #282 remains open and untouched
+- PR: #475 open; historical PR #282 closed as superseded
 - Dependency/package gates: exact `Reunion.Validation` `.1`, `Reunion.Errors` `.2`, and Payment
   `0.1.0-alpha.0.894` restore from the normal NuGet.org/GitHub feed graph; generated platform-sync
   PR #463 is present in current main. The local production-baseline gate is complete.
@@ -76,14 +76,14 @@ solution, Customer, Ticket unit/integration, Shared.Api architecture, standalone
 mechanical carrier/package, temporary-input, and whitespace gates are green. Final native, security,
 correctness, isolation, boundary, seeding, convention, and changed-path coverage review of
 `d916e95cf..c891dfabb` found no issues. The spent no-findings review work order was deleted under
-`reviews/AGENTS.md`. The reviewed head was pushed and verified at `c6b10acb6`; the independent
-push-evidence checkpoint is now the only local tail.
+`reviews/AGENTS.md`. Both publication legs were pushed and verified, replacement PR #475 is open on
+the exact branch, and historical PR #282 is closed as superseded.
 
 ## Next Steps
 
-Push this evidence checkpoint as the second leg and prove local/remote equality. Then open and verify
-the replacement PR, close PR #282 as superseded, and carry the replacement through PR checks,
-full-E2E merge queue, publication, generated platform sync, and terminal plan closeout.
+Push this PR-transition checkpoint, wait for PR #475's checks, select the full-E2E tier, and carry the
+replacement through the merge queue, publication, generated platform sync, and terminal plan
+closeout.
 
 ## Completed work
 
@@ -114,6 +114,8 @@ full-E2E merge queue, publication, generated platform sync, and terminal plan cl
   security, architecture, convention, seeding, and changed-path coverage lens with no findings.
 - Pushed reviewed head `c6b10acb6` to a new matching remote branch and verified exact local/remote
   equality before writing this independent evidence checkpoint.
+- Pushed and verified evidence head `b51d087d2`, opened replacement PR #475 against `main`, verified
+  its exact head/base, and closed historical PR #282 as superseded.
 
 ## Verification
 
@@ -172,6 +174,16 @@ full-E2E merge queue, publication, generated platform sync, and terminal plan cl
   application pre-check/domain throw in the Ticket branch's net diff.
 
 ## Event log
+
+### 2026-08-10 — replacement PR opened and historical PR superseded
+
+- Action: Completed the second publication leg, opened PR #475, verified its exact branch/head/base,
+  and closed PR #282 with a supersession comment.
+- Evidence: local and remote equality at `b51d087d280d92da5faf1b75e3643ef16c249d19`; PR #475 open
+  against `main` at that head; PR #282 closed at historical head `26ed63b8`.
+- Outcome: The replacement is now the sole active delivery vehicle. PR checks and full-E2E queueing
+  are actionable.
+- Follow-up: push this checkpoint and execute `## Next Steps`.
 
 ### 2026-08-10 — reviewed source push verified
 
