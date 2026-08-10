@@ -5,7 +5,7 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `05ca100f19c74494bf25d4850a4842b2642d0e61`  _(2026-08-10)_
+**Reviewed up to commit:** `335666bdbd6a68ad654fb1704610befeba97b556`  _(2026-08-10)_
 **Security-reviewed up to commit:** `b376131f73933849f6af44111d84a1b69eaf9c78`  _(2026-08-09)_
 
 > Range reviewed: `dc0da93..abcc9be` (2 commits).
@@ -111,3 +111,17 @@ helper tests pass 5/5 and both Customer and B2B UI E2E projects build with zero 
 browser rerun was discarded after Docker developed SQL pre-login resets during stack startup; full
 runtime verification remains with the merge queue. Checked correctness, shared-caller behavior, C#
 conventions, and changed-path coverage; the range introduces no security-sensitive change.
+
+## Incremental review — 2026-08-10 (B2B card-tab activation)
+
+> Range reviewed: `05ca100..335666b` (3 branch commits plus the current-main merge).
+
+No issues found. The next merge-group trace showed that keyboard activation changed the B2B Card
+tab's `aria-selected` state without mounting Stripe's card fields. The final helper instead clicks
+the semantic tab button only when it is unselected: B2B receives the pointer activation needed to
+mount the fields, while Customer's already-selected tab remains untouched and cannot hit the sticky
+application header. This supersedes the keyboard-activation detail in the preceding review. The
+shared helper tests pass 5/5 and both Customer and B2B UI E2E projects build with zero errors.
+Imported current-main changes are package-pin and technical-debt documentation updates with no
+branch-authored conflict resolution. Checked correctness, shared-caller behavior, C# conventions,
+and changed-path coverage; the range introduces no security-sensitive change.
