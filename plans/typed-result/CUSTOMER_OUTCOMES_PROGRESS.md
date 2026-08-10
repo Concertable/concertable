@@ -7,7 +7,9 @@
 - Dependency/package gates: exact `Reunion.Validation` `0.1.0-alpha.1` is published, indexed,
   repository-signature and payload-provenance verified, and clean-restored with `Reunion` and
   `Reunion.Errors` `.1` from NuGet.org only. Payment `0.1.0-alpha.0.894` publication and platform-sync
-  PR #463 are terminal. PR #282 remains excluded.
+  PR #463 are terminal. Customer Ticket replacement PR #475 and platform-sync PR #479 are terminal
+  on platform `.910`; historical PR #282 is closed as superseded and the shipped Ticket slice remains
+  excluded.
 - Last reconciled: 2026-08-10 against `origin/main` `d916e95cf`, this current-main merge, PR #425
   head `e60219f7d`, and terminal production evidence from the Reunion integration owner
 
@@ -15,8 +17,8 @@
 
 Phases 1 through 4 and Phase 5's implementation, verification, review, and finding-fix gates are
 complete. Phase 6 now owns the requested DI-validator migration before delivery. The branch owns only
-Review, Preference, User, Venue, and Artist outcomes/lookups; PR #282's
-Ticket, Concert, Customer Payment, purchase, and checkout slice remains excluded. Review and
+Review, Preference, User, Venue, and Artist outcomes/lookups; merged replacement PR #475's Ticket,
+Concert, Customer Payment, purchase, and checkout slice remains excluded. Review and
 Preference use named Dunet cases with exact stable definitions, application absence terminates as
 `Option<T>`, and scoped multi-item outputs are materialized `IReadOnlyList<T>` values. Existing HTTP
 status and payload contracts remain unchanged.
@@ -423,6 +425,16 @@ watermark from ledger prose. A fresh full `code-review` of the committed branch 
   wire contracts remain stable through per-case `[ErrorCode]` attributes and exact definition tests.
 
 ## Event log
+
+### 2026-08-10 — Customer Ticket boundary advanced to terminal replacement
+
+- Action: Accepted the terminal Customer Ticket owner handoff without changing this plan's code
+  scope.
+- Evidence: replacement PR #475 merged as `2b05ed110`; historical PR #282 closed as superseded;
+  publication delivered platform `.910`; generated sync PR #479 merged as `b17fb07fe`.
+- Outcome: Ticket remains excluded, but the exclusion now names the shipped replacement baseline
+  instead of the obsolete open PR.
+- Follow-up: continue this ledger's existing `## Next Steps` without editing Ticket-owned paths.
 
 ### 2026-08-10 - Phase 6 current-main reconciliation
 

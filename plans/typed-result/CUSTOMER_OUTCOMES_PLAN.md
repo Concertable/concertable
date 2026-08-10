@@ -51,9 +51,9 @@ This plan owns only:
   projects;
 - this plan, its ledger, and the roadmap lifecycle tick after delivery is terminal.
 
-PR #282 / `Feature/TypedResultMigrationPhase2` exclusively owns Customer Ticket, Concert, Customer
-Payment clients and mocks, purchase/checkout flows, and their coverage. This plan must not edit those
-modules or transplant their local-only changes. Review may consume the existing `ITicketModule`
+Merged replacement PR #475 exclusively owns Customer Ticket, Concert, Customer Payment clients and
+mocks, purchase/checkout flows, and their coverage; historical PR #282 is closed as superseded. This
+plan must not edit those modules or recreate their shipped changes. Review may consume the existing `ITicketModule`
 contract and mock it in Review-owned tests, but must adapt its nullable result at the Review boundary;
 it must not change `ITicketModule`, `TicketSummary`, Ticket tests, or Concert tests.
 
@@ -64,10 +64,9 @@ Also out of scope:
 - persistence/model changes and migrations;
 - Customer-wide FluentResults cleanup.
 
-`FluentResults` remains versioned in `api/Concertable.Customer/Directory.Packages.props` while the
-Ticket and Concert owner still consumes it. None of the five scoped production modules currently
-references FluentResults, so this work adds no replacement carrier and removes no shared package
-entry.
+The Ticket replacement removed Customer's final `FluentResults` package ownership and shipped direct
+Reunion/Reunion.Validation contracts on platform `.910`. None of the five scoped production modules
+may reintroduce FluentResults or duplicate Ticket's package cleanup.
 
 ## Contract design
 
@@ -293,6 +292,6 @@ tier and receives no skip label.
   propagation, and Customer's standalone package closure remain intact.
 - The scoped unit/integration suites, Shared.Api architecture suite, Release solution build, and
   Customer carve are green, and full merge-queue E2E plus the generated platform sync complete.
-- PR #282's exclusive Ticket/Concert/Payment slice remains untouched.
+- Merged PR #475's Ticket/Concert/Payment slice remains untouched on the published `.910` baseline.
 - The roadmap line is checked only after the complete delivery lifecycle ships; the roadmap itself is
   retained permanently.
