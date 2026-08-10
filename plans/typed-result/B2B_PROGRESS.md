@@ -4,18 +4,27 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-B2BTypedResultMigration`
 - Branch: `Refactor/B2BTypedResultMigration`
 - PR: not opened
-- Dependency/package gates: checkpoints 6-7 are locally complete against exact Payment packages from
-  `a779fe041`; Reunion integration PR #453, Payment publication, generated platform sync, and exact
-  published-package revalidation gate delivery
-- Last reconciled: 2026-08-10 against reviewed checkpoint `924c5fa39`, merged mainline baseline
-  `6f4a5cc3e`, and the environment-inconclusive final build/Docker gate attempts
+- Dependency/package gates: Payment `0.1.0-alpha.0.894`, platform-sync PR #463, and production-verified
+  `Reunion.Validation` `0.1.0-alpha.1` are terminal on the merged main baseline; Checkpoint 8 is
+  actionable from normal configured feeds
+- Last reconciled: 2026-08-10 against origin/main `3a94cc547`, required sync merge `92643964e`,
+  production validation-package evidence, and the new Checkpoint 8 DI-validator scope
 
 ## Current state
 
-All seven checkpoints are locally complete on the single B2B migration branch as implementation commit
+Checkpoints 1–7 are locally complete on the single B2B migration branch as implementation commit
 `e229afb581c829279ca821b0a85729c4c4f0f441`. During review fixes the branch merged `origin/main`
 through `6f4a5cc3ee953ea3971df464823da7f5b9b100c6`, including platform `0.1.0-alpha.0.892`; the
 review-fix code head is `92cd03a25f48bcee4f6c5e69010bf04be9477500`.
+
+Checkpoint 8 is newly outstanding. The scoped custom DI-validator inventory contains
+`IApplicationValidator` and `IConcertValidator`; both still expose
+`UnitResult<Concertable.Kernel.Errors.ValidationErrors>` on validation-only methods, while
+`IApplicationValidator` also owns ID-based resource lookup and operation-error mapping that belong in
+the application service. Checkpoint 8 replaces those validation-only contracts with
+`Reunion.Validation.ValidationResult`, preserves the existing capability booleans and validation
+ProblemDetails payloads, and leaves FluentValidation `AbstractValidator<T>` request validators plus
+non-DI Deal/domain validation out of scope.
 
 Concert accept, cancel, application-cancel, and finish workflows now expose operation-owned Reunion
 results. Payment and lifecycle failures compose through `MapError`; no string or HTTP-exception bridge
@@ -24,9 +33,9 @@ infrastructure exceptions so the worker invocation remains retryable.
 
 Every B2B carrier and HTTP terminal now uses Reunion directly with package ownership enforced by the
 B2B architecture suite. `FluentResults`, `Concertable.Kernel.Functional`, and
-`Concertable.Shared.Api.Results` are absent from B2B source and project files. Concertable-owned
-`ValidationErrors` remains the application validation vocabulary and is converted only at the
-Reunion error-definition boundary.
+`Concertable.Shared.Api.Results` are absent from B2B source and project files. The remaining custom
+`ValidationErrors` use in DI validator contracts is now explicitly superseded by Checkpoint 8; domain
+validation outside those DI contracts is not silently pulled into this checkpoint.
 
 All 33 B2B operation-error roots now follow the current convention: Dunet unions with disabled
 implicit conversions, 70 explicit naturally named cases, direct case construction, and one exhaustive
@@ -47,18 +56,21 @@ invitation acceptance asserts the typed `InvitationNotPending` Conflict contract
 integration regressions after that run; both projects build, but Docker became unavailable before those
 new tests could execute.
 
-The Payment dependency gate is open. Payment implementation PR #392 merged as `b66325ac`, generated
-platform-sync PR #420 landed the B2B/Customer owned-result consumer migration as `372be1041`, and the
-post-merge feed contains platform `0.1.0-alpha.0.857`. Current `origin/main` is now `1043a9178`; this
-branch has merged that exact base, with no PR or remote branch.
+The current dependency gate is open. PR #453 merged through full E2E as `9d43428c1`, Payment packages
+`0.1.0-alpha.0.894` were published and verified, and generated platform-sync PR #463 merged as
+`483350124`. `Reunion.Validation` `0.1.0-alpha.1` is published, indexed, repository-signature and
+payload-provenance verified, and clean-restored from NuGet.org with its published dependency graph.
+This branch merged current origin/main `3a94cc547` as `92643964e`; no B2B PR or remote branch exists.
 
-Exact local packages make checkpoints 6-7 independently implementable without changing delivery order.
+Exact local packages made checkpoints 6-7 independently implementable without changing delivery order.
 `Concertable.Payment.Contracts` and `Concertable.Payment.Client` `0.1.0-alpha.0.911` were packed from
 repository commit `a779fe04139e8e33fca7f294a26c41e44c89dda7` into
 `%LOCALAPPDATA%\NuGet\Concertable-Reunion-Parallel\a779fe041`. Their SHA-256 hashes
 are `7DDA02F542F606F6707D8305E8524E4227A7F2222F28113F8226D0AD239D3DA8` and
 `A52EA0562FA36EA123450BE2DC022E9F33AE9510FB100E4309F245DEFCC14D14` respectively. The manifests name
-that exact commit; Client depends on Contracts `.911`, Reunion `.1`, and Reunion.Errors `.1`.
+that exact commit; Client depends on Contracts `.911`, Reunion `.1`, and Reunion.Errors `.1`. Those
+artifacts are historical provenance only; Checkpoint 8 uses the normal published `.894`/Validation
+`.1` baseline and must not restore from the temporary feed.
 
 The full staged code/security review covered `1043a9178..e229afb58`; the clean incremental review then
 covered all 13 later commits through `3d50d321c62fc7b9bc302aa9b2cbb93d77aa28b0`. Both review
@@ -78,23 +90,24 @@ must not be retried again this turn.
 
 ## Next Steps
 
-Environment-pending local gates: obtain a conclusive final Release build with user NuGet/Aspire SDK
-access, then require `scripts/docker-health.ps1` to pass before running the NAT1 Tenant and NAT2 User
-integration regressions that have only been build-verified. Record the exact outcomes in this ledger.
-Do not retry Docker or the integration regressions again this turn. Do not push or merge B2B until
-separately instructed.
+Implement Checkpoint 8 against published `Reunion.Validation` `0.1.0-alpha.1`: add direct package
+ownership wherever the API is named, convert every validation-only `IApplicationValidator` and
+`IConcertValidator` method to `ValidationResult`, move ID lookup and operation-error mapping from the
+validator into the application service, and preserve capability booleans plus the exact existing
+validation ProblemDetails fields/messages. Do not convert FluentValidation request validators or
+non-DI Deal/domain validation.
 
-The delivery gate after that local review/verification is:
+Add structured validator/service/HTTP coverage and a scoped DI-validator inventory, then run the
+B2B/full Release builds, Concert unit/integration and architecture gates, the pending NAT1 Tenant and
+NAT2 User integration regressions after `scripts/docker-health.ps1` passes, and source/config audits.
+Commit Checkpoint 8, run incremental code/security review from the stored review watermark, address
+every new finding serially, and update this ledger. Do not push or merge B2B until separately
+instructed.
 
-Blocked: Reunion integration PR #453, Payment.Client publication, and the generated platform-sync PR are not terminal and green, so exact published-package revalidation cannot run.
-Unblock action: The owner session for plans/typed-result/REUNION_INTEGRATION_PROGRESS.md must merge PR #453 with full E2E, carry Payment publication and generated platform sync green, then update this ledger.
-Resume when: PR #453 is merged, the new Payment.Client/Contracts version is published, the generated platform-sync PR is merged green, and origin/main pins that version.
-
-Outstanding review blocker: SEC1 needs a human decision to authorize the separately planned B2B +
-Payment durable financial-lifecycle saga/package cut-over or explicitly accept the unresolved
+Before delivery, SEC1 still needs Tommy's decision to authorize the separately planned B2B + Payment
+durable financial-lifecycle saga/package cut-over or explicitly accept the unresolved
 financial/state inconsistency risk recorded in
-`api/Concertable.B2B/src/Modules/Concert/TECH_DEBT.md`. The lifecycle is not terminal, and this plan
-must not emit a resume pointer while either blocker remains.
+`api/Concertable.B2B/src/Modules/Concert/TECH_DEBT.md`.
 
 ## Completed work
 
@@ -114,6 +127,8 @@ must not emit a resume pointer while either blocker remains.
   `92cd03a25f48bcee4f6c5e69010bf04be9477500`.
 - Deferred SEC1 in `05ab7ecfe9e31edd9f9aa266c9fba6d32087575b`; its human decision and durable
   cross-service design are preserved in the owning Concert `TECH_DEBT.md`.
+- Merged current origin/main `3a94cc547` as `92643964e`, preserving this branch's direct Reunion
+  package ownership while bringing the terminal Payment `.894` and platform-sync baseline.
 - Synced current `origin/main` into the branch and resolved ConcertController and Tenant GlobalUsings.
 - Renamed branch from `Refactor/ConcertWorkflowDispatchers` to `Refactor/B2BTypedResultMigration`.
 - Renamed worktree to
@@ -170,6 +185,11 @@ must not emit a resume pointer while either blocker remains.
   added because the controller-test contract excludes the dev-only endpoint.
 - Review CV1: `ErrorDefinitionContractTests` passed 55/55, the full Concert unit suite passed 144/144,
   and the scoped diff check passed.
+- Checkpoint 8 planning audit: `IApplicationValidator` and `IConcertValidator` are the only custom
+  B2B validator interfaces registered directly in DI; their validation-only methods still return
+  `UnitResult<Concertable.Kernel.Errors.ValidationErrors>`. FluentValidation request validators are
+  framework contracts and are explicitly excluded. Production `Reunion.Validation` `.1`, Payment
+  `.894`, and platform-sync PR #463 are terminal and normal-feed ready.
 - Incremental code/security review: the 13 commits in
   `e229afb581c829279ca821b0a85729c4c4f0f441..3d50d321c62fc7b9bc302aa9b2cbb93d77aa28b0`
   produced no new findings after native correctness/test-coverage, security-sensitive controller and
@@ -235,13 +255,17 @@ must not emit a resume pointer while either blocker remains.
 
 - Revoked invitation acceptance is `InvitationNotPending`, an explicit Conflict outcome; the stale
   integration expectation was corrected from Bad Request to Conflict.
-- B2B remains the exclusive semantic owner. Exact local Payment packages open implementation now;
-  publication and generated sync remain the final delivery/revalidation gate.
+- B2B remains the exclusive semantic owner. Published Payment `.894`, Reunion.Validation `.1`, and
+  generated platform sync now open normal-feed implementation and verification; the exact local
+  `.911` artifacts remain provenance only.
 - Payment rejection now preserves its typed `PaymentRequired` contract at the HTTP boundary; a
   cross-tenant accept lookup remains fail-closed as Not Found. Direct executor integration tests assert
   owned finish errors rather than manufacturing HTTP exceptions below the controller boundary.
-- PR #453 remains open and green. Temporary package inputs were removed after verification; committed
-  Payment package versions again use `$(ConcertablePlatformVersion)`.
+- PR #453, Payment publication, and platform-sync PR #463 are terminal green. Temporary package
+  inputs remain removed; committed Payment package versions use `$(ConcertablePlatformVersion)`.
+- Custom validators resolved through DI use `ValidationResult`; services own resource absence,
+  operation-error mapping, and public capability reduction. FluentValidation request validators and
+  non-DI domain/entity validation keep their existing owners and carriers in this checkpoint.
 - The staged big review found NAT1-NAT5, SEC1-SEC2, and CV1. NAT1-NAT4, SEC2, and CV1 are fixed;
   NAT5 is fixed by this ledger checkpoint. SEC1 remains deferred for the explicit human architecture
   decision recorded in Concert `TECH_DEBT.md`.
@@ -256,12 +280,28 @@ must not emit a resume pointer while either blocker remains.
 
 - Waiting ledger: `plans/dotnet-11/B2B_WORKFLOW_UNIONS_PROGRESS.md`.
   Worktree: not created; reserved branch `Refactor/dotnet-11_b2b-workflow-unions`.
-  Gate: the B2B typed-result checkpoints 6-7 source PR and every resulting publication/platform-sync
+  Gate: the B2B typed-result checkpoints 6-8 source PR and every resulting publication/platform-sync
   gate must be terminal and green. At that gate, update the dependent ledger on current main and
   surface its implementation pointer; do not let the dependent poll or copy this worktree's
   overlapping Concert workflow changes.
 
 ## Event log
+
+### 2026-08-10 — DI validation checkpoint added
+
+- Action: Corrected the plan's validation direction, audited B2B custom DI validators and their
+  callers, merged current origin/main, and added Checkpoint 8 for Reunion validation-specific
+  carriers.
+- Evidence: `IApplicationValidator` and `IConcertValidator` are the only custom validator interfaces
+  registered directly in B2B DI; production `Reunion.Validation` `0.1.0-alpha.1` is verified and
+  Payment `.894` plus platform-sync PR #463 are terminal; origin/main `3a94cc547` merged as
+  `92643964e` with only the B2B central package conflict resolved by preserving direct Reunion
+  ownership.
+- Outcome: The prior statement that Concertable `ValidationErrors` remains the application validation
+  vocabulary is superseded for DI validators. Checkpoint 8 is actionable from normal feeds and owns
+  `ValidationResult`, application-service lookup/error mapping, direct package ownership, structured
+  coverage, and inventory gates without converting framework or non-DI validation.
+- Follow-up: execute `## Next Steps`; do not push or merge B2B.
 
 ### 2026-08-10 — final local gates environment-inconclusive
 
