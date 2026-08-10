@@ -76,13 +76,14 @@ solution, Customer, Ticket unit/integration, Shared.Api architecture, standalone
 mechanical carrier/package, temporary-input, and whitespace gates are green. Final native, security,
 correctness, isolation, boundary, seeding, convention, and changed-path coverage review of
 `d916e95cf..c891dfabb` found no issues. The spent no-findings review work order was deleted under
-`reviews/AGENTS.md`; the replacement is ready for its plan-aware two-leg push.
+`reviews/AGENTS.md`. The reviewed head was pushed and verified at `c6b10acb6`; the independent
+push-evidence checkpoint is now the only local tail.
 
 ## Next Steps
 
-Execute the plan-aware two-leg push, open and verify the replacement PR, close PR #282 as
-superseded, then carry the replacement through PR checks, full-E2E merge queue, publication,
-generated platform sync, and terminal plan closeout.
+Push this evidence checkpoint as the second leg and prove local/remote equality. Then open and verify
+the replacement PR, close PR #282 as superseded, and carry the replacement through PR checks,
+full-E2E merge queue, publication, generated platform sync, and terminal plan closeout.
 
 ## Completed work
 
@@ -111,6 +112,8 @@ generated platform sync, and terminal plan closeout.
   production-baseline verification gate with no failures.
 - Reviewed the final current-main branch range `d916e95cf..c891dfabb` through every required native,
   security, architecture, convention, seeding, and changed-path coverage lens with no findings.
+- Pushed reviewed head `c6b10acb6` to a new matching remote branch and verified exact local/remote
+  equality before writing this independent evidence checkpoint.
 
 ## Verification
 
@@ -169,6 +172,16 @@ generated platform sync, and terminal plan closeout.
   application pre-check/domain throw in the Ticket branch's net diff.
 
 ## Event log
+
+### 2026-08-10 — reviewed source push verified
+
+- Action: Pushed the reviewed branch head as the first leg of the plan-aware publication protocol and
+  fetched the new remote ref.
+- Evidence: local and `origin/Feature/typed-result_customer-ticket-reunion` both resolved to
+  `c6b10acb6ce37c9c67d6ba6f1f2d91d534abd396`; the push created the matching remote branch.
+- Outcome: The source publication is proven. This ledger entry is the independent checkpoint required
+  for the second leg.
+- Follow-up: push this checkpoint, verify equality again, and open the replacement PR.
 
 ### 2026-08-10 — authorized current-main review completed
 
