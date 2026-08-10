@@ -5,10 +5,10 @@
 - Branch: `Feature/typed-result_customer-ticket-reunion`
 - PR: not opened; historical PR #282 remains open and untouched
 - Dependency/package gates: validator implementation verified against merged Reunion.Validation
-  source; Reunion.Errors `.2`, Reunion.Validation `.1`, Payment publication, and generated platform
-  sync gate delivery and final clean-feed revalidation
-- Last reconciled: 2026-08-10 against `origin/main` `6f4a5cc3e`, branch head this commit with parent
-  `27607208f`, Payment
+  source; unpublished Reunion.Validation `.1`, Payment publication, and generated platform sync gate
+  delivery and final clean-feed revalidation; Reunion.Errors `.2` is published
+- Last reconciled: 2026-08-10 against `origin/main` `6f4a5cc3e`, implementation head
+  `d3b6d6b90`, Payment
   package source `a2497e3e8`, Reunion source `1500270`, implementation commit `acaec615b`, the active
   Reunion integration owner, and historical PR #282 head `26ed63b8`
 
@@ -51,16 +51,21 @@ The exact locally packed `Reunion.Validation` `0.1.0-alpha.1` artifact from merg
 dependencies on `Reunion` `0.1.0-alpha.1` and `Reunion.Errors` `0.1.0-alpha.1`; Customer's direct
 `Reunion.Errors` `.2` pin wins resolution. The validation package remains unpublished. Every
 temporary feed entry and Payment `.915` verification pin has been removed from source configuration.
-The Phase 5 source is verified and committed with this ledger as this commit; review is pending. The
-branch remains unpushed and PR #282 remains untouched.
+The Phase 5 source is verified and committed at `d3b6d6b90`. Native, security, correctness,
+isolation, boundary, seeding, convention, and changed-path test-coverage review found no issues in
+`27607208f..d3b6d6b90`. The branch remains unpushed and PR #282 remains untouched.
 
 ## Next Steps
 
-Review the Phase 5 commit range after `27607208fe2196129b757120d750b481da0df544` through the native,
-security, correctness, isolation, boundary, seeding, convention, and changed-path test-coverage lenses.
-Fix and reverify every finding,
-then mark Phase 5 delivery-ready behind Reunion.Errors `.2`, Reunion.Validation `.1`, Payment
-publication, and generated platform sync. Do not push or mutate PR #282.
+Blocked: `Reunion.Validation` `0.1.0-alpha.1` is not published, Payment PR #453 remains open, its
+`.915` packages are not published, and the generated platform sync therefore does not exist.
+
+Unblock action: the Reunion integration owner must publish and verify Reunion.Validation `.1`, land
+PR #453, verify the Payment publication, and land the generated platform-sync PR.
+
+Resume when: normal configured feeds resolve Reunion.Validation `.1` and the published Payment
+packages, the generated platform-sync PR is merged, and this branch restores, builds, and passes its
+targeted tests without a temporary source or disposable version pin.
 
 ## Completed work
 
@@ -77,6 +82,8 @@ publication, and generated platform sync. Do not push or mutate PR #282.
 - Replaced Ticket's interim boolean/list validator carriers with validation-specific Reunion contracts,
   preserved the eligibility boolean and public validation fields, and added direct validation package
   ownership and coverage.
+- Committed Phase 5 as `d3b6d6b90` and reviewed `27607208f..d3b6d6b90` across every required native,
+  security, architecture, convention, seeding, and changed-path coverage lens with no findings.
 
 ## Verification
 
@@ -92,6 +99,7 @@ publication, and generated platform sync. Do not push or mutate PR #282.
 - `git diff --check` and legacy carrier/terminal scans pass; normal Payment pins and NuGet sources are
   restored after verification.
 - Code/security review range `1043a9178..acaec615b`: one implementation commit, no findings.
+- Phase 5 code/security review range `27607208f..d3b6d6b90`: one implementation commit, no findings.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -107,8 +115,23 @@ publication, and generated platform sync. Do not push or mutate PR #282.
   stable when the validator's internal carrier changes.
 - Validator-owned `concert` / `quantity` fields stay internal; TicketService is the operation boundary
   that maps every invalid message to the existing public `purchase` / `checkout` field.
+- The Reunion integration owner recorded this waiting ledger and exact publication/sync return gate
+  in owner checkpoint `8d6cd0cfc`.
 
 ## Event log
+
+### 2026-08-10 — Reunion.Validation phase reviewed and delivery-gated
+
+- Action: Reviewed the exact Phase 5 commit, deleted the spent no-findings review work order, and
+  registered the cross-plan return gate with the Reunion integration owner.
+- Evidence: review range `27607208f..d3b6d6b90`; no findings across native, security, correctness,
+  isolation, boundary, seeding, convention, or changed-path coverage; owner checkpoint `8d6cd0cfc`;
+  NuGet.org resolves Reunion.Errors `.2` and returns 404 for Reunion.Validation; Payment PR #453 is
+  open/clean at `e3fd2b1ab`.
+- Outcome: Phase 5 is locally complete and delivery-ready behind the exact external package and sync
+  gate. The branch remains unpushed and PR #282 remains untouched.
+- Follow-up: the Reunion integration owner clears the blocker in `## Next Steps` and updates this
+  ledger only when its normal-feed resume condition is true.
 
 ### 2026-08-10 — Reunion.Validation implementation verified
 

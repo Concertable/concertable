@@ -39,7 +39,7 @@ superseded.
    mechanical legacy-carrier gates.
 4. [x] Restore all published-package configuration, commit and review the source as delivery-ready, then
    wait for published Payment revalidation before delivery or PR #282 supersession.
-5. [ ] Replace the Ticket DI validator's interim `bool` and `UnitResult<IReadOnlyList<string>>`
+5. [x] Replace the Ticket DI validator's interim `bool` and `UnitResult<IReadOnlyList<string>>`
    contracts with `Reunion.Validation.ValidationResult`. Preserve the separate typed not-found
    outcome for asynchronous concert lookup, keep existing purchase/checkout ProblemDetails field
    contracts stable, update direct package ownership and tests, and rerun the complete Ticket,
