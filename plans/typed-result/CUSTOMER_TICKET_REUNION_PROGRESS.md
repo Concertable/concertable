@@ -7,8 +7,8 @@
 - Dependency/package gates: exact `Reunion.Validation` `.1`, `Reunion.Errors` `.2`, and Payment
   `0.1.0-alpha.0.894` restore from the normal NuGet.org/GitHub feed graph; generated platform-sync
   PR #463 is present in current main. The local production-baseline gate is complete.
-- Last reconciled: 2026-08-10 against `origin/main` `ddb6017ca`, implementation head `d3b6d6b90`,
-  the verified merge candidate, and historical PR #282 head `26ed63b8`
+- Last reconciled: 2026-08-10 against `origin/main` `ddb6017ca`, verified local head `82e56eefa`,
+  and historical PR #282 head `26ed63b8`
 
 ## Current state
 
@@ -56,13 +56,17 @@ isolation, boundary, seeding, convention, and changed-path test-coverage review 
 Normal-feed restore resolves `Reunion.Validation` `.1`, `Reunion.Errors` `.2`, and Payment
 Contracts/Client `.894` exactly from NuGet.org and GitHub Packages. The production-baseline unit,
 integration, architecture, Customer/full Release, carve, inventory, and whitespace gates are green.
-The branch remains unpushed and PR #282 remains untouched.
+The current-main merge is committed at `82e56eefa`. Final native, security, correctness, isolation,
+boundary, seeding, convention, and changed-path coverage review of `ddb6017ca..82e56eefa` found no
+issues, so its spent review work order was deleted. Read-only PR preflight finds the branch current
+with main, all code committed, no existing replacement PR, and no open platform-sync PR. The branch
+remains unpushed and PR #282 remains open and untouched.
 
 ## Next Steps
 
-Commit the verified current-main merge, review the resulting branch delta against current main, and
-resolve every finding. Then leave the clean local branch ready for replacement-PR delivery while
-keeping historical PR #282 untouched until explicit approval to supersede it.
+Blocked: Replacement PR publication and historical PR #282 supersession require Tommy's explicit approval.
+Unblock action: Tommy approves superseding PR #282; then push this verified branch, open the replacement PR, close PR #282 as superseded, and continue its checks and merge lifecycle.
+Resume when: Tommy explicitly authorizes the replacement PR and supersession of PR #282.
 
 ## Completed work
 
@@ -85,6 +89,8 @@ keeping historical PR #282 untouched until explicit approval to supersede it.
   generated platform-sync gates and returned this ledger for final normal-feed revalidation.
 - Merged current main into the replacement candidate, removed duplicate package items introduced by
   the overlapping merge, and completed production-baseline revalidation through normal feeds.
+- Committed the verified current-main merge as `82e56eefa`, reviewed the complete 10-commit branch
+  delta with no findings, and completed a green local-readiness preflight without publishing it.
 
 ## Verification
 
@@ -111,6 +117,10 @@ keeping historical PR #282 untouched until explicit approval to supersede it.
 - Production-baseline rerun: Ticket unit 33/33, Ticket integration 25/25, Shared.Api 52/52; Customer
   Release and single-node full Release builds at 0 errors; staged standalone Customer carve at 0
   errors; temporary-input, legacy-carrier, validator-signature, and `git diff --check` gates clean.
+- Final native/security review range `ddb6017ca..82e56eefa`: 10 commits, no findings; the no-findings
+  work order was deleted under `reviews/AGENTS.md`.
+- PR preflight after fetch: 0 commits behind current main, 10 local commits ahead, all code committed,
+  no replacement PR, no open platform-sync PR; historical PR #282 remains open at `26ed63b8`.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -130,6 +140,18 @@ keeping historical PR #282 untouched until explicit approval to supersede it.
   in owner checkpoint `8d6cd0cfc`.
 
 ## Event log
+
+### 2026-08-10 — replacement branch locally ready
+
+- Action: Committed the verified current-main merge, ran the native/security and Concertable review
+  lenses over the complete current-main branch delta, deleted the spent no-findings work order, and
+  ran the read-only PR preflight.
+- Evidence: merge checkpoint `82e56eefa`; review range `ddb6017ca..82e56eefa`, 10 commits, no
+  findings; current-main divergence `0 behind / 10 ahead`; no uncommitted code, replacement PR, or
+  open platform-sync PR; PR #282 still open at `26ed63b8`.
+- Outcome: Ticket's Reunion.Validation migration is locally complete, production-baseline verified,
+  reviewed, and ready to publish. Delivery is intentionally stopped before push or PR mutation.
+- Follow-up: Tommy explicitly approves replacement-PR publication and supersession of PR #282.
 
 ### 2026-08-10 — current-main production revalidation completed
 
