@@ -16,7 +16,7 @@ Checkpoints 1–7 are locally complete on the single B2B migration branch as imp
 through `6f4a5cc3ee953ea3971df464823da7f5b9b100c6`, including platform `0.1.0-alpha.0.892`; the
 review-fix code head is `92cd03a25f48bcee4f6c5e69010bf04be9477500`.
 
-Checkpoint 8 is implemented but uncommitted pending its Docker-backed integration gate. The scoped
+Checkpoint 8 is complete and locally verified. The scoped
 custom DI-validator inventory contains only `IApplicationValidator` and `IConcertValidator`; every
 validation-only method now returns `Reunion.Validation.ValidationResult`. `ApplicationService` owns
 ID lookup, operation-error mapping, and reduction to the existing public capability booleans.
@@ -55,12 +55,11 @@ Opportunity, Contract, and Invoice. API controllers only map successful payloads
 Results. `ConcertService` and `SelfBillingAgreementService` own clock-dependent decisions; no B2B API
 project depends on `Option`, and no B2B controller injects `TimeProvider`.
 
-The implementation checkpoint's complete B2B integration surface is green: Artist 17/17, Concert
-148/148, Tenant 56/56, User 3/3, and Venue 25/25. The migration exposed two stale transport
-assertions: polymorphic `IDeal` responses now preserve their declared interface metadata, and revoked
-invitation acceptance asserts the typed `InvitationNotPending` Conflict contract. NAT1 and NAT2 added
-integration regressions after that run; both projects build, but Docker became unavailable before those
-new tests could execute.
+The implementation checkpoint's affected integration surface is green: B2B Concert 152/152,
+Customer Concert 11/11, B2B Tenant 58/58, B2B User 4/4, and Customer User 6/6. NAT1 and NAT2 are
+therefore exercised in their owning integration projects. Customer User required the documented
+temporary elevated `R:` mapping for Windows SNI native-DLL path length; the mapping was removed after
+the targeted rerun.
 
 The current dependency gate is open. `Reunion.Validation` `0.1.0-alpha.1` is published, indexed,
 repository-signature and payload-provenance verified. The merged platform `.897` baseline requires
@@ -88,24 +87,15 @@ unresolved risk and decision are owned by
 deferred.
 
 The B2B and full-solution Release builds, Concert unit tests, architecture tests, formatting, package
-resolution, and source/config audits are conclusive and green on the uncommitted Checkpoint 8 tree.
-Docker remains environment-blocked: `docker ps` timed out after 34 seconds and the required
-fresh-container HTTP round-trip produced no result before its 3-minute timeout. Concert integration
-and the pending NAT1 Tenant/NAT2 User regressions were not started. Per the Docker startup-failure
-rule, Docker-backed tests must not be retried again this turn.
+resolution, source/config audits, Docker health probe, and affected integration suites are conclusive
+and green for Checkpoint 8.
 
 ## Next Steps
 
-Blocked: Checkpoint 8 cannot pass its required Concert, NAT1 Tenant, and NAT2 User integration gates because Docker did not complete either the daemon check or the mandatory fresh-container HTTP round-trip.
-Unblock action: Tommy must start or restart Docker Desktop and leave it in the Running state, then resume this worktree without discarding its uncommitted Checkpoint 8 code.
-Resume when: `scripts/docker-health.ps1` completes successfully with a stable host-to-container HTTP data round-trip.
-
-After the health gate passes, run `scripts/integration.ps1 concert`, the Tenant integration project,
-and the User integration project through the `integration-debug` workflow. If green, commit the
-uncommitted Checkpoint 8 runtime/test tree, then implement Checkpoint 9 from the plan. Fetch and
-reconcile the newer origin/main, repeat affected build/test gates, then run incremental code/security
-review from watermark `3d50d321c`, address every new finding serially, and update this ledger. Do not
-push or merge B2B until separately instructed.
+Commit the verified Checkpoint 8 runtime/test tree, then implement Checkpoint 9 from the plan. Fetch
+and reconcile the newer origin/main, repeat affected build/test gates, then run incremental
+code/security review from watermark `3d50d321c`, address every new finding serially, and update this
+ledger. Do not push or merge B2B until separately instructed.
 
 Before delivery, SEC1 still needs Tommy's decision to authorize the separately planned B2B + Payment
 durable financial-lifecycle saga/package cut-over or explicitly accept the unresolved
@@ -118,9 +108,9 @@ financial/state inconsistency risk recorded in
   migrations, preserved from the branch's existing commits.
 - Checkpoints 6-7: Concert payment/cancel/finish owned outcomes, retryable completion faults, direct
   Reunion carrier/terminal ownership, and complete B2B FluentResults removal.
-- Checkpoint 8 implementation is present in the working tree: DI validation carriers, service-owned
-  lookup/error mapping, capability booleans, structured coverage, direct package ownership, and the
-  Reunion.Errors alpha.2 direct-factory compatibility migration. Its integration gate is pending.
+- Checkpoint 8: DI validation carriers, service-owned lookup/error mapping, capability booleans,
+  structured coverage, direct package ownership, and the Reunion.Errors alpha.2 direct-factory
+  compatibility migration; all affected integration suites are green.
 - Committed checkpoints 6-7 as `e229afb581c829279ca821b0a85729c4c4f0f441`.
 - Completed the staged big review over `1043a9178..e229afb58`, then the clean incremental code/security
   review over `e229afb581c829279ca821b0a85729c4c4f0f441..3d50d321c62fc7b9bc302aa9b2cbb93d77aa28b0`.
@@ -175,9 +165,12 @@ financial/state inconsistency risk recorded in
   `IApplicationValidator` and `IConcertValidator`; their validation-only methods return
   `ValidationResult`. Remaining `UnitResult<ValidationErrors>` uses are the explicitly excluded
   Deal/domain validation surface.
-- Checkpoint 8 Docker gate: `docker ps` timed out after 34 seconds; the approved
-  `scripts/docker-health.ps1` fresh-container HTTP probe produced no result before its 3-minute
-  timeout. Concert, NAT1 Tenant, and NAT2 User integration tests were not started.
+- Checkpoint 8 Docker/integration gate: fresh-container host-to-container HTTP data round-trip passed;
+  B2B Concert 152/152, Customer Concert 11/11, B2B Tenant 58/58, B2B User 4/4, and Customer User 6/6.
+  The Concert wrapper's ten-minute shell cap expired after B2B completed and while Customer restore
+  started, so the surviving Customer project was followed to its green result. Customer User's first
+  run hit the documented SNI path-length error before fixture initialization; the targeted elevated
+  `R:` rerun passed 6/6 and removed the mapping afterward.
 - Exact-package Release build: `api/Concertable.B2B/Concertable.B2B.slnx` succeeded with 0 warnings
   and 0 errors against Payment.Contracts/Client `.911` from reviewed producer `a779fe041`.
 - B2B unit wrapper: all four projects green; Concert 124/124, Deal 22/22, Tenant 117/117, Workers 5/5.
@@ -307,6 +300,17 @@ financial/state inconsistency risk recorded in
   overlapping Concert workflow changes.
 
 ## Event log
+
+### 2026-08-10 - Checkpoint 8 integration gate completed
+
+- Action: Verified Docker with the fresh-container HTTP probe, ran the affected Concert, Tenant, and
+  User integration projects, and used a temporary elevated `R:` mapping for the known Customer User
+  native SNI path-length constraint.
+- Evidence: B2B Concert 152/152, Customer Concert 11/11, B2B Tenant 58/58, B2B User 4/4, and
+  Customer User 6/6. The temporary drive mapping was removed after the targeted run.
+- Outcome: Checkpoint 8 is complete and ready to commit; NAT1 and NAT2 are covered by their green
+  owning integration projects.
+- Follow-up: commit Checkpoint 8 and implement Checkpoint 9.
 
 ### 2026-08-10 — Checkpoint 8 implemented; integration blocked on Docker
 

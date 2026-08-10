@@ -44,7 +44,7 @@ adapter, string bridge, committed local source, feed path, or disposable package
 - [x] **Checkpoint 7 — B2B FluentResults removal.** Remove FluentResults
   from the migrated B2B projects once their last local use is gone and every migrated signature uses
   the published Reunion-backed surface.
-- [ ] **Checkpoint 8 — DI validation results.** Convert the custom DI-resolved
+- [x] **Checkpoint 8 — DI validation results.** Convert the custom DI-resolved
   `IApplicationValidator` and `IConcertValidator` validation-only contracts to
   `Reunion.Validation.ValidationResult = Valid | Invalid(ValidationErrors)`. Move resource lookup and
   operation-error mapping out of `IApplicationValidator` into the application service, reduce
