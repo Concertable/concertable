@@ -52,6 +52,16 @@ adapter, string bridge, committed local source, feed path, or disposable package
   errors without parsing messages or changing ProblemDetails field/message contracts. Add direct
   `Reunion.Validation` ownership to every compiling project that names its API. FluentValidation
   `AbstractValidator<T>` request validators and non-DI Deal/domain validation are explicitly excluded.
+- [ ] **Checkpoint 9 — domain-owned expected alternatives.** Reconcile the production domain guards
+  that are already inside this branch's B2B semantic scope. `TenantInvitationEntity.Accept` and
+  `Revoke` return operation-owned typed failures for the pending/expired alternatives and the tenant
+  service maps them without duplicating the same checks. `ConcertEntity.DeclareDoorRevenue` owns the
+  non-negative-revenue alternative and maps it into a stable `DeclareDoorRevenueError` case. Artist
+  and Venue create/update plus Tenant legal/tax/address construction return structured validation for
+  caller-supplied fields; services map those results instead of relying on request validators to avoid
+  domain throws. Preserve exceptions for malformed geocoder/image/identity-provider output,
+  invitation expiry after the pending query, `VatBreakdown` imbalance, and other impossible internal
+  construction or consistency faults. Do not catch those invariant faults in Result combinators.
 
 ## Error and boundary rules
 
@@ -74,6 +84,14 @@ adapter, string bridge, committed local source, feed path, or disposable package
   operation errors. Application services own lookup absence, translate `Invalid.Errors` into their
   operation-specific cases, and preserve the current `application`, `totalTickets`, `booking`, and
   `datePosted` structured fields at the HTTP terminal.
+- Expected alternatives are owned by the domain method or factory that enforces them. HTTP request
+  validation may reject the same malformed wire input, but application services remain correct when
+  called directly and do not repeat an equivalent guard merely to avoid a `DomainException`.
+- The repository-wide audit retains the B2B invariant inventory: Artist/Venue collaborator and
+  identity-output guards; `TenantInvitationEntity.Expire` and provisioning-handler consistency;
+  `VatBreakdown` arithmetic balance; and unconditional state mutations that expose no expected
+  rejection today. Those faults must not become public 4xx contracts through blanket exception
+  handling.
 
 ## Verification gate — every checkpoint
 
@@ -84,6 +102,12 @@ adapter, string bridge, committed local source, feed path, or disposable package
   lookup/error mapping, capability booleans, rule accumulation/order, collaborator exception
   propagation, and unchanged validation ProblemDetails; a scoped inventory proves every custom
   DI-resolved validator returns `ValidationResult` while excluding framework validators;
+- Checkpoint 9: domain tests pin each typed rejection at its owning method/factory; direct service
+  tests prove mappings without HTTP validators; source/architecture inventories prove the named
+  caller-actionable guards no longer throw `DomainException`, equivalent service pre-checks are gone,
+  and the deferred invariant inventory still propagates exceptionally; HTTP tests pin unchanged
+  stable codes, messages, structured fields, and ProblemDetails while invariant exceptions remain
+  500-class faults;
 - final checkpoint: select the merge-queue E2E tier (full by default); do not duplicate the queue run
   locally.
 

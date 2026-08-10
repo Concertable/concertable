@@ -24,6 +24,14 @@ Structured validator, service, and HTTP coverage preserves the `application`, `t
 `booking`, and `datePosted` fields and messages. FluentValidation `AbstractValidator<T>` request
 validators plus non-DI Deal/domain validation remain unchanged and out of scope.
 
+The PR #470 domain-outcome audit adds Checkpoint 9 after Checkpoint 8. The branch-local corrections are
+the duplicated Tenant invitation pending/expiry checks around throwing `Accept`/`Revoke`, negative
+door revenue, caller-supplied Artist/Venue name/about validation, and Tenant legal/tax/address
+construction. Image/geocoder/identity output guards, `TenantInvitationEntity.Expire` after its pending
+query, provisioning-handler consistency, and `VatBreakdown` balance remain invariant exceptions.
+Shared value-object and blanket HTTP exception behavior remains with the roadmap's future global
+audit; Checkpoint 9 must not absorb that repository-wide work.
+
 Concert accept, cancel, application-cancel, and finish workflows now expose operation-owned Reunion
 results. Payment and lifecycle failures compose through `MapError`; no string or HTTP-exception bridge
 remains. The completion runner continues after expected refusal/deferral results and propagates
@@ -93,10 +101,11 @@ Unblock action: Tommy must start or restart Docker Desktop and leave it in the R
 Resume when: `scripts/docker-health.ps1` completes successfully with a stable host-to-container HTTP data round-trip.
 
 After the health gate passes, run `scripts/integration.ps1 concert`, the Tenant integration project,
-and the User integration project through the `integration-debug` workflow. If green, commit
-Checkpoint 8 with this plan pair, fetch and reconcile the newer origin/main, repeat affected build/test
-gates, then run incremental code/security review from watermark `3d50d321c`, address every new finding
-serially, and update this ledger. Do not push or merge B2B until separately instructed.
+and the User integration project through the `integration-debug` workflow. If green, commit the
+uncommitted Checkpoint 8 runtime/test tree, then implement Checkpoint 9 from the plan. Fetch and
+reconcile the newer origin/main, repeat affected build/test gates, then run incremental code/security
+review from watermark `3d50d321c`, address every new finding serially, and update this ledger. Do not
+push or merge B2B until separately instructed.
 
 Before delivery, SEC1 still needs Tommy's decision to authorize the separately planned B2B + Payment
 durable financial-lifecycle saga/package cut-over or explicitly accept the unresolved
@@ -315,6 +324,23 @@ financial/state inconsistency risk recorded in
   uncommitted and unreviewed until Concert, NAT1 Tenant, and NAT2 User integration pass. No push, PR,
   or merge was created.
 - Follow-up: start or restart Docker Desktop; resume only after `scripts/docker-health.ps1` passes.
+
+### 2026-08-10 — PR #470 domain-outcome reconciliation
+
+- Action: Audited the net B2B branch scope, every production B2B `DomainException` guard, existing
+  Result/ValidationResult/bool/nullable state boundary, duplicated service pre-check, HTTP terminal,
+  and relevant test/architecture coverage; added Checkpoint 9 without changing the dirty Checkpoint 8
+  implementation.
+- Evidence: Caller-actionable duplicates exist in Tenant invitation acceptance/revocation and door
+  revenue; Artist/Venue request fields and Tenant legal/tax/address construction also reject expected
+  input by exception. Deal factories and lifecycle transitions already own typed outcomes. The
+  remaining named guards are collaborator, background-consistency, arithmetic, or construction
+  invariants and remain exceptional.
+- Outcome: B2B is active/actionable after its current Docker delivery gate; branch-owned corrections
+  are explicit and Shared/repository-wide exception behavior is deferred to the roadmap audit with an
+  exact B2B inventory.
+- Follow-up: satisfy `## Next Steps`; do not broaden Checkpoint 9 into Shared HTTP handling or other
+  service owners.
 
 ### 2026-08-10 — DI validation checkpoint added
 
