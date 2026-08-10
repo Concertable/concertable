@@ -6,7 +6,8 @@
 ## Objective
 
 Replace Concertable's temporary owned Result/Option carriers with the real Reunion package family,
-using reviewed carrier base `7bf5f66` through corrected merged release head `e33b40f`, without changing domain
+using reviewed carrier base `7bf5f66` through corrected merged release head `e33b40f` and the direct
+error-factory correction at `1500270`, without changing domain
 error ownership, controller signatures, MVC behavior, published transport contracts, or service
 package boundaries.
 
@@ -451,15 +452,18 @@ the next code layer. No source PR or platform sync is created for the discarded 
   `Reunion` and `Reunion.Errors` references wherever source uses those APIs, including Payment.Client
   because its public API exposes carriers. Add `Reunion.AspNetCore` only to a Payment HTTP-edge
   project whose source maps those carriers.
+- Pin `Reunion.Errors` `0.1.0-alpha.2` and use only its direct nested-case factories such as
+  `ErrorDefinition.NotFound<TCase>()`; the removed `For<TError>()` builder is not a supported surface.
 - The current Payment API/Web source maps no Result or Option carrier, so this layer adds no unused
   `Reunion.AspNetCore` dependency. If that changes, use `Reunion.AspNetCore.Mvc` directly and its
   generic `ToActionResult` for CreatedAtAction/Accepted contracts rather than adding local extensions.
 - Own the generated platform sync and prove B2B/Customer consumers compile against the republished
   client before the next contraction.
 
-Gate: Payment build/unit/integration/package-consumer verification and merge-queue E2E green; source
-PR merged; generated platform sync green and merged; the Reunion-based Payment.Client package is
-available. Never remove the old Shared identities before this gate.
+Gate: `Reunion.Errors` `0.1.0-alpha.2` is published and verified from NuGet.org; Payment
+build/unit/integration/package-consumer verification and merge-queue E2E green; source PR merged;
+generated platform sync green and merged; the Reunion-based Payment.Client package is available.
+Never remove the old Shared identities before this gate.
 
 ### Phase 5 — Parallel consumer preparation
 

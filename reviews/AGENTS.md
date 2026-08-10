@@ -6,7 +6,7 @@ the root [`AGENTS.md`](../AGENTS.md)). A review left lying around after its find
 PR has merged is rot: it misleads the next reader into thinking work is still outstanding, and `reviews/`
 silently fills with dead files.
 
-Produced by `code-review` / `incremental-review` / `big-review`; consumed by `address-review` (which
+Produced by `review` / `incremental-review` / `big-review`; consumed by `address-review` (which
 already deletes a review once every finding is fixed cleanly). This file states the lifecycle so it holds
 even when a review is produced or resolved by hand.
 
