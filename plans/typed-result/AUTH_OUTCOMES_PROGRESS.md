@@ -5,34 +5,30 @@
 - Branch: `Feature/typed-result_auth-outcomes`
 - PR: not opened
 - Dependency/package gates: no implementation gate; Auth has no Payment/B2B/Customer dependency.
-  `Reunion`, `Reunion.Errors`, and `Reunion.AspNetCore` `0.1.0-alpha.1` are published. No platform-sync
-  PR is open. After the Auth `api/**` change merges, this work owns its generated publication and
-  platform-sync gates to terminal green.
-- Last reconciled: `2026-08-10` from fresh `origin/main` `d916e95cfc5fbcc13a581e6d34bc211a4dfa639c`,
-  local branch head `56ef28241d10f6c7da4cfab4d616572a79178cf3`, and live local/GitHub delivery
-  state.
+  Auth uses published `Reunion` `0.1.0-alpha.1` and `Reunion.Errors` `0.1.0-alpha.2`; its Razor edges
+  do not need `Reunion.AspNetCore`. After the Auth `api/**` change merges, this work owns publication
+  and platform-sync to terminal green.
+- Last reconciled: `2026-08-10` through merged `origin/main`
+  `e16af7a52d2a6506a04cd110a35a3fa463bf8d5a` and platform pin `0.1.0-alpha.0.906`, plus the
+  domain-ownership correction described below.
 
 ## Current state
 
-The task directly matches branch `Feature/typed-result_auth-outcomes`: its committed diff is confined
-to Auth-owned runtime/tests, the Shared typed-result architecture guard, solution/integration-runner
-registration, and this plan pair. No branch PR or remote branch exists, no platform-sync PR is open,
-and no other worktree owns overlapping Auth implementation. Fresh `origin/main` is
-`d916e95cfc5fbcc13a581e6d34bc211a4dfa639c`; the local head
-`56ef28241d10f6c7da4cfab4d616572a79178cf3` is 31 commits ahead and 123 behind. The only dirty path is
-the untracked clean-review work order `reviews/Feature-typed-result_auth-outcomes.md`. The prior green
-verification, review, and preflight evidence therefore requires current-main reconciliation and a
-fresh gate after delivery is authorized; no merge, verification, push, or PR action is authorized yet.
+The task directly matches branch `Feature/typed-result_auth-outcomes`. The branch has no PR or remote
+branch, no other worktree owns overlapping Auth implementation, and the unrelated untracked review
+work order remains untouched. Current main was reconciled before the domain correction gate. The new
+runtime checkpoint is locally green and requires incremental review plus fresh PR preflight before
+any push or PR.
 
 At the prior green checkpoint, merge commit `1a6c6d670` integrated `origin/main` `1043a9178`, including
 platform `0.1.0-alpha.0.890` and the authoritative Reunion conversion plan.
 
-The completed Auth semantics now compile directly against published `Reunion` and `Reunion.Errors`
-`0.1.0-alpha.1`. Auth runtime owns both packages, its unit project owns `Reunion.Errors`, and its
-integration project owns `Reunion`. Razor pages continue to map carriers manually and call no
-Reunion HTTP terminal, so `Reunion.AspNetCore` is intentionally absent. `Concertable.Kernel` remains
-for unrelated Auth identity, geometry, entity, and extension APIs. No wire, persistence, model,
-migration, or cross-service runtime contract changed.
+The completed Auth semantics compile directly against published `Reunion` `0.1.0-alpha.1` and
+`Reunion.Errors` `0.1.0-alpha.2`. Credential authentication/password decisions and token expiry
+decisions now live in the domain entities. Expected refusals remain typed; token/credential identity
+mismatch remains an invariant exception. Razor pages still map carriers manually, so
+`Reunion.AspNetCore` is intentionally absent. No wire, persistence model, migration, or cross-service
+runtime contract changed.
 
 Before that advance, the clean branch was zero behind fresh `origin/main` after merge commits
 `ecb9351608d7a5b7ac3eb06f2342041cfa7bc492` and
@@ -82,28 +78,28 @@ is stamped at the verified code head for the merge gate. A fresh fetch left `ori
 the branch zero behind / 29 ahead, with no remote branch, branch PR, or open platform-sync PR. The
 read-only PR preflight is GREEN; its only delivery note is that the 29 local commits remain unpushed.
 
-The PR #470 domain-outcome audit is clean for Auth's net branch scope. Production Auth has no
-`DomainException` guard, no rejecting entity/value-object factory, and no duplicated service
-pre-check around a throwing domain rule. `CredentialEntity` mutations are unconditional; token
-`IsActive` and page booleans are capabilities/rendering state. Existing Option, UnitResult, nullable
-EF state, and completion-only privacy no-ops already match caller decisions. Razor and Duende map
-owned values without changing Shared HTTP exception handling, while infrastructure, cancellation,
-and malformed identity state remain exceptional. No runtime correction is owned locally.
+The PR #470 audit required an Auth-local correction. `CredentialEntity` now owns authentication and
+password mutation decisions, while the verification/reset token entities own expiry refusal and the
+successful credential transition. `AuthService` maps absent database rows and coordinates persistence
+without duplicating those domain decisions. Token/credential mismatch throws `DomainException` as an
+invariant defect; infrastructure, cancellation, and malformed identity state remain exceptional.
 
 ## Next Steps
 
-Blocked: Auth publication and PR delivery require Tommy's explicit push instruction.
-Unblock action: Tommy authorizes pushing `Feature/typed-result_auth-outcomes` and opening its plain GitHub PR.
-Resume when: Tommy explicitly authorizes Auth delivery.
-
-After authorization, preserve the review work order, inspect and merge fresh `origin/main`, reconcile
-any Auth/package/convention changes, and repeat the Auth unit/integration, typed-result architecture,
-Release solution build, standalone carve, mechanical search, incremental review, and PR-preflight
-gates. Then push the committed branch changes, open the plain GitHub PR, add no E2E skip label or
-trailer, and continue the normal merge workflow with full merge-queue API and UI E2E plus publication/
-platform-sync ownership to terminal green.
+Run incremental code review over the commits after the existing review watermark, including the
+domain-ownership correction. Address every clear finding, refresh current-main state, and run the
+read-only PR preflight. Do not push or open a PR without instruction; delivery still requires full
+merge-queue API/UI E2E and publication/platform-sync ownership to terminal green.
 
 ## Completed work
+
+- Corrected the DDD boundary: domain entities own password verification/mutation and verification/
+  reset token expiry decisions; the application service only maps missing persistence state and
+  coordinates saving/removal.
+- Moved the domain-owned errors and password-hasher port into `Concertable.Auth.Domain`, retained
+  invariant exceptions for token/credential mismatch, and added focused domain tests.
+- Upgraded Auth to `Reunion.Errors` `0.1.0-alpha.2` and replaced every removed
+  `ErrorDefinition.For<TError>()` call with the current direct generic factory API.
 
 - Converted the completed Auth semantic migration from old Kernel functional/error namespaces to
   direct published `Reunion` and `Reunion.Errors` `0.1.0-alpha.1` ownership without adding the unused
@@ -156,6 +152,10 @@ platform-sync ownership to terminal green.
 - Added the plan and this initialized ledger in this commit. No migration code was implemented.
 
 ## Verification
+
+- Domain-correction checkpoint: Auth unit tests 13/13; Auth integration tests 54/54; typed-result
+  architecture tests 16/16; full Release solution build 0 errors; fresh standalone Auth carve 0
+  errors; `git diff --check` and stale-API/legacy-domain-method searches passed.
 
 - Published-Reunion conversion checkpoint: Auth unit tests 4/4; Auth integration tests 54/54; typed-
   result architecture tests 16/16; full Release solution build 0 errors and 5 unrelated existing
@@ -324,11 +324,25 @@ finding IDs or dispositions exist. Later merge `e196f13e1` contains only already
 - Full API and UI E2E is required in the merge queue. It must not be duplicated locally before the PR.
 - No model change or migration is planned. A discovered model or shared-Kernel need requires a plan
   amendment/separate additive shared item before implementation proceeds.
-- The PR #470 audit found no Auth-local correction. Shared/background exception classification and
-  blanket HTTP handling stay with the roadmap's future global audit after all service tracks are
-  terminal.
+- The PR #470 audit found and now owns the Auth-local domain correction. Shared/background exception
+  classification and blanket HTTP handling stay with the roadmap's future global audit after all
+  service tracks are terminal.
 
 ## Event log
+
+### 2026-08-10 - Domain ownership and current Reunion API corrected
+
+- Action: Reconciled current main, moved credential authentication/password decisions and token
+  expiry transitions into Auth domain entities, kept token/credential mismatch exceptional, moved the
+  owned error types and hasher port into the domain namespace, and upgraded `Reunion.Errors` from
+  `0.1.0-alpha.1` to `0.1.0-alpha.2`.
+- Evidence: no `ErrorDefinition.For<TError>()`, token `IsActive`, or `SetPasswordHash` call remains;
+  Auth unit tests 13/13; Auth integration tests 54/54; typed-result architecture tests 16/16; Release
+  solution build 0 errors; fresh standalone Auth carve 0 errors; diff check passed; checkpoint commit
+  `refactor(auth): move expected outcomes into domain`.
+- Outcome: Expected domain alternatives are typed where the decision is made, invariant defects still
+  throw, and all error definitions use the current direct factory API with exhaustive Dunet switches.
+- Follow-up: run incremental review and PR preflight as `## Next Steps`.
 
 ### 2026-08-10 - Explicit delivery gate and current-main drift revalidated
 

@@ -2,10 +2,9 @@
 
 > Next steps live in @plans/typed-result/AUTH_OUTCOMES_PROGRESS.md -> `## Next Steps`.
 
-**Status:** The semantic migration and published Reunion conversion are locally complete. Delivery
-awaits explicit push/PR instruction; after authorization the branch must first reconcile current
-`origin/main` and repeat verification, review, and preflight. Auth has no Payment, B2B, or Customer
-runtime/package dependency.
+**Status:** The semantic migration, published Reunion conversion, and domain-ownership correction are
+locally implemented and verified. The new runtime checkpoint still requires incremental review and
+fresh PR preflight before delivery. Auth has no Payment, B2B, or Customer runtime/package dependency.
 
 ## Outcome
 
@@ -32,10 +31,13 @@ wire behavior does not carry `Result` or `Option` values.
   no-ops remain externally indistinguishable wherever they are indistinguishable today.
 - EF query nullability remains inside `AuthService`; no persistence contract returns `Option<T>`.
 - Database, Duende, email/outbox, cancellation, and invariant failures remain exceptions.
-- Auth's production domain/data entities contain no `DomainException` guard or caller-actionable
-  throwing state transition. `CredentialEntity` mutations are unconditional after service-owned
-  decisions, and token `IsActive` plus Razor page booleans are capability/rendering state rather than
-  untyped rejection contracts. Do not manufacture Results for those values.
+- `CredentialEntity` owns password verification and mutation decisions. Verification/reset token
+  entities own token-expiry refusal and successful mutation; `AuthService` only maps missing rows and
+  coordinates persistence.
+- Expected domain refusals use operation-owned Results. A token paired with the wrong credential is
+  an invariant defect and remains a `DomainException`; no application pre-check duplicates it.
+- Error definitions use the current direct `ErrorDefinition.<Kind><TCase>(...)` API. No
+  `ErrorDefinition.For<TError>()` call remains.
 - No Result/Option/error carrier crosses Razor, HTTP, OAuth/OIDC, Duende, event, or persistence wire
   shapes.
 - Auth builds from its own published package closure, including the Reunion-backed Kernel package at
@@ -198,6 +200,18 @@ and ship in one PR.
   email operations and ordinary nullable input parameters.
 - [x] Re-run every Auth test plus the unchanged cross-surface coverage inventory before entering review.
 
+### Phase 5 - Domain ownership and current Reunion API (complete)
+
+- [x] Move authentication capability and password-change/reset decisions into `CredentialEntity`
+  behind an Auth-domain password-hasher port.
+- [x] Move verification/reset token expiry decisions and successful credential mutation into the token
+  entities; keep token/credential identity mismatch exceptional as a domain invariant.
+- [x] Move domain-owned errors beside those rules and replace the removed
+  `ErrorDefinition.For<TError>()` factory with the current direct generic factories.
+- [x] Add focused entity tests for success, expected refusal without mutation, and invariant failure.
+- [x] Re-run Auth unit/integration tests, the architecture slice, full Release solution build, fresh
+  standalone Auth carve, and mechanical checks.
+
 ## Verification gate for every phase
 
 1. Run the affected Auth unit and integration projects through the `integration-debug` workflow;
@@ -215,7 +229,7 @@ a genuine model change, stop and amend the plan before touching migrations.
 ## Review and delivery lifecycle
 
 1. After Phase 4, run a full code review over `origin/main..HEAD`; resolve every clear finding and use
-   incremental review for later code commits.
+   incremental review for later code commits, including the Phase 5 domain correction.
 2. Reconcile with current `origin/main`, audit Auth's actual package/HTTP topology, replace old carrier
    imports and terminals with directly owned Reunion packages at their real edges, then rebuild,
    retest, re-carve, incrementally review, and run PR preflight. If topology proves no unpublished
@@ -236,8 +250,8 @@ a genuine model change, stop and amend the plan before touching migrations.
 - Roles, user kinds, tenant/customer concepts, business profiles, downstream projections, or claims
   beyond Auth's existing credential identity responsibility.
 - Payment, B2B, Customer, or Search runtime changes, or cross-service runtime references.
-- New shared Kernel operations, direct Reunion package references, alternative Result/Option carriers,
-  implicit conversions, or local functional helpers.
+- New shared Kernel operations, alternative Result/Option carriers, implicit conversions, or local
+  functional helpers.
 - Result types for silent email/no-op operations or any other outcome that gives callers no meaningful
   distinction.
 - Result/Option values in HTTP, Razor form models, Duende protocol models, events, persistence entities,
