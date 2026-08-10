@@ -42,8 +42,8 @@ No issues found in this area. Checked the native review catalog, security-sensit
 - [x] **NAT1 — LOW — test coverage** — `api/Concertable.B2B/src/Modules/Tenant/Concertable.B2B.Tenant.Infrastructure/Services/InvitationService.cs:91`
   Resolved: integration tests assert accepting an unknown invitation returns 404 without invitation or membership writes, and revoking an accepted invitation returns 409 without changing its status or membership.
 
-- [ ] **NAT2 — LOW — test coverage** — `api/Concertable.B2B/src/Modules/User/Concertable.B2B.User.Infrastructure/Services/UserService.cs:32`
-  `SaveLocationAsync`'s new authenticated-but-missing user-projection failure is not exercised by the existing unauthenticated request test, which stops in authorization middleware; add an integration test using an authenticated test principal absent from `[user].[Users]` and assert the typed 401 response without a location write.
+- [x] **NAT2 — LOW — test coverage** — `api/Concertable.B2B/src/Modules/User/Concertable.B2B.User.Infrastructure/Services/UserService.cs:32`
+  Resolved: an authenticated test principal absent from the User projection now receives the typed 401 ProblemDetails response, and the test verifies no user/location projection is written.
 
 - [ ] **NAT3 — LOW — native** — `api/Concertable.B2B/src/Modules/Tenant/Concertable.B2B.Tenant.Contracts/ITenantModule.cs:20`
   The changed contract still documents `GetTaxComplianceAsync` as returning null and `GetVatCalculationAsync` as throwing for every missing tenant/compliance case, contradicting its `Option` and typed `TenantNotFound` result; update the summaries to distinguish `None`, the typed failure, and the remaining missing-compliance invariant exception.
