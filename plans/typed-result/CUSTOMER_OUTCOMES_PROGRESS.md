@@ -149,16 +149,18 @@ clean. `NAT1` is fixed in this commit by adding Review.Infrastructure's missing 
 translates the unique-`UserId` constraint into the typed conflict; Preference unit tests pass 19/19.
 `NAT3` is fixed in this commit with the equivalent atomic Review insert and unique-`TicketId`
 translation; Review unit tests pass 43/43, including duplicate, fault, and cancellation paths. Docker
-became unresponsive before the focused integration reruns: the mandatory data-path preflight and a
-direct `docker ps` both timed out, so the integration-debug rule correctly prevented a suite start.
+briefly became unresponsive before the focused integration reruns, so the integration-debug rule
+correctly prevented a suite start. The single planned retry then proved a stable fresh-container data
+path; Preference passes 7/7 and Review passes 12/12 through their integration wrappers, including the
+existing duplicate-conflict scenarios, and the post-run Docker inventory is empty.
 
 ## Next Steps
 
-Rerun the mandatory Docker data-path preflight once; when healthy, run the Preference and Review
-integration wrappers to close the two persistence gates, followed by incremental review from
-`5cfdb9427` until clean. Then fetch and reconcile the branch with current `origin/main`, inspect the
-incoming delta, rerun every affected local gate, incrementally review the reconciliation, and update
-PR #425 through the plan-managed two-leg push only when the exact final work head is current and green.
+Run incremental `/incremental-review` from watermark `5cfdb9427` over the three finding-fix commits and
+this ledger-only verification checkpoint. Address any new finding serially until clean. Then fetch and
+reconcile the branch with current `origin/main`, inspect the incoming delta, rerun every affected local
+gate, incrementally review the reconciliation, and update PR #425 through the plan-managed two-leg push
+only when the exact final work head is current and green.
 
 ## Completed work
 
@@ -930,3 +932,16 @@ watermark from ledger prose. A fresh full `code-review` of the committed branch 
   incremental review.
 - Follow-up: Require one healthy Docker data-path preflight, run the Preference and Review integration
   wrappers, then incrementally review from `5cfdb9427`.
+
+### 2026-08-10 - focused persistence integration gates green
+
+- Action: Retried Docker once after both atomic create fixes, then ran the Preference and Review
+  integration wrappers sequentially under the integration-debug workflow.
+- Evidence: The fresh nginx probe completed a stable host-to-container data round trip; Preference
+  passes 7/7 and Review passes 12/12 in Release, each with a fresh Testcontainers SQL instance; the
+  existing 409 duplicate-create scenarios pass through the new atomic repository paths; and the
+  post-run Docker inventory is empty.
+- Outcome: `NAT2` and `NAT3` now have green deterministic and real-database gates. All three review
+  findings are fixed; incremental review is actionable.
+- Follow-up: Incrementally review `5cfdb9427..HEAD`, address any new finding, then reconcile current
+  main and complete the final delivery gate.
