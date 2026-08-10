@@ -417,6 +417,7 @@ def evaluate(data):
     message = (data.get("last_assistant_message") or data.get("lastAssistantMessage") or "").replace(
         "\r\n", "\n"
     )
+    message = "\n".join(line.rstrip() for line in message.split("\n"))
     blocked_failures = []
     for path, pointer, details in blocked:
         if pointer in message:
@@ -432,32 +433,28 @@ def evaluate(data):
             blocked_failures.append(
                 f"{path.name}: report these exact lines: " + "; ".join(missing)
             )
+    failures = []
     if blocked_failures:
-        return {
-            "decision": "block",
-            "reason": "BLOCKER HANDOFF GATE: " + " | ".join(blocked_failures),
-        }
-    if not active:
-        return {}
-    missing = [(path, pointer) for path, pointer in active if pointer not in message]
-    ending = message.rstrip()
-    ends_with_pointer = any(
-        ending.endswith(pointer) or ending.endswith(f"{pointer}\n```") for _, pointer in active
-    )
-    if not missing and ends_with_pointer:
-        return {}
-    if not missing:
-        missing = active
-    pointers = "\n\n".join(f"```text\n{pointer}\n```" for _, pointer in missing)
-    names = ", ".join(path.name for path, _ in missing)
-    return {
-        "decision": "block",
-        "reason": (
-            f"HANDOFF GATE: {names} has non-terminal `## Next Steps`, but the final response "
-            "omitted its exact continuation pointer. Local implementation completion is not lifecycle "
-            f"completion. End the response with:\n\n{pointers}"
-        ),
-    }
+        failures.append("BLOCKER HANDOFF GATE: " + " | ".join(blocked_failures))
+    if active:
+        missing = [(path, pointer) for path, pointer in active if pointer not in message]
+        ending = message.rstrip()
+        ends_with_pointer = any(
+            ending.endswith(pointer) or ending.endswith(f"{pointer}\n```") for _, pointer in active
+        )
+        if missing or not ends_with_pointer:
+            if not missing:
+                missing = active
+            pointers = "\n\n".join(f"```text\n{pointer}\n```" for _, pointer in missing)
+            names = ", ".join(path.name for path, _ in missing)
+            failures.append(
+                f"HANDOFF GATE: {names} has non-terminal `## Next Steps`, but the final response "
+                "omitted its exact continuation pointer. Local implementation completion is not "
+                f"lifecycle completion. End the response with:\n\n{pointers}"
+            )
+    if failures:
+        return {"decision": "block", "reason": "\n\n".join(failures)}
+    return {}
 
 
 def main():
