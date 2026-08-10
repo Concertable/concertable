@@ -50,8 +50,8 @@ No issues found in this area. Checked the native review catalog, security-sensit
 
 ## Concert — reviewed 2026-08-10
 
-- [ ] **NAT4 — HIGH — native/correctness** — `api/Concertable.B2B/src/Modules/Concert/Concertable.B2B.Concert.Infrastructure/Services/Workflow/Executors/EscrowExecutor.cs:40`
-  `IApplicationCancelStep.ExecuteAsync` now returns a typed refund failure, but both this late-capture compensation path and `WithdrawExecutor.cs:22` await it as a plain `Task` and discard the result; a failed refund can therefore acknowledge the webhook or persist the Withdraw transition while money remains captured. Propagate the failure so the lifecycle transition is not saved, pass the cancellation token through, and add failure-path tests for both callers.
+- [x] **NAT4 — HIGH — native/correctness** — `api/Concertable.B2B/src/Modules/Concert/Concertable.B2B.Concert.Infrastructure/Services/Workflow/Executors/EscrowExecutor.cs:40`
+  Resolved: both callers now use typed transition effects, propagate refund failures without saving the lifecycle transition, and forward cancellation. Withdrawal returns the failure through its HTTP terminal; late-capture compensation throws at the worker terminal so the webhook is not acknowledged. Focused tests cover both failure paths.
 
 - [ ] **SEC1 — HIGH — security/correctness** — `api/Concertable.B2B/src/Modules/Concert/Concertable.B2B.Concert.Api/Controllers/ApplicationController.cs:130`
   The migrated accept and application-cancel endpoints now carry `RequestAborted` through an irreversible capture/deposit/refund and then into the later lifecycle `SaveChangesAsync`; a disconnect after Payment succeeds can cancel the B2B state save and leave money moved against an unaccepted or uncancelled application. Establish a durable idempotent operation/reconciliation boundary and use a server-owned token once the financial operation begins, with cancellation-after-payment tests.
