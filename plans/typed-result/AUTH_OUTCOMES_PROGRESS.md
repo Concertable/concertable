@@ -9,8 +9,8 @@
   do not need `Reunion.AspNetCore`. After the Auth `api/**` change merges, this work owns publication
   and platform-sync to terminal green.
 - Last reconciled: `2026-08-10` through merged `origin/main`
-  `e16af7a52d2a6506a04cd110a35a3fa463bf8d5a` and platform pin `0.1.0-alpha.0.906`, plus the
-  domain-ownership correction described below.
+  `673a41737`, local merge `7b28e8bb9`, and platform pin `0.1.0-alpha.0.906`, plus the
+  domain-ownership correction described below. The local plan-handoff hook now matches current main.
 
 ## Current state
 
@@ -329,6 +329,18 @@ finding IDs or dispositions exist. Later merge `e196f13e1` contains only already
   service tracks are terminal.
 
 ## Event log
+
+### 2026-08-10 - Current plan-handoff hook reconciled
+
+- Action: Fetched/pruned origin, verified the branch-local Auth work has no PR or remote branch,
+  preserved the untracked review work order, and merged the four current-main handoff-hook/prompt
+  commits without conflict.
+- Evidence: local merge `7b28e8bb9`; branch zero behind `origin/main` `673a41737`; direct diff confirms
+  `.agents/hooks/plan_handoff_stop.py` matches `origin/main`; the review work order was restored
+  unchanged.
+- Outcome: The checkout now has the collision-safe active-owner handoff hook and can rely on the
+  ledger's non-terminal continuation pointer again.
+- Follow-up: run incremental review and PR preflight as `## Next Steps`.
 
 ### 2026-08-10 - Domain ownership and current Reunion API corrected
 
