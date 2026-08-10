@@ -15,14 +15,14 @@ merge command the hook fails CLOSED — any doubt (missing/stale/unclean review,
 even an internal error) blocks, because letting an unreviewed merge through is the
 exact failure this guard exists to prevent. Non-merge commands always exit 0.
 
-The review file is what `code-review` / `docs-review` write:
+The review file is what `review` / `docs-review` write:
 `reviews/<branch-with-slashes-as-dashes>.md`, carrying a top-of-file
 `**Reviewed up to commit:** \`<sha>\`` marker and `- [ ]` / `- [x]` findings.
 
 Security layer: when the reviewed range touches security-sensitive paths (Auth,
 Payment, *.Contracts, controllers, auth/authz/secret/credential files, CI
 workflows), the merge also requires a current `**Security-reviewed up to commit:**
-\`<sha>\`` marker — stamped by `code-review` Step 1d after it runs `/security-review`.
+\`<sha>\`` marker — stamped by `review` Step 1d after it runs `/security-review`.
 """
 
 import json
@@ -112,7 +112,7 @@ def main():
     except OSError:
         block(
             "MERGE GATE (AGENTS.md — review before merge): no review file for "
-            "branch '" + branch + "' at reviews/" + slug + ".md. Run /code-review "
+            "branch '" + branch + "' at reviews/" + slug + ".md. Run /review "
             "(or /docs-review for a docs-only branch) and address findings, THEN "
             "merge. Do NOT merge unreviewed."
         )
@@ -120,14 +120,14 @@ def main():
     m = re.search(r"Reviewed up to commit:.*?`([0-9a-fA-F]{7,40})`", review)
     if not m:
         block("MERGE GATE: reviews/" + slug + ".md has no `Reviewed up to commit:` "
-              "marker. Re-run /code-review to stamp it, then merge.")
+              "marker. Re-run /review to stamp it, then merge.")
 
     reviewed = m.group(1).lower()
     if not (head.lower().startswith(reviewed) or reviewed.startswith(head.lower())):
         block(
             "MERGE GATE: review is STALE — reviews/" + slug + ".md is stamped at "
             + reviewed + " but HEAD is " + head[:12] + ". Commits landed since the "
-            "review. Re-run /incremental-review (or /code-review), then merge."
+            "review. Re-run /incremental-review (or /review), then merge."
         )
 
     open_findings = [
@@ -162,7 +162,7 @@ def main():
             block(
                 "MERGE GATE (security layer): '" + sensitive + "' is security-sensitive but "
                 "reviews/" + slug + ".md has no `Security-reviewed up to commit:` marker. Run "
-                "/security-review (or re-run /code-review, which runs it on sensitive paths and "
+                "/security-review (or re-run /review, which runs it on sensitive paths and "
                 "stamps the marker), THEN merge."
             )
         sreviewed = sm.group(1).lower()
