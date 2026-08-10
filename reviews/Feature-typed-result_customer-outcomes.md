@@ -14,8 +14,8 @@
 
 ## Findings
 
-- [ ] **NAT1 — MEDIUM — native/package ownership** — `api/Concertable.Customer/src/Modules/Review/Concertable.Customer.Review.Infrastructure/Concertable.Customer.Review.Infrastructure.csproj:27`
-  `ReviewValidator` directly imports and constructs `Reunion.Errors.ValidationErrors`, but its compiling project declares only `Reunion` and `Reunion.Validation`; add a direct `Reunion.Errors` reference so the standalone project does not rely on a transitive compile asset.
+- [x] **NAT1 — MEDIUM — native/package ownership** — `api/Concertable.Customer/src/Modules/Review/Concertable.Customer.Review.Infrastructure/Concertable.Customer.Review.Infrastructure.csproj:27`
+  Fixed in this commit by adding direct `Reunion.Errors` ownership; the focused Release build succeeds with 0 errors.
 - [ ] **NAT2 — MEDIUM — native/correctness** — `api/Concertable.Customer/src/Modules/Preference/Concertable.Customer.Preference.Infrastructure/Services/PreferenceService.cs:37`
   The new `PreferenceAlreadyExists` result is guarded only by a read before insert, so concurrent create requests can both pass the read and the loser surfaces SQL's unique-`UserId` violation as a 500; translate the existing duplicate-key constraint at `SaveChangesAsync` into the same typed conflict and discard the failed tracked insert.
 - [ ] **NAT3 — MEDIUM — native/correctness** — `api/Concertable.Customer/src/Modules/Review/Concertable.Customer.Review.Infrastructure/Services/ConcertReviewService.cs:90`

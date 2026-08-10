@@ -141,17 +141,18 @@ for the required post-review reconciliation.
 The fresh full review and security pass cover `d916e95cf..5cfdb9427` across 43 commits and the full
 net branch diff. `reviews/Feature-typed-result_customer-outcomes.md` is stamped at the exact work head.
 The service/module-boundary, seeding, C# convention, changed-path coverage, and security lenses are
-clean. Three medium native findings are open: `NAT1` adds Review.Infrastructure's missing direct
-`Reunion.Errors` ownership; `NAT2` translates Preference's unique-`UserId` create race into its typed
-conflict; and `NAT3` does the same for Review's unique-`TicketId` create race.
+clean. `NAT1` is fixed in this commit by adding Review.Infrastructure's missing direct
+`Reunion.Errors` ownership; its focused Release build succeeds with 0 errors and one existing warning.
+Two medium native findings remain open: `NAT2` translates Preference's unique-`UserId` create race
+into its typed conflict, and `NAT3` does the same for Review's unique-`TicketId` create race.
 
 ## Next Steps
 
-Fix `NAT1`, `NAT2`, and `NAT3` serially in their own commits, updating the review work order and this
-ledger with focused verification for each. Run incremental review from `5cfdb9427` until clean. Then
-fetch and reconcile the branch with current `origin/main`, inspect the incoming delta, rerun every
-affected local gate, incrementally review the reconciliation, and update PR #425 through the plan-
-managed two-leg push only when the exact final work head is current and green.
+Fix `NAT2` and `NAT3` serially in their own commits, updating the review work order and this ledger
+with focused verification for each. Run incremental review from `5cfdb9427` until clean. Then fetch
+and reconcile the branch with current `origin/main`, inspect the incoming delta, rerun every affected
+local gate, incrementally review the reconciliation, and update PR #425 through the plan-managed two-
+leg push only when the exact final work head is current and green.
 
 ## Completed work
 
@@ -874,3 +875,14 @@ watermark from ledger prose. A fresh full `code-review` of the committed branch 
   duplicate-key race translations. PR #425 remains unchanged.
 - Follow-up: Fix and verify `NAT1`, `NAT2`, and `NAT3` in separate commits, then run incremental
   review from `5cfdb9427`.
+
+### 2026-08-10 - review finding NAT1 fixed
+
+- Action: Added direct `Reunion.Errors` package ownership to Review.Infrastructure, whose validator
+  directly constructs `ValidationErrors`.
+- Evidence: `NAT1` is fixed in the review work order by this commit; the focused Review.Infrastructure
+  Release build succeeds with 0 errors and one existing warning; direct-reference inventory and
+  `git diff --check` pass.
+- Outcome: `NAT1` is fixed and verified in its own unpushed commit. `NAT2` and `NAT3` remain open.
+- Follow-up: Fix Preference's duplicate-create race as `NAT2`, then Review's equivalent race as
+  `NAT3`, each in its own verified commit.
