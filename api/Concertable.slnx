@@ -192,7 +192,7 @@
   </Folder>
   <Folder Name="/Search/">
     <Project Path="Concertable.Search/src/Concertable.Search.AppHost/Concertable.Search.AppHost.csproj" />
-    <Project Path="Concertable.Search/src/Concertable.Search.AppHost.Extensions/Concertable.Search.AppHost.Extensions.csproj" />
+    <Project Path="Concertable.Search/src/Concertable.Search.Hosting/Concertable.Search.Hosting.csproj" />
     <Project Path="Concertable.Search/src/Concertable.Search.Api/Concertable.Search.Api.csproj" />
     <Project Path="Concertable.Search/src/Concertable.Search.Application/Concertable.Search.Application.csproj" />
     <Project Path="Concertable.Search/src/Concertable.Search.Domain/Concertable.Search.Domain.csproj" />
