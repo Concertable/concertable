@@ -162,15 +162,31 @@ until the prepared consumer set and exact remaining-call-site inventory exist.
 
 ### Blocked follow-ups
 
+- [ ] 🔴 **Domain outcome and invariant-exception audit.** Plan after B2B, Auth, Customer non-Payment,
+  and Customer Ticket are terminal on the published Reunion baseline, and complete it before final
+  repository cleanup. Inventory every production `DomainException` throw/guard and every domain
+  operation or factory that can reject work.
+  - Expected domain alternatives that a caller can act on return an operation-owned typed Result from
+    the domain method/factory that owns the rule; do not duplicate the rule as an application-service
+    pre-check followed by an equivalent throwing entity guard.
+  - Malformed internal construction, cross-aggregate identity mismatches, impossible state, and other
+    programmer/corruption defects remain exceptions. Do not manufacture Results for those faults or
+    catch them in Result combinators.
+  - Expected error unions and `ErrorDefinition` own stable public codes/messages. Replace the ambiguous
+    blanket `DomainException` to HTTP 400 behavior with an explicit distinction in which expected
+    refusals terminate through typed Results and invariant defects remain non-public 500 failures.
+  - Add exhaustive inventory, domain behavior, HTTP mapping, and architecture enforcement so every
+    surviving domain exception is classified and expected business refusals cannot regress to throws.
 - [ ] 🔴 **Shared Kernel, Messaging, and background-path audit.** Plan only after the service tracks
   establish concrete remaining call sites. Service plans consume the published Kernel API as-is; a
   genuinely missing shared operation becomes its own additive Kernel publish/sync item rather than
   three service-local variants.
 - [ ] 🔴 **Repository cleanup and architecture enforcement.** Blocked until Payment, B2B, Customer,
-  Search, and Auth are complete. Remove the remaining third-party Result dependencies and compatibility
-  surfaces, then enforce: no third-party Result/Option in public signatures, no nullable non-persistence
-  single-item application/module/client lookups, no `Option`-wrapped collections, no Result on wire
-  DTOs, and no controller-local typed-error status switches.
+  Search, and Auth are complete and the domain outcome/invariant audit has landed. Remove the remaining
+  third-party Result dependencies and compatibility surfaces, then enforce: no third-party
+  Result/Option in public signatures, no nullable non-persistence single-item application/module/client
+  lookups, no `Option`-wrapped collections, no Result on wire DTOs, and no controller-local typed-error
+  status switches.
 - [ ] 🔴 **Released .NET native-union error cutover.** Blocked until Concertable upgrades from net10.0
   to the released .NET/C# toolchain that supports the required union semantics. Reunion already
   supplies conventional union-compatible net10 assets and native net11 carrier support; this item is
@@ -205,7 +221,9 @@ Payment source PR ── publish Payment.Client ── generated sync
     ├── B2B published-package revalidation/merge
     └── Customer Ticket published-package revalidation/merge
 Auth and Customer non-Payment deliver when their own topology and gates prove them merge-ready
-All consumers terminal ── Shared/background cleanup and enforcement
+All consumers terminal
+├── Domain outcome and invariant-exception audit ────────────┐
+└── Shared Kernel, Messaging, and background-path audit ─────┴── repository cleanup and enforcement
 
 Released .NET native unions
 └── Concertable-owned error-union cutover
@@ -224,8 +242,13 @@ inputs never become committed delivery configuration.
   mapping carriers takes `Reunion.AspNetCore`. Shared.Api neither distributes the adapter nor defines
   duplicate Result/Option HTTP terminals. Domain error unions and published semantics remain
   application-owned.
-- Expected caller-actionable refusals use typed Results. Infrastructure failures, cancellation, and
-  programmer/invariant defects remain exceptions. Do not catch them in Result combinators.
+- Expected caller-actionable refusals use typed Results, including inside domain entities and factories
+  when rejection is a normal domain alternative. The owning domain method enforces the rule once and
+  the application layer maps its typed outcome; do not pre-check the same rule merely to avoid a
+  throwing domain guard.
+- Infrastructure failures, cancellation, malformed internal construction, and programmer/invariant
+  defects remain exceptions. Do not catch them in Result combinators or expose their messages as
+  expected API contracts; `ErrorDefinition` owns stable public codes and messages.
 - Repository single-item lookups may remain nullable as a persistence concern. Application, module,
   service, and published client boundaries convert ordinary absence to `Option<T>`; collections return
   empty `IReadOnlyList<T>` values.
@@ -252,5 +275,10 @@ inputs never become committed delivery configuration.
 - Repository-wide inventories find no FluentResults/CSharpFunctionalExtensions production use,
   third-party Result/Option public signatures, nullable non-persistence single-item lookup contracts,
   Option-wrapped collections, or Result-bearing wire DTOs.
+- Every production domain exception is classified: expected domain alternatives return typed Results,
+  genuine invariant defects remain exceptions, and no service duplicates a domain rule as pre-check
+  plus throw.
+- Expected domain refusals terminate through `ErrorDefinition`; invariant defects are non-public 500
+  failures and are never blanket-mapped to HTTP 4xx.
 - Architecture enforcement prevents those contracts from returning.
 - The released native-union error cutover is complete and Dunet is removed.
