@@ -9,8 +9,8 @@
   do not need `Reunion.AspNetCore`. After the Auth `api/**` change merges, this work owns publication
   and platform-sync to terminal green.
 - Last reconciled: `2026-08-10` through merged `origin/main`
-  `673a41737`, local merge `7b28e8bb9`, and platform pin `0.1.0-alpha.0.906`, plus the
-  domain-ownership correction described below. The local plan-handoff hook now matches current main.
+  `b17fb07fe`, local merge `3574c04c3`, and platform pin `0.1.0-alpha.0.910`, plus the
+  domain-ownership correction described below. The worktree's plan-handoff hook matches current main.
 
 ## Current state
 
@@ -329,6 +329,19 @@ finding IDs or dispositions exist. Later merge `e196f13e1` contains only already
   service tracks are terminal.
 
 ## Event log
+
+### 2026-08-10 - Ticket migration and platform `0.910` reconciled
+
+- Action: Fetched/pruned origin again, preserved the untracked review work order, and merged the
+  Customer Ticket Reunion delivery plus generated platform pin `0.1.0-alpha.0.910` without conflict.
+- Evidence: local merge `3574c04c3`; branch zero behind `origin/main` `b17fb07fe`; Auth's checked-out
+  `plan_handoff_stop.py` blob equals the `origin/main` blob; the review work order was restored
+  unchanged.
+- Outcome: The Auth worktree is current and retains the verified domain correction. The session root
+  checkout separately has an unrelated uncommitted hook edit, which its launcher will continue to
+  reject until that owner reconciles or preserves it.
+- Follow-up: run incremental review and PR preflight as `## Next Steps` once the session-root hook gate
+  is resolved.
 
 ### 2026-08-10 - Current plan-handoff hook reconciled
 
