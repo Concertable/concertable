@@ -7,8 +7,8 @@
 - Dependency/package gates: checkpoints 6-7 are locally complete against exact Payment packages from
   `a779fe041`; Reunion integration PR #453, Payment publication, generated platform sync, and exact
   published-package revalidation gate delivery
-- Last reconciled: 2026-08-10 against implementation commit `e229afb58`, review-fix head `92cd03a25`,
-  merged mainline baseline `6f4a5cc3e`, and the staged review artifact
+- Last reconciled: 2026-08-10 against implementation commit `e229afb58`, clean incremental-review
+  watermark `3d50d321c62fc7b9bc302aa9b2cbb93d77aa28b0`, merged mainline baseline `6f4a5cc3e`, and review artifact
   `reviews/BIG-Refactor-B2BTypedResultMigration-Review.md`
 
 ## Current state
@@ -61,21 +61,19 @@ are `7DDA02F542F606F6707D8305E8524E4227A7F2222F28113F8226D0AD239D3DA8` and
 `A52EA0562FA36EA123450BE2DC022E9F33AE9510FB100E4309F245DEFCC14D14` respectively. The manifests name
 that exact commit; Client depends on Contracts `.911`, Reunion `.1`, and Reunion.Errors `.1`.
 
-The full staged code/security review covered `1043a9178..e229afb58`; both stored watermarks remain
-`e229afb581c829279ca821b0a85729c4c4f0f441` until the mandatory incremental review covers every later
-commit. NAT1, NAT2, NAT3, NAT4, SEC2, and CV1 are fixed. SEC1 is consciously deferred because the
-durable correction requires a cross-service B2B + Payment saga/package cut-over; the unresolved risk
-and decision are owned by `api/Concertable.B2B/src/Modules/Concert/TECH_DEBT.md`. NAT5 is reconciled in
-this checkpoint. The review artifact stays because SEC1 remains deferred and the incremental review is
-not complete.
+The full staged code/security review covered `1043a9178..e229afb58`; the clean incremental review then
+covered all 13 later commits through `3d50d321c62fc7b9bc302aa9b2cbb93d77aa28b0`. Both review
+watermarks now equal that checkpoint. NAT1-NAT5, SEC2, and CV1 are fixed. SEC1 is consciously deferred
+because the durable correction requires a cross-service B2B + Payment saga/package cut-over; the
+unresolved risk and decision are owned by
+`api/Concertable.B2B/src/Modules/Concert/TECH_DEBT.md`. The review artifact stays because SEC1 remains
+deferred.
 
 ## Next Steps
 
-Run the mandatory incremental code/security review over `e229afb581c829279ca821b0a85729c4c4f0f441..HEAD`
-while `reviews/BIG-Refactor-B2BTypedResultMigration-Review.md` still exists, address any new
-high-confidence findings serially, and update both review watermarks. Re-run the full solution build;
-when Docker is healthy, execute the NAT1 Tenant and NAT2 User integration regressions that have only
-been build-verified. Do not push or merge B2B until separately instructed.
+Run the final full solution build. When Docker is healthy, execute the NAT1 Tenant and NAT2 User
+integration regressions that have only been build-verified. Record those exact outcomes in this ledger.
+Do not push or merge B2B until separately instructed.
 
 The delivery gate after that local review/verification is:
 
@@ -96,8 +94,9 @@ must not emit a resume pointer while either blocker remains.
 - Checkpoints 6-7: Concert payment/cancel/finish owned outcomes, retryable completion faults, direct
   Reunion carrier/terminal ownership, and complete B2B FluentResults removal.
 - Committed checkpoints 6-7 as `e229afb581c829279ca821b0a85729c4c4f0f441`.
-- Completed the staged big review over `1043a9178..e229afb58`; the artifact's code and security
-  watermarks are `e229afb581c829279ca821b0a85729c4c4f0f441` pending incremental review of the fixes.
+- Completed the staged big review over `1043a9178..e229afb58`, then the clean incremental code/security
+  review over `e229afb581c829279ca821b0a85729c4c4f0f441..3d50d321c62fc7b9bc302aa9b2cbb93d77aa28b0`.
+  Both review watermarks are `3d50d321c62fc7b9bc302aa9b2cbb93d77aa28b0`.
 - Fixed NAT1 in `9ef412e82799cfba62742e12ed5eb8164c7b6a80`, NAT2 in
   `c6701ae0b0b9dd923b7fbb63caa41458887ed28a`, NAT3 in
   `a465cd313511a00e53d4dccfc1a01502e1f2616f`, NAT4 in
@@ -162,6 +161,10 @@ must not emit a resume pointer while either blocker remains.
   added because the controller-test contract excludes the dev-only endpoint.
 - Review CV1: `ErrorDefinitionContractTests` passed 55/55, the full Concert unit suite passed 144/144,
   and the scoped diff check passed.
+- Incremental code/security review: the 13 commits in
+  `e229afb581c829279ca821b0a85729c4c4f0f441..3d50d321c62fc7b9bc302aa9b2cbb93d77aa28b0`
+  produced no new findings after native correctness/test-coverage, security-sensitive controller and
+  Contracts, microservice-isolation, module-boundary, seeding, C# convention, and documentation lenses.
 
 - `dotnet build api/Concertable.B2B/Concertable.B2B.slnx --configuration Release`: succeeded,
   0 errors (1 pre-existing nullable warning).
@@ -223,8 +226,8 @@ must not emit a resume pointer while either blocker remains.
 - The staged big review found NAT1-NAT5, SEC1-SEC2, and CV1. NAT1-NAT4, SEC2, and CV1 are fixed;
   NAT5 is fixed by this ledger checkpoint. SEC1 remains deferred for the explicit human architecture
   decision recorded in Concert `TECH_DEBT.md`.
-- The stored code/security review watermarks intentionally remain at `e229afb58`; the fix commits and
-  intervening mainline merge require an incremental review before the branch can be called reviewed.
+- The clean incremental review covers every fix commit and the intervening mainline merge through
+  `3d50d321c`; both code/security watermarks equal that commit and no new findings were opened.
 
 ## Downstream handoffs
 
@@ -236,6 +239,18 @@ must not emit a resume pointer while either blocker remains.
   overlapping Concert workflow changes.
 
 ## Event log
+
+### 2026-08-10 — incremental review clean
+
+- Action: Reviewed every commit after the staged-review watermark, including all finding fixes, the
+  intervening mainline merge, and the NAT5 ledger checkpoint, using the native and security lenses.
+- Evidence: incremental range
+  `e229afb581c829279ca821b0a85729c4c4f0f441..3d50d321c62fc7b9bc302aa9b2cbb93d77aa28b0`
+  contains 13 commits; both review watermarks now equal `3d50d321c62fc7b9bc302aa9b2cbb93d77aa28b0`;
+  no new findings.
+- Outcome: local review is current through the NAT5 checkpoint. SEC1 remains the single consciously
+  deferred finding, and the publication chain remains externally blocked.
+- Follow-up: execute `## Next Steps`; do not emit this plan's resume pointer while either blocker remains.
 
 ### 2026-08-10 — staged review addressed and ledger reconciled
 

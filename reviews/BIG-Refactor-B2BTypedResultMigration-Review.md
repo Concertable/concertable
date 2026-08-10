@@ -6,16 +6,22 @@
 > in one line, take the safe path, keep going.
 
 **Plan anchored to commit:** `e229afb581c829279ca821b0a85729c4c4f0f441`  _(2026-08-10)_
-**Reviewed up to commit:** `e229afb581c829279ca821b0a85729c4c4f0f441`  _(2026-08-10)_
-**Security-reviewed up to commit:** `e229afb581c829279ca821b0a85729c4c4f0f441`  _(2026-08-10)_
+**Reviewed up to commit:** `3d50d321c62fc7b9bc302aa9b2cbb93d77aa28b0`  _(2026-08-10)_
+**Security-reviewed up to commit:** `3d50d321c62fc7b9bc302aa9b2cbb93d77aa28b0`  _(2026-08-10)_
 Net diff reviewed: `1043a9178..e229afb58`. Move-only files skipped.
 Status legend: `[ ]` not yet reviewed · `[x]` reviewed (date) · `[~]` in progress (incomplete — re-review).
 
 ## Summary
 
-Big review complete: all 4 areas were reviewed over `1043a9178..e229afb58`. There are 8 open findings: 2 HIGH, 2 MEDIUM, and 4 LOW. By review layer/lens, these comprise 5 native findings (2 test-coverage, 1 correctness, and 2 contract/documentation), 2 security findings, and 1 C# convention/test-coverage finding; no microservice-isolation, module-boundary, or seeding findings survived the confidence filter.
+Big review complete: all 4 areas were reviewed over `1043a9178..e229afb58`. All 8 findings were
+addressed: NAT1-NAT5, SEC2, and CV1 are fixed; SEC1 is consciously deferred to a human architecture
+decision and tracked in the owning Concert `TECH_DEBT.md`. By review layer/lens, the findings comprise
+5 native findings (2 test-coverage, 1 correctness, and 2 contract/documentation), 2 security findings,
+and 1 C# convention/test-coverage finding; no microservice-isolation, module-boundary, or seeding
+findings survived the confidence filter.
 
-The highest-priority fixes are NAT4 (propagate application-cancellation refund failures), SEC1 (make financial transitions durable across request cancellation), SEC2 (avoid exposing settlement-state detail from the dev endpoint), and NAT5 (make the plan ledger's operational state and next action current). All Cross-area notes are resolved.
+The incremental review of all 13 later commits is clean. SEC1 is the only outstanding finding; all
+Cross-area notes are resolved.
 
 ## Coverage
 
@@ -68,3 +74,11 @@ No issues found in this area. Checked the native review catalog, security-sensit
   Resolved: the ledger now records implementation `e229afb58`, review range and watermarks, every
   finding disposition and verification result, the mandatory incremental review, and both the
   publication and deferred SEC1 blockers without claiming terminal lifecycle state.
+
+## Incremental review — 2026-08-10
+
+> Range reviewed: `e229afb581c829279ca821b0a85729c4c4f0f441..3d50d321c62fc7b9bc302aa9b2cbb93d77aa28b0` (13 commits).
+
+No new findings. Checked the native correctness and test-coverage catalog, security-sensitive
+controller and Contracts changes, microservice isolation, module boundaries, seeding, C# conventions,
+and documentation/ledger accuracy.
