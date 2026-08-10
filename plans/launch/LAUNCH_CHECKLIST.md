@@ -37,8 +37,9 @@
 
 - [ ] ICO data protection fee paid (£40-60/yr depending on size, ~10 min online at https://ico.org.uk/for-organisations/data-protection-fee/).
 - [ ] **[LEGAL]** Privacy policy drafted (solicitor draft OR template + solicitor review).
-- [ ] **[LEGAL]** Cookie policy drafted (often combined with privacy policy).
-- [ ] Cookie consent banner deployed on all three SPAs (customer/venue/artist) — CookieYes, Osano, or hand-rolled.
+- [ ] **[LEGAL]** Cookie/storage policy drafted from the verified production inventory (often combined with privacy policy).
+- [ ] **[CODE]** Browser storage audited across anonymous, authenticated, and Stripe-checkout journeys; unnecessary storage removed and each retained first- or third-party technology classified by purpose, owner, duration, and consent requirement.
+- [ ] **[CODE] [LEGAL]** Consent UI retained or introduced only for actual non-exempt optional technology, and it must gate that technology's loading; remove the current generic consent machinery if the audit finds no such technology.
 - [ ] Lawful basis matrix documented per data category (internal doc).
 - [ ] Data retention schedule documented (internal doc).
 - [ ] DSAR (Data Subject Access Request) process documented (how requests come in, who handles, SLA).
