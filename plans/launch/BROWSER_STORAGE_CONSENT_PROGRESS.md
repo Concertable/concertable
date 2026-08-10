@@ -68,7 +68,19 @@ this gates the start of Phase 3. The production-ready work is then:
 4. **Phase 4** — engineering inventory doc generated from the manifest.
 
 Reject-all parity, no pre-ticked boxes, and consent records are compliance requirements to verify against
-the legal-research output.
+the legal-research output. (Banner already renders Reject-all + Accept-all at equal prominence — parity OK.)
+
+**Phase 3 progress (this session):**
+- ✅ **Lazy Stripe** — `lib/stripe.ts` now exports `getStripe()` (memoised), called only by `StripePaymentForm`
+  (on mount) and `handle3ds`; no more module-top `loadStripe`. Four SPA builds green. Committed.
+- ⬜ **Consent gating primitive** — a category-keyed loader keyed off `hasConsent`/`onConsentChange` so the
+  Analytics/Marketing toggles actually govern loading; the integration point for future GA4/pixels + Consent
+  Mode v2. (Banner/dialog UI + `consent.ts` record already exist and are retained.)
+- ⬜ **Maps → on-use, off boot** — remove `APIProvider` from the three `main.tsx`; mount it only around the
+  map/search components. **Open UX decision:** treat Maps as *functional-necessary-on-use* (load on its own
+  pages, no banner gate — preserves find-page conversion) vs *hard-gate under a new `functional` category*
+  (degrade to manual entry when refused). Recommend the former; the latter is a solicitor/product call.
+- ⬜ **Storage manifest + drift-guard test**, then **Phase 4** `BROWSER_STORAGE.md` inventory.
 
 **Re-running the runtime capture** (for Phase 2/3 verification): `npm install` in `app/`, then
 `npm run build:web-packages`, then `npm run dev:customer|venue|artist|business` from `app/`; drive with
@@ -303,6 +315,19 @@ None yet.
   defect (toggles gate nothing) moves to Phase 3 "make it actually gate," design pending research.
 - Follow-up: compile the three research reports into a repo doc + recommendation, then implement Phase 3
   (gating primitive + lazy Stripe/Maps + storage manifest).
+
+### 2026-08-10 — research compiled; build-vs-buy decided (custom); Phase 3 started (lazy Stripe)
+
+- Action: Compiled all three research passes into `plans/launch/CONSENT_RESEARCH.md` (committed with the
+  dead-cookie removal). Tommy chose **custom real-gate** over a CMP. Started Phase 3 with the self-contained
+  **lazy-Stripe** change and committed it (`de4cda25f`).
+- Evidence: `CONSENT_RESEARCH.md`; four SPA builds green after the Stripe change; commits `2c31f44da`
+  (dead cookie + research) and `de4cda25f` (lazy Stripe).
+- Outcome: Stripe no longer loads on anonymous landing (the headline audit finding). Banner retained with
+  Reject-all parity already correct. Remaining Phase 3: consent gating primitive, Maps off-boot, storage
+  manifest, Phase 4 inventory doc.
+- Follow-up: consent gating primitive next; Maps handling pending the on-use-vs-hard-gate UX decision (see
+  Next Steps). Nothing pushed.
 
 ## Resume prompt
 
