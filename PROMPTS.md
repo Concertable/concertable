@@ -14,12 +14,19 @@
   when the worktree doesn't exist yet — and keep it inside the paste-ready prompt.
 - For **non-plan** work, make the prompt self-contained for zero context: name the branch or PR,
   relevant working files, and exact next action.
-- For **plan-managed** work the prompt is ONLY the pointer — an opener line then the read line:
+- For **plan-managed** work, introduce the handoff with a short `Next steps:` preview: one to three
+  bullets describing at outcome level what the next session will implement, verify, review, or deliver.
+  Derive it from the ledger's current `## Next Steps`; keep it useful but non-authoritative, with exact
+  commands and changing operational detail staying in the ledger. Then end with the paste-ready prompt,
+  which is ONLY the pointer — an opener line then the read line:
 
   ```
   <opener>
   Read @plans/<PLAN>_PLAN.md and @plans/<this-worktree-ledger>_PROGRESS.md and do what its `## Next Steps` says.
   ```
+
+  Nothing follows the pointer. The final-response shape is therefore a result summary, the plain-English
+  `Next steps:` preview, then the exact two-line pointer as the final content.
 
   The `<opener>` is `/worktree create <Type>/<epic>_<name>` when the plan's worktree doesn't exist yet — a
   freshly-written plan, or after a clear with no live worktree — so implementation runs in an isolated
