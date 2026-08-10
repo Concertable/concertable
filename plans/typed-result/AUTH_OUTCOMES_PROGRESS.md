@@ -76,12 +76,23 @@ is stamped at the verified code head for the merge gate. A fresh fetch left `ori
 the branch zero behind / 29 ahead, with no remote branch, branch PR, or open platform-sync PR. The
 read-only PR preflight is GREEN; its only delivery note is that the 29 local commits remain unpushed.
 
+The PR #470 domain-outcome audit is clean for Auth's net branch scope. Production Auth has no
+`DomainException` guard, no rejecting entity/value-object factory, and no duplicated service
+pre-check around a throwing domain rule. `CredentialEntity` mutations are unconditional; token
+`IsActive` and page booleans are capabilities/rendering state. Existing Option, UnitResult, nullable
+EF state, and completion-only privacy no-ops already match caller decisions. Razor and Duende map
+owned values without changing Shared HTTP exception handling, while infrastructure, cancellation,
+and malformed identity state remain exceptional. No runtime correction is owned locally.
+
 ## Next Steps
 
-Do not push without instruction. On explicit delivery instruction, push the committed branch
-changes, open the plain GitHub PR, add no E2E skip label or trailer, and continue the normal merge
-workflow with full merge-queue API and UI E2E plus publication/platform-sync ownership to terminal
-green.
+Blocked: Auth publication and PR delivery require Tommy's explicit push instruction.
+Unblock action: Tommy authorizes pushing `Feature/typed-result_auth-outcomes` and opening its plain GitHub PR.
+Resume when: Tommy explicitly authorizes Auth delivery.
+
+After authorization, push the committed branch changes, open the plain GitHub PR, add no E2E skip
+label or trailer, and continue the normal merge workflow with full merge-queue API and UI E2E plus
+publication/platform-sync ownership to terminal green.
 
 ## Completed work
 
@@ -304,8 +315,23 @@ finding IDs or dispositions exist. Later merge `e196f13e1` contains only already
 - Full API and UI E2E is required in the merge queue. It must not be duplicated locally before the PR.
 - No model change or migration is planned. A discovered model or shared-Kernel need requires a plan
   amendment/separate additive shared item before implementation proceeds.
+- The PR #470 audit found no Auth-local correction. Shared/background exception classification and
+  blanket HTTP handling stay with the roadmap's future global audit after all service tracks are
+  terminal.
 
 ## Event log
+
+### 2026-08-10 - PR #470 domain-outcome reconciliation
+
+- Action: Audited Auth's net merge-base-to-HEAD production scope, entity/token methods, all existing
+  Option/UnitResult/bool/nullable outcomes, Razor and Duende mappings, exception paths, and test and
+  architecture evidence.
+- Evidence: Auth contains no production `DomainException`; no service pre-check duplicates a throwing
+  domain guard; capability/page booleans do not encode rejection; 4 unit and 54 integration tests plus
+  the architecture slice cover the intended owned outcomes and exception propagation.
+- Outcome: The plan is classification-clean and delivery-gated; no runtime work or global-audit
+  implementation was added.
+- Follow-up: wait for the explicit delivery authorization in `## Next Steps`.
 
 ### 2026-08-09 - Review and PR preflight completed
 

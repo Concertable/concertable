@@ -31,6 +31,10 @@ wire behavior does not carry `Result` or `Option` values.
   no-ops remain externally indistinguishable wherever they are indistinguishable today.
 - EF query nullability remains inside `AuthService`; no persistence contract returns `Option<T>`.
 - Database, Duende, email/outbox, cancellation, and invariant failures remain exceptions.
+- Auth's production domain/data entities contain no `DomainException` guard or caller-actionable
+  throwing state transition. `CredentialEntity` mutations are unconditional after service-owned
+  decisions, and token `IsActive` plus Razor page booleans are capability/rendering state rather than
+  untyped rejection contracts. Do not manufacture Results for those values.
 - No Result/Option/error carrier crosses Razor, HTTP, OAuth/OIDC, Duende, event, or persistence wire
   shapes.
 - Auth builds from its own published package closure, including the Reunion-backed Kernel package at
@@ -39,6 +43,8 @@ wire behavior does not carry `Result` or `Option` values.
   edge behavior.
 - The final PR passes review, build, unit/integration tests, Auth carve, full merge-queue API and UI
   E2E, merge, publication, and the generated platform-sync gate.
+- The PR #470 audit proves no duplicated application pre-check/domain throw, no invariant exception
+  converted to an expected outcome, and no `DomainException`-to-HTTP behavior changed by this branch.
 
 ## Ownership and invariants
 
