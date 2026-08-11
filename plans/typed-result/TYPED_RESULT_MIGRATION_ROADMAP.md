@@ -112,7 +112,7 @@ their current branch and worktree rather than fragmenting in-flight work.
     [`../../api/Concertable.Customer/ARCHITECTURE.md`](../../api/Concertable.Customer/ARCHITECTURE.md),
     and `api/agents/CODE_CONVENTIONS.md`.
 
-- [ ] 🟠 **Auth expected-outcome migration.** Exclusive owner:
+- [ ] 🟠 **Auth expected-outcome migration.** `typed-result/auth-outcomes` Exclusive owner:
   `Feature/typed-result_auth-outcomes` at
   `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_auth-outcomes`.
   **Authoritative work is active and unpushed in the recorded local worktree as of 2026-08-09.**
