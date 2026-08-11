@@ -76,7 +76,7 @@ their current branch and worktree rather than fragmenting in-flight work.
 
 ### In flight — existing owners, do not offer or duplicate
 
-- [ ] 🟠 **B2B typed-result migration.** Exclusive owner: `Refactor/B2BTypedResultMigration` at
+- [ ] 🟠 **B2B typed-result migration.** `typed-result/b2b` Exclusive owner: `Refactor/B2BTypedResultMigration` at
   `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-B2BTypedResultMigration`.
   **Authoritative work is active and unpushed in the recorded local worktree as of 2026-08-09.**
   GitHub remains an incomplete inventory because no branch PR or remote branch exists.
