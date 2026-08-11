@@ -13,7 +13,7 @@
   </Folder>
   <Folder Name="/B2B/">
     <Project Path="Concertable.B2B/src/Concertable.B2B.AppHost/Concertable.B2B.AppHost.csproj" />
-    <Project Path="Concertable.B2B/src/Concertable.B2B.AppHost.Extensions/Concertable.B2B.AppHost.Extensions.csproj" />
+    <Project Path="Concertable.B2B/src/Concertable.B2B.Hosting/Concertable.B2B.Hosting.csproj" />
     <Project Path="Concertable.B2B/src/Concertable.B2B.Web/Concertable.B2B.Web.csproj" />
     <Project Path="Concertable.B2B/src/Concertable.B2B.Workers/Concertable.B2B.Workers.csproj" />
     <Project Path="Concertable.B2B/src/Concertable.B2B.Infrastructure/Concertable.B2B.Infrastructure.csproj" />
