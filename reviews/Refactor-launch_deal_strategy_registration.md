@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `599b50836729225d8626ccadfd3cabbcef4f000f`  _(2026-08-11)_
-**Security-reviewed up to commit:** `599b50836729225d8626ccadfd3cabbcef4f000f`  _(2026-08-11)_
+**Reviewed up to commit:** `662378e69a91eca2e1663d702d1cf455cc6376cb`  _(2026-08-11)_
+**Security-reviewed up to commit:** `662378e69a91eca2e1663d702d1cf455cc6376cb`  _(2026-08-11)_
 
 > Range reviewed: `43fe1caf4..fb34f37b1` (21 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -54,3 +54,12 @@ invariant contracts preserve every supported resolution path. Native and reposit
 found no merge-seam, boundary, seeding, convention, or changed-path coverage issue. Security review of
 the workflow, browser-loading, package-feed, and worktree-script changes found no new secret, auth,
 authorization, or untrusted-input exposure.
+
+## Incremental review — 2026-08-11 (latest-main reconciliation)
+
+> Range reviewed: `599b50836..662378e69` (6 commits).
+
+No new findings. The range contains the preceding review/checkpoint commits and a clean merge of the
+already-reviewed worktree-cleanup postcondition fix from current `main`. The merged script now derives
+the common repository root before deleting its target and leaves the strategy-factory product paths
+unchanged. Native, repository-specific, and security review found no merge-seam or input-handling issue.

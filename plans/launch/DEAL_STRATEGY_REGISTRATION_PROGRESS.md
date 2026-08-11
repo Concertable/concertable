@@ -3,13 +3,13 @@
 - Plan: `plans/launch/DEAL_STRATEGY_REGISTRATION_PLAN.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal_strategy_registration`
 - Branch: `Refactor/launch_deal_strategy_registration`
-- PR: [#451](https://github.com/Concertable/concertable/pull/451) — open; the user-authorized
-  covariance correction and current-main reconciliation are pushed and verified at work head
-  `ce767fd5ce186d6a6f6df4107d5a3494941b09fd`; checkpoint transport is in progress
+- PR: [#451](https://github.com/Concertable/concertable/pull/451) — open; remote head
+  `529a4795812abc4ee073e3c1fc16f38ce86a2d4f` is verified, while a later current-main reconciliation
+  and clean incremental review await a replacement compound push
 - Dependency/package gates: no pre-merge package dependency; the generated platform-sync PR must be
   followed to green/merged after this `api/**` PR lands
 - Last reconciled: 2026-08-11; current `origin/main`
-  `e3fb7c38c` is merged as `599b50836`; branch is 0 commits behind and 45 ahead
+  `f63e9a1eb` is merged as `662378e69`; branch is 0 commits behind and 48 ahead
 
 ## Current state
 
@@ -24,16 +24,16 @@ The implementation commits are `506bc35e4` (terms/factory), `4a741fa50` (payee/p
 guard). The existing review artifact is `reviews/Refactor-launch_deal_strategy_registration.md`; all
 recorded reviews are clean with no open finding.
 
-Current main at `e3fb7c38c` is merged into the branch. The reconciled base includes platform version
+Current main at `f63e9a1eb` is merged into the branch. The reconciled base includes platform version
 `0.1.0-alpha.0.922`, Concert cancellation routing, and the worktree-lifecycle automation without
 overlapping either strategy factory interface or the module-local registration composition.
 Covariance is removed from both module-local interfaces and their documented examples; repository
 search finds no remaining variant factory declaration or covariance-dependent assignment.
 
-The work-head leg pushed `30c459d71..ce767fd5c`; local HEAD, the remote-tracking ref, and PR
-`headRefOid` were verified equal at `ce767fd5ce186d6a6f6df4107d5a3494941b09fd`. That head contains
-the current-main merges, invariant factory correction, clean incremental review, and no unrelated
-dirty or untracked source. Fresh PR checks are now the next remote gate.
+The first work-head leg pushed `30c459d71..ce767fd5c`, and its checkpoint transport produced verified
+remote/PR head `529a4795812abc4ee073e3c1fc16f38ce86a2d4f`. `main` then advanced with a reviewed
+worktree-cleanup-only change, so local head now contains its clean merge plus a replacement incremental
+review; no unrelated dirty or untracked source is present.
 
 Merge-group run `31486088803` completed successfully, including API and UI E2E. GitHub then
 rebuilt the group after an earlier queued PR changed `main`. Replacement run `31486673612` passed API
@@ -81,9 +81,9 @@ unused covariance from both module-local strategy factory interfaces.
 - Artifact: `reviews/Refactor-launch_deal_strategy_registration.md`.
 - Native, security, correctness, microservice-isolation, module-boundary, seeding, C# convention,
   keyed-strategy, and changed-path coverage reviews have no open finding.
-- Incremental review covers `ddd2ca4ce..599b50836` (60 commits), including both current-main merges,
-  the invariant factory correction, and security-sensitive workflow/browser/tooling paths; it found
-  no issue and advances both review watermarks to `599b50836`.
+- Incremental reviews cover `ddd2ca4ce..662378e69`, including every current-main merge, the invariant
+  factory correction, and security-sensitive workflow/browser/tooling paths; they found no issue and
+  advance both review watermarks to `662378e69`.
 
 ## Decisions and constraints
 
@@ -97,7 +97,7 @@ unused covariance from both module-local strategy factory interfaces.
 
 ## Next Steps
 
-1. Commit and push this single checkpoint-transport update, then verify local HEAD, the remote-tracking
-   ref, and PR `headRefOid` are identical.
-2. Wait for terminal green PR checks, select the E2E tier mechanically, and enqueue that verified
-   current remote head once.
+1. Commit the clean latest-main incremental review, then use the compound push protocol from verified
+   remote head `529a4795812abc4ee073e3c1fc16f38ce86a2d4f`.
+2. Wait for terminal green PR checks, select the E2E tier mechanically, and enqueue the resulting
+   verified current remote head once.
