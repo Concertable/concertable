@@ -134,7 +134,7 @@ Runtime type/union matching inside a selected workflow is a different dispatch a
 The noun before `Factory` is what it returns. `DealType` is only the selection key:
 
 ```csharp
-internal interface IConcertDealStrategyFactory<out TStrategy>
+internal interface IConcertDealStrategyFactory<TStrategy>
     where TStrategy : class
 {
     TStrategy Create(DealType dealType);

@@ -97,7 +97,7 @@ mechanism, or inject the generic factory merely to perform a business operation.
 The factory's noun names what it returns. `DealType` is only the selection key:
 
 ```csharp
-internal interface IDealStrategyFactory<out TStrategy>
+internal interface IDealStrategyFactory<TStrategy>
     where TStrategy : class
 {
     TStrategy Create(DealType dealType);
