@@ -5,7 +5,7 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `40b9c50b3b4ba7948a3a98b0d97e5961362a4549`  _(2026-08-11)_
+**Reviewed up to commit:** `0162ae91dfd9a2789426973b887303e7aadcd499`  _(2026-08-11)_
 
 > Range reviewed: `ed76ef7..40b9c50` (3 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -15,3 +15,9 @@
 - [x] **NAT1 — HIGH — native correctness** — `scripts/worktrees.ps1:250`
   Removed the repository-wide `git worktree prune` from targeted cleanup so closing one worktree
   cannot unregister unrelated prunable or persistent worktrees.
+
+## Incremental review — 2026-08-11
+
+No issues found in `40b9c50..0162ae9`. Checked the current-main merge and conflict resolutions in
+`AGENTS.md`, `plans/agents/PLAN.md`, and the progress template; the incoming roadmap-graph metadata
+and PR-scoped worktree lifecycle remain consistent.
