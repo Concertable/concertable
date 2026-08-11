@@ -27,8 +27,9 @@ recorded reviews are clean with no open finding.
 
 Current main at `ac25c8a2196a84fae5fd9b51d49f910d2ffbee48` is merged into the branch. The merge includes platform
 version `0.1.0-alpha.0.922` and Concert cancellation routing changes without overlapping either strategy
-factory interface or the module-local registration composition. The merged candidate must be rebuilt
-and incrementally reviewed before it is pushed.
+factory interface or the module-local registration composition. Covariance is removed from both
+module-local interfaces and their documented examples; repository search finds no remaining variant
+factory declaration or covariance-dependent assignment.
 
 The reviewed work range `bc05263e7..7cdf680f0` and its single checkpoint-transport commit are pushed.
 Local HEAD, the remote-tracking ref, and PR `headRefOid` were verified at
@@ -62,8 +63,9 @@ unused covariance from both module-local strategy factory interfaces.
 
 ## Verification
 
-- The prior full solution build passed at `bc4d9d174`, but it is superseded by the current-main merge;
-  the candidate at `d2a20695f` requires a fresh full build and affected B2B tests.
+- `dotnet build api/Concertable.slnx --artifacts-path
+  C:\Users\TommySeery\AppData\Local\Temp\Concertable\launch-deal-strategy-pr451-invariant` completed
+  in 18m27s with 0 errors and 8 existing warnings against current main; affected B2B tests remain.
 - `git diff --check origin/main..HEAD` is clean.
 - The net PR diff has no cross-service runtime reference, no keyed-service lookup outside the two
   module-local factories, no new deal-type business branch, and no undeclared strategy family.
@@ -94,9 +96,8 @@ unused covariance from both module-local strategy factory interfaces.
 
 ## Next Steps
 
-1. Remove `out` from both module-local strategy factory interfaces and verify no covariance-dependent
-   assignment exists.
-2. Build `api/Concertable.slnx`, run the affected B2B unit and integration gates, commit the correction,
-   and incrementally review the complete post-watermark range.
+1. Run the Concert and Deal unit projects plus the B2B Concert integration gate against the invariant
+   factory candidate.
+2. Commit the correction and incrementally review the complete post-watermark range.
 3. Use the compound push protocol to update PR #451, wait for terminal green PR checks, select the E2E
    tier mechanically, and enqueue the verified current remote head once.
