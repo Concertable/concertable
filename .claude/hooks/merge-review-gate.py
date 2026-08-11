@@ -31,10 +31,28 @@ import subprocess
 import sys
 
 
-def git(*args):
+def git(*args, cwd="."):
     return subprocess.run(
-        ["git", *args], capture_output=True, text=True, check=True
+        ["git", "-C", cwd, *args], capture_output=True, text=True, check=True
     ).stdout.strip()
+
+
+_CD_RE = re.compile(r"""\bcd\s+("[^"]*"|'[^']*'|[^\s;&|<>]+)""")
+
+
+def merge_target_dir(command, data):
+    # Merges run `cd "<worktree>" && gh pr merge ...`, so gate on the worktree's
+    # git state, not the hook process cwd (the pinned main checkout).
+    merge_pos = command.find("gh pr merge")
+    prefix = command if merge_pos < 0 else command[:merge_pos]
+    target = None
+    for m in _CD_RE.finditer(prefix):
+        target = m.group(1)
+        if target[:1] in ("'", '"'):
+            target = target[1:-1]
+    if target:
+        return target
+    return data.get("cwd") or "."
 
 
 _ENABLE_TOKENS = ("--auto", "--admin", "--merge", "--squash", "--rebase")
@@ -95,10 +113,11 @@ def main():
         sys.exit(0)
 
     # From here on the command WOULD merge — fail closed on anything unproven.
+    target = merge_target_dir(command, data)
     try:
-        branch = git("rev-parse", "--abbrev-ref", "HEAD")
-        head = git("rev-parse", "HEAD")
-        toplevel = git("rev-parse", "--show-toplevel")
+        branch = git("rev-parse", "--abbrev-ref", "HEAD", cwd=target)
+        head = git("rev-parse", "HEAD", cwd=target)
+        toplevel = git("rev-parse", "--show-toplevel", cwd=target)
     except Exception as exc:  # noqa: BLE001 — a merge with a broken check must not slip through
         block("MERGE GATE: cannot resolve git state (" + str(exc) + "); refusing "
               "`gh pr merge` until a code-review can be verified.")
@@ -148,10 +167,10 @@ def main():
         # origin/main not local main: local main drifts stale and would false-positive
         # the security check by dragging unrelated commits into the range.
         try:
-            base = git("merge-base", "origin/main", "HEAD")
+            base = git("merge-base", "origin/main", "HEAD", cwd=target)
         except Exception:  # noqa: BLE001
-            base = git("merge-base", "main", "HEAD")
-        changed = git("diff", "--name-only", base + "..HEAD").splitlines()
+            base = git("merge-base", "main", "HEAD", cwd=target)
+        changed = git("diff", "--name-only", base + "..HEAD", cwd=target).splitlines()
     except Exception:  # noqa: BLE001 — can't classify → don't block on the security sub-check
         changed = []
 
