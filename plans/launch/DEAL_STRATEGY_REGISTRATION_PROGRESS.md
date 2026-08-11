@@ -3,8 +3,8 @@
 - Plan: `plans/launch/DEAL_STRATEGY_REGISTRATION_PLAN.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal_strategy_registration`
 - Branch: `Refactor/launch_deal_strategy_registration`
-- PR: [#451](https://github.com/Concertable/concertable/pull/451) — open; terminal PR checks green at
-  verified remote head `30c459d712ab0b5b05c801db79664eca6772f9bf`
+- PR: [#451](https://github.com/Concertable/concertable/pull/451) — open; blocked by a merge-group
+  runner failure at verified remote head `30c459d712ab0b5b05c801db79664eca6772f9bf`
 - Dependency/package gates: no pre-merge package dependency; the generated platform-sync PR must be
   followed to green/merged after this `api/**` PR lands
 - Last reconciled: 2026-08-11; current `origin/main` is merged through
@@ -34,6 +34,13 @@ Local HEAD, the remote-tracking ref, and PR `headRefOid` were verified at
 are terminal green at that exact remote head. There are no skip trailers or labels, so the default
 full API + UI merge-queue E2E tier applies. No unrelated dirty or untracked source is present.
 
+Merge-group run `31486088803` completed successfully, including full API and UI E2E. GitHub then
+rebuilt the group after an earlier queued PR changed `main`. Replacement run `31486673612` passed API
+E2E and reached UI E2E, but its B2B Tenant integration job failed before executing product assertions:
+the runner's Docker pull of the SQL Server image from `mcr.microsoft.com` was reset by the network.
+All 56 tests failed in fixture startup in 76 ms. This is an external runner/image-pull failure, not a
+changed-area test failure, and the failed queue run must not be retried automatically.
+
 ## Completed milestones
 
 - Design and all five implementation phases are complete in the commits listed above.
@@ -44,6 +51,9 @@ full API + UI merge-queue E2E tier applies. No unrelated dirty or untracked sour
   remote head `bc05263e7` found no issue.
 - PR #451 is open against `main`; replacement build, carve, unit, and integration checks passed at
   `30c459d7`. Full API and UI E2E are intentionally reserved for the merge queue.
+- Merge-group run `31486088803` passed its complete matrix, API E2E, and UI E2E against the first queue
+  base. Current-base replacement run `31486673612` passed API E2E but hit an MCR connection reset
+  while the Tenant integration fixture pulled SQL Server.
 - Pre-existing platform-sync PR #488 for `0.1.0-alpha.0.917` passed its checks and merged as
   `130211aa90ae031a31e8b827e2567c3667fbc2b8` before the branch was reconciled.
 
@@ -59,6 +69,8 @@ full API + UI merge-queue E2E tier applies. No unrelated dirty or untracked sour
 - The only security-sensitive net path is deletion of unused public marker
   `Concertable.B2B.Deal.Contracts.IDealStrategy`; repository search finds no consumer or remaining
   reference.
+- Failed job `93764269468` reports `DockerApiException` from `SqlFixture.InitializeAsync`: the MCR
+  manifest request was reset by peer; 0 of 56 Tenant integration tests reached execution.
 
 ## Review state
 
@@ -81,11 +93,10 @@ full API + UI merge-queue E2E tier applies. No unrelated dirty or untracked sour
 
 ## Next Steps
 
-Land PR #451 through the repository merge workflow:
-
-1. Commit this local-only terminal-check observation checkpoint without pushing it.
-2. Enqueue verified remote head `30c459d7` and follow the merge-group API/UI E2E result to a terminal
-   merge or failure.
-3. On merge, transfer the plan-only local observation tail to the close-out worktree, remove the feature worktree/branch,
-   follow publication and the generated platform-sync PR to green/merged, then delete the plan and
-   ledger and land the roadmap closeout through the docs-only merge path.
+Blocked: PR #451's current-base merge-group run `31486673612` has a failed Tenant integration job
+caused by a GitHub runner network reset while pulling SQL Server from MCR.
+Unblock action: Once GitHub runner access to `mcr.microsoft.com` is healthy, explicitly re-enqueue PR
+#451 once and require a fresh current-base merge-group run to pass; do not rerun the failed job.
+Resume when: A fresh merge-group run for verified remote head `30c459d7` is admitted, or PR #451 is
+merged after that run passes. Then transfer the plan-only observation tail to the close-out worktree,
+remove the feature worktree/branch, and own publication and platform sync through terminal green.
