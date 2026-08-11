@@ -93,10 +93,6 @@ changed-area test failure, and the failed queue run must not be retried automati
 
 ## Next Steps
 
-Blocked: PR #451's current-base merge-group run `31486673612` has a failed Tenant integration job
-caused by a GitHub runner network reset while pulling SQL Server from MCR.
-Unblock action: Once GitHub runner access to `mcr.microsoft.com` is healthy, explicitly re-enqueue PR
-#451 once and require a fresh current-base merge-group run to pass; do not rerun the failed job.
-Resume when: A fresh merge-group run for verified remote head `30c459d7` is admitted, or PR #451 is
-merged after that run passes. Then transfer the plan-only observation tail to the close-out worktree,
-remove the feature worktree/branch, and own publication and platform sync through terminal green.
+Blocked: PR #451's current-base merge-group run `31486673612` has a failed Tenant integration job caused by a GitHub runner network reset while pulling SQL Server from MCR.
+Unblock action: Once GitHub runner access to `mcr.microsoft.com` is healthy, explicitly re-enqueue PR #451 once and require a fresh current-base merge-group run to pass; do not rerun the failed job.
+Resume when: A fresh merge-group run for verified remote head `30c459d7` is admitted, or PR #451 is merged after that run passes; then transfer the plan-only observation tail to the close-out worktree, remove the feature worktree/branch, and own publication and platform sync through terminal green.
