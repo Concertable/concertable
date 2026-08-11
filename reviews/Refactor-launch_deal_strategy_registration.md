@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `bc05263e7bd1015f81fb51ada31e636c5ed7c874`  _(2026-08-11)_
-**Security-reviewed up to commit:** `fb34f37b17387dd398a3d1a8d6e3e31dfb0a2719`  _(2026-08-09)_
+**Reviewed up to commit:** `ddd2ca4ced246a23969965ff2eacd508956f3b0b`  _(2026-08-11)_
+**Security-reviewed up to commit:** `ddd2ca4ced246a23969965ff2eacd508956f3b0b`  _(2026-08-11)_
 
 > Range reviewed: `43fe1caf4..fb34f37b1` (21 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -32,3 +32,13 @@ security-sensitive product path was introduced, so the security watermark remain
 No new findings. The range contains only the preceding review artifact and its plan-ledger transport
 checkpoint. Native correctness and repository-specific architecture lenses found no runtime change,
 and no security-sensitive path was introduced.
+
+## Incremental review — 2026-08-11 (current-main reconciliation)
+
+> Range reviewed: `bc05263e7..ddd2ca4ce` (232 commits).
+
+No new findings. The range is the current-main reconciliation plus review, build, and plan checkpoints.
+Native review of the net PR diff and the automatically merged Concert registration seam found both
+parents preserved correctly. Security review found no auth, authorization, secret, or input-handling
+change; the only sensitive net path deletes the unused `IDealStrategy` Contracts marker, with no
+repository consumer. The full API solution builds with 0 errors on the resulting code tree.
