@@ -8,7 +8,8 @@
   required after the `api/**` source PR merges
 - Last reconciled: 2026-08-11; all five implementation phases are complete; incremental review of
   `36375ffdf..bc05263e7` found no issues; PR #451 is green at `bc05263e7` but the branch is 221
-  commits behind current `origin/main` and must be reconciled, rebuilt, and re-reviewed before queueing
+  commits behind the last fetched `origin/main`; pre-existing platform-sync PR #488 has now merged
+  green as `130211aa9`, so the branch can fetch and reconcile the final current platform pin
 
 ## Current state
 
@@ -215,6 +216,8 @@ Land PR #451 through the repository merge workflow only:
   or repository-specific confidence filters; the reviewed range changes only the review artifact and
   plan ledger. PR-level build, carve, unit, and integration checks were terminal green at remote head
   `bc05263e7`; merge-queue E2E remained correctly skipped at PR level.
+- 2026-08-11: pre-existing platform-sync PR #488 passed build, carve, unit, and integration checks and
+  merged through its normal queued path as `130211aa90ae031a31e8b827e2567c3667fbc2b8`.
 
 ## Reviews
 
@@ -648,6 +651,15 @@ Land PR #451 through the repository merge workflow only:
 - Outcome: The pre-reconciliation branch state is review-clean. Current `origin/main` is 221 commits
   ahead, so queue admission remains gated on base reconciliation, rebuild, and final incremental review.
 - Follow-up: Merge current `origin/main`, rebuild the API solution, and incrementally review the new head.
+
+### 2026-08-11 — existing platform-sync gate cleared
+
+- Action: Inspected the repository's only open platform-sync PR, verified every required check green,
+  confirmed it was already queued, and followed it to merge before reconciling PR #451's base.
+- Evidence: platform-sync PR #488 for `0.1.0-alpha.0.917`; merge commit
+  `130211aa90ae031a31e8b827e2567c3667fbc2b8`; no failed check.
+- Outcome: No red or pending platform-sync gate remains ahead of PR #451's base reconciliation.
+- Follow-up: Fetch and merge current `origin/main`, then rebuild and incrementally review the result.
 
 ## Resume prompt
 
