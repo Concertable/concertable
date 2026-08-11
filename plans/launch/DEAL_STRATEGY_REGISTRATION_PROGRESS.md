@@ -3,9 +3,9 @@
 - Plan: `plans/launch/DEAL_STRATEGY_REGISTRATION_PLAN.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal_strategy_registration`
 - Branch: `Refactor/launch_deal_strategy_registration`
-- PR: [#451](https://github.com/Concertable/concertable/pull/451) — open; remote head
-  `529a4795812abc4ee073e3c1fc16f38ce86a2d4f` is verified, while a later current-main reconciliation
-  and clean incremental review await a replacement compound push
+- PR: [#451](https://github.com/Concertable/concertable/pull/451) — open; replacement work head
+  `76e17b0206b77742fd5d89961bccb1be9b429387` is pushed and verified; checkpoint transport is in
+  progress
 - Dependency/package gates: no pre-merge package dependency; the generated platform-sync PR must be
   followed to green/merged after this `api/**` PR lands
 - Last reconciled: 2026-08-11; current `origin/main`
@@ -30,10 +30,10 @@ overlapping either strategy factory interface or the module-local registration c
 Covariance is removed from both module-local interfaces and their documented examples; repository
 search finds no remaining variant factory declaration or covariance-dependent assignment.
 
-The first work-head leg pushed `30c459d71..ce767fd5c`, and its checkpoint transport produced verified
-remote/PR head `529a4795812abc4ee073e3c1fc16f38ce86a2d4f`. `main` then advanced with a reviewed
-worktree-cleanup-only change, so local head now contains its clean merge plus a replacement incremental
-review; no unrelated dirty or untracked source is present.
+After the first compound push, `main` advanced with a reviewed worktree-cleanup-only change. The
+replacement work-head leg pushed `529a47958..76e17b020`; local HEAD, the remote-tracking ref, and PR
+`headRefOid` were verified equal at `76e17b0206b77742fd5d89961bccb1be9b429387`, with 0 commits
+behind current `origin/main` and no unrelated dirty or untracked source.
 
 Merge-group run `31486088803` completed successfully, including API and UI E2E. GitHub then
 rebuilt the group after an earlier queued PR changed `main`. Replacement run `31486673612` passed API
@@ -97,7 +97,7 @@ unused covariance from both module-local strategy factory interfaces.
 
 ## Next Steps
 
-1. Commit the clean latest-main incremental review, then use the compound push protocol from verified
-   remote head `529a4795812abc4ee073e3c1fc16f38ce86a2d4f`.
-2. Wait for terminal green PR checks, select the E2E tier mechanically, and enqueue the resulting
-   verified current remote head once.
+1. Commit and push this single checkpoint-transport update, then verify local HEAD, the remote-tracking
+   ref, and PR `headRefOid` are identical.
+2. Wait for terminal green PR checks, select the E2E tier mechanically, and enqueue that verified
+   current remote head once.
