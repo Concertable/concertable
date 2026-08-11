@@ -4,15 +4,17 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\launch_browser-storage-consent`
 - Branch: `Feature/launch_browser-storage-consent`
 - PR: [#482](https://github.com/Concertable/concertable/pull/482) — open, **not merged** (awaiting go-ahead to `/merge`)
-- Dependency/package gates: **no hard platform-sync gate** — the only `api/**` edits will be E2E test
-  projects, so no published `Concertable.*` package changes shape; any `chore/platform-sync-*` PR is
-  non-breaking and auto-merges. **Legal input (non-blocking):** solicitor-drafted cookie/storage
+- Dependency/package gates: **no platform-sync gate at all** — the final diff touches **no `api/**`**
+  (the Phase-2 E2E-scaffold edits were reverted), so the merge triggers **no `Publish packages` /
+  `chore/platform-sync-*` PR**. Confirmed 2026-08-11: `git diff --name-only origin/main...HEAD` = only
+  `app/web/**` + `plans/launch/*.md`. **Legal input (non-blocking):** solicitor-drafted cookie/storage
   **policy copy** is a Month-4 input and gates ONLY the final policy-wording wire (Phase 4 tail), not
   the audit/removal/correction/inventory work.
-- Last reconciled: 2026-08-10 — **Phases 1–4 engineering COMPLETE.** Synced to `origin/main` (was 3
-  behind; clean merge). Shipped the consent gating primitive, lazy Stripe (prior), on-use Maps, the
-  storage manifest + drift-guard test, and the `BROWSER_STORAGE.md` inventory. Four SPA builds green;
-  shared vitest 19/19 green. Pushed to the feature branch; PR not yet opened (opt-in).
+- Last reconciled: 2026-08-11 — **merge in progress.** Synced to `origin/main` (was **38 behind**;
+  clean merge `016c6fe45`, no conflicts — branch never touched the version-pin file). Rebuilt: four SPA
+  builds green + shared vitest **19/19** green. Pushed the merge head to `Feature/launch_browser-storage-consent`
+  (`034d8ee96..016c6fe45`); remote + PR #482 head both == `016c6fe45`. Next: wait for PR checks terminal/green,
+  then enqueue at **full E2E tier**.
 
 ## Current state
 
@@ -50,13 +52,14 @@ All engineering is done, committed, and pushed. What remains is delivery + a doc
    (NAT1 — drift guard blind to zustand `persist()`) found and fixed + verified (vitest 19/19, four
    builds green). Work-order: `reviews/Feature-launch_browser-storage-consent.md`. Fix committed **and
    pushed** (`d82059cd6`). Branch is now 28 behind `origin/main` — `/merge` syncs before enabling auto-merge.
-2. ✅ **PR opened — [#482](https://github.com/Concertable/concertable/pull/482) (2026-08-10).** Not
-   merged (Tommy: "just open for now"). **Merge awaits go-ahead** — then `/merge` at the **full E2E
-   tier**: this changes a first-visit flow across all SPAs (banner + boot-time script loading), so do
-   **not** `skip-e2e`. `/merge` resyncs to `origin/main` (28 behind) before enabling auto-merge; let
-   the merge queue run E2E, don't duplicate it locally.
-3. **Follow the platform-sync PR** — the `api/**` edits are E2E-test-only, so the
-   `chore/platform-sync-*` PR is non-breaking and auto-merges; confirm it greens.
+2. ⏳ **Merge in progress (2026-08-11, go-ahead given).** `/merge` at the **full E2E tier** — this
+   changes a first-visit flow across all SPAs (banner + boot-time script loading), so **not** `skip-e2e`.
+   Branch resynced to `origin/main` (was 38 behind → 0), rebuilt green, pushed `016c6fe45`. Remaining:
+   confirm PR checks terminal/green, normalize labels (no `skip-e2e`), enqueue, wait for `MERGED`. Let
+   the merge queue run E2E; don't duplicate it locally.
+3. **No platform-sync to follow** — the final diff touches **no `api/**`**, so the merge triggers no
+   `Publish packages` / `chore/platform-sync-*` PR. (Corrected from the earlier "E2E-test-only api edits"
+   note — those edits were reverted with Phase 2.)
 4. **At merge close-out:** tick the roadmap line (`plans/launch/LAUNCH_ROADMAP.md:30`, `:197`) and the
    §7 checklist items (`plans/launch/LAUNCH_CHECKLIST.md:41`, `:42` — the `[CODE]` parts) in the
    close-out commit; move recovery state to a `Docs/*_closeout` worktree and delete this plan + ledger.
@@ -377,6 +380,20 @@ change.
 - Outcome: `origin/Feature/launch_browser-storage-consent` at `d82059cd6`; PR #482 open. Branch 28
   behind `origin/main` (main moved on since last sync — `/merge` will resync before enabling auto-merge).
 - Follow-up: `## Next Steps` 2 — `/merge` at full E2E tier when Tommy gives the go-ahead.
+
+### 2026-08-11 — `/merge` started (go-ahead given); branch synced + rebuilt + pushed
+
+- Action: Go-ahead to merge given. Ran `/merge` (full E2E tier). Branch was **38 behind / 15 ahead**;
+  auto-merge was already enabled on #482 by a bot while behind (the "enabled-while-behind" trap), so the
+  resync is mandatory. Merged `origin/main` into the branch — **clean, no conflicts** (no
+  `<ConcertablePlatformVersion>` conflict: the branch never touched `api/`). Rebuilt `build:web-packages`
+  then all four SPA builds and shared vitest. Pushed the merge head.
+- Evidence: merge commit `016c6fe45`; `build:customer|venue|artist|business` all exit 0; shared vitest
+  **19/19**; push `034d8ee96..016c6fe45`; verified remote + PR #482 `headRefOid` both == `016c6fe45`.
+  `git diff --name-only origin/main...HEAD` = `app/web/**` + `plans/launch/*.md` only — **no `api/**`**.
+- Outcome: Branch current with `origin/main`, verified green, pushed. **No platform-sync PR will fire**
+  (no `api/**` in the diff) — step 6 of the merge skill is a no-op for this PR.
+- Follow-up: confirm PR checks terminal/green → normalize labels (no `skip-e2e`) → enqueue → wait `MERGED`.
 
 ## Resume prompt
 
