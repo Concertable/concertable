@@ -46,7 +46,7 @@ The big one: in this suite a failing test usually means **the synchronous call r
 - Tests: `Payments/ConcertDraftTests.cs` (accept → draft → settlement payout), `Payments/ConcertFinishedTests.cs` (concert-finished → completion + door-split/versus payout)
 - Fixture: `AppFixture.cs` (boots `Concertable.B2B.AppHost`, seeds via `DevDbInitializer`, exposes `B2BClient` / `Polling` / `StripePaymentIntents` / `SeedState` / `DbFixture`)
 - DB helpers (raw SQL, for polling state): `DbFixture.cs`, `ApplicationDb.cs`, `BookingDb.cs`, `OpportunityDb.cs`
-- Stack composition: `DistributedApplicationBuilderExtensions.cs` (`AddB2BE2E` — pins Payment/Auth/Search + stripe-cli)
+- Stack composition: `DistributedApplicationBuilderExtensions.cs` (`AddE2EStack` — pins Payment/Auth/Search + stripe-cli)
 - Last run log: `api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests/api-tests.last.log`
 
 **Customer API E2E** — `api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests/`
