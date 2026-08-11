@@ -13,8 +13,8 @@
 > **Canonical conventions:** [`../../api/agents/CODE_CONVENTIONS.md`](../../api/agents/CODE_CONVENTIONS.md)
 > “Typed operation Results.” Backend ownership and package rules live in
 > [`../../api/ARCHITECTURE.md`](../../api/ARCHITECTURE.md).
-> Those conventions remain the current code contract until the Reunion producer and generated
-> platform-sync consumer cutover lands; the remaining cleanup is owned by
+> Those conventions describe the current published Reunion and platform-sync baseline; the remaining
+> cleanup is owned by
 > [`REUNION_SHARED_CONTRACTION_PLAN.md`](REUNION_SHARED_CONTRACTION_PLAN.md).
 >
 > **Current producer baseline:** NuGet.org publishes `0.1.0-alpha.2` for `Reunion`,
