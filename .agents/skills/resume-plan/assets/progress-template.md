@@ -21,28 +21,26 @@ resume/handoff prompts point here instead of restating it; blocked plans never e
 
 ## Completed work
 
-<Completed phases and changes with commit/PR evidence.>
+<Compact milestones only: normally one item per completed phase or delivery gate, with commit/PR evidence.>
 
 ## Verification
 
-<Commands/checks, outcomes, and the code state they verified.>
+<Only the latest commands/checks still valid for the current candidate, with outcomes and tested state.>
 
 ## Reviews
 
-<Review type and range, artifact, findings, dispositions, and resulting commits.>
+<Current review type/range/artifact and open findings. Once clean, collapse to the reviewed state and
+resulting commits; leave detailed history in the review artifact and git.>
 
 ## Decisions, discoveries, blockers, and deviations
 
-<Durable context that cannot be reconstructed safely from code alone.>
+<Only durable context that still affects execution and cannot be reconstructed safely from code or
+named artifacts.>
 
-## Event log
+## Recent transitions
 
-### <YYYY-MM-DD — event>
-
-- Action: <what happened>
-- Evidence: <commit, command/result, artifact, PR/check, or package state>
-- Outcome: <what changed>
-- Follow-up: <remaining consequence or none>
+<Optional temporary working memory. Keep only material transitions not yet fully represented above.
+Delete or collapse each entry once its outcome is folded into the snapshot; omit this section when empty.>
 
 ## Resume prompt
 

@@ -14,14 +14,14 @@ A plan describes a chunk of work too big for one commit, broken into **phases th
 independently shippable and each end green**. A phase states what it changes, why, and its
 verification gate. Phases sequence so that every intermediate state builds and passes.
 
-## Companion progress ledger — record the whole operational history
+## Companion progress ledger — keep a compact operational snapshot
 
 Every `plans/<epic>/<NAME>_PLAN.md` has at least one same-directory `<NAME>_PROGRESS.md` companion,
 created with the plan. Plan and ledger share the `<NAME>` stem; the plan's worktree/branch is
 `<Type>/<epic>_<name>` so branch, plan, and ledger carry one identity. The **plan** is the shared design — phases, dependencies, definition-of-done; each **ledger** is
 the operational truth of **one worktree** working it, so the ledger (not the plan) is 1:1 with a
-worktree and owns the `Worktree`/`Branch`/`PR` identity. Keep the plan readable by putting the detailed
-history and current truth in the ledger. Start each from
+worktree and owns the `Worktree`/`Branch`/`PR` identity. Keep the plan readable by putting the current
+operational truth in the ledger. Start each from
 [`resume-plan/assets/progress-template.md`](../../.agents/skills/resume-plan/assets/progress-template.md).
 
 **A plan may have several ledgers.** Worked in one worktree it has one `plans/<NAME>_PROGRESS.md`. When
@@ -30,16 +30,19 @@ branch while a later phase waits — it has **one ledger per worktree**. Name ea
 worktree, and set its `- Plan:` header to this plan: that header is the authoritative plan↔ledger
 grouping (`/resume-plan` greps it), not the filename.
 
-The ledger must make the chat disposable at any point. Record **every project action and state
-transition as it happens**, not just phase summaries: user direction and scope changes, partial
-implementation, commits, verification commands and results, reviews and every
-finding's disposition, fixes after review, PR creation and checks, merges, publications, platform
-syncs, decisions, discoveries, deviations, blockers, failed approaches worth avoiding, and external
-gates — all scoped to the plan's substance (code, design, delivery, gate state). Not tooling,
-environment or git mishaps, or incident narration; record the durable fact ("committed as `<sha>`"),
-never the drama. "A review happened" is insufficient: identify the review type and range, its artifact,
-whether findings remain open, and the commit or deferral that resolved each one. Never leave a project
-fact only in chat because it happened between phase boundaries.
+The ledger must make the chat disposable at any point, but it is a **rolling recovery snapshot, not an
+append-only history**. Preserve only facts a fresh agent needs to continue safely: current partial or
+uncommitted work, active gates and blockers, the latest verification valid for the current candidate,
+open review findings, compact completed-milestone evidence, and decisions or failed approaches that
+still constrain future work. Git history, PRs, check runs, review artifacts, and package feeds are the
+archive for superseded detail.
+
+Record each material state transition immediately, then reconcile the snapshot: replace stale facts,
+remove resolved blockers and obsolete next steps, drop verification superseded by a newer candidate,
+and collapse finished phases or delivery sequences to their terminal commit/PR evidence. Do not retain
+routine chronology once its durable outcome is represented elsewhere in the ledger. The retention test
+is: **could removing this fact cause a fresh agent to take the wrong action or repeat a costly failed
+approach?** If not, remove it.
 
 Every workflow that advances or evaluates plan-managed work owns this update before it ends. That
 includes implementation, `/code-review`, `/big-review`, `/incremental-review`, addressing findings,
@@ -52,13 +55,15 @@ The mandatory procedure is
 Every repository workflow skill named above must invoke it before any report or stop. Apply it directly
 for plan-aware implementation or plain `gh pr create` work that has no repository skill wrapper.
 
-Each ledger keeps these current sections above its chronological event log:
+Each ledger keeps these current sections, plus an optional short `## Recent transitions` section:
 
 - plan, absolute worktree, branch, PR, and relevant dependency or package gates;
 - current state, including partial/uncommitted work that the next agent must preserve;
-- completed work with commit or PR evidence;
-- verification and review state;
-- decisions, discoveries, blockers, and deviations;
+- completed milestones, normally one concise item per phase or delivery gate with commit/PR evidence;
+- the latest verification and review state still valid for the current candidate, including every open
+  finding and its disposition;
+- decisions, discoveries, blockers, and deviations that still affect execution and cannot be safely
+  reconstructed from code or durable artifacts;
 - **`## Next Steps`** — the single resolved action for the next agent, expressed as concrete,
   self-contained steps. If no action can proceed, start it with the exact `Blocked:`, `Unblock action:`,
   and `Resume when:` fields defined below. Apply the repository's standing instructions and current
@@ -66,18 +71,21 @@ Each ledger keeps these current sections above its chronological event log:
   **single source of truth** for what to do next; resume/handoff prompts point here instead of restating
   it only when the action is executable. Keep it current at every checkpoint.
 
-Update the summary whenever an event changes it, then append the evidenced event to the log. Include
-enough commands, paths, identifiers, results, and reasoning to continue without the prior conversation;
-do not paste entire routine logs when their command, outcome, and durable artifact fully preserve the
-fact. Commit ledger updates with the work they describe whenever possible. Remote-only transitions
-that happen after a commit, such as a PR entering the queue or a package publishing, go into the next
-immediate ledger checkpoint.
+`## Recent transitions` is temporary working memory for a material change not yet fully represented by
+the stable sections. Omit it when empty. Delete or collapse each entry as soon as its outcome is folded
+into current state, a milestone, verification, review, or a durable decision; it must never become a
+permanent event log. Include enough commands, paths, identifiers, results, and reasoning to continue
+without the prior conversation, but do not duplicate evidence available in a named durable artifact.
+Commit ledger updates with the work they describe whenever possible. Remote-only transitions that
+happen after a commit, such as a PR entering the queue or a package publishing, still require the next
+immediate ledger checkpoint; that checkpoint replaces prior state instead of accumulating narration.
 
 **Backward compatibility:** the absence of a progress ledger means the plan predates this rule, not
 that no work has happened. Read the plan, git history and working tree, review artifacts, test evidence,
 PR/check state, and package gates. Create `<NAME>_PROGRESS.md` with an explicitly labelled
 "reconstructed baseline" containing only verifiable facts; do not invent missing history. All future
-progress goes into that ledger.
+progress goes into that ledger. When a workflow next touches a legacy append-only ledger, compact its
+superseded history under this rule as part of that checkpoint.
 
 The ledger is working state, not a permanent report. Completing and verifying the final local phase
 does **not** close it while delivery is still live. Keep the plan and ledger discoverable until every
@@ -135,8 +143,8 @@ An implementation blocker is a two-ledger state transition:
    checkpoint or emit its own resume pointer.
 2. In the owner ledger, add a `## Downstream handoffs` entry with the waiting ledger, its worktree, and
    the same gate. This is the durable return path.
-3. When the owner crosses the gate, update the waiting ledger's current state, `## Next Steps`, and
-   event log in that same delivery session, then surface its exact resume prompt to Tommy.
+3. When the owner crosses the gate, update and compact the waiting ledger's current state and
+   `## Next Steps` in that same delivery session, then surface its exact resume prompt to Tommy.
 4. Do not close or delete the owner plan/ledger while a downstream handoff remains undispatched.
 
 Reporting "waiting for X" without first proving that X blocks implementation is incomplete. Reporting
