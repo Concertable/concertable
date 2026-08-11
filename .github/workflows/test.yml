@@ -439,7 +439,7 @@ jobs:
             -not -path '*/tests/*' \
             -not -path '*/obj/*' \
             -not -name 'Concertable.B2B.AppHost.csproj' \
-            -not -name 'Concertable.B2B.AppHost.Extensions.csproj')
+            -not -name 'Concertable.B2B.Hosting.csproj')
           echo "Package-clean closure projects (${#PROJS[@]}):"
           printf '%s\n' "${PROJS[@]}"
           dotnet sln CarveB2B.slnx add "${PROJS[@]}"
@@ -509,7 +509,7 @@ jobs:
             -not -path '*/tests/*' \
             -not -path '*/obj/*' \
             -not -name 'Concertable.Customer.AppHost.csproj' \
-            -not -name 'Concertable.Customer.AppHost.Extensions.csproj')
+            -not -name 'Concertable.Customer.Hosting.csproj')
           echo "Package-clean closure projects (${#PROJS[@]}):"
           printf '%s\n' "${PROJS[@]}"
           dotnet sln CarveCustomer.slnx add "${PROJS[@]}"
