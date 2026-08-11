@@ -3,8 +3,8 @@
 - Plan: `plans/launch/DEAL_STRATEGY_REGISTRATION_PLAN.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal_strategy_registration`
 - Branch: `Refactor/launch_deal_strategy_registration`
-- PR: [#451](https://github.com/Concertable/concertable/pull/451) — open; remote head
-  `bc05263e7bd1015f81fb51ada31e636c5ed7c874`
+- PR: [#451](https://github.com/Concertable/concertable/pull/451) — open; verified work head
+  `7cdf680f016a9945dbbebba7d5e110951b4a47a3`
 - Dependency/package gates: no pre-merge package dependency; the generated platform-sync PR must be
   followed to green/merged after this `api/**` PR lands
 - Last reconciled: 2026-08-11; current `origin/main` is merged through
@@ -28,9 +28,10 @@ advance was docs/meta guidance, so the API tree is identical to the tree built s
 `bc4d9d174`. The automatic merge seam in Concert's `ServiceCollectionExtensions` retains both current
 main's `IApplicationExecutor` registration and this branch's `AddConcertDealStrategies` composition.
 
-The local branch contains the current-main merge, compact ledger, build evidence, and final clean
-review that still need the plan-managed two-leg push. No unrelated dirty or untracked source is
-present in this worktree.
+The reviewed work range `bc05263e7..7cdf680f0` is pushed. Local HEAD, remote-tracking ref, and PR
+`headRefOid` were all verified at `7cdf680f016a9945dbbebba7d5e110951b4a47a3`. This ledger update is
+the single checkpoint-transport leg; after it is pushed and verified, replacement PR checks are the
+next gate. No unrelated dirty or untracked source is present in this worktree.
 
 ## Completed milestones
 
@@ -81,11 +82,11 @@ present in this worktree.
 
 Land PR #451 through the repository merge workflow:
 
-1. Commit the final review artifact plus this compact ledger.
-2. Push the reviewed work head, verify remote-tracking and PR heads, create and push the single
-   plan-ledger transport checkpoint, then wait for the replacement PR checks to become terminal green.
-3. Normalize labels to full E2E, enqueue the verified remote head, and follow the merge-group API/UI
+1. Commit and push this single plan-ledger transport checkpoint, then verify local, remote-tracking,
+   and PR heads are identical.
+2. Wait for the replacement PR checks to become terminal green, normalize labels to full E2E, enqueue
+   the verified remote head, and follow the merge-group API/UI
    E2E result to a terminal merge or failure.
-4. On merge, transfer recovery state to the close-out worktree, remove the feature worktree/branch,
+3. On merge, transfer recovery state to the close-out worktree, remove the feature worktree/branch,
    follow publication and the generated platform-sync PR to green/merged, then delete the plan and
    ledger and land the roadmap closeout through the docs-only merge path.
