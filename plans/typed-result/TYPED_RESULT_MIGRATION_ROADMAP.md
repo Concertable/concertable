@@ -14,8 +14,8 @@
 > “Typed operation Results.” Backend ownership and package rules live in
 > [`../../api/ARCHITECTURE.md`](../../api/ARCHITECTURE.md).
 > Those conventions remain the current code contract until the Reunion producer and generated
-> platform-sync consumer cutover land; the selected cutover design lives in
-> [`REUNION_INTEGRATION_PLAN.md`](REUNION_INTEGRATION_PLAN.md).
+> platform-sync consumer cutover lands; the remaining cleanup is owned by
+> [`REUNION_SHARED_CONTRACTION_PLAN.md`](REUNION_SHARED_CONTRACTION_PLAN.md).
 >
 > **Current producer baseline:** NuGet.org publishes `0.1.0-alpha.2` for `Reunion`,
 > `Reunion.Validation`, `Reunion.Errors`, and `Reunion.AspNetCore`. The merged producer baseline adds
@@ -158,12 +158,11 @@ their current branch and worktree rather than fragmenting in-flight work.
   repository-wide package-version cutover and its publication/platform-sync lifecycle, not service
   semantics or unused package additions. Active service owners may prepare their own alpha.2 code now.
 
-- [ ] 🟡 **Reunion package integration and carrier cutover.** `typed-result/reunion-integration` The design and operational state are in
-  [`REUNION_INTEGRATION_PLAN.md`](REUNION_INTEGRATION_PLAN.md) and
-  [`REUNION_INTEGRATION_PROGRESS.md`](REUNION_INTEGRATION_PROGRESS.md). The initial alpha.1 producer
-  and Payment cutover are terminal. The current producer baseline is the four-package alpha.2 family;
-  Customer Ticket is terminal, while B2B, Auth, and Customer non-Payment adopt alpha.2 independently.
-  The final Shared contraction waits only for those remaining consumers' terminal inventories.
+- [x] ✅ **Reunion package integration and Payment carrier cutover.**
+  `typed-result/reunion-integration` PR #453, platform-sync PR #463, and domain-outcome follow-up PR
+  #470 are merged. The current producer baseline is the four-package alpha.2 family. B2B, Auth, and
+  Customer non-Payment remain independently owned consumer tracks; the final Shared contraction is
+  owned only by `typed-result/reunion-shared-contraction`.
 
 - [x] 🟢 **HTTP terminal ownership resolved upstream.** `Reunion.AspNetCore` already publishes the MVC
   and Minimal API Result/Option terminals, generic success mappers, ProblemDetails execution, and

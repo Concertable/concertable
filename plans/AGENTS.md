@@ -85,10 +85,10 @@ ledger and surfaces its resume prompt when the gate opens. Full mechanics:
 
 ## An actionable non-terminal plan handoff must end with its exact continuation pointer
 
-If a `_PROGRESS.md` ledger with actionable non-terminal `## Next Steps` is explicitly named by path in
-the user request or edited during the turn, the final response must end with the exact two-line plan
-pointer from [`../PROMPTS.md`](../PROMPTS.md). Read-only inspection of a dependency owner's ledger
-under the cross-plan blocker rule does not claim that owner's handoff. Local
+If a `_PROGRESS.md` ledger with actionable non-terminal `## Next Steps` is owned by the current or
+explicitly targeted worktree, the final response must end with the exact two-line plan pointer from
+[`../PROMPTS.md`](../PROMPTS.md). Reading or editing a foreign owner ledger during dependency or
+roadmap reconciliation does not claim that owner's handoff. Local
 implementation completion is not lifecycle completion while review, PR, merge, publication,
 dependency, or platform-sync work remains. A summary, a prose “next steps” sentence, or an offer to
 continue does not satisfy this gate. The exception is a registered in-flight owner wait under the
