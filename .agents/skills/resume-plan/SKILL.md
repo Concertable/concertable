@@ -27,7 +27,8 @@ executing that action — not choosing among paths or reconstructing it.
 3. **Confirm the ledger still holds** before acting: check its header branch/PR/gates against actual
    `git`/PR state and confirm `## Next Steps` still names one resolved action under `AGENTS.md`. Reconcile
    stale state or unresolved alternatives from current evidence and standing instructions, then update
-   the ledger's current-state, `## Next Steps`, and event log before acting. For every package, PR,
+   and compact the ledger's current state and `## Next Steps` before acting. Fold any still-material
+   recent transition into the stable snapshot and remove superseded chronology. For every package, PR,
    publication, or sync dependency, classify implementation and delivery separately. Do not preserve a
    stale hard blocker when source or an exact producer artifact now permits safe local preparation.
 4. **Do what `## Next Steps` says,** honoring its prerequisites and gates.
