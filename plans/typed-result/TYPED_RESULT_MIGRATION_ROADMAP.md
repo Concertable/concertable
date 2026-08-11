@@ -85,15 +85,11 @@ their current branch and worktree rather than fragmenting in-flight work.
   payment/cancel/finish workflows and final B2B FluentResults removal. Those checkpoints are
   implementable now against exact Payment packages from `a779fe041`; publication and generated sync
   gate delivery and final revalidation, not local preparation.
-- [ ] 🟠 **Customer Ticket purchase/checkout slice.** Replacement owner:
-  `Feature/typed-result_customer-ticket-reunion`, planned in
-  [`CUSTOMER_TICKET_REUNION_PLAN.md`](CUSTOMER_TICKET_REUNION_PLAN.md).
-  PR #282 contains one unique commit and is 776 commits behind current `origin/main` at the
-  2026-08-09 reconciliation.
-  Its Ticket/Concert semantics remain exclusive, but its old carrier and CFE composition should not
-  be revived wholesale. Recreate the slice now from current main against exact Payment packages from
-  `a779fe041`, recovering behavior and tests deliberately rather than rebasing the historical branch.
-  Do not close or mutate PR #282 until that replacement is ready and approved.
+- [x] ✅ **Customer Ticket purchase/checkout slice.** Replacement PR #475 recreated the unique Ticket,
+  Concert purchase/checkout, eligibility, and Customer Payment semantics on current main with direct
+  Reunion/Reunion.Validation ownership. It merged through full B2B/Customer API and UI E2E as
+  `2b05ed110`; publication delivered platform `0.1.0-alpha.0.910`; generated sync PR #479 merged as
+  `b17fb07fe`; historical PR #282 is closed as superseded.
 
 - [ ] 🟠 **Customer non-Payment outcomes and lookups.** Exclusive owner:
   `Feature/typed-result_customer-outcomes` at
@@ -109,8 +105,8 @@ their current branch and worktree rather than fragmenting in-flight work.
     event boundaries, and Customer’s standalone build closure.
   - Out of scope: Ticket, Concert, Payment clients/mocks, purchase/checkout flows, shared Kernel API
     changes, cross-service runtime references, and Customer-wide FluentResults pin/package cleanup.
-    The existing Ticket owner or final repository cleanup removes the shared package entry after the
-    last Customer consumer is gone.
+    The terminal Ticket replacement already removed that package ownership; this track must not
+    reintroduce it.
   - Planning sources: this roadmap, [`../../api/AGENTS.md`](../../api/AGENTS.md),
     [`../../api/ARCHITECTURE.md`](../../api/ARCHITECTURE.md),
     [`../../api/Concertable.Customer/ARCHITECTURE.md`](../../api/Concertable.Customer/ARCHITECTURE.md),
@@ -145,9 +141,9 @@ their current branch and worktree rather than fragmenting in-flight work.
   [`REUNION_INTEGRATION_PLAN.md`](REUNION_INTEGRATION_PLAN.md) and
   [`REUNION_INTEGRATION_PROGRESS.md`](REUNION_INTEGRATION_PROGRESS.md). Use Reunion commit `7bf5f66`
   for the initial package battle test. The Reunion package family is published; migrate
-  Payment/Payment.Client first in the delivery DAG. In parallel, Auth and Customer non-Payment convert
-  against published Reunion, while B2B and Ticket prepare against exact local Payment packages. The
-  final Shared contraction waits until those consumers are delivery-ready.
+  Payment/Payment.Client first in the delivery DAG. Customer Ticket is terminal on platform `.910`;
+  Auth and Customer non-Payment continue against published Reunion, while B2B completes its remaining
+  consumer work. The final Shared contraction waits until those remaining consumers are terminal.
 
 - [x] 🟢 **HTTP terminal ownership resolved upstream.** `Reunion.AspNetCore` already publishes the MVC
   and Minimal API Result/Option terminals, generic success mappers, ProblemDetails execution, and
@@ -156,15 +152,17 @@ their current branch and worktree rather than fragmenting in-flight work.
 
 ### Parallel preparation dispatched
 
-B2B, Auth, Customer non-Payment, and Customer Ticket each have independently executable ledgers.
+B2B, Auth, and Customer non-Payment have independently executable ledgers; Customer Ticket is
+terminal on published platform `.910`.
 `REUNION_SHARED_CONTRACTION_PLAN.md` owns the final contraction but remains implementation-blocked
-until the prepared consumer set and exact remaining-call-site inventory exist.
+until the remaining prepared consumer set and exact remaining-call-site inventory exist.
 
 ### Blocked follow-ups
 
-- [ ] 🔴 **Domain outcome and invariant-exception audit.** Plan after B2B, Auth, Customer non-Payment,
-  and Customer Ticket are terminal on the published Reunion baseline, and complete it before final
-  repository cleanup. Inventory every production `DomainException` throw/guard and every domain
+- [ ] 🔴 **Domain outcome and invariant-exception audit.** Customer Ticket is terminal on the
+  published Reunion baseline; plan after B2B, Auth, and Customer non-Payment are also terminal, and
+  complete it before final repository cleanup. Inventory every production `DomainException`
+  throw/guard and every domain
   operation or factory that can reject work.
   - Expected domain alternatives that a caller can act on return an operation-owned typed Result from
     the domain method/factory that owns the rule; do not duplicate the rule as an application-service
