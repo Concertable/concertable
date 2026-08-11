@@ -54,14 +54,14 @@ The big one: in this suite a failing test usually means **the synchronous call r
 - Fixture: `AppFixture.cs` (boots `Concertable.Customer.AppHost`; exposes `CustomerClient` / `Polling` / `SeedState` / `Catalog` / `DbFixture`)
 - Last run log: `api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests/api-tests.last.log`
 
-**Shared E2E infra** (service-agnostic) — `api/Concertable.Shared/tests/Concertable.E2ETests/`
+**Shared E2E infra** (service-agnostic) — `api/Concertable.Shared/tests/Concertable.Testing.E2E/`
 - `HealthWaiter` (`WaitForAllHealthyAsync` / `WaitForAllServingAsync` / `WaitForPayoutAccountsAsync`), `PollingService`, `AspireResourceLogger`, `TestTokenMinter`, `StripeE2EAccountResolver`.
 
 **Triggering time-based flows** — `WorkersFixture.cs` (`fixture.Workers.TriggerAsync(nameof(SomeFunction))`) fires a timer function on the Workers (Functions) host via its admin API `POST /admin/functions/{name}` (e.g. `ConcertFinishedFunction` for the concert-finished → completion sweep). Acceptance (202) is fire-and-forget — assert on the state the function produces. (This replaced the old test-only `POST /e2e/...` endpoints on the B2B Web host.)
 
 **Run settings** — `api/Concertable.runsettings` (`MaxCpuCount=1`; the two E2E apps must not run concurrently — see memory `e2e_parallel_execution`). The wrapper passes this automatically.
 
-**Scratch run logs** — capture ad-hoc `dotnet test` output under `api/Concertable.Shared/tests/Concertable.E2ETests/logs/` (git-ignored; `New-Item -ItemType Directory -Force` it first) — **never the repo root**. The canonical `api-tests.last.log` files written by `./e2e.ps1 api` stay in their project dirs.
+**Scratch run logs** — capture ad-hoc `dotnet test` output under `api/Concertable.Shared/tests/Concertable.Testing.E2E/logs/` (git-ignored; `New-Item -ItemType Directory -Force` it first) — **never the repo root**. The canonical `api-tests.last.log` files written by `./e2e.ps1 api` stay in their project dirs.
 
 ## Step 0 — Pre-flight check
 
@@ -139,7 +139,7 @@ dotnet test 'api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETes
 `FullyQualifiedName~` is a substring match. Drop the method to run a whole class. To keep the output for grepping, `Tee-Object` into the scratch logs dir (NOT the repo root):
 
 ```powershell
-$logs = 'api/Concertable.Shared/tests/Concertable.E2ETests/logs'; New-Item -ItemType Directory -Force $logs | Out-Null
+$logs = 'api/Concertable.Shared/tests/Concertable.Testing.E2E/logs'; New-Item -ItemType Directory -Force $logs | Out-Null
 dotnet test '<csproj>' --filter "FullyQualifiedName~<test>" --settings api/Concertable.runsettings --logger "console;verbosity=normal" | Tee-Object -FilePath "$logs/<test-slug>.log"
 ```
 

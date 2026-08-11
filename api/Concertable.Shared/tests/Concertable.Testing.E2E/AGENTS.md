@@ -1,4 +1,4 @@
-# Concertable.E2ETests — shared E2E harness
+# Concertable.Testing.E2E — shared E2E harness
 
 ## This project is SERVICE-AGNOSTIC. Nothing service-specific goes here. Ever.
 

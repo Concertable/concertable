@@ -7,7 +7,7 @@
 
 ## The problem
 
-`Concertable.Testing`, `Concertable.Testing.Integration`, and the shared `Concertable.E2ETests` harness
+`Concertable.Testing`, `Concertable.Testing.Integration`, and the shared `Concertable.Testing.E2E` harness
 live under `api/Concertable.Shared/tests/` — the Shared "repo". But every consuming test project reaches
 them by a `ProjectReference` that **escapes its own service folder**, e.g.
 
@@ -52,7 +52,7 @@ to keep the inner loop fast.
 
 ## Execution (if A)
 
-1. Add `Concertable.Testing`, `Concertable.Testing.Integration`, `Concertable.E2ETests` to the platform
+1. Add `Concertable.Testing`, `Concertable.Testing.Integration`, `Concertable.Testing.E2E` to the platform
    **publish set** + pin them in `Directory.Packages.props` (`ConcertablePlatformVersion`).
 2. Convert **every** consumer `ProjectReference` → `PackageReference` — all module unit/integration test
    projects across **B2B, Customer, Search** + the B2B/Customer E2E projects (~15+ `.csproj`s).

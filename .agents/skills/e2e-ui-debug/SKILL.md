@@ -74,9 +74,9 @@ Treat scenarios already reported by CI or the merge queue as arguments. Only whe
 
 `e2e.ps1` takes a domain (`ui` or `api`) then a command. This skill is the **`ui`** domain. The **`api`** domain runs the sibling xUnit/Aspire API E2E suite (no browser) — see the `e2e-api-debug` skill; to debug both layers in one pass use `e2e-debug`. A bare command with no domain (`./e2e.ps1 ui run`) still works and is treated as `ui` for back-compat.
 
-**Baseline file** (which scenarios are expected to pass vs fail): `api/Concertable.Shared/tests/Concertable.E2ETests/E2E_BASELINE.md`.
+**Baseline file** (which scenarios are expected to pass vs fail): `api/Concertable.Shared/tests/Concertable.Testing.E2E/E2E_BASELINE.md`.
 
-**Scratch run logs** — if you capture `dotnet test` output to a file for later grepping (retries, deep-dives, scenario reruns), write it under `api/Concertable.Shared/tests/Concertable.E2ETests/logs/` — **never the repo root**. Create the dir first if needed: `New-Item -ItemType Directory -Force api/Concertable.Shared/tests/Concertable.E2ETests/logs | Out-Null`. That folder is git-ignored. The canonical `ui-tests.last.log` / `regress.last.log` files written by `./e2e.ps1` stay in their project dirs (above) — leave those as-is.
+**Scratch run logs** — if you capture `dotnet test` output to a file for later grepping (retries, deep-dives, scenario reruns), write it under `api/Concertable.Shared/tests/Concertable.Testing.E2E/logs/` — **never the repo root**. Create the dir first if needed: `New-Item -ItemType Directory -Force api/Concertable.Shared/tests/Concertable.Testing.E2E/logs | Out-Null`. That folder is git-ignored. The canonical `ui-tests.last.log` / `regress.last.log` files written by `./e2e.ps1` stay in their project dirs (above) — leave those as-is.
 
 ## Which command to use
 
@@ -170,7 +170,7 @@ $env:HEADLESS='true'; dotnet test 'api/Concertable.Customer/tests/E2ETests/Conce
 If you want to keep the output to grep later, tee it into the scratch logs dir (NOT the repo root):
 
 ```powershell
-$logs = 'api/Concertable.Shared/tests/Concertable.E2ETests/logs'; New-Item -ItemType Directory -Force $logs | Out-Null
+$logs = 'api/Concertable.Shared/tests/Concertable.Testing.E2E/logs'; New-Item -ItemType Directory -Force $logs | Out-Null
 $env:HEADLESS='true'; dotnet test '<csproj>' --filter "DisplayName~<scenario>" --logger "console;verbosity=normal" | Tee-Object -FilePath "$logs/<scenario-slug>.log"
 ```
 

@@ -1,6 +1,6 @@
 using Microsoft.Playwright;
 
-namespace Concertable.E2ETests.Support;
+namespace Concertable.Testing.E2E.Ui;
 
 public sealed class RadixSlider(IPage page, ILocator root, int min, int max)
 {

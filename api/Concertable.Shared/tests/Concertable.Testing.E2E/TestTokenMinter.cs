@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using System.Text.Json;
 
-namespace Concertable.E2ETests;
+namespace Concertable.Testing.E2E;
 
 public sealed class TestTokenMinter : IDisposable
 {

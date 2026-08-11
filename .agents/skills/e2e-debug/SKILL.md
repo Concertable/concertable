@@ -73,7 +73,7 @@ Run and fix the UI suite to green using the full **`e2e-ui-debug`** flow:
 - Watch startup (same Aspire AppHost, same startup-hang playbook).
 - For each failed scenario, re-run it alone with `--filter "DisplayName~<scenario>"`, and diagnose **HTTP 4xx/5xx first**, then gRPC (callee resource log), then browser console / on-screen errors, then the failure screenshot. Full mechanics: **`e2e-ui-debug`** Steps 2–3.
 - Fix the real bug (service, page object, step def, or test support), then re-run only the failing scenario until green.
-- If a scenario **crossed the line** (newly passes or newly fails vs `api/Concertable.Shared/tests/Concertable.E2ETests/E2E_BASELINE.md`), prompt the user to update the baseline (move it between `passing`/`failing`, bump the `(N)` counts, update the summary table). The UI baseline is the only baseline — the API suite has none.
+- If a scenario **crossed the line** (newly passes or newly fails vs `api/Concertable.Shared/tests/Concertable.Testing.E2E/E2E_BASELINE.md`), prompt the user to update the baseline (move it between `passing`/`failing`, bump the `(N)` counts, update the summary table). The UI baseline is the only baseline — the API suite has none.
 
 If the user scoped to `api` only, skip this step.
 
