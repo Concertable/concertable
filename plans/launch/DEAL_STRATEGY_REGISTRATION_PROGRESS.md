@@ -1,109 +1,77 @@
 # Deal-type strategy registration refactor progress
 
 - Plan: `plans/launch/DEAL_STRATEGY_REGISTRATION_PLAN.md`
-- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal_strategy_registration`
-- Branch: `Refactor/launch_deal_strategy_registration`
-- PR: [#451](https://github.com/Concertable/concertable/pull/451) — open; final current-main work head
-  `df7b6daae82189363efcd237c73bf545881e2aa6` is pushed and verified; checkpoint transport is in
-  progress
-- Dependency/package gates: no pre-merge package dependency; the generated platform-sync PR must be
-  followed to green/merged after this `api/**` PR lands
-- Last reconciled: 2026-08-11; current `origin/main`
-  `79a15129a` is merged as `ba8ef8e03`; branch is 0 commits behind and 51 ahead
+- Roadmap: `plans/launch/LAUNCH_ROADMAP.md`
+- Roadmap item: `launch/deal-strategy-registration`
+- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-launch_deal_strategy_registration-closeout`
+- Branch: `Docs/launch_deal_strategy_registration_closeout`
+- PR: [#451](https://github.com/Concertable/concertable/pull/451) — merged as
+  `b4bbe37623ebcbb573ffc2b50a55b168919b163e` at 2026-08-11 17:05 UTC
+- Dependency/package gates: `Publish packages` run
+  [31515811143](https://github.com/Concertable/concertable/actions/runs/31515811143) published
+  `0.1.0-alpha.0.933`; platform-sync [#504](https://github.com/Concertable/concertable/pull/504)
+  merged green as `58892a626b9feb16e816ce6ba76c1461e50cc3a7`
+- Last reconciled: 2026-08-11; close-out branch is based on terminal `origin/main` `58892a626`
 
 ## Current state
 
-All five implementation phases are complete. Concert now declares terms, payee direction, payment
-projection, settlement calculation, workflows, lifecycle state machines, capabilities, and steps
-vertically per `DealType`. Deal owns a separate module-local factory and vertical registration for its
-mapper and updater families. Both builders validate exact coverage and lifetime consistency before
-emitting keyed registrations, and operation-specific facades remain the business-facing API.
+All five implementation phases and every delivery gate are complete. Concert declares terms, payee
+direction, payment projection, settlement calculation, workflows, lifecycle state machines,
+capabilities, and steps vertically per `DealType`. Deal owns a separate module-local factory and
+vertical registration for mapper and updater families. Both builders validate exact coverage and
+lifetime consistency before emitting keyed registrations, while named operation-specific facades
+remain the business-facing API.
 
-The implementation commits are `506bc35e4` (terms/factory), `4a741fa50` (payee/payment), `0a8320289`
-(settlement), `02730b0da` (workflow composition), and `4d4f44e0a` (Deal registration and architecture
-guard). The existing review artifact is `reviews/Refactor-launch_deal_strategy_registration.md`; all
-recorded reviews are clean with no open finding.
+The two module-local generic factory contracts are invariant. Every consumer requests an exact closed
+generic type, and repository search found no covariance-dependent assignment. PR #451 merged after
+final current-base merge-group run `31512208928` passed its complete hard floor plus API and UI E2E.
+The merged source worktree and branch were removed with `scripts/worktrees.ps1 close -PlanManaged`.
 
-Current main at `79a15129a` is merged into the branch. The reconciled base includes platform version
-`0.1.0-alpha.0.922`, Concert cancellation routing, worktree-lifecycle automation, and shared read-query
-`AsNoTracking` without overlapping either strategy factory interface or the module-local registration
-composition.
-Covariance is removed from both module-local interfaces and their documented examples; repository
-search finds no remaining variant factory declaration or covariance-dependent assignment.
-
-The preceding compound push produced verified head `0fd5ca70d`; its PR workflow `31508372652`
-concluded success with required `ci-complete` green, while the Concert integration check's outer record
-remained stale-pending after every step succeeded. `main` then advanced with a reviewed shared
-DataAccess fix. The final work-head leg pushed `0fd5ca70d..df7b6daae`; local HEAD, remote tracking, and
-PR `headRefOid` were verified equal at `df7b6daae82189363efcd237c73bf545881e2aa6`, 0 behind main.
-
-Merge-group run `31486088803` completed successfully, including API and UI E2E. GitHub then
-rebuilt the group after an earlier queued PR changed `main`. Replacement run `31486673612` passed API
-E2E and reached UI E2E, but its B2B Tenant integration job failed before executing product assertions:
-the runner's Docker pull of the SQL Server image from `mcr.microsoft.com` was reset by the network.
-All 56 tests failed in fixture startup in 76 ms. This is an external runner/image-pull failure, not a
-changed-area test failure. Tommy has now explicitly authorized one fresh merge attempt after removing
-unused covariance from both module-local strategy factory interfaces.
+Package publication and platform sync are terminal. Version `0.1.0-alpha.0.933` is on the feed, and
+platform-sync PR #504 passed build, unit, and integration checks before merging the new platform pin
+to every service.
 
 ## Completed milestones
 
-- Design and all five implementation phases are complete in the commits listed above.
-- Deal and Concert unit coverage pins factory resolution, scoped/singleton lifetimes, exact strategy
-  coverage, workflow composition, payee direction, settlement values, rendering, serialization, and
-  architecture allowlists.
-- Complete implementation review covered `43fe1caf4..fb34f37b1`; later incremental reviews through
-  remote head `bc05263e7` found no issue.
-- PR #451 is open against `main`; replacement build, carve, unit, and integration checks passed at
-  `30c459d7`. Full API and UI E2E are intentionally reserved for the merge queue.
-- Merge-group run `31486088803` passed its complete matrix, API E2E, and UI E2E against the first queue
-  base. Current-base replacement run `31486673612` passed API E2E but hit an MCR connection reset
-  while the Tenant integration fixture pulled SQL Server.
-- Pre-existing platform-sync PR #488 for `0.1.0-alpha.0.917` passed its checks and merged as
-  `130211aa90ae031a31e8b827e2567c3667fbc2b8` before the branch was reconciled.
+- The implementation shipped through commits `506bc35e4` (terms/factory), `4a741fa50`
+  (payee/payment), `0a8320289` (settlement), `02730b0da` (workflow composition), and `4d4f44e0a`
+  (Deal registration and architecture guard).
+- Unit coverage pins factory resolution, lifetimes, exact strategy coverage, workflow composition,
+  payee direction, settlement values, rendering, serialization, and architecture allowlists.
+- Covariance was removed in `0df1545b8`; current-main reconciliations and clean incremental reviews
+  produced final PR head `22683be6f1b6d72bf73c06a53e5f8ee22fe58d6c`.
+- PR #451 merged as `b4bbe3762`; publication run `31515811143` succeeded; platform-sync PR #504
+  merged as `58892a626`.
 
 ## Verification
 
-- `dotnet build api/Concertable.slnx --artifacts-path
-  C:\Users\TommySeery\AppData\Local\Temp\Concertable\launch-deal-strategy-pr451-invariant` completed
-  in 18m27s with 0 errors and 8 existing warnings against current main.
-- The final current-main rebuild using artifact path `launch-deal-strategy-pr451-final-main` completed
-  in 3m23s with 0 errors and 6 existing warnings after merging `79a15129a`.
-- `Concertable.B2B.Concert.UnitTests` passed 132/132 and `Concertable.B2B.Deal.UnitTests` passed 41/41;
-  `scripts/integration.ps1 concert` passed both projects: B2B Concert 144/144 and Customer Concert
-  11/11.
-- `git diff --check origin/main..HEAD` is clean.
-- The net PR diff has no cross-service runtime reference, no keyed-service lookup outside the two
-  module-local factories, no new deal-type business branch, and no undeclared strategy family.
-- The only security-sensitive net path is deletion of unused public marker
-  `Concertable.B2B.Deal.Contracts.IDealStrategy`; repository search finds no consumer or remaining
-  reference.
-- Failed job `93764269468` reports `DockerApiException` from `SqlFixture.InitializeAsync`: the MCR
-  manifest request was reset by peer; 0 of 56 Tenant integration tests reached execution.
+- Final local current-main build: `dotnet build api/Concertable.slnx --artifacts-path
+  C:\Users\TommySeery\AppData\Local\Temp\Concertable\launch-deal-strategy-pr451-final-main` —
+  0 errors, 6 existing warnings.
+- Local affected tests: Concert unit 132/132, Deal unit 41/41, B2B Concert integration 144/144,
+  Customer Concert integration 11/11.
+- Final PR-head CI run `31511143458`: build, all carves, all unit tests, all integration tests, and
+  required `ci-complete` passed.
+- Final current-base merge-group run `31512208928`: 43 jobs, zero failures; API E2E and UI E2E passed.
+- Publication run `31515811143` succeeded and platform-sync PR #504's build, unit, integration, and
+  `ci-complete` checks passed before merge.
 
 ## Review state
 
 - Artifact: `reviews/Refactor-launch_deal_strategy_registration.md`.
 - Native, security, correctness, microservice-isolation, module-boundary, seeding, C# convention,
-  keyed-strategy, and changed-path coverage reviews have no open finding.
-- Incremental reviews cover `ddd2ca4ce..ba8ef8e03`, including every current-main merge, the invariant
-  factory correction, shared DataAccess, and security-sensitive workflow/browser/tooling paths; they
-  found no issue and advance both review watermarks to `ba8ef8e03`.
+  keyed-strategy, merge-seam, and changed-path coverage reviews have no open finding.
+- Review watermarks cover runtime state through `ba8ef8e03`; the remaining commits contain only the
+  clean review checkpoint and plan transport.
 
 ## Decisions and constraints
 
-- Re-select the merge-queue E2E tier mechanically after the final diff is reviewed; do not duplicate
-  queue E2E locally.
-- The platform safety gate rejected `skip-e2e` for this broad refactor; PR #451 carries `full-e2e`, so
-  the next merge-group must run both API and UI E2E.
-- Use a short `--artifacts-path` for local SDK work because the deep Windows worktree can exceed path
-  limits in ordinary `obj` output.
-- After source merge, close this plan-managed feature worktree with `scripts/worktrees.ps1`, create a
-  clean `Docs/launch_deal_strategy_registration_closeout` worktree from current `origin/main`, and own
-  package publication and generated platform sync to terminal green before docs closeout.
+- Factory type parameters remain invariant because the application uses exact closed-generic DI
+  resolution and supports no subtype substitution scenario.
+- The platform safety gate required `full-e2e` for this broad refactor; both API and UI E2E passed in
+  the final merge group.
+- The short artifacts path remains the reliable Windows build shape for deep worktrees.
 
 ## Next Steps
 
-1. Commit and push this single checkpoint-transport update, then verify local HEAD, remote tracking,
-   and PR `headRefOid` are identical.
-2. Wait for terminal green PR checks and enqueue that verified current remote head once with the
-   existing `full-e2e` label.
+Complete.
