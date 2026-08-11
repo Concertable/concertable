@@ -25,21 +25,28 @@ current-summary section affected by the event:
 - `## Next Steps` — the single resolved next action as self-contained steps; when no action can
   proceed, the exact `Blocked:`, `Unblock action:`, and `Resume when:` fields from
   `plans/agents/PLAN.md`;
-- completed work with commit or PR evidence;
-- verification commands and outcomes, tied to the code state they verified;
-- decisions, discoveries, blockers, and deviations.
+- compact completed milestones with commit or PR evidence;
+- the latest verification commands and outcomes still valid for the current code state;
+- current review state and every finding that remains open or needs follow-up;
+- decisions, discoveries, blockers, and deviations that still affect execution.
 
-Append a dated event-log entry with the action, evidence, outcome, and follow-up. For review work,
-also record the review type and range, artifact, every finding ID and disposition (`open`, `fixed`,
-`deferred`, or `superseded`), and the fixing commit or deferral evidence. Never claim a transition
-that the workflow did not verify.
+Do not append a permanent dated event entry. If the transition cannot yet be represented safely in the
+stable sections, put it briefly in optional `## Recent transitions`. At every checkpoint, fold prior
+entries into the stable snapshot and delete superseded chronology. When touching a legacy ledger with
+an append-only `## Event log`, compact it under this rule in the same checkpoint; retain only facts whose
+removal could change the next agent's action or cause a costly failed approach to be repeated.
+
+For review work, keep the review type and range, artifact, and every finding that remains open or needs
+follow-up. Once all findings are resolved and the follow-up review is clean, collapse them to the clean
+reviewed state and the fixing commits still material to the branch; the review artifact and git retain
+the detailed history. Never claim a transition that the workflow did not verify.
 
 Use workflow-specific evidence: implementation paths and partial state; review range, artifact,
 watermark and finding dispositions; verification command, tested commit/working tree, counts and
 result; commit subject and SHA (or `this commit` inside the commit that carries the entry); pushed
 remote/range and resulting PR head; PR number/URL/head/checks; queue result and merge SHA; published
 package/version/run; and platform-sync PR/version/check/merge state. Record failed, blocked, cancelled,
-and no-op outcomes too, with the prerequisite or reason.
+or no-op outcomes only while they affect the current state, next action, or a durable decision.
 
 ## Preserve and checkpoint
 
@@ -64,7 +71,7 @@ Only after the work head is verified, update the ledger with the evidenced pushe
 work and PR heads, outcome, and exact post-push next action. Stage only the plan and ledger and create
 one checkpoint commit. Push that commit as a checkpoint-transport leg, then fetch and require local
 `HEAD`, the remote-tracking ref, and any PR `headRefOid` to equal the checkpoint commit. Transport is
-part of the same push event: it never invokes this procedure recursively, appends another push event,
+part of the same push event: it never invokes this procedure recursively, adds another transition,
 or creates another checkpoint commit. The ledger records the verified work push and resulting next
 action; it does not fabricate advance evidence that its own transport succeeded.
 
