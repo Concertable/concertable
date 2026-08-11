@@ -1,6 +1,8 @@
 # Reunion Shared contraction progress
 
 - Plan: `plans/typed-result/REUNION_SHARED_CONTRACTION_PLAN.md`
+- Roadmap: `plans/typed-result/TYPED_RESULT_MIGRATION_ROADMAP.md`
+- Roadmap item: `typed-result/reunion-shared-contraction`
 - Worktree: not created
 - Branch: `Refactor/typed-result_reunion-shared-contraction` (reserved)
 - PR: not opened
@@ -16,6 +18,7 @@ conversion work. Starting contraction now would guess at remaining public surfac
 ## Next Steps
 
 Blocked: The exact post-conversion Shared, messaging, and background-path inventory does not exist yet.
+Blocked by: plans/typed-result/B2B_PROGRESS.md; plans/typed-result/AUTH_OUTCOMES_PROGRESS.md; plans/typed-result/CUSTOMER_OUTCOMES_PROGRESS.md; external owner `Feature/TypedResultMigrationPhase2`.
 Unblock action: Complete and review the B2B, Auth, Customer non-Payment, and Customer Ticket local preparation ledgers, then update this ledger with their remaining-call-site evidence.
 Resume when: All four consumers are delivery-ready and their ledgers identify every remaining old carrier, terminal, and third-party dependency outside their owned scopes.
 

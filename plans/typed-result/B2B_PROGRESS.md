@@ -1,6 +1,8 @@
 # B2B typed-result migration progress
 
 - Plan: `plans/typed-result/B2B_PLAN.md`
+- Roadmap: `plans/typed-result/TYPED_RESULT_MIGRATION_ROADMAP.md`
+- Roadmap item: `typed-result/b2b`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-B2BTypedResultMigration`
 - Branch: `Refactor/B2BTypedResultMigration`
 - PR: not opened
@@ -138,6 +140,9 @@ published Payment.Client revalidation as its next gate. Do not push or merge unt
 
 ## Downstream handoffs
 
+- Waiting ledger: `plans/typed-result/REUNION_SHARED_CONTRACTION_PROGRESS.md`.
+  Gate: B2B must be delivery-ready and identify every remaining old carrier, terminal, and third-party
+  dependency outside its owned scope.
 - Waiting ledger: `plans/dotnet-11/B2B_WORKFLOW_UNIONS_PROGRESS.md`.
   Worktree: not created; reserved branch `Refactor/dotnet-11_b2b-workflow-unions`.
   Gate: the B2B typed-result checkpoints 6-7 source PR and every resulting publication/platform-sync

@@ -66,7 +66,7 @@ committed local source, feed path, or disposable package pin may be introduced.
 - `dotnet build api/Concertable.B2B/Concertable.B2B.slnx` and `api/Concertable.slnx` (Release), 0 errors;
 - affected module unit + integration tests via the `integration-debug` skill;
 - B2B architecture tests;
-- final checkpoint: select the merge-queue E2E tier (full by default); do not duplicate the queue run
+- final checkpoint: select the merge-queue E2E tier mechanically via merge Step 4; do not duplicate the queue run
   locally.
 
 ## Dependency gate

@@ -1,6 +1,8 @@
 # Music licence attestation progress
 
 - Plan: `plans/launch/MUSIC_LICENCE_ATTESTATION_PLAN.md`
+- Roadmap: `plans/launch/LAUNCH_ROADMAP.md`
+- Roadmap item: `launch/music-licence-attestation`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\launch_music-licence-attestation` (created)
 - Branch: `Feature/launch_music-licence-attestation`
 - PR: [#363](https://github.com/Concertable/concertable/pull/363) — open, full E2E tier
