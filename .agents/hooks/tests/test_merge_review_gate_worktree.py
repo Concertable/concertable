@@ -42,6 +42,10 @@ class MergeTargetDirTests(unittest.TestCase):
     def test_process_cwd_when_nothing(self):
         self.assertEqual(".", gate.merge_target_dir("gh pr merge 1 --auto", {}))
 
+    def test_unbalanced_quote_not_mangled(self):
+        cmd = 'cd "unbalanced && gh pr merge 1 --auto'
+        self.assertEqual('"unbalanced', gate.merge_target_dir(cmd, {}))
+
 
 class EndToEndTests(unittest.TestCase):
     def setUp(self):

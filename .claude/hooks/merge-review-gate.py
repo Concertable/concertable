@@ -41,14 +41,12 @@ _CD_RE = re.compile(r"""\bcd\s+("[^"]*"|'[^']*'|[^\s;&|<>]+)""")
 
 
 def merge_target_dir(command, data):
-    # Merges run `cd "<worktree>" && gh pr merge ...`, so gate on the worktree's
-    # git state, not the hook process cwd (the pinned main checkout).
     merge_pos = command.find("gh pr merge")
     prefix = command if merge_pos < 0 else command[:merge_pos]
     target = None
     for m in _CD_RE.finditer(prefix):
         target = m.group(1)
-        if target[:1] in ("'", '"'):
+        if len(target) >= 2 and target[0] == target[-1] and target[0] in "\"'":
             target = target[1:-1]
     if target:
         return target
