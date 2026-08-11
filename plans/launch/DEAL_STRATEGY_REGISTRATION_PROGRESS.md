@@ -3,9 +3,9 @@
 - Plan: `plans/launch/DEAL_STRATEGY_REGISTRATION_PLAN.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal_strategy_registration`
 - Branch: `Refactor/launch_deal_strategy_registration`
-- PR: [#451](https://github.com/Concertable/concertable/pull/451) — open; remote head
-  `0fd5ca70da2518a82e92d939895e57f3250bce05` is verified, while the latest current-main runtime
-  reconciliation and clean incremental review await a replacement compound push
+- PR: [#451](https://github.com/Concertable/concertable/pull/451) — open; final current-main work head
+  `df7b6daae82189363efcd237c73bf545881e2aa6` is pushed and verified; checkpoint transport is in
+  progress
 - Dependency/package gates: no pre-merge package dependency; the generated platform-sync PR must be
   followed to green/merged after this `api/**` PR lands
 - Last reconciled: 2026-08-11; current `origin/main`
@@ -31,11 +31,11 @@ composition.
 Covariance is removed from both module-local interfaces and their documented examples; repository
 search finds no remaining variant factory declaration or covariance-dependent assignment.
 
-The replacement compound push produced verified local/remote/PR head
-`0fd5ca70da2518a82e92d939895e57f3250bce05`. Its PR workflow `31508372652` concluded success with
-required `ci-complete` green; the Concert integration check's outer record remained stale-pending even
-though every step completed successfully. `main` then advanced with a reviewed shared DataAccess fix,
-so local head now contains its clean merge and replacement review with no unrelated dirty source.
+The preceding compound push produced verified head `0fd5ca70d`; its PR workflow `31508372652`
+concluded success with required `ci-complete` green, while the Concert integration check's outer record
+remained stale-pending after every step succeeded. `main` then advanced with a reviewed shared
+DataAccess fix. The final work-head leg pushed `0fd5ca70d..df7b6daae`; local HEAD, remote tracking, and
+PR `headRefOid` were verified equal at `df7b6daae82189363efcd237c73bf545881e2aa6`, 0 behind main.
 
 Merge-group run `31486088803` completed successfully, including API and UI E2E. GitHub then
 rebuilt the group after an earlier queued PR changed `main`. Replacement run `31486673612` passed API
@@ -103,7 +103,7 @@ unused covariance from both module-local strategy factory interfaces.
 
 ## Next Steps
 
-1. Commit the clean shared read-repository incremental review, then use the compound push protocol from
-   verified remote head `0fd5ca70da2518a82e92d939895e57f3250bce05`.
-2. Wait for terminal green PR checks and enqueue the resulting verified current remote head once with
-   the existing `full-e2e` label.
+1. Commit and push this single checkpoint-transport update, then verify local HEAD, remote tracking,
+   and PR `headRefOid` are identical.
+2. Wait for terminal green PR checks and enqueue that verified current remote head once with the
+   existing `full-e2e` label.
