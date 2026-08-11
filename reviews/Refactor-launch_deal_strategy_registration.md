@@ -5,7 +5,7 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `36375ffdffe23c0a69e59958a1afc4588ff86e13`  _(2026-08-09)_
+**Reviewed up to commit:** `bc05263e7bd1015f81fb51ada31e636c5ed7c874`  _(2026-08-11)_
 **Security-reviewed up to commit:** `fb34f37b17387dd398a3d1a8d6e3e31dfb0a2719`  _(2026-08-09)_
 
 > Range reviewed: `43fe1caf4..fb34f37b1` (21 commits).
@@ -24,3 +24,11 @@ No new findings. The range contains the review checkpoint, plan-ledger reconcili
 merge of current `origin/main`; the reviewed feature implementation is unchanged. The merged hook
 fix passed its 23-test regression suite, including the dependency-ledger claim case. No new
 security-sensitive product path was introduced, so the security watermark remains unchanged.
+
+## Incremental review — 2026-08-11
+
+> Range reviewed: `36375ffdf..bc05263e7` (2 commits).
+
+No new findings. The range contains only the preceding review artifact and its plan-ledger transport
+checkpoint. Native correctness and repository-specific architecture lenses found no runtime change,
+and no security-sensitive path was introduced.
