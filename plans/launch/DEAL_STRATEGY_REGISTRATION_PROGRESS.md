@@ -7,9 +7,8 @@
 - Dependency/package gates: no pre-merge package dependency; generated platform-sync observation is
   required after the `api/**` source PR merges
 - Last reconciled: 2026-08-11; all five implementation phases are complete; incremental review of
-  `36375ffdf..bc05263e7` found no issues; PR #451 is green at `bc05263e7` but the branch is 221
-  commits behind the last fetched `origin/main`; pre-existing platform-sync PR #488 has now merged
-  green as `130211aa9`, so the branch can fetch and reconcile the final current platform pin
+  `36375ffdf..bc05263e7` found no issues; pre-existing platform-sync PR #488 merged green as
+  `130211aa9`; merge commit `9722bb3f9` reconciles PR #451 with that current `origin/main` at 0 behind
 
 ## Current state
 
@@ -53,12 +52,17 @@ plan-ledger transport checkpoint. Refreshed `origin/main` is 221 commits ahead o
 clean reviewed head must now merge current main, rebuild the full API solution, and receive a final
 incremental review before its replacement head is pushed.
 
+Current `origin/main` at `130211aa90ae031a31e8b827e2567c3667fbc2b8` is merged through
+`9722bb3f9e33f88b4520de1355b5db9ed9d14d63` with no conflicts. The branch is 0 commits behind main;
+the merge resolved the shared Concert registration file automatically. A full API solution build and
+final review of the current-base composition are required before the replacement PR head is pushed.
+
 ## Next Steps
 
 Land PR #451 through the repository merge workflow only:
 
-1. Merge current `origin/main` into the clean branch, rebuild `api/Concertable.slnx` to 0 errors, and
-   incrementally review the reconciliation commit.
+1. Build `api/Concertable.slnx` to 0 errors, then review the current-base branch composition and push
+   the verified replacement PR head through the plan-managed two-leg protocol.
 2. This broad booking/payment/settlement refactor requires full API + UI merge-queue E2E; remove any
    skip label or trailer and use the full tier.
 3. Follow the PR to a terminal merge result and then own the generated `chore/platform-sync-*` PR to
@@ -218,6 +222,8 @@ Land PR #451 through the repository merge workflow only:
   `bc05263e7`; merge-queue E2E remained correctly skipped at PR level.
 - 2026-08-11: pre-existing platform-sync PR #488 passed build, carve, unit, and integration checks and
   merged through its normal queued path as `130211aa90ae031a31e8b827e2567c3667fbc2b8`.
+- 2026-08-11: merged current `origin/main` at `130211aa9` through `9722bb3f9` with no conflict; the
+  branch is 0 commits behind and 31 commits ahead before this ledger checkpoint.
 
 ## Reviews
 
@@ -660,6 +666,15 @@ Land PR #451 through the repository merge workflow only:
   `130211aa90ae031a31e8b827e2567c3667fbc2b8`; no failed check.
 - Outcome: No red or pending platform-sync gate remains ahead of PR #451's base reconciliation.
 - Follow-up: Fetch and merge current `origin/main`, then rebuild and incrementally review the result.
+
+### 2026-08-11 — current main reconciled
+
+- Action: Fetched the merge of platform-sync PR #488, reloaded the updated repository guidance, and
+  merged current `origin/main` into the clean PR #451 worktree.
+- Evidence: base `130211aa90ae031a31e8b827e2567c3667fbc2b8`; merge commit
+  `9722bb3f9e33f88b4520de1355b5db9ed9d14d63`; 0 commits behind main; no merge conflict or dirty path.
+- Outcome: PR #451 now composes with the current platform pin and current main source.
+- Follow-up: Build the complete API solution to 0 errors, then run the final current-base review.
 
 ## Resume prompt
 
