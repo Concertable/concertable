@@ -1,6 +1,8 @@
 # <Plan title> progress
 
 - Plan: `<repo-relative plan path, plans/<epic>/<NAME>_PLAN.md>`
+- Roadmap: `<repo-relative roadmap path, plans/<epic>/<EPIC>_ROADMAP.md>`
+- Roadmap item: `<stable epic/slug key carried by the roadmap checklist item>`
 - Worktree: `<current delivery worktree path, or none after merged cleanup>`
 - Branch: `<current delivery branch, or next proposed Type/<epic>_<name>>`
 - PR: `<number and URL, or not opened>`
@@ -14,8 +16,9 @@
 ## Next Steps
 
 <The single resolved action for the next agent, expressed as concrete, self-contained steps. If no
-action can proceed, start with three single-line fields: `Blocked: <exact unmet gate>`,
-`Unblock action: <what must be done, by whom or where>`, and `Resume when: <objective evidence>`.
+action can proceed, start with four single-line fields: `Blocked: <exact unmet gate>`,
+`Blocked by: <owning ledger path or external owner>`, `Unblock action: <what must be done, by whom or
+where>`, and `Resume when: <objective evidence>`.
 Apply the repository's standing instructions and current evidence before writing it. Actionable
 resume/handoff prompts point here instead of restating it; blocked plans never emit their own pointer.>
 

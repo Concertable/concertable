@@ -1,6 +1,8 @@
 # Reunion integration progress
 
 - Plan: `plans/typed-result/REUNION_INTEGRATION_PLAN.md`
+- Roadmap: `plans/typed-result/TYPED_RESULT_MIGRATION_ROADMAP.md`
+- Roadmap item: `typed-result/reunion-integration`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_reunion-integration`
 - Branch: `Feature/typed-result_reunion-integration`, current with `origin/main` `6f4a5cc3e`; code
   head `a779fe041` retires the discarded Shared rehearsal and migrates Payment/Payment.Client to

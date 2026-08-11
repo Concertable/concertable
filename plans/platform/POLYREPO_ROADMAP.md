@@ -78,7 +78,7 @@ feed — the npm analogue of the backend carve.
 - [x] ✅ **Phase 0** — scoped npm registry + PAT.
 - [x] ✅ **Phase 1** — publish the universal core `@concertable/shared` (published, restorable).
 - [x] ✅ **Phase 2** — package the four remaining tiers + cut consumers over (done on branch, PR pending).
-- [ ] 🟡 **Phase 3** — prove each surface feed-restores its shared deps, `carve-fe-{customer,b2b}` CI, FE
+- [ ] 🟡 **Phase 3** `platform/polyrepo-fullstack` — prove each surface feed-restores its shared deps, `carve-fe-{customer,b2b}` CI, FE
   import-boundary rule, and close the Phase-2 metro/nativewind/tailwind + carve-CSS runtime deferrals.
 
 ## 4. Per-service doc & guidance locality — 🟠 4a + 4b shipped; 4c deferred

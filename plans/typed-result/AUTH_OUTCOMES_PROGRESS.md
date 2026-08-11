@@ -1,6 +1,8 @@
 # Auth expected-outcome migration progress
 
 - Plan: `plans/typed-result/AUTH_OUTCOMES_PLAN.md`
+- Roadmap: `plans/typed-result/TYPED_RESULT_MIGRATION_ROADMAP.md`
+- Roadmap item: `typed-result/auth-outcomes`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_auth-outcomes`
 - Branch: `Feature/typed-result_auth-outcomes`
 - PR: not opened
@@ -76,6 +78,12 @@ Keep changes Auth-owned except for an already-owned architecture guard, repeat A
 Release solution build, carve, mechanical gates, incremental review, and PR preflight, and classify
 delivery from the resulting topology. Do not push without instruction; require full merge-queue API
 and UI E2E when delivered.
+
+## Downstream handoffs
+
+- Waiting ledger: `plans/typed-result/REUNION_SHARED_CONTRACTION_PROGRESS.md`.
+  Gate: Auth must be delivery-ready and identify every remaining old carrier, terminal, and third-party
+  dependency outside its owned scope.
 
 ## Completed work
 

@@ -23,6 +23,11 @@ worktrees and records the current or last `Worktree`/`Branch`/`PR` identity. Kee
 operational truth in the ledger. Start each from
 [`resume-plan/assets/progress-template.md`](../../.agents/skills/resume-plan/assets/progress-template.md).
 
+Each ledger records the owning `Roadmap:` and stable `<epic>/<slug>` `Roadmap item:` key. The roadmap
+checklist line carries that key in backticks. Together with `Plan:`, these required headers form the
+explicit roadmap→plan→ledger graph. Reconstruct them from the plan and roadmap when adopting a legacy
+ledger.
+
 **A plan may have several ledgers.** One logical workstream keeps one `plans/<NAME>_PROGRESS.md` across
 every fresh PR worktree. Parallel workstreams each get a ledger named for that workstream. Set its
 `- Plan:` header to this plan: that header is the authoritative plan↔ledger
@@ -63,8 +68,8 @@ Each ledger keeps these current sections, plus an optional short `## Recent tran
 - decisions, discoveries, blockers, and deviations that still affect execution and cannot be safely
   reconstructed from code or durable artifacts;
 - **`## Next Steps`** — the single resolved action for the next agent, expressed as concrete,
-  self-contained steps. If no action can proceed, start it with the exact `Blocked:`, `Unblock action:`,
-  and `Resume when:` fields defined below. Apply the repository's standing instructions and current
+  self-contained steps. If no action can proceed, start it with the exact `Blocked:`, `Blocked by:`,
+  `Unblock action:`, and `Resume when:` fields defined below. Apply the repository's standing instructions and current
   evidence before writing it, so it directs execution instead of presenting alternatives. This is the
   **single source of truth** for what to do next; resume/handoff prompts point here instead of restating
   it only when the action is executable. Keep it current at every checkpoint.
@@ -139,8 +144,8 @@ An implementation blocker is a two-ledger state transition:
 1. In the waiting ledger, record the exact terminal gate, owner-ledger action, and objective green
    evidence with the blocked-state fields below. The waiting worktree does not poll after that
    checkpoint or emit its own resume pointer.
-2. In the owner ledger, add a `## Downstream handoffs` entry with the waiting ledger, its worktree, and
-   the same gate. This is the durable return path.
+2. In every plan-owner ledger named by `Blocked by:`, add a `## Downstream handoffs` entry with the
+   waiting ledger, its worktree, and the same gate. This is the durable return path.
 3. When the owner crosses the gate, update and compact the waiting ledger's current state and
    `## Next Steps` in that same delivery session, then surface its exact resume prompt to Tommy.
 4. Do not close or delete the owner plan/ledger while a downstream handoff remains undispatched.
@@ -154,19 +159,21 @@ cited inside a plan (see [`ROADMAP.md`](ROADMAP.md)).
 
 If safe, authorized work in the current session can remove the obstacle—or if local implementation can
 proceed while delivery waits—do that work; it is not a hard blocker. Otherwise `## Next Steps` must
-begin with three single-line fields:
+begin with four single-line fields:
 
 ```text
 Blocked: <the exact unmet gate>
+Blocked by: <the owning plans/..._PROGRESS.md ledger, or the external owner>
 Unblock action: <what must be done, by whom or where>
 Resume when: <the objective evidence that proves the gate opened>
 ```
 
-The final response reports all three lines verbatim and never emits this plan's continuation pointer while
+The final response reports all four lines verbatim and never emits this plan's continuation pointer while
 they remain true. Route the resolving work according to ownership:
 
 - Existing PR, plan, or session: register the downstream handoff, name the owner, and stop without a
-  prompt. The owner updates this ledger and surfaces its pointer when the gate opens.
+  prompt. The owner updates this ledger and surfaces its pointer when the gate opens, then removes the
+  dispatched entry from `## Downstream handoffs` before becoming terminal.
 - No owner and a separate context is appropriate: emit a paste-ready dispatch prompt for the resolver,
   including the blocked ledger and the condition it unlocks. This is not the blocked plan's pointer.
 - User or external action: give the exact action and verification condition directly, with no prompt.
