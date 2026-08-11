@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `662378e69a91eca2e1663d702d1cf455cc6376cb`  _(2026-08-11)_
-**Security-reviewed up to commit:** `662378e69a91eca2e1663d702d1cf455cc6376cb`  _(2026-08-11)_
+**Reviewed up to commit:** `ba8ef8e03d5e395856b8539c483df6714f0f0697`  _(2026-08-11)_
+**Security-reviewed up to commit:** `ba8ef8e03d5e395856b8539c483df6714f0f0697`  _(2026-08-11)_
 
 > Range reviewed: `43fe1caf4..fb34f37b1` (21 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -63,3 +63,13 @@ No new findings. The range contains the preceding review/checkpoint commits and 
 already-reviewed worktree-cleanup postcondition fix from current `main`. The merged script now derives
 the common repository root before deleting its target and leaves the strategy-factory product paths
 unchanged. Native, repository-specific, and security review found no merge-seam or input-handling issue.
+
+## Incremental review — 2026-08-11 (shared read-repository reconciliation)
+
+> Range reviewed: `662378e69..ba8ef8e03` (6 commits).
+
+No new findings. The range contains the preceding review/checkpoint commits and a clean merge of the
+current-main shared read-repository correction. The incoming change applies `AsNoTracking` to read
+queries without changing identifiers, persistence writes, module boundaries, or strategy dispatch.
+Native, repository-specific, and security review found no merge-seam or data-handling issue; the full
+API solution builds with 0 errors on the combined tree.

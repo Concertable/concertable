@@ -3,13 +3,13 @@
 - Plan: `plans/launch/DEAL_STRATEGY_REGISTRATION_PLAN.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal_strategy_registration`
 - Branch: `Refactor/launch_deal_strategy_registration`
-- PR: [#451](https://github.com/Concertable/concertable/pull/451) — open; replacement work head
-  `76e17b0206b77742fd5d89961bccb1be9b429387` is pushed and verified; checkpoint transport is in
-  progress
+- PR: [#451](https://github.com/Concertable/concertable/pull/451) — open; remote head
+  `0fd5ca70da2518a82e92d939895e57f3250bce05` is verified, while the latest current-main runtime
+  reconciliation and clean incremental review await a replacement compound push
 - Dependency/package gates: no pre-merge package dependency; the generated platform-sync PR must be
   followed to green/merged after this `api/**` PR lands
 - Last reconciled: 2026-08-11; current `origin/main`
-  `f63e9a1eb` is merged as `662378e69`; branch is 0 commits behind and 48 ahead
+  `79a15129a` is merged as `ba8ef8e03`; branch is 0 commits behind and 51 ahead
 
 ## Current state
 
@@ -24,16 +24,18 @@ The implementation commits are `506bc35e4` (terms/factory), `4a741fa50` (payee/p
 guard). The existing review artifact is `reviews/Refactor-launch_deal_strategy_registration.md`; all
 recorded reviews are clean with no open finding.
 
-Current main at `f63e9a1eb` is merged into the branch. The reconciled base includes platform version
-`0.1.0-alpha.0.922`, Concert cancellation routing, and the worktree-lifecycle automation without
-overlapping either strategy factory interface or the module-local registration composition.
+Current main at `79a15129a` is merged into the branch. The reconciled base includes platform version
+`0.1.0-alpha.0.922`, Concert cancellation routing, worktree-lifecycle automation, and shared read-query
+`AsNoTracking` without overlapping either strategy factory interface or the module-local registration
+composition.
 Covariance is removed from both module-local interfaces and their documented examples; repository
 search finds no remaining variant factory declaration or covariance-dependent assignment.
 
-After the first compound push, `main` advanced with a reviewed worktree-cleanup-only change. The
-replacement work-head leg pushed `529a47958..76e17b020`; local HEAD, the remote-tracking ref, and PR
-`headRefOid` were verified equal at `76e17b0206b77742fd5d89961bccb1be9b429387`, with 0 commits
-behind current `origin/main` and no unrelated dirty or untracked source.
+The replacement compound push produced verified local/remote/PR head
+`0fd5ca70da2518a82e92d939895e57f3250bce05`. Its PR workflow `31508372652` concluded success with
+required `ci-complete` green; the Concert integration check's outer record remained stale-pending even
+though every step completed successfully. `main` then advanced with a reviewed shared DataAccess fix,
+so local head now contains its clean merge and replacement review with no unrelated dirty source.
 
 Merge-group run `31486088803` completed successfully, including API and UI E2E. GitHub then
 rebuilt the group after an earlier queued PR changed `main`. Replacement run `31486673612` passed API
@@ -64,6 +66,8 @@ unused covariance from both module-local strategy factory interfaces.
 - `dotnet build api/Concertable.slnx --artifacts-path
   C:\Users\TommySeery\AppData\Local\Temp\Concertable\launch-deal-strategy-pr451-invariant` completed
   in 18m27s with 0 errors and 8 existing warnings against current main.
+- The final current-main rebuild using artifact path `launch-deal-strategy-pr451-final-main` completed
+  in 3m23s with 0 errors and 6 existing warnings after merging `79a15129a`.
 - `Concertable.B2B.Concert.UnitTests` passed 132/132 and `Concertable.B2B.Deal.UnitTests` passed 41/41;
   `scripts/integration.ps1 concert` passed both projects: B2B Concert 144/144 and Customer Concert
   11/11.
@@ -81,14 +85,16 @@ unused covariance from both module-local strategy factory interfaces.
 - Artifact: `reviews/Refactor-launch_deal_strategy_registration.md`.
 - Native, security, correctness, microservice-isolation, module-boundary, seeding, C# convention,
   keyed-strategy, and changed-path coverage reviews have no open finding.
-- Incremental reviews cover `ddd2ca4ce..662378e69`, including every current-main merge, the invariant
-  factory correction, and security-sensitive workflow/browser/tooling paths; they found no issue and
-  advance both review watermarks to `662378e69`.
+- Incremental reviews cover `ddd2ca4ce..ba8ef8e03`, including every current-main merge, the invariant
+  factory correction, shared DataAccess, and security-sensitive workflow/browser/tooling paths; they
+  found no issue and advance both review watermarks to `ba8ef8e03`.
 
 ## Decisions and constraints
 
 - Re-select the merge-queue E2E tier mechanically after the final diff is reviewed; do not duplicate
   queue E2E locally.
+- The platform safety gate rejected `skip-e2e` for this broad refactor; PR #451 carries `full-e2e`, so
+  the next merge-group must run both API and UI E2E.
 - Use a short `--artifacts-path` for local SDK work because the deep Windows worktree can exceed path
   limits in ordinary `obj` output.
 - After source merge, close this plan-managed feature worktree with `scripts/worktrees.ps1`, create a
@@ -97,7 +103,7 @@ unused covariance from both module-local strategy factory interfaces.
 
 ## Next Steps
 
-1. Commit and push this single checkpoint-transport update, then verify local HEAD, the remote-tracking
-   ref, and PR `headRefOid` are identical.
-2. Wait for terminal green PR checks, select the E2E tier mechanically, and enqueue that verified
-   current remote head once.
+1. Commit the clean shared read-repository incremental review, then use the compound push protocol from
+   verified remote head `0fd5ca70da2518a82e92d939895e57f3250bce05`.
+2. Wait for terminal green PR checks and enqueue the resulting verified current remote head once with
+   the existing `full-e2e` label.
