@@ -23,7 +23,7 @@ current-summary section affected by the event:
 - worktree, branch, PR, and dependency or package gates;
 - current state and partial or uncommitted work that must be preserved;
 - `## Next Steps` — the single resolved next action as self-contained steps; when no action can
-  proceed, the exact `Blocked:`, `Unblock action:`, and `Resume when:` fields from
+  proceed, the exact `Blocked:`, `Blocked by:`, `Unblock action:`, and `Resume when:` fields from
   `plans/agents/PLAN.md`;
 - compact completed milestones with commit or PR evidence;
 - the latest verification commands and outcomes still valid for the current code state;

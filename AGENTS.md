@@ -250,8 +250,9 @@ The convention is **ROADMAP → PLAN → PROGRESS**, folder = roadmap/plan: an e
   gate; the owning ledger lists the blocked dependent. When the gate opens, the owner updates the
   dependent ledger and surfaces its resume prompt — the waiting plan does not poll or rely on memory.
 - **A blocked plan never emits its own resume prompt.** Its ledger and final report name the exact
-  blocker, the action that removes it, and the evidence that makes resumption valid. Dispatch the
-  resolver or give Tommy the external action; only surface the waiting plan after the gate opens.
+  blocker, its owner, the action that removes it, and the evidence that makes resumption valid.
+  Dispatch the resolver or give Tommy the external action; only surface the waiting plan after the
+  gate opens.
 - **Keep the plan and its `_PROGRESS.md` companion until the entire lifecycle is terminal — not merely until the final local phase is committed and verified.** They remain the recovery anchor through every required review/fix, PR/check/merge, publication, dependency, and platform-sync gate. When the source PR merges, move that recovery state to a clean `Docs/*_closeout` worktree and delete the feature worktree immediately. Record the final gate outcome there, then delete both artifacts together and land the close-out through `/merge-docs`. If no later delivery or package gate exists, the final phase commit may close them out.
 - A plan **superseded** by a newer plan, or describing a design that was **rejected**, is deleted the moment that's decided — don't leave a tombstone.
 - A **partially-done** plan stays, but strike/check off the sections that shipped (in the same commit as the work) so what remains is only the outstanding work.

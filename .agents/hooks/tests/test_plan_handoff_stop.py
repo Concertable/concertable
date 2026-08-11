@@ -20,6 +20,11 @@ class PlanHandoffStopTests(unittest.TestCase):
         self.plan = self.root / "plans" / "launch" / "EXAMPLE_PLAN.md"
         self.plan.parent.mkdir(parents=True)
         self.plan.write_text("# Plan\n", encoding="utf-8")
+        self.roadmap = self.root / "plans" / "launch" / "LAUNCH_ROADMAP.md"
+        self.roadmap.write_text(
+            "# Roadmap\n\n- [ ] **Example** `launch/example`\n",
+            encoding="utf-8",
+        )
 
     def tearDown(self):
         self.temp.cleanup()
@@ -31,6 +36,9 @@ class PlanHandoffStopTests(unittest.TestCase):
                 [
                     "# Progress",
                     "",
+                    "- Plan: `plans/launch/EXAMPLE_PLAN.md`",
+                    "- Roadmap: `plans/launch/LAUNCH_ROADMAP.md`",
+                    "- Roadmap item: `launch/example`",
                     f"- Worktree: `{declared_worktree}`",
                     "- Branch: `Feature/launch_example`",
                     "",
@@ -51,6 +59,9 @@ class PlanHandoffStopTests(unittest.TestCase):
                 [
                     "# Progress",
                     "",
+                    "- Plan: `plans/launch/EXAMPLE_PLAN.md`",
+                    "- Roadmap: `plans/launch/LAUNCH_ROADMAP.md`",
+                    "- Roadmap item: `launch/example`",
                     f"- Worktree: `{self.root}`",
                     "- Branch: `Feature/launch_example`",
                     "",
@@ -66,11 +77,19 @@ class PlanHandoffStopTests(unittest.TestCase):
         plan = root / "plans" / "launch" / "EXAMPLE_PLAN.md"
         plan.parent.mkdir(parents=True, exist_ok=True)
         plan.write_text("# Plan\n", encoding="utf-8")
+        roadmap = root / "plans" / "launch" / "LAUNCH_ROADMAP.md"
+        roadmap.write_text(
+            "# Roadmap\n\n- [ ] **Example** `launch/example`\n",
+            encoding="utf-8",
+        )
         ledger.write_text(
             "\n".join(
                 [
                     "# Progress",
                     "",
+                    "- Plan: `plans/launch/EXAMPLE_PLAN.md`",
+                    "- Roadmap: `plans/launch/LAUNCH_ROADMAP.md`",
+                    "- Roadmap item: `launch/example`",
                     f"- Worktree: `{worktree}`",
                     f"- Branch: `{branch}`",
                     "",
@@ -301,12 +320,14 @@ class PlanHandoffStopTests(unittest.TestCase):
     def test_inflight_owner_wait_reports_blocker_without_pointer(self):
         self.write_ledger(
             "Blocked: PR #123 has not merged.\n"
+            "Blocked by: GitHub PR #123.\n"
             "Unblock action: The PR #123 owner must follow it to a terminal merge.\n"
             "Resume when: GitHub reports PR #123 merged."
         )
         result = evaluate(
             self.input_with_codex_transcript(
                 "Blocked: PR #123 has not merged.\n"
+                "Blocked by: GitHub PR #123.\n"
                 "Unblock action: The PR #123 owner must follow it to a terminal merge.\n"
                 "Resume when: GitHub reports PR #123 merged."
             )
@@ -316,6 +337,7 @@ class PlanHandoffStopTests(unittest.TestCase):
     def test_registered_downstream_wait_reports_blocker_without_pointer(self):
         self.write_ledger(
             "Blocked: Checkpoints 6-7 require the owner's platform-sync PR to merge.\n"
+            "Blocked by: owner ledger.\n"
             "Unblock action: The owner ledger must follow the sync and dispatch this dependent.\n"
             "Resume when: The owner records the merged sync in this ledger.\n\n"
             "The owner ledger lists this ledger under `## Downstream handoffs`."
@@ -323,6 +345,7 @@ class PlanHandoffStopTests(unittest.TestCase):
         result = evaluate(
             self.input_with_codex_transcript(
                 "Blocked: Checkpoints 6-7 require the owner's platform-sync PR to merge.\n"
+                "Blocked by: owner ledger.\n"
                 "Unblock action: The owner ledger must follow the sync and dispatch this dependent.\n"
                 "Resume when: The owner records the merged sync in this ledger."
             )
@@ -332,6 +355,7 @@ class PlanHandoffStopTests(unittest.TestCase):
     def test_blocker_report_must_include_every_actionable_value(self):
         self.write_ledger(
             "Blocked: Commit abc is unavailable.\n"
+            "Blocked by: upstream branch.\n"
             "Unblock action: Push a branch containing commit abc.\n"
             "Resume when: git cat-file resolves commit abc."
         )
@@ -343,11 +367,13 @@ class PlanHandoffStopTests(unittest.TestCase):
     def test_blocked_plan_pointer_is_rejected(self):
         self.write_ledger(
             "Blocked: Commit abc is unavailable.\n"
+            "Blocked by: upstream branch.\n"
             "Unblock action: Push a branch containing commit abc.\n"
             "Resume when: git cat-file resolves commit abc."
         )
         message = (
             "Blocked: Commit abc is unavailable.\n"
+            "Blocked by: upstream branch.\n"
             "Unblock action: Push a branch containing commit abc.\n"
             f"Resume when: git cat-file resolves commit abc.\n\n{self.pointer()}"
         )
@@ -364,14 +390,21 @@ class PlanHandoffStopTests(unittest.TestCase):
         active_plan.write_text("# Plan\n", encoding="utf-8")
         blocker = (
             "Blocked: The package is not published.\n"
+            "Blocked by: package owner.\n"
             "Unblock action: Publish and verify the package.\n"
             "Resume when: The production feed restores it."
         )
         blocked.write_text(
+            "- Plan: `plans/launch/OWNER_PLAN.md`\n"
+            "- Roadmap: `plans/launch/LAUNCH_ROADMAP.md`\n"
+            "- Roadmap item: `launch/example`\n"
             f"- Worktree: `{self.root}`\n\n## Next Steps\n\n{blocker}\n",
             encoding="utf-8",
         )
         active.write_text(
+            "- Plan: `plans/launch/DEPENDENT_PLAN.md`\n"
+            "- Roadmap: `plans/launch/LAUNCH_ROADMAP.md`\n"
+            "- Roadmap item: `launch/example`\n"
             f"- Worktree: `{self.root}`\n\n## Next Steps\n\nOpen the dependent PR.\n",
             encoding="utf-8",
         )
@@ -424,7 +457,31 @@ class PlanHandoffStopTests(unittest.TestCase):
         self.write_ledger("Waiting for PR #123 to merge; its owner will surface this plan when ready.")
         result = evaluate(self.input_with_codex_transcript("Waiting for PR #123."))
         self.assertEqual("block", result["decision"])
+        self.assertIn("`Blocked by:`", result["reason"])
         self.assertIn("`Unblock action:`", result["reason"])
+
+    def test_old_three_line_blocker_is_rejected_without_a_pointer(self):
+        self.write_ledger(
+            "Blocked: Commit abc is unavailable.\n"
+            "Unblock action: Push a branch containing commit abc.\n"
+            "Resume when: git cat-file resolves commit abc."
+        )
+
+        result = evaluate(self.input_with_codex_transcript("Commit abc is unavailable."))
+
+        self.assertEqual("block", result["decision"])
+        self.assertIn("`Blocked by:`", result["reason"])
+        self.assertNotIn(self.pointer(), result["reason"])
+
+    def test_invalid_plan_graph_blocks_without_a_pointer(self):
+        self.write_ledger("Open the PR.")
+        self.roadmap.write_text("# Roadmap\n", encoding="utf-8")
+
+        result = evaluate(self.input_with_codex_transcript("Implementation is complete."))
+
+        self.assertEqual("block", result["decision"])
+        self.assertIn("PLAN GRAPH GATE", result["reason"])
+        self.assertNotIn(self.pointer(), result["reason"])
 
     def test_blocked_work_without_registered_suppression_still_needs_pointer(self):
         self.write_ledger(
@@ -444,23 +501,50 @@ class PlanHandoffStopTests(unittest.TestCase):
             ledger.with_name(ledger.name.replace("_PROGRESS.md", "_PLAN.md")).write_text(
                 "# Plan\n", encoding="utf-8"
             )
+        typed_roadmap = typed_result / "TYPED_RESULT_ROADMAP.md"
+        typed_roadmap.write_text(
+            "- [ ] **Integration** `typed-result/integration`\n"
+            "- [ ] **B2B** `typed-result/b2b`\n",
+            encoding="utf-8",
+        )
+        dotnet_roadmap = unions / "DOTNET_ROADMAP.md"
+        dotnet_roadmap.write_text(
+            "- [ ] **Unions** `dotnet/unions`\n",
+            encoding="utf-8",
+        )
         owner.write_text(
-            "## Next Steps\n\nCreate the integration worktree.\n",
+            "- Plan: `plans/typed-result/REUNION_INTEGRATION_PLAN.md`\n"
+            "- Roadmap: `plans/typed-result/TYPED_RESULT_ROADMAP.md`\n"
+            "- Roadmap item: `typed-result/integration`\n\n"
+            "## Next Steps\n\nCreate the integration worktree.\n\n"
+            "## Downstream handoffs\n\n- `plans/typed-result/B2B_PROGRESS.md`\n",
             encoding="utf-8",
         )
         b2b_steps = (
             "Blocked: ReUnion platform sync has not merged.\n"
+            "Blocked by: plans/typed-result/REUNION_INTEGRATION_PROGRESS.md.\n"
             "Unblock action: The owner at `plans/typed-result/REUNION_INTEGRATION_PROGRESS.md` "
             "must merge it.\n"
             "Resume when: Main contains the ReUnion platform pin."
         )
-        b2b.write_text(f"## Next Steps\n\n{b2b_steps}\n", encoding="utf-8")
+        b2b.write_text(
+            "- Plan: `plans/typed-result/B2B_PLAN.md`\n"
+            "- Roadmap: `plans/typed-result/TYPED_RESULT_ROADMAP.md`\n"
+            "- Roadmap item: `typed-result/b2b`\n\n"
+            f"## Next Steps\n\n{b2b_steps}\n\n"
+            "## Downstream handoffs\n\n- `plans/dotnet-11/B2B_WORKFLOW_UNIONS_PROGRESS.md`\n",
+            encoding="utf-8",
+        )
         union_steps = (
             "Blocked: B2B delivery is not terminal.\n"
+            "Blocked by: plans/typed-result/B2B_PROGRESS.md.\n"
             "Unblock action: The owner at `plans/typed-result/B2B_PROGRESS.md` must finish it.\n"
             "Resume when: Main contains the B2B work."
         )
         workflow_unions.write_text(
+            "- Plan: `plans/dotnet-11/B2B_WORKFLOW_UNIONS_PLAN.md`\n"
+            "- Roadmap: `plans/dotnet-11/DOTNET_ROADMAP.md`\n"
+            "- Roadmap item: `dotnet/unions`\n\n"
             f"## Next Steps\n\n{union_steps}\n",
             encoding="utf-8",
         )

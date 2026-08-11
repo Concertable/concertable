@@ -34,6 +34,8 @@ does **not** design or write the plan here, and does **not** resume an existing 
    - **ready and unowned** — no implementation or delivery gate prevents normal work.
    Enumerate the whole outstanding set before concluding an item is ready; a name scan can't see an
    in-flight worktree, so verify against `git`/PR state, not the roadmap's own status marks.
+   Match existing ledgers by their explicit `Roadmap:` and `Roadmap item:` headers before using names
+   or branch heuristics. Assign a stable `<epic>/<slug>` key to an unkeyed chosen checklist item.
 4. **Resolve the choice.**
    - With no preference, present every ready and delivery-gated-but-implementable candidate with a
      recommendation and stop for Tommy to pick. Use one line each: the item, its size/blast radius, and
@@ -49,7 +51,8 @@ does **not** design or write the plan here, and does **not** resume an existing 
      and delivery dependencies;
    - instruct: branch `Feature/<epic>_<name>` off `origin/main` (the epic is the roadmap's folder), then
      write `plans/<epic>/<NAME>_PLAN.md` **and** its `<NAME>_PROGRESS.md` ledger from the progress
-     template, following `plans/agents/PLAN.md`;
+     template, following `plans/agents/PLAN.md`; the ledger must record the roadmap path and exact item
+     key, then pass `python .agents/hooks/plan_graph.py --root <absolute-worktree>`;
    - state the outcome, constraints and what's out of scope — but leave the design to the plan;
    - tick the roadmap line when the feature ships (do not delete the roadmap).
    Do not open the branch or write the plan here.

@@ -79,11 +79,15 @@ under the cross-plan blocker rule does not claim that owner's handoff. Local
 implementation completion is not lifecycle completion while review, PR, merge, publication,
 dependency, or platform-sync work remains. A summary, a prose “next steps” sentence, or an offer to
 continue does not satisfy this gate. The exception is a registered in-flight owner wait under the
-cross-plan blocker rule above or any hard stop recorded with the exact `Blocked:`, `Unblock action:`,
-and `Resume when:` fields from [`agents/PLAN.md`](agents/PLAN.md). A blocked plan's own pointer is
-forbidden: report those three lines verbatim and route the resolver instead. Trusted repository Stop hooks
+cross-plan blocker rule above or any hard stop recorded with the exact `Blocked:`, `Blocked by:`,
+`Unblock action:`, and `Resume when:` fields from [`agents/PLAN.md`](agents/PLAN.md). A blocked plan's
+own pointer is forbidden: report those four lines verbatim and route the resolver instead. Trusted repository Stop hooks
 enforce the invariant for Claude and Codex; follow the hook's actionable-versus-blocked instruction
 rather than weakening or bypassing it.
+
+Run `python .agents/hooks/plan_graph.py --root <absolute-worktree>` after creating or changing plan
+graph metadata. Missing or broken links, malformed blockers, missing reciprocal owner handoffs, and
+terminal owners with pending handoffs fail.
 
 ### Rename definition-of-done: the grep gate (mechanical, not judgement)
 

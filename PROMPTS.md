@@ -45,7 +45,7 @@
   edits. A delivery gate does not suppress an implementation pointer when the owned ledger has safe
   local work; only an implementation blocker does.
 - A blocked plan never emits its own continuation pointer. First do any safe, authorized work that can
-  remove the blocker in the current session. If the gate still cannot move, record the three-line hard
+  remove the blocker in the current session. If the gate still cannot move, record the four-line hard
   blocker schema from [`plans/agents/PLAN.md`](plans/agents/PLAN.md) at the start of `## Next Steps` and
   report those lines verbatim to Tommy. Then route the unblock action instead of routing back into the
   blocked plan:
