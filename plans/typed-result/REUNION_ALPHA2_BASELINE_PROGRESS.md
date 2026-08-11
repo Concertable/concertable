@@ -16,6 +16,9 @@ alpha.1 and alpha.2, so the repository lacks one canonical consumer baseline. Th
 package-only cutover. B2B, Auth, and Customer may adopt alpha.2 in their own locally implementable
 checkpoints without waiting for this plan to merge.
 
+The planning range `81422e584..3340590c5` passed docs review with no findings. The review artifact is
+`reviews/Docs-typed-result_alpha2-roadmap.md`, stamped through `3340590c50f3e12caf4da4686212de6d907243e7`.
+
 ## Next Steps
 
 1. Create `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_reunion-alpha2-baseline`
