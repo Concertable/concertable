@@ -1,27 +1,30 @@
 ---
 name: resume-plan
-description: Resume plan-managed work from its ledger. Use when Tommy invokes `/resume-plan` or wants to pick a plan back up after a clear or handoff. Take an optional reference to a `_PROGRESS.md` ledger, a plan `.md`, or a worktree; otherwise use the current worktree's ledger. `cd` to the resolved worktree, read AGENTS.md, plans/AGENTS.md, plans/agents/PLAN.md, the plan and its ledger, then do what the ledger's `## Next Steps` says.
+description: Resume plan-managed work from its ledger. Use when Tommy invokes `/resume-plan` or wants to pick a plan back up after a clear or handoff. Take an optional reference to a `_PROGRESS.md` ledger, a plan `.md`, or a worktree; otherwise use the current worktree's ledger. Resolve or recreate the ledger's PR-scoped worktree from current main, read the governing docs, then do what `## Next Steps` says.
 ---
 
 # Resume Plan
 
-A plan keeps one `_PROGRESS.md` ledger **per worktree** working it, whose `## Next Steps` is the single
-resolved next action kept current at every checkpoint (see `plans/AGENTS.md`). The ledger is 1:1 with a
-worktree; a plan may have several. Resuming is landing in the right worktree, reading its ledger, and
-executing that action — not choosing among paths or reconstructing it.
+A plan keeps one `_PROGRESS.md` ledger per logical workstream, whose `## Next Steps` is the single
+resolved next action kept current at every checkpoint. Delivery happens through replaceable
+PR-scoped worktrees; a plan may have several independent workstream ledgers.
 
 ## Steps
 
-1. **Resolve the ledger and its worktree.** `/resume-plan` takes a `_PROGRESS.md` ledger, a plan `.md`,
+1. **Resolve the ledger and its current delivery worktree.** `/resume-plan` takes a `_PROGRESS.md` ledger, a plan `.md`,
    or a worktree:
    - **a ledger** (`/resume-plan @plans/<X>_PROGRESS.md`) → read its `Worktree` header.
    - **a plan** (`/resume-plan @plans/<X>_PLAN.md`) → find every `plans/**/*_PROGRESS.md` whose `- Plan:`
-     header names that plan. One → use it. Several (a plan worked in parallel worktrees) → list each
+     header names that plan. One → use it. Several (independent workstreams) → list each
      with its worktree/branch and a one-line `## Next Steps` gist and ask which to resume — **unless the
      invocation also named a worktree**, then pick that one directly.
    - **nothing** → use the current worktree's ledger.
 
-   Then `cd` to the resolved worktree before anything else — a fresh session may open elsewhere.
+   Reconcile the recorded worktree, branch, and PR with Git and GitHub. If the worktree exists, `cd`
+   there. If it was removed after a merged PR, fetch and create the next branch/worktree from current
+   `origin/main`, resume the same ledger, and update its header in the next work commit. If an open
+   branch/PR exists without a worktree, restore that exact branch instead. Stop on dirty state or a
+   branch/worktree collision.
 2. **Read in full:** `AGENTS.md`, `plans/AGENTS.md`, `plans/agents/PLAN.md`, the plan, and the resolved
    ledger.
    After applying the root current-main sync gate, run
