@@ -1,6 +1,8 @@
 # Browser-storage audit + consent correction — progress
 
 - Plan: `plans/launch/BROWSER_STORAGE_CONSENT_PLAN.md`
+- Roadmap: `plans/launch/LAUNCH_ROADMAP.md`
+- Roadmap item: `launch/browser-storage-consent`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\launch_browser-storage-consent`
 - Branch: `Feature/launch_browser-storage-consent`
 - PR: [#482](https://github.com/Concertable/concertable/pull/482) — open, **not merged** (awaiting go-ahead to `/merge`)
@@ -47,6 +49,7 @@ reopened roadmap line and the merged `Docs/launch_cookie-storage-audit` PR #469.
 ## Next Steps
 
 Blocked: `/merge` reached the final enqueue but is hard-blocked — `.claude/hooks/merge-review-gate.py` refuses every `gh pr merge 482` because it resolves branch/HEAD/review with bare `git` from the pinned main-checkout cwd (`Feature/launch_dashboard-accepted-checkout` @ `1dbe256ed`, whose review is stale) instead of this worktree, so it gates #482 against the wrong branch; and GitHub will not self-admit (auto-merge re-eval glitch, enabled-while-behind — 6 clean polls, never queued).
+Blocked by: Tommy or the external `.claude/hooks/merge-review-gate.py` owner.
 Unblock action: Tommy fixes `merge-review-gate.py` to resolve git state from the merge target (e.g. `git -C` the hook-payload `cwd`) or authorizes a one-time break-glass, then re-assert auto-merge — `gh pr merge 482 --disable-auto` then `gh pr merge 482 --merge --auto`.
 Resume when: the review gate evaluates this worktree's branch (review re-stamped clean at the pushed PR head, 0 findings) and #482 is admitted to the merge queue (full E2E).
 

@@ -1,6 +1,8 @@
 # Customer non-Payment outcomes and lookups progress
 
 - Plan: `plans/typed-result/CUSTOMER_OUTCOMES_PLAN.md`
+- Roadmap: `plans/typed-result/TYPED_RESULT_MIGRATION_ROADMAP.md`
+- Roadmap item: `typed-result/customer-outcomes`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_customer-outcomes`
 - Branch: `Feature/typed-result_customer-outcomes`
 - PR: [#425](https://github.com/Concertable/concertable/pull/425) — open, non-draft, head `e60219f7d`
@@ -54,6 +56,12 @@ the existing Review/Preference/User/Venue/Artist work to direct published Reunio
 touching Ticket, Concert, Payment clients/mocks, purchase, or checkout. Verify the affected Customer
 integration tests, Release solution, and carve; incrementally review; then update PR #425 once. Do not
 enqueue it until the topology audit proves it merge-ready and the updated PR gates are green.
+
+## Downstream handoffs
+
+- Waiting ledger: `plans/typed-result/REUNION_SHARED_CONTRACTION_PROGRESS.md`.
+  Gate: Customer non-Payment must be delivery-ready and identify every remaining old carrier,
+  terminal, and third-party dependency outside its owned scope.
 
 ## Completed work
 

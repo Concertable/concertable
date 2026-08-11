@@ -1,6 +1,8 @@
 # Percentage platform commission and pricing transparency progress
 
 - Plan: `plans/launch/PLATFORM_COMMISSION_PLAN.md`
+- Roadmap: `plans/launch/LAUNCH_ROADMAP.md`
+- Roadmap item: `launch/platform-commission`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\CommissionBindingDeferredPricing`
 - Branch: `Feature/CommissionBindingDeferredPricing`
 - PR: [#296 — Own deferred commission pricing in Payment](https://github.com/Concertable/concertable/pull/296)

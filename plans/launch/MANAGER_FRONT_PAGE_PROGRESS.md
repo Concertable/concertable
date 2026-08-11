@@ -1,5 +1,9 @@
 # Manager Front Page — Session Feedback & Decisions
 
+- Plan: `plans/launch/MANAGER_FRONT_PAGE_PLAN.md`
+- Roadmap: `plans/launch/LAUNCH_ROADMAP.md`
+- Roadmap item: `launch/manager-front-page`
+
 Captured during Phase A implementation. These supersede the original plan
 where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_PAGE_PLAN.md).
 
