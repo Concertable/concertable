@@ -122,42 +122,26 @@ inflate-a-timeout to get past a failure — that's bypassing, not fixing. For E2
 does **flaky-vs-real triage**: re-run the failed scenario alone on a fresh stack — passes clean = a
 host-load blip (proven, not assumed); fails again = a real bug, so fix it.
 
-## Merge-queue E2E tier — full by default, skip only for demonstrably low blast radius
+## Merge-queue E2E tier — selected mechanically by merge Step 4
 
 The full E2E suites (API `Concertable.B2B.E2ETests` + the UI regress) are **expensive and
-Docker-gated**. The merge queue runs them by default; the strict criteria below decide whether a PR
-qualifies to opt out. Local verification still stops at build + unit + integration before a PR.
+Docker-gated**. The merge skill selects whether the merge queue runs them. Local verification still
+stops at build + unit + integration before a PR.
 
-**The PR merge queue IS the E2E gate — never run E2E locally ahead of a merge.** When the change is
-going out as a PR, the merge-queue pipeline runs the full suite (E2E included) as the gate. Running it
-locally first just burns ~25-30 min duplicating exactly what CI will do on the way in. So for anything
-headed to a PR, the local gate stops at build + unit + integration — **push it and let the queue run
-E2E.** The **only** reason to run E2E locally is when **the merge fails on failing E2E tests** — then
-run the failing scenarios via the **`e2e-ui-debug`** / **`e2e-debug`** skill to diagnose and fix, and
-push the fix (the queue re-runs E2E on the way back in). **This overrides any plan phase line or
+**The PR merge queue IS the E2E gate — never run E2E locally ahead of a merge.** When Step 4 requires
+E2E, the merge-queue pipeline runs the selected suite as the gate. Running it locally first just burns
+~25-30 min duplicating exactly what CI will do on the way in. So for anything headed to a PR, the local
+gate stops at build + unit + integration — **push it and let the queue apply the selected tier.** The
+**only** reason to run E2E locally is when **the merge fails on failing E2E tests** — then run the
+failing scenarios via the **`e2e-ui-debug`** / **`e2e-debug`** skill to diagnose and fix, and push the
+fix (the queue re-runs required E2E on the way back in). **This overrides any plan phase line or
 kickoff prompt that says "run the E2E regress"** — if a PR will run it, let the PR run it; a written
 "run E2E" step is not a reason to duplicate the queue.
 
-The merge skill's Step 4 is the single source of truth for this decision. **Full E2E is the default.**
-Add `skip-e2e` only when the PR is both small and demonstrably low-blast-radius, with every one of
-these true:
-
-- The diff and affected area are small and isolated.
-- It touches no package/service boundary, shared infrastructure, build/publish/deployment pipeline,
-  CI workflow, or multiple application surfaces.
-- It changes no user-facing/runtime flow covered by E2E.
-- Unit/integration tests fully cover the affected behaviour.
-
-**Zero intended behaviour change is not sufficient.** Package renames, lockfile/workspace changes,
-shared-library moves, broad refactors, and build/publish separation still have broad blast radius and
-must run full E2E. When in doubt, do not skip.
-
-Encode a qualifying skip with the `skip-e2e` PR label (`skip-e2e-ui` for UI-only); labels are the
-reliable lever and are read fresh in the merge group. Remove stale skip labels when the PR does not
-qualify. If historical `Skip-E2E` / `Skip-E2E-UI` trailers would opt out a PR that now requires the
-full tier, add `full-e2e`; it is the authoritative positive override. Unit and integration tests never
-skip for code/package changes, and build + carve never skip. A matching git trailer also works but is
-fragile because it must be in the final contiguous trailer block, so prefer the label.
+The merge skill's Step 4 is the single source of truth for this decision. Apply its positive-trigger
+list and label normalization mechanically; do not substitute a separate plan-level default or run E2E
+“to be safe.” Unit and integration tests never skip for code/package changes, and build + carve never
+skip.
 
 When E2E must run for a PR, let the merge queue run it; this tier decision does **not** authorize a
 duplicate local run. **How** to run E2E safely after a queue failure (the mandatory Docker health
