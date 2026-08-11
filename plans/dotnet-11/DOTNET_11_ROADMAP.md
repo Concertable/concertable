@@ -9,25 +9,23 @@
 
 ## How to continue this roadmap
 
-The selected item is blocked behind B2B, which is itself blocked behind the ReUnion integration.
-Continue the actionable resolver at the head of that chain:
+The selected item is blocked behind the existing B2B typed-result migration. Continue that actionable
+owner directly:
 
 ```text
-/resume-plan @plans/typed-result/REUNION_INTEGRATION_PROGRESS.md
+/resume-plan @plans/typed-result/B2B_PROGRESS.md
 ```
 
-The ReUnion owner will open and surface B2B; B2B will then open and surface the blocked .NET 11 ledger.
-Do not resume either blocked ledger directly, and do not start another .NET 11 service slice until this
-one establishes the package, CI, hosting, and toolchain conventions.
+The B2B owner will open and surface the blocked .NET 11 ledger. Do not resume that blocked ledger
+directly, and do not start another .NET 11 service slice until this one establishes the package, CI,
+hosting, and toolchain conventions.
 
 ## Status
 
 ### Prerequisites — existing owners, do not duplicate
 
-- [ ] 🟠 **ReUnion integration and carrier cutover.** Owned by
-  [`../typed-result/REUNION_INTEGRATION_PROGRESS.md`](../typed-result/REUNION_INTEGRATION_PROGRESS.md).
-  It must publish and synchronize the Reunion-backed Result/Option baseline before the existing B2B
-  migration resumes.
+- [x] ✅ **ReUnion integration and Payment carrier cutover.** PR #453 and platform-sync PR #463 are
+  merged; B2B now owns its remaining Reunion migration directly.
 - [ ] 🟠 **B2B typed-result migration.** Owned by
   [`../typed-result/B2B_PROGRESS.md`](../typed-result/B2B_PROGRESS.md). Its remaining Concert
   payment/cancel/finish work overlaps the workflow surface in this roadmap, so it must finish and land
@@ -35,7 +33,7 @@ one establishes the package, CI, hosting, and toolchain conventions.
 
 ### Selected
 
-- [ ] 🟡 **B2B .NET 11 runtime and native workflow unions.** Design and operational state:
+- [ ] 🟡 **B2B .NET 11 runtime and native workflow unions.** `dotnet-11/b2b-workflow-unions` Design and operational state:
   [`B2B_WORKFLOW_UNIONS_PLAN.md`](B2B_WORKFLOW_UNIONS_PLAN.md) and
   [`B2B_WORKFLOW_UNIONS_PROGRESS.md`](B2B_WORKFLOW_UNIONS_PROGRESS.md). Upgrade the B2B runtime and
   reverse build/test closure while keeping published cross-service contracts net10-compatible, then

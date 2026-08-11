@@ -11,8 +11,9 @@ PROGRESS**.
 **Folder = roadmap/plan.** Each epic gets a folder under `plans/`; its roadmap and every plan it spins
 off live inside it (`plans/<epic>/<EPIC>_ROADMAP.md`, `plans/<epic>/<NAME>_PLAN.md` + `<NAME>_PROGRESS.md`).
 Standing reference/RFC docs keep a bare stem (no suffix). The `plans/` hub (this file) and `agents/`
-playbooks stay at the top. A plan's **worktree/branch is named `<Type>/<epic>_<name>`** to match its
-`_PROGRESS` stem, so branch, plan, and ledger share one identity.
+playbooks stay at the top. A plan's ledger owns its logical workstream across delivery PRs. Its current
+worktree/branch is temporary execution state, normally named `<Type>/<epic>_<name>` and safe to
+recreate from `origin/main` after the prior PR's worktree is removed.
 
 Git history is the archive; a finished plan kept "for reference" is rot that misleads the next reader.
 This file carries the cross-cutting rules for *doing* the work; the root [`AGENTS.md`](../AGENTS.md)
@@ -53,6 +54,18 @@ not each need their own PR; keep coherent work together. Split only where a merg
 platform sync or runtime deployment must finish before the next work can build or run, and group all
 work possible on each side of that gate.
 
+## Plans outlive PR worktrees
+
+Every plan-managed PR must merge the current plan and progress ledger. A worktree owns one PR-sized
+delivery slice, not the plan's lifetime. Once the PR merges, run
+`./scripts/worktrees.ps1 close -Worktree <path> -PullRequest <n> -PlanManaged`, then create a fresh
+worktree from current `origin/main` if work remains.
+
+Never commit observations after a PR's merged head or retain its worktree as the only recovery copy.
+GitHub owns remote check/merge evidence until it is reconciled from the next continuation or
+`Docs/*_closeout` worktree. A superseded no-PR branch uses `scripts/worktrees.ps1 retire` with its exact
+head and a retirement-evidence commit already on `main`.
+
 ## Delivery gates do not automatically block implementation
 
 For work spanning branches, packages, or generated syncs, keep two dependency graphs: what must exist
@@ -72,18 +85,22 @@ ledger and surfaces its resume prompt when the gate opens. Full mechanics:
 
 ## An actionable non-terminal plan handoff must end with its exact continuation pointer
 
-If a `_PROGRESS.md` ledger with actionable non-terminal `## Next Steps` is explicitly named by path in
-the user request or edited during the turn, the final response must end with the exact two-line plan
-pointer from [`../PROMPTS.md`](../PROMPTS.md). Read-only inspection of a dependency owner's ledger
-under the cross-plan blocker rule does not claim that owner's handoff. Local
+If a `_PROGRESS.md` ledger with actionable non-terminal `## Next Steps` is owned by the current or
+explicitly targeted worktree, the final response must end with the exact two-line plan pointer from
+[`../PROMPTS.md`](../PROMPTS.md). Reading or editing a foreign owner ledger during dependency or
+roadmap reconciliation does not claim that owner's handoff. Local
 implementation completion is not lifecycle completion while review, PR, merge, publication,
 dependency, or platform-sync work remains. A summary, a prose “next steps” sentence, or an offer to
 continue does not satisfy this gate. The exception is a registered in-flight owner wait under the
-cross-plan blocker rule above or any hard stop recorded with the exact `Blocked:`, `Unblock action:`,
-and `Resume when:` fields from [`agents/PLAN.md`](agents/PLAN.md). A blocked plan's own pointer is
-forbidden: report those three lines verbatim and route the resolver instead. Trusted repository Stop hooks
+cross-plan blocker rule above or any hard stop recorded with the exact `Blocked:`, `Blocked by:`,
+`Unblock action:`, and `Resume when:` fields from [`agents/PLAN.md`](agents/PLAN.md). A blocked plan's
+own pointer is forbidden: report those four lines verbatim and route the resolver instead. Trusted repository Stop hooks
 enforce the invariant for Claude and Codex; follow the hook's actionable-versus-blocked instruction
 rather than weakening or bypassing it.
+
+Run `python .agents/hooks/plan_graph.py --root <absolute-worktree>` after creating or changing plan
+graph metadata. Missing or broken links, malformed blockers, missing reciprocal owner handoffs, and
+terminal owners with pending handoffs fail.
 
 ### Rename definition-of-done: the grep gate (mechanical, not judgement)
 
@@ -122,42 +139,26 @@ inflate-a-timeout to get past a failure — that's bypassing, not fixing. For E2
 does **flaky-vs-real triage**: re-run the failed scenario alone on a fresh stack — passes clean = a
 host-load blip (proven, not assumed); fails again = a real bug, so fix it.
 
-## Merge-queue E2E tier — full by default, skip only for demonstrably low blast radius
+## Merge-queue E2E tier — selected mechanically by merge Step 4
 
 The full E2E suites (API `Concertable.B2B.E2ETests` + the UI regress) are **expensive and
-Docker-gated**. The merge queue runs them by default; the strict criteria below decide whether a PR
-qualifies to opt out. Local verification still stops at build + unit + integration before a PR.
+Docker-gated**. The merge skill selects whether the merge queue runs them. Local verification still
+stops at build + unit + integration before a PR.
 
-**The PR merge queue IS the E2E gate — never run E2E locally ahead of a merge.** When the change is
-going out as a PR, the merge-queue pipeline runs the full suite (E2E included) as the gate. Running it
-locally first just burns ~25-30 min duplicating exactly what CI will do on the way in. So for anything
-headed to a PR, the local gate stops at build + unit + integration — **push it and let the queue run
-E2E.** The **only** reason to run E2E locally is when **the merge fails on failing E2E tests** — then
-run the failing scenarios via the **`e2e-ui-debug`** / **`e2e-debug`** skill to diagnose and fix, and
-push the fix (the queue re-runs E2E on the way back in). **This overrides any plan phase line or
+**The PR merge queue IS the E2E gate — never run E2E locally ahead of a merge.** When Step 4 requires
+E2E, the merge-queue pipeline runs the selected suite as the gate. Running it locally first just burns
+~25-30 min duplicating exactly what CI will do on the way in. So for anything headed to a PR, the local
+gate stops at build + unit + integration — **push it and let the queue apply the selected tier.** The
+**only** reason to run E2E locally is when **the merge fails on failing E2E tests** — then run the
+failing scenarios via the **`e2e-ui-debug`** / **`e2e-debug`** skill to diagnose and fix, and push the
+fix (the queue re-runs required E2E on the way back in). **This overrides any plan phase line or
 kickoff prompt that says "run the E2E regress"** — if a PR will run it, let the PR run it; a written
 "run E2E" step is not a reason to duplicate the queue.
 
-The merge skill's Step 4 is the single source of truth for this decision. **Full E2E is the default.**
-Add `skip-e2e` only when the PR is both small and demonstrably low-blast-radius, with every one of
-these true:
-
-- The diff and affected area are small and isolated.
-- It touches no package/service boundary, shared infrastructure, build/publish/deployment pipeline,
-  CI workflow, or multiple application surfaces.
-- It changes no user-facing/runtime flow covered by E2E.
-- Unit/integration tests fully cover the affected behaviour.
-
-**Zero intended behaviour change is not sufficient.** Package renames, lockfile/workspace changes,
-shared-library moves, broad refactors, and build/publish separation still have broad blast radius and
-must run full E2E. When in doubt, do not skip.
-
-Encode a qualifying skip with the `skip-e2e` PR label (`skip-e2e-ui` for UI-only); labels are the
-reliable lever and are read fresh in the merge group. Remove stale skip labels when the PR does not
-qualify. If historical `Skip-E2E` / `Skip-E2E-UI` trailers would opt out a PR that now requires the
-full tier, add `full-e2e`; it is the authoritative positive override. Unit and integration tests never
-skip for code/package changes, and build + carve never skip. A matching git trailer also works but is
-fragile because it must be in the final contiguous trailer block, so prefer the label.
+The merge skill's Step 4 is the single source of truth for this decision. Apply its positive-trigger
+list and label normalization mechanically; do not substitute a separate plan-level default or run E2E
+“to be safe.” Unit and integration tests never skip for code/package changes, and build + carve never
+skip.
 
 When E2E must run for a PR, let the merge queue run it; this tier decision does **not** authorize a
 duplicate local run. **How** to run E2E safely after a queue failure (the mandatory Docker health

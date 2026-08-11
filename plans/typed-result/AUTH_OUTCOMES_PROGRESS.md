@@ -98,6 +98,12 @@ checkpoint. Address every clear finding, refresh current-main state, and run the
 read-only PR preflight. Do not push or open a PR without instruction; delivery still requires full
 merge-queue API/UI E2E and publication/platform-sync ownership to terminal green.
 
+## Downstream handoffs
+
+- Waiting ledger: `plans/typed-result/REUNION_SHARED_CONTRACTION_PROGRESS.md`.
+  Gate: Auth must be delivery-ready and identify every remaining old carrier, terminal, and third-party
+  dependency outside its owned scope.
+
 ## Completed work
 
 - Corrected the DDD boundary: domain entities own password verification/mutation and verification/

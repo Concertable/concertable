@@ -87,69 +87,76 @@ Keep the ordinary owned/scoped/writable repository unqualified, and qualify only
 contract. Do not force `Public`, `Read`, or a projection-shape term onto a service where it names the
 wrong distinction.
 
-## Keyed strategy resolver
+## Module-local keyed strategy factory
 
-**When a rule varies by a closed key** (typically `DealType`): one facade class implements the
-public interface, constructor-injects the concrete strategies, maps key → strategy in a
-`FrozenDictionary`, and delegates. Consumers inject the interface and call it — they never branch on
-the key, never see the map, never touch keyed DI.
+**When behavior varies by a closed key** (typically `DealType`), declare every strategy family
+vertically at the owning module's composition root. A module-local generic factory owns keyed DI;
+operation-specific facades delegate through it. Consumers never branch on the key, see the registration
+mechanism, or inject the generic factory merely to perform a business operation.
 
-Canonical example — `DealMapper`
-(`Modules/Deal/Concertable.B2B.Deal.Application/Mappers/DealMapper.cs`):
+The factory's noun names what it returns. `DealType` is only the selection key:
 
 ```csharp
-internal sealed class DealMapper : IDealMapper
+internal interface IDealStrategyFactory<TStrategy>
+    where TStrategy : class
 {
-    private readonly FrozenDictionary<DealType, IDealMapper> mappers;
+    TStrategy Create(DealType dealType);
+}
 
-    public DealMapper(
-        FlatFeeDealMapper flatFee,
-        DoorSplitDealMapper doorSplit,
-        VersusDealMapper versus,
-        VenueHireDealMapper venueHire)
+internal sealed class DealStrategyFactory<TStrategy> : IDealStrategyFactory<TStrategy>
+    where TStrategy : class
+{
+    private readonly IKeyedServiceProvider services;
+
+    public DealStrategyFactory(IKeyedServiceProvider services)
     {
-        mappers = new Dictionary<DealType, IDealMapper>
-        {
-            [DealType.FlatFee] = flatFee,
-            [DealType.DoorSplit] = doorSplit,
-            [DealType.Versus] = versus,
-            [DealType.VenueHire] = venueHire,
-        }.ToFrozenDictionary();
+        this.services = services;
     }
 
-    public IDeal ToDeal(DealEntity entity) =>
-        mappers[entity.DealType].ToDeal(entity);
+    public TStrategy Create(DealType dealType) =>
+        services.GetRequiredKeyedService<TStrategy>(dealType);
 }
 ```
 
-Other instances: `TicketPayeeResolver` / `SettlementPayeeResolver` (Concert module — which party
-receives a concert's ticket revenue vs. its settlement; inverse maps over shared leaves),
-`DealTermsRenderer`, `ArtistShareCalculator`, `DealTermsSerializer` (Concert module).
+The builder records registrations before mutating `IServiceCollection`, then rejects duplicate keys,
+undeclared or incomplete coverage, unexpected keys, and conflicting lifetimes. Every family declares
+`RequireAll<T>()` or `RequireExactly<T>(...)`; adding an enum member therefore fails composition until
+the new type is handled deliberately.
+
+```csharp
+services.AddDealStrategies(strategies =>
+{
+    strategies.For(DealType.FlatFee)
+        .AddSingleton<IDealMapper, FlatFeeDealMapper>()
+        .AddSingleton<IDealUpdater, FlatFeeDealUpdater>();
+
+    // The other deal types follow in the same vertical block.
+
+    strategies.RequireAll<IDealMapper>();
+    strategies.RequireAll<IDealUpdater>();
+});
+```
 
 Rules of the shape:
 
-- The facade and the strategies implement the **same interface**; the facade is the only DI-default
-  registration (`AddSingleton<IXResolver, XResolver>()`), strategies register as their concrete types.
-- Strategies are injected as **concrete constructor parameters** — not `IServiceProvider`, not
-  `GetRequiredKeyedService`, not `IEnumerable<IX>` scanning. The dictionary in the constructor IS the
-  rule, written once, readable at a glance.
-- Methods return **existing domain types or scalars** — don't mint a one-use DTO just to bundle a
-  resolver's outputs; add a second method instead.
-- An unmapped key throws (`KeyNotFoundException`) — a new enum member fails loudly rather than
-  silently defaulting.
-- **The dispatch is its own facade — never inlined into a consumer that also does other work.** The
-  facade's single job is key → strategy → delegate. If a type both holds the map *and* does something
-  else (e.g. `TermsFingerprintCalculator` once held the per-`DealType` dict *and* hashed), split
-  it: extract the facade, inject it, leave the consumer its own job. A giveaway you've inlined it is a
-  dict typed to a *different* interface than the thing consuming it.
-- **Name the three roles structurally, not with a mandated word** — agent-noun of the strategy's one
-  method, so the name says what it *does*: interface `IX` (shared by facade + strategies); strategies
-  `{Key}X` registered as concrete DI types; facade `X` (unprefixed) holds the dict and is the DI
-  default. `X` follows the method — `Mapper.Map`, `Resolver.Resolve`, `Calculator.Calculate`,
-  `Serializer.Serialize` (canonical string for hashing/compare), `Renderer.Render` (human-facing
-  presentation text). Do **not** force one word across families that do genuinely different things:
-  `DealTermsRenderer` (presentation) and `DealTermsSerializer` (hash input) are correctly
-  different names for correctly different jobs.
+- **Factories return a selected component.** A resolver consumes a selected strategy and returns the
+  final domain answer. Mappers, renderers, serializers, and calculators keep naming the operation they
+  perform; sharing a selection mechanism never flattens those suffixes into `Strategy`.
+- **Factories and builders are module-local.** Deal and Concert own separate implementations because
+  their strategies are different runtime concerns. Do not create a cross-module registry or put the
+  factory in a shared Contracts package.
+- **Only the factory implementation performs keyed lookup.** Composition roots may register the scoped
+  `IKeyedServiceProvider` adapter; application handlers, steps, services, and named facades never inject
+  it or call `GetRequiredKeyedService`.
+- **The factory is scoped.** A selected leaf may depend on scoped repositories or clients. Stateless
+  leaves may remain singleton, but any unkeyed facade that captures the factory must also be scoped.
+- **Named facades remain the business API.** `DealMapper`, `DealUpdater`, `DealTermsRenderer`, and
+  `SettlementAmountResolver` implement their operation-specific interfaces and delegate selection to
+  the module factory. `IConcertWorkflowFactory` remains a named factory because its caller genuinely
+  needs the selected workflow instance.
+- Methods return existing domain types or scalars. Do not mint a one-use DTO or return an enum that
+  every caller must reinterpret; add a second operation-specific method when a caller needs another
+  value.
 
 ### The anti-patterns this replaces — never do these
 
@@ -157,9 +164,12 @@ Rules of the shape:
   switch) inside a handler/service/mapper that is otherwise contract-agnostic plants a business rule
   where nobody will look for it, and it WILL get copy-pasted (that's how it spreads). The rule lives
   in exactly one resolver.
-- **Service location at the consumer.** `GetRequiredKeyedService<T>(key)` in a handler or step leaks
-  the dispatch mechanism into business code. Keyed/dynamic resolution, if ever needed, stays inside
-  the facade next to the composition root.
+- **Service location outside the factory.** `IKeyedServiceProvider` or
+  `GetRequiredKeyedService<T>(key)` in a handler, step, service, or named facade leaks the dispatch
+  mechanism into business code.
+- **Parallel hand-written maps.** A `FrozenDictionary<DealType, ...>` per facade duplicates coverage
+  declarations and lets one family drift when a new deal type is added. Declare all families in the
+  validated vertical builder instead.
 - **Enum + switch as an API.** Returning an enum that every caller must re-interpret with its own
   switch just multiplies the branch across the codebase. Return the resolved *value*, not a label.
 - **Throwaway result records.** A `record Xyz(Guid A, Guid B)` created only to carry one resolver's
