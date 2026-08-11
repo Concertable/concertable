@@ -1,4 +1,5 @@
 import { Map, Marker } from "@vis.gl/react-google-maps";
+import { MapsProvider } from "@/providers/MapsProvider";
 
 interface Props {
   lat?: number;
@@ -11,15 +12,17 @@ export function GoogleMap({ lat, lng, className }: Readonly<Props>) {
 
   return (
     <div className={className}>
-      <Map
-        style={{ width: "100%", height: "400px" }}
-        defaultCenter={{ lat, lng }}
-        defaultZoom={14}
-        gestureHandling="none"
-        disableDefaultUI
-      >
-        <Marker position={{ lat, lng }} />
-      </Map>
+      <MapsProvider>
+        <Map
+          style={{ width: "100%", height: "400px" }}
+          defaultCenter={{ lat, lng }}
+          defaultZoom={14}
+          gestureHandling="none"
+          disableDefaultUI
+        >
+          <Marker position={{ lat, lng }} />
+        </Map>
+      </MapsProvider>
     </div>
   );
 }
