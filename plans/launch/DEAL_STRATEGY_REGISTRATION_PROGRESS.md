@@ -3,12 +3,12 @@
 - Plan: `plans/launch/DEAL_STRATEGY_REGISTRATION_PLAN.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal_strategy_registration`
 - Branch: `Refactor/launch_deal_strategy_registration`
-- PR: [#451](https://github.com/Concertable/concertable/pull/451) — open; verified work head
-  `7cdf680f016a9945dbbebba7d5e110951b4a47a3`
+- PR: [#451](https://github.com/Concertable/concertable/pull/451) — open; terminal PR checks green at
+  verified remote head `30c459d712ab0b5b05c801db79664eca6772f9bf`
 - Dependency/package gates: no pre-merge package dependency; the generated platform-sync PR must be
   followed to green/merged after this `api/**` PR lands
 - Last reconciled: 2026-08-11; current `origin/main` is merged through
-  `ddd2ca4ced246a23969965ff2eacd508956f3b0b`; branch is 0 commits behind and 34 ahead
+  `ddd2ca4ced246a23969965ff2eacd508956f3b0b`; branch is 0 commits behind and 36 ahead
 
 ## Current state
 
@@ -28,10 +28,11 @@ advance was docs/meta guidance, so the API tree is identical to the tree built s
 `bc4d9d174`. The automatic merge seam in Concert's `ServiceCollectionExtensions` retains both current
 main's `IApplicationExecutor` registration and this branch's `AddConcertDealStrategies` composition.
 
-The reviewed work range `bc05263e7..7cdf680f0` is pushed. Local HEAD, remote-tracking ref, and PR
-`headRefOid` were all verified at `7cdf680f016a9945dbbebba7d5e110951b4a47a3`. This ledger update is
-the single checkpoint-transport leg; after it is pushed and verified, replacement PR checks are the
-next gate. No unrelated dirty or untracked source is present in this worktree.
+The reviewed work range `bc05263e7..7cdf680f0` and its single checkpoint-transport commit are pushed.
+Local HEAD, the remote-tracking ref, and PR `headRefOid` were verified at
+`30c459d712ab0b5b05c801db79664eca6772f9bf`. Replacement build, carve, unit, and integration checks
+are terminal green at that exact remote head. There are no skip trailers or labels, so the default
+full API + UI merge-queue E2E tier applies. No unrelated dirty or untracked source is present.
 
 ## Completed milestones
 
@@ -41,8 +42,8 @@ next gate. No unrelated dirty or untracked source is present in this worktree.
   architecture allowlists.
 - Complete implementation review covered `43fe1caf4..fb34f37b1`; later incremental reviews through
   remote head `bc05263e7` found no issue.
-- PR #451 is open against `main`; its prior build, carve, unit, and integration checks passed at
-  `bc05263e7`. Full API and UI E2E are intentionally reserved for the merge queue.
+- PR #451 is open against `main`; replacement build, carve, unit, and integration checks passed at
+  `30c459d7`. Full API and UI E2E are intentionally reserved for the merge queue.
 - Pre-existing platform-sync PR #488 for `0.1.0-alpha.0.917` passed its checks and merged as
   `130211aa90ae031a31e8b827e2567c3667fbc2b8` before the branch was reconciled.
 
@@ -82,11 +83,9 @@ next gate. No unrelated dirty or untracked source is present in this worktree.
 
 Land PR #451 through the repository merge workflow:
 
-1. Commit and push this single plan-ledger transport checkpoint, then verify local, remote-tracking,
-   and PR heads are identical.
-2. Wait for the replacement PR checks to become terminal green, normalize labels to full E2E, enqueue
-   the verified remote head, and follow the merge-group API/UI
-   E2E result to a terminal merge or failure.
-3. On merge, transfer recovery state to the close-out worktree, remove the feature worktree/branch,
+1. Commit this local-only terminal-check observation checkpoint without pushing it.
+2. Enqueue verified remote head `30c459d7` and follow the merge-group API/UI E2E result to a terminal
+   merge or failure.
+3. On merge, transfer the plan-only local observation tail to the close-out worktree, remove the feature worktree/branch,
    follow publication and the generated platform-sync PR to green/merged, then delete the plan and
    ledger and land the roadmap closeout through the docs-only merge path.
