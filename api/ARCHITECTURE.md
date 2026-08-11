@@ -200,7 +200,8 @@ for service-owned projects, `api/Concertable.Shared/` for cross-service infra) p
 - `api/Concertable.Search/` — Search service (projections + search API).
 - `api/Concertable.Payment/` — Payment service (Stripe integration, payouts).
 - `api/Concertable.AppHost/` — Umbrella AppHost (runs everything; the only host that gates cross-service startup with `WaitFor`).
-- `api/Concertable.AppHost.Shared/` — Aspire resource registration helpers shared by every AppHost (topology/references only — never cross-service `WaitFor`).
+- `api/Concertable.AppHost.Shared/` — generic cross-service Aspire helpers shared by every AppHost (SQL/ServiceBus/Storage/topology/secrets — references only, never cross-service `WaitFor`).
+- `api/Concertable.Frontend.Hosting/` — Aspire composition for the frontend surfaces (web SPAs + mobile apps), consumed by the umbrella, B2B, and Customer AppHosts.
 - `api/Concertable.Shared/` — Cross-service infrastructure (Kernel, shared seeding infra, messaging contracts, etc.).
 - `api/docs/` — Conventions, rules, design docs.
 
