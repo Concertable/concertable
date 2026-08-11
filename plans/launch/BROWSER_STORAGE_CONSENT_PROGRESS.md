@@ -46,23 +46,13 @@ reopened roadmap line and the merged `Docs/launch_cookie-storage-audit` PR #469.
 
 ## Next Steps
 
-All engineering is done, committed, and pushed. What remains is delivery + a documented legal tail.
+Blocked: `/merge` reached the final enqueue but is hard-blocked — `.claude/hooks/merge-review-gate.py` refuses every `gh pr merge 482` because it resolves branch/HEAD/review with bare `git` from the pinned main-checkout cwd (`Feature/launch_dashboard-accepted-checkout` @ `1dbe256ed`, whose review is stale) instead of this worktree, so it gates #482 against the wrong branch; and GitHub will not self-admit (auto-merge re-eval glitch, enabled-while-behind — 6 clean polls, never queued).
+Unblock action: Tommy fixes `merge-review-gate.py` to resolve git state from the merge target (e.g. `git -C` the hook-payload `cwd`) or authorizes a one-time break-glass, then re-assert auto-merge — `gh pr merge 482 --disable-auto` then `gh pr merge 482 --merge --auto`.
+Resume when: the review gate evaluates this worktree's branch (review re-stamped clean at the pushed PR head, 0 findings) and #482 is admitted to the merge queue (full E2E).
 
-1. ✅ **Review the branch — DONE (2026-08-10).** Full code review over `origin/main..HEAD`; one finding
-   (NAT1 — drift guard blind to zustand `persist()`) found and fixed + verified (vitest 19/19, four
-   builds green). Work-order: `reviews/Feature-launch_browser-storage-consent.md`. Fix committed **and
-   pushed** (`d82059cd6`). Branch is now 28 behind `origin/main` — `/merge` syncs before enabling auto-merge.
-2. ⏳ **Merge in progress (2026-08-11, go-ahead given).** `/merge` at the **full E2E tier** — this
-   changes a first-visit flow across all SPAs (banner + boot-time script loading), so **not** `skip-e2e`.
-   Branch resynced to `origin/main` (was 38 behind → 0), rebuilt green, pushed `016c6fe45`. Remaining:
-   confirm PR checks terminal/green, normalize labels (no `skip-e2e`), enqueue, wait for `MERGED`. Let
-   the merge queue run E2E; don't duplicate it locally.
-3. **No platform-sync to follow** — the final diff touches **no `api/**`**, so the merge triggers no
-   `Publish packages` / `chore/platform-sync-*` PR. (Corrected from the earlier "E2E-test-only api edits"
-   note — those edits were reverted with Phase 2.)
-4. **At merge close-out:** tick the roadmap line (`plans/launch/LAUNCH_ROADMAP.md:30`, `:197`) and the
-   §7 checklist items (`plans/launch/LAUNCH_CHECKLIST.md:41`, `:42` — the `[CODE]` parts) in the
-   close-out commit; move recovery state to a `Docs/*_closeout` worktree and delete this plan + ledger.
+Merge readiness is otherwise complete: branch synced to `origin/main` (was 38 behind → 0, clean merge `016c6fe45`), four SPA builds + shared vitest 19/19 green, full E2E tier (no labels/trailers to normalize). The review file (untracked) is re-stamped to the current pushed PR head after every docs commit, so it always equals HEAD for the gate.
+
+Once merged (delivery, unchanged): **no platform-sync fires** (diff touches no `api/**`); then close-out — tick roadmap `plans/launch/LAUNCH_ROADMAP.md:30`,`:197` + §7 checklist `plans/launch/LAUNCH_CHECKLIST.md:41`,`:42` (`[CODE]` parts), move recovery to a `Docs/*_closeout` worktree, delete plan+ledger via `/merge-docs`, remove this worktree.
 
 **Legal-gated tail (not blocking the above):**
 - Solicitor drafts cookie/storage policy copy from `app/web/shared/BROWSER_STORAGE.md`; wiring it into
@@ -394,6 +384,42 @@ change.
 - Outcome: Branch current with `origin/main`, verified green, pushed. **No platform-sync PR will fire**
   (no `api/**` in the diff) — step 6 of the merge skill is a no-op for this PR.
 - Follow-up: confirm PR checks terminal/green → normalize labels (no `skip-e2e`) → enqueue → wait `MERGED`.
+
+### 2026-08-11 — merge blocked at enqueue: merge-review-gate.py worktree bug + auto-merge re-eval glitch
+
+- Action: PR #482 checks went CLEAN, but the monitor loop found GitHub never admitted it to the queue
+  over 6 clean polls (auto-merge was enabled by a bot while the branch was behind — the enabled-while-behind
+  re-eval glitch). Tried the documented one-time re-assert (`gh pr merge --disable-auto` then `--merge --auto`);
+  **blocked by the PreToolUse hook `.claude/hooks/merge-review-gate.py`.** Diagnosed the hook: it resolves
+  `branch`/`HEAD`/`toplevel`/review with **bare `git`** (no `-C`), so it reads the **pinned main-checkout cwd**
+  (branch `Feature/launch_dashboard-accepted-checkout` @ `1dbe256ed`, whose `reviews/…-dashboard-accepted-checkout.md`
+  is stale at `a531e829`) — NOT this worktree. Confirmed the session cwd is pinned to the main checkout (a
+  standalone `cd` into the worktree is reset), so the hook cannot be steered to this branch. Did the legitimate
+  half (merge-skill Step 0): incremental review of `d82059cd6..0e6aa0550` — `git diff … -- app/` empty (only 2
+  docs commits + the clean `origin/main` merge), no new source — and **re-stamped** `reviews/Feature-launch_browser-storage-consent.md`
+  at HEAD `0e6aa0550`, 0 findings.
+- Evidence: hook source lines 99–101 (bare `git rev-parse`); block message named the dashboard review/HEAD;
+  session `pwd` = `…/Concertable` (main checkout) after a `cd` attempt; monitor output polls 7–12 `[OPEN/CLEAN] queue=[no]`.
+- Outcome: **Hard-blocked on infrastructure, not on this plan's work.** #482 is synced, green, reviewed, and
+  merge-ready; it cannot be enqueued until the hook resolves the correct worktree (or a break-glass is authorized)
+  AND the auto-merge is re-asserted. Did NOT bypass the gate (no `gh api` side-channel, no `--admin`), did NOT
+  edit the hook (it runs from the main checkout on an unrelated branch — Tommy's call). Ledger edit left
+  uncommitted to preserve HEAD == review stamp.
+- Follow-up: `## Next Steps` blocker lines — routed to Tommy (fix hook or break-glass), then re-assert + monitor.
+
+### 2026-08-11 — logged storage-accessor tech debt; committed + pushed onto #482
+
+- Action: On Tommy's ask, recorded a tech-debt item in `app/web/TECH_DEBT.md` (lowest node containing the
+  concern — spans `shared` consent/manifest/gate + `b2b/shared` zustand): first-party storage has no single
+  classified accessor and classification is enforced by a **regex drift-guard (detection)** not by
+  construction, which is what let zustand `persist()` slip past (NAT1). Durable fix noted:
+  `createClassifiedStorage()` that auto-registers in the manifest + gates non-necessary classes on
+  `hasConsent`, with the manifest/guard retained as the catch-all for un-wrappable third-party writers.
+  Committed with the pending ledger blocker record and pushed onto #482; re-stamped the review to the new head.
+- Evidence: `app/web/TECH_DEBT.md` new entry; commit + push below.
+- Outcome: Tech debt captured and travels with the storage code in #482. Merge remains blocked on the
+  hook/glitch (unchanged).
+- Follow-up: unchanged — `## Next Steps` blocker lines.
 
 ## Resume prompt
 
