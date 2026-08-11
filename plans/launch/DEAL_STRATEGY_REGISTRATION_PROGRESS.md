@@ -65,7 +65,9 @@ unused covariance from both module-local strategy factory interfaces.
 
 - `dotnet build api/Concertable.slnx --artifacts-path
   C:\Users\TommySeery\AppData\Local\Temp\Concertable\launch-deal-strategy-pr451-invariant` completed
-  in 18m27s with 0 errors and 8 existing warnings against current main; affected B2B tests remain.
+  in 18m27s with 0 errors and 8 existing warnings against current main.
+- `Concertable.B2B.Concert.UnitTests` passed 132/132 and `Concertable.B2B.Deal.UnitTests` passed 41/41;
+  the B2B Concert integration gate remains.
 - `git diff --check origin/main..HEAD` is clean.
 - The net PR diff has no cross-service runtime reference, no keyed-service lookup outside the two
   module-local factories, no new deal-type business branch, and no undeclared strategy family.
@@ -96,8 +98,7 @@ unused covariance from both module-local strategy factory interfaces.
 
 ## Next Steps
 
-1. Run the Concert and Deal unit projects plus the B2B Concert integration gate against the invariant
-   factory candidate.
+1. Run the B2B Concert integration gate against the invariant factory candidate.
 2. Commit the correction and incrementally review the complete post-watermark range.
 3. Use the compound push protocol to update PR #451, wait for terminal green PR checks, select the E2E
    tier mechanically, and enqueue the verified current remote head once.
