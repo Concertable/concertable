@@ -91,7 +91,7 @@ their current branch and worktree rather than fragmenting in-flight work.
   `2b05ed110`; publication delivered platform `0.1.0-alpha.0.910`; generated sync PR #479 merged as
   `b17fb07fe`; historical PR #282 is closed as superseded.
 
-- [ ] 🟠 **Customer non-Payment outcomes and lookups.** Exclusive owner:
+- [ ] 🟠 **Customer non-Payment outcomes and lookups.** `typed-result/customer-outcomes` Exclusive owner:
   `Feature/typed-result_customer-outcomes` at
   `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_customer-outcomes`.
   Non-draft PR #425 is open at `e60219f7d`. It contains 29 unique commits and is 117 commits behind
