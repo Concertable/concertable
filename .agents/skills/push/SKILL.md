@@ -34,7 +34,7 @@ Push the current branch to its remote. The happy path is one command; the job is
    work and PR heads, outcome, and exact post-push next action. Stage only the plan and ledger and
    create one checkpoint commit. Push that commit as the checkpoint-transport leg, fetch again, and
    require local `HEAD`, the remote-tracking ref, and any PR `headRefOid` to all equal the checkpoint
-   commit. This transport does not invoke the checkpoint procedure, append another push event, or
+   commit. This transport does not invoke the checkpoint procedure, add another transition, or
    create another checkpoint commit.
 
 5. **If the push or verification fails**, read the error and fix the actual cause, then retry the

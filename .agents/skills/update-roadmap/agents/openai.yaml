@@ -1,0 +1,4 @@
+interface:
+  display_name: "Update Roadmap"
+  short_description: "Reconcile upstream changes across roadmap plans"
+  default_prompt: "Use $update-roadmap to reconcile these upstream changes across the selected roadmap and all affected live plans."

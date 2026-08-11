@@ -38,8 +38,8 @@
 - [ ] ICO data protection fee paid (£40-60/yr depending on size, ~10 min online at https://ico.org.uk/for-organisations/data-protection-fee/).
 - [ ] **[LEGAL]** Privacy policy drafted (solicitor draft OR template + solicitor review).
 - [ ] **[LEGAL]** Cookie/storage policy drafted from the verified production inventory (often combined with privacy policy).
-- [ ] **[CODE]** Browser storage audited across anonymous, authenticated, and Stripe-checkout journeys; unnecessary storage removed and each retained first- or third-party technology classified by purpose, owner, duration, and consent requirement.
-- [ ] **[CODE] [LEGAL]** Consent UI retained or introduced only for actual non-exempt optional technology, and it must gate that technology's loading; remove the current generic consent machinery if the audit finds no such technology.
+- [x] **[CODE]** Browser storage audited across anonymous, authenticated, and Stripe-checkout journeys; unnecessary storage removed and each retained first- or third-party technology classified by purpose, owner, duration, and consent requirement. _(#482: audit + drift-guarded `storageManifest.ts` + `BROWSER_STORAGE.md`. Authenticated/Stripe-checkout journeys documented-not-observed by agreed scope — classified by purpose from library behaviour.)_
+- [ ] **[CODE] [LEGAL]** Consent UI retained or introduced only for actual non-exempt optional technology, and it must gate that technology's loading; remove the current generic consent machinery if the audit finds no such technology. _**[CODE] shipped** (#482): banner retained (analytics/marketing roadmapped) and its toggles now gate loading via `consentGate.ts`; Stripe + Maps made load-on-use. **[LEGAL] pending**: solicitor call on whether Maps needs a `functional` consent category, and final policy copy._
 - [ ] Lawful basis matrix documented per data category (internal doc).
 - [ ] Data retention schedule documented (internal doc).
 - [ ] DSAR (Data Subject Access Request) process documented (how requests come in, who handles, SLA).

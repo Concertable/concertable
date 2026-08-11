@@ -35,7 +35,8 @@
   `Why:` and collision-warning lines, then the exact two-line pointer as the final content.
 
   The `<opener>` is `/worktree create <Type>/<epic>_<name>` when the plan's worktree doesn't exist yet — a
-  freshly-written plan, or after a clear with no live worktree — so implementation runs in an isolated
+  freshly-written plan, after a clear with no live worktree, or normal continuation after a prior PR's
+  worktree was removed — so implementation runs in an isolated
   worktree, never the main checkout; it's `cd <absolute-worktree-path>` once that worktree exists. Nothing
   else plan-specific goes in the prompt — no branch to verify, checkpoints, gates, commands, or next action;
   every such specific lives in the ledger (its header + `## Next Steps`), so the prompt can't drift.
@@ -45,7 +46,7 @@
   edits. A delivery gate does not suppress an implementation pointer when the owned ledger has safe
   local work; only an implementation blocker does.
 - A blocked plan never emits its own continuation pointer. First do any safe, authorized work that can
-  remove the blocker in the current session. If the gate still cannot move, record the three-line hard
+  remove the blocker in the current session. If the gate still cannot move, record the four-line hard
   blocker schema from [`plans/agents/PLAN.md`](plans/agents/PLAN.md) at the start of `## Next Steps` and
   report those lines verbatim to Tommy. Then route the unblock action instead of routing back into the
   blocked plan:
@@ -58,7 +59,7 @@
     `Resume when` condition, with no prompt.
 
   Never re-poll an unchanged blocker into repeated "still blocked" commits. The Stop hook rejects the
-  blocked plan's pointer and rejects a blocker report that omits any of the three exact lines.
+  blocked plan's pointer and rejects a blocker report that omits any of the four exact lines.
 - Use the handoff instead of asking whether to continue.
 - Before an implementation PR merges, route through `/review` or `/big-review`; use
   `/incremental-review` after later code commits.

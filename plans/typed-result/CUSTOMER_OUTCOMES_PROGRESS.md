@@ -190,6 +190,12 @@ owned scope, and rerun every Docker-independent gate first.
    Release integration wrappers, confirm 74/74 and an empty Docker inventory, reconcile any new base
    advance, incrementally review it, and perform the plan-managed two-leg push.
 
+## Downstream handoffs
+
+- Waiting ledger: `plans/typed-result/REUNION_SHARED_CONTRACTION_PROGRESS.md`.
+  Gate: Customer non-Payment must be delivery-ready and identify every remaining old carrier,
+  terminal, and third-party dependency outside its owned scope.
+
 ## Completed work
 
 - Audited the five scoped modules' real application/module/repository contracts, controllers,

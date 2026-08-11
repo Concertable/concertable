@@ -20,6 +20,11 @@ Each buildable roadmap item **spins off its own feature plan** (e.g. `VAT_PLAN.m
 phases and delivery; when it ships it **ticks its roadmap line**, then is deleted. The roadmap keeps the
 tick.
 
+Give every item that spins off a plan a stable backticked `<epic>/<slug>` key on its checklist line.
+The new ledger records that exact key in `Roadmap item:` and the roadmap path in `Roadmap:`; this is
+the machine-checkable roadmap→plan→ledger link. The disposable plan file still does not cite the
+roadmap.
+
 **A plan's file must not cite the roadmap — but an agent working the plan may read it.** The document
 dependency runs one way: a plan is spun off *from* a roadmap item and reports completion back to it, and
 a plan that cites the roadmap couples the disposable artifact to the permanent one. Reading is different

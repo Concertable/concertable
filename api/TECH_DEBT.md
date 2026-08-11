@@ -6,6 +6,27 @@ Debt spanning multiple services, host `Program.cs` files, or repo-wide build/CI 
 
 ## MED
 
+### Repository bases repeat CRUD, and read no-tracking is a bypassable `Query` convention
+
+The shared `Concertable.DataAccess.Infrastructure` repository bases duplicate `GetByIdAsync` /
+`GetAllAsync` / `Exists` across `ReadRepository<>` and `Repository<>` (plus concrete overrides). The
+*only* real difference is tracking: read reads go through the no-tracking `Query` root, write reads
+through the tracked `context.Set<T>()`. And `Query` enforces nothing — a read repo can still call
+`context.Foo` directly and get a **tracked** query; nothing stops it. So it's a convention, not a
+guarantee, and the duplication only exists because tracking lives on the query.
+
+**Resolves when:** no-tracking becomes a property of the **context**, not the query. Read repositories
+sit on a read-only, no-tracking context (the `PublicDbContext` shape — `SaveChanges` throws — already
+exists), so `context.Foo` is no-tracking by construction and can't be bypassed, and `Query` is
+deleted. With tracking off the query, read/write `GetById`/`GetAll`/`Exists` become identical, so the
+bases collapse to one CRUD implementation exposed through `IReadRepository` / `IWriteRepository`
+facets. The base unification is a published-package change (publish-first); giving each service's read
+repos their own no-tracking read context is service-internal. Projection handlers keep a tracked
+context (they fetch-then-mutate), which is why context-wide `NoTracking` on the shared module context
+was rejected — the split is read-context vs write-context, not a global toggle.
+
+---
+
 ### Environment names are raw strings and test modes leak into production branches
 
 The backend has three overlapping environment vocabularies with no single owner:

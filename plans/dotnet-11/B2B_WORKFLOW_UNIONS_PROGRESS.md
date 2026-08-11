@@ -1,6 +1,8 @@
 # B2B .NET 11 runtime and native workflow unions progress
 
 - Plan: `plans/dotnet-11/B2B_WORKFLOW_UNIONS_PLAN.md`
+- Roadmap: `plans/dotnet-11/DOTNET_11_ROADMAP.md`
+- Roadmap item: `dotnet-11/b2b-workflow-unions`
 - Worktree: not created
 - Branch: `Refactor/dotnet-11_b2b-workflow-unions` (reserved; not created)
 - Plan PR: #448 merged — https://github.com/Concertable/concertable/pull/448
@@ -31,6 +33,7 @@ does not introduce `IAcceptStep` or place step interfaces inside union cases.
 ## Next Steps
 
 Blocked: The B2B typed-result checkpoints 6-7 source PR and every resulting publication/platform-sync gate are not yet terminal and green.
+Blocked by: plans/typed-result/B2B_PROGRESS.md.
 Unblock action: The owner at `plans/typed-result/B2B_PROGRESS.md` must finish checkpoints 6-7, merge the source PR, follow every resulting publication/platform-sync gate to terminal green, then update this ledger.
 Resume when: Current main contains the merged B2B work and `plans/typed-result/B2B_PROGRESS.md` records the source PR and every resulting publication/platform-sync gate as terminal and green.
 
