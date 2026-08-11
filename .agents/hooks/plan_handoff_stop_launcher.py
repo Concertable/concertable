@@ -6,10 +6,15 @@ from pathlib import Path
 
 
 IMPLEMENTATION = ".agents/hooks/plan_handoff_stop.py"
+TRUSTED_FILES = (
+    ".agents/hooks/plan_handoff_stop_launcher.py",
+    IMPLEMENTATION,
+    ".agents/hooks/plan_graph.py",
+)
 
 
-def blob_oid(root, revision=None):
-    target = f"{revision}:{IMPLEMENTATION}" if revision else str(root / IMPLEMENTATION)
+def blob_oid(root, implementation=IMPLEMENTATION, revision=None):
+    target = f"{revision}:{implementation}" if revision else str(root / implementation)
     command = ["git", "-C", str(root), "rev-parse", target] if revision else [
         "git",
         "-C",
@@ -30,9 +35,12 @@ def blob_oid(root, revision=None):
 
 
 def implementation_is_current(root):
-    checked_out = blob_oid(root)
-    origin_main = blob_oid(root, "origin/main")
-    return bool(checked_out and origin_main and checked_out == origin_main)
+    return all(
+        (checked_out := blob_oid(root, implementation))
+        and (origin_main := blob_oid(root, implementation, "origin/main"))
+        and checked_out == origin_main
+        for implementation in TRUSTED_FILES
+    )
 
 
 def main():
@@ -41,7 +49,7 @@ def main():
         result = {
             "decision": "block",
             "reason": (
-                "HANDOFF GATE ERROR: this checkout's plan handoff hook differs from origin/main. "
+                "HANDOFF GATE ERROR: this checkout's plan handoff hook bundle differs from origin/main. "
                 "Sync this branch with current main before relying on plan handoffs."
             ),
         }

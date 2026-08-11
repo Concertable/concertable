@@ -35,7 +35,7 @@ one establishes the package, CI, hosting, and toolchain conventions.
 
 ### Selected
 
-- [ ] 🟡 **B2B .NET 11 runtime and native workflow unions.** Design and operational state:
+- [ ] 🟡 **B2B .NET 11 runtime and native workflow unions.** `dotnet-11/b2b-workflow-unions` Design and operational state:
   [`B2B_WORKFLOW_UNIONS_PLAN.md`](B2B_WORKFLOW_UNIONS_PLAN.md) and
   [`B2B_WORKFLOW_UNIONS_PROGRESS.md`](B2B_WORKFLOW_UNIONS_PROGRESS.md). Upgrade the B2B runtime and
   reverse build/test closure while keeping published cross-service contracts net10-compatible, then

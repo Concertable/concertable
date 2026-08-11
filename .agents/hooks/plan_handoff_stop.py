@@ -4,19 +4,21 @@ import subprocess
 import sys
 from pathlib import Path
 
+HOOK_ROOT = str(Path(__file__).resolve().parent)
+if HOOK_ROOT not in sys.path:
+    sys.path.insert(0, HOOK_ROOT)
 
-TERMINAL = {
-    "",
-    "closed",
-    "complete",
-    "completed",
-    "done",
-    "n/a",
-    "na",
-    "none",
-    "nothing",
-    "terminal",
-}
+from plan_graph import (
+    BLOCKER_FIELDS,
+    blocker_details,
+    is_terminal,
+    ledger_errors,
+    ledger_root,
+    looks_like_legacy_blocker,
+    metadata,
+    next_steps,
+    plan_path,
+)
 
 ABSOLUTE_LEDGER = re.compile(
     r"[A-Za-z]:[\\/][^\"'\r\n<>|]*?[\\/]plans[\\/][A-Za-z0-9_.() \\/-]+?_PROGRESS\.md",
@@ -30,14 +32,6 @@ WORKDIR = re.compile(r"[\"']?(?:workdir|cwd)[\"']?\s*:\s*[\"']([^\"']+)", re.IGN
 CD_WORKDIR = re.compile(
     r"^\s*cd\s+(?:\"([^\"]+)\"|'([^']+)'|([^\r\n]+?))\s*$",
     re.IGNORECASE | re.MULTILINE,
-)
-REGISTERED_OWNER_WAIT = re.compile(r"\bdownstream handoffs\b", re.IGNORECASE)
-BLOCKED_OR_WAITING = re.compile(r"\b(?:blocked|waiting)\b", re.IGNORECASE)
-SUPPRESS_RESUME_PROMPT = re.compile(
-    r"\bdo not\b(?:(?![.!?](?:\s|$)).){0,240}"
-    r"\b(?:emit|include|surface)\b(?:(?![.!?](?:\s|$)).){0,120}"
-    r"\b(?:resume|continuation|handoff)(?:\s+prompt)?\b",
-    re.IGNORECASE | re.DOTALL,
 )
 MUTATING_TOOL_NAMES = {
     "apply_patch",
@@ -54,57 +48,6 @@ PATCH_FILE_TARGET = re.compile(
     r"((?:[A-Za-z]:[\\/])?[^\"'\r\n<>|]*?_PROGRESS\.md)",
     re.IGNORECASE,
 )
-
-
-def next_steps(text):
-    match = re.search(
-        r"^##+\s*Next Steps\s*$(.*?)(^##\s|\Z)",
-        text,
-        re.MULTILINE | re.DOTALL | re.IGNORECASE,
-    )
-    return match.group(1).strip() if match else None
-
-
-def is_terminal(body):
-    if body is None:
-        return True
-    normalized = re.sub(r"[`*_#>\-\s.]", "", body).lower()
-    plain = body.strip().lower()
-    return not normalized or plain in TERMINAL
-
-
-def blocker_details(body):
-    if body is None:
-        return None
-    lines = [line.strip() for line in body.splitlines() if line.strip()]
-    names = ("Blocked", "Unblock action", "Resume when")
-    if len(lines) < len(names):
-        return None
-    values = []
-    for line, name in zip(lines, names):
-        prefix = f"{name}:"
-        if not line.startswith(prefix):
-            return None
-        value = line.removeprefix(prefix).strip()
-        if not value:
-            return None
-        values.append(value)
-    return tuple(values)
-
-
-def looks_like_legacy_blocker(body):
-    if body is None:
-        return False
-    first_line = next((line.strip().lower() for line in body.splitlines() if line.strip()), "")
-    return (
-        first_line.startswith("waiting for ")
-        or first_line.startswith("blocked:")
-        or (
-            BLOCKED_OR_WAITING.search(body)
-            and REGISTERED_OWNER_WAIT.search(body)
-            and SUPPRESS_RESUME_PROMPT.search(body)
-        )
-    )
 
 
 def strings(value):
@@ -275,11 +218,6 @@ def git_branch(root):
         return ""
 
 
-def metadata(text, name):
-    match = re.search(rf"^- {re.escape(name)}:\s*`?([^`\r\n]+)`?\s*$", text, re.MULTILINE)
-    return match.group(1).strip() if match else ""
-
-
 def add_if_ledger(paths, candidate):
     try:
         resolved = candidate.resolve()
@@ -364,13 +302,6 @@ def branch_ledgers(root):
     return paths
 
 
-def ledger_root(path):
-    for parent in path.parents:
-        if parent.name.lower() == "plans":
-            return parent.parent
-    raise ValueError(f"Ledger is not below plans/: {path}")
-
-
 def logical_ledger_key(path):
     return path.relative_to(ledger_root(path)).as_posix().casefold()
 
@@ -398,9 +329,7 @@ def canonical_ledgers(paths):
 
 def expected_pointer(path):
     root = ledger_root(path)
-    plan = path.with_name(path.name.removesuffix("_PROGRESS.md") + "_PLAN.md")
-    if not plan.is_file():
-        raise ValueError(f"Missing companion plan for {path}")
+    plan = plan_path(path)
     text = path.read_text(encoding="utf-8")
     declared_worktree = metadata(text, "Worktree")
     owner_branch = metadata(text, "Branch")
@@ -483,6 +412,12 @@ def evaluate(data):
     blocked = []
     malformed_blockers = []
     for path in sorted(ledgers):
+        graph_errors = ledger_errors(path)
+        if graph_errors:
+            return {
+                "decision": "block",
+                "reason": "PLAN GRAPH GATE: " + " | ".join(graph_errors),
+            }
         body = next_steps(path.read_text(encoding="utf-8"))
         if body is None:
             return {
@@ -503,8 +438,8 @@ def evaluate(data):
             "decision": "block",
             "reason": (
                 f"BLOCKER HANDOFF GATE: {names} describes blocked work without the required "
-                "three-line contract. Start `## Next Steps` with non-empty `Blocked:`, "
-                "`Unblock action:`, and `Resume when:` lines. Do not emit the blocked plan's "
+                "four-line contract. Start `## Next Steps` with non-empty `Blocked:`, "
+                "`Blocked by:`, `Unblock action:`, and `Resume when:` lines. Do not emit the blocked plan's "
                 "continuation pointer."
             ),
         }
@@ -526,7 +461,7 @@ def evaluate(data):
             )
         required = tuple(
             f"{name}: {value}"
-            for name, value in zip(("Blocked", "Unblock action", "Resume when"), details)
+            for name, value in zip(BLOCKER_FIELDS, details)
         )
         missing = [line for line in required if line not in message]
         if missing:
