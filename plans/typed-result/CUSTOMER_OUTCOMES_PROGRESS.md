@@ -12,7 +12,7 @@
   `REUNION_ALPHA2_BASELINE` workstream owns the repository-wide pin cutover; this service workstream
   may independently prepare its Customer-owned alpha.2 code. Customer Ticket PR #475 and its
   platform-sync PR #479 are terminal on platform `.910` and remain outside this scope.
-- Last reconciled: 2026-08-11 after merging `origin/main` `de80debea` as local head `7ce4ed10d` and
+- Last reconciled: 2026-08-12 after merging `origin/main` `b94028d3f` as local head `a3c1c1420` and
   confirming PR #425 remains open at `e60219f7d`
 
 ## Current state
@@ -24,8 +24,8 @@ event contracts. Atomic Review and Preference creates translate only the existin
 to their typed conflicts; collaborator, provider, identity, invariant, and cancellation failures
 remain exceptions.
 
-The local branch is current with `origin/main` at platform `.936`, 55 commits ahead of it, and
-531 commits ahead of the deliberately preserved PR head. The current-main merge was automatic in
+The local branch is current with `origin/main` at platform `.939`, 57 commits ahead of it, and
+546 commits ahead of the deliberately preserved PR head. The current-main merge was automatic in
 Customer code and plan state. The branch still owns the same five-module semantic slice; Ticket,
 Concert, Customer Payment, purchase/checkout, shared Kernel API, events, models, and migrations are
 excluded.
@@ -44,12 +44,10 @@ the plan-managed two-leg push.
 
 ## Next Steps
 
-1. Commit the green alpha.2 checkpoint with this plan and ledger.
-2. Fetch `origin`, reconcile any new `origin/main` advance, and rerun every gate affected by incoming
-   code or package changes.
-3. Incrementally review the current-main merge and alpha.2 checkpoint from `c021d26c9`; fix, verify,
+1. Commit the final `.939` verification checkpoint with this ledger.
+2. Incrementally review the current-main merges and alpha.2 checkpoint from `c021d26c9`; fix, verify,
    commit, and re-review every actionable finding.
-4. Perform the plan-managed two-leg push to PR #425: push the reviewed work head, verify local,
+3. Perform the plan-managed two-leg push to PR #425: push the reviewed work head, verify local,
    remote-tracking, and PR OIDs, then commit and push the verified transport checkpoint separately.
 
 ## Downstream handoffs
@@ -85,14 +83,14 @@ the plan-managed two-leg push.
   74/74 across Customer Review 12/12, Preference 7/7, User 6/6, Venue 2/2, Artist 2/2 plus the matching
   B2B User 3/3, Venue 25/25, and Artist 17/17 projects. This evidence is historical; Phase 7 reruns it
   on current main.
-- Phase 7 Docker-independent candidate: all resolved Customer assets contain Reunion-family alpha.2
-  and no alpha.1; scoped units pass 80/80; Shared.Api passes 60/60; the complete Release solution
-  builds with 0 errors and 2 existing warnings; the isolated 36-project Customer carve builds with
-  0 errors and 1 existing warning; structural and whitespace audits pass.
-- Phase 7 Docker-backed candidate: `scripts/docker-health.ps1` passed its fresh-container HTTP data
+- Final `.939` Docker-independent candidate: all resolved Customer assets contain Reunion-family
+  alpha.2 and no alpha.1; scoped units pass 80/80; Shared.Api passes 60/60; the complete Release
+  solution builds with 0 errors and 4 existing warnings; the isolated 36-project Customer carve
+  builds with 0 errors and 1 existing warning; structural and whitespace audits pass.
+- Final `.939` Docker-backed candidate: `scripts/docker-health.ps1` passed its fresh-container HTTP data
   round trip. Review 12/12, Preference 7/7, B2B/Customer User 3/3 + 6/6, B2B/Customer Venue 25/25 +
   2/2, and B2B/Customer Artist 17/17 + 2/2 passed: 74/74 across eight projects. Every run-owned SQL
-  and Ryuk container was removed; unrelated pre-existing and concurrent containers were untouched.
+  and Ryuk container was removed; a separate session started a new pair after this run completed.
 - Review artifact: `reviews/Feature-typed-result_customer-outcomes.md`. All findings are fixed. Both
   review watermarks are `c021d26c9de0f65f291b319e38668c40844bc984`; the current-main merge and
   alpha.2 checkpoint remain to be incrementally reviewed.
