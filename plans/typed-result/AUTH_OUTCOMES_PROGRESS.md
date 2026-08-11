@@ -1,11 +1,13 @@
 # Auth expected-outcome migration progress
 
 - Plan: `plans/typed-result/AUTH_OUTCOMES_PLAN.md`
+- Roadmap: `plans/typed-result/TYPED_RESULT_MIGRATION_ROADMAP.md`
+- Roadmap item: `typed-result/auth-outcomes`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_auth-outcomes`
 - Branch: `Feature/typed-result_auth-outcomes`
 - PR: not opened
 - Dependency/package gates: no implementation gate; Auth has no Payment/B2B/Customer dependency.
-  Auth uses published `Reunion` `0.1.0-alpha.1` and `Reunion.Errors` `0.1.0-alpha.2`; its Razor edges
+  Published `Reunion` and `Reunion.Errors` `0.1.0-alpha.2` are available; its Razor edges
   do not need `Reunion.AspNetCore`. After the Auth `api/**` change merges, this work owns publication
   and platform-sync to terminal green.
 - Last reconciled: `2026-08-10` through merged `origin/main`
@@ -23,8 +25,10 @@ any push or PR.
 At the prior green checkpoint, merge commit `1a6c6d670` integrated `origin/main` `1043a9178`, including
 platform `0.1.0-alpha.0.890` and the authoritative Reunion conversion plan.
 
-The completed Auth semantics compile directly against published `Reunion` `0.1.0-alpha.1` and
-`Reunion.Errors` `0.1.0-alpha.2`. Credential authentication/password decisions and token expiry
+The completed Auth semantics currently compile against `Reunion` `0.1.0-alpha.1` and
+`Reunion.Errors` `0.1.0-alpha.2`. The next locally implementable checkpoint aligns both used packages
+to alpha.2 and adopts the new unambiguous construction surface before review. Credential
+authentication/password decisions and token expiry
 decisions now live in the domain entities. Expected refusals remain typed; token/credential identity
 mismatch remains an invariant exception. Razor pages still map carriers manually, so
 `Reunion.AspNetCore` is intentionally absent. No wire, persistence model, migration, or cross-service
@@ -86,8 +90,11 @@ invariant defect; infrastructure, cancellation, and malformed identity state rem
 
 ## Next Steps
 
-Run incremental code review over the commits after the existing review watermark, including the
-domain-ownership correction. Address every clear finding, refresh current-main state, and run the
+First align Auth's existing `Reunion` and `Reunion.Errors` references to `0.1.0-alpha.2`, adopt the
+new construction conversions only where intent remains explicit, and rerun the Auth unit/integration,
+Release build, architecture, carve, and mechanical gates. Then run incremental code review over the
+commits after the existing review watermark, including the domain-ownership correction and alpha.2
+checkpoint. Address every clear finding, refresh current-main state, and run the
 read-only PR preflight. Do not push or open a PR without instruction; delivery still requires full
 merge-queue API/UI E2E and publication/platform-sync ownership to terminal green.
 

@@ -3,7 +3,8 @@
 > Next steps live in @plans/typed-result/AUTH_OUTCOMES_PROGRESS.md -> `## Next Steps`.
 
 **Status:** The semantic migration, published Reunion conversion, and domain-ownership correction are
-locally implemented and verified. The new runtime checkpoint still requires incremental review and
+locally implemented and verified. Alpha.2 package/API reconciliation is the next code checkpoint;
+after that the runtime checkpoint requires incremental review and
 fresh PR preflight before delivery. Auth has no Payment, B2B, or Customer runtime/package dependency.
 
 ## Outcome
@@ -38,6 +39,8 @@ wire behavior does not carry `Result` or `Option` values.
   an invariant defect and remains a `DomainException`; no application pre-check duplicates it.
 - Error definitions use the current direct `ErrorDefinition.<Kind><TCase>(...)` API. No
   `ErrorDefinition.For<TError>()` call remains.
+- Every used Reunion package resolves exactly `0.1.0-alpha.2`; Auth does not add the unused Validation
+  or AspNetCore packages.
 - No Result/Option/error carrier crosses Razor, HTTP, OAuth/OIDC, Duende, event, or persistence wire
   shapes.
 - Auth builds from its own published package closure, including the Reunion-backed Kernel package at
@@ -101,8 +104,10 @@ message, and `ErrorKind`; expected values must not be calculated with production
 
 - Keep `FirstOrDefaultAsync` / `FindAsync` nullable results in `AuthService`, then create `Option` or a
   typed failure at the service return boundary.
-- Use `TryGetValue`, `TryGetError`, `Match`, `ValueOr`, or existing Kernel composition. Do not add
-  throwing payload accessors, implicit conversions, or local unwrap helpers.
+- Use `TryGetValue`, `TryGetError`, `Match`, `ValueOr`, or the alpha.2 construction surface. A
+  target-typed raw payload is valid only where success/error intent is unambiguous; use exact named
+  cases where payload types overlap or branch intent matters. Do not add throwing payload accessors or
+  local unwrap/conversion helpers.
 - Do not catch EF, Duende, outbox/email, hashing, token-generation, or cancellation exceptions to turn
   them into expected outcomes. Tests must prove representative infrastructure and cancellation faults
   still escape.
@@ -212,6 +217,14 @@ and ship in one PR.
 - [x] Re-run Auth unit/integration tests, the architecture slice, full Release solution build, fresh
   standalone Auth carve, and mechanical checks.
 
+### Phase 6 - Reunion alpha.2 baseline and construction ergonomics
+
+- [ ] Align Auth's existing direct `Reunion` and `Reunion.Errors` references to
+  `0.1.0-alpha.2`; do not add `Reunion.Validation` or `Reunion.AspNetCore`.
+- [ ] Adopt target-typed raw payload or exact named-case conversions where they simplify the existing
+  Auth-owned contracts without weakening branch intent or error-union ownership.
+- [ ] Rerun the Auth verification gate before incremental review and PR preflight.
+
 ## Verification gate for every phase
 
 1. Run the affected Auth unit and integration projects through the `integration-debug` workflow;
@@ -228,8 +241,8 @@ a genuine model change, stop and amend the plan before touching migrations.
 
 ## Review and delivery lifecycle
 
-1. After Phase 4, run a full code review over `origin/main..HEAD`; resolve every clear finding and use
-   incremental review for later code commits, including the Phase 5 domain correction.
+1. After Phase 6, run incremental review for the domain correction and alpha.2 checkpoint from the
+   existing review watermark; resolve every clear finding.
 2. Reconcile with current `origin/main`, audit Auth's actual package/HTTP topology, replace old carrier
    imports and terminals with directly owned Reunion packages at their real edges, then rebuild,
    retest, re-carve, incrementally review, and run PR preflight. If topology proves no unpublished
