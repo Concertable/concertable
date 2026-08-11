@@ -8,7 +8,8 @@
   required after the `api/**` source PR merges
 - Last reconciled: 2026-08-11; all five implementation phases are complete; incremental review of
   `36375ffdf..bc05263e7` found no issues; pre-existing platform-sync PR #488 merged green as
-  `130211aa9`; merge commit `9722bb3f9` reconciles PR #451 with that current `origin/main` at 0 behind
+  `130211aa9`; merge commit `9722bb3f9` reconciles PR #451 with current main at 0 behind; the full
+  current-main API solution build passed with 0 errors and 8 existing warnings
 
 ## Current state
 
@@ -57,12 +58,17 @@ Current `origin/main` at `130211aa90ae031a31e8b827e2567c3667fbc2b8` is merged th
 the merge resolved the shared Concert registration file automatically. A full API solution build and
 final review of the current-base composition are required before the replacement PR head is pushed.
 
+The full current-main `api/Concertable.slnx` build passed from commit `bc4d9d174` using the short
+artifact root `C:\Users\TommySeery\AppData\Local\Temp\Concertable\launch-deal-strategy-pr451-current-main`.
+It completed with 0 errors and 8 existing warnings. The remaining local gate is the final review of
+the net branch diff and the automatically merged Concert registration seam.
+
 ## Next Steps
 
 Land PR #451 through the repository merge workflow only:
 
-1. Build `api/Concertable.slnx` to 0 errors, then review the current-base branch composition and push
-   the verified replacement PR head through the plan-managed two-leg protocol.
+1. Review the current-base branch composition, including the Concert registration merge seam, then
+   push the verified replacement PR head through the plan-managed two-leg protocol.
 2. This broad booking/payment/settlement refactor requires full API + UI merge-queue E2E; remove any
    skip label or trailer and use the full tier.
 3. Follow the PR to a terminal merge result and then own the generated `chore/platform-sync-*` PR to
@@ -224,6 +230,9 @@ Land PR #451 through the repository merge workflow only:
   merged through its normal queued path as `130211aa90ae031a31e8b827e2567c3667fbc2b8`.
 - 2026-08-11: merged current `origin/main` at `130211aa9` through `9722bb3f9` with no conflict; the
   branch is 0 commits behind and 31 commits ahead before this ledger checkpoint.
+- 2026-08-11: `dotnet build api/Concertable.slnx --artifacts-path
+  C:\Users\TommySeery\AppData\Local\Temp\Concertable\launch-deal-strategy-pr451-current-main`
+  succeeded from `bc4d9d174` with 0 errors and 8 existing warnings in 9m24s.
 
 ## Reviews
 
@@ -675,6 +684,16 @@ Land PR #451 through the repository merge workflow only:
   `9722bb3f9e33f88b4520de1355b5db9ed9d14d63`; 0 commits behind main; no merge conflict or dirty path.
 - Outcome: PR #451 now composes with the current platform pin and current main source.
 - Follow-up: Build the complete API solution to 0 errors, then run the final current-base review.
+
+### 2026-08-11 — current-main solution build passed
+
+- Action: Built the complete API solution after the 223-commit base reconciliation using a short
+  artifact path to avoid the deep-worktree Windows path limit.
+- Evidence: `dotnet build api/Concertable.slnx --artifacts-path
+  C:\Users\TommySeery\AppData\Local\Temp\Concertable\launch-deal-strategy-pr451-current-main` at
+  `bc4d9d174`; 0 errors, 8 existing warnings, 9m24s.
+- Outcome: The current-base compilation gate is terminal green.
+- Follow-up: Review the net PR diff and the automatically merged Concert registration seam.
 
 ## Resume prompt
 
