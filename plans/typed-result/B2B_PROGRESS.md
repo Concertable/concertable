@@ -1,11 +1,13 @@
 # B2B typed-result migration progress
 
 - Plan: `plans/typed-result/B2B_PLAN.md`
+- Roadmap: `plans/typed-result/TYPED_RESULT_MIGRATION_ROADMAP.md`
+- Roadmap item: `typed-result/b2b`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-B2BTypedResultMigration`
 - Branch: `Refactor/B2BTypedResultMigration`
 - PR: not opened
-- Dependency/package gates: platform `0.1.0-alpha.0.897`, `Reunion.Errors` `0.1.0-alpha.2`, and
-  production-verified `Reunion.Validation` `0.1.0-alpha.1` resolve from normal configured feeds
+- Dependency/package gates: platform `0.1.0-alpha.0.897` and production-verified `Reunion`,
+  `Reunion.Validation`, and `Reunion.Errors` `0.1.0-alpha.2` resolve from normal configured feeds
 - Last reconciled: 2026-08-10 against origin/main `5f39b9d76`, merged as `f108a83fd`; origin/main
   advanced to `0509c6dfd` during verification and has not been merged into the dirty worktree
 
@@ -61,12 +63,12 @@ therefore exercised in their owning integration projects. Customer User required
 temporary elevated `R:` mapping for Windows SNI native-DLL path length; the mapping was removed after
 the targeted rerun.
 
-The current dependency gate is open. `Reunion.Validation` `0.1.0-alpha.1` is published, indexed,
-repository-signature and payload-provenance verified. The merged platform `.897` baseline requires
-`Reunion.Errors` `0.1.0-alpha.2`; Checkpoint 8 therefore upgraded B2B's direct pin and mechanically
-replaced the removed `ErrorDefinition.For<TError>()` builder with the supported direct nested-case
-factories. The resolved Concert graph is Reunion `.1`, Reunion.Errors `.2`, and Reunion.Validation
-`.1`. This branch merged origin/main `5f39b9d76` as `f108a83fd`; no B2B PR or remote branch exists.
+The current dependency gate is open. The complete Reunion package family is published at
+`0.1.0-alpha.2`. Checkpoint 8 already upgraded `Reunion.Errors` and replaced the removed
+`ErrorDefinition.For<TError>()` builder with direct static factories, but the dirty candidate still
+resolves `Reunion` and `Reunion.Validation` alpha.1. Reconcile those existing pins to alpha.2 and use
+the new raw-payload or exact named-case conversions only where intent remains compile-time explicit.
+This branch merged origin/main `5f39b9d76` as `f108a83fd`; no B2B PR or remote branch exists.
 
 Exact local packages made checkpoints 6-7 independently implementable without changing delivery order.
 `Concertable.Payment.Contracts` and `Concertable.Payment.Client` `0.1.0-alpha.0.911` were packed from
@@ -92,8 +94,10 @@ and green for Checkpoint 8.
 
 ## Next Steps
 
-Commit the verified Checkpoint 8 runtime/test tree, then implement Checkpoint 9 from the plan. Fetch
-and reconcile the newer origin/main, repeat affected build/test gates, then run incremental
+Reconcile the dirty Checkpoint 8 tree to `Reunion`, `Reunion.Validation`, and `Reunion.Errors`
+`0.1.0-alpha.2`, adopt the new unambiguous construction surface within its existing scope, rerun its
+affected gates, and commit it. Then implement Checkpoint 9 from the plan. Fetch and reconcile the
+newer origin/main, repeat affected build/test gates, then run incremental
 code/security review from watermark `3d50d321c`, address every new finding serially, and update this
 ledger. Do not push or merge B2B until separately instructed.
 

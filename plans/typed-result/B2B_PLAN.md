@@ -14,8 +14,8 @@ this service branch owns only B2B semantics and consumes the integrated publishe
 
 ## Checkpoints
 
-Checkpoints 1–7 are complete on the branch. Checkpoint 8 is actionable against published
-`Reunion.Validation` `0.1.0-alpha.1`, `Reunion.Errors` `0.1.0-alpha.2`, and the published
+Checkpoints 1–7 are complete on the branch. Checkpoint 8 is implemented and must be reconciled before
+commit against published `Reunion`, `Reunion.Validation`, and `Reunion.Errors` `0.1.0-alpha.2` and the published
 Payment/platform baseline. No FluentResults
 adapter, string bridge, committed local source, feed path, or disposable package pin may be introduced.
 
@@ -84,6 +84,10 @@ adapter, string bridge, committed local source, feed path, or disposable package
   operation errors. Application services own lookup absence, translate `Invalid.Errors` into their
   operation-specific cases, and preserve the current `application`, `totalTickets`, `booking`, and
   `datePosted` structured fields at the HTTP terminal.
+- Use target-typed raw payload conversions only where success/error intent is unambiguous. Use exact
+  named cases when payload types overlap or branch intent matters, and direct static factories when
+  inference would obscure the owned error contract. Do not add conversion helpers or casts that hide
+  ambiguity.
 - Expected alternatives are owned by the domain method or factory that enforces them. HTTP request
   validation may reject the same malformed wire input, but application services remain correct when
   called directly and do not repeat an equivalent guard merely to avoid a `DomainException`.
@@ -113,8 +117,9 @@ adapter, string bridge, committed local source, feed path, or disposable package
 
 ## Dependency gate
 
-The dependency gate is open. `Reunion.Validation` `0.1.0-alpha.1` and `Reunion.Errors`
+The dependency gate is open. `Reunion`, `Reunion.Validation`, and `Reunion.Errors`
 `0.1.0-alpha.2` are published, indexed, repository-signature and payload-provenance verified, and
 clean-restored from NuGet.org with their published dependency graph. The merged platform `.897`
 baseline is the implementation baseline. Checkpoint 8 must use only normal configured feeds and the
-published versions; temporary package inputs remain forbidden.
+published versions; temporary package inputs remain forbidden. The repository-wide baseline plan does
+not block this branch's local alpha.2 reconciliation.
