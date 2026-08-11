@@ -280,12 +280,12 @@ tier and receives no skip label.
 
 ### Phase 7 — Reunion alpha.2 package/API reconciliation
 
-- [ ] Align every existing Customer reference to `Reunion`, `Reunion.Validation`, `Reunion.Errors`,
+- [x] Align every existing Customer reference to `Reunion`, `Reunion.Validation`, `Reunion.Errors`,
   and `Reunion.AspNetCore` to `0.1.0-alpha.2`; do not add packages to projects that do not use them.
-- [ ] Within the five-module scope, use target-typed raw payload conversions only where intent is
+- [x] Within the five-module scope, use target-typed raw payload conversions only where intent is
   unambiguous and exact named cases where payload types overlap or branch intent matters. Keep direct
   static factories when inference would obscure the owned error contract.
-- [ ] Run all Docker-independent package, build, unit, architecture, carve, scope, and whitespace gates
+- [x] Run all Docker-independent package, build, unit, architecture, carve, scope, and whitespace gates
   before the Docker-dependent final integration gate. Docker health does not block this code phase.
 - [ ] After a healthy Docker data-path preflight, rerun the five Release integration wrappers, then
   review the alpha.2 checkpoint and perform the existing two-leg PR update.
