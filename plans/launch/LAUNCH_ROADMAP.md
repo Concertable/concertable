@@ -31,6 +31,10 @@
 - [x] ✅ **Browser-storage audit + consent correction** `launch/browser-storage-consent` — shipped (`Feature/launch_browser-storage-consent`, #482): evidence-led audit (static sweep + anonymous runtime capture) of the four SPAs' device storage, every item classified necessary/functional/optional in a drift-guarded `app/web/shared/src/lib/storageManifest.ts` and the engineering inventory `app/web/shared/BROWSER_STORAGE.md`. Removed the dead `sidebar_state` cookie; made the two boot-time third parties load on use only (lazy Stripe `getStripe()`; Google Maps via a scoped `MapsProvider` on find/detail routes, no longer at app boot); added `consentGate.ts` so the retained analytics/marketing banner's toggles actually gate loading (the integration point for roadmapped GA4/pixels). Banner retained by decision — analytics/marketing is roadmapped and UK PECR mandates the banner once such tech loads. Legal-gated tail only: solicitor policy-copy wire into the `/cookies` page (separate item, line 198) and whether Maps needs a `functional` consent category.
 - [ ] 🔴 **Production deployment + config/secrets** — the app has **no** deployment path, config store, or secret store (all local Aspire + emulators; secrets committed to source, incl. a plaintext Azure SQL password). Surfaced 2026-07-17. Hard launch gate. Plan: [../CONFIG_AND_DEPLOYMENT_PLAN.md](../platform/CONFIG_AND_DEPLOYMENT_PLAN.md).
 
+**Architecture refactors — ready, not launch gates:**
+
+- [ ] 🟡 **Deal-type strategy registration** — replace nine hand-written `DealType → strategy` dictionaries with module-local factories and one vertically declared registration source, while preserving named business facades and the existing Deal/Concert boundary. Compatible with the planned .NET 11 Accept/Apply/Checkout union migration. Plan: [DEAL_STRATEGY_REGISTRATION_PLAN.md](DEAL_STRATEGY_REGISTRATION_PLAN.md).
+
 **Verify before trusting — competitor table-stakes, not confirmed in code:** reviews/reputation end-to-end · calendar sync (Google/Apple/Outlook) · financial/settlement CSV export.
 
 The legal/business track is [LAUNCH_CHECKLIST.md](LAUNCH_CHECKLIST.md); the hard launch gates are in §7.
