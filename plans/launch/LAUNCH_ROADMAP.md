@@ -33,7 +33,7 @@
 
 **Architecture refactors — ready, not launch gates:**
 
-- [ ] 🟡 **Deal-type strategy registration** — replace nine hand-written `DealType → strategy` dictionaries with module-local factories and one vertically declared registration source, while preserving named business facades and the existing Deal/Concert boundary. Compatible with the planned .NET 11 Accept/Apply/Checkout union migration. Plan: [DEAL_STRATEGY_REGISTRATION_PLAN.md](DEAL_STRATEGY_REGISTRATION_PLAN.md).
+- [x] ✅ **Deal-type strategy registration** — shipped in PR #451: module-local factories and vertically declared registration replace the repeated `DealType → strategy` dictionaries while preserving named business facades and the Deal/Concert boundary. `launch/deal-strategy-registration`
 
 **Verify before trusting — competitor table-stakes, not confirmed in code:** reviews/reputation end-to-end · calendar sync (Google/Apple/Outlook) · financial/settlement CSV export.
 
