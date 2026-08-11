@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `ddd2ca4ced246a23969965ff2eacd508956f3b0b`  _(2026-08-11)_
-**Security-reviewed up to commit:** `ddd2ca4ced246a23969965ff2eacd508956f3b0b`  _(2026-08-11)_
+**Reviewed up to commit:** `599b50836729225d8626ccadfd3cabbcef4f000f`  _(2026-08-11)_
+**Security-reviewed up to commit:** `599b50836729225d8626ccadfd3cabbcef4f000f`  _(2026-08-11)_
 
 > Range reviewed: `43fe1caf4..fb34f37b1` (21 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -42,3 +42,15 @@ Native review of the net PR diff and the automatically merged Concert registrati
 parents preserved correctly. Security review found no auth, authorization, secret, or input-handling
 change; the only sensitive net path deletes the unused `IDealStrategy` Contracts marker, with no
 repository consumer. The full API solution builds with 0 errors on the resulting code tree.
+
+## Incremental review — 2026-08-11 (invariant factory correction)
+
+> Range reviewed: `ddd2ca4ce..599b50836` (60 commits).
+
+No new findings. The range removes unused covariance from the two module-local factory contracts and
+merges current `main`, including the already-reviewed frontend-hosting, browser-storage, plan-graph,
+and worktree-lifecycle changes. All factory consumers request exact closed generic types, so the
+invariant contracts preserve every supported resolution path. Native and repository-specific review
+found no merge-seam, boundary, seeding, convention, or changed-path coverage issue. Security review of
+the workflow, browser-loading, package-feed, and worktree-script changes found no new secret, auth,
+authorization, or untrusted-input exposure.

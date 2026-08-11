@@ -3,14 +3,13 @@
 - Plan: `plans/launch/DEAL_STRATEGY_REGISTRATION_PLAN.md`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal_strategy_registration`
 - Branch: `Refactor/launch_deal_strategy_registration`
-- PR: [#451](https://github.com/Concertable/concertable/pull/451) — open; user-authorized covariance
-  correction and fresh merge-queue attempt are in progress from remote head
+- PR: [#451](https://github.com/Concertable/concertable/pull/451) — open; the user-authorized
+  covariance correction is locally verified and reviewed, pending its compound push from remote head
   `30c459d712ab0b5b05c801db79664eca6772f9bf`
 - Dependency/package gates: no pre-merge package dependency; the generated platform-sync PR must be
   followed to green/merged after this `api/**` PR lands
 - Last reconciled: 2026-08-11; current `origin/main`
-  `ac25c8a2196a84fae5fd9b51d49f910d2ffbee48` is merged as `d2a20695f`; branch is 0 commits behind
-  and 40 ahead
+  `e3fb7c38c` is merged as `599b50836`; branch is 0 commits behind and 45 ahead
 
 ## Current state
 
@@ -25,11 +24,11 @@ The implementation commits are `506bc35e4` (terms/factory), `4a741fa50` (payee/p
 guard). The existing review artifact is `reviews/Refactor-launch_deal_strategy_registration.md`; all
 recorded reviews are clean with no open finding.
 
-Current main at `ac25c8a2196a84fae5fd9b51d49f910d2ffbee48` is merged into the branch. The merge includes platform
-version `0.1.0-alpha.0.922` and Concert cancellation routing changes without overlapping either strategy
-factory interface or the module-local registration composition. Covariance is removed from both
-module-local interfaces and their documented examples; repository search finds no remaining variant
-factory declaration or covariance-dependent assignment.
+Current main at `e3fb7c38c` is merged into the branch. The reconciled base includes platform version
+`0.1.0-alpha.0.922`, Concert cancellation routing, and the worktree-lifecycle automation without
+overlapping either strategy factory interface or the module-local registration composition.
+Covariance is removed from both module-local interfaces and their documented examples; repository
+search finds no remaining variant factory declaration or covariance-dependent assignment.
 
 The reviewed work range `bc05263e7..7cdf680f0` and its single checkpoint-transport commit are pushed.
 Local HEAD, the remote-tracking ref, and PR `headRefOid` were verified at
@@ -83,9 +82,9 @@ unused covariance from both module-local strategy factory interfaces.
 - Artifact: `reviews/Refactor-launch_deal_strategy_registration.md`.
 - Native, security, correctness, microservice-isolation, module-boundary, seeding, C# convention,
   keyed-strategy, and changed-path coverage reviews have no open finding.
-- Final prior incremental review covered `bc05263e7..ddd2ca4ce` (232 commits), including the net PR
-  diff and automatic Concert registration merge seam; it found no issue. The current-main merge and
-  covariance correction require a new incremental review before push.
+- Incremental review covers `ddd2ca4ce..599b50836` (60 commits), including both current-main merges,
+  the invariant factory correction, and security-sensitive workflow/browser/tooling paths; it found
+  no issue and advances both review watermarks to `599b50836`.
 
 ## Decisions and constraints
 
@@ -93,13 +92,12 @@ unused covariance from both module-local strategy factory interfaces.
   queue E2E locally.
 - Use a short `--artifacts-path` for local SDK work because the deep Windows worktree can exceed path
   limits in ordinary `obj` output.
-- After source merge, transfer the plan-only observation tail to a clean
-  `Docs/launch_deal_strategy_registration_closeout` worktree, remove this feature worktree and branch,
-  then own package publication and generated platform sync to terminal green before docs closeout.
+- After source merge, close this plan-managed feature worktree with `scripts/worktrees.ps1`, create a
+  clean `Docs/launch_deal_strategy_registration_closeout` worktree from current `origin/main`, and own
+  package publication and generated platform sync to terminal green before docs closeout.
 
 ## Next Steps
 
-1. Commit the verified invariant factory correction and incrementally review the complete
-   post-watermark range.
+1. Commit the clean incremental review checkpoint.
 2. Use the compound push protocol to update PR #451, wait for terminal green PR checks, select the E2E
    tier mechanically, and enqueue the verified current remote head once.
