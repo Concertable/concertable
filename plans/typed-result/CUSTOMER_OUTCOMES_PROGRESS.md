@@ -1,12 +1,14 @@
 # Customer non-Payment outcomes and lookups progress
 
 - Plan: `plans/typed-result/CUSTOMER_OUTCOMES_PLAN.md`
+- Roadmap: `plans/typed-result/TYPED_RESULT_MIGRATION_ROADMAP.md`
+- Roadmap item: `typed-result/customer-outcomes`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_customer-outcomes`
 - Branch: `Feature/typed-result_customer-outcomes`
 - PR: [#425](https://github.com/Concertable/concertable/pull/425) — open, non-draft, head `e60219f7d`
-- Dependency/package gates: exact `Reunion.Validation` `0.1.0-alpha.1` is published, indexed,
-  repository-signature and payload-provenance verified, and clean-restored with `Reunion` and
-  `Reunion.Errors` `.1` from NuGet.org only. Payment `0.1.0-alpha.0.894` publication and platform-sync
+- Dependency/package gates: exact `0.1.0-alpha.2` is published for `Reunion`,
+  `Reunion.Validation`, `Reunion.Errors`, and `Reunion.AspNetCore`. Payment `0.1.0-alpha.0.894`
+  publication and platform-sync
   PR #463 are terminal. Customer Ticket replacement PR #475 and platform-sync PR #479 are terminal
   on platform `.910`; historical PR #282 is closed as superseded and the shipped Ticket slice remains
   excluded.
@@ -167,19 +169,26 @@ and accepts main's removal of unused `FluentResults`. The incremental native, se
 and coverage review of `958c05c5a..c021d26c9` is clean and both review watermarks name that merge
 head.
 
-The deterministic current-main gate is green: the Release solution builds with 0 errors and 8
+The deterministic current-main gate is green on the mixed alpha.1/alpha.2 candidate: the Release solution builds with 0 errors and 8
 existing warnings; the five scoped unit suites pass 80/80; Shared.Api passes 60/60; the isolated
 36-project Customer package-consumer carve builds with 0 errors and its temporary directory was
 removed; scoped carrier, validation, excluded Ticket/Concert/Payment, legacy namespace, and
 whitespace inventories pass. The mandatory fresh-container Docker health check timed out after five
 minutes and a subsequent read-only `docker ps` also timed out. Docker Desktop has one non-responding
 process, so no current-main integration suite was started and the two-leg PR update remains blocked.
+The new alpha.2 package/API checkpoint is independently actionable before that Docker gate: align all
+four used package families, adopt only unambiguous raw-payload or exact named-case conversions in the
+owned scope, and rerun every Docker-independent gate first.
 
 ## Next Steps
 
-Blocked: Docker Desktop's daemon does not answer the mandatory fresh-container data-path check or `docker ps`, so the current-main integration gate cannot run and PR #425 must remain at `e60219f7d`.
-Unblock action: Restart Docker Desktop and require `scripts/docker-health.ps1` to pass once; then run the five Release integration wrappers, confirm 74/74 and an empty Docker inventory, reconcile any new base advance, incrementally review it, and perform the plan-managed two-leg push.
-Resume when: Docker Desktop shows Running and the fresh-container HTTP data round trip is stable.
+1. Align every existing Customer `Reunion`, `Reunion.Validation`, `Reunion.Errors`, and
+   `Reunion.AspNetCore` reference to `0.1.0-alpha.2`, applying the new construction surface only where
+   intent remains compile-time explicit.
+2. Run every Docker-independent package, build, unit, architecture, carve, scope, and whitespace gate.
+3. Then restart Docker Desktop if needed, require `scripts/docker-health.ps1` to pass once, run the five
+   Release integration wrappers, confirm 74/74 and an empty Docker inventory, reconcile any new base
+   advance, incrementally review it, and perform the plan-managed two-leg push.
 
 ## Completed work
 

@@ -9,6 +9,8 @@ smallest Reunion-backed functional shape that represents their real outcomes:
 
 - operation-specific `Result<TValue, TError>` only for expected failures a caller can act on;
 - `ValidationResult` for validation-only contracts implemented behind dependency injection;
+- exact `0.1.0-alpha.2` ownership for every used Reunion-family package and the new construction
+  surface where success/error intent remains explicit;
 - `Option<T>` for ordinary absence at application and module boundaries;
 - successful empty `IReadOnlyList<T>` values for collection queries;
 - plain values and capability booleans where no actionable failure or absence exists.
@@ -276,6 +278,18 @@ tier and receives no skip label.
   evidence in the ledger, then delete this plan and ledger together in the following close-out change
   under the repository lifecycle rules.
 
+### Phase 7 — Reunion alpha.2 package/API reconciliation
+
+- [ ] Align every existing Customer reference to `Reunion`, `Reunion.Validation`, `Reunion.Errors`,
+  and `Reunion.AspNetCore` to `0.1.0-alpha.2`; do not add packages to projects that do not use them.
+- [ ] Within the five-module scope, use target-typed raw payload conversions only where intent is
+  unambiguous and exact named cases where payload types overlap or branch intent matters. Keep direct
+  static factories when inference would obscure the owned error contract.
+- [ ] Run all Docker-independent package, build, unit, architecture, carve, scope, and whitespace gates
+  before the Docker-dependent final integration gate. Docker health does not block this code phase.
+- [ ] After a healthy Docker data-path preflight, rerun the five Release integration wrappers, then
+  review the alpha.2 checkpoint and perform the existing two-leg PR update.
+
 ## Definition of done
 
 - Review create and Preference create/update expose only operation-owned expected failures with exact,
@@ -284,6 +298,7 @@ tier and receives no skip label.
   application service; request validation is not the only protection against the throwing guard.
 - Every custom Review validator resolved through DI returns Reunion `ValidationResult`; application
   services map it to operation-owned Results or capability booleans without leaking it onto the wire.
+- Every used Reunion-family package resolves exactly `0.1.0-alpha.2`, with no unused package added.
 - All ordinary single-item application/module absence in the five scoped modules is `Option<T>`;
   persistence lookup contracts remain nullable.
 - All scoped returned collection contracts are successful empty `IReadOnlyList<T>` values, except
