@@ -7,7 +7,7 @@ from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from plan_handoff_stop import evaluate, transcript_ledgers
+from plan_handoff_stop import evaluate, expected_handoff, next_steps, transcript_ledgers
 
 
 class PlanHandoffStopTests(unittest.TestCase):
@@ -142,6 +142,13 @@ class PlanHandoffStopTests(unittest.TestCase):
             "and do what its `## Next Steps` says."
         )
 
+    def handoff(self):
+        return expected_handoff(
+            self.ledger.resolve(),
+            self.pointer(),
+            next_steps(self.ledger.read_text(encoding="utf-8")),
+        )
+
     def input_without_ledger_reference(self, message):
         transcript = self.root / "unrelated-transcript.jsonl"
         record = {"type": "response_item", "payload": {"type": "message", "role": "user"}}
@@ -208,8 +215,62 @@ class PlanHandoffStopTests(unittest.TestCase):
 
     def test_allows_exact_pointer(self):
         self.write_ledger("Run the repository code-review workflow, then open the PR.")
-        result = evaluate(self.input_with_codex_transcript(f"Ready.\n\n```text\n{self.pointer()}\n```"))
+        result = evaluate(self.input_with_codex_transcript(f"Ready.\n\n{self.handoff()}"))
         self.assertEqual({}, result)
+
+    def test_allows_markdown_hard_break_whitespace_in_pointer(self):
+        self.write_ledger("Run the repository code-review workflow, then open the PR.")
+        handoff = self.handoff().replace("\n", "  \n")
+        result = evaluate(self.input_with_codex_transcript(f"Ready.\n\n{handoff}"))
+        self.assertEqual({}, result)
+
+    def test_allows_rendered_plain_text_handoff_with_full_untruncated_reason(self):
+        next_steps_body = (
+            "Run incremental code review over the commits after the existing review watermark, "
+            "including the domain-ownership correction. Address every clear finding, refresh "
+            "current-main state, and run the read-only PR preflight. Do not push or open a PR "
+            "without instruction."
+        )
+        self.write_ledger(next_steps_body)
+        rendered_pointer = self.pointer().replace("`", "")
+        message = (
+            f"Why: {self.ledger.name} owns unfinished work from this turn: {next_steps_body}\n\n"
+            "Only run this continuation if no agent or session is already working in "
+            f"{self.root}.\n\n{rendered_pointer}"
+        )
+        result = evaluate(self.input_with_codex_transcript(message))
+        self.assertEqual({}, result)
+
+    def test_normalized_handoff_still_must_end_with_pointer(self):
+        self.write_ledger("Run the repository code-review workflow, then open the PR.")
+        rendered_handoff = self.handoff().replace("`", "").replace("text\n", "").replace("\n", " ")
+        result = evaluate(
+            self.input_with_codex_transcript(f"{rendered_handoff}\n\nLet me know.")
+        )
+        self.assertEqual("block", result["decision"])
+
+    def test_allows_renderer_line_wrap_after_path_hyphen(self):
+        declared_worktree = self.root.parent / "typed-result_auth-outcomes"
+        declared_worktree.mkdir()
+        self.write_ledger("Run the repository code-review workflow, then open the PR.", declared_worktree)
+        rendered_handoff = (
+            self.handoff()
+            .replace("`", "")
+            .replace("```text\n", "")
+            .replace("\n```", "")
+            .replace("auth-outcomes", "auth-\noutcomes")
+        )
+        result = evaluate(self.input_with_codex_transcript(rendered_handoff))
+        self.assertEqual({}, result)
+
+    def test_bare_pointer_does_not_pass_without_reason_and_collision_warning(self):
+        self.write_ledger("Open the PR after review.")
+        result = evaluate(
+            self.input_with_codex_transcript(f"```text\n{self.pointer()}\n```")
+        )
+        self.assertEqual("block", result["decision"])
+        self.assertIn("Why:", result["reason"])
+        self.assertIn("Only run this continuation if no agent or session", result["reason"])
 
     def test_paraphrased_next_steps_does_not_pass(self):
         self.write_ledger("Run the repository code-review workflow, then open the PR.")
@@ -293,6 +354,71 @@ class PlanHandoffStopTests(unittest.TestCase):
         result = evaluate(self.input_with_codex_transcript(message))
         self.assertEqual("block", result["decision"])
         self.assertIn("remove the blocked plan's continuation pointer", result["reason"])
+
+    def test_reports_blocker_contract_and_actionable_pointer_together(self):
+        blocked = self.root / "plans" / "launch" / "OWNER_PROGRESS.md"
+        blocked_plan = blocked.with_name("OWNER_PLAN.md")
+        active = self.root / "plans" / "launch" / "DEPENDENT_PROGRESS.md"
+        active_plan = active.with_name("DEPENDENT_PLAN.md")
+        blocked_plan.write_text("# Plan\n", encoding="utf-8")
+        active_plan.write_text("# Plan\n", encoding="utf-8")
+        blocker = (
+            "Blocked: The package is not published.\n"
+            "Unblock action: Publish and verify the package.\n"
+            "Resume when: The production feed restores it."
+        )
+        blocked.write_text(
+            f"- Worktree: `{self.root}`\n\n## Next Steps\n\n{blocker}\n",
+            encoding="utf-8",
+        )
+        active.write_text(
+            f"- Worktree: `{self.root}`\n\n## Next Steps\n\nOpen the dependent PR.\n",
+            encoding="utf-8",
+        )
+        active_pointer = (
+            f"cd {self.root}\n"
+            "Read @plans/launch/DEPENDENT_PLAN.md and "
+            "@plans/launch/DEPENDENT_PROGRESS.md and do what its `## Next Steps` says."
+        )
+        transcript = self.root / "mixed-handoff-transcript.jsonl"
+        records = [
+            {
+                "type": "response_item",
+                "payload": {
+                    "type": "custom_tool_call",
+                    "name": "exec",
+                    "input": (
+                        'const patch = "*** Begin Patch\\n*** Update File: '
+                        'plans/launch/OWNER_PROGRESS.md\\n*** Update File: '
+                        'plans/launch/DEPENDENT_PROGRESS.md\\n*** End Patch"; '
+                        f'const options = {{workdir: "{self.root}"}};'
+                    ),
+                },
+            }
+        ]
+        transcript.write_text(
+            "\n".join(json.dumps(record) for record in records),
+            encoding="utf-8",
+        )
+        data = {
+            "cwd": str(self.root),
+            "transcript_path": str(transcript),
+            "last_assistant_message": "Implementation is complete.",
+        }
+
+        result = evaluate(data)
+
+        self.assertEqual("block", result["decision"])
+        self.assertIn("Blocked: The package is not published.", result["reason"])
+        self.assertIn(active_pointer, result["reason"])
+
+        active_handoff = expected_handoff(
+            active.resolve(),
+            active_pointer,
+            next_steps(active.read_text(encoding="utf-8")),
+        )
+        data["last_assistant_message"] = f"{blocker}\n\n{active_handoff}"
+        self.assertEqual({}, evaluate(data))
 
     def test_legacy_blocker_requires_structured_contract(self):
         self.write_ledger("Waiting for PR #123 to merge; its owner will surface this plan when ready.")
@@ -508,18 +634,24 @@ class PlanHandoffStopTests(unittest.TestCase):
             missing_owner,
         )
         transcript = self.root / "logical-duplicate-transcript.jsonl"
-        record = {
-            "type": "response_item",
-            "payload": {
-                "type": "message",
-                "role": "user",
-                "content": [
-                    {"type": "input_text", "text": str(first)},
-                    {"type": "input_text", "text": str(second)},
-                ],
-            },
-        }
-        transcript.write_text(json.dumps(record), encoding="utf-8")
+        records = [
+            {
+                "type": "response_item",
+                "payload": {
+                    "type": "custom_tool_call",
+                    "name": "exec",
+                    "input": (
+                        f'const patch = "*** Begin Patch\\n*** Update File: {path}'
+                        '\\n*** End Patch"; await tools.apply_patch(patch);'
+                    ),
+                },
+            }
+            for path in (first, second)
+        ]
+        transcript.write_text(
+            "\n".join(json.dumps(record) for record in records),
+            encoding="utf-8",
+        )
         result = evaluate(
             {
                 "cwd": str(self.root),

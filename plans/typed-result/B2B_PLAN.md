@@ -12,11 +12,10 @@ this service branch owns only B2B semantics and consumes the integrated publishe
 
 ## Checkpoints
 
-Checkpoints 1–5 are complete on the branch. Payment PR #392 and platform-sync PR #420 discharged the
-old Payment gate. Checkpoints 6–7 now wait for the Reunion integration plan's generated Phase 4
-platform-sync PR to merge so B2B reconciles only once onto the final published carrier and terminal
-surface. No FluentResults adapter, string bridge, local source dependency, or branch-local Reunion
-package substitution may be introduced to cross that gate.
+Checkpoints 1–5 are complete on the branch. Checkpoints 6–7 are implementable now against the exact
+Payment packages produced from reviewed Reunion integration commit `a779fe041`; publication and the
+generated platform sync gate delivery, not local preparation. No FluentResults adapter, string bridge,
+committed local source, feed path, or disposable package pin may be introduced.
 
 - [x] **Checkpoint 1 — Deal.** Deal module outcomes → owned Results; operation errors use explicit
   Dunet cases with disabled implicit conversions and one exhaustive root `Definition` switch;
@@ -35,12 +34,12 @@ package substitution may be introduced to cross that gate.
   without catch/rethrow; dispatcher / executor / capability interfaces migrated as vertical slices;
   owner-concert action capabilities moved into `ConcertService` (no `TimeProvider` in any controller);
   keyed deal-strategy resolution preserved (no `DealType` switches, no service location).
-- [ ] **Checkpoint 6 — Concert payment / cancel / finish workflows.** *Blocked on the Reunion Phase 4
-  integrated platform baseline.* Migrate `IConcertWorkflowModule`, cancellation/completion dispatchers, and every
+- [ ] **Checkpoint 6 — Concert payment / cancel / finish workflows.** Migrate `IConcertWorkflowModule`,
+  cancellation/completion dispatchers, and every
   keyed cancel / finish / accept / payment step to owned Results; compose Payment failures with
   `MapError` (no `BadRequestException(result.Errors)` bridge); `ConcertCompletionRunner` distinguishes
   expected deferral/refusal from retryable faults; remove catch-all conversions.
-- [ ] **Checkpoint 7 — B2B FluentResults removal.** *Blocked with Checkpoint 6.* Remove FluentResults
+- [ ] **Checkpoint 7 — B2B FluentResults removal.** Remove FluentResults
   from the migrated B2B projects once their last local use is gone and every migrated signature uses
   the published Reunion-backed surface.
 
@@ -72,7 +71,8 @@ package substitution may be introduced to cross that gate.
 
 ## Dependency gate
 
-`plans/typed-result/REUNION_INTEGRATION_PROGRESS.md` owns the blocking handoff. Checkpoints 6–7 must
-not begin until its Phase 4 generated platform-sync PR is merged and current `origin/main` contains the
-published Reunion-backed platform pin. Then merge main once, resolve B2B semantics only, and complete
-the checkpoints without duplicating package or Shared.Api work.
+Implementation uses the exact local `Payment.Contracts` and `Payment.Client` `0.1.0-alpha.0.911`
+packages from integration commit `a779fe041`, with provenance recorded in the ledger. Complete, test,
+commit, and review B2B-owned source now, then restore all temporary restore inputs. The branch becomes
+delivery-ready; it becomes merge-ready only after the Payment producer publishes, the generated sync
+lands, and the same gates pass against the real published versions.

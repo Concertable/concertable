@@ -31,7 +31,7 @@ handing off / clearing is exactly the misread that produces the failure below.
 
 **"I've left it uncommitted so you can look at it first" is the anti-pattern, not the courtesy:**
 
-- **Review runs off commits.** `/code-review` diffs `main..HEAD`; work sitting in the working tree
+- **Review runs off commits.** `/review` diffs `main..HEAD`; work sitting in the working tree
   is invisible to it. Leaving it uncommitted is precisely what stops the reviewer seeing it.
 - **Uncommitted is the fragile state.** It survives no `git checkout`, no stray `git restore`, no
   context clear. A commit is the cheapest insurance that exists.
@@ -52,6 +52,16 @@ Complete a plan in the fewest PRs its real dependencies allow. Numbered steps, c
 not each need their own PR; keep coherent work together. Split only where a merge, package publication,
 platform sync or runtime deployment must finish before the next work can build or run, and group all
 work possible on each side of that gate.
+
+## Delivery gates do not automatically block implementation
+
+For work spanning branches, packages, or generated syncs, keep two dependency graphs: what must exist
+to implement and verify locally, and what must land before delivery. A PR, publication, or platform-sync
+gate blocks local implementation only when the required source, API, design, or exact test artifact is
+unavailable. Otherwise prepare the consumer in its own worktree, test and review it against the exact
+producer artifact, and leave it delivery-gated until it passes again against the published baseline.
+Actively hand off every independent implementation path; parallel means independently owned work made
+ready for its eventual merge order, not branches that are already mergeable today.
 
 ## Cross-plan blockers are two-way handoffs
 

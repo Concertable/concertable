@@ -34,4 +34,4 @@ Do not re-review or second-guess the agents' findings here. The file is the deli
 
 - The checklist is already fully `[x]` -> the pass is done; there is nothing to run. Point them at the file or `incremental-review` for new commits, per the `big-review` skill's own "When NOT to use".
 - Just one stage wanted -> `big-review`.
-- A normal-sized branch -> `code-review`.
+- A normal-sized branch -> `review`.

@@ -9,7 +9,7 @@ Run the Concertable UI E2E test suite and analyse any failures using the enriche
 
 ## The point of this skill: run autonomously — FIX failing tests yourself, do not ask
 
-When the user invokes this skill, they are delegating the **entire** run → diagnose → fix → verify loop to you, to run autonomously end to end. **Any failing scenario is something you fix in code yourself**, without stopping to ask permission, then re-run and keep going until the suite is green. Do not report findings and wait for a go-ahead; do not treat the `E2E_BASELINE.md` "failing" list or an "out of scope for this branch" note as a reason to leave a test broken — the baseline records the *current* state, it is not an instruction to skip fixing. Diagnose the root cause, write the code change (in the app, page objects, step definitions, or test support — wherever the real bug is), and re-run to confirm green. The only time you pause for the user is a genuine product-behaviour ambiguity you cannot resolve from the code (per the "Test vs prod code — ask first" convention). Otherwise: run the suite, fix every failure you can, verify, and report what you changed — all in one pass.
+When the user invokes this skill, they are delegating the entire run → diagnose → fix → verify loop to you. Fix each failing scenario without stopping for permission, then re-run only that scenario until it is green. Do not treat the E2E baseline or branch scope as permission to leave a failure broken. Pause only for a genuine product-behaviour ambiguity that the code cannot resolve.
 
 ## NEVER disable or bypass a step to get past its failure
 
@@ -21,17 +21,31 @@ The suite exists to test the CURRENT state of the code. If something is failing 
 
 If a step hangs with no useful output, the next move is **reproduce it and observe it live** (process trees, what the child processes are doing, file locks, CPU) — not to remove the step. A bypass is only acceptable when the user explicitly asks for it after seeing the diagnosis.
 
+## Diagnostics must preserve scenario semantics
+
+Before changing a shared fixture, page object, or test helper, enumerate every call site and classify
+its success, expected-failure, and challenge flows. A diagnostic improvement must not change which
+outcomes those callers accept. If it does, it is a regression, not a debugging aid.
+
+- Keep transport plumbing generic: click, await, capture, and return the response.
+- Keep outcome validation explicit at the test DSL boundary. Prefer a named operation such as
+  `PayWithDeclinedCardAsync` over a boolean/enum mode passed through a generic confirm helper.
+- Put reusable response validation in a focused extension/helper, not a private copy in one page
+  object. Never special-case an expected HTTP status inside generic browser plumbing.
+- When a diagnostic change breaks previously-passing scenarios, remove or redesign that diagnostic
+  change before touching the scenarios. Do not patch each caller around the altered helper semantics.
+
 ## Input
 
 If the skill is invoked with arguments, treat them as the full scenario names as they appear in the test output (e.g. `"Venue manager accepts a venue hire application on a flat fee", "Customer purchases a ticket and completes 3DS challenge"`). Run Step 0, then skip Step 1 and go straight to Step 2, running each one individually using `DisplayName~` with the full name as the filter value.
 
-If invoked with no arguments, run Step 0 then the full suite (Step 1) to discover which scenarios fail, then proceed to Step 2 for each failure.
+Treat scenarios already reported by CI or the merge queue as arguments. Only when there are no arguments and no known failures should you run Step 1 to discover them.
 
 ## Headless vs headed — default to headless
 
 **Always run headless** unless the user explicitly asks to watch the browser. Headless is faster and does not interfere with debugging: failure screenshots (`CaptureFailureAsync`), Playwright traces, and the enriched HTTP/console logs all work identically headless.
 
-- `./e2e.ps1 ui <cmd>` (Step 1, Step 4 full-suite re-runs) is headless by default — it sets `HEADLESS=true` unless you pass `-Headed`.
+- `./e2e.ps1 ui <cmd>` discovery runs are headless by default — it sets `HEADLESS=true` unless you pass `-Headed`.
 - Direct `dotnet test` runs (Step 2 single-scenario deep-dives) do NOT pick up that default — the fixture runs **headed** with `SlowMo` unless `HEADLESS` is set. So always prefix Step 2 commands with `$env:HEADLESS='true'; ` (shown in Step 2 below).
 - If (and only if) the user asks to watch the browser, run headed: pass `-Headed` to `./e2e.ps1`, or set `$env:HEADLESS='false'` (or omit it) for direct `dotnet test`.
 
@@ -67,7 +81,7 @@ If invoked with no arguments, run Step 0 then the full suite (Step 1) to discove
 ## Which command to use
 
 - **User wants to verify a code change hasn't broken anything → `./e2e.ps1 ui regress`.** It parses `E2E_BASELINE.md`, runs only the scenarios listed under the `passing` fenced blocks, and exits 1 if any of them fails or if any baseline name no longer matches a real test. Much faster than the full suite, and the only signal needed to confirm "no regression."
-- **User wants to discover newly-passing or newly-failing scenarios, or you've just landed a real test fix → `./e2e.ps1 ui run`.** This runs all 30 scenarios.
+- **User wants to discover newly-passing or newly-failing scenarios → `./e2e.ps1 ui run`.** This runs all 30 scenarios. Do not use it after fixing a known failure; rerun only that scenario locally, then let the merge queue perform the full-suite verification.
 - **After `./e2e.ps1 ui run` reveals a status change** (a scenario crossed the line), prompt the user to update `E2E_BASELINE.md`: move the scenario between the `passing` and `failing` fenced blocks and bump the `(N)` count in the heading. Both regress and PR review depend on this file being current.
 
 ## Step 0 — Pre-flight check
@@ -84,7 +98,7 @@ Before running anything, verify Docker with the real gate. **`docker ps` answeri
 
 `./e2e.ps1 ui ...` runs this automatically and refuses to boot on failure. If it reports unhealthy, **STOP** — tell the user Docker is half-started/down and to wait for Docker Desktop to show **Running**, then retry. Do not rerun or debug application code for this; it's an environment failure (root `AGENTS.md`).
 
-Then tell the user: **"Starting full E2E suite — this takes ~7 minutes. I'll report back when done."**
+Tell the user whether this is a targeted scenario run or a full discovery run. Give the full-suite estimate only for discovery.
 
 ## Step 0b — Watch for startup hangs
 
@@ -212,7 +226,7 @@ If the HTTP/gRPC errors, console output, and screenshots still don't explain *wh
 After identifying the cause:
 1. Make the fix in the relevant service/page object/step definition.
 2. Re-run the specific scenario to confirm it goes green.
-3. Re-run the full suite to confirm no regressions.
+3. Do not re-run the full suite locally. Once every originally failing scenario passes in isolation, push and merge; the merge queue is the single full-suite verification.
 
 ## Useful filter patterns
 

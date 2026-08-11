@@ -130,8 +130,17 @@ end state; it does not replace any transition checkpoint that should already exi
 
 Report the workflow result only after the checkpoint is durable, having written the immediate next
 action into the ledger's `## Next Steps` section so it is the durable source of truth. If actionable
-plan-managed work remains, end with exactly one prompt, and it is ONLY the pointer — nothing
-plan-specific. Literally:
+plan-managed work remains, hand off only ledgers owned by the current or explicitly targeted worktree.
+Do not claim a dependency ledger merely because it was read or received a cross-worktree return-link
+edit. Introduce each owned handoff with the first `## Next Steps` paragraph as its short reason and a
+warning to run it only when no agent/session already owns that worktree. The prompt itself remains ONLY
+the pointer — nothing plan-specific. Delivery-gated local preparation is actionable; an
+implementation-blocked ledger gets no pointer. Literally:
+
+```
+Why: `<PLAN>_PROGRESS.md` owns unfinished work from this turn: <short next-action reason>
+Only run this continuation if no agent or session is already working in `<absolute-worktree-path>`.
+```
 
 ```
 cd <absolute-worktree-path>

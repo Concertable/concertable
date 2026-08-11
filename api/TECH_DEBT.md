@@ -6,6 +6,37 @@ Debt spanning multiple services, host `Program.cs` files, or repo-wide build/CI 
 
 ## MED
 
+### Environment names are raw strings and test modes leak into production branches
+
+The backend has three overlapping environment vocabularies with no single owner:
+
+- Framework environments use `IsDevelopment()` / `IsProduction()` in some C# paths, while
+  `"Development"` is repeated throughout launch configuration.
+- The custom `"Testing"` name is repeated across Auth, B2B, Customer, Search, and Payment production
+  hosts plus all integration fixtures.
+- The custom `"E2E"` name and the `ASPNETCORE_ENVIRONMENT` / `DOTNET_ENVIRONMENT` keys are repeated
+  across Auth, `Concertable.ServiceDefaults`, shared E2E composition, and service E2E helpers.
+
+Typos compile, ASP.NET Core and generic-host environment variables can drift apart, and environment
+identity has become a hidden capability switch: production entry points know that `Testing` may omit
+required configuration and that `E2E` enables test-only behaviour. Environment selection should load
+configuration; explicit typed composition/options should select capabilities.
+
+**Resolves when:**
+
+- Establish one testing-owned environment vocabulary for Concertable's custom names and environment
+  variable keys, use the framework `Environments` constants/helpers for built-in names in production
+  C#, and give test harnesses one API that applies the correct environment consistently to every
+  resource.
+- Remove every production branch on `Testing` / `E2E`, whether expressed through `IsEnvironment(...)`
+  or direct `EnvironmentName` comparison. Integration and E2E hosts supply explicit configuration and
+  DI overrides from their own composition roots instead of teaching production code the semantics of
+  test environments.
+- Eliminate raw custom environment-name literals from C#, move `appsettings.Testing.json` /
+  `appsettings.E2E.json` and other test-only configuration out of production project closures, and
+  validate the allowed names. Declarative JSON values may remain strings where the format requires
+  them, but their values must follow the same vocabulary and be covered by a consistency test.
+
 ### `AzureServiceBusOptions` binder defaults are `= ""` instead of `null!`
 
 `Concertable.Messaging.AzureServiceBus/Options/AzureServiceBusOptions.cs` initialises binder-populated `string` properties to `= ""`, where the convention (`agents/CODE_CONVENTIONS.md`) requires `null!` so a missing bind surfaces instead of silently becoming empty (and it uses the banned `""` literal). Deferred, not host-only: `AzureServiceBusOptions` ships in the **published** `Concertable.Messaging` package, so flipping the defaults is a cross-service package change that must ride a Messaging publish + platform-sync, not a bare edit. (The host-side `?? ""` masks that used to sit alongside this — `Auth:Authority` / `ServiceAuth:ClientId` / the ASB `ConnectionString` across the Auth, B2B.Web, B2B.Workers, Customer.Web, Payment.Web, Payment.Workers, Search.Workers, and B2B.Seed.Simulator hosts — now fail fast at startup outside the "Testing" environment, done. `ServiceAuth:ClientSecret` is a genuine optional, now bound **null** when absent — its earlier `string.Empty` was a masking cosmetic swap. The complete fix (`TokenServiceOptions.ClientSecret` → `string?` + the token service omitting the `client_secret` form param when null, correct for a secret-less/public client) is a **published Kernel change** — tracked with the `GetId()` Kernel item above as a cut-over.)
