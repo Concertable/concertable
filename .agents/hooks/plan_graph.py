@@ -121,6 +121,8 @@ def plan_path(path):
     if not plan.is_file():
         source = f"declared Plan `{declared}`" if declared else "legacy filename convention"
         raise ValueError(f"Missing companion plan for {path} from {source}: {plan}")
+    if plan.parent != path.parent:
+        raise ValueError(f"Plan and ledger must share an epic folder: {plan} and {path}")
     return plan
 
 
@@ -138,6 +140,11 @@ def roadmap_errors(path, text):
         return [f"{path.name}: {error}"]
     if not roadmap_path.is_file():
         return [f"{path.name}: declared roadmap does not exist: {roadmap}"]
+    if roadmap_path.parent != path.parent:
+        return [f"{path.name}: roadmap and ledger must share an epic folder: {roadmap}"]
+    epic = path.parent.relative_to(root / "plans").as_posix()
+    if not re.fullmatch(rf"{re.escape(epic)}/[a-z0-9]+(?:-[a-z0-9]+)*", item):
+        return [f"{path.name}: roadmap item key must match `{epic}/<slug>`: {item}"]
     marker = f"`{item}`"
     roadmap_text = roadmap_path.read_text(encoding="utf-8")
     checklist_item = re.compile(rf"^- \[[ xX]\].*{re.escape(marker)}", re.MULTILINE)

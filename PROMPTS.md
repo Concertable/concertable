@@ -58,7 +58,7 @@
     `Resume when` condition, with no prompt.
 
   Never re-poll an unchanged blocker into repeated "still blocked" commits. The Stop hook rejects the
-  blocked plan's pointer and rejects a blocker report that omits any of the three exact lines.
+  blocked plan's pointer and rejects a blocker report that omits any of the four exact lines.
 - Use the handoff instead of asking whether to continue.
 - Before an implementation PR merges, route through `/review` or `/big-review`; use
   `/incremental-review` after later code commits.

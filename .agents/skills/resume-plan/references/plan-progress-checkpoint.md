@@ -157,5 +157,5 @@ Read @plans/<PLAN>_PLAN.md and @plans/<PLAN>_PROGRESS.md and do what its `## Nex
 No branch to verify, checkpoints, gates, commands, or steps in the prompt — every such specific lives in
 the ledger, never restated, so the prompt can't drift. If the lifecycle is terminal, follow the close-out
 rule and do not invent a continuation prompt. If the plan is hard-blocked, do not emit this pointer:
-report the ledger's three blocker lines verbatim, then emit a resolver dispatch
+report the ledger's four blocker lines verbatim, then emit a resolver dispatch
 prompt only when a separate unowned task can open the gate.

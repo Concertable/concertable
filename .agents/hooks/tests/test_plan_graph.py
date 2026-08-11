@@ -65,6 +65,18 @@ class PlanGraphTests(unittest.TestCase):
         self.assertEqual(1, len(errors))
         self.assertIn("roadmap item marker", errors[0])
 
+    def test_roadmap_item_key_must_match_the_epic(self):
+        ledger = self.write_ledger()
+        ledger.write_text(
+            ledger.read_text(encoding="utf-8").replace("epic/graph", "other/graph"),
+            encoding="utf-8",
+        )
+
+        errors = ledger_errors(ledger)
+
+        self.assertEqual(1, len(errors))
+        self.assertIn("must match `epic/<slug>`", errors[0])
+
     def test_missing_reciprocal_owner_handoff_is_rejected(self):
         owner = self.write_ledger("OWNER_PROGRESS.md")
         waiting = self.write_ledger(

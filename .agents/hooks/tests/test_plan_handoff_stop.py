@@ -509,7 +509,7 @@ class PlanHandoffStopTests(unittest.TestCase):
         )
         dotnet_roadmap = unions / "DOTNET_ROADMAP.md"
         dotnet_roadmap.write_text(
-            "- [ ] **Unions** `dotnet/unions`\n",
+            "- [ ] **Unions** `dotnet-11/unions`\n",
             encoding="utf-8",
         )
         owner.write_text(
@@ -544,7 +544,7 @@ class PlanHandoffStopTests(unittest.TestCase):
         workflow_unions.write_text(
             "- Plan: `plans/dotnet-11/B2B_WORKFLOW_UNIONS_PLAN.md`\n"
             "- Roadmap: `plans/dotnet-11/DOTNET_ROADMAP.md`\n"
-            "- Roadmap item: `dotnet/unions`\n\n"
+            "- Roadmap item: `dotnet-11/unions`\n\n"
             f"## Next Steps\n\n{union_steps}\n",
             encoding="utf-8",
         )

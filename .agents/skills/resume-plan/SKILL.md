@@ -24,8 +24,9 @@ executing that action — not choosing among paths or reconstructing it.
    Then `cd` to the resolved worktree before anything else — a fresh session may open elsewhere.
 2. **Read in full:** `AGENTS.md`, `plans/AGENTS.md`, `plans/agents/PLAN.md`, the plan, and the resolved
    ledger.
-   Run `python .agents/hooks/plan_graph.py --root <absolute-worktree>` before trusting the graph; fix
-   any reported graph error before resuming implementation.
+   After applying the root current-main sync gate, run
+   `python .agents/hooks/plan_graph.py --root <absolute-worktree>` before trusting the graph; fix any
+   reported graph error before resuming implementation.
 3. **Confirm the ledger still holds** before acting: check its header branch/PR/gates against actual
    `git`/PR state and confirm `## Next Steps` still names one resolved action under `AGENTS.md`. Reconcile
    stale state or unresolved alternatives from current evidence and standing instructions, then update

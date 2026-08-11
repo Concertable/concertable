@@ -35,7 +35,8 @@ does **not** design or write the plan here, and does **not** resume an existing 
    Enumerate the whole outstanding set before concluding an item is ready; a name scan can't see an
    in-flight worktree, so verify against `git`/PR state, not the roadmap's own status marks.
    Match existing ledgers by their explicit `Roadmap:` and `Roadmap item:` headers before using names
-   or branch heuristics. Assign a stable `<epic>/<slug>` key to an unkeyed chosen checklist item.
+   or branch heuristics. Select a stable `<epic>/<slug>` key for an unkeyed chosen item and include it
+   in the handoff; the planning context adds it to the checklist line and ledger before validation.
 4. **Resolve the choice.**
    - With no preference, present every ready and delivery-gated-but-implementable candidate with a
      recommendation and stop for Tommy to pick. Use one line each: the item, its size/blast radius, and
