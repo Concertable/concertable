@@ -3,8 +3,8 @@
 - Plan: `<repo-relative plan path, plans/<epic>/<NAME>_PLAN.md>`
 - Roadmap: `<repo-relative roadmap path, plans/<epic>/<EPIC>_ROADMAP.md>`
 - Roadmap item: `<stable epic/slug key carried by the roadmap checklist item>`
-- Worktree: `<absolute worktree path>`
-- Branch: `<Type/<epic>_<name>, matching the <NAME>_PROGRESS stem>`
+- Worktree: `<current delivery worktree path, or none after merged cleanup>`
+- Branch: `<current delivery branch, or next proposed Type/<epic>_<name>>`
 - PR: `<number and URL, or not opened>`
 - Dependency/package gates: `<state, or none>`
 - Last reconciled: `<date/time and evidence source>`
@@ -53,6 +53,6 @@ never restate the branch, gates, checkpoints, or steps here — they live in `##
 be duplicated where they can drift. Keep it verbatim in this fenced block:>
 
 ```
-cd <absolute worktree path>
+<cd existing-worktree OR /worktree create Type/epic_name>
 Read @plans/<PLAN>_PLAN.md and @plans/<PLAN>_PROGRESS.md and do what its `## Next Steps` says.
 ```

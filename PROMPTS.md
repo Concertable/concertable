@@ -35,7 +35,8 @@
   `Why:` and collision-warning lines, then the exact two-line pointer as the final content.
 
   The `<opener>` is `/worktree create <Type>/<epic>_<name>` when the plan's worktree doesn't exist yet — a
-  freshly-written plan, or after a clear with no live worktree — so implementation runs in an isolated
+  freshly-written plan, after a clear with no live worktree, or normal continuation after a prior PR's
+  worktree was removed — so implementation runs in an isolated
   worktree, never the main checkout; it's `cd <absolute-worktree-path>` once that worktree exists. Nothing
   else plan-specific goes in the prompt — no branch to verify, checkpoints, gates, commands, or next action;
   every such specific lives in the ledger (its header + `## Next Steps`), so the prompt can't drift.

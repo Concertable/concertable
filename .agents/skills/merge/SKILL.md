@@ -44,9 +44,8 @@ source branch, PR number, and remote `headRefOid` as the delivery identity. Appl
 [the shared plan-progress checkpoint](../resume-plan/references/plan-progress-checkpoint.md)
 immediately after every material transition below, before the next wait, mutation, checkout, or
 early stop. Unchanged polling observations do not need new checkpoints.
-After the source PR merges, transfer that identity and its checkpoint-only tail to the clean docs
-closeout worktree required by step 5; that worktree becomes the recovery anchor for the remaining
-publication and platform-sync transitions.
+The final pushed PR head carries the recovery ledger. After merge, remove that PR worktree and
+reconcile later outcomes from a fresh continuation or close-out worktree based on `origin/main`.
 
 Checkpoint review/preflight readiness or blockers; PR discovery; dirty, uncommitted, unpushed,
 remote-divergent, or base-stale state; branch update, verification, and compound-push results;
@@ -154,8 +153,8 @@ or queueing. Never push a checkpoint-only local tail to a queued, locked, merged
    gh pr merge <n> --merge --auto
    ```
    - Verify and checkpoint actual queue admission for the recorded PR and remote `headRefOid`. If
-     admission fails or the head changed, checkpoint the outcome and stop; do not push the local
-     observation tail or silently enqueue a different head.
+     admission fails or the head changed, reconcile the outcome before the next source update; do not
+     push an observation-only commit or silently enqueue a different head.
    - **No `--delete-branch`** (the queue rejects it).
    - `--auto` only *enqueues*. Now **wait for it to actually land** — the queue runs carves plus the
      selected E2E tier on the merge group and merges only if green. A positive-trigger PR runs
@@ -175,60 +174,27 @@ or queueing. Never push a checkpoint-only local tail to a queued, locked, merged
    - **`--admin` override (only when the user explicitly asked to skip the queue):**
      `gh pr merge <n> --merge --admin` merges immediately with **no E2E**. Verify with
      `gh pr view <n> --json state,mergeCommit`.
-   - Checkpoint closed-without-merge, failed checks, sustained green-but-unadmitted, and timeout states
-     before stopping. On merge, immediately checkpoint the merge commit, method, E2E outcome, and
-     source PR head before switching worktrees or syncing main.
+   - Reconcile closed-without-merge, failed checks, sustained green-but-unadmitted, and timeout states
+     before the next source update. On merge, retain the result as evidence for the fresh worktree.
 
 5. **Return to a clean, up-to-date main — and remove the merged feature worktree immediately.**
    ```
    git checkout main
    git pull --ff-only origin main
    ```
-   **Plan-managed work:** the source PR's local observation tail is expected, but it does not justify
-   retaining a merged feature worktree. After the immediate merge checkpoint and before waiting for
-   publication or platform sync:
-
-   1. Create `Docs/<epic>_<name>_closeout` in a clean sibling worktree from fetched `origin/main`.
-   2. Verify every commit after the recorded source PR `headRefOid` changes only the active plan and
-      ledger. Cherry-pick that complete tail in order into the close-out branch.
-   3. Update and commit the ledger's worktree/branch identity, then verify the close-out plan and ledger
-      exactly match the source worktree's latest committed state.
-   4. Remove the source worktree and delete its local/remote branch. Because the PR is verified `MERGED`
-      and the checkpoint tail is transferred, force-deleting the local source branch is safe if `-d`
-      refuses. Continue Step 6 from the close-out worktree.
-
-   Any commit or dirty path after the PR head outside the active plan/ledger is a hard stop: transfer or
-   resolve that work first. Never leave the feature worktree registered merely to retain plan markdown.
-
-   **Non-plan work:** tear down the merged branch as soon as the PR is `MERGED`. A worktree-developed
-   branch is still checked out there, so the worktree must go before branch deletion. Remove only when
-   the source tree is clean apart from generated output:
+   From another checkout, use the repository command for every worktree-developed branch:
+   ```powershell
+   ./scripts/worktrees.ps1 close -Worktree <path> -PullRequest <n> [-PlanManaged]
    ```
-   if [ -z "$(git -C <path> status --porcelain | grep -vE '/(bin|obj|node_modules)/')" ]; then
-     git worktree remove --force <path>       # safe: tracked tree clean, HEAD is the merged head
-     git branch -d <merged-branch>            # now free to delete; safe: -d only deletes if merged
-     git push origin --delete <merged-branch> # remote cleanup (the queue blocked gh's --delete-branch)
-   else
-     echo "worktree <path> has uncommitted source — worktree AND branch LEFT in place, handle manually"
-   fi
-   ```
-   (Branch developed in the main checkout, no worktree? Skip the worktree command and delete the local
-   and remote branch directly.)
-   - If `git branch -d` refuses ("not fully merged") — usually because the merge was a squash/merge-commit
-     and the local tip differs — confirm the PR really is `MERGED`, then it's safe to `git branch -D`.
-     Don't force-delete an unmerged branch.
-   - **The worktree teardown is automatic.** The incident that once destroyed
-     an in-progress worktree was an *unguarded* teardown; the clean-check above is the guard. Remove ONLY
-     when that porcelain check is empty — no uncommitted or untracked *source* (`bin/`/`obj/`/
-     `node_modules/` don't count). For plan-managed work, the verified transfer is the guard instead;
-     the ledger tail moves, then the merged feature worktree goes. Leaving merged feature worktrees in
-     place is never an accepted recovery strategy.
-   - `--force` is required — it discards only the build output the guard already cleared; plain
-     `git worktree remove` fails on a built tree with "Directory not empty".
-   - Windows: a live `dotnet`/Playwright process can lock `bin/`/`node_modules` ("Device or resource
-     busy"); `--force` still unregisters the worktree — report any leftover directory for manual deletion.
+   Add `-PlanManaged` when a plan owns the work. The command refuses dirty or detached worktrees,
+   post-PR commits, PR/head mismatches, missing merged ledgers, case-colliding refs, and persistent
+   branches. It handles junctions, Windows long paths, Git administration, and branch deletion.
+
+   A branch developed in the main checkout has no worktree to close; apply the same evidence manually.
    - **Exception — persistent branches, NEVER auto-removed even when merged:** `Chore/TechDebt` (reused
      every debt pass — keep its branch and worktree).
+   - If plan work remains, create its next PR-scoped worktree from `origin/main` and resume the same
+     ledger. If only remote gates remain, use a fresh `Docs/<epic>_<name>_closeout` worktree.
 
 6. **Watch the platform-sync consequence — a merge that touched a published package triggers it, and
    nothing else watches it.**
@@ -274,11 +240,10 @@ or queueing. Never push a checkpoint-only local tail to a queued, locked, merged
      Checkpoint the red checks and broken consumers before editing, then the fix, full build,
      sync-branch push, replacement checks, and merge as each occurs. Work on the sync branch in its own
      checkout; never push the source plan's recovery commits to either PR.
-   - **Close plan-managed delivery from the docs worktree.** After publication and platform sync are
+   - **Close plan-managed delivery from the fresh docs worktree.** After publication and platform sync are
      terminal, commit the final ledger checkpoint. In the following commit delete the plan and ledger
      together and tick the owning roadmap item. Run `/docs-review`, land the net meta-only branch through
-     `/merge-docs`, and remove the close-out worktree. Do not move the edits back to the merged feature
-     worktree or leave either worktree behind.
+     `/merge-docs`, which removes the close-out worktree through the repository command.
 
 ## Final summary
 
@@ -298,7 +263,7 @@ red and you migrated its consumers** (which files, now green) — never "merged,
 behind." If you stopped early (failed check, red E2E in the queue, unpushed work), say exactly what's
 blocking and what's needed.
 
-Keep it terminal: verify PR green → enqueue → wait for MERGED → transfer plan state and remove the
-feature worktree → sync main → **watch the platform-sync PR to green/merged (or migrate its consumers
+Keep it terminal: verify PR green → enqueue → wait for MERGED → remove the PR worktree → sync main
+→ **watch the platform-sync PR to green/merged (or migrate its consumers
 if it's red)** → land plan close-out through `/merge-docs` → remove the close-out worktree → summarize
 → stop. No preamble. Plain `git`/`gh` only (personal repo — never the work PR/ADO skills).
