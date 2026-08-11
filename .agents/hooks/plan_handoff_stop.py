@@ -232,7 +232,7 @@ def context_root(path):
     return git_root(candidate) or candidate
 
 
-def context_owns_ledger(path, bases, allow_missing_owner=False):
+def context_owns_ledger(path, bases, source):
     text = path.read_text(encoding="utf-8")
     declared_worktree = metadata(text, "Worktree")
     roots = {context_root(base) for base in bases}
@@ -240,7 +240,12 @@ def context_owns_ledger(path, bases, allow_missing_owner=False):
         owner = Path(declared_worktree).resolve()
         if owner.is_dir():
             return owner in roots
-        return allow_missing_owner
+        if source == "mutation" and ledger_root(path) in roots:
+            return True
+        owner_branch = metadata(text, "Branch")
+        if owner_branch:
+            return any(git_branch(root) == owner_branch for root in roots)
+        return False
     owner_branch = metadata(text, "Branch")
     if owner_branch:
         return any(git_branch(root) == owner_branch for root in roots)
@@ -267,14 +272,7 @@ def transcript_ledgers(records, cwd):
                 for base in bases:
                     add_if_ledger(candidates, base / relative)
         for path in candidates:
-            ownership_bases = bases
-            if context.get("source") == "mutation" and not explicit_bases:
-                ownership_bases = {ledger_root(path)}
-            if context_owns_ledger(
-                path,
-                ownership_bases,
-                allow_missing_owner=context.get("source") == "mutation",
-            ):
+            if context_owns_ledger(path, bases, context.get("source")):
                 paths.add(path)
     return paths
 
@@ -481,15 +479,30 @@ def evaluate(data):
         if missing or not ends_with_handoff:
             if not missing:
                 missing = active
-            handoffs = "\n\n".join(handoff for _, _, _, handoff in missing)
             names = ", ".join(path.name for path, _, _, _ in missing)
             failures.append(
                 f"HANDOFF GATE: {names} has non-terminal `## Next Steps`, but the final response "
                 "omitted its explained, collision-safe continuation. Local implementation completion "
-                f"is not lifecycle completion. End the response with:\n\n{handoffs}"
+                "is not lifecycle completion."
             )
     if failures:
-        return {"decision": "block", "reason": "\n\n".join(failures)}
+        required = [
+            "\n".join(
+                f"{name}: {value}"
+                for name, value in zip(BLOCKER_FIELDS, details)
+            )
+            for _, _, details in blocked
+        ]
+        required.extend(handoff for _, _, _, handoff in active)
+        replacement = "\n\n".join(required)
+        return {
+            "decision": "block",
+            "reason": (
+                "\n\n".join(failures)
+                + "\n\nReplace the final response ending with this complete required handoff block:\n\n"
+                + replacement
+            ),
+        }
     return {}
 
 

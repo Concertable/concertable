@@ -8,7 +8,7 @@
   <Project Path="Concertable.ServiceDefaults/Concertable.ServiceDefaults.csproj" />
   <Folder Name="/Auth/">
     <Project Path="Concertable.Auth/src/Concertable.Auth.AppHost/Concertable.Auth.AppHost.csproj" />
-    <Project Path="Concertable.Auth/src/Concertable.Auth.AppHost.Extensions/Concertable.Auth.AppHost.Extensions.csproj" />
+    <Project Path="Concertable.Auth/src/Concertable.Auth.Hosting/Concertable.Auth.Hosting.csproj" />
     <Project Path="Concertable.Auth/src/Concertable.Auth/Concertable.Auth.csproj" />
     <Project Path="Concertable.Auth.Contracts/Concertable.Auth.Contracts.csproj" />
   </Folder>
