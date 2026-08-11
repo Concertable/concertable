@@ -124,7 +124,7 @@ class PlanHandoffStopTests(unittest.TestCase):
         ]
         transcript.write_text("\n".join(json.dumps(record) for record in records), encoding="utf-8")
         return {
-            "cwd": str(self.root),
+            "cwd": str(Path(self.temp.name) / "unrelated-main-checkout"),
             "transcript_path": str(transcript),
             "last_assistant_message": message,
         }
@@ -149,7 +149,7 @@ class PlanHandoffStopTests(unittest.TestCase):
         ]
         transcript.write_text("\n".join(json.dumps(record) for record in records), encoding="utf-8")
         return {
-            "cwd": str(Path(self.temp.name) / "unrelated-main-checkout"),
+            "cwd": str(self.root),
             "transcript_path": str(transcript),
             "last_assistant_message": message,
         }
