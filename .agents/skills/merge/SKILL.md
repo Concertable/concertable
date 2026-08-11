@@ -14,10 +14,10 @@ This skill is **Concertable-specific**. It encodes how this repo actually merges
 
 ## Repo facts (why this skill exists)
 
-- **`main` is protected by a merge queue** (ruleset `17393335`, `ALLGREEN`). Its required checks are
-  `e2e-api-tests`, `e2e-ui-tests`, and the five `carve-*` jobs — i.e. **the queue applies the selected
-  E2E tier against current `main`.** Required E2E runs on the merge group and blocks a red merge;
-  deliberately skipped E2E reports no work without bypassing the queue.
+- **`main` is protected by a merge queue** (ruleset `17393335`, `ALLGREEN`). Its single required check
+  is `ci-complete`, which aggregates the selected E2E tier and the carve jobs against current `main`.
+  Required E2E runs on the merge group and blocks a red merge; deliberately skipped E2E reports no
+  work without bypassing the queue.
 - **`e2e-api-tests` / `e2e-ui-tests` are merge-queue-only** (`if: github.event_name == 'merge_group'`).
   On the PR itself they show **`skipping`** — expected, not a failure. They run **after** you enqueue,
   inside the merge group when Step 4 requires them. So a green PR is *not* proof required E2E passed;

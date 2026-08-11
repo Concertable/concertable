@@ -171,30 +171,11 @@ locally; the local gate stops at build + unit + integration unless a queue failu
 [`plans/AGENTS.md`](./plans/AGENTS.md) carries that local workflow. The merge skill's Step 4 is the
 single source of truth for selecting the merge-queue E2E tier.
 
-**Full E2E in the merge queue is the default.** Add `skip-e2e` only when the PR is both small and
-demonstrably low-blast-radius, with every one of these true:
-
-- The diff and affected area are small and isolated.
-- It touches no package/service boundary, shared infrastructure, build/publish/deployment pipeline,
-  CI workflow, or multiple application surfaces.
-- It changes no user-facing/runtime flow covered by E2E.
-- Unit/integration tests fully cover the affected behaviour.
-
-**Zero intended behaviour change is not sufficient.** Package renames, lockfile/workspace changes,
-shared-library moves, broad refactors, and build/publish separation must run full E2E. When in doubt,
-do not skip. The labels are the reliable lever: `skip-e2e` drops both E2E suites and `skip-e2e-ui`
-drops only the UI suite. Remove stale skip labels when the PR does not qualify; if historical trailers
-would opt out a PR that now requires the full tier, add `full-e2e`. Unit tests, integration tests,
-build, and carve are never skippable for code/package changes.
-
-A same-named **git trailer** (`Skip-E2E: true` on its own line) works too — parsed structurally by git,
-so prose that merely mentions it can't trip the gate (the pr-227 bug) — **but it is fragile in this repo,
-so prefer the label.** Git only parses the *last* paragraph of a commit message as trailers, and every
-commit here carries a mandated `Co-Authored-By:` trailer, so `Skip-E2E: true` must sit in the **same
-contiguous block** as `Co-Authored-By:` — a blank line between them splits the paragraph and git no
-longer sees `Skip-E2E`, so the queue silently runs E2E anyway. Unit and integration tests always run
-for code/package changes and have no opt-out. The label sidesteps the E2E trailer fragility entirely.
-Full tier table in [`.github/workflows/test.yml`](./.github/workflows/test.yml).
+Apply the merge skill's Step 4 mechanically; it is the **single source of truth** for the E2E tier.
+A positive trigger requires `full-e2e`; no positive trigger requires `skip-e2e`. Do not run E2E “to
+be safe” when integration covers the touched path and no trigger is present. Build, carve, unit, and
+integration remain mandatory for code/package changes, and every code/package PR handled by the merge
+skill still enters the queue on current `main`.
 
 Run E2E only through `./e2e.ps1` via the matching skill (`e2e-ui-regress`, `e2e-ui-debug`,
 `e2e-api-debug`) — the skill's Step 0 Docker pre-flight is mandatory, every run.
