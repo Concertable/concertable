@@ -1,6 +1,8 @@
 # <Plan title> progress
 
 - Plan: `<repo-relative plan path, plans/<epic>/<NAME>_PLAN.md>`
+- Roadmap: `<repo-relative roadmap path, plans/<epic>/<EPIC>_ROADMAP.md>`
+- Roadmap item: `<stable epic/slug key carried by the roadmap checklist item>`
 - Worktree: `<absolute worktree path>`
 - Branch: `<Type/<epic>_<name>, matching the <NAME>_PROGRESS stem>`
 - PR: `<number and URL, or not opened>`
@@ -14,35 +16,34 @@
 ## Next Steps
 
 <The single resolved action for the next agent, expressed as concrete, self-contained steps. If no
-action can proceed, start with three single-line fields: `Blocked: <exact unmet gate>`,
-`Unblock action: <what must be done, by whom or where>`, and `Resume when: <objective evidence>`.
+action can proceed, start with four single-line fields: `Blocked: <exact unmet gate>`,
+`Blocked by: <owning ledger path or external owner>`, `Unblock action: <what must be done, by whom or
+where>`, and `Resume when: <objective evidence>`.
 Apply the repository's standing instructions and current evidence before writing it. Actionable
 resume/handoff prompts point here instead of restating it; blocked plans never emit their own pointer.>
 
 ## Completed work
 
-<Completed phases and changes with commit/PR evidence.>
+<Compact milestones only: normally one item per completed phase or delivery gate, with commit/PR evidence.>
 
 ## Verification
 
-<Commands/checks, outcomes, and the code state they verified.>
+<Only the latest commands/checks still valid for the current candidate, with outcomes and tested state.>
 
 ## Reviews
 
-<Review type and range, artifact, findings, dispositions, and resulting commits.>
+<Current review type/range/artifact and open findings. Once clean, collapse to the reviewed state and
+resulting commits; leave detailed history in the review artifact and git.>
 
 ## Decisions, discoveries, blockers, and deviations
 
-<Durable context that cannot be reconstructed safely from code alone.>
+<Only durable context that still affects execution and cannot be reconstructed safely from code or
+named artifacts.>
 
-## Event log
+## Recent transitions
 
-### <YYYY-MM-DD — event>
-
-- Action: <what happened>
-- Evidence: <commit, command/result, artifact, PR/check, or package state>
-- Outcome: <what changed>
-- Follow-up: <remaining consequence or none>
+<Optional temporary working memory. Keep only material transitions not yet fully represented above.
+Delete or collapse each entry once its outcome is folded into the snapshot; omit this section when empty.>
 
 ## Resume prompt
 
@@ -53,5 +54,5 @@ be duplicated where they can drift. Keep it verbatim in this fenced block:>
 
 ```
 cd <absolute worktree path>
-Read @plans/<PLAN>_PLAN.md and @plans/<PLAN>_PROGRESS.md, then do what the ledger's `## Next Steps` says.
+Read @plans/<PLAN>_PLAN.md and @plans/<PLAN>_PROGRESS.md and do what its `## Next Steps` says.
 ```

@@ -1,17 +1,17 @@
 ---
 name: docs-review
-description: Full review of a branch's documentation/meta diff (**/*.md, .agents/.claude/.codex agent metadata, plans/**, docs/**, AGENTS.md, CLAUDE.md, PROMPTS.md, README*) against the repo's own doc conventions — accuracy vs the real code/commands/paths it cites, contradiction with sibling docs, the topic-playbook convention, concision of harness-reloaded docs, and dangling references to transient artifacts. The docs counterpart to `code-review`: same review-file work-order format and confidence bar, different lenses. Use when the user wants to "docs-review", "review these docs", or before merging a docs/meta-only PR (the `/merge` docs branch and `/merge-docs` gate on it). For runtime/source changes use `code-review`.
+description: Full review of a branch's documentation/meta diff (**/*.md, .agents/.claude/.codex agent metadata, plans/**, docs/**, AGENTS.md, CLAUDE.md, PROMPTS.md, README*) against the repo's own doc conventions — accuracy vs the real code/commands/paths it cites, contradiction with sibling docs, the topic-playbook convention, concision of harness-reloaded docs, and dangling references to transient artifacts. The docs counterpart to `review`: same review-file work-order format and confidence bar, different lenses. Use when the user wants to "docs-review", "review these docs", or before merging a docs/meta-only PR (the `/merge` docs branch and `/merge-docs` gate on it). For runtime/source changes use `review`.
 ---
 
 # docs-review
 
 Full review of the current branch's **documentation/meta** diff, judged against the repo's own doc
 conventions — not generic style. A docs change has no build or test gate, so this review *is* its gate.
-Output is the same per-branch review markdown `code-review` produces (a `reviews/<branch>.md` work
+Output is the same per-branch review markdown `review` produces (a `reviews/<branch>.md` work
 order with a `Reviewed up to commit:` SHA marker), so `address-review` and `incremental-review` consume
 it unchanged.
 
-This is the docs sibling of [`code-review`](../code-review/SKILL.md): identical file, marker, confidence
+This is the docs sibling of [`review`](../review/SKILL.md): identical file, marker, confidence
 filter and no-hedge rule; the lenses (Step 3) and the rules it loads (Step 2) are what differ.
 
 ## When to use
@@ -22,8 +22,8 @@ filter and no-hedge rule; the lenses (Step 3) and the rules it loads (Step 2) ar
 
 ## When NOT to use
 
-- The diff touches runtime/product/package/CI-test-selection code → `code-review` (docs-review does not
-  judge code). A mixed PR is a code PR: run `code-review`, which covers its docs too.
+- The diff touches runtime/product/package/CI-test-selection code → `review` (docs-review does not
+  judge code). A mixed PR is a code PR: run `review`, which covers its docs too.
 - Re-reviewing only commits added since a prior review → `incremental-review` (reads the SHA marker).
 
 ## Step 1 — Confirm the checkout, then determine the review range
@@ -47,12 +47,12 @@ If the range is empty or the branch is `main`, that's the wrong-checkout symptom
 **Scope guard:** list changed paths (`git diff --name-only "<start>..HEAD"`). If any is a
 runtime/product/package/CI-test-selection path (`api/**`, `app/**` source, `*.csproj`/CPM,
 `package.json`/lockfiles, `.github/workflows/**`, migrations), this is **not** a docs-only diff — stop
-and route to `code-review`. In-scope meta paths: `**/*.md`, `.agents/**`, `.claude/**`, `.codex/**`,
+and route to `review`. In-scope meta paths: `**/*.md`, `.agents/**`, `.claude/**`, `.codex/**`,
 `plans/**`, `docs/**`, `AGENTS.md`, `CLAUDE.md`, `README*`, `PROMPTS.md`.
 
 ## Step 1b — Create the review file NOW, before reviewing (mandatory)
 
-Same as `code-review` Step 1b: the moment the range is known, resolve the target path
+Same as `review` Step 1b: the moment the range is known, resolve the target path
 (`reviews/<branch-slug>.md`, `/` → `-`; or an existing/named file) and, if it doesn't exist, write the
 Step-5 skeleton — the `# Docs review — <branch>` header, the work-order blurb, the
 `**Reviewed up to commit:**` marker at current HEAD, the range line, and a `## Findings` section with a
@@ -126,7 +126,7 @@ stated pass condition.
 
 ## Step 4 — Confidence filter
 
-Same bar as `code-review`. For each candidate, judge it's real and a reader will actually be
+Same bar as `review`. For each candidate, judge it's real and a reader will actually be
 misled/blocked by it. **Drop anything below ~80/100.** Discard: pre-existing issues on unchanged lines;
 pure preference re-wording that changes no meaning; a "violation" no convention actually states;
 deliberate, noted exceptions.

@@ -18,21 +18,22 @@ jobs:
     #   run_tests  -> unit + integration
     #   run_e2e    -> e2e-api-tests
     #   run_e2e_ui -> e2e-ui-tests
-    #   run_fe     -> carve-fe        (the FE COMPILE FLOOR: each surface builds standalone from the feed)
+    #   run_fe     -> fe-boundaries + carve-fe (the FE COMPILE FLOOR: ownership holds and each surface builds from the feed)
     # Automatic classification, by the changed-file set:
     #   - non-code    (docs / .claude / plans / reviews / root dotfiles) -> ALL FOUR false: nothing to
     #                 compile or test. build + carve no-op, unit/integration skip, E2E no-op.
     #   - package-only (nothing but Directory.Packages.props — e.g. platform-sync) -> run_code + run_tests true,
     #                 run_e2e + run_e2e_ui false: a dep bump can break compile/tests so those gate, but it has ZERO
     #                 runtime delta so E2E no-ops.
-    #   - anything else                                                            -> all four true (full CI).
-    # OPT-OUT to turn E2E gates OFF (never unit/integration) for a change the diff over-covers. It is a git
-    # TRAILER on its own line — `Skip-E2E: true` or `Skip-E2E-UI: true` — parsed structurally by git (not
-    # substring-grepped), so prose that merely mentions a token can't trip it (the pr-227 bug). A PR label of
-    # the same name (skip-e2e / skip-e2e-ui) works too.
+    #   - anything else -> initially enables every job; this is conservative job plumbing, not E2E-tier policy.
+    # `.agents/skills/merge/SKILL.md` is the single source of truth for the E2E tier: a positive trigger keeps
+    # full E2E on via `full-e2e`; no positive trigger selects `skip-e2e`. The hard floor remains build + carve +
+    # unit + integration, and every PR still merges through the queue on current main.
+    # The same E2E selections can also be supplied as git TRAILERS on their own line — `Skip-E2E: true` or
+    # `Skip-E2E-UI: true` — parsed structurally by git (not substring-grepped), so prose that merely mentions a
+    # token can't trip it (the pr-227 bug). A PR label of the same name (skip-e2e / skip-e2e-ui) works too.
     #   Skip-E2E-UI / skip-e2e-ui -> run_e2e_ui off       (build+carve, unit+integration, api E2E still run)
     #   Skip-E2E    / skip-e2e    -> run_e2e + run_e2e_ui off  (build+carve, unit+integration still run)
-    # Everything still merges through the queue on current main, so an opt-out can never merge something stale.
     # NOTE: `ci-complete` is the single required check. Jobs with no work are skipped before runner allocation;
     # `ci-complete` accepts skipped dependencies and reports the required success result.
     runs-on: ubuntu-latest
@@ -439,7 +440,7 @@ jobs:
             -not -path '*/tests/*' \
             -not -path '*/obj/*' \
             -not -name 'Concertable.B2B.AppHost.csproj' \
-            -not -name 'Concertable.B2B.AppHost.Extensions.csproj')
+            -not -name 'Concertable.B2B.Hosting.csproj')
           echo "Package-clean closure projects (${#PROJS[@]}):"
           printf '%s\n' "${PROJS[@]}"
           dotnet sln CarveB2B.slnx add "${PROJS[@]}"
@@ -509,11 +510,32 @@ jobs:
             -not -path '*/tests/*' \
             -not -path '*/obj/*' \
             -not -name 'Concertable.Customer.AppHost.csproj' \
-            -not -name 'Concertable.Customer.AppHost.Extensions.csproj')
+            -not -name 'Concertable.Customer.Hosting.csproj')
           echo "Package-clean closure projects (${#PROJS[@]}):"
           printf '%s\n' "${PROJS[@]}"
           dotnet sln CarveCustomer.slnx add "${PROJS[@]}"
           dotnet build CarveCustomer.slnx --configuration Release -p:MinVerSkip=true
+
+  fe-boundaries:
+    runs-on: ubuntu-latest
+    needs: [changes]
+    if: needs.changes.outputs.run_fe == 'true'
+    permissions:
+      contents: read
+      packages: read
+    env:
+      GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install frontend dependencies
+        working-directory: app
+        run: npm ci
+      - name: Prove and enforce frontend workspace boundaries
+        working-directory: app
+        run: npm run test:boundaries && npm run lint:boundaries
 
   carve-fe:
     # FE analogue of the backend carve-* gates: each surface must restore its shared @concertable tiers
@@ -950,6 +972,7 @@ jobs:
       - carve-search
       - carve-b2b
       - carve-customer
+      - fe-boundaries
       - carve-fe
       - unit-tests
       - integration-tests

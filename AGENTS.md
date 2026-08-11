@@ -10,6 +10,13 @@ Concertable is a monorepo (a convenience, not the architecture) with a `.NET` mi
 - **A shortcut is only acceptable when it is genuinely, provably the right call** (e.g. deferring live tax-ID verification that overlaps Stripe) — and then it is *logged* in the owning `TECH_DEBT.md` with the reasoning, never left silent.
 - **If effort/complexity is pushing you toward the lesser option, surface that as a trade-off for Tommy to decide — do not quietly downgrade the solution.** The bias is always toward the durable, maintainable, architecturally-honest answer.
 
+## Questions come before actions
+
+When Tommy asks a question, answer it directly before taking any action. Discussion of possible work,
+numbered options, prompts, branches, or plans is not authorization to execute it. If one message both
+asks a question and explicitly requests an action, answer the question first, then perform only the
+explicitly requested action.
+
 ## Autonomy — act on reversible work, don't ask
 
 Decide and act on reversible work (doc/plan edits, isolated commits, retrying a transient failure), then report — no check-ins. Research: run end-to-end, update the relevant docs, commit in isolation. Pause only when an action is irreversible or contradicts what you find (e.g. unrelated work already staged) — flag it in one line and take the safe path, don't ask permission.
@@ -164,30 +171,11 @@ locally; the local gate stops at build + unit + integration unless a queue failu
 [`plans/AGENTS.md`](./plans/AGENTS.md) carries that local workflow. The merge skill's Step 4 is the
 single source of truth for selecting the merge-queue E2E tier.
 
-**Full E2E in the merge queue is the default.** Add `skip-e2e` only when the PR is both small and
-demonstrably low-blast-radius, with every one of these true:
-
-- The diff and affected area are small and isolated.
-- It touches no package/service boundary, shared infrastructure, build/publish/deployment pipeline,
-  CI workflow, or multiple application surfaces.
-- It changes no user-facing/runtime flow covered by E2E.
-- Unit/integration tests fully cover the affected behaviour.
-
-**Zero intended behaviour change is not sufficient.** Package renames, lockfile/workspace changes,
-shared-library moves, broad refactors, and build/publish separation must run full E2E. When in doubt,
-do not skip. The labels are the reliable lever: `skip-e2e` drops both E2E suites and `skip-e2e-ui`
-drops only the UI suite. Remove stale skip labels when the PR does not qualify; if historical trailers
-would opt out a PR that now requires the full tier, add `full-e2e`. Unit tests, integration tests,
-build, and carve are never skippable for code/package changes.
-
-A same-named **git trailer** (`Skip-E2E: true` on its own line) works too — parsed structurally by git,
-so prose that merely mentions it can't trip the gate (the pr-227 bug) — **but it is fragile in this repo,
-so prefer the label.** Git only parses the *last* paragraph of a commit message as trailers, and every
-commit here carries a mandated `Co-Authored-By:` trailer, so `Skip-E2E: true` must sit in the **same
-contiguous block** as `Co-Authored-By:` — a blank line between them splits the paragraph and git no
-longer sees `Skip-E2E`, so the queue silently runs E2E anyway. Unit and integration tests always run
-for code/package changes and have no opt-out. The label sidesteps the E2E trailer fragility entirely.
-Full tier table in [`.github/workflows/test.yml`](./.github/workflows/test.yml).
+Apply the merge skill's Step 4 mechanically; it is the **single source of truth** for the E2E tier.
+A positive trigger requires `full-e2e`; no positive trigger requires `skip-e2e`. Do not run E2E “to
+be safe” when integration covers the touched path and no trigger is present. Build, carve, unit, and
+integration remain mandatory for code/package changes, and every code/package PR handled by the merge
+skill still enters the queue on current `main`.
 
 Run E2E only through `./e2e.ps1` via the matching skill (`e2e-ui-regress`, `e2e-ui-debug`,
 `e2e-api-debug`) — the skill's Step 0 Docker pre-flight is mandatory, every run.
@@ -237,14 +225,15 @@ Plans are working docs for unfinished work, **not** an archive — git history i
 
 **Opening a `plans/*.md` to work from obliges you to read [`plans/AGENTS.md`](./plans/AGENTS.md) in the same breath** — phases, verification gates, and when to run E2E live there, and the plan's own prose is not a substitute for them. Reading only the plan is how its rules get skipped.
 
-The convention is **ROADMAP → PLAN → PROGRESS**, folder = roadmap/plan: an epic tracker at `plans/<epic>/<EPIC>_ROADMAP.md` spins off plans at `plans/<epic>/<NAME>_PLAN.md`, each with a same-directory `<NAME>_PROGRESS.md` companion and a worktree/branch named `<Type>/<epic>_<name>` to match. The plan holds the design and outstanding phases; the progress ledger records every project action, result, and state transition plus the current operational truth. Keep both current throughout the work. Legacy plans without a ledger remain valid: reconstruct them from the plan and repository evidence, then create the ledger before recording further progress. Full rules: [`plans/AGENTS.md`](./plans/AGENTS.md) "Companion progress ledger."
+The convention is **ROADMAP → PLAN → PROGRESS**, folder = roadmap/plan: an epic tracker at `plans/<epic>/<EPIC>_ROADMAP.md` spins off plans at `plans/<epic>/<NAME>_PLAN.md`, each with a same-directory `<NAME>_PROGRESS.md` companion and a worktree/branch named `<Type>/<epic>_<name>` to match. The plan holds the design and outstanding phases; the progress ledger is a compact rolling snapshot of the current operational truth, not an append-only history. Keep both current throughout the work. Legacy plans without a ledger remain valid: reconstruct them from the plan and repository evidence, then create the ledger before recording further progress. Full rules: [`plans/AGENTS.md`](./plans/AGENTS.md) "Companion progress ledger."
 
 - **Cross-plan blockers are two-way handoffs.** The blocked ledger names the owning ledger and exact
   gate; the owning ledger lists the blocked dependent. When the gate opens, the owner updates the
   dependent ledger and surfaces its resume prompt — the waiting plan does not poll or rely on memory.
 - **A blocked plan never emits its own resume prompt.** Its ledger and final report name the exact
-  blocker, the action that removes it, and the evidence that makes resumption valid. Dispatch the
-  resolver or give Tommy the external action; only surface the waiting plan after the gate opens.
+  blocker, its owner, the action that removes it, and the evidence that makes resumption valid.
+  Dispatch the resolver or give Tommy the external action; only surface the waiting plan after the
+  gate opens.
 - **Keep the plan and its `_PROGRESS.md` companion until the entire lifecycle is terminal — not merely until the final local phase is committed and verified.** They remain the recovery anchor through every required review/fix, PR/check/merge, publication, dependency, and platform-sync gate. When the source PR merges, move that recovery state to a clean `Docs/*_closeout` worktree and delete the feature worktree immediately. Record the final gate outcome there, then delete both artifacts together and land the close-out through `/merge-docs`. If no later delivery or package gate exists, the final phase commit may close them out.
 - A plan **superseded** by a newer plan, or describing a design that was **rejected**, is deleted the moment that's decided — don't leave a tombstone.
 - A **partially-done** plan stays, but strike/check off the sections that shipped (in the same commit as the work) so what remains is only the outstanding work.

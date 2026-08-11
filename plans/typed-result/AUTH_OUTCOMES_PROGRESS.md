@@ -1,12 +1,13 @@
 # Auth expected-outcome migration progress
 
 - Plan: `plans/typed-result/AUTH_OUTCOMES_PLAN.md`
+- Roadmap: `plans/typed-result/TYPED_RESULT_MIGRATION_ROADMAP.md`
+- Roadmap item: `typed-result/auth-outcomes`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_auth-outcomes`
 - Branch: `Feature/typed-result_auth-outcomes`
 - PR: not opened
-- Dependency/package gates: Payment PR #392/platform-sync #420 are terminal. Auth now waits for
-  `plans/typed-result/REUNION_INTEGRATION_PROGRESS.md` to merge its Phase 4 generated platform-sync PR;
-  after Auth merges, this plan still owns its own publication/platform-sync lifecycle to terminal green.
+- Dependency/package gates: no implementation gate; Auth has no Payment/B2B/Customer dependency.
+  Delivery classification follows the current package-topology audit and published Reunion `.1` use.
 - Last reconciled: `2026-08-09` from fresh `origin/main` `c72b058afe43742854b765838bf43f179e7ed92a`,
   current branch head `98599413adca3364ef7d3613850b66d69caf2f69`, merged Reunion PRs #443/#444,
   and live local/GitHub state.
@@ -66,19 +67,23 @@ three post-watermark branch-owned commits both completed with no findings. The i
 also checked the package/solution merge resolutions; later merge `e196f13e1` contains only already-
 merged mobile CI/docs changes. The clean review artifact was deleted under the review lifecycle rule.
 
-The earlier PR preflight was green at its recorded mainline checkpoint, but that result is stale. The
-merged Reunion plan now owns the shared carrier/package cutover. Auth must not merge intermediate main
-or duplicate Reunion references; it waits for the Phase 4 generated sync, then reconciles once and
-reruns the complete verification, incremental-review, and preflight gates.
+The earlier PR preflight is stale. Published Reunion `.1` and Auth's isolated topology make the direct
+carrier conversion implementable now; Payment delivery is not an Auth implementation prerequisite.
 
 ## Next Steps
 
-Wait for `plans/typed-result/REUNION_INTEGRATION_PROGRESS.md` to merge its Phase 4 generated
-platform-sync PR. That owner will update this ledger and surface the resume prompt. Then fetch and
-merge current main once, reconcile only Auth-owned Reunion imports and semantic conflicts, repeat the
-Auth unit/integration, Release solution build, carve, mechanical gates, incremental review, and PR
-preflight, and open the plain GitHub PR through the plan-aware push protocol. Require full merge-queue
-API and UI E2E; add no skip label or trailer and do not run E2E locally.
+Fetch and merge current `origin/main`, audit the Auth package and HTTP-edge topology, then migrate the
+completed Auth semantic work from old Kernel carriers/terminals to direct published Reunion packages.
+Keep changes Auth-owned except for an already-owned architecture guard, repeat Auth unit/integration,
+Release solution build, carve, mechanical gates, incremental review, and PR preflight, and classify
+delivery from the resulting topology. Do not push without instruction; require full merge-queue API
+and UI E2E when delivered.
+
+## Downstream handoffs
+
+- Waiting ledger: `plans/typed-result/REUNION_SHARED_CONTRACTION_PROGRESS.md`.
+  Gate: Auth must be delivery-ready and identify every remaining old carrier, terminal, and third-party
+  dependency outside its owned scope.
 
 ## Completed work
 
@@ -253,8 +258,8 @@ finding IDs or dispositions exist. Later merge `e196f13e1` contains only already
 - Origin: the permanent typed-result epic item is **Auth expected-outcome migration** in
   `plans/typed-result/TYPED_RESULT_MIGRATION_ROADMAP.md`. Tick that item only after the entire feature
   lifecycle, including merge and platform sync, ships; never delete the permanent tracker.
-- Auth has no dependency on the Payment, B2B, or Customer feature branches. It is blocked only on the
-  shared Reunion Phase 4 generated platform-sync baseline and must not duplicate that owner's work.
+- Auth has no dependency on the Payment, B2B, or Customer feature branches. Published Reunion opens
+  direct service-owned conversion; delivery follows Auth's actual topology.
 - Auth's top-level program reads required E2E host settings before `WithWebHostBuilder` app
   configuration is visible. The fixture therefore scopes process environment overrides to host
   startup and restores every prior value immediately after `factory.Services` materializes.
@@ -285,6 +290,13 @@ finding IDs or dispositions exist. Later merge `e196f13e1` contains only already
   amendment/separate additive shared item before implementation proceeds.
 
 ## Event log
+
+### 2026-08-09 — direct Reunion conversion dispatched
+
+- Action: Reclassified the Payment/platform-sync wait against Auth's actual service topology.
+- Evidence: Auth has no Payment, B2B, or Customer dependency; Reunion `.1` is published.
+- Outcome: direct Auth conversion and verification are actionable now.
+- Follow-up: execute `## Next Steps`.
 
 ### 2026-08-09 - Reunion integration dependency registered
 

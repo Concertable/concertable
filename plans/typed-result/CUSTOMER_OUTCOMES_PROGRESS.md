@@ -1,13 +1,13 @@
 # Customer non-Payment outcomes and lookups progress
 
 - Plan: `plans/typed-result/CUSTOMER_OUTCOMES_PLAN.md`
+- Roadmap: `plans/typed-result/TYPED_RESULT_MIGRATION_ROADMAP.md`
+- Roadmap item: `typed-result/customer-outcomes`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_customer-outcomes`
 - Branch: `Feature/typed-result_customer-outcomes`
 - PR: [#425](https://github.com/Concertable/concertable/pull/425) — open, non-draft, head `e60219f7d`
-- Dependency/package gates: Kernel/Payment foundations and platform syncs #291/#420 are shipped; PR
-  #282 remains the exclusive Ticket/Concert/Customer Payment owner; this plan now waits for
-  `plans/typed-result/REUNION_INTEGRATION_PROGRESS.md` to merge its Phase 4 generated platform-sync PR,
-  which includes the semantic Shared.Api terminal consumer migration
+- Dependency/package gates: no implementation gate; this non-Payment scope can convert against
+  published Reunion `.1` now. PR #282 remains excluded and Payment delivery is tracked separately.
 - Last reconciled: 2026-08-09 against `origin/main` `c72b058af`, local head `e7c44f5b3`, PR #425 head
   `e60219f7d`, merged Reunion PRs #443/#444, and the preserved HTTP-terminal worktree
 
@@ -45,19 +45,23 @@ Fresh `origin/main` is now `c72b058af`; the clean local branch is at `e7c44f5b3`
 and 31 ahead. PR #425 remains open, non-draft, and clean at `e60219f7d`; the two local commits after
 that PR head update only this ledger.
 
-The merged Reunion plan now owns the carrier, Shared.Api terminal, publication, and generated
-platform-sync cutover as one sequence. The existing HTTP-terminal implementation remains preserved as
-local input to that owner and will not publish a competing package. PR #425 must therefore wait for
-the Reunion Phase 4 generated sync, then update exactly once against the final integrated baseline.
+PR #425 can be prepared locally now against published Reunion `.1` because its scope excludes
+Payment.Client. Preserve its existing review history and remote head; update the PR once after the
+current-main conversion, verification, and incremental review are complete.
 
 ## Next Steps
 
-Wait for `plans/typed-result/REUNION_INTEGRATION_PROGRESS.md` to merge its Phase 4 generated
-platform-sync PR. That owner will update this ledger and surface the resume prompt. Then fetch and
-merge current main once, reconcile Customer-owned Reunion imports and semantic terminal calls,
-verify the affected Customer integration tests, Shared.Api suite, Release solution, and carve,
-incrementally review the change, and update PR #425. Do not enqueue PR #425 before that one integrated
-consumer migration is complete.
+Fetch and merge current `origin/main`, audit this scope's package and HTTP-edge topology, and migrate
+the existing Review/Preference/User/Venue/Artist work to direct published Reunion packages without
+touching Ticket, Concert, Payment clients/mocks, purchase, or checkout. Verify the affected Customer
+integration tests, Release solution, and carve; incrementally review; then update PR #425 once. Do not
+enqueue it until the topology audit proves it merge-ready and the updated PR gates are green.
+
+## Downstream handoffs
+
+- Waiting ledger: `plans/typed-result/REUNION_SHARED_CONTRACTION_PROGRESS.md`.
+  Gate: Customer non-Payment must be delivery-ready and identify every remaining old carrier,
+  terminal, and third-party dependency outside its owned scope.
 
 ## Completed work
 
@@ -276,8 +280,8 @@ build green, and current main reviewed, the spent artifact is removed in this ch
 - PR #282 is open at remote head `26ed63b8` and owns the excluded Ticket/Concert/Payment slice. Its
   local branch contains substantial unpushed owned-result work; none of it may be copied or modified
   here.
-- The only blocking package dependency is the Reunion integration Phase 4 generated platform-sync
-  baseline. Customer has no dependency on B2B/Auth implementation and must not duplicate shared work.
+- This non-Payment scope has no implementation blocker: published Reunion opens direct conversion.
+  Customer has no dependency on B2B/Auth implementation; delivery follows its actual package topology.
 - In this long worktree, default Debug output puts the x64 SqlClient SNI DLL at a 259-character path,
   which Windows rejects with `ERROR_FILENAME_EXCED_RANGE`. Use a short supported `--artifacts-path`
   for integration runs from this worktree; the binaries and application behavior are otherwise green.
@@ -286,6 +290,13 @@ build green, and current main reviewed, the spent artifact is removed in this ch
   wire contracts remain stable through per-case `[ErrorCode]` attributes and exact definition tests.
 
 ## Event log
+
+### 2026-08-09 — PR #425 Reunion preparation dispatched
+
+- Action: Separated this non-Payment scope from the Payment publication delivery chain.
+- Evidence: the branch excludes Ticket/Concert/Payment clients; Reunion `.1` is published.
+- Outcome: local conversion, verification, and review can proceed now while preserving the PR head.
+- Follow-up: execute `## Next Steps` and update PR #425 once after the local gate is green.
 
 ### 2026-08-09 — Reunion integration dependency registered
 

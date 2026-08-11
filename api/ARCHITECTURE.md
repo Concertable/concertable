@@ -118,11 +118,12 @@ produces a build that restores and compiles. The dependency types map as:
 | `Concertable.X.Seed.Simulator` (Worker host) | `AddProject<Projects.X>()` in AppHost | Container image, `AddContainer(...)` in AppHost |
 
 Within a service, intra-folder references stay `ProjectReference`. Two layers are **exempt** from the
-package boundary and keep their cross-folder `ProjectReference`s by design: the **AppHosts**
-(dev-composition — they reference sibling deployables to orchestrate the topology) and the
-**full-stack E2E/integration test harnesses** (test-composition — they boot multiple services
-together). A service's *deployable closure* must be package-clean; its AppHost and test harness need
-not be — until the deployment effort turns those refs into `AddContainer` / a containerised E2E topology.
+package boundary and keep their cross-folder `ProjectReference`s by design: the **AppHost composition
+layer** (the executable `*.AppHost` projects plus reusable service-owned `*.Hosting` libraries, which
+reference sibling deployables to orchestrate the dev topology) and the **full-stack E2E/integration
+test harnesses** (test-composition — they boot multiple services together). A service's *deployable
+closure* must be package-clean; its AppHost composition and test harness need not be — until the
+deployment effort turns those refs into `AddContainer` / a containerised E2E topology.
 
 The split-repo step is now nearly a no-op: the csproj reference types are already what they need to
 be, so a `subtree split` of `api/Concertable.X/` restores from the (org-scoped, split-surviving) feed.
@@ -162,7 +163,8 @@ edge; HTTP failures map centrally through `IError.Definition` in `Concertable.Sh
 
 - **Build-time guardrail (fast-fail, local + CI).** Each service folder's `Directory.Build.targets`
   fails the build if any deployable-closure project gains a `ProjectReference` escaping the service
-  folder. AppHost/Tests projects and `UseLocalCore=true` builds are exempt (`EnforceServiceBoundary`).
+  folder. AppHost composition (`*.AppHost` and `*.Hosting`), Tests projects, and `UseLocalCore=true`
+  builds are exempt (`EnforceServiceBoundary`).
 - **Carve CI gates.** `carve-{auth,payment,search,b2b,customer}` jobs in `.github/workflows/test.yml`
   `git archive` each service folder, restore from the feed, and build the closure standalone — so an
   escaping reference (or a missing package on the feed) fails CI as a project-not-found.
@@ -198,7 +200,8 @@ for service-owned projects, `api/Concertable.Shared/` for cross-service infra) p
 - `api/Concertable.Search/` — Search service (projections + search API).
 - `api/Concertable.Payment/` — Payment service (Stripe integration, payouts).
 - `api/Concertable.AppHost/` — Umbrella AppHost (runs everything; the only host that gates cross-service startup with `WaitFor`).
-- `api/Concertable.AppHost.Shared/` — Aspire resource registration helpers shared by every AppHost (topology/references only — never cross-service `WaitFor`).
+- `api/Concertable.AppHost.Shared/` — generic cross-service Aspire helpers shared by every AppHost (SQL/ServiceBus/Storage/topology/secrets — references only, never cross-service `WaitFor`).
+- `api/Concertable.Frontend.Hosting/` — Aspire composition for the frontend surfaces (web SPAs + mobile apps), consumed by the umbrella, B2B, and Customer AppHosts.
 - `api/Concertable.Shared/` — Cross-service infrastructure (Kernel, shared seeding infra, messaging contracts, etc.).
 - `api/docs/` — Conventions, rules, design docs.
 

@@ -20,6 +20,11 @@ Each buildable roadmap item **spins off its own feature plan** (e.g. `VAT_PLAN.m
 phases and delivery; when it ships it **ticks its roadmap line**, then is deleted. The roadmap keeps the
 tick.
 
+Give every item that spins off a plan a stable backticked `<epic>/<slug>` key on its checklist line.
+The new ledger records that exact key in `Roadmap item:` and the roadmap path in `Roadmap:`; this is
+the machine-checkable roadmap→plan→ledger link. The disposable plan file still does not cite the
+roadmap.
+
 **A plan's file must not cite the roadmap — but an agent working the plan may read it.** The document
 dependency runs one way: a plan is spun off *from* a roadmap item and reports completion back to it, and
 a plan that cites the roadmap couples the disposable artifact to the permanent one. Reading is different
@@ -39,8 +44,8 @@ existing ✅/🔴/🟠/🟡 style), exactly like ticking a phase in a plan. Don'
 ## `/continue-roadmap` picks the next item
 
 `/continue-roadmap [@plans/<X>_ROADMAP.md] [preferred item in natural language]` reads a roadmap and
-classifies every outstanding item against real git/PR/worktree state (in-flight / blocked / ready).
-Without a preference it lists the ready candidates for Tommy to choose. A ready preference is treated
-as the choice and goes directly to the handoff; a blocked, in-flight, or unmatched preference produces
-the ready alternatives instead. The handoff tells a fresh context to write that item's feature plan.
-This is the epic-level analog of `/resume-plan`; it **creates** a new plan rather than resuming one.
+classifies every outstanding item against real git/PR/worktree state: in flight, implementation-blocked,
+delivery-gated but implementable, or ready and unowned. It offers every independently implementable
+candidate; an unlanded PR, publication, or platform sync excludes an item only when it prevents safe
+local implementation. The handoff tells a fresh context to write that item's feature plan. This is the
+epic-level analog of `/resume-plan`; it **creates** a new plan rather than resuming one.

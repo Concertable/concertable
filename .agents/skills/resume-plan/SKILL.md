@@ -24,19 +24,27 @@ executing that action — not choosing among paths or reconstructing it.
    Then `cd` to the resolved worktree before anything else — a fresh session may open elsewhere.
 2. **Read in full:** `AGENTS.md`, `plans/AGENTS.md`, `plans/agents/PLAN.md`, the plan, and the resolved
    ledger.
+   After applying the root current-main sync gate, run
+   `python .agents/hooks/plan_graph.py --root <absolute-worktree>` before trusting the graph; fix any
+   reported graph error before resuming implementation.
 3. **Confirm the ledger still holds** before acting: check its header branch/PR/gates against actual
    `git`/PR state and confirm `## Next Steps` still names one resolved action under `AGENTS.md`. Reconcile
    stale state or unresolved alternatives from current evidence and standing instructions, then update
-   the ledger's current-state, `## Next Steps`, and event log before acting.
+   and compact the ledger's current state and `## Next Steps` before acting. Fold any still-material
+   recent transition into the stable snapshot and remove superseded chronology. For every package, PR,
+   publication, or sync dependency, classify implementation and delivery separately. Do not preserve a
+   stale hard blocker when source or an exact producer artifact now permits safe local preparation.
 4. **Do what `## Next Steps` says,** honoring its prerequisites and gates.
 5. **When `## Next Steps` is a hard stop:**
-   - Do any safe, authorized work in the current scope that can remove it. If that advances the plan,
-     reconcile the ledger and continue normally.
-   - If it cannot move, make `## Next Steps` start with the exact single-line `Blocked:`,
+   - Do any safe, authorized work in the current scope that can remove it. Also check whether the gate
+     blocks only delivery: if local implementation, tests, or review can proceed against an exact
+     producer artifact, reconcile the ledger to actionable delivery-gated work and continue normally.
+   - If it cannot move, make `## Next Steps` start with the exact single-line `Blocked:`, `Blocked by:`,
      `Unblock action:`, and `Resume when:` fields from `plans/agents/PLAN.md`. If the same fields and
      evidence were already recorded, do not create another no-change blocker checkpoint.
-   - **Existing owner:** establish the two-ledger return path before stopping. Report all three lines verbatim
-     and name the owner, but emit no prompt; the owner surfaces this plan when the gate opens.
+   - **Existing owner:** establish the reciprocal return path in every plan-owner ledger named by
+     `Blocked by:` before stopping. Report all four lines verbatim and name the owner, but emit no
+     prompt; the owner surfaces this plan when the gate opens.
    - **Separate resolver needed:** emit a paste-ready prompt for that resolving task, naming the
      blocked ledger and return condition. Never emit the blocked plan's own resume pointer.
    - **User or external action needed:** tell the user the exact action and objective verification
