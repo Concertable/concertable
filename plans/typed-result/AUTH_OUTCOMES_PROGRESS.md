@@ -49,10 +49,10 @@ distinct safe explanation.
 
 ## Next Steps
 
-Transport this push checkpoint, restore the clean review work order from its local stash, and run the
-required incremental correctness/security review over the new branch-owned range. Then wait for green
-PR checks, apply `full-e2e` because Auth behavior is observable end to end, enqueue the exact reviewed
-head, and own merge, publication, platform sync, and docs closeout to terminal completion.
+Wait for PR #517's replacement checks on reviewed head `dd9e3111a4b6689cf46b9232275fccd63a349b72`
+to reach terminal green. Then remove the served clean-review work order, apply `full-e2e` because Auth
+behavior is observable end to end, enqueue that exact remote head, and own merge, publication,
+platform sync, and docs closeout to terminal completion.
 
 ## Downstream handoffs
 
@@ -131,10 +131,11 @@ Final producer-reconciled candidate:
 ## Reviews
 
 The untracked work order `reviews/Feature-typed-result_auth-outcomes.md` records clean full and
-incremental correctness/security reviews with no open findings. The latest range is
-`e50d9bbe..1afdb4b3` (341 commits including inherited `main` merges); the branch-owned runtime delta
-reviewed in depth is `af37d2618` and `1afdb4b3`. Both review markers are stamped through
-`1afdb4b3396d2fde525a7a1da324b66cf9575f54`.
+incremental correctness/security reviews with no open findings. The latest exact range is
+`ac7b2341..dd9e3111` (43 commits including inherited, already-merged `main` work); branch-unique
+non-merge commits change only the Auth plan pair and delivery ledger, while Auth runtime source is
+unchanged. Both review markers are stamped through PR head
+`dd9e3111a4b6689cf46b9232275fccd63a349b72`.
 
 ## Decisions, discoveries, blockers, and deviations
 
