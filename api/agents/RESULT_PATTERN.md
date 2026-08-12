@@ -33,11 +33,30 @@ Choose the return type from the decisions the caller must make:
 |---|---|
 | Success value or expected, actionable failure | `Result<TValue, TError>` |
 | Completion or expected, actionable failure | `UnitResult<TError>` |
-| Present or ordinarily absent, with no failure explanation | `Option<T>` |
+| Present or ordinarily absent as an intentional application outcome | `Option<T>` |
 | Expected failure, otherwise an optional value | `Result<Option<T>, TError>` |
+| Provider, storage, framework, wire, or short local value that may be null | `T?` |
 | Zero or more values | `IReadOnlyList<T>`; no matches is an empty list |
 | No actionable alternate outcome | Plain value, `Task`, or another completion type |
 | Capability question only | `bool` |
+
+The short rule is: use `T?` for technical nullability that stays in infrastructure or short local
+plumbing; use `Option<T>` when `Some(T)` and `None` are the complete, intentional outcomes of an
+in-process API. If absence is a named failure, needs an explanation, or must coexist with other
+failure cases, use `Result<TValue, TError>` instead.
+
+The layer is a strong heuristic, not the decision by itself. Repository and provider lookups
+normally return `T?`. Domain, application, `IXModule`, service, and published C# client query
+contracts normally promote ordinary absence to `Option<T>` so callers cannot access `T` without
+observing the case. Commands and queries with named rejections use Result. A guaranteed value stays
+a plain value, and an optional property on a DTO remains nullable rather than wrapping each field
+in Option.
+
+`Option<T>` is a distinct runtime value with a non-null payload; NRT annotations are compiler flow
+analysis over the same runtime reference type. On .NET 10, Option forces conditional payload
+extraction but cannot prevent a caller from ignoring the returned value or a `TryGetValue` boolean.
+On .NET 11, Reunion's native-union asset additionally supports exhaustive `Some<T>`/`None` switch
+expressions. Do not claim either carrier provides more safety than it actually does.
 
 An expected failure is part of normal control flow and gives a caller a legitimate branch: not
 found, invalid input, conflict, unauthenticated, forbidden, payment required, or another named
@@ -49,6 +68,11 @@ Use `bool` only for an actual predicate such as `CanAuthenticate`. A command sho
 uniformity when every expected outcome is intentionally indistinguishable to the caller. Login is
 an example: invalid credentials and an unknown account are both ordinary absence because preserving
 that equivalence avoids an account-enumeration branch.
+
+A lookup returning HTTP 404 does not automatically require a Result. `GetDetailsByIdAsync` may
+return `Option<T>` when found and absent are the whole application contract and the HTTP terminal
+owns the `None`-to-404 policy. Use a `NotFound` error case when the missing resource is one of several
+operation failures, carries useful detail, or must remain distinguishable outside that terminal.
 
 `Result<TValue>` and non-generic `Result` carry string errors. Keep them to genuinely private,
 low-level flows where a string is the complete local contract. Module, application, service, and
@@ -69,16 +93,31 @@ Each edge maps the carrier to its owned wire or storage contract. Cross-service 
 published client or Contracts packages, never another service's runtime project.
 
 Repository single-item lookups return nullable values such as `Task<TEntity?>`, matching the
-provider's missing-row contract. Convert nullable values to `Option<T>` at the domain, application,
-service, or client boundary. Do not push `Option<T>` into EF or repository contracts.
+provider's missing-row contract. Convert nullable values to `Option<T>` when an ordinary
+present-or-absent result crosses a domain, application, module, service, or client boundary. Do not
+push `Option<T>` into EF or repository contracts, and do not wrap a nullable value merely to unwrap
+it again in the same local flow.
 
 ```csharp
-public async Task<Option<User>> FindAsync(Guid id, CancellationToken ct)
+public interface IVenueReadRepository
 {
-    UserEntity? entity = await repository.GetAsync(id, ct);
-    return entity?.ToUser();
+    Task<VenueDetails?> GetDetailsByIdAsync(int venueId);
 }
+
+public interface IVenueService
+{
+    Task<Option<VenueDetails>> GetDetailsByIdAsync(int venueId);
+}
+
+public async Task<Option<VenueDetails>> GetDetailsByIdAsync(int venueId) =>
+    await repository.GetDetailsByIdAsync(venueId);
 ```
+
+The implicit conversion in the service implementation translates the provider's nullable row into
+the application's explicit `Some(VenueDetails) | None` outcome. A command that requires the venue
+instead returns an operation-owned Result such as
+`Task<Result<VenueDetails, UpdateVenueError>>`, with `UpdateVenueError.VenueNotFound` as a named
+failure.
 
 ## Construct Results and Options
 
@@ -116,10 +155,11 @@ public UnitResult<ChangePasswordError> ChangePassword(string password)
 ```
 
 For a target-typed `Option<T>`, prefer `return null;` for `None` and return a nullable value directly
-when it already expresses present-or-absent. Do not write `new None()`, `Option.None<T>()`, or
-`nullable.ToOption() ?? new None()` when the target type already supplies the conversion. Use
-`ToOption()` when an explicit conversion inside a larger expression improves the composition or
-when there is no target-typed conversion site.
+when it already expresses present-or-absent. Do not write `new None()` or `Option.None<T>()` when the
+target type already supplies the conversion. Use `ToOption()` when an explicit conversion inside a
+larger expression improves the composition or when there is no target-typed conversion site. These
+conversions create an Option; there is deliberately no implicit conversion from Option back to
+`T?`.
 
 Use named cases when the value and error payload types overlap, when a broad source type would hide
 the intended branch, or when the branch itself is the point of the expression:
@@ -174,6 +214,23 @@ Compose operations before their terminal:
 - `OrElse`, `ValueOr`, and `ValueOrElse` supply Option fallbacks.
 - `Recover` and `RecoverWith` are for an intentional recovery policy, not for hiding faults.
 
+Prefer the Reunion operation that states the caller's policy instead of open-coding or locally
+renaming it:
+
+```csharp
+Result<VenueDetails, GetVenueError> venue = await venueService
+    .GetDetailsByIdAsync(id)
+    .OrFailure(new GetVenueError.VenueNotFound());
+
+Task<string> ResolveRedirectAsync(Task<Option<string>> redirect) =>
+    redirect.ValueOr("/");
+```
+
+`OrFailure` promotes ordinary absence to a named failure at the boundary where it becomes one.
+`ValueOr` and `ValueOrElse` make a caller-owned fallback explicit. The task extensions apply these
+operations directly to `Task<Option<T>>`; use `MatchAsync`, `MapAsync`, `BindAsync`,
+`OrFailureAsync`, `OrElseAsync`, or `ValueOrElseAsync` when the supplied callback is asynchronous.
+
 For collections, `Sequence` converts many same-error Results into one Result, `Traverse` and
 `TraverseAsync` map then sequence, and `Combine` collapses unit Results. These operations are
 fail-fast; they are not substitutes for validation accumulation.
@@ -183,11 +240,41 @@ delegate is asynchronous. Do not insert unnecessary `await` statements merely to
 reconstruct the same carrier. Result and Option also support minimal LINQ query syntax backed by
 their fail-fast `Map` and `Bind`; use it only when it makes the chain clearer.
 
+The null-coalescing operator works only on nullable operands and cannot be overloaded, so
+`option ?? fallback` does not compile and an implicit conversion cannot make it compile. If a
+framework boundary genuinely requires a nullable reference, convert explicitly at that edge:
+
+```csharp
+string? redirect = option.Match<string?>(static value => value, static () => null);
+```
+
+Prefer keeping a framework-provided nullable value nullable when wrapping and immediately
+unwrapping it would add no application outcome. Do not add Concertable-local `ToNullable`,
+`GetValueOrDefault`, or fallback helpers; they obscure whether the correct contract was nullable,
+Option, or Result.
+
 Ordinary composition is fail-fast. Only validation flows explicitly designed to collect
 independent field errors accumulate failures.
 
 Combinators do not catch exceptions. Cancellation, dependency failures, and faults pass through the
 exception path unless an infrastructure adapter explicitly normalizes a known dependency condition.
+
+## .NET 11 native unions
+
+Reunion's `net11.0` asset exposes Result and Option as compiler-recognized custom unions. Prefer an
+exhaustive switch when both cases drive materially different terminal behavior:
+
+```csharp
+return venue switch
+{
+    Some<VenueDetails>(var details) => Render(details),
+    None => NotFound()
+};
+```
+
+Native union matching improves observation ergonomics; it does not change carrier selection.
+Repositories, EF, serialization, and nullable framework APIs still use `T?`, and `??` still does
+not apply to Option.
 
 ## Own typed application errors by operation
 
