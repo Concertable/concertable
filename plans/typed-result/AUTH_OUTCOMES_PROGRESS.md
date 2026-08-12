@@ -58,8 +58,8 @@ distinct safe explanation.
 
 ## Next Steps
 
-1. Commit and push the corrected installed-package version assertion through the plan push protocol.
-2. Require replacement checks, keep `full-e2e`, and requeue the new exact head.
+1. Push this transport checkpoint and require replacement checks on the final exact head.
+2. Keep `full-e2e` and requeue the final exact head.
 3. After merge, remove this source worktree, then follow package publication, generated platform sync, and plan
    close-out from a fresh docs worktree based on merged `origin/main`.
 
@@ -144,6 +144,8 @@ distinct safe explanation.
   because its presentation-string assertion rejected `stripe version` output. API/UI scenarios did
   not run and PR #517 was ejected. The assertion now verifies the installed dpkg version exactly and
   invokes `stripe version` separately to prove the executable starts.
+- Version-validation repair push: local and upstream work heads verified equal at
+  `a300cf7351a766d3791b15eab9bc4babd3c99e1a`; the branch was zero behind `origin/main`.
 - Reviewed PR checks: remote head `dd9e3111a4b6689cf46b9232275fccd63a349b72` passed build, all
   service carves, all unit/integration jobs, and `ci-complete`; PR-level E2E skipped as designed.
 - Queue readiness: a final fetch proved that remote head zero behind `origin/main`, `OPEN/CLEAN`, and
