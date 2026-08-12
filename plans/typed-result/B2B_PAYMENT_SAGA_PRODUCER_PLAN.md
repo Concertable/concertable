@@ -10,14 +10,14 @@ are explicit contract outcomes, and retries replay the same outcome without movi
 
 ## Phases
 
-- [ ] **Phase 1 — exact Reunion producer baseline.** Consume the exact Reunion package artifact from
+- [x] **Phase 1 — exact Reunion producer baseline.** Consume the exact Reunion package artifact from
   producer commit `113be42f532d5d7e8daf1c362262ff7a7854b7bc`, including the flexible Option HTTP
   terminals. Resolve its same-commit dependency closure, record package versions and SHA-256 hashes,
   and use only temporary restore inputs. Do not copy or recreate Reunion extensions in Concertable.
-- [ ] **Phase 2 — additive Payment contracts.** Add Payment-owned capture, deposit, and refund command
+- [x] **Phase 2 — additive Payment contracts.** Add Payment-owned capture, deposit, and refund command
   and outcome contracts carrying operation ID and booking correlation. Preserve every existing Client
   contract so Customer remains source-compatible.
-- [ ] **Phase 3 — idempotent Payment runtime.** Persist operation execution/replay state before remote
+- [x] **Phase 3 — idempotent Payment runtime.** Persist operation execution/replay state before remote
   money movement, make capture/deposit/refund booking-idempotent, handle commands in Payment.Web, and
   publish terminal or deferred outcomes through Payment's transactional outbox. Preserve invariant
   exceptions for impossible internal state.
