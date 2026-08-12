@@ -42,9 +42,10 @@ Auth `api/**` PR lands, own package publication and the generated platform-sync 
 
 ## Downstream handoffs
 
-- Waiting ledger: `plans/typed-result/REUNION_SHARED_CONTRACTION_PROGRESS.md`.
-  Gate: Auth must be delivery-ready and identify every remaining old carrier, terminal, and
-  third-party dependency outside its owned scope.
+- Waiting ledger: `plans/typed-result/REUNION_SHARED_CONTRACTION_PROGRESS.md` now records the Auth
+  gate satisfied. Auth has zero old Kernel functional/error carriers, Shared.Api terminals,
+  third-party functional carriers, or legacy Reunion factories left in its owned scope; B2B and
+  Customer preparation remain separate blockers for that plan.
 
 ## Completed milestones
 
