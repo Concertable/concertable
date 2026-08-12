@@ -12,8 +12,8 @@
   `REUNION_ALPHA2_BASELINE` workstream owns the repository-wide pin cutover; this service workstream
   may independently prepare its Customer-owned alpha.2 code. Customer Ticket PR #475 and its
   platform-sync PR #479 are terminal on platform `.910` and remain outside this scope.
-- Last reconciled: 2026-08-12 after merging `origin/main` `b94028d3f` as local head `a3c1c1420` and
-  confirming PR #425 remains open at `e60219f7d`
+- Last reconciled: 2026-08-12 after the clean incremental review through `d623a3501`; the last
+  fetched `origin/main` is `b94028d3f` and PR #425 remains open at `e60219f7d`
 
 ## Current state
 
@@ -24,8 +24,8 @@ event contracts. Atomic Review and Preference creates translate only the existin
 to their typed conflicts; collaborator, provider, identity, invariant, and cancellation failures
 remain exceptions.
 
-The local branch is current with `origin/main` at platform `.939`, 57 commits ahead of it, and
-546 commits ahead of the deliberately preserved PR head. The current-main merge was automatic in
+The local branch is current with the last fetched `origin/main` at platform `.939`, 59 commits
+ahead of it, and 548 commits ahead of the deliberately preserved PR head. The current-main merge was automatic in
 Customer code and plan state. The branch still owns the same five-module semantic slice; Ticket,
 Concert, Customer Payment, purchase/checkout, shared Kernel API, events, models, and migrations are
 excluded.
@@ -38,16 +38,16 @@ the owned contract. No project package reference was added or removed.
 
 The complete Release solution, five scoped unit suites, Shared.Api architecture suite, isolated
 Customer carve, package/resolved-graph inventories, structural audits, Docker health preflight, and
-five integration wrappers are green. PR #425 remains unchanged until this candidate is committed,
-reconciled with any new base advance, and incrementally reviewed from `c021d26c9`. Delivery then uses
-the plan-managed two-leg push.
+five integration wrappers are green. The incremental native, security, architecture, convention, and
+coverage review is clean through `d623a3501`; `CV4` was fixed by qualifying five inherited
+`Query` calls and the affected Release unit suites pass 25/25. PR #425 remains unchanged. Delivery
+now uses the plan-managed two-leg push.
 
 ## Next Steps
 
-1. Commit the final `.939` verification checkpoint with this ledger.
-2. Incrementally review the current-main merges and alpha.2 checkpoint from `c021d26c9`; fix, verify,
-   commit, and re-review every actionable finding.
-3. Perform the plan-managed two-leg push to PR #425: push the reviewed work head, verify local,
+1. Fetch and reconcile any new `origin/main` advance, repeating affected gates and incremental review
+   if the base changed.
+2. Perform the plan-managed two-leg push to PR #425: push the reviewed work head, verify local,
    remote-tracking, and PR OIDs, then commit and push the verified transport checkpoint separately.
 
 ## Downstream handoffs
@@ -73,6 +73,9 @@ the plan-managed two-leg push.
   architecture, convention, and coverage review was clean.
 - The branch was refreshed to `origin/main` `de80debea` as `7ce4ed10d` before Phase 7; no Customer
   conflict required a semantic resolution.
+- Phase 7 aligned the Customer Reunion-family graph to alpha.2 in `47c9ba547`, reconciled platform
+  `.939` in `a3c1c1420`, recorded final verification in `22fb61697`, and fixed review finding
+  `CV4` in `d623a3501`.
 
 ## Verification and review
 
@@ -92,8 +95,8 @@ the plan-managed two-leg push.
   2/2, and B2B/Customer Artist 17/17 + 2/2 passed: 74/74 across eight projects. Every run-owned SQL
   and Ryuk container was removed; a separate session started a new pair after this run completed.
 - Review artifact: `reviews/Feature-typed-result_customer-outcomes.md`. All findings are fixed. Both
-  review watermarks are `c021d26c9de0f65f291b319e38668c40844bc984`; the current-main merge and
-  alpha.2 checkpoint remain to be incrementally reviewed.
+  review watermarks are `d623a35014cd23632f190e557ee37668953680b9`; the follow-up review of the
+  `CV4` fix is clean.
 
 ## Decisions and constraints
 

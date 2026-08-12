@@ -5,9 +5,9 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `22fb616974bdf3c78015adf35412e63b05ff751d`  _(2026-08-12)_
+**Reviewed up to commit:** `d623a35014cd23632f190e557ee37668953680b9`  _(2026-08-12)_
 
-**Security-reviewed up to commit:** `22fb616974bdf3c78015adf35412e63b05ff751d`  _(2026-08-12)_
+**Security-reviewed up to commit:** `d623a35014cd23632f190e557ee37668953680b9`  _(2026-08-12)_
 
 > Range reviewed: `d916e95cf..5cfdb9427` (43 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -51,3 +51,10 @@ boundaries, AppHost composition, seeding, C# conventions, and test coverage. The
 preserve secret injection and authorization behavior; the browser-storage changes defer Stripe and
 Maps loading without introducing a fail-open consent path; the Reunion alpha.2 conversions preserve
 the target-typed success and error alternatives verified by the scoped unit and integration suites.
+
+## Incremental review — 2026-08-12 (CV4 fix)
+
+> Range reviewed: `22fb61697..d623a3501` (1 commit).
+
+No new findings. The five `base.Query` qualifications are convention-only, preserve the no-tracking
+query root, and pass the affected Concert, Artist, and Venue Release unit suites 25/25.
