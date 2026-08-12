@@ -12,21 +12,20 @@
   This branch owns Auth's semantic migration and alpha.2 source adoption. The separate alpha.2
   baseline plan owns repository-wide version alignment. After the Auth `api/**` PR merges, this plan
   owns publication and its generated platform-sync gate to terminal green.
-- Last reconciled: `2026-08-12` after discovering open PR #517 and fetching current `origin/main`.
-  The local branch, its upstream, and the PR head all equal
-  `4b53ac5bbbe0a08af9254d7a51d80f164f68387e`; the PR's original hard-floor checks are green, but the
-  branch is 28 commits behind `origin/main` and must be updated before queue admission.
+- Last reconciled: `2026-08-12` after merging current `origin/main` at `8ec037d7d` into the Auth
+  branch as `962969cad`. The merge preserved Auth source unchanged, advanced its platform pin from
+  `0.943` to `0.950`, and reconciled the Auth and Customer handoffs in the Shared-contraction ledger.
+  The first serialized full Release build exceeded the host's ten-minute command cap; its confirmed
+  build process completed roughly two minutes later, but no terminal result was recoverable.
 
 ## Current state
 
 The task directly matches this branch and worktree. No other worktree owns the Auth implementation.
-PR #517 is open at the exact local/upstream head
-`4b53ac5bbbe0a08af9254d7a51d80f164f68387e`, and its original build, carve, unit, and integration
-checks are green. The branch is now 28 commits behind current `origin/main`, including platform
-`0.950` and the nullable/Option carrier guidance from PR #524, so those commits must be merged and
-the updated candidate rebuilt before the PR can enter the queue.
-The sole unrelated dirty path is the preserved untracked clean-review work order
-`reviews/Feature-typed-result_auth-outcomes.md`.
+PR #517 remains open at remote head `4b53ac5bbbe0a08af9254d7a51d80f164f68387e`; its original build,
+carve, unit, and integration checks are green. The local candidate now contains current `origin/main`
+through `8ec037d7d` plus merge commit `962969cad`. The clean-review work order is preserved in a local
+stash while the branch update is verified. No Auth implementation edit was required by PR #524's
+nullable/Option guidance.
 
 Phases 1-5 are committed and locally verified. Auth's in-process contracts use direct published
 Reunion ownership: login/logout return `Option<T>`, four caller-actionable refusal paths return
@@ -51,10 +50,11 @@ distinct safe explanation.
 
 ## Next Steps
 
-Merge current `origin/main` into the Auth branch, verify the merged implementation still satisfies
-the new carrier guidance, rebuild the full solution to 0 errors, and push the updated candidate to
-PR #517. Then incrementally review the new range, wait for green PR checks, apply `full-e2e` because
-Auth behavior is observable end to end, enqueue the exact reviewed head, and own merge, publication,
+Run a warm serialized full Release build with `--no-restore` to obtain an authoritative terminal
+result after the first process completed beyond its command cap. On 0 errors, push the current-main
+candidate to PR #517 through the plan-managed compound push protocol. Then restore the review work
+order, incrementally review the new range, wait for green PR checks, apply `full-e2e` because Auth
+behavior is observable end to end, enqueue the exact reviewed head, and own merge, publication,
 platform sync, and docs closeout to terminal completion.
 
 ## Downstream handoffs
@@ -96,6 +96,9 @@ platform sync, and docs closeout to terminal completion.
   `4b53ac5bbbe0a08af9254d7a51d80f164f68387e`. PR creation was rejected before GitHub created a PR.
 - PR discovery: PR #517 exists at that exact head. Its original hard-floor checks are green; current
   `origin/main` is 28 commits ahead, so the PR is not yet eligible for queue admission.
+- Current-main update (`962969cad`): merged `origin/main` through `8ec037d7d`; Auth source remained
+  unchanged, its platform pin advanced to `0.950`, and the Shared-contraction ledger now retains both
+  the Auth and Customer preparation handoffs.
 
 ## Verification
 
@@ -116,6 +119,10 @@ Final producer-reconciled candidate:
 - Full Release solution build: 0 errors and 2 existing generated E2E nullable-annotation warnings.
   The serialized no-restore build completed under concurrent host load; the warm authoritative rerun
   completed in 1m29s with build servers, shared compilation, and parallel builds disabled.
+- Current-main full Release build attempt: the serialized restore/build command exceeded its
+  ten-minute host cap without returning a compiler error or terminal summary. Its confirmed child
+  process exited about two minutes later; a warm `--no-restore` rerun is required for authoritative
+  evidence.
 - No API/UI E2E was run locally; the merge workflow owns any selected E2E tier.
 
 ## Reviews
