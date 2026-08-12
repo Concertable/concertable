@@ -12,20 +12,19 @@
   This branch owns Auth's semantic migration and alpha.2 source adoption. The separate alpha.2
   baseline plan owns repository-wide version alignment. After the Auth `api/**` PR merges, this plan
   owns publication and its generated platform-sync gate to terminal green.
-- Last reconciled: `2026-08-12` after merging current `origin/main` at `8ec037d7d` into the Auth
-  branch as `962969cad`. The merge preserved Auth source unchanged, advanced its platform pin from
-  `0.943` to `0.950`, and reconciled the Auth and Customer handoffs in the Shared-contraction ledger.
-  The first serialized full Release build exceeded the host's ten-minute command cap; its confirmed
-  build process completed roughly two minutes later, but no terminal result was recoverable.
+- Last reconciled: `2026-08-12` after the authoritative warm full Release solution build passed at
+  local head `8c4cd5b47`: 0 errors and 4 existing warnings in 9m08s. The current-main merge preserved
+  Auth source unchanged, advanced its platform pin from `0.943` to `0.950`, and requires no change
+  for PR #524's nullable/Option conventions.
 
 ## Current state
 
 The task directly matches this branch and worktree. No other worktree owns the Auth implementation.
 PR #517 remains open at remote head `4b53ac5bbbe0a08af9254d7a51d80f164f68387e`; its original build,
-carve, unit, and integration checks are green. The local candidate now contains current `origin/main`
-through `8ec037d7d` plus merge commit `962969cad`. The clean-review work order is preserved in a local
-stash while the branch update is verified. No Auth implementation edit was required by PR #524's
-nullable/Option guidance.
+carve, unit, and integration checks are green. The local candidate contains current `origin/main`
+through `8ec037d7d` plus merge commit `962969cad`, and its full Release build is green. The clean-review
+work order is preserved in a local stash while the branch update is verified. No Auth implementation
+edit was required by PR #524's nullable/Option guidance.
 
 Phases 1-5 are committed and locally verified. Auth's in-process contracts use direct published
 Reunion ownership: login/logout return `Option<T>`, four caller-actionable refusal paths return
@@ -50,19 +49,18 @@ distinct safe explanation.
 
 ## Next Steps
 
-Run a warm serialized full Release build with `--no-restore` to obtain an authoritative terminal
-result after the first process completed beyond its command cap. On 0 errors, push the current-main
-candidate to PR #517 through the plan-managed compound push protocol. Then restore the review work
-order, incrementally review the new range, wait for green PR checks, apply `full-e2e` because Auth
-behavior is observable end to end, enqueue the exact reviewed head, and own merge, publication,
-platform sync, and docs closeout to terminal completion.
+Fetch and confirm the candidate remains current with `origin/main`, then push the green current-main
+candidate to PR #517 through the plan-managed compound push protocol. Restore the review work order,
+incrementally review the new range, wait for green PR checks, apply `full-e2e` because Auth behavior
+is observable end to end, enqueue the exact reviewed head, and own merge, publication, platform sync,
+and docs closeout to terminal completion.
 
 ## Downstream handoffs
 
 - Waiting ledger: `plans/typed-result/REUNION_SHARED_CONTRACTION_PROGRESS.md` now records the Auth
   gate satisfied. Auth has zero old Kernel functional/error carriers, Shared.Api terminals,
   third-party functional carriers, or legacy Reunion factories left in its owned scope; B2B and
-  Customer preparation remain separate blockers for that plan.
+  preparation is the remaining blocker for that plan.
 
 ## Completed milestones
 
@@ -119,10 +117,9 @@ Final producer-reconciled candidate:
 - Full Release solution build: 0 errors and 2 existing generated E2E nullable-annotation warnings.
   The serialized no-restore build completed under concurrent host load; the warm authoritative rerun
   completed in 1m29s with build servers, shared compilation, and parallel builds disabled.
-- Current-main full Release build attempt: the serialized restore/build command exceeded its
-  ten-minute host cap without returning a compiler error or terminal summary. Its confirmed child
-  process exited about two minutes later; a warm `--no-restore` rerun is required for authoritative
-  evidence.
+- Current-main full Release solution build: 0 errors and 4 existing warnings in 9m08s using
+  `--no-restore`, disabled build servers/shared compilation, and a single MSBuild node. This verifies
+  the merged platform `0.950` candidate at local head `8c4cd5b47`.
 - No API/UI E2E was run locally; the merge workflow owns any selected E2E tier.
 
 ## Reviews
