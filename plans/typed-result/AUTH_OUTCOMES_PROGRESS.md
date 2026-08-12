@@ -15,17 +15,20 @@
   owns publication and its generated platform-sync gate to terminal green.
 - Last reconciled: `2026-08-12` after formally classifying merge-group run
   [31618590547](https://github.com/Concertable/concertable/actions/runs/31618590547) as an external
-  bootstrap transport failure, committing the Auth alpha.3 candidate as `12c000d7`, and completing a
-  clean full correctness/security review through that commit. The PR remains open on unchanged
-  remote head `dd9e3111a4b6689cf46b9232275fccd63a349b72`; the reviewed local candidate is not yet pushed.
+  bootstrap transport failure, committing the Auth alpha.3 candidate as `12c000d7`, merging current
+  `origin/main` as `38e62584`, and completing a clean correctness/security review through that merge.
+  The PR remains open on unchanged remote head `dd9e3111a4b6689cf46b9232275fccd63a349b72`;
+  the reviewed current-main local candidate is not yet pushed.
 
 ## Current state
 
 The task directly matches this branch and worktree. No other worktree owns the Auth implementation.
 PR #517 is open at verified remote head `dd9e3111a4b6689cf46b9232275fccd63a349b72`. Local candidate
-`12c000d7a1f273706494ad974b368a549a7533d7` includes the intervening delivery-ledger checkpoints and
-the committed alpha.3 package adoption. The full net branch range has a clean correctness/security
-review and is ready for the plan push protocol. The first full-E2E merge group was ejected by an
+`38e62584d702f16e1efaa4570aa53e1378ddc464` includes the intervening delivery-ledger checkpoints,
+the committed alpha.3 package adoption, and current `origin/main` through `6a3d66677`. The main merge
+was conflict-free, changed only Customer read-context implementation, and left Auth's platform and
+Reunion pins unchanged. The full net branch range has a clean correctness/security review and is
+ready for the plan push protocol. The first full-E2E merge group was ejected by an
 external bootstrap-download failure, not an Auth build, carve, unit, integration, API E2E, or scenario
 failure.
 
@@ -92,6 +95,8 @@ distinct safe explanation.
   `Reunion.Errors` package closure to published `0.1.0-alpha.3` and audited Reunion source commit
   `91fdc6f2e33d8f396fa463ad309cb1288bea3be5`. Its new flexible Option HTTP terminals do not apply to
   Auth's Razor/Duende topology, so no runtime call site or AspNetCore package was added.
+- Current-main merge (`38e62584`): merged `origin/main` through `6a3d66677` without conflict. The
+  inherited change is Customer-only; Auth package pins and runtime source are unchanged.
 - PR readiness: clean incremental correctness/security review and GREEN read-only preflight on
   current `origin/main`; no code, package-cutover, PR, or platform-sync blocker remains.
 - Delivery push: local and remote work heads verified equal at `c784db2044cf11521681e842b28a38f92946385c`;
@@ -131,6 +136,9 @@ Final producer-reconciled candidate:
 - Auth unit tests: 13 passed, 0 failed in Release against `Reunion` alpha.3.
 - Auth integration tests through `integration-debug`: 54 passed, 0 failed in Release against
   `Reunion` alpha.3 using the real SQL Testcontainers fixture.
+- Current-main focused recheck at `38e62584`: Auth Release build 0 warnings/0 errors, 13 unit tests
+  passed, and all 54 real-SQL integration tests passed after restoring generated assets removed by
+  the earlier disk cleanup.
 - Typed-result architecture tests: 16 passed, 0 failed on the final candidate.
 - Fresh standalone Auth carve: 0 errors against published platform `0.1.0-alpha.0.953`; only existing
   analyzer warnings. The verified temporary carve was removed.
@@ -160,8 +168,9 @@ Final producer-reconciled candidate:
 The review work order `reviews/Feature-typed-result_auth-outcomes.md` records a clean full
 correctness/security review with no open findings. Because the previously served review work order
 was removed before the first queue attempt, incremental-review correctly fell back to a fresh review
-of the complete `5bf622fe..12c000d7` net branch range (68 commits). Both review markers are stamped
-through local candidate `12c000d7a1f273706494ad974b368a549a7533d7`.
+of the complete branch net diff, followed by an incremental review of the conflict-free current-main
+merge. Both review markers are stamped through local candidate
+`38e62584d702f16e1efaa4570aa53e1378ddc464`.
 
 ## Decisions, discoveries, blockers, and deviations
 
