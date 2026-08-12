@@ -6,7 +6,8 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_customer-outcomes`
 - Branch: `Feature/typed-result_customer-outcomes`
 - PR: [#425](https://github.com/Concertable/concertable/pull/425) - open, non-draft, remote head
-  `08a92f91659e4eccc4558e55def5027b26c08348`
+  `08a92f91659e4eccc4558e55def5027b26c08348`; verified local delivery head is based on
+  `origin/main` `5bf622fecd600868b4ec437daf6c6ad0389029a6` through merge `6f3a8c4f3`.
 - Dependency/package gates: NuGet.org accepted and its official v3 flat-container indexes listed
   `0.1.0-alpha.3` for `Reunion`, `Reunion.AspNetCore`, `Reunion.Errors`, and `Reunion.Validation`
   together at 2026-08-12 17:09:18Z. Alpha.3 was packed from Reunion merged `master` commit
@@ -14,14 +15,12 @@
   was `113be42f532d5d7e8daf1c362262ff7a7854b7bc`; every nuspec records `91fdc6f2e33d8f396fa463ad309cb1288bea3be5`
   as its repository commit. Both `net10.0` and `net11.0` `Reunion.AspNetCore` assemblies expose the
   minimal-API `ToOkOr` overloads with generic/parameter arities `2/2` and `3/3`, and the MVC overloads
-  with arities `1/2` and `2/3`. Publication is terminal; Phase 8 now needs official published-baseline
-  revalidation before it is merge-ready. Customer Ticket PR #475 and platform-sync PR #479 remain
-  terminal and out of scope.
-- Last reconciled: 2026-08-12 after alpha.3 publication/indexing. The clean owning branch is
-  `f4fa1bd76efeafc746de2244389143a7cb27d310`, 11 commits ahead of PR #425's remote head
-  `08a92f91659e4eccc4558e55def5027b26c08348` and 30 commits behind `origin/main`; PR #425 is open,
-  non-draft, and `DIRTY`. Preserve the local range and do not push or merge until the branch is current,
-  alpha.3 is pinned from NuGet.org, and the published-baseline verification and review are green.
+  with arities `1/2` and `2/3`. Publication and published-baseline revalidation are terminal. Customer
+  Ticket PR #475 and platform-sync PR #479 remain terminal and out of scope.
+- Last reconciled: 2026-08-12 after alpha.3 published-baseline verification. The owning branch is
+  current with `origin/main`; alpha.3, the plan, and this ledger are the only pending tracked edits
+  before the verification checkpoint commit. Preserve the local range and do not push until
+  incremental review is green.
 
 ## Current state
 
@@ -39,7 +38,7 @@ the same five-module semantic slice; Ticket, Concert, Customer Payment, purchase
 Kernel API, events, models, and migrations are excluded.
 
 Phase 7 implementation and local verification are green. All four existing Customer Reunion-family
-pins are `0.1.0-alpha.2`; branch-owned Review and Preference construction sites use raw payload
+pins are now `0.1.0-alpha.3`; branch-owned Review and Preference construction sites use raw payload
 conversions only where their target types keep success/error intent explicit. Named Dunet cases,
 validation factories, and nullable-to-Option boundaries remain explicit where inference would obscure
 the owned contract.
@@ -61,40 +60,22 @@ The Phase 8 candidate is locally verified and reviewed against exact gitignored 
 `artifacts/reunion-113be42` with version `0.1.0-local.113be42`. The temporary NuGet config and local
 version pins were removed from tracked state after verification. This checkpoint is not published to
 PR #425.
-The upstream publication gate is now open. The exact official baseline is the four-package
-`0.1.0-alpha.3` graph from Reunion merge `91fdc6f2e33d8f396fa463ad309cb1288bea3be5`; the prior local
-artifact remains historical verification evidence only and must not be reused as the final restore
-source. PR #425 is still delivery-ready rather than merge-ready until this branch is synchronized and
-the same candidate passes against official alpha.3.
+The exact official baseline is the four-package `0.1.0-alpha.3` graph from Reunion merge
+`91fdc6f2e33d8f396fa463ad309cb1288bea3be5`; the prior local artifact remains historical verification
+evidence only. The synchronized candidate has passed against official alpha.3 and is ready for its
+required incremental review.
 
 ## Next Steps
 
-Convert the reviewed Phase 8 candidate from delivery-ready to merge-ready against the official
-alpha.3 baseline, preserving the local range that is not yet on PR #425:
+Convert the verified Phase 8 candidate into its terminal delivery state:
 
-1. Confirm the clean starting identity above, fetch `origin`, and merge current `origin/main` into
-   `Feature/typed-result_customer-outcomes` without resetting, rebasing away, or overwriting the 11
-   local commits beyond PR head `08a92f916`. Resolve only genuine five-module/plan-ledger conflicts.
-2. Change every existing Customer `Reunion`, `Reunion.AspNetCore`, `Reunion.Errors`, and
-   `Reunion.Validation` pin from alpha.2 to `0.1.0-alpha.3` without adding package ownership. Restore
-   through NuGet.org only, using isolated caches, and prove the resolved four-package graph contains
-   one exact version with no local source, temporary config, or machine-specific workaround.
-3. Inspect the restored official nupkgs: require repository commit
-   `91fdc6f2e33d8f396fa463ad309cb1288bea3be5` for all four packages and the published MVC/minimal-API
-   `ToOkOr` overload pairs recorded above. Do not substitute the historical
-   `artifacts/reunion-113be42` feed for this check.
-4. Rerun the complete Phase 8 published-baseline gate on the synchronized tree: the five changed
-   project closures, affected units, Shared.Api architecture suite, Release solution, isolated
-   Customer carve, Docker data-path preflight and eight integration projects, plus package, carrier,
-   terminal, rename, scope, local-workaround, and whitespace inventories. Drive any red test through
-   the matching debug workflow until green and record exact current counts/results.
-5. Commit the alpha.3/synchronization checkpoint with the ledger, run `/incremental-review` from the
+1. Commit the alpha.3/synchronization checkpoint with the ledger, run `/incremental-review` from the
    current `9bcb25eea61794ca982b7f8c1a4f044c7b8f4514` review watermark, fix every actionable finding in
    separate commits, and rerun affected gates/review until clean.
-6. Deliver the verified range through the plan-managed two-leg push protocol: push the actual work
+2. Deliver the verified range through the plan-managed two-leg push protocol: push the actual work
    head, fetch and prove remote-tracking plus PR #425 head equality, then transport the resulting
    ledger checkpoint and prove local/remote/PR equality again.
-7. Route PR #425 through `/merge` with the required full merge-queue E2E tier, follow it to its exact
+3. Route PR #425 through `/merge` with the required full merge-queue E2E tier, follow it to its exact
    merge SHA, then own the generated platform-sync PR through green/merged before close-out. Keep the
    plan and ledger until all delivery gates are terminal.
 
@@ -173,6 +154,16 @@ alpha.3 baseline, preserving the local range that is not yet on PR #425:
   Reunion.Validation `5319FD405FAF7C3D7073CF34AF50FAF53BB5508188A1B9773D4851132F58B472`.
   Official v3 flat-container indexes listed alpha.3 for all four packages together at
   2026-08-12 17:09:18Z.
+- Alpha.3 published-baseline verification on synchronized main: the five changed API closures build
+  with 0 warnings/errors; affected units pass 80/80; Shared.Api architecture passes 60/60; the Release
+  solution builds with 0 errors and 2 unrelated generated B2B UI warnings; the isolated 36-project
+  Customer carve builds with 0 errors and 1 existing warning. Docker's fresh-container HTTP data path
+  passed. The planned eight integration projects pass 74/74: Customer Review 12/12, Preference 7/7,
+  User 6/6, Venue 2/2, Artist 2/2, plus B2B User 3/3, Venue 25/25, and Artist 17/17. Customer Concert
+  11/11 and Ticket 25/25 also pass. The long worktree hit the known 261-character SqlClient native DLL
+  path in Customer User; the same project passed through a temporary short drive mapping with no
+  tracked workaround. Package, carrier, terminal, rename, excluded-scope, local-workaround, and
+  whitespace inventories are clean.
 - Current review state: all local work is clean through `9bcb25eea`; no findings remain open.
 
 ## Decisions and constraints

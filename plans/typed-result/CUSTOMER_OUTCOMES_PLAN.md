@@ -9,9 +9,8 @@ smallest Reunion-backed functional shape that represents their real outcomes:
 
 - operation-specific `Result<TValue, TError>` only for expected failures a caller can act on;
 - `ValidationResult` for validation-only contracts implemented behind dependency injection;
-- one exact published Reunion-family baseline in every consuming project, with `0.1.0-alpha.2` as the
-  current tracked baseline and the version containing upstream commit `113be42` required before the
-  new flexible Option terminals can be delivered;
+- one exact published Reunion-family baseline in every consuming project, now `0.1.0-alpha.3` from
+  Reunion merge `91fdc6f2`, which contains upstream terminal source `113be42`;
 - `Option<T>` for ordinary absence at application and module boundaries;
 - successful empty `IReadOnlyList<T>` values for collection queries;
 - plain values and capability booleans where no actionable failure or absence exists.
@@ -291,7 +290,7 @@ tier and receives no skip label.
 - [x] After a healthy Docker data-path preflight, rerun the five Release integration wrappers, then
   review the alpha.2 checkpoint and perform the existing two-leg PR update.
 
-### Phase 8 - Flexible Option terminals and repository insert naming - LOCAL IMPLEMENTATION VERIFIED (2026-08-12)
+### Phase 8 - Flexible Option terminals and repository insert naming - PUBLISHED BASELINE VERIFIED (2026-08-12)
 
 - [x] Verify the exact flexible Option terminal signatures from Reunion commit `113be42`, prove that
   no published `Reunion.AspNetCore` version contains them, and build a uniquely versioned exact local
@@ -307,6 +306,9 @@ tier and receives no skip label.
 - [x] Review this checkpoint and address every actionable finding. Delivery remains gated until the
   exact published Reunion-family version containing `113be42` is proven from package metadata, pinned
   without a local feed, and the affected verification is green again against that published baseline.
+- [x] Pin the official `0.1.0-alpha.3` graph, prove all four nuspecs identify Reunion merge `91fdc6f2`,
+  and rerun the complete published-baseline build, carve, unit, architecture, integration, scope, and
+  whitespace gates on current `origin/main`.
 
 ## Definition of done
 
