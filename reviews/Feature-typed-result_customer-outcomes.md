@@ -5,9 +5,9 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `e649fbda9e0b97c18087ffb30ef24eb467d3eac9`  _(2026-08-13)_
+**Reviewed up to commit:** `850227996197dcdcf5f7827e6c6c33100c5d95cf`  _(2026-08-13)_
 
-**Security-reviewed up to commit:** `e649fbda9e0b97c18087ffb30ef24eb467d3eac9`  _(2026-08-13)_
+**Security-reviewed up to commit:** `850227996197dcdcf5f7827e6c6c33100c5d95cf`  _(2026-08-13)_
 
 > Range reviewed: `d916e95cf..5cfdb9427` (43 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -99,3 +99,12 @@ paths. The incoming Auth typed-result migration preserves authentication, regist
 email-verification, logout, cancellation, and redirect behavior with direct unit and integration
 coverage. The shared Stripe setup action installs and verifies the exact signed package version for
 all E2E jobs. The synchronized 188-project Release solution builds with 0 errors.
+
+## Incremental review â€” 2026-08-13 (platform `.961` reconciliation)
+
+> Range reviewed: `e649fbda9..850227996` (7 commits).
+
+No issues found. Checked native correctness, security-sensitive package paths, package consistency,
+architecture boundaries, and test coverage of changed paths. The five service platform pins move together from `.958` to the published
+`.961` baseline; the remaining changes are Auth tech debt and plan/review checkpoints. The complete
+188-project Release solution builds with 0 errors against `.961`.
