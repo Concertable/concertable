@@ -88,25 +88,21 @@ by construction — `Query` is deleted. Projection handlers keep the existing tr
 
 Current `main` already has `Query` (from #498/#503), so:
 
-- **PR-A — Customer read contexts (boundary-safe, no publish).** Introduce `ConcertReadDbContext` /
-  `VenueReadDbContext` / `ArtistReadDbContext` (Public-style: same provider, `SaveChanges` throws),
-  register them `.UseQueryTrackingBehavior(NoTracking)`, and point the 3 read repos at them —
-  dropping their use of `Query`/ad-hoc `.AsNoTracking()`. This is where enforced no-tracking lands.
-  All Customer-internal source → one clean PR, no publish cycle.
-- **PR-B — published base (publish-first).** Fold `IBaseRepository` into `IRepository` (kills the
-  `new GetAllAsync` diamond); `Repository : ReadRepository`; delete `BaseRepository`; remove `Query`;
-  add `InsertAsync`. **No renames** — `IReadRepository`/`IRepository`/`ReadRepository`/`Repository`
-  keep their names, so consumers don't churn. Ships in `Concertable.DataAccess.Infrastructure` →
-  publish → `platform-sync` bumps the pin (the fold is source-compatible for consumers that only use
-  `IRepository`/`IReadRepository`).
-
-PR-A first (no consumer of `Query` remains after it), then PR-B removes `Query` + unifies the bases.
+- **PR-A — Customer read contexts (boundary-safe, no publish). ✅ DONE** (#522 merged, sync green).
+  Plus a follow-up **#526 (merged, sync green)** put the read repos behind a queryable-only
+  `IReadDbContext` interface. Operational truth in the `_PROGRESS.md` ledger.
+- **PR-B — published base (publish-first). IN PROGRESS.** Remove `GetAllAsync` from `IBaseRepository`
+  (that member forces the `new GetAllAsync` diamond) + add `InsertAsync`; `Repository : ReadRepository`;
+  remove `Query`. **`IBaseRepository`/`BaseRepository` are KEPT** (not deleted — see the resolved
+  open-decision below). **No renames.** Ships in `Concertable.DataAccess.*` → publish → `platform-sync`.
 
 ## Open decisions / risks
 
-- **Does anything depend on `IBaseRepository` as a standalone write-only surface?** The census shows it's
-  consumed via `IRepository`; confirm zero standalone `IBaseRepository` references before folding it away
-  (else keep it as a marker interface).
+- **RESOLVED — `IBaseRepository`/`BaseRepository` are KEPT (the write-only facet).** Census found real
+  standalone consumers: `CollectionSyncer`, `OpportunitySyncer` (write-only `IBaseRepository`), and
+  `SequenceRepository<TSequence>` which is **keyless** (`ISequence : ITenant`, not `IEntity<TKey>`) so it
+  can only use the keyless `BaseRepository`, never the keyed `Repository`. So the facet cannot be folded
+  away; the diamond is killed by removing `GetAllAsync` from `IBaseRepository` instead.
 - **B2B/Payment dead `ReadRepository<T>` aliases** — unused (no concrete subclasses). Delete them in PR-B
   rather than carry them through the unify.
 - **`InsertAsync` adoption is opportunistic** — new/changed call sites use it; not a forced migration of
