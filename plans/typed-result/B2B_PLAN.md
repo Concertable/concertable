@@ -9,15 +9,15 @@ framework contracts, and non-DI domain/entity validation is outside this validat
 One migration branch (`Refactor/B2BTypedResultMigration`), delivered in checkpoints. Repository single-item lookups
 stay nullable (a persistence concern); modules and application services convert absence with the
 published functional surface and expose typed Results; controllers only map successful payloads and
-terminate typed Results. The Reunion integration plan owns the carrier/package substitution once;
-this service branch owns only B2B semantics and consumes the integrated published baseline.
+terminate typed Results. The published Reunion alpha.2 baseline owns the carrier/package surface;
+this service branch owns only B2B semantics and consumes that baseline.
 
 ## Checkpoints
 
-Checkpoints 1–7 are complete on the branch. Checkpoint 8 is implemented and must be reconciled before
-commit against published `Reunion`, `Reunion.Validation`, and `Reunion.Errors` `0.1.0-alpha.2` and the published
-Payment/platform baseline. No FluentResults
-adapter, string bridge, committed local source, feed path, or disposable package pin may be introduced.
+Checkpoints 1–7 are committed. Checkpoints 8 and 9 are implemented together in the dirty worktree;
+their remaining verification, combined commit, current-main reconciliation, and incremental review
+are tracked in the progress ledger. No FluentResults adapter, string bridge, committed local source,
+feed path, or disposable package pin may be introduced.
 
 - [x] **Checkpoint 1 — Deal.** Deal module outcomes → owned Results; operation errors use explicit
   Dunet cases with disabled implicit conversions and one exhaustive root `Definition` switch;
@@ -52,7 +52,7 @@ adapter, string bridge, committed local source, feed path, or disposable package
   errors without parsing messages or changing ProblemDetails field/message contracts. Add direct
   `Reunion.Validation` ownership to every compiling project that names its API. FluentValidation
   `AbstractValidator<T>` request validators and non-DI Deal/domain validation are explicitly excluded.
-- [ ] **Checkpoint 9 — domain-owned expected alternatives.** Reconcile the production domain guards
+- [x] **Checkpoint 9 — domain-owned expected alternatives.** Reconcile the production domain guards
   that are already inside this branch's B2B semantic scope. `TenantInvitationEntity.Accept` and
   `Revoke` return operation-owned typed failures for the pending/expired alternatives and the tenant
   service maps them without duplicating the same checks. `ConcertEntity.DeclareDoorRevenue` owns the
@@ -119,7 +119,6 @@ adapter, string bridge, committed local source, feed path, or disposable package
 
 The dependency gate is open. `Reunion`, `Reunion.Validation`, and `Reunion.Errors`
 `0.1.0-alpha.2` are published, indexed, repository-signature and payload-provenance verified, and
-clean-restored from NuGet.org with their published dependency graph. The merged platform `.897`
-baseline is the implementation baseline. Checkpoint 8 must use only normal configured feeds and the
-published versions; temporary package inputs remain forbidden. The repository-wide baseline plan does
-not block this branch's local alpha.2 reconciliation.
+clean-restored from NuGet.org with their published dependency graph. Checkpoint 8 uses only normal
+configured feeds and published versions; temporary package inputs remain forbidden. Shared contraction
+is downstream cleanup and does not block this branch's local alpha.2 implementation or verification.

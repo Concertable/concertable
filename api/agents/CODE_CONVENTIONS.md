@@ -311,8 +311,8 @@ public abstract partial record EscrowRefundError : IError
 }
 ```
 
-A validation case carries `ValidationErrors` and uses the same switch; convert its payload only at
-the definition boundary:
+A validation case carries `Reunion.Errors.ValidationErrors` and uses the same switch. Pass that
+payload directly to the definition:
 
 ```csharp
 [Union(EnableImplicitConversions = false)]
@@ -321,7 +321,7 @@ public abstract partial record CreateDealError : IError
     public ErrorDefinition Definition => this switch
     {
         Invalid(var errors) =>
-            ErrorDefinition.Validation<Invalid>(errors.ToDictionary())
+            ErrorDefinition.Validation<Invalid>(errors)
     };
 
     public partial record Invalid(ValidationErrors Errors);
@@ -445,6 +445,14 @@ the Kernel Task extensions until a terminal adapter. Ordinary composition is fai
 validation flows explicitly designed to collect errors accumulate them and map that collection once
 into their owning operation error. Consume payloads through composition, `Match`, or `TryGetValue` /
 `TryGetError`; the owned types expose no throwing `Value`, `Error`, or `Unwrap` accessor.
+
+Translate typed failures with `MapError`, exhaustively matching every Dunet case. Never use
+`TryGetError(out _)` and then construct the failure believed to have occurred: that discards the
+operation's actual error and makes a newly added case silently map incorrectly. Use `IsFailure` for a
+state-only branch; use `TryGetError` only when the returned error value is actually consumed.
+
+Use `Reunion.Errors.ValidationErrors` everywhere a Result or operation error carries structured
+validation. Do not define, alias, wrap, or convert through a project-owned validation-error carrier.
 
 `default(Option<T>)` is `None`; every default Result shape is an invalid, uninitialized value whose
 state, observation, and composition members throw `InvalidOperationException`. Never manufacture,
