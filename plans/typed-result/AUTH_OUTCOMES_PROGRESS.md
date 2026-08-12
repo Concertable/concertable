@@ -11,9 +11,9 @@
   This branch owns Auth's semantic migration and alpha.2 source adoption. The separate alpha.2
   baseline plan owns repository-wide version alignment. After the Auth `api/**` PR merges, this plan
   owns publication and its generated platform-sync gate to terminal green.
-- Last reconciled: `2026-08-12` after a clean incremental correctness/security review through
-  `1afdb4b3396d2fde525a7a1da324b66cf9575f54` and a GREEN read-only PR preflight at local head
-  `9ff1026b019a3f4c9a0bde0bb18e7864d1b704ab`. Plan graph: 0 errors, 0 warnings.
+- Last reconciled: `2026-08-12` after completing the final implementation audit against Reunion
+  producer commit `113be42f532d5d7e8daf1c362262ff7a7854b7bc`. The audit required no Auth code
+  or test change. The branch is current with `origin/main`; plan graph: 0 errors, 0 warnings.
 
 ## Current state
 
@@ -29,10 +29,13 @@ Credential authentication/password decisions and token expiry transitions live i
 entities. Token/credential identity mismatch remains an invariant exception. Razor and Duende map
 the carriers without leaking them into wire or persistence shapes.
 
-Phase 6 is complete and fully verified. Auth aligns `Reunion` and `Reunion.Errors` to
-`0.1.0-alpha.2`, uses unambiguous target-typed value/error conversions, exact `Success` cases, and
-target-typed `null` for `None`. It contains no old Auth factory call and still uses neither
-`Reunion.Validation` nor `Reunion.AspNetCore`.
+Phase 6 and the final producer reconciliation are complete. Auth aligns `Reunion` and
+`Reunion.Errors` to `0.1.0-alpha.2`, uses unambiguous target-typed value/error conversions, exact
+unit `Success` cases, target-typed `null` for `None`, and direct forwarding where domain and service
+result types already match. No factory, wrapper, cast, or result reconstruction should change.
+Producer commit `113be42` adds flexible Option HTTP terminals, but Auth owns no Minimal API outcome
+surface: its account handlers are server-rendered Razor Pages and its other outcome edge is Duende.
+`Reunion.AspNetCore` therefore remains correctly absent.
 
 ## Next Steps
 
@@ -68,15 +71,20 @@ Auth `api/**` PR lands, own package publication and the generated platform-sync 
   scope.
 - Phase 6 (`1afdb4b33`): aligned Auth to Reunion alpha.2 construction, including target-typed `null`
   for Option absence, and completed the final verification gate.
+- Producer reconciliation (`this commit`): audited Auth against Reunion `113be42`; the new flexible
+  Option HTTP terminals do not apply to Auth's Razor/Duende topology, and existing construction plus
+  direct result forwarding is already canonical. No implementation or focused-test edit was needed.
 - PR readiness: clean incremental correctness/security review and GREEN read-only preflight on
   current `origin/main`; no code, package-cutover, PR, or platform-sync blocker remains.
 
 ## Verification
 
-Final Phase 6 candidate:
+Final producer-reconciled candidate:
 
-- Auth unit tests: 13 passed, 0 failed on the final candidate.
-- Auth integration tests through `integration-debug`: 54 passed, 0 failed on the final candidate.
+- Auth unit tests: 13 passed, 0 failed in Release on the unchanged implementation.
+- Auth integration tests through `integration-debug`: the existing final-candidate result remains
+  54 passed, 0 failed. A fresh rerun did not start because Docker did not answer the mandatory
+  `docker ps` preflight; no application or test failure occurred.
 - Typed-result architecture tests: 16 passed, 0 failed on the final candidate.
 - Fresh standalone Auth carve: 0 errors against published platform `0.1.0-alpha.0.943`; 55 existing
   analyzer warnings. The verified temporary carve was removed.
@@ -85,9 +93,9 @@ Final Phase 6 candidate:
 - Signature, construction-factory, package-ownership, migration, scope, and `git diff --check` gates
   pass. The service surface remains two `Option<T>`, four `UnitResult<TError>`, and two intentional
   completion-only email operations.
-- Full Release solution build: 0 errors and 4 existing warnings in 17m47s using the ledger's exact
-  serialized no-restore command with build servers, shared compilation, and parallel builds disabled
-  after restoring platform `0.943` on an otherwise idle host.
+- Full Release solution build: 0 errors and 2 existing generated E2E nullable-annotation warnings.
+  The serialized no-restore build completed under concurrent host load; the warm authoritative rerun
+  completed in 1m29s with build servers, shared compilation, and parallel builds disabled.
 - No API/UI E2E was run locally; the merge workflow owns any selected E2E tier.
 
 ## Reviews

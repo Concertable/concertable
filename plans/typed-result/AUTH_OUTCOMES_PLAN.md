@@ -2,10 +2,10 @@
 
 > Next steps live in @plans/typed-result/AUTH_OUTCOMES_PROGRESS.md -> `## Next Steps`.
 
-**Status:** The semantic migration, published Reunion conversion, and domain-ownership correction are
-locally implemented and verified. Alpha.2 package/API reconciliation is the next code checkpoint;
-after that the runtime checkpoint requires incremental review and
-fresh PR preflight before delivery. Auth has no Payment, B2B, or Customer runtime/package dependency.
+**Status:** The semantic migration, published Reunion conversion, domain-ownership correction,
+alpha.2 construction reconciliation, and final producer-terminal audit are locally implemented and
+verified. The branch is PR-ready but delivery awaits explicit instruction. Auth has no Payment, B2B,
+or Customer runtime/package dependency.
 
 ## Outcome
 
