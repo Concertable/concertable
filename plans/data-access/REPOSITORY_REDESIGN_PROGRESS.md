@@ -5,13 +5,13 @@
 - Roadmap item: `data-access/repository-redesign`
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable.worktrees/Refactor/data-access_repository-redesign`
 - Branch: `Refactor/data-access_repository-redesign`
-- PR: not opened
-- Dependency/package gates: PR-B is publish-first (ships `Concertable.DataAccess.Infrastructure`); PR-A is Customer-internal, no publish cycle. PR-B blocked until PR-A merges.
-- Last reconciled: 2026-08-12, local build+test evidence
+- PR: #522 — https://github.com/Concertable/concertable/pull/522 (PR-A, open)
+- Dependency/package gates: PR-B is publish-first (ships `Concertable.DataAccess.Infrastructure`); PR-A is Customer-internal, no publish cycle. PR-B blocked until PR-A (#522) merges.
+- Last reconciled: 2026-08-12, PR-A pushed + opened
 
 ## Current state
 
-PR-A (Customer read-only no-tracking contexts) is implemented and locally verified; not yet committed/pushed.
+PR-A (Customer read-only no-tracking contexts) is committed (`4439cb8e7`), pushed, and open as #522. Locally verified (build+unit+integration green).
 
 Enforcement lands via a shared Customer read-only base `ReadDbContext` (in `Concertable.Customer.DataAccess.Infrastructure`, mirroring B2B's `PublicDbContext`: composes the module's `IEntityTypeConfigurationProvider`, `HasDefaultSchema`, seals `SaveChanges`/`SaveChangesAsync` to throw). Each read repo binds a per-module `{Concert,Venue,Artist}ReadDbContext : ReadDbContext` registered `.UseQueryTrackingBehavior(NoTracking)` with no interceptors. Read contexts expose their sets as `IQueryable<T>` (not `DbSet<T>`) so the read surface can't stage writes — a hardening beyond the plan, agreed with Tommy. The 3 concrete read repos drop the `Query` helper for the (now no-tracking) named sets.
 
@@ -19,7 +19,7 @@ PR-B not started.
 
 ## Next Steps
 
-Commit PR-A (code + these plan docs) on `Refactor/data-access_repository-redesign`, push, and open the PR with `gh pr create` (personal repo — plain gh, no work item). Drive PR-A to merge. Then start PR-B in this same worktree/ledger: fold `IBaseRepository` into `IRepository` (kill the `new GetAllAsync` diamond), `Repository : ReadRepository`, delete `BaseRepository`, remove `Query` (rewrite base `GetAll`/`GetById` off it), add `InsertAsync` (`AddAsync`+`SaveChangesAsync`, returns entity), delete the dead B2B/Payment `ReadRepository<T>` aliases; ships in `Concertable.DataAccess.Infrastructure` → publish → follow the `chore/platform-sync-*` PR to green.
+Drive PR-A (#522) to merge via `/merge`. Once merged, start PR-B in this same worktree/ledger (sync to current `origin/main` first): fold `IBaseRepository` into `IRepository` (kill the `new GetAllAsync` diamond), `Repository : ReadRepository`, delete `BaseRepository`, remove `Query` (rewrite base `GetAll`/`GetById` off it — first confirm zero remaining `Query`/`IBaseRepository` consumers repo-wide), add `InsertAsync` (`AddAsync`+`SaveChangesAsync`, returns entity), delete the dead B2B/Payment `ReadRepository<T>` aliases. Ships in `Concertable.DataAccess.Infrastructure` → publish → follow the `chore/platform-sync-*` PR to green (migrate any red consumer in that sync PR).
 
 ## Completed work
 
