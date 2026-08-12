@@ -17,10 +17,9 @@
   minimal-API `ToOkOr` overloads with generic/parameter arities `2/2` and `3/3`, and the MVC overloads
   with arities `1/2` and `2/3`. Publication and published-baseline revalidation are terminal. Customer
   Ticket PR #475 and platform-sync PR #479 remain terminal and out of scope.
-- Last reconciled: 2026-08-12 after alpha.3 published-baseline verification. The owning branch is
-  current with `origin/main`; alpha.3, the plan, and this ledger are the only pending tracked edits
-  before the verification checkpoint commit. Preserve the local range and do not push until
-  incremental review is green.
+- Last reconciled: 2026-08-12 after the clean alpha.3 incremental review. The owning branch is current
+  with `origin/main`; published-baseline work head `fcd1b58df783551e08307183bd82c75d739405ef`
+  is reviewed with no findings. The review/ledger checkpoint is ready for the two-leg push.
 
 ## Current state
 
@@ -67,15 +66,12 @@ required incremental review.
 
 ## Next Steps
 
-Convert the verified Phase 8 candidate into its terminal delivery state:
+Deliver the reviewed Phase 8 candidate into its terminal state:
 
-1. Commit the alpha.3/synchronization checkpoint with the ledger, run `/incremental-review` from the
-   current `9bcb25eea61794ca982b7f8c1a4f044c7b8f4514` review watermark, fix every actionable finding in
-   separate commits, and rerun affected gates/review until clean.
-2. Deliver the verified range through the plan-managed two-leg push protocol: push the actual work
+1. Deliver the verified range through the plan-managed two-leg push protocol: push the actual work
    head, fetch and prove remote-tracking plus PR #425 head equality, then transport the resulting
    ledger checkpoint and prove local/remote/PR equality again.
-3. Route PR #425 through `/merge` with the required full merge-queue E2E tier, follow it to its exact
+2. Route PR #425 through `/merge` with the required full merge-queue E2E tier, follow it to its exact
    merge SHA, then own the generated platform-sync PR through green/merged before close-out. Keep the
    plan and ledger until all delivery gates are terminal.
 
@@ -129,8 +125,9 @@ Convert the verified Phase 8 candidate into its terminal delivery state:
   2/2, and B2B/Customer Artist 17/17 + 2/2 passed: 74/74 across eight projects. Every run-owned SQL
   and Ryuk container was removed; a separate session started a new pair after this run completed.
 - Review artifact: `reviews/Feature-typed-result_customer-outcomes.md`. All findings are fixed. Both
-  review watermarks are `9bcb25eea61794ca982b7f8c1a4f044c7b8f4514`; the Phase 8 incremental
-  native, security, architecture, convention, and coverage review found no new issues.
+  review watermarks are `fcd1b58df783551e08307183bd82c75d739405ef`; the published alpha.3
+  incremental native, security, architecture, convention, and coverage review of
+  `9bcb25eea..fcd1b58df` found no new issues.
 - Push evidence: starting remote head `e60219f7dfe13f0c49c818e2ed7ab7a557f84569`; reviewed work
   head `297c61192117d14e631c5ad5f64364e28ed670db`; the later checkpoint transport made the current
   remote-tracking/PR head `08a92f91659e4eccc4558e55def5027b26c08348`.
@@ -164,7 +161,7 @@ Convert the verified Phase 8 candidate into its terminal delivery state:
   path in Customer User; the same project passed through a temporary short drive mapping with no
   tracked workaround. Package, carrier, terminal, rename, excluded-scope, local-workaround, and
   whitespace inventories are clean.
-- Current review state: all local work is clean through `9bcb25eea`; no findings remain open.
+- Current review state: all implementation work is clean through `fcd1b58df`; no findings remain open.
 
 ## Decisions and constraints
 

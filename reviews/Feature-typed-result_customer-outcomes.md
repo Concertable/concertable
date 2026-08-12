@@ -5,9 +5,9 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `9bcb25eea61794ca982b7f8c1a4f044c7b8f4514`  _(2026-08-12)_
+**Reviewed up to commit:** `fcd1b58df783551e08307183bd82c75d739405ef`  _(2026-08-12)_
 
-**Security-reviewed up to commit:** `9bcb25eea61794ca982b7f8c1a4f044c7b8f4514`  _(2026-08-12)_
+**Security-reviewed up to commit:** `fcd1b58df783551e08307183bd82c75d739405ef`  _(2026-08-12)_
 
 > Range reviewed: `d916e95cf..5cfdb9427` (43 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -68,3 +68,13 @@ microservice isolation, module boundaries, seeding, C# conventions, and test cov
 paths. The flexible Option terminals preserve the existing 200/401/404 behavior and authorization
 attributes, nullable-to-Option conversion preserves ordinary absence, and the repository rename
 retains the reviewed duplicate-only insert behavior and its existing coverage.
+
+## Incremental review â€” 2026-08-12 (published alpha.3 baseline)
+
+> Range reviewed: `9bcb25eea..fcd1b58df` (31 commits).
+
+No issues found. Checked native correctness, security-sensitive workflow and package paths,
+microservice isolation, module boundaries, seeding, C# conventions, and test coverage of changed
+paths. The mainline repository and E2E refactors retain module/service ownership and compile through
+the full solution; the Customer alpha.3 pin resolves the four verified packages from Reunion merge
+`91fdc6f2` and passes the complete build, carve, unit, architecture, and 74/74 integration gates.
