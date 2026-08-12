@@ -12,10 +12,10 @@
   This branch owns Auth's semantic migration and alpha.2 source adoption. The separate alpha.2
   baseline plan owns repository-wide version alignment. After the Auth `api/**` PR merges, this plan
   owns publication and its generated platform-sync gate to terminal green.
-- Last reconciled: `2026-08-12` after the first queue request. PR #517 remains `OPEN/CLEAN` on
-  reviewed, green remote head `dd9e3111a4b6689cf46b9232275fccd63a349b72` with `full-e2e`, but
-  its `mergeQueueEntry` is null. Auto-merge was still the stale bot request enabled at PR creation,
-  so the request did not trigger fresh admission for the updated head.
+- Last reconciled: `2026-08-12` after the one-time auto-merge re-assertion admitted PR #517 to the
+  merge queue. Parameterized GraphQL reports `mergeQueueEntry.state = QUEUED` for exact reviewed,
+  green remote head `dd9e3111a4b6689cf46b9232275fccd63a349b72`; `full-e2e` remains the sole
+  label.
 
 ## Current state
 
@@ -51,10 +51,10 @@ distinct safe explanation.
 
 ## Next Steps
 
-Perform the one-time auto-merge re-assertion for exact reviewed/green remote head
-`dd9e3111a4b6689cf46b9232275fccd63a349b72`, verify queue admission with parameterized GraphQL, and
-monitor the `full-e2e` merge group to a terminal merge or genuine failure without retrying. Then own
-publication, platform sync, and docs closeout to terminal completion.
+Monitor PR #517 and its `full-e2e` merge-group runs to a terminal merge or genuine failure without
+retrying. On merge, record the source head and merge commit, transfer the ledger-only local tail to a
+clean Auth closeout worktree, remove the source worktree/branches, then own publication, platform
+sync, and docs closeout to terminal completion.
 
 ## Downstream handoffs
 
@@ -108,6 +108,8 @@ publication, platform sync, and docs closeout to terminal completion.
   labelled only `full-e2e`; the served untracked review work order was removed.
 - Initial queue request: GitHub left `mergeQueueEntry` null because the existing bot auto-merge
   request dated from PR creation; one explicit disable/enable re-assertion is required.
+- Queue admission: the one-time re-assertion admitted exact reviewed head `dd9e3111a` with
+  `mergeQueueEntry.state = QUEUED`; `full-e2e` is selected for the queue-only API/UI suites.
 
 ## Verification
 
