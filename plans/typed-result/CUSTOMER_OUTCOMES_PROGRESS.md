@@ -6,8 +6,8 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_customer-outcomes`
 - Branch: `Feature/typed-result_customer-outcomes`
 - PR: [#425](https://github.com/Concertable/concertable/pull/425) - open, non-draft, remote head
-  `87bcdc52321511fad6a7c67197849268a81689bd`; local head
-  `a396b510fa2d027f4970df43b8ec6d0616c28c3b` merges current `origin/main`
+  `1bf1a349b6e8ac98d293816e75e264f940009d5b`, proven equal across the reviewed local work head,
+  remote-tracking branch, and PR. Merge `a396b510fa2d027f4970df43b8ec6d0616c28c3b` brings in current `origin/main`
   `c680da03b0caaf65492109702be522a0c861411c`, including the merged Auth-owned Stripe CLI bootstrap
   repair. GitHub ejected the prior head from the merge queue after
   merge-group run [31640531994](https://github.com/Concertable/concertable/actions/runs/31640531994)
@@ -22,10 +22,11 @@
   minimal-API `ToOkOr` overloads with generic/parameter arities `2/2` and `3/3`, and the MVC overloads
   with arities `1/2` and `2/3`. Publication and published-baseline revalidation are terminal. Customer
   Ticket PR #475 and platform-sync PR #479 remain terminal and out of scope.
-- Last reconciled: 2026-08-13 after current-main merge. PR #425 remains at remote head
-  `87bcdc52321511fad6a7c67197849268a81689bd`; local merge head `a396b510f` is not yet verified or
-  pushed. PR #425 is open with auto-merge off. The prior Stripe setup blocker is resolved on current
-  main by Auth PR #517 and its terminal platform-sync PR #531.
+- Last reconciled: 2026-08-13 after plan push leg one. Starting remote/PR head
+  `87bcdc52321511fad6a7c67197849268a81689bd` advanced to reviewed work head
+  `1bf1a349b6e8ac98d293816e75e264f940009d5b`, proven equal across local, remote-tracking, and PR #425.
+  PR #425 is open with auto-merge off. The prior Stripe setup blocker is resolved on current main by
+  Auth PR #517 and its terminal platform-sync PR #531.
 
 ## Current state
 
@@ -79,9 +80,8 @@ failure, not a Customer test result, and the failed queue run must not be blindl
 
 Finish PR #425 delivery from synchronized local head `a396b510f`:
 
-1. Commit the verified current-main build and clean incremental-review checkpoint.
-2. Push through the plan-managed two-leg protocol, proving local, remote-tracking, and PR head
-   equality after each leg.
+1. Transport this push-evidence checkpoint and prove local, remote-tracking, and PR head equality.
+2. Wait for PR #425's replacement hard-floor checks to complete green.
 3. Return PR #425 to `/merge` with `full-e2e`, follow it to its merge commit, then own publication and
    the generated platform-sync PR through green/merged before close-out.
 
@@ -154,6 +154,9 @@ Finish PR #425 delivery from synchronized local head `a396b510f`:
   `87bcdc52321511fad6a7c67197849268a81689bd`. All PR-head build, five carve, unit, and integration
   checks passed. Merge-group run 31640531994 passed API E2E and every hard-floor job; UI E2E job
   94265184983 failed in `Install Stripe CLI` with curl exit 56 before scenarios started.
+- Current-main work push advanced starting remote/PR head `87bcdc52321511fad6a7c67197849268a81689bd`
+  to reviewed work head `1bf1a349b6e8ac98d293816e75e264f940009d5b`; local, remote-tracking, and
+  PR #425 head equality was verified before this checkpoint transport.
 - Phase 8 exact-artifact evidence: all local nupkgs embed producer commit
   `113be42f532d5d7e8daf1c362262ff7a7854b7bc`. SHA-256: Reunion
   `9FADC33CD06F3B4A9A92564633E01007CC81EA091AA9F257D821532E046E10CE`;
