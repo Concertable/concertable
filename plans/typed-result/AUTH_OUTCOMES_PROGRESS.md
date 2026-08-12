@@ -5,8 +5,8 @@
 - Roadmap item: `typed-result/auth-outcomes`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_auth-outcomes`
 - Branch: `Feature/typed-result_auth-outcomes`
-- PR: [#517](https://github.com/Concertable/concertable/pull/517), open at remote work head
-  `2d50164b38d6b3a601e0620dba0dd374844f053a`
+- PR: [#517](https://github.com/Concertable/concertable/pull/517), open at remote final head
+  `e91b6ecadde05e9ecad6b3126a5b44e1ea10b57b`
 - Dependency/package gates: no implementation gate. NuGet.org publishes `Reunion` and
   `Reunion.AspNetCore`, `Reunion.Errors`, and `Reunion.Validation` `0.1.0-alpha.3`; Auth has
   no Payment, B2B, or Customer runtime/package dependency. This branch owns Auth's semantic migration
@@ -17,13 +17,13 @@
   [31618590547](https://github.com/Concertable/concertable/actions/runs/31618590547) as an external
   bootstrap transport failure, committing the Auth alpha.3 candidate as `12c000d7`, merging current
   `origin/main` as `38e62584`, and completing a clean correctness/security review through that merge.
-  The reviewed current-main work head `2d50164b38d6b3a601e0620dba0dd374844f053a` is verified equal
-  locally, on the upstream branch, and on PR #517; this checkpoint is the plan-only transport tail.
+  The reviewed current-main final head `e91b6ecadde05e9ecad6b3126a5b44e1ea10b57b` passed the complete
+  PR hard-floor matrix. This local-only observation checkpoint must not be pushed before queueing.
 
 ## Current state
 
 The task directly matches this branch and worktree. No other worktree owns the Auth implementation.
-PR #517 is open at verified remote work head `2d50164b38d6b3a601e0620dba0dd374844f053a`. That candidate
+PR #517 is open at verified remote final head `e91b6ecadde05e9ecad6b3126a5b44e1ea10b57b`. That candidate
 includes the intervening delivery-ledger checkpoints,
 the committed alpha.3 package adoption, and current `origin/main` through `6a3d66677`. The main merge
 was conflict-free, changed only Customer read-context implementation, and left Auth's platform and
@@ -56,11 +56,8 @@ distinct safe explanation.
 
 ## Next Steps
 
-1. Push this plan-only transport checkpoint, verify local/upstream/PR equality again, and require
-   replacement PR checks to pass on that exact final head. The clean-machine `build` job is the authoritative full-solution gate
-   because both local full-build attempts exhausted the shared drive while compiling unrelated late
-   solution projects.
-2. Keep `full-e2e`, enqueue PR #517 again, and follow it through merge, publication, generated
+1. Keep `full-e2e`, enqueue exact remote head `e91b6eca` again, and follow it through merge,
+   publication, generated
    platform sync, and plan close-out.
 
 ## Downstream handoffs
@@ -114,6 +111,11 @@ distinct safe explanation.
   `424f1b80950450a0f462427483ac8fe36d2d785a`; the branch was zero behind `origin/main` at push time.
 - Alpha.3 delivery push: local work head, upstream, and PR head verified equal at
   `2d50164b38d6b3a601e0620dba0dd374844f053a`; the branch was zero behind `origin/main` at push time.
+- Transport checkpoint push: local, upstream, and PR head verified equal at
+  `e91b6ecadde05e9ecad6b3126a5b44e1ea10b57b`; the branch remained zero behind `origin/main`.
+- Replacement PR checks: workflow run 31631354398 passed the clean-machine build, every service
+  carve, all unit/integration jobs (including Auth), and `ci-complete` on exact head `e91b6eca`.
+  PR-level API/UI E2E skipped as designed and `full-e2e` remains the sole E2E-tier label.
 - Reviewed PR checks: remote head `dd9e3111a4b6689cf46b9232275fccd63a349b72` passed build, all
   service carves, all unit/integration jobs, and `ci-complete`; PR-level E2E skipped as designed.
 - Queue readiness: a final fetch proved that remote head zero behind `origin/main`, `OPEN/CLEAN`, and
