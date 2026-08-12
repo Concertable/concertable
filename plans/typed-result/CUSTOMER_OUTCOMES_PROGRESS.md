@@ -6,7 +6,7 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_customer-outcomes`
 - Branch: `Feature/typed-result_customer-outcomes`
 - PR: [#425](https://github.com/Concertable/concertable/pull/425) - open, non-draft, remote head
-  `08a92f91659e4eccc4558e55def5027b26c08348`; verified local delivery head is based on
+  `306cab6de966ee74688c64b47f2eee7027a4a5e4`; verified local delivery head is based on
   `origin/main` `5bf622fecd600868b4ec437daf6c6ad0389029a6` through merge `6f3a8c4f3`.
 - Dependency/package gates: NuGet.org accepted and its official v3 flat-container indexes listed
   `0.1.0-alpha.3` for `Reunion`, `Reunion.AspNetCore`, `Reunion.Errors`, and `Reunion.Validation`
@@ -17,9 +17,10 @@
   minimal-API `ToOkOr` overloads with generic/parameter arities `2/2` and `3/3`, and the MVC overloads
   with arities `1/2` and `2/3`. Publication and published-baseline revalidation are terminal. Customer
   Ticket PR #475 and platform-sync PR #479 remain terminal and out of scope.
-- Last reconciled: 2026-08-12 after the clean alpha.3 incremental review. The owning branch is current
-  with `origin/main`; published-baseline work head `fcd1b58df783551e08307183bd82c75d739405ef`
-  is reviewed with no findings. The review/ledger checkpoint is ready for the two-leg push.
+- Last reconciled: 2026-08-12 after push leg one. The owning branch is current with `origin/main`;
+  reviewed work head `306cab6de966ee74688c64b47f2eee7027a4a5e4` is proven equal across local,
+  `origin/Feature/typed-result_customer-outcomes`, and PR #425. Transport this ledger checkpoint, then
+  enter the merge workflow.
 
 ## Current state
 
@@ -68,9 +69,8 @@ required incremental review.
 
 Deliver the reviewed Phase 8 candidate into its terminal state:
 
-1. Deliver the verified range through the plan-managed two-leg push protocol: push the actual work
-   head, fetch and prove remote-tracking plus PR #425 head equality, then transport the resulting
-   ledger checkpoint and prove local/remote/PR equality again.
+1. Transport this push-evidence ledger checkpoint and prove local, remote-tracking, and PR #425 head
+   equality again.
 2. Route PR #425 through `/merge` with the required full merge-queue E2E tier, follow it to its exact
    merge SHA, then own the generated platform-sync PR through green/merged before close-out. Keep the
    plan and ledger until all delivery gates are terminal.
@@ -130,7 +130,9 @@ Deliver the reviewed Phase 8 candidate into its terminal state:
   `9bcb25eea..fcd1b58df` found no new issues.
 - Push evidence: starting remote head `e60219f7dfe13f0c49c818e2ed7ab7a557f84569`; reviewed work
   head `297c61192117d14e631c5ad5f64364e28ed670db`; the later checkpoint transport made the current
-  remote-tracking/PR head `08a92f91659e4eccc4558e55def5027b26c08348`.
+  remote-tracking/PR head `08a92f91659e4eccc4558e55def5027b26c08348`. Alpha.3 push leg one
+  advanced local, remote-tracking, and PR #425 together to reviewed head
+  `306cab6de966ee74688c64b47f2eee7027a4a5e4`.
 - Phase 8 exact-artifact evidence: all local nupkgs embed producer commit
   `113be42f532d5d7e8daf1c362262ff7a7854b7bc`. SHA-256: Reunion
   `9FADC33CD06F3B4A9A92564633E01007CC81EA091AA9F257D821532E046E10CE`;
