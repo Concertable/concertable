@@ -18,7 +18,7 @@
   bootstrap transport failure, committing the Auth alpha.3 candidate as `12c000d7`, merging current
   `origin/main` as `38e62584`, and completing a clean correctness/security review through that merge.
   The reviewed current-main final head `e91b6ecadde05e9ecad6b3126a5b44e1ea10b57b` passed the complete
-  PR hard-floor matrix. This local-only observation checkpoint must not be pushed before queueing.
+  PR hard-floor matrix and is admitted to the merge queue at position 1 with `full-e2e`.
 
 ## Current state
 
@@ -56,9 +56,9 @@ distinct safe explanation.
 
 ## Next Steps
 
-1. Keep `full-e2e`, enqueue exact remote head `e91b6eca` again, and follow it through merge,
-   publication, generated
-   platform sync, and plan close-out.
+1. Follow merge-group API/UI E2E on exact remote head `e91b6eca` to terminal green and merge.
+2. Remove this source worktree, then follow package publication, generated platform sync, and plan
+   close-out from a fresh docs worktree based on merged `origin/main`.
 
 ## Downstream handoffs
 
@@ -116,6 +116,8 @@ distinct safe explanation.
 - Replacement PR checks: workflow run 31631354398 passed the clean-machine build, every service
   carve, all unit/integration jobs (including Auth), and `ci-complete` on exact head `e91b6eca`.
   PR-level API/UI E2E skipped as designed and `full-e2e` remains the sole E2E-tier label.
+- Second queue admission: exact remote head `e91b6eca` entered at position 1 with
+  `mergeQueueEntry.state = AWAITING_CHECKS`; `full-e2e` is the sole E2E-tier label.
 - Reviewed PR checks: remote head `dd9e3111a4b6689cf46b9232275fccd63a349b72` passed build, all
   service carves, all unit/integration jobs, and `ci-complete`; PR-level E2E skipped as designed.
 - Queue readiness: a final fetch proved that remote head zero behind `origin/main`, `OPEN/CLEAN`, and

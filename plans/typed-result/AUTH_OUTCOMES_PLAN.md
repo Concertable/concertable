@@ -232,7 +232,7 @@ and ship in one PR.
   terminal surface, so `Reunion.AspNetCore` remains absent and no runtime call site changes.
 - [x] Rerun the Auth verification gate and review the package update.
 - [x] Push the exact candidate through the plan push protocol.
-- [ ] Require replacement checks to pass and return PR #517 to the full-E2E merge queue.
+- [x] Require replacement checks to pass and return PR #517 to the full-E2E merge queue.
 
 ## Verification gate for every phase
 
