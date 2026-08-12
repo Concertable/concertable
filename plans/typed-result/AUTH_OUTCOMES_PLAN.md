@@ -231,7 +231,8 @@ and ship in one PR.
 - [x] Audit the additive flexible Option HTTP terminals. Auth still owns no Minimal API or MVC
   terminal surface, so `Reunion.AspNetCore` remains absent and no runtime call site changes.
 - [x] Rerun the Auth verification gate and review the package update.
-- [ ] Push the exact candidate and return PR #517 to the full-E2E merge queue.
+- [x] Push the exact candidate through the plan push protocol.
+- [ ] Require replacement checks to pass and return PR #517 to the full-E2E merge queue.
 
 ## Verification gate for every phase
 
