@@ -304,7 +304,7 @@ tier and receives no skip label.
 - [x] Build the five changed project closures; run the five unit suites, Shared.Api architecture suite,
   Docker preflight, five integration wrappers, Result/package/rename audits, and whitespace gate
   against the exact `113be42` artifact.
-- [ ] Review this checkpoint and address every actionable finding. Delivery remains gated until the
+- [x] Review this checkpoint and address every actionable finding. Delivery remains gated until the
   exact published Reunion-family version containing `113be42` is proven from package metadata, pinned
   without a local feed, and the affected verification is green again against that published baseline.
 

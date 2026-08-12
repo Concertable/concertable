@@ -13,8 +13,9 @@
   `113be42f532d5d7e8daf1c362262ff7a7854b7bc`. Phase 8 is implementable and locally verified against
   an exact artifact, but delivery remains gated on a published Reunion-family version containing
   `113be42`. Customer Ticket PR #475 and platform-sync PR #479 remain terminal and out of scope.
-- Last reconciled: 2026-08-12 at the locally verified Phase 8 checkpoint in this commit; PR #425 is
-  not merge-ready and must not be pushed or merged until review and the publication gate complete.
+- Last reconciled: 2026-08-12 after the clean Phase 8 incremental review through local semantic head
+  `9bcb25eea`; PR #425 is not merge-ready and must not be pushed or merged until the publication gate
+  and published-baseline verification complete.
 
 ## Current state
 
@@ -26,9 +27,10 @@ to their typed conflicts; collaborator, provider, identity, invariant, and cance
 remain exceptions.
 
 The prior reviewed work head was `297c61192`; PR #425's current remote checkpoint is `08a92f916`.
-Local merge `f94eeec09` brought `origin/main` `93cecb645` into the branch before Phase 8. The branch
-still owns the same five-module semantic slice; Ticket, Concert, Customer Payment, purchase/checkout,
-shared Kernel API, events, models, and migrations are excluded.
+Local merge `f94eeec09` brought platform `.943` from `origin/main` before Phase 8, and local merge
+`9bcb25eea` brought current docs-only `origin/main` `e10fd17fa` in before review. The branch still owns
+the same five-module semantic slice; Ticket, Concert, Customer Payment, purchase/checkout, shared
+Kernel API, events, models, and migrations are excluded.
 
 Phase 7 implementation and local verification are green. All four existing Customer Reunion-family
 pins are `0.1.0-alpha.2`; branch-owned Review and Preference construction sites use raw payload
@@ -36,8 +38,9 @@ conversions only where their target types keep success/error intent explicit. Na
 validation factories, and nullable-to-Option boundaries remain explicit where inference would obscure
 the owned contract.
 
-The prior alpha.2 work remains reviewed through `d623a3501` and published to PR #425 through remote
-checkpoint `08a92f916`. A later local merge `f94eeec09` brought current `origin/main` into the branch.
+The prior alpha.2 work remains published to PR #425 through remote checkpoint `08a92f916`. The full
+local range through synchronized Phase 8 semantic head `9bcb25eea` has now passed incremental native,
+security, architecture, convention, and coverage review with no new findings.
 
 Phase 8 adopts the flexible Option terminals from exact Reunion commit `113be42`: projected
 Artist/Venue `ToOkOr`, User's direct unauthorized alternative, and target-typed Artist/Venue nullable
@@ -48,19 +51,18 @@ without changing its add/save/duplicate-only behavior. The two custom Created Re
 unchanged. Shared generic DataAccess was not extended; its future published-package standardization
 is recorded in `api/Concertable.DataAccess/TECH_DEBT.md`.
 
-The Phase 8 candidate is locally verified against exact gitignored packages under
+The Phase 8 candidate is locally verified and reviewed against exact gitignored packages under
 `artifacts/reunion-113be42` with version `0.1.0-local.113be42`. The temporary NuGet config and local
-version pins were removed from tracked state after verification. This checkpoint has not yet received
-incremental review and is not published to PR #425.
+version pins were removed from tracked state after verification. This checkpoint is not published to
+PR #425.
 
 ## Next Steps
 
-1. Run `/incremental-review` from the prior clean watermark `d623a35014cd23632f190e557ee37668953680b9`
-   through the Phase 8 checkpoint and address every actionable finding. Do not push or merge PR #425.
-2. After review is clean, query official package metadata for the exact published Reunion-family
-   version containing `113be42`; do not guess. When it exists, pin the whole family to that version,
-   rerun the affected closures, unit/integration suites, package/structural audits, and incremental
-   review against the published baseline before the plan-managed two-leg PR update.
+1. Query official package metadata for the exact published Reunion-family version containing
+   `113be42`; do not guess. Do not push or merge PR #425.
+2. When it exists, pin the whole family to that version, rerun the affected closures,
+   unit/integration suites, package/structural audits, and incremental review against the published
+   baseline before the plan-managed two-leg PR update.
 
 ## Downstream handoffs
 
@@ -90,8 +92,9 @@ incremental review and is not published to PR #425.
   `CV4` in `d623a3501`. The reviewed work range `e60219f7d..297c61192` was pushed to PR #425
   with local, remote-tracking, and PR head equality.
 - Phase 8 implemented flexible Option terminals, direct `InsertAsync` naming, nullable-to-Option
-  simplifications, Result guidance, and DataAccess debt in this checkpoint. Delivery remains gated
-  on review and publication of a Reunion-family package containing `113be42`.
+  simplifications, Result guidance, and DataAccess debt in `5ee10d11a`; the incremental native,
+  security, architecture, convention, and coverage review through `9bcb25eea` was clean. Delivery
+  remains gated on publication of a Reunion-family package containing `113be42`.
 
 ## Verification and review
 
@@ -111,8 +114,8 @@ incremental review and is not published to PR #425.
   2/2, and B2B/Customer Artist 17/17 + 2/2 passed: 74/74 across eight projects. Every run-owned SQL
   and Ryuk container was removed; a separate session started a new pair after this run completed.
 - Review artifact: `reviews/Feature-typed-result_customer-outcomes.md`. All findings are fixed. Both
-  review watermarks are `d623a35014cd23632f190e557ee37668953680b9`; the follow-up review of the
-  `CV4` fix is clean.
+  review watermarks are `9bcb25eea61794ca982b7f8c1a4f044c7b8f4514`; the Phase 8 incremental
+  native, security, architecture, convention, and coverage review found no new issues.
 - Push evidence: starting remote head `e60219f7dfe13f0c49c818e2ed7ab7a557f84569`; reviewed work
   head `297c61192117d14e631c5ad5f64364e28ed670db`; the later checkpoint transport made the current
   remote-tracking/PR head `08a92f91659e4eccc4558e55def5027b26c08348`.
@@ -127,7 +130,7 @@ incremental review and is not published to PR #425.
   passes 60/60; Docker fresh-container HTTP data-path preflight passes; the five wrappers pass 74/74
   across eight projects. Resolved Customer assets contain only the exact local Reunion-family version.
   Rename, shared-DataAccess, terminal, Created-mapping, local-workaround, and whitespace audits pass.
-- Current review state: prior work is clean through `d623a3501`; Phase 8 is awaiting incremental review.
+- Current review state: all local work is clean through `9bcb25eea`; no findings remain open.
 
 ## Decisions and constraints
 

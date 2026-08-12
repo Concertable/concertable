@@ -5,9 +5,9 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `d623a35014cd23632f190e557ee37668953680b9`  _(2026-08-12)_
+**Reviewed up to commit:** `9bcb25eea61794ca982b7f8c1a4f044c7b8f4514`  _(2026-08-12)_
 
-**Security-reviewed up to commit:** `d623a35014cd23632f190e557ee37668953680b9`  _(2026-08-12)_
+**Security-reviewed up to commit:** `9bcb25eea61794ca982b7f8c1a4f044c7b8f4514`  _(2026-08-12)_
 
 > Range reviewed: `d916e95cf..5cfdb9427` (43 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -58,3 +58,13 @@ the target-typed success and error alternatives verified by the scoped unit and 
 
 No new findings. The five `base.Query` qualifications are convention-only, preserve the no-tracking
 query root, and pass the affected Concert, Artist, and Venue Release unit suites 25/25.
+
+## Incremental review — 2026-08-12 (Phase 8)
+
+> Range reviewed: `d623a3501..9bcb25eea` (10 commits).
+
+No issues found. Checked native correctness, security-sensitive controller and package paths,
+microservice isolation, module boundaries, seeding, C# conventions, and test coverage of changed
+paths. The flexible Option terminals preserve the existing 200/401/404 behavior and authorization
+attributes, nullable-to-Option conversion preserves ordinary absence, and the repository rename
+retains the reviewed duplicate-only insert behavior and its existing coverage.
