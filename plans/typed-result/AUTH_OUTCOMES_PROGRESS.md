@@ -5,22 +5,24 @@
 - Roadmap item: `typed-result/auth-outcomes`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_auth-outcomes`
 - Branch: `Feature/typed-result_auth-outcomes`
-- PR: not opened; no remote branch exists
+- PR: not opened; remote branch head `c784db2044cf11521681e842b28a38f92946385c`
 - Dependency/package gates: no implementation gate. NuGet.org publishes `Reunion` and
   `Reunion.Errors` `0.1.0-alpha.2`; Auth has no Payment, B2B, or Customer runtime/package dependency.
   This branch owns Auth's semantic migration and alpha.2 source adoption. The separate alpha.2
   baseline plan owns repository-wide version alignment. After the Auth `api/**` PR merges, this plan
   owns publication and its generated platform-sync gate to terminal green.
-- Last reconciled: `2026-08-12` after completing the final implementation audit against Reunion
-  producer commit `113be42f532d5d7e8daf1c362262ff7a7854b7bc`. The audit required no Auth code
-  or test change. The branch is current with `origin/main`; plan graph: 0 errors, 0 warnings.
+- Last reconciled: `2026-08-12` after the verified delivery push. Local and remote work heads both
+  equal `c784db2044cf11521681e842b28a38f92946385c`; the branch is current with `origin/main` and
+  plan graph validation reports 0 errors and 0 warnings.
 
 ## Current state
 
 The task directly matches this branch and worktree. No other worktree owns the Auth implementation,
-no Auth PR or remote branch exists, and no platform-sync PR is open. A fresh fetch left the branch
-zero behind / 49 ahead of `origin/main`; all code is committed. The sole unrelated dirty path is the
-preserved untracked clean-review work order `reviews/Feature-typed-result_auth-outcomes.md`.
+no Auth PR exists, and no platform-sync PR is open. The verified delivery push created
+`origin/Feature/typed-result_auth-outcomes` at the exact local work head
+`c784db2044cf11521681e842b28a38f92946385c`; the branch is zero behind / 53 ahead of `origin/main`.
+The sole unrelated dirty path is the preserved untracked clean-review work order
+`reviews/Feature-typed-result_auth-outcomes.md`.
 
 Phases 1-5 are committed and locally verified. Auth's in-process contracts use direct published
 Reunion ownership: login/logout return `Option<T>`, four caller-actionable refusal paths return
@@ -39,9 +41,9 @@ surface: its account handlers are server-rendered Razor Pages and its other outc
 
 ## Next Steps
 
-Do not push without instruction. On explicit delivery instruction, push the committed branch,
-open the plain GitHub PR, and use the normal merge workflow with full merge-queue E2E. After the
-Auth `api/**` PR lands, own package publication and the generated platform-sync PR to terminal green.
+Open the plain GitHub PR for remote head `c784db2044cf11521681e842b28a38f92946385c`, then use the
+normal merge workflow with full merge-queue E2E. After the Auth `api/**` PR lands, own package
+publication and the generated platform-sync PR to terminal green.
 
 ## Downstream handoffs
 
@@ -76,6 +78,8 @@ Auth `api/**` PR lands, own package publication and the generated platform-sync 
   direct result forwarding is already canonical. No implementation or focused-test edit was needed.
 - PR readiness: clean incremental correctness/security review and GREEN read-only preflight on
   current `origin/main`; no code, package-cutover, PR, or platform-sync blocker remains.
+- Delivery push: local and remote work heads verified equal at `c784db2044cf11521681e842b28a38f92946385c`;
+  the pushed range is the complete 53-commit branch delta over current `origin/main`.
 
 ## Verification
 
