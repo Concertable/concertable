@@ -1,6 +1,9 @@
 # B2B typed-result migration plan
 
-Next steps live in @plans/typed-result/B2B_PROGRESS.md → `## Next Steps`.
+Next steps live in these workstream ledgers:
+
+- @plans/typed-result/B2B_PAYMENT_SAGA_PRODUCER_PROGRESS.md → `## Next Steps`
+- @plans/typed-result/B2B_PROGRESS.md → `## Next Steps`
 
 Migrate every B2B service module from FluentResults + nullable lookups to the shared Reunion-backed
 `Result` / `Option` / `UnitResult` vocabulary. Custom validation contracts resolved through dependency
@@ -15,9 +18,10 @@ this service branch owns only B2B semantics and consumes that baseline.
 ## Checkpoints
 
 Checkpoints 1–9 are implemented, committed, reconciled with current main, and incrementally reviewed.
-The remaining SEC1 delivery decision and downstream lifecycle gates are tracked in the progress
-ledger. No FluentResults adapter, string bridge, committed local source, feed path, or disposable
-package pin may be introduced.
+Tommy authorized the durable SEC1 B2B + Payment saga/package cut-over on 2026-08-12. Checkpoint 10 is
+split into independently deliverable producer and consumer workstreams because B2B compiles against
+published Payment packages rather than Payment source. No FluentResults adapter, string bridge,
+committed local source, feed path, or disposable package pin may be introduced.
 
 - [x] **Checkpoint 1 — Deal.** Deal module outcomes → owned Results; operation errors use explicit
   Dunet cases with disabled implicit conversions and one exhaustive root `Definition` switch;
@@ -62,6 +66,20 @@ package pin may be introduced.
   domain throws. Preserve exceptions for malformed geocoder/image/identity-provider output,
   invitation expiry after the pending query, `VatBreakdown` imbalance, and other impossible internal
   construction or consistency faults. Do not catch those invariant faults in Result combinators.
+- [ ] **Checkpoint 10A — Payment saga contract and idempotent producer.** Add Payment-owned financial
+  operation command and outcome contracts for capture, deposit, and refund. Payment handles commands
+  through its own runtime, keys operation replay by B2B operation ID and booking, and publishes the
+  same terminal outcome after retries without moving money twice. Expected caller-actionable
+  refusals become explicit contract outcomes; infrastructure/cancellation faults remain exceptional.
+  Consume the exact Reunion package artifact from producer commit `113be42` and use its implicit
+  conversions and projected `ToOkOr` terminals without recreating its extensions in Concertable.
+- [ ] **Checkpoint 10B — B2B durable lifecycle saga.** Persist acceptance/cancellation intent and its
+  financial-operation state before money moves, stage the Payment command in the same transaction via
+  the B2B outbox, and complete or fail the lifecycle only from Payment-owned outcome events. Reconcile
+  pending operations in the B2B worker with the same operation ID. Cancellation requested before or
+  after capture/deposit must converge to `Cancelled`; a deferred refund remains pending and retryable.
+  Expose operation status through a typed HTTP contract and Reunion terminals without weakening any
+  endpoint union to `IResult`.
 
 ## Error and boundary rules
 
@@ -122,3 +140,18 @@ The dependency gate is open. `Reunion`, `Reunion.Validation`, and `Reunion.Error
 clean-restored from NuGet.org with their published dependency graph. Checkpoint 8 uses only normal
 configured feeds and published versions; temporary package inputs remain forbidden. Shared contraction
 is downstream cleanup and does not block this branch's local alpha.2 implementation or verification.
+
+## Checkpoint 10 package topology
+
+- Producer layer: `Concertable.Payment.Contracts` owns the additive command/outcome wire contracts;
+  `Concertable.Payment.Client` republishes against the same Payment package release but does not
+  re-expose the saga types in a changed public surface.
+- Consumer layer: B2B consumes `Concertable.Payment.Contracts` and `Concertable.Payment.Client` only
+  as published packages. Customer consumes the same packages but needs no source migration because the
+  saga surface is additive.
+- Delivery DAG: Payment producer branch → Payment package publication → generated platform sync →
+  B2B published-package revalidation and delivery. The exact local producer artifact may make B2B
+  delivery-ready, but only the published package and generated sync can make it merge-ready.
+- Implementation DAG: Payment producer and B2B consumer may be prepared independently. Temporary
+  package versions and feeds are never committed; each ledger records the producer commit, package
+  version, SHA-256 hashes, and reproducible artifact location used for local verification.

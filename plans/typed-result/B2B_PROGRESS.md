@@ -49,16 +49,18 @@ The Reunion integration close-out and stop-hook scope correction are merged inde
 `origin/main` by PR #512 and included in the current reconciliation. Do not recreate the deleted
 `REUNION_INTEGRATION_PLAN.md` or `REUNION_INTEGRATION_PROGRESS.md` files here.
 
-SEC1 is a delivery decision, not an implementation blocker. Its durable B2B + Payment saga/package
-cut-over remains recorded in `api/Concertable.B2B/src/Modules/Concert/TECH_DEBT.md` and must be decided
-before delivery.
+Tommy authorized the durable SEC1 B2B + Payment saga/package cut-over on 2026-08-12. Checkpoint 10 now
+owns the finding through a Payment producer workstream and this B2B consumer workstream. The hard
+decision blocker is removed; the Concert tech-debt entry remains until the saga and recovery gates are
+verified, then is deleted rather than retained as an archive.
 
 ## Next Steps
 
-Blocked: B2B implementation and review are complete, but delivery cannot begin until SEC1 is decided.
-Blocked by: Tommy's decision on the durable B2B + Payment saga/package cut-over recorded in the Concert tech debt.
-Unblock action: Authorize the saga/package cut-over before B2B delivery, or explicitly accept the recorded risk and authorize delivery of the current branch.
-Resume when: The SEC1 decision is recorded and Tommy separately instructs this branch to proceed with delivery.
+Implement Checkpoint 10B against the exact local Payment package artifacts produced by
+`B2B_PAYMENT_SAGA_PRODUCER_PROGRESS.md`. Persist acceptance/cancellation operations and outbox commands,
+consume Payment outcomes idempotently, reconcile pending work, expose typed operation status at HTTP,
+and prove cancellation-after-payment plus process recovery. Restore all temporary package inputs before
+committing. Do not push, open a PR, or merge.
 
 ## Completed work
 
@@ -67,8 +69,7 @@ Resume when: The SEC1 decision is recorded and Tommy separately instructs this b
   carrier/terminal ownership, and complete B2B FluentResults removal; implementation commit
   `e229afb581c829279ca821b0a85729c4c4f0f441`.
 - The staged review covered `1043a9178..e229afb58`; the prior incremental review covered later commits
-  through `3d50d321c`. NAT1-NAT5, SEC2, and CV1 are fixed. SEC1 is deferred to the owning tech-debt
-  entry as a pre-delivery decision.
+  through `3d50d321c`. NAT1-NAT5, SEC2, and CV1 are fixed. SEC1 is authorized and owned by Checkpoint 10.
 - Checkpoints 8-9 and their alpha.2 package reconciliation, direct unit coverage, and HTTP contract
   coverage are implemented, verified, and committed as `bfc8690b1`.
 - Current main was reconciled and verified in merge commit `5613a817a`.
@@ -115,10 +116,16 @@ Resume when: The SEC1 decision is recorded and Tommy separately instructs this b
 - Shared compatibility contraction is owned downstream. B2B removes its own usage but preserves the
   old Kernel carrier and tests until Auth and Customer delivery gates are terminal.
 - Do not kill unrelated .NET processes owned by parallel Auth, Customer, Shared, or platform work.
+- Checkpoint 10 is limited to SEC1's accept/withdraw/cancel capture, deposit, and refund paths. Concert
+  finish/settlement remains outside this finding.
 - The pre-merge plan graph's 13 unrelated stale-ledger errors belonged to the old branch snapshot;
   the current-main graph is the authoritative post-reconciliation gate.
 
 ## Downstream handoffs
+
+- Owning ledger: `plans/typed-result/B2B_PAYMENT_SAGA_PRODUCER_PROGRESS.md`.
+  Gate: exact locally packed Payment artifacts enable preparation here; publication and generated sync
+  enable final merge-ready revalidation.
 
 - Waiting ledger: `plans/typed-result/REUNION_SHARED_CONTRACTION_PROGRESS.md`.
   Gate: B2B must be delivery-ready and identify every remaining old carrier, terminal, and third-party

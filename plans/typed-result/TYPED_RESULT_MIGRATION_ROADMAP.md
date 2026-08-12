@@ -94,6 +94,11 @@ their current branch and worktree rather than fragmenting in-flight work.
   gate delivery and final revalidation, not local preparation.
   Before the next B2B checkpoint commit, align every direct Reunion reference to `0.1.0-alpha.2` and
   use the new construction surface where it keeps the owned error union explicit.
+  SEC1's durable financial lifecycle finding is authorized and active as Checkpoint 10. Its Payment
+  producer workstream is `Refactor/typed-result_payment-financial-saga` at
+  `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-typed-result_payment-financial-saga`;
+  the existing B2B worktree remains the consumer owner. Payment publication and generated platform
+  sync gate final B2B revalidation, not local producer/consumer preparation.
 - [x] ✅ **Customer Ticket purchase/checkout slice.** Replacement PR #475 recreated the unique Ticket,
   Concert purchase/checkout, eligibility, and Customer Payment semantics on current main with direct
   Reunion/Reunion.Validation ownership. It merged through full B2B/Customer API and UI E2E as
