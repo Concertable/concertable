@@ -22,11 +22,13 @@
   minimal-API `ToOkOr` overloads with generic/parameter arities `2/2` and `3/3`, and the MVC overloads
   with arities `1/2` and `2/3`. Publication and published-baseline revalidation are terminal. Customer
   Ticket PR #475 and platform-sync PR #479 remain terminal and out of scope.
-- Last reconciled: 2026-08-13 after replacement PR-head checks. Starting remote/PR head
+- Last reconciled: 2026-08-13 after queue admission exposed new base drift. Starting remote/PR head
   `87bcdc52321511fad6a7c67197849268a81689bd` advanced to reviewed work head
   `1bf1a349b6e8ac98d293816e75e264f940009d5b`, proven equal across local, remote-tracking, and PR #425.
   Checkpoint transport then advanced all three refs to `1a4913c24a0d5af4c50f5400620c994c1b937e85`.
-  PR #425 is open with auto-merge off; replacement run 31650254795 is terminal green. The prior
+  Replacement run 31650254795 is terminal green. PR #425 was admitted at position 1 with queue state
+  `AWAITING_CHECKS`, but `origin/main` advanced four commits during the PR checks through platform-sync
+  PR #534 (`.961`), so the admission must be withdrawn and the branch updated before requeueing. The prior
   Stripe setup blocker is resolved on current main by Auth PR #517 and its terminal platform-sync PR #531.
 
 ## Current state
@@ -81,9 +83,10 @@ failure, not a Customer test result, and the failed queue run must not be blindl
 
 Finish PR #425 delivery from synchronized local head `a396b510f`:
 
-1. Normalize PR #425 to `full-e2e`, enqueue verified remote head `1a4913c24`, and follow it to its merge
-   commit without pushing this observation-only checkpoint.
-2. Own publication and
+1. Withdraw the stale-base queue admission, merge current `origin/main`, rebuild and incrementally
+   review the four-commit delta, then repeat the two-leg push protocol.
+2. Requeue with `full-e2e` only when the branch is current, and follow it to its merge commit.
+3. Own publication and
    the generated platform-sync PR through green/merged before close-out.
 
 ## Completed milestones
@@ -163,6 +166,10 @@ Finish PR #425 delivery from synchronized local head `a396b510f`:
   [31650254795](https://github.com/Concertable/concertable/actions/runs/31650254795) is terminal green:
   build, all five backend carves, Auth and the complete unit/integration matrix, and `ci-complete`
   passed; merge-group-only E2E correctly skipped at PR level.
+- PR #425 was admitted to the merge queue at position 1 in `AWAITING_CHECKS`, still targeting remote
+  head `1a4913c24`. A subsequent fetch proved it was four commits behind new `origin/main` after docs
+  PR #533 and platform-sync PR #534 landed, so this admission is being withdrawn before any stale-base
+  queue result is accepted.
 - Phase 8 exact-artifact evidence: all local nupkgs embed producer commit
   `113be42f532d5d7e8daf1c362262ff7a7854b7bc`. SHA-256: Reunion
   `9FADC33CD06F3B4A9A92564633E01007CC81EA091AA9F257D821532E046E10CE`;
