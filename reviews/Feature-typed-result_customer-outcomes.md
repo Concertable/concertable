@@ -5,9 +5,9 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `c021d26c9de0f65f291b319e38668c40844bc984`  _(2026-08-10)_
+**Reviewed up to commit:** `22fb616974bdf3c78015adf35412e63b05ff751d`  _(2026-08-12)_
 
-**Security-reviewed up to commit:** `c021d26c9de0f65f291b319e38668c40844bc984`  _(2026-08-10)_
+**Security-reviewed up to commit:** `22fb616974bdf3c78015adf35412e63b05ff751d`  _(2026-08-12)_
 
 > Range reviewed: `d916e95cf..5cfdb9427` (43 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -38,3 +38,16 @@ No issues found. Checked correctness, security-sensitive paths, microservice iso
 boundaries, seeding, C# conventions, and test coverage of changed paths. The only merge conflict was
 Customer central package management; the resolution takes platform `.910`, preserves the branch's
 required `Shouldly` ownership, and accepts main's removal of unused `FluentResults`.
+
+## Incremental review — 2026-08-12
+
+> Range reviewed: `c021d26c9..22fb61697` (166 commits).
+
+- [x] **CV4 — LOW — C# convention** — `api/Concertable.Customer/src/Modules/Artist/Concertable.Customer.Artist.Infrastructure/Repositories/ArtistReadRepository.cs:14`, `api/Concertable.Customer/src/Modules/Venue/Concertable.Customer.Venue.Infrastructure/Repositories/VenueReadRepository.cs:14`, `api/Concertable.Customer/src/Modules/Concert/Concertable.Customer.Concert.Infrastructure/Repositories/ConcertReadRepository.cs:15`
+  Fixed by qualifying all five inherited `Query` uses with `base.`; the affected Concert, Artist, and Venue Release unit suites pass 25/25.
+
+No other issues found. Checked correctness, security-sensitive paths, microservice isolation, module
+boundaries, AppHost composition, seeding, C# conventions, and test coverage. The Auth/hosting changes
+preserve secret injection and authorization behavior; the browser-storage changes defer Stripe and
+Maps loading without introducing a fail-open consent path; the Reunion alpha.2 conversions preserve
+the target-typed success and error alternatives verified by the scoped unit and integration suites.
