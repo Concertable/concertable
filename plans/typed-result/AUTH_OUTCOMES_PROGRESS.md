@@ -12,10 +12,9 @@
   This branch owns Auth's semantic migration and alpha.2 source adoption. The separate alpha.2
   baseline plan owns repository-wide version alignment. After the Auth `api/**` PR merges, this plan
   owns publication and its generated platform-sync gate to terminal green.
-- Last reconciled: `2026-08-12` after PR #517's replacement hard-floor checks reached terminal green
-  on reviewed remote head `dd9e3111a4b6689cf46b9232275fccd63a349b72`. Build, every service
-  carve, Auth unit/integration, the complete unit/integration fan-out, and `ci-complete` passed;
-  PR-level API/UI E2E skipped as expected before queue admission.
+- Last reconciled: `2026-08-12` at the queue-admission gate. PR #517 is `OPEN/CLEAN` on reviewed,
+  green remote head `dd9e3111a4b6689cf46b9232275fccd63a349b72`, zero behind `origin/main`
+  `5bf622fecd600868b4ec437daf6c6ad0389029a6`, with only the `full-e2e` label applied.
 
 ## Current state
 
@@ -51,10 +50,9 @@ distinct safe explanation.
 
 ## Next Steps
 
-Remove the served clean-review work order, fetch and require PR head
-`dd9e3111a4b6689cf46b9232275fccd63a349b72` to remain current with `origin/main`, normalize labels to
-`full-e2e`, and enqueue that exact reviewed/green head. Then own merge, publication, platform sync,
-and docs closeout to terminal completion.
+Enqueue exact reviewed/green remote head `dd9e3111a4b6689cf46b9232275fccd63a349b72` into the merge queue
+with `full-e2e`, verify queue admission, and monitor the merge group to a terminal merge or genuine
+failure without retrying. Then own publication, platform sync, and docs closeout to terminal completion.
 
 ## Downstream handoffs
 
@@ -104,6 +102,8 @@ and docs closeout to terminal completion.
   `424f1b80950450a0f462427483ac8fe36d2d785a`; the branch was zero behind `origin/main` at push time.
 - Reviewed PR checks: remote head `dd9e3111a4b6689cf46b9232275fccd63a349b72` passed build, all
   service carves, all unit/integration jobs, and `ci-complete`; PR-level E2E skipped as designed.
+- Queue readiness: a final fetch proved that remote head zero behind `origin/main`, `OPEN/CLEAN`, and
+  labelled only `full-e2e`; the served untracked review work order was removed.
 
 ## Verification
 
