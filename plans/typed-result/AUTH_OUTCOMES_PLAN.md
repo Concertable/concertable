@@ -219,11 +219,11 @@ and ship in one PR.
 
 ### Phase 6 - Reunion alpha.2 baseline and construction ergonomics
 
-- [ ] Align Auth's existing direct `Reunion` and `Reunion.Errors` references to
+- [x] Align Auth's existing direct `Reunion` and `Reunion.Errors` references to
   `0.1.0-alpha.2`; do not add `Reunion.Validation` or `Reunion.AspNetCore`.
-- [ ] Adopt target-typed raw payload or exact named-case conversions where they simplify the existing
+- [x] Adopt target-typed raw payload or exact named-case conversions where they simplify the existing
   Auth-owned contracts without weakening branch intent or error-union ownership.
-- [ ] Rerun the Auth verification gate before incremental review and PR preflight.
+- [x] Rerun the Auth verification gate before incremental review and PR preflight.
 
 ## Verification gate for every phase
 
