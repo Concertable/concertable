@@ -12,9 +12,10 @@
   This branch owns Auth's semantic migration and alpha.2 source adoption. The separate alpha.2
   baseline plan owns repository-wide version alignment. After the Auth `api/**` PR merges, this plan
   owns publication and its generated platform-sync gate to terminal green.
-- Last reconciled: `2026-08-12` at the queue-admission gate. PR #517 is `OPEN/CLEAN` on reviewed,
-  green remote head `dd9e3111a4b6689cf46b9232275fccd63a349b72`, zero behind `origin/main`
-  `5bf622fecd600868b4ec437daf6c6ad0389029a6`, with only the `full-e2e` label applied.
+- Last reconciled: `2026-08-12` after the first queue request. PR #517 remains `OPEN/CLEAN` on
+  reviewed, green remote head `dd9e3111a4b6689cf46b9232275fccd63a349b72` with `full-e2e`, but
+  its `mergeQueueEntry` is null. Auto-merge was still the stale bot request enabled at PR creation,
+  so the request did not trigger fresh admission for the updated head.
 
 ## Current state
 
@@ -50,9 +51,10 @@ distinct safe explanation.
 
 ## Next Steps
 
-Enqueue exact reviewed/green remote head `dd9e3111a4b6689cf46b9232275fccd63a349b72` into the merge queue
-with `full-e2e`, verify queue admission, and monitor the merge group to a terminal merge or genuine
-failure without retrying. Then own publication, platform sync, and docs closeout to terminal completion.
+Perform the one-time auto-merge re-assertion for exact reviewed/green remote head
+`dd9e3111a4b6689cf46b9232275fccd63a349b72`, verify queue admission with parameterized GraphQL, and
+monitor the `full-e2e` merge group to a terminal merge or genuine failure without retrying. Then own
+publication, platform sync, and docs closeout to terminal completion.
 
 ## Downstream handoffs
 
@@ -104,6 +106,8 @@ failure without retrying. Then own publication, platform sync, and docs closeout
   service carves, all unit/integration jobs, and `ci-complete`; PR-level E2E skipped as designed.
 - Queue readiness: a final fetch proved that remote head zero behind `origin/main`, `OPEN/CLEAN`, and
   labelled only `full-e2e`; the served untracked review work order was removed.
+- Initial queue request: GitHub left `mergeQueueEntry` null because the existing bot auto-merge
+  request dated from PR creation; one explicit disable/enable re-assertion is required.
 
 ## Verification
 
