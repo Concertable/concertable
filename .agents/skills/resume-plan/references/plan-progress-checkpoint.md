@@ -124,7 +124,6 @@ implementation-blocked ledger gets no pointer. Literally:
 
 ```
 Why: `<PLAN>_PROGRESS.md` owns unfinished work from this turn: <short next-action reason>
-Only run this continuation if no agent or session already owns this ledger.
 ```
 
 ```
