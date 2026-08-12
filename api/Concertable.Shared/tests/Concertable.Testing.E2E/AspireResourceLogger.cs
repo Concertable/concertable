@@ -2,7 +2,7 @@ using Aspire.Hosting.ApplicationModel;
 using Microsoft.Extensions.Logging;
 using System.Text.RegularExpressions;
 
-namespace Concertable.E2ETests;
+namespace Concertable.Testing.E2E;
 
 public sealed class AspireResourceLogger : IAsyncDisposable
 {

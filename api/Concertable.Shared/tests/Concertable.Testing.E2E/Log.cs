@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
 using System.Net;
 
-namespace Concertable.E2ETests;
+namespace Concertable.Testing.E2E;
 
 internal static partial class Log
 {

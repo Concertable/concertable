@@ -2,7 +2,7 @@ using Dapper;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 
-namespace Concertable.E2ETests;
+namespace Concertable.Testing.E2E;
 
 public sealed class HealthWaiter : IDisposable
 {

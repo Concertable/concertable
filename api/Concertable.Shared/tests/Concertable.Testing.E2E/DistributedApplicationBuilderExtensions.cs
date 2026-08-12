@@ -5,7 +5,7 @@ using Concertable.Auth.Hosting;
 using Concertable.Payment.Hosting;
 using Microsoft.Extensions.Configuration;
 
-namespace Concertable.E2ETests;
+namespace Concertable.Testing.E2E;
 
 internal static class DistributedApplicationBuilderExtensions
 {
