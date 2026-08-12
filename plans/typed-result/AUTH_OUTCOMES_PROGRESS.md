@@ -16,13 +16,14 @@
 - Last reconciled: `2026-08-12` after PR #517 merged through full-E2E run 31641085535. The pinned
   Stripe installer passed in both API and UI jobs; both suites passed. Publication run 31644761975
   succeeded and restored all 40 published packages at platform `0.1.0-alpha.0.958`. Generated
-  platform-sync PR #531 is open and owns the final delivery gate.
+  platform-sync PR #531 passed its hard-floor queue run and merged as
+  `9d1dd7acd17badb54a93ef9b269802e1590ceb21`. Every lifecycle gate is terminal.
 
 ## Current state
 
-Auth implementation and the durable Stripe bootstrap correction are merged. This fresh closeout
-worktree is based on `origin/main` after source merge and owns only the remaining publication,
-platform-sync, and terminal plan cleanup evidence. The former source worktree is ready for removal.
+Auth implementation and the durable Stripe bootstrap correction are merged. Publication and
+platform sync are terminal, and the former source worktree and feature branches are removed. This
+closeout worktree now owns only the terminal plan/ledger deletion and roadmap update.
 
 Phases 1-5 are committed and locally verified. Auth's in-process contracts use direct published
 Reunion ownership: login/logout return `Option<T>`, four caller-actionable refusal paths return
@@ -48,10 +49,8 @@ distinct safe explanation.
 
 ## Next Steps
 
-1. Remove the merged source worktree through `scripts/worktrees.ps1 close -PlanManaged`.
-2. Follow generated platform-sync PR #531 to green and merged.
-3. Record terminal evidence, delete this plan and ledger together, tick the roadmap item, then land
-   the closeout through `merge-docs`.
+1. Delete this terminal plan and ledger together and tick the roadmap item.
+2. Run `docs-review` and land the closeout through `merge-docs`.
 
 ## Downstream handoffs
 
@@ -141,6 +140,10 @@ distinct safe explanation.
 - Publication: run 31644761975 succeeded at platform version `0.1.0-alpha.0.958` and verified a fresh
   restore of the complete 40-package published closure from GitHub Packages.
 - Platform sync: generated PR #531 is open at `d86e79e7f0071ab63f50d1181bf931bcee792b58`.
+- Source cleanup: `scripts/worktrees.ps1 close -PlanManaged` removed the merged
+  `Feature/typed-result_auth-outcomes` worktree plus its local and remote branches.
+- Platform sync completion: PR #531 passed workflow run 31645544356 and merged as
+  `9d1dd7acd17badb54a93ef9b269802e1590ceb21` at platform `0.1.0-alpha.0.958`.
 - Reviewed PR checks: remote head `dd9e3111a4b6689cf46b9232275fccd63a349b72` passed build, all
   service carves, all unit/integration jobs, and `ci-complete`; PR-level E2E skipped as designed.
 - Queue readiness: a final fetch proved that remote head zero behind `origin/main`, `OPEN/CLEAN`, and
