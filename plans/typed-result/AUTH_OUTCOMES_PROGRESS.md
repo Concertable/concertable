@@ -19,7 +19,8 @@
   `origin/main` as `38e62584`, and completing a clean correctness/security review through that merge.
   The reviewed current-main final head `e91b6ecadde05e9ecad6b3126a5b44e1ea10b57b` passed the complete
   PR hard-floor matrix, but merge-group run 31634022795 repeated the pre-scenario Stripe bootstrap
-  failure with HTTP 503. The branch now owns a durable workflow fix before requeueing.
+  failure with HTTP 503. The durable workflow fix is committed as `3ac1b4af`; required platform-sync
+  `0.955` is merged as `84c07a5d` and the branch is current with main.
 
 ## Current state
 
@@ -57,8 +58,8 @@ distinct safe explanation.
 
 ## Next Steps
 
-1. Commit the verified, cleanly reviewed Stripe installer with this checkpoint and push the compound
-   fix through the plan push protocol.
+1. Commit this platform-verification checkpoint and push the reviewed compound fix through the plan
+   push protocol.
 2. Require replacement PR checks, keep `full-e2e`, and requeue the new exact head.
 3. After merge, remove this source worktree, then follow package publication, generated platform sync, and plan
    close-out from a fresh docs worktree based on merged `origin/main`.
@@ -132,6 +133,8 @@ distinct safe explanation.
   local composite action, no old GitHub release reference remains, `git diff --check` passes, and
   Stripe's official apt metadata publishes exact package `1.45.2`. A clean Ubuntu container pull
   stalled in Docker Desktop and was not counted as evidence; queue execution remains authoritative.
+- Platform `0.955` merge (`84c07a5d`): merged platform-sync PR #527 without conflict and advanced
+  Auth's published platform closure from `0.953` to `0.955`; Reunion remains pinned to alpha.3.
 - Reviewed PR checks: remote head `dd9e3111a4b6689cf46b9232275fccd63a349b72` passed build, all
   service carves, all unit/integration jobs, and `ci-complete`; PR-level E2E skipped as designed.
 - Queue readiness: a final fetch proved that remote head zero behind `origin/main`, `OPEN/CLEAN`, and
@@ -159,6 +162,11 @@ Final producer-reconciled candidate:
 - Current-main focused recheck at `38e62584`: Auth Release build 0 warnings/0 errors, 13 unit tests
   passed, and all 54 real-SQL integration tests passed after restoring generated assets removed by
   the earlier disk cleanup.
+- Platform `0.955` focused recheck: Auth Release build passed with 0 warnings/0 errors and all 13 unit
+  tests passed. Integration startup could not reach Docker after the clean Ubuntu image pull stalled;
+  all cases failed at the shared Testcontainers fixture with `DockerEndpointAuthConfig`, and the
+  mandatory `docker-health.ps1` data-path check also timed out. No SQL or application code ran, so
+  this is a formally classified local Docker environment failure; replacement CI is authoritative.
 - Typed-result architecture tests: 16 passed, 0 failed on the final candidate.
 - Fresh standalone Auth carve: 0 errors against published platform `0.1.0-alpha.0.953`; only existing
   analyzer warnings. The verified temporary carve was removed.
@@ -189,10 +197,9 @@ The review work order `reviews/Feature-typed-result_auth-outcomes.md` records a 
 correctness/security review with no open findings. Because the previously served review work order
 was removed before the first queue attempt, incremental-review correctly fell back to a fresh review
 of the complete branch net diff, followed by an incremental review of the conflict-free current-main
-merge. Both review markers are stamped through local candidate
-`38e62584d702f16e1efaa4570aa53e1378ddc464`.
-The post-ejection incremental correctness/security review of the local observation tail and reusable
-Stripe installer found no issues; its marker will be stamped to the compound fix commit before push.
+merge. The post-ejection incremental correctness/security review of the local observation tail,
+reusable Stripe installer, and conflict-free platform `0.955` pin merge found no issues. Its marker
+will be stamped to the compound candidate before push.
 
 ## Decisions, discoveries, blockers, and deviations
 
