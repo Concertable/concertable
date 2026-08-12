@@ -48,26 +48,38 @@ Next steps live in @plans/data-access/REPOSITORY_REDESIGN_PROGRESS.md → `## Ne
 alias for cosmetic parity and buys nothing — Ardalis and this codebase already use `IReadRepository`/
 `IRepository`. The value is context-enforced no-tracking + base unification + `InsertAsync`, not names.
 
-**Interfaces** — two, inheritance; fold away `IBaseRepository` (it's what forces the GetAll diamond):
+**Interfaces** — three facets; `IBaseRepository` is **kept**, not folded away:
 
 ```csharp
-IReadRepository<T,K>                          // GetById, GetAll, Exists
-IRepository<T,K> : IReadRepository<T,K>        // + Add, AddRange, Update, Remove, InsertAsync, SaveChanges  — no `new GetAllAsync`
+IReadRepository<T,K>                                       // GetById, GetAll, Exists
+IBaseRepository<T>                                         // Add, AddRange, InsertAsync, Update, Remove, SaveChanges — write-only, keyless
+IRepository<T,K> : IBaseRepository<T>, IReadRepository<T,K> // no `new GetAllAsync`
 ```
 
-No `IWriteOnlyRepository` — YAGNI in EF (you read before you write).
+**`IBaseRepository` cannot be deleted** (the earlier "fold it away" was wrong — it never checked the
+keyless case): `SequenceRepository<TSequence>` operates on `ISequence` entities, which are `ITenant`
+but deliberately **not** `IEntity<TKey>`, so they cannot satisfy `IReadRepository<T,K>`'s
+`IEntity<TKey>` constraint and need a write-only, keyless base. `OpportunitySyncer` and
+`CollectionSyncer<T>` also inject the write-only `IBaseRepository<T>` directly. The GetAll diamond is
+killed instead by **removing `GetAllAsync` from `IBaseRepository`** (no caller used it). `IBaseRepository`
+is a bad name for a write-only facet (Cosmos calls it `IWriteOnlyRepository`); renaming it to
+`IWriteRepository` is deferred — it is binary-breaking on a published type and needs its own
+publish-first migration (see "Open decisions").
 
-**Classes** — one query implementation, write extends read, no `BaseRepository`:
+**Classes** — `Repository` extends the write base; reads are re-declared (as `main` has them):
 
 ```csharp
-ReadRepository<T,TContext,K> : IReadRepository<T,K>                     // GetById/GetAll/Exists over context.Set<T>(), ONCE
-Repository<T,TContext,K> : ReadRepository<T,TContext,K>, IRepository<T,K>   // + writes + InsertAsync
+ReadRepository<T,TContext,K> : IReadRepository<T,K>                     // GetById/GetAll/Exists over context.Set<T>()
+Repository<T,TContext,K> : BaseRepository<T,TContext>, IRepository<T,K> // inherits writes + InsertAsync; re-declares the 3 reads
 ```
 
-`GetById`/`GetAll`/`Exists` live **once** (in `ReadOnlyRepository`); the write repo inherits them and
-adds mutations. Works because tracking is on the context: a read repo binds a no-tracking read context
-(untracked reads), a write repo binds the writable/tracking context (tracked fetch-to-mutate) — same
-inherited code.
+Reparenting `Repository` onto `ReadRepository` (to define reads once) was **reverted as
+binary-breaking**: it moves the inherited `context` field off `BaseRepository`, and feed-compiled
+consumers (`DealRepository → TenantScopedRepository → Repository`) emit `ldfld BaseRepository::context`
+— the integration host loads the source-built new base and the field dangles (`FieldAccessException`,
+run 31636765379). Keeping `Repository : BaseRepository` leaves `context` where compiled consumers
+expect it. The read-member duplication that costs is cosmetic; the real win (context-enforced
+no-tracking) already shipped in PR-A/#526.
 
 **`InsertAsync`** — on `IWriteOnlyRepository`, in the write repo: `AddAsync` + `SaveChangesAsync`,
 returns the entity (Id populated). Faults propagate as exceptions (no bool). Cosmos calls this
@@ -92,9 +104,10 @@ Current `main` already has `Query` (from #498/#503), so:
   Plus a follow-up **#526 (merged, sync green)** put the read repos behind a queryable-only
   `IReadDbContext` interface. Operational truth in the `_PROGRESS.md` ledger.
 - **PR-B — published base (publish-first). IN PROGRESS.** Remove `GetAllAsync` from `IBaseRepository`
-  (that member forces the `new GetAllAsync` diamond) + add `InsertAsync`; `Repository : ReadRepository`;
-  remove `Query`. **`IBaseRepository`/`BaseRepository` are KEPT** (not deleted — see the resolved
-  open-decision below). **No renames.** Ships in `Concertable.DataAccess.*` → publish → `platform-sync`.
+  (that member forces the `new GetAllAsync` diamond) + add `InsertAsync`; `Repository : BaseRepository`
+  (the `: ReadRepository` reparent was reverted — binary-breaking); remove `Query`.
+  **`IBaseRepository`/`BaseRepository` are KEPT** (not deleted — see the resolved open-decision below).
+  **No renames.** Ships in `Concertable.DataAccess.*` → publish → `platform-sync`.
 
 ## Open decisions / risks
 
@@ -107,3 +120,12 @@ Current `main` already has `Query` (from #498/#503), so:
   rather than carry them through the unify.
 - **`InsertAsync` adoption is opportunistic** — new/changed call sites use it; not a forced migration of
   every existing `AddAsync` + `SaveChangesAsync`.
+- **OPEN — rename `IBaseRepository`/`BaseRepository` → `IWriteRepository`/`WriteRepository`.** The honest
+  name for the write-only facet. Deferred out of PR-B because it is **binary-breaking on a published
+  type**: feed-compiled consumers reference the type by name (`OpportunitySyncer` ctor, `ldfld
+  BaseRepository::context` in every module repo), so a rename fails the same integration seam that
+  reverted the reparent. Lands cleanly only as either (a) a deprecate→migrate→remove publish-first
+  sequence, or (b) after the integration test seam is fixed so a base-type change can be validated
+  in-PR. The seam (feed-compiled consumers vs source-built DataAccess via `Seed.Infrastructure`'s source
+  ProjectReference) is the real blocker on *any* binary-breaking base change — decide seam-fix vs
+  deprecation-dance with Tommy.
