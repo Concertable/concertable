@@ -11,7 +11,7 @@
 
 ## Current state
 
-Phases 1-3 are implemented and verified for this commit. Payment.Contracts owns additive capture,
+All producer phases are implemented and verified at `5aaf13d769e6ddeea84e7b6d820215dfee223157`. Payment.Contracts owns additive capture,
 deposit, refund, success, rejection, and deferred messages. Payment.Web handles commands without any
 B2B runtime reference. A Payment-owned journal persists intent before Stripe, commits terminal outcome
 plus outbox message together, replays terminal outcomes, and re-enters pending operations after a
@@ -26,12 +26,18 @@ the released `Reunion.AspNetCore` artifact
 `0.1.0-local.113be42` under `artifacts/reunion-113be42`. Temporary local source and version inputs are
 restored and are not part of the candidate.
 
+The exact producer packages are `Concertable.Payment.Contracts.0.1.0-alpha.0.947.nupkg` with
+SHA-256 `34D5AA954FE40FEF54759783C57240914FBA5F0286EB0C17103A39544775CFCB` and
+`Concertable.Payment.Client.0.1.0-alpha.0.947.nupkg` with SHA-256
+`3FB139300483AC9564F15D92578539E3712AF91D8C873FC9D803BAD5C172BB2C`. Both record source commit
+`5aaf13d769e6ddeea84e7b6d820215dfee223157` and are under `artifacts/payment-saga-5aaf13d`.
+
 ## Next Steps
 
-Complete Phase 4: run scoped formatting, Payment and full API Release builds, the standalone Payment
-carve, package-ownership inventories, and final plan graph. Pack exact Payment.Contracts and
-Payment.Client artifacts from this commit, record their versions and SHA-256 hashes, and commit the
-verified producer handoff. Do not push, publish, open a PR, or merge.
+Copy the exact Payment and Reunion artifact closure to the B2B worktree and implement the consumer
+phase recorded in `plans/typed-result/B2B_PROGRESS.md`. Keep this producer branch unpushed and
+unpublished until the consumer is locally verified and a later delivery instruction authorizes the
+publish-first merge sequence.
 
 ## Completed work
 
@@ -40,6 +46,8 @@ verified producer handoff. Do not push, publish, open a PR, or merge.
 - Phases 1-3: exact Reunion closure, additive Contracts surface, Payment operation journal,
   booking-idempotent Stripe calls, pending-refund recovery, and regenerated initial migration are in
   this commit.
+- Phase 4: exact package closure, standalone runtime carve, package-ownership inventory, and repository
+  compatibility gates are complete.
 
 ## Verification
 
@@ -48,6 +56,14 @@ verified producer handoff. Do not push, publish, open a PR, or merge.
 - Full Payment integration suite: 9/9, including SQL persistence through the regenerated migration.
 - Docker fresh-container HTTP data round-trip: green.
 - Payment Web Release build against exact Reunion `113be42`: 0 errors, 0 warnings.
+- Payment solution Release build against exact Reunion `113be42`: 0 errors.
+- Full API Release build: 0 errors; two existing generated nullable warnings in the B2B UI E2E project.
+- Source-only Payment carve from `5aaf13d`: Web, Workers, and Client each build with 0 errors and 0
+  warnings against package dependencies. The aggregate solution additionally contains repository-level
+  AppHost, E2E helper, and integration-fixture project references and is not itself a standalone carve.
+- Package ownership inventory: the new commands and events exist only in Payment.Contracts, Payment
+  runtime, and Payment tests; Payment.Contracts and Payment.Client have no B2B or Customer references.
+- Scoped whitespace format and verification: green.
 - Initial migrations re-scaffold: every unchanged context retained its ID; Payment regenerated with
   `FinancialOperations` and the unique nullable refund `OperationId` index.
 - Plan graph: 0 errors and 0 warnings; `git diff --check` green.

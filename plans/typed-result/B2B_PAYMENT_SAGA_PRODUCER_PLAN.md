@@ -21,7 +21,7 @@ are explicit contract outcomes, and retries replay the same outcome without movi
   money movement, make capture/deposit/refund booking-idempotent, handle commands in Payment.Web, and
   publish terminal or deferred outcomes through Payment's transactional outbox. Preserve invariant
   exceptions for impossible internal state.
-- [ ] **Phase 4 — producer verification and artifacts.** Add focused unit, integration, architecture,
+- [x] **Phase 4 — producer verification and artifacts.** Add focused unit, integration, architecture,
   and HTTP contract tests. Run Payment and repository builds, carve, formatting, package ownership,
   package pack/provenance, and plan graph gates. Commit each verified boundary, restore temporary
   Reunion inputs, and leave exact Payment package artifacts for the B2B consumer. Do not push, publish,
