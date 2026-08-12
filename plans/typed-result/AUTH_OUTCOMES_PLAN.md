@@ -235,7 +235,8 @@ and ship in one PR.
 - [x] Require replacement checks to pass and return PR #517 to the full-E2E merge queue.
 - [x] Replace the repeatedly failing GitHub release bootstrap with one pinned Stripe package installer,
   then verify and review it.
-- [ ] Push the bootstrap fix and return PR #517 to the full-E2E merge queue.
+- [x] Push the bootstrap fix through the plan push protocol.
+- [ ] Require replacement checks and return PR #517 to the full-E2E merge queue.
 
 ## Verification gate for every phase
 
