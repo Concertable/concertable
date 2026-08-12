@@ -12,10 +12,11 @@
   This branch owns Auth's semantic migration and alpha.2 source adoption. The separate alpha.2
   baseline plan owns repository-wide version alignment. After the Auth `api/**` PR merges, this plan
   owns publication and its generated platform-sync gate to terminal green.
-- Last reconciled: `2026-08-12` after the one-time auto-merge re-assertion admitted PR #517 to the
-  merge queue. Parameterized GraphQL reports `mergeQueueEntry.state = QUEUED` for exact reviewed,
-  green remote head `dd9e3111a4b6689cf46b9232275fccd63a349b72`; `full-e2e` remains the sole
-  label.
+- Last reconciled: `2026-08-12` after merge-group run
+  [31618590547](https://github.com/Concertable/concertable/actions/runs/31618590547) failed and
+  ejected PR #517. API E2E passed; UI E2E ran no scenarios because its `Install Stripe CLI` step
+  failed downloading the release asset with `curl: (56) Connection died, tried 5 times before giving
+  up`. The PR is `OPEN/CLEAN`, not queued, on unchanged head `dd9e3111a4b6689cf46b9232275fccd63a349b72`.
 
 ## Current state
 
@@ -26,7 +27,8 @@ PR #517 is open at verified head `dd9e3111a4b6689cf46b9232275fccd63a349b72`, cur
 work order is the sole untracked path pending removal. No Auth implementation edit was required by
 PR #524's nullable/Option guidance. Replacement PR checks are green on the exact clean-reviewed remote
 head. Local commits after that head change only this active progress ledger and must not be pushed to
-the checked PR.
+the checked PR. The first full-E2E merge group was ejected by an external bootstrap-download failure,
+not an Auth build, carve, unit, integration, API E2E, or scenario failure.
 
 Phases 1-5 are committed and locally verified. Auth's in-process contracts use direct published
 Reunion ownership: login/logout return `Option<T>`, four caller-actionable refusal paths return
@@ -51,10 +53,10 @@ distinct safe explanation.
 
 ## Next Steps
 
-Monitor PR #517 and its `full-e2e` merge-group runs to a terminal merge or genuine failure without
-retrying. On merge, record the source head and merge commit, transfer the ledger-only local tail to a
-clean Auth closeout worktree, remove the source worktree/branches, then own publication, platform
-sync, and docs closeout to terminal completion.
+Blocked: PR #517 was ejected from the merge queue by a failed UI-E2E bootstrap job.
+Blocked by: Merge-group run 31618590547, job `e2e-ui-tests`, step `Install Stripe CLI`; the release-asset download terminated with curl exit 56 before any scenario ran.
+Unblock action: Use the dedicated `e2e-ui-debug` workflow to diagnose and durably fix or formally classify the CI bootstrap failure; do not rerun or re-enqueue this failed merge group blindly.
+Resume when: The failure has an evidence-backed disposition and any required CI fix is committed, reviewed, pushed, and green on PR #517, making a new exact-head queue admission valid.
 
 ## Downstream handoffs
 
@@ -110,6 +112,9 @@ sync, and docs closeout to terminal completion.
   request dated from PR creation; one explicit disable/enable re-assertion is required.
 - Queue admission: the one-time re-assertion admitted exact reviewed head `dd9e3111a` with
   `mergeQueueEntry.state = QUEUED`; `full-e2e` is selected for the queue-only API/UI suites.
+- Queue failure: merge-group run 31618590547 passed build, all service carves, unit/integration, and
+  API E2E, then failed before UI scenarios when Stripe CLI's GitHub release-asset download returned
+  curl exit 56. GitHub ejected PR #517; no retry was requested.
 
 ## Verification
 
