@@ -7,7 +7,7 @@
 - Branch: `Refactor/data-access_repository-redesign`
 - PR: #522 — https://github.com/Concertable/concertable/pull/522 (PR-A, open)
 - Dependency/package gates: PR-B is publish-first (ships `Concertable.DataAccess.Infrastructure`); PR-A is Customer-internal, no publish cycle. PR-B blocked until PR-A (#522) merges.
-- Last reconciled: 2026-08-12, PR-A pushed + opened
+- Last reconciled: 2026-08-12, merged origin/main (#520 platform-sync pin bump), rebuilt green, reviewed clean, enqueuing
 
 ## Current state
 
@@ -31,10 +31,11 @@ Drive PR-A (#522) to merge via `/merge`. Once merged, start PR-B in this same wo
 - `Concertable.Customer.Concert.UnitTests` — 21/21 passed.
 - `Concertable.Customer.Concert.IntegrationTests` — 11/11 passed (Docker healthy via `scripts/docker-health.ps1`); boots full module DI, proving `ConcertReadDbContext`/`ConcertReadRepository` resolve.
 - Venue/Artist have no test projects (projection-only) — build is their gate.
+- Merged `origin/main` (brings #520 platform-sync `<ConcertablePlatformVersion>` bump via each service's `Directory.Packages.props`); rebuilt `Concertable.Customer.slnx` — 0 errors.
 
 ## Reviews
 
-None yet.
+`/review` (low) — range `157b3f0f5..d4d7277b3`, `reviews/Refactor-data-access_repository-redesign.md` (uncommitted work-order): **clean, no findings** (Layer 1 native + Layer 2 arch lenses). Marker re-stamped to post-merge HEAD for the merge gate. Two non-blocking notes: consolidate `ReadDbContext`/B2B `PublicDbContext` into the published package under PR-B; Venue/Artist read paths remain untested (pre-existing gap).
 
 ## Decisions, discoveries, blockers, and deviations
 
