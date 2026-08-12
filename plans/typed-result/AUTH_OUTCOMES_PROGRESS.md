@@ -6,25 +6,27 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_auth-outcomes`
 - Branch: `Feature/typed-result_auth-outcomes`
 - PR: [#517](https://github.com/Concertable/concertable/pull/517), open at remote head
-  `424f1b80950450a0f462427483ac8fe36d2d785a`
+  `dd9e3111a4b6689cf46b9232275fccd63a349b72`
 - Dependency/package gates: no implementation gate. NuGet.org publishes `Reunion` and
   `Reunion.Errors` `0.1.0-alpha.2`; Auth has no Payment, B2B, or Customer runtime/package dependency.
   This branch owns Auth's semantic migration and alpha.2 source adoption. The separate alpha.2
   baseline plan owns repository-wide version alignment. After the Auth `api/**` PR merges, this plan
   owns publication and its generated platform-sync gate to terminal green.
-- Last reconciled: `2026-08-12` after pushing the green, current-main work head
-  `424f1b80950450a0f462427483ac8fe36d2d785a` to PR #517. A fetch verified the local work head,
-  upstream, and PR `headRefOid` are identical; the branch is zero behind `origin/main` at
-  `5bf622fecd600868b4ec437daf6c6ad0389029a6`.
+- Last reconciled: `2026-08-12` after PR #517's replacement hard-floor checks reached terminal green
+  on reviewed remote head `dd9e3111a4b6689cf46b9232275fccd63a349b72`. Build, every service
+  carve, Auth unit/integration, the complete unit/integration fan-out, and `ci-complete` passed;
+  PR-level API/UI E2E skipped as expected before queue admission.
 
 ## Current state
 
 The task directly matches this branch and worktree. No other worktree owns the Auth implementation.
-PR #517 is open at verified work head `424f1b80950450a0f462427483ac8fe36d2d785a`, current with
+PR #517 is open at verified head `dd9e3111a4b6689cf46b9232275fccd63a349b72`, current with
 `origin/main` through `5bf622fec`. The updated candidate includes merge commits `962969cad` and
-`fd69b70f0`; its full Release restore/build is green against platform `0.953`. The clean-review work
-order is preserved in a local stash. No Auth implementation edit was required by PR #524's nullable/
-Option guidance. Replacement PR checks are now being dispatched for the updated head.
+`fd69b70f0`; its full Release restore/build is green against platform `0.953`. The served clean-review
+work order is the sole untracked path pending removal. No Auth implementation edit was required by
+PR #524's nullable/Option guidance. Replacement PR checks are green on the exact clean-reviewed remote
+head. Local commits after that head change only this active progress ledger and must not be pushed to
+the checked PR.
 
 Phases 1-5 are committed and locally verified. Auth's in-process contracts use direct published
 Reunion ownership: login/logout return `Option<T>`, four caller-actionable refusal paths return
@@ -49,10 +51,10 @@ distinct safe explanation.
 
 ## Next Steps
 
-Wait for PR #517's replacement checks on reviewed head `dd9e3111a4b6689cf46b9232275fccd63a349b72`
-to reach terminal green. Then remove the served clean-review work order, apply `full-e2e` because Auth
-behavior is observable end to end, enqueue that exact remote head, and own merge, publication,
-platform sync, and docs closeout to terminal completion.
+Remove the served clean-review work order, fetch and require PR head
+`dd9e3111a4b6689cf46b9232275fccd63a349b72` to remain current with `origin/main`, normalize labels to
+`full-e2e`, and enqueue that exact reviewed/green head. Then own merge, publication, platform sync,
+and docs closeout to terminal completion.
 
 ## Downstream handoffs
 
@@ -100,6 +102,8 @@ platform sync, and docs closeout to terminal completion.
   advanced Auth's published platform closure from `0.950` to `0.953`.
 - Updated delivery push: local work head, upstream, and PR head verified equal at
   `424f1b80950450a0f462427483ac8fe36d2d785a`; the branch was zero behind `origin/main` at push time.
+- Reviewed PR checks: remote head `dd9e3111a4b6689cf46b9232275fccd63a349b72` passed build, all
+  service carves, all unit/integration jobs, and `ci-complete`; PR-level E2E skipped as designed.
 
 ## Verification
 
