@@ -253,9 +253,8 @@ class PlanHandoffStopTests(unittest.TestCase):
         self.write_ledger(next_steps_body)
         rendered_pointer = self.pointer().replace("`", "")
         message = (
-            f"Why: {self.ledger.name} owns unfinished work from this turn: {next_steps_body}\n\n"
-            "Only run this continuation if no agent or session is already working in "
-            f"{self.root}.\n\n{rendered_pointer}"
+            f"Why: {self.ledger.name} owns unfinished work from this turn: {next_steps_body}"
+            f"\n\n{rendered_pointer}"
         )
         result = evaluate(self.input_with_codex_transcript(message))
         self.assertEqual({}, result)
@@ -282,14 +281,13 @@ class PlanHandoffStopTests(unittest.TestCase):
         result = evaluate(self.input_with_codex_transcript(rendered_handoff))
         self.assertEqual({}, result)
 
-    def test_bare_pointer_does_not_pass_without_reason_and_collision_warning(self):
+    def test_bare_pointer_does_not_pass_without_reason(self):
         self.write_ledger("Open the PR after review.")
         result = evaluate(
             self.input_with_codex_transcript(f"```text\n{self.pointer()}\n```")
         )
         self.assertEqual("block", result["decision"])
         self.assertIn("Why:", result["reason"])
-        self.assertIn("Only run this continuation if no agent or session", result["reason"])
 
     def test_paraphrased_next_steps_does_not_pass(self):
         self.write_ledger("Run the repository code-review workflow, then open the PR.")
