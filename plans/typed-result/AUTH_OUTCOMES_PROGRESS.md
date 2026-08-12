@@ -12,20 +12,19 @@
   This branch owns Auth's semantic migration and alpha.2 source adoption. The separate alpha.2
   baseline plan owns repository-wide version alignment. After the Auth `api/**` PR merges, this plan
   owns publication and its generated platform-sync gate to terminal green.
-- Last reconciled: `2026-08-12` after a pre-push fetch found `origin/main` advanced by platform-sync
-  PR #525 to `5bf622fec`, two commits beyond the green local candidate. The verified local work head
-  is `8cc5301b9`, the upstream and PR head remain `4b53ac5bbbe0a08af9254d7a51d80f164f68387e`,
-  and no updated candidate has been pushed.
+- Last reconciled: `2026-08-12` after merging platform-sync PR #525 at `5bf622fec` as local merge
+  `fd69b70f0` and completing a full restore/Release build against platform `0.953`: 0 errors and
+  4 existing warnings in 12m45s. The upstream and PR head remain
+  `4b53ac5bbbe0a08af9254d7a51d80f164f68387e`; no updated candidate has been pushed yet.
 
 ## Current state
 
 The task directly matches this branch and worktree. No other worktree owns the Auth implementation.
 PR #517 remains open at remote head `4b53ac5bbbe0a08af9254d7a51d80f164f68387e`; its original build,
 carve, unit, and integration checks are green. The local candidate contains `origin/main` through
-`8ec037d7d` plus merge commit `962969cad`, and its full Release build is green, but current
-`origin/main` now includes platform-sync PR #525 and platform pin `0.953`. The clean-review work order
-is preserved in a local stash. No Auth implementation edit was required by PR #524's nullable/Option
-guidance.
+`origin/main` through `5bf622fec` plus merge commits `962969cad` and `fd69b70f0`; its full Release
+restore/build is green against platform `0.953`. The clean-review work order is preserved in a local
+stash. No Auth implementation edit was required by PR #524's nullable/Option guidance.
 
 Phases 1-5 are committed and locally verified. Auth's in-process contracts use direct published
 Reunion ownership: login/logout return `Option<T>`, four caller-actionable refusal paths return
@@ -50,11 +49,11 @@ distinct safe explanation.
 
 ## Next Steps
 
-Merge current `origin/main` at `5bf622fec`, restore/build the full Release solution to 0 errors against
-platform `0.953`, and only then push the current candidate to PR #517 through the plan-managed compound
-push protocol. Restore the review work order, incrementally review the new range, wait for green PR
-checks, apply `full-e2e` because Auth behavior is observable end to end, enqueue the exact reviewed
-head, and own merge, publication, platform sync, and docs closeout to terminal completion.
+Fetch once more and require zero drift from `origin/main`, then push the green platform `0.953`
+candidate to PR #517 through the plan-managed compound push protocol. Restore the review work order,
+incrementally review the new range, wait for green PR checks, apply `full-e2e` because Auth behavior
+is observable end to end, enqueue the exact reviewed head, and own merge, publication, platform sync,
+and docs closeout to terminal completion.
 
 ## Downstream handoffs
 
@@ -98,6 +97,8 @@ head, and own merge, publication, platform sync, and docs closeout to terminal c
 - Current-main update (`962969cad`): merged `origin/main` through `8ec037d7d`; Auth source remained
   unchanged, its platform pin advanced to `0.950`, and the Shared-contraction ledger now retains both
   the Auth and Customer preparation handoffs.
+- Platform `0.953` update (`fd69b70f0`): merged platform-sync PR #525 without source conflict and
+  advanced Auth's published platform closure from `0.950` to `0.953`.
 
 ## Verification
 
@@ -121,6 +122,9 @@ Final producer-reconciled candidate:
 - Current-main full Release solution build: 0 errors and 4 existing warnings in 9m08s using
   `--no-restore`, disabled build servers/shared compilation, and a single MSBuild node. This verifies
   the merged platform `0.950` candidate at local head `8c4cd5b47`.
+- Platform `0.953` full restore/Release solution build: 0 errors and the same 4 existing warnings in
+  12m45s with build servers/shared compilation disabled and a single MSBuild node. This verifies
+  local source head `fd69b70f0`.
 - No API/UI E2E was run locally; the merge workflow owns any selected E2E tier.
 
 ## Reviews
