@@ -10,8 +10,9 @@
 - Current-main merge commit: `5613a817a96bb0316ea9dc3a2d624e59f43e56a4`
 - Review/fix commit: `eb84634699fa643a072342cd196b9767a6694619`
 - Review watermark: `eb84634699fa643a072342cd196b9767a6694619`
-- Dependency/package gate: open; `Reunion`, `Reunion.Validation`, `Reunion.Errors`, and
-  `Reunion.AspNetCore` `0.1.0-alpha.2` resolve from normal configured feeds
+- Checkpoint 10B consumer commit: this commit
+- Dependency/package gate: local consumer preparation is complete against Payment producer commit
+  `6458ec0d0` and Reunion producer commit `113be42`; publication and generated platform sync remain
 - Main reconciliation: `origin/main` `93cecb6453d347ffd4e50efabb28190d1c7228f8` is reconciled;
   semantic conflict resolution and post-merge verification are complete
 
@@ -49,18 +50,20 @@ The Reunion integration close-out and stop-hook scope correction are merged inde
 `origin/main` by PR #512 and included in the current reconciliation. Do not recreate the deleted
 `REUNION_INTEGRATION_PLAN.md` or `REUNION_INTEGRATION_PROGRESS.md` files here.
 
-Tommy authorized the durable SEC1 B2B + Payment saga/package cut-over on 2026-08-12. Checkpoint 10 now
-owns the finding through a Payment producer workstream and this B2B consumer workstream. The hard
-decision blocker is removed; the Concert tech-debt entry remains until the saga and recovery gates are
-verified, then is deleted rather than retained as an archive.
+Tommy authorized the durable SEC1 B2B + Payment saga/package cut-over on 2026-08-12. The hard decision
+blocker is removed. Checkpoint 10A is implemented and committed on the Payment producer branch;
+Checkpoint 10B is implemented in this consumer worktree. B2B persists stable acceptance/cancellation
+operation IDs, atomically stages Payment commands through its outbox, consumes typed terminal/deferred
+outcomes idempotently, and exposes the latest operation through a typed Option HTTP terminal. Payment
+owns operation replay and pending-operation recovery; no B2B reconciliation runner or Payment runtime
+reference was added. The resolved SEC1 tech-debt entry has been deleted.
 
 ## Next Steps
 
-Implement Checkpoint 10B against the exact local Payment package artifacts produced by
-`B2B_PAYMENT_SAGA_PRODUCER_PROGRESS.md`. Persist acceptance/cancellation operations and outbox commands,
-consume Payment outcomes idempotently, reconcile pending work, expose typed operation status at HTTP,
-and prove cancellation-after-payment plus process recovery. Restore all temporary package inputs before
-committing. Do not push, open a PR, or merge.
+Restore Docker Desktop to a healthy engine, run `./docker-health.ps1`, then run the full B2B integration
+suite and drive any real failures to green. After that gate, run the incremental code review and
+published-package revalidation when Payment `6458ec0d0` and Reunion `113be42` successors are available
+from the normal feeds. Do not push, open a PR, or merge without further instruction.
 
 ## Completed work
 
@@ -74,11 +77,29 @@ committing. Do not push, open a PR, or merge.
   coverage are implemented, verified, and committed as `bfc8690b1`.
 - Current main was reconciled and verified in merge commit `5613a817a`.
 - Incremental review covered `3d50d321c..eb8463469` (332 commits). NAT6 restored the Shared-owned
-  compatibility carrier and tests in `eb8463469`; the follow-up review is clean. SEC1 remains the
-  previously deferred delivery decision.
+  compatibility carrier and tests in `eb8463469`; the follow-up review is clean.
+- Checkpoint 10A producer implementation is committed through `6458ec0d0`. Checkpoint 10B stages
+  capture/deposit/refund commands transactionally, handles seven typed Payment outcomes, persists
+  operation/failure state, maps pending cancellation safely, and provides the typed operation-status
+  endpoint. The B2B migration was re-scaffolded; unrelated Payment migration churn was removed.
+- Exact local verification used `Concertable.Payment.Contracts` / `.Client` `0.1.0-alpha.0.949` from
+  producer commit `6458ec0d0` (SHA-256 `F0330F4687B8D4E073262D99C0AC16B7BAF50387C13A85B2C75D6A199818246C`
+  and `7585A321BBB16C87323806F67885C011ED838DB42BD1AADD207F352681EE8C92`) plus Reunion
+  `0.1.0-local.113be42`. All temporary feed and version inputs were restored before commit.
 
 ## Verification
 
+- Full `api/Concertable.slnx` Release build against the exact local package closure: passed, 0 errors
+  and two existing generated B2B UI nullable-context warnings.
+- B2B solution build: passed, 0 errors and the same two existing generated warnings.
+- B2B unit suites: 4/4 projects green; Concert 205/205. B2B architecture tests: 8/8.
+- Standalone B2B package carve: passed in Release with 0 errors and one existing `UserEntity` warning;
+  Payment runtime source was absent and deployable references remained package-only.
+- Affected-project formatting: passed. The solution-wide formatter itself cannot apply generated
+  document-property changes; narrowed project gates completed successfully. `git diff --check` is clean.
+- Focused saga integration/HTTP tests compile, but execution is outstanding: `docker info` timed out
+  twice, `com.docker.service` is stopped and unavailable to this session, and Docker Desktop did not
+  recover after a background launch. No test scenario started and no local E2E was run.
 - `dotnet build api/Concertable.B2B/Concertable.B2B.slnx --configuration Release --no-restore -m:1
   -nr:false`: passed, 0 errors and 4 existing warnings (two Concert integration nullable warnings and
   two generated Reqnroll nullable warnings).
@@ -111,13 +132,15 @@ committing. Do not push, open a PR, or merge.
 
 - The inherited dirty tree interleaved Checkpoints 8 and 9 before Checkpoint 8 was committed. Preserve
   it and use one verified combined commit instead of risking a semantic split through partial staging.
-- Customer Docker and SEC1 are later verification/delivery concerns and did not block alpha.2 or
-  Checkpoint 9 implementation.
+- Customer Docker did not block alpha.2 or Checkpoint 9 implementation.
 - Shared compatibility contraction is owned downstream. B2B removes its own usage but preserves the
   old Kernel carrier and tests until Auth and Customer delivery gates are terminal.
 - Do not kill unrelated .NET processes owned by parallel Auth, Customer, Shared, or platform work.
 - Checkpoint 10 is limited to SEC1's accept/withdraw/cancel capture, deposit, and refund paths. Concert
   finish/settlement remains outside this finding.
+- B2B does not need a second recovery runner. Its durable outbox redelivers commands; Payment owns the
+  persisted operation journal, resumes pending work with the same operation ID, and replays terminal
+  outcomes. B2B's inbox makes outcome consumption idempotent.
 - The pre-merge plan graph's 13 unrelated stale-ledger errors belonged to the old branch snapshot;
   the current-main graph is the authoritative post-reconciliation gate.
 

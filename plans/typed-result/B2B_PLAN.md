@@ -66,7 +66,7 @@ committed local source, feed path, or disposable package pin may be introduced.
   domain throws. Preserve exceptions for malformed geocoder/image/identity-provider output,
   invitation expiry after the pending query, `VatBreakdown` imbalance, and other impossible internal
   construction or consistency faults. Do not catch those invariant faults in Result combinators.
-- [ ] **Checkpoint 10A — Payment saga contract and idempotent producer.** Add Payment-owned financial
+- [x] **Checkpoint 10A — Payment saga contract and idempotent producer.** Add Payment-owned financial
   operation command and outcome contracts for capture, deposit, and refund. Payment handles commands
   through its own runtime, keys operation replay by B2B operation ID and booking, and publishes the
   same terminal outcome after retries without moving money twice. Expected caller-actionable
@@ -75,9 +75,10 @@ committed local source, feed path, or disposable package pin may be introduced.
   conversions and projected `ToOkOr` terminals without recreating its extensions in Concertable.
 - [ ] **Checkpoint 10B — B2B durable lifecycle saga.** Persist acceptance/cancellation intent and its
   financial-operation state before money moves, stage the Payment command in the same transaction via
-  the B2B outbox, and complete or fail the lifecycle only from Payment-owned outcome events. Reconcile
-  pending operations in the B2B worker with the same operation ID. Cancellation requested before or
-  after capture/deposit must converge to `Cancelled`; a deferred refund remains pending and retryable.
+  the B2B outbox, and complete or fail the lifecycle only from Payment-owned outcome events. The B2B
+  outbox redelivers undelivered commands; Payment resumes a persisted pending operation with the same
+  operation ID and replays terminal outcomes. Cancellation requested before or after capture/deposit
+  must converge to `Cancelled`; a deferred refund remains pending and retryable.
   Expose operation status through a typed HTTP contract and Reunion terminals without weakening any
   endpoint union to `IResult`.
 
