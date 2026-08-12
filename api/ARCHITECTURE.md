@@ -152,12 +152,13 @@ of truth). **Never set `UseLocalCore=true` in committed config** — it breaks t
 
 ### Shared functional contracts stay in process
 
-`Concertable.Kernel` publishes Concertable-owned `Result`, `Result<TValue>`, `UnitResult<TError>`,
-`Result<TValue,TError>`, and `Option<T>` types from `Concertable.Kernel.Functional`. They are shared in-process
-vocabulary and do not depend on a third-party Result, Option, union, or error carrier. They may appear
-in application, module, and published client signatures, but never as HTTP, protobuf, event,
-persistence, or other wire payloads. Each transport maps to an owned wire contract at its service
-edge; HTTP failures map centrally through `IError.Definition` in `Concertable.Shared.Api`.
+Services consume the Reunion package family directly for Result, Option, typed application errors,
+structured validation, and HTTP terminals; these concerns are not redistributed through
+`Concertable.Kernel` or `Concertable.Shared.Api`. The carriers may appear in application, module, and
+published client signatures, but never as HTTP, protobuf, event, persistence, or other wire
+payloads. Each transport maps to an owned wire contract at its service edge. The complete package,
+carrier, construction, error, validation, and terminal rules live in
+[`agents/RESULT_PATTERN.md`](./agents/RESULT_PATTERN.md).
 
 ### How separation is enforced
 
