@@ -6,35 +6,42 @@
 - Worktree: not created
 - Branch: `Refactor/typed-result_reunion-shared-contraction` (reserved)
 - PR: not opened
-- Dependency/package gates: implementation inventory waits for the B2B and Auth preparation ledgers;
-  Customer Ticket is terminal and Customer non-Payment is delivery-ready
-- Last reconciled: 2026-08-12 after Customer non-Payment completed exact-artifact verification and review
+- Dependency/package gates: implementation inventory waits only for the B2B preparation ledger;
+  Payment and Auth are reviewed, Customer Ticket is terminal, and Customer non-Payment is delivery-ready
+- Last reconciled: 2026-08-12 after reconciling the Auth and Customer preparation handoffs
 
 ## Current state
 
-Payment is reviewed locally. Customer Ticket is terminal. Customer non-Payment is delivery-ready
+Payment and Auth are reviewed locally. Customer Ticket is terminal. Customer non-Payment is delivery-ready
 against exact producer artifact `113be42`; its five-module production scope has no remaining old
 carrier, old terminal, or third-party functional dependency, while its own delivery waits only for
-the required Reunion publication. B2B and Auth preparation are not yet delivery-ready. Search has no
-carrier conversion work. Starting contraction now would still guess at the B2B and Auth surfaces.
+the required Reunion publication. Auth reports no old Kernel functional/error carrier, Shared.Api
+terminal, third-party functional carrier, or legacy Reunion factory in its owned scope. B2B
+preparation is not yet delivery-ready. Search has no carrier conversion work. Starting contraction
+now would still guess at the B2B surface.
 
 ## Next Steps
 
 Blocked: The exact post-conversion Shared, messaging, and background-path inventory does not exist yet.
-Blocked by: plans/typed-result/B2B_PROGRESS.md; plans/typed-result/AUTH_OUTCOMES_PROGRESS.md.
-Unblock action: Complete and review the B2B and Auth local preparation ledgers, then update this ledger with their remaining-call-site evidence.
-Resume when: B2B and Auth are delivery-ready and their ledgers identify every remaining old carrier, terminal, and third-party dependency outside their owned scopes.
+Blocked by: plans/typed-result/B2B_PROGRESS.md.
+Unblock action: Complete and review the B2B local preparation ledger, then update this ledger with its remaining-call-site evidence.
+Resume when: B2B is delivery-ready and its ledger identifies every remaining old carrier, terminal, and third-party dependency outside its owned scope.
 
 ## Completed work
 
 - Reserved one authoritative final-contraction owner.
 - Confirmed Search requires no independent Reunion conversion.
+- Auth preparation is reviewed and GREEN for PR delivery. Its owned source directly references
+  `Reunion` and `Reunion.Errors` `0.1.0-alpha.2` and reports zero legacy carrier or terminal call sites.
 - Recorded Customer Ticket as terminal and Customer non-Payment as delivery-ready with no remaining
   old carrier, old terminal, or third-party functional dependency in its owned production scope.
 
 ## Verification
 
 - Current source inventory found no Search functional carrier/error import.
+- Auth inventory found zero imports or construction calls for the old Kernel functional/error
+  carriers, Shared.Api result terminals, CSharpFunctionalExtensions, FluentResults, OneOf, ErrorOr,
+  or LanguageExt. Auth does not require Reunion.Validation or Reunion.AspNetCore.
 
 ## Decisions, discoveries, blockers, and deviations
 

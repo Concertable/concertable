@@ -2,9 +2,9 @@
 
 > Next steps live in @plans/typed-result/AUTH_OUTCOMES_PROGRESS.md -> `## Next Steps`.
 
-**Status:** The semantic migration is complete and Reunion conversion is independently implementable
-now. Auth has no Payment, B2B, or Customer runtime/package dependency; its delivery order is determined
-from the current topology after conversion, not assumed from the Payment publication sequence.
+**Status:** The semantic migration, published Reunion conversion, domain-ownership correction,
+alpha.3 package reconciliation, and final producer-terminal audit are locally implemented. Auth has
+no Payment, B2B, or Customer runtime/package dependency.
 
 ## Outcome
 
@@ -31,6 +31,15 @@ wire behavior does not carry `Result` or `Option` values.
   no-ops remain externally indistinguishable wherever they are indistinguishable today.
 - EF query nullability remains inside `AuthService`; no persistence contract returns `Option<T>`.
 - Database, Duende, email/outbox, cancellation, and invariant failures remain exceptions.
+- `CredentialEntity` owns password verification and mutation decisions. Verification/reset token
+  entities own token-expiry refusal and successful mutation; `AuthService` only maps missing rows and
+  coordinates persistence.
+- Expected domain refusals use operation-owned Results. A token paired with the wrong credential is
+  an invariant defect and remains a `DomainException`; no application pre-check duplicates it.
+- Error definitions use the current direct `ErrorDefinition.<Kind><TCase>(...)` API. No
+  `ErrorDefinition.For<TError>()` call remains.
+- Every used Reunion package resolves exactly `0.1.0-alpha.3`; Auth does not add the unused Validation
+  or AspNetCore packages.
 - No Result/Option/error carrier crosses Razor, HTTP, OAuth/OIDC, Duende, event, or persistence wire
   shapes.
 - Auth builds from its own published package closure, including the Reunion-backed Kernel package at
@@ -39,6 +48,8 @@ wire behavior does not carry `Result` or `Option` values.
   edge behavior.
 - The final PR passes review, build, unit/integration tests, Auth carve, full merge-queue API and UI
   E2E, merge, publication, and the generated platform-sync gate.
+- The PR #470 audit proves no duplicated application pre-check/domain throw, no invariant exception
+  converted to an expected outcome, and no `DomainException`-to-HTTP behavior changed by this branch.
 
 ## Ownership and invariants
 
@@ -92,8 +103,10 @@ message, and `ErrorKind`; expected values must not be calculated with production
 
 - Keep `FirstOrDefaultAsync` / `FindAsync` nullable results in `AuthService`, then create `Option` or a
   typed failure at the service return boundary.
-- Use `TryGetValue`, `TryGetError`, `Match`, `ValueOr`, or existing Kernel composition. Do not add
-  throwing payload accessors, implicit conversions, or local unwrap helpers.
+- Use `TryGetValue`, `TryGetError`, `Match`, `ValueOr`, or the alpha.3 construction surface. A
+  target-typed raw payload is valid only where success/error intent is unambiguous; use exact named
+  cases where payload types overlap or branch intent matters. Do not add throwing payload accessors or
+  local unwrap/conversion helpers.
 - Do not catch EF, Duende, outbox/email, hashing, token-generation, or cancellation exceptions to turn
   them into expected outcomes. Tests must prove representative infrastructure and cancellation faults
   still escape.
@@ -191,6 +204,40 @@ and ship in one PR.
   email operations and ordinary nullable input parameters.
 - [x] Re-run every Auth test plus the unchanged cross-surface coverage inventory before entering review.
 
+### Phase 5 - Domain ownership and current Reunion API (complete)
+
+- [x] Move authentication capability and password-change/reset decisions into `CredentialEntity`
+  behind an Auth-domain password-hasher port.
+- [x] Move verification/reset token expiry decisions and successful credential mutation into the token
+  entities; keep token/credential identity mismatch exceptional as a domain invariant.
+- [x] Move domain-owned errors beside those rules and replace the removed
+  `ErrorDefinition.For<TError>()` factory with the current direct generic factories.
+- [x] Add focused entity tests for success, expected refusal without mutation, and invariant failure.
+- [x] Re-run Auth unit/integration tests, the architecture slice, full Release solution build, fresh
+  standalone Auth carve, and mechanical checks.
+
+### Phase 6 - Reunion alpha.2 baseline and construction ergonomics (complete)
+
+- [x] Align Auth's existing direct `Reunion` and `Reunion.Errors` references to
+  `0.1.0-alpha.2`; do not add `Reunion.Validation` or `Reunion.AspNetCore`.
+- [x] Adopt target-typed raw payload or exact named-case conversions where they simplify the existing
+  Auth-owned contracts without weakening branch intent or error-union ownership.
+- [x] Rerun the Auth verification gate before incremental review and PR preflight.
+
+### Phase 7 - Reunion alpha.3 published baseline (delivery in progress)
+
+- [x] Align Auth's direct `Reunion` and `Reunion.Errors` references to `0.1.0-alpha.3` after the
+  producer packages are indexed on NuGet.org.
+- [x] Audit the additive flexible Option HTTP terminals. Auth still owns no Minimal API or MVC
+  terminal surface, so `Reunion.AspNetCore` remains absent and no runtime call site changes.
+- [x] Rerun the Auth verification gate and review the package update.
+- [x] Push the exact candidate through the plan push protocol.
+- [x] Require replacement checks to pass and return PR #517 to the full-E2E merge queue.
+- [x] Replace the repeatedly failing GitHub release bootstrap with one pinned Stripe package installer,
+  then verify and review it.
+- [x] Push the bootstrap fix through the plan push protocol.
+- [ ] Require replacement checks and return PR #517 to the full-E2E merge queue.
+
 ## Verification gate for every phase
 
 1. Run the affected Auth unit and integration projects through the `integration-debug` workflow;
@@ -207,8 +254,8 @@ a genuine model change, stop and amend the plan before touching migrations.
 
 ## Review and delivery lifecycle
 
-1. After Phase 4, run a full code review over `origin/main..HEAD`; resolve every clear finding and use
-   incremental review for later code commits.
+1. After the final package reconciliation, run incremental review from the
+   existing review watermark; resolve every clear finding.
 2. Reconcile with current `origin/main`, audit Auth's actual package/HTTP topology, replace old carrier
    imports and terminals with directly owned Reunion packages at their real edges, then rebuild,
    retest, re-carve, incrementally review, and run PR preflight. If topology proves no unpublished
@@ -229,8 +276,8 @@ a genuine model change, stop and amend the plan before touching migrations.
 - Roles, user kinds, tenant/customer concepts, business profiles, downstream projections, or claims
   beyond Auth's existing credential identity responsibility.
 - Payment, B2B, Customer, or Search runtime changes, or cross-service runtime references.
-- New shared Kernel operations, direct Reunion package references, alternative Result/Option carriers,
-  implicit conversions, or local functional helpers.
+- New shared Kernel operations, alternative Result/Option carriers, implicit conversions, or local
+  functional helpers.
 - Result types for silent email/no-op operations or any other outcome that gives callers no meaningful
   distinction.
 - Result/Option values in HTTP, Razor form models, Duende protocol models, events, persistence entities,
