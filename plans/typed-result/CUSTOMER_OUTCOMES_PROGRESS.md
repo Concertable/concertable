@@ -7,16 +7,21 @@
 - Branch: `Feature/typed-result_customer-outcomes`
 - PR: [#425](https://github.com/Concertable/concertable/pull/425) - open, non-draft, remote head
   `08a92f91659e4eccc4558e55def5027b26c08348`
-- Dependency/package gates: a 2026-08-12 query of NuGet.org's official v3 indexes found only
-  `0.1.0-alpha.1` and `0.1.0-alpha.2` for `Reunion`, `Reunion.AspNetCore`, `Reunion.Errors`, and
-  `Reunion.Validation`. Published alpha.2 embeds commit
-  `ab3386a76e83b057bc9498ebc2d7d31be5f62626` and does not contain `ToOkOr`; no published package
-  contains flexible Option terminals from `113be42f532d5d7e8daf1c362262ff7a7854b7bc`. Phase 8 is
-  delivery-ready against the exact producer artifact but publication-blocked. Customer Ticket PR
-  #475 and platform-sync PR #479 remain terminal and out of scope.
-- Last reconciled: 2026-08-12 after the clean Phase 8 review checkpoint `e6c53717c` and official
-  NuGet.org v3 publication query; PR #425 is not merge-ready and must not be pushed or merged until
-  publication and published-baseline verification complete.
+- Dependency/package gates: NuGet.org accepted and its official v3 flat-container indexes listed
+  `0.1.0-alpha.3` for `Reunion`, `Reunion.AspNetCore`, `Reunion.Errors`, and `Reunion.Validation`
+  together at 2026-08-12 17:09:18Z. Alpha.3 was packed from Reunion merged `master` commit
+  `91fdc6f2e33d8f396fa463ad309cb1288bea3be5`, the squash merge of PR #8 whose reviewed source head
+  was `113be42f532d5d7e8daf1c362262ff7a7854b7bc`; every nuspec records `91fdc6f2e33d8f396fa463ad309cb1288bea3be5`
+  as its repository commit. Both `net10.0` and `net11.0` `Reunion.AspNetCore` assemblies expose the
+  minimal-API `ToOkOr` overloads with generic/parameter arities `2/2` and `3/3`, and the MVC overloads
+  with arities `1/2` and `2/3`. Publication is terminal; Phase 8 now needs official published-baseline
+  revalidation before it is merge-ready. Customer Ticket PR #475 and platform-sync PR #479 remain
+  terminal and out of scope.
+- Last reconciled: 2026-08-12 after alpha.3 publication/indexing. The clean owning branch is
+  `f4fa1bd76efeafc746de2244389143a7cb27d310`, 11 commits ahead of PR #425's remote head
+  `08a92f91659e4eccc4558e55def5027b26c08348` and 30 commits behind `origin/main`; PR #425 is open,
+  non-draft, and `DIRTY`. Preserve the local range and do not push or merge until the branch is current,
+  alpha.3 is pinned from NuGet.org, and the published-baseline verification and review are green.
 
 ## Current state
 
@@ -57,12 +62,42 @@ The Phase 8 candidate is locally verified and reviewed against exact gitignored 
 version pins were removed from tracked state after verification. This checkpoint is not published to
 PR #425.
 
+The upstream publication gate is now open. The exact official baseline is the four-package
+`0.1.0-alpha.3` graph from Reunion merge `91fdc6f2e33d8f396fa463ad309cb1288bea3be5`; the prior local
+artifact remains historical verification evidence only and must not be reused as the final restore
+source. PR #425 is still delivery-ready rather than merge-ready until this branch is synchronized and
+the same candidate passes against official alpha.3.
+
 ## Next Steps
 
-Blocked: No published common Reunion-family version contains producer commit `113be42` and the flexible Option `ToOkOr` terminals required by Phase 8.
-Blocked by: external owner `Reunion NuGet publisher`.
-Unblock action: Publish `Reunion`, `Reunion.AspNetCore`, `Reunion.Errors`, and `Reunion.Validation` from `113be42` or a verified descendant under one exact version, then allow all four packages to index on NuGet.org.
-Resume when: Official NuGet v3 metadata lists that same version for all four packages, package repository metadata proves `113be42` is included, and `Reunion.AspNetCore` exposes the flexible MVC `ToOkOr` overloads.
+Convert the reviewed Phase 8 candidate from delivery-ready to merge-ready against the official
+alpha.3 baseline, preserving the local range that is not yet on PR #425:
+
+1. Confirm the clean starting identity above, fetch `origin`, and merge current `origin/main` into
+   `Feature/typed-result_customer-outcomes` without resetting, rebasing away, or overwriting the 11
+   local commits beyond PR head `08a92f916`. Resolve only genuine five-module/plan-ledger conflicts.
+2. Change every existing Customer `Reunion`, `Reunion.AspNetCore`, `Reunion.Errors`, and
+   `Reunion.Validation` pin from alpha.2 to `0.1.0-alpha.3` without adding package ownership. Restore
+   through NuGet.org only, using isolated caches, and prove the resolved four-package graph contains
+   one exact version with no local source, temporary config, or machine-specific workaround.
+3. Inspect the restored official nupkgs: require repository commit
+   `91fdc6f2e33d8f396fa463ad309cb1288bea3be5` for all four packages and the published MVC/minimal-API
+   `ToOkOr` overload pairs recorded above. Do not substitute the historical
+   `artifacts/reunion-113be42` feed for this check.
+4. Rerun the complete Phase 8 published-baseline gate on the synchronized tree: the five changed
+   project closures, affected units, Shared.Api architecture suite, Release solution, isolated
+   Customer carve, Docker data-path preflight and eight integration projects, plus package, carrier,
+   terminal, rename, scope, local-workaround, and whitespace inventories. Drive any red test through
+   the matching debug workflow until green and record exact current counts/results.
+5. Commit the alpha.3/synchronization checkpoint with the ledger, run `/incremental-review` from the
+   current `9bcb25eea61794ca982b7f8c1a4f044c7b8f4514` review watermark, fix every actionable finding in
+   separate commits, and rerun affected gates/review until clean.
+6. Deliver the verified range through the plan-managed two-leg push protocol: push the actual work
+   head, fetch and prove remote-tracking plus PR #425 head equality, then transport the resulting
+   ledger checkpoint and prove local/remote/PR equality again.
+7. Route PR #425 through `/merge` with the required full merge-queue E2E tier, follow it to its exact
+   merge SHA, then own the generated platform-sync PR through green/merged before close-out. Keep the
+   plan and ledger until all delivery gates are terminal.
 
 ## Completed milestones
 
@@ -88,7 +123,10 @@ Resume when: Official NuGet v3 metadata lists that same version for all four pac
 - Phase 8 implemented flexible Option terminals, direct `InsertAsync` naming, nullable-to-Option
   simplifications, Result guidance, and DataAccess debt in `5ee10d11a`; the incremental native,
   security, architecture, convention, and coverage review through `9bcb25eea` was clean. Delivery
-  remains gated on publication of a Reunion-family package containing `113be42`.
+  was validated against the exact local `113be42` artifact.
+- Reunion PR #8 merged as `91fdc6f2e33d8f396fa463ad309cb1288bea3be5`; all four
+  `0.1.0-alpha.3` packages were inspected, published, and listed by official NuGet v3 metadata. The
+  publication blocker is cleared; published-baseline revalidation and PR #425 delivery remain.
 - Customer non-Payment is delivery-ready against the exact `113be42` artifact. Its owned five-module
   production scope has no remaining old carrier, old terminal, or third-party functional dependency;
   that readiness evidence is reconciled into `REUNION_SHARED_CONTRACTION_PROGRESS.md`.
@@ -127,6 +165,15 @@ Resume when: Official NuGet v3 metadata lists that same version for all four pac
   passes 60/60; Docker fresh-container HTTP data-path preflight passes; the five wrappers pass 74/74
   across eight projects. Resolved Customer assets contain only the exact local Reunion-family version.
   Rename, shared-DataAccess, terminal, Created-mapping, local-workaround, and whitespace audits pass.
+- Alpha.3 release evidence: all four packed nuspecs embed merged repository commit
+  `91fdc6f2e33d8f396fa463ad309cb1288bea3be5`; both target frameworks expose the expected flexible
+  `ToOkOr` surfaces. Uploaded-file SHA-256: Reunion
+  `04084C484EB4A6B3EC0D23E5EF50F9D297DA3A653A22AC157A0873297BC7D943`;
+  Reunion.AspNetCore `C6CFE2B28E10C86EEC89AA3726E253556EC45B2431823DA2D3759DD709C46EB0`;
+  Reunion.Errors `53D0B558375D7E98223CC82779AB5A73551B6380A738EA7A9BF031DE0297729E`;
+  Reunion.Validation `5319FD405FAF7C3D7073CF34AF50FAF53BB5508188A1B9773D4851132F58B472`.
+  Official v3 flat-container indexes listed alpha.3 for all four packages together at
+  2026-08-12 17:09:18Z.
 - Current review state: all local work is clean through `9bcb25eea`; no findings remain open.
 
 ## Decisions and constraints
@@ -143,5 +190,6 @@ Resume when: Official NuGet v3 metadata lists that same version for all four pac
   workflow selects and runs the required queue tier.
 - Published `Reunion.AspNetCore` alpha.2 is not a valid verification baseline for Phase 8: its nuspec
   embeds `ab3386a76e83b057bc9498ebc2d7d31be5f62626`, and its assembly exposes no `ToOkOr` symbol.
-  Recreate the exact local graph from producer commit `113be42` when needed; never commit a local feed,
-  temporary version, or machine-specific restore path.
+  Official `0.1.0-alpha.3` from merged source `91fdc6f2e33d8f396fa463ad309cb1288bea3be5`
+  is the only delivery baseline; never commit a local feed, temporary version, or machine-specific
+  restore path.
