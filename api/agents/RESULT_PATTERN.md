@@ -42,12 +42,12 @@ Choose the return type from the decisions the caller must make:
 
 The short rule is: use `T?` for technical nullability that stays in infrastructure or short local
 plumbing; use `Option<T>` when `Some(T)` and `None` are the complete, intentional outcomes of an
-in-process API. If absence needs a reason or changes the caller's action, use
-`Result<TValue, TError>` instead.
+in-process API. If absence is a named failure, needs an explanation, or must coexist with other
+failure cases, use `Result<TValue, TError>` instead.
 
 The layer is a strong heuristic, not the decision by itself. Repository and provider lookups
-normally return `T?`. Public domain, application, `IXModule`, service, and published C# client
-queries normally promote ordinary absence to `Option<T>` so callers cannot access `T` without
+normally return `T?`. Domain, application, `IXModule`, service, and published C# client query
+contracts normally promote ordinary absence to `Option<T>` so callers cannot access `T` without
 observing the case. Commands and queries with named rejections use Result. A guaranteed value stays
 a plain value, and an optional property on a DTO remains nullable rather than wrapping each field
 in Option.
@@ -101,16 +101,16 @@ it again in the same local flow.
 ```csharp
 public interface IVenueReadRepository
 {
-    Task<VenueDetails?> GetDetailsByIdAsync(int venueId, CancellationToken ct);
+    Task<VenueDetails?> GetDetailsByIdAsync(int venueId);
 }
 
 public interface IVenueService
 {
-    Task<Option<VenueDetails>> GetDetailsByIdAsync(int venueId, CancellationToken ct);
+    Task<Option<VenueDetails>> GetDetailsByIdAsync(int venueId);
 }
 
-public async Task<Option<VenueDetails>> GetDetailsByIdAsync(int venueId, CancellationToken ct) =>
-    await repository.GetDetailsByIdAsync(venueId, ct);
+public async Task<Option<VenueDetails>> GetDetailsByIdAsync(int venueId) =>
+    await repository.GetDetailsByIdAsync(venueId);
 ```
 
 The implicit conversion in the service implementation translates the provider's nullable row into
@@ -219,7 +219,7 @@ renaming it:
 
 ```csharp
 Result<VenueDetails, GetVenueError> venue = await venueService
-    .GetDetailsByIdAsync(id, ct)
+    .GetDetailsByIdAsync(id)
     .OrFailure(new GetVenueError.VenueNotFound());
 
 Task<string> ResolveRedirectAsync(Task<Option<string>> redirect) =>
