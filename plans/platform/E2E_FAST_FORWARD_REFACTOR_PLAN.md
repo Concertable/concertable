@@ -6,7 +6,7 @@
 > is already written in the E2E `CLAUDE.md`s (shared + per-suite); this plan applies it to the
 > existing scenarios.
 
-## The principle (already in `Concertable.Shared/tests/Concertable.E2ETests/CLAUDE.md`)
+## The principle (already in `Concertable.Shared/tests/Concertable.Testing.E2E/CLAUDE.md`)
 
 Within a **single contract type, with all other variables held constant**, a stage proven by one
 scenario is not re-proven by the next. Once the flat-fee happy path proves `post → apply → accept →
@@ -85,7 +85,7 @@ runs the real `accept + pay → cancel`. That removes the redundant half without
 - The four per-contract `books artist on …` happy paths — the canonical creation tests; they stay
   full-flow.
 - The payment variants — already fast-forwarded correctly.
-- Renaming the shared harness project — separate plan (`plans/platform/E2E_HARNESS_RENAME_PLAN.md`).
+- Renaming the shared harness project — done (now `Concertable.Testing.E2E`).
 
 ## Gate (every phase)
 `dotnet build api/Concertable.slnx` green · the touched UI suite green via `./scripts/e2e.ps1 ui <suite>`

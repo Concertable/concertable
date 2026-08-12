@@ -1,4 +1,4 @@
-namespace Concertable.E2ETests;
+namespace Concertable.Testing.E2E;
 
 public interface IPollingService
 {
