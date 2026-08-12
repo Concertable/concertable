@@ -6,14 +6,15 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_customer-outcomes`
 - Branch: `Feature/typed-result_customer-outcomes`
 - PR: [#425](https://github.com/Concertable/concertable/pull/425) - open, non-draft, remote head
-  `297c61192117d14e631c5ad5f64364e28ed670db`
-- Dependency/package gates: NuGet.org publishes exact `0.1.0-alpha.2` packages for `Reunion`,
-  `Reunion.Validation`, `Reunion.Errors`, and `Reunion.AspNetCore`. The separate
-  `REUNION_ALPHA2_BASELINE` workstream owns the repository-wide pin cutover; this service workstream
-  may independently prepare its Customer-owned alpha.2 code. Customer Ticket PR #475 and its
-  platform-sync PR #479 are terminal on platform `.910` and remain outside this scope.
-- Last reconciled: 2026-08-12 after the reviewed work range `e60219f7d..297c61192` was pushed;
-  local work head, remote-tracking branch, and PR #425 head all verified as `297c61192`
+  `08a92f91659e4eccc4558e55def5027b26c08348`
+- Dependency/package gates: NuGet.org publishes only `Reunion.AspNetCore` `0.1.0-alpha.1` and
+  `0.1.0-alpha.2`. Published alpha.2 embeds commit `ab3386a76e83b057bc9498ebc2d7d31be5f62626`
+  and does not contain `ToOkOr`; no published package contains flexible Option terminals from
+  `113be42f532d5d7e8daf1c362262ff7a7854b7bc`. Phase 8 is implementable and locally verified against
+  an exact artifact, but delivery remains gated on a published Reunion-family version containing
+  `113be42`. Customer Ticket PR #475 and platform-sync PR #479 remain terminal and out of scope.
+- Last reconciled: 2026-08-12 at the locally verified Phase 8 checkpoint in this commit; PR #425 is
+  not merge-ready and must not be pushed or merged until review and the publication gate complete.
 
 ## Current state
 
@@ -24,29 +25,42 @@ event contracts. Atomic Review and Preference creates translate only the existin
 to their typed conflicts; collaborator, provider, identity, invariant, and cancellation failures
 remain exceptions.
 
-The reviewed work head `297c61192` is current with `origin/main` `b94028d3f` at platform `.939`
-and 60 commits ahead of it. The current-main merge was automatic in Customer code and plan state.
-The branch still owns the same five-module semantic slice; Ticket, Concert, Customer Payment,
-purchase/checkout, shared Kernel API, events, models, and migrations are excluded.
+The prior reviewed work head was `297c61192`; PR #425's current remote checkpoint is `08a92f916`.
+Local merge `f94eeec09` brought `origin/main` `93cecb645` into the branch before Phase 8. The branch
+still owns the same five-module semantic slice; Ticket, Concert, Customer Payment, purchase/checkout,
+shared Kernel API, events, models, and migrations are excluded.
 
 Phase 7 implementation and local verification are green. All four existing Customer Reunion-family
 pins are `0.1.0-alpha.2`; branch-owned Review and Preference construction sites use raw payload
 conversions only where their target types keep success/error intent explicit. Named Dunet cases,
 validation factories, and nullable-to-Option boundaries remain explicit where inference would obscure
-the owned contract. No project package reference was added or removed.
+the owned contract.
 
-The complete Release solution, five scoped unit suites, Shared.Api architecture suite, isolated
-Customer carve, package/resolved-graph inventories, structural audits, Docker health preflight, and
-five integration wrappers are green. The incremental native, security, architecture, convention, and
-coverage review is clean through `d623a3501`; `CV4` was fixed by qualifying five inherited
-`Query` calls and the affected Release unit suites pass 25/25. The reviewed work head is published
-to PR #425 with exact local, remote-tracking, and PR OID equality.
+The prior alpha.2 work remains reviewed through `d623a3501` and published to PR #425 through remote
+checkpoint `08a92f916`. A later local merge `f94eeec09` brought current `origin/main` into the branch.
+
+Phase 8 adopts the flexible Option terminals from exact Reunion commit `113be42`: projected
+Artist/Venue `ToOkOr`, User's direct unauthorized alternative, and target-typed Artist/Venue nullable
+repository conversions. User.Api replaces its direct `Reunion` package ownership with
+`Reunion.AspNetCore`, which supplies both the Option type transitively and the MVC terminal. Review
+and Preference now name their existing immediate duplicate-aware primitive `InsertAsync` everywhere
+without changing its add/save/duplicate-only behavior. The two custom Created Result mappings are
+unchanged. Shared generic DataAccess was not extended; its future published-package standardization
+is recorded in `api/Concertable.DataAccess/TECH_DEBT.md`.
+
+The Phase 8 candidate is locally verified against exact gitignored packages under
+`artifacts/reunion-113be42` with version `0.1.0-local.113be42`. The temporary NuGet config and local
+version pins were removed from tracked state after verification. This checkpoint has not yet received
+incremental review and is not published to PR #425.
 
 ## Next Steps
 
-1. Run `/merge` for PR #425 from the final pushed checkpoint head. Require the plan's full E2E queue
-   tier, follow the source PR and generated platform-sync PR to terminal green/merged state, then
-   perform plan-managed close-out.
+1. Run `/incremental-review` from the prior clean watermark `d623a35014cd23632f190e557ee37668953680b9`
+   through the Phase 8 checkpoint and address every actionable finding. Do not push or merge PR #425.
+2. After review is clean, query official package metadata for the exact published Reunion-family
+   version containing `113be42`; do not guess. When it exists, pin the whole family to that version,
+   rerun the affected closures, unit/integration suites, package/structural audits, and incremental
+   review against the published baseline before the plan-managed two-leg PR update.
 
 ## Downstream handoffs
 
@@ -75,6 +89,9 @@ to PR #425 with exact local, remote-tracking, and PR OID equality.
   `.939` in `a3c1c1420`, recorded final verification in `22fb61697`, and fixed review finding
   `CV4` in `d623a3501`. The reviewed work range `e60219f7d..297c61192` was pushed to PR #425
   with local, remote-tracking, and PR head equality.
+- Phase 8 implemented flexible Option terminals, direct `InsertAsync` naming, nullable-to-Option
+  simplifications, Result guidance, and DataAccess debt in this checkpoint. Delivery remains gated
+  on review and publication of a Reunion-family package containing `113be42`.
 
 ## Verification and review
 
@@ -97,7 +114,20 @@ to PR #425 with exact local, remote-tracking, and PR OID equality.
   review watermarks are `d623a35014cd23632f190e557ee37668953680b9`; the follow-up review of the
   `CV4` fix is clean.
 - Push evidence: starting remote head `e60219f7dfe13f0c49c818e2ed7ab7a557f84569`; reviewed work
-  head and resulting remote-tracking/PR head `297c61192117d14e631c5ad5f64364e28ed670db`.
+  head `297c61192117d14e631c5ad5f64364e28ed670db`; the later checkpoint transport made the current
+  remote-tracking/PR head `08a92f91659e4eccc4558e55def5027b26c08348`.
+- Phase 8 exact-artifact evidence: all local nupkgs embed producer commit
+  `113be42f532d5d7e8daf1c362262ff7a7854b7bc`. SHA-256: Reunion
+  `9FADC33CD06F3B4A9A92564633E01007CC81EA091AA9F257D821532E046E10CE`;
+  Reunion.AspNetCore `5BCE01783D79B99F60FB1F848560B04563169C9346A84CF02815E483A5E8767C`;
+  Reunion.Errors `5FB87198717D8A6F4C62226E2E79784F10C81AEE2133DB0DA1D4DABAF0A55BF5`;
+  Reunion.Validation `1FBCBD656725D35C575A2A3CE0C84BED41C99894EB3D0A198D22D68370CD77F8`.
+- Phase 8 Release verification against `0.1.0-local.113be42`: Artist, Venue, User, Preference, and
+  Review API closures build with 0 errors; affected unit suites pass 80/80; Shared.Api architecture
+  passes 60/60; Docker fresh-container HTTP data-path preflight passes; the five wrappers pass 74/74
+  across eight projects. Resolved Customer assets contain only the exact local Reunion-family version.
+  Rename, shared-DataAccess, terminal, Created-mapping, local-workaround, and whitespace audits pass.
+- Current review state: prior work is clean through `d623a3501`; Phase 8 is awaiting incremental review.
 
 ## Decisions and constraints
 
@@ -111,3 +141,7 @@ to PR #425 with exact local, remote-tracking, and PR OID equality.
   Windows native-loader path-length failure.
 - No EF model changes exist, so migrations are not required. Local E2E is not duplicated; the merge
   workflow selects and runs the required queue tier.
+- Published `Reunion.AspNetCore` alpha.2 is not a valid verification baseline for Phase 8: its nuspec
+  embeds `ab3386a76e83b057bc9498ebc2d7d31be5f62626`, and its assembly exposes no `ToOkOr` symbol.
+  Recreate the exact local graph from producer commit `113be42` when needed; never commit a local feed,
+  temporary version, or machine-specific restore path.

@@ -17,9 +17,9 @@
 - [x] **NAT1 — MEDIUM — native/package ownership** — `api/Concertable.Customer/src/Modules/Review/Concertable.Customer.Review.Infrastructure/Concertable.Customer.Review.Infrastructure.csproj:27`
   Fixed in this commit by adding direct `Reunion.Errors` ownership; the focused Release build succeeds with 0 errors.
 - [x] **NAT2 — MEDIUM — native/correctness** — `api/Concertable.Customer/src/Modules/Preference/Concertable.Customer.Preference.Infrastructure/Services/PreferenceService.cs:37`
-  Fixed in this commit with an atomic repository `TryAddAsync` backed by the unique `UserId` index; duplicate-key failures discard the rejected insert and return the typed conflict.
+  Fixed in this commit with an atomic repository `InsertAsync` backed by the unique `UserId` index; duplicate-key failures discard the rejected insert and return the typed conflict.
 - [x] **NAT3 — MEDIUM — native/correctness** — `api/Concertable.Customer/src/Modules/Review/Concertable.Customer.Review.Infrastructure/Services/ConcertReviewService.cs:90`
-  Fixed in this commit with an atomic repository `TryAddAsync` backed by the unique `TicketId` index; duplicate-key failures discard the rejected review and return `ReviewAlreadyExists`.
+  Fixed in this commit with an atomic repository `InsertAsync` backed by the unique `TicketId` index; duplicate-key failures discard the rejected review and return `ReviewAlreadyExists`.
 
 ## Incremental review — 2026-08-10
 

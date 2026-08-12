@@ -9,8 +9,9 @@ smallest Reunion-backed functional shape that represents their real outcomes:
 
 - operation-specific `Result<TValue, TError>` only for expected failures a caller can act on;
 - `ValidationResult` for validation-only contracts implemented behind dependency injection;
-- exact `0.1.0-alpha.2` ownership for every used Reunion-family package and the new construction
-  surface where success/error intent remains explicit;
+- one exact published Reunion-family baseline in every consuming project, with `0.1.0-alpha.2` as the
+  current tracked baseline and the version containing upstream commit `113be42` required before the
+  new flexible Option terminals can be delivered;
 - `Option<T>` for ordinary absence at application and module boundaries;
 - successful empty `IReadOnlyList<T>` values for collection queries;
 - plain values and capability booleans where no actionable failure or absence exists.
@@ -290,6 +291,23 @@ tier and receives no skip label.
 - [x] After a healthy Docker data-path preflight, rerun the five Release integration wrappers, then
   review the alpha.2 checkpoint and perform the existing two-leg PR update.
 
+### Phase 8 - Flexible Option terminals and repository insert naming - LOCAL IMPLEMENTATION VERIFIED (2026-08-12)
+
+- [x] Verify the exact flexible Option terminal signatures from Reunion commit `113be42`, prove that
+  no published `Reunion.AspNetCore` version contains them, and build a uniquely versioned exact local
+  package graph without committing a feed or version workaround.
+- [x] Adopt projected Artist/Venue `ToOkOr` terminals and User's direct unauthorized alternative;
+  preserve the two existing custom Created Result mappings.
+- [x] Simplify the Artist/Venue nullable repository conversions and rename the Review/Preference
+  immediate duplicate-aware repository primitive from `TryAddAsync` to `InsertAsync` everywhere.
+  Keep the primitive module-local and record shared generic standardization as DataAccess debt.
+- [x] Build the five changed project closures; run the five unit suites, Shared.Api architecture suite,
+  Docker preflight, five integration wrappers, Result/package/rename audits, and whitespace gate
+  against the exact `113be42` artifact.
+- [ ] Review this checkpoint and address every actionable finding. Delivery remains gated until the
+  exact published Reunion-family version containing `113be42` is proven from package metadata, pinned
+  without a local feed, and the affected verification is green again against that published baseline.
+
 ## Definition of done
 
 - Review create and Preference create/update expose only operation-owned expected failures with exact,
@@ -298,7 +316,8 @@ tier and receives no skip label.
   application service; request validation is not the only protection against the throwing guard.
 - Every custom Review validator resolved through DI returns Reunion `ValidationResult`; application
   services map it to operation-owned Results or capability booleans without leaking it onto the wire.
-- Every used Reunion-family package resolves exactly `0.1.0-alpha.2`, with no unused package added.
+- Every used Reunion-family package resolves to one exact published baseline, with no unused package
+  added; the flexible Option terminals do not ship until that baseline contains `113be42`.
 - All ordinary single-item application/module absence in the five scoped modules is `Option<T>`;
   persistence lookup contracts remain nullable.
 - All scoped returned collection contracts are successful empty `IReadOnlyList<T>` values, except

@@ -366,7 +366,16 @@ Map only at the controller or endpoint boundary:
 - `ToCreatedOrProblem` when the normal success is Created;
 - `ToActionResult` for custom MVC success mapping;
 - `ToResults` for custom typed HTTP-result success mapping;
+- `ToOkOr` for Options whose absence maps to a caller-supplied HTTP result;
 - `ToOkOrNotFound` and `ToOkOrNoContent` for Options where HTTP owns that absence policy.
+
+Use the projected `ToOkOr` overload when the application value must become a dedicated HTTP
+response, and pass controller result methods directly when no extra state is needed:
+
+```csharp
+return user.ToOkOr(Unauthorized);
+return artist.ToOkOr(value => value.ToDetailsResponse(), NotFound);
+```
 
 For `TError : IError`, omit the problem mapper. Reunion maps `Invalid`/`NotFound`/`Conflict`/
 `Unauthenticated`/`Forbidden`/`PaymentRequired` to 400/404/409/401/403/402, includes the stable code,
