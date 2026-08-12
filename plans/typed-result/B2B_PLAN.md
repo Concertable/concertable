@@ -14,10 +14,10 @@ this service branch owns only B2B semantics and consumes that baseline.
 
 ## Checkpoints
 
-Checkpoints 1–7 are committed. Checkpoints 8 and 9 are implemented together in the dirty worktree;
-their remaining verification, combined commit, current-main reconciliation, and incremental review
-are tracked in the progress ledger. No FluentResults adapter, string bridge, committed local source,
-feed path, or disposable package pin may be introduced.
+Checkpoints 1–9 are implemented, committed, reconciled with current main, and incrementally reviewed.
+The remaining SEC1 delivery decision and downstream lifecycle gates are tracked in the progress
+ledger. No FluentResults adapter, string bridge, committed local source, feed path, or disposable
+package pin may be introduced.
 
 - [x] **Checkpoint 1 — Deal.** Deal module outcomes → owned Results; operation errors use explicit
   Dunet cases with disabled implicit conversions and one exhaustive root `Definition` switch;

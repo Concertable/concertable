@@ -6,8 +6,8 @@
 > in one line, take the safe path, keep going.
 
 **Plan anchored to commit:** `e229afb581c829279ca821b0a85729c4c4f0f441`  _(2026-08-10)_
-**Reviewed up to commit:** `3d50d321c62fc7b9bc302aa9b2cbb93d77aa28b0`  _(2026-08-10)_
-**Security-reviewed up to commit:** `3d50d321c62fc7b9bc302aa9b2cbb93d77aa28b0`  _(2026-08-10)_
+**Reviewed up to commit:** `eb84634699fa643a072342cd196b9767a6694619`  _(2026-08-12)_
+**Security-reviewed up to commit:** `eb84634699fa643a072342cd196b9767a6694619`  _(2026-08-12)_
 Net diff reviewed: `1043a9178..e229afb58`. Move-only files skipped.
 Status legend: `[ ]` not yet reviewed · `[x]` reviewed (date) · `[~]` in progress (incomplete — re-review).
 
@@ -20,8 +20,9 @@ decision and tracked in the owning Concert `TECH_DEBT.md`. By review layer/lens,
 and 1 C# convention/test-coverage finding; no microservice-isolation, module-boundary, or seeding
 findings survived the confidence filter.
 
-The incremental review of all 13 later commits is clean. SEC1 is the only outstanding finding; all
-Cross-area notes are resolved.
+The earlier incremental review of 13 commits was clean. The 2026-08-12 incremental review found NAT6;
+it is fixed in `eb8463469` and its follow-up is clean. SEC1 is the only outstanding finding; all
+cross-area notes are resolved.
 
 ## Coverage
 
@@ -82,3 +83,14 @@ No issues found in this area. Checked the native review catalog, security-sensit
 No new findings. Checked the native correctness and test-coverage catalog, security-sensitive
 controller and Contracts changes, microservice isolation, module boundaries, seeding, C# conventions,
 and documentation/ledger accuracy.
+
+## Incremental review - 2026-08-12
+
+> Range reviewed: `3d50d321c62fc7b9bc302aa9b2cbb93d77aa28b0..eb84634699fa643a072342cd196b9767a6694619` (332 commits).
+
+- [x] **NAT6 - HIGH - native/architecture** - `api/Concertable.Shared/src/Concertable.Kernel/Errors/ValidationErrors.cs:1`
+  Resolved in `eb8463469`: restored the shared compatibility carrier and its tests exactly from
+  current main. Their eventual deletion remains owned by the downstream Shared-contraction plan.
+
+No other issues found. Checked native correctness, security-sensitive controller changes,
+microservice isolation, module boundaries, seeding, C# conventions, and test coverage of changed paths.

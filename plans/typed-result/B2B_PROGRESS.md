@@ -7,7 +7,9 @@
 - Branch: `Refactor/B2BTypedResultMigration`
 - PR: not opened
 - Checkpoints 8-9 commit: `bfc8690b196821bdd735ea5d229182fd9a3baf36`
-- Review watermark: `3d50d321c62fc7b9bc302aa9b2cbb93d77aa28b0`
+- Current-main merge commit: `5613a817a96bb0316ea9dc3a2d624e59f43e56a4`
+- Review/fix commit: `eb84634699fa643a072342cd196b9767a6694619`
+- Review watermark: `eb84634699fa643a072342cd196b9767a6694619`
 - Dependency/package gate: open; `Reunion`, `Reunion.Validation`, `Reunion.Errors`, and
   `Reunion.AspNetCore` `0.1.0-alpha.2` resolve from normal configured feeds
 - Main reconciliation: `origin/main` `93cecb6453d347ffd4e50efabb28190d1c7228f8` is reconciled;
@@ -18,13 +20,15 @@
 Checkpoints 1-9 are committed. Checkpoints 8 and 9 were verified and committed together because this
 session resumed an interrupted tree in which their changes were already interleaved. The current-main
 merge preserves the typed contracts through main's application-executor façade and keyed Deal
-strategy factories and is fully verified.
+strategy factories and is fully verified. Incremental review found one ownership defect, NAT6, and
+fixed it in `eb8463469`; no other new finding survived the confidence filter.
 
 Checkpoint 8 now uses the complete Reunion alpha.2 family. The two custom DI validators return
 `Reunion.Validation.ValidationResult`; B2B no longer contains `FluentResults`,
-`Concertable.Kernel.Functional`, or `Concertable.Shared.Api.Results`; the obsolete shared Kernel
-`ValidationErrors` carrier and its tests are deleted. Direct package ownership is green in the B2B
-architecture suite.
+`Concertable.Kernel.Functional`, `Concertable.Shared.Api.Results`, or the old Kernel
+`ValidationErrors` carrier. The shared compatibility carrier and its tests remain intact for Auth and
+Customer until the downstream Shared-contraction plan owns their deletion. Direct package ownership
+is green in the B2B architecture suite.
 
 Checkpoint 9 moves caller-actionable guards into domain-owned Results:
 
@@ -51,9 +55,10 @@ before delivery.
 
 ## Next Steps
 
-1. Commit the verified current-main reconciliation. Do not push.
-2. Use the `incremental-review` skill from watermark `3d50d321c`, address every new finding serially,
-   and update this ledger. Do not push, open a PR, or merge B2B until separately instructed.
+Blocked: B2B implementation and review are complete, but delivery cannot begin until SEC1 is decided.
+Blocked by: Tommy's decision on the durable B2B + Payment saga/package cut-over recorded in the Concert tech debt.
+Unblock action: Authorize the saga/package cut-over before B2B delivery, or explicitly accept the recorded risk and authorize delivery of the current branch.
+Resume when: The SEC1 decision is recorded and Tommy separately instructs this branch to proceed with delivery.
 
 ## Completed work
 
@@ -66,6 +71,10 @@ before delivery.
   entry as a pre-delivery decision.
 - Checkpoints 8-9 and their alpha.2 package reconciliation, direct unit coverage, and HTTP contract
   coverage are implemented, verified, and committed as `bfc8690b1`.
+- Current main was reconciled and verified in merge commit `5613a817a`.
+- Incremental review covered `3d50d321c..eb8463469` (332 commits). NAT6 restored the Shared-owned
+  compatibility carrier and tests in `eb8463469`; the follow-up review is clean. SEC1 remains the
+  previously deferred delivery decision.
 
 ## Verification
 
@@ -88,6 +97,8 @@ before delivery.
   B2B architecture 8/8.
 - Post-merge B2B integrations: Artist 17/17, Concert 153/153, Tenant 58/58, User 4/4, Venue 25/25.
 - Post-merge plan graph: 0 errors and 0 warnings.
+- Post-review B2B Release build: passed, 0 errors and 2 generated Reqnroll nullable-context warnings.
+- Post-review Kernel unit tests: 241/241; B2B architecture tests: 8/8.
 - Exact assets audit: Concert Application resolves Reunion, Reunion.Validation, and Reunion.Errors
   alpha.2; Concert API additionally resolves Reunion.AspNetCore alpha.2.
 - Source/config audit: no B2B legacy carriers, alpha.1 pins, caller-actionable `DomainException`
@@ -101,6 +112,8 @@ before delivery.
   it and use one verified combined commit instead of risking a semantic split through partial staging.
 - Customer Docker and SEC1 are later verification/delivery concerns and did not block alpha.2 or
   Checkpoint 9 implementation.
+- Shared compatibility contraction is owned downstream. B2B removes its own usage but preserves the
+  old Kernel carrier and tests until Auth and Customer delivery gates are terminal.
 - Do not kill unrelated .NET processes owned by parallel Auth, Customer, Shared, or platform work.
 - The pre-merge plan graph's 13 unrelated stale-ledger errors belonged to the old branch snapshot;
   the current-main graph is the authoritative post-reconciliation gate.
@@ -115,46 +128,3 @@ before delivery.
   Gate: the B2B typed-result source PR and every resulting publication/platform-sync gate must be
   terminal and green. At that gate, update the dependent ledger on current main and surface its
   implementation pointer.
-
-## Event log
-
-### 2026-08-12 - Current-main semantic reconciliation completed
-
-- Committed the verified interleaved Checkpoints 8-9 tree as `bfc8690b1` without pushing.
-- Began merging `origin/main` `93cecb645`; PR #512's Reunion close-out and scoped stop hook are present.
-- Reconciled main's application-executor façade and keyed Deal strategy factories with the branch's
-  typed contracts.
-- Restored the full 182-project solution graph; Release builds passed for B2B and the full solution.
-  Affected unit/architecture suites and all five B2B integration projects passed.
-- PR #512's Reunion close-out and scoped stop hook are absorbed; the plan graph is clean.
-
-### 2026-08-12 - Checkpoints 8-9 verified
-
-- Scoped formatting and `--verify-no-changes` passed over all changed C# files.
-- Docker health passed; Artist 17/17, Venue 25/25, Tenant 58/58, B2B Concert 153/153, and Customer
-  Concert 11/11 integrations are green.
-- The full Release solution build passed with 0 errors; affected unit and architecture suites passed
-  at Artist 11/11, Venue 12/12, Tenant 124/124, Concert 151/151, and architecture 8/8.
-- Static source/package audits and `git diff --check` passed. Checkpoint 9 is complete; the combined
-  Checkpoints 8-9 tree is ready for its required coherent commit.
-
-### 2026-08-12 - Host-capacity verification gate reopened
-
-- No Concertable build or test command was active; the machine had one unrelated long-lived `dotnet`
-  process.
-- `origin/main` remained `b94028d3fe39ce2495bc9555ca13a5e6992272ee`; the branch is still 211
-  commits behind and 46 ahead, so the dirty checkpoint must be verified and committed before merging.
-- Removed the temporary host-capacity blocker and resumed the pending verification sequence.
-
-### 2026-08-11 - Checkpoints 8-9 implementation reconciled; verification paused for host capacity
-
-- Upgraded all B2B Reunion-family pins to alpha.2 and removed unnecessary direct `Reunion` references
-  from Artist/Venue unit-test projects.
-- Completed structured domain outcomes and direct service mappings for Artist, Venue, Tenant,
-  invitations, and door revenue; added direct unit and HTTP contract coverage.
-- Corrected null tax-compliance mapping, new-code derivation, and redundant async continuations found
-  during reconciliation.
-- Passed the B2B build, affected unit tests, architecture tests, Artist integration, package/source
-  audits, Docker health, and whitespace audit.
-- Paused the remaining environment-sensitive gates after Testcontainers startup failed under unrelated
-  concurrent .NET load; no application failure was observed.
