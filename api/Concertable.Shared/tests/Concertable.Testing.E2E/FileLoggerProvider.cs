@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 
-namespace Concertable.E2ETests;
+namespace Concertable.Testing.E2E;
 
 // Writes log entries to a file so CI can upload them as an artifact; the in-fixture
 // console logger isn't surfaced by `dotnet test`.

@@ -61,7 +61,6 @@ The Phase 8 candidate is locally verified and reviewed against exact gitignored 
 `artifacts/reunion-113be42` with version `0.1.0-local.113be42`. The temporary NuGet config and local
 version pins were removed from tracked state after verification. This checkpoint is not published to
 PR #425.
-
 The upstream publication gate is now open. The exact official baseline is the four-package
 `0.1.0-alpha.3` graph from Reunion merge `91fdc6f2e33d8f396fa463ad309cb1288bea3be5`; the prior local
 artifact remains historical verification evidence only and must not be reused as the final restore

@@ -2,7 +2,7 @@ using System.Net;
 using Concertable.Seed.Identity;
 using Stripe;
 
-namespace Concertable.E2ETests;
+namespace Concertable.Testing.E2E;
 
 public sealed class StripeCustomerResolver : IAsyncDisposable
 {
