@@ -6,8 +6,10 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_customer-outcomes`
 - Branch: `Feature/typed-result_customer-outcomes`
 - PR: [#425](https://github.com/Concertable/concertable/pull/425) - open, non-draft, remote head
-  `9f420f86afaac7c8791b9e65829b2023e69b1ec7`; verified local delivery head is based on
-  `origin/main` `5bf622fecd600868b4ec437daf6c6ad0389029a6` through merge `6f3a8c4f3`.
+  `87bcdc52321511fad6a7c67197849268a81689bd`; GitHub ejected it from the merge queue after
+  merge-group run [31640531994](https://github.com/Concertable/concertable/actions/runs/31640531994)
+  failed in UI E2E setup. The branch is based on `origin/main`
+  `58e19d938128c533008280b1adbfb7e500c574fa` through merge `132f3a568`.
 - Dependency/package gates: NuGet.org accepted and its official v3 flat-container indexes listed
   `0.1.0-alpha.3` for `Reunion`, `Reunion.AspNetCore`, `Reunion.Errors`, and `Reunion.Validation`
   together at 2026-08-12 17:09:18Z. Alpha.3 was packed from Reunion merged `master` commit
@@ -17,10 +19,10 @@
   minimal-API `ToOkOr` overloads with generic/parameter arities `2/2` and `3/3`, and the MVC overloads
   with arities `1/2` and `2/3`. Publication and published-baseline revalidation are terminal. Customer
   Ticket PR #475 and platform-sync PR #479 remain terminal and out of scope.
-- Last reconciled: 2026-08-12 after current-main push leg one. Reviewed head
-  `9f420f86afaac7c8791b9e65829b2023e69b1ec7` is proven equal across local,
-  `origin/Feature/typed-result_customer-outcomes`, and PR #425. Transport this ledger checkpoint,
-  then queue the PR.
+- Last reconciled: 2026-08-12 after merge-queue ejection. Final pushed head
+  `87bcdc52321511fad6a7c67197849268a81689bd` was proven equal across local,
+  `origin/Feature/typed-result_customer-outcomes`, and PR #425 before queueing. PR #425 is now
+  `OPEN`/`CLEAN`, auto-merge is off, and no source change has followed the failed run.
 
 ## Current state
 
@@ -63,17 +65,19 @@ PR #425.
 The exact official baseline is the four-package `0.1.0-alpha.3` graph from Reunion merge
 `91fdc6f2e33d8f396fa463ad309cb1288bea3be5`; the prior local artifact remains historical verification
 evidence only. The synchronized candidate has passed against official alpha.3 and is ready for its
-required incremental review.
+required delivery gate. PR-level build, carve, unit, and integration checks are green. Its first
+full-E2E merge-group attempt passed API E2E and every hard-floor job, but UI E2E job
+[94265184983](https://github.com/Concertable/concertable/actions/runs/31640531994/job/94265184983)
+failed before any scenario ran: the `Install Stripe CLI` asset download ended with
+`curl: (56) Connection died, tried 5 times before giving up`. This is a fresh-runner setup/network
+failure, not a Customer test result, and the failed queue run must not be blindly retried.
 
 ## Next Steps
 
-Deliver the reviewed Phase 8 candidate into its terminal state:
-
-1. Transport this current-main push-evidence ledger checkpoint and prove local, remote-tracking, and
-   PR #425 head equality.
-2. Route PR #425 through `/merge` with the required full merge-queue E2E tier, follow it to its exact
-   merge SHA, then own the generated platform-sync PR through green/merged before close-out. Keep the
-   plan and ledger until all delivery gates are terminal.
+Blocked: PR #425 cannot merge until its required full-E2E gate has a valid UI-suite result; merge-group run 31640531994 failed during Stripe CLI installation before any UI scenario ran.
+Blocked by: GitHub Actions runner/external Stripe CLI asset download failure in UI E2E job 94265184983.
+Unblock action: In a dedicated `/e2e-ui-debug` session, run the mandatory fresh Docker preflight and UI suite, diagnose any repeat setup failure, and if the fresh run is green reconcile this ledger and return PR #425 to `/merge`; do not rerun the failed GitHub job directly.
+Resume when: A fresh-stack UI E2E run is green, or a repeated setup failure yields an actionable infrastructure fix committed with this ledger through the plan push protocol.
 
 ## Completed milestones
 
@@ -106,6 +110,9 @@ Deliver the reviewed Phase 8 candidate into its terminal state:
 - Customer non-Payment is delivery-ready against the exact `113be42` artifact. Its owned five-module
   production scope has no remaining old carrier, old terminal, or third-party functional dependency;
   that readiness evidence is reconciled into `REUNION_SHARED_CONTRACTION_PROGRESS.md`.
+- PR #425 reached merge-group run 31640531994 at pushed head `87bcdc523`; API E2E and every hard-floor
+  job passed. UI E2E never reached a scenario because Stripe CLI download setup failed, so GitHub
+  ejected the PR without merging.
 
 ## Verification and review
 
@@ -134,6 +141,10 @@ Deliver the reviewed Phase 8 candidate into its terminal state:
   `306cab6de966ee74688c64b47f2eee7027a4a5e4`.
 - Current-main push leg one advanced local, remote-tracking, and PR #425 together to reviewed head
   `9f420f86afaac7c8791b9e65829b2023e69b1ec7`.
+- Final checkpoint transport advanced local, remote-tracking, and PR #425 together to
+  `87bcdc52321511fad6a7c67197849268a81689bd`. All PR-head build, five carve, unit, and integration
+  checks passed. Merge-group run 31640531994 passed API E2E and every hard-floor job; UI E2E job
+  94265184983 failed in `Install Stripe CLI` with curl exit 56 before scenarios started.
 - Phase 8 exact-artifact evidence: all local nupkgs embed producer commit
   `113be42f532d5d7e8daf1c362262ff7a7854b7bc`. SHA-256: Reunion
   `9FADC33CD06F3B4A9A92564633E01007CC81EA091AA9F257D821532E046E10CE`;
