@@ -6,25 +6,25 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_auth-outcomes`
 - Branch: `Feature/typed-result_auth-outcomes`
 - PR: [#517](https://github.com/Concertable/concertable/pull/517), open at remote head
-  `4b53ac5bbbe0a08af9254d7a51d80f164f68387e`
+  `424f1b80950450a0f462427483ac8fe36d2d785a`
 - Dependency/package gates: no implementation gate. NuGet.org publishes `Reunion` and
   `Reunion.Errors` `0.1.0-alpha.2`; Auth has no Payment, B2B, or Customer runtime/package dependency.
   This branch owns Auth's semantic migration and alpha.2 source adoption. The separate alpha.2
   baseline plan owns repository-wide version alignment. After the Auth `api/**` PR merges, this plan
   owns publication and its generated platform-sync gate to terminal green.
-- Last reconciled: `2026-08-12` after merging platform-sync PR #525 at `5bf622fec` as local merge
-  `fd69b70f0` and completing a full restore/Release build against platform `0.953`: 0 errors and
-  4 existing warnings in 12m45s. The upstream and PR head remain
-  `4b53ac5bbbe0a08af9254d7a51d80f164f68387e`; no updated candidate has been pushed yet.
+- Last reconciled: `2026-08-12` after pushing the green, current-main work head
+  `424f1b80950450a0f462427483ac8fe36d2d785a` to PR #517. A fetch verified the local work head,
+  upstream, and PR `headRefOid` are identical; the branch is zero behind `origin/main` at
+  `5bf622fecd600868b4ec437daf6c6ad0389029a6`.
 
 ## Current state
 
 The task directly matches this branch and worktree. No other worktree owns the Auth implementation.
-PR #517 remains open at remote head `4b53ac5bbbe0a08af9254d7a51d80f164f68387e`; its original build,
-carve, unit, and integration checks are green. The local candidate contains `origin/main` through
-`origin/main` through `5bf622fec` plus merge commits `962969cad` and `fd69b70f0`; its full Release
-restore/build is green against platform `0.953`. The clean-review work order is preserved in a local
-stash. No Auth implementation edit was required by PR #524's nullable/Option guidance.
+PR #517 is open at verified work head `424f1b80950450a0f462427483ac8fe36d2d785a`, current with
+`origin/main` through `5bf622fec`. The updated candidate includes merge commits `962969cad` and
+`fd69b70f0`; its full Release restore/build is green against platform `0.953`. The clean-review work
+order is preserved in a local stash. No Auth implementation edit was required by PR #524's nullable/
+Option guidance. Replacement PR checks are now being dispatched for the updated head.
 
 Phases 1-5 are committed and locally verified. Auth's in-process contracts use direct published
 Reunion ownership: login/logout return `Option<T>`, four caller-actionable refusal paths return
@@ -49,17 +49,16 @@ distinct safe explanation.
 
 ## Next Steps
 
-Fetch once more and require zero drift from `origin/main`, then push the green platform `0.953`
-candidate to PR #517 through the plan-managed compound push protocol. Restore the review work order,
-incrementally review the new range, wait for green PR checks, apply `full-e2e` because Auth behavior
-is observable end to end, enqueue the exact reviewed head, and own merge, publication, platform sync,
-and docs closeout to terminal completion.
+Transport this push checkpoint, restore the clean review work order from its local stash, and run the
+required incremental correctness/security review over the new branch-owned range. Then wait for green
+PR checks, apply `full-e2e` because Auth behavior is observable end to end, enqueue the exact reviewed
+head, and own merge, publication, platform sync, and docs closeout to terminal completion.
 
 ## Downstream handoffs
 
 - Waiting ledger: `plans/typed-result/REUNION_SHARED_CONTRACTION_PROGRESS.md` now records the Auth
   gate satisfied. Auth has zero old Kernel functional/error carriers, Shared.Api terminals,
-  third-party functional carriers, or legacy Reunion factories left in its owned scope; B2B and
+  third-party functional carriers, or legacy Reunion factories left in its owned scope; B2B
   preparation is the remaining blocker for that plan.
 
 ## Completed milestones
@@ -99,6 +98,8 @@ and docs closeout to terminal completion.
   the Auth and Customer preparation handoffs.
 - Platform `0.953` update (`fd69b70f0`): merged platform-sync PR #525 without source conflict and
   advanced Auth's published platform closure from `0.950` to `0.953`.
+- Updated delivery push: local work head, upstream, and PR head verified equal at
+  `424f1b80950450a0f462427483ac8fe36d2d785a`; the branch was zero behind `origin/main` at push time.
 
 ## Verification
 
