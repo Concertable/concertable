@@ -11,18 +11,15 @@
   This branch owns Auth's semantic migration and alpha.2 source adoption. The separate alpha.2
   baseline plan owns repository-wide version alignment. After the Auth `api/**` PR merges, this plan
   owns publication and its generated platform-sync gate to terminal green.
-- Last reconciled: `2026-08-12` after merge commit
-  `6c6c54484c2dda191e60ebbab995e831547eddd0` brought in `origin/main`
-  `93cecb6453d347ffd4e50efabb28190d1c7228f8`, the Result-pattern documentation, and platform pin
-  `0.1.0-alpha.0.943`. Plan graph: 0 errors, 0 warnings.
+- Last reconciled: `2026-08-12` after a clean incremental correctness/security review through
+  `1afdb4b3396d2fde525a7a1da324b66cf9575f54`. Plan graph: 0 errors, 0 warnings.
 
 ## Current state
 
 The task directly matches this branch and worktree. No other worktree owns the Auth implementation,
-no Auth PR or remote branch exists, and no platform-sync PR is open. The branch is zero behind current
-`origin/main`. The sole unrelated dirty path after the Phase 6 checkpoint is the preserved untracked
-clean-review work order
-`reviews/Feature-typed-result_auth-outcomes.md`.
+no Auth PR or remote branch exists, and no platform-sync PR is open. The branch was zero behind
+`origin/main` at the Phase 6 checkpoint. The sole unrelated dirty path is the preserved untracked
+clean-review work order `reviews/Feature-typed-result_auth-outcomes.md`.
 
 Phases 1-5 are committed and locally verified. Auth's in-process contracts use direct published
 Reunion ownership: login/logout return `Option<T>`, four caller-actionable refusal paths return
@@ -38,11 +35,10 @@ target-typed `null` for `None`. It contains no old Auth factory call and still u
 
 ## Next Steps
 
-Commit the Phase 6 checkpoint, then run incremental code review from the existing review watermark.
-Address every clear finding and rerun the affected verification. Fetch current `origin/main`, confirm
-the branch remains current, then run read-only PR preflight. Do not push or open a PR without
-instruction; delivery still requires full merge-queue E2E plus publication and platform-sync
-ownership to terminal green.
+Fetch current `origin/main`, confirm the branch remains current, then run read-only PR preflight.
+Record any concrete blocker; otherwise report Auth ready for PR delivery. Do not push or open a PR
+without instruction; delivery still requires full merge-queue E2E plus publication and
+platform-sync ownership to terminal green.
 
 ## Downstream handoffs
 
@@ -69,8 +65,8 @@ ownership to terminal green.
 - Current-main reconciliation (`6c6c54484`): merged the Result-pattern documentation and platform
   `0.943` without conflict; the preserved Auth outcome work remains the only branch-owned runtime
   scope.
-- Phase 6 (current checkpoint): aligned Auth to Reunion alpha.2 construction, including target-typed
-  `null` for Option absence, and completed the final verification gate.
+- Phase 6 (`1afdb4b33`): aligned Auth to Reunion alpha.2 construction, including target-typed `null`
+  for Option absence, and completed the final verification gate.
 
 ## Verification
 
@@ -93,11 +89,11 @@ Final Phase 6 candidate:
 
 ## Reviews
 
-The untracked work order `reviews/Feature-typed-result_auth-outcomes.md` records a clean full
-correctness/security review of `1043a9178..754939891` and is stamped through checkpoint commit
-`e50d9bbeaefe459395d6a275b6da81f83d069999`. No findings are open. Incremental review must cover every
-later branch-owned code commit, including `af37d2618` and the Phase 6 checkpoint, while excluding
-current-main merge content already reviewed on its source branches.
+The untracked work order `reviews/Feature-typed-result_auth-outcomes.md` records clean full and
+incremental correctness/security reviews with no open findings. The latest range is
+`e50d9bbe..1afdb4b3` (341 commits including inherited `main` merges); the branch-owned runtime delta
+reviewed in depth is `af37d2618` and `1afdb4b3`. Both review markers are stamped through
+`1afdb4b3396d2fde525a7a1da324b66cf9575f54`.
 
 ## Decisions, discoveries, blockers, and deviations
 
