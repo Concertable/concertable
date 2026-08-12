@@ -5,9 +5,9 @@
 - Roadmap item: `data-access/repository-redesign`
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable.worktrees/Refactor/data-access_base-unify`
 - Branch: `Refactor/data-access_base-unify`
-- PR: PR-B #530 — https://github.com/Concertable/concertable/pull/530 (open; reparent reverted → **binary-safe, build green, ready to push**). (PR-A #522 merged; IReadDbContext #526 merged.)
+- PR: PR-B #530 — https://github.com/Concertable/concertable/pull/530 (open). Scope expanded (2026-08-12): seam fix + reparent + `IWriteRepository` rename, all this PR. Plan is execution-ready for handoff. (PR-A #522 merged; IReadDbContext #526 merged.)
 - Dependency/package gates: PR-B is publish-first (ships `Concertable.DataAccess.*`) → on merge, publish + a `chore/platform-sync-*` PR rebuild every consumer against the new package. That sync PR is the real cross-consumer test.
-- Last reconciled: 2026-08-12, reparent reverted (direction 1), `api/Concertable.slnx` builds 0 errors — awaiting push
+- Last reconciled: 2026-08-12 — scope decided (fix the seam, don't defer); full 5-phase execution plan written. Tree currently at `535a3ebd7` (reparent reverted = binary-safe fallback); seam fix not yet built.
 
 ## Current state
 
@@ -17,9 +17,28 @@ PR-A (#522) and IReadDbContext (#526) are merged + platform-sync green. **PR-B (
 
 ## Next Steps
 
-1. **Push** and let the merge queue re-run integration (`skip-e2e` — no positive E2E trigger). Direction 1 is binary-safe, so the `FieldAccessException` suites should pass.
-2. On green, **own the `chore/platform-sync-*` PR** to green/merged (non-breaking → should auto-merge), then close out via `/merge-docs` + prune the worktree.
-3. **Decision pending (not blocking PR-B): rename `IBaseRepository`→`IWriteRepository`.** The honest name for the write-only facet, but binary-breaking on a published type (same seam that broke the reparent), so it can't ride PR-B. Lands only as a deprecate→migrate→remove publish-first sequence **or** after fixing the integration test seam (feed-compiled consumers vs source-built DataAccess). The seam is the real root blocker on any binary-breaking base change — seam-fix vs deprecation-dance is Tommy's call.
+**Decided (2026-08-12): fix the seam properly and do it all in this PR** — no deferral. Full mechanism +
+5 phases in `REPOSITORY_REDESIGN_PLAN.md` → "The seam fix" and "Execution plan". Execute in order:
+
+1. **Phase 1 — Seam fix (local platform-pack + pin override).** Make the integration build compile AND
+   run every consumer against the ONE source-built platform (carve-safe: consumers stay PackageReference).
+   Land first.
+2. **Phase 2 — Restore the reparent** (`Repository : ReadRepository`). This is the exact change that
+   failed as run 31636765379 — it going green is the proof the seam fix works (the 6 suites: B2B
+   Artist/Concert/User/Venue, Customer User/Concert).
+3. **Phase 3 — Rename** `IBaseRepository`/`BaseRepository` → `IWriteRepository`/`WriteRepository`, full
+   grep-gate (`grep -rniE "ibaserepository|baserepository"` → zero, every tier/casing), all consumers
+   migrated in-PR.
+4. **Phase 4 — Verify:** local pack → `dotnet build api/Concertable.slnx -p:ConcertablePlatformVersion=<local>`
+   0 errors; integration suites green via `e2e-*` skills (Docker health pre-flight); a red suite → the
+   matching debug skill, not a report.
+5. **Phase 5 — Deliver:** push (queue tier `skip-e2e`), own the `chore/platform-sync-*` PR to merged
+   (consumers already migrated → green), close out per `plans/AGENTS.md`.
+
+**Current tree state:** the reparent is currently REVERTED to `Repository : BaseRepository` (commit
+`535a3ebd7`) so PR-B is green *without* the seam fix. Phase 2 re-applies the reparent once Phase 1 lands.
+If executing, either start from here (reparent reverted, seam fix not yet built) or note that
+`535a3ebd7` is the binary-safe fallback if the seam fix proves infeasible.
 
 ## Completed work
 

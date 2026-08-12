@@ -1,10 +1,13 @@
 # Repository redesign — Cosmos-aligned facets + context-enforced no-tracking
 
-Unify the DataAccess repository bases, make no-tracking **enforced by the context** (not a per-query
-opt-in), and align the interface surface to the `Microsoft.Azure.CosmosRepository` facet split. Adds
-`InsertAsync` (add + save) on the write side.
+Unify the DataAccess repository bases, make no-tracking **enforced by the context** (already shipped),
+add `InsertAsync`, reparent `Repository` onto `ReadRepository` (reads once), and rename the write-only
+facet `IBaseRepository`/`BaseRepository` → `IWriteRepository`/`WriteRepository`. The linchpin enabling
+the last two is a **fix to the integration test seam** (a local platform-pack so consumers compile
+against the source-built platform they run against) — see "The seam fix" below.
 
-Branch/worktree when executing: `Refactor/data-access_repository-redesign` (fresh from `origin/main`).
+Branch/worktree: `Refactor/data-access_base-unify`, PR-B #530 (open). Read
+[`plans/AGENTS.md`](../AGENTS.md) + [`plans/agents/PLAN.md`](../agents/PLAN.md) before executing.
 
 Next steps live in @plans/data-access/REPOSITORY_REDESIGN_PROGRESS.md → `## Next Steps`.
 
@@ -43,89 +46,131 @@ Next steps live in @plans/data-access/REPOSITORY_REDESIGN_PROGRESS.md → `## Ne
 
 ## Target design
 
-**Decision: keep the EF-idiomatic names (`IReadRepository`/`IRepository`); do NOT rename to the Cosmos
-`IReadOnlyRepository`/`IWriteOnlyRepository`.** That would be a repo-wide sweep across every service's
-alias for cosmetic parity and buys nothing — Ardalis and this codebase already use `IReadRepository`/
-`IRepository`. The value is context-enforced no-tracking + base unification + `InsertAsync`, not names.
+**Naming:** keep the EF-idiomatic `IReadRepository`/`IRepository` (do NOT adopt Cosmos's
+`IReadOnlyRepository`). **But DO rename the write-only facet** `IBaseRepository`/`BaseRepository` →
+`IWriteRepository`/`WriteRepository`: "Base" is a dishonest name for what is purely the write-only side
+(Add/AddRange/Insert/Update/Remove/SaveChanges, no reads, no key — Cosmos's `IWriteOnlyRepository`).
 
-**Interfaces** — three facets; `IBaseRepository` is **kept**, not folded away:
+**Interfaces** — three facets:
 
 ```csharp
-IReadRepository<T,K>                                       // GetById, GetAll, Exists
-IBaseRepository<T>                                         // Add, AddRange, InsertAsync, Update, Remove, SaveChanges — write-only, keyless
-IRepository<T,K> : IBaseRepository<T>, IReadRepository<T,K> // no `new GetAllAsync`
+IReadRepository<T,K>                                        // GetById, GetAll, Exists
+IWriteRepository<T>                                         // Add, AddRange, InsertAsync, Update, Remove, SaveChanges — write-only, keyless (renamed from IBaseRepository)
+IRepository<T,K> : IWriteRepository<T>, IReadRepository<T,K> // no `new GetAllAsync`
 ```
 
-**`IBaseRepository` cannot be deleted** (the earlier "fold it away" was wrong — it never checked the
-keyless case): `SequenceRepository<TSequence>` operates on `ISequence` entities, which are `ITenant`
-but deliberately **not** `IEntity<TKey>`, so they cannot satisfy `IReadRepository<T,K>`'s
+The write-only facet is **kept, not folded away** (the plan's original "delete it" was wrong — it never
+checked the keyless case): `SequenceRepository<TSequence>` operates on `ISequence` entities, which are
+`ITenant` but deliberately **not** `IEntity<TKey>`, so they cannot satisfy `IReadRepository<T,K>`'s
 `IEntity<TKey>` constraint and need a write-only, keyless base. `OpportunitySyncer` and
-`CollectionSyncer<T>` also inject the write-only `IBaseRepository<T>` directly. The GetAll diamond is
-killed instead by **removing `GetAllAsync` from `IBaseRepository`** (no caller used it). `IBaseRepository`
-is a bad name for a write-only facet (Cosmos calls it `IWriteOnlyRepository`); renaming it to
-`IWriteRepository` is deferred — it is binary-breaking on a published type and needs its own
-publish-first migration (see "Open decisions").
+`CollectionSyncer<T>` also inject the write-only facet directly. The GetAll diamond is killed by
+**removing `GetAllAsync` from the write facet** (no caller used it — verified).
 
-**Classes** — `Repository` extends the write base; reads are re-declared (as `main` has them):
+**Classes** — `Repository` reparents onto `ReadRepository` (reads defined once):
 
 ```csharp
-ReadRepository<T,TContext,K> : IReadRepository<T,K>                     // GetById/GetAll/Exists over context.Set<T>()
-Repository<T,TContext,K> : BaseRepository<T,TContext>, IRepository<T,K> // inherits writes + InsertAsync; re-declares the 3 reads
+ReadRepository<T,TContext,K> : IReadRepository<T,K>                       // GetById/GetAll/Exists over context.Set<T>()
+WriteRepository<T,TContext>  : IWriteRepository<T>                        // writes + InsertAsync, keyless (renamed from BaseRepository)
+Repository<T,TContext,K> : ReadRepository<T,TContext,K>, IRepository<T,K> // inherits reads; adds writes + InsertAsync
 ```
 
-Reparenting `Repository` onto `ReadRepository` (to define reads once) was **reverted as
-binary-breaking**: it moves the inherited `context` field off `BaseRepository`, and feed-compiled
-consumers (`DealRepository → TenantScopedRepository → Repository`) emit `ldfld BaseRepository::context`
-— the integration host loads the source-built new base and the field dangles (`FieldAccessException`,
-run 31636765379). Keeping `Repository : BaseRepository` leaves `context` where compiled consumers
-expect it. The read-member duplication that costs is cosmetic; the real win (context-enforced
-no-tracking) already shipped in PR-A/#526.
+Single inheritance means one facet's members are duplicated on `Repository`; we duplicate the **trivial
+writes** (keeping reads defined once), and log it in `TECH_DEBT.md`. Reads-once was the original goal;
+the only thing that ever blocked it — the reparent moving the inherited `context` field off the write
+base, which the integration seam turned into a `FieldAccessException` (run 31636765379) — is removed by
+the **seam fix below**, so the reparent is restored.
 
-**`InsertAsync`** — on `IWriteOnlyRepository`, in the write repo: `AddAsync` + `SaveChangesAsync`,
-returns the entity (Id populated). Faults propagate as exceptions (no bool). Cosmos calls this
-`CreateAsync`.
+**`InsertAsync`** — on `IWriteRepository`, in the write repo: `AddAsync` + `SaveChangesAsync`, returns
+the entity (Id populated). Faults propagate as exceptions (no bool). Cosmos calls this `CreateAsync`.
 
-**Read contexts (the enforcement)** — Customer gets a read-only, no-tracking context per read-repo
-module (`Concert`/`Venue`/`Artist`), mirroring B2B's `PublicDbContext`: composes the same
-`IEntityTypeConfigurationProvider`, `SaveChanges` throws, and **registered with
-`.UseQueryTrackingBehavior(NoTracking)`**. The read repos bind these; `context.Foo` is then no-tracking
-by construction — `Query` is deleted. Projection handlers keep the existing tracked `ConcertDbContext`.
+**Read contexts (the enforcement) — ✅ already shipped (PR-A/#526).** Customer read repos bind a
+read-only, no-tracking `IReadDbContext`; `Query`/ad-hoc `.AsNoTracking()` are gone. No further work here.
 
-> Enforcement note: this is context/DI-enforced (read repos bind a no-tracking read-only context), not a
-> generic `where TContext : ReadDbContext` constraint — the constraint would block `Repository :
-> ReadOnlyRepository` (a writable context can't be a read-only one) and force composition boilerplate.
-> Context-level enforcement is what B2B already does and keeps the clean inheritance.
+## The seam fix — why it's the linchpin, and how
 
-## Delivery (2 PRs, 1 publish cycle)
+**The `FieldAccessException` is a test-harness artifact, not a real break.** In production every service
+pins its own `<ConcertablePlatformVersion>` (per-service `Directory.Packages.props`, all at `0.955`) and
+consumes DataAccess as a **PackageReference** (carve rule: `Deal.Infrastructure.csproj` — "never a
+ProjectReference"); `platform-sync` **recompiles** each service against the new pin before the new base
+ever reaches it. So compiled-version == runtime-version, always — a moved field or renamed type can never
+dangle in prod.
 
-Current `main` already has `Query` (from #498/#503), so:
+The integration harness breaks that invariant: `Concertable.B2B.IntegrationTests.Fixtures` →
+`Concertable.Shared/src/Seed/Concertable.Seed.Infrastructure` **→ source `ProjectReference` to
+`Concertable.DataAccess.Infrastructure`**. That source DataAccess (higher MinVer) wins in the test output,
+while the module repos (`Deal`/`Concert`/…) were compiled against the **feed** pin `0.955`. Source
+platform + feed consumers = the false failure. It flags exactly the class of changes (reparent, rename)
+that are production-safe, and it can never reach the platform-sync that would recompile consumers.
 
-- **PR-A — Customer read contexts (boundary-safe, no publish). ✅ DONE** (#522 merged, sync green).
-  Plus a follow-up **#526 (merged, sync green)** put the read repos behind a queryable-only
-  `IReadDbContext` interface. Operational truth in the `_PROGRESS.md` ledger.
-- **PR-B — published base (publish-first). IN PROGRESS.** Remove `GetAllAsync` from `IBaseRepository`
-  (that member forces the `new GetAllAsync` diamond) + add `InsertAsync`; `Repository : BaseRepository`
-  (the `: ReadRepository` reparent was reverted — binary-breaking); remove `Query`.
-  **`IBaseRepository`/`BaseRepository` are KEPT** (not deleted — see the resolved open-decision below).
-  **No renames.** Ships in `Concertable.DataAccess.*` → publish → `platform-sync`.
+**Fix = validate PR-B's platform locally the way platform-sync validates it remotely: a local
+platform-pack + pin override, so the integration build compiles AND runs every consumer against the ONE
+source-built platform.** Carve-safe (consumers stay PackageReference; no source ProjectReference added to
+production projects):
+
+1. **Pack the source platform to a local feed.** `dotnet pack` every project that publishes a
+   `Concertable.*` package referenced via `$(ConcertablePlatformVersion)` (enumerate them from the
+   `<PackageVersion Include="Concertable.*" Version="$(ConcertablePlatformVersion)" />` lines in each
+   service's `Directory.Packages.props` — DataAccess.Application/Infrastructure, Kernel, Contracts,
+   Seed.*, Messaging.*, ServiceDefaults, Shared.*, …) into e.g. `artifacts/local-platform/`, all at a
+   single `$(LocalPlatformVersion)` set **above** `0.955`. Use `-p:MinVerVersionOverride=$(LocalPlatformVersion)`
+   so the pack **and** any source `ProjectReference` of those same projects (the Seed→DataAccess ref)
+   build at the **same** version/assembly identity.
+2. **Register the local feed** as a NuGet source with `packageSourceMapping` `Concertable.*` (keep the
+   dependency-confusion guard) in a `nuget.config` on the integration build's path.
+3. **Override the pin for the build under test:** `-p:ConcertablePlatformVersion=$(LocalPlatformVersion)`
+   so every consumer restores the local-packed source platform.
+4. **Consistency gate (the critical check):** exactly ONE `Concertable.DataAccess.Infrastructure.dll`
+   (one version) may land in each integration test output folder. If the Seed source ProjectReference
+   and the packed package resolve to two identities, the mismatch persists — that's the thing to verify,
+   not assume.
+5. **Wire it into CI and the local runner:** the merge-queue integration job (the one that produced run
+   31636765379) and the local integration/e2e runner both do the pack + override as a pre-step.
+
+**Unknowns the executor must resolve against the repo (do NOT assume):** the exact platform project set
+to pack; the MinVer/`MinVerVersionOverride` interplay that guarantees single-assembly-identity; which CI
+workflow runs the B2B/Customer integration suites and how it invokes build; whether the local feed goes
+in a repo-root `nuget.config` or per-service. The local-pack is **test/CI-only** — it must not change
+what the real `publish-packages` workflow emits, and the pin override must not be committed as a default.
+
+## Execution plan (single PR — PR-B #530)
+
+Everything below lands in the existing PR-B worktree/branch (`Refactor/data-access_base-unify`). Order
+matters: the seam fix must precede the reparent/rename or their builds/tests fail for the wrong reason.
+
+- **Phase 1 — Seam fix.** Implement the local platform-pack + pin override (5 steps above). Land it
+  first so Phases 2–3 are validated against a consistent platform.
+- **Phase 2 — Restore the reparent.** `Repository<T,TContext,TKey> : ReadRepository<T,TContext,TKey>`;
+  move the write methods + `InsertAsync` onto `Repository`; drop its re-declared reads (inherited now).
+  This is the exact change that failed as run 31636765379 — **it is the proof the seam fix works:** the
+  6 suites (B2B Artist/Concert/User/Venue, Customer User/Concert) must go green.
+- **Phase 3 — Rename `IBaseRepository`/`BaseRepository` → `IWriteRepository`/`WriteRepository`.** Full
+  **grep-gate** rename (see [`plans/agents/PLAN.md`](../agents/PLAN.md) "grep gate"):
+  `grep -rniE "ibaserepository|baserepository"` over the whole repo returns **zero**, every tier/casing —
+  type names, the keyless `BaseRepository<T>` module alias behind `SequenceRepository`, every module's
+  `Repository`/`TenantScopedRepository`, `OpportunitySyncer`/`CollectionSyncer`, DI registrations,
+  identifiers (`baseRepository`→`writeRepository`), comments, docs. Allowlist: the historical mentions in
+  this plan + its `_PROGRESS.md` (they narrate the old name) — update or list them explicitly, nothing
+  else. Consumers compile because Phase 1 makes them build against the renamed source platform.
+- **Phase 4 — Verify (build + Docker integration).** Pack locally, then
+  `dotnet build api/Concertable.slnx -p:ConcertablePlatformVersion=$(LocalPlatformVersion)` → 0 errors.
+  Run the integration suites via the `e2e-*` skills (mandatory `docker-health.ps1` pre-flight) → the 6
+  formerly-red suites + all integration green; unit green. A red suite → the matching debug skill, not a
+  status report.
+- **Phase 5 — Deliver.** Push; the merge queue runs build + unit + integration (merge Step 4 tier: no
+  positive E2E trigger → `skip-e2e`). On merge → `publish-packages` emits the renamed DataAccess →
+  `platform-sync` bumps pins; because every consumer was migrated in-PR (grep gate = zero old refs), the
+  `chore/platform-sync-*` PR builds green — **own it to merged**. Then close out per
+  [`plans/AGENTS.md`](../AGENTS.md) (move recovery state to a `Docs/*_closeout` worktree, prune this one).
 
 ## Open decisions / risks
 
-- **RESOLVED — `IBaseRepository`/`BaseRepository` are KEPT (the write-only facet).** Census found real
-  standalone consumers: `CollectionSyncer`, `OpportunitySyncer` (write-only `IBaseRepository`), and
-  `SequenceRepository<TSequence>` which is **keyless** (`ISequence : ITenant`, not `IEntity<TKey>`) so it
-  can only use the keyless `BaseRepository`, never the keyed `Repository`. So the facet cannot be folded
-  away; the diamond is killed by removing `GetAllAsync` from `IBaseRepository` instead.
-- **B2B/Payment dead `ReadRepository<T>` aliases** — unused (no concrete subclasses). Delete them in PR-B
-  rather than carry them through the unify.
+- **Reparent duplicates the writes.** Single inheritance forces one facet's members onto `Repository`;
+  we duplicate the trivial writes to keep reads-once. Logged in `TECH_DEBT.md`, not eliminable without
+  default-interface-members or a mixin.
 - **`InsertAsync` adoption is opportunistic** — new/changed call sites use it; not a forced migration of
   every existing `AddAsync` + `SaveChangesAsync`.
-- **OPEN — rename `IBaseRepository`/`BaseRepository` → `IWriteRepository`/`WriteRepository`.** The honest
-  name for the write-only facet. Deferred out of PR-B because it is **binary-breaking on a published
-  type**: feed-compiled consumers reference the type by name (`OpportunitySyncer` ctor, `ldfld
-  BaseRepository::context` in every module repo), so a rename fails the same integration seam that
-  reverted the reparent. Lands cleanly only as either (a) a deprecate→migrate→remove publish-first
-  sequence, or (b) after the integration test seam is fixed so a base-type change can be validated
-  in-PR. The seam (feed-compiled consumers vs source-built DataAccess via `Seed.Infrastructure`'s source
-  ProjectReference) is the real blocker on *any* binary-breaking base change — decide seam-fix vs
-  deprecation-dance with Tommy.
+- **B2B/Payment dead `ReadRepository<T>` aliases** — unused (no concrete subclasses); already deleted in
+  the current PR-B diff. Keep them gone.
+- **Local-pack scope creep** — packing the whole platform is safest but slower; if pack time hurts CI,
+  narrow to the transitive platform closure the integration graph actually restores (still derived from
+  Directory.Packages.props, not guessed).
