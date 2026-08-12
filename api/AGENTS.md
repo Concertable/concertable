@@ -1,6 +1,6 @@
 # Concertable — backend (`api/`)
 
-The .NET app. C# code conventions: @./agents/CODE_CONVENTIONS.md (notably: logging is source-generated — never call `logger.LogInformation/LogWarning/LogError` with an inline template; add a `[LoggerMessage]` method to the project's `Log.cs`). Design patterns the codebase commits to (structure — keyed strategy resolvers, tenancy-composed DbContexts, dependency-holders, typed Refit clients): @./agents/CODE_PATTERNS.md — use the pattern, don't invent a local variant.
+The .NET app. C# code conventions: @./agents/CODE_CONVENTIONS.md (notably: logging is source-generated — never call `logger.LogInformation/LogWarning/LogError` with an inline template; add a `[LoggerMessage]` method to the project's `Log.cs`). Result, Option, typed-error, validation, and transport-terminal conventions: @./agents/RESULT_PATTERN.md. Design patterns the codebase commits to (structure — keyed strategy resolvers, tenancy-composed DbContexts, dependency-holders, typed Refit clients): @./agents/CODE_PATTERNS.md — use the pattern, don't invent a local variant.
 
 ## These are microservices — read [`ARCHITECTURE.md`](./ARCHITECTURE.md) before crossing a service boundary
 
