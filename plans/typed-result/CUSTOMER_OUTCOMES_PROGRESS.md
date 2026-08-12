@@ -22,11 +22,12 @@
   minimal-API `ToOkOr` overloads with generic/parameter arities `2/2` and `3/3`, and the MVC overloads
   with arities `1/2` and `2/3`. Publication and published-baseline revalidation are terminal. Customer
   Ticket PR #475 and platform-sync PR #479 remain terminal and out of scope.
-- Last reconciled: 2026-08-13 after plan push leg one. Starting remote/PR head
+- Last reconciled: 2026-08-13 after replacement PR-head checks. Starting remote/PR head
   `87bcdc52321511fad6a7c67197849268a81689bd` advanced to reviewed work head
   `1bf1a349b6e8ac98d293816e75e264f940009d5b`, proven equal across local, remote-tracking, and PR #425.
-  PR #425 is open with auto-merge off. The prior Stripe setup blocker is resolved on current main by
-  Auth PR #517 and its terminal platform-sync PR #531.
+  Checkpoint transport then advanced all three refs to `1a4913c24a0d5af4c50f5400620c994c1b937e85`.
+  PR #425 is open with auto-merge off; replacement run 31650254795 is terminal green. The prior
+  Stripe setup blocker is resolved on current main by Auth PR #517 and its terminal platform-sync PR #531.
 
 ## Current state
 
@@ -80,9 +81,9 @@ failure, not a Customer test result, and the failed queue run must not be blindl
 
 Finish PR #425 delivery from synchronized local head `a396b510f`:
 
-1. Transport this push-evidence checkpoint and prove local, remote-tracking, and PR head equality.
-2. Wait for PR #425's replacement hard-floor checks to complete green.
-3. Return PR #425 to `/merge` with `full-e2e`, follow it to its merge commit, then own publication and
+1. Normalize PR #425 to `full-e2e`, enqueue verified remote head `1a4913c24`, and follow it to its merge
+   commit without pushing this observation-only checkpoint.
+2. Own publication and
    the generated platform-sync PR through green/merged before close-out.
 
 ## Completed milestones
@@ -157,6 +158,11 @@ Finish PR #425 delivery from synchronized local head `a396b510f`:
 - Current-main work push advanced starting remote/PR head `87bcdc52321511fad6a7c67197849268a81689bd`
   to reviewed work head `1bf1a349b6e8ac98d293816e75e264f940009d5b`; local, remote-tracking, and
   PR #425 head equality was verified before this checkpoint transport.
+- Push checkpoint transport advanced local, remote-tracking, and PR #425 to
+  `1a4913c24a0d5af4c50f5400620c994c1b937e85`. Replacement PR-head CI run
+  [31650254795](https://github.com/Concertable/concertable/actions/runs/31650254795) is terminal green:
+  build, all five backend carves, Auth and the complete unit/integration matrix, and `ci-complete`
+  passed; merge-group-only E2E correctly skipped at PR level.
 - Phase 8 exact-artifact evidence: all local nupkgs embed producer commit
   `113be42f532d5d7e8daf1c362262ff7a7854b7bc`. SHA-256: Reunion
   `9FADC33CD06F3B4A9A92564633E01007CC81EA091AA9F257D821532E046E10CE`;
