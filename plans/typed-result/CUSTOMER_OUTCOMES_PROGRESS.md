@@ -7,15 +7,16 @@
 - Branch: `Feature/typed-result_customer-outcomes`
 - PR: [#425](https://github.com/Concertable/concertable/pull/425) - open, non-draft, remote head
   `08a92f91659e4eccc4558e55def5027b26c08348`
-- Dependency/package gates: NuGet.org publishes only `Reunion.AspNetCore` `0.1.0-alpha.1` and
-  `0.1.0-alpha.2`. Published alpha.2 embeds commit `ab3386a76e83b057bc9498ebc2d7d31be5f62626`
-  and does not contain `ToOkOr`; no published package contains flexible Option terminals from
-  `113be42f532d5d7e8daf1c362262ff7a7854b7bc`. Phase 8 is implementable and locally verified against
-  an exact artifact, but delivery remains gated on a published Reunion-family version containing
-  `113be42`. Customer Ticket PR #475 and platform-sync PR #479 remain terminal and out of scope.
-- Last reconciled: 2026-08-12 after the clean Phase 8 incremental review through local semantic head
-  `9bcb25eea`; PR #425 is not merge-ready and must not be pushed or merged until the publication gate
-  and published-baseline verification complete.
+- Dependency/package gates: a 2026-08-12 query of NuGet.org's official v3 indexes found only
+  `0.1.0-alpha.1` and `0.1.0-alpha.2` for `Reunion`, `Reunion.AspNetCore`, `Reunion.Errors`, and
+  `Reunion.Validation`. Published alpha.2 embeds commit
+  `ab3386a76e83b057bc9498ebc2d7d31be5f62626` and does not contain `ToOkOr`; no published package
+  contains flexible Option terminals from `113be42f532d5d7e8daf1c362262ff7a7854b7bc`. Phase 8 is
+  delivery-ready against the exact producer artifact but publication-blocked. Customer Ticket PR
+  #475 and platform-sync PR #479 remain terminal and out of scope.
+- Last reconciled: 2026-08-12 after the clean Phase 8 review checkpoint `e6c53717c` and official
+  NuGet.org v3 publication query; PR #425 is not merge-ready and must not be pushed or merged until
+  publication and published-baseline verification complete.
 
 ## Current state
 
@@ -58,17 +59,10 @@ PR #425.
 
 ## Next Steps
 
-1. Query official package metadata for the exact published Reunion-family version containing
-   `113be42`; do not guess. Do not push or merge PR #425.
-2. When it exists, pin the whole family to that version, rerun the affected closures,
-   unit/integration suites, package/structural audits, and incremental review against the published
-   baseline before the plan-managed two-leg PR update.
-
-## Downstream handoffs
-
-- Waiting ledger: `plans/typed-result/REUNION_SHARED_CONTRACTION_PROGRESS.md`.
-  Gate: Customer non-Payment must be delivery-ready and identify every remaining old carrier,
-  terminal, and third-party dependency outside its owned scope.
+Blocked: No published common Reunion-family version contains producer commit `113be42` and the flexible Option `ToOkOr` terminals required by Phase 8.
+Blocked by: external owner `Reunion NuGet publisher`.
+Unblock action: Publish `Reunion`, `Reunion.AspNetCore`, `Reunion.Errors`, and `Reunion.Validation` from `113be42` or a verified descendant under one exact version, then allow all four packages to index on NuGet.org.
+Resume when: Official NuGet v3 metadata lists that same version for all four packages, package repository metadata proves `113be42` is included, and `Reunion.AspNetCore` exposes the flexible MVC `ToOkOr` overloads.
 
 ## Completed milestones
 
@@ -95,6 +89,9 @@ PR #425.
   simplifications, Result guidance, and DataAccess debt in `5ee10d11a`; the incremental native,
   security, architecture, convention, and coverage review through `9bcb25eea` was clean. Delivery
   remains gated on publication of a Reunion-family package containing `113be42`.
+- Customer non-Payment is delivery-ready against the exact `113be42` artifact. Its owned five-module
+  production scope has no remaining old carrier, old terminal, or third-party functional dependency;
+  that readiness evidence is reconciled into `REUNION_SHARED_CONTRACTION_PROGRESS.md`.
 
 ## Verification and review
 
