@@ -3,36 +3,26 @@
 - Plan: `plans/typed-result/AUTH_OUTCOMES_PLAN.md`
 - Roadmap: `plans/typed-result/TYPED_RESULT_MIGRATION_ROADMAP.md`
 - Roadmap item: `typed-result/auth-outcomes`
-- Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_auth-outcomes`
-- Branch: `Feature/typed-result_auth-outcomes`
-- PR: [#517](https://github.com/Concertable/concertable/pull/517), open at remote final head
-  `e91b6ecadde05e9ecad6b3126a5b44e1ea10b57b`
+- Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Docs\typed-result_auth-outcomes_closeout`
+- Branch: `Docs/typed-result_auth-outcomes_closeout`
+- Source PR: [#517](https://github.com/Concertable/concertable/pull/517), merged as
+  `bf723db98bd1acb573d55e3cbe50692efea0e2cf`
 - Dependency/package gates: no implementation gate. NuGet.org publishes `Reunion` and
   `Reunion.AspNetCore`, `Reunion.Errors`, and `Reunion.Validation` `0.1.0-alpha.3`; Auth has
   no Payment, B2B, or Customer runtime/package dependency. This branch owns Auth's semantic migration
   and direct `Reunion`/`Reunion.Errors` alpha.3 adoption. The separate repository baseline plan owns
   repository-wide version alignment. After the Auth `api/**` PR merges, this plan
   owns publication and its generated platform-sync gate to terminal green.
-- Last reconciled: `2026-08-12` after formally classifying merge-group run
-  [31618590547](https://github.com/Concertable/concertable/actions/runs/31618590547) as an external
-  bootstrap transport failure, committing the Auth alpha.3 candidate as `12c000d7`, merging current
-  `origin/main` as `38e62584`, and completing a clean correctness/security review through that merge.
-  The reviewed current-main final head `e91b6ecadde05e9ecad6b3126a5b44e1ea10b57b` passed the complete
-  PR hard-floor matrix, but merge-group run 31634022795 repeated the pre-scenario Stripe bootstrap
-  failure with HTTP 503. The durable workflow fix is committed as `3ac1b4af`; required platform-sync
-  `0.955` is merged as `84c07a5d` and the branch is current with main.
+- Last reconciled: `2026-08-12` after PR #517 merged through full-E2E run 31641085535. The pinned
+  Stripe installer passed in both API and UI jobs; both suites passed. Publication run 31644761975
+  succeeded and restored all 40 published packages at platform `0.1.0-alpha.0.958`. Generated
+  platform-sync PR #531 is open and owns the final delivery gate.
 
 ## Current state
 
-The task directly matches this branch and worktree. No other worktree owns the Auth implementation.
-PR #517 is open at verified remote final head `e91b6ecadde05e9ecad6b3126a5b44e1ea10b57b`. That candidate
-includes the intervening delivery-ledger checkpoints,
-the committed alpha.3 package adoption, and current `origin/main` through `6a3d66677`. The main merge
-was conflict-free, changed only Customer read-context implementation, and left Auth's platform and
-Reunion pins unchanged. The full net branch range has a clean correctness/security review and is
-ready for the plan push protocol. The first full-E2E merge group was ejected by an
-external bootstrap-download failure, not an Auth build, carve, unit, integration, API E2E, or scenario
-failure.
+Auth implementation and the durable Stripe bootstrap correction are merged. This fresh closeout
+worktree is based on `origin/main` after source merge and owns only the remaining publication,
+platform-sync, and terminal plan cleanup evidence. The former source worktree is ready for removal.
 
 Phases 1-5 are committed and locally verified. Auth's in-process contracts use direct published
 Reunion ownership: login/logout return `Option<T>`, four caller-actionable refusal paths return
@@ -58,10 +48,10 @@ distinct safe explanation.
 
 ## Next Steps
 
-1. Push this transport checkpoint and require replacement checks on the final exact head.
-2. Keep `full-e2e` and requeue the final exact head.
-3. After merge, remove this source worktree, then follow package publication, generated platform sync, and plan
-   close-out from a fresh docs worktree based on merged `origin/main`.
+1. Remove the merged source worktree through `scripts/worktrees.ps1 close -PlanManaged`.
+2. Follow generated platform-sync PR #531 to green and merged.
+3. Record terminal evidence, delete this plan and ledger together, tick the roadmap item, then land
+   the closeout through `merge-docs`.
 
 ## Downstream handoffs
 
@@ -146,6 +136,11 @@ distinct safe explanation.
   invokes `stripe version` separately to prove the executable starts.
 - Version-validation repair push: local and upstream work heads verified equal at
   `a300cf7351a766d3791b15eab9bc4babd3c99e1a`; the branch was zero behind `origin/main`.
+- Final full-E2E and merge: run 31641085535 passed the pinned Stripe installer in both jobs, API E2E,
+  UI E2E, and `ci-complete`; PR #517 landed as `bf723db98bd1acb573d55e3cbe50692efea0e2cf`.
+- Publication: run 31644761975 succeeded at platform version `0.1.0-alpha.0.958` and verified a fresh
+  restore of the complete 40-package published closure from GitHub Packages.
+- Platform sync: generated PR #531 is open at `d86e79e7f0071ab63f50d1181bf931bcee792b58`.
 - Reviewed PR checks: remote head `dd9e3111a4b6689cf46b9232275fccd63a349b72` passed build, all
   service carves, all unit/integration jobs, and `ci-complete`; PR-level E2E skipped as designed.
 - Queue readiness: a final fetch proved that remote head zero behind `origin/main`, `OPEN/CLEAN`, and
