@@ -6,7 +6,7 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_customer-outcomes`
 - Branch: `Feature/typed-result_customer-outcomes`
 - PR: [#425](https://github.com/Concertable/concertable/pull/425) - open, non-draft, remote head
-  `1bf1a349b6e8ac98d293816e75e264f940009d5b`, proven equal across the reviewed local work head,
+  `1fcfbacd61dbe5928da898713144a9d193a7a7cd`, proven equal across the reviewed local work head,
   remote-tracking branch, and PR. Merge `a396b510fa2d027f4970df43b8ec6d0616c28c3b` brings in current `origin/main`
   `c680da03b0caaf65492109702be522a0c861411c`, including the merged Auth-owned Stripe CLI bootstrap
   repair. GitHub ejected the prior head from the merge queue after
@@ -27,8 +27,9 @@
   `1bf1a349b6e8ac98d293816e75e264f940009d5b`, proven equal across local, remote-tracking, and PR #425.
   Checkpoint transport then advanced all three refs to `1a4913c24a0d5af4c50f5400620c994c1b937e85`.
   Replacement run 31650254795 is terminal green. The stale-base queue admission was withdrawn.
-  Local head `850227996197dcdcf5f7827e6c6c33100c5d95cf` now merges current `origin/main` through platform-sync
-  PR #534 (`.961`), builds green, and is incrementally reviewed clean; it is not yet pushed. The prior
+  Work head `1fcfbacd61dbe5928da898713144a9d193a7a7cd` merges current `origin/main` through platform-sync
+  PR #534 (`.961`), builds green, is incrementally reviewed clean, and is proven equal across local,
+  remote-tracking, and PR #425. The prior
   Stripe setup blocker is resolved on current main by Auth PR #517 and its terminal platform-sync PR #531.
 
 ## Current state
@@ -83,8 +84,7 @@ failure, not a Customer test result, and the failed queue run must not be blindl
 
 Finish PR #425 delivery from synchronized local head `850227996`:
 
-1. Commit the verified `.961` build and incremental-review checkpoint, then repeat the two-leg push
-   protocol.
+1. Transport this `.961` push-evidence checkpoint and prove local, remote-tracking, and PR head equality.
 2. Requeue with `full-e2e` only when the branch is current, and follow it to its merge commit.
 3. Own publication and
    the generated platform-sync PR through green/merged before close-out.
@@ -174,6 +174,9 @@ Finish PR #425 delivery from synchronized local head `850227996`:
   merged cleanly as `850227996`; its only runtime effect is the consistent platform `.961` pin across
   all five services. The 188-project Release build passed with 0 errors and 8 existing warnings, and
   incremental review of `e649fbda9..850227996` found no issues.
+- Platform `.961` work push advanced remote/PR head `1a4913c24a0d5af4c50f5400620c994c1b937e85`
+  to reviewed work head `1fcfbacd61dbe5928da898713144a9d193a7a7cd`; local, remote-tracking, and
+  PR #425 head equality was verified before this checkpoint transport.
 - Phase 8 exact-artifact evidence: all local nupkgs embed producer commit
   `113be42f532d5d7e8daf1c362262ff7a7854b7bc`. SHA-256: Reunion
   `9FADC33CD06F3B4A9A92564633E01007CC81EA091AA9F257D821532E046E10CE`;
