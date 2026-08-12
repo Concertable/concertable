@@ -5,22 +5,26 @@
 - Roadmap item: `typed-result/auth-outcomes`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_auth-outcomes`
 - Branch: `Feature/typed-result_auth-outcomes`
-- PR: not opened; remote branch head `c784db2044cf11521681e842b28a38f92946385c`
+- PR: [#517](https://github.com/Concertable/concertable/pull/517), open at remote head
+  `4b53ac5bbbe0a08af9254d7a51d80f164f68387e`
 - Dependency/package gates: no implementation gate. NuGet.org publishes `Reunion` and
   `Reunion.Errors` `0.1.0-alpha.2`; Auth has no Payment, B2B, or Customer runtime/package dependency.
   This branch owns Auth's semantic migration and alpha.2 source adoption. The separate alpha.2
   baseline plan owns repository-wide version alignment. After the Auth `api/**` PR merges, this plan
   owns publication and its generated platform-sync gate to terminal green.
-- Last reconciled: `2026-08-12` after the verified delivery push. Local and remote work heads both
-  equal `c784db2044cf11521681e842b28a38f92946385c`; the branch is current with `origin/main` and
-  plan graph validation reports 0 errors and 0 warnings.
+- Last reconciled: `2026-08-12` after discovering open PR #517 and fetching current `origin/main`.
+  The local branch, its upstream, and the PR head all equal
+  `4b53ac5bbbe0a08af9254d7a51d80f164f68387e`; the PR's original hard-floor checks are green, but the
+  branch is 28 commits behind `origin/main` and must be updated before queue admission.
 
 ## Current state
 
-The task directly matches this branch and worktree. No other worktree owns the Auth implementation,
-no Auth PR exists, and no platform-sync PR is open. The verified delivery push created
-`origin/Feature/typed-result_auth-outcomes` at the exact local work head
-`c784db2044cf11521681e842b28a38f92946385c`; the branch is zero behind / 53 ahead of `origin/main`.
+The task directly matches this branch and worktree. No other worktree owns the Auth implementation.
+PR #517 is open at the exact local/upstream head
+`4b53ac5bbbe0a08af9254d7a51d80f164f68387e`, and its original build, carve, unit, and integration
+checks are green. The branch is now 28 commits behind current `origin/main`, including platform
+`0.950` and the nullable/Option carrier guidance from PR #524, so those commits must be merged and
+the updated candidate rebuilt before the PR can enter the queue.
 The sole unrelated dirty path is the preserved untracked clean-review work order
 `reviews/Feature-typed-result_auth-outcomes.md`.
 
@@ -39,11 +43,19 @@ Producer commit `113be42` adds flexible Option HTTP terminals, but Auth owns no 
 surface: its account handlers are server-rendered Razor Pages and its other outcome edge is Duende.
 `Reunion.AspNetCore` therefore remains correctly absent.
 
+PR #524's additional carrier guidance applies to Auth's boundary choices but requires no source
+change: EF lookups remain nullable inside `AuthService`, while `LoginAsync` and `LogoutAsync` expose
+intentional present-or-absent application outcomes as `Option<T>`. Auth does not wrap and immediately
+unwrap technical nullability, leak Option into persistence, or use a Result where absence has no
+distinct safe explanation.
+
 ## Next Steps
 
-Open the plain GitHub PR for remote head `c784db2044cf11521681e842b28a38f92946385c`, then use the
-normal merge workflow with full merge-queue E2E. After the Auth `api/**` PR lands, own package
-publication and the generated platform-sync PR to terminal green.
+Merge current `origin/main` into the Auth branch, verify the merged implementation still satisfies
+the new carrier guidance, rebuild the full solution to 0 errors, and push the updated candidate to
+PR #517. Then incrementally review the new range, wait for green PR checks, apply `full-e2e` because
+Auth behavior is observable end to end, enqueue the exact reviewed head, and own merge, publication,
+platform sync, and docs closeout to terminal completion.
 
 ## Downstream handoffs
 
@@ -80,6 +92,10 @@ publication and the generated platform-sync PR to terminal green.
   current `origin/main`; no code, package-cutover, PR, or platform-sync blocker remains.
 - Delivery push: local and remote work heads verified equal at `c784db2044cf11521681e842b28a38f92946385c`;
   the pushed range is the complete 53-commit branch delta over current `origin/main`.
+- Push checkpoint transport: local and remote heads verified equal at
+  `4b53ac5bbbe0a08af9254d7a51d80f164f68387e`. PR creation was rejected before GitHub created a PR.
+- PR discovery: PR #517 exists at that exact head. Its original hard-floor checks are green; current
+  `origin/main` is 28 commits ahead, so the PR is not yet eligible for queue admission.
 
 ## Verification
 
