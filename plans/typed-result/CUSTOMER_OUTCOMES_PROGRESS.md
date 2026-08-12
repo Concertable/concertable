@@ -6,7 +6,10 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_customer-outcomes`
 - Branch: `Feature/typed-result_customer-outcomes`
 - PR: [#425](https://github.com/Concertable/concertable/pull/425) - open, non-draft, remote head
-  `87bcdc52321511fad6a7c67197849268a81689bd`; GitHub ejected it from the merge queue after
+  `87bcdc52321511fad6a7c67197849268a81689bd`; local head
+  `a396b510fa2d027f4970df43b8ec6d0616c28c3b` merges current `origin/main`
+  `c680da03b0caaf65492109702be522a0c861411c`, including the merged Auth-owned Stripe CLI bootstrap
+  repair. GitHub ejected the prior head from the merge queue after
   merge-group run [31640531994](https://github.com/Concertable/concertable/actions/runs/31640531994)
   failed in UI E2E setup. The branch is based on `origin/main`
   `58e19d938128c533008280b1adbfb7e500c574fa` through merge `132f3a568`.
@@ -19,10 +22,10 @@
   minimal-API `ToOkOr` overloads with generic/parameter arities `2/2` and `3/3`, and the MVC overloads
   with arities `1/2` and `2/3`. Publication and published-baseline revalidation are terminal. Customer
   Ticket PR #475 and platform-sync PR #479 remain terminal and out of scope.
-- Last reconciled: 2026-08-12 after merge-queue ejection. Final pushed head
-  `87bcdc52321511fad6a7c67197849268a81689bd` was proven equal across local,
-  `origin/Feature/typed-result_customer-outcomes`, and PR #425 before queueing. PR #425 is now
-  `OPEN`/`CLEAN`, auto-merge is off, and no source change has followed the failed run.
+- Last reconciled: 2026-08-13 after current-main merge. PR #425 remains at remote head
+  `87bcdc52321511fad6a7c67197849268a81689bd`; local merge head `a396b510f` is not yet verified or
+  pushed. PR #425 is open with auto-merge off. The prior Stripe setup blocker is resolved on current
+  main by Auth PR #517 and its terminal platform-sync PR #531.
 
 ## Current state
 
@@ -74,10 +77,14 @@ failure, not a Customer test result, and the failed queue run must not be blindl
 
 ## Next Steps
 
-Blocked: PR #425 cannot merge until its required full-E2E gate has a valid UI-suite result; merge-group run 31640531994 failed during Stripe CLI installation before any UI scenario ran.
-Blocked by: GitHub Actions runner/external Stripe CLI asset download failure in UI E2E job 94265184983.
-Unblock action: In a dedicated `/e2e-ui-debug` session, run the mandatory fresh Docker preflight and UI suite, diagnose any repeat setup failure, and if the fresh run is green reconcile this ledger and return PR #425 to `/merge`; do not rerun the failed GitHub job directly.
-Resume when: A fresh-stack UI E2E run is green, or a repeated setup failure yields an actionable infrastructure fix committed with this ledger through the plan push protocol.
+Finish PR #425 delivery from synchronized local head `a396b510f`:
+
+1. Build `api/Concertable.slnx` in Release to 0 errors, complete the required incremental review, and
+   commit the verified current-main checkpoint.
+2. Push through the plan-managed two-leg protocol, proving local, remote-tracking, and PR head
+   equality after each leg.
+3. Return PR #425 to `/merge` with `full-e2e`, follow it to its merge commit, then own publication and
+   the generated platform-sync PR through green/merged before close-out.
 
 ## Completed milestones
 
@@ -113,6 +120,9 @@ Resume when: A fresh-stack UI E2E run is green, or a repeated setup failure yiel
 - PR #425 reached merge-group run 31640531994 at pushed head `87bcdc523`; API E2E and every hard-floor
   job passed. UI E2E never reached a scenario because Stripe CLI download setup failed, so GitHub
   ejected the PR without merging.
+- Auth PR #517 merged the durable Stripe CLI bootstrap through the signed Stripe apt repository and
+  corrected its installed-version assertion; platform-sync PR #531 and Auth closeout PR #532 are
+  terminal. Current `origin/main` `c680da03b` merged cleanly into this branch as `a396b510f`.
 
 ## Verification and review
 
