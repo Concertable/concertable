@@ -5,9 +5,9 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `132f3a568fb6eee4e2635130ab016fd1b6ebdd3d`  _(2026-08-12)_
+**Reviewed up to commit:** `e649fbda9e0b97c18087ffb30ef24eb467d3eac9`  _(2026-08-13)_
 
-**Security-reviewed up to commit:** `132f3a568fb6eee4e2635130ab016fd1b6ebdd3d`  _(2026-08-12)_
+**Security-reviewed up to commit:** `e649fbda9e0b97c18087ffb30ef24eb467d3eac9`  _(2026-08-13)_
 
 > Range reviewed: `d916e95cf..5cfdb9427` (43 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -88,3 +88,14 @@ module boundaries, seeding, C# conventions, and test coverage of changed paths. 
 `IReadDbContext` refactor keeps every query context module-local, preserves no-tracking registration,
 and compiles with the Customer alpha.3 terminals across the full 188-project Release graph with 0
 errors. The `.955` platform pins match current main.
+
+## Incremental review â€” 2026-08-13 (Auth Stripe repair reconciliation)
+
+> Range reviewed: `132f3a568..e649fbda9` (101 commits).
+
+No issues found. Checked native correctness, security-sensitive Auth and workflow paths,
+microservice isolation, module boundaries, seeding, C# conventions, and test coverage of changed
+paths. The incoming Auth typed-result migration preserves authentication, registration, password,
+email-verification, logout, cancellation, and redirect behavior with direct unit and integration
+coverage. The shared Stripe setup action installs and verifies the exact signed package version for
+all E2E jobs. The synchronized 188-project Release solution builds with 0 errors.

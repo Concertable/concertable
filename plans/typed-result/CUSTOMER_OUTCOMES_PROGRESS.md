@@ -79,8 +79,7 @@ failure, not a Customer test result, and the failed queue run must not be blindl
 
 Finish PR #425 delivery from synchronized local head `a396b510f`:
 
-1. Build `api/Concertable.slnx` in Release to 0 errors, complete the required incremental review, and
-   commit the verified current-main checkpoint.
+1. Commit the verified current-main build and clean incremental-review checkpoint.
 2. Push through the plan-managed two-leg protocol, proving local, remote-tracking, and PR head
    equality after each leg.
 3. Return PR #425 to `/merge` with `full-e2e`, follow it to its merge commit, then own publication and
@@ -185,7 +184,11 @@ Finish PR #425 delivery from synchronized local head `a396b510f`:
   path in Customer User; the same project passed through a temporary short drive mapping with no
   tracked workaround. Package, carrier, terminal, rename, excluded-scope, local-workaround, and
   whitespace inventories are clean.
-- Current review state: all implementation work is clean through `132f3a568`; no findings remain open.
+- Current-main `.958` verification: `dotnet build api/Concertable.slnx --configuration Release
+  --nologo` succeeded across 188 projects with 0 errors and 6 existing warnings. Incremental native,
+  security, architecture, module-boundary, seeding, convention, and coverage review of
+  `132f3a568..e649fbda9` (101 commits) found no new issues.
+- Current review state: all implementation work is clean through `e649fbda9`; no findings remain open.
 
 ## Decisions and constraints
 
