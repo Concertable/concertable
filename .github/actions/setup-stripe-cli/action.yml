@@ -15,4 +15,5 @@ runs:
           | sudo tee /etc/apt/sources.list.d/stripe.list > /dev/null
         sudo apt-get update
         sudo apt-get install --yes "stripe=$STRIPE_CLI_VERSION"
-        test "$(stripe version)" = "stripe version $STRIPE_CLI_VERSION"
+        test "$(dpkg-query --show --showformat='${Version}' stripe)" = "$STRIPE_CLI_VERSION"
+        stripe version
