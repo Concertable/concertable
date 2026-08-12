@@ -23,35 +23,41 @@ current-summary section affected by the event:
 - worktree, branch, PR, and dependency or package gates;
 - current state and partial or uncommitted work that must be preserved;
 - `## Next Steps` — the single resolved next action as self-contained steps; when no action can
-  proceed, the exact `Blocked:`, `Unblock action:`, and `Resume when:` fields from
+  proceed, the exact `Blocked:`, `Blocked by:`, `Unblock action:`, and `Resume when:` fields from
   `plans/agents/PLAN.md`;
-- completed work with commit or PR evidence;
-- verification commands and outcomes, tied to the code state they verified;
-- decisions, discoveries, blockers, and deviations.
+- compact completed milestones with commit or PR evidence;
+- the latest verification commands and outcomes still valid for the current code state;
+- current review state and every finding that remains open or needs follow-up;
+- decisions, discoveries, blockers, and deviations that still affect execution.
 
-Append a dated event-log entry with the action, evidence, outcome, and follow-up. For review work,
-also record the review type and range, artifact, every finding ID and disposition (`open`, `fixed`,
-`deferred`, or `superseded`), and the fixing commit or deferral evidence. Never claim a transition
-that the workflow did not verify.
+Do not append a permanent dated event entry. If the transition cannot yet be represented safely in the
+stable sections, put it briefly in optional `## Recent transitions`. At every checkpoint, fold prior
+entries into the stable snapshot and delete superseded chronology. When touching a legacy ledger with
+an append-only `## Event log`, compact it under this rule in the same checkpoint; retain only facts whose
+removal could change the next agent's action or cause a costly failed approach to be repeated.
+
+For review work, keep the review type and range, artifact, and every finding that remains open or needs
+follow-up. Once all findings are resolved and the follow-up review is clean, collapse them to the clean
+reviewed state and the fixing commits still material to the branch; the review artifact and git retain
+the detailed history. Never claim a transition that the workflow did not verify.
 
 Use workflow-specific evidence: implementation paths and partial state; review range, artifact,
 watermark and finding dispositions; verification command, tested commit/working tree, counts and
 result; commit subject and SHA (or `this commit` inside the commit that carries the entry); pushed
 remote/range and resulting PR head; PR number/URL/head/checks; queue result and merge SHA; published
 package/version/run; and platform-sync PR/version/check/merge state. Record failed, blocked, cancelled,
-and no-op outcomes too, with the prerequisite or reason.
+or no-op outcomes only while they affect the current state, next action, or a durable decision.
 
 ## Preserve and checkpoint
 
 Keep the plan and ledger while any required review/fix, verification, PR/check/merge, publication,
 dependency, or platform-sync gate is non-terminal. After the final gate, record its outcome and make
 that ledger state durable before deleting the plan and ledger together in the following close-out
-change. A final local phase with no later gate may close them in its completing commit.
+change. The plan and ledger survive the source PR merge on `main`.
 
 Include the ledger update in the work commit when its evidence is already known. If the event became
-known only after that commit or occurred remotely, stage only the plan/ledger changes and create an
-immediate local checkpoint commit when repository rules permit. Never push merely because this
-procedure created a checkpoint; pushing remains governed by the invoking workflow and user request.
+known after the final pushed PR head or occurred remotely, do not add a local observation commit to
+the source branch. Reconcile it from a fresh continuation or close-out worktree based on `origin/main`.
 
 ### Push protocol
 
@@ -64,7 +70,7 @@ Only after the work head is verified, update the ledger with the evidenced pushe
 work and PR heads, outcome, and exact post-push next action. Stage only the plan and ledger and create
 one checkpoint commit. Push that commit as a checkpoint-transport leg, then fetch and require local
 `HEAD`, the remote-tracking ref, and any PR `headRefOid` to equal the checkpoint commit. Transport is
-part of the same push event: it never invokes this procedure recursively, appends another push event,
+part of the same push event: it never invokes this procedure recursively, adds another transition,
 or creates another checkpoint commit. The ledger records the verified work push and resulting next
 action; it does not fabricate advance evidence that its own transport succeeded.
 
@@ -79,49 +85,28 @@ unless final local, remote-tracking, and PR equality is verified.
 
 ### Remote-transition protocol
 
-Long-running delivery workflows checkpoint a material remote transition immediately after observing
-it, before the next wait, mutation, checkout, or early stop. Resolve the plan once at workflow start
-and retain its absolute worktree, source branch, PR number, and source PR `headRefOid` as the delivery
-identity. Reconcile those values at every checkpoint.
+Resolve the plan once and retain its source worktree, branch, PR number, and remote `headRefOid`.
+The final pushed PR head carries the ledger's current state and exact next remote gate. GitHub keeps
+queue, check, and merge evidence durable; observe it without committing after the source PR head.
 
-When the transition does not require changing the source PR head, update the plan and ledger, stage
-only those files, and create a local recovery commit. This is an observation checkpoint:
+If the queue ejects the PR, reconcile the failure with its required fix and publish both through the
+normal push protocol. Never push an observation-only commit to re-trigger a queue.
 
-- never push it merely to publish the observation;
-- never amend, push, or otherwise mutate a source PR that is queued, locked, merged, or closed;
-- keep operating on the PR by number and verified remote `headRefOid`, not by assuming local `HEAD`
-  is still the delivery head; and
-- until the source PR merges, stack later observation checkpoints on its local branch.
+As soon as the source PR is `MERGED`, switch to another checkout and run:
 
-A terminal green PR-check checkpoint made immediately before queue admission is intentionally local
-only. Verify every commit after the PR's `headRefOid` changes only the active plan and ledger, verify
-the PR head still equals the checked OID, then enqueue that exact PR head. On resume, this documented
-checkpoint-only tail is not unpushed implementation work and must not be pushed, reset, or used to
-block queue monitoring. If any commit in the tail changes another path, stop and record the
-contradictory local state.
+```powershell
+./scripts/worktrees.ps1 close -Worktree <source-path> -PullRequest <n> -PlanManaged
+```
 
-As soon as the source PR is `MERGED`, record its merge checkpoint, then move recovery ownership before
-any publication or platform-sync wait:
-
-1. Fetch `origin/main` and create `Docs/<epic>_<name>_closeout` in a clean sibling worktree.
-2. Verify every commit after the recorded source `headRefOid` changes only the active plan and ledger,
-   then cherry-pick those commits in order onto the close-out branch. Apply no runtime/source change.
-3. Update the ledger's worktree and branch identity to the close-out worktree, and verify its plan and
-   ledger content match the source worktree's latest committed state.
-4. Remove the merged feature worktree and its local/remote branch immediately. Continue publication,
-   dependency, and platform-sync checkpoints only in the close-out worktree.
-
-If any post-source-head commit or dirty path is not the active plan/ledger, stop: the transfer is not
-safe and the contradictory work must be resolved before teardown. The transfer itself is local-only;
-do not push the close-out branch until its terminal net meta-only change passes `/docs-review` and is
-landed through `/merge-docs`.
+The command proves the PR/head relationship, merged containment, cleanliness, and ledger presence at
+both the PR head and `origin/main`. If work remains, create a fresh continuation or docs close-out
+worktree from current `origin/main` and reconcile remote outcomes there. There is no tail to transfer.
 
 If the queue ejects the PR and a code fix is required, checkpoint the failure first. Once the PR is
-confirmed open and unlocked, commit the fix after the local checkpoint tail and use the compound push
+confirmed open and unlocked, commit the fix with the ledger update and use the compound push
 protocol above to publish the complete new head. A platform-sync fix belongs to the sync PR's own
-branch or worktree: checkpoint its discovery and state in the active plan worktree (the close-out
-worktree after source merge), but never push plan checkpoints to the sync PR or use them to mutate the
-merged source PR.
+branch or worktree: record its discovery in the continuation or close-out ledger, never in the merged
+source branch.
 
 The final report still requires a full reconciliation checkpoint. That hook verifies and records the
 end state; it does not replace any transition checkpoint that should already exist.
@@ -130,17 +115,25 @@ end state; it does not replace any transition checkpoint that should already exi
 
 Report the workflow result only after the checkpoint is durable, having written the immediate next
 action into the ledger's `## Next Steps` section so it is the durable source of truth. If actionable
-plan-managed work remains, end with one pointer per independently executable ledger, and each prompt is
-ONLY the pointer — nothing plan-specific. Delivery-gated local preparation is actionable; an
+plan-managed work remains, hand off only the current or explicitly targeted logical workstream.
+Do not claim a dependency ledger merely because it was read or received a cross-workstream return-link
+edit. Use the cd-first pointer for a live worktree or the worktree-create opener from `PROMPTS.md` after
+merged cleanup. The prompt remains ONLY
+the pointer — nothing plan-specific. Delivery-gated local preparation is actionable; an
 implementation-blocked ledger gets no pointer. Literally:
 
 ```
-cd <absolute-worktree-path>
+Why: `<PLAN>_PROGRESS.md` owns unfinished work from this turn: <short next-action reason>
+Only run this continuation if no agent or session already owns this ledger.
+```
+
+```
+<cd existing-worktree OR /worktree create Type/epic_name>
 Read @plans/<PLAN>_PLAN.md and @plans/<PLAN>_PROGRESS.md and do what its `## Next Steps` says.
 ```
 
 No branch to verify, checkpoints, gates, commands, or steps in the prompt — every such specific lives in
 the ledger, never restated, so the prompt can't drift. If the lifecycle is terminal, follow the close-out
 rule and do not invent a continuation prompt. If the plan is hard-blocked, do not emit this pointer:
-report the ledger's three blocker lines verbatim, then emit a resolver dispatch
+report the ledger's four blocker lines verbatim, then emit a resolver dispatch
 prompt only when a separate unowned task can open the gate.

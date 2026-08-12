@@ -7,7 +7,7 @@ import {
 } from "@stripe/react-stripe-js";
 import type { Appearance, StripeElementsOptions } from "@stripe/stripe-js";
 import { Button } from "@/components/ui/button";
-import { stripePromise } from "@/lib/stripe";
+import { getStripe } from "@/lib/stripe";
 import type { CheckoutSession } from "../../types";
 
 const appearance: Appearance = { theme: "night" };
@@ -22,6 +22,7 @@ export interface Props {
 
 export function StripePaymentForm(props: Readonly<Props>) {
   const { clientSecret, customerSession } = props.session;
+  const stripe = useMemo(() => getStripe(), []);
   const options = useMemo<StripeElementsOptions>(
     () => ({
       clientSecret,
@@ -32,7 +33,7 @@ export function StripePaymentForm(props: Readonly<Props>) {
   );
 
   return (
-    <Elements stripe={stripePromise} options={options}>
+    <Elements stripe={stripe} options={options}>
       <Form {...props} />
     </Elements>
   );

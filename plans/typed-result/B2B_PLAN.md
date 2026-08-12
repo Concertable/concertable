@@ -112,8 +112,8 @@ feed path, or disposable package pin may be introduced.
   and the deferred invariant inventory still propagates exceptionally; HTTP tests pin unchanged
   stable codes, messages, structured fields, and ProblemDetails while invariant exceptions remain
   500-class faults;
-- final checkpoint: select the merge-queue E2E tier (full by default); do not duplicate the queue run
-  locally.
+- final checkpoint: select the merge-queue E2E tier mechanically via merge Step 4; do not duplicate
+  the queue run locally.
 
 ## Dependency gate
 

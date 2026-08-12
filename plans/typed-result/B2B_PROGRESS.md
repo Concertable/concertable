@@ -6,18 +6,19 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-B2BTypedResultMigration`
 - Branch: `Refactor/B2BTypedResultMigration`
 - PR: not opened
-- Local head: `ef24a9e39832fe06596877809da6bc668797a9be`
+- Checkpoints 8-9 commit: `bfc8690b196821bdd735ea5d229182fd9a3baf36`
 - Review watermark: `3d50d321c62fc7b9bc302aa9b2cbb93d77aa28b0`
 - Dependency/package gate: open; `Reunion`, `Reunion.Validation`, `Reunion.Errors`, and
   `Reunion.AspNetCore` `0.1.0-alpha.2` resolve from normal configured feeds
-- Main reconciliation: fetched `origin/main` at `b94028d3fe39ce2495bc9555ca13a5e6992272ee`;
-  the dirty worktree is 211 commits behind and must be committed before merging main
+- Main reconciliation: `origin/main` `93cecb6453d347ffd4e50efabb28190d1c7228f8` is reconciled;
+  semantic conflict resolution and post-merge verification are complete
 
 ## Current state
 
-Checkpoints 1-7 are committed. Checkpoints 8 and 9 are implemented and verified together in the
-current dirty worktree because this session resumed an interrupted tree in which their changes were
-already interleaved. Do not split, stash, or discard that work. There are 84 changed/untracked paths.
+Checkpoints 1-9 are committed. Checkpoints 8 and 9 were verified and committed together because this
+session resumed an interrupted tree in which their changes were already interleaved. The current-main
+merge preserves the typed contracts through main's application-executor façade and keyed Deal
+strategy factories and is fully verified.
 
 Checkpoint 8 now uses the complete Reunion alpha.2 family. The two custom DI validators return
 `Reunion.Validation.ValidationResult`; B2B no longer contains `FluentResults`,
@@ -40,8 +41,8 @@ New, never-published cases use resolver-derived codes rather than `[ErrorCode]` 
 overrides. Existing published cases keep their pinned codes. The negative door-revenue application
 case is named `Negative`, deriving `declare.door_revenue_negative`.
 
-The Reunion integration close-out and stop-hook scope correction are already merged independently on
-`origin/main` by PR #512. The later main merge must absorb those changes; do not recreate the deleted
+The Reunion integration close-out and stop-hook scope correction are merged independently on
+`origin/main` by PR #512 and included in the current reconciliation. Do not recreate the deleted
 `REUNION_INTEGRATION_PLAN.md` or `REUNION_INTEGRATION_PROGRESS.md` files here.
 
 SEC1 is a delivery decision, not an implementation blocker. Its durable B2B + Payment saga/package
@@ -50,11 +51,8 @@ before delivery.
 
 ## Next Steps
 
-1. Commit the verified interleaved Checkpoint 8-9 tree as one coherent checkpoint. Do not push.
-2. Merge current `origin/main` into the now-clean branch, preserving this ledger's authoritative B2B
-   state while absorbing PR #512. Run the local plan graph, repeat affected build/test gates, and
-   resolve any reconciliation fallout.
-3. Use the `incremental-review` skill from watermark `3d50d321c`, address every new finding serially,
+1. Commit the verified current-main reconciliation. Do not push.
+2. Use the `incremental-review` skill from watermark `3d50d321c`, address every new finding serially,
    and update this ledger. Do not push, open a PR, or merge B2B until separately instructed.
 
 ## Completed work
@@ -67,7 +65,7 @@ before delivery.
   through `3d50d321c`. NAT1-NAT5, SEC2, and CV1 are fixed. SEC1 is deferred to the owning tech-debt
   entry as a pre-delivery decision.
 - Checkpoints 8-9 and their alpha.2 package reconciliation, direct unit coverage, and HTTP contract
-  coverage are implemented and verified in the dirty tree.
+  coverage are implemented, verified, and committed as `bfc8690b1`.
 
 ## Verification
 
@@ -83,6 +81,13 @@ before delivery.
 - Full `api/Concertable.slnx` Release build: passed, 0 errors and 2 existing generated E2E
   nullable-context warnings.
 - Scoped changed-file formatting and immediate `--verify-no-changes`: passed.
+- Post-merge full `api/Concertable.slnx` Release build: passed, 0 errors and 3 existing warnings after
+  restoring all 182 current-main projects.
+- Post-merge B2B Release build: passed, 0 errors and 5 existing warnings.
+- Post-merge unit tests: Artist 11/11, Venue 12/12, Tenant 124/124, Deal 53/53, Concert 201/201;
+  B2B architecture 8/8.
+- Post-merge B2B integrations: Artist 17/17, Concert 153/153, Tenant 58/58, User 4/4, Venue 25/25.
+- Post-merge plan graph: 0 errors and 0 warnings.
 - Exact assets audit: Concert Application resolves Reunion, Reunion.Validation, and Reunion.Errors
   alpha.2; Concert API additionally resolves Reunion.AspNetCore alpha.2.
 - Source/config audit: no B2B legacy carriers, alpha.1 pins, caller-actionable `DomainException`
@@ -97,11 +102,31 @@ before delivery.
 - Customer Docker and SEC1 are later verification/delivery concerns and did not block alpha.2 or
   Checkpoint 9 implementation.
 - Do not kill unrelated .NET processes owned by parallel Auth, Customer, Shared, or platform work.
-- The origin/main plan graph reports 13 errors only in stale non-B2B ledgers on this 211-commit-behind
-  branch. B2B itself satisfies the graph contract; the required post-commit main merge owns resolving
-  the stale snapshot instead of editing unrelated plan state here.
+- The pre-merge plan graph's 13 unrelated stale-ledger errors belonged to the old branch snapshot;
+  the current-main graph is the authoritative post-reconciliation gate.
+
+## Downstream handoffs
+
+- Waiting ledger: `plans/typed-result/REUNION_SHARED_CONTRACTION_PROGRESS.md`.
+  Gate: B2B must be delivery-ready and identify every remaining old carrier, terminal, and third-party
+  dependency outside its owned scope.
+- Waiting ledger: `plans/dotnet-11/B2B_WORKFLOW_UNIONS_PROGRESS.md`.
+  Worktree: not created; reserved branch `Refactor/dotnet-11_b2b-workflow-unions`.
+  Gate: the B2B typed-result source PR and every resulting publication/platform-sync gate must be
+  terminal and green. At that gate, update the dependent ledger on current main and surface its
+  implementation pointer.
 
 ## Event log
+
+### 2026-08-12 - Current-main semantic reconciliation completed
+
+- Committed the verified interleaved Checkpoints 8-9 tree as `bfc8690b1` without pushing.
+- Began merging `origin/main` `93cecb645`; PR #512's Reunion close-out and scoped stop hook are present.
+- Reconciled main's application-executor façade and keyed Deal strategy factories with the branch's
+  typed contracts.
+- Restored the full 182-project solution graph; Release builds passed for B2B and the full solution.
+  Affected unit/architecture suites and all five B2B integration projects passed.
+- PR #512's Reunion close-out and scoped stop hook are absorbed; the plan graph is clean.
 
 ### 2026-08-12 - Checkpoints 8-9 verified
 

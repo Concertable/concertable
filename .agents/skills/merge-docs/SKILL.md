@@ -23,7 +23,7 @@ Plain `git`/`gh` only (personal repo — never the work PR/ADO skills).
 ## Steps
 
 0. **Docs review first.** A docs/meta PR still gates on a review — just `/docs-review`, not
-   `/code-review` (it has no runtime to code-review). Confirm a clean docs-review of this branch before
+   `/review` (it has no runtime to code-review). Confirm a clean docs-review of this branch before
    the admin-merge below; if none exists or findings are open, stop and hand off a `/docs-review`
    prompt naming this worktree and branch. The `--admin` bypass skips the queue, so this is the only
    gate the change gets — don't skip it.
@@ -51,10 +51,9 @@ Plain `git`/`gh` only (personal repo — never the work PR/ADO skills).
    - If `--admin` is refused (e.g. HTTP 401 on the local token), fall back to the queue **with the skip
      label**: `gh pr merge <n> --merge --auto`, then poll for `MERGED`. Never force past a red check.
 6. **Return to clean main** (in the main checkout) and clean up:
-   ```
+   ```powershell
    git checkout main && git pull --ff-only origin main
-   git worktree remove --force <path>         # if you created one in step 1 — --force clears leftover build output so the worktree can't linger and fill the disk (plain remove fails with "Directory not empty")
-   git branch -D Docs/<Name>; git push origin --delete Docs/<Name>
+   ./scripts/worktrees.ps1 close -Worktree <path> -PullRequest <n>
    ```
 7. **No platform-sync** — a docs-only diff touches no `api/**`, so nothing republishes. Confirm and stop:
    `gh pr diff <n> --name-only | grep -q '^api/' && echo unexpected || echo "no sync (docs-only)"`.

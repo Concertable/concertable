@@ -1,27 +1,27 @@
 ---
 name: big-review
-description: Review a very large branch diff in resumable area-stages, instead of one unreviewable pass. A staging wrapper around the `code-review` skill for branches too big to review at once (hundreds/thousands of changed files, e.g. `Refactor/Microservices`). Reviews the NET diff `merge-base..HEAD` (current state vs main — never walks intermediate commits, which waste time on superseded designs), sliced into area-stages. Each run reviews the next unreviewed area, appends findings, and ticks a coverage checklist in `reviews/BIG-<branch-slug>-Review.md`. Use when the user wants to "big review", "review this massive PR in stages", "stage the review", or resume a staged review ("continue the big review", "next stage"). For a normal-sized branch use `code-review`; for only-new-commits use `incremental-review`.
+description: Review a very large branch diff in resumable area-stages, instead of one unreviewable pass. A staging wrapper around the `review` skill for branches too big to review at once (hundreds/thousands of changed files, e.g. `Refactor/Microservices`). Reviews the NET diff `merge-base..HEAD` (current state vs main — never walks intermediate commits, which waste time on superseded designs), sliced into area-stages. Each run reviews the next unreviewed area, appends findings, and ticks a coverage checklist in `reviews/BIG-<branch-slug>-Review.md`. Use when the user wants to "big review", "review this massive PR in stages", "stage the review", or resume a staged review ("continue the big review", "next stage"). For a normal-sized branch use `review`; for only-new-commits use `incremental-review`.
 ---
 
 # big-review
 
-`big-review` **is the `code-review` skill applied in resumable area-stages** to a branch too large to review in one sitting. Two things differ from `code-review`:
+`big-review` **is the `review` skill applied in resumable area-stages** to a branch too large to review in one sitting. Two things differ from `review`:
 
 1. **Scope per run** — instead of reviewing the whole diff at once, each run reviews the NET diff `merge-base..HEAD` **scoped to one area's paths**. The net diff is what actually ships; intermediate commits are NOT walked (a long-lived refactor branch builds things then refactors them away — reviewing history wastes effort on code that no longer exists).
 2. **Progress contract** — a **coverage checklist** of areas at the top of `reviews/BIG-<branch-slug>-Review.md` is the source of truth for what's done. Each run picks the next `[ ]` area, reviews it, appends its findings, and ticks it `[x]`. This is the resume mechanism (the analogue of `incremental-review`'s SHA marker).
 
-Everything else — the rule docs, the five lenses, the ≥80-confidence filter — comes from `code-review` unchanged. **Read `.agents/skills/code-review/SKILL.md` and follow its Steps 2–4 verbatim for each area.** Keep this skill in sync with it.
+Everything else — the native review layer, the rule docs, the six lenses, the ≥80-confidence filter — comes from `review` unchanged. **Read `.agents/skills/review/SKILL.md` and follow its Steps 1c–4 verbatim for each area.** Keep this skill in sync with it.
 
 ## When to use
 
 - "big review", "review this massive PR in stages", "stage the review"
 - "continue the big review", "next stage", "resume the big review"
-- Any branch where `code-review`'s single-pass diff would be too large to review with real recall (rule of thumb: >300 changed files or it spans multiple services).
+- Any branch where `review`'s single-pass diff would be too large to review with real recall (rule of thumb: >300 changed files or it spans multiple services).
 
 ## When NOT to use
 
 - **A review whose Coverage checklist is already fully `[x]` — the staging pass is DONE.** Don't re-invoke this skill; it only re-reports "complete" and does zero useful work. Pointing at a completed review, or "address the comments/findings", means **work the findings** and then delete the file when they're resolved — see [`reviews/AGENTS.md`](../../../reviews/AGENTS.md) for that convention and the delete-when-addressed lifecycle.
-- Normal-sized branch → `code-review`.
+- Normal-sized branch → `review`.
 - Only re-review commits added since a prior review → `incremental-review`.
 - An exhaustive multi-agent pass → run a `Workflow` (ultracode).
 
@@ -53,7 +53,7 @@ On a resume, the very first thing — before picking an area — is to compare c
 - **All areas `[x]` and HEAD ≠ plan-anchor** → the staging pass is **complete but the branch has drifted** past what this review covered. This is the case that must be obvious immediately, not derived stage-by-stage. Do **not** re-plan the completed file and do **not** re-walk its stages. Instead:
   1. Show the drift: `git log --oneline <anchor>..HEAD` and `git diff <anchor>..HEAD --stat | tail -1`.
   2. Route by the size of that delta:
-     - **Modest delta** (fits one `code-review` sitting — rule of thumb <300 files, single service) → hand off to **`incremental-review`**, which scopes to `<anchor>..HEAD` off the stamped `Reviewed up to commit:` marker. That is the designed continuation and needs no new staging file.
+     - **Modest delta** (fits one `review` sitting — rule of thumb <300 files, single service) → hand off to **`incremental-review`**, which scopes to `<anchor>..HEAD` off the stamped `Reviewed up to commit:` marker. That is the designed continuation and needs no new staging file.
      - **Large / multi-area delta** (would itself be unreviewable in one pass) → offer a fresh **staged** wave: a new tracking file `reviews/BIG-<branch-slug>-Review-Wave2.md` (bump the suffix for further waves) anchored to current HEAD, covering `<prior-watermark>..HEAD`. Leave the completed file intact — never overwrite a stamped, finished review.
   3. State the fork to the user and let them pick (incremental single-pass vs a fresh staged wave) unless it's unambiguous. Then proceed with the chosen path.
 
@@ -82,7 +82,7 @@ Read the coverage checklist. If the plan-anchor SHA differs from current HEAD, n
 
     This is the contract `incremental-review` reads (it greps for `Reviewed up to commit:`). Stamp it **only on completion** — never while areas are still `[ ]`/`[~]`, or `incremental-review` would wrongly treat un-reviewed code as covered. New commits added after the anchor are then reviewed by pointing `incremental-review` at this file (it scopes to `<anchor>..HEAD`). Use the plan-anchor SHA, not current HEAD — HEAD may have moved past what this review actually covered.
 
-## Step 3 — Review the chosen area (the `code-review` procedure, path-scoped)
+## Step 3 — Review the chosen area (the `review` procedure, path-scoped)
 
 First, flip the area's checklist item to `[~]` and save — if this context dies mid-review, the next run knows the stage is incomplete rather than untouched. Then **read the Cross-area notes section**: any note targeting this area's paths is a mandatory check for this stage.
 
@@ -93,12 +93,12 @@ git diff <merge-base>..HEAD --stat -- <area-path-1> <area-path-2> ...
 git diff <merge-base>..HEAD --diff-filter=d --find-renames -- <area-paths>   # excludes pure deletes
 ```
 
-Then follow **`code-review` Steps 2–4 verbatim** on that scoped diff:
+Then follow **`review` Steps 1c–4 verbatim** on that scoped diff:
 
-- Run the native review layer (`code-review` Step 1c) over the area's scoped diff (`NAT#` IDs continue across areas); the security layer (`code-review` Step 1d) runs on whichever stage holds security-sensitive paths, stamping the shared security marker once.
-- Load the rule docs relevant to the area (`code-review` Step 2).
-- Review through all six lenses — correctness, microservice isolation, module boundaries, seeding, C# conventions, test coverage of changed paths (`code-review` Step 3). For whichever stage holds the shared/contract code the rest of the diff depends on, the isolation/boundary lens is the headline check.
-- Apply the ≥80-confidence filter (`code-review` Step 4).
+- Run the native review layer (`review` Step 1c) over the area's scoped diff (`NAT#` IDs continue across areas); the security layer (`review` Step 1d) runs on whichever stage holds security-sensitive paths, stamping the shared security marker once.
+- Load the rule docs relevant to the area (`review` Step 2).
+- Review through all six lenses — correctness, microservice isolation, module boundaries, seeding, C# conventions, test coverage of changed paths (`review` Step 3). For whichever stage holds the shared/contract code the rest of the diff depends on, the isolation/boundary lens is the headline check.
+- Apply the ≥80-confidence filter (`review` Step 4).
 
 While reviewing, when you spot something whose other half lives in a **different** area (a changed contract whose consumers are in a later stage, a renamed config key, a behaviour change that some other component must absorb), don't drop it and don't review outside your paths — **add a one-line entry to Cross-area notes** naming the target area and what to verify there.
 
@@ -108,7 +108,7 @@ For a very large area, fan out reading with parallel sub-agents (one per sub-tre
 
 In `reviews/BIG-<branch-slug>-Review.md`:
 
-- **Append** a `## <Area> — reviewed <date>` section with the findings (use `code-review`'s finding shape and stable IDs; continue the ID scheme across areas, no renumbering). No findings → write the "No issues found in this area" line.
+- **Append** a `## <Area> — reviewed <date>` section with the findings (use `review`'s finding shape and stable IDs; continue the ID scheme across areas, no renumbering). No findings → write the "No issues found in this area" line.
 - Mark any Cross-area note you checked during this stage as resolved (strike it through with the outcome); leave notes you added for later stages open.
 - Flip that area's checklist item from `[~]` to `[x]` with the date.
 - Preserve every prior area's section and status marks. Never overwrite (the one exception: replacing a partial section left by a dead `[~]` run, per Step 2).

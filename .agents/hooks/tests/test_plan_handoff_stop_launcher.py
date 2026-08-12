@@ -9,7 +9,7 @@ from unittest.mock import Mock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from plan_handoff_stop_launcher import blob_oid, implementation_is_current, main
+from plan_handoff_stop_launcher import TRUSTED_FILES, blob_oid, implementation_is_current, main
 
 
 class PlanHandoffStopLauncherTests(unittest.TestCase):
@@ -42,7 +42,7 @@ class PlanHandoffStopLauncherTests(unittest.TestCase):
     def test_reads_origin_main_blob_oid_without_executing_it(self, run):
         run.return_value = Mock(returncode=0, stdout="def456\n")
 
-        self.assertEqual("def456", blob_oid(self.root, "origin/main"))
+        self.assertEqual("def456", blob_oid(self.root, revision="origin/main"))
         run.assert_called_once_with(
             [
                 "git",
@@ -56,7 +56,7 @@ class PlanHandoffStopLauncherTests(unittest.TestCase):
             timeout=5,
         )
 
-    @patch("plan_handoff_stop_launcher.blob_oid", side_effect=["same", "same"])
+    @patch("plan_handoff_stop_launcher.blob_oid", side_effect=["same", "same"] * len(TRUSTED_FILES))
     def test_accepts_matching_implementation(self, _):
         self.assertTrue(implementation_is_current(self.root))
 
