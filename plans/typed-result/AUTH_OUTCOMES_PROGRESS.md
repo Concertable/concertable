@@ -5,518 +5,226 @@
 - Roadmap item: `typed-result/auth-outcomes`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_auth-outcomes`
 - Branch: `Feature/typed-result_auth-outcomes`
-- PR: not opened
-- Dependency/package gates: no implementation gate; Auth has no Payment/B2B/Customer dependency.
-  Delivery classification follows the current package-topology audit and published Reunion `.1` use.
-- Last reconciled: `2026-08-09` from fresh `origin/main` `c72b058afe43742854b765838bf43f179e7ed92a`,
-  current branch head `98599413adca3364ef7d3613850b66d69caf2f69`, merged Reunion PRs #443/#444,
-  and live local/GitHub state.
+- PR: [#517](https://github.com/Concertable/concertable/pull/517), open at remote final head
+  `e91b6ecadde05e9ecad6b3126a5b44e1ea10b57b`
+- Dependency/package gates: no implementation gate. NuGet.org publishes `Reunion` and
+  `Reunion.AspNetCore`, `Reunion.Errors`, and `Reunion.Validation` `0.1.0-alpha.3`; Auth has
+  no Payment, B2B, or Customer runtime/package dependency. This branch owns Auth's semantic migration
+  and direct `Reunion`/`Reunion.Errors` alpha.3 adoption. The separate repository baseline plan owns
+  repository-wide version alignment. After the Auth `api/**` PR merges, this plan
+  owns publication and its generated platform-sync gate to terminal green.
+- Last reconciled: `2026-08-12` after formally classifying merge-group run
+  [31618590547](https://github.com/Concertable/concertable/actions/runs/31618590547) as an external
+  bootstrap transport failure, committing the Auth alpha.3 candidate as `12c000d7`, merging current
+  `origin/main` as `38e62584`, and completing a clean correctness/security review through that merge.
+  The reviewed current-main final head `e91b6ecadde05e9ecad6b3126a5b44e1ea10b57b` passed the complete
+  PR hard-floor matrix, but merge-group run 31634022795 repeated the pre-scenario Stripe bootstrap
+  failure with HTTP 503. The durable workflow fix is committed as `3ac1b4af`; required platform-sync
+  `0.955` is merged as `84c07a5d` and the branch is current with main.
 
 ## Current state
 
-The task directly matches branch `Feature/typed-result_auth-outcomes`: its committed diff is confined
-to Auth-owned runtime/tests, the Shared typed-result architecture guard, solution/integration-runner
-registration, and this plan pair. The worktree is clean at `98599413a`, no branch PR or remote branch
-exists, and no other worktree owns overlapping Auth implementation. Fresh `origin/main` is
-`c72b058af`, leaving this branch 218 commits behind and 27 ahead.
+The task directly matches this branch and worktree. No other worktree owns the Auth implementation.
+PR #517 is open at verified remote final head `e91b6ecadde05e9ecad6b3126a5b44e1ea10b57b`. That candidate
+includes the intervening delivery-ledger checkpoints,
+the committed alpha.3 package adoption, and current `origin/main` through `6a3d66677`. The main merge
+was conflict-free, changed only Customer read-context implementation, and left Auth's platform and
+Reunion pins unchanged. The full net branch range has a clean correctness/security review and is
+ready for the plan push protocol. The first full-E2E merge group was ejected by an
+external bootstrap-download failure, not an Auth build, carve, unit, integration, API E2E, or scenario
+failure.
 
-Before that advance, the clean branch was zero behind fresh `origin/main` after merge commits
-`ecb9351608d7a5b7ac3eb06f2342041cfa7bc492` and
-`e196f13e19f70285d103c5fe1d5db1066f133fb3`. The first range added Auth AppHost extension wiring and
-platform package `0.847`; the second changed only mobile CI and documentation. Neither changed the
-Auth outcome implementation. No PR exists and nothing has been pushed.
+Phases 1-5 are committed and locally verified. Auth's in-process contracts use direct published
+Reunion ownership: login/logout return `Option<T>`, four caller-actionable refusal paths return
+operation-owned `UnitResult<TError>`, and privacy-sensitive email operations remain completion-only.
+Credential authentication/password decisions and token expiry transitions live in Auth domain
+entities. Token/credential identity mismatch remains an invariant exception. Razor and Duende map
+the carriers without leaking them into wire or persistence shapes.
 
-Commit `c5e22a05b66c151497d7737d1db992ef7d66d222` converts the four Auth errors to operation-owned Dunet
-unions with natural cases, exhaustive `Definition` switches, derived codes, direct case construction,
-and explicit per-case contract tests. It also aligns the Shared typed-result architecture guard with
-the exhaustive-switch convention. No Auth wire, Razor state, persistence model, migration, or
-cross-service runtime contract changed.
+Phase 6 and the final producer reconciliation are complete. The current candidate aligns `Reunion`
+and `Reunion.Errors` to `0.1.0-alpha.3`, uses unambiguous target-typed value/error conversions, exact
+unit `Success` cases, target-typed `null` for `None`, and direct forwarding where domain and service
+result types already match. No factory, wrapper, cast, or result reconstruction should change.
+Reunion source commit `91fdc6f2e33d8f396fa463ad309cb1288bea3be5` adds flexible Option HTTP
+terminals, but Auth owns no Minimal API or MVC outcome surface: its account handlers are
+server-rendered Razor Pages and its other outcome edge is Duende. `Reunion.AspNetCore` therefore
+remains correctly absent.
 
-Docker is responsive and the Auth integration suite passes 54/54. Auth unit contracts pass 4/4, the
-typed-result architecture slice passes 14/14, and the full Release solution build terminates with 0
-errors and 5 unrelated existing warnings. Signature, legacy-carrier, local-core, model/migration, and
-diff checks pass. The earlier standalone Auth carve remains valid because the later main ranges changed
-only AppHost composition, package pinning, mobile CI, and documentation.
-
-`RegisterAsync` now returns `UnitResult<RegisterError>` and the obsolete `RegisterResult` enum is
-deleted. Duplicate email becomes `RegisterError.EmailAlreadyExists`; `RegisterModel` maps the owned
-definition message back to the unchanged disclosed Razor failure and keeps the existing submitted
-success state. `VerifyEmailAsync` now returns `UnitResult<VerifyEmailError>`; missing, expired, and
-orphaned tokens all become `VerifyEmailError.InvalidOrExpiredToken`, while valid verification still
-mutates the credential once and consumes the token. `SendEmailVerificationAsync` remains
-completion-only and preserves its missing-credential no-op.
-
-Direct contract and HTTP coverage now prove success/failure carriers, duplicate registration without
-an additional credential or verification email, token mutation/consumption, invalid-token
-no-mutation, missing-user email completion, infrastructure exception propagation, and cancellation
-propagation. Phase 4 password signatures remain untouched; no EF model, migration, wire contract,
-or other service runtime changed.
-
-`ChangePasswordAsync` now returns `UnitResult<ChangePasswordError>` and collapses missing credentials
-and incorrect current passwords to `CurrentPasswordIncorrect`; `ChangePasswordModel` maps the owned
-safe message and preserves its existing success state. `ResetPasswordAsync` now returns
-`UnitResult<ResetPasswordError>` and collapses unknown, expired, and orphaned token rows to
-`InvalidOrExpiredToken`; `ResetPasswordModel` preserves its success/failure page behavior.
-`SendPasswordResetAsync` remains completion-only, and known/unknown email response parity is unchanged.
-Direct and HTTP coverage prove success, owned refusals, cancellation propagation, reset-request
-privacy/no-op behavior, invalid-token no-mutation, and one-time token consumption. The final
-`IAuthService` surface contains no command-success boolean or nullable login/logout return.
-
-Full review through `2a6fb0069c20491c5f1da6a21ce0aa3bf6e56508` and incremental review of the
-three post-watermark branch-owned commits both completed with no findings. The incremental review
-also checked the package/solution merge resolutions; later merge `e196f13e1` contains only already-
-merged mobile CI/docs changes. The clean review artifact was deleted under the review lifecycle rule.
-
-The earlier PR preflight is stale. Published Reunion `.1` and Auth's isolated topology make the direct
-carrier conversion implementable now; Payment delivery is not an Auth implementation prerequisite.
+PR #524's additional carrier guidance applies to Auth's boundary choices but requires no source
+change: EF lookups remain nullable inside `AuthService`, while `LoginAsync` and `LogoutAsync` expose
+intentional present-or-absent application outcomes as `Option<T>`. Auth does not wrap and immediately
+unwrap technical nullability, leak Option into persistence, or use a Result where absence has no
+distinct safe explanation.
 
 ## Next Steps
 
-Fetch and merge current `origin/main`, audit the Auth package and HTTP-edge topology, then migrate the
-completed Auth semantic work from old Kernel carriers/terminals to direct published Reunion packages.
-Keep changes Auth-owned except for an already-owned architecture guard, repeat Auth unit/integration,
-Release solution build, carve, mechanical gates, incremental review, and PR preflight, and classify
-delivery from the resulting topology. Do not push without instruction; require full merge-queue API
-and UI E2E when delivered.
+1. Push this transport checkpoint and require replacement checks on the final exact head.
+2. Keep `full-e2e` and requeue the final exact head.
+3. After merge, remove this source worktree, then follow package publication, generated platform sync, and plan
+   close-out from a fresh docs worktree based on merged `origin/main`.
 
 ## Downstream handoffs
 
-- Waiting ledger: `plans/typed-result/REUNION_SHARED_CONTRACTION_PROGRESS.md`.
-  Gate: Auth must be delivery-ready and identify every remaining old carrier, terminal, and third-party
-  dependency outside its owned scope.
+- Waiting ledger: `plans/typed-result/REUNION_SHARED_CONTRACTION_PROGRESS.md` now records the Auth
+  gate satisfied. Auth has zero old Kernel functional/error carriers, Shared.Api terminals,
+  third-party functional carriers, or legacy Reunion factories left in its owned scope; B2B
+  preparation is the remaining blocker for that plan.
 
-## Completed work
+## Completed milestones
 
-- Completed the post-review verification, incremental review, and PR preflight on current main; the
-  branch is locally green and ready for push/PR delivery.
-- Reconciled the completed Auth migration with typed-error convention PR #407: four operation-owned
-  Dunet unions now derive their definitions from exhaustive switches, callers construct natural
-  cases directly, and exact tests pin every code, message, and kind. Committed as
-  `c5e22a05b66c151497d7737d1db992ef7d66d222`.
-- Updated the stale Shared typed-result architecture guard so repository enforcement matches the
-  merged exhaustive-switch/direct-construction convention.
-
-- Completed Phase 4 in `d4ebf1c9d33a367fb642c013daa542c7d267a6b8`: migrated password-change and password-reset refusals to their
-  operation-owned `UnitResult<TError>` contracts, mapped both Razor callers, and completed the
-  `IAuthService` carrier cleanup while leaving reset-email requests completion-only.
-- Added direct service coverage for successful/refused change/reset operations, cancellation,
-  missing-account reset requests, invalid-token non-mutation, and token consumption; the unchanged
-  HTTP characterization proves page behavior and account-disclosure parity.
-- Completed Phase 3 in this commit: migrated registration and email-verification refusals to their
-  operation-owned `UnitResult<TError>` contracts, deleted `RegisterResult`, and mapped both carriers
-  back to unchanged Razor behavior.
-- Added direct success/refusal and cancellation contracts plus HTTP side-effect/no-mutation coverage;
-  kept verification-email sending completion-only with its missing-credential no-op.
-- Completed Phase 2 in this commit: migrated login and logout ordinary absence to `Option<T>` at the
-  Auth service boundary and mapped the owned carrier back to unchanged Razor, cookie, redirect, and
-  Duende protocol behavior.
-- Added direct `Some`/`None` service-contract coverage for valid/missing login and logout outcomes;
-  the existing HTTP characterization continues to prove every Razor and password-grant adapter edge.
-- Completed Phase 1 in this commit: added Auth's direct published `Concertable.Kernel` dependency,
-  four operation-owned error definitions, and exact definition contract tests without changing any
-  existing `IAuthService` signature or caller.
-- Added Auth-owned unit, integration-fixture, and integration test projects to `api/Concertable.slnx`;
-  registered the Auth integration suite in `scripts/integration.ps1`.
-- Added real HTTP characterization for Razor login/logout/registration/verification/password flows,
-  the Duende resource-owner password grant, known/unknown privacy parity, token consumption and
-  no-mutation cases, representative email infrastructure failures, and cancellation propagation.
-- Brought the branch onto fresh `origin/main` and platform pin `0.1.0-alpha.0.814` before completing
-  Phase 1.
-- Created the requested worktree and branch from freshly fetched `origin/main`; after main advanced
-  during the audit, refreshed the still-clean branch and finally rebased the unpushed planning
-  checkpoint onto `e419966a97dda7b2bc0fd9354a002a9b0dad0d57`.
-- Passed the branch-time no-red-platform-sync gate: PR #367 was non-red at creation and PR #372 was
-  non-red after the pre-edit refresh; PR #373 was non-red at the final reconciliation.
-- Audited all required planning, architecture, convention, Kernel implementation/test, Auth service,
-  Razor caller, Duende caller, persistence, and repo-wide test coverage sources.
-- Designed the exhaustive caller-driven contracts, coverage additions, four green implementation
-  phases, and terminal review/delivery lifecycle in the companion plan.
-- Added the plan and this initialized ledger in this commit. No migration code was implemented.
+- Phase 1 (`d38312937`): added Auth's direct package closure, owned error vocabulary, unit and
+  integration projects, HTTP characterization, solution registration, and integration-runner entry.
+- Phase 2 (`efc15b72b`): migrated login/logout ordinary absence to `Option<T>` and preserved Razor,
+  cookie, redirect, and Duende behavior.
+- Phase 3 (`0e434f48d`): migrated registration and email-verification refusals to owned
+  `UnitResult<TError>` contracts while preserving registration disclosure and verification behavior.
+- Phase 4 (`d4ebf1c9d`): migrated password-change/reset refusals, preserved reset-request privacy, and
+  removed legacy command-success booleans and nullable login/logout contracts.
+- Typed-error reconciliation (`c5e22a05b`): moved the four errors to operation-owned Dunet unions with
+  exhaustive definitions and aligned the Shared typed-result architecture guard.
+- Published Reunion conversion (`754939891`): replaced old Kernel carrier/error namespaces with
+  direct `Reunion` and `Reunion.Errors` ownership without adding the ASP.NET adapter.
+- Phase 5 domain correction (`af37d2618`): moved password and token decisions into Auth domain
+  entities, retained invariant exceptions, and adopted the direct alpha.2 `ErrorDefinition` API.
+- Current-main reconciliation (`6c6c54484`): merged the Result-pattern documentation and platform
+  `0.943` without conflict; the preserved Auth outcome work remains the only branch-owned runtime
+  scope.
+- Phase 6 (`1afdb4b33`): aligned Auth to Reunion alpha.2 construction, including target-typed `null`
+  for Option absence, and completed the final verification gate.
+- Alpha.3 producer reconciliation (`12c000d7`): aligned Auth's direct `Reunion` and
+  `Reunion.Errors` package closure to published `0.1.0-alpha.3` and audited Reunion source commit
+  `91fdc6f2e33d8f396fa463ad309cb1288bea3be5`. Its new flexible Option HTTP terminals do not apply to
+  Auth's Razor/Duende topology, so no runtime call site or AspNetCore package was added.
+- Current-main merge (`38e62584`): merged `origin/main` through `6a3d66677` without conflict. The
+  inherited change is Customer-only; Auth package pins and runtime source are unchanged.
+- PR readiness: clean incremental correctness/security review and GREEN read-only preflight on
+  current `origin/main`; no code, package-cutover, PR, or platform-sync blocker remains.
+- Delivery push: local and remote work heads verified equal at `c784db2044cf11521681e842b28a38f92946385c`;
+  the pushed range is the complete 53-commit branch delta over current `origin/main`.
+- Push checkpoint transport: local and remote heads verified equal at
+  `4b53ac5bbbe0a08af9254d7a51d80f164f68387e`. PR creation was rejected before GitHub created a PR.
+- PR discovery: PR #517 exists at that exact head. Its original hard-floor checks are green; current
+  `origin/main` is 28 commits ahead, so the PR is not yet eligible for queue admission.
+- Current-main update (`962969cad`): merged `origin/main` through `8ec037d7d`; Auth source remained
+  unchanged, its platform pin advanced to `0.950`, and the Shared-contraction ledger now retains both
+  the Auth and Customer preparation handoffs.
+- Platform `0.953` update (`fd69b70f0`): merged platform-sync PR #525 without source conflict and
+  advanced Auth's published platform closure from `0.950` to `0.953`.
+- Updated delivery push: local work head, upstream, and PR head verified equal at
+  `424f1b80950450a0f462427483ac8fe36d2d785a`; the branch was zero behind `origin/main` at push time.
+- Alpha.3 delivery push: local work head, upstream, and PR head verified equal at
+  `2d50164b38d6b3a601e0620dba0dd374844f053a`; the branch was zero behind `origin/main` at push time.
+- Transport checkpoint push: local, upstream, and PR head verified equal at
+  `e91b6ecadde05e9ecad6b3126a5b44e1ea10b57b`; the branch remained zero behind `origin/main`.
+- Replacement PR checks: workflow run 31631354398 passed the clean-machine build, every service
+  carve, all unit/integration jobs (including Auth), and `ci-complete` on exact head `e91b6eca`.
+  PR-level API/UI E2E skipped as designed and `full-e2e` remains the sole E2E-tier label.
+- Second queue admission: exact remote head `e91b6eca` entered at position 1 with
+  `mergeQueueEntry.state = AWAITING_CHECKS`; `full-e2e` is the sole E2E-tier label.
+- Second queue failure: merge-group run 31634022795 passed API E2E but UI E2E failed before any
+  scenario when GitHub's Stripe release API returned HTTP 503. PR #517 was ejected to `OPEN/CLEAN`.
+  Two independent failures across release discovery and asset delivery make the unpinned GitHub
+  release bootstrap a CI defect rather than a one-off transient.
+- Bootstrap correction: all three E2E jobs use one local composite action that pins Stripe CLI
+  `1.45.2` and installs it from Stripe's signed official apt repository. This removes runtime
+  discovery of `latest`, the GitHub release API, and GitHub release assets without adding retries.
+- Bootstrap verification: both workflow YAML documents parse, all three call sites resolve to the
+  local composite action, no old GitHub release reference remains, `git diff --check` passes, and
+  Stripe's official apt metadata publishes exact package `1.45.2`. A clean Ubuntu container pull
+  stalled in Docker Desktop and was not counted as evidence; queue execution remains authoritative.
+- Platform `0.955` merge (`84c07a5d`): merged platform-sync PR #527 without conflict and advanced
+  Auth's published platform closure from `0.953` to `0.955`; Reunion remains pinned to alpha.3.
+- Bootstrap repair push: local, upstream, and PR work heads verified equal at
+  `3615bfa36cef0867f2f34d10bf21e55cb6d51a36`; the branch was zero behind `origin/main`.
+- Bootstrap transport push: local, upstream, and PR final heads verified equal at
+  `319680347b952db5d0fd351303c8891e445fd3c5`; replacement workflow run 31637748572 passed build,
+  frontend/backend carves, every unit/integration job, and `ci-complete` on that exact head.
+- Third queue failure: merge-group run 31638703850 successfully retrieved Stripe's signing key,
+  verified apt metadata, downloaded, and installed exact package `1.45.2`; the action then failed only
+  because its presentation-string assertion rejected `stripe version` output. API/UI scenarios did
+  not run and PR #517 was ejected. The assertion now verifies the installed dpkg version exactly and
+  invokes `stripe version` separately to prove the executable starts.
+- Version-validation repair push: local and upstream work heads verified equal at
+  `a300cf7351a766d3791b15eab9bc4babd3c99e1a`; the branch was zero behind `origin/main`.
+- Reviewed PR checks: remote head `dd9e3111a4b6689cf46b9232275fccd63a349b72` passed build, all
+  service carves, all unit/integration jobs, and `ci-complete`; PR-level E2E skipped as designed.
+- Queue readiness: a final fetch proved that remote head zero behind `origin/main`, `OPEN/CLEAN`, and
+  labelled only `full-e2e`; the served untracked review work order was removed.
+- Initial queue request: GitHub left `mergeQueueEntry` null because the existing bot auto-merge
+  request dated from PR creation; one explicit disable/enable re-assertion is required.
+- Queue admission: the one-time re-assertion admitted exact reviewed head `dd9e3111a` with
+  `mergeQueueEntry.state = QUEUED`; `full-e2e` is selected for the queue-only API/UI suites.
+- Queue failure: merge-group run 31618590547 passed build, all service carves, unit/integration, and
+  API E2E, then failed before UI scenarios when Stripe CLI's GitHub release-asset download returned
+  curl exit 56. GitHub ejected PR #517; no retry was requested.
+- UI bootstrap classification: the API E2E job in the same run downloaded and executed Stripe CLI
+  `1.45.2` successfully at `16:42:55`; the UI job ran the identical installer at `16:52:38` and its
+  release-asset connection died after curl's five transport attempts. No archive extraction, test
+  host, browser, or scenario started. This is a formally classified external transient, with no CI
+  workflow or Auth code defect evidenced and no retry/timeout padding justified.
 
 ## Verification
 
-- Fresh `docker ps` succeeded; `./scripts/integration.ps1 auth` through `integration-debug`: 54 passed,
-  0 failed across the one Auth integration project.
-- `dotnet build api/Concertable.slnx --configuration Release --disable-build-servers -m:1 -nr:false
-  -p:UseSharedCompilation=false`: succeeded with 0 errors and 5 unrelated existing warnings.
-- Current-branch Auth unit definition contracts: 4 passed, 0 failed. Current typed-result architecture
-  slice: 14 passed, 0 failed.
-- At the verified checkpoint, signature, legacy-carrier, Razor/Data boundary, local-core,
-  model/migration, and branch/worktree `git diff --check` gates passed; repeat them after the required
-  current-main merge.
-- Historical `pr-preflight`: GREEN at the prior current-main checkpoint; repeat after merging fresh
-  `origin/main` because the branch is now 101 commits behind.
-- Post-review convention checkpoint `dotnet test api/Concertable.Auth/tests/Concertable.Auth.UnitTests/Concertable.Auth.UnitTests.csproj --configuration Release`: 4 passed, 0 failed, 0 skipped.
-- Targeted `TypedResultArchitectureTests`: 14 passed, 0 failed, 0 skipped.
-- `dotnet build api/Concertable.Auth/tests/Concertable.Auth.IntegrationTests/Concertable.Auth.IntegrationTests.csproj --configuration Release --no-restore -m:1 -nr:false -p:UseSharedCompilation=false`: succeeded with 0 warnings and 0 errors.
-- Fresh standalone Auth carve restored from the published `0.842` package closure and built with 0 errors; its verified `C:\tmp\auth-carve-*` directory was removed.
-- Current searches prove all four errors use Dunet unions and exhaustive definition switches, `IAuthService` retains the intended two `Option<T>`, four `UnitResult<TError>`, and two completion-only signatures, and no model/migration diff exists. `git diff --check` passes.
-- Auth integration execution is pending: Docker Desktop processes exist, but `docker ps` timed out twice at the mandatory preflight, so Testcontainers was not started.
-- The full Release solution build remains pending after two capped attempts did not return a terminal result under machine-wide build contention; the exact affected closure and standalone carve are green.
+Final producer-reconciled candidate:
 
-- Phase 4 `dotnet test api/Concertable.Auth/tests/Concertable.Auth.UnitTests/Concertable.Auth.UnitTests.csproj --configuration Release`: 4 passed, 0 failed, 0 skipped.
-- Phase 4 `./scripts/integration.ps1 auth` through `integration-debug`: 54 passed, 0 failed across the
-  Auth integration project, including all direct service and unchanged Razor/Duende contracts.
-- Phase 4 `dotnet build api/Concertable.slnx --configuration Release`: succeeded with 0 errors and 9
-  existing warnings outside the Auth outcome migration.
-- Fresh standalone copy of the complete current `api/Concertable.Auth` tree, excluding build outputs:
-  `dotnet build src/Concertable.Auth/Concertable.Auth.csproj --configuration Release` restored from
-  Auth's published `0.1.0-alpha.0.827` package closure and succeeded with 0 errors. The verified
-  temporary carve under `C:\tmp` was deleted.
-- Final Phase 4 searches found all eight intended `IAuthService` signatures, exactly the two
-  completion-only email methods, and no `RegisterResult`, nullable login/logout return, password
-  command-success boolean, functional carrier in Razor/Data shapes, active local-Core mode, runtime
-  project reference, model/migration change, or non-Auth working-tree code path. `git diff --check`
-  passed.
-- Final origin reconciliation found the branch zero behind
-  `48bd0eaf5e8079d07302ec4e07dfdc78167427d2` after a docs/meta-only merge that did not invalidate
-  the Phase 4 gate, with no PR. Platform-sync PR #393 is green and open at
-  remote head `6064e1f97df7a3fe386c26ea286755a0e28c9a2c`; Auth remains on the stable
-  `0.1.0-alpha.0.827` pin until that sync lands.
-- No API/UI E2E was run locally because the merge queue owns the required full E2E gate.
-- Final reconciled `dotnet test api/Concertable.Auth/tests/Concertable.Auth.UnitTests/Concertable.Auth.UnitTests.csproj --configuration Release --no-restore`: 4 passed, 0 failed, 0 skipped.
-- Final reconciled `./scripts/integration.ps1 auth` through `integration-debug`: 44 passed, 0 failed
-  across the Auth integration project, including all seven new Phase 3 direct and HTTP contracts.
-- Final reconciled `dotnet build api/Concertable.slnx --configuration Release`: succeeded with 0
-  errors; 5 existing warnings were outside the Phase 3 Auth changes.
-- Fresh standalone copy of the complete current `api/Concertable.Auth` tree, excluding build outputs:
-  `dotnet build src/Concertable.Auth/Concertable.Auth.csproj --configuration Release` restored from
-  Auth's published `0.1.0-alpha.0.827` package closure and succeeded with 0 errors. The verified
-  temporary carve under `C:\tmp` was deleted.
-- Phase 3 searches found exactly the two `UnitResult<TError>` signatures and the intentional
-  completion-only verification-email signature; no `RegisterResult`, boolean verification signature,
-  functional carrier in Razor/Data shapes, committed local-Core enablement, model/migration change,
-  or non-Auth working-tree path survives. Final `git diff --check` passed.
-- Branch `Feature/typed-result_auth-outcomes` is zero behind `origin/main`
-  `3e3bcce89b7cc6c96843e2d80cb634835453a253`; Auth consumes `0.1.0-alpha.0.827`, platform-sync PR
-  #388 is merged, no newer sync PR is open, and no Auth PR exists.
-- No API/UI E2E was run locally because the merge queue owns the required full E2E gate.
-- Final reconciled `dotnet test api/Concertable.Auth/tests/Concertable.Auth.UnitTests/Concertable.Auth.UnitTests.csproj --configuration Release`:
-  4 passed, 0 failed, 0 skipped.
-- Final reconciled `./scripts/integration.ps1 auth` through `integration-debug`: 37 passed, 0 failed
-  across the Auth integration project. The first full run exposed two fixture-only logout tests that
-  lacked Duende's required ambient `HttpContext`; after the fixture was corrected, both failed tests
-  passed individually and two subsequent full Auth runs passed 37/37.
-- Final reconciled `dotnet build api/Concertable.slnx --configuration Release`: succeeded with
-  0 errors; a subsequent quiet incremental confirmation reported 0 warnings and 0 errors.
-- Final fresh standalone copy of the complete current `api/Concertable.Auth` tree, excluding build
-  outputs: `dotnet build src/Concertable.Auth/Concertable.Auth.csproj --configuration Release`
-  restored from Auth's published package closure and succeeded with 0 errors. The verified temporary
-  carve under `C:\tmp` was deleted.
-- Phase 2 searches found exactly the two `Option<T>` `IAuthService` signatures and their three runtime
-  adapters; no nullable login/logout signature, returned-principal null check, redirect `??` fallback,
-  local-Core setting, model/migration change, or transport/persistence carrier survives.
-- Final `git diff --check` passed before staging. Branch `Feature/typed-result_auth-outcomes` is zero
-  behind `origin/main` `355f658b9d556dd07e3fa612fb1b04bcdb63a59d` after four clean upstream
-  reconciliations; both incoming changes were outside Auth runtime.
-- Platform-sync PR #381 (`chore/platform-sync-0.1.0-alpha.0.819`) passed every check and merged as
-  `355f658b9d556dd07e3fa612fb1b04bcdb63a59d`; Auth now consumes the published `0.1.0-alpha.0.819` pin.
-- `dotnet test api/Concertable.Auth/tests/Concertable.Auth.UnitTests/Concertable.Auth.UnitTests.csproj --configuration Release`:
-  4 passed, 0 failed, 0 skipped, with no warnings.
-- `./scripts/integration.ps1 auth` through `integration-debug`: 31 passed, 0 failed across the Auth
-  integration project; the valid Duende logout-context test also passed alone before the full rerun.
-- `dotnet build api/Concertable.slnx --configuration Release`: succeeded with 0 errors; 9 existing
-  warnings were outside the Phase 1 Auth changes.
-- Fresh standalone copy of the complete current `api/Concertable.Auth` tree, excluding build outputs:
-  `dotnet build src/Concertable.Auth/Concertable.Auth.csproj --configuration Release` restored from
-  Auth's package closure and succeeded with 0 errors. The verified temporary carve was deleted.
-- Phase searches: all eight legacy `IAuthService` signatures and callers remain unchanged; no runtime
-  `Option`/`UnitResult` carrier was introduced early; no `UseLocalCore=true` setting exists; no Auth
-  migration/model path changed; the direct Kernel package and all three test projects are registered.
-- `git diff --check` passed before staging; the staged form is rechecked immediately before commit.
-- Branch/worktree gate: `Feature/typed-result_auth-outcomes`, clean before editing, with its sole local
-  planning checkpoint based on `origin/main` `e419966a97dda7b2bc0fd9354a002a9b0dad0d57` and zero behind.
-- Platform-sync gate: `gh pr checks` reported no failed checks for open sync PR #373 after the final
-  fetch.
-- Surface inventory: repo-wide `rg` confirmed `IAuthService` has exactly seven Razor callers plus
-  `ResourceOwnerPasswordValidator`, and no downstream runtime consumer.
-- Coverage inventory: no `api/Concertable.Auth/tests/` project exists. Existing API E2E uses successful
-  `/connect/token` minting; existing passing UI E2E covers successful Customer/B2B login and Customer/
-  Venue/Artist registration -> fake-email verification -> login only.
-- Planning checkpoint checks passed: all eight `IAuthService` methods are classified; the plan has zero roadmap
-  references; the ledger pointer is near the plan top; every template/current-state section is
-  populated; only the requested two files are changed; and neither file has trailing whitespace.
-- No build or test run was required for the earlier plan-only checkpoint.
+- Auth unit tests: 13 passed, 0 failed in Release against `Reunion` alpha.3.
+- Auth integration tests through `integration-debug`: 54 passed, 0 failed in Release against
+  `Reunion` alpha.3 using the real SQL Testcontainers fixture.
+- Current-main focused recheck at `38e62584`: Auth Release build 0 warnings/0 errors, 13 unit tests
+  passed, and all 54 real-SQL integration tests passed after restoring generated assets removed by
+  the earlier disk cleanup.
+- Platform `0.955` focused recheck: Auth Release build passed with 0 warnings/0 errors and all 13 unit
+  tests passed. Integration startup could not reach Docker after the clean Ubuntu image pull stalled;
+  all cases failed at the shared Testcontainers fixture with `DockerEndpointAuthConfig`, and the
+  mandatory `docker-health.ps1` data-path check also timed out. No SQL or application code ran, so
+  this is a formally classified local Docker environment failure; replacement CI is authoritative.
+- Typed-result architecture tests: 16 passed, 0 failed on the final candidate.
+- Fresh standalone Auth carve: 0 errors against published platform `0.1.0-alpha.0.953`; only existing
+  analyzer warnings. The verified temporary carve was removed.
+- Restored package graph resolves both `Reunion` and `Reunion.Errors` exactly
+  `0.1.0-alpha.3`; Auth has no alpha.1/alpha.2 pin and no Validation or AspNetCore package.
+- Signature, construction-factory, package-ownership, migration, scope, and `git diff --check` gates
+  pass. The service surface remains two `Option<T>`, four `UnitResult<TError>`, and two intentional
+  completion-only email operations.
+- Full Release solution build: 0 errors and 2 existing generated E2E nullable-annotation warnings.
+  The serialized no-restore build completed under concurrent host load; the warm authoritative rerun
+  completed in 1m29s with build servers, shared compilation, and parallel builds disabled.
+- Current-main full Release solution build: 0 errors and 4 existing warnings in 9m08s using
+  `--no-restore`, disabled build servers/shared compilation, and a single MSBuild node. This verifies
+  the merged platform `0.950` candidate at local head `8c4cd5b47`.
+- Platform `0.953` full restore/Release solution build: 0 errors and the same 4 existing warnings in
+  12m45s with build servers/shared compilation disabled and a single MSBuild node. This verifies
+  local source head `fd69b70f0`.
+- Alpha.3 full-solution build attempts: no code diagnostic was reached. The first run failed after
+  14m05s with 54 disk-full write errors; after removing 6.33 GiB of this worktree's generated output,
+  the clean/warm attempts again exhausted the shared drive while compiling unrelated late Customer
+  integration projects. Auth's focused tests and standalone carve are green; replacement PR CI must
+  provide the authoritative clean-machine solution build.
+- No API/UI E2E was run locally; the merge workflow owns any selected E2E tier.
 
 ## Reviews
 
-Full code review completed on 2026-08-06 over
-`48bd0eaf5e8079d07302ec4e07dfdc78167427d2..2a6fb0069c20491c5f1da6a21ce0aa3bf6e56508`
-(17 commits). The stamped artifact `reviews/Feature-typed-result_auth-outcomes.md` recorded no findings
-and was deleted under the clean-review lifecycle rule. No finding IDs or dispositions exist. Any later
-code commit requires incremental review from watermark
-`2a6fb0069c20491c5f1da6a21ce0aa3bf6e56508`.
-
-Incremental code review completed on 2026-08-07 from that watermark over the branch-owned commits
-`1bd00115c`, `c5e22a05b`, and `28a586a75`, plus the package/solution merge resolutions, through
-`ecb9351608d7a5b7ac3eb06f2342041cfa7bc492`. No findings survived the correctness, isolation,
-boundary, seeding, C# convention, or changed-path test lenses. The clean artifact was deleted; no
-finding IDs or dispositions exist. Later merge `e196f13e1` contains only already-merged mobile CI/docs.
+The review work order `reviews/Feature-typed-result_auth-outcomes.md` records a clean full
+correctness/security review with no open findings. Because the previously served review work order
+was removed before the first queue attempt, incremental-review correctly fell back to a fresh review
+of the complete branch net diff, followed by an incremental review of the conflict-free current-main
+merge. The post-ejection incremental correctness/security review of the local observation tail,
+reusable Stripe installer, and conflict-free platform `0.955` pin merge found no issues. Its marker
+will be stamped to the compound candidate before push.
 
 ## Decisions, discoveries, blockers, and deviations
 
-- Origin: the permanent typed-result epic item is **Auth expected-outcome migration** in
-  `plans/typed-result/TYPED_RESULT_MIGRATION_ROADMAP.md`. Tick that item only after the entire feature
-  lifecycle, including merge and platform sync, ships; never delete the permanent tracker.
-- Auth has no dependency on the Payment, B2B, or Customer feature branches. Published Reunion opens
-  direct service-owned conversion; delivery follows Auth's actual topology.
-- Auth's top-level program reads required E2E host settings before `WithWebHostBuilder` app
-  configuration is visible. The fixture therefore scopes process environment overrides to host
-  startup and restores every prior value immediately after `factory.Services` materializes.
-- Direct EF Core and Relational references in the unit/fixture projects are required to converge the
-  published platform closure's EF 10.0.3 assemblies with Auth's EF 10.0.7 build; removing them produced
-  MSBuild assembly-conflict warnings.
-- Valid redirect logout characterization creates a real Duende `LogoutMessage` through its
-  `IMessageStore`; an unauthenticated `/connect/endsession` request produces no usable logout context.
-- Kernel's shipped factories and observers are sufficient: `Option<T>`, `UnitResult<TError>`,
-  `TryGetValue`, `TryGetError`, `Match`, `ValueOr`, `ToOption`, and explicit success/failure factories.
-- Direct `AuthService.LogoutAsync` contract tests must supply an ambient request `HttpContext` because
-  Duende's `DefaultIdentityServerInteractionService` derives logout data through the current request.
-  The fixture scopes and restores that context around generic direct-service calls.
-- Login deliberately collapses unknown email, wrong password, and unverified email to `None` and the
-  same Razor/Duende response.
-- Registration deliberately discloses only `EmailAlreadyExists`; verification deliberately collapses
-  missing, expired, and orphaned tokens to `InvalidOrExpiredToken`. Cancellation and infrastructure
-  faults remain exceptions.
-- Password-reset email remains completion-only so known and unknown accounts have the same observable
-  page outcome. Verification-email missing-user behavior also remains a silent completion because no
-  caller has a safe actionable branch.
-- Duplicate registration remains intentionally disclosed exactly as it is today.
-- Existing E2E provides successful cross-surface compatibility coverage but leaves all failure,
-  logout, password, and disclosure branches uncovered. Auth-owned unit/integration tests close those
-  gaps; this branch does not modify another service's runtime or make its test tree Auth's owner.
-- Full API and UI E2E is required in the merge queue. It must not be duplicated locally before the PR.
-- No model change or migration is planned. A discovered model or shared-Kernel need requires a plan
-  amendment/separate additive shared item before implementation proceeds.
-
-## Event log
-
-### 2026-08-09 — direct Reunion conversion dispatched
-
-- Action: Reclassified the Payment/platform-sync wait against Auth's actual service topology.
-- Evidence: Auth has no Payment, B2B, or Customer dependency; Reunion `.1` is published.
-- Outcome: direct Auth conversion and verification are actionable now.
-- Follow-up: execute `## Next Steps`.
-
-### 2026-08-09 - Reunion integration dependency registered
-
-- Action: Reconciled the clean Auth owner with merged Reunion planning PRs #443/#444 and registered
-  this ledger in the Reunion owner's downstream handoffs.
-- Evidence: local head `98599413a`; fresh `origin/main` `c72b058af`; 218 behind / 27 ahead; no Auth PR
-  or remote branch; no open platform-sync PR.
-- Outcome: the completed Auth semantics remain authoritative and unchanged. Delivery waits for the
-  single Reunion Phase 4 generated platform-sync baseline, then performs one reconciliation and gate run.
-- Follow-up: the Reunion owner updates this ledger and surfaces its resume prompt after Phase 4 merges.
-
-### 2026-08-08 - Payment platform gate discharged
-
-- Action: Recorded the Payment owner's completed package and generated consumer-sync delivery.
-- Evidence: Payment PR #392 merged as `b66325ac`; platform-sync PR #420 merged as `372be1041` after
-  migrating B2B/Customer consumers; publish run `31225852815` produced platform
-  `0.1.0-alpha.0.857`, and sync run `31225952562` passed with no recursive follow-on PR.
-- Outcome: Auth delivery is no longer blocked by repository platform state. Fresh `origin/main` is
-  `372be1041`; this clean branch is 101 behind and 26 ahead.
-- Follow-up: execute `## Next Steps` in this worktree, beginning with the current-main merge.
-
-### 2026-08-07 - Auth delivery blocked by Payment platform sync
-
-- Action: Refetched origin and GitHub before the planned push, revalidated worktree/branch ownership,
-  and traced the open repository platform gate to Payment owned-result publication.
-- Evidence: clean Auth branch `8c6b2c320b4b345812fa98c39fcd3ac5f54c6f15`; no branch PR or remote
-  branch; fresh `origin/main` `b66325acdee7979bb3771e4c28248364b769d402`; branch 88 behind and 25
-  ahead. Platform-sync PR #420 at `c2679d1ad6e0d245d0aa8b7f830083b22aee2247` is open/red: build run
-  `31212334407` reports 24 missing Payment client-interface errors across B2B and Customer.
-- Outcome: Push/PR preflight is blocked by a genuine red platform-sync gate. Auth is registered as a
-  downstream handoff in the Payment owner ledger and will not merge the mid-cutover mainline or poll.
-- Follow-up: The Payment owner must migrate PR #420 to terminal green, update this ledger, and surface
-  the Auth resume prompt.
-
-### 2026-08-07 - Verification, incremental review, and PR preflight completed
-
-- Action: Reconciled two fresh main ranges, restored Docker-backed verification, completed the
-  terminal Release solution build and mechanical gates, reviewed every post-watermark branch-owned
-  change, and ran the read-only PR preflight.
-- Evidence: current branch `e196f13e19f70285d103c5fe1d5db1066f133fb3` is zero behind
-  `origin/main` `83a3f49a194c5faff60b7912d7c9b8452679f6f0`; Auth integration 54/54; Auth unit 4/4;
-  typed-result architecture 14/14; Release solution build 0 errors; carrier/model/diff searches
-  green; incremental review through `ecb9351608d7a5b7ac3eb06f2342041cfa7bc492` found no issues;
-  preflight found no PR or open platform-sync gate.
-- Outcome: Local implementation, verification, and review are terminal and the branch is GREEN to
-  publish. Full API/UI E2E remains owned by the merge queue.
-- Follow-up: Push with verified plan checkpoints, open the plain GitHub PR without skip labels, then
-  continue normal queue delivery.
-
-### 2026-08-07 - Typed-error convention reconciliation implemented
-
-- Action: Merged fresh `origin/main`, reread the current backend/test conventions, audited every Auth
-  branch change, migrated the four superseded static error catalogs to operation-owned Dunet unions,
-  updated their callers/contracts, and aligned the stale Shared architecture guard with convention
-  PR #407.
-- Evidence: branch merge `d8cceed2a1874f74103121375d403e1a576c7ec4` is zero behind
-  `origin/main` `529dba9dde0776e058a168d4ce137e482194a9ed`; platform-sync PR #393 is
-  merged green and no sync PR is open; Auth unit tests 4/4; typed-result architecture tests 14/14;
-  affected Auth integration closure build 0 warnings/0 errors; fresh Auth carve 0 errors; carrier,
-  model/migration, and diff checks passed; reconciliation commit
-  `c5e22a05b66c151497d7737d1db992ef7d66d222`.
-- Outcome: The Auth migration now follows the merged natural-case, derived-definition,
-  exhaustive-switch convention without changing externally observable Auth behavior. Docker-backed
-  integration and the full Release solution build remain non-terminal environment gates.
-- Follow-up: Restore responsive Docker, complete the remaining verification, run incremental review,
-  then run PR preflight; do not push, open a PR, or run E2E locally.
-
-### 2026-08-06 - Full branch code review completed cleanly
-
-- Action: Ran the repository `code-review` workflow over the complete Auth expected-outcome migration,
-  loading the root, backend, Auth, architecture, module, seeding, C#, unit, integration, plan, and
-  review lifecycle rules before checking every changed production, test, package, solution, script,
-  and plan path through all six review lenses.
-- Evidence: reviewed range
-  `48bd0eaf5e8079d07302ec4e07dfdc78167427d2..2a6fb0069c20491c5f1da6a21ce0aa3bf6e56508`
-  (17 commits, 35 files); stamped `reviews/Feature-typed-result_auth-outcomes.md` at the reviewed head;
-  `git diff --check` passed; fresh `origin/main` remains `48bd0eaf5e8079d07302ec4e07dfdc78167427d2`;
-  no branch PR exists; platform-sync PR #393 remains open at
-  `6064e1f97df7a3fe386c26ea286755a0e28c9a2c` with every check passing.
-- Outcome: No findings survived the high-confidence filter across correctness, microservice isolation,
-  module boundaries, seeding, C# conventions, or changed-path test coverage. The clean review artifact
-  was removed because it had no remaining work-order purpose; no address-review handoff is required.
-- Follow-up: Reconcile fresh base/package gates and run the read-only PR preflight; do not push, open a
-  PR, or run E2E in that context.
-
-### 2026-08-06 - Post-Phase 4 docs-only main transition reconciled
-
-- Action: Refetched origin after the Phase 4 commit exposed a new 12-commit base advance, verified the
-  incoming range, merged it cleanly, and reread the changed plan/checkpoint guidance before handoff.
-- Evidence: the incoming range changed only agent/plan documentation and closed Search plan artifacts;
-  it contained no Auth, solution, or integration-runner path. Merge commit
-  `d5ac70605eac829afac7d71c547520dc950b3fe9` is zero behind
-  `origin/main` `48bd0eaf5e8079d07302ec4e07dfdc78167427d2`; the tree was clean before
-  this ledger-only checkpoint.
-- Outcome: The Phase 4 evidence at `d4ebf1c9d33a367fb642c013daa542c7d267a6b8` remains valid, and
-  full branch review will start from the current base and updated plan lifecycle rules.
-- Follow-up: Run full code review over `origin/main..HEAD` only; do not push, open a PR, run E2E
-  locally, or begin delivery in that context.
-
-### 2026-08-06 - Phase 4 password Result migration and exhaustive cleanup completed
-
-- Action: Migrated change-password and reset-password outcomes to operation-owned
-  `UnitResult<TError>` contracts, mapped both Razor callers, retained completion-only password-reset
-  email semantics, and expanded direct/HTTP contracts for every Phase 4 outcome and privacy rule.
-- Evidence: Auth unit tests 4/4; Auth integration tests 54/54; Release solution build 0 errors; fresh
-  standalone Auth carve 0 errors; diff, signature, legacy-carrier, boundary, local-Core,
-  project-reference, and model/migration searches passed. The branch is zero behind fresh
-  `origin/main` `6586122b82f1cca835db2537656ec96f40e9aaa7`; platform-sync PR #393 is green at
-  `6064e1f97df7a3fe386c26ea286755a0e28c9a2c` and Auth remains on stable pin `0.827`.
-- Outcome: Commit `d4ebf1c9d33a367fb642c013daa542c7d267a6b8` completes all four local
-  implementation phases without changing Razor disclosure or
-  success behavior, reset-email privacy/no-op behavior, EF models, migrations, wire contracts, or
-  another service's runtime. Every caller-actionable Auth refusal and ordinary absence now uses the
-  planned smallest owned in-process carrier.
-- Follow-up: Stop at this local checkpoint. Resume with full code review over `origin/main..HEAD` only;
-  do not push, open a PR, run E2E locally, or begin delivery in that context.
-
-### 2026-08-06 - Phase 4 resume and upstream gate reconciled
-
-- Action: Fetched origin, verified the requested clean worktree/branch and absent branch PR, inspected
-  the open platform sync and its dedicated worktree, and merged fresh `origin/main` before editing.
-- Evidence: pre-merge branch was 11 behind and 13 ahead; incoming main had no Auth change since the
-  merge base. Merge commit `f122ccb34fff25b7a296e77af8dc5eb26f9905ef` is zero behind
-  `origin/main` `6586122b82f1cca835db2537656ec96f40e9aaa7`; Auth remains pinned to
-  `0.1.0-alpha.0.827`; no Auth PR exists. Platform-sync PR #393 is red, while its isolated worktree
-  contains only the Payment/Money consumer migration and no Auth path.
-- Outcome: Phase 4 can proceed on current main without consuming the broken `0.830` pin or overlapping
-  the sync worktree. The sync remains a mandatory recheck before the final Phase 4 verification gate.
-- Follow-up: Implement and verify Phase 4 only, then commit the green checkpoint and hand off to full
-  branch review.
-
-### 2026-08-05 - Phase 3 registration/email-verification Result migration completed
-
-- Action: Migrated registration and email verification to operation-owned `UnitResult<TError>`
-  contracts, deleted `RegisterResult`, mapped both Razor callers, expanded direct/HTTP contracts, and
-  reconciled the branch through the `0.827` platform sync before the final gate.
-- Evidence: Auth unit tests 4/4; final Auth integration tests 44/44; Release solution build 0 errors;
-  fresh standalone Auth carve 0 errors; diff, signature, legacy-carrier, boundary, local-Core, and
-  model/migration searches passed. Branch is zero behind `origin/main`
-  `3e3bcce89b7cc6c96843e2d80cb634835453a253`; platform-sync PR #388 is merged and Auth's `0.827`
-  package-pin gate is green.
-- Outcome: Phase 3 is complete without changing Razor disclosure/success behavior, email no-op
-  semantics, EF models, migrations, wire contracts, or another service's runtime. Expected
-  registration and verification refusals are explicit at Auth's in-process service boundary.
-- Follow-up: Stop at this local checkpoint. Resume with Phase 4 password change/reset migration and
-  exhaustive cleanup only; do not push or begin review in that context.
-
-### 2026-08-05 - Phase 2 login/logout Option migration completed
-
-- Action: Migrated `LoginAsync` and `LogoutAsync` to `Option<T>`, mapped the carrier at both Razor
-  pages and the Duende resource-owner validator, added direct contract coverage, and reconciled four times
-  as `origin/main` advanced during the phase.
-- Evidence: Auth unit tests 4/4; final Auth integration tests 37/37 after both initially failing
-  fixture-only logout tests passed individually; final Release solution build 0 errors; fresh
-  standalone Auth carve 0 errors; diff, signature, legacy-null/fallback, local-Core, and model/migration
-  searches passed. Branch is zero behind `origin/main` `355f658b9d556dd07e3fa612fb1b04bcdb63a59d`;
-  platform-sync PR #381 is merged and Auth's `0.819` package-pin gate is green.
-- Outcome: Phase 2 is complete without changing Razor/cookie/redirect/OAuth behavior, EF models,
-  migrations, wire contracts, or another service's runtime. Ordinary login/logout absence is now
-  explicit at Auth's in-process service boundary.
-- Follow-up: Stop at this local checkpoint. Resume with Phase 3 registration and email-verification
-  `UnitResult<TError>` migration only; do not push or begin Phase 4 in that context.
-
-### 2026-08-05 - Phase 1 Auth test foundation completed
-
-- Action: Added Auth's direct Kernel package dependency, four owned error definitions, exact unit
-  contracts, Auth integration infrastructure, and HTTP characterization across every existing Auth
-  flow; registered all projects in the solution and integration runner.
-- Evidence: Auth unit tests 4/4; Auth integration tests 31/31; Release solution build 0 errors;
-  fresh standalone Auth carve build 0 errors; diff, signature, runtime-carrier, package, local-core,
-  and migration/model searches passed. No API/UI E2E was run locally because the merge queue owns it.
-- Outcome: Phase 1 is complete and green without changing `IAuthService`, runtime callers, models, or
-  migrations. The characterization suite now locks the current Razor/Duende behavior for migration.
-- Follow-up: Stop at this local checkpoint. Resume with Phase 2 login/logout `Option<T>` migration
-  only; do not push or begin Phase 3 in that context.
-
-### 2026-08-05 - Phase 1 partial state and upstream transition reconciled
-
-- Action: Resumed the plan in its recorded worktree, fetched `origin`, inspected the branch, worktree,
-  dirty paths, package pins, PR inventory, and open platform-sync inventory before editing.
-- Evidence: branch `Feature/typed-result_auth-outcomes` at `3eb2c2d12b39b49535f91c9a67dfd481dc5f5929`;
-  fresh `origin/main` `0ed29d8f077fc9593467d6c858c6a0cbab688290`; ahead `1`, behind `7`; no branch PR;
-  no open platform-sync PR; `origin/main` Auth pin `0.1.0-alpha.0.814`; dirty paths are confined to
-  the Phase 1 Auth test foundation, package/solution registration, and integration runner.
-- Outcome: The branch/worktree identity is valid and the partial Phase 1 work is in scope, but it must
-  be preserved while the branch is updated before it is built or completed. The work was stashed,
-  `origin/main` merged as `185876e9219d8854dae8e09ceef791b351361855`, and the stash restored without
-  conflict; the branch is now zero behind at platform pin `0.1.0-alpha.0.814`.
-- Follow-up: Audit the restored implementation against Phase 1, complete the missing coverage, and
-  drive the full phase gate green.
-
-### 2026-08-05 - Worktree and dependency gate established
-
-- Action: Fetched `origin`, checked open platform-sync PRs, and created the sibling worktree on
-  `Feature/typed-result_auth-outcomes` from `origin/main`; refreshed again before the first edit when
-  main advanced.
-- Evidence: initial base `03aa7e35dadd1c4b03b5a7a06577f49092f8af73`; pre-edit refreshed base
-  `f04025c5ef4d7fe68d7ecef6cea4786470e138a1`; final rebased base
-  `e419966a97dda7b2bc0fd9354a002a9b0dad0d57`; `git rev-list --count HEAD..origin/main` returned `0`;
-  platform-sync PRs #367, #372, and #373 had no failed checks at their respective gates.
-- Outcome: The requested branch is current, isolated, and not blocked by a red platform sync.
-- Follow-up: Implement only after this planning checkpoint is committed.
-
-### 2026-08-05 - Caller and coverage planning completed
-
-- Action: Read the mandated sources in full and audited Auth service methods, every Razor/Duende
-  caller, persistence behavior, test projects, API token minting, and passing UI E2E login/sign-up
-  scenarios.
-- Evidence: `plans/typed-result/AUTH_OUTCOMES_PLAN.md` and this ledger in this commit; repo-wide file,
-  symbol, route, feature, project, and package-reference inventories; planning checks classified all
-  eight service methods, found zero roadmap references in the plan, verified every ledger section and
-  the near-top pointer, limited the working tree to the two requested files, and found no trailing
-  whitespace.
-- Outcome: The migration has an exhaustive target contract table, explicit privacy/boundary rules,
-  a real coverage-gap inventory, four independently green phases, and a full delivery lifecycle.
-- Follow-up: Execute Phase 1 exactly as described in `## Next Steps`.
-
-## Resume prompt
-
-```
-cd C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_auth-outcomes
-Read @plans/typed-result/AUTH_OUTCOMES_PLAN.md and @plans/typed-result/AUTH_OUTCOMES_PROGRESS.md and do what its `## Next Steps` says.
-```
+- Auth remains credential-only and has no Payment, B2B, Customer, role, tenant, or business-profile
+  dependency. The migration changes only Auth-owned runtime/tests plus its existing Shared
+  architecture guard.
+- Expected caller-actionable refusals are typed in process. Infrastructure, cancellation, malformed
+  identity, and invariant failures remain exceptions. Token/credential mismatch is an invariant defect.
+- Unknown credentials, wrong passwords, unverified credentials, unknown reset emails, and invalid or
+  orphaned tokens retain their existing privacy-equivalent edge behavior.
+- `Reunion.AspNetCore` remains intentionally absent because Auth's UI is Razor Pages and the pages map
+  owned carriers manually. `Reunion.Validation` is unused.
+- Auth's integration fixture must scope process environment overrides through host startup, and direct
+  logout service tests must supply an ambient request `HttpContext` for Duende logout-context access.
+- Direct EF Core and Relational test references intentionally converge Auth's published platform
+  closure with its local EF build.
+- No EF model or migration change is planned. No local E2E run is authorized before a queue failure.
