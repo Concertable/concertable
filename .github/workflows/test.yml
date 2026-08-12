@@ -689,14 +689,7 @@ jobs:
 
       - name: Install Stripe CLI
         if: needs.changes.outputs.run_e2e == 'true'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          url=$(curl -fsSL -H "Authorization: Bearer $GH_TOKEN" https://api.github.com/repos/stripe/stripe-cli/releases/latest | grep -oE 'https://[^"]+_linux_x86_64\.tar\.gz' | head -1)
-          test -n "$url" || { echo "Stripe CLI linux_x86_64 asset not found"; exit 1; }
-          curl -fsSL "$url" -o /tmp/stripe.tar.gz
-          sudo tar -xzf /tmp/stripe.tar.gz -C /usr/local/bin stripe
-          stripe version
+        uses: ./.github/actions/setup-stripe-cli
 
       - name: Install Azure Functions Core Tools
         if: needs.changes.outputs.run_e2e == 'true'
@@ -776,14 +769,7 @@ jobs:
 
       - name: Install Stripe CLI
         if: needs.changes.outputs.run_e2e_ui == 'true'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          url=$(curl -fsSL -H "Authorization: Bearer $GH_TOKEN" https://api.github.com/repos/stripe/stripe-cli/releases/latest | grep -oE 'https://[^"]+_linux_x86_64\.tar\.gz' | head -1)
-          test -n "$url" || { echo "Stripe CLI linux_x86_64 asset not found"; exit 1; }
-          curl -fsSL "$url" -o /tmp/stripe.tar.gz
-          sudo tar -xzf /tmp/stripe.tar.gz -C /usr/local/bin stripe
-          stripe version
+        uses: ./.github/actions/setup-stripe-cli
 
       - name: Install Azure Functions Core Tools
         if: needs.changes.outputs.run_e2e_ui == 'true'
@@ -904,14 +890,7 @@ jobs:
 
       - name: Install Stripe CLI
         if: env.RUN == 'true'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          url=$(curl -fsSL -H "Authorization: Bearer $GH_TOKEN" https://api.github.com/repos/stripe/stripe-cli/releases/latest | grep -oE 'https://[^"]+_linux_x86_64\.tar\.gz' | head -1)
-          test -n "$url" || { echo "Stripe CLI linux_x86_64 asset not found"; exit 1; }
-          curl -fsSL "$url" -o /tmp/stripe.tar.gz
-          sudo tar -xzf /tmp/stripe.tar.gz -C /usr/local/bin stripe
-          stripe version
+        uses: ./.github/actions/setup-stripe-cli
 
       - name: Install Azure Functions Core Tools
         if: env.RUN == 'true'
