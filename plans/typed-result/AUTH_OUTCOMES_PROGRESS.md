@@ -18,7 +18,8 @@
   bootstrap transport failure, committing the Auth alpha.3 candidate as `12c000d7`, merging current
   `origin/main` as `38e62584`, and completing a clean correctness/security review through that merge.
   The reviewed current-main final head `e91b6ecadde05e9ecad6b3126a5b44e1ea10b57b` passed the complete
-  PR hard-floor matrix and is admitted to the merge queue at position 1 with `full-e2e`.
+  PR hard-floor matrix, but merge-group run 31634022795 repeated the pre-scenario Stripe bootstrap
+  failure with HTTP 503. The branch now owns a durable workflow fix before requeueing.
 
 ## Current state
 
@@ -56,8 +57,10 @@ distinct safe explanation.
 
 ## Next Steps
 
-1. Follow merge-group API/UI E2E on exact remote head `e91b6eca` to terminal green and merge.
-2. Remove this source worktree, then follow package publication, generated platform sync, and plan
+1. Commit the verified, cleanly reviewed Stripe installer with this checkpoint and push the compound
+   fix through the plan push protocol.
+2. Require replacement PR checks, keep `full-e2e`, and requeue the new exact head.
+3. After merge, remove this source worktree, then follow package publication, generated platform sync, and plan
    close-out from a fresh docs worktree based on merged `origin/main`.
 
 ## Downstream handoffs
@@ -118,6 +121,17 @@ distinct safe explanation.
   PR-level API/UI E2E skipped as designed and `full-e2e` remains the sole E2E-tier label.
 - Second queue admission: exact remote head `e91b6eca` entered at position 1 with
   `mergeQueueEntry.state = AWAITING_CHECKS`; `full-e2e` is the sole E2E-tier label.
+- Second queue failure: merge-group run 31634022795 passed API E2E but UI E2E failed before any
+  scenario when GitHub's Stripe release API returned HTTP 503. PR #517 was ejected to `OPEN/CLEAN`.
+  Two independent failures across release discovery and asset delivery make the unpinned GitHub
+  release bootstrap a CI defect rather than a one-off transient.
+- Bootstrap correction: all three E2E jobs use one local composite action that pins Stripe CLI
+  `1.45.2` and installs it from Stripe's signed official apt repository. This removes runtime
+  discovery of `latest`, the GitHub release API, and GitHub release assets without adding retries.
+- Bootstrap verification: both workflow YAML documents parse, all three call sites resolve to the
+  local composite action, no old GitHub release reference remains, `git diff --check` passes, and
+  Stripe's official apt metadata publishes exact package `1.45.2`. A clean Ubuntu container pull
+  stalled in Docker Desktop and was not counted as evidence; queue execution remains authoritative.
 - Reviewed PR checks: remote head `dd9e3111a4b6689cf46b9232275fccd63a349b72` passed build, all
   service carves, all unit/integration jobs, and `ci-complete`; PR-level E2E skipped as designed.
 - Queue readiness: a final fetch proved that remote head zero behind `origin/main`, `OPEN/CLEAN`, and
@@ -177,6 +191,8 @@ was removed before the first queue attempt, incremental-review correctly fell ba
 of the complete branch net diff, followed by an incremental review of the conflict-free current-main
 merge. Both review markers are stamped through local candidate
 `38e62584d702f16e1efaa4570aa53e1378ddc464`.
+The post-ejection incremental correctness/security review of the local observation tail and reusable
+Stripe installer found no issues; its marker will be stamped to the compound fix commit before push.
 
 ## Decisions, discoveries, blockers, and deviations
 

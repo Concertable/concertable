@@ -233,6 +233,9 @@ and ship in one PR.
 - [x] Rerun the Auth verification gate and review the package update.
 - [x] Push the exact candidate through the plan push protocol.
 - [x] Require replacement checks to pass and return PR #517 to the full-E2E merge queue.
+- [x] Replace the repeatedly failing GitHub release bootstrap with one pinned Stripe package installer,
+  then verify and review it.
+- [ ] Push the bootstrap fix and return PR #517 to the full-E2E merge queue.
 
 ## Verification gate for every phase
 
