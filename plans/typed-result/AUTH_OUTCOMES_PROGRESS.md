@@ -58,9 +58,8 @@ distinct safe explanation.
 
 ## Next Steps
 
-1. Push this plan-only transport checkpoint, verify exact head equality, and require replacement PR
-   checks on the final head.
-2. Keep `full-e2e` and requeue the final exact head.
+1. Keep `full-e2e` and requeue exact remote head `31968034`.
+2. Follow the new merge-group installer, API/UI E2E, and merge to terminal green.
 3. After merge, remove this source worktree, then follow package publication, generated platform sync, and plan
    close-out from a fresh docs worktree based on merged `origin/main`.
 
@@ -137,6 +136,9 @@ distinct safe explanation.
   Auth's published platform closure from `0.953` to `0.955`; Reunion remains pinned to alpha.3.
 - Bootstrap repair push: local, upstream, and PR work heads verified equal at
   `3615bfa36cef0867f2f34d10bf21e55cb6d51a36`; the branch was zero behind `origin/main`.
+- Bootstrap transport push: local, upstream, and PR final heads verified equal at
+  `319680347b952db5d0fd351303c8891e445fd3c5`; replacement workflow run 31637748572 passed build,
+  frontend/backend carves, every unit/integration job, and `ci-complete` on that exact head.
 - Reviewed PR checks: remote head `dd9e3111a4b6689cf46b9232275fccd63a349b72` passed build, all
   service carves, all unit/integration jobs, and `ci-complete`; PR-level E2E skipped as designed.
 - Queue readiness: a final fetch proved that remote head zero behind `origin/main`, `OPEN/CLEAN`, and
