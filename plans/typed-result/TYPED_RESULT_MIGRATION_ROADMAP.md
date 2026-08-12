@@ -124,30 +124,10 @@ their current branch and worktree rather than fragmenting in-flight work.
     [`../../api/Concertable.Customer/ARCHITECTURE.md`](../../api/Concertable.Customer/ARCHITECTURE.md),
     and `api/agents/CODE_CONVENTIONS.md`.
 
-- [ ] 🟠 **Auth expected-outcome migration.** `typed-result/auth-outcomes` Exclusive owner:
-  `Feature/typed-result_auth-outcomes` at
-  `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_auth-outcomes`.
-  **Authoritative work is active and unpushed in the recorded local worktree as of 2026-08-09.**
-  GitHub remains an incomplete inventory because no branch PR or remote branch exists.
-  The semantic work is complete. Auth has no Payment/B2B/Customer dependency, so reconcile and convert
-  it directly to published Reunion now; determine delivery from Auth's actual package topology.
-  Its next checkpoint aligns its used `Reunion` and `Reunion.Errors` references to
-  `0.1.0-alpha.2` and adopts the new unambiguous construction surface before review.
-  - Scope: audit `IAuthService` null/bool/enum/void outcomes; model ordinary absence with `Option<T>`
-    and caller-actionable refusal with operation-specific Result contracts where that distinction is
-    useful; map owned in-process results to Duende/Razor/protocol behavior at the Auth edge.
-  - Preserve: Auth’s credential-only responsibility, privacy-preserving indistinguishability of invalid
-    credentials/accounts, framework-required wire/protocol shapes, capability queries whose complete
-    contract is genuinely boolean, and infrastructure/cancellation exceptions.
-  - Current evidence: Auth has no third-party Result dependency. Its review surface includes nullable
-    login/logout returns, `RegisterResult`, password-change/reset and verification booleans, and silent
-    email/reset no-ops used to avoid account disclosure.
-  - Out of scope: roles, tenant/customer business concepts, downstream user projections, Payment/B2B/
-    Customer runtime code, and shared Kernel API changes.
-  - Planning sources: this roadmap, `api/AGENTS.md`, `api/ARCHITECTURE.md`,
-    [`../../api/Concertable.Auth/ARCHITECTURE.md`](../../api/Concertable.Auth/ARCHITECTURE.md),
-    `api/agents/CODE_CONVENTIONS.md`, Auth’s Pages/Services, and the coverage inventory established by
-    the plan.
+- [x] ✅ **Auth expected-outcome migration.** `typed-result/auth-outcomes` PR #517 migrated Auth's
+  ordinary absence and caller-actionable refusals to published Reunion `Option<T>` and owned typed
+  results while preserving Razor, Duende, privacy, and exception boundaries. Full API/UI E2E passed;
+  publication delivered platform `0.1.0-alpha.0.958`, and platform-sync PR #531 merged terminal green.
 
 ### Selected cross-cutting track — one owner, never duplicated on service PRs
 
@@ -171,7 +151,7 @@ their current branch and worktree rather than fragmenting in-flight work.
 
 ### Parallel preparation dispatched
 
-B2B, Auth, Customer non-Payment, and the alpha.2 package-baseline owner have independently executable
+B2B, Customer non-Payment, and the alpha.2 package-baseline owner have independently executable
 ledgers; Customer Ticket is terminal on published platform `.910`.
 `REUNION_SHARED_CONTRACTION_PLAN.md` owns the final contraction but remains implementation-blocked
 until the remaining prepared consumer set and exact remaining-call-site inventory exist.
@@ -247,9 +227,9 @@ Released .NET native unions
 └── Concertable-owned error-union cutover
 ```
 
-B2B and Auth have authoritative unpushed local work that is now inventoried. Preserve both worktrees;
-remote state alone remains insufficient. Service diffs remain service-owned, and temporary package
-inputs never become committed delivery configuration.
+B2B has authoritative unpushed local work that is now inventoried. Preserve its worktree; remote state
+alone remains insufficient. Service diffs remain service-owned, and temporary package inputs never
+become committed delivery configuration.
 
 ## Shared migration rules
 
