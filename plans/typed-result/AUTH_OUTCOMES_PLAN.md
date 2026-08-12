@@ -3,9 +3,8 @@
 > Next steps live in @plans/typed-result/AUTH_OUTCOMES_PROGRESS.md -> `## Next Steps`.
 
 **Status:** The semantic migration, published Reunion conversion, domain-ownership correction,
-alpha.2 construction reconciliation, and final producer-terminal audit are locally implemented and
-verified. The branch is PR-ready but delivery awaits explicit instruction. Auth has no Payment, B2B,
-or Customer runtime/package dependency.
+alpha.3 package reconciliation, and final producer-terminal audit are locally implemented. Auth has
+no Payment, B2B, or Customer runtime/package dependency.
 
 ## Outcome
 
@@ -39,7 +38,7 @@ wire behavior does not carry `Result` or `Option` values.
   an invariant defect and remains a `DomainException`; no application pre-check duplicates it.
 - Error definitions use the current direct `ErrorDefinition.<Kind><TCase>(...)` API. No
   `ErrorDefinition.For<TError>()` call remains.
-- Every used Reunion package resolves exactly `0.1.0-alpha.2`; Auth does not add the unused Validation
+- Every used Reunion package resolves exactly `0.1.0-alpha.3`; Auth does not add the unused Validation
   or AspNetCore packages.
 - No Result/Option/error carrier crosses Razor, HTTP, OAuth/OIDC, Duende, event, or persistence wire
   shapes.
@@ -104,7 +103,7 @@ message, and `ErrorKind`; expected values must not be calculated with production
 
 - Keep `FirstOrDefaultAsync` / `FindAsync` nullable results in `AuthService`, then create `Option` or a
   typed failure at the service return boundary.
-- Use `TryGetValue`, `TryGetError`, `Match`, `ValueOr`, or the alpha.2 construction surface. A
+- Use `TryGetValue`, `TryGetError`, `Match`, `ValueOr`, or the alpha.3 construction surface. A
   target-typed raw payload is valid only where success/error intent is unambiguous; use exact named
   cases where payload types overlap or branch intent matters. Do not add throwing payload accessors or
   local unwrap/conversion helpers.
@@ -225,6 +224,15 @@ and ship in one PR.
   Auth-owned contracts without weakening branch intent or error-union ownership.
 - [x] Rerun the Auth verification gate before incremental review and PR preflight.
 
+### Phase 7 - Reunion alpha.3 published baseline (in progress)
+
+- [x] Align Auth's direct `Reunion` and `Reunion.Errors` references to `0.1.0-alpha.3` after the
+  producer packages are indexed on NuGet.org.
+- [x] Audit the additive flexible Option HTTP terminals. Auth still owns no Minimal API or MVC
+  terminal surface, so `Reunion.AspNetCore` remains absent and no runtime call site changes.
+- [ ] Rerun the Auth verification gate, incrementally review the package update, push the exact
+  candidate, and return PR #517 to the full-E2E merge queue.
+
 ## Verification gate for every phase
 
 1. Run the affected Auth unit and integration projects through the `integration-debug` workflow;
@@ -241,7 +249,7 @@ a genuine model change, stop and amend the plan before touching migrations.
 
 ## Review and delivery lifecycle
 
-1. After Phase 6, run incremental review for the domain correction and alpha.2 checkpoint from the
+1. After the final package reconciliation, run incremental review from the
    existing review watermark; resolve every clear finding.
 2. Reconcile with current `origin/main`, audit Auth's actual package/HTTP topology, replace old carrier
    imports and terminals with directly owned Reunion packages at their real edges, then rebuild,

@@ -8,27 +8,26 @@
 - PR: [#517](https://github.com/Concertable/concertable/pull/517), open at remote head
   `dd9e3111a4b6689cf46b9232275fccd63a349b72`
 - Dependency/package gates: no implementation gate. NuGet.org publishes `Reunion` and
-  `Reunion.Errors` `0.1.0-alpha.2`; Auth has no Payment, B2B, or Customer runtime/package dependency.
-  This branch owns Auth's semantic migration and alpha.2 source adoption. The separate alpha.2
-  baseline plan owns repository-wide version alignment. After the Auth `api/**` PR merges, this plan
+  `Reunion`, `Reunion.AspNetCore`, `Reunion.Errors`, and `Reunion.Validation` `0.1.0-alpha.3`; Auth has
+  no Payment, B2B, or Customer runtime/package dependency. This branch owns Auth's semantic migration
+  and direct `Reunion`/`Reunion.Errors` alpha.3 adoption. The separate repository baseline plan owns
+  repository-wide version alignment. After the Auth `api/**` PR merges, this plan
   owns publication and its generated platform-sync gate to terminal green.
-- Last reconciled: `2026-08-12` after merge-group run
-  [31618590547](https://github.com/Concertable/concertable/actions/runs/31618590547) failed and
-  ejected PR #517. API E2E passed; UI E2E ran no scenarios because its `Install Stripe CLI` step
-  failed downloading the release asset with `curl: (56) Connection died, tried 5 times before giving
-  up`. The PR is `OPEN/CLEAN`, not queued, on unchanged head `dd9e3111a4b6689cf46b9232275fccd63a349b72`.
+- Last reconciled: `2026-08-12` after formally classifying merge-group run
+  [31618590547](https://github.com/Concertable/concertable/actions/runs/31618590547) as an external
+  bootstrap transport failure and verifying the Auth alpha.3 candidate locally. The PR remains open
+  on unchanged remote head `dd9e3111a4b6689cf46b9232275fccd63a349b72`; the local source update is
+  not yet committed, reviewed, or pushed.
 
 ## Current state
 
 The task directly matches this branch and worktree. No other worktree owns the Auth implementation.
-PR #517 is open at verified head `dd9e3111a4b6689cf46b9232275fccd63a349b72`, current with
-`origin/main` through `5bf622fec`. The updated candidate includes merge commits `962969cad` and
-`fd69b70f0`; its full Release restore/build is green against platform `0.953`. The served clean-review
-work order is the sole untracked path pending removal. No Auth implementation edit was required by
-PR #524's nullable/Option guidance. Replacement PR checks are green on the exact clean-reviewed remote
-head. Local commits after that head change only this active progress ledger and must not be pushed to
-the checked PR. The first full-E2E merge group was ejected by an external bootstrap-download failure,
-not an Auth build, carve, unit, integration, API E2E, or scenario failure.
+PR #517 is open at verified remote head `dd9e3111a4b6689cf46b9232275fccd63a349b72`. Six local commits
+after that head change only this active progress ledger. The current working candidate additionally
+updates Auth's direct `Reunion` and `Reunion.Errors` pins from alpha.2 to alpha.3 and updates this plan
+pair; it has not been committed, reviewed, or pushed. The first full-E2E merge group was ejected by an
+external bootstrap-download failure, not an Auth build, carve, unit, integration, API E2E, or scenario
+failure.
 
 Phases 1-5 are committed and locally verified. Auth's in-process contracts use direct published
 Reunion ownership: login/logout return `Option<T>`, four caller-actionable refusal paths return
@@ -37,13 +36,14 @@ Credential authentication/password decisions and token expiry transitions live i
 entities. Token/credential identity mismatch remains an invariant exception. Razor and Duende map
 the carriers without leaking them into wire or persistence shapes.
 
-Phase 6 and the final producer reconciliation are complete. Auth aligns `Reunion` and
-`Reunion.Errors` to `0.1.0-alpha.2`, uses unambiguous target-typed value/error conversions, exact
+Phase 6 and the final producer reconciliation are complete. The current candidate aligns `Reunion`
+and `Reunion.Errors` to `0.1.0-alpha.3`, uses unambiguous target-typed value/error conversions, exact
 unit `Success` cases, target-typed `null` for `None`, and direct forwarding where domain and service
 result types already match. No factory, wrapper, cast, or result reconstruction should change.
-Producer commit `113be42` adds flexible Option HTTP terminals, but Auth owns no Minimal API outcome
-surface: its account handlers are server-rendered Razor Pages and its other outcome edge is Duende.
-`Reunion.AspNetCore` therefore remains correctly absent.
+Reunion source commit `91fdc6f2e33d8f396fa463ad309cb1288bea3be5` adds flexible Option HTTP
+terminals, but Auth owns no Minimal API or MVC outcome surface: its account handlers are
+server-rendered Razor Pages and its other outcome edge is Duende. `Reunion.AspNetCore` therefore
+remains correctly absent.
 
 PR #524's additional carrier guidance applies to Auth's boundary choices but requires no source
 change: EF lookups remain nullable inside `AuthService`, while `LoginAsync` and `LogoutAsync` expose
@@ -53,10 +53,14 @@ distinct safe explanation.
 
 ## Next Steps
 
-Blocked: PR #517 was ejected from the merge queue by a failed UI-E2E bootstrap job.
-Blocked by: Merge-group run 31618590547, job `e2e-ui-tests`, step `Install Stripe CLI`; the release-asset download terminated with curl exit 56 before any scenario ran.
-Unblock action: Use the dedicated `e2e-ui-debug` workflow to diagnose and durably fix or formally classify the CI bootstrap failure; do not rerun or re-enqueue this failed merge group blindly.
-Resume when: The failure has an evidence-backed disposition and any required CI fix is committed, reviewed, pushed, and green on PR #517, making a new exact-head queue admission valid.
+1. Commit the verified Auth alpha.3 package update and this plan checkpoint.
+2. Run incremental review from the existing `dd9e3111` watermark; resolve every open finding.
+3. Push the exact reviewed candidate through the plan push protocol and require replacement PR checks
+   to pass on that exact head. The clean-machine `build` job is the authoritative full-solution gate
+   because both local full-build attempts exhausted the shared drive while compiling unrelated late
+   solution projects.
+4. Keep `full-e2e`, enqueue PR #517 again, and follow it through merge, publication, generated
+   platform sync, and plan close-out.
 
 ## Downstream handoffs
 
@@ -86,9 +90,10 @@ Resume when: The failure has an evidence-backed disposition and any required CI 
   scope.
 - Phase 6 (`1afdb4b33`): aligned Auth to Reunion alpha.2 construction, including target-typed `null`
   for Option absence, and completed the final verification gate.
-- Producer reconciliation (`this commit`): audited Auth against Reunion `113be42`; the new flexible
-  Option HTTP terminals do not apply to Auth's Razor/Duende topology, and existing construction plus
-  direct result forwarding is already canonical. No implementation or focused-test edit was needed.
+- Alpha.3 producer reconciliation (`this commit`): aligned Auth's direct `Reunion` and
+  `Reunion.Errors` package closure to published `0.1.0-alpha.3` and audited Reunion source commit
+  `91fdc6f2e33d8f396fa463ad309cb1288bea3be5`. Its new flexible Option HTTP terminals do not apply to
+  Auth's Razor/Duende topology, so no runtime call site or AspNetCore package was added.
 - PR readiness: clean incremental correctness/security review and GREEN read-only preflight on
   current `origin/main`; no code, package-cutover, PR, or platform-sync blocker remains.
 - Delivery push: local and remote work heads verified equal at `c784db2044cf11521681e842b28a38f92946385c`;
@@ -115,20 +120,24 @@ Resume when: The failure has an evidence-backed disposition and any required CI 
 - Queue failure: merge-group run 31618590547 passed build, all service carves, unit/integration, and
   API E2E, then failed before UI scenarios when Stripe CLI's GitHub release-asset download returned
   curl exit 56. GitHub ejected PR #517; no retry was requested.
+- UI bootstrap classification: the API E2E job in the same run downloaded and executed Stripe CLI
+  `1.45.2` successfully at `16:42:55`; the UI job ran the identical installer at `16:52:38` and its
+  release-asset connection died after curl's five transport attempts. No archive extraction, test
+  host, browser, or scenario started. This is a formally classified external transient, with no CI
+  workflow or Auth code defect evidenced and no retry/timeout padding justified.
 
 ## Verification
 
 Final producer-reconciled candidate:
 
-- Auth unit tests: 13 passed, 0 failed in Release on the unchanged implementation.
-- Auth integration tests through `integration-debug`: the existing final-candidate result remains
-  54 passed, 0 failed. A fresh rerun did not start because Docker did not answer the mandatory
-  `docker ps` preflight; no application or test failure occurred.
+- Auth unit tests: 13 passed, 0 failed in Release against `Reunion` alpha.3.
+- Auth integration tests through `integration-debug`: 54 passed, 0 failed in Release against
+  `Reunion` alpha.3 using the real SQL Testcontainers fixture.
 - Typed-result architecture tests: 16 passed, 0 failed on the final candidate.
-- Fresh standalone Auth carve: 0 errors against published platform `0.1.0-alpha.0.943`; 55 existing
+- Fresh standalone Auth carve: 0 errors against published platform `0.1.0-alpha.0.953`; only existing
   analyzer warnings. The verified temporary carve was removed.
 - Restored package graph resolves both `Reunion` and `Reunion.Errors` exactly
-  `0.1.0-alpha.2`; Auth has no alpha.1 pin and no Validation or AspNetCore package.
+  `0.1.0-alpha.3`; Auth has no alpha.1/alpha.2 pin and no Validation or AspNetCore package.
 - Signature, construction-factory, package-ownership, migration, scope, and `git diff --check` gates
   pass. The service surface remains two `Option<T>`, four `UnitResult<TError>`, and two intentional
   completion-only email operations.
@@ -141,16 +150,22 @@ Final producer-reconciled candidate:
 - Platform `0.953` full restore/Release solution build: 0 errors and the same 4 existing warnings in
   12m45s with build servers/shared compilation disabled and a single MSBuild node. This verifies
   local source head `fd69b70f0`.
+- Alpha.3 full-solution build attempts: no code diagnostic was reached. The first run failed after
+  14m05s with 54 disk-full write errors; after removing 6.33 GiB of this worktree's generated output,
+  the clean/warm attempts again exhausted the shared drive while compiling unrelated late Customer
+  integration projects. Auth's focused tests and standalone carve are green; replacement PR CI must
+  provide the authoritative clean-machine solution build.
 - No API/UI E2E was run locally; the merge workflow owns any selected E2E tier.
 
 ## Reviews
 
-The untracked work order `reviews/Feature-typed-result_auth-outcomes.md` records clean full and
+The review work order `reviews/Feature-typed-result_auth-outcomes.md` records clean full and
 incremental correctness/security reviews with no open findings. The latest exact range is
 `ac7b2341..dd9e3111` (43 commits including inherited, already-merged `main` work); branch-unique
 non-merge commits change only the Auth plan pair and delivery ledger, while Auth runtime source is
 unchanged. Both review markers are stamped through PR head
-`dd9e3111a4b6689cf46b9232275fccd63a349b72`.
+`dd9e3111a4b6689cf46b9232275fccd63a349b72`. The alpha.3 package update remains to be incrementally
+reviewed after its commit.
 
 ## Decisions, discoveries, blockers, and deviations
 
