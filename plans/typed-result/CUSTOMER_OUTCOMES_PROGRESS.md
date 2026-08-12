@@ -6,14 +6,14 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_customer-outcomes`
 - Branch: `Feature/typed-result_customer-outcomes`
 - PR: [#425](https://github.com/Concertable/concertable/pull/425) - open, non-draft, remote head
-  `e60219f7dfe13f0c49c818e2ed7ab7a557f84569`
+  `297c61192117d14e631c5ad5f64364e28ed670db`
 - Dependency/package gates: NuGet.org publishes exact `0.1.0-alpha.2` packages for `Reunion`,
   `Reunion.Validation`, `Reunion.Errors`, and `Reunion.AspNetCore`. The separate
   `REUNION_ALPHA2_BASELINE` workstream owns the repository-wide pin cutover; this service workstream
   may independently prepare its Customer-owned alpha.2 code. Customer Ticket PR #475 and its
   platform-sync PR #479 are terminal on platform `.910` and remain outside this scope.
-- Last reconciled: 2026-08-12 after the clean incremental review through `d623a3501`; the last
-  fetched `origin/main` is `b94028d3f` and PR #425 remains open at `e60219f7d`
+- Last reconciled: 2026-08-12 after the reviewed work range `e60219f7d..297c61192` was pushed;
+  local work head, remote-tracking branch, and PR #425 head all verified as `297c61192`
 
 ## Current state
 
@@ -24,11 +24,10 @@ event contracts. Atomic Review and Preference creates translate only the existin
 to their typed conflicts; collaborator, provider, identity, invariant, and cancellation failures
 remain exceptions.
 
-The local branch is current with the last fetched `origin/main` at platform `.939`, 59 commits
-ahead of it, and 548 commits ahead of the deliberately preserved PR head. The current-main merge was automatic in
-Customer code and plan state. The branch still owns the same five-module semantic slice; Ticket,
-Concert, Customer Payment, purchase/checkout, shared Kernel API, events, models, and migrations are
-excluded.
+The reviewed work head `297c61192` is current with `origin/main` `b94028d3f` at platform `.939`
+and 60 commits ahead of it. The current-main merge was automatic in Customer code and plan state.
+The branch still owns the same five-module semantic slice; Ticket, Concert, Customer Payment,
+purchase/checkout, shared Kernel API, events, models, and migrations are excluded.
 
 Phase 7 implementation and local verification are green. All four existing Customer Reunion-family
 pins are `0.1.0-alpha.2`; branch-owned Review and Preference construction sites use raw payload
@@ -40,15 +39,14 @@ The complete Release solution, five scoped unit suites, Shared.Api architecture 
 Customer carve, package/resolved-graph inventories, structural audits, Docker health preflight, and
 five integration wrappers are green. The incremental native, security, architecture, convention, and
 coverage review is clean through `d623a3501`; `CV4` was fixed by qualifying five inherited
-`Query` calls and the affected Release unit suites pass 25/25. PR #425 remains unchanged. Delivery
-now uses the plan-managed two-leg push.
+`Query` calls and the affected Release unit suites pass 25/25. The reviewed work head is published
+to PR #425 with exact local, remote-tracking, and PR OID equality.
 
 ## Next Steps
 
-1. Fetch and reconcile any new `origin/main` advance, repeating affected gates and incremental review
-   if the base changed.
-2. Perform the plan-managed two-leg push to PR #425: push the reviewed work head, verify local,
-   remote-tracking, and PR OIDs, then commit and push the verified transport checkpoint separately.
+1. Run `/merge` for PR #425 from the final pushed checkpoint head. Require the plan's full E2E queue
+   tier, follow the source PR and generated platform-sync PR to terminal green/merged state, then
+   perform plan-managed close-out.
 
 ## Downstream handoffs
 
@@ -75,7 +73,8 @@ now uses the plan-managed two-leg push.
   conflict required a semantic resolution.
 - Phase 7 aligned the Customer Reunion-family graph to alpha.2 in `47c9ba547`, reconciled platform
   `.939` in `a3c1c1420`, recorded final verification in `22fb61697`, and fixed review finding
-  `CV4` in `d623a3501`.
+  `CV4` in `d623a3501`. The reviewed work range `e60219f7d..297c61192` was pushed to PR #425
+  with local, remote-tracking, and PR head equality.
 
 ## Verification and review
 
@@ -97,6 +96,8 @@ now uses the plan-managed two-leg push.
 - Review artifact: `reviews/Feature-typed-result_customer-outcomes.md`. All findings are fixed. Both
   review watermarks are `d623a35014cd23632f190e557ee37668953680b9`; the follow-up review of the
   `CV4` fix is clean.
+- Push evidence: starting remote head `e60219f7dfe13f0c49c818e2ed7ab7a557f84569`; reviewed work
+  head and resulting remote-tracking/PR head `297c61192117d14e631c5ad5f64364e28ed670db`.
 
 ## Decisions and constraints
 

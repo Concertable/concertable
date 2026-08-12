@@ -287,7 +287,7 @@ tier and receives no skip label.
   static factories when inference would obscure the owned error contract.
 - [x] Run all Docker-independent package, build, unit, architecture, carve, scope, and whitespace gates
   before the Docker-dependent final integration gate. Docker health does not block this code phase.
-- [ ] After a healthy Docker data-path preflight, rerun the five Release integration wrappers, then
+- [x] After a healthy Docker data-path preflight, rerun the five Release integration wrappers, then
   review the alpha.2 checkpoint and perform the existing two-leg PR update.
 
 ## Definition of done
