@@ -5,9 +5,9 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `fcd1b58df783551e08307183bd82c75d739405ef`  _(2026-08-12)_
+**Reviewed up to commit:** `132f3a568fb6eee4e2635130ab016fd1b6ebdd3d`  _(2026-08-12)_
 
-**Security-reviewed up to commit:** `fcd1b58df783551e08307183bd82c75d739405ef`  _(2026-08-12)_
+**Security-reviewed up to commit:** `132f3a568fb6eee4e2635130ab016fd1b6ebdd3d`  _(2026-08-12)_
 
 > Range reviewed: `d916e95cf..5cfdb9427` (43 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -78,3 +78,13 @@ microservice isolation, module boundaries, seeding, C# conventions, and test cov
 paths. The mainline repository and E2E refactors retain module/service ownership and compile through
 the full solution; the Customer alpha.3 pin resolves the four verified packages from Reunion merge
 `91fdc6f2` and passes the complete build, carve, unit, architecture, and 74/74 integration gates.
+
+## Incremental review â€” 2026-08-12 (current-main `.955` reconciliation)
+
+> Range reviewed: `fcd1b58df..132f3a568` (8 commits).
+
+No issues found. Checked native correctness, security-sensitive package paths, microservice isolation,
+module boundaries, seeding, C# conventions, and test coverage of changed paths. The incoming
+`IReadDbContext` refactor keeps every query context module-local, preserves no-tracking registration,
+and compiles with the Customer alpha.3 terminals across the full 188-project Release graph with 0
+errors. The `.955` platform pins match current main.

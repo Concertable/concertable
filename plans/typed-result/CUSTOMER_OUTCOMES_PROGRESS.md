@@ -17,10 +17,10 @@
   minimal-API `ToOkOr` overloads with generic/parameter arities `2/2` and `3/3`, and the MVC overloads
   with arities `1/2` and `2/3`. Publication and published-baseline revalidation are terminal. Customer
   Ticket PR #475 and platform-sync PR #479 remain terminal and out of scope.
-- Last reconciled: 2026-08-12 after push leg one. The owning branch is current with `origin/main`;
-  reviewed work head `306cab6de966ee74688c64b47f2eee7027a4a5e4` is proven equal across local,
-  `origin/Feature/typed-result_customer-outcomes`, and PR #425. Transport this ledger checkpoint, then
-  enter the merge workflow.
+- Last reconciled: 2026-08-12 after current-main `.955` reconciliation. Merge
+  `132f3a568fb6eee4e2635130ab016fd1b6ebdd3d` brings `origin/main` `58e19d938` into the branch;
+  the 188-project Release graph builds with 0 errors and the incremental review is clean. Republish
+  the current reviewed head through the two-leg push before queueing PR #425.
 
 ## Current state
 
@@ -69,8 +69,8 @@ required incremental review.
 
 Deliver the reviewed Phase 8 candidate into its terminal state:
 
-1. Transport this push-evidence ledger checkpoint and prove local, remote-tracking, and PR #425 head
-   equality again.
+1. Republish the current-main reviewed head through the plan-managed two-leg push and prove local,
+   remote-tracking, and PR #425 head equality.
 2. Route PR #425 through `/merge` with the required full merge-queue E2E tier, follow it to its exact
    merge SHA, then own the generated platform-sync PR through green/merged before close-out. Keep the
    plan and ledger until all delivery gates are terminal.
@@ -125,9 +125,8 @@ Deliver the reviewed Phase 8 candidate into its terminal state:
   2/2, and B2B/Customer Artist 17/17 + 2/2 passed: 74/74 across eight projects. Every run-owned SQL
   and Ryuk container was removed; a separate session started a new pair after this run completed.
 - Review artifact: `reviews/Feature-typed-result_customer-outcomes.md`. All findings are fixed. Both
-  review watermarks are `fcd1b58df783551e08307183bd82c75d739405ef`; the published alpha.3
-  incremental native, security, architecture, convention, and coverage review of
-  `9bcb25eea..fcd1b58df` found no new issues.
+  review watermarks are `132f3a568fb6eee4e2635130ab016fd1b6ebdd3d`; the current-main `.955`
+  incremental native, security, architecture, convention, and coverage review found no new issues.
 - Push evidence: starting remote head `e60219f7dfe13f0c49c818e2ed7ab7a557f84569`; reviewed work
   head `297c61192117d14e631c5ad5f64364e28ed670db`; the later checkpoint transport made the current
   remote-tracking/PR head `08a92f91659e4eccc4558e55def5027b26c08348`. Alpha.3 push leg one
@@ -163,7 +162,7 @@ Deliver the reviewed Phase 8 candidate into its terminal state:
   path in Customer User; the same project passed through a temporary short drive mapping with no
   tracked workaround. Package, carrier, terminal, rename, excluded-scope, local-workaround, and
   whitespace inventories are clean.
-- Current review state: all implementation work is clean through `fcd1b58df`; no findings remain open.
+- Current review state: all implementation work is clean through `132f3a568`; no findings remain open.
 
 ## Decisions and constraints
 
