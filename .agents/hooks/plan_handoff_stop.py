@@ -356,12 +356,7 @@ def handoff_summary(body):
 
 def handoff_reason(path, body):
     summary = handoff_summary(body)
-    text = path.read_text(encoding="utf-8")
-    worktree = metadata(text, "Worktree") or str(ledger_root(path))
-    return (
-        f"Why: `{path.name}` owns unfinished work from this turn: {summary}\n"
-        f"Only run this continuation if no agent or session is already working in `{worktree}`."
-    )
+    return f"Why: `{path.name}` owns unfinished work from this turn: {summary}"
 
 
 def expected_handoff(path, pointer, body):
@@ -376,12 +371,9 @@ def normalized_handoff_text(value):
 
 
 def handoff_present(message, path, pointer, body):
-    text = path.read_text(encoding="utf-8")
-    worktree = metadata(text, "Worktree") or str(ledger_root(path))
     parts = (
         f"Why: {path.name} owns unfinished work from this turn:",
         handoff_summary(body).removesuffix("..."),
-        f"Only run this continuation if no agent or session is already working in {worktree}.",
         pointer,
     )
     normalized_message = normalized_handoff_text(message)
@@ -482,7 +474,7 @@ def evaluate(data):
             names = ", ".join(path.name for path, _, _, _ in missing)
             failures.append(
                 f"HANDOFF GATE: {names} has non-terminal `## Next Steps`, but the final response "
-                "omitted its explained, collision-safe continuation. Local implementation completion "
+                "omitted its explained continuation. Local implementation completion "
                 "is not lifecycle completion."
             )
     if failures:
