@@ -8,24 +8,24 @@
 - PR: [#517](https://github.com/Concertable/concertable/pull/517), open at remote head
   `dd9e3111a4b6689cf46b9232275fccd63a349b72`
 - Dependency/package gates: no implementation gate. NuGet.org publishes `Reunion` and
-  `Reunion`, `Reunion.AspNetCore`, `Reunion.Errors`, and `Reunion.Validation` `0.1.0-alpha.3`; Auth has
+  `Reunion.AspNetCore`, `Reunion.Errors`, and `Reunion.Validation` `0.1.0-alpha.3`; Auth has
   no Payment, B2B, or Customer runtime/package dependency. This branch owns Auth's semantic migration
   and direct `Reunion`/`Reunion.Errors` alpha.3 adoption. The separate repository baseline plan owns
   repository-wide version alignment. After the Auth `api/**` PR merges, this plan
   owns publication and its generated platform-sync gate to terminal green.
 - Last reconciled: `2026-08-12` after formally classifying merge-group run
   [31618590547](https://github.com/Concertable/concertable/actions/runs/31618590547) as an external
-  bootstrap transport failure and verifying the Auth alpha.3 candidate locally. The PR remains open
-  on unchanged remote head `dd9e3111a4b6689cf46b9232275fccd63a349b72`; the local source update is
-  not yet committed, reviewed, or pushed.
+  bootstrap transport failure, committing the Auth alpha.3 candidate as `12c000d7`, and completing a
+  clean full correctness/security review through that commit. The PR remains open on unchanged
+  remote head `dd9e3111a4b6689cf46b9232275fccd63a349b72`; the reviewed local candidate is not yet pushed.
 
 ## Current state
 
 The task directly matches this branch and worktree. No other worktree owns the Auth implementation.
-PR #517 is open at verified remote head `dd9e3111a4b6689cf46b9232275fccd63a349b72`. Six local commits
-after that head change only this active progress ledger. The current working candidate additionally
-updates Auth's direct `Reunion` and `Reunion.Errors` pins from alpha.2 to alpha.3 and updates this plan
-pair; it has not been committed, reviewed, or pushed. The first full-E2E merge group was ejected by an
+PR #517 is open at verified remote head `dd9e3111a4b6689cf46b9232275fccd63a349b72`. Local candidate
+`12c000d7a1f273706494ad974b368a549a7533d7` includes the intervening delivery-ledger checkpoints and
+the committed alpha.3 package adoption. The full net branch range has a clean correctness/security
+review and is ready for the plan push protocol. The first full-E2E merge group was ejected by an
 external bootstrap-download failure, not an Auth build, carve, unit, integration, API E2E, or scenario
 failure.
 
@@ -53,13 +53,11 @@ distinct safe explanation.
 
 ## Next Steps
 
-1. Commit the verified Auth alpha.3 package update and this plan checkpoint.
-2. Run incremental review from the existing `dd9e3111` watermark; resolve every open finding.
-3. Push the exact reviewed candidate through the plan push protocol and require replacement PR checks
+1. Push the exact reviewed candidate through the plan push protocol and require replacement PR checks
    to pass on that exact head. The clean-machine `build` job is the authoritative full-solution gate
    because both local full-build attempts exhausted the shared drive while compiling unrelated late
    solution projects.
-4. Keep `full-e2e`, enqueue PR #517 again, and follow it through merge, publication, generated
+2. Keep `full-e2e`, enqueue PR #517 again, and follow it through merge, publication, generated
    platform sync, and plan close-out.
 
 ## Downstream handoffs
@@ -90,7 +88,7 @@ distinct safe explanation.
   scope.
 - Phase 6 (`1afdb4b33`): aligned Auth to Reunion alpha.2 construction, including target-typed `null`
   for Option absence, and completed the final verification gate.
-- Alpha.3 producer reconciliation (`this commit`): aligned Auth's direct `Reunion` and
+- Alpha.3 producer reconciliation (`12c000d7`): aligned Auth's direct `Reunion` and
   `Reunion.Errors` package closure to published `0.1.0-alpha.3` and audited Reunion source commit
   `91fdc6f2e33d8f396fa463ad309cb1288bea3be5`. Its new flexible Option HTTP terminals do not apply to
   Auth's Razor/Duende topology, so no runtime call site or AspNetCore package was added.
@@ -159,13 +157,11 @@ Final producer-reconciled candidate:
 
 ## Reviews
 
-The review work order `reviews/Feature-typed-result_auth-outcomes.md` records clean full and
-incremental correctness/security reviews with no open findings. The latest exact range is
-`ac7b2341..dd9e3111` (43 commits including inherited, already-merged `main` work); branch-unique
-non-merge commits change only the Auth plan pair and delivery ledger, while Auth runtime source is
-unchanged. Both review markers are stamped through PR head
-`dd9e3111a4b6689cf46b9232275fccd63a349b72`. The alpha.3 package update remains to be incrementally
-reviewed after its commit.
+The review work order `reviews/Feature-typed-result_auth-outcomes.md` records a clean full
+correctness/security review with no open findings. Because the previously served review work order
+was removed before the first queue attempt, incremental-review correctly fell back to a fresh review
+of the complete `5bf622fe..12c000d7` net branch range (68 commits). Both review markers are stamped
+through local candidate `12c000d7a1f273706494ad974b368a549a7533d7`.
 
 ## Decisions, discoveries, blockers, and deviations
 

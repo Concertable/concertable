@@ -224,14 +224,14 @@ and ship in one PR.
   Auth-owned contracts without weakening branch intent or error-union ownership.
 - [x] Rerun the Auth verification gate before incremental review and PR preflight.
 
-### Phase 7 - Reunion alpha.3 published baseline (in progress)
+### Phase 7 - Reunion alpha.3 published baseline (delivery in progress)
 
 - [x] Align Auth's direct `Reunion` and `Reunion.Errors` references to `0.1.0-alpha.3` after the
   producer packages are indexed on NuGet.org.
 - [x] Audit the additive flexible Option HTTP terminals. Auth still owns no Minimal API or MVC
   terminal surface, so `Reunion.AspNetCore` remains absent and no runtime call site changes.
-- [ ] Rerun the Auth verification gate, incrementally review the package update, push the exact
-  candidate, and return PR #517 to the full-E2E merge queue.
+- [x] Rerun the Auth verification gate and review the package update.
+- [ ] Push the exact candidate and return PR #517 to the full-E2E merge queue.
 
 ## Verification gate for every phase
 
