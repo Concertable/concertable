@@ -217,7 +217,7 @@ and ship in one PR.
 - [x] Re-run Auth unit/integration tests, the architecture slice, full Release solution build, fresh
   standalone Auth carve, and mechanical checks.
 
-### Phase 6 - Reunion alpha.2 baseline and construction ergonomics
+### Phase 6 - Reunion alpha.2 baseline and construction ergonomics (complete)
 
 - [x] Align Auth's existing direct `Reunion` and `Reunion.Errors` references to
   `0.1.0-alpha.2`; do not add `Reunion.Validation` or `Reunion.AspNetCore`.

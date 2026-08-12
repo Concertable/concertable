@@ -12,14 +12,15 @@
   baseline plan owns repository-wide version alignment. After the Auth `api/**` PR merges, this plan
   owns publication and its generated platform-sync gate to terminal green.
 - Last reconciled: `2026-08-12` after a clean incremental correctness/security review through
-  `1afdb4b3396d2fde525a7a1da324b66cf9575f54`. Plan graph: 0 errors, 0 warnings.
+  `1afdb4b3396d2fde525a7a1da324b66cf9575f54` and a GREEN read-only PR preflight at local head
+  `9ff1026b019a3f4c9a0bde0bb18e7864d1b704ab`. Plan graph: 0 errors, 0 warnings.
 
 ## Current state
 
 The task directly matches this branch and worktree. No other worktree owns the Auth implementation,
-no Auth PR or remote branch exists, and no platform-sync PR is open. The branch was zero behind
-`origin/main` at the Phase 6 checkpoint. The sole unrelated dirty path is the preserved untracked
-clean-review work order `reviews/Feature-typed-result_auth-outcomes.md`.
+no Auth PR or remote branch exists, and no platform-sync PR is open. A fresh fetch left the branch
+zero behind / 49 ahead of `origin/main`; all code is committed. The sole unrelated dirty path is the
+preserved untracked clean-review work order `reviews/Feature-typed-result_auth-outcomes.md`.
 
 Phases 1-5 are committed and locally verified. Auth's in-process contracts use direct published
 Reunion ownership: login/logout return `Option<T>`, four caller-actionable refusal paths return
@@ -35,10 +36,9 @@ target-typed `null` for `None`. It contains no old Auth factory call and still u
 
 ## Next Steps
 
-Fetch current `origin/main`, confirm the branch remains current, then run read-only PR preflight.
-Record any concrete blocker; otherwise report Auth ready for PR delivery. Do not push or open a PR
-without instruction; delivery still requires full merge-queue E2E plus publication and
-platform-sync ownership to terminal green.
+Do not push without instruction. On explicit delivery instruction, push the committed branch,
+open the plain GitHub PR, and use the normal merge workflow with full merge-queue E2E. After the
+Auth `api/**` PR lands, own package publication and the generated platform-sync PR to terminal green.
 
 ## Downstream handoffs
 
@@ -67,6 +67,8 @@ platform-sync ownership to terminal green.
   scope.
 - Phase 6 (`1afdb4b33`): aligned Auth to Reunion alpha.2 construction, including target-typed `null`
   for Option absence, and completed the final verification gate.
+- PR readiness: clean incremental correctness/security review and GREEN read-only preflight on
+  current `origin/main`; no code, package-cutover, PR, or platform-sync blocker remains.
 
 ## Verification
 
