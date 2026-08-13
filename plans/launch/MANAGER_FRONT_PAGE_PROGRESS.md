@@ -3,25 +3,30 @@
 - Plan: `plans/launch/MANAGER_FRONT_PAGE_PLAN.md`
 - Roadmap: `plans/launch/LAUNCH_ROADMAP.md`
 - Roadmap item: `launch/manager-front-page`
-- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-launch-dashboard-mtd-payments`
-- Branch: `Feature/launch_dashboard-mtd-payments`
-- PR: [#545](https://github.com/Concertable/concertable/pull/545) (draft)
+- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-launch-dashboard-mtd-consumer`
+- Branch: `Feature/launch_dashboard-mtd-consumer`
+- PR: not opened (B2B consumer slice)
 
 Captured during Phase A implementation. These supersede the original plan
 where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_PAGE_PLAN.md).
 
 ## Next Steps
 
-**Immediate action:** PR #545 is being taken through the merge queue. The branch was updated to current
-`main` (merged `origin/main`; platform pin now `0.1.0-alpha.0.971`; Payment solution build 0 warnings/0 errors
-against it). Push the update, require exact-head CI green (full solution build, Payment carve, complete unit +
-integration matrices), mark the PR ready, and enqueue with `full-e2e` — the `payment.proto`/gRPC contract and the
-published `Concertable.Payment.Client` public shape (`IManagerPaymentReportingClient`, `ManagerPaymentClient`) are
-positive E2E triggers, so E2E cannot be skipped. Wait for `MERGED`, then follow package publication and the
-`chore/platform-sync-*` PR to green/merged. Once the new `Concertable.Payment.Client` version is on `main`, create a
-fresh B2B consumer PR that constructs the UTC month-to-date `DateRange`, calls both reporting operations with
-`ITenantContext.GetTenantId()`, replaces the two zero KPI stubs (`MtdRevenueCents`/`MtdPayoutsCents`), and removes
-their TODOs. Do not consume the client source from this producer branch: B2B compiles against the published package.
+**Immediate action:** Producer delivery is complete — PR #545 MERGED as `3004fb52d`, package published, and
+platform-sync PR #551 merged the platform to `0.1.0-alpha.0.976` (B2B pins it; the published `Concertable.Payment.Client`
+carries `IManagerPaymentReportingClient`). Now implementing the **B2B consumer** in worktree
+`Feature/launch_dashboard-mtd-consumer` (branch off `origin/main` `a2747a90f`): inject `IManagerPaymentReportingClient` +
+`ITenantContext` + `TimeProvider` into `VenueDashboardService`/`ArtistDashboardService`; add `GetTicketRevenueAsync` /
+`GetSettlementPayoutsAsync(tenantContext.GetTenantId(), <UTC month-to-date DateRange>)` into the existing `Task.WhenAll`;
+replace the `MtdRevenueCents: 0` / `MtdPayoutsCents: 0` stubs with `Money.ToMinorUnits()` and drop the TODOs. Implementation + local verification are DONE: both services wired; `Venue`/`Artist.Infrastructure` gained
+`Concertable.Payment.Client` (package) + `Tenant.Contracts` (project) refs; `MockManagerPaymentClient`
+(+`IMockManagerPaymentClient`) implements `IManagerPaymentReportingClient` and is registered in `ApiFixture`;
+new `Venue.UnitTests`/`Artist.UnitTests` projects (added to `Concertable.slnx`, `DynamicProxyGenAssembly2` +
+`*.UnitTests` IVT added to the module `AssemblyInfo`s). Venue + Artist Infrastructure build 0 errors against
+`0.976`; both unit-test projects pass 2/2; fixtures build 0 errors. Remaining: commit, push a draft PR, run
+`/review`, then take it through `/merge` with **`skip-e2e`** — the diff changes no HTTP/gRPC/published contract and
+integration coverage boots the real path, so no positive E2E trigger. B2B compiles against the published package,
+never the producer branch source.
 
 **Update (2026-08-13):** PR [#50](https://github.com/Concertable/concertable/pull/50) **merged** (2026-05-19)
 — Phase A + B.9–B.11 are on `main`. The repo has since **carved** into `Concertable.B2B` /
@@ -46,28 +51,21 @@ their TODOs. Do not consume the client source from this producer branch: B2B com
    Package publication succeeded; cumulative platform-sync PR #541 superseded #539, updated the platform to
    `0.1.0-alpha.0.968`, passed build/unit/integration checks, and merged as
    `1c88858f93f648f1719fa9e4d273749b8932b364`.
-3. ⏳ **MTD revenue/payouts (was item 2, money slices) — IN PROGRESS.** `MtdRevenueCents` /
-   `MtdPayoutsCents` remain stubbed at 0 on `main`. Payment PRs #392 and #296 are merged, so their blocker is
-   clear. The current producer branch adds Payment-owned aggregate queries over completed transactions within
-   an explicit `DateRange`, two additive `ManagerPayment` RPCs exposed through a new
-   `IManagerPaymentReportingClient` using protobuf `Timestamp`, and the existing `Money` contract/value object.
-   The separate reporting interface keeps the published `IManagerPaymentOperationsClient` source-compatible
-   with B2B's concrete test client. Ticket revenue
-   sums `TicketTransaction.Amount`; artist payouts sum `SettlementTransaction.PayeeGrossMinor`, excluding the
-   commission included in the payer total. The owner key is already B2B's tenant `Guid`, so the consumer must
-   use `ITenantContext.GetTenantId()` directly and construct the UTC month-to-date `DateRange`; no venue/artist
-   integer-ID translation is required. Delivery is
-   deliberately split because B2B consumes the published `Concertable.Payment.Client` package rather than its
-   source project. Producer commit `d42fe4d6b`, the SEC1 fix `c044ee247`, and a fresh current-main merge
-   (platform pin `0.1.0-alpha.0.971`) are on the branch; the Payment solution builds 0 warnings/errors against the
-   new pin. Draft-PR CI owns the full build/carve/unit/integration matrices at the exact remote head. Repository
-   integration coverage verifies payee/status/start/end filtering and settlement gross semantics.
-   PR [#545](https://github.com/Concertable/concertable/pull/545) is open and being taken through the merge queue. Native plus security review of
-   `2e6e0cc78..c044ee247` found one malformed-protobuf-timestamp boundary defect; commit `c044ee247` maps it to
-   gRPC `InvalidArgument`, adds focused coverage, and passed follow-up review with no open findings. Review record
-   commit `3a91bb103` is pushed and verified equal across local, remote-tracking, and PR refs. Local verification
-   on reviewed code head `c044ee247`: Payment solution build 0 warnings/errors, Payment unit tests 238/238, and
-   `git diff --check` clean.
+3. ⏳ **MTD revenue/payouts (was item 2, money slices) — PRODUCER DELIVERED; CONSUMER IN PROGRESS.**
+   **Producer:** PR [#545](https://github.com/Concertable/concertable/pull/545) MERGED as `3004fb52d` (full-e2e
+   merge-group passed after one auto-merge re-assert cleared a GitHub re-eval glitch); package published; platform-sync
+   PR #551 merged the platform to `0.1.0-alpha.0.976`. **Consumer (this worktree):** wiring the two published reporting
+   RPCs into `VenueDashboardService`/`ArtistDashboardService` to replace the `MtdRevenueCents`/`MtdPayoutsCents` zero
+   stubs — payee is `ITenantContext.GetTenantId()`, window is a UTC month-to-date `DateRange`, `Money.ToMinorUnits()` →
+   the `long` cents fields. The producer (now on `main`) added Payment-owned aggregate queries over completed
+   transactions within an explicit `DateRange`, two additive `ManagerPayment` RPCs exposed through a new
+   `IManagerPaymentReportingClient` (protobuf `Timestamp` + the existing `Money` value object). The separate reporting
+   interface keeps the published `IManagerPaymentOperationsClient` source-compatible with B2B's concrete test client.
+   Ticket revenue sums `TicketTransaction.Amount`; artist payouts sum `SettlementTransaction.PayeeGrossMinor` (excludes
+   the commission in the payer total). Payee is B2B's tenant `Guid` (`ITenantContext.GetTenantId()`) — no venue/artist
+   integer-ID translation. B2B consumes the published `Concertable.Payment.Client` package, never the producer source.
+   Consumer test surface: `MockManagerPaymentClient` must also implement `IManagerPaymentReportingClient` and be
+   registered in `ApiFixture`; add `VenueDashboardService`/`ArtistDashboardService` unit tests (no such tests exist yet).
 4. ⏳ **Phase C — swap FE mock tier → real (was item 4).** Blocked: only
    `/api/{Venue,Artist}Dashboard/kpis` exist server-side; the other 17 FE `dashboardApi` methods (overview,
    inbox, upcoming-concerts, revenue/payouts, opportunities, activity, settlements, applications, reviews)
