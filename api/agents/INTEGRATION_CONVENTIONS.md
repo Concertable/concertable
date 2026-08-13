@@ -28,6 +28,7 @@ integration suites goes in `Concertable.Testing.Integration` (or `Concertable.Te
 helpers) and is composed via extension methods / constants — never copy-pasted per fixture. When you catch
 yourself copying a setup step into a second fixture, lift it into the shared lib instead.
 
+- `HostEnvironments.Integration` / `.E2E` — the host environment name; never a raw literal.
 - `services.AddTestAuthentication()` — makes `TestAuthHandler` the default scheme.
 - `services.AddXunitLogging(accessor)` — routes host logs to the current xunit test output.
 - `services.RemoveAzureServiceBus()` — drops the ASB receiver(s) and swaps `IBusTransport` for a no-op
