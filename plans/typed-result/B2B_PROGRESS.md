@@ -64,9 +64,15 @@ reference was added. The resolved SEC1 tech-debt entry has been deleted.
 
 ## Next Steps
 
-Enqueue Messaging producer PR #536 and wait for its merge, package publication, and
-generated platform sync, then deliver Payment producer commit `6458ec0d0` and wait for its publication
-and sync. Reconcile
+Blocked: Messaging producer PR #536 cannot enter the merge queue yet.
+
+Blocked by: explicit authorization to merge PR #536 into `main`.
+
+Unblock action: Tommy explicitly instructs `merge PR #536`.
+
+Resume when: that merge instruction is received; enqueue the reviewed head with `full-e2e`, then wait
+for its merge, package publication, and generated platform sync before delivering Payment producer
+commit `6458ec0d0`. Reconcile
 this consumer branch with current `origin/main`, consume those normal-feed packages, rerun the build,
 carve, unit, integration, architecture, formatting, ownership, and plan-graph gates, then run the
 incremental code review. Do not push, open a PR, or merge without further instruction.
@@ -125,6 +131,8 @@ incremental code review. Do not push, open a PR, or merge without further instru
 - Messaging PR #536's build, carve, unit, and integration checks are terminal and green against remote
   head `28e5797ff`; PR-level E2E jobs skipped as expected before queue admission.
 - PR #536 is current with `origin/main` and labelled `full-e2e` because it changes a public published-package API.
+- Queue admission was not performed because the available authorization covered pushing/opening the
+  producer PR but did not explicitly authorize merging it into `main`.
 - Package-only B2B Web Release build against the isolated exact Messaging, Payment, and Reunion
   artifact closure: passed, 0 errors and one existing `UserEntity` warning.
 - `dotnet build api/Concertable.B2B/Concertable.B2B.slnx --configuration Release --no-restore -m:1

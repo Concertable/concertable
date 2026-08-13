@@ -27,8 +27,15 @@ through temporary restore inputs. Do not copy or recreate the extensions locally
 
 ## Next Steps
 
-Enqueue Messaging producer PR #536, then wait for its merge, package publication, and
-generated platform sync. Then reconcile and deliver Payment through `6458ec0d0`, wait for Payment package
+Blocked: Messaging producer PR #536 cannot enter the merge queue yet.
+
+Blocked by: explicit authorization to merge PR #536 into `main`.
+
+Unblock action: Tommy explicitly instructs `merge PR #536`.
+
+Resume when: that instruction is received; enqueue PR #536 with `full-e2e`, wait for its merge,
+package publication, and generated platform sync. Then reconcile and deliver Payment through
+`6458ec0d0`, wait for Payment package
 publication and sync, and update the B2B waiting ledger so its current-main/package revalidation can
 resume. Do not push, open a PR, publish, or merge without further instruction.
 
