@@ -7,6 +7,7 @@
 - Branch: `Refactor/typed-result_payment-financial-saga`
 - PR: not opened
 - Base reconciliation: `15de28fb8` includes current platform sync `1c88858f9`
+- Review watermark: `9f59b6da8`; correctness and security review clean
 - Package gate: Messaging prerequisite is published and synced; Payment publication is delivery-authorized
 
 ## Current state
@@ -72,6 +73,8 @@ passes 9/9 on this reconciled head.
 - Source-only Payment carve from `5aaf13d`: Web, Workers, and Client each build with 0 errors and 0
   warnings against package dependencies. The aggregate solution additionally contains repository-level
   AppHost, E2E helper, and integration-fixture project references and is not itself a standalone carve.
+- Exact CI-style standalone Payment carve from `9f59b6da8`: all nine deployable projects restored from
+  published dependencies and built in Release with 0 errors and 0 warnings.
 - Package ownership inventory: the new commands and events exist only in Payment.Contracts, Payment
   runtime, and Payment tests; Payment.Contracts and Payment.Client have no B2B or Customer references.
 - Scoped whitespace format and verification: green.
@@ -80,6 +83,7 @@ passes 9/9 on this reconciled head.
 - Plan graph: 0 errors and 0 warnings; `git diff --check` green.
 - Current-session integration attempt: 5/9 passed; four fixtures failed during Testcontainers Docker
   named-pipe startup before test execution. This is the sole remaining local delivery gate.
+- Full correctness/security review through `9f59b6da8`: clean; no open findings.
 
 ## Decisions and deviations
 
