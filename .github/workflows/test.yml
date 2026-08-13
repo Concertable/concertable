@@ -352,8 +352,7 @@ jobs:
             src/Concertable.Payment.Application/Concertable.Payment.Application.csproj \
             src/Concertable.Payment.Infrastructure/Concertable.Payment.Infrastructure.csproj \
             src/Concertable.Payment.Domain/Concertable.Payment.Domain.csproj \
-            src/Concertable.Payment.Contracts/Concertable.Payment.Contracts.csproj \
-            src/Seed/Concertable.Payment.Seed/Concertable.Payment.Seed.csproj
+            src/Concertable.Payment.Contracts/Concertable.Payment.Contracts.csproj
           pwsh "$GITHUB_WORKSPACE/scripts/local-platform.ps1" build "$PWD/CarvePayment.slnx" --configuration Release -p:MinVerSkip=true
 
   carve-search:

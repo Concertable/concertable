@@ -7,11 +7,11 @@
 - Branch: `Refactor/data-access_base-unify`
 - PR: PR-B #530 — https://github.com/Concertable/concertable/pull/530 (open). Scope: seam fix + composed repository facets + `IWriteRepository` rename, all this PR. (PR-A #522 merged; Customer IReadDbContext #526 merged.)
 - Dependency/package gates: PR-B is publish-first (ships `Concertable.DataAccess.*`) → on merge, publish + a `chore/platform-sync-*` PR rebuild every consumer against the new package. That sync PR is the real cross-consumer test.
-- Last reconciled: 2026-08-13 — Phases 3–4 are complete and verified in this commit. Current-main drift accrued during the long validation run; sync is the next clean-checkpoint action.
+- Last reconciled: 2026-08-13 — current `origin/main` merged into the clean Phase 3/4 checkpoint; the sole workflow conflict preserved the local-platform carve while accepting Payment Seed's upstream removal. Post-merge gates and review are next.
 
 ## Current state
 
-PR-A (#522) and Customer IReadDbContext (#526) are merged + platform-sync green. **PR-B (#530): Phases 1–4 are locally complete; current-main sync and review are next.** Shared `ReadRepository` and `WriteRepository` own read and write behavior once; the flat `Repository` facade composes both over the same tracked module context and contains only delegates. All three use explicit constructors.
+PR-A (#522) and Customer IReadDbContext (#526) are merged + platform-sync green. **PR-B (#530): Phases 1–4 are locally complete and current `origin/main` is merged; post-merge focused gates and review are next.** Shared `ReadRepository` and `WriteRepository` own read and write behavior once; the flat `Repository` facade composes both over the same tracked module context and contains only delegates. All three use explicit constructors.
 
 Customer Concert grounds the context boundary: `ConcertModule` consumes only `IConcertReadRepository`; `ConcertReadRepository` directly inherits a read base and DI passes `ConcertReadDbContext`. Projection handlers separately use tracked `ConcertDbContext`. Combined repositories are tracked units of work and give one writable module-context instance to both composed facets; they do not hide a separate no-tracking context behind `IRepository`.
 
@@ -32,9 +32,8 @@ and consume the same feed. Publishing and committed service pins are unchanged.
 
 ## Next Steps
 
-1. Fetch `origin` and merge current `origin/main` into this clean Phase 3/4 checkpoint; require `git rev-list --count HEAD..origin/main` to return zero. The verified candidate already includes the exact B2B Reunion alpha-3 alignment from upstream commit `7738f954e`, but all later drift must be reconciled before review.
-2. Re-run the repository-wide legacy-name content/path grep, `git diff --check`, the plan graph, and the focused DataAccess unit project after the merge.
-3. Run a full PR-B code review over the current `origin/main...HEAD` candidate. Address every actionable finding, update this ledger with the review state, and stop at the review boundary; Phase 5 delivery remains separate.
+1. Require `git rev-list --count HEAD..origin/main` to return zero, then re-run the repository-wide legacy-name content/path grep, `git diff --check`, the plan graph, and the focused DataAccess unit project against the merged candidate.
+2. Run a full PR-B code review over the current `origin/main...HEAD` candidate. Address every actionable finding, update this ledger with the review state, and stop at the review boundary; Phase 5 delivery remains separate.
 
 ## Completed work
 
