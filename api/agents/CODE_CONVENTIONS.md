@@ -60,8 +60,8 @@ Every module owns a `Repositories/Repository.cs` that binds the shared
 (`int` + `IIdEntity` for most modules, `Guid` + `IGuidEntity` for User/Tenant):
 
 ```csharp
-internal abstract class BaseRepository<TEntity>(TenantDbContext context)
-    : BaseRepository<TEntity, TenantDbContext>(context)
+internal abstract class WriteRepository<TEntity>(TenantDbContext context)
+    : WriteRepository<TEntity, TenantDbContext>(context)
     where TEntity : class;
 
 internal abstract class Repository<TEntity>(TenantDbContext context)
