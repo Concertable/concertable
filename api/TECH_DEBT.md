@@ -73,7 +73,8 @@ configuration; explicit typed composition/options should select capabilities.
 - Establish one testing-owned environment vocabulary for Concertable's custom names and environment
   variable keys, use the framework `Environments` constants/helpers for built-in names in production
   C#, and give test harnesses one API that applies the correct environment consistently to every
-  resource.
+  resource. The `"Testing"` name is semantically the *integration* environment (nothing but integration
+  uses it) and reads wrong — the vocabulary should rename it to `"Integration"`.
 - Remove every production branch on `Testing` / `E2E`, whether expressed through `IsEnvironment(...)`
   or direct `EnvironmentName` comparison. Integration and E2E hosts supply explicit configuration and
   DI overrides from their own composition roots instead of teaching production code the semantics of
