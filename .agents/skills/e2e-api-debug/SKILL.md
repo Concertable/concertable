@@ -55,7 +55,7 @@ The big one: in this suite a failing test usually means **the synchronous call r
 - Last run log: `api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests/api-tests.last.log`
 
 **Shared E2E infra** (service-agnostic) — `api/Concertable.Shared/tests/Concertable.Testing.E2E/`
-- `HealthWaiter` (`WaitForAllHealthyAsync` / `WaitForAllServingAsync` / `WaitForPayoutAccountsAsync`), `PollingService`, `AspireResourceLogger`, `TestTokenMinter`, `StripeE2EAccountResolver`.
+- `HealthWaiter` (`WaitForAllHealthyAsync` / `WaitForAllServingAsync` / `WaitForPayoutAccountsAsync`), `PollingService`, `AspireResourceLogger`, `TestTokenMinter`.
 
 **Triggering time-based flows** — `WorkersFixture.cs` (`fixture.Workers.TriggerAsync(nameof(SomeFunction))`) fires a timer function on the Workers (Functions) host via its admin API `POST /admin/functions/{name}` (e.g. `ConcertFinishedFunction` for the concert-finished → completion sweep). Acceptance (202) is fire-and-forget — assert on the state the function produces. (This replaced the old test-only `POST /e2e/...` endpoints on the B2B Web host.)
 
