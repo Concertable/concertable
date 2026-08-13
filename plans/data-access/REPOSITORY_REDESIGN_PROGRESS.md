@@ -7,11 +7,11 @@
 - Branch: `Refactor/data-access_base-unify`
 - PR: PR-B #530 — https://github.com/Concertable/concertable/pull/530 (open). Scope: seam fix + composed repository facets + `IWriteRepository` rename, all this PR. (PR-A #522 merged; Customer IReadDbContext #526 merged.)
 - Dependency/package gates: PR-B is publish-first (ships `Concertable.DataAccess.*`) → on merge, publish + a `chore/platform-sync-*` PR rebuild every consumer against the new package. That sync PR is the real cross-consumer test.
-- Last reconciled: 2026-08-13 — current `origin/main` is merged through `f133bbefb`; post-merge focused gates are green and the incremental review found no issues. Phase 5 delivery is next.
+- Last reconciled: 2026-08-13 — work-head push `190674ea5..276e191e4` is verified at local, remote-tracking, and PR #530 head; exact-head PR CI is running. Phase 5 delivery is in progress.
 
 ## Current state
 
-PR-A (#522) and Customer IReadDbContext (#526) are merged + platform-sync green. **PR-B (#530): Phases 1–4 are locally complete, current `origin/main` is merged, post-merge gates are green, and review is clean through `f133bbefb`. Phase 5 delivery is next.** Shared `ReadRepository` and `WriteRepository` own read and write behavior once; the flat `Repository` facade composes both over the same tracked module context and contains only delegates. All three use explicit constructors.
+PR-A (#522) and Customer IReadDbContext (#526) are merged + platform-sync green. **PR-B (#530): Phases 1–4 are locally complete, current `origin/main` is merged, review is clean through `f133bbefb`, and candidate `276e191e4` is published to the PR. Exact-head PR CI is running.** Shared `ReadRepository` and `WriteRepository` own read and write behavior once; the flat `Repository` facade composes both over the same tracked module context and contains only delegates. All three use explicit constructors.
 
 Customer Concert grounds the context boundary: `ConcertModule` consumes only `IConcertReadRepository`; `ConcertReadRepository` directly inherits a read base and DI passes `ConcertReadDbContext`. Projection handlers separately use tracked `ConcertDbContext`. Combined repositories are tracked units of work and give one writable module-context instance to both composed facets; they do not hide a separate no-tracking context behind `IRepository`.
 
@@ -32,7 +32,7 @@ and consume the same feed. Publishing and committed service pins are unchanged.
 
 ## Next Steps
 
-Run Phase 5 delivery: publish the reviewed candidate to PR-B #530 with the plan push protocol, require exact-head PR CI green, then merge through `/merge` with `skip-e2e` (no positive trigger). Own `publish-packages` and the resulting `chore/platform-sync-*` PR to a green merge, then close out the plan from a fresh docs worktree.
+Complete Phase 5 delivery: require exact-head PR CI green on candidate `276e191e4`, then merge PR-B #530 through `/merge` with `skip-e2e` (no positive trigger). Own `publish-packages` and the resulting `chore/platform-sync-*` PR to a green merge, then close out the plan from a fresh docs worktree.
 
 ## Completed work
 
@@ -42,9 +42,11 @@ Run Phase 5 delivery: publish the reviewed candidate to PR-B #530 with the plan 
 - **Phase 2 — composed repository facets:** shared `IReadDbContext` and read behavior moved to DataAccess; `Repository` delegates to the shared read/write facets over one tracked context; Customer Concert/Venue/Artist inherit the shared read facet with their dedicated no-tracking contexts; the duplicate Customer contract/read base are deleted. Focused behavior and architecture tests enforce the context and uniqueness invariants.
 - **Phase 3 — write-facet rename:** the public write contract and shared implementation are `IWriteRepository`/`WriteRepository`; module aliases, keyless sequence persistence, syncers, identifiers, tests, conventions, plan material, and the existing review artifact use the new vocabulary. The whole-repository case-insensitive content and path grep for the legacy names is zero.
 - **Phase 4 — verification:** local platform `0.1.0-local.1786642862582` packed 40/40 projects; the Release solution build succeeded with 0 errors; 23/23 unit projects passed 1,075 tests; 16/16 integration projects passed 407 tests. Every integration output contained exactly one DataAccess assembly at `0.1.0-local.1786642862582+dddff8c7902d7ebce546270f030ef36d4b56f20b`.
+- **Phase 5 — work-head push:** starting remote/PR head `190674ea5`; pushed range `190674ea5..276e191e4`; fetched remote-tracking and PR `headRefOid` both verified equal to work head `276e191e4`. Exact-head CI is running.
 
 ## Verification
 
+- Plan-managed work push: local `HEAD`, `origin/Refactor/data-access_base-unify`, and PR #530 `headRefOid` all equalled `276e191e4fd9b1e245d25869d3063561b77731f4` after fetch; the prior remote/PR head was `190674ea520feca593ab9327b051325c87202054`.
 - Post-merge candidate `c143c15c6`: `git rev-list --count HEAD..origin/main` returned 0; repository-wide case-insensitive legacy-name content/path grep returned zero outside the plan/ledger historical allowlist; `git diff --check origin/main...HEAD` passed; plan graph reported 0 errors and 0 warnings; `Concertable.DataAccess.UnitTests` passed 4/4 in Release.
 - Review fix `6914b9baf`: `scripts/unit.ps1 list` reported the added DataAccess group and `git diff --check` passed.
 - Current-main candidate `f133bbefb`: repository-wide legacy-name content/path grep returned zero outside the plan/ledger historical allowlist; `git diff --check origin/main...HEAD` passed; plan graph reported 0 errors and 0 warnings; `Concertable.DataAccess.UnitTests` passed 4/4 in Release.
