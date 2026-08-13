@@ -28,9 +28,11 @@ If multi-agent tooling is unavailable, work the findings yourself one at a time 
 - **Review the fix commits before deleting the watermark.** When code changed, run `incremental-review`
   over the commits added since the recorded review SHA while the review file still exists. Any new
   findings re-enter this same serial fix loop; rebuild and repeat until the incremental pass is clean.
-- **Delete only if all fixed cleanly.** When every finding was fixed, nothing was deferred, and
-  exact-head PR CI is green, `git rm` the review file in a final commit per `reviews/AGENTS.md`. If
-  anything was deferred or CI failed, keep the file with just the outstanding items.
+- **Delete only if all fixed cleanly.** When every finding was fixed, nothing was deferred, and the
+  latest code checkpoint's exact-head PR CI is green, `git rm` the review file in a final review-only
+  commit per `reviews/AGENTS.md`. Push that closeout and require its exact-head checks to finish green.
+  If anything was deferred or the code checkpoint failed CI, keep the file with just the outstanding
+  items.
 
 ## After it finishes
 
