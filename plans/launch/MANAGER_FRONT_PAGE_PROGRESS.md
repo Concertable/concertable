@@ -5,17 +5,18 @@
 - Roadmap item: `launch/manager-front-page`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-launch-dashboard-mtd-payments`
 - Branch: `Feature/launch_dashboard-mtd-payments`
-- PR: not opened
+- PR: [#545](https://github.com/Concertable/concertable/pull/545) (draft)
 
 Captured during Phase A implementation. These supersede the original plan
 where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_PAGE_PLAN.md).
 
 ## Next Steps
 
-**Immediate action:** push this ledger checkpoint, open a draft producer PR, and let exact-head PR CI own the
-full solution build, Payment carve, complete unit matrix, and integration matrix. Review the branch while CI
-runs; when both are clean, mark it ready and wait for explicit
-merge authorization. After merge, follow package publication and platform sync. Once the new
+**Immediate action:** push this checkpoint and require local `HEAD`,
+`origin/Feature/launch_dashboard-mtd-payments`, and PR #545's `headRefOid` to match. Then wait for exact-head
+draft-PR CI to complete the full solution build, Payment carve, complete unit matrix, and integration matrix.
+The code and security review is clean through work head `c044ee247`; when exact-head CI is also clean, mark the
+PR ready and wait for explicit merge authorization. After merge, follow package publication and platform sync. Once the new
 `Concertable.Payment.Client` version is available on `main`, create a fresh B2B consumer PR that constructs the
 UTC month-to-date `DateRange`, calls both operations with `ITenantContext.GetTenantId()`, replaces the two zero
 KPI stubs, and removes their TODOs. Do not consume the client source from this producer branch: B2B compiles
@@ -62,6 +63,12 @@ against the published package.
    (0 errors/warnings). Repository
    integration coverage verifies payee/status/start/end filtering and settlement gross semantics; current-main
    policy assigns execution of that integration project and the full build/carve matrices to draft-PR CI.
+   Draft PR [#545](https://github.com/Concertable/concertable/pull/545) is open. Native plus security review of
+   `2e6e0cc78..c044ee247` found one malformed-protobuf-timestamp boundary defect; commit `c044ee247` maps it to
+   gRPC `InvalidArgument`, adds focused coverage, and passed follow-up review with no open findings. Review record
+   commit `3a91bb103` is pushed and verified equal across local, remote-tracking, and PR refs. Local verification
+   on reviewed code head `c044ee247`: Payment solution build 0 warnings/errors, Payment unit tests 238/238, and
+   `git diff --check` clean.
 4. ⏳ **Phase C — swap FE mock tier → real (was item 4).** Blocked: only
    `/api/{Venue,Artist}Dashboard/kpis` exist server-side; the other 17 FE `dashboardApi` methods (overview,
    inbox, upcoming-concerts, revenue/payouts, opportunities, activity, settlements, applications, reviews)
