@@ -7,11 +7,11 @@
 - Branch: `Refactor/data-access_base-unify`
 - PR: PR-B #530 — https://github.com/Concertable/concertable/pull/530 (open). Scope: seam fix + composed repository facets + `IWriteRepository` rename, all this PR. (PR-A #522 merged; Customer IReadDbContext #526 merged.)
 - Dependency/package gates: PR-B is publish-first (ships `Concertable.DataAccess.*`) → on merge, publish + a `chore/platform-sync-*` PR rebuild every consumer against the new package. That sync PR is the real cross-consumer test.
-- Last reconciled: 2026-08-13 — the carve argument-forwarding fix is locally green and incremental review `f133bbefb..be808fb37` found no issues. Replacement publication is next.
+- Last reconciled: 2026-08-13 — replacement work-head push `a16de3907..b45773c3e` is verified at local, remote-tracking, and PR #530 head; replacement exact-head CI is running.
 
 ## Current state
 
-PR-A (#522) and Customer IReadDbContext (#526) are merged + platform-sync green. **PR-B (#530): Phases 1–4 are locally complete, current `origin/main` is merged, and review is clean through `be808fb37`. Exact-head CI run `31749113047` exposed an argument-forwarding defect in the new carve seam; the wrapper now parses only its command and target itself and forwards every remaining token unchanged, avoiding PowerShell named-parameter binding. The fix is locally green and review-clean.** Shared `ReadRepository` and `WriteRepository` own read and write behavior once; the flat `Repository` facade composes both over the same tracked module context and contains only delegates. All three use explicit constructors.
+PR-A (#522) and Customer IReadDbContext (#526) are merged + platform-sync green. **PR-B (#530): Phases 1–4 are locally complete, current `origin/main` is merged, and review is clean through `be808fb37`. Exact-head CI run `31749113047` exposed an argument-forwarding defect in the new carve seam; the locally green, review-clean fix is published at work head `b45773c3e`, and replacement exact-head CI is running.** Shared `ReadRepository` and `WriteRepository` own read and write behavior once; the flat `Repository` facade composes both over the same tracked module context and contains only delegates. All three use explicit constructors.
 
 Customer Concert grounds the context boundary: `ConcertModule` consumes only `IConcertReadRepository`; `ConcertReadRepository` directly inherits a read base and DI passes `ConcertReadDbContext`. Projection handlers separately use tracked `ConcertDbContext`. Combined repositories are tracked units of work and give one writable module-context instance to both composed facets; they do not hide a separate no-tracking context behind `IRepository`.
 
@@ -32,7 +32,7 @@ and consume the same feed. Publishing and committed service pins are unchanged.
 
 ## Next Steps
 
-Publish the reviewed candidate to PR-B #530 through the plan push protocol and require replacement exact-head PR CI green. Then merge through `/merge` with `full-e2e` because the published DataAccess public shape is a positive trigger. Own `publish-packages` and the resulting `chore/platform-sync-*` PR to a green merge, then close out the plan from a fresh docs worktree.
+Require replacement exact-head PR CI green on candidate `b45773c3e`, then merge PR-B #530 through `/merge` with `full-e2e` because the published DataAccess public shape is a positive trigger. Own `publish-packages` and the resulting `chore/platform-sync-*` PR to a green merge, then close out the plan from a fresh docs worktree.
 
 ## Completed work
 
@@ -44,9 +44,11 @@ Publish the reviewed candidate to PR-B #530 through the plan push protocol and r
 - **Phase 4 — verification:** local platform `0.1.0-local.1786642862582` packed 40/40 projects; the Release solution build succeeded with 0 errors; 23/23 unit projects passed 1,075 tests; 16/16 integration projects passed 407 tests. Every integration output contained exactly one DataAccess assembly at `0.1.0-local.1786642862582+dddff8c7902d7ebce546270f030ef36d4b56f20b`.
 - **Phase 5 — work-head push:** starting remote/PR head `190674ea5`; pushed range `190674ea5..276e191e4`; fetched remote-tracking and PR `headRefOid` both verified equal to work head `276e191e4`; checkpoint transport then made local, remote-tracking, and PR heads equal `a16de3907`.
 - **Phase 5 — carve CI fix:** `local-platform.ps1` now manually parses its two wrapper arguments and forwards all later `dotnet` tokens unchanged, so `-p:` options cannot collide with PowerShell common-parameter prefixes.
+- **Phase 5 — replacement work-head push:** starting remote/PR head `a16de3907`; pushed range `a16de3907..b45773c3e`; fetched remote-tracking and PR `headRefOid` both verified equal to work head `b45773c3e`. Replacement exact-head CI is running.
 
 ## Verification
 
+- Plan-managed replacement work push: local `HEAD`, `origin/Refactor/data-access_base-unify`, and PR #530 `headRefOid` all equalled `b45773c3e59042cd79b1910c1cf561252fd429f4` after fetch; the prior remote/PR head was `a16de39074b372dc5c52e2bc0c1129b1560362ba`.
 - Carve argument-forwarding fix: `powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\local-platform.ps1 build api\Concertable.DataAccess\Tests\Concertable.DataAccess.UnitTests\Concertable.DataAccess.UnitTests.csproj --configuration Release -p:MinVerSkip=true` completed the mapped-feed restore and Release build with 0 warnings and 0 errors.
 - Exact-head PR CI run `31749113047` on `a16de3907`: main build passed and completed unit/integration jobs passed; `carve-b2b`, `carve-customer`, and `carve-payment` failed before compilation with `local-platform.ps1: Parameter cannot be processed because the parameter name 'p' is ambiguous` when their `-p:` MSBuild arguments reached PowerShell script binding.
 - Plan-managed work push: local `HEAD`, `origin/Refactor/data-access_base-unify`, and PR #530 `headRefOid` all equalled `276e191e4fd9b1e245d25869d3063561b77731f4` after fetch; the prior remote/PR head was `190674ea520feca593ab9327b051325c87202054`.
