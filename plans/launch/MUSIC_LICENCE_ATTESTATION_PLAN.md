@@ -124,12 +124,12 @@ Implement steps 1–15 in order (backend model → re-scaffold migration → DTO
 → backend tests → web). One coherent PR; a backend commit then a web commit is fine for reviewability.
 
 **Verification gate:**
-- `dotnet build api/Concertable.slnx` → 0 errors.
-- Tenant module unit + integration tests green, and the touched Concert unit tests green — run via the
-  `integration-debug` skill (a red run enters that skill, never a status report).
+- Tenant module build and focused unit tests green locally, together with the touched Concert unit
+  tests.
 - `./initial-migrations.ps1` run from `api/` (the model changed).
-- All four web builds green (`web-customer`, `web-venue`, `web-artist`, `web-business`) — the boundary
-  gate for shared code.
+- Push the coherent checkpoint. Exact-head PR CI owns the full solution, standalone carves, all four
+  web builds, and complete unit/integration matrices. A remote red integration job enters the
+  `integration-debug` skill at its narrowest failing scope.
 - **Merge-queue E2E tier: full E2E, do not skip.** The change touches a module/package boundary
   (`Tenant.Contracts`), shared web code, and a user-facing org-setup flow — it fails the `skip-e2e`
   criteria. Let the merge queue run E2E; do not duplicate it locally.

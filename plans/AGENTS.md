@@ -19,12 +19,13 @@ Git history is the archive; a finished plan kept "for reference" is rot that mis
 This file carries the cross-cutting rules for *doing* the work; the root [`AGENTS.md`](../AGENTS.md)
 carries the short version.
 
-## Commit finished work the instant its gate goes green — this is unconditional
+## Commit finished work when its targeted checkpoint goes green
 
 **The default is to commit, not to "leave it for review."** The moment a discrete chunk of work is
-complete and its gate has passed (build green + the affected tests), **commit it, without asking.**
-Committing is a local, reversible checkpoint; only `push` waits for Tommy's explicit go-ahead
-(**commit ≠ push**).
+complete and its targeted local checks pass, **commit it, without asking.** At the first coherent code
+checkpoint, push and open a draft PR; push later coherent checkpoints so remote CI can run. Merge and
+deployment still wait for Tommy's explicit go-ahead. See
+[`../docs/REMOTE_VALIDATION.md`](../docs/REMOTE_VALIDATION.md).
 
 This rule is **not** scoped to phase boundaries or handoffs; it applies to *every* finished, verified
 chunk: a phase, a bug fix, a refactor, an investigation's output, a doc close-out. Reading the commit rule as conditional on
@@ -43,9 +44,10 @@ handing off / clearing is exactly the misread that produces the failure below.
 If finished work belongs in a **different PR** than the branch you're on, that is a reason to
 **branch and commit it there** — never a reason to leave it sitting in the working tree.
 
-**Mechanical trigger:** the gate went green → commit. If your next sentence would be *"should I
+**Mechanical trigger:** the targeted checkpoint went green → commit. If your next sentence would be *"should I
 commit this?"* or *"I've left it uncommitted for your review"*, **that sentence is the trigger** —
-don't send it, commit. The only thing you ever stop and ask about is `push`.
+don't send it, commit. Push coherent implementation checkpoints to their draft PR; do not enqueue,
+merge, or deploy without explicit instruction.
 
 ## Use the fewest safe merges
 
@@ -139,16 +141,17 @@ inflate-a-timeout to get past a failure — that's bypassing, not fixing. For E2
 does **flaky-vs-real triage**: re-run the failed scenario alone on a fresh stack — passes clean = a
 host-load blip (proven, not assumed); fails again = a real bug, so fix it.
 
-## Merge-queue E2E tier — selected mechanically by merge Step 4
+## Remote validation tiers — PR CI first, merge-queue E2E second
 
 The full E2E suites (API `Concertable.B2B.E2ETests` + the UI regress) are **expensive and
-Docker-gated**. The merge skill selects whether the merge queue runs them. Local verification still
-stops at build + unit + integration before a PR.
+Docker-gated**. Draft-PR CI owns the full build, carve, unit, and integration gate; the merge skill
+selects whether the merge queue runs E2E. Local verification is limited to required generators and
+invariants, the smallest affected build, and focused unit tests.
 
 **The PR merge queue IS the E2E gate — never run E2E locally ahead of a merge.** When Step 4 requires
 E2E, the merge-queue pipeline runs the selected suite as the gate. Running it locally first just burns
-~25-30 min duplicating exactly what CI will do on the way in. So for anything headed to a PR, the local
-gate stops at build + unit + integration — **push it and let the queue apply the selected tier.** The
+~25-30 min duplicating exactly what CI will do on the way in. **Push the coherent checkpoint and let
+PR CI and the queue apply their gates.** The
 **only** reason to run E2E locally is when **the merge fails on failing E2E tests** — then run the
 failing scenarios via the **`e2e-ui-debug`** / **`e2e-debug`** skill to diagnose and fix, and push the
 fix (the queue re-runs required E2E on the way back in). **This overrides any plan phase line or
@@ -157,8 +160,8 @@ kickoff prompt that says "run the E2E regress"** — if a PR will run it, let th
 
 The merge skill's Step 4 is the single source of truth for this decision. Apply its positive-trigger
 list and label normalization mechanically; do not substitute a separate plan-level default or run E2E
-“to be safe.” Unit and integration tests never skip for code/package changes, and build + carve never
-skip.
+“to be safe.” Unit and integration tests never skip in PR CI for code/package changes, and build +
+carve never skip there. Full workflow: [`../docs/REMOTE_VALIDATION.md`](../docs/REMOTE_VALIDATION.md).
 
 When E2E must run for a PR, let the merge queue run it; this tier decision does **not** authorize a
 duplicate local run. **How** to run E2E safely after a queue failure (the mandatory Docker health
