@@ -33,18 +33,10 @@ released `Reunion` and `Reunion.Errors` `0.1.0-alpha.3` artifacts containing pro
 
 ## Next Steps
 
-Blocked: required current-main Payment integration verification.
-
-Blocked by: after a successful fresh-container Docker data round-trip, four SQL fixtures timed out
-opening Docker's named pipe; the five tests that obtained a fixture passed and no Payment assertion
-failed. The local safety gate forbids retrying an environment-startup failure in this session.
-
-Unblock action: restart Docker Desktop or Windows in a fresh session, run `scripts/docker-health.ps1`,
-then run the Payment integration suite once. If all 9 tests pass, finish review, push/open the Payment
-producer PR, and merge it through the package publication and platform-sync gates.
-
-Resume when: Docker's fresh-container data round-trip is stable and the full Payment integration suite
-passes 9/9 on this reconciled head.
+Push the reviewed producer head and open its PR. Treat the PR's clean-host Payment integration job as
+the authoritative replacement for the local Docker-startup-blocked run; do not enqueue until that job
+and the rest of the required matrix are green. Then merge through the package publication and
+platform-sync gates before resuming the B2B consumer.
 
 ## Completed work
 
