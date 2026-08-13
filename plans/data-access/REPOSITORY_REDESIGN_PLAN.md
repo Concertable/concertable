@@ -88,6 +88,28 @@ scoped instance to its read and write components, and preserves one change track
 write facet and is also the correct tracked read context for a combined unit-of-work repository.
 
 ```csharp
+public interface IReadDbContext
+{
+    IQueryable<TEntity> Query<TEntity>()
+        where TEntity : class;
+}
+
+public abstract class DbContextBase : DbContext, IReadDbContext
+{
+    public IQueryable<TEntity> Query<TEntity>()
+        where TEntity : class =>
+        Set<TEntity>();
+}
+```
+
+`DbSet<TEntity>` already implements `IQueryable<TEntity>`, so this is an implicit interface conversion;
+do not add a redundant `.AsQueryable()` call. Do not introduce a `ReadDbContextView` wrapper either:
+the `IReadDbContext`-typed field is the compile-time capability boundary, while dedicated
+`ReadDbContext` implementations retain their sealed throwing `SaveChanges` overrides as the runtime
+backstop. Because every repository-compatible context derives from `DbContextBase`, the shared
+capability is implemented once rather than repeated in every module context.
+
+```csharp
 public Repository(TContext context)
 {
     this.context = context;
@@ -116,6 +138,13 @@ Do not silently combine a dedicated no-tracking context and a writable context b
 `IRepository<TEntity>`: an entity read by the first is detached from the second, which breaks the
 established read-mutate-save unit-of-work contract. Consumers that need only projections inject
 `IReadRepository<TEntity>`; consumers that mutate aggregates inject `IRepository<TEntity>`.
+
+**Context-architecture definition of done:** this phase is a full migration. Exactly one shared
+`IReadDbContext`, one generic read implementation, and one generic write implementation remain;
+Customer's duplicate context contract/read base are deleted; all dedicated read repositories use their
+matching no-tracking `*ReadDbContext`; all combined repositories compose both facets over one tracked
+module context; and architecture tests prevent duplicate abstractions or write capabilities from
+returning to the read contract. No transitional parallel hierarchy is left for a later cleanup.
 
 **`InsertAsync`** — on `IWriteRepository`, in the write repo: `AddAsync` + `SaveChangesAsync`, returns
 the entity (Id populated). Faults propagate as exceptions (no bool). Cosmos calls this `CreateAsync`.

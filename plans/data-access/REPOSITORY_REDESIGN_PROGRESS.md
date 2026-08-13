@@ -15,6 +15,11 @@ PR-A (#522) and Customer IReadDbContext (#526) are merged + platform-sync green.
 
 Customer Concert grounds the context boundary: `ConcertModule` consumes only `IConcertReadRepository`; `ConcertReadRepository` directly inherits a read base and DI passes `ConcertReadDbContext`. Projection handlers separately use tracked `ConcertDbContext`. Combined repositories are tracked units of work and give one writable module-context instance to both composed facets; they do not hide a separate no-tracking context behind `IRepository`.
 
+The shared `IReadDbContext.Query<TEntity>()` implementation belongs once on `DbContextBase` and returns
+`Set<TEntity>()` directly; `DbSet<TEntity>` implicitly converts to `IQueryable<TEntity>`, so neither
+`.AsQueryable()` nor a `ReadDbContextView` wrapper belongs in the final design. The migration is terminal
+only when the duplicate Customer contract/read base and every transitional parallel abstraction are gone.
+
 **Phase 1 is complete.** `.github/workflows/test.yml` and
 `scripts/{local-platform,integration,unit,e2e,test}.ps1` now enforce the seam. `local-platform.ps1` packs the 40 production
 `IsPackable` projects at one unique MinVer override, emits a mapped local NuGet config, restores/builds/
