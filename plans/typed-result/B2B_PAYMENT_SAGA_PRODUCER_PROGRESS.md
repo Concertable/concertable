@@ -9,7 +9,7 @@
 - Base: `origin/main` `93cecb6453d347ffd4e50efabb28190d1c7228f8`
 - Producer commits: `5aaf13d76`, `6717d5d0a`, `6458ec0d0`
 - Package gate: producer implementation is verified; publication not requested
-- Messaging prerequisite: PR #536, remote head `2142f5d6a1dc1a60d0afdc221f4e2362c98c251e`
+- Messaging prerequisite: PR #536, remote head `7a0886e1245ef76267f0cf906518b2169ac3cfd6`
 
 ## Current state
 
@@ -27,7 +27,8 @@ through temporary restore inputs. Do not copy or recreate the extensions locally
 
 ## Next Steps
 
-Confirm PR #536's `full-e2e` label and current-main state, then enqueue it. Wait for its merge, package publication, and
+Wait for PR #536's final checks to become terminal and green at current-main head `7a0886e12`, confirm
+the `full-e2e` label, then enqueue it. Wait for its merge, package publication, and
 generated platform sync. Then reconcile and deliver Payment through
 `6458ec0d0`, wait for Payment package
 publication and sync, and update the B2B waiting ledger so its current-main/package revalidation can
