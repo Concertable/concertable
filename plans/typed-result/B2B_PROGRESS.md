@@ -18,7 +18,8 @@
 - Dependency/package gate: terminal. Payment `0.1.0-alpha.0.973`, Messaging, and Reunion `0.1.0-alpha.3`
   are published and synced through platform-sync PR #547.
 - Main reconciliation: current `origin/main` through `7bd9564998a67e3f6ec03ee2244100be7a77ee7c`
-  is merged; final published-package revalidation is in progress.
+  is merged in `dc651f49f`; final published-package revalidation is in progress. Newer cumulative
+  platform-sync PR #551 is fully green and may merge while draft-PR validation runs.
 
 ## Current state
 
@@ -155,6 +156,10 @@ the first coherent verified checkpoint so remote CI validates the exact branch h
 - Payment PR #544 passed its corrected full-E2E merge group and merged as `d6619a856`. Publish run
   `31722209038` released platform `0.1.0-alpha.0.973`; platform-sync PR #547 aligned B2B to Reunion
   `0.1.0-alpha.3`, passed its full build/carve/unit/integration matrix, and merged as `7bd956499`.
+- Current-main/package reconciliation committed as `dc651f49f`. The deployable B2B Web runtime closure
+  builds in Release against normal-feed Payment `0.1.0-alpha.0.973` and Reunion `0.1.0-alpha.3` with
+  0 errors and 0 warnings. The full B2B solution attempt hit the contended host's 20-minute timeout
+  without diagnostic output; exact-head draft-PR CI owns that complete matrix.
 - Payment was reconciled with that current main in `15de28fb8` and now consumes the released Reunion
   alpha.3 family containing `113be42`. Payment reached the queue after its build, carve, unit,
   integration, ownership, plan-graph, and review gates passed. Its queue regression fix is locally
@@ -189,6 +194,7 @@ the first coherent verified checkpoint so remote CI validates the exact branch h
   guards, new `[ErrorCode]` compatibility attributes, or added code comments; `git diff --check` clean.
 - Docker health passed with a fresh-container host-to-container HTTP data round-trip before the
   successful integration sequence.
+- Current-main focused financial-operation entity/workflow unit slice: 5/5.
 
 ## Decisions and deviations
 
