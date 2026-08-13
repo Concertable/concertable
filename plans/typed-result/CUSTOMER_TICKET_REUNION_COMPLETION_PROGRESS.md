@@ -5,7 +5,7 @@
 - Roadmap item: `typed-result/customer-ticket-reunion`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Fix-typed-result-customer-ticket-reunion-completion`
 - Branch: `Fix/typed-result_customer-ticket-reunion-completion`
-- PR: pending creation from pushed implementation head `724bf0851`
+- PR: [#540](https://github.com/Concertable/concertable/pull/540)
 - Dependency/package gates: none; Reunion `0.1.0-alpha.3` and platform `0.1.0-alpha.0.963` are published
 - Last reconciled: 2026-08-13 against `origin/main` `306f072af` and merged PR #475 `2b05ed110`
 
@@ -60,5 +60,5 @@ project whose source or public API uses it.
 
 ## Next Steps
 
-Publish this push-evidence checkpoint, open the corrective PR against `main`, verify the exact
-local/remote/PR heads, then follow its checks and merge-queue delivery.
+Land PR #540 through the merge workflow, follow package publication and platform sync to terminal
+green, then close the roadmap item and delete the plan pair through the docs closeout workflow.
