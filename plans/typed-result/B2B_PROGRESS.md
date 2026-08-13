@@ -64,9 +64,8 @@ reference was added. The resolved SEC1 tech-debt entry has been deleted.
 
 ## Next Steps
 
-Wait for Messaging producer PR #536's refreshed checks to become terminal and green at head
-`2142f5d6a`, confirm it is current with `origin/main` and still labelled `full-e2e`, then enqueue it.
-Wait for its merge, package publication, and generated platform sync before delivering Payment producer
+Confirm Messaging producer PR #536 remains current with `origin/main` and labelled `full-e2e`, then
+enqueue it. Wait for its merge, package publication, and generated platform sync before delivering Payment producer
 commit `6458ec0d0`. Reconcile
 this consumer branch with current `origin/main`, consume those normal-feed packages, rerun the build,
 carve, unit, integration, architecture, formatting, ownership, and plan-graph gates, then run the
@@ -131,6 +130,8 @@ incremental code review. Do not push, open a PR, or merge without further instru
   `RegisterCommandHandler` for receiver ownership, and `HandledCommandTypes` for receiver creation.
   Focused build passed with 0 errors; Messaging tests passed 41/41 and Azure Service Bus tests 8/8;
   formatting and diff gates passed. Incremental review is clean through `2142f5d6a`.
+- PR #536's refreshed build, carve, unit, and integration matrix is terminal and green at exact remote
+  head `2142f5d6a`; PR-level E2E jobs skipped as expected before queue admission.
 - Package-only B2B Web Release build against the isolated exact Messaging, Payment, and Reunion
   artifact closure: passed, 0 errors and one existing `UserEntity` warning.
 - `dotnet build api/Concertable.B2B/Concertable.B2B.slnx --configuration Release --no-restore -m:1
