@@ -80,8 +80,9 @@ ReUnion integration + generated platform sync
   the full solution and all affected CI jobs are part of the gate.
 - B2B Workers must not be deployed to Azure Functions until the hosted isolated-worker support matrix
   includes the selected net11 release. Local/Aspire execution does not prove hosted support.
-- Full E2E is mandatory in the merge queue for runtime, TFM, CI, and workflow-dispatch changes. The
-  local gate remains build, unit, architecture, and integration tests.
+- Full E2E is mandatory in the merge queue for runtime, TFM, CI, and workflow-dispatch changes. Local
+  work runs targeted TFM/architecture checks and affected builds/tests; draft-PR CI owns the full
+  build, carve, unit, and integration gate.
 
 ## Epic definition of done
 

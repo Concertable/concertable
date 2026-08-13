@@ -22,11 +22,15 @@ If multi-agent tooling is unavailable, work the findings yourself one at a time 
 
 - **Sequential, one finding per agent context.** Never parallelise fixes.
 - **Fix clear defects; defer judgment calls.** Fix only unambiguous defects: correctness, isolation/boundary, seeding, convention nits with a stated fix. Anything framed as a tradeoff, author's call, subjective point, or not high-confidence is marked `- [-] DEFERRED` with the decision needed. Code stays untouched for deferred findings.
-- **One commit per finding, never pushed.** Use pathspec-scoped staging so unrelated working-tree changes are not swept in. Verification per fix is build plus nearest unit/integration tests, not E2E. A final step runs a full solution build.
+- **One commit per finding.** Use pathspec-scoped staging so unrelated working-tree changes are not
+  swept in. Run the smallest affected build and focused tests, then push coherent fix batches to the
+  draft PR. Exact-head PR CI owns the full solution and integration gates; E2E remains merge-queue-only.
 - **Review the fix commits before deleting the watermark.** When code changed, run `incremental-review`
   over the commits added since the recorded review SHA while the review file still exists. Any new
   findings re-enter this same serial fix loop; rebuild and repeat until the incremental pass is clean.
-- **Delete only if all fixed cleanly.** When every finding was fixed, nothing was deferred, and the final build is green, `git rm` the review file in a final commit per `reviews/AGENTS.md`. If anything was deferred or the build failed, keep the file with just the outstanding items.
+- **Delete only if all fixed cleanly.** When every finding was fixed, nothing was deferred, and
+  exact-head PR CI is green, `git rm` the review file in a final commit per `reviews/AGENTS.md`. If
+  anything was deferred or CI failed, keep the file with just the outstanding items.
 
 ## After it finishes
 
@@ -43,8 +47,8 @@ when happy” handoff.
    PR, push to update an existing PR, or the named blocker and its fix.
 
 Then report concisely: which findings were fixed, which were deferred and what decision each needs,
-whether the build passed, whether the review file was deleted or kept, and the per-finding unpushed
-commit SHAs. Do not re-litigate the agents' fixes.
+whether exact-head CI passed, whether the review file was deleted or kept, and the per-finding commit
+SHAs. Do not re-litigate the agents' fixes.
 
 ## When NOT to use
 
