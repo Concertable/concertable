@@ -6,6 +6,31 @@ Debt spanning multiple services, host `Program.cs` files, or repo-wide build/CI 
 
 ## MED
 
+### Repository query outputs blur entities, read models, projections, and DTO contracts
+
+Repository contracts across B2B, Customer, Search, and Payment do not follow one ownership or naming
+model for query results. Depending on the module, repositories return persistence entities,
+event-maintained `*ReadModel` entities, application `*Details`/`*Dto` shapes, paged DTOs, tuples, or a
+public `*.Contracts` DTO. For example, Customer Concert's `IConcertReadRepository.GetDtoAsync` returns
+the module contract `ConcertDto`, so its persistence adapter materializes a cross-module contract
+directly, while neighbouring repositories return `ConcertDetails`, entities, or persisted read models.
+
+The existing DTO-versus-Response rule in `api/AGENTS.md` defines service and HTTP outputs but does not
+define what a repository/query abstraction may return, who owns an efficient database projection, or
+how to distinguish an ephemeral LINQ projection from an event-fed persisted read model. As a result,
+`Dto`, `Details`, `Projection`, `ReadModel`, and `Entity` communicate different things in different
+areas, and dependency direction, mapping responsibility, tracking expectations, and public-contract
+coupling are decided locally rather than consistently.
+
+**Resolves when:** investigate the repository and query shapes across every backend service, establish
+and document one codebase standard for persistence entities, event-maintained read models, ephemeral
+query projections, application DTOs, module Contracts DTOs, and API Responses/Requests, including
+their ownership, allowed dependency directions, naming/location, mapping boundary, and absence
+semantics. Validate the proposed rule against representative read, write, paginated, cross-module,
+and performance-sensitive queries before migrating code. Then inventory and migrate every violation
+in coherent service/package cut-overs, and add practical architecture tests or mechanical guards for
+the parts of the standard that can be enforced automatically.
+
 ### Repository bases repeat CRUD, and read no-tracking is a bypassable `Query` convention
 
 The shared `Concertable.DataAccess.Infrastructure` repository bases duplicate `GetByIdAsync` /
