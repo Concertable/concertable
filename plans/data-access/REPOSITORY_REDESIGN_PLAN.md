@@ -2,7 +2,7 @@
 
 Unify the DataAccess repository bases, make no-tracking **enforced by the context** (already shipped),
 add `InsertAsync`, compose the shared read and write implementations behind `Repository`, and rename the
-write-only facet `IBaseRepository`/`BaseRepository` → `IWriteRepository`/`WriteRepository`. The linchpin
+legacy write-only facet to `IWriteRepository`/`WriteRepository`. The linchpin
 enabling the published base-class changes is a **fix to the integration test seam** (a local platform-pack so consumers compile
 against the source-built platform they run against) — see "The seam fix" below.
 
@@ -16,8 +16,8 @@ Next steps live in @plans/data-access/REPOSITORY_REDESIGN_PROGRESS.md → `## Ne
 ## Why (the two problems)
 
 1. **Duplicated CRUD.** `GetByIdAsync`/`GetAllAsync`/`Exists` are written in both `ReadRepository` and
-   `Repository` (the latter via `BaseRepository` + re-declared read members). `IRepository` even carries
-   a `new GetAllAsync` to resolve the GetAll diamond between `IReadRepository` and `IBaseRepository`.
+   `Repository` (the latter via the legacy write implementation + re-declared read members). `IRepository` even carries
+   a `new GetAllAsync` to resolve the GetAll diamond between `IReadRepository` and the legacy write contract.
 2. **No-tracking is a bypassable convention.** The just-merged `Query => context.Set<T>().AsNoTracking()`
    root (#498 base / #503 consumers) is opt-in — a read repo can still call `context.Foo` and get a
    tracked query. Tracking is a *context* concern in EF; it should live there.
@@ -25,9 +25,9 @@ Next steps live in @plans/data-access/REPOSITORY_REDESIGN_PROGRESS.md → `## Ne
 ## Grounding facts (verified against `main` + the CosmosRepository source)
 
 - **Current interfaces** (`Concertable.DataAccess.Application`): `IReadRepository<T,K>` = reads;
-  `IBaseRepository<T>` = writes (+GetAll); `IRepository<T,K> : IBaseRepository<T>, IReadRepository<T,K>`
+  the legacy write facet exposed writes plus `GetAll`; `IRepository<T,K>` inherited both write and read facets
   with `new GetAllAsync`.
-- **Current shared bases** (one file, `…Infrastructure/Repository.cs`): `BaseRepository<T,TContext>`
+- **Current shared bases** (one file, `…Infrastructure/Repository.cs`): the legacy write implementation
   implements writes, `ReadRepository<T,TContext,K>` implements reads, and the locally committed but
   rejected Phase 2 makes `Repository<T,TContext,K> : ReadRepository` and copies every write method.
 - **Read-only context precedent:** `PublicDbContext : DbContextBase` composes the module's anemic
@@ -51,7 +51,7 @@ Next steps live in @plans/data-access/REPOSITORY_REDESIGN_PROGRESS.md → `## Ne
 ## Target design
 
 **Naming:** keep the EF-idiomatic `IReadRepository`/`IRepository` (do NOT adopt Cosmos's
-`IReadOnlyRepository`). **But DO rename the write-only facet** `IBaseRepository`/`BaseRepository` →
+`IReadOnlyRepository`). **The write-only facet is renamed** from its legacy base-oriented naming to
 `IWriteRepository`/`WriteRepository`: "Base" is a dishonest name for what is purely the write-only side
 (Add/AddRange/Insert/Update/Remove/SaveChanges, no reads, no key — Cosmos's `IWriteOnlyRepository`).
 
@@ -59,7 +59,7 @@ Next steps live in @plans/data-access/REPOSITORY_REDESIGN_PROGRESS.md → `## Ne
 
 ```csharp
 IReadRepository<T,K>                                        // GetById, GetAll, Exists
-IWriteRepository<T>                                         // Add, AddRange, InsertAsync, Update, Remove, SaveChanges — write-only, keyless (renamed from IBaseRepository)
+IWriteRepository<T>                                         // Add, AddRange, InsertAsync, Update, Remove, SaveChanges — write-only, keyless (write-only facet)
 IRepository<T,K> : IWriteRepository<T>, IReadRepository<T,K> // no `new GetAllAsync`
 ```
 
@@ -208,23 +208,23 @@ matters: the seam fix must precede the composition/rename or their builds/tests 
 - **Phase 2 — Compose the repository facets. ✅ Complete.** Replaced rejected local commit `d65293cc3`'s
   `Repository : ReadRepository` + copied writes with composition. Moved `IReadDbContext` to shared
   DataAccess, made `DbContextBase` implement it, centralized reads in `ReadRepository<TEntity,TKey>`,
-  centralized writes in `BaseRepository<TEntity,TContext>`, and made `Repository<TEntity,TContext,TKey>`
+  centralized writes in `WriteRepository<TEntity,TContext>`, and made `Repository<TEntity,TContext,TKey>`
   delegate its existing flat API to both using the same scoped `TContext`. Rebound Customer's dedicated
   read repositories to the shared read implementation and their existing read-only contexts. Preserved
   `IRepository<TEntity>`/`IReadRepository<TEntity>` consumer APIs, custom repository overrides, and the
   protected writable `context` used by module-specific queries. The 6 historical proof suites (B2B
   Artist/Concert/User/Venue, Customer User/Concert) are green.
-- **Phase 3 — Rename `IBaseRepository`/`BaseRepository` → `IWriteRepository`/`WriteRepository`.** Full
+- **Phase 3 — Rename the legacy write-only facet to `IWriteRepository`/`WriteRepository`. Complete.** Full
   **grep-gate** rename (see [`plans/agents/PLAN.md`](../agents/PLAN.md) "grep gate"):
-  `grep -rniE "ibaserepository|baserepository"` over the whole repo returns **zero**, every tier/casing —
-  type names, the keyless `BaseRepository<T>` module alias behind `SequenceRepository`, every module's
+  the whole-repository legacy-name grep over the whole repo returns **zero**, every tier/casing —
+  type names, the keyless `WriteRepository<T>` module alias behind `SequenceRepository`, every module's
   `Repository`/`TenantScopedRepository`, `OpportunitySyncer`/`CollectionSyncer`, DI registrations,
-  identifiers (`baseRepository`→`writeRepository`), comments, docs. Allowlist: the historical mentions in
+  write-facet identifiers, comments, docs. Allowlist: the historical mentions in
   this plan + its `_PROGRESS.md` (they narrate the old name) — update or list them explicitly, nothing
   else. Consumers compile because Phase 1 makes them build against the renamed source platform.
-- **Phase 4 — Verify (build + Docker integration).** Pack locally, then
+- **Phase 4 — Verify (build + Docker integration). Complete.** Packed locally, then
   `dotnet build api/Concertable.slnx -p:ConcertablePlatformVersion=$(LocalPlatformVersion)` → 0 errors.
-  Run the integration suites via the `e2e-*` skills (mandatory `docker-health.ps1` pre-flight) → the 6
+  Ran the dynamically discovered integration suites through the integration debug workflow with Docker pre-flight → the 6
   formerly-red suites + all integration green; unit green. A red suite → the matching debug skill, not a
   status report.
 - **Phase 5 — Deliver.** Push; the merge queue runs build + unit + integration (merge Step 4 tier: no
