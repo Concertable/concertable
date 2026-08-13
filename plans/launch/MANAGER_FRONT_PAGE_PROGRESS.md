@@ -12,16 +12,25 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
 
 ## Next Steps
 
-**Immediate action:** Item 3 (MTD revenue/payouts) is delivered — the next work is to build the remaining
-**B.11 pickup endpoints** so the dashboard FE can cut over from fixtures to real data (item 4). Only
-`/api/{Venue,Artist}Dashboard/kpis` exist server-side; the other ~17 `dashboardApi` sections (overview, inbox,
-upcoming-concerts, revenue/payouts charts, opportunities, activity, settlements, applications, reviews) still have no
-endpoint. Build them per the plan's [B.11 pickup notes](MANAGER_FRONT_PAGE_PLAN.md#b11-pickup-notes-post-merge) —
-ordered by independence, activity feed last (it needs a notification-log table + `api/initial-migrations.ps1`
-re-scaffold) — in the fewest safe PRs the dependencies allow. Each mirrors the shipped KPI slice: thin controller →
-`IXDashboardService` orchestration → `IConcertModule` / `IManagerPaymentReportingClient` facade → one composed query.
-This is a large, previously-unlisted backend phase; whether to trim the endpoint set or sequence UX-freeze (item 5)
-first is Tommy's call at kickoff.
+**Immediate action:** Commit the completed Payment reporting producer slice with this ledger, push the work head, verify
+the remote head, and open a draft PR. Then checkpoint the PR identity and make clean code review plus exact-head PR CI
+the next gate. After this additive package producer merges, publishes, and platform-sync lands, resume from a fresh B2B
+consumer worktree and implement the overview, canonical-resource list, chart, review, inbox, activity, and settlement
+endpoints against that published baseline. Activity stays last because it needs its owned persistence model and an
+`api/initial-migrations.ps1` re-scaffold. Keep every remaining dashboard section in scope; Phase A.8 UX freeze remains
+an independent later item.
+
+## Current producer slice
+
+- The producer implementation and focused tests are completed in this commit.
+- Payment now owns agnostic reporting contracts for monthly ticket revenue, monthly settlement payouts, and recent
+  settlements. Each aggregate materialises once in `TransactionRepository`; B2B will enrich opaque booking and owner
+  identifiers after the published-client gate.
+- The gRPC surface and `IManagerPaymentReportingClient` expose `Money`-based report records without venue, artist,
+  concert, or dashboard concepts leaking into Payment.
+- Local verification for the current working tree: Payment Infrastructure build succeeded with 0 warnings/errors;
+  focused reporting/service/mapper unit tests passed 25/25; SQL repository aggregate tests passed 5/5 against a real
+  Testcontainers SQL Server.
 
 **Item 3 — DELIVERED (2026-08-13).** Producer PR [#545](https://github.com/Concertable/concertable/pull/545) merged
 (`3004fb52d`); consumer PR [#554](https://github.com/Concertable/concertable/pull/554) merged (`2dfe09cc9`) wired both
