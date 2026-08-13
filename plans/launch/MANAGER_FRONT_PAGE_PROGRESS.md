@@ -12,14 +12,13 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
 
 ## Next Steps
 
-**Immediate action:** Draft PR #554 is open at verified head `88f53edee`. Full review over
-`a2747a90f..88f53edee` found one low-severity project-structure omission: the new unit-test projects were absent
-from service-local `api/Concertable.B2B/Concertable.B2B.slnx`. The fix is ready in this checkpoint and `dotnet sln
-Concertable.B2B.slnx list` resolves both projects. Commit and push it, run the incremental review to the new exact
-head, then require PR CI green, mark ready, and take it through `/merge` with **`skip-e2e`** — the diff changes no
-HTTP/gRPC/published contract, so no positive E2E trigger. Local candidate verification: Venue and Artist unit-test
-projects each build with 0 warnings/errors and pass 4/4; `git diff --check` clean. B2B compiles against published
-platform `0.1.0-alpha.0.976`, never producer source.
+**Immediate action:** Draft PR #554 is open at verified work head `da185097d`. Full plus incremental review is clean:
+the only finding (new unit-test projects absent from service-local `Concertable.B2B.slnx`) was fixed in `da185097d`,
+and `dotnet sln Concertable.B2B.slnx list` resolves both. Push this review checkpoint, require exact-head PR CI green,
+mark ready, and take it through `/merge` with **`skip-e2e`** — the diff changes no HTTP/gRPC/published contract, so
+no positive E2E trigger. Local verification: Venue and Artist unit-test projects each build with 0 warnings/errors
+and pass 4/4; `git diff --check` clean. B2B compiles against published platform `0.1.0-alpha.0.976`, never producer
+source.
 
 **Update (2026-08-13):** PR [#50](https://github.com/Concertable/concertable/pull/50) **merged** (2026-05-19)
 — Phase A + B.9–B.11 are on `main`. The repo has since **carved** into `Concertable.B2B` /
