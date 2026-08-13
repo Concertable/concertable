@@ -27,9 +27,9 @@ through temporary restore inputs. Do not copy or recreate the extensions locally
 
 ## Next Steps
 
-Monitor cumulative platform-sync PR #541 for platform `0.1.0-alpha.0.968` to a green merge. Then
-reconcile and deliver Payment through
-`6458ec0d0`, wait for Payment package
+Reconcile this Payment producer worktree through `6458ec0d0` with current `origin/main`, rebuild and
+retest it against published platform `0.1.0-alpha.0.968`, review the reconciled head, then push/open and
+merge its producer PR. Wait for Payment package
 publication and sync, and update the B2B waiting ledger so its current-main/package revalidation can
 resume. Do not push, open a PR, publish, or merge without further instruction.
 
@@ -60,6 +60,8 @@ resume. Do not push, open a PR, publish, or merge without further instruction.
   the Messaging release and its entire required check matrix is terminal and green.
 - PR #539 was superseded by cumulative sync PR #541 after API PR #529 published
   `0.1.0-alpha.0.968`; PR #541 is the active cumulative gate.
+- Cumulative platform-sync PR #541 passed its required matrix and merged green as
+  `1c88858f93f648f1719fa9e4d273749b8932b364`. The Messaging prerequisite is terminal on normal feeds.
 
 ## Decisions and deviations
 
