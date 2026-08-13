@@ -64,8 +64,8 @@ reference was added. The resolved SEC1 tech-debt entry has been deleted.
 
 ## Next Steps
 
-Re-assert auto-merge once for Messaging producer PR #536 at exact reviewed head `7a0886e12`, then
-verify queue admission. Wait for its merge, package publication,
+Monitor Messaging producer PR #536 in merge-queue position 1 at exact reviewed head `7a0886e12`.
+Wait for its merge, package publication,
 and generated platform sync before delivering Payment producer
 commit `6458ec0d0`. Reconcile
 this consumer branch with current `origin/main`, consume those normal-feed packages, rerun the build,
@@ -141,6 +141,8 @@ incremental code review. Do not push, open a PR, or merge without further instru
 - Auto-merge was enabled but PR #536 remained `OPEN/CLEAN` with no queue entry for six consecutive
   minutes. No merge-group run was dispatched or failed, proving the GitHub re-evaluation glitch; the
   sanctioned one-time disable/re-enable nudge is the next action.
+- The one-time nudge admitted PR #536 to the merge queue at position 1. GitHub cleared the standalone
+  auto-merge request as expected and retained the exact reviewed head.
 - Package-only B2B Web Release build against the isolated exact Messaging, Payment, and Reunion
   artifact closure: passed, 0 errors and one existing `UserEntity` warning.
 - `dotnet build api/Concertable.B2B/Concertable.B2B.slnx --configuration Release --no-restore -m:1

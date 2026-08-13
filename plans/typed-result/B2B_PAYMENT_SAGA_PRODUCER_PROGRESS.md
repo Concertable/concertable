@@ -27,8 +27,8 @@ through temporary restore inputs. Do not copy or recreate the extensions locally
 
 ## Next Steps
 
-Re-assert auto-merge once for PR #536 at exact reviewed/current-main head `7a0886e12` with
-`full-e2e`, then verify queue admission. Wait for its merge, package publication, and
+Monitor PR #536 in merge-queue position 1 at exact reviewed/current-main head `7a0886e12` with
+`full-e2e`. Wait for its merge, package publication, and
 generated platform sync. Then reconcile and deliver Payment through
 `6458ec0d0`, wait for Payment package
 publication and sync, and update the B2B waiting ledger so its current-main/package revalidation can
