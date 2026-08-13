@@ -197,8 +197,8 @@
     <Project Path="Concertable.Payment/tests/E2ETests/Concertable.Payment.E2ETests.Helpers/Concertable.Payment.E2ETests.Helpers.csproj" />
     <Project Path="Concertable.Payment/tests/E2ETests/Concertable.Payment.E2ETests.Helpers.UnitTests/Concertable.Payment.E2ETests.Helpers.UnitTests.csproj" />
     <Project Path="Concertable.Payment/tests/E2ETests/Concertable.Payment.E2ETests.Stripe/Concertable.Payment.E2ETests.Stripe.csproj" />
-    <Project Path="Concertable.Payment/tests/E2ETests/Concertable.Payment.E2ETests.WebHost/Concertable.Payment.E2ETests.WebHost.csproj" />
-    <Project Path="Concertable.Payment/tests/E2ETests/Concertable.Payment.E2ETests.WorkersHost/Concertable.Payment.E2ETests.WorkersHost.csproj" />
+    <Project Path="Concertable.Payment/tests/E2ETests/Concertable.Payment.E2ETests.Web/Concertable.Payment.E2ETests.Web.csproj" />
+    <Project Path="Concertable.Payment/tests/E2ETests/Concertable.Payment.E2ETests.Workers/Concertable.Payment.E2ETests.Workers.csproj" />
   </Folder>
   <Folder Name="/Search/">
     <Project Path="Concertable.Search/src/Concertable.Search.AppHost/Concertable.Search.AppHost.csproj" />
