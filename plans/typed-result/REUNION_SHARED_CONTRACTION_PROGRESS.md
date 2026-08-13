@@ -7,16 +7,16 @@
 - Branch: `Refactor/typed-result_reunion-shared-contraction` (reserved)
 - PR: not opened
 - Dependency/package gates: implementation inventory waits only for the B2B preparation ledger;
-  Payment and Auth are reviewed, Customer Ticket is terminal, and Customer non-Payment is delivery-ready
-- Last reconciled: 2026-08-12 after reconciling the Auth and Customer preparation handoffs
+  Payment, Auth, Customer Ticket, and Customer non-Payment are terminal
+- Last reconciled: 2026-08-13 after Customer PR #425 and platform-sync PR #535 completed
 
 ## Current state
 
-Payment and Auth are reviewed locally. Customer Ticket is terminal. Customer non-Payment is delivery-ready
-against exact producer artifact `113be42`; its five-module production scope has no remaining old
-carrier, old terminal, or third-party functional dependency, while its own delivery waits only for
-the required Reunion publication. Auth reports no old Kernel functional/error carrier, Shared.Api
-terminal, third-party functional carrier, or legacy Reunion factory in its owned scope. B2B
+Payment, Auth, and Customer Ticket are terminal. Customer non-Payment is terminal on published Reunion
+`0.1.0-alpha.3` and platform `.963`; its five-module production scope has no remaining old carrier,
+old terminal, or third-party functional dependency. Auth reports no old Kernel functional/error
+carrier, Shared.Api terminal, third-party functional carrier, or legacy Reunion factory in its owned
+scope. B2B
 preparation is not yet delivery-ready. Search has no carrier conversion work. Starting contraction
 now would still guess at the B2B surface.
 
@@ -31,10 +31,11 @@ Resume when: B2B is delivery-ready and its ledger identifies every remaining old
 
 - Reserved one authoritative final-contraction owner.
 - Confirmed Search requires no independent Reunion conversion.
-- Auth preparation is reviewed and GREEN for PR delivery. Its owned source directly references
-  `Reunion` and `Reunion.Errors` `0.1.0-alpha.2` and reports zero legacy carrier or terminal call sites.
-- Recorded Customer Ticket as terminal and Customer non-Payment as delivery-ready with no remaining
-  old carrier, old terminal, or third-party functional dependency in its owned production scope.
+- Auth PR #517 and platform-sync PR #531 are terminal. Its owned source directly references `Reunion`
+  and `Reunion.Errors` `0.1.0-alpha.2` and reports zero legacy carrier or terminal call sites.
+- Recorded Customer Ticket and Customer non-Payment as terminal, with no remaining old carrier, old
+  terminal, or third-party functional dependency in their owned production scopes. Customer PR #425
+  merged as `9c3192066`; publication succeeded; platform-sync PR #535 merged as `8249fa5c9`.
 
 ## Verification
 
@@ -42,6 +43,8 @@ Resume when: B2B is delivery-ready and its ledger identifies every remaining old
 - Auth inventory found zero imports or construction calls for the old Kernel functional/error
   carriers, Shared.Api result terminals, CSharpFunctionalExtensions, FluentResults, OneOf, ErrorOr,
   or LanguageExt. Auth does not require Reunion.Validation or Reunion.AspNetCore.
+- Customer PR #425 passed full merge-queue API/UI E2E. Platform-sync PR #535 passed its build, carve,
+  unit, and integration matrix and delivered `ConcertablePlatformVersion` `0.1.0-alpha.0.963`.
 
 ## Decisions, discoveries, blockers, and deviations
 
