@@ -12,9 +12,8 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
 
 ## Next Steps
 
-**Immediate action:** incrementally review the current #414 head, commit and push the review/ledger
-checkpoint with the `origin/main` merge, wait for the replacement PR checks, then enqueue #414 with
-`full-e2e` because the computed KPI changes user-visible API behaviour. Follow the merge, package
+**Immediate action:** wait for #414's replacement PR checks on pushed head `35f63ea30`, then enqueue
+with `full-e2e` because the computed KPI changes user-visible API behaviour. Follow the merge, package
 publication, and platform-sync gates to terminal state before starting the next implementation slice.
 
 **Update (2026-08-13):** PR [#50](https://github.com/Concertable/concertable/pull/50) **merged** (2026-05-19)
@@ -36,9 +35,10 @@ publication, and platform-sync gates to terminal state before starting the next 
    (`b711b9365`, one conflict in `ConcertWorkflowCapabilityRegistry.cs`: kept `DealTypesWith` on
    origin/main's `workflowTypes` rename), B2B build 0 errors, Concert unit tests 133/133, pushed.
    **2026-08-13 delivery refresh:** merged current `origin/main` at `abe5bff8e` (no conflicts) and ran
-   `dotnet build api/Concertable.slnx`: succeeded with 0 errors. The local branch is three commits ahead
-   of the pushed PR head `51afc0e07`; incremental review and the compound plan-managed push are the live
-   gates before enqueueing.
+   `dotnet build api/Concertable.slnx`: succeeded with 0 errors. Incremental code + security review of
+   `a531e8290..35f63ea30` found no issues; the current-main work head `35f63ea30` is verified equal to
+   both `origin/Feature/launch_dashboard-accepted-checkout` and PR #414's `headRefOid`. Replacement CI
+   is pending before queue admission.
 3. ⏳ **MTD revenue/payouts (was item 2, money slices).** `MtdRevenueCents` / `MtdPayoutsCents` still
    stubbed at 0. NOT a simple method add: `IManagerPaymentModule` does not exist and **Payment is a
    separate gRPC microservice**, so this is a cross-service build — Payment repo query (`TicketTransaction`
