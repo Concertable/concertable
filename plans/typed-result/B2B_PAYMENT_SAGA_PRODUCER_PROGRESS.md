@@ -33,10 +33,11 @@ released `Reunion` and `Reunion.Errors` `0.1.0-alpha.3` artifacts containing pro
 
 ## Next Steps
 
-Push the merge-queue regression fix to PR #544 and use exact-head PR CI as the authoritative full
-build, carve, unit, and integration gate. After CI and review are green, re-enqueue with `full-e2e`.
-Merge only after the queue E2E passes, then follow Payment package publication and cumulative platform
-sync before resuming B2B.
+Reconcile the open PR's `DIRTY` state with current `origin/main`, rerun the smallest affected build and
+focused tests if the merge changes the Payment closure, then push the reconciled head. Use its exact-head
+PR CI as the authoritative full build, carve, unit, and integration gate. After CI and review are green,
+re-enqueue with `full-e2e`. Merge only after the queue E2E passes, then follow Payment package publication
+and cumulative platform sync before resuming B2B.
 
 ## Completed work
 
@@ -63,6 +64,10 @@ sync before resuming B2B.
   metadata is observability-only, legacy calls without either identity receive no custom key, and the
   shared private formatter owns the Stripe key shape. Payment topology now provisions capture, deposit,
   and refund command queues. The regression fix and its focused coverage are checkpointed in this commit.
+- Verified work push: starting remote/PR head `e53a2661126322977f2446a4afe54494702e08f1`, pushed range
+  `e53a26611..da0fd3b6e`, and work/local/remote/PR head
+  `da0fd3b6e18cf92d8acb729252609c67c21da1f3`. PR #544 remained open and reported `DIRTY`, so current-main
+  reconciliation is the next action before authoritative exact-head CI and queue admission.
 
 ## Verification
 
