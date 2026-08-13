@@ -95,11 +95,13 @@ their current branch and worktree rather than fragmenting in-flight work.
   gate delivery and final revalidation, not local preparation.
   Before the next B2B checkpoint commit, align every direct Reunion reference to `0.1.0-alpha.2` and
   use the new construction surface where it keeps the owned error union explicit.
-- [x] ✅ **Customer Ticket purchase/checkout slice.** Replacement PR #475 recreated the unique Ticket,
-  Concert purchase/checkout, eligibility, and Customer Payment semantics on current main with direct
-  Reunion/Reunion.Validation ownership. It merged through full B2B/Customer API and UI E2E as
-  `2b05ed110`; publication delivered platform `0.1.0-alpha.0.910`; generated sync PR #479 merged as
-  `b17fb07fe`; historical PR #282 is closed as superseded.
+- [ ] 🟠 **Customer Ticket purchase/checkout slice.** `typed-result/customer-ticket-reunion` Exclusive
+  owner: `Fix/typed-result_customer-ticket-reunion-completion` at
+  `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Fix-typed-result-customer-ticket-reunion-completion`.
+  Replacement PR #475 delivered the Ticket outcomes as `2b05ed110`, but a post-merge audit found its
+  nullable Concert/Ticket application and module lookups, Result composition ceremony, dropped Concert
+  query cancellation, and incomplete direct Reunion package ownership. The correction plan and ledger
+  own completion before this item returns to terminal.
 
 - [x] ✅ **Customer non-Payment outcomes and lookups.** `typed-result/customer-outcomes` PR #425
   migrated Review, Preference, User, Venue, and Artist to operation-owned Results, structured
@@ -135,15 +137,15 @@ their current branch and worktree rather than fragmenting in-flight work.
 
 ### Parallel preparation dispatched
 
-B2B and the alpha.2 package-baseline owner have independently executable ledgers; Customer Ticket is
-terminal on published platform `.910`, and Customer non-Payment is terminal on platform `.963`.
+B2B, the alpha.2 package-baseline owner, and the Customer Ticket correction have independently
+executable ledgers; Customer non-Payment is terminal on platform `.963`.
 `REUNION_SHARED_CONTRACTION_PLAN.md` owns the final contraction but remains implementation-blocked
 until the remaining prepared consumer set and exact remaining-call-site inventory exist.
 
 ### Blocked follow-ups
 
-- [ ] 🔴 **Domain outcome and invariant-exception audit.** Customer Ticket, Auth, and Customer
-  non-Payment are terminal on published Reunion baselines; plan after B2B is also terminal, and
+- [ ] 🔴 **Domain outcome and invariant-exception audit.** Auth and Customer non-Payment are terminal
+  on published Reunion baselines; plan after B2B and the Customer Ticket correction are also terminal, and
   complete it before final repository cleanup. Inventory every production `DomainException`
   throw/guard and every domain
   operation or factory that can reject work.
