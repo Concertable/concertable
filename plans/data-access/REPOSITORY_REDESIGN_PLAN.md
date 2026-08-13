@@ -205,15 +205,15 @@ matters: the seam fix must precede the composition/rename or their builds/tests 
 
 - **Phase 1 — Seam fix. ✅ Complete.** Implement the local platform-pack + pin override (5 steps above). Land it
   first so Phases 2–3 are validated against a consistent platform.
-- **Phase 2 — Compose the repository facets.** Replace rejected local commit `d65293cc3`'s
-  `Repository : ReadRepository` + copied writes with composition. Move `IReadDbContext` to shared
-  DataAccess, make `DbContextBase` implement it, centralize reads in `ReadRepository<TEntity,TKey>`,
-  centralize writes in `WriteRepository<TEntity,TContext>`, and make `Repository<TEntity,TContext,TKey>`
-  delegate its existing flat API to both using the same scoped `TContext`. Rebind Customer's dedicated
-  read repositories to the shared read implementation and their existing read-only contexts. Preserve
+- **Phase 2 — Compose the repository facets. ✅ Complete.** Replaced rejected local commit `d65293cc3`'s
+  `Repository : ReadRepository` + copied writes with composition. Moved `IReadDbContext` to shared
+  DataAccess, made `DbContextBase` implement it, centralized reads in `ReadRepository<TEntity,TKey>`,
+  centralized writes in `BaseRepository<TEntity,TContext>`, and made `Repository<TEntity,TContext,TKey>`
+  delegate its existing flat API to both using the same scoped `TContext`. Rebound Customer's dedicated
+  read repositories to the shared read implementation and their existing read-only contexts. Preserved
   `IRepository<TEntity>`/`IReadRepository<TEntity>` consumer APIs, custom repository overrides, and the
   protected writable `context` used by module-specific queries. The 6 historical proof suites (B2B
-  Artist/Concert/User/Venue, Customer User/Concert) must go green.
+  Artist/Concert/User/Venue, Customer User/Concert) are green.
 - **Phase 3 — Rename `IBaseRepository`/`BaseRepository` → `IWriteRepository`/`WriteRepository`.** Full
   **grep-gate** rename (see [`plans/agents/PLAN.md`](../agents/PLAN.md) "grep gate"):
   `grep -rniE "ibaserepository|baserepository"` over the whole repo returns **zero**, every tier/casing —
