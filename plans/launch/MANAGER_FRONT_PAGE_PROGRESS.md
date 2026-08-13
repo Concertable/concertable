@@ -28,8 +28,8 @@ first is Tommy's call at kickoff.
 published `IManagerPaymentReportingClient` reporting RPCs into `VenueDashboardService` / `ArtistDashboardService`,
 replacing the `MtdRevenueCents` / `MtdPayoutsCents` zero stubs (verified: no stub or TODO remains). Window is UTC
 month-to-date, payee the fail-closed `ITenantContext.GetTenantId()`, exact month-start returns zero without a
-degenerate `DateRange`, `Money.ToMinorUnits()` fills the `long` cents. Platform-sync PR #556 (→ `0.1.0-alpha.0.978`)
-is the final gate: non-breaking, auto-merge on, build in progress, no `platform-sync-broken` label — closes on its own.
+degenerate `DateRange`, `Money.ToMinorUnits()` fills the `long` cents. Platform-sync PR #556 **merged** (2026-08-13,
+21:15) — platform now `0.1.0-alpha.0.978`. Item 3's delivery chain is fully closed.
 
 **Update (2026-08-13):** PR [#50](https://github.com/Concertable/concertable/pull/50) **merged** (2026-05-19)
 — Phase A + B.9–B.11 are on `main`. The repo has since **carved** into `Concertable.B2B` /
@@ -59,7 +59,7 @@ is the final gate: non-breaking, auto-merge on, build in progress, no `platform-
    `SettlementTransaction.PayeeGrossMinor` (excludes payer-side commission). Two additive `ManagerPayment` RPCs on a
    new `IManagerPaymentReportingClient` (protobuf `Timestamp` + `Money`) kept `IManagerPaymentOperationsClient`
    source-compatible with B2B's concrete test client; B2B consumes the published `Concertable.Payment.Client` package,
-   never producer source. Only platform-sync #556 is still closing (healthy).
+   never producer source. Platform-sync #556 merged — platform on `0.1.0-alpha.0.978`; the chain is fully closed.
 4. ⏳ **B.11 pickup endpoints + Phase C FE cutover — ACTIVE (this worktree).** See "Immediate action" above for the
    endpoint build. Once the endpoints land, complete Phase C: delete `app/shared/.../persona.ts`,
    `PersonaSwitcher.tsx`, and the per-SPA `fixtures/`, swapping each `dashboardApi.ts` body from a fixture return to
