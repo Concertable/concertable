@@ -7,11 +7,11 @@
 - Branch: `Refactor/data-access_base-unify`
 - PR: PR-B #530 — https://github.com/Concertable/concertable/pull/530 (open). Scope: seam fix + composed repository facets + `IWriteRepository` rename, all this PR. (PR-A #522 merged; Customer IReadDbContext #526 merged.)
 - Dependency/package gates: PR-B is publish-first (ships `Concertable.DataAccess.*`) → on merge, publish + a `chore/platform-sync-*` PR rebuild every consumer against the new package. That sync PR is the real cross-consumer test.
-- Last reconciled: 2026-08-13 — the carve argument-forwarding defect from exact-head PR CI run `31749113047` is fixed locally; a focused local-platform Release build with `-p:MinVerSkip=true` passed with 0 warnings and 0 errors. Incremental review is next.
+- Last reconciled: 2026-08-13 — the carve argument-forwarding fix is locally green and incremental review `f133bbefb..be808fb37` found no issues. Replacement publication is next.
 
 ## Current state
 
-PR-A (#522) and Customer IReadDbContext (#526) are merged + platform-sync green. **PR-B (#530): Phases 1–4 are locally complete, current `origin/main` is merged, and review is clean through `f133bbefb`. Exact-head CI run `31749113047` exposed an argument-forwarding defect in the new carve seam; the wrapper now parses only its command and target itself and forwards every remaining token unchanged, avoiding PowerShell named-parameter binding. The fix is locally green and awaits incremental review.** Shared `ReadRepository` and `WriteRepository` own read and write behavior once; the flat `Repository` facade composes both over the same tracked module context and contains only delegates. All three use explicit constructors.
+PR-A (#522) and Customer IReadDbContext (#526) are merged + platform-sync green. **PR-B (#530): Phases 1–4 are locally complete, current `origin/main` is merged, and review is clean through `be808fb37`. Exact-head CI run `31749113047` exposed an argument-forwarding defect in the new carve seam; the wrapper now parses only its command and target itself and forwards every remaining token unchanged, avoiding PowerShell named-parameter binding. The fix is locally green and review-clean.** Shared `ReadRepository` and `WriteRepository` own read and write behavior once; the flat `Repository` facade composes both over the same tracked module context and contains only delegates. All three use explicit constructors.
 
 Customer Concert grounds the context boundary: `ConcertModule` consumes only `IConcertReadRepository`; `ConcertReadRepository` directly inherits a read base and DI passes `ConcertReadDbContext`. Projection handlers separately use tracked `ConcertDbContext`. Combined repositories are tracked units of work and give one writable module-context instance to both composed facets; they do not hide a separate no-tracking context behind `IRepository`.
 
@@ -32,7 +32,7 @@ and consume the same feed. Publishing and committed service pins are unchanged.
 
 ## Next Steps
 
-Run an incremental review of the carve argument-forwarding fix. If clean, publish the reviewed candidate to PR-B #530 through the plan push protocol and require replacement exact-head PR CI green. Then merge through `/merge` with `full-e2e` because the published DataAccess public shape is a positive trigger. Own `publish-packages` and the resulting `chore/platform-sync-*` PR to a green merge, then close out the plan from a fresh docs worktree.
+Publish the reviewed candidate to PR-B #530 through the plan push protocol and require replacement exact-head PR CI green. Then merge through `/merge` with `full-e2e` because the published DataAccess public shape is a positive trigger. Own `publish-packages` and the resulting `chore/platform-sync-*` PR to a green merge, then close out the plan from a fresh docs worktree.
 
 ## Completed work
 
@@ -60,7 +60,7 @@ Run an incremental review of the carve argument-forwarding fix. If clean, publis
 
 ## Reviews
 
-Full PR-B `/review` (low/high-confidence threshold) covered `2dfe09cc9..6914b9baf` (20 commits) in `reviews/Refactor-data-access_base-unify.md`, including the security-sensitive workflow/package lens. One low native finding (DataAccess missing from `unit.ps1 list`/help) was fixed in `6914b9baf` and verified. Incremental review `6914b9baf..f133bbefb` covered the latest platform-sync merge and found no issues; no open findings remain.
+Full PR-B `/review` (low/high-confidence threshold) covered `2dfe09cc9..6914b9baf` (20 commits) in `reviews/Refactor-data-access_base-unify.md`, including the security-sensitive workflow/package lens. One low native finding (DataAccess missing from `unit.ps1 list`/help) was fixed in `6914b9baf` and verified. Incremental reviews `6914b9baf..f133bbefb` and `f133bbefb..be808fb37` covered the current-main sync and carve argument-forwarding fix; both found no issues and no open findings remain.
 
 ## Decisions, discoveries, blockers, and deviations
 

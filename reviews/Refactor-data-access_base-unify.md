@@ -3,8 +3,8 @@
 > **This file is a work order, not a discussion.** Fix the open `[ ]` findings directly and report what
 > changed. Tick each `[x]` as you land it.
 
-**Reviewed up to commit:** `f133bbefbaeb582f56298237f18dbf91b495e368`  _(2026-08-13)_
-**Security-reviewed up to commit:** `f133bbefbaeb582f56298237f18dbf91b495e368`  _(2026-08-13)_
+**Reviewed up to commit:** `be808fb378080ccd2799d1f4cee7163d0d00c8a0`  _(2026-08-13)_
+**Security-reviewed up to commit:** `be808fb378080ccd2799d1f4cee7163d0d00c8a0`  _(2026-08-13)_
 
 > Range reviewed: `58e19d938..190674ea5` (1 commit — PR-B). Status legend: `[ ]` todo · `[x]` done · `[wontfix]`.
 
@@ -30,3 +30,7 @@ No additional issues found. Checked native correctness, security-sensitive workf
 ## Incremental review — 2026-08-13 (current-main sync)
 
 No issues found. Reviewed `6914b9baf..f133bbefb`: the only upstream delta is the five service platform pins moving to `0.1.0-alpha.0.978`, plus the plan checkpoint carried by the merge.
+
+## Incremental review — 2026-08-13 (carve argument forwarding)
+
+No issues found. Reviewed `f133bbefb..be808fb37` (4 commits). The native pass verified that manual positional parsing preserves every downstream `dotnet` token while avoiding PowerShell option binding, and the focused local-platform build exercised the failing `-p:` shape successfully. The security pass found no credential, secret, injection, or untrusted-input change.
