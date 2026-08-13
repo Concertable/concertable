@@ -7,11 +7,11 @@
 - Branch: `Refactor/data-access_base-unify`
 - PR: PR-B #530 — https://github.com/Concertable/concertable/pull/530 (open). Scope expanded (2026-08-12): seam fix + reparent + `IWriteRepository` rename, all this PR. Plan is execution-ready for handoff. (PR-A #522 merged; IReadDbContext #526 merged.)
 - Dependency/package gates: PR-B is publish-first (ships `Concertable.DataAccess.*`) → on merge, publish + a `chore/platform-sync-*` PR rebuild every consumer against the new package. That sync PR is the real cross-consumer test.
-- Last reconciled: 2026-08-13 — Phase 1 is complete and verified on current `origin/main` (`98fa02b9e`). The current CI graph contains 40 packable platform projects, 19 unit projects, and 13 integration projects.
+- Last reconciled: 2026-08-13 — Phase 2 is complete on current `origin/main` (`8249fa5c9`) plus merge `42a2d8c2c`; the current graph contains 40 packable platform projects, 22 unit projects, and 16 integration projects.
 
 ## Current state
 
-PR-A (#522) and IReadDbContext (#526) are merged + platform-sync green. **PR-B (#530): the binary-breaking reparent remains reverted until Phase 1 is verified.** `Repository<T,TContext,TKey> : BaseRepository` again, with the 3 read members re-declared; `context` stays on `BaseRepository` so feed-compiled consumers keep resolving. All additive wins retained: `InsertAsync`, dead B2B/Payment `ReadRepository<T>` alias deletion, `GetAllAsync` removed from `IBaseRepository` (kills the diamond), `Query` removed.
+PR-A (#522) and IReadDbContext (#526) are merged + platform-sync green. **PR-B (#530): Phase 2 is complete locally.** `Repository<T,TContext,TKey>` now inherits `ReadRepository<T,TContext,TKey>`, inherits the read members once, and owns the duplicated write members plus `InsertAsync`. The keyless write-only `BaseRepository` remains unchanged for `SequenceRepository` and direct `IBaseRepository` consumers. Phase 3's `IWriteRepository`/`WriteRepository` rename remains outstanding.
 
 **Phase 1 is complete.** `.github/workflows/test.yml` and
 `scripts/{local-platform,integration,unit,e2e,test}.ps1` now enforce the seam. `local-platform.ps1` packs the 40 production
@@ -25,24 +25,27 @@ and consume the same feed. Publishing and committed service pins are unchanged.
 
 ## Next Steps
 
-1. Implement Phase 2: reparent `Repository<T,TContext,TKey>` onto `ReadRepository<T,TContext,TKey>`.
-2. Move the write methods and `InsertAsync` onto `Repository`; remove its re-declared read methods so reads are inherited once.
-3. Run the six proof suites named in the plan against a newly prepared local platform feed, then the full build, unit, and integration gates. Diagnose any red integration test through `integration-debug`.
-4. Update the plan and ledger, commit Phase 2, and stop at the phase boundary.
+1. Implement Phase 3: rename `IBaseRepository`/`BaseRepository` to `IWriteRepository`/`WriteRepository` across the shared platform and every consumer, including identifiers and module aliases.
+2. Run the whole-repository case-insensitive grep gate for `ibaserepository|baserepository`; only the plan and ledger's explicitly historical text may remain, and every other occurrence must be removed.
+3. Prepare a new local platform feed, run the full Release solution build plus all dynamically discovered unit and integration projects, and verify every integration output contains exactly one DataAccess assembly at that local version. Diagnose any red integration test through `integration-debug`.
+4. Update the plan and ledger, commit Phase 3, and stop at the phase boundary.
 
 ## Completed work
 
 - **PR-A** (#522, merged `da9d02c29`, sync green): Customer read-only no-tracking contexts — shared `ReadDbContext` base + `{Concert,Venue,Artist}ReadDbContext` (NoTracking, `SaveChanges` throws); read repos rebound off `Query`.
 - **#526** (merged `6a3d66677`, sync green): `IReadDbContext` — read repos depend on a queryable-only interface (`IQueryable<T> Query<T>()`), no `DbSet`/`Add`/`SaveChanges` reachable; DI injects each concrete read context as `IReadDbContext` via a factory.
 - **Phase 1 — seam fix:** the test and CI harnesses pack the source platform once, override every consumer pin to that version, and assert integration/E2E outputs contain exactly one `Concertable.DataAccess.Infrastructure.dll` at the expected version. The normal publish workflow and committed service pins are unchanged.
+- **Phase 2 — repository reparent (this commit):** `Repository<T,TContext,TKey>` inherits `ReadRepository<T,TContext,TKey>`, reads are defined once, and the concrete repository base carries the write operations required by `IRepository`.
 
 ## Verification
 
-- Local platform `0.1.0-local.1786575969629`: 40/40 production `IsPackable` projects packed at one MinVer override.
-- Unit: 19/19 dynamically discovered projects green, 974/974 tests.
-- Integration: 13/13 projects green, 390/390 tests; every project verified exactly one `Concertable.DataAccess.Infrastructure.dll` at the local platform version. Four Customer projects required the repository's documented `subst` short-path workaround for Windows `MAX_PATH`; their first failures were `Microsoft.Data.SqlClient.SNI.dll` load errors, not product failures.
-- Release solution build against the local feed after the final `origin/main` merge: 0 errors, 4 existing warnings.
-- Static checks: plan graph, PowerShell parse, and `git diff --check` green.
+- Local platform `0.1.0-local.1786608449216`: 40/40 production `IsPackable` projects packed at one MinVer override.
+- Six historical proof projects: B2B Artist 17/17, Concert 144/144, User 3/3, Venue 25/25; Customer User 6/6 and Concert 11/11. Each output contained exactly one DataAccess assembly at the local platform version.
+- Release solution build against the local feed: 0 errors, 8 existing warnings.
+- Unit: 22/22 dynamically discovered projects green, 1,038/1,038 tests.
+- Integration: 16/16 dynamically discovered projects green, 404/404 tests; every output contained exactly one `Concertable.DataAccess.Infrastructure.dll` at the local platform version.
+- The deep worktree reproduced the known Customer `Microsoft.Data.SqlClient.SNI.dll` native-load failure; all final integration evidence was collected through the `R:` `subst` short path. Two B2B Concert fixture-reset SQL timeouts passed individually on fresh stacks and the complete project then passed 144/144.
+- Static checks: plan graph and `git diff --check` green.
 
 ## Reviews
 

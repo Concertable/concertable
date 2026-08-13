@@ -139,7 +139,7 @@ matters: the seam fix must precede the reparent/rename or their builds/tests fai
 
 - **Phase 1 — Seam fix. ✅ Complete.** Implement the local platform-pack + pin override (5 steps above). Land it
   first so Phases 2–3 are validated against a consistent platform.
-- **Phase 2 — Restore the reparent.** `Repository<T,TContext,TKey> : ReadRepository<T,TContext,TKey>`;
+- **Phase 2 — Restore the reparent. ✅ Complete.** `Repository<T,TContext,TKey> : ReadRepository<T,TContext,TKey>`;
   move the write methods + `InsertAsync` onto `Repository`; drop its re-declared reads (inherited now).
   This is the exact change that failed as run 31636765379 — **it is the proof the seam fix works:** the
   6 suites (B2B Artist/Concert/User/Venue, Customer User/Concert) must go green.
