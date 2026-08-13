@@ -6,7 +6,8 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Fix-typed-result-customer-ticket-reunion-completion`
 - Branch: `Fix/typed-result_customer-ticket-reunion-completion`
 - PR: [#540](https://github.com/Concertable/concertable/pull/540)
-- Dependency/package gates: Reunion `0.1.0-alpha.4` and platform `0.1.0-alpha.0.963` are published
+- Dependency/package gates: corrected Reunion `0.1.0-alpha.5` packages are published and indexed;
+  platform `0.1.0-alpha.0.963` is published
 - Last reconciled: 2026-08-13 against `origin/main` `306f072af` and merged PR #475 `2b05ed110`
 
 ## Current state
@@ -60,17 +61,17 @@ project whose source or public API uses it.
 - The repository output-shape ambiguity exposed by `GetDtoAsync` is now recorded in
   `api/TECH_DEBT.md` as a cross-codebase investigation; PR #540 does not invent or apply that wider
   standard.
-- Reunion's missing direct `ValidationResult` composition surface is recorded at commit `0d10ca1` on
-  `Feature/validation-result-composition` in the Reunion worktree
-  `C:\Users\TommySeery\source\repos\Reunion.worktrees\Feature-validation-result-composition`.
-  Reunion PR [#9](https://github.com/tomjseery/Reunion/pull/9) merged as `3ab6a473d`, and
-  `Reunion.Validation` `0.1.0-alpha.4` is published and indexed on NuGet.org. The current Concertable
-  worktree's exploratory Option/Result composition edits can now be finalized against that exact
-  package without a consumer-local validation wrapper.
+- Reunion PR [#9](https://github.com/tomjseery/Reunion/pull/9) was reverted by
+  [#10](https://github.com/tomjseery/Reunion/pull/10). The corrected composition API merged in
+  [#11](https://github.com/tomjseery/Reunion/pull/11) as `02e01a8ed` and delegates ordinary fail-fast
+  composition directly to the inner `UnitResult<ValidationErrors>`. `Reunion`, `Reunion.Errors`, and
+  `Reunion.Validation` `0.1.0-alpha.5` are published and indexed on NuGet.org. Resume when a clean
+  Concertable restore resolves that exact package version.
 
 ## Next Steps
 
-Resume PR #540 by updating Concertable to `Reunion.Validation` `0.1.0-alpha.4`, replacing the preserved
-exploratory validation carrier mechanics with the published direct `ValidationResult` composition
+Resume the post-PR #540 Ticket follow-up by confirming a clean restore resolves Reunion
+`0.1.0-alpha.5`, updating Concertable's Reunion package set to that exact version, replacing the
+preserved exploratory validation carrier mechanics with the direct `ValidationResult` composition
 surface, then rerun the affected build, unit, integration, package-clean, and review gates before
 merging.
