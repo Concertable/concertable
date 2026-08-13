@@ -28,6 +28,12 @@ merge it through `/merge-docs` without waiting for another instruction, keeping 
 
 **If requested work depends on a PR that does not exist, create it and do the work; never hand back the same blocked prompt.**
 
+**A terminal delivery instruction authorizes the required delivery chain.** When Tommy says to merge,
+ship, finish a cut-over, sort it out, or otherwise complete plan-managed work, that authorization
+includes every required producer and consumer PR, package publication, generated platform-sync PR,
+and merge in that delivery chain. Do not stop to request the same authorization again unless Tommy
+explicitly limits it to a named PR or stage.
+
 ## Validation is remote-first
 
 Concertable is developed across concurrent worktrees. Run generators/invariant checks, the smallest
