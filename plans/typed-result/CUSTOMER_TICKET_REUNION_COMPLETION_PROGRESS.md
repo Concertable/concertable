@@ -30,8 +30,8 @@ consumer against the corrected package before the plan's terminal delivery gates
   dropped cancellation token, and missing direct Reunion package ownership.
 - PR #540 merged as `491890ec9`, delivering the Option boundaries, Result/payment cleanup,
   cancellation propagation, direct package ownership, and focused coverage.
-- Follow-up implementation commit `f765dc196` is pushed and verified at the remote and PR head on
-  draft PR #555.
+- Initial implementation commit `f765dc196` and guard-style correction `f30ce554e` are pushed; local,
+  remote, and draft PR #555 work heads were verified equal at `f30ce554e`.
 
 ## Verification and review
 
