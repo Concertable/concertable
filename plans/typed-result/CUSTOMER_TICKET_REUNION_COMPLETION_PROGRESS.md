@@ -57,6 +57,9 @@ project whose source or public API uses it.
   boundaries convert them to `Option<T>`.
 - Missing Concert during payment completion remains an invariant exception after Option unwrapping.
 - Repository-wide enforcement remains owned by the roadmap's final cleanup item.
+- The repository output-shape ambiguity exposed by `GetDtoAsync` is now recorded in
+  `api/TECH_DEBT.md` as a cross-codebase investigation; PR #540 does not invent or apply that wider
+  standard.
 
 ## Next Steps
 
