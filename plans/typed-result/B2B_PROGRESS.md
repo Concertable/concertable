@@ -12,6 +12,8 @@
 - Review watermark: `eb84634699fa643a072342cd196b9767a6694619`
 - Checkpoint 10B consumer commits: `c55c99718` and `544144527`
 - Messaging producer commit: `ade9728f9`
+- Messaging delivery branch/PR: `Feature/MessagingOutboundCommands`, PR #536, remote head
+  `28e5797ff0029914bce024f63874afec6fed72a9`
 - Dependency/package gate: local consumer preparation is complete against Messaging `ade9728f9`,
   Payment `6458ec0d0`, and Reunion `113be42`; publication and generated platform sync remain
 - Main reconciliation: the previously reconciled base is now 137 commits behind live `origin/main`;
@@ -62,8 +64,9 @@ reference was added. The resolved SEC1 tech-debt entry has been deleted.
 
 ## Next Steps
 
-Deliver Messaging producer commit `ade9728f9`, wait for its package publication and generated platform
-sync, then deliver Payment producer commit `6458ec0d0` and wait for its publication and sync. Reconcile
+Merge Messaging producer PR #536 through the full-E2E queue, wait for its package publication and
+generated platform sync, then deliver Payment producer commit `6458ec0d0` and wait for its publication
+and sync. Reconcile
 this consumer branch with current `origin/main`, consume those normal-feed packages, rerun the build,
 carve, unit, integration, architecture, formatting, ownership, and plan-graph gates, then run the
 incremental code review. Do not push, open a PR, or merge without further instruction.
@@ -117,6 +120,8 @@ incremental code review. Do not push, open a PR, or merge without further instru
   HTTP data round-trip. No local E2E was run.
 - Focused changed saga and HTTP surface: 34/34 passed. Full B2B Concert integration: 155/155 passed.
 - Messaging Application unit tests: 41/41 passed. Azure Service Bus unit tests: 8/8 passed.
+- Current-main isolated Messaging producer branch: full API Release build passed with 0 errors;
+  affected formatting and diff checks passed. Code review through `28e5797ff` is clean.
 - Package-only B2B Web Release build against the isolated exact Messaging, Payment, and Reunion
   artifact closure: passed, 0 errors and one existing `UserEntity` warning.
 - `dotnet build api/Concertable.B2B/Concertable.B2B.slnx --configuration Release --no-restore -m:1
