@@ -60,10 +60,16 @@ project whose source or public API uses it.
 - The repository output-shape ambiguity exposed by `GetDtoAsync` is now recorded in
   `api/TECH_DEBT.md` as a cross-codebase investigation; PR #540 does not invent or apply that wider
   standard.
+- Reunion's missing direct `ValidationResult` composition surface is recorded at commit `0d10ca1` on
+  `Feature/validation-result-composition` in the Reunion worktree
+  `C:\Users\TommySeery\source\repos\Reunion.worktrees\Feature-validation-result-composition`.
+  The current Concertable worktree contains uncommitted exploratory Option/Result composition edits;
+  preserve them as evidence, but do not finalize their validation helpers before the Reunion API is
+  published.
 
 ## Next Steps
 
-Complete the cross-codebase repository output-shape investigation as docs-only work on this branch,
-then review all commits added after the last clean review and push the reviewed head to PR #540. Land
-it through the merge workflow, follow package publication and platform sync to terminal green, then
-close the roadmap item and delete the plan pair through the docs closeout workflow.
+Blocked: PR #540 cannot finalize its validation composition without duplicating carrier mechanics or standardizing the explicit `ToResult` bridge that Reunion is expected to remove.
+Blocked by: the external Reunion `ValidationResult` composition API and its published NuGet package.
+Unblock action: implement and review the Reunion `TECH_DEBT.md` item on `Feature/validation-result-composition`, merge its PR, and publish the resulting Reunion package.
+Resume when: a published Reunion package exposes the reviewed direct `ValidationResult` composition surface and its exact version is available to restore in Concertable.
