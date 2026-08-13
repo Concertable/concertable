@@ -10,11 +10,12 @@
 - Current-main merge commit: `5613a817a96bb0316ea9dc3a2d624e59f43e56a4`
 - Review/fix commit: `eb84634699fa643a072342cd196b9767a6694619`
 - Review watermark: `eb84634699fa643a072342cd196b9767a6694619`
-- Checkpoint 10B consumer commit: this commit
-- Dependency/package gate: local consumer preparation is complete against Payment producer commit
-  `6458ec0d0` and Reunion producer commit `113be42`; publication and generated platform sync remain
-- Main reconciliation: `origin/main` `93cecb6453d347ffd4e50efabb28190d1c7228f8` is reconciled;
-  semantic conflict resolution and post-merge verification are complete
+- Checkpoint 10B consumer commits: `c55c99718` and `544144527`
+- Messaging producer commit: `ade9728f9`
+- Dependency/package gate: local consumer preparation is complete against Messaging `ade9728f9`,
+  Payment `6458ec0d0`, and Reunion `113be42`; publication and generated platform sync remain
+- Main reconciliation: the previously reconciled base is now 137 commits behind live `origin/main`;
+  final published-package revalidation must follow a clean current-main reconciliation
 
 ## Current state
 
@@ -52,18 +53,20 @@ The Reunion integration close-out and stop-hook scope correction are merged inde
 
 Tommy authorized the durable SEC1 B2B + Payment saga/package cut-over on 2026-08-12. The hard decision
 blocker is removed. Checkpoint 10A is implemented and committed on the Payment producer branch;
-Checkpoint 10B is implemented in this consumer worktree. B2B persists stable acceptance/cancellation
-operation IDs, atomically stages Payment commands through its outbox, consumes typed terminal/deferred
-outcomes idempotently, and exposes the latest operation through a typed Option HTTP terminal. Payment
-owns operation replay and pending-operation recovery; no B2B reconciliation runner or Payment runtime
+Checkpoint 10B is implemented, verified, and committed in this consumer worktree. B2B persists stable
+acceptance/cancellation operation IDs, atomically stages Payment commands through its outbox, consumes
+typed terminal/deferred outcomes idempotently, and exposes the latest operation through a typed Option
+HTTP terminal. Payment owns operation replay and pending-operation recovery; no B2B reconciliation
+runner or Payment runtime
 reference was added. The resolved SEC1 tech-debt entry has been deleted.
 
 ## Next Steps
 
-Restore Docker Desktop to a healthy engine, run `./docker-health.ps1`, then run the full B2B integration
-suite and drive any real failures to green. After that gate, run the incremental code review and
-published-package revalidation when Payment `6458ec0d0` and Reunion `113be42` successors are available
-from the normal feeds. Do not push, open a PR, or merge without further instruction.
+Deliver Messaging producer commit `ade9728f9`, wait for its package publication and generated platform
+sync, then deliver Payment producer commit `6458ec0d0` and wait for its publication and sync. Reconcile
+this consumer branch with current `origin/main`, consume those normal-feed packages, rerun the build,
+carve, unit, integration, architecture, formatting, ownership, and plan-graph gates, then run the
+incremental code review. Do not push, open a PR, or merge without further instruction.
 
 ## Completed work
 
@@ -82,10 +85,23 @@ from the normal feeds. Do not push, open a PR, or merge without further instruct
   capture/deposit/refund commands transactionally, handles seven typed Payment outcomes, persists
   operation/failure state, maps pending cancellation safely, and provides the typed operation-status
   endpoint. The B2B migration was re-scaffolded; unrelated Payment migration churn was removed.
+- B2B registers the three Payment commands as outbound-only through Messaging `Sends<T>`. The
+  Messaging registry resolves their wire identities without making B2B receive or handle Payment
+  commands; implementation commit `ade9728f9`, consumer follow-up `544144527`.
 - Exact local verification used `Concertable.Payment.Contracts` / `.Client` `0.1.0-alpha.0.949` from
   producer commit `6458ec0d0` (SHA-256 `F0330F4687B8D4E073262D99C0AC16B7BAF50387C13A85B2C75D6A199818246C`
   and `7585A321BBB16C87323806F67885C011ED838DB42BD1AADD207F352681EE8C92`) plus Reunion
-  `0.1.0-local.113be42`. All temporary feed and version inputs were restored before commit.
+  `0.1.0-local.113be42`. Reunion core, AspNetCore, and Errors SHA-256 hashes are
+  `36F5C1C66BD9D63DFD180AEF69D266FDF05FB5EEDBE7573DCEB326063129A9A2`,
+  `5BCE01783D79B99F60FB1F848560B04563169C9346A84CF02815E483A5E8767C`, and
+  `993E8F966BEDEF06C94D8D8FDC28C89A7856BCFCB6DD21980CE64F329FD82544`.
+- Exact local Messaging verification used `Concertable.Messaging.Application` `0.1.0-alpha.0.943`
+  from `ade9728f9` (SHA-256
+  `040342DF1327CBBB7A1CFD64351332C626CC2E45B0DF46AE4FFEA88D1D4BD8B9`).
+- The reproducible isolated closure is under
+  `C:\Users\TommySeery\source\repos\Concertable\.artifacts\package-cutover\consumer-packages-ade9728f9`;
+  the Messaging producer pack is under the sibling `messaging-ade9728f9-platform943` directory. All
+  temporary feed and version inputs were restored before commit.
 
 ## Verification
 
@@ -97,9 +113,12 @@ from the normal feeds. Do not push, open a PR, or merge without further instruct
   Payment runtime source was absent and deployable references remained package-only.
 - Affected-project formatting: passed. The solution-wide formatter itself cannot apply generated
   document-property changes; narrowed project gates completed successfully. `git diff --check` is clean.
-- Focused saga integration/HTTP tests compile, but execution is outstanding: `docker info` timed out
-  twice, `com.docker.service` is stopped and unavailable to this session, and Docker Desktop did not
-  recover after a background launch. No test scenario started and no local E2E was run.
+- Docker health passed after a clean Docker Desktop restart with a fresh-container host-to-container
+  HTTP data round-trip. No local E2E was run.
+- Focused changed saga and HTTP surface: 34/34 passed. Full B2B Concert integration: 155/155 passed.
+- Messaging Application unit tests: 41/41 passed. Azure Service Bus unit tests: 8/8 passed.
+- Package-only B2B Web Release build against the isolated exact Messaging, Payment, and Reunion
+  artifact closure: passed, 0 errors and one existing `UserEntity` warning.
 - `dotnet build api/Concertable.B2B/Concertable.B2B.slnx --configuration Release --no-restore -m:1
   -nr:false`: passed, 0 errors and 4 existing warnings (two Concert integration nullable warnings and
   two generated Reqnroll nullable warnings).
@@ -108,7 +127,7 @@ from the normal feeds. Do not push, open a PR, or merge without further instruct
 - B2B Artist integration: 17/17.
 - B2B Venue integration: 25/25.
 - B2B Tenant integration: 58/58.
-- B2B Concert integration: 153/153; Customer Concert integration: 11/11.
+- Earlier baseline B2B Concert integration: 153/153; Customer Concert integration: 11/11.
 - Full `api/Concertable.slnx` Release build: passed, 0 errors and 2 existing generated E2E
   nullable-context warnings.
 - Scoped changed-file formatting and immediate `--verify-no-changes`: passed.
@@ -141,14 +160,17 @@ from the normal feeds. Do not push, open a PR, or merge without further instruct
 - B2B does not need a second recovery runner. Its durable outbox redelivers commands; Payment owns the
   persisted operation journal, resumes pending work with the same operation ID, and replays terminal
   outcomes. B2B's inbox makes outcome consumption idempotent.
+- Sending a published command is distinct from handling it. `Sends<T>` adds outbound type resolution
+  without adding the command to `RegisteredCommandTypes`, so Azure Service Bus does not create a
+  Payment command receiver in B2B.
 - The pre-merge plan graph's 13 unrelated stale-ledger errors belonged to the old branch snapshot;
   the current-main graph is the authoritative post-reconciliation gate.
 
 ## Downstream handoffs
 
 - Owning ledger: `plans/typed-result/B2B_PAYMENT_SAGA_PRODUCER_PROGRESS.md`.
-  Gate: exact locally packed Payment artifacts enable preparation here; publication and generated sync
-  enable final merge-ready revalidation.
+  Gate: Messaging `ade9728f9` must publish and sync before Payment `6458ec0d0`; the Payment publication
+  and following sync then enable final B2B current-main/package revalidation.
 
 - Waiting ledger: `plans/typed-result/REUNION_SHARED_CONTRACTION_PROGRESS.md`.
   Gate: B2B must be delivery-ready and identify every remaining old carrier, terminal, and third-party

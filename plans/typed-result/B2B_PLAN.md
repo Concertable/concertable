@@ -73,7 +73,7 @@ committed local source, feed path, or disposable package pin may be introduced.
   refusals become explicit contract outcomes; infrastructure/cancellation faults remain exceptional.
   Consume the exact Reunion package artifact from producer commit `113be42` and use its implicit
   conversions and projected `ToOkOr` terminals without recreating its extensions in Concertable.
-- [ ] **Checkpoint 10B — B2B durable lifecycle saga.** Persist acceptance/cancellation intent and its
+- [x] **Checkpoint 10B — B2B durable lifecycle saga.** Persist acceptance/cancellation intent and its
   financial-operation state before money moves, stage the Payment command in the same transaction via
   the B2B outbox, and complete or fail the lifecycle only from Payment-owned outcome events. The B2B
   outbox redelivers undelivered commands; Payment resumes a persisted pending operation with the same
@@ -144,15 +144,19 @@ is downstream cleanup and does not block this branch's local alpha.2 implementat
 
 ## Checkpoint 10 package topology
 
+- Messaging producer layer: `Concertable.Messaging.Application` owns the additive `Sends<T>` host
+  registration API. It registers command identity for outbound resolution without registering a local
+  command handler or receiver.
 - Producer layer: `Concertable.Payment.Contracts` owns the additive command/outcome wire contracts;
   `Concertable.Payment.Client` republishes against the same Payment package release but does not
   re-expose the saga types in a changed public surface.
 - Consumer layer: B2B consumes `Concertable.Payment.Contracts` and `Concertable.Payment.Client` only
   as published packages. Customer consumes the same packages but needs no source migration because the
   saga surface is additive.
-- Delivery DAG: Payment producer branch → Payment package publication → generated platform sync →
-  B2B published-package revalidation and delivery. The exact local producer artifact may make B2B
-  delivery-ready, but only the published package and generated sync can make it merge-ready.
+- Delivery DAG: Messaging producer publication → generated platform sync → Payment producer
+  publication → generated platform sync → B2B published-package revalidation and delivery. Exact
+  local producer artifacts may make B2B delivery-ready, but only published packages and generated
+  syncs can make it merge-ready.
 - Implementation DAG: Payment producer and B2B consumer may be prepared independently. Temporary
   package versions and feeds are never committed; each ledger records the producer commit, package
   version, SHA-256 hashes, and reproducible artifact location used for local verification.
