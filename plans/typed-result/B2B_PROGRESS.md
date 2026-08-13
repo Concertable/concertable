@@ -5,7 +5,7 @@
 - Roadmap item: `typed-result/b2b`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-B2BTypedResultMigration`
 - Branch: `Refactor/B2BTypedResultMigration`
-- PR: not opened
+- PR: #552 (draft)
 - Checkpoints 8-9 commit: `bfc8690b196821bdd735ea5d229182fd9a3baf36`
 - Current-main merge commit: `5613a817a96bb0316ea9dc3a2d624e59f43e56a4`
 - Review/fix commit: `eb84634699fa643a072342cd196b9767a6694619`
@@ -17,9 +17,9 @@
 - Messaging merge commit: `5c4dc3ddf5e0a67c51d493b1c9f5a93da6dfb9b3`
 - Dependency/package gate: terminal. Payment `0.1.0-alpha.0.973`, Messaging, and Reunion `0.1.0-alpha.3`
   are published and synced through platform-sync PR #547.
-- Main reconciliation: current `origin/main` through `7bd9564998a67e3f6ec03ee2244100be7a77ee7c`
-  is merged in `dc651f49f`; final published-package revalidation is in progress. Newer cumulative
-  platform-sync PR #551 is fully green and may merge while draft-PR validation runs.
+- Main reconciliation: `origin/main` through `7bd9564998a67e3f6ec03ee2244100be7a77ee7c`
+  is merged in `dc651f49f`. Final normal-feed implementation and local validation are complete;
+  exact-head draft-PR CI and final current-main currency remain.
 
 ## Current state
 
@@ -66,10 +66,9 @@ reference was added. The resolved SEC1 tech-debt entry has been deleted.
 
 ## Next Steps
 
-Complete the current-main reconciliation, consume only normal-feed Payment `0.1.0-alpha.0.973` and
-Reunion `0.1.0-alpha.3`, then run the final focused build, unit, integration, architecture, HTTP
-contract, formatting, ownership, plan-graph, and incremental-review gates. Open the draft B2B PR at
-the first coherent verified checkpoint so remote CI validates the exact branch head.
+Commit and push the final normal-feed result-boundary checkpoint to draft PR #552. Wait for exact-head
+build, carve, unit, integration, architecture, and HTTP-contract CI, run the incremental review, then
+reconcile current `origin/main`, repeat the smallest affected gates, and mark the PR ready.
 
 ## Completed work
 
@@ -195,6 +194,22 @@ the first coherent verified checkpoint so remote CI validates the exact branch h
 - Docker health passed with a fresh-container host-to-container HTTP data round-trip before the
   successful integration sequence.
 - Current-main focused financial-operation entity/workflow unit slice: 5/5.
+- Final B2B Web/architecture closure build after direct Reunion conversion cleanup: passed, 0 errors
+  and 0 warnings.
+- Final focused unit and contract slices: Concert 72/72 and Tenant 26/26.
+- Shared typed-result architecture tests: 24/24, including the no-HTTP-exception boundary rule.
+- B2B architecture tests: 8/8. Deployable B2B Web/module runtime has no Payment runtime namespace or
+  project reference; canonical AppHost/E2E orchestration remains outside that runtime boundary.
+- Scoped changed-file formatting: passed. The full-solution formatter reports only pre-existing
+  whitespace/style debt outside this checkpoint.
+- Final affected unit suites: Artist 11/11, Concert 211/211, Deal 53/53, Tenant 128/128, User 1/1,
+  and Venue 12/12. Focused Concert result/contract tests passed 72/72; focused Tenant tests passed
+  26/26.
+- The 11-test `ApplicationApiTests` HTTP contract slice compiles after updating its dashboard helper
+  for the published `Option<ArtistDashboardCounts>` contract. Local execution could not start because
+  Docker/Testcontainers was unavailable; every failure occurred during fixture construction before
+  application code ran. Draft-PR integration CI owns the healthy-runner execution.
+- Final changed-file formatting verification and `git diff --check`: passed.
 
 ## Decisions and deviations
 

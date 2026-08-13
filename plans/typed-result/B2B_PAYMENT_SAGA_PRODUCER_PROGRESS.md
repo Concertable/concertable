@@ -57,3 +57,7 @@ copied or recreated locally.
 - Owning ledger: `plans/typed-result/B2B_PROGRESS.md`.
   Gate removed: Payment `0.1.0-alpha.0.973` is published and platform-sync PR #547 is merged. B2B owns
   final current-main reconciliation, normal-feed validation, review, and delivery.
+
+## Next Steps
+
+None. This producer plan is terminal; continue delivery from `plans/typed-result/B2B_PROGRESS.md`.
