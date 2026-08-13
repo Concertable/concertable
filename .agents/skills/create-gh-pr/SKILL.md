@@ -4,9 +4,9 @@ name: create-gh-pr
 
 # create-gh-pr
 
-Open the PR for the current branch and hand off. One job: get committed work onto a GitHub PR with a
-title and body drafted from the branch, then stop. It does **not** enqueue, label the E2E tier, or wait
-for a merge — that is the `merge` skill.
+Open or update the PR for the current branch and hand off. During implementation, create a draft PR at
+the first coherent checkpoint so GitHub owns full validation; later checkpoints push to that PR. This
+skill does **not** enqueue, label the E2E tier, or wait for a merge — that is the `merge` skill.
 
 This skill is **Concertable-specific and personal-repo-only**. It is the deliberately-slim sibling of
 
@@ -22,8 +22,10 @@ This skill is **Concertable-specific and personal-repo-only**. It is the deliber
   of truth for `skip-e2e` / `full-e2e`, read fresh in the merge group. Do not set E2E labels at
   PR-create time — you'd just have to reconcile them at merge.
 - **Docs/plans ride uncommitted; only CODE blocks a PR.** Per the root `AGENTS.md`, uncommitted
-  markdown/plans/scratch notes travel with the next commit. Only uncommitted **code** means the PR would
-  ship incomplete.
+   markdown/plans/scratch notes travel with the next commit. Only uncommitted **code** means the PR would
+   ship incomplete.
+- **Implementation PRs start as drafts.** A draft is the remote validation environment, not a claim
+  that delivery is ready. Mark it ready only after review and exact-head CI are green.
 
 ## Steps
 
@@ -41,9 +43,9 @@ git status --porcelain
 ```
 
 - Only `*.md` / `plans/*` / scratch docs dirty → fine, they ride the next commit. Don't fuss.
-- Any uncommitted **code** (`.cs`, `.csproj`, `.props`, `.ts`, `.tsx`, workflow `.yml`, …) → **stop and
-  ask** whether to commit it first (offer an inferred message via the `commit` skill). A PR only contains
-  committed work; don't auto-commit code silently.
+- Any completed **code** (`.cs`, `.csproj`, `.props`, `.ts`, `.tsx`, workflow `.yml`, …) → run its
+  targeted local checkpoint, then commit it through the `commit` skill. A PR only contains committed
+  work.
 
 ### 3. Push the branch
 
@@ -68,7 +70,7 @@ Only if there's no upstream or the branch is ahead of its remote.
 - <area / behaviour bullets, drawn from the commits>
 
 ## Test coverage
-- <what's verified: build + the affected unit/integration/web builds, and which behaviours are asserted>
+- <targeted checks completed locally, plus the exact-head gates delegated to PR CI>
 
 ## Notes
 - <E2E tier if non-default and why; platform-sync if `api/**` changed; anything a reviewer needs>
@@ -81,13 +83,14 @@ Drop a section that has nothing to say; keep the footer.
 ### 5. Create the PR
 
 ```
-gh pr create --title "<title>" --body "$(cat <<'EOF'
+gh pr create --draft --title "<title>" --body "$(cat <<'EOF'
 <body>
 EOF
 )"
 ```
 
-- Add `--base <branch>` only if targeting something other than `main`; `--draft` only if asked.
+- Add `--base <branch>` only if targeting something other than `main`. Omit `--draft` only when the
+  work is already complete, reviewed, and exact-head CI-ready.
 - No `--assignee`, no `AB#` — this is the personal repo.
 
 ### 6. Report and hand off

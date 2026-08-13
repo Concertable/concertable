@@ -11,22 +11,27 @@ Run the Concertable xUnit integration test suite and analyse failures using the 
 
 If invoked with arguments, treat them as either:
 - A **fully-qualified test name** (e.g. `Concertable.B2B.Artist.IntegrationTests.ArtistApiTests.Create_Returns_201`) -- run Step 0 then jump to Step 2 for that single test.
-- A **module name** (e.g. `concert`, `artist`, `venue`) -- run Step 0 then `./integration.ps1 <module>`.
+- A **module name** (e.g. `concert`, `artist`, `venue`) -- run Step 0 then
+  `./scripts/integration.ps1 <module>`.
 
-If invoked with no arguments, run Step 0 then the full suite (Step 1), then Step 2 for each failure.
+If invoked for a CI failure with no explicit test, inspect the failing CI job and derive the narrowest
+project/test scope before Step 0. Run the full suite only when the user explicitly requests it or the
+failure is in shared integration infrastructure and no narrower proof exists.
 
 ## Key paths
 
-**Wrapper script** -- `integration.ps1` at the repo root. Commands: `run | b2b | customer | search | <module> | list`. Each project writes its own `integration-tests.last.log`.
+**Wrapper script** -- `scripts/integration.ps1`. Commands:
+`run | b2b | customer | search | <module> | list`. Each project writes its own
+`integration-tests.last.log`.
 
 **B2B integration tests** -- `api/Concertable.B2B/src/Modules/<Module>/Tests/Concertable.B2B.<Module>.IntegrationTests/`
-- Modules: `Artist`, `Concert`, `Organization`, `User`, `Venue`
+- Modules: `Artist`, `Concert`, `Tenant`, `User`, `Venue`
 - Shared fixture: `api/Concertable.B2B/tests/Concertable.B2B.IntegrationTests.Fixtures/ApiFixture.cs`
 - Mocks (Stripe, notification, email, geocoding, image, bus transport) live under that Fixtures project's `Mocks/` folder
 - Last run log per project: `<project>/integration-tests.last.log`
 
 **Customer integration tests** -- `api/Concertable.Customer/src/Modules/<Module>/Tests/Concertable.Customer.<Module>.IntegrationTests/`
-- Modules: `Concert`, `Review`, `Ticket`, `User`
+- Modules: `Artist`, `Concert`, `Preference`, `Review`, `Ticket`, `User`, `Venue`
 - Shared fixture: `api/Concertable.Customer/tests/Concertable.Customer.IntegrationTests.Fixtures/`
 
 **Search integration tests** -- `api/Concertable.Search/tests/Concertable.Search.IntegrationTests/`
@@ -52,7 +57,8 @@ docker ps 2>&1
 
 If this errors or the daemon is unreachable, stop and tell the user: **"Docker is not running -- please start Docker Desktop before running integration tests."** Do not proceed.
 
-Then tell the user: **"Starting full integration suite -- this takes a few minutes (10 csproj's, each spins up a Testcontainers SQL container). I'll report back when done."**
+State the exact local scope being reproduced. If it is the explicitly requested full suite, warn that
+each project starts a Testcontainers SQL container.
 
 ## Step 0b -- Watch for startup hangs
 
@@ -80,15 +86,15 @@ Pick the narrowest scope the user asked for:
 
 ```powershell
 # Everything
-./integration.ps1 run
+./scripts/integration.ps1 run
 
 # One service
-./integration.ps1 b2b
-./integration.ps1 customer
-./integration.ps1 search
+./scripts/integration.ps1 b2b
+./scripts/integration.ps1 customer
+./scripts/integration.ps1 search
 
 # One module (matches any service that has it -- e.g. 'concert' hits both B2B and Customer)
-./integration.ps1 concert
+./scripts/integration.ps1 concert
 ```
 
 The script runs each csproj in turn and writes a per-project `integration-tests.last.log`. After it finishes, parse each log to extract pass/fail counts and build a summary table to present before proceeding:
@@ -180,9 +186,13 @@ If you see an FK violation referencing a table from a different module/context, 
 After identifying the cause:
 1. Make the fix (application code, fixture setup, or test).
 2. Re-run the specific test with `--filter "FullyQualifiedName=<FQN>"` to confirm green.
-3. Re-run the whole module's integration project (`./integration.ps1 <module>`) to catch regressions in sibling tests.
-4. If the change is broader (Kernel, shared infra, fixture, mock), re-run the full suite (`./integration.ps1 run`).
-5. **Run the UI E2E regression check** (`./e2e.ps1 ui regress`, ~3-6 min). Integration tests live in-process with mocked external services; the regression check exercises the full Aspire stack with real bus + Stripe CLI + browser. A fix that's green at the integration layer can still break the UI E2E baseline (mock vs real bus behaviour, controller / service / SignalR interactions, request shape changes). Required before considering any non-trivial change done. Skill to invoke: `e2e-ui-regress`.
+3. Re-run the whole module's integration project (`./scripts/integration.ps1 <module>`) to catch
+   regressions in sibling tests.
+4. If the change is broader (Kernel, shared infra, fixture, mock), push the focused green fix and let
+   PR CI run the complete integration matrix. Run the full suite locally only when explicitly requested
+   or when remote logs cannot isolate the shared-infrastructure failure.
+5. Do not add a local UI E2E run. Push the fix; the merge queue owns full E2E. Reproduce only a specific
+   queue failure through the matching E2E debug skill.
 
 ## Useful filter patterns
 
