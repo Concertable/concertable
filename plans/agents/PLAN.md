@@ -304,8 +304,10 @@ point where the context becomes disposable. Don't carry unwritten state across a
 
 Every phase, no exceptions:
 
-- `dotnet build api/Concertable.slnx` green (0 errors).
-- The **affected** module's unit + integration tests — run them via the `integration-debug` skill.
+- Run required generators, grep/invariant gates, and the smallest affected project or frontend build.
+- Run focused unit tests for the changed behavior.
+- Commit and push the coherent checkpoint to its draft PR. Exact-head PR CI is authoritative for the
+  full solution, standalone carves, and complete unit/integration matrices.
 - Phases that change the model end with `./initial-migrations.ps1` from `api/` (re-scaffold, never
   additive migrations).
 - **Final phase only:** select the merge-queue E2E tier under the hub's
@@ -314,3 +316,5 @@ Every phase, no exceptions:
 
 A phase's own "verification gate" line may name E2E; treat that as selecting full merge-queue E2E when
 the hub's criteria require it, not as an instruction to duplicate the queue run locally.
+Likewise, a plan must not restate a full local build/integration gate; inherit
+[`../../docs/REMOTE_VALIDATION.md`](../../docs/REMOTE_VALIDATION.md).

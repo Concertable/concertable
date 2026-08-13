@@ -43,8 +43,8 @@ the package-only cutover through the normal PR, publication, and platform-sync l
 
 ### Phase 3 — Verification and delivery
 
-- Run affected Release builds, unit tests, integration tests, architecture tests, and standalone
-  carves required by `plans/AGENTS.md`.
+- Run affected Release builds, focused unit tests, and architecture checks locally; push the coherent
+  checkpoint and require exact-head PR CI for standalone carves and complete unit/integration matrices.
 - Run review and PR preflight, commit, push, and merge through the normal code path.
 - Follow the generated platform-sync PR to green and merged; repair any affected consumer in that PR.
 
