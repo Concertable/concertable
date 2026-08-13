@@ -28,10 +28,15 @@ public static class ServiceCollectionExtensions
                     sp.GetRequiredService<AuditInterceptor>(),
                     sp.GetRequiredService<IDomainEventDispatchInterceptor>()));
 
+        services.AddDbContext<ConcertReadDbContext>((sp, opts) =>
+            opts.UseSqlServer(configuration.GetConnectionString("CustomerDb"))
+                .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking));
+
         services.AddScoped<IUnitOfWork<ConcertDbContext>, UnitOfWork<ConcertDbContext>>();
         services.AddScoped<IUnitOfWorkBehavior, UnitOfWorkBehavior>();
 
-        services.AddScoped<IConcertReadRepository, ConcertReadRepository>();
+        services.AddScoped<IConcertReadRepository>(sp =>
+            new ConcertReadRepository(sp.GetRequiredService<ConcertReadDbContext>()));
         services.AddScoped<IConcertService, ConcertService>();
         services.AddScoped<IConcertModule, ConcertModule>();
         services.AddScoped<IIntegrationEventHandler<ConcertChangedEvent>, ConcertProjectionHandler>();
