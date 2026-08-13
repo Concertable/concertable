@@ -12,10 +12,9 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
 
 ## Next Steps
 
-**Immediate action:** commit the coherent Payment producer checkpoint, merge the six current `origin/main`
-commits that introduced remote-first validation, rerun the Payment build + focused unit tests, then push and
-open a draft producer PR. Let exact-head PR CI own the full solution build, Payment carve, complete unit matrix,
-and integration matrix. Review the branch while CI runs; when both are clean, mark it ready and wait for explicit
+**Immediate action:** push this ledger checkpoint, open a draft producer PR, and let exact-head PR CI own the
+full solution build, Payment carve, complete unit matrix, and integration matrix. Review the branch while CI
+runs; when both are clean, mark it ready and wait for explicit
 merge authorization. After merge, follow package publication and platform sync. Once the new
 `Concertable.Payment.Client` version is available on `main`, create a fresh B2B consumer PR that constructs the
 UTC month-to-date `DateRange`, calls both operations with `ITenantContext.GetTenantId()`, replaces the two zero
@@ -57,8 +56,10 @@ against the published package.
    use `ITenantContext.GetTenantId()` directly and construct the UTC month-to-date `DateRange`; no venue/artist
    integer-ID translation is required. Delivery is
    deliberately split because B2B consumes the published `Concertable.Payment.Client` package rather than its
-   source project. The uncommitted producer working tree passes the Payment solution build with 0 warnings/errors,
-   all 237 focused Payment unit tests, `git diff --check`, and the plan graph (0 errors/warnings). Repository
+   source project. Producer commit `d42fe4d6b` plus the current-main merge at `70cc54cbf` are pushed and verified
+   equal to `origin/Feature/launch_dashboard-mtd-payments`. That exact work head passes the Payment solution
+   build with 0 warnings/errors, all 237 focused Payment unit tests, `git diff --check`, and the plan graph
+   (0 errors/warnings). Repository
    integration coverage verifies payee/status/start/end filtering and settlement gross semantics; current-main
    policy assigns execution of that integration project and the full build/carve matrices to draft-PR CI.
 4. ⏳ **Phase C — swap FE mock tier → real (was item 4).** Blocked: only
