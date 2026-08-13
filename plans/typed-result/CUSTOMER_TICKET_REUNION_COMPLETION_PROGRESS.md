@@ -38,9 +38,9 @@ consumer against the corrected package before the plan's terminal delivery gates
 - Customer restore resolved `Reunion`, `Reunion.AspNetCore`, `Reunion.Errors`, and
   `Reunion.Validation` `0.1.0-alpha.5` from NuGet. The focused Ticket Infrastructure Release build is
   green with 0 errors, and Ticket unit tests are 33/33 green against that package set.
-- The direct validation composition preserves the existing missing-Concert and invalid-purchase/
-  checkout coverage. Package-version, resolved-assets, whitespace, and plan-graph inventories are
-  clean.
+- Guard-style validation rebuilt Ticket Infrastructure and the Ticket test assembly with 0 warnings
+  and 0 errors; Ticket unit tests remain 33/33 green. Existing missing-Concert and invalid-purchase/
+  checkout coverage is preserved.
 - `dotnet build api/Concertable.slnx --configuration Release --no-restore`: 0 errors; existing
   UserEntity and generated E2E warnings only.
 - Affected unit suites: Concert 23/23, Ticket 33/33, Review 43/43.
@@ -74,6 +74,8 @@ consumer against the corrected package before the plan's terminal delivery gates
   [#11](https://github.com/tomjseery/Reunion/pull/11) as `02e01a8ed` and delegates ordinary fail-fast
   composition directly to the inner `UnitResult<ValidationErrors>`. `Reunion`, `Reunion.AspNetCore`,
   `Reunion.Errors`, and `Reunion.Validation` `0.1.0-alpha.5` are published and indexed on NuGet.org.
+- Ticket retains `OrFailure` for Concert absence and an explicit validation guard. A later Reunion
+  release will provide value-preserving validation-aware `Ensure` composition.
 
 ## Next Steps
 

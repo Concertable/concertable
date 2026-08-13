@@ -421,22 +421,26 @@ ValidationResult validation = new[]
 }.Combine();
 ```
 
-Validation does not replace the operation's domain error. When validation is one step in a larger
-Result pipeline, use its direct composition surface and map it once at the owning operation boundary:
+Validation does not replace the operation's domain error. Map it once at the owning operation
+boundary. When a validator has no success payload and the operation must preserve an existing value,
+use a guard rather than `Map(() => existingValue, ...)`:
 
 ```csharp
-private Result<Concert, CheckoutError> ValidateCheckout(Concert concert, int quantity) =>
-    ticketValidator.CanPurchaseTickets(concert, quantity)
-        .Map<Concert, CheckoutError>(
-            () => concert,
-            errors => new CheckoutError.Invalid(errors));
+private Result<Concert, CheckoutError> ValidateCheckout(Concert concert, int quantity)
+{
+    var validation = ticketValidator.CanPurchaseTickets(concert, quantity);
+    if (validation.TryGetErrors(out var errors))
+        return new CheckoutError.Invalid(errors);
+
+    return concert;
+}
 ```
 
 `Map`, `Bind`, their async variants, guard-style observation, and explicit conversion are all valid.
-Use direct `Map`/`Bind` when validation participates in a fluent pipeline, and `TryGetFailure` when a
-simple early-return guard is clearest. `ToResult` remains available when an explicit carrier conversion
-fits the call site, but it is not a prerequisite for composition. Complete all independent validation
-and `Combine` it before entering ordinary fail-fast composition.
+Use direct `Map` when validation genuinely creates a new success value, and `TryGetErrors` or
+`TryGetFailure` when a simple early-return guard is clearest. `ToResult` remains available when an
+explicit carrier conversion fits the call site. Complete all independent validation and `Combine` it
+before entering ordinary fail-fast composition.
 
 `ValidationResult` converts implicitly and losslessly to `UnitResult<ValidationErrors>` for assignments
 and method arguments. C# member lookup does not follow that conversion, so Reunion exposes the same
@@ -460,7 +464,7 @@ public abstract partial record CreateUserError : IError
 
 Use `Combine` only for independent validations where reporting all field failures is useful.
 Business operations, dependency calls, and state transitions remain fail-fast. `ValidationResult`
-converts explicitly to the Result family; raw `ValidationErrors` do not implicitly choose a branch.
+does not implicitly choose a branch of a value-bearing Result; raw `ValidationErrors` do not either.
 
 ## HTTP terminals
 
