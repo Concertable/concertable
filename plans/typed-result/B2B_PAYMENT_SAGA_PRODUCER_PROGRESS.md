@@ -27,7 +27,7 @@ through temporary restore inputs. Do not copy or recreate the extensions locally
 
 ## Next Steps
 
-Monitor platform-sync PR #538 for published platform `0.1.0-alpha.0.966` to a green merge. Then
+Monitor cumulative platform-sync PR #539 for platform `0.1.0-alpha.0.967` to a green merge. Then
 reconcile and deliver Payment through
 `6458ec0d0`, wait for Payment package
 publication and sync, and update the B2B waiting ledger so its current-main/package revalidation can
@@ -56,6 +56,8 @@ resume. Do not push, open a PR, publish, or merge without further instruction.
   `5c4dc3ddf5e0a67c51d493b1c9f5a93da6dfb9b3`.
 - Publish run 31693533673 succeeded with fresh-feed restore verification. Platform-sync run
   31693704239 opened PR #538 for `0.1.0-alpha.0.966`.
+- PR #538 was superseded by cumulative sync PR #539 after another API publication. PR #539 includes
+  the Messaging release and its entire required check matrix is terminal and green.
 
 ## Decisions and deviations
 
