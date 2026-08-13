@@ -27,7 +27,7 @@ through temporary restore inputs. Do not copy or recreate the extensions locally
 
 ## Next Steps
 
-Merge Messaging producer PR #536 through the full-E2E queue and wait for its package publication and
+Apply the `full-e2e` label and merge Messaging producer PR #536 through the queue, then wait for its package publication and
 generated platform sync. Then reconcile and deliver Payment through `6458ec0d0`, wait for Payment package
 publication and sync, and update the B2B waiting ledger so its current-main/package revalidation can
 resume. Do not push, open a PR, publish, or merge without further instruction.
