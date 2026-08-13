@@ -9,7 +9,7 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
 
 ## Next Steps
 
-**Update (2026-08-07):** PR [#50](https://github.com/Concertable/concertable/pull/50) **merged** (2026-05-19)
+**Update (2026-08-13):** PR [#50](https://github.com/Concertable/concertable/pull/50) **merged** (2026-05-19)
 — Phase A + B.9–B.11 are on `main`. The repo has since **carved** into `Concertable.B2B` /
 `Concertable.Customer` / `Concertable.Payment` services; dashboard FE now lives under
 `app/web/b2b/{venue,artist,shared}/`. Reconciled outstanding work:
@@ -17,12 +17,18 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
 1. ✅ **Migration re-scaffold (was item 3) — DONE.** The carve re-ran `api/initial-migrations.ps1`; the
    B2B `Concerts` table already carries the owned `Period_Start`/`Period_End` columns. No drift; nothing
    to run.
-2. ✅ **`AcceptedAwaitingCheckout` KPI (was item 2, artist slice) — DONE** on branch
+2. ✅ **`AcceptedAwaitingCheckout` KPI (was item 2, artist slice) — DONE**, PR
+   [#414](https://github.com/Concertable/concertable/pull/414) on branch
    `Feature/launch_dashboard-accepted-checkout`. Added `IConcertWorkflowCapabilityRegistry.DealTypesWith<T>()`,
    a third `Accepted` + checkout-capable + upcoming applications query in `ConcertDashboardRepository`, the
    `ArtistDashboardCounts.AcceptedAwaitingCheckout` field + projection, and wired `ArtistDashboardService`.
-   Unit test (registry) + integration test (count delta on accept) added. Build + unit green; integration
-   runs in the merge queue (local Docker was down).
+   **2026-08-13:** layering refactor (`ec5e7b7bb`) moved `IConcertWorkflowCapabilityRegistry` out of the
+   repo into `ConcertDashboardService`, passing the resolved checkout-capable `DealType` set down as a
+   filter param (repo stays pure data-access). Branch was **330 commits behind `main`** — synced
+   (`b711b9365`, one conflict in `ConcertWorkflowCapabilityRegistry.cs`: kept `DealTypesWith` on
+   origin/main's `workflowTypes` rename), B2B build 0 errors, Concert unit tests 133/133, pushed.
+   **PR #414 is current with `main` and merge-ready** (integration `ArtistDashboardCountsTests` runs in
+   the merge queue). Terminal action: land #414 via `/merge`.
 3. ⏳ **MTD revenue/payouts (was item 2, money slices).** `MtdRevenueCents` / `MtdPayoutsCents` still
    stubbed at 0. NOT a simple method add: `IManagerPaymentModule` does not exist and **Payment is a
    separate gRPC microservice**, so this is a cross-service build — Payment repo query (`TicketTransaction`
