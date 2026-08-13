@@ -7,7 +7,7 @@
 - Branch: `Refactor/data-access_base-unify`
 - PR: PR-B #530 — https://github.com/Concertable/concertable/pull/530 (open). Scope expanded (2026-08-12): seam fix + reparent + `IWriteRepository` rename, all this PR. Plan is execution-ready for handoff. (PR-A #522 merged; IReadDbContext #526 merged.)
 - Dependency/package gates: PR-B is publish-first (ships `Concertable.DataAccess.*`) → on merge, publish + a `chore/platform-sync-*` PR rebuild every consumer against the new package. That sync PR is the real cross-consumer test.
-- Last reconciled: 2026-08-13 — Phase 2 is complete on current `origin/main` (`8249fa5c9`) plus merge `42a2d8c2c`; the current graph contains 40 packable platform projects, 22 unit projects, and 16 integration projects.
+- Last reconciled: 2026-08-13 — Phase 2 is complete as `d65293cc3` and includes current `origin/main` (`3a5df8b18`); the post-verification drift was docs-only and did not change the 40 packable platform projects, 22 unit projects, or 16 integration projects.
 
 ## Current state
 
@@ -35,7 +35,7 @@ and consume the same feed. Publishing and committed service pins are unchanged.
 - **PR-A** (#522, merged `da9d02c29`, sync green): Customer read-only no-tracking contexts — shared `ReadDbContext` base + `{Concert,Venue,Artist}ReadDbContext` (NoTracking, `SaveChanges` throws); read repos rebound off `Query`.
 - **#526** (merged `6a3d66677`, sync green): `IReadDbContext` — read repos depend on a queryable-only interface (`IQueryable<T> Query<T>()`), no `DbSet`/`Add`/`SaveChanges` reachable; DI injects each concrete read context as `IReadDbContext` via a factory.
 - **Phase 1 — seam fix:** the test and CI harnesses pack the source platform once, override every consumer pin to that version, and assert integration/E2E outputs contain exactly one `Concertable.DataAccess.Infrastructure.dll` at the expected version. The normal publish workflow and committed service pins are unchanged.
-- **Phase 2 — repository reparent (this commit):** `Repository<T,TContext,TKey>` inherits `ReadRepository<T,TContext,TKey>`, reads are defined once, and the concrete repository base carries the write operations required by `IRepository`.
+- **Phase 2 — repository reparent (`d65293cc3`):** `Repository<T,TContext,TKey>` inherits `ReadRepository<T,TContext,TKey>`, reads are defined once, and the concrete repository base carries the write operations required by `IRepository`.
 
 ## Verification
 
