@@ -27,9 +27,8 @@ through temporary restore inputs. Do not copy or recreate the extensions locally
 
 ## Next Steps
 
-Find and monitor the `Publish packages` run for Messaging merge
-`5c4dc3ddf5e0a67c51d493b1c9f5a93da6dfb9b3`, then follow its generated platform-sync PR to a green
-merge. Then reconcile and deliver Payment through
+Monitor platform-sync PR #538 for published platform `0.1.0-alpha.0.966` to a green merge. Then
+reconcile and deliver Payment through
 `6458ec0d0`, wait for Payment package
 publication and sync, and update the B2B waiting ledger so its current-main/package revalidation can
 resume. Do not push, open a PR, publish, or merge without further instruction.
@@ -55,6 +54,8 @@ resume. Do not push, open a PR, publish, or merge without further instruction.
 - Messaging Application tests: 41/41; Azure Service Bus tests: 8/8.
 - Messaging PR #536 passed full API and UI E2E and merged as
   `5c4dc3ddf5e0a67c51d493b1c9f5a93da6dfb9b3`.
+- Publish run 31693533673 succeeded with fresh-feed restore verification. Platform-sync run
+  31693704239 opened PR #538 for `0.1.0-alpha.0.966`.
 
 ## Decisions and deviations
 
