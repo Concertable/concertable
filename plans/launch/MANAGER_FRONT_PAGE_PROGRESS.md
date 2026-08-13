@@ -3,22 +3,33 @@
 - Plan: `plans/launch/MANAGER_FRONT_PAGE_PLAN.md`
 - Roadmap: `plans/launch/LAUNCH_ROADMAP.md`
 - Roadmap item: `launch/manager-front-page`
-- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-launch-dashboard-mtd-consumer`
-- Branch: `Feature/launch_dashboard-mtd-consumer`
-- PR: [#554](https://github.com/Concertable/concertable/pull/554) (draft; head `d572f06ae`)
+- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-launch-dashboard-pickup-endpoints`
+- Branch: `Feature/launch_dashboard-pickup-endpoints`
+- PR: none yet — item-3 consumer PR [#554](https://github.com/Concertable/concertable/pull/554) merged 2026-08-13 (`2dfe09cc9`)
 
 Captured during Phase A implementation. These supersede the original plan
 where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_PAGE_PLAN.md).
 
 ## Next Steps
 
-**Immediate action:** Draft PR #554 is open at verified work head `da185097d`. Full plus incremental review is clean:
-the only finding (new unit-test projects absent from service-local `Concertable.B2B.slnx`) was fixed in `da185097d`,
-and `dotnet sln Concertable.B2B.slnx list` resolves both. Push this review checkpoint, require exact-head PR CI green,
-mark ready, and take it through `/merge` with **`skip-e2e`** — the diff changes no HTTP/gRPC/published contract, so
-no positive E2E trigger. Local verification: Venue and Artist unit-test projects each build with 0 warnings/errors
-and pass 4/4; `git diff --check` clean. B2B compiles against published platform `0.1.0-alpha.0.976`, never producer
-source.
+**Immediate action:** Item 3 (MTD revenue/payouts) is delivered — the next work is to build the remaining
+**B.11 pickup endpoints** so the dashboard FE can cut over from fixtures to real data (item 4). Only
+`/api/{Venue,Artist}Dashboard/kpis` exist server-side; the other ~17 `dashboardApi` sections (overview, inbox,
+upcoming-concerts, revenue/payouts charts, opportunities, activity, settlements, applications, reviews) still have no
+endpoint. Build them per the plan's [B.11 pickup notes](MANAGER_FRONT_PAGE_PLAN.md#b11-pickup-notes-post-merge) —
+ordered by independence, activity feed last (it needs a notification-log table + `api/initial-migrations.ps1`
+re-scaffold) — in the fewest safe PRs the dependencies allow. Each mirrors the shipped KPI slice: thin controller →
+`IXDashboardService` orchestration → `IConcertModule` / `IManagerPaymentReportingClient` facade → one composed query.
+This is a large, previously-unlisted backend phase; whether to trim the endpoint set or sequence UX-freeze (item 5)
+first is Tommy's call at kickoff.
+
+**Item 3 — DELIVERED (2026-08-13).** Producer PR [#545](https://github.com/Concertable/concertable/pull/545) merged
+(`3004fb52d`); consumer PR [#554](https://github.com/Concertable/concertable/pull/554) merged (`2dfe09cc9`) wired both
+published `IManagerPaymentReportingClient` reporting RPCs into `VenueDashboardService` / `ArtistDashboardService`,
+replacing the `MtdRevenueCents` / `MtdPayoutsCents` zero stubs (verified: no stub or TODO remains). Window is UTC
+month-to-date, payee the fail-closed `ITenantContext.GetTenantId()`, exact month-start returns zero without a
+degenerate `DateRange`, `Money.ToMinorUnits()` fills the `long` cents. Platform-sync PR #556 (→ `0.1.0-alpha.0.978`)
+is the final gate: non-breaking, auto-merge on, build in progress, no `platform-sync-broken` label — closes on its own.
 
 **Update (2026-08-13):** PR [#50](https://github.com/Concertable/concertable/pull/50) **merged** (2026-05-19)
 — Phase A + B.9–B.11 are on `main`. The repo has since **carved** into `Concertable.B2B` /
@@ -43,32 +54,19 @@ source.
    Package publication succeeded; cumulative platform-sync PR #541 superseded #539, updated the platform to
    `0.1.0-alpha.0.968`, passed build/unit/integration checks, and merged as
    `1c88858f93f648f1719fa9e4d273749b8932b364`.
-3. ⏳ **MTD revenue/payouts (was item 2, money slices) — PRODUCER DELIVERED; CONSUMER DELIVERY IN PROGRESS.**
-   **Producer:** PR [#545](https://github.com/Concertable/concertable/pull/545) MERGED as `3004fb52d` (full-e2e
-   merge-group passed after one auto-merge re-assert cleared a GitHub re-eval glitch); package published; platform-sync
-   PR #551 merged the platform to `0.1.0-alpha.0.976`. **Consumer:** commit `a569b2084` wires the two published reporting
-   RPCs into `VenueDashboardService`/`ArtistDashboardService`, replacing the `MtdRevenueCents`/`MtdPayoutsCents` zero
-   stubs. Payee is the fail-closed `ITenantContext.GetTenantId()`, the window is UTC month-to-date, exact month start
-   returns zero without constructing a degenerate `DateRange`, and `Money.ToMinorUnits()` fills the `long` cents fields.
-   The producer (now on `main`) added Payment-owned aggregate queries over completed
-   transactions within an explicit `DateRange`, two additive `ManagerPayment` RPCs exposed through a new
-   `IManagerPaymentReportingClient` (protobuf `Timestamp` + the existing `Money` value object). The separate reporting
-   interface keeps the published `IManagerPaymentOperationsClient` source-compatible with B2B's concrete test client.
-   Ticket revenue sums `TicketTransaction.Amount`; artist payouts sum `SettlementTransaction.PayeeGrossMinor` (excludes
-   the commission in the payer total). Payee is B2B's tenant `Guid` (`ITenantContext.GetTenantId()`) — no venue/artist
-   integer-ID translation. B2B consumes the published `Concertable.Payment.Client` package, never the producer source.
-   `MockManagerPaymentClient` implements both Payment client interfaces and is registered under both in `ApiFixture`;
-   new Venue/Artist dashboard unit tests cover mapping, tenant/period forwarding, null counts, month-start zero, and
-   fail-closed tenant resolution. Local result: 4/4 per project, both builds 0 warnings/errors.
-4. ⏳ **Phase C — swap FE mock tier → real (was item 4).** Blocked: only
-   `/api/{Venue,Artist}Dashboard/kpis` exist server-side; the other 17 FE `dashboardApi` methods (overview,
-   inbox, upcoming-concerts, revenue/payouts, opportunities, activity, settlements, applications, reviews)
-   have **no endpoint**. Needs the B.11 pickup endpoints built first (never previously listed as a step).
-   Only then delete `app/shared/.../persona.ts`, `PersonaSwitcher.tsx`, and the per-SPA `fixtures/`,
-   swapping each `dashboardApi.ts` body to real `api.get`.
-5. ⏳ **Phase A.8 — UX freeze (was item 1).** Manual browser QA of the fixture-backed dashboard across
-   `?persona=empty|mid|thriving` + tablet/mobile responsive collapse. Independent; needs the running
-   authenticated B2B stack.
+3. ✅ **MTD revenue/payouts (was item 2, money slices) — DELIVERED.** See "Item 3 — DELIVERED" above. Producer #545
+   + consumer #554 both merged. Ticket revenue sums `TicketTransaction.Amount`; artist payouts sum
+   `SettlementTransaction.PayeeGrossMinor` (excludes payer-side commission). Two additive `ManagerPayment` RPCs on a
+   new `IManagerPaymentReportingClient` (protobuf `Timestamp` + `Money`) kept `IManagerPaymentOperationsClient`
+   source-compatible with B2B's concrete test client; B2B consumes the published `Concertable.Payment.Client` package,
+   never producer source. Only platform-sync #556 is still closing (healthy).
+4. ⏳ **B.11 pickup endpoints + Phase C FE cutover — ACTIVE (this worktree).** See "Immediate action" above for the
+   endpoint build. Once the endpoints land, complete Phase C: delete `app/shared/.../persona.ts`,
+   `PersonaSwitcher.tsx`, and the per-SPA `fixtures/`, swapping each `dashboardApi.ts` body from a fixture return to
+   `api.get`.
+5. ⏳ **Phase A.8 — UX freeze (was item 1).** Manual browser QA of the dashboard across
+   `?persona=empty|mid|thriving` + tablet/mobile responsive collapse. Independent of item 4; needs the running
+   authenticated B2B stack (human-gated).
 
 ## Naming & terminology
 
