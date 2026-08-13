@@ -33,9 +33,10 @@ released `Reunion` and `Reunion.Errors` `0.1.0-alpha.3` artifacts containing pro
 
 ## Next Steps
 
-Wait for PR #544's required matrix. Use its clean-host Payment integration job as the authoritative
-replacement for the local Docker-startup-blocked run and do not enqueue until the matrix is green.
-Then merge through package publication and cumulative platform sync before resuming B2B.
+Push the merge-queue regression fix to PR #544 and use exact-head PR CI as the authoritative full
+build, carve, unit, and integration gate. After CI and review are green, re-enqueue with `full-e2e`.
+Merge only after the queue E2E passes, then follow Payment package publication and cumulative platform
+sync before resuming B2B.
 
 ## Completed work
 
@@ -54,6 +55,14 @@ Then merge through package publication and cumulative platform sync before resum
   applied because the branch adds published cross-service command/event contracts.
 - Current main was reconciled in `64fc7f8e2`; its remote-validation workflow/docs changes introduced
   no Payment runtime change, and the guidance conflict preserves both policies.
+- Merge-group run `31705953582` failed the flat-fee acceptance API E2E because booking-derived Stripe
+  idempotency keys collided with keys retained from an earlier test run. Its diagnostics also exposed
+  that the three financial-operation command queues were registered for handling but absent from the
+  Payment AppHost topology.
+- Stripe retry identity is now carried explicitly as a financial operation ID or commission binding ID;
+  metadata is observability-only, legacy calls without either identity receive no custom key, and the
+  shared private formatter owns the Stripe key shape. Payment topology now provisions capture, deposit,
+  and refund command queues. The regression fix and its focused coverage are checkpointed in this commit.
 
 ## Verification
 
@@ -74,6 +83,11 @@ Then merge through package publication and cumulative platform sync before resum
 - Package ownership inventory: the new commands and events exist only in Payment.Contracts, Payment
   runtime, and Payment tests; Payment.Contracts and Payment.Client have no B2B or Customer references.
 - Scoped whitespace format and verification: green.
+- Regression fix focused Payment service/adapter unit slice: 58/58.
+- Financial-operation topology unit test: 1/1.
+- Regression fix Payment AppHost build: 0 errors, 0 warnings.
+- Regression fix scoped Payment format and `git diff --check`: green. The solution-wide format command
+  still reports pre-existing Shared Kernel whitespace and B2B namespace findings outside this change.
 - Initial migrations re-scaffold: every unchanged context retained its ID; Payment regenerated with
   `FinancialOperations` and the unique nullable refund `OperationId` index.
 - Plan graph: 0 errors and 0 warnings; `git diff --check` green.
