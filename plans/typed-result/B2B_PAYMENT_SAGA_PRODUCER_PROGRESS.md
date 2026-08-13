@@ -9,7 +9,7 @@
 - Base: `origin/main` `93cecb6453d347ffd4e50efabb28190d1c7228f8`
 - Producer commits: `5aaf13d76`, `6717d5d0a`, `6458ec0d0`
 - Package gate: producer implementation is verified; publication not requested
-- Messaging prerequisite: PR #536, remote head `28e5797ff0029914bce024f63874afec6fed72a9`
+- Messaging prerequisite: PR #536, remote head `2142f5d6a1dc1a60d0afdc221f4e2362c98c251e`
 
 ## Current state
 
@@ -27,14 +27,9 @@ through temporary restore inputs. Do not copy or recreate the extensions locally
 
 ## Next Steps
 
-Blocked: Messaging producer PR #536 cannot enter the merge queue yet.
-
-Blocked by: explicit authorization to merge PR #536 into `main`.
-
-Unblock action: Tommy explicitly instructs `merge PR #536`.
-
-Resume when: that instruction is received; enqueue PR #536 with `full-e2e`, wait for its merge,
-package publication, and generated platform sync. Then reconcile and deliver Payment through
+Wait for PR #536's refreshed checks to become terminal and green at head `2142f5d6a`, confirm the
+`full-e2e` label and current-main state, then enqueue it. Wait for its merge, package publication, and
+generated platform sync. Then reconcile and deliver Payment through
 `6458ec0d0`, wait for Payment package
 publication and sync, and update the B2B waiting ledger so its current-main/package revalidation can
 resume. Do not push, open a PR, publish, or merge without further instruction.

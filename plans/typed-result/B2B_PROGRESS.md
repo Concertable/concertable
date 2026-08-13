@@ -13,7 +13,7 @@
 - Checkpoint 10B consumer commits: `c55c99718` and `544144527`
 - Messaging producer commit: `ade9728f9`
 - Messaging delivery branch/PR: `Feature/MessagingOutboundCommands`, PR #536, remote head
-  `28e5797ff0029914bce024f63874afec6fed72a9`
+  `2142f5d6a1dc1a60d0afdc221f4e2362c98c251e`
 - Dependency/package gate: local consumer preparation is complete against Messaging `ade9728f9`,
   Payment `6458ec0d0`, and Reunion `113be42`; publication and generated platform sync remain
 - Main reconciliation: the previously reconciled base is now 137 commits behind live `origin/main`;
@@ -64,14 +64,9 @@ reference was added. The resolved SEC1 tech-debt entry has been deleted.
 
 ## Next Steps
 
-Blocked: Messaging producer PR #536 cannot enter the merge queue yet.
-
-Blocked by: explicit authorization to merge PR #536 into `main`.
-
-Unblock action: Tommy explicitly instructs `merge PR #536`.
-
-Resume when: that merge instruction is received; enqueue the reviewed head with `full-e2e`, then wait
-for its merge, package publication, and generated platform sync before delivering Payment producer
+Wait for Messaging producer PR #536's refreshed checks to become terminal and green at head
+`2142f5d6a`, confirm it is current with `origin/main` and still labelled `full-e2e`, then enqueue it.
+Wait for its merge, package publication, and generated platform sync before delivering Payment producer
 commit `6458ec0d0`. Reconcile
 this consumer branch with current `origin/main`, consume those normal-feed packages, rerun the build,
 carve, unit, integration, architecture, formatting, ownership, and plan-graph gates, then run the
@@ -131,8 +126,11 @@ incremental code review. Do not push, open a PR, or merge without further instru
 - Messaging PR #536's build, carve, unit, and integration checks are terminal and green against remote
   head `28e5797ff`; PR-level E2E jobs skipped as expected before queue admission.
 - PR #536 is current with `origin/main` and labelled `full-e2e` because it changes a public published-package API.
-- Queue admission was not performed because the available authorization covered pushing/opening the
-  producer PR but did not explicitly authorize merging it into `main`.
+- Tommy explicitly authorized merging PR #536 on 2026-08-13.
+- The naming follow-up `2142f5d6a` uses `RegisterCommand` for wire identity,
+  `RegisterCommandHandler` for receiver ownership, and `HandledCommandTypes` for receiver creation.
+  Focused build passed with 0 errors; Messaging tests passed 41/41 and Azure Service Bus tests 8/8;
+  formatting and diff gates passed. Incremental review is clean through `2142f5d6a`.
 - Package-only B2B Web Release build against the isolated exact Messaging, Payment, and Reunion
   artifact closure: passed, 0 errors and one existing `UserEntity` warning.
 - `dotnet build api/Concertable.B2B/Concertable.B2B.slnx --configuration Release --no-restore -m:1
