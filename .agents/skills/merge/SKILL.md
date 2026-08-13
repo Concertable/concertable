@@ -95,8 +95,8 @@ or queueing. Never push a checkpoint-only local tail to a queued, locked, merged
      `chore/platform-sync-*` has merged to main since the branch's base** (`git log --oneline
      origin/main ^HEAD | grep platform-sync`): the branch is pinned to an *older* platform version, so
      it builds/tests against a stale platform — the queue rebuilds on main but a real pin/shape drift
-     surfaces as a queue kick-out (or worse, a green merge that's actually stale). Update, rebuild, push,
-     then continue.
+     surfaces as a queue kick-out. Update, run the smallest affected local build, push, and require
+     exact-head PR CI before continuing.
 
 3. **Wait for the PR's own checks to reach a terminal state, then verify green.**
    - Poll `gh pr checks <n>` until **no** check is `pending`. Prefer the `Monitor` tool with an
@@ -232,12 +232,12 @@ or queueing. Never push a checkpoint-only local tail to a queued, locked, merged
    - **Red** → **do not walk away.** This is a breaking platform change surfacing at exactly the
      consumers that must migrate. Read the failing `build` log (`gh run view --job <id> --log`), find
      the broken consumer(s), and **migrate them IN the sync PR** — now legal, the version is on the
-     feed. Check out the sync branch, apply the fix, build `api/Concertable.slnx` against the new pins
-     to confirm **0 errors**, then push; auto-merge lands it once CI greens. (This is the sync PR
+     feed. Check out the sync branch, apply the fix, run the smallest builds covering every reported
+     consumer, then push; auto-merge lands it once exact-head CI greens. (This is the sync PR
      body's own instruction — the skill just guarantees someone actually does it instead of leaving it
-     red.) The build job may report only the first broken file; **build the whole `.slnx` locally**, a
-     namespace/shape move usually stranded several consumers, not one.
-     Checkpoint the red checks and broken consumers before editing, then the fix, full build,
+     red.) The build job may report only the first broken file; use the replacement PR CI build to
+     discover any additional consumers rather than starting a full local solution build.
+     Checkpoint the red checks and broken consumers before editing, then the fix, targeted builds,
      sync-branch push, replacement checks, and merge as each occurs. Work on the sync branch in its own
      checkout; never push the source plan's recovery commits to either PR.
    - **Close plan-managed delivery from the fresh docs worktree.** After publication and platform sync are

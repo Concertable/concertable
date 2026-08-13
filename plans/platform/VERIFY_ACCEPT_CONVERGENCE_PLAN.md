@@ -101,8 +101,9 @@ not a substitute for the `TryBook` idempotency guard.)
 
 ## Phases
 
-Each phase is independently shippable and ends green (build + affected unit/integration tests; see
-`plans/AGENTS.md`). Model changes end with `./initial-migrations.ps1` from `api/` (never additive).
+Each phase is independently shippable and ends with targeted local verification plus exact-head PR CI
+green (see `plans/AGENTS.md`). Model changes end with `./initial-migrations.ps1` from `api/` (never
+additive).
 
 ### ✅ Phase 1 — the join (THE fix; unblocks the flake) — DONE
 Landed as the durable join. Final design (deltas from the sketch above are deliberate — see the commit

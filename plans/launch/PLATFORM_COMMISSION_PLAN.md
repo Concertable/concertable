@@ -403,8 +403,9 @@ Start from updated `origin/main` after Phase 1b's platform sync.
 4. Add exact and deferred pricing DTOs, final takings review/attestation and fail-closed error mapping.
 5. Implement payer and artist disclosures in the manager SPAs.
 6. Re-scaffold the Concert model.
-7. Build the solution and all manager SPAs; run affected B2B and Payment unit/integration tests. This
-   phase changes payment behaviour, so the merge queue remains the E2E gate.
+7. Build the affected B2B/Payment projects and manager SPAs locally and run focused unit tests. Push
+   the checkpoint for authoritative full build/carve/unit/integration CI. This phase changes payment
+   behaviour, so the merge queue remains the E2E gate.
 8. Update this plan and launch trackers in the implementation commit.
 9. **Hard stop:** merge and own publish/platform-sync before removing legacy Payment APIs.
 
@@ -417,7 +418,8 @@ Start after Phase 2 and its platform sync are green.
 3. Rename remaining internal `PlatformFee` identifiers to percentage-commission language where that
    can be completed as one safe package cut-over; never discard actual accounting snapshots.
 4. Re-scaffold affected Payment models if required.
-5. Build and run affected Payment/B2B unit and integration tests.
+5. Run affected Payment/B2B builds and focused unit tests locally; require exact-head PR CI for the
+   complete build, carve, unit, and integration gate.
 6. Merge, publish and own the final platform-sync PR to green. Fix every consumer in that sync before
    considering the cut-over complete.
 7. Mark pricing transparency complete in `LAUNCH_ROADMAP.md` and `LAUNCH_CHECKLIST.md`.

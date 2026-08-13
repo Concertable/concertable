@@ -258,10 +258,10 @@ scenario.
 
 1. Merge current `origin/main` while the tree is clean, then re-run the SDK/support/proposal snapshot.
    If a newer preview/RC/GA is available, update the exact pin in its own green commit before review.
-2. Run `dotnet build api/Concertable.B2B/Concertable.B2B.slnx -c Release` and
-   `dotnet build api/Concertable.slnx -c Release` with 0 errors.
-3. Run all affected unit, architecture, and integration suites. Run package compatibility/standalone
-   carves proving net10 consumers remain independent.
+2. Run the B2B Release build and focused affected unit and architecture tests locally.
+3. Push the coherent checkpoint. Exact-head PR CI owns the full solution build, standalone carves,
+   package compatibility, and complete unit/integration matrices proving net10 consumers remain
+   independent.
 4. Run a full code review of `origin/main...HEAD`, fix every high-confidence finding, and re-run affected
    gates.
 5. Open one PR and require full merge-queue E2E. This change is not eligible for `skip-e2e` or
