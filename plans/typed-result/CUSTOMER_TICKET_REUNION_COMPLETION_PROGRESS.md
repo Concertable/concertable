@@ -3,11 +3,12 @@
 - Plan: `plans/typed-result/CUSTOMER_TICKET_REUNION_COMPLETION_PLAN.md`
 - Roadmap: `plans/typed-result/TYPED_RESULT_MIGRATION_ROADMAP.md`
 - Roadmap item: `typed-result/customer-ticket-reunion`
-- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Fix-typed-result-customer-ticket-reunion-completion`
-- Branch: `Fix/typed-result_customer-ticket-reunion-completion`
-- PR: [#540](https://github.com/Concertable/concertable/pull/540)
-- Dependency/package gates: Reunion `0.1.0-alpha.4` and platform `0.1.0-alpha.0.963` are published
-- Last reconciled: 2026-08-13 against `origin/main` `306f072af` and merged PR #475 `2b05ed110`
+- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Fix-typed-result-customer-ticket-validation-composition`
+- Branch: `Fix/typed-result_customer-ticket-validation-composition`
+- PR: pending
+- Dependency/package gates: corrected Reunion `0.1.0-alpha.5` packages are published and indexed;
+  platform `0.1.0-alpha.0.976` is published
+- Last reconciled: 2026-08-13 against `origin/main` `a2747a90f` and merged PR #540 `491890ec9`
 
 ## Current state
 
@@ -17,21 +18,27 @@ adapters passed repository nulls through, and the Concert module discarded its c
 Ticket purchase, checkout, and eligibility also expanded unambiguous Result branches into factories,
 while Payment success/error projection used terminal `Match` rather than `Map`/`MapError`.
 
-The correction is implemented and locally verified at implementation commit `f626ee680`. Repository
-contracts remain nullable;
-service/module contracts now return `Option<T>` through `ToOption()`. Ticket and Review consumers
-unwrap expected absence into their owning typed behavior, the Concert HTTP edge uses Reunion's Option
-terminal, the EF query receives cancellation, and direct Reunion package ownership is declared in each
-project whose source or public API uses it.
+PR #540 completed the Option-boundary correction and merged as `491890ec9`. The remaining Ticket
+follow-up is now isolated on a fresh branch from current `origin/main`: align Customer's Reunion package
+set on `0.1.0-alpha.5`, adopt the published direct ValidationResult composition API, and verify the
+consumer against the corrected package before the plan's terminal delivery gates.
 
 ## Completed milestones
 
 - PR #475 merged as `2b05ed110`; publication and platform-sync PR #479 were terminal green.
 - The post-merge audit identified the incomplete Option boundaries, Result composition ceremony, one
   dropped cancellation token, and missing direct Reunion package ownership.
+- PR #540 merged as `491890ec9`, delivering the Option boundaries, Result/payment cleanup,
+  cancellation propagation, direct package ownership, and focused coverage.
 
 ## Verification and review
 
+- Customer restore resolved `Reunion`, `Reunion.AspNetCore`, `Reunion.Errors`, and
+  `Reunion.Validation` `0.1.0-alpha.5` from NuGet. The focused Ticket Infrastructure Release build is
+  green with 0 errors, and Ticket unit tests are 33/33 green against that package set.
+- The direct validation composition preserves the existing missing-Concert and invalid-purchase/
+  checkout coverage. Package-version, resolved-assets, whitespace, and plan-graph inventories are
+  clean.
 - `dotnet build api/Concertable.slnx --configuration Release --no-restore`: 0 errors; existing
   UserEntity and generated E2E warnings only.
 - Affected unit suites: Concert 23/23, Ticket 33/33, Review 43/43.
@@ -60,17 +67,14 @@ project whose source or public API uses it.
 - The repository output-shape ambiguity exposed by `GetDtoAsync` is now recorded in
   `api/TECH_DEBT.md` as a cross-codebase investigation; PR #540 does not invent or apply that wider
   standard.
-- Reunion's missing direct `ValidationResult` composition surface is recorded at commit `0d10ca1` on
-  `Feature/validation-result-composition` in the Reunion worktree
-  `C:\Users\TommySeery\source\repos\Reunion.worktrees\Feature-validation-result-composition`.
-  Reunion PR [#9](https://github.com/tomjseery/Reunion/pull/9) merged as `3ab6a473d`, and
-  `Reunion.Validation` `0.1.0-alpha.4` is published and indexed on NuGet.org. The current Concertable
-  worktree's exploratory Option/Result composition edits can now be finalized against that exact
-  package without a consumer-local validation wrapper.
+- Reunion PR [#9](https://github.com/tomjseery/Reunion/pull/9) was reverted by
+  [#10](https://github.com/tomjseery/Reunion/pull/10). The corrected composition API merged in
+  [#11](https://github.com/tomjseery/Reunion/pull/11) as `02e01a8ed` and delegates ordinary fail-fast
+  composition directly to the inner `UnitResult<ValidationErrors>`. `Reunion`, `Reunion.AspNetCore`,
+  `Reunion.Errors`, and `Reunion.Validation` `0.1.0-alpha.5` are published and indexed on NuGet.org.
 
 ## Next Steps
 
-Resume PR #540 by updating Concertable to `Reunion.Validation` `0.1.0-alpha.4`, replacing the preserved
-exploratory validation carrier mechanics with the published direct `ValidationResult` composition
-surface, then rerun the affected build, unit, integration, package-clean, and review gates before
-merging.
+Commit and open the follow-up draft PR. After remote CI is green, run the affected integration,
+package-clean, mechanical inventory, and exact-commit review gates, then deliver the PR through merge,
+package publication, platform sync, and terminal docs closeout.

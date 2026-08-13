@@ -240,6 +240,21 @@ delegate is asynchronous. Do not insert unnecessary `await` statements merely to
 reconstruct the same carrier. Result and Option also support minimal LINQ query syntax backed by
 their fail-fast `Map` and `Bind`; use it only when it makes the chain clearer.
 
+Guard-style observation and fluent composition are both valid. Use `TryGetValue` when a simple early
+return is the clearest shape or the missing case has non-Result behavior such as an invariant
+exception. When Option absence immediately becomes an operation error and the present value continues
+through Result-producing work, prefer `OrFailure` followed by `Bind`/`BindAsync`. If the continuation
+is multi-statement, extract a private operation whose return type honestly distinguishes `MapAsync`
+(`Task<TNext>`) from `BindAsync` (`Task<Result<TNext, TError>>`).
+
+```csharp
+public Task<Result<Checkout, CheckoutError>> CheckoutAsync(int concertId) =>
+    concertModule.GetByIdAsync(concertId)
+        .OrFailure<Concert, CheckoutError>(new CheckoutError.ConcertNotFound(concertId))
+        .Bind(ValidateCheckout)
+        .MapAsync(CreateCheckoutAsync);
+```
+
 The null-coalescing operator works only on nullable operands and cannot be overloaded, so
 `option ?? fallback` does not compile and an implicit conversion cannot make it compile. If a
 framework boundary genuinely requires a nullable reference, convert explicitly at that edge:
@@ -392,9 +407,11 @@ Validators that produce field errors return `ValidationResult` from `Reunion.Val
 ValidationResult = Valid | Invalid(ValidationErrors)
 ```
 
-`ValidationResult` is distinct from `UnitResult<TError>`. Its invalid payload is always immutable,
-non-empty `ValidationErrors`, and its `Combine` operation accumulates independent failures while
-preserving field keys and message order. Do not flatten structured field errors into one string.
+`ValidationResult` is the validation-specific facade over `UnitResult<ValidationErrors>`. It fixes the
+invalid payload to immutable, non-empty `ValidationErrors`, gives the cases validation vocabulary,
+and adds `Combine` for accumulating independent failures while preserving field keys and message
+order. Its ordinary composition operations delegate to the inner UnitResult carrier and are
+fail-fast. Do not flatten structured field errors into one string.
 
 ```csharp
 ValidationResult validation = new[]
@@ -404,17 +421,27 @@ ValidationResult validation = new[]
 }.Combine();
 ```
 
-Validation does not replace the operation's domain error. Map it once at the owning operation
-boundary:
+Validation does not replace the operation's domain error. When validation is one step in a larger
+Result pipeline, use its direct composition surface and map it once at the owning operation boundary:
 
 ```csharp
-if (validation.TryGetFailure(
-    errors => new CreateUserError.Invalid(errors),
-    out var failure))
-{
-    return failure;
-}
+private Result<Concert, CheckoutError> ValidateCheckout(Concert concert, int quantity) =>
+    ticketValidator.CanPurchaseTickets(concert, quantity)
+        .Map<Concert, CheckoutError>(
+            () => concert,
+            errors => new CheckoutError.Invalid(errors));
 ```
+
+`Map`, `Bind`, their async variants, guard-style observation, and explicit conversion are all valid.
+Use direct `Map`/`Bind` when validation participates in a fluent pipeline, and `TryGetFailure` when a
+simple early-return guard is clearest. `ToResult` remains available when an explicit carrier conversion
+fits the call site, but it is not a prerequisite for composition. Complete all independent validation
+and `Combine` it before entering ordinary fail-fast composition.
+
+`ValidationResult` converts implicitly and losslessly to `UnitResult<ValidationErrors>` for assignments
+and method arguments. C# member lookup does not follow that conversion, so Reunion exposes the same
+ordinary composition surface directly on ValidationResult. Raw `ValidationErrors` never convert
+implicitly into a success or failure branch.
 
 The union's validation case preserves the payload in its definition:
 
