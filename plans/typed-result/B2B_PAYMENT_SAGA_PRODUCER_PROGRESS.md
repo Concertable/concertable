@@ -6,12 +6,12 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-typed-result_payment-financial-saga`
 - Branch: `Refactor/typed-result_payment-financial-saga`
 - PR: not opened
-- Base: `origin/main` `e10fd17fa20ee91b04d0a738275314312c73cd6b9`
-- Package gate: producer implementation authorized; publication not requested
+- Base reconciliation: `15de28fb8` includes current platform sync `1c88858f9`
+- Package gate: Messaging prerequisite is published and synced; Payment publication is delivery-authorized
 
 ## Current state
 
-All producer phases are implemented and verified at `5aaf13d769e6ddeea84e7b6d820215dfee223157`. Payment.Contracts owns additive capture,
+All producer phases are implemented through `6458ec0d0`. Payment.Contracts owns additive capture,
 deposit, refund, success, rejection, and deferred messages. Payment.Web handles commands without any
 B2B runtime reference. A Payment-owned journal persists intent before Stripe, commits terminal outcome
 plus outbox message together, replays terminal outcomes, and re-enters pending operations after a
@@ -26,18 +26,24 @@ the released `Reunion.AspNetCore` artifact
 `0.1.0-local.113be42` under `artifacts/reunion-113be42`. Temporary local source and version inputs are
 restored and are not part of the candidate.
 
-The exact producer packages are `Concertable.Payment.Contracts.0.1.0-alpha.0.947.nupkg` with
-SHA-256 `34D5AA954FE40FEF54759783C57240914FBA5F0286EB0C17103A39544775CFCB` and
-`Concertable.Payment.Client.0.1.0-alpha.0.947.nupkg` with SHA-256
-`3FB139300483AC9564F15D92578539E3712AF91D8C873FC9D803BAD5C172BB2C`. Both record source commit
-`5aaf13d769e6ddeea84e7b6d820215dfee223157` and are under `artifacts/payment-saga-5aaf13d`.
+The producer is reconciled with current main and platform `0.1.0-alpha.0.968`. It now consumes the
+released `Reunion` and `Reunion.Errors` `0.1.0-alpha.3` artifacts containing producer commit
+`113be42`; no Reunion extension was copied or recreated locally.
 
 ## Next Steps
 
-Copy the exact Payment and Reunion artifact closure to the B2B worktree and implement the consumer
-phase recorded in `plans/typed-result/B2B_PROGRESS.md`. Keep this producer branch unpushed and
-unpublished until the consumer is locally verified and a later delivery instruction authorizes the
-publish-first merge sequence.
+Blocked: required current-main Payment integration verification.
+
+Blocked by: after a successful fresh-container Docker data round-trip, four SQL fixtures timed out
+opening Docker's named pipe; the five tests that obtained a fixture passed and no Payment assertion
+failed. The local safety gate forbids retrying an environment-startup failure in this session.
+
+Unblock action: restart Docker Desktop or Windows in a fresh session, run `scripts/docker-health.ps1`,
+then run the Payment integration suite once. If all 9 tests pass, finish review, push/open the Payment
+producer PR, and merge it through the package publication and platform-sync gates.
+
+Resume when: Docker's fresh-container data round-trip is stable and the full Payment integration suite
+passes 9/9 on this reconciled head.
 
 ## Completed work
 
@@ -48,16 +54,21 @@ publish-first merge sequence.
   this commit.
 - Phase 4: exact package closure, standalone runtime carve, package-ownership inventory, and repository
   compatibility gates are complete.
+- Messaging PR #536 merged as `5c4dc3ddf`; its package publication and cumulative platform-sync PR
+  #541 are terminal and green.
+- Current main was reconciled in `15de28fb8`; Payment now uses released Reunion alpha.3.
 
 ## Verification
 
 - Focused saga/idempotency unit tests: 10/10.
-- Full Payment unit suite: 249/249.
+- Full Payment unit suite on the reconciled head: 253/253.
+- Payment E2E helper unit suite: 5/5.
 - Full Payment integration suite: 9/9, including SQL persistence through the regenerated migration.
 - Docker fresh-container HTTP data round-trip: green.
 - Payment Web Release build against exact Reunion `113be42`: 0 errors, 0 warnings.
 - Payment solution Release build against exact Reunion `113be42`: 0 errors.
-- Full API Release build: 0 errors; two existing generated nullable warnings in the B2B UI E2E project.
+- Reconciled Payment solution Release build: 0 errors, 0 warnings.
+- Full API Release build: 0 errors; four existing B2B/Customer nullable warnings.
 - Source-only Payment carve from `5aaf13d`: Web, Workers, and Client each build with 0 errors and 0
   warnings against package dependencies. The aggregate solution additionally contains repository-level
   AppHost, E2E helper, and integration-fixture project references and is not itself a standalone carve.
@@ -67,6 +78,8 @@ publish-first merge sequence.
 - Initial migrations re-scaffold: every unchanged context retained its ID; Payment regenerated with
   `FinancialOperations` and the unique nullable refund `OperationId` index.
 - Plan graph: 0 errors and 0 warnings; `git diff --check` green.
+- Current-session integration attempt: 5/9 passed; four fixtures failed during Testcontainers Docker
+  named-pipe startup before test execution. This is the sole remaining local delivery gate.
 
 ## Decisions and deviations
 
@@ -74,14 +87,12 @@ publish-first merge sequence.
   idempotency, and persistence stay inside Payment.
 - Scope is SEC1 accept/withdraw/cancel capture, deposit, and refund. Finish/settlement is outside this
   finding.
-- Normal Payment configuration still pins Reunion core alpha.1. The producer candidate is locally
-  verified against exact `113be42` artifacts and remains delivery-gated on their published successor;
-  no local feed or disposable package pin is committed.
+- Normal Payment configuration consumes the released Reunion alpha.3 family containing `113be42`.
 
 ## Downstream handoffs
 
 - Waiting ledger: `plans/typed-result/B2B_PROGRESS.md` on branch
   `Refactor/B2BTypedResultMigration` in worktree
   `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-B2BTypedResultMigration`.
-  Gate: exact locally packed Payment artifacts enable preparation; publication plus generated platform
-  sync enables final merge-ready revalidation.
+  Gate: a green Payment integration rerun enables the Payment producer merge; Payment publication plus
+  generated platform sync then enables final B2B merge-ready revalidation.
