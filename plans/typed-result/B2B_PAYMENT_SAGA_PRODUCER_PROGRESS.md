@@ -6,8 +6,8 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-typed-result_payment-financial-saga`
 - Branch: `Refactor/typed-result_payment-financial-saga`
 - PR: #544, `https://github.com/Concertable/concertable/pull/544`
-- Base reconciliation: `15de28fb8` includes current platform sync `1c88858f9`
-- Review watermark: `a26895d80`; runtime security review through `9f59b6da8`; no open findings
+- Base reconciliation: `64fc7f8e2` includes current main `2e6e0cc78`
+- Review watermark: `64fc7f8e2`; runtime security review through `9f59b6da8`; no open findings
 - Package gate: Messaging prerequisite is published and synced; Payment publication authorized
 
 ## Current state
@@ -52,6 +52,8 @@ Then merge through package publication and cumulative platform sync before resum
 - Tommy explicitly authorized pushing, opening, and merging the Payment producer on 2026-08-13.
 - Published work head `a26895d80` is verified equal across local, remote, and PR #544; `full-e2e` is
   applied because the branch adds published cross-service command/event contracts.
+- Current main was reconciled in `64fc7f8e2`; its remote-validation workflow/docs changes introduced
+  no Payment runtime change, and the guidance conflict preserves both policies.
 
 ## Verification
 
