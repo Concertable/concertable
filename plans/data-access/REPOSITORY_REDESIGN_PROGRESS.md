@@ -7,11 +7,11 @@
 - Branch: `Refactor/data-access_base-unify`
 - PR: PR-B #530 — https://github.com/Concertable/concertable/pull/530 (open). Scope: seam fix + composed repository facets + `IWriteRepository` rename, all this PR. (PR-A #522 merged; Customer IReadDbContext #526 merged.)
 - Dependency/package gates: PR-B is publish-first (ships `Concertable.DataAccess.*`) → on merge, publish + a `chore/platform-sync-*` PR rebuild every consumer against the new package. That sync PR is the real cross-consumer test.
-- Last reconciled: 2026-08-13 — full PR-B review is clean through `6914b9baf`; the sole finding was fixed and verified. Phase 5 delivery is next.
+- Last reconciled: 2026-08-13 — merging platform-sync `0.1.0-alpha.0.978` from current `origin/main` into the clean reviewed checkpoint. Post-merge focused gates and an incremental review are next.
 
 ## Current state
 
-PR-A (#522) and Customer IReadDbContext (#526) are merged + platform-sync green. **PR-B (#530): Phases 1–4 are locally complete, current `origin/main` is merged, the post-merge focused gates are green, and the full review is clean. Phase 5 delivery is next.** Shared `ReadRepository` and `WriteRepository` own read and write behavior once; the flat `Repository` facade composes both over the same tracked module context and contains only delegates. All three use explicit constructors.
+PR-A (#522) and Customer IReadDbContext (#526) are merged + platform-sync green. **PR-B (#530): Phases 1–4 are locally complete and the full review is clean through `6914b9baf`; the latest platform-sync main drift is merged in this commit and needs the focused gates plus incremental review before Phase 5.** Shared `ReadRepository` and `WriteRepository` own read and write behavior once; the flat `Repository` facade composes both over the same tracked module context and contains only delegates. All three use explicit constructors.
 
 Customer Concert grounds the context boundary: `ConcertModule` consumes only `IConcertReadRepository`; `ConcertReadRepository` directly inherits a read base and DI passes `ConcertReadDbContext`. Projection handlers separately use tracked `ConcertDbContext`. Combined repositories are tracked units of work and give one writable module-context instance to both composed facets; they do not hide a separate no-tracking context behind `IRepository`.
 
@@ -32,7 +32,7 @@ and consume the same feed. Publishing and committed service pins are unchanged.
 
 ## Next Steps
 
-Run Phase 5 delivery: publish the reviewed candidate to PR-B #530 with the plan push protocol, require exact-head PR CI green, then merge through `/merge` with `skip-e2e` (no positive trigger). Own `publish-packages` and the resulting `chore/platform-sync-*` PR to a green merge, then close out the plan from a fresh docs worktree.
+Re-run the repository-wide legacy-name content/path grep, `git diff --check`, the plan graph, and the focused DataAccess unit project after the platform-sync merge. Then incrementally review the commits after `6914b9baf`, address every actionable finding, and stop at the review boundary; Phase 5 delivery remains separate.
 
 ## Completed work
 
@@ -54,7 +54,7 @@ Run Phase 5 delivery: publish the reviewed candidate to PR-B #530 with the plan 
 
 ## Reviews
 
-Full PR-B `/review` (low/high-confidence threshold) covered `2dfe09cc9..6914b9baf` (20 commits) in `reviews/Refactor-data-access_base-unify.md`, including the security-sensitive workflow/package lens. One low native finding (DataAccess missing from `unit.ps1 list`/help) was fixed in `6914b9baf` and verified; no open findings remain.
+Full PR-B `/review` (low/high-confidence threshold) covered `2dfe09cc9..6914b9baf` (20 commits) in `reviews/Refactor-data-access_base-unify.md`, including the security-sensitive workflow/package lens. One low native finding (DataAccess missing from `unit.ps1 list`/help) was fixed in `6914b9baf` and verified; no open findings remain. The later platform-sync merge still needs an incremental review.
 
 ## Decisions, discoveries, blockers, and deviations
 
