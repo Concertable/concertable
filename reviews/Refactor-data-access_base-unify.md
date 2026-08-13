@@ -3,8 +3,8 @@
 > **This file is a work order, not a discussion.** Fix the open `[ ]` findings directly and report what
 > changed. Tick each `[x]` as you land it.
 
-**Reviewed up to commit:** `6914b9baf407596e36d17098e91470f9173f0ebd`  _(2026-08-13)_
-**Security-reviewed up to commit:** `6914b9baf407596e36d17098e91470f9173f0ebd`  _(2026-08-13)_
+**Reviewed up to commit:** `f133bbefbaeb582f56298237f18dbf91b495e368`  _(2026-08-13)_
+**Security-reviewed up to commit:** `f133bbefbaeb582f56298237f18dbf91b495e368`  _(2026-08-13)_
 
 > Range reviewed: `58e19d938..190674ea5` (1 commit — PR-B). Status legend: `[ ]` todo · `[x]` done · `[wontfix]`.
 
@@ -26,3 +26,7 @@ Security layer (Payment path in range → gate-flagged): the only Payment change
 > Range reviewed: `2dfe09cc9..6914b9baf` (20 commits). NAT1 was fixed in `6914b9baf`; no open findings remain.
 
 No additional issues found. Checked native correctness, security-sensitive workflow/package handling, microservice isolation, module boundaries, seeding, C# conventions, and test coverage of changed paths.
+
+## Incremental review — 2026-08-13 (current-main sync)
+
+No issues found. Reviewed `6914b9baf..f133bbefb`: the only upstream delta is the five service platform pins moving to `0.1.0-alpha.0.978`, plus the plan checkpoint carried by the merge.
