@@ -64,8 +64,7 @@ reference was added. The resolved SEC1 tech-debt entry has been deleted.
 
 ## Next Steps
 
-Wait for Messaging producer PR #536's final checks to become terminal and green at current-main head
-`7a0886e12`, confirm the `full-e2e` label, then enqueue it. Wait for its merge, package publication,
+Enqueue Messaging producer PR #536 at exact reviewed head `7a0886e12`. Wait for its merge, package publication,
 and generated platform sync before delivering Payment producer
 commit `6458ec0d0`. Reconcile
 this consumer branch with current `origin/main`, consume those normal-feed packages, rerun the build,
@@ -136,6 +135,8 @@ incremental code review. Do not push, open a PR, or merge without further instru
 - PR #536 was reconciled conflict-free with current `origin/main` in `7a0886e12`; the full API Release
   solution rebuild passed with 0 errors and four existing warnings. The remote head matches locally,
   is 0 commits behind main, and the reconciliation review is clean.
+- PR #536's final current-main build, carve, unit, and integration matrix is terminal and green; exact
+  local, remote, and PR heads match `7a0886e12`, merge state is clean, and `full-e2e` is applied.
 - Package-only B2B Web Release build against the isolated exact Messaging, Payment, and Reunion
   artifact closure: passed, 0 errors and one existing `UserEntity` warning.
 - `dotnet build api/Concertable.B2B/Concertable.B2B.slnx --configuration Release --no-restore -m:1
