@@ -8,7 +8,7 @@
 - PR: not opened
 - Base reconciliation: `15de28fb8` includes current platform sync `1c88858f9`
 - Review watermark: `9f59b6da8`; correctness and security review clean
-- Package gate: Messaging prerequisite is published and synced; Payment publication is delivery-authorized
+- Package gate: Messaging prerequisite is published and synced; Payment publication awaits explicit authorization
 
 ## Current state
 
@@ -33,10 +33,16 @@ released `Reunion` and `Reunion.Errors` `0.1.0-alpha.3` artifacts containing pro
 
 ## Next Steps
 
-Push the reviewed producer head and open its PR. Treat the PR's clean-host Payment integration job as
-the authoritative replacement for the local Docker-startup-blocked run; do not enqueue until that job
-and the rest of the required matrix are green. Then merge through the package publication and
-platform-sync gates before resuming the B2B consumer.
+Blocked: Payment producer publication.
+
+Blocked by: the original cut-over instruction withholds push, PR, and merge authorization. The later
+merge authorization applied to Messaging PR #536, which is now terminal, not this Payment branch.
+
+Unblock action: Tommy explicitly authorizes pushing, opening, and merging the Payment producer PR.
+Use its clean-host Payment integration job as the authoritative replacement for the local
+Docker-startup-blocked run and do not enqueue until the required matrix is green.
+
+Resume when: Payment producer publication is explicitly authorized.
 
 ## Completed work
 
