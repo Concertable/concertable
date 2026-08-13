@@ -23,7 +23,7 @@ existing HTTP, payment, validation, and background consistency behavior.
 2. [x] Convert the remaining Customer Concert/Ticket service and module lookups to `Option<T>`, carry
    cancellation through the Concert repository query, normalize Ticket Result construction and payment
    mapping, and update affected consumers, package ownership, and tests.
-3. [x] Complete the full solution, affected Customer unit/integration, standalone carve, mechanical
+3. [ ] Complete the full solution, affected Customer unit/integration, standalone carve, mechanical
    inventory, and review gates; deliver the correction PR through merge, publication, platform sync,
    and terminal docs closeout.
 

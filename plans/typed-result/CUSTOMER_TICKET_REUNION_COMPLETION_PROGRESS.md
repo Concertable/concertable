@@ -7,7 +7,7 @@
 - Branch: `Fix/typed-result_customer-ticket-reunion-completion`
 - PR: not opened
 - Dependency/package gates: none; Reunion `0.1.0-alpha.3` and platform `0.1.0-alpha.0.963` are published
-- Last reconciled: 2026-08-13 against `origin/main` `3a5df8b18` and merged PR #475 `2b05ed110`
+- Last reconciled: 2026-08-13 against `origin/main` `5c4dc3ddf` and merged PR #475 `2b05ed110`
 
 ## Current state
 
@@ -44,6 +44,9 @@ project whose source or public API uses it.
   forwarding in `ConcertModule` was not directly pinned. The fix adds focused Some/None and exact-token
   tests in `0dc5e62ac`; its Concert unit and full-solution gates are green. Incremental native,
   security, architecture, convention, and changed-path coverage review found no additional issues.
+- `origin/main` was merged at `d46a45ddd`; the incoming diff was confined to shared Messaging. The
+  exact reconciled candidate repeats the full-solution build at 0 errors and all 99 affected unit
+  tests green.
 
 ## Decisions, discoveries, blockers, and deviations
 
