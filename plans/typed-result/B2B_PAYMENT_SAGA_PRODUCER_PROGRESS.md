@@ -33,11 +33,10 @@ released `Reunion` and `Reunion.Errors` `0.1.0-alpha.3` artifacts containing pro
 
 ## Next Steps
 
-Reconcile the open PR's `DIRTY` state with current `origin/main`, rerun the smallest affected build and
-focused tests if the merge changes the Payment closure, then push the reconciled head. Use its exact-head
-PR CI as the authoritative full build, carve, unit, and integration gate. After CI and review are green,
-re-enqueue with `full-e2e`. Merge only after the queue E2E passes, then follow Payment package publication
-and cumulative platform sync before resuming B2B.
+Wait for PR #544 exact-head CI on the current-main-reconciled head; it is the authoritative full build,
+carve, unit, and integration gate. After CI and review are green, re-enqueue with `full-e2e`. Merge only
+after the queue E2E passes, then follow Payment package publication and cumulative platform sync before
+resuming B2B.
 
 ## Completed work
 
@@ -68,6 +67,12 @@ and cumulative platform sync before resuming B2B.
   `e53a26611..da0fd3b6e`, and work/local/remote/PR head
   `da0fd3b6e18cf92d8acb729252609c67c21da1f3`. PR #544 remained open and reported `DIRTY`, so current-main
   reconciliation is the next action before authoritative exact-head CI and queue admission.
+- Current-main reconciliation merged 14 incoming commits as `5df6badee3eb63b779876c6067f617fa878c62ee`.
+  The sole conflict was the typed-result roadmap and was resolved by retaining both active workstreams;
+  the incoming range did not change the Payment closure. Starting remote/PR head
+  `6becaae50e51e8eb8147661bc75ac4d987425049`, pushed range `6becaae50..5df6badee`, and local/remote/PR
+  work head are verified equal at `5df6badee3eb63b779876c6067f617fa878c62ee`. PR #544 is open and
+  `BLOCKED` while its new exact-head checks run.
 
 ## Verification
 
