@@ -5,24 +5,25 @@
 - Roadmap item: `launch/manager-front-page`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-launch-dashboard-pickup-endpoints`
 - Branch: `Feature/launch_dashboard-pickup-endpoints`
-- PR: none yet — item-3 consumer PR [#554](https://github.com/Concertable/concertable/pull/554) merged 2026-08-13 (`2dfe09cc9`)
+- PR: draft producer PR [#557](https://github.com/Concertable/concertable/pull/557) — item-3 consumer PR [#554](https://github.com/Concertable/concertable/pull/554) merged 2026-08-13 (`2dfe09cc9`)
 
 Captured during Phase A implementation. These supersede the original plan
 where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_PAGE_PLAN.md).
 
 ## Next Steps
 
-**Immediate action:** Commit the completed Payment reporting producer slice with this ledger, push the work head, verify
-the remote head, and open a draft PR. Then checkpoint the PR identity and make clean code review plus exact-head PR CI
-the next gate. After this additive package producer merges, publishes, and platform-sync lands, resume from a fresh B2B
-consumer worktree and implement the overview, canonical-resource list, chart, review, inbox, activity, and settlement
-endpoints against that published baseline. Activity stays last because it needs its owned persistence model and an
-`api/initial-migrations.ps1` re-scaffold. Keep every remaining dashboard section in scope; Phase A.8 UX freeze remains
-an independent later item.
+**Immediate action:** Run `/review` against draft producer PR [#557](https://github.com/Concertable/concertable/pull/557)
+at implementation head `0d37bfa7a`, address every actionable finding in this worktree, push the reviewed head, and require
+exact-head PR CI to pass. Do not merge until explicitly requested. After this additive package producer merges, publishes,
+and platform-sync lands, close this worktree and resume from a fresh B2B consumer worktree to implement the overview,
+canonical-resource list, chart, review, inbox, activity, and settlement endpoints against that published baseline.
+Activity stays last because it needs its owned persistence model and an `api/initial-migrations.ps1` re-scaffold. Keep
+every remaining dashboard section in scope; Phase A.8 UX freeze remains an independent later item.
 
 ## Current producer slice
 
-- The producer implementation and focused tests are completed in this commit.
+- Producer implementation commit `0d37bfa7a` is pushed and is the verified head of draft PR
+  [#557](https://github.com/Concertable/concertable/pull/557); PR CI is running and review is the next gate.
 - Payment now owns agnostic reporting contracts for monthly ticket revenue, monthly settlement payouts, and recent
   settlements. Each aggregate materialises once in `TransactionRepository`; B2B will enrich opaque booking and owner
   identifiers after the published-client gate.
