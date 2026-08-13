@@ -27,14 +27,14 @@ the released `Reunion.AspNetCore` artifact
 `0.1.0-local.113be42` under `artifacts/reunion-113be42`. Temporary local source and version inputs are
 restored and are not part of the candidate.
 
-The producer is reconciled with current main and platform `0.1.0-alpha.0.968`. It now consumes the
+The producer is reconciled with current main and platform `0.1.0-alpha.0.971`. It now consumes the
 released `Reunion` and `Reunion.Errors` `0.1.0-alpha.3` artifacts containing producer commit
 `113be42`; no Reunion extension was copied or recreated locally.
 
 ## Next Steps
 
-Wait for PR #544 exact-head CI on the current-main-reconciled head; it is the authoritative full build,
-carve, unit, and integration gate. After CI and review are green, re-enqueue with `full-e2e`. Merge only
+Wait for PR #544 exact-head CI on `aa0d193269d78de59da65a8a6899c413aae3ebd9`; it is the authoritative
+full build, carve, unit, and integration gate. After CI is green, re-enqueue with `full-e2e`. Merge only
 after the queue E2E passes, then follow Payment package publication and cumulative platform sync before
 resuming B2B.
 
@@ -73,6 +73,12 @@ resuming B2B.
   `6becaae50e51e8eb8147661bc75ac4d987425049`, pushed range `6becaae50..5df6badee`, and local/remote/PR
   work head are verified equal at `5df6badee3eb63b779876c6067f617fa878c62ee`. PR #544 is open and
   `BLOCKED` while its new exact-head checks run.
+- Exact-head CI run `31714654610` completed green across the full solution build, every service carve,
+  and the complete unit and integration matrices at `dacdff75dc64b1bcedac45922411f5792cb572ff`.
+- Current main and cumulative platform sync `0.1.0-alpha.0.971` were reconciled in
+  `aa0d193269d78de59da65a8a6899c413aae3ebd9`. Starting remote/PR head
+  `dacdff75dc64b1bcedac45922411f5792cb572ff`, pushed range `dacdff75d..aa0d1932`, and local, remote,
+  and PR work heads are verified equal at `aa0d193269d78de59da65a8a6899c413aae3ebd9`.
 
 ## Verification
 
@@ -96,6 +102,8 @@ resuming B2B.
 - Regression fix focused Payment service/adapter unit slice: 58/58.
 - Financial-operation topology unit test: 1/1.
 - Regression fix Payment AppHost build: 0 errors, 0 warnings.
+- Current-platform Payment AppHost build at platform `0.1.0-alpha.0.971`: 0 errors, 0 warnings.
+- Current-platform focused retry/idempotency unit slice: 49/49.
 - Regression fix scoped Payment format and `git diff --check`: green. The solution-wide format command
   still reports pre-existing Shared Kernel whitespace and B2B namespace findings outside this change.
 - Incremental correctness, architecture, security, and test-coverage review over
@@ -120,5 +128,5 @@ resuming B2B.
 - Waiting ledger: `plans/typed-result/B2B_PROGRESS.md` on branch
   `Refactor/B2BTypedResultMigration` in worktree
   `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-B2BTypedResultMigration`.
-  Gate: a green Payment integration rerun enables the Payment producer merge; Payment publication plus
-  generated platform sync then enables final B2B merge-ready revalidation.
+  Gate: PR #544 exact-head CI and merge-queue E2E must pass; Payment publication plus generated platform
+  sync then enables final B2B merge-ready revalidation.
