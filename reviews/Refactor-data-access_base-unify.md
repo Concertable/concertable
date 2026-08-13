@@ -3,8 +3,8 @@
 > **This file is a work order, not a discussion.** Fix the open `[ ]` findings directly and report what
 > changed. Tick each `[x]` as you land it.
 
-**Reviewed up to commit:** `190674ea520feca593ab9327b051325c87202054`  _(2026-08-12)_
-**Security-reviewed up to commit:** `190674ea520feca593ab9327b051325c87202054`  _(2026-08-12)_
+**Reviewed up to commit:** `6914b9baf407596e36d17098e91470f9173f0ebd`  _(2026-08-13)_
+**Security-reviewed up to commit:** `6914b9baf407596e36d17098e91470f9173f0ebd`  _(2026-08-13)_
 
 > Range reviewed: `58e19d938..190674ea5` (1 commit — PR-B). Status legend: `[ ]` todo · `[x]` done · `[wontfix]`.
 
@@ -17,3 +17,12 @@ Layer 1 (native `code-reviewer`, medium effort) verified: (1) removing `AsNoTrac
 Security layer (Payment path in range → gate-flagged): the only Payment change is deleting a dead `ReadRepository<T>` alias. The diff has no auth/authz, credential, data-exposure, injection, or serialization surface — it's a repository-base refactor. Security-clean.
 
 > Environment note (not a code finding): the review agent hit a transient `C:` full-disk spike (0 bytes free) mid-run; `df` later showed ~30G free. The session has created several full worktrees — worth pruning the merged/stale ones.
+
+## Incremental review — 2026-08-13
+
+- [x] **NAT1 — LOW — native** — `scripts/unit.ps1:128`
+  The new DataAccess unit-test group is included in `run` but omitted from `list` and from the `run` help text, so the command no longer reports the complete inventory it executes. Add a DataAccess section and include it in the help summary.
+
+> Range reviewed: `2dfe09cc9..6914b9baf` (20 commits). NAT1 was fixed in `6914b9baf`; no open findings remain.
+
+No additional issues found. Checked native correctness, security-sensitive workflow/package handling, microservice isolation, module boundaries, seeding, C# conventions, and test coverage of changed paths.

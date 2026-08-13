@@ -7,11 +7,11 @@
 - Branch: `Refactor/data-access_base-unify`
 - PR: PR-B #530 — https://github.com/Concertable/concertable/pull/530 (open). Scope: seam fix + composed repository facets + `IWriteRepository` rename, all this PR. (PR-A #522 merged; Customer IReadDbContext #526 merged.)
 - Dependency/package gates: PR-B is publish-first (ships `Concertable.DataAccess.*`) → on merge, publish + a `chore/platform-sync-*` PR rebuild every consumer against the new package. That sync PR is the real cross-consumer test.
-- Last reconciled: 2026-08-13 — current `origin/main` is merged at `c143c15c6`; the repository grep/invariant gates and focused DataAccess tests are green. Full PR-B review is next.
+- Last reconciled: 2026-08-13 — full PR-B review is clean through `6914b9baf`; the sole finding was fixed and verified. Phase 5 delivery is next.
 
 ## Current state
 
-PR-A (#522) and Customer IReadDbContext (#526) are merged + platform-sync green. **PR-B (#530): Phases 1–4 are locally complete, current `origin/main` is merged, and the post-merge focused gates are green; full review is next.** Shared `ReadRepository` and `WriteRepository` own read and write behavior once; the flat `Repository` facade composes both over the same tracked module context and contains only delegates. All three use explicit constructors.
+PR-A (#522) and Customer IReadDbContext (#526) are merged + platform-sync green. **PR-B (#530): Phases 1–4 are locally complete, current `origin/main` is merged, the post-merge focused gates are green, and the full review is clean. Phase 5 delivery is next.** Shared `ReadRepository` and `WriteRepository` own read and write behavior once; the flat `Repository` facade composes both over the same tracked module context and contains only delegates. All three use explicit constructors.
 
 Customer Concert grounds the context boundary: `ConcertModule` consumes only `IConcertReadRepository`; `ConcertReadRepository` directly inherits a read base and DI passes `ConcertReadDbContext`. Projection handlers separately use tracked `ConcertDbContext`. Combined repositories are tracked units of work and give one writable module-context instance to both composed facets; they do not hide a separate no-tracking context behind `IRepository`.
 
@@ -32,7 +32,7 @@ and consume the same feed. Publishing and committed service pins are unchanged.
 
 ## Next Steps
 
-Run a full PR-B code review over the current `origin/main...HEAD` candidate. Address every actionable finding, update this ledger with the review state, and stop at the review boundary; Phase 5 delivery remains separate.
+Run Phase 5 delivery: publish the reviewed candidate to PR-B #530 with the plan push protocol, require exact-head PR CI green, then merge through `/merge` with `skip-e2e` (no positive trigger). Own `publish-packages` and the resulting `chore/platform-sync-*` PR to a green merge, then close out the plan from a fresh docs worktree.
 
 ## Completed work
 
@@ -46,6 +46,7 @@ Run a full PR-B code review over the current `origin/main...HEAD` candidate. Add
 ## Verification
 
 - Post-merge candidate `c143c15c6`: `git rev-list --count HEAD..origin/main` returned 0; repository-wide case-insensitive legacy-name content/path grep returned zero outside the plan/ledger historical allowlist; `git diff --check origin/main...HEAD` passed; plan graph reported 0 errors and 0 warnings; `Concertable.DataAccess.UnitTests` passed 4/4 in Release.
+- Review fix `6914b9baf`: `scripts/unit.ps1 list` reported the added DataAccess group and `git diff --check` passed.
 - Phase 3/4 candidate in this commit: local platform `0.1.0-local.1786642862582` packed 40/40 projects; Release solution build succeeded with 0 errors; 23/23 dynamically discovered unit projects passed (1,075 tests); 16/16 dynamically discovered integration projects passed (407 tests). Every integration output contained exactly one `Concertable.DataAccess.Infrastructure.dll` at `0.1.0-local.1786642862582+dddff8c7902d7ebce546270f030ef36d4b56f20b`.
 - Focused DataAccess behavior/architecture tests passed 4/4. The whole-repository legacy-name content/path grep, plan graph, and `git diff --check` are green.
 - The initial Release restore exposed B2B's stale Reunion alpha-1 pin after the freshly packed Payment client required alpha 3. `integration-debug` traced it to upstream commit `7738f954e`; applying that exact one-line alignment made the full build and both test matrices green.
@@ -53,7 +54,7 @@ Run a full PR-B code review over the current `origin/main...HEAD` candidate. Add
 
 ## Reviews
 
-PR-B not yet reviewed.
+Full PR-B `/review` (low/high-confidence threshold) covered `2dfe09cc9..6914b9baf` (20 commits) in `reviews/Refactor-data-access_base-unify.md`, including the security-sensitive workflow/package lens. One low native finding (DataAccess missing from `unit.ps1 list`/help) was fixed in `6914b9baf` and verified; no open findings remain.
 
 ## Decisions, discoveries, blockers, and deviations
 
