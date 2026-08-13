@@ -17,7 +17,8 @@ adapters passed repository nulls through, and the Concert module discarded its c
 Ticket purchase, checkout, and eligibility also expanded unambiguous Result branches into factories,
 while Payment success/error projection used terminal `Match` rather than `Map`/`MapError`.
 
-The correction is implemented, locally verified, and uncommitted. Repository contracts remain nullable;
+The correction is implemented and locally verified at implementation commit `f626ee680`. Repository
+contracts remain nullable;
 service/module contracts now return `Option<T>` through `ToOption()`. Ticket and Review consumers
 unwrap expected absence into their owning typed behavior, the Concert HTTP edge uses Reunion's Option
 terminal, the EF query receives cancellation, and direct Reunion package ownership is declared in each
@@ -31,15 +32,17 @@ project whose source or public API uses it.
 
 ## Verification and review
 
-- `dotnet build api/Concertable.slnx --configuration Release --no-restore`: 0 errors; four existing
-  generated E2E nullable-context warnings.
-- Affected unit suites: Concert 21/21, Ticket 33/33, Review 43/43.
+- `dotnet build api/Concertable.slnx --configuration Release --no-restore`: 0 errors; existing
+  UserEntity and generated E2E warnings only.
+- Affected unit suites: Concert 23/23, Ticket 33/33, Review 43/43.
 - Customer integration workflow: 65/65 across all seven Customer projects; Concert 11/11, Review
   12/12, and Ticket 25/25.
 - Standalone Customer package-clean carve: 36 projects, 0 errors; one existing UserEntity warning.
 - Nullable service/module, Ticket Result factory/Match, duplicate package, whitespace, and plan-graph
   inventories are clean.
-- Review remains pending for the current uncommitted candidate.
+- Full review of `3a5df8b18..f626ee680` found one changed-path coverage gap: the cancellation-token
+  forwarding in `ConcertModule` was not directly pinned. The fix adds focused Some/None and exact-token
+  tests; its Concert unit and full-solution gates are green. Incremental review and commit remain.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -51,6 +54,6 @@ project whose source or public API uses it.
 
 ## Next Steps
 
-Commit the green correction with this plan checkpoint, complete the required native, security,
-architecture, convention, and changed-path coverage review, address every finding, then push and open
-the corrective PR.
+Commit the verified review fix with this ledger update, incrementally review the new commit through
+native, security, architecture, convention, and changed-path coverage lenses, delete the spent review
+work order when clean, then push and open the corrective PR.
