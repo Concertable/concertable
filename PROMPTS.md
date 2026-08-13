@@ -2,7 +2,7 @@
 
 - **Hard final-response gate for plan-managed work:** if a `_PROGRESS.md` ledger with non-terminal
   `## Next Steps` is owned by the current or explicitly targeted worktree, the response is incomplete
-  until it ends with the explained, collision-safe pointer below. Merely naming a dependency ledger
+  until it ends with the explained continuation pointer below. Merely naming a dependency ledger
   for reading, or editing its copy from another plan's worktree to register a return handoff, does not
   claim it. A ledger whose declared worktree already exists elsewhere is left to that owner unless
   the turn explicitly targets that worktree. “Implementation complete” is not “nothing remains” while review,
@@ -16,14 +16,12 @@
 - For **non-plan** work, make the prompt self-contained for zero context: name the branch or PR,
   relevant working files, and exact next action.
 - For **plan-managed** work, introduce each handoff with one `Why:` line derived from the first
-  paragraph of the ledger's current `## Next Steps`, then state that the continuation must run only if
-  no agent or session is already working in the declared worktree. This makes the purpose and collision
-  boundary explicit without duplicating the full operational procedure. Then end with the paste-ready
+  paragraph of the ledger's current `## Next Steps`. This makes the purpose explicit without
+  duplicating the full operational procedure. Then end with the paste-ready
   prompt, which is ONLY the pointer — an opener line then the read line:
 
   ```text
   Why: `<LEDGER>_PROGRESS.md` owns unfinished work from this turn: <short next-action reason>
-  Only run this continuation if no agent or session is already working in `<declared-worktree>`.
   ```
 
   ```
@@ -32,10 +30,11 @@
   ```
 
   Nothing follows the pointer. The final-response shape is therefore a result summary, the exact
-  `Why:` and collision-warning lines, then the exact two-line pointer as the final content.
+  `Why:` line, then the exact two-line pointer as the final content.
 
   The `<opener>` is `/worktree create <Type>/<epic>_<name>` when the plan's worktree doesn't exist yet — a
-  freshly-written plan, or after a clear with no live worktree — so implementation runs in an isolated
+  freshly-written plan, after a clear with no live worktree, or normal continuation after a prior PR's
+  worktree was removed — so implementation runs in an isolated
   worktree, never the main checkout; it's `cd <absolute-worktree-path>` once that worktree exists. Nothing
   else plan-specific goes in the prompt — no branch to verify, checkpoints, gates, commands, or next action;
   every such specific lives in the ledger (its header + `## Next Steps`), so the prompt can't drift.

@@ -1,6 +1,7 @@
 using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
 using Aspire.Hosting.Testing;
+using Concertable.Auth.Hosting;
 using Concertable.Customer.Hosting;
 using Concertable.Search.E2ETests.Helpers;
 
@@ -8,7 +9,7 @@ namespace Concertable.Customer.E2ETests;
 
 internal static class DistributedApplicationBuilderExtensions
 {
-    public static IDistributedApplicationTestingBuilder AddCustomerE2E(
+    public static IDistributedApplicationTestingBuilder AddE2EStack(
         this IDistributedApplicationTestingBuilder builder,
         string customerApiBaseUrl,
         string searchApiBaseUrl,
@@ -17,8 +18,8 @@ internal static class DistributedApplicationBuilderExtensions
         StripeCustomerResolver stripeCustomers)
     {
         builder.PinAuthService(authBaseUrl);
-        builder.PinAuthCustomerApi(customerApiBaseUrl);
-        builder.PinCustomerWeb(customerApiBaseUrl, authBaseUrl, paymentBaseUrl);
+        builder.PinAuthApi(customerApiBaseUrl);
+        builder.PinWeb(customerApiBaseUrl, authBaseUrl, paymentBaseUrl);
         builder.AddSearchService(searchApiBaseUrl, authBaseUrl);
         builder.PinPaymentWeb(paymentBaseUrl, authBaseUrl, stripeCustomers);
         builder.PinPaymentWorkers(stripeCustomers);
@@ -27,7 +28,7 @@ internal static class DistributedApplicationBuilderExtensions
         return builder;
     }
 
-    private static void PinAuthCustomerApi(
+    private static void PinAuthApi(
         this IDistributedApplicationTestingBuilder builder,
         string customerApiBaseUrl)
     {
@@ -41,7 +42,7 @@ internal static class DistributedApplicationBuilderExtensions
         }));
     }
 
-    private static void PinCustomerWeb(
+    private static void PinWeb(
         this IDistributedApplicationTestingBuilder builder,
         string customerApiBaseUrl,
         string authBaseUrl,
@@ -57,7 +58,7 @@ internal static class DistributedApplicationBuilderExtensions
             context.EnvironmentVariables["ASPNETCORE_URLS"] = customerApiBaseUrl;
             context.EnvironmentVariables["Auth__Authority"] = authBaseUrl;
             context.EnvironmentVariables["services__payment-web__https__0"] = paymentBaseUrl;
-            context.EnvironmentVariables["ServiceAuth__ClientSecret"] = Concertable.E2ETests.DistributedApplicationBuilderExtensions.CustomerServiceAuthSecret;
+            context.EnvironmentVariables["ServiceAuth__ClientSecret"] = Concertable.Testing.E2E.DistributedApplicationBuilderExtensions.CustomerServiceAuthSecret;
         }));
     }
 }

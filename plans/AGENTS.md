@@ -11,8 +11,9 @@ PROGRESS**.
 **Folder = roadmap/plan.** Each epic gets a folder under `plans/`; its roadmap and every plan it spins
 off live inside it (`plans/<epic>/<EPIC>_ROADMAP.md`, `plans/<epic>/<NAME>_PLAN.md` + `<NAME>_PROGRESS.md`).
 Standing reference/RFC docs keep a bare stem (no suffix). The `plans/` hub (this file) and `agents/`
-playbooks stay at the top. A plan's **worktree/branch is named `<Type>/<epic>_<name>`** to match its
-`_PROGRESS` stem, so branch, plan, and ledger share one identity.
+playbooks stay at the top. A plan's ledger owns its logical workstream across delivery PRs. Its current
+worktree/branch is temporary execution state, normally named `<Type>/<epic>_<name>` and safe to
+recreate from `origin/main` after the prior PR's worktree is removed.
 
 Git history is the archive; a finished plan kept "for reference" is rot that misleads the next reader.
 This file carries the cross-cutting rules for *doing* the work; the root [`AGENTS.md`](../AGENTS.md)
@@ -53,6 +54,18 @@ not each need their own PR; keep coherent work together. Split only where a merg
 platform sync or runtime deployment must finish before the next work can build or run, and group all
 work possible on each side of that gate.
 
+## Plans outlive PR worktrees
+
+Every plan-managed PR must merge the current plan and progress ledger. A worktree owns one PR-sized
+delivery slice, not the plan's lifetime. Once the PR merges, run
+`./scripts/worktrees.ps1 close -Worktree <path> -PullRequest <n> -PlanManaged`, then create a fresh
+worktree from current `origin/main` if work remains.
+
+Never commit observations after a PR's merged head or retain its worktree as the only recovery copy.
+GitHub owns remote check/merge evidence until it is reconciled from the next continuation or
+`Docs/*_closeout` worktree. A superseded no-PR branch uses `scripts/worktrees.ps1 retire` with its exact
+head and a retirement-evidence commit already on `main`.
+
 ## Delivery gates do not automatically block implementation
 
 For work spanning branches, packages, or generated syncs, keep two dependency graphs: what must exist
@@ -72,10 +85,10 @@ ledger and surfaces its resume prompt when the gate opens. Full mechanics:
 
 ## An actionable non-terminal plan handoff must end with its exact continuation pointer
 
-If a `_PROGRESS.md` ledger with actionable non-terminal `## Next Steps` is explicitly named by path in
-the user request or edited during the turn, the final response must end with the exact two-line plan
-pointer from [`../PROMPTS.md`](../PROMPTS.md). Read-only inspection of a dependency owner's ledger
-under the cross-plan blocker rule does not claim that owner's handoff. Local
+If a `_PROGRESS.md` ledger with actionable non-terminal `## Next Steps` is owned by the current or
+explicitly targeted worktree, the final response must end with the exact two-line plan pointer from
+[`../PROMPTS.md`](../PROMPTS.md). Reading or editing a foreign owner ledger during dependency or
+roadmap reconciliation does not claim that owner's handoff. Local
 implementation completion is not lifecycle completion while review, PR, merge, publication,
 dependency, or platform-sync work remains. A summary, a prose “next steps” sentence, or an offer to
 continue does not satisfy this gate. The exception is a registered in-flight owner wait under the

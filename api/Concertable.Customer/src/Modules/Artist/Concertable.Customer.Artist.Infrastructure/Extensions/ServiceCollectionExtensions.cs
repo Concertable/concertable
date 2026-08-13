@@ -21,10 +21,15 @@ public static class ServiceCollectionExtensions
                     sp.GetRequiredService<AuditInterceptor>(),
                     sp.GetRequiredService<IDomainEventDispatchInterceptor>()));
 
+        services.AddDbContext<ArtistReadDbContext>((sp, opts) =>
+            opts.UseSqlServer(configuration.GetConnectionString("CustomerDb"))
+                .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking));
+
         services.AddScoped<IUnitOfWork<ArtistDbContext>, UnitOfWork<ArtistDbContext>>();
         services.AddScoped<IUnitOfWorkBehavior, UnitOfWorkBehavior>();
 
-        services.AddScoped<IArtistReadRepository, ArtistReadRepository>();
+        services.AddScoped<IArtistReadRepository>(sp =>
+            new ArtistReadRepository(sp.GetRequiredService<ArtistReadDbContext>()));
         services.AddScoped<IArtistService, ArtistService>();
         services.AddScoped<IIntegrationEventHandler<ArtistChangedEvent>, ArtistProjectionHandler>();
         services.AddScoped<IIntegrationEventHandler<ArtistRatingUpdatedEvent>, ArtistRatingProjectionHandler>();

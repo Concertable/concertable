@@ -8,6 +8,57 @@
 
 ---
 
+## Launch triage — critical path, ownership & what to start now
+
+> Added 2026-08-11 from a full reconciliation of this checklist + [`LAUNCH_ROADMAP.md`](LAUNCH_ROADMAP.md)
+> against real git/PR/worktree state. This is the "what actually gates the launch" view: who owns each
+> strand, the elapsed-time long poles, and the order to start them. Detailed **code** status lives in the
+> roadmap; this section is the cross-cutting sequencing so the work can be picked up later.
+
+### The 4 long poles (everything else fits around these)
+
+| Long pole | Owner | Lead time | Unblocks |
+|---|---|---|---|
+| **Company registration** (name + domain → Companies House + PSC + bank + Corp Tax) | You | ~1 week | Stripe, business bank, insurance, HMRC — all need the legal entity to exist first |
+| **Solicitor engagement** (T&Cs cluster) | You + solicitor | **2–4 weeks** | Platform/venue/artist terms, privacy + cookie policy, refund/cancellation matrix, OSA sign-off, T&Cs page routes — one engagement clears the whole legal cluster |
+| **Stripe production approval** | You (needs entity) | 1–2 weeks | Hard launch gate — no real money without it |
+| **Production deployment + config/secrets** (🔴) | Dev (code) | **Weeks** | The app has no prod existence today; gates webhooks, prod Stripe config, status page, DB backups, running anywhere but localhost. Plan: [`../platform/CONFIG_AND_DEPLOYMENT_PLAN.md`](../platform/CONFIG_AND_DEPLOYMENT_PLAN.md) |
+
+The first three are **yours and calendar-bound** — no code substitutes for them, and if they're not
+started they *are* the slip. The fourth is the one big **code** long pole and is independent of the
+external clocks, so it parallelises.
+
+### Start these now (you) — ordered by lead time / unblocking power
+
+1. **Pay the ICO fee** (~10 min, £40–60) — Phase 2.
+2. **Confirm company name + register the domain** — Phase 0. Blocks everything downstream.
+3. **Register the Ltd** (Companies House + PSC + business bank + Corp Tax) — Phase 1.
+4. **Engage a marketplace/fintech solicitor** — Phase 3. The single biggest unblocker; start the 2–4-week clock early.
+5. **Submit the Stripe production application** once the entity exists — Phase 7.
+6. In parallel, the lower-urgency external clocks: **insurance broker** (Phase 4), **accountant**
+   (Phase 5), **HMRC platform-operator registration** (Phase 6), **email-on-domain + `support@`**
+   (Phase 9), **beta-cohort outreach** (Phase 10 — start early, warm intros).
+
+### Ownership legend for the phases below
+
+- **You — external clock:** Phases 0, 1, 3 (via solicitor), 4, 5, 6 (registration), 7 (Stripe activation), 9 (email/support), 10.
+- **You own, a dev can draft the doc now (no external gate):** lawful-basis matrix, retention schedule,
+  DSAR process, breach-notification process (Phase 2); test→live migration plan (Phase 7);
+  incident-response process (Phase 9); first-bookings playbook (Phase 10). **OSA pack already drafted →**
+  [`OSA_COMPLIANCE.md`](OSA_COMPLIANCE.md).
+- **Code — status (detail in [`LAUNCH_ROADMAP.md`](LAUNCH_ROADMAP.md)):**
+  - **Done:** DAC7 onboarding + payout gate · music-licence attestation · cancellation/escrow refund ·
+    per-contract VAT + self-billed invoices · booking agreement + e-sign · DoorSplit/Versus door-take ·
+    commission Phase 1 · Stripe Express + test-mode fee.
+  - **In-flight / blocked:** browser-storage consent (PR #482 — engineering done + green, stuck at merge
+    on the review-gate hook) · commission cut-over + payer pricing disclosure (PR #296 — held on the
+    Kernel error-convention) · manager-dashboard money slices (cross-service Payment work).
+  - **Ready + unowned, small:** DAC7 export script (low urgency — first run 31 Jan 2028) · DAC7 seller
+    notification email · OSA report button · marketing site + pricing page.
+  - **Big code long pole:** production deployment + config/secrets (🔴, above).
+
+---
+
 ## Phase 0 — Decisions that block other work
 
 - [x] **Revenue model** picked: one Payment-owned percentage of the final deal gross calculated by B2B. Payment charges gross + commission and pays the counterparty gross; all four deal types use the same rate. The shipped £10 fee is temporary and must be removed before launch.
@@ -38,8 +89,8 @@
 - [ ] ICO data protection fee paid (£40-60/yr depending on size, ~10 min online at https://ico.org.uk/for-organisations/data-protection-fee/).
 - [ ] **[LEGAL]** Privacy policy drafted (solicitor draft OR template + solicitor review).
 - [ ] **[LEGAL]** Cookie/storage policy drafted from the verified production inventory (often combined with privacy policy).
-- [ ] **[CODE]** Browser storage audited across anonymous, authenticated, and Stripe-checkout journeys; unnecessary storage removed and each retained first- or third-party technology classified by purpose, owner, duration, and consent requirement.
-- [ ] **[CODE] [LEGAL]** Consent UI retained or introduced only for actual non-exempt optional technology, and it must gate that technology's loading; remove the current generic consent machinery if the audit finds no such technology.
+- [x] **[CODE]** Browser storage audited across anonymous, authenticated, and Stripe-checkout journeys; unnecessary storage removed and each retained first- or third-party technology classified by purpose, owner, duration, and consent requirement. _(#482: audit + drift-guarded `storageManifest.ts` + `BROWSER_STORAGE.md`. Authenticated/Stripe-checkout journeys documented-not-observed by agreed scope — classified by purpose from library behaviour.)_
+- [ ] **[CODE] [LEGAL]** Consent UI retained or introduced only for actual non-exempt optional technology, and it must gate that technology's loading; remove the current generic consent machinery if the audit finds no such technology. _**[CODE] shipped** (#482): banner retained (analytics/marketing roadmapped) and its toggles now gate loading via `consentGate.ts`; Stripe + Maps made load-on-use. **[LEGAL] pending**: solicitor call on whether Maps needs a `functional` consent category, and final policy copy._
 - [ ] Lawful basis matrix documented per data category (internal doc).
 - [ ] Data retention schedule documented (internal doc).
 - [ ] DSAR (Data Subject Access Request) process documented (how requests come in, who handles, SLA).
@@ -140,10 +191,13 @@ Codebase audit confirmed: connected accounts created with `Type = "express"` in 
 
 **Owner: you. Total cost: time only. Total elapsed: 1 day.**
 
-Concertable has user-to-user messaging (artist↔venue). OSA 2023 applies.
+Concertable has user-to-user messaging (artist↔venue). OSA 2023 applies. Draft compliance pack (risk
+assessment, reporting route, takedown SLA, complaints/appeals, children's-access assessment):
+[`OSA_COMPLIANCE.md`](OSA_COMPLIANCE.md) — **[LEGAL]** solicitor to validate.
 
-- [ ] Risk assessment documented (B2B-only messaging = low risk, but document it).
-- [ ] Illegal-content reporting route in app (button or email).
+- [ ] Illegal-content risk assessment documented (B2B-only 1:1 messaging = low risk, but document it).
+- [ ] Children's-access assessment documented (draft: not likely accessed by children).
+- [ ] Illegal-content reporting route in app (report button + published email).
 - [ ] Illegal-content takedown SLA documented (internal).
 - [ ] Complaints / appeals process documented.
 
@@ -194,8 +248,8 @@ Don't tackle until B2B has traction.
 Code-level workflow/legal items are owned by `api/Concertable.B2B/Modules/Contract/LEGAL_REQUIREMENTS.md` — the single source; don't duplicate them here. Current state at a glance:
 
 - ✅ 3% PRS deduction — correctly absent: PRS is the venue's liability via TheMusicLicence (not the platform's), and a flat skim would double-charge an already-licensed venue. (A proper per-tenant pass-through for *non*-self-licensed venues is a separate, still-open item — `LEGAL_REQUIREMENTS.md` item 5, marked ABSENT.)
-- [ ] `holdsMusicLicence` self-attestation — outstanding (lives on `Tenant.Compliance`, not `Venue`).
-- [ ] `Cancelled`-stage escrow refund — outstanding; `EscrowEntity.Refund()` exists but B2B never calls it (not just "confirm" — it's unbuilt).
+- [x] ✅ `holdsMusicLicence` self-attestation — **shipped** on `Tenant.Compliance` (record-only bool; `Feature/launch_music-licence-attestation`).
+- [x] ✅ `Cancelled`-stage escrow refund — **shipped**: concert-cancel path (PR #76) + application cancellation (`Feature/ApplicationCancel`) both unwind escrow across all four contract types.
 
 ---
 

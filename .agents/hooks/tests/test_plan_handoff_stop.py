@@ -149,7 +149,7 @@ class PlanHandoffStopTests(unittest.TestCase):
         ]
         transcript.write_text("\n".join(json.dumps(record) for record in records), encoding="utf-8")
         return {
-            "cwd": str(Path(self.temp.name) / "unrelated-main-checkout"),
+            "cwd": str(self.root),
             "transcript_path": str(transcript),
             "last_assistant_message": message,
         }
@@ -253,9 +253,8 @@ class PlanHandoffStopTests(unittest.TestCase):
         self.write_ledger(next_steps_body)
         rendered_pointer = self.pointer().replace("`", "")
         message = (
-            f"Why: {self.ledger.name} owns unfinished work from this turn: {next_steps_body}\n\n"
-            "Only run this continuation if no agent or session is already working in "
-            f"{self.root}.\n\n{rendered_pointer}"
+            f"Why: {self.ledger.name} owns unfinished work from this turn: {next_steps_body}"
+            f"\n\n{rendered_pointer}"
         )
         result = evaluate(self.input_with_codex_transcript(message))
         self.assertEqual({}, result)
@@ -282,14 +281,13 @@ class PlanHandoffStopTests(unittest.TestCase):
         result = evaluate(self.input_with_codex_transcript(rendered_handoff))
         self.assertEqual({}, result)
 
-    def test_bare_pointer_does_not_pass_without_reason_and_collision_warning(self):
+    def test_bare_pointer_does_not_pass_without_reason(self):
         self.write_ledger("Open the PR after review.")
         result = evaluate(
             self.input_with_codex_transcript(f"```text\n{self.pointer()}\n```")
         )
         self.assertEqual("block", result["decision"])
         self.assertIn("Why:", result["reason"])
-        self.assertIn("Only run this continuation if no agent or session", result["reason"])
 
     def test_paraphrased_next_steps_does_not_pass(self):
         self.write_ledger("Run the repository code-review workflow, then open the PR.")
@@ -451,6 +449,12 @@ class PlanHandoffStopTests(unittest.TestCase):
             next_steps(active.read_text(encoding="utf-8")),
         )
         data["last_assistant_message"] = f"{blocker}\n\n{active_handoff}"
+        self.assertEqual({}, evaluate(data))
+
+        data["last_assistant_message"] = active_handoff
+        rejection = evaluate(data)
+        self.assertEqual("block", rejection["decision"])
+        data["last_assistant_message"] = rejection["reason"]
         self.assertEqual({}, evaluate(data))
 
     def test_legacy_blocker_requires_structured_contract(self):
@@ -636,6 +640,30 @@ class PlanHandoffStopTests(unittest.TestCase):
         )
         self.assertNotIn(alternate_ledger, transcript_ledgers(records, alternate_root))
 
+    def test_cross_worktree_mutation_does_not_claim_foreign_ledger(self):
+        foreign_root = (Path(self.temp.name) / "foreign-worktree").resolve()
+        foreign_ledger = self.write_plan_pair(
+            foreign_root,
+            "Open the foreign PR.",
+            foreign_root,
+            branch="Feature/foreign",
+        )
+        records = [
+            {
+                "type": "response_item",
+                "payload": {
+                    "type": "custom_tool_call",
+                    "name": "exec",
+                    "input": (
+                        f'const patch = "*** Begin Patch\\n*** Update File: {foreign_ledger}'
+                        '\\n*** End Patch"; await tools.apply_patch(patch);'
+                    ),
+                },
+            }
+        ]
+
+        self.assertEqual(set(), transcript_ledgers(records, self.root))
+
     def test_structured_tool_workdir_resolves_relative_reference(self):
         self.write_ledger("Open the owner PR.")
         records = [
@@ -666,7 +694,8 @@ class PlanHandoffStopTests(unittest.TestCase):
                     "name": "exec",
                     "input": (
                         f'const patch = "*** Begin Patch\\n*** Update File: {self.ledger}'
-                        '\\n*** End Patch"; await tools.apply_patch(patch);'
+                        '\\n*** End Patch"; await tools.apply_patch(patch); '
+                        f'const options = {{workdir: "{self.root}"}};'
                     ),
                 },
             }
@@ -726,7 +755,8 @@ class PlanHandoffStopTests(unittest.TestCase):
                     "name": "exec",
                     "input": (
                         f'const patch = "*** Begin Patch\\n*** Update File: {path}'
-                        '\\n*** End Patch"; await tools.apply_patch(patch);'
+                        '\\n*** End Patch"; await tools.apply_patch(patch); '
+                        f'const options = {{workdir: "{path.parents[2]}"}};'
                     ),
                 },
             }

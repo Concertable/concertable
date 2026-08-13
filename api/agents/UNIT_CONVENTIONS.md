@@ -50,7 +50,7 @@ source of truth). Never a silently-suppressing exclusion list that can rot.
 ## Naming
 
 `Method_Scenario_ExpectedBehaviour` — `Apply_RegisteredSupplier_DecomposesInclusiveGross`,
-`CalculateArtistShare_ReturnsCorrectAmount`. The scenario segment names the input state; the last
+`Create_ArtistDoorPercentOutsideRange_ThrowsDomainException`. The scenario segment names the input state; the last
 segment names the observable outcome. (Some older tests use the terser `Method_ShouldXxx` — prefer the
 three-part form for new tests.)
 
@@ -71,7 +71,7 @@ Shouldly too is an open call — codify it here once decided.)*
 ## Grouping a large test class
 
 When one test class covers several methods of a SUT, divide it into `#region`s named for the **method
-under test** (`#region Apply`, `#region CalculateArtistShare`). A cluster that isn't a single method
+under test** (`#region Apply`, `#region Create`). A cluster that isn't a single method
 names the behaviour instead (`#region Late capture compensation`). This is the established pattern
 across the suite. Regioning is for navigation, not a licence to let a class sprawl — when it outgrows
 comfortable regioning, that's the cue to split it (by SUT method, into separate files), not to pile on

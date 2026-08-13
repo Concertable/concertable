@@ -33,6 +33,7 @@ merge it through `/merge-docs` without waiting for another instruction, keeping 
 **Doc locality — a guidance/architecture doc lives at the lowest node that fully contains its concern:** single-service → that service's own folder (thin, inheriting root + `api/` upward, never restating — e.g. [`api/Concertable.Payment/AGENTS.md`](./api/Concertable.Payment/AGENTS.md)); cross-service or orchestration → root. Create one only where genuine service-specific content exists.
 
 - **Backend (.NET, `api/`)** — seeding, migrations, DTOs, module rules, C# conventions: [`api/AGENTS.md`](./api/AGENTS.md).
+- **Backend Result pattern** — Result, Option, typed errors, validation, construction, composition, and transport terminals: [`api/agents/RESULT_PATTERN.md`](./api/agents/RESULT_PATTERN.md).
 - **Design patterns the codebase commits to** (keyed strategy resolvers, and the anti-patterns they replace — branching on `DealType` in agnostic code, service location, throwaway DTOs): [`api/agents/CODE_PATTERNS.md`](./api/agents/CODE_PATTERNS.md). Read it before adding any rule that varies by a closed key.
 - **Web SPA (`app/web/`)** — [`app/web/AGENTS.md`](./app/web/AGENTS.md).
 - **Customer cross-platform core (`app/customer/shared`, npm package `@concertable/customer`, exported as `@concertable/customer/shared/*`)** — consumed ONLY by the customer web + mobile apps: [`app/customer/shared/AGENTS.md`](./app/customer/shared/AGENTS.md).
@@ -225,7 +226,7 @@ Plans are working docs for unfinished work, **not** an archive — git history i
 
 **Opening a `plans/*.md` to work from obliges you to read [`plans/AGENTS.md`](./plans/AGENTS.md) in the same breath** — phases, verification gates, and when to run E2E live there, and the plan's own prose is not a substitute for them. Reading only the plan is how its rules get skipped.
 
-The convention is **ROADMAP → PLAN → PROGRESS**, folder = roadmap/plan: an epic tracker at `plans/<epic>/<EPIC>_ROADMAP.md` spins off plans at `plans/<epic>/<NAME>_PLAN.md`, each with a same-directory `<NAME>_PROGRESS.md` companion and a worktree/branch named `<Type>/<epic>_<name>` to match. The plan holds the design and outstanding phases; the progress ledger is a compact rolling snapshot of the current operational truth, not an append-only history. Keep both current throughout the work. Legacy plans without a ledger remain valid: reconstruct them from the plan and repository evidence, then create the ledger before recording further progress. Full rules: [`plans/AGENTS.md`](./plans/AGENTS.md) "Companion progress ledger."
+The convention is **ROADMAP → PLAN → PROGRESS**, folder = roadmap/plan: an epic tracker at `plans/<epic>/<EPIC>_ROADMAP.md` spins off plans at `plans/<epic>/<NAME>_PLAN.md`, each with a same-directory `<NAME>_PROGRESS.md` companion. Plans and ledgers live across delivery PRs on `main`; worktrees and branches are disposable PR-sized execution state. The plan holds the design and outstanding phases; the progress ledger is a compact rolling snapshot of the current operational truth, not an append-only history. Keep both current throughout the work. Legacy plans without a ledger remain valid: reconstruct them from the plan and repository evidence, then create the ledger before recording further progress. Full rules: [`plans/AGENTS.md`](./plans/AGENTS.md) "Companion progress ledger."
 
 - **Cross-plan blockers are two-way handoffs.** The blocked ledger names the owning ledger and exact
   gate; the owning ledger lists the blocked dependent. When the gate opens, the owner updates the
@@ -234,9 +235,17 @@ The convention is **ROADMAP → PLAN → PROGRESS**, folder = roadmap/plan: an e
   blocker, its owner, the action that removes it, and the evidence that makes resumption valid.
   Dispatch the resolver or give Tommy the external action; only surface the waiting plan after the
   gate opens.
-- **Keep the plan and its `_PROGRESS.md` companion until the entire lifecycle is terminal — not merely until the final local phase is committed and verified.** They remain the recovery anchor through every required review/fix, PR/check/merge, publication, dependency, and platform-sync gate. When the source PR merges, move that recovery state to a clean `Docs/*_closeout` worktree and delete the feature worktree immediately. Record the final gate outcome there, then delete both artifacts together and land the close-out through `/merge-docs`. If no later delivery or package gate exists, the final phase commit may close them out.
+- **Keep the plan and its `_PROGRESS.md` companion until the entire lifecycle is terminal — not merely until the final local phase is committed and verified.** Every plan-managed PR includes their current state, so `main` is always the recovery anchor. Once that PR merges, remove its worktree with `./scripts/worktrees.ps1 close -Worktree <path> -PullRequest <n> -PlanManaged`. Continue from a fresh worktree based on current `origin/main`; use a `Docs/*_closeout` worktree for final remote-gate evidence and deletion of both artifacts.
 - A plan **superseded** by a newer plan, or describing a design that was **rejected**, is deleted the moment that's decided — don't leave a tombstone.
 - A **partially-done** plan stays, but strike/check off the sections that shipped (in the same commit as the work) so what remains is only the outstanding work.
+
+## Worktree cleanup is repository automation, not an AI audit
+
+Use `./scripts/worktrees.ps1 audit` for a read-only inventory. It fetches once, queries PRs once, and
+classifies registered worktrees with Git evidence; it never deletes. Use `close` only with the exact
+merged PR, adding `-PlanManaged` for plan work. Use `retire` only for a superseded no-PR branch after
+the retirement decision is committed on `main`. The commands refuse dirty, detached, mismatched,
+post-PR, case-colliding, persistent, and missing-ledger states. Routine cleanup needs no AI or schedule.
 
 ## Throwaway working markdown — in the repo, then deleted
 
