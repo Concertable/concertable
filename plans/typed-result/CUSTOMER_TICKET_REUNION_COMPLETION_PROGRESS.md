@@ -63,5 +63,7 @@ project whose source or public API uses it.
 
 ## Next Steps
 
-Land PR #540 through the merge workflow, follow package publication and platform sync to terminal
-green, then close the roadmap item and delete the plan pair through the docs closeout workflow.
+Complete the cross-codebase repository output-shape investigation as docs-only work on this branch,
+then review all commits added after the last clean review and push the reviewed head to PR #540. Land
+it through the merge workflow, follow package publication and platform sync to terminal green, then
+close the roadmap item and delete the plan pair through the docs closeout workflow.
