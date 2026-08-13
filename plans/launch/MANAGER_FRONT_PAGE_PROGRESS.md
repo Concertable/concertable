@@ -3,18 +3,24 @@
 - Plan: `plans/launch/MANAGER_FRONT_PAGE_PLAN.md`
 - Roadmap: `plans/launch/LAUNCH_ROADMAP.md`
 - Roadmap item: `launch/manager-front-page`
-- Worktree: `C:\Users\TommySeery\source\repos\Concertable`
-- Branch: `Feature/launch_dashboard-accepted-checkout`
-- PR: [#414](https://github.com/Concertable/concertable/pull/414)
+- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-launch-dashboard-mtd-payments`
+- Branch: `Feature/launch_dashboard-mtd-payments`
+- PR: not opened
 
 Captured during Phase A implementation. These supersede the original plan
 where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_PAGE_PLAN.md).
 
 ## Next Steps
 
-**Immediate action:** wait for #414's replacement PR checks on pushed head `35f63ea30`, then enqueue
-with `full-e2e` because the computed KPI changes user-visible API behaviour. Follow the merge, package
-publication, and platform-sync gates to terminal state before starting the next implementation slice.
+**Immediate action:** commit the coherent Payment producer checkpoint, merge the six current `origin/main`
+commits that introduced remote-first validation, rerun the Payment build + focused unit tests, then push and
+open a draft producer PR. Let exact-head PR CI own the full solution build, Payment carve, complete unit matrix,
+and integration matrix. Review the branch while CI runs; when both are clean, mark it ready and wait for explicit
+merge authorization. After merge, follow package publication and platform sync. Once the new
+`Concertable.Payment.Client` version is available on `main`, create a fresh B2B consumer PR that constructs the
+UTC month-to-date `DateRange`, calls both operations with `ITenantContext.GetTenantId()`, replaces the two zero
+KPI stubs, and removes their TODOs. Do not consume the client source from this producer branch: B2B compiles
+against the published package.
 
 **Update (2026-08-13):** PR [#50](https://github.com/Concertable/concertable/pull/50) **merged** (2026-05-19)
 — Phase A + B.9–B.11 are on `main`. The repo has since **carved** into `Concertable.B2B` /
@@ -34,18 +40,27 @@ publication, and platform-sync gates to terminal state before starting the next 
    filter param (repo stays pure data-access). Branch was **330 commits behind `main`** — synced
    (`b711b9365`, one conflict in `ConcertWorkflowCapabilityRegistry.cs`: kept `DealTypesWith` on
    origin/main's `workflowTypes` rename), B2B build 0 errors, Concert unit tests 133/133, pushed.
-   **2026-08-13 delivery refresh:** merged current `origin/main` at `abe5bff8e` (no conflicts) and ran
-   `dotnet build api/Concertable.slnx`: succeeded with 0 errors. Incremental code + security review of
-   `a531e8290..35f63ea30` found no issues; the current-main work head `35f63ea30` is verified equal to
-   both `origin/Feature/launch_dashboard-accepted-checkout` and PR #414's `headRefOid`. Replacement CI
-   is pending before queue admission.
-3. ⏳ **MTD revenue/payouts (was item 2, money slices).** `MtdRevenueCents` / `MtdPayoutsCents` still
-   stubbed at 0. NOT a simple method add: `IManagerPaymentModule` does not exist and **Payment is a
-   separate gRPC microservice**, so this is a cross-service build — Payment repo query (`TicketTransaction`
-   / `SettlementTransaction`, `Status=Complete`, `PayeeId`, MTD `CreatedAt`) → internal service → proto RPC
-   → `ManagerPaymentGrpcService` → `IManagerPaymentClient` → a B2B-side facade → the dashboard services —
-   plus an int `venueId`/`artistId` → `Guid` payout-owner-id resolution. **Collides with in-flight Payment
-   PRs #392 / #296 (typed-Result migration); sequence after those land.**
+   **2026-08-13 delivery:** incremental code + security review found no issues. PR #414 merged as
+   `306f072af2683e25ddaf29c36688feaa0253a189` after its full API + UI E2E merge-group run passed.
+   Package publication succeeded; cumulative platform-sync PR #541 superseded #539, updated the platform to
+   `0.1.0-alpha.0.968`, passed build/unit/integration checks, and merged as
+   `1c88858f93f648f1719fa9e4d273749b8932b364`.
+3. ⏳ **MTD revenue/payouts (was item 2, money slices) — IN PROGRESS.** `MtdRevenueCents` /
+   `MtdPayoutsCents` remain stubbed at 0 on `main`. Payment PRs #392 and #296 are merged, so their blocker is
+   clear. The current producer branch adds Payment-owned aggregate queries over completed transactions within
+   an explicit `DateRange`, two additive `ManagerPayment` RPCs exposed through a new
+   `IManagerPaymentReportingClient` using protobuf `Timestamp`, and the existing `Money` contract/value object.
+   The separate reporting interface keeps the published `IManagerPaymentOperationsClient` source-compatible
+   with B2B's concrete test client. Ticket revenue
+   sums `TicketTransaction.Amount`; artist payouts sum `SettlementTransaction.PayeeGrossMinor`, excluding the
+   commission included in the payer total. The owner key is already B2B's tenant `Guid`, so the consumer must
+   use `ITenantContext.GetTenantId()` directly and construct the UTC month-to-date `DateRange`; no venue/artist
+   integer-ID translation is required. Delivery is
+   deliberately split because B2B consumes the published `Concertable.Payment.Client` package rather than its
+   source project. The uncommitted producer working tree passes the Payment solution build with 0 warnings/errors,
+   all 237 focused Payment unit tests, `git diff --check`, and the plan graph (0 errors/warnings). Repository
+   integration coverage verifies payee/status/start/end filtering and settlement gross semantics; current-main
+   policy assigns execution of that integration project and the full build/carve matrices to draft-PR CI.
 4. ⏳ **Phase C — swap FE mock tier → real (was item 4).** Blocked: only
    `/api/{Venue,Artist}Dashboard/kpis` exist server-side; the other 17 FE `dashboardApi` methods (overview,
    inbox, upcoming-concerts, revenue/payouts, opportunities, activity, settlements, applications, reviews)
