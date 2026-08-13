@@ -137,7 +137,7 @@ what the real `publish-packages` workflow emits, and the pin override must not b
 Everything below lands in the existing PR-B worktree/branch (`Refactor/data-access_base-unify`). Order
 matters: the seam fix must precede the reparent/rename or their builds/tests fail for the wrong reason.
 
-- **Phase 1 — Seam fix.** Implement the local platform-pack + pin override (5 steps above). Land it
+- **Phase 1 — Seam fix. ✅ Complete.** Implement the local platform-pack + pin override (5 steps above). Land it
   first so Phases 2–3 are validated against a consistent platform.
 - **Phase 2 — Restore the reparent.** `Repository<T,TContext,TKey> : ReadRepository<T,TContext,TKey>`;
   move the write methods + `InsertAsync` onto `Repository`; drop its re-declared reads (inherited now).
