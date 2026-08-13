@@ -42,7 +42,8 @@ project whose source or public API uses it.
   inventories are clean.
 - Full review of `3a5df8b18..f626ee680` found one changed-path coverage gap: the cancellation-token
   forwarding in `ConcertModule` was not directly pinned. The fix adds focused Some/None and exact-token
-  tests; its Concert unit and full-solution gates are green. Incremental review and commit remain.
+  tests in `0dc5e62ac`; its Concert unit and full-solution gates are green. Incremental native,
+  security, architecture, convention, and changed-path coverage review found no additional issues.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -54,6 +55,5 @@ project whose source or public API uses it.
 
 ## Next Steps
 
-Commit the verified review fix with this ledger update, incrementally review the new commit through
-native, security, architecture, convention, and changed-path coverage lenses, delete the spent review
-work order when clean, then push and open the corrective PR.
+Push the reviewed branch through the plan-aware two-leg protocol, open the corrective PR against
+`main`, verify the exact local/remote/PR heads, then follow its checks and merge-queue delivery.
