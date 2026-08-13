@@ -5,7 +5,7 @@
 - Roadmap item: `typed-result/customer-ticket-reunion`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Fix-typed-result-customer-ticket-validation-composition`
 - Branch: `Fix/typed-result_customer-ticket-validation-composition`
-- PR: pending
+- PR: [#555](https://github.com/Concertable/concertable/pull/555) (draft)
 - Dependency/package gates: corrected Reunion `0.1.0-alpha.5` packages are published and indexed;
   platform `0.1.0-alpha.0.976` is published
 - Last reconciled: 2026-08-13 against `origin/main` `a2747a90f` and merged PR #540 `491890ec9`
@@ -30,6 +30,8 @@ consumer against the corrected package before the plan's terminal delivery gates
   dropped cancellation token, and missing direct Reunion package ownership.
 - PR #540 merged as `491890ec9`, delivering the Option boundaries, Result/payment cleanup,
   cancellation propagation, direct package ownership, and focused coverage.
+- Follow-up implementation commit `f765dc196` is pushed and verified at the remote and PR head on
+  draft PR #555.
 
 ## Verification and review
 
@@ -75,6 +77,6 @@ consumer against the corrected package before the plan's terminal delivery gates
 
 ## Next Steps
 
-Commit and open the follow-up draft PR. After remote CI is green, run the affected integration,
-package-clean, mechanical inventory, and exact-commit review gates, then deliver the PR through merge,
-package publication, platform sync, and terminal docs closeout.
+Wait for draft PR #555 CI to reach terminal green. Then run the affected integration, package-clean,
+mechanical inventory, and exact-commit review gates, push any required fixes through the plan checkpoint
+protocol, and mark the PR ready for the explicit merge workflow.
