@@ -1,9 +1,9 @@
 # Repository redesign — Cosmos-aligned facets + context-enforced no-tracking
 
 Unify the DataAccess repository bases, make no-tracking **enforced by the context** (already shipped),
-add `InsertAsync`, reparent `Repository` onto `ReadRepository` (reads once), and rename the write-only
-facet `IBaseRepository`/`BaseRepository` → `IWriteRepository`/`WriteRepository`. The linchpin enabling
-the last two is a **fix to the integration test seam** (a local platform-pack so consumers compile
+add `InsertAsync`, compose the shared read and write implementations behind `Repository`, and rename the
+write-only facet `IBaseRepository`/`BaseRepository` → `IWriteRepository`/`WriteRepository`. The linchpin
+enabling the published base-class changes is a **fix to the integration test seam** (a local platform-pack so consumers compile
 against the source-built platform they run against) — see "The seam fix" below.
 
 Branch/worktree: `Refactor/data-access_base-unify`, PR-B #530 (open). Read
@@ -27,18 +27,22 @@ Next steps live in @plans/data-access/REPOSITORY_REDESIGN_PROGRESS.md → `## Ne
 - **Current interfaces** (`Concertable.DataAccess.Application`): `IReadRepository<T,K>` = reads;
   `IBaseRepository<T>` = writes (+GetAll); `IRepository<T,K> : IBaseRepository<T>, IReadRepository<T,K>`
   with `new GetAllAsync`.
-- **Current bases** (one file, `…Infrastructure/Repository.cs`): `BaseRepository<T,TContext>` (writes +
-  GetAll), `ReadRepository<T,TContext,K>` (reads, + the new `Query` root), `Repository<T,TContext,K> :
-  BaseRepository` (re-declares GetById/Exists). All constrain `TContext : DbContextBase`.
+- **Current shared bases** (one file, `…Infrastructure/Repository.cs`): `BaseRepository<T,TContext>`
+  implements writes, `ReadRepository<T,TContext,K>` implements reads, and the locally committed but
+  rejected Phase 2 makes `Repository<T,TContext,K> : ReadRepository` and copies every write method.
 - **Read-only context precedent:** `PublicDbContext : DbContextBase` composes the module's anemic
   `IEntityTypeConfigurationProvider` and **seals `SaveChanges`/`SaveChangesAsync` to throw**. It does
   **not** set `QueryTrackingBehavior` itself — no-tracking is applied at **DI** via
   `.UseQueryTrackingBehavior(NoTracking)` (B2B Venue/Artist/Concert public contexts).
-- **Only Customer has concrete read repos** — `Concert`/`Venue`/`Artist`ReadRepository. B2B/Payment
-  declare the `ReadRepository<T>` alias but have **zero** concrete subclasses (dead aliases).
-- **Customer `ConcertDbContext`** derives straight from `DbContextBase` (no tenancy/public split), is
-  registered **tracked** (no `UseQueryTrackingBehavior`), and is shared by the read repo **and** the
-  projection handlers (which need tracking to fetch-then-update read models).
+- **Only Customer has concrete generic read repos** — `Concert`/`Venue`/`ArtistReadRepository`.
+  Each directly inherits the Customer read base and DI supplies its matching
+  `ConcertReadDbContext`/`VenueReadDbContext`/`ArtistReadDbContext`. Projection handlers separately use
+  the tracked writable module context. B2B/Payment's dead `ReadRepository<T>` aliases are already gone.
+- **Customer currently duplicates the generic read implementation.** Its package owns
+  `IReadDbContext` plus a second `ReadRepository<TEntity>` implementation because the shared
+  `ReadRepository<TEntity,TContext,TKey>` is tied to `DbContextBase`. The final design moves the
+  queryable-only context contract to shared DataAccess so both tracked and read-only contexts can use
+  the one shared read implementation.
 - **CosmosRepository model** (`IEvangelist.Azure.CosmosRepository`, verified source): three facets —
   `IReadOnlyRepository<T>`, `IWriteOnlyRepository<T>`, and `IRepository<T> : IReadOnlyRepository<T>,
   IWriteOnlyRepository<T>, IBatchRepository<T>` (empty body, pure composition). Its `CreateAsync` = create
@@ -66,19 +70,52 @@ checked the keyless case): `SequenceRepository<TSequence>` operates on `ISequenc
 `CollectionSyncer<T>` also inject the write-only facet directly. The GetAll diamond is killed by
 **removing `GetAllAsync` from the write facet** (no caller used it — verified).
 
-**Classes** — `Repository` reparents onto `ReadRepository` (reads defined once):
+**Classes — composition, not reparenting.** The two facet implementations own behavior once;
+`Repository` is a flat-API facade which delegates to both. All three shared types use explicit
+constructors — no primary constructors for captured state.
 
 ```csharp
-ReadRepository<T,TContext,K> : IReadRepository<T,K>                       // GetById/GetAll/Exists over context.Set<T>()
-WriteRepository<T,TContext>  : IWriteRepository<T>                        // writes + InsertAsync, keyless (renamed from BaseRepository)
-Repository<T,TContext,K> : ReadRepository<T,TContext,K>, IRepository<T,K> // inherits reads; adds writes + InsertAsync
+IReadDbContext                         // IQueryable<T> Query<T>()
+ReadRepository<T,K>                    // owns GetById/GetAll/Exists once
+WriteRepository<T,TContext>            // owns Add/AddRange/Insert/Update/Remove/SaveChanges once
+Repository<T,TContext,K>               // composes ReadRepository + WriteRepository; delegates the flat IRepository API
 ```
 
-Single inheritance means one facet's members are duplicated on `Repository`; we duplicate the **trivial
-writes** (keeping reads defined once), and log it in `TECH_DEBT.md`. Reads-once was the original goal;
-the only thing that ever blocked it — the reparent moving the inherited `context` field off the write
-base, which the integration seam turned into a `FieldAccessException` (run 31636765379) — is removed by
-the **seam fix below**, so the reparent is restored.
+`DbContextBase` implements the shared `IReadDbContext` by returning `Set<TEntity>()` from `Query<TEntity>()`.
+A combined `Repository<TEntity,TContext,TKey>` receives one tracked writable `TContext`, gives that same
+scoped instance to its read and write components, and preserves one change tracker, transaction, and
+`SaveChangesAsync` boundary. `TContext` is not claimed to be write-only; it is the context used by the
+write facet and is also the correct tracked read context for a combined unit-of-work repository.
+
+```csharp
+public Repository(TContext context)
+{
+    this.context = context;
+    this.readRepository = new ReadRepository<TEntity, TKey>(context);
+    this.writeRepository = new WriteRepository<TEntity, TContext>(context);
+}
+```
+
+A dedicated read-only repository is a separate object graph and directly inherits the shared read
+implementation. Customer Concert is the grounding example: `ConcertModule` consumes
+`IConcertReadRepository`; `ConcertReadRepository` inherits `ReadRepository<ConcertEntity, int>`; DI passes
+`ConcertReadDbContext` as `IReadDbContext`. It does not compose a writer and never receives
+`ConcertDbContext`.
+
+```csharp
+internal sealed class ConcertReadRepository : ReadRepository<ConcertEntity, int>, IConcertReadRepository
+{
+    public ConcertReadRepository(IReadDbContext context)
+        : base(context)
+    {
+    }
+}
+```
+
+Do not silently combine a dedicated no-tracking context and a writable context behind one
+`IRepository<TEntity>`: an entity read by the first is detached from the second, which breaks the
+established read-mutate-save unit-of-work contract. Consumers that need only projections inject
+`IReadRepository<TEntity>`; consumers that mutate aggregates inject `IRepository<TEntity>`.
 
 **`InsertAsync`** — on `IWriteRepository`, in the write repo: `AddAsync` + `SaveChangesAsync`, returns
 the entity (Id populated). Faults propagate as exceptions (no bool). Cosmos calls this `CreateAsync`.
@@ -135,14 +172,19 @@ what the real `publish-packages` workflow emits, and the pin override must not b
 ## Execution plan (single PR — PR-B #530)
 
 Everything below lands in the existing PR-B worktree/branch (`Refactor/data-access_base-unify`). Order
-matters: the seam fix must precede the reparent/rename or their builds/tests fail for the wrong reason.
+matters: the seam fix must precede the composition/rename or their builds/tests fail for the wrong reason.
 
 - **Phase 1 — Seam fix. ✅ Complete.** Implement the local platform-pack + pin override (5 steps above). Land it
   first so Phases 2–3 are validated against a consistent platform.
-- **Phase 2 — Restore the reparent. ✅ Complete.** `Repository<T,TContext,TKey> : ReadRepository<T,TContext,TKey>`;
-  move the write methods + `InsertAsync` onto `Repository`; drop its re-declared reads (inherited now).
-  This is the exact change that failed as run 31636765379 — **it is the proof the seam fix works:** the
-  6 suites (B2B Artist/Concert/User/Venue, Customer User/Concert) must go green.
+- **Phase 2 — Compose the repository facets.** Replace rejected local commit `d65293cc3`'s
+  `Repository : ReadRepository` + copied writes with composition. Move `IReadDbContext` to shared
+  DataAccess, make `DbContextBase` implement it, centralize reads in `ReadRepository<TEntity,TKey>`,
+  centralize writes in `WriteRepository<TEntity,TContext>`, and make `Repository<TEntity,TContext,TKey>`
+  delegate its existing flat API to both using the same scoped `TContext`. Rebind Customer's dedicated
+  read repositories to the shared read implementation and their existing read-only contexts. Preserve
+  `IRepository<TEntity>`/`IReadRepository<TEntity>` consumer APIs, custom repository overrides, and the
+  protected writable `context` used by module-specific queries. The 6 historical proof suites (B2B
+  Artist/Concert/User/Venue, Customer User/Concert) must go green.
 - **Phase 3 — Rename `IBaseRepository`/`BaseRepository` → `IWriteRepository`/`WriteRepository`.** Full
   **grep-gate** rename (see [`plans/agents/PLAN.md`](../agents/PLAN.md) "grep gate"):
   `grep -rniE "ibaserepository|baserepository"` over the whole repo returns **zero**, every tier/casing —
@@ -164,9 +206,12 @@ matters: the seam fix must precede the reparent/rename or their builds/tests fai
 
 ## Open decisions / risks
 
-- **Reparent duplicates the writes.** Single inheritance forces one facet's members onto `Repository`;
-  we duplicate the trivial writes to keep reads-once. Logged in `TECH_DEBT.md`, not eliminable without
-  default-interface-members or a mixin.
+- **Facade forwarding is acceptable; behavior duplication is not.** `Repository` keeps one-line
+  delegates so existing flat `IRepository<TEntity>` call sites remain unchanged. All EF read/write
+  behavior lives only in the composed facet implementations.
+- **Combined and read-only repositories have different context semantics.** A combined repository uses
+  one tracked module context for both facets to preserve the unit of work. A dedicated read-only
+  repository directly inherits `ReadRepository` and receives its module's no-tracking `ReadDbContext`.
 - **`InsertAsync` adoption is opportunistic** — new/changed call sites use it; not a forced migration of
   every existing `AddAsync` + `SaveChangesAsync`.
 - **B2B/Payment dead `ReadRepository<T>` aliases** — unused (no concrete subclasses); already deleted in
