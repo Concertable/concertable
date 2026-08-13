@@ -1,77 +1,59 @@
 # B2B Payment saga producer progress
 
-- Plan: `plans/typed-result/B2B_PLAN.md`
+- Plan: `plans/typed-result/B2B_PAYMENT_SAGA_PRODUCER_PLAN.md`
 - Roadmap: `plans/typed-result/TYPED_RESULT_MIGRATION_ROADMAP.md`
-- Roadmap item: `typed-result/b2b`
-- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-typed-result_payment-financial-saga`
+- Roadmap item: `typed-result/b2b-payment-saga-producer`
 - Branch: `Refactor/typed-result_payment-financial-saga`
-- PR: not opened
-- Base: `origin/main` `93cecb6453d347ffd4e50efabb28190d1c7228f8`
-- Producer commits: `5aaf13d76`, `6717d5d0a`, `6458ec0d0`
-- Package gate: producer implementation is verified; publication not requested
-- Messaging prerequisite: PR #536, remote head `7a0886e1245ef76267f0cf906518b2169ac3cfd6`
+- PR: #544
+- Merge commit: `d6619a85667617fb29b7cbb8ce005b779b39346d`
+- Published platform: `0.1.0-alpha.0.973`
+- Platform-sync PR: #547
+- Platform-sync merge: `7bd9564998a67e3f6ec03ee2244100be7a77ee7c`
 
 ## Current state
 
-Tommy authorized the durable SEC1 B2B + Payment saga/package cut-over on 2026-08-12. The topology scan
-identified a Messaging producer prerequisite, one Payment producer layer, and one B2B consumer sync
-hop. Payment.Contracts owns the new
-additive wire contracts; Payment.Client republishes in the same release. Customer consumes both
-packages but requires no migration because no existing public identity changes.
+Terminal. Payment.Contracts owns the additive capture, deposit, refund, success, rejection, and
+deferred messages. Payment.Web handles the commands without any B2B runtime reference. Payment owns
+the persisted operation journal, retry identity, pending-operation recovery, terminal replay, and
+Stripe idempotency. B2B integrates only through the published Payment Contracts and Client packages.
 
-Reunion producer commit `113be42f532d5d7e8daf1c362262ff7a7854b7bc` owns the flexible Option HTTP
-terminals. Its exact `Reunion.AspNetCore` artifact is available as `0.1.0-local.113be42` with SHA-256
-`5BCE01783D79B99F60FB1F848560B04563169C9346A84CF02815E483A5E8767C`. Resolve the artifact's exact
-core/error dependency closure from the same producer commit, record all hashes, and consume it only
-through temporary restore inputs. Do not copy or recreate the extensions locally.
-
-## Next Steps
-
-Reconcile this Payment producer worktree through `6458ec0d0` with current `origin/main`, rebuild and
-retest it against published platform `0.1.0-alpha.0.968`, review the reconciled head, then push/open and
-merge its producer PR. Wait for Payment package
-publication and sync, and update the B2B waiting ledger so its current-main/package revalidation can
-resume. Do not push, open a PR, publish, or merge without further instruction.
+Reunion `0.1.0-alpha.3`, containing producer commit
+`113be42f532d5d7e8daf1c362262ff7a7854b7bc`, is the released dependency. No Reunion extensions were
+copied or recreated locally.
 
 ## Completed work
 
-- Checkpoint 10A is implemented and committed through `6458ec0d0`: Payment owns the durable operation
-  journal, idempotent capture/deposit/refund execution, pending recovery, and typed outcome replay.
-- Exact local Payment packages are `Concertable.Payment.Contracts` and `.Client`
-  `0.1.0-alpha.0.949`; their SHA-256 hashes are
-  `F0330F4687B8D4E073262D99C0AC16B7BAF50387C13A85B2C75D6A199818246C` and
-  `7585A321BBB16C87323806F67885C011ED838DB42BD1AADD207F352681EE8C92`.
-- Their consumer-ready copies are in
-  `C:\Users\TommySeery\source\repos\Concertable\.artifacts\package-cutover\consumer-packages-ade9728f9`.
-- The consumer integration exposed the additive Messaging prerequisite. Commit `ade9728f9` separates
-  outbound `Sends<T>` registration from handled command receiver registration.
+- Messaging PR #536 published outbound-only command registration and completed its platform sync.
+- Payment PR #544 passed its exact-head build, carve, unit, integration, architecture, formatting,
+  ownership, and review gates.
+- The first merge-group run exposed reusable booking-derived Stripe idempotency keys and missing
+  Payment command queues. Explicit financial-operation or commission-binding retry identities and
+  capture/deposit/refund queues fixed both defects.
+- The corrected full-E2E merge group passed and PR #544 merged as `d6619a856`.
+- Publish run `31722209038` succeeded and released platform `0.1.0-alpha.0.973`.
+- Platform-sync PR #547 initially exposed B2B's stale Reunion `alpha.1` pin. The sync branch aligned
+  B2B to Reunion `alpha.3`; its full build, carve, unit, and integration matrix passed, and it merged
+  as `7bd956499`.
 
 ## Verification
 
-- Pre-implementation plan graph: 0 errors and 0 warnings.
-- Producer build, unit, integration, architecture, formatting, package ownership, and exact pack gates
-  are green as recorded by commit `6717d5d0a`.
-- Messaging Application tests: 41/41; Azure Service Bus tests: 8/8.
-- Messaging PR #536 passed full API and UI E2E and merged as
-  `5c4dc3ddf5e0a67c51d493b1c9f5a93da6dfb9b3`.
-- Publish run 31693533673 succeeded with fresh-feed restore verification. Platform-sync run
-  31693704239 opened PR #538 for `0.1.0-alpha.0.966`.
-- PR #538 was superseded by cumulative sync PR #539 after another API publication. PR #539 includes
-  the Messaging release and its entire required check matrix is terminal and green.
-- PR #539 was superseded by cumulative sync PR #541 after API PR #529 published
-  `0.1.0-alpha.0.968`; PR #541 is the active cumulative gate.
-- Cumulative platform-sync PR #541 passed its required matrix and merged green as
-  `1c88858f93f648f1719fa9e4d273749b8932b364`. The Messaging prerequisite is terminal on normal feeds.
+- Payment AppHost build: 0 errors, 0 warnings.
+- Focused Payment retry/idempotency slice: 49/49.
+- Payment topology test: green.
+- PR #544 exact-head CI: green.
+- PR #544 full-E2E merge group `31719346251`: green.
+- Package publication and fresh-feed restore: green.
+- PR #547 full solution build, all carves, all unit suites, and all integration suites: green.
 
-## Decisions and deviations
+## Decisions
 
-- Runtime isolation is strict: B2B sends only Payment-owned Contracts messages; Payment handlers and
-  persistence remain inside Payment.
-- The producer branch starts from `origin/main`, not the 50-commit B2B consumer branch.
+- Runtime isolation remains strict: B2B sends Payment-owned Contracts messages; Payment handlers,
+  persistence, Stripe calls, and recovery remain inside Payment.
+- Scope is SEC1 accept/withdraw/cancel capture, deposit, and refund. Concert finish/settlement remains
+  outside this finding.
 
-## Downstream handoffs
+## Downstream handoff
 
-- Waiting ledger: `plans/typed-result/B2B_PROGRESS.md`.
-  Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-B2BTypedResultMigration`.
-  Gate: Messaging publication/sync, then Payment publication/sync, enable final B2B current-main and
-  normal-feed package revalidation.
+- Owning ledger: `plans/typed-result/B2B_PROGRESS.md`.
+  Gate removed: Payment `0.1.0-alpha.0.973` is published and platform-sync PR #547 is merged. B2B owns
+  final current-main reconciliation, normal-feed validation, review, and delivery.

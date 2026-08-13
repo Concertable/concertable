@@ -1,6 +1,6 @@
 ---
 name: pr-preflight
-description: Pre-flight readiness gate — a READ-ONLY check of whether the current branch is CLEAR to open (or enqueue) a PR, run before you do. Verifies you're on a proper `<Type>/<Name>` branch (not main), your local is in sync with origin (not behind, not ahead-unpushed, not tracking a `[gone]` remote), the branch isn't badly stale vs main, all CODE is committed (docs/plans may ride uncommitted), no red/pending platform-sync gate is blocking merges, and no half-done published-package cut-over is left out of sync — then reports GREEN (clear, with the next command) or names exactly what's blocking and the fix. Use whenever Tommy says "can I PR this", "am I clear to PR", "ready to PR/merge?", "pr preflight", "check before I PR", "is this branch clean to ship", or before running `merge` or `create-gh-pr`. Concertable-specific (knows this repo's merge queue + platform-sync gate + branch conventions). Changes NO state — plain read-only `git`/`gh`.
+description: Pre-flight readiness gate — a READ-ONLY check of whether the current branch is CLEAR to open (or enqueue) a PR, run before you do. Verifies you're on a proper Type/Name branch (not main), your local is not behind origin or tracking a `[gone]` remote, reports commits that still need pushing, checks drift from main, requires all CODE committed (docs/plans may ride uncommitted), rejects red/pending platform-sync gates, and detects incomplete published-package cut-overs — then reports GREEN with the next command or names exactly what's blocking and the fix. Use whenever Tommy says "can I PR this", "am I clear to PR", "ready to PR/merge?", "pr preflight", "check before I PR", "is this branch clean to ship", or before running `merge` or `create-gh-pr`. Concertable-specific (knows this repo's merge queue + platform-sync gate + branch conventions). Changes NO state — plain read-only `git`/`gh`.
 ---
 
 # pr-preflight
@@ -97,13 +97,9 @@ never changes the working tree, index, or any branch.
      "Never leave the codebase out of sync"). Skip this check entirely if the branch touched no
      packable contract.
 
-8. **(Optional, slow) Local build green.** The merge queue is the real build/test/E2E gate, but a
-   local build catches an obvious break before you spend a ~30-40 min queue cycle:
-   ```
-   dotnet build api/Concertable.slnx
-   ```
-   Run it for full confidence on a non-trivial change; skip it for a small/doc change and let the queue
-   be the gate.
+8. **Targeted local checkpoint present.** Confirm the branch has the required generators/invariants,
+   smallest affected build, and focused unit tests recorded. Do not run a full local solution build or
+   integration matrix here; exact-head PR CI owns those gates under `docs/REMOTE_VALIDATION.md`.
 
 ## Verdict
 

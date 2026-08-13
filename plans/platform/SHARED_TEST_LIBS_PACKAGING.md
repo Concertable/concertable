@@ -7,7 +7,7 @@
 
 ## The problem
 
-`Concertable.Testing`, `Concertable.Testing.Integration`, and the shared `Concertable.E2ETests` harness
+`Concertable.Testing`, `Concertable.Testing.Integration`, and the shared `Concertable.Testing.E2E` harness
 live under `api/Concertable.Shared/tests/` — the Shared "repo". But every consuming test project reaches
 them by a `ProjectReference` that **escapes its own service folder**, e.g.
 
@@ -52,14 +52,16 @@ to keep the inner loop fast.
 
 ## Execution (if A)
 
-1. Add `Concertable.Testing`, `Concertable.Testing.Integration`, `Concertable.E2ETests` to the platform
+1. Add `Concertable.Testing`, `Concertable.Testing.Integration`, `Concertable.Testing.E2E` to the platform
    **publish set** + pin them in `Directory.Packages.props` (`ConcertablePlatformVersion`).
 2. Convert **every** consumer `ProjectReference` → `PackageReference` — all module unit/integration test
    projects across **B2B, Customer, Search** + the B2B/Customer E2E projects (~15+ `.csproj`s).
 3. Extend the `UseLocalCore` (`Directory.Build.targets`) swap to cover the test libs for local dev.
 4. **Publish-first ordering:** this lands as its own PR *before* any later PR that adds a new shared
    test helper (same boundary as Kernel — a consumer can't pin a helper that isn't published yet).
-5. Verify: full `Concertable.slnx` build + a green integration + UI-E2E run against the pinned packages.
+5. Verify the smallest affected package and consumer builds locally, then push the coherent checkpoint.
+   Exact-head PR CI owns the full solution, carve, unit, and integration gates; the merge queue owns
+   the required UI E2E run against the pinned packages.
 
 ## Non-goals / notes
 

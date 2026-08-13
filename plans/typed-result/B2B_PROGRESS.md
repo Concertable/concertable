@@ -15,10 +15,10 @@
 - Messaging delivery branch/PR: `Feature/MessagingOutboundCommands`, PR #536, remote head
   `7a0886e1245ef76267f0cf906518b2169ac3cfd6`
 - Messaging merge commit: `5c4dc3ddf5e0a67c51d493b1c9f5a93da6dfb9b3`
-- Dependency/package gate: Messaging is published and synced; local consumer preparation is complete
-  against Payment `6458ec0d0` and Reunion `113be42`; Payment publication and sync remain
-- Main reconciliation: the previously reconciled base is now 137 commits behind live `origin/main`;
-  final published-package revalidation must follow a clean current-main reconciliation
+- Dependency/package gate: terminal. Payment `0.1.0-alpha.0.973`, Messaging, and Reunion `0.1.0-alpha.3`
+  are published and synced through platform-sync PR #547.
+- Main reconciliation: current `origin/main` through `7bd9564998a67e3f6ec03ee2244100be7a77ee7c`
+  is merged; final published-package revalidation is in progress.
 
 ## Current state
 
@@ -65,19 +65,10 @@ reference was added. The resolved SEC1 tech-debt entry has been deleted.
 
 ## Next Steps
 
-Blocked: Payment producer publication.
-
-Blocked by: the Payment producer is locally built, carved, tested, and reviewed, but the original
-cut-over instruction withholds push, PR, and merge authorization. The later merge authorization was
-specific to Messaging PR #536.
-
-Unblock action: Tommy explicitly authorizes pushing, opening, and merging the Payment producer PR.
-Its clean-host integration job must be green before queue admission; then follow its package
-publication and cumulative platform-sync PR to terminal green.
-
-Resume when: the Payment package is published, its cumulative platform-sync PR is green and merged,
-and the normal feed exposes the synced version. Then reconcile this consumer branch with current main,
-consume the normal-feed packages, and run every final B2B gate and incremental review.
+Complete the current-main reconciliation, consume only normal-feed Payment `0.1.0-alpha.0.973` and
+Reunion `0.1.0-alpha.3`, then run the final focused build, unit, integration, architecture, HTTP
+contract, formatting, ownership, plan-graph, and incremental-review gates. Open the draft B2B PR at
+the first coherent verified checkpoint so remote CI validates the exact branch head.
 
 ## Completed work
 
@@ -161,9 +152,14 @@ consume the normal-feed packages, and run every final B2B gate and incremental r
   `0.1.0-alpha.0.968`. PR #541 remains the active gate and includes the Messaging release.
 - Cumulative platform-sync PR #541 passed its required matrix and merged green as
   `1c88858f93f648f1719fa9e4d273749b8932b364`. The Messaging prerequisite is terminal on normal feeds.
+- Payment PR #544 passed its corrected full-E2E merge group and merged as `d6619a856`. Publish run
+  `31722209038` released platform `0.1.0-alpha.0.973`; platform-sync PR #547 aligned B2B to Reunion
+  `0.1.0-alpha.3`, passed its full build/carve/unit/integration matrix, and merged as `7bd956499`.
 - Payment was reconciled with that current main in `15de28fb8` and now consumes the released Reunion
-  alpha.3 family containing `113be42`. Payment build, carve, unit, ownership, plan-graph, and review
-  gates are green; clean-host integration remains the required pre-queue gate.
+  alpha.3 family containing `113be42`. Payment reached the queue after its build, carve, unit,
+  integration, ownership, plan-graph, and review gates passed. Its queue regression fix is locally
+  green for the Payment AppHost build, 58 focused service/adapter tests, the command-topology test,
+  formatting, and diff checks.
 - Package-only B2B Web Release build against the isolated exact Messaging, Payment, and Reunion
   artifact closure: passed, 0 errors and one existing `UserEntity` warning.
 - `dotnet build api/Concertable.B2B/Concertable.B2B.slnx --configuration Release --no-restore -m:1
@@ -216,8 +212,7 @@ consume the normal-feed packages, and run every final B2B gate and incremental r
 ## Downstream handoffs
 
 - Owning ledger: `plans/typed-result/B2B_PAYMENT_SAGA_PRODUCER_PROGRESS.md`.
-  Gate: explicit Payment publication authorization enables its PR and clean-host integration gate;
-  Payment publication and following sync then enable final B2B current-main/package revalidation.
+  Gate complete: Payment `0.1.0-alpha.0.973` is published and platform-sync PR #547 is terminal green.
 
 - Waiting ledger: `plans/typed-result/REUNION_SHARED_CONTRACTION_PROGRESS.md`.
   Gate: B2B must be delivery-ready and identify every remaining old carrier, terminal, and third-party

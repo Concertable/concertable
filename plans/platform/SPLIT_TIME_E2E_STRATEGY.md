@@ -67,7 +67,7 @@ provided for free — worth adding when you want off the compiler crutch, low ma
 
 **Now (discipline):**
 1. Create a system-level E2E project (boots the umbrella `Concertable.AppHost`); move the B2B and
-   Customer full-fleet E2E suites into it; share the existing `api/Shared/Tests/Concertable.E2ETests`
+   Customer full-fleet E2E suites into it; share the existing `api/Shared/Tests/Concertable.Testing.E2E`
    infra.
 2. Reduce each service's own test footprint to integration tests with the `Mock*Client` fakes; ensure
    coverage that the relocated E2E used to provide at the service level is met by integration tests.
