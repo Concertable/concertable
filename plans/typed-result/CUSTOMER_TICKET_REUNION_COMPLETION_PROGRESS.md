@@ -7,7 +7,7 @@
 - Branch: `Fix/typed-result_customer-ticket-reunion-completion`
 - PR: not opened
 - Dependency/package gates: none; Reunion `0.1.0-alpha.3` and platform `0.1.0-alpha.0.963` are published
-- Last reconciled: 2026-08-13 against `origin/main` `5c4dc3ddf` and merged PR #475 `2b05ed110`
+- Last reconciled: 2026-08-13 against `origin/main` `306f072af` and merged PR #475 `2b05ed110`
 
 ## Current state
 
@@ -47,6 +47,8 @@ project whose source or public API uses it.
 - `origin/main` was merged at `d46a45ddd`; the incoming diff was confined to shared Messaging. The
   exact reconciled candidate repeats the full-solution build at 0 errors and all 99 affected unit
   tests green.
+- After `main` advanced again, it was reconciled at `f9707e7b5`. Its incoming product diff is confined
+  to the B2B dashboard; the exact candidate's full-solution build remains green with 0 errors.
 
 ## Decisions, discoveries, blockers, and deviations
 
