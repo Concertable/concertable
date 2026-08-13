@@ -5,20 +5,19 @@
 - Roadmap item: `launch/manager-front-page`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-launch-dashboard-mtd-consumer`
 - Branch: `Feature/launch_dashboard-mtd-consumer`
-- PR: not opened (B2B consumer slice; branch pushed through `a569b2084`)
+- PR: [#554](https://github.com/Concertable/concertable/pull/554) (draft; head `d572f06ae`)
 
 Captured during Phase A implementation. These supersede the original plan
 where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_PAGE_PLAN.md).
 
 ## Next Steps
 
-**Immediate action:** The B2B consumer implementation is committed and pushed through `a569b2084`. Commit the
-fail-closed hardening in this checkpoint: resolve `ITenantContext.GetTenantId()` before the exact-month-start zero
-shortcut so an unresolved tenant still returns 403, with focused Venue/Artist coverage. Then push the work head,
-open a draft PR, record and push the PR checkpoint, run `/review`, wait for exact-head PR CI, mark ready, and take it
-through `/merge` with **`skip-e2e`** — the diff changes no HTTP/gRPC/published contract, so no positive E2E trigger.
-Local candidate verification: Venue and Artist unit-test projects each build with 0 warnings/errors and pass 4/4;
-`git diff --check` clean. B2B compiles against published platform `0.1.0-alpha.0.976`, never producer source.
+**Immediate action:** Draft PR #554 is open at verified head `d572f06ae` (local, remote-tracking, and PR refs equal;
+work push `a569b2084..d572f06ae`). Run `/review` over `a2747a90f..d572f06ae`, address every finding, then require
+exact-head PR CI green, mark ready, and take it through `/merge` with **`skip-e2e`** — the diff changes no
+HTTP/gRPC/published contract, so no positive E2E trigger. Local candidate verification: Venue and Artist unit-test
+projects each build with 0 warnings/errors and pass 4/4; `git diff --check` clean. B2B compiles against published
+platform `0.1.0-alpha.0.976`, never producer source.
 
 **Update (2026-08-13):** PR [#50](https://github.com/Concertable/concertable/pull/50) **merged** (2026-05-19)
 — Phase A + B.9–B.11 are on `main`. The repo has since **carved** into `Concertable.B2B` /
