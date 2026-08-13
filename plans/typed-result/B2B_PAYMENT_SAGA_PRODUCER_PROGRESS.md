@@ -7,7 +7,7 @@
 - Branch: `Refactor/typed-result_payment-financial-saga`
 - PR: #544, `https://github.com/Concertable/concertable/pull/544`
 - Base reconciliation: `64fc7f8e2` includes current main `2e6e0cc78`
-- Review watermark: `64fc7f8e2`; runtime security review through `9f59b6da8`; no open findings
+- Review and security watermark: `253a4dbd33c7c07caa4beec8a66825bbec4ea8f7`; no open findings
 - Package gate: Messaging prerequisite is published and synced; Payment publication authorized
 
 ## Current state
@@ -98,6 +98,8 @@ resuming B2B.
 - Regression fix Payment AppHost build: 0 errors, 0 warnings.
 - Regression fix scoped Payment format and `git diff --check`: green. The solution-wide format command
   still reports pre-existing Shared Kernel whitespace and B2B namespace findings outside this change.
+- Incremental correctness, architecture, security, and test-coverage review over
+  `64fc7f8e2..253a4dbd3`: clean; no open findings.
 - Initial migrations re-scaffold: every unchanged context retained its ID; Payment regenerated with
   `FinancialOperations` and the unique nullable refund `OperationId` index.
 - Plan graph: 0 errors and 0 warnings; `git diff --check` green.
