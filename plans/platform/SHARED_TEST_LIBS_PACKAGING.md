@@ -59,7 +59,9 @@ to keep the inner loop fast.
 3. Extend the `UseLocalCore` (`Directory.Build.targets`) swap to cover the test libs for local dev.
 4. **Publish-first ordering:** this lands as its own PR *before* any later PR that adds a new shared
    test helper (same boundary as Kernel — a consumer can't pin a helper that isn't published yet).
-5. Verify: full `Concertable.slnx` build + a green integration + UI-E2E run against the pinned packages.
+5. Verify the smallest affected package and consumer builds locally, then push the coherent checkpoint.
+   Exact-head PR CI owns the full solution, carve, unit, and integration gates; the merge queue owns
+   the required UI E2E run against the pinned packages.
 
 ## Non-goals / notes
 

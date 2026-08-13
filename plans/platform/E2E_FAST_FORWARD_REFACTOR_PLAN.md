@@ -53,8 +53,9 @@ runs the real `accept + pay → cancel`. That removes the redundant half without
 - Rewrite it to open with `Given a flat fee opportunity has been applied to` (existing seeded `Given`),
   then only `accept + pay → cancel → assert cancelled + refunded`. Drops the redundant post + apply UI
   steps; keeps the real charge the refund needs.
-- **Gate:** the scenario passes headed once, then via `./scripts/e2e.ps1 ui b2b`. Reconcile `E2E_BASELINE.md`
-  if timing/name changes.
+- **Gate:** run the smallest affected UI project build and scenario metadata checks locally, then push
+  the checkpoint. Let exact-head PR CI apply the full build/unit/integration floor and the merge queue
+  run the B2B UI suite. Reconcile `E2E_BASELINE.md` if timing/name changes.
 
 ### ~~Phase 2 — Trim the agreement signature scenario~~ ✅ DONE on `Feature/BookingAgreement` (2026-07-13)
 - **Shipped there, not here.** The earlier "defer to the refactor branch" decision was reversed: since
@@ -79,7 +80,9 @@ runs the real `accept + pay → cancel`. That removes the redundant half without
 - Check `Concertable.Customer.E2ETests.Ui/Features` for scenarios re-driving browse/search/open to
   reach a concert/ticket state another scenario already proves; fast-forward via the Customer suite's
   seeded `Given`s.
-- **Gate:** `./scripts/e2e.ps1 ui customer` green; baseline reconciled.
+- **Gate:** run the smallest affected UI project build and scenario metadata checks locally, then push
+  the checkpoint. Let exact-head PR CI apply the full build/unit/integration floor and the merge queue
+  run the Customer UI suite; reconcile the baseline from that result.
 
 ## Not in scope
 - The four per-contract `books artist on …` happy paths — the canonical creation tests; they stay
@@ -88,6 +91,7 @@ runs the real `accept + pay → cancel`. That removes the redundant half without
 - Renaming the shared harness project — done (now `Concertable.Testing.E2E`).
 
 ## Gate (every phase)
-`dotnet build api/Concertable.slnx` green · the touched UI suite green via `./scripts/e2e.ps1 ui <suite>`
-(Docker pre-flight mandatory) · `E2E_BASELINE.md` reconciled in the same commit as any status change.
+Targeted local build and metadata checks green · exact-head PR CI green · the touched UI suite green in
+the merge queue · `E2E_BASELINE.md` reconciled in the same commit as any status change. Run a failing
+scenario locally through the matching E2E debug skill only after a queue failure.
 `git rm` this plan in the commit that completes the last phase.

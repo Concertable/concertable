@@ -34,6 +34,15 @@ includes every required producer and consumer PR, package publication, generated
 and merge in that delivery chain. Do not stop to request the same authorization again unless Tommy
 explicitly limits it to a named PR or stage.
 
+## Validation is remote-first
+
+Concertable is developed across concurrent worktrees. Run generators/invariant checks, the smallest
+affected build, and focused unit tests locally; draft-PR CI owns the full solution build, service
+carves, and complete unit/integration matrices. Open a draft PR at the first coherent implementation
+checkpoint and push later coherent checkpoints without another prompt so CI can validate the exact
+remote head. Merge and deployment still require explicit instruction. Diagnose a red remote check by
+running only its failing scope locally. Full policy: [`docs/REMOTE_VALIDATION.md`](./docs/REMOTE_VALIDATION.md).
+
 ## Per-area guidance
 
 **Doc locality — a guidance/architecture doc lives at the lowest node that fully contains its concern:** single-service → that service's own folder (thin, inheriting root + `api/` upward, never restating — e.g. [`api/Concertable.Payment/AGENTS.md`](./api/Concertable.Payment/AGENTS.md)); cross-service or orchestration → root. Create one only where genuine service-specific content exists.
@@ -174,14 +183,15 @@ not an afterthought:
 ## E2E suites — Docker health first, always
 
 This section is **how** to run E2E safely. For a PR, do not duplicate the merge queue's E2E run
-locally; the local gate stops at build + unit + integration unless a queue failure needs debugging.
-[`plans/AGENTS.md`](./plans/AGENTS.md) carries that local workflow. The merge skill's Step 4 is the
+locally; draft-PR CI owns the hard floor and the queue owns selected E2E. Local E2E exists only for
+targeted diagnosis after a queue failure. [`docs/REMOTE_VALIDATION.md`](./docs/REMOTE_VALIDATION.md)
+carries the full validation workflow. The merge skill's Step 4 is the
 single source of truth for selecting the merge-queue E2E tier.
 
 Apply the merge skill's Step 4 mechanically; it is the **single source of truth** for the E2E tier.
 A positive trigger requires `full-e2e`; no positive trigger requires `skip-e2e`. Do not run E2E “to
 be safe” when integration covers the touched path and no trigger is present. Build, carve, unit, and
-integration remain mandatory for code/package changes, and every code/package PR handled by the merge
+integration remain mandatory in PR CI for code/package changes, and every code/package PR handled by the merge
 skill still enters the queue on current `main`.
 
 Run E2E only through `./e2e.ps1` via the matching skill (`e2e-ui-regress`, `e2e-ui-debug`,
