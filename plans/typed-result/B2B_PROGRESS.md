@@ -65,7 +65,7 @@ reference was added. The resolved SEC1 tech-debt entry has been deleted.
 
 ## Next Steps
 
-Monitor cumulative platform-sync PR #539 for platform `0.1.0-alpha.0.967` to a green merge before
+Monitor cumulative platform-sync PR #541 for platform `0.1.0-alpha.0.968` to a green merge before
 delivering Payment producer
 commit `6458ec0d0`. Reconcile
 this consumer branch with current `origin/main`, consume those normal-feed packages, rerun the build,
@@ -150,6 +150,8 @@ incremental code review. Do not push, open a PR, or merge without further instru
 - PR #538 was superseded and closed after another API merge published `0.1.0-alpha.0.967`; cumulative
   sync PR #539 contains the Messaging publication. Its build, carve, unit, integration, and
   `ci-complete` checks are terminal and green.
+- PR #539 was then superseded by cumulative sync PR #541 after API PR #529 merged and published
+  `0.1.0-alpha.0.968`. PR #541 remains the active gate and includes the Messaging release.
 - Package-only B2B Web Release build against the isolated exact Messaging, Payment, and Reunion
   artifact closure: passed, 0 errors and one existing `UserEntity` warning.
 - `dotnet build api/Concertable.B2B/Concertable.B2B.slnx --configuration Release --no-restore -m:1
