@@ -6,17 +6,31 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\typed-result_customer-outcomes`
 - Branch: `Feature/typed-result_customer-outcomes`
 - PR: [#425](https://github.com/Concertable/concertable/pull/425) - open, non-draft, remote head
-  `08a92f91659e4eccc4558e55def5027b26c08348`
-- Dependency/package gates: a 2026-08-12 query of NuGet.org's official v3 indexes found only
-  `0.1.0-alpha.1` and `0.1.0-alpha.2` for `Reunion`, `Reunion.AspNetCore`, `Reunion.Errors`, and
-  `Reunion.Validation`. Published alpha.2 embeds commit
-  `ab3386a76e83b057bc9498ebc2d7d31be5f62626` and does not contain `ToOkOr`; no published package
-  contains flexible Option terminals from `113be42f532d5d7e8daf1c362262ff7a7854b7bc`. Phase 8 is
-  delivery-ready against the exact producer artifact but publication-blocked. Customer Ticket PR
-  #475 and platform-sync PR #479 remain terminal and out of scope.
-- Last reconciled: 2026-08-12 after the clean Phase 8 review checkpoint `e6c53717c` and official
-  NuGet.org v3 publication query; PR #425 is not merge-ready and must not be pushed or merged until
-  publication and published-baseline verification complete.
+  `1fcfbacd61dbe5928da898713144a9d193a7a7cd`, proven equal across the reviewed local work head,
+  remote-tracking branch, and PR. Merge `a396b510fa2d027f4970df43b8ec6d0616c28c3b` brings in current `origin/main`
+  `c680da03b0caaf65492109702be522a0c861411c`, including the merged Auth-owned Stripe CLI bootstrap
+  repair. GitHub ejected the prior head from the merge queue after
+  merge-group run [31640531994](https://github.com/Concertable/concertable/actions/runs/31640531994)
+  failed in UI E2E setup. The branch is based on `origin/main`
+  `58e19d938128c533008280b1adbfb7e500c574fa` through merge `132f3a568`.
+- Dependency/package gates: NuGet.org accepted and its official v3 flat-container indexes listed
+  `0.1.0-alpha.3` for `Reunion`, `Reunion.AspNetCore`, `Reunion.Errors`, and `Reunion.Validation`
+  together at 2026-08-12 17:09:18Z. Alpha.3 was packed from Reunion merged `master` commit
+  `91fdc6f2e33d8f396fa463ad309cb1288bea3be5`, the squash merge of PR #8 whose reviewed source head
+  was `113be42f532d5d7e8daf1c362262ff7a7854b7bc`; every nuspec records `91fdc6f2e33d8f396fa463ad309cb1288bea3be5`
+  as its repository commit. Both `net10.0` and `net11.0` `Reunion.AspNetCore` assemblies expose the
+  minimal-API `ToOkOr` overloads with generic/parameter arities `2/2` and `3/3`, and the MVC overloads
+  with arities `1/2` and `2/3`. Publication and published-baseline revalidation are terminal. Customer
+  Ticket PR #475 and platform-sync PR #479 remain terminal and out of scope.
+- Last reconciled: 2026-08-13 after platform `.961` reconciliation. Starting remote/PR head
+  `87bcdc52321511fad6a7c67197849268a81689bd` advanced to reviewed work head
+  `1bf1a349b6e8ac98d293816e75e264f940009d5b`, proven equal across local, remote-tracking, and PR #425.
+  Checkpoint transport then advanced all three refs to `1a4913c24a0d5af4c50f5400620c994c1b937e85`.
+  Replacement run 31650254795 is terminal green. The stale-base queue admission was withdrawn.
+  Work head `1fcfbacd61dbe5928da898713144a9d193a7a7cd` merges current `origin/main` through platform-sync
+  PR #534 (`.961`), builds green, is incrementally reviewed clean, and is proven equal across local,
+  remote-tracking, and PR #425. The prior
+  Stripe setup blocker is resolved on current main by Auth PR #517 and its terminal platform-sync PR #531.
 
 ## Current state
 
@@ -34,7 +48,7 @@ the same five-module semantic slice; Ticket, Concert, Customer Payment, purchase
 Kernel API, events, models, and migrations are excluded.
 
 Phase 7 implementation and local verification are green. All four existing Customer Reunion-family
-pins are `0.1.0-alpha.2`; branch-owned Review and Preference construction sites use raw payload
+pins are now `0.1.0-alpha.3`; branch-owned Review and Preference construction sites use raw payload
 conversions only where their target types keep success/error intent explicit. Named Dunet cases,
 validation factories, and nullable-to-Option boundaries remain explicit where inference would obscure
 the owned contract.
@@ -56,13 +70,24 @@ The Phase 8 candidate is locally verified and reviewed against exact gitignored 
 `artifacts/reunion-113be42` with version `0.1.0-local.113be42`. The temporary NuGet config and local
 version pins were removed from tracked state after verification. This checkpoint is not published to
 PR #425.
+The exact official baseline is the four-package `0.1.0-alpha.3` graph from Reunion merge
+`91fdc6f2e33d8f396fa463ad309cb1288bea3be5`; the prior local artifact remains historical verification
+evidence only. The synchronized candidate has passed against official alpha.3 and is ready for its
+required delivery gate. PR-level build, carve, unit, and integration checks are green. Its first
+full-E2E merge-group attempt passed API E2E and every hard-floor job, but UI E2E job
+[94265184983](https://github.com/Concertable/concertable/actions/runs/31640531994/job/94265184983)
+failed before any scenario ran: the `Install Stripe CLI` asset download ended with
+`curl: (56) Connection died, tried 5 times before giving up`. This is a fresh-runner setup/network
+failure, not a Customer test result, and the failed queue run must not be blindly retried.
 
 ## Next Steps
 
-Blocked: No published common Reunion-family version contains producer commit `113be42` and the flexible Option `ToOkOr` terminals required by Phase 8.
-Blocked by: external owner `Reunion NuGet publisher`.
-Unblock action: Publish `Reunion`, `Reunion.AspNetCore`, `Reunion.Errors`, and `Reunion.Validation` from `113be42` or a verified descendant under one exact version, then allow all four packages to index on NuGet.org.
-Resume when: Official NuGet v3 metadata lists that same version for all four packages, package repository metadata proves `113be42` is included, and `Reunion.AspNetCore` exposes the flexible MVC `ToOkOr` overloads.
+Finish PR #425 delivery from synchronized local head `850227996`:
+
+1. Transport this `.961` push-evidence checkpoint and prove local, remote-tracking, and PR head equality.
+2. Requeue with `full-e2e` only when the branch is current, and follow it to its merge commit.
+3. Own publication and
+   the generated platform-sync PR through green/merged before close-out.
 
 ## Completed milestones
 
@@ -88,10 +113,19 @@ Resume when: Official NuGet v3 metadata lists that same version for all four pac
 - Phase 8 implemented flexible Option terminals, direct `InsertAsync` naming, nullable-to-Option
   simplifications, Result guidance, and DataAccess debt in `5ee10d11a`; the incremental native,
   security, architecture, convention, and coverage review through `9bcb25eea` was clean. Delivery
-  remains gated on publication of a Reunion-family package containing `113be42`.
+  was validated against the exact local `113be42` artifact.
+- Reunion PR #8 merged as `91fdc6f2e33d8f396fa463ad309cb1288bea3be5`; all four
+  `0.1.0-alpha.3` packages were inspected, published, and listed by official NuGet v3 metadata. The
+  publication blocker is cleared; published-baseline revalidation and PR #425 delivery remain.
 - Customer non-Payment is delivery-ready against the exact `113be42` artifact. Its owned five-module
   production scope has no remaining old carrier, old terminal, or third-party functional dependency;
   that readiness evidence is reconciled into `REUNION_SHARED_CONTRACTION_PROGRESS.md`.
+- PR #425 reached merge-group run 31640531994 at pushed head `87bcdc523`; API E2E and every hard-floor
+  job passed. UI E2E never reached a scenario because Stripe CLI download setup failed, so GitHub
+  ejected the PR without merging.
+- Auth PR #517 merged the durable Stripe CLI bootstrap through the signed Stripe apt repository and
+  corrected its installed-version assertion; platform-sync PR #531 and Auth closeout PR #532 are
+  terminal. Current `origin/main` `c680da03b` merged cleanly into this branch as `a396b510f`.
 
 ## Verification and review
 
@@ -111,11 +145,38 @@ Resume when: Official NuGet v3 metadata lists that same version for all four pac
   2/2, and B2B/Customer Artist 17/17 + 2/2 passed: 74/74 across eight projects. Every run-owned SQL
   and Ryuk container was removed; a separate session started a new pair after this run completed.
 - Review artifact: `reviews/Feature-typed-result_customer-outcomes.md`. All findings are fixed. Both
-  review watermarks are `9bcb25eea61794ca982b7f8c1a4f044c7b8f4514`; the Phase 8 incremental
-  native, security, architecture, convention, and coverage review found no new issues.
+  review watermarks are `132f3a568fb6eee4e2635130ab016fd1b6ebdd3d`; the current-main `.955`
+  incremental native, security, architecture, convention, and coverage review found no new issues.
 - Push evidence: starting remote head `e60219f7dfe13f0c49c818e2ed7ab7a557f84569`; reviewed work
   head `297c61192117d14e631c5ad5f64364e28ed670db`; the later checkpoint transport made the current
-  remote-tracking/PR head `08a92f91659e4eccc4558e55def5027b26c08348`.
+  remote-tracking/PR head `08a92f91659e4eccc4558e55def5027b26c08348`. Alpha.3 push leg one
+  advanced local, remote-tracking, and PR #425 together to reviewed head
+  `306cab6de966ee74688c64b47f2eee7027a4a5e4`.
+- Current-main push leg one advanced local, remote-tracking, and PR #425 together to reviewed head
+  `9f420f86afaac7c8791b9e65829b2023e69b1ec7`.
+- Final checkpoint transport advanced local, remote-tracking, and PR #425 together to
+  `87bcdc52321511fad6a7c67197849268a81689bd`. All PR-head build, five carve, unit, and integration
+  checks passed. Merge-group run 31640531994 passed API E2E and every hard-floor job; UI E2E job
+  94265184983 failed in `Install Stripe CLI` with curl exit 56 before scenarios started.
+- Current-main work push advanced starting remote/PR head `87bcdc52321511fad6a7c67197849268a81689bd`
+  to reviewed work head `1bf1a349b6e8ac98d293816e75e264f940009d5b`; local, remote-tracking, and
+  PR #425 head equality was verified before this checkpoint transport.
+- Push checkpoint transport advanced local, remote-tracking, and PR #425 to
+  `1a4913c24a0d5af4c50f5400620c994c1b937e85`. Replacement PR-head CI run
+  [31650254795](https://github.com/Concertable/concertable/actions/runs/31650254795) is terminal green:
+  build, all five backend carves, Auth and the complete unit/integration matrix, and `ci-complete`
+  passed; merge-group-only E2E correctly skipped at PR level.
+- PR #425 was admitted to the merge queue at position 1 in `AWAITING_CHECKS`, still targeting remote
+  head `1a4913c24`. A subsequent fetch proved it was four commits behind new `origin/main` after docs
+  PR #533 and platform-sync PR #534 landed, so this admission is being withdrawn before any stale-base
+  queue result is accepted.
+- The stale-base queue entry was removed through GitHub's dequeue mutation. Current `origin/main`
+  merged cleanly as `850227996`; its only runtime effect is the consistent platform `.961` pin across
+  all five services. The 188-project Release build passed with 0 errors and 8 existing warnings, and
+  incremental review of `e649fbda9..850227996` found no issues.
+- Platform `.961` work push advanced remote/PR head `1a4913c24a0d5af4c50f5400620c994c1b937e85`
+  to reviewed work head `1fcfbacd61dbe5928da898713144a9d193a7a7cd`; local, remote-tracking, and
+  PR #425 head equality was verified before this checkpoint transport.
 - Phase 8 exact-artifact evidence: all local nupkgs embed producer commit
   `113be42f532d5d7e8daf1c362262ff7a7854b7bc`. SHA-256: Reunion
   `9FADC33CD06F3B4A9A92564633E01007CC81EA091AA9F257D821532E046E10CE`;
@@ -127,7 +188,30 @@ Resume when: Official NuGet v3 metadata lists that same version for all four pac
   passes 60/60; Docker fresh-container HTTP data-path preflight passes; the five wrappers pass 74/74
   across eight projects. Resolved Customer assets contain only the exact local Reunion-family version.
   Rename, shared-DataAccess, terminal, Created-mapping, local-workaround, and whitespace audits pass.
-- Current review state: all local work is clean through `9bcb25eea`; no findings remain open.
+- Alpha.3 release evidence: all four packed nuspecs embed merged repository commit
+  `91fdc6f2e33d8f396fa463ad309cb1288bea3be5`; both target frameworks expose the expected flexible
+  `ToOkOr` surfaces. Uploaded-file SHA-256: Reunion
+  `04084C484EB4A6B3EC0D23E5EF50F9D297DA3A653A22AC157A0873297BC7D943`;
+  Reunion.AspNetCore `C6CFE2B28E10C86EEC89AA3726E253556EC45B2431823DA2D3759DD709C46EB0`;
+  Reunion.Errors `53D0B558375D7E98223CC82779AB5A73551B6380A738EA7A9BF031DE0297729E`;
+  Reunion.Validation `5319FD405FAF7C3D7073CF34AF50FAF53BB5508188A1B9773D4851132F58B472`.
+  Official v3 flat-container indexes listed alpha.3 for all four packages together at
+  2026-08-12 17:09:18Z.
+- Alpha.3 published-baseline verification on synchronized main: the five changed API closures build
+  with 0 warnings/errors; affected units pass 80/80; Shared.Api architecture passes 60/60; the Release
+  solution builds with 0 errors and 2 unrelated generated B2B UI warnings; the isolated 36-project
+  Customer carve builds with 0 errors and 1 existing warning. Docker's fresh-container HTTP data path
+  passed. The planned eight integration projects pass 74/74: Customer Review 12/12, Preference 7/7,
+  User 6/6, Venue 2/2, Artist 2/2, plus B2B User 3/3, Venue 25/25, and Artist 17/17. Customer Concert
+  11/11 and Ticket 25/25 also pass. The long worktree hit the known 261-character SqlClient native DLL
+  path in Customer User; the same project passed through a temporary short drive mapping with no
+  tracked workaround. Package, carrier, terminal, rename, excluded-scope, local-workaround, and
+  whitespace inventories are clean.
+- Current-main `.958` verification: `dotnet build api/Concertable.slnx --configuration Release
+  --nologo` succeeded across 188 projects with 0 errors and 6 existing warnings. Incremental native,
+  security, architecture, module-boundary, seeding, convention, and coverage review of
+  `132f3a568..e649fbda9` (101 commits) found no new issues.
+- Current review state: all implementation work is clean through `850227996`; no findings remain open.
 
 ## Decisions and constraints
 
@@ -143,5 +227,6 @@ Resume when: Official NuGet v3 metadata lists that same version for all four pac
   workflow selects and runs the required queue tier.
 - Published `Reunion.AspNetCore` alpha.2 is not a valid verification baseline for Phase 8: its nuspec
   embeds `ab3386a76e83b057bc9498ebc2d7d31be5f62626`, and its assembly exposes no `ToOkOr` symbol.
-  Recreate the exact local graph from producer commit `113be42` when needed; never commit a local feed,
-  temporary version, or machine-specific restore path.
+  Official `0.1.0-alpha.3` from merged source `91fdc6f2e33d8f396fa463ad309cb1288bea3be5`
+  is the only delivery baseline; never commit a local feed, temporary version, or machine-specific
+  restore path.
