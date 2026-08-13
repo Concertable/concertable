@@ -5,9 +5,9 @@
 - Roadmap item: `typed-result/b2b-payment-saga-producer`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-typed-result_payment-financial-saga`
 - Branch: `Refactor/typed-result_payment-financial-saga`
-- PR: not opened
+- PR: #544, `https://github.com/Concertable/concertable/pull/544`
 - Base reconciliation: `15de28fb8` includes current platform sync `1c88858f9`
-- Review watermark: `9f59b6da8`; correctness and security review clean
+- Review watermark: `a26895d80`; runtime security review through `9f59b6da8`; no open findings
 - Package gate: Messaging prerequisite is published and synced; Payment publication authorized
 
 ## Current state
@@ -33,10 +33,9 @@ released `Reunion` and `Reunion.Errors` `0.1.0-alpha.3` artifacts containing pro
 
 ## Next Steps
 
-Push the reviewed producer head and open its full-E2E PR. Use the PR's clean-host Payment integration
-job as the authoritative replacement for the local Docker-startup-blocked run and do not enqueue
-until the required matrix is green. Then merge through package publication and cumulative platform
-sync before resuming the B2B consumer.
+Wait for PR #544's required matrix. Use its clean-host Payment integration job as the authoritative
+replacement for the local Docker-startup-blocked run and do not enqueue until the matrix is green.
+Then merge through package publication and cumulative platform sync before resuming B2B.
 
 ## Completed work
 
@@ -51,6 +50,8 @@ sync before resuming the B2B consumer.
   #541 are terminal and green.
 - Current main was reconciled in `15de28fb8`; Payment now uses released Reunion alpha.3.
 - Tommy explicitly authorized pushing, opening, and merging the Payment producer on 2026-08-13.
+- Published work head `a26895d80` is verified equal across local, remote, and PR #544; `full-e2e` is
+  applied because the branch adds published cross-service command/event contracts.
 
 ## Verification
 
