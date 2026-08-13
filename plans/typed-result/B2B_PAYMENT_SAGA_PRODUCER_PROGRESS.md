@@ -27,9 +27,9 @@ through temporary restore inputs. Do not copy or recreate the extensions locally
 
 ## Next Steps
 
-Monitor PR #536 in merge-queue position 1 at exact reviewed/current-main head `7a0886e12` with
-`full-e2e`. Wait for its merge, package publication, and
-generated platform sync. Then reconcile and deliver Payment through
+Find and monitor the `Publish packages` run for Messaging merge
+`5c4dc3ddf5e0a67c51d493b1c9f5a93da6dfb9b3`, then follow its generated platform-sync PR to a green
+merge. Then reconcile and deliver Payment through
 `6458ec0d0`, wait for Payment package
 publication and sync, and update the B2B waiting ledger so its current-main/package revalidation can
 resume. Do not push, open a PR, publish, or merge without further instruction.
@@ -53,6 +53,8 @@ resume. Do not push, open a PR, publish, or merge without further instruction.
 - Producer build, unit, integration, architecture, formatting, package ownership, and exact pack gates
   are green as recorded by commit `6717d5d0a`.
 - Messaging Application tests: 41/41; Azure Service Bus tests: 8/8.
+- Messaging PR #536 passed full API and UI E2E and merged as
+  `5c4dc3ddf5e0a67c51d493b1c9f5a93da6dfb9b3`.
 
 ## Decisions and deviations
 

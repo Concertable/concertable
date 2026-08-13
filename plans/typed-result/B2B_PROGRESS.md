@@ -14,6 +14,7 @@
 - Messaging producer commit: `ade9728f9`
 - Messaging delivery branch/PR: `Feature/MessagingOutboundCommands`, PR #536, remote head
   `7a0886e1245ef76267f0cf906518b2169ac3cfd6`
+- Messaging merge commit: `5c4dc3ddf5e0a67c51d493b1c9f5a93da6dfb9b3`
 - Dependency/package gate: local consumer preparation is complete against Messaging `ade9728f9`,
   Payment `6458ec0d0`, and Reunion `113be42`; publication and generated platform sync remain
 - Main reconciliation: the previously reconciled base is now 137 commits behind live `origin/main`;
@@ -64,9 +65,9 @@ reference was added. The resolved SEC1 tech-debt entry has been deleted.
 
 ## Next Steps
 
-Monitor Messaging producer PR #536 in merge-queue position 1 at exact reviewed head `7a0886e12`.
-Wait for its merge, package publication,
-and generated platform sync before delivering Payment producer
+Find and monitor the `Publish packages` run for Messaging merge
+`5c4dc3ddf5e0a67c51d493b1c9f5a93da6dfb9b3`, then follow its generated platform-sync PR to a green
+merge before delivering Payment producer
 commit `6458ec0d0`. Reconcile
 this consumer branch with current `origin/main`, consume those normal-feed packages, rerun the build,
 carve, unit, integration, architecture, formatting, ownership, and plan-graph gates, then run the
@@ -143,6 +144,8 @@ incremental code review. Do not push, open a PR, or merge without further instru
   sanctioned one-time disable/re-enable nudge is the next action.
 - The one-time nudge admitted PR #536 to the merge queue at position 1. GitHub cleared the standalone
   auto-merge request as expected and retained the exact reviewed head.
+- PR #536 passed its full-E2E merge group and merged as
+  `5c4dc3ddf5e0a67c51d493b1c9f5a93da6dfb9b3`.
 - Package-only B2B Web Release build against the isolated exact Messaging, Payment, and Reunion
   artifact closure: passed, 0 errors and one existing `UserEntity` warning.
 - `dotnet build api/Concertable.B2B/Concertable.B2B.slnx --configuration Release --no-restore -m:1
