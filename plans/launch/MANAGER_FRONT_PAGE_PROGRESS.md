@@ -12,7 +12,7 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
 
 ## Next Steps
 
-**Immediate action:** Push this clean review checkpoint to draft producer PR
+**Immediate action:** Transport this verified review-push checkpoint to draft producer PR
 [#557](https://github.com/Concertable/concertable/pull/557), prove local `HEAD`, the remote-tracking branch, and the PR
 head match, and require exact-head CI to pass. Then mark the PR ready, apply `full-e2e` because it changes a published
 gRPC/client contract, enqueue it through the merge queue, and follow package publication plus platform-sync to green.
@@ -47,7 +47,10 @@ re-scaffold. Keep every remaining dashboard section in scope; Phase A.8 UX freez
   became the exact local, remote-tracking, and PR head, and exact-head CI run
   [31793924515](https://github.com/Concertable/concertable/actions/runs/31793924515) passed. The merge-authorized
   re-review restored the work order, preserved the fixed BUG1 evidence, and found no new issues through `1b0b46792`;
-  only plan/review checkpoints followed the last reviewed code commit.
+  only plan/review checkpoints followed the last reviewed code commit. Reviewed work head
+  `36dcdeb2c94d9d6e0a1d750b221c86983329a3c2` was pushed from starting remote/PR head
+  `1b0b46792842fb63916f7a299a7cc55de4d62ad3`; fetch verification proved local, remote-tracking, and PR heads all
+  equal the reviewed work head.
 - Payment now owns agnostic reporting contracts for monthly ticket revenue, monthly settlement payouts, and recent
   settlements. Each aggregate materialises once in `TransactionRepository`; B2B will enrich opaque booking and owner
   identifiers after the published-client gate.
