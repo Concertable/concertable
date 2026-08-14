@@ -12,15 +12,23 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
 
 ## Next Steps
 
-**Immediate action:** Implement the B2B consumer endpoints against published platform `0.1.0-alpha.0.983`: overview,
-canonical-resource lists, charts, reviews, inbox, activity, and settlements. Start with the overview and independent
-canonical-resource/list/chart/review/inbox/settlement surfaces; keep activity last because it needs its owned
-persistence model and an `api/initial-migrations.ps1` re-scaffold. Open a draft PR at the first coherent code checkpoint
-and let exact-head PR CI own the full build/unit/integration matrix. Once the endpoints land, complete the Phase C
-fixture-to-real-API cutover. Keep every remaining dashboard section in scope; Phase A.8 UX freeze remains an
-independent later item.
+**Immediate action:** Implement the current-tenant canonical resource endpoints for venue applications to review,
+artist applications, venue/artist upcoming concerts, venue open opportunities, artist recommended opportunities,
+venue/artist inbox previews, and recent venue/artist reviews. Keep these response shapes aligned with the existing
+dashboard TypeScript contracts and cover their repository/service behavior with focused tests. Activity remains last
+because it needs its owned persistence model and an `api/initial-migrations.ps1` re-scaffold. Once every endpoint lands,
+complete the Phase C fixture-to-real-API cutover. Keep every remaining dashboard section in scope; Phase A.8 UX freeze
+remains an independent later item.
 
 ## Current producer slice
+
+- **B2B consumer checkpoint 1 — locally green, not yet pushed.** Venue and artist overview endpoints now compose the
+  current profile, profile-health checklist, Stripe Connect state, and review summary. Venue ticket revenue and artist
+  payout charts consume the published monthly Payment reports and fill a fixed six-calendar-month series. Venue recent
+  settlements consume the published Payment report and enrich booking ids through the Concert module with concert,
+  counterparty, and direction data. `Concertable.B2B.Web` builds with 0 errors against platform
+  `0.1.0-alpha.0.983`; focused Venue tests pass 7/7 and Artist tests pass 6/6. The next checkpoint is the independent
+  canonical list/review/inbox surface named in `## Next Steps`.
 
 - **DELIVERED (2026-08-14).** The final incremental review found no new issues after the fixed settlement-completion-time
   defect. Exact-head PR CI run [31796969708](https://github.com/Concertable/concertable/actions/runs/31796969708)
@@ -108,8 +116,9 @@ degenerate `DateRange`, `Money.ToMinorUnits()` fills the `long` cents. Platform-
    new `IManagerPaymentReportingClient` (protobuf `Timestamp` + `Money`) kept `IManagerPaymentOperationsClient`
    source-compatible with B2B's concrete test client; B2B consumes the published `Concertable.Payment.Client` package,
    never producer source. Platform-sync #556 merged — platform on `0.1.0-alpha.0.978`; the chain is fully closed.
-4. ⏳ **B.11 pickup endpoints + Phase C FE cutover — ACTIVE (this worktree).** See "Immediate action" above for the
-   endpoint build. Once the endpoints land, complete Phase C: delete `app/shared/.../persona.ts`,
+4. ⏳ **B.11 pickup endpoints + Phase C FE cutover — ACTIVE (this worktree).** Overview, monthly revenue/payout charts,
+   and venue settlements are locally implemented and verified. See "Immediate action" above for the remaining
+   canonical lists, reviews, inbox, and activity. Once the endpoints land, complete Phase C: delete `app/shared/.../persona.ts`,
    `PersonaSwitcher.tsx`, and the per-SPA `fixtures/`, swapping each `dashboardApi.ts` body from a fixture return to
    `api.get`.
 5. ⏳ **Phase A.8 — UX freeze (was item 1).** Manual browser QA of the dashboard across

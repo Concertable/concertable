@@ -17,7 +17,7 @@ See [MANAGER_FRONT_PAGE_PROGRESS.md](MANAGER_FRONT_PAGE_PROGRESS.md) for session
 | B.9 | `ConcertEntity` → owned `DateRange Period` refactor | ✅ code; ⚠️ migration re-scaffold pending | `094fd4d4` |
 | B.10 | Shared `IHasDateRange` marker + `IUpcomingSpecification<T>` / `IDateRangeSpecification<T>` specs | ✅ | `e2193f46` + `23c8fc4c` (added `ApplyExpression<TParent>` overload + `BuildPredicate` helper) |
 | B.11 | Dashboard KPI endpoint (venue + artist) — orchestration via Venue/Artist dashboard services, one SQL round trip via `ConcertDashboardRepository` + queryable mapper | ✅ KPI slice only | `d4f9a3a6` + `a91c7271` + `23c8fc4c` |
-| B.11 | Dashboard overview + activity + charts endpoints | ⏳ Pending (see [pickup notes](#b11-pickup-notes-post-merge) below) | — |
+| B.11 | Dashboard overview + activity + charts endpoints | 🔄 Overview, revenue/payout charts, and venue settlements implemented on the B2B consumer branch; canonical lists and activity remain | — |
 | B.12 | Integration tests per new facade method | ⏳ Pending | — |
 
 ### B.11 KPI endpoint — what shipped
