@@ -5,9 +5,9 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `931dde050df1f3732d53a29cb04006ebd537bdee`  _(2026-08-14)_
+**Reviewed up to commit:** `8b7ba4e801b18943cdbcc2e2742142be12cd09b1`  _(2026-08-14)_
 
-**Security-reviewed up to commit:** `931dde050df1f3732d53a29cb04006ebd537bdee`  _(2026-08-14)_
+**Security-reviewed up to commit:** `8b7ba4e801b18943cdbcc2e2742142be12cd09b1`  _(2026-08-14)_
 
 > Range reviewed: `7377e8c7a..bc56de2d8` (5 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -28,3 +28,10 @@ No issues found. Checked correctness, security, microservice isolation, module b
 > Range reviewed: `0eb0babfb..931dde050` (current-main merge; no conflicts or branch-owned source resolution).
 
 No issues found. The effective PR source diff is unchanged beyond the previously reviewed BUG1 fix; current-main build and focused tests pass.
+
+## Incremental review — 2026-08-14 CI compatibility fix
+
+> Range reviewed: `931dde050..8b7ba4e80` (four commits; one test-fixture source change plus plan/review checkpoints).
+
+No issues found. The B2B integration-test client implements each additive reporting contract with the same deterministic
+empty-result behavior as its existing neutral payment defaults, and the exact local-platform consumer build passes.
