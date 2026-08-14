@@ -26,13 +26,13 @@ so the codebase has zero calls; the building blocks (all in `B2B.DataAccess.Infr
   shape, but `ApplyTenantFilters` declares per-entity single-owner filters
   (`modelBuilder.ApplySingleOwner<TEntity>(this)`, `TenantId == current`). Examples: `VenueDbContext`
   (filters `Venue`/`VenueImage`), `ArtistDbContext`.
-- **`PublicDbContext`** (abstract, same seam) — the public stance. Composes the module's own
-  configuration provider with no tenancy on top: public by construction, nothing is lifted because
-  nothing was applied. Read-only by construction — `SaveChanges` throws — so the write-side
-  `TenantInterceptor` guard can never be bypassed through it. One concrete subclass per module,
-  e.g. `PublicConcertDbContext`.
+- **`PublicXDbContext`** (one concrete context per module) — the public stance. It derives the shared
+  DataAccess `ReadDbContext`, which composes the module's configuration provider with no tenancy on
+  top: public by construction, nothing is lifted because nothing was applied. It is read-only by
+  construction — `SaveChanges` throws — so the write-side `TenantInterceptor` guard can never be
+  bypassed through it. Example: `PublicConcertDbContext`.
 - **`AdminDbContext`** (abstract, same seam) — the platform-admin stance: composes the provider with no
-  tenancy, but **writable** (unlike `PublicDbContext`), so a cross-tenant operator can act on rows it
+  tenancy, but **writable** (unlike `PublicXDbContext`), so a cross-tenant operator can act on rows it
   doesn't own; the `TenantInterceptor` write-guard no-ops for a tenant-less admin. One subclass per
   module that has an admin write flow, e.g. `AdminVenueDbContext` (venue approval).
 
@@ -41,13 +41,13 @@ the LSP violation — callers can't know which contract a method honors):
 
 - **`XRepository`** — the regular module context, including whichever tenant filters that entity
   declares. The default.
-- **`PublicXRepository`** — read-only, unfiltered access through `PublicDbContext`. Most serve
+- **`PublicXRepository`** — read-only, unfiltered access through its module's `PublicXDbContext`. Most serve
   anonymous marketplace reads; a narrow cross-tenant fact may instead expose only a boolean/scalar,
   e.g. `PublicBookingRepository.ExistsAsync`. Never returns private contents.
 - **`AdminXRepository`** — privileged cross-tenant read/write (e.g. admin approval) on the writable
   `AdminDbContext`. Only where an admin write flow exists, e.g. `AdminVenueRepository`.
 - **Domain facts that aren't naturally entity repositories** get their own named boolean/scalar
-  abstraction on `PublicDbContext`, e.g. `IConcertAvailability`.
+  abstraction on the module's `PublicXDbContext`, e.g. `IConcertAvailability`.
 
 The injection site is then self-documenting: a service holding `repository` + `publicRepository`
 (the codebase convention when a service injects both stances of its own aggregate) states exactly
@@ -72,7 +72,7 @@ Repository qualifiers describe the contract that differs from a service's unqual
 are not one vocabulary to impose across every service:
 
 - **B2B data-access stance:** `XRepository` uses the regular module context, `PublicXRepository` uses
-  unfiltered/read-only `PublicDbContext`, and `AdminXRepository` uses unfiltered/writable
+  the module's unfiltered/read-only `PublicXDbContext`, and `AdminXRepository` uses unfiltered/writable
   `AdminDbContext`. Name the composed contract, never the filtering mechanism: do not substitute
   `Unscoped` or `CrossTenant`.
 - **Mutability:** the shared `Repository<...>` surface permits writes; `ReadRepository<...>` exposes

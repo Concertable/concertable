@@ -6,8 +6,8 @@
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable/.worktrees/Plan-data-access-repository-permission-hierarchy`
 - Branch: `Refactor/DataAccessRepositoryPermissionHierarchy`
 - PR: [#561](https://github.com/Concertable/concertable/pull/561) (draft)
-- Dependency/package gates: Phase 1 implementation is committed and pushed; draft PR CI and formal review gate merge/publication; delivery then requires a green platform sync before Phase 2 consumer migration
-- Last reconciled: 2026-08-14 against fetched `origin/main` at `429581025`, Phase 1 commit `8ab4402d9`, and draft PR #561
+- Dependency/package gates: Phase 1 must pass exact-head draft CI before it can merge and publish the additive package surface
+- Last reconciled: 2026-08-14 against fetched `origin/main` at `429581025`, PR head `94d7664ad`, and failed CI run `31798505833`
 
 ## Current state
 
@@ -21,12 +21,22 @@ are committed and pushed at `8ab4402d9`. Every legacy published type and field r
 The pushed work head and `origin/Refactor/DataAccessRepositoryPermissionHierarchy` were verified equal
 at `8ab4402d9b5a2ff1adf613fcfdd143da887df423`; draft PR #561 targets `main`.
 
+Draft CI run `31798505833` exposed six compiler errors because the new shared `ReadDbContext` collided
+with Customer's redundant generic `ReadDbContext` intermediary. The correction moves its generic
+configuration-provider/default-schema behavior, plus B2B `PublicDbContext`'s equivalent behavior, into
+the shared DataAccess base. Both service intermediaries are deleted; the six concrete Customer/B2B
+module read contexts now derive the shared base directly.
+
+That reparenting exposed `PublicOpportunityRepository` inheriting a writable-context-constrained base.
+It now has an independent read-only implementation over `PublicConcertDbContext`; the public and
+regular repositories share only the `ActiveForVenue` query extension.
+
 ## Next Steps
 
-1. Verify exact-head draft PR #561 CI completes green across the full build, service carves, unit, and integration matrices.
-2. Run the formal code/documentation review of `origin/main..HEAD` and resolve every high-confidence finding.
-3. Re-run focused verification after any fix, update this ledger, and make PR #561 ready for merge review.
-4. Do not start the Phase 2 consumer branch until Phase 1 merges, publishes, and its platform-sync PR is green.
+1. Commit and push the verified context-hierarchy correction, then verify local/remote/PR head equality.
+2. Follow exact-head draft CI and fix any remaining failures on the corrected package topology.
+3. When Phase 1 CI is green, record its package-publication delivery gate and prepare the Phase 2
+   consumer migration from current `origin/main` after this PR merges.
 
 ## Completed work
 
@@ -34,11 +44,21 @@ at `8ab4402d9b5a2ff1adf613fcfdd143da887df423`; draft PR #561 targets `main`.
 - Drafted the roadmap item, plan, and progress ledger.
 - Tommy approved the context interfaces, independent repository implementations, service migration matrix, and staged package cutover.
 - Implemented and committed Phase 1's additive shared permission surface at `8ab4402d9`; retained the legacy arities plus protected read-context field for package compatibility and opened draft PR #561.
+- Removed the redundant Customer `ReadDbContext` and B2B `PublicDbContext` intermediaries; all six
+  concrete module read contexts now derive the shared DataAccess `ReadDbContext` directly.
+- Split `PublicOpportunityRepository` from the writable generic opportunity base and moved the shared
+  active-for-venue predicate to a query extension.
 
 ## Verification
 
 - `dotnet build api/Concertable.DataAccess/Tests/Concertable.DataAccess.UnitTests/Concertable.DataAccess.UnitTests.csproj --no-restore --disable-build-servers` - succeeded with 0 warnings and 0 errors.
 - `dotnet test api/Concertable.DataAccess/Tests/Concertable.DataAccess.UnitTests/Concertable.DataAccess.UnitTests.csproj --no-build --no-restore --disable-build-servers` - 12 passed, 0 failed, 0 skipped.
+- `./scripts/local-platform.ps1 prepare` - succeeded; packed 40 branch-local packages at version `0.1.0-local.1786712598892`.
+- `./scripts/local-platform.ps1 build api/Concertable.DataAccess/Tests/Concertable.DataAccess.UnitTests/Concertable.DataAccess.UnitTests.csproj --configuration Release --disable-build-servers` - succeeded with 0 warnings and 0 errors.
+- `./scripts/local-platform.ps1 build api/Concertable.Customer/tests/Concertable.Customer.IntegrationTests.Fixtures/Concertable.Customer.IntegrationTests.Fixtures.csproj --configuration Release --disable-build-servers` - succeeded with 0 warnings and 0 errors.
+- `./scripts/local-platform.ps1 build api/Concertable.B2B/tests/Concertable.B2B.IntegrationTests.Fixtures/Concertable.B2B.IntegrationTests.Fixtures.csproj --configuration Release --disable-build-servers` - succeeded with 0 warnings and 0 errors after the public opportunity repository split.
+- `./scripts/local-platform.ps1 test api/Concertable.B2B/src/Modules/Concert/Tests/Concertable.B2B.Concert.UnitTests/Concertable.B2B.Concert.UnitTests.csproj --configuration Release --disable-build-servers` - 133 passed, 0 failed, 0 skipped.
+- `./scripts/local-platform.ps1 build api/Concertable.slnx --configuration Release` - inconclusive locally; exceeded the 20-minute command ceiling without emitting a compiler error. Exact-head draft CI owns the complete solution matrix.
 - `python .agents/hooks/plan_graph.py --root C:/Users/TommySeery/source/repos/Concertable/.worktrees/Plan-data-access-repository-permission-hierarchy` - 0 errors, 0 warnings.
 - `git diff --check` - passed.
 
@@ -46,15 +66,18 @@ at `8ab4402d9b5a2ff1adf613fcfdd143da887df423`; draft PR #561 targets `main`.
 
 - Tommy design review approved.
 - Working-tree self-review found and corrected the `ReadRepository` protected-field binary compatibility edge.
-- Formal branch code/documentation review remains pending before merge.
+- Formal review of `429581025..94d7664ad` found BUG1 after exact-head CI exposed the namespace collision; the working-tree correction resolves it in `reviews/Refactor-DataAccessRepositoryPermissionHierarchy.md`.
 
 ## Decisions, discoveries, blockers, and deviations
 
 - Customer Artist/Venue/Concert each require both `XReadDbContext` and `XDbContext`: the first serves
   customer reads; the second writes local replicas only from integration events. Customer still exposes
   no write repository for those B2B-owned aggregates.
-- B2B public contexts are physically read-only but currently inherit the writable shared base; the new
-  shared `ReadDbContext` corrects that inheritance.
+- B2B public contexts now derive the shared read-only base directly; no B2B intermediary context or
+  writable context constraint remains in the public opportunity repository path.
+- Generic read-context plumbing belongs in shared DataAccess, not in Customer or B2B. The shared
+  `ReadDbContext` owns configuration-provider/default-schema composition, no-tracking, query access,
+  and save rejection; services own only their meaningful physical module contexts.
 - `SequenceRepository` inherits the write base only to reuse `AddAsync`, but its contract is a custom
   allocator rather than `IWriteRepository`; it will use `ConcertDbContext` directly instead.
 - Many bespoke B2B and Payment repositories use typed sets or EF-specific APIs. Shared bases will not

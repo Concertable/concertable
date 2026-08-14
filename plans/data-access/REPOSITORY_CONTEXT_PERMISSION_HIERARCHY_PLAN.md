@@ -41,8 +41,8 @@ The implementations do not mirror it cleanly:
   capability.
 - Customer `Artist`/`Venue`/`Concert` correctly have two physical contexts each: `XReadDbContext` for
   customer queries and `XDbContext` for event-driven projection maintenance. They must not be collapsed.
-- B2B `PublicDbContext` is read-only but currently inherits the writable shared base and relies on
-  throwing `SaveChanges` overrides to close the write path.
+- Customer `ReadDbContext` and B2B `PublicDbContext` duplicate generic schema/configuration-provider
+  plumbing inside service-specific intermediary bases.
 - The previous attempt to reparent the published `Repository` base atomically broke feed-compiled
   consumers at runtime. This redesign must expand the package first, migrate every consumer against the
   published expansion, and only then remove the legacy types.
@@ -98,18 +98,17 @@ Microsoft.EntityFrameworkCore.DbContext
 tracked, writable Concertable base and retains the existing inbox/outbox model integration. It adds the
 explicit `IWriteDbContext` implementation and implements `IDbContext`.
 
-The new shared `ReadDbContext` derives directly from EF Core `DbContext`, implements only
-`IReadDbContext`, sets `QueryTrackingBehavior.NoTracking` itself, and seals every synchronous and
-asynchronous `SaveChanges` overload to throw. It does not inherit `DbContextBase` and therefore does not
-acquire `IDbContext`, messaging mutation helpers, or the inbox/outbox model.
+The shared `ReadDbContext` derives directly from EF Core `DbContext`, implements only
+`IReadDbContext`, composes the supplied module configuration provider and default schema, sets
+`QueryTrackingBehavior.NoTracking` itself, and seals every synchronous and asynchronous `SaveChanges`
+overload to throw. It does not inherit `DbContextBase` and therefore does not acquire `IDbContext`,
+messaging mutation helpers, or the inbox/outbox model.
 
-Service-specific read stance bases compose the shared read base:
+There are no generic service-specific read-context bases. Customer `ArtistReadDbContext`,
+`VenueReadDbContext`, and `ConcertReadDbContext`, plus B2B `PublicArtistDbContext`,
+`PublicVenueDbContext`, and `PublicConcertDbContext`, derive the shared `ReadDbContext` directly and
+supply their module configuration provider and schema.
 
-- Customer `ReadDbContext` keeps its existing name and derives the fully-qualified shared
-  `Concertable.DataAccess.Infrastructure.ReadDbContext`; it continues to compose the module
-  configuration provider and default schema.
-- B2B `PublicDbContext` derives the shared `ReadDbContext`; it continues to compose the module
-  configuration provider and default schema.
 - B2B `TenantScopedDbContext`, `VenueArtistTenantDbContext`, and `AdminDbContext` remain writable stances
   over `DbContextBase` and therefore implement `IDbContext`.
 
@@ -290,8 +289,9 @@ dispatchers:
 ## Implementation DAG
 
 1. Add the new context interfaces, shared read context, new repository arities, and the additive
-   `ReadRepository.Context` property alongside the legacy public types and field. Add contract and
-   behavior tests. No consumer source needs to change.
+   `ReadRepository.Context` property alongside the legacy public types and field. Move generic read
+   context plumbing into DataAccess and derive the six concrete Customer/B2B read contexts directly.
+   Add contract and behavior tests.
 2. After the additive package is available as an exact artifact, migrate every service consumer and
    context stance. Customer, B2B, and Payment migrations are independently implementable against that
    artifact but form one coordinated consumer checkpoint before contraction.
@@ -320,7 +320,12 @@ platform-sync can recompile them.
 
 - Add `IWriteDbContext` and `IDbContext` beside `IReadDbContext`.
 - Make `DbContextBase` implement `IDbContext` and its mutation members explicitly.
-- Add the shared `ReadDbContext` with built-in no-tracking and sealed save rejection.
+- Add the shared `ReadDbContext` with configuration-provider/default-schema composition, built-in
+  no-tracking, and sealed save rejection.
+- Delete Customer's generic `ReadDbContext` and B2B's generic `PublicDbContext`; derive each concrete
+  module read context from the shared DataAccess base directly.
+- Split `PublicOpportunityRepository` from the writable generic opportunity repository; share only the
+  active-opportunity query predicate between the public read-only and regular writable implementations.
 - Add `WriteRepository<TEntity>` and `Repository<TEntity, TKey>` beside the legacy generic-arity
   implementations; keep `ReadRepository<TEntity, TKey>` on `IReadDbContext`.
 - Add `ReadRepository.Context` without removing its published protected `context` field.
@@ -331,11 +336,11 @@ PR CI owns the full build/carves/unit/integration matrix.
 
 ### Phase 2 - Migrate every context and repository consumer
 
-- Migrate Customer read/full context pairs and repository DI registrations without collapsing the
-  physical contexts.
-- Reparent B2B public contexts to the shared read context and migrate regular/admin/tenant repository
-  paths.
-- Correct the public Opportunity inheritance mismatch and standalone Sequence write path.
+- Migrate Customer read/full repository pairs and DI registrations without collapsing the physical
+  contexts.
+- Migrate B2B regular/admin/tenant repository paths; the public contexts already use the shared read
+  context from Phase 1.
+- Correct the standalone Sequence write path.
 - Migrate Payment standard repositories and retain concrete contexts only in bespoke implementations
   that require EF-specific APIs.
 - Classify Auth, Search, Review, User, Conversations, Messaging, and framework contexts according to the
@@ -372,6 +377,8 @@ and the post-publication platform sync prove the contracted baseline.
 - Shared repository implementations contain no concrete `DbContext` generic parameter, private facet
   implementation, or protected concrete EF context.
 - `ReadDbContext` is no-tracking without DI configuration and every save overload throws.
+- No service owns an intermediate generic read-context base; concrete module read contexts derive the
+  shared DataAccess `ReadDbContext` directly.
 - A read-only context model does not include inbox/outbox entities solely by inheriting the shared base.
 - A dedicated read context cannot observe unsaved tracked changes from the paired full context.
 - A combined repository read and subsequent save share one tracked context instance.
