@@ -242,16 +242,20 @@ their fail-fast `Map` and `Bind`; use it only when it makes the chain clearer.
 
 Guard-style observation and fluent composition are both valid. Use `TryGetValue` when a simple early
 return is the clearest shape or the missing case has non-Result behavior such as an invariant
-exception. When Option absence immediately becomes an operation error and the present value continues
-through Result-producing work, prefer `OrFailure` followed by `Bind`/`BindAsync`. If the continuation
-is multi-statement, extract a private operation whose return type honestly distinguishes `MapAsync`
-(`Task<TNext>`) from `BindAsync` (`Task<Result<TNext, TError>>`).
+exception. When Option absence immediately becomes an operation error, prefer `OrFailure`. When a
+successful value must pass structured validation, use the validation-aware `Ensure` overload to
+preserve that value and map `ValidationErrors` into the operation error. Use `Bind`/`BindAsync` when
+the continuation itself produces a Result. If the continuation is multi-statement, extract a private
+operation whose return type honestly distinguishes `MapAsync` (`Task<TNext>`) from `BindAsync`
+(`Task<Result<TNext, TError>>`).
 
 ```csharp
 public Task<Result<Checkout, CheckoutError>> CheckoutAsync(int concertId) =>
     concertModule.GetByIdAsync(concertId)
         .OrFailure<Concert, CheckoutError>(new CheckoutError.ConcertNotFound(concertId))
-        .Bind(ValidateCheckout)
+        .Ensure(
+            concert => ticketValidator.CanPurchaseTickets(concert, quantity),
+            errors => new CheckoutError.Invalid(errors))
         .MapAsync(CreateCheckoutAsync);
 ```
 
@@ -423,24 +427,21 @@ ValidationResult validation = new[]
 
 Validation does not replace the operation's domain error. Map it once at the owning operation
 boundary. When a validator has no success payload and the operation must preserve an existing value,
-use a guard rather than `Map(() => existingValue, ...)`:
+use the validation-aware `Ensure` overload:
 
 ```csharp
-private Result<Concert, CheckoutError> ValidateCheckout(Concert concert, int quantity)
-{
-    var validation = ticketValidator.CanPurchaseTickets(concert, quantity);
-    if (validation.TryGetErrors(out var errors))
-        return new CheckoutError.Invalid(errors);
-
-    return concert;
-}
+return concertModule.GetByIdAsync(concertId)
+    .OrFailure<Concert, CheckoutError>(new CheckoutError.ConcertNotFound(concertId))
+    .Ensure(
+        concert => ticketValidator.CanPurchaseTickets(concert, quantity),
+        errors => new CheckoutError.Invalid(errors));
 ```
 
-`Map`, `Bind`, their async variants, guard-style observation, and explicit conversion are all valid.
-Use direct `Map` when validation genuinely creates a new success value, and `TryGetErrors` or
-`TryGetFailure` when a simple early-return guard is clearest. `ToResult` remains available when an
-explicit carrier conversion fits the call site. Complete all independent validation and `Combine` it
-before entering ordinary fail-fast composition.
+Use validation-aware `Ensure` when a Result already carries the value to preserve. Use direct `Map`
+when validation genuinely creates a new success value, and `TryGetErrors` or `TryGetFailure` when a
+standalone validation guard is clearest. `ToResult` remains available when an explicit carrier
+conversion fits the call site. Complete all independent validation and `Combine` it before entering
+ordinary fail-fast composition.
 
 `ValidationResult` converts implicitly and losslessly to `UnitResult<ValidationErrors>` for assignments
 and method arguments. C# member lookup does not follow that conversion, so Reunion exposes the same
