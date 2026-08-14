@@ -74,9 +74,11 @@ configuration; explicit typed composition/options should select capabilities.
   variable keys, use the framework `Environments` constants/helpers for built-in names in production
   C#, and give test harnesses one API that applies the correct environment consistently to every
   resource. (In progress: the `"Testing"` env — purely the integration environment — was renamed to
-  `"Integration"`, and the shared `HostEnvironments` constant now lives in `Concertable.Kernel`. Once that
-  Kernel version publishes, the 24 production `IsEnvironment` checks and the fixtures switch onto it and the
-  temporary `Concertable.Testing.Integration` copy is deleted — a publish-first cutover.)
+  `"Integration"`; `Concertable.Kernel` now owns the `HostEnvironments` constant plus `IsIntegration()` /
+  `IsE2E()` extension methods on `IHostEnvironment` (mirroring the framework's `IsDevelopment()`). Once that
+  Kernel version publishes, the 24 production checks switch to `env.IsIntegration()`, the fixtures'
+  `UseEnvironment` points at the Kernel constant, and the temporary `Concertable.Testing.Integration` copy is
+  deleted — publish-first.)
 - Remove every production branch on `Testing` / `E2E`, whether expressed through `IsEnvironment(...)`
   or direct `EnvironmentName` comparison. Integration and E2E hosts supply explicit configuration and
   DI overrides from their own composition roots instead of teaching production code the semantics of
