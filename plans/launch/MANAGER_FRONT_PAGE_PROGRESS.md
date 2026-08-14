@@ -22,6 +22,20 @@ remains an independent later item.
 
 ## Current producer slice
 
+- **B2B consumer checkpoint 2 — committed locally.** Canonical current-tenant endpoints now provide venue/artist
+  applications, upcoming concerts, venue open opportunities, artist recommendations, and conversation message
+  previews. Application representations are actor-specific through `ApplicationResponse<TActions>` with separate
+  venue and artist action objects; the active membership exposes its tenant type so the shared resource route selects
+  the correct representation. `MessagePreview` is the database projection and `MessagePreviewDto` is the enriched
+  HTTP shape; the query is explicitly scoped to the active tenant and returns one latest message per counterparty with
+  member-specific unread state. The later migration to exhaustive role-and-state discriminated unions is recorded in
+  `api/Concertable.B2B/TECH_DEBT.md`. Work commit `16baf7cc4` builds through `Concertable.B2B.Web`; Concert unit tests
+  pass 133/133, Conversations unit tests 8/8, Tenant unit tests 96/96, and the Concert integration project compiles
+  with 0 warnings/errors. Seven focused SQL-backed endpoint tests were added; their local execution reached fixture
+  startup but Windows rejected `Microsoft.Data.SqlClient.SNI.dll` at this deep worktree path with `0x800700CE`, so
+  exact-head draft CI owns their short-checkout execution. The next implementation slice is recent venue/artist
+  reviews, followed by activity persistence and the migration re-scaffold.
+
 - **B2B consumer checkpoint 1 — pushed to draft PR #563.** Venue and artist overview endpoints now compose the
   current profile, profile-health checklist, Stripe Connect state, and review summary. Venue ticket revenue and artist
   payout charts consume the published monthly Payment reports and fill a fixed six-calendar-month series. Venue recent
