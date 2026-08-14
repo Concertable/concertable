@@ -11,12 +11,17 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import dayjs from "dayjs";
-import type { ActivityItem, ActivityType } from "@concertable/shared/features/dashboard";
+import type {
+  ActivityItem,
+  ActivityType,
+} from "@concertable/shared/features/dashboard";
 
 const iconMap: Record<ActivityType, LucideIcon> = {
   ApplicationReceived: UserPlus,
   ApplicationAccepted: CheckCircle2,
   ApplicationDeclined: XCircle,
+  ApplicationWithdrawn: XCircle,
+  ApplicationCancelled: XCircle,
   ConcertSettled: CircleDollarSign,
   ReviewReceived: Star,
   TicketSold: Ticket,

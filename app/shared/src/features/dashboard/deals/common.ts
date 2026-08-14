@@ -12,7 +12,8 @@ export interface ProfileHealth {
   items: ProfileHealthItem[];
 }
 
-export type StripeConnectState = "Complete" | "Incomplete" | "ActionRequired" | "Pending";
+export type StripeConnectState =
+  "Complete" | "Incomplete" | "ActionRequired" | "Pending";
 
 export interface StripeConnectStatus {
   state: StripeConnectState;
@@ -23,6 +24,8 @@ export type ActivityType =
   | "ApplicationReceived"
   | "ApplicationAccepted"
   | "ApplicationDeclined"
+  | "ApplicationWithdrawn"
+  | "ApplicationCancelled"
   | "ConcertSettled"
   | "ReviewReceived"
   | "TicketSold"
@@ -33,7 +36,7 @@ export interface ActivityItem {
   type: ActivityType;
   at: string;
   subject: string;
-  detail?: string;
+  detail: string | null;
   url: string;
 }
 
@@ -59,7 +62,7 @@ export interface Settlement {
 export interface MessagePreview {
   id: number;
   otherPartyName: string;
-  otherPartyAvatarUrl?: string;
+  otherPartyAvatarUrl: string | null;
   preview: string;
   at: string;
   unread: boolean;
@@ -77,7 +80,7 @@ export type DashboardApplicationStatus =
 export interface ConcertCard {
   id: number;
   name: string;
-  bannerUrl?: string;
+  bannerUrl: string | null;
   startDate: string;
   endDate: string;
   counterpartyName: string;
@@ -91,9 +94,9 @@ export type { ReviewSummary };
 export interface ReviewExcerpt {
   id: number;
   reviewerName: string;
-  reviewerAvatarUrl?: string;
+  reviewerAvatarUrl: string | null;
   stars: number;
-  excerpt?: string;
+  excerpt: string | null;
   at: string;
   href: string;
 }
