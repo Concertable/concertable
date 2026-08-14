@@ -7,8 +7,8 @@
 - Branch: `Refactor/B2BTypedResultMigration`
 - PR: #552 (ready; auto-merge disabled)
 - Checkpoints 8-9 commit: `bfc8690b196821bdd735ea5d229182fd9a3baf36`
-- Current-main merge commit: `9380696c208224e59ab77d09d8a72d00853e852f`, through
-  `66d26dbfa2e0cb5cab08e02e590703591e8cfdba`.
+- Current code/package-main merge commit: `0f331b6a37cd7ffa4a746ce5e2dd96cf636109aa`, through
+  platform-sync PR #566 merge `60cfaa3f1`.
 - Review/fix commit: `eb84634699fa643a072342cd196b9767a6694619`
 - Review watermark: `85e84c7dcc9c6e81c0f34e627254b43cec6e9553`; incremental review and
   security review are clean.
@@ -55,6 +55,10 @@
 - Module-facade/current-main push: starting remote head `1b7c4ada6`; pushed
   `1b7c4ada6..6ec2eea87`; local work head, remote branch, and PR #552 head matched
   `6ec2eea87b9eca250163fcf42325b2aa30f9ff05`.
+- Exact-head CI run `31821126177` passed at transport head `c52542f98`, including the solution build,
+  B2B/Customer/Payment carves, unit and integration matrices, and `ci-complete`.
+- Platform `0.1.0-alpha.0.988` reconciliation is clean and reviewed through
+  `0f331b6a37cd7ffa4a746ce5e2dd96cf636109aa`.
 
 ## Current state
 
@@ -108,9 +112,10 @@ package graph; no Reunion extension was copied or recreated locally.
 
 ## Next Steps
 
-Push this transport checkpoint, verify local/remote/PR head equality, and wait for exact-head build,
-carve, unit, integration, architecture, and HTTP-contract CI. Keep auto-merge disabled until Tommy
-explicitly authorizes landing PR #552.
+Commit and push the reviewed platform `0.1.0-alpha.0.988` reconciliation, verify local/remote/PR head
+equality, record its transport checkpoint, and wait for refreshed exact-head build, carve, unit,
+integration, architecture, and HTTP-contract CI. Keep auto-merge disabled until Tommy explicitly
+authorizes landing PR #552.
 
 ## Completed work
 
@@ -282,6 +287,9 @@ explicitly authorizes landing PR #552.
   37/37; B2B architecture passes 9/9; B2B User integration passes 4/4 on the shared integration
   harness. Plan graph and `git diff --check` pass with 0 errors and 0 warnings. The only build warning
   is the existing protected constructor on each service's sealed `UserEntity`.
+- Platform `0.1.0-alpha.0.988` revalidation: B2B Web and Customer Web build with 0 errors; the same
+  focused unit slices pass 16/16, 17/17, 15/15, 25/25, and 37/37; B2B architecture passes 9/9; B2B
+  User integration passes 4/4. Plan graph and `git diff --check` remain clean.
 - Standard Artist, Venue, Opportunity, Application, invitation, and Customer Review creation
   responses now use Reunion `ToCreatedOrProblem`; Deal lookup uses `ToOkOrProblem`. The remaining
   `ToActionResult` calls are limited to three file downloads and two bodyless `201 Created` responses

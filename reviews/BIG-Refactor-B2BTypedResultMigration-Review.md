@@ -6,8 +6,8 @@
 > in one line, take the safe path, keep going.
 
 **Plan anchored to commit:** `e229afb581c829279ca821b0a85729c4c4f0f441`  _(2026-08-10)_
-**Reviewed up to commit:** `9380696c208224e59ab77d09d8a72d00853e852f`  _(2026-08-14)_
-**Security-reviewed up to commit:** `9380696c208224e59ab77d09d8a72d00853e852f`  _(2026-08-14)_
+**Reviewed up to commit:** `0f331b6a37cd7ffa4a746ce5e2dd96cf636109aa`  _(2026-08-14)_
+**Security-reviewed up to commit:** `0f331b6a37cd7ffa4a746ce5e2dd96cf636109aa`  _(2026-08-14)_
 Net diff reviewed: `1043a9178..e229afb58`. Move-only files skipped.
 Status legend: `[ ]` not yet reviewed · `[x]` reviewed (date) · `[~]` in progress (incomplete — re-review).
 
@@ -154,3 +154,12 @@ and test coverage. The moved application-service operations preserve the former 
 mapping, Options, and booleans; facade tests and the architecture guard pin the new wiring. Upstream
 Payment reporting and shared integration-harness changes were already landed and introduce no
 branch-specific interaction defect.
+
+## Incremental review - 2026-08-14
+
+> Range reviewed: `9380696c208224e59ab77d09d8a72d00853e852f..0f331b6a37cd7ffa4a746ce5e2dd96cf636109aa` (5 commits).
+
+No new findings. Reviewed the verified push checkpoint and platform `0.1.0-alpha.0.988` reconciliation.
+The source delta is limited to the five service package pins from terminal-green platform-sync PR
+#566; restored B2B and Customer deployable closures, focused tests, architecture tests, and B2B User
+integration tests remain green.
