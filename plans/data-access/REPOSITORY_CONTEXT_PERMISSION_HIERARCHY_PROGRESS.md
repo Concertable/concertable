@@ -6,8 +6,8 @@
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable/.worktrees/Plan-data-access-repository-permission-hierarchy`
 - Branch: `Refactor/DataAccessRepositoryPermissionHierarchy`
 - PR: [#561](https://github.com/Concertable/concertable/pull/561) (draft)
-- Dependency/package gates: Phase 1 must pass exact-head draft CI before it can merge and publish the additive package surface
-- Last reconciled: 2026-08-14 against fetched `origin/main` at `429581025`; verified local, remote, and PR work head `3245c4fd9`; prior failed CI run `31798505833`
+- Dependency/package gates: Phase 1 work-head CI is green; the checkpoint-transport head must pass exact-head CI before PR #561 can leave draft. Merge requires explicit authorization, then additive package publication and the generated platform-sync PR must land green before Phase 2 resumes from current `origin/main`.
+- Last reconciled: 2026-08-14 against fetched `origin/main` at `a2747a90f`; verified local, remote, and PR work head `a579be698`; exact-head CI run `31812660710`
 
 ## Current state
 
@@ -31,15 +31,21 @@ That reparenting exposed `PublicOpportunityRepository` inheriting a writable-con
 It now has an independent read-only implementation over `PublicConcertDbContext`; the public and
 regular repositories share only the `ActiveForVenue` query extension. The correction is committed at
 `b850ea4b1` and passed its focused local gates. The corrected work and clean-review checkpoint range
-`94d7664ad..3245c4fd9` is pushed to draft PR #561, with local, remote-tracking, and PR heads verified
-equal at `3245c4fd99bb2b12c18478229a02c909aa4d9e01`.
+`94d7664ad..3245c4fd9` was pushed to draft PR #561.
+
+The branch merged fetched `origin/main` at `a2747a90f` without conflicts, producing work head
+`a579be6989bff37b3e1d1f13589b63ba0e166e3b`. Local HEAD, the remote-tracking branch, and PR #561's
+head were verified equal at that SHA. Exact-head CI run `31812660710` completed successfully across
+the source-platform pack, full solution build, all service carves, unit tests, and integration tests.
 
 ## Next Steps
 
-1. Follow exact-head draft CI for PR #561 and fix any remaining failures on the corrected package
-   topology.
-2. When Phase 1 CI is green, record its package-publication delivery gate and prepare the Phase 2
-   consumer migration from current `origin/main` after this PR merges.
+1. Follow exact-head draft CI for this ledger checkpoint; if it remains green, mark PR #561 ready.
+2. Wait for explicit authorization to merge PR #561. When authorized, merge it through the repository
+   merge workflow, follow additive package publication and the generated platform-sync PR to green,
+   and close this source worktree with `-PlanManaged`.
+3. Create the Phase 2 consumer-migration worktree from the resulting current `origin/main` and migrate
+   consumers against the published additive platform version.
 
 ## Completed work
 
@@ -62,6 +68,8 @@ equal at `3245c4fd99bb2b12c18478229a02c909aa4d9e01`.
 - `./scripts/local-platform.ps1 build api/Concertable.B2B/tests/Concertable.B2B.IntegrationTests.Fixtures/Concertable.B2B.IntegrationTests.Fixtures.csproj --configuration Release --disable-build-servers` - succeeded with 0 warnings and 0 errors after the public opportunity repository split.
 - `./scripts/local-platform.ps1 test api/Concertable.B2B/src/Modules/Concert/Tests/Concertable.B2B.Concert.UnitTests/Concertable.B2B.Concert.UnitTests.csproj --configuration Release --disable-build-servers` - 133 passed, 0 failed, 0 skipped.
 - `./scripts/local-platform.ps1 build api/Concertable.slnx --configuration Release` - inconclusive locally; exceeded the 20-minute command ceiling without emitting a compiler error. Exact-head draft CI owns the complete solution matrix.
+- `dotnet build api/Concertable.DataAccess/Tests/Concertable.DataAccess.UnitTests/Concertable.DataAccess.UnitTests.csproj --no-restore --disable-build-servers` after merging current `origin/main` - inconclusive locally; exceeded the 3-minute command ceiling after compiling the changed DataAccess assemblies without emitting a compiler error.
+- GitHub Actions CI run `31812660710` at work head `a579be698` - succeeded; source-platform pack, full solution build, all service carves, unit tests, and integration tests passed.
 - `python .agents/hooks/plan_graph.py --root C:/Users/TommySeery/source/repos/Concertable/.worktrees/Plan-data-access-repository-permission-hierarchy` - 0 errors, 0 warnings.
 - `git diff --check` - passed.
 
