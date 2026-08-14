@@ -9,7 +9,7 @@
 - Checkpoints 8-9 commit: `bfc8690b196821bdd735ea5d229182fd9a3baf36`
 - Current-main merge commit: `5613a817a96bb0316ea9dc3a2d624e59f43e56a4`
 - Review/fix commit: `eb84634699fa643a072342cd196b9767a6694619`
-- Review watermark: `eb84634699fa643a072342cd196b9767a6694619`
+- Review watermark: `54b419b0153fe06bc2786db061a48bbbbecef41c`
 - Checkpoint 10B consumer commits: `c55c99718` and `544144527`
 - Messaging producer commit: `ade9728f9`
 - Messaging delivery branch/PR: `Feature/MessagingOutboundCommands`, PR #536, remote head
@@ -210,6 +210,11 @@ reconcile current `origin/main`, repeat the smallest affected gates, and mark th
   Docker/Testcontainers was unavailable; every failure occurred during fixture construction before
   application code ran. Draft-PR integration CI owns the healthy-runner execution.
 - Final changed-file formatting verification and `git diff --check`: passed.
+- Final result-boundary commits: `fef0d2007` and Option-absence correction `54b419b01`.
+- B2B application-level `Option<T>` absence audit: all explicit absence branches return the named
+  `None` case through Reunion's implicit conversion; nullable repository/provider/framework returns
+  remain nullable. Artist, Venue, Tenant, and User infrastructure builds passed with 0 errors, scoped
+  formatting passed, and the incremental review is clean through `54b419b01`.
 
 ## Decisions and deviations
 

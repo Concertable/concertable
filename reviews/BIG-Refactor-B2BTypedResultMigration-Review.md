@@ -6,23 +6,23 @@
 > in one line, take the safe path, keep going.
 
 **Plan anchored to commit:** `e229afb581c829279ca821b0a85729c4c4f0f441`  _(2026-08-10)_
-**Reviewed up to commit:** `eb84634699fa643a072342cd196b9767a6694619`  _(2026-08-12)_
-**Security-reviewed up to commit:** `eb84634699fa643a072342cd196b9767a6694619`  _(2026-08-12)_
+**Reviewed up to commit:** `54b419b0153fe06bc2786db061a48bbbbecef41c`  _(2026-08-14)_
+**Security-reviewed up to commit:** `54b419b0153fe06bc2786db061a48bbbbecef41c`  _(2026-08-14)_
 Net diff reviewed: `1043a9178..e229afb58`. Move-only files skipped.
 Status legend: `[ ]` not yet reviewed · `[x]` reviewed (date) · `[~]` in progress (incomplete — re-review).
 
 ## Summary
 
-Big review complete: all 4 areas were reviewed over `1043a9178..e229afb58`. All 8 findings were
-addressed: NAT1-NAT5, SEC2, and CV1 are fixed; SEC1 is consciously deferred to a human architecture
-decision and tracked in the owning Concert `TECH_DEBT.md`. By review layer/lens, the findings comprise
+Big review complete: all 4 areas were reviewed over `1043a9178..e229afb58`. All findings are
+addressed: NAT1-NAT6, SEC1-SEC2, and CV1 are fixed. By review layer/lens, the findings comprise
 5 native findings (2 test-coverage, 1 correctness, and 2 contract/documentation), 2 security findings,
 and 1 C# convention/test-coverage finding; no microservice-isolation, module-boundary, or seeding
 findings survived the confidence filter.
 
 The earlier incremental review of 13 commits was clean. The 2026-08-12 incremental review found NAT6;
-it is fixed in `eb8463469` and its follow-up is clean. SEC1 is the only outstanding finding; all
-cross-area notes are resolved.
+it is fixed in `eb8463469` and its follow-up is clean. The 2026-08-14 incremental review verified the
+durable B2B/Payment saga cut-over, closed SEC1, and found no new issues. All findings and cross-area
+notes are resolved.
 
 ## Coverage
 
@@ -60,8 +60,11 @@ No issues found in this area. Checked the native review catalog, security-sensit
 - [x] **NAT4 — HIGH — native/correctness** — `api/Concertable.B2B/src/Modules/Concert/Concertable.B2B.Concert.Infrastructure/Services/Workflow/Executors/EscrowExecutor.cs:40`
   Resolved: both callers now use typed transition effects, propagate refund failures without saving the lifecycle transition, and forward cancellation. Withdrawal returns the failure through its HTTP terminal; late-capture compensation throws at the worker terminal so the webhook is not acknowledged. Focused tests cover both failure paths.
 
-- [-] **SEC1 — HIGH — security/correctness — DEFERRED** — `api/Concertable.B2B/src/Modules/Concert/Concertable.B2B.Concert.Api/Controllers/ApplicationController.cs:130`
-  A request-independent token alone only narrows the failure window: B2B has no durable acceptance/cancellation intent, non-commission Payment operations are not booking-key idempotent, and a durable Payment event cannot reconstruct an application left `Applied` after a process failure. The correct fix is a separately planned B2B + Payment saga/package cut-over that persists the lifecycle intent and intermediate state before money moves, stages a transactional outbox command, makes Payment operations idempotent by booking, and reconciles pending work in a worker with cancellation-after-payment tests. Human decision required: authorize that cross-service plan or explicitly accept the unresolved financial/state inconsistency risk. Tracked in `api/Concertable.B2B/src/Modules/Concert/TECH_DEBT.md`.
+- [x] **SEC1 — HIGH — security/correctness** — `api/Concertable.B2B/src/Modules/Concert/Concertable.B2B.Concert.Api/Controllers/ApplicationController.cs:130`
+  Resolved: B2B persists stable acceptance/cancellation operation IDs, stages Payment commands in the
+  same transaction through its outbox, and consumes typed Payment outcomes through its inbox. Payment
+  owns idempotent operation execution and recovery; B2B remains Contracts-only and exposes the durable
+  operation status without adding a cross-service runtime reference.
 
 - [x] **SEC2 — MEDIUM — security** — `api/Concertable.B2B/src/Modules/Concert/Concertable.B2B.Concert.Api/Controllers/DevController.cs:36`
   Resolved: the dev completion endpoint discards every successful `SettlementOutcome` and returns 204 No Content while retaining the typed ProblemDetails failure mapping.
@@ -94,3 +97,15 @@ and documentation/ledger accuracy.
 
 No other issues found. Checked native correctness, security-sensitive controller changes,
 microservice isolation, module boundaries, seeding, C# conventions, and test coverage of changed paths.
+
+## Incremental review - 2026-08-14
+
+> Range reviewed: `eb84634699fa643a072342cd196b9767a6694619..54b419b0153fe06bc2786db061a48bbbbecef41c`.
+
+No new findings. Reviewed the B2B-owned net changes for the durable financial-operation saga,
+outbound-only Messaging registration, Payment Contracts/Client boundary, inbox/outbox atomicity,
+state-machine retry paths, typed HTTP mappings, implicit Reunion conversions, invariant exceptions,
+EF migration, package ownership, and focused unit/integration/architecture coverage. SEC1 is closed.
+The follow-up audit replaced every B2B application-level `Option<T>` absence branch with the named
+`None` case through Reunion's implicit conversion; nullable repository and framework boundaries stay
+nullable. No new finding resulted.
