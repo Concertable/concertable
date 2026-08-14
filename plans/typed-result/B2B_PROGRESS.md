@@ -9,8 +9,7 @@
 - Checkpoints 8-9 commit: `bfc8690b196821bdd735ea5d229182fd9a3baf36`
 - Current-main merge commit: `5613a817a96bb0316ea9dc3a2d624e59f43e56a4`
 - Review/fix commit: `eb84634699fa643a072342cd196b9767a6694619`
-- Review watermark: `54b419b0153fe06bc2786db061a48bbbbecef41c`; the implicit-conversion
-  correction in this commit requires incremental review.
+- Review watermark: `219b34b1ef6152353212138e01f73a87120720ef`; incremental review is clean.
 - Checkpoint 10B consumer commits: `c55c99718` and `544144527`
 - Final reviewed delivery push: `b03abf8cd..6aef91470`; local, remote branch, and PR heads matched
   `6aef91470da0cab27dce5d525fe93c05b9b28f5c` immediately after the push.

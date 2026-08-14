@@ -6,8 +6,8 @@
 > in one line, take the safe path, keep going.
 
 **Plan anchored to commit:** `e229afb581c829279ca821b0a85729c4c4f0f441`  _(2026-08-10)_
-**Reviewed up to commit:** `54b419b0153fe06bc2786db061a48bbbbecef41c`  _(2026-08-14)_
-**Security-reviewed up to commit:** `54b419b0153fe06bc2786db061a48bbbbecef41c`  _(2026-08-14)_
+**Reviewed up to commit:** `219b34b1ef6152353212138e01f73a87120720ef`  _(2026-08-14)_
+**Security-reviewed up to commit:** `219b34b1ef6152353212138e01f73a87120720ef`  _(2026-08-14)_
 Net diff reviewed: `1043a9178..e229afb58`. Move-only files skipped.
 Status legend: `[ ]` not yet reviewed · `[x]` reviewed (date) · `[~]` in progress (incomplete — re-review).
 
@@ -106,6 +106,16 @@ No new findings. Reviewed the B2B-owned net changes for the durable financial-op
 outbound-only Messaging registration, Payment Contracts/Client boundary, inbox/outbox atomicity,
 state-machine retry paths, typed HTTP mappings, implicit Reunion conversions, invariant exceptions,
 EF migration, package ownership, and focused unit/integration/architecture coverage. SEC1 is closed.
-The follow-up audit replaced every B2B application-level `Option<T>` absence branch with the named
-`None` case through Reunion's implicit conversion; nullable repository and framework boundaries stay
-nullable. No new finding resulted.
+The follow-up Option construction was superseded by `219b34b1e`, which restores target-typed `null`
+for absence and direct reference payload returns.
+
+## Incremental review - 2026-08-14
+
+> Range reviewed: `54b419b0153fe06bc2786db061a48bbbbecef41c..219b34b1ef6152353212138e01f73a87120720ef` (3 commits).
+
+No new findings. Checked native correctness, implicit Reunion construction, nullable value-type
+conversion boundaries, microservice isolation, module boundaries, seeding, C# conventions, test
+coverage, and documentation/ledger accuracy. Explicit `Result` factories remain only at generic
+composition inference sites, `ToOption()` remains only for composition and nullable value types,
+and interface-typed successes retain named cases because C# forbids their raw user-defined
+conversion.
