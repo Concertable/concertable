@@ -6,7 +6,7 @@
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable/.worktrees/Plan-data-access-repository-permission-hierarchy`
 - Branch: `Refactor/DataAccessRepositoryPermissionHierarchy`
 - PR: [#561](https://github.com/Concertable/concertable/pull/561) (draft)
-- Remote work head: `86b352807f0ef4354cfcb16baae719481ae6e462`; local verified head: `9ba02a024b16684910d38da14741a54bd092bd58`
+- Remote and PR work head: `40b9e7076a2844e908a7e07f1b902a651f800869`
 - Dependency/package gates: Phase 1 remains an additive producer PR. After it merges, package publication and the generated platform-sync PR must be green before Phase 2 migrates consumers.
 - Last reconciled: 2026-08-15 against fetched `origin/main` at `34fd38198`; the branch is current with base and clean.
 
@@ -38,6 +38,8 @@ The replacement design is implemented in the working tree:
   explicit so the concepts are not mixed again.
 - The correction is committed at `28de99489`. Current `origin/main` merged cleanly at `9ba02a024`, and
   the post-merge branch-local platform build and focused Conversations tests are green.
+- The verified work range `86b352807..40b9e7076` is pushed; the remote-tracking branch and PR #561
+  both equal the recorded work head. The checkpoint-transport commit must land before exact-head CI is evaluated.
 
 ## Next Steps
 
@@ -83,6 +85,8 @@ The replacement design is implemented in the working tree:
 - Post-merge B2B Web Release build against that local platform - succeeded with 0 errors and the
   existing `UserEntity.UserEntity()` warning.
 - Post-merge Conversations unit tests - 9 passed, 0 failed, 0 skipped.
+- Work-head push `86b352807..40b9e7076` - succeeded; remote-tracking and PR heads both verified equal
+  `40b9e7076a2844e908a7e07f1b902a651f800869`.
 - Exact-head draft CI is pending.
 
 ## Reviews
