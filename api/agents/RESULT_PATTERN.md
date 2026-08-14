@@ -154,12 +154,12 @@ public UnitResult<ChangePasswordError> ChangePassword(string password)
 }
 ```
 
-For a target-typed `Option<T>`, prefer `return null;` for `None` and return a nullable value directly
-when it already expresses present-or-absent. Do not write `new None()` or `Option.None<T>()` when the
-target type already supplies the conversion. Use `ToOption()` when an explicit conversion inside a
-larger expression improves the composition or when there is no target-typed conversion site. These
-conversions create an Option; there is deliberately no implicit conversion from Option back to
-`T?`.
+For a target-typed `Option<T>`, return `new None()` for an explicitly absent application outcome and
+return present values directly. A nullable provider value may still be returned directly when the
+provider's present-or-absent result is the whole method result. Do not use `Option.None<T>()` when the
+named case can convert implicitly. Use `ToOption()` when an explicit conversion inside a larger
+expression improves the composition or when there is no target-typed conversion site. These
+conversions create an Option; there is deliberately no implicit conversion from Option back to `T?`.
 
 Use named cases when the value and error payload types overlap, when a broad source type would hide
 the intended branch, or when the branch itself is the point of the expression:
@@ -574,5 +574,5 @@ graph. A published contract change follows the repository's publish-and-sync cut
 - implicit Dunet case conversions;
 - broad exception-to-domain-error conversion;
 - shared error catalogs, reflection-discovered cases, or wrapper factories;
-- `new None()` or `Option.None<T>()` where a target-typed `null` is the clear Option result;
+- `return null;` or `Option.None<T>()` where a target-typed `new None()` is the clear Option result;
 - factory-heavy construction where a raw target-typed payload is unambiguous.
