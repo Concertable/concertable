@@ -73,12 +73,14 @@ configuration; explicit typed composition/options should select capabilities.
 - Establish one testing-owned environment vocabulary for Concertable's custom names and environment
   variable keys, use the framework `Environments` constants/helpers for built-in names in production
   C#, and give test harnesses one API that applies the correct environment consistently to every
-  resource. (In progress: the `"Testing"` env — purely the integration environment — was renamed to
-  `"Integration"`; `Concertable.Kernel` now owns C# 14 extension members — `Environments.Integration`/`.E2E` on
-  the framework's `Environments`, and `env.IsIntegration()`/`.IsE2E()` on `IHostEnvironment` (mirroring
-  `IsDevelopment()`). Once that Kernel version publishes, the 24 production checks switch to `env.IsIntegration()`,
-  the fixtures' `UseEnvironment` points at `Environments.Integration`, and the temporary
-  `Concertable.Testing.Integration` copy is deleted — publish-first.)
+  resource. (Owner + cut-over DONE: `"Testing"` → `"Integration"` rename; `Concertable.Kernel` owns C# 14
+  extension members — `Environments.Integration`/`.E2E` and `env.IsIntegration()`/`.IsE2E()` (mirroring
+  `IsDevelopment()`); post-publish, the 24 production `Integration` checks + Auth's 2 `E2E` checks now call the
+  helpers, the fixtures resolve `Environments.Integration` from Kernel, and the transitional
+  `Concertable.Testing.Integration` copy is deleted. **One literal remains:** `Concertable.ServiceDefaults` sits
+  *below* Kernel and can't reference its vocabulary without a layering inversion, so its single
+  `IsEnvironment("E2E")` stays a string — closing it needs the vocabulary to live in the lowest shared project,
+  a separate design call.)
 - Remove every production branch on `Testing` / `E2E`, whether expressed through `IsEnvironment(...)`
   or direct `EnvironmentName` comparison. Integration and E2E hosts supply explicit configuration and
   DI overrides from their own composition roots instead of teaching production code the semantics of
