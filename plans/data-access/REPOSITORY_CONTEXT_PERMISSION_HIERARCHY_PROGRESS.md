@@ -7,7 +7,7 @@
 - Branch: `Refactor/DataAccessRepositoryPermissionHierarchy`
 - PR: [#561](https://github.com/Concertable/concertable/pull/561) (draft)
 - Dependency/package gates: Phase 1 must pass exact-head draft CI before it can merge and publish the additive package surface
-- Last reconciled: 2026-08-14 against fetched `origin/main` at `429581025`, PR head `94d7664ad`, and failed CI run `31798505833`
+- Last reconciled: 2026-08-14 against fetched `origin/main` at `429581025`, local head `b850ea4b1`, PR head `94d7664ad`, and failed CI run `31798505833`
 
 ## Current state
 
@@ -29,11 +29,13 @@ module read contexts now derive the shared base directly.
 
 That reparenting exposed `PublicOpportunityRepository` inheriting a writable-context-constrained base.
 It now has an independent read-only implementation over `PublicConcertDbContext`; the public and
-regular repositories share only the `ActiveForVenue` query extension.
+regular repositories share only the `ActiveForVenue` query extension. The correction is committed at
+`b850ea4b1` and passed its focused local gates.
 
 ## Next Steps
 
-1. Commit and push the verified context-hierarchy correction, then verify local/remote/PR head equality.
+1. Push the verified context-hierarchy correction and review checkpoint, then verify local/remote/PR
+   head equality.
 2. Follow exact-head draft CI and fix any remaining failures on the corrected package topology.
 3. When Phase 1 CI is green, record its package-publication delivery gate and prepare the Phase 2
    consumer migration from current `origin/main` after this PR merges.
@@ -67,6 +69,8 @@ regular repositories share only the `ActiveForVenue` query extension.
 - Tommy design review approved.
 - Working-tree self-review found and corrected the `ReadRepository` protected-field binary compatibility edge.
 - Formal review of `429581025..94d7664ad` found BUG1 after exact-head CI exposed the namespace collision; the working-tree correction resolves it in `reviews/Refactor-DataAccessRepositoryPermissionHierarchy.md`.
+- Incremental review of `94d7664ad..b850ea4b1` found no new issues; the review watermark is current at
+  the corrected code head and BUG1 is resolved.
 
 ## Decisions, discoveries, blockers, and deviations
 
