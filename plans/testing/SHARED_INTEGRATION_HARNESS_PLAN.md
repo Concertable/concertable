@@ -63,7 +63,9 @@ extras vs shared `MockEmailSender`.
       `"Integration"` across all five services; `EnvironmentsExtensions`/`HostEnvironmentExtensions` extension
       members added to `Concertable.Kernel` (producer), fixtures on the transitional `.Testing` copy; docs updated;
       Auth `TECH_DEBT` entry removed; `TestBusTransport` deleted.
-- [ ] Kernel cutover (after PR 1's Kernel publishes): swap the 24 production checks to `env.IsIntegration()`;
-      point fixtures' `UseEnvironment` at `Environments.Integration`; delete the `.Testing` copy → no env literals.
+- [x] Kernel cutover (this branch, post-publish on `0.1.0-alpha.0.985`): the 24 production `Integration` checks +
+      Auth's 2 `E2E` checks now call `env.IsIntegration()`/`.IsE2E()`; fixtures resolve `Environments.Integration`
+      from Kernel; the transitional `.Testing` copy is deleted. One literal remains by design —
+      `Concertable.ServiceDefaults` sits below Kernel (logged in `api/TECH_DEBT.md`).
 - [ ] PR 2: migrate B2B + Customer onto the extensions; consider consolidating the duplicated
       `TestDbInitializer` and reconciling `MockEmailSender` with Auth's `TestEmailSender`.
