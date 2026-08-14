@@ -6,9 +6,10 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Fix-typed-result-customer-ticket-validation-composition`
 - Branch: `Fix/typed-result_customer-ticket-validation-composition`
 - PR: [#555](https://github.com/Concertable/concertable/pull/555) (draft)
-- Dependency/package gates: corrected Reunion `0.1.0-alpha.5` packages are published and indexed;
-  platform `0.1.0-alpha.0.976` is published
-- Last reconciled: 2026-08-13 against `origin/main` `a2747a90f` and merged PR #540 `491890ec9`
+- Dependency/package gates: all four Reunion `0.1.0-alpha.5` packages are published and indexed on
+  NuGet.org; platform `0.1.0-alpha.0.976` is published
+- Last reconciled: 2026-08-14 against draft PR #555, CI run `31745495727`, the live NuGet.org
+  indexes, and `origin/main` `429581025`
 
 ## Current state
 
@@ -19,9 +20,11 @@ Ticket purchase, checkout, and eligibility also expanded unambiguous Result bran
 while Payment success/error projection used terminal `Match` rather than `Map`/`MapError`.
 
 PR #540 completed the Option-boundary correction and merged as `491890ec9`. The remaining Ticket
-follow-up is now isolated on a fresh branch from current `origin/main`: align Customer's Reunion package
-set on `0.1.0-alpha.5`, adopt the published direct ValidationResult composition API, and verify the
-consumer against the corrected package before the plan's terminal delivery gates.
+follow-up adopts the corrected ValidationResult composition API on a lockstep `0.1.0-alpha.5` Reunion
+package set. The omitted `Reunion.AspNetCore` artifact has now been published from the corrected
+producer commit, NuGet.org indexes the complete set, and a forced no-cache full-solution restore is
+green. The branch has `origin/main` `429581025` merged at `77fcff14e` and is ready for an exact-head
+PR #555 CI run.
 
 ## Completed milestones
 
@@ -35,9 +38,13 @@ consumer against the corrected package before the plan's terminal delivery gates
 
 ## Verification and review
 
-- Customer restore resolved `Reunion`, `Reunion.AspNetCore`, `Reunion.Errors`, and
-  `Reunion.Validation` `0.1.0-alpha.5` from NuGet. The focused Ticket Infrastructure Release build is
-  green with 0 errors, and Ticket unit tests are 33/33 green against that package set.
+- `Reunion.AspNetCore` `0.1.0-alpha.5` was packed from producer commit `02e01a8ed`; the repository
+  package inspector verified its metadata, net10/net11 assets, Reunion dependencies, and ASP.NET Core
+  framework references. The local package SHA-256 is
+  `29686903837FD22C602340D1F0C422A53FC1FA23748DCED7D1AAD81410B919F7`.
+- NuGet.org accepted the package and its flat-container index now lists `0.1.0-alpha.5`.
+  `dotnet restore api/Concertable.slnx --force --no-cache --verbosity minimal` then restored the full
+  solution successfully from the public package set.
 - Guard-style validation rebuilt Ticket Infrastructure and the Ticket test assembly with 0 warnings
   and 0 errors; Ticket unit tests remain 33/33 green. Existing missing-Concert and invalid-purchase/
   checkout coverage is preserved.
@@ -58,6 +65,11 @@ consumer against the corrected package before the plan's terminal delivery gates
   tests green.
 - After `main` advanced again, it was reconciled at `f9707e7b5`. Its incoming product diff is confined
   to the B2B dashboard; the exact candidate's full-solution build remains green with 0 errors.
+- Draft PR #555 CI run `31745495727` failed deterministically in `build`: clean restore reported
+  `NU1102` for `Reunion.AspNetCore (>= 0.1.0-alpha.5)` across 19 Customer projects. No code, carve,
+  unit, integration, or E2E job ran after that restore failure.
+- `python .agents/hooks/plan_graph.py --root C:\Users\TommySeery\source\repos\Concertable\.worktrees\Fix-typed-result-customer-ticket-validation-composition`:
+  0 errors, 0 warnings after reconciling current `origin/main`.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -79,6 +91,7 @@ consumer against the corrected package before the plan's terminal delivery gates
 
 ## Next Steps
 
-Wait for draft PR #555 CI to reach terminal green. Then run the affected integration, package-clean,
-mechanical inventory, and exact-commit review gates, push any required fixes through the plan checkpoint
-protocol, and mark the PR ready for the explicit merge workflow.
+Push the current merged candidate through the plan checkpoint protocol and wait for exact-head draft
+PR #555 CI to reach terminal green. Then complete the affected integration, package-clean, mechanical
+inventory, and exact-commit review gates, push any required fixes through the same protocol, and mark
+PR #555 ready for the explicit merge workflow.
