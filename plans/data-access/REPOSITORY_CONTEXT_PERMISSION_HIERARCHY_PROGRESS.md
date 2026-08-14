@@ -6,8 +6,8 @@
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable/.worktrees/Plan-data-access-repository-permission-hierarchy`
 - Branch: `Refactor/DataAccessRepositoryPermissionHierarchy`
 - PR: [#561](https://github.com/Concertable/concertable/pull/561) (draft)
-- Dependency/package gates: Exact-head CI is green at `350ae02a1`. Incremental review found BUG2, and its focused Artist/Venue lookup coverage fix is locally green but uncommitted. PR #561 remains draft until the fix is pushed, exact-head CI is green again, and follow-up incremental review is clean. Merge still requires explicit authorization, then additive package publication and the generated platform-sync PR must land green before Phase 2 resumes from current `origin/main`.
-- Last reconciled: 2026-08-14 against fetched `origin/main` at `fc196ba99`; verified local, remote-tracking, and PR head `350ae02a1`; working tree contains the locally green BUG2 test fix and review/ledger updates
+- Dependency/package gates: Incremental-review BUG2 is fixed and pushed at `860d6fac8`. PR #561 remains draft until exact-head CI is green again and follow-up incremental review is clean. Merge still requires explicit authorization, then additive package publication and the generated platform-sync PR must land green before Phase 2 resumes from current `origin/main`.
+- Last reconciled: 2026-08-14 against fetched `origin/main` at `fc196ba99`; verified local, remote-tracking, and PR work head `860d6fac8`; exact-head CI and follow-up review pending
 
 ## Current state
 
@@ -54,13 +54,12 @@ only genuine marketplace repositories retain `Public`.
 
 ## Next Steps
 
-1. Commit and push the BUG2 focused lookup coverage fix through the two-leg plan checkpoint protocol.
-2. Require exact-head draft CI and a clean follow-up incremental review of only the fix commits before
+1. Require exact-head draft CI and a clean follow-up incremental review of only the fix commits before
    marking PR #561 ready.
-3. Wait for explicit authorization to merge PR #561. When authorized, merge it through the repository
+2. Wait for explicit authorization to merge PR #561. When authorized, merge it through the repository
    merge workflow, follow additive package publication and the generated platform-sync PR to green,
    and close this source worktree with `-PlanManaged`.
-4. Create the Phase 2 consumer-migration worktree from the resulting current `origin/main` and migrate
+3. Create the Phase 2 consumer-migration worktree from the resulting current `origin/main` and migrate
    consumers against the published additive platform version.
 
 ## Completed work
@@ -83,6 +82,8 @@ only genuine marketplace repositories retain `Public`.
   contracts while retaining `Public` only on marketplace repository contracts.
 - Committed and pushed the coherent correction at `272d17a78`; verified the pushed range
   `2a99965a3..272d17a78` and exact equality of local, remote-tracking, and PR heads.
+- Fixed BUG2 with focused Artist/Venue organisation-identity lookup coverage and pushed the work range
+  `350ae02a1..860d6fac8`; local, remote-tracking, and PR heads were verified equal.
 
 ## Verification
 
@@ -110,6 +111,7 @@ only genuine marketplace repositories retain `Public`.
 - GitHub Actions CI run `31835968326` at exact PR head `350ae02a1` - succeeded; source-platform pack, full solution build, service carves, unit tests, and integration tests passed.
 - `./scripts/local-platform.ps1 test api/Concertable.B2B/src/Modules/Artist/Tests/Concertable.B2B.Artist.UnitTests/Concertable.B2B.Artist.UnitTests.csproj --configuration Release --no-restore --disable-build-servers` after BUG2 - 6 passed, 0 failed, 0 skipped.
 - `./scripts/local-platform.ps1 test api/Concertable.B2B/src/Modules/Venue/Tests/Concertable.B2B.Venue.UnitTests/Concertable.B2B.Venue.UnitTests.csproj --configuration Release --no-restore --disable-build-servers` after BUG2 - 6 passed, 0 failed, 0 skipped.
+- Push checkpoint `350ae02a1..860d6fac8` - succeeded; local, remote-tracking, and PR heads verified equal at `860d6fac8ab4dfe980562ed776f353ffe53d46f6`.
 
 ## Reviews
 
@@ -119,8 +121,8 @@ only genuine marketplace repositories retain `Public`.
 - Incremental review of `94d7664ad..b850ea4b1` found no new issues; the review watermark is current at
   the corrected code head and BUG1 is resolved.
 - Incremental review of `b850ea4b1..350ae02a1` found BUG2: the new Artist/Venue organisation-identity
-  collaborators lacked focused wiring coverage. The fix is locally green; follow-up review is pending
-  after commit. Security review of the merged Auth, Payment, Contracts, and configuration paths found
+  collaborators lacked focused wiring coverage. The fix is committed and pushed at `860d6fac8`;
+  follow-up review is pending. Security review of the merged Auth, Payment, Contracts, and configuration paths found
   no issues and is stamped at `350ae02a1`.
 
 ## Decisions, discoveries, blockers, and deviations
