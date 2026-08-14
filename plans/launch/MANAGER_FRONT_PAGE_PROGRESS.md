@@ -12,9 +12,9 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
 
 ## Next Steps
 
-**Immediate action:** Push the incrementally reviewed B2B test-fixture compatibility checkpoint to draft producer PR
-[#557](https://github.com/Concertable/concertable/pull/557), and require local `HEAD`, the remote-tracking
-branch, and the PR head to match before its exact-head CI passes. Once green, delete the spent review work order in its
+**Immediate action:** Transport this verified-push ledger checkpoint to draft producer PR
+[#557](https://github.com/Concertable/concertable/pull/557), require local `HEAD`, the remote-tracking
+branch, and the PR head to match, then require its exact-head CI to pass. Once green, delete the spent review work order in its
 final review-only commit, push it, and require the new exact-head CI to pass. Do not merge until explicitly requested. After this additive package
 producer merges, publishes, and platform-sync lands, close this worktree and resume from a fresh B2B consumer worktree
 to implement the overview, canonical-resource list, chart, review, inbox, activity, and settlement endpoints against
@@ -38,6 +38,9 @@ an independent later item.
   deterministic empty report results, and the exact CI-equivalent local-platform Release build of
   `Concertable.B2B.IntegrationTests.Fixtures` passes with 0 warnings/errors.
 - Compatibility fix commit `8b7ba4e80` and its full incremental correctness/security review introduce no new findings.
+  Reviewed work head `5904b8c567fab16207b604320a1f333d363643cd` was pushed from starting remote/PR head
+  `93847e86a57ee4dd9016b88281104db53a399ca0`; a fetch then proved local, remote-tracking, and PR heads all equal the
+  reviewed work head. This ledger-only checkpoint is the pending transport leg.
 - Payment now owns agnostic reporting contracts for monthly ticket revenue, monthly settlement payouts, and recent
   settlements. Each aggregate materialises once in `TransactionRepository`; B2B will enrich opaque booking and owner
   identifiers after the published-client gate.
