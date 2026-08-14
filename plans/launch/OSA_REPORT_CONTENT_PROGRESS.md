@@ -22,20 +22,16 @@ Three things worth knowing, all verified against source rather than assumed:
 
 ## Next Steps
 
-1. **Watch draft PR #572's CI.** It owns the full solution build, the standalone service carves, and the
-   complete unit/integration matrices against the exact remote head. Do not reproduce those locally.
-2. **The integration tests have never executed** — Docker is not running on this machine and the
-   integration matrix is PR CI's gate. Expect the first CI run to be where
-   `ContentReportApiTests` and `ModerationApiTests` are proven. If one goes red, enter
-   `integration-debug` at its narrowest failing scope rather than re-running the suite.
-3. **Merge via `/merge` at the full-E2E tier.** Plan §11 is explicit: this change touches shared web
+1. **PR #572's CI is green** (57 pass / 4 skipping / 0 fail) at head `2dcf3cf98`. It is still a **draft**
+   — mark it ready and merge when Tommy gives the go-ahead. E2E has not run at any tier yet.
+2. **Merge via `/merge` at the full-E2E tier.** Plan §11 is explicit: this change touches shared web
    code, a user-facing messaging flow, the request-authorization surface and the data model, so it
    fails every `skip-e2e` criterion. Let the merge queue run E2E; do not run it locally first.
-4. **Own the post-merge `chore/platform-sync-*` PR to green.** This is an `api/**` change, so
+3. **Own the post-merge `chore/platform-sync-*` PR to green.** This is an `api/**` change, so
    `publish-packages` republishes and `platform-sync` bumps every service's pin. Expected
    non-breaking — no cross-service published contract changed — so it should auto-merge. A red sync is
    this plan's to fix, in that PR.
-5. **Close out only after platform sync is green:** record the terminal evidence here, then `git rm`
+4. **Close out only after platform sync is green:** record the terminal evidence here, then `git rm`
    this ledger and `OSA_REPORT_CONTENT_PLAN.md` together in a doc-only close-out landed through
    `/merge-docs`. The source PR never deletes its own recovery artifacts.
 
@@ -74,7 +70,7 @@ The roadmap lines have already been moved in the same commit as the shipping wor
 - **Unit tests written and green (18):** `ContentReportEntityTests`, `ReportMessageErrorTests`,
   `ContentReportServiceTests`, the `MessageEntity` hide/restore tests, and the `MessageRepository`
   hidden-exclusion test.
-- **Integration tests written, not yet executed:** `ContentReportApiTests` (204 + both emails,
+- **Integration tests written and green in CI (15 total in the suite):** `ContentReportApiTests` (204 + both emails,
   non-participant 404, anonymous 401, field-indexed 400, the inbound-only report link) and
   `ModerationApiTests` (hide removes from both inboxes and the unread count, restore reinstates,
   **tenant Owner 403 on every moderation endpoint**, anonymous 401, resolve records the outcome and a
@@ -102,8 +98,13 @@ All local, on this branch, after both phases:
 - Web — `build:web-packages`, all four SPA builds (`web-customer`, `web-venue`, `web-artist`,
   `web-business`), and `npm run lint:boundaries` (no violations across all five cruised graphs).
 
-**Not run locally, by policy or environment:** the integration matrix (Docker is not up here; PR CI owns
-it) and all E2E (the merge queue owns it).
+**PR #572 CI: 57 checks pass, 4 skipping, 0 failures** — including the Conversations integration job
+(15 passed), every service carve, `fe-boundaries`, and the full unit matrix. CI also surfaced one real
+defect in this work, now fixed: `ICurrentUser.Email` is nullable, so the acknowledgement send passed a
+possibly-null recipient (CS8604); it now fails closed up front.
+
+**Not run locally, by environment:** the integration matrix (Docker is not up on this machine — CI
+proved it instead). E2E has not run at any tier yet; the merge queue owns it.
 
 ## Reviews
 
