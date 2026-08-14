@@ -5,9 +5,9 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `0eb0babfbb60abc13a6b6dfb7486ea500280fb4e`  _(2026-08-14)_
+**Reviewed up to commit:** `931dde050df1f3732d53a29cb04006ebd537bdee`  _(2026-08-14)_
 
-**Security-reviewed up to commit:** `0eb0babfbb60abc13a6b6dfb7486ea500280fb4e`  _(2026-08-14)_
+**Security-reviewed up to commit:** `931dde050df1f3732d53a29cb04006ebd537bdee`  _(2026-08-14)_
 
 > Range reviewed: `7377e8c7a..bc56de2d8` (5 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -22,3 +22,9 @@
 > Range reviewed: `bc56de2d8..0eb0babfb` (1 commit).
 
 No issues found. Checked correctness, security, microservice isolation, module boundaries, seeding, C# conventions, and test coverage of changed paths.
+
+## Incremental review — 2026-08-14 current-main sync
+
+> Range reviewed: `0eb0babfb..931dde050` (current-main merge; no conflicts or branch-owned source resolution).
+
+No issues found. The effective PR source diff is unchanged beyond the previously reviewed BUG1 fix; current-main build and focused tests pass.

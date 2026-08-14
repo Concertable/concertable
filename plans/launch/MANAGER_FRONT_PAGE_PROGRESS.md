@@ -12,17 +12,15 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
 
 ## Next Steps
 
-**Immediate action:** Update this clean branch from current `origin/main` (31 commits behind at the reviewed BUG1
-checkpoint), resolve any conflicts without dropping the Payment reporting work, and rerun the plan graph, Payment Web
-build, the focused reporting/service unit tests, and `TransactionRepositoryAggregateTests`. Incrementally review any
-branch-owned merge-resolution delta, then push the reviewed work head and plan checkpoint through the two-leg
-plan-managed push protocol and require exact-head PR CI on draft producer PR
-[#557](https://github.com/Concertable/concertable/pull/557) to pass. Do not merge until explicitly requested. After this
-additive package producer merges, publishes, and platform-sync lands, close this worktree and resume from a fresh B2B
-consumer worktree to implement the overview, canonical-resource list, chart, review, inbox, activity, and settlement
-endpoints against that published baseline. Activity stays last because it needs its owned persistence model and an
-`api/initial-migrations.ps1` re-scaffold. Keep every remaining dashboard section in scope; Phase A.8 UX freeze remains
-an independent later item.
+**Immediate action:** Push the reviewed current-main work head and this plan checkpoint through the two-leg
+plan-managed push protocol, then require exact-head PR CI on draft producer PR
+[#557](https://github.com/Concertable/concertable/pull/557) to pass. Once that code checkpoint is green, delete the spent
+review work order in its final review-only commit, push it, and require the new exact-head CI to pass. Do not merge until
+explicitly requested. After this additive package producer merges, publishes, and platform-sync lands, close this
+worktree and resume from a fresh B2B consumer worktree to implement the overview, canonical-resource list, chart,
+review, inbox, activity, and settlement endpoints against that published baseline. Activity stays last because it needs
+its owned persistence model and an `api/initial-migrations.ps1` re-scaffold. Keep every remaining dashboard section in
+scope; Phase A.8 UX freeze remains an independent later item.
 
 ## Current producer slice
 
@@ -30,15 +28,18 @@ an independent later item.
   [#557](https://github.com/Concertable/concertable/pull/557). Full review through `bc56de2d8` found BUG1: settlement
   reports used creation time instead of completion time. Fix commit `0eb0babfb` persists immutable `CompletedAt`, uses
   it for completed-settlement totals/months/recency, and adds the boundary coverage. Incremental correctness/security
-  review of `bc56de2d8..0eb0babfb` found no new issues; the reviewed fix and this checkpoint are not yet pushed.
+  review of `bc56de2d8..0eb0babfb` found no new issues. Current `origin/main` merged conflict-free as `931dde050`; the
+  effective PR source diff is unchanged beyond the reviewed fix, and this reviewed current-main checkpoint is not yet
+  pushed.
 - Payment now owns agnostic reporting contracts for monthly ticket revenue, monthly settlement payouts, and recent
   settlements. Each aggregate materialises once in `TransactionRepository`; B2B will enrich opaque booking and owner
   identifiers after the published-client gate.
 - The gRPC surface and `IManagerPaymentReportingClient` expose `Money`-based report records without venue, artist,
   concert, or dashboard concepts leaking into Payment.
-- Local verification for fix commit `0eb0babfb`: full `api/initial-migrations.ps1` passed; Payment Web build succeeded
-  with 0 warnings/errors; focused domain/service tests passed 24/24; SQL `TransactionRepositoryAggregateTests` passed
-  5/5 against a real Testcontainers SQL Server. Re-run the focused gates after updating from `origin/main`.
+- Local verification after current-main merge `931dde050`: plan graph passed with 0 errors/warnings; Payment Web build
+  succeeded with 0 warnings/errors against platform `0.1.0-alpha.0.980`; focused domain/service tests passed 24/24;
+  SQL `TransactionRepositoryAggregateTests` passed 5/5 against a real Testcontainers SQL Server. The earlier full
+  `api/initial-migrations.ps1` re-scaffold also passed for the BUG1 model change.
 
 **Item 3 — DELIVERED (2026-08-13).** Producer PR [#545](https://github.com/Concertable/concertable/pull/545) merged
 (`3004fb52d`); consumer PR [#554](https://github.com/Concertable/concertable/pull/554) merged (`2dfe09cc9`) wired both
