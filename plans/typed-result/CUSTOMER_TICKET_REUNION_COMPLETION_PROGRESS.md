@@ -8,7 +8,7 @@
 - PR: [#555](https://github.com/Concertable/concertable/pull/555) (draft)
 - Dependency/package gates: all four Reunion `0.1.0-alpha.5` packages are published and indexed on
   NuGet.org; platform `0.1.0-alpha.0.976` is published
-- Last reconciled: 2026-08-14 against draft PR #555, CI run `31745495727`, the live NuGet.org
+- Last reconciled: 2026-08-14 against draft PR #555 work head `edc88edfa`, the live NuGet.org
   indexes, and `origin/main` `429581025`
 
 ## Current state
@@ -24,7 +24,7 @@ follow-up adopts the corrected ValidationResult composition API on a lockstep `0
 package set. The omitted `Reunion.AspNetCore` artifact has now been published from the corrected
 producer commit, NuGet.org indexes the complete set, and a forced no-cache full-solution restore is
 green. The branch has `origin/main` `429581025` merged at `77fcff14e` and is ready for an exact-head
-PR #555 CI run.
+PR #555 CI run. Work head `edc88edfa` is verified equal across local, remote-tracking, and PR refs.
 
 ## Completed milestones
 
@@ -35,6 +35,8 @@ PR #555 CI run.
   cancellation propagation, direct package ownership, and focused coverage.
 - Initial implementation commit `f765dc196` and guard-style correction `f30ce554e` are pushed; local,
   remote, and draft PR #555 work heads were verified equal at `f30ce554e`.
+- The resolved-package candidate `3adb44a66..edc88edfa` is pushed; local, remote-tracking, and draft
+  PR #555 work heads were verified equal at `edc88edfa`.
 
 ## Verification and review
 
@@ -91,7 +93,6 @@ PR #555 CI run.
 
 ## Next Steps
 
-Push the current merged candidate through the plan checkpoint protocol and wait for exact-head draft
-PR #555 CI to reach terminal green. Then complete the affected integration, package-clean, mechanical
-inventory, and exact-commit review gates, push any required fixes through the same protocol, and mark
-PR #555 ready for the explicit merge workflow.
+Wait for draft PR #555 CI on work head `edc88edfa` to reach terminal green. Then complete the affected
+integration, package-clean, mechanical inventory, and exact-commit review gates, push any required
+fixes through the plan checkpoint protocol, and mark PR #555 ready for the explicit merge workflow.
