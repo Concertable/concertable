@@ -5,7 +5,7 @@
 - Roadmap item: `typed-result/b2b`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-B2BTypedResultMigration`
 - Branch: `Refactor/B2BTypedResultMigration`
-- PR: #552 (draft)
+- PR: #552 (ready; auto-merge disabled)
 - Checkpoints 8-9 commit: `bfc8690b196821bdd735ea5d229182fd9a3baf36`
 - Current-main merge commit: `5613a817a96bb0316ea9dc3a2d624e59f43e56a4`
 - Review/fix commit: `eb84634699fa643a072342cd196b9767a6694619`
@@ -17,7 +17,12 @@
   `8b44d41ec8ecb9d8b7d4c648b76ad0967401024b`. Exact-head draft-PR CI is the next gate.
 - Current-main reconciliation push: starting remote head `2b68197e0`; pushed
   `506addfee..21e58a2b8`; local work head, remote branch, and PR #552 head matched
-  `21e58a2b865e79a1fdee8a2a9e7078dfb7474fbc`. Marking the PR ready is the next gate.
+  `21e58a2b865e79a1fdee8a2a9e7078dfb7474fbc`; checkpoint transport then matched
+  `8db6d14f0fd1f644226bda27c2764f429a0e0c1b`. PR #552 was marked ready and exact-head CI passed.
+- Current remote PR head: `af8aa70b46883a5536ac8a32ae79a8c470210eef`; this adds the scoped
+  `Concertable.AppHost.Shared` topology-builder tech-debt entry. The current uncommitted follow-up
+  replaces standard HTTP success callbacks with Reunion terminals and strengthens Location-header
+  contracts.
 - Messaging producer commit: `ade9728f9`
 - Messaging delivery branch/PR: `Feature/MessagingOutboundCommands`, PR #536, remote head
   `7a0886e1245ef76267f0cf906518b2169ac3cfd6`
@@ -74,8 +79,9 @@ reference was added. The resolved SEC1 tech-debt entry has been deleted.
 
 ## Next Steps
 
-Push the reviewed current-main reconciliation and mark PR #552 ready. Then wait for exact-head build,
-carve, unit, integration, architecture, and HTTP-contract CI.
+Commit and review the verified HTTP-terminal follow-up, publish it through the plan-managed two-leg
+push protocol, and wait for exact-head build, carve, unit, integration, architecture, and HTTP-contract
+CI. Keep auto-merge disabled until Tommy explicitly authorizes landing PR #552.
 
 ## Completed work
 
@@ -230,6 +236,15 @@ carve, unit, integration, architecture, and HTTP-contract CI.
   and short-circuits missing Artist/Venue identities as implicit `None` before Concert or Payment
   calls. B2B architecture/Web closure builds with 0 warnings and 0 errors; Artist passes 16/16,
   Venue 17/17, architecture 8/8, and scoped formatting passes.
+- Standard Artist, Venue, Opportunity, Application, invitation, and Customer Review creation
+  responses now use Reunion `ToCreatedOrProblem`; Deal lookup uses `ToOkOrProblem`. The remaining
+  `ToActionResult` calls are limited to three file downloads and two bodyless `201 Created` responses
+  for which Reunion has no dedicated unit-result terminal. Focused HTTP integration contracts pass
+  Artist 1/1, Venue 1/1, Concert 5/5, Tenant 1/1, and Customer Review 1/1, including exact Location
+  headers. B2B and Customer Web closures build with 0 errors; B2B architecture passes 8/8;
+  production-project formatting and `git diff --check` pass. The solution formatter timed out while
+  loading the full workspace without reporting a formatting violation; Customer Review required a
+  temporary short drive mapping for the Windows SqlClient native-loader path limit and then passed.
 
 ## Decisions and deviations
 
