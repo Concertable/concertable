@@ -52,6 +52,9 @@
   producer and completed Customer Ticket delivery records.
 - Post-merge review watermark: `9380696c208224e59ab77d09d8a72d00853e852f`; incremental native,
   security, isolation, module-boundary, seeding, convention, and coverage review is clean.
+- Module-facade/current-main push: starting remote head `1b7c4ada6`; pushed
+  `1b7c4ada6..6ec2eea87`; local work head, remote branch, and PR #552 head matched
+  `6ec2eea87b9eca250163fcf42325b2aa30f9ff05`.
 
 ## Current state
 
@@ -105,9 +108,9 @@ package graph; no Reunion extension was copied or recreated locally.
 
 ## Next Steps
 
-Commit and push the reviewed current-main checkpoint, verify local/remote/PR head equality, record
-the transport checkpoint, and wait for exact-head build, carve, unit, integration, architecture, and
-HTTP-contract CI. Keep auto-merge disabled until Tommy explicitly authorizes landing PR #552.
+Push this transport checkpoint, verify local/remote/PR head equality, and wait for exact-head build,
+carve, unit, integration, architecture, and HTTP-contract CI. Keep auto-merge disabled until Tommy
+explicitly authorizes landing PR #552.
 
 ## Completed work
 
