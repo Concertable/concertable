@@ -19,10 +19,9 @@
   `506addfee..21e58a2b8`; local work head, remote branch, and PR #552 head matched
   `21e58a2b865e79a1fdee8a2a9e7078dfb7474fbc`; checkpoint transport then matched
   `8db6d14f0fd1f644226bda27c2764f429a0e0c1b`. PR #552 was marked ready and exact-head CI passed.
-- Current remote PR head: `af8aa70b46883a5536ac8a32ae79a8c470210eef`; this adds the scoped
-  `Concertable.AppHost.Shared` topology-builder tech-debt entry. The current uncommitted follow-up
-  replaces standard HTTP success callbacks with Reunion terminals and strengthens Location-header
-  contracts.
+- HTTP-terminal follow-up push: starting remote head `af8aa70b46883a5536ac8a32ae79a8c470210eef`;
+  pushed `af8aa70b4..b9448ab0e`; local work head, remote branch, and PR #552 head matched
+  `b9448ab0e7ec552347d347044f64c0b77a747520`. Exact-head CI is the next gate.
 - Messaging producer commit: `ade9728f9`
 - Messaging delivery branch/PR: `Feature/MessagingOutboundCommands`, PR #536, remote head
   `7a0886e1245ef76267f0cf906518b2169ac3cfd6`
@@ -79,9 +78,8 @@ reference was added. The resolved SEC1 tech-debt entry has been deleted.
 
 ## Next Steps
 
-Commit and review the verified HTTP-terminal follow-up, publish it through the plan-managed two-leg
-push protocol, and wait for exact-head build, carve, unit, integration, architecture, and HTTP-contract
-CI. Keep auto-merge disabled until Tommy explicitly authorizes landing PR #552.
+Wait for exact-head build, carve, unit, integration, architecture, and HTTP-contract CI. Keep
+auto-merge disabled until Tommy explicitly authorizes landing PR #552.
 
 ## Completed work
 
