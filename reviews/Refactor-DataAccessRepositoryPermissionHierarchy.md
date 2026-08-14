@@ -5,7 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `b850ea4b1bedf43b4e85bce3b6e18bf728050ad3`  _(2026-08-14)_
+**Reviewed up to commit:** `350ae02a17c41c434edba5cff309046d5487c9b7`  _(2026-08-14)_
+**Security-reviewed up to commit:** `350ae02a17c41c434edba5cff309046d5487c9b7`  _(2026-08-14)_
 
 > Range reviewed: `429581025..94d7664ad` (2 commits).
 > Status legend: `[ ]` todo - `[~]` in progress - `[x]` done - `[wontfix]` (note why).
@@ -20,3 +21,12 @@
 > Range reviewed: `94d7664ad..b850ea4b1` (1 commit).
 
 No issues found. Checked correctness, microservice isolation, module boundaries, seeding, C# conventions, and test coverage of changed paths.
+
+## Incremental review - 2026-08-14
+
+> Range reviewed: `b850ea4b1..350ae02a1` (64 commits).
+
+- [x] **BUG2 - MEDIUM - test coverage** - `api/Concertable.B2B/src/Modules/Artist/Concertable.B2B.Artist.Infrastructure/Repositories/ArtistOrgIdentityLookup.cs:15`
+  Added focused Artist/Venue lookup tests that seed through the tenant contexts, read without tenant context, and cover both found and absent tenants.
+
+Security review found no issues in the Auth, Payment, Contracts, and configuration paths included through the merged-main portion of the range.
