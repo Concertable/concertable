@@ -40,6 +40,7 @@
     <Project Path="Concertable.B2B/src/Modules/Artist/Concertable.B2B.Artist.Domain/Concertable.B2B.Artist.Domain.csproj" />
     <Project Path="Concertable.B2B/src/Modules/Artist/Concertable.B2B.Artist.Infrastructure/Concertable.B2B.Artist.Infrastructure.csproj" />
     <Project Path="Concertable.B2B/src/Modules/Artist/Tests/Concertable.B2B.Artist.IntegrationTests/Concertable.B2B.Artist.IntegrationTests.csproj" />
+    <Project Path="Concertable.B2B/src/Modules/Artist/Tests/Concertable.B2B.Artist.UnitTests/Concertable.B2B.Artist.UnitTests.csproj" />
   </Folder>
   <Folder Name="/B2B/Modules/Concert/">
     <Project Path="Concertable.B2B/src/Modules/Concert/Concertable.B2B.Concert.Api/Concertable.B2B.Concert.Api.csproj" />
@@ -91,6 +92,7 @@
     <Project Path="Concertable.B2B/src/Modules/Venue/Concertable.B2B.Venue.Domain/Concertable.B2B.Venue.Domain.csproj" />
     <Project Path="Concertable.B2B/src/Modules/Venue/Concertable.B2B.Venue.Infrastructure/Concertable.B2B.Venue.Infrastructure.csproj" />
     <Project Path="Concertable.B2B/src/Modules/Venue/Tests/Concertable.B2B.Venue.IntegrationTests/Concertable.B2B.Venue.IntegrationTests.csproj" />
+    <Project Path="Concertable.B2B/src/Modules/Venue/Tests/Concertable.B2B.Venue.UnitTests/Concertable.B2B.Venue.UnitTests.csproj" />
   </Folder>
   <Folder Name="/Customer/">
     <Project Path="Concertable.Customer/src/Concertable.Customer.AppHost/Concertable.Customer.AppHost.csproj" />
@@ -168,6 +170,7 @@
   <Folder Name="/DataAccess/">
     <Project Path="Concertable.DataAccess/Concertable.DataAccess.Application/Concertable.DataAccess.Application.csproj" />
     <Project Path="Concertable.DataAccess/Concertable.DataAccess.Infrastructure/Concertable.DataAccess.Infrastructure.csproj" />
+    <Project Path="Concertable.DataAccess/Tests/Concertable.DataAccess.UnitTests/Concertable.DataAccess.UnitTests.csproj" />
   </Folder>
   <Folder Name="/Messaging/">
     <Project Path="Concertable.Messaging/Concertable.Messaging.Application/Concertable.Messaging.Application.csproj" />
