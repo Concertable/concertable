@@ -5,9 +5,9 @@
 - Roadmap item: `data-access/repository-context-permission-hierarchy`
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable/.worktrees/Plan-data-access-repository-permission-hierarchy`
 - Branch: `Refactor/DataAccessRepositoryPermissionHierarchy`
-- PR: not opened
-- Dependency/package gates: design approved; Phase 1 is implemented locally; delivery will use additive publish -> consumer migration -> contraction publish with a green platform sync after each package merge
-- Last reconciled: 2026-08-14 against fetched `origin/main` at `429581025`, the repo-wide census, and the verified Phase 1 working tree
+- PR: [#561](https://github.com/Concertable/concertable/pull/561) (draft)
+- Dependency/package gates: Phase 1 implementation is committed and pushed; draft PR CI and formal review gate merge/publication; delivery then requires a green platform sync before Phase 2 consumer migration
+- Last reconciled: 2026-08-14 against fetched `origin/main` at `429581025`, Phase 1 commit `8ab4402d9`, and draft PR #561
 
 ## Current state
 
@@ -15,24 +15,25 @@ The prior repository redesign is merged and its plan closed. Current `main` cont
 `IReadDbContext`, `IReadRepository`, `IWriteRepository`, and composite `IRepository`, but the shared
 implementation uses context-generic write/combined bases plus private read/write facet subclasses.
 
-Tommy approved the target design. Phase 1 is implemented and verified in the working tree: the shared
-context capabilities, read-only EF base, context-free write/combined repositories, and additive
-`ReadRepository.Context` migration property are present while every legacy published type and field
-remains available. The roadmap, plan, ledger, and implementation are not yet committed.
+Tommy approved the target design. Phase 1's shared context capabilities, read-only EF base,
+context-free write/combined repositories, and additive `ReadRepository.Context` migration property
+are committed and pushed at `8ab4402d9`. Every legacy published type and field remains available.
+The pushed work head and `origin/Refactor/DataAccessRepositoryPermissionHierarchy` were verified equal
+at `8ab4402d9b5a2ff1adf613fcfdd143da887df423`; draft PR #561 targets `main`.
 
 ## Next Steps
 
-1. Commit the coherent Phase 1 additive package checkpoint with this ledger state.
-2. Push the work head and verify the remote branch head, then open a draft GitHub PR.
-3. Record the PR and verified remote head in this ledger, push the checkpoint transport commit, and verify local/remote/PR head equality.
-4. Let exact-head draft PR CI validate the full build, service carves, unit, and integration matrices before merge review.
+1. Verify exact-head draft PR #561 CI completes green across the full build, service carves, unit, and integration matrices.
+2. Run the formal code/documentation review of `origin/main..HEAD` and resolve every high-confidence finding.
+3. Re-run focused verification after any fix, update this ledger, and make PR #561 ready for merge review.
+4. Do not start the Phase 2 consumer branch until Phase 1 merges, publishes, and its platform-sync PR is green.
 
 ## Completed work
 
 - Created an isolated planning worktree from fetched `origin/main` and completed the initial repository/context census.
 - Drafted the roadmap item, plan, and progress ledger.
 - Tommy approved the context interfaces, independent repository implementations, service migration matrix, and staged package cutover.
-- Implemented Phase 1's additive shared permission surface and retained the legacy arities plus protected read-context field for package compatibility.
+- Implemented and committed Phase 1's additive shared permission surface at `8ab4402d9`; retained the legacy arities plus protected read-context field for package compatibility and opened draft PR #561.
 
 ## Verification
 
@@ -65,10 +66,3 @@ remains available. The roadmap, plan, ledger, and implementation are not yet com
 - `ReadRepository<TEntity, TKey>` cannot gain a replacement arity, so Phase 1 adds `Context` while
   retaining the published protected `context` field; Phase 2 migrates derived source and Phase 3
   removes the field only after source/package grep gates are clean.
-
-## Recent transitions
-
-- The initial discussion explored and rejected context generics on `ReadRepository`, nested facet
-  composition, removal of the standalone `WriteRepository`, invented combined-context names, and
-  collapsing Customer read/projection contexts. The plan records the resolved hierarchy so those paths
-  are not repeated.
