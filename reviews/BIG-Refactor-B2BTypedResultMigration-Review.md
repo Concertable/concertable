@@ -6,8 +6,8 @@
 > in one line, take the safe path, keep going.
 
 **Plan anchored to commit:** `e229afb581c829279ca821b0a85729c4c4f0f441`  _(2026-08-10)_
-**Reviewed up to commit:** `85e84c7dcc9c6e81c0f34e627254b43cec6e9553`  _(2026-08-14)_
-**Security-reviewed up to commit:** `85e84c7dcc9c6e81c0f34e627254b43cec6e9553`  _(2026-08-14)_
+**Reviewed up to commit:** `35903d6e02d750761f4d41a02d906a096c8f0fd2`  _(2026-08-14)_
+**Security-reviewed up to commit:** `35903d6e02d750761f4d41a02d906a096c8f0fd2`  _(2026-08-14)_
 Net diff reviewed: `1043a9178..e229afb58`. Move-only files skipped.
 Status legend: `[ ]` not yet reviewed · `[x]` reviewed (date) · `[~]` in progress (incomplete — re-review).
 
@@ -22,7 +22,9 @@ findings survived the confidence filter.
 The earlier incremental review of 13 commits was clean. The 2026-08-12 incremental review found NAT6;
 it is fixed in `eb8463469` and its follow-up is clean. The 2026-08-14 incremental review verified the
 durable B2B/Payment saga cut-over, closed SEC1, and found no new issues. All findings and cross-area
-notes are resolved.
+notes are resolved. The follow-up through `35903d6e0` reviewed the branch-owned HTTP-terminal changes,
+the Deal polymorphic-wire correction, and their tests; current-main merge content was inherited from
+its landed PR. No new correctness, security, isolation, ownership, or coverage finding survived.
 
 ## Coverage
 
