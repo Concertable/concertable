@@ -3,13 +3,12 @@
 - Plan: `plans/typed-result/CUSTOMER_TICKET_REUNION_COMPLETION_PLAN.md`
 - Roadmap: `plans/typed-result/TYPED_RESULT_MIGRATION_ROADMAP.md`
 - Roadmap item: `typed-result/customer-ticket-reunion`
-- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Fix-typed-result-customer-ticket-validation-composition`
-- Branch: `Fix/typed-result_customer-ticket-validation-composition`
-- PR: [#555](https://github.com/Concertable/concertable/pull/555) (ready; merge requested)
+- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-customer-ticket-reunion-closeout`
+- Branch: `Docs/customer-ticket-reunion-closeout`
+- PR: [#555](https://github.com/Concertable/concertable/pull/555) (merged as `61ce0d116`)
 - Dependency/package gates: all four Reunion `0.1.0-alpha.6` packages are published and indexed on
-  NuGet.org; platform `0.1.0-alpha.0.976` is published
-- Last reconciled: 2026-08-14 against current-main merge candidate `a6a98d6dd`, the live NuGet.org
-  indexes, and `origin/main` `7b8764377`
+  NuGet.org; platform `0.1.0-alpha.0.985` is published and synchronized
+- Last reconciled: 2026-08-14 against terminal platform-sync merge `3ae425616` on `origin/main`
 
 ## Current state
 
@@ -26,7 +25,8 @@ packed, inspected, published, and indexed, and a forced no-cache full-solution r
 Implementation candidate `ada7172dc` replaces the duplicated purchase/checkout validation guards
 with `Ensure`; focused build and unit gates are green. Checkpoint `c00c6d580` passed exact-head PR CI.
 Incremental review through `c1dacb32c` found and corrected one invalid documentation example; no open
-findings remain. Tommy has explicitly requested merge.
+findings remain. PR #555, package publication, and generated platform-sync PR #564 are terminal green,
+so the plan lifecycle is complete and ready for docs-only deletion.
 
 ## Completed milestones
 
@@ -50,6 +50,12 @@ findings remain. Tommy has explicitly requested merge.
   authentication/routing, or a published Concertable API shape.
 - `origin/main` advanced by 20 commits before queue admission and merged cleanly as `a6a98d6dd`.
   The current-main Ticket test project builds with 0 warnings/errors and all 33 unit tests pass.
+- PR #555 passed final current-main PR CI run `31805888119` and merge-group run `31809493378`, then
+  merged as `61ce0d116`.
+- Publish run `31810370901` produced platform `0.1.0-alpha.0.985`; platform-sync workflow
+  `31810562185` opened PR #564.
+- Platform-sync PR #564 passed PR CI run `31810582449` and merge-group run `31811658225` with 55/55
+  jobs green, then merged as `3ae425616`.
 
 ## Verification and review
 
@@ -119,6 +125,6 @@ findings remain. Tommy has explicitly requested merge.
 
 ## Next Steps
 
-Continue the authorized merge workflow for PR #555: push this current-main `skip-e2e` queue
-checkpoint, wait for exact-head CI, enqueue, and own publication/platform-sync plus plan closeout
-through terminal completion.
+Commit this terminal evidence checkpoint, then delete this ledger and its plan together, tick roadmap
+item `typed-result/customer-ticket-reunion` as shipped with PR/publication/platform-sync evidence,
+run the plan-graph and docs-review gates, and land the closeout through the docs-only merge path.
