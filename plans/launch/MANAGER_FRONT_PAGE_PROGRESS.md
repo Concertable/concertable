@@ -5,7 +5,7 @@
 - Roadmap item: `launch/manager-front-page`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-launch-dashboard-b2b-consumer`
 - Branch: `Feature/launch_dashboard-b2b-consumer`
-- PR: none — fresh continuation branch based on platform-sync merge `7b8764377`
+- PR: [#563](https://github.com/Concertable/concertable/pull/563) — draft implementation PR
 
 Captured during Phase A implementation. These supersede the original plan
 where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_PAGE_PLAN.md).
@@ -22,13 +22,16 @@ remains an independent later item.
 
 ## Current producer slice
 
-- **B2B consumer checkpoint 1 — locally green, not yet pushed.** Venue and artist overview endpoints now compose the
+- **B2B consumer checkpoint 1 — pushed to draft PR #563.** Venue and artist overview endpoints now compose the
   current profile, profile-health checklist, Stripe Connect state, and review summary. Venue ticket revenue and artist
   payout charts consume the published monthly Payment reports and fill a fixed six-calendar-month series. Venue recent
   settlements consume the published Payment report and enrich booking ids through the Concert module with concert,
   counterparty, and direction data. `Concertable.B2B.Web` builds with 0 errors against platform
-  `0.1.0-alpha.0.983`; focused Venue tests pass 7/7 and Artist tests pass 6/6. The next checkpoint is the independent
-  canonical list/review/inbox surface named in `## Next Steps`.
+  `0.1.0-alpha.0.983`; focused Venue tests pass 7/7 and Artist tests pass 6/6. Work commit
+  `d82f93cb7084d9d9412b4ff9b4d19ce758269652` was pushed from a new remote branch and verified as the exact local,
+  remote-tracking, and PR head; exact-head draft CI run
+  [31809913260](https://github.com/Concertable/concertable/actions/runs/31809913260) is in progress. The next checkpoint is
+  the independent canonical list/review/inbox surface named in `## Next Steps`.
 
 - **DELIVERED (2026-08-14).** The final incremental review found no new issues after the fixed settlement-completion-time
   defect. Exact-head PR CI run [31796969708](https://github.com/Concertable/concertable/actions/runs/31796969708)
@@ -116,8 +119,8 @@ degenerate `DateRange`, `Money.ToMinorUnits()` fills the `long` cents. Platform-
    new `IManagerPaymentReportingClient` (protobuf `Timestamp` + `Money`) kept `IManagerPaymentOperationsClient`
    source-compatible with B2B's concrete test client; B2B consumes the published `Concertable.Payment.Client` package,
    never producer source. Platform-sync #556 merged — platform on `0.1.0-alpha.0.978`; the chain is fully closed.
-4. ⏳ **B.11 pickup endpoints + Phase C FE cutover — ACTIVE (this worktree).** Overview, monthly revenue/payout charts,
-   and venue settlements are locally implemented and verified. See "Immediate action" above for the remaining
+4. ⏳ **B.11 pickup endpoints + Phase C FE cutover — ACTIVE (draft PR #563).** Overview, monthly revenue/payout charts,
+   and venue settlements are implemented, locally verified, and pushed. See "Immediate action" above for the remaining
    canonical lists, reviews, inbox, and activity. Once the endpoints land, complete Phase C: delete `app/shared/.../persona.ts`,
    `PersonaSwitcher.tsx`, and the per-SPA `fixtures/`, swapping each `dashboardApi.ts` body from a fixture return to
    `api.get`.
