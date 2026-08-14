@@ -8,8 +8,8 @@
 - PR: [#555](https://github.com/Concertable/concertable/pull/555) (ready)
 - Dependency/package gates: all four Reunion `0.1.0-alpha.6` packages are published and indexed on
   NuGet.org; platform `0.1.0-alpha.0.976` is published
-- Last reconciled: 2026-08-14 against implementation candidate `ada7172dc`, the live NuGet.org
-  indexes, and `origin/main` `429581025`
+- Last reconciled: 2026-08-14 against ready PR #555 checkpoint `c00c6d580`, CI run `31797930536`,
+  the live NuGet.org indexes, and `origin/main` `429581025`
 
 ## Current state
 
@@ -24,8 +24,9 @@ follow-up now consumes Reunion's value-preserving validation-aware `Ensure` API 
 `0.1.0-alpha.6` package set. Reunion PR #15 merged that API as `15a41df2f`; all four packages were
 packed, inspected, published, and indexed, and a forced no-cache full-solution restore is green.
 Implementation candidate `ada7172dc` replaces the duplicated purchase/checkout validation guards
-with `Ensure`; focused build and unit gates are green. The prior review covers only candidate
-`a433b8587`, so the incremental-review decision remains with Tommy after exact-head CI completes.
+with `Ensure`; focused build and unit gates are green. Checkpoint `c00c6d580` passed exact-head PR CI.
+The prior review covers only candidate `a433b8587`, so the incremental-review decision now remains
+with Tommy.
 
 ## Completed milestones
 
@@ -42,6 +43,7 @@ with `Ensure`; focused build and unit gates are green. The prior review covers o
   inventories and review completed cleanly.
 - Correction `ada7172dc` consumes validation-aware `Ensure`, removes the private guard helpers, moves
   all four Customer Reunion pins to `0.1.0-alpha.6`, and corrects the Result-pattern guidance.
+- Checkpoint `c00c6d580` passed exact-head PR #555 CI after the correction and publication gates.
 
 ## Verification and review
 
@@ -58,6 +60,8 @@ with `Ensure`; focused build and unit gates are green. The prior review covers o
 - A forced no-cache full-solution restore resolves alpha.6 from the public feed. Ticket Infrastructure
   and the Ticket test assembly build with 0 errors; Ticket unit tests remain 33/33 green. Existing
   missing-Concert and invalid-purchase/checkout coverage is preserved.
+- PR #555 CI run `31797930536` completed green on checkpoint `c00c6d580`; full build, Customer carve,
+  Ticket unit, Ticket integration, all required unit/integration matrices, and `ci-complete` passed.
 - `dotnet build api/Concertable.slnx --configuration Release --no-restore`: 0 errors; existing
   UserEntity and generated E2E warnings only.
 - Affected unit suites: Concert 23/23, Ticket 33/33, Review 43/43.
@@ -109,7 +113,7 @@ with `Ensure`; focused build and unit gates are green. The prior review covers o
 
 ## Next Steps
 
-1. Push implementation candidate `ada7172dc` and this checkpoint to PR #555.
-2. Wait for exact-head PR CI and present the ready PR to Tommy.
-3. Decide whether to run incremental review from the existing `a433b8587` review marker.
-4. Do not merge until Tommy gives a new explicit merge instruction after the review decision.
+Blocked: Ready PR #555 has passed implementation, alpha.6 publication, restore, focused validation, and exact-head CI gates; Tommy asked to decide whether to run incremental review before merge.
+Blocked by: Tommy's review decision for the changes after the existing `a433b8587` review marker.
+Unblock action: Tell the agent either to run incremental review or to leave the green PR ready without another review.
+Resume when: Tommy gives the review decision; do not merge without a later explicit merge instruction.
