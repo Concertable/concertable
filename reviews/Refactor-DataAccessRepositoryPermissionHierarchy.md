@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `350ae02a17c41c434edba5cff309046d5487c9b7`  _(2026-08-14)_
-**Security-reviewed up to commit:** `350ae02a17c41c434edba5cff309046d5487c9b7`  _(2026-08-14)_
+**Reviewed up to commit:** `580426684040bc51ffb057a7dcbb110d0be1af7d`  _(2026-08-14)_
+**Security-reviewed up to commit:** `580426684040bc51ffb057a7dcbb110d0be1af7d`  _(2026-08-14)_
 
 > Range reviewed: `429581025..94d7664ad` (2 commits).
 > Status legend: `[ ]` todo - `[~]` in progress - `[x]` done - `[wontfix]` (note why).
@@ -30,3 +30,9 @@ No issues found. Checked correctness, microservice isolation, module boundaries,
   Added focused Artist/Venue lookup tests that seed through the tenant contexts, read without tenant context, and cover both found and absent tenants.
 
 Security review found no issues in the Auth, Payment, Contracts, and configuration paths included through the merged-main portion of the range.
+
+## Incremental review - 2026-08-14 (BUG2 follow-up)
+
+> Range reviewed: `350ae02a1..580426684` (2 commits).
+
+No issues found. Checked correctness, microservice isolation, module boundaries, seeding, C# conventions, security-sensitive paths, and test coverage of changed paths.

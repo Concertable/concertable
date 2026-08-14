@@ -6,8 +6,8 @@
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable/.worktrees/Plan-data-access-repository-permission-hierarchy`
 - Branch: `Refactor/DataAccessRepositoryPermissionHierarchy`
 - PR: [#561](https://github.com/Concertable/concertable/pull/561) (draft)
-- Dependency/package gates: Incremental-review BUG2 is fixed and pushed at `860d6fac8`. PR #561 remains draft until exact-head CI is green again and follow-up incremental review is clean. Merge still requires explicit authorization, then additive package publication and the generated platform-sync PR must land green before Phase 2 resumes from current `origin/main`.
-- Last reconciled: 2026-08-14 against fetched `origin/main` at `fc196ba99`; verified local, remote-tracking, and PR work head `860d6fac8`; exact-head CI and follow-up review pending
+- Dependency/package gates: BUG2 is fixed, exact-head CI is green at `580426684`, and follow-up incremental review is clean. PR #561 remains draft until this clean-review checkpoint is pushed and its exact-head CI is green; it can then be marked ready. Merge still requires explicit authorization, then additive package publication and the generated platform-sync PR must land green before Phase 2 resumes from current `origin/main`.
+- Last reconciled: 2026-08-14 against fetched `origin/main` at `fc196ba99`; verified local, remote-tracking, and PR head `580426684`; working tree contains the clean follow-up review and ledger checkpoint
 
 ## Current state
 
@@ -54,12 +54,12 @@ only genuine marketplace repositories retain `Public`.
 
 ## Next Steps
 
-1. Require exact-head draft CI and a clean follow-up incremental review of only the fix commits before
-   marking PR #561 ready.
-2. Wait for explicit authorization to merge PR #561. When authorized, merge it through the repository
+1. Commit and push the clean BUG2 follow-up review through the two-leg plan checkpoint protocol.
+2. Require exact-head draft CI for that checkpoint, then mark PR #561 ready when green.
+3. Wait for explicit authorization to merge PR #561. When authorized, merge it through the repository
    merge workflow, follow additive package publication and the generated platform-sync PR to green,
    and close this source worktree with `-PlanManaged`.
-3. Create the Phase 2 consumer-migration worktree from the resulting current `origin/main` and migrate
+4. Create the Phase 2 consumer-migration worktree from the resulting current `origin/main` and migrate
    consumers against the published additive platform version.
 
 ## Completed work
@@ -112,6 +112,7 @@ only genuine marketplace repositories retain `Public`.
 - `./scripts/local-platform.ps1 test api/Concertable.B2B/src/Modules/Artist/Tests/Concertable.B2B.Artist.UnitTests/Concertable.B2B.Artist.UnitTests.csproj --configuration Release --no-restore --disable-build-servers` after BUG2 - 6 passed, 0 failed, 0 skipped.
 - `./scripts/local-platform.ps1 test api/Concertable.B2B/src/Modules/Venue/Tests/Concertable.B2B.Venue.UnitTests/Concertable.B2B.Venue.UnitTests.csproj --configuration Release --no-restore --disable-build-servers` after BUG2 - 6 passed, 0 failed, 0 skipped.
 - Push checkpoint `350ae02a1..860d6fac8` - succeeded; local, remote-tracking, and PR heads verified equal at `860d6fac8ab4dfe980562ed776f353ffe53d46f6`.
+- GitHub Actions CI run `31838309184` at exact PR head `580426684` - the first attempt had one external `mcr.microsoft.com` connection reset while Payment Testcontainers pulled an image; the one-time failed-job rerun succeeded on the unchanged SHA.
 
 ## Reviews
 
@@ -121,9 +122,10 @@ only genuine marketplace repositories retain `Public`.
 - Incremental review of `94d7664ad..b850ea4b1` found no new issues; the review watermark is current at
   the corrected code head and BUG1 is resolved.
 - Incremental review of `b850ea4b1..350ae02a1` found BUG2: the new Artist/Venue organisation-identity
-  collaborators lacked focused wiring coverage. The fix is committed and pushed at `860d6fac8`;
-  follow-up review is pending. Security review of the merged Auth, Payment, Contracts, and configuration paths found
-  no issues and is stamped at `350ae02a1`.
+  collaborators lacked focused wiring coverage. The fix is committed and pushed at `860d6fac8`.
+  Security review of the merged Auth, Payment, Contracts, and configuration paths found no issues.
+- Follow-up incremental review of `350ae02a1..580426684` found no new issues. BUG2 is resolved, and the
+  review and security watermarks are current at `580426684`.
 
 ## Decisions, discoveries, blockers, and deviations
 
