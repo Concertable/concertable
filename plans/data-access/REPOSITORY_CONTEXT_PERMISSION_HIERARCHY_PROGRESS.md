@@ -6,8 +6,8 @@
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable/.worktrees/Plan-data-access-repository-permission-hierarchy`
 - Branch: `Refactor/DataAccessRepositoryPermissionHierarchy`
 - PR: [#561](https://github.com/Concertable/concertable/pull/561) (draft)
-- Dependency/package gates: The approved Phase 1 B2B context/repository naming correction is implemented and locally green. PR #561 remains draft until the correction is pushed, exact-head CI is green, and incremental review is clean. Merge still requires explicit authorization, then additive package publication and the generated platform-sync PR must land green before Phase 2 resumes from current `origin/main`.
-- Last reconciled: 2026-08-14 against fetched `origin/main` at `fc196ba99`; local work head `b060a6125`; remote and PR head `2a99965a3`; prior exact-head CI run `31812660710` green
+- Dependency/package gates: The approved Phase 1 B2B context/repository naming correction is pushed and locally green at `272d17a78`. PR #561 remains draft until exact-head CI is green and incremental review is clean. Merge still requires explicit authorization, then additive package publication and the generated platform-sync PR must land green before Phase 2 resumes from current `origin/main`.
+- Last reconciled: 2026-08-14 against fetched `origin/main` at `fc196ba99`; verified local, remote-tracking, and PR work head `272d17a78`; exact-head CI pending
 
 ## Current state
 
@@ -46,7 +46,7 @@ keep two physical contexts, rename the tenant-independent read-only `PublicXDbCo
 genuinely distinct restricted/projection model. `AdminVenueDbContext` retains its explicit admin
 tracked/write stance.
 
-The approved correction is implemented locally across Artist, Venue, and Concert. Tenant-independent
+The approved correction is implemented and pushed at `272d17a78` across Artist, Venue, and Concert. Tenant-independent
 contexts now use the module `XDbContext` names, tenant-aware tracked/write contexts use
 `TenantXDbContext`, and migration ownership remains with the tenant contexts without schema changes.
 Artist/Venue organisation identity and booking existence now use purpose-specific internal contracts;
@@ -54,14 +54,12 @@ only genuine marketplace repositories retain `Public`.
 
 ## Next Steps
 
-1. Commit and push the coherent B2B stance correction, then verify local, remote-tracking, and PR heads
-   are equal before recording the pushed checkpoint.
-2. Require exact-head draft CI and a clean incremental review of the correction before marking PR #561
+1. Require exact-head draft CI and a clean incremental review of the correction before marking PR #561
    ready. Do not treat the earlier green head as approval for the renamed design.
-3. Wait for explicit authorization to merge PR #561. When authorized, merge it through the repository
+2. Wait for explicit authorization to merge PR #561. When authorized, merge it through the repository
    merge workflow, follow additive package publication and the generated platform-sync PR to green,
    and close this source worktree with `-PlanManaged`.
-4. Create the Phase 2 consumer-migration worktree from the resulting current `origin/main` and migrate
+3. Create the Phase 2 consumer-migration worktree from the resulting current `origin/main` and migrate
    consumers against the published additive platform version.
 
 ## Completed work
@@ -82,6 +80,8 @@ only genuine marketplace repositories retain `Public`.
   without adding a migration or third context.
 - Split Artist/Venue organisation identity lookups and booking existence into purpose-specific internal
   contracts while retaining `Public` only on marketplace repository contracts.
+- Committed and pushed the coherent correction at `272d17a78`; verified the pushed range
+  `2a99965a3..272d17a78` and exact equality of local, remote-tracking, and PR heads.
 
 ## Verification
 
@@ -105,6 +105,7 @@ only genuine marketplace repositories retain `Public`.
 - `./scripts/local-platform.ps1 test api/Concertable.B2B/src/Modules/Concert/Tests/Concertable.B2B.Concert.UnitTests/Concertable.B2B.Concert.UnitTests.csproj --configuration Release --no-restore --disable-build-servers` - 134 passed, 0 failed, 0 skipped.
 - `./scripts/local-platform.ps1 build api/Concertable.B2B/src/Modules/Concert/Tests/Concertable.B2B.Concert.IntegrationTests/Concertable.B2B.Concert.IntegrationTests.csproj --configuration Release --no-restore --disable-build-servers` - inconclusive locally; exceeded the four-minute command ceiling without emitting a compiler error. Exact-head draft CI owns the integration-test compile matrix.
 - Repository-wide stale B2B context/repository name grep - no code matches; plan and ledger wording updated to the implemented names.
+- Push checkpoint `2a99965a3..272d17a78` - succeeded; local, remote-tracking, and PR heads verified equal at `272d17a78202433161bdd314230d6e289454bd4a`.
 
 ## Reviews
 
