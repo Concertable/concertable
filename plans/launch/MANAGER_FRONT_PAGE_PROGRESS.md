@@ -12,15 +12,15 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
 
 ## Next Steps
 
-**Immediate action:** Push the reviewed current-main work head and this plan checkpoint through the two-leg
-plan-managed push protocol, then require exact-head PR CI on draft producer PR
-[#557](https://github.com/Concertable/concertable/pull/557) to pass. Once that code checkpoint is green, delete the spent
-review work order in its final review-only commit, push it, and require the new exact-head CI to pass. Do not merge until
-explicitly requested. After this additive package producer merges, publishes, and platform-sync lands, close this
-worktree and resume from a fresh B2B consumer worktree to implement the overview, canonical-resource list, chart,
-review, inbox, activity, and settlement endpoints against that published baseline. Activity stays last because it needs
-its owned persistence model and an `api/initial-migrations.ps1` re-scaffold. Keep every remaining dashboard section in
-scope; Phase A.8 UX freeze remains an independent later item.
+**Immediate action:** Transport this verified-push ledger checkpoint, require local `HEAD`, the remote-tracking branch,
+and draft producer PR [#557](https://github.com/Concertable/concertable/pull/557) to equal that checkpoint commit, then
+require its exact-head PR CI to pass. Once green, delete the spent review work order in its final review-only commit,
+push it, and require the new exact-head CI to pass. Do not merge until explicitly requested. After this additive package
+producer merges, publishes, and platform-sync lands, close this worktree and resume from a fresh B2B consumer worktree
+to implement the overview, canonical-resource list, chart, review, inbox, activity, and settlement endpoints against
+that published baseline. Activity stays last because it needs its owned persistence model and an
+`api/initial-migrations.ps1` re-scaffold. Keep every remaining dashboard section in scope; Phase A.8 UX freeze remains
+an independent later item.
 
 ## Current producer slice
 
@@ -29,8 +29,9 @@ scope; Phase A.8 UX freeze remains an independent later item.
   reports used creation time instead of completion time. Fix commit `0eb0babfb` persists immutable `CompletedAt`, uses
   it for completed-settlement totals/months/recency, and adds the boundary coverage. Incremental correctness/security
   review of `bc56de2d8..0eb0babfb` found no new issues. Current `origin/main` merged conflict-free as `931dde050`; the
-  effective PR source diff is unchanged beyond the reviewed fix, and this reviewed current-main checkpoint is not yet
-  pushed.
+  effective PR source diff is unchanged beyond the reviewed fix. The reviewed current-main work head `9d9ffff66` was
+  pushed from starting remote/PR head `bc56de2d8`; fetch verification proved local, remote-tracking, and PR heads all
+  equal `9d9ffff66433a50f2e616029faa3ce3e0c8d0eb5`. This ledger-only checkpoint is the pending transport leg.
 - Payment now owns agnostic reporting contracts for monthly ticket revenue, monthly settlement payouts, and recent
   settlements. Each aggregate materialises once in `TransactionRepository`; B2B will enrich opaque booking and owner
   identifiers after the published-client gate.
