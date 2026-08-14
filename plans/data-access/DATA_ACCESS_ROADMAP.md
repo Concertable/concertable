@@ -5,4 +5,4 @@ package and its service consumers.
 
 ## Items
 
-- [ ] Cosmos-aligned repository facets + context-enforced no-tracking `data-access/repository-redesign`
+- [x] Cosmos-aligned repository facets + context-enforced no-tracking `data-access/repository-redesign`

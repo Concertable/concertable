@@ -3,25 +3,71 @@
 - Plan: `plans/launch/MANAGER_FRONT_PAGE_PLAN.md`
 - Roadmap: `plans/launch/LAUNCH_ROADMAP.md`
 - Roadmap item: `launch/manager-front-page`
-- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-launch-dashboard-mtd-payments`
-- Branch: `Feature/launch_dashboard-mtd-payments`
-- PR: [#545](https://github.com/Concertable/concertable/pull/545) (draft)
+- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-launch-dashboard-pickup-endpoints`
+- Branch: `Feature/launch_dashboard-pickup-endpoints`
+- PR: draft producer PR [#557](https://github.com/Concertable/concertable/pull/557) — item-3 consumer PR [#554](https://github.com/Concertable/concertable/pull/554) merged 2026-08-13 (`2dfe09cc9`)
 
 Captured during Phase A implementation. These supersede the original plan
 where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_PAGE_PLAN.md).
 
 ## Next Steps
 
-**Immediate action:** PR #545 is being taken through the merge queue. The branch was updated to current
-`main` (merged `origin/main`; platform pin now `0.1.0-alpha.0.971`; Payment solution build 0 warnings/0 errors
-against it). Push the update, require exact-head CI green (full solution build, Payment carve, complete unit +
-integration matrices), mark the PR ready, and enqueue with `full-e2e` — the `payment.proto`/gRPC contract and the
-published `Concertable.Payment.Client` public shape (`IManagerPaymentReportingClient`, `ManagerPaymentClient`) are
-positive E2E triggers, so E2E cannot be skipped. Wait for `MERGED`, then follow package publication and the
-`chore/platform-sync-*` PR to green/merged. Once the new `Concertable.Payment.Client` version is on `main`, create a
-fresh B2B consumer PR that constructs the UTC month-to-date `DateRange`, calls both reporting operations with
-`ITenantContext.GetTenantId()`, replaces the two zero KPI stubs (`MtdRevenueCents`/`MtdPayoutsCents`), and removes
-their TODOs. Do not consume the client source from this producer branch: B2B compiles against the published package.
+**Immediate action:** Transport this verified review-push checkpoint to draft producer PR
+[#557](https://github.com/Concertable/concertable/pull/557), prove local `HEAD`, the remote-tracking branch, and the PR
+head match, and require exact-head CI to pass. Then mark the PR ready, apply `full-e2e` because it changes a published
+gRPC/client contract, enqueue it through the merge queue, and follow package publication plus platform-sync to green.
+After the producer delivery chain lands, close this worktree and resume from a fresh B2B consumer worktree to implement
+the overview, canonical-resource list, chart, review, inbox, activity, and settlement endpoints against that published
+baseline. Activity stays last because it needs its owned persistence model and an `api/initial-migrations.ps1`
+re-scaffold. Keep every remaining dashboard section in scope; Phase A.8 UX freeze remains an independent later item.
+
+## Current producer slice
+
+- Producer implementation commit `0d37bfa7a` remains the published implementation baseline on draft PR
+  [#557](https://github.com/Concertable/concertable/pull/557). Full review through `bc56de2d8` found BUG1: settlement
+  reports used creation time instead of completion time. Fix commit `0eb0babfb` persists immutable `CompletedAt`, uses
+  it for completed-settlement totals/months/recency, and adds the boundary coverage. Incremental correctness/security
+  review of `bc56de2d8..0eb0babfb` found no new issues. Current `origin/main` merged conflict-free as `931dde050`; the
+  effective PR source diff is unchanged beyond the reviewed fix. The reviewed current-main work head `9d9ffff66` was
+  pushed from starting remote/PR head `bc56de2d8`; fetch verification proved local, remote-tracking, and PR heads all
+  equal `9d9ffff66433a50f2e616029faa3ce3e0c8d0eb5`; the ledger transport commit then advanced all three to
+  `93847e86a57ee4dd9016b88281104db53a399ca0`. Exact-head CI run
+  [31789070465](https://github.com/Concertable/concertable/actions/runs/31789070465) exposed that B2B's concrete
+  integration-test client had not implemented the three additive reporting methods. The compatibility fix supplies
+  deterministic empty report results, and the exact CI-equivalent local-platform Release build of
+  `Concertable.B2B.IntegrationTests.Fixtures` passes with 0 warnings/errors.
+- Compatibility fix commit `8b7ba4e80` and its full incremental correctness/security review introduce no new findings.
+  Reviewed work head `5904b8c567fab16207b604320a1f333d363643cd` was pushed from starting remote/PR head
+  `93847e86a57ee4dd9016b88281104db53a399ca0`; a fetch then proved local, remote-tracking, and PR heads all equal the
+  reviewed work head. Transport checkpoint `816a88b09e5f8fbb15ba9611bc8ee9539d72dbde` then became the exact local,
+  remote-tracking, and PR head; exact-head CI run
+  [31792858654](https://github.com/Concertable/concertable/actions/runs/31792858654) passed the full build, unit, and
+  integration matrix. All review findings were closed, so the spent review work order was deleted in closeout commit
+  `b52f0e28afa75d1f0f71b48773e2d0377b025881`; transport commit `1b0b46792842fb63916f7a299a7cc55de4d62ad3`
+  became the exact local, remote-tracking, and PR head, and exact-head CI run
+  [31793924515](https://github.com/Concertable/concertable/actions/runs/31793924515) passed. The merge-authorized
+  re-review restored the work order, preserved the fixed BUG1 evidence, and found no new issues through `1b0b46792`;
+  only plan/review checkpoints followed the last reviewed code commit. Reviewed work head
+  `36dcdeb2c94d9d6e0a1d750b221c86983329a3c2` was pushed from starting remote/PR head
+  `1b0b46792842fb63916f7a299a7cc55de4d62ad3`; fetch verification proved local, remote-tracking, and PR heads all
+  equal the reviewed work head.
+- Payment now owns agnostic reporting contracts for monthly ticket revenue, monthly settlement payouts, and recent
+  settlements. Each aggregate materialises once in `TransactionRepository`; B2B will enrich opaque booking and owner
+  identifiers after the published-client gate.
+- The gRPC surface and `IManagerPaymentReportingClient` expose `Money`-based report records without venue, artist,
+  concert, or dashboard concepts leaking into Payment.
+- Local verification after current-main merge `931dde050`: plan graph passed with 0 errors/warnings; Payment Web build
+  succeeded with 0 warnings/errors against platform `0.1.0-alpha.0.980`; focused domain/service tests passed 24/24;
+  SQL `TransactionRepositoryAggregateTests` passed 5/5 against a real Testcontainers SQL Server. The earlier full
+  `api/initial-migrations.ps1` re-scaffold also passed for the BUG1 model change.
+
+**Item 3 — DELIVERED (2026-08-13).** Producer PR [#545](https://github.com/Concertable/concertable/pull/545) merged
+(`3004fb52d`); consumer PR [#554](https://github.com/Concertable/concertable/pull/554) merged (`2dfe09cc9`) wired both
+published `IManagerPaymentReportingClient` reporting RPCs into `VenueDashboardService` / `ArtistDashboardService`,
+replacing the `MtdRevenueCents` / `MtdPayoutsCents` zero stubs (verified: no stub or TODO remains). Window is UTC
+month-to-date, payee the fail-closed `ITenantContext.GetTenantId()`, exact month-start returns zero without a
+degenerate `DateRange`, `Money.ToMinorUnits()` fills the `long` cents. Platform-sync PR #556 **merged** (2026-08-13,
+21:15) — platform now `0.1.0-alpha.0.978`. Item 3's delivery chain is fully closed.
 
 **Update (2026-08-13):** PR [#50](https://github.com/Concertable/concertable/pull/50) **merged** (2026-05-19)
 — Phase A + B.9–B.11 are on `main`. The repo has since **carved** into `Concertable.B2B` /
@@ -46,37 +92,19 @@ their TODOs. Do not consume the client source from this producer branch: B2B com
    Package publication succeeded; cumulative platform-sync PR #541 superseded #539, updated the platform to
    `0.1.0-alpha.0.968`, passed build/unit/integration checks, and merged as
    `1c88858f93f648f1719fa9e4d273749b8932b364`.
-3. ⏳ **MTD revenue/payouts (was item 2, money slices) — IN PROGRESS.** `MtdRevenueCents` /
-   `MtdPayoutsCents` remain stubbed at 0 on `main`. Payment PRs #392 and #296 are merged, so their blocker is
-   clear. The current producer branch adds Payment-owned aggregate queries over completed transactions within
-   an explicit `DateRange`, two additive `ManagerPayment` RPCs exposed through a new
-   `IManagerPaymentReportingClient` using protobuf `Timestamp`, and the existing `Money` contract/value object.
-   The separate reporting interface keeps the published `IManagerPaymentOperationsClient` source-compatible
-   with B2B's concrete test client. Ticket revenue
-   sums `TicketTransaction.Amount`; artist payouts sum `SettlementTransaction.PayeeGrossMinor`, excluding the
-   commission included in the payer total. The owner key is already B2B's tenant `Guid`, so the consumer must
-   use `ITenantContext.GetTenantId()` directly and construct the UTC month-to-date `DateRange`; no venue/artist
-   integer-ID translation is required. Delivery is
-   deliberately split because B2B consumes the published `Concertable.Payment.Client` package rather than its
-   source project. Producer commit `d42fe4d6b`, the SEC1 fix `c044ee247`, and a fresh current-main merge
-   (platform pin `0.1.0-alpha.0.971`) are on the branch; the Payment solution builds 0 warnings/errors against the
-   new pin. Draft-PR CI owns the full build/carve/unit/integration matrices at the exact remote head. Repository
-   integration coverage verifies payee/status/start/end filtering and settlement gross semantics.
-   PR [#545](https://github.com/Concertable/concertable/pull/545) is open and being taken through the merge queue. Native plus security review of
-   `2e6e0cc78..c044ee247` found one malformed-protobuf-timestamp boundary defect; commit `c044ee247` maps it to
-   gRPC `InvalidArgument`, adds focused coverage, and passed follow-up review with no open findings. Review record
-   commit `3a91bb103` is pushed and verified equal across local, remote-tracking, and PR refs. Local verification
-   on reviewed code head `c044ee247`: Payment solution build 0 warnings/errors, Payment unit tests 238/238, and
-   `git diff --check` clean.
-4. ⏳ **Phase C — swap FE mock tier → real (was item 4).** Blocked: only
-   `/api/{Venue,Artist}Dashboard/kpis` exist server-side; the other 17 FE `dashboardApi` methods (overview,
-   inbox, upcoming-concerts, revenue/payouts, opportunities, activity, settlements, applications, reviews)
-   have **no endpoint**. Needs the B.11 pickup endpoints built first (never previously listed as a step).
-   Only then delete `app/shared/.../persona.ts`, `PersonaSwitcher.tsx`, and the per-SPA `fixtures/`,
-   swapping each `dashboardApi.ts` body to real `api.get`.
-5. ⏳ **Phase A.8 — UX freeze (was item 1).** Manual browser QA of the fixture-backed dashboard across
-   `?persona=empty|mid|thriving` + tablet/mobile responsive collapse. Independent; needs the running
-   authenticated B2B stack.
+3. ✅ **MTD revenue/payouts (was item 2, money slices) — DELIVERED.** See "Item 3 — DELIVERED" above. Producer #545
+   + consumer #554 both merged. Ticket revenue sums `TicketTransaction.Amount`; artist payouts sum
+   `SettlementTransaction.PayeeGrossMinor` (excludes payer-side commission). Two additive `ManagerPayment` RPCs on a
+   new `IManagerPaymentReportingClient` (protobuf `Timestamp` + `Money`) kept `IManagerPaymentOperationsClient`
+   source-compatible with B2B's concrete test client; B2B consumes the published `Concertable.Payment.Client` package,
+   never producer source. Platform-sync #556 merged — platform on `0.1.0-alpha.0.978`; the chain is fully closed.
+4. ⏳ **B.11 pickup endpoints + Phase C FE cutover — ACTIVE (this worktree).** See "Immediate action" above for the
+   endpoint build. Once the endpoints land, complete Phase C: delete `app/shared/.../persona.ts`,
+   `PersonaSwitcher.tsx`, and the per-SPA `fixtures/`, swapping each `dashboardApi.ts` body from a fixture return to
+   `api.get`.
+5. ⏳ **Phase A.8 — UX freeze (was item 1).** Manual browser QA of the dashboard across
+   `?persona=empty|mid|thriving` + tablet/mobile responsive collapse. Independent of item 4; needs the running
+   authenticated B2B stack (human-gated).
 
 ## Naming & terminology
 
