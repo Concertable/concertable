@@ -30,26 +30,32 @@ Three things worth knowing, all verified against source rather than assumed:
 
 ## Next Steps
 
-1. **Unblock the local .NET restore first** — nothing below can be verified without it. Tommy runs
-   `gh auth refresh -s read:packages` (interactive browser consent; the current `gh` token carries only
-   `gist`, `read:org`, `repo`), then the session exports `GITHUB_PACKAGES_TOKEN=$(gh auth token)`.
-2. **Compile the Conversations module and fix what the first build finds.** This is B2B's first Reunion
+```text
+Blocked: local `dotnet restore` of `api/**` fails 401 against the private GitHub Packages feed, so the Phase 1 verification gate (Conversations build + focused unit tests + `./initial-migrations.ps1`) cannot run.
+Blocked by: Tommy — the `gh` token has scopes `gist`, `read:org`, `repo`; GitHub Packages requires `read:packages`, and adding it needs interactive browser consent no agent can give.
+Unblock action: Tommy runs `gh auth refresh -s read:packages` in this session, after which the session exports `GITHUB_PACKAGES_TOKEN=$(gh auth token)`.
+Resume when: `GITHUB_PACKAGES_TOKEN=$(gh auth token) dotnet restore api/Concertable.B2B/src/Modules/Conversations/Concertable.B2B.Conversations.Api/Concertable.B2B.Conversations.Api.csproj` completes with no NU1301.
+```
+
+Once the gate opens, in order:
+
+1. **Compile the Conversations module and fix what the first build finds.** This is B2B's first Reunion
    usage, so treat the composition in `ContentReportService.SubmitAsync` as the likely fix site: the
    `.OrFailure(...).Ensure(...).BindAsync(...)` chain assumes alpha.3 exposes the validation-aware
    `Ensure` task overload and a `Result<T,E> → UnitResult<E>` `BindAsync`. If either is absent, keep the
    operation's shape and adjust the combinators — do **not** fall back to exceptions.
-3. **Run the focused Conversations unit tests**, in particular `ReportMessageErrorTests`. Its expected
+2. **Run the focused Conversations unit tests**, in particular `ReportMessageErrorTests`. Its expected
    codes (`report.message_not_found`, `report.message_invalid`) are *derived predictions* from the
    `RESULT_PATTERN.md` naming rule, not observed output — correct the test to whatever Reunion actually
    derives, then keep it hard-coded.
-4. Run `./initial-migrations.ps1` from `api/` (the model changed — re-scaffold, never additive).
-5. Write the Phase 1 integration tests (plan §6.2, report half) over `ConversationsApiFixture`.
-6. Implement **Phase 2** (plan §11): `MessageEntity.Hide`/`Restore`, `AdminConversationsDbContext`,
+3. Run `./initial-migrations.ps1` from `api/` (the model changed — re-scaffold, never additive).
+4. Write the Phase 1 integration tests (plan §6.2, report half) over `ConversationsApiFixture`.
+5. Implement **Phase 2** (plan §11): `MessageEntity.Hide`/`Restore`, `AdminConversationsDbContext`,
    the admin repositories, `IModerationService`, `ModerationController` (`[Admin]`), the
    `MessageRepository` hidden-message exclusion, the moderation tests (including the
    **tenant-Owner-gets-403** guard), and the `api/Concertable.B2B/TECH_DEBT.md` entry for the `[Admin]`
    seam gaps. Re-run `./initial-migrations.ps1` after the `MessageEntity` change.
-7. Verification gate as written in plan §10/§11, then push, opening a **draft** PR. Update this ledger
+6. Verification gate as written in plan §10/§11, then push, opening a **draft** PR. Update this ledger
    in the same commit.
 
 Do **not** touch the roadmap lines yet. They move only in the same commit as the shipping work, and
