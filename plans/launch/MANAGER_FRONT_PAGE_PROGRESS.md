@@ -12,10 +12,10 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
 
 ## Next Steps
 
-**Immediate action:** Transport this verified-push ledger checkpoint, require local `HEAD`, the remote-tracking branch,
-and draft producer PR [#557](https://github.com/Concertable/concertable/pull/557) to equal that checkpoint commit, then
-require its exact-head PR CI to pass. Once green, delete the spent review work order in its final review-only commit,
-push it, and require the new exact-head CI to pass. Do not merge until explicitly requested. After this additive package
+**Immediate action:** Incrementally review the B2B test-fixture compatibility fix, push the reviewed checkpoint to draft
+producer PR [#557](https://github.com/Concertable/concertable/pull/557), and require local `HEAD`, the remote-tracking
+branch, and the PR head to match before its exact-head CI passes. Once green, delete the spent review work order in its
+final review-only commit, push it, and require the new exact-head CI to pass. Do not merge until explicitly requested. After this additive package
 producer merges, publishes, and platform-sync lands, close this worktree and resume from a fresh B2B consumer worktree
 to implement the overview, canonical-resource list, chart, review, inbox, activity, and settlement endpoints against
 that published baseline. Activity stays last because it needs its owned persistence model and an
@@ -31,7 +31,12 @@ an independent later item.
   review of `bc56de2d8..0eb0babfb` found no new issues. Current `origin/main` merged conflict-free as `931dde050`; the
   effective PR source diff is unchanged beyond the reviewed fix. The reviewed current-main work head `9d9ffff66` was
   pushed from starting remote/PR head `bc56de2d8`; fetch verification proved local, remote-tracking, and PR heads all
-  equal `9d9ffff66433a50f2e616029faa3ce3e0c8d0eb5`. This ledger-only checkpoint is the pending transport leg.
+  equal `9d9ffff66433a50f2e616029faa3ce3e0c8d0eb5`; the ledger transport commit then advanced all three to
+  `93847e86a57ee4dd9016b88281104db53a399ca0`. Exact-head CI run
+  [31789070465](https://github.com/Concertable/concertable/actions/runs/31789070465) exposed that B2B's concrete
+  integration-test client had not implemented the three additive reporting methods. The compatibility fix supplies
+  deterministic empty report results, and the exact CI-equivalent local-platform Release build of
+  `Concertable.B2B.IntegrationTests.Fixtures` passes with 0 warnings/errors.
 - Payment now owns agnostic reporting contracts for monthly ticket revenue, monthly settlement payouts, and recent
   settlements. Each aggregate materialises once in `TransactionRepository`; B2B will enrich opaque booking and owner
   identifiers after the published-client gate.
