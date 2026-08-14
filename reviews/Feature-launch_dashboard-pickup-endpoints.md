@@ -5,9 +5,9 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `bc56de2d837689816e3130fafd5d48731acd4099`  _(2026-08-14)_
+**Reviewed up to commit:** `0eb0babfbb60abc13a6b6dfb7486ea500280fb4e`  _(2026-08-14)_
 
-**Security-reviewed up to commit:** `bc56de2d837689816e3130fafd5d48731acd4099`  _(2026-08-14)_
+**Security-reviewed up to commit:** `0eb0babfbb60abc13a6b6dfb7486ea500280fb4e`  _(2026-08-14)_
 
 > Range reviewed: `7377e8c7a..bc56de2d8` (5 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -16,3 +16,9 @@
 
 - [x] **BUG1 — MAJOR — native/correctness** — `api/Concertable.Payment/src/Concertable.Payment.Infrastructure/Repositories/TransactionRepository.cs:104`
   Monthly and recent settlement reports filter, group, order, and expose `CreatedAt`, but a settlement may be created pending and complete later after customer action. Persist an immutable completion timestamp when `TransactionEntity.Complete` succeeds, use that timestamp for completed-settlement reporting, and cover a settlement created before the reporting window but completed inside it.
+
+## Incremental review — 2026-08-14
+
+> Range reviewed: `bc56de2d8..0eb0babfb` (1 commit).
+
+No issues found. Checked correctness, security, microservice isolation, module boundaries, seeding, C# conventions, and test coverage of changed paths.
