@@ -289,14 +289,14 @@ Artist, Venue, or Concert data.
 
 | Context/repository stance | Action |
 |---|---|
-| `ArtistDbContext`, `VenueDbContext`, `ConcertDbContext` | Rename the current `PublicXDbContext` types to these tenant-independent module names; keep them on shared `ReadDbContext` with no tracking and save rejection |
-| `TenantArtistDbContext`, `TenantVenueDbContext`, `TenantConcertDbContext` | Rename the current tenant-aware `XDbContext` types; continue as full `IDbContext` contexts with `ITenantContext`, selective filters, unit-of-work behavior, and migration ownership |
+| `ArtistDbContext`, `VenueDbContext`, `ConcertDbContext` | Use these tenant-independent module names on shared `ReadDbContext` with no tracking and save rejection |
+| `TenantArtistDbContext`, `TenantVenueDbContext`, `TenantConcertDbContext` | Continue as full `IDbContext` contexts with `ITenantContext`, selective filters, unit-of-work behavior, and migration ownership |
 | `DealDbContext`, `TenantDbContext`, `UserDbContext` | Continue as full `IDbContext` contexts; migrate standard and tenant repository bases to the new context-free arities |
 | `AdminVenueDbContext` | Continue as full `IDbContext`; `AdminVenueRepository` remains combined read/write |
 | `TenantScopedRepository` and `VenueArtistTenantScopedRepository` | Drop `TContext`; receive `IDbContext`; use protected generic query/mutation capabilities |
 | `OpportunityRepository`/`PublicOpportunityRepository` | Stop sharing a combined tenant repository base across tenant and marketplace contracts; share the active-opportunity predicate as a module-local query extension and keep the public implementation read-only |
 | `PublicArtistRepository`/`PublicVenueRepository` | Retain only marketplace-safe summary/details/genre operations; split organisation identity lookup into `IArtistOrgIdentityLookup`/`ArtistOrgIdentityLookup` and `IVenueOrgIdentityLookup`/`VenueOrgIdentityLookup`, using the same tenant-independent read context |
-| `PublicBookingRepository` | Rename the internal cross-tenant fact to `IBookingExistence`/`BookingExistence`; it is not a public API or marketplace repository |
+| `IBookingExistence`/`BookingExistence` | Keep the internal cross-tenant existence fact purpose-named; it is not a public API or marketplace repository |
 | `PublicConcertRepository`/`PublicOpportunityRepository` | Retain `Public` because these contracts genuinely represent marketplace output, while their shared EF context remains tenant-independent rather than public-labelled |
 | `SequenceRepository` | Stop inheriting `WriteRepository`: its contract is an allocator rather than `IWriteRepository`; implement it directly with `TenantConcertDbContext` for its read-before-stage algorithm |
 | Conversations and bespoke dashboard repositories | Keep their domain-specific implementations; adopt capability bases only when their contract matches |

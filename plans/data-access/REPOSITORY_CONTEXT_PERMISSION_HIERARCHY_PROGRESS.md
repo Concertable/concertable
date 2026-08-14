@@ -6,8 +6,8 @@
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable/.worktrees/Plan-data-access-repository-permission-hierarchy`
 - Branch: `Refactor/DataAccessRepositoryPermissionHierarchy`
 - PR: [#561](https://github.com/Concertable/concertable/pull/561) (draft)
-- Dependency/package gates: Phase 1 implementation and exact-head CI are green at the last pushed head, but PR #561 remains draft while the agreed B2B context/repository naming correction is implemented, reviewed, and revalidated. Merge still requires explicit authorization, then additive package publication and the generated platform-sync PR must land green before Phase 2 resumes from current `origin/main`.
-- Last reconciled: 2026-08-14 against fetched `origin/main` at `a2747a90f`; verified local, remote, and PR work head `2a99965a3`; prior implementation CI run `31812660710` green and exact-head CI reported green
+- Dependency/package gates: The approved Phase 1 B2B context/repository naming correction is implemented and locally green. PR #561 remains draft until the correction is pushed, exact-head CI is green, and incremental review is clean. Merge still requires explicit authorization, then additive package publication and the generated platform-sync PR must land green before Phase 2 resumes from current `origin/main`.
+- Last reconciled: 2026-08-14 against fetched `origin/main` at `fc196ba99`; local work head `b060a6125`; remote and PR head `2a99965a3`; prior exact-head CI run `31812660710` green
 
 ## Current state
 
@@ -28,7 +28,7 @@ the shared DataAccess base. Both service intermediaries are deleted; the six con
 module read contexts now derive the shared base directly.
 
 That reparenting exposed `PublicOpportunityRepository` inheriting a writable-context-constrained base.
-It now has an independent read-only implementation over `PublicConcertDbContext`; the public and
+It now has an independent read-only implementation over `ConcertDbContext`; the public and
 regular repositories share only the `ActiveForVenue` query extension. The correction is committed at
 `b850ea4b1` and passed its focused local gates. The corrected work and clean-review checkpoint range
 `94d7664ad..3245c4fd9` was pushed to draft PR #561.
@@ -46,26 +46,22 @@ keep two physical contexts, rename the tenant-independent read-only `PublicXDbCo
 genuinely distinct restricted/projection model. `AdminVenueDbContext` retains its explicit admin
 tracked/write stance.
 
+The approved correction is implemented locally across Artist, Venue, and Concert. Tenant-independent
+contexts now use the module `XDbContext` names, tenant-aware tracked/write contexts use
+`TenantXDbContext`, and migration ownership remains with the tenant contexts without schema changes.
+Artist/Venue organisation identity and booking existence now use purpose-specific internal contracts;
+only genuine marketplace repositories retain `Public`.
+
 ## Next Steps
 
-1. In this Phase 1 worktree, implement the approved B2B stance correction across Artist, Venue, and
-   Concert: current `PublicXDbContext` -> `XDbContext`; current tenant-aware `XDbContext` ->
-   `TenantXDbContext`. Update concrete DI, unit-of-work/interceptor bindings, design-time factories,
-   migration `[DbContext]` metadata, repositories, services, tests, and documentation without adding a
-   schema migration or a third read context.
-2. Keep `Public` only on genuine marketplace repository contracts. Split Artist/Venue organisation
-   identity lookups into `IArtistOrgIdentityLookup`/`ArtistOrgIdentityLookup` and
-   `IVenueOrgIdentityLookup`/`VenueOrgIdentityLookup`; rename `IPublicBookingRepository`/
-   `PublicBookingRepository` to `IBookingExistence`/`BookingExistence`. Marketplace and internal
-   cross-tenant queries continue sharing the module's tenant-independent `XDbContext`.
-3. Run focused B2B builds/tests and context/filter/save-boundary tests, update the plan and ledger,
-   commit and push the coherent correction, then require exact-head draft CI and a clean incremental
-   review before marking PR #561 ready. Do not treat the earlier green head as approval for the renamed
-   design.
-4. Wait for explicit authorization to merge PR #561. When authorized, merge it through the repository
+1. Commit and push the coherent B2B stance correction, then verify local, remote-tracking, and PR heads
+   are equal before recording the pushed checkpoint.
+2. Require exact-head draft CI and a clean incremental review of the correction before marking PR #561
+   ready. Do not treat the earlier green head as approval for the renamed design.
+3. Wait for explicit authorization to merge PR #561. When authorized, merge it through the repository
    merge workflow, follow additive package publication and the generated platform-sync PR to green,
    and close this source worktree with `-PlanManaged`.
-5. Create the Phase 2 consumer-migration worktree from the resulting current `origin/main` and migrate
+4. Create the Phase 2 consumer-migration worktree from the resulting current `origin/main` and migrate
    consumers against the published additive platform version.
 
 ## Completed work
@@ -81,6 +77,11 @@ tracked/write stance.
 - Investigated B2B tenancy stances from the concrete contexts, configuration providers, selective query
   filters, DI, repositories/services/tests, EF model-caching rules, and the commits that introduced the
   split. Confirmed separate physical contexts are correct and recorded Tommy's approved naming scheme.
+- Implemented the approved Artist/Venue/Concert context names across DI, unit-of-work/interceptor
+  bindings, design-time factories, migration metadata, repositories, services, tests, and documentation
+  without adding a migration or third context.
+- Split Artist/Venue organisation identity lookups and booking existence into purpose-specific internal
+  contracts while retaining `Public` only on marketplace repository contracts.
 
 ## Verification
 
@@ -96,6 +97,14 @@ tracked/write stance.
 - GitHub Actions CI run `31812660710` at work head `a579be698` - succeeded; source-platform pack, full solution build, all service carves, unit tests, and integration tests passed.
 - `python .agents/hooks/plan_graph.py --root C:/Users/TommySeery/source/repos/Concertable/.worktrees/Plan-data-access-repository-permission-hierarchy` - 0 errors, 0 warnings.
 - `git diff --check` - passed.
+- `./scripts/local-platform.ps1 prepare` - succeeded; packed 40 branch-local packages at version `0.1.0-local.1786734284588`.
+- `./scripts/local-platform.ps1 build api/Concertable.B2B/src/Concertable.B2B.Web/Concertable.B2B.Web.csproj --configuration Release --disable-build-servers` - succeeded with 0 errors and the existing `UserEntity.UserEntity()` warning.
+- `./scripts/local-platform.ps1 test api/Concertable.DataAccess/Tests/Concertable.DataAccess.UnitTests/Concertable.DataAccess.UnitTests.csproj --configuration Release --no-restore --disable-build-servers` - 12 passed, 0 failed, 0 skipped.
+- `./scripts/local-platform.ps1 test api/Concertable.B2B/src/Modules/Artist/Tests/Concertable.B2B.Artist.UnitTests/Concertable.B2B.Artist.UnitTests.csproj --configuration Release --no-restore --disable-build-servers` - 5 passed, 0 failed, 0 skipped.
+- `./scripts/local-platform.ps1 test api/Concertable.B2B/src/Modules/Venue/Tests/Concertable.B2B.Venue.UnitTests/Concertable.B2B.Venue.UnitTests.csproj --configuration Release --no-restore --disable-build-servers` - 5 passed, 0 failed, 0 skipped.
+- `./scripts/local-platform.ps1 test api/Concertable.B2B/src/Modules/Concert/Tests/Concertable.B2B.Concert.UnitTests/Concertable.B2B.Concert.UnitTests.csproj --configuration Release --no-restore --disable-build-servers` - 134 passed, 0 failed, 0 skipped.
+- `./scripts/local-platform.ps1 build api/Concertable.B2B/src/Modules/Concert/Tests/Concertable.B2B.Concert.IntegrationTests/Concertable.B2B.Concert.IntegrationTests.csproj --configuration Release --no-restore --disable-build-servers` - inconclusive locally; exceeded the four-minute command ceiling without emitting a compiler error. Exact-head draft CI owns the integration-test compile matrix.
+- Repository-wide stale B2B context/repository name grep - no code matches; plan and ledger wording updated to the implemented names.
 
 ## Reviews
 
@@ -111,8 +120,7 @@ tracked/write stance.
   customer reads; the second writes local replicas only from integration events. Customer still exposes
   no write repository for those B2B-owned aggregates.
 - B2B tenant-independent contexts derive the shared read-only base directly; no B2B intermediary context
-  or writable context constraint remains in the public opportunity repository path. Their current
-  `PublicXDbContext` names are inaccurate and are queued for correction before PR #561 returns to review.
+  or writable context constraint remains in the public opportunity repository path.
 - The approved B2B names are `XDbContext` for the tenant-independent no-tracking/save-rejecting stance
   and `TenantXDbContext` for the `ITenantContext`-carrying tracked/write stance. `AdminVenueDbContext`
   remains the tenant-independent administrative write stance. `Global` is redundant, and `Read` does
@@ -124,9 +132,9 @@ tracked/write stance.
 - Tenant-independent contexts intentionally compose the full module model. Repository contracts and
   DTOs control what leaves the module; marketplace reads and internal cross-tenant facts may safely
   share the same read-only physical context.
-- `PublicBookingRepository` is an internal cross-tenant existence fact, not a public repository.
-  Artist/Venue organisation-identity lookup methods are likewise internal facts and must be split from
-  the otherwise genuine marketplace repositories.
+- `IBookingExistence` is an internal cross-tenant existence fact, not a public repository.
+  Artist/Venue organisation-identity lookup methods are likewise internal facts and are split from the
+  otherwise genuine marketplace repositories.
 - Generic read-context plumbing belongs in shared DataAccess, not in Customer or B2B. The shared
   `ReadDbContext` owns configuration-provider/default-schema composition, no-tracking, query access,
   and save rejection; services own only their meaningful physical module contexts.
