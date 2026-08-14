@@ -20,9 +20,10 @@
 - Messaging merge commit: `5c4dc3ddf5e0a67c51d493b1c9f5a93da6dfb9b3`
 - Dependency/package gate: terminal. Payment `0.1.0-alpha.0.973`, Messaging, and Reunion `0.1.0-alpha.3`
   are published and synced through platform-sync PR #547.
-- Main reconciliation: `origin/main` through `7bd9564998a67e3f6ec03ee2244100be7a77ee7c`
-  is merged in `dc651f49f`. Final normal-feed implementation and local validation are complete;
-  exact-head draft-PR CI and final current-main currency remain.
+- Main reconciliation: `origin/main` through `429581025b471c5ed76d3b34518ff5623f364247`
+  is merged in this commit. The four Artist/Venue dashboard conflicts preserve main's MTD Payment
+  reporting behind the typed Option identity guards; platform `0.1.0-alpha.0.980` restores cleanly.
+  Exact-head PR CI remains after the reconciliation review and push.
 
 ## Current state
 
@@ -69,8 +70,8 @@ reference was added. The resolved SEC1 tech-debt entry has been deleted.
 
 ## Next Steps
 
-Wait for exact-head draft-PR #552 build, carve, unit, integration, architecture, and HTTP-contract CI.
-Then reconcile current `origin/main`, repeat the smallest affected gates, and mark the PR ready.
+Commit and incrementally review the current-main reconciliation, push it, and mark PR #552 ready.
+Then wait for exact-head build, carve, unit, integration, architecture, and HTTP-contract CI.
 
 ## Completed work
 
@@ -221,6 +222,10 @@ Then reconcile current `origin/main`, repeat the smallest affected gates, and ma
   payloads that C# forbids user-defined conversion from. The B2B architecture closure builds with
   0 warnings and 0 errors; rebuilt affected suites pass Artist 11/11, Concert 211/211, Tenant 128/128,
   User 1/1, and Venue 12/12; architecture passes 8/8.
+- Current-main reconciliation restores platform `0.1.0-alpha.0.980`, retains MTD Payment reporting,
+  and short-circuits missing Artist/Venue identities as implicit `None` before Concert or Payment
+  calls. B2B architecture/Web closure builds with 0 warnings and 0 errors; Artist passes 16/16,
+  Venue 17/17, architecture 8/8, and scoped formatting passes.
 
 ## Decisions and deviations
 

@@ -3,18 +3,22 @@
 - Plan: `plans/launch/MANAGER_FRONT_PAGE_PLAN.md`
 - Roadmap: `plans/launch/LAUNCH_ROADMAP.md`
 - Roadmap item: `launch/manager-front-page`
-- Worktree: `C:\Users\TommySeery\source\repos\Concertable`
-- Branch: `Feature/launch_dashboard-accepted-checkout`
-- PR: [#414](https://github.com/Concertable/concertable/pull/414)
+- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-launch-dashboard-mtd-consumer`
+- Branch: `Feature/launch_dashboard-mtd-consumer`
+- PR: [#554](https://github.com/Concertable/concertable/pull/554) (draft; head `d572f06ae`)
 
 Captured during Phase A implementation. These supersede the original plan
 where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_PAGE_PLAN.md).
 
 ## Next Steps
 
-**Immediate action:** wait for #414's replacement PR checks on pushed head `35f63ea30`, then enqueue
-with `full-e2e` because the computed KPI changes user-visible API behaviour. Follow the merge, package
-publication, and platform-sync gates to terminal state before starting the next implementation slice.
+**Immediate action:** Draft PR #554 is open at verified work head `da185097d`. Full plus incremental review is clean:
+the only finding (new unit-test projects absent from service-local `Concertable.B2B.slnx`) was fixed in `da185097d`,
+and `dotnet sln Concertable.B2B.slnx list` resolves both. Push this review checkpoint, require exact-head PR CI green,
+mark ready, and take it through `/merge` with **`skip-e2e`** — the diff changes no HTTP/gRPC/published contract, so
+no positive E2E trigger. Local verification: Venue and Artist unit-test projects each build with 0 warnings/errors
+and pass 4/4; `git diff --check` clean. B2B compiles against published platform `0.1.0-alpha.0.976`, never producer
+source.
 
 **Update (2026-08-13):** PR [#50](https://github.com/Concertable/concertable/pull/50) **merged** (2026-05-19)
 — Phase A + B.9–B.11 are on `main`. The repo has since **carved** into `Concertable.B2B` /
@@ -34,18 +38,28 @@ publication, and platform-sync gates to terminal state before starting the next 
    filter param (repo stays pure data-access). Branch was **330 commits behind `main`** — synced
    (`b711b9365`, one conflict in `ConcertWorkflowCapabilityRegistry.cs`: kept `DealTypesWith` on
    origin/main's `workflowTypes` rename), B2B build 0 errors, Concert unit tests 133/133, pushed.
-   **2026-08-13 delivery refresh:** merged current `origin/main` at `abe5bff8e` (no conflicts) and ran
-   `dotnet build api/Concertable.slnx`: succeeded with 0 errors. Incremental code + security review of
-   `a531e8290..35f63ea30` found no issues; the current-main work head `35f63ea30` is verified equal to
-   both `origin/Feature/launch_dashboard-accepted-checkout` and PR #414's `headRefOid`. Replacement CI
-   is pending before queue admission.
-3. ⏳ **MTD revenue/payouts (was item 2, money slices).** `MtdRevenueCents` / `MtdPayoutsCents` still
-   stubbed at 0. NOT a simple method add: `IManagerPaymentModule` does not exist and **Payment is a
-   separate gRPC microservice**, so this is a cross-service build — Payment repo query (`TicketTransaction`
-   / `SettlementTransaction`, `Status=Complete`, `PayeeId`, MTD `CreatedAt`) → internal service → proto RPC
-   → `ManagerPaymentGrpcService` → `IManagerPaymentClient` → a B2B-side facade → the dashboard services —
-   plus an int `venueId`/`artistId` → `Guid` payout-owner-id resolution. **Collides with in-flight Payment
-   PRs #392 / #296 (typed-Result migration); sequence after those land.**
+   **2026-08-13 delivery:** incremental code + security review found no issues. PR #414 merged as
+   `306f072af2683e25ddaf29c36688feaa0253a189` after its full API + UI E2E merge-group run passed.
+   Package publication succeeded; cumulative platform-sync PR #541 superseded #539, updated the platform to
+   `0.1.0-alpha.0.968`, passed build/unit/integration checks, and merged as
+   `1c88858f93f648f1719fa9e4d273749b8932b364`.
+3. ⏳ **MTD revenue/payouts (was item 2, money slices) — PRODUCER DELIVERED; CONSUMER DELIVERY IN PROGRESS.**
+   **Producer:** PR [#545](https://github.com/Concertable/concertable/pull/545) MERGED as `3004fb52d` (full-e2e
+   merge-group passed after one auto-merge re-assert cleared a GitHub re-eval glitch); package published; platform-sync
+   PR #551 merged the platform to `0.1.0-alpha.0.976`. **Consumer:** commit `a569b2084` wires the two published reporting
+   RPCs into `VenueDashboardService`/`ArtistDashboardService`, replacing the `MtdRevenueCents`/`MtdPayoutsCents` zero
+   stubs. Payee is the fail-closed `ITenantContext.GetTenantId()`, the window is UTC month-to-date, exact month start
+   returns zero without constructing a degenerate `DateRange`, and `Money.ToMinorUnits()` fills the `long` cents fields.
+   The producer (now on `main`) added Payment-owned aggregate queries over completed
+   transactions within an explicit `DateRange`, two additive `ManagerPayment` RPCs exposed through a new
+   `IManagerPaymentReportingClient` (protobuf `Timestamp` + the existing `Money` value object). The separate reporting
+   interface keeps the published `IManagerPaymentOperationsClient` source-compatible with B2B's concrete test client.
+   Ticket revenue sums `TicketTransaction.Amount`; artist payouts sum `SettlementTransaction.PayeeGrossMinor` (excludes
+   the commission in the payer total). Payee is B2B's tenant `Guid` (`ITenantContext.GetTenantId()`) — no venue/artist
+   integer-ID translation. B2B consumes the published `Concertable.Payment.Client` package, never the producer source.
+   `MockManagerPaymentClient` implements both Payment client interfaces and is registered under both in `ApiFixture`;
+   new Venue/Artist dashboard unit tests cover mapping, tenant/period forwarding, null counts, month-start zero, and
+   fail-closed tenant resolution. Local result: 4/4 per project, both builds 0 warnings/errors.
 4. ⏳ **Phase C — swap FE mock tier → real (was item 4).** Blocked: only
    `/api/{Venue,Artist}Dashboard/kpis` exist server-side; the other 17 FE `dashboardApi` methods (overview,
    inbox, upcoming-concerts, revenue/payouts, opportunities, activity, settlements, applications, reviews)
