@@ -250,13 +250,13 @@ operation whose return type honestly distinguishes `MapAsync` (`Task<TNext>`) fr
 (`Task<Result<TNext, TError>>`).
 
 ```csharp
-public Task<Result<Checkout, CheckoutError>> CheckoutAsync(int concertId) =>
+public Task<Result<Checkout, CheckoutError>> CheckoutAsync(int concertId, int quantity) =>
     concertModule.GetByIdAsync(concertId)
         .OrFailure<Concert, CheckoutError>(new CheckoutError.ConcertNotFound(concertId))
         .Ensure(
             concert => ticketValidator.CanPurchaseTickets(concert, quantity),
             errors => new CheckoutError.Invalid(errors))
-        .MapAsync(CreateCheckoutAsync);
+        .MapAsync(concert => CreateCheckoutAsync(concert, quantity));
 ```
 
 The null-coalescing operator works only on nullable operands and cannot be overloaded, so
