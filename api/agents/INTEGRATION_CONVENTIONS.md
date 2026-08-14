@@ -34,6 +34,9 @@ yourself copying a setup step into a second fixture, lift it into the shared lib
 - `services.AddXunitLogging(accessor)` — routes host logs to the current xunit test output.
 - `services.RemoveAzureServiceBus()` — drops the ASB receiver(s) and swaps `IBusTransport` for a no-op
   `MockBusTransport`; omit it in a service with no bus (e.g. Search).
+- `IntegrationDbInitializer` — the shared `IDbInitializer` that migrates inbox/outbox then migrates + seeds every
+  registered `ITestSeeder`; register via `services.AddScoped<IDbInitializer, IntegrationDbInitializer>()` alongside
+  the service's own seeders.
 
 Only genuinely service-specific wiring (Duende/Razor, Payment-in-process, Stripe fakes, per-service mocks and
 seeders) stays in the service's own fixture.
