@@ -6,9 +6,9 @@
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable/.worktrees/Plan-data-access-repository-permission-hierarchy`
 - Branch: `Refactor/DataAccessRepositoryPermissionHierarchy`
 - PR: [#561](https://github.com/Concertable/concertable/pull/561) (draft)
-- Remote work head: `86b352807f0ef4354cfcb16baae719481ae6e462`
+- Remote work head: `86b352807f0ef4354cfcb16baae719481ae6e462`; local verified head: `9ba02a024b16684910d38da14741a54bd092bd58`
 - Dependency/package gates: Phase 1 remains an additive producer PR. After it merges, package publication and the generated platform-sync PR must be green before Phase 2 migrates consumers.
-- Last reconciled: 2026-08-15; the branch is six commits behind fetched `origin/main` and must be updated after the current correction is committed.
+- Last reconciled: 2026-08-15 against fetched `origin/main` at `34fd38198`; the branch is current with base and clean.
 
 ## Current state
 
@@ -36,17 +36,17 @@ The replacement design is implemented in the working tree:
   snapshot, and migration metadata names and do not change their schemas.
 - B2B guidance now makes Tenant/organisation vocabulary and the participant projection boundary
   explicit so the concepts are not mixed again.
+- The correction is committed at `28de99489`. Current `origin/main` merged cleanly at `9ba02a024`, and
+  the post-merge branch-local platform build and focused Conversations tests are green.
 
 ## Next Steps
 
-1. Commit the verified corrected design as one coherent checkpoint.
-2. With a clean tree, merge current `origin/main` into the branch, rebuild the affected scopes, push the
-   updated head to draft PR #561, and require exact-head draft CI. Mark the PR ready only when that head
-   is green.
-3. Wait for explicit authorization to merge PR #561. When authorized, merge it through the repository
+1. Push the current verified head to draft PR #561 and require exact-head draft CI. Mark the PR ready
+   only when that head is green.
+2. Wait for explicit authorization to merge PR #561. When authorized, merge it through the repository
    merge workflow, follow additive package publication and the generated platform-sync PR to green,
    and close this source worktree with `-PlanManaged`.
-4. Create the Phase 2 consumer-migration worktree from the resulting current `origin/main` and migrate
+3. Create the Phase 2 consumer-migration worktree from the resulting current `origin/main` and migrate
    consumers against the published additive platform version.
 
 ## Completed work
@@ -78,7 +78,12 @@ The replacement design is implemented in the working tree:
   the approved identifier replacement.
 - `git diff --check` - passed.
 - `python .agents/hooks/plan_graph.py --root C:/Users/TommySeery/source/repos/Concertable/.worktrees/Plan-data-access-repository-permission-hierarchy` - 0 errors, 0 warnings.
-- Post-`origin/main` build and exact-head draft CI are pending.
+- Post-merge `./scripts/local-platform.ps1 prepare` - succeeded; packed 40 packages at
+  `0.1.0-local.1786751073698`.
+- Post-merge B2B Web Release build against that local platform - succeeded with 0 errors and the
+  existing `UserEntity.UserEntity()` warning.
+- Post-merge Conversations unit tests - 9 passed, 0 failed, 0 skipped.
+- Exact-head draft CI is pending.
 
 ## Reviews
 
