@@ -227,10 +227,9 @@ matters: the seam fix must precede the composition/rename or their builds/tests 
   Ran the dynamically discovered integration suites through the integration debug workflow with Docker pre-flight → the 6
   formerly-red suites + all integration green; unit green. A red suite → the matching debug skill, not a
   status report.
-- **Phase 5 — Deliver.** Push; the merge queue runs build + unit + integration (merge Step 4 tier: no
-  positive E2E trigger → `skip-e2e`). On merge → `publish-packages` emits the renamed DataAccess →
-  `platform-sync` bumps pins; because every consumer was migrated in-PR (grep gate = zero old refs), the
-  `chore/platform-sync-*` PR builds green — **own it to merged**. Then close out per
+- **Phase 5 — Deliver. ✅ Complete.** PR #530 passed the `full-e2e` merge-queue tier and merged;
+  `publish-packages` shipped platform version `0.1.0-alpha.0.980`; platform-sync PR #558 passed its
+  package-only merge-group matrix and merged. Then close out per
   [`plans/AGENTS.md`](../AGENTS.md) (move recovery state to a `Docs/*_closeout` worktree, prune this one).
 
 ## Open decisions / risks
