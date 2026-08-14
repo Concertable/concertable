@@ -9,7 +9,8 @@
 - Checkpoints 8-9 commit: `bfc8690b196821bdd735ea5d229182fd9a3baf36`
 - Current-main merge commit: `5613a817a96bb0316ea9dc3a2d624e59f43e56a4`
 - Review/fix commit: `eb84634699fa643a072342cd196b9767a6694619`
-- Review watermark: `54b419b0153fe06bc2786db061a48bbbbecef41c`
+- Review watermark: `54b419b0153fe06bc2786db061a48bbbbecef41c`; the implicit-conversion
+  correction in this commit requires incremental review.
 - Checkpoint 10B consumer commits: `c55c99718` and `544144527`
 - Final reviewed delivery push: `b03abf8cd..6aef91470`; local, remote branch, and PR heads matched
   `6aef91470da0cab27dce5d525fe93c05b9b28f5c` immediately after the push.
@@ -211,11 +212,15 @@ Then reconcile current `origin/main`, repeat the smallest affected gates, and ma
   Docker/Testcontainers was unavailable; every failure occurred during fixture construction before
   application code ran. Draft-PR integration CI owns the healthy-runner execution.
 - Final changed-file formatting verification and `git diff --check`: passed.
-- Final result-boundary commits: `fef0d2007` and Option-absence correction `54b419b01`.
-- B2B application-level `Option<T>` absence audit: all explicit absence branches return the named
-  `None` case through Reunion's implicit conversion; nullable repository/provider/framework returns
-  remain nullable. Artist, Venue, Tenant, and User infrastructure builds passed with 0 errors, scoped
-  formatting passed, and the incremental review is clean through `54b419b01`.
+- Final result-boundary commits: `fef0d2007`; this commit corrects the follow-up Option audit.
+- B2B result/Option construction audit: target-typed absence branches use `return null;`, present
+  reference payloads return directly, and success values, typed errors, and forwarded typed results
+  use Reunion's implicit conversions wherever C# supplies a target type. `ToOption()` remains only
+  for nullable value types and composition; explicit Result factories remain only where generic
+  `Bind`/`BindAsync` inference has no result target, and named `Success<T>` remains for interface-typed
+  payloads that C# forbids user-defined conversion from. The B2B architecture closure builds with
+  0 warnings and 0 errors; rebuilt affected suites pass Artist 11/11, Concert 211/211, Tenant 128/128,
+  User 1/1, and Venue 12/12; architecture passes 8/8.
 
 ## Decisions and deviations
 
