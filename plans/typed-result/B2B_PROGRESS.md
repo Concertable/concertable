@@ -9,7 +9,8 @@
 - Checkpoints 8-9 commit: `bfc8690b196821bdd735ea5d229182fd9a3baf36`
 - Current-main merge commit: `5613a817a96bb0316ea9dc3a2d624e59f43e56a4`
 - Review/fix commit: `eb84634699fa643a072342cd196b9767a6694619`
-- Review watermark: `219b34b1ef6152353212138e01f73a87120720ef`; incremental review is clean.
+- Review watermark: `506addfee8dfcaa9667b455d08d3ef457238fe9b`; incremental review and
+  security review are clean.
 - Checkpoint 10B consumer commits: `c55c99718` and `544144527`
 - Implicit-conversion correction push: starting remote head `804d9b4e8`; pushed
   `219b34b1e..8b44d41ec`; local work head, remote branch, and PR #552 head matched
@@ -70,8 +71,8 @@ reference was added. The resolved SEC1 tech-debt entry has been deleted.
 
 ## Next Steps
 
-Commit and incrementally review the current-main reconciliation, push it, and mark PR #552 ready.
-Then wait for exact-head build, carve, unit, integration, architecture, and HTTP-contract CI.
+Push the reviewed current-main reconciliation and mark PR #552 ready. Then wait for exact-head build,
+carve, unit, integration, architecture, and HTTP-contract CI.
 
 ## Completed work
 
