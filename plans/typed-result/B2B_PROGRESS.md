@@ -21,7 +21,14 @@
   `8db6d14f0fd1f644226bda27c2764f429a0e0c1b`. PR #552 was marked ready and exact-head CI passed.
 - HTTP-terminal follow-up push: starting remote head `af8aa70b46883a5536ac8a32ae79a8c470210eef`;
   pushed `af8aa70b4..b9448ab0e`; local work head, remote branch, and PR #552 head matched
-  `b9448ab0e7ec552347d347044f64c0b77a747520`. Exact-head CI is the next gate.
+  `b9448ab0e7ec552347d347044f64c0b77a747520`; checkpoint transport then matched
+  `bb29e929b87706a087f118025d09c7f3fbf3dc67`. Exact-head CI run `31803089514` failed only the
+  B2B Concert integration project because Deal GET's generic OK terminal omitted the polymorphic
+  `IDeal` discriminator. Current `origin/main` through `7b8764377` is merged as `2e9b16bd4`.
+- Deal terminal correction: this commit restores the custom typed `ActionResult<IDeal>` success
+  mapping required by the wire discriminator while retaining Reunion's typed error mapping. Focused
+  Deal HTTP contracts pass 2/2, B2B architecture passes 8/8, Deal API formatting is clean, and
+  `git diff --check` is clean.
 - Messaging producer commit: `ade9728f9`
 - Messaging delivery branch/PR: `Feature/MessagingOutboundCommands`, PR #536, remote head
   `7a0886e1245ef76267f0cf906518b2169ac3cfd6`
@@ -78,8 +85,9 @@ reference was added. The resolved SEC1 tech-debt entry has been deleted.
 
 ## Next Steps
 
-Wait for exact-head build, carve, unit, integration, architecture, and HTTP-contract CI. Keep
-auto-merge disabled until Tommy explicitly authorizes landing PR #552.
+Commit and review the Deal polymorphic-terminal correction, publish it through the plan-managed
+two-leg push protocol, and wait for exact-head build, carve, unit, integration, architecture, and
+HTTP-contract CI. Keep auto-merge disabled until Tommy explicitly authorizes landing PR #552.
 
 ## Completed work
 
