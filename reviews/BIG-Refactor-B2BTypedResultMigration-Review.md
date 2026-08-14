@@ -6,8 +6,8 @@
 > in one line, take the safe path, keep going.
 
 **Plan anchored to commit:** `e229afb581c829279ca821b0a85729c4c4f0f441`  _(2026-08-10)_
-**Reviewed up to commit:** `506addfee8dfcaa9667b455d08d3ef457238fe9b`  _(2026-08-14)_
-**Security-reviewed up to commit:** `506addfee8dfcaa9667b455d08d3ef457238fe9b`  _(2026-08-14)_
+**Reviewed up to commit:** `85e84c7dcc9c6e81c0f34e627254b43cec6e9553`  _(2026-08-14)_
+**Security-reviewed up to commit:** `85e84c7dcc9c6e81c0f34e627254b43cec6e9553`  _(2026-08-14)_
 Net diff reviewed: `1043a9178..e229afb58`. Move-only files skipped.
 Status legend: `[ ]` not yet reviewed · `[x]` reviewed (date) · `[~]` in progress (incomplete — re-review).
 
@@ -122,7 +122,7 @@ conversion.
 
 ## Incremental review - 2026-08-14
 
-> Range reviewed: `219b34b1ef6152353212138e01f73a87120720ef..506addfee8dfcaa9667b455d08d3ef457238fe9b` (66 commits).
+> Range reviewed: `219b34b1ef6152353212138e01f73a87120720ef..506addfee9891d33a8e3a06c0297bb95d931fa1b` (66 commits).
 
 No new findings. Reviewed the current-main reconciliation and its Artist/Venue dashboard conflict
 resolutions through native correctness, Payment security, package ownership, microservice isolation,
@@ -130,3 +130,14 @@ module boundaries, seeding, C# conventions, and test coverage. The merge preserv
 Payment reporting client and MTD values while the typed identity Options short-circuit absence before
 Concert or Payment calls. Upstream main changes outside the integration surface were already landed
 and introduced no branch-specific interaction defect.
+
+## Incremental review - 2026-08-14
+
+> Range reviewed: `506addfee9891d33a8e3a06c0297bb95d931fa1b..85e84c7dcc9c6e81c0f34e627254b43cec6e9553` (4 commits).
+
+No new findings. Reviewed the AppHost topology tech-debt entry and the standard HTTP-terminal cleanup
+through native correctness, typed-result transport semantics, authorization preservation,
+microservice isolation, module boundaries, C# conventions, and HTTP contract coverage. Created
+responses retain their values and exact Location headers through `ToCreatedOrProblem`; Deal lookup
+retains `200 OK` through `ToOkOrProblem`; the remaining custom callbacks are limited to file downloads
+and bodyless `201 Created` responses without a dedicated Reunion unit-result terminal.
