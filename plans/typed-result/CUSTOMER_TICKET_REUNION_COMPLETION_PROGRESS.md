@@ -8,8 +8,8 @@
 - PR: [#555](https://github.com/Concertable/concertable/pull/555) (ready; merge requested)
 - Dependency/package gates: all four Reunion `0.1.0-alpha.6` packages are published and indexed on
   NuGet.org; platform `0.1.0-alpha.0.976` is published
-- Last reconciled: 2026-08-14 against corrected candidate `c1dacb32c`, the live NuGet.org indexes,
-  and `origin/main` `429581025`
+- Last reconciled: 2026-08-14 against current-main merge candidate `a6a98d6dd`, the live NuGet.org
+  indexes, and `origin/main` `7b8764377`
 
 ## Current state
 
@@ -48,6 +48,8 @@ findings remain. Tommy has explicitly requested merge.
 - Merge-queue E2E selection is `skip-e2e`: the PR changes internal Customer Ticket composition and
   package consumption only; it does not touch UI, HTTP/wire contracts, cross-service contracts,
   authentication/routing, or a published Concertable API shape.
+- `origin/main` advanced by 20 commits before queue admission and merged cleanly as `a6a98d6dd`.
+  The current-main Ticket test project builds with 0 warnings/errors and all 33 unit tests pass.
 
 ## Verification and review
 
@@ -117,6 +119,6 @@ findings remain. Tommy has explicitly requested merge.
 
 ## Next Steps
 
-Continue the authorized merge workflow for PR #555: push this final `skip-e2e` queue checkpoint,
-wait for exact-head CI, update from `origin/main` if needed, enqueue, and own
-publication/platform-sync plus plan closeout through terminal completion.
+Continue the authorized merge workflow for PR #555: push this current-main `skip-e2e` queue
+checkpoint, wait for exact-head CI, enqueue, and own publication/platform-sync plus plan closeout
+through terminal completion.
