@@ -6,8 +6,8 @@
 > in one line, take the safe path, keep going.
 
 **Plan anchored to commit:** `e229afb581c829279ca821b0a85729c4c4f0f441`  _(2026-08-10)_
-**Reviewed up to commit:** `35903d6e02d750761f4d41a02d906a096c8f0fd2`  _(2026-08-14)_
-**Security-reviewed up to commit:** `35903d6e02d750761f4d41a02d906a096c8f0fd2`  _(2026-08-14)_
+**Reviewed up to commit:** `9380696c208224e59ab77d09d8a72d00853e852f`  _(2026-08-14)_
+**Security-reviewed up to commit:** `9380696c208224e59ab77d09d8a72d00853e852f`  _(2026-08-14)_
 Net diff reviewed: `1043a9178..e229afb58`. Move-only files skipped.
 Status legend: `[ ]` not yet reviewed · `[x]` reviewed (date) · `[~]` in progress (incomplete — re-review).
 
@@ -143,3 +143,14 @@ microservice isolation, module boundaries, C# conventions, and HTTP contract cov
 responses retain their values and exact Location headers through `ToCreatedOrProblem`; Deal lookup
 retains `200 OK` through `ToOkOrProblem`; the remaining custom callbacks are limited to file downloads
 and bodyless `201 Created` responses without a dedicated Reunion unit-result terminal.
+
+## Incremental review - 2026-08-14
+
+> Range reviewed: `35903d6e02d750761f4d41a02d906a096c8f0fd2..9380696c208224e59ab77d09d8a72d00853e852f` (36 commits).
+
+No new findings. Reviewed the module-facade delegation and current-main reconciliation through native
+correctness, Payment security, microservice isolation, module boundaries, seeding, C# conventions,
+and test coverage. The moved application-service operations preserve the former repository queries,
+mapping, Options, and booleans; facade tests and the architecture guard pin the new wiring. Upstream
+Payment reporting and shared integration-harness changes were already landed and introduce no
+branch-specific interaction defect.

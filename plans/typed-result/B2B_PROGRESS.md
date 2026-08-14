@@ -7,8 +7,8 @@
 - Branch: `Refactor/B2BTypedResultMigration`
 - PR: #552 (ready; auto-merge disabled)
 - Checkpoints 8-9 commit: `bfc8690b196821bdd735ea5d229182fd9a3baf36`
-- Current-main merge commit: this merge commit, through
-  `66d26dbfa2e0cb5cab08e02e590703591e8cfdba`
+- Current-main merge commit: `9380696c208224e59ab77d09d8a72d00853e852f`, through
+  `66d26dbfa2e0cb5cab08e02e590703591e8cfdba`.
 - Review/fix commit: `eb84634699fa643a072342cd196b9767a6694619`
 - Review watermark: `85e84c7dcc9c6e81c0f34e627254b43cec6e9553`; incremental review and
   security review are clean.
@@ -50,6 +50,8 @@
   renamed `api/agents/CONVENTIONS.md` and enforced by B2B architecture tests. Current main is
   reconciled through `66d26dbfa`; the sole roadmap conflict preserved both the completed B2B Payment
   producer and completed Customer Ticket delivery records.
+- Post-merge review watermark: `9380696c208224e59ab77d09d8a72d00853e852f`; incremental native,
+  security, isolation, module-boundary, seeding, convention, and coverage review is clean.
 
 ## Current state
 
@@ -103,10 +105,9 @@ package graph; no Reunion extension was copied or recreated locally.
 
 ## Next Steps
 
-Restore the reconciled platform `0.1.0-alpha.0.985` graph, revalidate the affected scope against the
-new shared integration harness, review the post-merge range, push the reconciled head, and wait for
-exact-head build, carve, unit, integration, architecture, and HTTP-contract CI. Keep auto-merge
-disabled until Tommy explicitly authorizes landing PR #552.
+Commit and push the reviewed current-main checkpoint, verify local/remote/PR head equality, record
+the transport checkpoint, and wait for exact-head build, carve, unit, integration, architecture, and
+HTTP-contract CI. Keep auto-merge disabled until Tommy explicitly authorizes landing PR #552.
 
 ## Completed work
 
@@ -273,6 +274,11 @@ disabled until Tommy explicitly authorizes landing PR #552.
   hits the known Roslyn generated-document property limitation, so all affected Customer projects
   were verified individually. Rename/source greps are zero and the plan graph passes 0 errors,
   0 warnings.
+- Current-main `0.1.0-alpha.0.985` revalidation: B2B Web and Customer Web build with 0 errors; focused
+  units pass B2B Artist 16/16 and Venue 17/17 plus Customer User 15/15, Concert 25/25, and Ticket
+  37/37; B2B architecture passes 9/9; B2B User integration passes 4/4 on the shared integration
+  harness. Plan graph and `git diff --check` pass with 0 errors and 0 warnings. The only build warning
+  is the existing protected constructor on each service's sealed `UserEntity`.
 - Standard Artist, Venue, Opportunity, Application, invitation, and Customer Review creation
   responses now use Reunion `ToCreatedOrProblem`; Deal lookup uses `ToOkOrProblem`. The remaining
   `ToActionResult` calls are limited to three file downloads and two bodyless `201 Created` responses
