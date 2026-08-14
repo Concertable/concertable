@@ -5,11 +5,11 @@
 - Roadmap item: `typed-result/customer-ticket-reunion`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Fix-typed-result-customer-ticket-validation-composition`
 - Branch: `Fix/typed-result_customer-ticket-validation-composition`
-- PR: [#555](https://github.com/Concertable/concertable/pull/555) (ready)
+- PR: [#555](https://github.com/Concertable/concertable/pull/555) (ready; merge requested)
 - Dependency/package gates: all four Reunion `0.1.0-alpha.6` packages are published and indexed on
   NuGet.org; platform `0.1.0-alpha.0.976` is published
-- Last reconciled: 2026-08-14 against ready PR #555 checkpoint `c00c6d580`, CI run `31797930536`,
-  the live NuGet.org indexes, and `origin/main` `429581025`
+- Last reconciled: 2026-08-14 against corrected candidate `c1dacb32c`, the live NuGet.org indexes,
+  and `origin/main` `429581025`
 
 ## Current state
 
@@ -25,8 +25,8 @@ follow-up now consumes Reunion's value-preserving validation-aware `Ensure` API 
 packed, inspected, published, and indexed, and a forced no-cache full-solution restore is green.
 Implementation candidate `ada7172dc` replaces the duplicated purchase/checkout validation guards
 with `Ensure`; focused build and unit gates are green. Checkpoint `c00c6d580` passed exact-head PR CI.
-The prior review covers only candidate `a433b8587`, so the incremental-review decision now remains
-with Tommy.
+Incremental review through `c1dacb32c` found and corrected one invalid documentation example; no open
+findings remain. Tommy has explicitly requested merge.
 
 ## Completed milestones
 
@@ -44,6 +44,7 @@ with Tommy.
 - Correction `ada7172dc` consumes validation-aware `Ensure`, removes the private guard helpers, moves
   all four Customer Reunion pins to `0.1.0-alpha.6`, and corrects the Result-pattern guidance.
 - Checkpoint `c00c6d580` passed exact-head PR #555 CI after the correction and publication gates.
+- Incremental review corrected the Result-pattern example in `c1dacb32c`; no open findings remain.
 
 ## Verification and review
 
@@ -87,8 +88,8 @@ with Tommy.
   closure to alpha.6, contains exactly the two intended validation-aware `Ensure` calls, and removes
   the private validation guards.
 - Full review `429581025..a433b8587` found no native, security, correctness, architecture, convention,
-  or changed-path coverage issues. It does not cover correction `ada7172dc`; incremental review is a
-  pending Tommy decision. Artifact:
+  or changed-path coverage issues. Incremental review `a433b8587..c1dacb32c` found one invalid
+  documentation example and corrected it in `c1dacb32c`; no open findings remain. Artifact:
   `reviews/Fix-typed-result_customer-ticket-validation-composition.md`.
 - `python .agents/hooks/plan_graph.py --root C:\Users\TommySeery\source\repos\Concertable\.worktrees\Fix-typed-result-customer-ticket-validation-composition`:
   0 errors, 0 warnings after reconciling current `origin/main`.
@@ -113,7 +114,6 @@ with Tommy.
 
 ## Next Steps
 
-Blocked: Ready PR #555 has passed implementation, alpha.6 publication, restore, focused validation, and exact-head CI gates; Tommy asked to decide whether to run incremental review before merge.
-Blocked by: Tommy's review decision for the changes after the existing `a433b8587` review marker.
-Unblock action: Tell the agent either to run incremental review or to leave the green PR ready without another review.
-Resume when: Tommy gives the review decision; do not merge without a later explicit merge instruction.
+Continue the authorized merge workflow for PR #555: commit and push this review checkpoint, wait for
+exact-head CI, apply the mechanically selected merge-queue E2E label, update from `origin/main` if
+needed, enqueue, and own publication/platform-sync plus plan closeout through terminal completion.
