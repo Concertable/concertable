@@ -6,10 +6,10 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Fix-typed-result-customer-ticket-validation-composition`
 - Branch: `Fix/typed-result_customer-ticket-validation-composition`
 - PR: [#555](https://github.com/Concertable/concertable/pull/555) (ready)
-- Dependency/package gates: all four Reunion `0.1.0-alpha.5` packages are published and indexed on
+- Dependency/package gates: all four Reunion `0.1.0-alpha.6` packages are published and indexed on
   NuGet.org; platform `0.1.0-alpha.0.976` is published
-- Last reconciled: 2026-08-14 against ready PR #555 candidate `a433b8587`, CI run `31791242597`,
-  the live NuGet.org indexes, and `origin/main` `429581025`
+- Last reconciled: 2026-08-14 against implementation candidate `ada7172dc`, the live NuGet.org
+  indexes, and `origin/main` `429581025`
 
 ## Current state
 
@@ -20,12 +20,12 @@ Ticket purchase, checkout, and eligibility also expanded unambiguous Result bran
 while Payment success/error projection used terminal `Match` rather than `Map`/`MapError`.
 
 PR #540 completed the Option-boundary correction and merged as `491890ec9`. The remaining Ticket
-follow-up adopts the corrected ValidationResult composition API on a lockstep `0.1.0-alpha.5` Reunion
-package set. The omitted `Reunion.AspNetCore` artifact has now been published from the corrected
-producer commit, NuGet.org indexes the complete set, and a forced no-cache full-solution restore is
-green. The branch has `origin/main` `429581025` merged at `77fcff14e` and is ready for an exact-head
-PR #555 CI run. Candidate `a433b8587` passed all remote gates, the final review found no issues, and
-PR #555 is ready for the explicit merge workflow.
+follow-up now consumes Reunion's value-preserving validation-aware `Ensure` API on a lockstep
+`0.1.0-alpha.6` package set. Reunion PR #15 merged that API as `15a41df2f`; all four packages were
+packed, inspected, published, and indexed, and a forced no-cache full-solution restore is green.
+Implementation candidate `ada7172dc` replaces the duplicated purchase/checkout validation guards
+with `Ensure`; focused build and unit gates are green. The prior review covers only candidate
+`a433b8587`, so the incremental-review decision remains with Tommy after exact-head CI completes.
 
 ## Completed milestones
 
@@ -40,6 +40,8 @@ PR #555 is ready for the explicit merge workflow.
   PR #555 work heads were verified equal at `edc88edfa`.
 - Checkpoint `a433b8587` passed exact-head CI and PR #555 was marked ready after the final mechanical
   inventories and review completed cleanly.
+- Correction `ada7172dc` consumes validation-aware `Ensure`, removes the private guard helpers, moves
+  all four Customer Reunion pins to `0.1.0-alpha.6`, and corrects the Result-pattern guidance.
 
 ## Verification and review
 
@@ -50,9 +52,12 @@ PR #555 is ready for the explicit merge workflow.
 - NuGet.org accepted the package and its flat-container index now lists `0.1.0-alpha.5`.
   `dotnet restore api/Concertable.slnx --force --no-cache --verbosity minimal` then restored the full
   solution successfully from the public package set.
-- Guard-style validation rebuilt Ticket Infrastructure and the Ticket test assembly with 0 warnings
-  and 0 errors; Ticket unit tests remain 33/33 green. Existing missing-Concert and invalid-purchase/
-  checkout coverage is preserved.
+- Reunion `0.1.0-alpha.6` was packed from green producer commit `15a41df2f`; all four repository
+  inspectors passed. NuGet.org accepted and indexed `Reunion`, `Reunion.Errors`,
+  `Reunion.AspNetCore`, and `Reunion.Validation` alpha.6.
+- A forced no-cache full-solution restore resolves alpha.6 from the public feed. Ticket Infrastructure
+  and the Ticket test assembly build with 0 errors; Ticket unit tests remain 33/33 green. Existing
+  missing-Concert and invalid-purchase/checkout coverage is preserved.
 - `dotnet build api/Concertable.slnx --configuration Release --no-restore`: 0 errors; existing
   UserEntity and generated E2E warnings only.
 - Affected unit suites: Concert 23/23, Ticket 33/33, Review 43/43.
@@ -73,11 +78,13 @@ PR #555 is ready for the explicit merge workflow.
 - PR #555 CI run `31791242597` completed 56/56 checks without failure on candidate `a433b8587`;
   full build, Customer carve, Ticket unit, all seven Customer integration projects, and `ci-complete`
   are green.
-- Mechanical inventory confirms all four Customer Reunion packages and the restored Web closure use
-  `0.1.0-alpha.5`; Ticket Infrastructure contains no Result factories or terminal `Match` calls;
-  whitespace and plan graph are clean.
+- Candidate `a433b8587` mechanically confirmed the previous alpha.5 closure and contained no Ticket
+  Result factories or terminal `Match` calls. Candidate `ada7172dc` moves the package and restored Web
+  closure to alpha.6, contains exactly the two intended validation-aware `Ensure` calls, and removes
+  the private validation guards.
 - Full review `429581025..a433b8587` found no native, security, correctness, architecture, convention,
-  or changed-path coverage issues. Artifact:
+  or changed-path coverage issues. It does not cover correction `ada7172dc`; incremental review is a
+  pending Tommy decision. Artifact:
   `reviews/Fix-typed-result_customer-ticket-validation-composition.md`.
 - `python .agents/hooks/plan_graph.py --root C:\Users\TommySeery\source\repos\Concertable\.worktrees\Fix-typed-result-customer-ticket-validation-composition`:
   0 errors, 0 warnings after reconciling current `origin/main`.
@@ -95,14 +102,14 @@ PR #555 is ready for the explicit merge workflow.
 - Reunion PR [#9](https://github.com/tomjseery/Reunion/pull/9) was reverted by
   [#10](https://github.com/tomjseery/Reunion/pull/10). The corrected composition API merged in
   [#11](https://github.com/tomjseery/Reunion/pull/11) as `02e01a8ed` and delegates ordinary fail-fast
-  composition directly to the inner `UnitResult<ValidationErrors>`. `Reunion`, `Reunion.AspNetCore`,
-  `Reunion.Errors`, and `Reunion.Validation` `0.1.0-alpha.5` are published and indexed on NuGet.org.
-- Ticket retains `OrFailure` for Concert absence and an explicit validation guard. A later Reunion
-  release will provide value-preserving validation-aware `Ensure` composition.
+  composition directly to the inner `UnitResult<ValidationErrors>`.
+- Reunion PR [#15](https://github.com/tomjseery/Reunion/pull/15) merged value-preserving,
+  validation-aware `Ensure` as `15a41df2f`. The lockstep `0.1.0-alpha.6` release is published and
+  indexed, and Ticket now composes Concert absence with `OrFailure` and validation with `Ensure`.
 
 ## Next Steps
 
-Blocked: Ready PR #555 has completed implementation, publication, restore, CI, mechanical inventory, and review gates but merge requires explicit authorization.
-Blocked by: Tommy's explicit instruction to merge PR #555.
-Unblock action: Tell the agent to merge PR #555 through the repository merge workflow.
-Resume when: Tommy explicitly instructs the agent to merge PR #555.
+1. Push implementation candidate `ada7172dc` and this checkpoint to PR #555.
+2. Wait for exact-head PR CI and present the ready PR to Tommy.
+3. Decide whether to run incremental review from the existing `a433b8587` review marker.
+4. Do not merge until Tommy gives a new explicit merge instruction after the review decision.
