@@ -7,8 +7,8 @@
 - Branch: `Refactor/B2BTypedResultMigration`
 - PR: #552 (ready; auto-merge disabled)
 - Checkpoints 8-9 commit: `bfc8690b196821bdd735ea5d229182fd9a3baf36`
-- Current-main merge commit: `8f763cf602ad9750ef2fc8354f3e17f67b9e4636`, through
-  `61ce0d1163a6b21573f509a1defec2741a572436`
+- Current-main merge commit: this merge commit, through
+  `66d26dbfa2e0cb5cab08e02e590703591e8cfdba`
 - Review/fix commit: `eb84634699fa643a072342cd196b9767a6694619`
 - Review watermark: `85e84c7dcc9c6e81c0f34e627254b43cec6e9553`; incremental review and
   security review are clean.
@@ -47,8 +47,9 @@
 - Module-facade convention follow-up: implemented and locally verified. B2B Artist, Venue, and User
   plus Customer Concert, Ticket, and User module facades now delegate their existing operations to
   application services instead of owning repository/mapping logic. The convention is documented in
-  renamed `api/agents/CONVENTIONS.md` and enforced by B2B architecture tests. `origin/main` advanced
-  after the local checkpoint and must be merged before the next push.
+  renamed `api/agents/CONVENTIONS.md` and enforced by B2B architecture tests. Current main is
+  reconciled through `66d26dbfa`; the sole roadmap conflict preserved both the completed B2B Payment
+  producer and completed Customer Ticket delivery records.
 
 ## Current state
 
@@ -102,10 +103,10 @@ package graph; no Reunion extension was copied or recreated locally.
 
 ## Next Steps
 
-Commit the verified module-facade checkpoint, merge current `origin/main`, revalidate the affected
-scope, push the reconciled head, and wait for exact-head build, carve, unit, integration,
-architecture, and HTTP-contract CI. Keep auto-merge disabled until Tommy explicitly authorizes
-landing PR #552.
+Restore the reconciled platform `0.1.0-alpha.0.985` graph, revalidate the affected scope against the
+new shared integration harness, review the post-merge range, push the reconciled head, and wait for
+exact-head build, carve, unit, integration, architecture, and HTTP-contract CI. Keep auto-merge
+disabled until Tommy explicitly authorizes landing PR #552.
 
 ## Completed work
 

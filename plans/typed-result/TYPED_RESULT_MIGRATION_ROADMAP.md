@@ -17,13 +17,14 @@
 > cleanup is owned by
 > [`REUNION_SHARED_CONTRACTION_PLAN.md`](REUNION_SHARED_CONTRACTION_PLAN.md).
 >
-> **Latest published producer release:** NuGet.org publishes `0.1.0-alpha.3` for `Reunion`,
+> **Latest published producer release:** NuGet.org publishes `0.1.0-alpha.6` for `Reunion`,
 > `Reunion.Validation`, `Reunion.Errors`, and `Reunion.AspNetCore`. The merged producer baseline adds
 > structured `ValidationResult`, direct static `ErrorDefinition` factories, canonical native-union
 > source/API baselines, and target-typed raw-payload plus exact named-case conversions across
-> `Result`, `UnitResult`, and `Option`, including flexible projected `Option` HTTP terminals. Customer
-> requires alpha.3 for those terminals; remaining owners reconcile their exact published baseline in
-> their own ledgers, and delivery ordering does not block independent service code.
+> `Result`, `UnitResult`, and `Option`, including flexible projected `Option` HTTP terminals and
+> value-preserving validation-aware `Ensure`. Customer Ticket consumes alpha.6; remaining owners
+> reconcile their exact published baseline in their own ledgers, and delivery ordering does not block
+> independent service code.
 
 ---
 
@@ -98,13 +99,11 @@ their current branch and worktree rather than fragmenting in-flight work.
 - [x] ✅ **B2B Payment saga producer.** `typed-result/b2b-payment-saga-producer` delivered Payment PR
   #544 as `d6619a856`, published platform `0.1.0-alpha.0.973`, and completed cumulative platform-sync
   PR #547 as `7bd956499`. The B2B consumer now owns final current-main/package revalidation.
-- [ ] 🟠 **Customer Ticket purchase/checkout slice.** `typed-result/customer-ticket-reunion` Exclusive
-  owner: `Fix/typed-result_customer-ticket-reunion-completion` at
-  `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Fix-typed-result-customer-ticket-reunion-completion`.
-  Replacement PR #475 delivered the Ticket outcomes as `2b05ed110`, but a post-merge audit found its
-  nullable Concert/Ticket application and module lookups, Result composition ceremony, dropped Concert
-  query cancellation, and incomplete direct Reunion package ownership. The correction plan and ledger
-  own completion before this item returns to terminal.
+- [x] ✅ **Customer Ticket purchase/checkout slice.** `typed-result/customer-ticket-reunion` PR #475
+  delivered typed Ticket outcomes; PR #540 completed Option boundaries, cancellation propagation,
+  package ownership, and focused coverage; PR #555 adopted validation-aware `Ensure` on Reunion
+  `0.1.0-alpha.6`. Publication succeeded and platform-sync PR #564 delivered platform
+  `0.1.0-alpha.0.985` as `3ae425616` with all PR and merge-group gates green.
 
 - [x] ✅ **Customer non-Payment outcomes and lookups.** `typed-result/customer-outcomes` PR #425
   migrated Review, Preference, User, Venue, and Artist to operation-owned Results, structured
@@ -140,16 +139,16 @@ their current branch and worktree rather than fragmenting in-flight work.
 
 ### Parallel preparation dispatched
 
-B2B, the alpha.2 package-baseline owner, and the Customer Ticket correction have independently
-executable ledgers; Customer non-Payment is terminal on platform `.963`.
+B2B and the alpha.2 package-baseline owner have independently executable ledgers; both Customer tracks
+are terminal, with the Ticket correction synchronized on platform `.985`.
 `REUNION_SHARED_CONTRACTION_PLAN.md` owns the final contraction but remains implementation-blocked
 until the remaining prepared consumer set and exact remaining-call-site inventory exist.
 
 ### Blocked follow-ups
 
-- [ ] 🔴 **Domain outcome and invariant-exception audit.** Auth and Customer non-Payment are terminal
-  on published Reunion baselines; plan after B2B and the Customer Ticket correction are also terminal, and
-  complete it before final repository cleanup. Inventory every production `DomainException`
+- [ ] 🔴 **Domain outcome and invariant-exception audit.** Auth and both Customer tracks are terminal
+  on published Reunion baselines; plan after B2B is also terminal, and complete it before final
+  repository cleanup. Inventory every production `DomainException`
   throw/guard and every domain
   operation or factory that can reject work.
   - Expected domain alternatives that a caller can act on return an operation-owned typed Result from
