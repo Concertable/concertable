@@ -6,8 +6,8 @@
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable/.worktrees/Plan-data-access-repository-permission-hierarchy`
 - Branch: `Refactor/DataAccessRepositoryPermissionHierarchy`
 - PR: [#561](https://github.com/Concertable/concertable/pull/561) (draft)
-- Dependency/package gates: BUG2 is fixed, exact-head CI is green at `580426684`, and follow-up incremental review is clean. PR #561 remains draft until this clean-review checkpoint is pushed and its exact-head CI is green; it can then be marked ready. Merge still requires explicit authorization, then additive package publication and the generated platform-sync PR must land green before Phase 2 resumes from current `origin/main`.
-- Last reconciled: 2026-08-14 against fetched `origin/main` at `fc196ba99`; verified local, remote-tracking, and PR head `580426684`; working tree contains the clean follow-up review and ledger checkpoint
+- Dependency/package gates: BUG2 is fixed and follow-up incremental review is clean. The clean-review work head is pushed at `c21f97ff4`; PR #561 remains draft until exact-head CI is green, then it can be marked ready. Merge still requires explicit authorization, then additive package publication and the generated platform-sync PR must land green before Phase 2 resumes from current `origin/main`.
+- Last reconciled: 2026-08-14 against fetched `origin/main` at `fc196ba99`; verified local, remote-tracking, and PR work head `c21f97ff4`; exact-head CI pending
 
 ## Current state
 
@@ -54,12 +54,11 @@ only genuine marketplace repositories retain `Public`.
 
 ## Next Steps
 
-1. Commit and push the clean BUG2 follow-up review through the two-leg plan checkpoint protocol.
-2. Require exact-head draft CI for that checkpoint, then mark PR #561 ready when green.
-3. Wait for explicit authorization to merge PR #561. When authorized, merge it through the repository
+1. Require exact-head draft CI for the clean-review checkpoint, then mark PR #561 ready when green.
+2. Wait for explicit authorization to merge PR #561. When authorized, merge it through the repository
    merge workflow, follow additive package publication and the generated platform-sync PR to green,
    and close this source worktree with `-PlanManaged`.
-4. Create the Phase 2 consumer-migration worktree from the resulting current `origin/main` and migrate
+3. Create the Phase 2 consumer-migration worktree from the resulting current `origin/main` and migrate
    consumers against the published additive platform version.
 
 ## Completed work
@@ -84,6 +83,8 @@ only genuine marketplace repositories retain `Public`.
   `2a99965a3..272d17a78` and exact equality of local, remote-tracking, and PR heads.
 - Fixed BUG2 with focused Artist/Venue organisation-identity lookup coverage and pushed the work range
   `350ae02a1..860d6fac8`; local, remote-tracking, and PR heads were verified equal.
+- Recorded and pushed the clean BUG2 follow-up review at `c21f97ff4`; verified the work range
+  `580426684..c21f97ff4` and exact equality of local, remote-tracking, and PR heads.
 
 ## Verification
 
@@ -113,6 +114,7 @@ only genuine marketplace repositories retain `Public`.
 - `./scripts/local-platform.ps1 test api/Concertable.B2B/src/Modules/Venue/Tests/Concertable.B2B.Venue.UnitTests/Concertable.B2B.Venue.UnitTests.csproj --configuration Release --no-restore --disable-build-servers` after BUG2 - 6 passed, 0 failed, 0 skipped.
 - Push checkpoint `350ae02a1..860d6fac8` - succeeded; local, remote-tracking, and PR heads verified equal at `860d6fac8ab4dfe980562ed776f353ffe53d46f6`.
 - GitHub Actions CI run `31838309184` at exact PR head `580426684` - the first attempt had one external `mcr.microsoft.com` connection reset while Payment Testcontainers pulled an image; the one-time failed-job rerun succeeded on the unchanged SHA.
+- Push checkpoint `580426684..c21f97ff4` - succeeded; local, remote-tracking, and PR heads verified equal at `c21f97ff42aadac87395fd17c28dd66a8803f76f`.
 
 ## Reviews
 
