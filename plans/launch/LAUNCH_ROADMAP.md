@@ -154,6 +154,7 @@ Stripe production approval (~2-4 weeks elapsed)
 | Venue legal details on emails (booking confirmation, invoices) | 1 day | Phase 5 (setup UI captures legal name) | Month 4 |
 | Refund / cancellation matrix codification in `Cancelled` workflow | 3-5 days | Cancellation policy text from solicitor | Month 5 |
 | Online Safety Act report-content flow (button + email destination + policy doc) | 1 day | – | Month 5 |
+| Tenant suspension as an admin enforcement action (suspension state enforced at membership resolution; held escrow + pending payouts resolved explicitly per booking) — split out of the OSA report-content work 2026-08-14: suspending a paying customer needs the illegal-content **enforcement clause in the T&Cs**, which is solicitor-owned and does not exist yet | 2-3 days | T&Cs enforcement clause **[LEGAL]** | Post-solicitor |
 | DAC7 annual export script (writes XML in HMRC schema, doesn't run until Jan 2028) | 2-3 days | Phase 6 complete | Month 5 |
 
 **Total Swim-lane C effort:** ~20-31 working days (up from ~12-19 after adding the booking-agreement, VAT-calculation, self-billed-invoice, and tenant-config items). Roughly 4-6 calendar weeks of focused work, spread across the 6 months because of dependency timing. The VAT chain (calculation → invoice) is the densest cluster and lands in Month 5 — watch it doesn't collide with the Phase 6 auth sweep (R6).
@@ -203,7 +204,7 @@ Concrete checklist for Month 6. Don't launch without all of these green.
 - [ ] Privacy + T&Cs pages accessible from every footer
 - [ ] Pricing transparency on all four payer journeys (gross, platform fee and total shown before commitment)
 - [ ] Venue legal details on booking confirmation emails + invoices
-- [ ] Online Safety Act report-content button + email destination live
+- [ ] Online Safety Act report-content button + email destination live `launch/osa-report-content`
 - [x] Music licence attestation captured in Org setup form
 
 ### Operational
