@@ -11,6 +11,8 @@
 - Review/fix commit: `eb84634699fa643a072342cd196b9767a6694619`
 - Review watermark: `54b419b0153fe06bc2786db061a48bbbbecef41c`
 - Checkpoint 10B consumer commits: `c55c99718` and `544144527`
+- Final reviewed delivery push: `b03abf8cd..6aef91470`; local, remote branch, and PR heads matched
+  `6aef91470da0cab27dce5d525fe93c05b9b28f5c` immediately after the push.
 - Messaging producer commit: `ade9728f9`
 - Messaging delivery branch/PR: `Feature/MessagingOutboundCommands`, PR #536, remote head
   `7a0886e1245ef76267f0cf906518b2169ac3cfd6`
@@ -66,9 +68,8 @@ reference was added. The resolved SEC1 tech-debt entry has been deleted.
 
 ## Next Steps
 
-Commit and push the final normal-feed result-boundary checkpoint to draft PR #552. Wait for exact-head
-build, carve, unit, integration, architecture, and HTTP-contract CI, run the incremental review, then
-reconcile current `origin/main`, repeat the smallest affected gates, and mark the PR ready.
+Wait for exact-head draft-PR #552 build, carve, unit, integration, architecture, and HTTP-contract CI.
+Then reconcile current `origin/main`, repeat the smallest affected gates, and mark the PR ready.
 
 ## Completed work
 
