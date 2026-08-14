@@ -7,7 +7,8 @@
 - Branch: `Refactor/B2BTypedResultMigration`
 - PR: #552 (ready; auto-merge disabled)
 - Checkpoints 8-9 commit: `bfc8690b196821bdd735ea5d229182fd9a3baf36`
-- Current-main merge commit: `5613a817a96bb0316ea9dc3a2d624e59f43e56a4`
+- Current-main merge commit: `8f763cf602ad9750ef2fc8354f3e17f67b9e4636`, through
+  `61ce0d1163a6b21573f509a1defec2741a572436`
 - Review/fix commit: `eb84634699fa643a072342cd196b9767a6694619`
 - Review watermark: `85e84c7dcc9c6e81c0f34e627254b43cec6e9553`; incremental review and
   security review are clean.
@@ -43,6 +44,11 @@
   is merged in this commit. The four Artist/Venue dashboard conflicts preserve main's MTD Payment
   reporting behind the typed Option identity guards; platform `0.1.0-alpha.0.980` restores cleanly.
   Exact-head PR CI remains after the reconciliation review and push.
+- Module-facade convention follow-up: implemented and locally verified. B2B Artist, Venue, and User
+  plus Customer Concert, Ticket, and User module facades now delegate their existing operations to
+  application services instead of owning repository/mapping logic. The convention is documented in
+  renamed `api/agents/CONVENTIONS.md` and enforced by B2B architecture tests. `origin/main` advanced
+  after the local checkpoint and must be merged before the next push.
 
 ## Current state
 
@@ -87,10 +93,19 @@ HTTP terminal. Payment owns operation replay and pending-operation recovery; no 
 runner or Payment runtime
 reference was added. The resolved SEC1 tech-debt entry has been deleted.
 
+The module-facade follow-up preserves the existing typed contracts and runtime behavior. Application
+services own the moved query implementations and forward `Option`/boolean results directly across the
+facade. Artist and Venue keep their existing `Option<int>` dashboard identity flow and explicit
+`TryGetValue` branching; only the operation name now states that the identity belongs to the current
+tenant. Customer consumes the published Reunion `0.1.0-alpha.6` artifacts after restoring the current
+package graph; no Reunion extension was copied or recreated locally.
+
 ## Next Steps
 
-Wait for exact-head build, carve, unit, integration, architecture, and HTTP-contract CI. Keep
-auto-merge disabled until Tommy explicitly authorizes landing PR #552.
+Commit the verified module-facade checkpoint, merge current `origin/main`, revalidate the affected
+scope, push the reconciled head, and wait for exact-head build, carve, unit, integration,
+architecture, and HTTP-contract CI. Keep auto-merge disabled until Tommy explicitly authorizes
+landing PR #552.
 
 ## Completed work
 
@@ -245,6 +260,18 @@ auto-merge disabled until Tommy explicitly authorizes landing PR #552.
   and short-circuits missing Artist/Venue identities as implicit `None` before Concert or Payment
   calls. B2B architecture/Web closure builds with 0 warnings and 0 errors; Artist passes 16/16,
   Venue 17/17, architecture 8/8, and scoped formatting passes.
+- Module-facade follow-up builds: B2B Web passed with 0 warnings/errors; Customer Web passed with 0
+  errors and the existing sealed `UserEntity` constructor warning.
+- Module-facade focused units: B2B Artist 16/16, Venue 17/17; Customer User 15/15, Concert 25/25,
+  Ticket 37/37. B2B architecture passed 9/9, including direct Reunion package ownership and the new
+  no-persistence-or-mapper facade dependency guard.
+- Focused B2B User integration passed 4/4 against the restored platform `0.1.0-alpha.0.983` graph.
+  The first fixture attempt proved stale local assets (`Payment.Client` 0.973 versus pin 0.983); the
+  restored run reached Docker and passed all application assertions.
+- Changed-project formatting and `git diff --check` pass. Customer solution-level formatting still
+  hits the known Roslyn generated-document property limitation, so all affected Customer projects
+  were verified individually. Rename/source greps are zero and the plan graph passes 0 errors,
+  0 warnings.
 - Standard Artist, Venue, Opportunity, Application, invitation, and Customer Review creation
   responses now use Reunion `ToCreatedOrProblem`; Deal lookup uses `ToOkOrProblem`. The remaining
   `ToActionResult` calls are limited to three file downloads and two bodyless `201 Created` responses
