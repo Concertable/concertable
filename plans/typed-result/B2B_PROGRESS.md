@@ -59,6 +59,9 @@
   B2B/Customer/Payment carves, unit and integration matrices, and `ci-complete`.
 - Platform `0.1.0-alpha.0.988` reconciliation is clean and reviewed through
   `0f331b6a37cd7ffa4a746ce5e2dd96cf636109aa`.
+- Platform `0.1.0-alpha.0.988` reconciliation push: starting remote head `c52542f98`; pushed
+  `c52542f98..202bbce12`; local work head, remote branch, and PR #552 head matched
+  `202bbce124d30350043bb6cf19002c140b3835fb`.
 
 ## Current state
 
@@ -112,10 +115,9 @@ package graph; no Reunion extension was copied or recreated locally.
 
 ## Next Steps
 
-Commit and push the reviewed platform `0.1.0-alpha.0.988` reconciliation, verify local/remote/PR head
-equality, record its transport checkpoint, and wait for refreshed exact-head build, carve, unit,
-integration, architecture, and HTTP-contract CI. Keep auto-merge disabled until Tommy explicitly
-authorizes landing PR #552.
+Push this transport checkpoint, verify local/remote/PR head equality, and wait for refreshed exact-head
+build, carve, unit, integration, architecture, and HTTP-contract CI. Keep auto-merge disabled until
+Tommy explicitly authorizes landing PR #552.
 
 ## Completed work
 
