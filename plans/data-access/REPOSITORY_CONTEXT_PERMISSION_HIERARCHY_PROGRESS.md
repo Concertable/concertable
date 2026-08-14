@@ -6,8 +6,8 @@
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable/.worktrees/Plan-data-access-repository-permission-hierarchy`
 - Branch: `Refactor/DataAccessRepositoryPermissionHierarchy`
 - PR: [#561](https://github.com/Concertable/concertable/pull/561) (draft)
-- Dependency/package gates: Phase 1 work-head CI is green; the checkpoint-transport head must pass exact-head CI before PR #561 can leave draft. Merge requires explicit authorization, then additive package publication and the generated platform-sync PR must land green before Phase 2 resumes from current `origin/main`.
-- Last reconciled: 2026-08-14 against fetched `origin/main` at `a2747a90f`; verified local, remote, and PR work head `a579be698`; exact-head CI run `31812660710`
+- Dependency/package gates: Phase 1 implementation and exact-head CI are green at the last pushed head, but PR #561 remains draft while the agreed B2B context/repository naming correction is implemented, reviewed, and revalidated. Merge still requires explicit authorization, then additive package publication and the generated platform-sync PR must land green before Phase 2 resumes from current `origin/main`.
+- Last reconciled: 2026-08-14 against fetched `origin/main` at `a2747a90f`; verified local, remote, and PR work head `2a99965a3`; prior implementation CI run `31812660710` green and exact-head CI reported green
 
 ## Current state
 
@@ -38,13 +38,34 @@ The branch merged fetched `origin/main` at `a2747a90f` without conflicts, produc
 head were verified equal at that SHA. Exact-head CI run `31812660710` completed successfully across
 the source-platform pack, full solution build, all service carves, unit tests, and integration tests.
 
+The green checkpoint was recorded and pushed at `2a99965a3b5f13e456bd365e3e25b0bb16077c19`.
+Review then paused on an unresolved B2B context-stance naming concern. Tommy approved the resolution:
+keep two physical contexts, rename the tenant-independent read-only `PublicXDbContext` types to
+`XDbContext`, and rename the tenant-aware tracked/write `XDbContext` types to `TenantXDbContext`.
+`IReadDbContext` supplies the read capability; B2B does not add a third `XReadDbContext` without a
+genuinely distinct restricted/projection model. `AdminVenueDbContext` retains its explicit admin
+tracked/write stance.
+
 ## Next Steps
 
-1. Follow exact-head draft CI for this ledger checkpoint; if it remains green, mark PR #561 ready.
-2. Wait for explicit authorization to merge PR #561. When authorized, merge it through the repository
+1. In this Phase 1 worktree, implement the approved B2B stance correction across Artist, Venue, and
+   Concert: current `PublicXDbContext` -> `XDbContext`; current tenant-aware `XDbContext` ->
+   `TenantXDbContext`. Update concrete DI, unit-of-work/interceptor bindings, design-time factories,
+   migration `[DbContext]` metadata, repositories, services, tests, and documentation without adding a
+   schema migration or a third read context.
+2. Keep `Public` only on genuine marketplace repository contracts. Split Artist/Venue organisation
+   identity lookups into `IArtistOrgIdentityLookup`/`ArtistOrgIdentityLookup` and
+   `IVenueOrgIdentityLookup`/`VenueOrgIdentityLookup`; rename `IPublicBookingRepository`/
+   `PublicBookingRepository` to `IBookingExistence`/`BookingExistence`. Marketplace and internal
+   cross-tenant queries continue sharing the module's tenant-independent `XDbContext`.
+3. Run focused B2B builds/tests and context/filter/save-boundary tests, update the plan and ledger,
+   commit and push the coherent correction, then require exact-head draft CI and a clean incremental
+   review before marking PR #561 ready. Do not treat the earlier green head as approval for the renamed
+   design.
+4. Wait for explicit authorization to merge PR #561. When authorized, merge it through the repository
    merge workflow, follow additive package publication and the generated platform-sync PR to green,
    and close this source worktree with `-PlanManaged`.
-3. Create the Phase 2 consumer-migration worktree from the resulting current `origin/main` and migrate
+5. Create the Phase 2 consumer-migration worktree from the resulting current `origin/main` and migrate
    consumers against the published additive platform version.
 
 ## Completed work
@@ -57,6 +78,9 @@ the source-platform pack, full solution build, all service carves, unit tests, a
   concrete module read contexts now derive the shared DataAccess `ReadDbContext` directly.
 - Split `PublicOpportunityRepository` from the writable generic opportunity base and moved the shared
   active-for-venue predicate to a query extension.
+- Investigated B2B tenancy stances from the concrete contexts, configuration providers, selective query
+  filters, DI, repositories/services/tests, EF model-caching rules, and the commits that introduced the
+  split. Confirmed separate physical contexts are correct and recorded Tommy's approved naming scheme.
 
 ## Verification
 
@@ -86,8 +110,23 @@ the source-platform pack, full solution build, all service carves, unit tests, a
 - Customer Artist/Venue/Concert each require both `XReadDbContext` and `XDbContext`: the first serves
   customer reads; the second writes local replicas only from integration events. Customer still exposes
   no write repository for those B2B-owned aggregates.
-- B2B public contexts now derive the shared read-only base directly; no B2B intermediary context or
-  writable context constraint remains in the public opportunity repository path.
+- B2B tenant-independent contexts derive the shared read-only base directly; no B2B intermediary context
+  or writable context constraint remains in the public opportunity repository path. Their current
+  `PublicXDbContext` names are inaccurate and are queued for correction before PR #561 returns to review.
+- The approved B2B names are `XDbContext` for the tenant-independent no-tracking/save-rejecting stance
+  and `TenantXDbContext` for the `ITenantContext`-carrying tracked/write stance. `AdminVenueDbContext`
+  remains the tenant-independent administrative write stance. `Global` is redundant, and `Read` does
+  not name a third physical stance because `XDbContext` already implements `IReadDbContext`.
+- The tenant contexts apply selective filters, not blanket module filtering: Artist filters
+  `ArtistEntity`; Venue filters `VenueEntity` and `VenueImageEntity`; Concert filters
+  `ApplicationEntity`, `BookingEntity`, `ContractEntity`, `InvoiceEntity`, and
+  `SelfBillingAgreementEntity`.
+- Tenant-independent contexts intentionally compose the full module model. Repository contracts and
+  DTOs control what leaves the module; marketplace reads and internal cross-tenant facts may safely
+  share the same read-only physical context.
+- `PublicBookingRepository` is an internal cross-tenant existence fact, not a public repository.
+  Artist/Venue organisation-identity lookup methods are likewise internal facts and must be split from
+  the otherwise genuine marketplace repositories.
 - Generic read-context plumbing belongs in shared DataAccess, not in Customer or B2B. The shared
   `ReadDbContext` owns configuration-provider/default-schema composition, no-tracking, query access,
   and save rejection; services own only their meaningful physical module contexts.

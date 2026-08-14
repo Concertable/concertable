@@ -17,6 +17,11 @@ Each repository implementation depends only on the matching context capability. 
 constructors select the exact EF context. Dedicated read contexts remain separate EF instances so their
 no-tracking and no-save guarantees cannot be weakened by a tracked projection or command context.
 
+For B2B Artist, Venue, and Concert, the two concrete contexts also encode different tenancy stances.
+`XDbContext` is the module's tenant-independent read-only context; `TenantXDbContext` is the tracked,
+writable context carrying `ITenantContext` and the module's selective tenant query filters. `Read` is a
+capability enforced by the shared base, not a third B2B context stance.
+
 The resulting shared API should be small and application-agnostic enough to extract into a reusable EF
 Core package later. This plan makes the seam extraction-ready; it does not split packages or detach the
 current `Concertable.Kernel`/messaging dependencies.
@@ -105,15 +110,67 @@ overload to throw. It does not inherit `DbContextBase` and therefore does not ac
 messaging mutation helpers, or the inbox/outbox model.
 
 There are no generic service-specific read-context bases. Customer `ArtistReadDbContext`,
-`VenueReadDbContext`, and `ConcertReadDbContext`, plus B2B `PublicArtistDbContext`,
-`PublicVenueDbContext`, and `PublicConcertDbContext`, derive the shared `ReadDbContext` directly and
-supply their module configuration provider and schema.
+`VenueReadDbContext`, and `ConcertReadDbContext`, plus B2B `ArtistDbContext`, `VenueDbContext`, and
+`ConcertDbContext`, derive the shared `ReadDbContext` directly and supply their module configuration
+provider and schema.
 
-- B2B `TenantScopedDbContext`, `VenueArtistTenantDbContext`, and `AdminDbContext` remain writable stances
-  over `DbContextBase` and therefore implement `IDbContext`.
+- B2B `TenantArtistDbContext`, `TenantVenueDbContext`, and `TenantConcertDbContext` compose their module
+  configuration with `TenantScopedDbContext`/`VenueArtistTenantDbContext`, remain writable stances over
+  `DbContextBase`, and therefore implement `IDbContext`.
+- `AdminVenueDbContext` remains the explicit tenant-independent tracked/write stance required by
+  platform administration.
 
 No `WriteDbContext` class is introduced: there is no physical write-only EF context today. A full
 `DbContextBase` instance is exposed to `WriteRepository` through the narrower `IWriteDbContext` view.
+
+### B2B tenancy stances and naming
+
+Artist, Venue, and Concert each keep exactly two normal runtime contexts:
+
+| Module | Tenant-independent read-only stance | Tenant-bound tracked/write stance | Additional stance |
+|---|---|---|---|
+| Artist | `ArtistDbContext` | `TenantArtistDbContext` | None |
+| Venue | `VenueDbContext` | `TenantVenueDbContext` | `AdminVenueDbContext` for tenant-independent administrative writes |
+| Concert | `ConcertDbContext` | `TenantConcertDbContext` | None |
+
+Their invariants are:
+
+- `XDbContext` has no `ITenantContext` dependency, composes the full module configuration provider,
+  applies no active-tenant query filters, defaults every query to no-tracking, implements only
+  `IReadDbContext`, rejects every save overload, and excludes inbox/outbox configuration.
+- `TenantXDbContext` requires the scoped `ITenantContext`, composes the same module configuration plus
+  the module-declared tenant filters, uses normal tracking, implements `IDbContext`, participates in the
+  module unit of work and inbox/outbox behavior, and owns design-time migrations.
+- `AdminVenueDbContext` composes the Venue model without active-tenant filters but remains tracked and
+  writable. Its `Admin` qualifier describes authorization/use-case stance; it is not another spelling
+  of tenant-independent reads.
+
+The tenant context is not accurately described as filtering its entire model. Its selective filters
+are exactly:
+
+- Artist: `ArtistEntity`.
+- Venue: `VenueEntity` and `VenueImageEntity`.
+- Concert: `ApplicationEntity`, `BookingEntity`, `ContractEntity`, `InvoiceEntity`, and
+  `SelfBillingAgreementEntity`.
+
+Other configured entities remain unfiltered unless their module explicitly adds a filter. The
+tenant-independent context therefore means "no active-tenant restriction", not "public data" and not
+"a larger model".
+
+Keep the stances as separate concrete EF types. Their model metadata, scoped dependencies, tracking,
+save permissions, interceptors, and messaging configuration differ. A runtime mode flag would require
+mode-aware EF model-cache keys and would make the write boundary conditional. `IgnoreQueryFilters`,
+service location, and runtime stance switching are forbidden. DI registers both concrete types
+explicitly; no unkeyed capability registration chooses between them. Renaming the migration-owning
+context updates its design-time factory and `[DbContext]` metadata but does not create or re-scaffold a
+schema migration.
+
+The tenant-independent context intentionally composes the full module model. Marketplace projections
+and internal cross-tenant facts may share that physical read context; repository contracts, DTOs, and
+module services determine which data may leave the module. A separate restricted context is warranted
+only if a genuinely distinct public read model/configuration is introduced. Merely needing queries does
+not justify `XReadDbContext`: `XDbContext` already implements `IReadDbContext` and is structurally
+read-only.
 
 ### Repository contracts and implementations
 
@@ -232,13 +289,17 @@ Artist, Venue, or Concert data.
 
 | Context/repository stance | Action |
 |---|---|
-| Regular `ArtistDbContext`, `VenueDbContext`, `ConcertDbContext`, `DealDbContext`, `TenantDbContext`, `UserDbContext` | Continue as full `IDbContext` contexts; migrate standard and tenant repository bases to the new context-free arities |
-| `PublicArtistDbContext`, `PublicVenueDbContext`, `PublicConcertDbContext` | Reparent through shared `ReadDbContext`; retain no-tracking and no-save enforcement; public repositories expose read contracts only |
+| `ArtistDbContext`, `VenueDbContext`, `ConcertDbContext` | Rename the current `PublicXDbContext` types to these tenant-independent module names; keep them on shared `ReadDbContext` with no tracking and save rejection |
+| `TenantArtistDbContext`, `TenantVenueDbContext`, `TenantConcertDbContext` | Rename the current tenant-aware `XDbContext` types; continue as full `IDbContext` contexts with `ITenantContext`, selective filters, unit-of-work behavior, and migration ownership |
+| `DealDbContext`, `TenantDbContext`, `UserDbContext` | Continue as full `IDbContext` contexts; migrate standard and tenant repository bases to the new context-free arities |
 | `AdminVenueDbContext` | Continue as full `IDbContext`; `AdminVenueRepository` remains combined read/write |
 | `TenantScopedRepository` and `VenueArtistTenantScopedRepository` | Drop `TContext`; receive `IDbContext`; use protected generic query/mutation capabilities |
-| `OpportunityRepository`/`PublicOpportunityRepository` | Stop sharing a combined tenant repository base across full and public contexts; share the active-opportunity predicate as a module-local query extension and keep the public implementation read-only |
-| `SequenceRepository` | Stop inheriting `WriteRepository`: its contract is an allocator rather than `IWriteRepository`; implement it directly with `ConcertDbContext` for its read-before-stage algorithm |
-| Conversations and bespoke dashboard/public repositories | Keep their domain-specific implementations; adopt capability bases only when their contract matches |
+| `OpportunityRepository`/`PublicOpportunityRepository` | Stop sharing a combined tenant repository base across tenant and marketplace contracts; share the active-opportunity predicate as a module-local query extension and keep the public implementation read-only |
+| `PublicArtistRepository`/`PublicVenueRepository` | Retain only marketplace-safe summary/details/genre operations; split organisation identity lookup into `IArtistOrgIdentityLookup`/`ArtistOrgIdentityLookup` and `IVenueOrgIdentityLookup`/`VenueOrgIdentityLookup`, using the same tenant-independent read context |
+| `PublicBookingRepository` | Rename the internal cross-tenant fact to `IBookingExistence`/`BookingExistence`; it is not a public API or marketplace repository |
+| `PublicConcertRepository`/`PublicOpportunityRepository` | Retain `Public` because these contracts genuinely represent marketplace output, while their shared EF context remains tenant-independent rather than public-labelled |
+| `SequenceRepository` | Stop inheriting `WriteRepository`: its contract is an allocator rather than `IWriteRepository`; implement it directly with `TenantConcertDbContext` for its read-before-stage algorithm |
+| Conversations and bespoke dashboard repositories | Keep their domain-specific implementations; adopt capability bases only when their contract matches |
 
 ### Payment, Auth, Search, and Messaging
 
@@ -285,6 +346,9 @@ dispatchers:
   repository capabilities therefore keep the existing scoped context lifetime.
 - EF Core exposes virtual synchronous and asynchronous `SaveChanges` overloads, allowing the shared
   read context to make save rejection a context-level boundary rather than a repository convention.
+- [Dynamic models](https://learn.microsoft.com/en-us/ef/core/modeling/dynamic-model) documents that EF
+  assumes one model per concrete context type unless a custom `IModelCacheKeyFactory` is supplied. The
+  B2B stance split keeps that model identity structural and avoids a runtime tenancy-mode cache key.
 
 ## Implementation DAG
 
@@ -324,6 +388,14 @@ platform-sync can recompile them.
   no-tracking, and sealed save rejection.
 - Delete Customer's generic `ReadDbContext` and B2B's generic `PublicDbContext`; derive each concrete
   module read context from the shared DataAccess base directly.
+- Rename B2B's tenant-independent concrete contexts to `ArtistDbContext`, `VenueDbContext`, and
+  `ConcertDbContext`; rename the tenant-aware tracked/write contexts to `TenantArtistDbContext`,
+  `TenantVenueDbContext`, and `TenantConcertDbContext`. Update DI, unit-of-work/interceptor bindings,
+  design-time factories, migration metadata, repositories, services, tests, and documentation without
+  re-scaffolding schema migrations.
+- Separate genuine marketplace repository contracts from internal cross-tenant facts: split Artist and
+  Venue organisation-identity lookups from their public repositories and rename the booking-existence
+  contract/implementation without `Public`.
 - Split `PublicOpportunityRepository` from the writable generic opportunity repository; share only the
   active-opportunity query predicate between the public read-only and regular writable implementations.
 - Add `WriteRepository<TEntity>` and `Repository<TEntity, TKey>` beside the legacy generic-arity
@@ -338,8 +410,8 @@ PR CI owns the full build/carves/unit/integration matrix.
 
 - Migrate Customer read/full repository pairs and DI registrations without collapsing the physical
   contexts.
-- Migrate B2B regular/admin/tenant repository paths; the public contexts already use the shared read
-  context from Phase 1.
+- Migrate B2B tenant/admin and tenant-independent repository paths; the tenant-independent contexts
+  already use the shared read context from Phase 1.
 - Correct the standalone Sequence write path.
 - Migrate Payment standard repositories and retain concrete contexts only in bespoke implementations
   that require EF-specific APIs.
@@ -384,7 +456,11 @@ and the post-publication platform sync prove the contracted baseline.
 - A combined repository read and subsequent save share one tracked context instance.
 - Customer Artist/Venue/Concert application registrations expose read repositories only; their full
   contexts remain reachable by projection handlers, seed/test infrastructure, and unit-of-work code.
-- B2B public contexts are read-only at both repository contract and EF save boundaries.
+- B2B `XDbContext` tenant-independent contexts are no-tracking and read-only at the EF boundary;
+  `TenantXDbContext` types are tracked/write contexts with only the explicitly declared entity filters.
+- No B2B `PublicXDbContext`, `GlobalXDbContext`, or redundant `XReadDbContext` remains.
+- `Public` names only genuine marketplace-facing repository contracts; internal cross-tenant facts and
+  organisation-identity lookups have purpose-specific contracts.
 - Final whole-repository grep has no legacy repository arities, facet types, stale factory registrations,
   or obsolete context inheritance.
 - Every published transition ends with a green platform-sync PR and builds against the real feed version.
@@ -397,6 +473,11 @@ and the post-publication platform sync prove the contracted baseline.
 - Do not make `Repository` inherit either implementation base or construct nested facet subclasses.
 - Do not introduce multiple concrete inheritance, command services, provider switching, or CQRS routing.
 - Do not register unkeyed context capability interfaces globally in a service with multiple contexts.
+- Do not collapse B2B's tenant and tenant-independent stances into one context through
+  `IgnoreQueryFilters`, a runtime mode switch, service location, or a custom model-cache discriminator.
+- Do not use `Public` or `Global` as a synonym for tenant-independent EF access.
+- Do not introduce a third B2B `XReadDbContext` unless it owns a genuinely distinct restricted model or
+  projection; implementing `IReadDbContext` is already the read capability boundary.
 - Do not preserve the legacy public types as permanent shims after all consumers migrate.
 - Do not split a future general-purpose package during this cutover; stabilize and measure first.
 
