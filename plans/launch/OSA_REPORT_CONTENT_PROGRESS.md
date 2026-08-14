@@ -5,70 +5,48 @@
 - Roadmap item: `launch/osa-report-content`
 - Worktree: `/home/tommy/projects/csharp/Concertable` (the main checkout — the kickoff instruction created the branch here rather than in an isolated worktree)
 - Branch: `Feature/launch_osa-report-content`
-- PR: not opened
+- PR: not opened yet — draft PR is the next action
 - Dependency/package gates: none blocking. No open or red `chore/platform-sync-*` PR at branch time. The
   D2 package question is **settled** — see "Completed work".
-- Environment gate (local only, not a code gate): the .NET restore of `api/**` needs
-  `GITHUB_PACKAGES_TOKEN`; see "Decisions, discoveries, blockers, and deviations".
-- Last reconciled: 2026-08-14, after writing the Phase 1 backend slice and the whole web + UI E2E slice.
+- Last reconciled: 2026-08-15, after both phases were implemented and verified locally.
 
 ## Current state
 
-**Phase 1 backend is written; the web slice and UI E2E feature are written and verified green.** The
-backend has not yet been compiled once — the local .NET restore is blocked on a missing
-`GITHUB_PACKAGES_TOKEN` (environment, not code). Phase 2 (admin moderation), the migration
-re-scaffold, and the integration tests are outstanding.
+**Both phases are implemented and locally verified.** Phase 1 (reporting route, record,
+acknowledgement) and Phase 2 (admin moderation) are complete on this branch, the full
+`api/Concertable.slnx` builds clean, Conversations unit tests are green, and all four web SPA builds
+plus the frontend boundary lint are green. Migrations are re-scaffolded. What remains is delivery:
+open the draft PR, let CI run the integration + E2E matrices, merge, and own the platform sync.
 
 Three things worth knowing, all verified against source rather than assumed:
 
-- **Tenant suspension is split out** and is not part of this delivery. The full analysis, the recommended
-  escrow/payout policy, and the legal gate that forces the split are in plan §7. A Swim-lane C row now
-  tracks it in the roadmap; no plan or ledger was created for it, deliberately.
-- **The `[Admin]` seam is being extended, not rebuilt.** Assessment in plan §3; its gaps get a
-  `api/Concertable.B2B/TECH_DEBT.md` entry in Phase 2.
-- **This is B2B's first production Reunion usage** (plan D2), scoped to the one new operation.
-
 ## Next Steps
 
-```text
-Blocked: local `dotnet restore` of `api/**` fails 401 against the private GitHub Packages feed, so the Phase 1 verification gate (Conversations build + focused unit tests + `./initial-migrations.ps1`) cannot run.
-Blocked by: Tommy — the `gh` token has scopes `gist`, `read:org`, `repo`; GitHub Packages requires `read:packages`, and adding it needs interactive browser consent no agent can give.
-Unblock action: Tommy runs `gh auth refresh -s read:packages` in this session, after which the session exports `GITHUB_PACKAGES_TOKEN=$(gh auth token)`.
-Resume when: `GITHUB_PACKAGES_TOKEN=$(gh auth token) dotnet restore api/Concertable.B2B/src/Modules/Conversations/Concertable.B2B.Conversations.Api/Concertable.B2B.Conversations.Api.csproj` completes with no NU1301.
-```
+1. **Open the draft PR** with plain `gh pr create` (personal repo — no `AB#`, no assignee), then push.
+   Exact-head PR CI owns the full solution build, the standalone service carves, and the complete
+   unit/integration matrices. Do not reproduce those locally.
+2. **The integration tests have never executed** — Docker is not running on this machine and the
+   integration matrix is PR CI's gate. Expect the first CI run to be where
+   `ContentReportApiTests` and `ModerationApiTests` are proven. If one goes red, enter
+   `integration-debug` at its narrowest failing scope rather than re-running the suite.
+3. **Merge via `/merge` at the full-E2E tier.** Plan §11 is explicit: this change touches shared web
+   code, a user-facing messaging flow, the request-authorization surface and the data model, so it
+   fails every `skip-e2e` criterion. Let the merge queue run E2E; do not run it locally first.
+4. **Own the post-merge `chore/platform-sync-*` PR to green.** This is an `api/**` change, so
+   `publish-packages` republishes and `platform-sync` bumps every service's pin. Expected
+   non-breaking — no cross-service published contract changed — so it should auto-merge. A red sync is
+   this plan's to fix, in that PR.
+5. **Close out only after platform sync is green:** record the terminal evidence here, then `git rm`
+   this ledger and `OSA_REPORT_CONTENT_PLAN.md` together in a doc-only close-out landed through
+   `/merge-docs`. The source PR never deletes its own recovery artifacts.
 
-Once the gate opens, in order:
+The roadmap lines have already been moved in the same commit as the shipping work, as required:
 
-1. **Compile the Conversations module and fix what the first build finds.** This is B2B's first Reunion
-   usage, so treat the composition in `ContentReportService.SubmitAsync` as the likely fix site: the
-   `.OrFailure(...).Ensure(...).BindAsync(...)` chain assumes alpha.3 exposes the validation-aware
-   `Ensure` task overload and a `Result<T,E> → UnitResult<E>` `BindAsync`. If either is absent, keep the
-   operation's shape and adjust the combinators — do **not** fall back to exceptions.
-2. **Run the focused Conversations unit tests**, in particular `ReportMessageErrorTests`. Its expected
-   codes (`report.message_not_found`, `report.message_invalid`) are *derived predictions* from the
-   `RESULT_PATTERN.md` naming rule, not observed output — correct the test to whatever Reunion actually
-   derives, then keep it hard-coded.
-3. Run `./initial-migrations.ps1` from `api/` (the model changed — re-scaffold, never additive).
-4. Write the Phase 1 integration tests (plan §6.2, report half) over `ConversationsApiFixture`.
-5. Implement **Phase 2** (plan §11): `MessageEntity.Hide`/`Restore`, `AdminConversationsDbContext`,
-   the admin repositories, `IModerationService`, `ModerationController` (`[Admin]`), the
-   `MessageRepository` hidden-message exclusion, the moderation tests (including the
-   **tenant-Owner-gets-403** guard), and the `api/Concertable.B2B/TECH_DEBT.md` entry for the `[Admin]`
-   seam gaps. Re-run `./initial-migrations.ps1` after the `MessageEntity` change.
-6. Verification gate as written in plan §10/§11, then push, opening a **draft** PR. Update this ledger
-   in the same commit.
-
-Do **not** touch the roadmap lines yet. They move only in the same commit as the shipping work, and
-the plan deliberately does not name them (a plan never cites the roadmap), so they are recorded here:
-
-- `plans/launch/LAUNCH_ROADMAP.md` **§5**, the "Online Safety Act report-content flow" Swim-lane C row —
-  mark it `✅` with Month → `done`, annotated that the in-app route shipped and the published-email
-  fallback remains with the legal pages.
-- `plans/launch/LAUNCH_ROADMAP.md` **§7**, "Online Safety Act report-content button + email destination
-  live `launch/osa-report-content`" — **leave it un-ticked**, annotated with what is live (report button,
-  structured safety-inbox email, persisted record, admin moderation) and what is outstanding (the
-  published `report@` address on the footer legal pages, solicitor-gated). Ticking it would claim a
-  compliance state we do not have.
+- `LAUNCH_ROADMAP.md` **§5** Swim-lane C row — marked `✅`, Month → `done`, annotated that the in-app
+  route shipped and the published-email fallback remains with the legal pages.
+- `LAUNCH_ROADMAP.md` **§7** checklist line — deliberately **left un-ticked**, annotated with what is
+  live and what is outstanding. Ticking it would claim a compliance state we do not have, because
+  Artifact 2's always-available published `report@` address depends on the solicitor-gated legal pages.
 
 ## Completed work
 
@@ -80,14 +58,28 @@ the plan deliberately does not name them (a plan never cites the roadmap), so th
   `0.1.0-alpha.3` on nuget.org (`Reunion.AspNetCore` skips alpha.4 but has alpha.3), and `Dunet 1.16.2`
   is present. All four are declared in `api/Concertable.B2B/Directory.Packages.props` at those versions,
   so B2B stays on one Reunion version and is not bumped to Customer's alpha.6.
-- **Phase 1 backend written** (unverified — see the environment gate): `ReportCategory`/`ReportOutcome`,
+- **Phase 1 backend complete and building:** `ReportCategory`/`ReportOutcome`,
   `ContentReportEntity` (with `Resolve`), the EF configuration + `ConversationsDbContext` stance, a
   module `Repository<T>` base + `ContentReportRepository`, `IMessageRepository.GetByIdAsync`,
   `ReportMessageError`, `ContentReportValidators`, `ContentReportService`, `ContentReportNotifier`,
   `SafetySettings` + the `Safety` section in `appsettings.json`, the composition-root registrations, and
   the `MessageController` report endpoint with the `MessageResponse`/`MessageActions` HATEOAS mapping.
-- **Phase 1 unit tests written** (unrun): `ContentReportEntityTests`, `ReportMessageErrorTests`,
-  `ContentReportServiceTests`.
+- **Phase 2 (admin moderation) complete and building:** `MessageEntity.Hide`/`Restore` +
+  `HiddenAt`/`HiddenByUserId`, the hidden-message exclusion in both `MessageRepository` reads,
+  `AdminConversationsDbContext` + registration, `AdminMessageRepository` /
+  `AdminContentReportRepository`, `ModerationError`, `ResolveReportRequest`, `ContentReportDto` +
+  mapper, `ModerationService`, and `ModerationController` under `[Admin]`. The `CR-{Id}` reference moved
+  onto the entity as a derived member once both the email and the triage queue rendered it.
+- **`api/Concertable.B2B/TECH_DEBT.md` entry added** for the `[Admin]` seam gaps (no admin SPA, no admin
+  roles, uncached per-request DB hit).
+- **Unit tests written and green (18):** `ContentReportEntityTests`, `ReportMessageErrorTests`,
+  `ContentReportServiceTests`, the `MessageEntity` hide/restore tests, and the `MessageRepository`
+  hidden-exclusion test.
+- **Integration tests written, not yet executed:** `ContentReportApiTests` (204 + both emails,
+  non-participant 404, anonymous 401, field-indexed 400, the inbound-only report link) and
+  `ModerationApiTests` (hide removes from both inboxes and the unread count, restore reinstates,
+  **tenant Owner 403 on every moderation endpoint**, anonymous 401, resolve records the outcome and a
+  second resolve conflicts, cross-tenant triage queue).
 - **Web slice complete and green** (plan §5): `ReportCategory`/`ReportMessageRequest`/`MessageActions`
   on the cross-platform `Message` type, `messageApi.reportMessage`, `useReportMessageMutation`,
   `ReportMessageDialog.tsx`, and the data-link-gated `Report` control in `Mailbox.tsx`.
@@ -96,12 +88,23 @@ the plan deliberately does not name them (a plan never cites the roadmap), so th
 
 ## Verification
 
+All local, on this branch, after both phases:
+
 - `python .agents/hooks/plan_graph.py --root /home/tommy/projects/csharp/Concertable` — 0 errors.
-- **Web, all green:** `npm run build:web-packages`, then all four app builds
-  (`web-customer`, `web-venue`, `web-artist`, `web-business`) and `npm run lint:boundaries`
-  (no dependency violations across all five cruised graphs).
-- **Backend: not verified.** The Conversations module has never been compiled — local `dotnet restore`
-  of `api/**` fails 401 against the private feed. Treat every backend file on this branch as unbuilt.
+- `dotnet build api/Concertable.slnx` — **succeeded**, 5 warnings (all pre-existing).
+- Conversations unit tests — **18 passed, 0 failed**.
+- `Concertable.B2B.ArchitectureTests` — 4 passed (module boundaries hold with the new
+  `Conversations.Api → User.Api` attribute reference).
+- `Concertable.Shared.Api.UnitTests` — 62 passed (includes the typed-result architecture rules; the new
+  Result-based files do not mix carriers).
+- `./initial-migrations.ps1` from `api/` — every other context reported *unchanged, kept existing
+  migration id*; only `ConversationsDbContext` re-stamped, carrying `ContentReports` and the
+  `HiddenAt`/`HiddenByUserId` columns.
+- Web — `build:web-packages`, all four SPA builds (`web-customer`, `web-venue`, `web-artist`,
+  `web-business`), and `npm run lint:boundaries` (no violations across all five cruised graphs).
+
+**Not run locally, by policy or environment:** the integration matrix (Docker is not up here; PR CI owns
+it) and all E2E (the merge queue owns it).
 
 ## Reviews
 
@@ -136,10 +139,25 @@ re-derive. The full reasoning is in the plan; these are the facts a fresh agent 
 - **Resolved — the D2 package question is not a fork.** All three Reunion sub-packages publish
   `0.1.0-alpha.3`; B2B stays on one Reunion version. The `OrNotFound` + FluentValidation fallback was
   not needed and was not taken.
-- **Local .NET restore needs `GITHUB_PACKAGES_TOKEN`, and the current `gh` token cannot supply it.**
-  `gh auth status` reports scopes `gist`, `read:org`, `repo` — GitHub Packages requires `read:packages`.
-  Fix: `gh auth refresh -s read:packages`, then `export GITHUB_PACKAGES_TOKEN=$(gh auth token)`. This is
-  an environment gate on *local verification only*; CI supplies its own token.
+- **Local .NET restore needs `GITHUB_PACKAGES_TOKEN` with the `read:packages` scope — now resolved.**
+  The `gh` token originally carried only `gist`, `read:org`, `repo`. Fixed by
+  `gh auth refresh -h github.com -s read:packages` (device-code flow; it needs a real TTY, so it stalls
+  if run non-interactively) and then `GITHUB_PACKAGES_TOKEN=$(gh auth token)` on each dotnet command.
+  CI supplies its own token; this was local-only.
+- **Reunion alpha.3's API differs from what `RESULT_PATTERN.md` documents** (the doc describes a later
+  version). Three concrete differences, all found at first compile and all recorded because the next
+  Reunion user in B2B will hit them: (1) `Ensure` is **predicate-only** — there is no validation-aware
+  overload mapping `ValidationErrors` into an owned error case, so the validator is applied through the
+  `TryGetErrors` guard the pattern doc sanctions for a standalone check; (2) `ErrorKind` has **no
+  `Validation` member** — the validation definition is a distinct `ValidationError : ErrorDefinition`
+  carrying the errors, with `Kind == Invalid`; (3) `ValidationErrors` exposes a keyed
+  `IReadOnlyDictionary<string, IReadOnlyList<string>>`, not an enumerable of pairs.
+  `BindAsync(Task<Result<T,E>>, Func<T, Task<UnitResult<E>>>)` **does** exist, so the operation kept its
+  intended shape.
+- **The error-code derivation predictions were right.** `report.message_not_found` and
+  `report.message_invalid` are what Reunion actually derives from
+  `ReportMessageError.MessageNotFound`/`.Invalid`, so no `[ErrorCode]` attribute was needed and the
+  contract test stands as written.
 - **The ASP.NET Core targeting pack was missing from this machine and is now installed.** Arch splits
   `Microsoft.AspNetCore.App.Ref` out of `dotnet-sdk` into `aspnet-targeting-pack`, so every project with
   a `Microsoft.AspNetCore.App` framework reference failed restore with `NETSDK1226` regardless of the
@@ -151,10 +169,14 @@ re-derive. The full reasoning is in the plan; these are the facts a fresh agent 
   second one broke the `@concertable/shared` build. This is the frontend counterpart of plan §4.7 and
   differs from it deliberately: on the backend the duplication is correct (module isolation), on the
   frontend the type is already shared.
-- **`ReportMessageErrorTests` expectations are predictions, not observations.** The codes
-  `report.message_not_found` and `report.message_invalid` were derived by hand from the
-  `RESULT_PATTERN.md` derivation rule and have never been executed. First run may legitimately correct
-  them.
+- **The Conversations module had no `Repositories/Repository.cs` base**; one was added binding the shared
+  base to `ConversationsDbContext`, per the repository convention, rather than hand-rolling CRUD on the
+  new report repositories. `IMessageRepository` gained a single `GetByIdAsync`; converting it wholesale
+  to the base was left alone as out-of-scope existing code.
+- **PowerShell and `dotnet-ef` were missing on this machine** and are now installed as .NET global tools
+  (`dotnet tool install --global PowerShell` / `dotnet-ef`), which needs no root and no AUR build.
+  `./initial-migrations.ps1` also needs the **whole** solution restored first, not just the changed
+  module, because it scaffolds every service.
 
 ## Resume prompt
 
