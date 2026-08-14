@@ -7,7 +7,7 @@
 - Branch: `Refactor/DataAccessRepositoryPermissionHierarchy`
 - PR: [#561](https://github.com/Concertable/concertable/pull/561) (draft)
 - Dependency/package gates: Phase 1 must pass exact-head draft CI before it can merge and publish the additive package surface
-- Last reconciled: 2026-08-14 against fetched `origin/main` at `429581025`, local head `b850ea4b1`, PR head `94d7664ad`, and failed CI run `31798505833`
+- Last reconciled: 2026-08-14 against fetched `origin/main` at `429581025`; verified local, remote, and PR work head `3245c4fd9`; prior failed CI run `31798505833`
 
 ## Current state
 
@@ -30,14 +30,15 @@ module read contexts now derive the shared base directly.
 That reparenting exposed `PublicOpportunityRepository` inheriting a writable-context-constrained base.
 It now has an independent read-only implementation over `PublicConcertDbContext`; the public and
 regular repositories share only the `ActiveForVenue` query extension. The correction is committed at
-`b850ea4b1` and passed its focused local gates.
+`b850ea4b1` and passed its focused local gates. The corrected work and clean-review checkpoint range
+`94d7664ad..3245c4fd9` is pushed to draft PR #561, with local, remote-tracking, and PR heads verified
+equal at `3245c4fd99bb2b12c18478229a02c909aa4d9e01`.
 
 ## Next Steps
 
-1. Push the verified context-hierarchy correction and review checkpoint, then verify local/remote/PR
-   head equality.
-2. Follow exact-head draft CI and fix any remaining failures on the corrected package topology.
-3. When Phase 1 CI is green, record its package-publication delivery gate and prepare the Phase 2
+1. Follow exact-head draft CI for PR #561 and fix any remaining failures on the corrected package
+   topology.
+2. When Phase 1 CI is green, record its package-publication delivery gate and prepare the Phase 2
    consumer migration from current `origin/main` after this PR merges.
 
 ## Completed work
