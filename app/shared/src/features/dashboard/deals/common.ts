@@ -56,7 +56,7 @@ export interface Settlement {
   direction: SettlementDirection;
 }
 
-export interface MessageThread {
+export interface MessagePreview {
   id: number;
   otherPartyName: string;
   otherPartyAvatarUrl?: string;

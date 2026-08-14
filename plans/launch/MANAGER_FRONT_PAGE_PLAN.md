@@ -442,7 +442,7 @@ composed server-side from one or more module-facade calls
 | VS1 | Header (welcome + profile health + Stripe + reviews) | `GET /api/venues/me/dashboard/header` | `VenueDashboardHeaderDto` | `IVenueModule.GetProfileHealthAsync` + `IPaymentModule.GetConnectStatusAsync` + `IReviewModule.GetVenueReviewSummaryAsync` (parallel) | on mount |
 | VS2 | KPI strip (4 numbers) | `GET /api/venues/me/dashboard/kpis` | `VenueDashboardKpisDto` | `IConcertModule.{applicationsAwaitingReview, openOpportunities, upcomingConcerts(days=30)}CountAsync` + `IPaymentModule.GetVenueTicketRevenueMtdAsync` (parallel) | 30s |
 | VS3 | Applications to review list | `GET /api/venues/me/dashboard/applications-to-review?take=5` | `ApplicationDto[]` | `IConcertModule.GetVenueApplicationsAwaitingReviewAsync` | 30s |
-| VS4 | Inbox preview | `GET /api/venues/me/dashboard/inbox?take=5` | `MessageThreadDto[]` | `IMessagingModule.GetRecentThreadsAsync` | 30s |
+| VS4 | Inbox preview | `GET /api/venues/me/dashboard/inbox?take=5` | `MessagePreviewDto[]` | `IMessageService.GetRecentPreviewsAsync` | 30s |
 | VS5 | Upcoming concerts strip | `GET /api/venues/me/dashboard/upcoming-concerts?take=5` | `ConcertCardDto[]` | `IConcertModule.GetVenueUpcomingConcertsAsync` | 60s |
 | VS6 | Ticket revenue chart (6-month series, gross + net) | `GET /api/venues/me/dashboard/charts/ticket-revenue?monthsBack=6` | `MonthlyRevenuePointDto[]` | `IPaymentModule.GetVenueTicketRevenueByMonthAsync` | 60s |
 | VS7 | Open opportunities | `GET /api/venues/me/dashboard/open-opportunities` | `OpportunityWithCountsDto[]` (opportunity + application count + days-until) | `IConcertModule.GetVenueOpenOpportunitiesAsync` (one query joining application counts) | 60s |
@@ -470,7 +470,7 @@ live in `Venue.Application/DTOs/` since the orchestration owns them.
 - `OpportunityWithCountsDto { Opportunity: OpportunityDto, ApplicationCount: int, DaysUntilDeadline: int }`
 
 Reuse existing DTOs where possible (`ApplicationDto`, `ConcertCardDto`,
-`ReviewSummaryDto`, `MessageThreadDto`).
+`ReviewSummaryDto`, `MessagePreviewDto`).
 
 ## Artist front page
 
@@ -508,7 +508,7 @@ Reuse existing DTOs where possible (`ApplicationDto`, `ConcertCardDto`,
 | AS1 | Header | `GET /api/artists/me/dashboard/header` | `ArtistDashboardHeaderDto` | `IArtistModule.GetProfileHealthAsync` + `IPaymentModule.GetConnectStatusAsync` + `IReviewModule.GetArtistReviewSummaryAsync` (parallel) | on mount |
 | AS2 | KPI strip | `GET /api/artists/me/dashboard/kpis` | `ArtistDashboardKpisDto` | `IConcertModule.{applications(status=Pending), applications(status=AcceptedAwaitingCheckout), upcomingConcerts(days=30)}CountAsync` + `IPaymentModule.GetArtistPayoutsMtdAsync` (parallel) | 30s |
 | AS3 | My applications (grouped by status) | `GET /api/artists/me/dashboard/applications?take=10` | `ApplicationDto[]` | `IConcertModule.GetArtistApplicationsAsync` | 30s |
-| AS4 | Inbox preview | `GET /api/artists/me/dashboard/inbox?take=5` | `MessageThreadDto[]` | `IMessagingModule.GetRecentThreadsAsync` | 30s |
+| AS4 | Inbox preview | `GET /api/artists/me/dashboard/inbox?take=5` | `MessagePreviewDto[]` | `IMessageService.GetRecentPreviewsAsync` | 30s |
 | AS5 | Upcoming gigs strip | `GET /api/artists/me/dashboard/upcoming-gigs?take=5` | `ConcertCardDto[]` | `IConcertModule.GetArtistUpcomingConcertsAsync` | 60s |
 | AS6 | Payout trend chart (6-month series) | `GET /api/artists/me/dashboard/charts/payouts?monthsBack=6` | `MonthlyRevenuePointDto[]` (reused DTO) | `IPaymentModule.GetArtistPayoutsByMonthAsync` | 60s |
 | AS7 | Recommended opportunities | `GET /api/artists/me/dashboard/recommended-opportunities?take=5` | `OpportunityCardDto[]` | `ISearchModule.GetRecommendedOpportunitiesForArtistAsync` | 60s |
@@ -524,7 +524,7 @@ Reuse existing DTOs where possible (`ApplicationDto`, `ConcertCardDto`,
 
 Reuse `MonthlyRevenuePointDto`, `ActivityItemDto`, `ApplicationDto`,
 `ConcertCardDto`, `ReviewSummaryDto`, `OpportunityCardDto`,
-`MessageThreadDto`.
+`MessagePreviewDto`.
 
 ## Backend additions — summary by module
 
@@ -583,7 +583,7 @@ Repo implementations compose: inline `.Where(x => x.VenueId == venueId)` /
 
 ### `IReviewModule` / `IMessagingModule` / `ISearchModule`
 
-- Verify existence of `GetVenueReviewSummaryAsync`, `GetArtistReviewSummaryAsync`, `GetRecommendedOpportunitiesForArtistAsync`, `GetRecentThreadsAsync` before adding. Where they exist, reuse; where they don't, follow the same single-query-via-spec pattern.
+- Verify existence of `GetVenueReviewSummaryAsync`, `GetArtistReviewSummaryAsync`, `GetRecommendedOpportunitiesForArtistAsync`, `GetRecentPreviewsAsync` before adding. Where they exist, reuse; where they don't, follow the same single-query-via-spec pattern.
 
 ### Migrations
 
