@@ -5,7 +5,7 @@
 - Roadmap item: `launch/osa-report-content`
 - Worktree: `/home/tommy/projects/csharp/Concertable` (the main checkout — the kickoff instruction created the branch here rather than in an isolated worktree)
 - Branch: `Feature/launch_osa-report-content`
-- PR: not opened yet — draft PR is the next action
+- PR: [#572](https://github.com/Concertable/concertable/pull/572) (draft), branch merged up to `origin/main` at `c07c52678` and rebuilt green
 - Dependency/package gates: none blocking. No open or red `chore/platform-sync-*` PR at branch time. The
   D2 package question is **settled** — see "Completed work".
 - Last reconciled: 2026-08-15, after both phases were implemented and verified locally.
@@ -22,9 +22,8 @@ Three things worth knowing, all verified against source rather than assumed:
 
 ## Next Steps
 
-1. **Open the draft PR** with plain `gh pr create` (personal repo — no `AB#`, no assignee), then push.
-   Exact-head PR CI owns the full solution build, the standalone service carves, and the complete
-   unit/integration matrices. Do not reproduce those locally.
+1. **Watch draft PR #572's CI.** It owns the full solution build, the standalone service carves, and the
+   complete unit/integration matrices against the exact remote head. Do not reproduce those locally.
 2. **The integration tests have never executed** — Docker is not running on this machine and the
    integration matrix is PR CI's gate. Expect the first CI run to be where
    `ContentReportApiTests` and `ModerationApiTests` are proven. If one goes red, enter
