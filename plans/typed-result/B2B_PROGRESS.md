@@ -11,8 +11,9 @@
 - Review/fix commit: `eb84634699fa643a072342cd196b9767a6694619`
 - Review watermark: `219b34b1ef6152353212138e01f73a87120720ef`; incremental review is clean.
 - Checkpoint 10B consumer commits: `c55c99718` and `544144527`
-- Final reviewed delivery push: `b03abf8cd..6aef91470`; local, remote branch, and PR heads matched
-  `6aef91470da0cab27dce5d525fe93c05b9b28f5c` immediately after the push.
+- Implicit-conversion correction push: starting remote head `804d9b4e8`; pushed
+  `219b34b1e..8b44d41ec`; local work head, remote branch, and PR #552 head matched
+  `8b44d41ec8ecb9d8b7d4c648b76ad0967401024b`. Exact-head draft-PR CI is the next gate.
 - Messaging producer commit: `ade9728f9`
 - Messaging delivery branch/PR: `Feature/MessagingOutboundCommands`, PR #536, remote head
   `7a0886e1245ef76267f0cf906518b2169ac3cfd6`
