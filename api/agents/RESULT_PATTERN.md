@@ -245,6 +245,25 @@ delegate is asynchronous. Do not insert unnecessary `await` statements merely to
 reconstruct the same carrier. Result and Option also support minimal LINQ query syntax backed by
 their fail-fast `Map` and `Bind`; use it only when it makes the chain clearer.
 
+Guard-style observation and fluent composition are both valid. Use `TryGetValue` when a simple early
+return is the clearest shape or the missing case has non-Result behavior such as an invariant
+exception. When Option absence immediately becomes an operation error, prefer `OrFailure`. When a
+successful value must pass structured validation, use the validation-aware `Ensure` overload to
+preserve that value and map `ValidationErrors` into the operation error. Use `Bind`/`BindAsync` when
+the continuation itself produces a Result. If the continuation is multi-statement, extract a private
+operation whose return type honestly distinguishes `MapAsync` (`Task<TNext>`) from `BindAsync`
+(`Task<Result<TNext, TError>>`).
+
+```csharp
+public Task<Result<Checkout, CheckoutError>> CheckoutAsync(int concertId, int quantity) =>
+    concertModule.GetByIdAsync(concertId)
+        .OrFailure<Concert, CheckoutError>(new CheckoutError.ConcertNotFound(concertId))
+        .Ensure(
+            concert => ticketValidator.CanPurchaseTickets(concert, quantity),
+            errors => new CheckoutError.Invalid(errors))
+        .MapAsync(concert => CreateCheckoutAsync(concert, quantity));
+```
+
 The null-coalescing operator works only on nullable operands and cannot be overloaded, so
 `option ?? fallback` does not compile and an implicit conversion cannot make it compile. If a
 framework boundary genuinely requires a nullable reference, convert explicitly at that edge:
@@ -397,9 +416,11 @@ Validators that produce field errors return `ValidationResult` from `Reunion.Val
 ValidationResult = Valid | Invalid(ValidationErrors)
 ```
 
-`ValidationResult` is distinct from `UnitResult<TError>`. Its invalid payload is always immutable,
-non-empty `ValidationErrors`, and its `Combine` operation accumulates independent failures while
-preserving field keys and message order. Do not flatten structured field errors into one string.
+`ValidationResult` is the validation-specific facade over `UnitResult<ValidationErrors>`. It fixes the
+invalid payload to immutable, non-empty `ValidationErrors`, gives the cases validation vocabulary,
+and adds `Combine` for accumulating independent failures while preserving field keys and message
+order. Its ordinary composition operations delegate to the inner UnitResult carrier and are
+fail-fast. Do not flatten structured field errors into one string.
 
 ```csharp
 ValidationResult validation = new[]
@@ -410,16 +431,27 @@ ValidationResult validation = new[]
 ```
 
 Validation does not replace the operation's domain error. Map it once at the owning operation
-boundary:
+boundary. When a validator has no success payload and the operation must preserve an existing value,
+use the validation-aware `Ensure` overload:
 
 ```csharp
-if (validation.TryGetFailure(
-    errors => new CreateUserError.Invalid(errors),
-    out var failure))
-{
-    return failure;
-}
+return concertModule.GetByIdAsync(concertId)
+    .OrFailure<Concert, CheckoutError>(new CheckoutError.ConcertNotFound(concertId))
+    .Ensure(
+        concert => ticketValidator.CanPurchaseTickets(concert, quantity),
+        errors => new CheckoutError.Invalid(errors));
 ```
+
+Use validation-aware `Ensure` when a Result already carries the value to preserve. Use direct `Map`
+when validation genuinely creates a new success value, and `TryGetErrors` or `TryGetFailure` when a
+standalone validation guard is clearest. `ToResult` remains available when an explicit carrier
+conversion fits the call site. Complete all independent validation and `Combine` it before entering
+ordinary fail-fast composition.
+
+`ValidationResult` converts implicitly and losslessly to `UnitResult<ValidationErrors>` for assignments
+and method arguments. C# member lookup does not follow that conversion, so Reunion exposes the same
+ordinary composition surface directly on ValidationResult. Raw `ValidationErrors` never convert
+implicitly into a success or failure branch.
 
 The union's validation case preserves the payload in its definition:
 
@@ -441,7 +473,7 @@ validation. Do not define, alias, wrap, or convert through a project-owned valid
 
 Use `Combine` only for independent validations where reporting all field failures is useful.
 Business operations, dependency calls, and state transitions remain fail-fast. `ValidationResult`
-converts explicitly to the Result family; raw `ValidationErrors` do not implicitly choose a branch.
+does not implicitly choose a branch of a value-bearing Result; raw `ValidationErrors` do not either.
 
 ## HTTP terminals
 
