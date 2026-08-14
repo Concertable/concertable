@@ -45,6 +45,9 @@ findings remain. Tommy has explicitly requested merge.
   all four Customer Reunion pins to `0.1.0-alpha.6`, and corrects the Result-pattern guidance.
 - Checkpoint `c00c6d580` passed exact-head PR #555 CI after the correction and publication gates.
 - Incremental review corrected the Result-pattern example in `c1dacb32c`; no open findings remain.
+- Merge-queue E2E selection is `skip-e2e`: the PR changes internal Customer Ticket composition and
+  package consumption only; it does not touch UI, HTTP/wire contracts, cross-service contracts,
+  authentication/routing, or a published Concertable API shape.
 
 ## Verification and review
 
@@ -114,6 +117,6 @@ findings remain. Tommy has explicitly requested merge.
 
 ## Next Steps
 
-Continue the authorized merge workflow for PR #555: commit and push this review checkpoint, wait for
-exact-head CI, apply the mechanically selected merge-queue E2E label, update from `origin/main` if
-needed, enqueue, and own publication/platform-sync plus plan closeout through terminal completion.
+Continue the authorized merge workflow for PR #555: push this final `skip-e2e` queue checkpoint,
+wait for exact-head CI, update from `origin/main` if needed, enqueue, and own
+publication/platform-sync plus plan closeout through terminal completion.
