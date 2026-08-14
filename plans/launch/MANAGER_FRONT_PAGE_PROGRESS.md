@@ -12,7 +12,7 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
 
 ## Next Steps
 
-**Immediate action:** Push the final review-closeout checkpoint to draft producer PR
+**Immediate action:** Transport this verified final review-closeout ledger checkpoint to draft producer PR
 [#557](https://github.com/Concertable/concertable/pull/557), require local `HEAD`, the remote-tracking
 branch, and the PR head to match, then require its exact-head CI to pass. Do not merge until explicitly requested. After this additive package
 producer merges, publishes, and platform-sync lands, close this worktree and resume from a fresh B2B consumer worktree
@@ -42,7 +42,9 @@ an independent later item.
   reviewed work head. Transport checkpoint `816a88b09e5f8fbb15ba9611bc8ee9539d72dbde` then became the exact local,
   remote-tracking, and PR head; exact-head CI run
   [31792858654](https://github.com/Concertable/concertable/actions/runs/31792858654) passed the full build, unit, and
-  integration matrix. All review findings are closed, so the spent review work order is deleted in this closeout.
+  integration matrix. All review findings are closed, so the spent review work order was deleted in closeout commit
+  `b52f0e28afa75d1f0f71b48773e2d0377b025881`; a fetch proved local, remote-tracking, and PR heads all equal that
+  closeout head. This ledger-only checkpoint is the pending transport leg.
 - Payment now owns agnostic reporting contracts for monthly ticket revenue, monthly settlement payouts, and recent
   settlements. Each aggregate materialises once in `TransactionRepository`; B2B will enrich opaque booking and owner
   identifiers after the published-client gate.
