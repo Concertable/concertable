@@ -21,11 +21,11 @@ so the codebase has zero calls; the building blocks (all in `B2B.DataAccess.Infr
   filter declarations via the abstract `ApplyTenantFilters` hook
   (`modelBuilder.ApplyVenueArtist<TEntity>(this)` per entity). Filters are declared per entity, never
   auto-derived from the `IVenueArtistTenantScoped` marker: marked ≠ filtered is a per-entity product
-  decision (Concert carries the pair but stays public). Example: `TenantConcertDbContext`.
+  decision (Concert carries the pair but stays public). Example: `ConcertTenantDbContext`.
 - **`TenantScopedDbContext`** (abstract, same seam) — the single-owner counterpart to the above: same
   shape, but `ApplyTenantFilters` declares per-entity single-owner filters
   (`modelBuilder.ApplySingleOwner<TEntity>(this)`, `TenantId == current`). Examples:
-  `TenantVenueDbContext` (filters `Venue`/`VenueImage`) and `TenantArtistDbContext`.
+  `VenueTenantDbContext` (filters `Venue`/`VenueImage`) and `ArtistTenantDbContext`.
 - **`XDbContext`** (one concrete context per module) — the tenant-independent read stance. It derives
   the shared DataAccess `ReadDbContext`, which composes the module's configuration provider with no
   tenancy on top. It is read-only by construction — `SaveChanges` throws — so the write-side
@@ -38,7 +38,7 @@ so the codebase has zero calls; the building blocks (all in `B2B.DataAccess.Infr
 Query classes then split by **data-access stance**, one stance per class (mixing them in one class is
 the LSP violation — callers can't know which contract a method honors):
 
-- **`XRepository`** — the tenant-bound `TenantXDbContext`, including whichever tenant filters that
+- **`XRepository`** — the tenant-bound `XTenantDbContext`, including whichever tenant filters that
   entity declares. The default.
 - **`PublicXRepository`** — genuine marketplace access through the module's tenant-independent,
   read-only `XDbContext`. Never returns private contents.
@@ -69,7 +69,7 @@ with browse split off to the public stance).
 Repository qualifiers describe the contract that differs from a service's unqualified default; they
 are not one vocabulary to impose across every service:
 
-- **B2B data-access stance:** `XRepository` uses `TenantXDbContext`, `PublicXRepository` uses the
+- **B2B data-access stance:** `XRepository` uses `XTenantDbContext`, `PublicXRepository` uses the
   tenant-independent/read-only `XDbContext` for a genuine marketplace contract, and
   `AdminXRepository` uses unfiltered/writable `AdminDbContext`. Purpose-named internal lookups and
   facts may share `XDbContext`; do not label them `Public` merely because they cross tenants. Name the
