@@ -3,26 +3,36 @@
 - Plan: `plans/launch/MANAGER_FRONT_PAGE_PLAN.md`
 - Roadmap: `plans/launch/LAUNCH_ROADMAP.md`
 - Roadmap item: `launch/manager-front-page`
-- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-launch-dashboard-pickup-endpoints`
-- Branch: `Feature/launch_dashboard-pickup-endpoints`
-- PR: draft producer PR [#557](https://github.com/Concertable/concertable/pull/557) — item-3 consumer PR [#554](https://github.com/Concertable/concertable/pull/554) merged 2026-08-13 (`2dfe09cc9`)
+- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-launch-dashboard-b2b-consumer`
+- Branch: `Feature/launch_dashboard-b2b-consumer`
+- PR: none — fresh continuation branch based on platform-sync merge `7b8764377`
 
 Captured during Phase A implementation. These supersede the original plan
 where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_PAGE_PLAN.md).
 
 ## Next Steps
 
-**Immediate action:** Transport this verified review-push checkpoint to draft producer PR
-[#557](https://github.com/Concertable/concertable/pull/557), prove local `HEAD`, the remote-tracking branch, and the PR
-head match, and require exact-head CI to pass. Then mark the PR ready, apply `full-e2e` because it changes a published
-gRPC/client contract, enqueue it through the merge queue, and follow package publication plus platform-sync to green.
-After the producer delivery chain lands, close this worktree and resume from a fresh B2B consumer worktree to implement
-the overview, canonical-resource list, chart, review, inbox, activity, and settlement endpoints against that published
-baseline. Activity stays last because it needs its owned persistence model and an `api/initial-migrations.ps1`
-re-scaffold. Keep every remaining dashboard section in scope; Phase A.8 UX freeze remains an independent later item.
+**Immediate action:** Implement the B2B consumer endpoints against published platform `0.1.0-alpha.0.983`: overview,
+canonical-resource lists, charts, reviews, inbox, activity, and settlements. Start with the overview and independent
+canonical-resource/list/chart/review/inbox/settlement surfaces; keep activity last because it needs its owned
+persistence model and an `api/initial-migrations.ps1` re-scaffold. Open a draft PR at the first coherent code checkpoint
+and let exact-head PR CI own the full build/unit/integration matrix. Once the endpoints land, complete the Phase C
+fixture-to-real-API cutover. Keep every remaining dashboard section in scope; Phase A.8 UX freeze remains an
+independent later item.
 
 ## Current producer slice
 
+- **DELIVERED (2026-08-14).** The final incremental review found no new issues after the fixed settlement-completion-time
+  defect. Exact-head PR CI run [31796969708](https://github.com/Concertable/concertable/actions/runs/31796969708)
+  passed at `03dd59a561ab3a439d586f98d5757bc8966cb3ed`. Producer PR
+  [#557](https://github.com/Concertable/concertable/pull/557) then passed its full API + UI E2E merge-group run
+  [31797907306](https://github.com/Concertable/concertable/actions/runs/31797907306) and merged as
+  `19f044ae37b1d600e01a59a0af7801c80e02202c`. Package publication run
+  [31800448691](https://github.com/Concertable/concertable/actions/runs/31800448691) published platform
+  `0.1.0-alpha.0.983`; generated platform-sync PR
+  [#562](https://github.com/Concertable/concertable/pull/562) passed its build/unit/integration gate and merged as
+  `7b876437779851765e99377b84799bf1991370bc`. The producer delivery chain is fully closed and its source worktree was
+  removed through the plan-managed close guard.
 - Producer implementation commit `0d37bfa7a` remains the published implementation baseline on draft PR
   [#557](https://github.com/Concertable/concertable/pull/557). Full review through `bc56de2d8` found BUG1: settlement
   reports used creation time instead of completion time. Fix commit `0eb0babfb` persists immutable `CompletedAt`, uses
