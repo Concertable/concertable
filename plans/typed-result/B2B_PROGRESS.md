@@ -29,6 +29,10 @@
   mapping required by the wire discriminator while retaining Reunion's typed error mapping. Focused
   Deal HTTP contracts pass 2/2, B2B architecture passes 8/8, Deal API formatting is clean, and
   `git diff --check` is clean.
+- Polymorphic-terminal correction push: starting remote head
+  `bb29e929b87706a087f118025d09c7f3fbf3dc67`; pushed `bb29e929b..2025e95bb`; local work head,
+  remote branch, and PR #552 head matched `2025e95bbbd761e438558b99e9d0fcc62720013e`.
+  Exact-head CI is the next gate.
 - Messaging producer commit: `ade9728f9`
 - Messaging delivery branch/PR: `Feature/MessagingOutboundCommands`, PR #536, remote head
   `7a0886e1245ef76267f0cf906518b2169ac3cfd6`
@@ -85,9 +89,8 @@ reference was added. The resolved SEC1 tech-debt entry has been deleted.
 
 ## Next Steps
 
-Commit and review the Deal polymorphic-terminal correction, publish it through the plan-managed
-two-leg push protocol, and wait for exact-head build, carve, unit, integration, architecture, and
-HTTP-contract CI. Keep auto-merge disabled until Tommy explicitly authorizes landing PR #552.
+Wait for exact-head build, carve, unit, integration, architecture, and HTTP-contract CI. Keep
+auto-merge disabled until Tommy explicitly authorizes landing PR #552.
 
 ## Completed work
 
