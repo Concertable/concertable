@@ -299,6 +299,13 @@ No inline `logger.LogInformation/LogWarning/LogError(...)`. Each project owns on
 internal static partial void PublishedVenueEvents(this ILogger logger, int count);
 ```
 
+## Extension members — C# 14 `extension()` blocks, not `this`
+
+New extension members go in `extension(Receiver)` blocks — one `XExtensions` static class per receiver type
+(`EnvironmentsExtensions` extends `Environments`; `HostEnvironmentExtensions` extends `IHostEnvironment`). This is
+the modern unified form (it also does properties/indexers/static members and groups by receiver). Never add a new
+legacy `public static … (this X x)` method; the existing ones await a migration sweep ([`../TECH_DEBT.md`](../TECH_DEBT.md)).
+
 ## Geometry — use IGeometryProvider
 
 Inject `[FromKeyedServices(GeometryProviderType.Geographic)] IGeometryProvider geometryProvider` for WGS84 point creation. Never instantiate `GeometryFactory` or `new Point(...)` directly.
