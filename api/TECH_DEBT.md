@@ -73,7 +73,12 @@ configuration; explicit typed composition/options should select capabilities.
 - Establish one testing-owned environment vocabulary for Concertable's custom names and environment
   variable keys, use the framework `Environments` constants/helpers for built-in names in production
   C#, and give test harnesses one API that applies the correct environment consistently to every
-  resource.
+  resource. (In progress: the `"Testing"` env — purely the integration environment — was renamed to
+  `"Integration"`; `Concertable.Kernel` now owns C# 14 extension members — `Environments.Integration`/`.E2E` on
+  the framework's `Environments`, and `env.IsIntegration()`/`.IsE2E()` on `IHostEnvironment` (mirroring
+  `IsDevelopment()`). Once that Kernel version publishes, the 24 production checks switch to `env.IsIntegration()`,
+  the fixtures' `UseEnvironment` points at `Environments.Integration`, and the temporary
+  `Concertable.Testing.Integration` copy is deleted — publish-first.)
 - Remove every production branch on `Testing` / `E2E`, whether expressed through `IsEnvironment(...)`
   or direct `EnvironmentName` comparison. Integration and E2E hosts supply explicit configuration and
   DI overrides from their own composition roots instead of teaching production code the semantics of
@@ -82,6 +87,20 @@ configuration; explicit typed composition/options should select capabilities.
   `appsettings.E2E.json` and other test-only configuration out of production project closures, and
   validate the allowed names. Declarative JSON values may remain strings where the format requires
   them, but their values must follow the same vocabulary and be covered by a consistency test.
+
+### Extension methods use the legacy `this`-parameter syntax, not C# 14 `extension()` blocks
+
+Every extension in the codebase is declared the pre-C# 14 way — `public static T M(this X x, …)` in `XExtensions`
+static classes. C# 14 (net10) added `extension()` blocks: the unified "extension members" form that also expresses
+extension properties, indexers, and static members, and groups members by receiver. Both compile to identical IL,
+so this is modernization/consistency debt, not a behavioural gap. The env-vocabulary work set the example —
+`Concertable.Kernel.EnvironmentsExtensions` / `HostEnvironmentExtensions` use `extension(Environments)` /
+`extension(IHostEnvironment env)` blocks (giving `Environments.Integration` + `env.IsIntegration()`).
+
+**Resolves when:** existing `this`-parameter extension methods migrate to `extension()` blocks — one `XExtensions`
+class per receiver type, members grouped in `extension(Receiver)` blocks — as a mechanical sweep or
+opportunistically as files are touched. New extension members use `extension()` from the start (see
+`agents/CODE_CONVENTIONS.md`).
 
 ### `AzureServiceBusOptions` binder defaults are `= ""` instead of `null!`
 
