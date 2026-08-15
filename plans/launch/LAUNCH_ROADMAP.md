@@ -202,7 +202,7 @@ Concrete checklist for Month 6. Don't launch without all of these green.
 - [x] Browser storage inventory complete; unnecessary storage removed; necessary Auth/Stripe storage documented; any retained consent UI gates real optional technology (otherwise removed) — shipped in #482 (`storageManifest.ts` + `BROWSER_STORAGE.md`; sidebar cookie removed; Stripe/Maps load-on-use; banner retained and wired to gate via `consentGate.ts`)
 - [ ] Privacy + T&Cs pages accessible from every footer
 - [ ] Pricing transparency on all four payer journeys (gross, platform fee and total shown before commitment)
-- [ ] Venue legal details on booking confirmation emails + invoices
+- [ ] Venue legal details on booking confirmation emails + invoices `launch/venue-legal-on-emails`
 - [ ] Online Safety Act report-content button + email destination live
 - [x] Music licence attestation captured in Org setup form
 
