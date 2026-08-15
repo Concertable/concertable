@@ -24,15 +24,13 @@ export function useMessagesQuery(params: PaginationParams, enabled = true) {
   });
 }
 
-export function useReportMessageMutation() {
+export function useReportMessageMutation(messageId: number) {
   return useMutation({
-    mutationFn: ({
-      messageId,
-      request,
-    }: {
-      messageId: number;
-      request: ReportMessageRequest;
-    }) => messageApi.reportMessage(messageId, request),
+    // The dialog renders the failure inline next to the form, so the global toast would say the same
+    // thing twice in different words.
+    meta: { silenceErrors: true },
+    mutationFn: (request: ReportMessageRequest) =>
+      messageApi.reportMessage(messageId, request),
   });
 }
 

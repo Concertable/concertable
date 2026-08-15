@@ -1,7 +1,6 @@
 import { useState } from "react";
 import type { ReportCategory } from "../types";
-import { reportMessageRequestSchema } from "@concertable/shared/features/messaging";
-import { useReportMessageMutation } from "../hooks/useMessageQuery";
+import { useReportMessage } from "@concertable/shared/features/messaging";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,7 +14,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/Select";
 
-const categories: { value: ReportCategory; label: string }[] = [
+interface CategoryOption {
+  value: ReportCategory;
+  label: string;
+}
+
+const categories: CategoryOption[] = [
   { value: "IllegalContent", label: "Illegal content" },
   { value: "Harassment", label: "Harassment or abuse" },
   { value: "Fraud", label: "Fraud or scam" },
@@ -34,31 +38,32 @@ export function ReportMessageDialog({
   open,
   onOpenChange,
 }: Readonly<Props>) {
-  const [category, setCategory] = useState(categories[0]);
+  // No preselected reason: a default would let an untouched form file the most serious OSA category.
+  const [category, setCategory] = useState<CategoryOption>();
   const [details, setDetails] = useState<string>();
-  const { mutate, isPending, isSuccess, isError, reset } =
-    useReportMessageMutation();
+  const { validate, submit, isPending, isSuccess, isError } =
+    useReportMessage(messageId);
 
-  const parsed = reportMessageRequestSchema.safeParse({
-    category: category.value,
-    details: details?.trim() || undefined,
-  });
+  const buffer = { category: category?.value, details };
+  const parsed = validate(buffer);
   const detailsError = parsed.success
     ? undefined
     : parsed.error.issues.find((issue) => issue.path[0] === "details")?.message;
 
+  // Closing mid-flight would unmount before the acknowledgement, leaving the reporter unsure whether
+  // the report landed — and free to file a duplicate.
   const close = (next: boolean) => {
+    if (isPending) return;
     onOpenChange(next);
-    if (!next) {
-      reset();
-      setDetails(undefined);
-      setCategory(categories[0]);
-    }
   };
 
   return (
     <Dialog open={open} onOpenChange={close}>
-      <DialogContent>
+      <DialogContent
+        showCloseButton={!isPending}
+        onEscapeKeyDown={(e) => isPending && e.preventDefault()}
+        onInteractOutside={(e) => isPending && e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle>Report this message</DialogTitle>
           <DialogDescription>
@@ -82,7 +87,13 @@ export function ReportMessageDialog({
                 onChange={setCategory}
                 getLabel={(c) => c.label}
                 getValue={(c) => c.value}
+                placeholder="Choose a reason"
               />
+              {!category && (
+                <p className="text-muted-foreground text-sm">
+                  Choose a reason to submit your report.
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -91,18 +102,22 @@ export function ReportMessageDialog({
                 id="report-details"
                 data-testid="report-details"
                 aria-invalid={detailsError !== undefined}
-                aria-describedby={detailsError ? "report-details-error" : undefined}
+                aria-describedby={
+                  detailsError ? "report-details-error" : undefined
+                }
                 rows={4}
                 value={details ?? ""}
                 onChange={(e) => setDetails(e.target.value)}
               />
+              {detailsError && (
+                <p
+                  id="report-details-error"
+                  className="text-destructive text-sm"
+                >
+                  {detailsError}
+                </p>
+              )}
             </div>
-
-            {detailsError && (
-              <p id="report-details-error" className="text-destructive text-sm">
-                {detailsError}
-              </p>
-            )}
 
             {isError && (
               <p className="text-destructive text-sm">
@@ -127,9 +142,7 @@ export function ReportMessageDialog({
               <Button
                 data-testid="report-submit"
                 disabled={isPending || !parsed.success}
-                onClick={() =>
-                  parsed.success && mutate({ messageId, request: parsed.data })
-                }
+                onClick={() => submit(buffer)}
               >
                 {isPending ? "Submitting..." : "Submit report"}
               </Button>

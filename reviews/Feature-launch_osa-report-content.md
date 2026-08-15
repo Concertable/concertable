@@ -143,9 +143,9 @@ Scope: `app/shared/src/features/messaging/{schemas/reportMessageRequestSchema.ts
 `app/web/shared/src/features/messaging/components/{ReportMessageDialog,Mailbox}.tsx`, the restored User
 migration, and the `TECH_DEBT`/conventions doc edits.
 
-**Layer 1 (native) did not run.** The `code-reviewer` subagent terminated on a session limit, so the
-correctness pass was done inline by the same agent that wrote the code — weaker, and stated plainly
-because this branch has already shown that self-review misses what the author rationalised.
+**Layer 1 (native) was re-run after the session limit reset** and returned 8 findings; 7 cleared the
+bar and were fixed, 1 dropped. Holding the merge for it was the right call — NAT1 below is a genuine
+compliance defect that the inline self-review missed.
 
 - [x] **NAT9 — MEDIUM — correctness (dead validation path)** — `ReportMessageDialog.tsx:88`
   `maxLength={2000}` on the textarea hard-capped input at exactly the schema's limit, so
@@ -156,6 +156,44 @@ because this branch has already shown that self-review misses what the author ra
   400 the cap was added to avoid. Introduced by stacking the earlier `maxLength` fix and the later zod
   schema without reconciling them. **Fixed:** cap removed, so the parse gates submit and reports the
   message inline; the field also now carries `aria-invalid`/`aria-describedby` pointing at it.
+
+- [x] **NAT1 — MEDIUM — correctness (compliance)** — `ReportMessageDialog.tsx:37`
+  The category buffer initialised to `categories[0]` — **"Illegal content"**, the most serious OSA
+  reason — so a reporter who never touched the Select filed an illegal-content report, and the zod gate
+  was cosmetic for the only required field. That would systematically inflate the gravest category in
+  the triage queue and misclassify reports in the record an information request would read. **Fixed:**
+  no default, `placeholder="Choose a reason"`, and the parse fails until a reason is chosen.
+- [x] **NAT2 — MEDIUM — error handling** — `ReportMessageDialog.tsx:46`
+  Only `details` issues were surfaced, so with NAT1 fixed "no reason chosen" became a silent dead-end:
+  submit disabled, nothing rendered. **Fixed** with a muted hint under the Select rather than a
+  destructive error — the form should explain why submit is unavailable without shouting at a field the
+  user has not touched yet.
+- [x] **NAT3 — MEDIUM — correctness** — `ReportMessageDialog.tsx:50`
+  Cancel was disabled while pending, but Escape, an outside click and `DialogContent`'s own close button
+  still fired `onOpenChange(false)`, which drops `reportingMessageId` and unmounts the dialog mid-POST —
+  the report lands, the acknowledgement never shows, and the reporter can immediately file a duplicate.
+  **Fixed:** `close` early-returns while pending, and the escape/outside/X routes are suppressed too.
+- [x] **NAT4 — MEDIUM — reuse** — `ReportMessageDialog.tsx:37`
+  The component owned the buffer, the parse, the buffer→request mapping and the `mutate` call — the
+  "mutation wiring in a component" anti-pattern in `CODE_PATTERNS.md`. **Fixed:** `useReportMessage`
+  facade following the `useInviteMember` precedent, returning `{ validate, submit, isPending, isSuccess,
+  isError }`; it sits in `app/shared` rather than the web tier because nothing about it is web-only.
+- [x] **NAT5 — LOW — error handling** — `useMessageQuery.ts:27`
+  A failed report was reported twice — the global `MutationCache.onError` toast *and* the dialog's inline
+  banner, in different words. **Fixed** with the documented `meta: { silenceErrors: true }` opt-out, so
+  the inline banner is the single deliberate surface.
+- [x] **NAT6 — LOW — simplification** — `useMessageQuery.ts:28`
+  `messageId` is fixed for the hook's lifetime yet was threaded through the mutation variables, against
+  the "bind everything constant, take only per-submit variables" litmus. **Fixed:**
+  `useReportMessageMutation(messageId)` closes over it.
+- [x] **NAT7 — LOW — simplification** — `ReportMessageDialog.tsx:52`
+  The reset block was unreachable: `onOpenChange(false)` unmounts the dialog in the same batched render,
+  so the resets were discarded updates on an unmounting component. **Fixed:** deleted; the conditional
+  mount is what guarantees fresh state per message.
+- [wontfix] **NAT8 — focus restoration after the popover dismisses.** ~60 confidence and the reviewer
+  states Radix's fallback target is inferred rather than observed. The mount structure it checked is
+  correct (the dialog is a sibling of `PopoverContent`, not nested). Revisit if a keyboard user reports
+  losing focus.
 
 ### Checked and clean (this delta)
 
