@@ -12,10 +12,10 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
 
 ## Next Steps
 
-Blocked: PR #563 cannot pass its standalone artist and venue carves until the published B2B frontend package exposes `MessagePreview` and `actionLinkApi`.
-Blocked by: Additive package producer PR [#578](https://github.com/Concertable/concertable/pull/578) merging and publishing `@concertable/b2b`.
-Unblock action: Take PR #578 through exact-head CI and the full-E2E merge queue, follow `publish-fe-packages` to green, verify its published exports, then sync PR #563 with current main and rerun exact-head CI.
-Resume when: The package publication run is green and the published `@concertable/b2b` version exports `features/conversations` with `MessagePreview` and exports `actionLinkApi` from `features/concerts`. Then make PR #563 exact-head CI green, perform the authenticated Phase A.8 seeded venue/artist UX review, and run the branch review before requesting merge.
+Blocked: Producer PR #578 is admitted to the merge queue but cannot dispatch its own merge group while PR #552's API E2E remains non-terminal.
+Blocked by: PR #552 merge-group run [31883844374](https://github.com/Concertable/concertable/actions/runs/31883844374), whose B2B API E2E step has run for more than 45 minutes after two earlier API-E2E queue failures.
+Unblock action: Let #552's owner or the queue bring that run to a terminal state; do not cancel, alter, or re-enqueue the unrelated PR from this dashboard workstream. Then follow #578's full-E2E merge group, merge, and `publish-fe-packages` run to green before syncing PR #563 with current main.
+Resume when: PR #578's own merge-group run dispatches, or #552 reaches a terminal state that requires reassessing #578's queue entry. After #578 publishes, verify `@concertable/b2b` exports `features/conversations` with `MessagePreview` and exports `actionLinkApi` from `features/concerts`; then make PR #563 exact-head CI green, perform the authenticated Phase A.8 seeded venue/artist UX review, and run the branch review before requesting merge.
 
 ## Current producer slice
 
@@ -29,6 +29,12 @@ Resume when: The package publication run is green and the published `@concertabl
   detail, banner, and review values optional. The corresponding backend response DTOs omit null values from JSON,
   with focused serialization tests proving the wire contract. B2B package tests pass 16/16; affected backend suites
   pass Conversations 9/9, Tenant 99/99, Concert 134/134, Artist 8/8, and Venue 9/9; B2B Web builds with 0 errors.
+  Producer final head `cc10a7f5fbb0015cd53fdb46d8c9daf1049cc970` passed exact-head CI run
+  [31882889954](https://github.com/Concertable/concertable/actions/runs/31882889954), was marked ready with
+  `full-e2e`, and was admitted behind the non-terminal #552 merge group. Its queue entry later disappeared while the
+  PR remained `OPEN/CLEAN` with no failed merge-group run; six sustained polls confirmed the documented GitHub
+  re-evaluation glitch. The permitted one-time disable/re-enable reassertion restored #578 to `QUEUED` at position 5
+  with an estimated 6,327 seconds to merge. No #578 merge-group run exists yet; do not toggle or retry it again.
 
 - **B2B consumer checkpoint 3 — committed locally.** Recent venue/artist review endpoints, a tenant-owned persisted
   activity feed, and every remaining dashboard API integration are implemented in work commit `e4054a7e6`. Activity
