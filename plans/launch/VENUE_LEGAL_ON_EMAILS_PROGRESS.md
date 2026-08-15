@@ -11,38 +11,52 @@
 
 ## Current state
 
-Plan and this ledger written; no code yet. Worktree is on `Feature/launch_venue-legal-on-emails`, branched
-from `origin/main` at `520761dd4`, clean. The design is grounded in existing seams (audit below); two open
-decisions are surfaced in the plan for review, both with a recommendation the phases assume.
+Phase 1 complete on `Feature/launch_venue-legal-on-emails` (branched from `origin/main` at `520761dd4`).
+`BookingConfirmationEmailGenerator` + interface/records added in `Concert.Infrastructure.Services`, registered
+in the module's `ServiceCollectionExtensions`, with 6 focused unit tests green. Chosen both recommended
+defaults (synchronous notifier; mirror the invoice's legal fields — no new company-number field). Generator is
+registered but not yet consumed — Phase 2 wires it. No code writes touch Tenant internals; it reads the same
+`TenantDto`/`TaxComplianceDto` Contracts the invoice uses.
 
 ## Next Steps
 
-Unless Tommy picks an alternative for an open decision at plan review, proceed on the plan's recommended
-defaults (synchronous `BookingConfirmationNotifier`; mirror the invoice's legal fields — no new company-number
-field) and implement **Phase 1 — Legal-details content generator + unit tests**:
+Implement **Phase 2 — Send the confirmation to both parties at booking-confirmed**:
 
-1. Add `BookingConfirmationEmailGenerator` (`IBookingConfirmationEmailGenerator`) in the Concert module. It
-   takes each party's `TenantDto` + `TaxComplianceDto?` and the concert summary and returns subject + HTML
-   body with a two-party legal-details block (legal name always; registered address + VAT only when the
-   party's `TaxComplianceDto` is non-null — omit, never blank). Author the body as HTML (`SmtpEmailTransport`
-   sends every body as HTML). No new legal-detail model — consume the existing Contracts DTOs directly.
-2. Unit-test cases (a)–(e) from the plan's Phase 1 gate: both parties rendered; `TaxCompliance` present →
-   address + VAT; absent → legal name only; VAT null but address present → address shown, VAT omitted;
-   placeholder pre-org-setup legal name still renders.
-3. Build the smallest affected Concert project + run the focused unit tests to green, then commit and push a
-   draft PR (first coherent checkpoint) so remote CI validates the exact head.
-
-Then continue with Phase 2 (wire `BookingConfirmationNotifier` into `ConcertDraftService.CreateAsync`,
-both parties, + integration test). Full phase detail lives in the plan.
+1. Add `BookingConfirmationNotifier` (`IBookingConfirmationNotifier`) in `Concert.Infrastructure.Services`,
+   mirroring `ConcertNotifier`. It resolves `(venueTenantId, artistTenantId)` from the booking's application
+   (`IApplicationRepository.GetTenantPairByIdAsync`), reads `ITenantModule.GetByIdAsync` +
+   `GetTaxComplianceAsync` for both, resolves each tenant's recipient emails
+   (`GetMemberUserIdsAsync` → `IUserModule.GetEmailsByIdsAsync`), calls `IBookingConfirmationEmailGenerator`,
+   and sends the one generated email to every recipient via `IEmailTransport`. Both recipients get the same
+   both-party legal block. Build the party `DisplayName`s from `artist.Name` / `venue.Name` and the date from
+   `concert.Period`.
+2. Register it in `ServiceCollectionExtensions`; inject into `ConcertDraftService` and invoke in `CreateAsync`
+   after the existing both-party `notifier.ConcertDraftCreatedAsync(...)` calls.
+3. Log the new synchronous email against the `api/Concertable.B2B/TECH_DEBT.md` outbox item.
+4. Integration test: the booking-confirmed transition sends the venue's and the artist's members an email
+   whose body carries both parties' legal details (legal name + registered address + VAT), via the existing
+   `EmailSender.Sent` harness; a second test asserts graceful degradation when a party's `TaxCompliance` is
+   absent. No model change → no migration.
+5. Commit; push. Then select the merge-queue E2E tier per the merge skill's Step 4 (do not run E2E locally
+   ahead of the queue).
 
 ## Completed work
 
 - Plan + ledger authored; roadmap §7 checklist line carries the `launch/venue-legal-on-emails` key (unticked
   — feature not shipped). `plan_graph.py` passes.
+- **Phase 1** — `IBookingConfirmationEmailGenerator` + `BookingConfirmationParty` / `BookingConfirmationEmail`
+  records (`Concert.Infrastructure/Services/IBookingConfirmationEmailGenerator.cs`) and
+  `BookingConfirmationEmailGenerator` (`…/BookingConfirmationEmailGenerator.cs`): pure producer, subject +
+  HTML body, two-party legal block, HTML-encoded values, graceful degradation. Registered in
+  `Concert.Infrastructure/Extensions/ServiceCollectionExtensions.cs`. Hosted in Infrastructure (not
+  Application) because its contract is the `Tenant.Contracts` DTOs — the dependency Infrastructure already
+  owns via `InvoiceIssuer`; Application deliberately doesn't reference `Tenant.Contracts`.
 
 ## Verification
 
-None yet — no code written.
+- Phase 1: `Concert.Infrastructure` builds clean; `BookingConfirmationEmailGeneratorTests` — 6/6 pass
+  (both-party render; `TaxCompliance` present → address + VAT; absent → legal name only; VAT null + address
+  present → address shown, VAT omitted; placeholder legal name renders; HTML in legal details is encoded).
 
 ## Reviews
 
