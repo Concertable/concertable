@@ -20,17 +20,22 @@ via `IEmailTransport` (Open decision 1) to every member of both tenants. Invoked
 off the loaded `Application` (`VenueTenantId`/`ArtistTenantId`) — no extra query. No model change → no
 migration. The synchronous send is logged in `api/Concertable.B2B/TECH_DEBT.md`.
 
-Builds clean; Concert unit suite 139/139 green; integration project compiles. Two integration tests added;
-they run in draft-PR CI, which owns the integration matrix (not run locally per `docs/REMOTE_VALIDATION.md`).
+Builds clean; Concert unit suite 139/139 green (after the review fix below); integration project compiles.
+Two integration tests added; they run in draft-PR CI, which owns the integration matrix (not run locally per
+`docs/REMOTE_VALIDATION.md`). Reviewed (native + architecture layers): one MEDIUM finding — the
+booking-confirmation send ran unguarded after `SaveChangesAsync` and could fail an already-committed booking
+(webhook retry) — fixed in `b19bcc79` (wrapped in try/catch + logged; the email is best-effort). No open
+findings.
 
 ## Next Steps
 
-Review, then merge on Tommy's go-ahead. CI is green (50 pass / 6 skip / 0 fail) — the outstanding gate is
-the review, not more validation:
+Review is complete (1 MEDIUM finding fixed, no open findings); merge on Tommy's go-ahead. CI is green:
 
-1. **Run `/review`** on this branch in this worktree — full code review (`api/**` runtime). The new
-   `BookingConfirmationNotifier` reads `Tenant.Contracts`, so expect the security lens and a
-   `Security-reviewed up to commit:` marker. Address every finding, then mark PR #582 ready (un-draft).
+1. **Mark PR #582 ready** (un-draft). Review: `reviews/Feature-launch_venue-legal-on-emails.md` — native +
+   architecture, marker at `b19bcc79`, no open findings. No security layer: the diff modifies no
+   `*.Contracts`/Auth/Payment path (it only consumes `ITenantModule`), so no `Security-reviewed` marker is
+   required. The branch tip adds only this ledger + the review file (docs), so re-stamp the review marker to
+   HEAD before enqueuing so the merge gate sees it current (trivial — no code moved since `b19bcc79`).
 2. If a check goes red, diagnose only the failing scope with the matching debug skill (`integration-debug`
    for the two integration tests) and push the fix; do not run E2E locally ahead of the queue.
 3. Merge-queue E2E tier: per the merge skill's Step 4 this change is B2B-internal and additive with no
@@ -70,7 +75,10 @@ the review, not more validation:
 
 ## Reviews
 
-None yet.
+`reviews/Feature-launch_venue-legal-on-emails.md` — native (`code-reviewer`) + architecture layers over
+`520761dd..b19bcc79`, marker at `b19bcc79`. One MEDIUM finding (BUG1: booking-confirmation send unguarded
+after commit → could fail a committed booking / webhook retry) **fixed** in `b19bcc79`. No open findings.
+No security layer (diff modifies no `*.Contracts`/Auth/Payment path).
 
 ## Decisions, discoveries, blockers, and deviations
 
