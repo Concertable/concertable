@@ -12,10 +12,17 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
 
 ## Next Steps
 
-Let producer PR #591 complete its required full-E2E merge-queue run and publish the Conversations `messageApi`.
-Consume that published API in both SPAs, remove message previews from both dashboard APIs, complete the incremental
-review, then commit and push the corrected consumer head. Let exact-head PR #563 CI pass before the authenticated
-Phase A.8 seeded venue/artist UX review and merge request.
+**Blocked on GitHub merge-queue dispatch for producer PR #591.** It has been position 1 in
+`AWAITING_CHECKS` since `2026-08-15T18:35:00Z`; GitHub created synthetic head
+`bffa0f4bc51e07bb7cfca8ef06a93ca79bc80ad1` but attached zero check runs and no `merge_group` workflow after a
+bounded 31-minute monitor. The gate opens when GitHub dispatches that merge group, or after a one-time human
+dequeue/re-enqueue repairs the stuck entry. Do not automate retries or toggles. Valid resumption evidence is a real
+merge-group run for #591 or its merged state.
+
+Once #591 merges, wait for and verify the published Conversations `messageApi`, consume it in both SPAs, remove
+message previews from both dashboard APIs, complete the incremental review, then commit and push the corrected
+consumer head. Let exact-head PR #563 CI pass before the authenticated Phase A.8 seeded venue/artist UX review and
+merge request.
 
 ## Reviews
 
@@ -24,11 +31,13 @@ Phase A.8 seeded venue/artist UX review and merge request.
 
 ## Current implementation
 
-- **Conversations API ownership — producer queued.** Producer PR
+- **Conversations API ownership — producer queue-dispatch blocked.** Producer PR
   [#591](https://github.com/Concertable/concertable/pull/591) adds a focused, tested `messageApi.getPreviews()` export
   under `@concertable/b2b/features/conversations`. Its exact-head PR CI passed 57 jobs with no failures; the branch is
-  current with `main` and admitted to the merge queue with `full-e2e` because this is a published-package public
-  shape. Consumer migration waits for the resulting package publication.
+  current with `main` and was admitted to the merge queue with `full-e2e` because this is a published-package public
+  shape. GitHub created synthetic queue head `bffa0f4bc51e07bb7cfca8ef06a93ca79bc80ad1`, but it remains position 1 in
+  `AWAITING_CHECKS` with zero attached check runs after a bounded monitor. No CI failure or queue ejection occurred;
+  consumer migration waits for the queue dispatch, merge, and resulting package publication.
 
 - **Consumer review corrections — verified locally.** Optional application-action UI state uses `undefined`, and
   action/navigation/cache/toast orchestration has moved from the widgets into role-specific hooks. Dashboard shared
