@@ -68,14 +68,17 @@ class PlanHandoffStopLauncherTests(unittest.TestCase):
     def test_rejects_unverifiable_implementation(self, _):
         self.assertIsNone(blob_oid(self.root))
 
+    @patch("plan_handoff_stop_launcher.runpy.run_path")
     @patch("plan_handoff_stop_launcher.implementation_is_current", return_value=False)
-    def test_stale_launcher_blocks_without_running_old_implementation(self, _):
+    def test_stale_launcher_warns_without_running_old_implementation(self, _, run_path):
         output = io.StringIO()
         with redirect_stdout(output):
             main()
 
-        self.assertIn('"decision": "block"', output.getvalue())
+        self.assertNotIn('"decision": "block"', output.getvalue())
+        self.assertIn("systemMessage", output.getvalue())
         self.assertIn("differs from origin/main", output.getvalue())
+        run_path.assert_not_called()
 
     @patch("plan_handoff_stop_launcher.runpy.run_path")
     @patch("plan_handoff_stop_launcher.implementation_is_current", return_value=True)

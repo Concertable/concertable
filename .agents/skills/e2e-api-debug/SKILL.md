@@ -191,7 +191,7 @@ If a gRPC call returned an error (B2B Web logs `Status(StatusCode=...)`), the **
 
 ### When the logs still don't pinpoint it — add tracing
 
-If the resource logs, HTTP bodies, and DB/Stripe state still don't explain *why* a handler skipped/failed, add `ILogger` tracing to the server-side class rather than guessing. Read [`api/docs/DEBUGGING_CONVENTIONS.md`](../../../api/docs/DEBUGGING_CONVENTIONS.md) first and follow it: generic, future-useful logs (handler invoked/skipped/wrote, dispatcher lifecycle) get promoted to the project's `Log.cs` with `[LoggerMessage]` source-gen and **kept**; one-off probes stay inline and are removed once found. Then re-run the single test and read your new lines from the resource log in the console output.
+If the resource logs, HTTP bodies, and DB/Stripe state still don't explain *why* a handler skipped/failed, add `ILogger` tracing to the server-side class rather than guessing. Read [`api/agents/DEBUGGING_CONVENTIONS.md`](../../../api/agents/DEBUGGING_CONVENTIONS.md) first and follow it: generic, future-useful logs (handler invoked/skipped/wrote, dispatcher lifecycle) get promoted to the project's `Log.cs` with `[LoggerMessage]` source-gen and **kept**; one-off probes stay inline and are removed once found. Then re-run the single test and read your new lines from the resource log in the console output.
 
 ## Step 4 — Fix and verify
 
