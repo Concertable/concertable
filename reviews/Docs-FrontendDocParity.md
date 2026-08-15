@@ -4,9 +4,9 @@
 > findings directly and report what changed. Tick each `[x]` as you land it. Pause only for a genuinely
 > ambiguous finding: flag it in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `c84602a67daafb27d9577a27b8e826857f73cbf4`  _(2026-08-15)_
+**Reviewed up to commit:** `c09c4c14fd5cce0cc731e889636aafb4b3d5b037`  _(2026-08-15)_
 
-> Range reviewed: `520761dd..c84602a6` (2 commits, diffed against `origin/main`'s merge-base — local
+> Range reviewed: `520761dd..c09c4c14` (3 commits, diffed against `origin/main`'s merge-base — local
 > `main` is stale and would have pulled in unrelated already-merged backend commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
 
