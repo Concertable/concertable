@@ -11,6 +11,7 @@ if HOOK_ROOT not in sys.path:
 from plan_graph import (
     BLOCKER_FIELDS,
     blocker_details,
+    is_paused,
     is_terminal,
     ledger_errors,
     ledger_root,
@@ -347,48 +348,19 @@ def expected_pointer(path):
     )
 
 
-def handoff_summary(body):
-    summary = re.sub(r"\s+", " ", body.split("\n\n", 1)[0]).strip()
-    if len(summary) > 240:
-        summary = summary[:237].rstrip() + "..."
-    return summary
-
-
-def handoff_reason(path, body):
-    summary = handoff_summary(body)
-    return f"Why: `{path.name}` owns unfinished work from this turn: {summary}"
-
-
-def expected_handoff(path, pointer, body):
-    return f"{handoff_reason(path, body)}\n\n```text\n{pointer}\n```"
-
-
-def normalized_handoff_text(value):
-    value = re.sub(r"```(?:text)?", "", value, flags=re.IGNORECASE)
-    value = value.replace("`", "")
-    value = re.sub(r"(?<=\S)-\s+(?=\S)", "-", value)
-    return re.sub(r"\s+", " ", value).strip()
-
-
-def handoff_present(message, path, pointer, body):
-    parts = (
-        f"Why: {path.name} owns unfinished work from this turn:",
-        handoff_summary(body).removesuffix("..."),
-        pointer,
-    )
-    normalized_message = normalized_handoff_text(message)
-    position = 0
-    for part in parts:
-        normalized_part = normalized_handoff_text(part)
-        match = normalized_message.find(normalized_part, position)
-        if match < 0:
-            return False
-        position = match + len(normalized_part)
-    return True
-
-
-def ends_with_pointer(message, pointer):
-    return normalized_handoff_text(message).endswith(normalized_handoff_text(pointer))
+def reminder_for(path):
+    errors = ledger_errors(path)
+    if errors:
+        return "PLAN GRAPH — " + " | ".join(errors)
+    body = next_steps(path.read_text(encoding="utf-8"))
+    if body is None:
+        return f"{path.name}: missing its required `## Next Steps` section."
+    if is_paused(body) or blocker_details(body) or is_terminal(body):
+        return None
+    if looks_like_legacy_blocker(body):
+        fields = ", ".join(f"`{name}:`" for name in BLOCKER_FIELDS)
+        return f"{path.name}: blocked work should start with the {fields} lines."
+    return f"{path.name} still has open `## Next Steps`. Resume with:\n{expected_pointer(path)}"
 
 
 def evaluate(data):
@@ -397,105 +369,19 @@ def evaluate(data):
     ledgers = transcript_ledgers(records, cwd)
     if not records:
         ledgers |= branch_ledgers(git_root(cwd))
-    ledgers = canonical_ledgers(ledgers)
-    active = []
-    blocked = []
-    malformed_blockers = []
-    for path in sorted(ledgers):
-        graph_errors = ledger_errors(path)
-        if graph_errors:
-            return {
-                "decision": "block",
-                "reason": "PLAN GRAPH GATE: " + " | ".join(graph_errors),
-            }
-        body = next_steps(path.read_text(encoding="utf-8"))
-        if body is None:
-            return {
-                "decision": "block",
-                "reason": f"HANDOFF GATE: {path.name} is missing its required `## Next Steps` section.",
-            }
-        details = blocker_details(body)
-        if details:
-            blocked.append((path, expected_pointer(path), details))
-        elif looks_like_legacy_blocker(body):
-            malformed_blockers.append(path)
-        elif not is_terminal(body):
-            pointer = expected_pointer(path)
-            active.append((path, pointer, body, expected_handoff(path, pointer, body)))
-    if malformed_blockers:
-        names = ", ".join(path.name for path in malformed_blockers)
-        return {
-            "decision": "block",
-            "reason": (
-                f"BLOCKER HANDOFF GATE: {names} describes blocked work without the required "
-                "four-line contract. Start `## Next Steps` with non-empty `Blocked:`, "
-                "`Blocked by:`, `Unblock action:`, and `Resume when:` lines. Do not emit the blocked plan's "
-                "continuation pointer."
-            ),
-        }
-    active = list(
-        {
-            pointer: (path, pointer, body, handoff)
-            for path, pointer, body, handoff in active
-        }.values()
-    )
-    message = (data.get("last_assistant_message") or data.get("lastAssistantMessage") or "").replace(
-        "\r\n", "\n"
-    )
-    message = "\n".join(line.rstrip() for line in message.split("\n"))
-    blocked_failures = []
-    for path, pointer, details in blocked:
-        if pointer in message:
-            blocked_failures.append(
-                f"{path.name}: remove the blocked plan's continuation pointer"
-            )
-        required = tuple(
-            f"{name}: {value}"
-            for name, value in zip(BLOCKER_FIELDS, details)
+    reminders = [
+        reminder
+        for path in sorted(canonical_ledgers(ledgers))
+        if (reminder := reminder_for(path))
+    ]
+    if not reminders:
+        return {}
+    return {
+        "systemMessage": (
+            "Plan handoff (advisory — this does not block your turn):\n\n"
+            + "\n\n".join(reminders)
         )
-        missing = [line for line in required if line not in message]
-        if missing:
-            blocked_failures.append(
-                f"{path.name}: report these exact lines: " + "; ".join(missing)
-            )
-    failures = []
-    if blocked_failures:
-        failures.append("BLOCKER HANDOFF GATE: " + " | ".join(blocked_failures))
-    if active:
-        missing = [
-            (path, pointer, body, handoff)
-            for path, pointer, body, handoff in active
-            if not handoff_present(message, path, pointer, body)
-        ]
-        ends_with_handoff = any(ends_with_pointer(message, pointer) for _, pointer, _, _ in active)
-        if missing or not ends_with_handoff:
-            if not missing:
-                missing = active
-            names = ", ".join(path.name for path, _, _, _ in missing)
-            failures.append(
-                f"HANDOFF GATE: {names} has non-terminal `## Next Steps`, but the final response "
-                "omitted its explained continuation. Local implementation completion "
-                "is not lifecycle completion."
-            )
-    if failures:
-        required = [
-            "\n".join(
-                f"{name}: {value}"
-                for name, value in zip(BLOCKER_FIELDS, details)
-            )
-            for _, _, details in blocked
-        ]
-        required.extend(handoff for _, _, _, handoff in active)
-        replacement = "\n\n".join(required)
-        return {
-            "decision": "block",
-            "reason": (
-                "\n\n".join(failures)
-                + "\n\nReplace the final response ending with this complete required handoff block:\n\n"
-                + replacement
-            ),
-        }
-    return {}
+    }
 
 
 def main():
@@ -503,10 +389,7 @@ def main():
         data = json.loads(sys.stdin.buffer.read().decode("utf-8-sig"))
         result = evaluate(data)
     except Exception as error:
-        result = {
-            "decision": "block",
-            "reason": f"HANDOFF GATE ERROR: validation could not complete: {error}",
-        }
+        result = {"systemMessage": f"Plan handoff hook could not run (advisory): {error}"}
     json.dump(result, sys.stdout)
     sys.stdout.write("\n")
 
