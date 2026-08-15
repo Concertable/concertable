@@ -6,15 +6,15 @@
 > in one line, take the safe path, keep going.
 
 **Plan anchored to commit:** `e229afb581c829279ca821b0a85729c4c4f0f441`  _(2026-08-10)_
-**Reviewed up to commit:** `1963db53a50bed449b5a7662525e86019b2bd7af`  _(2026-08-15)_
-**Security-reviewed up to commit:** `1963db53a50bed449b5a7662525e86019b2bd7af`  _(2026-08-15)_
+**Reviewed up to commit:** `6ac31ec934ebd9f91078a3d45a8ed96bf90bd8ba`  _(2026-08-15)_
+**Security-reviewed up to commit:** `6ac31ec934ebd9f91078a3d45a8ed96bf90bd8ba`  _(2026-08-15)_
 Net diff reviewed: `1043a9178..e229afb58`. Move-only files skipped.
 Status legend: `[ ]` not yet reviewed · `[x]` reviewed (date) · `[~]` in progress (incomplete — re-review).
 
 ## Summary
 
 Big review complete: all 4 areas were reviewed over `1043a9178..e229afb58`. All findings are
-addressed: NAT1-NAT6, SEC1-SEC2, and CV1 are fixed. By review layer/lens, the findings comprise
+addressed: NAT1-NAT8, SEC1-SEC2, and CV1 are fixed. The original review findings comprise
 5 native findings (2 test-coverage, 1 correctness, and 2 contract/documentation), 2 security findings,
 and 1 C# convention/test-coverage finding; no microservice-isolation, module-boundary, or seeding
 findings survived the confidence filter.
@@ -195,3 +195,21 @@ required file, bodyless Created, and polymorphic success paths.
 
 No additional findings. The range contains the clean review checkpoint and the focused NAT7 test fix;
 production runtime, authorization, package, and wire behavior are unchanged.
+
+## Incremental review - 2026-08-15
+
+> Range reviewed: `1963db53a50bed449b5a7662525e86019b2bd7af..6ac31ec934ebd9f91078a3d45a8ed96bf90bd8ba`.
+
+- [x] **NAT8 - HIGH - native/runtime correctness** -
+  `api/Concertable.B2B/src/Concertable.B2B.Web/Program.cs:150`
+  Merge-group run `31876662971` proved the destination-free outbound registrations routed the three
+  Payment commands through B2B's own service name, producing nonexistent `command-concertable-b2b-*`
+  queues while Payment owned `command-concertable-payment-*`. Resolved in `6ac31ec93`: the additive
+  `SendsTo<TCommand>` API records an explicit cross-service destination, Azure Service Bus uses it for
+  the queue name, and destination-free `Sends<TCommand>` retains its existing same-service behavior.
+  The Payment service identity is shared from its Contracts package, conflicting destinations fail at
+  registration, and focused tests cover both routing modes.
+
+No additional findings. Reviewed package compatibility, command ownership, outbox dispatch, service
+isolation, security impact, C# conventions, and focused coverage. Messaging tests pass 43/43 and
+10/10; the 40-package local platform set and B2B Web consumer build are green.

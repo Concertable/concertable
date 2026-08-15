@@ -10,7 +10,7 @@
 - Current code/package-main merge commit: `6c1e84101`, through platform-sync PR #575 merge
   `dee412ba8ff824a46ce16783d2f7d1fc161f2774`.
 - Review/fix commit: `eb84634699fa643a072342cd196b9767a6694619`
-- Review watermark: `1963db53a50bed449b5a7662525e86019b2bd7af`; incremental review and
+- Review watermark: `6ac31ec934ebd9f91078a3d45a8ed96bf90bd8ba`; incremental review and
   security review are clean.
 - Checkpoint 10B consumer commits: `c55c99718` and `544144527`
 - Implicit-conversion correction push: starting remote head `804d9b4e8`; pushed
@@ -196,6 +196,9 @@ downstream ledgers and dispatch their open work.
   set with 0 errors and one existing `UserEntity` warning. `git diff --check` is clean. Local Docker
   remains unavailable, so the four failed API E2E cases return to the merge queue as the exact-stack
   verification gate after exact-head PR CI.
+- Incremental native and security review through `6ac31ec934ebd9f91078a3d45a8ed96bf90bd8ba`
+  is clean. NAT8 records the merge-group command-destination failure and its additive, package-compatible
+  fix; no finding remains open.
 - Current-main isolated Messaging producer branch: full API Release build passed with 0 errors;
   affected formatting and diff checks passed. Code review through `28e5797ff` is clean.
 - Messaging PR #536's build, carve, unit, and integration checks are terminal and green against remote
