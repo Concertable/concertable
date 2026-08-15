@@ -72,8 +72,11 @@
 - Merge-group run `31876662971` passed 50 jobs but failed B2B API E2E: both cancellation-refund tests
   and both flat-fee/venue-hire draft-payment tests timed out waiting for Payment-owned escrow state.
   Diagnostics proved B2B sent the commands to `command-concertable-b2b-*` while the Payment topology
-  owned `command-concertable-payment-*`. The fix is implemented and locally verified but not yet
-  committed or pushed.
+  owned `command-concertable-payment-*`. The additive fix is committed in `6ac31ec93`, locally
+  verified, and reviewed through the current-main merge head.
+- Command-routing/current-main push: starting remote head `0fd076f459cf80800af54a086d919974c49fc7e8`;
+  pushed `0fd076f45..e238b781a`; local work head, remote branch, and PR #552 head matched
+  `e238b781af49018596130b257de8416303f4eaeb`. Exact-head PR CI is the next gate.
 
 ## Current state
 
@@ -134,9 +137,8 @@ registrations target it.
 
 ## Next Steps
 
-Push the reviewed current-main merge head through the plan push protocol and require local/remote/PR
-head equality. Require exact-head PR CI to pass, re-enqueue PR
-#552 with `full-e2e`, and own the new merge-group result without retrying the failed run. After merge,
+Require exact-head PR CI at `e238b781af49018596130b257de8416303f4eaeb` to pass, re-enqueue PR #552
+with `full-e2e`, and own the new merge-group result without retrying the failed run. After merge,
 own package publication and platform sync through terminal green, then update the registered
 downstream ledgers and dispatch their open work.
 
