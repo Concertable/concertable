@@ -306,3 +306,13 @@ No new findings. The branch-authored delta replaces the two free-form B2B cancel
 the Payment contract's accepted customer-requested refund reason and verifies both command producers
 and Stripe forwarding. The focused Payment handler/client slice passes 9/9 and `git diff --check` is
 clean. The remaining range is the reviewed checkpoint plus a conflict-free current-main merge.
+
+## Incremental review - 2026-08-16
+
+> Range reviewed: `fd05487fd864687573fc031f4845bf3b7aaeb535..17f3fa914`.
+
+No new findings. Reviewed first-tenant onboarding, OIDC state preservation, route authorization,
+existing-member routing, cross-surface symmetry, and the gateway's ordinary sign-in paths. Only the
+explicit `/create` route admits an authenticated user without a tenant membership; every other Artist
+and Venue route retains membership resolution. `git diff --check` is clean. Local web builds could not
+start because Node/npm is unavailable in this shell; exact-head CI owns the four-SPA build gate.
