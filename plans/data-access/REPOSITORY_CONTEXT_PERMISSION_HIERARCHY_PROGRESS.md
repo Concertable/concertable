@@ -6,10 +6,11 @@
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable/.worktrees/Plan-data-access-repository-permission-hierarchy`
 - Branch: `Refactor/DataAccessRepositoryPermissionHierarchy`
 - PR: [#561](https://github.com/Concertable/concertable/pull/561) (draft)
-- Remote and PR work head: `40b9e7076a2844e908a7e07f1b902a651f800869`
+- Source work head: `906c3da13ee6480d1a68b8dfab232c15f1603856`; this ledger update is its
+  checkpoint-transport commit and must be pushed before exact-head CI is evaluated.
 - Dependency/package gates: Phase 1 remains an additive producer PR. After it merges, package publication and the generated platform-sync PR must be green before Phase 2 migrates consumers.
 - Last reconciled: 2026-08-15 against fetched `origin/main` at `dee412ba8`; the correction is
-  uncommitted on local head `6779d2be3`, which is 11 commits behind base.
+  committed and the branch is current with base after merge commit `906c3da13`.
 
 ## Current state
 
@@ -45,21 +46,21 @@ The replacement design is implemented in the working tree:
   delivery; platform-sync retains only its bot-PR-scoped automation.
 - Integration-test guidance now requires the Kernel `IScoped<T>` scope-root abstraction for a single
   scoped dependency or event-handler collection instead of hand-written `CreateScope()` blocks.
+- The booking, scoped-test, and merge-policy correction is committed at `f8609b6a9`; current
+  `origin/main` merged without conflicts at `906c3da13`.
 - The earlier projection and naming correction is committed at `28de99489`. The then-current
   `origin/main` merged cleanly at `9ba02a024`, and the post-merge branch-local platform build and
   focused Conversations tests were green.
-- The verified work range `86b352807..40b9e7076` is pushed; the remote-tracking branch and PR #561
-  both equal the recorded work head. The checkpoint-transport commit must land before exact-head CI is evaluated.
+- The previously verified range `86b352807..40b9e7076` is on draft PR #561; source work now advances
+  through `906c3da13`, with this ledger update carrying its current recovery state.
 
 ## Next Steps
 
-1. Commit the booking-event, scoped-test, and workflow-policy correction; merge current `origin/main`
-   into the clean branch and complete focused verification.
-2. Push the coherent checkpoint to draft PR #561 and require exact-head draft CI.
-3. Keep PR #561 draft until explicit authorization to make it ready and merge. When authorized, use
+1. Push the coherent current-base checkpoint to draft PR #561 and require exact-head draft CI.
+2. Keep PR #561 draft until explicit authorization to make it ready and merge. When authorized, use
    the repository merge workflow, follow additive package publication and the generated platform-sync
    PR to green, and close this source worktree with `-PlanManaged`.
-4. Create the Phase 2 consumer-migration worktree from the resulting current `origin/main` and migrate
+3. Create the Phase 2 consumer-migration worktree from the resulting current `origin/main` and migrate
    consumers against the published additive platform version.
 
 ## Completed work
@@ -93,6 +94,8 @@ The replacement design is implemented in the working tree:
 - `python .agents/hooks/plan_graph.py --root C:/Users/TommySeery/source/repos/Concertable/.worktrees/Plan-data-access-repository-permission-hierarchy` - 0 errors, 0 warnings.
 - Current correction `git diff --check` - passed.
 - Current correction plan graph - 0 errors, 0 warnings.
+- Post-merge `git diff origin/main...HEAD --check` - passed.
+- Post-merge plan graph - 0 errors, 0 warnings.
 - The focused B2B build reached the expected pre-publication package gate: service contexts cannot
   consume the branch-local additive `ReadDbContext` from the published platform pin. Repacking the
   local platform could not complete after the worktree exhausted local disk space, so exact-head draft
