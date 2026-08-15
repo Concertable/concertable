@@ -28,9 +28,11 @@ their old-package behavior until the consumer migration removes it.
 
 ## Next Steps
 
-1. Push this verified work-head checkpoint and confirm local, remote-tracking, and PR heads are equal.
-2. Follow replacement exact-head CI to green and refresh current-main currency.
-3. Use the already authorized delivery chain to merge
+1. Push this current-main checkpoint and verify local, remote-tracking, and PR heads are equal.
+2. Follow replacement exact-head CI to green, then mark PR #590 ready, apply `full-e2e`, and enqueue
+   the exact remote head through the protected merge queue.
+3. Follow the merge group to a terminal result without retrying a failed run.
+4. On merge, follow package publication plus the generated platform-sync PR to green and merged.
    the producer and follow package publication plus the generated platform-sync PR to green and merged.
 4. Update the consumer ledger when the published baseline gate opens, close this producer worktree,
    and resume #561 from current `origin/main`.
@@ -53,6 +55,12 @@ their old-package behavior until the consumer migration removes it.
   successfully packing the additive platform; it was not retried.
 - Customer Web built with 0 errors against exact local platform `0.1.0-local.1786813897648` after the
   three explicit Customer-base aliases were added.
+- Replacement exact-head CI run `31898750230` passed on `3116eb40d`: 50 jobs green, including local
+  platform pack, full solution build, all five service carves, and selected unit/integration matrices.
+- Green platform-sync PR #588 merged as `0c9ec894a`, advancing the platform baseline to
+  `0.1.0-alpha.0.1005`. It merged cleanly into this branch at `aefcdee73`; incremental review found no
+  overlap. The package-sensitive Customer build exceeded the five-minute local command cap without a
+  compiler diagnostic, so replacement exact-head CI remains the authoritative post-merge gate.
 
 ## Reviews
 
@@ -61,8 +69,14 @@ their old-package behavior until the consumer migration removes it.
   `reviews/Refactor-DataAccessRepositoryPermissionHierarchyExpand.md`.
 - Incremental review of `ff7cdc954..07bf600f5` found no issues; the review watermark now resolves to
   exact commit `07bf600f5d86bb980215c46e97f4ad4262e25ab7`.
+- Incremental review of checkpoint-only range `07bf600f5..3116eb40d` found no issues; the local review
+  watermark matches the exact remote PR head.
+- Incremental review of `3116eb40d..aefcdee73` found no issues; it covered only the incoming green
+  platform sync and merge commit.
 - Plan-managed work-head push succeeded for `895020d39..3575330ce`; local, remote-tracking, and PR
   heads were verified equal at `3575330ce19149d5d97f30d44d2d0c1ce283c4e4`.
+- Current-main work-head push succeeded for `3116eb40d..aefcdee73`; local, remote-tracking, and PR heads
+  were verified equal at `aefcdee7340f60ae0e3b9c9c30f70b7d1e33b872`.
 
 ## Decisions, discoveries, blockers, and deviations
 
