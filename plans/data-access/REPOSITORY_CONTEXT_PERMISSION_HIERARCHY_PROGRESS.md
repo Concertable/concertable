@@ -6,11 +6,12 @@
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable/.worktrees/Plan-data-access-repository-permission-hierarchy`
 - Branch: `Refactor/DataAccessRepositoryPermissionHierarchy`
 - PR: [#561](https://github.com/Concertable/concertable/pull/561) (draft)
-- Remote and PR head: `391bd2517468a7e4e87a3938cb4880dab82f27cf`; the repository-naming
-  correction is pushed and exact-head draft CI is pending.
+- Remote and PR head: `3044fb74c2eb6b238a80c5bc443ec6442163d037`; exact-head draft CI run
+  `31881386510` passed. The local branch merged current `origin/main` at `beb0bd91d`; this commit
+  carries the two follow-up review fixes that still require committed review and push verification.
 - Dependency/package gates: Phase 1 remains an additive producer PR. After it merges, package publication and the generated platform-sync PR must be green before Phase 2 migrates consumers.
-- Last reconciled: 2026-08-15 against fetched `origin/main` at `dee412ba8`; the correction is
-  committed and the branch is current with base after merge commit `906c3da13`.
+- Last reconciled: 2026-08-15 against fetched `origin/main` at `520761dd4`; the branch is current with
+  base after merge commit `beb0bd91d`.
 
 ## Current state
 
@@ -20,7 +21,9 @@ Artist/Venue organisation-identity lookup design, so the PR was returned to draf
 merge. The repository-naming correction described below is committed and pushed on the current branch;
 exact-head CI and follow-up review still gate readiness.
 
-The replacement design is implemented on the pushed branch:
+The replacement design is implemented. Exact-head CI passed on the pushed checkpoint; the current
+worktree contains the focused fixes from the follow-up review and is green under the Conversations
+unit-test project.
 
 - `Tenant` is the canonical Domain/Application/Infrastructure/Contracts term. In the current model it
   is the business account, membership boundary, legal/VAT/Stripe identity, and settlement identity;
@@ -61,11 +64,18 @@ The replacement design is implemented on the pushed branch:
 - The earlier projection and naming correction is committed at `28de99489`. The then-current
   `origin/main` merged cleanly at `9ba02a024`, and the post-merge branch-local platform build and
   focused Conversations tests were green.
+- Exact-head draft CI run `31881386510` passed on pushed head `3044fb74c` with the full build, service
+  carves, selected unit and integration matrices, and `ci-complete` green.
+- Current `origin/main` merged cleanly at `beb0bd91d`.
+- Follow-up review of `580426684..beb0bd91d` found two medium issues: captured primary constructors in
+  the new participant projection handlers and missing assertions for sender profile rendering. Both
+  are fixed in this commit; the focused Conversations unit tests pass 11/11.
 
 ## Next Steps
 
-1. Require exact-head draft CI for `391bd2517` and follow-up review of the repository-naming correction.
-2. Keep PR [#561](https://github.com/Concertable/concertable/pull/561) draft until both gates are green
+1. Commit the follow-up review fixes, incrementally review that committed range, and resolve any finding.
+2. Push the green reviewed head through the plan push protocol, then require exact-head draft CI.
+3. Keep PR [#561](https://github.com/Concertable/concertable/pull/561) draft until those gates are green
    and Tommy explicitly authorizes `/merge`; when asking for that permission, always include this
    clickable PR link.
 
@@ -116,14 +126,17 @@ The replacement design is implemented on the pushed branch:
 - Post-merge Conversations unit tests - 9 passed, 0 failed, 0 skipped.
 - Current `git diff --check` - passed.
 - Current plan graph - 0 errors, 0 warnings.
+- Exact-head draft CI run `31881386510` on `3044fb74c` - passed: local platform pack, full solution
+  build, service carves, selected unit and integration matrices, and `ci-complete` all green.
+- Current focused Conversations unit tests after the review fixes - 11 passed, 0 failed, 0 skipped.
 
 ## Reviews
 
 - Tommy approved the shared permission hierarchy and later approved the corrected context stance names.
 - Prior formal and incremental reviews are recorded in `reviews/Refactor-DataAccessRepositoryPermissionHierarchy.md`.
-- Review of the corrected projection, event compatibility, migrations, context renames, module
-  boundaries, and tests found no open issues. The repository-naming correction still requires
-  exact-head draft CI and follow-up review on its committed range.
+- Follow-up review of `580426684..beb0bd91d` covered correctness, security, microservice isolation,
+  module boundaries, seeding, C# conventions, and test coverage. `CV1` and `BUG3` are fixed in the
+  working tree; the committed fix range still requires incremental review before push.
 
 ## Decisions, discoveries, blockers, and deviations
 

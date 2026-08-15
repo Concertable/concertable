@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `580426684040bc51ffb057a7dcbb110d0be1af7d`  _(2026-08-14)_
-**Security-reviewed up to commit:** `580426684040bc51ffb057a7dcbb110d0be1af7d`  _(2026-08-14)_
+**Reviewed up to commit:** `beb0bd91d94296dc8a899d39617e9cd19878b794`  _(2026-08-15)_
+**Security-reviewed up to commit:** `beb0bd91d94296dc8a899d39617e9cd19878b794`  _(2026-08-15)_
 
 > Range reviewed: `429581025..94d7664ad` (2 commits).
 > Status legend: `[ ]` todo - `[~]` in progress - `[x]` done - `[wontfix]` (note why).
@@ -36,3 +36,15 @@ Security review found no issues in the Auth, Payment, Contracts, and configurati
 > Range reviewed: `350ae02a1..580426684` (2 commits).
 
 No issues found. Checked correctness, microservice isolation, module boundaries, seeding, C# conventions, security-sensitive paths, and test coverage of changed paths.
+
+## Incremental review - 2026-08-15
+
+> Range reviewed: `580426684..beb0bd91d` (38 commits).
+
+- [x] **CV1 - MEDIUM - C# conventions** - `api/Concertable.B2B/src/Modules/Conversations/Concertable.B2B.Conversations.Infrastructure/Handlers/ParticipantProfileProjectionHandlers.cs:10`
+  Replaced both captured primary constructors with explicit readonly fields and constructors as required by `api/agents/CODE_CONVENTIONS.md`.
+
+- [x] **BUG3 - MEDIUM - test coverage** - `api/Concertable.B2B/src/Modules/Conversations/Tests/Concertable.B2B.Conversations.UnitTests/Services/MessageServiceTests.cs:11`
+  Notification and inbox tests now assert the event-fed participant profile, and the inbox tests cover the missing-profile fallback introduced by the sender-resolution rewrite.
+
+Security review found no issues. The additive Venue contract property preserves the existing positional wire shape, payment-event metadata remains validated by transaction type, and removing ready-event merge workflows reduces repository write authority.
