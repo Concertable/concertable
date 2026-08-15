@@ -40,8 +40,8 @@ the LSP violation — callers can't know which contract a method honors):
 
 - **`XRepository`** — the tenant-bound `XTenantDbContext`, including whichever tenant filters that
   entity declares. The default.
-- **`PublicXRepository`** — genuine marketplace access through the module's tenant-independent,
-  read-only `XDbContext`. Never returns private contents.
+- **`XReadRepository`** — read-only access through the module's tenant-independent `XDbContext`.
+  Its contract controls which data leaves the module.
 - **`AdminXRepository`** — privileged cross-tenant read/write (e.g. admin approval) on the writable
   `AdminDbContext`. Only where an admin write flow exists, e.g. `AdminVenueRepository`.
 - **Domain facts that aren't naturally entity repositories** may get their own purpose-named
@@ -49,7 +49,7 @@ the LSP violation — callers can't know which contract a method honors):
   independently consumed capability. Do not wrap a single query already owned by an aggregate
   repository in a one-method interface; keep that query on the repository.
 
-The injection site is then self-documenting: a service holding `repository` + `publicRepository`
+The injection site is then self-documenting: a service holding `repository` + `readRepository`
 (the codebase convention when a service injects both stances of its own aggregate) states exactly
 which queries see what.
 
@@ -71,10 +71,10 @@ with browse split off to the public stance).
 Repository qualifiers describe the contract that differs from a service's unqualified default; they
 are not one vocabulary to impose across every service:
 
-- **B2B data-access stance:** `XRepository` uses `XTenantDbContext`, `PublicXRepository` uses the
-  tenant-independent/read-only `XDbContext` for a genuine marketplace contract, and
+- **B2B data-access stance:** `XRepository` uses `XTenantDbContext`, `XReadRepository` uses the
+  tenant-independent/read-only `XDbContext`, and
   `AdminXRepository` uses unfiltered/writable `AdminDbContext`. Purpose-named internal lookups and
-  facts may share `XDbContext`; do not label them `Public` merely because they cross tenants. Name the
+  facts may share `XDbContext`. Name the
   composed contract, never the filtering mechanism: do not substitute `Unscoped` or `CrossTenant`.
 - **Mutability:** the shared `Repository<...>` surface permits writes; `ReadRepository<...>` exposes
   queries only. Customer's event-synced replicas therefore use `XReadRepository` even without a
@@ -82,11 +82,10 @@ are not one vocabulary to impose across every service:
 - **Projection shape:** Search's `XHeaderRepository` and `XAutocompleteRepository` names describe the
   projection they serve, not visibility or write capability.
 
-These dimensions are independent. A B2B `PublicXRepository` is both unfiltered and read-only because
+These dimensions are independent. A B2B `XReadRepository` is both unfiltered and read-only because
 of its context; a Customer `XReadRepository` is read-only over a context with no tenant filtering.
-Keep the ordinary owned/scoped/writable repository unqualified, and qualify only the differing
-contract. Do not force `Public`, `Read`, or a projection-shape term onto a service where it names the
-wrong distinction.
+Keep the ordinary owned/scoped/writable repository unqualified. Audience belongs at the API contract,
+not in persistence type names.
 
 ## Module-local keyed strategy factory
 

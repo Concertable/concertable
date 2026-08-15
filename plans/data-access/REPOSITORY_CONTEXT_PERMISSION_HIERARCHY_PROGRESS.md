@@ -6,8 +6,8 @@
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable/.worktrees/Plan-data-access-repository-permission-hierarchy`
 - Branch: `Refactor/DataAccessRepositoryPermissionHierarchy`
 - PR: [#561](https://github.com/Concertable/concertable/pull/561) (draft)
-- Source work head: `af7586cf7`; this ledger update is its
-  checkpoint-transport commit and must be pushed before exact-head CI is evaluated.
+- Remote and PR head: `d8c36cf058d27726a2038b78e8bb803bfaebccb1`; exact-head draft CI run
+  `31868276444` is green. The verified repository-naming correction is uncommitted in this worktree.
 - Dependency/package gates: Phase 1 remains an additive producer PR. After it merges, package publication and the generated platform-sync PR must be green before Phase 2 migrates consumers.
 - Last reconciled: 2026-08-15 against fetched `origin/main` at `dee412ba8`; the correction is
   committed and the branch is current with base after merge commit `906c3da13`.
@@ -15,11 +15,12 @@
 ## Current state
 
 Phase 1's additive shared context capabilities, independent read context, context-free repository bases,
-and compatibility surface are implemented on draft PR #561. Earlier exact-head CI checkpoints were
-green, but the current review invalidated the Artist/Venue organisation-identity lookup design, so the
-PR was returned to draft before merge.
+and compatibility surface are implemented on draft PR #561. A later review invalidated the original
+Artist/Venue organisation-identity lookup design, so the PR was returned to draft and corrected before
+merge. The corrected pushed head is current with `origin/main` and exact-head CI is green; the local
+repository-naming correction described below still requires a new checkpoint and exact-head CI.
 
-The replacement design is implemented in the working tree:
+The replacement design is implemented on the pushed branch:
 
 - `Tenant` is the canonical Domain/Application/Infrastructure/Contracts term. In the current model it
   is the business account, membership boundary, legal/VAT/Stripe identity, and settlement identity;
@@ -50,20 +51,24 @@ The replacement design is implemented in the working tree:
   `origin/main` merged without conflicts at `906c3da13`.
 - Exact-head CI exposed missing Payment contract imports in the new escrow integration test. The
   focused compiler correction is committed at `af7586cf7`.
+- The corrected checkpoint is pushed at `d8c36cf05`; PR #561 remains open and draft with auto-merge
+  disabled.
+- The remaining `Public`-qualified repository persistence names were inconsistent with the corrected
+  context stance. Their interfaces, implementations, files, DI registrations, and service fields are now named
+  `ArtistReadRepository`, `VenueReadRepository`, `ConcertReadRepository`, and
+  `OpportunityReadRepository`; marketplace audience remains at the API contract rather than in
+  persistence type names.
 - The earlier projection and naming correction is committed at `28de99489`. The then-current
   `origin/main` merged cleanly at `9ba02a024`, and the post-merge branch-local platform build and
   focused Conversations tests were green.
-- The previously verified range `86b352807..40b9e7076` is on draft PR #561; source work now advances
-  through `906c3da13`, with this ledger update carrying its current recovery state.
 
 ## Next Steps
 
-1. Push the coherent current-base checkpoint to draft PR #561 and require exact-head draft CI.
-2. Keep PR #561 draft until explicit authorization to make it ready and merge. When authorized, use
-   the repository merge workflow, follow additive package publication and the generated platform-sync
-   PR to green, and close this source worktree with `-PlanManaged`.
-3. Create the Phase 2 consumer-migration worktree from the resulting current `origin/main` and migrate
-   consumers against the published additive platform version.
+1. Commit the verified `XReadRepository` naming correction with this plan/ledger checkpoint.
+2. Push the coherent work head to draft PR [#561](https://github.com/Concertable/concertable/pull/561),
+   verify local/remote/PR head equality, then publish the push checkpoint and require exact-head draft CI.
+3. Keep PR [#561](https://github.com/Concertable/concertable/pull/561) draft until Tommy explicitly
+   authorizes `/merge`; when asking for that permission, always include this clickable PR link.
 
 ## Completed work
 
@@ -79,8 +84,6 @@ The replacement design is implemented in the working tree:
 
 ## Verification
 
-- Earlier exact-head GitHub Actions runs `31812660710`, `31835968326`, and `31838309184` completed
-  successfully for their respective pushed heads; they do not validate the current working-tree correction.
 - `./scripts/local-platform.ps1 build api/Concertable.B2B/src/Concertable.B2B.Web/Concertable.B2B.Web.csproj --configuration Release --disable-build-servers --maxcpucount:1` - succeeded with 0 errors and the existing `UserEntity.UserEntity()` warning.
 - Focused Conversations unit-test project build - succeeded with 0 errors and the existing `UserEntity.UserEntity()` warning.
 - `dotnet ef migrations add InitialCreate --no-build --configuration Release --context ConversationsDbContext ...` against the branch-local platform build - succeeded; the generated initial migration contains `conversations.ParticipantProfiles` keyed by `TenantId`.
@@ -92,37 +95,36 @@ The replacement design is implemented in the working tree:
   context names.
 - Mechanical rename comparison confirmed all nine context, factory, and snapshot renames differ only by
   the approved identifier replacement.
-- `git diff --check` - passed.
-- `python .agents/hooks/plan_graph.py --root C:/Users/TommySeery/source/repos/Concertable/.worktrees/Plan-data-access-repository-permission-hierarchy` - 0 errors, 0 warnings.
-- Current correction `git diff --check` - passed.
-- Current correction plan graph - 0 errors, 0 warnings.
 - Post-merge `git diff origin/main...HEAD --check` - passed.
 - Post-merge plan graph - 0 errors, 0 warnings.
-- Exact-head CI run `31865873337`: local platform pack passed; the solution build failed only in
-  `EscrowPaymentProcessorTests` because its Payment contract and event namespaces were not imported.
-- Added the two existing Payment contract imports in `af7586cf7`; `git diff --check` passed. A local
-  no-dependency compile produced no output before timing out on the disk-constrained checkout, so it
-  is not counted as validation.
-- The focused B2B build reached the expected pre-publication package gate: service contexts cannot
-  consume the branch-local additive `ReadDbContext` from the published platform pin. Repacking the
-  local platform could not complete after the worktree exhausted local disk space, so exact-head draft
-  CI remains the required validation for this checkpoint.
-- Post-merge `./scripts/local-platform.ps1 prepare` - succeeded; packed 40 packages at
-  `0.1.0-local.1786751073698`.
+- Exact-head CI run `31865873337` exposed missing Payment contract imports in
+  `EscrowPaymentProcessorTests`; `af7586cf7` added the two existing contract imports.
+- Exact-head draft CI run `31868276444` on `d8c36cf05` - passed: local platform pack, full solution
+  build, service carves, selected unit and integration matrices, and `ci-complete` all green.
+- Current `./scripts/local-platform.ps1 prepare` - succeeded; packed 40 exact-branch packages at
+  `0.1.0-local.1786789942005`.
+- Artist, Venue, and Concert Infrastructure Release builds against that exact package set - succeeded
+  with 0 warnings and 0 errors.
+- Current Artist unit tests - 5 passed, 0 failed, 0 skipped.
+- Current Venue unit tests - 5 passed, 0 failed, 0 skipped.
+- Current Concert unit tests - 134 passed, 0 failed, 0 skipped.
+- Whole-repository identifier and filename greps found zero old repository-name survivors.
+- The whole B2B Web build against the exact local package exceeded the five-minute local command cap
+  without a compiler diagnostic; the three directly affected infrastructure builds are green and
+  exact-head draft CI remains the authoritative full-build gate.
 - Post-merge B2B Web Release build against that local platform - succeeded with 0 errors and the
   existing `UserEntity.UserEntity()` warning.
 - Post-merge Conversations unit tests - 9 passed, 0 failed, 0 skipped.
-- Work-head push `86b352807..40b9e7076` - succeeded; remote-tracking and PR heads both verified equal
-  `40b9e7076a2844e908a7e07f1b902a651f800869`.
-- Exact-head draft CI is pending.
+- Current `git diff --check` - passed.
+- Current plan graph - 0 errors, 0 warnings.
 
 ## Reviews
 
 - Tommy approved the shared permission hierarchy and later approved the corrected context stance names.
 - Prior formal and incremental reviews are recorded in `reviews/Refactor-DataAccessRepositoryPermissionHierarchy.md`.
-- Working-tree review of the corrected projection, event compatibility, migrations, context renames,
-  module boundaries, and tests found no open issues. Exact-head draft CI remains required after the
-  branch is current with `origin/main`.
+- Review of the corrected projection, event compatibility, migrations, context renames, module
+  boundaries, and tests found no open issues. The repository-naming correction still requires
+  exact-head draft CI and follow-up review on its committed range.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -130,6 +132,8 @@ The replacement design is implemented in the working tree:
   naming correction does not collapse those Customer stances.
 - B2B tenant-independent contexts intentionally compose the full module model. Repository contracts and
   DTOs control what leaves the module; the context name does not imply marketplace visibility.
+- Persistence types describe capability and stance, not API audience: B2B tenant-independent readers
+  use `XReadRepository`; `Public` remains valid only at genuine HTTP/presentation boundaries.
 - `IBookingExistence` was not a distinct domain capability: it duplicated one unfiltered booking query
   solely to decorate an exception. Worker scopes already bypass tenant filters, and booking creation
   commits before Payment is called, so `IBookingRepository.GetApplicationIdByIdAsync` is sufficient.
