@@ -6,8 +6,8 @@
 > in one line, take the safe path, keep going.
 
 **Plan anchored to commit:** `e229afb581c829279ca821b0a85729c4c4f0f441`  _(2026-08-10)_
-**Reviewed up to commit:** `59e2a66c4bf53f124fd75ed0987a251bf4f50f61`  _(2026-08-15)_
-**Security-reviewed up to commit:** `59e2a66c4bf53f124fd75ed0987a251bf4f50f61`  _(2026-08-15)_
+**Reviewed up to commit:** `56a808a9cc19ae60e00dda0560654766952233ed`  _(2026-08-15)_
+**Security-reviewed up to commit:** `56a808a9cc19ae60e00dda0560654766952233ed`  _(2026-08-15)_
 Net diff reviewed: `1043a9178..e229afb58`. Move-only files skipped.
 Status legend: `[ ]` not yet reviewed · `[x]` reviewed (date) · `[~]` in progress (incomplete — re-review).
 
@@ -282,3 +282,18 @@ success, failure, exception, or cancellation behavior.
 No new findings. The range contains the alpha.8 review checkpoint and a conflict-free merge of
 current main's plan-review gate. Product and package code are unchanged; the plan hook tests pass
 39/39, the plan graph reports 0 errors and 0 warnings, and `git diff --check` is clean.
+
+## Incremental review - 2026-08-15
+
+> Range reviewed: `d009bc5e360f7e29ee6ff7b5b98ea669d30be10c..56a808a9cc19ae60e00dda0560654766952233ed` (6 commits).
+
+- [x] **CV2 - MEDIUM - code-comment convention** -
+  `api/Concertable.B2B/src/Modules/Tenant/Concertable.B2B.Tenant.Infrastructure/Events/TenantInvitationCreatedDomainEventHandler.cs:9`
+  Current main's invitation-outbox change introduced three design-narration XML comments. Resolved
+  in `56a808a9c`; the local one-line arranged-invitation invariant remains.
+
+No additional findings. Reviewed invitation authorization, recipient and portal routing, atomic
+outbox staging, command-handler ownership, typed-error compatibility, test isolation, and the three
+merge resolutions. Tenant unit tests pass 131/131 and `git diff --check` is clean. The B2B Web local
+closure still encounters the recorded `Concertable.Contracts` 1.0.0 versus platform 0.997 package
+mismatch; exact-head CI's local platform pack owns the full closure gate.
