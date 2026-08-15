@@ -7,10 +7,10 @@
 - Branch: `Refactor/B2BTypedResultMigration`
 - PR: #552 (ready; merge queue ejected after API E2E failure)
 - Checkpoints 8-9 commit: `bfc8690b196821bdd735ea5d229182fd9a3baf36`
-- Current code/package-main merge commit: `6c1e84101`, through platform-sync PR #575 merge
-  `dee412ba8ff824a46ce16783d2f7d1fc161f2774`.
+- Current code/package-main merge commit: `85df45648e8c5194c9be49f14918a76fe6bde54a`, through
+  platform-sync PR #576 merge `520761dd4` and platform `0.1.0-alpha.0.997`.
 - Review/fix commit: `eb84634699fa643a072342cd196b9767a6694619`
-- Review watermark: `6ac31ec934ebd9f91078a3d45a8ed96bf90bd8ba`; incremental review and
+- Review watermark: `85df45648e8c5194c9be49f14918a76fe6bde54a`; incremental review and
   security review are clean.
 - Checkpoint 10B consumer commits: `c55c99718` and `544144527`
 - Implicit-conversion correction push: starting remote head `804d9b4e8`; pushed
@@ -134,8 +134,8 @@ registrations target it.
 
 ## Next Steps
 
-Review and commit the command-destination fix with this ledger, then use the plan push protocol to
-publish it and require local/remote/PR head equality. Require exact-head PR CI to pass, re-enqueue PR
+Push the reviewed current-main merge head through the plan push protocol and require local/remote/PR
+head equality. Require exact-head PR CI to pass, re-enqueue PR
 #552 with `full-e2e`, and own the new merge-group result without retrying the failed run. After merge,
 own package publication and platform sync through terminal green, then update the registered
 downstream ledgers and dispatch their open work.
@@ -199,6 +199,9 @@ downstream ledgers and dispatch their open work.
 - Incremental native and security review through `6ac31ec934ebd9f91078a3d45a8ed96bf90bd8ba`
   is clean. NAT8 records the merge-group command-destination failure and its additive, package-compatible
   fix; no finding remains open.
+- Current main merged conflict-free as `85df45648e8c5194c9be49f14918a76fe6bde54a`; B2B Web rebuilt
+  against the prepared local package set with 0 errors and the same existing `UserEntity` warning.
+  Incremental native and security review through that merge head is clean.
 - Current-main isolated Messaging producer branch: full API Release build passed with 0 errors;
   affected formatting and diff checks passed. Code review through `28e5797ff` is clean.
 - Messaging PR #536's build, carve, unit, and integration checks are terminal and green against remote

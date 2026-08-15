@@ -6,8 +6,8 @@
 > in one line, take the safe path, keep going.
 
 **Plan anchored to commit:** `e229afb581c829279ca821b0a85729c4c4f0f441`  _(2026-08-10)_
-**Reviewed up to commit:** `6ac31ec934ebd9f91078a3d45a8ed96bf90bd8ba`  _(2026-08-15)_
-**Security-reviewed up to commit:** `6ac31ec934ebd9f91078a3d45a8ed96bf90bd8ba`  _(2026-08-15)_
+**Reviewed up to commit:** `85df45648e8c5194c9be49f14918a76fe6bde54a`  _(2026-08-15)_
+**Security-reviewed up to commit:** `85df45648e8c5194c9be49f14918a76fe6bde54a`  _(2026-08-15)_
 Net diff reviewed: `1043a9178..e229afb58`. Move-only files skipped.
 Status legend: `[ ]` not yet reviewed · `[x]` reviewed (date) · `[~]` in progress (incomplete — re-review).
 
@@ -213,3 +213,12 @@ production runtime, authorization, package, and wire behavior are unchanged.
 No additional findings. Reviewed package compatibility, command ownership, outbox dispatch, service
 isolation, security impact, C# conventions, and focused coverage. Messaging tests pass 43/43 and
 10/10; the 40-package local platform set and B2B Web consumer build are green.
+
+## Incremental review - 2026-08-15
+
+> Range reviewed: `6ac31ec934ebd9f91078a3d45a8ed96bf90bd8ba..85df45648e8c5194c9be49f14918a76fe6bde54a`.
+
+No new findings. The range contains the clean review checkpoint and a conflict-free merge of current
+main through platform `0.1.0-alpha.0.997`. Main's compiler-enforced B2B/Payment integration-test
+isolation removes obsolete test visibility and does not alter the command routing implementation.
+The B2B Web package-consumer build remains green at the merge head.
