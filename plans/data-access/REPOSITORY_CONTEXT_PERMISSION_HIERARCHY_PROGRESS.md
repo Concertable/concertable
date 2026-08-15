@@ -6,9 +6,17 @@
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable/.worktrees/Plan-data-access-repository-permission-hierarchy`
 - Branch: `Refactor/DataAccessRepositoryPermissionHierarchy`
 - PR: [#561](https://github.com/Concertable/concertable/pull/561) (draft)
-- Verified work and PR head: `df469d372c77dbfde67142f8e69ea31f6bdb3997`; pushed from remote head
-  `3044fb74c2eb6b238a80c5bc443ec6442163d037` through `df469d372` and verified against the
-  remote-tracking ref and draft PR head. The checkpoint-transport commit and its exact-head CI remain.
+- Verified work and PR head: `495fd7900e6d680e1064b641d723412e95e99736`; pushed from remote head
+  `fd2c5138653f466adb20098754e7552213539798` and verified against the remote-tracking ref and draft
+  PR head. The checkpoint-transport commit and its exact-head CI remain.
+- Tommy explicitly authorized `/merge` on 2026-08-15. The published contract/package shape requires
+  the `full-e2e` merge-queue tier; queue admission is the next delivery action.
+- `origin/main` advanced by six documentation-only commits during CI. It merged cleanly at
+  `495fd7900`; the merged range is reviewed and the branch is current with base. The required local
+  solution build exceeded ten minutes without a compiler diagnostic, so exact-head CI remains the
+  authoritative build gate before queue admission.
+- Plan-managed work-head push succeeded for `fd2c51386..495fd7900`; local, remote-tracking, and draft
+  PR heads were all verified at `495fd7900`.
 - Dependency/package gates: Phase 1 remains an additive producer PR. After it merges, package publication and the generated platform-sync PR must be green before Phase 2 migrates consumers.
 - Last reconciled: 2026-08-15 against fetched `origin/main` at `520761dd4`; the branch is current with
   base after merge commit `beb0bd91d`.
@@ -21,8 +29,8 @@ Artist/Venue organisation-identity lookup design, so the PR was returned to draf
 merge. The repository-naming correction described below is committed and pushed on the current branch;
 exact-head CI and follow-up review still gate readiness.
 
-The replacement design is implemented. Exact-head CI passed on the pushed checkpoint; the focused
-follow-up review fixes are committed, reviewed, and green under the Conversations unit-test project.
+The replacement design is implemented. The focused follow-up review fixes are committed, reviewed,
+and green locally and under exact-head draft CI. PR #561 is clean and remains draft with auto-merge off.
 
 - `Tenant` is the canonical Domain/Application/Infrastructure/Contracts term. In the current model it
   is the business account, membership boundary, legal/VAT/Stripe identity, and settlement identity;
@@ -75,10 +83,14 @@ follow-up review fixes are committed, reviewed, and green under the Conversation
 
 ## Next Steps
 
-1. Transport this push checkpoint, verify local/remote/PR head equality, then require exact-head draft CI.
-2. Keep PR [#561](https://github.com/Concertable/concertable/pull/561) draft until those gates are green
-   and Tommy explicitly authorizes `/merge`; when asking for that permission, always include this
-   clickable PR link.
+1. Transport this verified-push checkpoint, verify local/remote/PR head equality, then require exact-head
+   PR CI to pass.
+2. Normalize [PR #561](https://github.com/Concertable/concertable/pull/561) to `full-e2e`, mark it ready,
+   and enqueue the verified remote head through the merge queue.
+3. Follow the merge-group checks to a terminal result. On green, close the source worktree, sync main,
+   then follow package publication and the generated platform-sync PR to green and merged.
+4. From a fresh close-out worktree, reconcile the terminal delivery evidence, delete this plan and
+   ledger together, tick the roadmap item, and land the docs-only close-out.
 
 ## Completed work
 
@@ -130,6 +142,11 @@ follow-up review fixes are committed, reviewed, and green under the Conversation
 - Exact-head draft CI run `31881386510` on `3044fb74c` - passed: local platform pack, full solution
   build, service carves, selected unit and integration matrices, and `ci-complete` all green.
 - Current focused Conversations unit tests after the review fixes - 11 passed, 0 failed, 0 skipped.
+- Exact-head draft CI run `31883621520` on `fd2c51386` - passed: local platform pack, full solution
+  build, service carves, selected unit and integration matrices, and `ci-complete` all green.
+- Post-current-main local `dotnet build api/Concertable.slnx --configuration Release
+  --disable-build-servers --maxcpucount:1` - stopped after exceeding ten minutes with no compiler
+  diagnostic; exact-head PR CI is required before queue admission.
 
 ## Reviews
 

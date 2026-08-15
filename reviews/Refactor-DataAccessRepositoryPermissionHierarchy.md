@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `5c6ab849f477df411db357ee6e050eba7b41fdfb`  _(2026-08-15)_
-**Security-reviewed up to commit:** `5c6ab849f477df411db357ee6e050eba7b41fdfb`  _(2026-08-15)_
+**Reviewed up to commit:** `495fd7900e6d680e1064b641d723412e95e99736`  _(2026-08-15)_
+**Security-reviewed up to commit:** `495fd7900e6d680e1064b641d723412e95e99736`  _(2026-08-15)_
 
 > Range reviewed: `429581025..94d7664ad` (2 commits).
 > Status legend: `[ ]` todo - `[~]` in progress - `[x]` done - `[wontfix]` (note why).
@@ -54,3 +54,15 @@ Security review found no issues. The additive Venue contract property preserves 
 > Range reviewed: `beb0bd91d..5c6ab849f` (1 commit).
 
 No issues found. The explicit handler constructors comply with the repository convention, and the focused tests now verify projected notification and inbox senders plus the missing-profile fallback. No security-sensitive behavior changed.
+
+## Incremental review - 2026-08-15 (delivery checkpoint)
+
+> Range reviewed: `5c6ab849f..fd2c51386` (2 commits).
+
+No issues found. The range contains only the review record and plan-managed push checkpoint; no runtime or security-sensitive behavior changed.
+
+## Incremental review - 2026-08-15 (current-main merge)
+
+> Range reviewed: `fd2c51386..495fd7900` (7 commits).
+
+No issues found. The range merges current `origin/main`; its incoming changes are limited to frontend documentation, agent guidance, and their documentation-reachability guard.
