@@ -15,6 +15,8 @@ Planning is complete in this worktree and no production code has been changed. T
 been copied unchanged into the worktree, and the implementation plan records the complete current
 entry-point inventory, provider-product matrix, operation/attempt model, normalized transition
 vocabulary, additive package boundary, external ownership, phased verification, and delivery DAG.
+The reviewed work head `0986af4a2b99203a2671cac51d41715d230cdf90` is verified on
+`origin/Feature/payments_provider-contract-baseline`.
 
 The implementation work is ready to begin with Phase 1. PR #552 must not be duplicated; its exact head
 was `002c45f5fdb83362fff419448dd1c1a8832fd2a3` at reconciliation, including its additive
@@ -23,7 +25,7 @@ was `002c45f5fdb83362fff419448dd1c1a8832fd2a3` at reconciliation, including its 
 
 ## Next Steps
 
-1. Push the reviewed meta-only branch and open its GitHub PR.
+1. Open the reviewed meta-only GitHub PR from the verified remote head.
 2. Apply the `skip-e2e` label and admin-merge the PR through the sanctioned docs path.
 3. Confirm the PR is merged, close this plan-managed worktree, and create a fresh implementation
    worktree from current `origin/main`.
@@ -45,6 +47,8 @@ was `002c45f5fdb83362fff419448dd1c1a8832fd2a3` at reconciliation, including its 
   byte-for-byte (`e9898bda8f431d50e14ee1aed74266d043664caa`).
 - Normalized docs-reachability diagnostic paths to repository-style forward slashes so its hook tests
   are portable on Windows.
+- Pushed reviewed work head `0986af4a2b99203a2671cac51d41715d230cdf90` and verified the
+  remote-tracking ref matches.
 
 ## Verification
 
@@ -61,6 +65,9 @@ was `002c45f5fdb83362fff419448dd1c1a8832fd2a3` at reconciliation, including its 
   0 errors, 0 warnings.
 - `git diff --check`: passed for the tracked validator changes; the new plan and ledger also passed
   no-index whitespace checks. The unchanged source roadmap retains its existing final blank line.
+- Push verification: local work head and
+  `origin/Feature/payments_provider-contract-baseline` both resolved to
+  `0986af4a2b99203a2671cac51d41715d230cdf90`.
 
 ## Reviews
 
