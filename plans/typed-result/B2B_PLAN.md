@@ -12,7 +12,7 @@ framework contracts, and non-DI domain/entity validation is outside this validat
 One migration branch (`Refactor/B2BTypedResultMigration`), delivered in checkpoints. Repository single-item lookups
 stay nullable (a persistence concern); modules and application services convert absence with the
 published functional surface and expose typed Results; controllers only map successful payloads and
-terminate typed Results. The published Reunion alpha.2 baseline owns the carrier/package surface;
+terminate typed Results. The published Reunion alpha.8 baseline owns the carrier/package surface;
 this service branch owns only B2B semantics and consumes that baseline.
 
 ## Checkpoints
@@ -136,8 +136,8 @@ committed local source, feed path, or disposable package pin may be introduced.
 
 ## Dependency gate
 
-The dependency gate is open. `Reunion`, `Reunion.Validation`, and `Reunion.Errors`
-`0.1.0-alpha.2` are published, indexed, repository-signature and payload-provenance verified, and
+The dependency gate is open. The complete Reunion package family `0.1.0-alpha.8` is published,
+indexed, repository-signature and payload-provenance verified, and
 clean-restored from NuGet.org with their published dependency graph. Checkpoint 8 uses only normal
 configured feeds and published versions; temporary package inputs remain forbidden. Shared contraction
 is downstream cleanup and does not block this branch's local alpha.2 implementation or verification.

@@ -5,7 +5,7 @@
 - Roadmap item: `typed-result/b2b`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-B2BTypedResultMigration`
 - Branch: `Refactor/B2BTypedResultMigration`
-- PR: #552 (ready; exact-head CI required after the emulator-topology correction)
+- PR: #552 (ready; exact-head CI and incremental review required after the Reunion alpha.8 cut-over)
 - Checkpoints 8-9 commit: `bfc8690b196821bdd735ea5d229182fd9a3baf36`
 - Current-main merge commit: `ab3df9401028d086ce3c885f84cd27e6317ad6e2`, through
   `origin/main` `470390ca2`; platform remains `0.1.0-alpha.0.997`.
@@ -69,6 +69,12 @@
 - Reunion `0.1.0-alpha.7` is published. Concertable PR #569 merged as `7fb3baeaf920baa11dfe540db8c408aa316825b0`,
   its package publication is green, and platform-sync PR #575 merged platform `0.1.0-alpha.0.995` as
   `dee412ba8ff824a46ce16783d2f7d1fc161f2774`. Tommy authorized landing PR #552 on 2026-08-15.
+- Reunion PR #18 merged as `d3dadccbfc588c3351460e28fdbf39b6a7abda45`; Reunion,
+  Reunion.AspNetCore, Reunion.Errors, and Reunion.Validation `0.1.0-alpha.8` are published with
+  `net10.0` and `net11.0` assets. Consumer work commit `97b096d673f57c347fee29b2725e6c8c63a37273`
+  moved B2B and Customer to alpha.8 and replaced every B2B/Customer `MapError(...).Bind*` chain with
+  mapped `Bind`/`BindAsync`. Local, remote branch, and PR #552 head matched that work commit before
+  this checkpoint transport.
 - Merge-group run `31876662971` passed 50 jobs but failed B2B API E2E: both cancellation-refund tests
   and both flat-fee/venue-hire draft-payment tests timed out waiting for Payment-owned escrow state.
   Diagnostics proved B2B sent the commands to `command-concertable-b2b-*` while the Payment topology
@@ -142,8 +148,9 @@ The module-facade follow-up preserves the existing typed contracts and runtime b
 services own the moved query implementations and forward `Option`/boolean results directly across the
 facade. Artist and Venue keep their existing `Option<int>` dashboard identity flow and explicit
 `TryGetValue` branching; only the operation name now states that the identity belongs to the current
-tenant. B2B and Customer consume the published Reunion `0.1.0-alpha.7` family after restoring their
-service-local package graphs; no Reunion extension was copied or recreated locally.
+tenant. B2B and Customer consume the published Reunion `0.1.0-alpha.8` family after restoring their
+service-local package graphs; mapped error composition uses Reunion directly and no extension was
+copied or recreated locally.
 
 The failed merge-group exposed a cross-service command-routing defect in the Messaging producer API,
 not a typed-terminal regression. The additive `SendsTo<TCommand>(destinationServiceName)` registers one
@@ -163,9 +170,10 @@ subscriber semantics remain unchanged.
 
 ## Next Steps
 
-Require exact-head PR CI to pass, then re-enqueue PR #552 with `full-e2e` and own the new merge-group
-result without retrying either failed run. After merge, own package publication and platform sync
-through terminal green, then update the registered downstream ledgers and dispatch their open work.
+Complete the incremental review of consumer work commit `97b096d67`, require exact-head PR CI to
+pass, then re-enqueue PR #552 with `full-e2e` and own the new merge-group result without retrying any
+failed run. After merge, own package publication and platform sync through terminal green, then
+update the registered downstream ledgers and dispatch their open work.
 
 ## Completed work
 
@@ -203,6 +211,15 @@ through terminal green, then update the registered downstream ledgers and dispat
   temporary feed and version inputs were restored before commit.
 
 ## Verification
+
+- Reunion alpha.8 consumer builds passed with 0 errors for the affected B2B Artist, Venue, Deal,
+  Tenant, and Concert projects plus Customer Ticket and Review. Focused B2B units passed Artist
+  16/16, Venue 17/17, Deal 53/53, Tenant 128/128, and Concert 211/211. The final mapped-bind grep and
+  `git diff --check` are clean.
+- The broad local service-carve attempts remain blocked by this branch's existing platform-package
+  transition: package mode lacks the branch-local Messaging/Payment additions, while local-core mode
+  resolves `Concertable.Contracts` 1.0.0 against the 0.997 service pin. Exact-head PR CI owns the
+  complete solution/carve matrix as before; the directly affected normal-feed module closures are green.
 
 - Full `api/Concertable.slnx` Release build against the exact local package closure: passed, 0 errors
   and two existing generated B2B UI nullable-context warnings.
