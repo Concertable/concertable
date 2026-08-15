@@ -6,8 +6,8 @@
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable/.worktrees/Plan-data-access-repository-permission-hierarchy`
 - Branch: `Refactor/DataAccessRepositoryPermissionHierarchy`
 - PR: [#561](https://github.com/Concertable/concertable/pull/561) (draft)
-- Remote and PR head: `d8c36cf058d27726a2038b78e8bb803bfaebccb1`; exact-head draft CI run
-  `31868276444` is green. The verified repository-naming correction is uncommitted in this worktree.
+- Remote and PR head: `391bd2517468a7e4e87a3938cb4880dab82f27cf`; the repository-naming
+  correction is pushed and exact-head draft CI is pending.
 - Dependency/package gates: Phase 1 remains an additive producer PR. After it merges, package publication and the generated platform-sync PR must be green before Phase 2 migrates consumers.
 - Last reconciled: 2026-08-15 against fetched `origin/main` at `dee412ba8`; the correction is
   committed and the branch is current with base after merge commit `906c3da13`.
@@ -17,8 +17,8 @@
 Phase 1's additive shared context capabilities, independent read context, context-free repository bases,
 and compatibility surface are implemented on draft PR #561. A later review invalidated the original
 Artist/Venue organisation-identity lookup design, so the PR was returned to draft and corrected before
-merge. The corrected pushed head is current with `origin/main` and exact-head CI is green; the local
-repository-naming correction described below still requires a new checkpoint and exact-head CI.
+merge. The repository-naming correction described below is committed and pushed on the current branch;
+exact-head CI and follow-up review still gate readiness.
 
 The replacement design is implemented on the pushed branch:
 
@@ -57,18 +57,17 @@ The replacement design is implemented on the pushed branch:
   context stance. Their interfaces, implementations, files, DI registrations, and service fields are now named
   `ArtistReadRepository`, `VenueReadRepository`, `ConcertReadRepository`, and
   `OpportunityReadRepository`; marketplace audience remains at the API contract rather than in
-  persistence type names.
+  persistence type names. The correction is committed and pushed at `391bd2517`.
 - The earlier projection and naming correction is committed at `28de99489`. The then-current
   `origin/main` merged cleanly at `9ba02a024`, and the post-merge branch-local platform build and
   focused Conversations tests were green.
 
 ## Next Steps
 
-1. Commit the verified `XReadRepository` naming correction with this plan/ledger checkpoint.
-2. Push the coherent work head to draft PR [#561](https://github.com/Concertable/concertable/pull/561),
-   verify local/remote/PR head equality, then publish the push checkpoint and require exact-head draft CI.
-3. Keep PR [#561](https://github.com/Concertable/concertable/pull/561) draft until Tommy explicitly
-   authorizes `/merge`; when asking for that permission, always include this clickable PR link.
+1. Require exact-head draft CI for `391bd2517` and follow-up review of the repository-naming correction.
+2. Keep PR [#561](https://github.com/Concertable/concertable/pull/561) draft until both gates are green
+   and Tommy explicitly authorizes `/merge`; when asking for that permission, always include this
+   clickable PR link.
 
 ## Completed work
 
