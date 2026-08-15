@@ -108,7 +108,28 @@ proved it instead). E2E has not run at any tier yet; the merge queue owns it.
 
 ## Reviews
 
-None yet.
+`/review high` then `/incremental-review`, both recorded in
+[`reviews/Feature-launch_osa-report-content.md`](../../reviews/Feature-launch_osa-report-content.md).
+**0 open findings**; markers stamped at the reviewed head.
+
+- **First pass** — Layer 1 (native `code-reviewer`) returned 8 findings; 5 cleared the bar and were
+  fixed, 3 dropped with recorded reasons. The serious ones: a missing reporter email threw
+  `UnauthorizedAccessException`, which maps to 401 and made the SPA sign the reporter out *after* their
+  report had committed; and `Restore()` erased `HiddenAt`/`HiddenByUserId`, leaving no evidence a hide
+  had ever happened once an appeal succeeded — the exact record hide-never-delete exists to keep.
+  Layer 2 added 4 more: a missing `ModerationError` definition-contract test (mandatory per
+  `RESULT_PATTERN.md`), untested not-found branches, an unpaginated cross-tenant triage queue, and
+  surrogate-unsafe excerpt truncation.
+- **Security layer** — the diff touches Controllers and Authorization, so it ran. No HIGH or MEDIUM
+  findings; IDOR, moderation privilege escalation, admin-context reachability, email header injection,
+  injection/deserialization and enumeration were each traced and cleared.
+- **Incremental pass** — caught `maxLength` making the zod parse's error path dead code and silently
+  truncating long pastes. Layer 1 could not run on that pass (subagent session limit), so its
+  correctness review was inline and self-reviewed; re-run afterwards.
+- Convention misses found and fixed across both passes, each also closing the gap that allowed them:
+  hand-rolled validation instead of FluentValidation, a re-declared base-repository method, hand-built
+  `Pagination` instead of the extension, `null` where the frontend conventions require `undefined`, and
+  a form submitting its raw buffer with no zod parse.
 
 ## Decisions, discoveries, blockers, and deviations
 
