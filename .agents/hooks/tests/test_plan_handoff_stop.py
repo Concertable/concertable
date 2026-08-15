@@ -246,8 +246,8 @@ class PlanHandoffStopTests(unittest.TestCase):
         self.assertIn(self.pointer(), self.assertAdvisory(result))
 
     def test_paused_plan_is_silent(self):
-        self.write_ledger("Paused: awaiting Tommy — say `merge 582` to release the merge.")
-        result = evaluate(self.input_with_codex_transcript("PR is green; waiting on you."))
+        self.write_ledger("Paused: awaiting Tommy's go-ahead on the launch copy before publishing.")
+        result = evaluate(self.input_with_codex_transcript("Copy is ready; waiting on you."))
         self.assertEqual({}, result)
 
     def test_terminal_plan_is_silent(self):
