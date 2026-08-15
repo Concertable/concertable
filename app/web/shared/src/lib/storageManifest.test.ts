@@ -9,6 +9,12 @@ const APP_WEB_DIR = path.resolve(
   "../../..",
 );
 
+// The single sanctioned first-party write location: raw storage writes here are
+// createClassifiedStorage itself. Every other first-party write must route through the
+// accessor or be a declared library/substrate write site — so a new raw write elsewhere
+// fails the guard until it is classified, rather than being detected only after the fact.
+const ACCESSOR_MODULE = "shared/src/lib/classifiedStorage.ts";
+
 const SKIP_DIRS = new Set([
   "node_modules",
   "dist",
@@ -91,19 +97,34 @@ function multisetDiff(a: string[], b: string[]): string[] {
 }
 
 describe("storage manifest drift guard", () => {
-  it("every first-party manifest write site actually writes storage", () => {
-    const stale = multisetDiff(declaredWrites(), scannedWrites());
+  const scanned = scannedWrites();
+  const accessorWrites = scanned.filter((token) =>
+    token.startsWith(`${ACCESSOR_MODULE}|`),
+  );
+  const directWrites = scanned.filter(
+    (token) => !token.startsWith(`${ACCESSOR_MODULE}|`),
+  );
+
+  it("routes first-party storage through the classified accessor", () => {
     expect(
-      stale,
-      `Manifest declares write sites that no longer write storage — remove or fix them in storageManifest.ts:\n${stale.join("\n")}`,
+      accessorWrites.length,
+      `${ACCESSOR_MODULE} performs no storage write — the classified accessor must be the first-party write path.`,
+    ).toBeGreaterThan(0);
+  });
+
+  it("every direct storage write is a declared library/substrate site", () => {
+    const undeclared = multisetDiff(directWrites, declaredWrites());
+    expect(
+      undeclared,
+      `Unclassified direct storage write(s). Route first-party writes through createClassifiedStorage, or — for a library/substrate write the accessor cannot mediate — add it to STORAGE_MANIFEST in app/web/shared/src/lib/storageManifest.ts with its owner/purpose/duration/classification and a writeSites entry (file|api):\n${undeclared.join("\n")}`,
     ).toEqual([]);
   });
 
-  it("every storage write in app/web is classified in the manifest", () => {
-    const undeclared = multisetDiff(scannedWrites(), declaredWrites());
+  it("every declared write site still writes storage", () => {
+    const stale = multisetDiff(declaredWrites(), directWrites);
     expect(
-      undeclared,
-      `Unclassified storage write(s) found. Add each to STORAGE_MANIFEST in app/web/shared/src/lib/storageManifest.ts with its owner/purpose/duration/classification (file|api):\n${undeclared.join("\n")}`,
+      stale,
+      `Manifest declares write sites that no longer write storage — remove or fix them in storageManifest.ts:\n${stale.join("\n")}`,
     ).toEqual([]);
   });
 

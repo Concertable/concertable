@@ -30,9 +30,12 @@ export interface StorageItem {
   /** SPAs that store it: customer | venue | artist | business. */
   apps: readonly string[];
   /**
-   * First-party write locations, relative to `app/web`, one entry per write
-   * occurrence. The drift-guard test asserts the code's actual storage writes
-   * match exactly these — a new write fails until it is classified here.
+   * Direct first-party write locations, relative to `app/web`, one entry per write
+   * occurrence. Omitted for items written through `createClassifiedStorage` (the accessor
+   * is their sole, sanctioned write site); present only for the consent substrate and
+   * library-driven writes (zustand `persist`) the accessor cannot mediate. The drift-guard
+   * test asserts these match the code's actual direct writes — a new direct write fails
+   * until it either routes through the accessor or is classified here.
    */
   writeSites?: readonly string[];
   notes?: string;
@@ -59,7 +62,6 @@ export const STORAGE_MANIFEST: readonly StorageItem[] = [
     duration: "Persistent until cleared",
     classification: "functional",
     apps: ["customer", "venue", "artist"],
-    writeSites: ["shared/src/providers/ThemeProvider.tsx"],
   },
   {
     key: "concertable.active-tenant",
