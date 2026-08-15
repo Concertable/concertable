@@ -7,10 +7,10 @@
 - Branch: `Refactor/B2BTypedResultMigration`
 - PR: #552 (ready; auto-merge disabled)
 - Checkpoints 8-9 commit: `bfc8690b196821bdd735ea5d229182fd9a3baf36`
-- Current code/package-main merge commit: `0f331b6a37cd7ffa4a746ce5e2dd96cf636109aa`, through
-  platform-sync PR #566 merge `60cfaa3f1`.
+- Current code/package-main merge commit: `6c1e84101`, through platform-sync PR #575 merge
+  `dee412ba8ff824a46ce16783d2f7d1fc161f2774`.
 - Review/fix commit: `eb84634699fa643a072342cd196b9767a6694619`
-- Review watermark: `85e84c7dcc9c6e81c0f34e627254b43cec6e9553`; incremental review and
+- Review watermark: `a6762b0368bd930bfc564876cfc1f5cb8ce7e5e3`; incremental review and
   security review are clean.
 - Checkpoint 10B consumer commits: `c55c99718` and `544144527`
 - Implicit-conversion correction push: starting remote head `804d9b4e8`; pushed
@@ -121,11 +121,10 @@ service-local package graphs; no Reunion extension was copied or recreated local
 
 ## Next Steps
 
-Commit the current-main/alpha.7 consistency checkpoint, run incremental review, and address every open
-finding. Push the reviewed checkpoint, require local/remote/PR head equality and exact-head build,
-carve, unit, integration, architecture, formatting, and HTTP-contract CI. Enqueue PR #552 with the
-merge workflow's E2E tier and own publication/platform sync through terminal green. At that gate,
-update the registered downstream ledgers and dispatch their open work.
+Commit and push the clean incremental-review checkpoint, require local/remote/PR head equality and
+exact-head build, carve, unit, integration, architecture, formatting, and HTTP-contract CI. Enqueue
+PR #552 with the merge workflow's E2E tier and own publication/platform sync through terminal green.
+At that gate, update the registered downstream ledgers and dispatch their open work.
 
 ## Completed work
 
