@@ -12,8 +12,8 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
 
 ## Next Steps
 
-Push the current-main producer head and require exact-head CI to pass on additive package producer PR #578. Then
-mark it ready, apply the `full-e2e` label, merge it through the queue, and follow `publish-fe-packages` to green. Verify the published
+Require exact-head CI to pass on additive package producer PR #578. Then mark it ready, apply the `full-e2e` label,
+merge it through the queue, and follow `publish-fe-packages` to green. Verify the published
 `@concertable/b2b` version exports `features/conversations` with `MessagePreview` and exports `actionLinkApi` from
 `features/concerts`. Once published, sync dependent dashboard PR #563 with current main, apply the prepared consumer
 imports and `undefined` corrections, and rerun its exact-head standalone carves.
@@ -35,7 +35,10 @@ imports and `undefined` corrections, and rerun its exact-head standalone carves.
   [31881049352](https://github.com/Concertable/concertable/actions/runs/31881049352) passed on attempt 2 after the first
   attempt's B2B User integration fixture hit a transient SQL image registry connection reset. Current `origin/main`
   merged cleanly in `9f3d47417`; the full solution restore and build then succeeded with 0 errors. Incremental review
-  through `9f3d47417` found no new issues; the reviewed frontend source diff is unchanged.
+  through `9f3d47417` found no new issues; the reviewed frontend source diff is unchanged. Current-main work head
+  `9f24030b6bf0614b0cfc0e15eb47fd7904dea01c` was pushed from starting remote/PR head
+  `330c76c2ecfb0cecdd5bbbcb398c3284da5d6340`; fetch verification proved local, remote-tracking, and PR heads all
+  equal the work head.
 
 - Producer implementation commit `0d37bfa7a` remains the published implementation baseline on draft PR
   [#557](https://github.com/Concertable/concertable/pull/557). Full review through `bc56de2d8` found BUG1: settlement
