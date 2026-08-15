@@ -12,10 +12,8 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
 
 ## Next Steps
 
-Verify the published `@concertable/b2b@0.1.0-alpha.0.3689` package contains the Conversations `MessagePreview`
-declaration and Concerts `actionLinkApi` export. Then run the consumer's focused package/build gates, push the current
-work head using the compound plan protocol, and let exact-head PR #563 CI pass. Finish with the authenticated Phase
-A.8 seeded venue/artist UX review and branch review before requesting merge.
+Push this ledger transport and verify exact local/tracking/PR head equality. Let exact-head PR #563 CI pass, then
+perform the authenticated Phase A.8 seeded venue/artist UX review and branch review before requesting merge.
 
 ## Reviews
 
@@ -35,7 +33,12 @@ A.8 seeded venue/artist UX review and branch review before requesting merge.
   represents absent avatar, detail, banner, and review values as optional frontend properties. Backend response DTOs
   omit absent values from JSON, with focused serialization tests proving the wire contract. Before the current-main
   merge, B2B package tests passed 16/16; affected backend suites passed Conversations 9/9, Tenant 99/99, Concert
-  134/134, Artist 8/8, and Venue 9/9; B2B Web built with 0 errors.
+  134/134, Artist 8/8, and Venue 9/9; B2B Web built with 0 errors. The published tarball was then inspected directly:
+  its export map contains `./features/conversations`, `MessagePreview.otherPartyAvatarUrl` is optional, and the
+  Concerts barrel exports `actionLinkApi`. Current `origin/main` merged in `78bf8260a`; both venue and artist
+  feed-only standalone carves passed, B2B package tests/build passed 16/16, boundary test and lint passed, and B2B Web
+  built with 0 warnings/errors. Work head `78bf8260a20df9ff9254bf6e4e3085ba426ad540` was pushed and fetch verification
+  proved it equal across local, remote-tracking, and PR heads.
 
 - **B2B consumer checkpoint 3 — committed locally.** Recent venue/artist review endpoints, a tenant-owned persisted
   activity feed, and every remaining dashboard API integration are implemented in work commit `e4054a7e6`. Activity
