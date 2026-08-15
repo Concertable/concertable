@@ -54,6 +54,8 @@ Implement Phase 1 — durable decision artifact and exhaustive inventory:
 - Extended the plan-graph validator and its focused test to recognize a roadmap status-table row as
   the same stable checklist marker as a CommonMark task-list row, preserving the supplied roadmap
   byte-for-byte (`e9898bda8f431d50e14ee1aed74266d043664caa`).
+- Normalized docs-reachability diagnostic paths to repository-style forward slashes so its hook tests
+  are portable on Windows.
 
 ## Verification
 
@@ -65,9 +67,7 @@ Implement Phase 1 — durable decision artifact and exhaustive inventory:
   PR #581 merged at `c75890243c44435d707eacf7e51377e4631bcf22`; PR #552 was open,
   mergeable, and externally owned at the exact head recorded above; no open platform-sync PR was found.
 - `python .agents/hooks/tests/test_plan_graph.py`: 19 tests passed.
-- `python -m unittest discover -s .agents/hooks/tests -p 'test_*.py'`: 59 of 62 tests passed;
-  the three failures are unchanged Windows path-separator expectations in
-  `test_docs_reachability.py`, outside the changed validator.
+- `python -m unittest discover -s .agents/hooks/tests -p 'test_*.py'`: 62 tests passed.
 - `python .agents/hooks/plan_graph.py --root C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\payments_provider-contract-baseline`:
   0 errors, 0 warnings.
 - `git diff --check`: passed for the tracked validator changes; the new plan and ledger also passed
