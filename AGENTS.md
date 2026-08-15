@@ -255,10 +255,10 @@ The convention is **ROADMAP → PLAN → PROGRESS**, folder = roadmap/plan: an e
 - **Cross-plan blockers are two-way handoffs.** The blocked ledger names the owning ledger and exact
   gate; the owning ledger lists the blocked dependent. When the gate opens, the owner updates the
   dependent ledger and surfaces its resume prompt — the waiting plan does not poll or rely on memory.
-- **A blocked plan never emits its own resume prompt.** Its ledger and final report name the exact
-  blocker, its owner, the action that removes it, and the evidence that makes resumption valid.
-  Dispatch the resolver or give Tommy the external action; only surface the waiting plan after the
-  gate opens.
+- **A blocked or paused (human-gated) plan never emits its own resume prompt.** Its ledger and final
+  report name the exact blocker or human action, its owner, the step that removes it, and the evidence
+  that makes resumption valid. Dispatch the resolver or give Tommy the external action; only surface
+  the waiting plan after the gate opens.
 - **Keep the plan and its `_PROGRESS.md` companion until the entire lifecycle is terminal — not merely until the final local phase is committed and verified.** Every plan-managed PR includes their current state, so `main` is always the recovery anchor. Once that PR merges, remove its worktree with `./scripts/worktrees.ps1 close -Worktree <path> -PullRequest <n> -PlanManaged`. Continue from a fresh worktree based on current `origin/main`; use a `Docs/*_closeout` worktree for final remote-gate evidence and deletion of both artifacts.
 - A plan **superseded** by a newer plan, or describing a design that was **rejected**, is deleted the moment that's decided — don't leave a tombstone.
 - A **partially-done** plan stays, but strike/check off the sections that shipped (in the same commit as the work) so what remains is only the outstanding work.

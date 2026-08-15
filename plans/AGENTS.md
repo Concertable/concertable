@@ -85,20 +85,20 @@ blocked ledger in the dependency owner's `## Downstream handoffs`; that owner up
 ledger and surfaces its resume prompt when the gate opens. Full mechanics:
 [`agents/PLAN.md`](agents/PLAN.md) "Cross-plan blockers."
 
-## An actionable non-terminal plan handoff must end with its exact continuation pointer
+## Hand off an actionable non-terminal plan with its continuation pointer
 
 If a `_PROGRESS.md` ledger with actionable non-terminal `## Next Steps` is owned by the current or
-explicitly targeted worktree, the final response must end with the exact two-line plan pointer from
+explicitly targeted worktree, hand off by ending with the two-line plan pointer from
 [`../PROMPTS.md`](../PROMPTS.md). Reading or editing a foreign owner ledger during dependency or
 roadmap reconciliation does not claim that owner's handoff. Local
 implementation completion is not lifecycle completion while review, PR, merge, publication,
 dependency, or platform-sync work remains. A summary, a prose “next steps” sentence, or an offer to
-continue does not satisfy this gate. The exception is a registered in-flight owner wait under the
-cross-plan blocker rule above or any hard stop recorded with the exact `Blocked:`, `Blocked by:`,
-`Unblock action:`, and `Resume when:` fields from [`agents/PLAN.md`](agents/PLAN.md). A blocked plan's
-own pointer is forbidden: report those four lines verbatim and route the resolver instead. Trusted repository Stop hooks
-enforce the invariant for Claude and Codex; follow the hook's actionable-versus-blocked instruction
-rather than weakening or bypassing it.
+continue is not the handoff. The exceptions are a registered in-flight owner wait under the
+cross-plan blocker rule above, a hard stop recorded with the `Blocked:`, `Blocked by:`,
+`Unblock action:`, and `Resume when:` fields from [`agents/PLAN.md`](agents/PLAN.md), or a human-gated
+`Paused:` line — none emit the pointer. The Stop hook surfaces this as a non-blocking reminder for
+Claude and Codex; it no longer rejects a response, so keep the handoff honest yourself rather than
+relying on the gate.
 
 Run `python .agents/hooks/plan_graph.py --root <absolute-worktree>` after creating or changing plan
 graph metadata. Missing or broken links, malformed blockers, missing reciprocal owner handoffs, and

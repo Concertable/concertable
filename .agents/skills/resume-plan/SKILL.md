@@ -50,8 +50,9 @@ PR-scoped worktrees; a plan may have several independent workstream ledgers.
      prompt; the owner surfaces this plan when the gate opens.
    - **Separate resolver needed:** emit a paste-ready prompt for that resolving task, naming the
      blocked ledger and return condition. Never emit the blocked plan's own resume pointer.
-   - **User or external action needed:** tell the user the exact action and objective verification
-     condition directly. Never emit the blocked plan's own resume pointer.
+   - **User or external action needed:** when only a human decision remains, mark `## Next Steps` with a
+     single `Paused: <who> — <action>` line (lighter than the four-line schema), tell the user the exact
+     action and objective verification condition directly, and never emit the plan's own resume pointer.
 
    A blocked plan's ordinary pointer is actively misleading: replaying it can only repeat the same
    audit. It becomes valid again only after evidence opens the gate and the ledger is reconciled to an
