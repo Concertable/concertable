@@ -12,14 +12,14 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
 
 ## Next Steps
 
-Consume the published Conversations `messageApi` in both SPAs, remove message previews from both dashboard APIs,
-complete the incremental review, and commit and push the corrected consumer head. Let exact-head PR #563 CI pass
-before the authenticated Phase A.8 seeded venue/artist UX review and merge request.
+Commit the verified Conversations ownership cut-over, rerun the venue and artist feed-only carves sequentially from
+that commit, and complete the incremental review. Then push the corrected consumer head and let exact-head PR #563
+CI pass before the authenticated Phase A.8 seeded venue/artist UX review and merge request.
 
 ## Reviews
 
 - Producer full and incremental review is recorded in `reviews/Feature-launch_dashboard-frontend-package-expand.md`;
-  its only finding is closed. The consumer branch review remains after exact-head CI and authenticated UX review.
+  its only finding is closed. Consumer finding ARCH1 is now closed; the post-cut-over incremental review remains.
 
 ## Current implementation
 
@@ -31,13 +31,21 @@ before the authenticated Phase A.8 seeded venue/artist UX review and merge reque
   [`31911164238`](https://github.com/Concertable/concertable/actions/runs/31911164238) then packed, published, and
   verified all frontend tiers from the feed successfully.
 
+- **Conversations ownership cut-over — implemented and locally verified.** Venue and artist inbox hooks now consume
+  `messageApi.getPreviews()` from `@concertable/b2b/features/conversations`; both dashboard API objects have deleted
+  their duplicate message methods. `@concertable/b2b@0.1.0-alpha.0.3721` resolves from the feed and its manifest
+  contains the Conversations API runtime and declaration files. B2B package tests pass 17/17, frontend boundaries
+  pass, and both venue and artist TypeScript plus production Vite builds pass. The artist feed-only standalone carve
+  also restored and built successfully before Windows failed only while cleaning its temporary npm cache; both
+  carves will be rerun sequentially from the committed head to avoid concurrent `git stash create` locking.
+
 - **Consumer review corrections — verified locally.** Optional application-action UI state uses `undefined`, and
   action/navigation/cache/toast orchestration has moved from the widgets into role-specific hooks. Dashboard shared
   types moved from the needless `deals/common.ts` nesting to `dashboard/types.ts`. Current application queries now
   use the locked `Opportunity.Period.End > now` relevance rule, with a focused real HTTP/SQL integration test green;
   serializer tests prove absent venue avatars are omitted; the inbox preview test asserts the actual latest seeded
-  message; and both affected TypeScript projects compile. The branch review work order records these closed findings
-  and keeps only the Conversations package ownership cut-over open.
+  message; and both affected TypeScript projects compile. The branch review work order records all findings closed;
+  the post-cut-over incremental review remains.
 
 - **Frontend package gate — DELIVERED.** Producer PR [#578](https://github.com/Concertable/concertable/pull/578)
   passed exact-head CI and two full-E2E merge groups after `main` advanced, then merged as

@@ -26,6 +26,6 @@
   the latest counterparty message, matching the repository's contract and the seed timestamps.
 - [x] **CV1 — New infrastructure services captured dependencies through primary constructors.** The two stateful
   services now use the repository's explicit private-field constructor convention.
-- [~] **ARCH1 — Message previews are exposed from persona dashboard APIs instead of Conversations.** Producer PR
-  #591 publishes `messageApi` from `@concertable/b2b/features/conversations`; after publication the consumer must
-  import that API and delete both dashboard-owned message methods.
+- [x] **ARCH1 — Message previews are exposed from persona dashboard APIs instead of Conversations.** Both personas
+  now consume the published `messageApi` from `@concertable/b2b/features/conversations`; the dashboard-owned message
+  methods are deleted.
