@@ -191,8 +191,10 @@ checkpoint only when evidence or routing changed.
    partially-done plan stays; only the outstanding work should remain un-ticked, so the next reader
    sees exactly what's left.
 4. **Keep both artifacts after the last local phase while delivery is live.** Check off the phase and
-   make the ledger's exact next action the review, fix, PR, merge, publication, dependency, or
-   platform-sync gate that now owns progress. Merge that state in every plan-managed PR. Once the PR
+   make the ledger's exact next action the gate that now owns progress — `/review` comes first: never
+   write a merge as the next step until a review is recorded (a `## Reviews` entry or a review
+   watermark); then PR, merge, publication, dependency, or platform-sync follow. `plan_graph` enforces
+   this. Merge that state in every plan-managed PR. Once the PR
    merges, remove its worktree with `scripts/worktrees.ps1 close -PlanManaged`. If work remains, create
    a fresh worktree from current `origin/main` and resume the same ledger.
 5. **Close out only after the entire lifecycle is terminal.** Record the final gate's outcome and
