@@ -6,8 +6,8 @@
 > in one line, take the safe path, keep going.
 
 **Plan anchored to commit:** `e229afb581c829279ca821b0a85729c4c4f0f441`  _(2026-08-10)_
-**Reviewed up to commit:** `a6762b0368bd930bfc564876cfc1f5cb8ce7e5e3`  _(2026-08-15)_
-**Security-reviewed up to commit:** `a6762b0368bd930bfc564876cfc1f5cb8ce7e5e3`  _(2026-08-15)_
+**Reviewed up to commit:** `1963db53a50bed449b5a7662525e86019b2bd7af`  _(2026-08-15)_
+**Security-reviewed up to commit:** `1963db53a50bed449b5a7662525e86019b2bd7af`  _(2026-08-15)_
 Net diff reviewed: `1043a9178..e229afb58`. Move-only files skipped.
 Status legend: `[ ]` not yet reviewed · `[x]` reviewed (date) · `[~]` in progress (incomplete — re-review).
 
@@ -175,9 +175,23 @@ transport checkpoint; no runtime, package, contract, configuration, or test code
 
 > Range reviewed: `f1468d83626f2e32e73bb4b76e19629ea20fa13c..a6762b0368bd930bfc564876cfc1f5cb8ce7e5e3`.
 
-No new findings. Reviewed current-main reconciliation, the shared integration-harness merge conflict,
-Reunion alpha.7 package ownership, projected OK/Created terminals, MVC file-result inference,
-Customer Ticket overload disambiguation, authorization preservation, HTTP contract coverage,
-microservice isolation, module boundaries, seeding, C# conventions, and plan accuracy. The
-repository-wide controller inventory has no projection immediately before a terminal; the five B2B
-custom `ToActionResult` sites are the required file, bodyless Created, and polymorphic success paths.
+Reviewed current-main reconciliation, the shared integration-harness merge conflict, Reunion alpha.7
+package ownership, projected OK/Created terminals, MVC file-result inference, Customer Ticket overload
+disambiguation, authorization preservation, HTTP contract coverage, microservice isolation, module
+boundaries, seeding, C# conventions, and plan accuracy. The repository-wide controller inventory has
+no projection immediately before a terminal; the five B2B custom `ToActionResult` sites are the
+required file, bodyless Created, and polymorphic success paths.
+
+- [x] **NAT7 - MEDIUM - native/test correctness** -
+  `api/Concertable.Customer/src/Modules/Review/Tests/Concertable.Customer.Review.IntegrationTests/ReviewApiTests.cs:260`
+  The current-main merge retained both the new absolute CreatedAtAction Location assertion and the
+  branch's obsolete relative-Location assertion. Exact-head CI run `31873558361` failed the stale
+  assertion. Resolved in `1963db53a50bed449b5a7662525e86019b2bd7af` by deleting only the
+  contradictory legacy assertion; the absolute Location contract remains pinned.
+
+## Incremental review - 2026-08-15
+
+> Range reviewed: `a6762b0368bd930bfc564876cfc1f5cb8ce7e5e3..1963db53a50bed449b5a7662525e86019b2bd7af`.
+
+No additional findings. The range contains the clean review checkpoint and the focused NAT7 test fix;
+production runtime, authorization, package, and wire behavior are unchanged.

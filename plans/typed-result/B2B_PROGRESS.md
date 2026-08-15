@@ -10,7 +10,7 @@
 - Current code/package-main merge commit: `6c1e84101`, through platform-sync PR #575 merge
   `dee412ba8ff824a46ce16783d2f7d1fc161f2774`.
 - Review/fix commit: `eb84634699fa643a072342cd196b9767a6694619`
-- Review watermark: `a6762b0368bd930bfc564876cfc1f5cb8ce7e5e3`; incremental review and
+- Review watermark: `1963db53a50bed449b5a7662525e86019b2bd7af`; incremental review and
   security review are clean.
 - Checkpoint 10B consumer commits: `c55c99718` and `544144527`
 - Implicit-conversion correction push: starting remote head `804d9b4e8`; pushed
@@ -121,7 +121,7 @@ service-local package graphs; no Reunion extension was copied or recreated local
 
 ## Next Steps
 
-Commit and push the clean incremental-review checkpoint, require local/remote/PR head equality and
+Commit and push the NAT7 review checkpoint, require local/remote/PR head equality and refreshed
 exact-head build, carve, unit, integration, architecture, formatting, and HTTP-contract CI. Enqueue
 PR #552 with the merge workflow's E2E tier and own publication/platform sync through terminal green.
 At that gate, update the registered downstream ledgers and dispatch their open work.
@@ -311,6 +311,10 @@ At that gate, update the registered downstream ledgers and dispatch their open w
   The B2B Web closure and project formatters timed out during local workspace loading without compiler
   or formatting diagnostics. Docker is unavailable, so current-alpha.7 HTTP integration and the wider
   closure/carve/test/format matrix remain exact-head PR CI gates.
+- Exact-head CI run `31873558361` compiled and started the complete matrix, then failed only Customer
+  Review's merged success test because it simultaneously expected the new absolute CreatedAtAction
+  Location and the obsolete relative Location. NAT7 removes the contradictory relative assertion in
+  `1963db53a50bed449b5a7662525e86019b2bd7af`; refreshed exact-head CI is required.
 
 ## Decisions and deviations
 
