@@ -5,18 +5,17 @@
 - Roadmap item: `payments/provider-contract-baseline`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\payments_provider-contract-baseline`
 - Branch: `Feature/payments_provider-contract-baseline`
-- PR: not opened
+- PR: #594 — https://github.com/Concertable/concertable/pull/594 — merged as `3c8a2c5a847d0f9702884949ed57850c6e494c47`
 - Dependency/package gates: implementation is ready; PR #552 remains the external B2B consumer owner and is a delivery-only gate while the baseline stays additive; published platform baseline is `0.1.0-alpha.0.1009`; no open platform-sync PR was present at reconciliation
-- Last reconciled: 2026-08-16 against `origin/main` `836a15a56257a0e35ca5ef5674b39e38eb6767ac`, GitHub PR state, the source roadmap, current repository entry points, and official Stripe documentation
+- Last reconciled: 2026-08-16 against `origin/main` `3c8a2c5a847d0f9702884949ed57850c6e494c47`, merged PR #594, the source roadmap, current repository entry points, and official Stripe documentation
 
 ## Current state
 
-Planning is complete in this worktree and no production code has been changed. The source roadmap has
-been copied unchanged into the worktree, and the implementation plan records the complete current
-entry-point inventory, provider-product matrix, operation/attempt model, normalized transition
-vocabulary, additive package boundary, external ownership, phased verification, and delivery DAG.
-The reviewed work head `0986af4a2b99203a2671cac51d41715d230cdf90` is verified on
-`origin/Feature/payments_provider-contract-baseline`.
+Planning landed through PR #594, and this fresh implementation worktree is based on its merge commit
+at current `origin/main`. No production implementation has begun. The source roadmap, implementation
+plan, and ledger are now the recovery anchor for the complete current entry-point inventory,
+provider-product matrix, operation/attempt model, normalized transition vocabulary, additive package
+boundary, external ownership, phased verification, and delivery DAG.
 
 The implementation work is ready to begin with Phase 1. PR #552 must not be duplicated; its exact head
 was `002c45f5fdb83362fff419448dd1c1a8832fd2a3` at reconciliation, including its additive
@@ -25,12 +24,23 @@ was `002c45f5fdb83362fff419448dd1c1a8832fd2a3` at reconciliation, including its 
 
 ## Next Steps
 
-1. Open the reviewed meta-only GitHub PR from the verified remote head.
-2. Apply the `skip-e2e` label and admin-merge the PR through the sanctioned docs path.
-3. Confirm the PR is merged, close this plan-managed worktree, and create a fresh implementation
-   worktree from current `origin/main`.
-4. In that fresh worktree, restore this ledger's next action to Phase 1 — durable decision artifact
-   and exhaustive inventory — before beginning implementation.
+Implement Phase 1 — durable decision artifact and exhaustive inventory:
+
+1. Confirm this branch remains current with `origin/main` and preserve the planning files in
+   `plans/payments/`.
+2. Add `api/Concertable.Payment/PROVIDER_CONTRACT.md` with the plan's locked product matrix,
+   operation/attempt identities, session kinds, normalized state and transition tables, terminality,
+   retry/revision/expiry rules, safe public errors, Connect posture, consumer ownership, and explicit
+   Stripe.net/API/webhook version assumptions.
+3. Add a deterministic inventory artifact and Payment unit/architecture test that scans the plan's
+   Payment, Customer, B2B, customer-web, B2B-web, and customer-mobile roots. It must fail for an
+   unclassified Stripe provider call, frontend confirmation call, or client-secret parser. Treat the
+   PR #581 bridge files as the finite current allowlist and do not change them.
+4. Obtain and record the live Stripe webhook endpoint API version. Reconcile it with Stripe.net
+   `47.3.0`'s `2025-01-27.acacia` request version; do not upgrade the endpoint in this phase.
+5. Run the inventory check, the focused Payment unit-test project, and the smallest affected Payment
+   build. Update this plan's Phase 1 state and this ledger in the same commit. Do not edit B2B consumer
+   code or start Phase 2 until the Phase 1 exit gate is green.
 
 ## Completed work
 
@@ -49,6 +59,10 @@ was `002c45f5fdb83362fff419448dd1c1a8832fd2a3` at reconciliation, including its 
   are portable on Windows.
 - Pushed reviewed work head `0986af4a2b99203a2671cac51d41715d230cdf90` and verified the
   remote-tracking ref matches.
+- PR #594 passed the clean docs-review gate, carried only `.agents/**` and `plans/**`, and was
+  admin-merged with `skip-e2e` as `3c8a2c5a847d0f9702884949ed57850c6e494c47`.
+- Closed the merged plan-managed source worktree and recreated this Feature worktree from the merged
+  current `origin/main`.
 
 ## Verification
 
@@ -68,13 +82,15 @@ was `002c45f5fdb83362fff419448dd1c1a8832fd2a3` at reconciliation, including its 
 - Push verification: local work head and
   `origin/Feature/payments_provider-contract-baseline` both resolved to
   `0986af4a2b99203a2671cac51d41715d230cdf90`.
+- GitHub reports PR #594 `MERGED` at `3c8a2c5a847d0f9702884949ed57850c6e494c47`;
+  the recreated worktree started at that exact `origin/main` commit with zero commits behind.
 
 ## Reviews
 
-Docs review of `836a15a56257a0e35ca5ef5674b39e38eb6767ac..26ac5b8f33db9f006bffe3380b7d832b4c060c22`
-found no issues across accuracy, contradiction, document ownership, concision, dangling references,
-and followable instructions. Review artifact:
-`reviews/Feature-payments_provider-contract-baseline.md`. No implementation review exists.
+Docs review through PR head `ccb1dd00585b7943a401166f3f8eb3237ed6d628` found no issues across
+accuracy, contradiction, document ownership, concision, dangling references, and followable
+instructions. Its spent untracked review artifact was deleted after PR #594 merged. No implementation
+review exists.
 
 ## Decisions, discoveries, blockers, and deviations
 
