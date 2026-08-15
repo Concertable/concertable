@@ -12,8 +12,10 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
 
 ## Next Steps
 
-Require exact-head CI to pass on additive package producer PR #578. Then mark it ready, apply the `full-e2e` label,
-merge it through the queue, and follow `publish-fe-packages` to green. Verify the published
+Push current-main producer head `0cb5d04aa`, verify exact local/tracking/PR head equality, and let exact-head CI pass.
+Then re-enqueue PR #578 once on a fresh runner: its first merge-group run was cancelled after a runner OOM killed the
+Service Bus emulator during fixture startup, before any test ran. If the fresh-stack attempt repeats that signature,
+dispatch `e2e-api-debug`; if it passes, follow `publish-fe-packages` to green. Verify the published
 `@concertable/b2b` version exports `features/conversations` with `MessagePreview` and exports `actionLinkApi` from
 `features/concerts`. Once published, sync dependent dashboard PR #563 with current main, apply the prepared consumer
 imports and `undefined` corrections, and rerun its exact-head standalone carves.
@@ -39,6 +41,13 @@ imports and `undefined` corrections, and rerun its exact-head standalone carves.
   `9f24030b6bf0614b0cfc0e15eb47fd7904dea01c` was pushed from starting remote/PR head
   `330c76c2ecfb0cecdd5bbbcb398c3284da5d6340`; fetch verification proved local, remote-tracking, and PR heads all
   equal the work head.
+  PR CI then passed at final producer head `cc10a7f5fbb0015cd53fdb46d8c9daf1049cc970`. Merge-group run
+  [31886414949](https://github.com/Concertable/concertable/actions/runs/31886414949) completed all build, carve, unit,
+  and integration jobs, but the B2B API E2E fixture produced no test result and GitHub cancelled it at the queue's
+  roughly 45-minute limit. Its uploaded diagnostics show `Out of memory`, followed by the Service Bus emulator
+  exiting during startup; zero scenarios ran, so this is the fresh-stack flake case rather than a product assertion.
+  Current `origin/main` then merged cleanly as `0cb5d04aa`; the ordered `build:web-packages` chain passed, including
+  shared tests 6/6 and B2B tests 16/16 plus the B2B TypeScript package build.
 
 - Producer implementation commit `0d37bfa7a` remains the published implementation baseline on draft PR
   [#557](https://github.com/Concertable/concertable/pull/557). Full review through `bc56de2d8` found BUG1: settlement
