@@ -6,8 +6,8 @@
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable/.worktrees/Plan-data-access-repository-permission-hierarchy`
 - Branch: `Refactor/DataAccessRepositoryPermissionHierarchy`
 - PR: [#561](https://github.com/Concertable/concertable/pull/561) (ready, open)
-- Remote and PR head: `e39b3759c64ad8fc7e4b9a9fdc415512a1143d11`; local, remote-tracking, and
-  PR heads are equal. Replacement exact-head CI is pending.
+- Remote and PR head: `e39b3759c64ad8fc7e4b9a9fdc415512a1143d11`; reviewed local fix head:
+  `a36851c8477432fbd7c110dc3786316c83633be7`. Push and replacement exact-head CI are pending.
 - Tommy explicitly authorized `/merge` on 2026-08-15. The published contract/package shape requires
   the `full-e2e` merge-queue tier; queue admission is the next delivery action.
 - `origin/main` advanced by six documentation-only commits during CI. It merged cleanly at
@@ -52,9 +52,13 @@
   16 ms apart with different PKCE state values; the second navigation aborted the first login page.
   All three Strict-Mode SPA login routes now guard `signinRedirect` with a mount-persistent ref so one
   route activation starts one OIDC navigation.
+- The OIDC navigation fix is committed at `a36851c84`, incrementally reviewed with no findings, and
+  passes the full four-app web boundary build.
+- `origin/main` advanced by four Tenant invitation-outbox commits while the queue ran. They merged
+  cleanly at `8992a36cd`; incremental review found no overlap or new issue.
 - Dependency/package gates: Phase 1 remains an additive producer PR. After it merges, package publication and the generated platform-sync PR must be green before Phase 2 migrates consumers.
-- Last reconciled: 2026-08-15 against fetched `origin/main` at `9516a2a2b`; the branch is current with
-  base after merge commit `f80bd66c5`.
+- Last reconciled: 2026-08-15 against fetched `origin/main` at `863e0c3af`; the branch is current with
+  base after merge commit `8992a36cd`.
 
 ## Current state
 
@@ -118,12 +122,11 @@ and green locally and under exact-head draft CI. PR #561 is clean and remains dr
 
 ## Next Steps
 
-1. Commit and incrementally review the idempotent login redirect fix, push it through exact-head CI,
-   then re-enqueue `full-e2e` and follow a new merge group
+1. Commit the current-main review checkpoint, push it through exact-head CI, then re-enqueue `full-e2e` and follow a new merge group
    to a terminal result without retrying a failed run.
-3. On green, close the source worktree, sync main,
+2. On green, close the source worktree, sync main,
    then follow package publication and the generated platform-sync PR to green and merged.
-4. From a fresh close-out worktree, reconcile the terminal delivery evidence, delete this plan and
+3. From a fresh close-out worktree, reconcile the terminal delivery evidence, delete this plan and
    ledger together, tick the roadmap item, and land the docs-only close-out.
 
 ## Completed work

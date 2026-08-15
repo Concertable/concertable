@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `e39b3759c64ad8fc7e4b9a9fdc415512a1143d11`  _(2026-08-15)_
-**Security-reviewed up to commit:** `e39b3759c64ad8fc7e4b9a9fdc415512a1143d11`  _(2026-08-15)_
+**Reviewed up to commit:** `8992a36cda35c51c2185a9756b224eaac461369f`  _(2026-08-15)_
+**Security-reviewed up to commit:** `8992a36cda35c51c2185a9756b224eaac461369f`  _(2026-08-15)_
 
 > Range reviewed: `429581025..94d7664ad` (2 commits).
 > Status legend: `[ ]` todo - `[~]` in progress - `[x]` done - `[wontfix]` (note why).
@@ -95,3 +95,19 @@ security-sensitive change to this PR.
 
 No issues found. The commit records the clean review and plan graph state for the replacement remote
 head; no runtime or security-sensitive behavior changed.
+
+## Incremental review - 2026-08-15 (OIDC navigation fix)
+
+> Range reviewed: `e39b3759c..a36851c84` (1 commit).
+
+No issues found. The mount-persistent guards prevent React Strict Mode from initiating concurrent
+PKCE redirects while preserving the existing authenticated-route behavior across Customer, Venue,
+and Artist. The trace supports the failure mechanism, and all four web boundary builds pass.
+
+## Incremental review - 2026-08-15 (third current-main merge)
+
+> Range reviewed: `a36851c84..8992a36cd` (5 commits).
+
+No issues found. The range merges current main's independently reviewed Tenant invitation-outbox
+change and tests. It does not overlap the login redirect fix, participant projection, repository
+permissions, or another security-sensitive path changed by this branch.
