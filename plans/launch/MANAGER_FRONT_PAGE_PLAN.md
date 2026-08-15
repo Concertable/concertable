@@ -1,10 +1,11 @@
 # Manager Front Page Plan
 
-## Progress (2026-05-18, post-session-3 close-out)
+## Progress (2026-08-15, frontend package expansion)
 
-**Branch:** `Feature/ManagerFrontPage` — **PR [#50](https://github.com/ThomasSeery/Concertable/pull/50)** open against `main`. **Head: `23c8fc4c`.** Pushed.
+**Branch:** `Feature/launch_dashboard-frontend-package-expand` — additive package producer for dependent dashboard PR [#563](https://github.com/Concertable/concertable/pull/563).
 
-**Phase A: ✅ committed (5fb54e96).** Mocks running. **Phase B partially landed** — B.9 + B.10 done; B.11 KPI endpoint shipped end-to-end; remaining B.11 endpoints (overview, activity, charts) and B.12 (tests) deferred. **Intent: merge as incomplete-but-ready-to-expand.**
+**Phase A UI and Phase B implementation are complete on the dependent dashboard branch.** Its standalone carves are
+delivery-gated on publishing two additive `@concertable/b2b` exports from this producer branch.
 
 See [MANAGER_FRONT_PAGE_PROGRESS.md](MANAGER_FRONT_PAGE_PROGRESS.md) for session decisions that supersede this plan in conflict.
 
@@ -14,11 +15,11 @@ See [MANAGER_FRONT_PAGE_PROGRESS.md](MANAGER_FRONT_PAGE_PROGRESS.md) for session
 
 | Step | Description | Status | Commit |
 |---|---|---|---|
-| B.9 | `ConcertEntity` → owned `DateRange Period` refactor | ✅ code; ⚠️ migration re-scaffold pending | `094fd4d4` |
+| B.9 | `ConcertEntity` → owned `DateRange Period` refactor | ✅ code and all-module migration re-scaffold | `094fd4d4` + dashboard consumer commit `e4054a7e6` |
 | B.10 | Shared `IHasDateRange` marker + `IUpcomingSpecification<T>` / `IDateRangeSpecification<T>` specs | ✅ | `e2193f46` + `23c8fc4c` (added `ApplyExpression<TParent>` overload + `BuildPredicate` helper) |
 | B.11 | Dashboard KPI endpoint (venue + artist) — orchestration via Venue/Artist dashboard services, one SQL round trip via `ConcertDashboardRepository` + queryable mapper | ✅ KPI slice only | `d4f9a3a6` + `a91c7271` + `23c8fc4c` |
-| B.11 | Dashboard overview + activity + charts endpoints | ⏳ Pending (see [pickup notes](#b11-pickup-notes-post-merge) below) | — |
-| B.12 | Integration tests per new facade method | ⏳ Pending | — |
+| B.11 | Dashboard overview, activity, charts, canonical resources, and live SPA cutover | ✅ Implemented on dependent PR #563; package publication gate remains | `d82f93cb7` + `16baf7cc4` + `e4054a7e6` |
+| B.12 | Focused unit and SQL-backed integration coverage | ✅ Added on dependent PR #563; its exact-head CI remains gated | `e4054a7e6` |
 
 ### B.11 KPI endpoint — what shipped
 
