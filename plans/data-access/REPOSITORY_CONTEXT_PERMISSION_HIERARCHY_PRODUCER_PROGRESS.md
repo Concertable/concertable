@@ -5,7 +5,7 @@
 - Roadmap item: `data-access/repository-context-permission-hierarchy`
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable/.worktrees/Refactor-data-access-repository-permission-hierarchy-expand`
 - Branch: `Refactor/DataAccessRepositoryPermissionHierarchyExpand`
-- PR: not opened
+- PR: [#590](https://github.com/Concertable/concertable/pull/590) (draft)
 - Dependency/package gates: current platform-sync PR #588 was pending but had no failed check when this
   branch was created from `origin/main` at `1f4ea1f72`; refresh current main before delivery.
 - Last reconciled: 2026-08-15 against the extracted producer diff and package topology.
@@ -19,12 +19,14 @@ DataAccess projects and their focused unit tests: `IWriteDbContext`, `IDbContext
 
 The six source files are byte-equivalent to the already reviewed producer portion of #561. No B2B,
 Customer, Payment, or other service consumer source is part of this slice. Focused tests, exact local
-package preparation, diff checks, and the plan graph are green.
+package preparation, diff checks, and the plan graph are green. The reviewed work head
+`d2c3b346320a96ebc404c731a124263d0c66af8c` is pushed and verified equal to the remote branch; draft
+PR #590 is open for exact-head CI.
 
 ## Next Steps
 
-1. Commit the clean formal review checkpoint.
-2. Refresh current-main currency, then push, open a draft PR, and follow exact-head CI.
+1. Push this PR-identity checkpoint and verify local, remote-tracking, and PR heads are equal.
+2. Follow exact-head draft CI to green and refresh current-main currency.
 3. Use the already authorized delivery chain to merge
    the producer and follow package publication plus the generated platform-sync PR to green and merged.
 4. Update the consumer ledger when the published baseline gate opens, close this producer worktree,
