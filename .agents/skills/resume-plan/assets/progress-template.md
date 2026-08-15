@@ -20,7 +20,8 @@ action can proceed, start with four single-line fields: `Blocked: <exact unmet g
 `Blocked by: <owning ledger path or external owner>`, `Unblock action: <what must be done, by whom or
 where>`, and `Resume when: <objective evidence>`; or, when only a human decision remains, a single
 `Paused: <who> — <action and observable resume condition>` line.
-Apply the repository's standing instructions and current evidence before writing it. Actionable
+Apply the repository's standing instructions and current evidence before writing it. Never write a
+merge as the next step until a review is recorded — `/review` is the first delivery gate. Actionable
 resume/handoff prompts point here instead of restating it; blocked and paused plans never emit their own pointer.>
 
 ## Completed work
