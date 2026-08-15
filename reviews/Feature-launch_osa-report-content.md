@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `c0fc8d7ce5fd85e4fdbfc7caace23e4aaf500f3b`  _(2026-08-15)_
-**Security-reviewed up to commit:** `c0fc8d7ce5fd85e4fdbfc7caace23e4aaf500f3b`  _(2026-08-15)_
+**Reviewed up to commit:** `12b43c821a7156284db47869f2c18e405fa02169`  _(2026-08-15)_
+**Security-reviewed up to commit:** `12b43c821a7156284db47869f2c18e405fa02169`  _(2026-08-15)_
 
 > Range reviewed: `c07c526..b06e0a8` (13 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -215,3 +215,17 @@ compliance defect that the inline self-review missed.
   `report-details`, `report-submit`, `report-confirmation`.
 - **Migration restore** returns the User module's three files to `main`'s exact content; the migration
   diff against `main` is Conversations-only.
+
+
+### Marker moved to `12b43c821` — merge of `origin/main` only
+
+47 commits of `main` (four platform syncs to `0.1.0-alpha.0.1009`, the camelCase-JSON-enum helper, the
+DataAccess repository hierarchy expansion, and a Conversations dashboard API) merged with no conflicts.
+The branch's own diff against `main` is unchanged, so no new code entered review scope. Re-verified
+against the new base: full solution build, 29 Conversations unit tests, the integration test project
+compiles, four web builds, boundary lint, `plan_graph` and `docs_reachability`.
+
+Checked specifically because it could have moved this feature's wire contract: `AddApplicationJson`
+(camelCase enums, `allowIntegerValues: false`) is **not** adopted by `Concertable.B2B.Web`, which still
+registers the plain `JsonStringEnumConverter`. So `ReportCategory` stays PascalCase on the wire and the
+`"Details"` ModelState key in the integration test remains correct.
