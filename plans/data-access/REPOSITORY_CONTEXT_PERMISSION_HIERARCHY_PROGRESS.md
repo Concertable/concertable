@@ -28,9 +28,8 @@ delivery evidence. Package-bound B2B, Customer, and Payment builds and the focus
 
 ## Next Steps
 
-1. Commit and incrementally review the current-main merge, then commit the reconciled review/ledger
-   checkpoint and push the compound
-   checkpoint to PR #561.
+1. Commit the clean incremental-review checkpoint and push the compound current-main reconciliation
+   to PR #561 using the plan-managed two-leg push protocol.
 2. Require green exact-head PR CI, normalize to `full-e2e`, enqueue, and follow the new merge-group run
    to a terminal result without retrying a failure.
 3. On merge, close the source worktree and follow publication plus the generated platform-sync PR to
@@ -69,7 +68,9 @@ delivery evidence. Package-bound B2B, Customer, and Payment builds and the focus
 - Formal and incremental reviews are recorded in
   `reviews/Refactor-DataAccessRepositoryPermissionHierarchy.md`; all findings are resolved through
   reviewed remote head `dc1f55591ca589a5516bca6c6513e7a095beed1c`.
-- The current-main merge requires incremental review before the consumer head is pushed.
+- Incremental review of `dc1f55591..c3afdb4b2` found no issues across the native, security,
+  architecture, convention, seeding, and test-coverage lenses. Review and security watermarks are
+  current at `c3afdb4b2fd137cbf406dfeb7174d9c082968c4d`.
 
 ## Decisions, discoveries, blockers, and deviations
 

@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `dc1f55591ca589a5516bca6c6513e7a095beed1c`  _(2026-08-15)_
-**Security-reviewed up to commit:** `dc1f55591ca589a5516bca6c6513e7a095beed1c`  _(2026-08-15)_
+**Reviewed up to commit:** `c3afdb4b2fd137cbf406dfeb7174d9c082968c4d`  _(2026-08-15)_
+**Security-reviewed up to commit:** `c3afdb4b2fd137cbf406dfeb7174d9c082968c4d`  _(2026-08-15)_
 
 > Range reviewed: `429581025..94d7664ad` (2 commits).
 > Status legend: `[ ]` todo - `[~]` in progress - `[x]` done - `[wontfix]` (note why).
@@ -118,3 +118,13 @@ permissions, or another security-sensitive path changed by this branch.
 
 No issues found. The commit transports the clean OIDC/current-main review and plan checkpoint; no
 runtime or security-sensitive behavior changed.
+
+## Incremental review - 2026-08-15 (published DataAccess baseline)
+
+> Range reviewed: `dc1f55591..c3afdb4b2` (47 commits).
+
+No issues found. Checked the producer/consumer seam resolutions and incoming current-main changes
+through the native correctness, security, microservice-isolation, module-boundary, seeding, C# and
+frontend convention, and changed-path test-coverage lenses. The three Customer contexts retain the
+consumer migration to the published shared `ReadDbContext`; all incoming runtime changes were already
+reviewed on their owning merged PRs and do not overlap the repository permission hierarchy.
