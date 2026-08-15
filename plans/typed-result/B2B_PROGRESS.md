@@ -63,8 +63,9 @@
   `c52542f98..202bbce12`; local work head, remote branch, and PR #552 head matched
   `202bbce124d30350043bb6cf19002c140b3835fb`.
 - Transport head is synchronized locally, remotely, and on PR #552 at
-  `f1468d83626f2e32e73bb4b76e19629ea20fa13c`. Exact-head CI run `31823604514` is terminal green,
-  including the solution build, service carves, unit and integration matrices, and `ci-complete`.
+  `2a5e7fede251beff1d8f4867cbd302a31988932f`. Exact-head CI run `31875185312` is terminal green:
+  52 successful checks, including the solution build, service carves, formatting, architecture, unit,
+  integration, and HTTP-contract matrices.
 - Reunion `0.1.0-alpha.7` is published. Concertable PR #569 merged as `7fb3baeaf920baa11dfe540db8c408aa316825b0`,
   its package publication is green, and platform-sync PR #575 merged platform `0.1.0-alpha.0.995` as
   `dee412ba8ff824a46ce16783d2f7d1fc161f2774`. Tommy authorized landing PR #552 on 2026-08-15.
@@ -121,10 +122,10 @@ service-local package graphs; no Reunion extension was copied or recreated local
 
 ## Next Steps
 
-Commit and push the NAT7 review checkpoint, require local/remote/PR head equality and refreshed
-exact-head build, carve, unit, integration, architecture, formatting, and HTTP-contract CI. Enqueue
-PR #552 with the merge workflow's E2E tier and own publication/platform sync through terminal green.
-At that gate, update the registered downstream ledgers and dispatch their open work.
+Commit and push this green-CI transport checkpoint, require local/remote/PR head equality, then
+enqueue PR #552 with `full-e2e`. Own the merge-group result, package publication, and platform sync
+through terminal green. At that gate, update the registered downstream ledgers and dispatch their
+open work.
 
 ## Completed work
 
@@ -311,10 +312,9 @@ At that gate, update the registered downstream ledgers and dispatch their open w
   The B2B Web closure and project formatters timed out during local workspace loading without compiler
   or formatting diagnostics. Docker is unavailable, so current-alpha.7 HTTP integration and the wider
   closure/carve/test/format matrix remain exact-head PR CI gates.
-- Exact-head CI run `31873558361` compiled and started the complete matrix, then failed only Customer
-  Review's merged success test because it simultaneously expected the new absolute CreatedAtAction
-  Location and the obsolete relative Location. NAT7 removes the contradictory relative assertion in
-  `1963db53a50bed449b5a7662525e86019b2bd7af`; refreshed exact-head CI is required.
+- NAT7 removes Customer Review's contradictory legacy relative-Location assertion in
+  `1963db53a50bed449b5a7662525e86019b2bd7af`. Refreshed exact-head CI run `31875185312` passes all
+  52 checks, including the corrected Review integration project.
 
 ## Decisions and deviations
 
