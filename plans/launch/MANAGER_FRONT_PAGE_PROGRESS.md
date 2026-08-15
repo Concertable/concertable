@@ -12,13 +12,19 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
 
 ## Next Steps
 
-Push current-main producer head `0cb5d04aa`, verify exact local/tracking/PR head equality, and let exact-head CI pass.
-Then re-enqueue PR #578 once on a fresh runner: its first merge-group run was cancelled after a runner OOM killed the
+Push this ledger transport, verify exact local/tracking/PR head equality, and let exact-head CI pass. Then re-enqueue
+PR #578 once on a fresh runner: its first merge-group run was cancelled after a runner OOM killed the
 Service Bus emulator during fixture startup, before any test ran. If the fresh-stack attempt repeats that signature,
 dispatch `e2e-api-debug`; if it passes, follow `publish-fe-packages` to green. Verify the published
 `@concertable/b2b` version exports `features/conversations` with `MessagePreview` and exports `actionLinkApi` from
 `features/concerts`. Once published, sync dependent dashboard PR #563 with current main, apply the prepared consumer
 imports and `undefined` corrections, and rerun its exact-head standalone carves.
+
+## Reviews
+
+- Full and incremental review is recorded in `reviews/Feature-launch_dashboard-frontend-package-expand.md`; its only
+  finding is closed. Runtime source is reviewed through `9f3d47417bc40bc6355564b0225e3be290bdcde6`; later commits are
+  plan/review checkpoints and merges from `origin/main`, with no change to the reviewed frontend source diff.
 
 ## Current producer slice
 
@@ -48,6 +54,11 @@ imports and `undefined` corrections, and rerun its exact-head standalone carves.
   exiting during startup; zero scenarios ran, so this is the fresh-stack flake case rather than a product assertion.
   Current `origin/main` then merged cleanly as `0cb5d04aa`; the ordered `build:web-packages` chain passed, including
   shared tests 6/6 and B2B tests 16/16 plus the B2B TypeScript package build.
+  Work head `52ffc10a4aed1e8bed0f4942aaa11a947b7f03bb` was pushed with exact local/tracking/PR equality, and exact-head
+  PR CI run [31890416225](https://github.com/Concertable/concertable/actions/runs/31890416225) passed all 60 jobs.
+  `origin/main` advanced by review-gate documentation and hook changes while that run drained; those merged cleanly as
+  `755133470`. The ordered web-package gate passed again (shared 6/6, B2B 16/16, all four package builds), and fetch
+  verification proved `7551334704c1b02b0f47e43856337af9bcd42e6d` equal across local, tracking, and PR heads.
 
 - Producer implementation commit `0d37bfa7a` remains the published implementation baseline on draft PR
   [#557](https://github.com/Concertable/concertable/pull/557). Full review through `bc56de2d8` found BUG1: settlement
