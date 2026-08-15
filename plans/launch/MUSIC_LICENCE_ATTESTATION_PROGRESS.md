@@ -14,17 +14,18 @@
 **Phase 1 complete and committed; local gate green.** The `bool HoldsMusicLicence` is threaded end-to-end
 through the shipped `TaxCompliance` DAC7 slice: domain VO, migration (re-scaffolded), contracts DTO, mapper,
 the Concert cross-module compile fix, the Seed `TenantFactory`, all backend tests, and the b2b/shared org
-form (new "Music licence" checkbox). Roadmap line 26 + §7 ticked. Remaining: open the PR, `/merge` with
-**full E2E**, and own the post-merge `chore/platform-sync-*` PR to green.
+form (new "Music licence" checkbox). Roadmap line 26 + §7 ticked. Remaining: open the PR, `/review`,
+`/merge` with **full E2E**, and own the post-merge `chore/platform-sync-*` PR to green.
 
 ## Next Steps
 
 Phase 1 is implemented, verified (full local gate green) and committed. Delivery gates remain:
 
 1. **Open the PR** — plain `gh pr create` (personal repo; no `AB#`, no assignee).
-2. **`/merge` with full E2E** — do **not** skip. The change crosses the `Tenant.Contracts` boundary, touches shared web code, and a user-facing org-setup flow (plan §6).
-3. **Own the post-merge `chore/platform-sync-*` PR to green** — api/** MinVer bump; expected non-breaking (no cross-service published contract changed).
-4. **Close out** — after platform-sync is green, `git rm` this plan + `_PROGRESS.md` as a doc-only close-out riding the next change (plan §7).
+2. **`/review`** — full code review; the change crosses the `Tenant.Contracts` boundary and touches a user-facing org-setup flow, so expect the security lens. Address every finding.
+3. **`/merge` with full E2E** — do **not** skip. The change crosses the `Tenant.Contracts` boundary, touches shared web code, and a user-facing org-setup flow (plan §6).
+4. **Own the post-merge `chore/platform-sync-*` PR to green** — api/** MinVer bump; expected non-breaking (no cross-service published contract changed).
+5. **Close out** — after platform-sync is green, `git rm` this plan + `_PROGRESS.md` as a doc-only close-out riding the next change (plan §7).
 
 ## Completed work
 

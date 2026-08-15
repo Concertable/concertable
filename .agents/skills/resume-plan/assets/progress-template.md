@@ -18,9 +18,11 @@
 <The single resolved action for the next agent, expressed as concrete, self-contained steps. If no
 action can proceed, start with four single-line fields: `Blocked: <exact unmet gate>`,
 `Blocked by: <owning ledger path or external owner>`, `Unblock action: <what must be done, by whom or
-where>`, and `Resume when: <objective evidence>`.
-Apply the repository's standing instructions and current evidence before writing it. Actionable
-resume/handoff prompts point here instead of restating it; blocked plans never emit their own pointer.>
+where>`, and `Resume when: <objective evidence>`; or, when only a human decision remains, a single
+`Paused: <who> — <action and observable resume condition>` line.
+Apply the repository's standing instructions and current evidence before writing it. Never write a
+merge as the next step until a review is recorded — `/review` is the first delivery gate. Actionable
+resume/handoff prompts point here instead of restating it; blocked and paused plans never emit their own pointer.>
 
 ## Completed work
 
@@ -48,7 +50,7 @@ Delete or collapse each entry once its outcome is folded into the snapshot; omit
 ## Resume prompt
 
 <The single cd-first pointer to hand off after `/clear` when `## Next Steps` is actionable. Never emit
-it while the ledger carries the blocked-state fields. It ONLY points at this ledger's `## Next Steps`;
+it while the ledger carries the blocked-state fields or a `Paused:` line. It ONLY points at this ledger's `## Next Steps`;
 never restate the branch, gates, checkpoints, or steps here — they live in `## Next Steps` and must not
 be duplicated where they can drift. Keep it verbatim in this fenced block:>
 

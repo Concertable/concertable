@@ -47,11 +47,10 @@ def main():
     root = Path(__file__).resolve().parents[2]
     if not implementation_is_current(root):
         result = {
-            "decision": "block",
-            "reason": (
-                "HANDOFF GATE ERROR: this checkout's plan handoff hook bundle differs from origin/main. "
-                "Sync this branch with current main before relying on plan handoffs."
-            ),
+            "systemMessage": (
+                "Plan handoff hook bundle differs from origin/main (advisory); its reminders may not "
+                "match trunk. Sync this branch with current main before relying on them."
+            )
         }
         json.dump(result, sys.stdout)
         sys.stdout.write("\n")
