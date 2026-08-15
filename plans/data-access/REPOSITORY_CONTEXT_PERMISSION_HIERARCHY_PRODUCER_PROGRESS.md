@@ -21,12 +21,15 @@ The six source files are byte-equivalent to the already reviewed producer portio
 Customer, Payment, or other service consumer source is part of this slice. Focused tests, exact local
 package preparation, diff checks, and the plan graph are green. The reviewed work head
 `d2c3b346320a96ebc404c731a124263d0c66af8c` is pushed and verified equal to the remote branch; draft
-PR #590 is open for exact-head CI.
+PR #590 is open. Exact-head CI run `31898015544` packed the additive platform successfully, then found
+that the new shared `ReadDbContext` simple name collided with Customer's existing compatibility base
+in three inheritance clauses. Those clauses now explicitly alias the existing Customer base, preserving
+their old-package behavior until the consumer migration removes it.
 
 ## Next Steps
 
-1. Push this PR-identity checkpoint and verify local, remote-tracking, and PR heads are equal.
-2. Follow exact-head draft CI to green and refresh current-main currency.
+1. Commit the verified additive-name collision fix and run incremental review through the new head.
+2. Push the reviewed fix through the plan-managed push protocol and follow replacement exact-head CI.
 3. Use the already authorized delivery chain to merge
    the producer and follow package publication plus the generated platform-sync PR to green and merged.
 4. Update the consumer ledger when the published baseline gate opens, close this producer worktree,
@@ -46,6 +49,10 @@ PR #590 is open for exact-head CI.
   `0.1.0-local.1786813897648`, including both DataAccess packages.
 - `git diff --check` passed.
 - Plan graph passed with 0 errors and 0 warnings.
+- Exact-head CI run `31898015544` failed only on ambiguous Customer `ReadDbContext` inheritance after
+  successfully packing the additive platform; it was not retried.
+- Customer Web built with 0 errors against exact local platform `0.1.0-local.1786813897648` after the
+  three explicit Customer-base aliases were added.
 
 ## Reviews
 
@@ -61,6 +68,9 @@ PR #590 is open for exact-head CI.
   re-exposes the new types into another service layer.
 - The consumer PR remains delivery-ready rather than merge-ready until this producer's real package is
   published and synchronized.
+- A new shared simple type name can be source-breaking when a consumer already imports a same-named
+  compatibility type. The expansion keeps those consumers on their existing base through explicit
+  aliases; their real migration remains in #561.
 
 ## Downstream handoffs
 
