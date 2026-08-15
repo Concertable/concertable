@@ -120,6 +120,8 @@ These docs are the source of truth. Read the ones relevant to the diff — do no
 - Root `AGENTS.md` and `api/AGENTS.md` — top-of-context rules + pointers.
 - `api/ARCHITECTURE.md` and root `ARCHITECTURE.md` — **microservice premise** (the boundary rules below).
 - `api/agents/CODE_CONVENTIONS.md` — C# conventions (source-generated logging, field naming, ctors, etc.).
+- `app/agents/CODE_CONVENTIONS.md` — **frontend** conventions (null-vs-undefined, contract types, casing,
+  TanStack Query shape, stores, form buffers). Read whenever the diff touches `app/`.
 - `api/agents/MODULAR_MONOLITH_RULES.md` — module boundaries within a service.
 - `api/agents/SEEDING_CONVENTIONS.md` — what may and may not be seeded directly.
 - Any `AGENTS.md` in directories the diff touches (each service / module may add local rules).
@@ -156,12 +158,19 @@ Concertable is a multi-service system; **B2B, Customer, and Search are data serv
 - `IDevSeeder` vs `ITestSeeder` misuse (`ITestSeeder` never runs in dev/E2E).
 - Integration events published from a service layer instead of raised from a domain event.
 
-### Lens E — C# conventions (`api/agents/CODE_CONVENTIONS.md`)
+### Lens E — code conventions (`api/agents/CODE_CONVENTIONS.md` for `api/`, `app/agents/CODE_CONVENTIONS.md` for `app/`)
 
 - Inline logging templates (`logger.LogInformation("...")`) instead of a source-generated `[LoggerMessage]` in the project's `Log.cs`.
 - Primary constructors on services/repos/handlers/validators (use explicit ctor + `private readonly` fields, no `_` prefix).
 - `is { }` capture instead of `is not null`; unnecessary braces on single-statement `if`/`else`.
 - Additive EF migrations (model changes re-scaffold via `./initial-migrations.ps1`).
+
+Frontend (`app/`), same lens, different doc — these recur:
+- `null` where `undefined` is the convention (`useState<T | null>(null)`, `x: T | null` on a contract
+  type). `null` is only for a deliberately-set-empty state that something downstream branches on.
+- A read type named `XDto`/`XResponse`, or a write input that is not an `XRequest`.
+- Server state fetched or mutated from `useEffect` instead of TanStack Query.
+- A free-typed form submitting its raw buffer without a zod parse.
 
 ### Lens F — Test coverage of changed behaviour
 

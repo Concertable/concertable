@@ -36,7 +36,7 @@ export function ReportMessageDialog({
   onOpenChange,
 }: Readonly<Props>) {
   const [category, setCategory] = useState(categories[0]);
-  const [details, setDetails] = useState("");
+  const [details, setDetails] = useState<string>();
   const { mutate, isPending, isSuccess, isError, reset } =
     useReportMessageMutation();
 
@@ -44,7 +44,7 @@ export function ReportMessageDialog({
     onOpenChange(next);
     if (!next) {
       reset();
-      setDetails("");
+      setDetails(undefined);
       setCategory(categories[0]);
     }
   };
@@ -85,7 +85,7 @@ export function ReportMessageDialog({
                 data-testid="report-details"
                 rows={4}
                 maxLength={maxDetailsLength}
-                value={details}
+                value={details ?? ""}
                 onChange={(e) => setDetails(e.target.value)}
               />
             </div>
@@ -118,7 +118,7 @@ export function ReportMessageDialog({
                     messageId,
                     request: {
                       category: category.value,
-                      details: details.trim() || undefined,
+                      details: details?.trim() || undefined,
                     },
                   })
                 }

@@ -22,9 +22,7 @@ export function Mailbox() {
     nextPage,
     prevPage,
   } = useMailbox();
-  const [reportingMessageId, setReportingMessageId] = useState<number | null>(
-    null,
-  );
+  const [reportingMessageId, setReportingMessageId] = useState<number>();
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -126,11 +124,11 @@ export function Mailbox() {
         )}
       </PopoverContent>
 
-      {reportingMessageId !== null && (
+      {reportingMessageId !== undefined && (
         <ReportMessageDialog
           messageId={reportingMessageId}
           open
-          onOpenChange={(next) => !next && setReportingMessageId(null)}
+          onOpenChange={(next) => !next && setReportingMessageId(undefined)}
         />
       )}
     </Popover>

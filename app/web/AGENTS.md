@@ -1,5 +1,9 @@
 # Web Apps
 
+**Code conventions for everything under `app/` live in [`../agents/CODE_CONVENTIONS.md`](../agents/CODE_CONVENTIONS.md)**
+— naming, contract types, casing, null-vs-undefined, TanStack Query shape, stores, form buffers. This
+file covers only the sharing tiers and the build gate.
+
 Two products, three tiers of sharing:
 
 - `shared/` — code every SPA compiles (universal). Rules: [`shared/AGENTS.md`](./shared/AGENTS.md).
