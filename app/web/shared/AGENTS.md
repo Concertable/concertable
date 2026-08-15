@@ -1,7 +1,5 @@
 # app/web/shared — code shared across the web SPAs
 
-Inherits [`../../AGENTS.md`](../../AGENTS.md) (frontend conventions + patterns).
-
 ## Everything here compiles into EVERY web app. Nothing app-specific goes here. Ever.
 
 Concertable is two products. Code shared by the two manager apps but not the customer app —

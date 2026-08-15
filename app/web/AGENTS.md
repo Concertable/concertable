@@ -1,8 +1,8 @@
 # Web Apps
 
-Inherits [`../AGENTS.md`](../AGENTS.md) — which anchors the frontend code conventions and patterns
-(`app/agents/`) that every tier below obeys. This file covers only the web sharing tiers and the build
-gate; don't restate the conventions here.
+**Code conventions for everything under `app/` live in [`../agents/CODE_CONVENTIONS.md`](../agents/CODE_CONVENTIONS.md)**
+— naming, contract types, casing, null-vs-undefined, TanStack Query shape, stores, form buffers. This
+file covers only the sharing tiers and the build gate.
 
 Two products, three tiers of sharing:
 
