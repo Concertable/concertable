@@ -7,8 +7,8 @@
 - Branch: `Refactor/DataAccessRepositoryPermissionHierarchy`
 - PR: [#561](https://github.com/Concertable/concertable/pull/561) (draft)
 - Remote and PR head: `3044fb74c2eb6b238a80c5bc443ec6442163d037`; exact-head draft CI run
-  `31881386510` passed. The local branch merged current `origin/main` at `beb0bd91d`; this commit
-  carries the two follow-up review fixes that still require committed review and push verification.
+  `31881386510` passed. The local branch merged current `origin/main` at `beb0bd91d`; follow-up review
+  fixes are committed and reviewed at `5c6ab849f` and require push verification.
 - Dependency/package gates: Phase 1 remains an additive producer PR. After it merges, package publication and the generated platform-sync PR must be green before Phase 2 migrates consumers.
 - Last reconciled: 2026-08-15 against fetched `origin/main` at `520761dd4`; the branch is current with
   base after merge commit `beb0bd91d`.
@@ -21,9 +21,8 @@ Artist/Venue organisation-identity lookup design, so the PR was returned to draf
 merge. The repository-naming correction described below is committed and pushed on the current branch;
 exact-head CI and follow-up review still gate readiness.
 
-The replacement design is implemented. Exact-head CI passed on the pushed checkpoint; the current
-worktree contains the focused fixes from the follow-up review and is green under the Conversations
-unit-test project.
+The replacement design is implemented. Exact-head CI passed on the pushed checkpoint; the focused
+follow-up review fixes are committed, reviewed, and green under the Conversations unit-test project.
 
 - `Tenant` is the canonical Domain/Application/Infrastructure/Contracts term. In the current model it
   is the business account, membership boundary, legal/VAT/Stripe identity, and settlement identity;
@@ -69,13 +68,13 @@ unit-test project.
 - Current `origin/main` merged cleanly at `beb0bd91d`.
 - Follow-up review of `580426684..beb0bd91d` found two medium issues: captured primary constructors in
   the new participant projection handlers and missing assertions for sender profile rendering. Both
-  are fixed in this commit; the focused Conversations unit tests pass 11/11.
+  are fixed at `5c6ab849f`; the focused Conversations unit tests pass 11/11 and incremental review of
+  `beb0bd91d..5c6ab849f` found no further issues.
 
 ## Next Steps
 
-1. Commit the follow-up review fixes, incrementally review that committed range, and resolve any finding.
-2. Push the green reviewed head through the plan push protocol, then require exact-head draft CI.
-3. Keep PR [#561](https://github.com/Concertable/concertable/pull/561) draft until those gates are green
+1. Push the green reviewed head through the plan push protocol, then require exact-head draft CI.
+2. Keep PR [#561](https://github.com/Concertable/concertable/pull/561) draft until those gates are green
    and Tommy explicitly authorizes `/merge`; when asking for that permission, always include this
    clickable PR link.
 
@@ -135,8 +134,8 @@ unit-test project.
 - Tommy approved the shared permission hierarchy and later approved the corrected context stance names.
 - Prior formal and incremental reviews are recorded in `reviews/Refactor-DataAccessRepositoryPermissionHierarchy.md`.
 - Follow-up review of `580426684..beb0bd91d` covered correctness, security, microservice isolation,
-  module boundaries, seeding, C# conventions, and test coverage. `CV1` and `BUG3` are fixed in the
-  working tree; the committed fix range still requires incremental review before push.
+  module boundaries, seeding, C# conventions, and test coverage. `CV1` and `BUG3` are fixed at
+  `5c6ab849f`; incremental review of the committed fix range found no further issues.
 
 ## Decisions, discoveries, blockers, and deviations
 

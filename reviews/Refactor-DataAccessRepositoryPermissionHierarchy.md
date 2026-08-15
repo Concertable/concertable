@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `beb0bd91d94296dc8a899d39617e9cd19878b794`  _(2026-08-15)_
-**Security-reviewed up to commit:** `beb0bd91d94296dc8a899d39617e9cd19878b794`  _(2026-08-15)_
+**Reviewed up to commit:** `5c6ab849f477df411db357ee6e050eba7b41fdfb`  _(2026-08-15)_
+**Security-reviewed up to commit:** `5c6ab849f477df411db357ee6e050eba7b41fdfb`  _(2026-08-15)_
 
 > Range reviewed: `429581025..94d7664ad` (2 commits).
 > Status legend: `[ ]` todo - `[~]` in progress - `[x]` done - `[wontfix]` (note why).
@@ -48,3 +48,9 @@ No issues found. Checked correctness, microservice isolation, module boundaries,
   Notification and inbox tests now assert the event-fed participant profile, and the inbox tests cover the missing-profile fallback introduced by the sender-resolution rewrite.
 
 Security review found no issues. The additive Venue contract property preserves the existing positional wire shape, payment-event metadata remains validated by transaction type, and removing ready-event merge workflows reduces repository write authority.
+
+## Incremental review - 2026-08-15 (CV1/BUG3 follow-up)
+
+> Range reviewed: `beb0bd91d..5c6ab849f` (1 commit).
+
+No issues found. The explicit handler constructors comply with the repository convention, and the focused tests now verify projected notification and inbox senders plus the missing-profile fallback. No security-sensitive behavior changed.
