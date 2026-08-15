@@ -44,8 +44,10 @@ the LSP violation — callers can't know which contract a method honors):
   read-only `XDbContext`. Never returns private contents.
 - **`AdminXRepository`** — privileged cross-tenant read/write (e.g. admin approval) on the writable
   `AdminDbContext`. Only where an admin write flow exists, e.g. `AdminVenueRepository`.
-- **Domain facts that aren't naturally entity repositories** get their own purpose-named abstraction
-  on the module's `XDbContext`, e.g. `IConcertAvailability` or `IBookingExistence`.
+- **Domain facts that aren't naturally entity repositories** may get their own purpose-named
+  abstraction on the module's `XDbContext`, e.g. `IConcertAvailability`, when they form a real,
+  independently consumed capability. Do not wrap a single query already owned by an aggregate
+  repository in a one-method interface; keep that query on the repository.
 
 The injection site is then self-documenting: a service holding `repository` + `publicRepository`
 (the codebase convention when a service injects both stances of its own aggregate) states exactly
