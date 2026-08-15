@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `b06e0a805b56b2549c6e83405250e1a66edb20a8`  _(2026-08-15)_
-**Security-reviewed up to commit:** `b06e0a805b56b2549c6e83405250e1a66edb20a8`  _(2026-08-15)_
+**Reviewed up to commit:** `eae76af56d7b51e02704110170b988f7134a74fc`  _(2026-08-15)_
+**Security-reviewed up to commit:** `eae76af56d7b51e02704110170b988f7134a74fc`  _(2026-08-15)_
 
 > Range reviewed: `c07c526..b06e0a8` (13 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -43,6 +43,46 @@
   high surrogate before slicing (`char.IsHighSurrogate(content[MaxExcerptLength - 1])`), or truncate on
   `StringInfo`/rune boundaries.
 
+### Layer 1 — Native review (`code-reviewer`, effort high)
+
+Eight findings returned; five cleared the confidence bar and were fixed, three were dropped with reasons.
+
+- [x] **NAT1 — MEDIUM — error handling** — `Conversations.Infrastructure/Services/ContentReportNotifier.cs`
+  A missing reporter email threw `UnauthorizedAccessException`, which `GlobalExceptionHandler` maps to
+  **401**, and the SPA interceptor (`app/shared/src/lib/client.ts`) treats any 401 as session expiry and
+  calls `removeUser()` — so a data gap silently signed the reporter out *after* their report had already
+  committed. Now logged and skipped; the safety-inbox mail still sends.
+- [x] **NAT2 — MEDIUM — atomicity** — `Conversations.Infrastructure/Services/ContentReportService.cs`
+  The report row commits, then emails send inline, so a transport failure failed a request whose write
+  was already durable — and the retry filed a second report. The notifier call is now wrapped: the
+  failure is logged and the operation still succeeds, because the persisted record is what the duty
+  turns on, not the mail.
+- [x] **NAT4 — MEDIUM — correctness** — `Conversations.Domain/Entities/MessageEntity.cs`
+  `Restore()` nulled `HiddenAt`/`HiddenByUserId`, so after an appeal succeeded there was **no evidence
+  the content was ever hidden, by whom, or when** — the exact record hide-not-delete exists to keep, and
+  `TECH_DEBT.md`'s claim that every moderation action stamps actor+timestamp held only for `Resolve`.
+  Now `Restore(byUserId, at)` stamps `RestoredAt`/`RestoredByUserId` and never clears the hide; the read
+  filter derives visibility from the two, so a re-hide still works.
+- [x] **NAT6 — LOW — correctness** — `Conversations.Infrastructure/Services/ContentReportService.cs`
+  "You cannot report your own tenant's message" existed **only** in link generation, so a crafted POST
+  with an outbound message id recorded `ReporterTenantId == ReportedTenantId` and mailed the safety inbox
+  naming the reporter as the offender. The server now enforces it, answering `MessageNotFound` so it
+  stays consistent with the D5 privacy answer.
+- [x] **NAT7 — LOW — error handling** — `app/web/shared/.../ReportMessageDialog.tsx`
+  The details textarea had no cap while the server rejects >2000 chars, so a long paste became an opaque
+  "please try again" loop. `maxLength` added.
+- [wontfix] **NAT3 — dedupe repeat reports.** Contradicts plan **D7**, a deliberate decision: suppressing
+  or collapsing repeats would need a per-message "reported by me" read on every inbox page, and an OSA
+  reporting route must never be *harder* to reach. A second report is data, not an error; the queue
+  groups by message. (Also below the bar at ~75.)
+- [wontfix] **NAT5 — concurrency token on resolve.** Requires two simultaneous resolves; there is no
+  admin SPA at all (moderation is curl/Swagger by one operator) and expected volume is near zero, so it
+  is not hit in practice. Revisit if an admin UI ships.
+- [wontfix] **NAT8 — exclude hidden messages from `GetByIdAsync`.** ~60 confidence and the reviewer asked
+  for an explicit decision, so: **accepted deliberately.** A hidden message never appears in an inbox, so
+  no link is offered; a report arriving for one is a reporter acting on what they saw before moderation,
+  which is legitimate evidence rather than something to reject.
+
 ### Layer 1b — Security (diff touches Controllers + Authorization)
 
 No HIGH or MEDIUM findings. Paths traced: IDOR on the report endpoint (tenant-filtered lookup → 404 for a
@@ -52,6 +92,13 @@ non-participant, test-pinned); privilege escalation into moderation (`[Admin]` p
 (subjects interpolate only `CR-{int}`; user text stays in the body); injection/deserialization (EF-
 parameterised, `int` route ids, no dynamic SQL); enumeration (404-not-403 is deliberate); XSS (React, no
 `dangerouslySetInnerHTML`).
+
+- [wontfix] **CONV1 — LOW — conventions** — `Conversations.Infrastructure/Services/ModerationService.cs`
+  Hand-built `new Pagination<ContentReportDto>(...)` where `IPagination<T>.Select` already exists —
+  **fixed**, but the underlying cause is that `Select` sits in `Concertable.DataAccess.Infrastructure`,
+  unreachable from Api projects and undiscoverable from the layers that can reach it (eight-plus
+  hand-rolled copies repo-wide). Moving it to `Concertable.Contracts` is a publish-first cut-over, logged
+  in `api/TECH_DEBT.md`.
 
 - [wontfix] **DUP1 — LOW — reuse/duplication** — `api/Concertable.B2B/src/Modules/Conversations/Concertable.B2B.Conversations.Api/Responses/ActionLink.cs:3`
   `ActionLink` is now declared identically in `Concert.Api` and `Conversations.Api`. It belongs once in
@@ -64,7 +111,7 @@ parameterised, `int` route ids, no dynamic SQL); enumeration (404-not-403 is del
 
 ### Fixes applied in this review
 
-All four open findings were fixed on this branch before merge:
+Layer-2 findings, all fixed on this branch before merge:
 `ModerationErrorTests` (3 definition contracts, codes confirmed by running them), `ModerationServiceTests`
 (5 cases covering both not-found branches, the already-resolved conflict, and the hide stamp), the
 paginated triage queue (`IPagination<ContentReportDto>` + `PageParams`, mirroring

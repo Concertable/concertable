@@ -233,3 +233,39 @@ publish-first cut-over, not an edit.
 **Resolves when:** `public sealed record ActionLink(string Href, string Method)` lives in
 `Concertable.Shared.Api`, is published, and both module-local copies are deleted in the follow-up PR
 once the pin carries it. Any new Api module uses the shared one rather than minting a third.
+
+---
+
+### `IPagination<T>.Select` lives in a data-access package, so almost nobody finds it
+
+`PaginationExtensions` (`Concertable.DataAccess.Infrastructure`) holds two extensions with very
+different natures. `ToPaginationAsync` is genuinely data-access — it takes `IQueryable<T>` and awaits
+EF's `CountAsync`. `Select(this IPagination<TSource>, Func<TSource, TDestination>)` is **not**: it is a
+pure in-memory projection over an already-materialised page, with no EF dependency and no reason to sit
+behind a data-access reference.
+
+The consequence is that the type it operates on lives in `Concertable.Contracts` while the operation
+lives somewhere most consumers cannot see:
+
+- **Api projects cannot reach it at all** — they reference `Concertable.Shared.Api`, not
+  `Concertable.DataAccess.Infrastructure`, and correctly so. So every Api response mapper hand-rolls the
+  projection: `Concert.Api/Mappers/OpportunityResponseMapper.cs`,
+  `Conversations.Api/Mappers/MessageResponseMappers.cs`.
+- **Layers that *can* reach it still miss it**, because nothing points there and the placement implies a
+  data-access concern: `Conversations/MessageService`, `Concert.Application/OpportunityMapper`,
+  `Search`'s three header services, `Payment/TransactionService` all write
+  `new Pagination<T>(data, TotalCount, PageNumber, PageSize)` by hand.
+
+Eight-plus copies of a four-argument constructor call is the symptom; the placement is the cause.
+
+**Fix:** move `Select` to `Concertable.Contracts`, next to `IPagination<T>` and `Pagination<T>`, and
+leave `ToPaginationAsync` in `Concertable.DataAccess.Infrastructure` where it belongs. Then every layer
+— Application, Infrastructure and Api alike — can map a page without minting a constructor call.
+
+Both are **published packages pinned by `ConcertablePlatformVersion`**, so like the `ActionLink`
+duplication above this is a publish-first cut-over, not an edit: add to Contracts, publish, let
+`platform-sync` bump the pins, then migrate the call sites and delete the old overload.
+
+**Resolves when:** `Select` lives in `Concertable.Contracts`, the hand-rolled
+`new Pagination<T>(...)` projections above are replaced with it, and `PaginationExtensions` in
+`DataAccess.Infrastructure` retains only `ToPaginationAsync`.

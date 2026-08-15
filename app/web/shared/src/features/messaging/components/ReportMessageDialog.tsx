@@ -14,6 +14,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/Select";
 
+const maxDetailsLength = 2000;
+
 const categories: { value: ReportCategory; label: string }[] = [
   { value: "IllegalContent", label: "Illegal content" },
   { value: "Harassment", label: "Harassment or abuse" },
@@ -82,6 +84,7 @@ export function ReportMessageDialog({
                 id="report-details"
                 data-testid="report-details"
                 rows={4}
+                maxLength={maxDetailsLength}
                 value={details}
                 onChange={(e) => setDetails(e.target.value)}
               />
