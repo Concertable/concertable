@@ -23,23 +23,12 @@ was `002c45f5fdb83362fff419448dd1c1a8832fd2a3` at reconciliation, including its 
 
 ## Next Steps
 
-Implement Phase 1 — durable decision artifact and exhaustive inventory:
-
-1. Fetch and confirm this branch is not behind `origin/main`; preserve the three planning files in
-   `plans/payments/`.
-2. Add `api/Concertable.Payment/PROVIDER_CONTRACT.md` with the plan's locked product matrix,
-   operation/attempt identities, session kinds, normalized state and transition tables, terminality,
-   retry/revision/expiry rules, safe public errors, Connect posture, consumer ownership, and explicit
-   Stripe.net/API/webhook version assumptions.
-3. Add a deterministic inventory artifact and Payment unit/architecture test that scans the plan's
-   Payment, Customer, B2B, customer-web, B2B-web, and customer-mobile roots. It must fail for an
-   unclassified Stripe provider call, frontend confirmation call, or client-secret parser. Treat the
-   PR #581 bridge files as the finite current allowlist and do not change them.
-4. Obtain and record the live Stripe webhook endpoint API version. Reconcile it with Stripe.net
-   `47.3.0`'s `2025-01-27.acacia` request version; do not upgrade the endpoint in this phase.
-5. Run the inventory check, the focused Payment unit-test project, and the smallest affected Payment
-   build. Update this plan's Phase 1 state and this ledger in the same commit. Do not edit B2B consumer
-   code or start Phase 2 until the Phase 1 exit gate is green.
+1. Push the reviewed meta-only branch and open its GitHub PR.
+2. Apply the `skip-e2e` label and admin-merge the PR through the sanctioned docs path.
+3. Confirm the PR is merged, close this plan-managed worktree, and create a fresh implementation
+   worktree from current `origin/main`.
+4. In that fresh worktree, restore this ledger's next action to Phase 1 — durable decision artifact
+   and exhaustive inventory — before beginning implementation.
 
 ## Completed work
 
@@ -75,7 +64,10 @@ Implement Phase 1 — durable decision artifact and exhaustive inventory:
 
 ## Reviews
 
-Planning self-review found no open issues. No implementation review exists.
+Docs review of `836a15a56257a0e35ca5ef5674b39e38eb6767ac..26ac5b8f33db9f006bffe3380b7d832b4c060c22`
+found no issues across accuracy, contradiction, document ownership, concision, dangling references,
+and followable instructions. Review artifact:
+`reviews/Feature-payments_provider-contract-baseline.md`. No implementation review exists.
 
 ## Decisions, discoveries, blockers, and deviations
 
