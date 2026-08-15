@@ -148,7 +148,7 @@ class PlanGraphTests(unittest.TestCase):
 
     def test_paused_state_is_recognized_and_valid(self):
         ledger = self.write_ledger(
-            next_steps="Paused: awaiting Tommy — say `merge 582` to release the merge."
+            next_steps="Paused: awaiting Tommy's go-ahead on the launch copy before publishing."
         )
 
         self.assertTrue(is_paused(next_steps(ledger.read_text(encoding="utf-8"))))
@@ -164,6 +164,75 @@ class PlanGraphTests(unittest.TestCase):
                 "Resume when: GitHub reports it merged."
             )
         )
+
+    def test_merge_before_review_is_flagged(self):
+        ledger = self.write_ledger(
+            next_steps="1. Open the PR.\n2. `/merge` with full E2E, then follow the platform-sync PR."
+        )
+
+        errors = ledger_errors(ledger)
+
+        self.assertEqual(1, len(errors))
+        self.assertIn("pre-merge gate", errors[0])
+
+    def test_review_sequenced_before_merge_passes(self):
+        ledger = self.write_ledger(
+            next_steps="1. Run `/review`; address findings.\n2. `/merge` on go-ahead, then platform-sync."
+        )
+
+        self.assertEqual([], ledger_errors(ledger))
+
+    def test_merge_with_recorded_review_passes(self):
+        ledger = self.write_ledger(
+            next_steps="Merge on Tommy's go-ahead, then follow the platform-sync PR to green.",
+            extra="## Reviews\n\n- Reviewed `abc1234..def5678`, no open findings.",
+        )
+
+        self.assertEqual([], ledger_errors(ledger))
+
+    def test_merge_origin_main_is_a_branch_sync_not_a_pr_merge(self):
+        ledger = self.write_ledger(
+            next_steps="Merge origin/main, rebuild the affected projects to 0 errors, then push."
+        )
+
+        self.assertEqual([], ledger_errors(ledger))
+
+    def test_merge_with_watermark_review_evidence_passes(self):
+        ledger = self.write_ledger(
+            next_steps="After CI is green, re-enqueue with full-e2e; merge only after the queue E2E passes.",
+            extra="- Review and security watermark: `abc1234`; no open findings.",
+        )
+
+        self.assertEqual([], ledger_errors(ledger))
+
+    def test_paused_awaiting_merge_without_review_is_flagged(self):
+        ledger = self.write_ledger(
+            next_steps="Paused: awaiting Tommy — say `merge 42` to release the merge."
+        )
+
+        errors = ledger_errors(ledger)
+
+        self.assertEqual(1, len(errors))
+        self.assertIn("pre-merge gate", errors[0])
+
+    def test_blocker_mentioning_owner_merge_is_not_gated(self):
+        ledger = self.write_ledger(
+            next_steps=(
+                "Blocked: the owner package is not on the feed.\n"
+                "Blocked by: plans/epic/OWNER_PROGRESS.md.\n"
+                "Unblock action: the owner at `plans/epic/OWNER_PROGRESS.md` must merge it.\n"
+                "Resume when: the feed restores the package."
+            ),
+        )
+        owner = self.write_ledger(
+            "OWNER_PROGRESS.md",
+            extra="## Downstream handoffs\n\n- `plans/epic/WORKTREE_A_PROGRESS.md`",
+        )
+
+        errors = ledger_errors(ledger, live_owners=False)
+
+        self.assertTrue(owner.is_file())
+        self.assertNotIn("pre-merge gate", " ".join(errors))
 
     def test_legacy_graph_metadata_is_rejected(self):
         legacy_plan = self.epic / "LEGACY_PLAN.md"
