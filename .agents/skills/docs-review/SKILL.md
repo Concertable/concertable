@@ -87,11 +87,8 @@ Every concrete claim the doc makes must match the actual repo. Flag, with the mi
 - A **command that won't run** as written (wrong flag, wrong path, wrong shell for the repo).
 
 If the diff touches any `AGENTS.md`, `CLAUDE.md`, or `*/agents/*.md`, run
-`python .agents/hooks/docs_reachability.py --root <absolute-checkout>` — it fails when an `AGENTS.md`
-lacks a `CLAUDE.md` sibling (or that sibling isn't exactly `@AGENTS.md`), or a `*/agents/*.md` doc is
-unreachable by plain link or `@`-import, followed transitively, from any `AGENTS.md`/`CLAUDE.md`/
-`SKILL.md` in the repo. Fold each reported error in as a Lens A finding (a dead/orphaned reference) —
-this is exactly what caused the frontend `app/agents/CODE_CONVENTIONS.md`/`CODE_PATTERNS.md` orphan.
+`python .agents/hooks/docs_reachability.py --root <absolute-checkout>` and fold each reported error in
+as a Lens A finding (a dead/orphaned reference).
 
 ### Lens B — Contradiction with sibling docs (the other high-value lens)
 
