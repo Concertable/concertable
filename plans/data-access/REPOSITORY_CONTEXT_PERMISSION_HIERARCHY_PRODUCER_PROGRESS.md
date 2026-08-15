@@ -28,8 +28,8 @@ their old-package behavior until the consumer migration removes it.
 
 ## Next Steps
 
-1. Commit the clean incremental-review checkpoint.
-2. Push the reviewed fix through the plan-managed push protocol and follow replacement exact-head CI.
+1. Push this verified work-head checkpoint and confirm local, remote-tracking, and PR heads are equal.
+2. Follow replacement exact-head CI to green and refresh current-main currency.
 3. Use the already authorized delivery chain to merge
    the producer and follow package publication plus the generated platform-sync PR to green and merged.
 4. Update the consumer ledger when the published baseline gate opens, close this producer worktree,
@@ -61,6 +61,8 @@ their old-package behavior until the consumer migration removes it.
   `reviews/Refactor-DataAccessRepositoryPermissionHierarchyExpand.md`.
 - Incremental review of `ff7cdc954..07bf600f5` found no issues; the review watermark now resolves to
   exact commit `07bf600f5d86bb980215c46e97f4ad4262e25ab7`.
+- Plan-managed work-head push succeeded for `895020d39..3575330ce`; local, remote-tracking, and PR
+  heads were verified equal at `3575330ce19149d5d97f30d44d2d0c1ce283c4e4`.
 
 ## Decisions, discoveries, blockers, and deviations
 
