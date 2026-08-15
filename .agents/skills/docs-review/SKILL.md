@@ -86,6 +86,10 @@ Every concrete claim the doc makes must match the actual repo. Flag, with the mi
   renamed or removed, or a described behaviour that contradicts the code or config it documents.
 - A **command that won't run** as written (wrong flag, wrong path, wrong shell for the repo).
 
+If the diff touches any `AGENTS.md`, `CLAUDE.md`, or `*/agents/*.md`, run
+`python .agents/hooks/docs_reachability.py --root <absolute-checkout>` and fold each reported error in
+as a Lens A finding (a dead/orphaned reference).
+
 ### Lens B — Contradiction with sibling docs (the other high-value lens)
 
 A doc change must not make two docs disagree. When the diff adds or changes a rule, check the docs it
