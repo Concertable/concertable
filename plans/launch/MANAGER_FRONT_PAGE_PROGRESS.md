@@ -12,18 +12,31 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
 
 ## Next Steps
 
-After transporting this review/ledger checkpoint, require local, remote-tracking, and PR #563 heads to match, then
-let exact-head PR CI pass. Once green, complete the authenticated Phase A.8 seeded venue/artist UX review before the
-merge request.
+Transport this ledger/review checkpoint, require local, remote-tracking, and PR #563 heads to match, then let
+replacement exact-head PR CI pass. Once green, complete the authenticated Phase A.8 seeded venue/artist UX review
+before the merge request.
 
 ## Reviews
 
 - Producer full and incremental review is recorded in `reviews/Feature-launch_dashboard-frontend-package-expand.md`;
   its only finding is closed. Consumer finding ARCH1 is closed, and the incremental correctness/security review of
-  `9be56b9d..90a386b1` found no new issues across 33 commits. The review markers are stamped to work head
-  `90a386b1416f2179eaabef3e7b8068eef8594775`.
+  `9be56b9d..90a386b1` found no new issues across 33 commits. CI2 is closed, and the incremental review of
+  `90a386b1..510bd491` found no new issues. The correctness marker is stamped to work head
+  `510bd491bd67dd84216f6a5dc419aa094241d673`; no security-sensitive production code changed after the security
+  marker at `90a386b1416f2179eaabef3e7b8068eef8594775`.
 
 ## Current implementation
+
+- **Exact-head CI contract correction — fixed and focused tests green.** PR run
+  [`31913884736`](https://github.com/Concertable/concertable/actions/runs/31913884736) exposed six deterministic stale
+  Concert integration assertions: five opportunity cases deserialized the controller's public response as the
+  internal application DTO, and one application case expected the contract metadata route instead of the advertised
+  PDF HATEOAS action. Commit `510bd491b` corrects only those tests. All six formerly failing SQL-backed cases pass
+  locally from a short drive alias (4/4 create theory rows, then 2/2 seeded-opportunity and contract-link cases). The
+  full local project remained active without assertion output until the ten-minute command cap, so replacement
+  exact-head CI owns the authoritative full-project result. The reviewed work leg was pushed from checkpoint head
+  `47ffc4ae8`; fetch verification proved local, remote-tracking, and PR #563 heads all equal
+  `510bd491bd67dd84216f6a5dc419aa094241d673`.
 
 - **Conversations API ownership — producer and package publication complete.** Producer PR
   [#591](https://github.com/Concertable/concertable/pull/591) adds a focused, tested `messageApi.getPreviews()` export
