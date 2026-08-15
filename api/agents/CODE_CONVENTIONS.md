@@ -221,10 +221,6 @@ Two rules that follow from the table:
   pin the stricter meaning rather than inherit the ambiguity.
 - **`Builder` vs `Generator` vs `Factory` is decided by mechanics, not vibes** — mutable-then-finalize is
   a `Builder`; one-shot value from inputs is a `Generator`; one-shot *component* is a `Factory`.
-- **Name an impl for its *swappable technology* when that's its identity:** `IPdfRenderer` →
-  `QuestPdfRenderer`, `IEmailRenderer` → `MjmlEmailRenderer` (cf. `RedisCache`). The mechanism *is* the
-  identity, so it holds for a lone impl — unlike a *relational* stance qualifier (`Public*`/`Admin*`,
-  [`CODE_PATTERNS.md`](./CODE_PATTERNS.md)), which means nothing without a sibling and waits for one.
 
 For types whose whole job is a single operation, [`CODE_PATTERNS.md`](./CODE_PATTERNS.md) already governs
 the name — the agent-noun of that one method (`Mapper.Map`, `Resolver.Resolve`, `Calculator.Calculate`,
