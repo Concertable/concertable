@@ -16,7 +16,7 @@ Use the Reunion package family directly in the project that consumes each API:
 | `Reunion.AspNetCore` | Minimal API and MVC terminal adapters |
 
 Each service owns its exact Reunion versions in its service-local `Directory.Packages.props`. Keep
-all Reunion packages in a service on one version; the current baseline is `0.1.0-alpha.2`. Reference
+all Reunion packages in a service on one version; the current baseline is `0.1.0-alpha.7`. Reference
 only the packages whose APIs a project uses, and reference them directly rather than relying on a
 transitive dependency.
 
@@ -121,7 +121,7 @@ failure.
 
 ## Construct Results and Options
 
-Reunion alpha.2 supports target-typed raw payload conversions. Use them when the declared return or
+Reunion supports target-typed raw payload conversions. Use them when the declared return or
 assignment type makes the branch unambiguous:
 
 ```csharp
@@ -491,17 +491,22 @@ Map only at the controller or endpoint boundary:
 - `ToOkOrProblem` for value Results;
 - `ToNoContentOrProblem` for unit Results;
 - `ToCreatedOrProblem` when the normal success is Created;
+- `ToCreatedAtActionOrProblem` when MVC route generation owns the Created location;
 - `ToActionResult` for custom MVC success mapping;
 - `ToResults` for custom typed HTTP-result success mapping;
 - `ToOkOr` for Options whose absence maps to a caller-supplied HTTP result;
 - `ToOkOrNotFound` and `ToOkOrNoContent` for Options where HTTP owns that absence policy.
 
-Use the projected `ToOkOr` overload when the application value must become a dedicated HTTP
-response, and pass controller result methods directly when no extra state is needed:
+Use a terminal's projected overload when the application value must become a dedicated HTTP response.
+Do not `Map` immediately before `ToOkOrProblem`, `ToCreatedOrProblem`,
+`ToCreatedAtActionOrProblem`, or another terminal that can perform the projection itself. Use the
+projected `ToOkOr` overload for Options, and pass controller result methods directly when no extra
+state is needed:
 
 ```csharp
 return user.ToOkOr(Unauthorized);
 return artist.ToOkOr(value => value.ToDetailsResponse(), NotFound);
+return artistResult.ToOkOrProblem(value => value.ToDetailsResponse());
 ```
 
 For `TError : IError`, omit the problem mapper. Reunion maps `Invalid`/`NotFound`/`Conflict`/

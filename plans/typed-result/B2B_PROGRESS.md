@@ -116,19 +116,16 @@ The module-facade follow-up preserves the existing typed contracts and runtime b
 services own the moved query implementations and forward `Option`/boolean results directly across the
 facade. Artist and Venue keep their existing `Option<int>` dashboard identity flow and explicit
 `TryGetValue` branching; only the operation name now states that the identity belongs to the current
-tenant. Customer consumes the published Reunion `0.1.0-alpha.6` artifacts after restoring the current
-package graph; no Reunion extension was copied or recreated locally.
+tenant. B2B and Customer consume the published Reunion `0.1.0-alpha.7` family after restoring their
+service-local package graphs; no Reunion extension was copied or recreated locally.
 
 ## Next Steps
 
-Merge current `origin/main` through platform-sync PR #575, upgrade the complete B2B Reunion package
-family to `0.1.0-alpha.7`, and use projected `ToOkOrProblem` / `ToCreatedOrProblem` overloads for every
-eligible controller projection. Preserve custom `ToActionResult` only for file responses, bodyless
-unit-result Created responses, and Deal's required polymorphic formatter. Run the smallest affected
-builds, focused HTTP and architecture tests, formatting/invariant gates, plan graph, and incremental
-review. Commit and push the coherent checkpoint, require local/remote/PR head equality and exact-head
-CI, then enqueue PR #552 with the merge workflow's E2E tier and own publication/platform sync through
-terminal green. At that gate, update the registered downstream ledgers and dispatch their open work.
+Commit the current-main/alpha.7 consistency checkpoint, run incremental review, and address every open
+finding. Push the reviewed checkpoint, require local/remote/PR head equality and exact-head build,
+carve, unit, integration, architecture, formatting, and HTTP-contract CI. Enqueue PR #552 with the
+merge workflow's E2E tier and own publication/platform sync through terminal green. At that gate,
+update the registered downstream ledgers and dispatch their open work.
 
 ## Completed work
 
@@ -303,15 +300,18 @@ terminal green. At that gate, update the registered downstream ledgers and dispa
 - Platform `0.1.0-alpha.0.988` revalidation: B2B Web and Customer Web build with 0 errors; the same
   focused unit slices pass 16/16, 17/17, 15/15, 25/25, and 37/37; B2B architecture passes 9/9; B2B
   User integration passes 4/4. Plan graph and `git diff --check` remain clean.
-- Standard Artist, Venue, Opportunity, Application, invitation, and Customer Review creation
-  responses now use Reunion `ToCreatedOrProblem`; Deal lookup uses `ToOkOrProblem`. The remaining
-  `ToActionResult` calls are limited to three file downloads and two bodyless `201 Created` responses
-  for which Reunion has no dedicated unit-result terminal. Focused HTTP integration contracts pass
-  Artist 1/1, Venue 1/1, Concert 5/5, Tenant 1/1, and Customer Review 1/1, including exact Location
-  headers. B2B and Customer Web closures build with 0 errors; B2B architecture passes 8/8;
-  production-project formatting and `git diff --check` pass. The solution formatter timed out while
-  loading the full workspace without reporting a formatting violation; Customer Review required a
-  temporary short drive mapping for the Windows SqlClient native-loader path limit and then passed.
+- Current-main merge commit `6c1e84101` preserves the B2B saga transport fixture and current-main
+  Customer Review `ToCreatedAtActionOrProblem` behavior. The complete B2B Reunion family is alpha.7.
+  Every eligible backend controller projection now uses its terminal overload; the repository-wide
+  `Map(...).ToOk/Created*` inventory is zero. B2B retains exactly five custom `ToActionResult` calls:
+  three typed file responses, one bodyless unit-result Created response, and Deal's polymorphic
+  formatter. Alpha.7 required the file lambdas to return explicit `ActionResult<FileDownload>` values
+  and Customer Ticket's projection lambda to name `ValidationResult` to disambiguate overloads.
+- Direct Release builds pass with 0 warnings/errors for B2B Artist, Venue, and Concert APIs plus
+  Customer Ticket API. B2B architecture passes 9/9; plan graph and `git diff --check` are clean.
+  The B2B Web closure and project formatters timed out during local workspace loading without compiler
+  or formatting diagnostics. Docker is unavailable, so current-alpha.7 HTTP integration and the wider
+  closure/carve/test/format matrix remain exact-head PR CI gates.
 
 ## Decisions and deviations
 
