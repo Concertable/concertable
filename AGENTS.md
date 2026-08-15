@@ -50,6 +50,11 @@ running only its failing scope locally. Full policy: [`docs/REMOTE_VALIDATION.md
 - **Backend (.NET, `api/`)** — seeding, migrations, DTOs, module rules, C# conventions: [`api/AGENTS.md`](./api/AGENTS.md).
 - **Backend Result pattern** — Result, Option, typed errors, validation, construction, composition, and transport terminals: [`api/agents/RESULT_PATTERN.md`](./api/agents/RESULT_PATTERN.md).
 - **Design patterns the codebase commits to** (keyed strategy resolvers, and the anti-patterns they replace — branching on `DealType` in agnostic code, service location, throwaway DTOs): [`api/agents/CODE_PATTERNS.md`](./api/agents/CODE_PATTERNS.md). Read it before adding any rule that varies by a closed key.
+- **Frontend (React/TS, `app/`)** — tiers, conventions and patterns: [`app/AGENTS.md`](./app/AGENTS.md).
+  It anchors [`app/agents/CODE_CONVENTIONS.md`](./app/agents/CODE_CONVENTIONS.md) (absent values are
+  `undefined` not `null`; reads carry no `Dto`/`Response` suffix; writes are `XRequest`) and
+  [`app/agents/CODE_PATTERNS.md`](./app/agents/CODE_PATTERNS.md) (slots over role checks, the zod write
+  boundary, one `xApi` per resource) — the frontend counterparts of the `api/agents/` pair above.
 - **Web SPA (`app/web/`)** — [`app/web/AGENTS.md`](./app/web/AGENTS.md).
 - **Customer cross-platform core (`app/customer/shared`, npm package `@concertable/customer`, exported as `@concertable/customer/shared/*`)** — consumed ONLY by the customer web + mobile apps: [`app/customer/shared/AGENTS.md`](./app/customer/shared/AGENTS.md).
 
