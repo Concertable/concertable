@@ -12,8 +12,10 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
 
 ## Next Steps
 
-Push this ledger transport and verify exact local/tracking/PR head equality. Let exact-head PR #563 CI pass, then
-perform the authenticated Phase A.8 seeded venue/artist UX review and branch review before requesting merge.
+Let producer PR #591 complete its required full-E2E merge-queue run and publish the Conversations `messageApi`.
+Consume that published API in both SPAs, remove message previews from both dashboard APIs, complete the incremental
+review, then commit and push the corrected consumer head. Let exact-head PR #563 CI pass before the authenticated
+Phase A.8 seeded venue/artist UX review and merge request.
 
 ## Reviews
 
@@ -21,6 +23,20 @@ perform the authenticated Phase A.8 seeded venue/artist UX review and branch rev
   its only finding is closed. The consumer branch review remains after exact-head CI and authenticated UX review.
 
 ## Current implementation
+
+- **Conversations API ownership — producer queued.** Producer PR
+  [#591](https://github.com/Concertable/concertable/pull/591) adds a focused, tested `messageApi.getPreviews()` export
+  under `@concertable/b2b/features/conversations`. Its exact-head PR CI passed 57 jobs with no failures; the branch is
+  current with `main` and admitted to the merge queue with `full-e2e` because this is a published-package public
+  shape. Consumer migration waits for the resulting package publication.
+
+- **Consumer review corrections — verified locally.** Optional application-action UI state uses `undefined`, and
+  action/navigation/cache/toast orchestration has moved from the widgets into role-specific hooks. Dashboard shared
+  types moved from the needless `deals/common.ts` nesting to `dashboard/types.ts`. Current application queries now
+  use the locked `Opportunity.Period.End > now` relevance rule, with a focused real HTTP/SQL integration test green;
+  serializer tests prove absent venue avatars are omitted; the inbox preview test asserts the actual latest seeded
+  message; and both affected TypeScript projects compile. The branch review work order records these closed findings
+  and keeps only the Conversations package ownership cut-over open.
 
 - **Frontend package gate — DELIVERED.** Producer PR [#578](https://github.com/Concertable/concertable/pull/578)
   passed exact-head CI and two full-E2E merge groups after `main` advanced, then merged as

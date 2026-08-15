@@ -1,4 +1,4 @@
-import type { ReviewSummary } from "../../reviews/types";
+import type { ReviewSummary } from "../reviews/types";
 
 export interface ProfileHealthItem {
   id: string;
@@ -13,7 +13,10 @@ export interface ProfileHealth {
 }
 
 export type StripeConnectState =
-  "Complete" | "Incomplete" | "ActionRequired" | "Pending";
+  | "Complete"
+  | "Incomplete"
+  | "ActionRequired"
+  | "Pending";
 
 export interface StripeConnectStatus {
   state: StripeConnectState;
