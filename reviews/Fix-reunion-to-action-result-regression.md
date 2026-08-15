@@ -5,7 +5,7 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `a553c1aad53ef377a3481111bbb73998d8432c41`  _(2026-08-15)_
+**Reviewed up to commit:** `e9244e9f45ce2209989357e4bdc74156412e7a1d`  _(2026-08-15)_
 **Security-reviewed up to commit:** `bd9999ae711b1c6b33657548bf49011f2f7b25be`  _(2026-08-15)_
 
 > Range reviewed: `ab26721ae..bd9999ae7` (4 commits).
@@ -23,3 +23,9 @@ No security findings. The controller changes preserve the existing authorization
 > Range reviewed: `bd9999ae7..a553c1aad` (1 commit).
 
 No new findings. The commit adds the exact `Location` assertion required by NAT1 and records the completed review; it does not change production behavior.
+
+## Incremental review — 2026-08-15 (current-main reconciliation)
+
+> Range reviewed: `a553c1aad..e9244e9f4` (4 commits).
+
+No new findings. The range contains the review checkpoint and platform-sync `0.1.0-alpha.0.993` reconciliation only. The complete Release solution builds with 0 errors; the focused Review contract passed before reconciliation, while the post-reconciliation rerun was blocked at fixture construction by an unresponsive local Docker daemon.
