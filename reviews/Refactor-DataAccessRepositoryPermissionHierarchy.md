@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `495fd7900e6d680e1064b641d723412e95e99736`  _(2026-08-15)_
-**Security-reviewed up to commit:** `495fd7900e6d680e1064b641d723412e95e99736`  _(2026-08-15)_
+**Reviewed up to commit:** `a2c2cbd333222d27c3647ab67d8275767a3ac09d`  _(2026-08-15)_
+**Security-reviewed up to commit:** `a2c2cbd333222d27c3647ab67d8275767a3ac09d`  _(2026-08-15)_
 
 > Range reviewed: `429581025..94d7664ad` (2 commits).
 > Status legend: `[ ]` todo - `[~]` in progress - `[x]` done - `[wontfix]` (note why).
@@ -66,3 +66,9 @@ No issues found. The range contains only the review record and plan-managed push
 > Range reviewed: `fd2c51386..495fd7900` (7 commits).
 
 No issues found. The range merges current `origin/main`; its incoming changes are limited to frontend documentation, agent guidance, and their documentation-reachability guard.
+
+## Incremental review - 2026-08-15 (current-main checkpoint)
+
+> Range reviewed: `495fd7900..a2c2cbd33` (1 commit).
+
+No issues found. The checkpoint records the reviewed current-main merge and verified push; no runtime or security-sensitive behavior changed.

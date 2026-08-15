@@ -5,10 +5,9 @@
 - Roadmap item: `data-access/repository-context-permission-hierarchy`
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable/.worktrees/Plan-data-access-repository-permission-hierarchy`
 - Branch: `Refactor/DataAccessRepositoryPermissionHierarchy`
-- PR: [#561](https://github.com/Concertable/concertable/pull/561) (draft)
-- Verified work and PR head: `495fd7900e6d680e1064b641d723412e95e99736`; pushed from remote head
-  `fd2c5138653f466adb20098754e7552213539798` and verified against the remote-tracking ref and draft
-  PR head. The checkpoint-transport commit and its exact-head CI remain.
+- PR: [#561](https://github.com/Concertable/concertable/pull/561) (ready, open)
+- Remote and PR head: `a2c2cbd333222d27c3647ab67d8275767a3ac09d`; local, remote-tracking, and
+  draft PR heads are equal. Exact-head draft CI run `31885137119` passed, including `ci-complete`.
 - Tommy explicitly authorized `/merge` on 2026-08-15. The published contract/package shape requires
   the `full-e2e` merge-queue tier; queue admission is the next delivery action.
 - `origin/main` advanced by six documentation-only commits during CI. It merged cleanly at
@@ -17,6 +16,21 @@
   authoritative build gate before queue admission.
 - Plan-managed work-head push succeeded for `fd2c51386..495fd7900`; local, remote-tracking, and draft
   PR heads were all verified at `495fd7900`.
+- Exact-head CI passed on `a2c2cbd33`. PR #561 is ready with the mandatory `full-e2e` label; auto-merge
+  was enabled through the protected merge queue. GitHub admitted the verified PR head at queue position
+  4 while earlier merge groups ran. Its own merge group is now `AWAITING_CHECKS` at queue position 3:
+  run `31888159066`, merge head `a0ceaae9f`, based on `c0af85731`.
+- Merge-group API E2E passed on run `31888159066`; UI E2E is queued behind the remaining hard-floor
+  matrix jobs.
+- Merge-group UI E2E failed on run `31888159066`: 30/31 scenarios passed, while `A venue's members
+  share one inbox with independent read state` could not find a mailbox message labeled `The Rockers`.
+  No HTTP 4xx/5xx, browser-console, on-screen, or service error was logged. The failure is in the
+  participant-profile rendering path changed by this branch; the failed run was not retried.
+- GitHub ejected and unlocked PR #561. The failure screenshot confirmed the API rendered the seeded
+  artist as `Unknown`. The E2E reseeding host registered the outbox with its dispatcher disabled but
+  omitted the in-process event dispatch used by the real B2B host, so seeded Artist/Venue events never
+  populated Conversations' participant projection. The local fix adds that missing production-aligned
+  registration; it does not direct-seed the projection or add a runtime cross-module fallback.
 - Dependency/package gates: Phase 1 remains an additive producer PR. After it merges, package publication and the generated platform-sync PR must be green before Phase 2 migrates consumers.
 - Last reconciled: 2026-08-15 against fetched `origin/main` at `520761dd4`; the branch is current with
   base after merge commit `beb0bd91d`.
@@ -83,11 +97,10 @@ and green locally and under exact-head draft CI. PR #561 is clean and remains dr
 
 ## Next Steps
 
-1. Transport this verified-push checkpoint, verify local/remote/PR head equality, then require exact-head
-   PR CI to pass.
-2. Normalize [PR #561](https://github.com/Concertable/concertable/pull/561) to `full-e2e`, mark it ready,
-   and enqueue the verified remote head through the merge queue.
-3. Follow the merge-group checks to a terminal result. On green, close the source worktree, sync main,
+1. Merge the current six-commit `origin/main` drift, review and commit the E2E reseeding-host fix.
+2. Push the reviewed fix through exact-head CI, re-enqueue with `full-e2e`, and follow the replacement
+   merge group to a terminal result without retrying a failed run.
+3. On green, close the source worktree, sync main,
    then follow package publication and the generated platform-sync PR to green and merged.
 4. From a fresh close-out worktree, reconcile the terminal delivery evidence, delete this plan and
    ledger together, tick the roadmap item, and land the docs-only close-out.
@@ -147,6 +160,15 @@ and green locally and under exact-head draft CI. PR #561 is clean and remains dr
 - Post-current-main local `dotnet build api/Concertable.slnx --configuration Release
   --disable-build-servers --maxcpucount:1` - stopped after exceeding ten minutes with no compiler
   diagnostic; exact-head PR CI is required before queue admission.
+- Exact-head draft CI run `31885137119` on `a2c2cbd33` - passed: local platform pack, full solution
+  build, service carves, selected unit and integration matrices, and `ci-complete` all green.
+- Merge-group API E2E passed and UI E2E ran 30/31 scenarios green on run `31888159066`; the sole
+  failure exposed the missing in-process event dispatcher in the E2E reseeding host.
+- Messaging unit tests after the fix - 41 passed, 0 failed, 0 skipped.
+- The mandatory local Docker HTTP round-trip health check timed out, so no local browser rerun was
+  started. The affected E2E project build reached branch package consumers but failed because the
+  local package set predates this branch's additive `ReadDbContext`; exact-head CI must rebuild the
+  local platform before the replacement merge-group run.
 
 ## Reviews
 
