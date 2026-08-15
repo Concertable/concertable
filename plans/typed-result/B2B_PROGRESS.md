@@ -7,10 +7,10 @@
 - Branch: `Refactor/B2BTypedResultMigration`
 - PR: #552 (ready; exact-head CI required after the reviewed Reunion alpha.8 cut-over)
 - Checkpoints 8-9 commit: `bfc8690b196821bdd735ea5d229182fd9a3baf36`
-- Current-main merge commit: `ab3df9401028d086ce3c885f84cd27e6317ad6e2`, through
-  `origin/main` `470390ca2`; platform remains `0.1.0-alpha.0.997`.
+- Current-main merge commit: `59e2a66c4bf53f124fd75ed0987a251bf4f50f61`, through
+  `origin/main` `9516a2a2b`; platform remains `0.1.0-alpha.0.997`.
 - Review/fix commit: `eb84634699fa643a072342cd196b9767a6694619`
-- Review watermark: `ab3df9401028d086ce3c885f84cd27e6317ad6e2`; incremental review and
+- Review watermark: `59e2a66c4bf53f124fd75ed0987a251bf4f50f61`; incremental review and
   security review are clean.
 - Checkpoint 10B consumer commits: `c55c99718` and `544144527`
 - Implicit-conversion correction push: starting remote head `804d9b4e8`; pushed
@@ -77,6 +77,9 @@
   this checkpoint transport.
 - Incremental native, security, isolation, module-boundary, seeding, convention, and coverage review
   is clean through checkpoint head `254daebac16837dd5c1dc5fdf808b43eb7442714`; no finding remains open.
+- Current main through `9516a2a2b` is merged as `59e2a66c4`; the range adds only the mandatory
+  plan-review delivery gate. Incremental review is clean through that merge head, its 39 focused hook
+  tests pass, and the plan graph reports 0 errors and 0 warnings.
 - Merge-group run `31876662971` passed 50 jobs but failed B2B API E2E: both cancellation-refund tests
   and both flat-fee/venue-hire draft-payment tests timed out waiting for Payment-owned escrow state.
   Diagnostics proved B2B sent the commands to `command-concertable-b2b-*` while the Payment topology

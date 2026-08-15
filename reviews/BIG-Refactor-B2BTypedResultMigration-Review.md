@@ -6,8 +6,8 @@
 > in one line, take the safe path, keep going.
 
 **Plan anchored to commit:** `e229afb581c829279ca821b0a85729c4c4f0f441`  _(2026-08-10)_
-**Reviewed up to commit:** `254daebac16837dd5c1dc5fdf808b43eb7442714`  _(2026-08-15)_
-**Security-reviewed up to commit:** `254daebac16837dd5c1dc5fdf808b43eb7442714`  _(2026-08-15)_
+**Reviewed up to commit:** `59e2a66c4bf53f124fd75ed0987a251bf4f50f61`  _(2026-08-15)_
+**Security-reviewed up to commit:** `59e2a66c4bf53f124fd75ed0987a251bf4f50f61`  _(2026-08-15)_
 Net diff reviewed: `1043a9178..e229afb58`. Move-only files skipped.
 Status legend: `[ ]` not yet reviewed · `[x]` reviewed (date) · `[~]` in progress (incomplete — re-review).
 
@@ -274,3 +274,11 @@ boundaries, seeding, C# conventions, and test coverage. The producer-topic and e
 remain covered by the focused topology tests. Reunion alpha.8 preserves service-local package
 ownership, and every B2B/Customer error-mapping chain now maps at `Bind`/`BindAsync` without changing
 success, failure, exception, or cancellation behavior.
+
+## Incremental review - 2026-08-15
+
+> Range reviewed: `254daebac16837dd5c1dc5fdf808b43eb7442714..59e2a66c4bf53f124fd75ed0987a251bf4f50f61` (5 commits).
+
+No new findings. The range contains the alpha.8 review checkpoint and a conflict-free merge of
+current main's plan-review gate. Product and package code are unchanged; the plan hook tests pass
+39/39, the plan graph reports 0 errors and 0 warnings, and `git diff --check` is clean.
