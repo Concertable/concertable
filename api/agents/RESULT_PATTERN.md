@@ -16,7 +16,7 @@ Use the Reunion package family directly in the project that consumes each API:
 | `Reunion.AspNetCore` | Minimal API and MVC terminal adapters |
 
 Each service owns its exact Reunion versions in its service-local `Directory.Packages.props`. Keep
-all Reunion packages in a service on one version; the current baseline is `0.1.0-alpha.7`. Reference
+all Reunion packages in a service on one version; the current baseline is `0.1.0-alpha.8`. Reference
 only the packages whose APIs a project uses, and reference them directly rather than relying on a
 transitive dependency.
 
