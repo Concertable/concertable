@@ -12,17 +12,9 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
 
 ## Next Steps
 
-**Blocked on GitHub merge-queue dispatch for producer PR #591.** It has been position 1 in
-`AWAITING_CHECKS` since `2026-08-15T18:35:00Z`; GitHub created synthetic head
-`bffa0f4bc51e07bb7cfca8ef06a93ca79bc80ad1` but attached zero check runs and no `merge_group` workflow after a
-bounded 31-minute monitor. The gate opens when GitHub dispatches that merge group, or after a one-time human
-dequeue/re-enqueue repairs the stuck entry. Do not automate retries or toggles. Valid resumption evidence is a real
-merge-group run for #591 or its merged state.
-
-Once #591 merges, wait for and verify the published Conversations `messageApi`, consume it in both SPAs, remove
-message previews from both dashboard APIs, complete the incremental review, then commit and push the corrected
-consumer head. Let exact-head PR #563 CI pass before the authenticated Phase A.8 seeded venue/artist UX review and
-merge request.
+Consume the published Conversations `messageApi` in both SPAs, remove message previews from both dashboard APIs,
+complete the incremental review, and commit and push the corrected consumer head. Let exact-head PR #563 CI pass
+before the authenticated Phase A.8 seeded venue/artist UX review and merge request.
 
 ## Reviews
 
@@ -31,13 +23,13 @@ merge request.
 
 ## Current implementation
 
-- **Conversations API ownership — producer queue-dispatch blocked.** Producer PR
+- **Conversations API ownership — producer and package publication complete.** Producer PR
   [#591](https://github.com/Concertable/concertable/pull/591) adds a focused, tested `messageApi.getPreviews()` export
-  under `@concertable/b2b/features/conversations`. Its exact-head PR CI passed 57 jobs with no failures; the branch is
-  current with `main` and was admitted to the merge queue with `full-e2e` because this is a published-package public
-  shape. GitHub created synthetic queue head `bffa0f4bc51e07bb7cfca8ef06a93ca79bc80ad1`, but it remains position 1 in
-  `AWAITING_CHECKS` with zero attached check runs after a bounded monitor. No CI failure or queue ejection occurred;
-  consumer migration waits for the queue dispatch, merge, and resulting package publication.
+  under `@concertable/b2b/features/conversations`. Full merge-group run
+  [`31909464706`](https://github.com/Concertable/concertable/actions/runs/31909464706) passed all 58 jobs and #591
+  merged as `836a15a56257a0e35ca5ef5674b39e38eb6767ac`. Exact-merge frontend package publication run
+  [`31911164238`](https://github.com/Concertable/concertable/actions/runs/31911164238) then packed, published, and
+  verified all frontend tiers from the feed successfully.
 
 - **Consumer review corrections — verified locally.** Optional application-action UI state uses `undefined`, and
   action/navigation/cache/toast orchestration has moved from the widgets into role-specific hooks. Dashboard shared
