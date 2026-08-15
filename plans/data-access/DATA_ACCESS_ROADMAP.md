@@ -6,3 +6,4 @@ package and its service consumers.
 ## Items
 
 - [x] Cosmos-aligned repository facets + context-enforced no-tracking `data-access/repository-redesign`
+- [ ] EF context/repository permission hierarchy `data-access/repository-context-permission-hierarchy`
