@@ -192,10 +192,10 @@ explicit intent and both surfaces authenticate `/create` locally before applying
 
 ## Next Steps
 
-Verify the onboarding-route correction, publish it through the plan push protocol, require exact-head
-PR CI to pass, then re-enqueue PR #552 with `full-e2e` and own the new merge-group result without
-retrying any failed run. After merge, own package publication and platform sync through terminal
-green, then update the registered downstream ledgers and dispatch their open work.
+Require exact-head PR CI to pass after the onboarding-fix checkpoint transport, then re-enqueue PR
+#552 with `full-e2e` and own the new merge-group result without retrying any failed run. After merge,
+own package publication and platform sync through terminal green, then update the registered
+downstream ledgers and dispatch their open work.
 
 ## Completed work
 
@@ -249,6 +249,10 @@ green, then update the registered downstream ledgers and dispatch their open wor
   29/31 scenarios passing. The artist-manager and venue-manager sign-up scenarios both authenticated
   successfully but landed on `/` instead of `/create`; there were no HTTP 4xx/5xx, browser-console,
   or server errors. Customer UI did not run because the B2B UI gate failed. The run was not retried.
+- Onboarding fix and clean review range `002c45f5f..db596df1e` is pushed. Local `HEAD`,
+  `origin/Refactor/B2BTypedResultMigration`, and PR #552 `headRefOid` were all verified as
+  `db596df1e2d4ea9e22047f0d14cef97b05f400b3`. `git diff --check` passes; Node/npm is unavailable in
+  this shell, so exact-head CI owns the four-SPA build and test gates. No local E2E was run.
 - The broad local service-carve attempts remain blocked by this branch's existing platform-package
   transition: package mode lacks the branch-local Messaging/Payment additions, while local-core mode
   resolves `Concertable.Contracts` 1.0.0 against the 0.997 service pin. Exact-head PR CI owns the
