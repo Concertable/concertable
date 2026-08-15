@@ -5,7 +5,7 @@
 - Roadmap item: `typed-result/b2b`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-B2BTypedResultMigration`
 - Branch: `Refactor/B2BTypedResultMigration`
-- PR: #552 (ready; auto-merge disabled)
+- PR: #552 (ready; merge queue ejected after API E2E failure)
 - Checkpoints 8-9 commit: `bfc8690b196821bdd735ea5d229182fd9a3baf36`
 - Current code/package-main merge commit: `6c1e84101`, through platform-sync PR #575 merge
   `dee412ba8ff824a46ce16783d2f7d1fc161f2774`.
@@ -62,13 +62,18 @@
 - Platform `0.1.0-alpha.0.988` reconciliation push: starting remote head `c52542f98`; pushed
   `c52542f98..202bbce12`; local work head, remote branch, and PR #552 head matched
   `202bbce124d30350043bb6cf19002c140b3835fb`.
-- Transport head is synchronized locally, remotely, and on PR #552 at
-  `2a5e7fede251beff1d8f4867cbd302a31988932f`. Exact-head CI run `31875185312` is terminal green:
+- Transport head was synchronized locally, remotely, and on PR #552 at
+  `0fd076f459cf80800af54a086d919974c49fc7e8`. Exact-head CI is terminal green:
   52 successful checks, including the solution build, service carves, formatting, architecture, unit,
   integration, and HTTP-contract matrices.
 - Reunion `0.1.0-alpha.7` is published. Concertable PR #569 merged as `7fb3baeaf920baa11dfe540db8c408aa316825b0`,
   its package publication is green, and platform-sync PR #575 merged platform `0.1.0-alpha.0.995` as
   `dee412ba8ff824a46ce16783d2f7d1fc161f2774`. Tommy authorized landing PR #552 on 2026-08-15.
+- Merge-group run `31876662971` passed 50 jobs but failed B2B API E2E: both cancellation-refund tests
+  and both flat-fee/venue-hire draft-payment tests timed out waiting for Payment-owned escrow state.
+  Diagnostics proved B2B sent the commands to `command-concertable-b2b-*` while the Payment topology
+  owned `command-concertable-payment-*`. The fix is implemented and locally verified but not yet
+  committed or pushed.
 
 ## Current state
 
@@ -120,12 +125,20 @@ facade. Artist and Venue keep their existing `Option<int>` dashboard identity fl
 tenant. B2B and Customer consume the published Reunion `0.1.0-alpha.7` family after restoring their
 service-local package graphs; no Reunion extension was copied or recreated locally.
 
+The failed merge-group exposed a cross-service command-routing defect in the Messaging producer API,
+not a typed-terminal regression. The additive `SendsTo<TCommand>(destinationServiceName)` registers one
+explicit cross-service queue owner and rejects conflicting destinations; the existing `Sends<TCommand>()`
+continues to target the current service for same-service commands. The Payment service identity lives
+in `Concertable.Payment.Contracts` for both hosting and consumers, and all three B2B escrow command
+registrations target it.
+
 ## Next Steps
 
-Commit and push this green-CI transport checkpoint, require local/remote/PR head equality, then
-enqueue PR #552 with `full-e2e`. Own the merge-group result, package publication, and platform sync
-through terminal green. At that gate, update the registered downstream ledgers and dispatch their
-open work.
+Review and commit the command-destination fix with this ledger, then use the plan push protocol to
+publish it and require local/remote/PR head equality. Require exact-head PR CI to pass, re-enqueue PR
+#552 with `full-e2e`, and own the new merge-group result without retrying the failed run. After merge,
+own package publication and platform sync through terminal green, then update the registered
+downstream ledgers and dispatch their open work.
 
 ## Completed work
 
@@ -176,6 +189,13 @@ open work.
   HTTP data round-trip. No local E2E was run.
 - Focused changed saga and HTTP surface: 34/34 passed. Full B2B Concert integration: 155/155 passed.
 - Messaging Application unit tests: 41/41 passed. Azure Service Bus unit tests: 8/8 passed.
+- Command-routing fix: Messaging Application unit tests pass 43/43 and Azure Service Bus unit tests
+  pass 10/10. The repository-wide cross-service sender audit uses `SendsTo<TCommand>` for every
+  destination outside the current service.
+  Local platform preparation packed all 40 packages, and B2B Web built against that exact package
+  set with 0 errors and one existing `UserEntity` warning. `git diff --check` is clean. Local Docker
+  remains unavailable, so the four failed API E2E cases return to the merge queue as the exact-stack
+  verification gate after exact-head PR CI.
 - Current-main isolated Messaging producer branch: full API Release build passed with 0 errors;
   affected formatting and diff checks passed. Code review through `28e5797ff` is clean.
 - Messaging PR #536's build, carve, unit, and integration checks are terminal and green against remote
@@ -329,9 +349,11 @@ open work.
 - B2B does not need a second recovery runner. Its durable outbox redelivers commands; Payment owns the
   persisted operation journal, resumes pending work with the same operation ID, and replays terminal
   outcomes. B2B's inbox makes outcome consumption idempotent.
-- Sending a published command is distinct from handling it. `Sends<T>` adds outbound type resolution
-  without adding the command to `RegisteredCommandTypes`, so Azure Service Bus does not create a
-  Payment command receiver in B2B.
+- Sending a published command is distinct from handling it. `SendsTo<T>(destinationServiceName)` adds
+  outbound type resolution and one explicit cross-service queue owner without adding the command to
+  `HandledCommandTypes`, so Azure Service Bus does not create a Payment command receiver in B2B.
+  Same-service `Sends<T>()` retains the sending host's `ServiceName`; cross-service destinations use
+  the receiving service's contract-level identity.
 - The pre-merge plan graph's 13 unrelated stale-ledger errors belonged to the old branch snapshot;
   the current-main graph is the authoritative post-reconciliation gate.
 
