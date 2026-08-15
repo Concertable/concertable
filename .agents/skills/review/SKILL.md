@@ -121,7 +121,10 @@ These docs are the source of truth. Read the ones relevant to the diff — do no
 - `api/ARCHITECTURE.md` and root `ARCHITECTURE.md` — **microservice premise** (the boundary rules below).
 - `api/agents/CODE_CONVENTIONS.md` — C# conventions (source-generated logging, field naming, ctors, etc.).
 - `app/agents/CODE_CONVENTIONS.md` — **frontend** conventions (null-vs-undefined, contract types, casing,
-  TanStack Query shape, stores, form buffers). Read whenever the diff touches `app/`.
+  TanStack Query shape, stores, form buffers), and `app/agents/CODE_PATTERNS.md` — **frontend** patterns
+  (slots over role checks, hooks orchestrate/components render, one `xApi` per resource, the zod write
+  boundary, table dispatch). Read both whenever the diff touches `app/`, plus `app/AGENTS.md` and the
+  tier doc for the directory touched.
 - `api/agents/MODULAR_MONOLITH_RULES.md` — module boundaries within a service.
 - `api/agents/SEEDING_CONVENTIONS.md` — what may and may not be seeded directly.
 - Any `AGENTS.md` in directories the diff touches (each service / module may add local rules).
@@ -158,7 +161,7 @@ Concertable is a multi-service system; **B2B, Customer, and Search are data serv
 - `IDevSeeder` vs `ITestSeeder` misuse (`ITestSeeder` never runs in dev/E2E).
 - Integration events published from a service layer instead of raised from a domain event.
 
-### Lens E — code conventions (`api/agents/CODE_CONVENTIONS.md` for `api/`, `app/agents/CODE_CONVENTIONS.md` for `app/`)
+### Lens E — C# conventions (`api/agents/CODE_CONVENTIONS.md`)
 
 - Inline logging templates (`logger.LogInformation("...")`) instead of a source-generated `[LoggerMessage]` in the project's `Log.cs`.
 - Primary constructors on services/repos/handlers/validators (use explicit ctor + `private readonly` fields, no `_` prefix).
@@ -170,7 +173,11 @@ Frontend (`app/`), same lens, different doc — these recur:
   type). `null` is only for a deliberately-set-empty state that something downstream branches on.
 - A read type named `XDto`/`XResponse`, or a write input that is not an `XRequest`.
 - Server state fetched or mutated from `useEffect` instead of TanStack Query.
-- A free-typed form submitting its raw buffer without a zod parse.
+- A free-typed form submitting its raw buffer without a zod parse (`CODE_PATTERNS.md` "The write
+  boundary is a zod parse").
+- Variation resolved inside a shared tier with an identity/role check instead of an injected slot.
+- Code sitting at a narrower tier than every consumer that legitimately needs it, or a wider one than
+  every consumer can legitimately run.
 
 ### Lens F — Test coverage of changed behaviour
 
