@@ -1,5 +1,9 @@
 # Web Apps
 
+Inherits [`../AGENTS.md`](../AGENTS.md) — which anchors the frontend code conventions and patterns
+(`app/agents/`) that every tier below obeys. This file covers only the web sharing tiers and the build
+gate; don't restate the conventions here.
+
 Two products, three tiers of sharing:
 
 - `shared/` — code every SPA compiles (universal). Rules: [`shared/AGENTS.md`](./shared/AGENTS.md).
