@@ -3,25 +3,62 @@
 - Plan: `plans/launch/MANAGER_FRONT_PAGE_PLAN.md`
 - Roadmap: `plans/launch/LAUNCH_ROADMAP.md`
 - Roadmap item: `launch/manager-front-page`
-- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-launch-dashboard-pickup-endpoints`
-- Branch: `Feature/launch_dashboard-pickup-endpoints`
-- PR: draft producer PR [#557](https://github.com/Concertable/concertable/pull/557) — item-3 consumer PR [#554](https://github.com/Concertable/concertable/pull/554) merged 2026-08-13 (`2dfe09cc9`)
+- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-launch-dashboard-frontend-package-expand`
+- Branch: `Feature/launch_dashboard-frontend-package-expand`
+- PR: draft package producer PR [#578](https://github.com/Concertable/concertable/pull/578); dependent dashboard consumer PR [#563](https://github.com/Concertable/concertable/pull/563)
 
 Captured during Phase A implementation. These supersede the original plan
 where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_PAGE_PLAN.md).
 
 ## Next Steps
 
-**Immediate action:** Transport this verified review-push checkpoint to draft producer PR
-[#557](https://github.com/Concertable/concertable/pull/557), prove local `HEAD`, the remote-tracking branch, and the PR
-head match, and require exact-head CI to pass. Then mark the PR ready, apply `full-e2e` because it changes a published
-gRPC/client contract, enqueue it through the merge queue, and follow package publication plus platform-sync to green.
-After the producer delivery chain lands, close this worktree and resume from a fresh B2B consumer worktree to implement
-the overview, canonical-resource list, chart, review, inbox, activity, and settlement endpoints against that published
-baseline. Activity stays last because it needs its owned persistence model and an `api/initial-migrations.ps1`
-re-scaffold. Keep every remaining dashboard section in scope; Phase A.8 UX freeze remains an independent later item.
+Push this ledger transport, verify exact local/tracking/PR head equality, and let exact-head CI pass. Then re-enqueue
+PR #578 once on a fresh runner: its first merge-group run was cancelled after a runner OOM killed the
+Service Bus emulator during fixture startup, before any test ran. If the fresh-stack attempt repeats that signature,
+dispatch `e2e-api-debug`; if it passes, follow `publish-fe-packages` to green. Verify the published
+`@concertable/b2b` version exports `features/conversations` with `MessagePreview` and exports `actionLinkApi` from
+`features/concerts`. Once published, sync dependent dashboard PR #563 with current main, apply the prepared consumer
+imports and `undefined` corrections, and rerun its exact-head standalone carves.
+
+## Reviews
+
+- Full and incremental review is recorded in `reviews/Feature-launch_dashboard-frontend-package-expand.md`; its only
+  finding is closed. Runtime source is reviewed through `9f3d47417bc40bc6355564b0225e3be290bdcde6`; later commits are
+  plan/review checkpoints and merges from `origin/main`, with no change to the reviewed frontend source diff.
 
 ## Current producer slice
+
+- **Frontend package expansion — pushed to draft PR #578.** Commit `5246aeeb2` adds the B2B-owned
+  `features/conversations` package export with optional `MessagePreview.otherPartyAvatarUrl`, plus the shared B2B
+  `actionLinkApi` export used by both manager SPAs. `MessagePreview` is not a dashboard or universal-shared type.
+  Identical package source was built in the dependent dashboard worktree: shared tests pass 6/6, both shared package
+  builds pass, and customer, venue, artist, and business TypeScript/Vite production builds pass. The producer
+  worktree's own dependency install was interrupted and Windows security locked generated files; no generated or
+  dependency files are committed. Work head `7a11c0f368c49d5356206c1a7e9550ab49be4680` was verified equal across
+  local, remote-tracking, and PR heads; exact-head CI run
+  [31880667593](https://github.com/Concertable/concertable/actions/runs/31880667593) was superseded by the review fix.
+  Full review through `60742981e` found one missing action-link test gate; fix commit `60742981e` adds execute/download
+  coverage and makes B2B package builds run all tests. The clean dependent worktree passes 16/16 B2B package tests
+  and the package build. Exact-head CI run
+  [31881049352](https://github.com/Concertable/concertable/actions/runs/31881049352) passed on attempt 2 after the first
+  attempt's B2B User integration fixture hit a transient SQL image registry connection reset. Current `origin/main`
+  merged cleanly in `9f3d47417`; the full solution restore and build then succeeded with 0 errors. Incremental review
+  through `9f3d47417` found no new issues; the reviewed frontend source diff is unchanged. Current-main work head
+  `9f24030b6bf0614b0cfc0e15eb47fd7904dea01c` was pushed from starting remote/PR head
+  `330c76c2ecfb0cecdd5bbbcb398c3284da5d6340`; fetch verification proved local, remote-tracking, and PR heads all
+  equal the work head.
+  PR CI then passed at final producer head `cc10a7f5fbb0015cd53fdb46d8c9daf1049cc970`. Merge-group run
+  [31886414949](https://github.com/Concertable/concertable/actions/runs/31886414949) completed all build, carve, unit,
+  and integration jobs, but the B2B API E2E fixture produced no test result and GitHub cancelled it at the queue's
+  roughly 45-minute limit. Its uploaded diagnostics show `Out of memory`, followed by the Service Bus emulator
+  exiting during startup; zero scenarios ran, so this is the fresh-stack flake case rather than a product assertion.
+  Current `origin/main` then merged cleanly as `0cb5d04aa`; the ordered `build:web-packages` chain passed, including
+  shared tests 6/6 and B2B tests 16/16 plus the B2B TypeScript package build.
+  Work head `52ffc10a4aed1e8bed0f4942aaa11a947b7f03bb` was pushed with exact local/tracking/PR equality, and exact-head
+  PR CI run [31890416225](https://github.com/Concertable/concertable/actions/runs/31890416225) passed all 60 jobs.
+  `origin/main` advanced by review-gate documentation and hook changes while that run drained; those merged cleanly as
+  `755133470`. The ordered web-package gate passed again (shared 6/6, B2B 16/16, all four package builds), and fetch
+  verification proved `7551334704c1b02b0f47e43856337af9bcd42e6d` equal across local, tracking, and PR heads.
 
 - Producer implementation commit `0d37bfa7a` remains the published implementation baseline on draft PR
   [#557](https://github.com/Concertable/concertable/pull/557). Full review through `bc56de2d8` found BUG1: settlement
