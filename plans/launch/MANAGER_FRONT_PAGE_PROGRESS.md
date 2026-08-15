@@ -12,15 +12,24 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
 
 ## Next Steps
 
-**Immediate action:** Implement the current-tenant canonical resource endpoints for venue applications to review,
-artist applications, venue/artist upcoming concerts, venue open opportunities, artist recommended opportunities,
-venue/artist inbox previews, and recent venue/artist reviews. Keep these response shapes aligned with the existing
-dashboard TypeScript contracts and cover their repository/service behavior with focused tests. Activity remains last
-because it needs its owned persistence model and an `api/initial-migrations.ps1` re-scaffold. Once every endpoint lands,
-complete the Phase C fixture-to-real-API cutover. Keep every remaining dashboard section in scope; Phase A.8 UX freeze
-remains an independent later item.
+Push checkpoint 3 to draft PR #563 and let exact-head PR CI run the full build, carve, unit, and integration matrix.
+Once green, perform authenticated Phase A.8 UX review with seeded venue and artist managers: inspect both live
+dashboards at desktop, tablet, and mobile widths; exercise the application actions and contract download; and capture
+Tommy's feedback. Then run the branch review before requesting merge. Do not restore persona fixtures; UX now runs
+against the real API and seeded stack.
 
 ## Current producer slice
+
+- **B2B consumer checkpoint 3 — committed locally.** Recent venue/artist review endpoints, a tenant-owned persisted
+  activity feed, and every remaining dashboard API integration are implemented in work commit `e4054a7e6`. Activity
+  producers publish `TenantActivityRecordedEvent` through their owning transactional outbox; Tenant projects the
+  current-tenant feed with inbox idempotency. The all-module migration re-scaffold changed only Tenant, Venue, and
+  Artist as intended. Both dashboard SPAs now use real APIs throughout; persona switching and all fixtures are gone,
+  and advertised application/contract actions execute through the HATEOAS links. `Concertable.B2B.Web` builds with
+  0 warnings/errors; Tenant tests pass 98/98, Conversations 8/8, Concert 133/133, Venue 8/8, Artist 7/7, shared package
+  tests 6/6; both integration projects compile cleanly; both TypeScript and production Vite builds pass; and the
+  frontend boundary checker is green. SQL-backed test execution remains assigned to draft CI because Windows rejects
+  the SQL SNI path in this deep worktree with `0x800700CE` before application startup.
 
 - **B2B consumer checkpoint 2 — committed locally.** Canonical current-tenant endpoints now provide venue/artist
   applications, upcoming concerts, venue open opportunities, artist recommendations, and conversation message
@@ -133,14 +142,12 @@ degenerate `DateRange`, `Money.ToMinorUnits()` fills the `long` cents. Platform-
    new `IManagerPaymentReportingClient` (protobuf `Timestamp` + `Money`) kept `IManagerPaymentOperationsClient`
    source-compatible with B2B's concrete test client; B2B consumes the published `Concertable.Payment.Client` package,
    never producer source. Platform-sync #556 merged — platform on `0.1.0-alpha.0.978`; the chain is fully closed.
-4. ⏳ **B.11 pickup endpoints + Phase C FE cutover — ACTIVE (draft PR #563).** Overview, monthly revenue/payout charts,
-   and venue settlements are implemented, locally verified, and pushed. See "Immediate action" above for the remaining
-   canonical lists, reviews, inbox, and activity. Once the endpoints land, complete Phase C: delete `app/shared/.../persona.ts`,
-   `PersonaSwitcher.tsx`, and the per-SPA `fixtures/`, swapping each `dashboardApi.ts` body from a fixture return to
-   `api.get`.
-5. ⏳ **Phase A.8 — UX freeze (was item 1).** Manual browser QA of the dashboard across
-   `?persona=empty|mid|thriving` + tablet/mobile responsive collapse. Independent of item 4; needs the running
-   authenticated B2B stack (human-gated).
+4. ✅ **B.11 pickup endpoints + Phase C FE cutover — IMPLEMENTED (draft PR #563).** Every overview, chart,
+   canonical list, review, inbox, and activity endpoint is implemented and locally verified. Both SPAs use the real
+   API, fixtures and persona controls are deleted, and HATEOAS actions are functional. Exact-head CI remains.
+5. ⏳ **Phase A.8 — UX freeze (was item 1).** Review the live seeded venue and artist dashboards at desktop,
+   tablet, and mobile widths. Exercise application actions and contract download. Needs the running authenticated B2B
+   stack and Tommy's visual feedback.
 
 ## Naming & terminology
 
@@ -206,7 +213,7 @@ degenerate `DateRange`, `Money.ToMinorUnits()` fills the `long` cents. Platform-
 
 ## Mock-tier infrastructure (deleted in Phase C)
 
-When real BE lands, `dashboardApi.ts` **stays** — method bodies are swapped from fixture returns to real `api.get(...)` calls. Export shape is unchanged. These are the only things deleted:
+Phase C kept each `dashboardApi.ts` export shape and replaced its fixture bodies with real API calls. It deleted:
 
 - `app/web/{venue,artist}/src/features/dashboard/fixtures/` — fake data per persona
 - `app/shared/src/features/dashboard/persona.ts` — `FixturePersona`, `selectPersona`, `NOW` anchor + date helpers (`daysAhead`, `daysAgo`, `hoursAgo`, `monthsAgoIso`)
@@ -283,7 +290,9 @@ app/web/artist/src/features/dashboard/  # same shape, artist-specific
 
 ✅ 1–10 all done. Phase A committed on `Feature/ManagerFrontPage` (commit `5fb54e96`) 2026-05-18.
 
-11. **Phase A.8 — UX freeze.** Spin up dev server, hit `/_venue/` and `/_artist/` (both gated by auth — log in as a venue manager + artist; alternatively temporarily bypass guards in `_venue/route.tsx` / `_artist/route.tsx`). Toggle persona via `?persona=empty|mid|thriving` and check each visual state. Verify responsive collapse at tablet + mobile breakpoints.
+11. **Phase A.8 — UX freeze.** Run the authenticated seeded B2B stack, inspect `/_venue/` and `/_artist/` as the
+    corresponding managers, verify responsive collapse at desktop, tablet, and mobile widths, and exercise the
+    advertised application actions and contract download. Do not bypass guards or restore fixture personas.
 
 ## Session-2 deltas (2026-05-18, committed)
 

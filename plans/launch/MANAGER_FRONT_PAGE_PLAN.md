@@ -1,10 +1,11 @@
 # Manager Front Page Plan
 
-## Progress (2026-05-18, post-session-3 close-out)
+## Progress (2026-08-15, B2B consumer checkpoint 3)
 
-**Branch:** `Feature/ManagerFrontPage` — **PR [#50](https://github.com/ThomasSeery/Concertable/pull/50)** open against `main`. **Head: `23c8fc4c`.** Pushed.
+**Branch:** `Feature/launch_dashboard-b2b-consumer` — draft PR [#563](https://github.com/Concertable/concertable/pull/563).
 
-**Phase A: ✅ committed (5fb54e96).** Mocks running. **Phase B partially landed** — B.9 + B.10 done; B.11 KPI endpoint shipped end-to-end; remaining B.11 endpoints (overview, activity, charts) and B.12 (tests) deferred. **Intent: merge as incomplete-but-ready-to-expand.**
+**Phase A UI and Phase B implementation are complete.** The live-data cutover and focused tests are committed in
+`e4054a7e6`; exact-head draft CI and the authenticated Phase A.8 UX review remain before branch review and merge.
 
 See [MANAGER_FRONT_PAGE_PROGRESS.md](MANAGER_FRONT_PAGE_PROGRESS.md) for session decisions that supersede this plan in conflict.
 
@@ -14,11 +15,11 @@ See [MANAGER_FRONT_PAGE_PROGRESS.md](MANAGER_FRONT_PAGE_PROGRESS.md) for session
 
 | Step | Description | Status | Commit |
 |---|---|---|---|
-| B.9 | `ConcertEntity` → owned `DateRange Period` refactor | ✅ code; ⚠️ migration re-scaffold pending | `094fd4d4` |
+| B.9 | `ConcertEntity` → owned `DateRange Period` refactor | ✅ code and all-module migration re-scaffold | `094fd4d4` + `e4054a7e6` |
 | B.10 | Shared `IHasDateRange` marker + `IUpcomingSpecification<T>` / `IDateRangeSpecification<T>` specs | ✅ | `e2193f46` + `23c8fc4c` (added `ApplyExpression<TParent>` overload + `BuildPredicate` helper) |
 | B.11 | Dashboard KPI endpoint (venue + artist) — orchestration via Venue/Artist dashboard services, one SQL round trip via `ConcertDashboardRepository` + queryable mapper | ✅ KPI slice only | `d4f9a3a6` + `a91c7271` + `23c8fc4c` |
-| B.11 | Dashboard overview + activity + charts endpoints | 🔄 Overview, revenue/payout charts, and venue settlements implemented on the B2B consumer branch; canonical lists and activity remain | — |
-| B.12 | Integration tests per new facade method | ⏳ Pending | — |
+| B.11 | Dashboard overview, activity, charts, and canonical current-tenant resources; live SPA cutover | ✅ Implemented and locally verified | `d82f93cb7` + `16baf7cc4` + `e4054a7e6` |
+| B.12 | Focused unit and SQL-backed integration coverage | ✅ Added; draft CI owns SQL execution at the exact head | `e4054a7e6` |
 
 ### B.11 KPI endpoint — what shipped
 
@@ -97,7 +98,7 @@ Each remaining endpoint has a clear docking point. Order by independence:
 | A.5 | Venue widgets + page + route | ✅ |
 | A.6 | Artist widgets + page; layout diverged from venue (NextConcertHero, ApplicationsPipeline, no Settlements/Open opps) | ✅ |
 | A.7 | Stripe + Profile-Health banners | ✅ Done via overview widgets |
-| A.8 | UX freeze, persona switch verification, builds green | ⏳ Pending (eyeball with three personas; tablet/mobile responsive pass) |
+| A.8 | Authenticated live-data UX freeze; application actions; responsive review | ⏳ Pending seeded venue/artist review at desktop, tablet, and mobile widths |
 
 **Session-2 deltas (committed in 5fb54e96):**
 
@@ -112,7 +113,9 @@ Each remaining endpoint has a clear docking point. Order by independence:
 
 **Open Phase A todo:**
 
-- **A.8 UX freeze** — spin up dev server, hit `/_venue/` and `/_artist/`, toggle `?persona=empty|mid|thriving`, verify responsive collapse. Auth-gated routes; either log in as seeded venue/artist manager or temporarily bypass guards in `_venue/route.tsx` / `_artist/route.tsx`. Independent of Phase B work and can be picked up at any time.
+- **A.8 UX freeze** — run the authenticated seeded B2B stack, inspect `/_venue/` and `/_artist/` as the corresponding
+  managers, verify desktop/tablet/mobile layouts, and exercise application actions and contract download. The fixture
+  personas and guard bypass are no longer valid because Phase C now uses the real API end to end.
 
 **Key divergences from original plan** (codified in FEEDBACK.md):
 
