@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `016bd25fb0f84872c51f2cb2808cb4b680b06a3a`  _(2026-08-15)_
-**Security-reviewed up to commit:** `016bd25fb0f84872c51f2cb2808cb4b680b06a3a`  _(2026-08-15)_
+**Reviewed up to commit:** `f80bd66c50dd1e5e6de954e41441b9d8ae712fbc`  _(2026-08-15)_
+**Security-reviewed up to commit:** `f80bd66c50dd1e5e6de954e41441b9d8ae712fbc`  _(2026-08-15)_
 
 > Range reviewed: `429581025..94d7664ad` (2 commits).
 > Status legend: `[ ]` todo - `[~]` in progress - `[x]` done - `[wontfix]` (note why).
@@ -80,3 +80,11 @@ No issues found. The checkpoint records the reviewed current-main merge and veri
 No issues found. The E2E reseeding host now uses the same in-process event dispatch registration as
 the B2B web host, so Artist/Venue seed events populate Conversations through the production projection
 handlers. The change does not alter runtime authorization, service boundaries, or security-sensitive code.
+
+## Incremental review - 2026-08-15 (second current-main merge)
+
+> Range reviewed: `016bd25fb..f80bd66c5` (8 commits).
+
+No issues found. Besides the already-reviewed E2E fix checkpoint, the range brings in current main's
+plan graph and handoff-hook changes plus their tests and guidance. It does not add another runtime or
+security-sensitive change to this PR.

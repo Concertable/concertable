@@ -31,9 +31,12 @@
   omitted the in-process event dispatch used by the real B2B host, so seeded Artist/Venue events never
   populated Conversations' participant projection. The local fix adds that missing production-aligned
   registration; it does not direct-seed the projection or add a runtime cross-module fallback.
+- The fix is committed at `016bd25fb`, incrementally reviewed with no findings, and current
+  `origin/main` at `9516a2a2b` merged cleanly at `f80bd66c5`. The updated plan graph passes with zero
+  errors and zero warnings.
 - Dependency/package gates: Phase 1 remains an additive producer PR. After it merges, package publication and the generated platform-sync PR must be green before Phase 2 migrates consumers.
-- Last reconciled: 2026-08-15 against fetched `origin/main` at `520761dd4`; the branch is current with
-  base after merge commit `beb0bd91d`.
+- Last reconciled: 2026-08-15 against fetched `origin/main` at `9516a2a2b`; the branch is current with
+  base after merge commit `f80bd66c5`.
 
 ## Current state
 
@@ -97,12 +100,12 @@ and green locally and under exact-head draft CI. PR #561 is clean and remains dr
 
 ## Next Steps
 
-1. Merge the current six-commit `origin/main` drift, review and commit the E2E reseeding-host fix.
-2. Push the reviewed fix through exact-head CI, re-enqueue with `full-e2e`, and follow the replacement
+1. Commit the reviewed current-main checkpoint, push it through exact-head CI, then re-enqueue with
+   `full-e2e` and follow the replacement
    merge group to a terminal result without retrying a failed run.
-3. On green, close the source worktree, sync main,
+2. On green, close the source worktree, sync main,
    then follow package publication and the generated platform-sync PR to green and merged.
-4. From a fresh close-out worktree, reconcile the terminal delivery evidence, delete this plan and
+3. From a fresh close-out worktree, reconcile the terminal delivery evidence, delete this plan and
    ledger together, tick the roadmap item, and land the docs-only close-out.
 
 ## Completed work
