@@ -239,3 +239,20 @@ No additional findings. Reviewed standalone-service ownership, combined-AppHost 
 microservice isolation, published-contract boundaries, C# conventions, solution test discovery, and
 focused coverage. AppHost topology tests pass 5/5, existing Payment topology tests pass 6/6, and both
 the standalone B2B AppHost and full AppHost build with 0 errors.
+
+## Incremental review - 2026-08-15
+
+> Range reviewed: `207875a1f19aaf4422dd1e589930dd740144c11f..9419cff19`.
+
+- [x] **NAT10 - HIGH - native/runtime correctness** -
+  `api/Concertable.AppHost.Shared/AsbTopology.cs:38`
+  Merge-group run `31883844374` stalled before fixture startup because Service Bus emulator 2.0
+  rejects topics without subscriptions. The producer-owned `ConcertPostedEvent` topic was valid for
+  Azure Service Bus but invalid in the B2B-only emulator composition. Resolved in `9419cff19` by
+  finalizing emulator configuration after all topology declarations and adding a one-minute sink only
+  to orphan topics. Topics with real subscribers receive no sink, and every AppHost now uses the same
+  finalization path.
+
+No additional findings. Reviewed emulator-only behavior, production topology semantics, topic and
+subscription deduplication, standalone-service composition, microservice isolation, C# conventions,
+and focused coverage. AppHost topology tests pass 6/6.

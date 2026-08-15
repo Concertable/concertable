@@ -5,12 +5,12 @@
 - Roadmap item: `typed-result/b2b`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-B2BTypedResultMigration`
 - Branch: `Refactor/B2BTypedResultMigration`
-- PR: #552 (ready; merge queue ejected after the second API E2E failure)
+- PR: #552 (ready; exact-head CI required after the emulator-topology correction)
 - Checkpoints 8-9 commit: `bfc8690b196821bdd735ea5d229182fd9a3baf36`
 - Current code/package-main merge commit: `85df45648e8c5194c9be49f14918a76fe6bde54a`, through
   platform-sync PR #576 merge `520761dd4` and platform `0.1.0-alpha.0.997`.
 - Review/fix commit: `eb84634699fa643a072342cd196b9767a6694619`
-- Review watermark: `207875a1f19aaf4422dd1e589930dd740144c11f`; incremental review and
+- Review watermark: `9419cff19`; incremental review and
   security review are clean.
 - Checkpoint 10B consumer commits: `c55c99718` and `544144527`
 - Implicit-conversion correction push: starting remote head `804d9b4e8`; pushed
@@ -87,6 +87,13 @@
 - Producer-topology fix push: starting remote head `104ba11fde1b908614003e47855625d6c9babbca`;
   pushed `104ba11fd..002d26f6d`; local work head, remote branch, and PR #552 head matched
   `002d26f6d1c0fb643ad35271867e2c84506e76cb`.
+- Exact-head CI run `31883214616` passed 52 jobs with 5 expected skips. Merge-group run
+  `31883844374` then stalled before any B2B test executed. Its diagnostics proved Service Bus
+  emulator 2.0 terminated during `app.StartAsync()` because it requires at least one subscription per
+  topic; `ConcertPostedEvent` was intentionally producer-only in the standalone B2B composition.
+- Emulator-topology correction `9419cff19` moves emulator activation after the complete topology and
+  adds an expiring sink only to topics with no real subscriber. All six AppHosts use the shared path;
+  focused topology tests pass 6/6 and prove subscribed topics do not receive the sink.
 
 ## Current state
 
@@ -150,6 +157,9 @@ consumer-only AppHost topology model: B2B could not publish `ConcertPostedEvent`
 running because no topic existed. `AsbTopology.Publish<TEvent>` now lets each service topology provision
 its complete outbound event surface independently of downstream subscriptions; publish and subscribe
 declarations share one topic resource. Root orchestration tests pin every publishing service's event set.
+Because the local Service Bus emulator rejects valid producer-only topics, emulator activation now
+finalizes the topology with a one-minute sink for orphan topics only; Azure-facing publisher and real
+subscriber semantics remain unchanged.
 
 ## Next Steps
 
