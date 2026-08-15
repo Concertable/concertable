@@ -28,7 +28,7 @@ their old-package behavior until the consumer migration removes it.
 
 ## Next Steps
 
-1. Commit the verified additive-name collision fix and run incremental review through the new head.
+1. Commit the clean incremental-review checkpoint.
 2. Push the reviewed fix through the plan-managed push protocol and follow replacement exact-head CI.
 3. Use the already authorized delivery chain to merge
    the producer and follow package publication plus the generated platform-sync PR to green and merged.
@@ -59,6 +59,8 @@ their old-package behavior until the consumer migration removes it.
 - Formal review of `1f4ea1f72..ff7cdc954` found no issues across correctness, microservice isolation,
   module boundaries, seeding, C# conventions, or changed-path test coverage. Review artifact:
   `reviews/Refactor-DataAccessRepositoryPermissionHierarchyExpand.md`.
+- Incremental review of `ff7cdc954..07bf600f5` found no issues; the review watermark now resolves to
+  exact commit `07bf600f5d86bb980215c46e97f4ad4262e25ab7`.
 
 ## Decisions, discoveries, blockers, and deviations
 
