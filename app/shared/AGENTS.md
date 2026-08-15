@@ -1,5 +1,7 @@
 # app/shared — `@concertable/shared`, the universal cross-platform core
 
+Inherits [`../AGENTS.md`](../AGENTS.md) (frontend conventions + patterns).
+
 ## This is the WIDEST tier. Everything here compiles into EVERY surface — customer AND b2b, web AND mobile. It is the intersection, never the union.
 
 Concertable is two products (customer marketplace + b2b manager platform) across two platforms
