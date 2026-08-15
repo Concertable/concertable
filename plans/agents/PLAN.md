@@ -171,6 +171,10 @@ Resume when: <the objective evidence that proves the gate opened>
 The final response reports all four lines verbatim and never emits this plan's continuation pointer while
 they remain true. Route the resolving work according to ownership:
 
+When a blocker or user action concerns an existing PR, especially permission to make it ready or
+merge it, include the clickable `[PR #<number>](<url>)` link in the relevant blocker field and final
+report. Never ask for merge permission with only a bare PR number.
+
 - Existing PR, plan, or session: register the downstream handoff, name the owner, and stop without a
   prompt. The owner updates this ledger and surfaces its pointer when the gate opens, then removes the
   dispatched entry from `## Downstream handoffs` before becoming terminal.
