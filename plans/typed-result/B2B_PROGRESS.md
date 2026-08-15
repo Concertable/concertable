@@ -10,7 +10,7 @@
 - Current code/package-main merge commit: `85df45648e8c5194c9be49f14918a76fe6bde54a`, through
   platform-sync PR #576 merge `520761dd4` and platform `0.1.0-alpha.0.997`.
 - Review/fix commit: `eb84634699fa643a072342cd196b9767a6694619`
-- Review watermark: `85df45648e8c5194c9be49f14918a76fe6bde54a`; incremental review and
+- Review watermark: `207875a1f19aaf4422dd1e589930dd740144c11f`; incremental review and
   security review are clean.
 - Checkpoint 10B consumer commits: `c55c99718` and `544144527`
 - Implicit-conversion correction push: starting remote head `804d9b4e8`; pushed
@@ -150,10 +150,10 @@ declarations share one topic resource. Root orchestration tests pin every publis
 
 ## Next Steps
 
-Commit and incrementally review the producer-owned AppHost topology fix, push it with this ledger,
-require exact-head PR CI to pass, then re-enqueue PR #552 with `full-e2e` and own the new merge-group
-result without retrying either failed run. After merge, own package publication and platform sync
-through terminal green, then update the registered downstream ledgers and dispatch their open work.
+Push the reviewed producer-owned AppHost topology fix and this ledger, require exact-head PR CI to
+pass, then re-enqueue PR #552 with `full-e2e` and own the new merge-group result without retrying
+either failed run. After merge, own package publication and platform sync through terminal green,
+then update the registered downstream ledgers and dispatch their open work.
 
 ## Completed work
 

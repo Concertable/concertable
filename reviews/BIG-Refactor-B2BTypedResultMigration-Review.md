@@ -222,3 +222,20 @@ No new findings. The range contains the clean review checkpoint and a conflict-f
 main through platform `0.1.0-alpha.0.997`. Main's compiler-enforced B2B/Payment integration-test
 isolation removes obsolete test visibility and does not alter the command routing implementation.
 The B2B Web package-consumer build remains green at the merge head.
+
+## Incremental review - 2026-08-15
+
+> Range reviewed: `85df45648e8c5194c9be49f14918a76fe6bde54a..207875a1f19aaf4422dd1e589930dd740144c11f`.
+
+- [x] **NAT9 - HIGH - native/runtime correctness** -
+  `api/Concertable.AppHost.Shared/AsbTopology.cs:17`
+  Merge-group run `31881130783` proved B2B now reached the Payment command queues, then failed because
+  its standalone AppHost published `ConcertPostedEvent` to a topic provisioned only by the absent
+  Customer subscriber topology. Resolved in `207875a1f`: service topologies explicitly declare every
+  event they publish, `Publish<TEvent>` shares its topic resource with subscriptions, and root
+  orchestration tests pin the complete Auth, B2B, Customer, and Payment producer sets.
+
+No additional findings. Reviewed standalone-service ownership, combined-AppHost deduplication,
+microservice isolation, published-contract boundaries, C# conventions, solution test discovery, and
+focused coverage. AppHost topology tests pass 5/5, existing Payment topology tests pass 6/6, and both
+the standalone B2B AppHost and full AppHost build with 0 errors.
