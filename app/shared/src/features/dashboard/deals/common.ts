@@ -36,7 +36,7 @@ export interface ActivityItem {
   type: ActivityType;
   at: string;
   subject: string;
-  detail: string | null;
+  detail?: string;
   url: string;
 }
 
@@ -59,16 +59,6 @@ export interface Settlement {
   direction: SettlementDirection;
 }
 
-export interface MessagePreview {
-  id: number;
-  otherPartyName: string;
-  otherPartyAvatarUrl: string | null;
-  preview: string;
-  at: string;
-  unread: boolean;
-  href: string;
-}
-
 export type DashboardApplicationStatus =
   | "Pending"
   | "Accepted"
@@ -80,7 +70,7 @@ export type DashboardApplicationStatus =
 export interface ConcertCard {
   id: number;
   name: string;
-  bannerUrl: string | null;
+  bannerUrl?: string;
   startDate: string;
   endDate: string;
   counterpartyName: string;
@@ -94,9 +84,9 @@ export type { ReviewSummary };
 export interface ReviewExcerpt {
   id: number;
   reviewerName: string;
-  reviewerAvatarUrl: string | null;
+  reviewerAvatarUrl?: string;
   stars: number;
-  excerpt: string | null;
+  excerpt?: string;
   at: string;
   href: string;
 }

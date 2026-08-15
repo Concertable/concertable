@@ -12,20 +12,23 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
 
 ## Next Steps
 
-Blocked: PR #563 cannot pass its standalone artist and venue carves until the published frontend packages expose `MessagePreview` and `actionLinkApi`.
-Blocked by: A publish-first frontend package producer PR and Tommy's authorization to merge it.
-Unblock action: From current `origin/main`, add `MessagePreview` alongside the retained `MessageThread` export in `@concertable/shared` and add the new `actionLinkApi` export to `@concertable/b2b`; review and merge that additive PR, follow `publish-fe-packages` to green, then sync PR #563 with main and rerun exact-head CI.
-Resume when: The package publication run is green and the published `@concertable/shared` and `@concertable/b2b` version contains both new exports. Then make PR #563 exact-head CI green, perform the authenticated Phase A.8 seeded venue/artist UX review, and run the branch review before requesting merge.
+Blocked: PR #563 cannot pass its standalone artist and venue carves until the published B2B frontend package exposes `MessagePreview` and `actionLinkApi`.
+Blocked by: Additive package producer PR [#578](https://github.com/Concertable/concertable/pull/578) merging and publishing `@concertable/b2b`.
+Unblock action: Take PR #578 through exact-head CI and the full-E2E merge queue, follow `publish-fe-packages` to green, verify its published exports, then sync PR #563 with current main and rerun exact-head CI.
+Resume when: The package publication run is green and the published `@concertable/b2b` version exports `features/conversations` with `MessagePreview` and exports `actionLinkApi` from `features/concerts`. Then make PR #563 exact-head CI green, perform the authenticated Phase A.8 seeded venue/artist UX review, and run the branch review before requesting merge.
 
 ## Current producer slice
 
-- **Exact-head CI package gate — BLOCKED.** PR head `f1c6e57cbb8ba15dbbc738d6586cc134006c2b76` triggered CI run
+- **Frontend package gate and consumer correction — BLOCKED ON PUBLICATION.** PR head `f1c6e57cbb8ba15dbbc738d6586cc134006c2b76` triggered CI run
   [31878383968](https://github.com/Concertable/concertable/actions/runs/31878383968). The standalone artist and venue
   carves fail because they correctly restore the published packages: the current feed lacks the new
-  `@concertable/shared` `MessagePreview` export and `@concertable/b2b` `actionLinkApi` export that the workspace build
-  resolved from source. `MessageThread` to `MessagePreview` is a published identity change, so the durable repair is
-  an additive publish-first package PR retaining the old name until PR #563 migrates both known consumers; duplicating
-  these shared APIs inside each private SPA is rejected.
+  `@concertable/b2b` Conversations `MessagePreview` and Concerts `actionLinkApi` exports that the workspace build
+  resolved from source. Producer PR #578 owns both additive exports; `MessagePreview` is a Conversations contract,
+  not a dashboard or universal-shared type. This consumer commit imports it from
+  `@concertable/b2b/features/conversations`, removes it from universal dashboard types, and makes absent avatar,
+  detail, banner, and review values optional. The corresponding backend response DTOs omit null values from JSON,
+  with focused serialization tests proving the wire contract. B2B package tests pass 16/16; affected backend suites
+  pass Conversations 9/9, Tenant 99/99, Concert 134/134, Artist 8/8, and Venue 9/9; B2B Web builds with 0 errors.
 
 - **B2B consumer checkpoint 3 — committed locally.** Recent venue/artist review endpoints, a tenant-owned persisted
   activity feed, and every remaining dashboard API integration are implemented in work commit `e4054a7e6`. Activity
