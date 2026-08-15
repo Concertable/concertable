@@ -57,6 +57,13 @@ def is_terminal(body):
     return not normalized or normalized in TERMINAL
 
 
+def is_paused(body):
+    if body is None:
+        return False
+    first_line = next((line.strip() for line in body.splitlines() if line.strip()), "")
+    return first_line.lower().startswith("paused:")
+
+
 def blocker_details(body):
     if body is None:
         return None

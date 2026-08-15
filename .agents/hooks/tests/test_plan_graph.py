@@ -5,7 +5,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from plan_graph import ledger_errors, plan_path, repository_report
+from plan_graph import is_paused, ledger_errors, next_steps, plan_path, repository_report
 
 
 class PlanGraphTests(unittest.TestCase):
@@ -145,6 +145,25 @@ class PlanGraphTests(unittest.TestCase):
 
         self.assertEqual(1, len(errors))
         self.assertIn("terminal ledger still has undispatched", errors[0])
+
+    def test_paused_state_is_recognized_and_valid(self):
+        ledger = self.write_ledger(
+            next_steps="Paused: awaiting Tommy — say `merge 582` to release the merge."
+        )
+
+        self.assertTrue(is_paused(next_steps(ledger.read_text(encoding="utf-8"))))
+        self.assertEqual([], ledger_errors(ledger))
+
+    def test_active_and_blocked_states_are_not_paused(self):
+        self.assertFalse(is_paused("Open the PR."))
+        self.assertFalse(
+            is_paused(
+                "Blocked: PR #1 has not merged.\n"
+                "Blocked by: GitHub PR #1.\n"
+                "Unblock action: The owner merges it.\n"
+                "Resume when: GitHub reports it merged."
+            )
+        )
 
     def test_legacy_graph_metadata_is_rejected(self):
         legacy_plan = self.epic / "LEGACY_PLAN.md"
