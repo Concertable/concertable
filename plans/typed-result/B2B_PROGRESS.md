@@ -5,7 +5,7 @@
 - Roadmap item: `typed-result/b2b`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-B2BTypedResultMigration`
 - Branch: `Refactor/B2BTypedResultMigration`
-- PR: #552 (ready; merge queue ejected after API E2E failure)
+- PR: #552 (ready; merge queue ejected after the second API E2E failure)
 - Checkpoints 8-9 commit: `bfc8690b196821bdd735ea5d229182fd9a3baf36`
 - Current code/package-main merge commit: `85df45648e8c5194c9be49f14918a76fe6bde54a`, through
   platform-sync PR #576 merge `520761dd4` and platform `0.1.0-alpha.0.997`.
@@ -76,7 +76,14 @@
   verified, and reviewed through the current-main merge head.
 - Command-routing/current-main push: starting remote head `0fd076f459cf80800af54a086d919974c49fc7e8`;
   pushed `0fd076f45..e238b781a`; local work head, remote branch, and PR #552 head matched
-  `e238b781af49018596130b257de8416303f4eaeb`. Exact-head PR CI is the next gate.
+  `e238b781af49018596130b257de8416303f4eaeb`. The transport checkpoint then matched
+  `104ba11fde1b908614003e47855625d6c9babbca`; exact-head CI run `31880549047` passed
+  51 jobs with 5 expected skips and no failures.
+- Merge-group run `31881130783` proved the command destination fix but failed the same four B2B API
+  E2E flows because the standalone B2B AppHost did not provision the producer-owned
+  `ConcertPostedEvent` topic. The systemic AppHost fix adds idempotent `Publish<TEvent>` topology
+  declarations for every event published by Auth, B2B, Customer, and Payment, including events whose
+  downstream service is absent from a standalone composition.
 
 ## Current state
 
@@ -135,12 +142,18 @@ continues to target the current service for same-service commands. The Payment s
 in `Concertable.Payment.Contracts` for both hosting and consumers, and all three B2B escrow command
 registrations target it.
 
+The second merge-group proved those commands now reach Payment-owned queues, then exposed the
+consumer-only AppHost topology model: B2B could not publish `ConcertPostedEvent` when Customer was not
+running because no topic existed. `AsbTopology.Publish<TEvent>` now lets each service topology provision
+its complete outbound event surface independently of downstream subscriptions; publish and subscribe
+declarations share one topic resource. Root orchestration tests pin every publishing service's event set.
+
 ## Next Steps
 
-Require exact-head PR CI at `e238b781af49018596130b257de8416303f4eaeb` to pass, re-enqueue PR #552
-with `full-e2e`, and own the new merge-group result without retrying the failed run. After merge,
-own package publication and platform sync through terminal green, then update the registered
-downstream ledgers and dispatch their open work.
+Commit and incrementally review the producer-owned AppHost topology fix, push it with this ledger,
+require exact-head PR CI to pass, then re-enqueue PR #552 with `full-e2e` and own the new merge-group
+result without retrying either failed run. After merge, own package publication and platform sync
+through terminal green, then update the registered downstream ledgers and dispatch their open work.
 
 ## Completed work
 
@@ -343,6 +356,16 @@ downstream ledgers and dispatch their open work.
 - NAT7 removes Customer Review's contradictory legacy relative-Location assertion in
   `1963db53a50bed449b5a7662525e86019b2bd7af`. Refreshed exact-head CI run `31875185312` passes all
   52 checks, including the corrected Review integration project.
+- Exact-head CI run `31880549047` passed at transport head `104ba11fde1b908614003e47855625d6c9babbca`:
+  51 successful jobs, 5 expected skips, and no failures.
+- Merge-group run `31881130783` passed the build and 40 other jobs before B2B API E2E failed the same
+  four payment flows. Diagnostics contain no `command-concertable-b2b-*` failures and show all three
+  `command-concertable-payment-*` queues running; the remaining dispatch failure is the absent
+  `event-concertpostedevent` topic.
+- AppHost topology unit tests pass 5/5, including producer declarations for Auth, B2B, Customer, and
+  Payment plus publish/subscribe topic deduplication. Existing Payment topology tests pass 6/6.
+- The standalone B2B AppHost and the full combined AppHost build in Release with 0 errors. Each has
+  one existing sealed/protected `UserEntity` constructor warning. `git diff --check` is clean.
 
 ## Decisions and deviations
 
