@@ -6,9 +6,9 @@
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable/.worktrees/Plan-data-access-repository-permission-hierarchy`
 - Branch: `Refactor/DataAccessRepositoryPermissionHierarchy`
 - PR: [#561](https://github.com/Concertable/concertable/pull/561) (draft)
-- Remote and PR head: `3044fb74c2eb6b238a80c5bc443ec6442163d037`; exact-head draft CI run
-  `31881386510` passed. The local branch merged current `origin/main` at `beb0bd91d`; follow-up review
-  fixes are committed and reviewed at `5c6ab849f` and require push verification.
+- Verified work and PR head: `df469d372c77dbfde67142f8e69ea31f6bdb3997`; pushed from remote head
+  `3044fb74c2eb6b238a80c5bc443ec6442163d037` through `df469d372` and verified against the
+  remote-tracking ref and draft PR head. The checkpoint-transport commit and its exact-head CI remain.
 - Dependency/package gates: Phase 1 remains an additive producer PR. After it merges, package publication and the generated platform-sync PR must be green before Phase 2 migrates consumers.
 - Last reconciled: 2026-08-15 against fetched `origin/main` at `520761dd4`; the branch is current with
   base after merge commit `beb0bd91d`.
@@ -70,10 +70,12 @@ follow-up review fixes are committed, reviewed, and green under the Conversation
   the new participant projection handlers and missing assertions for sender profile rendering. Both
   are fixed at `5c6ab849f`; the focused Conversations unit tests pass 11/11 and incremental review of
   `beb0bd91d..5c6ab849f` found no further issues.
+- Plan-managed work-head push succeeded for `3044fb74c..df469d372`; local, remote-tracking, and draft
+  PR heads were all verified at `df469d372`.
 
 ## Next Steps
 
-1. Push the green reviewed head through the plan push protocol, then require exact-head draft CI.
+1. Transport this push checkpoint, verify local/remote/PR head equality, then require exact-head draft CI.
 2. Keep PR [#561](https://github.com/Concertable/concertable/pull/561) draft until those gates are green
    and Tommy explicitly authorizes `/merge`; when asking for that permission, always include this
    clickable PR link.
