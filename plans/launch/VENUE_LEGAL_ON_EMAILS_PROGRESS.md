@@ -25,9 +25,12 @@ they run in draft-PR CI, which owns the integration matrix (not run locally per 
 
 ## Next Steps
 
-Remote validation, then merge on Tommy's go-ahead:
+Review, then merge on Tommy's go-ahead. CI is green (50 pass / 6 skip / 0 fail) — the outstanding gate is
+the review, not more validation:
 
-1. Draft PR #582 is pushed — draft-PR CI owns the full build / carve / unit / integration gate. Confirm green.
+1. **Run `/review`** on this branch in this worktree — full code review (`api/**` runtime). The new
+   `BookingConfirmationNotifier` reads `Tenant.Contracts`, so expect the security lens and a
+   `Security-reviewed up to commit:` marker. Address every finding, then mark PR #582 ready (un-draft).
 2. If a check goes red, diagnose only the failing scope with the matching debug skill (`integration-debug`
    for the two integration tests) and push the fix; do not run E2E locally ahead of the queue.
 3. Merge-queue E2E tier: per the merge skill's Step 4 this change is B2B-internal and additive with no
