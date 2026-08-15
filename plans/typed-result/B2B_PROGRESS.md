@@ -7,10 +7,10 @@
 - Branch: `Refactor/B2BTypedResultMigration`
 - PR: #552 (ready; exact-head CI required after the emulator-topology correction)
 - Checkpoints 8-9 commit: `bfc8690b196821bdd735ea5d229182fd9a3baf36`
-- Current code/package-main merge commit: `85df45648e8c5194c9be49f14918a76fe6bde54a`, through
-  platform-sync PR #576 merge `520761dd4` and platform `0.1.0-alpha.0.997`.
+- Current-main merge commit: `ab3df9401028d086ce3c885f84cd27e6317ad6e2`, through
+  `origin/main` `470390ca2`; platform remains `0.1.0-alpha.0.997`.
 - Review/fix commit: `eb84634699fa643a072342cd196b9767a6694619`
-- Review watermark: `9419cff19`; incremental review and
+- Review watermark: `ab3df9401028d086ce3c885f84cd27e6317ad6e2`; incremental review and
   security review are clean.
 - Checkpoint 10B consumer commits: `c55c99718` and `544144527`
 - Implicit-conversion correction push: starting remote head `804d9b4e8`; pushed

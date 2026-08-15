@@ -256,3 +256,11 @@ the standalone B2B AppHost and full AppHost build with 0 errors.
 No additional findings. Reviewed emulator-only behavior, production topology semantics, topic and
 subscription deduplication, standalone-service composition, microservice isolation, C# conventions,
 and focused coverage. AppHost topology tests pass 6/6.
+
+## Incremental review - 2026-08-15
+
+> Range reviewed: `9419cff19..ab3df9401028d086ce3c885f84cd27e6317ad6e2`.
+
+No new findings. The range contains the reviewed emulator-fix ledger checkpoint and a clean merge of
+current main. Upstream changes are confined to repository hooks and documentation guidance and do
+not interact with AppHost topology or B2B runtime behavior.
