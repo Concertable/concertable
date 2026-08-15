@@ -178,6 +178,12 @@ Because the local Service Bus emulator rejects valid producer-only topics, emula
 finalizes the topology with a one-minute sink for orphan topics only; Azure-facing publisher and real
 subscriber semantics remain unchanged.
 
+The third merge-group reached Payment and exposed an invalid provider-boundary value rather than an
+E2E infrastructure failure: B2B sent its internal cancellation labels as Stripe refund reasons, but
+Stripe accepts only its documented reason codes. `RefundReasonCodes` now owns the provider-neutral
+cross-service values in Payment Contracts, both B2B cancellation workflows send
+`requested_by_customer`, and Payment client coverage proves the value reaches Stripe unchanged.
+
 ## Next Steps
 
 Require exact-head PR CI to pass, then re-enqueue PR #552 with `full-e2e` and own the new merge-group
@@ -225,6 +231,12 @@ through terminal green, then update the registered downstream ledgers and dispat
   Tenant, and Concert projects plus Customer Ticket and Review. Focused B2B units passed Artist
   16/16, Venue 17/17, Deal 53/53, Tenant 128/128, and Concert 211/211. The final mapped-bind grep and
   `git diff --check` are clean.
+- Exact-head PR CI run `31909683325` passed all build, carve, unit, and integration jobs at merge head
+  `2622f79c9`. Merge-group run `31910302454` then failed only the two B2B cancellation E2E flows:
+  Payment passed `concert-cancelled` / `application-cancelled` to Stripe, which rejected each value
+  because refund reasons must be `duplicate`, `fraudulent`, or `requested_by_customer`. The focused
+  Payment handler/client slice passes 9/9 after replacing those internal labels with the shared
+  `RefundReasonCodes.RequestedByCustomer` contract value; no local E2E was run.
 - The broad local service-carve attempts remain blocked by this branch's existing platform-package
   transition: package mode lacks the branch-local Messaging/Payment additions, while local-core mode
   resolves `Concertable.Contracts` 1.0.0 against the 0.997 service pin. Exact-head PR CI owns the
