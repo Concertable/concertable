@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `a2c2cbd333222d27c3647ab67d8275767a3ac09d`  _(2026-08-15)_
-**Security-reviewed up to commit:** `a2c2cbd333222d27c3647ab67d8275767a3ac09d`  _(2026-08-15)_
+**Reviewed up to commit:** `016bd25fb0f84872c51f2cb2808cb4b680b06a3a`  _(2026-08-15)_
+**Security-reviewed up to commit:** `016bd25fb0f84872c51f2cb2808cb4b680b06a3a`  _(2026-08-15)_
 
 > Range reviewed: `429581025..94d7664ad` (2 commits).
 > Status legend: `[ ]` todo - `[~]` in progress - `[x]` done - `[wontfix]` (note why).
@@ -72,3 +72,11 @@ No issues found. The range merges current `origin/main`; its incoming changes ar
 > Range reviewed: `495fd7900..a2c2cbd33` (1 commit).
 
 No issues found. The checkpoint records the reviewed current-main merge and verified push; no runtime or security-sensitive behavior changed.
+
+## Incremental review - 2026-08-15 (merge-queue fix)
+
+> Range reviewed: `a2c2cbd33..016bd25fb` (1 commit).
+
+No issues found. The E2E reseeding host now uses the same in-process event dispatch registration as
+the B2B web host, so Artist/Venue seed events populate Conversations through the production projection
+handlers. The change does not alter runtime authorization, service boundaries, or security-sensitive code.
