@@ -5,7 +5,7 @@
 - Roadmap item: `typed-result/b2b`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-B2BTypedResultMigration`
 - Branch: `Refactor/B2BTypedResultMigration`
-- PR: #552 (ready; exact-head CI and incremental review required after the Reunion alpha.8 cut-over)
+- PR: #552 (ready; exact-head CI required after the reviewed Reunion alpha.8 cut-over)
 - Checkpoints 8-9 commit: `bfc8690b196821bdd735ea5d229182fd9a3baf36`
 - Current-main merge commit: `ab3df9401028d086ce3c885f84cd27e6317ad6e2`, through
   `origin/main` `470390ca2`; platform remains `0.1.0-alpha.0.997`.
@@ -75,6 +75,8 @@
   moved B2B and Customer to alpha.8 and replaced every B2B/Customer `MapError(...).Bind*` chain with
   mapped `Bind`/`BindAsync`. Local, remote branch, and PR #552 head matched that work commit before
   this checkpoint transport.
+- Incremental native, security, isolation, module-boundary, seeding, convention, and coverage review
+  is clean through checkpoint head `254daebac16837dd5c1dc5fdf808b43eb7442714`; no finding remains open.
 - Merge-group run `31876662971` passed 50 jobs but failed B2B API E2E: both cancellation-refund tests
   and both flat-fee/venue-hire draft-payment tests timed out waiting for Payment-owned escrow state.
   Diagnostics proved B2B sent the commands to `command-concertable-b2b-*` while the Payment topology
@@ -170,10 +172,9 @@ subscriber semantics remain unchanged.
 
 ## Next Steps
 
-Complete the incremental review of consumer work commit `97b096d67`, require exact-head PR CI to
-pass, then re-enqueue PR #552 with `full-e2e` and own the new merge-group result without retrying any
-failed run. After merge, own package publication and platform sync through terminal green, then
-update the registered downstream ledgers and dispatch their open work.
+Require exact-head PR CI to pass, then re-enqueue PR #552 with `full-e2e` and own the new merge-group
+result without retrying any failed run. After merge, own package publication and platform sync
+through terminal green, then update the registered downstream ledgers and dispatch their open work.
 
 ## Completed work
 

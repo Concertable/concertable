@@ -6,8 +6,8 @@
 > in one line, take the safe path, keep going.
 
 **Plan anchored to commit:** `e229afb581c829279ca821b0a85729c4c4f0f441`  _(2026-08-10)_
-**Reviewed up to commit:** `85df45648e8c5194c9be49f14918a76fe6bde54a`  _(2026-08-15)_
-**Security-reviewed up to commit:** `85df45648e8c5194c9be49f14918a76fe6bde54a`  _(2026-08-15)_
+**Reviewed up to commit:** `254daebac16837dd5c1dc5fdf808b43eb7442714`  _(2026-08-15)_
+**Security-reviewed up to commit:** `254daebac16837dd5c1dc5fdf808b43eb7442714`  _(2026-08-15)_
 Net diff reviewed: `1043a9178..e229afb58`. Move-only files skipped.
 Status legend: `[ ]` not yet reviewed · `[x]` reviewed (date) · `[~]` in progress (incomplete — re-review).
 
@@ -264,3 +264,13 @@ and focused coverage. AppHost topology tests pass 6/6.
 No new findings. The range contains the reviewed emulator-fix ledger checkpoint and a clean merge of
 current main. Upstream changes are confined to repository hooks and documentation guidance and do
 not interact with AppHost topology or B2B runtime behavior.
+
+## Incremental review - 2026-08-15
+
+> Range reviewed: `85df45648e8c5194c9be49f14918a76fe6bde54a..254daebac16837dd5c1dc5fdf808b43eb7442714` (20 commits).
+
+No new findings. Reviewed native correctness and security plus microservice isolation, module
+boundaries, seeding, C# conventions, and test coverage. The producer-topic and emulator-sink changes
+remain covered by the focused topology tests. Reunion alpha.8 preserves service-local package
+ownership, and every B2B/Customer error-mapping chain now maps at `Bind`/`BindAsync` without changing
+success, failure, exception, or cancellation behavior.
