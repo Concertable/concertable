@@ -8,32 +8,49 @@ domain/service tests see [`UNIT_CONVENTIONS.md`](./UNIT_CONVENTIONS.md); for bro
 
 ## Structure
 
-Each microservice has its own testing infrastructure project that boots the service's real `Program`
-using `WebApplicationFactory`, a Testcontainers SQL Server, and a `TestAuthHandler` that replaces
-JWT Bearer validation.
+Each microservice owns a `Concertable.<Service>.IntegrationTests.Fixtures` project holding its `ApiFixture`,
+which boots the service's real `Program` via `WebApplicationFactory`. The shared, service-agnostic pieces
+live in `Concertable.Testing.Integration` (unit-level helpers in `Concertable.Testing`), referenced by every
+fixture: `SqlFixture` (Testcontainers SQL + Respawn), `TestAuthHandler`, the shared mocks, and the setup
+extensions below.
 
-| Infrastructure project | Boots | Test projects that use it |
-|---|---|---|
-| `Tests/Concertable.Testing.Integration` | `Concertable.B2B.Web` | Artist, Venue, User, Tenant, Concert |
-| `Tests/Concertable.Testing.Integration.Search` | `Concertable.Search.Web` | Search |
-| `Tests/Concertable.Testing.Integration.Customer` | `Concertable.Customer.Web` | Customer.* (scaffold — no tests yet) |
+| Service fixture | Boots |
+|---|---|
+| `Concertable.Auth.IntegrationTests.Fixtures` | `Concertable.Auth` (Razor Pages + Duende) |
+| `Concertable.B2B.IntegrationTests.Fixtures` | `Concertable.B2B.Web` |
+| `Concertable.Customer.IntegrationTests.Fixtures` | `Concertable.Customer.Web` |
+| `Concertable.Search.IntegrationTests.Fixtures` | `Concertable.Search.Web` |
+
+## Shared setup — anything common lives in `Concertable.Testing`
+
+A fixture must not re-hand-roll setup another service already has. Anything shared across two or more
+integration suites goes in `Concertable.Testing.Integration` (or `Concertable.Testing` for unit-level
+helpers) and is composed via extension methods / constants — never copy-pasted per fixture. When you catch
+yourself copying a setup step into a second fixture, lift it into the shared lib instead.
+
+- `Environments.Integration` / `.E2E` (set) and `env.IsIntegration()` / `env.IsE2E()` (check) — extension members
+  in `Concertable.Kernel` hung onto the framework's `Environments` / `IHostEnvironment`; never a raw env literal.
+- `services.AddTestAuthentication()` — makes `TestAuthHandler` the default scheme.
+- `services.AddXunitLogging(accessor)` — routes host logs to the current xunit test output.
+- `services.RemoveAzureServiceBus()` — drops the ASB receiver(s) and swaps `IBusTransport` for a no-op
+  `MockBusTransport`; omit it in a service with no bus (e.g. Search).
+- `IntegrationDbInitializer` — the shared `IDbInitializer` that migrates inbox/outbox then migrates + seeds every
+  registered `ITestSeeder`; register via `services.AddScoped<IDbInitializer, IntegrationDbInitializer>()` alongside
+  the service's own seeders.
+
+Only genuinely service-specific wiring (Duende/Razor, Payment-in-process, Stripe fakes, per-service mocks and
+seeders) stays in the service's own fixture.
 
 ## Key design decisions
 
-- **Each microservice owns its fixture** — `ApiFixture` and `SqlFixture` in each
-  `Testing.Integration.*` project are named identically but live in separate namespaces.
-  Test projects import only their own fixture; there is no naming conflict.
+- **Each microservice owns its fixture** — the `ApiFixture` in each `…IntegrationTests.Fixtures` project is
+  named identically but lives in its own namespace, so test projects import only their own.
 
 - **Testcontainers** — a fresh SQL Server container starts per test run. `Respawn` resets
   data between tests without re-running migrations.
 
-- **Authentication** — `TestAuthHandler` replaces JWT Bearer. Pass `X-Test-Sub` (user ID)
-  and optionally `X-Test-Email` headers to authenticate a request. No token or role claim is required.
-
-- **ASB receiver removed** — the `AzureServiceBusReceiver` hosted service is removed from
-  the DI container in B2B and Customer fixtures (no real broker in tests). The outbox
-  dispatcher and inbox are left running; a `MockBusTransport` is substituted so the
-  dispatcher can drain the outbox without connecting to Azure.
+- **Authentication** — via `AddTestAuthentication()`; pass `X-Test-Sub` (user ID) and optionally
+  `X-Test-Email` headers to authenticate a request. No token is required, and no `role` claim is emitted.
 
 - **Webhook simulation** — `MockWebhookSimulator` and `MockWebhookSimulatorFail` dispatch
   `PaymentSucceededEvent` / `PaymentFailedEvent` directly to `IIntegrationEventHandler`

@@ -47,10 +47,18 @@ running only its failing scope locally. Full policy: [`docs/REMOTE_VALIDATION.md
 
 **Doc locality — a guidance/architecture doc lives at the lowest node that fully contains its concern:** single-service → that service's own folder (thin, inheriting root + `api/` upward, never restating — e.g. [`api/Concertable.Payment/AGENTS.md`](./api/Concertable.Payment/AGENTS.md)); cross-service or orchestration → root. Create one only where genuine service-specific content exists.
 
+**Every `AGENTS.md` gets a `CLAUDE.md` sibling containing exactly `@AGENTS.md`, and every `*/agents/*.md` doc must be reachable — by plain link or `@`-import, followed transitively — from some `AGENTS.md`/`CLAUDE.md`/`SKILL.md`.** A doc that fails this is loaded nowhere, which is exactly how `app/agents/CODE_CONVENTIONS.md` and `CODE_PATTERNS.md` went unread until a shipped feature violated both. Mechanically checked by `.agents/hooks/docs_reachability.py`, run as part of `docs-review`.
+
 - **Backend (.NET, `api/`)** — seeding, migrations, DTOs, module rules, C# conventions: [`api/AGENTS.md`](./api/AGENTS.md).
 - **Backend Result pattern** — Result, Option, typed errors, validation, construction, composition, and transport terminals: [`api/agents/RESULT_PATTERN.md`](./api/agents/RESULT_PATTERN.md).
 - **Design patterns the codebase commits to** (keyed strategy resolvers, and the anti-patterns they replace — branching on `DealType` in agnostic code, service location, throwaway DTOs): [`api/agents/CODE_PATTERNS.md`](./api/agents/CODE_PATTERNS.md). Read it before adding any rule that varies by a closed key.
+- **Frontend (React/TS, `app/`)** — tiers, conventions and patterns: [`app/AGENTS.md`](./app/AGENTS.md).
+  It anchors [`app/agents/CODE_CONVENTIONS.md`](./app/agents/CODE_CONVENTIONS.md) (absent values are
+  `undefined` not `null`; reads carry no `Dto`/`Response` suffix; writes are `XRequest`) and
+  [`app/agents/CODE_PATTERNS.md`](./app/agents/CODE_PATTERNS.md) (slots over role checks, the zod write
+  boundary, one `xApi` per resource) — the frontend counterparts of the `api/agents/` pair above.
 - **Web SPA (`app/web/`)** — [`app/web/AGENTS.md`](./app/web/AGENTS.md).
+- **Mobile apps (`app/mobile/`)** — [`app/mobile/AGENTS.md`](./app/mobile/AGENTS.md).
 - **Customer cross-platform core (`app/customer/shared`, npm package `@concertable/customer`, exported as `@concertable/customer/shared/*`)** — consumed ONLY by the customer web + mobile apps: [`app/customer/shared/AGENTS.md`](./app/customer/shared/AGENTS.md).
 
 ## Git branch — branch first, capitalized type prefix, always
@@ -247,10 +255,10 @@ The convention is **ROADMAP → PLAN → PROGRESS**, folder = roadmap/plan: an e
 - **Cross-plan blockers are two-way handoffs.** The blocked ledger names the owning ledger and exact
   gate; the owning ledger lists the blocked dependent. When the gate opens, the owner updates the
   dependent ledger and surfaces its resume prompt — the waiting plan does not poll or rely on memory.
-- **A blocked plan never emits its own resume prompt.** Its ledger and final report name the exact
-  blocker, its owner, the action that removes it, and the evidence that makes resumption valid.
-  Dispatch the resolver or give Tommy the external action; only surface the waiting plan after the
-  gate opens.
+- **A blocked or paused (human-gated) plan never emits its own resume prompt.** Its ledger and final
+  report name the exact blocker or human action, its owner, the step that removes it, and the evidence
+  that makes resumption valid. Dispatch the resolver or give Tommy the external action; only surface
+  the waiting plan after the gate opens.
 - **Keep the plan and its `_PROGRESS.md` companion until the entire lifecycle is terminal — not merely until the final local phase is committed and verified.** Every plan-managed PR includes their current state, so `main` is always the recovery anchor. Once that PR merges, remove its worktree with `./scripts/worktrees.ps1 close -Worktree <path> -PullRequest <n> -PlanManaged`. Continue from a fresh worktree based on current `origin/main`; use a `Docs/*_closeout` worktree for final remote-gate evidence and deletion of both artifacts.
 - A plan **superseded** by a newer plan, or describing a design that was **rejected**, is deleted the moment that's decided — don't leave a tombstone.
 - A **partially-done** plan stays, but strike/check off the sections that shipped (in the same commit as the work) so what remains is only the outstanding work.

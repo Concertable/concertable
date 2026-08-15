@@ -1,11 +1,13 @@
 # Manager Front Page Plan
 
-## Progress (2026-08-15, B2B consumer checkpoint 3)
+## Progress (2026-08-15, B2B consumer checkpoint 4)
 
 **Branch:** `Feature/launch_dashboard-b2b-consumer` — draft PR [#563](https://github.com/Concertable/concertable/pull/563).
 
 **Phase A UI and Phase B implementation are complete.** The live-data cutover and focused tests are committed in
-`e4054a7e6`; exact-head draft CI and the authenticated Phase A.8 UX review remain before branch review and merge.
+`e4054a7e6`; the optional-wire-contract correction is committed in `01c9fbff6`. The required additive
+`@concertable/b2b` exports are published in `0.1.0-alpha.0.3689`. Exact-head draft CI, the authenticated Phase A.8
+UX review, and branch review remain before merge.
 
 See [MANAGER_FRONT_PAGE_PROGRESS.md](MANAGER_FRONT_PAGE_PROGRESS.md) for session decisions that supersede this plan in conflict.
 
@@ -15,11 +17,11 @@ See [MANAGER_FRONT_PAGE_PROGRESS.md](MANAGER_FRONT_PAGE_PROGRESS.md) for session
 
 | Step | Description | Status | Commit |
 |---|---|---|---|
-| B.9 | `ConcertEntity` → owned `DateRange Period` refactor | ✅ code and all-module migration re-scaffold | `094fd4d4` + `e4054a7e6` |
+| B.9 | `ConcertEntity` → owned `DateRange Period` refactor | ✅ code and all-module migration re-scaffold | `094fd4d4` + dashboard consumer commit `e4054a7e6` |
 | B.10 | Shared `IHasDateRange` marker + `IUpcomingSpecification<T>` / `IDateRangeSpecification<T>` specs | ✅ | `e2193f46` + `23c8fc4c` (added `ApplyExpression<TParent>` overload + `BuildPredicate` helper) |
 | B.11 | Dashboard KPI endpoint (venue + artist) — orchestration via Venue/Artist dashboard services, one SQL round trip via `ConcertDashboardRepository` + queryable mapper | ✅ KPI slice only | `d4f9a3a6` + `a91c7271` + `23c8fc4c` |
-| B.11 | Dashboard overview, activity, charts, and canonical current-tenant resources; live SPA cutover | ✅ Implemented and locally verified | `d82f93cb7` + `16baf7cc4` + `e4054a7e6` |
-| B.12 | Focused unit and SQL-backed integration coverage | ✅ Added; draft CI owns SQL execution at the exact head | `e4054a7e6` |
+| B.11 | Dashboard overview, activity, charts, canonical resources, and live SPA cutover | ✅ Implemented on dependent PR #563; package publication gate resolved | `d82f93cb7` + `16baf7cc4` + `e4054a7e6` + `01c9fbff6` |
+| B.12 | Focused unit and SQL-backed integration coverage | ✅ Added on dependent PR #563; exact-head CI remains | `e4054a7e6` + `01c9fbff6` |
 
 ### B.11 KPI endpoint — what shipped
 

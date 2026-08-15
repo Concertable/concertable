@@ -1,6 +1,6 @@
-# Concertable — cross-cutting technical debt
+# Concertable — backend cross-cutting technical debt
 
-Debt spanning multiple services, host `Program.cs` files, or repo-wide build/CI config. Debt inside the shared platform tree (`Concertable.Kernel`, `Concertable.Shared.*`, the shared test libs) belongs in [`Concertable.Shared/TECH_DEBT.md`](./Concertable.Shared/TECH_DEBT.md); service-specific debt belongs in that service's own `TECH_DEBT.md`. When an item is fixed, update both this file and [`ARCHITECTURE.md`](./ARCHITECTURE.md).
+Debt spanning multiple services or host `Program.cs` files. Debt inside the shared platform tree (`Concertable.Kernel`, `Concertable.Shared.*`, the shared test libs) belongs in [`Concertable.Shared/TECH_DEBT.md`](./Concertable.Shared/TECH_DEBT.md); service-specific debt belongs in that service's own `TECH_DEBT.md`; debt spanning `api/` and `app/`, or in root-level `.github/workflows/**`/config, belongs in the root [`TECH_DEBT.md`](../TECH_DEBT.md). When an item is fixed, update both this file and [`ARCHITECTURE.md`](./ARCHITECTURE.md).
 
 ---
 
@@ -73,7 +73,14 @@ configuration; explicit typed composition/options should select capabilities.
 - Establish one testing-owned environment vocabulary for Concertable's custom names and environment
   variable keys, use the framework `Environments` constants/helpers for built-in names in production
   C#, and give test harnesses one API that applies the correct environment consistently to every
-  resource.
+  resource. (Owner + cut-over DONE: `"Testing"` → `"Integration"` rename; `Concertable.Kernel` owns C# 14
+  extension members — `Environments.Integration`/`.E2E` and `env.IsIntegration()`/`.IsE2E()` (mirroring
+  `IsDevelopment()`); post-publish, the 24 production `Integration` checks + Auth's 2 `E2E` checks now call the
+  helpers, the fixtures resolve `Environments.Integration` from Kernel, and the transitional
+  `Concertable.Testing.Integration` copy is deleted. **One literal remains:** `Concertable.ServiceDefaults` sits
+  *below* Kernel and can't reference its vocabulary without a layering inversion, so its single
+  `IsEnvironment("E2E")` stays a string — closing it needs the vocabulary to live in the lowest shared project,
+  a separate design call.)
 - Remove every production branch on `Testing` / `E2E`, whether expressed through `IsEnvironment(...)`
   or direct `EnvironmentName` comparison. Integration and E2E hosts supply explicit configuration and
   DI overrides from their own composition roots instead of teaching production code the semantics of
@@ -82,6 +89,20 @@ configuration; explicit typed composition/options should select capabilities.
   `appsettings.E2E.json` and other test-only configuration out of production project closures, and
   validate the allowed names. Declarative JSON values may remain strings where the format requires
   them, but their values must follow the same vocabulary and be covered by a consistency test.
+
+### Extension methods use the legacy `this`-parameter syntax, not C# 14 `extension()` blocks
+
+Every extension in the codebase is declared the pre-C# 14 way — `public static T M(this X x, …)` in `XExtensions`
+static classes. C# 14 (net10) added `extension()` blocks: the unified "extension members" form that also expresses
+extension properties, indexers, and static members, and groups members by receiver. Both compile to identical IL,
+so this is modernization/consistency debt, not a behavioural gap. The env-vocabulary work set the example —
+`Concertable.Kernel.EnvironmentsExtensions` / `HostEnvironmentExtensions` use `extension(Environments)` /
+`extension(IHostEnvironment env)` blocks (giving `Environments.Integration` + `env.IsIntegration()`).
+
+**Resolves when:** existing `this`-parameter extension methods migrate to `extension()` blocks — one `XExtensions`
+class per receiver type, members grouped in `extension(Receiver)` blocks — as a mechanical sweep or
+opportunistically as files are touched. New extension members use `extension()` from the start (see
+`agents/CODE_CONVENTIONS.md`).
 
 ### `AzureServiceBusOptions` binder defaults are `= ""` instead of `null!`
 

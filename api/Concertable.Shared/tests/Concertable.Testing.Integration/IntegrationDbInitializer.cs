@@ -5,16 +5,16 @@ using Concertable.Seed.Shared;
 using Concertable.Seed.Shared.Identity;
 using Microsoft.EntityFrameworkCore;
 
-namespace Concertable.Customer.IntegrationTests.Fixtures;
+namespace Concertable.Testing.Integration;
 
-public sealed class TestDbInitializer : IDbInitializer
+public sealed class IntegrationDbInitializer : IDbInitializer
 {
     private readonly IEnumerable<ITestSeeder> seeders;
     private readonly InboxDbContext inboxDbContext;
     private readonly OutboxDbContext outboxDbContext;
     private readonly SeedingScope seedingScope;
 
-    public TestDbInitializer(
+    public IntegrationDbInitializer(
         IEnumerable<ITestSeeder> seeders,
         InboxDbContext inboxDbContext,
         OutboxDbContext outboxDbContext,
