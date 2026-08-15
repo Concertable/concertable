@@ -62,6 +62,12 @@
 - Platform `0.1.0-alpha.0.988` reconciliation push: starting remote head `c52542f98`; pushed
   `c52542f98..202bbce12`; local work head, remote branch, and PR #552 head matched
   `202bbce124d30350043bb6cf19002c140b3835fb`.
+- Transport head is synchronized locally, remotely, and on PR #552 at
+  `f1468d83626f2e32e73bb4b76e19629ea20fa13c`. Exact-head CI run `31823604514` is terminal green,
+  including the solution build, service carves, unit and integration matrices, and `ci-complete`.
+- Reunion `0.1.0-alpha.7` is published. Concertable PR #569 merged as `7fb3baeaf920baa11dfe540db8c408aa316825b0`,
+  its package publication is green, and platform-sync PR #575 merged platform `0.1.0-alpha.0.995` as
+  `dee412ba8ff824a46ce16783d2f7d1fc161f2774`. Tommy authorized landing PR #552 on 2026-08-15.
 
 ## Current state
 
@@ -115,9 +121,14 @@ package graph; no Reunion extension was copied or recreated locally.
 
 ## Next Steps
 
-Push this transport checkpoint, verify local/remote/PR head equality, and wait for refreshed exact-head
-build, carve, unit, integration, architecture, and HTTP-contract CI. Keep auto-merge disabled until
-Tommy explicitly authorizes landing PR #552.
+Merge current `origin/main` through platform-sync PR #575, upgrade the complete B2B Reunion package
+family to `0.1.0-alpha.7`, and use projected `ToOkOrProblem` / `ToCreatedOrProblem` overloads for every
+eligible controller projection. Preserve custom `ToActionResult` only for file responses, bodyless
+unit-result Created responses, and Deal's required polymorphic formatter. Run the smallest affected
+builds, focused HTTP and architecture tests, formatting/invariant gates, plan graph, and incremental
+review. Commit and push the coherent checkpoint, require local/remote/PR head equality and exact-head
+CI, then enqueue PR #552 with the merge workflow's E2E tier and own publication/platform sync through
+terminal green. At that gate, update the registered downstream ledgers and dispatch their open work.
 
 ## Completed work
 

@@ -6,8 +6,8 @@
 > in one line, take the safe path, keep going.
 
 **Plan anchored to commit:** `e229afb581c829279ca821b0a85729c4c4f0f441`  _(2026-08-10)_
-**Reviewed up to commit:** `0f331b6a37cd7ffa4a746ce5e2dd96cf636109aa`  _(2026-08-14)_
-**Security-reviewed up to commit:** `0f331b6a37cd7ffa4a746ce5e2dd96cf636109aa`  _(2026-08-14)_
+**Reviewed up to commit:** `f1468d83626f2e32e73bb4b76e19629ea20fa13c`  _(2026-08-14)_
+**Security-reviewed up to commit:** `f1468d83626f2e32e73bb4b76e19629ea20fa13c`  _(2026-08-14)_
 Net diff reviewed: `1043a9178..e229afb58`. Move-only files skipped.
 Status legend: `[ ]` not yet reviewed · `[x]` reviewed (date) · `[~]` in progress (incomplete — re-review).
 
@@ -163,3 +163,10 @@ No new findings. Reviewed the verified push checkpoint and platform `0.1.0-alpha
 The source delta is limited to the five service package pins from terminal-green platform-sync PR
 #566; restored B2B and Customer deployable closures, focused tests, architecture tests, and B2B User
 integration tests remain green.
+
+## Incremental review - 2026-08-14
+
+> Range reviewed: `0f331b6a37cd7ffa4a746ce5e2dd96cf636109aa..f1468d83626f2e32e73bb4b76e19629ea20fa13c` (2 commits).
+
+No new findings. The range contains only the reviewed platform-validation record and its plan-ledger
+transport checkpoint; no runtime, package, contract, configuration, or test code changed.
