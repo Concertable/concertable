@@ -176,7 +176,9 @@ they remain true. Route the resolving work according to ownership:
   dispatched entry from `## Downstream handoffs` before becoming terminal.
 - No owner and a separate context is appropriate: emit a paste-ready dispatch prompt for the resolver,
   including the blocked ledger and the condition it unlocks. This is not the blocked plan's pointer.
-- User or external action: give the exact action and verification condition directly, with no prompt.
+- User or external action: when only a human decision remains, mark `## Next Steps` with a single
+  `Paused: <who> — <action and observable resume condition>` line instead of the four-line schema, and
+  give that action directly with no prompt.
 
 Do not create a new checkpoint merely to prove an unchanged blocker is still blocked. Reconcile and
 checkpoint only when evidence or routing changed.
@@ -290,10 +292,10 @@ point where the context becomes disposable. Don't carry unwritten state across a
   worktree when one exists; otherwise it creates a fresh worktree from current `origin/main`. A plan alone
   resolves by the ledgers whose `- Plan:` names it: one → resume it; several → list them and ask which.
   Always confirm the ledger still matches git/PR reality first.
-- A ledger whose `## Next Steps` begins with the hard-blocker fields does not get its resume pointer.
-  Report the blocker, unblock action, and resume condition; dispatch the resolver when appropriate.
-  The pointer becomes valid only after evidence opens the gate and the ledger is reconciled to an
-  actionable next step.
+- A ledger whose `## Next Steps` begins with the hard-blocker fields or a `Paused:` line does not get
+  its resume pointer. Report the blocker or the human action and its resume condition; dispatch the
+  resolver when appropriate. The pointer becomes valid only after the gate opens and the ledger is
+  reconciled to an actionable next step.
 - A completed and verified phase ends the turn after its handoff. Start the next phase only when Tommy
   explicitly names it and says to do it now.
 - When several ledgers have independently executable `## Next Steps`, surface one exact pointer per

@@ -23,8 +23,8 @@ current-summary section affected by the event:
 - worktree, branch, PR, and dependency or package gates;
 - current state and partial or uncommitted work that must be preserved;
 - `## Next Steps` — the single resolved next action as self-contained steps; when no action can
-  proceed, the exact `Blocked:`, `Blocked by:`, `Unblock action:`, and `Resume when:` fields from
-  `plans/agents/PLAN.md`;
+  proceed, the `Blocked:`, `Blocked by:`, `Unblock action:`, and `Resume when:` fields from
+  `plans/agents/PLAN.md`, or a single `Paused: <who> — <action>` line when only a human decision remains;
 - compact completed milestones with commit or PR evidence;
 - the latest verification commands and outcomes still valid for the current code state;
 - current review state and every finding that remains open or needs follow-up;
@@ -133,6 +133,6 @@ Read @plans/<PLAN>_PLAN.md and @plans/<PLAN>_PROGRESS.md and do what its `## Nex
 
 No branch to verify, checkpoints, gates, commands, or steps in the prompt — every such specific lives in
 the ledger, never restated, so the prompt can't drift. If the lifecycle is terminal, follow the close-out
-rule and do not invent a continuation prompt. If the plan is hard-blocked, do not emit this pointer:
-report the ledger's four blocker lines verbatim, then emit a resolver dispatch
-prompt only when a separate unowned task can open the gate.
+rule and do not invent a continuation prompt. If the plan is hard-blocked or human-gated (`Paused:`), do
+not emit this pointer: report the blocker lines or the human action and its resume condition, then emit a
+resolver dispatch prompt only when a separate unowned task can open the gate.

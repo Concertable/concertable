@@ -7,7 +7,7 @@ from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from plan_handoff_stop import evaluate, expected_handoff, next_steps, transcript_ledgers
+from plan_handoff_stop import evaluate, expected_pointer, next_steps, transcript_ledgers
 
 
 class PlanHandoffStopTests(unittest.TestCase):
@@ -161,13 +161,6 @@ class PlanHandoffStopTests(unittest.TestCase):
             "and do what its `## Next Steps` says."
         )
 
-    def handoff(self):
-        return expected_handoff(
-            self.ledger.resolve(),
-            self.pointer(),
-            next_steps(self.ledger.read_text(encoding="utf-8")),
-        )
-
     def input_without_ledger_reference(self, message):
         transcript = self.root / "unrelated-transcript.jsonl"
         record = {"type": "response_item", "payload": {"type": "message", "role": "user"}}
@@ -213,7 +206,7 @@ class PlanHandoffStopTests(unittest.TestCase):
                     "type": "message",
                     "role": "user",
                     "content": (
-                        '<hook_prompt hook_run_id="stop:3:hooks.json">HANDOFF GATE: '
+                        '<hook_prompt hook_run_id="stop:3:hooks.json">HANDOFF: '
                         f"Read @{self.ledger}</hook_prompt>"
                     ),
                 },
@@ -226,160 +219,77 @@ class PlanHandoffStopTests(unittest.TestCase):
             "last_assistant_message": message,
         }
 
-    def test_blocks_local_completion_without_pointer(self):
+    def assertAdvisory(self, result):
+        self.assertNotIn("decision", result)
+        self.assertIn("systemMessage", result)
+        return result["systemMessage"]
+
+    def test_active_plan_emits_advisory_reminder_not_a_block(self):
         self.write_ledger("Run the repository code-review workflow, then open the PR.")
         result = evaluate(self.input_with_codex_transcript("Implementation is complete and committed."))
-        self.assertEqual("block", result["decision"])
-        self.assertIn(self.pointer(), result["reason"])
+        self.assertIn(self.pointer(), self.assertAdvisory(result))
 
-    def test_allows_exact_pointer(self):
+    def test_reminder_is_independent_of_message_content(self):
         self.write_ledger("Run the repository code-review workflow, then open the PR.")
-        result = evaluate(self.input_with_codex_transcript(f"Ready.\n\n{self.handoff()}"))
-        self.assertEqual({}, result)
+        for message in (
+            "Done.",
+            f"Ready.\n\n```text\n{self.pointer()}\n```",
+            "Next steps are code review and a PR.",
+            "The answer is 42.",
+        ):
+            result = evaluate(self.input_with_codex_transcript(message))
+            self.assertIn(self.pointer(), self.assertAdvisory(result))
 
-    def test_allows_markdown_hard_break_whitespace_in_pointer(self):
-        self.write_ledger("Run the repository code-review workflow, then open the PR.")
-        handoff = self.handoff().replace("\n", "  \n")
-        result = evaluate(self.input_with_codex_transcript(f"Ready.\n\n{handoff}"))
-        self.assertEqual({}, result)
-
-    def test_allows_rendered_plain_text_handoff_with_full_untruncated_reason(self):
-        next_steps_body = (
-            "Run incremental code review over the commits after the existing review watermark, "
-            "including the domain-ownership correction. Address every clear finding, refresh "
-            "current-main state, and run the read-only PR preflight. Do not push or open a PR "
-            "without instruction."
-        )
-        self.write_ledger(next_steps_body)
-        rendered_pointer = self.pointer().replace("`", "")
-        message = (
-            f"Why: {self.ledger.name} owns unfinished work from this turn: {next_steps_body}"
-            f"\n\n{rendered_pointer}"
-        )
-        result = evaluate(self.input_with_codex_transcript(message))
-        self.assertEqual({}, result)
-
-    def test_normalized_handoff_still_must_end_with_pointer(self):
-        self.write_ledger("Run the repository code-review workflow, then open the PR.")
-        rendered_handoff = self.handoff().replace("`", "").replace("text\n", "").replace("\n", " ")
-        result = evaluate(
-            self.input_with_codex_transcript(f"{rendered_handoff}\n\nLet me know.")
-        )
-        self.assertEqual("block", result["decision"])
-
-    def test_allows_renderer_line_wrap_after_path_hyphen(self):
-        declared_worktree = self.root.parent / "typed-result_auth-outcomes"
-        declared_worktree.mkdir()
-        self.write_ledger("Run the repository code-review workflow, then open the PR.", declared_worktree)
-        rendered_handoff = (
-            self.handoff()
-            .replace("`", "")
-            .replace("```text\n", "")
-            .replace("\n```", "")
-            .replace("auth-outcomes", "auth-\noutcomes")
-        )
-        result = evaluate(self.input_with_codex_transcript(rendered_handoff))
-        self.assertEqual({}, result)
-
-    def test_bare_pointer_does_not_pass_without_reason(self):
-        self.write_ledger("Open the PR after review.")
-        result = evaluate(
-            self.input_with_codex_transcript(f"```text\n{self.pointer()}\n```")
-        )
-        self.assertEqual("block", result["decision"])
-        self.assertIn("Why:", result["reason"])
-
-    def test_paraphrased_next_steps_does_not_pass(self):
-        self.write_ledger("Run the repository code-review workflow, then open the PR.")
-        result = evaluate(self.input_with_codex_transcript("Next steps are code review and a PR."))
-        self.assertEqual("block", result["decision"])
-
-    def test_pointer_followed_by_prose_does_not_pass(self):
-        self.write_ledger("Run the repository code-review workflow, then open the PR.")
-        result = evaluate(self.input_with_codex_transcript(f"{self.pointer()}\n\nLet me know."))
-        self.assertEqual("block", result["decision"])
-
-    def test_missing_next_steps_fails_closed(self):
-        self.write_ledger_without_next_steps()
-        result = evaluate(self.input_with_codex_transcript("Everything is complete."))
-        self.assertEqual("block", result["decision"])
-        self.assertIn("missing its required `## Next Steps`", result["reason"])
-
-    def test_claude_transcript_blocks_missing_pointer(self):
+    def test_claude_transcript_also_reminds(self):
         self.write_ledger("Run the repository code-review workflow, then open the PR.")
         result = evaluate(self.input_with_claude_transcript("Implementation is complete."))
-        self.assertEqual("block", result["decision"])
+        self.assertIn(self.pointer(), self.assertAdvisory(result))
 
-    def test_terminal_ledger_needs_no_pointer(self):
+    def test_paused_plan_is_silent(self):
+        self.write_ledger("Paused: awaiting Tommy — say `merge 582` to release the merge.")
+        result = evaluate(self.input_with_codex_transcript("PR is green; waiting on you."))
+        self.assertEqual({}, result)
+
+    def test_terminal_plan_is_silent(self):
         self.write_ledger("Complete")
         result = evaluate(self.input_with_codex_transcript("Everything is complete."))
         self.assertEqual({}, result)
 
-    def test_inflight_owner_wait_reports_blocker_without_pointer(self):
+    def test_well_formed_blocker_is_silent(self):
         self.write_ledger(
             "Blocked: PR #123 has not merged.\n"
             "Blocked by: GitHub PR #123.\n"
             "Unblock action: The PR #123 owner must follow it to a terminal merge.\n"
             "Resume when: GitHub reports PR #123 merged."
         )
-        result = evaluate(
-            self.input_with_codex_transcript(
-                "Blocked: PR #123 has not merged.\n"
-                "Blocked by: GitHub PR #123.\n"
-                "Unblock action: The PR #123 owner must follow it to a terminal merge.\n"
-                "Resume when: GitHub reports PR #123 merged."
-            )
-        )
+        result = evaluate(self.input_with_codex_transcript("Still blocked on PR #123."))
         self.assertEqual({}, result)
 
-    def test_registered_downstream_wait_reports_blocker_without_pointer(self):
-        self.write_ledger(
-            "Blocked: Checkpoints 6-7 require the owner's platform-sync PR to merge.\n"
-            "Blocked by: owner ledger.\n"
-            "Unblock action: The owner ledger must follow the sync and dispatch this dependent.\n"
-            "Resume when: The owner records the merged sync in this ledger.\n\n"
-            "The owner ledger lists this ledger under `## Downstream handoffs`."
-        )
-        result = evaluate(
-            self.input_with_codex_transcript(
-                "Blocked: Checkpoints 6-7 require the owner's platform-sync PR to merge.\n"
-                "Blocked by: owner ledger.\n"
-                "Unblock action: The owner ledger must follow the sync and dispatch this dependent.\n"
-                "Resume when: The owner records the merged sync in this ledger."
-            )
-        )
-        self.assertEqual({}, result)
+    def test_malformed_blocker_is_flagged_advisory(self):
+        self.write_ledger("Waiting for PR #123 to merge; its owner will surface this plan when ready.")
+        result = evaluate(self.input_with_codex_transcript("Waiting for PR #123."))
+        self.assertIn("Blocked by:", self.assertAdvisory(result))
 
-    def test_blocker_report_must_include_every_actionable_value(self):
-        self.write_ledger(
-            "Blocked: Commit abc is unavailable.\n"
-            "Blocked by: upstream branch.\n"
-            "Unblock action: Push a branch containing commit abc.\n"
-            "Resume when: git cat-file resolves commit abc."
-        )
-        result = evaluate(self.input_with_codex_transcript("Commit abc is unavailable."))
-        self.assertEqual("block", result["decision"])
-        self.assertIn("Push a branch containing commit abc.", result["reason"])
-        self.assertIn("git cat-file resolves commit abc.", result["reason"])
+    def test_missing_next_steps_is_flagged_advisory(self):
+        self.write_ledger_without_next_steps()
+        result = evaluate(self.input_with_codex_transcript("Everything is complete."))
+        self.assertIn("`## Next Steps`", self.assertAdvisory(result))
 
-    def test_blocked_plan_pointer_is_rejected(self):
-        self.write_ledger(
-            "Blocked: Commit abc is unavailable.\n"
-            "Blocked by: upstream branch.\n"
-            "Unblock action: Push a branch containing commit abc.\n"
-            "Resume when: git cat-file resolves commit abc."
-        )
-        message = (
-            "Blocked: Commit abc is unavailable.\n"
-            "Blocked by: upstream branch.\n"
-            "Unblock action: Push a branch containing commit abc.\n"
-            f"Resume when: git cat-file resolves commit abc.\n\n{self.pointer()}"
-        )
-        result = evaluate(self.input_with_codex_transcript(message))
-        self.assertEqual("block", result["decision"])
-        self.assertIn("remove the blocked plan's continuation pointer", result["reason"])
+    def test_invalid_plan_graph_is_flagged_advisory(self):
+        self.write_ledger("Open the PR.")
+        self.roadmap.write_text("# Roadmap\n", encoding="utf-8")
+        result = evaluate(self.input_with_codex_transcript("Implementation is complete."))
+        message = self.assertAdvisory(result)
+        self.assertIn("PLAN GRAPH", message)
+        self.assertNotIn(self.pointer(), message)
 
-    def test_reports_blocker_contract_and_actionable_pointer_together(self):
+    def test_missing_worktree_uses_create_opener(self):
+        missing = self.root.parent / "launch_not_created"
+        self.write_ledger("Implement the plan.", worktree=missing)
+        result = evaluate(self.input_with_codex_transcript("The plan is ready."))
+        self.assertIn("/worktree create Feature/launch_example", self.assertAdvisory(result))
+
+    def test_mixed_blocked_and_active_reminds_only_the_active(self):
         blocked = self.root / "plans" / "launch" / "OWNER_PROGRESS.md"
         blocked_plan = blocked.with_name("OWNER_PLAN.md")
         active = self.root / "plans" / "launch" / "DEPENDENT_PROGRESS.md"
@@ -431,68 +341,16 @@ class PlanHandoffStopTests(unittest.TestCase):
             "\n".join(json.dumps(record) for record in records),
             encoding="utf-8",
         )
-        data = {
-            "cwd": str(self.root),
-            "transcript_path": str(transcript),
-            "last_assistant_message": "Implementation is complete.",
-        }
-
-        result = evaluate(data)
-
-        self.assertEqual("block", result["decision"])
-        self.assertIn("Blocked: The package is not published.", result["reason"])
-        self.assertIn(active_pointer, result["reason"])
-
-        active_handoff = expected_handoff(
-            active.resolve(),
-            active_pointer,
-            next_steps(active.read_text(encoding="utf-8")),
+        result = evaluate(
+            {
+                "cwd": str(self.root),
+                "transcript_path": str(transcript),
+                "last_assistant_message": "Implementation is complete.",
+            }
         )
-        data["last_assistant_message"] = f"{blocker}\n\n{active_handoff}"
-        self.assertEqual({}, evaluate(data))
-
-        data["last_assistant_message"] = active_handoff
-        rejection = evaluate(data)
-        self.assertEqual("block", rejection["decision"])
-        data["last_assistant_message"] = rejection["reason"]
-        self.assertEqual({}, evaluate(data))
-
-    def test_legacy_blocker_requires_structured_contract(self):
-        self.write_ledger("Waiting for PR #123 to merge; its owner will surface this plan when ready.")
-        result = evaluate(self.input_with_codex_transcript("Waiting for PR #123."))
-        self.assertEqual("block", result["decision"])
-        self.assertIn("`Blocked by:`", result["reason"])
-        self.assertIn("`Unblock action:`", result["reason"])
-
-    def test_old_three_line_blocker_is_rejected_without_a_pointer(self):
-        self.write_ledger(
-            "Blocked: Commit abc is unavailable.\n"
-            "Unblock action: Push a branch containing commit abc.\n"
-            "Resume when: git cat-file resolves commit abc."
-        )
-
-        result = evaluate(self.input_with_codex_transcript("Commit abc is unavailable."))
-
-        self.assertEqual("block", result["decision"])
-        self.assertIn("`Blocked by:`", result["reason"])
-        self.assertNotIn(self.pointer(), result["reason"])
-
-    def test_invalid_plan_graph_blocks_without_a_pointer(self):
-        self.write_ledger("Open the PR.")
-        self.roadmap.write_text("# Roadmap\n", encoding="utf-8")
-
-        result = evaluate(self.input_with_codex_transcript("Implementation is complete."))
-
-        self.assertEqual("block", result["decision"])
-        self.assertIn("PLAN GRAPH GATE", result["reason"])
-        self.assertNotIn(self.pointer(), result["reason"])
-
-    def test_blocked_work_without_registered_suppression_still_needs_pointer(self):
-        self.write_ledger(
-            "Checkpoint 6 is blocked, but update the error records and their contract tests now."
-        )
-        result = evaluate(self.input_with_codex_transcript("Checkpoint 6 is blocked."))
-        self.assertEqual("block", result["decision"])
+        message = self.assertAdvisory(result)
+        self.assertIn(active_pointer, message)
+        self.assertNotIn("Blocked: The package is not published.", message)
 
     def test_patch_claims_targets_without_claiming_referenced_dependency_ledgers(self):
         typed_result = self.root / "plans" / "typed-result"
@@ -705,7 +563,7 @@ class PlanHandoffStopTests(unittest.TestCase):
     def test_owner_copy_wins_over_stale_worktree_copy(self):
         self.write_ledger("Open the owner PR.")
         stale_root = (Path(self.temp.name) / "stale-checkout").resolve()
-        stale_ledger = self.write_plan_pair(
+        self.write_plan_pair(
             stale_root,
             "Open the stale PR.",
             stale_root / "missing-owner",
@@ -717,7 +575,7 @@ class PlanHandoffStopTests(unittest.TestCase):
                 "type": "message",
                 "role": "user",
                 "content": [
-                    {"type": "input_text", "text": str(stale_ledger)},
+                    {"type": "input_text", "text": str(stale_root / "plans" / "launch" / "EXAMPLE_PROGRESS.md")},
                     {"type": "input_text", "text": str(self.ledger)},
                 ],
             },
@@ -730,9 +588,9 @@ class PlanHandoffStopTests(unittest.TestCase):
                 "last_assistant_message": "Implementation is complete.",
             }
         )
-        self.assertEqual("block", result["decision"])
-        self.assertIn(self.pointer(), result["reason"])
-        self.assertNotIn("missing-owner", result["reason"])
+        message = self.assertAdvisory(result)
+        self.assertIn(self.pointer(), message)
+        self.assertNotIn("missing-owner", message)
 
     def test_duplicate_logical_ledgers_emit_one_pointer(self):
         missing_owner = Path(self.temp.name) / "missing-owner"
@@ -773,10 +631,10 @@ class PlanHandoffStopTests(unittest.TestCase):
                 "last_assistant_message": "Implementation is complete.",
             }
         )
-        self.assertEqual("block", result["decision"])
-        self.assertEqual(1, result["reason"].count("/worktree create Feature/launch_example"))
+        message = self.assertAdvisory(result)
+        self.assertEqual(1, message.count("/worktree create Feature/launch_example"))
 
-    def test_unrelated_turn_in_plan_worktree_needs_no_pointer(self):
+    def test_unrelated_turn_in_plan_worktree_needs_no_reminder(self):
         self.write_ledger("Run the repository code-review workflow, then open the PR.")
         with patch("plan_handoff_stop.branch_ledgers", return_value={self.ledger}) as fallback:
             result = evaluate(self.input_without_ledger_reference("The answer is 42."))
@@ -792,13 +650,6 @@ class PlanHandoffStopTests(unittest.TestCase):
         self.write_ledger("Run the repository code-review workflow, then open the PR.")
         result = evaluate(self.input_with_injected_hook_prompt("That pointer was unrelated."))
         self.assertEqual({}, result)
-
-    def test_missing_worktree_uses_create_opener(self):
-        missing = self.root.parent / "launch_not_created"
-        self.write_ledger("Implement the plan.", worktree=missing)
-        result = evaluate(self.input_with_codex_transcript("The plan is ready."))
-        self.assertEqual("block", result["decision"])
-        self.assertIn("/worktree create Feature/launch_example", result["reason"])
 
 
 if __name__ == "__main__":
