@@ -303,6 +303,24 @@ internal static class EscrowMappers
 }
 ```
 
+## Paginated results — project with `IPagination<T>.Select`, never `new Pagination<T>(...)`
+
+Mapping a page from entity to DTO, or DTO to Response, is one call:
+
+```csharp
+return (await repository.GetQueueAsync(pageParams)).Select(r => r.ToDto());
+```
+
+`PaginationExtensions.Select` carries `TotalCount`/`PageNumber`/`PageSize` across for you. Hand-writing
+`new Pagination<TDestination>(source.Data.Select(...).ToList(), source.TotalCount, source.PageNumber,
+source.PageSize)` restates four arguments that have exactly one correct value, and it is how the repo
+ended up with eight-plus copies of the same constructor call.
+
+One live caveat: the extension sits in `Concertable.DataAccess.Infrastructure`, which `*.Api` projects
+deliberately do not reference — so Api response mappers genuinely cannot reach it and hand-construct
+today. Every layer that *can* reach it (Application, Infrastructure) uses it. Moving `Select` to
+`Concertable.Contracts`, next to `IPagination<T>` itself, is logged in [`../TECH_DEBT.md`](../TECH_DEBT.md).
+
 ## `#region` — sparingly, to group same-shaped members in an aggregating file
 
 The codebase does **not** use `#region` in ordinary classes — it hides code and usually signals a class
