@@ -262,6 +262,18 @@ Eight-plus copies of a four-argument constructor call is the symptom; the placem
 leave `ToPaginationAsync` in `Concertable.DataAccess.Infrastructure` where it belongs. Then every layer
 — Application, Infrastructure and Api alike — can map a page without minting a constructor call.
 
+**Rename it `Map` in the same cut-over.** `Select` names it after LINQ while behaving nothing like it:
+`Enumerable.Select` is lazy, returns `IEnumerable<TResult>`, and composes with `Where`/`OrderBy`; this is
+eager, returns a different container (`IPagination<TDestination>`), and composes with nothing. `Map` is
+already this repo's word for "transform the payload, preserve the carrier" — `Option.Map`, `Result.Map`,
+`MapAsync` — and `IPagination<T>` is exactly a carrier with metadata.
+
+There is also a latent trap in the current name. `IPagination<out T>` does not implement
+`IEnumerable<T>` today, but it exposes `Data` and one day someone will add it — at which point
+`page.Select(...)` silently binds to LINQ's extension instead, yields `IEnumerable<TDestination>`, and
+**drops `TotalCount`/`PageNumber`/`PageSize`**. `Map` cannot be captured that way. Since the move is
+already a breaking publish-first change, fold the rename into it rather than paying for two breaks.
+
 Both are **published packages pinned by `ConcertablePlatformVersion`**, so like the `ActionLink`
 duplication above this is a publish-first cut-over, not an edit: add to Contracts, publish, let
 `platform-sync` bump the pins, then migrate the call sites and delete the old overload.

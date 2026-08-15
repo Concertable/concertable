@@ -319,7 +319,9 @@ ended up with eight-plus copies of the same constructor call.
 One live caveat: the extension sits in `Concertable.DataAccess.Infrastructure`, which `*.Api` projects
 deliberately do not reference — so Api response mappers genuinely cannot reach it and hand-construct
 today. Every layer that *can* reach it (Application, Infrastructure) uses it. Moving `Select` to
-`Concertable.Contracts`, next to `IPagination<T>` itself, is logged in [`../TECH_DEBT.md`](../TECH_DEBT.md).
+`Concertable.Contracts`, next to `IPagination<T>` itself — and renaming it `Map`, since it preserves a
+carrier rather than behaving like LINQ's lazy `Select` — is logged in
+[`../TECH_DEBT.md`](../TECH_DEBT.md).
 
 ## `#region` — sparingly, to group same-shaped members in an aggregating file
 
