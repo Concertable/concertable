@@ -184,11 +184,18 @@ Stripe accepts only its documented reason codes. `RefundReasonCodes` now owns th
 cross-service values in Payment Contracts, both B2B cancellation workflows send
 `requested_by_customer`, and Payment client coverage proves the value reaches Stripe unchanged.
 
+Merge-group run `31913636172` proves the refund correction: both B2B and Customer API E2E suites pass.
+Its UI tier then exposed a separate first-tenant onboarding regression in the user-model guard change.
+The business gateway did not carry `/create` through OIDC, while the Artist and Venue parent routes
+required an existing membership before admitting the create page. The gateway now preserves that
+explicit intent and both surfaces authenticate `/create` locally before applying membership routing.
+
 ## Next Steps
 
-Require exact-head PR CI to pass, then re-enqueue PR #552 with `full-e2e` and own the new merge-group
-result without retrying any failed run. After merge, own package publication and platform sync
-through terminal green, then update the registered downstream ledgers and dispatch their open work.
+Verify the onboarding-route correction, publish it through the plan push protocol, require exact-head
+PR CI to pass, then re-enqueue PR #552 with `full-e2e` and own the new merge-group result without
+retrying any failed run. After merge, own package publication and platform sync through terminal
+green, then update the registered downstream ledgers and dispatch their open work.
 
 ## Completed work
 
@@ -237,6 +244,11 @@ through terminal green, then update the registered downstream ledgers and dispat
   because refund reasons must be `duplicate`, `fraudulent`, or `requested_by_customer`. The focused
   Payment handler/client slice passes 9/9 after replacing those internal labels with the shared
   `RefundReasonCodes.RequestedByCustomer` contract value; no local E2E was run.
+- Final exact-head CI run `31913071717` passed 52/52 jobs at current-main head `002c45f5f`.
+  Merge-group run `31913636172` passed 52 non-E2E jobs and API E2E, then failed B2B UI E2E with
+  29/31 scenarios passing. The artist-manager and venue-manager sign-up scenarios both authenticated
+  successfully but landed on `/` instead of `/create`; there were no HTTP 4xx/5xx, browser-console,
+  or server errors. Customer UI did not run because the B2B UI gate failed. The run was not retried.
 - The broad local service-carve attempts remain blocked by this branch's existing platform-package
   transition: package mode lacks the branch-local Messaging/Payment additions, while local-core mode
   resolves `Concertable.Contracts` 1.0.0 against the 0.997 service pin. Exact-head PR CI owns the
