@@ -23,8 +23,7 @@ package preparation, diff checks, and the plan graph are green.
 
 ## Next Steps
 
-1. Commit the additive producer checkpoint with the plan graph, run a fresh branch review, and resolve
-   any findings.
+1. Commit the clean formal review checkpoint.
 2. Refresh current-main currency, then push, open a draft PR, and follow exact-head CI.
 3. Use the already authorized delivery chain to merge
    the producer and follow package publication plus the generated platform-sync PR to green and merged.
@@ -48,8 +47,9 @@ package preparation, diff checks, and the plan graph are green.
 
 ## Reviews
 
-- The extracted code was reviewed as part of #561, but this branch diff still requires its own formal
-  review before delivery.
+- Formal review of `1f4ea1f72..ff7cdc954` found no issues across correctness, microservice isolation,
+  module boundaries, seeding, C# conventions, or changed-path test coverage. Review artifact:
+  `reviews/Refactor-DataAccessRepositoryPermissionHierarchyExpand.md`.
 
 ## Decisions, discoveries, blockers, and deviations
 
