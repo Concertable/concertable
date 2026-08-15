@@ -65,6 +65,17 @@ class PlanGraphTests(unittest.TestCase):
         self.assertEqual(1, len(errors))
         self.assertIn("roadmap item marker", errors[0])
 
+    def test_roadmap_item_accepts_a_status_table_row(self):
+        ledger = self.write_ledger()
+        self.roadmap.write_text(
+            "| Status | Key | Item |\n"
+            "|---|---|---|\n"
+            "| [ ] | `epic/graph` | Build the graph |\n",
+            encoding="utf-8",
+        )
+
+        self.assertEqual([], ledger_errors(ledger))
+
     def test_roadmap_item_key_must_match_the_epic(self):
         ledger = self.write_ledger()
         ledger.write_text(
