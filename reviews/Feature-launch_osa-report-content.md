@@ -131,3 +131,49 @@ passed**; `api/Concertable.slnx` builds clean.
   id. The derived `Reference` property is correctly not mapped to a column.
 - **Tenancy:** `ContentReportEntity` is filtered on the tenant-filtered context and unfiltered on the new
   `AdminConversationsDbContext`, which is registered without `VenueArtistTenantInterceptor` as required.
+
+
+## Incremental review — 2026-08-15
+
+Range `eff10041..73564c59` plus the fix below. Only the branch's own changes are in scope; the rest of
+the range is merged `main` (platform syncs, the Reunion action-result fix, the B2B test-isolation
+refactor, and the frontend doc-parity PR #579).
+
+Scope: `app/shared/src/features/messaging/{schemas/reportMessageRequestSchema.ts,types.ts,index.ts}`,
+`app/web/shared/src/features/messaging/components/{ReportMessageDialog,Mailbox}.tsx`, the restored User
+migration, and the `TECH_DEBT`/conventions doc edits.
+
+**Layer 1 (native) did not run.** The `code-reviewer` subagent terminated on a session limit, so the
+correctness pass was done inline by the same agent that wrote the code — weaker, and stated plainly
+because this branch has already shown that self-review misses what the author rationalised.
+
+- [x] **NAT9 — MEDIUM — correctness (dead validation path)** — `ReportMessageDialog.tsx:88`
+  `maxLength={2000}` on the textarea hard-capped input at exactly the schema's limit, so
+  `safeParse` could never fail the length rule: `detailsError` was always `undefined`, the inline error
+  never rendered, and `!parsed.success` never disabled submit. The entire inline-error affordance
+  `CODE_PATTERNS.md` "The write boundary is a zod parse" asks for was unreachable. It also made a long
+  paste **truncate silently** — 3000 characters in, 1000 gone, no explanation — which is worse than the
+  400 the cap was added to avoid. Introduced by stacking the earlier `maxLength` fix and the later zod
+  schema without reconciling them. **Fixed:** cap removed, so the parse gates submit and reports the
+  message inline; the field also now carries `aria-invalid`/`aria-describedby` pointing at it.
+
+### Checked and clean (this delta)
+
+- **Frontend conventions** (`app/agents/CODE_CONVENTIONS.md`, finally loadable): absent values are
+  `undefined`; the textarea stays controlled via `value={details ?? ""}`; reads carry no `Dto`/`Response`
+  suffix; the write input is an `XRequest`; casing is camelCase; object shapes are `interface` and the
+  category union is a `type`.
+- **Frontend patterns** (`app/agents/CODE_PATTERNS.md`): the schema lives in `features/messaging/schemas/`
+  and is the `z.infer` source for both types, so drift from the backend validator is a compile error;
+  `parsed.data` is passed with no `!` bang; `reportMessage` joined the existing `messageApi` object rather
+  than minting a second client; the raw hook carries the `Mutation` suffix; no server state touches
+  `useEffect`; no identity check inside the shared tier — the Report control is gated on the server's
+  action link.
+- **Dialog lifecycle:** closing sets `reportingMessageId` to `undefined`, which unmounts the dialog, so
+  category/details/mutation state cannot leak into the next report; `close()` resets explicitly as well.
+- **Mutation wiring:** reporting changes no cached list — no message is written into the thread and the
+  unread count is untouched — so the absence of an invalidation is correct, not an omission.
+- **E2E selectors** still match the component: `message-report-trigger`, `report-category`,
+  `report-details`, `report-submit`, `report-confirmation`.
+- **Migration restore** returns the User module's three files to `main`'s exact content; the migration
+  diff against `main` is Conversations-only.

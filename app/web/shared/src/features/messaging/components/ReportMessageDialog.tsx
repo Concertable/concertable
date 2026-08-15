@@ -90,15 +90,18 @@ export function ReportMessageDialog({
               <Textarea
                 id="report-details"
                 data-testid="report-details"
+                aria-invalid={detailsError !== undefined}
+                aria-describedby={detailsError ? "report-details-error" : undefined}
                 rows={4}
-                maxLength={2000}
                 value={details ?? ""}
                 onChange={(e) => setDetails(e.target.value)}
               />
             </div>
 
             {detailsError && (
-              <p className="text-destructive text-sm">{detailsError}</p>
+              <p id="report-details-error" className="text-destructive text-sm">
+                {detailsError}
+              </p>
             )}
 
             {isError && (
