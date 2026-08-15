@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `f80bd66c50dd1e5e6de954e41441b9d8ae712fbc`  _(2026-08-15)_
-**Security-reviewed up to commit:** `f80bd66c50dd1e5e6de954e41441b9d8ae712fbc`  _(2026-08-15)_
+**Reviewed up to commit:** `e39b3759c64ad8fc7e4b9a9fdc415512a1143d11`  _(2026-08-15)_
+**Security-reviewed up to commit:** `e39b3759c64ad8fc7e4b9a9fdc415512a1143d11`  _(2026-08-15)_
 
 > Range reviewed: `429581025..94d7664ad` (2 commits).
 > Status legend: `[ ]` todo - `[~]` in progress - `[x]` done - `[wontfix]` (note why).
@@ -88,3 +88,10 @@ handlers. The change does not alter runtime authorization, service boundaries, o
 No issues found. Besides the already-reviewed E2E fix checkpoint, the range brings in current main's
 plan graph and handoff-hook changes plus their tests and guidance. It does not add another runtime or
 security-sensitive change to this PR.
+
+## Incremental review - 2026-08-15 (fix checkpoint transport)
+
+> Range reviewed: `f80bd66c5..e39b3759c` (1 commit).
+
+No issues found. The commit records the clean review and plan graph state for the replacement remote
+head; no runtime or security-sensitive behavior changed.

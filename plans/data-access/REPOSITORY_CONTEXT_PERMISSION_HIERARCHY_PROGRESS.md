@@ -6,8 +6,8 @@
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable/.worktrees/Plan-data-access-repository-permission-hierarchy`
 - Branch: `Refactor/DataAccessRepositoryPermissionHierarchy`
 - PR: [#561](https://github.com/Concertable/concertable/pull/561) (ready, open)
-- Remote and PR head: `a2c2cbd333222d27c3647ab67d8275767a3ac09d`; local, remote-tracking, and
-  draft PR heads are equal. Exact-head draft CI run `31885137119` passed, including `ci-complete`.
+- Remote and PR head: `e39b3759c64ad8fc7e4b9a9fdc415512a1143d11`; local, remote-tracking, and
+  PR heads are equal. Replacement exact-head CI is pending.
 - Tommy explicitly authorized `/merge` on 2026-08-15. The published contract/package shape requires
   the `full-e2e` merge-queue tier; queue admission is the next delivery action.
 - `origin/main` advanced by six documentation-only commits during CI. It merged cleanly at
@@ -34,6 +34,24 @@
 - The fix is committed at `016bd25fb`, incrementally reviewed with no findings, and current
   `origin/main` at `9516a2a2b` merged cleanly at `f80bd66c5`. The updated plan graph passes with zero
   errors and zero warnings.
+- The reviewed transport checkpoint is committed at `e39b3759c`; local code is ready to push over PR
+  head `a2c2cbd33` and then requires replacement exact-head CI.
+- The first push of `e39b3759c` was rejected without changing the remote because GitHub still marked
+  #561 as merge-queued after the failed group despite clearing its auto-merge request. The exact stale
+  queue entry was removed through GitHub's dequeue mutation; the same reviewed SHA then pushed
+  successfully and local, remote-tracking, and PR heads were verified equal.
+- Replacement exact-head CI run `31891846110` passed on `e39b3759c`: local platform pack, full
+  solution build, all backend carves, selected unit and integration matrices, and `ci-complete` are
+  green. PR-level E2E jobs skipped as expected; the `full-e2e` label reserves them for the merge group.
+- The branch remains current with `origin/main` at `9516a2a2b`. GitHub re-admitted exact PR head
+  `e39b3759c` with the `full-e2e` label. Replacement merge-group run `31892616154` passed API E2E and
+  all 31 B2B UI scenarios, proving the seeded participant projection fix. It then failed an unrelated
+  Customer sign-up scenario after 5/6 Customer scenarios passed: `RunAndWaitForNavigationAsync` at
+  `SignUpSteps.cs:39` received `net::ERR_ABORTED; maybe frame was detached?`. The failed run must not be
+  retried. Its Playwright trace shows the Customer SPA issued two `/connect/authorize` requests about
+  16 ms apart with different PKCE state values; the second navigation aborted the first login page.
+  All three Strict-Mode SPA login routes now guard `signinRedirect` with a mount-persistent ref so one
+  route activation starts one OIDC navigation.
 - Dependency/package gates: Phase 1 remains an additive producer PR. After it merges, package publication and the generated platform-sync PR must be green before Phase 2 migrates consumers.
 - Last reconciled: 2026-08-15 against fetched `origin/main` at `9516a2a2b`; the branch is current with
   base after merge commit `f80bd66c5`.
@@ -100,12 +118,12 @@ and green locally and under exact-head draft CI. PR #561 is clean and remains dr
 
 ## Next Steps
 
-1. Commit the reviewed current-main checkpoint, push it through exact-head CI, then re-enqueue with
-   `full-e2e` and follow the replacement
-   merge group to a terminal result without retrying a failed run.
-2. On green, close the source worktree, sync main,
+1. Commit and incrementally review the idempotent login redirect fix, push it through exact-head CI,
+   then re-enqueue `full-e2e` and follow a new merge group
+   to a terminal result without retrying a failed run.
+3. On green, close the source worktree, sync main,
    then follow package publication and the generated platform-sync PR to green and merged.
-3. From a fresh close-out worktree, reconcile the terminal delivery evidence, delete this plan and
+4. From a fresh close-out worktree, reconcile the terminal delivery evidence, delete this plan and
    ledger together, tick the roadmap item, and land the docs-only close-out.
 
 ## Completed work
@@ -172,6 +190,16 @@ and green locally and under exact-head draft CI. PR #561 is clean and remains dr
   started. The affected E2E project build reached branch package consumers but failed because the
   local package set predates this branch's additive `ReadDbContext`; exact-head CI must rebuild the
   local platform before the replacement merge-group run.
+- Replacement exact-head CI run `31891846110` on `e39b3759c` - passed: local platform pack, full
+  solution build, all backend carves, selected unit and integration matrices, and `ci-complete` green.
+- Replacement merge-group run `31892616154` - API E2E passed; B2B UI E2E passed 31/31 including the
+  formerly failing mailbox scenario; Customer UI E2E passed 5/6 and failed `New customer registers and
+  signs in` on an aborted login-to-sign-up navigation.
+- The failed Customer trace confirms two concurrent OIDC authorize navigations, not an Auth service or
+  HTTP failure. Customer/Venue/Artist login routes now start `signinRedirect` at most once per mount.
+- The mandatory Docker HTTP health gate timed out again, so no local browser run was started.
+- Fresh lockfile install and shared web package build - succeeded; shared package tests passed 6/6.
+- Customer, Venue, Artist, and Business production builds after the auth fix - all succeeded.
 
 ## Reviews
 
