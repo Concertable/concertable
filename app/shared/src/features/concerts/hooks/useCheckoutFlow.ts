@@ -1,87 +1,42 @@
 import { useEffect, useState } from "react";
 import type { HubConnection } from "@microsoft/signalr";
 
-interface Options<TPayload, TFailure> {
+interface Options {
   connection: HubConnection;
   event: string;
-  failureEvent?: string;
-  active: boolean;
-  timeoutActive?: boolean;
   timeoutMs?: number;
-  matchesSuccess?: (payload: TPayload) => boolean;
-  matchesFailure?: (failure: TFailure) => boolean;
-  onFailure?: (failure: TFailure) => void;
-  resetKey?: unknown;
 }
 
-export type CheckoutFlowState<TPayload, TFailure = never> =
+export type CheckoutFlowState<TPayload> =
   | { phase: "awaiting" | "timeout" }
-  | { phase: "success"; result: TPayload }
-  | { phase: "failure"; failure: TFailure };
+  | { phase: "success"; result: TPayload };
 
-export function useCheckoutFlow<TPayload, TFailure = never>({
+export function useCheckoutFlow<TPayload>({
   connection,
   event,
-  failureEvent,
-  active,
-  timeoutActive = active,
   timeoutMs = 30_000,
-  matchesSuccess,
-  matchesFailure,
-  onFailure,
-  resetKey,
-}: Readonly<Options<TPayload, TFailure>>): CheckoutFlowState<
-  TPayload,
-  TFailure
-> {
-  const [state, setState] = useState<CheckoutFlowState<TPayload, TFailure>>({
+}: Readonly<Options>): CheckoutFlowState<TPayload> {
+  const [state, setState] = useState<CheckoutFlowState<TPayload>>({
     phase: "awaiting",
   });
 
   useEffect(() => {
-    setState((current) =>
-      current.phase === "awaiting" ? current : { phase: "awaiting" },
-    );
-  }, [active, resetKey]);
+    if (state.phase !== "awaiting") return;
 
-  useEffect(() => {
-    if (!active) return;
-
-    const successHandler = (payload: TPayload) => {
-      if (matchesSuccess && !matchesSuccess(payload)) return;
+    const handler = (payload: TPayload) => {
       setState({ phase: "success", result: payload });
     };
-    const failureHandler = (failure: TFailure) => {
-      if (matchesFailure && !matchesFailure(failure)) return;
-      onFailure?.(failure);
-      setState({ phase: "failure", failure });
-    };
 
-    connection.on(event, successHandler);
-    if (failureEvent) connection.on(failureEvent, failureHandler);
-    return () => {
-      connection.off(event, successHandler);
-      if (failureEvent) connection.off(failureEvent, failureHandler);
-    };
-  }, [
-    active,
-    connection,
-    event,
-    failureEvent,
-    matchesFailure,
-    matchesSuccess,
-    onFailure,
-  ]);
-
-  useEffect(() => {
-    if (!active || !timeoutActive || state.phase !== "awaiting") return;
-
+    connection.on(event, handler);
     const timeoutId = setTimeout(() => {
-      setState({ phase: "timeout" });
+      setState((s) => (s.phase === "awaiting" ? { phase: "timeout" } : s));
     }, timeoutMs);
 
-    return () => clearTimeout(timeoutId);
-  }, [active, state.phase, timeoutActive, timeoutMs]);
+    return () => {
+      connection.off(event, handler);
+      clearTimeout(timeoutId);
+    };
+  }, [state.phase, connection, event, timeoutMs]);
 
   return state;
 }

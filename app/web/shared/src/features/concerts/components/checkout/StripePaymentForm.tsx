@@ -16,9 +16,7 @@ export interface Props {
   session: CheckoutSession;
   submitLabel: string;
   disabled?: boolean;
-  error?: string;
   footer?: ReactNode;
-  onSubmitStart?: () => void;
   onSuccess: (paymentMethodId: string) => void;
 }
 
@@ -45,14 +43,12 @@ function Form({
   session,
   submitLabel,
   disabled,
-  error: paymentError,
   footer,
-  onSubmitStart,
   onSuccess,
 }: Props) {
   const stripe = useStripe();
   const elements = useElements();
-  const [stripeError, setStripeError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentReady, setPaymentReady] = useState(false);
 
@@ -60,13 +56,12 @@ function Form({
     event.preventDefault();
     if (!stripe || !elements) return;
 
-    onSubmitStart?.();
     setIsSubmitting(true);
-    setStripeError(null);
+    setError(null);
 
     const { error: submitError } = await elements.submit();
     if (submitError) {
-      setStripeError(submitError.message ?? "Payment validation failed.");
+      setError(submitError.message ?? "Payment validation failed.");
       setIsSubmitting(false);
       return;
     }
@@ -82,7 +77,7 @@ function Form({
       : await stripe.confirmPayment({ elements, confirmParams, redirect: "if_required" });
 
     if (result.error) {
-      setStripeError(result.error.message ?? "Payment failed.");
+      setError(result.error.message ?? "Payment failed.");
       setIsSubmitting(false);
       return;
     }
@@ -90,7 +85,7 @@ function Form({
     const intent = "setupIntent" in result ? result.setupIntent : result.paymentIntent;
     const paymentMethodId = intent?.payment_method as string | undefined;
     if (!paymentMethodId) {
-      setStripeError("Payment method missing from confirmation.");
+      setError("Payment method missing from confirmation.");
       setIsSubmitting(false);
       return;
     }
@@ -98,7 +93,6 @@ function Form({
   }
 
   const isDisabled = !stripe || !elements || !paymentReady || disabled || isSubmitting;
-  const displayedError = paymentError ?? stripeError;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -109,11 +103,7 @@ function Form({
         }}
         onReady={() => setPaymentReady(true)}
       />
-      {displayedError && (
-        <p data-testid="payment-error" className="text-destructive text-sm">
-          {displayedError}
-        </p>
-      )}
+      {error && <p data-testid="payment-error" className="text-destructive text-sm">{error}</p>}
       <Button
         type="submit"
         className="w-full"
