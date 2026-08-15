@@ -12,14 +12,16 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
 
 ## Next Steps
 
-Commit the verified Conversations ownership cut-over, rerun the venue and artist feed-only carves sequentially from
-that commit, and complete the incremental review. Then push the corrected consumer head and let exact-head PR #563
-CI pass before the authenticated Phase A.8 seeded venue/artist UX review and merge request.
+After transporting this review/ledger checkpoint, require local, remote-tracking, and PR #563 heads to match, then
+let exact-head PR CI pass. Once green, complete the authenticated Phase A.8 seeded venue/artist UX review before the
+merge request.
 
 ## Reviews
 
 - Producer full and incremental review is recorded in `reviews/Feature-launch_dashboard-frontend-package-expand.md`;
-  its only finding is closed. Consumer finding ARCH1 is now closed; the post-cut-over incremental review remains.
+  its only finding is closed. Consumer finding ARCH1 is closed, and the incremental correctness/security review of
+  `9be56b9d..90a386b1` found no new issues across 33 commits. The review markers are stamped to work head
+  `90a386b1416f2179eaabef3e7b8068eef8594775`.
 
 ## Current implementation
 
@@ -35,17 +37,18 @@ CI pass before the authenticated Phase A.8 seeded venue/artist UX review and mer
   `messageApi.getPreviews()` from `@concertable/b2b/features/conversations`; both dashboard API objects have deleted
   their duplicate message methods. `@concertable/b2b@0.1.0-alpha.0.3721` resolves from the feed and its manifest
   contains the Conversations API runtime and declaration files. B2B package tests pass 17/17, frontend boundaries
-  pass, and both venue and artist TypeScript plus production Vite builds pass. The artist feed-only standalone carve
-  also restored and built successfully before Windows failed only while cleaning its temporary npm cache; both
-  carves will be rerun sequentially from the committed head to avoid concurrent `git stash create` locking.
+  pass, and both venue and artist TypeScript plus production Vite builds pass. Sequential venue and artist feed-only
+  standalone carves both restored and built successfully from commit `90a386b14`. That reviewed work head was pushed
+  from starting remote/PR head `ec95772683e053975792f99229a1315e4e9c993d`; fetch verification proved local,
+  remote-tracking, and PR #563 heads all equal `90a386b1416f2179eaabef3e7b8068eef8594775`.
 
 - **Consumer review corrections — verified locally.** Optional application-action UI state uses `undefined`, and
   action/navigation/cache/toast orchestration has moved from the widgets into role-specific hooks. Dashboard shared
   types moved from the needless `deals/common.ts` nesting to `dashboard/types.ts`. Current application queries now
   use the locked `Opportunity.Period.End > now` relevance rule, with a focused real HTTP/SQL integration test green;
   serializer tests prove absent venue avatars are omitted; the inbox preview test asserts the actual latest seeded
-  message; and both affected TypeScript projects compile. The branch review work order records all findings closed;
-  the post-cut-over incremental review remains.
+  message; and both affected TypeScript projects compile. The branch review work order records all findings closed
+  and the post-cut-over incremental review clean.
 
 - **Frontend package gate — DELIVERED.** Producer PR [#578](https://github.com/Concertable/concertable/pull/578)
   passed exact-head CI and two full-E2E merge groups after `main` advanced, then merged as

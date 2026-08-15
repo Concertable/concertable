@@ -5,11 +5,12 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `9be56b9d381594d1300f9b3580dff08483a0cfac`  _(2026-08-15)_
-**Security-reviewed up to commit:** `9be56b9d381594d1300f9b3580dff08483a0cfac`  _(2026-08-15)_
+**Reviewed up to commit:** `90a386b1416f2179eaabef3e7b8068eef8594775`  _(2026-08-16)_
+**Security-reviewed up to commit:** `90a386b1416f2179eaabef3e7b8068eef8594775`  _(2026-08-16)_
 
 > Range reviewed: `1f4ea1f..ec957726` (12 commits).
 > Incremental range reviewed: `ec957726..9be56b9d` (1 commit).
+> Incremental range reviewed: `9be56b9d..90a386b1` (33 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
 
 ## Findings
@@ -29,3 +30,8 @@
 - [x] **ARCH1 — Message previews are exposed from persona dashboard APIs instead of Conversations.** Both personas
   now consume the published `messageApi` from `@concertable/b2b/features/conversations`; the dashboard-owned message
   methods are deleted.
+
+## Incremental review — 2026-08-16
+
+No issues found. Checked correctness, security, microservice isolation, module boundaries, seeding, C# conventions,
+and test coverage of changed paths.
