@@ -28,7 +28,10 @@ imports and `undefined` corrections, and rerun its exact-head standalone carves.
   worktree's own dependency install was interrupted and Windows security locked generated files; no generated or
   dependency files are committed. Work head `7a11c0f368c49d5356206c1a7e9550ab49be4680` was verified equal across
   local, remote-tracking, and PR heads; exact-head CI run
-  [31880667593](https://github.com/Concertable/concertable/actions/runs/31880667593) is in progress.
+  [31880667593](https://github.com/Concertable/concertable/actions/runs/31880667593) was superseded by the review fix.
+  Full review through `60742981e` found one missing action-link test gate; fix commit `60742981e` adds execute/download
+  coverage and makes B2B package builds run all tests. The clean dependent worktree passes 16/16 B2B package tests
+  and the package build.
 
 - Producer implementation commit `0d37bfa7a` remains the published implementation baseline on draft PR
   [#557](https://github.com/Concertable/concertable/pull/557). Full review through `bc56de2d8` found BUG1: settlement
