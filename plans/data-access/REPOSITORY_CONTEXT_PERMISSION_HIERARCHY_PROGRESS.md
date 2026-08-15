@@ -5,8 +5,11 @@
 - Roadmap item: `data-access/repository-context-permission-hierarchy`
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable/.worktrees/Plan-data-access-repository-permission-hierarchy`
 - Branch: `Refactor/DataAccessRepositoryPermissionHierarchy`
-- PR: [#561](https://github.com/Concertable/concertable/pull/561) (open; current-main reconciliation validated locally)
-- Remote and PR head: `dc1f55591ca589a5516bca6c6513e7a095beed1c`
+- PR: [#561](https://github.com/Concertable/concertable/pull/561) (open; exact-head CI pending)
+- Verified work head: `9e270e8337a2d14c07e87b08569ce027a7b004c2`
+- Starting remote head: `dc1f55591ca589a5516bca6c6513e7a095beed1c`
+- Pushed range: `dc1f55591ca589a5516bca6c6513e7a095beed1c..9e270e8337a2d14c07e87b08569ce027a7b004c2`
+- Remote and PR head: `9e270e8337a2d14c07e87b08569ce027a7b004c2` (verified equal after push)
 - Dependency/package gate: satisfied. Additive producer PR #590 merged as `59fe60e978affe23bcaf53823151eab2acda8ba0`, published platform `0.1.0-alpha.0.1007`, and platform-sync PR #592 merged green as `38e3d8548f10f3ab7a4a951b7c4ce961ec21c863`. Current `origin/main` pins `0.1.0-alpha.0.1009`, which includes the additive DataAccess API.
 - Last reconciled: 2026-08-15 against PR #561, fetched `origin/main` at `e8242eb43ee922ed34699ccbccdf29e473448b0d`, producer publication, and platform-sync evidence.
 
@@ -25,11 +28,11 @@ The producer/package gate is open. Current `origin/main` is reconciled in the pr
 worktree. The three Customer read-context conflicts retain the consumer migration to the published
 shared `ReadDbContext`; the plan artifacts retain the compact versions from `main` with current
 delivery evidence. Package-bound B2B, Customer, and Payment builds and the focused tests are green.
+The compound reconciliation work head is verified on the remote branch and PR.
 
 ## Next Steps
 
-1. Commit the clean incremental-review checkpoint and push the compound current-main reconciliation
-   to PR #561 using the plan-managed two-leg push protocol.
+1. Push this checkpoint-only transport commit and verify local, remote-tracking, and PR heads are equal.
 2. Require green exact-head PR CI, normalize to `full-e2e`, enqueue, and follow the new merge-group run
    to a terminal result without retrying a failure.
 3. On merge, close the source worktree and follow publication plus the generated platform-sync PR to
@@ -67,7 +70,7 @@ delivery evidence. Package-bound B2B, Customer, and Payment builds and the focus
 
 - Formal and incremental reviews are recorded in
   `reviews/Refactor-DataAccessRepositoryPermissionHierarchy.md`; all findings are resolved through
-  reviewed remote head `dc1f55591ca589a5516bca6c6513e7a095beed1c`.
+  reviewed work head `9e270e8337a2d14c07e87b08569ce027a7b004c2`.
 - Incremental review of `dc1f55591..c3afdb4b2` found no issues across the native, security,
   architecture, convention, seeding, and test-coverage lenses. Review and security watermarks are
   current at `c3afdb4b2fd137cbf406dfeb7174d9c082968c4d`.
