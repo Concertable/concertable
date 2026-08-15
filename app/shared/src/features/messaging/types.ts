@@ -1,5 +1,10 @@
 import type { ActionLink } from "../../types/common";
 
+export type {
+  ReportCategory,
+  ReportMessageRequest,
+} from "./schemas/reportMessageRequestSchema";
+
 export type MessageAction =
   | "ApplicationReceived"
   | "ApplicationAccepted"
@@ -12,18 +17,6 @@ export interface MessageSender {
   displayName: string;
   county: string | null;
   town: string | null;
-}
-
-export type ReportCategory =
-  | "IllegalContent"
-  | "Harassment"
-  | "Fraud"
-  | "Spam"
-  | "Other";
-
-export interface ReportMessageRequest {
-  category: ReportCategory;
-  details?: string;
 }
 
 export interface MessageActions {

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { ReportCategory } from "../types";
+import { reportMessageRequestSchema } from "@concertable/shared/features/messaging";
 import { useReportMessageMutation } from "../hooks/useMessageQuery";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,8 +14,6 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/Select";
-
-const maxDetailsLength = 2000;
 
 const categories: { value: ReportCategory; label: string }[] = [
   { value: "IllegalContent", label: "Illegal content" },
@@ -39,6 +38,14 @@ export function ReportMessageDialog({
   const [details, setDetails] = useState<string>();
   const { mutate, isPending, isSuccess, isError, reset } =
     useReportMessageMutation();
+
+  const parsed = reportMessageRequestSchema.safeParse({
+    category: category.value,
+    details: details?.trim() || undefined,
+  });
+  const detailsError = parsed.success
+    ? undefined
+    : parsed.error.issues.find((issue) => issue.path[0] === "details")?.message;
 
   const close = (next: boolean) => {
     onOpenChange(next);
@@ -84,11 +91,15 @@ export function ReportMessageDialog({
                 id="report-details"
                 data-testid="report-details"
                 rows={4}
-                maxLength={maxDetailsLength}
+                maxLength={2000}
                 value={details ?? ""}
                 onChange={(e) => setDetails(e.target.value)}
               />
             </div>
+
+            {detailsError && (
+              <p className="text-destructive text-sm">{detailsError}</p>
+            )}
 
             {isError && (
               <p className="text-destructive text-sm">
@@ -112,15 +123,9 @@ export function ReportMessageDialog({
               </Button>
               <Button
                 data-testid="report-submit"
-                disabled={isPending}
+                disabled={isPending || !parsed.success}
                 onClick={() =>
-                  mutate({
-                    messageId,
-                    request: {
-                      category: category.value,
-                      details: details?.trim() || undefined,
-                    },
-                  })
+                  parsed.success && mutate({ messageId, request: parsed.data })
                 }
               >
                 {isPending ? "Submitting..." : "Submit report"}

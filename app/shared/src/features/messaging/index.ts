@@ -5,6 +5,7 @@
   useReportMessageMutation,
 } from "./hooks/useMessageQuery";
 export { useMailbox } from "./hooks/useMailbox";
+export { reportMessageRequestSchema } from "./schemas/reportMessageRequestSchema";
 export type {
   Message,
   MessageAction,
