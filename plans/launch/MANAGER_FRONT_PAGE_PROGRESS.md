@@ -5,28 +5,30 @@
 - Roadmap item: `launch/manager-front-page`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-launch-dashboard-frontend-package-expand`
 - Branch: `Feature/launch_dashboard-frontend-package-expand`
-- PR: pending additive frontend package producer PR; dependent dashboard consumer PR [#563](https://github.com/Concertable/concertable/pull/563)
+- PR: draft package producer PR [#578](https://github.com/Concertable/concertable/pull/578); dependent dashboard consumer PR [#563](https://github.com/Concertable/concertable/pull/563)
 
 Captured during Phase A implementation. These supersede the original plan
 where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_PAGE_PLAN.md).
 
 ## Next Steps
 
-Push the additive frontend package producer commit, open its draft PR, and require exact-head CI and review to pass.
-Then merge the authorized producer PR and follow `publish-fe-packages` to green. Verify the published
+Require exact-head CI and review to pass on additive package producer PR #578. Then merge the authorized producer PR
+and follow `publish-fe-packages` to green. Verify the published
 `@concertable/b2b` version exports `features/conversations` with `MessagePreview` and exports `actionLinkApi` from
 `features/concerts`. Once published, sync dependent dashboard PR #563 with current main, apply the prepared consumer
 imports and `undefined` corrections, and rerun its exact-head standalone carves.
 
 ## Current producer slice
 
-- **Frontend package expansion — implemented locally.** Commit `5246aeeb2` adds the B2B-owned
+- **Frontend package expansion — pushed to draft PR #578.** Commit `5246aeeb2` adds the B2B-owned
   `features/conversations` package export with optional `MessagePreview.otherPartyAvatarUrl`, plus the shared B2B
   `actionLinkApi` export used by both manager SPAs. `MessagePreview` is not a dashboard or universal-shared type.
   Identical package source was built in the dependent dashboard worktree: shared tests pass 6/6, both shared package
   builds pass, and customer, venue, artist, and business TypeScript/Vite production builds pass. The producer
   worktree's own dependency install was interrupted and Windows security locked generated files; no generated or
-  dependency files are committed.
+  dependency files are committed. Work head `7a11c0f368c49d5356206c1a7e9550ab49be4680` was verified equal across
+  local, remote-tracking, and PR heads; exact-head CI run
+  [31880667593](https://github.com/Concertable/concertable/actions/runs/31880667593) is in progress.
 
 - Producer implementation commit `0d37bfa7a` remains the published implementation baseline on draft PR
   [#557](https://github.com/Concertable/concertable/pull/557). Full review through `bc56de2d8` found BUG1: settlement
