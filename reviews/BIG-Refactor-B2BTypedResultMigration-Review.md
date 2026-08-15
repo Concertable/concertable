@@ -297,3 +297,12 @@ outbox staging, command-handler ownership, typed-error compatibility, test isola
 merge resolutions. Tenant unit tests pass 131/131 and `git diff --check` is clean. The B2B Web local
 closure still encounters the recorded `Concertable.Contracts` 1.0.0 versus platform 0.997 package
 mismatch; exact-head CI's local platform pack owns the full closure gate.
+
+## Incremental review - 2026-08-15
+
+> Range reviewed: `56a808a9cc19ae60e00dda0560654766952233ed..fd05487fd864687573fc031f4845bf3b7aaeb535` (3 commits).
+
+No new findings. The branch-authored delta replaces the two free-form B2B cancellation labels with
+the Payment contract's accepted customer-requested refund reason and verifies both command producers
+and Stripe forwarding. The focused Payment handler/client slice passes 9/9 and `git diff --check` is
+clean. The remaining range is the reviewed checkpoint plus a conflict-free current-main merge.
