@@ -1,6 +1,9 @@
 # Repository and DbContext permission hierarchy
 
-Next steps live in @plans/data-access/REPOSITORY_CONTEXT_PERMISSION_HIERARCHY_PROGRESS.md -> `## Next Steps`.
+Consumer next steps live in
+@plans/data-access/REPOSITORY_CONTEXT_PERMISSION_HIERARCHY_PROGRESS.md -> `## Next Steps`.
+Additive-producer next steps live in
+@plans/data-access/REPOSITORY_CONTEXT_PERMISSION_HIERARCHY_PRODUCER_PROGRESS.md -> `## Next Steps`.
 
 ## Objective
 
@@ -364,6 +367,12 @@ dispatchers:
    legacy public implementation types and stale module aliases.
 
 ## Delivery DAG
+
+The published topology has one package layer: `Concertable.DataAccess.Application` and
+`Concertable.DataAccess.Infrastructure` republish together. B2B, Customer, and Payment are direct
+consumers of the new capability/repository surface; no consumer package re-exposes those types into a
+further service layer. The cut-over therefore requires exactly three feature merges, with the normal
+publication and generated platform-sync gate after each merge:
 
 1. Merge the additive shared-package PR; wait for package publication and its platform-sync PR to merge
    green.

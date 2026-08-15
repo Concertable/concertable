@@ -1,6 +1,6 @@
-# Concertable — cross-cutting technical debt
+# Concertable — backend cross-cutting technical debt
 
-Debt spanning multiple services, host `Program.cs` files, or repo-wide build/CI config. Debt inside the shared platform tree (`Concertable.Kernel`, `Concertable.Shared.*`, the shared test libs) belongs in [`Concertable.Shared/TECH_DEBT.md`](./Concertable.Shared/TECH_DEBT.md); service-specific debt belongs in that service's own `TECH_DEBT.md`. When an item is fixed, update both this file and [`ARCHITECTURE.md`](./ARCHITECTURE.md).
+Debt spanning multiple services or host `Program.cs` files. Debt inside the shared platform tree (`Concertable.Kernel`, `Concertable.Shared.*`, the shared test libs) belongs in [`Concertable.Shared/TECH_DEBT.md`](./Concertable.Shared/TECH_DEBT.md); service-specific debt belongs in that service's own `TECH_DEBT.md`; debt spanning `api/` and `app/`, or in root-level `.github/workflows/**`/config, belongs in the root [`TECH_DEBT.md`](../TECH_DEBT.md). When an item is fixed, update both this file and [`ARCHITECTURE.md`](./ARCHITECTURE.md).
 
 ---
 

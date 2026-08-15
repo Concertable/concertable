@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `8992a36cda35c51c2185a9756b224eaac461369f`  _(2026-08-15)_
-**Security-reviewed up to commit:** `8992a36cda35c51c2185a9756b224eaac461369f`  _(2026-08-15)_
+**Reviewed up to commit:** `dc1f55591ca589a5516bca6c6513e7a095beed1c`  _(2026-08-15)_
+**Security-reviewed up to commit:** `dc1f55591ca589a5516bca6c6513e7a095beed1c`  _(2026-08-15)_
 
 > Range reviewed: `429581025..94d7664ad` (2 commits).
 > Status legend: `[ ]` todo - `[~]` in progress - `[x]` done - `[wontfix]` (note why).
@@ -111,3 +111,10 @@ and Artist. The trace supports the failure mechanism, and all four web boundary 
 No issues found. The range merges current main's independently reviewed Tenant invitation-outbox
 change and tests. It does not overlap the login redirect fix, participant projection, repository
 permissions, or another security-sensitive path changed by this branch.
+
+## Incremental review - 2026-08-15 (OIDC checkpoint transport)
+
+> Range reviewed: `8992a36cd..dc1f55591` (1 commit).
+
+No issues found. The commit transports the clean OIDC/current-main review and plan checkpoint; no
+runtime or security-sensitive behavior changed.

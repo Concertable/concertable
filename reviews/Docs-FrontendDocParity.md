@@ -40,3 +40,14 @@ any sibling tier doc), doc home & convention (the `app/shared/TECH_DEBT.md` debt
 that would host its fix, not merely where all four call sites happen to be), harness-reloaded concision,
 dangling/transient references, and followable instructions. `.agents/hooks/docs_reachability.py` runs
 clean (0 errors) against the full repo, and its 8 unit tests pass.
+
+## Incremental review — 2026-08-15
+
+New root `TECH_DEBT.md` plus a header narrowing on `api/TECH_DEBT.md` (it had over-claimed "repo-wide
+build/CI config" — the same one-concern-two-homes mistake this branch fixed elsewhere). Checked: every
+relative link in both files resolves (verified programmatically); the logged `run_code` gate claim was
+confirmed against the real job list of PR #579's `merge_group` run (`build`/`carve-*`/unit/integration
+all ran; only `fe-boundaries`/`carve-fe` were skipped) — not a guess; no contradiction with
+`app/web/TECH_DEBT.md` or `app/shared/TECH_DEBT.md`'s scope (both stay tier-specific).
+
+No findings.
