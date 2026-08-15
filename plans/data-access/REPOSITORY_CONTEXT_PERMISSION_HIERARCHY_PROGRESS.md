@@ -6,7 +6,7 @@
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable/.worktrees/Plan-data-access-repository-permission-hierarchy`
 - Branch: `Refactor/DataAccessRepositoryPermissionHierarchy`
 - PR: [#561](https://github.com/Concertable/concertable/pull/561) (draft)
-- Source work head: `906c3da13ee6480d1a68b8dfab232c15f1603856`; this ledger update is its
+- Source work head: `af7586cf7`; this ledger update is its
   checkpoint-transport commit and must be pushed before exact-head CI is evaluated.
 - Dependency/package gates: Phase 1 remains an additive producer PR. After it merges, package publication and the generated platform-sync PR must be green before Phase 2 migrates consumers.
 - Last reconciled: 2026-08-15 against fetched `origin/main` at `dee412ba8`; the correction is
@@ -48,6 +48,8 @@ The replacement design is implemented in the working tree:
   scoped dependency or event-handler collection instead of hand-written `CreateScope()` blocks.
 - The booking, scoped-test, and merge-policy correction is committed at `f8609b6a9`; current
   `origin/main` merged without conflicts at `906c3da13`.
+- Exact-head CI exposed missing Payment contract imports in the new escrow integration test. The
+  focused compiler correction is committed at `af7586cf7`.
 - The earlier projection and naming correction is committed at `28de99489`. The then-current
   `origin/main` merged cleanly at `9ba02a024`, and the post-merge branch-local platform build and
   focused Conversations tests were green.
@@ -96,6 +98,11 @@ The replacement design is implemented in the working tree:
 - Current correction plan graph - 0 errors, 0 warnings.
 - Post-merge `git diff origin/main...HEAD --check` - passed.
 - Post-merge plan graph - 0 errors, 0 warnings.
+- Exact-head CI run `31865873337`: local platform pack passed; the solution build failed only in
+  `EscrowPaymentProcessorTests` because its Payment contract and event namespaces were not imported.
+- Added the two existing Payment contract imports in `af7586cf7`; `git diff --check` passed. A local
+  no-dependency compile produced no output before timing out on the disk-constrained checkout, so it
+  is not counted as validation.
 - The focused B2B build reached the expected pre-publication package gate: service contexts cannot
   consume the branch-local additive `ReadDbContext` from the published platform pin. Repacking the
   local platform could not complete after the worktree exhausted local disk space, so exact-head draft
