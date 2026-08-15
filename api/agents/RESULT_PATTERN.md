@@ -405,6 +405,39 @@ renamed or reused for a different meaning.
 
 ## Structured validation
 
+### FluentValidation expresses the rules; Reunion carries the outcome
+
+`ValidationResult` is the **carrier**, not an instruction to hand-write the rules. Request-shape
+validation — required, length, range, enum membership, format, per-property conditions — is expressed
+with **FluentValidation** (`AbstractValidator<TRequest>`), exactly as every other module in the service
+already does. It is registered in the module's composition root with
+`AddValidatorsFromAssemblyContaining<TValidator>(includeInternalTypes: true)` and injected as
+`IValidator<TRequest>`. Adapt its result to Reunion once, at the operation boundary:
+
+```csharp
+if (validator.Validate(request).ToValidationResult().TryGetErrors(out var errors))
+    return new ReportMessageError.Invalid(errors);
+```
+
+Do **not** hand-roll `Validate(bool, field, message)` helpers to re-implement `NotEmpty`,
+`MaximumLength`, or `IsInEnum` against `ValidationResult.Invalid(new ValidationErrors(...))`. Adopting
+Reunion as the *carrier* never meant dropping the validation library; a hand-rolled predicate helper is
+a worse `MaximumLength` with a second convention to learn.
+
+The adapter is **module- or service-local** — never a shared Concertable package, because a shared
+package must not redistribute Reunion (see "Packages and ownership"). `ValidationErrors` accepts
+`IEnumerable<KeyValuePair<string, string>>`, so the adapter is a few lines over
+`FluentValidation.Results.ValidationResult.Errors`; camel-case the property name so the failure key
+matches the JSON field it came from.
+
+A validator returning `ValidationResult` **directly**, with no FluentValidation underneath, is correct
+only when the check is a cross-entity business precondition rather than request shape — it needs other
+aggregates, modules, or the clock, and reads as domain eligibility (`TicketValidator.CanBePurchased`:
+is the concert posted, in the future, and not sold out). Field shape is FluentValidation's job; domain
+eligibility is the operation's.
+
+### The carrier
+
 Validators that produce field errors return `ValidationResult` from `Reunion.Validation`:
 
 ```text

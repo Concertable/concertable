@@ -79,7 +79,10 @@ identical writable shape, share a single `XRequest` (`PreferenceRequest`) instea
 `CreateXRequest`/`UpdateXRequest`; split them the moment the contracts diverge. Request records use
 `{ get; init; }`.
 
-Validators stay named `XValidators` regardless.
+Validators stay named `XValidators` regardless (the file; the types inside keep FluentValidation's
+`XRequestValidator` shape). **Request-shape rules use FluentValidation** — an operation on the Result
+pattern adapts that to Reunion's `ValidationResult` at its boundary rather than hand-rolling field
+predicates; see [`agents/RESULT_PATTERN.md`](./agents/RESULT_PATTERN.md) "Structured validation".
 
 Drop the `Dto` suffix when the name already says what the shape is (`AcceptCheckout`, `TicketCheckout`); only keep it to disambiguate from a same-named entity (`CustomerDto` vs `CustomerEntity`).
 
