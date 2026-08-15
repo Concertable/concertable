@@ -40,8 +40,7 @@ export function createClassifiedStorage<T extends string = string>(
     get: () => store().getItem(key) as T | null,
     set: (value) => {
       if (consentGated && (gate === undefined || !hasConsent(gate))) return false;
-      if (item.api === "localStorage") localStorage.setItem(key, value);
-      else sessionStorage.setItem(key, value);
+      store().setItem(key, value);
       return true;
     },
     remove: () => store().removeItem(key),

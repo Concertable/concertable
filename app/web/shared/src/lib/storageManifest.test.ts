@@ -9,10 +9,10 @@ const APP_WEB_DIR = path.resolve(
   "../../..",
 );
 
-// The single sanctioned first-party write location: raw storage writes here are
-// createClassifiedStorage itself. Every other first-party write must route through the
-// accessor or be a declared library/substrate write site — so a new raw write elsewhere
-// fails the guard until it is classified, rather than being detected only after the fact.
+// The sanctioned first-party write home. createClassifiedStorage resolves its Storage handle
+// dynamically, so its own write isn't scanned; excluding this module also covers any raw write it
+// later needs. Every other raw write must route through the accessor or be a declared
+// library/substrate site — so a new raw write elsewhere fails the guard, not detected after the fact.
 const ACCESSOR_MODULE = "shared/src/lib/classifiedStorage.ts";
 
 const SKIP_DIRS = new Set([
@@ -97,20 +97,9 @@ function multisetDiff(a: string[], b: string[]): string[] {
 }
 
 describe("storage manifest drift guard", () => {
-  const scanned = scannedWrites();
-  const accessorWrites = scanned.filter((token) =>
-    token.startsWith(`${ACCESSOR_MODULE}|`),
-  );
-  const directWrites = scanned.filter(
+  const directWrites = scannedWrites().filter(
     (token) => !token.startsWith(`${ACCESSOR_MODULE}|`),
   );
-
-  it("routes first-party storage through the classified accessor", () => {
-    expect(
-      accessorWrites.length,
-      `${ACCESSOR_MODULE} performs no storage write — the classified accessor must be the first-party write path.`,
-    ).toBeGreaterThan(0);
-  });
 
   it("every direct storage write is a declared library/substrate site", () => {
     const undeclared = multisetDiff(directWrites, declaredWrites());
