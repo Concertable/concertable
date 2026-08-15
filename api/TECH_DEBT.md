@@ -268,11 +268,12 @@ eager, returns a different container (`IPagination<TDestination>`), and composes
 already this repo's word for "transform the payload, preserve the carrier" — `Option.Map`, `Result.Map`,
 `MapAsync` — and `IPagination<T>` is exactly a carrier with metadata.
 
-There is also a latent trap in the current name. `IPagination<out T>` does not implement
+There is a latent trap in the current name too. `IPagination<out T>` does not implement
 `IEnumerable<T>` today, but it exposes `Data` and one day someone will add it — at which point
 `page.Select(...)` silently binds to LINQ's extension instead, yields `IEnumerable<TDestination>`, and
-**drops `TotalCount`/`PageNumber`/`PageSize`**. `Map` cannot be captured that way. Since the move is
-already a breaking publish-first change, fold the rename into it rather than paying for two breaks.
+**drops `TotalCount`/`PageNumber`/`PageSize`**. `Map` cannot be captured that way. The move is already a
+breaking publish-first change, so fold the rename into it rather than paying for two breaks.
+
 
 Both are **published packages pinned by `ConcertablePlatformVersion`**, so like the `ActionLink`
 duplication above this is a publish-first cut-over, not an edit: add to Contracts, publish, let
