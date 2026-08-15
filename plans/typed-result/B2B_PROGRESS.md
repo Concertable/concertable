@@ -84,6 +84,9 @@
   `ConcertPostedEvent` topic. The systemic AppHost fix adds idempotent `Publish<TEvent>` topology
   declarations for every event published by Auth, B2B, Customer, and Payment, including events whose
   downstream service is absent from a standalone composition.
+- Producer-topology fix push: starting remote head `104ba11fde1b908614003e47855625d6c9babbca`;
+  pushed `104ba11fd..002d26f6d`; local work head, remote branch, and PR #552 head matched
+  `002d26f6d1c0fb643ad35271867e2c84506e76cb`.
 
 ## Current state
 
@@ -150,10 +153,9 @@ declarations share one topic resource. Root orchestration tests pin every publis
 
 ## Next Steps
 
-Push the reviewed producer-owned AppHost topology fix and this ledger, require exact-head PR CI to
-pass, then re-enqueue PR #552 with `full-e2e` and own the new merge-group result without retrying
-either failed run. After merge, own package publication and platform sync through terminal green,
-then update the registered downstream ledgers and dispatch their open work.
+Require exact-head PR CI to pass, then re-enqueue PR #552 with `full-e2e` and own the new merge-group
+result without retrying either failed run. After merge, own package publication and platform sync
+through terminal green, then update the registered downstream ledgers and dispatch their open work.
 
 ## Completed work
 
