@@ -5,9 +5,9 @@
 - Roadmap item: `launch/deal-lifecycle-ownership`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules`
 - Branch: `Refactor/launch_deal-lifecycle-modules`
-- PR: implementation PR not yet opened; docs-only decision PR [#622](https://github.com/Concertable/concertable/pull/622) merged as `5c33f849444dda60ece44070353716c08819b2d8`; rejected PR #614 is closed and its worktree/local branch are retired
+- PR: draft implementation PR [#625](https://github.com/Concertable/concertable/pull/625) at verified work head `3d0fc5a823cad198f8de878aecef5928036f6c5f`; docs-only decision PR #622 merged as `5c33f849444dda60ece44070353716c08819b2d8`; rejected PR #614 is closed and retired
 - Dependency/package gates: Phase 1 is implemented. Phase 2 has no external package blocker; its module extraction must preserve current HTTP and package surfaces.
-- Last reconciled: 2026-08-17 after the locally green Phase 1 characterization and module-boundary gates on the fresh implementation branch
+- Last reconciled: 2026-08-17 after current `origin/main` `d5669a836` was merged, the B2B carve rebuilt, and draft PR #625 was verified at work head `3d0fc5a823cad198f8de878aecef5928036f6c5f`
 
 ## Current state
 
@@ -32,10 +32,9 @@ runtime change was carried forward.
 
 ## Next Steps
 
-1. Commit the Phase 1 characterization checkpoint, push it, and open the implementation PR as a draft.
-2. Verify local HEAD, the remote branch, and the draft PR head are identical, then route that exact
-   committed range through code review and address every high-confidence finding.
-3. Record the review and remote-check evidence in this ledger before starting Phase 2.
+1. Push this ledger checkpoint and verify local HEAD, the remote branch, and draft PR #625 are identical.
+2. Route that exact committed range through code review and address every high-confidence finding.
+3. Record the review and exact-head remote-check evidence in this ledger.
 4. Begin Phase 2 by scaffolding the Opportunity, Application, and Booking module project families and
    replacing cross-stage entity navigation with Contracts, owned IDs, and query projections.
 
@@ -66,6 +65,11 @@ runtime change was carried forward.
   direct Domain, Application, Infrastructure, and Api references between Opportunity, Application,
   Booking, Deal, and Concert.
 - Checkpointed the complete locally verified Phase 1 implementation in this commit.
+- Published initial work commit `7898bf8bb83f3dff61686044cd49023ed0afb9fc`, merged current
+  `origin/main` as `3d0fc5a823cad198f8de878aecef5928036f6c5f`, then pushed range
+  `7898bf8bb..3d0fc5a82` from starting remote head `7898bf8bb`.
+- Opened draft PR #625 and verified local HEAD, the remote branch, and PR `headRefOid` all equalled
+  `3d0fc5a823cad198f8de878aecef5928036f6c5f` before this ledger checkpoint.
 
 ## Verification
 
@@ -85,10 +89,12 @@ runtime change was carried forward.
   Conversations projects retain direct package references their source no longer consumes. The
   lifecycle module-boundary tests themselves are green.
 - `dotnet build api/Concertable.B2B/src/Concertable.B2B.Web/Concertable.B2B.Web.csproj --configuration Release --no-restore`:
-  0 warnings and 0 errors.
+  0 errors and the pre-existing `UserEntity` CS0628 warning after merging the current platform pin.
 - Rejected DealTerms implementation vocabulary scan: no matches.
 - `python .agents/hooks/plan_graph.py --root .`: 0 errors and 0 warnings.
 - `git diff --check`: passed.
+- Pre-checkpoint publication: local HEAD, `origin/Refactor/launch_deal-lifecycle-modules`, and draft PR
+  #625 `headRefOid` all equalled `3d0fc5a823cad198f8de878aecef5928036f6c5f`.
 
 ## Reviews
 
