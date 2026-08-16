@@ -5,11 +5,11 @@
 - Roadmap item: `data-access/repository-context-permission-hierarchy`
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable/.worktrees/Plan-data-access-repository-permission-hierarchy`
 - Branch: `Refactor/DataAccessRepositoryPermissionHierarchy`
-- PR: [#561](https://github.com/Concertable/concertable/pull/561) (open; standard-repository follow-up pending push)
-- Verified work head: `3f3734a5c7104b9d83cd4347e0ab571d15df69b6`
+- PR: [#561](https://github.com/Concertable/concertable/pull/561) (open; replacement exact-head CI pending)
+- Verified work head: `61b67199f57935c20151959f438e0a8768e13e15`
 - Starting remote head: `b65fce300a93626ef3fc47a45b5a37fa3f97bf54`
-- Pushed range: pending
-- Remote and PR head: `b65fce300a93626ef3fc47a45b5a37fa3f97bf54` (verified before current work)
+- Pushed range: `b65fce300a93626ef3fc47a45b5a37fa3f97bf54..61b67199f57935c20151959f438e0a8768e13e15`
+- Remote and PR head: `61b67199f57935c20151959f438e0a8768e13e15` (verified after work-head push)
 - Dependency/package gate: satisfied. Additive producer PR #590 merged as `59fe60e978affe23bcaf53823151eab2acda8ba0`, published platform `0.1.0-alpha.0.1007`, and platform-sync PR #592 merged green as `38e3d8548f10f3ab7a4a951b7c4ce961ec21c863`. Current `origin/main` pins `0.1.0-alpha.0.1009`, which includes the additive DataAccess API.
 - Last reconciled: 2026-08-16 against PR #561 and `origin/main` at `07624709d873dd0aecc934e59bbc45f78b0c844b`.
 
@@ -48,9 +48,8 @@ The fixture now completes a requested command type, and refund workflows explici
 
 ## Next Steps
 
-1. Push the reviewed standard-repository follow-up and verify local, remote-tracking, and PR heads.
-2. Require green exact-head PR CI.
-3. Await explicit merge authorization; then normalize to `full-e2e`, enqueue, and follow the merge-group,
+1. Require green exact-head PR CI.
+2. Await explicit merge authorization; then normalize to `full-e2e`, enqueue, and follow the merge-group,
    publication, and generated platform-sync gates to green before starting the legacy contraction.
 
 ## Completed work
