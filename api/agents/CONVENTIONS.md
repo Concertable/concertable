@@ -106,6 +106,20 @@ Shared libs sit at `api/Concertable.Shared/Concertable.<Name>/` and follow the s
 
 Full set of corollaries + rationale in [MM_NORTH_STAR.md](/api/docs/MM_NORTH_STAR.md).
 
+### Tenant internally, organization at the HTTP boundary
+
+`Tenant` is the domain and persistence term. `organization` is the product/API term. Perform that
+translation once in the Api layer: use explicit lowercase `api/organization/...` route templates and
+organization-named controllers/actions where the HTTP surface represents the active tenant, while
+application services, repositories, entities, and database columns continue to use `Tenant` and
+`TenantId`. Do not introduce `OrganizationId` aliases below the HTTP boundary.
+
+`X-Tenant-Id` selects the active tenant. Do not duplicate that selector in an organization-scoped
+route or query string. A tenant's zero-or-one Artist or Venue is a singleton relationship at
+`api/organization/artist` or `api/organization/venue`, not a human-user resource and not an invented
+multi-profile collection. Canonical resources remain addressable by their own IDs at
+`api/artist/{artistId}` and `api/venue/{venueId}`.
+
 ### Module facades delegate to application use cases
 
 An `IXModule` implementation is a cross-module adapter, not a second application service. It depends

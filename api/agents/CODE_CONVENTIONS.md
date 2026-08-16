@@ -97,6 +97,21 @@ finder says literally what it fetches and by what key — `GetByTenantIdAsync`,
 use-case name (`GetInboxAsync`, `GetInboxSummaryAsync`) belongs on the *service* that calls
 it. Don't push an intent name (`GetInbox`) down onto the repository.
 
+**Active-tenant use cases resolve tenancy in the application service.** `ITenantContext` is the
+single authority for the tenant selected by `X-Tenant-Id`. A controller does not accept or resolve a
+tenant ID, and a repository does not independently interpret the active request. Name application
+use cases for the intent (`GetDetailsForActiveTenantAsync`); name their repository queries for the
+actual key (`GetDetailsByTenantIdAsync(Guid tenantId, CancellationToken ct = default)`). Do not add
+profile-ID resolver methods merely to turn the active tenant into an Artist or Venue ID. Tenant-owned
+queries use `TenantId` directly, backed by a module-local projection when they cross a module boundary.
+
+`CurrentUser`, `ForUser`, `Me`, and `Self` are reserved for data belonging to the authenticated human.
+Use `ActiveTenant` for organization-owned data because several humans may manage the same tenant.
+
+**Every asynchronous application-service and repository method that can reach I/O accepts a
+`CancellationToken ct = default`.** Pass it through every awaited framework or dependency call that
+supports cancellation. Cancellation propagates as cancellation; it is never converted to a Result.
+
 ## Table + schema names — the module `Schema.cs` constants
 
 Each persistence module owns a `Schema.cs` (`internal static class Schema`) holding its DB schema name and

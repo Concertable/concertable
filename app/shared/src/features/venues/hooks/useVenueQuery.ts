@@ -17,6 +17,6 @@ export function useVenueQuery(id: number) {
 export function useMyVenueQuery() {
   return useQuery({
     queryKey: venueKeys.my(),
-    queryFn: venueApi.getMyVenue,
+    queryFn: venueApi.getOrganizationVenue,
   });
 }

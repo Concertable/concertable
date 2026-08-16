@@ -6,6 +6,19 @@ Debt spanning multiple services or host `Program.cs` files. Debt inside the shar
 
 ## MED
 
+### Async application and persistence APIs do not consistently propagate cancellation
+
+Many application-service, repository, module-facade, and infrastructure methods perform EF Core,
+HTTP, blob, payment, or other asynchronous I/O without accepting a `CancellationToken`, while some
+neighbouring paths already propagate one. Request cancellation therefore stops at inconsistent
+boundaries, and callers cannot reliably cancel work after a client disconnect or host shutdown.
+
+**Resolves when:** inventory every async backend interface and implementation, add
+`CancellationToken ct = default` to methods that can reach I/O, thread it through all supporting
+dependency and framework calls, and add architecture coverage that rejects new cancellable I/O paths
+without a token. Preserve the Result convention: cancellation propagates as cancellation and is never
+mapped to an expected-outcome error.
+
 ### Repository query outputs blur entities, read models, projections, and DTO contracts
 
 Repository contracts across B2B, Customer, Search, and Payment do not follow one ownership or naming
