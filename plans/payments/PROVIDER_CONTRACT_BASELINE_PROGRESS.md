@@ -6,7 +6,7 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\payments_provider-contract-baseline`
 - Branch: `Feature/payments_provider-contract-baseline`
 - PR: #597 — https://github.com/Concertable/concertable/pull/597 — open; exact-head CI run 31956570866 passed at pushed head `f56c80fde78c3cc99016bf65a122de250e5adcc3`; local review-fix head is this commit and is not yet pushed; auto-merge is disabled and the PR is not queued
-- Review readiness: **ONE OPEN INCREMENTAL FINDING** — NAT1, NAT2, BUG1, SEC1, and NAT3 are resolved; NAT4 must be addressed before the final incremental-review and exact-head CI gates
+- Review readiness: **EXISTING FINDINGS ADDRESSED — INCREMENTAL REVIEW REQUIRED** — NAT1, NAT2, BUG1, SEC1, NAT3, and NAT4 are resolved locally; the NAT3 and NAT4 resolution commits require incremental review before the exact-head CI gate
 - Dependency/package gates: Phases 1 through 4 are locally complete; the production/live-mode Stripe account has no webhook endpoint, so future deployment is locked to `2025-01-27.acacia` and must create the endpoint at the actual Payment Web URL while installing its signing secret; compatibility is anchored to published `0.1.0-alpha.0.1009`; the branch carries platform pin `0.1.0-alpha.0.1031`
 - Last reconciled: 2026-08-16 against open PR #597 pushed head `f56c80fd`, local review-fix head this commit, reviewed code head `85d85aab`, exact-head CI run 31956570866, published Payment packages `0.1.0-alpha.0.1009`, and `origin/main` `07624709`
 
@@ -16,7 +16,8 @@ Phases 1 through 4 are complete, committed, and pushed through `f56c80fd`. The l
 NAT1 at `0686b7f52c68ab492ba7683fa5fee895096785da`, NAT2 at
 `19e194c9eaefee2734718a298a127f414f75af6c`, BUG1 at
 `055c6bfd868484e847f907926b5da7b6dea55ff9`, SEC1 at
-`7b7561fa43b57ca004d082ebd207242f0e4499fd`, and NAT3 in this commit. For Phase 4,
+`7b7561fa43b57ca004d082ebd207242f0e4499fd`, NAT3 at
+`c4140cd3b79973e568a88e3217e007599482df46`, and NAT4 in this commit. For Phase 4,
 the checked-in generator captured 2,073 Contracts signatures, 1,161 Client signatures, 13 message
 URNs, and the `payment.proto` descriptor set from published `0.1.0-alpha.0.1009`. Candidate tests
 require those public APIs, URNs, protobuf messages/enums/fields/services/RPCs, field numbers, types,
@@ -48,7 +49,7 @@ template because current Payment runtime also handles `payment_intent.payment_fa
 PR #552 merged at `33f07c47a497586324edacdcfc10321a9d3f02ee`, and its additive Payment
 contracts are present after merging current `origin/main`. PR #597 is open and no longer draft at
 reviewed head `85d85aab1c6e3ef448c792cc9cad7c37639a8ae9`; exact-head CI is green. NAT1,
-NAT2, BUG1, SEC1, and NAT3 are resolved locally. NAT4 remains open. The historical
+NAT2, BUG1, SEC1, NAT3, and NAT4 are resolved locally. The historical
 `Refactor/GroupStripeWebhookHandling` branch is superseded evidence only.
 
 Phase 2 adds the provider-neutral operation identity, session kind, normalized state, terminal/retry
@@ -67,13 +68,16 @@ authorization, both setup kinds, and refund.
 
 ## Next Steps
 
-Continue `/address-review @reviews/Feature-payments_provider-contract-baseline.md` with NAT4 in its own
-fresh agent context and isolated commit. Then rerun `/incremental-review` over the NAT3 and NAT4
-resolution commits, publish the reviewed range through the plan push protocol, and require exact-head
-CI to pass. Do not merge in the same turn.
+Rerun `/incremental-review @reviews/Feature-payments_provider-contract-baseline.md` over the NAT3 and
+NAT4 resolution commits. If clean, publish the reviewed range through the plan push protocol and
+require exact-head CI to pass. Do not merge in the same turn.
 
 ## Completed work
 
+- Changed duplicate classification to require the complete mutable persisted projection to be
+  unchanged, so same-state safe-failure and capture-deadline changes are applied.
+- Added regressions for a same-state `RequiresPaymentMethod` observation changing the persisted
+  failure to `Declined` and a same-state authorization observation revising `CaptureBefore`.
 - Removed the async-name assumption from the provider inventory scanner, limited semantic discovery to
   Stripe API client/service receiver types, and added synchronous `RefundService.Create` coverage.
 - Prevented protobuf failure messages from crossing the public client boundary by deriving every
@@ -138,6 +142,9 @@ CI to pass. Do not merge in the same turn.
 
 ## Verification
 
+- NAT4 Payment UnitTests build succeeded with 0 warnings and 0 errors; focused transition tests passed
+  42 of 42 and the full provider-contract filter passed 116 of 116.
+- NAT4 focused `dotnet format --verify-no-changes` passed.
 - NAT3 Payment UnitTests build succeeded with 0 warnings and 0 errors; focused
   `ProviderContractInventoryTests` passed 51 of 51.
 - BUG1 Payment UnitTests build: succeeded with 0 warnings and 0 errors.
@@ -253,19 +260,19 @@ CI to pass. Do not merge in the same turn.
 
 ## Review status
 
-**ONE OPEN INCREMENTAL FINDING.** The full implementation and security review for
+**EXISTING FINDINGS ADDRESSED — INCREMENTAL REVIEW REQUIRED.** The full implementation and security review for
 [PR #597](https://github.com/Concertable/concertable/pull/597) covered
 `e861f3642cea14e919d203604a4e9e7d00bcced8..85d85aab1c6e3ef448c792cc9cad7c37639a8ae9`
 recorded NAT1, NAT2, BUG1, and SEC1. NAT1 is resolved at
 `0686b7f52c68ab492ba7683fa5fee895096785da`; NAT2 is resolved at
 `19e194c9eaefee2734718a298a127f414f75af6c`; BUG1 is resolved at
 `055c6bfd868484e847f907926b5da7b6dea55ff9`; SEC1 is resolved at
-`7b7561fa43b57ca004d082ebd207242f0e4499fd`; NAT3 is resolved in this commit. NAT4 remains open for
-same-state observations being discarded even when their persisted failure or capture-deadline
-projection changes. No additional
+`7b7561fa43b57ca004d082ebd207242f0e4499fd`; NAT3 is resolved at
+`c4140cd3b79973e568a88e3217e007599482df46`; NAT4 is resolved in this commit. The NAT3 and NAT4
+resolution commits still require incremental review. No additional
 microservice-isolation, module-boundary, seeding, convention, or security finding survived the
-confidence filter. The branch is not merge-ready until NAT4 is resolved and the resulting
-commits pass incremental review and exact-head CI.
+confidence filter. The branch is not merge-ready until the resulting commits pass incremental review
+and exact-head CI.
 
 The planning docs review through PR head `ccb1dd00585b7943a401166f3f8eb3237ed6d628` found no issues across
 accuracy, contradiction, document ownership, concision, dangling references, and followable

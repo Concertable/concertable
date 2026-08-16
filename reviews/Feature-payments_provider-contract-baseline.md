@@ -38,5 +38,6 @@
   The semantic detector still filters method names to `*Async`, but Stripe.net service types also expose synchronous provider operations. A new `service.Create(...)`, `Capture(...)`, or `Refund(...)` call therefore bypasses the exhaustive inventory while the guard remains green. Detect every invocation whose receiver binds to a Stripe SDK type and cover a synchronous form.
   Resolved by scanning every invocation on Stripe API client/service receivers regardless of method suffix and covering synchronous `RefundService.Create` discovery.
 
-- [ ] **NAT4 — MEDIUM — native/correctness** — `api/Concertable.Payment/src/Concertable.Payment.Domain/ProviderContract/StripeOperationTransitionSpecification.cs:155`
+- [x] **NAT4 — MEDIUM — native/correctness** — `api/Concertable.Payment/src/Concertable.Payment.Domain/ProviderContract/StripeOperationTransitionSpecification.cs:155`
   Same-state observations are classified as `Duplicate` solely from the normalized state. A decline commonly leaves an existing attempt in `RequiresPaymentMethod` while adding the new closed `Declined` failure, so the BUG1 path can still be discarded as a no-op. Treat an observation as duplicate only when the complete persisted projection is unchanged; apply same-state failure or capture-deadline changes and cover the decline regression.
+  Resolved by comparing the complete mutable persisted projection before classifying a duplicate, with regressions for same-state decline and authorization capture-deadline changes.
