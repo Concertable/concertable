@@ -7,8 +7,8 @@
 - Branch: `Feature/payments_provider-contract-baseline`
 - PR: #597 — https://github.com/Concertable/concertable/pull/597 — open; remote head `200e49f3ea4abe35f2e12038ad129650589f73ac` passed exact-head CI run 31964270135; auto-merge is disabled and the PR is not queued
 - Review readiness: **REVIEW COMPLETE — PUSH AND EXACT-HEAD CI REQUIRED** — the six original review findings remain resolved; the post-review readability refactor and current-main reconciliation are reviewed through `7c1253f6946ac195d809b0bb2d9cd91c2fd16266`, with one convention-wording finding resolved and no open findings
-- Dependency/package gates: Phases 1 through 4 are locally complete; the production/live-mode Stripe account has no webhook endpoint, so future deployment is locked to `2025-01-27.acacia` and must create the endpoint at the actual Payment Web URL while installing its signing secret; compatibility is anchored to published `0.1.0-alpha.0.1009`; the branch carries platform pin `0.1.0-alpha.0.1033`
-- Last reconciled: 2026-08-17 against open PR #597 remote head `200e49f3`, reviewed local head `7c1253f6`, published Payment packages `0.1.0-alpha.0.1009`, and `origin/main` `5c33f849`; current main is incorporated through merge `7dc74fae68bc9c0b0f37c7a30d23a3321ce88dc3`
+- Dependency/package gates: Phases 1 through 4 are locally complete; the production/live-mode Stripe account has no webhook endpoint, so future deployment is locked to `2025-01-27.acacia` and must create the endpoint at the actual Payment Web URL while installing its signing secret; compatibility is anchored to published `0.1.0-alpha.0.1009`; the branch carries platform pin `0.1.0-alpha.0.1039`
+- Last reconciled: 2026-08-17 against open PR #597 remote head `200e49f3`, reviewed code/convention head `7c1253f6`, published Payment packages `0.1.0-alpha.0.1009`, and `origin/main` `d5669a83`; current main and platform pin `.1039` are incorporated through merge `c99443cec3cd2cf3997902fd521d6afda3dbc501`
 
 ## Current state
 
@@ -152,6 +152,9 @@ checkpoint, then require exact-head CI to pass. Keep the PR open in this turn.
 
 ## Verification
 
+- Final current-main/platform reconciliation at `c99443ce`: restored the published `.1039` package
+  closure, built with 0 warnings and 0 errors, and passed all 478 Payment unit tests; plan graph and
+  whitespace checks passed with the branch zero commits behind `origin/main`.
 - Current readability refactor and current-main reconciliation: Payment UnitTests built with 0
   warnings and 0 errors and passed 478 of 478; focused formatting passed; plan graph and whitespace
   checks passed before the review wording checkpoint.
