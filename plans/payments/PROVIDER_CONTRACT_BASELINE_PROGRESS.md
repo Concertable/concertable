@@ -5,10 +5,10 @@
 - Roadmap item: `payments/provider-contract-baseline`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\payments_provider-contract-baseline`
 - Branch: `Feature/payments_provider-contract-baseline`
-- PR: #597 — https://github.com/Concertable/concertable/pull/597 — open; exact-head CI run 31953753845 passed at reviewed code head `85d85aab1c6e3ef448c792cc9cad7c37639a8ae9`; review work head `6a3f545e6400725b7b962bc4209cc306ab65ce19` is pushed and this ledger checkpoint is the transport leg; auto-merge is disabled and the PR is not queued
+- PR: #597 — https://github.com/Concertable/concertable/pull/597 — open; exact-head CI run 31956570866 passed at pushed head `f56c80fde78c3cc99016bf65a122de250e5adcc3`; local head `d84e391bcbd0fc562e2eacea0e5913160eebba74` cleanly merges current `origin/main` and is not yet pushed; auto-merge is disabled and the PR is not queued
 - Review readiness: **FOUR OPEN FINDINGS** — the complete implementation review recorded NAT1, NAT2, BUG1, and SEC1 as medium-severity findings in `reviews/Feature-payments_provider-contract-baseline.md`
 - Dependency/package gates: Phases 1 through 4 are locally complete; the production/live-mode Stripe account has no webhook endpoint, so future deployment is locked to `2025-01-27.acacia` and must create the endpoint at the actual Payment Web URL while installing its signing secret; compatibility is anchored to published `0.1.0-alpha.0.1009`; the branch carries platform pin `0.1.0-alpha.0.1025`
-- Last reconciled: 2026-08-16 against open PR #597 review work head `6a3f545e`, reviewed code head `85d85aab`, exact-head CI run 31953753845, published Payment packages `0.1.0-alpha.0.1009`, and `origin/main` `3ef37740` (seven commits ahead after the review concluded)
+- Last reconciled: 2026-08-16 against open PR #597 pushed head `f56c80fd`, local current-main merge head `d84e391b`, reviewed code head `85d85aab`, exact-head CI run 31956570866, published Payment packages `0.1.0-alpha.0.1009`, and `origin/main` `07624709`
 
 ## Current state
 
@@ -18,10 +18,10 @@ URNs, and the `payment.proto` descriptor set from published `0.1.0-alpha.0.1009`
 require those public APIs, URNs, protobuf messages/enums/fields/services/RPCs, field numbers, types,
 cardinality, and request/response types to remain an additive subset. A frozen consumer project
 compiles against the exact published Contracts and Client packages, and architecture tests enforce
-provider/consumer purity across the published assemblies and deployable Payment projects. Work head
-`e8976712839a528a10a0bd039cd21fab68685e2a` cleanly incorporates `origin/main`
-`e861f3642cea14e919d203604a4e9e7d00bcced8`, is locally verified, and was pushed through the work-head
-leg from `f5c6218a51d210328201d72e2d0b4cc09f18bb3e` with local, remote-tracking, and PR equality.
+provider/consumer purity across the published assemblies and deployable Payment projects. Local head
+`d84e391bcbd0fc562e2eacea0e5913160eebba74` cleanly incorporates current `origin/main`
+`07624709d873dd0aecc934e59bbc45f78b0c844b`; the pre-merge pushed head
+`f56c80fde78c3cc99016bf65a122de250e5adcc3` passed exact-head CI run 31956570866.
 
 `api/Concertable.Payment/PROVIDER_CONTRACT.md` now owns
 the provider-product matrix, operation/attempt identity, normalization and transition tables,
@@ -63,8 +63,7 @@ authorization, both setup kinds, and refund.
 
 ## Next Steps
 
-Bring the clean feature branch current with `origin/main`, then run
-`/address-review @reviews/Feature-payments_provider-contract-baseline.md` and address all four open
+Run `/address-review @reviews/Feature-payments_provider-contract-baseline.md` and address all four open
 findings. Re-run the focused Payment provider/compatibility build and tests, publish the fixes through
 the plan push protocol, then run `/incremental-review` over every commit after reviewed code head
 `85d85aab1c6e3ef448c792cc9cad7c37639a8ae9`, including the current-main merge. Do not merge in the
@@ -123,6 +122,9 @@ same turn.
 
 ## Verification
 
+- Current-main reconciliation: fetched `origin/main` `07624709d873dd0aecc934e59bbc45f78b0c844b`,
+  merged it cleanly as `d84e391bcbd0fc562e2eacea0e5913160eebba74`, and reran the plan graph with 0
+  errors and 0 warnings.
 - Review work push: starting remote/PR head `85d85aab1c6e3ef448c792cc9cad7c37639a8ae9`;
   pushed range `85d85aab1c6e3ef448c792cc9cad7c37639a8ae9..6a3f545e6400725b7b962bc4209cc306ab65ce19`;
   local, remote-tracking, and PR work heads all verified at
