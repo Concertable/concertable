@@ -12,9 +12,8 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
 
 ## Next Steps
 
-1. Commit the current-main reconciliation checkpoint, then run the full correctness/security and architecture review over the committed branch range.
-2. Address every review finding, push the reviewed checkpoint to draft PR #563, and require exact-head CI green.
-3. After CI is green, complete the remaining Phase A.8 authenticated seeded venue/artist UX review below.
+1. Push reviewed checkpoint `382a5850d` to draft PR #563 and require exact-head CI green.
+2. After CI is green, complete the remaining Phase A.8 authenticated seeded venue/artist UX review below.
 
 ## Reviews
 
@@ -28,7 +27,16 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
   `510bd491bd67dd84216f6a5dc419aa094241d673`; no security-sensitive production code changed after the security
   marker at `90a386b1416f2179eaabef3e7b8068eef8594775`.
 
+- Current-main correctness/security review of `35b114d4a..382a5850d` is recorded in the same review file. SER3, COR3,
+  and CI3 are closed; both review markers are stamped to code checkpoint
+  `382a5850d0b5a29d03628bb0d740089d3b143e25`.
+
 ## Current implementation
+
+- **Current-main review fixes are locally green.** The common application response preserves its role-specific actions
+  under the typed-Result terminal, hidden messages are excluded from previews and unread state, and the duplicated
+  Conversations test package reference is removed. B2B Web builds with 0 warnings/errors; Conversations unit tests
+  pass 32/32. The current shell has no Node runtime, so draft-PR CI owns the TypeScript/package builds.
 
 - **Current-main reconciliation and opportunity dashboard boundary — locally green.** The branch is reconciled with
   `origin/main`'s typed-Result/package changes without reintroducing exceptions. Opportunity dashboard orchestration now

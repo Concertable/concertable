@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `41d0189f3c0c4d5fe081eb654f91c871ab0e86b7`  _(2026-08-16)_
-**Security-reviewed up to commit:** `41d0189f3c0c4d5fe081eb654f91c871ab0e86b7`  _(2026-08-16)_
+**Reviewed up to commit:** `382a5850d0b5a29d03628bb0d740089d3b143e25`  _(2026-08-16)_
+**Security-reviewed up to commit:** `382a5850d0b5a29d03628bb0d740089d3b143e25`  _(2026-08-16)_
 
 > Range reviewed: `1f4ea1f..ec957726` (12 commits).
 > Incremental range reviewed: `ec957726..9be56b9d` (1 commit).
@@ -68,3 +68,18 @@ checkpoint and the focused integration-test correction; it introduces no securit
 
 No open findings remain. The full pass covered correctness, security and tenant scoping, module/repository boundaries,
 serialization/HATEOAS ownership, frontend mutation/query contracts, seeding implications, and focused test coverage.
+
+## Current-main review - 2026-08-16
+
+- [x] **SER3 - The common application endpoint declared only the base response contract.** The role-specific
+  `Actions` member could be omitted when MVC serialized `ActionResult<ApplicationResponse>`. The abstract response
+  base now registers both closed role variants for JSON polymorphism while retaining the clean typed-Result terminal.
+- [x] **COR3 - Recent message previews ignored hidden-message moderation.** Preview selection and unread calculation
+  now reuse the inbox's `NotHidden` predicate. A focused repository test covers a hidden latest message and verifies
+  that the preceding visible message is returned with the correct read state.
+- [x] **CI3 - Current-main reconciliation duplicated the Conversations test project's `Reunion` reference.** The
+  duplicate was removed; all 32 Conversations unit tests and the B2B host build pass with zero warnings or errors.
+
+No open findings remain. The review covered the current net branch diff `35b114d4a..382a5850d`, including correctness,
+security and tenant scoping, Result terminals, serialization/HATEOAS, module/repository boundaries, frontend contracts,
+seeding implications, and focused test coverage.
