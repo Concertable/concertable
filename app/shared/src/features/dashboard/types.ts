@@ -87,7 +87,6 @@ export type { ReviewSummary };
 export interface ReviewExcerpt {
   id: number;
   reviewerName: string;
-  reviewerAvatarUrl?: string;
   stars: number;
   excerpt?: string;
   at: string;
