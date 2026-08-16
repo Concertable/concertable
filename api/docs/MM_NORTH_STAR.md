@@ -25,11 +25,12 @@ Everything else is a corollary.
 
 ## Corollaries
 
-### 1. No `IReadDbContext` on hot paths.
-`IReadDbContext` was a transitional cross-module read shim during extraction. **It has been deleted** —
-cross-module / cross-tenant reads now go through each module's own read-only `Public<Module>DbContext`
-(e.g. `PublicConcertDbContext`), and the integration-test fixtures read back through the same. No Concert
-code reaches into Artist. No Payment code reaches into Identity. No Notification code reaches into anything.
+### 1. No cross-module context on hot paths.
+`IReadDbContext` is a narrow capability, not a cross-module read model. Cross-tenant reads go through
+each module's own tenant-independent read-only `<Module>DbContext` (for example,
+`ConcertDbContext`), and integration fixtures read back through the same module-owned context. No
+Concert code reaches into Artist. No Payment code reaches into Identity. No Notification code reaches
+into anything.
 
 ### 2. No `.Include(x => x.OtherModuleEntity)`.
 Navigation properties across module boundaries don't exist. FKs are plain primitives (`Guid UserId`,
