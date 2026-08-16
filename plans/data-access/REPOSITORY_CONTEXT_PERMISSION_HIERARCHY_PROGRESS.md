@@ -5,7 +5,7 @@
 - Roadmap item: `data-access/repository-context-permission-hierarchy`
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable/.worktrees/Plan-data-access-repository-permission-hierarchy`
 - Branch: `Refactor/DataAccessRepositoryPermissionHierarchy`
-- PR: [#561](https://github.com/Concertable/concertable/pull/561) (open; replacement exact-head CI pending)
+- PR: [#561](https://github.com/Concertable/concertable/pull/561) (open; full-E2E merge-group failure under targeted repair)
 - Verified work head: `4179700e2877a027a709c9dab9d5aa1df3a46690`
 - Starting remote head: `11c99197fd4976c3b9ced7c4e115ea92856d0496`
 - Pushed range: `11c99197fd4976c3b9ced7c4e115ea92856d0496..4179700e2877a027a709c9dab9d5aa1df3a46690`
@@ -52,11 +52,17 @@ The fixture now completes a requested command type, and refund workflows explici
 `RefundEscrowCommand`. The branch has since been reconciled with the latest current main through
 `b633d79aa`; the incoming range contains only the reviewed launch-roadmap gap sweep.
 
+Full-E2E merge-group run `31974080294` was ejected after 31/32 B2B UI scenarios passed. Artist signup
+timed out because the registration URL wait attached after the sign-up click and missed the navigation
+load edge. The mandated fresh-stack rerun also exposed that B2B handles `SendEmailCommand` without
+provisioning its service command queue. The missing queue is now provisioned and covered by the
+topology contract test, and both signup flows attach their registration wait before clicking.
+
 ## Next Steps
 
-1. Require green exact-head PR CI for the checkpoint-transport head.
-2. Normalize to `full-e2e`, enqueue, and follow the merge-group, publication, and generated
-   platform-sync gates to green before starting the legacy contraction.
+1. Incrementally review and compound-push the merge-group repair.
+2. Require green exact-head PR CI, then re-enqueue with `full-e2e` and follow merge-group, publication,
+   and platform-sync gates to green.
 
 ## Completed work
 
@@ -122,6 +128,16 @@ The fixture now completes a requested command type, and refund workflows explici
   10 existing warnings.
 - Reviewed current-main work head `4179700e2` was pushed from `11c99197f`, then verified equal on the
   remote branch and PR #561.
+- Exact-head CI run `31973511659` passed on checkpoint head `80d492cd3`.
+- Full-E2E merge-group run `31974080294` passed 31/32 B2B UI scenarios but failed artist signup at
+  `SignUpSteps.ClickSignUpLink`; API E2E and the remaining hard-floor jobs passed.
+- B2B topology tests passed 7/7 after adding the B2B `SendEmailCommand` queue contract.
+- B2B and Customer UI E2E projects built in Release with 0 errors after moving both registration waits
+  ahead of their sign-up clicks.
+- Docker health passed before the focused artist-signup rerun. The fresh local stack could not reach
+  the scenario because the long plan-worktree path caused Windows to reject
+  `Microsoft.Data.SqlClient.SNI.dll` with `0x800700CE`; exact-head and merge-group CI remain the valid
+  scenario execution gates from normal runner paths.
 
 ## Reviews
 
@@ -155,3 +171,8 @@ The fixture now completes a requested command type, and refund workflows explici
   tenant-independent no-tracking/no-save stance; `VenueAdminDbContext` is the administrative writable
   exception. Customer read and projection-write contexts remain separate physical contexts.
 - The plan requires three feature merges: additive package, consumers, then legacy contraction.
+- The merge-group repair must remove the navigation race and missing B2B command queue; it must not
+  inflate the 15-second browser timeout or bypass the failing signup step.
+- The focused local rerun is environment-blocked by the plan worktree's Windows path length, not by
+  Docker health or an application startup error. The source projects compile and the topology contract
+  passes locally; remote full-E2E must prove the repaired scenario.
