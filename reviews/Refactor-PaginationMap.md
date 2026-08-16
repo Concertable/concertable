@@ -51,3 +51,34 @@
   describe `Select` and the move as pending. Both are correct for the *current* pin, and the TECH_DEBT
   entry's own "Resolves when" covers the call-site migration — so they belong to the sync PR that
   actually completes the cut-over, not to this one.
+
+
+## Incremental review — 2026-08-16
+
+- [x] **BUG1 — HIGH — correctness (build)** — `api/Concertable.DataAccess/.../PaginationExtensions.cs`
+  Removing `Select` in the same PR that adds `Map` made the platform change **breaking**, and CI's
+  `build` job caught it: `ModerationService.cs(28,60): error CS0411 … ImmutableArrayExtensions.Select`.
+
+  The mistake was a wrong mental model of how consumers resolve the platform. CI's `local-platform-pack`
+  job **packs the platform from source** (`0.1.0-local.<run_id>`) and the `build` job consumes that
+  artifact, so every consumer compiles against *current source* — not the pinned published feed. So
+  "publish first, migrate consumers in the sync PR" cannot work for a **breaking** change: the same
+  commit has to satisfy both worlds, and it can't.
+
+  Concretely the two views were mutually exclusive:
+  - CI (source-packed): `Map` present, `Select` gone → the call site must be `.Map`
+  - Local (pinned `1017`): `Map` absent, `Select` present → the call site must be `.Select`
+
+  `UseLocalCore` doesn't bridge it either — it only swaps `Kernel` and `Messaging.*`, not `Contracts` or
+  `DataAccess.Infrastructure`.
+
+  **Fixed by making step 1 purely additive:** `Map` is added to `Contracts`, `Select` stays in
+  `DataAccess.Infrastructure` marked superseded, and no call site moves. That compiles under both views.
+  Removal of `Select` and migration of `ModerationService` become step 2, legal only once the pin
+  carries `Map`.
+
+### Note for the follow-up PR
+
+Step 2 (after this publishes and platform-sync bumps the pin): migrate `ModerationService:28` to `.Map`,
+delete `Select` from `DataAccess.Infrastructure`, and clear the two doc references that still describe
+the move as pending (`api/TECH_DEBT.md`, `api/agents/CODE_CONVENTIONS.md`).
