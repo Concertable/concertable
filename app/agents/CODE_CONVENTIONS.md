@@ -141,6 +141,17 @@ the axios layer transforms only query-string params.
 **Litmus:** *JSON body → camelCase. `FormData` field name → PascalCase (it's a C# property binder,
 not JSON).*
 
+## Enum labels/options derive from the enum — never re-type the wire values
+
+Labels are a `Record<TheEnum, string>` (exhaustive by the key type); options map the source, never a
+hand-listed `[{ value: "illegalContent", … }]`:
+
+```ts
+const REPORT_CATEGORY_LABELS: Record<ReportCategory, string> = { illegalContent: "Illegal content", … };
+const options = reportMessageRequestSchema.shape.category.options
+  .map((value) => ({ value, label: REPORT_CATEGORY_LABELS[value] }));
+```
+
 ## Object shapes are `interface`; unions/aliases/derived types are `type`
 
 Interfaces for object shapes, `type` for everything that isn't a plain object — the common TS style
