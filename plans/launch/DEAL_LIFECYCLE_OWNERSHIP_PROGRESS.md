@@ -5,9 +5,9 @@
 - Roadmap item: `launch/deal-lifecycle-ownership`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules`
 - Branch: `Refactor/launch_deal-lifecycle-modules`
-- PR: draft implementation PR [#625](https://github.com/Concertable/concertable/pull/625); docs-only decision PR #622 merged as `5c33f849444dda60ece44070353716c08819b2d8`; rejected PR #614 is closed and retired
+- PR: draft implementation PR [#625](https://github.com/Concertable/concertable/pull/625) at verified correction head `cea004a225d04e1ce92abb0eac1b061220e2bdc2`; docs-only decision PR #622 merged as `5c33f849444dda60ece44070353716c08819b2d8`; rejected PR #614 is closed and retired
 - Dependency/package gates: Phase 1 is reopened to replace discarded legacy-structure assertions with durable boundary-behaviour coverage. Phase 2 must not start until that gate is green.
-- Last reconciled: 2026-08-17 after Tommy rejected tests that froze the shared lifecycle abstraction scheduled for deletion
+- Last reconciled: 2026-08-17 after the legacy-state/source-layout assertions were removed, the corrected unit suite passed, and local, remote, and PR #625 matched `cea004a225d04e1ce92abb0eac1b061220e2bdc2`
 
 ## Current state
 
@@ -33,12 +33,10 @@ runtime change was carried forward.
 
 ## Next Steps
 
-1. Commit and push the correction that removes the legacy-state/source-layout tests, then update draft
-   PR #625 so its description no longer claims that implementation structure as coverage.
-2. Audit existing boundary-level coverage for accept/payment arrival order, cancellation, settlement
+1. Audit existing boundary-level coverage for accept/payment arrival order, cancellation, settlement
    retry, immutable Contract, Invoice, and exactly-once Concert creation; add only missing observable
    behaviour tests that remain valid after the module split.
-3. Run the focused gates, checkpoint the verified remote head, and route that exact range through code
+2. Run the focused gates, checkpoint the verified remote head, and route that exact range through code
    review before beginning Phase 2.
 
 ## Completed work
@@ -70,6 +68,8 @@ runtime change was carried forward.
 - Removed the exact shared-state topology and source/file inventory additions after recognizing they
   asserted the implementation scheduled for deletion rather than durable system behaviour. This
   correction is recorded in this commit.
+- Published correction `cea004a225d04e1ce92abb0eac1b061220e2bdc2`, verified local HEAD, the
+  remote branch, and PR #625 `headRefOid` matched, and corrected the draft PR title and description.
 
 ## Verification
 
@@ -96,6 +96,8 @@ runtime change was carried forward.
 - `git diff --check`: passed.
 - Pre-checkpoint publication: local HEAD, `origin/Refactor/launch_deal-lifecycle-modules`, and draft PR
   #625 `headRefOid` all equalled `3d0fc5a823cad198f8de878aecef5928036f6c5f`.
+- Correction publication: local HEAD, `origin/Refactor/launch_deal-lifecycle-modules`, and draft PR
+  #625 `headRefOid` all equalled `cea004a225d04e1ce92abb0eac1b061220e2bdc2`.
 
 ## Reviews
 
