@@ -110,6 +110,8 @@ opportunistically as files are touched. New extension members use `extension()` 
 
 **Resolves when:** the `= ""` defaults become `null!` as part of a `Concertable.Messaging` package publish.
 
+**Done (PR1, `Chore/TechDebt`) — pending publish:** both `ConnectionString` and `ServiceName` defaults are now `null!` — required, assigned-before-use. The connection string is no longer eagerly bound-and-thrown at registration; it is validated on resolution of the Service Bus client (see the `AddAzureServiceBusTransport` eager-probe item in [`Concertable.Messaging/TECH_DEBT.md`](./Concertable.Messaging/TECH_DEBT.md), the same package change). Delete this entry once that change publishes.
+
 ---
 
 ### Auth builds against a pinned shared-platform package while the rest of the solution builds from source
