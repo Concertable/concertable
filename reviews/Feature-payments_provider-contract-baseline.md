@@ -14,8 +14,9 @@
 
 ## Findings
 
-- [ ] **NAT1 — MEDIUM — native/test coverage** — `api/Concertable.Payment/tests/Concertable.Payment.UnitTests/ProviderContract/StripeOperationTransitionSpecificationTests.cs:14`
+- [x] **NAT1 — MEDIUM — native/test coverage** — `api/Concertable.Payment/tests/Concertable.Payment.UnitTests/ProviderContract/StripeOperationTransitionSpecificationTests.cs:14`
   The pinned-version test only compares one hard-coded `47.3.0` value with another, so changing the installed `Stripe.net` package in `Directory.Packages.props` leaves the executable status vocabulary green against the wrong SDK baseline. Bind this test to the resolved Stripe assembly/package version so every SDK upgrade requires an intentional baseline update.
+  Resolved by comparing the committed baseline to Stripe.net's resolved assembly informational version.
 
 - [ ] **NAT2 — MEDIUM — native/correctness** — `api/Concertable.Payment/tests/Concertable.Payment.UnitTests/Architecture/ProviderContractInventoryTests.cs:125`
   Payment entry-point discovery runs only when a source file contains the exact text `using Stripe;`, so a fully-qualified `Stripe.PaymentIntentService`, a namespace-specific/global using, or an injected `StripeClient` can add real provider calls without changing the committed inventory. Replace the import-gated regex discovery with syntax/semantic detection of Stripe SDK receivers and cover fully-qualified and global-using forms.
