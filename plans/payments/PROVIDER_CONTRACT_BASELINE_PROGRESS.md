@@ -5,10 +5,10 @@
 - Roadmap item: `payments/provider-contract-baseline`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\payments_provider-contract-baseline`
 - Branch: `Feature/payments_provider-contract-baseline`
-- PR: #597 — https://github.com/Concertable/concertable/pull/597 — open draft; Phase 4 work head `f210577564ea4ab78c56c2f687762b9378b6a083` is verified equal locally, on `origin/Feature/payments_provider-contract-baseline`, and as the PR `headRefOid`; this ledger checkpoint is the transport leg
-- Review readiness: **NOT READY FOR REVIEW** — Phase 4 remains; PR #597 stays draft until the final implementation candidate is locally verified and exact-head CI is green
+- PR: #597 — https://github.com/Concertable/concertable/pull/597 — open draft; checkpoint head `3d4dd68c482b236cf28ebc8b8e48a7efab08e10a` passed exact-head CI run 31950346307; this review-ready ledger checkpoint is the transport leg
+- Review readiness: **READY FOR REVIEW** — all four implementation phases and exact-head CI are green; convert [PR #597](https://github.com/Concertable/concertable/pull/597) from draft after this checkpoint transport is green, then run `/review`
 - Dependency/package gates: Phases 1 through 3 are complete and Phase 4 is locally implemented; the production/live-mode Stripe account has no webhook endpoint, so future deployment is locked to `2025-01-27.acacia` and must create the endpoint at the actual Payment Web URL while installing its signing secret; compatibility is anchored to published `0.1.0-alpha.0.1009`; the local branch carries platform pin `0.1.0-alpha.0.1021`
-- Last reconciled: 2026-08-16 against open draft PR #597 work head `f21057756`, published Payment packages `0.1.0-alpha.0.1009`, and `origin/main` `668ba639c`; the pushed candidate is zero commits behind that base
+- Last reconciled: 2026-08-16 against open draft PR #597 checkpoint head `3d4dd68c4`, exact-head CI run 31950346307, published Payment packages `0.1.0-alpha.0.1009`, and `origin/main` `668ba639c`
 
 ## Current state
 
@@ -65,9 +65,9 @@ authorization, both setup kinds, and refund.
 
 ## Next Steps
 
-Let draft-PR CI validate the exact checkpoint-transport head after this verified work push. Once the
-final candidate is exact-head green, check off Phase 4, mark PR #597 ready for review, and make
-`/review` the next action. Do not merge in the same turn.
+After this review-ready checkpoint transport is exact-head green and PR #597 is converted from draft,
+run `/review` against the complete branch. Record every high-confidence finding and disposition in
+this ledger before merge becomes the next action. Do not merge in the same turn.
 
 ## Completed work
 
@@ -135,6 +135,10 @@ final candidate is exact-head green, check off Phase 4, mark PR #597 ready for r
 - Phase 4 work push: starting remote/PR head `324dc4714565b623cba297de461b566787c6a521`;
   pushed range `324dc4714565b623cba297de461b566787c6a521..f210577564ea4ab78c56c2f687762b9378b6a083`;
   local, remote-tracking, and PR work heads all verified at `f210577564ea4ab78c56c2f687762b9378b6a083`.
+- Exact-head draft-PR CI run 31950346307 passed at checkpoint head
+  `3d4dd68c482b236cf28ebc8b8e48a7efab08e10a`: build, local platform package validation, all five
+  standalone service carves, the complete unit matrix, and the complete integration matrix were green;
+  E2E jobs were skipped under the draft-PR policy.
 - Phase 3 focused provider-contract suite: 106 passed, 0 failed, 0 skipped.
 - Phase 3 full Payment unit carve: 434 passed, 0 failed, 0 skipped.
 - Payment UnitTests project build: succeeded with 0 warnings and 0 errors.
@@ -198,10 +202,10 @@ final candidate is exact-head green, check off Phase 4, mark PR #597 ready for r
 
 ## Review status
 
-**NOT READY FOR REVIEW.** [Draft PR #597](https://github.com/Concertable/concertable/pull/597) still
-requires Phase 4. Once the final implementation candidate and exact-head CI are green,
-`## Next Steps` must route through `/review`; that review-ready checkpoint still emits the standard
-plan continuation pointer because the plan lifecycle is not terminal.
+**READY FOR REVIEW.** All implementation phases and exact-head CI run 31950346307 are green for
+[PR #597](https://github.com/Concertable/concertable/pull/597). After this review-ready checkpoint
+transport is green and the PR is converted from draft, `/review` is the only next action; merge is not
+authorized by this continuation.
 
 The planning docs review through PR head `ccb1dd00585b7943a401166f3f8eb3237ed6d628` found no issues across
 accuracy, contradiction, document ownership, concision, dangling references, and followable

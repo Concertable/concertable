@@ -234,7 +234,7 @@ Phase 2 adds definitions only where a later durable session implementation needs
   session/status/event vocabulary without changing existing consumers.
 - [x] **Phase 3 — executable transition specification.** Encode every supported Stripe status and
   legal/illegal normalized transition as pure rules with exhaustive tests.
-- [ ] **Phase 4 — compatibility and architecture gates.** Prove additive compatibility with
+- [x] **Phase 4 — compatibility and architecture gates.** Prove additive compatibility with
   `0.1.0-alpha.0.1009`, preserve service/package boundaries, and complete remote validation.
 
 ### Phase 1 — durable decision artifact and exhaustive inventory
@@ -312,7 +312,8 @@ Verification gate:
 
 ### Phase 4 — compatibility and architecture gates
 
-Status: implementation complete and current-main reconciled; exact-head draft-PR CI remains.
+Status: complete. The published-package compatibility, architecture, frozen-consumer, focused local,
+and exact-head draft-PR CI gates are green.
 
 - Generate committed golden baselines from published `Concertable.Payment.Contracts`, Protos, and
   Client `0.1.0-alpha.0.1009`: public .NET signatures/message URNs and a protobuf descriptor set.
