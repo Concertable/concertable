@@ -288,13 +288,13 @@ DealTerms implementation are rejected input, not an implementation base.
 
 ### Phase 1 — restore and characterize the real baseline
 
-- [ ] Retire the rejected PR/branch through the repository's safe worktree process; do not merge or
+- [x] Retire the rejected PR/branch through the repository's safe worktree process; do not merge or
   repair its DealTerms code into the new implementation.
-- [ ] Port only useful topology/characterization tests onto a fresh implementation branch.
-- [ ] Pin every current state, trigger, executor, processor, callback, worker, API/HATEOAS consumer,
+- [x] Port only useful topology/characterization tests onto a fresh implementation branch.
+- [x] Pin every current state, trigger, executor, processor, callback, worker, API/HATEOAS consumer,
   payment operation, cancellation path, settlement retry, Invoice relation, and Concert-creation
   invariant before moving ownership.
-- [ ] Add architecture tests that fail direct runtime/entity references across the target modules.
+- [x] Add architecture tests that fail direct runtime/entity references across the target modules.
 
 Gate: the new branch is behaviourally identical to `origin/main`, Deal vocabulary is intact, and the
 module/state inventory is executable as tests.

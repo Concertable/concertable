@@ -3,11 +3,11 @@
 - Plan: `plans/launch/DEAL_LIFECYCLE_OWNERSHIP_PLAN.md`
 - Roadmap: `plans/launch/LAUNCH_ROADMAP.md`
 - Roadmap item: `launch/deal-lifecycle-ownership`
-- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-launch_deal-lifecycle-decision`
-- Branch: `Docs/launch_deal-lifecycle-decision`
-- PR: docs-only decision checkpoint [#622](https://github.com/Concertable/concertable/pull/622) is open with `skip-e2e` at verified PR/remote head `486ad455bdf2ef4a95034a5401fda0a030f9f7c6`. Rejected draft implementation PR [#614](https://github.com/Concertable/concertable/pull/614) remains open at remote head `2208702c903dd26a7f43ff554eb955083317b3cf` and must not be continued
-- Dependency/package gates: make this approved decision durable on current `main`, then close and retire the rejected PR/branch before creating the fresh implementation worktree
-- Last reconciled: 2026-08-16 against `origin/main` `89361e99e`, rejected PR #614, and open decision PR #622 at verified local/remote/PR head `486ad455bdf2ef4a95034a5401fda0a030f9f7c6`
+- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules`
+- Branch: `Refactor/launch_deal-lifecycle-modules`
+- PR: implementation PR not yet opened; docs-only decision PR [#622](https://github.com/Concertable/concertable/pull/622) merged as `5c33f849444dda60ece44070353716c08819b2d8`; rejected PR #614 is closed and its worktree/local branch are retired
+- Dependency/package gates: Phase 1 is implemented. Phase 2 has no external package blocker; its module extraction must preserve current HTTP and package surfaces.
+- Last reconciled: 2026-08-17 after the locally green Phase 1 characterization and module-boundary gates on the fresh implementation branch
 
 ## Current state
 
@@ -20,18 +20,24 @@ model, contextual step contracts, and module-local step resolver. There is no um
 shared lifecycle state, workflow module, cross-module resolver, or parent state machine. A combined
 status exists only as a read projection.
 
-The approved planning state is isolated on a docs-only worktree from current `origin/main`. The
-rejected DealTerms implementation remains confined to PR #614 and its old worktree; none of that code
-is an approved implementation base. The old worktree is clean after its planning edits were moved to
-this branch through a recoverable stash.
+Phase 1 is implemented. Exact lifecycle graphs, enum values, executors, payment processors, callbacks,
+worker entry points, API/HATEOAS consumers, operation correlation, cancellation and settlement recovery,
+Invoice linkage, and Booking-to-Concert creation are executable characterization tests. The reserved
+Opportunity, Application, Booking, and Concert namespaces reject direct cross-module runtime/entity
+dependencies while permitting Contracts-only collaboration.
+
+Rejected PR #614 is closed, and its DealTerms branch and worktree were retired with exact-head checks.
+The fresh implementation branch contains only current-main Deal vocabulary; none of the rejected
+runtime change was carried forward.
 
 ## Next Steps
 
-1. Admin-merge reviewed docs-only PR #622 with `skip-e2e` so the retirement decision is durable on
-   `origin/main`.
-2. Close rejected PR #614 and retire its clean worktree with the landed decision commit as evidence.
-3. Create `Refactor/launch_deal-lifecycle-modules` from the resulting current `origin/main`, update this
-   ledger to that worktree, and execute Phase 1.
+1. Commit the Phase 1 characterization checkpoint, push it, and open the implementation PR as a draft.
+2. Verify local HEAD, the remote branch, and the draft PR head are identical, then route that exact
+   committed range through code review and address every high-confidence finding.
+3. Record the review and remote-check evidence in this ledger before starting Phase 2.
+4. Begin Phase 2 by scaffolding the Opportunity, Application, and Booking module project families and
+   replacing cross-stage entity navigation with Contracts, owned IDs, and query projections.
 
 ## Completed work
 
@@ -49,6 +55,17 @@ this branch through a recoverable stash.
   reviewed work head `d06422710a5789cc40ab8817f8ee860f80220eda`; the remote-tracking ref matched exactly.
 - Published ledger checkpoint `486ad455bdf2ef4a95034a5401fda0a030f9f7c6`, opened docs-only PR #622,
   and confirmed its PR head and `skip-e2e` label.
+- Merged docs decision PR #622 as `5c33f849444dda60ece44070353716c08819b2d8`, closed rejected PR #614,
+  and retired its clean worktree/local branch at exact head `ec1dcac897ce5075db83247d05ff694a912f9c43`.
+- Ported the useful exact lifecycle topology characterization onto current Deal vocabulary, pinning
+  both 19-edge graphs and the FlatFee/VenueHire and DoorSplit/Versus topology pairings.
+- Added an executable baseline inventory for every current lifecycle state, trigger, executor, payment
+  processor, callback and correlation path, worker, API/HATEOAS consumer, cancellation/settlement
+  recovery path, Invoice relation, and guarded Booking-to-Concert creation path.
+- Added a reserved lifecycle-module architecture rule that allows Contracts dependencies but rejects
+  direct Domain, Application, Infrastructure, and Api references between Opportunity, Application,
+  Booking, Deal, and Concert.
+- Checkpointed the complete locally verified Phase 1 implementation in this commit.
 
 ## Verification
 
@@ -62,16 +79,23 @@ this branch through a recoverable stash.
   plan preserves that invariant across module DbContexts.
 - Verify-before-Accept convergence already persists the early payment fact before advancing; the plan
   preserves the join without treating it as one end-to-end state.
-- `python .agents/hooks/plan_graph.py --root C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-launch_deal-lifecycle-decision`
-  passed with 0 errors and 0 warnings after the approved planning graph was reconciled onto current
-  `origin/main`.
+- Concert unit suite: 255/255 passed in Release, including the new topology and ownership inventory.
+- Targeted B2B module-boundary architecture suite: 7/7 passed in Release.
+- Complete architecture suite reached the unrelated current-main Reunion package-ownership guard;
+  Conversations projects retain direct package references their source no longer consumes. The
+  lifecycle module-boundary tests themselves are green.
+- `dotnet build api/Concertable.B2B/src/Concertable.B2B.Web/Concertable.B2B.Web.csproj --configuration Release --no-restore`:
+  0 warnings and 0 errors.
+- Rejected DealTerms implementation vocabulary scan: no matches.
+- `python .agents/hooks/plan_graph.py --root .`: 0 errors and 0 warnings.
+- `git diff --check`: passed.
 
 ## Reviews
 
 - Docs review of `89361e99e..d06422710` found three issues: the checkout boundary was ambiguous, the
   typed-result ledger retained a transferred return path, and graph evidence was stale. All were fixed
   in `0bd1d2094`; follow-up review through `d06422710` found no further issues.
-- No implementation review exists. The rejected PR's prior review is not evidence for this design.
+- No implementation review exists yet. The rejected PR's prior review is not evidence for this design.
 
 ## Decisions, discoveries, blockers, and deviations
 
