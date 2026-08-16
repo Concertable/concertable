@@ -238,7 +238,8 @@ Phase 2 adds definitions only where a later durable session implementation needs
 
 ### Phase 1 — durable decision artifact and exhaustive inventory
 
-Status: implementable.
+Status: local implementation and verification complete; exit is paused pending production/live-mode
+webhook endpoint evidence.
 
 - Add `api/Concertable.Payment/PROVIDER_CONTRACT.md` as the durable source of truth containing the
   product matrix, operation/attempt model, state tables, legal transitions, terminality, retry,

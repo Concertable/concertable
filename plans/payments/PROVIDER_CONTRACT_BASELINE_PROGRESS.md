@@ -5,45 +5,45 @@
 - Roadmap item: `payments/provider-contract-baseline`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\payments_provider-contract-baseline`
 - Branch: `Feature/payments_provider-contract-baseline`
-- PR: #594 — https://github.com/Concertable/concertable/pull/594 — merged as `3c8a2c5a847d0f9702884949ed57850c6e494c47`
-- Dependency/package gates: implementation is ready; PR #552 remains the external B2B consumer owner and is a delivery-only gate while the baseline stays additive; published platform baseline is `0.1.0-alpha.0.1009`; no open platform-sync PR was present at reconciliation
+- PR: implementation draft not opened; planning PR #594 merged as `3c8a2c5a847d0f9702884949ed57850c6e494c47`
+- Dependency/package gates: Phase 1 local implementation is green but production/live-mode webhook endpoint evidence is unavailable; PR #552 remains the external B2B consumer owner and is a delivery-only gate while the baseline stays additive; published platform baseline is `0.1.0-alpha.0.1009`; no open platform-sync PR was present at reconciliation
 - Last reconciled: 2026-08-16 against `origin/main` `3c8a2c5a847d0f9702884949ed57850c6e494c47`, merged PR #594, the source roadmap, current repository entry points, and official Stripe documentation
 
 ## Current state
 
-Planning landed through PR #594, and this fresh implementation worktree is based on its merge commit
-at current `origin/main`. No production implementation has begun. The source roadmap, implementation
-plan, and ledger are now the recovery anchor for the complete current entry-point inventory,
-provider-product matrix, operation/attempt model, normalized transition vocabulary, additive package
-boundary, external ownership, phased verification, and delivery DAG.
+Phase 1's local implementation is complete. `api/Concertable.Payment/PROVIDER_CONTRACT.md` now owns
+the provider-product matrix, operation/attempt identity, normalization and transition tables,
+terminality, retry/revision/expiry, safe failures, Connect posture, consumer ownership, compatibility
+islands, and version assumptions. `provider-contract-inventory.json` classifies 43 current entry
+points across seven explicit roots into 23 complete decisions, and the Payment architecture test
+fails for an unclassified provider call, consumer Payment-client call, frontend confirmation, or
+client-secret parser.
 
-The implementation work is ready to begin with Phase 1. PR #552 must not be duplicated; its exact head
-was `002c45f5fdb83362fff419448dd1c1a8832fd2a3` at reconciliation, including its additive
-`RefundReasonCodes` contract. The historical
-`Refactor/GroupStripeWebhookHandling` branch is superseded evidence only.
+A read-only Stripe API query with the configured test key found the deployed Azure webhook endpoint
+at API version `2025-01-27.acacia`, matching Stripe.net `47.3.0`, but the endpoint is test-mode and
+disabled. No browser session was available to inspect Stripe Dashboard live mode. Phase 1 therefore
+cannot cross its endpoint-evidence exit gate until the production/live-mode endpoint is recorded.
+PR #552 remains open and mergeable at `abb6b0035df2b0ecd32836814d166804cc59aa21`; it must not be
+duplicated. The historical `Refactor/GroupStripeWebhookHandling` branch is superseded evidence only.
 
 ## Next Steps
 
-Implement Phase 1 — durable decision artifact and exhaustive inventory:
-
-1. Confirm this branch remains current with `origin/main` and preserve the planning files in
-   `plans/payments/`.
-2. Add `api/Concertable.Payment/PROVIDER_CONTRACT.md` with the plan's locked product matrix,
-   operation/attempt identities, session kinds, normalized state and transition tables, terminality,
-   retry/revision/expiry rules, safe public errors, Connect posture, consumer ownership, and explicit
-   Stripe.net/API/webhook version assumptions.
-3. Add a deterministic inventory artifact and Payment unit/architecture test that scans the plan's
-   Payment, Customer, B2B, customer-web, B2B-web, and customer-mobile roots. It must fail for an
-   unclassified Stripe provider call, frontend confirmation call, or client-secret parser. Treat the
-   PR #581 bridge files as the finite current allowlist and do not change them.
-4. Obtain and record the live Stripe webhook endpoint API version. Reconcile it with Stripe.net
-   `47.3.0`'s `2025-01-27.acacia` request version; do not upgrade the endpoint in this phase.
-5. Run the inventory check, the focused Payment unit-test project, and the smallest affected Payment
-   build. Update this plan's Phase 1 state and this ledger in the same commit. Do not edit B2B consumer
-   code or start Phase 2 until the Phase 1 exit gate is green.
+Paused: Tommy — in Stripe Dashboard live mode, record the production webhook endpoint ID, URL,
+enabled status, and API version; resume when that evidence confirms `2025-01-27.acacia` or supplies
+the exact different version required for normalization fixtures. Do not start Phase 2 before this
+Phase 1 exit gate is reconciled.
 
 ## Completed work
 
+- Implemented the Phase 1 durable provider contract and linked it from Payment architecture.
+- Added the deterministic seven-root inventory with 43 classified entry points and 23 reusable
+  decisions, including the finite PR #581 frontend compatibility islands.
+- Added Payment unit architecture coverage that enforces exact inventory parity, complete decisions,
+  stable scan roots, unique keys, and self-verifying committed entries.
+- Queried the configured Stripe test account and recorded endpoint
+  `we_1RCqowQ1mmqr287N9MeY0iRV`, URL
+  `https://concertable-app.azurewebsites.net/api/webhook`, API version `2025-01-27.acacia`,
+  `livemode=false`, and `status=disabled` without changing provider configuration.
 - Created the clean worktree from current `origin/main` on
   `Feature/payments_provider-contract-baseline`.
 - Inspected all requested repository guidance, legal/architecture constraints, Payment/Customer/B2B
@@ -66,6 +66,14 @@ Implement Phase 1 — durable decision artifact and exhaustive inventory:
 
 ## Verification
 
+- `dotnet build api/Concertable.Payment/tests/Concertable.Payment.UnitTests/Concertable.Payment.UnitTests.csproj --no-restore`: succeeded with 0 warnings and 0 errors.
+- `dotnet test api/Concertable.Payment/tests/Concertable.Payment.UnitTests/Concertable.Payment.UnitTests.csproj --no-build --no-restore`: 318 passed, 0 failed, 0 skipped.
+- Focused inventory architecture coverage: 46 passed after correcting the detector to distinguish
+  Stripe SDK services from internal services and secret-ID splits from kind-prefix checks.
+- Inventory parse: schema 1, seven roots, 23 decisions, 43 entry points.
+- `python .agents/hooks/docs_reachability.py --root <worktree>`: 0 errors, 0 warnings.
+- `python .agents/hooks/plan_graph.py --root <worktree>`: 0 errors, 0 warnings.
+- `git diff --check`: passed.
 - Worktree branch was created at and reconciled to `origin/main`
   `836a15a56257a0e35ca5ef5674b39e38eb6767ac` with zero commits behind.
 - Source and copied roadmap SHA-256 matched at
@@ -89,8 +97,8 @@ Implement Phase 1 — durable decision artifact and exhaustive inventory:
 
 Docs review through PR head `ccb1dd00585b7943a401166f3f8eb3237ed6d628` found no issues across
 accuracy, contradiction, document ownership, concision, dangling references, and followable
-instructions. Its spent untracked review artifact was deleted after PR #594 merged. No implementation
-review exists.
+instructions. Its spent untracked review artifact was deleted after PR #594 merged. No Phase 1
+implementation review exists; the branch is not merge-ready.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -103,10 +111,5 @@ review exists.
   3DS bridge remain with later work.
 - The live webhook endpoint API version cannot be inferred from source and is explicit Phase 1 evidence,
   not an assumed fact or a planning blocker.
-
-## Resume prompt
-
-```
-cd C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\payments_provider-contract-baseline
-Read @plans/payments/PROVIDER_CONTRACT_BASELINE_PLAN.md and @plans/payments/PROVIDER_CONTRACT_BASELINE_PROGRESS.md and do what its `## Next Steps` says.
-```
+- The configured test account's endpoint matches the SDK request version, but test-mode evidence cannot
+  establish production/live-mode endpoint state.
