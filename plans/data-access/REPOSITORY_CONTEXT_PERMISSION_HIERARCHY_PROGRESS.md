@@ -5,8 +5,11 @@
 - Roadmap item: `data-access/repository-context-permission-hierarchy`
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable/.worktrees/Fix-signup-navigation-race`
 - Branch: `Fix/SignupNavigationRace`
-- PR: pending
-- Local repair head: `1a2da63ba`
+- PR: [#626](https://github.com/Concertable/concertable/pull/626) (draft; checkpoint transport pending)
+- Verified work head: `c7a23072c84186123277151c0da7affda089ffaa`
+- Starting remote head: `d5669a836c4d7fd9bb4d15e9c05f0a71f0e9f40c`
+- Pushed range: `d5669a836c4d7fd9bb4d15e9c05f0a71f0e9f40c..c7a23072c84186123277151c0da7affda089ffaa`
+- Remote and PR head: `c7a23072c84186123277151c0da7affda089ffaa` (verified after work-head push)
 - Consumer PR: [#561](https://github.com/Concertable/concertable/pull/561) merged as `249dc8a9df8d9b81271cd2250a01ecf086e97586`.
 - Dependency/package gate: satisfied. Additive producer PR #590 merged as `59fe60e978affe23bcaf53823151eab2acda8ba0`, published platform `0.1.0-alpha.0.1007`, and platform-sync PR #592 merged green as `38e3d8548f10f3ab7a4a951b7c4ce961ec21c863`. Current `origin/main` pins `0.1.0-alpha.0.1009`, which includes the additive DataAccess API.
 - Consumer publication/sync gate: satisfied. Publication run `31976777846` passed and platform-sync
@@ -61,8 +64,8 @@ topology contract test, and both signup flows attach their registration wait bef
 
 ## Next Steps
 
-1. Push the reviewed current-main repair head and open its draft follow-up PR.
-2. Require green exact-head PR CI, then apply `full-e2e`, enqueue, and follow merge-group,
+1. Compound-push this checkpoint and require green exact-head PR CI.
+2. Mark #626 ready, apply `full-e2e`, enqueue, and follow merge-group,
    publication, and platform-sync gates to green.
 3. Create the legacy-contraction worktree from current main and reconcile its owning ledger before
    removing the published compatibility surface.
