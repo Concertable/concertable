@@ -5,11 +5,11 @@
 - Roadmap item: `data-access/repository-context-permission-hierarchy`
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable/.worktrees/Plan-data-access-repository-permission-hierarchy`
 - Branch: `Refactor/DataAccessRepositoryPermissionHierarchy`
-- PR: [#561](https://github.com/Concertable/concertable/pull/561) (open; reviewed current-main candidate pending push)
-- Verified work head: `ff8354a15ec6254a630b420c3e0c1f8a47da7ca9`
+- PR: [#561](https://github.com/Concertable/concertable/pull/561) (open; exact-head CI pending)
+- Verified work head: `cbe40fa31308b02d5ed423e485f9227f31352c03`
 - Starting remote head: `b29e5422fc9a667df0d06b7cff249eb8a9c6ac60`
-- Pushed range: pending
-- Remote and PR head: `b29e5422fc9a667df0d06b7cff249eb8a9c6ac60` (verified before current work)
+- Pushed range: `b29e5422fc9a667df0d06b7cff249eb8a9c6ac60..cbe40fa31308b02d5ed423e485f9227f31352c03`
+- Remote and PR head: `cbe40fa31308b02d5ed423e485f9227f31352c03` (verified after work-head push)
 - Dependency/package gate: satisfied. Additive producer PR #590 merged as `59fe60e978affe23bcaf53823151eab2acda8ba0`, published platform `0.1.0-alpha.0.1007`, and platform-sync PR #592 merged green as `38e3d8548f10f3ab7a4a951b7c4ce961ec21c863`. Current `origin/main` pins `0.1.0-alpha.0.1009`, which includes the additive DataAccess API.
 - Last reconciled: 2026-08-16 against PR #561 and `origin/main` at `07624709d873dd0aecc934e59bbc45f78b0c844b`.
 
@@ -43,10 +43,8 @@ The fixture now completes a requested command type, and refund workflows explici
 
 ## Next Steps
 
-1. Commit and push the reviewed current-main candidate, then verify local, remote-tracking, and PR heads
-   are equal.
-2. Require green exact-head PR CI.
-3. Await explicit merge authorization; then normalize to `full-e2e`, enqueue, and follow the merge-group,
+1. Require green exact-head PR CI.
+2. Await explicit merge authorization; then normalize to `full-e2e`, enqueue, and follow the merge-group,
    publication, and generated platform-sync gates to green before starting the legacy contraction.
 
 ## Completed work
