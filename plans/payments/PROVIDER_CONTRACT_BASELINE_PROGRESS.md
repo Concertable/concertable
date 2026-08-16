@@ -5,10 +5,10 @@
 - Roadmap item: `payments/provider-contract-baseline`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\payments_provider-contract-baseline`
 - Branch: `Feature/payments_provider-contract-baseline`
-- PR: #597 — https://github.com/Concertable/concertable/pull/597 — open; exact-head CI run 31953753845 passed at reviewed head `85d85aab1c6e3ef448c792cc9cad7c37639a8ae9`; auto-merge is disabled and the PR is not queued
+- PR: #597 — https://github.com/Concertable/concertable/pull/597 — open; exact-head CI run 31953753845 passed at reviewed code head `85d85aab1c6e3ef448c792cc9cad7c37639a8ae9`; review work head `6a3f545e6400725b7b962bc4209cc306ab65ce19` is pushed and this ledger checkpoint is the transport leg; auto-merge is disabled and the PR is not queued
 - Review readiness: **FOUR OPEN FINDINGS** — the complete implementation review recorded NAT1, NAT2, BUG1, and SEC1 as medium-severity findings in `reviews/Feature-payments_provider-contract-baseline.md`
 - Dependency/package gates: Phases 1 through 4 are locally complete; the production/live-mode Stripe account has no webhook endpoint, so future deployment is locked to `2025-01-27.acacia` and must create the endpoint at the actual Payment Web URL while installing its signing secret; compatibility is anchored to published `0.1.0-alpha.0.1009`; the branch carries platform pin `0.1.0-alpha.0.1025`
-- Last reconciled: 2026-08-16 against open PR #597 reviewed head `85d85aab`, exact-head CI run 31953753845, published Payment packages `0.1.0-alpha.0.1009`, and review base `e861f3642`
+- Last reconciled: 2026-08-16 against open PR #597 review work head `6a3f545e`, reviewed code head `85d85aab`, exact-head CI run 31953753845, published Payment packages `0.1.0-alpha.0.1009`, and `origin/main` `3ef37740` (seven commits ahead after the review concluded)
 
 ## Current state
 
@@ -63,10 +63,12 @@ authorization, both setup kinds, and refund.
 
 ## Next Steps
 
-Run `/address-review @reviews/Feature-payments_provider-contract-baseline.md` and address all four open
+Bring the clean feature branch current with `origin/main`, then run
+`/address-review @reviews/Feature-payments_provider-contract-baseline.md` and address all four open
 findings. Re-run the focused Payment provider/compatibility build and tests, publish the fixes through
-the plan push protocol, then run `/incremental-review` over the new commits. Do not merge in the same
-turn.
+the plan push protocol, then run `/incremental-review` over every commit after reviewed code head
+`85d85aab1c6e3ef448c792cc9cad7c37639a8ae9`, including the current-main merge. Do not merge in the
+same turn.
 
 ## Completed work
 
@@ -121,6 +123,11 @@ turn.
 
 ## Verification
 
+- Review work push: starting remote/PR head `85d85aab1c6e3ef448c792cc9cad7c37639a8ae9`;
+  pushed range `85d85aab1c6e3ef448c792cc9cad7c37639a8ae9..6a3f545e6400725b7b962bc4209cc306ab65ce19`;
+  local, remote-tracking, and PR work heads all verified at
+  `6a3f545e6400725b7b962bc4209cc306ab65ce19`; PR #597 remained open with auto-merge disabled and no
+  merge-queue entry.
 - Exact-head PR CI run 31953753845 passed at reviewed head
   `85d85aab1c6e3ef448c792cc9cad7c37639a8ae9`: 54 jobs succeeded and five policy-selected jobs were
   skipped; build, local platform packages, all service carves, unit tests, and integration tests were
