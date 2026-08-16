@@ -4,7 +4,7 @@
 > findings directly and report what changed. Tick each `[x]` as you land it. Pause only for a genuinely
 > ambiguous finding: flag it in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `d023c9b56b78ff7c4c8ea88ac3d2eb8afca6d8a1`  _(2026-08-16)_
+**Reviewed up to commit:** `d023c9b56f3da873553c815a2b9249cc0f9c935f`  _(2026-08-16)_
 
 > Range reviewed: `b633d79a..d023c9b5` (2 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
