@@ -5,7 +5,7 @@
 - Roadmap item: `payments/provider-contract-baseline`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\payments_provider-contract-baseline`
 - Branch: `Feature/payments_provider-contract-baseline`
-- PR: implementation draft not opened; planning PR #594 merged as `3c8a2c5a847d0f9702884949ed57850c6e494c47`
+- PR: #597 — https://github.com/Concertable/concertable/pull/597 — draft at verified work head `7cd053d0719c699e77f4f8d5b4a3803367db6bf5`; planning PR #594 merged as `3c8a2c5a847d0f9702884949ed57850c6e494c47`
 - Dependency/package gates: Phase 1 local implementation is green but production/live-mode webhook endpoint evidence is unavailable; PR #552 remains the external B2B consumer owner and is a delivery-only gate while the baseline stays additive; published platform baseline is `0.1.0-alpha.0.1009`; no open platform-sync PR was present at reconciliation
 - Last reconciled: 2026-08-16 against `origin/main` `3c8a2c5a847d0f9702884949ed57850c6e494c47`, merged PR #594, the source roadmap, current repository entry points, and official Stripe documentation
 
@@ -24,7 +24,9 @@ at API version `2025-01-27.acacia`, matching Stripe.net `47.3.0`, but the endpoi
 disabled. No browser session was available to inspect Stripe Dashboard live mode. Phase 1 therefore
 cannot cross its endpoint-evidence exit gate until the production/live-mode endpoint is recorded.
 PR #552 remains open and mergeable at `abb6b0035df2b0ecd32836814d166804cc59aa21`; it must not be
-duplicated. The historical `Refactor/GroupStripeWebhookHandling` branch is superseded evidence only.
+duplicated. Phase 1 work commit `7cd053d0719c699e77f4f8d5b4a3803367db6bf5` is pushed to draft
+PR #597 and the local, remote-tracking, and PR heads were verified equal. The historical
+`Refactor/GroupStripeWebhookHandling` branch is superseded evidence only.
 
 ## Next Steps
 
@@ -44,6 +46,8 @@ Phase 1 exit gate is reconciled.
   `we_1RCqowQ1mmqr287N9MeY0iRV`, URL
   `https://concertable-app.azurewebsites.net/api/webhook`, API version `2025-01-27.acacia`,
   `livemode=false`, and `status=disabled` without changing provider configuration.
+- Committed Phase 1 as `7cd053d0719c699e77f4f8d5b4a3803367db6bf5`, pushed the two-commit
+  implementation range from current `origin/main`, and opened draft PR #597 for remote validation.
 - Created the clean worktree from current `origin/main` on
   `Feature/payments_provider-contract-baseline`.
 - Inspected all requested repository guidance, legal/architecture constraints, Payment/Customer/B2B
@@ -74,6 +78,8 @@ Phase 1 exit gate is reconciled.
 - `python .agents/hooks/docs_reachability.py --root <worktree>`: 0 errors, 0 warnings.
 - `python .agents/hooks/plan_graph.py --root <worktree>`: 0 errors, 0 warnings.
 - `git diff --check`: passed.
+- Push verification: local work head, `origin/Feature/payments_provider-contract-baseline`, and PR #597
+  `headRefOid` all resolved to `7cd053d0719c699e77f4f8d5b4a3803367db6bf5`.
 - Worktree branch was created at and reconciled to `origin/main`
   `836a15a56257a0e35ca5ef5674b39e38eb6767ac` with zero commits behind.
 - Source and copied roadmap SHA-256 matched at
