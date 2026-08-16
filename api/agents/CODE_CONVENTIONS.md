@@ -303,6 +303,23 @@ internal static class EscrowMappers
 }
 ```
 
+## Pure operations — extensions for receiver-owned behaviour, named evaluators for policy
+
+A pure operation belongs on an extension when one receiver clearly owns the transformation or question.
+Use the shortest unambiguous domain name: `value.ToDto()`, `observation.ToNormalized()`,
+`state.IsTerminal()`. Keep one `XExtensions` or `XMappers` class per receiver type.
+
+A decision over two or more peer inputs does not belong to either receiver. Keep the policy visible at
+the call site behind an operation-specific static type such as `TransitionEvaluator.Evaluate(current,
+observation)`. Do not use `Specification` for an evaluator; in this codebase that name is reserved for
+query/specification-pattern semantics.
+
+Represent a closed, deterministic key-to-value table once with `FrozenDictionary` or `FrozenSet` when
+the entries are data rather than behaviour. This includes enum translations, provider-status
+normalization, fixed error definitions, and legal transition edges. Use guarded code when the outcome
+depends on contextual validation or calculation. Do not create parallel frozen maps for the same key
+family; the validated keyed-strategy registry rule in `CODE_PATTERNS.md` remains authoritative there.
+
 ## Paginated results — project with `IPagination<T>.Map`, never `new Pagination<T>(...)`
 
 Mapping a page from entity to DTO, or DTO to Response, is one call:

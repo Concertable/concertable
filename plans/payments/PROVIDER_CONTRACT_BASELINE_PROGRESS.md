@@ -5,12 +5,18 @@
 - Roadmap item: `payments/provider-contract-baseline`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\payments_provider-contract-baseline`
 - Branch: `Feature/payments_provider-contract-baseline`
-- PR: #597 — https://github.com/Concertable/concertable/pull/597 — open; exact-head CI run 31963564771 passed at pushed checkpoint `3b49ef2d0a715626abd93aea39df80657da20bfd`; the spent review artifact is removed in this closeout checkpoint; auto-merge is disabled and the PR is not queued
-- Review readiness: **REVIEW COMPLETE — REVIEW-CLOSEOUT CHECKS REQUIRED** — NAT1, NAT2, BUG1, SEC1, NAT3, and NAT4 are resolved; incremental review through current-main reconciliation commit `01171e1b21b8a08a273eafb3d3f99859081756e2` found no additional issues; code-checkpoint CI is green and the spent review artifact is removed in this commit
-- Dependency/package gates: Phases 1 through 4 are locally complete; the production/live-mode Stripe account has no webhook endpoint, so future deployment is locked to `2025-01-27.acacia` and must create the endpoint at the actual Payment Web URL while installing its signing secret; compatibility is anchored to published `0.1.0-alpha.0.1009`; the branch carries platform pin `0.1.0-alpha.0.1031`
-- Last reconciled: 2026-08-16 against open PR #597 work/remote/PR head `3b49ef2d`, exact-head CI run 31963564771, published Payment packages `0.1.0-alpha.0.1009`, and `origin/main` `6d577792`
+- PR: #597 — https://github.com/Concertable/concertable/pull/597 — open; remote head `200e49f3ea4abe35f2e12038ad129650589f73ac` passed exact-head CI run 31964270135; auto-merge is disabled and the PR is not queued
+- Review readiness: **INCREMENTAL REVIEW REQUIRED** — the six original review findings remain resolved; a post-review readability refactor is locally verified and must be reconciled with current `origin/main`, reviewed, pushed, and pass exact-head CI
+- Dependency/package gates: Phases 1 through 4 are locally complete; the production/live-mode Stripe account has no webhook endpoint, so future deployment is locked to `2025-01-27.acacia` and must create the endpoint at the actual Payment Web URL while installing its signing secret; compatibility is anchored to published `0.1.0-alpha.0.1009`; the branch carries platform pin `0.1.0-alpha.0.1033`
+- Last reconciled: 2026-08-17 against open PR #597 remote head `200e49f3`, local base merge `50b77eaa`, published Payment packages `0.1.0-alpha.0.1009`, and `origin/main` `5c33f849`; current main advanced during the local readability refactor
 
 ## Current state
+
+A locally verified readability refactor now separates the provider contract backbone into named
+evaluators, receiver-owned extensions, immutable transition/status tables, and focused models. Stripe
+observations normalize through `ToNormalized()`, fixed code mappings use frozen collections, and
+`PaymentOperationError` is the single Reunion-backed authority for safe failure messages. The former
+`*Specification` evaluator names are removed, and the general C# convention now records this boundary.
 
 Phases 1 through 4 and all six review findings are complete, reviewed, and pushed through
 `ce43a2283c26416ca60593aefca35a79d2159698`. The branch resolves
@@ -64,17 +70,18 @@ messages without adding an RPC. `PaymentOperationStateChangedV1` has stable mess
 .NET 10 through the closed Dunet `PaymentOperationError`; the planned .NET 11 native-union migration
 follows the complete Stripe/provider refactor rather than interrupting it.
 
-Phase 3 adds pure Domain specifications for pinned Stripe status normalization, same-revision
+Phase 3 adds pure Domain evaluators and receiver-owned extensions for pinned Stripe status normalization, same-revision
 transitions, identity and freshness checks, duplicate/out-of-order observations, terminal protection,
 explicit cancellation, retry/revision decisions, and provider-confirmed authorization expiry. The
-specification has no EF, MassTransit, gRPC, Stripe SDK, timer, persistence, webhook, or consumer
+policy has no EF, MassTransit, gRPC, Stripe SDK, timer, persistence, webhook, or consumer
 dependency. Its exhaustive test matrix evaluates all 405 state pairs across automatic payment,
 authorization, both setup kinds, and refund.
 
 ## Next Steps
 
-Push this review-closeout checkpoint, verify the local, remote-tracking, and PR heads match, and require
-its exact-head checks to pass. Keep the PR open in this turn.
+Commit the locally verified readability refactor, merge current `origin/main`, rerun the affected
+Payment gates, perform the required incremental review, then push and require exact-head CI to pass.
+Keep the PR open in this turn.
 
 ## Completed work
 
@@ -99,7 +106,7 @@ its exact-head checks to pass. Keep the PR open in this turn.
   descriptor baselines with a reproducible checked-in generator.
 - Added additive compatibility tests, package/service architecture purity gates, and a frozen consumer
   fixture compiled against the exact published Contracts and Client versions.
-- Added the Phase 3 pure provider transition, retry/revision, and authorization-expiry specifications.
+- Added the Phase 3 pure provider transition, retry/revision, and authorization-expiry evaluators.
 - Added exhaustive pinned status, 405-state-pair, identity/freshness, duplicate/out-of-order,
   terminality, explicit-cancellation, safe-failure, retry, revision, and expiry coverage.
 - Implemented the Phase 1 durable provider contract and linked it from Payment architecture.
@@ -163,7 +170,7 @@ its exact-head checks to pass. Keep the PR open in this turn.
 - NAT3 Payment UnitTests build succeeded with 0 warnings and 0 errors; focused
   `ProviderContractInventoryTests` passed 51 of 51.
 - BUG1 Payment UnitTests build: succeeded with 0 warnings and 0 errors.
-- BUG1 focused `StripeOperationTransitionSpecificationTests`: 40 passed, 0 failed, 0 skipped.
+- BUG1 focused transition tests: 40 passed, 0 failed, 0 skipped.
 - BUG1 full provider-contract filter: 113 passed, 0 failed, 0 skipped.
 - BUG1 focused `dotnet format --verify-no-changes`: passed; workspace-load warnings only.
 - NAT2 Payment UnitTests build: succeeded with 0 warnings and 0 errors.
@@ -216,8 +223,8 @@ its exact-head checks to pass. Keep the PR open in this turn.
 - Phase 3 full Payment unit carve: 434 passed, 0 failed, 0 skipped.
 - Payment UnitTests project build: succeeded with 0 warnings and 0 errors.
 - Focused `dotnet format --verify-no-changes`: passed.
-- Focused XPlat coverage: authorization-expiry specification 100% line/branch; retry specification
-  97.72% line and 92% branch; transition specification 98.34% line and 96.38% branch. The explicit
+- Focused XPlat coverage: authorization-expiry evaluator 100% line/branch; retry evaluator
+  97.72% line and 92% branch; transition evaluator 98.34% line and 96.38% branch. The explicit
   state-pair oracle asserts all 405 product/state combinations, so removing an allowed or forbidden
   edge changes the focused suite.
 - Phase 3 work push: starting remote/PR head `bb9482c77a8264de35aa93711b99bf4f9bb2697b`;

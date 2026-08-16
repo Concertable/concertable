@@ -232,7 +232,7 @@ Phase 2 adds definitions only where a later durable session implementation needs
   entry point and baseline decision durable, then guard the inventory in tests.
 - [x] **Phase 2 — additive package and protobuf vocabulary.** Publish the smallest provider-neutral
   session/status/event vocabulary without changing existing consumers.
-- [x] **Phase 3 — executable transition specification.** Encode every supported Stripe status and
+- [x] **Phase 3 — executable transition policy.** Encode every supported Stripe status and
   legal/illegal normalized transition as pure rules with exhaustive tests.
 - [x] **Phase 4 — compatibility and architecture gates.** Prove additive compatibility with
   `0.1.0-alpha.0.1009`, preserve service/package boundaries, and complete remote validation.
@@ -285,14 +285,14 @@ Verification gate:
 - A candidate package built from the branch passes the committed compatibility baseline described in
   Phase 4.
 
-### Phase 3 — executable transition specification
+### Phase 3 — executable transition policy
 
-Status: complete. The pure Domain specification and exhaustive tests cover the pinned provider
+Status: complete. The pure Domain evaluators and exhaustive tests cover the pinned provider
 vocabularies, every same-revision state pair, identity/freshness rejection, retry/revision, explicit
 cancellation, terminal protection, and provider-confirmed authorization expiry without runtime wiring.
 
-- Implement pure, side-effect-free transition specifications for PaymentIntent, SetupIntent, and
-  Refund observations. The specification accepts the current persisted revision plus a versioned
+- Implement pure, side-effect-free transition policies for PaymentIntent, SetupIntent, and
+  Refund observations. The evaluator accepts the current persisted revision plus a versioned
   provider observation and returns an allowed transition, a duplicate/no-op, or a typed rejection.
 - Encode the complete allowed-edge tables for every normalized state, including authentication loops,
   `requires_capture`, processing, duplicate delivery, stale/out-of-order delivery, explicit
@@ -300,7 +300,7 @@ cancellation, terminal protection, and provider-confirmed authorization expiry w
 - Add exhaustive theory tests over every state pair and every Stripe status supported by Stripe.net
   `47.3.0`; unknown values must be tested as failures. Add fixtures for duplicate and out-of-order
   webhook sequences without implementing full webhook processing or reconciliation.
-- Keep the specification independent of EF, MassTransit, gRPC, Stripe services, timers, and consumer
+- Keep the policy independent of EF, MassTransit, gRPC, Stripe services, timers, and consumer
   domains so the later session entity and workers must call the same rules rather than reimplementing
   them.
 
