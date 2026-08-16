@@ -5,14 +5,15 @@
 - Roadmap item: `payments/provider-contract-baseline`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\payments_provider-contract-baseline`
 - Branch: `Feature/payments_provider-contract-baseline`
-- PR: #597 — https://github.com/Concertable/concertable/pull/597 — draft at verified local/remote/PR head `59b8e266d3630c9c98390827d0a2a820ec71d0d2`; branch is current with `origin/main` `35b114d4a` through merge commit `133b9386d`; planning PR #594 merged as `3c8a2c5a847d0f9702884949ed57850c6e494c47`
-- Review readiness: **NOT READY FOR REVIEW** — Phases 3 and 4 remain; PR #597 stays draft until the final implementation candidate is locally verified and exact-head CI is green
-- Dependency/package gates: Phases 1 and 2 are complete; the production/live-mode Stripe account has no webhook endpoint, so future deployment is locked to `2025-01-27.acacia` and must create the endpoint at the actual Payment Web URL while installing its signing secret; PR #552 merged as `33f07c47a497586324edacdcfc10321a9d3f02ee`; compatibility remains anchored to published `0.1.0-alpha.0.1009`; platform-sync PR #601 merged and the current platform pin is `0.1.0-alpha.0.1017`
-- Last reconciled: 2026-08-16 against `origin/main` `35b114d4a`, merged PRs #552/#601, draft PR #597, the source roadmap, current repository entry points, and live/test Stripe API evidence
+- PR: #597 — https://github.com/Concertable/concertable/pull/597 — open draft at remote/PR head `bb9482c77a8264de35aa93711b99bf4f9bb2697b`; local HEAD `1067982097d914f7090b94c06d0fd0bde878ecf6` includes current `origin/main` `7db0c9be964ea9ff4a2d64468c4462eae91d36ff` and is not yet pushed; planning PR #594 merged as `3c8a2c5a847d0f9702884949ed57850c6e494c47`
+- Review readiness: **NOT READY FOR REVIEW** — Phase 4 remains; PR #597 stays draft until the final implementation candidate is locally verified and exact-head CI is green
+- Dependency/package gates: Phases 1 through 3 are complete; the production/live-mode Stripe account has no webhook endpoint, so future deployment is locked to `2025-01-27.acacia` and must create the endpoint at the actual Payment Web URL while installing its signing secret; PR #552 merged as `33f07c47a497586324edacdcfc10321a9d3f02ee`; compatibility remains anchored to published `0.1.0-alpha.0.1009`; platform-sync PR #601 merged and the current platform pin is `0.1.0-alpha.0.1017`
+- Last reconciled: 2026-08-16 against `origin/main` `7db0c9be9`, merged PRs #552/#601/#605, open draft PR #597, the source roadmap, current repository entry points, and live/test Stripe API evidence
 
 ## Current state
 
-Phases 1 and 2 are complete, committed, and pushed. `api/Concertable.Payment/PROVIDER_CONTRACT.md` now owns
+Phases 1 and 2 are complete, committed, and pushed. Phase 3 is locally complete and verified in the
+current working tree, pending its coherent commit and plan-managed push. `api/Concertable.Payment/PROVIDER_CONTRACT.md` now owns
 the provider-product matrix, operation/attempt identity, normalization and transition tables,
 terminality, retry/revision/expiry, safe failures, Connect posture, consumer ownership, compatibility
 islands, and version assumptions. `provider-contract-inventory.json` classifies 43 current entry
@@ -31,11 +32,12 @@ template because current Payment runtime also handles `payment_intent.payment_fa
 `setup_intent.succeeded`, and `setup_intent.setup_failed`.
 
 PR #552 merged at `33f07c47a497586324edacdcfc10321a9d3f02ee`, and its additive Payment
-contracts are present after merging current `origin/main`. Local HEAD, the remote branch, and draft
-PR #597 all resolve to `59b8e266d3630c9c98390827d0a2a820ec71d0d2`; exact-head CI run
-31942952029 passed all 58 jobs. The branch is current with `origin/main` `35b114d4a` through merge
-commit `133b9386d`; the historical `Refactor/GroupStripeWebhookHandling` branch is superseded evidence
-only.
+contracts are present after merging current `origin/main`. Draft PR #597 remains open at remote head
+`bb9482c77a8264de35aa93711b99bf4f9bb2697b`; exact-head CI run 31944017441 passed all required jobs.
+Local merge commit `1067982097d914f7090b94c06d0fd0bde878ecf6` brings the branch to current
+`origin/main` `7db0c9be964ea9ff4a2d64468c4462eae91d36ff` with platform pin
+`0.1.0-alpha.0.1017`; that local candidate is not yet pushed. The historical
+`Refactor/GroupStripeWebhookHandling` branch is superseded evidence only.
 
 Phase 2 adds the provider-neutral operation identity, session kind, normalized state, terminal/retry
 disposition, safe-failure vocabulary, client descriptor/snapshot records, and matching protobuf
@@ -44,18 +46,26 @@ messages without adding an RPC. `PaymentOperationStateChangedV1` has stable mess
 .NET 10 through the closed Dunet `PaymentOperationError`; the planned .NET 11 native-union migration
 follows the complete Stripe/provider refactor rather than interrupting it.
 
+Phase 3 adds pure Domain specifications for pinned Stripe status normalization, same-revision
+transitions, identity and freshness checks, duplicate/out-of-order observations, terminal protection,
+explicit cancellation, retry/revision decisions, and provider-confirmed authorization expiry. The
+specification has no EF, MassTransit, gRPC, Stripe SDK, timer, persistence, webhook, or consumer
+dependency. Its exhaustive test matrix evaluates all 405 state pairs across automatic payment,
+authorization, both setup kinds, and refund.
+
 ## Next Steps
 
-Implement and verify Phase 3 only. Add the pure transition specification that normalizes the complete
-Stripe.net `47.3.0` PaymentIntent, SetupIntent, and Refund status vocabulary at the
-`2025-01-27.acacia` baseline; encode every allowed and rejected state edge, duplicate/stale
-observation, terminal protection, retry/revision rule, and capture expiry; prove the rules
-exhaustively without wiring runtime webhooks, persistence, reconciliation, or consumers. Update this
-ledger and the plan checklist, commit and push the coherent checkpoint, and let draft-PR CI validate
-the exact remote head. Do not start Phase 4 in the same turn.
+Implement and verify Phase 4 only. Generate and commit the `0.1.0-alpha.0.1009` public-signature,
+message-URN, and protobuf-descriptor baselines; enforce additive compatibility plus package/service
+architecture purity; compile the frozen consumer fixture; run the focused local gates; then push and
+let draft-PR CI validate the exact remote head. Once the final candidate is exact-head green, mark
+PR #597 ready for review and make `/review` the next action. Do not merge in the same turn.
 
 ## Completed work
 
+- Added the Phase 3 pure provider transition, retry/revision, and authorization-expiry specifications.
+- Added exhaustive pinned status, 405-state-pair, identity/freshness, duplicate/out-of-order,
+  terminality, explicit-cancellation, safe-failure, retry, revision, and expiry coverage.
 - Implemented the Phase 1 durable provider contract and linked it from Payment architecture.
 - Added the deterministic seven-root inventory with 43 classified entry points and 23 reusable
   decisions, including the finite PR #581 frontend compatibility islands.
@@ -100,6 +110,14 @@ the exact remote head. Do not start Phase 4 in the same turn.
 
 ## Verification
 
+- Phase 3 focused provider-contract suite: 106 passed, 0 failed, 0 skipped.
+- Phase 3 full Payment unit carve: 434 passed, 0 failed, 0 skipped.
+- Payment UnitTests project build: succeeded with 0 warnings and 0 errors.
+- Focused `dotnet format --verify-no-changes`: passed.
+- Focused XPlat coverage: authorization-expiry specification 100% line/branch; retry specification
+  97.72% line and 92% branch; transition specification 98.34% line and 96.38% branch. The explicit
+  state-pair oracle asserts all 405 product/state combinations, so removing an allowed or forbidden
+  edge changes the focused suite.
 - `dotnet build api/Concertable.Payment/tests/Concertable.Payment.UnitTests/Concertable.Payment.UnitTests.csproj --no-restore`: succeeded with 0 warnings and 0 errors.
 - `dotnet test api/Concertable.Payment/tests/Concertable.Payment.UnitTests/Concertable.Payment.UnitTests.csproj --no-build --no-restore`: 318 passed, 0 failed, 0 skipped.
 - Focused inventory architecture coverage: 46 passed after correcting the detector to distinguish
@@ -153,7 +171,7 @@ the exact remote head. Do not start Phase 4 in the same turn.
 ## Review status
 
 **NOT READY FOR REVIEW.** [Draft PR #597](https://github.com/Concertable/concertable/pull/597) still
-requires Phases 3 and 4. Once the final implementation candidate and exact-head CI are green,
+requires Phase 4. Once the final implementation candidate and exact-head CI are green,
 `## Next Steps` must route through `/review`; that review-ready checkpoint still emits the standard
 plan continuation pointer because the plan lifecycle is not terminal.
 

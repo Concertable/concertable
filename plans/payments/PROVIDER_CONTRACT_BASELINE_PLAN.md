@@ -232,7 +232,7 @@ Phase 2 adds definitions only where a later durable session implementation needs
   entry point and baseline decision durable, then guard the inventory in tests.
 - [x] **Phase 2 — additive package and protobuf vocabulary.** Publish the smallest provider-neutral
   session/status/event vocabulary without changing existing consumers.
-- [ ] **Phase 3 — executable transition specification.** Encode every supported Stripe status and
+- [x] **Phase 3 — executable transition specification.** Encode every supported Stripe status and
   legal/illegal normalized transition as pure rules with exhaustive tests.
 - [ ] **Phase 4 — compatibility and architecture gates.** Prove additive compatibility with
   `0.1.0-alpha.0.1009`, preserve service/package boundaries, and complete remote validation.
@@ -287,7 +287,9 @@ Verification gate:
 
 ### Phase 3 — executable transition specification
 
-Status: ready; Phase 2 vocabulary is complete.
+Status: complete. The pure Domain specification and exhaustive tests cover the pinned provider
+vocabularies, every same-revision state pair, identity/freshness rejection, retry/revision, explicit
+cancellation, terminal protection, and provider-confirmed authorization expiry without runtime wiring.
 
 - Implement pure, side-effect-free transition specifications for PaymentIntent, SetupIntent, and
   Refund observations. The specification accepts the current persisted revision plus a versioned
@@ -310,7 +312,7 @@ Verification gate:
 
 ### Phase 4 — compatibility and architecture gates
 
-Status: depends on Phases 2 and 3.
+Status: ready; Phases 2 and 3 are complete.
 
 - Generate committed golden baselines from published `Concertable.Payment.Contracts`, Protos, and
   Client `0.1.0-alpha.0.1009`: public .NET signatures/message URNs and a protobuf descriptor set.
