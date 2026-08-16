@@ -1,4 +1,4 @@
-# Modular Monolith Rules
+# Backend Module Conventions
 
 Concrete conventions. The *what goes where* doc. Companion to [MM_NORTH_STAR.md](/api/docs/MM_NORTH_STAR.md)
 (the *why*).
@@ -105,6 +105,19 @@ Shared libs sit at `api/Concertable.Shared/Concertable.<Name>/` and follow the s
 - Shared reference data (Genres, etc.) FKs into `SharedDbContext`. See MM_NORTH_STAR §6.
 
 Full set of corollaries + rationale in [MM_NORTH_STAR.md](/api/docs/MM_NORTH_STAR.md).
+
+### Module facades delegate to application use cases
+
+An `IXModule` implementation is a cross-module adapter, not a second application service. It depends
+on the owning module's application service or focused use-case interface and forwards the declared
+`Option` or `Result` directly.
+
+- Do not inject repositories, mappers, or a `DbContext` into a module facade.
+- Do not duplicate mapping, validation, or typed-result reconstruction in the facade.
+- Add the required operation to the cohesive `IXService` when it belongs there. If that interface
+  becomes too broad, introduce a focused query or command service instead.
+- When the cross-module contract needs different semantics, implement those semantics as an
+  application use case and keep the facade as its adapter.
 
 ---
 

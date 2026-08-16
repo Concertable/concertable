@@ -16,7 +16,7 @@ Use the Reunion package family directly in the project that consumes each API:
 | `Reunion.AspNetCore` | Minimal API and MVC terminal adapters |
 
 Each service owns its exact Reunion versions in its service-local `Directory.Packages.props`. Keep
-all Reunion packages in a service on one version; the current baseline is `0.1.0-alpha.2`. Reference
+all Reunion packages in a service on one version; the current baseline is `0.1.0-alpha.8`. Reference
 only the packages whose APIs a project uses, and reference them directly rather than relying on a
 transitive dependency.
 
@@ -121,7 +121,7 @@ failure.
 
 ## Construct Results and Options
 
-Reunion alpha.2 supports target-typed raw payload conversions. Use them when the declared return or
+Reunion supports target-typed raw payload conversions. Use them when the declared return or
 assignment type makes the branch unambiguous:
 
 ```csharp
@@ -154,12 +154,13 @@ public UnitResult<ChangePasswordError> ChangePassword(string password)
 }
 ```
 
-For a target-typed `Option<T>`, prefer `return null;` for `None` and return a nullable value directly
-when it already expresses present-or-absent. Do not write `new None()` or `Option.None<T>()` when the
-target type already supplies the conversion. Use `ToOption()` when an explicit conversion inside a
-larger expression improves the composition or when there is no target-typed conversion site. These
-conversions create an Option; there is deliberately no implicit conversion from Option back to
-`T?`.
+For a target-typed `Option<T>`, prefer `return null;` for `None` and return reference-type payloads
+directly. Do not write `new None()` or `Option.None<T>()` when the target type already supplies the
+conversion. C# cannot apply the `T` conversion to a nullable value type such as `int?`, `Guid?`, or a
+nullable value tuple, so use `ToOption()` at those boundaries. Also use `ToOption()` when an explicit
+conversion inside a larger expression improves the composition or when there is no target-typed
+conversion site. These conversions create an Option; there is deliberately no implicit conversion
+from Option back to `T?`.
 
 Use named cases when the value and error payload types overlap, when a broad source type would hide
 the intended branch, or when the branch itself is the point of the expression:
@@ -202,6 +203,10 @@ Read payloads through `Match`, `TryGetValue`, or `TryGetError`. There is deliber
 - Use `TryGetValue` or `TryGetError` for a simple guard clause or early return.
 - Use `IsSuccess`, `IsFailure`, `IsSome`, or `IsNone` only when the branch matters but its payload
   does not.
+
+Translate typed failures with `MapError`, exhaustively matching every Dunet case. Never discard a
+returned error and construct the failure believed to have occurred; that loses the operation's actual
+outcome and lets a newly added case map incorrectly.
 
 Compose operations before their terminal:
 
@@ -463,6 +468,9 @@ public abstract partial record CreateUserError : IError
 }
 ```
 
+Use `Reunion.Errors.ValidationErrors` everywhere a Result or operation error carries structured
+validation. Do not define, alias, wrap, or convert through a project-owned validation-error carrier.
+
 Use `Combine` only for independent validations where reporting all field failures is useful.
 Business operations, dependency calls, and state transitions remain fail-fast. `ValidationResult`
 does not implicitly choose a branch of a value-bearing Result; raw `ValidationErrors` do not either.
@@ -483,17 +491,22 @@ Map only at the controller or endpoint boundary:
 - `ToOkOrProblem` for value Results;
 - `ToNoContentOrProblem` for unit Results;
 - `ToCreatedOrProblem` when the normal success is Created;
+- `ToCreatedAtActionOrProblem` when MVC route generation owns the Created location;
 - `ToActionResult` for custom MVC success mapping;
 - `ToResults` for custom typed HTTP-result success mapping;
 - `ToOkOr` for Options whose absence maps to a caller-supplied HTTP result;
 - `ToOkOrNotFound` and `ToOkOrNoContent` for Options where HTTP owns that absence policy.
 
-Use the projected `ToOkOr` overload when the application value must become a dedicated HTTP
-response, and pass controller result methods directly when no extra state is needed:
+Use a terminal's projected overload when the application value must become a dedicated HTTP response.
+Do not `Map` immediately before `ToOkOrProblem`, `ToCreatedOrProblem`,
+`ToCreatedAtActionOrProblem`, or another terminal that can perform the projection itself. Use the
+projected `ToOkOr` overload for Options, and pass controller result methods directly when no extra
+state is needed:
 
 ```csharp
 return user.ToOkOr(Unauthorized);
 return artist.ToOkOr(value => value.ToDetailsResponse(), NotFound);
+return artistResult.ToOkOrProblem(value => value.ToDetailsResponse());
 ```
 
 For `TError : IError`, omit the problem mapper. Reunion maps `Invalid`/`NotFound`/`Conflict`/
