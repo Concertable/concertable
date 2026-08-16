@@ -5,9 +5,9 @@
 - Roadmap item: `launch/deal-lifecycle-ownership`
 - Worktree: planning worktree `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-DealLifecycleOwnershipPlan`; implementation worktree not created
 - Branch: `Docs/DealLifecycleOwnershipPlan`; next proposed branch `Refactor/launch_deal-lifecycle-ownership`
-- PR: not opened
+- PR: [#610](https://github.com/Concertable/concertable/pull/610), work head `c0f4e1d5274c0d8cb69865ad8708734f43adec5a`
 - Dependency/package gates: Phase 1 is unblocked. Phase 3 requires Phase 1, the Phase 2 Payment additive package, and the additive B2B HTTP/frontend package surfaces to be merged, published or deployed, platform-synced where applicable, and restorable. The Rust decision-engine plan is downstream of Phase 3, not a blocker.
-- Last reconciled: 2026-08-16 against clean planning worktree HEAD and origin/main `381720b9b`, including the merged B2B/Payment source
+- Last reconciled: 2026-08-16 against verified local, remote, and PR work head `c0f4e1d5274c0d8cb69865ad8708734f43adec5a`
 
 ## Current state
 
@@ -23,19 +23,23 @@ were not modified.
 
 ## Next Steps
 
-Implement Phase 1 as the first independently green PR slice:
+Land the reviewed docs-only planning PR, close its worktree, then implement Phase 1 as the first
+independently green code PR slice:
 
-1. Add exact transition-topology characterization tests for all four current deal types, including
+1. Admin-merge PR #610 with `skip-e2e` and close the planning worktree after merged containment is
+   verified.
+2. Create `Refactor/launch_deal-lifecycle-ownership` from current `origin/main`.
+3. Add exact transition-topology characterization tests for all four current deal types, including
    failure, retry, cancellation, late-payment, and settlement recovery edges.
-2. Rename the editable offer family from Deal to DealTerms across the Deal module, Opportunity
+4. Rename the editable offer family from Deal to DealTerms across the Deal module, Opportunity
    C# consumers, seed data, and tests; rename `OpportunityEntity.DealId` to `DealTermsId` without
    changing runtime or HTTP behaviour. Keep the existing wire and frontend package names until the
    additive Phase 2 producer surfaces are published.
-3. Preserve the two current module-local strategy builders in this phase; update architecture guidance
+5. Preserve the two current module-local strategy builders in this phase; update architecture guidance
    to distinguish DealTerms from the future concrete Deal.
-4. Re-scaffold B2B initial migrations, run the smallest affected Deal/Concert builds and focused unit
+6. Re-scaffold B2B initial migrations, run the smallest affected Deal/Concert builds and focused unit
    and integration tests, then open the draft PR so remote CI validates the exact head.
-5. Reconcile this ledger with commit, PR, verification, and review evidence. Do not begin Phase 3 until
+7. Reconcile this ledger with commit, PR, verification, and review evidence. Do not begin Phase 3 until
    both published-boundary expansion gates recorded in the plan are green.
 
 ## Completed work
@@ -59,12 +63,14 @@ Implement Phase 1 as the first independently green PR slice:
   identity, so Booking removal requires a package/API cut-over rather than a local entity deletion.
 - `python .agents/hooks/plan_graph.py --root C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-DealLifecycleOwnershipPlan`: 0 errors, 0 warnings.
 - `git diff --check`: passed.
+- Initial work push verified local HEAD, `origin/Docs/DealLifecycleOwnershipPlan`, and PR #610
+  `headRefOid` all equal `c0f4e1d5274c0d8cb69865ad8708734f43adec5a`.
 - No build or test run yet: this checkpoint changes planning documents only.
 
 ## Reviews
 
 - Docs review: clean after the published-frontend sequence, Rust prerequisite, package-cutover phase,
-  and ledger evidence were corrected.
+  and ledger evidence were corrected; reviewed through work head `c0f4e1d5274c0d8cb69865ad8708734f43adec5a`.
 - Review the Phase 1 code diff after implementation and focused verification.
 
 ## Decisions, discoveries, blockers, and deviations
