@@ -213,7 +213,7 @@ Each service folder contains its own `AppHost/`, `Web/`, `Workers/`, `Seeding/` 
 - Root [`ARCHITECTURE.md`](../ARCHITECTURE.md) — the system-wide, app-global premise (monorepo-of-convenience, split-repo future).
 - Root `CLAUDE.md` — top-of-context rules and pointers.
 - `api/agents/SEEDING_CONVENTIONS.md` — seeding rules (never seed event-driven data, etc.).
-- `api/agents/MODULAR_MONOLITH_RULES.md` — module boundary rules within a service.
+- `api/agents/CONVENTIONS.md` — module boundary rules within a service.
 - `api/Concertable.X/ARCHITECTURE.md` — per-service architecture docs.
 - `api/Concertable.B2B/src/Seed/Concertable.B2B.Seed.Simulator/CLAUDE.md` — the simulator pattern in detail.
 - `plans/PAYMENT_AGNOSTIC_AUDIT.md` — why Payment depends on no consumer.

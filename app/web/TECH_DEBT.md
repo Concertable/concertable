@@ -13,6 +13,7 @@ every width and stays one unambiguous testid (Playwright strict mode stays happy
 
 **Resolves when:** the narrow-viewport E2E scenario lands green.
 
+
 ### Browser-storage classification is detection-by-regex, not prevention-by-construction
 
 First-party device storage has no single sanctioned accessor: `consent.ts` (`cookie-consent`),

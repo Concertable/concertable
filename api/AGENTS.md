@@ -94,4 +94,4 @@ See [SEEDING_CONVENTIONS.md](./agents/SEEDING_CONVENTIONS.md) for the full rules
 
 ## Module rules
 
-See [MODULAR_MONOLITH_RULES.md](./agents/MODULAR_MONOLITH_RULES.md).
+See [CONVENTIONS.md](./agents/CONVENTIONS.md).
