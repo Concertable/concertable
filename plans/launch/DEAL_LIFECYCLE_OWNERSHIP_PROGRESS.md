@@ -3,11 +3,11 @@
 - Plan: `plans/launch/DEAL_LIFECYCLE_OWNERSHIP_PLAN.md`
 - Roadmap: `plans/launch/LAUNCH_ROADMAP.md`
 - Roadmap item: `launch/deal-lifecycle-ownership`
-- Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Refactor\DealLifecycleOwnership`
-- Branch: `Refactor/DealLifecycleOwnership`
+- Worktree: planning worktree `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-DealLifecycleOwnershipPlan`; implementation worktree not created
+- Branch: `Docs/DealLifecycleOwnershipPlan`; next proposed branch `Refactor/launch_deal-lifecycle-ownership`
 - PR: not opened
 - Dependency/package gates: Phase 1 is unblocked. Phase 3 requires Phase 1, the Phase 2 Payment additive package, and the additive B2B HTTP/frontend package surfaces to be merged, published or deployed, platform-synced where applicable, and restorable. The Rust decision-engine plan is downstream of Phase 3, not a blocker.
-- Last reconciled: 2026-08-16 13:25 +01:00 against clean worktree HEAD/origin/main `be418811b` and the merged B2B/Payment source
+- Last reconciled: 2026-08-16 against clean planning worktree HEAD and origin/main `381720b9b`, including the merged B2B/Payment source
 
 ## Current state
 
@@ -87,6 +87,6 @@ Implement Phase 1 as the first independently green PR slice:
 ## Resume prompt
 
 ```
-cd C:\Users\TommySeery\source\repos\Concertable.worktrees\Refactor\DealLifecycleOwnership
+/worktree create Refactor/launch_deal-lifecycle-ownership
 Read @plans/launch/DEAL_LIFECYCLE_OWNERSHIP_PLAN.md and @plans/launch/DEAL_LIFECYCLE_OWNERSHIP_PROGRESS.md and do what its `## Next Steps` says.
 ```
