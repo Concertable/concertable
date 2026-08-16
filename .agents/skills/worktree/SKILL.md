@@ -34,18 +34,25 @@ contains a task, continue that task in the new worktree during the same session.
    that location belongs to the harness.
 
 ```powershell
-$repository = git rev-parse --show-toplevel
+$commonDirectory = git rev-parse --path-format=absolute --git-common-dir
+$repository = [IO.Path]::GetDirectoryName($commonDirectory.Trim())
 $branch = '<Type>/<Name>'
 $folder = $branch.Replace('/', '-')
 $path = Join-Path $repository ".worktrees/$folder"
-git fetch origin --prune
-git worktree add $path -b $branch origin/main
+git -C $repository fetch origin --prune
+git -C $repository worktree add $path -b $branch origin/main
 ```
 
 For an existing local branch, omit `-b` and `origin/main`:
 
 ```powershell
-git worktree add $path $branch
+git -C $repository worktree add $path $branch
+```
+
+For a remote-only branch, create its matching local tracking ref:
+
+```powershell
+git -C $repository worktree add $path -b $branch --track "origin/$branch"
 ```
 
 5. Verify the resulting path, branch, HEAD, base or existing remote head, and clean status. Use absolute
