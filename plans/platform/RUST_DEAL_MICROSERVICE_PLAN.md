@@ -1,6 +1,13 @@
 # Rust Contract Settlement & Lifecycle Engine — design + build plan
 
-**Status:** decided 2026-06-02. This is the complete, self-contained handoff for building the service.
+> **STOP — prerequisite ownership refactor.** Do not execute this plan in its current form. Its
+> Application/Booking/Concert extraction source and stage model predate the concrete Deal aggregate
+> decided in `plans/launch/DEAL_LIFECYCLE_OWNERSHIP_PLAN.md`. B2B remains the persisted state owner,
+> but the source will be the Deal module's `Workflow`/`StateMachine`. Resume only after that plan's
+> Phase 3 lands and this document is rewritten against the landed boundary; its progress ledger owns
+> the gate.
+
+**Status:** blocked pending the Deal lifecycle ownership refactor. Retained as design input, not as an executable handoff.
 **One-line summary:** extract B2B's in-process contract settlement/lifecycle workflow into a standalone
 **Rust** microservice that is a **stateless gRPC decision engine** — it owns the *rules + settlement math*
 (enforced as compile errors via traits + typestate); B2B keeps the *state* and performs the *effects*.
@@ -34,24 +41,19 @@
 
 ## How to use this document (START HERE)
 
-This file is the single source of truth. A fresh session needs **nothing outside this file** except the
-canonical repo docs linked in §13. Everything required to begin — the full reference implementation, the
-crate layout, the toolchain bootstrap, the phase plan, and the test spec — is here.
+This file is paused design input. The executable source of truth is
+`plans/launch/DEAL_LIFECYCLE_OWNERSHIP_PLAN.md` until its Phase 3 ownership cut-over lands.
 
-- **First task is Phase 1** (§10): a pure-library Rust crate implementing the domain model with the
-  invariants as compile errors. Phase 1 is **not blocked by any open question** (§12).
-- The complete, hand-verified reference implementation to port is in **Appendix A**. It has not been
-  compiled (Rust was not installed when this was written), so **Phase 1, step 1 is `cargo check` and fix any
-  drift** — treat Appendix A as the intended shape, not infallible bytes.
-- Do **not** re-litigate the language or design choice (§1, §2). Do **not** reintroduce the runtime-dispatch
-  patterns called out in §5.
+- **First task after that gate opens:** rewrite and revalidate this plan's extraction boundary, lifecycle
+  model, phase sequence, and Appendix A against the landed Deal module. Do not create the Rust crate from
+  the current Appendix A.
+- The Rust/stateless-decision-engine direction remains decided. The Application/Booking/Concert source
+  model, stage names, capability matrix, and reference implementation do not.
+- After the rewrite, `cargo check` and the compile-fail suite become the first implementation checkpoint.
 
-**Extraction source (C# treated as a spec, not a template):** B2B `Modules/Concert` workflow —
-`AcceptExecutor`, `ApplyExecutor`, `VerifyExecutor`, `SettleExecutor`, `*AcceptStep`, `ConcertWorkflowFactory`,
-`ConcertWorkflowBuilder`, `ConcertTransitionValidator`. We keep *which contract has which capability* and
-*the legal per-variant path*; we replace the enum→factory, enum-keyed DI, the `switch` on interface type with
-its `_ => throw "does not support…"` arm, the downcasts, and the sequence-array validator with static trait
-dispatch + typestate.
+**Extraction source after the prerequisite lands:** B2B `Modules/Deal` workflow and state-machine boundary.
+The exact types and capabilities must be discovered from the landed code during the rewrite rather than
+copied from the stale reference below.
 
 ---
 
