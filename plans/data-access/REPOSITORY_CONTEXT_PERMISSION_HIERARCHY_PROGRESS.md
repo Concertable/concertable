@@ -5,11 +5,11 @@
 - Roadmap item: `data-access/repository-context-permission-hierarchy`
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable/.worktrees/Plan-data-access-repository-permission-hierarchy`
 - Branch: `Refactor/DataAccessRepositoryPermissionHierarchy`
-- PR: [#561](https://github.com/Concertable/concertable/pull/561) (open; exact-head CI pending)
-- Verified work head: `cbe40fa31308b02d5ed423e485f9227f31352c03`
-- Starting remote head: `b29e5422fc9a667df0d06b7cff249eb8a9c6ac60`
-- Pushed range: `b29e5422fc9a667df0d06b7cff249eb8a9c6ac60..cbe40fa31308b02d5ed423e485f9227f31352c03`
-- Remote and PR head: `cbe40fa31308b02d5ed423e485f9227f31352c03` (verified after work-head push)
+- PR: [#561](https://github.com/Concertable/concertable/pull/561) (open; standard-repository follow-up pending push)
+- Verified work head: `3f3734a5c7104b9d83cd4347e0ab571d15df69b6`
+- Starting remote head: `b65fce300a93626ef3fc47a45b5a37fa3f97bf54`
+- Pushed range: pending
+- Remote and PR head: `b65fce300a93626ef3fc47a45b5a37fa3f97bf54` (verified before current work)
 - Dependency/package gate: satisfied. Additive producer PR #590 merged as `59fe60e978affe23bcaf53823151eab2acda8ba0`, published platform `0.1.0-alpha.0.1007`, and platform-sync PR #592 merged green as `38e3d8548f10f3ab7a4a951b7c4ce961ec21c863`. Current `origin/main` pins `0.1.0-alpha.0.1009`, which includes the additive DataAccess API.
 - Last reconciled: 2026-08-16 against PR #561 and `origin/main` at `07624709d873dd0aecc934e59bbc45f78b0c844b`.
 
@@ -36,6 +36,11 @@ The consistency sweep also covers reusable and pre-existing administrative persi
 uses aggregate-first `ConversationsAdminDbContext`, `MessageAdminRepository`, and
 `ContentReportAdminRepository` names with matching interfaces.
 
+The standard repository-contract audit is also complete. Venue admin, Customer User, and Payment
+PayoutAccount now inherit the combined repository interface and implementation bases instead of
+hand-redeclaring generic CRUD. Payment FinancialOperation remains bespoke because it has no repository
+identity contract and participates in a separate unit of work.
+
 The first naming-correction CI run exposed a cancellation-test harness race: an untyped financial
 completion could consume a pending acceptance command before the asynchronously dispatched refund.
 The fixture now completes a requested command type, and refund workflows explicitly complete
@@ -43,8 +48,9 @@ The fixture now completes a requested command type, and refund workflows explici
 
 ## Next Steps
 
-1. Require green exact-head PR CI.
-2. Await explicit merge authorization; then normalize to `full-e2e`, enqueue, and follow the merge-group,
+1. Push the reviewed standard-repository follow-up and verify local, remote-tracking, and PR heads.
+2. Require green exact-head PR CI.
+3. Await explicit merge authorization; then normalize to `full-e2e`, enqueue, and follow the merge-group,
    publication, and generated platform-sync gates to green before starting the legacy contraction.
 
 ## Completed work
@@ -98,6 +104,10 @@ The fixture now completes a requested command type, and refund workflows explici
 - The completed B2B persistence-name sweep rebuilt B2B Web Release with 0 warnings and 0 errors;
   B2B DataAccess and Conversations unit suites passed 2/2 and 34/34; the old-name gate returned zero
   across source, guidance, plans, and review references.
+- Exact-head CI run `31960086019` passed on checkpoint head `b65fce300`.
+- The standard repository follow-up passed B2B Venue 18/18, Customer User 15/15, and Payment 272/272
+  unit tests. B2B Web, Customer Web, and Payment Web Release builds passed with zero errors; the direct
+  CRUD redeclaration audit now returns only the intentionally bespoke FinancialOperation contract.
 
 ## Reviews
 
@@ -110,6 +120,10 @@ The fixture now completes a requested command type, and refund workflows explici
   completion race. No other correctness, security, architecture, convention, seeding, or changed-path
   coverage issue was found. Review and security watermarks are current at
   `ff8354a15ec6254a630b420c3e0c1f8a47da7ca9`.
+- Incremental review of `ff8354a15..3f3734a5c` found and resolved `CV2`, the three standard repository
+  contracts that still redeclared base CRUD. No other correctness, security, architecture, convention,
+  seeding, or changed-path coverage issue was found. Review and security watermarks are current at
+  `3f3734a5c7104b9d83cd4347e0ab571d15df69b6`.
 
 ## Decisions, discoveries, blockers, and deviations
 

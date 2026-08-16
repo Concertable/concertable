@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `ff8354a15ec6254a630b420c3e0c1f8a47da7ca9`  _(2026-08-16)_
-**Security-reviewed up to commit:** `ff8354a15ec6254a630b420c3e0c1f8a47da7ca9`  _(2026-08-16)_
+**Reviewed up to commit:** `3f3734a5c7104b9d83cd4347e0ab571d15df69b6`  _(2026-08-16)_
+**Security-reviewed up to commit:** `3f3734a5c7104b9d83cd4347e0ab571d15df69b6`  _(2026-08-16)_
 
 > Range reviewed: `429581025..94d7664ad` (2 commits).
 > Status legend: `[ ]` todo - `[~]` in progress - `[x]` done - `[wontfix]` (note why).
@@ -146,3 +146,18 @@ admin repositories for administrative write exceptions. The reusable two-party b
 existing scoped vocabulary as `VenueArtistTenantScopedDbContext`. The latest current-main merge was
 clean and does not weaken those bindings. Security review found no authorization, tenancy-boundary,
 secret-handling, or cross-service isolation regression.
+
+## Incremental review - 2026-08-16 (standard repository contracts)
+
+> Range reviewed: `ff8354a15..3f3734a5c` (3 commits).
+
+- [x] **CV2 - MEDIUM - C# conventions** - `api/Concertable.B2B/src/Modules/Venue/Concertable.B2B.Venue.Application/Interfaces/IVenueAdminRepository.cs:10`
+  `IVenueAdminRepository`, Customer `IUserRepository`, and Payment `IPayoutAccountRepository`
+  hand-redeclared subsets of standard CRUD despite their entities and writable contexts satisfying the
+  combined repository contract. They now inherit `IRepository`, their implementations inherit the
+  matching combined base, and only their additional domain queries remain declared locally.
+
+No other issues found. The remaining direct CRUD-shaped contract is
+`IFinancialOperationRepository`; it is intentionally bespoke because `FinancialOperationEntity` has no
+repository identity contract and the handler stages operations through a separate unit of work.
+Security review found no authorization, tenant-selection, or cross-service behavior change.
