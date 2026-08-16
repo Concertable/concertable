@@ -112,6 +112,11 @@ are narrow Concert facade queries; Deal performs the transition and effects. Dra
 operational snapshot facts such as whether door revenue is required, not `DealType`, so Concert does
 not need Deal vocabulary to enforce its own commands.
 
+Book and cancel transitions that write both contexts run through the existing cross-module
+`IUnitOfWorkBehavior`, so the Concert mutation and Deal state change commit atomically in B2B's one
+database. External Payment calls remain outside that database transaction and retain the merged
+operation-id, inbox/outbox, retry, and compensation guarantees.
+
 ## 3. Target domain types and names
 
 ### 3.1 Aggregate and terms
@@ -192,7 +197,9 @@ This makes impossible-in-that-deal states representable for persistence but unre
 domain API. A stronger compile-time typestate model remains a possible decision-engine implementation,
 but B2B still has one persisted system of record and one aggregate invariant.
 
-## 5. Payment boundary
+## 5. Published boundaries
+
+### 5.1 Payment
 
 Removing Booking must not teach Payment about Deal. `DealId` is B2B vocabulary and does not belong in
 the agnostic adapter contract.
@@ -216,12 +223,25 @@ This is a published-package cut-over:
 Do not pass a Deal id through a parameter still called `bookingId`, and do not add a permanent adapter
 that translates Deal back into Application/Booking terminology.
 
+### 5.2 B2B frontend package and HTTP wire
+
+Venue and Artist consume the published `@concertable/b2b` package in their standalone carves. The
+Opportunity `deal` → `terms`, Application → Deal, and exported `Deal`-as-terms → `DealTerms` changes
+therefore cannot be an atomic source rename.
+
+Expand first: add the `terms` wire member while retaining `deal`, publish additive `DealTerms` exports
+and Deal resource client/types, then deploy the additive backend and publish the package. Phase 3
+switches Venue and Artist to those published surfaces. Phase 4 removes the old `deal` member,
+Application resource clients, and `Deal`-as-terms exports after repository and deployed-consumer
+searches prove they are unused. Compatibility exists only at these transport/package edges during the
+cut-over; it never enters the target domain model.
+
 ## 6. Delivery graph
 
 ```text
-Phase 1 ─ terms vocabulary + topology baseline ───────────┐
-                                                          ├─> Phase 3 ─ B2B vertical cut-over
-Phase 2 ─ Payment reference expand/publish/platform-sync ─┘                    │
+Phase 1 ─ terms vocabulary + topology baseline ──────────────┐
+                                                             ├─> Phase 3 ─ B2B vertical cut-over
+Phase 2 ─ published Payment + frontend boundary expansions ──┘                    │
                                                                                └─> Phase 4 ─ Payment cleanup
                                                                                             │
                                                                                             └─> Phase 5 ─ closeout
@@ -236,16 +256,18 @@ ownership seam.
 - [ ] Pin the exact current transition topology for all four deal types, including payment failure,
   retry, late webhook, cancellation pending/failure, and settlement recovery paths.
 - [ ] Rename the current editable offer model from Deal to DealTerms across Domain, Contracts,
-  Application, Infrastructure, Opportunity DTOs, seed data, and the B2B SPAs.
+  Application, Infrastructure, seed data, and tests.
 - [ ] Rename `OpportunityEntity.DealId` to `DealTermsId`; preserve behaviour and the current module
   seam in this phase.
+- [ ] Keep the existing HTTP `deal` member and published frontend `Deal`-as-terms export at the boundary
+  until Phase 2 expands their replacements; internal C# names use DealTerms immediately.
 - [ ] Keep the two module-local strategy builders until ownership moves; do not introduce a shared
   registry as an intermediate abstraction.
 - [ ] Update Deal/Concert architecture guidance so no new code uses the old ambiguous term while the
   later phases are in flight.
 - [ ] Re-scaffold B2B initial migrations and run the focused Deal/Concert unit and integration gates.
 
-### Phase 2 — Payment external-reference expansion
+### Phase 2 — published boundary expansions
 
 - [ ] Execute the published-package change through the repository package-cutover workflow.
 - [ ] Add reference-native Payment client/protobuf commands and v2 integration messages without
@@ -254,6 +276,10 @@ ownership seam.
   operations, ledgers, reporting, Stripe metadata, and returned outcomes.
 - [ ] Prove reference and operation idempotency with unit, SQL integration, and client transport tests.
 - [ ] Merge, publish, platform-sync, and verify B2B can restore the additive surface before Phase 3.
+- [ ] Add the Opportunity `terms` wire member beside `deal`; deploy that additive B2B backend shape.
+- [ ] Add and publish `@concertable/b2b` DealTerms exports plus Deal resource API/types while retaining
+  the old Application and Deal-as-terms exports. Verify Venue and Artist standalone carves restore the
+  published expansion before changing either consumer.
 
 ### Phase 3 — Deal aggregate and module-boundary cut-over
 
@@ -275,6 +301,8 @@ ownership seam.
   Deal aggregate guard and port the exact topology tests.
 - [ ] Extend `IConcertModule` with narrow draft creation, cancellation, completion-candidate, and
   settlement-fact operations. Return DTOs/scalars only; never expose `ConcertEntity`.
+- [ ] Use `IUnitOfWorkBehavior` for Booked/cancel transitions that write Deal and Concert contexts;
+  validate the transition before the effect and commit both local writes atomically.
 - [ ] Store returned `ConcertId` on Deal. Remove Booking navigation from Concert and create the draft
   entirely from a snapshot command so Concert remains independently queryable.
 - [ ] Remove `BookingEntity`, its TPH variants, service, repository, DTOs, DbSet/configuration, and all
@@ -282,6 +310,8 @@ ownership seam.
 - [ ] Cut every B2B Payment call and outcome handler to `deal:{id}` on the reference-native surface.
 - [ ] Rename the internal/API/frontend resource identity from Application to Deal while retaining
   phase-specific user copy where it is genuinely an application or booking view.
+- [ ] Switch Venue and Artist to the published DealTerms/Deal package surface and Opportunity `terms`
+  wire member; keep the transport compatibility members only until Phase 4.
 - [ ] Split dashboard aggregation by owner: Deal supplies opportunity/deal counts, Concert supplies
   concert counts/facts, and Venue/Artist compose the two facades without cross-module queries.
 - [ ] Remove Concert's reference to Deal Contracts and add architecture tests for the final one-way
@@ -292,7 +322,7 @@ ownership seam.
   authoritative, but its extraction source becomes Deal `Workflow`/`StateMachine`, not the retired
   Application/Booking/Concert chain.
 
-### Phase 4 — retire Payment's phase-specific surface
+### Phase 4 — retire legacy published surfaces
 
 - [ ] Prove no source, published consumer, integration handler, Stripe metadata parser, seed fixture,
   or test still uses Payment `ApplicationId`, `BookingId`, or booking-named operations.
@@ -300,6 +330,9 @@ ownership seam.
 - [ ] Rename remaining storage/reporting concepts to external-reference vocabulary and re-scaffold the
   Payment initial migration.
 - [ ] Publish and platform-sync the breaking cleanup; migrate any discovered consumer in the sync PR.
+- [ ] Remove the old Opportunity `deal` member, Application resource clients/types, and frontend
+  `Deal`-as-terms exports after both manager SPAs and standalone carves use the replacements; publish
+  the frontend cleanup and verify no deployed consumer remains.
 
 ### Phase 5 — verification and closeout
 
