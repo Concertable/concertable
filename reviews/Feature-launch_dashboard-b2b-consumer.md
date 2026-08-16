@@ -5,13 +5,14 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `510bd491bd67dd84216f6a5dc419aa094241d673`  _(2026-08-16)_
-**Security-reviewed up to commit:** `90a386b1416f2179eaabef3e7b8068eef8594775`  _(2026-08-16)_
+**Reviewed up to commit:** `41d0189f3c0c4d5fe081eb654f91c871ab0e86b7`  _(2026-08-16)_
+**Security-reviewed up to commit:** `41d0189f3c0c4d5fe081eb654f91c871ab0e86b7`  _(2026-08-16)_
 
 > Range reviewed: `1f4ea1f..ec957726` (12 commits).
 > Incremental range reviewed: `ec957726..9be56b9d` (1 commit).
 > Incremental range reviewed: `9be56b9d..90a386b1` (33 commits).
 > Incremental range reviewed: `90a386b1..510bd491` (2 commits).
+> Full range reviewed: `836a15a5..41d0189f3` (current branch net diff against its implementation base).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
 
 ## Findings
@@ -43,3 +44,27 @@ and test coverage of changed paths.
 
 The incremental review of `90a386b1..510bd491` found no new issues. The range contains the prior plan/review transport
 checkpoint and the focused integration-test correction; it introduces no security-sensitive production change.
+
+## Full review â€” 2026-08-16
+
+- [x] **ARCH2 â€” Review repositories returned API-shaped DTOs containing JSON policy and SPA links.** Venue and artist
+  review repositories now return persisted review/rating read models. Services map public review contracts, while API
+  mappers alone create `RecentReviewResponse` and its HATEOAS link. Permanently empty avatar members were removed.
+- [x] **ARCH3 â€” `TenantActivityService` owned EF queries directly.** A normal tenant activity repository now owns
+  persistence and returns entities; the service maps the activity contract and the event handler retains the single
+  inbox/activity commit.
+- [x] **CV2 â€” Review projection handlers bypassed the tenant-scoped repository for owner lookup.** Both handlers now
+  use the existing `GetTenantIdByIdAsync` repository capability and retain their DbContext only for projection/inbox/
+  outbox work.
+- [x] **CV3 â€” Dashboard services mixed orchestration, conversion helpers, inline month construction, and `.Result`.**
+  Conversion moved to role-local mappers, month boundaries to `StartOfMonth()`, and completed task values are awaited.
+- [x] **COR2 â€” Manager upcoming-concert queries excluded concerts already in progress.** Both role queries now use
+  `Period.End > now`, with an HTTP/SQL integration regression covering venue and artist managers.
+- [x] **API1 â€” Dashboard clients controlled fixed presentation list sizes.** Activity and recent-review limits are now
+  server-owned; the SPAs no longer send `take` query parameters.
+- [x] **SER2 â€” New contracts carried permanently absent placeholder members.** Unimplemented KPI deltas, message and
+  review avatars, and recommended-venue avatars were removed end to end instead of being represented by null/optional
+  fields that no producer populated and no UI rendered.
+
+No open findings remain. The full pass covered correctness, security and tenant scoping, module/repository boundaries,
+serialization/HATEOAS ownership, frontend mutation/query contracts, seeding implications, and focused test coverage.

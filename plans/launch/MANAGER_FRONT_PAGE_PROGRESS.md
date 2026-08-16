@@ -12,12 +12,19 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
 
 ## Next Steps
 
-Transport this ledger/review checkpoint, require local, remote-tracking, and PR #563 heads to match, then let
-replacement exact-head PR CI pass. Once green, complete the authenticated Phase A.8 seeded venue/artist UX review
-before the merge request.
+1. Push code checkpoint `41d0189f3` and this ledger/review checkpoint to draft PR #563, then require exact-head CI green.
+2. After CI is green, complete the remaining Phase A.8 authenticated seeded venue/artist UX review below.
+
+Blocked: Phase A.8 authenticated seeded venue/artist UX review is not complete.
+Blocked by: The in-app browser fails before session creation with `failed to write kernel assets: The system cannot find the path specified`, although the B2B AppHost remains live and responds on `http://localhost:15216`.
+Unblock action: Open `http://localhost:15216/login?t=5a85943e4f63ed7ef0bea6c77b23aae7` in a functioning browser, review both manager dashboards at desktop, tablet, and mobile widths, and exercise the advertised application actions and contract download.
+Resume when: The seeded venue and artist visual/action review is complete and its feedback is recorded here.
 
 ## Reviews
 
+- Full correctness/security review of `836a15a5..41d0189f3` is recorded in
+  `reviews/Feature-launch_dashboard-b2b-consumer.md`; all seven findings are closed and both markers are stamped to
+  code checkpoint `41d0189f3c0c4d5fe081eb654f91c871ab0e86b7`.
 - Producer full and incremental review is recorded in `reviews/Feature-launch_dashboard-frontend-package-expand.md`;
   its only finding is closed. Consumer finding ARCH1 is closed, and the incremental correctness/security review of
   `9be56b9d..90a386b1` found no new issues across 33 commits. CI2 is closed, and the incremental review of
@@ -27,16 +34,28 @@ before the merge request.
 
 ## Current implementation
 
+- **Repository/application/API boundaries and full review corrections â€” committed locally.** Review repositories now
+  return persisted review/rating read models, services map application contracts, and only API response mappers own
+  recent-review HATEOAS/serialization. Tenant activity persistence has a normal repository, review projection handlers
+  use the generic tenant-id lookup, dashboard conversion/date logic is outside services, `.Result` is gone, list limits
+  are server-owned, in-progress concerts remain upcoming, and permanently absent contract fields were deleted instead
+  of represented as null/optional placeholders. B2B Web builds with 0 warnings/errors; Venue, Artist, Concert,
+  Conversations, and Tenant unit suites pass 259/259; the four changed integration projects compile with 0 warnings/
+  errors. Frontend package/SPA execution is locally blocked because this shell has no Node runtime; draft-PR CI owns
+  those exact builds.
+
 - **Exact-head CI contract correction — fixed and focused tests green.** PR run
   [`31913884736`](https://github.com/Concertable/concertable/actions/runs/31913884736) exposed six deterministic stale
   Concert integration assertions: five opportunity cases deserialized the controller's public response as the
   internal application DTO, and one application case expected the contract metadata route instead of the advertised
   PDF HATEOAS action. Commit `510bd491b` corrects only those tests. All six formerly failing SQL-backed cases pass
   locally from a short drive alias (4/4 create theory rows, then 2/2 seeded-opportunity and contract-link cases). The
-  full local project remained active without assertion output until the ten-minute command cap, so replacement
-  exact-head CI owns the authoritative full-project result. The reviewed work leg was pushed from checkpoint head
-  `47ffc4ae8`; fetch verification proved local, remote-tracking, and PR #563 heads all equal
-  `510bd491bd67dd84216f6a5dc419aa094241d673`.
+  full local project remained active without assertion output until the ten-minute command cap. The reviewed work
+  leg was pushed from checkpoint head `47ffc4ae8`; fetch verification proved local, remote-tracking, and PR #563
+  heads all equal `510bd491bd67dd84216f6a5dc419aa094241d673`. Transport checkpoint `ec98e4480` then became the exact local,
+  remote-tracking, and PR head. Replacement exact-head run
+  [`31915550316`](https://github.com/Concertable/concertable/actions/runs/31915550316) passed all 56 substantive
+  build, carve, unit, and integration jobs plus its completion sentinel.
 
 - **Conversations API ownership — producer and package publication complete.** Producer PR
   [#591](https://github.com/Concertable/concertable/pull/591) adds a focused, tested `messageApi.getPreviews()` export
