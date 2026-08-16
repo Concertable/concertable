@@ -3,7 +3,7 @@
 > **This file is a work order, not a discussion.** If you're handed this file, fix the open `[ ]`
 > findings directly and report what changed. Tick each `[x]` as you land it.
 
-**Reviewed up to commit:** `PENDING`  _(2026-08-16)_
+**Reviewed up to commit:** `b438c86c76c3e09910c4b8401749ff80d07ddd0d`  _(2026-08-16)_
 
 > Range reviewed: `origin/main..HEAD`.
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
