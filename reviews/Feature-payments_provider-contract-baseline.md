@@ -18,8 +18,9 @@
   The pinned-version test only compares one hard-coded `47.3.0` value with another, so changing the installed `Stripe.net` package in `Directory.Packages.props` leaves the executable status vocabulary green against the wrong SDK baseline. Bind this test to the resolved Stripe assembly/package version so every SDK upgrade requires an intentional baseline update.
   Resolved by comparing the committed baseline to Stripe.net's resolved assembly informational version.
 
-- [ ] **NAT2 — MEDIUM — native/correctness** — `api/Concertable.Payment/tests/Concertable.Payment.UnitTests/Architecture/ProviderContractInventoryTests.cs:125`
+- [x] **NAT2 — MEDIUM — native/correctness** — `api/Concertable.Payment/tests/Concertable.Payment.UnitTests/Architecture/ProviderContractInventoryTests.cs:125`
   Payment entry-point discovery runs only when a source file contains the exact text `using Stripe;`, so a fully-qualified `Stripe.PaymentIntentService`, a namespace-specific/global using, or an injected `StripeClient` can add real provider calls without changing the committed inventory. Replace the import-gated regex discovery with syntax/semantic detection of Stripe SDK receivers and cover fully-qualified and global-using forms.
+  Resolved by binding invocation receivers with Roslyn per Payment project and covering fully-qualified, namespace-specific, global-using, and injected SDK forms.
 
 - [ ] **BUG1 — MEDIUM — correctness** — `api/Concertable.Payment/src/Concertable.Payment.Domain/ProviderContract/StripeOperationTransitionSpecification.cs:405`
   Every `requires_payment_method` observation is emitted as `PaymentMethodRequired`, but Stripe also returns that status after a decline and exposes the reason through `last_payment_error`; the observation type has no safe classified failure input, so the required `Declined` outcome is unreachable. Add a provider-internal failure classifier/input and make the transition emit the closed `Declined` code with a Concertable-authored message while keeping raw Stripe detail internal.

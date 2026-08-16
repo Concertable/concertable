@@ -5,22 +5,23 @@
 - Roadmap item: `payments/provider-contract-baseline`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\payments_provider-contract-baseline`
 - Branch: `Feature/payments_provider-contract-baseline`
-- PR: #597 — https://github.com/Concertable/concertable/pull/597 — open; exact-head CI run 31956570866 passed at pushed head `f56c80fde78c3cc99016bf65a122de250e5adcc3`; local head `d84e391bcbd0fc562e2eacea0e5913160eebba74` cleanly merges current `origin/main` and is not yet pushed; auto-merge is disabled and the PR is not queued
-- Review readiness: **FOUR OPEN FINDINGS** — the complete implementation review recorded NAT1, NAT2, BUG1, and SEC1 as medium-severity findings in `reviews/Feature-payments_provider-contract-baseline.md`
-- Dependency/package gates: Phases 1 through 4 are locally complete; the production/live-mode Stripe account has no webhook endpoint, so future deployment is locked to `2025-01-27.acacia` and must create the endpoint at the actual Payment Web URL while installing its signing secret; compatibility is anchored to published `0.1.0-alpha.0.1009`; the branch carries platform pin `0.1.0-alpha.0.1025`
-- Last reconciled: 2026-08-16 against open PR #597 pushed head `f56c80fd`, local current-main merge head `d84e391b`, reviewed code head `85d85aab`, exact-head CI run 31956570866, published Payment packages `0.1.0-alpha.0.1009`, and `origin/main` `07624709`
+- PR: #597 — https://github.com/Concertable/concertable/pull/597 — open; exact-head CI run 31956570866 passed at pushed head `f56c80fde78c3cc99016bf65a122de250e5adcc3`; local review-fix head is this commit and is not yet pushed; auto-merge is disabled and the PR is not queued
+- Review readiness: **TWO OPEN FINDINGS** — NAT1 is resolved at `0686b7f52c68ab492ba7683fa5fee895096785da` and NAT2 is resolved in this commit; BUG1 and SEC1 remain open in `reviews/Feature-payments_provider-contract-baseline.md`
+- Dependency/package gates: Phases 1 through 4 are locally complete; the production/live-mode Stripe account has no webhook endpoint, so future deployment is locked to `2025-01-27.acacia` and must create the endpoint at the actual Payment Web URL while installing its signing secret; compatibility is anchored to published `0.1.0-alpha.0.1009`; the branch carries platform pin `0.1.0-alpha.0.1031`
+- Last reconciled: 2026-08-16 against open PR #597 pushed head `f56c80fd`, local review-fix head this commit, reviewed code head `85d85aab`, exact-head CI run 31956570866, published Payment packages `0.1.0-alpha.0.1009`, and `origin/main` `07624709`
 
 ## Current state
 
-Phases 1 through 3 are complete, committed, and pushed. Phase 4 is implemented locally in this commit:
+Phases 1 through 4 are complete, committed, and pushed through `f56c80fd`. The local branch resolves
+NAT1 at `0686b7f52c68ab492ba7683fa5fee895096785da` and NAT2 in this commit. For Phase 4,
 the checked-in generator captured 2,073 Contracts signatures, 1,161 Client signatures, 13 message
 URNs, and the `payment.proto` descriptor set from published `0.1.0-alpha.0.1009`. Candidate tests
 require those public APIs, URNs, protobuf messages/enums/fields/services/RPCs, field numbers, types,
 cardinality, and request/response types to remain an additive subset. A frozen consumer project
 compiles against the exact published Contracts and Client packages, and architecture tests enforce
-provider/consumer purity across the published assemblies and deployable Payment projects. Local head
-`d84e391bcbd0fc562e2eacea0e5913160eebba74` cleanly incorporates current `origin/main`
-`07624709d873dd0aecc934e59bbc45f78b0c844b`; the pre-merge pushed head
+provider/consumer purity across the published assemblies and deployable Payment projects. The local
+branch cleanly incorporates current `origin/main` `07624709d873dd0aecc934e59bbc45f78b0c844b`;
+the pushed head
 `f56c80fde78c3cc99016bf65a122de250e5adcc3` passed exact-head CI run 31956570866.
 
 `api/Concertable.Payment/PROVIDER_CONTRACT.md` now owns
@@ -43,8 +44,8 @@ template because current Payment runtime also handles `payment_intent.payment_fa
 
 PR #552 merged at `33f07c47a497586324edacdcfc10321a9d3f02ee`, and its additive Payment
 contracts are present after merging current `origin/main`. PR #597 is open and no longer draft at
-reviewed head `85d85aab1c6e3ef448c792cc9cad7c37639a8ae9`; exact-head CI is green, and the full
-implementation review recorded four open medium-severity findings. The historical
+reviewed head `85d85aab1c6e3ef448c792cc9cad7c37639a8ae9`; exact-head CI is green. NAT1 and
+NAT2 are resolved locally, while BUG1 and SEC1 remain open. The historical
 `Refactor/GroupStripeWebhookHandling` branch is superseded evidence only.
 
 Phase 2 adds the provider-neutral operation identity, session kind, normalized state, terminal/retry
@@ -63,14 +64,16 @@ authorization, both setup kinds, and refund.
 
 ## Next Steps
 
-Run `/address-review @reviews/Feature-payments_provider-contract-baseline.md` and address all four open
-findings. Re-run the focused Payment provider/compatibility build and tests, publish the fixes through
+Continue `/address-review @reviews/Feature-payments_provider-contract-baseline.md` and address BUG1
+and SEC1. Re-run the focused Payment provider/compatibility build and tests, publish the fixes through
 the plan push protocol, then run `/incremental-review` over every commit after reviewed code head
 `85d85aab1c6e3ef448c792cc9cad7c37639a8ae9`, including the current-main merge. Do not merge in the
 same turn.
 
 ## Completed work
 
+- Replaced import-gated Stripe entry-point regexes with per-project Roslyn receiver binding and added
+  focused fully-qualified, namespace-specific, separate global-using, and injected SDK coverage.
 - Generated committed `0.1.0-alpha.0.1009` Contracts/Client public-API, message-URN, and protobuf
   descriptor baselines with a reproducible checked-in generator.
 - Added additive compatibility tests, package/service architecture purity gates, and a frozen consumer
@@ -122,6 +125,8 @@ same turn.
 
 ## Verification
 
+- NAT2 Payment UnitTests build: succeeded with 0 warnings and 0 errors.
+- NAT2 focused `ProviderContractInventoryTests`: 50 passed, 0 failed, 0 skipped.
 - Current-main reconciliation: fetched `origin/main` `07624709d873dd0aecc934e59bbc45f78b0c844b`,
   merged it cleanly as `d84e391bcbd0fc562e2eacea0e5913160eebba74`, and reran the plan graph with 0
   errors and 0 warnings.
@@ -229,13 +234,14 @@ same turn.
 
 ## Review status
 
-**FOUR OPEN FINDINGS.** The full implementation and security review for
+**TWO OPEN FINDINGS.** The full implementation and security review for
 [PR #597](https://github.com/Concertable/concertable/pull/597) covered
 `e861f3642cea14e919d203604a4e9e7d00bcced8..85d85aab1c6e3ef448c792cc9cad7c37639a8ae9`
-and recorded NAT1, NAT2, BUG1, and SEC1 in
+recorded NAT1, NAT2, BUG1, and SEC1. NAT1 is resolved at
+`0686b7f52c68ab492ba7683fa5fee895096785da`; NAT2 is resolved in this commit. BUG1 and SEC1 remain in
 `reviews/Feature-payments_provider-contract-baseline.md`. No additional microservice-isolation,
 module-boundary, seeding, convention, or test-coverage finding survived the confidence filter. The
-branch is not merge-ready until the four findings are addressed and the resulting commits pass an
+branch is not merge-ready until the two remaining findings are addressed and the resulting commits pass an
 incremental review.
 
 The planning docs review through PR head `ccb1dd00585b7943a401166f3f8eb3237ed6d628` found no issues across
