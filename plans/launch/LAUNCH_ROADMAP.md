@@ -34,6 +34,7 @@
 **Architecture refactors — ready, not launch gates:**
 
 - [x] ✅ **Deal-type strategy registration** — shipped in PR #451: module-local factories and vertically declared registration replace the repeated `DealType → strategy` dictionaries while preserving named business facades and the Deal/Concert boundary. `launch/deal-strategy-registration`
+- [ ] 🟡 **Concrete Deal lifecycle ownership** — replace the phase-split Application → Booking identity chain with one Deal aggregate from apply through settlement, recut Deal/Concert module ownership, and retire consumer-specific payment correlation. `launch/deal-lifecycle-ownership` See [DEAL_LIFECYCLE_OWNERSHIP_PLAN.md](DEAL_LIFECYCLE_OWNERSHIP_PLAN.md).
 
 **Verify before trusting — competitor table-stakes, not confirmed in code:** reviews/reputation end-to-end · calendar sync (Google/Apple/Outlook) · financial/settlement CSV export.
 
