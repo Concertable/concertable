@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `155232b4fcfd9e78ab0e571e1982be52e90d966d`  _(2026-08-16)_
-**Security-reviewed up to commit:** `155232b4fcfd9e78ab0e571e1982be52e90d966d`  _(2026-08-16)_
+**Reviewed up to commit:** `7529c57616b4632b6ce2fc4a78fc0cbc8872508e`  _(2026-08-16)_
+**Security-reviewed up to commit:** `7529c57616b4632b6ce2fc4a78fc0cbc8872508e`  _(2026-08-16)_
 
 > Range reviewed: `1f4ea1f..ec957726` (12 commits).
 > Incremental range reviewed: `ec957726..9be56b9d` (1 commit).
@@ -87,7 +87,10 @@ serialization/HATEOAS ownership, frontend mutation/query contracts, seeding impl
 - [x] **CI4 - `TenantActivityRecordedEvent` was written to the outbox without message-registry or ASB topology
   registration.** The B2B host now registers the event for publication and both AppHosts provision its topic. The
   focused topology regression passes.
+- [x] **ARCH4 - Venue and Artist introduced module-local generic `ReadRepository<TEntity>` implementations.** Both
+  review repositories now inherit the canonical shared `ReadRepository<TEntity, int>` directly; the duplicate
+  generic wrappers are deleted and the repository architecture guard passes.
 
-No open findings remain. The review covered the current net branch diff `35b114d4a..155232b4f`, including correctness,
+No open findings remain. The review covered the current net branch diff `35b114d4a..7529c5761`, including correctness,
 security and tenant scoping, Result terminals, serialization/HATEOAS, module/repository boundaries, frontend contracts,
 seeding implications, and focused test coverage.

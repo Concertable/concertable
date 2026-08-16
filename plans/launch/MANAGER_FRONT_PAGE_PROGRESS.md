@@ -12,7 +12,7 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
 
 ## Next Steps
 
-1. Require replacement exact-head CI green for PR #563 work head `155232b4fcfd9e78ab0e571e1982be52e90d966d`; diagnose any deterministic failure.
+1. Require replacement exact-head CI green for PR #563 work head `7529c57616b4632b6ce2fc4a78fc0cbc8872508e`; diagnose any deterministic failure.
 2. After CI is green, complete the remaining Phase A.8 authenticated seeded venue/artist UX review below.
 
 ## Reviews
@@ -27,19 +27,18 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
   `510bd491bd67dd84216f6a5dc419aa094241d673`; no security-sensitive production code changed after the security
   marker at `90a386b1416f2179eaabef3e7b8068eef8594775`.
 
-- Current-main correctness/security review is recorded in the same review file. SER3, COR3, CI3, FE2, and CI4 are
-  closed; both review markers are stamped to code checkpoint `155232b4fcfd9e78ab0e571e1982be52e90d966d`.
+- Current-main correctness/security review is recorded in the same review file. SER3, COR3, CI3, FE2, CI4, and ARCH4
+  are closed; both review markers are stamped to code checkpoint `7529c57616b4632b6ce2fc4a78fc0cbc8872508e`.
 
 ## Current implementation
 
-- **Exact-head backend CI corrections are locally verified.** PR run
-  [`31951761079`](https://github.com/Concertable/concertable/actions/runs/31951761079) passed the frontend carves and
-  backend build, then exposed that the abstract common `ApplicationResponse` could not be deserialized by existing
-  HTTP consumers and that `TenantActivityRecordedEvent` was absent from the outbox registry/topology. The common
-  response is concrete and deserializable again while retaining role-specific derived action objects. The activity
-  event is registered by the B2B host and provisioned by both AppHosts; its focused topology test passes 1/1. The
-  focused local integration command is blocked before test execution by a stale local-platform package missing
-  `RefundReasonCodes`, so replacement exact-head CI owns the HTTP/SQL confirmation.
+- **Exact-head CI follow-up is locally verified.** PR run
+  [`31953565101`](https://github.com/Concertable/concertable/actions/runs/31953565101) passed every frontend carve,
+  the backend build, and every integration carve, including the formerly failing B2B Concert suite. Its only failure
+  was the shared repository architecture guard: Venue and Artist had introduced duplicate module-local generic
+  `ReadRepository<TEntity>` wrappers. Both review repositories now inherit the canonical shared
+  `ReadRepository<TEntity, int>` directly and the wrappers are deleted. The exact architecture test passes 1/1;
+  Venue and Artist infrastructure both compile with zero errors.
 
 - **Frontend carve fix push verified.** Starting remote head `20d3fda8c8792e36bf1b28d4b301f2832a9dba9e` advanced through
   `20d3fda8c..60c765abd`. Fetch verification proved local HEAD, the remote-tracking branch, and draft PR #563 all equal
