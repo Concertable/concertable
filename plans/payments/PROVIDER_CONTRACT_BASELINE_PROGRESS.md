@@ -5,14 +5,15 @@
 - Roadmap item: `payments/provider-contract-baseline`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\payments_provider-contract-baseline`
 - Branch: `Feature/payments_provider-contract-baseline`
-- PR: #597 — https://github.com/Concertable/concertable/pull/597 — open; exact-head CI run 31956570866 passed at pushed head `f56c80fde78c3cc99016bf65a122de250e5adcc3`; local review-fix head is this commit and is not yet pushed; auto-merge is disabled and the PR is not queued
-- Review readiness: **REVIEW COMPLETE — PUBLISH AND EXACT-HEAD CI REQUIRED** — NAT1, NAT2, BUG1, SEC1, NAT3, and NAT4 are resolved; incremental review through current-main reconciliation commit `01171e1b21b8a08a273eafb3d3f99859081756e2` found no additional issues
+- PR: #597 — https://github.com/Concertable/concertable/pull/597 — open; reviewed work head `ce43a2283c26416ca60593aefca35a79d2159698` is verified at the remote-tracking ref and PR head; exact-head CI is pending; auto-merge is disabled and the PR is not queued
+- Review readiness: **REVIEW COMPLETE — EXACT-HEAD CI REQUIRED** — NAT1, NAT2, BUG1, SEC1, NAT3, and NAT4 are resolved; incremental review through current-main reconciliation commit `01171e1b21b8a08a273eafb3d3f99859081756e2` found no additional issues
 - Dependency/package gates: Phases 1 through 4 are locally complete; the production/live-mode Stripe account has no webhook endpoint, so future deployment is locked to `2025-01-27.acacia` and must create the endpoint at the actual Payment Web URL while installing its signing secret; compatibility is anchored to published `0.1.0-alpha.0.1009`; the branch carries platform pin `0.1.0-alpha.0.1031`
-- Last reconciled: 2026-08-16 against open PR #597 pushed head `f56c80fd`, local reviewed head `01171e1b`, exact-head CI run 31956570866, published Payment packages `0.1.0-alpha.0.1009`, and `origin/main` `6d577792`
+- Last reconciled: 2026-08-16 against open PR #597 work/remote/PR head `ce43a228`, pending exact-head CI, published Payment packages `0.1.0-alpha.0.1009`, and `origin/main` `6d577792`
 
 ## Current state
 
-Phases 1 through 4 are complete, committed, and pushed through `f56c80fd`. The local branch resolves
+Phases 1 through 4 and all six review findings are complete, reviewed, and pushed through
+`ce43a2283c26416ca60593aefca35a79d2159698`. The branch resolves
 NAT1 at `0686b7f52c68ab492ba7683fa5fee895096785da`, NAT2 at
 `19e194c9eaefee2734718a298a127f414f75af6c`, BUG1 at
 `055c6bfd868484e847f907926b5da7b6dea55ff9`, SEC1 at
@@ -72,8 +73,7 @@ authorization, both setup kinds, and refund.
 
 ## Next Steps
 
-Publish the reviewed local range through the plan push protocol and require exact-head CI to pass.
-Keep the PR open in this turn.
+Require exact-head CI to pass at the final pushed checkpoint head. Keep the PR open in this turn.
 
 ## Completed work
 
@@ -145,6 +145,10 @@ Keep the PR open in this turn.
 
 ## Verification
 
+- Plan-managed work push: starting remote/PR head
+  `f56c80fde78c3cc99016bf65a122de250e5adcc3`; pushed range
+  `f56c80fde78c3cc99016bf65a122de250e5adcc3..ce43a2283c26416ca60593aefca35a79d2159698`;
+  local work head, remote-tracking ref, and PR head all verified at `ce43a2283c26416ca60593aefca35a79d2159698`.
 - Current-main reconciliation build succeeded with 0 warnings and 0 errors; the focused
   `ProviderContract` filter passed 116 of 116; plan graph and whitespace checks passed.
 - Incremental implementation and security review through merge commit
