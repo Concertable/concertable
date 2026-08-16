@@ -59,7 +59,8 @@ or queueing. Never push a checkpoint-only local tail to a queued, locked, merged
 0. **Review first — code or docs by PR type.** Before querying, pushing or merging a PR, confirm it has
    been reviewed. **Which review depends on the diff:** a **docs/meta-only** PR (every path under
    `**/*.md`, `.agents/**`, `.claude/**`, `.codex/**`, `plans/**`, `docs/**`, `AGENTS.md`, `CLAUDE.md`,
-   `PROMPTS.md`, `README*`) requires a clean **`/docs-review`**, not a code review — and such a PR
+   `PROMPTS.md`, `README*`) requires a clean **`/docs-review`**, not a code review — unless it is a pure
+   close-out (net diff deletions only), which `docs-review` exempts — and such a PR
    normally lands via `/merge-docs`, not this skill. Any runtime/product/package/CI-test-selection path
    makes it a code PR: require **`/review`** (`/big-review` when too large for one pass). If commits
    were added after the review, require `/incremental-review`. Do not proceed while review findings
