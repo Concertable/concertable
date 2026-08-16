@@ -5,11 +5,11 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `d39368b45c121282f3ae1e7f77564bff355ad975`  _(2026-08-16)_
+**Reviewed up to commit:** `60772aa1d70bfdab39ceb8970dbd958219330001`  _(2026-08-17)_
 
-**Security-reviewed up to commit:** `d39368b45c121282f3ae1e7f77564bff355ad975`  _(2026-08-16)_
+**Security-reviewed up to commit:** `60772aa1d70bfdab39ceb8970dbd958219330001`  _(2026-08-17)_
 
-> Range reviewed: `89361e9..d39368b` (3 commits).
+> Range reviewed: `89361e9..60772aa` (78 commits, including current main).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
 
 ## Findings
@@ -23,3 +23,7 @@
 
 - [x] **CV1 — LOW — convention** — `api/Concertable.B2B/src/Modules/Concert/Tests/Concertable.B2B.Concert.IntegrationTests/TenantScopingTests.cs:119`
   The renamed organization-scoped endpoint is still described and tested as a current-user resource. Rename the test and its description to `OrganizationConcertRead`.
+
+## Incremental review — current-main merge
+
+No new findings. The merge preserves main's permission-specific read repositories, removes both active-tenant profile ID resolver APIs, and keeps tenant resolution in the Artist/Venue services and Concert-owned projections. B2B Web builds with 0 warnings and 0 errors; Artist, Venue, and Concert unit suites pass 18/18, 19/19, and 229/229.
