@@ -56,7 +56,7 @@ DOC1/DOC2 flag that the plan (§10 Phase 1) and both launch trackers assert this
 
 - [-] **CV1 — DEFERRED — module visibility** — `api/Concertable.Payment/src/Concertable.Payment.Domain/Entities/CommissionAuthorizationEntity.cs:3`
   DEFERRED 2026-07-31: all 14 existing Payment.Domain entities (`EscrowEntity`, `SettlementTransactionEntity`, `TransactionEntity`, …) are `public`; none are `internal`. Making only the 3 new entities internal would be inconsistent with the whole module and likely cascade compile breakage across Application/Infrastructure. Decision needed: apply the `internal`-default rule to the ENTIRE Payment.Domain entity surface as one deliberate refactor (adding the integration-test friend assembly, re-promoting genuinely cross-module types), or leave as-is. Not a single-finding nit.
-  The new `CommissionAuthorizationEntity`, `CommissionConfigurationEntity`, and `PaymentRefundEntity` are public even though they are Payment-internal domain types; `api/agents/MODULAR_MONOLITH_RULES.md` requires Domain entities to default to `internal` and tests to use `InternalsVisibleTo`. Make the new entities and their newly exposed navigation/collection surface internal, and add the Payment integration-test friend assembly where needed.
+  The new `CommissionAuthorizationEntity`, `CommissionConfigurationEntity`, and `PaymentRefundEntity` are public even though they are Payment-internal domain types; `api/agents/CONVENTIONS.md` requires Domain entities to default to `internal` and tests to use `InternalsVisibleTo`. Make the new entities and their newly exposed navigation/collection surface internal, and add the Payment integration-test friend assembly where needed.
 
 ## Payment persistence, configuration, and schema — reviewed 2026-07-30
 

@@ -6,6 +6,7 @@ import {
 } from "@tanstack/react-query";
 import type { PaginationParams } from "../../../hooks/usePagination";
 import messageApi from "../api/messageApi";
+import type { ReportMessageRequest } from "../types";
 
 export function useUnreadCountQuery() {
   return useQuery({
@@ -20,6 +21,16 @@ export function useMessagesQuery(params: PaginationParams, enabled = true) {
     queryFn: () => messageApi.getMessages(params),
     placeholderData: keepPreviousData,
     enabled,
+  });
+}
+
+export function useReportMessageMutation(messageId: number) {
+  return useMutation({
+    // The dialog renders the failure inline next to the form, so the global toast would say the same
+    // thing twice in different words.
+    meta: { silenceErrors: true },
+    mutationFn: (request: ReportMessageRequest) =>
+      messageApi.reportMessage(messageId, request),
   });
 }
 

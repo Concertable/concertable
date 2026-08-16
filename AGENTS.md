@@ -47,10 +47,18 @@ running only its failing scope locally. Full policy: [`docs/REMOTE_VALIDATION.md
 
 **Doc locality — a guidance/architecture doc lives at the lowest node that fully contains its concern:** single-service → that service's own folder (thin, inheriting root + `api/` upward, never restating — e.g. [`api/Concertable.Payment/AGENTS.md`](./api/Concertable.Payment/AGENTS.md)); cross-service or orchestration → root. Create one only where genuine service-specific content exists.
 
+**Every `AGENTS.md` gets a `CLAUDE.md` sibling containing exactly `@AGENTS.md`, and every `*/agents/*.md` doc must be reachable — by plain link or `@`-import, followed transitively — from some `AGENTS.md`/`CLAUDE.md`/`SKILL.md`.** A doc that fails this is loaded nowhere, which is exactly how `app/agents/CODE_CONVENTIONS.md` and `CODE_PATTERNS.md` went unread until a shipped feature violated both. Mechanically checked by `.agents/hooks/docs_reachability.py`, run as part of `docs-review`.
+
 - **Backend (.NET, `api/`)** — seeding, migrations, DTOs, module rules, C# conventions: [`api/AGENTS.md`](./api/AGENTS.md).
 - **Backend Result pattern** — Result, Option, typed errors, validation, construction, composition, and transport terminals: [`api/agents/RESULT_PATTERN.md`](./api/agents/RESULT_PATTERN.md).
 - **Design patterns the codebase commits to** (keyed strategy resolvers, and the anti-patterns they replace — branching on `DealType` in agnostic code, service location, throwaway DTOs): [`api/agents/CODE_PATTERNS.md`](./api/agents/CODE_PATTERNS.md). Read it before adding any rule that varies by a closed key.
+- **Frontend (React/TS, `app/`)** — tiers, conventions and patterns: [`app/AGENTS.md`](./app/AGENTS.md).
+  It anchors [`app/agents/CODE_CONVENTIONS.md`](./app/agents/CODE_CONVENTIONS.md) (absent values are
+  `undefined` not `null`; reads carry no `Dto`/`Response` suffix; writes are `XRequest`) and
+  [`app/agents/CODE_PATTERNS.md`](./app/agents/CODE_PATTERNS.md) (slots over role checks, the zod write
+  boundary, one `xApi` per resource) — the frontend counterparts of the `api/agents/` pair above.
 - **Web SPA (`app/web/`)** — [`app/web/AGENTS.md`](./app/web/AGENTS.md).
+- **Mobile apps (`app/mobile/`)** — [`app/mobile/AGENTS.md`](./app/mobile/AGENTS.md).
 - **Customer cross-platform core (`app/customer/shared`, npm package `@concertable/customer`, exported as `@concertable/customer/shared/*`)** — consumed ONLY by the customer web + mobile apps: [`app/customer/shared/AGENTS.md`](./app/customer/shared/AGENTS.md).
 
 ## Git branch — branch first, capitalized type prefix, always
@@ -105,7 +113,7 @@ After enabling auto-merge, confirm the outcome with a **Bash `run_in_background`
 to exactly ONE of three terminal states and reports it automatically — no reprompt needed. It **never
 retries and never toggles**: a failed check is a real failure to surface and debug, not something to poke.
 
-The three outcomes:
+The four outcomes:
 1. **Merged** — report `✓ landed as <sha>` and stop.
 2. **A check failed** — report `✗ CI failed: <job/check>`, point at the run/log, and **stop. Do not
    retry** (re-running a genuinely-failing e2e just fails again). Hand off to debugging by emitting a
@@ -114,17 +122,23 @@ The three outcomes:
    a heavy local E2E run inline. Emit it **as soon as the failure is obviously genuine** (a targeted or
    deterministic failure in the changed area); only a *flake-signature* failure (the whole suite dead
    at startup/auth) waits for a fresh-stack re-run to fail again before you dispatch.
-3. **Green but never admitted** — the PR is `CLEAN`, all checks pass, auto-merge is on, yet GitHub never
+3. **Conflicted mid-wait** — `main` moved while you waited, the PR went `DIRTY`, and **GitHub silently
+   disabled auto-merge** when it did. Nothing is wrong with the work and nothing is retrying; the PR
+   simply stopped being enqueued. Report `✗ #<PR> DIRTY — conflicted with main, auto-merge disabled`,
+   then update the branch, rebuild, push, and re-arm `--auto`. This is the state that looks most like
+   "still waiting" and is the easiest hour to lose: a loop that only knows MERGED/CLOSED/failed/CLEAN
+   polls a dead branch to its cap. Watch `mergeStateStatus` and the auto-merge flag, not just checks.
+4. **Green but never admitted** — the PR is `CLEAN`, all checks pass, auto-merge is on, yet GitHub never
    adds it to the queue. This is a GitHub auto-merge **re-evaluation glitch** (enable-while-pending, then
    it never looks again — observed live on pr-229), **not** a test failure. Surface it as its own state;
    the remedy is a **one-time** human/agent action — re-assert auto-merge once (`gh pr merge --disable-auto <PR>`
    then `--auto <PR>`) or break-glass admin-merge — never an automated loop.
 
-**Telling #2 from #3 requires inspecting the actual run results, not just PR state** — this is the trap.
+**Telling #2 from #4 requires inspecting the actual run results, not just PR state** — this is the trap.
 After a `merge_group` run FAILS, GitHub ejects the PR back to `OPEN`/`CLEAN`/not-queued, which looks
-**identical** to the never-admitted glitch (#3). The failure lives on the `gh-readonly-queue/...pr-<N>-...`
+**identical** to the never-admitted glitch (#4). The failure lives on the `gh-readonly-queue/...pr-<N>-...`
 run, not on the PR head's checks, so `gh pr checks <PR>` alone won't show it. The loop must also scan
-`merge_group` run conclusions for this PR — a failed one means #2 (debug it), none-ever-dispatched means #3
+`merge_group` run conclusions for this PR — a failed one means #2 (debug it), none-ever-dispatched means #4
 (nudge it). Conflating them is how a real failure gets mistaken for a stall (and vice versa).
 
 - **Never use the `Monitor` tool** for a single "tell me when it merges" — it's for streaming many events, and its detached poller silently missed merges here (it timed out instead of firing).
@@ -136,18 +150,21 @@ while :; do i=$((i+1))
   # Read state + mergeStateStatus into SEPARATE vars — never a joined string. `case "$st"` must compare
   # the bare state ("MERGED"), or it silently never matches "MERGED UNKNOWN" and the loop times out
   # instead of reporting the merge (the "monitored for ages, missed the merge" bug).
-  read -r st mss < <(gh pr view "$pr" --json state,mergeStateStatus -q '.state+" "+.mergeStateStatus' 2>&1)
+  read -r st mss auto < <(gh pr view "$pr" --json state,mergeStateStatus,autoMergeRequest -q '.state+" "+.mergeStateStatus+" "+((.autoMergeRequest!=null)|tostring)' 2>&1)
   inq=$(gh api graphql -f query='{repository(owner:"'"${repo%/*}"'",name:"'"${repo#*/}"'"){pullRequest(number:'"$pr"'){mergeQueueEntry{state}}}}' -q '.data.repository.pullRequest.mergeQueueEntry.state // "no"' 2>&1)
   fail=$(gh pr checks "$pr" 2>/dev/null | awk -F'\t' '$2=="fail"{print $1}' | paste -sd, -)
   mgfail=$(gh run list --event merge_group -L 15 --json conclusion,headBranch --jq '.[]|select(.headBranch|contains("pr-'"$pr"'-"))|.conclusion' 2>/dev/null | grep -c failure)
-  echo "poll $i: [$st/$mss] queue=[$inq] pr-checks-failing=[${fail:-none}] merge_group-failures=[$mgfail]"
+  echo "poll $i: [$st/$mss] auto=[$auto] queue=[$inq] pr-checks-failing=[${fail:-none}] merge_group-failures=[$mgfail]"
   case "$st" in
     MERGED) echo ">>> #$pr ✓ MERGED"; exit 0;;
     CLOSED) echo ">>> #$pr CLOSED without merging"; exit 0;;
   esac
+  # Conflicted with main -> GitHub turned auto-merge off. Terminal: it will never enqueue itself.
+  if [ "$mss" = DIRTY ]; then
+    echo ">>> #$pr ✗ DIRTY — conflicted with main, auto-merge disabled; update+rebuild+push, then re-arm --auto"; exit 4; fi
   if [ -n "$fail" ] || [ "$mgfail" -gt 0 ]; then
     echo ">>> #$pr ✗ CI FAILED (pr:[$fail] merge_group-failures:$mgfail) — inspect the run, do NOT retry"; exit 2; fi
-  # green + mergeable + never admitted, sustained past normal latency -> the re-eval glitch (#3)
+  # green + mergeable + never admitted, sustained past normal latency -> the re-eval glitch (#4)
   if [ "$st" = OPEN ] && [ "$mss" = CLEAN ] && [ "$inq" = no ]; then cleanpolls=$((cleanpolls+1)); else cleanpolls=0; fi
   if [ "$cleanpolls" -ge 6 ]; then
     echo ">>> #$pr ⚠ GREEN but unadmitted ~6min (GitHub re-eval glitch, NOT a failure) — re-assert auto-merge once or break-glass"; exit 3; fi
@@ -247,10 +264,10 @@ The convention is **ROADMAP → PLAN → PROGRESS**, folder = roadmap/plan: an e
 - **Cross-plan blockers are two-way handoffs.** The blocked ledger names the owning ledger and exact
   gate; the owning ledger lists the blocked dependent. When the gate opens, the owner updates the
   dependent ledger and surfaces its resume prompt — the waiting plan does not poll or rely on memory.
-- **A blocked plan never emits its own resume prompt.** Its ledger and final report name the exact
-  blocker, its owner, the action that removes it, and the evidence that makes resumption valid.
-  Dispatch the resolver or give Tommy the external action; only surface the waiting plan after the
-  gate opens.
+- **A blocked or paused (human-gated) plan never emits its own resume prompt.** Its ledger and final
+  report name the exact blocker or human action, its owner, the step that removes it, and the evidence
+  that makes resumption valid. Dispatch the resolver or give Tommy the external action; only surface
+  the waiting plan after the gate opens.
 - **Keep the plan and its `_PROGRESS.md` companion until the entire lifecycle is terminal — not merely until the final local phase is committed and verified.** Every plan-managed PR includes their current state, so `main` is always the recovery anchor. Once that PR merges, remove its worktree with `./scripts/worktrees.ps1 close -Worktree <path> -PullRequest <n> -PlanManaged`. Continue from a fresh worktree based on current `origin/main`; use a `Docs/*_closeout` worktree for final remote-gate evidence and deletion of both artifacts.
 - A plan **superseded** by a newer plan, or describing a design that was **rejected**, is deleted the moment that's decided — don't leave a tombstone.
 - A **partially-done** plan stays, but strike/check off the sections that shipped (in the same commit as the work) so what remains is only the outstanding work.

@@ -30,6 +30,18 @@ LEDGER_REFERENCE = re.compile(
     r"plans[\\/][A-Za-z0-9_.() \\/-]+?_PROGRESS\.md",
     re.IGNORECASE,
 )
+# A merge of THIS PR — not "merge origin/main" / "merge main" (that is a branch sync).
+MERGE_INTENT = re.compile(
+    r"/merge\b|gh pr merge|\bmerge[ -]?queue\b|\benqueue\b|"
+    r"\bmerge\b(?!\s+(?:origin/|current\s+)?`?main`?\b)",
+    re.IGNORECASE,
+)
+REVIEW_STEP = re.compile(r"/(?:incremental-|big-|security-)?review\b|\breview\b", re.IGNORECASE)
+# A recorded review can live in `## Reviews` or in an established watermark/record form.
+REVIEW_EVIDENCE = re.compile(
+    r"review[\w /&-]{0,40}watermark|review record commit|reviewed[^.\n]{0,80}no open findings",
+    re.IGNORECASE,
+)
 
 
 def section(text, name):
@@ -55,6 +67,39 @@ def is_terminal(body):
         return True
     normalized = re.sub(r"[`*_#>\-\s.]", "", body).lower()
     return not normalized or normalized in TERMINAL
+
+
+def is_paused(body):
+    if body is None:
+        return False
+    first_line = next((line.strip() for line in body.splitlines() if line.strip()), "")
+    return first_line.lower().startswith("paused:")
+
+
+def review_recorded(text):
+    body = section(text, "Reviews")
+    if body is not None:
+        normalized = re.sub(r"[`*_#>\-\s.]", "", body).lower()
+        if normalized not in {"", "none", "noneyet", "na", "tbd"}:
+            return True
+    return REVIEW_EVIDENCE.search(text) is not None
+
+
+def review_gate_error(path, body, text):
+    if body is None:
+        return None
+    merge = MERGE_INTENT.search(body)
+    if not merge:
+        return None
+    review = REVIEW_STEP.search(body)
+    if review is not None and review.start() < merge.start():
+        return None
+    if review_recorded(text):
+        return None
+    return (
+        f"{path.name}: `## Next Steps` proposes a merge (`{merge.group(0).strip()}`) with no `/review` "
+        "step before it and no review recorded in `## Reviews` — review is a mandatory pre-merge gate"
+    )
 
 
 def blocker_details(body):
@@ -147,7 +192,10 @@ def roadmap_errors(path, text):
         return [f"{path.name}: roadmap item key must match `{epic}/<slug>`: {item}"]
     marker = f"`{item}`"
     roadmap_text = roadmap_path.read_text(encoding="utf-8")
-    checklist_item = re.compile(rf"^- \[[ xX]\].*{re.escape(marker)}", re.MULTILINE)
+    checklist_item = re.compile(
+        rf"^(?:- \[[ xX]\].*|\|\s*\[[ xX]\]\s*\|.*){re.escape(marker)}.*$",
+        re.MULTILINE,
+    )
     matches = checklist_item.findall(roadmap_text)
     if not matches:
         return [f"{path.name}: roadmap item marker {marker} is missing from {roadmap}"]
@@ -231,6 +279,10 @@ def ledger_errors(path, live_owners=True):
     elif looks_like_legacy_blocker(body):
         fields = ", ".join(f"`{name}:`" for name in BLOCKER_FIELDS)
         errors.append(f"{path.name}: blocked work must begin with non-empty {fields} lines")
+    else:
+        gate = review_gate_error(path, body, text)
+        if gate:
+            errors.append(gate)
     errors.extend(terminal_handoff_errors(path, text, body))
     return errors
 

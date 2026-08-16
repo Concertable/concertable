@@ -32,7 +32,10 @@ using Xunit;
 using Xunit.Abstractions;
 using Concertable.DataAccess.Application;
 using Concertable.DataAccess.Infrastructure.Data;
+using Concertable.Messaging.Application;
 using Concertable.Messaging.Contracts;
+using Concertable.Messaging.Domain;
+using Concertable.Messaging.Infrastructure.Outbox;
 using Concertable.Shared.Email.Application;
 using Concertable.Shared.Geocoding.Application;
 using Concertable.Shared.Imaging.Application;
@@ -57,6 +60,7 @@ public class ApiFixture : IAsyncLifetime
     public IMockManagerPaymentClient ManagerPaymentClient { get; }
     public MockPayoutAccountClient PayoutAccountClient { get; } = new();
     public MockEscrowClient EscrowClient { get; }
+    public MockPaymentTransport PaymentTransport { get; } = new();
 
     public ApiFixture()
     {
@@ -79,7 +83,6 @@ public class ApiFixture : IAsyncLifetime
                 config.AddInMemoryCollection(new Dictionary<string, string?>
                 {
                     ["ConnectionStrings:B2BDb"] = sqlFixture.ConnectionString,
-                    ["ConnectionStrings:PaymentDb"] = sqlFixture.ConnectionString,
                     ["ExternalServices:UseRealStripe"] = "false",
                     ["ExternalServices:UseRealBlob"] = "false",
                     ["ExternalServices:UseRealEmail"] = "false",
@@ -95,9 +98,11 @@ public class ApiFixture : IAsyncLifetime
                 services.RemoveAzureServiceBus();
                 services.AddTransient<IStartupFilter, TestClientIpStartupFilter>();
 
+                services.AddSingleton(PaymentTransport);
+                services.Replace(ServiceDescriptor.Singleton<IBusTransport>(PaymentTransport));
                 services.AddSingleton<INotificationClient>(NotificationService);
                 services.AddSingleton(StripeApiClient);
-                services.AddResettables(NotificationService, StripeApiClient, EmailSender, ManagerPaymentClient, PayoutAccountClient, EscrowClient);
+                services.AddResettables(NotificationService, StripeApiClient, EmailSender, ManagerPaymentClient, PayoutAccountClient, EscrowClient, PaymentTransport);
                 services.AddSingleton<IEmailTransport>(EmailSender);
 
                 services.AddSingleton<IManagerPaymentOperationsClient>(ManagerPaymentClient);
@@ -161,6 +166,12 @@ public class ApiFixture : IAsyncLifetime
     /// <paramref name="bookingId"/> — the failure leg <see cref="IWebhookSimulator"/> cannot simulate.</summary>
     public async Task SendEscrowFailedWebhookAsync(int bookingId)
     {
+        if (PaymentTransport.Commands.Any(command => command is CaptureEscrowCommand or DepositEscrowCommand))
+        {
+            await PaymentTransport.RejectLatestAcceptanceAsync(factory.Services.GetRequiredService<IServiceScopeFactory>());
+            return;
+        }
+
         using var eventScope = factory.Services.CreateScope();
         var handlers = eventScope.ServiceProvider.GetServices<IIntegrationEventHandler<PaymentFailedEvent>>();
         var envelope = new MessageEnvelope(Guid.NewGuid(), MessageTypeAttribute.Resolve(typeof(PaymentFailedEvent)), DateTimeOffset.UtcNow);
@@ -174,7 +185,31 @@ public class ApiFixture : IAsyncLifetime
             await handler.HandleAsync(evt, envelope, CancellationToken.None);
     }
 
+    public Task CompleteLatestFinancialOperationAsync() =>
+        PaymentTransport.CompleteLatestAsync(factory.Services.GetRequiredService<IServiceScopeFactory>());
+
+    public Task RejectLatestFinancialOperationAsync() =>
+        PaymentTransport.RejectLatestAsync(factory.Services.GetRequiredService<IServiceScopeFactory>());
+
     public IServiceProvider Services => factory.Services;
+
+    public async Task<IReadOnlyList<SendEmailCommand>> GetStagedEmailsAsync()
+    {
+        using var readScope = factory.Services.CreateScope();
+        var outbox = readScope.ServiceProvider.GetRequiredService<OutboxDbContext>();
+        var serializer = readScope.ServiceProvider.GetRequiredService<MessageSerializer>();
+        var messageType = MessageTypeAttribute.Resolve(typeof(SendEmailCommand));
+
+        var rows = await outbox.Set<OutboxMessageEntity>()
+            .AsNoTracking()
+            .Where(m => m.MessageType == messageType)
+            .OrderBy(m => m.OccurredAtUtc)
+            .ToListAsync();
+
+        return rows
+            .Select(r => (SendEmailCommand)serializer.Deserialize(BinaryData.FromString(r.Payload), typeof(SendEmailCommand)))
+            .ToList();
+    }
 
     public HttpClient CreateClient(UserEntity user)
     {
