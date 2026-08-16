@@ -5,10 +5,10 @@
 - Roadmap item: `payments/provider-contract-baseline`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\payments_provider-contract-baseline`
 - Branch: `Feature/payments_provider-contract-baseline`
-- PR: #597 — https://github.com/Concertable/concertable/pull/597 — open and ready for review; auto-merge was disabled and the PR was dequeued before the current-main update; work head `e8976712839a528a10a0bd039cd21fab68685e2a` is pushed and this ledger checkpoint is the transport leg
-- Review readiness: **AWAITING EXACT-HEAD CI** — all four implementation phases and local current-main validation are green; run `/review` only after this checkpoint transport is green
+- PR: #597 — https://github.com/Concertable/concertable/pull/597 — open; exact-head CI run 31953753845 passed at reviewed head `85d85aab1c6e3ef448c792cc9cad7c37639a8ae9`; auto-merge is disabled and the PR is not queued
+- Review readiness: **FOUR OPEN FINDINGS** — the complete implementation review recorded NAT1, NAT2, BUG1, and SEC1 as medium-severity findings in `reviews/Feature-payments_provider-contract-baseline.md`
 - Dependency/package gates: Phases 1 through 4 are locally complete; the production/live-mode Stripe account has no webhook endpoint, so future deployment is locked to `2025-01-27.acacia` and must create the endpoint at the actual Payment Web URL while installing its signing secret; compatibility is anchored to published `0.1.0-alpha.0.1009`; the branch carries platform pin `0.1.0-alpha.0.1025`
-- Last reconciled: 2026-08-16 against open PR #597 work head `e8976712`, published Payment packages `0.1.0-alpha.0.1009`, and `origin/main` `e861f3642`
+- Last reconciled: 2026-08-16 against open PR #597 reviewed head `85d85aab`, exact-head CI run 31953753845, published Payment packages `0.1.0-alpha.0.1009`, and review base `e861f3642`
 
 ## Current state
 
@@ -43,9 +43,9 @@ template because current Payment runtime also handles `payment_intent.payment_fa
 
 PR #552 merged at `33f07c47a497586324edacdcfc10321a9d3f02ee`, and its additive Payment
 contracts are present after merging current `origin/main`. PR #597 is open and no longer draft at
-work head `e8976712839a528a10a0bd039cd21fab68685e2a`; exact-head CI is the live gate after this ledger
-checkpoint is transported. The historical `Refactor/GroupStripeWebhookHandling` branch is superseded
-evidence only.
+reviewed head `85d85aab1c6e3ef448c792cc9cad7c37639a8ae9`; exact-head CI is green, and the full
+implementation review recorded four open medium-severity findings. The historical
+`Refactor/GroupStripeWebhookHandling` branch is superseded evidence only.
 
 Phase 2 adds the provider-neutral operation identity, session kind, normalized state, terminal/retry
 disposition, safe-failure vocabulary, client descriptor/snapshot records, and matching protobuf
@@ -63,10 +63,10 @@ authorization, both setup kinds, and refund.
 
 ## Next Steps
 
-After this checkpoint transport is exact-head green, run `/review` against the complete branch.
-Record every high-confidence finding and disposition in this ledger before merge becomes the next
-action. If repository automation re-enqueues PR #597, dequeue it before changing the branch; merge is
-not authorized in this continuation.
+Run `/address-review @reviews/Feature-payments_provider-contract-baseline.md` and address all four open
+findings. Re-run the focused Payment provider/compatibility build and tests, publish the fixes through
+the plan push protocol, then run `/incremental-review` over the new commits. Do not merge in the same
+turn.
 
 ## Completed work
 
@@ -121,6 +121,14 @@ not authorized in this continuation.
 
 ## Verification
 
+- Exact-head PR CI run 31953753845 passed at reviewed head
+  `85d85aab1c6e3ef448c792cc9cad7c37639a8ae9`: 54 jobs succeeded and five policy-selected jobs were
+  skipped; build, local platform packages, all service carves, unit tests, and integration tests were
+  green.
+- Full implementation and security review covered
+  `e861f3642cea14e919d203604a4e9e7d00bcced8..85d85aab1c6e3ef448c792cc9cad7c37639a8ae9`
+  (22 commits) and recorded four medium-severity open findings: two native-review findings, one
+  correctness finding, and one security finding.
 - Current-main review candidate: merged `origin/main` `e861f3642cea14e919d203604a4e9e7d00bcced8`
   cleanly as work head `e8976712839a528a10a0bd039cd21fab68685e2a`; `HEAD..origin/main` is zero.
 - Regenerated the published `0.1.0-alpha.0.1009` contract baselines with no diff.
@@ -212,14 +220,18 @@ not authorized in this continuation.
 
 ## Review status
 
-**AWAITING EXACT-HEAD CI.** All implementation phases and local current-main validation are green for
-[PR #597](https://github.com/Concertable/concertable/pull/597). After this ledger checkpoint transport
-is green, `/review` is the only next action; merge is not authorized by this continuation.
+**FOUR OPEN FINDINGS.** The full implementation and security review for
+[PR #597](https://github.com/Concertable/concertable/pull/597) covered
+`e861f3642cea14e919d203604a4e9e7d00bcced8..85d85aab1c6e3ef448c792cc9cad7c37639a8ae9`
+and recorded NAT1, NAT2, BUG1, and SEC1 in
+`reviews/Feature-payments_provider-contract-baseline.md`. No additional microservice-isolation,
+module-boundary, seeding, convention, or test-coverage finding survived the confidence filter. The
+branch is not merge-ready until the four findings are addressed and the resulting commits pass an
+incremental review.
 
 The planning docs review through PR head `ccb1dd00585b7943a401166f3f8eb3237ed6d628` found no issues across
 accuracy, contradiction, document ownership, concision, dangling references, and followable
-instructions. Its spent untracked review artifact was deleted after PR #594 merged. No Phase 1
-implementation review exists; the branch is not merge-ready.
+instructions. Its spent untracked review artifact was deleted after PR #594 merged.
 
 ## Decisions, discoveries, blockers, and deviations
 
