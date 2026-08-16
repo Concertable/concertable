@@ -12,7 +12,7 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
 
 ## Next Steps
 
-1. Push reviewed frontend carve fix `f01c6f0f0`, verify PR #563's exact head, and require replacement CI green.
+1. Require replacement exact-head CI green for PR #563 work head `60c765abd1e96aec7d89df808cc9b30a4b01fd68`; diagnose any deterministic failure.
 2. After CI is green, complete the remaining Phase A.8 authenticated seeded venue/artist UX review below.
 
 ## Reviews
@@ -32,6 +32,10 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
   `f01c6f0f03b1378cd1d69ee1a1d95c1a93e9d8f8`.
 
 ## Current implementation
+
+- **Frontend carve fix push verified.** Starting remote head `20d3fda8c8792e36bf1b28d4b301f2832a9dba9e` advanced through
+  `20d3fda8c..60c765abd`. Fetch verification proved local HEAD, the remote-tracking branch, and draft PR #563 all equal
+  reviewed work head `60c765abd1e96aec7d89df808cc9b30a4b01fd68`. Replacement exact-head CI is the remaining remote gate.
 
 - **Exact-head artist carve failure fixed locally.** CI run
   [`31950865437`](https://github.com/Concertable/concertable/actions/runs/31950865437) failed
