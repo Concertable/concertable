@@ -110,6 +110,8 @@ opportunistically as files are touched. New extension members use `extension()` 
 
 **Resolves when:** the `= ""` defaults become `null!` as part of a `Concertable.Messaging` package publish.
 
+**Done (PR1, `Chore/TechDebt`) — pending publish:** both `ConnectionString` and `ServiceName` defaults are now `null!` — required, assigned-before-use. The connection string is no longer eagerly bound-and-thrown at registration; it is validated on resolution of the Service Bus client (see the `AddAzureServiceBusTransport` eager-probe item in [`Concertable.Messaging/TECH_DEBT.md`](./Concertable.Messaging/TECH_DEBT.md), the same package change). Delete this entry once that change publishes.
+
 ---
 
 ### Auth builds against a pinned shared-platform package while the rest of the solution builds from source
@@ -207,3 +209,78 @@ packages consumed cross-service (Auth/B2B/Customer call `AddSharedBlob` / imagin
 `platform-sync` and can't be atomic: rename in the package, publish, migrate consumers in the sync PR.
 Do the pair in one sweep so the store vocabulary doesn't land half-applied.
 
+
+---
+
+### `ActionLink` is declared once per Api module instead of once in `Concertable.Shared.Api`
+
+`internal sealed record ActionLink(string Href, string Method)` now exists twice, byte-identical:
+`Concertable.B2B.Concert.Api/Responses/ActionLink.cs` and
+`Concertable.B2B.Conversations.Api/Responses/ActionLink.cs`. It is a generic HATEOAS wire primitive —
+not a module concept — and every Api module that grows an action link will copy it a third time.
+
+The OSA report-content plan justified the second copy on the grounds that hoisting it would create the
+cross-module coupling `MODULAR_MONOLITH_RULES.md` forbids. **That reasoning was wrong:** those rules
+forbid one module reaching into another module's types, and explicitly cover shared libraries as a
+legitimate home for cross-cutting layer concerns. `Concertable.Shared.Api` is exactly that home — the
+Api-layer shared library both modules already consume — and the frontend has had a single shared
+`ActionLink` in `app/shared/src/types/common.ts` all along, so the backend duplication is also
+asymmetric with the wire contract it mirrors.
+
+It could not be fixed in the PR that introduced the second copy, because `Concertable.Shared.Api` is
+consumed as a **published package pinned to `ConcertablePlatformVersion`** — a type added to its source
+is invisible to consumers until it is published and `platform-sync` bumps the pin. So it is a
+publish-first cut-over, not an edit.
+
+**Resolves when:** `public sealed record ActionLink(string Href, string Method)` lives in
+`Concertable.Shared.Api`, is published, and both module-local copies are deleted in the follow-up PR
+once the pin carries it. Any new Api module uses the shared one rather than minting a third.
+
+---
+
+### `IPagination<T>.Select` lives in a data-access package, so almost nobody finds it
+
+`PaginationExtensions` (`Concertable.DataAccess.Infrastructure`) holds two extensions with very
+different natures. `ToPaginationAsync` is genuinely data-access — it takes `IQueryable<T>` and awaits
+EF's `CountAsync`. `Select(this IPagination<TSource>, Func<TSource, TDestination>)` is **not**: it is a
+pure in-memory projection over an already-materialised page, with no EF dependency and no reason to sit
+behind a data-access reference.
+
+The consequence is that the type it operates on lives in `Concertable.Contracts` while the operation
+lives somewhere most consumers cannot see:
+
+- **Api projects cannot reach it at all** — they reference `Concertable.Shared.Api`, not
+  `Concertable.DataAccess.Infrastructure`, and correctly so. So every Api response mapper hand-rolls the
+  projection: `Concert.Api/Mappers/OpportunityResponseMapper.cs`,
+  `Conversations.Api/Mappers/MessageResponseMappers.cs`.
+- **Layers that *can* reach it still miss it**, because nothing points there and the placement implies a
+  data-access concern: `Conversations/MessageService`, `Concert.Application/OpportunityMapper`,
+  `Search`'s three header services, `Payment/TransactionService` all write
+  `new Pagination<T>(data, TotalCount, PageNumber, PageSize)` by hand.
+
+Eight-plus copies of a four-argument constructor call is the symptom; the placement is the cause.
+
+**Fix:** move `Select` to `Concertable.Contracts`, next to `IPagination<T>` and `Pagination<T>`, and
+leave `ToPaginationAsync` in `Concertable.DataAccess.Infrastructure` where it belongs. Then every layer
+— Application, Infrastructure and Api alike — can map a page without minting a constructor call.
+
+**Rename it `Map` in the same cut-over.** `Select` names it after LINQ while behaving nothing like it:
+`Enumerable.Select` is lazy, returns `IEnumerable<TResult>`, and composes with `Where`/`OrderBy`; this is
+eager, returns a different container (`IPagination<TDestination>`), and composes with nothing. `Map` is
+already this repo's word for "transform the payload, preserve the carrier" — `Option.Map`, `Result.Map`,
+`MapAsync` — and `IPagination<T>` is exactly a carrier with metadata.
+
+There is a latent trap in the current name too. `IPagination<out T>` does not implement
+`IEnumerable<T>` today, but it exposes `Data` and one day someone will add it — at which point
+`page.Select(...)` silently binds to LINQ's extension instead, yields `IEnumerable<TDestination>`, and
+**drops `TotalCount`/`PageNumber`/`PageSize`**. `Map` cannot be captured that way. The move is already a
+breaking publish-first change, so fold the rename into it rather than paying for two breaks.
+
+
+Both are **published packages pinned by `ConcertablePlatformVersion`**, so like the `ActionLink`
+duplication above this is a publish-first cut-over, not an edit: add to Contracts, publish, let
+`platform-sync` bump the pins, then migrate the call sites and delete the old overload.
+
+**Resolves when:** `Select` lives in `Concertable.Contracts`, the hand-rolled
+`new Pagination<T>(...)` projections above are replaced with it, and `PaginationExtensions` in
+`DataAccess.Infrastructure` retains only `ToPaginationAsync`.
