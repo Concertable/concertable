@@ -21,31 +21,31 @@ so the codebase has zero calls; the building blocks (all in `B2B.DataAccess.Infr
   filter declarations via the abstract `ApplyTenantFilters` hook
   (`modelBuilder.ApplyVenueArtist<TEntity>(this)` per entity). Filters are declared per entity, never
   auto-derived from the `IVenueArtistTenantScoped` marker: marked ≠ filtered is a per-entity product
-  decision (Concert carries the pair but stays public). Example: `ConcertTenantDbContext`.
+  decision (Concert carries the pair but stays public). Example: `ConcertDbContext`.
 - **`TenantScopedDbContext`** (abstract, same seam) — the single-owner counterpart to the above: same
   shape, but `ApplyTenantFilters` declares per-entity single-owner filters
   (`modelBuilder.ApplySingleOwner<TEntity>(this)`, `TenantId == current`). Examples:
-  `VenueTenantDbContext` (filters `Venue`/`VenueImage`) and `ArtistTenantDbContext`.
-- **`XDbContext`** (one concrete context per module) — the tenant-independent read stance. It derives
+  `VenueDbContext` (filters `Venue`/`VenueImage`) and `ArtistDbContext`.
+- **`XReadDbContext`** (one concrete read context per split module) — the tenant-independent read stance. It derives
   the shared DataAccess `ReadDbContext`, which composes the module's configuration provider with no
   tenancy on top. It is read-only by construction — `SaveChanges` throws — so the write-side
-  `TenantInterceptor` guard can never be bypassed through it. Example: `ConcertDbContext`.
+  `TenantInterceptor` guard can never be bypassed through it. Example: `ConcertReadDbContext`.
 - **`AdminDbContext`** (abstract, same seam) — the platform-admin stance: composes the provider with no
-  tenancy, but **writable** (unlike `XDbContext`), so a cross-tenant operator can act on rows it
+  tenancy, but **writable** (unlike `XReadDbContext`), so a cross-tenant operator can act on rows it
   doesn't own; the `TenantInterceptor` write-guard no-ops for a tenant-less admin. One subclass per
-  module that has an admin write flow, e.g. `AdminVenueDbContext` (venue approval).
+  module that has an admin write flow, e.g. `VenueAdminDbContext` (venue approval).
 
 Query classes then split by **data-access stance**, one stance per class (mixing them in one class is
 the LSP violation — callers can't know which contract a method honors):
 
-- **`XRepository`** — the tenant-bound `XTenantDbContext`, including whichever tenant filters that
+- **`XRepository`** — the tenant-bound `XDbContext`, including whichever tenant filters that
   entity declares. The default.
-- **`XReadRepository`** — read-only access through the module's tenant-independent `XDbContext`.
+- **`XReadRepository`** — read-only access through the module's tenant-independent `XReadDbContext`.
   Its contract controls which data leaves the module.
-- **`AdminXRepository`** — privileged cross-tenant read/write (e.g. admin approval) on the writable
-  `AdminDbContext`. Only where an admin write flow exists, e.g. `AdminVenueRepository`.
+- **`XAdminRepository`** — privileged cross-tenant read/write (e.g. admin approval) on the writable
+  `AdminDbContext`. Only where an admin write flow exists, e.g. `VenueAdminRepository`.
 - **Domain facts that aren't naturally entity repositories** may get their own purpose-named
-  abstraction on the module's `XDbContext`, e.g. `IConcertAvailability`, when they form a real,
+  abstraction on the module's `XReadDbContext`, e.g. `IConcertAvailability`, when they form a real,
   independently consumed capability. Do not wrap a single query already owned by an aggregate
   repository in a one-method interface; keep that query on the repository.
 
@@ -71,10 +71,10 @@ with browse split off to the public stance).
 Repository qualifiers describe the contract that differs from a service's unqualified default; they
 are not one vocabulary to impose across every service:
 
-- **B2B data-access stance:** `XRepository` uses `XTenantDbContext`, `XReadRepository` uses the
-  tenant-independent/read-only `XDbContext`, and
-  `AdminXRepository` uses unfiltered/writable `AdminDbContext`. Purpose-named internal lookups and
-  facts may share `XDbContext`. Name the
+- **B2B data-access stance:** `XRepository` uses the normal tenant-bound `XDbContext`, `XReadRepository`
+  uses the tenant-independent/read-only `XReadDbContext`, and `XAdminRepository` uses
+  unfiltered/writable `AdminDbContext`. Purpose-named internal lookups and facts may share
+  `XReadDbContext`. Name the
   composed contract, never the filtering mechanism: do not substitute `Unscoped` or `CrossTenant`.
 - **Mutability:** the shared `Repository<...>` surface permits writes; `ReadRepository<...>` exposes
   queries only. Customer's event-synced replicas therefore use `XReadRepository` even without a

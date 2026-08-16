@@ -5,13 +5,13 @@
 - Roadmap item: `data-access/repository-context-permission-hierarchy`
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable/.worktrees/Plan-data-access-repository-permission-hierarchy`
 - Branch: `Refactor/DataAccessRepositoryPermissionHierarchy`
-- PR: [#561](https://github.com/Concertable/concertable/pull/561) (open; current-main reconciliation pending push)
-- Verified work head: `3b0d666437f10c7ba4aaa22f4ec117b949c586cc`
-- Starting remote head: `899ced29927028fcf285f67935da7480eabff129`
-- Pushed range: `899ced29927028fcf285f67935da7480eabff129..3b0d666437f10c7ba4aaa22f4ec117b949c586cc`
-- Remote and PR head: `3b0d666437f10c7ba4aaa22f4ec117b949c586cc` (verified equal after push)
+- PR: [#561](https://github.com/Concertable/concertable/pull/561) (open; naming correction pending push)
+- Verified work head: `1037165132e38f4fca8eddd991804ba097eba58d`
+- Starting remote head: `1037165132e38f4fca8eddd991804ba097eba58d`
+- Pushed range: pending
+- Remote and PR head: `1037165132e38f4fca8eddd991804ba097eba58d` (verified before current work)
 - Dependency/package gate: satisfied. Additive producer PR #590 merged as `59fe60e978affe23bcaf53823151eab2acda8ba0`, published platform `0.1.0-alpha.0.1007`, and platform-sync PR #592 merged green as `38e3d8548f10f3ab7a4a951b7c4ce961ec21c863`. Current `origin/main` pins `0.1.0-alpha.0.1009`, which includes the additive DataAccess API.
-- Last reconciled: 2026-08-16 against PR #561 and `origin/main` at `be418811bebdb0e11ebcde55ebd58a8d25326bec`.
+- Last reconciled: 2026-08-16 against PR #561 and `origin/main` at `e861f3642cea14e919d203604a4e9e7d00bcced8`.
 
 ## Current state
 
@@ -25,15 +25,18 @@ host now dispatches seeded participant events in process, and the three Strict M
 start at most one OIDC redirect per mount.
 
 The producer/package gate is open. The current-main merge preserves the typed-result service APIs,
-the B2B `XDbContext`/`XTenantDbContext` split, capability-named `*ReadRepository` persistence surface,
-and Conversations-owned participant projection. The Concert and Conversations initial migrations were
-re-scaffolded from the merged model. No source or filename outside the plan/review historical record
-contains a `Public*Repository`, `IPublic*Repository`, or `Public*DbContext` persistence name.
+capability-named `*ReadRepository` persistence surface, and Conversations-owned participant projection.
+B2B now uses unqualified `XDbContext`/`XRepository` for the normal active-tenant unit of work,
+`XReadDbContext`/`XReadRepository` for tenant-independent structurally read-only access, and
+`VenueAdminDbContext`/`VenueAdminRepository` for the administrative write exception. No source or
+filename contains the superseded concrete context/repository identifiers or a `Public*` persistence name.
 
 ## Next Steps
 
-1. Require green exact-head PR CI on `3b0d666437f10c7ba4aaa22f4ec117b949c586cc`.
-2. Await explicit merge authorization; then normalize to `full-e2e`, enqueue, and follow the merge-group,
+1. Commit and push the current-main merge and B2B naming correction, then verify local, remote-tracking,
+   and PR heads are equal.
+2. Require green exact-head PR CI.
+3. Await explicit merge authorization; then normalize to `full-e2e`, enqueue, and follow the merge-group,
    publication, and generated platform-sync gates to green before starting the legacy contraction.
 
 ## Completed work
@@ -67,9 +70,17 @@ contains a `Public*Repository`, `IPublic*Repository`, or `Public*DbContext` pers
   build passed with 0 warnings and 0 errors; Artist, Venue, Concert, and Conversations unit tests passed
   17/17, 18/18, 219/219, and 34/34; source/filename persistence-name grep returned zero; plan graph
   reported 0 errors and 0 warnings; `git diff --cached origin/main --check` passed.
-- Current-main work-head push succeeded for `899ced299..3b0d66643`; local, remote-tracking, and PR heads
-  were verified equal at `3b0d666437f10c7ba4aaa22f4ec117b949c586cc`. Replacement exact-head CI run
-  `31949374553` is in progress.
+- Current-main work-head push succeeded for `899ced299..3b0d66643`; its checkpoint transport produced
+  `1037165132e38f4fca8eddd991804ba097eba58d`, and exact-head CI run `31949481048` passed.
+- Reconciled 31 newer `origin/main` commits and corrected the B2B persistence names without changing
+  the context separation: normal tenant contexts/repositories are unqualified, alternate read-only
+  contexts/repositories use `Read`, and the Venue admin exception uses aggregate-first `VenueAdmin`.
+- Current candidate verification: B2B Web Release build passed with 0 errors; Artist, Venue, and Concert
+  unit suites passed 17/17, 18/18, and 221/221; EF design-time resolution and pending-model checks passed
+  for `ArtistDbContext`, `VenueDbContext`, and `ConcertDbContext`; plan graph and docs reachability reported
+  0 errors and 0 warnings; old concrete-identifier and public persistence-filename gates returned zero.
+  The full all-context migration script exceeded its 20-minute command budget without output, so its
+  affected-context invariant was verified directly with EF instead.
 
 ## Reviews
 
@@ -85,6 +96,7 @@ contains a `Public*Repository`, `IPublic*Repository`, or `Public*DbContext` pers
 - Consumer source may be prepared against an exact local producer package, but it could not merge
   until the same API existed in the published platform version. That gate is now satisfied.
 - `Tenant` is the canonical backend identity term. `Organisation` remains presentation language only.
-- B2B `XDbContext` is tenant-independent and read-only; `XTenantDbContext` is tenant-bound, tracked,
-  and writable. Customer read and projection-write contexts remain separate physical contexts.
+- B2B unqualified `XDbContext` is the normal tenant-bound tracked/write stance; `XReadDbContext` is the
+  tenant-independent no-tracking/no-save stance; `VenueAdminDbContext` is the administrative writable
+  exception. Customer read and projection-write contexts remain separate physical contexts.
 - The plan requires three feature merges: additive package, consumers, then legacy contraction.
