@@ -5,7 +5,7 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `b19bcc792d6a9b1889643a7e075552f40ab09c72`  _(2026-08-15)_
+**Reviewed up to commit:** `a8fd98ce0c09bcde71709f056e2b6d2cf97880f4`  _(2026-08-16)_
 
 > Range reviewed: `520761dd..b19bcc79` (5 commits). Native (`code-reviewer`) + architecture layers.
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -34,3 +34,35 @@
   end-to-end by the integration test (both-tenant receipt + the placeholder-legal-name degradation path).
 - **Member-fanout duplication** vs `Messenger`/`ApplicationNotifier` — the idiom already repeats across
   3+ existing sites with no shared helper; an accepted convention, not a new reuse violation.
+
+## Incremental review — 2026-08-16
+
+> Range: `b19bcc79..a8fd98ce`. Native (`code-reviewer`) + architecture layers. The booking-confirmation
+> email was **entirely rewritten** here: the hand-rolled `BookingConfirmationEmailGenerator` +
+> synchronous `BookingConfirmationNotifier` became the shared MJML `IEmailRenderer` + a transactional
+> outbox delivery (`BookingEntity.Confirm` raises `BookingConfirmedDomainEvent` → pre-commit
+> `BookingConfirmedDomainEventHandler` → `BookingConfirmationEmailSender` stages `SendEmailCommand`s).
+
+- [x] **BUG1 superseded** — the earlier isolation fix (try/catch around a post-commit send) is **gone**:
+  the send is now staged on the booking's own transaction via the outbox, so it can neither be lost nor
+  fail the committed booking. The plan's Open Decision 1 (synchronous) was reversed — its deferral
+  reason ("outbox not observable in the harness") no longer holds since `InvitationService` migrated.
+- [x] **NAT1 — LOW — correctness** — `Emails/BookingConfirmationEmailSender.cs` — `SendAsync` forwarded
+  its `CancellationToken` only to `bus.SendAsync`; the three `ITenantModule` reads dropped it. **Fixed**
+  (`a8fd98ce`): threaded `ct` through `BuildPartyAsync`/`StageToMembersAsync` to all three reads.
+- [x] **COV1 — LOW — test coverage (Lens F)** — the new `BookingEntity.Confirm` → domain-event wiring
+  was covered only by the Docker-gated integration test. **Fixed** (`0ca49c8b`): added
+  `BookingEntityTests.Confirm_...RaisesBookingConfirmedDomainEvent` (mirrors `TenantInvitationEntityTests`).
+
+## Cleared without a finding — 2026-08-16
+
+- **Transactional atomicity** — `DomainEventDispatchInterceptor` scans `IEventRaiser` entities and runs
+  the pre-commit handler inside `SaveChanges`, so the staged sends commit with the booking (established
+  Concert pattern: `ConcertPosted`/`Cancelled`/`Changed`).
+- **EF mapping of the new `IEventRaiser` field on `BookingEntity`** — no config needed: `DomainEvents` is
+  get-only (convention-ignored) and the private `events` field has no mapped property; identical to
+  `ConcertEntity`, which carries no `Ignore` config and no migration.
+- **`FormatAddress` NPE** — `RegisteredAddressDto.RegisteredAddress` is `required`/non-null, guarded by
+  `TryGetValue`; safe. `html.escape` on every tenant value preserves the old `HtmlEncode` safety.
+- **Fan-out vs `ApplicationNotifier`** — targets a different mechanism (`messenger`/`EmailCopy`); direct
+  outbox staging here is not a reuse violation.
