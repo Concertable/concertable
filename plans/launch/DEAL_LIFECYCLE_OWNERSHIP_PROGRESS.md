@@ -17,8 +17,9 @@ Accept, and creates Concert at Booked. Contract, Invoice, workflow strategies, e
 handlers, and combined dashboard queries all live in Concert. Payment correlates the same flow through
 consumer-specific ApplicationId and BookingId contracts.
 
-No product code has changed in this worktree. The plan, ledger, and roadmap item are the only planned
-changes. The dirty main checkout and unrelated worktrees were not modified.
+No product code has changed in this worktree. The plan, ledger, roadmap item, and prerequisite gate in
+the Rust decision-engine plan are the only changes. The dirty main checkout and unrelated worktrees
+were not modified.
 
 ## Next Steps
 
@@ -46,23 +47,24 @@ Implement Phase 1 as the first independently green PR slice:
   multi-PR package cut-over sequence in `DEAL_LIFECYCLE_OWNERSHIP_PLAN.md`.
 - Corrected the frontend delivery sequence for the published `@concertable/b2b` package and blocked
   the stale Rust extraction plan until the Deal ownership cut-over has landed and been reconciled.
-- Plan, ledger, and launch-roadmap ownership checkpoint: this commit.
+- Planning baseline: `6870e8e05`; delivery-gate corrections: `ec368204c`; implementation handoff
+  metadata: `688c3f966`.
 
 ## Verification
 
 - `git fetch origin --quiet`: refreshed the planning baseline.
 - `git rev-list --count HEAD..origin/main`: `0` in this worktree before plan edits.
-- `git status --short --branch`: clean `Refactor/DealLifecycleOwnership...origin/main` before plan edits.
+- `git status --short --branch`: clean `Docs/DealLifecycleOwnershipPlan...origin/main` before plan edits.
 - Repository searches confirmed Payment and the B2B SPAs are real consumers of Application/Booking
   identity, so Booking removal requires a package/API cut-over rather than a local entity deletion.
-- `python .agents/hooks/plan_graph.py --root C:\Users\TommySeery\source\repos\Concertable.worktrees\Refactor\DealLifecycleOwnership`: 0 errors, 0 warnings.
+- `python .agents/hooks/plan_graph.py --root C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-DealLifecycleOwnershipPlan`: 0 errors, 0 warnings.
 - `git diff --check`: passed.
 - No build or test run yet: this checkpoint changes planning documents only.
 
 ## Reviews
 
-- Docs review: clean after ACC1 and CON1 were fixed in
-  `reviews/Refactor-DealLifecycleOwnership.md`.
+- Docs review: clean after the published-frontend sequence, Rust prerequisite, package-cutover phase,
+  and ledger evidence were corrected.
 - Review the Phase 1 code diff after implementation and focused verification.
 
 ## Decisions, discoveries, blockers, and deviations

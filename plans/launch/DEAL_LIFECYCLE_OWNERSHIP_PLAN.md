@@ -269,7 +269,8 @@ ownership seam.
 
 ### Phase 2 — published boundary expansions
 
-- [ ] Execute the published-package change through the repository package-cutover workflow.
+- [ ] Map the Payment Contracts/Client producer and consumer topology before changing the published
+  surface; publish the additive versions through the normal package pipeline.
 - [ ] Add reference-native Payment client/protobuf commands and v2 integration messages without
   removing the legacy surface.
 - [ ] Persist one external reference through escrow, verification, settlement transactions, financial
@@ -324,6 +325,7 @@ ownership seam.
 
 ### Phase 4 — retire legacy published surfaces
 
+- [ ] Execute the breaking Payment surface removal through the repository package-cutover workflow.
 - [ ] Prove no source, published consumer, integration handler, Stripe metadata parser, seed fixture,
   or test still uses Payment `ApplicationId`, `BookingId`, or booking-named operations.
 - [ ] Remove the legacy client/protobuf/message versions and internal phase-specific properties.
