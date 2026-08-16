@@ -5,9 +5,9 @@
 - Roadmap item: `launch/deal-lifecycle-ownership`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-launch_deal-lifecycle-decision`
 - Branch: `Docs/launch_deal-lifecycle-decision`
-- PR: decision checkpoint not yet opened; rejected draft implementation PR [#614](https://github.com/Concertable/concertable/pull/614) remains open at remote head `2208702c903dd26a7f43ff554eb955083317b3cf` and must not be continued
+- PR: decision checkpoint branch pushed at `d06422710a5789cc40ab8817f8ee860f80220eda`; PR not yet opened. Rejected draft implementation PR [#614](https://github.com/Concertable/concertable/pull/614) remains open at remote head `2208702c903dd26a7f43ff554eb955083317b3cf` and must not be continued
 - Dependency/package gates: make this approved decision durable on current `main`, then close and retire the rejected PR/branch before creating the fresh implementation worktree
-- Last reconciled: 2026-08-16 against `origin/main` `b633d79aa`, rejected PR #614, and the transferred approved planning diff
+- Last reconciled: 2026-08-16 against `origin/main` `89361e99e`, rejected PR #614, and verified local/remote work head `d06422710a5789cc40ab8817f8ee860f80220eda`
 
 ## Current state
 
@@ -27,10 +27,10 @@ this branch through a recoverable stash.
 
 ## Next Steps
 
-1. Validate the reconciled plan graph and complete a docs review of this decision checkpoint.
-2. Commit, push, and land the docs-only checkpoint so the retirement decision is durable on `origin/main`.
-3. Close rejected PR #614 and retire its clean worktree with the landed decision commit as evidence.
-4. Create `Refactor/launch_deal-lifecycle-modules` from the resulting current `origin/main`, update this
+1. Open and admin-merge the reviewed docs-only decision checkpoint with `skip-e2e` so the retirement
+   decision is durable on `origin/main`.
+2. Close rejected PR #614 and retire its clean worktree with the landed decision commit as evidence.
+3. Create `Refactor/launch_deal-lifecycle-modules` from the resulting current `origin/main`, update this
    ledger to that worktree, and execute Phase 1.
 
 ## Completed work
@@ -45,6 +45,8 @@ this branch through a recoverable stash.
   module-local state machines/resolvers, contextual names, and no umbrella parent.
 - Replaced the undecided plan with executable phases covering module extraction, state ownership,
   transaction/convergence invariants, local step resolution, projections, and delivery.
+- Reconciled the approved decision onto current main, fixed all three docs-review findings, and pushed
+  reviewed work head `d06422710a5789cc40ab8817f8ee860f80220eda`; the remote-tracking ref matched exactly.
 
 ## Verification
 
@@ -64,7 +66,10 @@ this branch through a recoverable stash.
 
 ## Reviews
 
-No implementation review exists. The rejected PR's prior review is not evidence for this design.
+- Docs review of `89361e99e..d06422710` found three issues: the checkout boundary was ambiguous, the
+  typed-result ledger retained a transferred return path, and graph evidence was stale. All were fixed
+  in `0bd1d2094`; follow-up review through `d06422710` found no further issues.
+- No implementation review exists. The rejected PR's prior review is not evidence for this design.
 
 ## Decisions, discoveries, blockers, and deviations
 
