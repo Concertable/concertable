@@ -6,9 +6,9 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\payments_provider-contract-baseline`
 - Branch: `Feature/payments_provider-contract-baseline`
 - PR: #597 — https://github.com/Concertable/concertable/pull/597 — open; remote head `200e49f3ea4abe35f2e12038ad129650589f73ac` passed exact-head CI run 31964270135; auto-merge is disabled and the PR is not queued
-- Review readiness: **INCREMENTAL REVIEW REQUIRED** — the six original review findings remain resolved; a post-review readability refactor is locally verified and must be reconciled with current `origin/main`, reviewed, pushed, and pass exact-head CI
+- Review readiness: **REVIEW COMPLETE — PUSH AND EXACT-HEAD CI REQUIRED** — the six original review findings remain resolved; the post-review readability refactor and current-main reconciliation are reviewed through `7c1253f6946ac195d809b0bb2d9cd91c2fd16266`, with one convention-wording finding resolved and no open findings
 - Dependency/package gates: Phases 1 through 4 are locally complete; the production/live-mode Stripe account has no webhook endpoint, so future deployment is locked to `2025-01-27.acacia` and must create the endpoint at the actual Payment Web URL while installing its signing secret; compatibility is anchored to published `0.1.0-alpha.0.1009`; the branch carries platform pin `0.1.0-alpha.0.1033`
-- Last reconciled: 2026-08-17 against open PR #597 remote head `200e49f3`, local base merge `50b77eaa`, published Payment packages `0.1.0-alpha.0.1009`, and `origin/main` `5c33f849`; current main advanced during the local readability refactor
+- Last reconciled: 2026-08-17 against open PR #597 remote head `200e49f3`, reviewed local head `7c1253f6`, published Payment packages `0.1.0-alpha.0.1009`, and `origin/main` `5c33f849`; current main is incorporated through merge `7dc74fae68bc9c0b0f37c7a30d23a3321ce88dc3`
 
 ## Current state
 
@@ -79,9 +79,8 @@ authorization, both setup kinds, and refund.
 
 ## Next Steps
 
-Commit the locally verified readability refactor, merge current `origin/main`, rerun the affected
-Payment gates, perform the required incremental review, then push and require exact-head CI to pass.
-Keep the PR open in this turn.
+Push the reviewed work head, verify local, remote-tracking, and PR head equality, record the push
+checkpoint, then require exact-head CI to pass. Keep the PR open in this turn.
 
 ## Completed work
 
@@ -153,6 +152,12 @@ Keep the PR open in this turn.
 
 ## Verification
 
+- Current readability refactor and current-main reconciliation: Payment UnitTests built with 0
+  warnings and 0 errors and passed 478 of 478; focused formatting passed; plan graph and whitespace
+  checks passed before the review wording checkpoint.
+- Incremental implementation and security review covered `200e49f3..7c1253f6`; CV1 corrected an
+  over-broad extension-placement convention, and no runtime, boundary, security, or test-coverage
+  findings remain open.
 - Exact-head PR CI run 31963564771 passed at
   `3b49ef2d0a715626abd93aea39df80657da20bfd`; solution build, local platform package validation, all
   service carves, unit tests, and integration tests were green; policy-selected E2E jobs were skipped.
