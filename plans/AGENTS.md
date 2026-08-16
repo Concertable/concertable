@@ -85,10 +85,10 @@ blocked ledger in the dependency owner's `## Downstream handoffs`; that owner up
 ledger and surfaces its resume prompt when the gate opens. Full mechanics:
 [`agents/PLAN.md`](agents/PLAN.md) "Cross-plan blockers."
 
-## Hand off an actionable non-terminal plan with its continuation pointer
+## An actionable non-terminal plan handoff must end with its continuation pointer
 
 If a `_PROGRESS.md` ledger with actionable non-terminal `## Next Steps` is owned by the current or
-explicitly targeted worktree, hand off by ending with the two-line plan pointer from
+explicitly targeted worktree, the final response must end with the two-line plan pointer from
 [`../PROMPTS.md`](../PROMPTS.md). Reading or editing a foreign owner ledger during dependency or
 roadmap reconciliation does not claim that owner's handoff. Local
 implementation completion is not lifecycle completion while review, PR, merge, publication,
@@ -96,9 +96,8 @@ dependency, or platform-sync work remains. A summary, a prose “next steps” s
 continue is not the handoff. The exceptions are a registered in-flight owner wait under the
 cross-plan blocker rule above, a hard stop recorded with the `Blocked:`, `Blocked by:`,
 `Unblock action:`, and `Resume when:` fields from [`agents/PLAN.md`](agents/PLAN.md), or a human-gated
-`Paused:` line — none emit the pointer. The Stop hook surfaces this as a non-blocking reminder for
-Claude and Codex; it no longer rejects a response, so keep the handoff honest yourself rather than
-relying on the gate.
+`Paused:` line — none emit the pointer. The Stop hook blocks one incomplete final response for Claude
+and Codex and supplies the exact replacement handoff. Its retry guard prevents recursive blocking.
 
 Run `python .agents/hooks/plan_graph.py --root <absolute-worktree>` after creating or changing plan
 graph metadata. Missing or broken links, malformed blockers, missing reciprocal owner handoffs, and

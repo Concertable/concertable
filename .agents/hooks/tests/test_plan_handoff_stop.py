@@ -7,7 +7,7 @@ from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from plan_handoff_stop import evaluate, expected_pointer, next_steps, transcript_ledgers
+from plan_handoff_stop import evaluate, expected_handoff, expected_pointer, next_steps, transcript_ledgers
 
 
 class PlanHandoffStopTests(unittest.TestCase):
@@ -161,6 +161,13 @@ class PlanHandoffStopTests(unittest.TestCase):
             "and do what its `## Next Steps` says."
         )
 
+    def handoff(self):
+        return expected_handoff(
+            self.ledger.resolve(),
+            self.pointer(),
+            next_steps(self.ledger.read_text(encoding="utf-8")),
+        )
+
     def input_without_ledger_reference(self, message):
         transcript = self.root / "unrelated-transcript.jsonl"
         record = {"type": "response_item", "payload": {"type": "message", "role": "user"}}
@@ -219,31 +226,57 @@ class PlanHandoffStopTests(unittest.TestCase):
             "last_assistant_message": message,
         }
 
-    def assertAdvisory(self, result):
-        self.assertNotIn("decision", result)
-        self.assertIn("systemMessage", result)
-        return result["systemMessage"]
+    def assertBlocked(self, result):
+        self.assertEqual("block", result["decision"])
+        return result["reason"]
 
-    def test_active_plan_emits_advisory_reminder_not_a_block(self):
+    def test_active_plan_blocks_without_handoff(self):
         self.write_ledger("Run the repository code-review workflow, then open the PR.")
         result = evaluate(self.input_with_codex_transcript("Implementation is complete and committed."))
-        self.assertIn(self.pointer(), self.assertAdvisory(result))
+        self.assertIn(self.pointer(), self.assertBlocked(result))
 
-    def test_reminder_is_independent_of_message_content(self):
+    def test_allows_explained_handoff_at_end(self):
         self.write_ledger("Run the repository code-review workflow, then open the PR.")
-        for message in (
-            "Done.",
-            f"Ready.\n\n```text\n{self.pointer()}\n```",
-            "Next steps are code review and a PR.",
-            "The answer is 42.",
-        ):
-            result = evaluate(self.input_with_codex_transcript(message))
-            self.assertIn(self.pointer(), self.assertAdvisory(result))
+        result = evaluate(self.input_with_codex_transcript(f"Ready.\n\n{self.handoff()}"))
+        self.assertEqual({}, result)
 
-    def test_claude_transcript_also_reminds(self):
+    def test_bare_pointer_is_rejected(self):
+        self.write_ledger("Run the repository code-review workflow, then open the PR.")
+        result = evaluate(
+            self.input_with_codex_transcript(f"Ready.\n\n```text\n{self.pointer()}\n```")
+        )
+        self.assertIn("explained continuation", self.assertBlocked(result))
+
+    def test_pointer_followed_by_prose_is_rejected(self):
+        self.write_ledger("Run the repository code-review workflow, then open the PR.")
+        result = evaluate(
+            self.input_with_codex_transcript(f"{self.handoff()}\n\nLet me know.")
+        )
+        self.assertIn("placed prose after it", self.assertBlocked(result))
+
+    def test_generated_repair_handoff_passes_on_retry(self):
+        self.write_ledger("Run the repository code-review workflow, then open the PR.")
+        first = evaluate(self.input_with_codex_transcript("Implementation is complete."))
+        retry = self.input_with_codex_transcript(f"Ready.\n\n{self.handoff()}")
+        retry["stop_hook_active"] = True
+
+        self.assertEqual("block", first["decision"])
+        self.assertEqual({}, evaluate(retry))
+
+    def test_retry_guard_prevents_recursive_block(self):
+        self.write_ledger("Run the repository code-review workflow, then open the PR.")
+        retry = self.input_with_codex_transcript("Still missing the pointer.")
+        retry["stop_hook_active"] = True
+
+        result = evaluate(retry)
+
+        self.assertNotIn("decision", result)
+        self.assertIn("prevent a recursive Stop-hook loop", result["systemMessage"])
+
+    def test_claude_transcript_also_blocks(self):
         self.write_ledger("Run the repository code-review workflow, then open the PR.")
         result = evaluate(self.input_with_claude_transcript("Implementation is complete."))
-        self.assertIn(self.pointer(), self.assertAdvisory(result))
+        self.assertIn(self.pointer(), self.assertBlocked(result))
 
     def test_paused_plan_is_silent(self):
         self.write_ledger("Paused: awaiting Tommy's go-ahead on the launch copy before publishing.")
@@ -255,31 +288,35 @@ class PlanHandoffStopTests(unittest.TestCase):
         result = evaluate(self.input_with_codex_transcript("Everything is complete."))
         self.assertEqual({}, result)
 
-    def test_well_formed_blocker_is_silent(self):
-        self.write_ledger(
+    def test_well_formed_blocker_requires_exact_report(self):
+        blocker = (
             "Blocked: PR #123 has not merged.\n"
             "Blocked by: GitHub PR #123.\n"
             "Unblock action: The PR #123 owner must follow it to a terminal merge.\n"
             "Resume when: GitHub reports PR #123 merged."
         )
-        result = evaluate(self.input_with_codex_transcript("Still blocked on PR #123."))
+        self.write_ledger(blocker)
+        result = evaluate(self.input_with_codex_transcript(blocker))
         self.assertEqual({}, result)
 
-    def test_malformed_blocker_is_flagged_advisory(self):
+        missing = evaluate(self.input_with_codex_transcript("Still blocked on PR #123."))
+        self.assertIn("report these exact lines", self.assertBlocked(missing))
+
+    def test_malformed_blocker_is_blocked(self):
         self.write_ledger("Waiting for PR #123 to merge; its owner will surface this plan when ready.")
         result = evaluate(self.input_with_codex_transcript("Waiting for PR #123."))
-        self.assertIn("Blocked by:", self.assertAdvisory(result))
+        self.assertIn("Blocked by:", self.assertBlocked(result))
 
-    def test_missing_next_steps_is_flagged_advisory(self):
+    def test_missing_next_steps_is_blocked(self):
         self.write_ledger_without_next_steps()
         result = evaluate(self.input_with_codex_transcript("Everything is complete."))
-        self.assertIn("`## Next Steps`", self.assertAdvisory(result))
+        self.assertIn("`## Next Steps`", self.assertBlocked(result))
 
-    def test_invalid_plan_graph_is_flagged_advisory(self):
+    def test_invalid_plan_graph_is_blocked(self):
         self.write_ledger("Open the PR.")
         self.roadmap.write_text("# Roadmap\n", encoding="utf-8")
         result = evaluate(self.input_with_codex_transcript("Implementation is complete."))
-        message = self.assertAdvisory(result)
+        message = self.assertBlocked(result)
         self.assertIn("PLAN GRAPH", message)
         self.assertNotIn(self.pointer(), message)
 
@@ -287,9 +324,9 @@ class PlanHandoffStopTests(unittest.TestCase):
         missing = self.root.parent / "launch_not_created"
         self.write_ledger("Implement the plan.", worktree=missing)
         result = evaluate(self.input_with_codex_transcript("The plan is ready."))
-        self.assertIn("/worktree create Feature/launch_example", self.assertAdvisory(result))
+        self.assertIn("/worktree create Feature/launch_example", self.assertBlocked(result))
 
-    def test_mixed_blocked_and_active_reminds_only_the_active(self):
+    def test_mixed_blocked_and_active_returns_complete_repair(self):
         blocked = self.root / "plans" / "launch" / "OWNER_PROGRESS.md"
         blocked_plan = blocked.with_name("OWNER_PLAN.md")
         active = self.root / "plans" / "launch" / "DEPENDENT_PROGRESS.md"
@@ -348,9 +385,9 @@ class PlanHandoffStopTests(unittest.TestCase):
                 "last_assistant_message": "Implementation is complete.",
             }
         )
-        message = self.assertAdvisory(result)
+        message = self.assertBlocked(result)
         self.assertIn(active_pointer, message)
-        self.assertNotIn("Blocked: The package is not published.", message)
+        self.assertIn("Blocked: The package is not published.", message)
 
     def test_patch_claims_targets_without_claiming_referenced_dependency_ledgers(self):
         typed_result = self.root / "plans" / "typed-result"
@@ -588,7 +625,7 @@ class PlanHandoffStopTests(unittest.TestCase):
                 "last_assistant_message": "Implementation is complete.",
             }
         )
-        message = self.assertAdvisory(result)
+        message = self.assertBlocked(result)
         self.assertIn(self.pointer(), message)
         self.assertNotIn("missing-owner", message)
 
@@ -631,10 +668,10 @@ class PlanHandoffStopTests(unittest.TestCase):
                 "last_assistant_message": "Implementation is complete.",
             }
         )
-        message = self.assertAdvisory(result)
+        message = self.assertBlocked(result)
         self.assertEqual(1, message.count("/worktree create Feature/launch_example"))
 
-    def test_unrelated_turn_in_plan_worktree_needs_no_reminder(self):
+    def test_unrelated_turn_in_plan_worktree_needs_no_handoff(self):
         self.write_ledger("Run the repository code-review workflow, then open the PR.")
         with patch("plan_handoff_stop.branch_ledgers", return_value={self.ledger}) as fallback:
             result = evaluate(self.input_without_ledger_reference("The answer is 42."))
