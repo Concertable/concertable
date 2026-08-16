@@ -40,6 +40,10 @@ def all_md_files(root):
     return sorted(path for path in root.rglob("*.md") if not ignored(path.relative_to(root)))
 
 
+def repo_path(root, path):
+    return path.relative_to(root).as_posix()
+
+
 def resolve_reference(referrer, raw_ref):
     ref = raw_ref.strip().split("#", 1)[0].strip()
     if not ref or ref.startswith(("http://", "https://", "mailto:")):
@@ -67,14 +71,14 @@ def sibling_errors(root):
         claude = path.with_name("CLAUDE.md")
         if not claude.is_file():
             errors.append(
-                f"{path.relative_to(root)}: has no sibling CLAUDE.md "
+                f"{repo_path(root, path)}: has no sibling CLAUDE.md "
                 f"(every AGENTS.md must have a CLAUDE.md containing exactly `{CLAUDE_BODY}`)"
             )
             continue
         body = claude.read_text(encoding="utf-8").strip()
         if body != CLAUDE_BODY:
             errors.append(
-                f"{claude.relative_to(root)}: must contain exactly `{CLAUDE_BODY}`, found `{body}`"
+                f"{repo_path(root, claude)}: must contain exactly `{CLAUDE_BODY}`, found `{body}`"
             )
     return errors
 
@@ -99,7 +103,7 @@ def orphan_errors(root):
     for doc in agents_dir_docs(root):
         if doc.resolve() not in reachable:
             errors.append(
-                f"{doc.relative_to(root)}: not reachable (by plain link or @-import, followed "
+                f"{repo_path(root, doc)}: not reachable (by plain link or @-import, followed "
                 "transitively) from any AGENTS.md, CLAUDE.md, or SKILL.md in the repository"
             )
     return errors

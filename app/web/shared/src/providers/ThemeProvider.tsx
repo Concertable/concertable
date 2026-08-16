@@ -1,6 +1,9 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import { createClassifiedStorage } from "@/lib/classifiedStorage";
 
 type Theme = "light" | "dark" | "system";
+
+const themeStorage = createClassifiedStorage<Theme>("theme");
 
 interface ThemeContextValue {
   theme: Theme;
@@ -19,7 +22,7 @@ function applyTheme(theme: Theme) {
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(
-    () => (localStorage.getItem("theme") as Theme) ?? "system",
+    () => themeStorage.get() ?? "system",
   );
 
   useEffect(() => {
@@ -34,7 +37,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, [theme]);
 
   function setTheme(theme: Theme) {
-    localStorage.setItem("theme", theme);
+    themeStorage.set(theme);
     setThemeState(theme);
   }
 
