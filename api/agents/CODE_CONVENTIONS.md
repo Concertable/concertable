@@ -303,25 +303,25 @@ internal static class EscrowMappers
 }
 ```
 
-## Paginated results — project with `IPagination<T>.Select`, never `new Pagination<T>(...)`
+## Paginated results — project with `IPagination<T>.Map`, never `new Pagination<T>(...)`
 
 Mapping a page from entity to DTO, or DTO to Response, is one call:
 
 ```csharp
-return (await repository.GetQueueAsync(pageParams)).Select(r => r.ToDto());
+return (await reportRepository.GetQueueAsync(pageParams)).Map(r => r.ToDto());
 ```
 
-`PaginationExtensions.Select` carries `TotalCount`/`PageNumber`/`PageSize` across for you. Hand-writing
-`new Pagination<TDestination>(source.Data.Select(...).ToList(), source.TotalCount, source.PageNumber,
-source.PageSize)` restates four arguments that have exactly one correct value, and it is how the repo
-ended up with eight-plus copies of the same constructor call.
+`Map` lives in `Concertable.Contracts` beside `IPagination<T>`, so every layer can reach it — including
+`*.Api`, which deliberately does not reference the data-access package. It carries
+`TotalCount`/`PageNumber`/`PageSize` across for you; hand-writing `new Pagination<TDestination>(...)`
+restates four arguments that have exactly one correct value.
 
-One live caveat: the extension sits in `Concertable.DataAccess.Infrastructure`, which `*.Api` projects
-deliberately do not reference — so Api response mappers genuinely cannot reach it and hand-construct
-today. Every layer that *can* reach it (Application, Infrastructure) uses it. Moving `Select` to
-`Concertable.Contracts`, next to `IPagination<T>` itself — and renaming it `Map`, since it preserves a
-carrier rather than behaving like LINQ's lazy `Select` — is logged in
-[`../TECH_DEBT.md`](../TECH_DEBT.md).
+Two cases are **not** `Map`:
+
+- **Only the item type widens** — `IPagination<out T>` is covariant, so an `IPagination<ArtistHeader>`
+  already *is* an `IPagination<IHeader>`. Return it; don't re-wrap and don't `Map(x => x)`.
+- **The projection is asynchronous** — `Map` takes a synchronous selector, so an `await`-ing projection
+  (`OpportunityMapper.ToDtosAsync`) still constructs its page by hand.
 
 ## `#region` — sparingly, to group same-shaped members in an aggregating file
 
