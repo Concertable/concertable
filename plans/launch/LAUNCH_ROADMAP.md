@@ -16,9 +16,11 @@
 - [x] Revenue model — **resolved for launch 2026-07-30: one Payment-owned percentage of the final B2B-calculated deal gross.** The payer pays gross plus commission and the payee receives gross. B2B owns four deal-gross strategies; Payment owns one deal-agnostic commission calculation. The shipped £10 fee is temporary and must be removed before launch. See [PLATFORM_COMMISSION_PLAN.md](PLATFORM_COMMISSION_PLAN.md) and the decision log.
 - [x] DoorSplit/Versus revenue source — **resolved: manual door-takings entry + charge-the-venue** for v1 (external-ticketer import ruled out — §9). All four contract types ship in the pure-B2B MVP, no marketplace dependency. See §9 / R9.
 
-**Code sweep 2026-08-16 — six previously untracked gaps.** A verification pass over the admin,
+**Code sweep 2026-08-16 — eight previously untracked gaps.** A verification pass over the admin,
 tenant-verification, Stripe-webhook, GDPR, rate-limiting and audit surfaces found work the roadmap had
-never listed; four are launch gates. They are folded into the lists below and into §5/§7/§9 with their
+never listed: four launch gates (webhook coverage, tenant verification, admin console, GDPR subject
+rights), rate limiting, the open settlement-dispute decision in §9, and two post-launch rows (email
+preferences, admin audit log). They are folded into the lists below and into §5/§7/§9 with their
 code evidence inline, rather than kept as a separate appendix. The three "verify before trusting"
 table-stakes items were resolved in the same pass.
 
@@ -117,8 +119,8 @@ Calendar-realistic, not optimistic. Slips are flagged as risks (§6).
 | **Month 2 (Jul 2026)** | Business bank account opened · Accountant engaged · Solicitor drafts circulating | **Phase 2** — Venue/Artist wired to Tenant | Browser-storage inventory + policy classification; consent only where actual optional technology requires it |
 | **Month 3 (Aug 2026)** | Insurance arranged (Professional Indemnity + Cyber) · Stripe production application submitted | **Phase 3** — `PayoutAccountEntity` re-key to TenantId | **Pricing transparency** at each payer commitment point (Payment quote package first) |
 | **Month 4 (Sep 2026)** | Solicitor T&Cs finalised · DPA signed with Stripe · ICO documentation (privacy policy, lawful basis, retention) | **Phase 4** — `ComplianceContext` snapshot on Booking · **Phase 5** — Organization setup UI | **Privacy + T&Cs page routes** wired up (solicitor text now in hand) · **Venue legal details on emails** template change · **Booking agreement + click-wrap e-sign** at Accept (PDF via `IPdfRenderer`) |
-| **Month 5 (Oct 2026)** | HMRC platform-operator registration · Stripe production approved · Marketing site live | **Phase 6** — Multi-user membership + auth sweep | **Refund / cancellation codification** in `Cancelled` workflow · **Per-contract VAT calculation** + **self-billed invoice generation** (reuses agreement PDF plumbing) · **OSA report-content flow** (button + email + policy doc) · **DAC7 export script** (defer the actual run until Jan 2028) |
-| **Month 6 (Nov 2026)** | Beta cohort recruited (~10 venues + 50 artists) · Support process live · Pricing page live | Bugfixes from beta feedback · final integration tests | Final polish · accessibility quick-pass · **LAUNCH** |
+| **Month 5 (Oct 2026)** | HMRC platform-operator registration · Stripe production approved · Marketing site live | **Phase 6** — Multi-user membership + auth sweep · **Admin console + admin provisioning** · **Tenant verification** (needs the console) | **Refund / cancellation codification** in `Cancelled` workflow · **Per-contract VAT calculation** + **self-billed invoice generation** (reuses agreement PDF plumbing) · **OSA report-content flow** (button + email + policy doc) · **DAC7 export script** (defer the actual run until Jan 2028) |
+| **Month 6 (Nov 2026)** | Beta cohort recruited (~10 venues + 50 artists) · Support process live · Pricing page live | Bugfixes from beta feedback · final integration tests | **Stripe webhook coverage** (disputes / account status / payout failures) · **GDPR erasure + export** · **Rate limiting** · Final polish · accessibility quick-pass · **LAUNCH** |
 
 ## 4. Critical path
 
@@ -144,6 +146,12 @@ Phase 0 — Tenant scaffolding (Month 1)
                                     └─→ Phase 5 — Setup UI (Month 4)
                                             └─→ Phase 6 — Membership refactor (Month 5)
                                                     └─→ Beta + launch (Month 6)
+
+Admin console + production admin provisioning (Month 5)
+    └─→ Tenant verification (evidence upload + admin review + enforced gate)
+
+Payment provider-contract baseline
+    └─→ Stripe webhook coverage (disputes, account.updated, payout/transfer failures)
 
 Stripe production approval (~2-4 weeks elapsed)
     └─→ Must be approved before Month 6 launch
@@ -199,6 +207,7 @@ Stripe production approval (~2-4 weeks elapsed)
 | R8 | Solicitor flags an issue we haven't planned for (e.g. requires PSR registration, not just disclosed-agent) | Low | High | First solicitor consultation in Month 1 should explicitly confirm disclosed-agent posture is viable on Stripe Connect Express. If they push back, this plan needs major rework. |
 | R9 | DoorSplit/Versus manual-entry settlement screen slips → two of four contract types unsellable at launch | Low | Medium | **Resolved 2026-06-22 (§9):** manual door-take entry + charge-the-venue feeds DoorSplit/Versus at v1 so all four ship; external-ticketer import ruled out; owned checkout (marketplace) is the deferred durable feed. Residual is only *building* the door-take entry screen — the money mechanic reuses FlatFee escrow. FlatFee + VenueHire remain the standalone floor if that screen slips. |
 | R10 | VAT calculation + invoice work (Month 5) collides with Phase 6 auth sweep | Medium | Medium | Both land Month 5. If Phase 6 is running hot, pull the VAT chain forward to Month 4 (it depends only on the tenant VAT fields from Phase 1, not on Phase 6). |
+| R11 | The 2026-08-16 sweep roughly doubled Swim-lane C (~20-31 → ~40-60 days) against a fixed November 2026 date, and four of the additions are launch gates landing in Months 5-6 — the same window as the Phase 6 auth sweep and production deployment | **High** | **High** | The lane no longer fits its window on current sequencing. Either move the launch date, or cut scope explicitly: the honest candidates are shipping tenant verification as manual/offline admin review (evidence by email, flag flipped by hand) rather than a built upload workflow, and deferring rate limiting to a CDN/gateway rule. Do **not** cut the webhook-coverage or GDPR gates — the first is money correctness on the differentiating path, the second is a regulator obligation. Reassess at the end of Month 4. |
 
 ## 7. Definition of "launch-ready"
 
