@@ -15,7 +15,7 @@
 - Consumer publication/sync gate: satisfied. Publication run `31976777846` passed and platform-sync
   PR [#623](https://github.com/Concertable/concertable/pull/623) merged green as
   `d5669a836c4d7fd9bb4d15e9c05f0a71f0e9f40c`.
-- Last reconciled: 2026-08-17 against `origin/main` at `d5669a836c4d7fd9bb4d15e9c05f0a71f0e9f40c`.
+- Last reconciled: 2026-08-17 against `origin/main` at `5951fa4f7`.
 
 ## Current state
 
@@ -64,7 +64,7 @@ topology contract test, and both signup flows attach their registration wait bef
 
 ## Next Steps
 
-1. Compound-push this checkpoint and require green exact-head PR CI.
+1. Compound-push the reviewed current-main checkpoint and require green replacement exact-head PR CI.
 2. Mark #626 ready, apply `full-e2e`, enqueue, and follow merge-group,
    publication, and platform-sync gates to green.
 3. Create the legacy-contraction worktree from current main and reconcile its owning ledger before
@@ -140,6 +140,8 @@ topology contract test, and both signup flows attach their registration wait bef
 - The automatically readmitted merge-group run `31975154334` passed full E2E; consumer PR #561 then
   merged as `249dc8a9d`, package publication run `31976777846` passed, and platform-sync PR #623 merged
   green as `d5669a836`.
+- Follow-up exact-head CI run `31979493729` passed on `7361b99b1`; two newer main guidance commits were
+  then merged through `27dd5f7b4`, and the focused topology suite remained green at 7/7.
 - B2B topology tests passed 7/7 after adding the B2B `SendEmailCommand` queue contract.
 - B2B and Customer UI E2E projects built in Release with 0 errors after moving both registration waits
   ahead of their sign-up clicks.
@@ -172,6 +174,8 @@ topology contract test, and both signup flows attach their registration wait bef
   watermark is current at `b887f15c8fe3baec149033dcc99358d8cc6cb959`.
 - Review of follow-up range `d5669a836..1a2da63ba` found no issues. The review is recorded in
   `reviews/Fix-SignupNavigationRace.md`; the diff changes no security-sensitive production path.
+- Incremental review of `7361b99b1..27dd5f7b4` found no issues; the range contains only current-main
+  guidance and its merge commit, with no overlap in the repaired paths.
 
 ## Decisions, discoveries, blockers, and deviations
 
