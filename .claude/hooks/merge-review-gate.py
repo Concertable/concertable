@@ -76,6 +76,33 @@ def is_merge_enable(command):
     return True
 
 
+def pr_number(command):
+    """The PR number the command targets, when it names one explicitly."""
+    m = re.search(r"gh\s+pr\s+merge\s+(\d+)", command)
+    return m.group(1) if m else None
+
+
+def gh_json(*args):
+    return subprocess.run(
+        ["gh", *args], capture_output=True, text=True, check=True
+    ).stdout.strip()
+
+
+def review_only(base, head):
+    """True when everything between base and head touched reviews/ alone.
+
+    Stamping the marker is itself a commit, so a review can never be stamped AT the
+    commit that contains it. Demanding marker == head therefore blocks every honestly
+    reviewed PR, which is why this gate could not be satisfied from any checkout.
+    Nothing reviewable changed, so the review is still current.
+    """
+    try:
+        changed = git("diff", "--name-only", base + ".." + head).splitlines()
+    except Exception:  # noqa: BLE001 - unresolvable range -> treat as stale, fail closed
+        return False
+    return bool(changed) and all(x.startswith("reviews/") for x in changed)
+
+
 def block(reason):
     sys.stderr.write(reason)
     sys.exit(2)
@@ -96,20 +123,52 @@ def main():
 
     # From here on the command WOULD merge — fail closed on anything unproven.
     try:
-        branch = git("rev-parse", "--abbrev-ref", "HEAD")
-        head = git("rev-parse", "HEAD")
         toplevel = git("rev-parse", "--show-toplevel")
     except Exception as exc:  # noqa: BLE001 — a merge with a broken check must not slip through
         block("MERGE GATE: cannot resolve git state (" + str(exc) + "); refusing "
               "`gh pr merge` until a code-review can be verified.")
 
+    # Gate the branch being MERGED, not the branch this session happens to sit on.
+    # Resolving the session's checkout meant a worktree PR merged from a main-rooted
+    # session looked for reviews/main.md and blocked, however clean its own review was.
+    target = pr_number(command)
+    if target:
+        try:
+            branch = gh_json("pr", "view", target, "--json", "headRefName", "--jq", ".headRefName")
+            head = gh_json("pr", "view", target, "--json", "headRefOid", "--jq", ".headRefOid")
+        except Exception as exc:  # noqa: BLE001
+            block("MERGE GATE: cannot resolve PR #" + target + " (" + str(exc) + "); refusing to "
+                  "merge until its review can be verified.")
+    else:
+        try:
+            branch = git("rev-parse", "--abbrev-ref", "HEAD")
+            head = git("rev-parse", "HEAD")
+        except Exception as exc:  # noqa: BLE001
+            block("MERGE GATE: cannot resolve git state (" + str(exc) + "); refusing to merge "
+                  "until a code-review can be verified.")
+
     slug = branch.replace("/", "-")
     review_path = toplevel + "/reviews/" + slug + ".md"
 
-    try:
-        with open(review_path, encoding="utf-8") as fh:
-            review = fh.read()
-    except OSError:
+    review = None
+    if target:
+        for ref in (branch, head):
+            try:
+                git("fetch", "origin", ref)
+                break
+            except Exception:  # noqa: BLE001 - deleted branch / unfetchable oid; try the next
+                continue
+        try:
+            review = git("show", head + ":reviews/" + slug + ".md")
+        except Exception:  # noqa: BLE001 - fall through to the working tree
+            review = None
+    if review is None:
+        try:
+            with open(review_path, encoding="utf-8") as fh:
+                review = fh.read()
+        except OSError:
+            review = None
+    if review is None:
         block(
             "MERGE GATE (AGENTS.md — review before merge): no review file for "
             "branch '" + branch + "' at reviews/" + slug + ".md. Run /review "
@@ -123,7 +182,8 @@ def main():
               "marker. Re-run /review to stamp it, then merge.")
 
     reviewed = m.group(1).lower()
-    if not (head.lower().startswith(reviewed) or reviewed.startswith(head.lower())):
+    if not (head.lower().startswith(reviewed) or reviewed.startswith(head.lower())) \
+            and not review_only(reviewed, head):
         block(
             "MERGE GATE: review is STALE — reviews/" + slug + ".md is stamped at "
             + reviewed + " but HEAD is " + head[:12] + ". Commits landed since the "
