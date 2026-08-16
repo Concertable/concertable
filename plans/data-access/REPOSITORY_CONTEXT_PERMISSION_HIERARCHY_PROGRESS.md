@@ -5,13 +5,13 @@
 - Roadmap item: `data-access/repository-context-permission-hierarchy`
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable/.worktrees/Plan-data-access-repository-permission-hierarchy`
 - Branch: `Refactor/DataAccessRepositoryPermissionHierarchy`
-- PR: [#561](https://github.com/Concertable/concertable/pull/561) (open; naming correction pending push)
-- Verified work head: `1037165132e38f4fca8eddd991804ba097eba58d`
-- Starting remote head: `1037165132e38f4fca8eddd991804ba097eba58d`
+- PR: [#561](https://github.com/Concertable/concertable/pull/561) (open; reviewed current-main candidate pending push)
+- Verified work head: `ff8354a15ec6254a630b420c3e0c1f8a47da7ca9`
+- Starting remote head: `b29e5422fc9a667df0d06b7cff249eb8a9c6ac60`
 - Pushed range: pending
-- Remote and PR head: `1037165132e38f4fca8eddd991804ba097eba58d` (verified before current work)
+- Remote and PR head: `b29e5422fc9a667df0d06b7cff249eb8a9c6ac60` (verified before current work)
 - Dependency/package gate: satisfied. Additive producer PR #590 merged as `59fe60e978affe23bcaf53823151eab2acda8ba0`, published platform `0.1.0-alpha.0.1007`, and platform-sync PR #592 merged green as `38e3d8548f10f3ab7a4a951b7c4ce961ec21c863`. Current `origin/main` pins `0.1.0-alpha.0.1009`, which includes the additive DataAccess API.
-- Last reconciled: 2026-08-16 against PR #561 and `origin/main` at `e861f3642cea14e919d203604a4e9e7d00bcced8`.
+- Last reconciled: 2026-08-16 against PR #561 and `origin/main` at `07624709d873dd0aecc934e59bbc45f78b0c844b`.
 
 ## Current state
 
@@ -31,10 +31,20 @@ B2B now uses unqualified `XDbContext`/`XRepository` for the normal active-tenant
 `VenueAdminDbContext`/`VenueAdminRepository` for the administrative write exception. No source or
 filename contains the superseded concrete context/repository identifiers or a `Public*` persistence name.
 
+The consistency sweep also covers reusable and pre-existing administrative persistence types:
+`VenueArtistTenantScopedDbContext` matches the scoped repository/entity vocabulary, and Conversations
+uses aggregate-first `ConversationsAdminDbContext`, `MessageAdminRepository`, and
+`ContentReportAdminRepository` names with matching interfaces.
+
+The first naming-correction CI run exposed a cancellation-test harness race: an untyped financial
+completion could consume a pending acceptance command before the asynchronously dispatched refund.
+The fixture now completes a requested command type, and refund workflows explicitly complete
+`RefundEscrowCommand`. The branch has since been reconciled with the latest current main.
+
 ## Next Steps
 
-1. Commit and push the current-main merge and B2B naming correction, then verify local, remote-tracking,
-   and PR heads are equal.
+1. Commit and push the reviewed current-main candidate, then verify local, remote-tracking, and PR heads
+   are equal.
 2. Require green exact-head PR CI.
 3. Await explicit merge authorization; then normalize to `full-e2e`, enqueue, and follow the merge-group,
    publication, and generated platform-sync gates to green before starting the legacy contraction.
@@ -81,15 +91,27 @@ filename contains the superseded concrete context/repository identifiers or a `P
   0 errors and 0 warnings; old concrete-identifier and public persistence-filename gates returned zero.
   The full all-context migration script exceeded its 20-minute command budget without output, so its
   affected-context invariant was verified directly with EF instead.
+- Naming-correction head `b29e5422f` reached exact-head CI run `31954686429`; all jobs passed except
+  B2B Concert integration, where two cancellation tests deterministically found no refund command.
+- The two exact failing tests passed after command-typed completion. The complete changed classes then
+  passed 11/11 and 4/4 before current-main reconciliation.
+- Merged 26 newer current-main commits through `07624709d`; B2B Web Release rebuilt with 0 errors, and
+  the combined `ApplicationCancelApiTests` plus `ConcertCancelApiTests` scope passed 15/15.
+- The completed B2B persistence-name sweep rebuilt B2B Web Release with 0 warnings and 0 errors;
+  B2B DataAccess and Conversations unit suites passed 2/2 and 34/34; the old-name gate returned zero
+  across source, guidance, plans, and review references.
 
 ## Reviews
 
 - Formal and incremental reviews are recorded in
-  `reviews/Refactor-DataAccessRepositoryPermissionHierarchy.md`; all findings are resolved through
-  reviewed work head `9e270e8337a2d14c07e87b08569ce027a7b004c2`.
+  `reviews/Refactor-DataAccessRepositoryPermissionHierarchy.md`; all findings are resolved.
 - Incremental review of `dc1f55591..c3afdb4b2` found no issues across the native, security,
   architecture, convention, seeding, and test-coverage lenses. Review and security watermarks are
   current at `c3afdb4b2fd137cbf406dfeb7174d9c082968c4d`.
+- Incremental review of `c3afdb4b2..ff8354a15` found and resolved `BUG4`, the untyped payment-command
+  completion race. No other correctness, security, architecture, convention, seeding, or changed-path
+  coverage issue was found. Review and security watermarks are current at
+  `ff8354a15ec6254a630b420c3e0c1f8a47da7ca9`.
 
 ## Decisions, discoveries, blockers, and deviations
 

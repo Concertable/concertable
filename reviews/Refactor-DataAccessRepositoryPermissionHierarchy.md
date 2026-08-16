@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `c3afdb4b2fd137cbf406dfeb7174d9c082968c4d`  _(2026-08-15)_
-**Security-reviewed up to commit:** `c3afdb4b2fd137cbf406dfeb7174d9c082968c4d`  _(2026-08-15)_
+**Reviewed up to commit:** `ff8354a15ec6254a630b420c3e0c1f8a47da7ca9`  _(2026-08-16)_
+**Security-reviewed up to commit:** `ff8354a15ec6254a630b420c3e0c1f8a47da7ca9`  _(2026-08-16)_
 
 > Range reviewed: `429581025..94d7664ad` (2 commits).
 > Status legend: `[ ]` todo - `[~]` in progress - `[x]` done - `[wontfix]` (note why).
@@ -128,3 +128,21 @@ through the native correctness, security, microservice-isolation, module-boundar
 frontend convention, and changed-path test-coverage lenses. The three Customer contexts retain the
 consumer migration to the published shared `ReadDbContext`; all incoming runtime changes were already
 reviewed on their owning merged PRs and do not overlap the repository permission hierarchy.
+
+## Incremental review - 2026-08-16 (persistence naming and CI follow-up)
+
+> Range reviewed: `c3afdb4b2..ff8354a15` (288 commits).
+
+- [x] **BUG4 - MEDIUM - test reliability** - `api/Concertable.B2B/tests/Concertable.B2B.IntegrationTests.Fixtures/Mocks/MockPaymentTransport.cs:38`
+  Cancellation tests completed whichever financial command happened to be pending first. A prior
+  acceptance command could therefore be consumed before the asynchronously dispatched refund arrived,
+  leaving the subsequent refund assertion with an empty command queue. The fixture now supports
+  command-typed completion, and every refund workflow completes `RefundEscrowCommand` explicitly.
+
+No other issues found. The B2B persistence surface consistently uses unqualified contexts and
+repositories for the normal active-tenant tracked/write stance, `Read` for the tenant-independent
+structurally read-only stance, and aggregate-first `VenueAdmin`/`ConversationsAdmin` plus matching
+admin repositories for administrative write exceptions. The reusable two-party base now matches the
+existing scoped vocabulary as `VenueArtistTenantScopedDbContext`. The latest current-main merge was
+clean and does not weaken those bindings. Security review found no authorization, tenancy-boundary,
+secret-handling, or cross-service isolation regression.
