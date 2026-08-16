@@ -307,7 +307,8 @@ internal static class EscrowMappers
 
 A pure operation belongs on an extension when one receiver clearly owns the transformation or question.
 Use the shortest unambiguous domain name: `value.ToDto()`, `observation.ToNormalized()`,
-`state.IsTerminal()`. Keep one `XExtensions` or `XMappers` class per receiver type.
+`state.IsTerminal()`. Keep a receiver's related extensions together in one `XExtensions` class or the
+domain mapping family's `XMappers` class; do not scatter them across unrelated helpers.
 
 A decision over two or more peer inputs does not belong to either receiver. Keep the policy visible at
 the call site behind an operation-specific static type such as `TransitionEvaluator.Evaluate(current,
