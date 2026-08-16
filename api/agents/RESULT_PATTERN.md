@@ -410,6 +410,10 @@ renamed or reused for a different meaning.
 
 ## Structured validation
 
+**Which validator shape to reach for — request-shape vs domain eligibility — is decided in
+[`CODE_CONVENTIONS.md`](./CODE_CONVENTIONS.md) "Validators".** This section governs only the carrier a
+validator returns once that choice is made.
+
 Validators that produce field errors return `ValidationResult` from `Reunion.Validation`:
 
 ```text
