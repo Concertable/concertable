@@ -30,7 +30,7 @@
   hide/restore/resolve against an unknown id (each yielding its named error and performing no
   `SaveChangesAsync`), plus the already-resolved conflict at the service level.
 
-- [x] **PERF1 — LOW — efficiency** — `api/Concertable.B2B/src/Modules/Conversations/Concertable.B2B.Conversations.Infrastructure/Repositories/AdminContentReportRepository.cs:11`
+- [x] **PERF1 — LOW — efficiency** — `api/Concertable.B2B/src/Modules/Conversations/Concertable.B2B.Conversations.Infrastructure/Repositories/ContentReportAdminRepository.cs:11`
   `GetQueueAsync` materialises **every** content report across every tenant with `.ToListAsync()`, and
   `GET /api/Moderation/reports` returns it unpaginated. Reports are never deleted (hide-never-delete is
   the whole design), so this grows without bound. **Fix:** mirror `MessageController.GetForUser` — take
@@ -87,7 +87,7 @@ Eight findings returned; five cleared the confidence bar and were fixed, three w
 
 No HIGH or MEDIUM findings. Paths traced: IDOR on the report endpoint (tenant-filtered lookup → 404 for a
 non-participant, test-pinned); privilege escalation into moderation (`[Admin]` platform axis, tenant Owner
-403 / anonymous 401, test-pinned); reachability of the unfiltered writable `AdminConversationsDbContext`
+403 / anonymous 401, test-pinned); reachability of the unfiltered writable `ConversationsAdminDbContext`
 (only via the two admin repositories → `ModerationService` → `[Admin]` controller); email header injection
 (subjects interpolate only `CR-{int}`; user text stays in the body); injection/deserialization (EF-
 parameterised, `int` route ids, no dynamic SQL); enumeration (404-not-403 is deliberate); XSS (React, no
@@ -130,7 +130,7 @@ passed**; `api/Concertable.slnx` builds clean.
 - **Migrations:** re-scaffolded via `./initial-migrations.ps1`, not additive; every other context kept its
   id. The derived `Reference` property is correctly not mapped to a column.
 - **Tenancy:** `ContentReportEntity` is filtered on the tenant-filtered context and unfiltered on the new
-  `AdminConversationsDbContext`, which is registered without `VenueArtistTenantInterceptor` as required.
+  `ConversationsAdminDbContext`, which is registered without `VenueArtistTenantInterceptor` as required.
 
 
 ## Incremental review — 2026-08-15

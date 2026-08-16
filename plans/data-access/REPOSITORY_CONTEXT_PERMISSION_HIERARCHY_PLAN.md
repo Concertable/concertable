@@ -117,7 +117,7 @@ There are no generic service-specific read-context bases. Customer and B2B `Arti
 their module configuration provider and schema.
 
 - B2B `ArtistDbContext`, `VenueDbContext`, and `ConcertDbContext` compose their module
-  configuration with `TenantScopedDbContext`/`VenueArtistTenantDbContext`, remain writable stances over
+  configuration with `TenantScopedDbContext`/`VenueArtistTenantScopedDbContext`, remain writable stances over
   `DbContextBase`, and therefore implement `IDbContext`.
 - `VenueAdminDbContext` remains the explicit tenant-independent tracked/write stance required by
   platform administration.

@@ -15,7 +15,7 @@ so the codebase has zero calls; the building blocks (all in `B2B.DataAccess.Infr
 - **The module's `XConfigurationProvider` is the anemic core** — pure table mappings, zero tenancy.
   Both stances below compose it; neither modifies it. Both stances are **per module** — a cross-module
   "sees everything" context would break module isolation (every module reads only its own model).
-- **`VenueArtistTenantDbContext`** (abstract, `B2B.DataAccess.Infrastructure`) — the tenant-filtered
+- **`VenueArtistTenantScopedDbContext`** (abstract, `B2B.DataAccess.Infrastructure`) — the tenant-filtered
   stance. Ctor-injects the module's configuration provider + `ITenantContext` (it implements
   `IHasTenantContext`); its sealed `OnModelCreating` composes the anemic core first, then the module's
   filter declarations via the abstract `ApplyTenantFilters` hook
