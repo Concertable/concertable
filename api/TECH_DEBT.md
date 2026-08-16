@@ -41,7 +41,7 @@ through the tracked `context.Set<T>()`. And `Query` enforces nothing — a read 
 guarantee, and the duplication only exists because tracking lives on the query.
 
 **Resolves when:** no-tracking becomes a property of the **context**, not the query. Read repositories
-sit on a read-only, no-tracking context (the `PublicDbContext` shape — `SaveChanges` throws — already
+sit on a read-only, no-tracking context (the shared `ReadDbContext` shape — `SaveChanges` throws — already
 exists), so `context.Foo` is no-tracking by construction and can't be bypassed, and `Query` is
 deleted. With tracking off the query, read/write `GetById`/`GetAll`/`Exists` become identical, so the
 bases collapse to one CRUD implementation exposed through `IReadRepository` / `IWriteRepository`
