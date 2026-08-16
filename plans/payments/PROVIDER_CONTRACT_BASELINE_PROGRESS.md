@@ -6,9 +6,9 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\payments_provider-contract-baseline`
 - Branch: `Feature/payments_provider-contract-baseline`
 - PR: #597 — https://github.com/Concertable/concertable/pull/597 — open; exact-head CI run 31956570866 passed at pushed head `f56c80fde78c3cc99016bf65a122de250e5adcc3`; local review-fix head is this commit and is not yet pushed; auto-merge is disabled and the PR is not queued
-- Review readiness: **REVIEW COMPLETE — PUBLISH AND EXACT-HEAD CI REQUIRED** — NAT1, NAT2, BUG1, SEC1, NAT3, and NAT4 are resolved; incremental review through `6cc1d59d5281a141f72f9b4f6ddd233ea46da233` found no additional issues
+- Review readiness: **REVIEW COMPLETE — PUBLISH AND EXACT-HEAD CI REQUIRED** — NAT1, NAT2, BUG1, SEC1, NAT3, and NAT4 are resolved; incremental review through current-main reconciliation commit `01171e1b21b8a08a273eafb3d3f99859081756e2` found no additional issues
 - Dependency/package gates: Phases 1 through 4 are locally complete; the production/live-mode Stripe account has no webhook endpoint, so future deployment is locked to `2025-01-27.acacia` and must create the endpoint at the actual Payment Web URL while installing its signing secret; compatibility is anchored to published `0.1.0-alpha.0.1009`; the branch carries platform pin `0.1.0-alpha.0.1031`
-- Last reconciled: 2026-08-16 against open PR #597 pushed head `f56c80fd`, local review-fix head this commit, reviewed code head `85d85aab`, exact-head CI run 31956570866, published Payment packages `0.1.0-alpha.0.1009`, and `origin/main` `07624709`
+- Last reconciled: 2026-08-16 against open PR #597 pushed head `f56c80fd`, local reviewed head `01171e1b`, exact-head CI run 31956570866, published Payment packages `0.1.0-alpha.0.1009`, and `origin/main` `6d577792`
 
 ## Current state
 
@@ -28,6 +28,9 @@ provider/consumer purity across the published assemblies and deployable Payment 
 branch cleanly incorporates current `origin/main` `07624709d873dd0aecc934e59bbc45f78b0c844b`;
 the pushed head
 `f56c80fde78c3cc99016bf65a122de250e5adcc3` passed exact-head CI run 31956570866.
+The branch also cleanly incorporates current `origin/main`
+`6d577792c940d18546e20c4ad45c3c43a96e0850` through reviewed merge commit
+`01171e1b21b8a08a273eafb3d3f99859081756e2`.
 
 `api/Concertable.Payment/PROVIDER_CONTRACT.md` now owns
 the provider-product matrix, operation/attempt identity, normalization and transition tables,
@@ -142,6 +145,10 @@ Keep the PR open in this turn.
 
 ## Verification
 
+- Current-main reconciliation build succeeded with 0 warnings and 0 errors; the focused
+  `ProviderContract` filter passed 116 of 116; plan graph and whitespace checks passed.
+- Incremental implementation and security review through merge commit
+  `01171e1b21b8a08a273eafb3d3f99859081756e2` recorded no additional findings.
 - NAT4 Payment UnitTests build succeeded with 0 warnings and 0 errors; focused transition tests passed
   42 of 42 and the full provider-contract filter passed 116 of 116.
 - NAT4 focused `dotnet format --verify-no-changes` passed.

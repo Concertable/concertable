@@ -5,9 +5,9 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `6cc1d59d5281a141f72f9b4f6ddd233ea46da233`  _(2026-08-16)_
+**Reviewed up to commit:** `01171e1b21b8a08a273eafb3d3f99859081756e2`  _(2026-08-16)_
 
-**Security-reviewed up to commit:** `6cc1d59d5281a141f72f9b4f6ddd233ea46da233`  _(2026-08-16)_
+**Security-reviewed up to commit:** `01171e1b21b8a08a273eafb3d3f99859081756e2`  _(2026-08-16)_
 
 > Range reviewed: `e861f3642..85d85aab1` (22 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -49,3 +49,10 @@
 No additional findings survived the confidence filter. The synchronous Stripe-call inventory fix and
 same-state persisted-projection fix preserve the provider boundary, terminal-state protection, safe
 failure vocabulary, and focused regression coverage.
+
+## Incremental review — 2026-08-16 (current-main reconciliation)
+
+> Range reviewed: `6cc1d59d5..01171e1b2` (2 commits).
+
+No additional findings survived the confidence filter. The merge was conflict-free; the Payment-side
+upstream changes remove a dead transaction-mapper method and do not intersect the provider contract.
