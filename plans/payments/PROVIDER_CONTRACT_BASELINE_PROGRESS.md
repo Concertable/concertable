@@ -5,10 +5,10 @@
 - Roadmap item: `payments/provider-contract-baseline`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\payments_provider-contract-baseline`
 - Branch: `Feature/payments_provider-contract-baseline`
-- PR: #597 — https://github.com/Concertable/concertable/pull/597 — open draft; checkpoint head `3d4dd68c482b236cf28ebc8b8e48a7efab08e10a` passed exact-head CI run 31950346307; this review-ready ledger checkpoint is the transport leg
-- Review readiness: **READY FOR REVIEW** — all four implementation phases and exact-head CI are green; convert [PR #597](https://github.com/Concertable/concertable/pull/597) from draft after this checkpoint transport is green, then run `/review`
-- Dependency/package gates: Phases 1 through 3 are complete and Phase 4 is locally implemented; the production/live-mode Stripe account has no webhook endpoint, so future deployment is locked to `2025-01-27.acacia` and must create the endpoint at the actual Payment Web URL while installing its signing secret; compatibility is anchored to published `0.1.0-alpha.0.1009`; the local branch carries platform pin `0.1.0-alpha.0.1021`
-- Last reconciled: 2026-08-16 against open draft PR #597 checkpoint head `3d4dd68c4`, exact-head CI run 31950346307, published Payment packages `0.1.0-alpha.0.1009`, and `origin/main` `668ba639c`
+- PR: #597 — https://github.com/Concertable/concertable/pull/597 — open and ready for review; auto-merge was disabled and the PR was dequeued before the current-main update; work head `e8976712839a528a10a0bd039cd21fab68685e2a` is pushed and this ledger checkpoint is the transport leg
+- Review readiness: **AWAITING EXACT-HEAD CI** — all four implementation phases and local current-main validation are green; run `/review` only after this checkpoint transport is green
+- Dependency/package gates: Phases 1 through 4 are locally complete; the production/live-mode Stripe account has no webhook endpoint, so future deployment is locked to `2025-01-27.acacia` and must create the endpoint at the actual Payment Web URL while installing its signing secret; compatibility is anchored to published `0.1.0-alpha.0.1009`; the branch carries platform pin `0.1.0-alpha.0.1025`
+- Last reconciled: 2026-08-16 against open PR #597 work head `e8976712`, published Payment packages `0.1.0-alpha.0.1009`, and `origin/main` `e861f3642`
 
 ## Current state
 
@@ -19,9 +19,9 @@ require those public APIs, URNs, protobuf messages/enums/fields/services/RPCs, f
 cardinality, and request/response types to remain an additive subset. A frozen consumer project
 compiles against the exact published Contracts and Client packages, and architecture tests enforce
 provider/consumer purity across the published assemblies and deployable Payment projects. Work head
-`f210577564ea4ab78c56c2f687762b9378b6a083` cleanly incorporates `origin/main`
-`668ba639c6fb59a2513ba6c70d669b6b2d01f974`, is locally verified, and was pushed through the work-head
-leg with local, remote-tracking, and PR equality.
+`e8976712839a528a10a0bd039cd21fab68685e2a` cleanly incorporates `origin/main`
+`e861f3642cea14e919d203604a4e9e7d00bcced8`, is locally verified, and was pushed through the work-head
+leg from `f5c6218a51d210328201d72e2d0b4cc09f18bb3e` with local, remote-tracking, and PR equality.
 
 `api/Concertable.Payment/PROVIDER_CONTRACT.md` now owns
 the provider-product matrix, operation/attempt identity, normalization and transition tables,
@@ -42,12 +42,10 @@ template because current Payment runtime also handles `payment_intent.payment_fa
 `setup_intent.succeeded`, and `setup_intent.setup_failed`.
 
 PR #552 merged at `33f07c47a497586324edacdcfc10321a9d3f02ee`, and its additive Payment
-contracts are present after merging current `origin/main`. Draft PR #597 remains open at remote head
-`bb9482c77a8264de35aa93711b99bf4f9bb2697b`; exact-head CI run 31944017441 passed all required jobs.
-Local merge commit `1067982097d914f7090b94c06d0fd0bde878ecf6` brings the branch to current
-`origin/main` `7db0c9be964ea9ff4a2d64468c4462eae91d36ff` with platform pin
-`0.1.0-alpha.0.1017`; that local candidate is not yet pushed. The historical
-`Refactor/GroupStripeWebhookHandling` branch is superseded evidence only.
+contracts are present after merging current `origin/main`. PR #597 is open and no longer draft at
+work head `e8976712839a528a10a0bd039cd21fab68685e2a`; exact-head CI is the live gate after this ledger
+checkpoint is transported. The historical `Refactor/GroupStripeWebhookHandling` branch is superseded
+evidence only.
 
 Phase 2 adds the provider-neutral operation identity, session kind, normalized state, terminal/retry
 disposition, safe-failure vocabulary, client descriptor/snapshot records, and matching protobuf
@@ -65,9 +63,10 @@ authorization, both setup kinds, and refund.
 
 ## Next Steps
 
-After this review-ready checkpoint transport is exact-head green and PR #597 is converted from draft,
-run `/review` against the complete branch. Record every high-confidence finding and disposition in
-this ledger before merge becomes the next action. Do not merge in the same turn.
+After this checkpoint transport is exact-head green, run `/review` against the complete branch.
+Record every high-confidence finding and disposition in this ledger before merge becomes the next
+action. If repository automation re-enqueues PR #597, dequeue it before changing the branch; merge is
+not authorized in this continuation.
 
 ## Completed work
 
@@ -121,6 +120,17 @@ this ledger before merge becomes the next action. Do not merge in the same turn.
   current `origin/main`.
 
 ## Verification
+
+- Current-main review candidate: merged `origin/main` `e861f3642cea14e919d203604a4e9e7d00bcced8`
+  cleanly as work head `e8976712839a528a10a0bd039cd21fab68685e2a`; `HEAD..origin/main` is zero.
+- Regenerated the published `0.1.0-alpha.0.1009` contract baselines with no diff.
+- Payment UnitTests and frozen published-contract fixture build: succeeded with 0 warnings and 0
+  errors against platform pin `0.1.0-alpha.0.1025`.
+- Focused provider-contract, inventory, contract, mapper, error, and compatibility suite: 216 passed,
+  0 failed, 0 skipped.
+- Current plan graph and whitespace gates: 0 errors and 0 warnings; `git diff --check` passed.
+- Current-main work push: `f5c6218a51d210328201d72e2d0b4cc09f18bb3e..e8976712839a528a10a0bd039cd21fab68685e2a`;
+  local, remote-tracking, and PR work heads all verified at `e8976712839a528a10a0bd039cd21fab68685e2a`.
 
 - Phase 4 compatibility and architecture suite: 6 passed, 0 failed, 0 skipped.
 - Phase 4 full Payment unit carve: 440 passed, 0 failed, 0 skipped.
@@ -202,10 +212,9 @@ this ledger before merge becomes the next action. Do not merge in the same turn.
 
 ## Review status
 
-**READY FOR REVIEW.** All implementation phases and exact-head CI run 31950346307 are green for
-[PR #597](https://github.com/Concertable/concertable/pull/597). After this review-ready checkpoint
-transport is green and the PR is converted from draft, `/review` is the only next action; merge is not
-authorized by this continuation.
+**AWAITING EXACT-HEAD CI.** All implementation phases and local current-main validation are green for
+[PR #597](https://github.com/Concertable/concertable/pull/597). After this ledger checkpoint transport
+is green, `/review` is the only next action; merge is not authorized by this continuation.
 
 The planning docs review through PR head `ccb1dd00585b7943a401166f3f8eb3237ed6d628` found no issues across
 accuracy, contradiction, document ownership, concision, dangling references, and followable
