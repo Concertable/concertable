@@ -26,5 +26,6 @@
   Every `requires_payment_method` observation is emitted as `PaymentMethodRequired`, but Stripe also returns that status after a decline and exposes the reason through `last_payment_error`; the observation type has no safe classified failure input, so the required `Declined` outcome is unreachable. Add a provider-internal failure classifier/input and make the transition emit the closed `Declined` code with a Concertable-authored message while keeping raw Stripe detail internal.
   Resolved with a provider-neutral internal decline classification, safe closed failure mapping, fail-closed applicability checks, and exhaustive status/session coverage.
 
-- [ ] **SEC1 — MEDIUM — security** — `api/Concertable.Payment/src/Concertable.Payment.Client/Adapters/PaymentOperationMappers.cs:40`
+- [x] **SEC1 — MEDIUM — security** — `api/Concertable.Payment/src/Concertable.Payment.Client/Adapters/PaymentOperationMappers.cs:40`
   The protobuf mapper fails closed on an unknown failure code but copies `failure.Message` verbatim for every known code, so provider exception text can cross the public client boundary under a valid enum value. Derive the published message from the closed code, or reject any wire message that does not match the central Concertable-authored definition.
+  Resolved by deriving every known-code message from the central error definition and ignoring wire text while preserving unknown-code rejection.

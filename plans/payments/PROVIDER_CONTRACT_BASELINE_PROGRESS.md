@@ -6,7 +6,7 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\payments_provider-contract-baseline`
 - Branch: `Feature/payments_provider-contract-baseline`
 - PR: #597 — https://github.com/Concertable/concertable/pull/597 — open; exact-head CI run 31956570866 passed at pushed head `f56c80fde78c3cc99016bf65a122de250e5adcc3`; local review-fix head is this commit and is not yet pushed; auto-merge is disabled and the PR is not queued
-- Review readiness: **ONE OPEN FINDING** — NAT1 is resolved at `0686b7f52c68ab492ba7683fa5fee895096785da`, NAT2 at `19e194c9eaefee2734718a298a127f414f75af6c`, and BUG1 in this commit; SEC1 remains open in `reviews/Feature-payments_provider-contract-baseline.md`
+- Review readiness: **EXISTING FINDINGS ADDRESSED — INCREMENTAL REVIEW REQUIRED** — NAT1 is resolved at `0686b7f52c68ab492ba7683fa5fee895096785da`, NAT2 at `19e194c9eaefee2734718a298a127f414f75af6c`, BUG1 at `055c6bfd868484e847f907926b5da7b6dea55ff9`, and SEC1 in this commit; the review remains until the fix range passes incremental review and exact-head CI
 - Dependency/package gates: Phases 1 through 4 are locally complete; the production/live-mode Stripe account has no webhook endpoint, so future deployment is locked to `2025-01-27.acacia` and must create the endpoint at the actual Payment Web URL while installing its signing secret; compatibility is anchored to published `0.1.0-alpha.0.1009`; the branch carries platform pin `0.1.0-alpha.0.1031`
 - Last reconciled: 2026-08-16 against open PR #597 pushed head `f56c80fd`, local review-fix head this commit, reviewed code head `85d85aab`, exact-head CI run 31956570866, published Payment packages `0.1.0-alpha.0.1009`, and `origin/main` `07624709`
 
@@ -14,7 +14,8 @@
 
 Phases 1 through 4 are complete, committed, and pushed through `f56c80fd`. The local branch resolves
 NAT1 at `0686b7f52c68ab492ba7683fa5fee895096785da`, NAT2 at
-`19e194c9eaefee2734718a298a127f414f75af6c`, and BUG1 in this commit. For Phase 4,
+`19e194c9eaefee2734718a298a127f414f75af6c`, BUG1 at
+`055c6bfd868484e847f907926b5da7b6dea55ff9`, and SEC1 in this commit. For Phase 4,
 the checked-in generator captured 2,073 Contracts signatures, 1,161 Client signatures, 13 message
 URNs, and the `payment.proto` descriptor set from published `0.1.0-alpha.0.1009`. Candidate tests
 require those public APIs, URNs, protobuf messages/enums/fields/services/RPCs, field numbers, types,
@@ -46,7 +47,7 @@ template because current Payment runtime also handles `payment_intent.payment_fa
 PR #552 merged at `33f07c47a497586324edacdcfc10321a9d3f02ee`, and its additive Payment
 contracts are present after merging current `origin/main`. PR #597 is open and no longer draft at
 reviewed head `85d85aab1c6e3ef448c792cc9cad7c37639a8ae9`; exact-head CI is green. NAT1,
-NAT2, and BUG1 are resolved locally, while SEC1 remains open. The historical
+NAT2, BUG1, and SEC1 are resolved locally; the fix range still requires incremental review. The historical
 `Refactor/GroupStripeWebhookHandling` branch is superseded evidence only.
 
 Phase 2 adds the provider-neutral operation identity, session kind, normalized state, terminal/retry
@@ -65,14 +66,19 @@ authorization, both setup kinds, and refund.
 
 ## Next Steps
 
-Continue `/address-review @reviews/Feature-payments_provider-contract-baseline.md` and address SEC1.
-Re-run the focused Payment provider/compatibility build and tests, publish the fixes through
-the plan push protocol, then run `/incremental-review` over every commit after reviewed code head
-`85d85aab1c6e3ef448c792cc9cad7c37639a8ae9`, including the current-main merge. Do not merge in the
-same turn.
+Run `/incremental-review @reviews/Feature-payments_provider-contract-baseline.md` over every commit
+after reviewed code head `85d85aab1c6e3ef448c792cc9cad7c37639a8ae9`, including the current-main
+merge and all four finding resolutions. Then publish the reviewed fix range through the plan push
+protocol and require exact-head CI to pass. Do not merge in the same turn.
 
 ## Completed work
 
+- Prevented protobuf failure messages from crossing the public client boundary by deriving every
+  known-code message from the central `PaymentOperationError.Definition`; exhaustive mapper tests
+  prove arbitrary wire text is ignored and unspecified or unknown codes still fail closed.
+- SEC1 focused validation: Payment unit-test project build succeeded with 0 warnings and 0 errors;
+  mapper, central error-definition, and operation-contract tests passed 107 of 107; focused Contracts,
+  Client, and UnitTests formatting, plan graph, and whitespace checks passed.
 - Added a provider-neutral internal decline classification for provider observations, mapped
   `requires_payment_method` declines to the closed safe `Declined` failure, and rejected the
   classification on every incompatible or unknown provider status.
@@ -242,16 +248,16 @@ same turn.
 
 ## Review status
 
-**ONE OPEN FINDING.** The full implementation and security review for
+**EXISTING FINDINGS ADDRESSED; INCREMENTAL REVIEW REQUIRED.** The full implementation and security review for
 [PR #597](https://github.com/Concertable/concertable/pull/597) covered
 `e861f3642cea14e919d203604a4e9e7d00bcced8..85d85aab1c6e3ef448c792cc9cad7c37639a8ae9`
 recorded NAT1, NAT2, BUG1, and SEC1. NAT1 is resolved at
 `0686b7f52c68ab492ba7683fa5fee895096785da`; NAT2 is resolved at
-`19e194c9eaefee2734718a298a127f414f75af6c`; BUG1 is resolved in this commit. SEC1 remains in
-`reviews/Feature-payments_provider-contract-baseline.md`. No additional microservice-isolation,
+`19e194c9eaefee2734718a298a127f414f75af6c`; BUG1 is resolved at
+`055c6bfd868484e847f907926b5da7b6dea55ff9`; SEC1 is resolved in this commit. The review remains for
+the required incremental review over the fix range. No additional microservice-isolation,
 module-boundary, seeding, convention, or test-coverage finding survived the confidence filter. The
-branch is not merge-ready until SEC1 is addressed and the resulting commits pass an
-incremental review.
+branch is not merge-ready until the resulting commits pass incremental review and exact-head CI.
 
 The planning docs review through PR head `ccb1dd00585b7943a401166f3f8eb3237ed6d628` found no issues across
 accuracy, contradiction, document ownership, concision, dangling references, and followable
