@@ -79,7 +79,10 @@ identical writable shape, share a single `XRequest` (`PreferenceRequest`) instea
 `CreateXRequest`/`UpdateXRequest`; split them the moment the contracts diverge. Request records use
 `{ get; init; }`.
 
-Validators stay named `XValidators` regardless.
+Validators stay named `XValidators` regardless. **Input shape uses FluentValidation; domain
+eligibility uses a Reunion `ValidationResult` validator** — and whether you register it for
+auto-validation or inject `IValidator<T>` depends on whether the input arrives through an MVC action.
+See [`agents/CODE_CONVENTIONS.md`](./agents/CODE_CONVENTIONS.md) "Validators".
 
 Drop the `Dto` suffix when the name already says what the shape is (`AcceptCheckout`, `TicketCheckout`); only keep it to disambiguate from a same-named entity (`CustomerDto` vs `CustomerEntity`).
 

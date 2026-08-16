@@ -1,7 +1,7 @@
 import { apiClient } from "../../../lib/apiClient";
 import type { Pagination } from "../../../types/common";
 import type { PaginationParams } from "../../../hooks/usePagination";
-import type { Message } from "../types";
+import type { Message, ReportMessageRequest } from "../types";
 
 const messageApi = {
   getUnreadCount: async (): Promise<number> => {
@@ -16,6 +16,13 @@ const messageApi = {
       params,
     });
     return data;
+  },
+
+  reportMessage: async (
+    messageId: number,
+    request: ReportMessageRequest,
+  ): Promise<void> => {
+    await apiClient.post(`/message/${messageId}/report`, request);
   },
 
   markInboxRead: async (): Promise<number> => {
