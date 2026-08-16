@@ -6,7 +6,7 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\payments_provider-contract-baseline`
 - Branch: `Feature/payments_provider-contract-baseline`
 - PR: #597 — https://github.com/Concertable/concertable/pull/597 — open; exact-head CI run 31956570866 passed at pushed head `f56c80fde78c3cc99016bf65a122de250e5adcc3`; local review-fix head is this commit and is not yet pushed; auto-merge is disabled and the PR is not queued
-- Review readiness: **EXISTING FINDINGS ADDRESSED — INCREMENTAL REVIEW REQUIRED** — NAT1, NAT2, BUG1, SEC1, NAT3, and NAT4 are resolved locally; the NAT3 and NAT4 resolution commits require incremental review before the exact-head CI gate
+- Review readiness: **REVIEW COMPLETE — PUBLISH AND EXACT-HEAD CI REQUIRED** — NAT1, NAT2, BUG1, SEC1, NAT3, and NAT4 are resolved; incremental review through `6cc1d59d5281a141f72f9b4f6ddd233ea46da233` found no additional issues
 - Dependency/package gates: Phases 1 through 4 are locally complete; the production/live-mode Stripe account has no webhook endpoint, so future deployment is locked to `2025-01-27.acacia` and must create the endpoint at the actual Payment Web URL while installing its signing secret; compatibility is anchored to published `0.1.0-alpha.0.1009`; the branch carries platform pin `0.1.0-alpha.0.1031`
 - Last reconciled: 2026-08-16 against open PR #597 pushed head `f56c80fd`, local review-fix head this commit, reviewed code head `85d85aab`, exact-head CI run 31956570866, published Payment packages `0.1.0-alpha.0.1009`, and `origin/main` `07624709`
 
@@ -17,7 +17,8 @@ NAT1 at `0686b7f52c68ab492ba7683fa5fee895096785da`, NAT2 at
 `19e194c9eaefee2734718a298a127f414f75af6c`, BUG1 at
 `055c6bfd868484e847f907926b5da7b6dea55ff9`, SEC1 at
 `7b7561fa43b57ca004d082ebd207242f0e4499fd`, NAT3 at
-`c4140cd3b79973e568a88e3217e007599482df46`, and NAT4 in this commit. For Phase 4,
+`c4140cd3bb42a8a0f13beb652b7590f98691a63d`, and NAT4 at
+`6cc1d59d5281a141f72f9b4f6ddd233ea46da233`. For Phase 4,
 the checked-in generator captured 2,073 Contracts signatures, 1,161 Client signatures, 13 message
 URNs, and the `payment.proto` descriptor set from published `0.1.0-alpha.0.1009`. Candidate tests
 require those public APIs, URNs, protobuf messages/enums/fields/services/RPCs, field numbers, types,
@@ -68,9 +69,8 @@ authorization, both setup kinds, and refund.
 
 ## Next Steps
 
-Rerun `/incremental-review @reviews/Feature-payments_provider-contract-baseline.md` over the NAT3 and
-NAT4 resolution commits. If clean, publish the reviewed range through the plan push protocol and
-require exact-head CI to pass. Do not merge in the same turn.
+Publish the reviewed local range through the plan push protocol and require exact-head CI to pass.
+Keep the PR open in this turn.
 
 ## Completed work
 
@@ -260,7 +260,7 @@ require exact-head CI to pass. Do not merge in the same turn.
 
 ## Review status
 
-**EXISTING FINDINGS ADDRESSED — INCREMENTAL REVIEW REQUIRED.** The full implementation and security review for
+**REVIEW COMPLETE — PUBLISH AND EXACT-HEAD CI REQUIRED.** The full implementation and security review for
 [PR #597](https://github.com/Concertable/concertable/pull/597) covered
 `e861f3642cea14e919d203604a4e9e7d00bcced8..85d85aab1c6e3ef448c792cc9cad7c37639a8ae9`
 recorded NAT1, NAT2, BUG1, and SEC1. NAT1 is resolved at
@@ -268,11 +268,10 @@ recorded NAT1, NAT2, BUG1, and SEC1. NAT1 is resolved at
 `19e194c9eaefee2734718a298a127f414f75af6c`; BUG1 is resolved at
 `055c6bfd868484e847f907926b5da7b6dea55ff9`; SEC1 is resolved at
 `7b7561fa43b57ca004d082ebd207242f0e4499fd`; NAT3 is resolved at
-`c4140cd3b79973e568a88e3217e007599482df46`; NAT4 is resolved in this commit. The NAT3 and NAT4
-resolution commits still require incremental review. No additional
-microservice-isolation, module-boundary, seeding, convention, or security finding survived the
-confidence filter. The branch is not merge-ready until the resulting commits pass incremental review
-and exact-head CI.
+`c4140cd3bb42a8a0f13beb652b7590f98691a63d`; NAT4 is resolved at
+`6cc1d59d5281a141f72f9b4f6ddd233ea46da233`. Incremental review through that head found no additional
+finding across the microservice-isolation, module-boundary, seeding, convention, or security lenses.
+The branch is not merge-ready until the reviewed commits pass exact-head CI.
 
 The planning docs review through PR head `ccb1dd00585b7943a401166f3f8eb3237ed6d628` found no issues across
 accuracy, contradiction, document ownership, concision, dangling references, and followable
