@@ -5,11 +5,15 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `cdf21ea2a`  _(2026-08-16)_
-**Security-reviewed up to commit:** `cdf21ea2a`  _(2026-08-16)_ — no findings (integers now rejected = net tightening; role/status mismatch fails closed, no authz bypass; published converter safe; test client is test-only).
+**Reviewed up to commit:** `a927478f6`  _(2026-08-16)_
+**Security-reviewed up to commit:** `a927478f6`  _(2026-08-16)_ — no findings (integers now rejected = net tightening; role/status mismatch fails closed, no authz bypass; published converter safe; test client is test-only).
 
 > Range reviewed: `836a15a56..cdf21ea2a` (2 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
+
+> Commits after the `cdf21ea2a` review are structural only — `origin/main` merges (currency +
+> platform-sync pins to 1017), the surface trim that split venue/artist into consumer PR #600, and a
+> "keep-both" messaging merge conflict (label export + report feature). No new enum logic to re-review.
 
 ## Findings
 
