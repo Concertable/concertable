@@ -1,5 +1,5 @@
 {
-  "description": "Remind about incomplete plan-managed handoffs before Codex ends a turn (advisory, non-blocking).",
+  "description": "Block an incomplete plan-managed handoff once before Codex ends a turn.",
   "hooks": {
     "Stop": [
       {
