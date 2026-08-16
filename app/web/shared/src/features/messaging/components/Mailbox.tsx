@@ -1,4 +1,5 @@
-import { MailIcon } from "lucide-react";
+import { useState } from "react";
+import { FlagIcon, MailIcon } from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -7,6 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { PaginationControls } from "@/components/ui/PaginationControls";
 import { useMailbox } from "../hooks/useMailbox";
+import { ReportMessageDialog } from "./ReportMessageDialog";
 
 export function Mailbox() {
   const {
@@ -20,6 +22,7 @@ export function Mailbox() {
     nextPage,
     prevPage,
   } = useMailbox();
+  const [reportingMessageId, setReportingMessageId] = useState<number>();
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -93,6 +96,18 @@ export function Mailbox() {
                     </span>
                   )}
               <p className="text-sm">{message.content}</p>
+              {message.actions?.report && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground h-auto px-0 py-0 text-[11px]"
+                  data-testid="message-report-trigger"
+                  onClick={() => setReportingMessageId(message.id)}
+                >
+                  <FlagIcon className="size-3" />
+                  Report
+                </Button>
+              )}
             </div>
           ))}
         </div>
@@ -108,6 +123,14 @@ export function Mailbox() {
           </div>
         )}
       </PopoverContent>
+
+      {reportingMessageId !== undefined && (
+        <ReportMessageDialog
+          messageId={reportingMessageId}
+          open
+          onOpenChange={(next) => !next && setReportingMessageId(undefined)}
+        />
+      )}
     </Popover>
   );
 }

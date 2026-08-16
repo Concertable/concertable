@@ -192,7 +192,10 @@ def roadmap_errors(path, text):
         return [f"{path.name}: roadmap item key must match `{epic}/<slug>`: {item}"]
     marker = f"`{item}`"
     roadmap_text = roadmap_path.read_text(encoding="utf-8")
-    checklist_item = re.compile(rf"^- \[[ xX]\].*{re.escape(marker)}", re.MULTILINE)
+    checklist_item = re.compile(
+        rf"^(?:- \[[ xX]\].*|\|\s*\[[ xX]\]\s*\|.*){re.escape(marker)}.*$",
+        re.MULTILINE,
+    )
     matches = checklist_item.findall(roadmap_text)
     if not matches:
         return [f"{path.name}: roadmap item marker {marker} is missing from {roadmap}"]

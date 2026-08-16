@@ -1,20 +1,26 @@
 # B2B typed-result migration plan
 
-Next steps live in @plans/typed-result/B2B_PROGRESS.md → `## Next Steps`.
+Next steps live in these workstream ledgers:
+
+- @plans/typed-result/B2B_PAYMENT_SAGA_PRODUCER_PROGRESS.md → `## Next Steps`
+- @plans/typed-result/B2B_PROGRESS.md → `## Next Steps`
 
 Migrate every B2B service module from FluentResults + nullable lookups to the shared Reunion-backed
-`Result` / `Option` / `UnitResult` vocabulary while retaining Concertable-owned `ValidationErrors`.
+`Result` / `Option` / `UnitResult` vocabulary. Custom validation contracts resolved through dependency
+injection use `Reunion.Validation.ValidationResult`; FluentValidation request validators remain
+framework contracts, and non-DI domain/entity validation is outside this validation checkpoint.
 One migration branch (`Refactor/B2BTypedResultMigration`), delivered in checkpoints. Repository single-item lookups
 stay nullable (a persistence concern); modules and application services convert absence with the
 published functional surface and expose typed Results; controllers only map successful payloads and
-terminate typed Results. The Reunion integration plan owns the carrier/package substitution once;
-this service branch owns only B2B semantics and consumes the integrated published baseline.
+terminate typed Results. The published Reunion alpha.8 baseline owns the carrier/package surface;
+this service branch owns only B2B semantics and consumes that baseline.
 
 ## Checkpoints
 
-Checkpoints 1–5 are complete on the branch. Checkpoints 6–7 are implementable now against the exact
-Payment packages produced from reviewed Reunion integration commit `a779fe041`; publication and the
-generated platform sync gate delivery, not local preparation. No FluentResults adapter, string bridge,
+Checkpoints 1–9 are implemented, committed, reconciled with current main, and incrementally reviewed.
+Tommy authorized the durable SEC1 B2B + Payment saga/package cut-over on 2026-08-12. Checkpoint 10 is
+split into independently deliverable producer and consumer workstreams because B2B compiles against
+published Payment packages rather than Payment source. No FluentResults adapter, string bridge,
 committed local source, feed path, or disposable package pin may be introduced.
 
 - [x] **Checkpoint 1 — Deal.** Deal module outcomes → owned Results; operation errors use explicit
@@ -34,14 +40,47 @@ committed local source, feed path, or disposable package pin may be introduced.
   without catch/rethrow; dispatcher / executor / capability interfaces migrated as vertical slices;
   owner-concert action capabilities moved into `ConcertService` (no `TimeProvider` in any controller);
   keyed deal-strategy resolution preserved (no `DealType` switches, no service location).
-- [ ] **Checkpoint 6 — Concert payment / cancel / finish workflows.** Migrate `IConcertWorkflowModule`,
+- [x] **Checkpoint 6 — Concert payment / cancel / finish workflows.** Migrate `IConcertWorkflowModule`,
   cancellation/completion dispatchers, and every
   keyed cancel / finish / accept / payment step to owned Results; compose Payment failures with
   `MapError` (no `BadRequestException(result.Errors)` bridge); `ConcertCompletionRunner` distinguishes
   expected deferral/refusal from retryable faults; remove catch-all conversions.
-- [ ] **Checkpoint 7 — B2B FluentResults removal.** Remove FluentResults
+- [x] **Checkpoint 7 — B2B FluentResults removal.** Remove FluentResults
   from the migrated B2B projects once their last local use is gone and every migrated signature uses
   the published Reunion-backed surface.
+- [x] **Checkpoint 8 — DI validation results.** Convert the custom DI-resolved
+  `IApplicationValidator` and `IConcertValidator` validation-only contracts to
+  `Reunion.Validation.ValidationResult = Valid | Invalid(ValidationErrors)`. Move resource lookup and
+  operation-error mapping out of `IApplicationValidator` into the application service, reduce
+  eligibility to the existing public booleans, and map invalid results into the existing operation
+  errors without parsing messages or changing ProblemDetails field/message contracts. Add direct
+  `Reunion.Validation` ownership to every compiling project that names its API. FluentValidation
+  `AbstractValidator<T>` request validators and non-DI Deal/domain validation are explicitly excluded.
+- [x] **Checkpoint 9 — domain-owned expected alternatives.** Reconcile the production domain guards
+  that are already inside this branch's B2B semantic scope. `TenantInvitationEntity.Accept` and
+  `Revoke` return operation-owned typed failures for the pending/expired alternatives and the tenant
+  service maps them without duplicating the same checks. `ConcertEntity.DeclareDoorRevenue` owns the
+  non-negative-revenue alternative and maps it into a stable `DeclareDoorRevenueError` case. Artist
+  and Venue create/update plus Tenant legal/tax/address construction return structured validation for
+  caller-supplied fields; services map those results instead of relying on request validators to avoid
+  domain throws. Preserve exceptions for malformed geocoder/image/identity-provider output,
+  invitation expiry after the pending query, `VatBreakdown` imbalance, and other impossible internal
+  construction or consistency faults. Do not catch those invariant faults in Result combinators.
+- [x] **Checkpoint 10A — Payment saga contract and idempotent producer.** Add Payment-owned financial
+  operation command and outcome contracts for capture, deposit, and refund. Payment handles commands
+  through its own runtime, keys operation replay by B2B operation ID and booking, and publishes the
+  same terminal outcome after retries without moving money twice. Expected caller-actionable
+  refusals become explicit contract outcomes; infrastructure/cancellation faults remain exceptional.
+  Consume the exact Reunion package artifact from producer commit `113be42` and use its implicit
+  conversions and projected `ToOkOr` terminals without recreating its extensions in Concertable.
+- [x] **Checkpoint 10B — B2B durable lifecycle saga.** Persist acceptance/cancellation intent and its
+  financial-operation state before money moves, stage the Payment command in the same transaction via
+  the B2B outbox, and complete or fail the lifecycle only from Payment-owned outcome events. The B2B
+  outbox redelivers undelivered commands; Payment resumes a persisted pending operation with the same
+  operation ID and replays terminal outcomes. Cancellation requested before or after capture/deposit
+  must converge to `Cancelled`; a deferred refund remains pending and retryable.
+  Expose operation status through a typed HTTP contract and Reunion terminals without weakening any
+  endpoint union to `IResult`.
 
 ## Error and boundary rules
 
@@ -60,19 +99,64 @@ committed local source, feed path, or disposable package pin may be introduced.
   enforce both.
 - B2B consumes the published Kernel package only; a nullable-to-Result Kernel extension is not added
   here because it would violate the B2B-only package boundary.
+- DI validators return the validation-specific Reunion carrier, not `UnitResult<ValidationErrors>` or
+  operation errors. Application services own lookup absence, translate `Invalid.Errors` into their
+  operation-specific cases, and preserve the current `application`, `totalTickets`, `booking`, and
+  `datePosted` structured fields at the HTTP terminal.
+- Use target-typed raw payload conversions only where success/error intent is unambiguous. Use exact
+  named cases when payload types overlap or branch intent matters, and direct static factories when
+  inference would obscure the owned error contract. Do not add conversion helpers or casts that hide
+  ambiguity.
+- Expected alternatives are owned by the domain method or factory that enforces them. HTTP request
+  validation may reject the same malformed wire input, but application services remain correct when
+  called directly and do not repeat an equivalent guard merely to avoid a `DomainException`.
+- The repository-wide audit retains the B2B invariant inventory: Artist/Venue collaborator and
+  identity-output guards; `TenantInvitationEntity.Expire` and provisioning-handler consistency;
+  `VatBreakdown` arithmetic balance; and unconditional state mutations that expose no expected
+  rejection today. Those faults must not become public 4xx contracts through blanket exception
+  handling.
 
 ## Verification gate — every checkpoint
 
 - `dotnet build api/Concertable.B2B/Concertable.B2B.slnx` and `api/Concertable.slnx` (Release), 0 errors;
 - affected module unit + integration tests via the `integration-debug` skill;
 - B2B architecture tests;
-- final checkpoint: select the merge-queue E2E tier mechanically via merge Step 4; do not duplicate the queue run
-  locally.
+- Checkpoint 8: validator tests pin exact Valid/Invalid structured payloads; service and HTTP tests pin
+  lookup/error mapping, capability booleans, rule accumulation/order, collaborator exception
+  propagation, and unchanged validation ProblemDetails; a scoped inventory proves every custom
+  DI-resolved validator returns `ValidationResult` while excluding framework validators;
+- Checkpoint 9: domain tests pin each typed rejection at its owning method/factory; direct service
+  tests prove mappings without HTTP validators; source/architecture inventories prove the named
+  caller-actionable guards no longer throw `DomainException`, equivalent service pre-checks are gone,
+  and the deferred invariant inventory still propagates exceptionally; HTTP tests pin unchanged
+  stable codes, messages, structured fields, and ProblemDetails while invariant exceptions remain
+  500-class faults;
+- final checkpoint: select the merge-queue E2E tier mechanically via merge Step 4; do not duplicate
+  the queue run locally.
 
 ## Dependency gate
 
-Implementation uses the exact local `Payment.Contracts` and `Payment.Client` `0.1.0-alpha.0.911`
-packages from integration commit `a779fe041`, with provenance recorded in the ledger. Complete, test,
-commit, and review B2B-owned source now, then restore all temporary restore inputs. The branch becomes
-delivery-ready; it becomes merge-ready only after the Payment producer publishes, the generated sync
-lands, and the same gates pass against the real published versions.
+The dependency gate is open. The complete Reunion package family `0.1.0-alpha.8` is published,
+indexed, repository-signature and payload-provenance verified, and
+clean-restored from NuGet.org with their published dependency graph. Checkpoint 8 uses only normal
+configured feeds and published versions; temporary package inputs remain forbidden. Shared contraction
+is downstream cleanup and does not block this branch's local alpha.2 implementation or verification.
+
+## Checkpoint 10 package topology
+
+- Messaging producer layer: `Concertable.Messaging.Application` owns the additive `Sends<T>` host
+  registration API. It registers command identity for outbound resolution without registering a local
+  command handler or receiver.
+- Producer layer: `Concertable.Payment.Contracts` owns the additive command/outcome wire contracts;
+  `Concertable.Payment.Client` republishes against the same Payment package release but does not
+  re-expose the saga types in a changed public surface.
+- Consumer layer: B2B consumes `Concertable.Payment.Contracts` and `Concertable.Payment.Client` only
+  as published packages. Customer consumes the same packages but needs no source migration because the
+  saga surface is additive.
+- Delivery DAG: Messaging producer publication → generated platform sync → Payment producer
+  publication → generated platform sync → B2B published-package revalidation and delivery. Exact
+  local producer artifacts may make B2B delivery-ready, but only published packages and generated
+  syncs can make it merge-ready.
+- Implementation DAG: Payment producer and B2B consumer may be prepared independently. Temporary
+  package versions and feeds are never committed; each ledger records the producer commit, package
+  version, SHA-256 hashes, and reproducible artifact location used for local verification.

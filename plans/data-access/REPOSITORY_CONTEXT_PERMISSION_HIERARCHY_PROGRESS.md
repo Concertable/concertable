@@ -5,17 +5,17 @@
 - Roadmap item: `data-access/repository-context-permission-hierarchy`
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable/.worktrees/Plan-data-access-repository-permission-hierarchy`
 - Branch: `Refactor/DataAccessRepositoryPermissionHierarchy`
-- PR: [#561](https://github.com/Concertable/concertable/pull/561) (open; exact-head CI pending)
+- PR: [#561](https://github.com/Concertable/concertable/pull/561) (open; current-main reconciliation pending push)
 - Verified work head: `9e270e8337a2d14c07e87b08569ce027a7b004c2`
 - Starting remote head: `dc1f55591ca589a5516bca6c6513e7a095beed1c`
 - Pushed range: `dc1f55591ca589a5516bca6c6513e7a095beed1c..9e270e8337a2d14c07e87b08569ce027a7b004c2`
 - Remote and PR head: `9e270e8337a2d14c07e87b08569ce027a7b004c2` (verified equal after push)
 - Dependency/package gate: satisfied. Additive producer PR #590 merged as `59fe60e978affe23bcaf53823151eab2acda8ba0`, published platform `0.1.0-alpha.0.1007`, and platform-sync PR #592 merged green as `38e3d8548f10f3ab7a4a951b7c4ce961ec21c863`. Current `origin/main` pins `0.1.0-alpha.0.1009`, which includes the additive DataAccess API.
-- Last reconciled: 2026-08-15 against PR #561, fetched `origin/main` at `e8242eb43ee922ed34699ccbccdf29e473448b0d`, producer publication, and platform-sync evidence.
+- Last reconciled: 2026-08-16 against PR #561 and `origin/main` at `be418811bebdb0e11ebcde55ebd58a8d25326bec`.
 
 ## Current state
 
-The repo-wide consumer migration is implemented, committed, reviewed, and delivery-ready on #561.
+The repo-wide consumer migration is implemented and reconciled locally with current main for #561.
 It includes the Customer, B2B, and Payment repository
 and context migrations, the B2B context-stance naming correction, and the Conversations-owned
 participant projection required to preserve the module boundary.
@@ -24,19 +24,18 @@ The branch also carries two merge-queue fixes discovered while validating this w
 host now dispatches seeded participant events in process, and the three Strict Mode SPA login routes
 start at most one OIDC redirect per mount.
 
-The producer/package gate is open. Current `origin/main` is reconciled in the preserved consumer
-worktree. The three Customer read-context conflicts retain the consumer migration to the published
-shared `ReadDbContext`; the plan artifacts retain the compact versions from `main` with current
-delivery evidence. Package-bound B2B, Customer, and Payment builds and the focused tests are green.
-The compound reconciliation work head is verified on the remote branch and PR.
+The producer/package gate is open. The current-main merge preserves the typed-result service APIs,
+the B2B `XDbContext`/`XTenantDbContext` split, capability-named `*ReadRepository` persistence surface,
+and Conversations-owned participant projection. The Concert and Conversations initial migrations were
+re-scaffolded from the merged model. No source or filename outside the plan/review historical record
+contains a `Public*Repository`, `IPublic*Repository`, or `Public*DbContext` persistence name.
 
 ## Next Steps
 
-1. Push this checkpoint-only transport commit and verify local, remote-tracking, and PR heads are equal.
-2. Require green exact-head PR CI, normalize to `full-e2e`, enqueue, and follow the new merge-group run
-   to a terminal result without retrying a failure.
-3. On merge, close the source worktree and follow publication plus the generated platform-sync PR to
-   green before starting the legacy shared-package contraction.
+1. Commit and push the current-main reconciliation, then verify local, remote-tracking, and PR heads are equal.
+2. Require green exact-head PR CI.
+3. Await explicit merge authorization; then normalize to `full-e2e`, enqueue, and follow the merge-group,
+   publication, and generated platform-sync gates to green before starting the legacy contraction.
 
 ## Completed work
 
@@ -65,6 +64,10 @@ The compound reconciliation work head is verified on the remote branch and PR.
 - Focused B2B DataAccess/Conversations, Customer Artist/Venue/Concert, and Payment unit-test projects
   all passed.
 - Current merge diff checks passed; plan graph reported 0 errors and 0 warnings.
+- Current-main reconciliation: `initial-migrations.ps1` completed for every context; B2B Web Release
+  build passed with 0 warnings and 0 errors; Artist, Venue, Concert, and Conversations unit tests passed
+  17/17, 18/18, 219/219, and 34/34; source/filename persistence-name grep returned zero; plan graph
+  reported 0 errors and 0 warnings; `git diff --cached origin/main --check` passed.
 
 ## Reviews
 
