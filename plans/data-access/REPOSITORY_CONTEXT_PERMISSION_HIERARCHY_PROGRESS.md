@@ -6,12 +6,12 @@
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable/.worktrees/Plan-data-access-repository-permission-hierarchy`
 - Branch: `Refactor/DataAccessRepositoryPermissionHierarchy`
 - PR: [#561](https://github.com/Concertable/concertable/pull/561) (open; replacement exact-head CI pending)
-- Verified work head: `61b67199f57935c20151959f438e0a8768e13e15`
-- Starting remote head: `b65fce300a93626ef3fc47a45b5a37fa3f97bf54`
-- Pushed range: `b65fce300a93626ef3fc47a45b5a37fa3f97bf54..61b67199f57935c20151959f438e0a8768e13e15`
-- Remote and PR head: `61b67199f57935c20151959f438e0a8768e13e15` (verified after work-head push)
+- Verified work head: `b0b3d35af9606d16596f79aa9facd5344087551a`
+- Starting remote head: `ba3e4ddab5a43f41bd2b1f9e864ccdf074b7895d`
+- Pushed range: `ba3e4ddab5a43f41bd2b1f9e864ccdf074b7895d..b0b3d35af9606d16596f79aa9facd5344087551a`
+- Remote and PR head: `b0b3d35af9606d16596f79aa9facd5344087551a` (verified after work-head push)
 - Dependency/package gate: satisfied. Additive producer PR #590 merged as `59fe60e978affe23bcaf53823151eab2acda8ba0`, published platform `0.1.0-alpha.0.1007`, and platform-sync PR #592 merged green as `38e3d8548f10f3ab7a4a951b7c4ce961ec21c863`. Current `origin/main` pins `0.1.0-alpha.0.1009`, which includes the additive DataAccess API.
-- Last reconciled: 2026-08-16 against PR #561 and `origin/main` at `07624709d873dd0aecc934e59bbc45f78b0c844b`.
+- Last reconciled: 2026-08-16 against PR #561 and `origin/main` at `1e22be2fdefdeb39a8dce9da3199f68ee578230f`.
 
 ## Current state
 
@@ -40,6 +40,11 @@ The standard repository-contract audit is also complete. Venue admin, Customer U
 PayoutAccount now inherit the combined repository interface and implementation bases instead of
 hand-redeclaring generic CRUD. Payment FinancialOperation remains bespoke because it has no repository
 identity contract and participates in a separate unit of work.
+
+All six B2B and Customer Artist/Venue/Concert read contexts now implement module-specific interfaces
+that expose only named `IQueryable` roots. Production repositories and query services inject those
+interfaces rather than concrete EF contexts, while the shared `ReadDbContext` still enforces no
+tracking and rejects saves.
 
 The first naming-correction CI run exposed a cancellation-test harness race: an untyped financial
 completion could consume a pending acceptance command before the asynchronously dispatched refund.
@@ -107,6 +112,11 @@ The fixture now completes a requested command type, and refund workflows explici
 - The standard repository follow-up passed B2B Venue 18/18, Customer User 15/15, and Payment 272/272
   unit tests. B2B Web, Customer Web, and Payment Web Release builds passed with zero errors; the direct
   CRUD redeclaration audit now returns only the intentionally bespoke FinancialOperation contract.
+- The narrow read-context surface passed B2B Artist 17/17, Venue 18/18, and Concert 229/229 plus
+  Customer Artist 2/2, Venue 2/2, and Concert 25/25 unit tests. B2B and Customer Web Release builds
+  passed with zero errors before the constructor-only review fix; every constructor-touched module
+  then rebuilt through its focused unit suite.
+- Work head `b0b3d35af` was pushed from `ba3e4ddab`, then verified equal on the remote branch and PR #561.
 
 ## Reviews
 
@@ -123,6 +133,10 @@ The fixture now completes a requested command type, and refund workflows explici
   contracts that still redeclared base CRUD. No other correctness, security, architecture, convention,
   seeding, or changed-path coverage issue was found. Review and security watermarks are current at
   `3f3734a5c7104b9d83cd4347e0ab571d15df69b6`.
+- Incremental review of `3f3734a5c..f9cb45b8c` found and resolved `CV3`, captured primary constructors
+  on the new query-backed base and touched read consumers. No other correctness, security, architecture,
+  convention, seeding, or changed-path coverage issue was found. Review and security watermarks are
+  current at `f9cb45b8c15ffea1e612efa80e6fbbb388770443`.
 
 ## Decisions, discoveries, blockers, and deviations
 
