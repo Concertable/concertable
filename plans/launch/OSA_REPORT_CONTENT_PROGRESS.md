@@ -5,7 +5,7 @@
 - Roadmap item: `launch/osa-report-content`
 - Worktree: `/home/tommy/projects/csharp/Concertable` (the main checkout — the kickoff instruction created the branch here rather than in an isolated worktree)
 - Branch: `Feature/launch_osa-report-content`
-- PR: [#572](https://github.com/Concertable/concertable/pull/572) (draft), branch merged up to `origin/main` at `c07c52678` and rebuilt green
+- PR: **MERGED** `fc3c876f5` (2026-08-16) — original entry: [#572](https://github.com/Concertable/concertable/pull/572) (draft), branch merged up to `origin/main` at `c07c52678` and rebuilt green
 - Dependency/package gates: none blocking. No open or red `chore/platform-sync-*` PR at branch time. The
   D2 package question is **settled** — see "Completed work".
 - Last reconciled: 2026-08-15, after both phases were implemented and verified locally.
@@ -22,26 +22,7 @@ Three things worth knowing, all verified against source rather than assumed:
 
 ## Next Steps
 
-1. **PR #572's CI is green** (57 pass / 4 skipping / 0 fail) at head `2dcf3cf98`. It is still a **draft**
-   — mark it ready and merge when Tommy gives the go-ahead. E2E has not run at any tier yet.
-2. **Merge via `/merge` at the full-E2E tier.** Plan §11 is explicit: this change touches shared web
-   code, a user-facing messaging flow, the request-authorization surface and the data model, so it
-   fails every `skip-e2e` criterion. Let the merge queue run E2E; do not run it locally first.
-3. **Own the post-merge `chore/platform-sync-*` PR to green.** This is an `api/**` change, so
-   `publish-packages` republishes and `platform-sync` bumps every service's pin. Expected
-   non-breaking — no cross-service published contract changed — so it should auto-merge. A red sync is
-   this plan's to fix, in that PR.
-4. **Close out only after platform sync is green:** record the terminal evidence here, then `git rm`
-   this ledger and `OSA_REPORT_CONTENT_PLAN.md` together in a doc-only close-out landed through
-   `/merge-docs`. The source PR never deletes its own recovery artifacts.
-
-The roadmap lines have already been moved in the same commit as the shipping work, as required:
-
-- `LAUNCH_ROADMAP.md` **§5** Swim-lane C row — marked `✅`, Month → `done`, annotated that the in-app
-  route shipped and the published-email fallback remains with the legal pages.
-- `LAUNCH_ROADMAP.md` **§7** checklist line — deliberately **left un-ticked**, annotated with what is
-  live and what is outstanding. Ticking it would claim a compliance state we do not have, because
-  Artifact 2's always-available published `report@` address depends on the solicitor-gated legal pages.
+Terminal. The plan and this ledger are deleted in the next commit.
 
 ## Completed work
 
@@ -205,3 +186,31 @@ re-derive. The full reasoning is in the plan; these are the facts a fresh agent 
 cd /home/tommy/projects/csharp/Concertable
 Read @plans/launch/OSA_REPORT_CONTENT_PLAN.md and @plans/launch/OSA_REPORT_CONTENT_PROGRESS.md and do what its `## Next Steps` says.
 ```
+
+
+## Terminal evidence
+
+- **Merged** as `fc3c876f5` through the merge queue at the **full-E2E tier**, so both E2E suites ran
+  against the merge group — the first end-to-end exercise of the reporting flow, including the
+  deliberately un-preselected category dropdown.
+- **Publish + platform sync green.** The merge republished the platform and `chore/platform-sync-*` #601
+  bumped every service to `0.1.0-alpha.0.1017` and merged clean. No sync PR is open and every
+  `Platform sync alert` run is `skipped`, so nothing was left stranded on a broken pin.
+- **Branch deleted** (the queue removed the remote ref; local cleaned). The work ran in the main
+  checkout, so there is no worktree to close.
+- **Roadmap reported honestly:** the Swim-lane C row is `✅ done`; the launch-readiness checklist line is
+  deliberately **un-ticked** and annotated, because Artifact 2's always-available published
+  `report@`/`safety@` address depends on the solicitor-gated footer legal pages. Ticking it would claim
+  a compliance state we do not have.
+
+### Carried forward, deliberately not done here
+
+- **Tenant suspension** — split at the `[LEGAL]` T&Cs enforcement-clause gate (plan §7), tracked as its
+  own Swim-lane C roadmap row. No plan or ledger created: its first phase is a solicitor decision.
+- **Tech debt logged rather than fixed:** the `[Admin]` seam gaps (no admin SPA, no roles, uncached
+  per-request DB hit), Conversations' missing thread aggregate + retention policy, the content-report
+  generalisation trigger for when marketplace content becomes reportable, `ActionLink` duplicated per
+  Api module, `IPagination.Select` placement + the `Map` rename, and the customer SPA's Mailbox 404.
+- **`Refactor/PaginationMap` (#577)** is open and depends on this: `ModerationService` now calls
+  `.Select(r => r.ToDto())` on `main`, so when #577 publishes, that call must migrate to `.Map` in its
+  platform-sync PR. Flagged in #577's body.
