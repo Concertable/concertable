@@ -5,7 +5,7 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `a8fd98ce0c09bcde71709f056e2b6d2cf97880f4`  _(2026-08-16)_
+**Reviewed up to commit:** `7efc0e017c6e65030758789d108ca007b7743798`  _(2026-08-16)_
 
 > Range reviewed: `520761dd..b19bcc79` (5 commits). Native (`code-reviewer`) + architecture layers.
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -53,6 +53,10 @@
 - [x] **COV1 — LOW — test coverage (Lens F)** — the new `BookingEntity.Confirm` → domain-event wiring
   was covered only by the Docker-gated integration test. **Fixed** (`0ca49c8b`): added
   `BookingEntityTests.Confirm_...RaisesBookingConfirmedDomainEvent` (mirrors `TenantInvitationEntityTests`).
+- [x] **CV1 — LOW — convention** — the sender's private `FormatAddress` helper should be a mapper per
+  CODE_CONVENTIONS ("Mappers — `XMappers` extension methods"). **Fixed** (`7efc0e01`): moved to
+  `RegisteredAddressMappers.ToSingleLine()` as a C# 14 `extension()` block. Behaviour-preserving (same
+  output, covered by the sender test) — mechanical move, no new findings.
 
 ## Cleared without a finding — 2026-08-16
 
