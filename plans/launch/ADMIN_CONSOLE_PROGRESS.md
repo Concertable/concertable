@@ -5,52 +5,65 @@
 - Roadmap item: `launch/admin-console`
 - Worktree: current checkout (`C:\Users\tommy\source\repos\Concertable`)
 - Branch: `Feature/launch_admin-console`
-- PR: not opened
+- PR: [#624](https://github.com/Concertable/concertable/pull/624) (draft)
 - Dependency/package gates: none. No published-package boundary crosses this plan (Auth + B2B edits land
   in the same repo, no NuGet republish/platform-sync gate).
-- Last reconciled: 2026-08-16, plan authored fresh this session.
+- Last reconciled: 2026-08-16, Phase 1 implemented and pushed.
 
 ## Current state
 
-Plan and ledger just written; no implementation yet. Branch created off `origin/main`, clean.
+Phase 1 (backend provisioning) implemented, committed, and pushed as draft PR #624. Local build (full
+B2B solution + web host) and unit tests are green; integration tests compile but could not run locally
+(no Docker in this environment) — draft-PR CI owns that run per the remote-validation policy.
 
 ## Next Steps
 
-Start Phase 1 (backend provisioning) per `plans/launch/ADMIN_CONSOLE_PLAN.md` "Phase 1":
-
-1. Add `AdminInvitationEntity` to `Concertable.B2B.User.Domain` (mirror `TenantInvitationEntity`'s
-   shape minus tenant fields — Id/Email/Status/CreatedByUserId/CreatedAt/ExpiresAt, 7-day TTL).
-2. EF configuration + repository access (extend `UserDbContext`/`UserRepository`, no new module).
-3. Update `CredentialRegisteredHandler`
-   (`api/Concertable.B2B/src/Modules/User/Concertable.B2B.User.Infrastructure/Events/CredentialRegisteredHandler.cs`)
-   per design decision 1: invitation-or-bootstrap gate on the `ClientIds.Admin` branch. Inject
-   `TimeProvider` + a bootstrap-email option (`Admin:BootstrapEmail` config key, defaulting to
-   `SeedUsers.AdminEmail` outside Production).
-4. New `AdminController` in `Concertable.B2B.User.Api/Controllers/` + `IAdminService`/`AdminService` in
-   Infrastructure: `POST /api/AdminInvitation`, `DELETE /api/AdminInvitation/{id}`, `GET /api/Admin`,
-   `DELETE /api/Admin/{sub}` (last-admin invariant, mirror `MembershipService.IsLastOwnerAsync`),
-   `GET /api/Admin/me`.
-5. Invite email via the existing outbox pattern (`TenantInvitationCreatedDomainEventHandler` template).
-6. `./initial-migrations.ps1` from `api/` to re-scaffold the User module's migration.
-7. Tests per the plan's Phase 1 verification gate — the load-bearing one is: registering via
-   `ClientIds.Admin` with no matching invitation and a non-bootstrap email must create a `UserEntity`
-   but grant **no** `AdminProfileEntity`.
-8. Commit when green; push to open the draft PR (first coherent checkpoint).
-
-Then proceed to Phase 2 (SPA shell) in the same or next session — see the plan for its scope. Phases 3-4
-follow once Phase 2 is green.
+1. Watch PR #624's CI (build, carve, unit, integration matrix) to green; if the integration suite fails,
+   enter `integration-debug` per `plans/AGENTS.md` rather than re-reporting.
+2. Once #624 is reviewed and merged, start Phase 2 (admin console SPA shell) per
+   `plans/launch/ADMIN_CONSOLE_PLAN.md` "Phase 2" from a fresh worktree based on current `origin/main`:
+   - `app/web/admin/` scaffold (mirrors the `customer` app's shape, no `@b2b/*` alias).
+   - Routes: `login.tsx`, `auth.callback.tsx`, `__root.tsx`, `_admin/route.tsx` (guard via
+     `GET /api/Admin/me`), landing page listing admins + pending invitations wired to Phase 1's
+     `AdminController` endpoints.
+   - Auth service: `ClientIds.Admin` ("admin") Duende Web client — `Config.WebClients` +
+     `SpaClientSettings.Admin` + redirect URIs in `appsettings*.json`. This is what makes Phase 1's
+     fail-closed gate load-bearing (today `admin` has no OIDC client, so the path is unreachable).
+   - AppHost wiring: `AppHostExtensions.AddAdminSpa` (mirrors `AddCustomerSpa`), called from
+     `Concertable.B2B.AppHost/Program.cs` and the umbrella `Concertable.AppHost/Program.cs`.
+   - Verification gate: all five web builds green; focused component/hook tests for invite/revoke.
+3. Phases 3 (moderation UI) and 4 (venue approval UI, plus the new `GET /api/Venue/pending-approval`
+   endpoint) follow once Phase 2 is green — see the plan for scope.
 
 ## Completed work
 
-None yet.
+- **Phase 1 — Admin provisioning backend** (PR #624): `AdminInvitationEntity` (User.Domain, mirrors
+  `TenantInvitationEntity` minus tenant fields) with Accept/Expire/Revoke transitions and a 7-day TTL;
+  EF configuration + `UserDbContext`/`UserRepository` extensions (no new module); `CredentialRegisteredHandler`
+  rewritten with the invitation-or-bootstrap gate on `ClientIds.Admin` (`Admin:BootstrapEmail` config,
+  defaults to `SeedUsers.AdminEmail` outside Production); `IAdminService`/`AdminService`
+  (mirrors `InvitationService`/`MembershipService`, last-admin invariant mirrors `IsLastOwnerAsync`);
+  `AdminController` (`POST`/`DELETE /api/AdminInvitation`, `GET`/`DELETE /api/Admin`, `GET /api/Admin/me`);
+  invite email via the existing outbox/`IBus` pattern; `./initial-migrations.ps1` re-scaffold for the new
+  `AdminInvitations` table.
 
 ## Verification
 
-None yet.
+- `dotnet build` on `Concertable.B2B.Web` (full host) and every touched project: green.
+- `Concertable.B2B.User.UnitTests`: 20/20 passing — `AdminInvitationEntityTests` (Create/Accept/Revoke/
+  Expire/IsActive transitions) + `AdminServiceTests` (last-admin invariant, invite conflict cases).
+- `Concertable.B2B.User.IntegrationTests.AdminProvisioningTests` (new `UserApiFixture` in the shared
+  fixtures project): compiles clean; covers invitation-matched grant, case-insensitive email match,
+  expired-invitation non-grant, bootstrap-email grant only when `AdminProfiles` is empty, bootstrap
+  email non-grant once an admin exists, no-invitation/non-bootstrap registration (UserEntity created,
+  no AdminProfileEntity), non-admin-client no-op, and inbox-dedup idempotency on redelivery. Could not
+  execute locally (no Docker in this environment) — deferred to draft-PR CI per the remote-validation
+  policy; existing `ModerationApiTests`/venue-approval integration tests are untouched (they seed
+  `AdminProfileEntity` via `ITestSeeder`, not through the handler).
 
 ## Reviews
 
-None yet.
+None yet — PR #624 is in draft, awaiting CI + review.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -70,6 +83,26 @@ None yet.
   — so the bootstrap mechanism deliberately avoids depending on any "runs at B2B startup in production"
   hook (none is proven to exist yet) and instead triggers lazily inside the existing
   `CredentialRegisteredHandler` reactive path, which already runs in every environment.
+- The invite email deliberately carries **no** accept link — unlike `TenantInvitationCreatedDomainEventHandler`,
+  admin acceptance is implicit at registration-time email match (design decision 1), and the admin
+  console's real URL doesn't exist until Phase 2. The email just tells the invitee which email to
+  register with; revisit once Phase 2 gives it a real base URL, if a link becomes worth adding.
+- `AdminProfileEntity` stayed in `Concertable.B2B.User.Infrastructure` (not moved to Domain) —
+  `IUserRepository`'s new admin members return only primitive `Guid`/`bool` values, never the entity, so
+  no Application-layer type ever needs to see it. `AdminInvitationEntity` did move to Domain per the
+  plan's explicit instruction, since `AdminService`/`IUserRepository` legitimately pass it across the
+  Application boundary (mirrors `TenantInvitationEntity`).
+- Needed three new `[assembly: InternalsVisibleTo(...)]` grants beyond what the plan called out:
+  `Concertable.B2B.User.Infrastructure` → `Concertable.B2B.User.UnitTests` (to unit-test `AdminService`
+  and dispatch `CredentialRegisteredHandler` directly in integration tests) and → `Concertable.B2B.IntegrationTests.Fixtures`
+  + `Concertable.B2B.User.IntegrationTests`; `Concertable.B2B.User.Application` → `DynamicProxyGenAssembly2`
+  (Moq needs this to mock the internal `IUserRepository`, same as every other module's `.Application`
+  assembly already grants).
+- Added `UserApiFixture` to the shared `Concertable.B2B.IntegrationTests.Fixtures` project (mirrors
+  `TenantApiFixture`) — exposes `AdminInvitations`, `IsAdminAsync`, `AddAdminInvitationAsync`, and
+  `ClearAdminsAsync` (removes both the seeded `AdminProfileEntity` *and* its `UserEntity` row, since the
+  seeded admin's email — `SeedUsers.AdminEmail` — collides with the default bootstrap email and `Users.Email`
+  has a unique index). `UserApiTests`/`IntegrationCollection` now use it in place of the base `ApiFixture`.
 
 ## Resume prompt
 
