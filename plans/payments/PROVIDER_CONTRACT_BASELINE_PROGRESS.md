@@ -5,15 +5,16 @@
 - Roadmap item: `payments/provider-contract-baseline`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\payments_provider-contract-baseline`
 - Branch: `Feature/payments_provider-contract-baseline`
-- PR: #597 — https://github.com/Concertable/concertable/pull/597 — open draft at remote/PR head `bb9482c77a8264de35aa93711b99bf4f9bb2697b`; local HEAD `1067982097d914f7090b94c06d0fd0bde878ecf6` includes current `origin/main` `7db0c9be964ea9ff4a2d64468c4462eae91d36ff` and is not yet pushed; planning PR #594 merged as `3c8a2c5a847d0f9702884949ed57850c6e494c47`
+- PR: #597 — https://github.com/Concertable/concertable/pull/597 — open draft; Phase 3 work head `2c972be16d4fafd26c90d0c2d6d88887e9c159f2` is verified equal locally, on `origin/Feature/payments_provider-contract-baseline`, and as the PR `headRefOid`; this ledger checkpoint is the transport leg; planning PR #594 merged as `3c8a2c5a847d0f9702884949ed57850c6e494c47`
 - Review readiness: **NOT READY FOR REVIEW** — Phase 4 remains; PR #597 stays draft until the final implementation candidate is locally verified and exact-head CI is green
 - Dependency/package gates: Phases 1 through 3 are complete; the production/live-mode Stripe account has no webhook endpoint, so future deployment is locked to `2025-01-27.acacia` and must create the endpoint at the actual Payment Web URL while installing its signing secret; PR #552 merged as `33f07c47a497586324edacdcfc10321a9d3f02ee`; compatibility remains anchored to published `0.1.0-alpha.0.1009`; platform-sync PR #601 merged and the current platform pin is `0.1.0-alpha.0.1017`
 - Last reconciled: 2026-08-16 against `origin/main` `7db0c9be9`, merged PRs #552/#601/#605, open draft PR #597, the source roadmap, current repository entry points, and live/test Stripe API evidence
 
 ## Current state
 
-Phases 1 and 2 are complete, committed, and pushed. Phase 3 is locally complete and verified in the
-current working tree, pending its coherent commit and plan-managed push. `api/Concertable.Payment/PROVIDER_CONTRACT.md` now owns
+Phases 1 through 3 are complete, committed, and pushed. Phase 3 work commit
+`2c972be16d4fafd26c90d0c2d6d88887e9c159f2` is verified at the local, remote-tracking, and PR work
+heads. `api/Concertable.Payment/PROVIDER_CONTRACT.md` now owns
 the provider-product matrix, operation/attempt identity, normalization and transition tables,
 terminality, retry/revision/expiry, safe failures, Connect posture, consumer ownership, compatibility
 islands, and version assumptions. `provider-contract-inventory.json` classifies 43 current entry
@@ -55,11 +56,12 @@ authorization, both setup kinds, and refund.
 
 ## Next Steps
 
-Implement and verify Phase 4 only. Generate and commit the `0.1.0-alpha.0.1009` public-signature,
-message-URN, and protobuf-descriptor baselines; enforce additive compatibility plus package/service
-architecture purity; compile the frozen consumer fixture; run the focused local gates; then push and
-let draft-PR CI validate the exact remote head. Once the final candidate is exact-head green, mark
-PR #597 ready for review and make `/review` the next action. Do not merge in the same turn.
+Confirm draft-PR CI is green at the current checkpoint head, then implement and verify Phase 4 only.
+Generate and commit the `0.1.0-alpha.0.1009` public-signature, message-URN, and protobuf-descriptor
+baselines; enforce additive compatibility plus package/service architecture purity; compile the
+frozen consumer fixture; run the focused local gates; then push and let draft-PR CI validate the exact
+remote head. Once the final candidate is exact-head green, mark PR #597 ready for review and make
+`/review` the next action. Do not merge in the same turn.
 
 ## Completed work
 
@@ -118,6 +120,9 @@ PR #597 ready for review and make `/review` the next action. Do not merge in the
   97.72% line and 92% branch; transition specification 98.34% line and 96.38% branch. The explicit
   state-pair oracle asserts all 405 product/state combinations, so removing an allowed or forbidden
   edge changes the focused suite.
+- Phase 3 work push: starting remote/PR head `bb9482c77a8264de35aa93711b99bf4f9bb2697b`;
+  pushed range `bb9482c77a8264de35aa93711b99bf4f9bb2697b..2c972be16d4fafd26c90d0c2d6d88887e9c159f2`;
+  local, remote-tracking, and PR work heads all verified at `2c972be16d4fafd26c90d0c2d6d88887e9c159f2`.
 - `dotnet build api/Concertable.Payment/tests/Concertable.Payment.UnitTests/Concertable.Payment.UnitTests.csproj --no-restore`: succeeded with 0 warnings and 0 errors.
 - `dotnet test api/Concertable.Payment/tests/Concertable.Payment.UnitTests/Concertable.Payment.UnitTests.csproj --no-build --no-restore`: 318 passed, 0 failed, 0 skipped.
 - Focused inventory architecture coverage: 46 passed after correcting the detector to distinguish
