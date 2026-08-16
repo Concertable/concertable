@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `12b43c821a7156284db47869f2c18e405fa02169`  _(2026-08-15)_
-**Security-reviewed up to commit:** `12b43c821a7156284db47869f2c18e405fa02169`  _(2026-08-15)_
+**Reviewed up to commit:** `c3172e835d004792b0d94e4c4f430b3129620a56`  _(2026-08-15)_
+**Security-reviewed up to commit:** `c3172e835d004792b0d94e4c4f430b3129620a56`  _(2026-08-15)_
 
 > Range reviewed: `c07c526..b06e0a8` (13 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -229,3 +229,20 @@ Checked specifically because it could have moved this feature's wire contract: `
 (camelCase enums, `allowIntegerValues: false`) is **not** adopted by `Concertable.B2B.Web`, which still
 registers the plain `JsonStringEnumConverter`. So `ReportCategory` stays PascalCase on the wire and the
 `"Details"` ModelState key in the integration test remains correct.
+
+
+### Marker moved to `c3172e835` — main merges and the Reunion alpha.8 jump
+
+`main` moved ~153 commits and conflicted, which took the PR `DIRTY` and silently disarmed auto-merge.
+Two conflicts, both resolved to `main`: `Directory.Packages.props` (main has since added the Reunion
+sub-packages itself and moved B2B to **alpha.8**, dropping FluentResults — superseding this plan's D2
+alpha.3 pin) and `app/web/TECH_DEBT.md` (both sides appended a different entry; both kept).
+
+The branch then could not build on two Concert files consuming `RefundReasonCodes`, which existed in
+`Payment.Contracts` source but not in the published package at pin `1009` — `main` mid-cut-over, not a
+defect here. Resolved when sync PR #598 landed and the pin advanced to `1015`.
+
+No branch code changed. Re-verified on the new base: full solution build, 29 Conversations unit tests,
+integration project compiles, four web builds, boundary lint, both hook guards, migration audit clean.
+**The Reunion alpha.3 → alpha.8 jump needed no code change** — `OrFailure`, `BindAsync`, `TryGetError`,
+`Success` and `ToNoContentOrProblem` all survive the version move.
