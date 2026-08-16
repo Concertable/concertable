@@ -5,11 +5,11 @@
 - Roadmap item: `data-access/repository-context-permission-hierarchy`
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable/.worktrees/Plan-data-access-repository-permission-hierarchy`
 - Branch: `Refactor/DataAccessRepositoryPermissionHierarchy`
-- PR: [#561](https://github.com/Concertable/concertable/pull/561) (open; reviewed current-main refresh pending push and replacement exact-head CI)
-- Verified work head: `b0b3d35af9606d16596f79aa9facd5344087551a`
-- Starting remote head: `ba3e4ddab5a43f41bd2b1f9e864ccdf074b7895d`
-- Pushed range: `ba3e4ddab5a43f41bd2b1f9e864ccdf074b7895d..b0b3d35af9606d16596f79aa9facd5344087551a`
-- Remote and PR head: `b0b3d35af9606d16596f79aa9facd5344087551a` (verified after work-head push)
+- PR: [#561](https://github.com/Concertable/concertable/pull/561) (open; replacement exact-head CI pending)
+- Verified work head: `4179700e2877a027a709c9dab9d5aa1df3a46690`
+- Starting remote head: `11c99197fd4976c3b9ced7c4e115ea92856d0496`
+- Pushed range: `11c99197fd4976c3b9ced7c4e115ea92856d0496..4179700e2877a027a709c9dab9d5aa1df3a46690`
+- Remote and PR head: `4179700e2877a027a709c9dab9d5aa1df3a46690` (verified after work-head push)
 - Dependency/package gate: satisfied. Additive producer PR #590 merged as `59fe60e978affe23bcaf53823151eab2acda8ba0`, published platform `0.1.0-alpha.0.1007`, and platform-sync PR #592 merged green as `38e3d8548f10f3ab7a4a951b7c4ce961ec21c863`. Current `origin/main` pins `0.1.0-alpha.0.1009`, which includes the additive DataAccess API.
 - Last reconciled: 2026-08-16 against PR #561 and `origin/main` at `b633d79aaec3cb957ef3213847aeaa7121731334`.
 
@@ -54,8 +54,7 @@ The fixture now completes a requested command type, and refund workflows explici
 
 ## Next Steps
 
-1. Push the reviewed current-main candidate through the plan-managed compound push protocol and require
-   green exact-head PR CI.
+1. Require green exact-head PR CI for the checkpoint-transport head.
 2. Normalize to `full-e2e`, enqueue, and follow the merge-group, publication, and generated
    platform-sync gates to green before starting the legacy contraction.
 
@@ -121,6 +120,8 @@ The fixture now completes a requested command type, and refund workflows explici
 - Work head `b0b3d35af` was pushed from `ba3e4ddab`, then verified equal on the remote branch and PR #561.
 - Current main through `b633d79aa` merged cleanly; the Release solution build passed with 0 errors and
   10 existing warnings.
+- Reviewed current-main work head `4179700e2` was pushed from `11c99197f`, then verified equal on the
+  remote branch and PR #561.
 
 ## Reviews
 
