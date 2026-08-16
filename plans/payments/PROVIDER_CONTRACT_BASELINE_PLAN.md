@@ -312,7 +312,7 @@ Verification gate:
 
 ### Phase 4 — compatibility and architecture gates
 
-Status: ready; Phases 2 and 3 are complete.
+Status: implementation complete locally; current-main reconciliation and exact-head draft-PR CI remain.
 
 - Generate committed golden baselines from published `Concertable.Payment.Contracts`, Protos, and
   Client `0.1.0-alpha.0.1009`: public .NET signatures/message URNs and a protobuf descriptor set.

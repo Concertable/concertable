@@ -5,16 +5,24 @@
 - Roadmap item: `payments/provider-contract-baseline`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\payments_provider-contract-baseline`
 - Branch: `Feature/payments_provider-contract-baseline`
-- PR: #597 — https://github.com/Concertable/concertable/pull/597 — open draft; Phase 3 work head `2c972be16d4fafd26c90d0c2d6d88887e9c159f2` is verified equal locally, on `origin/Feature/payments_provider-contract-baseline`, and as the PR `headRefOid`; this ledger checkpoint is the transport leg; planning PR #594 merged as `3c8a2c5a847d0f9702884949ed57850c6e494c47`
+- PR: #597 — https://github.com/Concertable/concertable/pull/597 — open draft; checkpoint head `324dc4714565b623cba297de461b566787c6a521` passed exact-head CI run 31947954010; the Phase 4 implementation candidate is this commit and is not yet pushed
 - Review readiness: **NOT READY FOR REVIEW** — Phase 4 remains; PR #597 stays draft until the final implementation candidate is locally verified and exact-head CI is green
-- Dependency/package gates: Phases 1 through 3 are complete; the production/live-mode Stripe account has no webhook endpoint, so future deployment is locked to `2025-01-27.acacia` and must create the endpoint at the actual Payment Web URL while installing its signing secret; PR #552 merged as `33f07c47a497586324edacdcfc10321a9d3f02ee`; compatibility remains anchored to published `0.1.0-alpha.0.1009`; platform-sync PR #601 merged and the current platform pin is `0.1.0-alpha.0.1017`
-- Last reconciled: 2026-08-16 against `origin/main` `7db0c9be9`, merged PRs #552/#601/#605, open draft PR #597, the source roadmap, current repository entry points, and live/test Stripe API evidence
+- Dependency/package gates: Phases 1 through 3 are complete and Phase 4 is locally implemented; the production/live-mode Stripe account has no webhook endpoint, so future deployment is locked to `2025-01-27.acacia` and must create the endpoint at the actual Payment Web URL while installing its signing secret; compatibility is anchored to published `0.1.0-alpha.0.1009`; the local branch carries platform pin `0.1.0-alpha.0.1021`
+- Last reconciled: 2026-08-16 against open draft PR #597, exact-head CI run 31947954010, published Payment packages `0.1.0-alpha.0.1009`, and `origin/main` `381720b9b`; the branch is 19 commits behind that moving base and must be updated before push
 
 ## Current state
 
-Phases 1 through 3 are complete, committed, and pushed. Phase 3 work commit
-`2c972be16d4fafd26c90d0c2d6d88887e9c159f2` is verified at the local, remote-tracking, and PR work
-heads. `api/Concertable.Payment/PROVIDER_CONTRACT.md` now owns
+Phases 1 through 3 are complete, committed, and pushed. Phase 4 is implemented locally in this commit:
+the checked-in generator captured 2,073 Contracts signatures, 1,161 Client signatures, 13 message
+URNs, and the `payment.proto` descriptor set from published `0.1.0-alpha.0.1009`. Candidate tests
+require those public APIs, URNs, protobuf messages/enums/fields/services/RPCs, field numbers, types,
+cardinality, and request/response types to remain an additive subset. A frozen consumer project
+compiles against the exact published Contracts and Client packages, and architecture tests enforce
+provider/consumer purity across the published assemblies and deployable Payment projects. The branch
+must now merge moving `origin/main` `381720b9b`, rerun the focused gates, and push the resulting
+candidate for exact-head CI.
+
+`api/Concertable.Payment/PROVIDER_CONTRACT.md` now owns
 the provider-product matrix, operation/attempt identity, normalization and transition tables,
 terminality, retry/revision/expiry, safe failures, Connect posture, consumer ownership, compatibility
 islands, and version assumptions. `provider-contract-inventory.json` classifies 43 current entry
@@ -56,15 +64,19 @@ authorization, both setup kinds, and refund.
 
 ## Next Steps
 
-Confirm draft-PR CI is green at the current checkpoint head, then implement and verify Phase 4 only.
-Generate and commit the `0.1.0-alpha.0.1009` public-signature, message-URN, and protobuf-descriptor
-baselines; enforce additive compatibility plus package/service architecture purity; compile the
-frozen consumer fixture; run the focused local gates; then push and let draft-PR CI validate the exact
-remote head. Once the final candidate is exact-head green, mark PR #597 ready for review and make
-`/review` the next action. Do not merge in the same turn.
+Update the clean Phase 4 implementation checkpoint with current `origin/main` `381720b9b`, rerun the
+generator/fixture and Payment unit-test builds, the six compatibility/architecture tests, all 440
+Payment unit tests, formatting, plan-graph validation, and `git diff --check`; then push through the
+plan-managed two-leg protocol and let draft-PR CI validate the exact remote head. Once the final
+candidate is exact-head green, mark PR #597 ready for review and make `/review` the next action. Do
+not merge in the same turn.
 
 ## Completed work
 
+- Generated committed `0.1.0-alpha.0.1009` Contracts/Client public-API, message-URN, and protobuf
+  descriptor baselines with a reproducible checked-in generator.
+- Added additive compatibility tests, package/service architecture purity gates, and a frozen consumer
+  fixture compiled against the exact published Contracts and Client versions.
 - Added the Phase 3 pure provider transition, retry/revision, and authorization-expiry specifications.
 - Added exhaustive pinned status, 405-state-pair, identity/freshness, duplicate/out-of-order,
   terminality, explicit-cancellation, safe-failure, retry, revision, and expiry coverage.
@@ -112,6 +124,13 @@ remote head. Once the final candidate is exact-head green, mark PR #597 ready fo
 
 ## Verification
 
+- Phase 4 compatibility and architecture suite: 6 passed, 0 failed, 0 skipped.
+- Phase 4 full Payment unit carve: 440 passed, 0 failed, 0 skipped.
+- Payment UnitTests plus frozen published-contract fixture build: succeeded with 0 warnings and 0
+  errors; fixture and generator both resolved `Concertable.Payment.Client` and
+  `Concertable.Payment.Contracts` exactly at `0.1.0-alpha.0.1009`.
+- Focused formatting for UnitTests, the frozen fixture, and the generator: passed after correcting the
+  test-helper namespace to match its folder.
 - Phase 3 focused provider-contract suite: 106 passed, 0 failed, 0 skipped.
 - Phase 3 full Payment unit carve: 434 passed, 0 failed, 0 skipped.
 - Payment UnitTests project build: succeeded with 0 warnings and 0 errors.
