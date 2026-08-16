@@ -5,9 +5,9 @@
 - Roadmap item: `launch/deal-lifecycle-ownership`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-launch_deal-lifecycle-decision`
 - Branch: `Docs/launch_deal-lifecycle-decision`
-- PR: decision checkpoint branch pushed at `d06422710a5789cc40ab8817f8ee860f80220eda`; PR not yet opened. Rejected draft implementation PR [#614](https://github.com/Concertable/concertable/pull/614) remains open at remote head `2208702c903dd26a7f43ff554eb955083317b3cf` and must not be continued
+- PR: docs-only decision checkpoint [#622](https://github.com/Concertable/concertable/pull/622) is open with `skip-e2e` at verified PR/remote head `486ad455bdf2ef4a95034a5401fda0a030f9f7c6`. Rejected draft implementation PR [#614](https://github.com/Concertable/concertable/pull/614) remains open at remote head `2208702c903dd26a7f43ff554eb955083317b3cf` and must not be continued
 - Dependency/package gates: make this approved decision durable on current `main`, then close and retire the rejected PR/branch before creating the fresh implementation worktree
-- Last reconciled: 2026-08-16 against `origin/main` `89361e99e`, rejected PR #614, and verified local/remote work head `d06422710a5789cc40ab8817f8ee860f80220eda`
+- Last reconciled: 2026-08-16 against `origin/main` `89361e99e`, rejected PR #614, and open decision PR #622 at verified local/remote/PR head `486ad455bdf2ef4a95034a5401fda0a030f9f7c6`
 
 ## Current state
 
@@ -27,8 +27,8 @@ this branch through a recoverable stash.
 
 ## Next Steps
 
-1. Open and admin-merge the reviewed docs-only decision checkpoint with `skip-e2e` so the retirement
-   decision is durable on `origin/main`.
+1. Admin-merge reviewed docs-only PR #622 with `skip-e2e` so the retirement decision is durable on
+   `origin/main`.
 2. Close rejected PR #614 and retire its clean worktree with the landed decision commit as evidence.
 3. Create `Refactor/launch_deal-lifecycle-modules` from the resulting current `origin/main`, update this
    ledger to that worktree, and execute Phase 1.
@@ -47,6 +47,8 @@ this branch through a recoverable stash.
   transaction/convergence invariants, local step resolution, projections, and delivery.
 - Reconciled the approved decision onto current main, fixed all three docs-review findings, and pushed
   reviewed work head `d06422710a5789cc40ab8817f8ee860f80220eda`; the remote-tracking ref matched exactly.
+- Published ledger checkpoint `486ad455bdf2ef4a95034a5401fda0a030f9f7c6`, opened docs-only PR #622,
+  and confirmed its PR head and `skip-e2e` label.
 
 ## Verification
 
