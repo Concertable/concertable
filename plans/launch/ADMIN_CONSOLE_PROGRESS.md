@@ -41,6 +41,24 @@ unprompted. Resume when: #624 is merged (or review feedback lands, requiring rew
    - AppHost wiring: `AppHostExtensions.AddAdminSpa` (mirrors `AddCustomerSpa`), called from
      `Concertable.B2B.AppHost/Program.cs` and the umbrella `Concertable.AppHost/Program.cs`.
    - Verification gate: all five web builds green; focused component/hook tests for invite/revoke.
+   - **Security pre-flight (found in #624's `/review`/`/security-review` pass):** design decision 2
+     claims bootstrap "reuses the same email-ownership proof every registration already relies on:
+     Auth's existing email-verification flow" — verified against the shipped `AuthService.RegisterAsync`/
+     `CredentialEntity` code that this is **not actually true**: `CredentialRegisteredEvent` fires at
+     registration submit time, before `IsEmailVerified` is ever set, and carries no verified-status
+     field. `GrantAdminIfEligibleAsync` (`CredentialRegisteredHandler.cs`) grants off the raw event
+     email with no verification check. This is provably inert in Phase 1 (no `admin` OIDC client
+     exists yet, so `RegisterAsync` can never be invoked with `client_id=admin`), which is why the
+     `/security-review` pass scored it 5/10 (below the blocking bar) — but the moment Phase 2 registers
+     the client, the gap goes live: anyone who knows the bootstrap email or an invited admin's email
+     could self-register with it before the real owner does, consuming the one-time bootstrap slot or
+     the invitation, and (via Auth's global email-uniqueness check) permanently blocking the legitimate
+     admin from ever registering that email. **Close this before or as part of Phase 2** — either gate
+     `GrantAdminIfEligibleAsync` on a verified-email signal (Auth would need to carry/expose one at
+     registration time, which it currently doesn't for any client), or require the admin SPA's login
+     flow to force an explicit verify-then-retry step before the grant becomes reachable. Full finding:
+     `reviews/Feature-launch_admin-console.md` (SEC layer note, below the 8-confidence bar for a
+     blocking finding but real).
 2. Phases 3 (moderation UI) and 4 (venue approval UI, plus the new `GET /api/Venue/pending-approval`
    endpoint) follow once Phase 2 is green — see the plan for scope.
 
