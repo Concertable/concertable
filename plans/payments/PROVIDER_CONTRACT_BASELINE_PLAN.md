@@ -25,8 +25,9 @@ platform baseline `0.1.0-alpha.0.1009`.
 - Merged PR #581 at `c75890243c44435d707eacf7e51377e4631bcf22` owns the current Customer
   web/mobile 3DS bridge. Its client-secret parsing, SignalR correlation, and 30-second wait remain an
   explicit compatibility island until the later Customer and frontend migration work.
-- PR #552 (`Refactor/B2BTypedResultMigration`, inspected at
-  `002c45f5fdb83362fff419448dd1c1a8832fd2a3`) is the external owner for B2B adoption of the existing
+- Merged PR #552 (`Refactor/B2BTypedResultMigration`, consumer head
+  `abb6b0035df2b0ecd32836814d166804cc59aa21`, merge commit
+  `33f07c47a497586324edacdcfc10321a9d3f02ee`) owns B2B adoption of the existing
   financial-operation commands and outcomes, including its additive `RefundReasonCodes` contract.
   This work must neither edit its consumer flow nor introduce replacement capture/deposit/refund
   messages or refund-reason constants.
@@ -227,7 +228,7 @@ Phase 2 adds definitions only where a later durable session implementation needs
 
 ### Phase checklist
 
-- [ ] **Phase 1 — durable decision artifact and exhaustive inventory.** Make every existing Stripe
+- [x] **Phase 1 — durable decision artifact and exhaustive inventory.** Make every existing Stripe
   entry point and baseline decision durable, then guard the inventory in tests.
 - [ ] **Phase 2 — additive package and protobuf vocabulary.** Publish the smallest provider-neutral
   session/status/event vocabulary without changing existing consumers.
@@ -238,8 +239,9 @@ Phase 2 adds definitions only where a later durable session implementation needs
 
 ### Phase 1 — durable decision artifact and exhaustive inventory
 
-Status: local implementation and verification complete; exit is paused pending production/live-mode
-webhook endpoint evidence.
+Status: complete. Live-mode evidence found that the production account has no webhook endpoint, so
+fixtures and future endpoint creation are locked to `2025-01-27.acacia`; endpoint creation and signing
+secret installation are deployment gates rather than implementation blockers.
 
 - Add `api/Concertable.Payment/PROVIDER_CONTRACT.md` as the durable source of truth containing the
   product matrix, operation/attempt model, state tables, legal transitions, terminality, retry,
@@ -252,7 +254,7 @@ webhook endpoint evidence.
 - Verify and record the live webhook endpoint API version. If it differs from
   `2025-01-27.acacia`, document the exact endpoint version and make normalization fixtures target that
   version; do not upgrade the endpoint as an incidental change.
-- Reconcile the artifact against current `origin/main`, PR #552's exact head if still open, and the
+- Reconcile the artifact against current `origin/main`, merged PR #552's exact contracts, and the
   published `0.1.0-alpha.0.1009` package surface. Do not edit B2B consumer code.
 
 Verification gate:
@@ -317,8 +319,8 @@ Status: depends on Phases 2 and 3.
 - Add assembly/source architecture tests proving Payment contracts/client/protos do not reference
   Stripe.net or Customer/B2B runtime/domain assemblies, and that Payment runtime does not gain a
   consumer-domain dependency.
-- Compile the frozen compatibility fixture and inspect PR #552 at its then-current exact head. Treat a
-  PR #552 change as external evidence to refresh, never as files to copy into this branch.
+- Compile the frozen compatibility fixture and verify the merged PR #552 contracts now present on
+  current `origin/main`.
 - Run plan-graph validation and the repository's focused local gates; open a draft PR for remote build,
   service carve, unit, integration, and package validation. Do not run local E2E unless a failing
   remote check requires targeted diagnosis.
@@ -331,9 +333,8 @@ Verification gate:
 
 ## Delivery DAG
 
-1. Merge or otherwise reconcile PR #552 before this branch enters the merge queue if it still owns
-   overlapping published Payment contract files. This is a delivery gate, not an implementation
-   blocker, while all baseline additions remain additive.
+1. Satisfied: PR #552 merged as `33f07c47a497586324edacdcfc10321a9d3f02ee`; its overlapping
+   Payment contract additions are present on this branch through current `origin/main`.
 2. Update the implementation branch from current `origin/main`, rerun affected builds/tests, review,
    push, and let draft-PR CI validate the exact remote head.
 3. Enter the normal code merge queue with the E2E tier selected mechanically from the changed paths.
@@ -341,7 +342,10 @@ Verification gate:
 4. Follow `publish-packages` and the generated `chore/platform-sync-*` PR through green/merged. Because
    this item changes published Payment packages, the work is not terminal until the new platform pin
    has synchronized every service.
-5. Revalidate the compatibility fixtures and service builds against the published version, tick the
+5. Before a production deployment accepts webhooks, create the live endpoint at the actual deployed
+   Payment Web URL with API version `2025-01-27.acacia` and the four currently handled event types,
+   store its signing secret as `Stripe:WebhookSecret`, and record the returned endpoint evidence.
+6. Revalidate the compatibility fixtures and service builds against the published version, tick the
    `payments/provider-contract-baseline` checklist item, then close the plan and ledger through the
    prescribed docs closeout. Keep the roadmap.
 

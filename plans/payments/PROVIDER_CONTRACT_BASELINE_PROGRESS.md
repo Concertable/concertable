@@ -5,13 +5,13 @@
 - Roadmap item: `payments/provider-contract-baseline`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\payments_provider-contract-baseline`
 - Branch: `Feature/payments_provider-contract-baseline`
-- PR: #597 — https://github.com/Concertable/concertable/pull/597 — draft at verified work head `7cd053d0719c699e77f4f8d5b4a3803367db6bf5`; planning PR #594 merged as `3c8a2c5a847d0f9702884949ed57850c6e494c47`
-- Dependency/package gates: Phase 1 local implementation is green but production/live-mode webhook endpoint evidence is unavailable; PR #552 remains the external B2B consumer owner and is a delivery-only gate while the baseline stays additive; published platform baseline is `0.1.0-alpha.0.1009`; no open platform-sync PR was present at reconciliation
-- Last reconciled: 2026-08-16 against `origin/main` `3c8a2c5a847d0f9702884949ed57850c6e494c47`, merged PR #594, the source roadmap, current repository entry points, and official Stripe documentation
+- PR: #597 — https://github.com/Concertable/concertable/pull/597 — draft at remote/PR head `dd1fa17b82a96c33d9979fe9cb5798d5fd99b6d7`; local branch is current with `origin/main` through unpushed merge commit `9b8c1b5d0ee681e70662ef32dfae21b23d02379e`; planning PR #594 merged as `3c8a2c5a847d0f9702884949ed57850c6e494c47`
+- Dependency/package gates: Phase 1 is complete; the production/live-mode Stripe account has no webhook endpoint, so future deployment is locked to `2025-01-27.acacia` and must create the endpoint at the actual Payment Web URL while installing its signing secret; this does not block Phase 2 implementation; PR #552 merged as `33f07c47a497586324edacdcfc10321a9d3f02ee`; compatibility remains anchored to published `0.1.0-alpha.0.1009` while the current platform pin is `0.1.0-alpha.0.1015`; platform-sync PR #601 is open with no failed check at reconciliation
+- Last reconciled: 2026-08-16 against `origin/main` `2ec423f5f1583a74c2c9121eb82229ca3e46bb42`, merged PR #552, draft PR #597, platform-sync PR #601, the source roadmap, current repository entry points, and live/test Stripe API evidence
 
 ## Current state
 
-Phase 1's local implementation is complete. `api/Concertable.Payment/PROVIDER_CONTRACT.md` now owns
+Phase 1 is complete. `api/Concertable.Payment/PROVIDER_CONTRACT.md` now owns
 the provider-product matrix, operation/attempt identity, normalization and transition tables,
 terminality, retry/revision/expiry, safe failures, Connect posture, consumer ownership, compatibility
 islands, and version assumptions. `provider-contract-inventory.json` classifies 43 current entry
@@ -19,21 +19,31 @@ points across seven explicit roots into 23 complete decisions, and the Payment a
 fails for an unclassified provider call, consumer Payment-client call, frontend confirmation, or
 client-secret parser.
 
-A read-only Stripe API query with the configured test key found the deployed Azure webhook endpoint
-at API version `2025-01-27.acacia`, matching Stripe.net `47.3.0`, but the endpoint is test-mode and
-disabled. No browser session was available to inspect Stripe Dashboard live mode. Phase 1 therefore
-cannot cross its endpoint-evidence exit gate until the production/live-mode endpoint is recorded.
-PR #552 remains open and mergeable at `abb6b0035df2b0ecd32836814d166804cc59aa21`; it must not be
-duplicated. Phase 1 work commit `7cd053d0719c699e77f4f8d5b4a3803367db6bf5` is pushed to draft
-PR #597 and the local, remote-tracking, and PR heads were verified equal. The historical
+A read-only Stripe MCP query enumerated the only OAuth-accessible live context as Concertable account
+`acct_1QqfAGLtYbsqaOIf` and returned zero webhook endpoints. There is therefore no production endpoint
+ID, status, or API version to reconcile with Stripe.net `47.3.0`. The absence is explicit evidence:
+normalization fixtures and future endpoint creation target `2025-01-27.acacia`, while endpoint creation
+and signing-secret installation wait for an actual standalone Payment deployment. The configured test
+endpoint `we_1RCqowQ1mmqr287N9MeY0iRV` remains disabled at
+`2025-01-27.acacia` and subscribes only to `payment_intent.succeeded`; it is not a complete production
+template because current Payment runtime also handles `payment_intent.payment_failed`,
+`setup_intent.succeeded`, and `setup_intent.setup_failed`.
+
+PR #552 merged at `33f07c47a497586324edacdcfc10321a9d3f02ee`, and its additive Payment
+contracts are now present after merging current `origin/main`. Phase 1 work commit
+`7cd053d0719c699e77f4f8d5b4a3803367db6bf5` remains pushed to draft PR #597; its remote/PR head is
+`dd1fa17b82a96c33d9979fe9cb5798d5fd99b6d7`, while the clean local branch is current with main through
+unpublished merge commit `9b8c1b5d0ee681e70662ef32dfae21b23d02379e`. The historical
 `Refactor/GroupStripeWebhookHandling` branch is superseded evidence only.
 
 ## Next Steps
 
-Paused: Tommy — in Stripe Dashboard live mode, record the production webhook endpoint ID, URL,
-enabled status, and API version; resume when that evidence confirms `2025-01-27.acacia` or supplies
-the exact different version required for normalization fixtures. Do not start Phase 2 before this
-Phase 1 exit gate is reconciled.
+Implement Phase 2's additive package and protobuf vocabulary against current `origin/main` and merged
+PR #552: add the provider-neutral session, identity, state, retry, failure, and snapshot definitions to
+Payment Client/Protos; add `PaymentOperationStateChangedV1` to Payment.Contracts with a stable URN;
+extend public error/result mappings exhaustively without changing existing RPCs or consumers; add
+contract tests for enum numbers, protobuf fields, URN stability, and provider/service-boundary purity;
+then run the smallest affected builds and focused Payment unit tests and checkpoint the phase.
 
 ## Completed work
 
@@ -46,6 +56,11 @@ Phase 1 exit gate is reconciled.
   `we_1RCqowQ1mmqr287N9MeY0iRV`, URL
   `https://concertable-app.azurewebsites.net/api/webhook`, API version `2025-01-27.acacia`,
   `livemode=false`, and `status=disabled` without changing provider configuration.
+- Queried every OAuth-accessible live Stripe context through the authenticated MCP connection and
+  proved Concertable account `acct_1QqfAGLtYbsqaOIf` currently has zero webhook endpoints.
+- Merged current `origin/main` `2ec423f5f1583a74c2c9121eb82229ca3e46bb42` into the clean feature
+  branch as `9b8c1b5d0ee681e70662ef32dfae21b23d02379e`, bringing merged PR #552 and platform pin
+  `0.1.0-alpha.0.1015` into the implementation baseline.
 - Committed Phase 1 as `7cd053d0719c699e77f4f8d5b4a3803367db6bf5`, pushed the two-commit
   implementation range from current `origin/main`, and opened draft PR #597 for remote validation.
 - Created the clean worktree from current `origin/main` on
@@ -85,8 +100,17 @@ Phase 1 exit gate is reconciled.
 - Source and copied roadmap SHA-256 matched at
   `4181DB21EEF72F29EC4C61536858FE7F5B8ED659ED991C8076C9EB4DE8B2CDB0`.
 - GitHub evidence: PR #544 merged at `d6619a85667617fb29b7cbb8ce005b779b39346d`;
-  PR #581 merged at `c75890243c44435d707eacf7e51377e4631bcf22`; PR #552 was open,
-  mergeable, and externally owned at the exact head recorded above; no open platform-sync PR was found.
+  PR #581 merged at `c75890243c44435d707eacf7e51377e4631bcf22`; PR #552 merged at
+  `33f07c47a497586324edacdcfc10321a9d3f02ee`; platform-sync PR #601 was open with no failed check.
+- Stripe MCP live-context query: `query_succeeded=true`; Concertable account
+  `acct_1QqfAGLtYbsqaOIf`, `livemode=true`, returned `endpoints=[]` from
+  `GET /v1/webhook_endpoints?limit=100`.
+- Stripe test endpoint read: `we_1RCqowQ1mmqr287N9MeY0iRV`, disabled,
+  `2025-01-27.acacia`, `livemode=false`, with only `payment_intent.succeeded` enabled.
+- Current-main reconciliation: local branch merged `origin/main`
+  `2ec423f5f1583a74c2c9121eb82229ca3e46bb42` cleanly as
+  `9b8c1b5d0ee681e70662ef32dfae21b23d02379e`; `HEAD..origin/main` is zero.
+- Post-merge `python .agents/hooks/plan_graph.py --root <worktree>`: 0 errors, 0 warnings.
 - `python .agents/hooks/tests/test_plan_graph.py`: 19 tests passed.
 - `python -m unittest discover -s .agents/hooks/tests -p 'test_*.py'`: 62 tests passed.
 - `python .agents/hooks/plan_graph.py --root C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\payments_provider-contract-baseline`:
@@ -115,7 +139,8 @@ implementation review exists; the branch is not merge-ready.
   abstraction will replace them.
 - Full webhook handling, reconciliation, persistence, frontend migration, and removal of the tactical
   3DS bridge remain with later work.
-- The live webhook endpoint API version cannot be inferred from source and is explicit Phase 1 evidence,
-  not an assumed fact or a planning blocker.
-- The configured test account's endpoint matches the SDK request version, but test-mode evidence cannot
-  establish production/live-mode endpoint state.
+- The live account has no webhook endpoint, so no production endpoint version exists to infer or
+  normalize against. Fixtures target `2025-01-27.acacia`; creation waits for the actual Payment Web
+  deployment URL and is a delivery gate, not a Phase 2 implementation blocker.
+- The configured test endpoint matches the SDK request version but is disabled and subscribes only to
+  `payment_intent.succeeded`; it cannot be copied as the production event selection.
