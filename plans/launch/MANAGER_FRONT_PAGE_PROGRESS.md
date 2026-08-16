@@ -12,7 +12,7 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
 
 ## Next Steps
 
-1. Push reviewed checkpoint `382a5850d` to draft PR #563 and require exact-head CI green.
+1. Require exact-head CI green for PR #563 head `73c83fe989b9768fc8e9cab59c9e69972ca63858`; diagnose and fix any deterministic failure.
 2. After CI is green, complete the remaining Phase A.8 authenticated seeded venue/artist UX review below.
 
 ## Reviews
@@ -32,6 +32,10 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
   `382a5850d0b5a29d03628bb0d740089d3b143e25`.
 
 ## Current implementation
+
+- **Reviewed work-head push verified.** Starting remote head `2b67da3139dfa720a16a17e6e7048b5294fbf846` advanced through
+  `2b67da313..73c83fe98`. Fetch verification proved local HEAD, the remote-tracking branch, and draft PR #563 all equal
+  reviewed work head `73c83fe989b9768fc8e9cab59c9e69972ca63858`. Exact-head CI is the remaining remote gate.
 
 - **Current-main review fixes are locally green.** The common application response preserves its role-specific actions
   under the typed-Result terminal, hidden messages are excluded from previews and unread state, and the duplicated
