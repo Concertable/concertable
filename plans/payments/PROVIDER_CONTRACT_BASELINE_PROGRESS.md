@@ -5,7 +5,7 @@
 - Roadmap item: `payments/provider-contract-baseline`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\payments_provider-contract-baseline`
 - Branch: `Feature/payments_provider-contract-baseline`
-- PR: #597 — https://github.com/Concertable/concertable/pull/597 — draft at remote/PR head `dd1fa17b82a96c33d9979fe9cb5798d5fd99b6d7`; local branch is current with `origin/main` through unpushed merge commit `9b8c1b5d0ee681e70662ef32dfae21b23d02379e`; planning PR #594 merged as `3c8a2c5a847d0f9702884949ed57850c6e494c47`
+- PR: #597 — https://github.com/Concertable/concertable/pull/597 — draft at verified local/remote/PR work head `ef4b4c0848820cd0746e44b067c5c922471c985e`; branch is current with `origin/main` through merge commit `9b8c1b5d0ee681e70662ef32dfae21b23d02379e`; planning PR #594 merged as `3c8a2c5a847d0f9702884949ed57850c6e494c47`
 - Dependency/package gates: Phase 1 is complete; the production/live-mode Stripe account has no webhook endpoint, so future deployment is locked to `2025-01-27.acacia` and must create the endpoint at the actual Payment Web URL while installing its signing secret; this does not block Phase 2 implementation; PR #552 merged as `33f07c47a497586324edacdcfc10321a9d3f02ee`; compatibility remains anchored to published `0.1.0-alpha.0.1009` while the current platform pin is `0.1.0-alpha.0.1015`; platform-sync PR #601 is open with no failed check at reconciliation
 - Last reconciled: 2026-08-16 against `origin/main` `2ec423f5f1583a74c2c9121eb82229ca3e46bb42`, merged PR #552, draft PR #597, platform-sync PR #601, the source roadmap, current repository entry points, and live/test Stripe API evidence
 
@@ -45,7 +45,7 @@ follows the complete Stripe/provider refactor rather than interrupting it.
 
 ## Next Steps
 
-After the Phase 2 work head is pushed and exact-head draft PR CI is green, implement Phase 3's pure
+Wait for exact-head draft PR CI at `ef4b4c0848820cd0746e44b067c5c922471c985e`; once green, implement Phase 3's pure
 transition specification: normalize the complete Stripe.net `47.3.0` PaymentIntent, SetupIntent, and
 Refund status vocabulary at the `2025-01-27.acacia` baseline; encode every allowed and rejected state
 edge, duplicate/stale observation, terminal protection, retry/revision rule, and capture expiry; prove
@@ -107,6 +107,7 @@ the rules exhaustively without wiring runtime webhooks, persistence, reconciliat
 - Payment Client/Contracts build: succeeded with 0 warnings and 0 errors.
 - Payment Web and Workers runtime builds: each succeeded with 0 warnings and 0 errors.
 - Focused `dotnet format --verify-no-changes` for Payment Contracts, Client, and UnitTests: passed.
+- Phase 2 work push: `dd1fa17b82a96c33d9979fe9cb5798d5fd99b6d7..ef4b4c0848820cd0746e44b067c5c922471c985e`; local HEAD, remote-tracking ref, and PR #597 `headRefOid` matched the work head after fetch.
 - Push verification: local work head, `origin/Feature/payments_provider-contract-baseline`, and PR #597
   `headRefOid` all resolved to `7cd053d0719c699e77f4f8d5b4a3803367db6bf5`.
 - Worktree branch was created at and reconciled to `origin/main`
