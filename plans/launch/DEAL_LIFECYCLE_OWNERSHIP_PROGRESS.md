@@ -5,9 +5,9 @@
 - Roadmap item: `launch/deal-lifecycle-ownership`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules`
 - Branch: `Refactor/launch_deal-lifecycle-modules`
-- PR: draft implementation PR [#625](https://github.com/Concertable/concertable/pull/625) at verified work head `3d0fc5a823cad198f8de878aecef5928036f6c5f`; docs-only decision PR #622 merged as `5c33f849444dda60ece44070353716c08819b2d8`; rejected PR #614 is closed and retired
-- Dependency/package gates: Phase 1 is implemented. Phase 2 has no external package blocker; its module extraction must preserve current HTTP and package surfaces.
-- Last reconciled: 2026-08-17 after current `origin/main` `d5669a836` was merged, the B2B carve rebuilt, and draft PR #625 was verified at work head `3d0fc5a823cad198f8de878aecef5928036f6c5f`
+- PR: draft implementation PR [#625](https://github.com/Concertable/concertable/pull/625); docs-only decision PR #622 merged as `5c33f849444dda60ece44070353716c08819b2d8`; rejected PR #614 is closed and retired
+- Dependency/package gates: Phase 1 is reopened to replace discarded legacy-structure assertions with durable boundary-behaviour coverage. Phase 2 must not start until that gate is green.
+- Last reconciled: 2026-08-17 after Tommy rejected tests that froze the shared lifecycle abstraction scheduled for deletion
 
 ## Current state
 
@@ -20,11 +20,12 @@ model, contextual step contracts, and module-local step resolver. There is no um
 shared lifecycle state, workflow module, cross-module resolver, or parent state machine. A combined
 status exists only as a read projection.
 
-Phase 1 is implemented. Exact lifecycle graphs, enum values, executors, payment processors, callbacks,
-worker entry points, API/HATEOAS consumers, operation correlation, cancellation and settlement recovery,
-Invoice linkage, and Booking-to-Concert creation are executable characterization tests. The reserved
-Opportunity, Application, Booking, and Concert namespaces reject direct cross-module runtime/entity
-dependencies while permitting Contracts-only collaboration.
+Phase 1 remains in progress. The exact shared-state topology and source/file inventory tests were a
+design error: they froze the legacy `LifecycleState` abstraction and current owner layout that later
+phases deliberately delete. Those additions are removed. Characterization must instead pin observable
+outcomes at module or API boundaries so the same tests survive the ownership split. The reserved
+Opportunity, Application, Booking, and Concert namespace guard remains valid because it enforces the
+target dependency direction.
 
 Rejected PR #614 is closed, and its DealTerms branch and worktree were retired with exact-head checks.
 The fresh implementation branch contains only current-main Deal vocabulary; none of the rejected
@@ -32,11 +33,13 @@ runtime change was carried forward.
 
 ## Next Steps
 
-1. Push this ledger checkpoint and verify local HEAD, the remote branch, and draft PR #625 are identical.
-2. Route that exact committed range through code review and address every high-confidence finding.
-3. Record the review and exact-head remote-check evidence in this ledger.
-4. Begin Phase 2 by scaffolding the Opportunity, Application, and Booking module project families and
-   replacing cross-stage entity navigation with Contracts, owned IDs, and query projections.
+1. Commit and push the correction that removes the legacy-state/source-layout tests, then update draft
+   PR #625 so its description no longer claims that implementation structure as coverage.
+2. Audit existing boundary-level coverage for accept/payment arrival order, cancellation, settlement
+   retry, immutable Contract, Invoice, and exactly-once Concert creation; add only missing observable
+   behaviour tests that remain valid after the module split.
+3. Run the focused gates, checkpoint the verified remote head, and route that exact range through code
+   review before beginning Phase 2.
 
 ## Completed work
 
@@ -56,20 +59,17 @@ runtime change was carried forward.
   and confirmed its PR head and `skip-e2e` label.
 - Merged docs decision PR #622 as `5c33f849444dda60ece44070353716c08819b2d8`, closed rejected PR #614,
   and retired its clean worktree/local branch at exact head `ec1dcac897ce5075db83247d05ff694a912f9c43`.
-- Ported the useful exact lifecycle topology characterization onto current Deal vocabulary, pinning
-  both 19-edge graphs and the FlatFee/VenueHire and DoorSplit/Versus topology pairings.
-- Added an executable baseline inventory for every current lifecycle state, trigger, executor, payment
-  processor, callback and correlation path, worker, API/HATEOAS consumer, cancellation/settlement
-  recovery path, Invoice relation, and guarded Booking-to-Concert creation path.
 - Added a reserved lifecycle-module architecture rule that allows Contracts dependencies but rejects
   direct Domain, Application, Infrastructure, and Api references between Opportunity, Application,
   Booking, Deal, and Concert.
-- Checkpointed the complete locally verified Phase 1 implementation in this commit.
 - Published initial work commit `7898bf8bb83f3dff61686044cd49023ed0afb9fc`, merged current
   `origin/main` as `3d0fc5a823cad198f8de878aecef5928036f6c5f`, then pushed range
   `7898bf8bb..3d0fc5a82` from starting remote head `7898bf8bb`.
 - Opened draft PR #625 and verified local HEAD, the remote branch, and PR `headRefOid` all equalled
   `3d0fc5a823cad198f8de878aecef5928036f6c5f` before this ledger checkpoint.
+- Removed the exact shared-state topology and source/file inventory additions after recognizing they
+  asserted the implementation scheduled for deletion rather than durable system behaviour. This
+  correction is recorded in this commit.
 
 ## Verification
 
@@ -83,7 +83,8 @@ runtime change was carried forward.
   plan preserves that invariant across module DbContexts.
 - Verify-before-Accept convergence already persists the early payment fact before advancing; the plan
   preserves the join without treating it as one end-to-end state.
-- Concert unit suite: 255/255 passed in Release, including the new topology and ownership inventory.
+- Corrected Concert unit suite: 229/229 passed in Release with the branch restored to current-main
+  lifecycle test coverage and no new assertion over `LifecycleState` or its transition table.
 - Targeted B2B module-boundary architecture suite: 7/7 passed in Release.
 - Complete architecture suite reached the unrelated current-main Reunion package-ownership guard;
   Conversations projects retain direct package references their source no longer consumes. The
@@ -125,6 +126,23 @@ runtime change was carried forward.
 - Opportunity is not hidden inside Application. Its physical extraction is part of the module carve.
 - Invoice/settlement records require evidence-based final placement during the Concert carve, but they
   cannot justify a shared lifecycle owner.
+- A characterization test must survive the refactor it protects. Types, transition tables, filenames,
+  source tokens, and collaborator ownership explicitly scheduled for removal belong in migration
+  inventory, never in new regression assertions.
+
+## Migration inventory
+
+- Application commands currently run through Apply, Accept, Reject, Withdraw, and application-cancel
+  executors; Accept owns the transaction/outbox boundary, Contract issuance, and early-payment join.
+- Booking progression currently spans verification, escrow, settlement, refund, and financial-operation
+  callbacks, with operation IDs on Application and settlement correlation through Booking.
+- Concert completion runs from `ConcertFinishedFunction`; Concert API actions cover update, post,
+  cancellation, door revenue, Contract reads, and Invoice reads.
+- Application and Opportunity HATEOAS currently derive checkout and command links from the Concert
+  workflow capability registry.
+- Booking-to-Concert creation currently runs through the book step and draft service; Invoice currently
+  reaches DealType through Concert to Booking to Application. These are migration sites, not target
+  ownership or test expectations.
 
 ## Downstream handoffs
 
