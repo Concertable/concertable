@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `f01c6f0f03b1378cd1d69ee1a1d95c1a93e9d8f8`  _(2026-08-16)_
-**Security-reviewed up to commit:** `f01c6f0f03b1378cd1d69ee1a1d95c1a93e9d8f8`  _(2026-08-16)_
+**Reviewed up to commit:** `155232b4fcfd9e78ab0e571e1982be52e90d966d`  _(2026-08-16)_
+**Security-reviewed up to commit:** `155232b4fcfd9e78ab0e571e1982be52e90d966d`  _(2026-08-16)_
 
 > Range reviewed: `1f4ea1f..ec957726` (12 commits).
 > Incremental range reviewed: `ec957726..9be56b9d` (1 commit).
@@ -72,8 +72,9 @@ serialization/HATEOAS ownership, frontend mutation/query contracts, seeding impl
 ## Current-main review - 2026-08-16
 
 - [x] **SER3 - The common application endpoint declared only the base response contract.** The role-specific
-  `Actions` member could be omitted when MVC serialized `ActionResult<ApplicationResponse>`. The abstract response
-  base now registers both closed role variants for JSON polymorphism while retaining the clean typed-Result terminal.
+  `Actions` member could be omitted when MVC serialized `ActionResult<ApplicationResponse>`. The concrete response
+  base now registers both closed role variants for JSON polymorphism while remaining deserializable as the common
+  wire contract and retaining the clean typed-Result terminal.
 - [x] **COR3 - Recent message previews ignored hidden-message moderation.** Preview selection and unread calculation
   now reuse the inbox's `NotHidden` predicate. A focused repository test covers a hidden latest message and verifies
   that the preceding visible message is returned with the correct read state.
@@ -83,7 +84,10 @@ serialization/HATEOAS ownership, frontend mutation/query contracts, seeding impl
   Standalone SPA carving correctly failed because its published package did not contain the branch-local exports.
   `OpportunityMatch` now belongs to the artist SPA and `OpportunityApplicationMetrics` to the venue SPA; only the
   genuinely shared `OpportunitySummary` remains in `@concertable/b2b/features/dashboard`.
+- [x] **CI4 - `TenantActivityRecordedEvent` was written to the outbox without message-registry or ASB topology
+  registration.** The B2B host now registers the event for publication and both AppHosts provision its topic. The
+  focused topology regression passes.
 
-No open findings remain. The review covered the current net branch diff `35b114d4a..f01c6f0f0`, including correctness,
+No open findings remain. The review covered the current net branch diff `35b114d4a..155232b4f`, including correctness,
 security and tenant scoping, Result terminals, serialization/HATEOAS, module/repository boundaries, frontend contracts,
 seeding implications, and focused test coverage.
