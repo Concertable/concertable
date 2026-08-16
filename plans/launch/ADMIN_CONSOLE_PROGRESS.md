@@ -5,29 +5,31 @@
 - Roadmap item: `launch/admin-console`
 - Worktree: current checkout (`C:\Users\tommy\source\repos\Concertable`)
 - Branch: `Feature/launch_admin-console`
-- PR: [#624](https://github.com/Concertable/concertable/pull/624) (draft)
+- PR: [#624](https://github.com/Concertable/concertable/pull/624) (ready for review)
 - Dependency/package gates: none. No published-package boundary crosses this plan (Auth + B2B edits land
   in the same repo, no NuGet republish/platform-sync gate).
-- Last reconciled: 2026-08-16, PR #624 CI failure fixed and pushed; branch synced with origin/main.
+- Last reconciled: 2026-08-16, PR #624 CI green; marked ready for review.
 
 ## Current state
 
-Phase 1 (backend provisioning) implemented as draft PR #624. First CI run surfaced one genuine failure
-(the rest of the matrix's failures were cascading cancellations from that same run, not separate bugs):
+Phase 1 (backend provisioning) implemented as PR #624. First CI run surfaced one genuine failure (the
+rest of the matrix's failures were cascading cancellations from that same run, not separate bugs):
 `Registration_BootstrapEmail_GrantsNoAdminProfile_WhenAnAdminAlreadyExists` fired a
 `CredentialRegisteredEvent` for a new userId using the exact email of the already-seeded admin
 (`SeedUsers.AdminEmail`) — a collision real registration can never produce (Auth enforces global email
 uniqueness) — which hit the `Users.Email` unique index. Fixed by freeing the email via
 `ClearAdminsAsync()` and provisioning a distinct admin first, so the test isolates the
 AdminProfiles-non-empty gate instead of an artificial collision. Branch was also 73 commits behind
-`origin/main`; merged clean (no conflicts), full B2B solution rebuilds green post-merge. Fix pushed;
-awaiting the next CI run.
+`origin/main`; merged clean (no conflicts), full B2B solution rebuilds green post-merge. Second CI run:
+all 54 required checks passed (5 E2E jobs correctly skipping per this plan's phase scope). PR marked
+ready for review.
+
+Paused: awaiting Tommy's review and merge decision on #624 — neither is a call this session makes
+unprompted. Resume when: #624 is merged (or review feedback lands, requiring rework first).
 
 ## Next Steps
 
-1. Watch PR #624's next CI run (build, carve, unit, integration matrix) to green; if the integration
-   suite fails again, enter `integration-debug` per `plans/AGENTS.md` rather than re-reporting.
-2. Once #624 is reviewed and merged, start Phase 2 (admin console SPA shell) per
+1. Once #624 is reviewed and merged, start Phase 2 (admin console SPA shell) per
    `plans/launch/ADMIN_CONSOLE_PLAN.md` "Phase 2" from a fresh worktree based on current `origin/main`:
    - `app/web/admin/` scaffold (mirrors the `customer` app's shape, no `@b2b/*` alias).
    - Routes: `login.tsx`, `auth.callback.tsx`, `__root.tsx`, `_admin/route.tsx` (guard via
@@ -39,7 +41,7 @@ awaiting the next CI run.
    - AppHost wiring: `AppHostExtensions.AddAdminSpa` (mirrors `AddCustomerSpa`), called from
      `Concertable.B2B.AppHost/Program.cs` and the umbrella `Concertable.AppHost/Program.cs`.
    - Verification gate: all five web builds green; focused component/hook tests for invite/revoke.
-3. Phases 3 (moderation UI) and 4 (venue approval UI, plus the new `GET /api/Venue/pending-approval`
+2. Phases 3 (moderation UI) and 4 (venue approval UI, plus the new `GET /api/Venue/pending-approval`
    endpoint) follow once Phase 2 is green — see the plan for scope.
 
 ## Completed work
@@ -70,7 +72,7 @@ awaiting the next CI run.
 
 ## Reviews
 
-None yet — PR #624 is in draft, awaiting CI + review.
+None yet — PR #624 is ready for review, CI green, awaiting Tommy's review.
 
 ## Decisions, discoveries, blockers, and deviations
 
