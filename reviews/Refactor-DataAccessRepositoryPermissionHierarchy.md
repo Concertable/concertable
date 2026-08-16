@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `3f3734a5c7104b9d83cd4347e0ab571d15df69b6`  _(2026-08-16)_
-**Security-reviewed up to commit:** `3f3734a5c7104b9d83cd4347e0ab571d15df69b6`  _(2026-08-16)_
+**Reviewed up to commit:** `f9cb45b8c15ffea1e612efa80e6fbbb388770443`  _(2026-08-16)_
+**Security-reviewed up to commit:** `f9cb45b8c15ffea1e612efa80e6fbbb388770443`  _(2026-08-16)_
 
 > Range reviewed: `429581025..94d7664ad` (2 commits).
 > Status legend: `[ ]` todo - `[~]` in progress - `[x]` done - `[wontfix]` (note why).
@@ -161,3 +161,17 @@ No other issues found. The remaining direct CRUD-shaped contract is
 `IFinancialOperationRepository`; it is intentionally bespoke because `FinancialOperationEntity` has no
 repository identity contract and the handler stages operations through a separate unit of work.
 Security review found no authorization, tenant-selection, or cross-service behavior change.
+
+## Incremental review - 2026-08-16 (narrow read-context surfaces)
+
+> Range reviewed: `3f3734a5c..f9cb45b8c` (14 commits).
+
+- [x] **CV3 - MEDIUM - C# conventions** - `api/Concertable.Customer/src/Concertable.Customer.DataAccess/Concertable.Customer.DataAccess.Infrastructure/QueryableReadRepository.cs:7`
+  The new query-backed repository base and every touched read repository or query service that captures
+  a context now use explicit readonly fields and constructors instead of captured primary constructors.
+
+No other issues found. All six module read contexts expose only module-named `IQueryable` roots through
+their injected interfaces, retain the shared context's no-tracking and save-rejection guarantees, and
+keep their concrete EF APIs out of production consumers. The merged-main portion contains the already
+reviewed merge-gate and pagination changes plus platform-version syncs. Security review found no change
+to authorization, tenant selection, mutation authority, secrets, or cross-service isolation.
