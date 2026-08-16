@@ -230,7 +230,7 @@ Phase 2 adds definitions only where a later durable session implementation needs
 
 - [x] **Phase 1 — durable decision artifact and exhaustive inventory.** Make every existing Stripe
   entry point and baseline decision durable, then guard the inventory in tests.
-- [ ] **Phase 2 — additive package and protobuf vocabulary.** Publish the smallest provider-neutral
+- [x] **Phase 2 — additive package and protobuf vocabulary.** Publish the smallest provider-neutral
   session/status/event vocabulary without changing existing consumers.
 - [ ] **Phase 3 — executable transition specification.** Encode every supported Stripe status and
   legal/illegal normalized transition as pure rules with exhaustive tests.
@@ -265,7 +265,8 @@ Verification gate:
 
 ### Phase 2 — additive package and protobuf vocabulary
 
-Status: depends on Phase 1 decisions, not on PR #552 implementation.
+Status: complete. The additive Contracts, Client, and protobuf vocabulary is locally green without
+runtime, RPC, persistence, webhook, or consumer wiring.
 
 - Add the client/protobuf records and enums listed under “Smallest additive contract surface”. Assign
   explicit non-zero protobuf enum values and append new field numbers; reserve nothing already shipped.

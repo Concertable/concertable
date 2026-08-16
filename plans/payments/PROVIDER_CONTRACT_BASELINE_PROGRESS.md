@@ -11,7 +11,7 @@
 
 ## Current state
 
-Phase 1 is complete. `api/Concertable.Payment/PROVIDER_CONTRACT.md` now owns
+Phases 1 and 2 are complete locally. `api/Concertable.Payment/PROVIDER_CONTRACT.md` now owns
 the provider-product matrix, operation/attempt identity, normalization and transition tables,
 terminality, retry/revision/expiry, safe failures, Connect posture, consumer ownership, compatibility
 islands, and version assumptions. `provider-contract-inventory.json` classifies 43 current entry
@@ -36,14 +36,20 @@ contracts are now present after merging current `origin/main`. Phase 1 work comm
 unpublished merge commit `9b8c1b5d0ee681e70662ef32dfae21b23d02379e`. The historical
 `Refactor/GroupStripeWebhookHandling` branch is superseded evidence only.
 
+Phase 2 adds the provider-neutral operation identity, session kind, normalized state, terminal/retry
+disposition, safe-failure vocabulary, client descriptor/snapshot records, and matching protobuf
+messages without adding an RPC. `PaymentOperationStateChangedV1` has stable message type
+`concertable.payment.payment-operation-state-changed.v1`. Reunion Result mapping remains supported on
+.NET 10 through the closed Dunet `PaymentOperationError`; the planned .NET 11 native-union migration
+follows the complete Stripe/provider refactor rather than interrupting it.
+
 ## Next Steps
 
-Implement Phase 2's additive package and protobuf vocabulary against current `origin/main` and merged
-PR #552: add the provider-neutral session, identity, state, retry, failure, and snapshot definitions to
-Payment Client/Protos; add `PaymentOperationStateChangedV1` to Payment.Contracts with a stable URN;
-extend public error/result mappings exhaustively without changing existing RPCs or consumers; add
-contract tests for enum numbers, protobuf fields, URN stability, and provider/service-boundary purity;
-then run the smallest affected builds and focused Payment unit tests and checkpoint the phase.
+After the Phase 2 work head is pushed and exact-head draft PR CI is green, implement Phase 3's pure
+transition specification: normalize the complete Stripe.net `47.3.0` PaymentIntent, SetupIntent, and
+Refund status vocabulary at the `2025-01-27.acacia` baseline; encode every allowed and rejected state
+edge, duplicate/stale observation, terminal protection, retry/revision rule, and capture expiry; prove
+the rules exhaustively without wiring runtime webhooks, persistence, reconciliation, or consumers.
 
 ## Completed work
 
@@ -58,6 +64,10 @@ then run the smallest affected builds and focused Payment unit tests and checkpo
   `livemode=false`, and `status=disabled` without changing provider configuration.
 - Queried every OAuth-accessible live Stripe context through the authenticated MCP connection and
   proved Concertable account `acct_1QqfAGLtYbsqaOIf` currently has zero webhook endpoints.
+- Added the Phase 2 provider-neutral Contracts, Client records, protobuf messages/enums, stable
+  `PaymentOperationStateChangedV1` message type, and exhaustive .NET 10 Reunion/Dunet error mapping.
+- Added contract and mapper coverage for stable enum values, protobuf fields, safe error definitions,
+  unknown-value rejection, optional-field mapping, and Stripe/consumer reference purity.
 - Merged current `origin/main` `2ec423f5f1583a74c2c9121eb82229ca3e46bb42` into the clean feature
   branch as `9b8c1b5d0ee681e70662ef32dfae21b23d02379e`, bringing merged PR #552 and platform pin
   `0.1.0-alpha.0.1015` into the implementation baseline.
@@ -93,6 +103,10 @@ then run the smallest affected builds and focused Payment unit tests and checkpo
 - `python .agents/hooks/docs_reachability.py --root <worktree>`: 0 errors, 0 warnings.
 - `python .agents/hooks/plan_graph.py --root <worktree>`: 0 errors, 0 warnings.
 - `git diff --check`: passed.
+- Phase 2 focused Payment contract/mapper/error tests: 104 passed, 0 failed, 0 skipped.
+- Payment Client/Contracts build: succeeded with 0 warnings and 0 errors.
+- Payment Web and Workers runtime builds: each succeeded with 0 warnings and 0 errors.
+- Focused `dotnet format --verify-no-changes` for Payment Contracts, Client, and UnitTests: passed.
 - Push verification: local work head, `origin/Feature/payments_provider-contract-baseline`, and PR #597
   `headRefOid` all resolved to `7cd053d0719c699e77f4f8d5b4a3803367db6bf5`.
 - Worktree branch was created at and reconciled to `origin/main`
@@ -139,6 +153,8 @@ implementation review exists; the branch is not merge-ready.
   abstraction will replace them.
 - Full webhook handling, reconciliation, persistence, frontend migration, and removal of the tactical
   3DS bridge remain with later work.
+- The full Stripe/provider refactor remains on .NET 10 with Reunion and Dunet; migration to .NET 11
+  preview/native unions follows completion of the Stripe refactor.
 - The live account has no webhook endpoint, so no production endpoint version exists to infer or
   normalize against. Fixtures target `2025-01-27.acacia`; creation waits for the actual Payment Web
   deployment URL and is a delivery gate, not a Phase 2 implementation blocker.
