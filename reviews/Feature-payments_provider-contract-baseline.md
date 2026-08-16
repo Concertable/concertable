@@ -5,9 +5,9 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `85d85aab1c6e3ef448c792cc9cad7c37639a8ae9`  _(2026-08-16)_
+**Reviewed up to commit:** `7b7561fa43b57ca004d082ebd207242f0e4499fd`  _(2026-08-16)_
 
-**Security-reviewed up to commit:** `85d85aab1c6e3ef448c792cc9cad7c37639a8ae9`  _(2026-08-16)_
+**Security-reviewed up to commit:** `7b7561fa43b57ca004d082ebd207242f0e4499fd`  _(2026-08-16)_
 
 > Range reviewed: `e861f3642..85d85aab1` (22 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -29,3 +29,13 @@
 - [x] **SEC1 — MEDIUM — security** — `api/Concertable.Payment/src/Concertable.Payment.Client/Adapters/PaymentOperationMappers.cs:40`
   The protobuf mapper fails closed on an unknown failure code but copies `failure.Message` verbatim for every known code, so provider exception text can cross the public client boundary under a valid enum value. Derive the published message from the closed code, or reject any wire message that does not match the central Concertable-authored definition.
   Resolved by deriving every known-code message from the central error definition and ignoring wire text while preserving unknown-code rejection.
+
+## Incremental review — 2026-08-16
+
+> Range reviewed: `85d85aab1..7b7561fa4` (16 commits).
+
+- [ ] **NAT3 — MEDIUM — native/correctness** — `api/Concertable.Payment/tests/Concertable.Payment.UnitTests/Architecture/ProviderContractInventoryTests.cs:258`
+  The semantic detector still filters method names to `*Async`, but Stripe.net service types also expose synchronous provider operations. A new `service.Create(...)`, `Capture(...)`, or `Refund(...)` call therefore bypasses the exhaustive inventory while the guard remains green. Detect every invocation whose receiver binds to a Stripe SDK type and cover a synchronous form.
+
+- [ ] **NAT4 — MEDIUM — native/correctness** — `api/Concertable.Payment/src/Concertable.Payment.Domain/ProviderContract/StripeOperationTransitionSpecification.cs:155`
+  Same-state observations are classified as `Duplicate` solely from the normalized state. A decline commonly leaves an existing attempt in `RequiresPaymentMethod` while adding the new closed `Declined` failure, so the BUG1 path can still be discarded as a no-op. Treat an observation as duplicate only when the complete persisted projection is unchanged; apply same-state failure or capture-deadline changes and cover the decline regression.
