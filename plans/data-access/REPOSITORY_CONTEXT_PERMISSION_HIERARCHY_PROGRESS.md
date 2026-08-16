@@ -6,10 +6,10 @@
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable/.worktrees/Plan-data-access-repository-permission-hierarchy`
 - Branch: `Refactor/DataAccessRepositoryPermissionHierarchy`
 - PR: [#561](https://github.com/Concertable/concertable/pull/561) (open; current-main reconciliation pending push)
-- Verified work head: `9e270e8337a2d14c07e87b08569ce027a7b004c2`
-- Starting remote head: `dc1f55591ca589a5516bca6c6513e7a095beed1c`
-- Pushed range: `dc1f55591ca589a5516bca6c6513e7a095beed1c..9e270e8337a2d14c07e87b08569ce027a7b004c2`
-- Remote and PR head: `9e270e8337a2d14c07e87b08569ce027a7b004c2` (verified equal after push)
+- Verified work head: `3b0d666437f10c7ba4aaa22f4ec117b949c586cc`
+- Starting remote head: `899ced29927028fcf285f67935da7480eabff129`
+- Pushed range: `899ced29927028fcf285f67935da7480eabff129..3b0d666437f10c7ba4aaa22f4ec117b949c586cc`
+- Remote and PR head: `3b0d666437f10c7ba4aaa22f4ec117b949c586cc` (verified equal after push)
 - Dependency/package gate: satisfied. Additive producer PR #590 merged as `59fe60e978affe23bcaf53823151eab2acda8ba0`, published platform `0.1.0-alpha.0.1007`, and platform-sync PR #592 merged green as `38e3d8548f10f3ab7a4a951b7c4ce961ec21c863`. Current `origin/main` pins `0.1.0-alpha.0.1009`, which includes the additive DataAccess API.
 - Last reconciled: 2026-08-16 against PR #561 and `origin/main` at `be418811bebdb0e11ebcde55ebd58a8d25326bec`.
 
@@ -32,9 +32,8 @@ contains a `Public*Repository`, `IPublic*Repository`, or `Public*DbContext` pers
 
 ## Next Steps
 
-1. Commit and push the current-main reconciliation, then verify local, remote-tracking, and PR heads are equal.
-2. Require green exact-head PR CI.
-3. Await explicit merge authorization; then normalize to `full-e2e`, enqueue, and follow the merge-group,
+1. Require green exact-head PR CI on `3b0d666437f10c7ba4aaa22f4ec117b949c586cc`.
+2. Await explicit merge authorization; then normalize to `full-e2e`, enqueue, and follow the merge-group,
    publication, and generated platform-sync gates to green before starting the legacy contraction.
 
 ## Completed work
@@ -68,6 +67,9 @@ contains a `Public*Repository`, `IPublic*Repository`, or `Public*DbContext` pers
   build passed with 0 warnings and 0 errors; Artist, Venue, Concert, and Conversations unit tests passed
   17/17, 18/18, 219/219, and 34/34; source/filename persistence-name grep returned zero; plan graph
   reported 0 errors and 0 warnings; `git diff --cached origin/main --check` passed.
+- Current-main work-head push succeeded for `899ced299..3b0d66643`; local, remote-tracking, and PR heads
+  were verified equal at `3b0d666437f10c7ba4aaa22f4ec117b949c586cc`. Replacement exact-head CI run
+  `31949374553` is in progress.
 
 ## Reviews
 
