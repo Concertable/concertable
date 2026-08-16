@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `382a5850d0b5a29d03628bb0d740089d3b143e25`  _(2026-08-16)_
-**Security-reviewed up to commit:** `382a5850d0b5a29d03628bb0d740089d3b143e25`  _(2026-08-16)_
+**Reviewed up to commit:** `f01c6f0f03b1378cd1d69ee1a1d95c1a93e9d8f8`  _(2026-08-16)_
+**Security-reviewed up to commit:** `f01c6f0f03b1378cd1d69ee1a1d95c1a93e9d8f8`  _(2026-08-16)_
 
 > Range reviewed: `1f4ea1f..ec957726` (12 commits).
 > Incremental range reviewed: `ec957726..9be56b9d` (1 commit).
@@ -79,7 +79,11 @@ serialization/HATEOAS ownership, frontend mutation/query contracts, seeding impl
   that the preceding visible message is returned with the correct read state.
 - [x] **CI3 - Current-main reconciliation duplicated the Conversations test project's `Reunion` reference.** The
   duplicate was removed; all 32 Conversations unit tests and the B2B host build pass with zero warnings or errors.
+- [x] **FE2 - Persona-only opportunity contracts were exported from the published two-manager dashboard package.**
+  Standalone SPA carving correctly failed because its published package did not contain the branch-local exports.
+  `OpportunityMatch` now belongs to the artist SPA and `OpportunityApplicationMetrics` to the venue SPA; only the
+  genuinely shared `OpportunitySummary` remains in `@concertable/b2b/features/dashboard`.
 
-No open findings remain. The review covered the current net branch diff `35b114d4a..382a5850d`, including correctness,
+No open findings remain. The review covered the current net branch diff `35b114d4a..f01c6f0f0`, including correctness,
 security and tenant scoping, Result terminals, serialization/HATEOAS, module/repository boundaries, frontend contracts,
 seeding implications, and focused test coverage.

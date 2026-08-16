@@ -12,7 +12,7 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
 
 ## Next Steps
 
-1. Require exact-head CI green for PR #563 head `73c83fe989b9768fc8e9cab59c9e69972ca63858`; diagnose and fix any deterministic failure.
+1. Push reviewed frontend carve fix `f01c6f0f0`, verify PR #563's exact head, and require replacement CI green.
 2. After CI is green, complete the remaining Phase A.8 authenticated seeded venue/artist UX review below.
 
 ## Reviews
@@ -28,10 +28,17 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
   marker at `90a386b1416f2179eaabef3e7b8068eef8594775`.
 
 - Current-main correctness/security review of `35b114d4a..382a5850d` is recorded in the same review file. SER3, COR3,
-  and CI3 are closed; both review markers are stamped to code checkpoint
-  `382a5850d0b5a29d03628bb0d740089d3b143e25`.
+  CI3, and FE2 are closed; both review markers are stamped to code checkpoint
+  `f01c6f0f03b1378cd1d69ee1a1d95c1a93e9d8f8`.
 
 ## Current implementation
+
+- **Exact-head artist carve failure fixed locally.** CI run
+  [`31950865437`](https://github.com/Concertable/concertable/actions/runs/31950865437) failed
+  `carve-fe (web/b2b/artist)` because the standalone SPA restored a published `@concertable/b2b` package without the
+  branch-local `OpportunityMatch` export; that also left the genre callback implicitly typed as `any`. The contract is
+  artist-only and now lives in the artist SPA. The analogous venue-only `OpportunityApplicationMetrics` moved to the
+  venue SPA before its carve ran. Shared dashboard code retains only two-manager `OpportunitySummary`.
 
 - **Reviewed work-head push verified.** Starting remote head `2b67da3139dfa720a16a17e6e7048b5294fbf846` advanced through
   `2b67da313..73c83fe98`. Fetch verification proved local HEAD, the remote-tracking branch, and draft PR #563 all equal
