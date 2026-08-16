@@ -250,7 +250,8 @@ or queueing. Never push a checkpoint-only local tail to a queued, locked, merged
      checkout; never push the source plan's recovery commits to either PR.
    - **Close plan-managed delivery from the fresh docs worktree.** After publication and platform sync are
      terminal, commit the final ledger checkpoint. In the following commit delete the plan and ledger
-     together and tick the owning roadmap item. Run `/docs-review`, land the net meta-only branch through
+     together and tick the owning roadmap item. Run `/docs-review` (skip it when the branch is a pure
+     close-out — net diff deletions only), land the net meta-only branch through
      `/merge-docs`, which removes the close-out worktree through the repository command.
 
 ## Final summary
