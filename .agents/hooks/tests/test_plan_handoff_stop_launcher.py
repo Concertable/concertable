@@ -1,4 +1,5 @@
 import io
+import json
 import subprocess
 import sys
 import tempfile
@@ -70,14 +71,32 @@ class PlanHandoffStopLauncherTests(unittest.TestCase):
 
     @patch("plan_handoff_stop_launcher.runpy.run_path")
     @patch("plan_handoff_stop_launcher.implementation_is_current", return_value=False)
-    def test_stale_launcher_warns_without_running_old_implementation(self, _, run_path):
+    def test_stale_launcher_blocks_once_without_running_old_implementation(self, _, run_path):
         output = io.StringIO()
-        with redirect_stdout(output):
+        hook_input = io.TextIOWrapper(
+            io.BytesIO(json.dumps({"stop_hook_active": False}).encode("utf-8")),
+            encoding="utf-8",
+        )
+        with patch("sys.stdin", hook_input), redirect_stdout(output):
+            main()
+
+        self.assertIn('"decision": "block"', output.getvalue())
+        self.assertIn("differs from origin/main", output.getvalue())
+        run_path.assert_not_called()
+
+    @patch("plan_handoff_stop_launcher.runpy.run_path")
+    @patch("plan_handoff_stop_launcher.implementation_is_current", return_value=False)
+    def test_stale_launcher_retry_guard_does_not_reblock(self, _, run_path):
+        output = io.StringIO()
+        hook_input = io.TextIOWrapper(
+            io.BytesIO(json.dumps({"stop_hook_active": True}).encode("utf-8")),
+            encoding="utf-8",
+        )
+        with patch("sys.stdin", hook_input), redirect_stdout(output):
             main()
 
         self.assertNotIn('"decision": "block"', output.getvalue())
-        self.assertIn("systemMessage", output.getvalue())
-        self.assertIn("differs from origin/main", output.getvalue())
+        self.assertIn("prevent a recursive Stop-hook loop", output.getvalue())
         run_path.assert_not_called()
 
     @patch("plan_handoff_stop_launcher.runpy.run_path")
