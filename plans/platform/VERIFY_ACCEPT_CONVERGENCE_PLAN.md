@@ -3,6 +3,11 @@
 **Status:** ✅ Phase 1 landed on `Bug/DoorSplitE2ETimeout` (PR #237). Phases 2 & 3 remain — separate
 concerns, their own branches off `origin/main`.
 
+> **Lifecycle-ownership constraint (2026-08-16):** the approved module split must preserve this durable
+> two-signal join while removing the combined Application lifecycle state. Pre-accept verification may
+> remain immutable evidence on Application because Booking does not yet exist; Booking owns payment
+> state after acceptance. Do not recreate a shared process row or cross-module workflow to keep the race fix.
+
 ## The bug (confirmed, with evidence)
 
 Accepting a **verified-payment** deal (`DealType.DoorSplit` and `DealType.Versus` — everything wired

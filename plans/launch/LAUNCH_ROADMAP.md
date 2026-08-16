@@ -47,7 +47,14 @@ table-stakes items were resolved in the same pass.
 **Architecture refactors — ready, not launch gates:**
 
 - [x] ✅ **Deal-type strategy registration** — shipped in PR #451: module-local factories and vertically declared registration replace the repeated `DealType → strategy` dictionaries while preserving named business facades and the Deal/Concert boundary. `launch/deal-strategy-registration`
-- [ ] 🟡 **Concrete Deal lifecycle ownership** — replace the phase-split Application → Booking identity chain with one Deal aggregate from apply through settlement, recut Deal/Concert module ownership, and retire consumer-specific payment correlation. `launch/deal-lifecycle-ownership` See [DEAL_LIFECYCLE_OWNERSHIP_PLAN.md](DEAL_LIFECYCLE_OWNERSHIP_PLAN.md).
+- [ ] 🟡 **Application → Booking → Concert module ownership** `launch/deal-lifecycle-ownership` — design approved 2026-08-16: split the current
+  Concert umbrella into honest Opportunity, Application, Booking/Contract, and Concert ownership;
+  each lifecycle aggregate owns independent state, transitions, contextual steps, and a module-local
+  resolver. The fixed stage order never varies by `DealType`; no umbrella process entity, shared
+  workflow module, cross-module state machine, Deal-owned orchestration, or Rust decision engine is
+  allowed. The follow-on .NET 11 slice owns native unions for closed internal values, never DI service
+  dispatch. See
+  [DEAL_LIFECYCLE_OWNERSHIP_PLAN.md](DEAL_LIFECYCLE_OWNERSHIP_PLAN.md).
 
 **Competitor table-stakes — verified ABSENT 2026-08-16 (was "verify before trusting"):**
 

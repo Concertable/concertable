@@ -463,7 +463,7 @@ downstream ledgers and dispatch their open work.
   Gate: B2B must be delivery-ready and identify every remaining old carrier, terminal, and third-party
   dependency outside its owned scope.
 - Waiting ledger: `plans/dotnet-11/B2B_WORKFLOW_UNIONS_PROGRESS.md`.
-  Worktree: not created; reserved branch `Refactor/dotnet-11_b2b-workflow-unions`.
-  Gate: the B2B typed-result source PR and every resulting publication/platform-sync gate must be
-  terminal and green. At that gate, update the dependent ledger on current main and surface its
-  implementation pointer.
+  Worktree: not created; reserved branch `Refactor/dotnet-11_b2b-runtime`.
+  Gate transferred: the typed-result source landed in PR #552; the .NET 11 plan now waits on
+  `plans/launch/DEAL_LIFECYCLE_OWNERSHIP_PROGRESS.md`, whose approved design supersedes workflow unions
+  over DI step implementations.
