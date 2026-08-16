@@ -39,7 +39,7 @@ Wire shape: `GET /api/VenueDashboard/kpis` + `GET /api/ArtistDashboard/kpis`. `[
 
 **Files (Venue/Artist side):**
 
-- `Venue.Application/Interfaces/IVenueDashboardService.cs` + `Venue.Infrastructure/Services/VenueDashboardService.cs` — orchestration. Resolves "me" via `IVenueService.GetIdForCurrentUserAsync`, calls `IConcertModule` for counts, assembles wire DTO. `Task.WhenAll` of one task today; second slot ready for Payment.
+- `Venue.Application/Interfaces/IVenueDashboardService.cs` + `Venue.Infrastructure/Services/VenueDashboardService.cs` — orchestration. Resolves "me" via `IVenueService.GetIdForCurrentTenantAsync`, calls `IConcertModule` for counts, assembles wire DTO. `Task.WhenAll` of one task today; second slot ready for Payment.
 - `Venue.Api/Controllers/VenueDashboardController.cs` — one-line delegate, returns `NoContent` for null DTO. **`Venue.Api.csproj` no longer references `Concert.Contracts`** — controller doesn't touch Concert types.
 - Same files on Artist side.
 - `Venue.Infrastructure` / `Artist.Infrastructure` `ServiceCollectionExtensions.cs` — DI for new services.

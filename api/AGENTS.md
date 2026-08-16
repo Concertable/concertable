@@ -57,9 +57,12 @@ consideration and not a blocker — do not surface it as one.
 
 ## DTOs vs Responses
 
-Services return `Dto` types from `Module.Application/DTOs/` (or `Module.Contracts/` for cross-module
-shapes). Services never return HTTP-flavoured `Response` types — keeps services callable from
-non-HTTP consumers (Workers, gRPC, SignalR, etc.).
+Services return application data shapes from `Module.Application/DTOs/` (or `Module.Contracts/` for
+cross-module shapes). `Dto` is an intentional disambiguator, not a mandatory service-output suffix:
+keep it when it distinguishes the data shape from a same-named entity or concept (`OpportunityDto`),
+and omit it when the shape name is already unambiguous (`AcceptCheckout`, `TicketCheckout`). Services
+never return HTTP-flavoured `Response` types — keeps services callable from non-HTTP consumers
+(Workers, gRPC, SignalR, etc.).
 
 Controllers return either the Dto verbatim (default — most endpoints) or a `Response` from
 `Module.Api/Responses/` if the wire shape genuinely differs from the Dto (versioning, role-based
@@ -79,9 +82,14 @@ identical writable shape, share a single `XRequest` (`PreferenceRequest`) instea
 `CreateXRequest`/`UpdateXRequest`; split them the moment the contracts diverge. Request records use
 `{ get; init; }`.
 
-Validators stay named `XValidators` regardless.
+Validators stay named `XValidators` regardless. **Input shape uses FluentValidation; domain
+eligibility uses a Reunion `ValidationResult` validator** — and whether you register it for
+auto-validation or inject `IValidator<T>` depends on whether the input arrives through an MVC action.
+See [`agents/CODE_CONVENTIONS.md`](./agents/CODE_CONVENTIONS.md) "Validators".
 
-Drop the `Dto` suffix when the name already says what the shape is (`AcceptCheckout`, `TicketCheckout`); only keep it to disambiguate from a same-named entity (`CustomerDto` vs `CustomerEntity`).
+Repository-output naming follows [`agents/CODE_CONVENTIONS.md`](./agents/CODE_CONVENTIONS.md): use
+`Projection` only for an intermediate query shape that the service must map or enrich; do not add it
+when the repository already returns the final meaningful read shape.
 
 ## Seeders
 
@@ -91,4 +99,4 @@ See [SEEDING_CONVENTIONS.md](./agents/SEEDING_CONVENTIONS.md) for the full rules
 
 ## Module rules
 
-See [MODULAR_MONOLITH_RULES.md](./agents/MODULAR_MONOLITH_RULES.md).
+See [CONVENTIONS.md](./agents/CONVENTIONS.md).

@@ -12,13 +12,9 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
 
 ## Next Steps
 
-1. Push code checkpoint `41d0189f3` and this ledger/review checkpoint to draft PR #563, then require exact-head CI green.
-2. After CI is green, complete the remaining Phase A.8 authenticated seeded venue/artist UX review below.
-
-Blocked: Phase A.8 authenticated seeded venue/artist UX review is not complete.
-Blocked by: The in-app browser fails before session creation with `failed to write kernel assets: The system cannot find the path specified`, although the B2B AppHost remains live and responds on `http://localhost:15216`.
-Unblock action: Open `http://localhost:15216/login?t=5a85943e4f63ed7ef0bea6c77b23aae7` in a functioning browser, review both manager dashboards at desktop, tablet, and mobile widths, and exercise the advertised application actions and contract download.
-Resume when: The seeded venue and artist visual/action review is complete and its feedback is recorded here.
+1. Commit the current-main reconciliation checkpoint, then run the full correctness/security and architecture review over the committed branch range.
+2. Address every review finding, push the reviewed checkpoint to draft PR #563, and require exact-head CI green.
+3. After CI is green, complete the remaining Phase A.8 authenticated seeded venue/artist UX review below.
 
 ## Reviews
 
@@ -33,6 +29,15 @@ Resume when: The seeded venue and artist visual/action review is complete and it
   marker at `90a386b1416f2179eaabef3e7b8068eef8594775`.
 
 ## Current implementation
+
+- **Current-main reconciliation and opportunity dashboard boundary — locally green.** The branch is reconciled with
+  `origin/main`'s typed-Result/package changes without reintroducing exceptions. Opportunity dashboard orchestration now
+  lives in `OpportunityDashboardService`; tenant-scoped venue metrics remain on `IOpportunityRepository`, cross-tenant
+  artist match candidates remain on `IPublicOpportunityRepository`, repository-only intermediate shapes use the
+  `Projection` suffix, service outputs compose the canonical `OpportunityDto`, and API response mappers own wire-only
+  summaries and HATEOAS. The repository/service output naming rule is recorded in `api/agents/CODE_CONVENTIONS.md` and
+  `api/AGENTS.md`. B2B Web builds with 0 warnings/errors; rebuilt Concert, Venue, and Artist unit suites pass 216/216,
+  21/21, and 19/19. This shell still has no Node runtime, so draft-PR CI owns the affected TypeScript/package builds.
 
 - **Repository/application/API boundaries and full review corrections â€” committed locally.** Review repositories now
   return persisted review/rating read models, services map application contracts, and only API response mappers own
@@ -419,7 +424,7 @@ Both overloads return `IQueryable` — Expression never escapes the spec impl. I
 
 - **One SQL round trip per persona**, anchored on `VenueReadModels` / `ArtistReadModels`, projecting three (venue) / two (artist) scalar subqueries through new `QueryableVenueDashboardMappers.ToVenueCounts` / `QueryableArtistDashboardMappers.ToArtistCounts`. Matches the `ConcertHeaderRepository.SearchAsync` / `QueryableConcertHeaderMappers.ToHeaderDtos` precedent — single composed `IQueryable`, single materialisation.
 - **`IConcertDashboardRepository`** is a dedicated read-shape repo (separate from `ConcertRepository` / `OpportunityRepository` / `ApplicationRepository`) — mirrors `ConcertHeaderRepository` precedent in Search. Per-aggregate count methods on the existing repos were tried then reverted; the dedicated repo is the right home for dashboard-shaped reads.
-- **Cross-module orchestration lives in `IVenueDashboardService` / `IArtistDashboardService`**, not in the controller. Resolves "me" via `IXService.GetIdForCurrentUserAsync`, calls `IConcertModule`, assembles wire DTO. `Task.WhenAll` of one task today; Payment slots into the second position when it lands.
+- **Cross-module orchestration lives in `IVenueDashboardService` / `IArtistDashboardService`**, not in the controller. Resolves "me" via `IXService.GetIdForCurrentTenantAsync`, calls `IConcertModule`, assembles wire DTO. `Task.WhenAll` of one task today; Payment slots into the second position when it lands.
 - **Controllers are one-line delegates.** Return `NoContent` (204) when the service returns null DTO — read-model projection hasn't populated yet for that venue/artist. Honest about "you exist by auth, the data just isn't here yet" vs a real 404.
 - **`Venue.Api.csproj` and `Artist.Api.csproj` no longer reference `Concert.Contracts`** — controllers don't touch Concert types anymore.
 
@@ -460,5 +465,5 @@ A.8 UX freeze (browser eyeball + responsive pass) was not done this session. Ind
 - **Don't put cross-module orchestration in the controller.** Controllers are thin delegates to `IXDashboardService`. The service owns `Task.WhenAll` of facade calls and assembles the wire DTO. Payment / future facades slot into the service without changing the controller.
 - **Don't change `Apply` on the spec to return `Expression<Func<T, bool>>` or expose a `Predicate` property.** Both shapes (`Apply` direct + `ApplyExpression<TParent>` via nav) are IQueryable-in/out by design — keeps the abstraction honest about what consumers receive.
 - **Don't add `IHasDateRangeExpression` or static-Expression members on entities for nav-lift convenience.** That's an anti-pattern — pretends `ApplicationEntity` is a range entity (it isn't), and pulls `System.Linq.Expressions` into Domain. The asymmetry is handled at the spec call site via `ApplyExpression(query, nav)`.
-- **Don't return `NotFound` from the dashboard KPI endpoint** when the read-model row is missing. The user owns the venue/artist by authorization (`GetIdForCurrentUserAsync` would have thrown 403 otherwise) — the projection just hasn't populated yet. Use `NoContent` (204).
+- **Don't return `NotFound` from the dashboard KPI endpoint** when the read-model row is missing. The user owns the venue/artist by authorization (`GetIdForCurrentTenantAsync` would have thrown 403 otherwise) — the projection just hasn't populated yet. Use `NoContent` (204).
 - **Don't rename `VenueDashboardCountsDto` to drop the `Dto` suffix.** Keep `Dto` on cross-module DTOs in `Concert.Contracts` (the user explicitly preferred this over the CLAUDE.md "drop suffix" guidance — Concert.Contracts has multiple `XxxDto` records and dropping for one creates inconsistency).

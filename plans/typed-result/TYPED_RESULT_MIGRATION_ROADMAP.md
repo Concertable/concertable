@@ -96,13 +96,9 @@ their current branch and worktree rather than fragmenting in-flight work.
   gate delivery and final revalidation, not local preparation.
   Before the next B2B checkpoint commit, align every direct Reunion reference to `0.1.0-alpha.2` and
   use the new construction surface where it keeps the owned error union explicit.
-- [ ] 🟠 **B2B Payment saga producer.** `typed-result/b2b-payment-saga-producer` Exclusive owner:
-  `Refactor/typed-result_payment-financial-saga` at
-  `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-typed-result_payment-financial-saga`.
-  Tommy authorized this Payment-owned package/runtime expansion for B2B SEC1 on 2026-08-12. It owns
-  additive capture/deposit/refund saga contracts, booking-idempotent execution, exact producer
-  artifacts, and the handoff back to the B2B consumer. Publication and generated platform sync gate
-  final B2B revalidation; they do not block local producer or consumer preparation.
+- [x] ✅ **B2B Payment saga producer.** `typed-result/b2b-payment-saga-producer` delivered Payment PR
+  #544 as `d6619a856`, published platform `0.1.0-alpha.0.973`, and completed cumulative platform-sync
+  PR #547 as `7bd956499`. The B2B consumer now owns final current-main/package revalidation.
 - [x] ✅ **Customer Ticket purchase/checkout slice.** `typed-result/customer-ticket-reunion` PR #475
   delivered typed Ticket outcomes; PR #540 completed Option boundaries, cancellation propagation,
   package ownership, and focused coverage; PR #555 adopted validation-aware `Ensure` on Reunion
