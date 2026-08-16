@@ -25,6 +25,12 @@ filter and no-hedge rule; the lenses (Step 3) and the rules it loads (Step 2) ar
 - The diff touches runtime/product/package/CI-test-selection code → `review` (docs-review does not
   judge code). A mixed PR is a code PR: run `review`, which covers its docs too.
 - Re-reviewing only commits added since a prior review → `incremental-review` (reads the SHA marker).
+- **A pure close-out** — the branch's **net** diff against `main` is deletions only (a spent plan +
+  ledger, a spent review file), with no surviving content change. There is nothing left to check for
+  accuracy, contradiction or dangling references; every lens below needs surviving text to judge.
+  `git diff --diff-filter=ACMRT --name-only main...HEAD` printing nothing is the test (it lists
+  surviving adds/edits/renames; deletions are excluded) — note it in the PR body and merge. The moment anything survives (a roadmap tick, a `TECH_DEBT` entry, a convention
+  edit), it is an ordinary docs PR and this review applies to the surviving change.
 
 ## Step 1 — Confirm the checkout, then determine the review range
 
