@@ -58,7 +58,9 @@ this branch through a recoverable stash.
   plan preserves that invariant across module DbContexts.
 - Verify-before-Accept convergence already persists the early payment fact before advancing; the plan
   preserves the join without treating it as one end-to-end state.
-- `plan_graph.py` passed with 0 errors and 0 warnings before the planning edits.
+- `python .agents/hooks/plan_graph.py --root C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-launch_deal-lifecycle-decision`
+  passed with 0 errors and 0 warnings after the approved planning graph was reconciled onto current
+  `origin/main`.
 
 ## Reviews
 

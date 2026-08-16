@@ -65,9 +65,10 @@ machine.
 
 ### Application
 
-Owns applying, apply-time checkout, terms-fingerprint and artist-signature capture, rejection,
-withdrawal, and acceptance. It may retain immutable pre-accept payment evidence that can arrive before
-a Booking exists; that evidence is not Application lifecycle state.
+Owns applying, apply-time checkout, pre-accept acceptance-checkout initiation, terms-fingerprint and
+artist-signature capture, rejection, withdrawal, and acceptance. It may retain immutable pre-accept
+payment evidence that can arrive before a Booking exists; that evidence is not Application lifecycle
+state.
 
 Application reaches a terminal state when it is accepted, rejected, or withdrawn:
 
@@ -79,9 +80,10 @@ Applied ──Withdraw→ Withdrawn
 
 ### Booking
 
-Owns Booking and Contract creation, acceptance-time checkout/payment, financial confirmation,
-payment failure/retry, and cancellation/refund before a Concert exists. Acceptance atomically forms
-the Booking and Contract; financial confirmation hands authority to Concert.
+Owns Booking and Contract creation, acceptance-triggered payment processing after Booking creation,
+financial confirmation, payment failure/retry, and cancellation/refund before a Concert exists.
+Acceptance atomically forms the Booking and Contract; financial confirmation hands authority to
+Concert.
 
 The exact enum names are fixed during the implementation inventory, but the state meaning is:
 
