@@ -5,10 +5,11 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `5492efa5877681fb50a909849c24ef3116c0439e`  _(2026-08-16)_
-**Security-reviewed up to commit:** `5492efa5877681fb50a909849c24ef3116c0439e`  _(2026-08-16)_
+**Reviewed up to commit:** `2a53c010b80b737dfae665c2e8e9140571a4e27e`  _(2026-08-16)_
+**Security-reviewed up to commit:** `2a53c010b80b737dfae665c2e8e9140571a4e27e`  _(2026-08-16)_
 
-> Range reviewed: `d5669a836..5492efa58` (9 commits).
+> Range reviewed: `d5669a836..2a53c010b` (11 commits). Commits after `5492efa58` are docs-only
+> (this review file + the plan ledger's Phase-2 pre-flight note) — no code to re-review.
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
 
 ## Findings
