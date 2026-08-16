@@ -244,7 +244,7 @@ Concrete checklist for Month 6. Don't launch without all of these green.
 - [ ] Online Safety Act report-content button + email destination live `launch/osa-report-content` — **live:** in-app report button on inbound messages, structured safety-inbox email, persisted report record, reporter acknowledgement, admin hide/restore/resolve. **Outstanding:** the always-available published `report@`/`safety@` address on the footer legal pages, which depends on the solicitor-gated Privacy/T&Cs page routes above
 - [x] Music licence attestation captured in Org setup form
 - [ ] GDPR erasure + data export routes live, with the HMRC-retention split documented `launch/gdpr-subject-rights`
-- [ ] Admin console reachable in production, with a real admin provisioning path `launch/admin-console`
+- [ ] Admin console reachable in production, with a real admin provisioning path (see "Build — MVP blockers")
 
 ### Operational
 - [ ] support@ inbox monitored; SLA documented (target: first response within 1 working day)
