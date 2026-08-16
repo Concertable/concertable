@@ -5,10 +5,10 @@
 - Roadmap item: `payments/provider-contract-baseline`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\payments_provider-contract-baseline`
 - Branch: `Feature/payments_provider-contract-baseline`
-- PR: #597 — https://github.com/Concertable/concertable/pull/597 — open; reviewed work head `ce43a2283c26416ca60593aefca35a79d2159698` is verified at the remote-tracking ref and PR head; exact-head CI is pending; auto-merge is disabled and the PR is not queued
-- Review readiness: **REVIEW COMPLETE — EXACT-HEAD CI REQUIRED** — NAT1, NAT2, BUG1, SEC1, NAT3, and NAT4 are resolved; incremental review through current-main reconciliation commit `01171e1b21b8a08a273eafb3d3f99859081756e2` found no additional issues
+- PR: #597 — https://github.com/Concertable/concertable/pull/597 — open; exact-head CI run 31963564771 passed at pushed checkpoint `3b49ef2d0a715626abd93aea39df80657da20bfd`; the spent review artifact is removed in this closeout checkpoint; auto-merge is disabled and the PR is not queued
+- Review readiness: **REVIEW COMPLETE — REVIEW-CLOSEOUT CHECKS REQUIRED** — NAT1, NAT2, BUG1, SEC1, NAT3, and NAT4 are resolved; incremental review through current-main reconciliation commit `01171e1b21b8a08a273eafb3d3f99859081756e2` found no additional issues; code-checkpoint CI is green and the spent review artifact is removed in this commit
 - Dependency/package gates: Phases 1 through 4 are locally complete; the production/live-mode Stripe account has no webhook endpoint, so future deployment is locked to `2025-01-27.acacia` and must create the endpoint at the actual Payment Web URL while installing its signing secret; compatibility is anchored to published `0.1.0-alpha.0.1009`; the branch carries platform pin `0.1.0-alpha.0.1031`
-- Last reconciled: 2026-08-16 against open PR #597 work/remote/PR head `ce43a228`, pending exact-head CI, published Payment packages `0.1.0-alpha.0.1009`, and `origin/main` `6d577792`
+- Last reconciled: 2026-08-16 against open PR #597 work/remote/PR head `3b49ef2d`, exact-head CI run 31963564771, published Payment packages `0.1.0-alpha.0.1009`, and `origin/main` `6d577792`
 
 ## Current state
 
@@ -73,7 +73,8 @@ authorization, both setup kinds, and refund.
 
 ## Next Steps
 
-Require exact-head CI to pass at the final pushed checkpoint head. Keep the PR open in this turn.
+Push this review-closeout checkpoint, verify the local, remote-tracking, and PR heads match, and require
+its exact-head checks to pass. Keep the PR open in this turn.
 
 ## Completed work
 
@@ -145,6 +146,9 @@ Require exact-head CI to pass at the final pushed checkpoint head. Keep the PR o
 
 ## Verification
 
+- Exact-head PR CI run 31963564771 passed at
+  `3b49ef2d0a715626abd93aea39df80657da20bfd`; solution build, local platform package validation, all
+  service carves, unit tests, and integration tests were green; policy-selected E2E jobs were skipped.
 - Plan-managed work push: starting remote/PR head
   `f56c80fde78c3cc99016bf65a122de250e5adcc3`; pushed range
   `f56c80fde78c3cc99016bf65a122de250e5adcc3..ce43a2283c26416ca60593aefca35a79d2159698`;
