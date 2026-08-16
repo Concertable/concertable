@@ -4,7 +4,6 @@
 
 ## Context
 
-Roadmap item `launch/admin-console` (`plans/launch/LAUNCH_ROADMAP.md`, "Build — MVP blockers", §5, §7).
 Two already-shipped backend surfaces have no way to be driven in production:
 
 - OSA moderation — `ModerationController` (`api/Concertable.B2B/src/Modules/Conversations/Concertable.B2B.Conversations.Api/Controllers/ModerationController.cs`): `[Admin]`-gated report queue, hide/restore message, resolve report.
@@ -70,9 +69,9 @@ emails. Fine for the MVP; not worth a redesign for a handful of platform operato
 ### 2. Bootstrap needs no secret store — it's a configured, non-secret email address
 
 The very first admin has nobody to invite them. Rather than inventing a shared-secret bootstrap token
-(which would need a real secret store — `launch/production deployment + config/secrets`,
-`plans/platform/CONFIG_AND_DEPLOYMENT_PLAN.md`, doesn't exist yet), bootstrap reuses the same
-email-ownership proof every registration already relies on: Auth's existing email-verification flow.
+(which would need a real secret store — the still-open `launch/production deployment + config/secrets`
+gate, planned in `plans/platform/CONFIG_AND_DEPLOYMENT_PLAN.md` but not yet built), bootstrap reuses the
+same email-ownership proof every registration already relies on: Auth's existing email-verification flow.
 
 `Admin:BootstrapEmail`, read via `IConfiguration` in `CredentialRegisteredHandler`'s composition
 (a small bound options type is fine) — plain non-secret config, no different in posture from every
@@ -162,9 +161,9 @@ as one PR or be split for reviewability — see the ledger for the actual PR sha
 ### Phase 2 — Admin console SPA shell + provisioning UI
 
 - `app/web/admin/` scaffold: `package.json`, `vite.config.ts`, `tsconfig*.json`, `index.html`, matching
-  the `customer` app's shape (no `@b2b/*` alias). OIDC client id `admin-web`... — no, reuse
-  `ClientIds.Admin` (`"admin"`) verbatim so the Duende client id and the SPA's `VITE_OIDC_CLIENT_ID`
-  agree, exactly like Venue/Artist do today.
+  the `customer` app's shape (no `@b2b/*` alias). OIDC client id is `ClientIds.Admin` (`"admin"`)
+  verbatim, so the Duende client id and the SPA's `VITE_OIDC_CLIENT_ID` agree, exactly like Venue/Artist
+  do today (`venue-web`/`artist-web` match `ClientIds.VenueWeb`/`ClientIds.ArtistWeb`).
 - Routes: `login.tsx` (mirrors `app/web/b2b/venue/src/routes/login.tsx`), `auth.callback.tsx`,
   `__root.tsx`, `_admin/route.tsx` (guard: calls `GET /api/Admin/me`, redirects non-admins), a landing
   page listing admins + pending invitations with invite/revoke actions wired to Phase 1's endpoints.
