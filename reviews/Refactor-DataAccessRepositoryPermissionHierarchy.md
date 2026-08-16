@@ -5,7 +5,7 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `f9cb45b8c15ffea1e612efa80e6fbbb388770443`  _(2026-08-16)_
+**Reviewed up to commit:** `b887f15c8fe3baec149033dcc99358d8cc6cb959`  _(2026-08-16)_
 **Security-reviewed up to commit:** `f9cb45b8c15ffea1e612efa80e6fbbb388770443`  _(2026-08-16)_
 
 > Range reviewed: `429581025..94d7664ad` (2 commits).
@@ -175,3 +175,11 @@ their injected interfaces, retain the shared context's no-tracking and save-reje
 keep their concrete EF APIs out of production consumers. The merged-main portion contains the already
 reviewed merge-gate and pagination changes plus platform-version syncs. Security review found no change
 to authorization, tenant selection, mutation authority, secrets, or cross-service isolation.
+
+## Incremental review - 2026-08-16 (current-main refresh)
+
+> Range reviewed: `f9cb45b8c..b887f15c8` (7 commits).
+
+No issues found. The range contains the narrow read-context review record and plan checkpoint plus the
+already-reviewed launch-roadmap gap sweep merged from current main. It changes no runtime,
+security-sensitive, microservice, module-boundary, seeding, convention, or test-coverage behavior.

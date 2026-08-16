@@ -5,13 +5,13 @@
 - Roadmap item: `data-access/repository-context-permission-hierarchy`
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable/.worktrees/Plan-data-access-repository-permission-hierarchy`
 - Branch: `Refactor/DataAccessRepositoryPermissionHierarchy`
-- PR: [#561](https://github.com/Concertable/concertable/pull/561) (open; replacement exact-head CI pending)
+- PR: [#561](https://github.com/Concertable/concertable/pull/561) (open; reviewed current-main refresh pending push and replacement exact-head CI)
 - Verified work head: `b0b3d35af9606d16596f79aa9facd5344087551a`
 - Starting remote head: `ba3e4ddab5a43f41bd2b1f9e864ccdf074b7895d`
 - Pushed range: `ba3e4ddab5a43f41bd2b1f9e864ccdf074b7895d..b0b3d35af9606d16596f79aa9facd5344087551a`
 - Remote and PR head: `b0b3d35af9606d16596f79aa9facd5344087551a` (verified after work-head push)
 - Dependency/package gate: satisfied. Additive producer PR #590 merged as `59fe60e978affe23bcaf53823151eab2acda8ba0`, published platform `0.1.0-alpha.0.1007`, and platform-sync PR #592 merged green as `38e3d8548f10f3ab7a4a951b7c4ce961ec21c863`. Current `origin/main` pins `0.1.0-alpha.0.1009`, which includes the additive DataAccess API.
-- Last reconciled: 2026-08-16 against PR #561 and `origin/main` at `1e22be2fdefdeb39a8dce9da3199f68ee578230f`.
+- Last reconciled: 2026-08-16 against PR #561 and `origin/main` at `b633d79aaec3cb957ef3213847aeaa7121731334`.
 
 ## Current state
 
@@ -49,13 +49,15 @@ tracking and rejects saves.
 The first naming-correction CI run exposed a cancellation-test harness race: an untyped financial
 completion could consume a pending acceptance command before the asynchronously dispatched refund.
 The fixture now completes a requested command type, and refund workflows explicitly complete
-`RefundEscrowCommand`. The branch has since been reconciled with the latest current main.
+`RefundEscrowCommand`. The branch has since been reconciled with the latest current main through
+`b633d79aa`; the incoming range contains only the reviewed launch-roadmap gap sweep.
 
 ## Next Steps
 
-1. Require green exact-head PR CI.
-2. Await explicit merge authorization; then normalize to `full-e2e`, enqueue, and follow the merge-group,
-   publication, and generated platform-sync gates to green before starting the legacy contraction.
+1. Push the reviewed current-main candidate through the plan-managed compound push protocol and require
+   green exact-head PR CI.
+2. Normalize to `full-e2e`, enqueue, and follow the merge-group, publication, and generated
+   platform-sync gates to green before starting the legacy contraction.
 
 ## Completed work
 
@@ -117,6 +119,8 @@ The fixture now completes a requested command type, and refund workflows explici
   passed with zero errors before the constructor-only review fix; every constructor-touched module
   then rebuilt through its focused unit suite.
 - Work head `b0b3d35af` was pushed from `ba3e4ddab`, then verified equal on the remote branch and PR #561.
+- Current main through `b633d79aa` merged cleanly; the Release solution build passed with 0 errors and
+  10 existing warnings.
 
 ## Reviews
 
@@ -137,6 +141,9 @@ The fixture now completes a requested command type, and refund workflows explici
   on the new query-backed base and touched read consumers. No other correctness, security, architecture,
   convention, seeding, or changed-path coverage issue was found. Review and security watermarks are
   current at `f9cb45b8c15ffea1e612efa80e6fbbb388770443`.
+- Incremental review of `f9cb45b8c..b887f15c8` found no issues. The range contains only review and
+  plan checkpoints plus the already-reviewed launch-roadmap gap sweep from current main; the review
+  watermark is current at `b887f15c8fe3baec149033dcc99358d8cc6cb959`.
 
 ## Decisions, discoveries, blockers, and deviations
 
