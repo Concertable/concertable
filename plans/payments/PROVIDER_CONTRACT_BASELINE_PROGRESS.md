@@ -5,10 +5,10 @@
 - Roadmap item: `payments/provider-contract-baseline`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\payments_provider-contract-baseline`
 - Branch: `Feature/payments_provider-contract-baseline`
-- PR: #597 — https://github.com/Concertable/concertable/pull/597 — open draft; checkpoint head `324dc4714565b623cba297de461b566787c6a521` passed exact-head CI run 31947954010; the Phase 4 implementation candidate is this commit and is not yet pushed
+- PR: #597 — https://github.com/Concertable/concertable/pull/597 — open draft; Phase 4 work head `f210577564ea4ab78c56c2f687762b9378b6a083` is verified equal locally, on `origin/Feature/payments_provider-contract-baseline`, and as the PR `headRefOid`; this ledger checkpoint is the transport leg
 - Review readiness: **NOT READY FOR REVIEW** — Phase 4 remains; PR #597 stays draft until the final implementation candidate is locally verified and exact-head CI is green
 - Dependency/package gates: Phases 1 through 3 are complete and Phase 4 is locally implemented; the production/live-mode Stripe account has no webhook endpoint, so future deployment is locked to `2025-01-27.acacia` and must create the endpoint at the actual Payment Web URL while installing its signing secret; compatibility is anchored to published `0.1.0-alpha.0.1009`; the local branch carries platform pin `0.1.0-alpha.0.1021`
-- Last reconciled: 2026-08-16 against open draft PR #597, exact-head CI run 31947954010, published Payment packages `0.1.0-alpha.0.1009`, and `origin/main` `381720b9b`; the branch is 19 commits behind that moving base and must be updated before push
+- Last reconciled: 2026-08-16 against open draft PR #597 work head `f21057756`, published Payment packages `0.1.0-alpha.0.1009`, and `origin/main` `668ba639c`; the pushed candidate is zero commits behind that base
 
 ## Current state
 
@@ -18,9 +18,10 @@ URNs, and the `payment.proto` descriptor set from published `0.1.0-alpha.0.1009`
 require those public APIs, URNs, protobuf messages/enums/fields/services/RPCs, field numbers, types,
 cardinality, and request/response types to remain an additive subset. A frozen consumer project
 compiles against the exact published Contracts and Client packages, and architecture tests enforce
-provider/consumer purity across the published assemblies and deployable Payment projects. The branch
-must now merge moving `origin/main` `381720b9b`, rerun the focused gates, and push the resulting
-candidate for exact-head CI.
+provider/consumer purity across the published assemblies and deployable Payment projects. Work head
+`f210577564ea4ab78c56c2f687762b9378b6a083` cleanly incorporates `origin/main`
+`668ba639c6fb59a2513ba6c70d669b6b2d01f974`, is locally verified, and was pushed through the work-head
+leg with local, remote-tracking, and PR equality.
 
 `api/Concertable.Payment/PROVIDER_CONTRACT.md` now owns
 the provider-product matrix, operation/attempt identity, normalization and transition tables,
@@ -64,12 +65,9 @@ authorization, both setup kinds, and refund.
 
 ## Next Steps
 
-Update the clean Phase 4 implementation checkpoint with current `origin/main` `381720b9b`, rerun the
-generator/fixture and Payment unit-test builds, the six compatibility/architecture tests, all 440
-Payment unit tests, formatting, plan-graph validation, and `git diff --check`; then push through the
-plan-managed two-leg protocol and let draft-PR CI validate the exact remote head. Once the final
-candidate is exact-head green, mark PR #597 ready for review and make `/review` the next action. Do
-not merge in the same turn.
+Let draft-PR CI validate the exact checkpoint-transport head after this verified work push. Once the
+final candidate is exact-head green, check off Phase 4, mark PR #597 ready for review, and make
+`/review` the next action. Do not merge in the same turn.
 
 ## Completed work
 
@@ -131,6 +129,12 @@ not merge in the same turn.
   `Concertable.Payment.Contracts` exactly at `0.1.0-alpha.0.1009`.
 - Focused formatting for UnitTests, the frozen fixture, and the generator: passed after correcting the
   test-helper namespace to match its folder.
+- Current-main reconciliation: merged `origin/main` `668ba639c6fb59a2513ba6c70d669b6b2d01f974`
+  cleanly; regenerated baselines produced no diff; formatting, 0-warning build, 440-test Payment carve,
+  plan graph, and whitespace gates all passed at work head `f210577564ea4ab78c56c2f687762b9378b6a083`.
+- Phase 4 work push: starting remote/PR head `324dc4714565b623cba297de461b566787c6a521`;
+  pushed range `324dc4714565b623cba297de461b566787c6a521..f210577564ea4ab78c56c2f687762b9378b6a083`;
+  local, remote-tracking, and PR work heads all verified at `f210577564ea4ab78c56c2f687762b9378b6a083`.
 - Phase 3 focused provider-contract suite: 106 passed, 0 failed, 0 skipped.
 - Phase 3 full Payment unit carve: 434 passed, 0 failed, 0 skipped.
 - Payment UnitTests project build: succeeded with 0 warnings and 0 errors.
