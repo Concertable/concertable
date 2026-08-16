@@ -287,7 +287,7 @@ Verification gate:
 
 ### Phase 3 — executable transition specification
 
-Status: depends on Phase 2 vocabulary.
+Status: ready; Phase 2 vocabulary is complete.
 
 - Implement pure, side-effect-free transition specifications for PaymentIntent, SetupIntent, and
   Refund observations. The specification accepts the current persisted revision plus a versioned
@@ -322,22 +322,26 @@ Status: depends on Phases 2 and 3.
   consumer-domain dependency.
 - Compile the frozen compatibility fixture and verify the merged PR #552 contracts now present on
   current `origin/main`.
-- Run plan-graph validation and the repository's focused local gates; open a draft PR for remote build,
-  service carve, unit, integration, and package validation. Do not run local E2E unless a failing
-  remote check requires targeted diagnosis.
+- Run plan-graph validation and the repository's focused local gates; keep draft PR #597 current for
+  remote build, service carve, unit, integration, and package validation. Do not run local E2E unless
+  a failing remote check requires targeted diagnosis.
 
 Verification gate:
 
 - Compatibility and architecture tests pass against `0.1.0-alpha.0.1009` and the candidate packages.
 - Focused local build/tests and draft-PR CI are green at the same commit.
+- Once the final implementation candidate and exact-head CI are green, mark PR #597 ready for review
+  unmistakably in the ledger, include its URL, and make `/review` the ledger's next action. The
+  review-ready checkpoint still hands off with the standard continuation pointer; it is not terminal.
 - A code review records no open high-confidence findings before merge becomes the ledger's next step.
 
 ## Delivery DAG
 
 1. Satisfied: PR #552 merged as `33f07c47a497586324edacdcfc10321a9d3f02ee`; its overlapping
    Payment contract additions are present on this branch through current `origin/main`.
-2. Update the implementation branch from current `origin/main`, rerun affected builds/tests, review,
-   push, and let draft-PR CI validate the exact remote head.
+2. Update the implementation branch from current `origin/main`, rerun affected builds/tests, push,
+   and let draft-PR CI validate the exact remote head; then review that green candidate. Any later code
+   commit requires `/incremental-review` before merge becomes the ledger's next step.
 3. Enter the normal code merge queue with the E2E tier selected mechanically from the changed paths.
    No local full E2E run is planned for this contract/architecture item.
 4. Follow `publish-packages` and the generated `chore/platform-sync-*` PR through green/merged. Because

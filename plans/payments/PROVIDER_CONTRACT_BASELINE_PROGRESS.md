@@ -5,13 +5,14 @@
 - Roadmap item: `payments/provider-contract-baseline`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\payments_provider-contract-baseline`
 - Branch: `Feature/payments_provider-contract-baseline`
-- PR: #597 — https://github.com/Concertable/concertable/pull/597 — draft; verified Phase 2 work head `ef4b4c0848820cd0746e44b067c5c922471c985e`, with the remote/PR head tracking the current ledger checkpoint; branch is current with `origin/main` `35b114d4a` through merge commit `133b9386d`; planning PR #594 merged as `3c8a2c5a847d0f9702884949ed57850c6e494c47`
+- PR: #597 — https://github.com/Concertable/concertable/pull/597 — draft at verified local/remote/PR head `59b8e266d3630c9c98390827d0a2a820ec71d0d2`; branch is current with `origin/main` `35b114d4a` through merge commit `133b9386d`; planning PR #594 merged as `3c8a2c5a847d0f9702884949ed57850c6e494c47`
+- Review readiness: **NOT READY FOR REVIEW** — Phases 3 and 4 remain; PR #597 stays draft until the final implementation candidate is locally verified and exact-head CI is green
 - Dependency/package gates: Phases 1 and 2 are complete; the production/live-mode Stripe account has no webhook endpoint, so future deployment is locked to `2025-01-27.acacia` and must create the endpoint at the actual Payment Web URL while installing its signing secret; PR #552 merged as `33f07c47a497586324edacdcfc10321a9d3f02ee`; compatibility remains anchored to published `0.1.0-alpha.0.1009`; platform-sync PR #601 merged and the current platform pin is `0.1.0-alpha.0.1017`
 - Last reconciled: 2026-08-16 against `origin/main` `35b114d4a`, merged PRs #552/#601, draft PR #597, the source roadmap, current repository entry points, and live/test Stripe API evidence
 
 ## Current state
 
-Phases 1 and 2 are complete locally. `api/Concertable.Payment/PROVIDER_CONTRACT.md` now owns
+Phases 1 and 2 are complete, committed, and pushed. `api/Concertable.Payment/PROVIDER_CONTRACT.md` now owns
 the provider-product matrix, operation/attempt identity, normalization and transition tables,
 terminality, retry/revision/expiry, safe failures, Connect posture, consumer ownership, compatibility
 islands, and version assumptions. `provider-contract-inventory.json` classifies 43 current entry
@@ -30,11 +31,11 @@ template because current Payment runtime also handles `payment_intent.payment_fa
 `setup_intent.succeeded`, and `setup_intent.setup_failed`.
 
 PR #552 merged at `33f07c47a497586324edacdcfc10321a9d3f02ee`, and its additive Payment
-contracts are now present after merging current `origin/main`. Phase 1 work commit
-`7cd053d0719c699e77f4f8d5b4a3803367db6bf5` remains pushed to draft PR #597; its remote/PR head is
-`dd1fa17b82a96c33d9979fe9cb5798d5fd99b6d7`. The branch is current with `origin/main` `35b114d4a`
-through merge commit `133b9386d`; the historical
-`Refactor/GroupStripeWebhookHandling` branch is superseded evidence only.
+contracts are present after merging current `origin/main`. Local HEAD, the remote branch, and draft
+PR #597 all resolve to `59b8e266d3630c9c98390827d0a2a820ec71d0d2`; exact-head CI run
+31942952029 passed all 58 jobs. The branch is current with `origin/main` `35b114d4a` through merge
+commit `133b9386d`; the historical `Refactor/GroupStripeWebhookHandling` branch is superseded evidence
+only.
 
 Phase 2 adds the provider-neutral operation identity, session kind, normalized state, terminal/retry
 disposition, safe-failure vocabulary, client descriptor/snapshot records, and matching protobuf
@@ -45,11 +46,13 @@ follows the complete Stripe/provider refactor rather than interrupting it.
 
 ## Next Steps
 
-Push the current-main inventory reconciliation and wait for exact-head draft PR CI; once green, implement Phase 3's pure
-transition specification: normalize the complete Stripe.net `47.3.0` PaymentIntent, SetupIntent, and
-Refund status vocabulary at the `2025-01-27.acacia` baseline; encode every allowed and rejected state
-edge, duplicate/stale observation, terminal protection, retry/revision rule, and capture expiry; prove
-the rules exhaustively without wiring runtime webhooks, persistence, reconciliation, or consumers.
+Implement and verify Phase 3 only. Add the pure transition specification that normalizes the complete
+Stripe.net `47.3.0` PaymentIntent, SetupIntent, and Refund status vocabulary at the
+`2025-01-27.acacia` baseline; encode every allowed and rejected state edge, duplicate/stale
+observation, terminal protection, retry/revision rule, and capture expiry; prove the rules
+exhaustively without wiring runtime webhooks, persistence, reconciliation, or consumers. Update this
+ledger and the plan checklist, commit and push the coherent checkpoint, and let draft-PR CI validate
+the exact remote head. Do not start Phase 4 in the same turn.
 
 ## Completed work
 
@@ -114,6 +117,9 @@ the rules exhaustively without wiring runtime webhooks, persistence, reconciliat
 - Exact-head CI run 31941813626 exposed five stale inventory keys after its test merge incorporated
   newer PR #552 closeout changes; the focused local reproduction failed 6 of 374 tests, and the
   command-entry reconciliation restored all 374 tests without changing B2B runtime code.
+- Corrected exact-head CI run 31942952029 at `59b8e266d3630c9c98390827d0a2a820ec71d0d2`:
+  58 of 58 jobs passed, including build, package, service carves, all unit projects, and integration
+  matrices.
 - Push verification: local work head, `origin/Feature/payments_provider-contract-baseline`, and PR #597
   `headRefOid` all resolved to `7cd053d0719c699e77f4f8d5b4a3803367db6bf5`.
 - Worktree branch was created at and reconciled to `origin/main`
@@ -144,9 +150,14 @@ the rules exhaustively without wiring runtime webhooks, persistence, reconciliat
 - GitHub reports PR #594 `MERGED` at `3c8a2c5a847d0f9702884949ed57850c6e494c47`;
   the recreated worktree started at that exact `origin/main` commit with zero commits behind.
 
-## Reviews
+## Review status
 
-Docs review through PR head `ccb1dd00585b7943a401166f3f8eb3237ed6d628` found no issues across
+**NOT READY FOR REVIEW.** [Draft PR #597](https://github.com/Concertable/concertable/pull/597) still
+requires Phases 3 and 4. Once the final implementation candidate and exact-head CI are green,
+`## Next Steps` must route through `/review`; that review-ready checkpoint still emits the standard
+plan continuation pointer because the plan lifecycle is not terminal.
+
+The planning docs review through PR head `ccb1dd00585b7943a401166f3f8eb3237ed6d628` found no issues across
 accuracy, contradiction, document ownership, concision, dangling references, and followable
 instructions. Its spent untracked review artifact was deleted after PR #594 merged. No Phase 1
 implementation review exists; the branch is not merge-ready.
