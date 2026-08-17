@@ -52,13 +52,13 @@ Each verified against current file contents.
 | 1 | `api/agents/DEBUGGING_CONVENTIONS.md:5` — "leave it as an inline `logger.Log*` call" vs `CODE_CONVENTIONS.md:396` "**No** inline `logger.LogInformation/…`" and `api/AGENTS.md:3` "**never**" | **Settled by evidence.** `.editorconfig:17` sets `CA1848` to error for all `[*.cs]`, exempt only under Migrations; grep finds **0** inline calls across `api/**`. The debugging doc instructs code that does not compile — and it is the doc `e2e-ui-debug:222` / `e2e-api-debug:194` tell you to read first |
 | 2 | Root `AGENTS.md:227`, `:241`×2, `:244` cite `./e2e.ps1` / `./docker-health.ps1` vs `E2E_CONVENTIONS.md:29`, `:36` citing `./scripts/e2e.ps1` | **Settled.** Neither exists at root; only `scripts/` does, and `scripts/e2e.ps1` prints `./scripts/e2e.ps1` in its own usage. 4 wrong lines in the always-loaded file, plus ~32 in the four e2e skills, against 5 correct |
 | 3 | Root `AGENTS.md:125–127` "exactly ONE of **three** terminal states" vs `:129` "The **four** outcomes:" with four items listed and exits 0/2/3/4 | **Settled** — the preamble wasn't updated when the DIRTY state was inserted |
-| 4 | `Monitor`: root `AGENTS.md:123` (heading) + `:157` "**Never use the `Monitor` tool**" vs `merge/SKILL.md:111` "**Prefer the `Monitor` tool**" and `:229` "prefer the `Monitor` tool over busy-waiting" | **Needs your ruling.** `merge` is also internally inconsistent — `:173–176` uses a plain bash loop for the same job |
-| 5 | Branch currency: root `AGENTS.md:102–107` "**Update first, then enable — always**… mandatory" and `merge:100–108` "non-negotiable" vs `pr-preflight:25–27` "still mergeable (the queue rebases it)" and `:63–68` "soft… not fatal" | **Needs your ruling.** `pr-preflight` is the outlier of three, and its own description covers the enqueue decision |
+| 4 | `Monitor`: root `AGENTS.md:123` (heading) + `:157` "**Never use the `Monitor` tool**" vs `merge/SKILL.md:111` "**Prefer the `Monitor` tool**" and `:229` "prefer the `Monitor` tool over busy-waiting" | **Resolved:** rule stays in root — always loaded, and it carries the rationale — and `merge` now defers to it. Moving it into the skill would have traded correctness for token savings |
+| 5 | Branch currency: root `AGENTS.md:102–107` "**Update first, then enable — always**… mandatory" and `merge:100–108` "non-negotiable" vs `pr-preflight:25–27` "still mergeable (the queue rebases it)" and `:63–68` "soft… not fatal" | **Resolved: mandatory.** `pr-preflight` is now a hard gate. The cost is asymmetric — being wrong means merging code never built against current `main`, with a possibly stale platform pin |
 | 6 | Notification is an adapter **service** (`api/ARCHITECTURE.md:34`, `api/AGENTS.md:11`, `MICROSERVICES_NORTH_STAR.md:22`, `:50`) vs a shared **library** (`MICROSERVICES_ARCHITECTURE.md:186–206`, decided 2026-05-19) | **Settled by code.** There is no Notification service or host — only `api/Concertable.Shared/src/Concertable.Shared.Notification`, a library. Nothing can `WaitFor` it. Both auto-loaded docs are wrong |
 | 7 | `MICROSERVICES_ARCHITECTURE.md:246` lists "gRPC between services" under **Disallowed**, repeated `:461`, `:492` vs `api/ARCHITECTURE.md:35` "may call them synchronously (gRPC)", `api/AGENTS.md:24` (B2B fronts Payment over gRPC), and `Concertable.Grpc` existing | **Settled by code** — the design record is stale |
 | 8 | `CODE_CONVENTIONS.md:292–297` "do **not** add Result-pattern rules here" vs `:299–328`, a Result-payload naming rule duplicating `RESULT_PATTERN.md:574–585` | **Settled** — self-contradiction two lines apart |
-| 9 | `api/AGENTS.md:69–73` mandates `XDetailsResponse` "even when it is currently a field-for-field clone" vs `CODE_CONVENTIONS.md:301` / `RESULT_PATTERN.md:581` gating `Response` on the wire "genuinely differ[ing]" | **Needs a one-line carve-out** in the other two, or an agent reading only those will delete a clone as redundant |
-| 10 | `app/web/AGENTS.md:26` "never import `AxiosError`/`isAxiosError`" vs `app/agents/CODE_CONVENTIONS.md:206` and `CODE_PATTERNS.md:191`, which allow `isAxiosError(e) && status === 401` in a route guard | **Needs your ruling** |
+| 9 | `api/AGENTS.md:69–73` mandates `XDetailsResponse` "even when it is currently a field-for-field clone" vs `CODE_CONVENTIONS.md:301` / `RESULT_PATTERN.md:581` gating `Response` on the wire "genuinely differ[ing]" | **Resolved:** `RESULT_PATTERN` now points at `CODE_CONVENTIONS` for DTO naming, which points at `api/AGENTS.md` where the carve-out lives. One home, one path to the exception |
+| 10 | `app/web/AGENTS.md:26` "never import `AxiosError`/`isAxiosError`" vs `app/agents/CODE_CONVENTIONS.md:206` and `CODE_PATTERNS.md:191`, which allow `isAxiosError(e) && status === 401` in a route guard | **Resolved by code, opposite to the first guess:** guards use `isApiError` from the shared seam and `isAxiosError` appears only in the shared client/interceptor, so `app/web/AGENTS.md` was right and both `app/agents` docs were stale |
 
 Plus a looser-predecessor pair that isn't opposing but is exploitable: `CODE_CONVENTIONS.md:192–194`
 ("Only add a comment when the WHY is non-obvious" — no ≤2-line cap, no disqualifiers) sits directly
@@ -255,11 +255,11 @@ Into each `conventions/README.md`. These generalize what the repo already states
 
 ## Phases
 
-### Phase 1 — index and meta-rules, nothing moves
+### Phase 1 — index and meta-rules, nothing moves — DONE
 `docs/INDEX.md` mapping topic → owning file; the two `conventions/README.md` files. Reviewable against
 the current tree.
 
-### Phase 2 — factual fixes (separately committed)
+### Phase 2 — factual fixes (separately committed) — DONE
 Contradictions 1, 2, 3, 6, 7, 8 (evidence-settled) and 9; all 12 dangling/misdirected references
 including `review/SKILL.md:128`, `:151`; delete `CODE_CONVENTIONS.md:192–194`; the five stale app-side
 citations; the `./scripts/` path fixes across root `AGENTS.md` and the four e2e skills; the
@@ -279,17 +279,20 @@ double-writes, which currently load twice.
 ### Deferred to follow-up PRs
 Auto-load thinning (`api/AGENTS.md:3`'s three imports; the 86 merge lines and 32 Docker lines that
 `/merge` and `scripts/e2e.ps1` already automate); the analyzer push-down plus
-`EnforceCodeStyleInBuild`; extraction of `portable/`; a `docs_reachability.py` extension that checks
-link-target existence and widens beyond `agents/*.md`.
+`EnforceCodeStyleInBuild`; extraction of `portable/`.
+
+The `docs_reachability.py` extension moved forward into Phase 2 rather than being deferred: without a
+machine check, the nine dangling references fixed there simply accumulate again. It now errors on a
+guidance doc that links a non-existent file or uses a root-absolute path, and warns for `plans/` and
+`reviews/`, which are working docs that get deleted. It skips fenced blocks — a shell regex like
+`[/\](bin|obj)[/\]` matches the markdown link pattern and is not a link.
 
 ## Open decisions
 
-1. **`Monitor` for merge confirmation** — root forbids, `merge` prefers, `merge` is internally
-   inconsistent. Which wins?
-2. **Branch currency before enqueue** — mandatory (root + `merge`) or advisory (`pr-preflight`)?
-3. **`isAxiosError` in a route guard** — allowed there only, or never?
-4. **Disposal of the two obsolete architecture docs** — delete `MICROSERVICES_NORTH_STAR.md` and
-   `MM_NORTH_STAR.md` per the tombstone rule, or keep as dated history? Recommendation: delete both,
-   inlining `MM_NORTH_STAR`'s still-true corollaries into `MODULE_STRUCTURE.md`. Leaving an
-   auto-loaded doc pointing at an obsolete one is the worse failure.
-5. **`api/agents/CONVENTIONS.md` rename** — `MODULE_STRUCTURE.md` (recommended) or keep the collision?
+All Phase 1–2 rulings are settled (see the contradictions table). Still open, and needed before Phase 3:
+
+1. **`api/agents/CONVENTIONS.md` rename** — `MODULE_STRUCTURE.md` (recommended: fixes both the
+   collision with `CODE_CONVENTIONS.md` and the stale "monolith" framing at `:6`/`:91`) or keep it?
+2. **Auto-load budget** — Phase 5 would drop `api/AGENTS.md:3`'s three `@`-imports (1,331 lines) and
+   the always-loaded merge/Docker blocks that `/merge` and `scripts/e2e.ps1` already automate. Is
+   dropping `RESULT_PATTERN.md` from every-prompt load acceptable given it is the most-violated set?

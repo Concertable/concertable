@@ -45,9 +45,11 @@ running only its failing scope locally. Full policy: [`docs/REMOTE_VALIDATION.md
 
 ## Per-area guidance
 
+**Every rule has one owning doc — [`docs/INDEX.md`](./docs/INDEX.md) maps topic → owner, lists what a machine already enforces, and carries the rules for adding to the corpus. Look a topic up there before writing a rule down; elsewhere links, never restates.**
+
 **Doc locality — a guidance/architecture doc lives at the lowest node that fully contains its concern:** single-service → that service's own folder (thin, inheriting root + `api/` upward, never restating — e.g. [`api/Concertable.Payment/AGENTS.md`](./api/Concertable.Payment/AGENTS.md)); cross-service or orchestration → root. Create one only where genuine service-specific content exists.
 
-**Every `AGENTS.md` gets a `CLAUDE.md` sibling containing exactly `@AGENTS.md`, and every `*/agents/*.md` doc must be reachable — by plain link or `@`-import, followed transitively — from some `AGENTS.md`/`CLAUDE.md`/`SKILL.md`.** A doc that fails this is loaded nowhere, which is exactly how `app/agents/CODE_CONVENTIONS.md` and `CODE_PATTERNS.md` went unread until a shipped feature violated both. Mechanically checked by `.agents/hooks/docs_reachability.py`, run as part of `docs-review`.
+**Every `AGENTS.md` gets a `CLAUDE.md` sibling containing exactly `@AGENTS.md`, and every `*/agents/*.md` doc must be reachable — by plain link or `@`-import, followed transitively — from some `AGENTS.md`/`CLAUDE.md`/`SKILL.md`.** A doc that fails this is loaded nowhere, which is exactly how `app/agents/CODE_CONVENTIONS.md` and `CODE_PATTERNS.md` went unread until a shipped feature violated both. Mechanically checked by `.agents/hooks/docs_reachability.py`, run as part of `docs-review` — which also fails a guidance doc that links a file that doesn't exist, or uses a root-absolute `/api/...` path (dead links in `plans/`/`reviews/` only warn).
 
 - **Backend (.NET, `api/`)** — seeding, migrations, DTOs, module rules, C# conventions: [`api/AGENTS.md`](./api/AGENTS.md).
 - **Backend Result pattern** — Result, Option, typed errors, validation, construction, composition, and transport terminals: [`api/agents/RESULT_PATTERN.md`](./api/agents/RESULT_PATTERN.md).

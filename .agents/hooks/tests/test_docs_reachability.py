@@ -98,6 +98,55 @@ class DocsReachabilityTests(unittest.TestCase):
 
         self.assertEqual([], report["errors"])
 
+    def test_guidance_doc_linking_a_missing_file_is_an_error(self):
+        self.write("CLAUDE.md", "@AGENTS.md\n")
+        self.write("AGENTS.md", "See [the audit](./plans/DELETED_AUDIT.md).\n")
+
+        report = repository_report(self.root)
+
+        self.assertTrue(
+            any("DELETED_AUDIT.md" in error and "does not exist" in error for error in report["errors"])
+        )
+
+    def test_a_reachable_doc_can_still_carry_a_dead_link(self):
+        self.write("CLAUDE.md", "@AGENTS.md\n")
+        self.write("AGENTS.md", "@./agents/CODE_CONVENTIONS.md\n")
+        self.write("agents/CODE_CONVENTIONS.md", "Rationale: [why](./GONE.md).\n")
+
+        report = repository_report(self.root)
+
+        self.assertTrue(any("GONE.md" in error for error in report["errors"]))
+
+    def test_root_absolute_reference_is_an_error_even_though_it_resolves(self):
+        self.write("CLAUDE.md", "@AGENTS.md\n")
+        self.write("AGENTS.md", "See [north star](/api/docs/NORTH_STAR.md).\n")
+
+        report = repository_report(self.root)
+
+        self.assertTrue(any("root-absolute" in error for error in report["errors"]))
+
+    def test_working_docs_dead_links_warn_rather_than_fail_the_gate(self):
+        self.write("CLAUDE.md", "@AGENTS.md\n")
+        self.write("AGENTS.md", "# Root\n")
+        self.write("plans/epic/A_PLAN.md", "Ledger: [progress](./A_PROGRESS.md).\n")
+        self.write("reviews/Feature-X.md", "See [finding](./gone.md).\n")
+
+        report = repository_report(self.root)
+
+        self.assertEqual([], report["errors"])
+        self.assertEqual(2, len(report["warnings"]))
+
+    def test_link_like_text_inside_a_fenced_block_is_not_a_reference(self):
+        self.write("CLAUDE.md", "@AGENTS.md\n")
+        self.write(
+            "AGENTS.md",
+            "# Root\n\n```bash\ngrep -viE \"[/\\\\](bin|obj)[/\\\\]\"\n```\n",
+        )
+
+        report = repository_report(self.root)
+
+        self.assertEqual([], report["errors"])
+
 
 if __name__ == "__main__":
     unittest.main()

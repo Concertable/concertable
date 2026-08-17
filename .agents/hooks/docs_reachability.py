@@ -8,7 +8,9 @@ from pathlib import Path
 REFERRER_NAMES = {"AGENTS.md", "CLAUDE.md", "SKILL.md"}
 CLAUDE_BODY = "@AGENTS.md"
 IGNORED_DIR_NAMES = {"node_modules", "bin", "obj", "dist", ".git"}
+WORKING_DOC_DIRS = {"plans", "reviews"}
 LINK_PATTERN = re.compile(r"\]\(([^)\s]+)\)")
+FENCE_PATTERN = re.compile(r"^\s*(?:```|~~~)", re.MULTILINE)
 AT_IMPORT_PATTERN = re.compile(r"(?<![\w@])@([\w./-]+\.md)")
 
 
@@ -54,15 +56,31 @@ def resolve_reference(referrer, raw_ref):
         return None
 
 
-def references_in(path):
+def without_fenced_blocks(text):
+    out, fenced = [], False
+    for line in text.splitlines():
+        if FENCE_PATTERN.match(line):
+            fenced = not fenced
+            continue
+        if not fenced:
+            out.append(line)
+    return "\n".join(out)
+
+
+def raw_references_in(path, skip_fenced=False):
     text = path.read_text(encoding="utf-8")
-    targets = set()
+    if skip_fenced:
+        text = without_fenced_blocks(text)
     for pattern in (LINK_PATTERN, AT_IMPORT_PATTERN):
         for match in pattern.finditer(text):
-            target = resolve_reference(path, match.group(1))
+            raw = match.group(1)
+            target = resolve_reference(path, raw)
             if target:
-                targets.add(target)
-    return targets
+                yield raw, target
+
+
+def references_in(path):
+    return {target for _, target in raw_references_in(path)}
 
 
 def sibling_errors(root):
@@ -109,9 +127,34 @@ def orphan_errors(root):
     return errors
 
 
+def dead_links(root):
+    """Split dead references by whether the referring doc is durable guidance or a working doc.
+
+    Guidance docs are load-bearing, so a dead reference there is an error. `plans/` and `reviews/`
+    are working docs that get deleted once spent, and enforcing link integrity across them would
+    fail the whole gate on churn nobody is reading.
+    """
+    errors, warnings = [], []
+    for doc in all_md_files(root):
+        relative = doc.relative_to(root)
+        if hidden(relative) and doc.name not in REFERRER_NAMES:
+            continue
+        bucket = warnings if relative.parts[0] in WORKING_DOC_DIRS else errors
+        for raw, target in sorted(set(raw_references_in(doc, skip_fenced=True))):
+            if raw.startswith("/"):
+                errors.append(
+                    f"{repo_path(root, doc)}: root-absolute reference `{raw}` resolves against the "
+                    "filesystem root, not the repo - use a repo-relative path"
+                )
+            elif not target.exists():
+                bucket.append(f"{repo_path(root, doc)}: reference does not exist: {raw}")
+    return errors, warnings
+
+
 def repository_report(root):
-    errors = sibling_errors(root) + orphan_errors(root)
-    return {"errors": errors, "warnings": []}
+    dead_errors, dead_warnings = dead_links(root)
+    errors = sibling_errors(root) + orphan_errors(root) + dead_errors
+    return {"errors": errors, "warnings": dead_warnings}
 
 
 def main():
