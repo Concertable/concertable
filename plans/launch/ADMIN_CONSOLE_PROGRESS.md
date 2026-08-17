@@ -5,10 +5,11 @@
 - Roadmap item: `launch/admin-console`
 - Worktree: current checkout (`C:\Users\tommy\source\repos\Concertable`)
 - Branch: `Feature/launch_admin-console`
-- PR: [#624](https://github.com/Concertable/concertable/pull/624) (ready for review)
+- PR: [#624](https://github.com/Concertable/concertable/pull/624) (reviewed, CI green, merge blocked — see below)
 - Dependency/package gates: none. No published-package boundary crosses this plan (Auth + B2B edits land
   in the same repo, no NuGet republish/platform-sync gate).
-- Last reconciled: 2026-08-16, PR #624 CI green; marked ready for review.
+- Last reconciled: 2026-08-16, `/review` + `/security-review` complete and clean (one test-coverage
+  finding fixed inline); merge attempt surfaced an unrelated hook bug — see Blocked below.
 
 ## Current state
 
@@ -24,8 +25,24 @@ AdminProfiles-non-empty gate instead of an artificial collision. Branch was also
 all 54 required checks passed (5 E2E jobs correctly skipping per this plan's phase scope). PR marked
 ready for review.
 
-Paused: awaiting Tommy's review and merge decision on #624 — neither is a call this session makes
-unprompted. Resume when: #624 is merged (or review feedback lands, requiring rework first).
+Since then: ran `/review` on #624 (native + security layers) — no findings above the confidence bar
+except one test-coverage gap (`AdminService.GetOverviewAsync`/`IsCurrentUserAdminAsync`/
+`RevokeInvitationAsync` had no unit test; fixed inline, 6 tests added, 26/26 green) and one sub-8-confidence
+security note (recorded above in Next Steps, Phase-2 pre-flight). `reviews/Feature-launch_admin-console.md`
+is clean (zero open findings) and its markers are current at HEAD.
+
+Blocked: `gh pr merge 624 --auto` is refused by `.claude/hooks/merge-review-gate.py`'s security-marker
+check, which has a real bug — it requires `Security-reviewed up to commit:` to exactly equal HEAD, but
+the commit that stamps the marker always creates a new HEAD, so the marker can never literally equal its
+own commit's hash (the primary `Reviewed up to commit:` check has a `review_only` tolerance for exactly
+this; the security check never got the same tolerance, so it's unsatisfiable by construction for any
+security-sensitive branch, not just this one).
+Blocked by: needs Tommy to choose how the hook fix lands — approve the one-line `review_only` tolerance
+directly, edit it himself, or fold it into #624 instead of a separate `Fix/` branch. Asked via
+`AskUserQuestion`; awaiting his answer (he asked to clarify the question first).
+Unblock action: Tommy answers/clarifies, then whichever path he picks gets executed and #624 retried.
+Resume when: the hook fix lands (however he chooses) and `gh pr merge 624 --auto` succeeds, or Tommy
+merges #624 by another route.
 
 ## Next Steps
 
