@@ -372,10 +372,24 @@ Type-to-type mapping (e.g. gRPC proto ⇄ domain/contract types) lives in a stat
 ```csharp
 internal static class EscrowMappers
 {
-    public static EscrowDeposit ToEscrowDeposit(this Proto.EscrowResponse r) => ...;
-    public static EscrowStatus ToEscrowStatus(this Proto.EscrowStatusType s) => ...;
+    extension(Proto.EscrowResponse response)
+    {
+        public EscrowDeposit ToEscrowDeposit() => ...;
+    }
+
+    extension(Proto.EscrowStatusType status)
+    {
+        public EscrowStatus ToEscrowStatus() => ...;
+    }
 }
 ```
+
+## Versioned integration events — version the wire identity, not the C# type
+
+Keep the CLR event name free of transport-version suffixes. Put the version in the stable
+`MessageType` wire identity: `PaymentOperationStateChanged` with
+`concertable.payment.payment-operation-state-changed.v1`, never `PaymentOperationStateChangedV1`.
+Application code talks in domain event names; serializers and brokers own wire-version selection.
 
 ## Pure operations — extensions for receiver-owned behaviour, named evaluators for policy
 
@@ -408,12 +422,20 @@ return (await reportRepository.GetQueueAsync(pageParams)).Map(r => r.ToDto());
 `TotalCount`/`PageNumber`/`PageSize` across for you; hand-writing `new Pagination<TDestination>(...)`
 restates four arguments that have exactly one correct value.
 
-Two cases are **not** `Map`:
+One case is **not** `Map`: **only the item type widens**. `IPagination<out T>` is covariant, so an
+`IPagination<ArtistHeader>` already *is* an `IPagination<IHeader>`. Return it; don't re-wrap and don't
+`Map(x => x)`.
 
-- **Only the item type widens** — `IPagination<out T>` is covariant, so an `IPagination<ArtistHeader>`
-  already *is* an `IPagination<IHeader>`. Return it; don't re-wrap and don't `Map(x => x)`.
-- **The projection is asynchronous** — `Map` takes a synchronous selector, so an `await`-ing projection
-  (`OpportunityMapper.ToDtosAsync`) still constructs its page by hand.
+**An `async` mapper is not an exception.** A mapper is normally `async` because it *prefetches a
+dependency in one batch*, not because projecting a row is asynchronous. Await the batch first, then
+`Map` synchronously over the result — as `OpportunityMapper.ToDtosAsync` does with its deal lookup:
+
+```csharp
+var deals = await DealsByIdAsync(opportunities.Data);
+return opportunities.Map(o => ToDto(o, deals));
+```
+
+Awaiting *inside* the selector would be the real defect anyway — that is a per-row round trip (N+1).
 
 ## `#region` — sparingly, to group same-shaped members in an aggregating file
 
@@ -440,12 +462,17 @@ No inline `logger.LogInformation/LogWarning/LogError(...)`. Each project owns on
 internal static partial void PublishedVenueEvents(this ILogger logger, int count);
 ```
 
-## Extension members — C# 14 `extension()` blocks, not `this`
+## Extension members — always use C# 14 `extension()` blocks
 
-New extension members go in `extension(Receiver)` blocks — one `XExtensions` static class per receiver type
-(`EnvironmentsExtensions` extends `Environments`; `HostEnvironmentExtensions` extends `IHostEnvironment`). This is
-the modern unified form (it also does properties/indexers/static members and groups by receiver). Never add a new
-legacy `public static … (this X x)` method; the existing ones await a migration sweep ([`../TECH_DEBT.md`](../TECH_DEBT.md)).
+All ordinary extension members use `extension(Receiver)` blocks. Keep receiver-owned members in one
+`XExtensions` class; an `XMappers` mapping family may contain one block for each related receiver.
+When an existing extension container is edited, migrate every ordinary member in that container so a
+class never mixes `extension()` blocks with legacy `this` parameters. Never add a new
+`public static … (this X x)` method.
+
+The only exception is a declaration contract that genuinely requires the receiver in the method
+signature, such as source-generated `[LoggerMessage]` partial methods. Existing untouched legacy
+containers remain the migration sweep tracked in [`../TECH_DEBT.md`](../TECH_DEBT.md).
 
 ## Geometry — use IGeometryProvider
 

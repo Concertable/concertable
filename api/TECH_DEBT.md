@@ -97,19 +97,19 @@ configuration; explicit typed composition/options should select capabilities.
   validate the allowed names. Declarative JSON values may remain strings where the format requires
   them, but their values must follow the same vocabulary and be covered by a consistency test.
 
-### Extension methods use the legacy `this`-parameter syntax, not C# 14 `extension()` blocks
+### Existing extension containers still use legacy `this` parameters
 
-Every extension in the codebase is declared the pre-C# 14 way — `public static T M(this X x, …)` in `XExtensions`
+Many existing extension containers still use the pre-C# 14 form — `public static T M(this X x, …)` in `XExtensions`
 static classes. C# 14 (net10) added `extension()` blocks: the unified "extension members" form that also expresses
 extension properties, indexers, and static members, and groups members by receiver. Both compile to identical IL,
 so this is modernization/consistency debt, not a behavioural gap. The env-vocabulary work set the example —
 `Concertable.Kernel.EnvironmentsExtensions` / `HostEnvironmentExtensions` use `extension(Environments)` /
 `extension(IHostEnvironment env)` blocks (giving `Environments.Integration` + `env.IsIntegration()`).
 
-**Resolves when:** existing `this`-parameter extension methods migrate to `extension()` blocks — one `XExtensions`
-class per receiver type, members grouped in `extension(Receiver)` blocks — as a mechanical sweep or
-opportunistically as files are touched. New extension members use `extension()` from the start (see
-`agents/CODE_CONVENTIONS.md`).
+**Resolves when:** ordinary `this`-parameter extension methods migrate to `extension()` blocks, with
+receiver-owned members grouped in `XExtensions` and related mapping receivers grouped in `XMappers`.
+Every touched container migrates completely; new extension members use `extension()` from the start
+(see `agents/CODE_CONVENTIONS.md`). Signature-bound generator/framework declarations are excluded.
 
 ### `AzureServiceBusOptions` binder defaults are `= ""` instead of `null!`
 

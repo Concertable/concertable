@@ -159,4 +159,19 @@ jobs:
           # auto-merge is then never enabled, and the PR sits green-but-unmerged forever (this is why syncs stalled
           # and piled up). A pin bump is package-only, so the queue's E2E gate no-ops and it lands in minutes with no
           # review; a red (breaking) bump just sits for the in-PR migration above.
-          gh pr merge --auto "$branch"
+          #
+          # Retry with backoff: a transient GitHub API error here (observed live: a 503 "upstream connect
+          # error") previously left an otherwise-green sync PR permanently unmerged with nothing to notice or
+          # retry it — the PR just sat there until a human happened to look. Five attempts with growing
+          # backoff absorbs a blip; if it's still failing after that, fail the job loudly instead of silently
+          # stranding the PR, so the platform-sync-alert.yml / job-failure notification actually fires.
+          for attempt in 1 2 3 4 5; do
+            if gh pr merge --auto "$branch"; then
+              echo "Auto-merge enabled on attempt $attempt."
+              exit 0
+            fi
+            echo "Attempt $attempt to enable auto-merge failed (possibly a transient GitHub API error) — retrying in $((attempt * 10))s..."
+            sleep $((attempt * 10))
+          done
+          echo "::error::Failed to enable auto-merge on $branch after 5 attempts. Run 'gh pr merge --auto $branch' by hand."
+          exit 1
