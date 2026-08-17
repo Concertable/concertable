@@ -1,0 +1,67 @@
+{
+  "_comment": [
+    "Path -> owning skill. The ONLY place this mapping lives; a new concern is a new row here, not",
+    "another paragraph in an AGENTS.md nobody reads. skill_router.py enforces it on Write/Edit, and",
+    "the review skill reads the same table so a review cannot miss what an author was required to load.",
+    "",
+    "path    : regex matched against the repo-relative POSIX path.",
+    "skills  : must be invoked before writing this file. The router quotes each skill's own",
+    "          description rather than restating rules, so there is exactly one copy.",
+    "deny    : regex matched against the content being written. A hit is a hard block, not a nudge -",
+    "          only put mechanically-decidable violations here."
+  ],
+  "routes": [
+    {
+      "path": "\\.UnitTests/.*\\.cs$",
+      "skills": ["unit-testing"],
+      "deny": [
+        {
+          "pattern": "WebApplicationFactory|TestServer|WebApplication\\.Create|Testcontainers|Respawn",
+          "reason": "This is a *.UnitTests project and this code boots a host, container or database. That makes it an integration test. Put it in this service's *.IntegrationTests project, which owns the fixture that boots the real Program. The build enforces this too (api/TestConventions.targets)."
+        }
+      ]
+    },
+    {
+      "path": "\\.IntegrationTests/.*\\.cs$",
+      "skills": ["integration-testing"]
+    },
+    {
+      "path": "\\.E2ETests[^/]*/.*\\.(cs|feature)$",
+      "skills": ["e2e-scenarios"]
+    },
+    {
+      "path": "\\.csproj$",
+      "content_requires": "<IsTestProject>\\s*true",
+      "skills": ["unit-testing", "integration-testing"],
+      "note": "Creating a test project is the classification moment: decide unit vs integration BEFORE the name exists, because the name is what declares the tier and the build fails a name that states none."
+    },
+    {
+      "path": "Repository\\.cs$",
+      "skills": ["persistence", "multitenancy"]
+    },
+    {
+      "path": "Controller\\.cs$",
+      "skills": ["http-api", "result-terminals"]
+    },
+    {
+      "path": "\\.proto$",
+      "skills": ["proto"]
+    },
+    {
+      "path": "/Log\\.cs$",
+      "skills": ["logging"]
+    },
+    {
+      "path": "app/.*/api/[^/]*\\.ts$",
+      "skills": ["http-layer", "contract-naming"]
+    },
+    {
+      "path": "app/.*/(hooks|queries)/use[^/]*\\.ts$",
+      "skills": ["server-state", "client-state"]
+    },
+    {
+      "path": "app/.*/schemas/[^/]*\\.ts$",
+      "skills": ["write-boundary"]
+    }
+  ]
+}
