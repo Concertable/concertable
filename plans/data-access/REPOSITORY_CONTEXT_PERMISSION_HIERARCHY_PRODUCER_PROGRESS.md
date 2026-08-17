@@ -5,10 +5,10 @@
 - Roadmap item: `data-access/repository-context-permission-hierarchy`
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable/.worktrees/Refactor-data-access-repository-permission-hierarchy-expand`
 - Branch: `Refactor/DataAccessRepositoryPermissionHierarchyExpand`
-- PR: [#590](https://github.com/Concertable/concertable/pull/590) (draft)
-- Dependency/package gates: current platform-sync PR #588 was pending but had no failed check when this
-  branch was created from `origin/main` at `1f4ea1f72`; refresh current main before delivery.
-- Last reconciled: 2026-08-15 against the extracted producer diff and package topology.
+- PR: [#590](https://github.com/Concertable/concertable/pull/590) (merged)
+- Dependency/package gates: satisfied. PR #590 merged, published `0.1.0-alpha.0.1007`, and
+  platform-sync PR #592 merged green.
+- Last reconciled: 2026-08-17 from the active contraction worktree at `95305c7a9`.
 
 ## Current state
 
@@ -28,14 +28,8 @@ their old-package behavior until the consumer migration removes it.
 
 ## Next Steps
 
-1. Push this current-main checkpoint and verify local, remote-tracking, and PR heads are equal.
-2. Follow replacement exact-head CI to green, then mark PR #590 ready, apply `full-e2e`, and enqueue
-   the exact remote head through the protected merge queue.
-3. Follow the merge group to a terminal result without retrying a failed run.
-4. On merge, follow package publication plus the generated platform-sync PR to green and merged.
-   the producer and follow package publication plus the generated platform-sync PR to green and merged.
-4. Update the consumer ledger when the published baseline gate opens, close this producer worktree,
-   and resume #561 from current `origin/main`.
+Completed workstream. The remaining legacy contraction is owned by
+`REPOSITORY_CONTEXT_PERMISSION_HIERARCHY_PROGRESS.md`.
 
 ## Completed work
 

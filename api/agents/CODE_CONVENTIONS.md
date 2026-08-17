@@ -53,49 +53,84 @@ Captured constructor parameters — anything read by a method or property — mu
 
 A constructor that only forwards its parameters to `base(...)` and captures nothing may use a primary constructor — there is no field to make `readonly`, so the shorthand is the clearest spelling. The pure base-forwarder leaf DB contexts (e.g. `VenueDbContext`, `VenueAdminDbContext`) are the standing example.
 
-## Repositories — inherit the module `Repository<T>` base
+## Repositories — depend on the matching context capability
 
-Every module owns a `Repositories/Repository.cs` that binds the shared
-`Concertable.DataAccess.Infrastructure` bases to the module's `DbContext` and key type
-(`int` + `IIdEntity` for most modules, `Guid` + `IGuidEntity` for User/Tenant):
+The shared `Concertable.DataAccess.Infrastructure` implementations mirror the context and repository
+capability hierarchies:
+
+```text
+IReadDbContext  -> IReadRepository<TEntity, TKey>  -> ReadRepository<TEntity, TKey>
+IWriteDbContext -> IWriteRepository<TEntity>      -> WriteRepository<TEntity>
+IDbContext      -> IRepository<TEntity, TKey>      -> Repository<TEntity, TKey>
+```
+
+The shared bases deliberately have no concrete `TContext` parameter. Their protected `Context`
+properties expose only the matching `IReadDbContext`, `IWriteDbContext`, or `IDbContext` capability.
+
+A module may keep a local `Repository<TEntity>` alias to bind its normal concrete context and key type
+(`int` + `IIdEntity` for most modules, `Guid` + `IGuidEntity` for User/Tenant). Its constructor accepts
+the concrete module context and forwards it to the context-free shared base:
 
 ```csharp
-internal abstract class WriteRepository<TEntity>(TenantDbContext context)
-    : WriteRepository<TEntity, TenantDbContext>(context)
-    where TEntity : class;
-
 internal abstract class Repository<TEntity>(TenantDbContext context)
-    : Repository<TEntity, TenantDbContext, Guid>(context)
+    : Repository<TEntity, Guid>(context)
     where TEntity : class, IGuidEntity;
 ```
 
-A concrete repository inherits that base and implements the module's `IXRepository`,
-which extends `IRepository<XEntity, TKey>` (or `IRepository<XEntity>` for `int` keys) and
-needs **no members of its own** unless the module has extra queries.
-`GetAll`/`GetById`/`Exists`/`Add`/`Update`/`Remove`/`SaveChanges` all come from the base —
-**never re-declare them** (not even a `CancellationToken` overload of `GetById`). Add only
-the *extra* finders the base can't express (e.g. `GetByUserIdAsync`), querying through the
-inherited `context` field.
+Keep a module-local `ReadRepository<TEntity>` or `WriteRepository<TEntity>` alias only when concrete
+repositories actually derive from it. A standalone read or write contract uses the matching shared
+base; a combined CRUD contract uses `Repository<TEntity, TKey>`.
+
+A concrete repository implements the module's `IXRepository`, which extends the matching shared
+interface, and needs **no members of its own** unless the module has extra queries.
+`GetAll`/`GetById`/`Exists`/`Add`/`Update`/`Remove`/`SaveChanges` come from the combined base —
+**never re-declare them** (not even a `CancellationToken` overload of `GetById`). Add only the extra
+finders the base cannot express.
+
+Use the inherited `Context` capability for generic entity queries. If a specialized repository needs
+typed `DbSet` properties or EF-specific APIs such as `Entry`, `Database`, `ChangeTracker`, or bulk
+operations, retain the concrete context in a private readonly `context` field on that repository:
 
 ```csharp
-internal interface ITenantRepository : IRepository<TenantEntity, Guid>;
-
 internal sealed class TenantRepository : Repository<TenantEntity>, ITenantRepository
 {
-    public TenantRepository(TenantDbContext context) : base(context) { }
-    // extra finders only (e.g. GetByUserIdAsync) — query via the inherited `context`
+    private readonly TenantDbContext context;
+
+    public TenantRepository(TenantDbContext context) : base(context)
+    {
+        this.context = context;
+    }
+
+    public Task<TenantMembershipEntity?> FindMembershipAsync(Guid tenantId, Guid userId, CancellationToken ct = default) =>
+        context.Memberships.FirstOrDefaultAsync(m => m.TenantId == tenantId && m.UserId == userId, ct);
 }
 ```
 
-The injected `DbContext` field is always named `context` (never `dbContext`) — see the
-field-naming rule above. Don't hand-roll a bare `IXRepository` that re-implements CRUD;
-inherit the base.
+The injected concrete context field is always named `context` (never `dbContext`) — see the
+field-naming rule above. Do not retain it when the protected capability is sufficient, and do not
+hand-roll a bare `IXRepository` that re-implements matching generic CRUD.
 
 **Name a repository method for the query, a service method for the intent.** A repository
 finder says literally what it fetches and by what key — `GetByTenantIdAsync`,
 `GetUnreadCountByTenantIdAsync` — so the data access is obvious at the call site. The
 use-case name (`GetInboxAsync`, `GetInboxSummaryAsync`) belongs on the *service* that calls
 it. Don't push an intent name (`GetInbox`) down onto the repository.
+
+**Active tenant is the default scope of B2B application services.** `ITenantContext` is the single
+authority for the tenant selected by `X-Tenant-Id`. A controller does not accept or resolve a tenant
+ID, and a repository does not independently interpret the active request. Name the ordinary scoped
+use case for its domain intent (`GetDetailsAsync`, `CreateAsync`, `UpdateAsync`); name an alternative
+capability explicitly (`GetDetailsByIdAsync`). Repository queries state the actual key
+(`GetDetailsByTenantIdAsync(Guid tenantId, CancellationToken ct = default)`). Do not add profile-ID
+resolver methods merely to turn the active tenant into an Artist or Venue ID. Tenant-owned queries
+use `TenantId` directly, backed by a module-local projection when they cross a module boundary.
+
+`CurrentUser`, `ForUser`, `Me`, and `Self` are reserved for data belonging to the authenticated human.
+Do not add `ActiveTenant` to every ordinary B2B service method merely to restate its default scope.
+
+**Every asynchronous application-service and repository method that can reach I/O accepts a
+`CancellationToken ct = default`.** Pass it through every awaited framework or dependency call that
+supports cancellation. Cancellation propagates as cancellation; it is never converted to a Result.
 
 ## Repository query outputs — `Projection` only names an intermediate query shape
 
