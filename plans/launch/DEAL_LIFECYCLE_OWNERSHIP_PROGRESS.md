@@ -5,9 +5,9 @@
 - Roadmap item: `launch/deal-lifecycle-ownership`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules-phase2`
 - Branch: `Refactor/launch_deal-lifecycle-modules-phase2`
-- PR: none yet; Phase 1 PR [#625](https://github.com/Concertable/concertable/pull/625) merged as `4efa1740e0e74601361e4c6595cc1d9d94e1b1bb`; docs-only decision PR #622 merged as `5c33f849444dda60ece44070353716c08819b2d8`; rejected PR #614 is closed and retired
+- PR: draft Phase 2 PR [#633](https://github.com/Concertable/concertable/pull/633) at scaffold work head `66284e37a0c9f54a0bbb890f04180fe22f6902c1`; Phase 1 PR #625 merged as `4efa1740e0e74601361e4c6595cc1d9d94e1b1bb`; docs-only decision PR #622 merged as `5c33f849444dda60ece44070353716c08819b2d8`; rejected PR #614 is closed and retired
 - Dependency/package gates: Phase 1 delivery is terminal. Package publication run `31986741518` succeeded, and platform-sync PR [#630](https://github.com/Concertable/concertable/pull/630) merged green at platform version `0.1.0-alpha.0.1046`. Phase 2 is active from current `origin/main`.
-- Last reconciled: 2026-08-17 after Phase 1 delivery, worktree cleanup, and creation of the Phase 2 continuation
+- Last reconciled: 2026-08-17 after publishing the Phase 2 scaffold work head and opening draft PR #633
 
 ## Current state
 
@@ -45,12 +45,11 @@ services, API ownership, and the existing public routes remain in Concert until 
 
 ## Next Steps
 
-1. Commit and publish the green module-scaffold checkpoint to a new draft PR under the plan-managed
-   push protocol.
-2. Inventory and remove the Opportunity â†’ Application, Application â†’ Booking, and Booking â†’ Concert
+1. While exact-head draft-PR CI validates scaffold work head `66284e37a0c9f54a0bbb890f04180fe22f6902c1`,
+   inventory and remove the Opportunity â†’ Application, Application â†’ Booking, and Booking â†’ Concert
    EF navigations, replacing traversals with owned IDs, module contracts, or explicit query shapes
    while preserving the current HTTP routes and responses.
-3. Move each module's composition registration and owned surface behind its new project family, add
+2. Move each module's composition registration and owned surface behind its new project family, add
    focused tests for the handoff records and dependency direction, then review the complete Phase 2
    diff before delivery.
 
@@ -134,6 +133,8 @@ services, API ownership, and the existing public routes remain in Concert until 
   changing HTTP, cross-service, published-package, auth, or routing behaviour.
 - Package publication run `31986741518` succeeded, and platform-sync PR #630 merged green as
   `b0a3c3b42bf2a50b8518364bcd648e193a1bbd01` at `0.1.0-alpha.0.1046`.
+- Published Phase 2 scaffold work head `66284e37a0c9f54a0bbb890f04180fe22f6902c1`; local HEAD and
+  `origin/Refactor/launch_deal-lifecycle-modules-phase2` matched exactly before opening draft PR #633.
 - Phase 2 scaffold: `dotnet build api/Concertable.B2B/src/Concertable.B2B.Web/Concertable.B2B.Web.csproj
   --configuration Release --no-restore --disable-build-servers` passed with 0 warnings and 0 errors.
 - Phase 2 module-boundary scope: `dotnet test
