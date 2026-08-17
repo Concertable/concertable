@@ -111,13 +111,22 @@ what leaves and what stays:
 Each surviving file names the skills that own its generic half. Nested `AGENTS.md` compose, so a per-service
 file must never restate the api-wide floor.
 
+**One thing to settle before 3b edits root `AGENTS.md`:** the migrated process skills overlap this repo's own
+executable delivery skills, so the queue-confirmation loop now sits in root `AGENTS.md`, in the executable skill
+that automates it, *and* in the `merging` standards skill. Three copies of exactly what this plan deduplicates.
+The executable skill should own the procedure and the standards skill point at it or go; same question for
+`pr-preflight` and `review`.
+
 Then, in order:
 
-1. **Phase 4** — collapse the duplication rows to one home each; seeding still sits in 5 places. Resolve
+1. **Phase 3c** — the 10,011 lines of markdown outside the conventions folders. Most is correctly-placed domain
+   knowledge and is untouched; six items need a disposition, listed in the plan. `app/README.md` is still the
+   unmodified Vite scaffold, and `notes/Concert-Rust-Analysis.md` (444) is referenced by nothing.
+2. **Phase 4** — collapse the duplication rows to one home each; seeding still sits in 5 places. Resolve
    `api/AGENTS.md:26–45` under meta-rule 7: `SEEDING_CONVENTIONS.md` is not `@`-imported, which is *why* that
    inline summary exists. **After 3b** — dedupeing into files 3b then restructures edits the same lines twice.
-2. **Re-point `docs/INDEX.md`** at the skill that owns each topic, and re-run the link check.
-3. **Make the 7 process skills concrete.** They were written generic for a shared repo; now that they live in
+3. **Re-point `docs/INDEX.md`** at the skill that owns each topic, and re-run the link check.
+4. **Make the 7 process skills concrete.** They were written generic for a shared repo; now that they live in
    the org repo they should name the real commands and paths — this repo's own delivery skills,
    `scripts/worktrees.ps1`, `scripts/e2e.ps1`, the platform-sync workflow — instead of describing them
    abstractly.

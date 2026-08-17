@@ -401,6 +401,26 @@ Cut the generic bodies now owned by a skill out of `api/agents/*` and `app/agent
 floor; add each service's thin `CODE_CONVENTIONS.md`/`CODE_PATTERNS.md` carrying only its own precedents;
 rename `CONVENTIONS.md` → `MODULE_STRUCTURE.md` (decided) and fix its `:6`/`:91` monolith framing.
 
+### Phase 3c — the markdown outside the two conventions folders
+10,011 lines of markdown live outside `plans/`, `reviews/`, `api/agents/` and `app/agents/`. Most of it is
+domain knowledge already sitting in the right place — per-service `ARCHITECTURE.md`, `LEGAL_REQUIREMENTS.md`,
+the `TECH_DEBT.md` set, `E2E_BASELINE.md`, `BROWSER_STORAGE.md` — and is not touched. What needs a decision:
+
+| File | Lines | Disposition |
+|---|---|---|
+| `app/README.md` | 73 | Still the unmodified Vite scaffold, describing ESLint config the repo doesn't use. Replace with the tier map. |
+| `notes/Concert-Rust-Analysis.md` | 444 | Orphan analysis, referenced by nothing. Delete per the throwaway-markdown rule, or give it a home. |
+| `api/docs/MICROSERVICES_ARCHITECTURE.md` | 525 | Self-declared subordinate to `api/ARCHITECTURE.md`, stale-dated. Keep as dated history or fold and delete. |
+| `api/docs/VS_TEST_EXPLORER_TROUBLESHOOTING.md` | 51 | Duplicate of the `reset-test-explorer` skill. One owner, one pointer. |
+| `docs/USP.md`, `docs/DEEP_RESEARCH_PROMPT_GUIDE.md`, `docs/OVERVIEW.md` | 319 | All orphaned. `OVERVIEW.md` is the clearest "what is Concertable" anywhere and nothing links it — link it from root. |
+| `api/docs/` as a tree | — | After 3b it holds only the two files above. Collapse it; two parallel doc trees in one service tree with no stated distinction is the original defect. |
+
+**Settle before 3b edits root `AGENTS.md`:** the migrated `agent-process` skills overlap this repo's own
+executable skills, so the merge-confirmation loop now exists in root `AGENTS.md`, `.agents/skills/merge/SKILL.md`
+(which also *automates* it), and the `merging` standards skill — three copies of the thing this plan exists to
+deduplicate. Recommendation: the **executable** skill owns the procedure; the standards skill points at it or is
+deleted. Same question for `pr-preflight` and `review`.
+
 ### Phase 4 — dedupe to one home
 Collapse each duplication row. Biggest win: seeding from 5 locations to the `seeding` skill (the principle)
 plus one in-repo seed inventory (the forbidden-table list), with `api/AGENTS.md:26–45` becoming a pointer —
