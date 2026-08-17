@@ -29,10 +29,13 @@ Since then: ran `/review` on #624 (native + security layers) — no findings abo
 except one test-coverage gap (`AdminService.GetOverviewAsync`/`IsCurrentUserAdminAsync`/
 `RevokeInvitationAsync` had no unit test; fixed inline, 6 tests added), a repository-boundary fix
 (extracted `IAdminRepository` from `IUserRepository`, see Completed work), a self-check redesign
-(`AdminController.Me()` deleted, `IsAdmin` folded into `UserDto`/`GET /api/auth/me` instead), and one
-sub-8-confidence security note (recorded below, Phase-2 pre-flight). All unit tests green (26/26).
-`reviews/Feature-launch_admin-console.md` is clean (zero open findings) and its markers are current at
-HEAD.
+(`AdminController.Me()` deleted, `IsAdmin` folded into `UserDto`/`GET /api/auth/me` instead), an
+`InsertAsync` cleanup logged as recurring debt across five other services, and a C# convention fix
+(`AdminMappers.cs` converted to C# 14 `extension()` blocks — it's new code, no grandfather clause) — all
+found via Tommy's own line-by-line review of the diff, not this session's `/review` pass alone. One
+sub-8-confidence security note remains open (recorded below, Phase-2 pre-flight). All unit tests green
+(26/26). `reviews/Feature-launch_admin-console.md` is clean (zero open findings) and its markers are
+current at HEAD.
 
 ## Next Steps
 
