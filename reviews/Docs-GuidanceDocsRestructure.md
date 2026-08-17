@@ -5,9 +5,9 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `e29cd957236eab6372480c664579bf13f77a7357`  _(2026-08-17)_
+**Reviewed up to commit:** `645ca5017c6bc054f8bb0a0361b515d04a4c8cb1`  _(2026-08-17)_
 
-**Security-reviewed up to commit:** `e29cd957236eab6372480c664579bf13f77a7357`  _(2026-08-17)_
+**Security-reviewed up to commit:** `645ca5017c6bc054f8bb0a0361b515d04a4c8cb1`  _(2026-08-17)_
 
 > Range reviewed: `9205e82d..2b93b45b` (12 commits reviewed; markers moved to `54b91961`, the fix commit, 73 files — markdown plus one Python hook).
 > Markers moved forward three times with nothing re-reviewable in between: once to the fix commit
@@ -18,7 +18,11 @@
 > bump `0.1.0-alpha.0.1055` → `0.1.0-alpha.0.1061` across five `Directory.Packages.props`, reviewed and
 > merged on `main` as #645. None of it is in this branch's scope.
 >
-> **This clean automated review is not merge authorization.** Tommy has not read the PR himself; the
+> **The markers are no longer clean-and-idle.** The Phase 6 enforcement review below covers
+> `c8302694..e29cd957` and found three real defects; the markers now sit at `645ca501`, the commit that
+> fixes them. See "Incremental review — 2026-08-17 (Phase 6 enforcement)".
+>
+> **This review is not merge authorization.** Tommy has not read the PR himself; the
 > ledger's `## Next Steps` carries the human-gated `Paused:` line. Do not enqueue on the strength of
 > this file alone.
 >
