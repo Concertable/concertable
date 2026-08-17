@@ -27,24 +27,19 @@ ready for review.
 
 Since then: ran `/review` on #624 (native + security layers) — no findings above the confidence bar
 except one test-coverage gap (`AdminService.GetOverviewAsync`/`IsCurrentUserAdminAsync`/
-`RevokeInvitationAsync` had no unit test; fixed inline, 6 tests added, 26/26 green) and one sub-8-confidence
-security note (recorded above in Next Steps, Phase-2 pre-flight). `reviews/Feature-launch_admin-console.md`
-is clean (zero open findings) and its markers are current at HEAD.
-
-Blocked: `gh pr merge 624 --auto` is refused by `.claude/hooks/merge-review-gate.py`'s security-marker
-check, which has a real bug — it requires `Security-reviewed up to commit:` to exactly equal HEAD, but
-the commit that stamps the marker always creates a new HEAD, so the marker can never literally equal its
-own commit's hash (the primary `Reviewed up to commit:` check has a `review_only` tolerance for exactly
-this; the security check never got the same tolerance, so it's unsatisfiable by construction for any
-security-sensitive branch, not just this one).
-Blocked by: needs Tommy to choose how the hook fix lands — approve the one-line `review_only` tolerance
-directly, edit it himself, or fold it into #624 instead of a separate `Fix/` branch. Asked via
-`AskUserQuestion`; awaiting his answer (he asked to clarify the question first).
-Unblock action: Tommy answers/clarifies, then whichever path he picks gets executed and #624 retried.
-Resume when: the hook fix lands (however he chooses) and `gh pr merge 624 --auto` succeeds, or Tommy
-merges #624 by another route.
+`RevokeInvitationAsync` had no unit test; fixed inline, 6 tests added), a repository-boundary fix
+(extracted `IAdminRepository` from `IUserRepository`, see Completed work), a self-check redesign
+(`AdminController.Me()` deleted, `IsAdmin` folded into `UserDto`/`GET /api/auth/me` instead), and one
+sub-8-confidence security note (recorded below, Phase-2 pre-flight). All unit tests green (26/26).
+`reviews/Feature-launch_admin-console.md` is clean (zero open findings) and its markers are current at
+HEAD.
 
 ## Next Steps
+
+Blocked: `gh pr merge 624 --auto` is refused by `.claude/hooks/merge-review-gate.py`'s security-marker check, which requires `Security-reviewed up to commit:` to exactly equal HEAD — impossible by construction, since the commit that stamps the marker always creates a new HEAD (the primary `Reviewed up to commit:` check has a `review_only` tolerance for exactly this gap; the security check never got the same tolerance).
+Blocked by: needs Tommy to choose how the hook fix lands — approve the one-line `review_only` tolerance directly, edit it himself, or fold it into #624 instead of a separate `Fix/` branch. Asked via `AskUserQuestion`; awaiting his answer.
+Unblock action: Tommy answers, then whichever path he picks gets executed and #624 retried.
+Resume when: the hook fix lands (however he chooses) and `gh pr merge 624 --auto` succeeds, or Tommy merges #624 by another route.
 
 1. Once #624 is reviewed and merged, start Phase 2 (admin console SPA shell) per
    `plans/launch/ADMIN_CONSOLE_PLAN.md` "Phase 2" from a fresh worktree based on current `origin/main`:
