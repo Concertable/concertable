@@ -17,6 +17,11 @@ const venueApi = {
     return data;
   },
 
+  getVenueById: async (id: number): Promise<Venue> => {
+    const { data } = await apiClient.get<Venue>(`/venue/${id}`);
+    return data;
+  },
+
   getMyVenue: async (): Promise<Venue | null> => {
     const { data, status } = await apiClient.get<Venue>("/venue/user");
     return status === 204 ? null : data;

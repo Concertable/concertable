@@ -288,16 +288,17 @@ DealTerms implementation are rejected input, not an implementation base.
 
 ### Phase 1 — restore and characterize the real baseline
 
-- [ ] Retire the rejected PR/branch through the repository's safe worktree process; do not merge or
+- [x] Retire the rejected PR/branch through the repository's safe worktree process; do not merge or
   repair its DealTerms code into the new implementation.
-- [ ] Port only useful topology/characterization tests onto a fresh implementation branch.
-- [ ] Pin every current state, trigger, executor, processor, callback, worker, API/HATEOAS consumer,
-  payment operation, cancellation path, settlement retry, Invoice relation, and Concert-creation
-  invariant before moving ownership.
-- [ ] Add architecture tests that fail direct runtime/entity references across the target modules.
+- [x] Pin observable acceptance, payment, cancellation, settlement, Contract, Invoice, and
+  Concert-creation outcomes at module or API boundaries before moving ownership. Do not add tests for
+  the shared `LifecycleState`, its transition table, executor filenames, source tokens, or other
+  implementation structure scheduled for deletion.
+- [x] Record the current executors, processors, callbacks, worker, and API/HATEOAS consumers as
+  migration inventory in the progress ledger rather than freezing those owners as test expectations.
 
-Gate: the new branch is behaviourally identical to `origin/main`, Deal vocabulary is intact, and the
-module/state inventory is executable as tests.
+Gate: the new branch is behaviourally identical to `origin/main`, Deal vocabulary is intact, durable
+behaviour is executable as tests, and no new test depends on the legacy shared lifecycle abstraction.
 
 ### Phase 2 — establish module contracts and remove cross-stage entity navigation
 
@@ -307,6 +308,8 @@ module/state inventory is executable as tests.
   IDs, module contracts, or query projections.
 - [ ] Define forward handoff records carrying immutable accepted/confirmed facts and deterministic IDs.
 - [ ] Preserve current API routes and wire vocabulary during the internal cutover.
+- [ ] Add architecture rules against the real module assemblies as they are scaffolded, failing direct
+  runtime/entity references while allowing Contracts dependencies.
 
 Gate: the dependency graph is acyclic and Contracts-only while behaviour and public responses remain
 unchanged.
