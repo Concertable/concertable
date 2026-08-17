@@ -44,51 +44,40 @@ no retry) — merged #634 by hand to unblock, then shipped the actual retry fix 
 All unit tests green (26/26). `reviews/Feature-launch_admin-console.md` is clean (zero open findings).
 
 **#624 merged.** One sub-8-confidence security note from the review was NOT closed before merging —
-it's inert until Phase 2 registers the `admin` OIDC client, and is carried below as a Phase 2 pre-flight
-item, not a Phase 1 blocker.
-
-## Next Steps
-
-Blocked: before wiring the `admin` OIDC client (which makes the fail-closed provisioning gate reachable for the first time), need Tommy's call on how to close the email-verification gap the review already flagged — `GrantAdminIfEligibleAsync` grants off the raw registration email with no verified-email check, so the moment the client exists, anyone who knows the bootstrap/invited email can register with it first.
-Blocked by: needs Tommy to choose between the proper fix (Auth's `CredentialRegisteredEvent` carries a verified-email signal, B2B's gate checks it — a real cross-service contract change, its own small backend PR before the OIDC client lands) or the weaker client-side mitigation (admin SPA forces a verify-then-retry step, doesn't actually close the hole). Asked directly; awaiting his answer.
-Unblock action: Tommy answers, then that path gets implemented before (proper fix) or alongside (mitigation) the OIDC client wiring below.
-Resume when: Tommy's answer lands, then continue Phase 2 per the plan.
+carried into Phase 2, and **now resolved** (see below) before the OIDC client was wired, so the gap
+never went live.
 
 Phase 1's worktree/branch is closed (no separate worktree existed — Phase 1 ran in the primary
 checkout; its branch was deleted on merge). Fresh worktree created for Phase 2:
 `.worktrees/Feature-launch_admin-console`, branch `Feature/launch_admin-console`, off `origin/main`
 at `bfbfd863c...` (contains #624).
 
-1. Start Phase 2 (admin console SPA shell) per `plans/launch/ADMIN_CONSOLE_PLAN.md` "Phase 2":
+**Security pre-flight closed, before the OIDC client:** the carried-over gap (`GrantAdminIfEligibleAsync`
+granting off the raw, unverified registration event) is fixed — asked Tommy for a decision among three
+options (Auth contract change / weak client-side mitigation / move the grant to a post-login,
+already-verified checkpoint); he picked the third. Implemented as
+`AdminService.EnsureCurrentUserAdminGrantedIfEligibleAsync`, called from `UserController.Me()`; see plan
+design decision 1 for the full mechanism. Zero cross-service contract changes. `IAdminRepository` gained
+`AddAdmin(Guid)`. `AdminServiceTests` gained 6 tests (32/32 total); `AdminProvisioningTests` restructured
+around a register-then-log-in two-step flow (compiles clean, deferred to CI per remote-validation policy
+— no local Docker). Committed on this branch, not yet pushed (no PR opened for Phase 2 yet).
+
+## Next Steps
+
+1. Continue Phase 2 (admin console SPA shell) per `plans/launch/ADMIN_CONSOLE_PLAN.md` "Phase 2":
    - `app/web/admin/` scaffold (mirrors the `customer` app's shape, no `@b2b/*` alias).
    - Routes: `login.tsx`, `auth.callback.tsx`, `__root.tsx`, `_admin/route.tsx` (guard via
      `GET /api/auth/me`, reading `UserDto.IsAdmin`), landing page listing admins + pending invitations
      wired to Phase 1's `AdminController` endpoints.
    - Auth service: `ClientIds.Admin` ("admin") Duende Web client — `Config.WebClients` +
-     `SpaClientSettings.Admin` + redirect URIs in `appsettings*.json`. This is what makes Phase 1's
-     fail-closed gate load-bearing (today `admin` has no OIDC client, so the path is unreachable).
+     `SpaClientSettings.Admin` + redirect URIs in `appsettings*.json`. This is what makes the fail-closed
+     gate load-bearing (today `admin` has no OIDC client, so the path is unreachable) — now safe to wire,
+     since the security pre-flight above already closed the gap it would otherwise expose.
    - AppHost wiring: `AppHostExtensions.AddAdminSpa` (mirrors `AddCustomerSpa`), called from
      `Concertable.B2B.AppHost/Program.cs` and the umbrella `Concertable.AppHost/Program.cs`.
    - Verification gate: all five web builds green; focused component/hook tests for invite/revoke.
-   - **Security pre-flight (found in #624's `/review`/`/security-review` pass):** design decision 2
-     claims bootstrap "reuses the same email-ownership proof every registration already relies on:
-     Auth's existing email-verification flow" — verified against the shipped `AuthService.RegisterAsync`/
-     `CredentialEntity` code that this is **not actually true**: `CredentialRegisteredEvent` fires at
-     registration submit time, before `IsEmailVerified` is ever set, and carries no verified-status
-     field. `GrantAdminIfEligibleAsync` (`CredentialRegisteredHandler.cs`) grants off the raw event
-     email with no verification check. This is provably inert in Phase 1 (no `admin` OIDC client
-     exists yet, so `RegisterAsync` can never be invoked with `client_id=admin`), which is why the
-     `/security-review` pass scored it 5/10 (below the blocking bar) — but the moment Phase 2 registers
-     the client, the gap goes live: anyone who knows the bootstrap email or an invited admin's email
-     could self-register with it before the real owner does, consuming the one-time bootstrap slot or
-     the invitation, and (via Auth's global email-uniqueness check) permanently blocking the legitimate
-     admin from ever registering that email. **Close this before or as part of Phase 2** — either gate
-     `GrantAdminIfEligibleAsync` on a verified-email signal (Auth would need to carry/expose one at
-     registration time, which it currently doesn't for any client), or require the admin SPA's login
-     flow to force an explicit verify-then-retry step before the grant becomes reachable. Full finding:
-     `reviews/Feature-launch_admin-console.md` (SEC layer note, below the 8-confidence bar for a
-     blocking finding but real).
-2. Phases 3 (moderation UI) and 4 (venue approval UI, plus the new `GET /api/Venue/pending-approval`
+2. Push, open the draft PR for Phase 2, let CI validate the integration test restructure.
+3. Phases 3 (moderation UI) and 4 (venue approval UI, plus the new `GET /api/Venue/pending-approval`
    endpoint) follow once Phase 2 is green — see the plan for scope.
 
 ## Completed work
@@ -147,8 +136,10 @@ per its own lifecycle policy — all findings resolved and the PR merged).
 - Confirmed B2B's production startup currently runs **no** `IDbInitializer` at all
   (`Concertable.B2B.Web/Program.cs`: the initializer only runs `if (!app.Environment.IsProduction())`)
   — so the bootstrap mechanism deliberately avoids depending on any "runs at B2B startup in production"
-  hook (none is proven to exist yet) and instead triggers lazily inside the existing
-  `CredentialRegisteredHandler` reactive path, which already runs in every environment.
+  hook (none is proven to exist yet). It originally triggered lazily inside
+  `CredentialRegisteredHandler`'s reactive path; **corrected in Phase 2** to trigger from
+  `UserController.Me()` instead (every authenticated request path, not just registration) — see the
+  security pre-flight entry above and plan design decision 1.
 - The invite email deliberately carries **no** accept link — unlike `TenantInvitationCreatedDomainEventHandler`,
   admin acceptance is implicit at registration-time email match (design decision 1), and the admin
   console's real URL doesn't exist until Phase 2. The email just tells the invitee which email to
@@ -173,6 +164,6 @@ per its own lifecycle policy — all findings resolved and the PR merged).
 ## Resume prompt
 
 ```
-cd C:\Users\tommy\source\repos\Concertable
+cd C:\Users\tommy\source\repos\Concertable\.worktrees\Feature-launch_admin-console
 Read @plans/launch/ADMIN_CONSOLE_PLAN.md and @plans/launch/ADMIN_CONSOLE_PROGRESS.md and do what its `## Next Steps` says.
 ```
