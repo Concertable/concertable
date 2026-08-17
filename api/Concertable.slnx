@@ -42,6 +42,20 @@
     <Project Path="Concertable.B2B/src/Modules/Artist/Tests/Concertable.B2B.Artist.IntegrationTests/Concertable.B2B.Artist.IntegrationTests.csproj" />
     <Project Path="Concertable.B2B/src/Modules/Artist/Tests/Concertable.B2B.Artist.UnitTests/Concertable.B2B.Artist.UnitTests.csproj" />
   </Folder>
+  <Folder Name="/B2B/Modules/Application/">
+    <Project Path="Concertable.B2B/src/Modules/Application/Concertable.B2B.Application.Api/Concertable.B2B.Application.Api.csproj" />
+    <Project Path="Concertable.B2B/src/Modules/Application/Concertable.B2B.Application.Application/Concertable.B2B.Application.Application.csproj" />
+    <Project Path="Concertable.B2B/src/Modules/Application/Concertable.B2B.Application.Contracts/Concertable.B2B.Application.Contracts.csproj" />
+    <Project Path="Concertable.B2B/src/Modules/Application/Concertable.B2B.Application.Domain/Concertable.B2B.Application.Domain.csproj" />
+    <Project Path="Concertable.B2B/src/Modules/Application/Concertable.B2B.Application.Infrastructure/Concertable.B2B.Application.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/B2B/Modules/Booking/">
+    <Project Path="Concertable.B2B/src/Modules/Booking/Concertable.B2B.Booking.Api/Concertable.B2B.Booking.Api.csproj" />
+    <Project Path="Concertable.B2B/src/Modules/Booking/Concertable.B2B.Booking.Application/Concertable.B2B.Booking.Application.csproj" />
+    <Project Path="Concertable.B2B/src/Modules/Booking/Concertable.B2B.Booking.Contracts/Concertable.B2B.Booking.Contracts.csproj" />
+    <Project Path="Concertable.B2B/src/Modules/Booking/Concertable.B2B.Booking.Domain/Concertable.B2B.Booking.Domain.csproj" />
+    <Project Path="Concertable.B2B/src/Modules/Booking/Concertable.B2B.Booking.Infrastructure/Concertable.B2B.Booking.Infrastructure.csproj" />
+  </Folder>
   <Folder Name="/B2B/Modules/Concert/">
     <Project Path="Concertable.B2B/src/Modules/Concert/Concertable.B2B.Concert.Api/Concertable.B2B.Concert.Api.csproj" />
     <Project Path="Concertable.B2B/src/Modules/Concert/Concertable.B2B.Concert.Application/Concertable.B2B.Concert.Application.csproj" />
@@ -58,6 +72,13 @@
     <Project Path="Concertable.B2B/src/Modules/Deal/Concertable.B2B.Deal.Domain/Concertable.B2B.Deal.Domain.csproj" />
     <Project Path="Concertable.B2B/src/Modules/Deal/Concertable.B2B.Deal.Infrastructure/Concertable.B2B.Deal.Infrastructure.csproj" />
     <Project Path="Concertable.B2B/src/Modules/Deal/Tests/Concertable.B2B.Deal.UnitTests/Concertable.B2B.Deal.UnitTests.csproj" />
+  </Folder>
+  <Folder Name="/B2B/Modules/Opportunity/">
+    <Project Path="Concertable.B2B/src/Modules/Opportunity/Concertable.B2B.Opportunity.Api/Concertable.B2B.Opportunity.Api.csproj" />
+    <Project Path="Concertable.B2B/src/Modules/Opportunity/Concertable.B2B.Opportunity.Application/Concertable.B2B.Opportunity.Application.csproj" />
+    <Project Path="Concertable.B2B/src/Modules/Opportunity/Concertable.B2B.Opportunity.Contracts/Concertable.B2B.Opportunity.Contracts.csproj" />
+    <Project Path="Concertable.B2B/src/Modules/Opportunity/Concertable.B2B.Opportunity.Domain/Concertable.B2B.Opportunity.Domain.csproj" />
+    <Project Path="Concertable.B2B/src/Modules/Opportunity/Concertable.B2B.Opportunity.Infrastructure/Concertable.B2B.Opportunity.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/B2B/Modules/Conversations/">
     <Project Path="Concertable.B2B/src/Modules/Conversations/Concertable.B2B.Conversations.Api/Concertable.B2B.Conversations.Api.csproj" />

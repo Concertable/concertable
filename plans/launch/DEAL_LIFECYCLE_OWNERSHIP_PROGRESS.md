@@ -3,11 +3,11 @@
 - Plan: `plans/launch/DEAL_LIFECYCLE_OWNERSHIP_PLAN.md`
 - Roadmap: `plans/launch/LAUNCH_ROADMAP.md`
 - Roadmap item: `launch/deal-lifecycle-ownership`
-- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules`
-- Branch: `Refactor/launch_deal-lifecycle-modules`
-- PR: draft implementation PR [#625](https://github.com/Concertable/concertable/pull/625) at current-main work head `b88e867ab6f2a52d8fcb838d688957450e361820`, carrying reviewed source head `1457a2508db5b69d5a0fa7f05eea78ba412edd76`; docs-only decision PR #622 merged as `5c33f849444dda60ece44070353716c08819b2d8`; rejected PR #614 is closed and retired
-- Dependency/package gates: Phase 1 characterization and review are complete, and the branch is current with `origin/main`. Replacement exact-head draft-PR CI must pass, then PR #625 can enter the merge queue. Phase 2 has not started.
-- Last reconciled: 2026-08-17 after incorporating platform-sync #629, rebuilding affected projects, and publishing the exact work head
+- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules-phase2`
+- Branch: `Refactor/launch_deal-lifecycle-modules-phase2`
+- PR: none yet; Phase 1 PR [#625](https://github.com/Concertable/concertable/pull/625) merged as `4efa1740e0e74601361e4c6595cc1d9d94e1b1bb`; docs-only decision PR #622 merged as `5c33f849444dda60ece44070353716c08819b2d8`; rejected PR #614 is closed and retired
+- Dependency/package gates: Phase 1 delivery is terminal. Package publication run `31986741518` succeeded, and platform-sync PR [#630](https://github.com/Concertable/concertable/pull/630) merged green at platform version `0.1.0-alpha.0.1046`. Phase 2 is active from current `origin/main`.
+- Last reconciled: 2026-08-17 after Phase 1 delivery, worktree cleanup, and creation of the Phase 2 continuation
 
 ## Current state
 
@@ -28,19 +28,31 @@ and a failed settlement followed by a successful retry reaches the existing comp
 new test asserts the legacy shared lifecycle topology, transition table, source layout, or filenames.
 
 The speculative future-module architecture guard was removed because it matched no types before the
-modules existed. Phase 2 will add compile-time project boundaries and ArchUnitNET rules against each
-real assembly as it is scaffolded. The correction is published and reviewed; replacement exact-head
-CI and merge delivery remain before Phase 2 starts.
+modules existed. Phase 2 now owns the real compile-time project boundaries and ArchUnitNET rules as
+the module assemblies are scaffolded.
 
 Rejected PR #614 is closed, and its DealTerms branch and worktree were retired with exact-head checks.
-The fresh implementation branch contains only current-main Deal vocabulary; none of the rejected
-runtime change was carried forward.
+Phase 1 merged through PR #625, published successfully, and reached a green platform sync. Its merged
+worktree and local branch were removed through the plan-managed repository command. Phase 2 starts
+from `origin/main` at `92ea04166a10843e4db3978211a874e98b44507a`.
+
+The first Phase 2 checkpoint scaffolds the Application, Booking, and Opportunity Contracts, Domain,
+Application, Infrastructure, and Api projects; wires them into both solution manifests and the B2B Web
+composition closure; and includes the real module namespaces in the positive-result architecture
+rules. Immutable `AcceptedApplication`, `ConfirmedBooking`, and `OpportunityDetails` contract records
+establish the forward fact shapes, with operation IDs as replay-stable handoff identities. Persistence,
+services, API ownership, and the existing public routes remain in Concert until the next cutover slice.
 
 ## Next Steps
 
-1. Confirm replacement exact-head draft-PR CI, mark PR #625 ready, and merge it through the queue with
-   the mechanically selected E2E tier; follow package publication and platform sync to terminal green.
-2. Resume Phase 2 from a fresh plan-managed worktree after PR #625 lands.
+1. Commit and publish the green module-scaffold checkpoint to a new draft PR under the plan-managed
+   push protocol.
+2. Inventory and remove the Opportunity â†’ Application, Application â†’ Booking, and Booking â†’ Concert
+   EF navigations, replacing traversals with owned IDs, module contracts, or explicit query shapes
+   while preserving the current HTTP routes and responses.
+3. Move each module's composition registration and owned surface behind its new project family, add
+   focused tests for the handoff records and dependency direction, then review the complete Phase 2
+   diff before delivery.
 
 ## Completed work
 
@@ -117,6 +129,17 @@ runtime change was carried forward.
 - Exact-head draft-PR CI at checkpoint `f3ebb0fc966a30efab227d16d191cb8d8dcb07a4`: green. The B2B
   Concert integration shard passed in 5m03s, the Concert unit shard passed in 1m14s, and `ci-complete`
   passed.
+- Phase 1 PR #625 merged as `4efa1740e0e74601361e4c6595cc1d9d94e1b1bb` with `skip-e2e`: no
+  positive E2E trigger was present because the diff added internal characterization coverage without
+  changing HTTP, cross-service, published-package, auth, or routing behaviour.
+- Package publication run `31986741518` succeeded, and platform-sync PR #630 merged green as
+  `b0a3c3b42bf2a50b8518364bcd648e193a1bbd01` at `0.1.0-alpha.0.1046`.
+- Phase 2 scaffold: `dotnet build api/Concertable.B2B/src/Concertable.B2B.Web/Concertable.B2B.Web.csproj
+  --configuration Release --no-restore --disable-build-servers` passed with 0 warnings and 0 errors.
+- Phase 2 module-boundary scope: `dotnet test
+  api/Concertable.B2B/tests/Concertable.B2B.ArchitectureTests/Concertable.B2B.ArchitectureTests.csproj
+  --configuration Release --no-restore --disable-build-servers --filter
+  "FullyQualifiedName~ModuleBoundaryTests"` passed 6/6.
 - Removed the future-module ArchUnitNET rule before delivery because `WithoutRequiringPositiveResults`
   made it vacuous until the module assemblies exist; Phase 2 now owns meaningful boundary enforcement.
 - Published corrected work head `1457a2508db5b69d5a0fa7f05eea78ba412edd76`; local HEAD, the remote
