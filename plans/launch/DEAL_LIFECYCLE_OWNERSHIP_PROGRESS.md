@@ -5,9 +5,9 @@
 - Roadmap item: `launch/deal-lifecycle-ownership`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules`
 - Branch: `Refactor/launch_deal-lifecycle-modules`
-- PR: draft implementation PR [#625](https://github.com/Concertable/concertable/pull/625) at verified checkpoint head `40cd20957289ef6117ec4926adcf5a6c8172462c`; docs-only decision PR #622 merged as `5c33f849444dda60ece44070353716c08819b2d8`; rejected PR #614 is closed and retired
-- Dependency/package gates: Phase 1 characterization is complete locally. Its work head must be published, reviewed, and pass exact-head draft-PR CI before Phase 2 starts.
-- Last reconciled: 2026-08-17 after auditing the durable lifecycle boundary coverage, adding the two missing observable cases, and passing the focused local build and invariants
+- PR: draft implementation PR [#625](https://github.com/Concertable/concertable/pull/625) at verified work head `96dd6598979313c40214cbf78c69facd25e4b2e7`; docs-only decision PR #622 merged as `5c33f849444dda60ece44070353716c08819b2d8`; rejected PR #614 is closed and retired
+- Dependency/package gates: Phase 1 characterization is published. Its exact implementation range must be reviewed and pass exact-head draft-PR CI before Phase 2 starts.
+- Last reconciled: 2026-08-17 after publishing the Phase 1 characterization range and verifying local, remote, and PR heads
 
 ## Current state
 
@@ -28,8 +28,8 @@ and a failed settlement followed by a successful retry reaches the existing comp
 new test asserts the legacy shared lifecycle topology, transition table, source layout, or filenames.
 
 The reserved Opportunity, Application, Booking, and Concert namespace guard remains valid because it
-enforces the target dependency direction. Phase 1 now awaits publication, implementation review, and
-exact-head draft-PR CI before Phase 2 may begin.
+enforces the target dependency direction. Phase 1 is published and now awaits implementation review
+and exact-head draft-PR CI before Phase 2 may begin.
 
 Rejected PR #614 is closed, and its DealTerms branch and worktree were retired with exact-head checks.
 The fresh implementation branch contains only current-main Deal vocabulary; none of the rejected
@@ -37,10 +37,9 @@ runtime change was carried forward.
 
 ## Next Steps
 
-1. Publish the verified Phase 1 characterization work head from starting remote head
-   `40cd20957289ef6117ec4926adcf5a6c8172462c` through the plan push protocol.
-2. Route the resulting exact implementation range through code review and resolve every actionable
-   finding; Phase 2 remains closed until that review and exact-head draft-PR CI are green.
+1. Route exact implementation range `40cd20957289ef6117ec4926adcf5a6c8172462c..96dd6598979313c40214cbf78c69facd25e4b2e7`
+   through code review and resolve every actionable finding.
+2. Confirm exact-head draft-PR CI is green; Phase 2 remains closed until both gates pass.
 
 ## Completed work
 
@@ -75,6 +74,9 @@ runtime change was carried forward.
   remote branch, and PR #625 `headRefOid` matched, and corrected the draft PR title and description.
 - Audited Phase 1 boundary coverage and added only the missing settlement-recovery flow and direct
   exactly-once Concert assertion; the existing coverage already protects the other required outcomes.
+- Published Phase 1 range `40cd20957..96dd65989`, including current `origin/main` merge
+  `96dd6598979313c40214cbf78c69facd25e4b2e7`; local HEAD, the remote branch, and PR #625
+  `headRefOid` matched exactly before this ledger checkpoint.
 
 ## Verification
 
@@ -110,6 +112,10 @@ runtime change was carried forward.
 - Current candidate `python .agents/hooks/plan_graph.py --root <worktree>`: 0 errors and 0 warnings;
   `git diff --check`: passed. The integration matrix is pending exact-head draft-PR CI under the
   remote-validation policy.
+- After merging current `origin/main`, the affected integration-test project built with 0 errors and
+  two pre-existing nullable warnings; the focused lifecycle boundary architecture test passed 1/1.
+- Phase 1 work-head publication: local HEAD, `origin/Refactor/launch_deal-lifecycle-modules`, and draft
+  PR #625 `headRefOid` all equalled `96dd6598979313c40214cbf78c69facd25e4b2e7`.
 
 ## Reviews
 
