@@ -3,13 +3,12 @@
 - Plan: `plans/launch/ADMIN_CONSOLE_PLAN.md`
 - Roadmap: `plans/launch/LAUNCH_ROADMAP.md`
 - Roadmap item: `launch/admin-console`
-- Worktree: current checkout (`C:\Users\tommy\source\repos\Concertable`)
-- Branch: `Feature/launch_admin-console`
-- PR: [#624](https://github.com/Concertable/concertable/pull/624) — **MERGED** (`7fd40bf59860c27f1c1d1e48537901b022de0f43`, 2026-08-17T14:18:26Z)
+- Worktree: none; Phase 1's merged worktree is no longer registered and the continuation worktree has not been created
+- Branch: none for the remaining work; Phase 1 branch `Feature/launch_admin-console` merged
+- PR: [#624](https://github.com/Concertable/concertable/pull/624) — **MERGED** (`7fd40bf59860c27f1c1d1e48537901b022de0f43`, 2026-08-17T14:18:26Z); Phases 2-4 have no PR yet
 - Dependency/package gates: none. No published-package boundary crosses this plan (Auth + B2B edits land
   in the same repo, no NuGet republish/platform-sync gate).
-- Last reconciled: 2026-08-17, PR #624 merged. Worktree still needs closing (see Next Steps) — Phase 2
-  starts in a fresh worktree per the plan.
+- Last reconciled: 2026-08-17 after the repository clarified that reviewability alone does not split a plan
 
 ## Current state
 
@@ -48,11 +47,11 @@ item, not a Phase 1 blocker.
 
 ## Next Steps
 
-1. Close this worktree/branch now that #624 has merged:
-   `./scripts/worktrees.ps1 close -Worktree <path> -PullRequest 624 -PlanManaged` (per
-   `plans/AGENTS.md` "Plans outlive PR worktrees").
-2. Start Phase 2 (admin console SPA shell) per `plans/launch/ADMIN_CONSOLE_PLAN.md` "Phase 2" from a
-   fresh worktree based on current `origin/main`:
+Create one fresh continuation worktree from current `origin/main` and implement Phases 2-4 together on
+one complete draft PR. Begin with the Phase 2 security pre-flight below, then build the admin SPA,
+moderation UI, and venue-approval UI without a phase merge stop:
+
+1. Build the admin console SPA shell and provisioning UI:
    - `app/web/admin/` scaffold (mirrors the `customer` app's shape, no `@b2b/*` alias).
    - Routes: `login.tsx`, `auth.callback.tsx`, `__root.tsx`, `_admin/route.tsx` (guard via
      `GET /api/auth/me`, reading `UserDto.IsAdmin`), landing page listing admins + pending invitations
@@ -81,8 +80,9 @@ item, not a Phase 1 blocker.
      flow to force an explicit verify-then-retry step before the grant becomes reachable. Full finding:
      `reviews/Feature-launch_admin-console.md` (SEC layer note, below the 8-confidence bar for a
      blocking finding but real).
-3. Phases 3 (moderation UI) and 4 (venue approval UI, plus the new `GET /api/Venue/pending-approval`
-   endpoint) follow once Phase 2 is green — see the plan for scope.
+2. In the same PR, complete Phase 3 moderation UI and Phase 4 venue approval UI, including the new
+   `GET /api/Venue/pending-approval` endpoint. Phase checkpoints must remain green, but none is an
+   independent delivery candidate.
 
 ## Completed work
 
@@ -126,6 +126,8 @@ per its own lifecycle policy — all findings resolved and the PR merged).
 
 ## Decisions, discoveries, blockers, and deviations
 
+- Remaining Phases 2-4 land together. There is no package, publication, deployment, or runtime gate
+  between them, so reviewability is not a reason for another partial PR.
 - Confirmed via `AdminProfileHandler` that the `"Admin"` policy is checked entirely on B2B's side
   (`AdminProfiles.Sub == sub` claim), not via any Auth-side role/claim — so provisioning is a B2B-only
   concern; Auth's `RegisterAsync` needs no changes.

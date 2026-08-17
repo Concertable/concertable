@@ -56,6 +56,12 @@ not each need their own PR; keep coherent work together. Split only where a merg
 platform sync or runtime deployment must finish before the next work can build or run, and group all
 work possible on each side of that gate.
 
+The default is **one complete plan implementation in one draft PR**. Phases are recovery, review, and
+verification checkpoints inside that PR; they are not delivery units and do not make an incomplete
+architecture independently mergeable. Diff size, phase numbering, or reviewability alone never
+justifies landing scaffolding, compatibility glue, no-op composition roots, or another deliberately
+transitional state on `main`.
+
 ## Plans outlive PR worktrees
 
 Every plan-managed PR must merge the current plan and progress ledger. A worktree owns one PR-sized

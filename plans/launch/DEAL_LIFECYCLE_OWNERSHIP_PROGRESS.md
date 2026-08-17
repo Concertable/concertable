@@ -5,9 +5,9 @@
 - Roadmap item: `launch/deal-lifecycle-ownership`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules-phase2`
 - Branch: `Refactor/launch_deal-lifecycle-modules-phase2`
-- PR: draft Phase 2 PR [#633](https://github.com/Concertable/concertable/pull/633); exact-head CI run `32035899299` failed the solution build on two remaining E2E Booking-to-Concert navigation references, and reviewed fix head `7fbecfb3162b3da98b11932f4fe3cee51e165476` is published for replacement CI; Phase 1 PR #625 merged as `4efa1740e0e74601361e4c6595cc1d9d94e1b1bb`
-- Dependency/package gates: Phase 1 delivery is terminal. Package publication run `31986741518` succeeded, and platform-sync PR [#630](https://github.com/Concertable/concertable/pull/630) merged green at platform version `0.1.0-alpha.0.1046`. Phase 2 is active from current `origin/main`.
-- Last reconciled: 2026-08-17 after completing the Phase 2 branch review and local verification
+- PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633). Published Phase 2 checkpoint `5967be92166375c29144016167a13cd4771aacc8` passed exact-head CI run `32037986816`; local branch merged current `origin/main` via `451c10395bfe6dcbf1ae6713033440761489387e`, and the corrected planning checkpoint is not yet pushed.
+- Dependency/package gates: none block the remaining B2B-internal implementation. Phase 1 delivery is terminal; final `api/**` delivery will own its routine package publication and platform-sync gate only after the complete refactor merges.
+- Last reconciled: 2026-08-17 after Tommy rejected phase-sized delivery and approved one complete PR
 
 ## Current state
 
@@ -19,6 +19,12 @@ Application, Booking, and Concert will become independent modules with their own
 model, contextual step contracts, and module-local step resolver. There is no umbrella process entity,
 shared lifecycle state, workflow module, cross-module resolver, or parent state machine. A combined
 status exists only as a read projection.
+
+PR #633 now owns the complete remaining decomposition through the plan's definition of done. Phases
+2-6 are implementation/recovery checkpoints on that one draft PR, not merge candidates. Reviewability,
+diff size, and a green intermediate build are not reasons to land a half-owned architecture; a separate
+PR is allowed only if a real published-package, deployment, or other external-artifact dependency is
+discovered. None is currently present.
 
 Phase 1 characterization is complete. Existing integration coverage already pins both
 payment/Accept arrival orders, payment failures, pre- and post-Concert cancellation, late-capture
@@ -33,28 +39,35 @@ the module assemblies are scaffolded.
 
 Rejected PR #614 is closed, and its DealTerms branch and worktree were retired with exact-head checks.
 Phase 1 merged through PR #625, published successfully, and reached a green platform sync. Its merged
-worktree and local branch were removed through the plan-managed repository command. Phase 2 starts
-from `origin/main` at `92ea04166a10843e4db3978211a874e98b44507a`.
+worktree and local branch were removed through the plan-managed repository command. The active branch
+has merged current `origin/main`; its original Phase 2 base is no longer operationally relevant.
 
-The first Phase 2 checkpoint scaffolds the Application, Booking, and Opportunity Contracts, Domain,
-Application, Infrastructure, and Api projects; wires them into both solution manifests and the B2B Web
-composition closure; and includes the real module namespaces in the positive-result architecture
-rules. Immutable `AcceptedApplication`, `ConfirmedBooking`, and `OpportunityDetails` contract records
-establish the forward fact shapes, with operation IDs as replay-stable handoff identities. Persistence,
-services, API ownership, and the existing public routes remain in Concert until the next cutover slice.
+The Phase 2 in-branch checkpoint removes the Opportunity-to-Application, Application-to-Booking, and
+Booking-to-Concert EF navigations and establishes immutable `AcceptedApplication`, `ConfirmedBooking`,
+and `OpportunityDetails` handoff facts. Persistence, services, APIs, `LifecycleState`, and workflow
+ownership still sit in Concert. The new runtime layer projects and `AddApplicationModule`/
+`AddBookingModule`/`AddOpportunityModule` calls are currently empty migration scaffolding, not completed
+module ownership; each must gain real owned behaviour or be removed before delivery.
 
-The completed Phase 2 cut removes the Opportunity-to-Application, Application-to-Booking, and
-Booking-to-Concert EF navigations without moving Phase 3 state or persistence ownership early.
-Booking and Concert retain immutable accepted/confirmed facts, while queries join explicitly through
-owned IDs and contracts. The B2B host calls all three new composition roots, and Concert draft
-creation explicitly adds the Concert instead of relying on EF graph tracking.
+`BookingDto` remains an internal application result and belongs in Booking.Application after the move;
+`ConfirmedBooking` is the deliberate cross-module Booking.Contracts handoff. `BookingDraftContext` is
+a purpose-built query projection mapped by `ConcertDraftService`, not ambient context; the final carve
+must replace it with the owned handoff/projection shape rather than preserve that name.
 
 ## Next Steps
 
-1. Require exact-head draft-PR CI for #633, including the B2B Concert integration shard that local
-   Docker could not start.
-2. Treat Phase 2 as delivery-ready only after that exact head is green. Merge remains an explicit
-   delivery step.
+Continue the complete ownership refactor on draft PR #633 without a phase delivery stop:
+
+1. Move Application and Booking persistence, services, APIs, local state, acceptance/payment recovery,
+   Contract ownership, and pre-Concert cancellation into their real modules while preserving the
+   transaction, callback-order, retry, and idempotency invariants.
+2. Continue directly through independent Concert operational ownership, deletion of the shared
+   `LifecycleState`/god workflow, local step resolution, and the combined read projection. Populate or
+   remove every empty layer and no-op composition root; keep internal DTOs in Application layers and
+   name mapped query shapes as projections rather than contexts.
+3. Re-scaffold migrations, update all consumers/docs, and run the final verification/review gates only
+   after the complete definition of done is represented. Checkpoint commits and exact-head draft CI are
+   for recovery and diagnosis; do not mark the PR ready or merge any intermediate phase.
 
 ## Completed work
 
@@ -96,6 +109,8 @@ creation explicitly adds the Concert instead of relying on EF graph tracking.
 
 ## Verification
 
+- Delivery-model reconciliation: `python .agents/hooks/plan_graph.py --root .` reports 0 errors and 0
+  warnings; `git diff --check` passes.
 - `origin/main` uses one broad `LifecycleState` on Application while Booking and Concert have no
   lifecycle state of their own.
 - Public Application mapping already collapses post-accept states back to Accepted, proving those later
@@ -204,9 +219,18 @@ creation explicitly adds the Concert instead of relying on EF graph tracking.
   integration, microservice isolation, module boundaries, seeding, C# conventions, and changed-path
   coverage. Its duplicated `DealType` rule, project-file whitespace, and missed E2E consumer findings
   are resolved; no open findings remain.
+- That review closes only the Phase 2 checkpoint. The complete PR requires a new full review after the
+  remaining ownership, state, workflow, projection, and documentation work is implemented.
 
 ## Decisions, discoveries, blockers, and deviations
 
+- The remaining refactor is one complete PR. Phases are in-branch checkpoints; only a genuine external
+  artifact dependency can justify another merge.
+- Empty layer projects and no-op `Add*Module` methods cannot survive delivery. Add a layer only when the
+  module has real content for it.
+- DTO placement follows audience: internal service results belong in Application; only deliberate
+  cross-module shapes belong in Contracts. Purpose-built mapped read shapes are projections/snapshots,
+  not contexts.
 - One state machine exists per owning aggregate/module, not per individual enum value.
 - Local state machines may use different structures; no common lifecycle interface is required.
 - Context supplies names inside a module: `State`, `Trigger`, `StateMachine`, `IStepResolver<TStep>`,

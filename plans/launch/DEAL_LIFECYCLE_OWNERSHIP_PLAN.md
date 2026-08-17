@@ -23,6 +23,11 @@ This decision was explicitly approved by Tommy on 2026-08-16 after comparing the
 the aggregate-collapse, Deal-owned workflow, premature two-way state split, and separate process-root
 alternatives.
 
+The remaining implementation from Phase 2 onward is one complete draft PR. The phases below are
+in-branch recovery and verification checkpoints, not independently mergeable slices. This B2B-internal
+refactor has no published-package, deployment, or production-data dependency requiring a partial state
+to land first; PR #633 remains draft until the full definition of done is satisfied.
+
 ## 2. Domain meanings that do not change
 
 - **Opportunity** is the venue's advertised opening. It owns one current Deal and may receive many
@@ -225,6 +230,12 @@ Concert created
 
 Rules:
 
+- A module creates only the layers it actually uses. Empty layer projects and no-op composition roots
+  are migration scaffolding only and must be populated or removed before delivery.
+- Owning a DTO does not make it a Contracts type. Internal service inputs/results stay in the owning
+  Application layer; only a shape deliberately consumed across a module boundary belongs in Contracts.
+- Purpose-built query shapes mapped by an application service are projections, snapshots, or details.
+  `Context` is reserved for ambient request, tenant, transport, or persistence context.
 - Deal never references Application, Booking, or Concert runtime/contracts to interpret their state.
 - Application never queries or commands Booking or Concert state.
 - Booking never queries or commands Concert state.
@@ -281,10 +292,13 @@ creation path.
 - FlatFee/VenueHire escrow release and DoorSplit/Versus deferred settlement retain their current money,
   payer/payee, retry, invoice, and completion invariants.
 
-## 9. Delivery phases
+## 9. Implementation phases and single-PR delivery
 
-Implementation starts from a fresh worktree based on current `origin/main`. Draft PR #614 and its
-DealTerms implementation are rejected input, not an implementation base.
+Phase 1's characterization PR is merged history. Phases 2-6 remain together on draft PR #633 from a
+current `origin/main` base. Checkpoint commits and exact-head CI keep the large rewrite recoverable and
+green; none of those checkpoints is a merge candidate until all later phases and the definition of done
+are complete. Draft PR #614 and its DealTerms implementation are rejected input, not an implementation
+base.
 
 ### Phase 1 — restore and characterize the real baseline
 
@@ -300,10 +314,10 @@ DealTerms implementation are rejected input, not an implementation base.
 Gate: the new branch is behaviourally identical to `origin/main`, Deal vocabulary is intact, durable
 behaviour is executable as tests, and no new test depends on the legacy shared lifecycle abstraction.
 
-### Phase 2 — establish module contracts and remove cross-stage entity navigation
+### Phase 2 — establish the in-branch cutover seam
 
-- [x] Scaffold Opportunity, Application, and Booking module project families following existing B2B
-  conventions; Concert keeps only its eventual owned surface.
+- [x] Establish the Opportunity, Application, and Booking project/Contracts seam needed for the
+  migration; runtime layers and composition roots remain incomplete until the ownership moves below.
 - [x] Replace cross-stage EF navigation in services, specifications, workers, and mappers with owned
   IDs, module contracts, or query projections.
 - [x] Define forward handoff records carrying immutable accepted/confirmed facts and deterministic IDs.
@@ -311,8 +325,9 @@ behaviour is executable as tests, and no new test depends on the legacy shared l
 - [x] Add architecture rules against the real module assemblies as they are scaffolded, failing direct
   runtime/entity references while allowing Contracts dependencies.
 
-Gate: the dependency graph is acyclic and Contracts-only while behaviour and public responses remain
-unchanged.
+Checkpoint gate: the dependency graph is acyclic and Contracts-only while behaviour and public
+responses remain unchanged. Empty runtime layers, no-op `Add*Module` methods, and the legacy shared
+`LifecycleState` are explicitly non-deliverable transient state on the draft branch.
 
 ### Phase 3 — split Application and Booking ownership atomically
 

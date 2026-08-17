@@ -52,8 +52,10 @@ table-stakes items were resolved in the same pass.
   each lifecycle aggregate owns independent state, transitions, contextual steps, and a module-local
   resolver. The fixed stage order never varies by `DealType`; no umbrella process entity, shared
   workflow module, cross-module state machine, Deal-owned orchestration, or Rust decision engine is
-  allowed. The follow-on .NET 11 slice owns native unions for closed internal values, never DI service
-  dispatch. See
+  allowed. The remaining decomposition lands as one complete PR; its implementation phases are draft-
+  branch checkpoints, not separately mergeable slices. Split only if a real published-package or
+  deployment dependency appears. The follow-on .NET 11 slice owns native unions for closed internal
+  values, never DI service dispatch. See
   [DEAL_LIFECYCLE_OWNERSHIP_PLAN.md](DEAL_LIFECYCLE_OWNERSHIP_PLAN.md).
 
 **Competitor table-stakes — verified ABSENT 2026-08-16 (was "verify before trusting"):**

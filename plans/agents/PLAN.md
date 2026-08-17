@@ -10,9 +10,16 @@ next reader into thinking the work is still pending.
 
 ## Shape of a plan
 
-A plan describes a chunk of work too big for one commit, broken into **phases that are each
-independently shippable and each end green**. A phase states what it changes, why, and its
-verification gate. Phases sequence so that every intermediate state builds and passes.
+A plan describes a chunk of work too big for one commit, broken into **implementation phases that end
+green**. A phase states what it changes, why, and its verification gate, but it is a recovery/review
+checkpoint rather than an independently mergeable delivery unit. The default delivery shape is one
+complete draft PR for the whole plan. Split only where a merge, package publication, platform sync,
+runtime deployment, or other external artifact must complete before the remaining implementation can
+build or run; diff size and reviewability alone are not delivery dependencies.
+
+Intermediate commits may contain scaffolding or a deliberately transitional model while the draft PR
+remains in progress. The PR must not leave draft or merge until those transitions are gone and the
+plan's coherent end state is implemented.
 
 ## Companion progress ledger — keep a compact operational snapshot
 
@@ -190,8 +197,10 @@ checkpoint only when evidence or routing changed.
 ## Lifecycle
 
 1. **Write it** when the work spans multiple commits/PRs or needs a design decided up front. Before creating its ledger/worktree, check existing branches, worktrees, PRs, and ledgers for the same work, then assign each logical workstream exactly one canonical ledger; never create a second implementation owner.
-2. **Branch, then work a delivery slice** — create a worktree from current `origin/main`. That branch/worktree carries one PR-sized slice, not the lifetime of the plan.
-3. **Check off / strike the shipped phase in the plan and update the progress ledger, in the same commit as the work.** A
+2. **Branch, then work the complete delivery unit** — create a worktree from current `origin/main` and
+   keep every implementation phase on its one draft PR. Start another PR/worktree only when a genuine
+   delivery dependency requires the current PR to merge first.
+3. **Check off / strike the completed phase in the plan and update the progress ledger, in the same commit as the work.** A
    partially-done plan stays; only the outstanding work should remain un-ticked, so the next reader
    sees exactly what's left.
 4. **Keep both artifacts after the last local phase while delivery is live.** Check off the phase and
@@ -302,8 +311,10 @@ point where the context becomes disposable. Don't carry unwritten state across a
   its resume pointer. Report the blocker or the human action and its resume condition; dispatch the
   resolver when appropriate. The pointer becomes valid only after the gate opens and the ledger is
   reconciled to an actionable next step.
-- A completed and verified phase ends the turn after its handoff. Start the next phase only when Tommy
-  explicitly names it and says to do it now.
+- A phase boundary is not an automatic stop. When Tommy has authorized the plan, continue through the
+  next implementable phase in the same draft PR; checkpoint the plan, ledger, and commit so a clear is
+  safe. Stop only for a real blocker, an explicit scope limit, or a delivery action that still requires
+  authorization.
 - When several ledgers have independently executable `## Next Steps`, surface one exact pointer per
   ledger. A delivery-gated ledger remains actionable until its local preparation reaches
   `delivery-ready`; only an implementation-blocked ledger suppresses its pointer.
@@ -316,6 +327,8 @@ Every phase, no exceptions:
 - Run focused unit tests for the changed behavior.
 - Commit and push the coherent checkpoint to its draft PR. Exact-head PR CI is authoritative for the
   full solution, standalone carves, and complete unit/integration matrices.
+- Treat these as recovery and remote-validation checkpoints on the same draft PR, never as evidence
+  that an intentionally partial architecture is ready to merge.
 - Phases that change the model end with `./initial-migrations.ps1` from `api/` (re-scaffold, never
   additive migrations).
 - **Final phase only:** select the merge-queue E2E tier under the hub's

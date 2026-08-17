@@ -138,9 +138,9 @@ that call optional).
 
 ## Phases
 
-Each phase builds, tests, and ships independently. Given no package-publish or platform-sync boundary
-crosses this plan (Auth and B2B are edited in the same repo, no NuGet republish gate), phases may land
-as one PR or be split for reviewability — see the ledger for the actual PR shape chosen.
+Phase 1 merged before the repository clarified its delivery rule. No package-publish, platform-sync,
+or deployment boundary separates the remaining work, so Phases 2-4 build and test as checkpoints on
+one complete continuation PR. Reviewability alone does not justify another partial merge.
 
 ### Phase 1 — Admin provisioning backend
 
