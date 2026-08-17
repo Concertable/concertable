@@ -545,6 +545,55 @@ standard, not in a blocker. Gating everything is how a gate gets switched off.
 skill pointers must not merge before the mechanism that makes those skills fire, or the window between
 them is exactly the incident above. Phase 6 rides the same PR.
 
+### Phase 6b — `.agents`-first plugins ship the standard AND its enforcement, to both tools
+
+**Decided 2026-08-17, and it supersedes how Phase 6's router is currently wired.** Two harnesses are in
+daily use here, Codex at least as much as Claude, so anything Claude-only is the wrong primary. Verified
+empirically rather than assumed:
+
+- **`.agents/plugins/marketplace.json` is Codex's native plugin manifest path.** `codex plugin list`
+  shows OpenAI's own bundled marketplaces resolving through exactly that path
+  (`…/openai-primary-runtime/.agents/plugins/marketplace.json`). Codex's plugin loader also knows
+  `.claude-plugin/marketplace.json` and `.cursor-plugin/marketplace.json` as alternates.
+- **A plugin ships `skills/` *and* `hooks/hooks.json`** — both appear in Codex's plugin loader next to
+  `plugin.json#hooks[]`. So one package can carry a standard and the hook that enforces it.
+- **Codex supports `pre_tool_use` / `post_tool_use`**; both strings are in the Codex binary. The
+  write-time router is therefore not a Claude-only mechanism, which was the open question.
+- Repo-level wiring (`.claude/settings.json`, `.codex/hooks.json`) stays irreducibly per-harness —
+  neither tool will read hook wiring out of `.agents/`. **But it becomes unnecessary for anything shipped
+  inside a plugin**, which is the reason to prefer the plugin route over per-repo wiring.
+
+**Target shape:** `.agents/plugins/<plugin>/{skills,hooks}/` authored once, `.agents/plugins/marketplace.json`
+as the manifest Codex reads, and a generated `.claude-plugin/marketplace.json` shim for Claude — the same
+"one canonical source, generated per-harness stub" discipline already used for the skill stubs, with the
+generator refusing to emit anything unroutable.
+
+**Consequence for work already committed:** the router (`45c3cd304`) lives in the repo with
+`.claude/settings.json` wiring only. It must move into the standards plugin so both tools get it from
+one place, and the per-repo wiring should then be deleted rather than duplicated into `.codex/hooks.json`.
+The build gate (`f99fa8c2f`) is unaffected — MSBuild is harness-agnostic by construction, which is exactly
+why it is tier 1.
+
+`extraKnownMarketplaces` + `enabledPlugins` in `.claude/settings.json` plus a per-person
+`claude plugin install`. That works there because it is a Claude-only shop. Here it would strand Codex,
+so it is at most optional sugar on the Claude side.
+
+
+It is the same model — "engineering standards, distributed to every repo as load-on-demand skills" — and
+it settles two things this plan was still arguing:
+
+- **Mechanical enforcement belongs outside the skills.** Its editing rule: *"Mechanical rules don't belong
+  here. Linters and hooks can fail a build; prose can't."* Phase 6 is the missing half of that model, not
+  a departure from it.
+- **Phase 5's sibling-doc pattern is proven, not speculative.** `backend-testing/fixtures.md` (174 lines)
+  and `observability/kql-cookbook.md` (61) sit beside their `SKILL.md`, under the rule *"Long code goes in
+  a sibling file, so the skill body stays cheap to load."* Phase 5 generalizes it to a topic-named tree
+  with an orphan check and a generated index.
+
+Also worth copying: it treats the commit SHA as the version (every merge ships), and its troubleshooting
+table names our own Phase 6a failure exactly — *"No skills, `plugin list` empty → Step 2 skipped. Settings
+never install a plugin."*
+
 ### Phase 6a — the shared skills are deployed by copy, and the copies had drifted
 
 `~/.agents/skills/` is a **plain directory of copies** — not a junction, not a clone — so nothing links

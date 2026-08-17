@@ -15,6 +15,12 @@
 - Dependency/package gates: no consumer migration to do, but this PR **will** trigger publish + platform sync — `publish-packages.yml` triggers on the coarse `paths: api/**`, which this branch's `api/**` markdown matches. MinVer republishes and a `chore/platform-sync-*` PR opens; non-breaking (no published type changed), so it should auto-merge green. Follow it to green anyway — whoever merges owns the sync.
 - Last reconciled: 2026-08-17 against `origin/main` at `ab6d560c1` (0 behind), plus `agent-standards` `8c42daa` and `dotagents` skill enumeration
 
+**Scope changed 2026-08-17: this is no longer a docs PR.** It now carries build behaviour
+(`api/TestConventions.targets` gating every test project) and a PreToolUse hook, because Phase 6 must land
+with the thinning rather than after it. `skip-e2e` is still correct — no Step 4 positive trigger: no UI
+flow, no HTTP/gRPC contract, no published-package shape, no auth/routing change. But PR CI now matters far
+more than it did, since the new targets file participates in every project's build.
+
 ## Current state
 
 The reduction has happened. Every generic rule now has exactly one home — a skill — and the in-repo docs hold
@@ -156,28 +162,49 @@ wrong assertion library and wrote no sibling `AGENTS.md`, with `unit-testing` an
 both installed, described and listed. Neither fired; the follow-up `/review` repeated the blind spot and
 returned clean. Merging the thinning before the enforcement opens exactly that window.
 
-Order of work, all on this branch:
+Order of work, all on this branch. **Read Phase 6b of the plan first — it changes where the enforcement
+lives, and steps 2 and 3 below were built before that decision.**
 
-1. **Phase 6a — fix skill deployment.** Install `agent-standards` (7 process skills reachable from no
-   session today, so Phase 3a's "36" is really 29) and switch both `~/.agents/skills/` and
-   `~/.claude/skills/` from copies to per-skill junctions. **Done already: the two installed-only skill
-   edits that copy-deployment had stranded are recovered into `dotagents` `c153697`** (`prune-worktrees`
-   +34, `worktree` +17 — a junction redeploy without checking direction first would have destroyed both);
-   installed and canonical now agree on all 36. Remaining: the junction switch (deletes 36 live copy
-   directories — content is safely in git first), the 3 uninstalled skills, and a deploy script that
-   reports orphaned/missing links.
-2. **Phase 6 tier 1 — the build gate**, per the plan: shared targets file imported the same one-line way
-   as `api/BannedSymbols.txt`, giving the tier-naming gate, the misclassification gate and
-   `BannedSymbols.UnitTests.txt`. Measured zero current violations, so it lands at error severity with no
-   migration. Must be a `<Target>`, not props logic.
-3. **Phase 6 tier 2 — the skill router hook** plus its path→skill table, mirrored into `.agents/hooks/`
-   for Codex, and wired into `/review` so the review blind spot closes mechanically.
-4. **Phase 6 tier 3** — test-project stubs lead with the unit-vs-integration decision, and
-   `docs_reachability.py` requires the `AGENTS.md`/`CLAUDE.md` pair in every `IsTestProject` directory.
-5. **Then Tommy's own read of the PR**, then merge. Paused: Tommy — his sign-off is still required and
-   the clean automated `/review` is not it; resume on his go-ahead once 1–4 are in.
+1. **Phase 6b — move the enforcement into an `.agents`-first plugin.** This is the next action. Verified
+   with `codex plugin list` and the Codex binary: `.agents/plugins/marketplace.json` is Codex's native
+   manifest path, a plugin ships `skills/` **and** `hooks/hooks.json`, and Codex supports
+   `pre_tool_use`/`post_tool_use`. So one plugin authored under `.agents/` delivers a standard *and* its
+   enforcement to both harnesses, and the per-repo `.claude/settings.json` / `.codex/hooks.json` wiring
+   becomes unnecessary. Move `skill_router.py` + `skill-routes.json` into the standards plugin, generate
+   the `.claude-plugin/marketplace.json` shim, and delete the per-repo wiring rather than duplicating it.
+   Tommy's steer, and correct: nothing should be Claude-centred here — he uses Codex at least as much.
+2. **DONE — Phase 6 tier 1, the build gate** (`f99fa8c2f`). `api/TestConventions.targets` +
+   `BannedSymbols.UnitTests.txt`, imported from all 9 `Directory.Build.targets`. Verified: tier resolves
+   for all four tiers across every MSBuild shadowing case; both gates fire on deliberate violations
+   including the incident's literal `.Tests` shape; all 51 declared test projects already conform (no
+   migration); no unit-test source trips the ban; representative projects build 0/0. **Unaffected by 6b —
+   MSBuild is harness-agnostic, which is why this is the tier that guarantees.**
+3. **BUILT BUT MISWIRED — Phase 6 tier 2, the skill router** (`45c3cd304`).
+   `.agents/hooks/skill_router.py` + `.agents/skill-routes.json` + 12 tests (84 hook tests green, run
+   twice). Logic is already harness-neutral and in the right place; only the *wiring* is wrong — it went
+   into `.claude/settings.json` alone. Do not add a `.codex/hooks.json` twin; fold it into the plugin per
+   step 1.
+4. **Phase 6 tier 3** — test-project stubs lead with the unit-vs-integration decision rather than a
+   pointer, and `docs_reachability.py` requires the `AGENTS.md`/`CLAUDE.md` pair in every `IsTestProject`
+   directory. Also wire `/review` to read `skill-routes.json`, so a review cannot miss what its author was
+   required to load — the second half of the original failure.
+5. **Phase 6a — skill deployment.** `agent-standards`' 7 process skills load in **no session today**
+   (`installed_plugins.json` has only stripe/clangd/rust-analyzer; `known_marketplaces.json` only
+   `claude-plugins-official`), so Phase 3a delivered 29 skills, not 36. `dotagents/.agents/deploy-skills.ps1`
+   (`dotagents` `71de4b5`) junctions canonical → `~/.agents/skills`; `-WhatIf` is clean at 46 skills, zero
+   refusals. **Not yet run — it needs Tommy, because deleting 36 directories under `~/.claude`/`~/.agents`
+   trips the permission classifier:**
+   `! & "$env:USERPROFILE\source\repos\dotagents\.agents\deploy-skills.ps1" -Confirm:$false`
+   Revisit its target list against Phase 6b first: if skills ship via the plugin, only the `~/.agents` leg
+   is still needed. Already done: the two installed-only skill edits that copy-deployment had stranded are
+   recovered into `dotagents` `c153697` (`prune-worktrees` +34, `worktree` +17 — a junction redeploy without
+   checking direction first would have destroyed both). Installed and canonical now agree on all 36; 3
+   canonical skills (`last-conversation`, `recents`, `search`) remain uninstalled.
+6. **Then Tommy's own read of the PR**, then merge. Paused: Tommy — his sign-off is required and the clean
+   automated `/review` is not it; resume on his go-ahead once 1–5 are in. Note the review markers are
+   deliberately stale: real reviewable code (build gate, router) landed after them.
 
-6. **Land this PR** once the above is in. Routed to `/merge`, not `/merge-docs`: the diff carries one `.cs` file
+7. **Land this PR** once the above is in. Routed to `/merge`, not `/merge-docs`: the diff carries one `.cs` file
    (`ModuleBoundaryTests.cs` — comment and `.Because(...)` strings repointed by the
    `CONVENTIONS.md` → `MODULE_STRUCTURE.md` rename), which `merge-docs` hard-refuses, so the queue's
    build gate applies. Review clean (0 open findings), branch 0 behind `origin/main`, local = remote =
