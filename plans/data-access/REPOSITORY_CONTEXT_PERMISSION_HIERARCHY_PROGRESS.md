@@ -5,7 +5,7 @@
 - Roadmap item: `data-access/repository-context-permission-hierarchy`
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable/.worktrees/rpc`
 - Branch: `Refactor/RepositoryPermissionContraction`
-- PR: not opened
+- PR: [#632](https://github.com/Concertable/concertable/pull/632) (draft)
 - Starting head: `95305c7a909d48a703ab572c2a153fe74d2d4daa`
 - Consumer PR: [#561](https://github.com/Concertable/concertable/pull/561) merged as `249dc8a9df8d9b81271cd2250a01ecf086e97586`.
 - Dependency/package gate: satisfied. Additive producer PR #590 merged as `59fe60e978affe23bcaf53823151eab2acda8ba0`, published platform `0.1.0-alpha.0.1007`, and platform-sync PR #592 merged green as `38e3d8548f10f3ab7a4a951b7c4ce961ec21c863`. Current `origin/main` pins `0.1.0-alpha.0.1009`, which includes the additive DataAccess API.
@@ -17,7 +17,7 @@
   `0.1.0-alpha.0.1044`, and platform-sync PR
   [#629](https://github.com/Concertable/concertable/pull/629) merged green as
   `95305c7a909d48a703ab572c2a153fe74d2d4daa`.
-- Last reconciled: 2026-08-17 against `origin/main` at `95305c7a9`.
+- Last reconciled: 2026-08-17 against `origin/main` at `92ea04166`.
 
 ## Current state
 
@@ -26,8 +26,9 @@ and platform-synced on main. Phase 3 contraction is implemented in the short-pat
 source consumer now uses the final context-free repository arities, concrete-context access is declared
 locally where specialized queries require it, unused module write aliases are removed, and the shared
 legacy arities, facet implementation, protected read-context field, and compatibility-only tests are
-gone. Static verification is green; the branch must now reconcile newer main commits and use draft-PR
-CI for compilation because the local .NET runner repeatedly stalled without producing compiler output.
+gone. Static verification remained green after merging current main through `92ea04166`. Draft PR #632
+now owns compilation and tests because the local .NET runner repeatedly stalled without producing
+compiler output; its initial remote work head is `fa86fd8bb`.
 
 The branch also carries two merge-queue fixes discovered while validating this work: the E2E reseeding
 host now dispatches seeded participant events in process, and the three Strict Mode SPA login routes
@@ -69,11 +70,11 @@ topology contract test, and both signup flows attach their registration wait bef
 
 ## Next Steps
 
-1. Commit the verified contraction, reconcile the branch with current `origin/main`, and rerun the
-   legacy grep, concrete-context ownership, plan-graph, and diff gates.
-2. Push the work head, open a draft PR, checkpoint the remote head in this ledger, and require exact-head
-   CI to supply the shared/B2B/Customer/Payment compile and test evidence unavailable locally.
-3. After the runtime/package contraction lands and platform sync is green, update the durable DataAccess
+1. Push this recovery checkpoint and require exact-head PR #632 CI to supply the
+   shared/B2B/Customer/Payment compile and test evidence unavailable locally.
+2. Review the exact CI-green head, mark the PR ready, apply the full-E2E tier for the published-package
+   shape change, and land it through the merge queue.
+3. Follow package publication and platform sync to green. Then update the durable DataAccess
    and B2B hierarchy guidance on a separate docs branch, then complete the plan closeout gates.
 
 ## Completed work
@@ -159,6 +160,10 @@ topology contract test, and both signup flows attach their registration wait bef
 - Phase 3 source contraction removed every legacy repository-arity, `base.context`, facet, and protected
   read-context-field match across `api/**/*.cs`; every production repository that uses a concrete
   `context` now owns an explicit concrete `DbContext` field, and `git diff --check` passed.
+- Merged 22 newer `origin/main` commits through `92ea04166`; the post-merge legacy grep and concrete-
+  context ownership gates remained clean, plan graph reported 0 errors and 0 warnings, and
+  `git diff --check origin/main...HEAD` passed.
+- Work head `fa86fd8bb` was pushed and verified equal to draft PR #632's remote `headRefOid`.
 - Local restore/test and no-restore test attempts repeatedly stalled without compiler or test output;
   their orphaned processes were stopped and no failure result was inferred. Draft-PR CI is the required
   compile/test gate for the exact committed head.
