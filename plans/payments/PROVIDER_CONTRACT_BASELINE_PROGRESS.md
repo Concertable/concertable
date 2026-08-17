@@ -5,8 +5,8 @@
 - Roadmap item: `payments/provider-contract-baseline`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\payments_provider-contract-baseline`
 - Branch: `Feature/payments_provider-contract-baseline`
-- PR: #597 — https://github.com/Concertable/concertable/pull/597 — open at remote head `af5bb9c3ed6aef2bc0fc50e442eec1e9a5ed9e88`; the requested CLR event rename and extension-syntax normalization are locally verified but not yet committed or pushed; auto-merge is disabled and the PR is not queued
-- Review readiness: **INCREMENTAL REVIEW REQUIRED** — the six original review findings remain resolved; the prior implementation and security review is current through `7c1253f6946ac195d809b0bb2d9cd91c2fd16266`; the requested post-review contract/convention correction must be committed and reviewed before publication
+- PR: #597 — https://github.com/Concertable/concertable/pull/597 — open at remote head `af5bb9c3ed6aef2bc0fc50e442eec1e9a5ed9e88`; reviewed correction work head `45faf5d7dc960528cc0767099d29e1b15cafe109` is committed locally but not yet pushed; auto-merge is disabled and the PR is not queued
+- Review readiness: **REVIEW COMPLETE — PUSH AND EXACT-HEAD CI REQUIRED** — the six original review findings remain resolved; incremental implementation and security review is current through `45faf5d7dc960528cc0767099d29e1b15cafe109` with no new findings
 - Dependency/package gates: Phases 1 through 4 are locally complete; the production/live-mode Stripe account has no webhook endpoint, so future deployment is locked to `2025-01-27.acacia` and must create the endpoint at the actual Payment Web URL while installing its signing secret; compatibility is anchored to published `0.1.0-alpha.0.1009`; the branch carries platform pin `0.1.0-alpha.0.1046`
 - Last reconciled: 2026-08-17 against open PR #597 remote head `af5bb9c`, reviewed head `7c1253f6`, published Payment packages `0.1.0-alpha.0.1009`, and current `origin/main` `92ea0416`; current main and platform pin `.1046` are incorporated through merge `008e0a95c87b0aae14cced1001b7ac25917a9056`
 
@@ -83,10 +83,9 @@ authorization, both setup kinds, and refund.
 
 ## Next Steps
 
-Commit the locally verified event-name and extension-syntax correction, run the required incremental
-implementation and security review from the recorded watermark through that commit, resolve any
-findings, then publish through the plan-managed two-leg push protocol and require exact-head CI to pass
-at the final checkpoint-transport head. Keep PR #597 open with auto-merge disabled.
+Publish reviewed work head `45faf5d7dc960528cc0767099d29e1b15cafe109` through the plan-managed
+two-leg push protocol, verify local, remote-tracking, and PR head equality, then require exact-head CI
+to pass at the final checkpoint-transport head. Keep PR #597 open with auto-merge disabled.
 
 ## Completed work
 
@@ -158,6 +157,12 @@ at the final checkpoint-transport head. Keep PR #597 open with auto-merge disabl
 
 ## Verification
 
+- Requested contract/convention correction at `45faf5d7`: Payment UnitTests built with 0 warnings and
+  0 errors and passed 478 of 478; focused formatting, plan graph, and whitespace checks passed.
+- Incremental native and security review covered `7c1253f6..45faf5d7`, excluding incoming
+  `origin/main` changes except merge resolution, and recorded no new correctness, boundary, seeding,
+  convention, security, or test-coverage findings. The review watermark's invalid long-form expansion
+  of `7c1253f6` was replaced by the verified current head.
 - Reviewed work push `200e49f3..0402ee59`: local `HEAD`, remote-tracking branch, and PR #597
   `headRefOid` all verified at `0402ee590ae371ddb2a6f8de60f3fb76a06cff7d`.
 - Final current-main/platform reconciliation at `c99443ce`: restored the published `.1039` package
@@ -298,7 +303,8 @@ at the final checkpoint-transport head. Keep PR #597 open with auto-merge disabl
 
 ## Review status
 
-**REVIEW COMPLETE — PUBLISH AND EXACT-HEAD CI REQUIRED.** The full implementation and security review for
+**REVIEW COMPLETE — PUBLISH AND EXACT-HEAD CI REQUIRED.** Incremental implementation and security
+review through `45faf5d7dc960528cc0767099d29e1b15cafe109` found no new issues. The full implementation and security review for
 [PR #597](https://github.com/Concertable/concertable/pull/597) covered
 `e861f3642cea14e919d203604a4e9e7d00bcced8..85d85aab1c6e3ef448c792cc9cad7c37639a8ae9`
 recorded NAT1, NAT2, BUG1, and SEC1. NAT1 is resolved at
