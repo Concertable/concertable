@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `72709c16dd1d5e38053ef0e878c1231ceb06a951`  _(2026-08-17)_
-**Security-reviewed up to commit:** `72709c16dd1d5e38053ef0e878c1231ceb06a951`  _(2026-08-17)_
+**Reviewed up to commit:** `d67e10c3ee85573c8768e73c3e7362fc0ed6c862`  _(2026-08-17)_
+**Security-reviewed up to commit:** `d67e10c3ee85573c8768e73c3e7362fc0ed6c862`  _(2026-08-17)_
 
 > Range reviewed: `d5669a836..72709c16d` (22 commits, merge-base advanced three times as `origin/main`
 > moved — all merges resolved a docs-only conflict in `api/agents/CODE_CONVENTIONS.md` with no semantic
