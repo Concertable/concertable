@@ -148,13 +148,36 @@ already reviewed and merged on `main` as #645. Review state: **clean, 0 open fin
 
 ## Next Steps
 
-Paused: Tommy — read PR #637 himself and say whether it is ready; resume when he gives the merge
-go-ahead (or hands back findings to fix on the branch). The automated `/review` is clean, but that is
-not his sign-off, and the corpus this PR rewrites is the guidance he reads every prompt. Everything
-below step 1's enqueue is prepared and waiting: branch 0 behind, head `11342ad7c` pushed, checks
-running on the exact head, `skip-e2e` correct, gate satisfied. Do not enqueue until he says so.
+**#637 is no longer merge-ready, and not because of its own content.** Phase 6 (added to the plan
+2026-08-17) must ride the same PR: thinning the in-repo corpus to skill pointers must not land before
+the mechanism that makes those skills fire. A live failure proved triage is not a guarantee — an agent
+created `Concertable.ServiceDefaults.Tests`, booted a `WebApplication` inside a "unit" test, used the
+wrong assertion library and wrote no sibling `AGENTS.md`, with `unit-testing` and `integration-testing`
+both installed, described and listed. Neither fired; the follow-up `/review` repeated the blind spot and
+returned clean. Merging the thinning before the enforcement opens exactly that window.
 
-1. **Land this PR.** Routed to `/merge`, not `/merge-docs`: the diff carries one `.cs` file
+Order of work, all on this branch:
+
+1. **Phase 6a — fix skill deployment.** Install `agent-standards` (7 process skills reachable from no
+   session today, so Phase 3a's "36" is really 29) and switch both `~/.agents/skills/` and
+   `~/.claude/skills/` from copies to per-skill junctions. **Done already: the two installed-only skill
+   edits that copy-deployment had stranded are recovered into `dotagents` `c153697`** (`prune-worktrees`
+   +34, `worktree` +17 — a junction redeploy without checking direction first would have destroyed both);
+   installed and canonical now agree on all 36. Remaining: the junction switch (deletes 36 live copy
+   directories — content is safely in git first), the 3 uninstalled skills, and a deploy script that
+   reports orphaned/missing links.
+2. **Phase 6 tier 1 — the build gate**, per the plan: shared targets file imported the same one-line way
+   as `api/BannedSymbols.txt`, giving the tier-naming gate, the misclassification gate and
+   `BannedSymbols.UnitTests.txt`. Measured zero current violations, so it lands at error severity with no
+   migration. Must be a `<Target>`, not props logic.
+3. **Phase 6 tier 2 — the skill router hook** plus its path→skill table, mirrored into `.agents/hooks/`
+   for Codex, and wired into `/review` so the review blind spot closes mechanically.
+4. **Phase 6 tier 3** — test-project stubs lead with the unit-vs-integration decision, and
+   `docs_reachability.py` requires the `AGENTS.md`/`CLAUDE.md` pair in every `IsTestProject` directory.
+5. **Then Tommy's own read of the PR**, then merge. Paused: Tommy — his sign-off is still required and
+   the clean automated `/review` is not it; resume on his go-ahead once 1–4 are in.
+
+6. **Land this PR** once the above is in. Routed to `/merge`, not `/merge-docs`: the diff carries one `.cs` file
    (`ModuleBoundaryTests.cs` — comment and `.Because(...)` strings repointed by the
    `CONVENTIONS.md` → `MODULE_STRUCTURE.md` rename), which `merge-docs` hard-refuses, so the queue's
    build gate applies. Review clean (0 open findings), branch 0 behind `origin/main`, local = remote =

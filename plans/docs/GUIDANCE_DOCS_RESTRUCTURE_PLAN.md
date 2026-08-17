@@ -490,6 +490,86 @@ one way.
 Sequenced after this PR merges: the Concertable-side pointers get rewritten once, against the final
 structure, instead of twice.
 
+### Phase 6 — make consultation non-optional, because triage is not a guarantee
+
+**Added 2026-08-17, after a live failure.** The plan already names the risk — a skill "applies **only if
+it gets invoked**", and the tier table's guarantee column says exactly that. Its answer was *triage*: put
+the expensive-and-silent rules in `AGENTS.md` and let the rest be skills. **That answer is now disproven.**
+An agent added a test to `Concertable.ServiceDefaults` and got four things wrong at once — created
+`Concertable.ServiceDefaults.Tests` (neither `*.UnitTests` nor `*.IntegrationTests`), booted a
+`WebApplication` over HTTP inside what it called a unit test, used `Assert.*` where the integration tier
+uses Shouldly, and wrote no sibling `AGENTS.md`. `unit-testing` and `integration-testing` were both
+installed, both described, both listed. Neither was invoked, and the follow-up `/review` repeated the
+identical blind spot and returned clean.
+
+So the failure was **discretion, not reachability**, and no amount of better pointing fixes it. Three
+tiers, in this order:
+
+1. **Build-time is the guarantee.** Every service already has a `Directory.Build.props` that wires the
+   shared `api/BannedSymbols.txt` into `AdditionalFiles` for `BannedApiAnalyzers` — the seam already
+   trusted at error severity for `RS0030`. A shared targets file, imported the same one-line way, adds:
+   a **tier-naming gate** (`IsTestProject == true` and no `UnitTests`/`IntegrationTests`/`E2ETests`/
+   `ArchitectureTests` segment → error), a **misclassification gate** (a `*.UnitTests` project
+   referencing `Mvc.Testing`, `TestHost`, `Testcontainers.*`, `Respawn`, `Playwright`, `Reqnroll` →
+   error), and a per-tier `BannedSymbols.UnitTests.txt` catching `WebApplicationFactory<T>`/`TestServer`/
+   `WebApplication.CreateBuilder` in source, which a package check misses on a transitive reference.
+   `<IsTestProject>` is already explicit and correct in 51 csprojs (`false` in the 12 support libs), so
+   there is nothing to infer. **Measured: zero current violations of all three, so this lands at error
+   severity with no migration.** Must execute as a `<Target>`, not props logic — `Directory.Build.props`
+   is imported before the csproj body, so `$(IsTestProject)` is not yet set there.
+2. **A PreToolUse skill router for fast feedback and context injection** — `.agents/hooks/skill_router.py`
+   over `Write|Edit|MultiEdit`, driven by a checked-in path→skill table (`*.UnitTests/**/*.cs` →
+   `unit-testing`; `*Repository.cs` → `persistence` + `multitenancy`; `*.proto` → `proto`;
+   `app/**/api/*.ts` → `http-layer` + `contract-naming`; a test csproj → both testing skills, because
+   that is the classification moment). It injects the owning doc on first touch and blocks a fingerprint
+   hit. **This is the piece that generalizes to anything: a new concern is a new row, not another
+   paragraph nobody reads.** Same table should drive `/review`, which is how that blind spot closes
+   mechanically instead of by remembering.
+   **Its coverage is genuinely leaky and that is why it is tier 2, not tier 1:** matchers are per-tool, so
+   `dotnet new`, a Bash heredoc or an MCP file write never reach a `Write` matcher, and it binds only a
+   harness wired to it. Injection also is not compliance. Only the decidable set can be guaranteed.
+3. **The stub leads with the decision, not the pointer.** `Conventions: the unit-testing skill` names a
+   standard; what was needed was the unasked question, at the point of use — *"Unit-only: a test that
+   needs a host, HTTP or a database belongs in `<Service>.IntegrationTests`."* And
+   `docs_reachability.py` should require every `IsTestProject` directory to carry the `AGENTS.md` +
+   `CLAUDE.md` pair, which removes "there was no stub at all" as a reachable state — the hole that made
+   the `@`-import argument moot, since the incident folder had no `AGENTS.md` for an import to live in.
+
+**Deliberately not mechanized: test method names.** Measured 1,062 unit-test methods; **256 (24%) do not
+use the 3-part `Method_Scenario_ExpectedBehaviour` form** (`Map_ProjectsEveryItem`,
+`CancelledSourceTasks_RemainCancelled`), most of them reasonable. A gate needs a 256-site migration first,
+and the skill is overstating a rule the repo follows ~76% of the time. It belongs in the injected
+standard, not in a blocker. Gating everything is how a gate gets switched off.
+
+**Ordering consequence — this phase gates Phase 3b's delivery.** Thinning the in-repo corpus to
+skill pointers must not merge before the mechanism that makes those skills fire, or the window between
+them is exactly the incident above. Phase 6 rides the same PR.
+
+### Phase 6a — the shared skills are deployed by copy, and the copies had drifted
+
+`~/.agents/skills/` is a **plain directory of copies** — not a junction, not a clone — so nothing links
+an installed skill to its canonical source and nothing detects divergence. Verified state on 2026-08-17:
+
+- **`agent-standards` is installed nowhere.** Not in `~/.agents/skills/`, not in `~/.claude/skills/`;
+  `installed_plugins.json` holds only `stripe`, `clangd-lsp`, `rust-analyzer-lsp`, and
+  `known_marketplaces.json` only `claude-plugins-official` — despite the repo carrying a valid
+  `.claude-plugin/marketplace.json` declaring the `agent-process` plugin. So Phase 3a's "36 skills"
+  is **29 in reality**, and the 7 process skills are unreachable from every session, by every agent.
+- **Two installed skills were ahead of canonical and were nearly lost.** `prune-worktrees` (+34 lines,
+  the sweep of orphaned leftover folders `git worktree list` is structurally blind to) and `worktree`
+  (+17, the Windows "stand in the main checkout before deleting, then verify" footgun) existed **only**
+  as loose installed files, edited 2026-08-10 against a repo still at its 2026-08-08 initial commit.
+  Recovered into `dotagents` `c153697`; installed and canonical now agree on all 36. **A junction-based
+  redeploy done without checking direction first would have destroyed both.**
+- **3 canonical skills are not installed** — `last-conversation`, `recents`, `search`.
+
+Fix the mechanism, not the symptom: **per-skill directory junctions** from `~/.agents/skills/<name>` and
+`~/.claude/skills/<name>` to the owning repo, so a `git pull` is the deployment and drift is structurally
+impossible. Per-skill rather than one junction at `skills/` because discovery is `<root>/skills/*/SKILL.md`
+and does not recurse, and because two source repos must land in one namespace. It is also the idiom
+already used for the work-repo skills. One stated trade-off: junctions make the installed set depend on
+the repo staying put, and a deploy script must therefore also report orphaned and missing links.
+
 ### Deferred to follow-up PRs
 Auto-load thinning (`api/AGENTS.md:3`'s three imports; the 86 merge lines and 32 Docker lines that
 `/merge` and `scripts/e2e.ps1` already automate); the analyzer push-down plus
