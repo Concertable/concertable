@@ -5,9 +5,9 @@
 - Roadmap item: `launch/deal-lifecycle-ownership`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules`
 - Branch: `Refactor/launch_deal-lifecycle-modules`
-- PR: draft implementation PR [#625](https://github.com/Concertable/concertable/pull/625) at verified current-main work head `ac7e3799e743657697b73c024b9ec75a7a71760b`, carrying reviewed source head `1457a2508db5b69d5a0fa7f05eea78ba412edd76`; docs-only decision PR #622 merged as `5c33f849444dda60ece44070353716c08819b2d8`; rejected PR #614 is closed and retired
+- PR: draft implementation PR [#625](https://github.com/Concertable/concertable/pull/625) at current-main work head `b88e867ab6f2a52d8fcb838d688957450e361820`, carrying reviewed source head `1457a2508db5b69d5a0fa7f05eea78ba412edd76`; docs-only decision PR #622 merged as `5c33f849444dda60ece44070353716c08819b2d8`; rejected PR #614 is closed and retired
 - Dependency/package gates: Phase 1 characterization and review are complete, and the branch is current with `origin/main`. Replacement exact-head draft-PR CI must pass, then PR #625 can enter the merge queue. Phase 2 has not started.
-- Last reconciled: 2026-08-17 after merging current `origin/main`, rebuilding affected projects, and publishing the exact work head
+- Last reconciled: 2026-08-17 after incorporating platform-sync #629, rebuilding affected projects, and publishing the exact work head
 
 ## Current state
 
@@ -123,6 +123,8 @@ runtime change was carried forward.
   branch, and PR #625 `headRefOid` matched exactly before this review checkpoint.
 - Merged current `origin/main` as `ac7e3799e743657697b73c024b9ec75a7a71760b`; the architecture and
   Concert integration-test projects rebuilt with 0 errors, and local, remote, and PR heads matched.
+- Incorporated platform-sync #629 as work head `b88e867ab6f2a52d8fcb838d688957450e361820`; both affected
+  projects rebuilt with 0 errors and the branch was 0 commits behind `origin/main` before checkpointing.
 
 ## Reviews
 
