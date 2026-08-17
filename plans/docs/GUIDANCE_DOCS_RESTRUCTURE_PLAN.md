@@ -154,7 +154,7 @@ None of these are caught by anything today, because the hook does not check targ
 
 `MODULAR_MONOLITH_RULES.md` → `api/agents/CONVENTIONS.md` (in `7908c97ed`) put two files named
 `CONVENTIONS.md` and `CODE_CONVENTIONS.md` side by side, and dropped the only word that told them
-apart. `api/AGENTS.md:97` renders as a bare `See [CONVENTIONS.md](./agents/CONVENTIONS.md)` under
+apart. `api/AGENTS.md:97` rendered as a bare `See [CONVENTIONS.md](./agents/CONVENTIONS.md)` under
 `## Module rules` — the filename gives no hint it is layer/project topology, and "CONVENTIONS" reads as
 the *superset* of "CODE_CONVENTIONS", which is backwards.
 
@@ -396,10 +396,19 @@ citations; the `./scripts/` path fixes across root `AGENTS.md` and the four e2e 
 domain; `proto`'s mapper and payload-naming sections collapsed to pointers rather than restating
 `csharp-naming`.
 
-### Phase 3b — reduce the in-repo half to the hard floor
-Cut the generic bodies now owned by a skill out of `api/agents/*` and `app/agents/*`, leaving the api-wide
-floor; add each service's thin `CODE_CONVENTIONS.md`/`CODE_PATTERNS.md` carrying only its own precedents;
-rename `CONVENTIONS.md` → `MODULE_STRUCTURE.md` (decided) and fix its `:6`/`:91` monolith framing.
+### Phase 3b — reduce the in-repo half to the hard floor — DONE
+`api/agents/*` 1,986 → 349 lines and `app/agents/*` 752 → 118, with every surviving file naming the skills
+that own its generic half and carrying only this repo's roster. `UNIT_CONVENTIONS.md`,
+`DEBUGGING_CONVENTIONS.md`, `E2E_CONVENTIONS.md` and `MICROSERVICE_COMMUNICATION.md` deleted, their local
+remnants folded into `Concertable.Testing.E2E/AGENTS.md` and `api/ARCHITECTURE.md`;
+`CONVENTIONS.md` → `MODULE_STRUCTURE.md` with the monolith framing fixed. B2B's scoped topics (context
+stances, filtered entities, `DealType` families, workflow steps) moved to
+`api/Concertable.B2B/CODE_PATTERNS.md`, imported only by B2B — so four of the five services stop paying for
+them. 17 unit-test stubs and 6 E2E stubs now name their skill instead of importing a file.
+
+One rule was **kept in repo rather than cut**: "one repository per entity", which landed on `main` mid-phase
+and no skill owns yet. Cutting it would have deleted a live rule; it is a promotion candidate for
+`persistence`.
 
 ### Phase 3c — the markdown outside the two conventions folders
 10,011 lines of markdown live outside `plans/`, `reviews/`, `api/agents/` and `app/agents/`. Most of it is
@@ -415,11 +424,18 @@ the `TECH_DEBT.md` set, `E2E_BASELINE.md`, `BROWSER_STORAGE.md` — and is not t
 | `docs/USP.md`, `docs/DEEP_RESEARCH_PROMPT_GUIDE.md`, `docs/OVERVIEW.md` | 319 | All orphaned. `OVERVIEW.md` is the clearest "what is Concertable" anywhere and nothing links it — link it from root. |
 | `api/docs/` as a tree | — | After 3b it holds only the two files above. Collapse it; two parallel doc trees in one service tree with no stated distinction is the original defect. |
 
-**Settle before 3b edits root `AGENTS.md`:** the migrated `agent-process` skills overlap this repo's own
-executable skills, so the merge-confirmation loop now exists in root `AGENTS.md`, `.agents/skills/merge/SKILL.md`
-(which also *automates* it), and the `merging` standards skill — three copies of the thing this plan exists to
-deduplicate. Recommendation: the **executable** skill owns the procedure; the standards skill points at it or is
-deleted. Same question for `pr-preflight` and `review`.
+**Settled (was: "settle before 3b edits root `AGENTS.md`").** The merge-confirmation loop exists in root
+`AGENTS.md`, in `.agents/skills/merge/SKILL.md` which *automates* it, and in the `merging` standards skill.
+The ruling: **the executable in-repo skill owns the procedure** — it knows this repo's real labels, workflows
+and commands — while root `AGENTS.md` keeps only the invariants whose violation is expensive and silent (never
+enable auto-merge on a stale branch; a failed check is a real failure, never retried or toggled; never
+`Monitor`; whoever merges owns the platform-sync PR), one line each pointing at the skill. The `merging`
+standards skill stays as the *generic* standard for carve-out repos that will not have this repo's `merge`
+skill, and must be reduced to the rule without the loop body. Same shape for `pr-preflight` and `review`.
+
+3b did **not** need this ruling after all: it never edited root `AGENTS.md`'s merge or Docker blocks, because
+the plan already defers auto-load thinning to a follow-up PR. Executing the ruling belongs to that PR (root
+side) and to Next Step 4 (standards-skill side).
 
 ### Phase 4 — dedupe to one home
 Collapse each duplication row. Biggest win: seeding from 5 locations to the `seeding` skill (the principle)
@@ -441,11 +457,9 @@ guidance doc that links a non-existent file or uses a root-absolute path, and wa
 
 ## Open decisions
 
-All Phase 1–2 rulings are settled (see the contradictions table), and the `CONVENTIONS.md` →
-`MODULE_STRUCTURE.md` rename is now decided: rename it, in Phase 3b. It fixes the collision with
-`CODE_CONVENTIONS.md`, stops the file reading as that one's superset when it is narrower, matches the
-`module-structure` skill that now owns its generic half, and the same commit fixes the stale "modules in the
-monolith" framing at `:6`/`:91` that contradicts `api/ARCHITECTURE.md:8`.
+All Phase 1–2 rulings are settled (see the contradictions table). The `CONVENTIONS.md` →
+`MODULE_STRUCTURE.md` rename **has happened** in Phase 3b, along with the fix to its stale "modules in the
+monolith" framing; the three-copy merge-procedure question is settled above.
 
 Codex parity, previously listed here as a gate on Phase 3b, was never a real one: the existing `.agents/`
 convention already solves it. Canonical skills are plain markdown under `.agents/skills/`, agent-agnostic

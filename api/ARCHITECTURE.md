@@ -25,7 +25,7 @@ Concertable is a multi-microservice system. Each service —
 
 If standalone Customer is broken because B2B isn't running, the fix is **never** "add B2B to Customer.AppHost." That defeats the entire point of microservice isolation. The fix is for the upstream service (B2B) to ship a "seeding simulator" — a Worker that publishes its integration events without needing its full runtime — and Customer.AppHost references that simulator as an Aspire resource.
 
-See `api/Concertable.B2B/src/Seed/Concertable.B2B.Seed.Simulator/CLAUDE.md` for the simulator pattern.
+See [`Concertable.B2B/src/Seed/Concertable.B2B.Seed.Simulator/AGENTS.md`](./Concertable.B2B/src/Seed/Concertable.B2B.Seed.Simulator/AGENTS.md) for the simulator pattern.
 
 ### Adapter services may be depended on; data services may not depend on each other
 
@@ -62,6 +62,25 @@ This is the single fact that determines a lot of design decisions:
 - Why direct projection-table seeding is forbidden (the producing service owns its events; consumers receive them).
 
 Forgetting it leads to designs that re-monolith the system. Re-read this section any time a cross-service dependency feels easier than the simulator pattern.
+
+### The surface each service actually exposes
+
+*Which* protocol a hop uses is decided by the consumer, not by preference — the decision table, the
+gRPC/HTTP rules, and the one-host-two-protocols traps are the `microservice-boundaries` skill. What is
+specific to this system is which surfaces exist:
+
+| Service | Internal surface | Edge / external surface |
+|---|---|---|
+| **B2B** | gRPC | HTTP — the existing public SPA APIs (controllers) |
+| **Customer** | gRPC | HTTP — the `Customer.Web` SPA |
+| **Search** | gRPC (internal queries) | HTTP — customer-facing search UI |
+| **Payment** | gRPC (B2B/Customer sync calls) | HTTP — the Stripe webhook (controller) |
+| **Auth** | — | HTTP — OIDC/OAuth via Duende, spec-mandated |
+
+`Concertable.Shared.Notification` is a library, not a service: it has no host and nothing can `WaitFor` it.
+Payment is the standing both-protocols host — gRPC for B2B/Customer, plus the Stripe HTTP webhook in the
+same Kestrel app. `ITokenService`/`ClientCredentialsTokenService` in `Concertable.Kernel` mints the
+`client_credentials` bearer token that goes on gRPC call metadata.
 
 ## Producer seed libraries point downward only (read before touching any `*.Seed.Contracts`)
 
@@ -156,8 +175,9 @@ Services consume the Reunion package family directly for Result, Option, typed a
 structured validation, and HTTP terminals; these concerns are not redistributed through
 `Concertable.Kernel` or `Concertable.Shared.Api`. The carriers may appear in application, module, and
 published client signatures, but never as HTTP, protobuf, event, persistence, or other wire
-payloads. Each transport maps to an owned wire contract at its service edge. The complete package,
-carrier, construction, error, validation, and terminal rules live in
+payloads. Each transport maps to an owned wire contract at its service edge. The carrier, construction,
+error, validation and terminal rules are the `result-carriers`, `result-errors`, `result-terminals` and
+`validation` skills; this repo's package pins and legacy-carrier migration state are in
 [`agents/RESULT_PATTERN.md`](./agents/RESULT_PATTERN.md).
 
 ### How separation is enforced
@@ -211,8 +231,8 @@ Each service folder contains its own `AppHost/`, `Web/`, `Workers/`, `Seeding/` 
 ## Related docs
 
 - Root [`ARCHITECTURE.md`](../ARCHITECTURE.md) — the system-wide, app-global premise (monorepo-of-convenience, split-repo future).
-- Root `CLAUDE.md` — top-of-context rules and pointers.
-- `api/agents/SEEDING_CONVENTIONS.md` — seeding rules (never seed event-driven data, etc.).
-- `api/agents/CONVENTIONS.md` — module boundary rules within a service.
+- Root [`AGENTS.md`](../AGENTS.md) — top-of-context rules and pointers.
+- [`agents/SEEDING_CONVENTIONS.md`](./agents/SEEDING_CONVENTIONS.md) — this system's forbidden-table inventory (the rule itself is the `seeding` skill).
+- [`agents/MODULE_STRUCTURE.md`](./agents/MODULE_STRUCTURE.md) — module naming and boundary decisions within a service (the generic layering is the `module-structure` skill).
 - `api/Concertable.X/ARCHITECTURE.md` — per-service architecture docs.
-- `api/Concertable.B2B/src/Seed/Concertable.B2B.Seed.Simulator/CLAUDE.md` — the simulator pattern in detail.
+- [`Concertable.B2B/src/Seed/Concertable.B2B.Seed.Simulator/AGENTS.md`](./Concertable.B2B/src/Seed/Concertable.B2B.Seed.Simulator/AGENTS.md) — the simulator pattern in detail.

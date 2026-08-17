@@ -28,7 +28,7 @@ public `*.Contracts` DTO. For example, Customer Concert's `IConcertReadRepositor
 the module contract `ConcertDto`, so its persistence adapter materializes a cross-module contract
 directly, while neighbouring repositories return `ConcertDetails`, entities, or persisted read models.
 
-The repository-output and DTO rules in `api/agents/CODE_CONVENTIONS.md` now define the intended naming,
+The repository-output and DTO rules in the `csharp-naming` skill now define the intended naming,
 ownership, and mapping boundary. Existing repositories predate that standard, however, so `Dto`,
 `Details`, `Projection`, `ReadModel`, and `Entity` still communicate different things in different areas,
 and dependency direction, tracking expectations, and public-contract coupling remain inconsistent.
@@ -109,11 +109,11 @@ so this is modernization/consistency debt, not a behavioural gap. The env-vocabu
 **Resolves when:** existing `this`-parameter extension methods migrate to `extension()` blocks — one `XExtensions`
 class per receiver type, members grouped in `extension(Receiver)` blocks — as a mechanical sweep or
 opportunistically as files are touched. New extension members use `extension()` from the start (see
-`agents/CODE_CONVENTIONS.md`).
+the `csharp-style` skill).
 
 ### `AzureServiceBusOptions` binder defaults are `= ""` instead of `null!`
 
-`Concertable.Messaging.AzureServiceBus/Options/AzureServiceBusOptions.cs` initialises binder-populated `string` properties to `= ""`, where the convention (`agents/CODE_CONVENTIONS.md`) requires `null!` so a missing bind surfaces instead of silently becoming empty (and it uses the banned `""` literal). Deferred, not host-only: `AzureServiceBusOptions` ships in the **published** `Concertable.Messaging` package, so flipping the defaults is a cross-service package change that must ride a Messaging publish + platform-sync, not a bare edit. (The host-side `?? ""` masks that used to sit alongside this — `Auth:Authority` / `ServiceAuth:ClientId` / the ASB `ConnectionString` across the Auth, B2B.Web, B2B.Workers, Customer.Web, Payment.Web, Payment.Workers, Search.Workers, and B2B.Seed.Simulator hosts — now fail fast at startup outside the "Testing" environment, done. `ServiceAuth:ClientSecret` is a genuine optional, now bound **null** when absent — its earlier `string.Empty` was a masking cosmetic swap. The complete fix (`TokenServiceOptions.ClientSecret` → `string?` + the token service omitting the `client_secret` form param when null, correct for a secret-less/public client) is a **published Kernel change** — tracked with the `GetId()` Kernel item above as a cut-over.)
+`Concertable.Messaging.AzureServiceBus/Options/AzureServiceBusOptions.cs` initialises binder-populated `string` properties to `= ""`, where the convention (`csharp-style` skill) requires `null!` so a missing bind surfaces instead of silently becoming empty (and it uses the banned `""` literal). Deferred, not host-only: `AzureServiceBusOptions` ships in the **published** `Concertable.Messaging` package, so flipping the defaults is a cross-service package change that must ride a Messaging publish + platform-sync, not a bare edit. (The host-side `?? ""` masks that used to sit alongside this — `Auth:Authority` / `ServiceAuth:ClientId` / the ASB `ConnectionString` across the Auth, B2B.Web, B2B.Workers, Customer.Web, Payment.Web, Payment.Workers, Search.Workers, and B2B.Seed.Simulator hosts — now fail fast at startup outside the "Testing" environment, done. `ServiceAuth:ClientSecret` is a genuine optional, now bound **null** when absent — its earlier `string.Empty` was a masking cosmetic swap. The complete fix (`TokenServiceOptions.ClientSecret` → `string?` + the token service omitting the `client_secret` form param when null, correct for a secret-less/public client) is a **published Kernel change** — tracked with the `GetId()` Kernel item above as a cut-over.)
 
 **Resolves when:** the `= ""` defaults become `null!` as part of a `Concertable.Messaging` package publish.
 
@@ -227,7 +227,7 @@ Do the pair in one sweep so the store vocabulary doesn't land half-applied.
 not a module concept — and every Api module that grows an action link will copy it a third time.
 
 The OSA report-content plan justified the second copy on the grounds that hoisting it would create the
-cross-module coupling `api/agents/CONVENTIONS.md` forbids. **That reasoning was wrong:** those rules
+cross-module coupling `api/agents/MODULE_STRUCTURE.md` forbids. **That reasoning was wrong:** those rules
 forbid one module reaching into another module's types, and explicitly cover shared libraries as a
 legitimate home for cross-cutting layer concerns. `Concertable.Shared.Api` is exactly that home — the
 Api-layer shared library both modules already consume — and the frontend has had a single shared

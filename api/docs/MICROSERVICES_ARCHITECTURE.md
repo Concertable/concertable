@@ -245,7 +245,7 @@ The two-package wire/framework rule still applies for `Concertable.Contracts` vs
 - **Sync HTTP from Search.Api outbound to B2B or Customer** — Search is read-only and event-fed. If Search ever needed to "fill in a missing field" by sync-calling a data service, the projection is wrong and the fix is to expand the event, not introduce coupling.
 - **gRPC between data services** (`B2B`, `Customer`, `Search`) — same antipattern risk as sync HTTP.
   gRPC *to an adapter* (`Auth`, `Payment`) is allowed and is the standing default for our-own internal
-  sync calls — see `api/agents/MICROSERVICE_COMMUNICATION.md`.
+  sync calls — see the `microservice-boundaries` skill and `api/ARCHITECTURE.md`.
 - **Cross-service joins, shared schemas, shared DBs** — each service has its own database.
 - **Project references between B2B modules and Customer modules** — only `Concertable.Contracts` (and the authorization-helpers library) may be referenced by both. Enforce via CI architecture tests.
 

@@ -119,13 +119,18 @@ These docs are the source of truth. Read the ones relevant to the diff — do no
 
 - Root `AGENTS.md` and `api/AGENTS.md` — top-of-context rules + pointers.
 - `api/ARCHITECTURE.md` and root `ARCHITECTURE.md` — **microservice premise** (the boundary rules below).
-- `api/agents/CODE_CONVENTIONS.md` — C# conventions (source-generated logging, field naming, ctors, etc.).
-- `app/agents/CODE_CONVENTIONS.md` — **frontend** conventions (null-vs-undefined, contract types, casing,
-  TanStack Query shape, stores, form buffers), and `app/agents/CODE_PATTERNS.md` — **frontend** patterns
-  (slots over role checks, hooks orchestrate/components render, one `xApi` per resource, the zod write
-  boundary, table dispatch). Read both whenever the diff touches `app/`, plus `app/AGENTS.md` and the
-  tier doc for the directory touched.
-- `api/agents/CONVENTIONS.md` — module boundaries within a service.
+- The **skills** that own the generic standard, invoked by what the diff touches: `csharp-style`,
+  `csharp-naming`, `logging`, `dependency-injection`, `validation`, `persistence`, `multitenancy`,
+  `keyed-strategies`, `http-api`, `result-carriers`/`result-errors`/`result-terminals`, `proto`,
+  `unit-testing`/`integration-testing`/`e2e-scenarios` for `api/`; `typescript-style`,
+  `contract-naming`, `react-structure`, `server-state`, `client-state`, `http-layer`, `write-boundary`,
+  `tiered-shared-code` for `app/`. Only flag a convention issue the invoked skill actually states.
+- `api/agents/CODE_CONVENTIONS.md`, `api/agents/CODE_PATTERNS.md`, `app/agents/CODE_CONVENTIONS.md`,
+  `app/agents/CODE_PATTERNS.md` — **this repo's** precedents: real context/client/permission names, the
+  Refit inventory, the `isApiError` seam. Read the `app/` pair whenever the diff touches `app/`, plus
+  `app/AGENTS.md` and the tier doc for the directory touched; read
+  `api/Concertable.B2B/CODE_PATTERNS.md` for a B2B diff.
+- `api/agents/MODULE_STRUCTURE.md` + the `module-structure` skill — module boundaries within a service.
 - `api/agents/SEEDING_CONVENTIONS.md` — what may and may not be seeded directly.
 - Any `AGENTS.md` in directories the diff touches (each service / module may add local rules).
 
@@ -148,7 +153,7 @@ Concertable is a multi-service system; **B2B, Customer, and Search are data serv
 - A producer's `*.Seed.Contracts` **referencing a consumer's** (dependency must point downward only: consumer → producer).
 - Customer entities reaching back into B2B via nav chains instead of holding **purchase-time snapshots** of B2B fields.
 
-### Lens C — Module boundaries (`api/agents/CONVENTIONS.md`)
+### Lens C — Module boundaries (`module-structure` skill + `api/agents/MODULE_STRUCTURE.md`)
 
 - Cross-module calls not going through `Contracts` / the module facade (`IXModule`).
 - EF queries inlined in a module facade (facades delegate to Application abstractions).
@@ -161,7 +166,7 @@ Concertable is a multi-service system; **B2B, Customer, and Search are data serv
 - `IDevSeeder` vs `ITestSeeder` misuse (`ITestSeeder` never runs in dev/E2E).
 - Integration events published from a service layer instead of raised from a domain event.
 
-### Lens E — C# conventions (`api/agents/CODE_CONVENTIONS.md`)
+### Lens E — C# conventions (`csharp-style`, `csharp-naming`, `logging`, `persistence` skills)
 
 - Inline logging templates (`logger.LogInformation("...")`) instead of a source-generated `[LoggerMessage]` in the project's `Log.cs`.
 - Primary constructors on services/repos/handlers/validators (use explicit ctor + `private readonly` fields, no `_` prefix).
@@ -173,8 +178,7 @@ Frontend (`app/`), same lens, different doc — these recur:
   type). `null` is only for a deliberately-set-empty state that something downstream branches on.
 - A read type named `XDto`/`XResponse`, or a write input that is not an `XRequest`.
 - Server state fetched or mutated from `useEffect` instead of TanStack Query.
-- A free-typed form submitting its raw buffer without a zod parse (`CODE_PATTERNS.md` "The write
-  boundary is a zod parse").
+- A free-typed form submitting its raw buffer without a zod parse (`write-boundary` skill).
 - Variation resolved inside a shared tier with an identity/role check instead of an injected slot.
 - Code sitting at a narrower tier than every consumer that legitimately needs it, or a wider one than
   every consumer can legitimately run.

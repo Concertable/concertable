@@ -4,6 +4,13 @@ Every rule has **one** owning doc. Look the topic up here before writing a rule 
 an owner, add it there and link from wherever else it matters. A second copy of a rule is a bug, not
 emphasis — the copies drift, and the reader can't tell which one is current.
 
+**Two kinds of owner.** A `skill` entry names a load-on-demand skill: generic standards that name no
+product, so they live outside this repo (`~/.agents/skills/` from `tomjseery/dotagents`, plus the
+Concertable process skills in `Concertable/agent-standards`) and apply to every repo. Invoke it by name;
+the task you are doing is the trigger. A path entry names a file here, and every one of those carries only
+what a skill deliberately omits — the roster of real types, contexts, clients and tables in *this* system.
+When a topic has both, the skill owns the rule and the file owns the inventory.
+
 `.agents/hooks/docs_reachability.py` checks that docs are *reachable*. Nothing checks that they are
 *non-duplicated* or *correct*. That is what this file and the rules at the bottom are for.
 
@@ -39,7 +46,8 @@ emphasis — the copies drift, and the reader can't tell which one is current.
 | Standalone AppHost is canonical; the simulator pattern | [`api/ARCHITECTURE.md`](../api/ARCHITECTURE.md) |
 | Producer seed libraries point downward only | [`api/ARCHITECTURE.md`](../api/ARCHITECTURE.md) |
 | Cross-service contract distribution; per-folder build closures; `UseLocalCore` | [`api/ARCHITECTURE.md`](../api/ARCHITECTURE.md) |
-| Protocol selection — gRPC / HTTP / Service Bus | [`api/agents/MICROSERVICE_COMMUNICATION.md`](../api/agents/MICROSERVICE_COMMUNICATION.md) |
+| Protocol selection — gRPC / HTTP / Service Bus; what may `WaitFor` what | skill `microservice-boundaries` |
+| Which surface each service actually exposes | [`api/ARCHITECTURE.md`](../api/ARCHITECTURE.md) "The surface each service actually exposes" |
 | Design rationale and decision history (not current state) | [`api/docs/MICROSERVICES_ARCHITECTURE.md`](../api/docs/MICROSERVICES_ARCHITECTURE.md) |
 | Per-service specifics | that service's own `AGENTS.md` / `ARCHITECTURE.md` |
 
@@ -47,27 +55,47 @@ emphasis — the copies drift, and the reader can't tell which one is current.
 
 | Topic | Owner |
 |---|---|
-| C# style and naming — fields, ctors, braces, suffixes, mappers, `#region` | [`api/agents/CODE_CONVENTIONS.md`](../api/agents/CODE_CONVENTIONS.md) |
-| DTO naming — `Response` is HTTP-only, `Dto` disambiguates | [`api/agents/CODE_CONVENTIONS.md`](../api/agents/CODE_CONVENTIONS.md) "DTO naming" |
-| Logging — source-generated `Log.cs`, probes included | [`api/agents/CODE_CONVENTIONS.md`](../api/agents/CODE_CONVENTIONS.md) "Logging" |
-| Validator tool choice — FluentValidation vs `ValidationResult` | [`api/agents/CODE_CONVENTIONS.md`](../api/agents/CODE_CONVENTIONS.md) "Validators" |
-| Structural patterns — tenancy composition, keyed strategies, DI, dependency-holders, Refit, unit of work | [`api/agents/CODE_PATTERNS.md`](../api/agents/CODE_PATTERNS.md) |
-| Project layering, reference graph, visibility cascade, folder layout, cross-module rules | [`api/agents/CONVENTIONS.md`](../api/agents/CONVENTIONS.md) |
-| Result, Option, typed errors, validation, transport terminals | [`api/agents/RESULT_PATTERN.md`](../api/agents/RESULT_PATTERN.md) |
-| Seeding — drive the trigger, never write the row | [`api/agents/SEEDING_CONVENTIONS.md`](../api/agents/SEEDING_CONVENTIONS.md) |
+| C# style — fields, ctors, `null!`, braces, optional params, `base.`, `#region`, `extension()` | skill `csharp-style` |
+| C# naming — suffix table, `Projection`, `Response`/`Dto`, `XMappers`, evaluators, frozen tables | skill `csharp-naming` |
+| Comments and XML doc mechanics | skill `comments` (policy: [`AGENTS.md`](../AGENTS.md) "Code comments") |
+| DI registration, dependency-holders, lifetimes | skill `dependency-injection` |
+| Logging — source-generated `Log.cs`, probes included | skill `logging` |
+| Validator tool choice, `ValidationResult`, accumulation | skill `validation` |
+| Repositories, `Schema.cs`, pagination, unit of work, write→read FKs | skill `persistence` |
+| Tenancy composition, context stances, query filters, repository qualifiers | skill `multitenancy` |
+| Behaviour that varies by a closed key | skill `keyed-strategies` |
+| Project layering, reference graph, visibility cascade, cross-module rules, module facades | skill `module-structure` |
+| Endpoint contracts — DTO vs `Response`, `Request` records, route vocabulary | skill `http-api` |
+| Result and Option carriers; typed errors; transport terminals | skills `result-carriers`, `result-errors`, `result-terminals` |
+| Proto naming, proto mappers, wire error mapping | skill `proto` |
+| Seeding — drive the trigger, never write the row | skill `seeding` |
+| Unit / integration / E2E scenario authoring | skills `unit-testing`, `integration-testing`, `e2e-scenarios` |
+| **This repo's** api-wide precedents — `Concertable.DataAccess` capability hierarchy, `IGeometryProvider`, `IPagination.Map` placement | [`api/agents/CODE_CONVENTIONS.md`](../api/agents/CODE_CONVENTIONS.md) |
+| **This repo's** structural precedents — Refit client inventory, one repository per entity | [`api/agents/CODE_PATTERNS.md`](../api/agents/CODE_PATTERNS.md) |
+| **This repo's** Reunion pins and legacy-carrier migration state | [`api/agents/RESULT_PATTERN.md`](../api/agents/RESULT_PATTERN.md) |
+| **This repo's** project naming, `organization` routes, `Genre` enum, no cross-module read context | [`api/agents/MODULE_STRUCTURE.md`](../api/agents/MODULE_STRUCTURE.md) |
+| **This repo's** forbidden seed tables, the B2B simulator, the ticket-sales exception | [`api/agents/SEEDING_CONVENTIONS.md`](../api/agents/SEEDING_CONVENTIONS.md) |
+| **This repo's** integration fixtures, shared harness members, run commands | [`api/agents/INTEGRATION_CONVENTIONS.md`](../api/agents/INTEGRATION_CONVENTIONS.md) |
+| **This repo's** E2E baseline path, run script, seeded fast-forward | [`Concertable.Testing.E2E`](../api/Concertable.Shared/tests/Concertable.Testing.E2E/AGENTS.md) |
+| B2B's DbContext stances, filtered entities, `DealType` families and workflow steps | [`api/Concertable.B2B/CODE_PATTERNS.md`](../api/Concertable.B2B/CODE_PATTERNS.md) |
 | DTOs vs Responses at the controller boundary; migrations; shared-is-the-intersection | [`api/AGENTS.md`](../api/AGENTS.md) |
-| Unit tests | [`api/agents/UNIT_CONVENTIONS.md`](../api/agents/UNIT_CONVENTIONS.md) |
-| Integration tests | [`api/agents/INTEGRATION_CONVENTIONS.md`](../api/agents/INTEGRATION_CONVENTIONS.md) |
-| E2E scenario authoring | [`api/agents/E2E_CONVENTIONS.md`](../api/agents/E2E_CONVENTIONS.md) |
-| Adding a logger while investigating | [`api/agents/DEBUGGING_CONVENTIONS.md`](../api/agents/DEBUGGING_CONVENTIONS.md) |
 
 ## Frontend code (`app/`)
 
 | Topic | Owner |
 |---|---|
+| `interface` vs `type`, casing, `undefined` over `null`, discriminated unions | skill `typescript-style` |
+| Read/write contract naming, one `types.ts` per feature | skill `contract-naming` |
+| Feature slices, hooks vs components, raw vs facade hooks, Effects, table dispatch | skill `react-structure` |
+| Queries, mutations, query keys, mutation variables | skill `server-state` |
+| Private stores, facade hooks, derived state, imperative session | skill `client-state` |
+| `xApi` objects, one client per backend, errors resolved once | skill `http-layer` |
+| The zod parse between buffer and request | skill `write-boundary` |
+| Slots over role checks, composed identity, tier discipline | skill `tiered-shared-code` |
+| Which library to reach for | skill `stack-defaults` |
 | The sharing tiers and the build gate | [`app/AGENTS.md`](../app/AGENTS.md) |
-| TS/React conventions — naming, casing, `interface` vs `type`, contract types | [`app/agents/CODE_CONVENTIONS.md`](../app/agents/CODE_CONVENTIONS.md) |
-| Frontend patterns — slots over role checks, hooks orchestrate, state homes, zod boundary, table dispatch | [`app/agents/CODE_PATTERNS.md`](../app/agents/CODE_PATTERNS.md) |
+| **This repo's** four HTTP clients, `isApiError` seam, `$type` unions, `FormData` casing | [`app/agents/CODE_CONVENTIONS.md`](../app/agents/CODE_CONVENTIONS.md) |
+| **This repo's** `User`/`B2bIdentity` split, tenant session, `SharedPermissions` | [`app/agents/CODE_PATTERNS.md`](../app/agents/CODE_PATTERNS.md) |
 | Axios confinement and the error contract | [`app/web/AGENTS.md`](../app/web/AGENTS.md) "HTTP errors" |
 | What belongs in each tier | that tier's own `AGENTS.md` |
 | Browser storage inventory and consent gating | [`app/web/shared/BROWSER_STORAGE.md`](../app/web/shared/BROWSER_STORAGE.md) |
@@ -107,12 +135,13 @@ diagnostic or test name, not an argument.
 6. **A doc is either `@`-imported or summarized — never both.** Summarizing an imported doc duplicates
    it into the same context twice; summarizing a linked one is how the two versions drift apart. Decide
    which, then commit to it.
-7. **Scope a rule by its import edge, not by where the file sits.** One topic per file, and only the
-   `AGENTS.md` of a consumer that actually has the thing imports it — a file's folder cannot stop it
-   loading. Proto conventions belong to the one service with a `.proto`, not to every `api/**` prompt;
-   the 42 test-project stubs that import a single `TESTING_*` file are the working shape. A scoped topic
-   that gains a second consumer stays one file and gains an import; it is never copied, and never
-   promoted into the baseline just because two consumers use it.
+7. **Scope a rule by what pulls it in, not by where the file sits.** A generic rule becomes a skill and
+   is pulled in by the task — its `description` is the router, so it must name both the content and the
+   trigger or it silently never loads. A repo-specific rule is a file imported by **only** the `AGENTS.md`
+   of a consumer that actually has the thing: B2B's context and `DealType` rosters load on B2B prompts,
+   not on every `api/**` prompt. A folder cannot stop a file loading; only the import edge can. A scoped
+   topic that gains a second consumer stays one file and gains an import — never a copy, and never a
+   promotion into the baseline just because two consumers use it.
 8. **Keep the rule generic and the precedents local.** A rule that names Concertable types can't be
    reused or lifted, so state the shape generically and put the roster of real examples in the
    consumer's own doc. Generic topic files are therefore exempt from doc locality — a generic convention

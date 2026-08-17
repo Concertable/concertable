@@ -1,6 +1,8 @@
 # Concertable — backend (`api/`)
 
-The .NET app. C# code conventions: @./agents/CODE_CONVENTIONS.md (notably: logging is source-generated — never call `logger.LogInformation/LogWarning/LogError` with an inline template; add a `[LoggerMessage]` method to the project's `Log.cs`). Result, Option, typed-error, validation, and transport-terminal conventions: @./agents/RESULT_PATTERN.md. Design patterns the codebase commits to (structure — keyed strategy resolvers, tenancy-composed DbContexts, dependency-holders, typed Refit clients): @./agents/CODE_PATTERNS.md — use the pattern, don't invent a local variant.
+The .NET app. **The generic .NET standard is not in this repo** — it is a set of load-on-demand skills (`csharp-style`, `csharp-naming`, `comments`, `dependency-injection`, `logging`, `validation`, `persistence`, `multitenancy`, `keyed-strategies`, `module-structure`, `http-api`, `microservice-boundaries`, `proto`, `seeding`, `result-carriers`, `result-errors`, `result-terminals`, `unit-testing`, `integration-testing`, `e2e-scenarios`), and the task you are doing is the trigger to read the matching one. Reach for it rather than inventing a local variant.
+
+What lives here is the roster of real types those skills deliberately omit — api-wide naming and data-access precedents: @./agents/CODE_CONVENTIONS.md; api-wide structural precedents: @./agents/CODE_PATTERNS.md; Reunion package pins and migration state: @./agents/RESULT_PATTERN.md. The one rule worth restating because its violation is a build failure: logging is source-generated, so never call `logger.LogInformation/LogWarning/LogError` with an inline template — add a `[LoggerMessage]` method to the project's `Log.cs` (`CA1848` = error).
 
 ## These are microservices — read [`ARCHITECTURE.md`](./ARCHITECTURE.md) before crossing a service boundary
 
@@ -11,7 +13,7 @@ Two kinds of service, two rules (full rationale in [`ARCHITECTURE.md`](./ARCHITE
 - **Adapter services — `Auth`, `Payment`.** Shared runtime dependencies present in every host. A data service MAY call them synchronously (gRPC) and MAY `WaitFor` them at startup. **B2B and Customer each require Auth + Payment to be running.** So `WaitFor(auth)` / `WaitFor(paymentWeb)` belong in the shared `Concertable.AppHost.Shared` helpers and apply in every host.
 - **Data services — `B2B`, `Customer`, `Search`.** They must NEVER depend on each other's runtime. **B2B and Customer require Payment + Auth, but never each other.** Cross-data-service communication is `*.Contracts` events only; when a standalone host is missing another data service's events at seed time, a `*.Seed.Simulator` replays them — you never run the other data service to fix it. A data service `WaitFor`-ing another data service is the bug to never introduce.
 
-Note: real `Payment` only emits payment events for *live* Stripe webhooks, never for seed data. Payment is an agnostic adapter and owns no seed catalog or simulator; the seed-only payment-derived state (B2B `ConcertEntity.TicketsSold`, Customer `TicketEntity`) is inherently unreproducible historical data, reflection-seeded on each consumer's own side (see `agents/SEEDING_CONVENTIONS.md`).
+Note: real `Payment` only emits payment events for *live* Stripe webhooks, never for seed data. Payment is an agnostic adapter and owns no seed catalog or simulator; the seed-only payment-derived state (B2B `ConcertEntity.TicketsSold`, Customer `TicketEntity`) is inherently unreproducible historical data, reflection-seeded on each consumer's own side (see [`agents/SEEDING_CONVENTIONS.md`](./agents/SEEDING_CONVENTIONS.md)).
 
 ## Shared code is the intersection, never the union
 
@@ -79,10 +81,8 @@ identical writable shape, share a single `XRequest` (`PreferenceRequest`) instea
 `CreateXRequest`/`UpdateXRequest`; split them the moment the contracts diverge. Request records use
 `{ get; init; }`.
 
-Validators stay named `XValidators` regardless. **Input shape uses FluentValidation; domain
-eligibility uses a Reunion `ValidationResult` validator** — and whether you register it for
-auto-validation or inject `IValidator<T>` depends on whether the input arrives through an MVC action.
-See [`agents/CODE_CONVENTIONS.md`](./agents/CODE_CONVENTIONS.md) "Validators".
+Validators stay named `XValidators` regardless. Which tool a rule belongs to, and whether the validator
+is auto-validated by the MVC filter or injected and called explicitly, is the `validation` skill.
 
 Drop the `Dto` suffix when the name already says what the shape is (`AcceptCheckout`, `TicketCheckout`); only keep it to disambiguate from a same-named entity (`CustomerDto` vs `CustomerEntity`).
 
@@ -94,4 +94,4 @@ See [SEEDING_CONVENTIONS.md](./agents/SEEDING_CONVENTIONS.md) for the full rules
 
 ## Module rules
 
-See [CONVENTIONS.md](./agents/CONVENTIONS.md).
+See [`agents/MODULE_STRUCTURE.md`](./agents/MODULE_STRUCTURE.md).

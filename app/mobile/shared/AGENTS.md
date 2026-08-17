@@ -14,8 +14,8 @@ whole product, not two.
 - **Backend rule** — same as web: authenticated calls go only to backends every mobile app can call
   with its own token (`apiClient`, `searchClient`, `paymentClient`, built bare in `lib/*Client.ts`
   with no auth). Auth attaches per app via `configureMobileClient` (token-storage flavour of the
-  shared fluent builder in [`CODE_PATTERNS.md`](../../agents/CODE_PATTERNS.md), "one axios instance per
-  backend service") — never wired into the bare `lib/*Client.ts` instance.
+  shared fluent builder in [`CODE_CONVENTIONS.md`](../../agents/CODE_CONVENTIONS.md), "The four HTTP
+  clients") — never wired into the bare `lib/*Client.ts` instance.
 - **Identity rule** — no product-conditional branching here (`isVenueManager`, tenant-type checks).
   Same slot/prop injection pattern as `app/web/shared` — the owning app decides, this tier renders
   what it's given.

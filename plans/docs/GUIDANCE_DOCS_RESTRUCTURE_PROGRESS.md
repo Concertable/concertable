@@ -8,128 +8,122 @@
 - Branch: `Docs/GuidanceDocsRestructure`
 - PR: #637 (draft)
 - Shared repos: `Concertable/agent-standards` (7 process skills) and `tomjseery/dotagents` (28 generic, synced to `~/.agents/skills/`), cloned at `C:\Users\TommySeery\source\repos\{agent-standards,dotagents}`
-- Dependency/package gates: none — docs and one hook only; no `api/**` change, so no package publication or platform sync
-- Last reconciled: 2026-08-17 against `origin/main` `dc037f477`, plus `agent-standards` `8c42daa`
+- Dependency/package gates: none — docs and one hook only; no `api/**` code change, so no package publication or platform sync
+- Last reconciled: 2026-08-17 against `origin/main` (merged in, 0 behind), plus `agent-standards` `8c42daa`
 
 ## Current state
 
-The corpus is **correct, indexed, and its generic half now lives outside the repo as `.agents`-canonical
-skills**. What has not happened is the in-repo reduction: no `api/agents/*` or `app/agents/*` file has shrunk,
-so every generic rule currently exists in two places — the skill and the doc — which is exactly what Phase 3b
-ends. Until it runs, the doc is the one being read on every prompt, so the skills are additive weight, not yet
-a saving.
+The reduction has happened. Every generic rule now has exactly one home — a skill — and the in-repo docs hold
+only this system's roster of real types, contexts, clients, tables and pins. The corpus that auto-loads on an
+`api/**` prompt went from **1,429 lines to 246**, and on an `app/**` prompt from **786 to 151**; a unit-test
+project no longer pulls in 80 lines and an E2E project no longer pulls in 37.
 
-An earlier pass of this analysis ran against a local `main` **610 commits stale** and was discarded and
-redone against `origin/main`. Two of its conclusions were wrong in opposite directions: the frontend-orphan
-problem was already fixed upstream (`app/AGENTS.md` plus a reachability hook), and the `isAxiosError`
-question resolved the *opposite* way once checked against code.
+What remains is Phase 3c (the markdown outside the conventions folders), Phase 4 (the duplication rows that
+still have >1 home, chiefly seeding across `api/AGENTS.md` and `SEEDING_CONVENTIONS.md`), and the deferred
+auto-load thinning of root `AGENTS.md`.
 
 ## Done
+
+**Phase 3b — the in-repo corpus reduced to its roster** (this PR)
+
+- `api/agents/*` **1,986 → 349** lines, `app/agents/*` **752 → 118**. Each surviving file opens by naming the
+  skills that own its generic half, then carries only what those skills deliberately omit.
+- **Four files deleted, their local remnants rehomed.** `UNIT_CONVENTIONS.md` (fully owned by `unit-testing`,
+  which also settles its open Shouldly question with "one assertion library per tier");
+  `DEBUGGING_CONVENTIONS.md` (owned by `logging`, and its separate existence was what let it contradict
+  `CA1848`); `E2E_CONVENTIONS.md` → the local eight lines now sit in
+  `Concertable.Shared/tests/Concertable.Testing.E2E/AGENTS.md`, beside the baseline file they name;
+  `MICROSERVICE_COMMUNICATION.md` → the per-service surface table folded into `api/ARCHITECTURE.md`.
+- **`CONVENTIONS.md` → `MODULE_STRUCTURE.md`**, killing the collision with `CODE_CONVENTIONS.md`, and its
+  "modules in the monolith" framing replaced with "each service is a modular monolith *internally*".
+- **B2B's scoped topics left the api-wide floor.** Context stances, the filtered/unfiltered entity list, the
+  `DealType` strategy families and the workflow steps now live in `api/Concertable.B2B/CODE_PATTERNS.md`,
+  imported only by `api/Concertable.B2B/AGENTS.md` — so Customer, Search, Payment and Auth stop paying ~150
+  lines they can never act on. B2B's active-tenant *naming* rules joined the active-tenant section already in
+  its `AGENTS.md`, which is the same concern.
+- **23 stubs repointed:** 17 unit-test and 6 E2E project `AGENTS.md` files now name their skill in one line
+  instead of `@`-importing a file. The 12 integration stubs still import `INTEGRATION_CONVENTIONS.md`, which
+  survives as the fixture/harness inventory.
+- **`docs/INDEX.md` re-pointed** at the owning skill per topic, with a stated two-kinds-of-owner rule (a skill
+  owns the rule, an in-repo file owns the inventory) and rule 7 rewritten around what *pulls a rule in* rather
+  than the old 42-stub example that no longer exists.
+- **~30 inbound references corrected** across service `ARCHITECTURE.md`s, four `TECH_DEBT.md`s, `docs/OVERVIEW.md`,
+  `api/docs/MICROSERVICES_ARCHITECTURE.md`, `app/mobile/shared/AGENTS.md`, and the `review`, `e2e-ui-debug` and
+  `e2e-api-debug` skills — each now pointing at whichever skill or file actually holds the rule.
+- **Two live defects found by checking code before writing the rule down**, both inherited from the old docs:
+  the B2B identity module is `@b2b/*`'s `features/tenant`, not the `features/identity` both docs claimed, and
+  `B2bIdentity` *extends* `User` rather than wrapping it in the `{ user, memberships }` shape the old code
+  sample showed. Also fixed: `e2e-ui-debug` and `e2e-api-debug` still told you to leave a one-off probe as an
+  inline `logger.Log*` call, which `CA1848 = error` rejects at build — the same contradiction Phase 2 fixed in
+  the doc but not in the two skills that read it first.
+- **One rule deliberately kept in repo rather than cut:** "one repository per entity", which landed on `main`
+  mid-phase and no skill owns. Deleting it would have removed a live rule on the strength of a skill that does
+  not cover it.
+- Verified: `docs_reachability.py` reports **0 errors** (21 warnings, all pre-existing `plans/` working docs);
+  hook suite green at 72. Every type name written into the new B2B and app rosters was checked against code.
 
 **Phase 3a — the corpus moved out as `.agents`-canonical skills** (`agent-standards` `ffe5721`,
 `dotagents` `00e02f9`)
 
-- 35 skills, **split by whether the rule names this product** — the correction that matters here. 28 generic
-  ones (C# style/naming, comments, DI, logging, validation, the three Result skills, persistence,
-  multitenancy, keyed strategies, module structure, service boundaries, proto, HTTP contracts, seeding, the
-  three test tiers, and the 8 TypeScript/React ones) name no project, so they live in `dotagents` and sync to
-  `~/.agents/skills/` for every repo. The 7 process ones are Concertable-shaped — the merge queue and its
-  platform-sync PR, the draft-PR/queue tiering, ROADMAP→PLAN→PROGRESS and the worktree scripts — so they stay
-  in the org repo where carve-outs inherit them.
+- 35 skills, split by whether the rule names this product: 28 generic in `dotagents` → `~/.agents/skills/`
+  (C# style/naming, comments, DI, logging, validation, the three Result skills, persistence, multitenancy,
+  keyed strategies, module structure, service boundaries, proto, HTTP contracts, seeding, the three test tiers,
+  and the 8 TypeScript/React ones); 7 Concertable-shaped process ones in the org repo.
 - **`.agents/skills/` is canonical in both**, with `.claude/skills/` and `plugins/*/skills/` as generated
-  layout literally instead of taking the idea; that is fixed, and nothing is Claude-only.
-- **The repo rename and org transfer that the prior ledger recorded as blocked went through**:
-  `tomjseery/standards-docs` → `Concertable/agent-standards`. Those calls succeeded on retry.
-- **The stub generator mirrors each canonical `description` and now fails rather than emit an unroutable
-  stub.** That guard caught a live defect: a bare colon-space truncates an unquoted YAML scalar, so
-  `module-structure` and `typescript-style` had no description to route on and would never have loaded, with
-  nothing visibly wrong. Side benefit — the pre-existing command skills' stubs now carry real descriptions
-  instead of boilerplate.
-- Deployed: `~/.agents/skills/` holds 35 canonical skills and `~/.claude/skills/` their stubs, so the
-  standards are live in every session now, not only committed.
-- Two topics were deliberately **not** migrated, from applying the tier table rather than the topic list:
-  "questions come before actions" and "act on reversible work" are always-applicable rules whose violation
-  is silent, so a load-on-demand skill is the wrong tier — the task would have to summon them, and by then
-  the miss has happened. They stay global, as does the comment *policy*; only the C# mechanics became a skill.
-- Two naming departures from the plan's sketch, both recorded there: branch currency folded into `merging`
-  (it is a pre-step of enabling auto-merge, not a topic), and no `reviews` skill — `review/SKILL.md` is
-  lenses pointed at this repo's own docs, local by construction.
-- Migration surfaced a duplicate inside the *shared* repo itself: `proto`'s `XMappers` and payload-naming
-  sections restated what `csharp-naming` now owns. Collapsed to pointers — the rule the restructure exists
-  to enforce applies to its own output.
+  stubs from one generator — nothing is Claude-only, and Codex reads the same files.
+- The stub generator mirrors each canonical `description` and fails rather than emit an unroutable stub. That
+  guard caught a live defect: a bare colon-space truncates an unquoted YAML scalar, so `module-structure` and
+  `typescript-style` had no description to route on and would never have loaded, with nothing visibly wrong.
+- Two topics deliberately not migrated — "questions come before actions" and "act on reversible work" are
+  always-applicable rules whose violation is silent, so a load-on-demand skill is the wrong tier. They stay
+  global, as does the comment *policy*; only the C# mechanics became a skill.
 
 **Phase 2 — correctness** (`e5df43bd4`)
 
-- Ten contradictions between loaded docs reconciled; six settled by code or config rather than opinion. The
-  sharpest: `DEBUGGING_CONVENTIONS.md` instructed an inline `logger.Log*` call that `CA1848 = error` rejects
-  at build, in the doc the e2e debug skills read first.
-- Root-relative `./e2e.ps1` / `./docker-health.ps1` corrected in root `AGENTS.md` (4) and the four e2e
-  skills (39). Both scripts live only under `scripts/`.
-- `Notification` no longer documented as an adapter service a data service may `WaitFor` — no such service
-  exists, only `Concertable.Shared.Notification`.
-- `Monitor` and branch-currency each now have one answer. The `Monitor` rule stayed in root rather than
-  moving into the `merge` skill: root is always loaded and carries the rationale.
-- Deleted `MM_NORTH_STAR.md` (423) and `MICROSERVICES_NORTH_STAR.md` (83). Checking before inlining
-  `MM_NORTH_STAR`'s corollaries caught one it had propagated into a linked doc: `CONVENTIONS.md` taught that
-  shared reference data FKs into `SharedDbContext`, but neither that context nor `GenreEntity` exists.
-- Twelve dangling or misdirected references fixed, including `review/SKILL.md`, which still aimed Lens C at
-  the renamed `MODULAR_MONOLITH_RULES.md` — collateral that had silently broken the lens.
-- Five rotted citations stripped from `app/agents/CODE_PATTERNS.md`; axios instance names corrected.
+- Ten contradictions between loaded docs reconciled, six settled by code or config rather than opinion.
+- Root-relative `./e2e.ps1` / `./docker-health.ps1` corrected in root `AGENTS.md` (4) and the four e2e skills (39).
+- `Notification` no longer documented as an adapter service a data service may `WaitFor` — only
+  `Concertable.Shared.Notification`, a library, exists.
+- Deleted `MM_NORTH_STAR.md` (423) and `MICROSERVICES_NORTH_STAR.md` (83); twelve dangling references fixed;
+  five rotted citations stripped from `app/agents/CODE_PATTERNS.md`.
 
 **Phase 1 — index, meta-rules, and the machine check**
 
-- `docs/INDEX.md`: topic → owning doc; a table of what a machine already enforces and whether it fails a
-  build; ten rules for adding to the corpus. All 44 links verified.
-- `docs_reachability.py` extended to error on a guidance doc linking a non-existent file or using a
-  root-absolute `/api/...` path, warning for `plans/`/`reviews/`. Six tests added; suite green at 72.
+- `docs/INDEX.md`; `docs_reachability.py` extended to error on a guidance doc linking a non-existent file or
+  using a root-absolute path. Six tests added; suite green at 72.
+
+## Reviews
+
+None recorded for Phase 3b yet. This is a docs/meta-only change with no `api/**` code in it, so its gate is
+`/review` on PR #637 followed by `/merge-docs` — the no-E2E docs path.
 
 ## Next Steps
 
-**Phase 3b — reduce the in-repo corpus to the hard floor.** Nothing gates it: the Codex-parity question the
-prior ledger raised was never a real blocker, because `.agents/skills/` is agent-agnostic and `~/.agents/skills/`
-is exactly what a Codex session reads. Cutting a generic body now removes it from neither tool.
-
-Today `api/agents/*` + `app/agents/*` is **2,681 lines, of which 2,073 auto-load** (1,321 on every `api/**`
-prompt via `api/AGENTS.md:3`, 752 on every frontend prompt via `app/AGENTS.md`). Target ≈330 in-repo. Per file,
-what leaves and what stays:
-
-| File | Now | Stays | What stays is |
-|---|---|---|---|
-| `api/agents/RESULT_PATTERN.md` | 614 | ~20 | Reunion version baseline, "don't redistribute through Kernel", the `Kernel.Functional` legacy debt |
-| `api/agents/CODE_CONVENTIONS.md` | 414 | ~30 | B2B active-tenant naming, `IGeometryProvider`, the local context roster |
-| `app/agents/CODE_CONVENTIONS.md` | 391 | ~70 combined | the 4 axios clients + `qs` serializer, tier map, `User`/`B2bIdentity`, `SharedPermissions`, `FormData` field names |
-| `app/agents/CODE_PATTERNS.md` | 361 | ↑ | ↑ |
-| `api/agents/CODE_PATTERNS.md` | 293 | ~70 | the real context roster, filtered/unfiltered entity list, `DealType` families + workflow steps, Refit inventory + `ITokenApi` captive-singleton caveat |
-| `api/agents/INTEGRATION_CONVENTIONS.md` | 150 | ~40 | the fixture table, `Concertable.Testing.Integration` members, mock simulators, run commands |
-| `api/agents/CONVENTIONS.md` | 142 | ~30 | renamed `MODULE_STRUCTURE.md`: project naming, tenant→`organization` routes, `Genre` as enum; `:6`/`:91` framing fixed |
-| `api/agents/SEEDING_CONVENTIONS.md` | 113 | ~45 | the seed inventory — actual forbidden tables, simulator specifics, `TicketsSold` |
-| `api/agents/MICROSERVICE_COMMUNICATION.md` | 81 | ~20 | per-service surface table, folded into `api/ARCHITECTURE.md` |
-| `api/agents/UNIT_CONVENTIONS.md` | 80 | — | deleted |
-| `api/agents/E2E_CONVENTIONS.md` | 37 | ~8 | baseline path + `SeedState` shape, folded into the suite's own doc |
-| `api/agents/DEBUGGING_CONVENTIONS.md` | 5 | — | deleted; its separate existence is what let it contradict `CA1848` |
-
-Each surviving file names the skills that own its generic half. Nested `AGENTS.md` compose, so a per-service
-file must never restate the api-wide floor.
-
-**One thing to settle before 3b edits root `AGENTS.md`:** the migrated process skills overlap this repo's own
-executable delivery skills, so the queue-confirmation loop now sits in root `AGENTS.md`, in the executable skill
-that automates it, *and* in the `merging` standards skill. Three copies of exactly what this plan deduplicates.
-The executable skill should own the procedure and the standards skill point at it or go; same question for
-`pr-preflight` and `review`.
-
-Then, in order:
-
-1. **Phase 3c** — the 10,011 lines of markdown outside the conventions folders. Most is correctly-placed domain
-   knowledge and is untouched; six items need a disposition, listed in the plan. `app/README.md` is still the
-   unmodified Vite scaffold, and `notes/Concert-Rust-Analysis.md` (444) is referenced by nothing.
-2. **Phase 4** — collapse the duplication rows to one home each; seeding still sits in 5 places. Resolve
-   `api/AGENTS.md:26–45` under meta-rule 7: `SEEDING_CONVENTIONS.md` is not `@`-imported, which is *why* that
-   inline summary exists. **After 3b** — dedupeing into files 3b then restructures edits the same lines twice.
-3. **Re-point `docs/INDEX.md`** at the skill that owns each topic, and re-run the link check.
-4. **Make the 7 process skills concrete.** They were written generic for a shared repo; now that they live in
-   the org repo they should name the real commands and paths — this repo's own delivery skills,
-   `scripts/worktrees.ps1`, `scripts/e2e.ps1`, the platform-sync workflow — instead of describing them
-   abstractly.
+1. **Review and land this PR.** Run `/review` against #637, address findings, then `/merge-docs`. Docs-only,
+   no platform-sync gate.
+2. **Phase 3c — the 10,011 lines of markdown outside the conventions folders.** Most is correctly-placed domain
+   knowledge and stays untouched; six items need a disposition, listed in the plan's Phase 3c table.
+   `app/README.md` is still the unmodified Vite scaffold, and `notes/Concert-Rust-Analysis.md` (444) is
+   referenced by nothing.
+3. **Phase 4 — collapse the remaining duplication rows to one home each.** Seeding is the big one: the
+   `seeding` skill now owns the rule and `SEEDING_CONVENTIONS.md` the inventory, but `api/AGENTS.md:28–47`
+   still restates 20 lines of it inline. Resolve under meta-rule 7 by deciding import-or-pointer — that
+   summary exists precisely *because* `SEEDING_CONVENTIONS.md` is not `@`-imported. Same for
+   `api/AGENTS.md`'s "shared code is the intersection" section, which `microservice-boundaries` now states
+   generically.
+4. **Make the 7 process skills concrete, and execute the settled merge ruling on their side.** They were
+   written generic for a shared repo; the `merging` skill must lose the confirm-loop body and keep the rule,
+   with the executable `.agents/skills/merge/SKILL.md` owning the procedure. Same for `pr-preflight`.
+5. **Promotion candidates for the shared skills**, all found while cutting against them — none blocking:
+   - `persistence` teaches a context-typed base (`Repository<TEntity, OrderDbContext, Guid>`), but
+     Concertable's shared bases are capability-typed with no `TContext` parameter. The *rule* (module-local
+     alias) is the same; the example predates the change.
+   - "One repository per entity" has no skill home (see Done).
+   - `e2e-scenarios` closes by pointing at "the `agent-process` standards", a name no skill has — the
+     container-health rule lives in `remote-validation`.
+6. **Deferred to its own PR:** auto-load thinning of root `AGENTS.md` (the 86 merge lines and 32 Docker lines
+   that `/merge` and `scripts/e2e.ps1` already automate), the analyzer push-down plus
+   `EnforceCodeStyleInBuild`.
 
 ## Also Tommy's, not blocking
 

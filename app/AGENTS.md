@@ -1,11 +1,13 @@
 # Concertable — frontend (`app/`)
 
-The React/TypeScript surfaces. TS/React code conventions: @./agents/CODE_CONVENTIONS.md (notably:
-absent values are `undefined`, never `null`, unless "deliberately set to empty" is a distinct acted-on
-state; reads are named for the domain noun with no `Dto`/`Response` suffix; writes are `XRequest`).
-Design patterns the frontend commits to (structure — slots over role checks, hooks orchestrate while
-components render, one `xApi` per resource, the zod write boundary, table dispatch on a closed key):
-@./agents/CODE_PATTERNS.md — use the pattern, don't invent a local variant.
+The React/TypeScript surfaces. **The generic TS/React standard is not in this repo** — it is a set of
+load-on-demand skills (`typescript-style`, `contract-naming`, `react-structure`, `server-state`,
+`client-state`, `http-layer`, `write-boundary`, `tiered-shared-code`, `stack-defaults`), and the task you
+are doing is the trigger to read the matching one. Use the pattern, don't invent a local variant.
+
+What lives here is the roster of real names those skills deliberately omit — the four HTTP clients, the
+error seam, the `$type` unions: @./agents/CODE_CONVENTIONS.md; identity composition, the tenant session,
+permissions: @./agents/CODE_PATTERNS.md.
 
 ## Five sharing tiers, widest first
 

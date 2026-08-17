@@ -219,7 +219,7 @@ The path is anchored to `AppContext.BaseDirectory` so it always lands in the bui
 
 ### When the logs don't pinpoint the cause — add tracing
 
-If the HTTP/gRPC errors, console output, and screenshots still don't explain *why* (e.g. an endpoint 404s because a row is missing and you can't tell whether a projection handler ran, skipped, or failed), add `ILogger` tracing to the relevant server-side class rather than guessing. Read [`api/agents/DEBUGGING_CONVENTIONS.md`](../../../api/agents/DEBUGGING_CONVENTIONS.md) first and follow it: generic, future-useful logs (handler invoked/skipped/wrote, processor lifecycle) get promoted to the project's `Log.cs` with `[LoggerMessage]` source-gen and **kept permanently**; one-off probes stay inline and are removed once the bug is found. Then re-run the single scenario (Step 2) and read your new log lines from the Aspire service output.
+If the HTTP/gRPC errors, console output, and screenshots still don't explain *why* (e.g. an endpoint 404s because a row is missing and you can't tell whether a projection handler ran, skipped, or failed), add `ILogger` tracing to the relevant server-side class rather than guessing. Follow the `logging` skill: every message, **including a one-off probe**, is a `[LoggerMessage]` method on the project's `Log.cs` — an inline `logger.Log*` call does not compile (`CA1848` = error). Generic, future-useful logs (handler invoked/skipped/wrote, processor lifecycle) are **kept permanently**; delete the probe's `Log.cs` entry once the bug is fixed. Then re-run the single scenario (Step 2) and read your new log lines from the Aspire service output.
 
 ## Step 4 — Fix and verify
 

@@ -340,7 +340,7 @@ it are operational choices that are not urgent yet.
 - [../../api/Concertable.B2B/src/Modules/Deal/LEGAL_REQUIREMENTS.md](../../api/Concertable.B2B/src/Modules/Deal/LEGAL_REQUIREMENTS.md) — B2B legal backlog (rewritten 2026-06-01: contract-type-centric, items 0-9, PRS corrected)
 - [../../api/Concertable.Customer/LEGAL_REQUIREMENTS.md](../../api/Concertable.Customer/LEGAL_REQUIREMENTS.md) — marketplace/fan legal leads (future, separate system)
 - [../../api/Concertable.B2B/src/Modules/Deal/ARCHITECTURE.md](../../api/Concertable.B2B/src/Modules/Deal/ARCHITECTURE.md) — deal + workflow architecture
-- [CONVENTIONS.md](../../api/agents/CONVENTIONS.md) — module boundary rules
+- [CONVENTIONS.md](../../api/agents/MODULE_STRUCTURE.md) — module boundary rules
 
 ## Decisions locked
 
