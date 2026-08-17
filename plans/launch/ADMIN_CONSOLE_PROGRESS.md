@@ -5,13 +5,17 @@
 - Roadmap item: `launch/admin-console`
 - Worktree: `C:\Users\tommy\source\repos\Concertable\.worktrees\Feature-launch_admin-console`
 - Branch: `Feature/launch_admin-console` (Phase 2 — new branch of the same name, Phase 1's was deleted on merge)
-- PR: Phase 2: [#648](https://github.com/Concertable/concertable/pull/648) — **DRAFT, open**. Phase 1:
-  [#624](https://github.com/Concertable/concertable/pull/624) — **MERGED**
+- PR: Phase 2: [#648](https://github.com/Concertable/concertable/pull/648) — **READY FOR REVIEW** (draft
+  CI all green, `mergeStateStatus: CLEAN`; not yet merged — merge waits on Tommy's explicit instruction).
+  Phase 1: [#624](https://github.com/Concertable/concertable/pull/624) — **MERGED**
   (`7fd40bf59860c27f1c1d1e48537901b022de0f43`, 2026-08-17T14:18:26Z)
 - Dependency/package gates: none. No published-package boundary crosses this plan (Auth + B2B edits land
   in the same repo, no NuGet republish/platform-sync gate).
-- Last reconciled: 2026-08-17, Phase 2 pushed and draft PR #648 opened; local build/boundary gates green
-  (draft-PR CI not yet observed).
+- Last reconciled: 2026-08-17, #648's draft CI ran clean (full build, all carves, unit + integration
+  matrices including `AdminProvisioningTests`; the 3 E2E jobs correctly skipped per phase scope, zero
+  failing checks) and the PR was marked ready for review. `Refactor/b2b_admin-module` (see below) still
+  has no PR open — its worktree is mid-refactor with uncommitted changes — so step 2 (merge it into this
+  branch before #648 merges) remains not-yet-actionable and is not blocking.
 - Parallel, independent work: `Refactor/b2b_admin-module` (separate worktree/session, dispatched
   2026-08-17) extracts `Concertable.B2B.Admin` out of `Concertable.B2B.User` to match the
   `Concertable.B2B.Tenant` precedent (own `AdminDbContext`, plain `Guid` FKs, `IAdminModule` facade for
@@ -117,16 +121,16 @@ draft PR [#648](https://github.com/Concertable/concertable/pull/648).
 
 ## Next Steps
 
-1. Watch PR #648's draft CI (full solution build, service carves, unit + integration matrices,
-   including `AdminProvisioningTests` which only compiled locally — no Docker here). Fix any red check
-   in its own failing scope per `docs/REMOTE_VALIDATION.md`.
-2. Once `Refactor/b2b_admin-module` (parallel, independent — see header) merges to `main`, merge it into
+1. Once `Refactor/b2b_admin-module` (parallel, independent — see header) merges to `main`, merge it into
    this branch before #648 merges, so Phase 2 doesn't ship against the old `Concertable.B2B.User`-owned
    Admin location. Not a hard blocker — #648 builds and runs fine against the current location either
    way, since the HTTP contract is unchanged — just do it before #648's own merge to avoid a needless
-   rebase later.
-3. Once #648 is green, mark it ready for review; merge only on Tommy's explicit instruction.
-4. Phases 3 (moderation UI) and 4 (venue approval UI, plus the new `GET /api/Venue/pending-approval`
+   rebase later. As of this reconciliation, that refactor has no PR open yet (its worktree is
+   mid-refactor, uncommitted), so this step is not yet actionable — recheck
+   `gh pr list --head Refactor/b2b_admin-module --state all` before merging #648.
+2. #648 is ready for review (draft CI green, marked ready). Merge only on Tommy's explicit instruction —
+   when given, follow the root `AGENTS.md` "Before enabling auto-merge" currency check first.
+3. Phases 3 (moderation UI) and 4 (venue approval UI, plus the new `GET /api/Venue/pending-approval`
    endpoint) follow once Phase 2 is merged — see the plan for scope.
 
 ## Completed work
