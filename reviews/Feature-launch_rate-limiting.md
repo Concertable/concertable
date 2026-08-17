@@ -5,7 +5,7 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `92df75ec0dc6533acc7a817f9f35b47b57eb9f21`  _(2026-08-17)_
+**Reviewed up to commit:** `d319c8c3bce4ff39307a23c6eb8e6027c51c96d0`  _(2026-08-17)_
 
 > Range reviewed: `bfbfd863c..6050bd927` (4 commits — Phase 1 seam + test + plan docs).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
