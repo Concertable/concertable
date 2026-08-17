@@ -5,12 +5,13 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `0d7821d6d4985d905600caf99c873513179982e0`  _(2026-08-17)_
-**Security-reviewed up to commit:** `0d7821d6d4985d905600caf99c873513179982e0`  _(2026-08-17)_
+**Reviewed up to commit:** `825dc4793bd6a67b2b594975c196b7249fa9a333`  _(2026-08-17)_
+**Security-reviewed up to commit:** `825dc4793bd6a67b2b594975c196b7249fa9a333`  _(2026-08-17)_
 
-> Range reviewed: `d5669a836..0d7821d6d` (14 commits). Commits after `5492efa58` are docs-only except
-> `6aabf147b` (the IAdminRepository extraction below) and `0d7821d6d` (merge of `origin/main`, resolving
-> one conflict in `api/agents/CODE_CONVENTIONS.md` by keeping both sides' additions — no semantic change).
+> Range reviewed: `d5669a836..825dc4793` (15 commits). Commits after `5492efa58` are docs-only except
+> `6aabf147b` (the IAdminRepository extraction below), `0d7821d6d` (merge of `origin/main`, resolving
+> one conflict in `api/agents/CODE_CONVENTIONS.md` by keeping both sides' additions — no semantic change),
+> and `825dc4793` (the Me() redesign below).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
 
 ## Findings
@@ -38,6 +39,17 @@
   (`api/Concertable.B2B/TECH_DEBT.md`). Added "One repository per entity" to `api/agents/CODE_PATTERNS.md`
   and logged `ITenantRepository`'s pre-existing three-entity mix as tech debt in a new Tenant module
   `TECH_DEBT.md` (out of scope for this branch — pre-existing, cross-cutting).
+
+- [x] **CV2 — MED — API design** — `api/Concertable.B2B/src/Modules/User/Concertable.B2B.User.Api/Controllers/AdminController.cs`
+  `AdminController.Me()` (`GET /api/Admin/me`, bool self-check) was justified in the plan as mirroring
+  `VenueController.IsOwner`'s shape — the wrong precedent. `IsOwner` is a parameterized, per-resource
+  check (ownership of venue `{id}`); `IsAdmin` is a flat, unparameterized identity fact, the same shape
+  as `Memberships`, which `UserController.Me()` (`GET /api/auth/me`) already attaches to `UserDto` for
+  every B2B app on login. Fixed: added `UserDto.IsAdmin`, populated in `UserController.Me()` via the same
+  `IAdminService.IsCurrentUserAdminAsync()` the removed endpoint used; deleted `AdminController.Me()`
+  entirely, and moved `[Admin]` to the controller class level now that every remaining action needs it.
+  Covered the new field with `Me_ReturnsIsAdminTrue/False_When...` in `UserApiTests.cs` (`Me()` had no
+  prior test coverage at all). Plan doc updated to match (design decision 3).
 
 <!-- NAT layer (Layer 1, code-reviewer subagent): no findings cleared the 80% confidence bar. Diff closely mirrors InvitationService/TenantInvitationEntity/MembershipService precedent. -->
 
