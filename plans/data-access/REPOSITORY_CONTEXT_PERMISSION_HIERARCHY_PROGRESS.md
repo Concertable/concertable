@@ -17,7 +17,7 @@
   `0.1.0-alpha.0.1044`, and platform-sync PR
   [#629](https://github.com/Concertable/concertable/pull/629) merged green as
   `95305c7a909d48a703ab572c2a153fe74d2d4daa`.
-- Last reconciled: 2026-08-17 against `origin/main` at `92ea04166`.
+- Last reconciled: 2026-08-17 against `origin/main` at `a8cb736a5`.
 
 ## Current state
 
@@ -72,6 +72,12 @@ B2B API E2E wrapper attempt was stopped before Aspire startup when the long-path
 its documented parallel-build process storm; no E2E outcome is inferred from that attempt. Follow-up
 review found no remaining correctness, architecture, convention, security, or coverage issue; its
 native pass strengthened the draft process-start dependency to the final HTTPS health dependency.
+
+The reviewed repair was merged with current main at `0237faee7`. The context-free repository arity
+gate and `git diff --check` remain clean. On that exact reconciled head, the Search E2E helper and its
+Web/Workers dependency graph build in Release with zero warnings and zero errors, B2B Web builds in
+Release with zero errors, the DataAccess unit suite passes 11/11, and the formerly failing
+`Cancel_ShouldMarkCancelled_FromPaymentFailed` integration test passes 1/1.
 
 All six B2B and Customer Artist/Venue/Concert read contexts now implement module-specific interfaces
 that expose only named `IQueryable` roots. Production repositories and query services inject those
@@ -212,6 +218,10 @@ topology contract test, and both signup flows attach their registration wait bef
   with zero warnings and zero errors before the review-strengthened HTTPS health dependency.
 - The final HTTPS health dependency rebuilt the same Search helper and Web/Workers dependency graph in
   Release with zero warnings and zero errors.
+- Merged current `origin/main` at `a8cb736a5` into the reviewed repair as `0237faee7`. The Search E2E
+  helper rebuilt with zero warnings and zero errors, B2B Web rebuilt with zero errors, DataAccess unit
+  tests passed 11/11, the formerly failing B2B Concert integration test passed 1/1, the legacy-
+  repository-arity grep remained empty, and `git diff --check origin/main...HEAD` passed.
 - The targeted local B2B API E2E wrapper was stopped before test-host startup after its build spawned
   the documented long-worktree process storm; it created no test log or TRX and provides no pass/fail
   evidence. The orphaned processes were terminated, and remote full-E2E remains the authoritative gate.
