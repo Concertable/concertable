@@ -5,9 +5,9 @@
 - Roadmap item: `launch/deal-lifecycle-ownership`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules-phase2`
 - Branch: `Refactor/launch_deal-lifecycle-modules-phase2`
-- PR: draft Phase 2 PR [#633](https://github.com/Concertable/concertable/pull/633); scaffold head `66284e37a0c9f54a0bbb890f04180fe22f6902c1` is published and the completed navigation cut is ready for its checkpoint commit; Phase 1 PR #625 merged as `4efa1740e0e74601361e4c6595cc1d9d94e1b1bb`
+- PR: draft Phase 2 PR [#633](https://github.com/Concertable/concertable/pull/633); the completed navigation cut and resolved review finding are ready for exact-head CI; Phase 1 PR #625 merged as `4efa1740e0e74601361e4c6595cc1d9d94e1b1bb`
 - Dependency/package gates: Phase 1 delivery is terminal. Package publication run `31986741518` succeeded, and platform-sync PR [#630](https://github.com/Concertable/concertable/pull/630) merged green at platform version `0.1.0-alpha.0.1046`. Phase 2 is active from current `origin/main`.
-- Last reconciled: 2026-08-17 after completing the Phase 2 navigation cut and local verification
+- Last reconciled: 2026-08-17 after completing the Phase 2 branch review and local verification
 
 ## Current state
 
@@ -51,10 +51,10 @@ creation explicitly adds the Concert instead of relying on EF graph tracking.
 
 ## Next Steps
 
-1. Commit and push the completed Phase 2 navigation cut to draft PR #633, then run the full branch
-   review and address every high-confidence finding.
-2. Require exact-head draft-PR CI, including the B2B Concert integration shard that local Docker could
-   not start, before treating Phase 2 as delivery-ready. Merge remains an explicit delivery step.
+1. Push the reviewed Phase 2 checkpoint to draft PR #633 and require exact-head draft-PR CI, including
+   the B2B Concert integration shard that local Docker could not start.
+2. Treat Phase 2 as delivery-ready only after that exact head is green. Merge remains an explicit
+   delivery step.
 
 ## Completed work
 
@@ -155,6 +155,12 @@ creation explicitly adds the Concert instead of relying on EF graph tracking.
   persistence test.
 - Completed Phase 2 B2B Web build: 0 warnings and 0 errors after migration regeneration, seed-link
   cleanup, and composition-root wiring.
+- Review fix `4b1752304598997ee43c7538daf2f8251a21d41d` preserves the Booking subtype's immutable
+  door-revenue requirement in the forward handoff and Concert, removing three duplicated `DealType`
+  branches from agnostic Concert code. The initial migration was regenerated through the repository
+  helper.
+- Post-review verification passed: B2B Web build with 0 warnings and 0 errors, Concert unit suite
+  230/230, module-boundary tests 6/6, plan graph 0 errors and 0 warnings, and `git diff --check`.
 - Concert integration tests compile against the navigation-free fixture surface. The runtime
   integration preflight stopped because elevated `docker ps` timed out; exact-head draft-PR CI owns
   the required SQL/Testcontainers execution.
@@ -178,6 +184,10 @@ creation explicitly adds the Concert instead of relying on EF graph tracking.
   correctness, microservice isolation, module boundaries, seeding, C# conventions, and changed-path
   coverage. Its integration-test convention finding and incremental ledger-consistency finding are
   resolved; no open findings remain.
+- Review `reviews/Refactor-launch_deal-lifecycle-modules-phase2.md` covered
+  `92ea04166..4b1752304` across correctness, Contracts security, microservice isolation, module
+  boundaries, seeding, C# conventions, and changed-path coverage. Its duplicated `DealType` rule
+  finding is resolved; no open findings remain.
 
 ## Decisions, discoveries, blockers, and deviations
 
