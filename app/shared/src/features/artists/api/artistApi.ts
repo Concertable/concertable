@@ -25,8 +25,8 @@ const artistApi = {
   },
 
   getMyArtist: async (): Promise<Artist | null> => {
-    const { data, status } = await apiClient.get<Artist>("/artist/user");
-    return status === 204 ? null : data;
+    const { data } = await apiClient.getOptional<Artist>("/organization/artist");
+    return data;
   },
 
   createArtist: async (input: CreateArtist): Promise<Artist> => {
@@ -40,7 +40,10 @@ const artistApi = {
     input.genres.forEach((g, i) => {
       formData.append(`Genres[${i}]`, g);
     });
-    const { data } = await apiClient.post<Artist>("/artist", formData);
+    const { data } = await apiClient.post<Artist>(
+      "/organization/artist",
+      formData,
+    );
     return data;
   },
 
@@ -59,7 +62,7 @@ const artistApi = {
     });
     if (banner) formData.append("Banner", banner as any);
     if (avatar) formData.append("Avatar", avatar as any);
-    const { data } = await apiClient.put<Artist>(`/artist/${artist.id}`, formData);
+    const { data } = await apiClient.put<Artist>("/organization/artist", formData);
     return data;
   },
 };
