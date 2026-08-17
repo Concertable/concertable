@@ -5,9 +5,9 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `645ca5017c6bc054f8bb0a0361b515d04a4c8cb1`  _(2026-08-17)_
+**Reviewed up to commit:** `07800262586bf151266495c7bdfa089d53960e65`  _(2026-08-18)_
 
-**Security-reviewed up to commit:** `645ca5017c6bc054f8bb0a0361b515d04a4c8cb1`  _(2026-08-17)_
+**Security-reviewed up to commit:** `07800262586bf151266495c7bdfa089d53960e65`  _(2026-08-18)_
 
 > Range reviewed: `9205e82d..2b93b45b` (12 commits reviewed; markers moved to `54b91961`, the fix commit, 73 files — markdown plus one Python hook).
 > Markers moved forward three times with nothing re-reviewable in between: once to the fix commit
@@ -19,8 +19,9 @@
 > merged on `main` as #645. None of it is in this branch's scope.
 >
 > **The markers are no longer clean-and-idle.** The Phase 6 enforcement review below covers
-> `c8302694..e29cd957` and found three real defects; the markers now sit at `645ca501`, the commit that
-> fixes them. See "Incremental review — 2026-08-17 (Phase 6 enforcement)".
+> `c8302694..e29cd957` and found three real defects, fixed in `645ca501`. A fourth, found while
+> verifying the skill deployment, is fixed in `07800262`, where the markers now sit. See
+> "Incremental review — 2026-08-17 (Phase 6 enforcement)".
 >
 > **This review is not merge authorization.** Tommy has not read the PR himself; the
 > ledger's `## Next Steps` carries the human-gated `Paused:` line. Do not enqueue on the strength of
@@ -271,3 +272,18 @@ plus a clean build re-checked for a unit and an integration project through diff
   `TestConventions.targets`' own header where the reader already is, and drop it from the nine import sites.
   **Fixed** — 53 lines deleted, imports untouched; tier resolution re-verified through both a service
   chain and a `tests/` chain afterwards.
+
+- [x] **ENF4 — MEDIUM — a BOM made 18 Claude skill stubs unroutable, and the generator could not see it** —
+  `.claude/skills/*/SKILL.md`, `.agents/sync-claude-skill-stubs.ps1:40`
+  Found while verifying the Phase 6a deployment, not by reading the diff: the harness listed 18 repo-local
+  skills with `---` as their description. Each of those files begins with a UTF-8 BOM before the `---`,
+  which stops the frontmatter parsing, so `name` and `description` read as empty. The BOM set and the
+  undescribed set matched exactly — 18 and 18 — including `merge`, `incremental-review`, `pr-preflight`,
+  all four `e2e-*` debug skills, `commit`, `push`, `pull`, `integration-debug` and `address-review`.
+  The generator was not the source (it writes UTF8-no-BOM) but could not heal it either: it compares with
+  `ReadAllText`, which **strips** the BOM, so every broken stub read back as identical and was reported
+  "unchanged" on every run. It now compares the raw bytes for the BOM specifically. Regenerating cleared
+  all 18 and created the two stubs that never existed (`update-roadmap`, `techdebt`), 26 → 28 — closing
+  the "Claude Code can't see `update-roadmap`" gap the ledger had recorded separately.
+  Same failure class as the colon-space truncation this corpus already hit once, and the same signature:
+  nothing visibly wrong, the skill simply never loads.

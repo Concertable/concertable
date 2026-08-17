@@ -272,6 +272,13 @@ in `agent-standards`, vendored here with a hash check, wired for **both** harnes
    Also resolved by the swap: the `sync` / `worktree` "missing YAML frontmatter" fault that made Codex
    refuse both lived in the installed copies, which no longer exist — all 46 canonical files carry
    well-formed frontmatter and a description, verified.
+   **And the deployment surfaced a fourth defect (ENF4, fixed in `07800262`):** 18 of the repo's own
+   `.claude/skills` stubs began with a UTF-8 BOM, which stops Claude parsing the frontmatter — `merge`,
+   `incremental-review`, `pr-preflight`, all four `e2e-*` debug skills and others listed with no name or
+   description at all. `sync-claude-skill-stubs.ps1` compared with `ReadAllText`, which strips the BOM, so
+   it reported them "unchanged" every run and could never heal them; it now compares raw bytes. Regenerating
+   cleared all 18 and created the two missing stubs (`update-roadmap`, `techdebt`), 26 → 28 — which also
+   closes the separately-recorded "`update-roadmap` has no `.claude` stub" gap.
 2. **Approve the Codex hook once** (Tommy, ~5 seconds, in a Codex session in this repo). Codex trusts a
    project hook by hash per file per path, so the `PreToolUse` entry in `.codex/hooks.json` is inert
    until approved, and the worktree is trusted separately from the main checkout. **Do this after the
