@@ -7,7 +7,7 @@
 - Branch: `Refactor/B2bPackageTopology`
 - PR: draft [#643](https://github.com/Concertable/concertable/pull/643)
 - Dependency/package gates: Phase 2 is delivery-gated on a feed-published and verified Phase 1 `@concertable/web-b2b` version; Phase 3 is delivery-gated on the first feed-published versions of both first-class Phase 2 packages.
-- Last reconciled: 2026-08-17 against clean `origin/main` `9205e82df4359df8ddf8dfdace07b4aa09b6d186` and the settled two-package topology.
+- Last reconciled: 2026-08-17 against `origin/main` `c90ece92a879b97619b9691426a2d65176b0841d` and the settled two-package topology.
 
 ## Current state
 
@@ -16,12 +16,16 @@ stages the published files under an alias without mutating the source manifest; 
 focused unit test, and the publish workflow packs, verifies, publishes, and feed-verifies both names.
 The existing source package remains `@concertable/b2b`; no consumer manifests, imports, lockfile
 entries, or runtime files have changed. Local, remote-tracking, and PR head are verified equal at
-`382070aecfa43aedd8718615208cac931d44ccac`.
+`921412108b63d1eca52346656fc6fee5f1c6f743`. Exact-head PR CI run
+[32049656253](https://github.com/Concertable/concertable/actions/runs/32049656253) passed, after which
+the branch merged nine new `origin/main` commits cleanly. The alias test and ordered web-package gate
+passed again against that current base; the updated merge head is not pushed yet.
 
 ## Next Steps
 
-Follow exact-head PR CI to green, then use `/merge` to land Phase 1 and verify the publish workflow
-produced the exact `@concertable/web-b2b` version before beginning Phase 2 delivery.
+Push the current-main merge head, verify local/remote/PR equality, and let replacement exact-head CI
+pass. Then enqueue PR #643 with `full-e2e`, land Phase 1, and verify the publish workflow produced the
+exact `@concertable/web-b2b` version before beginning Phase 2 delivery.
 
 ## Completed work
 
@@ -37,6 +41,8 @@ produced the exact `@concertable/web-b2b` version before beginning Phase 2 deliv
 - `node --test app/scripts/pack-fe-package-alias.test.mjs`: passed 1/1 from the root execution context.
 - `npm run build:web-packages`: passed in dependency order; `@concertable/shared` tests 6/6,
   `@concertable/b2b` tests 17/17, and shared, web, customer, and B2B package builds all completed green.
+- After merging current `origin/main` `c90ece92a`, `npm run test:package-tools` passed 1/1 and
+  `npm run build:web-packages` passed again with shared 6/6 and B2B 17/17 tests.
 - `git diff --check`: passed.
 - `app/package.json`: JSON parse passed.
 - New-file trailing-whitespace scan: passed.

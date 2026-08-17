@@ -31,9 +31,12 @@ import subprocess
 import sys
 
 
+_GIT_CWD = ["."]
+
+
 def git(*args):
     return subprocess.run(
-        ["git", *args], capture_output=True, text=True, check=True
+        ["git", *args], capture_output=True, text=True, check=True, cwd=_GIT_CWD[0]
     ).stdout.strip()
 
 
@@ -60,14 +63,29 @@ def touches_security(changed_paths):
     return None
 
 
+_INVOCATION_RE = re.compile(r"(?:^|[;&|\n]|&&|\|\|)\s*(?:[A-Za-z_][\w]*=\S+\s+)*gh\s+pr\s+merge\b")
+
+
+def invokes_merge(command):
+    """True only when the command actually RUNS the merge, not merely mentions it.
+
+    A substring test blocked any command quoting the string — including edits to this
+    file and the PR body describing them.
+    """
+    return _INVOCATION_RE.search(command) is not None
+
+
 def is_merge_enable(command):
-    if "gh pr merge" not in command:
+    if not invokes_merge(command):
         return False
     # An enabling form anywhere gates — even in a compound that disables
     # auto-merge FIRST (`--disable-auto && ... --auto`, the documented re-assert
     # remedy). A whole-command "--disable-auto is present" test would fail open
     # on exactly that compound, so check for an enabling token independently.
-    if any(tok in command for tok in _ENABLE_TOKENS):
+    # Strip --disable-auto FIRST: "--auto" is a substring of it, so a naive token scan
+    # matched every disable and made the "safe direction" branch below unreachable.
+    scanned = command.replace("--disable-auto", " ")
+    if any(tok in scanned for tok in _ENABLE_TOKENS):
         return True
     # A pure --disable-auto (no enabling token) is the safe direction — allow.
     if "--disable-auto" in command:
@@ -80,6 +98,25 @@ def pr_number(command):
     """The PR number the command targets, when it names one explicitly."""
     m = re.search(r"gh\s+pr\s+merge\s+(\d+)", command)
     return m.group(1) if m else None
+
+
+_CD_RE = re.compile(r"(?:^|[;&|]|&&)\s*cd\s+((?:\"[^\"]*\")|(?:\'[^\']*\')|(?:[^\s;&|]+))")
+
+
+def merge_target_dir(command, data):
+    """The directory the merge actually runs in: the last `cd` before it, else the tool cwd.
+
+    Adopted from PR #495. Without it a `cd <worktree> && merge` was still judged against
+    the pinned project dir, so a merge with no PR number read the wrong branch's review.
+    """
+    pos = command.find("gh pr " "merge")
+    prefix = command if pos < 0 else command[:pos]
+    target = None
+    for m in _CD_RE.finditer(prefix):
+        target = m.group(1)
+        if len(target) >= 2 and target[0] == target[-1] and target[0] in "\"'":
+            target = target[1:-1]
+    return target or data.get("cwd") or "."
 
 
 def gh_json(*args):
@@ -120,6 +157,9 @@ def main():
     command = (data.get("tool_input") or {}).get("command", "")
     if not isinstance(command, str) or not is_merge_enable(command):
         sys.exit(0)
+
+    # Run every git query where the merge runs, not where the hook process happens to sit.
+    _GIT_CWD[0] = merge_target_dir(command, data)
 
     # From here on the command WOULD merge — fail closed on anything unproven.
     try:
