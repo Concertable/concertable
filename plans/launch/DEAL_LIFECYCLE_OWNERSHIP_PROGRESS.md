@@ -5,7 +5,7 @@
 - Roadmap item: `launch/deal-lifecycle-ownership`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules-phase2`
 - Branch: `Refactor/launch_deal-lifecycle-modules-phase2`
-- PR: draft Phase 2 PR [#633](https://github.com/Concertable/concertable/pull/633); reviewed work head `9ec087d6f07a6bbb3c248a7aefbcc829f8c906ab` is published and exact-head CI is pending; Phase 1 PR #625 merged as `4efa1740e0e74601361e4c6595cc1d9d94e1b1bb`
+- PR: draft Phase 2 PR [#633](https://github.com/Concertable/concertable/pull/633); exact-head CI run `32035899299` failed the solution build on two remaining E2E Booking-to-Concert navigation references, and the reviewed fix is ready to publish; Phase 1 PR #625 merged as `4efa1740e0e74601361e4c6595cc1d9d94e1b1bb`
 - Dependency/package gates: Phase 1 delivery is terminal. Package publication run `31986741518` succeeded, and platform-sync PR [#630](https://github.com/Concertable/concertable/pull/630) merged green at platform version `0.1.0-alpha.0.1046`. Phase 2 is active from current `origin/main`.
 - Last reconciled: 2026-08-17 after completing the Phase 2 branch review and local verification
 
@@ -51,8 +51,8 @@ creation explicitly adds the Concert instead of relying on EF graph tracking.
 
 ## Next Steps
 
-1. Require exact-head draft-PR CI for #633, including the B2B Concert integration shard that local
-   Docker could not start.
+1. Push the reviewed E2E consumer fix to #633, then require exact-head draft-PR CI, including the B2B
+   Concert integration shard that local Docker could not start.
 2. Treat Phase 2 as delivery-ready only after that exact head is green. Merge remains an explicit
    delivery step.
 
@@ -169,6 +169,11 @@ creation explicitly adds the Concert instead of relying on EF graph tracking.
 - Published reviewed Phase 2 range `f563d9b02..9ec087d6f` from starting remote head
   `f563d9b022477cdc2ce28d4e6fc6290995717728`; local HEAD, the remote branch, and PR #633
   `headRefOid` all equalled `9ec087d6f07a6bbb3c248a7aefbcc829f8c906ab`.
+- Exact-head CI run `32035899299` failed the solution build at checkpoint
+  `4315e80c80b92a82a58bf0e0e9d5acbad6392af6` because two B2B API E2E tests still read the removed
+  `BookingEntity.Concert` navigation. Fix `b3b6b071156d1231df10060462fec6c677cc65de` replaces those
+  references and the matching UI E2E step with `SeedState.ConcertFor`; no Booking-to-Concert test
+  navigation remains.
 - Concert integration tests compile against the navigation-free fixture surface. The runtime
   integration preflight stopped because elevated `docker ps` timed out; exact-head draft-PR CI owns
   the required SQL/Testcontainers execution.
@@ -193,10 +198,10 @@ creation explicitly adds the Concert instead of relying on EF graph tracking.
   coverage. Its integration-test convention finding and incremental ledger-consistency finding are
   resolved; no open findings remain.
 - Review `reviews/Refactor-launch_deal-lifecycle-modules-phase2.md` covered
-  current-base range `b6ba59f3f..478771e4c` across correctness, Contracts security, current-main
+  current-base range `2cfbce326..3a83e68d3` across correctness, Contracts security, current-main
   integration, microservice isolation, module boundaries, seeding, C# conventions, and changed-path
-  coverage. Its duplicated `DealType` rule and project-file whitespace findings are resolved; no open
-  findings remain.
+  coverage. Its duplicated `DealType` rule, project-file whitespace, and missed E2E consumer findings
+  are resolved; no open findings remain.
 
 ## Decisions, discoveries, blockers, and deviations
 
