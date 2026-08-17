@@ -7,7 +7,7 @@
 - Branch: `Refactor/frontend_domain-companion-mapping` (reserved; not created)
 - Plan worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-frontend-domain-companion-plan`
 - Plan branch: `Docs/frontend_domain-companion-plan`
-- Plan PR: not opened
+- Plan PR: #644 — https://github.com/Concertable/concertable/pull/644 (`skip-e2e`)
 - Dependency/package gates: PRs #595, #600, and #637 must be terminal before the implementation worktree is created; no package publication gate
 - Last reconciled: 2026-08-17 against `origin/main` at `9205e82df4359df8ddf8dfdace07b4aa09b6d186`, open PR inventory, and registered worktrees
 
@@ -49,13 +49,15 @@ Resume when: `gh pr view 595`, `600`, and `637` each report `MERGED` or `CLOSED`
 - `python .agents/hooks/plan_graph.py --root <plan-worktree>`: 0 errors, 0 warnings.
 - Local Markdown link check: every relative link in `plans/frontend/` resolves.
 - `git diff --check`: clean through `959dbb516`.
+- Reviewed work head `385441409ab5c88c4361413003785375c8a858a5` pushed and verified equal to
+  `origin/Docs/frontend_domain-companion-plan`; PR #644 opened from that exact head with `skip-e2e`.
 - No implementation tests apply yet.
 
 ## Reviews
 
 Full docs review covered `9205e82df..959dbb516`. Five accuracy, contradiction, and followability
-findings were fixed; the plan and roadmap are clean through `959dbb516`. No implementation review
-exists.
+findings were fixed; incremental review found no issues in the ledger checkpoint through
+`385441409`. No implementation review exists.
 
 ## Decisions, discoveries, blockers, and deviations
 
