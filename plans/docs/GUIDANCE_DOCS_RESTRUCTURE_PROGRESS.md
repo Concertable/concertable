@@ -12,7 +12,7 @@
 ## Current state
 
 Phases 1 and 2 are complete, committed, and pushed. The corpus is now *correct and indexed*; it is not
-yet *reorganized* — no file has moved, and the `portable/` vs `local/` split does not exist yet.
+yet *reorganized* — no file has moved, and no topic file or per-consumer import exists yet.
 
 An earlier pass of this analysis was run against a local `main` **610 commits stale** and had to be
 discarded and redone against `origin/main`. Two of its conclusions were wrong in opposite directions:
@@ -47,7 +47,7 @@ in the plan is now verified against `dc037f477`.
 **Phase 1 — index, meta-rules, and the machine check**
 
 - `docs/INDEX.md`: topic → owning doc across process, architecture, backend and frontend; a table of
-  what a machine already enforces and whether it fails a build; and eight rules for adding to the
+  what a machine already enforces and whether it fails a build; and ten rules for adding to the
   corpus. Linked from root `AGENTS.md` "Per-area guidance". All 44 links verified to resolve.
 - `docs_reachability.py` extended — brought forward from "deferred" because without a machine check the
   dangling references fixed in Phase 2 just accumulate again. It now errors when a **guidance** doc
@@ -61,25 +61,39 @@ skips fenced blocks. Reachability still scans them.
 
 ## Next Steps
 
-Phase 3 — split and move — needs one decision first: whether `api/agents/CONVENTIONS.md` becomes
-`MODULE_STRUCTURE.md`. It currently collides with `CODE_CONVENTIONS.md`, reads as that file's superset
-when it is actually narrower, and its `:6`/`:91` "modules in the monolith" framing contradicts
-`api/ARCHITECTURE.md:8`.
+Design corrected mid-turn on two counts from Tommy, both recorded in the plan:
 
-Then, in order:
+- **Scope is a fourth axis, and it is the one that governs bloat.** Folders can't express it; only the
+  `@`-import edge can. Verified: ~200 lines of always-loaded content is single-service — tenancy
+  composition (62, B2B), keyed `DealType` strategies (90, B2B), gRPC boundaries (34, Payment), proto
+  naming (~12, Payment, and exactly one `.proto` exists). Auth, Search and Customer pay for all of it
+  every prompt. The model is granular topic files composed per consumer, generalizing the 42
+  test-project stubs that already `@`-import a single `TESTING_*` file.
+- **"portable" was a redundant label, and the shared repo lands early, not last.** A generic doc at the
+  `api/` layer is portable by construction, so the `portable/`/`local/` folder split is gone. More
+  importantly the monorepo is temporary: conventions kept inside it make every carve-out an import
+  rewrite, so `conventions/` is built at repo root now — the future submodule mount point — and the swap
+  is `git rm -r --cached` + `git submodule add` with zero import churn.
 
-1. `git mv` `api/agents/*` and `app/agents/*` into `conventions/portable/` and `conventions/local/` per
-   the plan's target tree, splitting `RESULT_PATTERN.md` (620), both `CODE_CONVENTIONS.md`, and both
-   `CODE_PATTERNS.md`. Carry text verbatim so the diff reads as a move.
-2. Write the two `conventions/README.md` files from the meta-rules already in `docs/INDEX.md`.
-3. Phase 4 — collapse each duplication row to one home. Biggest: seeding from 5 locations to
-   `portable/SEEDING.md` + `local/SEED_INVENTORY.md`. Resolve `api/AGENTS.md:26–45` under the
-   import-or-pointer rule: `SEEDING_CONVENTIONS.md` is not `@`-imported, which is *why* that summary
-   exists — pick one, not both.
+Next, in order:
+
+1. **`docs/conventions-repo`** — create the shared `conventions` repo (`dotnet/`, `typescript/`,
+   `process/`) and mount it at repo root. **Blocking prerequisite:** `.github/workflows/*` checks out
+   without submodules today, so `actions/checkout` needs `submodules: true` in the same change or every
+   `@conventions/...` import resolves to nothing and the reachability gate goes red.
+2. **`docs/guidance-restructure`** — split `api/agents/*` and `app/agents/*` into one topic per file
+   under `conventions/`, carrying text verbatim. Pull the four scoped topics out to `PROTO.md`,
+   `MULTITENANCY.md`, `KEYED_STRATEGIES.md`. Rewrite each consumer's `AGENTS.md` to import only what it
+   can act on; move Concertable precedents (context roster, filtered-entity list, `DealType` families,
+   Refit client roster) into the consumer's own `agents/` file.
+3. Collapse the duplication rows to one home each. Biggest: seeding from 5 locations. Resolve
+   `api/AGENTS.md:26-45` under the import-or-summarize rule — `SEEDING_CONVENTIONS.md` is not
+   `@`-imported, which is *why* that inline summary exists. Pick one.
 4. Re-point `docs/INDEX.md` at the new paths and re-run the link check.
 
-Strict portable/local separation was chosen: portable files carry no Concertable identifier, so the
-later extraction is a `git mv` rather than a rewrite. Precedents move to the local sibling.
+Still needs a decision before step 2: whether `api/agents/CONVENTIONS.md` becomes `MODULE_STRUCTURE.md`.
+It collides with `CODE_CONVENTIONS.md`, reads as that file's superset when it is narrower, and its
+`:6`/`:91` "modules in the monolith" framing contradicts `api/ARCHITECTURE.md:8`.
 
-Not in scope for Phase 3: auto-load thinning, the analyzer push-down plus `EnforceCodeStyleInBuild`
-(several `severity = error` style rules are currently IDE-only), and the extraction itself.
+Not in scope: auto-load thinning beyond what scoping achieves, and the analyzer push-down including
+`EnforceCodeStyleInBuild` (several `severity = error` style rules currently fail no build).

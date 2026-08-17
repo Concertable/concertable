@@ -107,7 +107,17 @@ diagnostic or test name, not an argument.
 6. **A doc is either `@`-imported or summarized — never both.** Summarizing an imported doc duplicates
    it into the same context twice; summarizing a linked one is how the two versions drift apart. Decide
    which, then commit to it.
-7. **Links are repo-relative.** A root-absolute `/api/...` path renders broken and silently satisfies
+7. **Scope a rule by its import edge, not by where the file sits.** One topic per file, and only the
+   `AGENTS.md` of a consumer that actually has the thing imports it — a file's folder cannot stop it
+   loading. Proto conventions belong to the one service with a `.proto`, not to every `api/**` prompt;
+   the 42 test-project stubs that import a single `TESTING_*` file are the working shape. A scoped topic
+   that gains a second consumer stays one file and gains an import; it is never copied, and never
+   promoted into the baseline just because two consumers use it.
+8. **Keep the rule generic and the precedents local.** A rule that names Concertable types can't be
+   reused or lifted, so state the shape generically and put the roster of real examples in the
+   consumer's own doc. Generic topic files are therefore exempt from doc locality — a generic convention
+   isn't *about* any node, it's a library entry addressed by import rather than by position.
+9. **Links are repo-relative.** A root-absolute `/api/...` path renders broken and silently satisfies
    the reachability hook without pointing anywhere.
-8. **Check the code before you write the rule down.** Several rules here taught things the codebase had
+10. **Check the code before you write the rule down.** Several rules here taught things the codebase had
    already moved past, and every one of them read as maintained.

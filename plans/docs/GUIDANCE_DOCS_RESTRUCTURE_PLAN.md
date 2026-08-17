@@ -2,8 +2,8 @@
 
 Reorganize the guidance corpus (root `AGENTS.md`, `api/agents/*`, `app/agents/*`, `docs/*`,
 `api/docs/*`) so that every rule has exactly one home, the auto-loaded weight is proportionate, and the
-portable half sits in its own folder — ready to be extracted to a shared .NET conventions repo by
-`git mv` rather than by rewriting.
+generic half lives in a separate repo, mounted at a fixed path, so carving a service out of this
+monorepo rewrites no imports.
 
 All line references verified against `origin/main` at `dc037f477`.
 
@@ -181,59 +181,151 @@ doc; this doc records the design and its decision history."*
   → `api/agents/CONVENTIONS.md:3` and `:106`, which present it as the authority for *why*. Parts of its
   corollary text have been retrofitted to current reality, which makes it read as maintained.
 
-## Target structure
+## The organizing axes
+
+Four axes are currently collapsed into a vague pair of filenames. Separate them and "where does this
+rule go?" becomes a lookup.
+
+| Axis | Values | Encoded by |
+|---|---|---|
+| **Scope** | universal · api-wide · one service · one project type | **which `AGENTS.md` `@`-imports the topic file** |
+| **Genericity** | generic (belongs in the shared repo) · Concertable-specific | **repo** (`conventions/` submodule vs the consumer's own `agents/`) |
+| **Kind** | style · naming · structure · testing · process | **filename — one topic per file** |
+| **Audience** | human-consultable convention · agent-process instruction | `conventions/` vs `docs/process/` |
+
+**Scope governs bloat, and a folder cannot express it — only an import edge can.** A topic file under
+`api/conventions/` still loads for every service that touches `api/**`. The fix is granular topic files
+plus per-consumer composition: the file exists once, generic, and only the `AGENTS.md` of a consumer
+that actually needs it imports it.
+
+The repo already does this in 42 files — every test project's `AGENTS.md` is a two-line stub that
+`@`-imports exactly one of `UNIT_CONVENTIONS.md` / `INTEGRATION_CONVENTIONS.md`. Generalizing that
+precedent to every topic is the model.
+
+Measured scope violations in the currently always-loaded set:
+
+| Topic | Lines | Consumers that can use it |
+|---|---|---|
+| `CODE_PATTERNS.md` "Tenancy is composed, never subtracted" | 62 | B2B only (`TenantScopedDbContext`, `VenueArtistTenantScopedDbContext`, `AdminDbContext`) |
+| `CODE_PATTERNS.md` "Module-local keyed strategy factory" | 90 | B2B only (`IDealStrategyFactory`, `DealType`) |
+| `RESULT_PATTERN.md` "gRPC boundaries" | 34 | Payment only |
+| `CODE_CONVENTIONS.md` proto naming + proto mapper example | ~12 | Payment only — exactly one `.proto` exists in the repo |
+
+~200 lines that four of the five services can never act on, on every `api/**` prompt. Genuinely api-wide
+by contrast: `Log.cs` (7 services), `Schema.cs` (7), `IPagination` (6), `IGeometryProvider` (5),
+`IUnitOfWorkBehavior` (3), `ValidationResult` (3).
+
+Two distinct defects fall out, with different fixes — don't conflate them:
+
+- **A generic rule carrying local examples** (`base.` qualification illustrated with `CurrentTenant`,
+  `XMappers` illustrated with `EscrowDeposit`). The rule is portable; genericize the example.
+- **A genuinely single-service topic** (tenancy composition, keyed `DealType` strategies, proto). The
+  whole topic is scoped; it becomes its own file, imported only by that service.
+
+**Corollary — generic topic files are exempt from doc locality.** Root `AGENTS.md` "Doc locality" places
+a doc at the lowest node containing its concern; that governs *Concertable-specific* guidance. A generic
+convention is not *about* any node, it is a library entry addressed by import rather than by position.
+Locality still governs the thin local files that name precedents.
+
+## The shared repo, and why it lands early
+
+The monorepo is temporary. Any design that puts the generic conventions *inside* it makes every future
+carve-out a rewrite, so the shared repo is not the last phase — it is the mount point everything else is
+built against.
+
+**The deciding test.** When B2B becomes its own repo, what happens to
+`@../../conventions/dotnet/STYLE.md`? Conventions inside the monorepo → every import in every carved
+repo is rewritten. Conventions at a fixed mount point → the carved repo adds the same submodule at the
+same path and **not one import changes**. That is the property worth paying for.
+
+**One shared repo, not two.** The tempting split is docs-vs-agents, but it doesn't hold: the real axis is
+*generic* (leaves) vs *Concertable-specific* (stays), and product docs (`docs/USP.md`,
+`docs/OVERVIEW.md`) are Concertable-specific, so they never leave regardless. Two repos would double the
+pinning ceremony while a consumer almost always wants a matching set. So one repo, three folders:
 
 ```text
-AGENTS.md                          entry: the floor + the index. No rule bodies that live elsewhere.
-docs/
-  INDEX.md                         topic -> owning file. The dedupe device.
-api/
-  AGENTS.md                        pointers + api-wide floor only
-  ARCHITECTURE.md                  authoritative current state
-  conventions/                     from api/agents/
-    README.md                      index + the meta-rules below
-    portable/
-      CSHARP_STYLE.md              braces, empty blocks, this., null!, primary ctors, extension members
-      CSHARP_NAMING.md             suffix table, mappers, Projection, optional params, pure operations
-      COMMENTS_AND_XMLDOC.md
-      DEPENDENCY_INJECTION.md      DI + dependency-holders
-      LOGGING.md                   Log.cs, absorbing DEBUGGING_CONVENTIONS
-      VALIDATION.md                FluentValidation vs ValidationResult
-      RESULT_CARRIERS.md           RESULT_PATTERN :28-302
-      RESULT_ERRORS.md             :303-481
-      RESULT_TERMINALS.md          :482-621
-      TESTING_UNIT.md
-      TESTING_INTEGRATION.md
-      TESTING_E2E.md
-      MODULE_STRUCTURE.md          from CONVENTIONS.md - layers, visibility, folder layout
-      MICROSERVICE_BOUNDARIES.md
-      MICROSERVICE_COMMUNICATION.md
-      CONTRACT_DISTRIBUTION.md
-      PERSISTENCE.md               repository bases, Schema.cs, unit of work, pagination
-      TENANCY_COMPOSITION.md       compose-don't-subtract, stance naming
-      SEEDING.md                   the principle: drive the trigger, never the row
-      KEYED_STRATEGIES.md          the pattern, key-agnostic
-    local/
-      SEED_INVENTORY.md            the Concertable forbidden-table list
-      TENANCY.md                   context roster, which entities are filtered
-      DEAL_STRATEGIES.md           DealType families, workflow steps
-      HTTP_CONTRACTS.md            Dto/Request/Response + the XDetailsResponse carve-out
-      REFIT_CLIENTS.md             client roster + ITokenApi caveat
-      ORGANIZATION_BOUNDARY.md     tenant internally, organization at HTTP
-      GEOMETRY.md
-      PACKAGES.md                  Reunion pins, UseLocalCore, carve enforcement
-app/
-  AGENTS.md                        keep as-is (already the correct mount point)
-  conventions/
-    README.md
-    portable/                      TYPESCRIPT_STYLE, CONTRACT_NAMING, REACT_STRUCTURE,
-                                   SERVER_STATE, CLIENT_STATE, HTTP_LAYER, WRITE_BOUNDARY,
-                                   TIERED_SHARED_CODE
-    local/                         APP_TIERS, IDENTITY, CLIENTS, PERMISSIONS, BROWSER_STORAGE
+conventions/            (the shared repo, mounted at repo root)
+  dotnet/               C# + .NET service conventions, incl. the scoped topics
+  typescript/           TS/React conventions
+  process/              the generic agent workflow: git, branch hygiene, merge confirmation,
+                        auto-merge currency, tech-debt locality, comments, plan/markdown lifecycle
 ```
 
-Per-service `AGENTS.md` / `ARCHITECTURE.md` / `TECH_DEBT.md` files stay put — doc locality already works
-at that level. `api/docs/` keeps `MICROSERVICES_ARCHITECTURE.md` as dated history.
+`process/` is justified by measurement, not taste: ~60% of root `AGENTS.md` is generic agent workflow
+that would lift into any of Tommy's repos — including the 65-line merge-confirmation block, where only
+the repo slug and the skill names are Concertable.
+
+**Consumption: git submodule at a fixed path, pinned by commit.**
+
+- `@`-imports need real files at a resolvable relative path, so a package is the wrong shape.
+- An NTFS junction (the existing work-repo skills pattern) is Windows-local and invisible to CI, and
+  `docs_reachability.py` runs in `docs-review` — missing imports would turn the gate red.
+- A commit pin means a conventions change never silently alters a consumer's rules; the bump is
+  deliberate, the same discipline as `ConcertablePlatformVersion`.
+
+**Blocking prerequisite:** `.github/workflows/*` currently checks out without submodules. `actions/checkout`
+needs `submodules: true` in the same change, or every `@conventions/...` import resolves to nothing and
+the reachability gate fails.
+
+**Sequencing consequence.** Build `conventions/` at **repo root now, as a plain folder** — that is the
+future submodule mount point, so the swap is `git rm -r --cached conventions` + `git submodule add`, with
+zero import churn. Do not build it under `api/` and move it later; that repeats the rewrite this section
+exists to avoid.
+
+## Target structure
+
+A **generic topic library** plus **per-consumer composition**. The library holds one topic per file with
+no Concertable identifiers; each consumer's `AGENTS.md` `@`-imports only the topics it can actually act
+on, and carries its own thin local file for precedents.
+
+```text
+conventions/                       the topic library - generic, one topic per file, the extraction unit
+  dotnet/
+    STYLE.md                       braces, empty blocks, this., null!, primary ctors, extension members
+    NAMING.md                      type-name suffix table, mappers, optional params, pure operations
+    COMMENTS.md                    comments + XML doc
+    DEPENDENCY_INJECTION.md        DI + dependency-holders
+    LOGGING.md                     Log.cs source-gen, probes included
+    VALIDATION.md                  input shape vs domain eligibility
+    PERSISTENCE.md                 repository bases, Schema.cs, pagination, unit of work
+    RESULT_CARRIERS.md             smallest truthful carrier, boundaries, construction, composition
+    RESULT_ERRORS.md               typed error unions, definitions, published contracts
+    RESULT_TERMINALS.md            HTTP terminals, workers, cancellation
+    HTTP_API.md                    Dto / Request / Response layering
+    MODULE_STRUCTURE.md            layers, reference graph, visibility cascade, cross-module rules
+    MICROSERVICE_BOUNDARIES.md     adapter vs data services, contract distribution
+    MICROSERVICE_COMMUNICATION.md  protocol selection
+    SEEDING.md                     drive the trigger, never write the row
+    TESTING_UNIT.md  TESTING_INTEGRATION.md  TESTING_E2E.md
+    -- scoped topics: imported ONLY by a consumer that has the thing --
+    PROTO.md                       proto naming, mappers, gRPC wire boundaries
+    MULTITENANCY.md                compose contexts never subtract; repository stance naming
+    KEYED_STRATEGIES.md            closed-key strategy factory + the anti-patterns
+  typescript/
+    STYLE.md  CONTRACT_NAMING.md  REACT_STRUCTURE.md  SERVER_STATE.md
+    CLIENT_STATE.md  HTTP_LAYER.md  WRITE_BOUNDARY.md  TIERED_SHARED_CODE.md
+```
+
+Composition — the import edge is the scoping mechanism:
+
+| Consumer | Imports | Local file |
+|---|---|---|
+| `api/AGENTS.md` | the api-wide baseline: STYLE, NAMING, COMMENTS, DI, LOGGING, VALIDATION, PERSISTENCE, RESULT_*, HTTP_API, MODULE_STRUCTURE, SEEDING | `api/agents/` for Concertable-wide facts |
+| `api/Concertable.Payment/AGENTS.md` | + `PROTO.md` | money/escrow/Stripe precedents (already there) |
+| `api/Concertable.B2B/AGENTS.md` | + `MULTITENANCY.md`, `KEYED_STRATEGIES.md` | context roster, which entities are filtered, `DealType` families |
+| `api/Concertable.Customer/AGENTS.md`, `Search`, `Auth` | baseline only | as needed |
+| every `*.UnitTests/AGENTS.md` | `TESTING_UNIT.md` | — (already the shape, 42 files) |
+| `app/AGENTS.md` | the `typescript/` baseline | tiers, clients, permissions |
+
+Two rules keep this honest:
+
+- **A topic file is imported, never summarized.** The summary is what drifts, and re-summarizing an
+  imported file puts the same rule in context twice.
+- **A scoped topic that gains a second consumer stays one file** — the second consumer adds an import.
+  It is never copied, and it does not get promoted into the baseline just because two services use it.
+
+`api/docs/` keeps `MICROSERVICES_ARCHITECTURE.md` as dated history. `api/ARCHITECTURE.md` stays
+authoritative for current state. Per-service `ARCHITECTURE.md` / `TECH_DEBT.md` files stay put.
 
 ## The meta-rules
 
