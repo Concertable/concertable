@@ -5,10 +5,10 @@
 - Roadmap item: `payments/provider-contract-baseline`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\payments_provider-contract-baseline`
 - Branch: `Feature/payments_provider-contract-baseline`
-- PR: #597 — https://github.com/Concertable/concertable/pull/597 — open at remote head `e1186d498311c396a5460d6788dd74d04441e3f9`; the dictionary-backed error-kind mapper is locally verified but not yet committed or pushed; auto-merge is disabled and the PR is not queued
-- Review readiness: **INCREMENTAL REVIEW REQUIRED** — the six original review findings remain resolved; the prior implementation and security review is current through correction head `45faf5d7dc960528cc0767099d29e1b15cafe109`; the new mapper correction must be committed and reviewed before publication
-- Dependency/package gates: Phases 1 through 4 are locally complete; the production/live-mode Stripe account has no webhook endpoint, so future deployment is locked to `2025-01-27.acacia` and must create the endpoint at the actual Payment Web URL while installing its signing secret; compatibility is anchored to published `0.1.0-alpha.0.1009`; the branch carries platform pin `0.1.0-alpha.0.1049`
-- Last reconciled: 2026-08-17 against open PR #597 remote head `e1186d49`, reviewed correction head `45faf5d7`, and published Payment packages `0.1.0-alpha.0.1009`; `origin/main` `30c399e0` and platform pin `.1049` are incorporated through merge `ca430b074c004147e8ca5e96499aeb5fa412d1ce`; `origin/main` subsequently advanced and must be reconciled again before publication
+- PR: #597 — https://github.com/Concertable/concertable/pull/597 — open at remote head `e1186d498311c396a5460d6788dd74d04441e3f9`; reviewed mapper/current-main head `cb2d41c30c32304b951ac63d4b9823fe4bcdfcd2` is committed locally but not yet pushed; auto-merge is disabled and the PR is not queued
+- Review readiness: **REVIEW COMPLETE — PUSH AND EXACT-HEAD CI REQUIRED** — the six original review findings remain resolved; incremental implementation and security review is current through `cb2d41c30c32304b951ac63d4b9823fe4bcdfcd2` with no new findings
+- Dependency/package gates: Phases 1 through 4 are locally complete; the production/live-mode Stripe account has no webhook endpoint, so future deployment is locked to `2025-01-27.acacia` and must create the endpoint at the actual Payment Web URL while installing its signing secret; compatibility is anchored to published `0.1.0-alpha.0.1009`; the branch carries platform pin `0.1.0-alpha.0.1052`
+- Last reconciled: 2026-08-17 against open PR #597 remote head `e1186d49`, reviewed mapper/current-main head `cb2d41c3`, published Payment packages `0.1.0-alpha.0.1009`, and current `origin/main` `b6ba59f3`; current main and platform pin `.1052` are incorporated through merge `cb2d41c30c32304b951ac63d4b9823fe4bcdfcd2` with zero commits behind
 
 ## Current state
 
@@ -86,10 +86,9 @@ authorization, both setup kinds, and refund.
 
 ## Next Steps
 
-Commit the locally verified dictionary-backed `ToErrorKind()` mapper, reconcile the clean branch with
-current `origin/main`, revalidate the affected Payment scope, and run incremental implementation and
-security review from the recorded watermark. Then publish through the plan-managed two-leg push
-protocol and require exact-head CI to pass. Keep PR #597 open with auto-merge disabled.
+Publish this reviewed mapper/current-main checkpoint through the plan-managed two-leg push protocol,
+verify local, remote-tracking, and PR head equality, then require exact-head CI to pass at the final
+checkpoint-transport head. Keep PR #597 open with auto-merge disabled.
 
 ## Completed work
 
@@ -161,9 +160,15 @@ protocol and require exact-head CI to pass. Keep PR #597 open with auto-merge di
 
 ## Verification
 
-- Dictionary-backed error-kind mapper working tree: Payment UnitTests built with 0 warnings and 0
-  errors; focused `PaymentClientResultsTests` passed 17 of 17, including protobuf kind `999`; the full
+- Dictionary-backed error-kind mapper commit `b4f65daaf`: Payment UnitTests built with 0 warnings and
+  0 errors; focused `PaymentClientResultsTests` passed 17 of 17, including protobuf kind `999`; the full
   Payment unit suite passed 479 of 479; focused formatter verification passed.
+- Final current-main reconciliation at `cb2d41c3`: restored platform pin `.1052`, built the Payment
+  unit-test project with 0 warnings and 0 errors, passed all 479 Payment unit tests, and remained zero
+  commits behind `origin/main`.
+- Incremental implementation and security review covered `45faf5d7..cb2d41c3`, excluding incoming
+  `origin/main` changes except merge resolution, and recorded no new correctness, boundary, seeding,
+  convention, security, or test-coverage findings.
 - Plan-managed correction work push: starting remote/PR head `af5bb9c3ed6aef2bc0fc50e442eec1e9a5ed9e88`;
   pushed range `af5bb9c3..6e0482d6`; local work head, remote-tracking ref, and PR #597 head all
   verified at `6e0482d6eac215ec844d965860975635c1da9c00`.
@@ -313,10 +318,8 @@ protocol and require exact-head CI to pass. Keep PR #597 open with auto-merge di
 
 ## Review status
 
-**INCREMENTAL REVIEW REQUIRED.** The dictionary-backed error-kind mapper changes already-reviewed
-Payment client code and must receive implementation and security review after its local checkpoint.
-The prior incremental implementation and security review through
-`45faf5d7dc960528cc0767099d29e1b15cafe109` found no new issues. The full implementation and security review for
+**REVIEW COMPLETE — PUBLISH AND EXACT-HEAD CI REQUIRED.** Incremental implementation and security
+review through `cb2d41c30c32304b951ac63d4b9823fe4bcdfcd2` found no new issues. The full implementation and security review for
 [PR #597](https://github.com/Concertable/concertable/pull/597) covered
 `e861f3642cea14e919d203604a4e9e7d00bcced8..85d85aab1c6e3ef448c792cc9cad7c37639a8ae9`
 recorded NAT1, NAT2, BUG1, and SEC1. NAT1 is resolved at
