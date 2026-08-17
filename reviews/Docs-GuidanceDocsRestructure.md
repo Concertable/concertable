@@ -5,9 +5,9 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `c8302694f950708a2420ae37754826417b916840`  _(2026-08-17)_
+**Reviewed up to commit:** `e29cd957236eab6372480c664579bf13f77a7357`  _(2026-08-17)_
 
-**Security-reviewed up to commit:** `c8302694f950708a2420ae37754826417b916840`  _(2026-08-17)_
+**Security-reviewed up to commit:** `e29cd957236eab6372480c664579bf13f77a7357`  _(2026-08-17)_
 
 > Range reviewed: `9205e82d..2b93b45b` (12 commits reviewed; markers moved to `54b91961`, the fix commit, 73 files — markdown plus one Python hook).
 > Markers moved forward three times with nothing re-reviewable in between: once to the fix commit
@@ -158,3 +158,112 @@ One deliberate addition, not a finding: main added a rule to `api/agents/CODE_CO
 Phase 3b cut — integration events version the **wire identity** (`[MessageType(…​.v1)]`), never the CLR
 type. No skill owns event wire versioning, so the reduction kept it rather than dropping a live rule;
 `docs/INDEX.md:73` names the new topic and the ledger lists it as a promotion candidate.
+
+## Incremental review — 2026-08-17 (Phase 6 enforcement)
+
+> Range: `c8302694..e29cd957` (21 commits, 101 files). The ledger's `## Next Steps` named `2b93b45b..HEAD`,
+> but the marker is the contract between runs and it already sat at `c8302694` — two marker moves later,
+> both over merges whose content was already reviewed and merged on `main`. Reviewing from `2b93b45b`
+> would have re-covered that. Ledger corrected.
+>
+> In scope: the build tier gate (`api/TestConventions.targets`, `api/BannedSymbols.UnitTests.txt`, nine
+> `Directory.Build.targets` imports), the vendored skill router and its wiring, the `docs_reachability.py`
+> test-project rule, 17 new test-project stub pairs, `review` Step 2, `docs/INDEX.md`, `.agents/README.md`.
+> Out of scope, arriving by merge and already on `origin/main`: `OpportunityMapper.cs` (#617, verified
+> `9a84f45e` is an ancestor of `origin/main`), the `plans/payments/*` closeout (#650), and the
+> `<ConcertablePlatformVersion>` bump to `0.1.0-alpha.0.1064` (#647).
+
+Verified: hook suite **92 passed** (+4 subtests), `docs_reachability.py` **0 errors / 23 warnings** (all
+pre-existing `plans/` working docs), `plan_graph.py` **0 errors**. Every route in `.agents/skill-routes.json`
+matches real files, and the four rows added by tier 3 match their claimed counts exactly (`Seeder.cs` 28,
+`Validators?.cs` 29, `Module.cs` 20, `AppHost*/Program.cs` 6). Every `IsTestProject=true` project resolves
+a tier under the new gate and none trips the host-package or Shouldly error, so the gate does not break
+the build.
+
+Security layer ran (the range touches `api/Concertable.Payment/**` and both harnesses' hook config). The
+Payment changes are one import line, the merged platform pin and markdown stubs; the hook config adds a
+`PreToolUse` command running a repo-local Python file, the same shape as the existing Stop hook. No authz
+rule, secret, credential or workflow changed. Nothing to report.
+
+Native-catalog layer (correctness/reuse/simplification/efficiency/error-handling) was applied inline over
+the executable changes — `TestConventions.targets`, `skill_router.py`, `docs_reachability.py` and the hook
+wiring — rather than via the `code-reviewer` subagent, per this session's standing directive not to call
+the Agent tool. ENF1 and ENF2 below are native-layer correctness findings.
+
+All three fixed on the branch. Verified after the fixes: `agent-standards` **26 passed** (was 20, and the
+four new Codex tests fail against the old router — checked by running them against it), Concertable hook
+suite **94 passed / 13 subtests** (was 92/4), `docs_reachability.py` **0 errors / 23 warnings**,
+`plan_graph.py` **0 errors**, `vendor-hooks -Check` and `sync-generated -Check` clean, and tier resolution
+plus a clean build re-checked for a unit and an integration project through different
+`Directory.Build.targets` chains.
+
+- [x] **ENF1 — HIGH — correctness: the Codex half of the router is inert, and the test that guards it
+  cannot see that** — `.codex/hooks.json:6`, `.agents/hooks/skill_router.py:45`, `:200`
+  The Codex `PreToolUse` matcher is `"Write|Edit|MultiEdit|NotebookEdit|apply_patch"`, but the router's
+  `WRITE_TOOLS = {"Write", "Edit", "MultiEdit", "NotebookEdit"}` — so `main()` hits
+  `if data.get("tool_name") not in WRITE_TOOLS: sys.exit(0)` and allows every Codex write. `apply_patch`
+  appears nowhere in the router, here or in `agent-standards`. Two further breaks sit behind that one: an
+  `apply_patch` payload carries no `file_path`/`notebook_path`, so `target` would be falsy and exit 0
+  anyway, and the routed path lives inside the patch body (`*** Update File: …`), which the router never
+  parses. This is not speculative about Codex's vocabulary — the sibling hook in this same repo already
+  handles it: `plan_handoff_stop.py:37` lists `apply_patch`/`edit_file`/`write_file`/lowercase variants,
+  `:48` reads `path`/`filepath`, and `:49` parses `*** Add|Update|Delete File:` out of the patch.
+  `test_vendored_hooks.py:43` asserts only that the string `skill_router.py` appears in both wiring files,
+  so it passes while certifying exactly the claim that is false — and `docs/INDEX.md` ("wired in
+  `.claude/settings.json` and `.codex/hooks.json`") and `.agents/README.md` ("one harness only is the
+  defect") both state that claim to the reader. Note this also makes Next Step 2 moot as written:
+  approving the hook in Codex approves an inert hook. Fix upstream in `agent-standards` (add Codex's tool
+  names to `WRITE_TOOLS`, derive targets from the patch body and the `path`/`filepath` keys, mirroring
+  `plan_handoff_stop.py`), re-vendor, and add a Codex-payload test — `test_non_write_tool_is_ignored`
+  currently asserts the wrong side of this for `apply_patch`.
+  **Fixed** in `agent-standards` `268796e` (+ `88cf091` regenerating the plugin payload), re-vendored
+  here: `WRITE_TOOLS` is now lowercased and carries Codex's names, `written_targets` reads
+  `path`/`filepath` and parses `*** Add|Update|Delete File:` out of the patch, deny patterns match only
+  **added** lines so a patch that deletes a violation is not blocked by it, and `repo_relative` resolves
+  against the payload's cwd because patch paths are session-relative. Four upstream tests cover the Codex
+  payload, a lowercase tool name, a multi-file patch and the deletion case; one test here pins this repo's
+  own table under a Codex payload. `test_vendored_hooks.py` gained
+  `test_every_wired_tool_name_is_one_the_hook_acts_on`, which asserts every tool in each wiring file's
+  matcher is one the hook's own vocabulary accepts — the check that would have caught this, instead of
+  the filename presence that could not.
+
+- [x] **ENF2 — MEDIUM — correctness: the unit-tier source backstop covers 2 of the 6 host families the
+  package check names, so the build tier is weaker than the hook tier** — `api/BannedSymbols.UnitTests.txt`,
+  `api/TestConventions.targets:17`, `:30`
+  The targets file states the source list exists "because the symbol can arrive through a transitive
+  reference", but the `@(PackageReference)` check at `:30` names six families (Mvc.Testing, TestHost,
+  Respawn, `Testcontainers*`, `Microsoft.Playwright*`, `Reqnroll*`) while the banned list closes only
+  `WebApplicationFactory`, `TestServer` and `WebApplication.Create*`. A unit-test project that reaches
+  Respawn, Playwright, Testcontainers or the Aspire testing host through a `ProjectReference` passes both
+  gates. That shape is live in the tree today, not hypothetical:
+  `Concertable.Payment.E2ETests.Helpers.UnitTests` is Unit tier and project-references
+  `Concertable.Payment.E2ETests.Helpers`, which carries `Respawn`, `Microsoft.Playwright` and
+  `Aspire.Hosting.Testing`; the same is reachable from any unit project referencing a
+  `*.IntegrationTests.Fixtures`. `.agents/skill-routes.json` already denies `Testcontainers|Respawn` at
+  write time, so the tier the router's own docstring calls "the tier that guarantees" is the weaker of the
+  two for four of six families. Add the fingerprints actually used in this repo: `T:Respawn.Respawner`
+  (14 uses), `T:Aspire.Hosting.Testing.DistributedApplicationTestingBuilder` (18),
+  `T:Microsoft.Playwright.IPlaywright`, `T:Testcontainers.MsSql.MsSqlBuilder`.
+  **Fixed** — those four plus `T:Microsoft.Playwright.Playwright` and `T:Reqnroll.BindingAttribute`,
+  every type name and namespace first confirmed present in its assembly, then proved end-to-end: a probe
+  calling `Respawner.CreateAsync` inside `Concertable.Payment.E2ETests.Helpers.UnitTests` now fails the
+  build with RS0030 and the new message, and the project builds clean once the probe is removed.
+  Two corrections to what this finding first claimed, both worth recording because each would have
+  landed a wrong change: the qualified filename `BannedSymbols.UnitTests.txt` **is** read by
+  BannedApiAnalyzers 3.3.4 — an intermediate run suggested otherwise and prompted a rename into a
+  same-named file in its own directory, which was reverted once the run proved confounded (the first
+  probe failed in `Concertable.Testing.E2E` and aborted the build before reaching the unit project).
+  And RS0030 fires on a symbol being **used**, not on a type named in a member signature, so the
+  original four entries were never inert.
+
+- [x] **ENF3 — LOW — nine verbatim copies of a design-narration comment, one of them self-contradictory** —
+  `api/Directory.Build.targets:4` and the eight service/test `Directory.Build.targets` import sites
+  The same three-line comment ("MSBuild auto-imports only the FIRST `Directory.Build.targets` … so this
+  file shadows `api/Directory.Build.targets` for everything beneath it") is pasted at every import site.
+  In `api/Directory.Build.targets` it is false on its face — that file *is* `api/Directory.Build.targets`,
+  so it shadows nothing. Root `AGENTS.md` "Code comments" disqualifies a comment that restates reasoning
+  already stated elsewhere ("two copies drift the day one changes"), and nine copies of a why in a PR whose
+  thesis is one-rule-one-home is the disease it is treating. Keep the explanation once, in
+  `TestConventions.targets`' own header where the reader already is, and drop it from the nine import sites.
+  **Fixed** — 53 lines deleted, imports untouched; tier resolution re-verified through both a service
+  chain and a `tests/` chain afterwards.

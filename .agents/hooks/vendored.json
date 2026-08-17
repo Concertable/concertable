@@ -3,8 +3,8 @@
     "skill_router.py": {
       "source": "Concertable/agent-standards",
       "path": ".agents/hooks/skill_router.py",
-      "commit": "262564f2cf4074d1f3e31a578d1a385330766e53",
-      "sha256": "sha256:3ed6d60e2e6ac90dae0c9ac5122076184dacb5b030d911fc58a6858f8efa34d8"
+      "commit": "268796e44f080b641730e711664a809e5f7aa662",
+      "sha256": "sha256:4177899e92e5c35549f571a7bb4b030cb19e743d8a078139299bd58b4871bf5e"
     }
   }
 }

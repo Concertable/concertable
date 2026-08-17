@@ -27,9 +27,11 @@ prints which skills a set of changed files obliges a reader to load. That is wha
 review cannot miss what its author was required to load - the other half of the failure above, where
 the follow-up review repeated the identical blind spot and returned clean.
 
-Ships in the `agent-process` plugin, so both harnesses run this one file: Claude Code's `PreToolUse`
-and Codex's `pre_tool_use` pass the same payload keys and read the same exit-2 block contract. A repo
-opts in by carrying `.agents/skill-routes.json`; without one the hook exits 0 and does nothing.
+Ships in the `agent-process` plugin, so both harnesses run this one file. They share the exit-2 block
+contract but NOT the payload: Claude sends a PascalCase tool name and one path under `file_path`,
+while Codex sends `apply_patch` with the paths named inside the patch body. Matching only Claude's
+shape is not a partial rollout - it is a hook that allows every Codex write while looking wired. A
+repo opts in by carrying `.agents/skill-routes.json`; without one the hook exits 0 and does nothing.
 """
 
 import hashlib
@@ -42,15 +44,38 @@ from pathlib import Path
 
 
 ROUTES_FILE = ".agents/skill-routes.json"
-WRITE_TOOLS = {"Write", "Edit", "MultiEdit", "NotebookEdit"}
+# Lowercased, because the two harnesses do not agree on casing or on names. Claude writes through
+# Write/Edit/MultiEdit/NotebookEdit; Codex writes through apply_patch, and matching only Claude's
+# vocabulary is how this hook spent its first life doing nothing at all in a Codex session.
+WRITE_TOOLS = {
+    "write",
+    "edit",
+    "multiedit",
+    "notebookedit",
+    "apply_patch",
+    "edit_file",
+    "write_file",
+    "multi_edit",
+}
+PATH_KEYS = ("file_path", "notebook_path", "path", "filepath")
+# An apply_patch envelope names its files inside the patch body, so a key lookup alone sees none of them.
+PATCH_FILE_TARGET = re.compile(r"\*\*\*\s+(?:Add|Update|Delete)\s+File:\s*([^\r\n]+)", re.IGNORECASE)
+PATCH_ADDED_LINE = re.compile(r"^\+(?!\+\+)(.*)$", re.MULTILINE)
 SKILL_ROOTS = (Path.home() / ".agents" / "skills", Path.home() / ".claude" / "skills")
 QUERY_FLAG = "--skills-for"
 
 
 def repo_relative(path, cwd):
-    """POSIX repo-relative path, so a route regex never has to know about drive letters."""
+    """POSIX repo-relative path, so a route regex never has to know about drive letters.
+
+    Resolved against the payload's cwd, not the hook process's - a patch body names its files
+    relative to the session, and `Path.resolve()` alone would anchor them wherever python started.
+    """
     try:
-        p = Path(path).resolve()
+        p = Path(path)
+        if not p.is_absolute():
+            p = Path(cwd) / p
+        p = p.resolve()
     except OSError:
         return str(path).replace("\\", "/")
     for base in (Path(cwd).resolve(), *Path(cwd).resolve().parents):
@@ -62,8 +87,24 @@ def repo_relative(path, cwd):
     return p.as_posix()
 
 
+def strings(value):
+    """Every string anywhere in the payload - the two harnesses nest their write differently."""
+    if isinstance(value, str):
+        yield value
+    elif isinstance(value, dict):
+        for item in value.values():
+            yield from strings(item)
+    elif isinstance(value, list):
+        for item in value:
+            yield from strings(item)
+
+
 def written_content(tool_input):
-    """Every string the tool would put into the file, concatenated for pattern matching."""
+    """Every string the tool would put into the file, concatenated for pattern matching.
+
+    Only text being ADDED. A deny pattern must never fire on the text a call is deleting - matching a
+    patch blob whole would block the very edit that removes the violation.
+    """
     parts = [
         tool_input.get("content"),
         tool_input.get("new_string"),
@@ -72,7 +113,33 @@ def written_content(tool_input):
     for edit in tool_input.get("edits") or []:
         if isinstance(edit, dict):
             parts.append(edit.get("new_string"))
+    for blob in strings(tool_input):
+        if PATCH_FILE_TARGET.search(blob):
+            parts.extend(PATCH_ADDED_LINE.findall(blob))
     return "\n".join(p for p in parts if isinstance(p, str))
+
+
+def written_targets(tool_input):
+    """Every path this call would write, in order and deduplicated.
+
+    Claude names one file per call under a known key; Codex's apply_patch can carry many, named only
+    inside the patch body.
+    """
+    found = []
+    for key in PATH_KEYS:
+        value = tool_input.get(key)
+        if isinstance(value, str) and value:
+            found.append(value)
+    for blob in strings(tool_input):
+        for match in PATCH_FILE_TARGET.findall(blob):
+            found.append(match.strip().strip("\"'"))
+
+    ordered, seen = [], set()
+    for target in found:
+        if target and target not in seen:
+            seen.add(target)
+            ordered.append(target)
+    return ordered
 
 
 def skill_description(name):
@@ -197,12 +264,13 @@ def main():
     except ValueError:
         sys.exit(0)
 
-    if data.get("tool_name") not in WRITE_TOOLS:
+    tool_name = data.get("tool_name")
+    if not isinstance(tool_name, str) or tool_name.lower() not in WRITE_TOOLS:
         sys.exit(0)
 
     tool_input = data.get("tool_input") or {}
-    target = tool_input.get("file_path") or tool_input.get("notebook_path")
-    if not isinstance(target, str) or not target:
+    targets = written_targets(tool_input)
+    if not targets:
         sys.exit(0)
 
     cwd = data.get("cwd") or os.getcwd()
@@ -213,15 +281,18 @@ def main():
     if not routes:
         sys.exit(0)
 
-    rel = repo_relative(target, cwd)
     content = written_content(tool_input)
 
-    matched = list(matching_routes(routes, rel, content))
+    matched = []
+    for target in targets:
+        rel = repo_relative(target, cwd)
+        for route in matching_routes(routes, rel, content):
+            matched.append((rel, route))
     if not matched:
         sys.exit(0)
 
     # Deny patterns first: a decidable violation blocks every time, not once per session.
-    for route in matched:
+    for rel, route in matched:
         for _, reason in deny_hits(route, rel, content):
             sys.stderr.write(
                 "SKILL ROUTER - blocked, this is a rule violation, not a reminder:\n\n"
@@ -234,11 +305,11 @@ def main():
     session = data.get("session_id")
     seen = load_seen(session)
     pending = []
-    for route in matched:
+    for rel, route in matched:
         key = route.get("path")
         if key in seen:
             continue
-        pending.append(route)
+        pending.append((rel, route))
         seen.add(key)
 
     if not pending:
@@ -246,13 +317,9 @@ def main():
 
     save_seen(session, seen)
 
-    lines = [
-        "SKILL ROUTER - a standard owns this path, and it has not been loaded this session:",
-        "",
-        f"  {rel}",
-        "",
-    ]
-    for route in pending:
+    lines = ["SKILL ROUTER - a standard owns this path, and it has not been loaded this session:", ""]
+    for rel, route in pending:
+        lines += [f"  {rel}", ""]
         for name in route.get("skills") or []:
             desc = skill_description(name)
             lines.append(f"  * {name}")

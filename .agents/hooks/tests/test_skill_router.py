@@ -39,11 +39,39 @@ class SkillRouterTests(unittest.TestCase):
             text=True,
         )
 
+    def run_codex_patch(self, body, session=None):
+        """Codex's shape: `apply_patch`, no file_path, every path named inside the patch body."""
+        payload = {
+            "tool_name": "apply_patch",
+            "session_id": session or self.session,
+            "cwd": str(self.root),
+            "tool_input": {"input": body},
+        }
+        return subprocess.run(
+            [sys.executable, str(HOOK)],
+            input=json.dumps(payload),
+            capture_output=True,
+            text=True,
+        )
+
     def test_non_write_tool_is_ignored(self):
         self.assertEqual(0, self.run_hook(tool="Bash").returncode)
 
     def test_unrouted_path_is_allowed(self):
         self.assertEqual(0, self.run_hook(path="src/Whatever.cs").returncode)
+
+    def test_this_repos_table_enforces_against_a_codex_patch_too(self):
+        # Both harnesses run the same vendored router, so both must reach the same verdict on this
+        # repo's own table - not just the one whose payload shape the router was written against.
+        result = self.run_codex_patch(
+            "*** Begin Patch\n"
+            "*** Add File: api/Concertable.Svc/tests/Concertable.Svc.UnitTests/HostTests.cs\n"
+            "+var f = new WebApplicationFactory<Program>();\n"
+            "*** End Patch\n"
+        )
+
+        self.assertEqual(2, result.returncode)
+        self.assertIn("integration test", result.stderr)
 
     def test_first_write_to_a_routed_path_blocks_and_names_the_skill(self):
         result = self.run_hook(path="api/Svc.UnitTests/SomeTests.cs", content="public class X { }")

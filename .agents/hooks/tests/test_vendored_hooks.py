@@ -1,4 +1,5 @@
 import hashlib
+import importlib.util
 import json
 import unittest
 from pathlib import Path
@@ -12,6 +13,36 @@ WIRING = (REPO / ".claude" / "settings.json", REPO / ".codex" / "hooks.json")
 
 def normalized(path):
     return path.read_bytes().decode("utf-8").replace("\r\n", "\n")
+
+
+def load_hook(name):
+    spec = importlib.util.spec_from_file_location(Path(name).stem, HOOKS / name)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def matchers_for(wiring_path, hook_name):
+    """Every matcher string on a hook entry whose command runs this hook."""
+    found = []
+
+    def walk(node):
+        if isinstance(node, dict):
+            inner = node.get("hooks")
+            if isinstance(inner, list) and any(
+                hook_name in str(entry.get("command", "")) + str(entry.get("commandWindows", ""))
+                for entry in inner
+                if isinstance(entry, dict)
+            ):
+                found.append(node.get("matcher") or "")
+            for value in node.values():
+                walk(value)
+        elif isinstance(node, list):
+            for value in node:
+                walk(value)
+
+    walk(json.loads(wiring_path.read_text(encoding="utf-8")))
+    return found
 
 
 class VendoredHookTests(unittest.TestCase):
@@ -47,6 +78,27 @@ class VendoredHookTests(unittest.TestCase):
             for wiring in WIRING:
                 with self.subTest(hook=name, wiring=wiring.name):
                     self.assertIn(name, wiring.read_text(encoding="utf-8"))
+
+    def test_every_wired_tool_name_is_one_the_hook_acts_on(self):
+        # Being named in both wiring files is not the same as running in both. The router was matched
+        # on Codex's `apply_patch` while its own tool list held only Claude's names, so it exited 0 on
+        # every Codex write - wired, tested, and enforcing nothing. Presence of the filename cannot
+        # see that; agreement between the matcher and the hook's own vocabulary can.
+        for name in self.entries:
+            hook = load_hook(name)
+            vocabulary = getattr(hook, "WRITE_TOOLS", None)
+            if vocabulary is None:
+                continue  # not a tool-matched hook (a Stop hook has no matcher to agree with)
+            for wiring in WIRING:
+                for matcher in matchers_for(wiring, name):
+                    for tool in (t.strip() for t in matcher.split("|") if t.strip()):
+                        with self.subTest(hook=name, wiring=wiring.name, tool=tool):
+                            self.assertIn(
+                                tool.lower(),
+                                vocabulary,
+                                f"{wiring.name} routes '{tool}' to {name}, but the hook ignores that "
+                                "tool name and exits 0 - the wiring enforces nothing for it.",
+                            )
 
 
 if __name__ == "__main__":

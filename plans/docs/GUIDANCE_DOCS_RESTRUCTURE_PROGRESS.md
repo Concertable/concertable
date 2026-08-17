@@ -11,9 +11,9 @@
   conflicts resolved, below), from 2 behind after platform-sync #645 merged — a clean merge carrying only
   the `<ConcertablePlatformVersion>` bump `0.1.0-alpha.0.1055` → `0.1.0-alpha.0.1061` across the five
   service `Directory.Packages.props` — and from 10 behind at `2b04d57e2`.
-- Shared repos: `Concertable/agent-standards` (7 process skills + the `skill_router` hook, `262564f`) and `tomjseery/dotagents` (29 generic — 20 .NET + 9 TS/React — synced to `~/.agents/skills/`), cloned at `C:\Users\TommySeery\source\repos\{agent-standards,dotagents}`
+- Shared repos: `Concertable/agent-standards` (7 process skills + the `skill_router` hook, `88cf091`, pushed) and `tomjseery/dotagents` (29 generic — 20 .NET + 9 TS/React — synced to `~/.agents/skills/`), cloned at `C:\Users\TommySeery\source\repos\{agent-standards,dotagents}`
 - Dependency/package gates: no consumer migration to do, but this PR **will** trigger publish + platform sync — `publish-packages.yml` triggers on the coarse `paths: api/**`, which this branch's `api/**` markdown matches. MinVer republishes and a `chore/platform-sync-*` PR opens; non-breaking (no published type changed), so it should auto-merge green. Follow it to green anyway — whoever merges owns the sync.
-- Last reconciled: 2026-08-17 against `agent-standards` `262564f` (pushed) and a live Codex 0.147.0 session; `origin/main` matched at the tier-3 commit (0 behind)
+- Last reconciled: 2026-08-17 against `agent-standards` `88cf091` (pushed) after the incremental review's three fixes; `origin/main` matched at the tier-3 commit (0 behind) — re-check at enqueue time
 
 **Scope changed 2026-08-17: this is no longer a docs PR.** It now carries build behaviour
 (`api/TestConventions.targets` gating every test project) and a PreToolUse hook, because Phase 6 must land
@@ -28,9 +28,11 @@ only this system's roster of real types, contexts, clients, tables and pins. The
 `api/**` prompt went from **1,429 lines to 246**, and on an `app/**` prompt from **786 to 151**; a unit-test
 project no longer pulls in 80 lines and an E2E project no longer pulls in 37.
 
-Enforcement is now complete at all three tiers: the build fails a misnamed or misclassified test project, the
-write-time router blocks the first write into a routed path, every test project's stub opens with the
-unit-vs-integration decision, and `/review` resolves the standards it owes from the same table. What remains
+Enforcement is now complete at all three tiers, **and in both harnesses** — the incremental review found the
+router had been enforcing in Claude only, so a Codex session wrote past it silently. The build fails a
+misnamed or misclassified test project, the write-time router blocks the first write into a routed path
+whichever harness makes it, every test project's stub opens with the unit-vs-integration decision, and
+`/review` resolves the standards it owes from the same table. What remains
 is Phase 6a's deployment (Tommy's to run), Phase 3c (the markdown outside the conventions folders), Phase 4
 (the duplication rows that still have >1 home, chiefly seeding across `api/AGENTS.md` and
 `SEEDING_CONVENTIONS.md`), and the deferred auto-load thinning of root `AGENTS.md`.
@@ -221,10 +223,24 @@ Both markers have since moved forward twice more with nothing re-reviewable in b
 base-currency merges of `origin/main`, whose only content outside `reviews/` is the platform pin bump
 already reviewed and merged on `main` as #645. Review state on that range: **clean, 0 open findings.**
 
-**Reviewable code has landed since**: the build gate, the router, the vendoring, and now Phase 6 tier 3
-(`1d198c6ba`). So the marker-to-head range no longer touches `reviews/` alone, and
-`merge-review-gate.py` will refuse an enqueue until an `incremental-review` covers it. That review is
-Step 1 of landing, not an optional extra.
+**That review has now run** (`c8302694..e29cd957`, 21 commits, 101 files). Note the range: the marker
+already sat at `c8302694`, not the `2b93b45b` this ledger previously named — the marker is the contract
+between runs, and the two moves after `2b93b45b` were over merges already reviewed on `main`. **Three
+findings, all fixed on the branch**, so the markers are stamped at the fix head rather than `e29cd957`:
+
+- **ENF1 (HIGH)** — the router's Codex leg was inert. `.codex/hooks.json` matched `apply_patch`, but the
+  router only knew Claude's PascalCase names and its `file_path` key, so every Codex write exited 0. The
+  drift test could not see it: it asserts the hook's *filename* appears in both wiring files, which was
+  true throughout. Fixed upstream (`agent-standards` `268796e`, payload `88cf091`) and re-vendored;
+  `test_every_wired_tool_name_is_one_the_hook_acts_on` now makes the matcher and the hook's own
+  vocabulary agree. **This retires Next Step 2's premise** — approving the old hook in Codex would have
+  approved an inert one.
+- **ENF2 (MEDIUM)** — the unit-tier source list covered 2 of the 6 host families the PackageReference
+  check names, so a unit project reaching Respawn/Playwright/Testcontainers/Aspire *transitively* (the
+  live shape: `Concertable.Payment.E2ETests.Helpers.UnitTests` → `…E2ETests.Helpers`) passed both gates.
+  Six fingerprints added and proved end-to-end with a build probe.
+- **ENF3 (LOW)** — 53 lines of one comment pasted at nine import sites, self-contradictory in
+  `api/Directory.Build.targets`. Deleted.
 
 ## Next Steps
 
@@ -257,18 +273,14 @@ in `agent-standards`, vendored here with a hash check, wired for **both** harnes
    `c153697` (`prune-worktrees` +34, `worktree` +17 — a junction redeploy without checking direction first
    would have destroyed both). Installed and canonical now agree on all 36; 3 canonical skills
    (`last-conversation`, `recents`, `search`) remain uninstalled.
-2. **Approve the new Codex hook once** (Tommy, ~5 seconds, in a Codex session in this repo). Codex trusts a
-   project hook by hash per file per path, so the new `PreToolUse` entry in `.codex/hooks.json` is inert
-   until approved, and the worktree is trusted separately from the main checkout. Nothing else waits on it.
+2. **Approve the Codex hook once** (Tommy, ~5 seconds, in a Codex session in this repo). Codex trusts a
+   project hook by hash per file per path, so the `PreToolUse` entry in `.codex/hooks.json` is inert
+   until approved, and the worktree is trusted separately from the main checkout. **Do this after the
+   ENF1 fix, not before** — approving the previous hook would have approved one that allowed every Codex
+   write. Nothing else waits on it.
 3. **Then Tommy's own read of the PR**, then merge. Paused: Tommy — his sign-off is required and the clean
-   automated `/review` is not it; resume on his go-ahead once the above is in. Note the review markers are
-   deliberately stale: real reviewable code (build gate, router, vendoring) landed after them.
-
-4. **`/incremental-review` over `2b93b45b..HEAD`** — the build gate, the router, the vendoring and tier 3
-   all landed after the current markers, so the gate hook will refuse an enqueue until this runs and
-   re-stamps them. Its Layer 1 spawns the `code-reviewer` subagent, so run it in a session that permits
-   subagents.
-5. **Land this PR** once the above is in. Routed to `/merge`, not `/merge-docs`: the diff carries one `.cs` file
+   automated `/review` is not it; resume on his go-ahead once the above is in.
+4. **Land this PR** once the above is in. Routed to `/merge`, not `/merge-docs`: the diff carries one `.cs` file
    (`ModuleBoundaryTests.cs` — comment and `.Because(...)` strings repointed by the
    `CONVENTIONS.md` → `MODULE_STRUCTURE.md` rename), which `merge-docs` hard-refuses, so the queue's
    build gate applies. Review clean (0 open findings), local = remote = PR head, `skip-e2e` label correct
@@ -283,20 +295,20 @@ in `agent-standards`, vendored here with a hash check, wired for **both** harnes
    C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-guidance-docs -PullRequest 637
    -PlanManaged`, then follow the generated `chore/platform-sync-*` PR to green (this branch's `api/**`
    markdown matches `publish-packages.yml`'s coarse `paths:`; non-breaking, so it should auto-merge).
-6. **Phase 3c — the 10,011 lines of markdown outside the conventions folders.** Most is correctly-placed domain
+5. **Phase 3c — the 10,011 lines of markdown outside the conventions folders.** Most is correctly-placed domain
    knowledge and stays untouched; six items need a disposition, listed in the plan's Phase 3c table.
    `app/README.md` is still the unmodified Vite scaffold, and `notes/Concert-Rust-Analysis.md` (444) is
    referenced by nothing.
-7. **Phase 4 — collapse the remaining duplication rows to one home each.** Seeding is the big one: the
+6. **Phase 4 — collapse the remaining duplication rows to one home each.** Seeding is the big one: the
    `seeding` skill now owns the rule and `SEEDING_CONVENTIONS.md` the inventory, but `api/AGENTS.md:28–47`
    still restates 20 lines of it inline. Resolve under meta-rule 7 by deciding import-or-pointer — that
    summary exists precisely *because* `SEEDING_CONVENTIONS.md` is not `@`-imported. Same for
    `api/AGENTS.md`'s "shared code is the intersection" section, which `microservice-boundaries` now states
    generically.
-8. **Make the 7 process skills concrete, and execute the settled merge ruling on their side.** They were
+7. **Make the 7 process skills concrete, and execute the settled merge ruling on their side.** They were
    written generic for a shared repo; the `merging` skill must lose the confirm-loop body and keep the rule,
    with the executable `.agents/skills/merge/SKILL.md` owning the procedure. Same for `pr-preflight`.
-9. **Promotion candidates for the shared skills**, all found while cutting against them — none blocking:
+8. **Promotion candidates for the shared skills**, all found while cutting against them — none blocking:
    - **FIXED (`dotagents` `daef94d`)** — `persistence` taught that an awaiting page projection "still
      constructs its page by hand", the practice `main` refactored away from in `OpportunityMapper`. The
      10-commit merge in this turn surfaced it: the owning home was teaching the superseded rule while the
@@ -342,7 +354,7 @@ in `agent-standards`, vendored here with a hash check, wired for **both** harnes
      Not on this branch: #637 is enqueue-ready and any further push re-stales its review; the cut also
      rewrites `Concertable.Testing.E2E/AGENTS.md`, which #637 already edits. Do it in the continuation
      worktree once #637 lands.
-10. **Deferred to its own PR:** auto-load thinning of root `AGENTS.md` (the 86 merge lines and 32 Docker lines
+9. **Deferred to its own PR:** auto-load thinning of root `AGENTS.md` (the 86 merge lines and 32 Docker lines
    that `/merge` and `scripts/e2e.ps1` already automate), the analyzer push-down plus
    `EnforceCodeStyleInBuild`, and **a CI job running the Python hook tests** — nothing in
    `.github/workflows/` runs them today, so every hook gate here is only as live as the last person who ran
