@@ -5,13 +5,14 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `43d6cf20590d08375e2bbf176564acc52103046d`  _(2026-08-17)_
-**Security-reviewed up to commit:** `43d6cf20590d08375e2bbf176564acc52103046d`  _(2026-08-17)_
+**Reviewed up to commit:** `1f823c8ed50b073e8aa4da933eeb52848a066427`  _(2026-08-17)_
+**Security-reviewed up to commit:** `1f823c8ed50b073e8aa4da933eeb52848a066427`  _(2026-08-17)_
 
-> Range reviewed: `d5669a836..43d6cf205` (17 commits). Commits after `5492efa58` are docs-only except
+> Range reviewed: `d5669a836..1f823c8ed` (18 commits). Commits after `5492efa58` are docs-only except
 > `6aabf147b` (the IAdminRepository extraction below), `0d7821d6d` (merge of `origin/main`, resolving
 > one conflict in `api/agents/CODE_CONVENTIONS.md` by keeping both sides' additions — no semantic change),
-> `825dc4793` (the Me() redesign below), and `43d6cf205` (the extension-block conversion below).
+> `825dc4793` (the Me() redesign below), `43d6cf205` (the extension-block conversion below), and
+> `1f823c8ed` (splitting error mapping into `AdminErrorMappers.cs`, same finding below).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
 
 ## Findings
@@ -59,6 +60,13 @@
   converted both methods to `extension(AdminInvitationEntity invitation)` /
   `extension(AdminInvitationRevocationError error)` blocks, matching the live reference example
   (`RegisteredAddressMappers.cs`).
+
+- [x] **CV4 — LOW — file organization** — `api/Concertable.B2B/src/Modules/User/Concertable.B2B.User.Application/Mappers/AdminMappers.cs`
+  `AdminMappers.cs` mixed DTO mapping (`ToDto`) with Domain→Application error-taxonomy translation
+  (`ToRevokeAdminInvitationError`) — two different concerns sharing one file just because both happened
+  to be extension methods. Fixed: split the error translation into its own `AdminErrorMappers.cs`,
+  keeping the extension-block shape (still correct — `MapError`'s error-translation boundary is exactly
+  the "one receiver owns this question" case the extension convention describes).
 
 <!-- NAT layer (Layer 1, code-reviewer subagent): no findings cleared the 80% confidence bar. Diff closely mirrors InvitationService/TenantInvitationEntity/MembershipService precedent. -->
 
