@@ -5,18 +5,22 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `4142a6aa628ceb77487aa5de5c11e2bf3decd2a7`  _(2026-08-17)_
+**Reviewed up to commit:** `c8302694f950708a2420ae37754826417b916840`  _(2026-08-17)_
 
-**Security-reviewed up to commit:** `4142a6aa628ceb77487aa5de5c11e2bf3decd2a7`  _(2026-08-17)_
+**Security-reviewed up to commit:** `c8302694f950708a2420ae37754826417b916840`  _(2026-08-17)_
 
 > Range reviewed: `9205e82d..2b93b45b` (12 commits reviewed; markers moved to `54b91961`, the fix commit, 73 files — markdown plus one Python hook).
 > Markers moved forward three times with nothing re-reviewable in between: once to the fix commit
 > `54b91961`; then to the first `origin/main` merge required before enqueueing — that merge brought in only
 > `plans/frontend/*`, `reviews/Fix-merge-gate-command-matching.md` and `.claude/hooks/merge-review-gate.py`,
-> all already reviewed and merged on `main`; then to `4142a6aa` after a second such merge, whose only
-> content outside `reviews/` is the `<ConcertablePlatformVersion>` bump `0.1.0-alpha.0.1055` →
-> `0.1.0-alpha.0.1061` across five `Directory.Packages.props`, reviewed and merged on `main` as #645.
-> None of it is in this branch's scope.
+> all already reviewed and merged on `main`; then to `c8302694` after a second such merge and two ledger
+> commits, the merge's only content outside `plans/`/`reviews/` being the `<ConcertablePlatformVersion>`
+> bump `0.1.0-alpha.0.1055` → `0.1.0-alpha.0.1061` across five `Directory.Packages.props`, reviewed and
+> merged on `main` as #645. None of it is in this branch's scope.
+>
+> **This clean automated review is not merge authorization.** Tommy has not read the PR himself; the
+> ledger's `## Next Steps` carries the human-gated `Paused:` line. Do not enqueue on the strength of
+> this file alone.
 >
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
 >
