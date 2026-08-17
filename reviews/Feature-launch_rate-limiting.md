@@ -23,5 +23,18 @@ Layer 2 (Concertable lenses):
 
 Security layer: not run — none of the changed paths match the merge gate's `_SECURITY_PATTERNS` (no Auth/Payment/`*.Contracts`/`*Controller*.cs`/workflow/credential paths), so no `Security-reviewed up to commit:` marker is required.
 
+## Incremental review — 2026-08-17 (correction)
+
+The initial pass **missed a real finding**: the test was misclassified. It boots a host over HTTP
+(`TestHost`), which the conventions define as an integration test, but it was authored as an
+ambiguously-named `*.Tests` unit-style project (`Assert.*`, unit naming, no `AGENTS.md`). CI also
+discovers tests only by `*.UnitTests.csproj`/`*.IntegrationTests.csproj`, so the `*.Tests` project would
+never have run. Root cause of the miss: neither authoring nor this review loaded the test-convention docs.
+
+- [x] **CV1 — MED — conventions** — `api/Concertable.ServiceDefaults/tests/…` — test misclassified as a
+  unit test. **Fixed:** reclassified to `Concertable.ServiceDefaults.IntegrationTests` (host + HTTP ⇒
+  integration), switched to Shouldly, corrected naming, added sibling `AGENTS.md`/`CLAUDE.md` documenting
+  why the service-fixture apparatus doesn't apply (ServiceDefaults has no Program/DB). Test green.
+
 ### Noted, not a finding (out-of-diff, tracked in the plan)
 - The IP-keyed policies (`Login`, `Upload`) partition on `Connection.RemoteIpAddress`, which collapses to the proxy IP unless the host runs `UseForwardedHeaders` before `UseDefaultRateLimiting`. This is a Phase-2 consumer/host-pipeline concern (the seam correctly reads the connection IP), and `Login` runs on `Concertable.Auth`, which already configures ForwardedHeaders. Pinned as an explicit Phase-2 requirement in `plans/launch/RATE_LIMITING_PLAN.md`.

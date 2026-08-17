@@ -51,10 +51,13 @@ and tested; nothing further is safely implementable locally.
 - **Phase 1 implemented** in `api/Concertable.ServiceDefaults/`: `RateLimitPolicies.cs`,
   `RateLimitingOptions.cs`, `RateLimitingExtensions.cs`. Main csproj excludes `tests/**` from its default
   compile/pack globs (the test project nests under the package folder to inherit its props/nuget config).
-- **Focused test project** `tests/Concertable.ServiceDefaults.Tests` — boots an in-memory `WebApplication`
-  (TestHost) with a stub endpoint under `RateLimitPolicies.Apply`, drives it past a config-bound limit, and
-  asserts 429 + a `Retry-After` header. Also proves config binding (limit supplied via in-memory config).
-  Added to `api/Concertable.slnx`; test package versions added to ServiceDefaults `Directory.Packages.props`.
+- **Integration test project** `tests/Concertable.ServiceDefaults.IntegrationTests` — boots an in-memory
+  `WebApplication` (TestHost) with a stub endpoint under `RateLimitPolicies.Apply`, drives it past a
+  config-bound limit, and asserts 429 + a `Retry-After` header (Shouldly). Also proves config binding
+  (limit supplied via in-memory config). Named `*.IntegrationTests` (it boots a host + HTTP, so it's an
+  integration test per the conventions, and CI discovers integration tests by that suffix) with sibling
+  `AGENTS.md`/`CLAUDE.md`; the service-fixture apparatus doesn't apply (ServiceDefaults has no Program/DB).
+  Added to `api/Concertable.slnx`; test + Shouldly package versions in ServiceDefaults `Directory.Packages.props`.
 - **Distributed-store deferral** logged in `api/TECH_DEBT.md` (in-process limiter loosens per-replica under
   horizontal scale; acceptable at single-instance launch).
 - Plan + this ledger authored earlier.
@@ -62,7 +65,7 @@ and tested; nothing further is safely implementable locally.
 ## Verification
 
 - `dotnet build Concertable.ServiceDefaults.csproj` → 0 warnings, 0 errors.
-- `dotnet test` (`Concertable.ServiceDefaults.Tests`) → 1 passed. Over-limit request returns
+- `dotnet test` (`Concertable.ServiceDefaults.IntegrationTests`) → 1 passed. Over-limit request returns
   `429 TooManyRequests` with a `Retry-After` header; limit driven from bound config.
 - Full solution build / carve / integration matrix deferred to draft-PR CI (remote-first).
 
