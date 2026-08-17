@@ -5,14 +5,16 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `e8674d4530db24e979c4e1a8a5931d0cc78b0642`  _(2026-08-17)_
-**Security-reviewed up to commit:** `e8674d4530db24e979c4e1a8a5931d0cc78b0642`  _(2026-08-17)_
+**Reviewed up to commit:** `72709c16dd1d5e38053ef0e878c1231ceb06a951`  _(2026-08-17)_
+**Security-reviewed up to commit:** `72709c16dd1d5e38053ef0e878c1231ceb06a951`  _(2026-08-17)_
 
-> Range reviewed: `d5669a836..e8674d453` (20 commits, merge-base advanced twice as `origin/main` moved —
-> both merges resolved a docs-only conflict in `api/agents/CODE_CONVENTIONS.md` with no semantic change).
-> Non-docs commits: `6aabf147b` (IAdminRepository extraction), `825dc4793` (Me() redesign), `43d6cf205`
-> (extension-block conversion), `e8674d453` (composite-error wrap replacing `AdminErrorMappers.cs`) — all
-> findings below.
+> Range reviewed: `d5669a836..72709c16d` (22 commits, merge-base advanced three times as `origin/main`
+> moved — all merges resolved a docs-only conflict in `api/agents/CODE_CONVENTIONS.md` with no semantic
+> change, except the third which also pulled in the `0.1.0-alpha.0.1049` platform pin bump). Non-docs
+> commits: `6aabf147b` (IAdminRepository extraction), `825dc4793` (Me() redesign), `43d6cf205`
+> (extension-block conversion), `e8674d453` (composite-error wrap replacing `AdminErrorMappers.cs`),
+> `72709c16d` (AdminRepository's own `context` field, tracking the platform's repository-shape
+> migration) — all findings below.
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
 
 ## Findings
@@ -74,6 +76,22 @@
   `AdminService.RevokeInvitationAsync` now does `.MapError<RevokeAdminInvitationError>(error => new
   RevokeAdminInvitationError.RevocationFailed(error))` directly, so a future case added to
   `AdminInvitationRevocationError` needs zero changes here to keep compiling and flowing through.
+
+- [x] **BUG1 — HIGH — merge-queue build failure** — `api/Concertable.B2B/src/Modules/User/Concertable.B2B.User.Infrastructure/Repositories/AdminRepository.cs`
+  `#624`'s merge-queue `build` job failed: `CS0103: The name 'context' does not exist in the current
+  context` at every `context.AdminProfiles`/`context.AdminInvitations` usage. Root cause: the platform
+  package (`0.1.0-alpha.0.1049`, published from the in-flight repository-context-permission-hierarchy
+  refactor) dropped the `TContext` generic parameter from `Repository<TEntity,TContext,TKey>`, so its
+  protected `context` field no longer exists — every other concrete repository in the codebase was
+  already migrated (each now declares its own `private readonly TContext context` field, set in its
+  constructor body; see `UserRepository`/`TenantRepository`/etc.) via the platform-sync PR's consumer-fix
+  step, but `AdminRepository` isn't on `main` yet so the bot never touched it. Fixed: added the same
+  local `context` field + constructor assignment. Separately, `chore/platform-sync-0.1.0-alpha.0.1049`
+  (#634) had `autoMergeRequest: null` despite its own description saying auto-merge is on — its
+  workflow run shows the "Enable auto-merge" step's `gh pr merge --auto` call failed on a transient
+  GitHub API 503, with no retry, permanently stranding an otherwise-green PR (not a logic bug in the
+  step itself). Reviewed and merged #634 by hand to unblock; the missing-retry gap is logged in the
+  root `TECH_DEBT.md`, not fixed here (out of scope for this branch).
 
 <!-- NAT layer (Layer 1, code-reviewer subagent): no findings cleared the 80% confidence bar. Diff closely mirrors InvitationService/TenantInvitationEntity/MembershipService precedent. -->
 
