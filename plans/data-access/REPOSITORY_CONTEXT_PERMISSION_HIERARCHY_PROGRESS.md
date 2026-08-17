@@ -17,7 +17,7 @@
   `0.1.0-alpha.0.1044`, and platform-sync PR
   [#629](https://github.com/Concertable/concertable/pull/629) merged green as
   `95305c7a909d48a703ab572c2a153fe74d2d4daa`.
-- Last reconciled: 2026-08-17 against `origin/main` at `a8cb736a5`.
+- Last reconciled: 2026-08-17 against `origin/main` at `dc037f477`.
 
 ## Current state
 
@@ -223,6 +223,10 @@ topology contract test, and both signup flows attach their registration wait bef
   repository-arity grep remained empty, and `git diff --check origin/main...HEAD` passed.
 - Reviewed current-main repair head `1b0ccfef1` was pushed from `3b103bc4c`, then verified equal to the
   remote branch and PR #632 `headRefOid`.
+- Exact-head CI run `32025468368` passed on checkpoint `1405e1f23`, including the B2B Concert
+  integration shard. Three hook/docs-only main commits landed during that run; they merged without
+  code overlap as `7b14e765e`, which was pushed and verified equal to the remote branch and PR head.
+  The legacy-arity grep, plan graph, docs reachability, and `git diff --check` remained clean.
 - The targeted local B2B API E2E wrapper was stopped before test-host startup after its build spawned
   the documented long-worktree process storm; it created no test log or TRX and provides no pass/fail
   evidence. The orphaned processes were terminated, and remote full-E2E remains the authoritative gate.
