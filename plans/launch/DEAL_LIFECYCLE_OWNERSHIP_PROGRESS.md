@@ -161,6 +161,11 @@ creation explicitly adds the Concert instead of relying on EF graph tracking.
   helper.
 - Post-review verification passed: B2B Web build with 0 warnings and 0 errors, Concert unit suite
   230/230, module-boundary tests 6/6, plan graph 0 errors and 0 warnings, and `git diff --check`.
+- Integrated current `origin/main` through `b6ba59f3f4eae7be6b15117416fca50ff2b5cbc5`, composing the
+  organization-route tenant-ID changes and repository-permission contraction with the navigation-free
+  query shapes. The current-main host build passed with 0 errors and one inherited `UserEntity`
+  warning; Concert units passed 230/230, module boundaries passed 6/6, and the Concert integration
+  project compiled with 0 errors and its two existing nullable warnings.
 - Concert integration tests compile against the navigation-free fixture surface. The runtime
   integration preflight stopped because elevated `docker ps` timed out; exact-head draft-PR CI owns
   the required SQL/Testcontainers execution.
@@ -185,9 +190,10 @@ creation explicitly adds the Concert instead of relying on EF graph tracking.
   coverage. Its integration-test convention finding and incremental ledger-consistency finding are
   resolved; no open findings remain.
 - Review `reviews/Refactor-launch_deal-lifecycle-modules-phase2.md` covered
-  `92ea04166..4b1752304` across correctness, Contracts security, microservice isolation, module
-  boundaries, seeding, C# conventions, and changed-path coverage. Its duplicated `DealType` rule
-  finding is resolved; no open findings remain.
+  current-base range `b6ba59f3f..478771e4c` across correctness, Contracts security, current-main
+  integration, microservice isolation, module boundaries, seeding, C# conventions, and changed-path
+  coverage. Its duplicated `DealType` rule and project-file whitespace findings are resolved; no open
+  findings remain.
 
 ## Decisions, discoveries, blockers, and deviations
 
