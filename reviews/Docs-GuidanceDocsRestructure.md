@@ -5,15 +5,18 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `adb7e255c1995b8b0d191901a45d26c954bba3bc`  _(2026-08-17)_
+**Reviewed up to commit:** `4142a6aa628ceb77487aa5de5c11e2bf3decd2a7`  _(2026-08-17)_
 
-**Security-reviewed up to commit:** `adb7e255c1995b8b0d191901a45d26c954bba3bc`  _(2026-08-17)_
+**Security-reviewed up to commit:** `4142a6aa628ceb77487aa5de5c11e2bf3decd2a7`  _(2026-08-17)_
 
 > Range reviewed: `9205e82d..2b93b45b` (12 commits reviewed; markers moved to `54b91961`, the fix commit, 73 files — markdown plus one Python hook).
-> Markers moved forward twice with nothing re-reviewable in between: once to the fix commit `54b91961`,
-> then to the `origin/main` merge required before enqueueing — that merge brought in only `plans/frontend/*`,
-> `reviews/Fix-merge-gate-command-matching.md` and `.claude/hooks/merge-review-gate.py`, all already
-> reviewed and merged on `main`, and none of it in this branch's scope.
+> Markers moved forward three times with nothing re-reviewable in between: once to the fix commit
+> `54b91961`; then to the first `origin/main` merge required before enqueueing — that merge brought in only
+> `plans/frontend/*`, `reviews/Fix-merge-gate-command-matching.md` and `.claude/hooks/merge-review-gate.py`,
+> all already reviewed and merged on `main`; then to `4142a6aa` after a second such merge, whose only
+> content outside `reviews/` is the `<ConcertablePlatformVersion>` bump `0.1.0-alpha.0.1055` →
+> `0.1.0-alpha.0.1061` across five `Directory.Packages.props`, reviewed and merged on `main` as #645.
+> None of it is in this branch's scope.
 >
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
 >
