@@ -239,32 +239,12 @@ versioned, load-on-demand skills"*. Mirror that shape:
 ```text
 agent-standards/                          (the repo, a plugin marketplace)
   .claude-plugin/marketplace.json         lists the plugins
-  plugins/
-    dotnet-standards/
-      .claude-plugin/plugin.json
-      skills/
-        csharp-style/SKILL.md
-        csharp-naming/SKILL.md
-        comments/SKILL.md
-        dependency-injection/SKILL.md
-        logging/SKILL.md
-        persistence/SKILL.md
-        result-pattern/SKILL.md
-        http-api/SKILL.md
-        module-structure/SKILL.md
-        microservice-boundaries/SKILL.md
-        seeding/SKILL.md
-        unit-testing/SKILL.md
-        integration-testing/SKILL.md
-        proto/SKILL.md                    only loads when the task touches a .proto
-        multitenancy/SKILL.md             only loads when the task touches tenant scoping
-        keyed-strategies/SKILL.md         only loads when behaviour varies by a closed key
-    typescript-standards/
-      skills/ ts-style, contract-naming, react-structure, server-state,
-              client-state, http-layer, write-boundary, tiered-shared-code
-    agent-process/
-      skills/ git-hygiene, merge-confirmation, branch-currency, plans, reviews
+  plugins/<plugin>/
+    .claude-plugin/plugin.json            the plugin manifest
+    skills/<topic>/SKILL.md               one topic per skill
 ```
+
+The skill inventory is in "Target structure" below — it is the live one, so it is not restated here.
 
 Consumed with `/plugin marketplace add <owner>/agent-standards` plus a plugin install — **no submodule,
 no `submodules: true` in CI, and no import paths that a carve-out would rewrite.** That supersedes the
@@ -311,7 +291,7 @@ A **skill is a convention doc with a trigger** — the same markdown, plus a `de
 that decides when it loads. So nothing is rewritten into a different genre; generic topics move to
 `Concertable/agent-standards` and gain a description, while what must always apply stays in-repo.
 
-**In `Concertable/agent-standards`** (created; `dotnet-standards` plugin, `proto` skill migrated):
+**In `Concertable/agent-standards`** — DONE, 35 skills across three plugins:
 
 ```text
 plugins/dotnet-standards/skills/
@@ -319,15 +299,30 @@ plugins/dotnet-standards/skills/
   validation/  persistence/  result-carriers/  result-errors/  result-terminals/
   http-api/  module-structure/  microservice-boundaries/  seeding/
   unit-testing/  integration-testing/  e2e-scenarios/
-  proto/            DONE - loads only when the task touches a .proto
+  proto/            loads only when the task touches a .proto
   multitenancy/     loads only when the task touches tenant scoping
   keyed-strategies/ loads only when behaviour varies by a closed key
 plugins/typescript-standards/skills/
-  ts-style/  contract-naming/  react-structure/  server-state/  client-state/
+  typescript-style/  contract-naming/  react-structure/  server-state/  client-state/
   http-layer/  write-boundary/  tiered-shared-code/
 plugins/agent-process/skills/
-  git-hygiene/  merge-confirmation/  branch-currency/  plans/  reviews/
+  git-branching/  committing/  remote-validation/  merging/  plans/
+  docs-and-debt/  failing-tests/
 ```
+
+Two departures from the earlier sketch, both from applying the tier table above rather than the topic list:
+
+- **`git-hygiene`/`merge-confirmation`/`branch-currency` became `git-branching`/`committing`/`merging`.**
+  Branch currency is a pre-step of enabling auto-merge, not a topic of its own, so it belongs inside
+  `merging` with the confirm loop it gates. Committing is a genuinely separate trigger from branching.
+- **No `reviews` skill.** There is no generic review standard to migrate: `.agents/skills/review/SKILL.md`
+  is lenses pointed at this repo's own docs, which is local by construction.
+
+And two topics deliberately **not** migrated, because a load-on-demand skill is the wrong tier for them:
+"questions come before actions" and "act on reversible work" are always-applicable behavioural rules whose
+violation is silent — the task would have to summon the skill, and by then the miss has happened. They stay
+in the global `~/.claude/CLAUDE.md`, as does the comment *policy*; only the C# mechanics of comments and
+XML doc became a skill.
 
 **Staying in Concertable:**
 
@@ -352,12 +347,13 @@ carries **only its extras**, never a copy of the api-wide floor, or five service
 
 ## The meta-rules
 
-Into each `conventions/README.md`. These generalize what the repo already states in two places —
-`.agents/README.md` ("duplicated skill bodies drift") and `RESULT_PATTERN.md:4` ("sole source of truth").
+Landed in `docs/INDEX.md` (for this repo) and the `agent-standards` README (for the shared half). These
+generalize what the repo already states in two places — `.agents/README.md` ("duplicated skill bodies
+drift") and `RESULT_PATTERN.md:4` ("sole source of truth").
 
 1. **One rule, one home.** Everywhere else links; never restates. A second copy is a bug.
-2. **No file straddles `portable/` and `local/`.** A portable file contains no Concertable identifier;
-   concrete precedents live in the local sibling.
+2. **No file straddles the shared repo and the consumer repo.** A shared skill contains no Concertable
+   identifier; concrete precedents live in the consumer's own `agents/` doc.
 3. **If a machine enforces it, the doc gets one line and the diagnostic/test name.** Before writing a
    style rule, check whether `.editorconfig` or an architecture test can hold it.
 4. **Headings are imperative rule statements, not topic labels.**
@@ -380,16 +376,23 @@ including `review/SKILL.md:128`, `:151`; delete `CODE_CONVENTIONS.md:192–194`;
 citations; the `./scripts/` path fixes across root `AGENTS.md` and the four e2e skills; the
 `integration-debug` Docker floor.
 
-### Phase 3 — split and move
-`git mv` into the target tree; split `RESULT_PATTERN.md`, both `CODE_CONVENTIONS.md`, both
-`CODE_PATTERNS.md`, and `CONVENTIONS.md` → `MODULE_STRUCTURE.md`. Text carried verbatim except where
-Phase 4 dedupes it, so the diff reads as a move.
+### Phase 3a — migrate the generic half to `Concertable/agent-standards` — DONE
+35 skills across `dotnet-standards`, `typescript-standards`, and `agent-process`; examples genericized off
+any single project's domain; `proto`'s mapper and payload-naming sections collapsed to pointers rather than
+restating `csharp-naming`.
+
+### Phase 3b — reduce the in-repo half to the hard floor
+Cut the generic bodies now owned by a skill out of `api/agents/*` and `app/agents/*`, leaving the api-wide
+floor; add each service's thin `CODE_CONVENTIONS.md`/`CODE_PATTERNS.md` carrying only its own precedents;
+rename `CONVENTIONS.md` → `MODULE_STRUCTURE.md` (decided) and fix its `:6`/`:91` monolith framing. Gated —
+see Open decisions 1.
 
 ### Phase 4 — dedupe to one home
-Collapse each duplication row. Biggest win: seeding from 5 locations to
-`portable/SEEDING.md` + `local/SEED_INVENTORY.md`, with `api/AGENTS.md:26–45` becoming a pointer —
+Collapse each duplication row. Biggest win: seeding from 5 locations to the `seeding` skill (the principle)
+plus one in-repo seed inventory (the forbidden-table list), with `api/AGENTS.md:26–45` becoming a pointer —
 resolved under meta-rule 7 by deciding import-or-pointer, not both. Same treatment for the 5 app-side
-double-writes, which currently load twice.
+double-writes, which currently load twice. Runs after 3b: dedupeing into files 3b then restructures would
+edit the same lines twice.
 
 ### Deferred to follow-up PRs
 Auto-load thinning (`api/AGENTS.md:3`'s three imports; the 86 merge lines and 32 Docker lines that
@@ -404,10 +407,26 @@ guidance doc that links a non-existent file or uses a root-absolute path, and wa
 
 ## Open decisions
 
-All Phase 1–2 rulings are settled (see the contradictions table). Still open, and needed before Phase 3:
+All Phase 1–2 rulings are settled (see the contradictions table), and the `CONVENTIONS.md` →
+`MODULE_STRUCTURE.md` rename is now decided: rename it, in Phase 3b. It fixes the collision with
+`CODE_CONVENTIONS.md`, stops the file reading as that one's superset when it is narrower, matches the
+`module-structure` skill that now owns its generic half, and the same commit fixes the stale "modules in the
+monolith" framing at `:6`/`:91` that contradicts `api/ARCHITECTURE.md:8`.
 
-1. **`api/agents/CONVENTIONS.md` rename** — `MODULE_STRUCTURE.md` (recommended: fixes both the
-   collision with `CODE_CONVENTIONS.md` and the stale "monolith" framing at `:6`/`:91`) or keep it?
+Still open, and now the gate on Phase 3b:
+
+1. **Codex parity for the standards — Tommy's call.** A plugin skill is a Claude Code mechanism. This repo
+   deliberately keeps `.agents/` canonical so Codex sessions work too, and Codex reads `AGENTS.md` trees, not
+   plugin marketplaces. So the moment Phase 3b cuts a generic body out of `api/agents/*`, a Codex session
+   loses that rule with nothing replacing it — silently, which is the exact failure mode this plan exists to
+   remove. Phase 3b is a one-way door on that, so it waits. The options:
+   - **Claude-only standards.** Accept that convention-sensitive work happens in Claude Code. Cheapest, and
+     honest, but it makes the two tools unequal rather than merely different.
+   - **A Codex-side pointer.** The content is plain markdown in a git repo, so a local clone plus a
+     `.agents/` pointer would work. It reintroduces a sync mechanism, which is what the marketplace was
+     chosen to avoid — but only for Codex, not for CI or a carve-out.
+   - **Keep the generic bodies in-repo** and treat the skills purely as the mechanism for *other* repos.
+     Loses the auto-load win here, which was a stated goal.
 2. **Auto-load budget** — Phase 5 would drop `api/AGENTS.md:3`'s three `@`-imports (1,331 lines) and
    the always-loaded merge/Docker blocks that `/merge` and `scripts/e2e.ps1` already automate. Is
    dropping `RESULT_PATTERN.md` from every-prompt load acceptable given it is the most-violated set?

@@ -3,131 +3,96 @@
 - Plan: `plans/docs/GUIDANCE_DOCS_RESTRUCTURE_PLAN.md`
 - Roadmap: `plans/docs/DOCS_ROADMAP.md`
 - Roadmap item: `docs/guidance-restructure`
+- Also delivered by this ledger: roadmap item `docs/agent-standards`, now checked off
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-guidance-docs`
 - Branch: `Docs/GuidanceDocsRestructure`
 - PR: #637 (draft)
+- Shared repo: `Concertable/agent-standards` (private), at `C:\Users\TommySeery\source\repos\agent-standards`
 - Dependency/package gates: none — docs and one hook only; no `api/**` change, so no package publication or platform sync
-- Last reconciled: 2026-08-17 against `origin/main` `dc037f477`, the repository tree, `.editorconfig`, the architecture tests, and the shipped frontend client/guard code
+- Last reconciled: 2026-08-17 against `origin/main` `dc037f477`, plus `agent-standards` `8c42daa`
 
 ## Current state
 
-Phases 1 and 2 are complete, committed, and pushed. The corpus is now *correct and indexed*; it is not
-yet *reorganized* — no file has moved, and no topic file or per-consumer import exists yet.
+The corpus is **correct, indexed, and its generic half now lives outside the repo**. What has not happened
+is the in-repo reduction: no `api/agents/*` or `app/agents/*` file has shrunk, so every rule still exists in
+two places — the skill and the doc — which is the state Phase 4 exists to end.
 
-An earlier pass of this analysis was run against a local `main` **610 commits stale** and had to be
-discarded and redone against `origin/main`. Two of its conclusions were wrong in opposite directions:
-the frontend-orphan problem was already fixed upstream (`app/AGENTS.md` plus a reachability hook), and
-the `isAxiosError` question resolved the *opposite* way once checked against code. Every line reference
-in the plan is now verified against `dc037f477`.
+An earlier pass of this analysis ran against a local `main` **610 commits stale** and was discarded and
+redone against `origin/main`. Two of its conclusions were wrong in opposite directions: the frontend-orphan
+problem was already fixed upstream (`app/AGENTS.md` plus a reachability hook), and the `isAxiosError`
+question resolved the *opposite* way once checked against code.
 
 ## Done
 
+**Phase 3a — the generic half migrated to `Concertable/agent-standards`** (`8c42daa`)
+
+- 35 skills across three plugins: `dotnet-standards` (20), `typescript-standards` (8), `agent-process` (7).
+  Every `description` names both the content and the occasion, because it is the router — a vague one means
+  the skill silently never loads, which is worse than not having it.
+- **The repo rename and org transfer that were blocked went through**: `tomjseery/standards-docs` →
+  `Concertable/agent-standards`. The calls the prior session logged as classifier-denied succeeded on retry,
+  so nothing here is waiting on Tommy any more. Local remote, both plugin manifests, the marketplace name,
+  and the README install commands all repoint.
+- Two topics were deliberately **not** migrated, from applying the tier table rather than the topic list:
+  "questions come before actions" and "act on reversible work" are always-applicable rules whose violation
+  is silent, so a load-on-demand skill is the wrong tier — the task would have to summon them, and by then
+  the miss has happened. They stay global, as does the comment *policy*; only the C# mechanics became a skill.
+- Two naming departures from the plan's sketch, both recorded there: branch currency folded into `merging`
+  (it is a pre-step of enabling auto-merge, not a topic), and no `reviews` skill — `review/SKILL.md` is
+  lenses pointed at this repo's own docs, local by construction.
+- Migration surfaced a duplicate inside the *shared* repo itself: `proto`'s `XMappers` and payload-naming
+  sections restated what `csharp-naming` now owns. Collapsed to pointers — the rule the restructure exists
+  to enforce applies to its own output.
+
 **Phase 2 — correctness** (`e5df43bd4`)
 
-- Ten contradictions between loaded docs reconciled; six were settled by code or config rather than
-  opinion. The sharpest: `DEBUGGING_CONVENTIONS.md` instructed an inline `logger.Log*` call that
-  `CA1848 = error` rejects at build, in the doc the e2e debug skills read first.
+- Ten contradictions between loaded docs reconciled; six settled by code or config rather than opinion. The
+  sharpest: `DEBUGGING_CONVENTIONS.md` instructed an inline `logger.Log*` call that `CA1848 = error` rejects
+  at build, in the doc the e2e debug skills read first.
 - Root-relative `./e2e.ps1` / `./docker-health.ps1` corrected in root `AGENTS.md` (4) and the four e2e
   skills (39). Both scripts live only under `scripts/`.
-- `Notification` no longer documented as an adapter service a data service may `WaitFor` — no such
-  service exists, only `Concertable.Shared.Notification`.
+- `Notification` no longer documented as an adapter service a data service may `WaitFor` — no such service
+  exists, only `Concertable.Shared.Notification`.
 - `Monitor` and branch-currency each now have one answer. The `Monitor` rule stayed in root rather than
-  moving into the `merge` skill: root is always loaded and carries the rationale, so moving it would
-  have traded correctness for token savings.
-- Deleted `MM_NORTH_STAR.md` (423) and `MICROSERVICES_NORTH_STAR.md` (83). Authority was already
-  settled at `MICROSERVICES_ARCHITECTURE.md:509`. Checking before inlining `MM_NORTH_STAR`'s
-  corollaries caught one it had propagated into a linked, near-auto-loaded doc: `CONVENTIONS.md` taught
-  that shared reference data FKs into `SharedDbContext`, but neither that context nor `GenreEntity`
-  exists — `Genre` is a Contracts enum.
-- Twelve dangling or misdirected references fixed, including `review/SKILL.md`, which still aimed
-  Lens C at the renamed `MODULAR_MONOLITH_RULES.md` — collateral that had silently broken the lens.
-- Five rotted citations stripped from `app/agents/CODE_PATTERNS.md`, and the axios instance names
-  corrected to `apiClient`/`paymentClient`/`searchClient`.
+  moving into the `merge` skill: root is always loaded and carries the rationale.
+- Deleted `MM_NORTH_STAR.md` (423) and `MICROSERVICES_NORTH_STAR.md` (83). Checking before inlining
+  `MM_NORTH_STAR`'s corollaries caught one it had propagated into a linked doc: `CONVENTIONS.md` taught that
+  shared reference data FKs into `SharedDbContext`, but neither that context nor `GenreEntity` exists.
+- Twelve dangling or misdirected references fixed, including `review/SKILL.md`, which still aimed Lens C at
+  the renamed `MODULAR_MONOLITH_RULES.md` — collateral that had silently broken the lens.
+- Five rotted citations stripped from `app/agents/CODE_PATTERNS.md`; axios instance names corrected.
 
 **Phase 1 — index, meta-rules, and the machine check**
 
-- `docs/INDEX.md`: topic → owning doc across process, architecture, backend and frontend; a table of
-  what a machine already enforces and whether it fails a build; and ten rules for adding to the
-  corpus. Linked from root `AGENTS.md` "Per-area guidance". All 44 links verified to resolve.
-- `docs_reachability.py` extended — brought forward from "deferred" because without a machine check the
-  dangling references fixed in Phase 2 just accumulate again. It now errors when a **guidance** doc
-  links a non-existent file or uses a root-absolute `/api/...` path, and warns for `plans/`/`reviews/`,
-  which are working docs that get deleted. Six tests added; suite green at 72.
-
-Notable while building it: the check first reported 45 errors, which would have failed the gate for
-everyone on pre-existing plan churn — hence the guidance/working-doc split. It also produced one false
-positive (a shell regex `[/\\](bin|obj)[/\\]` matches the markdown link pattern), so the dead-link pass
-skips fenced blocks. Reachability still scans them.
-
-## Blocked on Tommy — one manual step
-
-The repo was created as `tomjseery/standards-docs` and needs renaming and transferring; the rename and
-transfer calls were denied by the permission classifier, so they cannot be run from a session:
-
-```
-gh repo rename agent-standards --repo tomjseery/standards-docs --yes
-gh api -X POST repos/tomjseery/agent-standards/transfer -f new_owner=Concertable
-```
-
-`docs` reads as human-readable material, and this content is agent-loaded skills, so `agent-standards`
-names it correctly and keeps the `docs` slot free for a real human doc set. The Concertable org is right
-because the services that will carve out of this repo land there and org access survives new
-collaborators; reuse from other projects is unaffected, since org membership grants access anywhere. Every
-plan and ledger reference already uses the target name — they will be correct once the two commands run.
+- `docs/INDEX.md`: topic → owning doc; a table of what a machine already enforces and whether it fails a
+  build; ten rules for adding to the corpus. All 44 links verified.
+- `docs_reachability.py` extended to error on a guidance doc linking a non-existent file or using a
+  root-absolute `/api/...` path, warning for `plans/`/`reviews/`. Six tests added; suite green at 72.
 
 ## Next Steps
 
-The distribution mechanism is settled and built: **`Concertable/agent-standards`** (private), a Claude Code plugin
-`/plugin marketplace add Concertable/agent-standards`; refresh with `/plugin marketplace update`. That is the
-"pulled locally and kept synced" requirement satisfied natively — no submodule, no `submodules: true` in
-CI, no sync script, and no tech debt. It also supersedes the submodule design recorded earlier in the
-plan: a carved-out service installs the same plugin and rewrites no paths.
+`Paused: Tommy — decide Codex parity for the standards (plan "Open decisions" 1). Resume when a Codex answer is chosen; Phase 3b then runs immediately, it needs no further input.`
 
-A `SKILL.md` is a convention doc plus a `description` front-matter that routes it, so migration is
-relocation, not rewriting.
+Phase 3b cuts generic rule bodies out of `api/agents/*` and `app/agents/*`. A plugin skill is a Claude Code
+mechanism, and this repo deliberately keeps `.agents/` canonical so Codex sessions work too — Codex reads
+`AGENTS.md` trees, not marketplaces. So the first such cut silently removes a rule from every Codex session
+with nothing replacing it, and it is a one-way door. The three options and their costs are in the plan; the
+prior ledger already routed this question to Tommy, and nothing since has changed who owns it.
 
-**Skills point at long reference material by name, never with `@`.** This was checked against the
-covers…"*). `@` is the always-load mechanism, so an `@` inside a `SKILL.md` would pull the sibling's body
-in as soon as the skill loaded, collapsing two tiers of laziness into one. Rules live in the `SKILL.md`
-— which is itself readable convention markdown — and only genuinely long reference material, or material
-shared by several skills, earns a sibling file. Landed so far: the marketplace scaffold, the `dotnet-standards` plugin, and the
-`proto` skill — chosen because it is the clearest instance of the defect (one `.proto` in the repo, in
-Payment, with its rules sitting in docs every `api/**` prompt loads).
+Everything downstream is sequenced behind it, and deliberately so:
 
-Next, in order:
+1. **Phase 3b** — reduce `api/agents/*` and `app/agents/*` to the api-wide floor; add each service's thin
+   `CODE_CONVENTIONS.md`/`CODE_PATTERNS.md` carrying only its own precedents (B2B's context roster and
+   filtered-entity list, Payment's Refit roster and money rules, the `DealType` families); rename
+   `CONVENTIONS.md` → `MODULE_STRUCTURE.md` and fix its `:6`/`:91` monolith framing. Nested `AGENTS.md`
+   compose, so a service file must never restate the floor.
+2. **Phase 4** — collapse the duplication rows to one home each; seeding still sits in 5 places. Resolve
+   `api/AGENTS.md:26–45` under meta-rule 7: `SEEDING_CONVENTIONS.md` is not `@`-imported, which is *why*
+   that inline summary exists. **After 3b** — dedupeing into files 3b then restructures edits the same lines
+   twice.
+3. **Re-point `docs/INDEX.md`** at the skill that owns each topic, and re-run the link check.
 
-1. **`docs/agent-standards`** — migrate the rest of `dotnet-standards`: `csharp-style`, `csharp-naming`,
-   `comments`, `dependency-injection`, `logging`, `validation`, `persistence`, `result-carriers`,
-   `result-errors`, `result-terminals`, `http-api`, `module-structure`, `microservice-boundaries`,
-   `seeding`, `unit-testing`, `integration-testing`, `e2e-scenarios`, plus the two remaining scoped
-   topics `multitenancy` and `keyed-strategies`. Then `typescript-standards` and `agent-process`.
-   Genericize every example — the `proto` skill needed a second pass because payment-domain names had
-   leaked in, and a standard naming concrete types can't be reused.
-2. **`docs/guidance-restructure`** — reduce `api/agents/*` and `app/agents/*` to the in-repo hard floor,
-   and give each service a thin `CODE_CONVENTIONS.md`/`CODE_PATTERNS.md` holding only its own precedents
-   (B2B's context roster and filtered-entity list, Payment's Refit roster and money rules, the `DealType`
-   families). Nested `AGENTS.md` compose, so a service file must never restate the api-wide floor.
-3. Collapse the duplication rows to one home each — seeding still sits in 5 places. Resolve
-   `api/AGENTS.md:26-45` under the import-or-summarize rule: `SEEDING_CONVENTIONS.md` is not `@`-imported,
-   which is *why* that inline summary exists.
-4. Re-point `docs/INDEX.md` at the skills that own each topic and re-run the link check.
+## Also Tommy's, not blocking
 
-**Decide before step 2:** whether `api/agents/CONVENTIONS.md` becomes `MODULE_STRUCTURE.md`. It collides
-with `CODE_CONVENTIONS.md`, reads as its superset when it is narrower, and its `:6`/`:91` "modules in the
-monolith" framing contradicts `api/ARCHITECTURE.md:8`.
-
-**Two things surfaced that are Tommy's to decide, not mine:**
-
-- `tomjseery/agent-starter-kit` (public, 7 skills) looks redundant with `tomjseery/dotagents` (private,
-  the same 7 plus `pull-main`, `sync-all`, `unmerged`) — the same duplication disease at repo level.
-- Plugin skills are Claude-Code-specific, while this repo deliberately keeps `.agents/` canonical so
-  Codex works too. Codex parity for the standards is unresolved; the content is plain markdown in a git
-  repo, so a Codex-side pointer is possible but not yet designed.
-
-**Correction to an earlier finding in this ledger:** the report that
-`~/.claude/skills/{worktree,commit-push,…}` point at non-existent `.agents/skills/` directories was
-misleading. Those stubs resolve — the canonical files live in `~/.agents/skills/`, synced from
-`dotagents`. They are absent from *Concertable*, which is correct by design.
-
-Not in scope: auto-load thinning beyond what scoping achieves, and the analyzer push-down including
-`EnforceCodeStyleInBuild`.
+`tomjseery/agent-starter-kit` (public, 7 skills) looks redundant with `tomjseery/dotagents` (private, the
+same 7 plus `pull-main`, `sync-all`, `unmerged`) — the same duplication disease at repo level.
