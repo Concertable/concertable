@@ -5,7 +5,7 @@
 - Roadmap item: `launch/rate-limiting`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-launch_rate-limiting`
 - Branch: `Feature/launch_rate-limiting`
-- PR: #TBD (Phase 1, draft — Concertable.ServiceDefaults rate-limiting seam)
+- PR: #646 (Phase 1, draft — Concertable.ServiceDefaults rate-limiting seam)
 - Dependency/package gates: Phase 2 (Auth + B2B consumers) is delivery-gated on Phase 1's ServiceDefaults
   package publishing + the `chore/platform-sync-*` pin bump. No inbound blockers.
 - Last reconciled: 2026-08-17, from `origin/main` + repository evidence.
