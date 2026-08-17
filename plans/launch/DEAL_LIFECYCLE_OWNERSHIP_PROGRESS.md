@@ -5,9 +5,9 @@
 - Roadmap item: `launch/deal-lifecycle-ownership`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules`
 - Branch: `Refactor/launch_deal-lifecycle-modules`
-- PR: draft implementation PR [#625](https://github.com/Concertable/concertable/pull/625) at verified correction head `cea004a225d04e1ce92abb0eac1b061220e2bdc2`; docs-only decision PR #622 merged as `5c33f849444dda60ece44070353716c08819b2d8`; rejected PR #614 is closed and retired
-- Dependency/package gates: Phase 1 is reopened to replace discarded legacy-structure assertions with durable boundary-behaviour coverage. Phase 2 must not start until that gate is green.
-- Last reconciled: 2026-08-17 after the legacy-state/source-layout assertions were removed, the corrected unit suite passed, and local, remote, and PR #625 matched `cea004a225d04e1ce92abb0eac1b061220e2bdc2`
+- PR: draft implementation PR [#625](https://github.com/Concertable/concertable/pull/625) at verified checkpoint head `40cd20957289ef6117ec4926adcf5a6c8172462c`; docs-only decision PR #622 merged as `5c33f849444dda60ece44070353716c08819b2d8`; rejected PR #614 is closed and retired
+- Dependency/package gates: Phase 1 characterization is complete locally. Its work head must be published, reviewed, and pass exact-head draft-PR CI before Phase 2 starts.
+- Last reconciled: 2026-08-17 after auditing the durable lifecycle boundary coverage, adding the two missing observable cases, and passing the focused local build and invariants
 
 ## Current state
 
@@ -20,12 +20,16 @@ model, contextual step contracts, and module-local step resolver. There is no um
 shared lifecycle state, workflow module, cross-module resolver, or parent state machine. A combined
 status exists only as a read projection.
 
-Phase 1 remains in progress. The exact shared-state topology and source/file inventory tests were a
-design error: they froze the legacy `LifecycleState` abstraction and current owner layout that later
-phases deliberately delete. Those additions are removed. Characterization must instead pin observable
-outcomes at module or API boundaries so the same tests survive the ownership split. The reserved
-Opportunity, Application, Booking, and Concert namespace guard remains valid because it enforces the
-target dependency direction.
+Phase 1 characterization is complete locally. Existing integration coverage already pins both
+payment/Accept arrival orders, payment failures, pre- and post-Concert cancellation, late-capture
+compensation, immutable Contract snapshots, Invoice creation, and duplicate settlement success. The
+two missing cases are now covered: payment-webhook redelivery asserts exactly one persisted Concert,
+and a failed settlement followed by a successful retry reaches the existing completion outcome. No
+new test asserts the legacy shared lifecycle topology, transition table, source layout, or filenames.
+
+The reserved Opportunity, Application, Booking, and Concert namespace guard remains valid because it
+enforces the target dependency direction. Phase 1 now awaits publication, implementation review, and
+exact-head draft-PR CI before Phase 2 may begin.
 
 Rejected PR #614 is closed, and its DealTerms branch and worktree were retired with exact-head checks.
 The fresh implementation branch contains only current-main Deal vocabulary; none of the rejected
@@ -33,11 +37,10 @@ runtime change was carried forward.
 
 ## Next Steps
 
-1. Audit existing boundary-level coverage for accept/payment arrival order, cancellation, settlement
-   retry, immutable Contract, Invoice, and exactly-once Concert creation; add only missing observable
-   behaviour tests that remain valid after the module split.
-2. Run the focused gates, checkpoint the verified remote head, and route that exact range through code
-   review before beginning Phase 2.
+1. Publish the verified Phase 1 characterization work head from starting remote head
+   `40cd20957289ef6117ec4926adcf5a6c8172462c` through the plan push protocol.
+2. Route the resulting exact implementation range through code review and resolve every actionable
+   finding; Phase 2 remains closed until that review and exact-head draft-PR CI are green.
 
 ## Completed work
 
@@ -70,6 +73,8 @@ runtime change was carried forward.
   correction is recorded in this commit.
 - Published correction `cea004a225d04e1ce92abb0eac1b061220e2bdc2`, verified local HEAD, the
   remote branch, and PR #625 `headRefOid` matched, and corrected the draft PR title and description.
+- Audited Phase 1 boundary coverage and added only the missing settlement-recovery flow and direct
+  exactly-once Concert assertion; the existing coverage already protects the other required outcomes.
 
 ## Verification
 
@@ -98,6 +103,13 @@ runtime change was carried forward.
   #625 `headRefOid` all equalled `3d0fc5a823cad198f8de878aecef5928036f6c5f`.
 - Correction publication: local HEAD, `origin/Refactor/launch_deal-lifecycle-modules`, and draft PR
   #625 `headRefOid` all equalled `cea004a225d04e1ce92abb0eac1b061220e2bdc2`.
+- `dotnet build api/Concertable.B2B/src/Modules/Concert/Tests/Concertable.B2B.Concert.IntegrationTests/Concertable.B2B.Concert.IntegrationTests.csproj --configuration Release`:
+  0 errors; the three warnings are pre-existing `UserEntity`/`ConcertApiTests` warnings.
+- Focused `LifecycleModules_DependOnEachOtherOnlyThroughContracts` architecture test: 1/1 passed in
+  Release.
+- Current candidate `python .agents/hooks/plan_graph.py --root <worktree>`: 0 errors and 0 warnings;
+  `git diff --check`: passed. The integration matrix is pending exact-head draft-PR CI under the
+  remote-validation policy.
 
 ## Reviews
 

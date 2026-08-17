@@ -290,7 +290,7 @@ DealTerms implementation are rejected input, not an implementation base.
 
 - [x] Retire the rejected PR/branch through the repository's safe worktree process; do not merge or
   repair its DealTerms code into the new implementation.
-- [ ] Pin observable acceptance, payment, cancellation, settlement, Contract, Invoice, and
+- [x] Pin observable acceptance, payment, cancellation, settlement, Contract, Invoice, and
   Concert-creation outcomes at module or API boundaries before moving ownership. Do not add tests for
   the shared `LifecycleState`, its transition table, executor filenames, source tokens, or other
   implementation structure scheduled for deletion.
