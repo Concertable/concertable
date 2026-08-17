@@ -24,6 +24,6 @@ export function useArtistByIdQuery(id: number) {
 export function useMyArtistQuery() {
   return useQuery({
     queryKey: artistKeys.my(),
-    queryFn: artistApi.getOrganizationArtist,
+    queryFn: artistApi.getMyArtist,
   });
 }

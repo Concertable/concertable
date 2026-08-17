@@ -24,7 +24,7 @@ const artistApi = {
     return data;
   },
 
-  getOrganizationArtist: async (): Promise<Artist | null> => {
+  getMyArtist: async (): Promise<Artist | null> => {
     const { data } = await apiClient.getOptional<Artist>("/organization/artist");
     return data;
   },
