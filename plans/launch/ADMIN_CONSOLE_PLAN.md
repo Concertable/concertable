@@ -94,11 +94,15 @@ beyond what the config/deployment plan already owns platform-wide.
   (`api/Concertable.B2B/src/Modules/Tenant/Concertable.B2B.Tenant.Infrastructure/Services/MembershipService.cs`):
   refuse to remove the last admin so the platform can never lock itself out.
 - `DELETE /api/AdminInvitation/{id}` — revoke a pending invite.
-- `GET /api/Admin/me` — self-check returning whether the caller holds Admin, for the SPA's route guard
-  (mirrors `VenueController.IsOwner`'s shape).
 
-All new endpoints are `[Admin]`-gated except `GET /api/Admin/me`, which is `[Authorize]`-only (same
-reasoning as `InvitationController`: the caller may not hold Admin yet — that's exactly what it answers).
+No separate self-check endpoint: `IsAdmin` is a flat, unparameterized fact about the caller's identity —
+the same shape as the `Memberships` list `UserController.Me()` (`GET /api/auth/me`) already attaches to
+`UserDto` for every B2B app. It's folded into that existing response rather than given its own
+`AdminController` endpoint (an earlier draft added `GET /api/Admin/me` mirroring
+`VenueController.IsOwner`, but that's the wrong precedent — `IsOwner` is a *parameterized, per-resource*
+check (`ownership of venue {id}`), not a flat identity fact; `Memberships` is the correct comparison).
+`AdminController` is therefore `[Admin]`-gated at the class level, with no `[Authorize]`-only exception —
+every action on it requires Admin.
 
 ### 4. Admin is a new top-level `app/web/admin` app — not a folder under `b2b/`
 
@@ -119,7 +123,8 @@ Identity: the shared `User` type (`app/shared/src/features/auth/types.ts`) is al
 intersection with no persona subtypes (see `app/shared/AGENTS.md` — the old `Admin` union member was
 already removed). Admin authority is fully server-enforced per request via `[Admin]`; the SPA needs no
 composed identity layer at all (unlike B2B's `B2bIdentity`) — it reads the base `User` and calls
-`GET /api/Admin/me` for the route guard.
+`GET /api/auth/me` (the same identity call every B2B app makes) for the route guard, reading
+`UserDto.IsAdmin` off the response.
 
 Auth wiring: a new Duende Web client, `ClientIds.Admin` ("admin", already defined in `ClientIds.cs`),
 registered the same way as Venue/Artist — `Config.WebClients` gains an `Admin` case, `SpaClientSettings`
@@ -139,14 +144,16 @@ as one PR or be split for reviewability — see the ledger for the actual PR sha
 
 ### Phase 1 — Admin provisioning backend
 
-- `AdminInvitationEntity` (Domain) + EF configuration + `Concertable.B2B.User.Infrastructure` repository
-  additions (or extend the existing `UserRepository`/`UserDbContext` — no new module).
+- `AdminInvitationEntity` (Domain) + EF configuration + `IAdminRepository`/`AdminRepository`
+  (`Concertable.B2B.User.Infrastructure` — its own repository per `api/agents/CODE_PATTERNS.md`'s "one
+  repository per entity", not folded into `UserRepository`; no new module, `UserDbContext` is shared).
 - `CredentialRegisteredHandler`: invitation-or-bootstrap gate on the `ClientIds.Admin` branch (design
   decision 1); inject `TimeProvider` + the bootstrap-email option.
-- New `AdminController` (`Concertable.B2B.User.Api/Controllers/`): `POST /api/AdminInvitation`,
-  `DELETE /api/AdminInvitation/{id}`, `GET /api/Admin`, `DELETE /api/Admin/{sub}`, `GET /api/Admin/me`.
-  Service layer (`IAdminService`/`AdminService`) mirrors `InvitationService`'s shape; last-admin
-  invariant mirrors `MembershipService.IsLastOwnerAsync`.
+- New `AdminController` (`Concertable.B2B.User.Api/Controllers/`), `[Admin]`-gated at the class level:
+  `POST /api/AdminInvitation`, `DELETE /api/AdminInvitation/{id}`, `GET /api/Admin`,
+  `DELETE /api/Admin/{sub}`. Service layer (`IAdminService`/`AdminService`) mirrors `InvitationService`'s
+  shape; last-admin invariant mirrors `MembershipService.IsLastOwnerAsync`; `IsCurrentUserAdminAsync`
+  backs `UserController.Me()`'s `UserDto.IsAdmin` field, not a separate endpoint (design decision 3).
 - Invite email reuses the existing outbox `IEmailSender` pattern
   (`TenantInvitationCreatedDomainEventHandler` is the template).
 - `./initial-migrations.ps1` re-scaffold for the new entity.
@@ -165,8 +172,9 @@ as one PR or be split for reviewability — see the ledger for the actual PR sha
   verbatim, so the Duende client id and the SPA's `VITE_OIDC_CLIENT_ID` agree, exactly like Venue/Artist
   do today (`venue-web`/`artist-web` match `ClientIds.VenueWeb`/`ClientIds.ArtistWeb`).
 - Routes: `login.tsx` (mirrors `app/web/b2b/venue/src/routes/login.tsx`), `auth.callback.tsx`,
-  `__root.tsx`, `_admin/route.tsx` (guard: calls `GET /api/Admin/me`, redirects non-admins), a landing
-  page listing admins + pending invitations with invite/revoke actions wired to Phase 1's endpoints.
+  `__root.tsx`, `_admin/route.tsx` (guard: calls `GET /api/auth/me`, reads `UserDto.IsAdmin`, redirects
+  non-admins), a landing page listing admins + pending invitations with invite/revoke actions wired to
+  Phase 1's endpoints.
 - Auth service changes: `Config.WebClients` + `SpaClientSettings.Admin` +
   `appsettings.json`/`appsettings.Production.json`/`appsettings.E2E.json` redirect URIs.
 - AppHost wiring: `AppHostExtensions.AddAdminSpa` (mirrors `AddCustomerSpa`); called from
