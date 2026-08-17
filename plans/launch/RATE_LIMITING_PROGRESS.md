@@ -51,13 +51,16 @@ and tested; nothing further is safely implementable locally.
 - **Phase 1 implemented** in `api/Concertable.ServiceDefaults/`: `RateLimitPolicies.cs`,
   `RateLimitingOptions.cs`, `RateLimitingExtensions.cs`. Main csproj excludes `tests/**` from its default
   compile/pack globs (the test project nests under the package folder to inherit its props/nuget config).
-- **Integration test project** `tests/Concertable.ServiceDefaults.IntegrationTests` — boots an in-memory
-  `WebApplication` (TestHost) with a stub endpoint under `RateLimitPolicies.Apply`, drives it past a
-  config-bound limit, and asserts 429 + a `Retry-After` header (Shouldly). Also proves config binding
-  (limit supplied via in-memory config). Named `*.IntegrationTests` (it boots a host + HTTP, so it's an
-  integration test per the conventions, and CI discovers integration tests by that suffix) with sibling
-  `AGENTS.md`/`CLAUDE.md`; the service-fixture apparatus doesn't apply (ServiceDefaults has no Program/DB).
-  Added to `api/Concertable.slnx`; test + Shouldly package versions in ServiceDefaults `Directory.Packages.props`.
+- **Unit test project** `tests/Concertable.ServiceDefaults.UnitTests` — resolves the limiter
+  `AddDefaultRateLimiting` configures (via `Host.CreateApplicationBuilder` → `IOptions<RateLimiterOptions>`
+  → `GlobalLimiter`) and drives `AcquireAsync` past a config-bound limit, asserting the over-limit lease is
+  rejected and carries `MetadataName.RetryAfter`. No host/HTTP/DB — a genuine unit test (`Assert.*`). The
+  HTTP 429/`Retry-After` response mapping (`OnRejected` + `UseDefaultRateLimiting`) is proven on a real
+  endpoint in Phase 2's B2B integration test (the plan's "real endpoint" leg). Sibling `AGENTS.md`/`CLAUDE.md`;
+  added to `api/Concertable.slnx`; test package versions in ServiceDefaults `Directory.Packages.props`.
+  **Why unit, not integration:** the CI harness (`scripts/local-platform.ps1` `Assert-DataAccessAssembly`)
+  requires every `*.IntegrationTests` project to transitively contain `Concertable.DataAccess.Infrastructure`,
+  which a shared-package middleware test cannot — so `*.IntegrationTests` is operationally impossible here.
 - **Distributed-store deferral** logged in `api/TECH_DEBT.md` (in-process limiter loosens per-replica under
   horizontal scale; acceptable at single-instance launch).
 - Plan + this ledger authored earlier.
@@ -65,8 +68,8 @@ and tested; nothing further is safely implementable locally.
 ## Verification
 
 - `dotnet build Concertable.ServiceDefaults.csproj` → 0 warnings, 0 errors.
-- `dotnet test` (`Concertable.ServiceDefaults.IntegrationTests`) → 1 passed. Over-limit request returns
-  `429 TooManyRequests` with a `Retry-After` header; limit driven from bound config.
+- `dotnet test` (`Concertable.ServiceDefaults.UnitTests`) → 1 passed. Over-limit `AcquireAsync` lease is
+  rejected and carries `RetryAfter`; limit driven from bound config.
 - Full solution build / carve / integration matrix deferred to draft-PR CI (remote-first).
 
 ## Reviews
