@@ -5,7 +5,7 @@
 - Roadmap item: `data-access/repository-context-permission-hierarchy`
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable/.worktrees/rpc`
 - Branch: `Refactor/RepositoryPermissionContraction`
-- PR: [#632](https://github.com/Concertable/concertable/pull/632) (draft)
+- PR: [#632](https://github.com/Concertable/concertable/pull/632) (ready, `full-e2e`, currently dequeued)
 - Starting head: `95305c7a909d48a703ab572c2a153fe74d2d4daa`
 - Consumer PR: [#561](https://github.com/Concertable/concertable/pull/561) merged as `249dc8a9df8d9b81271cd2250a01ecf086e97586`.
 - Dependency/package gate: satisfied. Additive producer PR #590 merged as `59fe60e978affe23bcaf53823151eab2acda8ba0`, published platform `0.1.0-alpha.0.1007`, and platform-sync PR #592 merged green as `38e3d8548f10f3ab7a4a951b7c4ce961ec21c863`. Current `origin/main` pins `0.1.0-alpha.0.1009`, which includes the additive DataAccess API.
@@ -51,6 +51,11 @@ PayoutAccount now inherit the combined repository interface and implementation b
 hand-redeclaring generic CRUD. Payment FinancialOperation remains bespoke because it has no repository
 identity contract and participates in a separate unit of work.
 
+The current code and security review found no implementation defect. Review finding `CV1` is resolved
+at `86b702886`: `api/agents/CODE_CONVENTIONS.md` now documents the context-free repository arities,
+capability interfaces, concrete-context-forwarding module aliases, and private concrete-context rule.
+Incremental review of `21cd0aba8..86b702886` found no new issues.
+
 All six B2B and Customer Artist/Venue/Concert read contexts now implement module-specific interfaces
 that expose only named `IQueryable` roots. Production repositories and query services inject those
 interfaces rather than concrete EF contexts, while the shared `ReadDbContext` still enforces no
@@ -70,12 +75,11 @@ topology contract test, and both signup flows attach their registration wait bef
 
 ## Next Steps
 
-1. Push this recovery checkpoint and require exact-head PR #632 CI to supply the
-   shared/B2B/Customer/Payment compile and test evidence unavailable locally.
-2. Review the exact CI-green head, mark the PR ready, apply the full-E2E tier for the published-package
-   shape change, and land it through the merge queue.
-3. Follow package publication and platform sync to green. Then update the durable DataAccess
-   and B2B hierarchy guidance on a separate docs branch, then complete the plan closeout gates.
+1. Push the reviewed `CV1` fix and plan checkpoint, then require exact-head PR CI to pass.
+2. Delete the fully resolved review work order through the address-review closeout, require the new
+   exact head to pass, keep the `full-e2e` tier, and return PR #632 to the merge queue.
+3. On merge, close the source worktree and follow package publication and platform sync to green,
+   then complete the published-baseline plan closeout gates.
 
 ## Completed work
 
@@ -164,6 +168,22 @@ topology contract test, and both signup flows attach their registration wait bef
   context ownership gates remained clean, plan graph reported 0 errors and 0 warnings, and
   `git diff --check origin/main...HEAD` passed.
 - Work head `fa86fd8bb` was pushed and verified equal to draft PR #632's remote `headRefOid`.
+- Recovery checkpoint `21cd0aba8` was pushed and exact-head CI run `32004250451` passed its platform
+  pack, solution build, all service carves, selected unit/integration matrices, and `ci-complete`.
+- Initial code and security review of `92ea04166..21cd0aba8` found no implementation or security issues.
+- Review finding `CV1` was fixed at `86b702886`; obsolete-arity and inherited-context greps, positive
+  hierarchy greps, docs reachability, and `git diff --check` passed.
+- Incremental review of `21cd0aba8..86b702886` found no new correctness, architecture, convention,
+  security, or changed-path coverage issues.
+- Reviewed fix head `86b702886` was pushed from `21cd0aba8`, then verified equal to the remote branch
+  and PR #632 `headRefOid`.
+- PR #632 was marked ready on unchanged remote head `21cd0aba8`; the published-package public-shape
+  trigger selected `full-e2e`, with no contradictory skip label present.
+- The final fetch found the remote head 0 commits behind current `origin/main`; PR #632 entered the
+  merge queue at position 1 in `AWAITING_CHECKS` state on unchanged head `21cd0aba8`.
+- Merge-group run `32009106399` passed the hard-floor build, carve, unit, integration, API E2E, and UI
+  E2E gates. The PR timeline records removal from the queue at `2026-08-17T08:43:23Z` under the
+  `tomjseery` actor; no CI check failed, and the PR is now open, clean, mergeable, and unqueued.
 - Local restore/test and no-restore test attempts repeatedly stalled without compiler or test output;
   their orphaned processes were stopped and no failure result was inferred. Draft-PR CI is the required
   compile/test gate for the exact committed head.
@@ -173,6 +193,10 @@ topology contract test, and both signup flows attach their registration wait bef
   scenario execution gates from normal runner paths.
 
 ## Reviews
+
+- Review of contraction range `92ea04166..21cd0aba8` and clean incremental review of the `CV1` fix
+  through `86b702886` are recorded in `reviews/Refactor-RepositoryPermissionContraction.md`; all
+  findings are resolved.
 
 - Formal and incremental reviews are recorded in
   `reviews/Refactor-DataAccessRepositoryPermissionHierarchy.md`; all findings are resolved.

@@ -5,8 +5,8 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `21cd0aba85ccac98924415b0e54f5645bbc829e8`  _(2026-08-17)_
-**Security-reviewed up to commit:** `21cd0aba85ccac98924415b0e54f5645bbc829e8`  _(2026-08-17)_
+**Reviewed up to commit:** `86b702886fad36dcecf85db4ab487f4420dc480e`  _(2026-08-17)_
+**Security-reviewed up to commit:** `86b702886fad36dcecf85db4ab487f4420dc480e`  _(2026-08-17)_
 
 > Range reviewed: `92ea04166..21cd0aba8` (3 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -23,3 +23,8 @@ module boundaries, seeding, C# conventions, and test coverage of changed paths.
   inherit the deleted `WriteRepository<TEntity, TContext>` and `Repository<TEntity, TContext, TKey>`
   arities and tells specialized repositories to use the removed inherited concrete `context`. Phase 3
   explicitly requires the final DataAccess/B2B hierarchy guidance to land with the contraction.
+
+## Incremental review — 2026-08-17 (CV1 fix)
+
+No issues found. Reviewed `21cd0aba8..86b702886`; the corrected guidance matches the context-free
+repository arities, capability interfaces, module aliases, and concrete-context retention rules.
