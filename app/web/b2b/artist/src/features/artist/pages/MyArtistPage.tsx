@@ -3,11 +3,11 @@ import { EditableProvider } from "@concertable/shared/providers";
 import { DetailsLayout } from "@concertable/web/components/details/DetailsLayout";
 import { DetailsPageSkeleton } from "@concertable/web/components/skeletons/DetailsPageSkeleton";
 import { useArtistStore, ArtistHero, artistSections } from "@concertable/web/features/artists";
-import { useMyArtist } from "../hooks/useMyArtist";
+import { useArtist } from "../hooks/useArtist";
 
 export function MyArtistPage() {
   const { artist, isDirty, isSaving, save, resetDraft, toggleEdit, editMode } =
-    useMyArtist();
+    useArtist();
 
   const draft = useArtistStore((state) => state.draft);
   const setName = useArtistStore((state) => state.setName);

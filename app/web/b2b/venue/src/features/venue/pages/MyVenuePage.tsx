@@ -3,12 +3,12 @@ import { EditableProvider } from "@concertable/shared/providers";
 import { DetailsLayout, type DetailsSection } from "@concertable/web/components/details/DetailsLayout";
 import { DetailsPageSkeleton } from "@concertable/web/components/skeletons/DetailsPageSkeleton";
 import { useVenueStore, VenueHero, venueSections } from "@concertable/web/features/venues";
-import { useMyVenue } from "../hooks/useMyVenue";
+import { useVenue } from "../hooks/useVenue";
 import { MyOpportunitiesSection } from "../components/MyOpportunitiesSection";
 
 export function MyVenuePage() {
   const { venue, isDirty, isSaving, isLoading, save, resetDraft, toggleEdit, editMode } =
-    useMyVenue();
+    useVenue();
 
   const draft = useVenueStore((state) => state.draft);
   const setName = useVenueStore((state) => state.setName);

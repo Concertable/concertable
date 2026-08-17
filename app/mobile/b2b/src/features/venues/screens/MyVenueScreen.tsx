@@ -3,7 +3,7 @@ import { View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { notify } from "@concertable/mobile/lib/toast";
 import {
-  useMyVenue,
+  useVenue,
   useVenueStore,
 } from "@concertable/shared/features/venues";
 import { EditableProvider } from "@concertable/shared/providers";
@@ -26,7 +26,7 @@ export function MyVenueScreen() {
     save,
     toggleEdit,
     resetDraft,
-  } = useMyVenue({
+  } = useVenue({
     onSuccess: () => notify("Venue saved!", "success"),
     onError: () => notify("Failed to save venue.", "error"),
   });
