@@ -287,9 +287,11 @@ Verification gate:
 
 ### Phase 3 — executable transition policy
 
-Status: complete. The pure Domain evaluators and exhaustive tests cover the pinned provider
-vocabularies, every same-revision state pair, identity/freshness rejection, retry/revision, explicit
-cancellation, terminal protection, and provider-confirmed authorization expiry without runtime wiring.
+Status: complete. The Stripe normalizer, provider-neutral Domain evaluators, and exhaustive tests
+cover the pinned provider vocabularies, every same-revision state pair, identity/freshness rejection,
+retry/revision, explicit cancellation, terminal protection, and provider-confirmed authorization
+expiry without runtime wiring. Raw nullable provider evidence normalizes into a closed non-nullable
+operation context before the reusable payment policy runs.
 
 - Implement pure, side-effect-free transition policies for PaymentIntent, SetupIntent, and
   Refund observations. The evaluator accepts the current persisted revision plus a versioned

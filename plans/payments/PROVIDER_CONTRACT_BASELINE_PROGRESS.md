@@ -12,10 +12,15 @@
 
 ## Current state
 
-A locally verified readability refactor now separates the provider contract backbone into named
-evaluators, receiver-owned extensions, immutable transition/status tables, and focused models. Stripe
-observations normalize through `ToNormalized()`, fixed code mappings use frozen collections, and
-`PaymentOperationError` is the single Reunion-backed authority for safe failure messages. The former
+A locally verified domain-boundary refactor now leaves raw Stripe API version, product, status, and
+nullable session evidence in the Stripe normalizer. Successful normalization produces one of five
+closed, non-nullable payment operation contexts and invokes a separate provider-neutral transition
+evaluator. Domain identity, binding, context, freshness, projection equality, terminal protection,
+and legal-transition rules live in focused receiver-owned extensions behind that canonical entry
+point. Stripe request idempotency and webhook/persistence deduplication remain future adapter and
+infrastructure responsibilities. Fixed mappings and transition tables use frozen collections directly,
+without private collection-construction aliases. `PaymentOperationError` remains the single
+Reunion-backed authority for safe failure messages. The former
 `*Specification` evaluator names are removed, and the general C# convention now records this boundary.
 The integration event is named `PaymentOperationStateChanged`; only its stable broker identity carries
 the `.v1` version. Every ordinary extension member in the Payment mapper container touched by this PR
@@ -86,11 +91,19 @@ authorization, both setup kinds, and refund.
 
 ## Next Steps
 
-Push this checkpoint-transport commit, verify local, remote-tracking, and PR head equality, then
+Commit this domain-boundary correction, run incremental implementation and security review over the
+new commit, push the reviewed checkpoint, verify local, remote-tracking, and PR head equality, then
 require exact-head CI to pass at that final head. Keep PR #597 open with auto-merge disabled.
 
 ## Completed work
 
+- Separated raw Stripe normalization from the provider-neutral payment transition evaluator and added
+  direct tests that invoke the reusable domain policy without Stripe types.
+- Replaced the nullable internal session discriminator with a closed operation context for payment,
+  authorization, payment-method setup, payment-method verification, and refund; null remains legal
+  only on untrusted raw Stripe evidence before normalization.
+- Split observation identity, provider binding, domain-context, freshness, projection, and lifecycle
+  rules into receiver-owned C# 14 extensions behind one evaluator entry point.
 - Changed duplicate classification to require the complete mutable persisted projection to be
   unchanged, so same-state safe-failure and capture-deadline changes are applied.
 - Added regressions for a same-state `RequiresPaymentMethod` observation changing the persisted
@@ -159,6 +172,9 @@ require exact-head CI to pass at that final head. Keep PR #597 open with auto-me
 
 ## Verification
 
+- Domain-boundary correction: Payment UnitTests built with 0 warnings and 0 errors; the focused
+  provider-contract suite passed 119 of 119; the complete Payment unit suite passed 482 of 482; and
+  focused Domain and UnitTests formatter verification passed.
 - Plan-managed deterministic-mapper work push: starting remote/PR head
   `e1186d498311c396a5460d6788dd74d04441e3f9`; pushed range `e1186d49..487e1983`; local work head,
   remote-tracking ref, and PR #597 head all verified at `487e19833273c28a9875199069c080c0af9494b2`.
