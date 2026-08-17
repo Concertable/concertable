@@ -18,6 +18,15 @@ if (!installTarget || !packageName) {
 // One representative export per published tier. Node checks stay light (a pure util / constant /
 // type) so a throwaway NodeNext consumer resolves the tier plus its @concertable deps from the feed
 // without dragging heavy component transitive types in. Mobile is metro-only (react-native runtime).
+function b2bChecks(name) {
+  return {
+    node: [
+      `import { TENANT_HEADER } from "${name}/features/tenant/constants";`,
+      `if (TENANT_HEADER !== "X-Tenant-Id") throw new Error("Unexpected ${name} TENANT_HEADER");`,
+    ],
+  };
+}
+
 const CHECKS = {
   "@concertable/shared": {
     node: [
@@ -67,12 +76,8 @@ const CHECKS = {
       'if (!customerClient) throw new Error("Missing @concertable/customer customerClient export");',
     ],
   },
-  "@concertable/b2b": {
-    node: [
-      'import { TENANT_HEADER } from "@concertable/b2b/features/tenant/constants";',
-      'if (TENANT_HEADER !== "X-Tenant-Id") throw new Error("Unexpected @concertable/b2b TENANT_HEADER");',
-    ],
-  },
+  "@concertable/b2b": b2bChecks("@concertable/b2b"),
+  "@concertable/web-b2b": b2bChecks("@concertable/web-b2b"),
   "@concertable/mobile": {
     metro: [
       'import { registerRootComponent } from "expo";',

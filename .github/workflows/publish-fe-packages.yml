@@ -12,6 +12,8 @@ on:
       - 'app/web/b2b/shared/**'
       - 'app/scripts/version-fe-packages.mjs'
       - 'app/scripts/verify-fe-package.mjs'
+      - 'app/scripts/pack-fe-package-alias.mjs'
+      - 'app/scripts/pack-fe-package-alias.test.mjs'
       - 'app/package.json'
       - 'app/package-lock.json'
       - '.github/workflows/publish-fe-packages.yml'
@@ -86,6 +88,18 @@ jobs:
             echo "::endgroup::"
           done
 
+          alias_name=@concertable/web-b2b
+          echo "::group::$alias_name@$VERSION"
+          alias_tarball=$(node app/scripts/pack-fe-package-alias.mjs \
+            app/web/b2b/shared "$alias_name" "$RUNNER_TEMP/fe-packages")
+          node app/scripts/verify-fe-package.mjs "$alias_tarball" "$alias_name"
+          if npm view "$alias_name@$VERSION" version >/dev/null 2>&1; then
+            echo "$alias_name@$VERSION is already published"
+          else
+            npm publish "$alias_tarball" --tag alpha
+          fi
+          echo "::endgroup::"
+
       # Feed sanity: confirm each tier resolves from the registry (not just the local tarball).
       - name: Verify published tiers from the feed
         env:
@@ -97,3 +111,4 @@ jobs:
           node app/scripts/verify-fe-package.mjs "@concertable/mobile@$VERSION" @concertable/mobile --metro-only
           node app/scripts/verify-fe-package.mjs "@concertable/customer@$VERSION" @concertable/customer
           node app/scripts/verify-fe-package.mjs "@concertable/b2b@$VERSION" @concertable/b2b
+          node app/scripts/verify-fe-package.mjs "@concertable/web-b2b@$VERSION" @concertable/web-b2b

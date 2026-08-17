@@ -81,6 +81,10 @@ feed — the npm analogue of the backend carve.
 - [ ] 🟡 **Phase 3** `platform/polyrepo-fullstack` — prove each surface feed-restores its shared deps, `carve-fe-{customer,b2b}` CI, FE
   import-boundary rule, and close the Phase-2 metro/nativewind/tailwind + carve-CSS runtime deferrals.
 
+- [ ] **B2B package topology** `platform/b2b-package-topology` - separate the manager-web tier as
+  `@concertable/web-b2b`, retain `@concertable/b2b` as the cross-platform B2B core, and migrate web
+  and mobile consumers through [`B2B_PACKAGE_TOPOLOGY_PLAN.md`](B2B_PACKAGE_TOPOLOGY_PLAN.md).
+
 ## 4. Per-service doc & guidance locality — 🟠 4a + 4b shipped; 4c deferred
 
 **The stream this roadmap was created to drive.** Guidance was only partly co-located with the service that
