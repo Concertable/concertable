@@ -5,9 +5,9 @@
 - Roadmap item: `launch/deal-lifecycle-ownership`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules`
 - Branch: `Refactor/launch_deal-lifecycle-modules`
-- PR: draft implementation PR [#625](https://github.com/Concertable/concertable/pull/625) at verified reviewed work head `1457a2508db5b69d5a0fa7f05eea78ba412edd76`; docs-only decision PR #622 merged as `5c33f849444dda60ece44070353716c08819b2d8`; rejected PR #614 is closed and retired
-- Dependency/package gates: Phase 1 characterization and review are complete. Replacement exact-head draft-PR CI must pass after removing the vacuous architecture guard, then PR #625 can enter the merge queue. Phase 2 has not started.
-- Last reconciled: 2026-08-17 after publishing and incrementally reviewing the architecture-guard correction
+- PR: draft implementation PR [#625](https://github.com/Concertable/concertable/pull/625) at verified current-main work head `ac7e3799e743657697b73c024b9ec75a7a71760b`, carrying reviewed source head `1457a2508db5b69d5a0fa7f05eea78ba412edd76`; docs-only decision PR #622 merged as `5c33f849444dda60ece44070353716c08819b2d8`; rejected PR #614 is closed and retired
+- Dependency/package gates: Phase 1 characterization and review are complete, and the branch is current with `origin/main`. Replacement exact-head draft-PR CI must pass, then PR #625 can enter the merge queue. Phase 2 has not started.
+- Last reconciled: 2026-08-17 after merging current `origin/main`, rebuilding affected projects, and publishing the exact work head
 
 ## Current state
 
@@ -121,6 +121,8 @@ runtime change was carried forward.
   made it vacuous until the module assemblies exist; Phase 2 now owns meaningful boundary enforcement.
 - Published corrected work head `1457a2508db5b69d5a0fa7f05eea78ba412edd76`; local HEAD, the remote
   branch, and PR #625 `headRefOid` matched exactly before this review checkpoint.
+- Merged current `origin/main` as `ac7e3799e743657697b73c024b9ec75a7a71760b`; the architecture and
+  Concert integration-test projects rebuilt with 0 errors, and local, remote, and PR heads matched.
 
 ## Reviews
 
