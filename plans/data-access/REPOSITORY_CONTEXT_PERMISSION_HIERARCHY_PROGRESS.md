@@ -54,7 +54,8 @@ identity contract and participates in a separate unit of work.
 The current code and security review found no implementation defect. Review finding `CV1` is resolved
 at `86b702886`: `api/agents/CODE_CONVENTIONS.md` now documents the context-free repository arities,
 capability interfaces, concrete-context-forwarding module aliases, and private concrete-context rule.
-Incremental review of `21cd0aba8..86b702886` found no new issues.
+Incremental review of `21cd0aba8..86b702886` found no new issues. Checkpoint head `df6c1a181` passed
+exact-head CI run `32014872614`; the resolved review work order is ready for deletion.
 
 All six B2B and Customer Artist/Venue/Concert read contexts now implement module-specific interfaces
 that expose only named `IQueryable` roots. Production repositories and query services inject those
@@ -75,9 +76,9 @@ topology contract test, and both signup flows attach their registration wait bef
 
 ## Next Steps
 
-1. Push the reviewed `CV1` fix and plan checkpoint, then require exact-head PR CI to pass.
-2. Delete the fully resolved review work order through the address-review closeout, require the new
-   exact head to pass, keep the `full-e2e` tier, and return PR #632 to the merge queue.
+1. Delete the fully resolved review work order through the address-review closeout, push the final
+   source head, and require its exact-head PR CI to pass.
+2. Keep the `full-e2e` tier and return PR #632 to the merge queue.
 3. On merge, close the source worktree and follow package publication and platform sync to green,
    then complete the published-baseline plan closeout gates.
 
@@ -177,6 +178,9 @@ topology contract test, and both signup flows attach their registration wait bef
   security, or changed-path coverage issues.
 - Reviewed fix head `86b702886` was pushed from `21cd0aba8`, then verified equal to the remote branch
   and PR #632 `headRefOid`.
+- Plan/review checkpoint `df6c1a181` was pushed and verified equal to the remote branch and PR head;
+  exact-head CI run `32014872614` passed its platform pack, solution build, all service carves,
+  selected unit/integration matrices, and `ci-complete`.
 - PR #632 was marked ready on unchanged remote head `21cd0aba8`; the published-package public-shape
   trigger selected `full-e2e`, with no contradictory skip label present.
 - The final fetch found the remote head 0 commits behind current `origin/main`; PR #632 entered the
