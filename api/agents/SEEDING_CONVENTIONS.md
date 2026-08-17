@@ -106,7 +106,7 @@ public async Task SeedAsync(CancellationToken ct)
 }
 ```
 
-Manager `User` rows are owned by `AuthDevSeeder`, which writes credentials in the Auth DB and publishes `CredentialRegisteredEvent` per credential through the outbox. The B2B/Customer `CredentialRegisteredHandler` writes the matching `User` row in its own DB. There is no separate `UserEventSeeder` in the E2E projects — `[user].[Users]` and B2B's `[user].[AdminProfiles]` stay in each `DbFixture`'s `TablesToIgnore`, so the rows survive Respawner resets.
+Manager `User` rows are owned by `AuthDevSeeder`, which writes credentials in the Auth DB and publishes `CredentialRegisteredEvent` per credential through the outbox. The B2B/Customer `CredentialRegisteredHandler` writes the matching `User` row in its own DB, and B2B's `AdminProvisioningHandler` reacts to the same event to grant `[admin].[AdminProfiles]`. There is no separate `UserEventSeeder` in the E2E projects — `[user].[Users]` and `[admin].[AdminProfiles]` stay in each `DbFixture`'s `TablesToIgnore`, so the rows survive Respawner resets.
 
 ## Idempotency
 

@@ -33,7 +33,7 @@ Things you must NOT seed directly. Each of these has a production write path tha
 
 - **Read-model projections / event-synced replicas** — B2B's & Search's `VenueReadModel`, `ArtistReadModel`, `ConcertReadModel`, anything in a `[concert]` / `[venue]` / `[artist]` / `[search]` projection schema, **and Customer's `VenueEntity` / `ArtistEntity` / `ConcertEntity`** (named `*Entity` because in Customer's isolated context they're the only model of that concept — but they're still populated solely by `XChangedEvent` handlers, so the same rule applies). Written by `XChangedEvent` handlers, never seeded directly.
 - **`UserEntity` rows** in B2B, Customer, and Payment user tables. Written by `CredentialRegisteredHandler` reacting to `CredentialRegisteredEvent` from Auth.
-- **`AdminProfileEntity` rows.** Written alongside admin users by `CredentialRegisteredHandler`; venue/artist authority lives in Tenant memberships, not manager-profile tables.
+- **`AdminProfileEntity` rows.** Written by B2B's `AdminProvisioningHandler` reacting to the same `CredentialRegisteredEvent`; venue/artist authority lives in Tenant memberships, not manager-profile tables.
 - **Stripe `PayoutAccount` rows** in Payment. Provisioned by `CredentialRegisteredHandler` in Payment.
 - **Inbox / outbox / messaging rows.** Owned by the messaging infrastructure.
 - **Anything else whose only production write is in an `IIntegrationEventHandler` / `IDomainEventHandler` / outbox dispatcher / webhook handler.**
