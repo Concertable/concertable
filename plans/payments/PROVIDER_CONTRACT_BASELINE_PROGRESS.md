@@ -5,8 +5,8 @@
 - Roadmap item: `payments/provider-contract-baseline`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\payments_provider-contract-baseline`
 - Branch: `Feature/payments_provider-contract-baseline`
-- PR: #597 — https://github.com/Concertable/concertable/pull/597 — open at remote head `af5bb9c3ed6aef2bc0fc50e442eec1e9a5ed9e88`; reviewed correction work head `45faf5d7dc960528cc0767099d29e1b15cafe109` is committed locally but not yet pushed; auto-merge is disabled and the PR is not queued
-- Review readiness: **REVIEW COMPLETE — PUSH AND EXACT-HEAD CI REQUIRED** — the six original review findings remain resolved; incremental implementation and security review is current through `45faf5d7dc960528cc0767099d29e1b15cafe109` with no new findings
+- PR: #597 — https://github.com/Concertable/concertable/pull/597 — open; reviewed work head `6e0482d6eac215ec844d965860975635c1da9c00` is verified at the local, remote-tracking, and PR refs; exact-head CI is required at the final checkpoint-transport head; auto-merge is disabled and the PR is not queued
+- Review readiness: **REVIEW COMPLETE — EXACT-HEAD CI REQUIRED** — the six original review findings remain resolved; incremental implementation and security review is current through correction head `45faf5d7dc960528cc0767099d29e1b15cafe109` with no new findings
 - Dependency/package gates: Phases 1 through 4 are locally complete; the production/live-mode Stripe account has no webhook endpoint, so future deployment is locked to `2025-01-27.acacia` and must create the endpoint at the actual Payment Web URL while installing its signing secret; compatibility is anchored to published `0.1.0-alpha.0.1009`; the branch carries platform pin `0.1.0-alpha.0.1046`
 - Last reconciled: 2026-08-17 against open PR #597 remote head `af5bb9c`, reviewed head `7c1253f6`, published Payment packages `0.1.0-alpha.0.1009`, and current `origin/main` `92ea0416`; current main and platform pin `.1046` are incorporated through merge `008e0a95c87b0aae14cced1001b7ac25917a9056`
 
@@ -83,9 +83,8 @@ authorization, both setup kinds, and refund.
 
 ## Next Steps
 
-Publish reviewed work head `45faf5d7dc960528cc0767099d29e1b15cafe109` through the plan-managed
-two-leg push protocol, verify local, remote-tracking, and PR head equality, then require exact-head CI
-to pass at the final checkpoint-transport head. Keep PR #597 open with auto-merge disabled.
+Push this checkpoint-transport commit, verify local, remote-tracking, and PR head equality, then
+require exact-head CI to pass at that final head. Keep PR #597 open with auto-merge disabled.
 
 ## Completed work
 
@@ -157,6 +156,9 @@ to pass at the final checkpoint-transport head. Keep PR #597 open with auto-merg
 
 ## Verification
 
+- Plan-managed correction work push: starting remote/PR head `af5bb9c3ed6aef2bc0fc50e442eec1e9a5ed9e88`;
+  pushed range `af5bb9c3..6e0482d6`; local work head, remote-tracking ref, and PR #597 head all
+  verified at `6e0482d6eac215ec844d965860975635c1da9c00`.
 - Requested contract/convention correction at `45faf5d7`: Payment UnitTests built with 0 warnings and
   0 errors and passed 478 of 478; focused formatting, plan graph, and whitespace checks passed.
 - Incremental native and security review covered `7c1253f6..45faf5d7`, excluding incoming
