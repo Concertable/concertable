@@ -135,6 +135,12 @@ into the fewest PRs).
   (no REST send endpoint), so the user-facing send path is SignalR (`NotificationHub`) or event-generated
   — confirm at implementation; if send is SignalR-only, apply a per-user limiter check in the hub send
   method rather than endpoint metadata (endpoint rate-limiting middleware does not cover hub methods).
+- **Per-IP policies need real client IPs.** `Login` and `Upload` partition on
+  `Connection.RemoteIpAddress`. Behind the ingress/reverse proxy that is the proxy's IP unless
+  `ForwardedHeaders` (`X-Forwarded-For`) is honoured — without it every anonymous request collapses into
+  one partition and the per-IP limit becomes a single global bucket. Confirm each web host runs
+  `UseForwardedHeaders` (with a trusted-proxy/network config) **before** `UseDefaultRateLimiting`, or add
+  it, as part of applying the per-IP policies.
 - **Integration test** in B2B's fixture proving a real throttled endpoint (`/api/Application/{id}` or
   `/api/Blob/upload`) returns 429 + `Retry-After` after the limit.
 - **Verification gate:** smallest affected build (Auth host / B2B host + module); focused unit +
