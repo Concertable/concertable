@@ -97,6 +97,22 @@ finder says literally what it fetches and by what key — `GetByTenantIdAsync`,
 use-case name (`GetInboxAsync`, `GetInboxSummaryAsync`) belongs on the *service* that calls
 it. Don't push an intent name (`GetInbox`) down onto the repository.
 
+**Active tenant is the default scope of B2B application services.** `ITenantContext` is the single
+authority for the tenant selected by `X-Tenant-Id`. A controller does not accept or resolve a tenant
+ID, and a repository does not independently interpret the active request. Name the ordinary scoped
+use case for its domain intent (`GetDetailsAsync`, `CreateAsync`, `UpdateAsync`); name an alternative
+capability explicitly (`GetDetailsByIdAsync`). Repository queries state the actual key
+(`GetDetailsByTenantIdAsync(Guid tenantId, CancellationToken ct = default)`). Do not add profile-ID
+resolver methods merely to turn the active tenant into an Artist or Venue ID. Tenant-owned queries
+use `TenantId` directly, backed by a module-local projection when they cross a module boundary.
+
+`CurrentUser`, `ForUser`, `Me`, and `Self` are reserved for data belonging to the authenticated human.
+Do not add `ActiveTenant` to every ordinary B2B service method merely to restate its default scope.
+
+**Every asynchronous application-service and repository method that can reach I/O accepts a
+`CancellationToken ct = default`.** Pass it through every awaited framework or dependency call that
+supports cancellation. Cancellation propagates as cancellation; it is never converted to a Result.
+
 ## Repository query outputs — `Projection` only names an intermediate query shape
 
 Name a query-result type for the role it actually plays, not merely for the layer returning it:
