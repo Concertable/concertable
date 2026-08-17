@@ -5,7 +5,7 @@
 - Roadmap item: `launch/deal-lifecycle-ownership`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules-phase2`
 - Branch: `Refactor/launch_deal-lifecycle-modules-phase2`
-- PR: draft Phase 2 PR [#633](https://github.com/Concertable/concertable/pull/633); the completed navigation cut and resolved review finding are ready for exact-head CI; Phase 1 PR #625 merged as `4efa1740e0e74601361e4c6595cc1d9d94e1b1bb`
+- PR: draft Phase 2 PR [#633](https://github.com/Concertable/concertable/pull/633); reviewed work head `9ec087d6f07a6bbb3c248a7aefbcc829f8c906ab` is published and exact-head CI is pending; Phase 1 PR #625 merged as `4efa1740e0e74601361e4c6595cc1d9d94e1b1bb`
 - Dependency/package gates: Phase 1 delivery is terminal. Package publication run `31986741518` succeeded, and platform-sync PR [#630](https://github.com/Concertable/concertable/pull/630) merged green at platform version `0.1.0-alpha.0.1046`. Phase 2 is active from current `origin/main`.
 - Last reconciled: 2026-08-17 after completing the Phase 2 branch review and local verification
 
@@ -51,8 +51,8 @@ creation explicitly adds the Concert instead of relying on EF graph tracking.
 
 ## Next Steps
 
-1. Push the reviewed Phase 2 checkpoint to draft PR #633 and require exact-head draft-PR CI, including
-   the B2B Concert integration shard that local Docker could not start.
+1. Require exact-head draft-PR CI for #633, including the B2B Concert integration shard that local
+   Docker could not start.
 2. Treat Phase 2 as delivery-ready only after that exact head is green. Merge remains an explicit
    delivery step.
 
@@ -166,6 +166,9 @@ creation explicitly adds the Concert instead of relying on EF graph tracking.
   query shapes. The current-main host build passed with 0 errors and one inherited `UserEntity`
   warning; Concert units passed 230/230, module boundaries passed 6/6, and the Concert integration
   project compiled with 0 errors and its two existing nullable warnings.
+- Published reviewed Phase 2 range `f563d9b02..9ec087d6f` from starting remote head
+  `f563d9b022477cdc2ce28d4e6fc6290995717728`; local HEAD, the remote branch, and PR #633
+  `headRefOid` all equalled `9ec087d6f07a6bbb3c248a7aefbcc829f8c906ab`.
 - Concert integration tests compile against the navigation-free fixture surface. The runtime
   integration preflight stopped because elevated `docker ps` timed out; exact-head draft-PR CI owns
   the required SQL/Testcontainers execution.
