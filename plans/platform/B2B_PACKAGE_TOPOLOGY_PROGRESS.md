@@ -5,29 +5,33 @@
 - Roadmap item: `platform/b2b-package-topology`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-B2bPackageTopology`
 - Branch: `Refactor/B2bPackageTopology`
-- PR: not opened
+- PR: draft [#643](https://github.com/Concertable/concertable/pull/643)
 - Dependency/package gates: Phase 2 is delivery-gated on a feed-published and verified Phase 1 `@concertable/web-b2b` version; Phase 3 is delivery-gated on the first feed-published versions of both first-class Phase 2 packages.
 - Last reconciled: 2026-08-17 against clean `origin/main` `9205e82df4359df8ddf8dfdace07b4aa09b6d186` and the settled two-package topology.
 
 ## Current state
 
-Phase 1 is implemented, committed, verified, and fully reviewed in the dedicated producer worktree. The reusable packer
+Phase 1 is implemented, committed, verified, fully reviewed, and pushed to draft PR #643. The reusable packer
 stages the published files under an alias without mutating the source manifest; PR CI now runs its
 focused unit test, and the publish workflow packs, verifies, publishes, and feed-verifies both names.
 The existing source package remains `@concertable/b2b`; no consumer manifests, imports, lockfile
-entries, or runtime files have changed.
+entries, or runtime files have changed. Local, remote-tracking, and the initial PR head were verified
+equal at `1613e2e7cb37cc0e42f5d295b3eb2d9a94da4419`.
 
 ## Next Steps
 
-Commit the clean review checkpoint, push the branch, open its draft PR, and let exact-head CI validate
-the Phase 1 producer bridge. Do not begin Phase 2 delivery until the merged workflow has published and
-feed-verified the exact `@concertable/web-b2b` version.
+Push this progress checkpoint and verify local, remote-tracking, and PR head equality. Follow exact-head
+PR CI to green, then use `/merge` to land Phase 1 and verify the publish workflow produced the exact
+`@concertable/web-b2b` version before beginning Phase 2 delivery.
 
 ## Completed work
 
 - **Phase 1 implementation (`693c68c9a`):** non-mutating alias packer and install-level unit test; parameterized B2B
   package verification; dual tarball/feed publication; PR-CI tool-test wiring; package-topology plan
   and roadmap registration.
+- **Review and draft PR (`1613e2e7c`, PR #643):** full correctness/architecture/security review found
+  no issues; the reviewed head was pushed and verified equal across local, remote-tracking, and the
+  initial draft PR head.
 
 ## Verification
 
