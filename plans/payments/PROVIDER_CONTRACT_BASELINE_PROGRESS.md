@@ -3,14 +3,18 @@
 - Plan: `plans/payments/PROVIDER_CONTRACT_BASELINE_PLAN.md`
 - Roadmap: `plans/payments/STRIPE_RELIABILITY_ROADMAP.md`
 - Roadmap item: `payments/provider-contract-baseline`
-- Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\payments_provider-contract-baseline`
-- Branch: `Feature/payments_provider-contract-baseline`
-- PR: #597 — https://github.com/Concertable/concertable/pull/597 — open; reviewed code head `10d07780fd1feaec34c2f7ae765d91ac8291d83e` is verified at the local, remote-tracking, and PR refs; the review/ledger checkpoint and exact-head CI are required; auto-merge is disabled and the PR is not queued
-- Review readiness: **REVIEW COMPLETE — CHECKPOINT AND EXACT-HEAD CI REQUIRED** — all eight findings remain resolved; incremental implementation and security review is current through reviewed code head `10d07780fd1feaec34c2f7ae765d91ac8291d83e` with no new findings
-- Dependency/package gates: Phases 1 through 4 are locally complete; the production/live-mode Stripe account has no webhook endpoint, so future deployment is locked to `2025-01-27.acacia` and must create the endpoint at the actual Payment Web URL while installing its signing secret; compatibility is anchored to published `0.1.0-alpha.0.1009`; the branch carries platform pin `0.1.0-alpha.0.1055`
-- Last reconciled: 2026-08-17 against open PR #597 reviewed code head `10d07780`, published Payment packages `0.1.0-alpha.0.1009`, and current `origin/main` `9205e82d`; current main and platform pin `.1055` are incorporated through merge `c9dac0b8d` with zero commits behind
+- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\pcb-closeout`
+- Branch: `Docs/payments_provider-contract-baseline_closeout`
+- PR: #597 merged as `bfbfd863c02399bd77b499428465d1fc3585f119`
+- Review readiness: **COMPLETE** — all findings resolved before merge
+- Dependency/package gates: published as platform `0.1.0-alpha.0.1061`; platform-sync PR #645 merged as `ab6d560c11fbf0b015cce00d8489e5da132acd9f`
+- Last reconciled: 2026-08-17 against current `origin/main` `ab6d560c11fbf0b015cce00d8489e5da132acd9f`
 
 ## Current state
+
+Terminal. All four phases shipped through PR #597, package publication and platform synchronization
+completed, and the required merge validation was recovered locally after GitHub's merge-group
+classifier failed before executing tests.
 
 A locally verified domain-boundary refactor now leaves raw Stripe API version, product, status, and
 nullable session evidence in the Stripe normalizer. Successful normalization produces one of five
@@ -95,9 +99,7 @@ authorization, both setup kinds, and refund.
 
 ## Next Steps
 
-Commit and push the review/ledger checkpoint, verify local, remote-tracking, and PR head equality, and
-require exact-head CI to pass at that final checkpoint-transport head. Keep PR #597 open with
-auto-merge disabled; merge only after Tommy reviews and explicitly approves it.
+Terminal
 
 ## Completed work
 
@@ -183,6 +185,16 @@ auto-merge disabled; merge only after Tommy reviews and explicitly approves it.
   current `origin/main`.
 
 ## Verification
+
+- PR #597 exact-head CI run `32051241208` passed its build, package, service-carve, unit, and
+  integration matrix at `13d3e578f705bddfbd418a0c8283c6dae6fb7406`.
+- Merge-group run `32052542383` failed in changed-file classification during a GitHub GraphQL HTTP 503;
+  no E2E test executed in that run. Local recovery on synchronized main passed API E2E 11 of 11,
+  B2B UI E2E 32 of 32, and Customer UI E2E 7 of 7. The first Customer UI attempt lost its Vite
+  process after three passing scenarios; the permitted fresh-stack rerun passed all seven.
+- Package publication run `32055197410` published platform `0.1.0-alpha.0.1061`.
+- Platform-sync PR #645 passed PR CI run `32055401953` and merge-group run `32056928062`, then merged
+  as `ab6d560c11fbf0b015cce00d8489e5da132acd9f`.
 
 - Receiver-owned error conversion at `10d07780`: Payment UnitTests built with 0 warnings and 0 errors;
   focused `PaymentClientResultsTests` passed 17 of 17; the complete Payment unit suite passed 487 of
