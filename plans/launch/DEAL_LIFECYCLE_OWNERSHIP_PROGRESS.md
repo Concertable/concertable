@@ -5,9 +5,9 @@
 - Roadmap item: `launch/deal-lifecycle-ownership`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules-phase2`
 - Branch: `Refactor/launch_deal-lifecycle-modules-phase2`
-- PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633). Published Phase 2 checkpoint `5967be92166375c29144016167a13cd4771aacc8` passed exact-head CI run `32037986816`; local branch merged current `origin/main` via `451c10395bfe6dcbf1ae6713033440761489387e`, and the corrected planning checkpoint is not yet pushed.
+- PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633). Local HEAD, the remote branch, and the PR head all equal the published Application/Booking ownership checkpoint `324186648e0f40b7789b80ca5e3b1ab20dedf8d6` before this ledger commit. After a 2026-08-17 fetch, the branch is 89 commits behind `origin/main`; the partial carve is now safely committed, so the next session may merge the base before continuing.
 - Dependency/package gates: none block the remaining B2B-internal implementation. Phase 1 delivery is terminal; final `api/**` delivery will own its routine package publication and platform-sync gate only after the complete refactor merges.
-- Last reconciled: 2026-08-17 after Tommy rejected phase-sized delivery and approved one complete PR
+- Last reconciled: 2026-08-17 after the corrected Application-to-Booking financial seam passed its focused verification gate
 
 ## Current state
 
@@ -39,35 +39,63 @@ the module assemblies are scaffolded.
 
 Rejected PR #614 is closed, and its DealTerms branch and worktree were retired with exact-head checks.
 Phase 1 merged through PR #625, published successfully, and reached a green platform sync. Its merged
-worktree and local branch were removed through the plan-managed repository command. The active branch
-has merged current `origin/main`; its original Phase 2 base is no longer operationally relevant.
+worktree and local branch were removed through the plan-managed repository command. This branch merged
+the then-current `origin/main` at `451c10395bfe6dcbf1ae6713033440761489387e`; the latest fetch now
+shows the 89-commit base drift recorded above.
 
-The Phase 2 in-branch checkpoint removes the Opportunity-to-Application, Application-to-Booking, and
-Booking-to-Concert EF navigations and establishes immutable `AcceptedApplication`, `ConfirmedBooking`,
-and `OpportunityDetails` handoff facts. Persistence, services, APIs, `LifecycleState`, and workflow
-ownership still sit in Concert. The new runtime layer projects and `AddApplicationModule`/
-`AddBookingModule`/`AddOpportunityModule` calls are currently empty migration scaffolding, not completed
-module ownership; each must gain real owned behaviour or be removed before delivery.
+The committed Phase 2 checkpoint removes the Opportunity-to-Application, Application-to-Booking, and
+Booking-to-Concert EF navigations and establishes the initial Contracts seams. Published checkpoint
+`324186648e0f40b7789b80ca5e3b1ab20dedf8d6` advances the physical carve across 270 paths:
 
-`BookingDto` remains an internal application result and belongs in Booking.Application after the move;
-`ConfirmedBooking` is the deliberate cross-module Booking.Contracts handoff. `BookingDraftContext` is
-a purpose-built query projection mapped by `ConcertDraftService`, not ambient context; the final carve
-must replace it with the owned handoff/projection shape rather than preserve that name.
+- Opportunity has real Api/Application/Domain/Infrastructure ownership, state, persistence, DI, and
+  Venue Contracts composition.
+- Application persistence, API, service, local state, keyed acceptance/terms steps, and pre-accept
+  verification evidence have moved into Application. Payment callbacks now persist case-specific
+  `VerifyPaymentSucceeded` or `VerifyPaymentFailed` facts and dispatch them within the Application
+  unit-of-work boundary.
+- Booking persistence, API, service, Contract/PDF ownership, local state, keyed confirmation steps,
+  and acceptance handler have moved into Booking. Creation requires the immutable
+  `AcceptedApplication` handoff, and financial confirmation/failure requires typed evidence correlated
+  by Application, expected operation, and provider transaction reference.
+- Concert still contains legacy shared lifecycle/workflow/payment/cancellation paths and moved-type
+  consumers. The full host/solution is not a valid candidate and has not been verified.
+
+`BookingDto` remains an internal Booking.Application result; deliberate cross-module facts alone belong
+in Contracts. Purpose-built mapped read shapes remain projections/snapshots/details, not contexts.
+
+The rejected financial handoff has been removed. There is no `PaymentVerificationOutcome`, combined
+nullable outcome event, identifier-only confirmation method, or placeholder
+`ApplicationPaymentVerified` vocabulary left in B2B source. Both payment-before-Accept and
+Accept-before-payment converge through the same typed evidence boundary, and duplicate delivery is
+idempotent.
+
+The full host is intentionally still red at the next ownership frontier: 37 compile errors are confined
+to Concert.Application interfaces, mappers, and shared workflow contracts that still mention the
+Application/Booking types already moved to their owning modules. Do not restore those dependencies or
+add cross-module runtime references; delete or replace the legacy consumers while establishing
+independent Concert ownership.
 
 ## Next Steps
 
-Continue the complete ownership refactor on draft PR #633 without a phase delivery stop:
+Resume at the Concert/payment carve while preserving the verified Application-to-Booking seam:
 
-1. Move Application and Booking persistence, services, APIs, local state, acceptance/payment recovery,
-   Contract ownership, and pre-Concert cancellation into their real modules while preserving the
-   transaction, callback-order, retry, and idempotency invariants.
-2. Continue directly through independent Concert operational ownership, deletion of the shared
-   `LifecycleState`/god workflow, local step resolution, and the combined read projection. Populate or
-   remove every empty layer and no-op composition root; keep internal DTOs in Application layers and
-   name mapped query shapes as projections rather than contexts.
-3. Re-scaffold migrations, update all consumers/docs, and run the final verification/review gates only
-   after the complete definition of done is represented. Checkpoint commits and exact-head draft CI are
-   for recovery and diagnosis; do not mark the PR ready or merge any intermediate phase.
+1. Fetch and merge the 89-commit `origin/main` drift into this now-checkpointed branch before editing,
+   resolving conflicts in favour of the module ownership design. Treat the 37 pre-merge
+   Concert.Application compile errors as deletion/replacement inventory, not as a reason to reference
+   Application or Booking runtime projects from Concert.
+2. Move Capture/Deposit success and rejection handling into Booking. Feed the callbacks through the
+   typed financial-evidence boundary, validate the acceptance operation ID, Booking/Application,
+   expected operation, and provider reference, and preserve late-success compensation and retry
+   idempotency.
+3. Emit the immutable `ConfirmedBooking` handoff only from financially confirmed Booking state, then
+   create Concert from that handoff and move post-creation cancellation, completion, settlement, and
+   their financial-operation facts onto Concert-owned state.
+4. Delete the shared `LifecycleState`, `IConcertWorkflow`, workflow/capability registries, cross-stage
+   builder, and legacy Application/Booking executors. Register exact local keyed steps independently in
+   Application, Booking, and Concert; keep the project graph Contracts-only and acyclic.
+5. Finish the combined read projection, migrations, API/seed/worker consumers, guidance, focused
+   integration coverage, and final review/verification gates on draft PR #633. No intermediate phase
+   is mergeable.
 
 ## Completed work
 
@@ -106,9 +134,22 @@ Continue the complete ownership refactor on draft PR #633 without a phase delive
   `IScoped<...>.RunAsync`, then verified and published the resolved review work head.
 - Exact checkpoint `f3ebb0fc966a30efab227d16d191cb8d8dcb07a4` passed draft-PR CI run
   `31983097059`, including build, every service carve, unit matrix, integration matrix, and `ci-complete`.
+- Replaced the rejected flattened verification outcome with immutable success/failure facts, required
+  accepted-application provenance, and an explicit Booking financial-evidence boundary.
+- Added focused Application and Booking unit projects covering payload validity, provenance,
+  correlation rejection, both payment/Accept arrival orders, and duplicate delivery.
+- Rewired seed ownership to Booking.Domain and corrected the `ConfirmedBooking` handoff construction;
+  the seed project and Application API now compile independently with zero warnings.
+- Published implementation checkpoint `324186648e0f40b7789b80ca5e3b1ab20dedf8d6`; local HEAD, the
+  remote branch, and draft PR #633 `headRefOid` matched exactly before this ledger commit.
 
 ## Verification
 
+- The published 270-path candidate remains an intentionally non-mergeable carve. Its Application-to-
+  Booking seam is verified; the host and architecture suite stop at 37 Concert.Application compile
+  errors naming legacy shared-workflow consumers of types already moved to their owning modules.
+- 2026-08-17 implementation publication: local HEAD, remote branch, and PR head matched
+  `324186648e0f40b7789b80ca5e3b1ab20dedf8d6`; the branch remained 89 commits behind `origin/main`.
 - Delivery-model reconciliation: `python .agents/hooks/plan_graph.py --root .` reports 0 errors and 0
   warnings; `git diff --check` passes.
 - `origin/main` uses one broad `LifecycleState` on Application while Booking and Concert have no
@@ -146,6 +187,13 @@ Continue the complete ownership refactor on draft PR #633 without a phase delive
 - Exact-head draft-PR CI at checkpoint `f3ebb0fc966a30efab227d16d191cb8d8dcb07a4`: green. The B2B
   Concert integration shard passed in 5m03s, the Concert unit shard passed in 1m14s, and `ci-complete`
   passed.
+- 2026-08-17 focused seam gate: Application unit tests 5/5 and Booking unit tests 12/12 passed in
+  Release; Application Infrastructure, Application API, Booking Infrastructure, and seed
+  Infrastructure builds passed with 0 warnings and 0 errors.
+- Rejected-boundary vocabulary scan across `api/Concertable.B2B/src`: no
+  `PaymentVerificationOutcome`, `PaymentVerificationRecordedDomainEvent`, identifier-only
+  `ConfirmAsync(bookingId)`, `RecordFinancialFailureAsync`, or `ApplicationPaymentVerified` remains.
+- Current candidate `git diff --check` passes and the plan graph reports 0 errors and 0 warnings.
 - Phase 1 PR #625 merged as `4efa1740e0e74601361e4c6595cc1d9d94e1b1bb` with `skip-e2e`: no
   positive E2E trigger was present because the diff added internal characterization coverage without
   changing HTTP, cross-service, published-package, auth, or routing behaviour.
@@ -239,6 +287,14 @@ Continue the complete ownership refactor on draft PR #633 without a phase delive
   registrations, transition tables, capabilities, and resolver instances remain module-local.
 - Application records pre-accept payment evidence only because the callback can arrive before Booking
   exists. The evidence is not a continuation of Application lifecycle state.
+- `Application.Contracts` supplies the immutable accepted-application provenance required to create a
+  Booking. Booking cannot be created from an arbitrary Application ID.
+- Booking confirmation requires an explicit successful financial-operation fact correlated to the
+  accepted Application, expected operation, and provider transaction. `ConfirmAsync(bookingId)` is a
+  rejected design; confirmation also must not load or accept a live Application aggregate.
+- Success and failure are separate facts with case-specific required data. An outcome enum/boolean plus
+  nullable failure code/message is rejected. The established payment-operation vocabulary is expressed
+  as `VerifyPaymentSucceeded` and `VerifyPaymentFailed`; `ApplicationPaymentVerified` is not used.
 - The fixed progression is an invariant to enforce, not an extension point. A `DealType` cannot skip,
   reorder, or merge Application, Booking, and Concert.
 - .NET 11 native unions are the selected mechanism for justified closed internal values after the
