@@ -52,6 +52,13 @@ not reference the data-access package.
 Inject `[FromKeyedServices(GeometryProviderType.Geographic)] IGeometryProvider geometryProvider` and call
 `geometryProvider.CreatePoint(latitude, longitude)`. Never `new GeometryFactory()` or `new Point(...)`.
 
+## Versioned integration events — version the wire identity, not the C# type
+
+Keep the CLR event name free of transport-version suffixes. Put the version in the stable `MessageType`
+wire identity: `PaymentOperationStateChanged` with
+`concertable.payment.payment-operation-state-changed.v1`, never `PaymentOperationStateChangedV1`.
+Application code talks in domain event names; serializers and brokers own wire-version selection.
+
 ## Known violations
 
 Type-suffix violations awaiting a batched rename sweep, and the legacy `(this X x)` extension methods
