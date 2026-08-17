@@ -5,11 +5,11 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `649dfb2c6b62028aee73645cfc4ba540e791ef56`  _(2026-08-17)_
+**Reviewed up to commit:** `af9a21ffe70d2ea91b4d2c57039185fdbded5688`  _(2026-08-17)_
 
-**Security-reviewed up to commit:** `649dfb2c6b62028aee73645cfc4ba540e791ef56`  _(2026-08-17)_
+**Security-reviewed up to commit:** `af9a21ffe70d2ea91b4d2c57039185fdbded5688`  _(2026-08-17)_
 
-> Range reviewed: `89361e9..649dfb2` (including current main).
+> Range reviewed: `89361e9..af9a21f` (including current main).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
 
 ## Findings
@@ -31,3 +31,7 @@ No new findings. The merge preserves main's permission-specific read repositorie
 ## Incremental review — package cutover compatibility
 
 No new findings. The temporary legacy HTTP aliases preserve published clients while canonical organization routes and active-tenant application-service semantics remain authoritative. The Venue integration-test project builds with 0 errors. The three affected frontend carves produced no compiler error but exceeded the 15-minute local command limit; exact-head CI remains the package-isolated verification gate.
+
+## Incremental review — organization boundary outcomes
+
+No new findings. The organization read preserves its declared optional bootstrap behavior when tenant resolution produces no active tenant, while organization writes remain invariant-backed and are rejected by `TenantSettingsEdit` authorization before entering the service. Tenant unit tests pass 131/131 and the Tenant integration-test project builds with 0 warnings and 0 errors.
