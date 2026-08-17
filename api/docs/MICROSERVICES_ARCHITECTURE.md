@@ -391,7 +391,7 @@ If those hold, mono-repo → poly-repo is a folder move + replacing project refe
 
 ## 8.5 Modular monolith inside each microservice
 
-The microservices split **does not retire the modular monolith pattern** — it shrinks the pattern's scope to the inside of each service. The current discipline (`IXModule` facades, per-module `XDbContext` with its own schema, in-process domain events between modules via `IEventRaiser`, module-owned `IEntityTypeConfiguration<T>`, NetArchTest boundary enforcement, `CONVENTIONS.md`) **carries forward verbatim into each microservice's internal structure**.
+The microservices split **does not retire the modular monolith pattern** — it shrinks the pattern's scope to the inside of each service. The current discipline (`IXModule` facades, per-module `XDbContext` with its own schema, in-process domain events between modules via `IEventRaiser`, module-owned `IEntityTypeConfiguration<T>`, NetArchTest boundary enforcement, `MODULE_STRUCTURE.md`) **carries forward verbatim into each microservice's internal structure**.
 
 **Inside `Concertable.B2B`:**
 
@@ -433,7 +433,7 @@ Same shape inside `Concertable.Customer` (modules: Concert, Preference, Review, 
 - If a sub-module within a service later needs its own deployable (e.g., `Contract` grows to warrant a `Concertable.B2B.Deal.Api`), extraction is a packaging change because the internal boundary already exists.
 - In-process domain events between modules avoid the latency and operational complexity of the bus for flows that don't actually cross a service boundary.
 - The same patterns devs (or future-you) already know, scoped smaller.
-- `CONVENTIONS.md` doesn't get deleted — it gets cited *per service*.
+- `MODULE_STRUCTURE.md` doesn't get deleted — it gets cited *per service*.
 
 **What this is not:** an excuse to keep B2B and Customer modules together. The microservices split between bounded contexts (§1) is not negotiable. Inside a bounded context, the modular monolith pattern still applies.
 

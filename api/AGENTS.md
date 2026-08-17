@@ -37,6 +37,7 @@ Things you must NOT seed directly. Each of these has a production write path tha
 - **`UserEntity` rows** in B2B, Customer, and Payment user tables. Written by `CredentialRegisteredHandler` reacting to `CredentialRegisteredEvent` from Auth.
 - **`AdminProfileEntity` rows.** Written alongside admin users by `CredentialRegisteredHandler`; venue/artist authority lives in Tenant memberships, not manager-profile tables.
 - **Stripe `PayoutAccount` rows** in Payment. Provisioned by `CredentialRegisteredHandler` in Payment.
+- **Invitation rows** (`TenantInvitationEntity`, `tenant.Invitations`) **and invitation-derived memberships.** Created only by the invite endpoint or the `TenantProvisioningHandler` invitation branch; only the founding Owner membership is seeded.
 - **Inbox / outbox / messaging rows.** Owned by the messaging infrastructure.
 - **Anything else whose only production write is in an `IIntegrationEventHandler` / `IDomainEventHandler` / outbox dispatcher / webhook handler.**
 

@@ -46,7 +46,7 @@ When a topic has both, the skill owns the rule and the file owns the inventory.
 | Standalone AppHost is canonical; the simulator pattern | [`api/ARCHITECTURE.md`](../api/ARCHITECTURE.md) |
 | Producer seed libraries point downward only | [`api/ARCHITECTURE.md`](../api/ARCHITECTURE.md) |
 | Cross-service contract distribution; per-folder build closures; `UseLocalCore` | [`api/ARCHITECTURE.md`](../api/ARCHITECTURE.md) |
-| Protocol selection — gRPC / HTTP / Service Bus; what may `WaitFor` what | skill `microservice-boundaries` |
+| Protocol selection — gRPC / HTTP / Service Bus | skill `microservice-boundaries` |
 | Which surface each service actually exposes | [`api/ARCHITECTURE.md`](../api/ARCHITECTURE.md) "The surface each service actually exposes" |
 | Design rationale and decision history (not current state) | [`api/docs/MICROSERVICES_ARCHITECTURE.md`](../api/docs/MICROSERVICES_ARCHITECTURE.md) |
 | Per-service specifics | that service's own `AGENTS.md` / `ARCHITECTURE.md` |
@@ -77,6 +77,7 @@ When a topic has both, the skill owns the rule and the file owns the inventory.
 | **This repo's** forbidden seed tables, the B2B simulator, the ticket-sales exception | [`api/agents/SEEDING_CONVENTIONS.md`](../api/agents/SEEDING_CONVENTIONS.md) |
 | **This repo's** integration fixtures, shared harness members, run commands | [`api/agents/INTEGRATION_CONVENTIONS.md`](../api/agents/INTEGRATION_CONVENTIONS.md) |
 | **This repo's** E2E baseline path, run script, seeded fast-forward | [`Concertable.Testing.E2E`](../api/Concertable.Shared/tests/Concertable.Testing.E2E/AGENTS.md) |
+| Page objects, `data-testid` naming, step-binding shape; the Stripe 3DS/timeout traps | [`E2E_UI_CONVENTIONS.md`](../api/Concertable.Shared/tests/Concertable.Testing.E2E/E2E_UI_CONVENTIONS.md), [`E2E_CONSIDERATIONS.md`](../api/Concertable.Shared/tests/Concertable.Testing.E2E/E2E_CONSIDERATIONS.md) |
 | B2B's DbContext stances, filtered entities, `DealType` families and workflow steps | [`api/Concertable.B2B/CODE_PATTERNS.md`](../api/Concertable.B2B/CODE_PATTERNS.md) |
 | DTOs vs Responses at the controller boundary; migrations; shared-is-the-intersection | [`api/AGENTS.md`](../api/AGENTS.md) |
 

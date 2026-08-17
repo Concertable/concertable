@@ -42,7 +42,7 @@ Assertions use Shouldly; on a failing status the message carries URL, status and
 Dispatch integration events through `IScoped<IEnumerable<IIntegrationEventHandler<TEvent>>>` — use the
 Kernel abstraction; the copy in `Concertable.DataAccess` is a temporary compatibility surface.
 
-Derive expectations from `fixture.Catalog`, never invented literals.
+Derive expectations from `fixture.SeedState` (and `fixture.SeedNow` for the clock), never invented literals.
 
 ## Running
 
@@ -61,12 +61,9 @@ Derive expectations from `fixture.Catalog`, never invented literals.
 The `integration-debug` skill runs the full suite with per-test server-side `ILogger` output and captured
 mock state (notifications, emails, Stripe).
 
-## The two Concertable-specific seeding shapes tests rely on
+## The local precedents for the seeding shapes
 
-- **Factory seeding.** A domain entity never carries a `Seed` static — that leaks test concerns into the
-  domain. Add `Seed` to the entity's **Factory**, which calls the real DDD constructor, stamps the id with
-  `EntityReflectionExtensions.With(...)`, then `ClearDomainEvents()` to suppress outbox publication. See
-  `CredentialFactory.Seed` versus `CredentialFactory.Create`.
-- **Sentinel guard for `SeedIfEmptyAsync`.** Where a cross-service event handler can write the same table
-  before the seeder runs, guarding on `AnyAsync()` lets one race-created row skip the whole seed. Guard on
-  an entity only the seeder ever creates (an admin user id).
+Factory `Seed` statics and sentinel guards are the `seeding` skill. The precedents to copy here are
+`CredentialFactory.Seed` versus `CredentialFactory.Create` (the reflection stamp is
+`EntityReflectionExtensions.With(...)`), and the admin user id as the sentinel our `SeedIfEmptyAsync`
+callers guard on.

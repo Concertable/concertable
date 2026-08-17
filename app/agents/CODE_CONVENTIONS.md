@@ -52,7 +52,9 @@ Multipart binds to C# by property name rather than through the JSON policy, so u
 
 `PaymentAmount` is `FlatPayment | DoorSharePayment | GuaranteedDoorPayment`, keyed on `$type` with the
 camelCase literals `"flat"`/`"doorShare"`/`"guaranteedDoor"` copied from the backend `[JsonDerivedType]`
-discriminators. `Contract` is the other umbrella.
+discriminators. The other two: `Deal` (`FlatFeeDeal | DoorSplitDeal | VersusDeal | VenueHireDeal`,
+mirroring `DealTypeNames`) in `@b2b/*`'s `features/deals/types.ts`, and the search `Header` /
+`AutocompleteResult` pair keyed on `HeaderType`.
 
 The universal `User` deliberately has **no** `$type` and no flat role — product identity is composed in its
 owning tier ([`CODE_PATTERNS.md`](./CODE_PATTERNS.md)).

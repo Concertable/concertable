@@ -8,8 +8,8 @@
 - Branch: `Docs/GuidanceDocsRestructure`
 - PR: #637 (draft)
 - Shared repos: `Concertable/agent-standards` (7 process skills) and `tomjseery/dotagents` (28 generic, synced to `~/.agents/skills/`), cloned at `C:\Users\TommySeery\source\repos\{agent-standards,dotagents}`
-- Dependency/package gates: none — docs and one hook only; no `api/**` code change, so no package publication or platform sync
-- Last reconciled: 2026-08-17 against `origin/main` (merged in, 0 behind), plus `agent-standards` `8c42daa`
+- Dependency/package gates: no consumer migration to do, but this PR **will** trigger publish + platform sync — `publish-packages.yml` triggers on the coarse `paths: api/**`, which this branch's `api/**` markdown matches. MinVer republishes and a `chore/platform-sync-*` PR opens; non-breaking (no published type changed), so it should auto-merge green. Follow it to green anyway — whoever merges owns the sync.
+- Last reconciled: 2026-08-17 against `origin/main` (0 behind at review time), plus `agent-standards` `8c42daa`
 
 ## Current state
 
@@ -94,13 +94,37 @@ auto-load thinning of root `AGENTS.md`.
 
 ## Reviews
 
-None recorded for Phase 3b yet. This is a docs/meta-only change with no `api/**` code in it, so its gate is
-`/review` on PR #637 followed by `/merge-docs` — the no-E2E docs path.
+`/review` run against #637 over `9205e82d..2b93b45b` → `reviews/Docs-GuidanceDocsRestructure.md`, security
+layer included (the range touches `api/Concertable.Payment/**`, which the merge gate treats as sensitive;
+those 12 lines are pointer rewiring, nothing to report). **10 findings, all fixed on the branch.** Four of
+them were the corpus asserting something the code does not do, found by checking the code rather than the
+prose:
+
+- The rename to `MODULE_STRUCTURE.md` left five citations of the deleted `CONVENTIONS.md` — including a
+  NetArchTest `.Because(...)` string, so a failing boundary test pointed the developer at a missing file.
+- `api/ARCHITECTURE.md`'s new surface table gave B2B, Customer and Search a gRPC internal surface. Payment
+  is the only one: one `.proto`, `AddGrpc`/`MapGrpcService` only in `Payment.Web`. The table came from the
+  deleted `MICROSERVICE_COMMUNICATION.md`, where it was target-state — folding it into the doc `INDEX.md`
+  calls "current-state, authoritative" turned a plan into a claim. Now marked target-vs-live per row.
+- `INTEGRATION_CONVENTIONS.md` told tests to read `fixture.Catalog`, which no integration fixture exposes
+  (`fixture.SeedState` / `fixture.SeedNow` are real; `Catalog` is on Customer's *E2E* `AppFixture`).
+- `app/agents/CODE_CONVENTIONS.md` rostered a `$type` union named `Contract`, which does not exist in
+  `app/` at all — the real second union is `Deal`, and a third is the search `Header` pair.
+
+Also fixed: B2B's stance table put every concrete `DbContext` in `B2B.DataAccess.Infrastructure` (only the
+bases are there); `INTEGRATION_CONVENTIONS.md` kept two `seeding`-skill rules under a
+"Concertable-specific" heading; `api/AGENTS.md`'s inlined seed list still omitted invitation rows (the
+drift the plan's table recorded); `E2E_UI_CONVENTIONS.md` + `E2E_CONSIDERATIONS.md` had zero inbound links
+repo-wide and the hook can't see them (its orphan walk covers `*/agents/*.md` only) — now linked from the
+harness `AGENTS.md` and `docs/INDEX.md`; `docs/INDEX.md` gave one topic two owners; `e2e-api-debug`
+cited `api/docs/SEEDING_CONVENTIONS.md`.
+
+Re-verified after the fixes: hooks **72 passed**, `docs_reachability.py` **0 errors / 21 warnings**.
 
 ## Next Steps
 
-1. **Review and land this PR.** Run `/review` against #637, address findings, then `/merge-docs`. Docs-only,
-   no platform-sync gate.
+1. **Land this PR.** `/review` is done and all 10 findings are fixed (see Reviews). Remaining: mark #637
+   ready, `/merge-docs`, then follow the generated `chore/platform-sync-*` PR to green.
 2. **Phase 3c — the 10,011 lines of markdown outside the conventions folders.** Most is correctly-placed domain
    knowledge and stays untouched; six items need a disposition, listed in the plan's Phase 3c table.
    `app/README.md` is still the unmodified Vite scaffold, and `notes/Concert-Rust-Analysis.md` (444) is

@@ -67,14 +67,18 @@ Forgetting it leads to designs that re-monolith the system. Re-read this section
 
 *Which* protocol a hop uses is decided by the consumer, not by preference — the decision table, the
 gRPC/HTTP rules, and the one-host-two-protocols traps are the `microservice-boundaries` skill. What is
-specific to this system is which surfaces exist:
+specific to this system is which surfaces exist, and **Payment is currently the only gRPC surface**:
+`Concertable.Payment.Client/Protos/payment.proto` is the repo's only `.proto`, and `AddGrpc` /
+`MapGrpcService` appear only in `Concertable.Payment.Web`. Every other internal surface below is the
+target a service gets when it first needs a synchronous internal caller — never something to assume is
+already there.
 
 | Service | Internal surface | Edge / external surface |
 |---|---|---|
-| **B2B** | gRPC | HTTP — the existing public SPA APIs (controllers) |
-| **Customer** | gRPC | HTTP — the `Customer.Web` SPA |
-| **Search** | gRPC (internal queries) | HTTP — customer-facing search UI |
-| **Payment** | gRPC (B2B/Customer sync calls) | HTTP — the Stripe webhook (controller) |
+| **B2B** | gRPC *(target — none today)* | HTTP — the existing public SPA APIs (controllers) |
+| **Customer** | gRPC *(target — none today)* | HTTP — the `Customer.Web` SPA |
+| **Search** | gRPC for internal queries *(target — none today)* | HTTP — customer-facing search UI |
+| **Payment** | gRPC — B2B/Customer sync calls, **live** | HTTP — the Stripe webhook (controller) |
 | **Auth** | — | HTTP — OIDC/OAuth via Duende, spec-mandated |
 
 `Concertable.Shared.Notification` is a library, not a service: it has no host and nothing can `WaitFor` it.
