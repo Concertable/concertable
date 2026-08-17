@@ -5,14 +5,14 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `1f823c8ed50b073e8aa4da933eeb52848a066427`  _(2026-08-17)_
-**Security-reviewed up to commit:** `1f823c8ed50b073e8aa4da933eeb52848a066427`  _(2026-08-17)_
+**Reviewed up to commit:** `e8674d4530db24e979c4e1a8a5931d0cc78b0642`  _(2026-08-17)_
+**Security-reviewed up to commit:** `e8674d4530db24e979c4e1a8a5931d0cc78b0642`  _(2026-08-17)_
 
-> Range reviewed: `d5669a836..1f823c8ed` (18 commits). Commits after `5492efa58` are docs-only except
-> `6aabf147b` (the IAdminRepository extraction below), `0d7821d6d` (merge of `origin/main`, resolving
-> one conflict in `api/agents/CODE_CONVENTIONS.md` by keeping both sides' additions — no semantic change),
-> `825dc4793` (the Me() redesign below), `43d6cf205` (the extension-block conversion below), and
-> `1f823c8ed` (splitting error mapping into `AdminErrorMappers.cs`, same finding below).
+> Range reviewed: `d5669a836..e8674d453` (20 commits, merge-base advanced twice as `origin/main` moved —
+> both merges resolved a docs-only conflict in `api/agents/CODE_CONVENTIONS.md` with no semantic change).
+> Non-docs commits: `6aabf147b` (IAdminRepository extraction), `825dc4793` (Me() redesign), `43d6cf205`
+> (extension-block conversion), `e8674d453` (composite-error wrap replacing `AdminErrorMappers.cs`) — all
+> findings below.
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
 
 ## Findings
@@ -61,12 +61,19 @@
   `extension(AdminInvitationRevocationError error)` blocks, matching the live reference example
   (`RegisteredAddressMappers.cs`).
 
-- [x] **CV4 — LOW — file organization** — `api/Concertable.B2B/src/Modules/User/Concertable.B2B.User.Application/Mappers/AdminMappers.cs`
-  `AdminMappers.cs` mixed DTO mapping (`ToDto`) with Domain→Application error-taxonomy translation
-  (`ToRevokeAdminInvitationError`) — two different concerns sharing one file just because both happened
-  to be extension methods. Fixed: split the error translation into its own `AdminErrorMappers.cs`,
-  keeping the extension-block shape (still correct — `MapError`'s error-translation boundary is exactly
-  the "one receiver owns this question" case the extension convention describes).
+- [x] **CV4 — MED — error design** — `api/Concertable.B2B/src/Modules/User/Concertable.B2B.User.Application/Errors/RevokeAdminInvitationError.cs`
+  `RevokeAdminInvitationError.InvitationNotPending` duplicated `AdminInvitationRevocationError.NotPending`'s
+  meaning in a second union, kept in sync only by a hand-written switch mapper (`AdminMappers`/later
+  `AdminErrorMappers`) — two touch points for one concept, and nothing forces them to stay aligned if the
+  domain error ever grows a case. `SettlementRefundError.PaymentFailure(PaymentError Error)` /
+  `PaymentError`'s own composite cases already establish the better pattern for exactly this scenario
+  (a domain error surfacing through an operation's application error): wrap it as a composite case and
+  forward `Definition`, rather than re-deriving an equivalent case. Fixed: `RevokeAdminInvitationError`
+  gained `RevocationFailed(AdminInvitationRevocationError Error)` (replacing `InvitationNotPending`),
+  `Definition` forwards to the wrapped error's own; `AdminErrorMappers.cs` deleted entirely —
+  `AdminService.RevokeInvitationAsync` now does `.MapError<RevokeAdminInvitationError>(error => new
+  RevokeAdminInvitationError.RevocationFailed(error))` directly, so a future case added to
+  `AdminInvitationRevocationError` needs zero changes here to keep compiling and flowing through.
 
 <!-- NAT layer (Layer 1, code-reviewer subagent): no findings cleared the 80% confidence bar. Diff closely mirrors InvitationService/TenantInvitationEntity/MembershipService precedent. -->
 
