@@ -16,11 +16,15 @@ Two behaviours, and the difference matters:
   the file exists, which costs one tool call and removes the discretion. State lives in a per-session
   file, so it is one interruption per route, not per edit.
 - **A deny pattern -> block every time.** Those are mechanically decidable violations, so they are not
-  advice. The build enforces the same test-tier rules (`api/TestConventions.targets`) because a hook
-  matcher is per-tool and never sees `dotnet new` or a shell heredoc.
+  advice. A repo whose rules are also expressible in its build should enforce them there too - a hook
+  matcher is per-tool and never sees `dotnet new`, a shell heredoc or an MCP write.
 
 Contract: exit 0 = allow, exit 2 = block with stderr fed back to the agent. Anything unexpected exits
-0 - a broken router must not wedge every write, since the build gate is the tier that guarantees.
+0 - a broken router must not wedge every write, since a build gate is the tier that guarantees.
+
+Ships in the `agent-process` plugin, so both harnesses run this one file: Claude Code's `PreToolUse`
+and Codex's `pre_tool_use` pass the same payload keys and read the same exit-2 block contract. A repo
+opts in by carrying `.agents/skill-routes.json`; without one the hook exits 0 and does nothing.
 """
 
 import hashlib
@@ -189,8 +193,8 @@ def main():
                 lines.append(f"      {desc}")
             else:
                 lines.append(
-                    "      NOT INSTALLED - run dotagents/.agents/deploy-skills.ps1. A route pointing "
-                    "at a missing skill is a deployment fault, not a reason to proceed."
+                    "      NOT INSTALLED - no SKILL.md under ~/.agents/skills or ~/.claude/skills. A "
+                    "route pointing at a missing skill is a deployment fault, not a reason to proceed."
                 )
         if route.get("note"):
             lines.append(f"      NOTE: {route['note']}")

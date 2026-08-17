@@ -560,19 +560,43 @@ empirically rather than assumed:
 - **Codex supports `pre_tool_use` / `post_tool_use`**; both strings are in the Codex binary. The
   write-time router is therefore not a Claude-only mechanism, which was the open question.
 - Repo-level wiring (`.claude/settings.json`, `.codex/hooks.json`) stays irreducibly per-harness —
-  neither tool will read hook wiring out of `.agents/`. **But it becomes unnecessary for anything shipped
-  inside a plugin**, which is the reason to prefer the plugin route over per-repo wiring.
+  neither tool will read hook wiring out of `.agents/`.
 
-**Target shape:** `.agents/plugins/<plugin>/{skills,hooks}/` authored once, `.agents/plugins/marketplace.json`
-as the manifest Codex reads, and a generated `.claude-plugin/marketplace.json` shim for Claude — the same
-"one canonical source, generated per-harness stub" discipline already used for the skill stubs, with the
-generator refusing to emit anything unroutable.
+**Then three further findings changed the shape, and the first one reverses the conclusion above.**
 
-**Consequence for work already committed:** the router (`45c3cd304`) lives in the repo with
-`.claude/settings.json` wiring only. It must move into the standards plugin so both tools get it from
-one place, and the per-repo wiring should then be deleted rather than duplicated into `.codex/hooks.json`.
-The build gate (`f99fa8c2f`) is unaffected — MSBuild is harness-agnostic by construction, which is exactly
-why it is tier 1.
+- **A plugin only runs where it was installed, so "delete the per-repo wiring" would have traded a
+  code copy for an install ritual.** Installation is per-machine state (`~/.claude/plugins/installed_plugins.json`,
+  `~/.codex/config.toml`), and Phase 6a already measured that this machine has installed the standards
+  plugin *nowhere*. Enforcement that is absent on a fresh clone is not enforcement, so the wiring stays
+  in the repo and the hook is **vendored** into it.
+- **A harness installs a plugin by copying only the plugin subtree** (`~/.claude/plugins/cache/<marketplace>/<plugin>/<version>`
+  holds `.claude-plugin`, `skills`, `agents` and nothing above them). The plugin's skill files were stubs
+  pointing at `../../../../.agents/skills/…`, which exists only in the source repo — so the plugin would
+  have installed cleanly and delivered nothing on every machine. The payload now carries generated full
+  copies.
+- **Codex reads project hooks from `<repo>/.codex/hooks.json` and trusts them by hash.** Confirmed live:
+  `~/.codex/config.toml` carries `[hooks.state.'…\Concertable\.codex\hooks.json:stop:0:0']` with a
+  `trusted_hash`, and its hook config is the same PascalCase-event/`matcher`/`command` shape Claude uses,
+  plus `commandWindows`, `statusMessage`, and `${CLAUDE_PLUGIN_ROOT}` substitution. Its `pre_tool_use`
+  payload keys and exit-2 block contract match Claude's exactly, so **one hook file serves both**. Two
+  consequences: a new or edited hook needs a one-time trust approval in Codex, and each worktree is
+  trusted separately from the main checkout.
+
+**Target shape.** `.agents/` in the standards repo authors everything exactly once — skills, the hook,
+and `.agents/plugins/marketplace.json` as the manifest Codex reads. Two generators emit the rest and
+refuse to emit anything unroutable: `sync-generated.ps1` writes the repo-local stubs, the plugin payload
+(full copies) and the `.claude-plugin/marketplace.json` shim; `vendor-hooks.ps1 -Into <repo>` copies the
+hook into a consuming repo and records source, commit and hash in that repo's `.agents/hooks/vendored.json`.
+The consuming repo owns only its own data — `skill-routes.json` — and its two wiring files, and its test
+suite fails if a vendored copy was edited in place or is wired for one harness only.
+
+So the plugin is the distribution channel for a repo that wants to install one, and vendoring is what
+makes the mechanism fire on a clone where nothing is installed. Both are fed by the same authored file.
+
+**Consequence for work already committed:** the router (`45c3cd304`) keeps its place in the repo, but as
+a generated copy rather than a fork, and gains the `.codex/hooks.json` wiring it never had — the actual
+defect behind "it is Claude-only". The build gate (`f99fa8c2f`) is unaffected — MSBuild is
+harness-agnostic by construction, which is exactly why it is tier 1.
 
 `extraKnownMarketplaces` + `enabledPlugins` in `.claude/settings.json` plus a per-person
 `claude plugin install`. That works there because it is a Claude-only shop. Here it would strand Codex,

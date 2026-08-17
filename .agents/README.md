@@ -12,6 +12,19 @@ If Claude Code also needs to discover the skill, add only a compatibility stub a
 `.claude/skills/<name>/SKILL.md` that points back to the matching `.agents` skill. Do not duplicate
 the full instructions in `.claude`; duplicated skill bodies drift.
 
+## Hooks — repo-owned versus vendored
+
+`.agents/hooks/` mixes two kinds of file, and `vendored.json` is what tells them apart. A hook listed
+there is **generated** from `Concertable/agent-standards` and must be changed upstream, then re-synced
+with that repo's `.agents/vendor-hooks.ps1 -Into <this repo>`; editing the copy in place fails
+`test_vendored_hooks.py`. Everything not listed (`plan_graph.py`, `plan_handoff_stop.py`,
+`docs_reachability.py`) is Concertable's own and is edited here.
+
+A vendored hook is carried rather than installed on purpose: a plugin only runs on a machine where
+someone installed it, so enforcement that depends on an install is absent on a fresh clone. Each hook
+is therefore wired in both `.claude/settings.json` and `.codex/hooks.json` — one harness only is the
+defect, not a partial rollout.
+
 ## Global starter kit
 
 Concertable skills belong in this repo. Do not mirror them into a global skills repo.

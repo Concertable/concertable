@@ -120,6 +120,9 @@ diagnostic or test name, not an argument.
 | Docker is really healthy before E2E | `scripts/docker-health.ps1`, gated by `scripts/e2e.ps1` | Gate |
 | Docs are reachable; `CLAUDE.md` siblings exist | `.agents/hooks/docs_reachability.py` via `docs-review` | Gate |
 | Plan handoff ends with its continuation pointer | `.agents/hooks/plan_handoff_stop.py` | Gate |
+| A test project's name declares its tier; a unit test cannot boot a host, container or database | `api/TestConventions.targets` + `api/BannedSymbols.UnitTests.txt` | Yes |
+| The standard that owns a path is loaded before the first write into it | `.agents/hooks/skill_router.py` over `.agents/skill-routes.json`, wired in `.claude/settings.json` and `.codex/hooks.json` | Gate |
+| A vendored hook still matches upstream and is wired for both harnesses | `.agents/hooks/tests/test_vendored_hooks.py` | Gate |
 
 ## Adding to the corpus
 
