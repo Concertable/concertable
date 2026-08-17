@@ -310,9 +310,9 @@ remove.
 
 A **skill is a convention doc with a trigger** — the same markdown, plus a `description` front-matter
 that decides when it loads. So nothing is rewritten into a different genre; generic topics move to
-`tomjseery/standards-docs` and gain a description, while what must always apply stays in-repo.
+`Concertable/agent-standards` and gain a description, while what must always apply stays in-repo.
 
-**In `tomjseery/standards-docs`** (created; `dotnet-standards` plugin, `proto` skill migrated):
+**In `Concertable/agent-standards`** (created; `dotnet-standards` plugin, `proto` skill migrated):
 
 ```text
 plugins/dotnet-standards/skills/

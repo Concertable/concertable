@@ -8,7 +8,7 @@
 > **Goal:** every rule has exactly one home, contradictions cannot survive unnoticed, each consumer
 > loads only the topics it can act on, and the generic half lives in a separate repo mounted at a fixed
 > path — so carving a service out of this monorepo rewrites no imports. Generic standards are
-> distributed as versioned, load-on-demand Claude Code plugin skills from `tomjseery/standards-docs`,
+> distributed as versioned, load-on-demand Claude Code plugin skills from `Concertable/agent-standards`,
 >
 > **Scope:** guidance and architecture markdown plus the hooks that police it. Product docs
 > (`docs/USP.md`, `docs/OVERVIEW.md`) and plan/review working docs are out of scope except where a
@@ -33,7 +33,7 @@ standing contradiction was structurally invisible to the one process meant to fi
 | Done | Item | What it delivers | Depends on |
 |---|---|---|---|
 | [x] | `docs/guidance-reconcile` | Reconcile the ten contradictions and every dangling reference; delete the two obsolete north-star docs; extend the reachability hook to fail on dead and root-absolute links | — |
-| [ ] | `docs/standards-repo` | Migrate the generic conventions into `tomjseery/standards-docs` as load-on-demand plugin skills. Scaffold + `proto` skill done; `dotnet-standards` remainder, `typescript-standards` and `agent-process` outstanding | docs/guidance-reconcile |
+| [ ] | `docs/agent-standards` | Migrate the generic conventions into `Concertable/agent-standards` as load-on-demand plugin skills. Scaffold + `proto` skill done; `dotnet-standards` remainder, `typescript-standards` and `agent-process` outstanding | docs/guidance-reconcile |
 | [ ] | `docs/guidance-restructure` | Reduce `api/agents/*` and `app/agents/*` to the in-repo hard floor, give each service a thin `CODE_CONVENTIONS.md`/`CODE_PATTERNS.md` of its own precedents, and collapse every duplicated rule to one home | docs/standards-repo |
 | [ ] | `docs/guidance-autoload` | Cut the auto-loaded floor: drop the three `@`-imports, and reduce the always-loaded merge and Docker blocks that `/merge` and `scripts/e2e.ps1` already automate | docs/guidance-restructure |
 | [ ] | `docs/analyzer-pushdown` | Set `EnforceCodeStyleInBuild` so `severity = error` style rules actually fail a build, move what prose re-argues into `.editorconfig`, and document the rules currently enforced with no written home (`MA0053`, file-scoped namespaces) | docs/guidance-restructure |

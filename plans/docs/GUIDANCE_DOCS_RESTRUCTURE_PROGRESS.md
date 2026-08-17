@@ -59,22 +59,44 @@ everyone on pre-existing plan churn — hence the guidance/working-doc split. It
 positive (a shell regex `[/\\](bin|obj)[/\\]` matches the markdown link pattern), so the dead-link pass
 skips fenced blocks. Reachability still scans them.
 
+## Blocked on Tommy — one manual step
+
+The repo was created as `tomjseery/standards-docs` and needs renaming and transferring; the rename and
+transfer calls were denied by the permission classifier, so they cannot be run from a session:
+
+```
+gh repo rename agent-standards --repo tomjseery/standards-docs --yes
+gh api -X POST repos/tomjseery/agent-standards/transfer -f new_owner=Concertable
+```
+
+`docs` reads as human-readable material, and this content is agent-loaded skills, so `agent-standards`
+names it correctly and keeps the `docs` slot free for a real human doc set. The Concertable org is right
+because the services that will carve out of this repo land there and org access survives new
+collaborators; reuse from other projects is unaffected, since org membership grants access anywhere. Every
+plan and ledger reference already uses the target name — they will be correct once the two commands run.
+
 ## Next Steps
 
-The distribution mechanism is settled and built: **`tomjseery/standards-docs`** (private), a Claude Code
-`/plugin marketplace add tomjseery/standards-docs`; refresh with `/plugin marketplace update`. That is the
+The distribution mechanism is settled and built: **`Concertable/agent-standards`** (private), a Claude Code plugin
+`/plugin marketplace add Concertable/agent-standards`; refresh with `/plugin marketplace update`. That is the
 "pulled locally and kept synced" requirement satisfied natively — no submodule, no `submodules: true` in
 CI, no sync script, and no tech debt. It also supersedes the submodule design recorded earlier in the
 plan: a carved-out service installs the same plugin and rewrites no paths.
 
 A `SKILL.md` is a convention doc plus a `description` front-matter that routes it, so migration is
-relocation, not rewriting. Landed so far: the marketplace scaffold, the `dotnet-standards` plugin, and the
+relocation, not rewriting.
+
+**Skills point at long reference material by name, never with `@`.** This was checked against the
+covers…"*). `@` is the always-load mechanism, so an `@` inside a `SKILL.md` would pull the sibling's body
+in as soon as the skill loaded, collapsing two tiers of laziness into one. Rules live in the `SKILL.md`
+— which is itself readable convention markdown — and only genuinely long reference material, or material
+shared by several skills, earns a sibling file. Landed so far: the marketplace scaffold, the `dotnet-standards` plugin, and the
 `proto` skill — chosen because it is the clearest instance of the defect (one `.proto` in the repo, in
 Payment, with its rules sitting in docs every `api/**` prompt loads).
 
 Next, in order:
 
-1. **`docs/standards-repo`** — migrate the rest of `dotnet-standards`: `csharp-style`, `csharp-naming`,
+1. **`docs/agent-standards`** — migrate the rest of `dotnet-standards`: `csharp-style`, `csharp-naming`,
    `comments`, `dependency-injection`, `logging`, `validation`, `persistence`, `result-carriers`,
    `result-errors`, `result-terminals`, `http-api`, `module-structure`, `microservice-boundaries`,
    `seeding`, `unit-testing`, `integration-testing`, `e2e-scenarios`, plus the two remaining scoped
