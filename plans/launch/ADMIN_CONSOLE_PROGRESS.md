@@ -3,13 +3,14 @@
 - Plan: `plans/launch/ADMIN_CONSOLE_PLAN.md`
 - Roadmap: `plans/launch/LAUNCH_ROADMAP.md`
 - Roadmap item: `launch/admin-console`
-- Worktree: current checkout (`C:\Users\tommy\source\repos\Concertable`)
-- Branch: `Feature/launch_admin-console`
-- PR: [#624](https://github.com/Concertable/concertable/pull/624) — **MERGED** (`7fd40bf59860c27f1c1d1e48537901b022de0f43`, 2026-08-17T14:18:26Z)
+- Worktree: `C:\Users\tommy\source\repos\Concertable\.worktrees\Feature-launch_admin-console`
+- Branch: `Feature/launch_admin-console` (Phase 2 — new branch of the same name, Phase 1's was deleted on merge)
+- PR: none yet (Phase 2 not yet pushed). Phase 1: [#624](https://github.com/Concertable/concertable/pull/624) — **MERGED**
+  (`7fd40bf59860c27f1c1d1e48537901b022de0f43`, 2026-08-17T14:18:26Z)
 - Dependency/package gates: none. No published-package boundary crosses this plan (Auth + B2B edits land
   in the same repo, no NuGet republish/platform-sync gate).
-- Last reconciled: 2026-08-17, PR #624 merged. Worktree still needs closing (see Next Steps) — Phase 2
-  starts in a fresh worktree per the plan.
+- Last reconciled: 2026-08-17, Phase 2 starting: fresh worktree created off current `origin/main`
+  (`bfbfd863c...`, which contains #624).
 
 ## Current state
 
@@ -48,11 +49,17 @@ item, not a Phase 1 blocker.
 
 ## Next Steps
 
-1. Close this worktree/branch now that #624 has merged:
-   `./scripts/worktrees.ps1 close -Worktree <path> -PullRequest 624 -PlanManaged` (per
-   `plans/AGENTS.md` "Plans outlive PR worktrees").
-2. Start Phase 2 (admin console SPA shell) per `plans/launch/ADMIN_CONSOLE_PLAN.md` "Phase 2" from a
-   fresh worktree based on current `origin/main`:
+Blocked: before wiring the `admin` OIDC client (which makes the fail-closed provisioning gate reachable for the first time), need Tommy's call on how to close the email-verification gap the review already flagged — `GrantAdminIfEligibleAsync` grants off the raw registration email with no verified-email check, so the moment the client exists, anyone who knows the bootstrap/invited email can register with it first.
+Blocked by: needs Tommy to choose between the proper fix (Auth's `CredentialRegisteredEvent` carries a verified-email signal, B2B's gate checks it — a real cross-service contract change, its own small backend PR before the OIDC client lands) or the weaker client-side mitigation (admin SPA forces a verify-then-retry step, doesn't actually close the hole). Asked directly; awaiting his answer.
+Unblock action: Tommy answers, then that path gets implemented before (proper fix) or alongside (mitigation) the OIDC client wiring below.
+Resume when: Tommy's answer lands, then continue Phase 2 per the plan.
+
+Phase 1's worktree/branch is closed (no separate worktree existed — Phase 1 ran in the primary
+checkout; its branch was deleted on merge). Fresh worktree created for Phase 2:
+`.worktrees/Feature-launch_admin-console`, branch `Feature/launch_admin-console`, off `origin/main`
+at `bfbfd863c...` (contains #624).
+
+1. Start Phase 2 (admin console SPA shell) per `plans/launch/ADMIN_CONSOLE_PLAN.md` "Phase 2":
    - `app/web/admin/` scaffold (mirrors the `customer` app's shape, no `@b2b/*` alias).
    - Routes: `login.tsx`, `auth.callback.tsx`, `__root.tsx`, `_admin/route.tsx` (guard via
      `GET /api/auth/me`, reading `UserDto.IsAdmin`), landing page listing admins + pending invitations
@@ -81,7 +88,7 @@ item, not a Phase 1 blocker.
      flow to force an explicit verify-then-retry step before the grant becomes reachable. Full finding:
      `reviews/Feature-launch_admin-console.md` (SEC layer note, below the 8-confidence bar for a
      blocking finding but real).
-3. Phases 3 (moderation UI) and 4 (venue approval UI, plus the new `GET /api/Venue/pending-approval`
+2. Phases 3 (moderation UI) and 4 (venue approval UI, plus the new `GET /api/Venue/pending-approval`
    endpoint) follow once Phase 2 is green — see the plan for scope.
 
 ## Completed work
