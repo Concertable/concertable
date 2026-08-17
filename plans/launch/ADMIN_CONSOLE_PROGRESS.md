@@ -5,11 +5,11 @@
 - Roadmap item: `launch/admin-console`
 - Worktree: current checkout (`C:\Users\tommy\source\repos\Concertable`)
 - Branch: `Feature/launch_admin-console`
-- PR: [#624](https://github.com/Concertable/concertable/pull/624) (reviewed, CI green, merge blocked — see below)
+- PR: [#624](https://github.com/Concertable/concertable/pull/624) — **MERGED** (`7fd40bf59860c27f1c1d1e48537901b022de0f43`, 2026-08-17T14:18:26Z)
 - Dependency/package gates: none. No published-package boundary crosses this plan (Auth + B2B edits land
   in the same repo, no NuGet republish/platform-sync gate).
-- Last reconciled: 2026-08-16, `/review` + `/security-review` complete and clean (one test-coverage
-  finding fixed inline); merge attempt surfaced an unrelated hook bug — see Blocked below.
+- Last reconciled: 2026-08-17, PR #624 merged. Worktree still needs closing (see Next Steps) — Phase 2
+  starts in a fresh worktree per the plan.
 
 ## Current state
 
@@ -25,27 +25,34 @@ AdminProfiles-non-empty gate instead of an artificial collision. Branch was also
 all 54 required checks passed (5 E2E jobs correctly skipping per this plan's phase scope). PR marked
 ready for review.
 
-Since then: ran `/review` on #624 (native + security layers) — no findings above the confidence bar
-except one test-coverage gap (`AdminService.GetOverviewAsync`/`IsCurrentUserAdminAsync`/
-`RevokeInvitationAsync` had no unit test; fixed inline, 6 tests added), a repository-boundary fix
-(extracted `IAdminRepository` from `IUserRepository`, see Completed work), a self-check redesign
-(`AdminController.Me()` deleted, `IsAdmin` folded into `UserDto`/`GET /api/auth/me` instead), an
-`InsertAsync` cleanup logged as recurring debt across five other services, and a C# convention fix
-(`AdminMappers.cs` converted to C# 14 `extension()` blocks — it's new code, no grandfather clause) — all
-found via Tommy's own line-by-line review of the diff, not this session's `/review` pass alone. One
-sub-8-confidence security note remains open (recorded below, Phase-2 pre-flight). All unit tests green
-(26/26). `reviews/Feature-launch_admin-console.md` is clean (zero open findings) and its markers are
-current at HEAD.
+Ran `/review` on #624 (native + security layers), then a further round driven by Tommy's own
+line-by-line read of the diff: a repository-boundary fix (extracted `IAdminRepository` from
+`IUserRepository`), a self-check redesign (`AdminController.Me()` deleted, `IsAdmin` folded into
+`UserDto`/`GET /api/auth/me` instead), an `InsertAsync` cleanup (logged as recurring debt across five
+other services in `api/Concertable.B2B/TECH_DEBT.md`), a C# convention fix (`AdminMappers.cs` → C# 14
+`extension()` blocks), and an error-design fix (`RevokeAdminInvitationError` now wraps
+`AdminInvitationRevocationError` as a composite case instead of duplicating it). Merge-queue CI then
+caught one genuine build break: the platform package `0.1.0-alpha.0.1049` (published mid-review, from
+the in-flight repository-context-permission-hierarchy refactor) dropped `Repository<T,TContext,TKey>`'s
+protected `context` field — every other repository in the codebase had already been migrated by the
+platform-sync bot's consumer-fix step, but `AdminRepository` wasn't on `main` yet so it was missed.
+Fixed by hand. Separately found and fixed `chore/platform-sync-0.1.0-alpha.0.1049` (#634) stuck with
+`autoMergeRequest: null` (a transient GitHub API 503 in `platform-sync.yml`'s one-shot auto-merge call,
+no retry) — merged #634 by hand to unblock, then shipped the actual retry fix as
+[#640](https://github.com/Concertable/concertable/pull/640) (auto-merge armed, landing independently).
+All unit tests green (26/26). `reviews/Feature-launch_admin-console.md` is clean (zero open findings).
+
+**#624 merged.** One sub-8-confidence security note from the review was NOT closed before merging —
+it's inert until Phase 2 registers the `admin` OIDC client, and is carried below as a Phase 2 pre-flight
+item, not a Phase 1 blocker.
 
 ## Next Steps
 
-Blocked: `gh pr merge 624 --auto` is refused by `.claude/hooks/merge-review-gate.py`'s security-marker check, which requires `Security-reviewed up to commit:` to exactly equal HEAD — impossible by construction, since the commit that stamps the marker always creates a new HEAD (the primary `Reviewed up to commit:` check has a `review_only` tolerance for exactly this gap; the security check never got the same tolerance).
-Blocked by: needs Tommy to choose how the hook fix lands — approve the one-line `review_only` tolerance directly, edit it himself, or fold it into #624 instead of a separate `Fix/` branch. Asked via `AskUserQuestion`; awaiting his answer.
-Unblock action: Tommy answers, then whichever path he picks gets executed and #624 retried.
-Resume when: the hook fix lands (however he chooses) and `gh pr merge 624 --auto` succeeds, or Tommy merges #624 by another route.
-
-1. Once #624 is reviewed and merged, start Phase 2 (admin console SPA shell) per
-   `plans/launch/ADMIN_CONSOLE_PLAN.md` "Phase 2" from a fresh worktree based on current `origin/main`:
+1. Close this worktree/branch now that #624 has merged:
+   `./scripts/worktrees.ps1 close -Worktree <path> -PullRequest 624 -PlanManaged` (per
+   `plans/AGENTS.md` "Plans outlive PR worktrees").
+2. Start Phase 2 (admin console SPA shell) per `plans/launch/ADMIN_CONSOLE_PLAN.md` "Phase 2" from a
+   fresh worktree based on current `origin/main`:
    - `app/web/admin/` scaffold (mirrors the `customer` app's shape, no `@b2b/*` alias).
    - Routes: `login.tsx`, `auth.callback.tsx`, `__root.tsx`, `_admin/route.tsx` (guard via
      `GET /api/auth/me`, reading `UserDto.IsAdmin`), landing page listing admins + pending invitations
@@ -74,7 +81,7 @@ Resume when: the hook fix lands (however he chooses) and `gh pr merge 624 --auto
      flow to force an explicit verify-then-retry step before the grant becomes reachable. Full finding:
      `reviews/Feature-launch_admin-console.md` (SEC layer note, below the 8-confidence bar for a
      blocking finding but real).
-2. Phases 3 (moderation UI) and 4 (venue approval UI, plus the new `GET /api/Venue/pending-approval`
+3. Phases 3 (moderation UI) and 4 (venue approval UI, plus the new `GET /api/Venue/pending-approval`
    endpoint) follow once Phase 2 is green — see the plan for scope.
 
 ## Completed work
@@ -110,7 +117,12 @@ Resume when: the hook fix lands (however he chooses) and `gh pr merge 624 --auto
 
 ## Reviews
 
-None yet — PR #624 is ready for review, CI green, awaiting Tommy's review.
+Tommy reviewed the diff line-by-line and raised four design questions, all resolved: `IUserRepository`
+mixing entities (extracted `IAdminRepository`), error-mapping placement (kept as an extension in its own
+`AdminErrorMappers.cs`, since `ToDto` is genuinely reused but the error mapper isn't), the `Me()`
+self-check endpoint (folded into `UserDto.IsAdmin`/`GET /api/auth/me`), and an `AddAsync`+`SaveChangesAsync`
+pair that should have been `InsertAsync`. `reviews/Feature-launch_admin-console.md` (deleted post-merge
+per its own lifecycle policy — all findings resolved and the PR merged).
 
 ## Decisions, discoveries, blockers, and deviations
 
