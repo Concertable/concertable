@@ -123,12 +123,11 @@ Re-verified after the fixes: hooks **72 passed**, `docs_reachability.py` **0 err
 
 ## Next Steps
 
-Paused: Tommy — run `! gh pr merge 637 --merge --auto` in his own session to enqueue #637.
-
-0. **Re-review before that merge command works.** This checkpoint commits `plans/docs/*`, so the review
-   watermark is genuinely stale now (it was only `reviews/`-only-diff stale before, which the gate
-   whitelists). Run `/docs-review` over the branch, re-stamp `reviews/Docs-GuidanceDocsRestructure.md`,
-   push, then the enqueue command above. The diff to review is plan/ledger prose only.
+0. **Re-review, then hand Tommy the enqueue command.** The `dae65fe2` checkpoint commits `plans/docs/*`,
+   so the review watermark is genuinely stale now (before it was `reviews/`-only-diff stale, which the
+   gate whitelists). Run `/docs-review` over the branch — the diff to review is plan/ledger prose only —
+   re-stamp `reviews/Docs-GuidanceDocsRestructure.md`, push, then give Tommy
+   `! gh pr merge 637 --merge --auto`. He must run it himself: see the stale-gate-hook note in step 1.
 
 1. **Land this PR.** Routed to `/merge`, not `/merge-docs`: the diff carries one `.cs` file
    (`ModuleBoundaryTests.cs` — comment and `.Because(...)` strings repointed by the
