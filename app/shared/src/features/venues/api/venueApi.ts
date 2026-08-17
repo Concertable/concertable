@@ -17,9 +17,14 @@ const venueApi = {
     return data;
   },
 
+  getVenueById: async (id: number): Promise<Venue> => {
+    const { data } = await apiClient.get<Venue>(`/venue/${id}`);
+    return data;
+  },
+
   getMyVenue: async (): Promise<Venue | null> => {
-    const { data, status } = await apiClient.get<Venue>("/venue/user");
-    return status === 204 ? null : data;
+    const { data } = await apiClient.getOptional<Venue>("/organization/venue");
+    return data;
   },
 
   createVenue: async (input: CreateVenue): Promise<Venue> => {
@@ -30,7 +35,10 @@ const venueApi = {
     formData.append("Longitude", String(input.longitude));
     formData.append("Banner", input.banner);
     formData.append("Avatar", input.avatar);
-    const { data } = await apiClient.post<Venue>("/venue", formData);
+    const { data } = await apiClient.post<Venue>(
+      "/organization/venue",
+      formData,
+    );
     return data;
   },
 
@@ -46,7 +54,7 @@ const venueApi = {
     formData.append("Longitude", String(venue.longitude));
     if (banner) formData.append("Banner", banner as any);
     if (avatar) formData.append("Avatar", avatar as any);
-    const { data } = await apiClient.put<Venue>(`/venue/${venue.id}`, formData);
+    const { data } = await apiClient.put<Venue>("/organization/venue", formData);
     return data;
   },
 };

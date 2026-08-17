@@ -3,19 +3,23 @@
 - Plan: `plans/data-access/REPOSITORY_CONTEXT_PERMISSION_HIERARCHY_PLAN.md`
 - Roadmap: `plans/data-access/DATA_ACCESS_ROADMAP.md`
 - Roadmap item: `data-access/repository-context-permission-hierarchy`
-- Worktree: `C:/Users/TommySeery/source/repos/Concertable/.worktrees/Plan-data-access-repository-permission-hierarchy`
-- Branch: `Refactor/DataAccessRepositoryPermissionHierarchy`
-- PR: [#561](https://github.com/Concertable/concertable/pull/561) (open; replacement exact-head CI pending)
-- Verified work head: `4179700e2877a027a709c9dab9d5aa1df3a46690`
-- Starting remote head: `11c99197fd4976c3b9ced7c4e115ea92856d0496`
-- Pushed range: `11c99197fd4976c3b9ced7c4e115ea92856d0496..4179700e2877a027a709c9dab9d5aa1df3a46690`
-- Remote and PR head: `4179700e2877a027a709c9dab9d5aa1df3a46690` (verified after work-head push)
+- Worktree: `C:/Users/TommySeery/source/repos/Concertable/.worktrees/Fix-signup-navigation-race`
+- Branch: `Fix/SignupNavigationRace`
+- PR: [#626](https://github.com/Concertable/concertable/pull/626) (draft; replacement exact-head CI pending)
+- Verified work head: `eef6e939f19ce0b239a9be8c5564549cf7025c1d`
+- Starting remote head: `7361b99b18e10d042d6c4ebd94af02bd8204df52`
+- Pushed range: `7361b99b18e10d042d6c4ebd94af02bd8204df52..eef6e939f19ce0b239a9be8c5564549cf7025c1d`
+- Remote and PR head: `eef6e939f19ce0b239a9be8c5564549cf7025c1d` (verified after work-head push)
+- Consumer PR: [#561](https://github.com/Concertable/concertable/pull/561) merged as `249dc8a9df8d9b81271cd2250a01ecf086e97586`.
 - Dependency/package gate: satisfied. Additive producer PR #590 merged as `59fe60e978affe23bcaf53823151eab2acda8ba0`, published platform `0.1.0-alpha.0.1007`, and platform-sync PR #592 merged green as `38e3d8548f10f3ab7a4a951b7c4ce961ec21c863`. Current `origin/main` pins `0.1.0-alpha.0.1009`, which includes the additive DataAccess API.
-- Last reconciled: 2026-08-16 against PR #561 and `origin/main` at `b633d79aaec3cb957ef3213847aeaa7121731334`.
+- Consumer publication/sync gate: satisfied. Publication run `31976777846` passed and platform-sync
+  PR [#623](https://github.com/Concertable/concertable/pull/623) merged green as
+  `d5669a836c4d7fd9bb4d15e9c05f0a71f0e9f40c`.
+- Last reconciled: 2026-08-17 against `origin/main` at `5951fa4f7`.
 
 ## Current state
 
-The repo-wide consumer migration is implemented and reconciled locally with current main for #561.
+The repo-wide consumer migration merged through #561 and is published and platform-synced on main.
 It includes the Customer, B2B, and Payment repository
 and context migrations, the B2B context-stance naming correction, and the Conversations-owned
 participant projection required to preserve the module boundary.
@@ -52,11 +56,19 @@ The fixture now completes a requested command type, and refund workflows explici
 `RefundEscrowCommand`. The branch has since been reconciled with the latest current main through
 `b633d79aa`; the incoming range contains only the reviewed launch-roadmap gap sweep.
 
+Full-E2E merge-group run `31974080294` was ejected after 31/32 B2B UI scenarios passed. Artist signup
+timed out because the registration URL wait attached after the sign-up click and missed the navigation
+load edge. The mandated fresh-stack rerun also exposed that B2B handles `SendEmailCommand` without
+provisioning its service command queue. The missing queue is now provisioned and covered by the
+topology contract test, and both signup flows attach their registration wait before clicking.
+
 ## Next Steps
 
-1. Require green exact-head PR CI for the checkpoint-transport head.
-2. Normalize to `full-e2e`, enqueue, and follow the merge-group, publication, and generated
-   platform-sync gates to green before starting the legacy contraction.
+1. Push this checkpoint transport and require green replacement exact-head PR CI.
+2. Mark #626 ready, apply `full-e2e`, enqueue, and follow merge-group,
+   publication, and platform-sync gates to green.
+3. Create the legacy-contraction worktree from current main and reconcile its owning ledger before
+   removing the published compatibility surface.
 
 ## Completed work
 
@@ -122,6 +134,21 @@ The fixture now completes a requested command type, and refund workflows explici
   10 existing warnings.
 - Reviewed current-main work head `4179700e2` was pushed from `11c99197f`, then verified equal on the
   remote branch and PR #561.
+- Exact-head CI run `31973511659` passed on checkpoint head `80d492cd3`.
+- Full-E2E merge-group run `31974080294` passed 31/32 B2B UI scenarios but failed artist signup at
+  `SignUpSteps.ClickSignUpLink`; API E2E and the remaining hard-floor jobs passed.
+- The automatically readmitted merge-group run `31975154334` passed full E2E; consumer PR #561 then
+  merged as `249dc8a9d`, package publication run `31976777846` passed, and platform-sync PR #623 merged
+  green as `d5669a836`.
+- Follow-up exact-head CI run `31979493729` passed on `7361b99b1`; two newer main guidance commits were
+  then merged through `27dd5f7b4`, and the focused topology suite remained green at 7/7.
+- B2B topology tests passed 7/7 after adding the B2B `SendEmailCommand` queue contract.
+- B2B and Customer UI E2E projects built in Release with 0 errors after moving both registration waits
+  ahead of their sign-up clicks.
+- Docker health passed before the focused artist-signup rerun. The fresh local stack could not reach
+  the scenario because the long plan-worktree path caused Windows to reject
+  `Microsoft.Data.SqlClient.SNI.dll` with `0x800700CE`; exact-head and merge-group CI remain the valid
+  scenario execution gates from normal runner paths.
 
 ## Reviews
 
@@ -145,6 +172,10 @@ The fixture now completes a requested command type, and refund workflows explici
 - Incremental review of `f9cb45b8c..b887f15c8` found no issues. The range contains only review and
   plan checkpoints plus the already-reviewed launch-roadmap gap sweep from current main; the review
   watermark is current at `b887f15c8fe3baec149033dcc99358d8cc6cb959`.
+- Review of follow-up range `d5669a836..1a2da63ba` found no issues. The review is recorded in
+  `reviews/Fix-SignupNavigationRace.md`; the diff changes no security-sensitive production path.
+- Incremental review of `7361b99b1..27dd5f7b4` found no issues; the range contains only current-main
+  guidance and its merge commit, with no overlap in the repaired paths.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -155,3 +186,11 @@ The fixture now completes a requested command type, and refund workflows explici
   tenant-independent no-tracking/no-save stance; `VenueAdminDbContext` is the administrative writable
   exception. Customer read and projection-write contexts remain separate physical contexts.
 - The plan requires three feature merges: additive package, consumers, then legacy contraction.
+- The merge-group repair must remove the navigation race and missing B2B command queue; it must not
+  inflate the 15-second browser timeout or bypass the failing signup step.
+- The focused local rerun is environment-blocked by the plan worktree's Windows path length, not by
+  Docker health or an application startup error. The source projects compile and the topology contract
+  passes locally; remote full-E2E must prove the repaired scenario.
+- GitHub automatically readmitted #561 after the first failed merge-group and landed the previously
+  pushed head before the repair commits existed. The repair therefore ships as a current-main follow-up
+  rather than mutating the already-merged consumer PR.
