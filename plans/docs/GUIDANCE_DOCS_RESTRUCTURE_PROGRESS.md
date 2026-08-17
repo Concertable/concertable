@@ -6,10 +6,14 @@
 - Also delivered by this ledger: roadmap item `docs/agent-standards`, now checked off
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-guidance-docs`
 - Branch: `Docs/GuidanceDocsRestructure`
-- PR: #637 — ready, label `skip-e2e`, awaiting enqueue. Head re-cut on 2026-08-17: the branch had gone **69 behind** `origin/main` and `DIRTY`, so `origin/main` is merged in (three doc conflicts resolved, below) and the branch is 0 behind again. Checks re-run against the new head.
+- PR: #637 — ready, label `skip-e2e`, head `17cd8d08a`, 0 behind `origin/main`, awaiting the exact-head check
+  run then enqueue. Updated for base currency twice on 2026-08-17: first from **69 behind** and `DIRTY`
+  (three doc conflicts resolved, below), then from 2 behind after platform-sync #645 merged — a clean
+  merge carrying only the `<ConcertablePlatformVersion>` bump `0.1.0-alpha.0.1055` → `0.1.0-alpha.0.1061`
+  across the five service `Directory.Packages.props`.
 - Shared repos: `Concertable/agent-standards` (7 process skills) and `tomjseery/dotagents` (29 generic — 20 .NET + 9 TS/React — synced to `~/.agents/skills/`), cloned at `C:\Users\TommySeery\source\repos\{agent-standards,dotagents}`
 - Dependency/package gates: no consumer migration to do, but this PR **will** trigger publish + platform sync — `publish-packages.yml` triggers on the coarse `paths: api/**`, which this branch's `api/**` markdown matches. MinVer republishes and a `chore/platform-sync-*` PR opens; non-breaking (no published type changed), so it should auto-merge green. Follow it to green anyway — whoever merges owns the sync.
-- Last reconciled: 2026-08-17 against `origin/main` (0 behind after the merge), plus `agent-standards` `8c42daa` and `dotagents` skill enumeration
+- Last reconciled: 2026-08-17 against `origin/main` at `ab6d560c1` (0 behind), plus `agent-standards` `8c42daa` and `dotagents` skill enumeration
 
 ## Current state
 
@@ -138,18 +142,22 @@ cited `api/docs/SEEDING_CONVENTIONS.md`.
 
 Re-verified after the fixes: hooks **72 passed**, `docs_reachability.py` **0 errors / 21 warnings**.
 
+Both markers have since moved forward twice more with nothing re-reviewable in between — the two
+base-currency merges of `origin/main`, whose only content outside `reviews/` is the platform pin bump
+already reviewed and merged on `main` as #645. Review state: **clean, 0 open findings.**
+
 ## Next Steps
 
 1. **Land this PR.** Routed to `/merge`, not `/merge-docs`: the diff carries one `.cs` file
    (`ModuleBoundaryTests.cs` — comment and `.Because(...)` strings repointed by the
    `CONVENTIONS.md` → `MODULE_STRUCTURE.md` rename), which `merge-docs` hard-refuses, so the queue's
-   build gate applies. Review clean (0 open findings), branch 0 behind `origin/main` after the merge,
-   local = remote = PR head, `skip-e2e` label correct (no positive trigger).
-   **The local gate hook is no longer the blocker** — the main checkout now carries the 281-line
-   `merge-review-gate.py` with `review_only`, which whitelists a marker-to-head range touching
-   `reviews/` alone, exactly this branch's case. What remains is simply that merge authorization is
-   Tommy's: run `! gh pr merge 637 --merge --auto` once the re-run checks are green.
-   After the enqueue lands: poll for `MERGED`, then `./scripts/worktrees.ps1 close -Worktree
+   build gate applies. Review clean (0 open findings), branch 0 behind `origin/main`, local = remote =
+   PR head, `skip-e2e` label correct (no positive trigger — 72 markdown files, two Python hook files,
+   one `.cs` comment/string change; no UI flow, HTTP/gRPC contract, published shape or auth behaviour).
+   The gate hook is satisfied: its `review_only` whitelist covers a marker-to-head range touching
+   `reviews/` alone, which is this branch's exact shape once the markers sit at the ledger commit.
+   Enqueue with `gh pr merge 637 --merge --auto` once the exact-head checks are green, poll for
+   `MERGED`, then `./scripts/worktrees.ps1 close -Worktree
    C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-guidance-docs -PullRequest 637
    -PlanManaged`, then follow the generated `chore/platform-sync-*` PR to green (this branch's `api/**`
    markdown matches `publish-packages.yml`'s coarse `paths:`; non-breaking, so it should auto-merge).
