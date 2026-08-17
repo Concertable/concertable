@@ -255,6 +255,12 @@ remains of Phase 6 is tier 3 and deployment.
    written generic for a shared repo; the `merging` skill must lose the confirm-loop body and keep the rule,
    with the executable `.agents/skills/merge/SKILL.md` owning the procedure. Same for `pr-preflight`.
 9. **Promotion candidates for the shared skills**, all found while cutting against them — none blocking:
+   - **FIXED (`dotagents` `daef94d`)** — `persistence` taught that an awaiting page projection "still
+     constructs its page by hand", the practice `main` refactored away from in `OpportunityMapper`. The
+     10-commit merge in this turn surfaced it: the owning home was teaching the superseded rule while the
+     repo doc it took over from had been tightened. Canonical and both installed copies now agree. Related
+     observation for Phase 6a: `~/.claude/skills/*` holds 10-line stubs pointing at `~/.agents/skills/*`,
+     so a junction deployment must target the `.agents` leg and leave the stubs, not replace them.
    - `persistence` teaches a context-typed base (`Repository<TEntity, OrderDbContext, Guid>`), but
      Concertable's shared bases are capability-typed with no `TContext` parameter. The *rule* (module-local
      alias) is the same; the example predates the change.
