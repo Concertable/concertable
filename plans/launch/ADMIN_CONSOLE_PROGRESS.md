@@ -50,8 +50,8 @@ merges #624 by another route.
    `plans/launch/ADMIN_CONSOLE_PLAN.md` "Phase 2" from a fresh worktree based on current `origin/main`:
    - `app/web/admin/` scaffold (mirrors the `customer` app's shape, no `@b2b/*` alias).
    - Routes: `login.tsx`, `auth.callback.tsx`, `__root.tsx`, `_admin/route.tsx` (guard via
-     `GET /api/Admin/me`), landing page listing admins + pending invitations wired to Phase 1's
-     `AdminController` endpoints.
+     `GET /api/auth/me`, reading `UserDto.IsAdmin`), landing page listing admins + pending invitations
+     wired to Phase 1's `AdminController` endpoints.
    - Auth service: `ClientIds.Admin` ("admin") Duende Web client — `Config.WebClients` +
      `SpaClientSettings.Admin` + redirect URIs in `appsettings*.json`. This is what makes Phase 1's
      fail-closed gate load-bearing (today `admin` has no OIDC client, so the path is unreachable).
@@ -83,11 +83,16 @@ merges #624 by another route.
 
 - **Phase 1 — Admin provisioning backend** (PR #624): `AdminInvitationEntity` (User.Domain, mirrors
   `TenantInvitationEntity` minus tenant fields) with Accept/Expire/Revoke transitions and a 7-day TTL;
-  EF configuration + `UserDbContext`/`UserRepository` extensions (no new module); `CredentialRegisteredHandler`
-  rewritten with the invitation-or-bootstrap gate on `ClientIds.Admin` (`Admin:BootstrapEmail` config,
-  defaults to `SeedUsers.AdminEmail` outside Production); `IAdminService`/`AdminService`
-  (mirrors `InvitationService`/`MembershipService`, last-admin invariant mirrors `IsLastOwnerAsync`);
-  `AdminController` (`POST`/`DELETE /api/AdminInvitation`, `GET`/`DELETE /api/Admin`, `GET /api/Admin/me`);
+  EF configuration + `IAdminRepository`/`AdminRepository` (own repository, bound to
+  `AdminInvitationEntity` — not folded into `UserRepository`; no new module, `UserDbContext` shared);
+  `CredentialRegisteredHandler` rewritten with the invitation-or-bootstrap gate on `ClientIds.Admin`
+  (`Admin:BootstrapEmail` config, defaults to `SeedUsers.AdminEmail` outside Production);
+  `IAdminService`/`AdminService` (mirrors `InvitationService`/`MembershipService`, last-admin invariant
+  mirrors `IsLastOwnerAsync`); `AdminController` (`[Admin]`-gated at the class level:
+  `POST`/`DELETE /api/AdminInvitation`, `GET`/`DELETE /api/Admin`); `UserController.Me()`
+  (`GET /api/auth/me`) now also returns `UserDto.IsAdmin`, backed by
+  `IAdminService.IsCurrentUserAdminAsync` — no separate `AdminController` self-check endpoint (see the
+  plan's design decision 3 for why `VenueController.IsOwner` was the wrong precedent to mirror here);
   invite email via the existing outbox/`IBus` pattern; `./initial-migrations.ps1` re-scaffold for the new
   `AdminInvitations` table.
 
