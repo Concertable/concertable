@@ -227,29 +227,31 @@ a doc at the lowest node containing its concern; that governs *Concertable-speci
 convention is not *about* any node, it is a library entry addressed by import rather than by position.
 Locality still governs the thin local files that name precedents.
 
-## The shared repo: a Claude Code plugin marketplace
+## The shared repo: `.agents/`-canonical skills
 
 The monorepo is temporary, so the generic half must not live inside it — otherwise every future
 carve-out is an import rewrite.
 
-**The mechanism is not Nx.** Nx is a JS/TS monorepo task graph and build cache; it distributes nothing
-to other repos. The right mechanism is a **Claude Code plugin marketplace**, which is exactly what
-versioned, load-on-demand skills"*. Mirror that shape:
+**The mechanism is not Nx** — Nx is a JS/TS task graph and build cache and distributes nothing to other
+repos. Nor is it a Claude Code plugin marketplace *by itself*: take the idea from
+not its Claude-only layout. **`.agents/skills/<topic>/SKILL.md` is canonical**, the same
+agent-agnostic convention this repo and `dotagents` already use, and the Claude-side paths are generated
+stubs:
 
 ```text
-agent-standards/                          (the repo, a plugin marketplace)
-  .claude-plugin/marketplace.json         lists the plugins
-  plugins/<plugin>/
-    .claude-plugin/plugin.json            the plugin manifest
-    skills/<topic>/SKILL.md               one topic per skill
+.agents/skills/<topic>/SKILL.md       the real instructions — one topic per skill
+.agents/sync-claude-skill-stubs.ps1   regenerates every stub from them
+.claude/skills/<topic>/SKILL.md       generated stub (Claude Code, repo-local)
+plugins/<plugin>/skills/<topic>/      generated stub (Claude Code, installed plugin)
+.claude-plugin/marketplace.json       the marketplace manifest
 ```
 
 The skill inventory is in "Target structure" below — it is the live one, so it is not restated here.
 
-Consumed with `/plugin marketplace add <owner>/agent-standards` plus a plugin install — **no submodule,
-no `submodules: true` in CI, and no import paths that a carve-out would rewrite.** That supersedes the
-submodule design: a carved service repo installs the same plugin and inherits the same standards
-unchanged.
+Two consumption paths off one source, so nothing is Claude-only: a Claude Code repo installs the plugin
+(`/plugin marketplace add <owner>/agent-standards`), while Codex and anything else reads `.agents/skills/`
+directly — junctioned, cloned, or synced to `~/.agents/skills/`. **No submodule, no `submodules: true` in
+CI, and no import path a carve-out would rewrite.**
 
 **The `description` front-matter is the load-bearing part.** It is the router that decides whether the
 well: *"…Use when writing, reviewing, or restructuring backend tests, adding tests for a new endpoint…"*.
@@ -291,10 +293,17 @@ A **skill is a convention doc with a trigger** — the same markdown, plus a `de
 that decides when it loads. So nothing is rewritten into a different genre; generic topics move to
 `Concertable/agent-standards` and gain a description, while what must always apply stays in-repo.
 
-**In `Concertable/agent-standards`** — DONE, 35 skills across three plugins:
+**Two homes, split by whether the rule names this product** — DONE, 35 skills. Both repos keep `.agents/skills/`
+canonical and generate the Claude-side stubs from it, so nothing is Claude-only and Codex reads the same files.
+
+- **`tomjseery/dotagents` → `~/.agents/skills/`** — the 28 generic ones. They name no project, so they are
+  personal and every repo on the machine has them with no per-repo install.
+- **`Concertable/agent-standards`** — the 7 process ones, which are Concertable-shaped: the merge queue and
+  its platform-sync PR, the draft-PR/queue tiering, ROADMAP→PLAN→PROGRESS and the worktree scripts. In the
+  org so carve-out service repos inherit them.
 
 ```text
-plugins/dotnet-standards/skills/
+dotagents  .agents/skills/     -> ~/.agents/skills/    (personal, generic, 28)
   csharp-style/  csharp-naming/  comments/  dependency-injection/  logging/
   validation/  persistence/  result-carriers/  result-errors/  result-terminals/
   http-api/  module-structure/  microservice-boundaries/  seeding/
@@ -302,13 +311,18 @@ plugins/dotnet-standards/skills/
   proto/            loads only when the task touches a .proto
   multitenancy/     loads only when the task touches tenant scoping
   keyed-strategies/ loads only when behaviour varies by a closed key
-plugins/typescript-standards/skills/
   typescript-style/  contract-naming/  react-structure/  server-state/  client-state/
   http-layer/  write-boundary/  tiered-shared-code/
-plugins/agent-process/skills/
+
+agent-standards  .agents/skills/                       (Concertable process, 7)
   git-branching/  committing/  remote-validation/  merging/  plans/
   docs-and-debt/  failing-tests/
 ```
+
+**A description is the router, and a bare colon-space breaks it.** An unquoted YAML scalar truncates at
+`: `, so a description containing one leaves the skill with nothing to route on and it never loads — with
+no visible error. Two migrated skills shipped that way; the stub generator now fails instead of emitting an
+unroutable stub.
 
 Two departures from the earlier sketch, both from applying the tier table above rather than the topic list:
 
@@ -376,16 +390,16 @@ including `review/SKILL.md:128`, `:151`; delete `CODE_CONVENTIONS.md:192–194`;
 citations; the `./scripts/` path fixes across root `AGENTS.md` and the four e2e skills; the
 `integration-debug` Docker floor.
 
-### Phase 3a — migrate the generic half to `Concertable/agent-standards` — DONE
-35 skills across `dotnet-standards`, `typescript-standards`, and `agent-process`; examples genericized off
-any single project's domain; `proto`'s mapper and payload-naming sections collapsed to pointers rather than
-restating `csharp-naming`.
+### Phase 3a — move the corpus out to `.agents`-canonical skills — DONE
+35 skills, split by whether the rule names this product: 28 generic to `dotagents` (`~/.agents/skills/`),
+7 Concertable process ones to `Concertable/agent-standards`. Examples genericized off any single project's
+domain; `proto`'s mapper and payload-naming sections collapsed to pointers rather than restating
+`csharp-naming`.
 
 ### Phase 3b — reduce the in-repo half to the hard floor
 Cut the generic bodies now owned by a skill out of `api/agents/*` and `app/agents/*`, leaving the api-wide
 floor; add each service's thin `CODE_CONVENTIONS.md`/`CODE_PATTERNS.md` carrying only its own precedents;
-rename `CONVENTIONS.md` → `MODULE_STRUCTURE.md` (decided) and fix its `:6`/`:91` monolith framing. Gated —
-see Open decisions 1.
+rename `CONVENTIONS.md` → `MODULE_STRUCTURE.md` (decided) and fix its `:6`/`:91` monolith framing.
 
 ### Phase 4 — dedupe to one home
 Collapse each duplication row. Biggest win: seeding from 5 locations to the `seeding` skill (the principle)
@@ -413,20 +427,13 @@ All Phase 1–2 rulings are settled (see the contradictions table), and the `CON
 `module-structure` skill that now owns its generic half, and the same commit fixes the stale "modules in the
 monolith" framing at `:6`/`:91` that contradicts `api/ARCHITECTURE.md:8`.
 
-Still open, and now the gate on Phase 3b:
+Codex parity, previously listed here as a gate on Phase 3b, was never a real one: the existing `.agents/`
+convention already solves it. Canonical skills are plain markdown under `.agents/skills/`, agent-agnostic
+by construction, and `dotagents` syncs them to `~/.agents/skills/`, which a Codex session reads. Claude Code
+gets generated stubs. Phase 3b cuts nothing that either tool then lacks.
 
-1. **Codex parity for the standards — Tommy's call.** A plugin skill is a Claude Code mechanism. This repo
-   deliberately keeps `.agents/` canonical so Codex sessions work too, and Codex reads `AGENTS.md` trees, not
-   plugin marketplaces. So the moment Phase 3b cuts a generic body out of `api/agents/*`, a Codex session
-   loses that rule with nothing replacing it — silently, which is the exact failure mode this plan exists to
-   remove. Phase 3b is a one-way door on that, so it waits. The options:
-   - **Claude-only standards.** Accept that convention-sensitive work happens in Claude Code. Cheapest, and
-     honest, but it makes the two tools unequal rather than merely different.
-   - **A Codex-side pointer.** The content is plain markdown in a git repo, so a local clone plus a
-     `.agents/` pointer would work. It reintroduces a sync mechanism, which is what the marketplace was
-     chosen to avoid — but only for Codex, not for CI or a carve-out.
-   - **Keep the generic bodies in-repo** and treat the skills purely as the mechanism for *other* repos.
-     Loses the auto-load win here, which was a stated goal.
-2. **Auto-load budget** — Phase 5 would drop `api/AGENTS.md:3`'s three `@`-imports (1,331 lines) and
+Still open:
+
+1. **Auto-load budget** — Phase 5 would drop `api/AGENTS.md:3`'s three `@`-imports (1,331 lines) and
    the always-loaded merge/Docker blocks that `/merge` and `scripts/e2e.ps1` already automate. Is
    dropping `RESULT_PATTERN.md` from every-prompt load acceptable given it is the most-violated set?
