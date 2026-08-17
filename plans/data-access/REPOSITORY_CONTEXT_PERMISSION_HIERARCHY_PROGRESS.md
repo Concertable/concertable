@@ -98,8 +98,7 @@ topology contract test, and both signup flows attach their registration wait bef
 
 ## Next Steps
 
-1. Push the reviewed merge-queue repair through the plan-managed compound protocol and require exact-
-   head CI.
+1. Require exact-head CI on the pushed repair checkpoint.
 2. Keep `full-e2e` and return
    PR #632 to the merge queue for the full-stack proof.
 3. On merge, close the source worktree and follow package publication and platform sync to green,
@@ -222,6 +221,8 @@ topology contract test, and both signup flows attach their registration wait bef
   helper rebuilt with zero warnings and zero errors, B2B Web rebuilt with zero errors, DataAccess unit
   tests passed 11/11, the formerly failing B2B Concert integration test passed 1/1, the legacy-
   repository-arity grep remained empty, and `git diff --check origin/main...HEAD` passed.
+- Reviewed current-main repair head `1b0ccfef1` was pushed from `3b103bc4c`, then verified equal to the
+  remote branch and PR #632 `headRefOid`.
 - The targeted local B2B API E2E wrapper was stopped before test-host startup after its build spawned
   the documented long-worktree process storm; it created no test log or TRX and provides no pass/fail
   evidence. The orphaned processes were terminated, and remote full-E2E remains the authoritative gate.
