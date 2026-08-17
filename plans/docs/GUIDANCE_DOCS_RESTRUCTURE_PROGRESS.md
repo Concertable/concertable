@@ -61,39 +61,51 @@ skips fenced blocks. Reachability still scans them.
 
 ## Next Steps
 
-Design corrected mid-turn on two counts from Tommy, both recorded in the plan:
+The distribution mechanism is settled and built: **`tomjseery/standards-docs`** (private), a Claude Code
+`/plugin marketplace add tomjseery/standards-docs`; refresh with `/plugin marketplace update`. That is the
+"pulled locally and kept synced" requirement satisfied natively — no submodule, no `submodules: true` in
+CI, no sync script, and no tech debt. It also supersedes the submodule design recorded earlier in the
+plan: a carved-out service installs the same plugin and rewrites no paths.
 
-- **Scope is a fourth axis, and it is the one that governs bloat.** Folders can't express it; only the
-  `@`-import edge can. Verified: ~200 lines of always-loaded content is single-service — tenancy
-  composition (62, B2B), keyed `DealType` strategies (90, B2B), gRPC boundaries (34, Payment), proto
-  naming (~12, Payment, and exactly one `.proto` exists). Auth, Search and Customer pay for all of it
-  every prompt. The model is granular topic files composed per consumer, generalizing the 42
-  test-project stubs that already `@`-import a single `TESTING_*` file.
-- **"portable" was a redundant label, and the shared repo lands early, not last.** A generic doc at the
-  `api/` layer is portable by construction, so the `portable/`/`local/` folder split is gone. More
-  importantly the monorepo is temporary: conventions kept inside it make every carve-out an import
-  rewrite, so `conventions/` is built at repo root now — the future submodule mount point — and the swap
-  is `git rm -r --cached` + `git submodule add` with zero import churn.
+A `SKILL.md` is a convention doc plus a `description` front-matter that routes it, so migration is
+relocation, not rewriting. Landed so far: the marketplace scaffold, the `dotnet-standards` plugin, and the
+`proto` skill — chosen because it is the clearest instance of the defect (one `.proto` in the repo, in
+Payment, with its rules sitting in docs every `api/**` prompt loads).
 
 Next, in order:
 
-1. **`docs/conventions-repo`** — create the shared `conventions` repo (`dotnet/`, `typescript/`,
-   `process/`) and mount it at repo root. **Blocking prerequisite:** `.github/workflows/*` checks out
-   without submodules today, so `actions/checkout` needs `submodules: true` in the same change or every
-   `@conventions/...` import resolves to nothing and the reachability gate goes red.
-2. **`docs/guidance-restructure`** — split `api/agents/*` and `app/agents/*` into one topic per file
-   under `conventions/`, carrying text verbatim. Pull the four scoped topics out to `PROTO.md`,
-   `MULTITENANCY.md`, `KEYED_STRATEGIES.md`. Rewrite each consumer's `AGENTS.md` to import only what it
-   can act on; move Concertable precedents (context roster, filtered-entity list, `DealType` families,
-   Refit client roster) into the consumer's own `agents/` file.
-3. Collapse the duplication rows to one home each. Biggest: seeding from 5 locations. Resolve
-   `api/AGENTS.md:26-45` under the import-or-summarize rule — `SEEDING_CONVENTIONS.md` is not
-   `@`-imported, which is *why* that inline summary exists. Pick one.
-4. Re-point `docs/INDEX.md` at the new paths and re-run the link check.
+1. **`docs/standards-repo`** — migrate the rest of `dotnet-standards`: `csharp-style`, `csharp-naming`,
+   `comments`, `dependency-injection`, `logging`, `validation`, `persistence`, `result-carriers`,
+   `result-errors`, `result-terminals`, `http-api`, `module-structure`, `microservice-boundaries`,
+   `seeding`, `unit-testing`, `integration-testing`, `e2e-scenarios`, plus the two remaining scoped
+   topics `multitenancy` and `keyed-strategies`. Then `typescript-standards` and `agent-process`.
+   Genericize every example — the `proto` skill needed a second pass because payment-domain names had
+   leaked in, and a standard naming concrete types can't be reused.
+2. **`docs/guidance-restructure`** — reduce `api/agents/*` and `app/agents/*` to the in-repo hard floor,
+   and give each service a thin `CODE_CONVENTIONS.md`/`CODE_PATTERNS.md` holding only its own precedents
+   (B2B's context roster and filtered-entity list, Payment's Refit roster and money rules, the `DealType`
+   families). Nested `AGENTS.md` compose, so a service file must never restate the api-wide floor.
+3. Collapse the duplication rows to one home each — seeding still sits in 5 places. Resolve
+   `api/AGENTS.md:26-45` under the import-or-summarize rule: `SEEDING_CONVENTIONS.md` is not `@`-imported,
+   which is *why* that inline summary exists.
+4. Re-point `docs/INDEX.md` at the skills that own each topic and re-run the link check.
 
-Still needs a decision before step 2: whether `api/agents/CONVENTIONS.md` becomes `MODULE_STRUCTURE.md`.
-It collides with `CODE_CONVENTIONS.md`, reads as that file's superset when it is narrower, and its
-`:6`/`:91` "modules in the monolith" framing contradicts `api/ARCHITECTURE.md:8`.
+**Decide before step 2:** whether `api/agents/CONVENTIONS.md` becomes `MODULE_STRUCTURE.md`. It collides
+with `CODE_CONVENTIONS.md`, reads as its superset when it is narrower, and its `:6`/`:91` "modules in the
+monolith" framing contradicts `api/ARCHITECTURE.md:8`.
+
+**Two things surfaced that are Tommy's to decide, not mine:**
+
+- `tomjseery/agent-starter-kit` (public, 7 skills) looks redundant with `tomjseery/dotagents` (private,
+  the same 7 plus `pull-main`, `sync-all`, `unmerged`) — the same duplication disease at repo level.
+- Plugin skills are Claude-Code-specific, while this repo deliberately keeps `.agents/` canonical so
+  Codex works too. Codex parity for the standards is unresolved; the content is plain markdown in a git
+  repo, so a Codex-side pointer is possible but not yet designed.
+
+**Correction to an earlier finding in this ledger:** the report that
+`~/.claude/skills/{worktree,commit-push,…}` point at non-existent `.agents/skills/` directories was
+misleading. Those stubs resolve — the canonical files live in `~/.agents/skills/`, synced from
+`dotagents`. They are absent from *Concertable*, which is correct by design.
 
 Not in scope: auto-load thinning beyond what scoping achieves, and the analyzer push-down including
-`EnforceCodeStyleInBuild` (several `severity = error` style rules currently fail no build).
+`EnforceCodeStyleInBuild`.

@@ -227,105 +227,129 @@ a doc at the lowest node containing its concern; that governs *Concertable-speci
 convention is not *about* any node, it is a library entry addressed by import rather than by position.
 Locality still governs the thin local files that name precedents.
 
-## The shared repo, and why it lands early
+## The shared repo: a Claude Code plugin marketplace
 
-The monorepo is temporary. Any design that puts the generic conventions *inside* it makes every future
-carve-out a rewrite, so the shared repo is not the last phase — it is the mount point everything else is
-built against.
+The monorepo is temporary, so the generic half must not live inside it — otherwise every future
+carve-out is an import rewrite.
 
-**The deciding test.** When B2B becomes its own repo, what happens to
-`@../../conventions/dotnet/STYLE.md`? Conventions inside the monorepo → every import in every carved
-repo is rewritten. Conventions at a fixed mount point → the carved repo adds the same submodule at the
-same path and **not one import changes**. That is the property worth paying for.
-
-**One shared repo, not two.** The tempting split is docs-vs-agents, but it doesn't hold: the real axis is
-*generic* (leaves) vs *Concertable-specific* (stays), and product docs (`docs/USP.md`,
-`docs/OVERVIEW.md`) are Concertable-specific, so they never leave regardless. Two repos would double the
-pinning ceremony while a consumer almost always wants a matching set. So one repo, three folders:
+**The mechanism is not Nx.** Nx is a JS/TS monorepo task graph and build cache; it distributes nothing
+to other repos. The right mechanism is a **Claude Code plugin marketplace**, which is exactly what
+versioned, load-on-demand skills"*. Mirror that shape:
 
 ```text
-conventions/            (the shared repo, mounted at repo root)
-  dotnet/               C# + .NET service conventions, incl. the scoped topics
-  typescript/           TS/React conventions
-  process/              the generic agent workflow: git, branch hygiene, merge confirmation,
-                        auto-merge currency, tech-debt locality, comments, plan/markdown lifecycle
+agent-standards/                          (the repo, a plugin marketplace)
+  .claude-plugin/marketplace.json         lists the plugins
+  plugins/
+    dotnet-standards/
+      .claude-plugin/plugin.json
+      skills/
+        csharp-style/SKILL.md
+        csharp-naming/SKILL.md
+        comments/SKILL.md
+        dependency-injection/SKILL.md
+        logging/SKILL.md
+        persistence/SKILL.md
+        result-pattern/SKILL.md
+        http-api/SKILL.md
+        module-structure/SKILL.md
+        microservice-boundaries/SKILL.md
+        seeding/SKILL.md
+        unit-testing/SKILL.md
+        integration-testing/SKILL.md
+        proto/SKILL.md                    only loads when the task touches a .proto
+        multitenancy/SKILL.md             only loads when the task touches tenant scoping
+        keyed-strategies/SKILL.md         only loads when behaviour varies by a closed key
+    typescript-standards/
+      skills/ ts-style, contract-naming, react-structure, server-state,
+              client-state, http-layer, write-boundary, tiered-shared-code
+    agent-process/
+      skills/ git-hygiene, merge-confirmation, branch-currency, plans, reviews
 ```
 
-`process/` is justified by measurement, not taste: ~60% of root `AGENTS.md` is generic agent workflow
-that would lift into any of Tommy's repos — including the 65-line merge-confirmation block, where only
-the repo slug and the skill names are Concertable.
+Consumed with `/plugin marketplace add <owner>/agent-standards` plus a plugin install — **no submodule,
+no `submodules: true` in CI, and no import paths that a carve-out would rewrite.** That supersedes the
+submodule design: a carved service repo installs the same plugin and inherits the same standards
+unchanged.
 
-**Consumption: git submodule at a fixed path, pinned by commit.**
+**The `description` front-matter is the load-bearing part.** It is the router that decides whether the
+skill loads, so it must name both the content and the trigger — the `standards-docs` skills do this
+well: *"…Use when writing, reviewing, or restructuring backend tests, adding tests for a new endpoint…"*.
+A vague description means the skill silently never loads.
 
-- `@`-imports need real files at a resolvable relative path, so a package is the wrong shape.
-- An NTFS junction (the existing work-repo skills pattern) is Windows-local and invisible to CI, and
-  `docs_reachability.py` runs in `docs-review` — missing imports would turn the gate red.
-- A commit pin means a conventions change never silently alters a consumer's rules; the bump is
-  deliberate, the same discipline as `ConcertablePlatformVersion`.
+### The one thing a skill cannot do — and the tier that follows
 
-**Blocking prerequisite:** `.github/workflows/*` currently checks out without submodules. `actions/checkout`
-needs `submodules: true` in the same change, or every `@conventions/...` import resolves to nothing and
-the reachability gate fails.
+A skill is load-on-demand, so it applies **only if it gets invoked**. That is the whole token win and
+also the whole risk, and it decides where each rule belongs:
 
-**Sequencing consequence.** Build `conventions/` at **repo root now, as a plain folder** — that is the
-future submodule mount point, so the swap is `git rm -r --cached conventions` + `git submodule add`, with
-zero import churn. Do not build it under `api/` and move it later; that repeats the rewrite this section
-exists to avoid.
+| Tier | Mechanism | Cost | Guarantee |
+|---|---|---|---|
+| Cross-project always-on | global `~/.claude/CLAUDE.md` (already exists) | every prompt, every repo | unconditional |
+| Repo hard floor | that repo's `AGENTS.md` | every prompt in the repo | unconditional |
+| Reference standard | plugin skill from `agent-standards` | ~one listing line until invoked | only when invoked |
+
+**Sort by the cost of missing the rule, not by topic.** A rule whose violation is expensive and silent
+stays in `AGENTS.md`: never seed handler-written rows, never `WaitFor` another data service, shared code
+is the intersection, comments default to none. A rule you consult *while already doing the work* becomes
+a skill, because the task itself is the trigger: proto mappers, result-pattern detail, testing shape,
+tenancy composition, keyed strategies.
+
+Convenient consequence: the hard floor is mostly Concertable-specific anyway (seed entity inventory,
+service topology), so it was never a candidate for the shared repo. The tiers fall out cleanly.
+
+### Per-service composition
+
+Each service keeps a thin `CODE_CONVENTIONS.md` / `CODE_PATTERNS.md` that names the skills relevant to
+it and carries its own precedents — the roster of real types the generic skill deliberately omits.
+
+**Mechanical trap:** nested `AGENTS.md` files *compose* — the parent and the child both load. So a
+service file must carry **only its extras**, never a copy of the api-wide baseline list. Five services
+each restating the baseline is five copies that drift, which is the defect this whole plan exists to
+remove.
 
 ## Target structure
 
-A **generic topic library** plus **per-consumer composition**. The library holds one topic per file with
-no Concertable identifiers; each consumer's `AGENTS.md` `@`-imports only the topics it can actually act
-on, and carries its own thin local file for precedents.
+A **skill is a convention doc with a trigger** — the same markdown, plus a `description` front-matter
+that decides when it loads. So nothing is rewritten into a different genre; generic topics move to
+`tomjseery/standards-docs` and gain a description, while what must always apply stays in-repo.
+
+**In `tomjseery/standards-docs`** (created; `dotnet-standards` plugin, `proto` skill migrated):
 
 ```text
-conventions/                       the topic library - generic, one topic per file, the extraction unit
-  dotnet/
-    STYLE.md                       braces, empty blocks, this., null!, primary ctors, extension members
-    NAMING.md                      type-name suffix table, mappers, optional params, pure operations
-    COMMENTS.md                    comments + XML doc
-    DEPENDENCY_INJECTION.md        DI + dependency-holders
-    LOGGING.md                     Log.cs source-gen, probes included
-    VALIDATION.md                  input shape vs domain eligibility
-    PERSISTENCE.md                 repository bases, Schema.cs, pagination, unit of work
-    RESULT_CARRIERS.md             smallest truthful carrier, boundaries, construction, composition
-    RESULT_ERRORS.md               typed error unions, definitions, published contracts
-    RESULT_TERMINALS.md            HTTP terminals, workers, cancellation
-    HTTP_API.md                    Dto / Request / Response layering
-    MODULE_STRUCTURE.md            layers, reference graph, visibility cascade, cross-module rules
-    MICROSERVICE_BOUNDARIES.md     adapter vs data services, contract distribution
-    MICROSERVICE_COMMUNICATION.md  protocol selection
-    SEEDING.md                     drive the trigger, never write the row
-    TESTING_UNIT.md  TESTING_INTEGRATION.md  TESTING_E2E.md
-    -- scoped topics: imported ONLY by a consumer that has the thing --
-    PROTO.md                       proto naming, mappers, gRPC wire boundaries
-    MULTITENANCY.md                compose contexts never subtract; repository stance naming
-    KEYED_STRATEGIES.md            closed-key strategy factory + the anti-patterns
-  typescript/
-    STYLE.md  CONTRACT_NAMING.md  REACT_STRUCTURE.md  SERVER_STATE.md
-    CLIENT_STATE.md  HTTP_LAYER.md  WRITE_BOUNDARY.md  TIERED_SHARED_CODE.md
+plugins/dotnet-standards/skills/
+  csharp-style/  csharp-naming/  comments/  dependency-injection/  logging/
+  validation/  persistence/  result-carriers/  result-errors/  result-terminals/
+  http-api/  module-structure/  microservice-boundaries/  seeding/
+  unit-testing/  integration-testing/  e2e-scenarios/
+  proto/            DONE - loads only when the task touches a .proto
+  multitenancy/     loads only when the task touches tenant scoping
+  keyed-strategies/ loads only when behaviour varies by a closed key
+plugins/typescript-standards/skills/
+  ts-style/  contract-naming/  react-structure/  server-state/  client-state/
+  http-layer/  write-boundary/  tiered-shared-code/
+plugins/agent-process/skills/
+  git-hygiene/  merge-confirmation/  branch-currency/  plans/  reviews/
 ```
 
-Composition — the import edge is the scoping mechanism:
+**Staying in Concertable:**
 
-| Consumer | Imports | Local file |
-|---|---|---|
-| `api/AGENTS.md` | the api-wide baseline: STYLE, NAMING, COMMENTS, DI, LOGGING, VALIDATION, PERSISTENCE, RESULT_*, HTTP_API, MODULE_STRUCTURE, SEEDING | `api/agents/` for Concertable-wide facts |
-| `api/Concertable.Payment/AGENTS.md` | + `PROTO.md` | money/escrow/Stripe precedents (already there) |
-| `api/Concertable.B2B/AGENTS.md` | + `MULTITENANCY.md`, `KEYED_STRATEGIES.md` | context roster, which entities are filtered, `DealType` families |
-| `api/Concertable.Customer/AGENTS.md`, `Search`, `Auth` | baseline only | as needed |
-| every `*.UnitTests/AGENTS.md` | `TESTING_UNIT.md` | — (already the shape, 42 files) |
-| `app/AGENTS.md` | the `typescript/` baseline | tiers, clients, permissions |
+```text
+AGENTS.md                       the repo hard floor + docs/INDEX.md pointer
+docs/INDEX.md                   topic -> owner, incl. which skill owns which topic
+api/AGENTS.md                   api-wide floor: seeding trigger rule, service topology,
+                                shared-is-the-intersection, migrations
+api/ARCHITECTURE.md             authoritative current state
+api/Concertable.<Service>/
+  CODE_CONVENTIONS.md           thin: this service's precedents + relevant skills
+  CODE_PATTERNS.md              thin: same
+  AGENTS.md / ARCHITECTURE.md   unchanged
+app/  same shape
+```
 
-Two rules keep this honest:
+The per-service files carry the roster the generic skill deliberately omits — B2B's context roster and
+filtered-entity list, Payment's Refit client roster and money conventions, the `DealType` families.
 
-- **A topic file is imported, never summarized.** The summary is what drifts, and re-summarizing an
-  imported file puts the same rule in context twice.
-- **A scoped topic that gains a second consumer stays one file** — the second consumer adds an import.
-  It is never copied, and it does not get promoted into the baseline just because two services use it.
-
-`api/docs/` keeps `MICROSERVICES_ARCHITECTURE.md` as dated history. `api/ARCHITECTURE.md` stays
-authoritative for current state. Per-service `ARCHITECTURE.md` / `TECH_DEBT.md` files stay put.
+**Mechanical trap:** nested `AGENTS.md` files *compose* — parent and child both load. A service file
+carries **only its extras**, never a copy of the api-wide floor, or five services drift five ways.
 
 ## The meta-rules
 
