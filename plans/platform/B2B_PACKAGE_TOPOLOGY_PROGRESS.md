@@ -15,14 +15,13 @@ Phase 1 is implemented, committed, verified, fully reviewed, and pushed to draft
 stages the published files under an alias without mutating the source manifest; PR CI now runs its
 focused unit test, and the publish workflow packs, verifies, publishes, and feed-verifies both names.
 The existing source package remains `@concertable/b2b`; no consumer manifests, imports, lockfile
-entries, or runtime files have changed. Local, remote-tracking, and the initial PR head were verified
-equal at `1613e2e7cb37cc0e42f5d295b3eb2d9a94da4419`.
+entries, or runtime files have changed. Local, remote-tracking, and PR head are verified equal at
+`382070aecfa43aedd8718615208cac931d44ccac`.
 
 ## Next Steps
 
-Push this progress checkpoint and verify local, remote-tracking, and PR head equality. Follow exact-head
-PR CI to green, then use `/merge` to land Phase 1 and verify the publish workflow produced the exact
-`@concertable/web-b2b` version before beginning Phase 2 delivery.
+Follow exact-head PR CI to green, then use `/merge` to land Phase 1 and verify the publish workflow
+produced the exact `@concertable/web-b2b` version before beginning Phase 2 delivery.
 
 ## Completed work
 
@@ -49,6 +48,8 @@ PR CI to green, then use `/merge` to land Phase 1 and verify the publish workflo
 - Full correctness and architecture review of `9205e82df..693c68c9a` found no issues. Security review
   of the workflow/package-publication changes found no issues. Both watermarks are recorded in
   `reviews/Refactor-B2bPackageTopology.md`.
+- Incremental review of the review/ledger-only range `693c68c9a..382070aec` found one stale next-step
+  entry; it is corrected in the review checkpoint and no finding remains open.
 
 ## Decisions, discoveries, blockers, and deviations
 
