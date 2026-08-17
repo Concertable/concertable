@@ -5,9 +5,9 @@
 - Roadmap item: `launch/deal-lifecycle-ownership`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules`
 - Branch: `Refactor/launch_deal-lifecycle-modules`
-- PR: draft implementation PR [#625](https://github.com/Concertable/concertable/pull/625) at exact checkpoint head `f3ebb0fc966a30efab227d16d191cb8d8dcb07a4`, carrying reviewed work head `2cc20d1be8bc4e7755d5cc4894f11c159dabd6c7`; docs-only decision PR #622 merged as `5c33f849444dda60ece44070353716c08819b2d8`; rejected PR #614 is closed and retired
-- Dependency/package gates: Phase 1 is complete: characterization is published, reviewed with its only finding resolved, and exact-head draft-PR CI is green. Phase 2 has not started.
-- Last reconciled: 2026-08-17 after exact-head draft-PR CI completed green for Phase 1
+- PR: draft implementation PR [#625](https://github.com/Concertable/concertable/pull/625) at verified reviewed work head `1457a2508db5b69d5a0fa7f05eea78ba412edd76`; docs-only decision PR #622 merged as `5c33f849444dda60ece44070353716c08819b2d8`; rejected PR #614 is closed and retired
+- Dependency/package gates: Phase 1 characterization and review are complete. Replacement exact-head draft-PR CI must pass after removing the vacuous architecture guard, then PR #625 can enter the merge queue. Phase 2 has not started.
+- Last reconciled: 2026-08-17 after publishing and incrementally reviewing the architecture-guard correction
 
 ## Current state
 
@@ -29,7 +29,8 @@ new test asserts the legacy shared lifecycle topology, transition table, source 
 
 The speculative future-module architecture guard was removed because it matched no types before the
 modules existed. Phase 2 will add compile-time project boundaries and ArchUnitNET rules against each
-real assembly as it is scaffolded. Phase 1 is complete and Phase 2 has not started.
+real assembly as it is scaffolded. The correction is published and reviewed; replacement exact-head
+CI and merge delivery remain before Phase 2 starts.
 
 Rejected PR #614 is closed, and its DealTerms branch and worktree were retired with exact-head checks.
 The fresh implementation branch contains only current-main Deal vocabulary; none of the rejected
@@ -37,11 +38,9 @@ runtime change was carried forward.
 
 ## Next Steps
 
-1. Begin Phase 2 by scaffolding the Opportunity, Application, and Booking module project families while
-   preserving Concert's eventual owned surface and current public routes.
-2. Replace cross-stage entity navigation with owned IDs, Contracts-only module calls, and immutable
-   forward handoff records, adding architecture rules against each real module assembly; stop at the
-   Phase 2 acyclic dependency-graph gate.
+1. Confirm replacement exact-head draft-PR CI, mark PR #625 ready, and merge it through the queue with
+   the mechanically selected E2E tier; follow package publication and platform sync to terminal green.
+2. Resume Phase 2 from a fresh plan-managed worktree after PR #625 lands.
 
 ## Completed work
 
@@ -120,15 +119,18 @@ runtime change was carried forward.
   passed.
 - Removed the future-module ArchUnitNET rule before delivery because `WithoutRequiringPositiveResults`
   made it vacuous until the module assemblies exist; Phase 2 now owns meaningful boundary enforcement.
+- Published corrected work head `1457a2508db5b69d5a0fa7f05eea78ba412edd76`; local HEAD, the remote
+  branch, and PR #625 `headRefOid` matched exactly before this review checkpoint.
 
 ## Reviews
 
 - Docs review of `89361e99e..d06422710` found three issues: the checkout boundary was ambiguous, the
   typed-result ledger retained a transferred return path, and graph evidence was stale. All were fixed
   in `0bd1d2094`; follow-up review through `d06422710` found no further issues.
-- Review `reviews/Refactor-launch_deal-lifecycle-modules.md` covered `40cd20957..2cc20d1be` across
+- Review `reviews/Refactor-launch_deal-lifecycle-modules.md` covered `40cd20957..1457a2508` across
   correctness, microservice isolation, module boundaries, seeding, C# conventions, and changed-path
-  coverage. Its one low-severity integration-test convention finding is resolved; no open findings remain.
+  coverage. Its integration-test convention finding and incremental ledger-consistency finding are
+  resolved; no open findings remain.
 
 ## Decisions, discoveries, blockers, and deviations
 
