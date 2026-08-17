@@ -189,11 +189,7 @@ return await base.CurrentTenant.Where(v => v.IsActive).ToListAsync(ct);
 return await CurrentTenant.Where(v => v.IsActive).ToListAsync(ct);
 ```
 
-## No comments on WHAT the code does
-
-Only add a comment when the WHY is non-obvious (hidden constraint, subtle invariant, workaround for a specific bug). Never narrate what the code does — well-named identifiers already do that.
-
-## Comments — default to none; mechanics here, policy in root `CLAUDE.md`
+## Comments — default to none; mechanics here, policy in root `AGENTS.md`
 
 The repo-wide policy (default to zero, ≤2 lines, *why* lives in the commit message, and the disqualifiers — restating docs, citing transient artifacts, narrating the *what*) is in the root [`AGENTS.md`](../../AGENTS.md). The C#-mechanical part: a WHY-comment is one line where it can be → `//`; the rare genuinely-multi-line one → a single `/* */` block, never stacked `//` lines.
 

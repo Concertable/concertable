@@ -125,7 +125,7 @@ These docs are the source of truth. Read the ones relevant to the diff — do no
   (slots over role checks, hooks orchestrate/components render, one `xApi` per resource, the zod write
   boundary, table dispatch). Read both whenever the diff touches `app/`, plus `app/AGENTS.md` and the
   tier doc for the directory touched.
-- `api/agents/MODULAR_MONOLITH_RULES.md` — module boundaries within a service.
+- `api/agents/CONVENTIONS.md` — module boundaries within a service.
 - `api/agents/SEEDING_CONVENTIONS.md` — what may and may not be seeded directly.
 - Any `AGENTS.md` in directories the diff touches (each service / module may add local rules).
 
@@ -148,7 +148,7 @@ Concertable is a multi-service system; **B2B, Customer, and Search are data serv
 - A producer's `*.Seed.Contracts` **referencing a consumer's** (dependency must point downward only: consumer → producer).
 - Customer entities reaching back into B2B via nav chains instead of holding **purchase-time snapshots** of B2B fields.
 
-### Lens C — Module boundaries (`api/agents/MODULAR_MONOLITH_RULES.md`)
+### Lens C — Module boundaries (`api/agents/CONVENTIONS.md`)
 
 - Cross-module calls not going through `Contracts` / the module facade (`IXModule`).
 - EF queries inlined in a module facade (facades delegate to Application abstractions).

@@ -108,8 +108,9 @@ or queueing. Never push a checkpoint-only local tail to a queued, locked, merged
      exact-head PR CI before continuing.
 
 3. **Wait for the PR's own checks to reach a terminal state, then verify green.**
-   - Poll `gh pr checks <n>` until **no** check is `pending`. Prefer the `Monitor` tool with an
-     until-loop so you're notified instead of busy-waiting, e.g.:
+   - Poll `gh pr checks <n>` until **no** check is `pending`, with a Bash background until-loop —
+     never the `Monitor` tool (root [`AGENTS.md`](../../../AGENTS.md) "Confirming a PR merge" owns this
+     rule and the reason). e.g.:
      ```
      while true; do out=$(gh pr checks <n> 2>&1);
        pend=$(echo "$out" | awk -F'\t' '$2=="pending"' | wc -l);
@@ -227,7 +228,7 @@ or queueing. Never push a checkpoint-only local tail to a queued, locked, merged
    - **If publication succeeded:** the sync PR opens within a few minutes. Checkpoint its number, URL,
      branch, version, and initial state when discovered, then poll ITS checks. A pin
      bump is package-only, so E2E no-ops — the gate is `build` + `unit` + `integration`, usually a few
-     minutes (prefer the `Monitor` tool over busy-waiting):
+     minutes (Bash background until-loop, not `Monitor` — same rule):
      ```
      # there is only ever ONE open sync PR
      while true; do sp=$(gh pr list --state open --json number,headRefName \

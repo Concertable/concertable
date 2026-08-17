@@ -100,12 +100,11 @@ const b2bMeApi = { getMe: async (): Promise<B2bIdentity> => (await api.get<B2bId
 ### The anti-patterns this replaces — never do these
 
 - **Product-specific subtypes in the universal union.** `User = VenueManager | ArtistManager | Customer` with
-  `venueId?`/`artistId?` fields (`app/shared/src/features/auth/types.ts`) enumerates product-specific identity variants
+  `venueId?`/`artistId?` fields enumerates product-specific identity variants
   in the tier a customer/mobile bundle compiles — dead weight for everyone but one product. Product identity
   composes in its owning tier.
-- **Casting extra fields off the shared `User`.** `membershipsOf(user)` reading a `memberships` field
-  the type doesn't declare (`@b2b/features/tenant/lib/tenantChoice.ts`) is the shared type lying about
-  its shape. The typed B2B `/me` removes the cast — the field is *typed where it's real*.
+- **Casting extra fields off the shared `User`.** A helper reading a `memberships` field the type
+  doesn't declare is the shared type lying about its shape. The typed B2B `/me` removes the cast — the field is *typed where it's real*.
 - **Two discriminants on one union.** `User` carrying both `$type` and `role`, with guards narrowing
   on `role` while the wire polymorphism key is `$type`, is a pick-one-key violation
   ([`CODE_CONVENTIONS.md`](./CODE_CONVENTIONS.md), "Polymorphic JSON"). A composed identity narrows on
@@ -157,10 +156,9 @@ const tenantSession = {
 
 ### The anti-patterns this replaces — never do these
 
-- **The same derivation implemented twice.** `tenantChoicePending` computed by an imperative
-  `isTenantChoicePending()` in `lib/tenantChoice.ts` *and* a reactive `useTenantChoicePending()` in
-  `hooks/useActiveMembership.ts`, with `_venue/route.tsx` calling both for the same question. Two
-  copies, guaranteed drift. Collapse to one core.
+- **The same derivation implemented twice.** One imperative `isXPending()` helper *and* a reactive
+  `useXPending()` hook answering the same question, with a route calling both. Two copies, guaranteed
+  drift. Collapse to one core.
 - **Raw state owners exported to consumers.** Components and routes must not interpret the identity
   cache or reach into the active-tenant store directly; the tenant feature exposes a facade hook and
   one internal imperative session over those owners.
@@ -189,7 +187,8 @@ stays in the web query client.
   for a status the caller handles itself (registered via TanStack module augmentation — see the
   `ErrorMeta` declaration in `@concertable/shared/lib/problemDetails.ts`).
 - The only place a feature legitimately inspects an error is to **change control flow, not to report**
-  — e.g. a route guard doing `isAxiosError(e) && status === 401` to `throw redirect(...)`.
+  — e.g. a route guard doing `isApiError(e) && e.status === 401` to `throw redirect(...)`. It reads the
+  shared `apiError` seam, never `isAxiosError`; axios is confined to the shared client and interceptor.
 
 ```ts
 // CORRECT — the caller expects 404 and renders its own empty state; the client stays silent
@@ -270,10 +269,11 @@ contract per remote surface, auth attached once at the edge.
 - **`features/<feature>/api/xApi.ts`** default-exports an object literal of `async` arrow methods that
   call the shared axios instance, type the response on the generic, destructure `{ data }`, return it.
   A `@b2b/*` api file that only re-exposes a shared one is a **pure re-export**, never a copy.
-- **One axios singleton per backend the site calls** (`api`, `paymentApi`, `searchApi`, `customerApi`),
-  created + configured (base URL, `qs` serializer) in `app/shared/src/lib/*Client.ts` with **no auth**
-  — that layer can't know the site's identity.
-- **Auth/interceptors attach in the app tree** (`web/shared/lib/axios.tsx`, `web/b2b/shared/lib/b2bAxios.ts`):
+- **One axios singleton per backend the site calls** (`apiClient`, `paymentClient`, `searchClient`,
+  `customerClient`), created bare in `app/shared/src/lib/*Client.ts` with **no auth** — that layer
+  can't know the site's identity.
+- **Auth/interceptors attach in the app tree** (`app/web/shared/src/lib/` via `configureWebClient`,
+  and `app/web/b2b/shared/src/lib/b2bClient.ts`):
   OIDC bearer, B2B `X-Tenant-Id` (read from the identity store's active tenant), `removeUser()` on 401.
   *Which* backends a site may call, and with *what* token, is an app-level decision.
 
@@ -292,9 +292,7 @@ export default organizationApi;
 - **A second client for a backend that already has one.** One singleton per service; configure it, don't
   recreate it.
 - **Auth wiring in `lib/*Client.ts`.** Bearer/tenant/401 belong in the app tree, not the shared
-  factory. *(Standing tech debt: the four `*Client.ts` files and their per-app interceptor wiring are
-  near-verbatim copies; the target is a `createApiClient(name)` factory + shared `attachAuth(client)` —
-  logged in the nearest `TECH_DEBT.md`. Same two-layer shape, no duplication.)*
+  factory.
 - **Manual `JsonDocument`-style ad-hoc fetching** where the `xApi` object expresses the call — the typed
   object is the readable source of truth.
 
@@ -326,7 +324,7 @@ updateConcert(parsed.data);                // parsed.data IS UpdateConcertReques
 - **Raw buffer → `XRequest` with a `!` bang or `?? fallback`.** The bang is the missing parse; a schema
   proves the fields instead of asserting past them (`useMyVenue`/`useMyArtist`, `OrganizationForm`).
 - **A form with free-typed fields and no schema.** No `schemas/` folder for a feature that has editable
-  inputs is the tell (`organizations`).
+  inputs is the tell.
 - **Client validation reported by `toast`** instead of inline from the parse result.
 
 ---

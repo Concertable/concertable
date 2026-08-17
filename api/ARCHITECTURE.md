@@ -31,7 +31,7 @@ See `api/Concertable.B2B/src/Seed/Concertable.B2B.Seed.Simulator/CLAUDE.md` for 
 
 There are two kinds of service, and they get two different rules:
 
-- **Adapter services — `Auth`, `Payment`, `Notification`** — are shared runtime dependencies, present
+- **Adapter services — `Auth`, `Payment`** — are shared runtime dependencies, present
   in every host. A data service may call them synchronously (gRPC) and may `WaitFor` them at startup.
   So `WaitFor(auth)` / `WaitFor(paymentWeb)` live in the shared `Concertable.AppHost.Shared` helpers
   and apply in **every** host — B2B and Customer each genuinely require Auth + Payment to run.
@@ -92,7 +92,7 @@ Two rules people (and AIs) keep getting wrong:
    "missing" for a structural reason. Payment therefore owns **no** seed catalog and **no** simulator —
    parking a catalog of ticket *purchases* in Payment would also invert the graph (purchase semantics
    live in the B2B/Customer consumers that read `PaymentSucceededEvent.Metadata`, not in agnostic
-   Payment; see `plans/PAYMENT_AGNOSTIC_AUDIT.md`).
+   Payment).
 
    The one thing Payment's events would otherwise have produced is seed-only payment-derived state — B2B
    `ConcertEntity.TicketsSold` and Customer `TicketEntity` rows for *past-dated* concerts. Real Payment
@@ -188,7 +188,7 @@ not (no back-compat shim for a return-type change).
 `chore/platform-sync-<version>` PR bumping every service's pin, set to auto-merge. **Non-breaking →
 green → merges hands-off. Breaking → red at exactly the consumers to migrate → do the migration in that
 PR** (now legal — the package exists), and it merges when CI greens. Full design + one-time repo setup:
-[`plans/PLATFORM_PACKAGE_SYNC.md`](../plans/PLATFORM_PACKAGE_SYNC.md).
+root [`AGENTS.md`](../AGENTS.md) "Platform sync is a live gate".
 
 C# code changes are minimal across the split. The ownership-based folder layout (`api/Concertable.X/`
 for service-owned projects, `api/Concertable.Shared/` for cross-service infra) previews the split.
@@ -216,4 +216,3 @@ Each service folder contains its own `AppHost/`, `Web/`, `Workers/`, `Seeding/` 
 - `api/agents/CONVENTIONS.md` — module boundary rules within a service.
 - `api/Concertable.X/ARCHITECTURE.md` — per-service architecture docs.
 - `api/Concertable.B2B/src/Seed/Concertable.B2B.Seed.Simulator/CLAUDE.md` — the simulator pattern in detail.
-- `plans/PAYMENT_AGNOSTIC_AUDIT.md` — why Payment depends on no consumer.

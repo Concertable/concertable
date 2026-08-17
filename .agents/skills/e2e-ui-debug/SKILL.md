@@ -45,9 +45,9 @@ Treat scenarios already reported by CI or the merge queue as arguments. Only whe
 
 **Always run headless** unless the user explicitly asks to watch the browser. Headless is faster and does not interfere with debugging: failure screenshots (`CaptureFailureAsync`), Playwright traces, and the enriched HTTP/console logs all work identically headless.
 
-- `./e2e.ps1 ui <cmd>` discovery runs are headless by default — it sets `HEADLESS=true` unless you pass `-Headed`.
+- `./scripts/e2e.ps1 ui <cmd>` discovery runs are headless by default — it sets `HEADLESS=true` unless you pass `-Headed`.
 - Direct `dotnet test` runs (Step 2 single-scenario deep-dives) do NOT pick up that default — the fixture runs **headed** with `SlowMo` unless `HEADLESS` is set. So always prefix Step 2 commands with `$env:HEADLESS='true'; ` (shown in Step 2 below).
-- If (and only if) the user asks to watch the browser, run headed: pass `-Headed` to `./e2e.ps1`, or set `$env:HEADLESS='false'` (or omit it) for direct `dotnet test`.
+- If (and only if) the user asks to watch the browser, run headed: pass `-Headed` to `./scripts/e2e.ps1`, or set `$env:HEADLESS='false'` (or omit it) for direct `dotnet test`.
 
 ## Key paths
 
@@ -65,24 +65,24 @@ Treat scenarios already reported by CI or the merge queue as arguments. Only whe
 - Hooks: `api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui/Hooks/`
 - Last run log: `api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui/ui-tests.last.log`
 
-- Full suite (both): `./e2e.ps1 ui run` (~25–30 min)
-- **Regression check** (baseline-passing only): `./e2e.ps1 ui regress` (~3–6 min)
-- B2B only: `./e2e.ps1 ui b2b`
-- Customer only: `./e2e.ps1 ui customer`
-- 3DS-only: `./e2e.ps1 ui 3ds`
-- Trace viewer: `./e2e.ps1 ui trace`
+- Full suite (both): `./scripts/e2e.ps1 ui run` (~25–30 min)
+- **Regression check** (baseline-passing only): `./scripts/e2e.ps1 ui regress` (~3–6 min)
+- B2B only: `./scripts/e2e.ps1 ui b2b`
+- Customer only: `./scripts/e2e.ps1 ui customer`
+- 3DS-only: `./scripts/e2e.ps1 ui 3ds`
+- Trace viewer: `./scripts/e2e.ps1 ui trace`
 
-`e2e.ps1` takes a domain (`ui` or `api`) then a command. This skill is the **`ui`** domain. The **`api`** domain runs the sibling xUnit/Aspire API E2E suite (no browser) — see the `e2e-api-debug` skill; to debug both layers in one pass use `e2e-debug`. A bare command with no domain (`./e2e.ps1 ui run`) still works and is treated as `ui` for back-compat.
+`e2e.ps1` takes a domain (`ui` or `api`) then a command. This skill is the **`ui`** domain. The **`api`** domain runs the sibling xUnit/Aspire API E2E suite (no browser) — see the `e2e-api-debug` skill; to debug both layers in one pass use `e2e-debug`. A bare command with no domain (`./scripts/e2e.ps1 ui run`) still works and is treated as `ui` for back-compat.
 
 **Baseline file** (which scenarios are expected to pass vs fail): `api/Concertable.Shared/tests/Concertable.Testing.E2E/E2E_BASELINE.md`.
 
-**Scratch run logs** — if you capture `dotnet test` output to a file for later grepping (retries, deep-dives, scenario reruns), write it under `api/Concertable.Shared/tests/Concertable.Testing.E2E/logs/` — **never the repo root**. Create the dir first if needed: `New-Item -ItemType Directory -Force api/Concertable.Shared/tests/Concertable.Testing.E2E/logs | Out-Null`. That folder is git-ignored. The canonical `ui-tests.last.log` / `regress.last.log` files written by `./e2e.ps1` stay in their project dirs (above) — leave those as-is.
+**Scratch run logs** — if you capture `dotnet test` output to a file for later grepping (retries, deep-dives, scenario reruns), write it under `api/Concertable.Shared/tests/Concertable.Testing.E2E/logs/` — **never the repo root**. Create the dir first if needed: `New-Item -ItemType Directory -Force api/Concertable.Shared/tests/Concertable.Testing.E2E/logs | Out-Null`. That folder is git-ignored. The canonical `ui-tests.last.log` / `regress.last.log` files written by `./scripts/e2e.ps1` stay in their project dirs (above) — leave those as-is.
 
 ## Which command to use
 
-- **User wants to verify a code change hasn't broken anything → `./e2e.ps1 ui regress`.** It parses `E2E_BASELINE.md`, runs only the scenarios listed under the `passing` fenced blocks, and exits 1 if any of them fails or if any baseline name no longer matches a real test. Much faster than the full suite, and the only signal needed to confirm "no regression."
-- **User wants to discover newly-passing or newly-failing scenarios → `./e2e.ps1 ui run`.** This runs all 30 scenarios. Do not use it after fixing a known failure; rerun only that scenario locally, then let the merge queue perform the full-suite verification.
-- **After `./e2e.ps1 ui run` reveals a status change** (a scenario crossed the line), prompt the user to update `E2E_BASELINE.md`: move the scenario between the `passing` and `failing` fenced blocks and bump the `(N)` count in the heading. Both regress and PR review depend on this file being current.
+- **User wants to verify a code change hasn't broken anything → `./scripts/e2e.ps1 ui regress`.** It parses `E2E_BASELINE.md`, runs only the scenarios listed under the `passing` fenced blocks, and exits 1 if any of them fails or if any baseline name no longer matches a real test. Much faster than the full suite, and the only signal needed to confirm "no regression."
+- **User wants to discover newly-passing or newly-failing scenarios → `./scripts/e2e.ps1 ui run`.** This runs all 30 scenarios. Do not use it after fixing a known failure; rerun only that scenario locally, then let the merge queue perform the full-suite verification.
+- **After `./scripts/e2e.ps1 ui run` reveals a status change** (a scenario crossed the line), prompt the user to update `E2E_BASELINE.md`: move the scenario between the `passing` and `failing` fenced blocks and bump the `(N)` count in the heading. Both regress and PR review depend on this file being current.
 
 ## Step 0 — Pre-flight check
 
@@ -93,10 +93,10 @@ plan-managed, read and apply
 Before running anything, verify Docker with the real gate. **`docker ps` answering is NOT proof Docker is healthy** — a half-started/flapping engine keeps `docker ps` (and `docker run hello-world`, and a bare TCP connect) working while host→container forwarding of real bytes for NEW containers is dead, and the suite then dies at SQL fixture startup with `pre-login handshake` resets:
 
 ```powershell
-./docker-health.ps1   # fresh container + published port + real HTTP round-trip + stability check; exit 1 = unhealthy
+./scripts/docker-health.ps1   # fresh container + published port + real HTTP round-trip + stability check; exit 1 = unhealthy
 ```
 
-`./e2e.ps1 ui ...` runs this automatically and refuses to boot on failure. If it reports unhealthy, **STOP** — tell the user Docker is half-started/down and to wait for Docker Desktop to show **Running**, then retry. Do not rerun or debug application code for this; it's an environment failure (root `AGENTS.md`).
+`./scripts/e2e.ps1 ui ...` runs this automatically and refuses to boot on failure. If it reports unhealthy, **STOP** — tell the user Docker is half-started/down and to wait for Docker Desktop to show **Running**, then retry. Do not rerun or debug application code for this; it's an environment failure (root `AGENTS.md`).
 
 Tell the user whether this is a targeted scenario run or a full discovery run. Give the full-suite estimate only for discovery.
 
@@ -140,7 +140,7 @@ Fix the root cause before re-running the test. Do not keep waiting on a stuck st
 ## Step 1 — Run the full suite
 
 ```powershell
-./e2e.ps1 ui run
+./scripts/e2e.ps1 ui run
 ```
 
 Run headless (default). After it finishes, parse both `ui-tests.last.log` files to extract pass/fail counts and build a results summary table to present to the user before proceeding:
@@ -196,7 +196,7 @@ Select-String -Path "api/Concertable.Customer/tests/E2ETests/Concertable.Custome
 Select-String -Path "api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui/ui-tests.last.log" -Pattern "\[console warn\]|On-screen error" -CaseSensitive:$false | Select-Object -First 50
 ```
 
-**Important**: for the individual scenario re-run (Step 2), the enriched output is in the `dotnet test` console output directly — NOT in `ui-tests.last.log` (that file is only written by the `./e2e.ps1` wrapper). Search the console output captured during Step 2 instead.
+**Important**: for the individual scenario re-run (Step 2), the enriched output is in the `dotnet test` console output directly — NOT in `ui-tests.last.log` (that file is only written by the `./scripts/e2e.ps1` wrapper). Search the console output captured during Step 2 instead.
 
 Work through the enriched output in this order:
 
@@ -241,8 +241,8 @@ After identifying the cause:
 
 ## Notes
 
-- Tests run headless by default (`HEADLESS=true`). Pass `-Headed` to `./e2e.ps1` to watch the browser.
+- Tests run headless by default (`HEADLESS=true`). Pass `-Headed` to `./scripts/e2e.ps1` to watch the browser.
 - Each suite writes its own `ui-tests.last.log` — useful for re-reading without re-running.
 - B2B features: `ArtistSignUp`, `DoorSplitWorkflow`, `FlatFeeWorkflow`, `Login`, `VenueHireWorkflow`, `VenueSignUp`, `VersusWorkflow`
 - Customer features: `CustomerSignUp`, `Login`, `TicketPurchase`
-- The sibling **API E2E** projects (`Concertable.B2B.E2ETests` / `Concertable.Customer.E2ETests`, no `.Ui`) run the same Aspire stack without a browser — `./e2e.ps1 api run`, debugged via the `e2e-api-debug` skill. This skill covers the Reqnroll+Playwright `ui` suites only; to sweep both layers use `e2e-debug`.
+- The sibling **API E2E** projects (`Concertable.B2B.E2ETests` / `Concertable.Customer.E2ETests`, no `.Ui`) run the same Aspire stack without a browser — `./scripts/e2e.ps1 api run`, debugged via the `e2e-api-debug` skill. This skill covers the Reqnroll+Playwright `ui` suites only; to sweep both layers use `e2e-debug`.

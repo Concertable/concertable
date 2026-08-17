@@ -573,16 +573,10 @@ effective. Do not catch broad exceptions and translate them to a generic domain 
 
 ## Payload and DTO naming
 
-`Result<TValue, TError>` is already the in-process operation wrapper. Its payload is not named
-`XResponse` merely because the operation returns it.
-
-- Service and client DTOs use the domain shape name, such as `Transfer`, `Refund`,
-  `EscrowDeposit`, or `PaymentOutcome`.
-- `Response` is reserved for an HTTP wire model in `Module.Api/Responses` when that wire genuinely
-  differs from the application DTO.
-- Proto messages retain normal RPC `*Response` names; mappers convert them to suffix-free C# DTOs.
-
-Resolve collisions with aliases rather than wire-flavoured service names.
+`Result<TValue, TError>` is already the in-process operation wrapper, so its payload is never named
+`XResponse` merely because the operation returns it. The naming rules themselves —  suffix-free
+service DTOs, `Response` as HTTP-only, proto `*Response`, alias collisions — live in
+[CODE_CONVENTIONS.md](./CODE_CONVENTIONS.md) "DTO naming".
 
 ## Testing and enforcement
 

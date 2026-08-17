@@ -37,7 +37,7 @@ The big one: in this suite a failing test usually means **the synchronous call r
 ## Input
 
 - **Fully-qualified test name** (e.g. `Concertable.B2B.E2ETests.Payments.ConcertDraftTests.ShouldCreateDraft_WhenDoorSplitApplicationAccepted`) — run Step 0, then jump to Step 2 for that single test.
-- **A service** (`b2b` / `customer`) — run Step 0 then `./e2e.ps1 api b2b` (or `customer`).
+- **A service** (`b2b` / `customer`) — run Step 0 then `./scripts/e2e.ps1 api b2b` (or `customer`).
 - **No arguments and no failures already reported by CI or the merge queue** — run Step 0 then the full API suite once to discover failures, then Step 2 for each failure.
 
 ## Key paths
@@ -61,7 +61,7 @@ The big one: in this suite a failing test usually means **the synchronous call r
 
 **Run settings** — `api/Concertable.runsettings` (`MaxCpuCount=1`; the two E2E apps must not run concurrently — see memory `e2e_parallel_execution`). The wrapper passes this automatically.
 
-**Scratch run logs** — capture ad-hoc `dotnet test` output under `api/Concertable.Shared/tests/Concertable.Testing.E2E/logs/` (git-ignored; `New-Item -ItemType Directory -Force` it first) — **never the repo root**. The canonical `api-tests.last.log` files written by `./e2e.ps1 api` stay in their project dirs.
+**Scratch run logs** — capture ad-hoc `dotnet test` output under `api/Concertable.Shared/tests/Concertable.Testing.E2E/logs/` (git-ignored; `New-Item -ItemType Directory -Force` it first) — **never the repo root**. The canonical `api-tests.last.log` files written by `./scripts/e2e.ps1 api` stay in their project dirs.
 
 ## Step 0 — Pre-flight check
 
@@ -72,10 +72,10 @@ plan-managed, read and apply
 These tests need Docker (SQL containers, ASB emulator, stripe-cli). **`docker ps` answering is NOT proof Docker is healthy** — a half-started/flapping engine keeps `docker ps` (and even `docker run hello-world`, and a bare TCP connect) working while host→container forwarding of real bytes for NEW containers is dead, and the suite then dies at SQL fixture startup with `pre-login handshake` resets. Use the data-round-trip gate:
 
 ```powershell
-./docker-health.ps1   # fresh container + published port + real HTTP round-trip + stability check; exit 1 = unhealthy
+./scripts/docker-health.ps1   # fresh container + published port + real HTTP round-trip + stability check; exit 1 = unhealthy
 ```
 
-`./e2e.ps1 api ...` runs this automatically and refuses to boot on failure. If it reports unhealthy, **STOP** — tell the user Docker is half-started/down and to wait for Docker Desktop to show **Running**, then retry. Do not rerun or debug application code for this; it's an environment failure (root `AGENTS.md`).
+`./scripts/e2e.ps1 api ...` runs this automatically and refuses to boot on failure. If it reports unhealthy, **STOP** — tell the user Docker is half-started/down and to wait for Docker Desktop to show **Running**, then retry. Do not rerun or debug application code for this; it's an environment failure (root `AGENTS.md`).
 
 The suite also needs Stripe + Google secrets in the environment (`Stripe__SecretKey`, `GoogleApiKey`) — the same ones CI injects. If a run dies immediately with a Stripe auth error or missing-config exception, confirm those are set before debugging anything else.
 
@@ -110,10 +110,10 @@ Fix the root cause before re-running. Do not keep waiting on a stuck startup.
 ## Step 1 — Run the API suite
 
 ```powershell
-./e2e.ps1 api run        # both services; exits non-zero on any failure
+./scripts/e2e.ps1 api run        # both services; exits non-zero on any failure
 # or scope it:
-./e2e.ps1 api b2b
-./e2e.ps1 api customer
+./scripts/e2e.ps1 api b2b
+./scripts/e2e.ps1 api customer
 ```
 
 Each project writes its own `api-tests.last.log`. The wrapper prints a per-test `[PASS]`/`[FAIL]` list and a summary table. After it finishes, build a results summary to present before proceeding:
@@ -213,5 +213,5 @@ If the resource logs, HTTP bodies, and DB/Stripe state still don't explain *why*
 - These tests make **real Stripe test-mode calls** and use a **real ASB emulator** — they are not hermetic the way integration tests are. Flakiness is usually a genuinely-slow/unreliable dependency (e.g. a webhook that occasionally lands late), OR cross-suite contention (never run an API E2E and a UI E2E app at the same time — that's the `e2e_parallel_execution` failure root; the wrapper + `MaxCpuCount=1` serialize them). The fix is to make the dependency reliable (or serialize the suites) — **not** to widen the `Polling` window to ride it out.
 - The HTTP client here is a plain `new HttpClient()` against the deployed URL — there is **no** per-test `ITestOutputHelper` server-log capture like integration tests have. Server-side detail comes from the **forwarded Aspire resource logs** in the console output instead.
 - Seeding runs via `DevDbInitializer` (`IDevSeeder`, the dev/E2E path) — **not** `ITestSeeder`. If seed state is wrong, fix the dev seeders, and never seed event-sourced/read-model/payout rows directly (see `api/docs/SEEDING_CONVENTIONS.md`, memory `idevseder_not_itestseeder_for_e2e`).
-- This suite has **no `E2E_BASELINE.md`** — that baseline is UI-only (Reqnroll DisplayNames). Every API E2E test is expected to pass; any failure is a regression, which is why `./e2e.ps1 api run` exits non-zero on failure.
+- This suite has **no `E2E_BASELINE.md`** — that baseline is UI-only (Reqnroll DisplayNames). Every API E2E test is expected to pass; any failure is a regression, which is why `./scripts/e2e.ps1 api run` exits non-zero on failure.
 - Integration (in-process, mocked) tests are a separate suite → `integration-debug`. Browser scenarios → `e2e-ui-debug`. Both layers at once → `e2e-debug`.

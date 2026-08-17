@@ -123,7 +123,7 @@ An `api/**` branch that's behind also risks a stale `<ConcertablePlatformVersion
 ## Confirming a PR merge — Bash background until-loop, never `Monitor`
 
 After enabling auto-merge, confirm the outcome with a **Bash `run_in_background` until-loop** that resolves
-to exactly ONE of three terminal states and reports it automatically — no reprompt needed. It **never
+to exactly ONE of four terminal states and reports it automatically — no reprompt needed. It **never
 retries and never toggles**: a failed check is a real failure to surface and debug, not something to poke.
 
 The four outcomes:
@@ -224,7 +224,7 @@ be safe” when integration covers the touched path and no trigger is present. B
 integration remain mandatory in PR CI for code/package changes, and every code/package PR handled by the merge
 skill still enters the queue on current `main`.
 
-Run E2E only through `./e2e.ps1` via the matching skill (`e2e-ui-regress`, `e2e-ui-debug`,
+Run E2E only through `./scripts/e2e.ps1` via the matching skill (`e2e-ui-regress`, `e2e-ui-debug`,
 `e2e-api-debug`) — the skill's Step 0 Docker pre-flight is mandatory, every run.
 
 - **`docker ps` answering is NOT proof Docker is healthy.** Docker Desktop can be off, paused, or
@@ -237,11 +237,11 @@ Run E2E only through `./e2e.ps1` via the matching skill (`e2e-ui-regress`, `e2e-
   needs no port forwarding, and the host-side `docker-proxy` completes a TCP handshake *locally* even
   when forwarding into the container is dead — so a connect "succeeds" while no data flows (exactly
   the `pre-login handshake` mode). The only valid check is a real **data** round-trip to a fresh
-  container: run **`./docker-health.ps1`** (fresh container + published port + HTTP round-trip +
-  stability check; exit 1 = unhealthy). `./e2e.ps1` runs it as an automatic gate before booting.
+  container: run **`./scripts/docker-health.ps1`** (fresh container + published port + HTTP round-trip +
+  stability check; exit 1 = unhealthy). `./scripts/e2e.ps1` runs it as an automatic gate before booting.
 - **A suite that fails at startup is an environment problem until proven otherwise.** STOP after
   the first such run — do not rerun, do not debug application code. Verify Docker with
-  `./docker-health.ps1` (and Docker Desktop showing **Running**). Fix, then run once.
+  `./scripts/docker-health.ps1` (and Docker Desktop showing **Running**). Fix, then run once.
 
 ## Tech debt (`TECH_DEBT.md`)
 
@@ -272,7 +272,7 @@ Plans are working docs for unfinished work, **not** an archive — git history i
 
 **Opening a `plans/*.md` to work from obliges you to read [`plans/AGENTS.md`](./plans/AGENTS.md) in the same breath** — phases, verification gates, and when to run E2E live there, and the plan's own prose is not a substitute for them. Reading only the plan is how its rules get skipped.
 
-The convention is **ROADMAP → PLAN → PROGRESS**, folder = roadmap/plan: an epic tracker at `plans/<epic>/<EPIC>_ROADMAP.md` spins off plans at `plans/<epic>/<NAME>_PLAN.md`, each with a same-directory `<NAME>_PROGRESS.md` companion. Plans and ledgers live across delivery PRs on `main`; worktrees and branches are disposable PR-sized execution state. The plan holds the design and outstanding phases; the progress ledger is a compact rolling snapshot of the current operational truth, not an append-only history. Keep both current throughout the work. Legacy plans without a ledger remain valid: reconstruct them from the plan and repository evidence, then create the ledger before recording further progress. Full rules: [`plans/AGENTS.md`](./plans/AGENTS.md) "Companion progress ledger."
+The convention is **ROADMAP → PLAN → PROGRESS**, folder = roadmap/plan: an epic tracker at `plans/<epic>/<EPIC>_ROADMAP.md` spins off plans at `plans/<epic>/<NAME>_PLAN.md`, each with a same-directory `<NAME>_PROGRESS.md` companion. Plans and ledgers live across delivery PRs on `main`; worktrees and branches are disposable PR-sized execution state. The plan holds the design and outstanding phases; the progress ledger is a compact rolling snapshot of the current operational truth, not an append-only history. Keep both current throughout the work. Legacy plans without a ledger remain valid: reconstruct them from the plan and repository evidence, then create the ledger before recording further progress. Full rules: [`plans/agents/PLAN.md`](./plans/agents/PLAN.md) "Companion progress ledger".
 
 - **Cross-plan blockers are two-way handoffs.** The blocked ledger names the owning ledger and exact
   gate; the owning ledger lists the blocked dependent. When the gate opens, the owner updates the

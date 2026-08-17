@@ -203,8 +203,10 @@ client does.
   caller handles itself (registered via TanStack module augmentation).
 - Shared retry policy (`queryRetry.ts`): network errors + transient statuses
   (`408/429/502/503/504`) only, max 2×.
-- **Allowed exception:** a route guard may `isAxiosError(e) && status === 401` to `throw redirect(...)`
-  (venue/artist `guards.ts`) — that's control flow, not error reporting.
+- **Allowed exception:** a route guard may branch on a status to `throw redirect(...)` — that's control
+  flow, not error reporting. It goes through the shared seam, `isApiError(e) && e.status === 401`
+  (`@concertable/shared/lib/apiError`, used by venue/artist `guards.ts`). Axios stays confined to the
+  shared client and interceptor; features never import `isAxiosError` (`app/web/AGENTS.md` "HTTP errors").
 
 **Litmus:** *writing a `catch` to `toast` an API error? Stop — the query client already did. Only
 catch to change control flow (redirect, fallback).*

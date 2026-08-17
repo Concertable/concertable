@@ -1,6 +1,6 @@
 # Backend Module Conventions
 
-Concrete conventions. The *what goes where* doc. Companion to [MM_NORTH_STAR.md](/api/docs/MM_NORTH_STAR.md)
+Concrete conventions. The *what goes where* doc. Companion to [`../ARCHITECTURE.md`](../ARCHITECTURE.md)
 (the *why*).
 
 Applies to **modules** in the monolith (`Concert`, `Customer`, `Payment`, ...) AND **shared
@@ -52,12 +52,12 @@ Arrows only point inward (toward Contracts/Kernel). **No outward refs** — `Dom
 
 - `*.Contracts` types are `public` — they're the cross-boundary contract.
 - `*.Domain` entities default `internal`. Promote to `public` *only* when another module legitimately
-  needs the type (e.g. cross-module read projection target). See `feedback_module_impl_visibility_cascade.md`.
+  needs the type (e.g. cross-module read projection target).
 - `*.Application` interfaces (`IXService`, `IXRepository`) stay `internal`. Use
   `InternalsVisibleTo("X.Infrastructure")` + `InternalsVisibleTo("X.Api")` to keep siblings linked.
 - `*.Infrastructure` impls stay `internal`.
 - `*.Api` controllers are `public` (reverted from internal 2026-04-25 — see
-  `feedback_module_facade_surface.md`).
+  the module facade).
 - Tests reach `internal` types via `InternalsVisibleTo("X.UnitTests")` /
   `InternalsVisibleTo("X.IntegrationTests")` on the owning csproj's `AssemblyInfo.cs`.
 
@@ -88,7 +88,7 @@ Shared libs sit at `api/Concertable.Shared/Concertable.<Name>/` and follow the s
 
 ---
 
-## Cross-module rules (the §1 of MM_NORTH_STAR)
+## Cross-module rules
 
 - Zero cross-module runtime queries. Every module reads only from its own `DbContext`.
 - **This applies per *stance* too:** when a module has both a tenant-bound context and a
@@ -101,9 +101,8 @@ Shared libs sit at `api/Concertable.Shared/Concertable.<Name>/` and follow the s
   or integration events (fan-out).
 - Cross-module FKs are plain primitives (`int ArtistId`, `Guid UserId`) — never nav properties
   across boundaries.
-- Shared reference data (Genres, etc.) FKs into `SharedDbContext`. See MM_NORTH_STAR §6.
-
-Full set of corollaries + rationale in [MM_NORTH_STAR.md](/api/docs/MM_NORTH_STAR.md).
+- Shared reference vocabulary (`Genre`, and any future country/currency list) is a `Concertable.Contracts`
+  enum, not a table any module FKs into. There is no shared reference `DbContext`.
 
 ### Tenant internally, organization at the HTTP boundary
 
@@ -139,4 +138,5 @@ on the owning module's application service or focused use-case interface and for
 ## Migrations
 
 Don't add additive migrations. When any model changes, run `./initial-migrations.ps1` from `api/`
-to nuke and re-scaffold every context's `InitialCreate`. See CLAUDE.md.
+to nuke and re-scaffold every context's `InitialCreate`. Full rule, including why a migration is
+never a cost to weigh: [`../AGENTS.md`](../AGENTS.md) "Migrations".

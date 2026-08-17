@@ -257,7 +257,7 @@ Current Refit clients, one interface per remote contract:
 
 `Concertable.Kernel` carries the `Refit.HttpClientFactory` package for `ITokenApi` — fine: Refit is a
 small, already-in-repo library, and a typed contract is worth a package reference. (The "shared is the
-intersection" rule in `api/CLAUDE.md` is about not bolting audience-specific *concepts* onto shared
+intersection" rule in `api/AGENTS.md` is about not bolting audience-specific *concepts* onto shared
 *types* — it does not forbid a shared utility package.)
 
 **One caveat specific to `ITokenApi`:** `ClientCredentialsTokenService` is a **singleton** (it owns the

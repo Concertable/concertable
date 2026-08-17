@@ -22,8 +22,10 @@ never changes the working tree, index, or any branch.
 
 ## Repo facts (why these checks exist)
 
-- **`main` is protected by a merge queue** that rebuilds each entry on current main — so a branch
-  that's merely *behind main* is still mergeable (the queue rebases it). What actually bites is your
+- **`main` is protected by a merge queue** that rebuilds each entry on current main. That does **not**
+  make being behind `main` safe to enqueue: root [`AGENTS.md`](../../../AGENTS.md) "Before enabling
+  auto-merge" requires the branch to be current with base first, and it is a hard gate here too.
+  A second, separate failure is your
   **local being out of sync with its own remote**: behind `origin/<branch>` (you'd push over newer
   work or merge a stale PR) or tracking a **`[gone]`** remote (the branch already merged + was
   deleted — you're on a dead branch). This is the exact "sync thing" that blocks a clean PR.
@@ -60,12 +62,14 @@ never changes the working tree, index, or any branch.
    - `[ahead N]` → note: N unpushed commits — `push` them (a PR needs them on origin). Not a blocker
      for `gh pr create` (it pushes), but is one for `merge`.
 
-3. **Staleness vs main (soft).**
+3. **Staleness vs main (hard gate).**
    ```
    git rev-list --left-right --count origin/main...HEAD
    ```
-   - `A  B` = A commits on main you don't have, B commits of yours. Large A → note the branch is
-     well behind main; the queue rebuilds so it's not fatal, but a merge of main avoids surprises.
+   - `A  B` = A commits on main you don't have, B commits of yours. **Any `A > 0` blocks `merge`** —
+     merge `origin/main`, rebuild the affected projects to 0 errors, and push before enqueueing. A
+     stale branch either sits `BEHIND` and never merges, or merges code never built against current
+     `main` (and can carry a stale `<ConcertablePlatformVersion>` pin).
 
 4. **All CODE committed (docs may ride).**
    ```

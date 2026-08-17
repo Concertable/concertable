@@ -227,7 +227,7 @@ Do the pair in one sweep so the store vocabulary doesn't land half-applied.
 not a module concept — and every Api module that grows an action link will copy it a third time.
 
 The OSA report-content plan justified the second copy on the grounds that hoisting it would create the
-cross-module coupling `MODULAR_MONOLITH_RULES.md` forbids. **That reasoning was wrong:** those rules
+cross-module coupling `api/agents/CONVENTIONS.md` forbids. **That reasoning was wrong:** those rules
 forbid one module reaching into another module's types, and explicitly cover shared libraries as a
 legitimate home for cross-cutting layer concerns. `Concertable.Shared.Api` is exactly that home — the
 Api-layer shared library both modules already consume — and the frontend has had a single shared

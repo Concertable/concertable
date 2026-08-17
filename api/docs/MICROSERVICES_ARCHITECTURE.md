@@ -243,7 +243,9 @@ The two-package wire/framework rule still applies for `Concertable.Contracts` vs
 
 - **Sync HTTP between B2B.Api and Customer.Api** — would create distributed-monolith coupling. Async events only.
 - **Sync HTTP from Search.Api outbound to B2B or Customer** — Search is read-only and event-fed. If Search ever needed to "fill in a missing field" by sync-calling a data service, the projection is wrong and the fix is to expand the event, not introduce coupling.
-- **gRPC between services** — same antipattern risk as sync HTTP, with worse-fitting tooling.
+- **gRPC between data services** (`B2B`, `Customer`, `Search`) — same antipattern risk as sync HTTP.
+  gRPC *to an adapter* (`Auth`, `Payment`) is allowed and is the standing default for our-own internal
+  sync calls — see `api/agents/MICROSERVICE_COMMUNICATION.md`.
 - **Cross-service joins, shared schemas, shared DBs** — each service has its own database.
 - **Project references between B2B modules and Customer modules** — only `Concertable.Contracts` (and the authorization-helpers library) may be referenced by both. Enforce via CI architecture tests.
 
@@ -458,7 +460,8 @@ Roughly a year of evenings-and-weekends if taken seriously. Valuable on a CV at 
 
 ## 10. Non-goals and rejected patterns
 
-- **No gRPC between services.** Synchronous coupling regardless of wire format.
+- **No gRPC between data services.** Synchronous coupling regardless of wire format. Adapter services
+  accept sync gRPC by design (§3).
 - **No shared "domain logic" service that B2B and Customer both call sync for venue/concert/artist data.** That is the distributed-monolith antipattern. Project via events instead.
 - **No shared database.** Each service has its own. Citadel (shared DB, multiple hosts) was considered and rejected because it doesn't serve the learning goals.
 - **No premature webhook fan-out service.** Single Webhook Receiver service is an option *later* if Stripe event routing gets complex. Start with each service exposing its own webhook endpoint, or Payment receiving all webhooks.
@@ -489,7 +492,7 @@ Roughly a year of evenings-and-weekends if taken seriously. Valuable on a CV at 
 **Foundational decisions (2026-05-18/19)** — all baked into §§2–8 above:
 - Event-driven microservices over Citadel (shared DB). Reason: learning goals + B2B/Customer are genuinely separate bounded contexts.
 - Adapter vs data service rule: Payment and Auth accept sync calls; B2B and Customer do not (§3).
-- No gRPC. No shared DB. No sync between B2B and Customer.
+- No gRPC between data services. No shared DB. No sync between B2B and Customer.
 - B2B tokens are identity-only; B2B authority derives from active tenant membership (§5.5). Customer's transitional claims remain Customer-owned.
 - Service-to-service: `client_credentials` via Duende. Rejected mTLS and API keys.
 - Customer owns `TicketEntity`, `ReviewEntity`, `AvailableTickets`. B2B owns `TotalTickets` capacity.
