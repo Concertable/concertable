@@ -593,9 +593,9 @@ jobs:
       - name: Install frontend dependencies
         working-directory: app
         run: npm ci
-      - name: Prove and enforce frontend workspace boundaries
+      - name: Test frontend tooling and enforce workspace boundaries
         working-directory: app
-        run: npm run test:boundaries && npm run lint:boundaries
+        run: npm run test:package-tools && npm run test:boundaries && npm run lint:boundaries
 
   carve-fe:
     # FE analogue of the backend carve-* gates: each surface must restore its shared @concertable tiers
