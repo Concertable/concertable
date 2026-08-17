@@ -97,6 +97,22 @@ finder says literally what it fetches and by what key — `GetByTenantIdAsync`,
 use-case name (`GetInboxAsync`, `GetInboxSummaryAsync`) belongs on the *service* that calls
 it. Don't push an intent name (`GetInbox`) down onto the repository.
 
+## Repository query outputs — `Projection` only names an intermediate query shape
+
+Name a query-result type for the role it actually plays, not merely for the layer returning it:
+
+- A repository returning a persistence entity or persisted event-fed read model returns that type directly.
+- A repository returning the final meaningful application/read shape uses that shape's normal name. Do not add
+  `Projection` merely because a repository materializes it.
+- Use the `Projection` suffix only for an ephemeral `Select` shape that the service must map or enrich before
+  returning its final result. Keep that type internal to the repository/application boundary.
+- `Dto` and `Projection` are not synonyms. `Projection` describes an intermediate query shape; `Dto` identifies a
+  data contract when that suffix genuinely disambiguates the type.
+- If a repository and service return the same final type, do not introduce a throwaway mapping type. Keep the final
+  type's own name, including `Dto` when that suffix is useful.
+- Repositories never leak `IQueryable`. Filtering, aggregation, and projection stay in data access; type-to-type
+  conversion or cross-module enrichment belongs in the service and an `XMappers` extension class.
+
 ## Table + schema names — the module `Schema.cs` constants
 
 Each persistence module owns a `Schema.cs` (`internal static class Schema`) holding its DB schema name and
@@ -264,7 +280,7 @@ transport-terminal conventions live in [RESULT_PATTERN.md](./RESULT_PATTERN.md).
 of truth for those; do not add Result-pattern rules here. The validator *tool choice* above is a
 separate concern and lives here.
 
-## DTO naming — `Response` is HTTP-only; typed `Result` is the service wrapper; C# DTOs carry no suffix
+## DTO naming — `Response` is HTTP-only; `Dto` is an intentional disambiguator
 
 The `Response` suffix is reserved for the **HTTP-API wire layer** (`Module.Api/Responses/`, see the
 "DTOs vs Responses" section in [`../AGENTS.md`](../AGENTS.md)). It does **not** belong on the C#
@@ -273,19 +289,23 @@ service/client DTOs that adapters (gRPC clients, service interfaces) pass around
 - **`Result<TValue, TError>`** is already the service-call wrapper — the "did it succeed" envelope.
   Naming the payload `XResponse` on top of `Result<XResponse, XError>` double-encodes "this is a
   reply".
-- **Service and client DTOs carry no suffix.** Name them for the shape, Stripe-aligned where the
-  concept mirrors Stripe: `Transfer`, `Refund`, `EscrowDeposit`, `PaymentOutcome` — not
-  `TransferResponse`/`PaymentResponse`. Accept the Stripe-SDK name collision (`Stripe.Transfer`,
-  `Stripe.Refund`) and resolve it with a `using` alias in the few files that need both
+- **Service and client payloads do not mechanically gain or lose `Dto`.** Keep the suffix when it
+  usefully distinguishes a data shape from the same-named entity or domain concept (`OpportunityDto`);
+  omit it when the payload name is already unambiguous (`Transfer`, `Refund`, `EscrowDeposit`,
+  `PaymentOutcome`). Accept an SDK name collision (`Stripe.Transfer`, `Stripe.Refund`) and resolve it
+  with a `using` alias in the few files that need both
   (`using Transfer = Concertable.Payment.Contracts.Transfer;`).
 - **Proto message names stay `*Response`.** `EscrowResponse`/`PaymentResponse` in a `.proto` are the
-  native gRPC RPC vocabulary — wire-only, generated, and never surfaced as the C# DTO. The client- and
-  server-side `XMappers` map proto `*Response` ⇄ the suffix-free C# DTO.
+  native gRPC RPC vocabulary — wire-only, generated, and never surfaced as the C# payload. The client- and
+  server-side `XMappers` map proto `*Response` ⇄ the C# payload.
 
 ```csharp
-// CORRECT — service/client DTO, no suffix; Result<TValue, TError> is the wrapper
+// CORRECT — unambiguous service/client payloads need no suffix
 Task<Result<EscrowDeposit, DepositError>> DepositAsync(...);
 Task<Result<Transfer, ReleaseError>> ReleaseAsync(...);
+
+// CORRECT — Dto distinguishes the data shape from the Opportunity entity/concept
+Task<Result<OpportunityDto, OpportunityError>> GetByIdAsync(int id);
 
 // WRONG — Response suffix on a non-HTTP DTO, redundant with typed Result
 Task<Result<EscrowResponse, DepositError>> DepositAsync(...);
