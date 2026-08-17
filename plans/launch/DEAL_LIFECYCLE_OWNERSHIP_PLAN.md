@@ -302,13 +302,13 @@ behaviour is executable as tests, and no new test depends on the legacy shared l
 
 ### Phase 2 — establish module contracts and remove cross-stage entity navigation
 
-- [ ] Scaffold Opportunity, Application, and Booking module project families following existing B2B
+- [x] Scaffold Opportunity, Application, and Booking module project families following existing B2B
   conventions; Concert keeps only its eventual owned surface.
-- [ ] Replace cross-stage EF navigation in services, specifications, workers, and mappers with owned
+- [x] Replace cross-stage EF navigation in services, specifications, workers, and mappers with owned
   IDs, module contracts, or query projections.
-- [ ] Define forward handoff records carrying immutable accepted/confirmed facts and deterministic IDs.
-- [ ] Preserve current API routes and wire vocabulary during the internal cutover.
-- [ ] Add architecture rules against the real module assemblies as they are scaffolded, failing direct
+- [x] Define forward handoff records carrying immutable accepted/confirmed facts and deterministic IDs.
+- [x] Preserve current API routes and wire vocabulary during the internal cutover.
+- [x] Add architecture rules against the real module assemblies as they are scaffolded, failing direct
   runtime/entity references while allowing Contracts dependencies.
 
 Gate: the dependency graph is acyclic and Contracts-only while behaviour and public responses remain

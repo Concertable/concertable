@@ -5,9 +5,9 @@
 - Roadmap item: `launch/deal-lifecycle-ownership`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules-phase2`
 - Branch: `Refactor/launch_deal-lifecycle-modules-phase2`
-- PR: draft Phase 2 PR [#633](https://github.com/Concertable/concertable/pull/633) at scaffold work head `66284e37a0c9f54a0bbb890f04180fe22f6902c1`; Phase 1 PR #625 merged as `4efa1740e0e74601361e4c6595cc1d9d94e1b1bb`; docs-only decision PR #622 merged as `5c33f849444dda60ece44070353716c08819b2d8`; rejected PR #614 is closed and retired
+- PR: draft Phase 2 PR [#633](https://github.com/Concertable/concertable/pull/633); scaffold head `66284e37a0c9f54a0bbb890f04180fe22f6902c1` is published and the completed navigation cut is ready for its checkpoint commit; Phase 1 PR #625 merged as `4efa1740e0e74601361e4c6595cc1d9d94e1b1bb`
 - Dependency/package gates: Phase 1 delivery is terminal. Package publication run `31986741518` succeeded, and platform-sync PR [#630](https://github.com/Concertable/concertable/pull/630) merged green at platform version `0.1.0-alpha.0.1046`. Phase 2 is active from current `origin/main`.
-- Last reconciled: 2026-08-17 after publishing the Phase 2 scaffold work head and opening draft PR #633
+- Last reconciled: 2026-08-17 after completing the Phase 2 navigation cut and local verification
 
 ## Current state
 
@@ -43,15 +43,18 @@ rules. Immutable `AcceptedApplication`, `ConfirmedBooking`, and `OpportunityDeta
 establish the forward fact shapes, with operation IDs as replay-stable handoff identities. Persistence,
 services, API ownership, and the existing public routes remain in Concert until the next cutover slice.
 
+The completed Phase 2 cut removes the Opportunity-to-Application, Application-to-Booking, and
+Booking-to-Concert EF navigations without moving Phase 3 state or persistence ownership early.
+Booking and Concert retain immutable accepted/confirmed facts, while queries join explicitly through
+owned IDs and contracts. The B2B host calls all three new composition roots, and Concert draft
+creation explicitly adds the Concert instead of relying on EF graph tracking.
+
 ## Next Steps
 
-1. While exact-head draft-PR CI validates scaffold work head `66284e37a0c9f54a0bbb890f04180fe22f6902c1`,
-   inventory and remove the Opportunity â†’ Application, Application â†’ Booking, and Booking â†’ Concert
-   EF navigations, replacing traversals with owned IDs, module contracts, or explicit query shapes
-   while preserving the current HTTP routes and responses.
-2. Move each module's composition registration and owned surface behind its new project family, add
-   focused tests for the handoff records and dependency direction, then review the complete Phase 2
-   diff before delivery.
+1. Commit and push the completed Phase 2 navigation cut to draft PR #633, then run the full branch
+   review and address every high-confidence finding.
+2. Require exact-head draft-PR CI, including the B2B Concert integration shard that local Docker could
+   not start, before treating Phase 2 as delivery-ready. Merge remains an explicit delivery step.
 
 ## Completed work
 
@@ -135,12 +138,28 @@ services, API ownership, and the existing public routes remain in Concert until 
   `b0a3c3b42bf2a50b8518364bcd648e193a1bbd01` at `0.1.0-alpha.0.1046`.
 - Published Phase 2 scaffold work head `66284e37a0c9f54a0bbb890f04180fe22f6902c1`; local HEAD and
   `origin/Refactor/launch_deal-lifecycle-modules-phase2` matched exactly before opening draft PR #633.
+- Removed every cross-stage Opportunity/Application/Booking/Concert EF navigation and replaced the
+  affected service, workflow, specification, mapper, dashboard, and repository traversals with owned
+  facts or explicit ID-based query shapes.
+- Added immutable accepted/confirmed facts to Booking and Concert, re-scaffolded the Concert initial
+  migration through the repository helper, and made seed lifecycle links explicit per `SeedState`.
+- Added a focused draft-creation unit test that proves Concert persistence no longer depends on the
+  removed Booking navigation, and wired the three new module composition roots into the B2B host.
 - Phase 2 scaffold: `dotnet build api/Concertable.B2B/src/Concertable.B2B.Web/Concertable.B2B.Web.csproj
   --configuration Release --no-restore --disable-build-servers` passed with 0 warnings and 0 errors.
 - Phase 2 module-boundary scope: `dotnet test
   api/Concertable.B2B/tests/Concertable.B2B.ArchitectureTests/Concertable.B2B.ArchitectureTests.csproj
   --configuration Release --no-restore --disable-build-servers --filter
   "FullyQualifiedName~ModuleBoundaryTests"` passed 6/6.
+- Completed Phase 2 Concert unit suite: 230/230 passed after the navigation cut and explicit draft
+  persistence test.
+- Completed Phase 2 B2B Web build: 0 warnings and 0 errors after migration regeneration, seed-link
+  cleanup, and composition-root wiring.
+- Concert integration tests compile against the navigation-free fixture surface. The runtime
+  integration preflight stopped because elevated `docker ps` timed out; exact-head draft-PR CI owns
+  the required SQL/Testcontainers execution.
+- `git diff --check` passed, and the entity navigation gate finds only Concert-owned
+  `ConcertImageEntity.Concert` and Booking-owned `ContractEntity.Booking` relationships.
 - Removed the future-module ArchUnitNET rule before delivery because `WithoutRequiringPositiveResults`
   made it vacuous until the module assemblies exist; Phase 2 now owns meaningful boundary enforcement.
 - Published corrected work head `1457a2508db5b69d5a0fa7f05eea78ba412edd76`; local HEAD, the remote
@@ -182,6 +201,9 @@ services, API ownership, and the existing public routes remain in Concert until 
 - Opportunity is not hidden inside Application. Its physical extraction is part of the module carve.
 - Invoice/settlement records require evidence-based final placement during the Concert carve, but they
   cannot justify a shared lifecycle owner.
+- Local Docker did not answer the integration preflight, so no local Testcontainers run was attempted
+  after the timeout. This is an environment gate, not evidence of a product failure; PR CI must supply
+  the runtime integration result.
 - A characterization test must survive the refactor it protects. Types, transition tables, filenames,
   source tokens, and collaborator ownership explicitly scheduled for removal belong in migration
   inventory, never in new regression assertions.
