@@ -1,6 +1,6 @@
 import { View } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { useVenue } from "@concertable/shared/features/venues";
+import { useVenueById } from "@concertable/shared/features/venues";
 import { EditableProvider } from "@concertable/shared/providers";
 import { Screen } from "@/components/ui/Screen";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -12,7 +12,7 @@ type Props = NativeStackScreenProps<ConcertNavParamList, "VenueDetail">;
 
 export function VenueDetailScreen({ route }: Props) {
   const { venueId } = route.params;
-  const { venue, isLoading, isError } = useVenue(venueId);
+  const { venue, isLoading, isError } = useVenueById(venueId);
 
   if (isLoading) {
     return (
