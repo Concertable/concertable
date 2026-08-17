@@ -5,10 +5,10 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `862e4722c484ad44ef08d5017b39395696258b3e`  _(2026-08-17)_
-**Security-reviewed up to commit:** `862e4722c484ad44ef08d5017b39395696258b3e`  _(2026-08-17)_
+**Reviewed up to commit:** `10d07780fd1feaec34c2f7ae765d91ac8291d83e`  _(2026-08-17)_
+**Security-reviewed up to commit:** `10d07780fd1feaec34c2f7ae765d91ac8291d83e`  _(2026-08-17)_
 
-> Range reviewed: `cb2d41c3..862e4722` (5 first-parent branch commits; incoming `origin/main` changes excluded except merge resolution).
+> Range reviewed: `862e4722..10d07780` (2 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
 
 ## Findings
@@ -51,3 +51,11 @@ and failure classifications now fail closed through typed rejections, provider c
 closed until their deterministic failure-code mapping, and the evaluator exposes separate state and
 failure validation steps. Security review found no remaining issue. Also checked microservice
 isolation, module boundaries, seeding, C# conventions, and changed-path test coverage.
+
+## Incremental review — 2026-08-17 (receiver-owned error conversion)
+
+No issues found. Native and security review covered `862e4722..10d07780`: the shared generic error
+conversion is now a private C# 14 member of the `RpcException` extension block, every named conversion
+delegates through `exception.ToError(...)`, and mapping behaviour remains unchanged. Also checked
+correctness, microservice isolation, module boundaries, seeding, C# conventions, and changed-path test
+coverage.
