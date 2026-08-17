@@ -258,21 +258,20 @@ returned clean. Merging the thinning before the enforcement opens exactly that w
 in `agent-standards`, vendored here with a hash check, wired for **both** harnesses), and tier 3 above.
 **What remains of Phase 6 is deployment, and it needs Tommy.**
 
-1. **Phase 6a — skill deployment.** `agent-standards`' 7 process skills load in **no session today**
-   (`installed_plugins.json` has only stripe/clangd/rust-analyzer; `known_marketplaces.json` only
-   `claude-plugins-official`), so Phase 3a delivered 29 skills, not 36. `dotagents/.agents/deploy-skills.ps1`
-   (`dotagents` `71de4b5`) junctions canonical → `~/.agents/skills`; `-WhatIf` is clean at 46 skills, zero
-   refusals. **Not yet run — it needs Tommy, because deleting 36 directories under `~/.claude`/`~/.agents`
-   trips the permission classifier:**
-   `! & "$env:USERPROFILE\source\repos\dotagents\.agents\deploy-skills.ps1" -Confirm:$false`
-   Phase 6b does not remove this: vendoring covers the *hook*, not the skills, so the `~/.agents` leg is
-   still what makes a skill loadable at all. Two extra faults for that run to fix, found by watching a real
-   Codex session: `~/.agents/skills/sync/SKILL.md` and `worktree/SKILL.md` have no YAML frontmatter, so
-   Codex refuses both — meaning `/sync` and `/worktree` are dead there while looking installed. Already
-   done: the two installed-only skill edits that copy-deployment had stranded are recovered into `dotagents`
-   `c153697` (`prune-worktrees` +34, `worktree` +17 — a junction redeploy without checking direction first
-   would have destroyed both). Installed and canonical now agree on all 36; 3 canonical skills
-   (`last-conversation`, `recents`, `search`) remain uninstalled.
+1. ~~**Phase 6a — skill deployment.**~~ **DONE 2026-08-17.** `deploy-skills.ps1` run; both
+   `~/.agents/skills` and `~/.claude/skills` are now **46 junctions, 0 real directories**, pointing at
+   `dotagents` and `agent-standards`. The 7 process skills (`merging`, `committing`, `plans`,
+   `docs-and-debt`, `failing-tests`, `git-branching`, `remote-validation`) load for the first time,
+   plus `last-conversation`, `recents`, `search`. Zero refusals — no installed copy had diverged.
+   Copy-drift is now structurally impossible: `git pull` is the deployment.
+   Two notes. The `.claude` stubs **were** replaced by junctions to canonical, contrary to the
+   earlier note that a junction deployment must leave them; harmless, since the frontmatter that
+   drives routing is identical and Claude now reads the full skill directly. And the run was still
+   *global* — Tommy's stated preference is repo-local so skills travel with a clone, which is the
+   open design question below, not something this deployment settled.
+   Also resolved by the swap: the `sync` / `worktree` "missing YAML frontmatter" fault that made Codex
+   refuse both lived in the installed copies, which no longer exist — all 46 canonical files carry
+   well-formed frontmatter and a description, verified.
 2. **Approve the Codex hook once** (Tommy, ~5 seconds, in a Codex session in this repo). Codex trusts a
    project hook by hash per file per path, so the `PreToolUse` entry in `.codex/hooks.json` is inert
    until approved, and the worktree is trusted separately from the main checkout. **Do this after the

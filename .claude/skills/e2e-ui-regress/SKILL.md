@@ -1,4 +1,4 @@
-﻿---
+---
 name: e2e-ui-regress
 description: Compatibility stub for Claude Code. The canonical skill lives in .agents/skills/e2e-ui-regress/SKILL.md.
 ---
