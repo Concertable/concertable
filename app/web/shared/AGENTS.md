@@ -9,7 +9,7 @@ opportunities, contracts, applications, payouts — belongs in `app/web/b2b/shar
 (see its CLAUDE.md), never here. This tree is for what is genuinely universal: design system,
 auth/search/messaging infrastructure, and the details views every site renders.
 
-The four SPAs (customer, venue, artist, business) are fully separate sites: separate OIDC clients,
+The five SPAs (customer, venue, artist, business, admin) are fully separate sites: separate OIDC clients,
 separate sessions, separate backends behind the same `api` client (customer → Customer service,
 managers → B2B). A manager logged into the venue site is simply not logged in anywhere else. Code in
 this tree cannot know which site it's running in — so it may only do things every site can
@@ -30,10 +30,10 @@ legitimately do:
   (`/my`, `/profile/...`, `/concert/checkout/$id`) is injected by the owning app.
 
 Enforcement is the type system: each app's `tsc -b` compiles this tree against its own TanStack
-route tree, so an app-specific route literal in shared fails some other app's build. All four web
+route tree, so an app-specific route literal in shared fails some other app's build. All five web
 builds green (`app/web/CLAUDE.md`) is the boundary gate.
 
-The test for new code: *"could every one of the four sites render this and run every call it makes,
+The test for new code: *"could every one of the five sites render this and run every call it makes,
 with its own token, today?"* If only one site can — customer tickets, review eligibility/create,
 manager payout onboarding — it belongs in that app's tree, even when that costs an extra slot prop
 on a shared component.

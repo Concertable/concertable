@@ -12,7 +12,7 @@ Two products, three tiers of sharing:
 - per-app `src/` — everything only that site can do.
 
 After making any changes to a web app or shared code, run the builds to verify before reporting
-done — **all four green is the boundary gate**: each app's `tsc -b` compiles the shared trees
+done — **all five green is the boundary gate**: each app's `tsc -b` compiles the shared trees
 against its own route tree, so an app-specific leak in shared fails some other app's build.
 
 ```
@@ -20,6 +20,7 @@ npm -w @concertable/web-customer run build
 npm -w @concertable/web-venue run build
 npm -w @concertable/web-artist run build
 npm -w @concertable/web-business run build
+npm -w @concertable/web-admin run build
 ```
 
 The business app uses `vite build` only (no `tsc -b`) — it's a minimal app that only uses a slice of shared and does not implement the full feature set that shared references.

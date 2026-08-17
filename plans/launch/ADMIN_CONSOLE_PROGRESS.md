@@ -9,8 +9,12 @@
   (`7fd40bf59860c27f1c1d1e48537901b022de0f43`, 2026-08-17T14:18:26Z)
 - Dependency/package gates: none. No published-package boundary crosses this plan (Auth + B2B edits land
   in the same repo, no NuGet republish/platform-sync gate).
-- Last reconciled: 2026-08-17, Phase 2 starting: fresh worktree created off current `origin/main`
-  (`bfbfd863c...`, which contains #624).
+- Last reconciled: 2026-08-17, Phase 2 SPA scaffold complete and build-verified, not yet pushed.
+- Parallel, independent work: `Refactor/b2b_admin-module` (separate worktree/session, dispatched
+  2026-08-17) extracts `Concertable.B2B.Admin` out of `Concertable.B2B.User` to match the
+  `Concertable.B2B.Tenant` precedent (own `AdminDbContext`, plain `Guid` FKs, `IAdminModule` facade for
+  `UserController.Me()`'s grant-check). Purely internal — routes/DTOs unchanged — so it does not block
+  or get blocked by this ledger; fold in a note here once it merges.
 
 ## Current state
 
@@ -60,23 +64,61 @@ already-verified checkpoint); he picked the third. Implemented as
 design decision 1 for the full mechanism. Zero cross-service contract changes. `IAdminRepository` gained
 `AddAdmin(Guid)`. `AdminServiceTests` gained 6 tests (32/32 total); `AdminProvisioningTests` restructured
 around a register-then-log-in two-step flow (compiles clean, deferred to CI per remote-validation policy
-— no local Docker). Committed on this branch, not yet pushed (no PR opened for Phase 2 yet).
+— no local Docker).
+
+**Auth OIDC client + AppHost wiring done:** `ClientIds.Admin` ("admin") added to `Config.WebClients` +
+`SpaClientSettings.Admin`, redirect URIs in `appsettings.json` (prod) and `appsettings.E2E.json`
+(`localhost:5178`); reuses the existing non-Customer scope branch (`openid profile concertable.b2b.api`)
+— no `Config.cs` logic change needed. `AppHostExtensions.AddAdminSpa` (mirrors `AddVenueSpa`/
+`AddArtistSpa` — B2B-only backend, no separate service), wired into both `Concertable.B2B.AppHost` and
+the umbrella `Concertable.AppHost`. Both builds green.
+
+**Phase 2 SPA scaffold done and build-verified:** `app/web/admin/` created as a fifth workspace
+(package.json/vite.config.ts/tsconfig*/index.html, port 5178). Deliberately does **not** depend on
+`@concertable/b2b` (the venue/artist tenant tier — Admin has no tenant concept) and does **not** use the
+shared `AppLayout`/`Navbar`/`ProfileMenu` stack (`ProfileMenu` hard-links `/settings` and
+`/settings/payment`, which don't apply to a platform-admin console) — instead a small hand-rolled
+`_admin/route.tsx` header using `useAuth()` alone (email from OIDC profile claims, sign-out). Routes:
+`login.tsx`/`auth.callback.tsx` (copied from venue), `forbidden.tsx` (new — shown when an authenticated
+non-admin B2B user reaches the app), `_admin/route.tsx` (`requireAdmin` guard: `requireAuth` then checks
+`Identity.isAdmin` off the same cache entry the guard already populated, no extra fetch),
+`_admin/index.tsx` (renders the admins page). `features/identity/` (guard + a feature-private `Identity`
+type, not exported — nothing outside the guard needs it) and `features/admins/` (mirrors b2b/shared's
+`members` feature shape: one `useAdminOverviewQuery` shared by both the roster and pending-invitations
+facades, since the backend returns both in one `GET /api/Admin` call unlike members' two separate
+endpoints; `useInviteAdmin`/`useAdminsRoster`/`usePendingInvitations` facades; revoke-admin button
+disabled client-side when it's the last admin, mirroring the server's last-admin invariant). All five
+web builds green (customer/venue/artist/business/admin) and `npm run lint:boundaries` clean across all
+12 workspaces (added `web/admin` to `app/scripts/check-fe-boundaries.mjs`). `app/web/AGENTS.md`'s build
+gate and `app/web/shared/AGENTS.md`'s route-contract docs updated from "four" to "five" SPAs;
+`BROWSER_STORAGE.md`/`storageManifest.ts` updated for admin's cookie-consent/theme/oidc storage.
+
+Two tech-debt items logged along the way (not fixed, out of scope here):
+`api/Concertable.Frontend.Hosting/TECH_DEBT.md` (new — the `AddXSpa` methods' magic port/surface-name
+literals, pre-existing across all five, low priority since it's dev-only orchestration likely reworked
+for prod deployment) and `app/web/shared/TECH_DEBT.md` (new — `useSyncUser`/`useAuthStore` duplicates
+TanStack Query's own cache via a `useEffect` copy, the exact anti-pattern `app/agents/CODE_PATTERNS.md`
+already warns against for `useConcertStore`; Admin's own guard/header deliberately avoid the pattern
+rather than adding to it).
+
+**Not added:** focused component tests for invite/revoke. Checked precedent first — `b2b/shared`'s
+`members` feature (the closest analog) has zero component/hook tests for its equivalent
+`InviteForm`/`MembersRoster`/`PendingInvitations` either, only one pure-logic test
+(`acceptInvitation.test.ts`, node environment, no jsdom). No single-app `vitest` config precedent exists
+in `venue`/`artist` either. Matched precedent rather than inventing new test infrastructure ahead of an
+established need; flagging this explicitly rather than silently skipping it.
+
+Not yet pushed; no PR opened for Phase 2 yet.
 
 ## Next Steps
 
-1. Continue Phase 2 (admin console SPA shell) per `plans/launch/ADMIN_CONSOLE_PLAN.md` "Phase 2":
-   - `app/web/admin/` scaffold (mirrors the `customer` app's shape, no `@b2b/*` alias).
-   - Routes: `login.tsx`, `auth.callback.tsx`, `__root.tsx`, `_admin/route.tsx` (guard via
-     `GET /api/auth/me`, reading `UserDto.IsAdmin`), landing page listing admins + pending invitations
-     wired to Phase 1's `AdminController` endpoints.
-   - Auth service: `ClientIds.Admin` ("admin") Duende Web client — `Config.WebClients` +
-     `SpaClientSettings.Admin` + redirect URIs in `appsettings*.json`. This is what makes the fail-closed
-     gate load-bearing (today `admin` has no OIDC client, so the path is unreachable) — now safe to wire,
-     since the security pre-flight above already closed the gap it would otherwise expose.
-   - AppHost wiring: `AppHostExtensions.AddAdminSpa` (mirrors `AddCustomerSpa`), called from
-     `Concertable.B2B.AppHost/Program.cs` and the umbrella `Concertable.AppHost/Program.cs`.
-   - Verification gate: all five web builds green; focused component/hook tests for invite/revoke.
-2. Push, open the draft PR for Phase 2, let CI validate the integration test restructure.
+1. Commit the SPA scaffold (this turn) and push the branch; open the draft PR for Phase 2, let CI
+   validate the integration test restructure from Phase 1 plus the new frontend build/boundary gates.
+2. Once `Refactor/b2b_admin-module` (parallel, independent — see header) merges to `main`, merge it into
+   this branch before Phase 2 merges, so Phase 2 doesn't ship against the old `Concertable.B2B.User`-owned
+   Admin location. Not a hard blocker — Phase 2 builds and runs fine against the current location either
+   way, since the HTTP contract is unchanged — just do it before this branch's own merge to avoid a
+   needless rebase later.
 3. Phases 3 (moderation UI) and 4 (venue approval UI, plus the new `GET /api/Venue/pending-approval`
    endpoint) follow once Phase 2 is green — see the plan for scope.
 

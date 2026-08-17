@@ -16,7 +16,7 @@ adds; none of them restate the conventions.
 |---|---|---|
 | `app/shared` (`@concertable/shared`) | **every** surface — customer + b2b, web + mobile | [`shared/AGENTS.md`](./shared/AGENTS.md) |
 | `app/customer/shared` (`@concertable/customer`) | customer web + mobile only | [`customer/shared/AGENTS.md`](./customer/shared/AGENTS.md) |
-| `app/web` | the four web SPAs | [`web/AGENTS.md`](./web/AGENTS.md) |
+| `app/web` | the five web SPAs | [`web/AGENTS.md`](./web/AGENTS.md) |
 | `app/mobile` | the two mobile apps | [`mobile/AGENTS.md`](./mobile/AGENTS.md) |
 | per-app `src/` | one site only | — |
 
@@ -26,6 +26,6 @@ inside shared code with an identity check.
 
 ## The build gate
 
-All four web builds green, and both mobile builds green, is the boundary gate — each app's typecheck
+All five web builds green, and both mobile builds green, is the boundary gate — each app's typecheck
 compiles the shared trees against its own tree, so a leak in shared fails a *different* app's build.
 Web commands: [`web/AGENTS.md`](./web/AGENTS.md). Mobile commands: [`mobile/AGENTS.md`](./mobile/AGENTS.md).
