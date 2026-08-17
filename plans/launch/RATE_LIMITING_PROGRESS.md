@@ -5,60 +5,65 @@
 - Roadmap item: `launch/rate-limiting`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-launch_rate-limiting`
 - Branch: `Feature/launch_rate-limiting`
-- PR: not opened
+- PR: #TBD (Phase 1, draft — Concertable.ServiceDefaults rate-limiting seam)
 - Dependency/package gates: Phase 2 (Auth + B2B consumers) is delivery-gated on Phase 1's ServiceDefaults
   package publishing + the `chore/platform-sync-*` pin bump. No inbound blockers.
-- Last reconciled: 2026-08-17, from `origin/main` (@bfbfd863c) + repository evidence.
+- Last reconciled: 2026-08-17, from `origin/main` + repository evidence.
 
 ## Current state
 
-Plan authored. Design decided and verified against `origin/main`: the shared seam is
-`Concertable.ServiceDefaults` (a feed package every web host consumes via `AddServiceDefaults`; Auth
-references it but not `Concertable.Shared.Api`; it already carries `FrameworkReference
-Microsoft.AspNetCore.App`, so no new package refs). Rate limiting ships as a **separate web-only** opt-in
-pair `AddDefaultRateLimiting` / `UseDefaultRateLimiting` (not folded into `AddServiceDefaults`, which
-non-web Workers/Simulator hosts also call). Policy definitions centralized in ServiceDefaults; policy
-application per-endpoint in Auth (login) and B2B (apply/messaging/upload). No code written yet.
+**Phase 1 complete locally, pushed to a draft PR.** The shared web-only seam is implemented in
+`Concertable.ServiceDefaults`: `RateLimitingOptions` (+ `RateLimitWindow`) with the plan's hard-coded
+defaults, `RateLimitPolicies` public constants (`Login`/`Apply`/`Messaging`/`Upload`),
+`AddDefaultRateLimiting(this IHostApplicationBuilder)` (global fallback keyed on `sub` else IP, four
+named fixed-window policies, `OnRejected` → 429 + `Retry-After` + ProblemDetails when the host registered
+it) and `UseDefaultRateLimiting(this WebApplication)`. No new package references on the shipping project
+(framework `Microsoft.AspNetCore.App` already carries the rate-limiting APIs). Focused test project green.
 
-Claim confirmed: zero `AddRateLimiter`/`UseRateLimiter` in `api/` on current `origin/main`.
+Phase 2 (consumers) is unchanged and cannot be implemented/verified locally yet: Auth + B2B reference
+ServiceDefaults as a **published feed package**, so they cannot compile against the new extension methods
+until Phase 1 merges, `publish-packages` republishes, and `platform-sync` bumps the pins. Merge requires
+Tommy's explicit go-ahead.
 
-Confirmed endpoints: apply = `POST /api/Application/{opportunityId}` (`ApplicationController.Apply`);
-upload = `POST /api/Blob/upload` (`BlobController.Upload`, anonymous today); login = Auth `/connect/token`
-+ `Pages/Account` POSTs. Messaging send surface unconfirmed — `MessageController` is read + `mark-read`
-only; send path (SignalR `NotificationHub` or event-generated) to be located in Phase 2.
+Confirmed endpoints (for Phase 2): apply = `POST /api/Application/{opportunityId}`
+(`ApplicationController.Apply`); upload = `POST /api/Blob/upload` (`BlobController.Upload`, anonymous
+today); login = Auth `/connect/token` + `Pages/Account` POSTs. Messaging send surface still unconfirmed —
+`MessageController` is read + `mark-read` only; send path (SignalR `NotificationHub` or event-generated) to
+be located in Phase 2.
 
 ## Next Steps
 
-Implement **Phase 1 — rate-limiting seam in `Concertable.ServiceDefaults`** (all local; no blockers):
+**Paused: Tommy — review the Phase 1 draft PR and authorize its merge.** Phase 1 is implemented, built,
+and tested; nothing further is safely implementable locally.
 
-1. In `api/Concertable.ServiceDefaults/`, add `RateLimitingOptions` (sane hard-coded defaults per the
-   plan's limits table), a public `RateLimitPolicies` constants class (`Login`/`Apply`/`Messaging`/`Upload`),
-   `AddDefaultRateLimiting(this IHostApplicationBuilder)` registering `AddRateLimiter` with a global
-   fallback (partition on `sub` claim else client IP), the four named fixed-window policies, and an
-   `OnRejected` that sets 429 + `Retry-After` from `MetadataName.RetryAfter`; and
-   `UseDefaultRateLimiting(this WebApplication)`. No new package references.
-2. Add a focused test (new ServiceDefaults test project) booting a minimal in-memory `WebApplication` with
-   a stub endpoint under `RateLimitPolicies.Apply`, asserting the over-limit request returns 429 with a
-   `Retry-After` header.
-3. Log the in-process-only / no-distributed-store deferral in `api/TECH_DEBT.md`.
-4. Build `Concertable.ServiceDefaults` + the test project; run the focused test to green. Commit and push
-   the coherent checkpoint to a draft PR (`gh pr create`, plain GitHub — personal repo).
-
-Stop after pushing the draft PR. Delivery gates and the Phase 2 handoff are described in the plan's
-Phase 1 delivery notes; they wait for explicit instruction and a `/review` pass.
+- **Resume when:** the Phase 1 PR is merged, `publish-packages` has republished ServiceDefaults, and its
+  `chore/platform-sync-*` PR is green/merged (the new `<ConcertablePlatformVersion>` pin is on the feed).
+- **Then:** implement **Phase 2 — opt in and apply policies in Auth & B2B** per the plan. Auth:
+  `AddDefaultRateLimiting()`/`UseDefaultRateLimiting()` + `Login` on the token endpoint and `Pages/Account`
+  POSTs. B2B: the pair placed after auth/`TenantResolutionMiddleware`, before authorization/`MapControllers`;
+  `Apply`→`ApplicationController.Apply`, `Upload`→`BlobController.Upload`, `Messaging`→the located
+  message-send surface. Add a B2B integration test proving a throttled endpoint returns 429 + `Retry-After`.
+- Route Phase 1 through `/review` before requesting merge.
 
 ## Completed work
 
-- Plan + this ledger authored (`plans/launch/RATE_LIMITING_PLAN.md`, this file). Design verified against
-  `origin/main` evidence; `plan_graph.py` run clean.
+- **Phase 1 implemented** in `api/Concertable.ServiceDefaults/`: `RateLimitPolicies.cs`,
+  `RateLimitingOptions.cs`, `RateLimitingExtensions.cs`. Main csproj excludes `tests/**` from its default
+  compile/pack globs (the test project nests under the package folder to inherit its props/nuget config).
+- **Focused test project** `tests/Concertable.ServiceDefaults.Tests` — boots an in-memory `WebApplication`
+  (TestHost) with a stub endpoint under `RateLimitPolicies.Apply`, drives it past a config-bound limit, and
+  asserts 429 + a `Retry-After` header. Also proves config binding (limit supplied via in-memory config).
+  Added to `api/Concertable.slnx`; test package versions added to ServiceDefaults `Directory.Packages.props`.
+- **Distributed-store deferral** logged in `api/TECH_DEBT.md` (in-process limiter loosens per-replica under
+  horizontal scale; acceptable at single-instance launch).
+- Plan + this ledger authored earlier.
 
 ## Verification
 
-- `grep -rn "AddRateLimiter|UseRateLimiter" api/` (worktree, `origin/main`) → zero matches. Claim holds.
-- Seam facts on `origin/main`: ServiceDefaults `IsPackable`/`FrameworkReference Microsoft.AspNetCore.App`;
-  B2B.Web + Auth `PackageReference Concertable.ServiceDefaults`; Auth has no `Shared.Api` ref; every web
-  host calls `AddServiceDefaults`.
-- No code/build verification yet (no implementation).
+- `dotnet build Concertable.ServiceDefaults.csproj` → 0 warnings, 0 errors.
+- `dotnet test` (`Concertable.ServiceDefaults.Tests`) → 1 passed. Over-limit request returns
+  `429 TooManyRequests` with a `Retry-After` header; limit driven from bound config.
+- Full solution build / carve / integration matrix deferred to draft-PR CI (remote-first).
 
 ## Reviews
 

@@ -6,6 +6,7 @@
   <Project Path="Concertable.AppHost.Shared/Concertable.AppHost.Shared.csproj" />
   <Project Path="Concertable.Frontend.Hosting/Concertable.Frontend.Hosting.csproj" />
   <Project Path="Concertable.ServiceDefaults/Concertable.ServiceDefaults.csproj" />
+  <Project Path="Concertable.ServiceDefaults/tests/Concertable.ServiceDefaults.Tests/Concertable.ServiceDefaults.Tests.csproj" />
   <Folder Name="/Auth/">
     <Project Path="Concertable.Auth/src/Concertable.Auth.AppHost/Concertable.Auth.AppHost.csproj" />
     <Project Path="Concertable.Auth/src/Concertable.Auth.Hosting/Concertable.Auth.Hosting.csproj" />
