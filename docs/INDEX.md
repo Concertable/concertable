@@ -70,7 +70,7 @@ When a topic has both, the skill owns the rule and the file owns the inventory.
 | Proto naming, proto mappers, wire error mapping | skill `proto` |
 | Seeding — drive the trigger, never write the row | skill `seeding` |
 | Unit / integration / E2E scenario authoring | skills `unit-testing`, `integration-testing`, `e2e-scenarios` |
-| **This repo's** api-wide precedents — `Concertable.DataAccess` capability hierarchy, `IGeometryProvider`, `IPagination.Map` placement | [`api/agents/CODE_CONVENTIONS.md`](../api/agents/CODE_CONVENTIONS.md) |
+| **This repo's** api-wide precedents — `Concertable.DataAccess` capability hierarchy, `IGeometryProvider`, `IPagination.Map` placement, integration-event wire versioning | [`api/agents/CODE_CONVENTIONS.md`](../api/agents/CODE_CONVENTIONS.md) |
 | **This repo's** structural precedents — Refit client inventory, one repository per entity | [`api/agents/CODE_PATTERNS.md`](../api/agents/CODE_PATTERNS.md) |
 | **This repo's** Reunion pins and legacy-carrier migration state | [`api/agents/RESULT_PATTERN.md`](../api/agents/RESULT_PATTERN.md) |
 | **This repo's** project naming, `organization` routes, `Genre` enum, no cross-module read context | [`api/agents/MODULE_STRUCTURE.md`](../api/agents/MODULE_STRUCTURE.md) |

@@ -6,10 +6,10 @@
 - Also delivered by this ledger: roadmap item `docs/agent-standards`, now checked off
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-guidance-docs`
 - Branch: `Docs/GuidanceDocsRestructure`
-- PR: #637 — ready, head `aa5759d5`, label `skip-e2e`, all 54 PR checks pass (6 `skipping`: both E2E, `carve-fe`, `fe-boundaries`, `review`). Awaiting enqueue.
-- Shared repos: `Concertable/agent-standards` (7 process skills) and `tomjseery/dotagents` (28 generic, synced to `~/.agents/skills/`), cloned at `C:\Users\TommySeery\source\repos\{agent-standards,dotagents}`
+- PR: #637 — ready, label `skip-e2e`, awaiting enqueue. Head re-cut on 2026-08-17: the branch had gone **69 behind** `origin/main` and `DIRTY`, so `origin/main` is merged in (three doc conflicts resolved, below) and the branch is 0 behind again. Checks re-run against the new head.
+- Shared repos: `Concertable/agent-standards` (7 process skills) and `tomjseery/dotagents` (29 generic — 20 .NET + 9 TS/React — synced to `~/.agents/skills/`), cloned at `C:\Users\TommySeery\source\repos\{agent-standards,dotagents}`
 - Dependency/package gates: no consumer migration to do, but this PR **will** trigger publish + platform sync — `publish-packages.yml` triggers on the coarse `paths: api/**`, which this branch's `api/**` markdown matches. MinVer republishes and a `chore/platform-sync-*` PR opens; non-breaking (no published type changed), so it should auto-merge green. Follow it to green anyway — whoever merges owns the sync.
-- Last reconciled: 2026-08-17 against `origin/main` (0 behind at review time), plus `agent-standards` `8c42daa`
+- Last reconciled: 2026-08-17 against `origin/main` (0 behind after the merge), plus `agent-standards` `8c42daa` and `dotagents` skill enumeration
 
 ## Current state
 
@@ -23,6 +23,22 @@ still have >1 home, chiefly seeding across `api/AGENTS.md` and `SEEDING_CONVENTI
 auto-load thinning of root `AGENTS.md`.
 
 ## Done
+
+**`origin/main` merge — three doc conflicts, resolved keeping both sides' intent** (this PR)
+
+- `api/Concertable.Payment/ARCHITECTURE.md` — kept the `keyed-strategies` skill pointer *and* main's new
+  `PROVIDER_CONTRACT.md` line.
+- `api/TECH_DEBT.md` — took main's sharper `extension()` resolves-when (whole-container migration,
+  `XExtensions`/`XMappers` grouping, generator declarations excluded) with the citation repointed from the
+  deleted `agents/CODE_CONVENTIONS.md` section to the `csharp-style` skill.
+- `api/agents/CODE_CONVENTIONS.md` — kept the reduced file, but main had added a rule the cut never saw:
+  **integration events version the wire identity, not the CLR type**
+  (`concertable.payment.payment-operation-state-changed.v1`, verified against `[MessageType]` in code).
+  No skill owns event wire versioning, so deleting it would have dropped a live rule; kept in repo and
+  listed under promotion candidates. `docs/INDEX.md` updated to name the new topic.
+- Main's other two edits to that file needed no repo home: the `EscrowMappers` example moving to
+  `extension()` blocks, and the strengthened extension-members section — both generic, both now
+  promotion candidates against `csharp-style`/`csharp-naming`.
 
 **Phase 3b — the in-repo corpus reduced to its roster** (this PR)
 
@@ -65,10 +81,11 @@ auto-load thinning of root `AGENTS.md`.
 **Phase 3a — the corpus moved out as `.agents`-canonical skills** (`agent-standards` `ffe5721`,
 `dotagents` `00e02f9`)
 
-- 35 skills, split by whether the rule names this product: 28 generic in `dotagents` → `~/.agents/skills/`
+- 36 skills, split by whether the rule names this product: 29 generic in `dotagents` → `~/.agents/skills/`
   (C# style/naming, comments, DI, logging, validation, the three Result skills, persistence, multitenancy,
   keyed strategies, module structure, service boundaries, proto, HTTP contracts, seeding, the three test tiers,
-  and the 8 TypeScript/React ones); 7 Concertable-shaped process ones in the org repo.
+  and the 9 TypeScript/React ones — 29 by a later enumeration of `dotagents/.agents/skills`, which the
+  original 28/8 counts undercounted); 7 Concertable-shaped process ones in the org repo.
 - **`.agents/skills/` is canonical in both**, with `.claude/skills/` and `plugins/*/skills/` as generated
   stubs from one generator — nothing is Claude-only, and Codex reads the same files.
 - The stub generator mirrors each canonical `description` and fails rather than emit an unroutable stub. That
@@ -123,25 +140,15 @@ Re-verified after the fixes: hooks **72 passed**, `docs_reachability.py` **0 err
 
 ## Next Steps
 
-0. **Re-review, then hand Tommy the enqueue command.** The `dae65fe2` checkpoint commits `plans/docs/*`,
-   so the review watermark is genuinely stale now (before it was `reviews/`-only-diff stale, which the
-   gate whitelists). Run `/docs-review` over the branch — the diff to review is plan/ledger prose only —
-   re-stamp `reviews/Docs-GuidanceDocsRestructure.md`, push, then give Tommy
-   `! gh pr merge 637 --merge --auto`. He must run it himself: see the stale-gate-hook note in step 1.
-
 1. **Land this PR.** Routed to `/merge`, not `/merge-docs`: the diff carries one `.cs` file
    (`ModuleBoundaryTests.cs` — comment and `.Because(...)` strings repointed by the
    `CONVENTIONS.md` → `MODULE_STRUCTURE.md` rename), which `merge-docs` hard-refuses, so the queue's
-   build gate applies. Review clean (0 open findings), branch 0 behind `origin/main`, local = remote =
-   PR head, all 54 checks green, `skip-e2e` label correct (no positive trigger).
-   **Enqueue is human-gated by a stale local gate hook, not by anything about this PR.**
-   `merge-review-gate.py` runs from `CLAUDE_PROJECT_DIR` (the main checkout at
-   `C:\Users\TommySeery\source\repos\Concertable`), whose `main` is **678 commits behind
-   `origin/main`** and therefore still the 180-line copy that predates its own `review_only` fix. That
-   old copy demands the review marker equal `HEAD`, which stamping can never satisfy — the 281-line
-   version already on `origin/main` whitelists a marker-to-head range that touches `reviews/` alone,
-   exactly this branch's case (`3893ea642..aa5759d5` = the review file only). Not fixed here: the main
-   checkout has unrelated staged work (`.agents/hooks/plan_*.py`), so syncing it is Tommy's call.
+   build gate applies. Review clean (0 open findings), branch 0 behind `origin/main` after the merge,
+   local = remote = PR head, `skip-e2e` label correct (no positive trigger).
+   **The local gate hook is no longer the blocker** — the main checkout now carries the 281-line
+   `merge-review-gate.py` with `review_only`, which whitelists a marker-to-head range touching
+   `reviews/` alone, exactly this branch's case. What remains is simply that merge authorization is
+   Tommy's: run `! gh pr merge 637 --merge --auto` once the re-run checks are green.
    After the enqueue lands: poll for `MERGED`, then `./scripts/worktrees.ps1 close -Worktree
    C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-guidance-docs -PullRequest 637
    -PlanManaged`, then follow the generated `chore/platform-sync-*` PR to green (this branch's `api/**`
@@ -166,6 +173,14 @@ Re-verified after the fixes: hooks **72 passed**, `docs_reachability.py` **0 err
    - "One repository per entity" has no skill home (see Done).
    - `e2e-scenarios` closes by pointing at "the `agent-process` standards", a name no skill has — the
      container-health rule lives in `remote-validation`.
+   - **Three surfaced by the `origin/main` merge**, all against the C# skills: `csharp-style`'s
+     `extension()` section is weaker than the repo's current rule — it lacks "migrate every ordinary
+     member of a container you touch, so a class never mixes forms" and the signature-bound
+     `[LoggerMessage]` exception; `csharp-naming`'s `XMappers` example still shows the legacy
+     `public static … (this X x)` form the same corpus now bans, so the two skills contradict each
+     other; and **integration-event wire versioning has no skill at all** — kept in
+     `api/agents/CODE_CONVENTIONS.md` for now, and the natural home is `microservice-boundaries`
+     (events) or `proto` (wire identity), neither of which mentions `MessageType` today.
    - **`E2E_UI_CONVENTIONS.md` is generic content still sitting in the repo** (Tommy flagged it). Page-object
      naming/shape, `data-testid` kebab-case and no-type-prefix, step bindings delegating with no Playwright
      calls, and API-not-UI setup for steps not under test are Reqnroll+Playwright rules with nothing

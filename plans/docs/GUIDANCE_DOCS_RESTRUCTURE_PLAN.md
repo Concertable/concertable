@@ -293,7 +293,7 @@ A **skill is a convention doc with a trigger** — the same markdown, plus a `de
 that decides when it loads. So nothing is rewritten into a different genre; generic topics move to
 `Concertable/agent-standards` and gain a description, while what must always apply stays in-repo.
 
-**Two homes, split by whether the rule names this product** — DONE, 35 skills. Both repos keep `.agents/skills/`
+**Two homes, split by whether the rule names this product** — DONE, 36 skills. Both repos keep `.agents/skills/`
 canonical and generate the Claude-side stubs from it, so nothing is Claude-only and Codex reads the same files.
 
 - **`tomjseery/dotagents` → `~/.agents/skills/`** — the 28 generic ones. They name no project, so they are
@@ -391,7 +391,7 @@ citations; the `./scripts/` path fixes across root `AGENTS.md` and the four e2e 
 `integration-debug` Docker floor.
 
 ### Phase 3a — move the corpus out to `.agents`-canonical skills — DONE
-35 skills, split by whether the rule names this product: 28 generic to `dotagents` (`~/.agents/skills/`),
+36 skills, split by whether the rule names this product: 29 generic to `dotagents` (`~/.agents/skills/`),
 7 Concertable process ones to `Concertable/agent-standards`. Examples genericized off any single project's
 domain; `proto`'s mapper and payload-naming sections collapsed to pointers rather than restating
 `csharp-naming`.
@@ -446,7 +446,7 @@ edit the same lines twice.
 
 ### Phase 5 — the shared repos become a browsable tree, not a flat skill list
 
-**Decided 2026-08-17.** Phase 3a landed 35 skills as flat sibling directories. That is fine for the
+**Decided 2026-08-17.** Phase 3a landed 36 skills as flat sibling directories. That is fine for the
 router and bad for a human: a listing of `write-boundary`, `contract-naming`, `tiered-shared-code`,
 `stack-defaults` answers "what exists?" only if you already know the answer. Tommy's actual question —
 *"did I document this, and where is it?"* — has no cheap way to be asked, and this plan's own execution
