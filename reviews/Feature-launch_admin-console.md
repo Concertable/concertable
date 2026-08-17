@@ -5,13 +5,13 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `825dc4793bd6a67b2b594975c196b7249fa9a333`  _(2026-08-17)_
-**Security-reviewed up to commit:** `825dc4793bd6a67b2b594975c196b7249fa9a333`  _(2026-08-17)_
+**Reviewed up to commit:** `43d6cf20590d08375e2bbf176564acc52103046d`  _(2026-08-17)_
+**Security-reviewed up to commit:** `43d6cf20590d08375e2bbf176564acc52103046d`  _(2026-08-17)_
 
-> Range reviewed: `d5669a836..825dc4793` (15 commits). Commits after `5492efa58` are docs-only except
+> Range reviewed: `d5669a836..43d6cf205` (17 commits). Commits after `5492efa58` are docs-only except
 > `6aabf147b` (the IAdminRepository extraction below), `0d7821d6d` (merge of `origin/main`, resolving
 > one conflict in `api/agents/CODE_CONVENTIONS.md` by keeping both sides' additions — no semantic change),
-> and `825dc4793` (the Me() redesign below).
+> `825dc4793` (the Me() redesign below), and `43d6cf205` (the extension-block conversion below).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
 
 ## Findings
@@ -50,6 +50,15 @@
   entirely, and moved `[Admin]` to the controller class level now that every remaining action needs it.
   Covered the new field with `Me_ReturnsIsAdminTrue/False_When...` in `UserApiTests.cs` (`Me()` had no
   prior test coverage at all). Plan doc updated to match (design decision 3).
+
+- [x] **CV3 — LOW — C# conventions** — `api/Concertable.B2B/src/Modules/User/Concertable.B2B.User.Application/Mappers/AdminMappers.cs`
+  Used the legacy `this X x` extension-method syntax in a brand-new file. `api/agents/CODE_CONVENTIONS.md`:
+  "New extension members go in `extension(Receiver)` blocks... Never add a new legacy `public static …
+  (this X x)` method; the existing ones await a migration sweep." `TenantMappers`/`ConcertMappers` keep
+  the legacy form correctly (pre-existing, grandfathered); `AdminMappers.cs` has no such excuse. Fixed:
+  converted both methods to `extension(AdminInvitationEntity invitation)` /
+  `extension(AdminInvitationRevocationError error)` blocks, matching the live reference example
+  (`RegisteredAddressMappers.cs`).
 
 <!-- NAT layer (Layer 1, code-reviewer subagent): no findings cleared the 80% confidence bar. Diff closely mirrors InvitationService/TenantInvitationEntity/MembershipService precedent. -->
 
