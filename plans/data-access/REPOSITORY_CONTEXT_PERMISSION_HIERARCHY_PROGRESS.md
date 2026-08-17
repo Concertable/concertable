@@ -3,9 +3,9 @@
 - Plan: `plans/data-access/REPOSITORY_CONTEXT_PERMISSION_HIERARCHY_PLAN.md`
 - Roadmap: `plans/data-access/DATA_ACCESS_ROADMAP.md`
 - Roadmap item: `data-access/repository-context-permission-hierarchy`
-- Worktree: `C:/Users/TommySeery/source/repos/Concertable/.worktrees/rpc`
-- Branch: `Refactor/RepositoryPermissionContraction`
-- PR: [#632](https://github.com/Concertable/concertable/pull/632) (ready, `full-e2e`, open and dequeued after merge-group failure)
+- Worktree: `C:/Users/TommySeery/source/repos/Concertable/.worktrees/rpc-closeout`
+- Branch: `Docs/repository_permission_hierarchy_closeout`
+- PR: [#632](https://github.com/Concertable/concertable/pull/632) (merged as `30c399e070e961d70506f535bde64c0bd8b0190a`)
 - Starting head: `95305c7a909d48a703ab572c2a153fe74d2d4daa`
 - Consumer PR: [#561](https://github.com/Concertable/concertable/pull/561) merged as `249dc8a9df8d9b81271cd2250a01ecf086e97586`.
 - Dependency/package gate: satisfied. Additive producer PR #590 merged as `59fe60e978affe23bcaf53823151eab2acda8ba0`, published platform `0.1.0-alpha.0.1007`, and platform-sync PR #592 merged green as `38e3d8548f10f3ab7a4a951b7c4ce961ec21c863`. Current `origin/main` pins `0.1.0-alpha.0.1009`, which includes the additive DataAccess API.
@@ -17,9 +17,18 @@
   `0.1.0-alpha.0.1044`, and platform-sync PR
   [#629](https://github.com/Concertable/concertable/pull/629) merged green as
   `95305c7a909d48a703ab572c2a153fe74d2d4daa`.
-- Last reconciled: 2026-08-17 against `origin/main` at `dc037f477`.
+- Last reconciled: 2026-08-17 against `origin/main` at `b6ba59f3f`.
 
 ## Current state
+
+Terminal. PR #632 passed exact-head CI run `32026618553` and full-E2E merge-group run `32028040528`,
+then merged as `30c399e070e961d70506f535bde64c0bd8b0190a`. Package publication and fresh-consumer
+restore passed in run `32031224915`, publishing platform `0.1.0-alpha.0.1052`. Generated
+platform-sync PR #638 passed exact-head CI run `32031483698` and merge-group run `32032837560`, then
+merged as `b6ba59f3f4eae7be6b15117416fca50ff2b5cbc5`. The final published pin therefore rebuilds all
+service carves with no red sync, compatibility repository arity, facet implementation, or stale pin.
+The capability seam is stable enough for a separate extraction evaluation, but extraction remains a
+separate plan because `IEntity<TKey>` and messaging integration are still Concertable-owned couplings.
 
 The repo-wide consumer migration and its signup/topology reliability follow-up are merged, published,
 and platform-synced on main. Phase 3 contraction is implemented in the short-path worktree: every
@@ -98,11 +107,8 @@ topology contract test, and both signup flows attach their registration wait bef
 
 ## Next Steps
 
-1. Require exact-head CI on the pushed repair checkpoint.
-2. Keep `full-e2e` and return
-   PR #632 to the merge queue for the full-stack proof.
-3. On merge, close the source worktree and follow package publication and platform sync to green,
-   then complete the published-baseline plan closeout gates.
+Terminal: delete this ledger, its producer ledger, and the completed plan; tick the roadmap item and
+land the docs-only closeout.
 
 ## Completed work
 

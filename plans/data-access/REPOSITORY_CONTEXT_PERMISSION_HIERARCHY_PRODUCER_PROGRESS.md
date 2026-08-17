@@ -3,14 +3,18 @@
 - Plan: `plans/data-access/REPOSITORY_CONTEXT_PERMISSION_HIERARCHY_PLAN.md`
 - Roadmap: `plans/data-access/DATA_ACCESS_ROADMAP.md`
 - Roadmap item: `data-access/repository-context-permission-hierarchy`
-- Worktree: `C:/Users/TommySeery/source/repos/Concertable/.worktrees/Refactor-data-access-repository-permission-hierarchy-expand`
-- Branch: `Refactor/DataAccessRepositoryPermissionHierarchyExpand`
+- Worktree: `C:/Users/TommySeery/source/repos/Concertable/.worktrees/rpc-closeout`
+- Branch: `Docs/repository_permission_hierarchy_closeout`
 - PR: [#590](https://github.com/Concertable/concertable/pull/590) (merged)
 - Dependency/package gates: satisfied. PR #590 merged, published `0.1.0-alpha.0.1007`, and
   platform-sync PR #592 merged green.
-- Last reconciled: 2026-08-17 from the active contraction worktree at `95305c7a9`.
+- Last reconciled: 2026-08-17 against terminal platform-sync merge `b6ba59f3f`.
 
 ## Current state
+
+Terminal. The additive producer, consumer migration, legacy contraction, publication, and generated
+platform sync have all merged. Platform `0.1.0-alpha.0.1052` is the final published baseline for this
+plan, and platform-sync PR #638 merged green as `b6ba59f3f4eae7be6b15117416fca50ff2b5cbc5`.
 
 The additive package slice is implemented in the producer worktree. It changes only the two packable
 DataAccess projects and their focused unit tests: `IWriteDbContext`, `IDbContext`, `ReadDbContext`,
@@ -28,8 +32,7 @@ their old-package behavior until the consumer migration removes it.
 
 ## Next Steps
 
-Completed workstream. The remaining legacy contraction is owned by
-`REPOSITORY_CONTEXT_PERMISSION_HIERARCHY_PROGRESS.md`.
+Terminal: delete this ledger with the completed plan and consumer ledger in the docs-only closeout.
 
 ## Completed work
 
@@ -83,15 +86,3 @@ Completed workstream. The remaining legacy contraction is owned by
 - A new shared simple type name can be source-breaking when a consumer already imports a same-named
   compatibility type. The expansion keeps those consumers on their existing base through explicit
   aliases; their real migration remains in #561.
-
-## Downstream handoffs
-
-- `plans/data-access/REPOSITORY_CONTEXT_PERMISSION_HIERARCHY_PROGRESS.md` resumes when the published
-  platform baseline contains the additive DataAccess API and the generated sync is merged.
-
-## Resume prompt
-
-```
-cd C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-data-access-repository-permission-hierarchy-expand
-Read @plans/data-access/REPOSITORY_CONTEXT_PERMISSION_HIERARCHY_PLAN.md and @plans/data-access/REPOSITORY_CONTEXT_PERMISSION_HIERARCHY_PRODUCER_PROGRESS.md and do what its `## Next Steps` says.
-```
