@@ -109,9 +109,11 @@ Full set of corollaries + rationale in [MM_NORTH_STAR.md](/api/docs/MM_NORTH_STA
 
 `Tenant` is the domain and persistence term. `organization` is the product/API term. Perform that
 translation once in the Api layer: use explicit lowercase `api/organization/...` route templates and
-organization-named controllers/actions where the HTTP surface represents the active tenant, while
-application services, repositories, entities, and database columns continue to use `Tenant` and
-`TenantId`. Do not introduce `OrganizationId` aliases below the HTTP boundary.
+organization vocabulary in HTTP models or actions where the surface represents the active tenant,
+while application services, repositories, entities, and database columns continue to use `Tenant`
+and `TenantId`. Controller ownership follows the resource's domain module; an `organization` route
+prefix alone does not justify an `OrganizationXController` wrapper. Do not introduce
+`OrganizationId` aliases below the HTTP boundary.
 
 `X-Tenant-Id` selects the active tenant. Do not duplicate that selector in an organization-scoped
 route or query string. A tenant's zero-or-one Artist or Venue is a singleton relationship at
