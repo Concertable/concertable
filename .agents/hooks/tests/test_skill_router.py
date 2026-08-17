@@ -123,6 +123,22 @@ class SkillRouterTests(unittest.TestCase):
 
         self.assertEqual(0, result.returncode)
 
+    def test_the_review_query_resolves_this_repo_table(self):
+        # What `review` Step 2 runs. It reads the file on disk, so the path must really exist.
+        target = self.root / "api/Svc.UnitTests/A.cs"
+        target.parent.mkdir(parents=True)
+        target.write_text("class A { }", encoding="utf-8")
+
+        result = subprocess.run(
+            [sys.executable, str(HOOK), "--skills-for", "api/Svc.UnitTests/A.cs"],
+            capture_output=True,
+            text=True,
+            cwd=str(self.root),
+        )
+
+        self.assertEqual(0, result.returncode)
+        self.assertIn("unit-testing", result.stdout)
+
     def test_every_route_declares_a_path_and_at_least_one_skill(self):
         routes = json.loads(ROUTES.read_text(encoding="utf-8"))["routes"]
 

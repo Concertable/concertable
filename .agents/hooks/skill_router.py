@@ -22,6 +22,11 @@ Two behaviours, and the difference matters:
 Contract: exit 0 = allow, exit 2 = block with stderr fed back to the agent. Anything unexpected exits
 0 - a broken router must not wedge every write, since a build gate is the tier that guarantees.
 
+The same table also answers the question after the fact: `--skills-for <paths>` (or paths on stdin)
+prints which skills a set of changed files obliges a reader to load. That is what a review runs, so a
+review cannot miss what its author was required to load - the other half of the failure above, where
+the follow-up review repeated the identical blind spot and returned clean.
+
 Ships in the `agent-process` plugin, so both harnesses run this one file: Claude Code's `PreToolUse`
 and Codex's `pre_tool_use` pass the same payload keys and read the same exit-2 block contract. A repo
 opts in by carrying `.agents/skill-routes.json`; without one the hook exits 0 and does nothing.
@@ -39,6 +44,7 @@ from pathlib import Path
 ROUTES_FILE = ".agents/skill-routes.json"
 WRITE_TOOLS = {"Write", "Edit", "MultiEdit", "NotebookEdit"}
 SKILL_ROOTS = (Path.home() / ".agents" / "skills", Path.home() / ".claude" / "skills")
+QUERY_FLAG = "--skills-for"
 
 
 def repo_relative(path, cwd):
@@ -112,7 +118,80 @@ def find_repo_root(cwd):
     return None
 
 
+def load_routes(root):
+    try:
+        return json.loads((root / ROUTES_FILE).read_text(encoding="utf-8")).get("routes", [])
+    except (OSError, ValueError):
+        return None
+
+
+def matching_routes(routes, rel, content):
+    """One matcher for both callers, so a review resolves a path exactly as the write-time block did."""
+    for route in routes:
+        pattern = route.get("path")
+        if not pattern or not re.search(pattern, rel):
+            continue
+        needle = route.get("content_requires")
+        if needle and not re.search(needle, content):
+            continue
+        yield route
+
+
+def deny_hits(route, rel, content):
+    for rule in route.get("deny") or []:
+        pattern = rule.get("pattern")
+        if pattern and re.search(pattern, content):
+            yield rel, rule.get("reason", "")
+
+
+def query(argv):
+    """`--skills-for <paths>` / paths on stdin -> the skills those files oblige a reader to load."""
+    paths = [arg for arg in argv if not arg.startswith("-")]
+    if not paths:
+        paths = [line.strip() for line in sys.stdin.read().splitlines() if line.strip()]
+
+    cwd = os.getcwd()
+    root = find_repo_root(cwd)
+    routes = load_routes(root) if root else None
+    if not routes:
+        print(f"no readable {ROUTES_FILE} above {cwd} - no skill is owed")
+        return 0
+
+    owed, violations = {}, []
+    for given in paths:
+        rel = repo_relative(given, cwd)
+        try:
+            content = (root / rel).read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            content = ""  # deleted or unreadable: the path still routes, the content gates cannot
+        for route in matching_routes(routes, rel, content):
+            for name in route.get("skills") or []:
+                owed.setdefault(name, []).append(rel)
+            violations.extend(deny_hits(route, rel, content))
+
+    if "--json" in argv:
+        json.dump({"skills": owed, "violations": violations}, sys.stdout, indent=2)
+        sys.stdout.write("\n")
+        return 0
+
+    if not owed:
+        print(f"no routed paths among the {len(paths)} given - no skill is owed")
+    else:
+        print("skill-routes.json owns these changed paths. Load each skill before judging its files:")
+        for name in sorted(owed):
+            files = sorted(set(owed[name]))
+            print(f"\n  * {name}  ({len(files)} file(s))")
+            for rel in files:
+                print(f"      {rel}")
+    for rel, reason in violations:
+        print(f"\nDENY PATTERN HIT - a decidable violation in the tree, report it:\n  {rel}\n      {reason}")
+    return 0
+
+
 def main():
+    if QUERY_FLAG in sys.argv[1:]:
+        sys.exit(query(sys.argv[1:]))
+
     try:
         data = json.load(sys.stdin)
     except ValueError:
@@ -130,39 +209,27 @@ def main():
     root = find_repo_root(cwd)
     if root is None:
         sys.exit(0)
-    try:
-        routes = json.loads((root / ROUTES_FILE).read_text(encoding="utf-8")).get("routes", [])
-    except (OSError, ValueError):
+    routes = load_routes(root)
+    if not routes:
         sys.exit(0)
 
     rel = repo_relative(target, cwd)
     content = written_content(tool_input)
 
-    matched = []
-    for route in routes:
-        pattern = route.get("path")
-        if not pattern or not re.search(pattern, rel):
-            continue
-        needle = route.get("content_requires")
-        if needle and not re.search(needle, content):
-            continue
-        matched.append(route)
-
+    matched = list(matching_routes(routes, rel, content))
     if not matched:
         sys.exit(0)
 
     # Deny patterns first: a decidable violation blocks every time, not once per session.
     for route in matched:
-        for rule in route.get("deny") or []:
-            pattern = rule.get("pattern")
-            if pattern and re.search(pattern, content):
-                sys.stderr.write(
-                    "SKILL ROUTER - blocked, this is a rule violation, not a reminder:\n\n"
-                    f"  {rel}\n  {rule.get('reason', '')}\n\n"
-                    f"Read the {', '.join(route.get('skills') or []) or 'owning'} skill and fix the "
-                    "classification before writing this file. The file was NOT written."
-                )
-                sys.exit(2)
+        for _, reason in deny_hits(route, rel, content):
+            sys.stderr.write(
+                "SKILL ROUTER - blocked, this is a rule violation, not a reminder:\n\n"
+                f"  {rel}\n  {reason}\n\n"
+                f"Read the {', '.join(route.get('skills') or []) or 'owning'} skill and fix the "
+                "classification before writing this file. The file was NOT written."
+            )
+            sys.exit(2)
 
     session = data.get("session_id")
     seen = load_seen(session)

@@ -119,12 +119,18 @@ These docs are the source of truth. Read the ones relevant to the diff — do no
 
 - Root `AGENTS.md` and `api/AGENTS.md` — top-of-context rules + pointers.
 - `api/ARCHITECTURE.md` and root `ARCHITECTURE.md` — **microservice premise** (the boundary rules below).
-- The **skills** that own the generic standard, invoked by what the diff touches: `csharp-style`,
-  `csharp-naming`, `logging`, `dependency-injection`, `validation`, `persistence`, `multitenancy`,
-  `keyed-strategies`, `http-api`, `result-carriers`/`result-errors`/`result-terminals`, `proto`,
-  `unit-testing`/`integration-testing`/`e2e-scenarios` for `api/`; `typescript-style`,
-  `contract-naming`, `react-structure`, `server-state`, `client-state`, `http-layer`, `write-boundary`,
-  `tiered-shared-code` for `app/`. Only flag a convention issue the invoked skill actually states.
+- The **skills the changed paths oblige**, resolved from the same `.agents/skill-routes.json` the
+  write-time router enforces — not from memory, and not from a list in this file. **Invoke every skill
+  it names, before flagging anything**; a review that skips one repeats the author's blind spot, which
+  is the failure this wiring exists for. A `DENY PATTERN HIT` line is a confirmed finding, not a hint.
+
+  ```bash
+  git diff --name-only "<start>..HEAD" | python .agents/hooks/skill_router.py --skills-for
+  ```
+
+  Only flag a convention issue the invoked skill actually states. The table is the floor, not the
+  ceiling — invoke any other skill the diff plainly touches too, and when you had to *remember* one,
+  that is a missing row in the table, not a paragraph to add here.
 - `api/agents/CODE_CONVENTIONS.md`, `api/agents/CODE_PATTERNS.md`, `app/agents/CODE_CONVENTIONS.md`,
   `app/agents/CODE_PATTERNS.md` — **this repo's** precedents: real context/client/permission names, the
   Refit inventory, the `isApiError` seam. Read the `app/` pair whenever the diff touches `app/`, plus

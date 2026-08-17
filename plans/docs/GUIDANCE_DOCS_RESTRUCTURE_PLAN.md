@@ -490,7 +490,7 @@ one way.
 Sequenced after this PR merges: the Concertable-side pointers get rewritten once, against the final
 structure, instead of twice.
 
-### Phase 6 — make consultation non-optional, because triage is not a guarantee
+### Phase 6 — make consultation non-optional, because triage is not a guarantee — DONE (all three tiers; deployment is Phase 6a)
 
 **Added 2026-08-17, after a live failure.** The plan already names the risk — a skill "applies **only if
 it gets invoked**", and the tier table's guarantee column says exactly that. Its answer was *triage*: put
@@ -545,7 +545,7 @@ standard, not in a blocker. Gating everything is how a gate gets switched off.
 skill pointers must not merge before the mechanism that makes those skills fire, or the window between
 them is exactly the incident above. Phase 6 rides the same PR.
 
-### Phase 6b — `.agents`-first plugins ship the standard AND its enforcement, to both tools
+### Phase 6b — `.agents`-first plugins ship the standard AND its enforcement, to both tools — DONE
 
 **Decided 2026-08-17, and it supersedes how Phase 6's router is currently wired.** Two harnesses are in
 daily use here, Codex at least as much as Claude, so anything Claude-only is the wrong primary. Verified

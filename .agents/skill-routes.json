@@ -40,6 +40,24 @@
       "skills": ["persistence", "multitenancy"]
     },
     {
+      "path": "Seeder\\.cs$",
+      "skills": ["seeding"],
+      "note": "The rule whose violation is silent and expensive: a seeder may only write what production code writes directly. If the only production write is a handler reacting to an event, drive the event. The forbidden-table roster is api/agents/SEEDING_CONVENTIONS.md."
+    },
+    {
+      "path": "Validators?\\.cs$",
+      "skills": ["validation"]
+    },
+    {
+      "path": "Module\\.cs$",
+      "skills": ["module-structure"]
+    },
+    {
+      "path": "AppHost[^/]*/Program\\.cs$",
+      "skills": ["microservice-boundaries"],
+      "note": "A data service WaitFor-ing another data service is the bug to never introduce. The live topology is api/ARCHITECTURE.md."
+    },
+    {
       "path": "Controller\\.cs$",
       "skills": ["http-api", "result-terminals"]
     },

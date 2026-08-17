@@ -136,6 +136,45 @@ class DocsReachabilityTests(unittest.TestCase):
         self.assertEqual([], report["errors"])
         self.assertEqual(2, len(report["warnings"]))
 
+    def test_test_project_without_an_agents_md_is_an_error(self):
+        self.write("CLAUDE.md", "@AGENTS.md\n")
+        self.write("AGENTS.md", "# Root\n")
+        self.write(
+            "api/Svc/tests/Svc.UnitTests/Svc.UnitTests.csproj",
+            "<Project><PropertyGroup><IsTestProject>true</IsTestProject></PropertyGroup></Project>\n",
+        )
+
+        report = repository_report(self.root)
+
+        self.assertEqual(1, len(report["errors"]))
+        self.assertIn("Svc.UnitTests.csproj", report["errors"][0])
+
+    def test_test_project_with_the_stub_pair_is_clean(self):
+        self.write("CLAUDE.md", "@AGENTS.md\n")
+        self.write("AGENTS.md", "# Root\n")
+        self.write(
+            "api/Svc/tests/Svc.UnitTests/Svc.UnitTests.csproj",
+            "<Project><PropertyGroup><IsTestProject>true</IsTestProject></PropertyGroup></Project>\n",
+        )
+        self.write("api/Svc/tests/Svc.UnitTests/AGENTS.md", "# Svc.UnitTests\n")
+        self.write("api/Svc/tests/Svc.UnitTests/CLAUDE.md", "@AGENTS.md\n")
+
+        report = repository_report(self.root)
+
+        self.assertEqual([], report["errors"])
+
+    def test_a_support_library_is_not_held_to_the_test_project_rule(self):
+        self.write("CLAUDE.md", "@AGENTS.md\n")
+        self.write("AGENTS.md", "# Root\n")
+        self.write(
+            "api/Svc/tests/Svc.Fixtures/Svc.Fixtures.csproj",
+            "<Project><PropertyGroup><IsTestProject>false</IsTestProject></PropertyGroup></Project>\n",
+        )
+
+        report = repository_report(self.root)
+
+        self.assertEqual([], report["errors"])
+
     def test_link_like_text_inside_a_fenced_block_is_not_a_reference(self):
         self.write("CLAUDE.md", "@AGENTS.md\n")
         self.write(

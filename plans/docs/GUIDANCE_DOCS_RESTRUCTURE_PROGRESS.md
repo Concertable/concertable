@@ -6,14 +6,14 @@
 - Also delivered by this ledger: roadmap item `docs/agent-standards`, now checked off
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-guidance-docs`
 - Branch: `Docs/GuidanceDocsRestructure`
-- PR: #637 — ready, label `skip-e2e`, **10 behind `origin/main`** as of the Phase 6b commit; update the
-  branch and rebuild before any enqueue. Updated for base currency twice on 2026-08-17: first from **69 behind** and `DIRTY`
-  (three doc conflicts resolved, below), then from 2 behind after platform-sync #645 merged — a clean
-  merge carrying only the `<ConcertablePlatformVersion>` bump `0.1.0-alpha.0.1055` → `0.1.0-alpha.0.1061`
-  across the five service `Directory.Packages.props`.
-- Shared repos: `Concertable/agent-standards` (7 process skills + the `skill_router` hook, `df35cea`) and `tomjseery/dotagents` (29 generic — 20 .NET + 9 TS/React — synced to `~/.agents/skills/`), cloned at `C:\Users\TommySeery\source\repos\{agent-standards,dotagents}`
+- PR: #637 — ready, label `skip-e2e`, **current with `origin/main`** (0 behind as of the Phase 6 tier-3
+  commit). Updated for base currency three times on 2026-08-17: from **69 behind** and `DIRTY` (three doc
+  conflicts resolved, below), from 2 behind after platform-sync #645 merged — a clean merge carrying only
+  the `<ConcertablePlatformVersion>` bump `0.1.0-alpha.0.1055` → `0.1.0-alpha.0.1061` across the five
+  service `Directory.Packages.props` — and from 10 behind at `2b04d57e2`.
+- Shared repos: `Concertable/agent-standards` (7 process skills + the `skill_router` hook, `262564f`) and `tomjseery/dotagents` (29 generic — 20 .NET + 9 TS/React — synced to `~/.agents/skills/`), cloned at `C:\Users\TommySeery\source\repos\{agent-standards,dotagents}`
 - Dependency/package gates: no consumer migration to do, but this PR **will** trigger publish + platform sync — `publish-packages.yml` triggers on the coarse `paths: api/**`, which this branch's `api/**` markdown matches. MinVer republishes and a `chore/platform-sync-*` PR opens; non-breaking (no published type changed), so it should auto-merge green. Follow it to green anyway — whoever merges owns the sync.
-- Last reconciled: 2026-08-17 against `agent-standards` `df35cea` (pushed) and a live Codex 0.147.0 session; `origin/main` last matched at `ab6d560c1`, now 10 behind
+- Last reconciled: 2026-08-17 against `agent-standards` `262564f` (pushed) and a live Codex 0.147.0 session; `origin/main` matched at the tier-3 commit (0 behind)
 
 **Scope changed 2026-08-17: this is no longer a docs PR.** It now carries build behaviour
 (`api/TestConventions.targets` gating every test project) and a PreToolUse hook, because Phase 6 must land
@@ -28,11 +28,47 @@ only this system's roster of real types, contexts, clients, tables and pins. The
 `api/**` prompt went from **1,429 lines to 246**, and on an `app/**` prompt from **786 to 151**; a unit-test
 project no longer pulls in 80 lines and an E2E project no longer pulls in 37.
 
-What remains is Phase 3c (the markdown outside the conventions folders), Phase 4 (the duplication rows that
-still have >1 home, chiefly seeding across `api/AGENTS.md` and `SEEDING_CONVENTIONS.md`), and the deferred
-auto-load thinning of root `AGENTS.md`.
+Enforcement is now complete at all three tiers: the build fails a misnamed or misclassified test project, the
+write-time router blocks the first write into a routed path, every test project's stub opens with the
+unit-vs-integration decision, and `/review` resolves the standards it owes from the same table. What remains
+is Phase 6a's deployment (Tommy's to run), Phase 3c (the markdown outside the conventions folders), Phase 4
+(the duplication rows that still have >1 home, chiefly seeding across `api/AGENTS.md` and
+`SEEDING_CONVENTIONS.md`), and the deferred auto-load thinning of root `AGENTS.md`.
 
 ## Done
+
+**Phase 6 tier 3 — the stub states the tier, the gate makes it unskippable, and the review reads the
+same table** (`agent-standards` `262564f`, this PR)
+
+- **The route table now answers after the fact, not only at write time.** `skill_router.py --skills-for
+  <paths>` (paths as args or on stdin, `--json` for a caller) resolves changed files through the same
+  matcher the hook blocks with, prints the skills those files oblige a reader to load, and reports any
+  deny pattern already sitting in the tree. Path/content matching and the deny scan moved into shared
+  functions, so a review can never resolve a path differently from the block that fired on it. Authored
+  in `agent-standards` and re-vendored here (hash check green); its tests there went 13 → 20.
+- **`review` Step 2 runs it.** The hand-maintained list of 24 skill names is gone — a list in a review
+  skill is the same discretion the incident exposed, one indirection later. `incremental-review` and
+  `big-review` inherit it. A `DENY PATTERN HIT` line is stated to be a confirmed finding, not a hint.
+  **The table is narrower than that list was**, so four rows were added where a miss is expensive and
+  silent — `*Seeder.cs` → `seeding`, `*Validator(s).cs` → `validation`, `*Module.cs` → `module-structure`,
+  `*AppHost*/Program.cs` → `microservice-boundaries` (28/29/20/6 files) — and Step 2 states the table is
+  the floor, not the ceiling: a skill you had to *remember* is a missing row, not a paragraph to re-add.
+- **Every test project now states its tier at the point of use, and `docs_reachability.py` requires it.**
+  17 test projects had no `AGENTS.md` at all — including `Concertable.B2B.ArchitectureTests`, both Auth
+  suites, Payment's integration suite and five `Concertable.Shared` unit suites — which is the hole that
+  made the `@`-import argument moot in the incident: there was nowhere for a pointer to live at the moment
+  the tier was being chosen. All 17 pairs created; the gate errors on any `IsTestProject == true`
+  directory without one (the existing sibling rule supplies the `CLAUDE.md` half, so it is stated once).
+- **Every unit and integration stub now leads with the decision, not the pointer** — "a test that needs a
+  host, HTTP, a container or a database belongs in `*.IntegrationTests`", and its converse. The four
+  `*.IntegrationTests.Fixtures` stubs got the honest version instead: a support library declaring
+  `<IsTestProject>false</IsTestProject>`, which the earlier sweep had wrongly labelled a suite.
+- Verified: hook suite **91 passed** (was 88), `agent-standards` **20 passed**, `sync-generated -Check`
+  and `vendor-hooks -Check` clean, `docs_reachability.py` **0 errors / 23 warnings** (all `plans/`).
+- **Gap found, not closed here:** no Concertable workflow runs the Python hook tests, so the vendored-hook
+  drift test and the route-table test only run when someone runs them locally. Adding a workflow would put
+  `.github/workflows/**` in the diff, which the merge gate treats as security-sensitive and would re-stale
+  #637's markers — so it is a follow-up, listed below rather than smuggled in.
 
 **Phase 6b — one authored hook, two delivery routes, both harnesses wired** (`agent-standards` `df35cea`,
 this PR)
@@ -195,17 +231,13 @@ wrong assertion library and wrote no sibling `AGENTS.md`, with `unit-testing` an
 both installed, described and listed. Neither fired; the follow-up `/review` repeated the blind spot and
 returned clean. Merging the thinning before the enforcement opens exactly that window.
 
-Order of work, all on this branch. **Tiers 1 and 2 and Phase 6b are in** — the build gate
-(`f99fa8c2f`: `api/TestConventions.targets` + `BannedSymbols.UnitTests.txt`, imported from all 9
-`Directory.Build.targets`, zero migration, tier resolution and both gates verified), and the router, now
-authored in `agent-standards`, vendored here with a hash check, and wired for **both** harnesses. What
-remains of Phase 6 is tier 3 and deployment.
+**All three Phase 6 tiers and Phase 6b are in** — the build gate (`f99fa8c2f`:
+`api/TestConventions.targets` + `BannedSymbols.UnitTests.txt`, imported from all 9
+`Directory.Build.targets`, zero migration, tier resolution and both gates verified), the router (authored
+in `agent-standards`, vendored here with a hash check, wired for **both** harnesses), and tier 3 above.
+**What remains of Phase 6 is deployment, and it needs Tommy.**
 
-1. **Phase 6 tier 3** — test-project stubs lead with the unit-vs-integration decision rather than a
-   pointer, and `docs_reachability.py` requires the `AGENTS.md`/`CLAUDE.md` pair in every `IsTestProject`
-   directory. Also wire `/review` to read `skill-routes.json`, so a review cannot miss what its author was
-   required to load — the second half of the original failure.
-2. **Phase 6a — skill deployment.** `agent-standards`' 7 process skills load in **no session today**
+1. **Phase 6a — skill deployment.** `agent-standards`' 7 process skills load in **no session today**
    (`installed_plugins.json` has only stripe/clangd/rust-analyzer; `known_marketplaces.json` only
    `claude-plugins-official`), so Phase 3a delivered 29 skills, not 36. `dotagents/.agents/deploy-skills.ps1`
    (`dotagents` `71de4b5`) junctions canonical → `~/.agents/skills`; `-WhatIf` is clean at 46 skills, zero
@@ -220,20 +252,21 @@ remains of Phase 6 is tier 3 and deployment.
    `c153697` (`prune-worktrees` +34, `worktree` +17 — a junction redeploy without checking direction first
    would have destroyed both). Installed and canonical now agree on all 36; 3 canonical skills
    (`last-conversation`, `recents`, `search`) remain uninstalled.
-3. **Approve the new Codex hook once** (Tommy, ~5 seconds, in a Codex session in this repo). Codex trusts a
+2. **Approve the new Codex hook once** (Tommy, ~5 seconds, in a Codex session in this repo). Codex trusts a
    project hook by hash per file per path, so the new `PreToolUse` entry in `.codex/hooks.json` is inert
    until approved, and the worktree is trusted separately from the main checkout. Nothing else waits on it.
-4. **Then Tommy's own read of the PR**, then merge. Paused: Tommy — his sign-off is required and the clean
+3. **Then Tommy's own read of the PR**, then merge. Paused: Tommy — his sign-off is required and the clean
    automated `/review` is not it; resume on his go-ahead once the above is in. Note the review markers are
    deliberately stale: real reviewable code (build gate, router, vendoring) landed after them.
 
-5. **Land this PR** once the above is in. Routed to `/merge`, not `/merge-docs`: the diff carries one `.cs` file
+4. **Land this PR** once the above is in. Routed to `/merge`, not `/merge-docs`: the diff carries one `.cs` file
    (`ModuleBoundaryTests.cs` — comment and `.Because(...)` strings repointed by the
    `CONVENTIONS.md` → `MODULE_STRUCTURE.md` rename), which `merge-docs` hard-refuses, so the queue's
    build gate applies. Review clean (0 open findings), local = remote = PR head, `skip-e2e` label correct
-   (no positive trigger — ~72 markdown files, three Python hook files, agent wiring JSON, one `.cs`
+   (no positive trigger — ~110 markdown files, three Python hook files, agent wiring JSON, one `.cs`
    comment/string change; no UI flow, HTTP/gRPC contract, published shape or auth behaviour). **Branch is
-   10 behind `origin/main` as of this entry — update and rebuild before enabling auto-merge.**
+   current with `origin/main` as of this entry — re-check `git rev-list --count HEAD..origin/main` at
+   enqueue time and update if it has moved.**
    The gate hook is satisfied: its `review_only` whitelist covers a marker-to-head range touching
    `reviews/` alone, which is this branch's exact shape once the markers sit at the ledger commit.
    Enqueue with `gh pr merge 637 --merge --auto` once the exact-head checks are green, poll for
@@ -241,20 +274,20 @@ remains of Phase 6 is tier 3 and deployment.
    C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-guidance-docs -PullRequest 637
    -PlanManaged`, then follow the generated `chore/platform-sync-*` PR to green (this branch's `api/**`
    markdown matches `publish-packages.yml`'s coarse `paths:`; non-breaking, so it should auto-merge).
-6. **Phase 3c — the 10,011 lines of markdown outside the conventions folders.** Most is correctly-placed domain
+5. **Phase 3c — the 10,011 lines of markdown outside the conventions folders.** Most is correctly-placed domain
    knowledge and stays untouched; six items need a disposition, listed in the plan's Phase 3c table.
    `app/README.md` is still the unmodified Vite scaffold, and `notes/Concert-Rust-Analysis.md` (444) is
    referenced by nothing.
-7. **Phase 4 — collapse the remaining duplication rows to one home each.** Seeding is the big one: the
+6. **Phase 4 — collapse the remaining duplication rows to one home each.** Seeding is the big one: the
    `seeding` skill now owns the rule and `SEEDING_CONVENTIONS.md` the inventory, but `api/AGENTS.md:28–47`
    still restates 20 lines of it inline. Resolve under meta-rule 7 by deciding import-or-pointer — that
    summary exists precisely *because* `SEEDING_CONVENTIONS.md` is not `@`-imported. Same for
    `api/AGENTS.md`'s "shared code is the intersection" section, which `microservice-boundaries` now states
    generically.
-8. **Make the 7 process skills concrete, and execute the settled merge ruling on their side.** They were
+7. **Make the 7 process skills concrete, and execute the settled merge ruling on their side.** They were
    written generic for a shared repo; the `merging` skill must lose the confirm-loop body and keep the rule,
    with the executable `.agents/skills/merge/SKILL.md` owning the procedure. Same for `pr-preflight`.
-9. **Promotion candidates for the shared skills**, all found while cutting against them — none blocking:
+8. **Promotion candidates for the shared skills**, all found while cutting against them — none blocking:
    - **FIXED (`dotagents` `daef94d`)** — `persistence` taught that an awaiting page projection "still
      constructs its page by hand", the practice `main` refactored away from in `OpportunityMapper`. The
      10-commit merge in this turn surfaced it: the owning home was teaching the superseded rule while the
@@ -300,9 +333,12 @@ remains of Phase 6 is tier 3 and deployment.
      Not on this branch: #637 is enqueue-ready and any further push re-stales its review; the cut also
      rewrites `Concertable.Testing.E2E/AGENTS.md`, which #637 already edits. Do it in the continuation
      worktree once #637 lands.
-10. **Deferred to its own PR:** auto-load thinning of root `AGENTS.md` (the 86 merge lines and 32 Docker lines
+9. **Deferred to its own PR:** auto-load thinning of root `AGENTS.md` (the 86 merge lines and 32 Docker lines
    that `/merge` and `scripts/e2e.ps1` already automate), the analyzer push-down plus
-   `EnforceCodeStyleInBuild`.
+   `EnforceCodeStyleInBuild`, and **a CI job running the Python hook tests** — nothing in
+   `.github/workflows/` runs them today, so every hook gate here is only as live as the last person who ran
+   it locally (`agent-standards` already has this; Concertable does not). Its own PR because touching
+   `.github/workflows/**` pulls the merge gate's security-marker requirement in with it.
 
 ## Also Tommy's, not blocking
 

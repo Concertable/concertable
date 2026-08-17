@@ -9,6 +9,7 @@ REFERRER_NAMES = {"AGENTS.md", "CLAUDE.md", "SKILL.md"}
 CLAUDE_BODY = "@AGENTS.md"
 IGNORED_DIR_NAMES = {"node_modules", "bin", "obj", "dist", ".git"}
 WORKING_DOC_DIRS = {"plans", "reviews"}
+TEST_PROJECT_PATTERN = re.compile(r"<IsTestProject>\s*true\s*</IsTestProject>", re.IGNORECASE)
 LINK_PATTERN = re.compile(r"\]\(([^)\s]+)\)")
 FENCE_PATTERN = re.compile(r"^\s*(?:```|~~~)", re.MULTILINE)
 AT_IMPORT_PATTERN = re.compile(r"(?<![\w@])@([\w./-]+\.md)")
@@ -101,6 +102,33 @@ def sibling_errors(root):
     return errors
 
 
+def test_project_errors(root):
+    """A test project with no stub at all is the state that made the tier question skippable.
+
+    The incident folder had no `AGENTS.md`, so there was nowhere for a pointer or an import to live and
+    nothing to read at the moment the tier was being chosen. `sibling_errors` then adds the CLAUDE.md
+    half, so this only has to require the AGENTS.md.
+    """
+    errors = []
+    for project in sorted(root.rglob("*.csproj")):
+        relative = project.relative_to(root)
+        if ignored(relative) or hidden(relative):
+            continue
+        try:
+            body = project.read_text(encoding="utf-8-sig", errors="replace")
+        except OSError:
+            continue
+        if not TEST_PROJECT_PATTERN.search(body):
+            continue
+        if not (project.parent / "AGENTS.md").is_file():
+            errors.append(
+                f"{repo_path(root, project)}: declares <IsTestProject>true</IsTestProject> but its "
+                "directory has no AGENTS.md - every test project states its tier at the point of use "
+                "(a test needing a host, HTTP or a database is an integration test, not a unit test)"
+            )
+    return errors
+
+
 def reachable_docs(root):
     files = all_md_files(root)
     edges = {path.resolve(): references_in(path) for path in files}
@@ -153,7 +181,7 @@ def dead_links(root):
 
 def repository_report(root):
     dead_errors, dead_warnings = dead_links(root)
-    errors = sibling_errors(root) + orphan_errors(root) + dead_errors
+    errors = sibling_errors(root) + orphan_errors(root) + test_project_errors(root) + dead_errors
     return {"errors": errors, "warnings": dead_warnings}
 
 
