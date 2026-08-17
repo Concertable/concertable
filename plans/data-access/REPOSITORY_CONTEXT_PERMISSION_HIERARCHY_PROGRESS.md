@@ -3,26 +3,31 @@
 - Plan: `plans/data-access/REPOSITORY_CONTEXT_PERMISSION_HIERARCHY_PLAN.md`
 - Roadmap: `plans/data-access/DATA_ACCESS_ROADMAP.md`
 - Roadmap item: `data-access/repository-context-permission-hierarchy`
-- Worktree: `C:/Users/TommySeery/source/repos/Concertable/.worktrees/Fix-signup-navigation-race`
-- Branch: `Fix/SignupNavigationRace`
-- PR: [#626](https://github.com/Concertable/concertable/pull/626) (draft; replacement exact-head CI pending)
-- Verified work head: `eef6e939f19ce0b239a9be8c5564549cf7025c1d`
-- Starting remote head: `7361b99b18e10d042d6c4ebd94af02bd8204df52`
-- Pushed range: `7361b99b18e10d042d6c4ebd94af02bd8204df52..eef6e939f19ce0b239a9be8c5564549cf7025c1d`
-- Remote and PR head: `eef6e939f19ce0b239a9be8c5564549cf7025c1d` (verified after work-head push)
+- Worktree: `C:/Users/TommySeery/source/repos/Concertable/.worktrees/rpc`
+- Branch: `Refactor/RepositoryPermissionContraction`
+- PR: not opened
+- Starting head: `95305c7a909d48a703ab572c2a153fe74d2d4daa`
 - Consumer PR: [#561](https://github.com/Concertable/concertable/pull/561) merged as `249dc8a9df8d9b81271cd2250a01ecf086e97586`.
 - Dependency/package gate: satisfied. Additive producer PR #590 merged as `59fe60e978affe23bcaf53823151eab2acda8ba0`, published platform `0.1.0-alpha.0.1007`, and platform-sync PR #592 merged green as `38e3d8548f10f3ab7a4a951b7c4ce961ec21c863`. Current `origin/main` pins `0.1.0-alpha.0.1009`, which includes the additive DataAccess API.
 - Consumer publication/sync gate: satisfied. Publication run `31976777846` passed and platform-sync
   PR [#623](https://github.com/Concertable/concertable/pull/623) merged green as
   `d5669a836c4d7fd9bb4d15e9c05f0a71f0e9f40c`.
-- Last reconciled: 2026-08-17 against `origin/main` at `5951fa4f7`.
+- Follow-up gate: satisfied. PR [#626](https://github.com/Concertable/concertable/pull/626) merged as
+  `a790708f3d0b087e4f8f2c9c8d0362d91a90a8bc`; publication run `31983176063` published
+  `0.1.0-alpha.0.1044`, and platform-sync PR
+  [#629](https://github.com/Concertable/concertable/pull/629) merged green as
+  `95305c7a909d48a703ab572c2a153fe74d2d4daa`.
+- Last reconciled: 2026-08-17 against `origin/main` at `95305c7a9`.
 
 ## Current state
 
-The repo-wide consumer migration merged through #561 and is published and platform-synced on main.
-It includes the Customer, B2B, and Payment repository
-and context migrations, the B2B context-stance naming correction, and the Conversations-owned
-participant projection required to preserve the module boundary.
+The repo-wide consumer migration and its signup/topology reliability follow-up are merged, published,
+and platform-synced on main. Phase 3 contraction is implemented in the short-path worktree: every
+source consumer now uses the final context-free repository arities, concrete-context access is declared
+locally where specialized queries require it, unused module write aliases are removed, and the shared
+legacy arities, facet implementation, protected read-context field, and compatibility-only tests are
+gone. Static verification is green; the branch must now reconcile newer main commits and use draft-PR
+CI for compilation because the local .NET runner repeatedly stalled without producing compiler output.
 
 The branch also carries two merge-queue fixes discovered while validating this work: the E2E reseeding
 host now dispatches seeded participant events in process, and the three Strict Mode SPA login routes
@@ -64,11 +69,12 @@ topology contract test, and both signup flows attach their registration wait bef
 
 ## Next Steps
 
-1. Push this checkpoint transport and require green replacement exact-head PR CI.
-2. Mark #626 ready, apply `full-e2e`, enqueue, and follow merge-group,
-   publication, and platform-sync gates to green.
-3. Create the legacy-contraction worktree from current main and reconcile its owning ledger before
-   removing the published compatibility surface.
+1. Commit the verified contraction, reconcile the branch with current `origin/main`, and rerun the
+   legacy grep, concrete-context ownership, plan-graph, and diff gates.
+2. Push the work head, open a draft PR, checkpoint the remote head in this ledger, and require exact-head
+   CI to supply the shared/B2B/Customer/Payment compile and test evidence unavailable locally.
+3. After the runtime/package contraction lands and platform sync is green, update the durable DataAccess
+   and B2B hierarchy guidance on a separate docs branch, then complete the plan closeout gates.
 
 ## Completed work
 
@@ -145,6 +151,17 @@ topology contract test, and both signup flows attach their registration wait bef
 - B2B topology tests passed 7/7 after adding the B2B `SendEmailCommand` queue contract.
 - B2B and Customer UI E2E projects built in Release with 0 errors after moving both registration waits
   ahead of their sign-up clicks.
+- Follow-up exact-head CI run `31980425847` and full-E2E merge-group run `31981377623` passed on PR
+  #626 before it merged as `a790708f3`.
+- Follow-up publication run `31983176063` published `0.1.0-alpha.0.1044`; platform-sync PR #629 passed
+  exact-head and merge-group CI and merged green as `95305c7a9`.
+- Fresh contraction worktree graph reported 0 errors and 0 warnings at `95305c7a9`.
+- Phase 3 source contraction removed every legacy repository-arity, `base.context`, facet, and protected
+  read-context-field match across `api/**/*.cs`; every production repository that uses a concrete
+  `context` now owns an explicit concrete `DbContext` field, and `git diff --check` passed.
+- Local restore/test and no-restore test attempts repeatedly stalled without compiler or test output;
+  their orphaned processes were stopped and no failure result was inferred. Draft-PR CI is the required
+  compile/test gate for the exact committed head.
 - Docker health passed before the focused artist-signup rerun. The fresh local stack could not reach
   the scenario because the long plan-worktree path caused Windows to reject
   `Microsoft.Data.SqlClient.SNI.dll` with `0x800700CE`; exact-head and merge-group CI remain the valid
