@@ -28,21 +28,15 @@ public `*.Contracts` DTO. For example, Customer Concert's `IConcertReadRepositor
 the module contract `ConcertDto`, so its persistence adapter materializes a cross-module contract
 directly, while neighbouring repositories return `ConcertDetails`, entities, or persisted read models.
 
-The existing DTO-versus-Response rule in `api/AGENTS.md` defines service and HTTP outputs but does not
-define what a repository/query abstraction may return, who owns an efficient database projection, or
-how to distinguish an ephemeral LINQ projection from an event-fed persisted read model. As a result,
-`Dto`, `Details`, `Projection`, `ReadModel`, and `Entity` communicate different things in different
-areas, and dependency direction, mapping responsibility, tracking expectations, and public-contract
-coupling are decided locally rather than consistently.
+The repository-output and DTO rules in `api/agents/CODE_CONVENTIONS.md` now define the intended naming,
+ownership, and mapping boundary. Existing repositories predate that standard, however, so `Dto`,
+`Details`, `Projection`, `ReadModel`, and `Entity` still communicate different things in different areas,
+and dependency direction, tracking expectations, and public-contract coupling remain inconsistent.
 
-**Resolves when:** investigate the repository and query shapes across every backend service, establish
-and document one codebase standard for persistence entities, event-maintained read models, ephemeral
-query projections, application DTOs, module Contracts DTOs, and API Responses/Requests, including
-their ownership, allowed dependency directions, naming/location, mapping boundary, and absence
-semantics. Validate the proposed rule against representative read, write, paginated, cross-module,
-and performance-sensitive queries before migrating code. Then inventory and migrate every violation
-in coherent service/package cut-overs, and add practical architecture tests or mechanical guards for
-the parts of the standard that can be enforced automatically.
+**Resolves when:** inventory and migrate every violation in coherent service/package cut-overs, validate
+the standard against representative read, write, paginated, cross-module, and performance-sensitive
+queries, and add practical architecture tests or mechanical guards for the parts that can be enforced
+automatically.
 
 ### Repository bases repeat CRUD, and read no-tracking is a bypassable `Query` convention
 
