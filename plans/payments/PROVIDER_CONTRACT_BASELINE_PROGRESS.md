@@ -5,10 +5,10 @@
 - Roadmap item: `payments/provider-contract-baseline`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\payments_provider-contract-baseline`
 - Branch: `Feature/payments_provider-contract-baseline`
-- PR: #597 — https://github.com/Concertable/concertable/pull/597 — open; reviewed work head `487e19833273c28a9875199069c080c0af9494b2` is verified at the local, remote-tracking, and PR refs; exact-head CI is required at the final checkpoint-transport head; auto-merge is disabled and the PR is not queued
-- Review readiness: **REVIEW COMPLETE — EXACT-HEAD CI REQUIRED** — the six original review findings remain resolved; incremental implementation and security review is current through mapper/current-main head `cb2d41c30c32304b951ac63d4b9823fe4bcdfcd2` with no new findings
-- Dependency/package gates: Phases 1 through 4 are locally complete; the production/live-mode Stripe account has no webhook endpoint, so future deployment is locked to `2025-01-27.acacia` and must create the endpoint at the actual Payment Web URL while installing its signing secret; compatibility is anchored to published `0.1.0-alpha.0.1009`; the branch carries platform pin `0.1.0-alpha.0.1052`
-- Last reconciled: 2026-08-17 against open PR #597 remote head `e1186d49`, reviewed mapper/current-main head `cb2d41c3`, published Payment packages `0.1.0-alpha.0.1009`, and current `origin/main` `b6ba59f3`; current main and platform pin `.1052` are incorporated through merge `cb2d41c30c32304b951ac63d4b9823fe4bcdfcd2` with zero commits behind
+- PR: #597 — https://github.com/Concertable/concertable/pull/597 — open; reviewed code head `862e4722c484ad44ef08d5017b39395696258b3e` is verified at the local, remote-tracking, and PR refs; exact-head CI is required at the final checkpoint-transport head; auto-merge is disabled and the PR is not queued
+- Review readiness: **REVIEW COMPLETE — EXACT-HEAD CI REQUIRED** — all eight review findings are resolved; incremental implementation and security review is current through reviewed code head `862e4722c484ad44ef08d5017b39395696258b3e` with no open findings
+- Dependency/package gates: Phases 1 through 4 are locally complete; the production/live-mode Stripe account has no webhook endpoint, so future deployment is locked to `2025-01-27.acacia` and must create the endpoint at the actual Payment Web URL while installing its signing secret; compatibility is anchored to published `0.1.0-alpha.0.1009`; the branch carries platform pin `0.1.0-alpha.0.1055`
+- Last reconciled: 2026-08-17 against open PR #597 reviewed code head `862e4722`, published Payment packages `0.1.0-alpha.0.1009`, and current `origin/main` `9205e82d`; current main and platform pin `.1055` are incorporated through merge `c9dac0b8d` with zero commits behind
 
 ## Current state
 
@@ -29,27 +29,28 @@ whenever legacy extension code is edited.
 Protobuf operation-error kinds now translate through one private frozen table exposed as the
 receiver-owned `ToErrorKind()` extension; unknown values map to no internal kind and therefore retain
 the existing fail-closed contract-mismatch result.
+Provider-neutral observations retain the closed provider failure classification until one frozen
+mapping translates it to a public Concertable failure code. Undefined operation states and provider
+failure classifications return typed transition rejections, and state and failure validation are
+separate evaluator steps.
 
-Phases 1 through 4 and all six review findings are complete, reviewed, and pushed through
-`ce43a2283c26416ca60593aefca35a79d2159698`. The branch resolves
+Phases 1 through 4 and all eight review findings are complete. The reviewed code is pushed through
+`862e4722c484ad44ef08d5017b39395696258b3e`. The branch resolves
 NAT1 at `0686b7f52c68ab492ba7683fa5fee895096785da`, NAT2 at
 `19e194c9eaefee2734718a298a127f414f75af6c`, BUG1 at
 `055c6bfd868484e847f907926b5da7b6dea55ff9`, SEC1 at
 `7b7561fa43b57ca004d082ebd207242f0e4499fd`, NAT3 at
 `c4140cd3bb42a8a0f13beb652b7590f98691a63d`, and NAT4 at
-`6cc1d59d5281a141f72f9b4f6ddd233ea46da233`. For Phase 4,
+`6cc1d59d5281a141f72f9b4f6ddd233ea46da233`; NAT5 and NAT6 are resolved at
+`862e4722c484ad44ef08d5017b39395696258b3e`. For Phase 4,
 the checked-in generator captured 2,073 Contracts signatures, 1,161 Client signatures, 13 message
 URNs, and the `payment.proto` descriptor set from published `0.1.0-alpha.0.1009`. Candidate tests
 require those public APIs, URNs, protobuf messages/enums/fields/services/RPCs, field numbers, types,
 cardinality, and request/response types to remain an additive subset. A frozen consumer project
 compiles against the exact published Contracts and Client packages, and architecture tests enforce
 provider/consumer purity across the published assemblies and deployable Payment projects. The local
-branch cleanly incorporates current `origin/main` `07624709d873dd0aecc934e59bbc45f78b0c844b`;
-the pushed head
-`f56c80fde78c3cc99016bf65a122de250e5adcc3` passed exact-head CI run 31956570866.
-The branch also cleanly incorporates current `origin/main`
-`6d577792c940d18546e20c4ad45c3c43a96e0850` through reviewed merge commit
-`01171e1b21b8a08a273eafb3d3f99859081756e2`.
+branch cleanly incorporates current `origin/main` `9205e82df4359df8ddf8dfdace07b4aa09b6d186`
+through merge `c9dac0b8d` and is zero commits behind.
 
 `api/Concertable.Payment/PROVIDER_CONTRACT.md` now owns
 the provider-product matrix, operation/attempt identity, normalization and transition tables,
@@ -71,8 +72,8 @@ template because current Payment runtime also handles `payment_intent.payment_fa
 
 PR #552 merged at `33f07c47a497586324edacdcfc10321a9d3f02ee`, and its additive Payment
 contracts are present after merging current `origin/main`. PR #597 is open and no longer draft at
-reviewed head `85d85aab1c6e3ef448c792cc9cad7c37639a8ae9`; exact-head CI is green. NAT1,
-NAT2, BUG1, SEC1, NAT3, and NAT4 are resolved locally. The historical
+reviewed code head `862e4722c484ad44ef08d5017b39395696258b3e`; exact-head CI is required at
+the final checkpoint-transport head. NAT1 through NAT6, BUG1, and SEC1 are resolved. The historical
 `Refactor/GroupStripeWebhookHandling` branch is superseded evidence only.
 
 Phase 2 adds the provider-neutral operation identity, session kind, normalized state, terminal/retry
@@ -91,12 +92,18 @@ authorization, both setup kinds, and refund.
 
 ## Next Steps
 
-Commit this domain-boundary correction, run incremental implementation and security review over the
-new commit, push the reviewed checkpoint, verify local, remote-tracking, and PR head equality, then
-require exact-head CI to pass at that final head. Keep PR #597 open with auto-merge disabled.
+Commit and push this review/ledger checkpoint, verify local, remote-tracking, and PR head equality,
+then require exact-head CI to pass at that final checkpoint-transport head. Keep PR #597 open with
+auto-merge disabled; merge only after Tommy reviews and explicitly approves it.
 
 ## Completed work
 
+- Resolved NAT5 and NAT6 by rejecting undefined operation states before disposition lookup and by
+  retaining the closed provider failure classification through domain validation and deterministic
+  frozen failure-code mapping.
+- Split the former broad context validation into explicit state and failure validation extensions and
+  added direct provider-neutral regressions for malformed states, malformed/incompatible failure
+  classifications, and the safe declined result.
 - Separated raw Stripe normalization from the provider-neutral payment transition evaluator and added
   direct tests that invoke the reusable domain policy without Stripe types.
 - Replaced the nullable internal session discriminator with a closed operation context for payment,
@@ -172,9 +179,17 @@ require exact-head CI to pass at that final head. Keep PR #597 open with auto-me
 
 ## Verification
 
-- Domain-boundary correction: Payment UnitTests built with 0 warnings and 0 errors; the focused
-  provider-contract suite passed 119 of 119; the complete Payment unit suite passed 482 of 482; and
-  focused Domain and UnitTests formatter verification passed.
+- Reviewed domain-boundary correction: Payment UnitTests built with 0 warnings and 0 errors; the
+  focused provider-contract suite passed 124 of 124; the complete Payment unit suite passed 487 of
+  487; focused Domain and UnitTests formatter verification passed; plan graph and whitespace checks
+  are required again at the checkpoint commit.
+- Incremental native and security review covered `cb2d41c3..862e4722`, excluding incoming
+  `origin/main` changes except merge resolution. NAT5 and NAT6 are resolved at `862e4722`; no findings
+  remain open across correctness, security, microservice isolation, module boundaries, seeding, C#
+  conventions, or changed-path test coverage.
+- Reviewed code push: starting remote/PR head `c7d70ab9fc9ba01519f6d35925301d2c7ac1c262`;
+  pushed range `c7d70ab9..862e4722`; local code head, remote-tracking ref, and PR #597 head all verified
+  at `862e4722c484ad44ef08d5017b39395696258b3e` with auto-merge disabled.
 - Plan-managed deterministic-mapper work push: starting remote/PR head
   `e1186d498311c396a5460d6788dd74d04441e3f9`; pushed range `e1186d49..487e1983`; local work head,
   remote-tracking ref, and PR #597 head all verified at `487e19833273c28a9875199069c080c0af9494b2`.
@@ -336,8 +351,10 @@ require exact-head CI to pass at that final head. Keep PR #597 open with auto-me
 
 ## Review status
 
-**REVIEW COMPLETE — PUBLISH AND EXACT-HEAD CI REQUIRED.** Incremental implementation and security
-review through `cb2d41c30c32304b951ac63d4b9823fe4bcdfcd2` found no new issues. The full implementation and security review for
+**REVIEW COMPLETE — CHECKPOINT AND EXACT-HEAD CI REQUIRED.** Incremental implementation and security
+review is current through `862e4722c484ad44ef08d5017b39395696258b3e`. The provider-neutral
+transition-policy review found NAT5 and NAT6; both are resolved at that head, and the follow-up review
+found no remaining issue. The full implementation and security review for
 [PR #597](https://github.com/Concertable/concertable/pull/597) covered
 `e861f3642cea14e919d203604a4e9e7d00bcced8..85d85aab1c6e3ef448c792cc9cad7c37639a8ae9`
 recorded NAT1, NAT2, BUG1, and SEC1. NAT1 is resolved at
@@ -346,9 +363,10 @@ recorded NAT1, NAT2, BUG1, and SEC1. NAT1 is resolved at
 `055c6bfd868484e847f907926b5da7b6dea55ff9`; SEC1 is resolved at
 `7b7561fa43b57ca004d082ebd207242f0e4499fd`; NAT3 is resolved at
 `c4140cd3bb42a8a0f13beb652b7590f98691a63d`; NAT4 is resolved at
-`6cc1d59d5281a141f72f9b4f6ddd233ea46da233`. Incremental review through that head found no additional
-finding across the microservice-isolation, module-boundary, seeding, convention, or security lenses.
-The branch is not merge-ready until the reviewed commits pass exact-head CI.
+`6cc1d59d5281a141f72f9b4f6ddd233ea46da233`; NAT5 and NAT6 are resolved at
+`862e4722c484ad44ef08d5017b39395696258b3e`. No finding remains open across the
+microservice-isolation, module-boundary, seeding, convention, or security lenses. The branch is not
+merge-ready until the checkpoint commit passes exact-head CI.
 
 The planning docs review through PR head `ccb1dd00585b7943a401166f3f8eb3237ed6d628` found no issues across
 accuracy, contradiction, document ownership, concision, dangling references, and followable
