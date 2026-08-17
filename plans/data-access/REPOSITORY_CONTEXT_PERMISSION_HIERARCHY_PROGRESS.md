@@ -3,26 +3,32 @@
 - Plan: `plans/data-access/REPOSITORY_CONTEXT_PERMISSION_HIERARCHY_PLAN.md`
 - Roadmap: `plans/data-access/DATA_ACCESS_ROADMAP.md`
 - Roadmap item: `data-access/repository-context-permission-hierarchy`
-- Worktree: `C:/Users/TommySeery/source/repos/Concertable/.worktrees/Fix-signup-navigation-race`
-- Branch: `Fix/SignupNavigationRace`
-- PR: [#626](https://github.com/Concertable/concertable/pull/626) (draft; replacement exact-head CI pending)
-- Verified work head: `eef6e939f19ce0b239a9be8c5564549cf7025c1d`
-- Starting remote head: `7361b99b18e10d042d6c4ebd94af02bd8204df52`
-- Pushed range: `7361b99b18e10d042d6c4ebd94af02bd8204df52..eef6e939f19ce0b239a9be8c5564549cf7025c1d`
-- Remote and PR head: `eef6e939f19ce0b239a9be8c5564549cf7025c1d` (verified after work-head push)
+- Worktree: `C:/Users/TommySeery/source/repos/Concertable/.worktrees/rpc`
+- Branch: `Refactor/RepositoryPermissionContraction`
+- PR: [#632](https://github.com/Concertable/concertable/pull/632) (ready, `full-e2e`, open and dequeued after merge-group failure)
+- Starting head: `95305c7a909d48a703ab572c2a153fe74d2d4daa`
 - Consumer PR: [#561](https://github.com/Concertable/concertable/pull/561) merged as `249dc8a9df8d9b81271cd2250a01ecf086e97586`.
 - Dependency/package gate: satisfied. Additive producer PR #590 merged as `59fe60e978affe23bcaf53823151eab2acda8ba0`, published platform `0.1.0-alpha.0.1007`, and platform-sync PR #592 merged green as `38e3d8548f10f3ab7a4a951b7c4ce961ec21c863`. Current `origin/main` pins `0.1.0-alpha.0.1009`, which includes the additive DataAccess API.
 - Consumer publication/sync gate: satisfied. Publication run `31976777846` passed and platform-sync
   PR [#623](https://github.com/Concertable/concertable/pull/623) merged green as
   `d5669a836c4d7fd9bb4d15e9c05f0a71f0e9f40c`.
-- Last reconciled: 2026-08-17 against `origin/main` at `5951fa4f7`.
+- Follow-up gate: satisfied. PR [#626](https://github.com/Concertable/concertable/pull/626) merged as
+  `a790708f3d0b087e4f8f2c9c8d0362d91a90a8bc`; publication run `31983176063` published
+  `0.1.0-alpha.0.1044`, and platform-sync PR
+  [#629](https://github.com/Concertable/concertable/pull/629) merged green as
+  `95305c7a909d48a703ab572c2a153fe74d2d4daa`.
+- Last reconciled: 2026-08-17 against `origin/main` at `dc037f477`.
 
 ## Current state
 
-The repo-wide consumer migration merged through #561 and is published and platform-synced on main.
-It includes the Customer, B2B, and Payment repository
-and context migrations, the B2B context-stance naming correction, and the Conversations-owned
-participant projection required to preserve the module boundary.
+The repo-wide consumer migration and its signup/topology reliability follow-up are merged, published,
+and platform-synced on main. Phase 3 contraction is implemented in the short-path worktree: every
+source consumer now uses the final context-free repository arities, concrete-context access is declared
+locally where specialized queries require it, unused module write aliases are removed, and the shared
+legacy arities, facet implementation, protected read-context field, and compatibility-only tests are
+gone. Static verification remained green after merging current main through `92ea04166`. Draft PR #632
+now owns compilation and tests because the local .NET runner repeatedly stalled without producing
+compiler output; its initial remote work head is `fa86fd8bb`.
 
 The branch also carries two merge-queue fixes discovered while validating this work: the E2E reseeding
 host now dispatches seeded participant events in process, and the three Strict Mode SPA login routes
@@ -45,6 +51,34 @@ PayoutAccount now inherit the combined repository interface and implementation b
 hand-redeclaring generic CRUD. Payment FinancialOperation remains bespoke because it has no repository
 identity contract and participates in a separate unit of work.
 
+The current code and security review found no implementation defect. Review finding `CV1` is resolved
+at `86b702886`: `api/agents/CODE_CONVENTIONS.md` now documents the context-free repository arities,
+capability interfaces, concrete-context-forwarding module aliases, and private concrete-context rule.
+Incremental review of `21cd0aba8..86b702886` found no new issues. The resolved review work order was
+deleted at `3b103bc4c`, whose exact-head CI run `32016018563` passed.
+
+Full-E2E merge-group run `32017197713` ejected PR #632. B2B Concert integration failed because
+`Cancel_ShouldMarkCancelled_FromPaymentFailed` used the untyped financial-operation completion helper,
+which can consume the older pending acceptance command before the asynchronously dispatched refund.
+The failed API E2E stack started but Search Web and Search Workers raced concurrent `dotnet run` builds of
+their shared seed-infrastructure project. Search Web lost the `.deps.json` file lock and exited, so
+all ten tests failed at fixture readiness on Search's `https://localhost:7087/health` without entering
+test bodies. Docker's fresh-container data-round-trip health gate passes locally. The Search E2E
+composition now pins and health-checks Web's HTTPS endpoint, then starts Workers only after Web passes
+`/health`, serializing their builds while leaving
+the standalone Search AppHost topology unchanged. The affected helper and both Search hosts build in
+Release with zero errors, and the corrected B2B Concert integration project passes 164/164. A local
+B2B API E2E wrapper attempt was stopped before Aspire startup when the long-path worktree reproduced
+its documented parallel-build process storm; no E2E outcome is inferred from that attempt. Follow-up
+review found no remaining correctness, architecture, convention, security, or coverage issue; its
+native pass strengthened the draft process-start dependency to the final HTTPS health dependency.
+
+The reviewed repair was merged with current main at `0237faee7`. The context-free repository arity
+gate and `git diff --check` remain clean. On that exact reconciled head, the Search E2E helper and its
+Web/Workers dependency graph build in Release with zero warnings and zero errors, B2B Web builds in
+Release with zero errors, the DataAccess unit suite passes 11/11, and the formerly failing
+`Cancel_ShouldMarkCancelled_FromPaymentFailed` integration test passes 1/1.
+
 All six B2B and Customer Artist/Venue/Concert read contexts now implement module-specific interfaces
 that expose only named `IQueryable` roots. Production repositories and query services inject those
 interfaces rather than concrete EF contexts, while the shared `ReadDbContext` still enforces no
@@ -64,11 +98,11 @@ topology contract test, and both signup flows attach their registration wait bef
 
 ## Next Steps
 
-1. Push this checkpoint transport and require green replacement exact-head PR CI.
-2. Mark #626 ready, apply `full-e2e`, enqueue, and follow merge-group,
-   publication, and platform-sync gates to green.
-3. Create the legacy-contraction worktree from current main and reconcile its owning ledger before
-   removing the published compatibility surface.
+1. Require exact-head CI on the pushed repair checkpoint.
+2. Keep `full-e2e` and return
+   PR #632 to the merge queue for the full-stack proof.
+3. On merge, close the source worktree and follow package publication and platform sync to green,
+   then complete the published-baseline plan closeout gates.
 
 ## Completed work
 
@@ -145,12 +179,81 @@ topology contract test, and both signup flows attach their registration wait bef
 - B2B topology tests passed 7/7 after adding the B2B `SendEmailCommand` queue contract.
 - B2B and Customer UI E2E projects built in Release with 0 errors after moving both registration waits
   ahead of their sign-up clicks.
+- Follow-up exact-head CI run `31980425847` and full-E2E merge-group run `31981377623` passed on PR
+  #626 before it merged as `a790708f3`.
+- Follow-up publication run `31983176063` published `0.1.0-alpha.0.1044`; platform-sync PR #629 passed
+  exact-head and merge-group CI and merged green as `95305c7a9`.
+- Fresh contraction worktree graph reported 0 errors and 0 warnings at `95305c7a9`.
+- Phase 3 source contraction removed every legacy repository-arity, `base.context`, facet, and protected
+  read-context-field match across `api/**/*.cs`; every production repository that uses a concrete
+  `context` now owns an explicit concrete `DbContext` field, and `git diff --check` passed.
+- Merged 22 newer `origin/main` commits through `92ea04166`; the post-merge legacy grep and concrete-
+  context ownership gates remained clean, plan graph reported 0 errors and 0 warnings, and
+  `git diff --check origin/main...HEAD` passed.
+- Work head `fa86fd8bb` was pushed and verified equal to draft PR #632's remote `headRefOid`.
+- Recovery checkpoint `21cd0aba8` was pushed and exact-head CI run `32004250451` passed its platform
+  pack, solution build, all service carves, selected unit/integration matrices, and `ci-complete`.
+- Initial code and security review of `92ea04166..21cd0aba8` found no implementation or security issues.
+- Review finding `CV1` was fixed at `86b702886`; obsolete-arity and inherited-context greps, positive
+  hierarchy greps, docs reachability, and `git diff --check` passed.
+- Incremental review of `21cd0aba8..86b702886` found no new correctness, architecture, convention,
+  security, or changed-path coverage issues.
+- Reviewed fix head `86b702886` was pushed from `21cd0aba8`, then verified equal to the remote branch
+  and PR #632 `headRefOid`.
+- Plan/review checkpoint `df6c1a181` was pushed and verified equal to the remote branch and PR head;
+  exact-head CI run `32014872614` passed its platform pack, solution build, all service carves,
+  selected unit/integration matrices, and `ci-complete`.
+- Final reviewed head `3b103bc4c` was pushed and verified equal to the remote branch and PR head;
+  exact-head CI run `32016018563` passed its platform pack, solution build, all service carves,
+  selected unit/integration matrices, and `ci-complete`.
+- Full-E2E merge-group run `32017197713` failed B2B Concert integration at
+  `ApplicationCancelApiTests.Cancel_ShouldMarkCancelled_FromPaymentFailed` (`Cancelled` expected,
+  `CancellationPending` actual) and B2B API E2E fixture readiness at `https://localhost:7087/health`;
+  the PR was ejected and remains open, clean, and mergeable at `3b103bc4c`.
+- The local Docker data-round-trip health gate passed after the queue failure.
+- The corrected `Cancel_ShouldMarkCancelled_FromPaymentFailed` test passed 1/1, then the complete B2B
+  Concert integration project passed 164/164.
+- `Concertable.Search.E2ETests.Helpers` and its Search Web/Workers dependency graph built in Release
+  with zero warnings and zero errors before the review-strengthened HTTPS health dependency.
+- The final HTTPS health dependency rebuilt the same Search helper and Web/Workers dependency graph in
+  Release with zero warnings and zero errors.
+- Merged current `origin/main` at `a8cb736a5` into the reviewed repair as `0237faee7`. The Search E2E
+  helper rebuilt with zero warnings and zero errors, B2B Web rebuilt with zero errors, DataAccess unit
+  tests passed 11/11, the formerly failing B2B Concert integration test passed 1/1, the legacy-
+  repository-arity grep remained empty, and `git diff --check origin/main...HEAD` passed.
+- Reviewed current-main repair head `1b0ccfef1` was pushed from `3b103bc4c`, then verified equal to the
+  remote branch and PR #632 `headRefOid`.
+- Exact-head CI run `32025468368` passed on checkpoint `1405e1f23`, including the B2B Concert
+  integration shard. Three hook/docs-only main commits landed during that run; they merged without
+  code overlap as `7b14e765e`, which was pushed and verified equal to the remote branch and PR head.
+  The legacy-arity grep, plan graph, docs reachability, and `git diff --check` remained clean.
+- The targeted local B2B API E2E wrapper was stopped before test-host startup after its build spawned
+  the documented long-worktree process storm; it created no test log or TRX and provides no pass/fail
+  evidence. The orphaned processes were terminated, and remote full-E2E remains the authoritative gate.
+- PR #632 was marked ready on unchanged remote head `21cd0aba8`; the published-package public-shape
+  trigger selected `full-e2e`, with no contradictory skip label present.
+- The final fetch found the remote head 0 commits behind current `origin/main`; PR #632 entered the
+  merge queue at position 1 in `AWAITING_CHECKS` state on unchanged head `21cd0aba8`.
+- Merge-group run `32009106399` passed the hard-floor build, carve, unit, integration, API E2E, and UI
+  E2E gates. The PR timeline records removal from the queue at `2026-08-17T08:43:23Z` under the
+  `tomjseery` actor; no CI check failed, and the PR is now open, clean, mergeable, and unqueued.
+- Local restore/test and no-restore test attempts repeatedly stalled without compiler or test output;
+  their orphaned processes were stopped and no failure result was inferred. Draft-PR CI is the required
+  compile/test gate for the exact committed head.
 - Docker health passed before the focused artist-signup rerun. The fresh local stack could not reach
   the scenario because the long plan-worktree path caused Windows to reject
   `Microsoft.Data.SqlClient.SNI.dll` with `0x800700CE`; exact-head and merge-group CI remain the valid
   scenario execution gates from normal runner paths.
 
 ## Reviews
+
+- Follow-up review of `3b103bc4c..this commit` found no remaining issue across the native,
+  correctness, microservice-isolation, module-boundary, seeding, C# convention, security-trigger, and
+  changed-path coverage lenses. The draft `WaitForStart` ordering was strengthened during review to a
+  pinned HTTPS `/health` dependency before the final reviewed commit.
+- Review of contraction range `92ea04166..21cd0aba8` and clean incremental review of the `CV1` fix
+  through `86b702886` are recorded in `reviews/Refactor-RepositoryPermissionContraction.md`; all
+  findings are resolved.
 
 - Formal and incremental reviews are recorded in
   `reviews/Refactor-DataAccessRepositoryPermissionHierarchy.md`; all findings are resolved.
