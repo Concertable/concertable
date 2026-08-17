@@ -11,7 +11,7 @@
 
 ## Current state
 
-Phase 1 is implemented and verified locally in the dedicated producer worktree. The reusable packer
+Phase 1 is implemented, committed, verified, and fully reviewed in the dedicated producer worktree. The reusable packer
 stages the published files under an alias without mutating the source manifest; PR CI now runs its
 focused unit test, and the publish workflow packs, verifies, publishes, and feed-verifies both names.
 The existing source package remains `@concertable/b2b`; no consumer manifests, imports, lockfile
@@ -19,15 +19,15 @@ entries, or runtime files have changed.
 
 ## Next Steps
 
-Run `/review` on the committed Phase 1 producer bridge before opening a draft PR. Do not begin Phase 2
-delivery until the merged workflow has published and feed-verified the exact
-`@concertable/web-b2b` version.
+Commit the clean review checkpoint, push the branch, open its draft PR, and let exact-head CI validate
+the Phase 1 producer bridge. Do not begin Phase 2 delivery until the merged workflow has published and
+feed-verified the exact `@concertable/web-b2b` version.
 
 ## Completed work
 
-- **Phase 1 local candidate:** non-mutating alias packer and install-level unit test; parameterized B2B
+- **Phase 1 implementation (`693c68c9a`):** non-mutating alias packer and install-level unit test; parameterized B2B
   package verification; dual tarball/feed publication; PR-CI tool-test wiring; package-topology plan
-  and roadmap registration. The complete local candidate is verified and ready to commit.
+  and roadmap registration.
 
 ## Verification
 
@@ -42,7 +42,9 @@ delivery until the merged workflow has published and feed-verified the exact
 
 ## Reviews
 
-Not started. `/review` is the next delivery gate after the local Phase 1 commit.
+- Full correctness and architecture review of `9205e82df..693c68c9a` found no issues. Security review
+  of the workflow/package-publication changes found no issues. Both watermarks are recorded in
+  `reviews/Refactor-B2bPackageTopology.md`.
 
 ## Decisions, discoveries, blockers, and deviations
 
