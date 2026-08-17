@@ -272,7 +272,6 @@ submodule design: a carved service repo installs the same plugin and inherits th
 unchanged.
 
 **The `description` front-matter is the load-bearing part.** It is the router that decides whether the
-skill loads, so it must name both the content and the trigger — the `standards-docs` skills do this
 well: *"…Use when writing, reviewing, or restructuring backend tests, adding tests for a new endpoint…"*.
 A vague description means the skill silently never loads.
 
