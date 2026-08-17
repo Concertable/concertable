@@ -5,7 +5,7 @@
 - Roadmap item: `launch/deal-lifecycle-ownership`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules-phase2`
 - Branch: `Refactor/launch_deal-lifecycle-modules-phase2`
-- PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633). Local HEAD, the remote branch, and the PR head all equal the published Application/Booking ownership checkpoint `324186648e0f40b7789b80ca5e3b1ab20dedf8d6` before this ledger commit. After a 2026-08-17 fetch, the branch is 89 commits behind `origin/main`; the partial carve is now safely committed, so the next session may merge the base before continuing.
+- PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633). Local HEAD, the remote branch, and the PR head all equal current-main merge checkpoint `ff2e4dc553aad7bd9093e958235fa809efe5c881` before this ledger commit; the branch is 0 commits behind `origin/main`.
 - Dependency/package gates: none block the remaining B2B-internal implementation. Phase 1 delivery is terminal; final `api/**` delivery will own its routine package publication and platform-sync gate only after the complete refactor merges.
 - Last reconciled: 2026-08-17 after the corrected Application-to-Booking financial seam passed its focused verification gate
 
@@ -79,21 +79,18 @@ independent Concert ownership.
 
 Resume at the Concert/payment carve while preserving the verified Application-to-Booking seam:
 
-1. Fetch and merge the 89-commit `origin/main` drift into this now-checkpointed branch before editing,
-   resolving conflicts in favour of the module ownership design. Treat the 37 pre-merge
-   Concert.Application compile errors as deletion/replacement inventory, not as a reason to reference
-   Application or Booking runtime projects from Concert.
-2. Move Capture/Deposit success and rejection handling into Booking. Feed the callbacks through the
+1. Move Capture/Deposit success and rejection handling into Booking. Feed the callbacks through the
    typed financial-evidence boundary, validate the acceptance operation ID, Booking/Application,
-   expected operation, and provider reference, and preserve late-success compensation and retry
-   idempotency.
-3. Emit the immutable `ConfirmedBooking` handoff only from financially confirmed Booking state, then
+   expected operation, and provider reference where the payment event supplies one. Capture/Deposit
+   rejection events correlate by acceptance operation ID and Booking ID and carry required error data;
+   do not fabricate a provider reference. Preserve late-success compensation and retry idempotency.
+2. Emit the immutable `ConfirmedBooking` handoff only from financially confirmed Booking state, then
    create Concert from that handoff and move post-creation cancellation, completion, settlement, and
    their financial-operation facts onto Concert-owned state.
-4. Delete the shared `LifecycleState`, `IConcertWorkflow`, workflow/capability registries, cross-stage
+3. Delete the shared `LifecycleState`, `IConcertWorkflow`, workflow/capability registries, cross-stage
    builder, and legacy Application/Booking executors. Register exact local keyed steps independently in
    Application, Booking, and Concert; keep the project graph Contracts-only and acyclic.
-5. Finish the combined read projection, migrations, API/seed/worker consumers, guidance, focused
+4. Finish the combined read projection, migrations, API/seed/worker consumers, guidance, focused
    integration coverage, and final review/verification gates on draft PR #633. No intermediate phase
    is mergeable.
 
@@ -142,6 +139,9 @@ Resume at the Concert/payment carve while preserving the verified Application-to
   the seed project and Application API now compile independently with zero warnings.
 - Published implementation checkpoint `324186648e0f40b7789b80ca5e3b1ab20dedf8d6`; local HEAD, the
   remote branch, and draft PR #633 `headRefOid` matched exactly before this ledger commit.
+- Merged the 93-commit `origin/main` drift without conflicts as
+  `ff2e4dc553aad7bd9093e958235fa809efe5c881`, then verified local HEAD, the remote branch, and draft PR
+  #633 `headRefOid` matched and the branch was 0 commits behind.
 
 ## Verification
 
@@ -194,6 +194,8 @@ Resume at the Concert/payment carve while preserving the verified Application-to
   `PaymentVerificationOutcome`, `PaymentVerificationRecordedDomainEvent`, identifier-only
   `ConfirmAsync(bookingId)`, `RecordFinancialFailureAsync`, or `ApplicationPaymentVerified` remains.
 - Current candidate `git diff --check` passes and the plan graph reports 0 errors and 0 warnings.
+- After the current-main merge, Application unit tests remain 5/5, Booking unit tests remain 12/12,
+  and the seed Infrastructure build remains green with 0 warnings and 0 errors.
 - Phase 1 PR #625 merged as `4efa1740e0e74601361e4c6595cc1d9d94e1b1bb` with `skip-e2e`: no
   positive E2E trigger was present because the diff added internal characterization coverage without
   changing HTTP, cross-service, published-package, auth, or routing behaviour.
