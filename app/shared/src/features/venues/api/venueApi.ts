@@ -17,6 +17,11 @@ const venueApi = {
     return data;
   },
 
+  getVenueById: async (id: number): Promise<Venue> => {
+    const { data } = await apiClient.get<Venue>(`/venue/${id}`);
+    return data;
+  },
+
   getOrganizationVenue: async (): Promise<Venue | null> => {
     const { data } = await apiClient.getOptional<Venue>("/organization/venue");
     return data;

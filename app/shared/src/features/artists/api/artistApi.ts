@@ -19,6 +19,11 @@ const artistApi = {
     return data;
   },
 
+  getArtistById: async (id: number): Promise<Artist> => {
+    const { data } = await apiClient.get<Artist>(`/artist/${id}`);
+    return data;
+  },
+
   getOrganizationArtist: async (): Promise<Artist | null> => {
     const { data } = await apiClient.getOptional<Artist>("/organization/artist");
     return data;
