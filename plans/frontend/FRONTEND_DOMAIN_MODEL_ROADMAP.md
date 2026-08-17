@@ -10,11 +10,11 @@
 
 ## How to continue this roadmap
 
-The selected item is fully specified by its plan and progress ledger:
-
-```text
-/resume-plan @plans/frontend/DOMAIN_COMPANION_MAPPING_PROGRESS.md
-```
+The selected item is blocked while PRs #595, #600, and #637 own overlapping frontend types and
+guidance. Do not resume its ledger directly. Let those owners reach merged or closed state, then
+reconcile [`DOMAIN_COMPANION_MAPPING_PROGRESS.md`](DOMAIN_COMPANION_MAPPING_PROGRESS.md) against
+current `origin/main`; the ledger becomes actionable only when all three PRs are terminal and no open
+red platform-sync PR remains.
 
 ## Status
 
