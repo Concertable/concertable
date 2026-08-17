@@ -84,7 +84,20 @@ git fetch origin --quiet && git checkout -b <Type>/<Name> origin/main
 
 Branches are named `<Type>/<Name>` with the type prefix **capitalized**: `Feature/`, `Refactor/`, `Bug/`, `Fix/`, etc. Never create a lowercase variant (`feature/...`). Windows' case-insensitive filesystem cannot hold two casings of the same ref, so a remote with both `feature/x` and `Feature/x` breaks `git fetch`/`git pull` for everyone ("cannot lock ref ... File exists"). Before creating a branch, match the casing of any existing branch of the same name exactly.
 
-**Docs and plans are exempt from branch hygiene.** Non-code markdown — `plans/*.md`, any `TECH_DEBT.md`, scratch notes — is non-breaking and never affects a build or another PR, so just commit it on whatever branch you're already on. Don't branch for it, don't split it into its own commit, and don't worry if `git add -A` sweeps a stray plan/doc into a feature commit — bundling doc-only changes is fine, not worth a force-push to tidy up.
+**Working docs and plans are exempt from branch hygiene.** Non-code working markdown — `plans/*.md`,
+any `TECH_DEBT.md`, scratch notes — is non-breaking and may ride its owning feature branch. Durable
+global guidance is different: when feature work changes an `AGENTS.md`, an `agents/*.md` playbook, a
+skill, or another cross-cutting instruction, split that change immediately onto a `Docs/*` branch from
+`origin/main`, review it, and land it through `/merge-docs`. Never leave guidance stranded behind a
+feature PR or mixed into a runtime commit.
+
+## Ready for review is not merge authorization
+
+Changing a PR from draft to ready only changes its review state. No workflow may enable auto-merge or
+merge a normal PR in response to `opened`, `reopened`, `synchronize`, or `ready_for_review`. Only an
+explicit `/merge` / `/merge-docs` instruction may start the delivery workflow. Repository-owned
+generated PRs such as `chore/platform-sync-*` may enable auto-merge for themselves as part of the
+already-authorized producer delivery chain; that scoped automation must never apply to ordinary PRs.
 
 ## Before enabling auto-merge — the branch MUST be current with base
 

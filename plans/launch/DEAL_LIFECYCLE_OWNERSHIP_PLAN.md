@@ -1,380 +1,402 @@
-# Deal lifecycle ownership
+# Application, Booking, and Concert module ownership
 
 > **Next steps live in @plans/launch/DEAL_LIFECYCLE_OWNERSHIP_PROGRESS.md → `## Next Steps`.**
 
-## 1. Decision
+## 1. Approved decision
 
-Model one concrete `DealEntity` as the aggregate that owns the commercial state machine from the
-moment an artist applies until the deal is rejected, withdrawn, cancelled, or completed after
-settlement.
-
-`ConcertEntity` remains a separate aggregate. It is created only when the deal becomes `Booked`, is
-referenced from the deal by `ConcertId`, and owns its independent operational and marketplace life
-after creation. It does not own or mirror the deal state.
-
-This is a boundary correction, not a field move:
-
-- the current editable economic offer becomes `DealTerms`;
-- applying to an opportunity creates one concrete `Deal` between the artist and venue;
-- `Application` and `Booking` remain valid phase vocabulary for UI projections and user copy, but
-  neither remains a persisted aggregate;
-- the Deal module owns the full commercial vertical slice, including opportunity terms, contract,
-  invoicing, lifecycle orchestration, payment outcomes, and settlement rules;
-- the Concert module owns the realised concert and exposes only narrow operations/facts through
-  `IConcertModule`;
-- Payment receives one opaque external reference instead of B2B-specific application and booking
-  identifiers.
-
-The target relationship is:
+The B2B lifecycle has a fixed, one-way stage order for every `DealType`:
 
 ```text
-Opportunity 1 ── 1 DealTerms
-Opportunity 1 ── * Deal
-Deal        1 ── 0..1 Contract
-Deal        1 ── 0..1 Invoice
-Deal        1 ── 0..1 ConcertId   ──> Concert
+Opportunity ──→ Application ──→ Booking ──→ Concert
+                    *              0..1         0..1
 ```
 
-The identity and state path is:
+`DealType` changes the behaviour performed inside a stage. It never changes the order or makes a
+stage optional in the domain model. Application, Booking, Contract, and Concert retain their
+established identities and cardinalities.
+
+The current Concert module must be decomposed so each persisted stage owns its own state and
+behaviour. There is no umbrella lifecycle entity, aggregate, state enum, state machine, workflow
+object, resolver, or module spanning the stages.
+
+This decision was explicitly approved by Tommy on 2026-08-16 after comparing the current model with
+the aggregate-collapse, Deal-owned workflow, premature two-way state split, and separate process-root
+alternatives.
+
+## 2. Domain meanings that do not change
+
+- **Opportunity** is the venue's advertised opening. It owns one current Deal and may receive many
+  Applications. It is upstream of the per-artist progression, not a stage to hide inside Application.
+- **Deal** is the editable economic arrangement selected by `DealType`. The Deal module remains
+  independent and never queries or commands Application, Booking, or Concert.
+- **Application** is one artist's submission to an Opportunity. Acceptance is its successful terminal
+  decision; later financial or operational outcomes do not rewrite that fact.
+- **Booking** is the accepted commercial relationship created from one Application. Its Standard and
+  Deferred variants retain their payment-timing meaning.
+- **Contract** is the immutable signed terms snapshot formed with the Booking at acceptance.
+- **Concert** is the realised operational event created from a Booking after financial confirmation.
+  Drafting, posting, editing, cancellation, completion, door revenue, and event facts belong here.
 
 ```text
-apply
-  └─> Deal(Applied)
-        ├─> Rejected
-        ├─> Withdrawn
-        └─> Accepted ─> payment outcome ─> Booked ─> finish/settlement ─> Complete
-                                      └─> payment failure/retry
-                         └─> cancellation/refund ─> Cancelled
+Opportunity 1 ── 1 Deal
+Opportunity 1 ── * Application
+Application 1 ── 0..1 Booking
+Booking     1 ── 0..1 Contract
+Booking     1 ── 0..1 Concert
 ```
 
-There is one database identity throughout. Payment callbacks, contract and invoice records, concert
-creation, cancellation, and settlement all correlate to the same deal.
+Invoice, settlement-attempt, refund-attempt, and ticket-transaction records keep their genuine
+financial identities. Their final module placement must follow the operation they make durable; they
+must not be folded into a replacement end-to-end lifecycle aggregate.
 
-## 2. Why this is the domain model
+## 3. Target module boundaries
 
-### 2.1 `Deal` is true at every state
+### Deal
 
-An opportunity publishes terms. Applying accepts the invitation to negotiate and opens a concrete
-commercial deal between one artist and one venue. That deal may fall through, be accepted, become a
-booking, produce a concert, be cancelled, or complete after settlement. None of those outcomes makes
-it stop being the same deal.
+Owns Deal entities, values, validation, rendering/mapping, and `DealType`. It exposes immutable deal
+facts through `Deal.Contracts`. Owning the selection key does not make Deal the owner of downstream
+behaviour selected by that key.
 
-`Application`, `Booking`, and `Concert` each name a phase or a later result. They are useful words at
-the product edge, but they cannot honestly name the one aggregate that exists for the full arc.
+### Opportunity
 
-### 2.2 The current terms object is not a concrete deal
+Owns Opportunity identity, schedule, availability, posting, and the `DealId` association. It reads
+Deal through `Deal.Contracts`/`IDealModule`. It does not own an Application, Booking, or Concert state
+machine.
 
-The current `DealEntity` is a tenant-owned, editable TPH value selected by an opportunity. It has no
-artist counterparty, no lifecycle state, and no existence independent of that published opportunity.
-Its domain role is terms, so its target name is `DealTermsEntity`; the contract surface becomes
-`IDealTerms` with `FlatFeeTerms`, `DoorSplitTerms`, `VersusTerms`, and `VenueHireTerms`.
+### Application
 
-Once Opportunity and DealTerms share the Deal module and context, Opportunity owns its terms directly.
-The terms row no longer needs to impersonate a tenant-scoped aggregate merely to cross a module seam.
+Owns applying, apply-time checkout, pre-accept acceptance-checkout initiation, terms-fingerprint and
+artist-signature capture, rejection, withdrawal, and acceptance. It may retain immutable pre-accept
+payment evidence that can arrive before a Booking exists; that evidence is not Application lifecycle
+state.
 
-### 2.3 `BookingEntity` has no surviving aggregate responsibility
+Application reaches a terminal state when it is accepted, rejected, or withdrawn:
 
-The current booking row does three things: creates a second identity at Accept, stores a payment-method
-reference for deferred deals, and provides joins from Application to Contract/Invoice/Concert and
-Payment. It has no state machine, independent commands, or invariant that is not already an accepted
-deal fact.
+```text
+Applied ──Accept──→ Accepted
+Applied ──Reject──→ Rejected
+Applied ──Withdraw→ Withdrawn
+```
 
-The target Deal already has an identity before Accept. It can store the required payment authorization,
-own its contract and invoice dependants, and reference the resulting concert. Keeping Booking would
-therefore preserve a phase-named identity whose only purpose is to route around the missing Deal
-aggregate. `BookingService`, the booking repository/DTO hierarchy, and the booking table are removed.
+### Booking
 
-An accepted or booked deal may still be presented to users as a booking. That is a projection, not a
-second write model.
+Owns Booking and Contract creation, acceptance-triggered payment processing after Booking creation,
+financial confirmation, payment failure/retry, and cancellation/refund before a Concert exists.
+Acceptance atomically forms the Booking and Contract; financial confirmation hands authority to
+Concert.
 
-### 2.4 The module boundary follows the aggregate
+The exact enum names are fixed during the implementation inventory, but the state meaning is:
 
-Moving only `DealState` while leaving its executors, workflow definitions, contracts, and settlement
-effects in Concert would make Concert an implementation back door into a Deal-owned aggregate. Moving
-only workflow interfaces would invert the same dependency in a different layer. Both violate modular
-monolith ownership.
+```text
+AwaitingFinancialConfirmation
+FinancialConfirmationFailed
+Confirmed
+CancellationPending
+CancellationFailed
+Cancelled
+```
 
-The cohesive boundary is:
+`Confirmed` is a terminal historical Booking fact. A later Concert cancellation does not make the
+accepted Booking or signed Contract cease to have existed.
 
-| Deal module | Concert module |
+### Concert
+
+Owns the Concert entity and all post-creation operational state: draft/posting, cancellation,
+completion, and any recovery state whose success is required to complete those operations. It does
+not inspect `Booking.Application.State` or ask Booking/Deal how to interpret Concert state.
+
+Settlement and invoice records must be assessed by identity during the carve. They may remain
+Concert-owned children where they make a Concert completion operation durable, or move to a
+separately justified financial module. They cannot revive a shared Application-to-Concert state.
+
+## 4. State ownership
+
+There is no authoritative state of a hidden end-to-end "thing." Each persisted identity records facts
+about itself and stops transitioning when authority moves forward:
+
+```text
+Application 42: Accepted
+Booking 81:     Confirmed
+Concert 103:    Complete
+```
+
+The API may derive one current journey view by preferring the latest existing stage:
+
+```text
+Concert exists      → Concert status and actions
+else Booking exists → Booking status and actions
+else                 → Application status and actions
+```
+
+That is a read model only. It has no command surface, transition method, repository, or source-of-truth
+row. After the B2B runtime moves to .NET 11, native C# unions will represent justified closed internal
+values, beginning with the combined read shape
+`ApplicationStage | BookingStage | ConcertStage` and module-local state, trigger, or operation-outcome
+shapes whose cases carry genuinely different data. Unions do not replace state ownership or dependency
+resolution: each module maps its persistence discriminator explicitly and retains transition authority,
+while `IStepResolver<TStep>` continues to resolve runtime services.
+
+## 5. State machines and contextual names
+
+Each module owns its own transition vocabulary and implementation. The types may use the same short
+names because their module namespace is the context:
+
+```text
+Application.Domain.Lifecycle.State
+Application.Domain.Lifecycle.Trigger
+Application.Domain.Lifecycle.StateMachine
+
+Booking.Domain.Lifecycle.State
+Booking.Domain.Lifecycle.Trigger
+Booking.Domain.Lifecycle.StateMachine
+
+Concert.Domain.Lifecycle.State
+Concert.Domain.Lifecycle.Trigger
+Concert.Domain.Lifecycle.StateMachine
+```
+
+They do not implement a common lifecycle interface or inherit from an umbrella state machine. A
+module may use an explicit transition table, aggregate methods, or a .NET 11 native union when that
+best expresses its closed local states, triggers, or outcomes. Similar syntax is not a reason to force
+identical structure.
+
+A tiny generic transition primitive may be extracted only after real duplication is demonstrated. It
+must contain no B2B state, trigger, `DealType`, module reference, transition table, or ownership rule.
+
+## 6. Deal-type behaviour and step resolution
+
+Delete the runtime `IConcertWorkflow` dependency-holder. No request needs every lifecycle operation at
+once, and no executable workflow spans the module boundary.
+
+Each module owns only the step families that operate on its aggregates. Internal types use contextual
+names rather than repeating the aggregate name:
+
+| Module | Local step contracts |
 |---|---|
-| Opportunity and DealTerms | Concert and concert images |
-| concrete Deal and its state | draft/post/update/public concert behaviour |
-| Contract and Invoice | ticket/door-revenue operational facts |
-| self-billing agreement and settlement gates | concert projections and published concert events |
-| apply/accept/reject/withdraw/cancel/finish executors | narrow `IConcertModule` commands and facts |
-| deal-type workflow, payment steps, payment outcome handlers | no Deal entity, state, workflow, or strategy implementation |
+| Application | `IApplyStep`, `IApplyCheckoutStep`, `IAcceptStep`, `IAcceptCheckoutStep` |
+| Booking | `IConfirmStep`, `ICancelStep` |
+| Concert | `ICancelStep`, `ICompleteStep`, and local settlement-recovery steps where required |
 
-The dependency is one-way: Deal calls `IConcertModule`. Concert does not reference Deal runtime or
-Contracts. `CreateDraftAsync` returns a Concert id, which Deal stores as a nullable primitive with a
-filtered unique index and no cross-module SQL foreign key. Completion discovery and settlement facts
-are narrow Concert facade queries; Deal performs the transition and effects. Draft creation passes
-operational snapshot facts such as whether door revenue is required, not `DealType`, so Concert does
-not need Deal vocabulary to enforce its own commands.
+The module-local resolver is `IStepResolver<TStep>`. Its implementation is the only code in that
+module allowed to perform keyed DI lookup. A caller requests one operation-specific dependency:
 
-Book and cancel transitions that write both contexts run through the existing cross-module
-`IUnitOfWorkBehavior`, so the Concert mutation and Deal state change commit atomically in B2B's one
-database. External Payment calls remain outside that database transaction and retain the merged
-operation-id, inbox/outbox, retry, and compensation guarantees.
-
-## 3. Target domain types and names
-
-### 3.1 Aggregate and terms
-
-| Concern | Target name | Location |
-|---|---|---|
-| concrete state owner | `DealEntity` | `Deal.Domain/Entities/DealEntity.cs` |
-| editable opportunity offer | `DealTermsEntity` | `Deal.Domain/Entities/DealTermsEntity.cs` |
-| public terms shape | `IDealTerms` + typed terms records | `Deal.Contracts/Terms/` |
-| state vocabulary | `DealState` | `Deal.Domain/StateMachine/DealState.cs` |
-| transition vocabulary | `DealTrigger` | `Deal.Domain/StateMachine/DealTrigger.cs` |
-| pure transition graph | `StateMachine` | `Deal.Domain/StateMachine/StateMachine.cs` |
-
-`DealState` and `DealTrigger` keep the noun because enum values and diagnostics frequently appear
-outside the defining namespace. `StateMachine` stays short because its namespace and signatures make
-the subject unambiguous; `LifecycleStateMachine` repeats what a state machine already is.
-
-### 3.2 Workflow and registration
-
-Use module-local names rather than carrying `Concert` or repeating `Deal` on every internal DI type:
-
-| Current role | Target name |
-|---|---|
-| `IConcertWorkflow` | `IWorkflow` |
-| `FlatFeeWorkflow`, etc. | unchanged |
-| `ConcertWorkflowBuilder` | `WorkflowBuilder` |
-| `IConcertWorkflowFactory` / implementation | `IWorkflowFactory` / `WorkflowFactory` |
-| both state-machine and capability registries | `IWorkflowRegistry` / `WorkflowRegistry` |
-| `ConcertWorkflowRegistration` | `WorkflowDefinition` |
-| `ConcertDealStrategyBuilder` plus current Deal builder | one `StrategyBuilder` |
-| both generic strategy factories | one `IStrategyFactory<T>` / `StrategyFactory<T>` |
-
-`WorkflowDefinition` contains the `DealType`, `StateMachine`, workflow CLR type, and registered step
-types. `WorkflowRegistry` is the single immutable per-`DealType` registry and answers both
-`Get(type).StateMachine` and capability questions. Do not retain a separate
-`DealStateMachineRegistry` and `DealWorkflowCapabilityRegistry`; those would be two long indexes over
-the same definitions.
-
-Executors and steps keep their direct, operation-shaped names (`ApplyExecutor`, `AcceptExecutor`,
-`PayoutFinishStep`). They move to Deal but do not gain a redundant `Deal` prefix.
-
-### 3.3 Phase vocabulary at the edge
-
-- API resource identity becomes `/api/deals/{dealId}` and response/request types use `Deal`.
-- Opportunity payloads expose `terms`, not a second object called `deal`.
-- application lists and cards may retain `Application` in user-facing projection names when they only
-  show deals in the applied phase.
-- booking copy may describe accepted/booked deals, but there is no `BookingEntity`, `BookingService`,
-  or `BookingId` in B2B.
-- concert endpoints that need commercial artifacts link to `/api/deals/{dealId}/contract` and
-  `/api/deals/{dealId}/invoice`; they do not traverse a booking join.
-
-## 4. Aggregate invariants
-
-`DealState` is the persisted union of states used by every deal type. Enum membership never grants a
-transition. The per-type graph is the authority.
-
-Enforce all of the following:
-
-1. `DealEntity.DealType` is immutable and captured from the opportunity terms at apply.
-2. `DealEntity.State` has a private setter and is changed only by the aggregate transition method.
-3. `StateMachine` carries its `DealType`; a deal rejects a machine for any other type.
-4. `StateMachine` exposes no state assignment API, only `Next(current, trigger)`.
-5. `WorkflowBuilder` validates duplicate edges, an `Applied` root, reachable configured states,
-   declared terminal states, and exact `DealType` coverage before DI is built.
-6. `WorkflowRegistry` is the only per-type lookup. Executors, services, mappers, and steps never perform
-   keyed service location or branch on `DealType`.
-7. Every command and payment outcome passes through the Deal transitioner; no repository, mapper,
-   seeder, bulk update, or event handler writes `State` directly.
-8. Exact topology tests pin every `(from, trigger,to)` edge for every existing `DealType`. Adding an enum
-   state does nothing until a workflow explicitly uses it; adding a deal type fails composition until
-   its complete strategy and workflow definition exists.
-9. The accept/webhook race may retain a durable `VerificationOutcome` fact on Deal so either arrival
-   order can converge. It is not a second lifecycle state or transition authority; the workflow
-   consumes it only when `DealState` is ready to advance.
-
-This makes impossible-in-that-deal states representable for persistence but unreachable through the
-domain API. A stronger compile-time typestate model remains a possible decision-engine implementation,
-but B2B still has one persisted system of record and one aggregate invariant.
-
-## 5. Published boundaries
-
-### 5.1 Payment
-
-Removing Booking must not teach Payment about Deal. `DealId` is B2B vocabulary and does not belong in
-the agnostic adapter contract.
-
-Generalise Payment's current `ApplicationId`/`BookingId` correlation to one required string
-`ExternalReference`, reusing the vocabulary already present on commission bindings. B2B sends
-`deal:{id}` for every checkout, verification, escrow, settlement, refund, ledger, and financial-operation
-flow after apply. VenueHire's setup checkout occurs before apply and therefore uses
-`opportunity:{id}`; it prepares a payment method but does not create or transition the Deal. `OperationId`
-remains the idempotent command identity; the external reference identifies the caller's commercial
-subject.
-
-This is a published-package cut-over:
-
-- add reference-native v2 client/protobuf/message surfaces and persist/index the external reference;
-- publish and platform-sync before B2B consumes them;
-- cut B2B to the new surface in the aggregate boundary PR;
-- remove the legacy application/booking-specific surface only after every consumer is proven absent;
-- re-scaffold Payment and B2B initial migrations at their respective model changes.
-
-Do not pass a Deal id through a parameter still called `bookingId`, and do not add a permanent adapter
-that translates Deal back into Application/Booking terminology.
-
-### 5.2 B2B frontend package and HTTP wire
-
-Venue and Artist consume the published `@concertable/b2b` package in their standalone carves. The
-Opportunity `deal` → `terms`, Application → Deal, and exported `Deal`-as-terms → `DealTerms` changes
-therefore cannot be an atomic source rename.
-
-Expand first: add the `terms` wire member while retaining `deal`, publish additive `DealTerms` exports
-and Deal resource client/types, then deploy the additive backend and publish the package. Phase 3
-switches Venue and Artist to those published surfaces. Phase 4 removes the old `deal` member,
-Application resource clients, and `Deal`-as-terms exports after repository and deployed-consumer
-searches prove they are unused. Compatibility exists only at these transport/package edges during the
-cut-over; it never enters the target domain model.
-
-## 6. Delivery graph
-
-```text
-Phase 1 ─ terms vocabulary + topology baseline ──────────────┐
-                                                             ├─> Phase 3 ─ B2B vertical cut-over
-Phase 2 ─ published Payment + frontend boundary expansions ──┘                    │
-                                                                               └─> Phase 4 ─ Payment cleanup
-                                                                                            │
-                                                                                            └─> Phase 5 ─ closeout
+```csharp
+var step = resolver.Resolve<ICompleteStep>(dealType);
+await step.ExecuteAsync(concert, cancellationToken);
 ```
 
-Phases 1 and 2 may proceed independently. Phase 3 requires both. Do not split Phase 3 into a
-Deal-state PR and a later workflow move: that would deliberately create the rejected two-module
-ownership seam.
+The generic keyed-registration mechanism may be mechanically similar in each module, but
+registrations, coverage declarations, step contracts, implementations, and resolver instances are
+module-local. There is no shared `IWorkflowStepResolver`, cross-module registry, or registration block.
 
-### Phase 1 — terms vocabulary and executable baseline
+Each module declares exact `DealType` coverage vertically at its own composition root. Repeating the
+closed key in three independent declarations is correct ownership, not duplication. Adding a new
+`DealType` must fail composition/tests in every module whose behaviour requires a deliberate choice.
 
-- [ ] Pin the exact current transition topology for all four deal types, including payment failure,
-  retry, late webhook, cancellation pending/failure, and settlement recovery paths.
-- [ ] Rename the current editable offer model from Deal to DealTerms across Domain, Contracts,
-  Application, Infrastructure, seed data, and tests.
-- [ ] Rename `OpportunityEntity.DealId` to `DealTermsId`; preserve behaviour and the current module
-  seam in this phase.
-- [ ] Keep the existing HTTP `deal` member and published frontend `Deal`-as-terms export at the boundary
-  until Phase 2 expands their replacements; internal C# names use DealTerms immediately.
-- [ ] Keep the two module-local strategy builders until ownership moves; do not introduce a shared
-  registry as an intermediate abstraction.
-- [ ] Update Deal/Concert architecture guidance so no new code uses the old ambiguous term while the
-  later phases are in flight.
-- [ ] Re-scaffold B2B initial migrations and run the focused Deal/Concert unit and integration gates.
+HATEOAS and dashboard capability checks consume module-local capability metadata or the combined read
+projection. They do not instantiate a workflow or reflect over an umbrella capability interface.
 
-### Phase 2 — published boundary expansions
+## 7. Dependency and communication rules
 
-- [ ] Map the Payment Contracts/Client producer and consumer topology before changing the published
-  surface; publish the additive versions through the normal package pipeline.
-- [ ] Add reference-native Payment client/protobuf commands and v2 integration messages without
-  removing the legacy surface.
-- [ ] Persist one external reference through escrow, verification, settlement transactions, financial
-  operations, ledgers, reporting, Stripe metadata, and returned outcomes.
-- [ ] Prove reference and operation idempotency with unit, SQL integration, and client transport tests.
-- [ ] Merge, publish, platform-sync, and verify B2B can restore the additive surface before Phase 3.
-- [ ] Add the Opportunity `terms` wire member beside `deal`; deploy that additive B2B backend shape.
-- [ ] Add and publish `@concertable/b2b` DealTerms exports plus Deal resource API/types while retaining
-  the old Application and Deal-as-terms exports. Verify Venue and Artist standalone carves restore the
-  published expansion before changing either consumer.
+Runtime code may reference another module only through its Contracts project. The intended dependency
+graph is acyclic:
 
-### Phase 3 — Deal aggregate and module-boundary cut-over
+```text
+Application.Runtime ──→ Opportunity.Contracts ──→ Deal.Contracts
+Booking.Runtime     ──→ Application.Contracts
+Concert.Runtime     ──→ Booking.Contracts
 
-- [ ] Move Opportunity and DealTerms into one Deal context and make terms an Opportunity-owned
-  one-to-one relationship.
-- [ ] Replace `ApplicationEntity` with concrete `DealEntity`, preserving the one-per-artist/opportunity
-  invariant and carrying tenant ids, artist/opportunity identity, immutable `DealType`, state,
-  signatures/fingerprint, payment authorization, operation ids, failures, and nullable `ConcertId`.
-- [ ] Replace `PaymentVerification`/`BookingAdvancer` phase naming with one durable
-  `VerificationOutcome` fact and payment-outcome coordinator on Deal; preserve both webhook-before-
-  accept and accept-before-webhook convergence without introducing a second state machine.
-- [ ] Move Contract, Invoice, invoice sequence, self-billing agreement/gate, their repositories,
-  services, renderers, and endpoints into Deal.
-- [ ] Move the complete workflow vertical slice into Deal: executors, steps, checkout dispatch,
-  transitioner, payment outcome handlers, payee/amount/terms/settlement strategies, and DI registration.
-- [ ] Merge the existing Deal and Concert per-type registrations into one validated vertical
-  `StrategyBuilder`; introduce `WorkflowDefinition` and the single `WorkflowRegistry`.
-- [ ] Implement `DealState`, `DealTrigger`, and `StateMachine`; route every mutation through the
-  Deal aggregate guard and port the exact topology tests.
-- [ ] Extend `IConcertModule` with narrow draft creation, cancellation, completion-candidate, and
-  settlement-fact operations. Return DTOs/scalars only; never expose `ConcertEntity`.
-- [ ] Use `IUnitOfWorkBehavior` for Booked/cancel transitions that write Deal and Concert contexts;
-  validate the transition before the effect and commit both local writes atomically.
-- [ ] Store returned `ConcertId` on Deal. Remove Booking navigation from Concert and create the draft
-  entirely from a snapshot command so Concert remains independently queryable.
-- [ ] Remove `BookingEntity`, its TPH variants, service, repository, DTOs, DbSet/configuration, and all
-  Application/Booking joins. Point Contract and Invoice directly at Deal.
-- [ ] Cut every B2B Payment call and outcome handler to `deal:{id}` on the reference-native surface.
-- [ ] Rename the internal/API/frontend resource identity from Application to Deal while retaining
-  phase-specific user copy where it is genuinely an application or booking view.
-- [ ] Switch Venue and Artist to the published DealTerms/Deal package surface and Opportunity `terms`
-  wire member; keep the transport compatibility members only until Phase 4.
-- [ ] Split dashboard aggregation by owner: Deal supplies opportunity/deal counts, Concert supplies
-  concert counts/facts, and Venue/Artist compose the two facades without cross-module queries.
-- [ ] Remove Concert's reference to Deal Contracts and add architecture tests for the final one-way
-  Deal → Concert.Contracts dependency.
-- [ ] Re-scaffold all B2B initial migrations; update dev/test seeders to create terms, opportunities,
-  deals, contracts, invoices, and concerts only through their production ownership paths.
-- [ ] Reconcile the legacy Rust decision-engine plan before it is resumed: B2B state remains
-  authoritative, but its extraction source becomes Deal `Workflow`/`StateMachine`, not the retired
-  Application/Booking/Concert chain.
+Application.Runtime ──→ Deal.Contracts
+Booking.Runtime     ──→ Deal.Contracts
+Concert.Runtime     ──→ Deal.Contracts
+```
 
-### Phase 4 — retire legacy published surfaces
+The runtime fact flow is always forward:
 
-- [ ] Execute the breaking Payment surface removal through the repository package-cutover workflow.
-- [ ] Prove no source, published consumer, integration handler, Stripe metadata parser, seed fixture,
-  or test still uses Payment `ApplicationId`, `BookingId`, or booking-named operations.
-- [ ] Remove the legacy client/protobuf/message versions and internal phase-specific properties.
-- [ ] Rename remaining storage/reporting concepts to external-reference vocabulary and re-scaffold the
-  Payment initial migration.
-- [ ] Publish and platform-sync the breaking cleanup; migrate any discovered consumer in the sync PR.
-- [ ] Remove the old Opportunity `deal` member, Application resource clients/types, and frontend
-  `Deal`-as-terms exports after both manager SPAs and standalone carves use the replacements; publish
-  the frontend cleanup and verify no deployed consumer remains.
+```text
+ApplicationAccepted
+        ↓
+Booking created / Contract frozen / financial confirmation
+        ↓
+BookingConfirmed
+        ↓
+Concert created
+```
 
-### Phase 5 — verification and closeout
+Rules:
 
-- [ ] Run focused Deal, Concert, Payment, Venue, and Artist unit/integration suites after each phase;
-  use draft-PR CI for complete solution, standalone carve, and full matrix validation.
-- [ ] Run the B2B API lifecycle E2E scenarios after Phase 3 and again against the final Payment package:
-  all four deal types, accept payment success/failure/retry, cancellation/refund races, concert draft,
-  finish, deferred settlement success/failure/recovery, contract, and invoice.
-- [ ] Keep focused SQL integration coverage for both accept/verification arrival orders and duplicate
-  outcomes so the renamed coordinator preserves the merged convergence guarantees.
-- [ ] Update `api/Concertable.B2B/ARCHITECTURE.md`, Deal architecture guidance, Concert guidance,
-  `api/docs/MICROSERVICES_ARCHITECTURE.md`, and payment vocabulary to the landed ownership model.
-- [ ] Review the net boundary, delete superseded review artifacts, verify every package/platform-sync
-  gate green, tick the roadmap item, then delete this plan and ledger in closeout.
+- Deal never references Application, Booking, or Concert runtime/contracts to interpret their state.
+- Application never queries or commands Booking or Concert state.
+- Booking never queries or commands Concert state.
+- Concert never traverses to `Booking.Application.State` or calls upstream services to finish an
+  operation.
+- A published downstream fact may update an upstream-facing read model or notification, but the
+  downstream transition never waits for a reply. Business authority never bounces backwards.
+- Opportunity reopening after cancellation must become a non-blocking fact/projection reaction or be
+  derived from current stage facts; Concert cancellation must not synchronously command Opportunity.
+- A composition/query layer may consume all three Contracts surfaces. It owns no lifecycle state or
+  commands.
 
-## 7. Acceptance criteria
+## 8. Transaction, ordering, and recovery invariants
 
-- one `DealEntity.Id` exists from apply through terminal state and is the only commercial lifecycle
-  identity in B2B;
-- `DealEntity.State` is the only persisted deal state and cannot be mutated with a mismatched
-  deal-type machine or an undeclared transition;
-- the current economic offer is named DealTerms everywhere it is not a concrete artist–venue deal;
-- no `ApplicationEntity`, `BookingEntity`, `BookingService`, `BookingId`, `LifecycleStateMachine`, or
-  `ConcertWorkflow*` type remains in B2B runtime code;
-- Deal owns every lifecycle implementation; Concert owns no Deal workflow implementation and has no
-  runtime/project reference back to Deal;
-- Concert is created at Booked, remains a separate aggregate, and is referenced from Deal only by id;
-- the single Deal strategy registration has exact coverage for every strategy family and workflow;
-- impossible per-type states remain unreachable even though `DealState` is a shared persisted union;
-- Payment receives only an opaque external reference and contains no Application, Booking, Deal,
-  Opportunity, Venue, Artist, or Concert settlement vocabulary except generic caller metadata used by
-  unrelated ticket-payment flows;
-- API, SPAs, seeders, tests, architecture docs, Rust-plan assumptions, package publications, platform
-  sync, and selected E2E coverage all agree with the final model.
+### Accept
 
-## 8. Explicit non-goals
+Preserve the current invariant that accepting an Application forms its Booking and Contract atomically.
+Within B2B, `IUnitOfWorkBehavior<T>` may coordinate the participating module DbContexts under one
+ambient transaction. That coordinator is an application-boundary operation with no persisted identity
+or state; it is not an umbrella aggregate.
 
-- changing the four deal types or their commercial formulas;
-- changing when checkout, capture, verification, escrow release, payout, or refund occurs;
-- moving persisted lifecycle state into the Rust decision engine;
-- combining Deal and Concert into one aggregate;
-- retaining compatibility aliases after the final consumer cut-over;
-- using the refactor to introduce dynamic/user-authored deal types.
+The transaction must stage all resulting outbox work before commit. A failure creating Booking or
+Contract leaves Application `Applied`.
+
+### Payment webhook before Accept
+
+Preserve the durable two-signal join:
+
+- a verification callback may arrive while Application is still `Applied` and before Booking exists;
+- Application records that immutable pre-accept payment evidence idempotently;
+- Accept creates Booking/Contract and consumes the recorded evidence;
+- whichever signal arrives second performs the one guarded handoff;
+- once Booking exists, later acceptance-payment outcomes and retries are Booking-owned;
+- duplicate/late callbacks are idempotent and cannot create a second Booking, Contract, or Concert.
+
+Do not solve ordering with retries-as-waiting, cross-module polling, or a global process row.
+
+### Booking confirmation
+
+Financial confirmation and Concert draft creation must converge exactly once. Prefer the same ambient
+cross-module transaction while both modules remain inside B2B; otherwise use an outbox/inbox handoff
+with deterministic identity and an explicit pending projection. The implementation must prove there
+is no lost callback, duplicate Concert, or permanently confirmed Booking without a recoverable Concert
+creation path.
+
+### Cancellation and settlement
+
+- Application handles only pre-accept rejection/withdrawal.
+- Booking handles cancellation/refund after acceptance and before Concert creation.
+- Concert handles cancellation after Concert creation.
+- Refund, completion, and settlement operation IDs, failures, retries, and compensations live with the
+  aggregate whose command is awaiting that outcome.
+- A late capture after cancellation is compensated idempotently without reopening an earlier state.
+- FlatFee/VenueHire escrow release and DoorSplit/Versus deferred settlement retain their current money,
+  payer/payee, retry, invoice, and completion invariants.
+
+## 9. Delivery phases
+
+Implementation starts from a fresh worktree based on current `origin/main`. Draft PR #614 and its
+DealTerms implementation are rejected input, not an implementation base.
+
+### Phase 1 — restore and characterize the real baseline
+
+- [x] Retire the rejected PR/branch through the repository's safe worktree process; do not merge or
+  repair its DealTerms code into the new implementation.
+- [x] Pin observable acceptance, payment, cancellation, settlement, Contract, Invoice, and
+  Concert-creation outcomes at module or API boundaries before moving ownership. Do not add tests for
+  the shared `LifecycleState`, its transition table, executor filenames, source tokens, or other
+  implementation structure scheduled for deletion.
+- [x] Record the current executors, processors, callbacks, worker, and API/HATEOAS consumers as
+  migration inventory in the progress ledger rather than freezing those owners as test expectations.
+
+Gate: the new branch is behaviourally identical to `origin/main`, Deal vocabulary is intact, durable
+behaviour is executable as tests, and no new test depends on the legacy shared lifecycle abstraction.
+
+### Phase 2 — establish module contracts and remove cross-stage entity navigation
+
+- [ ] Scaffold Opportunity, Application, and Booking module project families following existing B2B
+  conventions; Concert keeps only its eventual owned surface.
+- [ ] Replace cross-stage EF navigation in services, specifications, workers, and mappers with owned
+  IDs, module contracts, or query projections.
+- [ ] Define forward handoff records carrying immutable accepted/confirmed facts and deterministic IDs.
+- [ ] Preserve current API routes and wire vocabulary during the internal cutover.
+- [ ] Add architecture rules against the real module assemblies as they are scaffolded, failing direct
+  runtime/entity references while allowing Contracts dependencies.
+
+Gate: the dependency graph is acyclic and Contracts-only while behaviour and public responses remain
+unchanged.
+
+### Phase 3 — split Application and Booking ownership atomically
+
+- [ ] Move Application persistence, services, repository, API mapping, actions, and local lifecycle
+  state to Application.
+- [ ] Move Booking, Contract, acceptance payment/recovery, and pre-Concert cancellation to Booking.
+- [ ] Replace the combined `LifecycleState` with independent Application and Booking state.
+- [ ] Preserve the Accept transaction, immutable Contract snapshot, operation IDs, early-verification
+  join, late-callback compensation, retry, and idempotency invariants.
+- [ ] Re-home Standard/Prepaid Application and Standard/Deferred Booking without nullable flattening.
+
+Gate: Application is terminal after its decision, Booking owns every post-accept/pre-Concert
+transition, and all accept/payment arrival orders pass focused integration coverage.
+
+### Phase 4 — give Concert independent operational ownership
+
+- [ ] Create Concert only from a financially confirmed Booking handoff.
+- [ ] Move draft/posting, post-creation cancellation, completion, settlement recovery, and relevant
+  financial operation facts onto Concert or justified Concert-owned children.
+- [ ] Remove every Concert query or command that interprets `Application.State` or loads upstream
+  entities to determine a Concert transition.
+- [ ] Decide Invoice/settlement/ticket-transaction placement from their identity and transaction
+  evidence; create a separate financial module only if it owns an independent lifecycle.
+
+Gate: Concert can validate and complete every operation from its own state plus immutable handoff facts.
+
+### Phase 5 — replace the god workflow with local steps
+
+- [ ] Delete `IConcertWorkflow`, concrete `*Workflow` dependency-holders, the workflow factory,
+  cross-stage builder, state-machine registry, and reflection capability registry.
+- [ ] Add local `State`, `Trigger`, `StateMachine`, `IStepResolver<TStep>`, and contextual step contracts
+  only where each module needs them.
+- [ ] Register exact per-`DealType` step coverage independently in Application, Booking, and Concert.
+- [ ] Update `api/agents/CODE_PATTERNS.md` and module guidance so shared keyed infrastructure cannot be
+  mistaken for shared workflow ownership.
+
+Gate: each command resolves one local step; no service can resolve another module's steps or request a
+whole workflow.
+
+### Phase 6 — projections, compatibility, and delivery
+
+- [ ] Build the read-only combined journey projection used by APIs, dashboards, notifications, and
+  HATEOAS without granting it command authority.
+- [ ] Preserve public Application/Booking/Concert vocabulary and migrate frontend consumers without
+  exposing internal transition machinery.
+- [ ] Re-scaffold initial migrations after the final model move.
+- [ ] Update B2B architecture, Deal/Concert guidance, module AGENTS files, diagrams, and the .NET 11
+  native-union plan to the implemented boundary.
+- [ ] Run focused module/unit/integration verification locally; draft-PR CI owns the full solution,
+  carve, and integration matrix. Select the final merge-queue E2E tier under repository policy.
+- [ ] Review the complete implementation diff and follow PR, package publication, and platform sync to
+  terminal green before closing this plan.
+
+## 10. Definition of done
+
+- Deal, Opportunity, Application, Booking, Contract, and Concert retain their established meanings and
+  cardinalities.
+- Opportunity, Application, Booking, and Concert have honest module ownership; no module is an umbrella
+  named after one downstream entity while owning the entire chain.
+- Application, Booking, and Concert own independent state and transitions; no combined lifecycle state
+  or separately persisted process root exists.
+- The runtime dependency graph is Contracts-only and acyclic, with no backwards command/control flow.
+- There is no shared workflow module, cross-module step registry, umbrella state machine, or dependency-
+  holder exposing all steps.
+- Contextual local names (`State`, `Trigger`, `StateMachine`, `IStepResolver<TStep>`, `ICancelStep`) are
+  used without redundant aggregate prefixes inside their module.
+- Every `DealType` has exact, independently validated coverage for the local operations it requires.
+- Accept and Booking-confirmation boundaries are atomic or durably convergent as specified; every
+  callback order is idempotent.
+- Cancellation, late payment, refund, settlement recovery, Contract, Invoice, and Concert-creation
+  invariants remain covered.
+- APIs/frontends obtain one journey view from a read projection while commands remain module-owned.
+- Payment remains unaware of `DealType`, and Deal remains unaware of lifecycle state.
+
+## 11. Rejected directions
+
+- Deal → DealTerms renaming or a new per-artist Deal aggregate;
+- deleting or demoting Application or Booking;
+- Deal-owned workflow/state, including disguised Concert state passed through Deal Contracts;
+- keeping all post-accept state on Application;
+- moving all post-accept state onto Booking, including real Concert operations;
+- an Engagement/process/lifecycle aggregate or value object spanning the chain;
+- a BookingWorkflow, ConcertWorkflow, or shared Workflow module spanning multiple aggregates;
+- one shared resolver, registry, workflow definition, state enum, or state machine for all modules;
+- unions over DI service implementations rather than closed values;
+- any Rust lifecycle, settlement, or Deal decision engine;
+- backwards synchronous calls or a command cycle hidden behind facades, DTOs, events, or Contracts.

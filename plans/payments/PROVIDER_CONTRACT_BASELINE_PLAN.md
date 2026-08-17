@@ -25,8 +25,9 @@ platform baseline `0.1.0-alpha.0.1009`.
 - Merged PR #581 at `c75890243c44435d707eacf7e51377e4631bcf22` owns the current Customer
   web/mobile 3DS bridge. Its client-secret parsing, SignalR correlation, and 30-second wait remain an
   explicit compatibility island until the later Customer and frontend migration work.
-- PR #552 (`Refactor/B2BTypedResultMigration`, inspected at
-  `002c45f5fdb83362fff419448dd1c1a8832fd2a3`) is the external owner for B2B adoption of the existing
+- Merged PR #552 (`Refactor/B2BTypedResultMigration`, consumer head
+  `abb6b0035df2b0ecd32836814d166804cc59aa21`, merge commit
+  `33f07c47a497586324edacdcfc10321a9d3f02ee`) owns B2B adoption of the existing
   financial-operation commands and outcomes, including its additive `RefundReasonCodes` contract.
   This work must neither edit its consumer flow nor introduce replacement capture/deposit/refund
   messages or refund-reason constants.
@@ -214,7 +215,7 @@ Phase 2 adds definitions only where a later durable session implementation needs
 2. Do not add a new RPC until the durable session item can implement it end to end. The messages and
    client records are the shared wire vocabulary; existing `CheckoutSessionResponse`,
    `PaymentResponse`, `PaymentSessionType`, and every existing RPC remain byte-for-byte compatible.
-3. In Payment integration contracts, add one versioned `PaymentOperationStateChangedV1` event carrying
+3. In Payment integration contracts, add one `PaymentOperationStateChanged` event carrying
    operation identity, session kind, normalized state, monotonic revision, terminal/retry disposition,
    safe failure, expiry/capture deadline, and observation time. Do not alter or replace the existing
    `PaymentSucceeded`, `PaymentFailed`, or B2B financial-operation messages.
@@ -227,18 +228,20 @@ Phase 2 adds definitions only where a later durable session implementation needs
 
 ### Phase checklist
 
-- [ ] **Phase 1 — durable decision artifact and exhaustive inventory.** Make every existing Stripe
+- [x] **Phase 1 — durable decision artifact and exhaustive inventory.** Make every existing Stripe
   entry point and baseline decision durable, then guard the inventory in tests.
-- [ ] **Phase 2 — additive package and protobuf vocabulary.** Publish the smallest provider-neutral
+- [x] **Phase 2 — additive package and protobuf vocabulary.** Publish the smallest provider-neutral
   session/status/event vocabulary without changing existing consumers.
-- [ ] **Phase 3 — executable transition specification.** Encode every supported Stripe status and
+- [x] **Phase 3 — executable transition policy.** Encode every supported Stripe status and
   legal/illegal normalized transition as pure rules with exhaustive tests.
-- [ ] **Phase 4 — compatibility and architecture gates.** Prove additive compatibility with
+- [x] **Phase 4 — compatibility and architecture gates.** Prove additive compatibility with
   `0.1.0-alpha.0.1009`, preserve service/package boundaries, and complete remote validation.
 
 ### Phase 1 — durable decision artifact and exhaustive inventory
 
-Status: implementable.
+Status: complete. Live-mode evidence found that the production account has no webhook endpoint, so
+fixtures and future endpoint creation are locked to `2025-01-27.acacia`; endpoint creation and signing
+secret installation are deployment gates rather than implementation blockers.
 
 - Add `api/Concertable.Payment/PROVIDER_CONTRACT.md` as the durable source of truth containing the
   product matrix, operation/attempt model, state tables, legal transitions, terminality, retry,
@@ -251,7 +254,7 @@ Status: implementable.
 - Verify and record the live webhook endpoint API version. If it differs from
   `2025-01-27.acacia`, document the exact endpoint version and make normalization fixtures target that
   version; do not upgrade the endpoint as an incidental change.
-- Reconcile the artifact against current `origin/main`, PR #552's exact head if still open, and the
+- Reconcile the artifact against current `origin/main`, merged PR #552's exact contracts, and the
   published `0.1.0-alpha.0.1009` package surface. Do not edit B2B consumer code.
 
 Verification gate:
@@ -262,11 +265,12 @@ Verification gate:
 
 ### Phase 2 — additive package and protobuf vocabulary
 
-Status: depends on Phase 1 decisions, not on PR #552 implementation.
+Status: complete. The additive Contracts, Client, and protobuf vocabulary is locally green without
+runtime, RPC, persistence, webhook, or consumer wiring.
 
 - Add the client/protobuf records and enums listed under “Smallest additive contract surface”. Assign
   explicit non-zero protobuf enum values and append new field numbers; reserve nothing already shipped.
-- Add `PaymentOperationStateChangedV1` in Payment.Contracts with a stable message URN and no consumer-
+- Add `PaymentOperationStateChanged` in Payment.Contracts with a stable versioned message URN and no consumer-
   domain or Stripe dependency.
 - Extend existing error/result mappers with exhaustive handling for the new safe public codes while
   preserving the existing contracts used by `0.1.0-alpha.0.1009` and PR #552.
@@ -281,12 +285,16 @@ Verification gate:
 - A candidate package built from the branch passes the committed compatibility baseline described in
   Phase 4.
 
-### Phase 3 — executable transition specification
+### Phase 3 — executable transition policy
 
-Status: depends on Phase 2 vocabulary.
+Status: complete. The Stripe normalizer, provider-neutral Domain evaluators, and exhaustive tests
+cover the pinned provider vocabularies, every same-revision state pair, identity/freshness rejection,
+retry/revision, explicit cancellation, terminal protection, and provider-confirmed authorization
+expiry without runtime wiring. Raw nullable provider evidence normalizes into a closed non-nullable
+operation context before the reusable payment policy runs.
 
-- Implement pure, side-effect-free transition specifications for PaymentIntent, SetupIntent, and
-  Refund observations. The specification accepts the current persisted revision plus a versioned
+- Implement pure, side-effect-free transition policies for PaymentIntent, SetupIntent, and
+  Refund observations. The evaluator accepts the current persisted revision plus a versioned
   provider observation and returns an allowed transition, a duplicate/no-op, or a typed rejection.
 - Encode the complete allowed-edge tables for every normalized state, including authentication loops,
   `requires_capture`, processing, duplicate delivery, stale/out-of-order delivery, explicit
@@ -294,7 +302,7 @@ Status: depends on Phase 2 vocabulary.
 - Add exhaustive theory tests over every state pair and every Stripe status supported by Stripe.net
   `47.3.0`; unknown values must be tested as failures. Add fixtures for duplicate and out-of-order
   webhook sequences without implementing full webhook processing or reconciliation.
-- Keep the specification independent of EF, MassTransit, gRPC, Stripe services, timers, and consumer
+- Keep the policy independent of EF, MassTransit, gRPC, Stripe services, timers, and consumer
   domains so the later session entity and workers must call the same rules rather than reimplementing
   them.
 
@@ -306,7 +314,8 @@ Verification gate:
 
 ### Phase 4 — compatibility and architecture gates
 
-Status: depends on Phases 2 and 3.
+Status: complete. The published-package compatibility, architecture, frozen-consumer, focused local,
+and exact-head draft-PR CI gates are green.
 
 - Generate committed golden baselines from published `Concertable.Payment.Contracts`, Protos, and
   Client `0.1.0-alpha.0.1009`: public .NET signatures/message URNs and a protobuf descriptor set.
@@ -316,31 +325,37 @@ Status: depends on Phases 2 and 3.
 - Add assembly/source architecture tests proving Payment contracts/client/protos do not reference
   Stripe.net or Customer/B2B runtime/domain assemblies, and that Payment runtime does not gain a
   consumer-domain dependency.
-- Compile the frozen compatibility fixture and inspect PR #552 at its then-current exact head. Treat a
-  PR #552 change as external evidence to refresh, never as files to copy into this branch.
-- Run plan-graph validation and the repository's focused local gates; open a draft PR for remote build,
-  service carve, unit, integration, and package validation. Do not run local E2E unless a failing
-  remote check requires targeted diagnosis.
+- Compile the frozen compatibility fixture and verify the merged PR #552 contracts now present on
+  current `origin/main`.
+- Run plan-graph validation and the repository's focused local gates; keep draft PR #597 current for
+  remote build, service carve, unit, integration, and package validation. Do not run local E2E unless
+  a failing remote check requires targeted diagnosis.
 
 Verification gate:
 
 - Compatibility and architecture tests pass against `0.1.0-alpha.0.1009` and the candidate packages.
 - Focused local build/tests and draft-PR CI are green at the same commit.
+- Once the final implementation candidate and exact-head CI are green, mark PR #597 ready for review
+  unmistakably in the ledger, include its URL, and make `/review` the ledger's next action. The
+  review-ready checkpoint still hands off with the standard continuation pointer; it is not terminal.
 - A code review records no open high-confidence findings before merge becomes the ledger's next step.
 
 ## Delivery DAG
 
-1. Merge or otherwise reconcile PR #552 before this branch enters the merge queue if it still owns
-   overlapping published Payment contract files. This is a delivery gate, not an implementation
-   blocker, while all baseline additions remain additive.
-2. Update the implementation branch from current `origin/main`, rerun affected builds/tests, review,
-   push, and let draft-PR CI validate the exact remote head.
+1. Satisfied: PR #552 merged as `33f07c47a497586324edacdcfc10321a9d3f02ee`; its overlapping
+   Payment contract additions are present on this branch through current `origin/main`.
+2. Update the implementation branch from current `origin/main`, rerun affected builds/tests, push,
+   and let draft-PR CI validate the exact remote head; then review that green candidate. Any later code
+   commit requires `/incremental-review` before merge becomes the ledger's next step.
 3. Enter the normal code merge queue with the E2E tier selected mechanically from the changed paths.
    No local full E2E run is planned for this contract/architecture item.
 4. Follow `publish-packages` and the generated `chore/platform-sync-*` PR through green/merged. Because
    this item changes published Payment packages, the work is not terminal until the new platform pin
    has synchronized every service.
-5. Revalidate the compatibility fixtures and service builds against the published version, tick the
+5. Before a production deployment accepts webhooks, create the live endpoint at the actual deployed
+   Payment Web URL with API version `2025-01-27.acacia` and the four currently handled event types,
+   store its signing secret as `Stripe:WebhookSecret`, and record the returned endpoint evidence.
+6. Revalidate the compatibility fixtures and service builds against the published version, tick the
    `payments/provider-contract-baseline` checklist item, then close the plan and ledger through the
    prescribed docs closeout. Keep the roadmap.
 

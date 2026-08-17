@@ -6,6 +6,19 @@ Debt spanning multiple services or host `Program.cs` files. Debt inside the shar
 
 ## MED
 
+### Async application and persistence APIs do not consistently propagate cancellation
+
+Many application-service, repository, module-facade, and infrastructure methods perform EF Core,
+HTTP, blob, payment, or other asynchronous I/O without accepting a `CancellationToken`, while some
+neighbouring paths already propagate one. Request cancellation therefore stops at inconsistent
+boundaries, and callers cannot reliably cancel work after a client disconnect or host shutdown.
+
+**Resolves when:** inventory every async backend interface and implementation, add
+`CancellationToken ct = default` to methods that can reach I/O, thread it through all supporting
+dependency and framework calls, and add architecture coverage that rejects new cancellable I/O paths
+without a token. Preserve the Result convention: cancellation propagates as cancellation and is never
+mapped to an expected-outcome error.
+
 ### Repository query outputs blur entities, read models, projections, and DTO contracts
 
 Repository contracts across B2B, Customer, Search, and Payment do not follow one ownership or naming
@@ -15,21 +28,15 @@ public `*.Contracts` DTO. For example, Customer Concert's `IConcertReadRepositor
 the module contract `ConcertDto`, so its persistence adapter materializes a cross-module contract
 directly, while neighbouring repositories return `ConcertDetails`, entities, or persisted read models.
 
-The existing DTO-versus-Response rule in `api/AGENTS.md` defines service and HTTP outputs but does not
-define what a repository/query abstraction may return, who owns an efficient database projection, or
-how to distinguish an ephemeral LINQ projection from an event-fed persisted read model. As a result,
-`Dto`, `Details`, `Projection`, `ReadModel`, and `Entity` communicate different things in different
-areas, and dependency direction, mapping responsibility, tracking expectations, and public-contract
-coupling are decided locally rather than consistently.
+The repository-output and DTO rules in `api/agents/CODE_CONVENTIONS.md` now define the intended naming,
+ownership, and mapping boundary. Existing repositories predate that standard, however, so `Dto`,
+`Details`, `Projection`, `ReadModel`, and `Entity` still communicate different things in different areas,
+and dependency direction, tracking expectations, and public-contract coupling remain inconsistent.
 
-**Resolves when:** investigate the repository and query shapes across every backend service, establish
-and document one codebase standard for persistence entities, event-maintained read models, ephemeral
-query projections, application DTOs, module Contracts DTOs, and API Responses/Requests, including
-their ownership, allowed dependency directions, naming/location, mapping boundary, and absence
-semantics. Validate the proposed rule against representative read, write, paginated, cross-module,
-and performance-sensitive queries before migrating code. Then inventory and migrate every violation
-in coherent service/package cut-overs, and add practical architecture tests or mechanical guards for
-the parts of the standard that can be enforced automatically.
+**Resolves when:** inventory and migrate every violation in coherent service/package cut-overs, validate
+the standard against representative read, write, paginated, cross-module, and performance-sensitive
+queries, and add practical architecture tests or mechanical guards for the parts that can be enforced
+automatically.
 
 ### Repository bases repeat CRUD, and read no-tracking is a bypassable `Query` convention
 
@@ -41,7 +48,7 @@ through the tracked `context.Set<T>()`. And `Query` enforces nothing — a read 
 guarantee, and the duplication only exists because tracking lives on the query.
 
 **Resolves when:** no-tracking becomes a property of the **context**, not the query. Read repositories
-sit on a read-only, no-tracking context (the `PublicDbContext` shape — `SaveChanges` throws — already
+sit on a read-only, no-tracking context (the shared `ReadDbContext` shape — `SaveChanges` throws — already
 exists), so `context.Foo` is no-tracking by construction and can't be bypassed, and `Query` is
 deleted. With tracking off the query, read/write `GetById`/`GetAll`/`Exists` become identical, so the
 bases collapse to one CRUD implementation exposed through `IReadRepository` / `IWriteRepository`
@@ -90,19 +97,19 @@ configuration; explicit typed composition/options should select capabilities.
   validate the allowed names. Declarative JSON values may remain strings where the format requires
   them, but their values must follow the same vocabulary and be covered by a consistency test.
 
-### Extension methods use the legacy `this`-parameter syntax, not C# 14 `extension()` blocks
+### Existing extension containers still use legacy `this` parameters
 
-Every extension in the codebase is declared the pre-C# 14 way — `public static T M(this X x, …)` in `XExtensions`
+Many existing extension containers still use the pre-C# 14 form — `public static T M(this X x, …)` in `XExtensions`
 static classes. C# 14 (net10) added `extension()` blocks: the unified "extension members" form that also expresses
 extension properties, indexers, and static members, and groups members by receiver. Both compile to identical IL,
 so this is modernization/consistency debt, not a behavioural gap. The env-vocabulary work set the example —
 `Concertable.Kernel.EnvironmentsExtensions` / `HostEnvironmentExtensions` use `extension(Environments)` /
 `extension(IHostEnvironment env)` blocks (giving `Environments.Integration` + `env.IsIntegration()`).
 
-**Resolves when:** existing `this`-parameter extension methods migrate to `extension()` blocks — one `XExtensions`
-class per receiver type, members grouped in `extension(Receiver)` blocks — as a mechanical sweep or
-opportunistically as files are touched. New extension members use `extension()` from the start (see
-`agents/CODE_CONVENTIONS.md`).
+**Resolves when:** ordinary `this`-parameter extension methods migrate to `extension()` blocks, with
+receiver-owned members grouped in `XExtensions` and related mapping receivers grouped in `XMappers`.
+Every touched container migrates completely; new extension members use `extension()` from the start
+(see `agents/CODE_CONVENTIONS.md`). Signature-bound generator/framework declarations are excluded.
 
 ### `AzureServiceBusOptions` binder defaults are `= ""` instead of `null!`
 

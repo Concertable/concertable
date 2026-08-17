@@ -91,13 +91,12 @@ Shared libs sit at `api/Concertable.Shared/Concertable.<Name>/` and follow the s
 ## Cross-module rules (the §1 of MM_NORTH_STAR)
 
 - Zero cross-module runtime queries. Every module reads only from its own `DbContext`.
-- **This applies per *stance* too:** when a module has both a tenant-filtered and a public context
-  (see `CODE_PATTERNS.md` — "Tenancy is composed, never subtracted"), the public one is still a
-  per-module context composing only that module's configuration provider (`PublicConcertDbContext`).
-  A service-wide "public context over every module's model" is the same monolith query surface this
-  rule exists to prevent — don't add one. (The cross-module `ReadDbContext` that existed during the
-  extraction has been **deleted**; even the integration-test fixtures now read back through a module's
-  own `Public<Module>DbContext`.)
+- **This applies per *stance* too:** when a module has both a tenant-bound context and a
+  tenant-independent read context (see `CODE_PATTERNS.md` — "Tenancy is composed, never subtracted"),
+  the read context still composes only that module's configuration provider (`ConcertDbContext`). A
+  service-wide context over every module's model is the same monolith query surface this rule exists
+  to prevent — don't add one. The cross-module `ReadDbContext` that existed during extraction has
+  been deleted; integration fixtures read back through each module's own tenant-independent context.
 - Cross-module communication only via `IXModule` facades in Contracts (commands, narrow queries)
   or integration events (fan-out).
 - Cross-module FKs are plain primitives (`int ArtistId`, `Guid UserId`) — never nav properties
@@ -105,6 +104,22 @@ Shared libs sit at `api/Concertable.Shared/Concertable.<Name>/` and follow the s
 - Shared reference data (Genres, etc.) FKs into `SharedDbContext`. See MM_NORTH_STAR §6.
 
 Full set of corollaries + rationale in [MM_NORTH_STAR.md](/api/docs/MM_NORTH_STAR.md).
+
+### Tenant internally, organization at the HTTP boundary
+
+`Tenant` is the domain and persistence term. `organization` is the product/API term. Perform that
+translation once in the Api layer: use explicit lowercase `api/organization/...` route templates and
+organization vocabulary in HTTP models or actions where the surface represents the active tenant,
+while application services, repositories, entities, and database columns continue to use `Tenant`
+and `TenantId`. Controller ownership follows the resource's domain module; an `organization` route
+prefix alone does not justify an `OrganizationXController` wrapper. Do not introduce
+`OrganizationId` aliases below the HTTP boundary.
+
+`X-Tenant-Id` selects the active tenant. Do not duplicate that selector in an organization-scoped
+route or query string. A tenant's zero-or-one Artist or Venue is a singleton relationship at
+`api/organization/artist` or `api/organization/venue`, not a human-user resource and not an invented
+multi-profile collection. Canonical resources remain addressable by their own IDs at
+`api/artist/{artistId}` and `api/venue/{venueId}`.
 
 ### Module facades delegate to application use cases
 
