@@ -444,6 +444,52 @@ resolved under meta-rule 7 by deciding import-or-pointer, not both. Same treatme
 double-writes, which currently load twice. Runs after 3b: dedupeing into files 3b then restructures would
 edit the same lines twice.
 
+### Phase 5 — the shared repos become a browsable tree, not a flat skill list
+
+**Decided 2026-08-17.** Phase 3a landed 35 skills as flat sibling directories. That is fine for the
+router and bad for a human: a listing of `write-boundary`, `contract-naming`, `tiered-shared-code`,
+`stack-defaults` answers "what exists?" only if you already know the answer. Tommy's actual question —
+*"did I document this, and where is it?"* — has no cheap way to be asked, and this plan's own execution
+proves the cost: three gaps (page-object/`data-testid` shape, "tests must pass in isolation", "one
+repository per entity") were found by accident while cutting an unrelated file, not by inspection.
+Nothing about a flat list would ever have surfaced them.
+
+So invert the two: **the doc is the payload and the skill is the router**, and organize the payload as a
+tree. This applies to *everything* in the shared repos — process and runbooks as much as conventions —
+not just the convention topics.
+
+```text
+conventions/
+  testing/{e2e,integration,unit}/E2E.md, INTEGRATION.md, UNIT.md
+  csharp/{style,naming,comments}/…
+  react/{structure,server-state,client-state}/…
+skills/<topic>/SKILL.md        thin router -> the doc, one level deep (a discovery constraint)
+```
+
+Skills stay flat because discovery is `<root>/skills/*/SKILL.md` and does not recurse; only the content
+moves into the tree. Three consequences, all wanted: the tree is browsable and diffable, a gap is
+visible as a missing node, and the same doc gains two delivery modes — `@`-imported by a repo that wants
+it always-on, routed by the skill everywhere else. Content in a `SKILL.md` can only ever be delivered
+one way.
+
+- **Split `dotagents` by stack.** The .NET set and the TS/React set (9 skills, 671 lines) are
+  independent; a Spring Boot + React repo should get one without the other. Both still sync to
+  `~/.agents/skills/`, so consumption is unchanged.
+- **Do not name every leaf `CONVENTIONS.md`.** Twenty identically-named files defeat tabs, grep and
+  review. The topic goes in the filename. This repo already paid twice: `CODE_CONVENTIONS.md` vs
+  `CODE_PATTERNS.md` was the original "where does this rule go?" failure, and Phase 3b had to rename
+  `CONVENTIONS.md` → `MODULE_STRUCTURE.md` to clear a collision.
+- **Mandatory machine check — the tree must not grow orphans.** Every doc must have exactly one routing
+  skill and every skill must point at a doc that exists. Two structures that can drift is precisely how
+  754 lines of frontend law ended up with zero inbound links, unread until a shipped feature violated
+  it. Both halves of the pattern already exist: `docs_reachability.py` and the stub generator that
+  refuses to emit an unroutable stub.
+- **Generated per-repo index.** The tree answers "where is it"; an index generated from the tree
+  answers "did I document this" without opening anything.
+
+Sequenced after this PR merges: the Concertable-side pointers get rewritten once, against the final
+structure, instead of twice.
+
 ### Deferred to follow-up PRs
 Auto-load thinning (`api/AGENTS.md:3`'s three imports; the 86 merge lines and 32 Docker lines that
 `/merge` and `scripts/e2e.ps1` already automate); the analyzer push-down plus
