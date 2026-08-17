@@ -5,9 +5,9 @@
 - Roadmap item: `launch/deal-lifecycle-ownership`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules`
 - Branch: `Refactor/launch_deal-lifecycle-modules`
-- PR: draft implementation PR [#625](https://github.com/Concertable/concertable/pull/625) at verified work head `96dd6598979313c40214cbf78c69facd25e4b2e7`; docs-only decision PR #622 merged as `5c33f849444dda60ece44070353716c08819b2d8`; rejected PR #614 is closed and retired
-- Dependency/package gates: Phase 1 characterization is published. Its exact implementation range must be reviewed and pass exact-head draft-PR CI before Phase 2 starts.
-- Last reconciled: 2026-08-17 after publishing the Phase 1 characterization range and verifying local, remote, and PR heads
+- PR: draft implementation PR [#625](https://github.com/Concertable/concertable/pull/625) at verified reviewed work head `2cc20d1be8bc4e7755d5cc4894f11c159dabd6c7`; docs-only decision PR #622 merged as `5c33f849444dda60ece44070353716c08819b2d8`; rejected PR #614 is closed and retired
+- Dependency/package gates: Phase 1 characterization is published and reviewed with its only finding resolved. Exact-head draft-PR CI must pass before Phase 2 starts.
+- Last reconciled: 2026-08-17 after resolving the implementation review finding and verifying local, remote, and PR heads
 
 ## Current state
 
@@ -28,8 +28,8 @@ and a failed settlement followed by a successful retry reaches the existing comp
 new test asserts the legacy shared lifecycle topology, transition table, source layout, or filenames.
 
 The reserved Opportunity, Application, Booking, and Concert namespace guard remains valid because it
-enforces the target dependency direction. Phase 1 is published and now awaits implementation review
-and exact-head draft-PR CI before Phase 2 may begin.
+enforces the target dependency direction. Phase 1 is published and reviewed; only exact-head draft-PR
+CI remains before Phase 2 may begin.
 
 Rejected PR #614 is closed, and its DealTerms branch and worktree were retired with exact-head checks.
 The fresh implementation branch contains only current-main Deal vocabulary; none of the rejected
@@ -37,9 +37,8 @@ runtime change was carried forward.
 
 ## Next Steps
 
-1. Route exact implementation range `40cd20957289ef6117ec4926adcf5a6c8172462c..96dd6598979313c40214cbf78c69facd25e4b2e7`
-   through code review and resolve every actionable finding.
-2. Confirm exact-head draft-PR CI is green; Phase 2 remains closed until both gates pass.
+1. Confirm draft-PR CI is green at reviewed work head `2cc20d1be8bc4e7755d5cc4894f11c159dabd6c7`.
+2. Keep Phase 2 closed until that exact-head gate passes.
 
 ## Completed work
 
@@ -77,6 +76,8 @@ runtime change was carried forward.
 - Published Phase 1 range `40cd20957..96dd65989`, including current `origin/main` merge
   `96dd6598979313c40214cbf78c69facd25e4b2e7`; local HEAD, the remote branch, and PR #625
   `headRefOid` matched exactly before this ledger checkpoint.
+- Reviewed range `40cd20957..2cc20d1be`; replaced the fixture's hand-written handler scope with
+  `IScoped<...>.RunAsync`, then verified and published the resolved review work head.
 
 ## Verification
 
@@ -116,13 +117,18 @@ runtime change was carried forward.
   two pre-existing nullable warnings; the focused lifecycle boundary architecture test passed 1/1.
 - Phase 1 work-head publication: local HEAD, `origin/Refactor/launch_deal-lifecycle-modules`, and draft
   PR #625 `headRefOid` all equalled `96dd6598979313c40214cbf78c69facd25e4b2e7`.
+- Review-fix publication: local HEAD, `origin/Refactor/launch_deal-lifecycle-modules`, and draft PR #625
+  `headRefOid` all equalled `2cc20d1be8bc4e7755d5cc4894f11c159dabd6c7`; the affected integration-test
+  project rebuilt with 0 errors after the using-based scoped-dispatch cleanup.
 
 ## Reviews
 
 - Docs review of `89361e99e..d06422710` found three issues: the checkout boundary was ambiguous, the
   typed-result ledger retained a transferred return path, and graph evidence was stale. All were fixed
   in `0bd1d2094`; follow-up review through `d06422710` found no further issues.
-- No implementation review exists yet. The rejected PR's prior review is not evidence for this design.
+- Review `reviews/Refactor-launch_deal-lifecycle-modules.md` covered `40cd20957..2cc20d1be` across
+  correctness, microservice isolation, module boundaries, seeding, C# conventions, and changed-path
+  coverage. Its one low-severity integration-test convention finding is resolved; no open findings remain.
 
 ## Decisions, discoveries, blockers, and deviations
 
