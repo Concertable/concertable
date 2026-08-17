@@ -148,6 +148,12 @@ already reviewed and merged on `main` as #645. Review state: **clean, 0 open fin
 
 ## Next Steps
 
+Paused: Tommy — read PR #637 himself and say whether it is ready; resume when he gives the merge
+go-ahead (or hands back findings to fix on the branch). The automated `/review` is clean, but that is
+not his sign-off, and the corpus this PR rewrites is the guidance he reads every prompt. Everything
+below step 1's enqueue is prepared and waiting: branch 0 behind, head `11342ad7c` pushed, checks
+running on the exact head, `skip-e2e` correct, gate satisfied. Do not enqueue until he says so.
+
 1. **Land this PR.** Routed to `/merge`, not `/merge-docs`: the diff carries one `.cs` file
    (`ModuleBoundaryTests.cs` — comment and `.Because(...)` strings repointed by the
    `CONVENTIONS.md` → `MODULE_STRUCTURE.md` rename), which `merge-docs` hard-refuses, so the queue's
