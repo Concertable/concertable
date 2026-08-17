@@ -43,7 +43,8 @@ and tested; nothing further is safely implementable locally.
   POSTs. B2B: the pair placed after auth/`TenantResolutionMiddleware`, before authorization/`MapControllers`;
   `Apply`→`ApplicationController.Apply`, `Upload`→`BlobController.Upload`, `Messaging`→the located
   message-send surface. Add a B2B integration test proving a throttled endpoint returns 429 + `Retry-After`.
-- Route Phase 1 through `/review` before requesting merge.
+  Confirm each web host runs `UseForwardedHeaders` before `UseDefaultRateLimiting` so the per-IP policies
+  (`Login`/`Upload`) partition on the real client IP, not the proxy IP (see plan Phase 2).
 
 ## Completed work
 
@@ -67,7 +68,10 @@ and tested; nothing further is safely implementable locally.
 
 ## Reviews
 
-None yet.
+- 2026-08-17 `/review` (medium), range `bfbfd863c..6050bd927` → **clean, no findings**
+  (`reviews/Feature-launch_rate-limiting.md`). Native `code-reviewer` layer + Concertable lenses both
+  clear. One out-of-diff note (per-IP policies need host `UseForwardedHeaders`) pinned into the plan's
+  Phase 2 rather than raised as an in-diff finding. Security layer not required (no sensitive paths).
 
 ## Decisions, discoveries, blockers, and deviations
 
