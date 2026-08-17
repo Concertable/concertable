@@ -36,7 +36,8 @@ Resume when: `gh pr view 595`, `600`, and `637` each report `MERGED` or `CLOSED`
 - Selected the interface-plus-same-name-companion pattern with source-owned `toX` operations.
 - Classified the current frontend transformations and specified an exact disposition for every
   retained or migrated site.
-- Created the roadmap item, implementation plan, and operational ledger.
+- Created the roadmap item, implementation plan, and operational ledger in `d09f09f23`.
+- Resolved all five docs-review findings in `18fec1752` and `959dbb516`.
 
 ## Verification
 
@@ -45,11 +46,15 @@ Resume when: `gh pr view 595`, `600`, and `637` each report `MERGED` or `CLOSED`
   frontend implementation.
 - Registered worktrees checked. `Refactor/OrganizationProfileRouteContraction` has committed
   Artist/Venue changes without an open PR and is explicitly not the implementation base.
+- `python .agents/hooks/plan_graph.py --root <plan-worktree>`: 0 errors, 0 warnings.
+- Local Markdown link check: every relative link in `plans/frontend/` resolves.
+- `git diff --check`: clean through `959dbb516`.
 - No implementation tests apply yet.
 
 ## Reviews
 
-The plan artifacts require a docs review before their plan PR is merged. No implementation review
+Full docs review covered `9205e82df..959dbb516`. Five accuracy, contradiction, and followability
+findings were fixed; the plan and roadmap are clean through `959dbb516`. No implementation review
 exists.
 
 ## Decisions, discoveries, blockers, and deviations
