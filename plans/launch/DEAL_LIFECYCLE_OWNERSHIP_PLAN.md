@@ -296,7 +296,6 @@ DealTerms implementation are rejected input, not an implementation base.
   implementation structure scheduled for deletion.
 - [x] Record the current executors, processors, callbacks, worker, and API/HATEOAS consumers as
   migration inventory in the progress ledger rather than freezing those owners as test expectations.
-- [x] Add architecture tests that fail direct runtime/entity references across the target modules.
 
 Gate: the new branch is behaviourally identical to `origin/main`, Deal vocabulary is intact, durable
 behaviour is executable as tests, and no new test depends on the legacy shared lifecycle abstraction.
@@ -309,6 +308,8 @@ behaviour is executable as tests, and no new test depends on the legacy shared l
   IDs, module contracts, or query projections.
 - [ ] Define forward handoff records carrying immutable accepted/confirmed facts and deterministic IDs.
 - [ ] Preserve current API routes and wire vocabulary during the internal cutover.
+- [ ] Add architecture rules against the real module assemblies as they are scaffolded, failing direct
+  runtime/entity references while allowing Contracts dependencies.
 
 Gate: the dependency graph is acyclic and Contracts-only while behaviour and public responses remain
 unchanged.

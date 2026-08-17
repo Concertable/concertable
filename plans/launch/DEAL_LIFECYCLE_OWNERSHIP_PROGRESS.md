@@ -5,9 +5,9 @@
 - Roadmap item: `launch/deal-lifecycle-ownership`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules`
 - Branch: `Refactor/launch_deal-lifecycle-modules`
-- PR: draft implementation PR [#625](https://github.com/Concertable/concertable/pull/625) at verified reviewed work head `2cc20d1be8bc4e7755d5cc4894f11c159dabd6c7`; docs-only decision PR #622 merged as `5c33f849444dda60ece44070353716c08819b2d8`; rejected PR #614 is closed and retired
-- Dependency/package gates: Phase 1 characterization is published and reviewed with its only finding resolved. Exact-head draft-PR CI must pass before Phase 2 starts.
-- Last reconciled: 2026-08-17 after resolving the implementation review finding and verifying local, remote, and PR heads
+- PR: draft implementation PR [#625](https://github.com/Concertable/concertable/pull/625) at exact checkpoint head `f3ebb0fc966a30efab227d16d191cb8d8dcb07a4`, carrying reviewed work head `2cc20d1be8bc4e7755d5cc4894f11c159dabd6c7`; docs-only decision PR #622 merged as `5c33f849444dda60ece44070353716c08819b2d8`; rejected PR #614 is closed and retired
+- Dependency/package gates: Phase 1 is complete: characterization is published, reviewed with its only finding resolved, and exact-head draft-PR CI is green. Phase 2 has not started.
+- Last reconciled: 2026-08-17 after exact-head draft-PR CI completed green for Phase 1
 
 ## Current state
 
@@ -20,16 +20,16 @@ model, contextual step contracts, and module-local step resolver. There is no um
 shared lifecycle state, workflow module, cross-module resolver, or parent state machine. A combined
 status exists only as a read projection.
 
-Phase 1 characterization is complete locally. Existing integration coverage already pins both
+Phase 1 characterization is complete. Existing integration coverage already pins both
 payment/Accept arrival orders, payment failures, pre- and post-Concert cancellation, late-capture
 compensation, immutable Contract snapshots, Invoice creation, and duplicate settlement success. The
 two missing cases are now covered: payment-webhook redelivery asserts exactly one persisted Concert,
 and a failed settlement followed by a successful retry reaches the existing completion outcome. No
 new test asserts the legacy shared lifecycle topology, transition table, source layout, or filenames.
 
-The reserved Opportunity, Application, Booking, and Concert namespace guard remains valid because it
-enforces the target dependency direction. Phase 1 is published and reviewed; only exact-head draft-PR
-CI remains before Phase 2 may begin.
+The speculative future-module architecture guard was removed because it matched no types before the
+modules existed. Phase 2 will add compile-time project boundaries and ArchUnitNET rules against each
+real assembly as it is scaffolded. Phase 1 is complete and Phase 2 has not started.
 
 Rejected PR #614 is closed, and its DealTerms branch and worktree were retired with exact-head checks.
 The fresh implementation branch contains only current-main Deal vocabulary; none of the rejected
@@ -37,8 +37,11 @@ runtime change was carried forward.
 
 ## Next Steps
 
-1. Confirm draft-PR CI is green at reviewed work head `2cc20d1be8bc4e7755d5cc4894f11c159dabd6c7`.
-2. Keep Phase 2 closed until that exact-head gate passes.
+1. Begin Phase 2 by scaffolding the Opportunity, Application, and Booking module project families while
+   preserving Concert's eventual owned surface and current public routes.
+2. Replace cross-stage entity navigation with owned IDs, Contracts-only module calls, and immutable
+   forward handoff records, adding architecture rules against each real module assembly; stop at the
+   Phase 2 acyclic dependency-graph gate.
 
 ## Completed work
 
@@ -58,9 +61,6 @@ runtime change was carried forward.
   and confirmed its PR head and `skip-e2e` label.
 - Merged docs decision PR #622 as `5c33f849444dda60ece44070353716c08819b2d8`, closed rejected PR #614,
   and retired its clean worktree/local branch at exact head `ec1dcac897ce5075db83247d05ff694a912f9c43`.
-- Added a reserved lifecycle-module architecture rule that allows Contracts dependencies but rejects
-  direct Domain, Application, Infrastructure, and Api references between Opportunity, Application,
-  Booking, Deal, and Concert.
 - Published initial work commit `7898bf8bb83f3dff61686044cd49023ed0afb9fc`, merged current
   `origin/main` as `3d0fc5a823cad198f8de878aecef5928036f6c5f`, then pushed range
   `7898bf8bb..3d0fc5a82` from starting remote head `7898bf8bb`.
@@ -78,6 +78,8 @@ runtime change was carried forward.
   `headRefOid` matched exactly before this ledger checkpoint.
 - Reviewed range `40cd20957..2cc20d1be`; replaced the fixture's hand-written handler scope with
   `IScoped<...>.RunAsync`, then verified and published the resolved review work head.
+- Exact checkpoint `f3ebb0fc966a30efab227d16d191cb8d8dcb07a4` passed draft-PR CI run
+  `31983097059`, including build, every service carve, unit matrix, integration matrix, and `ci-complete`.
 
 ## Verification
 
@@ -93,10 +95,6 @@ runtime change was carried forward.
   preserves the join without treating it as one end-to-end state.
 - Corrected Concert unit suite: 229/229 passed in Release with the branch restored to current-main
   lifecycle test coverage and no new assertion over `LifecycleState` or its transition table.
-- Targeted B2B module-boundary architecture suite: 7/7 passed in Release.
-- Complete architecture suite reached the unrelated current-main Reunion package-ownership guard;
-  Conversations projects retain direct package references their source no longer consumes. The
-  lifecycle module-boundary tests themselves are green.
 - `dotnet build api/Concertable.B2B/src/Concertable.B2B.Web/Concertable.B2B.Web.csproj --configuration Release --no-restore`:
   0 errors and the pre-existing `UserEntity` CS0628 warning after merging the current platform pin.
 - Rejected DealTerms implementation vocabulary scan: no matches.
@@ -108,18 +106,20 @@ runtime change was carried forward.
   #625 `headRefOid` all equalled `cea004a225d04e1ce92abb0eac1b061220e2bdc2`.
 - `dotnet build api/Concertable.B2B/src/Modules/Concert/Tests/Concertable.B2B.Concert.IntegrationTests/Concertable.B2B.Concert.IntegrationTests.csproj --configuration Release`:
   0 errors; the three warnings are pre-existing `UserEntity`/`ConcertApiTests` warnings.
-- Focused `LifecycleModules_DependOnEachOtherOnlyThroughContracts` architecture test: 1/1 passed in
-  Release.
 - Current candidate `python .agents/hooks/plan_graph.py --root <worktree>`: 0 errors and 0 warnings;
-  `git diff --check`: passed. The integration matrix is pending exact-head draft-PR CI under the
-  remote-validation policy.
+  `git diff --check`: passed.
 - After merging current `origin/main`, the affected integration-test project built with 0 errors and
-  two pre-existing nullable warnings; the focused lifecycle boundary architecture test passed 1/1.
+  two pre-existing nullable warnings.
 - Phase 1 work-head publication: local HEAD, `origin/Refactor/launch_deal-lifecycle-modules`, and draft
   PR #625 `headRefOid` all equalled `96dd6598979313c40214cbf78c69facd25e4b2e7`.
 - Review-fix publication: local HEAD, `origin/Refactor/launch_deal-lifecycle-modules`, and draft PR #625
   `headRefOid` all equalled `2cc20d1be8bc4e7755d5cc4894f11c159dabd6c7`; the affected integration-test
   project rebuilt with 0 errors after the using-based scoped-dispatch cleanup.
+- Exact-head draft-PR CI at checkpoint `f3ebb0fc966a30efab227d16d191cb8d8dcb07a4`: green. The B2B
+  Concert integration shard passed in 5m03s, the Concert unit shard passed in 1m14s, and `ci-complete`
+  passed.
+- Removed the future-module ArchUnitNET rule before delivery because `WithoutRequiringPositiveResults`
+  made it vacuous until the module assemblies exist; Phase 2 now owns meaningful boundary enforcement.
 
 ## Reviews
 
