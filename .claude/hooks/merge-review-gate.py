@@ -226,7 +226,8 @@ def main():
                 "stamps the marker), THEN merge."
             )
         sreviewed = sm.group(1).lower()
-        if not (head.lower().startswith(sreviewed) or sreviewed.startswith(head.lower())):
+        if not (head.lower().startswith(sreviewed) or sreviewed.startswith(head.lower())) \
+                and not review_only(sreviewed, head):
             block(
                 "MERGE GATE (security layer): security review is STALE — reviews/" + slug + ".md "
                 "security marker is at " + sreviewed + " but HEAD is " + head[:12] + ". Commits "
