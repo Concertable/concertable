@@ -219,7 +219,12 @@ Re-verified after the fixes: hooks **72 passed**, `docs_reachability.py` **0 err
 
 Both markers have since moved forward twice more with nothing re-reviewable in between — the two
 base-currency merges of `origin/main`, whose only content outside `reviews/` is the platform pin bump
-already reviewed and merged on `main` as #645. Review state: **clean, 0 open findings.**
+already reviewed and merged on `main` as #645. Review state on that range: **clean, 0 open findings.**
+
+**Reviewable code has landed since**: the build gate, the router, the vendoring, and now Phase 6 tier 3
+(`1d198c6ba`). So the marker-to-head range no longer touches `reviews/` alone, and
+`merge-review-gate.py` will refuse an enqueue until an `incremental-review` covers it. That review is
+Step 1 of landing, not an optional extra.
 
 ## Next Steps
 
@@ -259,7 +264,11 @@ in `agent-standards`, vendored here with a hash check, wired for **both** harnes
    automated `/review` is not it; resume on his go-ahead once the above is in. Note the review markers are
    deliberately stale: real reviewable code (build gate, router, vendoring) landed after them.
 
-4. **Land this PR** once the above is in. Routed to `/merge`, not `/merge-docs`: the diff carries one `.cs` file
+4. **`/incremental-review` over `2b93b45b..HEAD`** — the build gate, the router, the vendoring and tier 3
+   all landed after the current markers, so the gate hook will refuse an enqueue until this runs and
+   re-stamps them. Its Layer 1 spawns the `code-reviewer` subagent, so run it in a session that permits
+   subagents.
+5. **Land this PR** once the above is in. Routed to `/merge`, not `/merge-docs`: the diff carries one `.cs` file
    (`ModuleBoundaryTests.cs` — comment and `.Because(...)` strings repointed by the
    `CONVENTIONS.md` → `MODULE_STRUCTURE.md` rename), which `merge-docs` hard-refuses, so the queue's
    build gate applies. Review clean (0 open findings), local = remote = PR head, `skip-e2e` label correct
@@ -274,20 +283,20 @@ in `agent-standards`, vendored here with a hash check, wired for **both** harnes
    C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-guidance-docs -PullRequest 637
    -PlanManaged`, then follow the generated `chore/platform-sync-*` PR to green (this branch's `api/**`
    markdown matches `publish-packages.yml`'s coarse `paths:`; non-breaking, so it should auto-merge).
-5. **Phase 3c — the 10,011 lines of markdown outside the conventions folders.** Most is correctly-placed domain
+6. **Phase 3c — the 10,011 lines of markdown outside the conventions folders.** Most is correctly-placed domain
    knowledge and stays untouched; six items need a disposition, listed in the plan's Phase 3c table.
    `app/README.md` is still the unmodified Vite scaffold, and `notes/Concert-Rust-Analysis.md` (444) is
    referenced by nothing.
-6. **Phase 4 — collapse the remaining duplication rows to one home each.** Seeding is the big one: the
+7. **Phase 4 — collapse the remaining duplication rows to one home each.** Seeding is the big one: the
    `seeding` skill now owns the rule and `SEEDING_CONVENTIONS.md` the inventory, but `api/AGENTS.md:28–47`
    still restates 20 lines of it inline. Resolve under meta-rule 7 by deciding import-or-pointer — that
    summary exists precisely *because* `SEEDING_CONVENTIONS.md` is not `@`-imported. Same for
    `api/AGENTS.md`'s "shared code is the intersection" section, which `microservice-boundaries` now states
    generically.
-7. **Make the 7 process skills concrete, and execute the settled merge ruling on their side.** They were
+8. **Make the 7 process skills concrete, and execute the settled merge ruling on their side.** They were
    written generic for a shared repo; the `merging` skill must lose the confirm-loop body and keep the rule,
    with the executable `.agents/skills/merge/SKILL.md` owning the procedure. Same for `pr-preflight`.
-8. **Promotion candidates for the shared skills**, all found while cutting against them — none blocking:
+9. **Promotion candidates for the shared skills**, all found while cutting against them — none blocking:
    - **FIXED (`dotagents` `daef94d`)** — `persistence` taught that an awaiting page projection "still
      constructs its page by hand", the practice `main` refactored away from in `OpportunityMapper`. The
      10-commit merge in this turn surfaced it: the owning home was teaching the superseded rule while the
@@ -333,7 +342,7 @@ in `agent-standards`, vendored here with a hash check, wired for **both** harnes
      Not on this branch: #637 is enqueue-ready and any further push re-stales its review; the cut also
      rewrites `Concertable.Testing.E2E/AGENTS.md`, which #637 already edits. Do it in the continuation
      worktree once #637 lands.
-9. **Deferred to its own PR:** auto-load thinning of root `AGENTS.md` (the 86 merge lines and 32 Docker lines
+10. **Deferred to its own PR:** auto-load thinning of root `AGENTS.md` (the 86 merge lines and 32 Docker lines
    that `/merge` and `scripts/e2e.ps1` already automate), the analyzer push-down plus
    `EnforceCodeStyleInBuild`, and **a CI job running the Python hook tests** — nothing in
    `.github/workflows/` runs them today, so every hook gate here is only as live as the last person who ran
