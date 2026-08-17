@@ -5,11 +5,12 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `2a53c010b80b737dfae665c2e8e9140571a4e27e`  _(2026-08-16)_
-**Security-reviewed up to commit:** `2a53c010b80b737dfae665c2e8e9140571a4e27e`  _(2026-08-16)_
+**Reviewed up to commit:** `0d7821d6d4985d905600caf99c873513179982e0`  _(2026-08-17)_
+**Security-reviewed up to commit:** `0d7821d6d4985d905600caf99c873513179982e0`  _(2026-08-17)_
 
-> Range reviewed: `d5669a836..2a53c010b` (11 commits). Commits after `5492efa58` are docs-only
-> (this review file + the plan ledger's Phase-2 pre-flight note) — no code to re-review.
+> Range reviewed: `d5669a836..0d7821d6d` (14 commits). Commits after `5492efa58` are docs-only except
+> `6aabf147b` (the IAdminRepository extraction below) and `0d7821d6d` (merge of `origin/main`, resolving
+> one conflict in `api/agents/CODE_CONVENTIONS.md` by keeping both sides' additions — no semantic change).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
 
 ## Findings
@@ -22,6 +23,21 @@
   these endpoints. Fixed: added `RevokeInvitationAsync_InvitationNotFound_*`, `RevokeInvitationAsync_AlreadyAccepted_*`,
   `RevokeInvitationAsync_Pending_*`, `IsCurrentUserAdminAsync_NoCurrentUser_*`, `IsCurrentUserAdminAsync_CurrentUserIsAdmin_*`,
   and `GetOverviewAsync_JoinsAdminEmailsAndPendingInvitations` to `AdminServiceTests.cs`.
+
+- [x] **MB1 — MED — module boundaries** — `api/Concertable.B2B/src/Modules/User/Concertable.B2B.User.Application/Interfaces/IUserRepository.cs`
+  `IUserRepository` mixed three unrelated entity types (`UserEntity`, `AdminProfileEntity`,
+  `AdminInvitationEntity`) — the minority repository shape in this codebase; Concert and Conversations
+  both give every entity its own repository, including satellite entities in the same module/DbContext
+  (`ApplicationRepository`/`BookingRepository`/`ConcertRepository`/.../`ContentReportRepository`/
+  `MessageRepository`). Fixed: extracted `IAdminRepository`/`AdminRepository` (bound to
+  `AdminInvitationEntity`) for the admin-authority and admin-invitation queries; `IUserRepository` is now
+  `UserEntity`-only. `AdminService` depends on `IAdminRepository`. Also collapsed a redundant
+  `GetInvitationByIdAsync`/`AddInvitation` pair (now covered by the inherited base `GetByIdAsync`/
+  `InsertAsync` once correctly bound) and an `AddAsync`+`SaveChangesAsync` pair into one `InsertAsync`
+  call — the same slip found and logged as recurring across five other services
+  (`api/Concertable.B2B/TECH_DEBT.md`). Added "One repository per entity" to `api/agents/CODE_PATTERNS.md`
+  and logged `ITenantRepository`'s pre-existing three-entity mix as tech debt in a new Tenant module
+  `TECH_DEBT.md` (out of scope for this branch — pre-existing, cross-cutting).
 
 <!-- NAT layer (Layer 1, code-reviewer subagent): no findings cleared the 80% confidence bar. Diff closely mirrors InvitationService/TenantInvitationEntity/MembershipService precedent. -->
 
