@@ -97,6 +97,25 @@ finder says literally what it fetches and by what key — `GetByTenantIdAsync`,
 use-case name (`GetInboxAsync`, `GetInboxSummaryAsync`) belongs on the *service* that calls
 it. Don't push an intent name (`GetInbox`) down onto the repository.
 
+**Adding one entity with nothing else staged — use `InsertAsync`, not `AddAsync` + `SaveChangesAsync`.**
+`IWriteRepository<TEntity>` gives both: `AddAsync` stages only (for a unit of work that stages more than
+one write before a single shared save), `InsertAsync` stages *and* saves in one call. When the add is the
+only write happening in that method, `InsertAsync` is the one-line form — writing `repository.Add(x);
+await repository.SaveChangesAsync(ct);` as the last two statements of a method is the same operation
+spelled with an extra line and an extra round-trip to reason about.
+
+```csharp
+// CORRECT — the add is the only staged write in this method
+await repository.InsertAsync(invitation, ct);
+
+// WRONG — two calls for what InsertAsync already does in one
+repository.Add(invitation);
+await repository.SaveChangesAsync(ct);
+```
+
+Reach for the two-call `AddAsync` + `SaveChangesAsync` form only when something *else* is staged first
+(another `Add`/`Update`/`Remove` in the same method) and the save is meant to commit all of it together.
+
 ## Table + schema names — the module `Schema.cs` constants
 
 Each persistence module owns a `Schema.cs` (`internal static class Schema`) holding its DB schema name and

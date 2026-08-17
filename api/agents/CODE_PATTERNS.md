@@ -87,6 +87,25 @@ of its context; a Customer `XReadRepository` is read-only over a context with no
 Keep the ordinary owned/scoped/writable repository unqualified. Audience belongs at the API contract,
 not in persistence type names.
 
+## One repository per entity — don't fold a satellite entity into another entity's repository
+
+A repository's generic base (`Repository<TEntity>`) binds it to exactly one entity; give every entity
+its own repository even when several live in the same module and DbContext, and even when one is
+queried far more than another. Concert (`ApplicationRepository`, `BookingRepository`,
+`ConcertRepository`, `ContractRepository`, `InvoiceRepository`, `OpportunityRepository`) and
+Conversations (`MessageRepository`, `ContentReportRepository`) are the reference shape: six and two
+sibling entities in one module, six and two repositories.
+
+The tell that a repository has drifted into this anti-pattern: its interface mixes queries for two or
+more unrelated entity types (e.g. `IUserRepository` returning both `UserEntity` and admin-invitation
+rows), or it hand-writes a `GetXByIdAsync`/`AddX` pair that only re-implements what the generic base
+already gives the *wrong* entity type bound as `TEntity`. Split it — one interface, one repository, one
+entity — even if the caller (a single service) ends up injecting two repositories instead of one; that
+is the service's job, not a reason to merge the persistence contracts.
+
+`ITenantRepository` (Tenant module) is a known, pre-existing violation — logged in that module's
+`TECH_DEBT.md`, not a pattern to copy.
+
 ## Module-local keyed strategy factory
 
 **When behavior varies by a closed key** (typically `DealType`), declare every strategy family
