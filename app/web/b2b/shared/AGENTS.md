@@ -15,7 +15,7 @@ Three buckets, three homes:
   messaging, user basics, concert/venue/artist details views.
 - **Both manager apps, no customer** → here. Opportunities, contract UI, application checkout
   hooks, payout onboarding.
-- **One app only** → that app's `src/`. `useMyVenue` belongs to venue, `useApply` to artist,
+- **One app only** → that app's `src/`. `useVenue` belongs to venue, `useApply` to artist,
   ticket surfaces to customer. Two consumers is the minimum bar for this folder — "venue uses it
   and artist might later" is single-app code.
 

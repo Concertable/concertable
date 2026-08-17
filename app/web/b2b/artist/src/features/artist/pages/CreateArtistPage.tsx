@@ -52,7 +52,7 @@ export function CreateArtistPage() {
         avatar: avatar! as unknown as File,
       }),
     onSuccess: (saved) => {
-      queryClient.setQueryData(artistKeys.my(), saved);
+      queryClient.setQueryData(artistKeys.details(), saved);
       navigate({ to: "/" });
     },
   });

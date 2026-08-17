@@ -3,7 +3,7 @@ import { View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { notify } from "@concertable/mobile/lib/toast";
 import {
-  useMyArtist,
+  useArtist,
   useArtistStore,
 } from "@concertable/shared/features/artists";
 import { EditableProvider } from "@concertable/shared/providers";
@@ -26,7 +26,7 @@ export function MyArtistScreen() {
     save,
     toggleEdit,
     resetDraft,
-  } = useMyArtist({
+  } = useArtist({
     onSuccess: () => notify("Artist saved!", "success"),
     onError: () => notify("Failed to save artist.", "error"),
   });

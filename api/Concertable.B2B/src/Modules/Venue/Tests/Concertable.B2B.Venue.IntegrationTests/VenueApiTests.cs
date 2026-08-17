@@ -411,4 +411,21 @@ public sealed class VenueApiTests : IAsyncLifetime
     }
 
     #endregion
+
+    [Theory]
+    [InlineData("GET", "/api/venue/user", HttpStatusCode.NotFound)]
+    [InlineData("POST", "/api/venue", HttpStatusCode.NotFound)]
+    [InlineData("PUT", "/api/venue/1", HttpStatusCode.MethodNotAllowed)]
+    public async Task LegacyRoutes_ShouldNotBeMapped(
+        string method,
+        string path,
+        HttpStatusCode expectedStatus)
+    {
+        var client = fixture.CreateClient(fixture.SeedState.VenueManager1);
+        using var request = new HttpRequestMessage(new HttpMethod(method), path);
+
+        var response = await client.SendAsync(request);
+
+        await response.ShouldBe(expectedStatus);
+    }
 }

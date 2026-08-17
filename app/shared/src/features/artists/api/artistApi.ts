@@ -14,18 +14,13 @@ export interface CreateArtist {
 }
 
 const artistApi = {
-  getArtist: async (id: number): Promise<Artist> => {
-    const { data } = await apiClient.get<Artist>(`/artist/${id}`);
+  getArtist: async (): Promise<Artist | null> => {
+    const { data } = await apiClient.getOptional<Artist>("/organization/artist");
     return data;
   },
 
   getArtistById: async (id: number): Promise<Artist> => {
     const { data } = await apiClient.get<Artist>(`/artist/${id}`);
-    return data;
-  },
-
-  getMyArtist: async (): Promise<Artist | null> => {
-    const { data } = await apiClient.getOptional<Artist>("/organization/artist");
     return data;
   },
 

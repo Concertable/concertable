@@ -3,14 +3,14 @@ import artistApi from "../api/artistApi";
 
 export const artistKeys = {
   all: () => ["artist"] as const,
+  details: () => ["artist", "details"] as const,
   byId: (id: number) => ["artist", id] as const,
-  my: () => ["artist", "my"] as const,
 };
 
-export function useArtistQuery(id: number) {
+export function useArtistQuery() {
   return useQuery({
-    queryKey: artistKeys.byId(id),
-    queryFn: () => artistApi.getArtist(id),
+    queryKey: artistKeys.details(),
+    queryFn: artistApi.getArtist,
   });
 }
 
@@ -18,12 +18,5 @@ export function useArtistByIdQuery(id: number) {
   return useQuery({
     queryKey: artistKeys.byId(id),
     queryFn: () => artistApi.getArtistById(id),
-  });
-}
-
-export function useMyArtistQuery() {
-  return useQuery({
-    queryKey: artistKeys.my(),
-    queryFn: artistApi.getMyArtist,
   });
 }

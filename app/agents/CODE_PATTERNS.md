@@ -324,7 +324,7 @@ updateConcert(parsed.data);                // parsed.data IS UpdateConcertReques
 ### The anti-patterns this replaces — never do these
 
 - **Raw buffer → `XRequest` with a `!` bang or `?? fallback`.** The bang is the missing parse; a schema
-  proves the fields instead of asserting past them (`useMyVenue`/`useMyArtist`, `OrganizationForm`).
+  proves the fields instead of asserting past them (`useVenue`/`useArtist`, `OrganizationForm`).
 - **A form with free-typed fields and no schema.** No `schemas/` folder for a feature that has editable
   inputs is the tell (`organizations`).
 - **Client validation reported by `toast`** instead of inline from the parse result.

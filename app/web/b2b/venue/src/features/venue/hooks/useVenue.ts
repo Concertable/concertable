@@ -1,17 +1,17 @@
 import {
-  useMyVenue as useMyVenueShared,
-  useMyVenueQuery,
+  useVenue as useVenueShared,
+  useVenueQuery,
 } from "@concertable/shared/features/venues";
-import type { UseMyVenueResult } from "@concertable/shared/features/venues";
+import type { UseVenueResult } from "@concertable/shared/features/venues";
 import { useOpportunities } from "@concertable/b2b/features/concerts/hooks/useOpportunities";
 import { opportunitiesQueryKey } from "@concertable/b2b/features/concerts/hooks/useOpportunitiesQuery";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import type { Opportunity } from "@concertable/b2b/features/concerts/types";
 
-export function useMyVenue(): UseMyVenueResult {
+export function useVenue(): UseVenueResult {
   const queryClient = useQueryClient();
-  const venueQuery = useMyVenueQuery();
+  const venueQuery = useVenueQuery();
   const venueId = venueQuery.data?.id ?? 0;
 
   const {
@@ -22,7 +22,7 @@ export function useMyVenue(): UseMyVenueResult {
     isSuccess: opportunitiesLoaded,
   } = useOpportunities(venueId);
 
-  const result = useMyVenueShared({
+  const result = useVenueShared({
     onSuccess: () => {
       resetOpportunities();
       toast.success("Venue saved!");

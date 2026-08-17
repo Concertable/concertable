@@ -50,7 +50,7 @@ export function CreateVenuePage() {
         avatar: avatar! as unknown as File,
       }),
     onSuccess: (saved) => {
-      queryClient.setQueryData(venueKeys.my(), saved);
+      queryClient.setQueryData(venueKeys.details(), saved);
       navigate({ to: "/" });
     },
   });

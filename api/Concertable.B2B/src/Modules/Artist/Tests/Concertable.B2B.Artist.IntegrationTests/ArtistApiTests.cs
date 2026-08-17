@@ -256,4 +256,21 @@ public sealed class ArtistApiTests : IAsyncLifetime
     }
 
     #endregion
+
+    [Theory]
+    [InlineData("GET", "/api/artist/user", HttpStatusCode.NotFound)]
+    [InlineData("POST", "/api/artist", HttpStatusCode.NotFound)]
+    [InlineData("PUT", "/api/artist/1", HttpStatusCode.MethodNotAllowed)]
+    public async Task LegacyRoutes_ShouldNotBeMapped(
+        string method,
+        string path,
+        HttpStatusCode expectedStatus)
+    {
+        var client = fixture.CreateClient(fixture.SeedState.ArtistManager1);
+        using var request = new HttpRequestMessage(new HttpMethod(method), path);
+
+        var response = await client.SendAsync(request);
+
+        await response.ShouldBe(expectedStatus);
+    }
 }

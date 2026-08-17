@@ -230,6 +230,12 @@ const applicationApi = {
 export default applicationApi;
 ```
 
+For B2B tenant-owned singleton resources, the active tenant is the default client scope. Use the
+plain domain method for that resource (`getArtist`, `createArtist`, `updateArtist`) and reserve
+`ById` for an arbitrary public lookup (`getArtistById`). `organization` belongs in the HTTP path,
+not in client method names; `My`, `CurrentUser`, `Me`, and `Self` describe a human and are not aliases
+for the tenant selected by `X-Tenant-Id`.
+
 A `@b2b/*` api file that only re-exposes a shared one is a pure re-export
 (`export { default } from "@concertable/shared/features/concerts/api/applicationApi"`), not a copy.
 
@@ -305,7 +311,7 @@ back a domain shape? → plain `useX`.*
 
 > **Note:** a raw `useQuery`/`useMutation` wrapper with a bare name is the violation (e.g. dashboard
 > hooks that return the raw query but omit `…Query`). Facades (`useConcert`, `useReviews`, `useApply`,
-> `useMyVenue`) correctly take the plain domain name — those are right, leave them.
+> `useVenue`) correctly take the plain domain name — those are right, leave them.
 
 ## Query keys — arrays, generic → specific, per-feature factory
 
