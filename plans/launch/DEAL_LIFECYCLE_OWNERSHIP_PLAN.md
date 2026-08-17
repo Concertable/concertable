@@ -83,12 +83,23 @@ Applied ──Reject──→ Rejected
 Applied ──Withdraw→ Withdrawn
 ```
 
+`Application.Contracts` owns the immutable accepted-application handoff consumed by Booking. That
+handoff is the provenance Booking requires: a Booking cannot be created from an arbitrary application
+identifier or without the accepted Application facts. Pre-accept payment evidence crosses with the
+handoff as case-specific immutable data, not as an enum or boolean accompanied by nullable metadata.
+
 ### Booking
 
 Owns Booking and Contract creation, acceptance-triggered payment processing after Booking creation,
 financial confirmation, payment failure/retry, and cancellation/refund before a Concert exists.
 Acceptance atomically forms the Booking and Contract; financial confirmation hands authority to
 Concert.
+
+Booking creation requires the accepted-application contract. Financial confirmation requires an
+explicit successful financial-operation fact correlated to that accepted Application and the expected
+operation/provider transaction; an identifier-only `ConfirmAsync(bookingId)` command is invalid. Once
+the Booking exists, it owns later financial outcomes and does not reload or accept a live Application
+aggregate to confirm itself.
 
 The exact enum names are fixed during the implementation inventory, but the state meaning is:
 
@@ -265,13 +276,20 @@ Contract leaves Application `Applied`.
 Preserve the durable two-signal join:
 
 - a verification callback may arrive while Application is still `Applied` and before Booking exists;
-- Application records that immutable pre-accept payment evidence idempotently;
-- Accept creates Booking/Contract and consumes the recorded evidence;
+- Application records that immutable pre-accept payment evidence idempotently as distinct success or
+  failure data with every field required for that case;
+- Accept creates Booking/Contract from the accepted-application contract and consumes the recorded
+  evidence;
 - whichever signal arrives second performs the one guarded handoff;
-- once Booking exists, later acceptance-payment outcomes and retries are Booking-owned;
+- once Booking exists, later acceptance-payment outcomes and retries are Booking-owned and remain
+  correlated to the accepted Application and payment operation;
 - duplicate/late callbacks are idempotent and cannot create a second Booking, Contract, or Concert.
 
 Do not solve ordering with retries-as-waiting, cross-module polling, or a global process row.
+Do not model the callback as one outcome value plus nullable failure code/message fields. Success and
+failure are separate facts with case-specific required data. Name those facts from the concrete payment
+operation vocabulary already used by the processors; `ApplicationPaymentVerified` is not an approved
+placeholder name.
 
 ### Booking confirmation
 
@@ -280,6 +298,11 @@ cross-module transaction while both modules remain inside B2B; otherwise use an 
 with deterministic identity and an explicit pending projection. The implementation must prove there
 is no lost callback, duplicate Concert, or permanently confirmed Booking without a recoverable Concert
 creation path.
+
+The confirmation service/aggregate boundary consumes the explicit successful financial-operation fact,
+validates its Application and operation correlation against the Booking created from the accepted-
+application handoff, and only then transitions. A failure travels through a separate failure fact and
+cannot be supplied to the confirmation method.
 
 ### Cancellation and settlement
 
@@ -337,6 +360,9 @@ responses remain unchanged. Empty runtime layers, no-op `Add*Module` methods, an
 - [ ] Replace the combined `LifecycleState` with independent Application and Booking state.
 - [ ] Preserve the Accept transaction, immutable Contract snapshot, operation IDs, early-verification
   join, late-callback compensation, retry, and idempotency invariants.
+- [x] Require accepted-application provenance for Booking creation and explicit correlated financial
+  success/failure facts for later outcomes; remove identifier-only confirmation and nullable outcome
+  payloads.
 - [ ] Re-home Standard/Prepaid Application and Standard/Deferred Booking without nullable flattening.
 
 Gate: Application is terminal after its decision, Booking owns every post-accept/pre-Concert
@@ -397,6 +423,10 @@ whole workflow.
 - Every `DealType` has exact, independently validated coverage for the local operations it requires.
 - Accept and Booking-confirmation boundaries are atomic or durably convergent as specified; every
   callback order is idempotent.
+- A Booking can only originate from the accepted-application handoff, and confirmation cannot be
+  invoked with only a Booking identifier or without matching financial-operation evidence.
+- Success and failure use separate, fully populated facts; no outcome enum/boolean is flattened with
+  nullable failure metadata.
 - Cancellation, late payment, refund, settlement recovery, Contract, Invoice, and Concert-creation
   invariants remain covered.
 - APIs/frontends obtain one journey view from a read projection while commands remain module-owned.
@@ -412,6 +442,8 @@ whole workflow.
 - an Engagement/process/lifecycle aggregate or value object spanning the chain;
 - a BookingWorkflow, ConcertWorkflow, or shared Workflow module spanning multiple aggregates;
 - one shared resolver, registry, workflow definition, state enum, or state machine for all modules;
+- identifier-only Booking confirmation or confirmation that reloads a live Application aggregate;
+- payment outcome contracts that combine success/failure with nullable case-specific fields;
 - unions over DI service implementations rather than closed values;
 - any Rust lifecycle, settlement, or Deal decision engine;
 - backwards synchronous calls or a command cycle hidden behind facades, DTOs, events, or Contracts.
