@@ -5,9 +5,9 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `3893ea642508e661afdfe756602a9adc476f7001`  _(2026-08-17)_
+**Reviewed up to commit:** `adb7e255c1995b8b0d191901a45d26c954bba3bc`  _(2026-08-17)_
 
-**Security-reviewed up to commit:** `3893ea642508e661afdfe756602a9adc476f7001`  _(2026-08-17)_
+**Security-reviewed up to commit:** `adb7e255c1995b8b0d191901a45d26c954bba3bc`  _(2026-08-17)_
 
 > Range reviewed: `9205e82d..2b93b45b` (12 commits reviewed; markers moved to `54b91961`, the fix commit, 73 files — markdown plus one Python hook).
 > Markers moved forward twice with nothing re-reviewable in between: once to the fix commit `54b91961`,
@@ -117,3 +117,37 @@
   Both rows end "what may `WaitFor` what" — one owned by `api/ARCHITECTURE.md`, one by skill
   `microservice-boundaries`. Row 49's real topic is protocol selection; drop the trailing clause so the
   file obeys its own rule 1.
+
+## Incremental review — 2026-08-17 (docs-review)
+
+> Range: `aa5759d5..adb7e255` — the two plan/ledger checkpoints, the `origin/main` merge (69 commits)
+> and its three conflict resolutions, and this reconciliation. The merged-in `main` commits are already
+> reviewed on `main` and are out of scope; what is in scope is the branch's own surviving content.
+
+Verified: `docs_reachability.py` **0 errors / 22 warnings** (all pre-existing `plans/` working docs),
+`plan_graph.py` **0 errors**, hook suite **72 passed**. No merge marker survives anywhere in the tree.
+
+Three findings, all fixed in `adb7e255`:
+
+- [x] **ACC11 — MED — Lens A: stale fact** — `plans/docs/GUIDANCE_DOCS_RESTRUCTURE_PROGRESS.md:10`, `:84`
+  The shared-repo split was recorded as "35 skills, 28 generic … the 8 TypeScript/React ones".
+  Enumerating `dotagents/.agents/skills` (39 directories, 10 of them utilities) and
+  `agent-standards/.agents/skills` (7) gives **29 generic — 20 .NET + 9 TS/React — and 36 total**. The
+  plan repeated the same three numbers.
+
+- [x] **ACC12 — MED — Lens A: described behaviour contradicts the config it documents** —
+  `plans/docs/GUIDANCE_DOCS_RESTRUCTURE_PROGRESS.md:154–161`
+  Step 1 asserted the enqueue was blocked by the main checkout still holding "the 180-line copy" of
+  `merge-review-gate.py`. That file is the **281-line** version, with `review_only` at `:128` and the
+  `reviews/`-only whitelist at `:226`. The gate is satisfiable; the only thing outstanding is Tommy's
+  merge authorization, which is not a hook problem and should not be described as one.
+
+- [x] **ACC13 — HIGH — Lens A: stale fact** — `plans/docs/GUIDANCE_DOCS_RESTRUCTURE_PROGRESS.md:9`, `:12`
+  The header claimed head `aa5759d5`, "all 54 PR checks pass" and "0 behind at review time". At review
+  the branch was **69 behind** `origin/main` and the PR was **`DIRTY`** — a state the ledger would have
+  sent the next session straight into `gh pr merge` against.
+
+One deliberate addition, not a finding: main added a rule to `api/agents/CODE_CONVENTIONS.md` after the
+Phase 3b cut — integration events version the **wire identity** (`[MessageType(…​.v1)]`), never the CLR
+type. No skill owns event wire versioning, so the reduction kept it rather than dropping a live rule;
+`docs/INDEX.md:73` names the new topic and the ledger lists it as a promotion candidate.
