@@ -6,4 +6,6 @@ package and its service consumers.
 ## Items
 
 - [x] Cosmos-aligned repository facets + context-enforced no-tracking `data-access/repository-redesign`
-- [ ] EF context/repository permission hierarchy `data-access/repository-context-permission-hierarchy`
+- [x] EF context/repository permission hierarchy `data-access/repository-context-permission-hierarchy`
+  — the capability seam is stable; any package extraction remains separate while Kernel entity and
+  messaging couplings are measured.

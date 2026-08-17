@@ -10,6 +10,27 @@ Service- or tier-specific debt belongs in that area's own `TECH_DEBT.md`.
 
 ## MED
 
+### `platform-sync.yml`'s "Enable auto-merge" step has no retry — a transient 503 strands the sync PR forever
+
+`chore/platform-sync-0.1.0-alpha.0.1049` (#634) sat green with `autoMergeRequest: null` — its own PR
+body says "Auto-merge is on," but nothing had actually armed it. The workflow run that opened it
+(`32024445332`) shows why: the "Enable auto-merge" step's `gh pr merge --auto "$branch"` call failed
+with `non-200 OK status code: 503 Service Unavailable body: "upstream connect error or disconnect/reset
+before headers. reset reason: connection termination"` — a one-off transient GitHub API blip, not a
+logic bug (the step's own command is already correct — no `--squash`/`--merge` flag, matching the
+in-file comment documenting that exact prior footgun). Nothing retries this step, and nothing else in
+the workflow (or `platform-sync-alert.yml`, which only watches for a *red* sync PR) notices a *green*
+sync PR that never got enqueued — so it just sits there until a human happens to look, exactly the
+"case 4: green but never admitted" failure mode `AGENTS.md`'s merge-confirm playbook already documents
+for interactive sessions, just unhandled at the bot-workflow level. Found and worked around by hand
+(reviewed + `gh pr merge --auto` re-run) while unblocking `#624`'s merge, whose build depended on the
+platform pin this sync PR carried.
+
+**Resolves when:** the "Enable auto-merge" step in `platform-sync.yml` retries `gh pr merge --auto`
+a few times with backoff before failing the job, and/or `platform-sync-alert.yml` (or a new lightweight
+check) also flags a sync PR that's been green for more than a few minutes with no `autoMergeRequest`
+set, not just a red one.
+
 ### The merge queue's `run_code` gate doesn't exclude docs/meta-only diffs
 
 `.github/workflows/test.yml`'s `changes` job computes `run_fe` and `run_e2e` with path filters that
