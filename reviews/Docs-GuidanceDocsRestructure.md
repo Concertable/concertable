@@ -5,11 +5,16 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `54b91961969e0480a25dcb91330f274fb1f25c06`  _(2026-08-17)_
+**Reviewed up to commit:** `3893ea642508e661afdfe756602a9adc476f7001`  _(2026-08-17)_
 
-**Security-reviewed up to commit:** `54b91961969e0480a25dcb91330f274fb1f25c06`  _(2026-08-17)_
+**Security-reviewed up to commit:** `3893ea642508e661afdfe756602a9adc476f7001`  _(2026-08-17)_
 
 > Range reviewed: `9205e82d..2b93b45b` (12 commits reviewed; markers moved to `54b91961`, the fix commit, 73 files — markdown plus one Python hook).
+> Markers moved forward twice with nothing re-reviewable in between: once to the fix commit `54b91961`,
+> then to the `origin/main` merge required before enqueueing — that merge brought in only `plans/frontend/*`,
+> `reviews/Fix-merge-gate-command-matching.md` and `.claude/hooks/merge-review-gate.py`, all already
+> reviewed and merged on `main`, and none of it in this branch's scope.
+>
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
 >
 > Security layer ran because the range touches `api/Concertable.Payment/**` (the merge gate's
