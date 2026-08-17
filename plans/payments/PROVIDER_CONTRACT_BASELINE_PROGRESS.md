@@ -5,10 +5,10 @@
 - Roadmap item: `payments/provider-contract-baseline`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable.worktrees\Feature\payments_provider-contract-baseline`
 - Branch: `Feature/payments_provider-contract-baseline`
-- PR: #597 — https://github.com/Concertable/concertable/pull/597 — open; reviewed work head `0402ee590ae371ddb2a6f8de60f3fb76a06cff7d` is verified at the local, remote-tracking, and PR refs; exact-head CI is required at the final checkpoint-transport head; auto-merge is disabled and the PR is not queued
-- Review readiness: **REVIEW COMPLETE — PUSH AND EXACT-HEAD CI REQUIRED** — the six original review findings remain resolved; the post-review readability refactor and current-main reconciliation are reviewed through `7c1253f6946ac195d809b0bb2d9cd91c2fd16266`, with one convention-wording finding resolved and no open findings
-- Dependency/package gates: Phases 1 through 4 are locally complete; the production/live-mode Stripe account has no webhook endpoint, so future deployment is locked to `2025-01-27.acacia` and must create the endpoint at the actual Payment Web URL while installing its signing secret; compatibility is anchored to published `0.1.0-alpha.0.1009`; the branch carries platform pin `0.1.0-alpha.0.1039`
-- Last reconciled: 2026-08-17 against open PR #597 verified work head `0402ee59`, reviewed code/convention head `7c1253f6`, published Payment packages `0.1.0-alpha.0.1009`, and `origin/main` `d5669a83`; current main and platform pin `.1039` are incorporated through merge `c99443cec3cd2cf3997902fd521d6afda3dbc501`
+- PR: #597 — https://github.com/Concertable/concertable/pull/597 — open at remote head `af5bb9c3ed6aef2bc0fc50e442eec1e9a5ed9e88`; the requested CLR event rename and extension-syntax normalization are locally verified but not yet committed or pushed; auto-merge is disabled and the PR is not queued
+- Review readiness: **INCREMENTAL REVIEW REQUIRED** — the six original review findings remain resolved; the prior implementation and security review is current through `7c1253f6946ac195d809b0bb2d9cd91c2fd16266`; the requested post-review contract/convention correction must be committed and reviewed before publication
+- Dependency/package gates: Phases 1 through 4 are locally complete; the production/live-mode Stripe account has no webhook endpoint, so future deployment is locked to `2025-01-27.acacia` and must create the endpoint at the actual Payment Web URL while installing its signing secret; compatibility is anchored to published `0.1.0-alpha.0.1009`; the branch carries platform pin `0.1.0-alpha.0.1046`
+- Last reconciled: 2026-08-17 against open PR #597 remote head `af5bb9c`, reviewed head `7c1253f6`, published Payment packages `0.1.0-alpha.0.1009`, and current `origin/main` `92ea0416`; current main and platform pin `.1046` are incorporated through merge `008e0a95c87b0aae14cced1001b7ac25917a9056`
 
 ## Current state
 
@@ -17,6 +17,10 @@ evaluators, receiver-owned extensions, immutable transition/status tables, and f
 observations normalize through `ToNormalized()`, fixed code mappings use frozen collections, and
 `PaymentOperationError` is the single Reunion-backed authority for safe failure messages. The former
 `*Specification` evaluator names are removed, and the general C# convention now records this boundary.
+The integration event is named `PaymentOperationStateChanged`; only its stable broker identity carries
+the `.v1` version. Every ordinary extension member in the Payment mapper container touched by this PR
+now uses a C# 14 `extension(Receiver)` block, and the convention requires complete-container migration
+whenever legacy extension code is edited.
 
 Phases 1 through 4 and all six review findings are complete, reviewed, and pushed through
 `ce43a2283c26416ca60593aefca35a79d2159698`. The branch resolves
@@ -65,7 +69,7 @@ NAT2, BUG1, SEC1, NAT3, and NAT4 are resolved locally. The historical
 
 Phase 2 adds the provider-neutral operation identity, session kind, normalized state, terminal/retry
 disposition, safe-failure vocabulary, client descriptor/snapshot records, and matching protobuf
-messages without adding an RPC. `PaymentOperationStateChangedV1` has stable message type
+messages without adding an RPC. `PaymentOperationStateChanged` has stable message type
 `concertable.payment.payment-operation-state-changed.v1`. Reunion Result mapping remains supported on
 .NET 10 through the closed Dunet `PaymentOperationError`; the planned .NET 11 native-union migration
 follows the complete Stripe/provider refactor rather than interrupting it.
@@ -79,8 +83,10 @@ authorization, both setup kinds, and refund.
 
 ## Next Steps
 
-Push this checkpoint-transport commit, verify local, remote-tracking, and PR head equality, then
-require exact-head CI to pass at that final head. Keep the PR open in this turn.
+Commit the locally verified event-name and extension-syntax correction, run the required incremental
+implementation and security review from the recorded watermark through that commit, resolve any
+findings, then publish through the plan-managed two-leg push protocol and require exact-head CI to pass
+at the final checkpoint-transport head. Keep PR #597 open with auto-merge disabled.
 
 ## Completed work
 
@@ -120,7 +126,7 @@ require exact-head CI to pass at that final head. Keep the PR open in this turn.
 - Queried every OAuth-accessible live Stripe context through the authenticated MCP connection and
   proved Concertable account `acct_1QqfAGLtYbsqaOIf` currently has zero webhook endpoints.
 - Added the Phase 2 provider-neutral Contracts, Client records, protobuf messages/enums, stable
-  `PaymentOperationStateChangedV1` message type, and exhaustive .NET 10 Reunion/Dunet error mapping.
+  `PaymentOperationStateChanged` message type, and exhaustive .NET 10 Reunion/Dunet error mapping.
 - Added contract and mapper coverage for stable enum values, protobuf fields, safe error definitions,
   unknown-value rejection, optional-field mapping, and Stripe/consumer reference purity.
 - Reconciled the inventory scanner with PR #552's command-based B2B capture, deposit, and refund entry

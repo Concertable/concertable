@@ -318,10 +318,24 @@ Type-to-type mapping (e.g. gRPC proto ⇄ domain/contract types) lives in a stat
 ```csharp
 internal static class EscrowMappers
 {
-    public static EscrowDeposit ToEscrowDeposit(this Proto.EscrowResponse r) => ...;
-    public static EscrowStatus ToEscrowStatus(this Proto.EscrowStatusType s) => ...;
+    extension(Proto.EscrowResponse response)
+    {
+        public EscrowDeposit ToEscrowDeposit() => ...;
+    }
+
+    extension(Proto.EscrowStatusType status)
+    {
+        public EscrowStatus ToEscrowStatus() => ...;
+    }
 }
 ```
+
+## Versioned integration events — version the wire identity, not the C# type
+
+Keep the CLR event name free of transport-version suffixes. Put the version in the stable
+`MessageType` wire identity: `PaymentOperationStateChanged` with
+`concertable.payment.payment-operation-state-changed.v1`, never `PaymentOperationStateChangedV1`.
+Application code talks in domain event names; serializers and brokers own wire-version selection.
 
 ## Pure operations — extensions for receiver-owned behaviour, named evaluators for policy
 
@@ -386,12 +400,17 @@ No inline `logger.LogInformation/LogWarning/LogError(...)`. Each project owns on
 internal static partial void PublishedVenueEvents(this ILogger logger, int count);
 ```
 
-## Extension members — C# 14 `extension()` blocks, not `this`
+## Extension members — always use C# 14 `extension()` blocks
 
-New extension members go in `extension(Receiver)` blocks — one `XExtensions` static class per receiver type
-(`EnvironmentsExtensions` extends `Environments`; `HostEnvironmentExtensions` extends `IHostEnvironment`). This is
-the modern unified form (it also does properties/indexers/static members and groups by receiver). Never add a new
-legacy `public static … (this X x)` method; the existing ones await a migration sweep ([`../TECH_DEBT.md`](../TECH_DEBT.md)).
+All ordinary extension members use `extension(Receiver)` blocks. Keep receiver-owned members in one
+`XExtensions` class; an `XMappers` mapping family may contain one block for each related receiver.
+When an existing extension container is edited, migrate every ordinary member in that container so a
+class never mixes `extension()` blocks with legacy `this` parameters. Never add a new
+`public static … (this X x)` method.
+
+The only exception is a declaration contract that genuinely requires the receiver in the method
+signature, such as source-generated `[LoggerMessage]` partial methods. Existing untouched legacy
+containers remain the migration sweep tracked in [`../TECH_DEBT.md`](../TECH_DEBT.md).
 
 ## Geometry — use IGeometryProvider
 

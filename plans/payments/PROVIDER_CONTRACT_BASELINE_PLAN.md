@@ -215,7 +215,7 @@ Phase 2 adds definitions only where a later durable session implementation needs
 2. Do not add a new RPC until the durable session item can implement it end to end. The messages and
    client records are the shared wire vocabulary; existing `CheckoutSessionResponse`,
    `PaymentResponse`, `PaymentSessionType`, and every existing RPC remain byte-for-byte compatible.
-3. In Payment integration contracts, add one versioned `PaymentOperationStateChangedV1` event carrying
+3. In Payment integration contracts, add one `PaymentOperationStateChanged` event carrying
    operation identity, session kind, normalized state, monotonic revision, terminal/retry disposition,
    safe failure, expiry/capture deadline, and observation time. Do not alter or replace the existing
    `PaymentSucceeded`, `PaymentFailed`, or B2B financial-operation messages.
@@ -270,7 +270,7 @@ runtime, RPC, persistence, webhook, or consumer wiring.
 
 - Add the client/protobuf records and enums listed under “Smallest additive contract surface”. Assign
   explicit non-zero protobuf enum values and append new field numbers; reserve nothing already shipped.
-- Add `PaymentOperationStateChangedV1` in Payment.Contracts with a stable message URN and no consumer-
+- Add `PaymentOperationStateChanged` in Payment.Contracts with a stable versioned message URN and no consumer-
   domain or Stripe dependency.
 - Extend existing error/result mappers with exhaustive handling for the new safe public codes while
   preserving the existing contracts used by `0.1.0-alpha.0.1009` and PR #552.
