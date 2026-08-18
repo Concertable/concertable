@@ -11,7 +11,7 @@
   conflicts resolved, below), from 2 behind after platform-sync #645 merged — a clean merge carrying only
   the `<ConcertablePlatformVersion>` bump `0.1.0-alpha.0.1055` → `0.1.0-alpha.0.1061` across the five
   service `Directory.Packages.props` — and from 10 behind at `2b04d57e2`.
-- Shared repos **today** (target shape in `## Topology` below): `Concertable/agent-standards` (7 process skills + the `skill_router` hook, `88cf091`, pushed) and `tomjseery/dotagents` (39 — 20 .NET, 9 TS/React, 10 utilities, `3918a85`, pushed; junctioned into `~/.agents/skills` + `~/.claude/skills`), plus `agent-utilities` (session tooling, no skills) and `agent-starter-kit` (to archive), cloned at `C:\Users\TommySeery\source\repos\{agent-standards,dotagents}`
+- Shared repos **today** (target shape in `## Topology` below): `Concertable/agent-standards` — `standards/process/` (7 docs) + the `skill_router` hook, on `Refactor/StandardsDomainTree`, **PR #2 open, CI green, unmerged**; and `tomjseery/dotagents` — `standards/{dotnet,react,communication}/` (31 docs) + 10 self-contained utilities, on `Refactor/StandardsDomainTree`, **PR #1 open, unmerged**. `main` in both still carries the pre-inversion flat layout, which is what the 48 live junctions point at. Plus `agent-utilities` (session tooling, no skills) and `agent-starter-kit` (to archive), cloned at `C:\Users\TommySeery\source\repos\{agent-standards,dotagents}`
 - Dependency/package gates: no consumer migration to do, but this PR **will** trigger publish + platform sync — `publish-packages.yml` triggers on the coarse `paths: api/**`, which this branch's `api/**` markdown matches. MinVer republishes and a `chore/platform-sync-*` PR opens; non-breaking (no published type changed), so it should auto-merge green. Follow it to green anyway — whoever merges owns the sync.
 - Last reconciled: 2026-08-18 — fetched at the doc-truth commit `4bbb2ddb0`: **0 behind `origin/main`**, 49 ahead, local head = `origin/Docs/GuidanceDocsRestructure` = PR #637 head, `mergeStateStatus` `CLEAN`, auto-merge off, label `skip-e2e`. `agent-standards` unchanged at `88cf091` (pushed) — re-check currency at enqueue time
 
@@ -26,7 +26,7 @@ more than it did, since the new targets file participates in every project's bui
 **#637 is not deliverable and that is the headline.** Everything below describes a branch that is
 internally coherent and externally unsupported: the reduction happened, but what it reduced *to* is
 reachable only through machine-local junctions. Read the standing constraint in `## Next Steps` before acting
-on anything here — the next work is Phase 5, not merging.
+on anything here — the next work is Phase 7, not merging.
 
 The reduction has happened. Every generic rule now has exactly one home — a skill — and the in-repo docs hold
 only this system's roster of real types, contexts, clients, tables and pins. The corpus that auto-loads on an
@@ -40,13 +40,53 @@ whichever harness makes it, every test project's stub opens with the unit-vs-int
 `/review` resolves the standards it owes from the same table. Phase 6a is deployed — 46 junctions across
 both roots.
 
-**What the reduction did not do, and why this is not near done:** it organized on portability rather than
-domain, left the payload inside flat `SKILL.md` files rather than a browsable tree, and kept `api/agents/`
-as a destination the polyrepo cut removes. Those are Phases 5, 5b and 5c, all outstanding — plus Phase 3c
-(markdown outside the conventions folders), Phase 4 (rows still with >1 home, chiefly seeding across
-`api/AGENTS.md` and `SEEDING_CONVENTIONS.md`), and the deferred auto-load thinning of root `AGENTS.md`.
+**Phase 5 is now done in both shared repos** (`Concertable/agent-standards#2` — CI green;
+`tomjseery/dotagents#1`). The corpus is organized by domain and the payload is out of the `SKILL.md`
+files: 38 standards are now docs under `standards/<domain>/`, each routed to by an eight-line skill, with
+a generated `INDEX.md` per domain and a build gate that refuses a router pointing at a missing doc, a doc
+with no router, or two routers claiming one doc. **Neither PR is merged and nothing is deployed** — the
+deployment junctions would point at trees that exist only on those branches.
+
+**What remains, and why this is still not near done:** the corpus is organized but not yet *installable*
+without junctions, which is Phase 7 and is now the only remaining gate on #637. Beyond it: `api/agents/`
+is still a destination the polyrepo cut removes (5b), the discovery pass has not run (5c, with
+`dotnet/STACK.md` its first known gap), Phase 3c (markdown outside the conventions folders), Phase 4 (rows
+still with >1 home, chiefly seeding across `api/AGENTS.md` and `SEEDING_CONVENTIONS.md`), and the deferred
+auto-load thinning of root `AGENTS.md`.
 
 ## Done
+
+**Phase 5 — the doc is the payload, the skill is the router** (`Concertable/agent-standards#2`, CI green;
+`tomjseery/dotagents#1`. Neither merged, nothing deployed.)
+
+- **38 skill bodies became docs in a domain tree.** `agent-standards` gained `standards/process/` (7);
+  `dotagents` gained `standards/dotnet/` (20, nesting `data/`, `results/`, `structure/`, `testing/`),
+  `standards/react/` (9) and `standards/communication/` (2). Every skill that owns a doc is now eight
+  lines: front matter plus that doc's path. Doc names shed what the folder already says
+  (`csharp-style` → `dotnet/STYLE.md`) while skill names stay globally unique, because the deployed
+  namespace is flat and spans every stack.
+- **The repos did NOT merge, and the plan's Phase 5 text saying they would is corrected.** Phase 7's repo
+  map is the authority: `dotagents` is personal cross-project machine config, so scoping it to one product
+  would break every other codebase that depends on it. The same `standards/<domain>/` convention is applied
+  twice instead, with domain names globally unique so both halves land in one deployed namespace.
+- **A utility is not a standard.** The 10 machine-tooling skills (`sync`, `worktree`, `recents`, …) are
+  procedures the agent runs, not a corpus anyone consults, so their bodies stay in their `SKILL.md` and they
+  own no doc. Both generators understand the two kinds.
+- **The orphan gate is proven, not nominal.** A router naming a missing doc, a doc with no router, and two
+  routers claiming one doc were each negative-tested to confirm they fail. A gate nobody proved fires is the
+  same defect class as the `hooks.json` matcher that shipped inert for every Codex write.
+- **Generated per-domain `INDEX.md`** replaces `dotagents/README.md`'s hand-maintained topic table — a second
+  structure with nothing holding it to the first. `AGENTS.md`'s pointer now names the tree.
+- **The plugin gets its own copy of the tree.** An installed plugin is only its own subtree, so plugin
+  routers carry a path relative to their own `SKILL.md`. `deploy-skills.ps1` junctions each
+  `standards/<domain>` into `~/.agents/standards`, refusing a domain declared by two repos exactly as it
+  refuses a duplicate skill name — without that, a deployed router points at a file the session cannot open.
+- **Two pre-existing `dotagents` defects fixed:** `draft-comment`'s description carried a colon-space, which
+  truncates an unquoted YAML scalar — the repo's own guard existed for it but had never run since the skill
+  was added; and `draft-comment` + `explaining-code` had no `.claude/skills` stub at all (41 canonical, 39
+  stubs), so both were invisible to a session opened on that repo.
+- Path handling deliberately avoids `[Path]::GetRelativePath` and `Resolve-Path -RelativeBasePath` (both
+  PowerShell 7 only): these repos are cloned onto 5.1 machines, while CI runs the same script on Linux.
 
 **Phase 6 tier 3 — the stub states the tier, the gate makes it unskippable, and the review reads the
 same table** (`agent-standards` `262564f`, this PR)
@@ -298,31 +338,31 @@ inventory has been checked against code.
 
 ## Next Steps
 
-**Next work is Phase 5: build the organized `standards/<domain>/` tree.** It is the gate on delivering
-this whole restructure - Phase 3b already removed 2,662 lines from the repo, and until the corpus is
-organized and installable, the only thing holding it is 48 junctions on one machine. Everything else
-below is sequenced behind it.
+**Next work is Phase 7: ship the corpus as plugins, so it travels with a clone.** Phase 5 is done - the
+corpus is organized by domain in both shared repos (PRs open, unmerged) - which leaves *installability*
+as the last gate on delivering this restructure. Phase 3b already removed 2,662 lines from this repo, and
+until a clean machine can install the replacement, the only thing holding it is 48 junctions on one
+machine. Everything else below is sequenced behind Phase 7.
+
+**First, though: land the two Phase 5 PRs and deploy.** `Concertable/agent-standards#2` (CI green) and
+`tomjseery/dotagents#1`, then `pwsh dotagents/.agents/deploy-skills.ps1`. Deployment was deliberately not
+run - the junctions would point at `standards/` trees that exist only on those branches, so a
+`git checkout main` would dangle every domain. Until it runs, Tommy's live corpus is the pre-inversion
+one, and the two repos' `main` branches still hold the flat layout.
 
 **Standing constraint - #637 does not merge, and no session may propose merging it.** Verified
 2026-08-18: `~/.claude/skills` is 48/48 junctions (41 -> `dotagents`, 7 -> `agent-standards`) and
 `installed_plugins.json` carries no standards plugin. The branch guts `RESULT_PATTERN.md`, both
 `CODE_CONVENTIONS.md`, both `CODE_PATTERNS.md` and deletes `UNIT_CONVENTIONS.md`, `E2E_CONVENTIONS.md`,
 `MICROSERVICE_COMMUNICATION.md`, `DEBUGGING_CONVENTIONS.md`, `CONVENTIONS.md`. Move a clone or open the
-repo anywhere else and those rules are gone. **It merges only when Phase 5 + Phase 7 make the corpus
-organized AND installable on a clean machine without junctions.** Earlier revisions of this ledger said
+repo anywhere else and those rules are gone. **Phase 5 has now made it organized; it merges only when
+Phase 7 also makes it installable on a clean machine without junctions.** Earlier revisions of this ledger said
 "enqueue-ready, review clean, paused on Tommy's read"; both were true and neither was the point - a
 clean review speaks to the diff's own quality, never to whether what it deletes has a home. Phase 6
 riding this PR fixed the *enforcement* ordering, never the *delivery* ordering. Do not reinstate a merge
 instruction until that condition actually holds.
 
-1. **Phase 5 - the domain tree.** Restructure `agent-standards` (and the skills currently in
-   `dotagents`) from flat `SKILL.md` siblings into `standards/<domain>/` with the doc as payload and the
-   skill as router: `dotnet/`, `react/`, `process/`, `concertable/`. Full spec in the plan's Phase 5.
-   Answer while doing it: which skills are *general* (stay `dotagents`, every codebase Tommy owns) vs
-   *Concertable org* (`agent-standards`) - the repo map in the plan's Phase 7 is the authority, and
-   `dotagents` is personal machine config that must NOT be folded into an org repo.
-
-2. **Phase 7 - plugins, so the corpus travels with a clone.** Mechanics are fully verified (plan's
+1. **Phase 7 - plugins, so the corpus travels with a clone.** Mechanics are fully verified (plan's
    "Verified mechanics - do not re-derive these"): both harnesses load the same plugin, Codex shows
    skills namespaced (`agent-process:committing`), neither auto-installs from repo settings, and a
    plugin's `hooks.json` fires with **zero** repo wiring - which retires vendoring. **The three blocking
@@ -333,7 +373,14 @@ instruction until that condition actually holds.
    README - Phase 7's real deliverable, since this plan is deleted when it completes and the repo map
    and delivery mechanics cannot live only here.
 
-3. **Phase 5b / 5c / 3c / 4**, in that order once the tree exists. 5b: `api/agents/` is deleted, not
+   Two things Phase 5 hands it: the plugin payload generation for `standards/` already exists in
+   `agent-standards/.agents/sync-generated.ps1` (tree copied into the plugin, router paths rewritten
+   relative to their own `SKILL.md`), so `dotnet-standards` / `react-standards` follow that shape rather
+   than inventing one. And the two generators are now near-identical PowerShell in two repos - the
+   duplication this plan otherwise forbids. Sharing them needs a package or submodule, so it is Phase 7's
+   to solve, not something to fix by copying a third time.
+
+2. **Phase 5b / 5c / 3c / 4**, in that order now the tree exists. 5b: `api/agents/` is deleted, not
    thinned - the polyrepo cut leaves no `api/` node to host it. 5c: the discovery pass, since relocation
    only moves rules that already exist as prose (B2B's stance taxonomy - `TenantScopedDbContext`,
    `ReadDbContext`, `AdminDbContext` and the filtered-entity list - lives only in code). 3c: the six
@@ -341,7 +388,7 @@ instruction until that condition actually holds.
    scaffold; `notes/Concert-Rust-Analysis.md` is referenced by nothing). 4: collapse the remaining
    duplication rows - chiefly `api/AGENTS.md:28-47` still restating 20 lines of seeding inline.
 
-4. **Cut the E2E doc footprint as one pass** (Tommy: "use this as an opportunity to cut all of this
+3. **Cut the E2E doc footprint as one pass** (Tommy: "use this as an opportunity to cut all of this
    bloat"). None of it is stale, but almost none of it is a *convention*: `E2E_CONSIDERATIONS.md` (37)
    deletes with its four sections redistributed ("do not add timeouts" is already owned verbatim by
    `failing-tests`; the 16-line Stripe-card section names its own unfixed root cause, so it is a
@@ -353,11 +400,11 @@ instruction until that condition actually holds.
    `.agents/skills/e2e-*` runbooks (711) each restate the Docker-health rule twice; `remote-validation`
    owns it - replace with a pointer.
 
-5. **Make the 7 process skills concrete.** They were written generic for a shared repo; `merging` must
+4. **Make the 7 process skills concrete.** They were written generic for a shared repo; `merging` must
    lose the confirm-loop *body* and keep the rule, with `.agents/skills/merge/SKILL.md` owning the
    procedure. Same for `pr-preflight`.
 
-6. **Skill fixes found while cutting** - none blocking: `persistence` teaches a context-typed base
+5. **Standards fixes found while cutting** - none blocking, and they now land in the `standards/<domain>/` doc rather than the `SKILL.md`: `persistence` teaches a context-typed base
    (`Repository<TEntity, OrderDbContext, Guid>`) but Concertable's shared bases are capability-typed
    with no `TContext`; "one repository per entity" has no skill home; `e2e-scenarios` closes by pointing
    at "the `agent-process` standards", a name no skill has; `csharp-style`'s `extension()` section lacks
@@ -367,7 +414,7 @@ instruction until that condition actually holds.
    `api/agents/CODE_CONVENTIONS.md`; natural home is `microservice-boundaries` or `proto`, neither of
    which mentions `MessageType`).
 
-7. **Tommy's, not agent work.** Approve the Codex `PreToolUse` hook once in a Codex session in this
+6. **Tommy's, not agent work.** Approve the Codex `PreToolUse` hook once in a Codex session in this
    worktree (inert until approved, and safe now that ENF1 made it actually fire). Archive
    `agent-starter-kit`. The `Concertable/agent-standards` -> `standards` rename: two of its five hard
    references die with vendoring, and there are **zero installed consumers today**, so it is cheapest
@@ -375,7 +422,7 @@ instruction until that condition actually holds.
    (`api/Concertable.Shared/TECH_DEBT.md:70`). Whether React Hook Form is adopted (in no `app/`
    workspace today).
 
-8. **Deferred to its own PR:** auto-load thinning of root `AGENTS.md` (the 86 merge lines and 32 Docker
+7. **Deferred to its own PR:** auto-load thinning of root `AGENTS.md` (the 86 merge lines and 32 Docker
    lines `/merge` and `scripts/e2e.ps1` already automate), the analyzer push-down plus
    `EnforceCodeStyleInBuild`, and **a CI job running the Python hook tests** - nothing in
    `.github/workflows/` runs them today, so every hook gate here is only as live as the last person who

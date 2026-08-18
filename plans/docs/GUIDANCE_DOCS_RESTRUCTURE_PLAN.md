@@ -448,7 +448,7 @@ resolved under meta-rule 7 by deciding import-or-pointer, not both. Same treatme
 double-writes, which currently load twice. Runs after 3b: dedupeing into files 3b then restructures would
 edit the same lines twice.
 
-### Phase 5 — one `standards` repo, domain trees, skills as routers
+### Phase 5 — domain trees, skills as routers — DONE (both repos; `concertable/` is 5b)
 
 **This phase gates delivery of the whole restructure — recorded 2026-08-18.** Phase 3b already removed
 2,662 lines from `api/agents/**` and `app/agents/**`. Until this phase and Phase 7 land, the only thing
@@ -469,7 +469,7 @@ So invert the two: **the doc is the payload and the skill is the router**, and o
 tree by domain.
 
 ```text
-standards/                       renamed from Concertable/agent-standards
+standards/                       one such tree per repo; see the repo split below
   dotnet/
     STACK.md                     which library for what: Reunion for results, EF Core,
                                  Dunet for unions, Refit for third-party REST, FluentValidation,
@@ -525,12 +525,26 @@ library to the doc that owns the rules. Organizing by library instead would be w
 the stable unit and the library is an attribute of it. `stack-defaults` today is a half-version of this:
 it name-drops Tailwind, dayjs and Vitest without any of them having an owning doc.
 
-**`dotagents` and a separate `react-agents` are not the shape.** They collapse into `standards/dotnet/`
-and `standards/react/`, so there is one repo to look in and one place a new domain (`infra/`) is added.
-`agent-utilities` keeps the machine tooling (`sync`, `worktree`, `recents`, `search`, `unmerged`,
-`prune-worktrees`, …), which is neither a standard nor stack-specific. `agent-starter-kit` is a strict
-subset of `dotagents` — two of its eight skills differ only by carrying a BOM that breaks frontmatter
-parsing — so it is archived, not migrated.
+**The tree is built inside each repo, per audience — the repos do NOT merge.** An earlier revision of
+this section had `dotagents` collapsing into `standards/dotnet/` + `standards/react/` in one repo; Phase
+7's repo map overrides that and is the authority, because `dotagents` is Tommy's personal cross-project
+machine config and scoping it to one product would break every other codebase that depends on it. So the
+same `standards/<domain>/` convention is applied twice, and the domain names stay globally unique so the
+two halves land in one deployed namespace without either repo owning the parent:
+
+| Repo | Domains |
+|---|---|
+| `dotagents` | `dotnet/`, `react/`, `communication/` |
+| `agent-standards` | `process/`, later `concertable/` |
+
+`agent-utilities` keeps the machine tooling that is neither a standard nor stack-specific.
+`agent-starter-kit` is a strict subset of `dotagents` — two of its eight skills differ only by carrying a
+BOM that breaks frontmatter parsing — so it is archived, not migrated.
+
+**A utility is not a standard, and is not routed.** `sync`, `worktree`, `recents`, `search`, `unmerged`,
+`prune-worktrees`, `pull-main`, `sync-all`, `commit-push`, `last-conversation` are procedures the agent
+runs, not a corpus anyone consults. Their bodies stay in their `SKILL.md` and they own no doc — the split
+the generator has to understand, since only a standard gets the router treatment.
 
 **Skills stay flat** because discovery is `<root>/skills/*/SKILL.md` and does not recurse; only the
 content moves into the tree. The deploy script flattens the tree into `~/.agents/skills/<name>`, so the
@@ -549,8 +563,41 @@ browsable and diffable, a gap is visible as a missing node, and the same doc gai
   and the stub generator that refuses to emit an unroutable stub.
 - **Generated index per domain.** The tree answers "where is it"; an index generated from the tree
   answers "did I document this" without opening anything.
-- **Both generators must recurse.** `deploy-skills.ps1:53` and `sync-claude-skill-stubs.ps1` walk one
-  level today, which is what made a flat source look mandatory.
+- **The tree walk recurses; skill discovery does not.** Only the standards walk needed it — skills stay
+  flat by the rule above, so `deploy-skills.ps1`'s one-level scan of `skills/` is correct as it stands.
+  What it *did* need was to junction each `standards/<domain>` into `~/.agents/standards`, or a deployed
+  router points at a file the reading session cannot open.
+
+#### What landed, 2026-08-18
+
+`Concertable/agent-standards#2` (7 process docs) and `tomjseery/dotagents#1` (31 docs across `dotnet/`,
+`react/`, `communication/`) — the same inversion applied per repo. 38 skill bodies moved out; every
+`SKILL.md` that owns a doc is now eight lines. The 10 utilities stayed self-contained.
+
+The router names **both** resolution roots — `standards/<domain>/<DOC>.md` in its repo and
+`~/.agents/standards/<domain>/<DOC>.md` deployed — because moving the body out is exactly what would
+have broken the junction path: a bare repo-relative path in a `~/.claude/skills/<name>/SKILL.md` resolves
+against whatever repo the session happens to be in. `deploy-skills.ps1` gained the matching
+per-domain junctions, refusing a domain declared by two repos just as it refuses a duplicate skill name.
+
+The orphan gate is real, not nominal: a router naming a missing doc, a doc with no router, and two routers
+claiming one doc were each **negative-tested to confirm they fail the build**. A gate nobody proved fires
+is the same defect class as the `hooks.json` matcher that shipped inert for every Codex write.
+
+Two pre-existing defects surfaced in `dotagents` while doing it, both fixed: `draft-comment`'s description
+carried a colon-space (truncates an unquoted YAML scalar — the repo's own guard existed for it but had
+never run since the skill was added), and `draft-comment` + `explaining-code` had no `.claude/skills` stub
+at all, so both were invisible to a session opened on that repo.
+
+**Deployment is deliberately not done.** The junctions would point at `standards/` trees that exist only
+on these two branches, so `deploy-skills.ps1` runs once both land — otherwise a `git checkout main` leaves
+every domain dangling. Until then Tommy's live corpus is the pre-inversion one.
+
+**Still open from this phase:** `dotnet/STACK.md` has no content (`react/STACK.md` exists as
+`stack-defaults`; nothing yet says which .NET library to reach for which job) — a Phase 5c node, recorded
+in `dotagents/README.md`'s named-gaps list. The two generators are now near-identical PowerShell in two
+repos, which is the duplication this plan otherwise forbids; sharing them needs a package or submodule, so
+it is logged for Phase 7 rather than solved by copy.
 
 ### Phase 5b — `api/agents/` is deleted, not thinned
 
