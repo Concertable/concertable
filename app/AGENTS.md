@@ -1,18 +1,21 @@
 # Concertable — frontend (`app/`)
 
-The React/TypeScript surfaces. **The generic TS/React standard is not in this repo** — it is a set of
+The React/TypeScript surfaces. **No standard lives in this repo.** The generic TS/React rules are
 load-on-demand skills (`typescript-style`, `contract-naming`, `react-structure`, `server-state`,
-`client-state`, `http-layer`, `write-boundary`, `tiered-shared-code`, `stack-defaults`), and the task you
-are doing is the trigger to read the matching one. Use the pattern, don't invent a local variant.
+`client-state`, `http-layer`, `write-boundary`, `tiered-shared-code`, `stack-defaults`), and what is true
+of *this* system is their `concertable-` counterparts — `concertable-http-layer` (the four clients and the
+`isApiError` seam), `concertable-typescript-style` (the live `$type` unions, multipart casing),
+`concertable-identity` (`User` versus `B2bIdentity`), `concertable-permissions`,
+`concertable-client-state` (the tenant session), `concertable-contract-naming`,
+`concertable-write-boundary` and `concertable-react-structure`. The task you are doing is the trigger to
+load the matching pair; `.agents/skill-routes.json` maps path to skill.
 
-What lives here is the roster of real names those skills deliberately omit — the four HTTP clients, the
-error seam, the `$type` unions: @./agents/CODE_CONVENTIONS.md; identity composition, the tenant session,
-permissions: @./agents/CODE_PATTERNS.md.
+What stays here is the tier map — which is structural, not a convention, and is what every tier doc below
+inherits.
 
 ## Five sharing tiers, widest first
 
-Everything below inherits the two documents above. Each tier doc covers only what its own boundary
-adds; none of them restate the conventions.
+Each tier doc covers only what its own boundary adds; none of them restate the standards.
 
 | Tier | Compiles into | Rules |
 |---|---|---|

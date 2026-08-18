@@ -13,7 +13,9 @@
   "routes": [
     {
       "path": "\\.UnitTests/.*\\.cs$",
-      "skills": ["unit-testing"],
+      "skills": [
+        "unit-testing"
+      ],
       "deny": [
         {
           "pattern": "WebApplicationFactory|TestServer|WebApplication\\.Create|Testcontainers|Respawn",
@@ -23,63 +25,129 @@
     },
     {
       "path": "\\.IntegrationTests/.*\\.cs$",
-      "skills": ["integration-testing"]
+      "skills": [
+        "integration-testing",
+        "concertable-integration-testing"
+      ]
     },
     {
       "path": "\\.E2ETests[^/]*/.*\\.(cs|feature)$",
-      "skills": ["e2e-scenarios"]
+      "skills": [
+        "e2e-scenarios"
+      ]
     },
     {
       "path": "\\.csproj$",
       "content_requires": "<IsTestProject>\\s*true",
-      "skills": ["unit-testing", "integration-testing"],
+      "skills": [
+        "unit-testing",
+        "integration-testing",
+        "concertable-integration-testing"
+      ],
       "note": "Creating a test project is the classification moment: decide unit vs integration BEFORE the name exists, because the name is what declares the tier and the build fails a name that states none."
     },
     {
       "path": "Repository\\.cs$",
-      "skills": ["persistence", "multitenancy"]
+      "skills": [
+        "persistence",
+        "concertable-persistence",
+        "multitenancy"
+      ]
     },
     {
       "path": "Seeder\\.cs$",
-      "skills": ["seeding"],
-      "note": "The rule whose violation is silent and expensive: a seeder may only write what production code writes directly. If the only production write is a handler reacting to an event, drive the event. The forbidden-table roster is api/agents/SEEDING_CONVENTIONS.md."
+      "skills": [
+        "seeding",
+        "concertable-seeding"
+      ],
+      "note": "The rule whose violation is silent and expensive: a seeder may only write what production code writes directly. If the only production write is a handler reacting to an event, drive the event. The forbidden-table roster is the concertable-seeding skill."
     },
     {
       "path": "Validators?\\.cs$",
-      "skills": ["validation"]
+      "skills": [
+        "validation"
+      ]
     },
     {
       "path": "Module\\.cs$",
-      "skills": ["module-structure"]
+      "skills": [
+        "module-structure",
+        "concertable-module-structure"
+      ]
     },
     {
       "path": "AppHost[^/]*/Program\\.cs$",
-      "skills": ["microservice-boundaries"],
+      "skills": [
+        "microservice-boundaries",
+        "concertable-microservice-boundaries"
+      ],
       "note": "A data service WaitFor-ing another data service is the bug to never introduce. The live topology is api/ARCHITECTURE.md."
     },
     {
       "path": "Controller\\.cs$",
-      "skills": ["http-api", "result-terminals"]
+      "skills": [
+        "http-api",
+        "concertable-http-api",
+        "result-terminals",
+        "concertable-result-terminals"
+      ]
     },
     {
       "path": "\\.proto$",
-      "skills": ["proto"]
+      "skills": [
+        "proto"
+      ]
     },
     {
       "path": "/Log\\.cs$",
-      "skills": ["logging"]
+      "skills": [
+        "logging"
+      ]
     },
     {
       "path": "app/.*/api/[^/]*\\.ts$",
-      "skills": ["http-layer", "contract-naming"]
+      "skills": [
+        "http-layer",
+        "concertable-http-layer",
+        "contract-naming",
+        "concertable-contract-naming"
+      ]
     },
     {
       "path": "app/.*/(hooks|queries)/use[^/]*\\.ts$",
-      "skills": ["server-state", "client-state"]
+      "skills": [
+        "server-state",
+        "client-state",
+        "concertable-client-state"
+      ]
     },
     {
       "path": "app/.*/schemas/[^/]*\\.ts$",
-      "skills": ["write-boundary"]
+      "skills": [
+        "write-boundary",
+        "concertable-write-boundary"
+      ]
+    },
+    {
+      "path": "Directory\\.(Build|Packages)\\.(props|targets)$",
+      "skills": [
+        "concertable-packages"
+      ],
+      "note": "Build and package config is per service folder by design - there is deliberately no repo-root version or build config, because a carve takes only the service folder and would leave anything above it behind."
+    },
+    {
+      "path": "Migrations/.*\\.cs$",
+      "skills": [
+        "concertable-migrations"
+      ]
+    },
+    {
+      "path": "app/.*/features/tenant/.*\\.ts$",
+      "skills": [
+        "concertable-client-state",
+        "concertable-identity",
+        "concertable-permissions"
+      ]
     }
   ]
 }

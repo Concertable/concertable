@@ -71,12 +71,18 @@ When a topic has both, the skill owns the rule and the file owns the inventory.
 | Proto naming, proto mappers, wire error mapping | skill `proto` |
 | Seeding — drive the trigger, never write the row | skill `seeding` |
 | Unit / integration / E2E scenario authoring | skills `unit-testing`, `integration-testing`, `e2e-scenarios` |
-| **This repo's** api-wide precedents — `Concertable.DataAccess` capability hierarchy, `IGeometryProvider`, `IPagination.Map` placement, integration-event wire versioning | [`api/agents/CODE_CONVENTIONS.md`](../api/agents/CODE_CONVENTIONS.md) |
-| **This repo's** structural precedents — Refit client inventory, one repository per entity | [`api/agents/CODE_PATTERNS.md`](../api/agents/CODE_PATTERNS.md) |
-| **This repo's** Reunion pins and legacy-carrier migration state | [`api/agents/RESULT_PATTERN.md`](../api/agents/RESULT_PATTERN.md) |
-| **This repo's** project naming, `organization` routes, `Genre` enum, no cross-module read context | [`api/agents/MODULE_STRUCTURE.md`](../api/agents/MODULE_STRUCTURE.md) |
-| **This repo's** forbidden seed tables, the B2B simulator, the ticket-sales exception | [`api/agents/SEEDING_CONVENTIONS.md`](../api/agents/SEEDING_CONVENTIONS.md) |
-| **This repo's** integration fixtures, shared harness members, run commands | [`api/agents/INTEGRATION_CONVENTIONS.md`](../api/agents/INTEGRATION_CONVENTIONS.md) |
+| **This system's** `Concertable.DataAccess` capability hierarchy, one repository per entity | skill: `concertable-persistence` |
+| **This system's** `IGeometryProvider` / WGS84 | skill: `concertable-geometry` |
+| **This system's** `IPagination.Map` placement, integration-event wire versioning, the `Genre` enum | skill: `concertable-dotnet-contracts` |
+| **This system's** Refit client inventory and the `ITokenApi` caveat | skill: `concertable-http-clients` |
+| **This system's** Reunion pins, never-redistribute, the package closure and carve gates | skill: `concertable-packages` |
+| **This system's** gRPC cancellation predicate | skill: `concertable-result-terminals` |
+| **This system's** project naming, internal controllers, no cross-module read context | skill: `concertable-module-structure` |
+| **This system's** `Tenant`-to-`organization` translation and route shapes | skill: `concertable-http-api` |
+| **This system's** service roster, adapter-vs-data, the surfaces each exposes | skill: `concertable-microservice-boundaries` |
+| **This system's** migration policy | skill: `concertable-migrations` |
+| **This system's** forbidden seed tables, the B2B simulator, the ticket-sales exception | skill: `concertable-seeding` |
+| **This system's** integration fixtures and shared harness members | skill: `concertable-integration-testing` |
 | **This repo's** E2E baseline path, run script, seeded fast-forward | [`Concertable.Testing.E2E`](../api/Concertable.Shared/tests/Concertable.Testing.E2E/AGENTS.md) |
 | Page objects, `data-testid` naming, step-binding shape; the Stripe 3DS/timeout traps | [`E2E_UI_CONVENTIONS.md`](../api/Concertable.Shared/tests/Concertable.Testing.E2E/E2E_UI_CONVENTIONS.md), [`E2E_CONSIDERATIONS.md`](../api/Concertable.Shared/tests/Concertable.Testing.E2E/E2E_CONSIDERATIONS.md) |
 | B2B's DbContext stances, filtered entities, `DealType` families and workflow steps | [`api/Concertable.B2B/CODE_PATTERNS.md`](../api/Concertable.B2B/CODE_PATTERNS.md) |
@@ -96,8 +102,11 @@ When a topic has both, the skill owns the rule and the file owns the inventory.
 | Slots over role checks, composed identity, tier discipline | skill `tiered-shared-code` |
 | Which library to reach for | skill `stack-defaults` |
 | The sharing tiers and the build gate | [`app/AGENTS.md`](../app/AGENTS.md) |
-| **This repo's** four HTTP clients, `isApiError` seam, `$type` unions, `FormData` casing | [`app/agents/CODE_CONVENTIONS.md`](../app/agents/CODE_CONVENTIONS.md) |
-| **This repo's** `User`/`B2bIdentity` split, tenant session, `SharedPermissions` | [`app/agents/CODE_PATTERNS.md`](../app/agents/CODE_PATTERNS.md) |
+| **This system's** four HTTP clients and the `isApiError` seam | skill: `concertable-http-layer` |
+| **This system's** `$type` unions and `FormData` casing | skill: `concertable-typescript-style` |
+| **This system's** `User`/`B2bIdentity` split | skill: `concertable-identity` |
+| **This system's** tenant session and active-tenant state | skill: `concertable-client-state` |
+| **This system's** `SharedPermissions` matrix | skill: `concertable-permissions` |
 | Axios confinement and the error contract | [`app/web/AGENTS.md`](../app/web/AGENTS.md) "HTTP errors" |
 | What belongs in each tier | that tier's own `AGENTS.md` |
 | Browser storage inventory and consent gating | [`app/web/shared/BROWSER_STORAGE.md`](../app/web/shared/BROWSER_STORAGE.md) |
