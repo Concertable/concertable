@@ -6,7 +6,7 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules-phase2`
 - Branch: `Refactor/launch_deal-lifecycle-modules-phase2`
 - PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633). Published
-  current-main and module-owned seeder work head `ebf259e22e7778b3ffd2944dd83a625724bf811b`;
+  current-main and Application counterparty-notification work head `af500baa92a0d182ff177fa36a4ba061669f3e00`;
   local HEAD, the remote branch, and PR `headRefOid` matched exactly after the work-head push.
 - Dependency/package gates: none block the remaining B2B-internal implementation. Phase 1 delivery is terminal; final `api/**` delivery will own its routine package publication and platform-sync gate only after the complete refactor merges.
 - Last reconciled: 2026-08-18 after completing the Application counterparty-notification
@@ -190,9 +190,12 @@ generalize selector/factory infrastructure in this slice.
 - Published current-main and module-owned seeder range `3747fb64f..ebf259e22` from starting remote
   head `3747fb64f90d8189868f37435120daab3bf5ea19`; local HEAD, the remote branch, and draft PR
   #633 `headRefOid` all equalled `ebf259e22e7778b3ffd2944dd83a625724bf811b`.
-- Merged 15 commits of current `origin/main` without conflicts as `360da218e`, then moved the
-  counterparty-notification handler, pre-commit registration, and focused tests from Concert into
-  Application in this commit. The obsolete `Cancelled` Application notification copy is removed.
+- Published current-main and Application counterparty-notification range `cb61d8298..af500baa9` from
+  starting remote head `cb61d8298567f7d8e07ef028972bd8d4304c4274`. The range merges 15 commits of
+  `origin/main` without conflicts as `360da218e`, moves the notification handler, pre-commit
+  registration, and focused tests from Concert into Application, and removes the obsolete `Cancelled`
+  Application notification copy. Local HEAD, the remote branch, and draft PR #633 `headRefOid` all
+  equalled `af500baa92a0d182ff177fa36a4ba061669f3e00` after the work-head push.
 - Merged the 93-commit `origin/main` drift without conflicts as
   `ff2e4dc553aad7bd9093e958235fa809efe5c881`, then verified local HEAD, the remote branch, and draft PR
   #633 `headRefOid` matched and the branch was 0 commits behind.
