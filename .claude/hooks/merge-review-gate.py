@@ -29,6 +29,13 @@ import json
 import re
 import subprocess
 import sys
+from pathlib import Path
+
+# This message is what the agent acts on, and Windows defaults these streams to cp1252,
+# which turns the punctuation in it into mojibake.
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        _stream.reconfigure(encoding="utf-8", errors="replace")
 
 
 _GIT_CWD = ["."]
@@ -119,9 +126,31 @@ def merge_target_dir(command, data):
     return target or data.get("cwd") or "."
 
 
+def common_git_dir(cwd):
+    # git answers this relative to the repo it was asked in, so it must be resolved against
+    # that directory - resolving it against this process's cwd silently compares the wrong path.
+    out = subprocess.run(
+        ["git", "rev-parse", "--git-common-dir"],
+        capture_output=True, text=True, check=True, cwd=cwd,
+    ).stdout.strip()
+    path = Path(out)
+    return path.resolve() if path.is_absolute() else (Path(cwd) / path).resolve()
+
+
+def same_repository(cwd):
+    """True when `cwd` belongs to the repository this hook file lives in."""
+    try:
+        return common_git_dir(cwd) == common_git_dir(str(Path(__file__).resolve().parent))
+    except Exception:  # noqa: BLE001 - unresolvable means do not claim jurisdiction
+        return False
+
+
 def gh_json(*args):
+    """Runs where the merge runs. `git` was already cwd-aware and this was not, so a
+    `cd <other-repo> && gh pr merge <n>` resolved <n> against THIS repo - gating an
+    unrelated repo's merge against a Concertable PR that merely shares the number."""
     return subprocess.run(
-        ["gh", *args], capture_output=True, text=True, check=True
+        ["gh", *args], capture_output=True, text=True, check=True, cwd=_GIT_CWD[0]
     ).stdout.strip()
 
 
@@ -167,6 +196,13 @@ def main():
     except Exception as exc:  # noqa: BLE001 — a merge with a broken check must not slip through
         block("MERGE GATE: cannot resolve git state (" + str(exc) + "); refusing "
               "`gh pr merge` until a code-review can be verified.")
+
+    # Only this repository's merges. `reviews/<branch>.md` is THIS repo's convention, and a
+    # sibling repo merged from this session has its own rules - gating it here demanded a
+    # review file that repo never had. Worktrees share a common git dir, so compare that
+    # rather than the toplevel, which differs per worktree of the same repo.
+    if not same_repository(_GIT_CWD[0]):
+        sys.exit(0)
 
     # Gate the branch being MERGED, not the branch this session happens to sit on.
     # Resolving the session's checkout meant a worktree PR merged from a main-rooted
