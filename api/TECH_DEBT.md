@@ -6,6 +6,17 @@ Debt spanning multiple services or host `Program.cs` files. Debt inside the shar
 
 ## MED
 
+### Controller route-token casing is implemented only in the B2B host
+
+`Concertable.B2B.Web` owns `KebabCaseRouteTransformer` and registers
+`RouteTokenTransformerConvention` directly in `Program.cs`. Controller-token casing is an HTTP-host
+convention rather than B2B domain behaviour, so leaving it local lets other backend hosts implement a
+different route format or copy the same plumbing.
+
+**Resolves when:** `Concertable.Shared.Api` exposes the transformer through one shared MVC registration
+extension, the package is published, every MVC host installs that extension, and the B2B-local
+transformer and inline registration are removed.
+
 ### Async application and persistence APIs do not consistently propagate cancellation
 
 Many application-service, repository, module-facade, and infrastructure methods perform EF Core,
