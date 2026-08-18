@@ -5,9 +5,13 @@
 - Roadmap item: `launch/deal-lifecycle-ownership`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules-phase2`
 - Branch: `Refactor/launch_deal-lifecycle-modules-phase2`
-- PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633). Local HEAD, the remote branch, and the PR head all equal current-main merge checkpoint `ff2e4dc553aad7bd9093e958235fa809efe5c881` before this ledger commit; the branch is 0 commits behind `origin/main`.
+- PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633). This plan-reset
+  checkpoint sits above implementation checkpoint `b8281bf6e45656419a0d20732c9fadc87427448f`;
+  the worktree retains a large uncommitted Phase 3/4 candidate that must be preserved and reconciled
+  after the design reset.
 - Dependency/package gates: none block the remaining B2B-internal implementation. Phase 1 delivery is terminal; final `api/**` delivery will own its routine package publication and platform-sync gate only after the complete refactor merges.
-- Last reconciled: 2026-08-17 after the corrected Application-to-Booking financial seam passed its focused verification gate
+- Last reconciled: 2026-08-18 after the module-boundary and transaction design review; Concert
+  collaborator placement remains intentionally undecided pending fresh-context research
 
 ## Current state
 
@@ -16,9 +20,15 @@ Booking → Concert for every `DealType`; DealType varies only the local behavio
 stage. Opportunity remains the upstream one-Deal/many-Applications aggregate.
 
 Application, Booking, and Concert will become independent modules with their own state, transition
-model, contextual step contracts, and module-local step resolver. There is no umbrella process entity,
+model, contextual step contracts, and module-local keyed selection. There is no umbrella process entity,
 shared lifecycle state, workflow module, cross-module resolver, or parent state machine. A combined
 status exists only as a read projection.
+
+This is a modular-monolith boundary inside the single B2B deployment, not an independently deployable
+service split. Its concrete value is compile-time enforcement of the one-way
+Application → Booking → Concert authority flow. Opportunity remains separate and owns its own
+Open/Filled state; Applications reference it by ID rather than forming an unbounded aggregate
+collection on Opportunity.
 
 PR #633 now owns the complete remaining decomposition through the plan's definition of done. Phases
 2-6 are implementation/recovery checkpoints on that one draft PR, not merge candidates. Reviewability,
@@ -69,30 +79,35 @@ nullable outcome event, identifier-only confirmation method, or placeholder
 Accept-before-payment converge through the same typed evidence boundary, and duplicate delivery is
 idempotent.
 
-The full host is intentionally still red at the next ownership frontier: 37 compile errors are confined
-to Concert.Application interfaces, mappers, and shared workflow contracts that still mention the
-Application/Booking types already moved to their owning modules. Do not restore those dependencies or
-add cross-module runtime references; delete or replace the legacy consumers while establishing
-independent Concert ownership.
+The worktree now contains a broad uncommitted Phase 3/4 candidate across B2B host composition,
+Application, Booking, Concert, focused Booking unit tests, and local tech-debt documentation. It moves
+Capture/Deposit outcomes and pre-Concert cancellation into Booking, expands the immutable
+`ConfirmedBooking` handoff, begins Concert-owned state/steps, and removes the draft/lifecycle service
+split. This candidate has not passed a current host build or full focused gate and must not be treated
+as an approved implementation. Preserve it, inspect it against the decisions below, and amend it rather
+than restarting or restoring the legacy cross-module model.
 
 ## Next Steps
 
-Resume at the Concert/payment carve while preserving the verified Application-to-Booking seam:
+Resume with a fresh-context architecture check before editing the uncommitted Concert candidate:
 
-1. Move Capture/Deposit success and rejection handling into Booking. Feed the callbacks through the
-   typed financial-evidence boundary, validate the acceptance operation ID, Booking/Application,
-   expected operation, and provider reference where the payment event supplies one. Capture/Deposit
-   rejection events correlate by acceptance operation ID and Booking ID and carry required error data;
-   do not fabricate a provider reference. Preserve late-success compensation and retry idempotency.
-2. Emit the immutable `ConfirmedBooking` handoff only from financially confirmed Booking state, then
-   create Concert from that handoff and move post-creation cancellation, completion, settlement, and
-   their financial-operation facts onto Concert-owned state.
-3. Delete the shared `LifecycleState`, `IConcertWorkflow`, workflow/capability registries, cross-stage
-   builder, and legacy Application/Booking executors. Register exact local keyed steps independently in
-   Application, Booking, and Concert; keep the project graph Contracts-only and acyclic.
-4. Finish the combined read projection, migrations, API/seed/worker consumers, guidance, focused
-   integration coverage, and final review/verification gates on draft PR #633. No intermediate phase
-   is mergeable.
+1. Independently research the Concert application boundary against the actual final dependency graph,
+   keyed-strategy convention, Result pattern, and comparable repository code. Treat the leading design
+   as a hypothesis: `ConcertExecutor` executes deal-specific Cancel and Complete steps, while uniform
+   `IConcertService.CreateAsync(ConfirmedBooking)` owns creation and returns a typed `UnitResult`.
+   Explicitly test whether creation genuinely varies by `DealType`, whether `Executor` has a broader
+   established meaning, and whether either placement creates a dependency bag. Do not implement until
+   the evidence-backed decision is recorded in this plan and ledger.
+2. Reconcile the existing uncommitted work with that decision. Keep
+   `BookingConfirmedDomainEventHandler` thin, pass only the immutable `ConfirmedBooking` contract into
+   Concert, and use typed Results for expected failures rather than explicit throws.
+3. Finish atomic Application acceptance with a conditional Opportunity `Open` to `Filled` claim inside
+   the existing ambient transaction. Preserve synchronous pre-commit `ApplicationAcceptedDomainEvent`
+   handling for Booking/Contract formation; the outbox is for outbound durable delivery, not
+   asynchronous Booking creation. Add concurrency and rollback coverage.
+4. Continue the remaining payment/Concert carve, delete the god workflow and shared lifecycle state,
+   finish projections/migrations/consumers/guidance, and run the focused gates before publishing the
+   next coherent checkpoint to draft PR #633. No intermediate phase is mergeable.
 
 ## Completed work
 
@@ -276,6 +291,36 @@ Resume at the Concert/payment carve while preserving the verified Application-to
 
 - The remaining refactor is one complete PR. Phases are in-branch checkpoints; only a genuine external
   artifact dependency can justify another merge.
+- Opportunity, Application, Booking, and Concert remain separate modules inside one B2B deployable.
+  Independent deployment is irrelevant; the boundary exists to enforce one-way state ownership.
+- Opportunity does not own an `Applications` collection. Application has an independent identity and
+  lifecycle and is queried by `OpportunityId` through its owning module.
+- Application acceptance to Booking/Contract formation remains a synchronous pre-commit domain-event
+  handoff inside one ambient SQL transaction. An asynchronous outbox handoff is rejected because it
+  would permit Accepted-without-Booking and require pending state, reconciliation, and compensation.
+- Acceptance must atomically claim Opportunity `Open` to `Filled`; the current non-conditional,
+  unused `MarkFilledAsync` path does not prevent two concurrent Applications from winning.
+- `ConfirmedBooking` is the only Booking-to-Concert creation input. Concert must not reload live
+  upstream aggregates.
+- The internal `ConcertExecutor` idea remains under consideration specifically for step-driven Concert
+  operations. Whether it owns Cancel/Complete only or also uniform creation is not approved and must be
+  researched before implementation. `ConcertCreator` and a separate `ConcertDraftService` are not the
+  assumed target.
+- `BookingConfirmedDomainEventHandler` remains a thin event adapter. The current leading hypothesis is
+  that it calls `IConcertService.CreateAsync(ConfirmedBooking)`, returning a typed `UnitResult`, while
+  `ConcertExecutor` hides deal-specific Cancel/Complete step selection.
+- HTTP hosts compose only `AddXApi(configuration)` boundaries; each API extension composes its own
+  module infrastructure. The analogous Customer host violations are recorded in
+  `api/Concertable.Customer/TECH_DEBT.md` for later correction and an architecture guard.
+- Pre-accept withdrawal remains Application-owned. Post-accept/pre-Concert cancellation is
+  Booking-owned and belongs on `BookingController`; compatibility routing may preserve the existing
+  Application cancellation URL without moving state ownership backwards. Post-creation cancellation
+  is Concert-owned.
+- Concert-owned Artist and Venue read-model repositories read local projections needed for creation;
+  they are distinct from the Concert aggregate repository and do not authorize cross-module queries.
+- Expected application failures use Reunion Results. Explicit exceptions are reserved for genuine
+  infrastructure faults or impossible invariant violations, not ordinary not-found/state/validation
+  outcomes.
 - Empty layer projects and no-op `Add*Module` methods cannot survive delivery. Add a layer only when the
   module has real content for it.
 - DTO placement follows audience: internal service results belong in Application; only deliberate
@@ -283,8 +328,9 @@ Resume at the Concert/payment carve while preserving the verified Application-to
   not contexts.
 - One state machine exists per owning aggregate/module, not per individual enum value.
 - Local state machines may use different structures; no common lifecycle interface is required.
-- Context supplies names inside a module: `State`, `Trigger`, `StateMachine`, `IStepResolver<TStep>`,
-  and `ICancelStep` do not need Application/Booking/Concert prefixes internally.
+- Context supplies names inside a module: `State`, `Trigger`, `StateMachine`, and `ICancelStep` do not
+  need Application/Booking/Concert prefixes internally. Resolver-versus-factory naming for the keyed
+  selector is part of the mandatory Concert-boundary research rather than a settled exception.
 - Generic keyed-DI or transition plumbing may be shared only when it has no domain knowledge. Strategy
   registrations, transition tables, capabilities, and resolver instances remain module-local.
 - Application records pre-accept payment evidence only because the callback can arrive before Booking
@@ -326,9 +372,10 @@ Resume at the Concert/payment carve while preserving the verified Application-to
   cancellation, door revenue, Contract reads, and Invoice reads.
 - Application and Opportunity HATEOAS currently derive checkout and command links from the Concert
   workflow capability registry.
-- Booking-to-Concert creation currently runs through the book step and draft service; Invoice currently
-  reaches DealType through Concert to Booking to Application. These are migration sites, not target
-  ownership or test expectations.
+- Committed Booking-to-Concert creation still carries legacy book-step/draft-service history, while the
+  uncommitted candidate removes `ConcertDraftService` and calls Concert creation from
+  `BookingConfirmedDomainEventHandler`. Its final `ConcertService` versus `ConcertExecutor` placement is
+  the mandatory first research decision in `## Next Steps`.
 
 ## Downstream handoffs
 

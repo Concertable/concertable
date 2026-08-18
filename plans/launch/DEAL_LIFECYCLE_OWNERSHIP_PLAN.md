@@ -19,6 +19,10 @@ The current Concert module must be decomposed so each persisted stage owns its o
 behaviour. There is no umbrella lifecycle entity, aggregate, state enum, state machine, workflow
 object, resolver, or module spanning the stages.
 
+These are compile-time module boundaries inside the single B2B deployable. Independent deployment is
+not a goal or justification. The value is enforcing the one-way ownership rule so a later stage cannot
+reach backwards and mutate an earlier aggregate.
+
 This decision was explicitly approved by Tommy on 2026-08-16 after comparing the current model with
 the aggregate-collapse, Deal-owned workflow, premature two-way state split, and separate process-root
 alternatives.
@@ -32,6 +36,8 @@ to land first; PR #633 remains draft until the full definition of done is satisf
 
 - **Opportunity** is the venue's advertised opening. It owns one current Deal and may receive many
   Applications. It is upstream of the per-artist progression, not a stage to hide inside Application.
+  Applications reference it by ID and are queried by the Application module; Opportunity does not own
+  an unbounded `Applications` aggregate collection or cross-module EF navigation.
 - **Deal** is the editable economic arrangement selected by `DealType`. The Deal module remains
   independent and never queries or commands Application, Booking, or Concert.
 - **Application** is one artist's submission to an Opportunity. Acceptance is its successful terminal
@@ -88,6 +94,11 @@ handoff is the provenance Booking requires: a Booking cannot be created from an 
 identifier or without the accepted Application facts. Pre-accept payment evidence crosses with the
 handoff as case-specific immutable data, not as an enum or boolean accompanied by nullable metadata.
 
+Acceptance raises an `ApplicationAcceptedDomainEvent` synchronously before commit. Booking consumes
+the immutable handoff and forms Booking and Contract inside the same ambient B2B transaction. This is
+a pre-commit domain handoff, not an asynchronous outbox integration handoff: the outbox makes outbound
+messages durable but does not make later asynchronous Booking creation atomic with Application.
+
 ### Booking
 
 Owns Booking and Contract creation, acceptance-triggered payment processing after Booking creation,
@@ -121,6 +132,14 @@ Owns the Concert entity and all post-creation operational state: draft/posting, 
 completion, and any recovery state whose success is required to complete those operations. It does
 not inspect `Booking.Application.State` or ask Booking/Deal how to interpret Concert state.
 
+Concert creation consumes the immutable `ConfirmedBooking` handoff from `Booking.Contracts`; it never
+loads a live Booking or Application aggregate. Creation is currently understood to be uniform across
+`DealType`, while cancellation and completion select deal-specific steps. The exact internal
+collaborator boundary is deliberately unresolved: the leading candidate keeps
+`CreateAsync(ConfirmedBooking)` on `IConcertService` and places step-driven Cancel/Complete operations
+on an internal `IConcertExecutor`, but a fresh AI must inspect the final dependency shape, repository
+conventions, Result handling, and tests before this is implemented or recorded as the final design.
+
 Settlement and invoice records must be assessed by identity during the carve. They may remain
 Concert-owned children where they make a Concert completion operation durable, or move to a
 separately justified financial module. They cannot revive a shared Application-to-Concert state.
@@ -149,8 +168,7 @@ row. After the B2B runtime moves to .NET 11, native C# unions will represent jus
 values, beginning with the combined read shape
 `ApplicationStage | BookingStage | ConcertStage` and module-local state, trigger, or operation-outcome
 shapes whose cases carry genuinely different data. Unions do not replace state ownership or dependency
-resolution: each module maps its persistence discriminator explicitly and retains transition authority,
-while `IStepResolver<TStep>` continues to resolve runtime services.
+resolution: each module maps its persistence discriminator explicitly and retains transition authority.
 
 ## 5. State machines and contextual names
 
@@ -193,17 +211,25 @@ names rather than repeating the aggregate name:
 | Booking | `IConfirmStep`, `ICancelStep` |
 | Concert | `ICancelStep`, `ICompleteStep`, and local settlement-recovery steps where required |
 
-The module-local resolver is `IStepResolver<TStep>`. Its implementation is the only code in that
-module allowed to perform keyed DI lookup. A caller requests one operation-specific dependency:
+The module-local keyed selector is the only code in that module allowed to perform keyed DI lookup.
+A caller requests one operation-specific dependency through a named business-facing collaborator:
 
 ```csharp
-var step = resolver.Resolve<ICompleteStep>(dealType);
-await step.ExecuteAsync(concert, cancellationToken);
+await concertExecutor.CompleteAsync(concertId, cancellationToken);
 ```
 
 The generic keyed-registration mechanism may be mechanically similar in each module, but
-registrations, coverage declarations, step contracts, implementations, and resolver instances are
+registrations, coverage declarations, step contracts, implementations, and selector instances are
 module-local. There is no shared `IWorkflowStepResolver`, cross-module registry, or registration block.
+Whether that selector is named a resolver or a factory must be checked against the repository's current
+keyed-strategy convention before implementation; the business-facing collaborator must not expose
+service-location mechanics.
+
+`ConcertExecutor` is a candidate name for the internal facade that executes Concert's deal-specific
+Cancel and Complete steps. It is not permission to turn an executor into a miscellaneous use-case bag.
+Whether uniform Concert creation belongs beside those operations or remains on `ConcertService` is an
+explicit pre-implementation research decision. Expected failures use typed Results; no design may
+convert them into explicit exceptions merely to cross an internal boundary.
 
 Each module declares exact `DealType` coverage vertically at its own composition root. Repeating the
 closed key in three independent declarations is correct ownership, not duplication. Adding a new
@@ -264,12 +290,21 @@ Rules:
 ### Accept
 
 Preserve the current invariant that accepting an Application forms its Booking and Contract atomically.
-Within B2B, `IUnitOfWorkBehavior<T>` may coordinate the participating module DbContexts under one
-ambient transaction. That coordinator is an application-boundary operation with no persisted identity
-or state; it is not an umbrella aggregate.
+Within B2B, the Application, Opportunity, and Booking module DbContexts join one ambient SQL
+transaction. `ApplicationAcceptedDomainEvent` is dispatched synchronously pre-commit so Booking and
+Contract formation either commits with Application acceptance or all participating writes roll back.
+That coordinator is an application-boundary operation with no persisted identity or state; it is not
+an umbrella aggregate.
 
 The transaction must stage all resulting outbox work before commit. A failure creating Booking or
 Contract leaves Application `Applied`.
+
+Acceptance must first claim the Opportunity atomically with an `Open` to `Filled` conditional write.
+A zero-row claim is an expected typed conflict Result. The claim, Application acceptance, sibling
+rejection, Booking and Contract creation, and staged outbox writes share the transaction. Concurrent
+Applications for one Opportunity must therefore produce exactly one Accepted Application, Booking,
+and Contract; all siblings become Rejected. No `AcceptedPendingBooking` state or reconciliation process
+is introduced.
 
 ### Payment webhook before Accept
 
@@ -360,6 +395,8 @@ responses remain unchanged. Empty runtime layers, no-op `Add*Module` methods, an
 - [ ] Replace the combined `LifecycleState` with independent Application and Booking state.
 - [ ] Preserve the Accept transaction, immutable Contract snapshot, operation IDs, early-verification
   join, late-callback compensation, retry, and idempotency invariants.
+- [ ] Make Opportunity acceptance an atomic `Open` to `Filled` claim and prove concurrent acceptance
+  yields exactly one Accepted Application, Booking, and Contract while rejecting every sibling.
 - [x] Require accepted-application provenance for Booking creation and explicit correlated financial
   success/failure facts for later outcomes; remove identifier-only confirmation and nullable outcome
   payloads.
@@ -370,6 +407,10 @@ transition, and all accept/payment arrival orders pass focused integration cover
 
 ### Phase 4 — give Concert independent operational ownership
 
+- [ ] Before changing the Concert application boundary, independently research the candidate
+  `IConcertExecutor`/`ConcertExecutor` and uniform `CreateAsync(ConfirmedBooking)` placement against the
+  final dependency graph, keyed-step conventions, typed-Result semantics, and comparable repository
+  code. Record the decision in this plan and ledger before implementation.
 - [ ] Create Concert only from a financially confirmed Booking handoff.
 - [ ] Move draft/posting, post-creation cancellation, completion, settlement recovery, and relevant
   financial operation facts onto Concert or justified Concert-owned children.
@@ -384,8 +425,8 @@ Gate: Concert can validate and complete every operation from its own state plus 
 
 - [ ] Delete `IConcertWorkflow`, concrete `*Workflow` dependency-holders, the workflow factory,
   cross-stage builder, state-machine registry, and reflection capability registry.
-- [ ] Add local `State`, `Trigger`, `StateMachine`, `IStepResolver<TStep>`, and contextual step contracts
-  only where each module needs them.
+- [ ] Add local `State`, `Trigger`, `StateMachine`, keyed selectors, named operation facades, and
+  contextual step contracts only where each module needs them.
 - [ ] Register exact per-`DealType` step coverage independently in Application, Booking, and Concert.
 - [ ] Update `api/agents/CODE_PATTERNS.md` and module guidance so shared keyed infrastructure cannot be
   mistaken for shared workflow ownership.
@@ -418,11 +459,13 @@ whole workflow.
 - The runtime dependency graph is Contracts-only and acyclic, with no backwards command/control flow.
 - There is no shared workflow module, cross-module step registry, umbrella state machine, or dependency-
   holder exposing all steps.
-- Contextual local names (`State`, `Trigger`, `StateMachine`, `IStepResolver<TStep>`, `ICancelStep`) are
-  used without redundant aggregate prefixes inside their module.
+- Contextual local names (`State`, `Trigger`, `StateMachine`, `ICancelStep`) are used without redundant
+  aggregate prefixes inside their module; keyed-selector naming matches its actual factory/resolution
+  semantics and remains module-local.
 - Every `DealType` has exact, independently validated coverage for the local operations it requires.
 - Accept and Booking-confirmation boundaries are atomic or durably convergent as specified; every
   callback order is idempotent.
+- Opportunity acceptance uses an atomic claim, so concurrent Applications cannot both become accepted.
 - A Booking can only originate from the accepted-application handoff, and confirmation cannot be
   invoked with only a Booking identifier or without matching financial-operation evidence.
 - Success and failure use separate, fully populated facts; no outcome enum/boolean is flattened with
@@ -441,6 +484,8 @@ whole workflow.
 - moving all post-accept state onto Booking, including real Concert operations;
 - an Engagement/process/lifecycle aggregate or value object spanning the chain;
 - a BookingWorkflow, ConcertWorkflow, or shared Workflow module spanning multiple aggregates;
+- treating `ConcertExecutor` as a replacement umbrella workflow or a dependency bag unrelated to
+  executing Concert-owned step families;
 - one shared resolver, registry, workflow definition, state enum, or state machine for all modules;
 - identifier-only Booking confirmation or confirmation that reloads a live Application aggregate;
 - payment outcome contracts that combine success/failure with nullable case-specific fields;
