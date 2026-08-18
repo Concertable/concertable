@@ -11,7 +11,7 @@
   conflicts resolved, below), from 2 behind after platform-sync #645 merged — a clean merge carrying only
   the `<ConcertablePlatformVersion>` bump `0.1.0-alpha.0.1055` → `0.1.0-alpha.0.1061` across the five
   service `Directory.Packages.props` — and from 10 behind at `2b04d57e2`.
-- Shared repos: `Concertable/agent-standards` (7 process skills + the `skill_router` hook, `88cf091`, pushed) and `tomjseery/dotagents` (29 generic — 20 .NET + 9 TS/React — synced to `~/.agents/skills/`), cloned at `C:\Users\TommySeery\source\repos\{agent-standards,dotagents}`
+- Shared repos **today** (target shape in `## Topology` below): `Concertable/agent-standards` (7 process skills + the `skill_router` hook, `88cf091`, pushed) and `tomjseery/dotagents` (39 — 20 .NET, 9 TS/React, 10 utilities, `3918a85`, pushed; junctioned into `~/.agents/skills` + `~/.claude/skills`), plus `agent-utilities` (session tooling, no skills) and `agent-starter-kit` (to archive), cloned at `C:\Users\TommySeery\source\repos\{agent-standards,dotagents}`
 - Dependency/package gates: no consumer migration to do, but this PR **will** trigger publish + platform sync — `publish-packages.yml` triggers on the coarse `paths: api/**`, which this branch's `api/**` markdown matches. MinVer republishes and a `chore/platform-sync-*` PR opens; non-breaking (no published type changed), so it should auto-merge green. Follow it to green anyway — whoever merges owns the sync.
 - Last reconciled: 2026-08-17 against `agent-standards` `88cf091` (pushed) after the incremental review's three fixes; `origin/main` matched at the tier-3 commit (0 behind) — re-check at enqueue time
 
@@ -32,10 +32,14 @@ Enforcement is now complete at all three tiers, **and in both harnesses** — th
 router had been enforcing in Claude only, so a Codex session wrote past it silently. The build fails a
 misnamed or misclassified test project, the write-time router blocks the first write into a routed path
 whichever harness makes it, every test project's stub opens with the unit-vs-integration decision, and
-`/review` resolves the standards it owes from the same table. What remains
-is Phase 6a's deployment (Tommy's to run), Phase 3c (the markdown outside the conventions folders), Phase 4
-(the duplication rows that still have >1 home, chiefly seeding across `api/AGENTS.md` and
-`SEEDING_CONVENTIONS.md`), and the deferred auto-load thinning of root `AGENTS.md`.
+`/review` resolves the standards it owes from the same table. Phase 6a is deployed — 46 junctions across
+both roots.
+
+**What the reduction did not do, and why this is not near done:** it organized on portability rather than
+domain, left the payload inside flat `SKILL.md` files rather than a browsable tree, and kept `api/agents/`
+as a destination the polyrepo cut removes. Those are Phases 5, 5b and 5c, all outstanding — plus Phase 3c
+(markdown outside the conventions folders), Phase 4 (rows still with >1 home, chiefly seeding across
+`api/AGENTS.md` and `SEEDING_CONVENTIONS.md`), and the deferred auto-load thinning of root `AGENTS.md`.
 
 ## Done
 
