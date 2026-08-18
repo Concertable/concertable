@@ -5,13 +5,12 @@
 - Roadmap item: `launch/deal-lifecycle-ownership`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules-phase2`
 - Branch: `Refactor/launch_deal-lifecycle-modules-phase2`
-- PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633). Published
-  recovery work head `2d14e08dbcab5d3ff63759781b3573ad17357165` preserves the Phase 3/4
-  candidate through the dashboard/projection compile frontier; local HEAD, the remote branch, and PR
-  `headRefOid` matched exactly after the work-head push.
+- PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633). Remote and
+  PR head remain at checkpoint `3747fb64f90d8189868f37435120daab3bf5ea19`. The local candidate includes
+  current-main merge `10140df12` and this verified module-owned seeder slice.
 - Dependency/package gates: none block the remaining B2B-internal implementation. Phase 1 delivery is terminal; final `api/**` delivery will own its routine package publication and platform-sync gate only after the complete refactor merges.
-- Last reconciled: 2026-08-18 after completing the dashboard/projection compile-recovery slice and
-  recording the module-owned seeder frontier as the next bounded lifecycle slice
+- Last reconciled: 2026-08-18 after completing the module-owned seeder compile-recovery slice and
+  recording the Application notification boundary as the next bounded lifecycle slice
 
 ## Current state
 
@@ -50,9 +49,8 @@ the module assemblies are scaffolded.
 Rejected PR #614 is closed, and its DealTerms branch and worktree were retired with exact-head checks.
 Phase 1 merged through PR #625, published successfully, and reached a green platform sync. Its merged
 worktree and local branch were removed through the plan-managed repository command. This branch merged
-the then-current `origin/main` at `451c10395bfe6dcbf1ae6713033440761489387e`; the latest fetch now
-shows 9 commits of base drift. The preserved dirty candidate prevents a safe current-main merge until
-its next coherent checkpoint is committed.
+the current `origin/main` without conflicts as `10140df12`; it is 0 commits behind locally. That merge
+and the verified seeder slice have not yet been pushed.
 
 The committed Phase 2 checkpoint removes the Opportunity-to-Application, Application-to-Booking, and
 Booking-to-Concert EF navigations and establishes the initial Contracts seams. Published checkpoint
@@ -80,13 +78,12 @@ nullable outcome event, identifier-only confirmation method, or placeholder
 Accept-before-payment converge through the same typed evidence boundary, and duplicate delivery is
 idempotent.
 
-The worktree now contains a broad uncommitted Phase 3/4 candidate across B2B host composition,
-Application, Booking, Concert, focused Booking unit tests, and local tech-debt documentation. It moves
-Capture/Deposit outcomes and pre-Concert cancellation into Booking, expands the immutable
-`ConfirmedBooking` handoff, begins Concert-owned state/steps, and removes the draft/lifecycle service
-split. This candidate has not passed a current host build or full focused gate and must not be treated
-as an approved implementation. Preserve it, inspect it against the decisions below, and amend it rather
-than restarting or restoring the legacy cross-module model.
+The broad Phase 3/4 candidate is preserved in published work head `2d14e08db` and checkpoint
+`3747fb64f`. It moves Capture/Deposit outcomes and pre-Concert cancellation into Booking, expands the
+immutable `ConfirmedBooking` handoff, begins Concert-owned state/steps, and removes the draft/lifecycle
+service split. The current candidate adds module-owned Opportunity, Application, Booking, and
+Concert seeders over that candidate; the complete PR still has not passed its full focused gate and is
+not an approved implementation.
 
 The Concert collaborator boundary is now resolved from the final candidate and repository conventions.
 `IConcertService.CreateAsync(ConfirmedBooking)` owns the uniform creation path. Cancel and Complete each
@@ -112,40 +109,33 @@ The duplicate Concert `IDealTermsRenderer`, `IDealTermsSerializer`, `IDealTerms`
 registrations, and DealTerms-specific unit coverage are removed. The scoped production scan finds no
 retained Concert runtime consumer, and Concert.Application now compiles.
 
-The dashboard/projection compile-recovery slice is complete. Concert now queries only Concert-owned
-read models and aggregates for its dashboard counts. Application owns pending/accepted dashboard
-projections and its checkout-capability rule; Opportunity owns upcoming/open queries from its own read
-context. `ConcertDashboardService` composes those narrow Contracts-facing results without a shared
-workflow registry or cross-module entity query. Application.Infrastructure and
-Opportunity.Infrastructure both build with 0 warnings and 0 errors. Concert.Infrastructure now reaches
-10 errors in the next independent frontier: five seeder/fingerprint ownership diagnostics, three
-obsolete Application counterparty notification diagnostics, and two Concert creation email-composition
-diagnostics. No dashboard/projection or stale global-using diagnostic remains. Recovery work head
-`2d14e08dbcab5d3ff63759781b3573ad17357165` is the first checkpoint for the preserved
-Phase 3/4 candidate and completed compile-recovery slices.
+The dashboard/projection and module-owned seeder compile-recovery slices are complete. Opportunity,
+Application, Booking, and Concert now seed only their own write tables in order, while the shared
+`SeedState` stages generated Application IDs into Booking links and then Concert creation inputs.
+Application owns seeded signatures and its internal terms-fingerprint calculator; Concert no longer
+registers or tests that collaborator. The three owning Infrastructure projects compile with 0 errors,
+and Concert.Infrastructure now reaches only five errors: three Application counterparty-notification
+diagnostics and two Concert creation email-composition diagnostics. No seeder/fingerprint,
+dashboard/projection, or stale global-using diagnostic remains.
 
 ## Next Steps
 
-Fresh-context module-owned seeder compile-recovery slice only — do not continue into the obsolete
-Application counterparty notification handler, Concert creation email composition, migrations,
-guidance, or another lifecycle operation:
+Fresh-context Application counterparty-notification compile-recovery slice only — do not continue
+into Concert creation email composition, migrations, guidance, or another lifecycle operation:
 
 The keyed-selector design concern is a recorded non-blocking follow-up. Do not refactor, rename, or
 generalize selector/factory infrastructure in this slice.
 
-1. Read `api/agents/SEEDING_CONVENTIONS.md` in full before editing any seeder.
-2. Remove Concert seeder ownership of Opportunity, Application, and Booking rows in
-   `ConcertDevSeeder`, `ConcertTestSeeder`, and `SeededApplicationSigner`. Establish the minimum
-   module-owned dev/test seeder sequence needed to preserve the existing `SeedState` identities,
-   Application signature/fingerprint facts, Booking links, and Concert creation inputs. Do not make
-   `ITermsFingerprintCalculator` public, add a runtime-project reference across modules, or let one
-   module write another module's tables.
-3. Run the scoped seeder ownership grep, `git diff --check`, each affected module Infrastructure
-   Release build, and the Concert Infrastructure Release build with single-worker MSBuild. The slice
-   gate is that all seeder/fingerprint diagnostics are gone and the Concert build either passes or
-   reaches only the recorded notification/email frontier.
-4. Update this ledger with the exact result and stop the context. Do not fix the next frontier in the
-   same continuation.
+1. Move `ApplicationCounterpartyNotifiedDomainEventHandler` and its focused tests from Concert into
+   Application ownership, register the pre-commit handler in Application, and remove the obsolete
+   `Cancelled` Application notification case rather than retaining post-accept cancellation vocabulary
+   on Application.
+2. Run the scoped `ApplicationCounterpartyNotifiedDomainEvent`/`ApplicationNotification` ownership
+   grep, `git diff --check`, the focused Application unit tests, the Application Infrastructure Release
+   build, and the Concert Infrastructure Release build with single-worker MSBuild.
+3. The slice gate is that all notification diagnostics are gone and Concert.Infrastructure reaches
+   only the two recorded `BookingConfirmationEmailSender` diagnostics. Update this ledger with the
+   exact result and stop the context; do not fix email composition in the same continuation.
 
 ## Completed work
 
@@ -210,11 +200,16 @@ generalize selector/factory infrastructure in this slice.
   `ApplicationEntity`, or `OpportunityEntity` match.
 - Application.Infrastructure and Opportunity.Infrastructure Release builds with `--no-restore`,
   disabled build servers, and single-worker MSBuild: 0 warnings and 0 errors.
+- Module-owned seeder grep: every `Opportunities`, `Applications`, `Bookings`, and `Concerts`
+  `AddRange` is now in its owning module seeder; Concert has no cross-module seeder write and no
+  `ITermsFingerprintCalculator` or `SeededApplicationSigner` reference.
+- Opportunity.Infrastructure, Application.Infrastructure, and Booking.Infrastructure Release builds
+  with `--no-restore`, disabled build servers, and single-worker MSBuild passed with 0 errors.
+  Application and Booking had 0 warnings; Opportunity reported only the inherited `UserEntity`
+  CS0628 warning from a referenced project.
 - `dotnet build api/Concertable.B2B/src/Modules/Concert/Concertable.B2B.Concert.Infrastructure/Concertable.B2B.Concert.Infrastructure.csproj --configuration Release --no-restore --disable-build-servers --maxcpucount:1`
-  cleared the dashboard/projection frontier and stopped at 10 errors with 0 warnings: five
-  `ITermsFingerprintCalculator` seeder diagnostics, three
-  `ApplicationCounterpartyNotifiedDomainEvent`/`ApplicationNotification` diagnostics, and two
-  `BookingConfirmationEmailSender` diagnostics.
+  stopped at 5 errors with 0 warnings: three `ApplicationCounterpartyNotifiedDomainEvent` /
+  `ApplicationNotification` diagnostics and two `BookingConfirmationEmailSender` diagnostics.
 - Refund recovery slice: `git diff --check` passed, and the scoped
   `RefundEscrowDeferredEvent` scan across Concert plus the B2B host returned no matches.
 - The published 270-path candidate remains an intentionally non-mergeable carve. Its Application-to-
