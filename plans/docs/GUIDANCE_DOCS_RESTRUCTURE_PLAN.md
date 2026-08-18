@@ -181,6 +181,134 @@ doc; this doc records the design and its decision history."*
   → `api/agents/CONVENTIONS.md:3` and `:106`, which present it as the authority for *why*. Parts of its
   corollary text have been retrofitted to current reality, which makes it read as maintained.
 
+## The target structure — four tiers, every doc named
+
+**Settled 2026-08-18 after this was re-derived wrongly three times.** The authoritative statement lives in
+`dotagents/AGENTS.md` (mirrors to `~/AGENTS.md`, so it loads in every session) and in full in
+`dotagents/ARCHITECTURE.md`. This section is the file-by-file target and must not contradict them.
+
+Split by **who the rule applies to**. The repo boundary carries the scope, so no folder repeats what its
+repo already says — which is why there is no `platform/` or `concertable/` folder anywhere below.
+
+### Tier 1 — `tomjseery/dotagents`: generic .NET, every .NET repo
+
+`dot` is **dotNET**, not dotfiles. React does not live here.
+
+```text
+standards/dotnet/
+  STACK.md              which .NET library for which job, and what is deliberately not used   NEW
+  STYLE.md              fields, this.-qualification, null!, explicit fields over primary-ctor
+                        captures, brace shape, base., #region, C# 14 extension() blocks
+  NAMING.md             the collaborator-suffix table WITH its precedent column, agent-noun
+                        for single-operation types, Response as HTTP-only, Dto, XMappers
+  COMMENTS.md           comment and XML-doc mechanics, when a summary earns its place
+  DEPENDENCY_INJECTION.md   ctor injection, composition roots, vendor extensions, holders
+  LOGGING.md            LoggerMessage on one Log.cs, CA1848, the probe-and-delete rule
+  VALIDATION.md         FluentValidation for shape vs a domain-eligibility validator
+  data/PERSISTENCE.md   the Repository base, the capability triple, schema constants,
+                        IQueryable never leaks, CancellationToken, paging via Map
+  data/MULTITENANCY.md  stances composed not subtracted, IgnoreQueryFilters banned (RS0030)
+  data/SEEDING.md       drive the trigger, never the row; the two sanctioned exceptions
+  results/CARRIERS.md   Result/UnitResult/Option/nullable/plain, and where each may not appear
+  results/ERRORS.md     one closed operation-owned union, ErrorDefinition, published codes
+  results/TERMINALS.md  the transport terminals and what an exception becomes
+  structure/MODULES.md            layer split, reference graph, visibility cascade
+  structure/SERVICE_BOUNDARIES.md adapter vs data services, protocol table, Aspire wiring
+  structure/HTTP_API.md           DTOs out, Request records in, identity from the route
+  structure/PROTO.md              proto naming, XMappers, what may cross the wire
+  structure/KEYED_STRATEGIES.md   the keyed factory shape and the anti-patterns it replaces
+  testing/UNIT.md         what makes it a unit test, xUnit shape, assertions per tier
+  testing/INTEGRATION.md  WebApplicationFactory, Testcontainers + Respawn, IScoped
+  testing/E2E.md          Reqnroll + Playwright scenario authoring
+standards/communication/
+  REVIEW_COMMENTS.md    drafting a comment Tommy posts under his own name
+  EXPLAINING_CODE.md    explaining code so the reader can verify rather than trust
+```
+
+`communication/` sits here because it is personal cross-project convention, and this repo already carries
+the personal machine config (`~/AGENTS.md`, `~/.agents/`, `~/.claude/`). It is not .NET, and that is the one
+deliberate exception to this repo being stack-scoped.
+
+### Tier 2 — `tomjseery/react-agents`: generic React/TS, every React repo — **REPO DOES NOT EXIST YET**
+
+```text
+standards/react/
+  STACK.md          which library for which job, and the deliberately-not-used list
+  TYPESCRIPT.md     interface vs type, wire casing, optional vs nullable, discriminated unions
+  STRUCTURE.md      the feature slice, hooks orchestrate / components render, Effect traps,
+                    the raw-hook vs facade-hook litmus (does it return the library result raw)
+  CONTRACTS.md      domain-noun reads, XRequest writes, one types.ts per feature
+  SERVER_STATE.md   useQuery/useMutation, query-key factories, invalidation, buffer vs vars
+  CLIENT_STATE.md   store privacy, facade hooks, derived values, the one imperative session
+  FORMS.md          the zod submit boundary; parse then map the parsed result
+  HTTP.md           axios, one client per backend, errors resolved once at the query client
+  SHARED_CODE.md    tiers, slots over role checks, composed identity
+  ROUTING.md        typed routes, search-param validation, guards, loader vs query   NEW
+  UI.md             Tailwind + cn/cva, Radix/shadcn ownership, sonner, framer-motion  NEW
+  TABLES.md         TanStack Table                                                    NEW
+  DATES.md          dayjs behind one formatting module                                NEW
+  TESTING.md        Vitest — what to test at which level                              NEW
+```
+
+### Tier 3 — `Concertable/agent-standards`: everything Concertable, by stack
+
+No `platform/`, no `concertable/`. Concertable **is** the platform and the repo already says so.
+
+```text
+standards/dotnet/
+  DATA_ACCESS.md        the Concertable.DataAccess capability hierarchy
+  CONTRACTS.md          IPagination's home, integration-event wire versioning
+  HTTP_CLIENTS.md       the Refit inventory and the ITokenApi caveat
+  SEEDING_INVENTORY.md  the forbidden-table list — what a seeder may never insert
+  GEOMETRY.md           IGeometryProvider
+  PACKAGES.md           the platform pin, UseLocalCore, carve enforcement
+  TESTING.md            SqlFixture, TestAuthHandler, the Environments extension members
+standards/react/
+  APP_TIERS.md          the four SPAs, route literals, the typecheck boundary gate
+  CLIENTS.md            apiClient / paymentClient / searchClient / customerClient
+  IDENTITY.md           User vs B2bIdentity, memberships
+  PERMISSIONS.md        the SharedPermissions matrix
+  BROWSER_STORAGE.md
+standards/process/
+  BRANCHING.md  COMMITTING.md  MERGING.md  PLANS.md
+  REMOTE_VALIDATION.md  DOCS_AND_DEBT.md  FAILING_TESTS.md
+```
+
+`process/` is a peer of the two stack sections, not a redundant name: branching and merging are neither
+.NET nor React. Where a process rule is genuinely generic it still lives here rather than earning a fourth
+repo — a known wrinkle, recorded rather than silently decided.
+
+### Tier 4 — each microservice repo: only what is true of that service
+
+**`AGENTS.md` is a roster and a set of pointers, not a dumping ground.** Where a service or module has
+conventions of its own, it names a sibling doc in its own repo:
+
+```text
+<service>/AGENTS.md              the roster: its real types, contexts, tables, clients + pointers
+<service>/CODE_CONVENTIONS.md    only where that service or module genuinely has its own
+<service>/ARCHITECTURE.md        only where it has service-specific topology
+<service>/TECH_DEBT.md           debt owned there, deleted when fixed
+<service>/src/Modules/<M>/AGENTS.md    per-module, same shape, thin
+```
+
+### How every doc in every tier is organised
+
+- **One concern per doc.** Past ~80 lines a section earns its own file; under ~20 lines a file merges into
+  its parent.
+- **A rule is statement, anti-pattern, one example — in that order, ~15 lines.** Longer earns its own `##`.
+- **Headings are imperative rule statements**, not topic labels: "Repositories inherit the module base",
+  not "Repositories".
+- **A doc name never repeats its folder.** `dotnet/STYLE.md`, never `dotnet/CSHARP_STYLE.md`.
+- **A skill name stays globally unique** — the deployed skill namespace is flat across every stack, so the
+  skill is `csharp-style` while its doc is `dotnet/STYLE.md`.
+- **Name framework and third-party types; never product types in a generic doc.** `WebApplicationFactory`,
+  `Testcontainers`, `axios`, `Reqnroll` all belong in a generic rule. Only the product's own identifiers
+  make a doc unportable, and stripping library names is what makes a rule ungreppable and unenforceable.
+- **One rule, one home; everywhere else links and never restates.** A generated `INDEX.md` per domain
+  answers "did I document this, and where".
+- **Never name violation sites**, never cite a transient artifact, and check the code before writing the
+  rule down.
+
 ## The organizing axes
 
 Four axes are currently collapsed into a vague pair of filenames. Separate them and "where does this
@@ -296,7 +424,7 @@ skill routes to it.
 **Superseded 2026-08-18 — the shape below is what Phase 3a shipped, not the target.** Phase 3a's split was
 made on *portability* (generic vs Concertable), which is why React ended up beside .NET and machine
 utilities in one repo. The target is a single `standards` repo with domain trees (`dotnet/`, `react/`,
-`process/`, `platform/`, later `infra/`) and flat routing skills — see Phase 5. Both repos keep
+`dotnet/`, `react/`, `process/`) and flat routing skills — see Phase 5. Both repos keep
 `.agents/skills/` canonical and generate the Claude-side stubs from it, so nothing is Claude-only and
 Codex reads the same files.
 
@@ -448,7 +576,7 @@ resolved under meta-rule 7 by deciding import-or-pointer, not both. Same treatme
 double-writes, which currently load twice. Runs after 3b: dedupeing into files 3b then restructures would
 edit the same lines twice.
 
-### Phase 5 — domain trees, skills as routers — DONE (both repos; `platform/` is 5b)
+### Phase 5 — domain trees, skills as routers — PARTIAL (trees built; the tier split is wrong, see 5b)
 
 **This phase gates delivery of the whole restructure — recorded 2026-08-18.** Phase 3b already removed
 2,662 lines from `api/agents/**` and `app/agents/**`. Until this phase and Phase 7 land, the only thing
@@ -500,7 +628,7 @@ standards/                       one such tree per repo; see the repo split belo
   process/
     BRANCHING.md  COMMITTING.md  MERGING.md  PLANS.md
     DOCS_AND_DEBT.md  FAILING_TESTS.md  REMOTE_VALIDATION.md
-  platform/                      the roster every service repo inherits once api/ is gone. NOT named
+  SUPERSEDED - see "The target structure - four tiers, every doc named" above.
                                  `concertable/`: this repo is already in the Concertable org, and a
                                  folder may not repeat what its path already says.
     DATA_ACCESS.md               Concertable.DataAccess capability hierarchy
@@ -548,7 +676,7 @@ two halves land in one deployed namespace without either repo owning the parent:
 | Repo | Domains |
 |---|---|
 | `dotagents` | `dotnet/`, `react/`, `communication/` |
-| `agent-standards` | `process/`, later `platform/` |
+| `agent-standards` | `dotnet/`, `react/`, `process/` |
 
 `agent-utilities` keeps the machine tooling that is neither a standard nor stack-specific.
 `agent-starter-kit` is a strict subset of `dotagents` — two of its eight skills differ only by carrying a
@@ -622,13 +750,13 @@ tier, applied per rule:
 | The rule… | Home |
 |---|---|
 | names no product | `standards/dotnet/` or `standards/react/` |
-| names a platform type every Concertable service uses | `standards/platform/` |
+| names a Concertable type every service shares | `agent-standards` → `standards/dotnet/` or `standards/react/` |
 | names one service's type | that service's own repo |
 
 Worked example, the one Tommy raised: *"a repository binds to a capability, not a context type"* is
 generic → `standards/dotnet/data/PERSISTENCE.md`. The `Concertable.DataAccess` capability hierarchy
 (`IReadDbContext` → `IReadRepository` → `ReadRepository`) is platform-wide →
-`standards/platform/DATA_ACCESS.md`. B2B's concrete stances — `TenantScopedDbContext` for tenant-scoped
+`agent-standards` → `standards/dotnet/DATA_ACCESS.md`. B2B's concrete stances — `TenantScopedDbContext` for tenant-scoped
 read/write, `VenueArtistTenantScopedDbContext`, `ReadDbContext` for unfiltered reads, `AdminDbContext` for
 everything, and which entities carry a query filter — are B2B's → the B2B repo.
 
@@ -814,7 +942,7 @@ and does not recurse, and because two source repos must land in one namespace. I
 already used for the work-repo skills. One stated trade-off: junctions make the installed set depend on
 the repo staying put, and a deploy script must therefore also report orphaned and missing links.
 
-### Phase 7 — one authored copy, delivered as plugins, to both harnesses — BUILT (install unproven; the `platform/` plugin is 5b)
+### Phase 7 — one authored copy, delivered as plugins, to both harnesses — BUILT (install proven; per-tier plugin split pending 5b)
 
 **Decided 2026-08-18; every mechanic below was verified live that day on both tools, then reverted — no
 marketplace, plugin or config entry was left on the machine.** The polyrepo cut removes the premise the

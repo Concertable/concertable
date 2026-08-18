@@ -11,6 +11,30 @@
   conflicts resolved, below), from 2 behind after platform-sync #645 merged — a clean merge carrying only
   the `<ConcertablePlatformVersion>` bump `0.1.0-alpha.0.1055` → `0.1.0-alpha.0.1061` across the five
   service `Directory.Packages.props` — and from 10 behind at `2b04d57e2`.
+- Shared repos **today** (target shape in `## Topology — four tiers, settled 2026-08-18
+
+**Authoritative statement: `dotagents/AGENTS.md` (mirrors to `~/AGENTS.md`, loads every session) and
+`dotagents/ARCHITECTURE.md`. The plan's "target structure" section is the file-by-file version. This ledger
+does not restate it — it records only what is not yet true.**
+
+| Tier | Repo | Status |
+|---|---|---|
+| Generic .NET | `tomjseery/dotagents` | 20 docs in `standards/dotnet/`, correct |
+| Generic React/TS | `tomjseery/react-agents` | **repo does not exist**; its 9 docs are wrongly sitting in `dotagents/standards/react/` |
+| Concertable | `Concertable/agent-standards` | only `standards/process/` exists; needs `dotnet/` + `react/`, into which the 480 lines still in `api/agents/` + `app/agents/` re-home |
+| One microservice | that service's repo | 67 backend + 8 app `AGENTS.md` in place; may name sibling docs (`CODE_CONVENTIONS.md`) for its own conventions |
+
+**Three models were recorded as settled before this one, each wrong, each rebuilt confidently by a later
+session from what the previous one wrote down:** one merged `standards` repo holding both generic and
+product rules; then `dotagents` holding both stacks; then a `platform/` folder inside the Concertable repo.
+All three are purged. `dot` in `dotagents` is **dotNET**, not dotfiles — that misreading is what produced
+the second one.
+
+## Next Steps`; it deletes 2,662 lines whose replacement is junction-only today). Label `skip-e2e`, **current with `origin/main`** (0 behind as of the Phase 6 tier-3
+  commit). Updated for base currency three times on 2026-08-17: from **69 behind** and `DIRTY` (three doc
+  conflicts resolved, below), from 2 behind after platform-sync #645 merged — a clean merge carrying only
+  the `<ConcertablePlatformVersion>` bump `0.1.0-alpha.0.1055` → `0.1.0-alpha.0.1061` across the five
+  service `Directory.Packages.props` — and from 10 behind at `2b04d57e2`.
 - Shared repos **today** (target shape in `## Topology` below): `Concertable/agent-standards` — `standards/process/` (7 docs) + the `skill_router` hook, shipping the `agent-process` plugin, on `Refactor/StandardsDomainTree`, **PR #2 open, CI green, unmerged**; and `tomjseery/dotagents` — `standards/{dotnet,react,communication}/` (31 docs) + 10 self-contained utilities, shipping `dotnet-standards`/`react-standards`/`communication-standards`, on `Refactor/StandardsDomainTree`, **PR #1 open, unmerged**. `main` in both still carries the pre-inversion flat layout with no plugins at all, which is what the 48 live junctions point at and why no `marketplace add` can find anything yet. Plus `agent-utilities` (session tooling, no skills) and `agent-starter-kit` (to archive), cloned at `C:\Users\TommySeery\source\repos\{agent-standards,dotagents}`. Delivery architecture: `dotagents/ARCHITECTURE.md`
 - Dependency/package gates: no consumer migration to do, but this PR **will** trigger publish + platform sync — `publish-packages.yml` triggers on the coarse `paths: api/**`, which this branch's `api/**` markdown matches. MinVer republishes and a `chore/platform-sync-*` PR opens; non-breaking (no published type changed), so it should auto-merge green. Follow it to green anyway — whoever merges owns the sync.
 - Last reconciled: 2026-08-18 — fetched at the doc-truth commit `4bbb2ddb0`: **0 behind `origin/main`**, 49 ahead, local head = `origin/Docs/GuidanceDocsRestructure` = PR #637 head, `mergeStateStatus` `CLEAN`, auto-merge off, label `skip-e2e`. `agent-standards` unchanged at `88cf091` (pushed) — re-check currency at enqueue time
