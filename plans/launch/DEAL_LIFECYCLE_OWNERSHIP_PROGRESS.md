@@ -5,11 +5,11 @@
 - Roadmap item: `launch/deal-lifecycle-ownership`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules-phase2`
 - Branch: `Refactor/launch_deal-lifecycle-modules-phase2`
-- PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633). Remote and
-  PR head remain at checkpoint `3747fb64f90d8189868f37435120daab3bf5ea19`. The local candidate includes
-  current-main merge `10140df12` and this verified module-owned seeder slice.
+- PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633). Published
+  current-main and module-owned seeder work head `ebf259e22e7778b3ffd2944dd83a625724bf811b`;
+  local HEAD, the remote branch, and PR `headRefOid` matched exactly after the work-head push.
 - Dependency/package gates: none block the remaining B2B-internal implementation. Phase 1 delivery is terminal; final `api/**` delivery will own its routine package publication and platform-sync gate only after the complete refactor merges.
-- Last reconciled: 2026-08-18 after completing the module-owned seeder compile-recovery slice and
+- Last reconciled: 2026-08-18 after publishing the module-owned seeder compile-recovery slice and
   recording the Application notification boundary as the next bounded lifecycle slice
 
 ## Current state
@@ -49,8 +49,8 @@ the module assemblies are scaffolded.
 Rejected PR #614 is closed, and its DealTerms branch and worktree were retired with exact-head checks.
 Phase 1 merged through PR #625, published successfully, and reached a green platform sync. Its merged
 worktree and local branch were removed through the plan-managed repository command. This branch merged
-the current `origin/main` without conflicts as `10140df12`; it is 0 commits behind locally. That merge
-and the verified seeder slice have not yet been pushed.
+the current `origin/main` without conflicts as `10140df12`; the merge and verified seeder slice were
+published together through work head `ebf259e22` and the branch is 0 commits behind.
 
 The committed Phase 2 checkpoint removes the Opportunity-to-Application, Application-to-Booking, and
 Booking-to-Concert EF navigations and establishes the initial Contracts seams. Published checkpoint
@@ -185,6 +185,9 @@ generalize selector/factory infrastructure in this slice.
 - Published recovery range `b90ecf6db..2d14e08db` from starting remote head
   `b90ecf6dbf5268355381e7f63beacb0a82583f69`; local HEAD, the remote branch, and draft PR
   #633 `headRefOid` all equalled `2d14e08dbcab5d3ff63759781b3573ad17357165`.
+- Published current-main and module-owned seeder range `3747fb64f..ebf259e22` from starting remote
+  head `3747fb64f90d8189868f37435120daab3bf5ea19`; local HEAD, the remote branch, and draft PR
+  #633 `headRefOid` all equalled `ebf259e22e7778b3ffd2944dd83a625724bf811b`.
 - Merged the 93-commit `origin/main` drift without conflicts as
   `ff2e4dc553aad7bd9093e958235fa809efe5c881`, then verified local HEAD, the remote branch, and draft PR
   #633 `headRefOid` matched and the branch was 0 commits behind.
