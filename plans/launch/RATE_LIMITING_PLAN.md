@@ -118,7 +118,26 @@ IHostApplicationBuilder)` (global fallback + four named policies + `OnRejected` 
   on the feed and pins are bumped — ServiceDefaults is a feed package, not in the `UseLocalCore` swap
   set).
 
-### Phase 2 — Opt in and apply policies in Auth & B2B (consumers)
+### Phase 2 — Opt in and apply policies in Auth & B2B (consumers) — ✅ DONE (PR pending merge)
+
+Delivery gate opened: Phase 1 (#646) merged and `chore/platform-sync-*` bumped every pin to
+`0.1.0-alpha.0.1070`, so both hosts compile against the published seam. Implemented in one PR (Auth + B2B
+are independent but small).
+
+**Two evidence-based deviations from the presumed surface (both confirmed against `origin/main`):**
+
+- **`/connect/token` is NOT throttled with `Login`.** ROPC is registered only under `IsE2E()`
+  (`Auth/Program.cs`), so in production the token endpoint carries **service client-credentials** (B2B,
+  Customer, Auth all POST there) + auth-code exchange + refresh — no password entry. A tight per-IP
+  Login cap there would throttle the platform's own service auth for zero brute-force benefit. The real
+  interactive credential surface is the `Pages/Account` Razor Pages, which carry `Login`. `/connect/token`
+  keeps the generous global fallback limiter.
+- **`Messaging` protects `MessageController.Report`, not a compose endpoint.** There is no user-facing
+  message-send surface: `MessageController` is read/`mark-read`/`report` only, `NotificationHub` has no
+  client-invokable send method, and the only caller of `IConversationsModule.SendAsync` is
+  `ApplicationNotifier` (messages are lifecycle-generated, already bounded by the `Apply` throttle). So
+  `Messaging` is applied to the one spammable conversations write, `Report`. When a direct compose
+  endpoint is added, it must carry `[EnableRateLimiting(RateLimitPolicies.Messaging)]`.
 
 Delivery-gated on Phase 1's published version + platform sync. Auth and B2B are independent services and
 each only consumes the already-published ServiceDefaults, so they are independently deliverable (group

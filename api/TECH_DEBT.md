@@ -268,3 +268,16 @@ gateway/edge layer enforces the coarse per-IP ceiling ahead of the app while the
 identity-aware policies. Revisit before any service runs more than one replica with rate limiting as a
 relied-upon control.
 
+### Per-IP rate-limit policies need production trusted-proxy `ForwardedHeaders` wiring
+
+The per-IP policies (`Login` on the Auth `Pages/Account` POSTs, `Upload` on B2B `/api/Blob/upload`)
+partition on `Connection.RemoteIpAddress`. Both web hosts call `UseForwardedHeaders` before the limiter,
+but `ForwardedHeadersOptions` is configured only in Development (cleared known-proxies) — so behind a
+production ingress, without a trusted-proxy/network config, `X-Forwarded-For` is ignored and every
+anonymous request collapses into the single proxy-IP partition, turning each per-IP cap into one global
+bucket. Not a security hole (fails toward over-limiting), but the per-IP granularity is inert until fixed.
+
+**Resolves when:** `launch/config-and-deployment` binds the production `ForwardedHeadersOptions`
+(`KnownNetworks`/`KnownProxies` for the real ingress) so the hosts honour `X-Forwarded-For` from the
+trusted proxy. Owned by that gate, not this one.
+
