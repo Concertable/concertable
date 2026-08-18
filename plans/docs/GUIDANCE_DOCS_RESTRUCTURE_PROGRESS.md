@@ -242,6 +242,30 @@ findings, all fixed on the branch**, so the markers are stamped at the fix head 
 - **ENF3 (LOW)** — 53 lines of one comment pasted at nine import sites, self-contradictory in
   `api/Directory.Build.targets`. Deleted.
 
+## Topology — settled 2026-08-18
+
+Phase 3a split the corpus on **portability**, which is why React sat beside .NET and machine utilities in
+one repo. Settled shape, by domain instead:
+
+| Repo | Holds |
+|---|---|
+| `standards` (rename of `Concertable/agent-standards`) | `dotnet/`, `react/`, `process/`, `concertable/`, later `infra/` — docs tree + flat routing skills |
+| `agent-utilities` | machine tooling (`sync`, `worktree`, `recents`, `search`, `unmerged`, …) |
+| service repos | that service's own rosters |
+| `dotagents` | collapses into `standards/dotnet/` + `standards/react/` |
+| `agent-starter-kit` | archived — strict subset of `dotagents`, two skills BOM-broken |
+
+**`api/agents/` is deleted, not thinned.** POLYREPO_ROADMAP §6 settled the same day as a true one-way cut,
+so there is no `api/` node to host it. Each rule re-homes by one test: names no product → `standards/dotnet`
+or `standards/react`; names a platform type every service uses → `standards/concertable`; names one
+service's type → that service's repo.
+
+Also added: **Phase 5c, the discovery pass.** The earlier phases only relocate rules that already exist as
+prose. Conventions that live solely in code — B2B's stance taxonomy (`TenantScopedDbContext` tenant-scoped
+read/write, `ReadDbContext` unfiltered reads, `AdminDbContext` everything, plus the filtered-entity list) is
+the example Tommy had to state verbally — are not found by relocation. Each domain node is only done once its
+inventory has been checked against code.
+
 ## Next Steps
 
 **#637 is no longer merge-ready, and not because of its own content.** Phase 6 (added to the plan

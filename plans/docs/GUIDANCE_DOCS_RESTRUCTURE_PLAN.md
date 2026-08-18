@@ -290,11 +290,15 @@ remove.
 ## Target structure
 
 A **skill is a convention doc with a trigger** — the same markdown, plus a `description` front-matter
-that decides when it loads. So nothing is rewritten into a different genre; generic topics move to
-`Concertable/agent-standards` and gain a description, while what must always apply stays in-repo.
+that decides when it loads. So nothing is rewritten into a different genre; the doc is the payload and the
+skill routes to it.
 
-**Two homes, split by whether the rule names this product** — DONE, 36 skills. Both repos keep `.agents/skills/`
-canonical and generate the Claude-side stubs from it, so nothing is Claude-only and Codex reads the same files.
+**Superseded 2026-08-18 — the shape below is what Phase 3a shipped, not the target.** Phase 3a's split was
+made on *portability* (generic vs Concertable), which is why React ended up beside .NET and machine
+utilities in one repo. The target is a single `standards` repo with domain trees (`dotnet/`, `react/`,
+`process/`, `concertable/`, later `infra/`) and flat routing skills — see Phase 5. Both repos keep
+`.agents/skills/` canonical and generate the Claude-side stubs from it, so nothing is Claude-only and
+Codex reads the same files.
 
 - **`tomjseery/dotagents` → `~/.agents/skills/`** — the 28 generic ones. They name no project, so they are
   personal and every repo on the machine has them with no per-repo install.
@@ -444,51 +448,105 @@ resolved under meta-rule 7 by deciding import-or-pointer, not both. Same treatme
 double-writes, which currently load twice. Runs after 3b: dedupeing into files 3b then restructures would
 edit the same lines twice.
 
-### Phase 5 — the shared repos become a browsable tree, not a flat skill list
+### Phase 5 — one `standards` repo, domain trees, skills as routers
 
-**Decided 2026-08-17.** Phase 3a landed 36 skills as flat sibling directories. That is fine for the
-router and bad for a human: a listing of `write-boundary`, `contract-naming`, `tiered-shared-code`,
-`stack-defaults` answers "what exists?" only if you already know the answer. Tommy's actual question —
-*"did I document this, and where is it?"* — has no cheap way to be asked, and this plan's own execution
-proves the cost: three gaps (page-object/`data-testid` shape, "tests must pass in isolation", "one
-repository per entity") were found by accident while cutting an unrelated file, not by inspection.
-Nothing about a flat list would ever have surfaced them.
+**Decided 2026-08-17, topology settled 2026-08-18.** Phase 3a landed 36 skills as flat sibling
+directories. That is fine for the router and bad for a human: a listing of `write-boundary`,
+`contract-naming`, `tiered-shared-code` answers "what exists?" only if you already know the answer.
+Tommy's actual question — *"did I document this, and where is it?"* — has no cheap way to be asked, and
+this plan's own execution proves the cost: three gaps were found by accident while cutting an unrelated
+file, never by inspection.
 
 So invert the two: **the doc is the payload and the skill is the router**, and organize the payload as a
-tree. This applies to *everything* in the shared repos — process and runbooks as much as conventions —
-not just the convention topics.
+tree by domain.
 
 ```text
-conventions/
-  testing/{e2e,integration,unit}/E2E.md, INTEGRATION.md, UNIT.md
-  csharp/{style,naming,comments}/…
-  react/{structure,server-state,client-state}/…
-skills/<topic>/SKILL.md        thin router -> the doc, one level deep (a discovery constraint)
+standards/                          renamed from Concertable/agent-standards
+  dotnet/
+    style/      CSHARP_STYLE.md  CSHARP_NAMING.md  COMMENTS.md
+    wiring/     DEPENDENCY_INJECTION.md  LOGGING.md  VALIDATION.md
+    data/       PERSISTENCE.md  MULTITENANCY.md  SEEDING.md
+    results/    CARRIERS.md  ERRORS.md  TERMINALS.md
+    structure/  MODULE_STRUCTURE.md  MICROSERVICE_BOUNDARIES.md  HTTP_API.md
+                PROTO.md  KEYED_STRATEGIES.md
+    testing/    UNIT.md  INTEGRATION.md  E2E.md
+  react/        TYPESCRIPT_STYLE.md  REACT_STRUCTURE.md  SERVER_STATE.md
+                CLIENT_STATE.md  HTTP_LAYER.md  CONTRACT_NAMING.md
+                WRITE_BOUNDARY.md  TIERED_SHARED_CODE.md  STACK_DEFAULTS.md
+  process/      GIT_BRANCHING.md  COMMITTING.md  MERGING.md  PLANS.md
+                DOCS_AND_DEBT.md  FAILING_TESTS.md  REMOTE_VALIDATION.md
+  infra/        (later)
+  concertable/  the platform roster every service repo inherits once api/ is gone:
+                DATA_ACCESS.md  CONTRACTS.md  HTTP_CLIENTS.md  SEEDING_INVENTORY.md
+  .agents/skills/<name>/SKILL.md    thin router -> its doc. Flat, one level.
 ```
 
-Skills stay flat because discovery is `<root>/skills/*/SKILL.md` and does not recurse; only the content
-moves into the tree. Three consequences, all wanted: the tree is browsable and diffable, a gap is
-visible as a missing node, and the same doc gains two delivery modes — `@`-imported by a repo that wants
-it always-on, routed by the skill everywhere else. Content in a `SKILL.md` can only ever be delivered
-one way.
+**`dotagents` and a separate `react-agents` are not the shape.** They collapse into `standards/dotnet/`
+and `standards/react/`, so there is one repo to look in and one place a new domain (`infra/`) is added.
+`agent-utilities` keeps the machine tooling (`sync`, `worktree`, `recents`, `search`, `unmerged`,
+`prune-worktrees`, …), which is neither a standard nor stack-specific. `agent-starter-kit` is a strict
+subset of `dotagents` — two of its eight skills differ only by carrying a BOM that breaks frontmatter
+parsing — so it is archived, not migrated.
 
-- **Split `dotagents` by stack.** The .NET set and the TS/React set (9 skills, 671 lines) are
-  independent; a Spring Boot + React repo should get one without the other. Both still sync to
-  `~/.agents/skills/`, so consumption is unchanged.
+**Skills stay flat** because discovery is `<root>/skills/*/SKILL.md` and does not recurse; only the
+content moves into the tree. The deploy script flattens the tree into `~/.agents/skills/<name>`, so the
+source layout is free and names must stay globally unique. Three consequences, all wanted: the tree is
+browsable and diffable, a gap is visible as a missing node, and the same doc gains two delivery modes —
+`@`-imported by a repo that wants it always-on, routed by the skill everywhere else. Content inside a
+`SKILL.md` can only ever be delivered one way.
+
 - **Do not name every leaf `CONVENTIONS.md`.** Twenty identically-named files defeat tabs, grep and
   review. The topic goes in the filename. This repo already paid twice: `CODE_CONVENTIONS.md` vs
   `CODE_PATTERNS.md` was the original "where does this rule go?" failure, and Phase 3b had to rename
   `CONVENTIONS.md` → `MODULE_STRUCTURE.md` to clear a collision.
-- **Mandatory machine check — the tree must not grow orphans.** Every doc must have exactly one routing
-  skill and every skill must point at a doc that exists. Two structures that can drift is precisely how
-  754 lines of frontend law ended up with zero inbound links, unread until a shipped feature violated
-  it. Both halves of the pattern already exist: `docs_reachability.py` and the stub generator that
-  refuses to emit an unroutable stub.
-- **Generated per-repo index.** The tree answers "where is it"; an index generated from the tree
+- **Mandatory machine check — the tree must not grow orphans.** Every doc has exactly one routing skill
+  and every skill points at a doc that exists. Two structures that can drift is precisely how 754 lines
+  of frontend law ended up with zero inbound links. Both halves already exist: `docs_reachability.py`
+  and the stub generator that refuses to emit an unroutable stub.
+- **Generated index per domain.** The tree answers "where is it"; an index generated from the tree
   answers "did I document this" without opening anything.
+- **Both generators must recurse.** `deploy-skills.ps1:53` and `sync-claude-skill-stubs.ps1` walk one
+  level today, which is what made a flat source look mandatory.
 
-Sequenced after this PR merges: the Concertable-side pointers get rewritten once, against the final
-structure, instead of twice.
+### Phase 5b — `api/agents/` is deleted, not thinned
+
+**The monorepo is going** (POLYREPO_ROADMAP §6, settled 2026-08-18: a true one-way cut, not read-only
+mirrors). There is no `api/` node in a polyrepo, so nothing can live at `api/agents/` — the folder and
+`api/AGENTS.md` are destinations with no future, and every rule in them must be re-homed. One test per
+tier, applied per rule:
+
+| The rule… | Home |
+|---|---|
+| names no product | `standards/dotnet/` or `standards/react/` |
+| names a platform type every Concertable service uses | `standards/concertable/` |
+| names one service's type | that service's own repo |
+
+Worked example, the one Tommy raised: *"a repository binds to a capability, not a context type"* is
+generic → `standards/dotnet/data/PERSISTENCE.md`. The `Concertable.DataAccess` capability hierarchy
+(`IReadDbContext` → `IReadRepository` → `ReadRepository`) is platform-wide →
+`standards/concertable/DATA_ACCESS.md`. B2B's concrete stances — `TenantScopedDbContext` for tenant-scoped
+read/write, `VenueArtistTenantScopedDbContext`, `ReadDbContext` for unfiltered reads, `AdminDbContext` for
+everything, and which entities carry a query filter — are B2B's → the B2B repo.
+
+### Phase 5c — the discovery pass: write down what was never written down
+
+**New scope, 2026-08-18.** Phases 3–5 move and organize rules that already exist as prose. They do not
+find the conventions that live only in the code and in Tommy's head — and the B2B stance taxonomy above
+is one he had to state verbally because no doc holds it. Organizing an incomplete corpus just produces a
+tidy incomplete corpus.
+
+So each domain node gets a pass that mines the code for its real conventions and writes the missing ones,
+rather than only relocating text. The signals that a convention exists but is undocumented:
+
+- a shape repeated across every module with no doc naming it (the stance taxonomy, `Schema.cs` constants)
+- an `.editorconfig`/analyzer rule with no prose counterpart, or prose with no analyzer where one is possible
+- a rule stated for one service that is really platform-wide, or the reverse
+- a rule whose only statement is a code comment, a test name, or a `.Because(...)` string
+
+This phase has no fixed size and is not a blocker for the others; it runs per domain node as that node is
+created, so a node is only "done" when its inventory has been checked against code rather than against
+the old docs. Every claim written must be verified against the code at the time of writing — four of the
+seven findings in this PR's own review were docs asserting something the code did not do.
 
 ### Phase 6 — make consultation non-optional, because triage is not a guarantee — DONE (all three tiers; deployment is Phase 6a)
 
@@ -646,7 +704,9 @@ the repo staying put, and a deploy script must therefore also report orphaned an
 ### Deferred to follow-up PRs
 Auto-load thinning (`api/AGENTS.md:3`'s three imports; the 86 merge lines and 32 Docker lines that
 `/merge` and `scripts/e2e.ps1` already automate); the analyzer push-down plus
-`EnforceCodeStyleInBuild`; extraction of `portable/`.
+`EnforceCodeStyleInBuild`. The `portable/`/`local/` folder axis this plan originally specified is
+superseded: skills cannot nest, and the axis is now carried by the `standards/<domain>/` tree plus repo
+boundary (Phase 5).
 
 The `docs_reachability.py` extension moved forward into Phase 2 rather than being deferred: without a
 machine check, the nine dangling references fixed there simply accumulate again. It now errors on a
