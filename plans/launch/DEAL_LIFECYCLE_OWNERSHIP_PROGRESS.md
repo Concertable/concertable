@@ -5,10 +5,10 @@
 - Roadmap item: `launch/deal-lifecycle-ownership`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules-phase2`
 - Branch: `Refactor/launch_deal-lifecycle-modules-phase2`
-- PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633). The
-  published starting head for this slice is `34010ca4cc0e42af5868115afdaa0cae2c25674c`; local HEAD,
-  the remote branch, and PR `headRefOid` matched before the Concert unit-test recovery candidate in
-  this commit. Publication of this candidate is pending.
+- PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633). Published
+  Concert unit-test recovery work head `b390da9b3fa67731edefcf1e9fbc60c6d251e056` from starting
+  remote head `34010ca4cc0e42af5868115afdaa0cae2c25674c`; local HEAD, the remote branch, and PR
+  `headRefOid` matched exactly after the work-head push.
 - Dependency/package gates: none block the remaining B2B-internal implementation. Phase 1 delivery is terminal; final `api/**` delivery will own its routine package publication and platform-sync gate only after the complete refactor merges.
 - Last reconciled: 2026-08-18 after clearing the Concert unit-test ownership frontier and passing the
   focused Release suite
@@ -148,9 +148,23 @@ the project builds with 0 warnings and 0 errors, and the Release suite passes 88
 
 ## Next Steps
 
-Publish this coherent Concert unit-test recovery work head to draft PR #633, verify the local head,
-remote-tracking ref, and PR `headRefOid` match exactly, then record that publication and replace this
-section with the next fresh-context B2B Web host compile/recovery slice.
+Fresh-context B2B Web host compile/recovery slice only — preserve the green module Infrastructure and
+Concert unit-test boundaries and do not continue into migrations, guidance, integration tests, or
+another lifecycle operation:
+
+The keyed-selector design concern is a recorded non-blocking follow-up. Do not refactor, rename, or
+generalize selector/factory infrastructure in this slice.
+
+1. Build `api/Concertable.B2B/src/Concertable.B2B.Web/Concertable.B2B.Web.csproj` in Release with
+   `--no-restore`, disabled build servers, and single-worker MSBuild to expose the exact remaining host
+   and API compile frontier.
+2. If it is red, use the repository's unit/integration debug workflow and resolve only failures caused
+   by the already-removed shared lifecycle or relocated Opportunity/Application/Booking/Concert
+   ownership. Stop and record any unrelated production frontier rather than entering another
+   lifecycle operation.
+3. Run a scoped rejected-ownership vocabulary grep over the B2B host and module API projects,
+   `git diff --check`, and repeat the Web build. The slice gate is a green build or an exact recorded
+   unrelated production blocker; update this ledger and stop the context.
 
 ## Completed work
 
@@ -219,9 +233,9 @@ section with the next fresh-context B2B Web host compile/recovery slice.
 - Published Concert invoice-query compile-recovery range `23be92681..8a44f386a` from starting remote
   head `23be926810fc1698003eaf764a48a57ccd3b49ec`; local HEAD, the remote branch, and draft PR #633
   `headRefOid` all equalled `8a44f386a47c06c02d0ead3b5c3458472d22e7ac` after the work-head push.
-- Completed the Concert unit-test ownership recovery in this commit: deleted tests whose shared
-  lifecycle/workflow SUTs no longer exist, rewrote surviving tests against `ConfirmedBooking` and
-  current Concert collaborators, and retained the draft-creation regression on `ConcertService`.
+- Published Concert unit-test ownership recovery range `34010ca4c..b390da9b3`; local HEAD, the remote
+  branch, and draft PR #633 `headRefOid` all equalled
+  `b390da9b3fa67731edefcf1e9fbc60c6d251e056` after the work-head push.
 - Merged the 93-commit `origin/main` drift without conflicts as
   `ff2e4dc553aad7bd9093e958235fa809efe5c881`, then verified local HEAD, the remote branch, and draft PR
   #633 `headRefOid` matched and the branch was 0 commits behind.
