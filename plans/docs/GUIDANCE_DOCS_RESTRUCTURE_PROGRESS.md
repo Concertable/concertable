@@ -54,10 +54,19 @@ architecture. Building it exposed a fourth blocking defect: the hook resolved sk
 junction roots, so it would have reported every plugin-installed skill as `NOT INSTALLED - a deployment
 fault` in the very mode Phase 7 makes primary.
 
-**The #637 gate is still NOT satisfied.** Installable was built, not proven: the plugins live on two
-unmerged branches, so a `marketplace add` against either `main` finds none. What closes it is merging
-both PRs and verifying one real install per harness - and that verification mutates machine config, so
-it is Tommy's to run or authorize.
+**The #637 gate is now SATISFIED — the install is proven, 2026-08-18.** Both plugins were installed for
+real from the branch worktree as a local-path marketplace, in **both** harnesses, and every one of the 20
+`dotnet-standards` routers resolved to a real doc inside the plugin's own copy (20/20 in Claude, 20/20 in
+Codex). Claude copied the payload into a sha-versioned cache even from a `Directory` source, confirming
+copies-not-references. Codex read `.agents/plugins/marketplace.json` natively while Claude used
+`.claude-plugin/` — one repo, both formats. The machine was restored to its exact pre-test snapshot
+afterwards. Measured cost: `dotnet-standards` adds **~5,242 always-on tokens** (20 descriptions), each
+router ~90 on invoke.
+
+**One caveat, stated rather than glossed:** "without junctions" could not be tested literally, because this
+machine has 48 of them. What was proven junction-independently is the part that matters — the payload is
+self-contained and its internal paths resolve inside the cache. The end-to-end "agent reads it on a machine
+that never cloned the repo" is inferred from that, not observed.
 
 **What remains after that:** `api/agents/` is still a destination the polyrepo cut removes (5b), the
 discovery pass has not run (5c, with `dotnet/STACK.md` its first known gap), Phase 3c (markdown outside
@@ -396,12 +405,11 @@ already the branch checkout, pointing a marketplace at that directory verifies t
 ref fetching at all. (Codex additionally accepts a remote ref via `@ref`/`--ref`; Claude's help does not
 advertise one. Immaterial — nothing here depends on it.)
 
-1. **Prove one install per harness, off the branch.** Add the local worktree (or `owner/repo@ref`) as a
-   marketplace, install a standards plugin, and confirm a routed skill loads *and* its doc opens from
-   inside the plugin copy — that last part is the whole point of the payload rewrite, and the only thing
-   a green generator cannot tell you. Then remove the marketplace and plugin again, as the earlier spike
-   did. This mutates machine config, so it is Tommy's to run or to authorize.
-2. **Merge both PRs** once step 1 passes. `agent-standards#2` and `dotagents#1`, both CI green.
+1. ~~**Prove one install per harness, off the branch.**~~ **DONE 2026-08-18** — 20/20 routers resolved
+   inside the plugin copy in both harnesses; machine restored to snapshot. Two defects it caught are fixed
+   and pushed (the plugin copy citing a `~/.agents/standards` path that need not exist, and the hook
+   trusting `.orphaned_at` as proof of uninstall when the marketplace-removal path writes no marker).
+2. **Merge both PRs** — this is now the next action. `agent-standards#2` and `dotagents#1`, both CI green.
 3. **Then run `pwsh dotagents/.agents/deploy-skills.ps1`** for the personal half (`~/AGENTS.md`,
    `~/.claude/`, the 10 utilities, and the standards-domain junctions). It must come after the merge: the
    junctions would otherwise point at `standards/` trees that exist only on the branches, so a
@@ -415,9 +423,10 @@ a merge is not proof.
 `installed_plugins.json` carries no standards plugin. The branch guts `RESULT_PATTERN.md`, both
 `CODE_CONVENTIONS.md`, both `CODE_PATTERNS.md` and deletes `UNIT_CONVENTIONS.md`, `E2E_CONVENTIONS.md`,
 `MICROSERVICE_COMMUNICATION.md`, `DEBUGGING_CONVENTIONS.md`, `CONVENTIONS.md`. Move a clone or open the
-repo anywhere else and those rules are gone. **Phases 5 and 7 have made it organized and built its
-installer; it merges only once an install is actually PROVEN on a clean machine without junctions** - built
-is not proven, and both plugin repos still have the payload sitting on an unmerged branch. Earlier revisions of this ledger said
+repo anywhere else and those rules are gone. **That condition is now met: Phases 5 and 7 organized the
+corpus and its install was PROVEN in both harnesses on 2026-08-18** (see `## Current state`). The remaining
+blocker is purely mechanical — the payload still sits on two unmerged branches, so those merge first and
+#637 follows them. This constraint can be retired once they land. Earlier revisions of this ledger said
 "enqueue-ready, review clean, paused on Tommy's read"; both were true and neither was the point - a
 clean review speaks to the diff's own quality, never to whether what it deletes has a home. Phase 6
 riding this PR fixed the *enforcement* ordering, never the *delivery* ordering. Do not reinstate a merge
