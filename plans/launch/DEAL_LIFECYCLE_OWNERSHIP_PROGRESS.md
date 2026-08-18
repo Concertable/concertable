@@ -6,9 +6,9 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules-phase2`
 - Branch: `Refactor/launch_deal-lifecycle-modules-phase2`
 - PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633). Published
-  Concert completion compile-recovery work head
-  `7b44c105e1f0af9ecc1894e6bc50335a24d156d2` from starting remote head
-  `4b5ed8a9aac086e24e0f2c377e8b25f1ec00ae18`;
+  Concert invoice-query compile-recovery work head
+  `8a44f386a47c06c02d0ead3b5c3458472d22e7ac` from starting remote head
+  `23be926810fc1698003eaf764a48a57ccd3b49ec`;
   local HEAD, the remote branch, and PR `headRefOid` matched exactly after the work-head push.
 - Dependency/package gates: none block the remaining B2B-internal implementation. Phase 1 delivery is terminal; final `api/**` delivery will own its routine package publication and platform-sync gate only after the complete refactor merges.
 - Last reconciled: 2026-08-18 after replacing the final Invoice-to-Booking DbContext traversal with
@@ -223,8 +223,9 @@ generalize selector/factory infrastructure in this slice.
 - Published Concert completion compile-recovery range `4b5ed8a9a..7b44c105e` from starting remote
   head `4b5ed8a9aac086e24e0f2c377e8b25f1ec00ae18`; local HEAD, the remote branch, and draft PR #633
   `headRefOid` all equalled `7b44c105e1f0af9ecc1894e6bc50335a24d156d2` after the work-head push.
-- Replaced the final `InvoiceRepository` cross-module DbContext traversal with a query over Concert's
-  immutable local `ApplicationId`/`BookingId` handoff facts; Concert Infrastructure now compiles.
+- Published Concert invoice-query compile-recovery range `23be92681..8a44f386a` from starting remote
+  head `23be926810fc1698003eaf764a48a57ccd3b49ec`; local HEAD, the remote branch, and draft PR #633
+  `headRefOid` all equalled `8a44f386a47c06c02d0ead3b5c3458472d22e7ac` after the work-head push.
 - Merged the 93-commit `origin/main` drift without conflicts as
   `ff2e4dc553aad7bd9093e958235fa809efe5c881`, then verified local HEAD, the remote branch, and draft PR
   #633 `headRefOid` matched and the branch was 0 commits behind.
