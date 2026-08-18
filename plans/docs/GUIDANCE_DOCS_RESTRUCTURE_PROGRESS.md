@@ -281,6 +281,8 @@ inventory has been checked against code.
 
 ## Next Steps
 
+Paused: Tommy — approve the Codex `PreToolUse` hook once in a Codex session in this worktree (step 2, safe now that ENF1 has made it actually fire), then read #637 and give the merge word. Resume when he says go: re-check `git rev-list --count HEAD..origin/main`, enqueue with `gh pr merge 637 --merge --auto`, poll to `MERGED`, close the worktree `-PlanManaged`, then follow the generated `chore/platform-sync-*` PR to green. Everything below step 5 is either his call or explicitly deferred off this branch — no agent work remains on #637.
+
 **#637 is no longer merge-ready, and not because of its own content.** Phase 6 (added to the plan
 2026-08-17) must ride the same PR: thinning the in-repo corpus to skill pointers must not land before
 the mechanism that makes those skills fire. A live failure proved triage is not a guarantee — an agent
