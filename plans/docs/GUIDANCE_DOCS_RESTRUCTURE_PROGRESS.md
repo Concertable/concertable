@@ -6,7 +6,7 @@
 - Also delivered by this ledger: roadmap item `docs/agent-standards`, now checked off
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-guidance-docs`
 - Branch: `Docs/GuidanceDocsRestructure`
-- PR: #637 — ready, label `skip-e2e`, **current with `origin/main`** (0 behind as of the Phase 6 tier-3
+- PR: #637 — **open working branch, NOT for merge** (see the `Blocked:` contract in `## Next Steps`; it deletes 2,662 lines whose replacement is junction-only today). Label `skip-e2e`, **current with `origin/main`** (0 behind as of the Phase 6 tier-3
   commit). Updated for base currency three times on 2026-08-17: from **69 behind** and `DIRTY` (three doc
   conflicts resolved, below), from 2 behind after platform-sync #645 merged — a clean merge carrying only
   the `<ConcertablePlatformVersion>` bump `0.1.0-alpha.0.1055` → `0.1.0-alpha.0.1061` across the five
@@ -22,6 +22,11 @@ flow, no HTTP/gRPC contract, no published-package shape, no auth/routing change.
 more than it did, since the new targets file participates in every project's build.
 
 ## Current state
+
+**#637 is not deliverable and that is the headline.** Everything below describes a branch that is
+internally coherent and externally unsupported: the reduction happened, but what it reduced *to* is
+reachable only through machine-local junctions. Read the `Blocked:` contract in `## Next Steps` before
+acting on anything here.
 
 The reduction has happened. Every generic rule now has exactly one home — a skill — and the in-repo docs hold
 only this system's roster of real types, contexts, clients, tables and pins. The corpus that auto-loads on an
@@ -293,21 +298,40 @@ inventory has been checked against code.
 
 ## Next Steps
 
-Paused: Tommy — approve the Codex `PreToolUse` hook once in a Codex session in this worktree (step 2, safe now that ENF1 has made it actually fire), then read #637 and give the merge word. Resume when he says go: re-check `git rev-list --count HEAD..origin/main`, enqueue with `gh pr merge 637 --merge --auto`, poll to `MERGED`, close the worktree `-PlanManaged`, then follow the generated `chore/platform-sync-*` PR to green. Everything below step 5 is either his call or explicitly deferred off this branch — no agent work remains on #637.
+Blocked: #637 must NOT be merged. It is a working branch, not a delivery, and every earlier "enqueue-ready" note in this ledger was wrong.
+Blocked by: the 2,662 lines of corpus it removes have nowhere durable to live - the replacement exists only as NTFS junctions on one machine, and the organized standards tree (Phases 5, 5b, 5c) is unbuilt.
+Unblock action: build the delivery the thinning depends on - Phase 5 (the domain tree) first, then Phase 7 (plugins, so the corpus travels with a clone), then 5b, 5c, 3c and 4.
+Resume when: the standards corpus is organized AND installable on a clean machine without junctions, so #637 removes nothing that is not durably retrievable.
 
-**#637 is no longer merge-ready, and not because of its own content.** Phase 6 (added to the plan
-2026-08-17) must ride the same PR: thinning the in-repo corpus to skill pointers must not land before
-the mechanism that makes those skills fire. A live failure proved triage is not a guarantee — an agent
-created `Concertable.ServiceDefaults.Tests`, booted a `WebApplication` inside a "unit" test, used the
-wrong assertion library and wrote no sibling `AGENTS.md`, with `unit-testing` and `integration-testing`
-both installed, described and listed. Neither fired; the follow-up `/review` repeated the blind spot and
-returned clean. Merging the thinning before the enforcement opens exactly that window.
+**The evidence, verified 2026-08-18 - do not re-derive it.** #637 deletes **2,662 lines** across
+`api/agents/**` and `app/agents/**` and adds 524 back: it guts `RESULT_PATTERN.md`, both
+`CODE_CONVENTIONS.md` and both `CODE_PATTERNS.md`, and deletes `UNIT_CONVENTIONS.md`,
+`E2E_CONVENTIONS.md`, `MICROSERVICE_COMMUNICATION.md`, `DEBUGGING_CONVENTIONS.md` and `CONVENTIONS.md`
+outright. What replaces them is 48 skills reachable **only as junctions on this one machine**:
+`~/.claude/skills` is 48/48 junctions - 41 into `dotagents`, 7 into `agent-standards` - and
+`installed_plugins.json` carries **no** standards plugin. Move a clone, delete a folder, or open the
+repo on another machine or in CI and the rules are gone. Meanwhile the standards repos are still flat
+skill lists: the browsable `standards/<domain>/` tree does not exist.
+
+**Why a session kept pushing to merge it anyway.** Earlier revisions of this ledger said "enqueue-ready,
+review clean, paused on Tommy's read". Both halves were true and neither was the point: a clean review
+speaks to the diff's own quality, never to whether the corpus it deletes has a home yet. Phase 6 riding
+this same PR fixed the *enforcement* ordering; it never addressed the *delivery* ordering. Do not
+reinstate a merge instruction here until the Resume-when condition above actually holds.
+
+**Why Phase 6 had to ride this PR anyway** — still true, still the reason enforcement is in the same
+branch. Thinning the in-repo corpus to skill pointers must not land before the mechanism that makes
+those skills fire. A live failure proved triage is not a guarantee: an agent created
+`Concertable.ServiceDefaults.Tests`, booted a `WebApplication` inside a "unit" test, used the wrong
+assertion library and wrote no sibling `AGENTS.md`, with `unit-testing` and `integration-testing` both
+installed, described and listed. Neither fired; the follow-up `/review` repeated the blind spot and
+returned clean.
 
 **All three Phase 6 tiers and Phase 6b are in** — the build gate (`f99fa8c2f`:
 `api/TestConventions.targets` + `BannedSymbols.UnitTests.txt`, imported from all 9
 `Directory.Build.targets`, zero migration, tier resolution and both gates verified), the router (authored
 in `agent-standards`, vendored here with a hash check, wired for **both** harnesses), and tier 3 above.
-**What remains of Phase 6 is deployment, and it needs Tommy.**
+**What remains of Phase 6 is deployment** — and Phase 6a's junction deployment is exactly the fragility recorded in the blocker above, so Phase 7 supersedes it rather than completing it.
 
 1. ~~**Phase 6a — skill deployment.**~~ **DONE 2026-08-17.** `deploy-skills.ps1` run; both
    `~/.agents/skills` and `~/.claude/skills` are now **46 junctions, 0 real directories**, pointing at
@@ -337,21 +361,13 @@ in `agent-standards`, vendored here with a hash check, wired for **both** harnes
    write. Nothing else waits on it.
 3. **Then Tommy's own read of the PR**, then merge. Paused: Tommy — his sign-off is required and the clean
    automated `/review` is not it; resume on his go-ahead once the above is in.
-4. **Land this PR** once the above is in. Routed to `/merge`, not `/merge-docs`: the diff carries one `.cs` file
-   (`ModuleBoundaryTests.cs` — comment and `.Because(...)` strings repointed by the
-   `CONVENTIONS.md` → `MODULE_STRUCTURE.md` rename), which `merge-docs` hard-refuses, so the queue's
-   build gate applies. Review clean (0 open findings), local = remote = PR head, `skip-e2e` label correct
-   (no positive trigger — ~110 markdown files, three Python hook files, agent wiring JSON, one `.cs`
-   comment/string change; no UI flow, HTTP/gRPC contract, published shape or auth behaviour). **Branch is
-   current with `origin/main` as of this entry — re-check `git rev-list --count HEAD..origin/main` at
-   enqueue time and update if it has moved.**
-   The gate hook is satisfied: its `review_only` whitelist covers a marker-to-head range touching
-   `reviews/` alone, which is this branch's exact shape once the markers sit at the ledger commit.
-   Enqueue with `gh pr merge 637 --merge --auto` once the exact-head checks are green, poll for
-   `MERGED`, then `./scripts/worktrees.ps1 close -Worktree
-   C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-guidance-docs -PullRequest 637
-   -PlanManaged`, then follow the generated `chore/platform-sync-*` PR to green (this branch's `api/**`
-   markdown matches `publish-packages.yml`'s coarse `paths:`; non-breaking, so it should auto-merge).
+4. **Do NOT land this PR yet** — see the blocker at the top of this section. When it eventually does
+   land it is routed to `/merge`, not `/merge-docs`: the diff carries `.cs` and Python files that
+   `merge-docs` hard-refuses, so the queue's build gate applies. `skip-e2e` remains correct (no positive
+   Step 4 trigger). At that point re-check `git rev-list --count HEAD..origin/main`, enqueue, poll to
+   `MERGED`, close the worktree with `-PlanManaged`, then follow the generated `chore/platform-sync-*`
+   PR to green — this branch's `api/**` markdown matches `publish-packages.yml`'s coarse `paths:`.
+
 5. **Doc-truth findings from the 2026-08-18 probe — resolved 2026-08-18 (`4bbb2ddb0`), except Tommy's
    ruling.** All four were run to ground against code rather than trusted; two were real and are fixed, two
    were correct as written:

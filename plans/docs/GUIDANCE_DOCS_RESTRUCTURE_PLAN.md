@@ -450,6 +450,14 @@ edit the same lines twice.
 
 ### Phase 5 — one `standards` repo, domain trees, skills as routers
 
+**This phase gates delivery of the whole restructure — recorded 2026-08-18.** Phase 3b already removed
+2,662 lines from `api/agents/**` and `app/agents/**`. Until this phase and Phase 7 land, the only thing
+holding that corpus is 48 NTFS junctions on one machine (41 into `dotagents`, 7 into `agent-standards`,
+zero plugin installs). A thinning PR therefore **must not merge** ahead of them: it would trade a
+browsable in-repo corpus for symlinks that do not survive a fresh clone, another machine, or CI. The
+sequencing is not a preference — it is the difference between relocating the corpus and losing it.
+
+
 **Decided 2026-08-17, topology settled 2026-08-18.** Phase 3a landed 36 skills as flat sibling
 directories. That is fine for the router and bad for a human: a listing of `write-boundary`,
 `contract-naming`, `tiered-shared-code` answers "what exists?" only if you already know the answer.
