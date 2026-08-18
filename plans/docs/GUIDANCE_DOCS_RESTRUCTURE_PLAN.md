@@ -461,25 +461,61 @@ So invert the two: **the doc is the payload and the skill is the router**, and o
 tree by domain.
 
 ```text
-standards/                          renamed from Concertable/agent-standards
+standards/                       renamed from Concertable/agent-standards
   dotnet/
-    style/      CSHARP_STYLE.md  CSHARP_NAMING.md  COMMENTS.md
-    wiring/     DEPENDENCY_INJECTION.md  LOGGING.md  VALIDATION.md
+    STACK.md                     which library for what: Reunion for results, EF Core,
+                                 Dunet for unions, Refit for third-party REST, FluentValidation,
+                                 xUnit + Testcontainers + Respawn, Reqnroll + Playwright.
+                                 High level only - the rules live in the concern doc.
+    STYLE.md  NAMING.md  COMMENTS.md
+    DEPENDENCY_INJECTION.md  LOGGING.md  VALIDATION.md
     data/       PERSISTENCE.md  MULTITENANCY.md  SEEDING.md
     results/    CARRIERS.md  ERRORS.md  TERMINALS.md
-    structure/  MODULE_STRUCTURE.md  MICROSERVICE_BOUNDARIES.md  HTTP_API.md
+    structure/  MODULES.md  SERVICE_BOUNDARIES.md  HTTP_API.md
                 PROTO.md  KEYED_STRATEGIES.md
     testing/    UNIT.md  INTEGRATION.md  E2E.md
-  react/        TYPESCRIPT_STYLE.md  REACT_STRUCTURE.md  SERVER_STATE.md
-                CLIENT_STATE.md  HTTP_LAYER.md  CONTRACT_NAMING.md
-                WRITE_BOUNDARY.md  TIERED_SHARED_CODE.md  STACK_DEFAULTS.md
-  process/      GIT_BRANCHING.md  COMMITTING.md  MERGING.md  PLANS.md
-                DOCS_AND_DEBT.md  FAILING_TESTS.md  REMOTE_VALIDATION.md
-  infra/        (later)
-  concertable/  the platform roster every service repo inherits once api/ is gone:
-                DATA_ACCESS.md  CONTRACTS.md  HTTP_CLIENTS.md  SEEDING_INVENTORY.md
-  .agents/skills/<name>/SKILL.md    thin router -> its doc. Flat, one level.
+  react/
+    STACK.md                     TanStack Query / Router / Table, Zustand, zod, axios,
+                                 Tailwind + cva + clsx, Radix/shadcn, sonner, framer-motion,
+                                 dayjs, Vitest. Same rule: table here, details in the concern doc.
+    TYPESCRIPT.md  STRUCTURE.md  CONTRACTS.md
+    SERVER_STATE.md              TanStack Query
+    CLIENT_STATE.md              Zustand
+    FORMS.md                     zod at the submit boundary
+    HTTP.md                      axios, one client per backend, the error seam
+    ROUTING.md                   TanStack Router - NEW, nothing documents it today
+    UI.md                        Tailwind + cn/cva, Radix/shadcn, sonner, framer-motion - NEW
+    TABLES.md                    TanStack Table - NEW
+    DATES.md                     dayjs behind one formatting module - NEW
+    TESTING.md                   Vitest
+    SHARED_CODE.md               tiers, slots over role checks, composed identity
+  process/
+    BRANCHING.md  COMMITTING.md  MERGING.md  PLANS.md
+    DOCS_AND_DEBT.md  FAILING_TESTS.md  REMOTE_VALIDATION.md
+  concertable/                   the platform roster every service repo inherits once api/ is gone
+    DATA_ACCESS.md               Concertable.DataAccess capability hierarchy
+    CONTRACTS.md                 IPagination location, integration-event wire versioning
+    HTTP_CLIENTS.md              the Refit inventory (IGoogleGeocodingApi, ITokenApi,
+                                 IUserClaimsApi, ICustomerUserClaimsApi)
+    SEEDING_INVENTORY.md         the forbidden-table list
+    GEOMETRY.md                  IGeometryProvider
+  infra/                         later
+  .agents/skills/<name>/SKILL.md thin router -> its doc. Flat, one level.
 ```
+
+**Two naming rules, and they pull in opposite directions on purpose.**
+
+- **A doc name never repeats its path.** `dotnet/STYLE.md`, not `dotnet/CSHARP_STYLE.md`;
+  `structure/MODULES.md`, not `structure/MODULE_STRUCTURE.md`. The folder already said it.
+- **A skill name stays globally unique**, because the deployed namespace is flat
+  (`~/.agents/skills/<name>`) and spans every stack. So the skill is `csharp-style` while its doc is
+  `dotnet/STYLE.md`; a skill called `style` would collide the moment a second stack wants one.
+
+**`STACK.md` per domain is the "what do I use for X" index, and nothing else.** It maps a need to a
+library to the doc that owns the rules. Organizing by library instead would be wrong — they interlink
+(zod is used by forms *and* by route search params; axios sits under the query client), so the concern is
+the stable unit and the library is an attribute of it. `stack-defaults` today is a half-version of this:
+it name-drops Tailwind, dayjs and Vitest without any of them having an owning doc.
 
 **`dotagents` and a separate `react-agents` are not the shape.** They collapse into `standards/dotnet/`
 and `standards/react/`, so there is one repo to look in and one place a new domain (`infra/`) is added.
@@ -542,6 +578,15 @@ rather than only relocating text. The signals that a convention exists but is un
 - an `.editorconfig`/analyzer rule with no prose counterpart, or prose with no analyzer where one is possible
 - a rule stated for one service that is really platform-wide, or the reverse
 - a rule whose only statement is a code comment, a test name, or a `.Because(...)` string
+- **a library in `package.json` or `Directory.Packages.props` with no doc naming how it is used** — the
+  cheapest signal there is, and it found four gaps immediately: TanStack **Router**, TanStack **Table**,
+  **Radix/shadcn** and **framer-motion** are all load-bearing in `app/` and documented nowhere. Routing in
+  particular is in every app. `ROUTING.md`, `TABLES.md`, `UI.md` and `DATES.md` are therefore new nodes,
+  not relocations.
+
+Note for the same reason: **React Hook Form is not installed** in any `app/` workspace, so `FORMS.md`
+covers the zod submit boundary only. If RHF is adopted, that doc is where it goes — do not write a
+standard for a library the repo does not use.
 
 This phase has no fixed size and is not a blocker for the others; it runs per domain node as that node is
 created, so a node is only "done" when its inventory has been checked against code rather than against
