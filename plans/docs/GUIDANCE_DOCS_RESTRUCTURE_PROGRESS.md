@@ -11,7 +11,7 @@
   conflicts resolved, below), from 2 behind after platform-sync #645 merged — a clean merge carrying only
   the `<ConcertablePlatformVersion>` bump `0.1.0-alpha.0.1055` → `0.1.0-alpha.0.1061` across the five
   service `Directory.Packages.props` — and from 10 behind at `2b04d57e2`.
-- Shared repos **today**: `tomjseery/dotagents` — `standards/dotnet/` (20 docs) + `standards/communication/` (2); `tomjseery/react-agents` — `standards/react/` (9), **created 2026-08-18, on `main`, CI green**; `Concertable/agent-standards` — `standards/process/` (7) + the `skill_router` hook, **no stack sections yet**. `dotagents` and `agent-standards` are still on `Refactor/StandardsDomainTree` with PRs open and CI green (`dotagents#1`, `agent-standards#2`), neither merged. Target shape and the three purged wrong models: `## Topology` below.
+- Shared repos **today**: `tomjseery/dotagents` — `standards/dotnet/` (20 docs) only; `tomjseery/react-agents` — `standards/react/` (9), **created 2026-08-18, on `main`, CI green**; `Concertable/agent-standards` — `standards/process/` (7) + the `skill_router` hook, **no stack sections yet**. `dotagents` and `agent-standards` are still on `Refactor/StandardsDomainTree` with PRs open and CI green (`dotagents#1`, `agent-standards#2`), neither merged. Target shape and the three purged wrong models: `## Topology` below.
 - Dependency/package gates: no consumer migration to do, but this PR **will** trigger publish + platform sync — `publish-packages.yml` triggers on the coarse `paths: api/**`, which this branch's `api/**` markdown matches. MinVer republishes and a `chore/platform-sync-*` PR opens; non-breaking (no published type changed), so it should auto-merge green. Follow it to green anyway — whoever merges owns the sync.
 - Last reconciled: 2026-08-18 — merged `origin/main` into the branch after the Tier 2 split (was 23 behind, clean merge, no conflicts). `dotagents` at `1389a2e` (pushed, CI green), `react-agents` at `b69b517` (`main`, CI green), `agent-standards` unchanged at `88cf091` — re-check currency at enqueue time
 
@@ -48,7 +48,7 @@ with no router, or two routers claiming one doc. **Neither PR is merged and noth
 deployment junctions would point at trees that exist only on those branches.
 
 **Phase 7 is BUILT on the same two PRs**: four plugins now carry the corpus (`agent-process` 7 docs +
-the hook, `dotnet-standards` 20, `react-standards` 9, `communication-standards` 2), assigned by domain
+the hook, `dotnet-standards` 20, `react-standards` 9, `communication-standards` 2 — the last since removed), assigned by domain
 from an authored map, and `dotagents/ARCHITECTURE.md` is the durable home for the delivery
 architecture. Building it exposed a fourth blocking defect: the hook resolved skills only in the
 junction roots, so it would have reported every plugin-installed skill as `NOT INSTALLED - a deployment
@@ -91,9 +91,9 @@ the conventions folders), Phase 4 (rows still with >1 home, chiefly seeding acro
   `dotagents` had produced — INDEX, plugin standards and plugin routers all byte-identical, so the move
   carried no content change. The routers' one authored fact, the doc path, is unchanged; only the repo they
   name moved.
-- **`dotagents` is now .NET plus `communication/`**: two plugins, two domains, and a marketplace
-  description that no longer claims the TypeScript half. Its README's frontend gap list moved to
-  `react-agents` with the corpus it described.
+- **`dotagents` is now .NET only**: one plugin, one domain, and a marketplace description that no longer
+  claims the TypeScript half. Its README's frontend gap list moved to `react-agents` with the corpus it
+  described. `standards/communication/` went too — see below.
 - **`deploy-skills.ps1` takes three source roots and three standards roots.** Its duplicate-domain guard
   already covered the collision; nothing else in it changed. Re-running it repointed 18 skill junctions at
   `react-agents` and — unplanned but found by the same run — created the four `~/.agents/standards/`
@@ -105,6 +105,21 @@ the conventions folders), Phase 4 (rows still with >1 home, chiefly seeding acro
   published module or a submodule, because each repo's CI must self-verify without reaching a private
   sibling; `dotagents/ARCHITECTURE.md` now carries that cost explicitly rather than leaving it in this
   plan, and names a fourth repo as the trigger.
+
+**`standards/communication/` removed from `dotagents`** (`dotagents#1` `a7e9b40`)
+
+- `REVIEW_COMMENTS.md` and `EXPLAINING_CODE.md`, the `draft-comment` and `explaining-code` routers, and the
+  `communication-standards` plugin are gone, along with their marketplace and payload entries. They are not
+  dotagents' to hold; the "one deliberate exception to this repo being stack-scoped" the plan recorded for
+  them is deleted rather than re-argued. `dotagents` is now one plugin, one domain, 20 docs.
+- The five junctions the removal orphaned (`draft-comment` and `explaining-code` under both
+  `~/.agents/skills` and `~/.claude/skills`, plus `~/.agents/standards/communication`) were deleted as
+  reparse points only. `deploy-skills.ps1` leaves orphans in place by design, so it does not do this — 46
+  skills and 3 standards domains deployed, nothing dangling.
+- **Consequence to be aware of: `~/.claude/skills` no longer carries `draft-comment` or
+  `explaining-code`.** Tommy's global `CLAUDE.md` invokes both by name. Nothing in this repo, in
+  `implement`, `ship`, `verify`, `worktree`. Their text is recoverable from `dotagents` history at
+  `1389a2e^`.
 
 **Phase 7 — the corpus ships as plugins, and the architecture stops being rediscovered** (same two PRs)
 
@@ -142,7 +157,7 @@ the conventions folders), Phase 4 (rows still with >1 home, chiefly seeding acro
 
 - **38 skill bodies became docs in a domain tree.** `agent-standards` gained `standards/process/` (7);
   `dotagents` gained `standards/dotnet/` (20, nesting `data/`, `results/`, `structure/`, `testing/`),
-  `standards/react/` (9) and `standards/communication/` (2). Every skill that owns a doc is now eight
+  `standards/react/` (9) and `standards/communication/` (2, since removed). Every skill that owns a doc is now eight
   lines: front matter plus that doc's path. Doc names shed what the folder already says
   (`csharp-style` → `dotnet/STYLE.md`) while skill names stay globally unique, because the deployed
   namespace is flat and spans every stack.

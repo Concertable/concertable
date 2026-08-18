@@ -220,14 +220,12 @@ standards/dotnet/
   testing/UNIT.md         what makes it a unit test, xUnit shape, assertions per tier
   testing/INTEGRATION.md  WebApplicationFactory, Testcontainers + Respawn, IScoped
   testing/E2E.md          Reqnroll + Playwright scenario authoring
-standards/communication/
-  REVIEW_COMMENTS.md    drafting a comment Tommy posts under his own name
-  EXPLAINING_CODE.md    explaining code so the reader can verify rather than trust
 ```
 
-`communication/` sits here because it is personal cross-project convention, and this repo already carries
-the personal machine config (`~/AGENTS.md`, `~/.agents/`, `~/.claude/`). It is not .NET, and that is the one
-deliberate exception to this repo being stack-scoped.
+**No `communication/` domain.** `REVIEW_COMMENTS.md` and `EXPLAINING_CODE.md` were parked here on the
+argument that this repo also carries the personal machine config, which made it the one deliberate
+exception to the repo being stack-scoped. Removed 2026-08-18: they are not dotagents' to hold, and the
+exception was buying nothing. This repo is the generic .NET standards and nothing else.
 
 ### Tier 2 — `tomjseery/react-agents`: generic React/TS, every React repo — **CREATED 2026-08-18**
 
@@ -679,7 +677,7 @@ two halves land in one deployed namespace without either repo owning the parent:
 
 | Repo | Domains |
 |---|---|
-| `dotagents` | `dotnet/`, `react/`, `communication/` |
+| `dotagents` | `dotnet/` |
 | `agent-standards` | `dotnet/`, `react/`, `process/` |
 
 `agent-utilities` keeps the machine tooling that is neither a standard nor stack-specific.
@@ -717,7 +715,8 @@ browsable and diffable, a gap is visible as a missing node, and the same doc gai
 
 `Concertable/agent-standards#2` (7 process docs) and `tomjseery/dotagents#1` (31 docs across `dotnet/`,
 `react/`, `communication/`) — the same inversion applied per repo. 38 skill bodies moved out; every
-`SKILL.md` that owns a doc is now eight lines. The 10 utilities stayed self-contained.
+`SKILL.md` that owns a doc is now eight lines. The 10 utilities stayed self-contained. `react/` has since
+moved to `react-agents` and `communication/` has been removed, leaving `dotagents` at 20 docs.
 
 The router names **both** resolution roots — `standards/<domain>/<DOC>.md` in its repo and
 `~/.agents/standards/<domain>/<DOC>.md` deployed — because moving the body out is exactly what would
@@ -1052,10 +1051,10 @@ builds on trees that exist only on those branches).
   refused to proceed without. A plugin receives only its own domains' docs and their routers, so a
   TypeScript project installing `react-standards` does not also receive the .NET corpus. A domain no
   plugin ships is now an error — otherwise a clone silently cannot install it.
-- **Four plugins across three repos**: `dotnet-standards` (20 docs) and `communication-standards` (2) in
-  `dotagents`, `react-standards` (9) in `react-agents` since the Tier 2 split, and `agent-process` (7)
-  keeping the hook in `agent-standards`. All 31 plugin routers were verified to resolve to a real doc
-  inside their own plugin.
+- **Three plugins across three repos**: `dotnet-standards` (20 docs) in `dotagents`, `react-standards` (9)
+  in `react-agents` since the Tier 2 split, and `agent-process` (7) keeping the hook in `agent-standards`.
+  `communication-standards` was dropped with its domain. All 29 remaining plugin routers resolve to a real
+  doc inside their own plugin.
 - **`dotagents` gained CI.** It had none, so its generated files were only as current as the last local
   run — and the check also proves the generator works on Linux/PowerShell 7 while staying 5.1-compatible.
 - **Pruning is by generated-set membership**, not by skill name: a doc moving between plugins otherwise
