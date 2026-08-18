@@ -5,10 +5,10 @@
 - Roadmap item: `launch/deal-lifecycle-ownership`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules-phase2`
 - Branch: `Refactor/launch_deal-lifecycle-modules-phase2`
-- PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633). This plan-reset
-  checkpoint sits above implementation checkpoint `b8281bf6e45656419a0d20732c9fadc87427448f`;
-  the worktree retains a large uncommitted Phase 3/4 candidate that must be preserved and reconciled
-  after the design reset.
+- PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633). Published
+  recovery work head `2d14e08dbcab5d3ff63759781b3573ad17357165` preserves the Phase 3/4
+  candidate through the dashboard/projection compile frontier; local HEAD, the remote branch, and PR
+  `headRefOid` matched exactly after the work-head push.
 - Dependency/package gates: none block the remaining B2B-internal implementation. Phase 1 delivery is terminal; final `api/**` delivery will own its routine package publication and platform-sync gate only after the complete refactor merges.
 - Last reconciled: 2026-08-18 after completing the dashboard/projection compile-recovery slice and
   recording the module-owned seeder frontier as the next bounded lifecycle slice
@@ -120,8 +120,9 @@ workflow registry or cross-module entity query. Application.Infrastructure and
 Opportunity.Infrastructure both build with 0 warnings and 0 errors. Concert.Infrastructure now reaches
 10 errors in the next independent frontier: five seeder/fingerprint ownership diagnostics, three
 obsolete Application counterparty notification diagnostics, and two Concert creation email-composition
-diagnostics. No dashboard/projection or stale global-using diagnostic remains. This commit is the
-first recovery checkpoint for the preserved Phase 3/4 candidate and completed compile-recovery slices.
+diagnostics. No dashboard/projection or stale global-using diagnostic remains. Recovery work head
+`2d14e08dbcab5d3ff63759781b3573ad17357165` is the first checkpoint for the preserved
+Phase 3/4 candidate and completed compile-recovery slices.
 
 ## Next Steps
 
@@ -191,6 +192,9 @@ generalize selector/factory infrastructure in this slice.
   the seed project and Application API now compile independently with zero warnings.
 - Published implementation checkpoint `324186648e0f40b7789b80ca5e3b1ab20dedf8d6`; local HEAD, the
   remote branch, and draft PR #633 `headRefOid` matched exactly before this ledger commit.
+- Published recovery range `b90ecf6db..2d14e08db` from starting remote head
+  `b90ecf6dbf5268355381e7f63beacb0a82583f69`; local HEAD, the remote branch, and draft PR
+  #633 `headRefOid` all equalled `2d14e08dbcab5d3ff63759781b3573ad17357165`.
 - Merged the 93-commit `origin/main` drift without conflicts as
   `ff2e4dc553aad7bd9093e958235fa809efe5c881`, then verified local HEAD, the remote branch, and draft PR
   #633 `headRefOid` matched and the branch was 0 commits behind.
