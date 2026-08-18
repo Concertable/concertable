@@ -5,14 +5,13 @@
 - Roadmap item: `launch/deal-lifecycle-ownership`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules-phase2`
 - Branch: `Refactor/launch_deal-lifecycle-modules-phase2`
-- PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633). Published
-  Concert invoice-query compile-recovery work head
-  `8a44f386a47c06c02d0ead3b5c3458472d22e7ac` from starting remote head
-  `23be926810fc1698003eaf764a48a57ccd3b49ec`;
-  local HEAD, the remote branch, and PR `headRefOid` matched exactly after the work-head push.
+- PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633). The
+  published starting head for this slice is `34010ca4cc0e42af5868115afdaa0cae2c25674c`; local HEAD,
+  the remote branch, and PR `headRefOid` matched before the Concert unit-test recovery candidate in
+  this commit. Publication of this candidate is pending.
 - Dependency/package gates: none block the remaining B2B-internal implementation. Phase 1 delivery is terminal; final `api/**` delivery will own its routine package publication and platform-sync gate only after the complete refactor merges.
-- Last reconciled: 2026-08-18 after replacing the final Invoice-to-Booking DbContext traversal with
-  the Concert-owned immutable application/booking facts and clearing the Concert Infrastructure build
+- Last reconciled: 2026-08-18 after clearing the Concert unit-test ownership frontier and passing the
+  focused Release suite
 
 ## Current state
 
@@ -138,26 +137,20 @@ nine `CompleteExecutor` diagnostics without changing its typed failures, transac
 completion-step selection. The prior Concert.Infrastructure build exposed only the deferred cross-module
 `InvoiceRepository` query error. The Invoice repository now resolves application-based reads through
 the Concert-owned `ApplicationId` and `BookingId` facts delivered by `ConfirmedBooking`; no Booking
-runtime query or new facade dependency is required. Concert.Infrastructure compiles with 0 errors, so
-the Concert unit-test project is the next bounded compile/run frontier.
+runtime query or new facade dependency is required. Concert.Infrastructure compiles with 0 errors.
+
+The Concert unit-test ownership recovery is complete in this commit. Tests of the deleted umbrella
+lifecycle, workflow, cross-stage executors, and Application/Booking-owned collaborators were removed
+from the Concert project. Surviving Concert tests now construct the immutable `ConfirmedBooking`
+contract directly, validate only Concert-owned state and persistence, and retain the draft-creation
+regression against `ConcertService.CreateAsync`. The scoped stale-ownership vocabulary scan is empty,
+the project builds with 0 warnings and 0 errors, and the Release suite passes 88/88.
 
 ## Next Steps
 
-Fresh-context Concert unit-test compile/recovery slice only — preserve the green Concert
-Infrastructure boundary and do not continue into migrations, guidance, integration tests, or another
-lifecycle operation:
-
-The keyed-selector design concern is a recorded non-blocking follow-up. Do not refactor, rename, or
-generalize selector/factory infrastructure in this slice.
-
-1. Run the Concert unit-test project in Release with `--no-restore`, disabled build servers, and
-   single-worker MSBuild to expose its exact remaining compile/test frontier.
-2. If it is red, use the repository's unit/integration debug workflow and resolve only failures caused
-   by the already-removed shared lifecycle or relocated Application/Booking/Concert ownership. Stop
-   and record any unrelated production frontier rather than entering another lifecycle operation.
-3. Run a scoped rejected-ownership vocabulary grep, `git diff --check`, and repeat the Concert unit
-   suite. The slice gate is a green suite or an exact recorded unrelated production blocker; update
-   this ledger with the result and stop the context.
+Publish this coherent Concert unit-test recovery work head to draft PR #633, verify the local head,
+remote-tracking ref, and PR `headRefOid` match exactly, then record that publication and replace this
+section with the next fresh-context B2B Web host compile/recovery slice.
 
 ## Completed work
 
@@ -226,12 +219,23 @@ generalize selector/factory infrastructure in this slice.
 - Published Concert invoice-query compile-recovery range `23be92681..8a44f386a` from starting remote
   head `23be926810fc1698003eaf764a48a57ccd3b49ec`; local HEAD, the remote branch, and draft PR #633
   `headRefOid` all equalled `8a44f386a47c06c02d0ead3b5c3458472d22e7ac` after the work-head push.
+- Completed the Concert unit-test ownership recovery in this commit: deleted tests whose shared
+  lifecycle/workflow SUTs no longer exist, rewrote surviving tests against `ConfirmedBooking` and
+  current Concert collaborators, and retained the draft-creation regression on `ConcertService`.
 - Merged the 93-commit `origin/main` drift without conflicts as
   `ff2e4dc553aad7bd9093e958235fa809efe5c881`, then verified local HEAD, the remote branch, and draft PR
   #633 `headRefOid` matched and the branch was 0 commits behind.
 
 ## Verification
 
+- Concert unit-test ownership scan finds no `IConcertWorkflow`, `ConcertWorkflow`,
+  `IConcertStateMachineRegistry`, `LifecycleState`, `IFinishStep`, `FinishExecutor`,
+  `ConcertDraftService`, `ContractIssuer`, Application/Booking/Opportunity entities or repositories,
+  or deleted payment-amount mapper reference in the Concert unit project; its file paths contain no
+  deleted `Workflow` or `FinishExecutor` vocabulary.
+- `dotnet test api/Concertable.B2B/src/Modules/Concert/Tests/Concertable.B2B.Concert.UnitTests/Concertable.B2B.Concert.UnitTests.csproj --configuration Release --no-restore --disable-build-servers --maxcpucount:1`:
+  88/88 passed with 0 warnings and 0 errors.
+- Current candidate `git diff --check`: passed.
 - Concert composition-root ownership scan finds neither the Application-owned
   `IApplicationValidator` registration nor the Opportunity-owned `OpportunityDtoValidator` scan under
   Concert. Their owning composition roots retain both registrations, and Concert registers
@@ -253,9 +257,6 @@ generalize selector/factory infrastructure in this slice.
   `BookingConfirmationEmailSender` diagnostics. After the email boundary fix, neither remained; the
   first post-email build exposed the five composition-root diagnostics cleared by the current
   candidate plus the still-current executor and repository frontier.
-- The focused sender/service tests were updated to the immutable `ConfirmedBooking` handoff but could
-  not execute because the downstream Concert.Infrastructure production errors prevent the unit-test
-  project from compiling.
 - `git diff --check` passed for the email-composition slice.
 - Application counterparty-notification ownership grep: every
   `ApplicationCounterpartyNotifiedDomainEvent` and `ApplicationNotification` production/test reference
@@ -263,9 +264,6 @@ generalize selector/factory infrastructure in this slice.
 - Application unit tests passed 11/11 in Release after the ownership move; Application.Infrastructure
   built with 0 warnings and 0 errors using `--no-restore`, disabled build servers, and single-worker
   MSBuild.
-- Concert.Infrastructure now stops at exactly 2 errors with 0 warnings, both unresolved
-  `BookingConfirmationEmailSender` symbols in `ConcertService`; all three former Application
-  counterparty-notification diagnostics are gone.
 - `git diff --check` passed for the notification slice.
 - Dead Concert terms-rendering slice: the scoped production-reference scan across Concert and the B2B
   host returned no `IDealTermsRenderer`, `IDealTermsSerializer`, `IDealTerms`, renderer/serializer
@@ -283,14 +281,8 @@ generalize selector/factory infrastructure in this slice.
   with `--no-restore`, disabled build servers, and single-worker MSBuild passed with 0 errors.
   Application and Booking had 0 warnings; Opportunity reported only the inherited `UserEntity`
   CS0628 warning from a referenced project.
-- `dotnet build api/Concertable.B2B/src/Modules/Concert/Concertable.B2B.Concert.Infrastructure/Concertable.B2B.Concert.Infrastructure.csproj --configuration Release --no-restore --disable-build-servers --maxcpucount:1`
-  stopped at 5 errors with 0 warnings: three `ApplicationCounterpartyNotifiedDomainEvent` /
-  `ApplicationNotification` diagnostics and two `BookingConfirmationEmailSender` diagnostics.
 - Refund recovery slice: `git diff --check` passed, and the scoped
   `RefundEscrowDeferredEvent` scan across Concert plus the B2B host returned no matches.
-- The published 270-path candidate remains an intentionally non-mergeable carve. Its Application-to-
-  Booking seam is verified; the host and architecture suite stop at 37 Concert.Application compile
-  errors naming legacy shared-workflow consumers of types already moved to their owning modules.
 - 2026-08-17 implementation publication: local HEAD, remote branch, and PR head matched
   `324186648e0f40b7789b80ca5e3b1ab20dedf8d6`; the branch remained 89 commits behind `origin/main`.
 - Delivery-model reconciliation: `python .agents/hooks/plan_graph.py --root .` reports 0 errors and 0
@@ -305,8 +297,6 @@ generalize selector/factory infrastructure in this slice.
   plan preserves that invariant across module DbContexts.
 - Verify-before-Accept convergence already persists the early payment fact before advancing; the plan
   preserves the join without treating it as one end-to-end state.
-- Corrected Concert unit suite: 229/229 passed in Release with the branch restored to current-main
-  lifecycle test coverage and no new assertion over `LifecycleState` or its transition table.
 - `dotnet build api/Concertable.B2B/src/Concertable.B2B.Web/Concertable.B2B.Web.csproj --configuration Release --no-restore`:
   0 errors and the pre-existing `UserEntity` CS0628 warning after merging the current platform pin.
 - Rejected DealTerms implementation vocabulary scan: no matches.
@@ -359,8 +349,6 @@ generalize selector/factory infrastructure in this slice.
   api/Concertable.B2B/tests/Concertable.B2B.ArchitectureTests/Concertable.B2B.ArchitectureTests.csproj
   --configuration Release --no-restore --disable-build-servers --filter
   "FullyQualifiedName~ModuleBoundaryTests"` passed 6/6.
-- Completed Phase 2 Concert unit suite: 230/230 passed after the navigation cut and explicit draft
-  persistence test.
 - Completed Phase 2 B2B Web build: 0 warnings and 0 errors after migration regeneration, seed-link
   cleanup, and composition-root wiring.
 - Review fix `4b1752304598997ee43c7538daf2f8251a21d41d` preserves the Booking subtype's immutable
