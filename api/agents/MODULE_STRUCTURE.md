@@ -34,13 +34,18 @@ vocabulary the skill's enum rule refers to is `Genre`, in `Concertable.Contracts
 ## `Tenant` internally, `organization` at the HTTP boundary
 
 `Tenant` is the domain and persistence term; `organization` is the product/API term. Translate once, in the
-Api layer: explicit lowercase `api/organization/...` route templates and organization vocabulary in HTTP
-models where the surface represents the active tenant, while services, repositories, entities and columns
-keep `Tenant`/`TenantId`. Never introduce an `OrganizationId` alias below the HTTP boundary.
+Api layer: organization vocabulary in routes and HTTP models where the surface represents the active
+tenant, while services, repositories, entities and columns keep `Tenant`/`TenantId`. Never introduce an
+`OrganizationId` alias below the HTTP boundary.
+
+Routes are token templates, not hand-lowercased literals: `[Route("api/[controller]")]`, and
+`[HttpGet("/api/organization/[controller]")]` for the active-tenant surface. `[controller]` is lowercased
+and kebab-cased by `RouteTokenTransformerConvention` + `KebabCaseRouteTransformer`, registered in
+`Concertable.B2B.Web/Program.cs` — **only** in the B2B host, which `TECH_DEBT.md` records.
 
 `X-Tenant-Id` selects the active tenant; never duplicate that selector in a route or query string. A
-tenant's zero-or-one Artist or Venue is a singleton sub-resource at `api/organization/artist` or
-`api/organization/venue` — not a human-user resource and not an invented multi-profile collection.
+tenant's zero-or-one Artist or Venue is a singleton sub-resource resolving to `api/organization/artist`
+or `api/organization/venue` — not a human-user resource and not an invented multi-profile collection.
 Canonical resources stay addressable by their own ids at `api/artist/{artistId}` and `api/venue/{venueId}`.
 
 ## Migrations

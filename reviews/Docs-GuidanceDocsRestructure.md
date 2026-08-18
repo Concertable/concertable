@@ -316,3 +316,15 @@ plus a clean build re-checked for a unit and an integration project through diff
   here (the deleted `ReadDbContext`, `Genre` in `Concertable.Contracts`). 53 -> 48 lines, all six probes now 0.
   The generic file needed no change on this count — it carries no Concertable identifier at all, using
   `WarehouseId` as a deliberately foreign example, so meta-rule 2 holds and extraction stays a `git mv`.
+
+- [x] **ENF7 — MEDIUM — the merge of `origin/main` made a route rule stale the same day it was written** —
+  `api/agents/MODULE_STRUCTURE.md` "`Tenant` internally, `organization` at the HTTP boundary"
+  The branch went 9 behind mid-review; the merge brought #649's "tokenize organization profile routes"
+  plus a new `KebabCaseRouteTransformer`. The doc still said to write "explicit lowercase
+  `api/organization/...` route templates", which is now the opposite of the convention: controllers use
+  `[Route("api/[controller]")]` and `[HttpGet("/api/organization/[controller]")]`, with `[controller]`
+  lowercased and kebab-cased by `RouteTokenTransformerConvention` + `KebabCaseRouteTransformer` in
+  `Concertable.B2B.Web/Program.cs`. There is no `[Route("api/organization/artist")]` attribute anywhere —
+  the URL the doc names is produced by the token. Corrected to state the token mechanism and name the
+  transformer, including main's own `TECH_DEBT.md` caveat that it is wired only in the B2B host.
+  Re-verified after the merge: controller counts unchanged (36 internal, 3 public), so ENF5 still holds.
