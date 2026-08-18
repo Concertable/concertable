@@ -254,3 +254,17 @@ publish-first cut-over, not an edit.
 `Concertable.Shared.Api`, is published, and both module-local copies are deleted in the follow-up PR
 once the pin carries it. Any new Api module uses the shared one rather than minting a third.
 
+### Rate limiting is in-process only — no distributed store for horizontally-scaled correctness
+
+`AddDefaultRateLimiting` (`Concertable.ServiceDefaults`) registers the built-in `AddRateLimiter`, whose
+partitioned limiters live in each process's memory. Under horizontal scale every replica counts
+independently, so a policy nominally set to N/min actually permits up to N×(replica count)/min — the
+per-user/per-IP ceiling loosens in proportion to the fleet. This is acceptable at launch (single-instance
+per service) and is the deliberate scope cut in `plans/launch/RATE_LIMITING_PLAN.md`: an in-process
+limiter delivers the abuse floor now without standing up shared infrastructure.
+
+**Resolves when:** the limiter is backed by a shared store (e.g. Redis) so counts are fleet-global, or a
+gateway/edge layer enforces the coarse per-IP ceiling ahead of the app while the app keeps the
+identity-aware policies. Revisit before any service runs more than one replica with rate limiting as a
+relied-upon control.
+
