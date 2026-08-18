@@ -6,7 +6,7 @@
 - Also delivered by this ledger: roadmap item `docs/agent-standards`, now checked off
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-guidance-docs`
 - Branch: `Docs/GuidanceDocsRestructure`
-- PR: #637 — **open working branch, NOT for merge** (see the `Blocked:` contract in `## Next Steps`; it deletes 2,662 lines whose replacement is junction-only today). Label `skip-e2e`, **current with `origin/main`** (0 behind as of the Phase 6 tier-3
+- PR: #637 — **open working branch, NOT for merge** (see the standing constraint in `## Next Steps`; it deletes 2,662 lines whose replacement is junction-only today). Label `skip-e2e`, **current with `origin/main`** (0 behind as of the Phase 6 tier-3
   commit). Updated for base currency three times on 2026-08-17: from **69 behind** and `DIRTY` (three doc
   conflicts resolved, below), from 2 behind after platform-sync #645 merged — a clean merge carrying only
   the `<ConcertablePlatformVersion>` bump `0.1.0-alpha.0.1055` → `0.1.0-alpha.0.1061` across the five
@@ -25,8 +25,8 @@ more than it did, since the new targets file participates in every project's bui
 
 **#637 is not deliverable and that is the headline.** Everything below describes a branch that is
 internally coherent and externally unsupported: the reduction happened, but what it reduced *to* is
-reachable only through machine-local junctions. Read the `Blocked:` contract in `## Next Steps` before
-acting on anything here.
+reachable only through machine-local junctions. Read the standing constraint in `## Next Steps` before acting
+on anything here — the next work is Phase 5, not merging.
 
 The reduction has happened. Every generic rule now has exactly one home — a skill — and the in-repo docs hold
 only this system's roster of real types, contexts, clients, tables and pins. The corpus that auto-loads on an
@@ -298,218 +298,97 @@ inventory has been checked against code.
 
 ## Next Steps
 
-Blocked: #637 must NOT be merged. It is a working branch, not a delivery, and every earlier "enqueue-ready" note in this ledger was wrong.
-Blocked by: the 2,662 lines of corpus it removes have nowhere durable to live - the replacement exists only as NTFS junctions on one machine, and the organized standards tree (Phases 5, 5b, 5c) is unbuilt.
-Unblock action: build the delivery the thinning depends on - Phase 5 (the domain tree) first, then Phase 7 (plugins, so the corpus travels with a clone), then 5b, 5c, 3c and 4.
-Resume when: the standards corpus is organized AND installable on a clean machine without junctions, so #637 removes nothing that is not durably retrievable.
+**Next work is Phase 5: build the organized `standards/<domain>/` tree.** It is the gate on delivering
+this whole restructure - Phase 3b already removed 2,662 lines from the repo, and until the corpus is
+organized and installable, the only thing holding it is 48 junctions on one machine. Everything else
+below is sequenced behind it.
 
-**The evidence, verified 2026-08-18 - do not re-derive it.** #637 deletes **2,662 lines** across
-`api/agents/**` and `app/agents/**` and adds 524 back: it guts `RESULT_PATTERN.md`, both
-`CODE_CONVENTIONS.md` and both `CODE_PATTERNS.md`, and deletes `UNIT_CONVENTIONS.md`,
-`E2E_CONVENTIONS.md`, `MICROSERVICE_COMMUNICATION.md`, `DEBUGGING_CONVENTIONS.md` and `CONVENTIONS.md`
-outright. What replaces them is 48 skills reachable **only as junctions on this one machine**:
-`~/.claude/skills` is 48/48 junctions - 41 into `dotagents`, 7 into `agent-standards` - and
-`installed_plugins.json` carries **no** standards plugin. Move a clone, delete a folder, or open the
-repo on another machine or in CI and the rules are gone. Meanwhile the standards repos are still flat
-skill lists: the browsable `standards/<domain>/` tree does not exist.
+**Standing constraint - #637 does not merge, and no session may propose merging it.** Verified
+2026-08-18: `~/.claude/skills` is 48/48 junctions (41 -> `dotagents`, 7 -> `agent-standards`) and
+`installed_plugins.json` carries no standards plugin. The branch guts `RESULT_PATTERN.md`, both
+`CODE_CONVENTIONS.md`, both `CODE_PATTERNS.md` and deletes `UNIT_CONVENTIONS.md`, `E2E_CONVENTIONS.md`,
+`MICROSERVICE_COMMUNICATION.md`, `DEBUGGING_CONVENTIONS.md`, `CONVENTIONS.md`. Move a clone or open the
+repo anywhere else and those rules are gone. **It merges only when Phase 5 + Phase 7 make the corpus
+organized AND installable on a clean machine without junctions.** Earlier revisions of this ledger said
+"enqueue-ready, review clean, paused on Tommy's read"; both were true and neither was the point - a
+clean review speaks to the diff's own quality, never to whether what it deletes has a home. Phase 6
+riding this PR fixed the *enforcement* ordering, never the *delivery* ordering. Do not reinstate a merge
+instruction until that condition actually holds.
 
-**Why a session kept pushing to merge it anyway.** Earlier revisions of this ledger said "enqueue-ready,
-review clean, paused on Tommy's read". Both halves were true and neither was the point: a clean review
-speaks to the diff's own quality, never to whether the corpus it deletes has a home yet. Phase 6 riding
-this same PR fixed the *enforcement* ordering; it never addressed the *delivery* ordering. Do not
-reinstate a merge instruction here until the Resume-when condition above actually holds.
+1. **Phase 5 - the domain tree.** Restructure `agent-standards` (and the skills currently in
+   `dotagents`) from flat `SKILL.md` siblings into `standards/<domain>/` with the doc as payload and the
+   skill as router: `dotnet/`, `react/`, `process/`, `concertable/`. Full spec in the plan's Phase 5.
+   Answer while doing it: which skills are *general* (stay `dotagents`, every codebase Tommy owns) vs
+   *Concertable org* (`agent-standards`) - the repo map in the plan's Phase 7 is the authority, and
+   `dotagents` is personal machine config that must NOT be folded into an org repo.
 
-**Why Phase 6 had to ride this PR anyway** — still true, still the reason enforcement is in the same
-branch. Thinning the in-repo corpus to skill pointers must not land before the mechanism that makes
-those skills fire. A live failure proved triage is not a guarantee: an agent created
-`Concertable.ServiceDefaults.Tests`, booted a `WebApplication` inside a "unit" test, used the wrong
-assertion library and wrote no sibling `AGENTS.md`, with `unit-testing` and `integration-testing` both
-installed, described and listed. Neither fired; the follow-up `/review` repeated the blind spot and
-returned clean.
+2. **Phase 7 - plugins, so the corpus travels with a clone.** Mechanics are fully verified (plan's
+   "Verified mechanics - do not re-derive these"): both harnesses load the same plugin, Codex shows
+   skills namespaced (`agent-process:committing`), neither auto-installs from repo settings, and a
+   plugin's `hooks.json` fires with **zero** repo wiring - which retires vendoring. **The three blocking
+   defects are FIXED and merged** (`agent-standards` `78e058693`): the payload matcher now covers all
+   eight tool names (it was inert for every Codex write), a malformed `skill-routes.json` now blocks
+   instead of silently disabling routing, and router output is UTF-8. Remaining: build the four plugin
+   payloads (`agent-process`, `dotnet-standards`, `react-standards`, `concertable-delivery`), then the
+   README - Phase 7's real deliverable, since this plan is deleted when it completes and the repo map
+   and delivery mechanics cannot live only here.
 
-**All three Phase 6 tiers and Phase 6b are in** — the build gate (`f99fa8c2f`:
-`api/TestConventions.targets` + `BannedSymbols.UnitTests.txt`, imported from all 9
-`Directory.Build.targets`, zero migration, tier resolution and both gates verified), the router (authored
-in `agent-standards`, vendored here with a hash check, wired for **both** harnesses), and tier 3 above.
-**What remains of Phase 6 is deployment** — and Phase 6a's junction deployment is exactly the fragility recorded in the blocker above, so Phase 7 supersedes it rather than completing it.
+3. **Phase 5b / 5c / 3c / 4**, in that order once the tree exists. 5b: `api/agents/` is deleted, not
+   thinned - the polyrepo cut leaves no `api/` node to host it. 5c: the discovery pass, since relocation
+   only moves rules that already exist as prose (B2B's stance taxonomy - `TenantScopedDbContext`,
+   `ReadDbContext`, `AdminDbContext` and the filtered-entity list - lives only in code). 3c: the six
+   markdown items outside the conventions folders (`app/README.md` is still the unmodified Vite
+   scaffold; `notes/Concert-Rust-Analysis.md` is referenced by nothing). 4: collapse the remaining
+   duplication rows - chiefly `api/AGENTS.md:28-47` still restating 20 lines of seeding inline.
 
-1. ~~**Phase 6a — skill deployment.**~~ **DONE 2026-08-17.** `deploy-skills.ps1` run; both
-   `~/.agents/skills` and `~/.claude/skills` are now **46 junctions, 0 real directories**, pointing at
-   `dotagents` and `agent-standards`. The 7 process skills (`merging`, `committing`, `plans`,
-   `docs-and-debt`, `failing-tests`, `git-branching`, `remote-validation`) load for the first time,
-   plus `last-conversation`, `recents`, `search`. Zero refusals — no installed copy had diverged.
-   Copy-drift is now structurally impossible: `git pull` is the deployment.
-   Two notes. The `.claude` stubs **were** replaced by junctions to canonical, contrary to the
-   earlier note that a junction deployment must leave them; harmless, since the frontmatter that
-   drives routing is identical and Claude now reads the full skill directly. And the run was still
-   *global* — Tommy's stated preference is repo-local so skills travel with a clone, which is the
-   open design question below, not something this deployment settled.
-   Also resolved by the swap: the `sync` / `worktree` "missing YAML frontmatter" fault that made Codex
-   refuse both lived in the installed copies, which no longer exist — all 46 canonical files carry
-   well-formed frontmatter and a description, verified.
-   **And the deployment surfaced a fourth defect (ENF4, fixed in `07800262`):** 18 of the repo's own
-   `.claude/skills` stubs began with a UTF-8 BOM, which stops Claude parsing the frontmatter — `merge`,
-   `incremental-review`, `pr-preflight`, all four `e2e-*` debug skills and others listed with no name or
-   description at all. `sync-claude-skill-stubs.ps1` compared with `ReadAllText`, which strips the BOM, so
-   it reported them "unchanged" every run and could never heal them; it now compares raw bytes. Regenerating
-   cleared all 18 and created the two missing stubs (`update-roadmap`, `techdebt`), 26 → 28 — which also
-   closes the separately-recorded "`update-roadmap` has no `.claude` stub" gap.
-2. **Approve the Codex hook once** (Tommy, ~5 seconds, in a Codex session in this repo). Codex trusts a
-   project hook by hash per file per path, so the `PreToolUse` entry in `.codex/hooks.json` is inert
-   until approved, and the worktree is trusted separately from the main checkout. **Do this after the
-   ENF1 fix, not before** — approving the previous hook would have approved one that allowed every Codex
-   write. Nothing else waits on it.
-3. **Then Tommy's own read of the PR**, then merge. Paused: Tommy — his sign-off is required and the clean
-   automated `/review` is not it; resume on his go-ahead once the above is in.
-4. **Do NOT land this PR yet** — see the blocker at the top of this section. When it eventually does
-   land it is routed to `/merge`, not `/merge-docs`: the diff carries `.cs` and Python files that
-   `merge-docs` hard-refuses, so the queue's build gate applies. `skip-e2e` remains correct (no positive
-   Step 4 trigger). At that point re-check `git rev-list --count HEAD..origin/main`, enqueue, poll to
-   `MERGED`, close the worktree with `-PlanManaged`, then follow the generated `chore/platform-sync-*`
-   PR to green — this branch's `api/**` markdown matches `publish-packages.yml`'s coarse `paths:`.
+4. **Cut the E2E doc footprint as one pass** (Tommy: "use this as an opportunity to cut all of this
+   bloat"). None of it is stale, but almost none of it is a *convention*: `E2E_CONSIDERATIONS.md` (37)
+   deletes with its four sections redistributed ("do not add timeouts" is already owned verbatim by
+   `failing-tests`; the 16-line Stripe-card section names its own unfixed root cause, so it is a
+   `TECH_DEBT.md` entry; "`checkout-awaiting` timing out" is a debug symptom for the `e2e-ui-debug`
+   table). `E2E_UI_CONVENTIONS.md` (26) drops to ~5 - page-object naming/shape, `data-testid`
+   kebab-case, step bindings that make no Playwright calls, and API-not-UI setup are generic
+   Reqnroll+Playwright rules that belong in `e2e-scenarios`, leaving only the roster (`WorkflowState`,
+   the Stripe-iframe selector exception, the `AcceptApplicationPage` examples). The four
+   `.agents/skills/e2e-*` runbooks (711) each restate the Docker-health rule twice; `remote-validation`
+   owns it - replace with a pointer.
 
-5. **Doc-truth findings from the 2026-08-18 probe — resolved 2026-08-18 (`4bbb2ddb0`), except Tommy's
-   ruling.** All four were run to ground against code rather than trusted; two were real and are fixed, two
-   were correct as written:
-   - **FIXED** — `api/agents/CODE_PATTERNS.md` "one repository per entity" claimed Concert **6 entities /
-     6 repositories** and Conversations **2 / 2**. Verified actual: Concert **9 / 13** (10 files in
-     `Concert.Domain/Entities` less `ISequence.cs`, which is an interface; 14 in
-     `Concert.Infrastructure/Repositories` less the generic base `Repository.cs`), Conversations **3 / 4**.
-     Rewritten rather than renumbered — the sentence implied counts *track* entity counts, when they run
-     **ahead** of them because stance (read, admin) and projection shape are independent dimensions that
-     each earn a repository. The Conversations precedent was dropped outright: `MessageRepository.cs:27`,
-     `:46`, `:55` join, read and `AddAsync` `context.ThreadReadStates`, so the doc was citing as its
-     precedent the one module whose code breaks the rule. That violation stays in
-     `api/Concertable.B2B/TECH_DEBT.md` per meta-rule 6 (`Concert/ConcertImageEntity` is the same shape and
-     is logged with it).
-   - **FIXED** — same file, the Refit inventory omitted **`ICustomerUserClaimsApi`**. Confirmed real at
-     `Concertable.Auth/Services/IUserClaimsApi.cs:17`: an empty interface deriving from `IUserClaimsApi`,
-     existing because Refit configures a client *per interface type*, so
-     `AddRemoteProfileClaimsProvider<TApi>` has something per source service to bind a base address and
-     `ServiceTokenHandler` to. Added with that reason and flagged as a marker, not a fourth contract —
-     Customer (`Program.cs:82`) is the only source registered today.
-   - **VERIFIED TRUE, no edit** — the 13 `TenantPermission` literals *do* mirror `SharedPermissions`
-     constant **names** one-for-one. Both lists extracted and diffed mechanically: 13 vs 13, identical. The
-     doc is also right to say *names* — the backend **values** are dotted strings (`operations.view`), the
-     frontend literals PascalCase. The six-role matrices mirror as well (13/7/5/4/1/2).
-   - **VERIFIED TRUE, no edit** — `customerClient` is where the doc says: created bare
-     (`axios.create()`) at `app/customer/shared/src/lib/customerClient.ts`, whose package **is**
-     `@concertable/customer`, and configured in the app tree (`app/web/customer/src/lib/customerClient.ts`).
-     `app/shared/src/lib/` correctly holds only the other three. Also spot-checked in the same table:
-     only `searchClient` carries the `qs` comma serializer — true.
-   - **Still Tommy's** — `api/Concertable.Shared/TECH_DEBT.md` holds the
-     `GenreController`-in-a-shared-library question, which needs a ruling rather than an edit.
+5. **Make the 7 process skills concrete.** They were written generic for a shared repo; `merging` must
+   lose the confirm-loop *body* and keep the rule, with `.agents/skills/merge/SKILL.md` owning the
+   procedure. Same for `pr-preflight`.
 
-6. **Phase 3c — the 10,011 lines of markdown outside the conventions folders.** Most is correctly-placed domain
-   knowledge and stays untouched; six items need a disposition, listed in the plan's Phase 3c table.
-   `app/README.md` is still the unmodified Vite scaffold, and `notes/Concert-Rust-Analysis.md` (444) is
-   referenced by nothing.
-7. **Phase 4 — collapse the remaining duplication rows to one home each.** Seeding is the big one: the
-   `seeding` skill now owns the rule and `SEEDING_CONVENTIONS.md` the inventory, but `api/AGENTS.md:28–47`
-   still restates 20 lines of it inline. Resolve under meta-rule 7 by deciding import-or-pointer — that
-   summary exists precisely *because* `SEEDING_CONVENTIONS.md` is not `@`-imported. Same for
-   `api/AGENTS.md`'s "shared code is the intersection" section, which `microservice-boundaries` now states
-   generically.
-8. **Make the 7 process skills concrete, and execute the settled merge ruling on their side.** They were
-   written generic for a shared repo; the `merging` skill must lose the confirm-loop body and keep the rule,
-   with the executable `.agents/skills/merge/SKILL.md` owning the procedure. Same for `pr-preflight`.
-9. **Promotion candidates for the shared skills**, all found while cutting against them — none blocking:
-   - **FIXED (`dotagents` `daef94d`)** — `persistence` taught that an awaiting page projection "still
-     constructs its page by hand", the practice `main` refactored away from in `OpportunityMapper`. The
-     10-commit merge in this turn surfaced it: the owning home was teaching the superseded rule while the
-     repo doc it took over from had been tightened. Canonical and both installed copies now agree. Related
-     observation for Phase 6a: `~/.claude/skills/*` holds 10-line stubs pointing at `~/.agents/skills/*`,
-     so a junction deployment must target the `.agents` leg and leave the stubs, not replace them.
-   - `persistence` teaches a context-typed base (`Repository<TEntity, OrderDbContext, Guid>`), but
-     Concertable's shared bases are capability-typed with no `TContext` parameter. The *rule* (module-local
-     alias) is the same; the example predates the change.
-   - "One repository per entity" has no skill home (see Done).
-   - `e2e-scenarios` closes by pointing at "the `agent-process` standards", a name no skill has — the
-     container-health rule lives in `remote-validation`.
-   - **Three surfaced by the `origin/main` merge**, all against the C# skills: `csharp-style`'s
-     `extension()` section is weaker than the repo's current rule — it lacks "migrate every ordinary
-     member of a container you touch, so a class never mixes forms" and the signature-bound
-     `[LoggerMessage]` exception; `csharp-naming`'s `XMappers` example still shows the legacy
-     `public static … (this X x)` form the same corpus now bans, so the two skills contradict each
-     other; and **integration-event wire versioning has no skill at all** — kept in
-     `api/agents/CODE_CONVENTIONS.md` for now, and the natural home is `microservice-boundaries`
-     (events) or `proto` (wire identity), neither of which mentions `MessageType` today.
-   - **`E2E_UI_CONVENTIONS.md` is generic content still sitting in the repo** (Tommy flagged it). Page-object
-     naming/shape, `data-testid` kebab-case and no-type-prefix, step bindings delegating with no Playwright
-     calls, and API-not-UI setup for steps not under test are Reqnroll+Playwright rules with nothing
-     Concertable in them — `e2e-scenarios` covers scenario authoring and stops short of all four. It survived
-     Phase 3b unexamined because it was an *orphan*: the review fixed its zero inbound links by wiring it up,
-     which is not the same as asking whether it belonged in the repo at all. Promote those four sections to
-     `dotagents` (extend `e2e-scenarios` or add a sibling), leaving behind only the roster: `WorkflowState`,
-     the Stripe-iframe selector exception, and the `AcceptApplicationPage`/`opportunity-add` examples.
-   - **Cut the whole E2E doc footprint next, as one pass** (Tommy: "use this as an opportunity to cut all
-     of this bloat"). None of it is stale — every identifier in `E2E_CONSIDERATIONS.md`
-     (`CompleteChallengeIfRequiredAsync`, `4000002500003155`, `Requires3ds`, `checkout-awaiting`,
-     `WaitUntilSavedAsync`) is still live in code — but almost none of it is a *convention*:
-     - `E2E_CONSIDERATIONS.md` (37) → **delete**, redistributing all four sections. "Do not add timeouts"
-       is already owned verbatim by `failing-tests` in `agent-standards`. "Tests must pass in isolation"
-       has no skill home — promote one line to `e2e-scenarios`. The 16-line Stripe-card section names its
-       own unfixed root cause ("provision a fresh Stripe test customer per run… until that is done,
-       `CompleteChallengeIfRequiredAsync` is the pragmatic stopgap") — that is a `TECH_DEBT.md` entry, and
-       the file already sits next to one. "`checkout-awaiting` timing out" is a debug symptom → the
-       `e2e-ui-debug` symptom table.
-     - `E2E_UI_CONVENTIONS.md` (26) → ~5, per the promotion above.
-     - The four `.agents/skills/e2e-*` runbooks (711) each restate the Docker-health rule twice; that rule
-       is owned by `remote-validation`. Replace with a pointer.
-     Not on this branch: #637 is enqueue-ready and any further push re-stales its review; the cut also
-     rewrites `Concertable.Testing.E2E/AGENTS.md`, which #637 already edits. Do it in the continuation
-     worktree once #637 lands.
-10. **Tommy-gated, not agent work.** Archiving `agent-starter-kit` (a GitHub repo action). The
-   `Concertable/agent-standards` → `standards` rename, which breaks `.agents/hooks/vendored.json`'s
-   recorded `source` and the plugin manifest, so it is a coordinated change across both repos and must not
-   be done mid-PR. Whether React Hook Form is adopted (it is in no `app/` workspace today).
+6. **Skill fixes found while cutting** - none blocking: `persistence` teaches a context-typed base
+   (`Repository<TEntity, OrderDbContext, Guid>`) but Concertable's shared bases are capability-typed
+   with no `TContext`; "one repository per entity" has no skill home; `e2e-scenarios` closes by pointing
+   at "the `agent-process` standards", a name no skill has; `csharp-style`'s `extension()` section lacks
+   the "migrate every ordinary member of a container you touch" rule and the `[LoggerMessage]`
+   exception; `csharp-naming`'s `XMappers` example still shows the `public static ... (this X x)` form
+   the same corpus now bans; and **integration-event wire versioning has no skill at all** (kept in
+   `api/agents/CODE_CONVENTIONS.md`; natural home is `microservice-boundaries` or `proto`, neither of
+   which mentions `MessageType`).
 
-11. **Deferred to its own PR:** auto-load thinning of root `AGENTS.md` (the 86 merge lines and 32 Docker lines
-   that `/merge` and `scripts/e2e.ps1` already automate), the analyzer push-down plus
-   `EnforceCodeStyleInBuild`, and **a CI job running the Python hook tests** — nothing in
-   `.github/workflows/` runs them today, so every hook gate here is only as live as the last person who ran
-   it locally (`agent-standards` already has this; Concertable does not). Its own PR because touching
+7. **Tommy's, not agent work.** Approve the Codex `PreToolUse` hook once in a Codex session in this
+   worktree (inert until approved, and safe now that ENF1 made it actually fire). Archive
+   `agent-starter-kit`. The `Concertable/agent-standards` -> `standards` rename: two of its five hard
+   references die with vendoring, and there are **zero installed consumers today**, so it is cheapest
+   now - but it is a coordinated change across repos. Rule on `GenreController` in a shared library
+   (`api/Concertable.Shared/TECH_DEBT.md:70`). Whether React Hook Form is adopted (in no `app/`
+   workspace today).
+
+8. **Deferred to its own PR:** auto-load thinning of root `AGENTS.md` (the 86 merge lines and 32 Docker
+   lines `/merge` and `scripts/e2e.ps1` already automate), the analyzer push-down plus
+   `EnforceCodeStyleInBuild`, and **a CI job running the Python hook tests** - nothing in
+   `.github/workflows/` runs them today, so every hook gate here is only as live as the last person who
+   ran it locally (`agent-standards` has this; Concertable does not). Its own PR because touching
    `.github/workflows/**` pulls the merge gate's security-marker requirement in with it.
 
-12. **Phase 7 — delete skills from service repos entirely** (new, plan updated 2026-08-18). The end state
-   Tommy named: a new microservice repo is an `AGENTS.md` roster plus two wiring files. Gated behind
-   Phase 5 (the domain tree) and behind the cut producing one real service repo to prove it against.
-   **The spike is DONE (2026-08-18) and both gates are open.** Run live on both harnesses, then fully
-   reverted — no marketplace, plugin or config entry left behind on the machine, and `config.toml` back to
-   zero `agent-standards` references.
-   - **Codex needs its own one-time install**, exactly like Claude: `codex plugin list` from inside
-     `agent-standards` showed nothing; after `marketplace add` it read `not installed` and needed
-     `codex plugin add`. It *does* resolve `.agents/plugins/marketplace.json` natively, and it also reads
-     `.claude-plugin/marketplace.json`, so one marketplace repo serves both tools.
-   - **Plugin hooks fire with ZERO repo wiring** — proven, not inferred. A scratch repo holding only
-     `.agents/skill-routes.json` blocked a routed write, named the owning skill, and the agent loaded it
-     and retried. So **vendoring is retired**, and the per-repo residue shrinks to `skill-routes.json` +
-     the roster; the two wiring files are needed only for hooks no plugin ships.
-   - Measured: `agent-process` costs **~1,750 tok always-on** for its 7 skills.
-
-   **Three defects the spike surfaced, now the actual blockers** (detail in the plan's Phase 7):
-   the plugin payload's `hooks.json` **omits `apply_patch`, so it is inert for every Codex write** — ENF1
-   repeated one layer up, escaping the fix because that file is hand-authored rather than generated;
-   a malformed `skill-routes.json` **disables routing silently** (`load_routes` swallows the parse error and
-   the hook exits 0 — this bit during the spike and looked exactly like a clean pass); and router output is
-   **mojibaked on Windows**. Fix these in `agent-standards` before any repo stops vendoring.
-
-   **Two corrections recorded in the plan's Phase 7, both from Tommy 2026-08-18:**
-   - **`dotagents` stays its own repo.** It is personal machine config mirroring `%USERPROFILE%`, and its
-     general standards apply to every codebase he owns — folding it into a Concertable org repo would scope
-     cross-project standards to one product. The earlier "collapses into `standards/dotnet/`" line was wrong.
-     Repo count is not the metric; audience is.
-   - **A plugin copies its payload; Claude does not *reference* `.agents/skills/`.** `plugin.json`'s `skills`
-     field rejects `../`. `.agents/skills/` stays the authoring source of truth, and the plugin payload is a
-     generated full copy. This misunderstanding is the root of both the stub mechanism and the triple-copy
-     generator, so Phase 7 states it explicitly.
-
-   **Phase 7's real deliverable is a durable README, not just the plugins** — this plan gets deleted when it
-   completes, so the repo map and delivery mechanics cannot live only here. It ships in `dotagents`, linked
-   marketplace, one plugin, no stubs and no generators.
-
-   Until then Concertable stays the fallback host and the 28 stubs stay — they are generated, and their one
-   real bug (the BOM comparison) is fixed.
+**Also fixed this session, outside the plan's phases:** Concertable's merge gate policed *other* repos -
+`gh` ran in the hook's own directory, so `cd <other-repo> && merge 1` resolved #1 against Concertable and
+blocked an `agent-standards` merge citing `TS/AuthRefactor`. Fixed on this branch (`2d553e9d4`, 15 -> 17
+cases). **It only goes live when #637 lands, so until then do not run cross-repo merges from a
+Concertable session.** Concertable's vendored `skill_router.py` is also now behind upstream
+(`4177899e` vs `89ed23e4`) - harmless, since its hash check verifies self-consistency rather than
+currency, and Phase 7 retires vendoring anyway.
 
 ## Also Tommy's, not blocking
 
