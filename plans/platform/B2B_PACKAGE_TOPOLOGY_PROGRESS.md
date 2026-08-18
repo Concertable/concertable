@@ -5,7 +5,7 @@
 - Roadmap item: `platform/b2b-package-topology`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-B2bPackageTopologyPhase2`
 - Branch: `Refactor/B2bPackageTopologyPhase2`
-- PR: not opened
+- PR: draft [#653](https://github.com/Concertable/concertable/pull/653)
 - Dependency/package gates: Phase 1 is satisfied by feed-verified `@concertable/web-b2b@0.1.0-alpha.0.4284`; Phase 3 is delivery-gated on the first feed-published versions of both first-class Phase 2 packages.
 - Last reconciled: 2026-08-18 against `origin/main` `de4f377e817127bfd200bf9f92a807ac2423c757` and the terminal Phase 1 publication.
 
@@ -23,13 +23,16 @@ Phase 2 has a coherent local candidate. `app/web/b2b/shared` is now the first-cl
 platform-configured tenant-core exports. Publication, workspace, lockfile, boundary, and Metro
 integration are updated, with no consumer cutover begun ahead of Phase 3. The reviewed work head
 `60fcd7395f57c9f73eb3cc5e5ee198aecfa8fd5d` created the correctly capitalized remote branch and was
-fetched back equal; no PR existed at that head.
+fetched back equal. The push checkpoint then landed as `dca48cd6aae06aa55f8f7b98d8444f03e640f02e`,
+and draft PR #653 opened from that exact local/remote head.
 
 ## Next Steps
 
-Open the draft PR from the verified remote branch, record its exact head, and let exact-head PR CI own
-the feed-restored carve and complete frontend matrices. Do not start Phase 3 delivery until both
-canonical packages from Phase 2 are published and feed-verified.
+Let exact-head PR CI run [32148856488](https://github.com/Concertable/concertable/actions/runs/32148856488)
+through the feed-restored carve and complete frontend matrices; diagnose and fix any real failure at
+its focused scope. Once exact-head CI is green, retain the draft and wait for explicit `/merge`
+authorization. Do not start Phase 3 delivery until both canonical packages from Phase 2 are published
+and feed-verified.
 
 ## Completed work
 
@@ -44,6 +47,9 @@ canonical packages from Phase 2 are published and feed-verified.
   and bypassed the zod write boundary, and added focused artist/venue multipart contract tests.
 - **Reviewed work-head push:** created `origin/Refactor/B2bPackageTopologyPhase2` from no prior remote
   ref and verified its fetched tip equals `60fcd7395f57c9f73eb3cc5e5ee198aecfa8fd5d`.
+- **Draft PR #653:** opened from verified local/remote head
+  `dca48cd6aae06aa55f8f7b98d8444f03e640f02e`; initial exact-head run 32148856488 has a green change
+  detector with the six feed-restored carves, frontend boundaries, and local platform pack pending.
 - **Mobile workspace resolution:** both Metro configurations watch every junctioned shared workspace
   they resolve locally, while carved/feed installs continue to use physical package directories.
 
