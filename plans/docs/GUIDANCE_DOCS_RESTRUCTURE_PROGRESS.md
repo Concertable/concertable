@@ -386,19 +386,25 @@ four plugins with a durable architecture doc. What is missing is not code - it i
 install is proven, the 2,662 lines Phase 3b removed from this repo are still held only by 48 junctions on
 one machine, and #637 must not merge.
 
-Three steps, in order:
+Three steps, in order — **prove the install BEFORE merging, not after.** An earlier revision of this
+ledger had these reversed, which would have merged an unproven payload into two `main` branches. Neither
+harness forces that: `claude plugin marketplace add` takes "a URL, path, or GitHub repo" and
+`codex plugin marketplace add` takes "a local path, `owner/repo[@ref]`, HTTPS Git URL" plus a `--ref`
+flag. So the branch, or the working tree itself, is directly installable.
 
-1. **Merge both PRs.** `agent-standards#2` (CI green) and `dotagents#1` (CI added this session).
-2. **Prove one install per harness** - `/plugin marketplace add` + `/plugin install` for Claude and
-   `codex plugin add` for Codex, per `dotagents/ARCHITECTURE.md`. Confirm a routed skill loads and its doc
-   opens from inside the plugin. This mutates machine config, so it is Tommy's to run or authorize.
+1. **Prove one install per harness, off the branch.** Add the local worktree (or `owner/repo@ref`) as a
+   marketplace, install a standards plugin, and confirm a routed skill loads *and* its doc opens from
+   inside the plugin copy — that last part is the whole point of the payload rewrite, and the only thing
+   a green generator cannot tell you. Then remove the marketplace and plugin again, as the earlier spike
+   did. This mutates machine config, so it is Tommy's to run or to authorize.
+2. **Merge both PRs** once step 1 passes. `agent-standards#2` and `dotagents#1`, both CI green.
 3. **Then run `pwsh dotagents/.agents/deploy-skills.ps1`** for the personal half (`~/AGENTS.md`,
-   `~/.claude/`, the 10 utilities, and the standards-domain junctions). It was deliberately not run this
-   session: the junctions would point at `standards/` trees that exist only on those branches, so a
+   `~/.claude/`, the 10 utilities, and the standards-domain junctions). It must come after the merge: the
+   junctions would otherwise point at `standards/` trees that exist only on the branches, so a
    `git checkout main` would dangle every domain.
 
-Only once step 2 passes is the #637 standing constraint below actually satisfied. Everything after that is
-sequenced behind it.
+Only once step 1 passes is the #637 standing constraint below actually satisfied — it asks for proof, and
+a merge is not proof.
 
 **Standing constraint - #637 does not merge, and no session may propose merging it.** Verified
 2026-08-18: `~/.claude/skills` is 48/48 junctions (41 -> `dotagents`, 7 -> `agent-standards`) and
