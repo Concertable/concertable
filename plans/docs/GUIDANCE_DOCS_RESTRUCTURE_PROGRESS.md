@@ -13,7 +13,7 @@
   service `Directory.Packages.props` — and from 10 behind at `2b04d57e2`.
 - Shared repos **today** (target shape in `## Topology` below): `Concertable/agent-standards` (7 process skills + the `skill_router` hook, `88cf091`, pushed) and `tomjseery/dotagents` (39 — 20 .NET, 9 TS/React, 10 utilities, `3918a85`, pushed; junctioned into `~/.agents/skills` + `~/.claude/skills`), plus `agent-utilities` (session tooling, no skills) and `agent-starter-kit` (to archive), cloned at `C:\Users\TommySeery\source\repos\{agent-standards,dotagents}`
 - Dependency/package gates: no consumer migration to do, but this PR **will** trigger publish + platform sync — `publish-packages.yml` triggers on the coarse `paths: api/**`, which this branch's `api/**` markdown matches. MinVer republishes and a `chore/platform-sync-*` PR opens; non-breaking (no published type changed), so it should auto-merge green. Follow it to green anyway — whoever merges owns the sync.
-- Last reconciled: 2026-08-17 against `agent-standards` `88cf091` (pushed) after the incremental review's three fixes; `origin/main` matched at the tier-3 commit (0 behind) — re-check at enqueue time
+- Last reconciled: 2026-08-18 — fetched at the doc-truth commit `4bbb2ddb0`: **0 behind `origin/main`**, 49 ahead, local head = `origin/Docs/GuidanceDocsRestructure` = PR #637 head, `mergeStateStatus` `CLEAN`, auto-merge off, label `skip-e2e`. `agent-standards` unchanged at `88cf091` (pushed) — re-check currency at enqueue time
 
 **Scope changed 2026-08-17: this is no longer a docs PR.** It now carries build behaviour
 (`api/TestConventions.targets` gating every test project) and a PreToolUse hook, because Phase 6 must land
@@ -246,6 +246,15 @@ findings, all fixed on the branch**, so the markers are stamped at the fix head 
 - **ENF3 (LOW)** — 53 lines of one comment pasted at nine import sites, self-contradictory in
   `api/Directory.Build.targets`. Deleted.
 
+**The doc-truth probe that ran alongside those three is now closed too** (`4bbb2ddb0`). It carried four
+open items into Next Step 5; checking each against code rather than the prose split them evenly. Two were
+real — `CODE_PATTERNS.md`'s repository counts (Concert 6/6 and Conversations 2/2 against an actual 9/13
+and 3/4) and its Refit inventory missing `ICustomerUserClaimsApi` — and are fixed. Two were correct as
+written and needed only the extraction nobody had done: the `TenantPermission` ↔ `SharedPermissions`
+mirror diffs identical at 13, and `customerClient` is where the doc says. The counts finding also killed a
+precedent rather than a number — the doc cited Conversations as proof of a rule `MessageRepository`
+breaks.
+
 ## Topology — settled 2026-08-18
 
 Phase 3a split the corpus on **portability**, which is why React sat beside .NET and machine utilities in
@@ -329,22 +338,37 @@ in `agent-standards`, vendored here with a hash check, wired for **both** harnes
    C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-guidance-docs -PullRequest 637
    -PlanManaged`, then follow the generated `chore/platform-sync-*` PR to green (this branch's `api/**`
    markdown matches `publish-packages.yml`'s coarse `paths:`; non-breaking, so it should auto-merge).
-5. **Doc-truth findings from the 2026-08-18 probe, not yet fixed.** Four of the seven review findings were
-   docs asserting what the code does not do, so the probe continues per file rather than being trusted:
-   - `api/agents/CODE_PATTERNS.md` — "one repository per entity" says Concert is **6 entities / 6
-     repositories** and Conversations **2 / 2**. Actual: Concert **9 / 13**, Conversations **3 / 4**. The
-     illustration meant to prove the rule is wrong on both counts. The rule's violation is logged in
-     `api/Concertable.B2B/TECH_DEBT.md`; the wrong counts are this plan's to fix.
-   - Same file — the Refit inventory lists three clients and omits **`ICustomerUserClaimsApi`**
-     (`Concertable.Auth/Services/IUserClaimsApi.cs`), a real Refit interface existing because Refit
-     configures clients per interface type. Add it with that reason.
-   - `app/agents/CODE_CONVENTIONS.md` / `CODE_PATTERNS.md` — **two claims never verified**: that the 13
-     `TenantPermission` literals mirror `SharedPermissions` names one-for-one (backend has 13; the
-     frontend list was not extracted), and that `customerClient` exists where the doc says
-     (`app/shared/src/lib/` holds only three of the four clients; the doc says the fourth is in
-     `@concertable/customer`). Verify both against code before the app docs are re-homed.
-   - `api/Concertable.Shared/TECH_DEBT.md` now holds the `GenreController`-in-a-shared-library question,
-     which needs Tommy's ruling rather than an edit.
+5. **Doc-truth findings from the 2026-08-18 probe — resolved 2026-08-18 (`4bbb2ddb0`), except Tommy's
+   ruling.** All four were run to ground against code rather than trusted; two were real and are fixed, two
+   were correct as written:
+   - **FIXED** — `api/agents/CODE_PATTERNS.md` "one repository per entity" claimed Concert **6 entities /
+     6 repositories** and Conversations **2 / 2**. Verified actual: Concert **9 / 13** (10 files in
+     `Concert.Domain/Entities` less `ISequence.cs`, which is an interface; 14 in
+     `Concert.Infrastructure/Repositories` less the generic base `Repository.cs`), Conversations **3 / 4**.
+     Rewritten rather than renumbered — the sentence implied counts *track* entity counts, when they run
+     **ahead** of them because stance (read, admin) and projection shape are independent dimensions that
+     each earn a repository. The Conversations precedent was dropped outright: `MessageRepository.cs:27`,
+     `:46`, `:55` join, read and `AddAsync` `context.ThreadReadStates`, so the doc was citing as its
+     precedent the one module whose code breaks the rule. That violation stays in
+     `api/Concertable.B2B/TECH_DEBT.md` per meta-rule 6 (`Concert/ConcertImageEntity` is the same shape and
+     is logged with it).
+   - **FIXED** — same file, the Refit inventory omitted **`ICustomerUserClaimsApi`**. Confirmed real at
+     `Concertable.Auth/Services/IUserClaimsApi.cs:17`: an empty interface deriving from `IUserClaimsApi`,
+     existing because Refit configures a client *per interface type*, so
+     `AddRemoteProfileClaimsProvider<TApi>` has something per source service to bind a base address and
+     `ServiceTokenHandler` to. Added with that reason and flagged as a marker, not a fourth contract —
+     Customer (`Program.cs:82`) is the only source registered today.
+   - **VERIFIED TRUE, no edit** — the 13 `TenantPermission` literals *do* mirror `SharedPermissions`
+     constant **names** one-for-one. Both lists extracted and diffed mechanically: 13 vs 13, identical. The
+     doc is also right to say *names* — the backend **values** are dotted strings (`operations.view`), the
+     frontend literals PascalCase. The six-role matrices mirror as well (13/7/5/4/1/2).
+   - **VERIFIED TRUE, no edit** — `customerClient` is where the doc says: created bare
+     (`axios.create()`) at `app/customer/shared/src/lib/customerClient.ts`, whose package **is**
+     `@concertable/customer`, and configured in the app tree (`app/web/customer/src/lib/customerClient.ts`).
+     `app/shared/src/lib/` correctly holds only the other three. Also spot-checked in the same table:
+     only `searchClient` carries the `qs` comma serializer — true.
+   - **Still Tommy's** — `api/Concertable.Shared/TECH_DEBT.md` holds the
+     `GenreController`-in-a-shared-library question, which needs a ruling rather than an edit.
 
 6. **Phase 3c — the 10,011 lines of markdown outside the conventions folders.** Most is correctly-placed domain
    knowledge and stays untouched; six items need a disposition, listed in the plan's Phase 3c table.
