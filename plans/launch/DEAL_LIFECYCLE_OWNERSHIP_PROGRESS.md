@@ -9,8 +9,8 @@
   current-main and Application counterparty-notification work head `af500baa92a0d182ff177fa36a4ba061669f3e00`;
   local HEAD, the remote branch, and PR `headRefOid` matched exactly after the work-head push.
 - Dependency/package gates: none block the remaining B2B-internal implementation. Phase 1 delivery is terminal; final `api/**` delivery will own its routine package publication and platform-sync gate only after the complete refactor merges.
-- Last reconciled: 2026-08-18 after completing the Application counterparty-notification
-  compile-recovery slice and recording Concert creation email composition as the next bounded slice
+- Last reconciled: 2026-08-18 after clearing Concert's stale composition-root registrations and
+  reducing the compile frontier to the two explicitly deferred production files
 
 ## Current state
 
@@ -51,6 +51,10 @@ Phase 1 merged through PR #625, published successfully, and reached a green plat
 worktree and local branch were removed through the plan-managed repository command. This branch merged
 the current `origin/main` without conflicts as `10140df12`; the merge and verified seeder slice were
 published together through work head `ebf259e22` and the branch is 0 commits behind.
+
+The clean branch merged the two newly fetched `origin/main` package-pin commits without conflicts as
+local commit `b03309fc5` before this slice. It is 0 commits behind; the merge is not yet published and
+belongs in the next coherent work-head push with the email-composition recovery.
 
 The committed Phase 2 checkpoint removes the Opportunity-to-Application, Application-to-Booking, and
 Booking-to-Concert EF navigations and establishes the initial Contracts seams. Published checkpoint
@@ -109,35 +113,44 @@ The duplicate Concert `IDealTermsRenderer`, `IDealTermsSerializer`, `IDealTerms`
 registrations, and DealTerms-specific unit coverage are removed. The scoped production scan finds no
 retained Concert runtime consumer, and Concert.Application now compiles.
 
-The dashboard/projection, module-owned seeder, and Application counterparty-notification
-compile-recovery slices are complete. Opportunity,
+The dashboard/projection, module-owned seeder, Application counterparty-notification, and Concert
+creation email-composition compile-recovery slices are complete. Opportunity,
 Application, Booking, and Concert now seed only their own write tables in order, while the shared
 `SeedState` stages generated Application IDs into Booking links and then Concert creation inputs.
 Application owns seeded signatures and its internal terms-fingerprint calculator; Concert no longer
 registers or tests that collaborator. The three owning Infrastructure projects compile with 0 errors,
 and Application now owns its counterparty-notification handler, pre-commit registration, and focused
-tests without a post-accept `Cancelled` notification case. Concert.Infrastructure now reaches only two
-Concert creation email-composition diagnostics. No notification, seeder/fingerprint,
-dashboard/projection, or stale global-using diagnostic remains in Concert.
+tests without a post-accept `Cancelled` notification case. Concert creation still consumes only the
+immutable `ConfirmedBooking` handoff, and `ConcertService` now depends on the Concert-owned
+`IBookingConfirmationEmailSender` application port implemented by Concert Infrastructure. The focused
+sender and service tests no longer construct deleted shared-lifecycle or event shapes. No notification,
+seeder/fingerprint, dashboard/projection, email-ownership, or stale global-using diagnostic remains in
+Concert.
+
+The current candidate includes the Concert creation email-composition and composition-root recovery
+with the current-main merge. Concert no longer registers Application's validator or scans
+Opportunity's validators, while `BookingConfirmedDomainEventHandler` is registered through its
+pre-commit handler contract. Concert.Infrastructure now exposes only nine `CompleteExecutor`
+Result/lambda errors and one cross-module `InvoiceRepository` query. The focused Concert unit tests
+cannot compile until that downstream production frontier is cleared.
 
 ## Next Steps
 
-Fresh-context Concert creation email-composition compile-recovery slice only — do not continue into
-migrations, guidance, or another lifecycle operation:
+Fresh-context Concert completion compile-recovery slice only — preserve the checkpointed creation
+email and composition-root work and do not continue into `InvoiceRepository`, migrations, guidance,
+or another lifecycle operation:
 
 The keyed-selector design concern is a recorded non-blocking follow-up. Do not refactor, rename, or
 generalize selector/factory infrastructure in this slice.
 
-1. Resolve the two `BookingConfirmationEmailSender` diagnostics inside Concert's existing creation and
-   email-composition boundary, preserving `ConfirmedBooking` as the creation input and the focused
-   sender/service tests. Do not move the sender upstream or introduce an Application/Booking runtime
-   dependency.
-2. Run the scoped `BookingConfirmationEmailSender`/`BookingConfirmationEmailContent` ownership grep,
-   `git diff --check`, the focused Concert unit tests, and the Concert Infrastructure Release build
-   with single-worker MSBuild.
-3. The slice gate is that the focused tests pass and Concert.Infrastructure builds with 0 errors.
-   Update this ledger with the exact result and stop the context; do not continue into migrations,
-   guidance, or another lifecycle operation in the same continuation.
+1. Resolve only the nine `CompleteExecutor` CS8031 diagnostics while preserving its operation-owned
+   typed Result contract, transaction boundary, and existing completion-step selection. Do not change
+   selector/factory infrastructure or touch `InvoiceRepository`.
+2. Run the scoped completion ownership/legacy-workflow grep, `git diff --check`, and the Concert
+   Infrastructure Release build with single-worker MSBuild.
+3. The slice gate is zero `CompleteExecutor` diagnostics and a compile frontier consisting only of the
+   current `InvoiceRepository` cross-module query error. Update this ledger with the exact result and
+   stop the context; do not fix that repository in the same continuation.
 
 ## Completed work
 
@@ -202,6 +215,27 @@ generalize selector/factory infrastructure in this slice.
 
 ## Verification
 
+- Concert composition-root ownership scan finds neither the Application-owned
+  `IApplicationValidator` registration nor the Opportunity-owned `OpportunityDtoValidator` scan under
+  Concert. Their owning composition roots retain both registrations, and Concert registers
+  `BookingConfirmedDomainEventHandler` through
+  `IPreCommitDomainEventHandler<BookingConfirmedDomainEvent>`.
+- The Concert.Infrastructure single-worker Release build reports 0 warnings and exactly 10 errors:
+  nine CS8031 diagnostics in `CompleteExecutor` at lines 51, 53, 55, 57, 59, 70, 79, 84, and 89, plus
+  one CS1061 diagnostic in `InvoiceRepository` at line 23. `ServiceCollectionExtensions` has no
+  remaining diagnostic.
+- `git diff --check` passed after the composition-root recovery.
+- Concert creation email ownership grep: every `IBookingConfirmationEmailSender`,
+  `BookingConfirmationEmailSender`, and `BookingConfirmationEmailContent` production/test reference is
+  under Concert; no Application or Booking runtime dependency was introduced.
+- The baseline Concert.Infrastructure Release build reproduced exactly the two recorded
+  `BookingConfirmationEmailSender` diagnostics. After the email boundary fix, neither remained; the
+  first post-email build exposed the five composition-root diagnostics cleared by the current
+  candidate plus the still-current executor and repository frontier.
+- The focused sender/service tests were updated to the immutable `ConfirmedBooking` handoff but could
+  not execute because the downstream Concert.Infrastructure production errors prevent the unit-test
+  project from compiling.
+- `git diff --check` passed for the email-composition slice.
 - Application counterparty-notification ownership grep: every
   `ApplicationCounterpartyNotifiedDomainEvent` and `ApplicationNotification` production/test reference
   is under Application; Concert has no match.
