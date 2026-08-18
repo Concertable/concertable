@@ -94,22 +94,32 @@ use a separate operation-specific executor backed by a module-local generic step
 `DealType` coverage. There is no umbrella `IConcertExecutor`, and the candidate's raw `StepResolver`
 shape must be replaced because keyed service lookup belongs only in the validated factory.
 
+The 2026-08-18 continuation exceeded a safe slice and is interrupted with uncommitted runtime edits.
+It combined Concert executors, payment callbacks, persistence cleanup, an atomic Opportunity claim,
+and the next compile frontier in one context. That breadth caused a concrete design error: it copied
+the legacy deferred-refund callback into Concert as an inbox-acknowledged state validation with no
+state change or output. Tommy rejected that no-op handler. The attempted removal was interrupted, so
+the worktree may contain a partially applied edit and must be audited before any further implementation.
+No runtime checkpoint from that continuation has been committed.
+
 ## Next Steps
 
-Resume the preserved Phase 3/4 candidate against the recorded Concert boundary decision:
+Recovery slice only — do not continue into dashboards, projections, migrations, guidance, or another
+lifecycle operation in this context:
 
-1. Reconcile the existing uncommitted work with that decision. Keep
-   `BookingConfirmedDomainEventHandler` thin, pass only the immutable `ConfirmedBooking` contract into
-   Concert, replace the raw `StepResolver` with a validated module-local step factory, split Cancel and
-   Complete into operation-specific executors, and use typed Results for expected failures rather than
-   explicit throws.
-2. Finish atomic Application acceptance with a conditional Opportunity `Open` to `Filled` claim inside
-   the existing ambient transaction. Preserve synchronous pre-commit `ApplicationAcceptedDomainEvent`
-   handling for Booking/Contract formation; the outbox is for outbound durable delivery, not
-   asynchronous Booking creation. Add concurrency and rollback coverage.
-3. Continue the remaining payment/Concert carve, delete the god workflow and shared lifecycle state,
-   finish projections/migrations/consumers/guidance, and run the focused gates before publishing the
-   next coherent checkpoint to draft PR #633. No intermediate phase is mergeable.
+1. Inspect the full uncommitted diff and the interrupted patch state without editing. Classify every
+   post-checkpoint change as preserved candidate work, deliberate bounded implementation, or accidental
+   mechanical carry-over.
+2. Correct only the Concert refund-outcome boundary. `FinancialOperationOutcomeProcessor` handles
+   refund success and rejection because they change Concert cancellation state. Remove its
+   `RefundEscrowDeferredEvent` interface, method, and DI registration: deferral leaves Concert in
+   `CancellationPending`, while Payment owns retry and later publishes the next material fact.
+3. Audit the other newly rewritten Concert payment handlers against the same rule and the recorded
+   state/transaction invariants. Do not broaden the edit if their purpose is uncertain; record the
+   exact uncertainty instead.
+4. Run `git diff --check`, the scoped legacy-reference grep, and the smallest affected Concert build
+   with single-worker MSBuild. Update this ledger with the exact result and stop the context. Only a
+   later fresh continuation may select the next bounded slice.
 
 ## Completed work
 

@@ -365,6 +365,18 @@ green; none of those checkpoints is a merge candidate until all later phases and
 are complete. Draft PR #614 and its DealTerms implementation are rejected input, not an implementation
 base.
 
+Each continuation executes exactly one bounded checklist slice. Before implementation, the progress
+ledger must name that slice, its allowed subsystem/path scope, and one focused exit gate. Reaching the
+gate ends the continuation: update the plan and ledger, commit and push the recovery checkpoint when
+green, then resume the next slice in a fresh context. The instruction to continue across implementable
+phases means successive checkpointed continuations, never loading Phases 3-6 into one context.
+
+Do not mechanically preserve a legacy callback merely because it previously existed. Every retained
+event handler must produce an owned state change or output, or enforce a specifically documented
+invariant that requires consuming the event. If it does none of those, remove the subscription. When
+that purpose is uncertain, stop the slice and record the question before editing adjacent lifecycle
+code.
+
 ### Phase 1 — restore and characterize the real baseline
 
 - [x] Retire the rejected PR/branch through the repository's safe worktree process; do not merge or
