@@ -287,3 +287,32 @@ plus a clean build re-checked for a unit and an integration project through diff
   the "Claude Code can't see `update-roadmap`" gap the ledger had recorded separately.
   Same failure class as the colon-space truncation this corpus already hit once, and the same signature:
   nothing visibly wrong, the skill simply never loads.
+
+- [x] **ENF5 — HIGH — the controller-visibility rule was backwards, and the wrong version had already
+  reached the shared repo** — `api/agents/MODULE_STRUCTURE.md:26`, `dotagents module-structure/SKILL.md:22`
+  Found during Tommy's organization review, by checking the rule against the code rather than reading the
+  diff. Both docs stated `*.Api` controllers are `public` (the repo one citing a 2026-04-25 revert from
+  internal). The code: **36 internal, 3 public** of 40 `*Controller.cs` — the rule described 3 of 39. Worse,
+  it had been promoted verbatim into `dotagents`, so it would have taught every .NET repo the wrong default.
+  Ruled by Tommy: controllers are generally `internal`.
+  Stating `internal` alone would have been worse than the original error, because ASP.NET's default
+  `ControllerFeatureProvider.IsController` requires a public type — follow it without a custom provider and
+  the routes silently do not exist. This repo has one: `InternalControllerFeatureProvider`
+  (`Concertable.Shared.Api/Controllers/`), wired by `ControllerBuilderExtensions`. So the generic skill now
+  carries the rule *and* the mechanism it depends on (`dotagents` `3918a85`), and the repo doc carries the
+  inventory: the provider, and the three deliberate exceptions (`BlobController`, `FallbackController`,
+  `GenreController`).
+  **Still open, and Tommy's:** `GenreController` lives in `api/Concertable.Shared/src/Concertable.Shared.Api/`,
+  while the skill's layer table says a shared library exposes no HTTP. Either the rule needs a stated
+  exception or that controller is misplaced.
+
+- [x] **ENF6 — MEDIUM — the repo half restated five rules the skills already own** —
+  `api/agents/MODULE_STRUCTURE.md`
+  Meta-rule 1 ("One rule, one home... a second copy is a bug, not emphasis") broken inside the PR that
+  establishes it. Verified by probe, not by eye: "same per-layer split", "no shared reference `DbContext`",
+  "an enum, not a table", "controller ownership follows the resource's domain module" and "a prefix alone
+  does not justify a wrapper" each appeared in both the repo doc and `module-structure`/`http-api`. The
+  skill copies are the keepers; the repo copies are cut, leaving only the inventory those rules resolve to
+  here (the deleted `ReadDbContext`, `Genre` in `Concertable.Contracts`). 53 -> 48 lines, all six probes now 0.
+  The generic file needed no change on this count — it carries no Concertable identifier at all, using
+  `WarehouseId` as a deliberately foreign example, so meta-rule 2 holds and extraction stays a `git mv`.

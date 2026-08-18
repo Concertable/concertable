@@ -20,28 +20,23 @@ api/Concertable.<Service>/src/Modules/<Module>/
 ```
 
 Examples: `Concertable.B2B.Concert.Domain`, `Concertable.Customer.Review.Application`. Genuinely
-cross-service shared libraries sit at `api/Concertable.Shared/Concertable.<Name>/` **unprefixed**, and
-follow the same per-layer split when they need more than one layer.
+cross-service shared libraries sit at `api/Concertable.Shared/Concertable.<Name>/` **unprefixed**.
 
-`*.Api` controllers are `public` (reverted from internal, 2026-04-25).
+Internal controllers are discovered by `InternalControllerFeatureProvider`
+(`Concertable.Shared.Api/Controllers/`), wired by `ControllerBuilderExtensions`. The three deliberately
+`public` controllers are `BlobController`, `FallbackController` and `GenreController`.
 
-## There is no cross-module read context, and no shared reference `DbContext`
+## What the cross-module rules resolved to here
 
-The cross-module `ReadDbContext` that existed during extraction has been **deleted**. Integration fixtures
-read back through each module's own tenant-independent context. Do not reintroduce a service-wide context
-over every module's model.
-
-Shared reference vocabulary — `Genre`, and any future country/currency list — is a `Concertable.Contracts`
-**enum**, not a table a module keys into.
+The cross-module `ReadDbContext` that existed during extraction has been **deleted**. The shared reference
+vocabulary the skill's enum rule refers to is `Genre`, in `Concertable.Contracts`.
 
 ## `Tenant` internally, `organization` at the HTTP boundary
 
 `Tenant` is the domain and persistence term; `organization` is the product/API term. Translate once, in the
 Api layer: explicit lowercase `api/organization/...` route templates and organization vocabulary in HTTP
 models where the surface represents the active tenant, while services, repositories, entities and columns
-keep `Tenant`/`TenantId`. Never introduce an `OrganizationId` alias below the HTTP boundary, and an
-`organization` route prefix alone does not justify an `OrganizationXController` wrapper — controller
-ownership follows the resource's domain module.
+keep `Tenant`/`TenantId`. Never introduce an `OrganizationId` alias below the HTTP boundary.
 
 `X-Tenant-Id` selects the active tenant; never duplicate that selector in a route or query string. A
 tenant's zero-or-one Artist or Venue is a singleton sub-resource at `api/organization/artist` or
