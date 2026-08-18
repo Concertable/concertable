@@ -5,8 +5,9 @@ an owner, add it there and link from wherever else it matters. A second copy of 
 emphasis — the copies drift, and the reader can't tell which one is current.
 
 **Two kinds of owner.** A `skill` entry names a load-on-demand skill: generic standards that name no
-product, so they live outside this repo (`~/.agents/skills/` from `tomjseery/dotagents`, plus the
-Concertable process skills in `Concertable/agent-standards`) and apply to every repo. Invoke it by name;
+product, so they live outside this repo (`~/.agents/skills/`, fed by `tomjseery/dotagents` for .NET,
+`tomjseery/react-agents` for React/TS, and `Concertable/agent-standards` for the process skills) and apply
+to every repo. Invoke it by name;
 the task you are doing is the trigger. A path entry names a file here, and every one of those carries only
 what a skill deliberately omits — the roster of real types, contexts, clients and tables in *this* system.
 When a topic has both, the skill owns the rule and the file owns the inventory.

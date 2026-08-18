@@ -11,9 +11,9 @@
   conflicts resolved, below), from 2 behind after platform-sync #645 merged — a clean merge carrying only
   the `<ConcertablePlatformVersion>` bump `0.1.0-alpha.0.1055` → `0.1.0-alpha.0.1061` across the five
   service `Directory.Packages.props` — and from 10 behind at `2b04d57e2`.
-- Shared repos **today**: `tomjseery/dotagents` — `standards/dotnet/` (20 docs, correct) plus `standards/react/` (9 docs, **in the wrong repo**) and `standards/communication/` (2); `Concertable/agent-standards` — `standards/process/` (7) + the `skill_router` hook, **no stack sections yet**. Both on `Refactor/StandardsDomainTree`, PRs open and CI green (`agent-standards#2`, `dotagents#1`), neither merged. `tomjseery/react-agents` **does not exist**. Target shape and the three purged wrong models: `## Topology` below.
+- Shared repos **today**: `tomjseery/dotagents` — `standards/dotnet/` (20 docs) + `standards/communication/` (2); `tomjseery/react-agents` — `standards/react/` (9), **created 2026-08-18, on `main`, CI green**; `Concertable/agent-standards` — `standards/process/` (7) + the `skill_router` hook, **no stack sections yet**. `dotagents` and `agent-standards` are still on `Refactor/StandardsDomainTree` with PRs open and CI green (`dotagents#1`, `agent-standards#2`), neither merged. Target shape and the three purged wrong models: `## Topology` below.
 - Dependency/package gates: no consumer migration to do, but this PR **will** trigger publish + platform sync — `publish-packages.yml` triggers on the coarse `paths: api/**`, which this branch's `api/**` markdown matches. MinVer republishes and a `chore/platform-sync-*` PR opens; non-breaking (no published type changed), so it should auto-merge green. Follow it to green anyway — whoever merges owns the sync.
-- Last reconciled: 2026-08-18 — fetched at the doc-truth commit `4bbb2ddb0`: **0 behind `origin/main`**, 49 ahead, local head = `origin/Docs/GuidanceDocsRestructure` = PR #637 head, `mergeStateStatus` `CLEAN`, auto-merge off, label `skip-e2e`. `agent-standards` unchanged at `88cf091` (pushed) — re-check currency at enqueue time
+- Last reconciled: 2026-08-18 — merged `origin/main` into the branch after the Tier 2 split (was 23 behind, clean merge, no conflicts). `dotagents` at `1389a2e` (pushed, CI green), `react-agents` at `b69b517` (`main`, CI green), `agent-standards` unchanged at `88cf091` — re-check currency at enqueue time
 
 **Scope changed 2026-08-17: this is no longer a docs PR.** It now carries build behaviour
 (`api/TestConventions.targets` gating every test project) and a PreToolUse hook, because Phase 6 must land
@@ -68,12 +68,43 @@ machine has 48 of them. What was proven junction-independently is the part that 
 self-contained and its internal paths resolve inside the cache. The end-to-end "agent reads it on a machine
 that never cloned the repo" is inferred from that, not observed.
 
-**What remains after that:** `api/agents/` is still a destination the polyrepo cut removes (5b), the
+**Tier 2 is now real.** `tomjseery/react-agents` exists, private, with the nine React docs, their routers,
+the generator, the marketplace, the `react-standards` plugin and a green CI check; `dotagents` no longer
+carries them, and `deploy-skills.ps1` takes all three repos as source roots. The 38 deployed routers were
+re-checked afterwards and every one resolves to a real doc — `~/.agents/standards/` had in fact never been
+deployed on this machine before, so that gap closed with the same run.
+
+**What remains after that:** `agent-standards` still has no stack sections (Next Step 1), `api/agents/` is
+still a destination the polyrepo cut removes (5b), the
 discovery pass has not run (5c, with `dotnet/STACK.md` its first known gap), Phase 3c (markdown outside
 the conventions folders), Phase 4 (rows still with >1 home, chiefly seeding across `api/AGENTS.md` and
 `SEEDING_CONVENTIONS.md`), and the deferred auto-load thinning of root `AGENTS.md`.
 
 ## Done
+
+**Tier 2 split — `tomjseery/react-agents` exists** (`react-agents` `main` `b69b517`, CI green;
+`dotagents#1` `1389a2e`, CI green)
+
+- **The nine React docs and their routers left `dotagents`**, with the delivery machinery that makes them
+  installable alone: `sync-generated.ps1`, `.agents/plugins/{marketplace,payloads}.json`, the
+  `react-standards` plugin and the CI `-Check` job. The generated payload was diffed against the copy
+  `dotagents` had produced — INDEX, plugin standards and plugin routers all byte-identical, so the move
+  carried no content change. The routers' one authored fact, the doc path, is unchanged; only the repo they
+  name moved.
+- **`dotagents` is now .NET plus `communication/`**: two plugins, two domains, and a marketplace
+  description that no longer claims the TypeScript half. Its README's frontend gap list moved to
+  `react-agents` with the corpus it described.
+- **`deploy-skills.ps1` takes three source roots and three standards roots.** Its duplicate-domain guard
+  already covered the collision; nothing else in it changed. Re-running it repointed 18 skill junctions at
+  `react-agents` and — unplanned but found by the same run — created the four `~/.agents/standards/`
+  domain junctions **for the first time**. Until then every deployed router named a
+  `~/.agents/standards/...` path that did not exist on this machine; Phase 6a had deployed the skills and
+  not the trees they route to. All 38 deployed routers now resolve to a real file.
+- **The generator is a third copy, and the note that said to revisit at the third repo is now due.** The
+  `react-agents` copy differs from the `dotagents` one only in its header paragraph. Sharing them needs a
+  published module or a submodule, because each repo's CI must self-verify without reaching a private
+  sibling; `dotagents/ARCHITECTURE.md` now carries that cost explicitly rather than leaving it in this
+  plan, and names a fourth repo as the trigger.
 
 **Phase 7 — the corpus ships as plugins, and the architecture stops being rediscovered** (same two PRs)
 
@@ -359,7 +390,7 @@ This ledger does not restate the model — it records only what is not yet true 
 | Tier | Repo | Status |
 |---|---|---|
 | Generic .NET | `tomjseery/dotagents` | 20 docs in `standards/dotnet/` — correct |
-| Generic React/TS | `tomjseery/react-agents` | **repo does not exist**; its 9 docs are wrongly sitting in `dotagents/standards/react/` |
+| Generic React/TS | `tomjseery/react-agents` | created 2026-08-18 — 9 docs in `standards/react/`, moved out of `dotagents` |
 | Concertable | `Concertable/agent-standards` | only `standards/process/` exists; needs `dotnet/` + `react/` sections, into which the 480 lines still in `api/agents/` + `app/agents/` re-home |
 | One microservice | that service's own repo | 67 backend + 8 app `AGENTS.md` in place, and each may name sibling docs (`CODE_CONVENTIONS.md`) where a module has conventions of its own |
 
@@ -390,28 +421,23 @@ Three superseded models were purged — do not reintroduce a merged standards re
 stacks, or a `platform/`/`concertable/` folder.
 
 Audit findings: `reviews/Docs-GuidanceDocsRestructure-AuditFindings.md` (16 defects). Several move depending
-on which tier a doc lands in, so the split comes first.
+on which tier a doc lands in, so the remaining split comes first. **Tier 2 is done** — `react-agents`
+exists and holds the React corpus; what is left is the Concertable tier.
 
-1. **Create `tomjseery/react-agents` and move `standards/react/` into it** — 9 docs plus their routers, out
-   of `dotagents`. `dot` is dotNET; React never belonged there. Port `sync-generated.ps1`, `payloads.json`,
-   a marketplace, a `react-standards` plugin and the CI `-Check` job; drop the `react` domain from
-   `dotagents`' payload map. `deploy-skills.ps1` gains the third standards root, and its duplicate-domain
-   guard already covers the collision.
-
-2. **Add `standards/dotnet/` and `standards/react/` to `agent-standards`, and re-home the 480 lines** still
+1. **Add `standards/dotnet/` and `standards/react/` to `agent-standards`, and re-home the 480 lines** still
    in `api/agents/` (`CODE_CONVENTIONS`, `CODE_PATTERNS`, `INTEGRATION_CONVENTIONS`, `MODULE_STRUCTURE`,
    `RESULT_PATTERN`, `SEEDING_CONVENTIONS`) and `app/agents/` (`CODE_CONVENTIONS`, `CODE_PATTERNS`). Target
    docs are named in the plan. `api/agents/` is then **deleted** — the polyrepo cut leaves no `api/` node to
    host it. Per-service and per-module `AGENTS.md` stay, and may name sibling docs (`CODE_CONVENTIONS.md`)
    where a module has conventions of its own.
 
-3. **Cut the process corpus over — P0 in the findings.** `standards/process/` was copied, not moved: its
+2. **Cut the process corpus over — P0 in the findings.** `standards/process/` was copied, not moved: its
    Concertable originals sit at full length and nothing references the extracted docs (zero hits for any
    process skill name across Concertable markdown), and `MERGING.md` duplicates root `AGENTS.md`'s poll loop
    near-byte-for-byte. Slim the Concertable originals to Concertable-only procedure and point at the skills,
    exactly as the React half already does.
 
-4. **Fix the 16 audit defects**, P0 correctness first: the `[LoggerMessage]` carve-out (the corpus currently
+3. **Fix the 16 audit defects**, P0 correctness first: the `[LoggerMessage]` carve-out (the corpus currently
    bans its own canonical example), the `XMappers` examples that demonstrate a banned form, and
    `PERSISTENCE.md`'s impossible repository signature. Then the paraphrase-losses — `axios`,
    `Reqnroll`/`Playwright`, `Aspire` and its four extension methods, `Docker`/`pre-login handshake`,
@@ -419,19 +445,20 @@ on which tier a doc lands in, so the split comes first.
    `Environments`/`IHostEnvironment`, the raw-hook litmus members, the TanStack API names, `silenceErrors`,
    the retry cap, `grep -rniE`.
 
-5. **Move Concertable's four remaining hooks to `agent-standards`** — `plan_handoff_stop.py` + launcher,
+4. **Move Concertable's four remaining hooks to `agent-standards`** — `plan_handoff_stop.py` + launcher,
    `plan_graph.py`, `docs_reachability.py`, `merge-review-gate.py`. They enforce standards that already
    moved, so enforcement sits apart from its rule with nothing watching for drift. **Verify a plugin `Stop`
    hook fires with zero repo wiring first** — that was proven only for `PreToolUse`.
 
-6. **Then the remaining phases**: 5c (the discovery pass — conventions that exist only in code, e.g. B2B's
+5. **Then the remaining phases**: 5c (the discovery pass — conventions that exist only in code, e.g. B2B's
    stance taxonomy), 3c (markdown outside the conventions folders), 4 (the last duplication rows), and the
    deferred auto-load thinning of root `AGENTS.md`.
 
-**#637 does not merge until steps 1-3 land.** It deletes 2,662 lines whose replacement is now organized and
+**#637 does not merge until steps 1-2 land.** It deletes 2,662 lines whose replacement is now organized and
 installable — the plugin install was proven in both harnesses on 2026-08-18 — but not yet correctly
-*tiered*: `react-agents` does not exist and `agent-standards` has no stack sections, so the corpus #637
-points at is not the one the model describes.
+*tiered*. `react-agents` now exists, so Tier 2 is no longer the blocker; `agent-standards` still has no
+stack sections, and the 480 lines in `api/agents/` + `app/agents/` still have nowhere correct to go, so the
+corpus #637 points at is still not the one the model describes.
 
 **Tommy's, not agent work:** approve the Codex `PreToolUse` hook once in a Codex session in this worktree;
 archive `agent-starter-kit`; rule on `GenreController` in a shared library

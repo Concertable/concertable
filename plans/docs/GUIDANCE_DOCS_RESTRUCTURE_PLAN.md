@@ -229,7 +229,11 @@ standards/communication/
 the personal machine config (`~/AGENTS.md`, `~/.agents/`, `~/.claude/`). It is not .NET, and that is the one
 deliberate exception to this repo being stack-scoped.
 
-### Tier 2 — `tomjseery/react-agents`: generic React/TS, every React repo — **REPO DOES NOT EXIST YET**
+### Tier 2 — `tomjseery/react-agents`: generic React/TS, every React repo — **CREATED 2026-08-18**
+
+The nine docs below and their routers moved out of `dotagents` with the delivery machinery they need to be
+installable alone: generator, marketplace, `react-standards` plugin, CI check. The five `NEW` rows are the
+repo's named gaps.
 
 ```text
 standards/react/
@@ -1048,9 +1052,10 @@ builds on trees that exist only on those branches).
   refused to proceed without. A plugin receives only its own domains' docs and their routers, so a
   TypeScript project installing `react-standards` does not also receive the .NET corpus. A domain no
   plugin ships is now an error — otherwise a clone silently cannot install it.
-- **Three plugins in `dotagents`**: `dotnet-standards` (20 docs), `react-standards` (9),
-  `communication-standards` (2); `agent-process` (7) keeps the hook. All 31 plugin routers were verified to
-  resolve to a real doc inside their own plugin.
+- **Four plugins across three repos**: `dotnet-standards` (20 docs) and `communication-standards` (2) in
+  `dotagents`, `react-standards` (9) in `react-agents` since the Tier 2 split, and `agent-process` (7)
+  keeping the hook in `agent-standards`. All 31 plugin routers were verified to resolve to a real doc
+  inside their own plugin.
 - **`dotagents` gained CI.** It had none, so its generated files were only as current as the last local
   run — and the check also proves the generator works on Linux/PowerShell 7 while staying 5.1-compatible.
 - **Pruning is by generated-set membership**, not by skill name: a doc moving between plugins otherwise
@@ -1070,11 +1075,14 @@ branches, so a `marketplace add` against either `main` still finds none. Remaini
 verify one real install per harness. That verification mutates machine config, so it is Tommy's to run or
 to authorize.
 
-**The generator duplication was assessed and consciously kept.** The two `sync-generated.ps1` files are
-structurally parallel but not identical (one has a hook and one plugin, the other has utilities and three),
-and `agent-standards` CI must self-verify without access to a private repo — which rules out a single
-shared copy short of a published module or submodule. Two ~280-line scripts with genuinely different
-delivery targets is the cheaper correct answer; revisit only if a third repo appears.
+**The generator duplication was assessed and consciously kept — and the third repo has now appeared.**
+The `sync-generated.ps1` copies are structurally parallel but not identical: `dotagents` has utilities and
+two plugins, `agent-standards` has a hook and one, `react-agents` has neither and one. Each repo's CI must
+self-verify without reaching a private sibling, and a plugin cannot reference outside its root, which rules
+out a single shared copy short of a published module or a submodule. The `react-agents` copy differs from
+the `dotagents` one only in its header paragraph, so the three stay diffable rather than merged;
+`dotagents/ARCHITECTURE.md` records the cost and names a fourth repo as the point at which a published
+module becomes the cheaper answer.
 
 #### Gap: Concertable's own hooks were never assigned a home
 
