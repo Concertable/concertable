@@ -329,20 +329,37 @@ in `agent-standards`, vendored here with a hash check, wired for **both** harnes
    C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-guidance-docs -PullRequest 637
    -PlanManaged`, then follow the generated `chore/platform-sync-*` PR to green (this branch's `api/**`
    markdown matches `publish-packages.yml`'s coarse `paths:`; non-breaking, so it should auto-merge).
-5. **Phase 3c — the 10,011 lines of markdown outside the conventions folders.** Most is correctly-placed domain
+5. **Doc-truth findings from the 2026-08-18 probe, not yet fixed.** Four of the seven review findings were
+   docs asserting what the code does not do, so the probe continues per file rather than being trusted:
+   - `api/agents/CODE_PATTERNS.md` — "one repository per entity" says Concert is **6 entities / 6
+     repositories** and Conversations **2 / 2**. Actual: Concert **9 / 13**, Conversations **3 / 4**. The
+     illustration meant to prove the rule is wrong on both counts. The rule's violation is logged in
+     `api/Concertable.B2B/TECH_DEBT.md`; the wrong counts are this plan's to fix.
+   - Same file — the Refit inventory lists three clients and omits **`ICustomerUserClaimsApi`**
+     (`Concertable.Auth/Services/IUserClaimsApi.cs`), a real Refit interface existing because Refit
+     configures clients per interface type. Add it with that reason.
+   - `app/agents/CODE_CONVENTIONS.md` / `CODE_PATTERNS.md` — **two claims never verified**: that the 13
+     `TenantPermission` literals mirror `SharedPermissions` names one-for-one (backend has 13; the
+     frontend list was not extracted), and that `customerClient` exists where the doc says
+     (`app/shared/src/lib/` holds only three of the four clients; the doc says the fourth is in
+     `@concertable/customer`). Verify both against code before the app docs are re-homed.
+   - `api/Concertable.Shared/TECH_DEBT.md` now holds the `GenreController`-in-a-shared-library question,
+     which needs Tommy's ruling rather than an edit.
+
+6. **Phase 3c — the 10,011 lines of markdown outside the conventions folders.** Most is correctly-placed domain
    knowledge and stays untouched; six items need a disposition, listed in the plan's Phase 3c table.
    `app/README.md` is still the unmodified Vite scaffold, and `notes/Concert-Rust-Analysis.md` (444) is
    referenced by nothing.
-6. **Phase 4 — collapse the remaining duplication rows to one home each.** Seeding is the big one: the
+7. **Phase 4 — collapse the remaining duplication rows to one home each.** Seeding is the big one: the
    `seeding` skill now owns the rule and `SEEDING_CONVENTIONS.md` the inventory, but `api/AGENTS.md:28–47`
    still restates 20 lines of it inline. Resolve under meta-rule 7 by deciding import-or-pointer — that
    summary exists precisely *because* `SEEDING_CONVENTIONS.md` is not `@`-imported. Same for
    `api/AGENTS.md`'s "shared code is the intersection" section, which `microservice-boundaries` now states
    generically.
-7. **Make the 7 process skills concrete, and execute the settled merge ruling on their side.** They were
+8. **Make the 7 process skills concrete, and execute the settled merge ruling on their side.** They were
    written generic for a shared repo; the `merging` skill must lose the confirm-loop body and keep the rule,
    with the executable `.agents/skills/merge/SKILL.md` owning the procedure. Same for `pr-preflight`.
-8. **Promotion candidates for the shared skills**, all found while cutting against them — none blocking:
+9. **Promotion candidates for the shared skills**, all found while cutting against them — none blocking:
    - **FIXED (`dotagents` `daef94d`)** — `persistence` taught that an awaiting page projection "still
      constructs its page by hand", the practice `main` refactored away from in `OpportunityMapper`. The
      10-commit merge in this turn surfaced it: the owning home was teaching the superseded rule while the
@@ -388,7 +405,12 @@ in `agent-standards`, vendored here with a hash check, wired for **both** harnes
      Not on this branch: #637 is enqueue-ready and any further push re-stales its review; the cut also
      rewrites `Concertable.Testing.E2E/AGENTS.md`, which #637 already edits. Do it in the continuation
      worktree once #637 lands.
-9. **Deferred to its own PR:** auto-load thinning of root `AGENTS.md` (the 86 merge lines and 32 Docker lines
+10. **Tommy-gated, not agent work.** Archiving `agent-starter-kit` (a GitHub repo action). The
+   `Concertable/agent-standards` → `standards` rename, which breaks `.agents/hooks/vendored.json`'s
+   recorded `source` and the plugin manifest, so it is a coordinated change across both repos and must not
+   be done mid-PR. Whether React Hook Form is adopted (it is in no `app/` workspace today).
+
+11. **Deferred to its own PR:** auto-load thinning of root `AGENTS.md` (the 86 merge lines and 32 Docker lines
    that `/merge` and `scripts/e2e.ps1` already automate), the analyzer push-down plus
    `EnforceCodeStyleInBuild`, and **a CI job running the Python hook tests** — nothing in
    `.github/workflows/` runs them today, so every hook gate here is only as live as the last person who ran
