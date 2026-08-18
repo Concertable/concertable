@@ -265,7 +265,7 @@ one repo. Settled shape, by domain instead:
 | `standards` (rename of `Concertable/agent-standards`) | `dotnet/`, `react/`, `process/`, `concertable/`, later `infra/` — docs tree + flat routing skills |
 | `agent-utilities` | machine tooling (`sync`, `worktree`, `recents`, `search`, `unmerged`, …) |
 | service repos | that service's own rosters |
-| `dotagents` | collapses into `standards/dotnet/` + `standards/react/` |
+| `dotagents` | **stays its own repo — corrected 2026-08-18.** It is Tommy's *personal machine config*: its README mirrors `%USERPROFILE%` (`~/AGENTS.md`, `~/.agents/`, `~/.claude/`), synced across machines, and its general engineering standards apply to **every** codebase he owns, not to Concertable. Folding it into a Concertable org repo would scope personal, cross-project standards to one product. An earlier revision of this table said it collapses into `standards/dotnet/` + `standards/react/`; that was wrong. |
 | `agent-starter-kit` | archived — strict subset of `dotagents`, two skills BOM-broken |
 
 **`api/agents/` is deleted, not thinned.** POLYREPO_ROADMAP §6 settled the same day as a true one-way cut,
@@ -477,6 +477,20 @@ in `agent-standards`, vendored here with a hash check, wired for **both** harnes
    a malformed `skill-routes.json` **disables routing silently** (`load_routes` swallows the parse error and
    the hook exits 0 — this bit during the spike and looked exactly like a clean pass); and router output is
    **mojibaked on Windows**. Fix these in `agent-standards` before any repo stops vendoring.
+
+   **Two corrections recorded in the plan's Phase 7, both from Tommy 2026-08-18:**
+   - **`dotagents` stays its own repo.** It is personal machine config mirroring `%USERPROFILE%`, and its
+     general standards apply to every codebase he owns — folding it into a Concertable org repo would scope
+     cross-project standards to one product. The earlier "collapses into `standards/dotnet/`" line was wrong.
+     Repo count is not the metric; audience is.
+   - **A plugin copies its payload; Claude does not *reference* `.agents/skills/`.** `plugin.json`'s `skills`
+     field rejects `../`. `.agents/skills/` stays the authoring source of truth, and the plugin payload is a
+     generated full copy. This misunderstanding is the root of both the stub mechanism and the triple-copy
+     generator, so Phase 7 states it explicitly.
+
+   **Phase 7's real deliverable is a durable README, not just the plugins** — this plan gets deleted when it
+   completes, so the repo map and delivery mechanics cannot live only here. It ships in `dotagents`, linked
+   marketplace, one plugin, no stubs and no generators.
 
    Until then Concertable stays the fallback host and the 28 stubs stay — they are generated, and their one
    real bug (the BOM comparison) is fixed.

@@ -746,97 +746,94 @@ and does not recurse, and because two source repos must land in one namespace. I
 already used for the work-repo skills. One stated trade-off: junctions make the installed set depend on
 the repo staying put, and a deploy script must therefore also report orphaned and missing links.
 
-### Phase 7 — a service repo carries no skills at all
+### Phase 7 — one authored copy, delivered as plugins, to both harnesses
 
-**Decided 2026-08-18.** The polyrepo cut removes the premise the earlier phases were written against:
-there is no "the repo" to hold a corpus. Phases 3b/5/5b thin and re-home the *docs*; this phase removes
-the *skills* from service repos entirely. Target: a new microservice repo is an `AGENTS.md` roster plus
-two wiring files, and nothing else agent-related.
+**Decided 2026-08-18; every mechanic below was verified live that day on both tools, then reverted — no
+marketplace, plugin or config entry was left on the machine.** The polyrepo cut removes the premise the
+earlier phases assumed: there is no "the repo" to hold a corpus. Target: a project carries **no skills** —
+no `.claude/skills/` stubs, no vendored hook, no sync script.
 
-| Leaves every repo | Stays in every repo |
-|---|---|
-| `.claude/skills/**` — the 28 generated stubs | `AGENTS.md` + `CLAUDE.md` — that service's roster only |
-| `.agents/sync-claude-skill-stubs.ps1` | `.claude/settings.json` — marketplace declaration + hook wiring |
-| `.agents/skills/**` | `.codex/hooks.json` — the same, per-harness and irreducible |
-| `.agents/hooks/skill_router.py` (vendored copy) | `.agents/skill-routes.json` — this repo's path→standard data |
-| `.agents/hooks/vendored.json`, `vendor-hooks.ps1` | |
+#### Verified mechanics — do not re-derive these
 
-**Plugin decomposition** — four, split by who must load them rather than by portability:
+This section exists because each of these was got wrong at least once, and one of them was got wrong *by
+this plan* (Phase 6b).
 
-| Plugin | Holds |
-|---|---|
-| `agent-process` (exists) | branching, committing, merging, plans, docs-and-debt, failing-tests, remote-validation |
-| `dotnet-standards` | the ~20 .NET skills |
-| `react-standards` | the ~9 TS/React skills |
-| `concertable-delivery` | merge, merge-docs, pr-preflight, package-cutover, create-gh-pr, the review family, the roadmap family, techdebt, the `e2e-*` runbooks, integration-debug |
+1. **Both harnesses load the same plugin.** Codex: `codex plugin add agent-process@agent-standards`, after
+   which its skills appear namespaced — `agent-process:committing`, `agent-process:merging`, all 7,
+   alongside Codex's own `browser:` and `pdf:` plugins. Claude: `claude plugin install … --scope user`,
+   after which `claude plugin details` reports `Skills (7)` and `Hooks (1) PreToolUse`.
+   **Plugins are not a Claude-only mechanism.** Phase 6b's framing that anything Claude-only is the wrong
+   primary does not apply to them.
+2. **Codex reads both marketplace formats** — `.agents/plugins/marketplace.json` natively, and
+   `.claude-plugin/marketplace.json` (it is how it sees `claude-plugins-official`). **One marketplace repo
+   serves both tools.**
+3. **Neither harness auto-installs from a repo's settings.** Both need a one-time `marketplace add` +
+   `plugin add`/`install`, **per machine, not per repo** — so the cost does not grow with the service
+   count. `--scope user` makes one install cover every repo, present and future.
+4. **A plugin's `hooks/hooks.json` fires with ZERO repo wiring.** Proven end to end: a directory holding
+   only `.agents/skill-routes.json` — no `.claude/settings.json`, no `.codex/`, no vendored hook — blocked
+   a write into a routed path, named the owning skill, and the agent loaded it and retried.
+   **This retires vendoring.** 6b's "repo-level wiring stays irreducibly per-harness" is true of where a
+   hook is *authored*; it does not mean a repo must wire a hook the plugin already carries.
+5. **A plugin COPIES its payload into a cache. It cannot reference `.agents/skills/`.** `plugin.json`'s
+   `skills` field rejects `../` paths, because files outside the plugin root are not copied on install.
+   So `.agents/skills/` is the **authoring source of truth** and the plugin payload is a **generated full
+   copy**. *"Claude just references the canonical skill"* is **false**, and believing it is the root of
+   both the stub mechanism and the triple-copy generator. One authored place, yes — but a generate step,
+   never a reference.
 
-Machine tooling (`sync`, `worktree`, `recents`, `search`, `unmerged`, `prune-worktrees`) stays in
-`agent-utilities` and is never repo-declared — it is personal scope by nature.
+#### Repo map — separate on purpose; do not propose merging them
 
-**Installation is per-machine once, and that is what makes this work.** Verified 2026-08-18 against the
-current docs: a plugin from an external-source marketplace does **not** auto-install from a project's
-`.claude/settings.json` — *"doesn't load until the team member installs it"*. Phase 6b read that as fatal
-and vendored instead. It is not fatal, because the install takes user scope:
+| Repo | What it actually is | Audience |
+|---|---|---|
+| `dotagents` | Tommy's **personal machine config** — mirrors `%USERPROFILE%` (`~/AGENTS.md`, `~/.agents/`, `~/.claude/`), synced across machines — plus the general engineering standards | **Every codebase Tommy owns**, personal or work |
+| `agent-standards` (→ `standards`) | Concertable org process standards + the `skill_router` hook | Concertable service repos |
+| `agent-utilities` | session/machine tooling | Personal |
+| `agent-starter-kit` | archive — strict subset of `dotagents` | — |
 
-```bash
-claude plugin marketplace add Concertable/agent-standards
-claude plugin install agent-process@agent-standards --scope user
-```
+An earlier revision of this plan proposed folding `dotagents` into `standards/dotnet/` + `standards/react/`.
+**That was wrong**: `dotagents` is personal, cross-project machine config, and scoping it to one product
+would break every other codebase that depends on it. Repo count is not the metric — audience is. Plugins
+make count matter less anyway, since a project installs only the plugins it wants.
 
-User scope is machine-wide — `~/.claude/plugins/installed_plugins.json` already carries `clangd-lsp` and
-`rust-analyzer-lsp` as `"scope": "user"` — so the cost is one command per **machine**, not one per repo.
-It does not grow with the service count, which is the only dimension the polyrepo cut changes. Phase 6b
-weighed the ritual against one repo; against fifteen service repos the arithmetic inverts.
+`.claude-plugin/marketplace.json`, one `plugins/service-standards/` with 4 skills, a README. No `.agents/`,
+no stubs, no generators, no hooks. Everything beyond that in `agent-standards` exists to serve two
+harnesses **and** a write-time hook, not because plugins demand it.
 
-**This retires vendoring rather than preserving it.** Phase 6b's objection — *"enforcement that is absent
-on a fresh clone is not enforcement"* — is real but mis-scoped: with a user-scope install the standards
-are absent on a fresh **machine**, not a fresh clone. Defend that case with an assertion instead of a
-copy. The repo-wired hook stays (neither harness reads hook wiring out of `.agents/`), and when the
-plugin is missing it **fails loudly** instead of exiting 0. That buys the same property — no silent
-unenforcement — without a code copy in every repo forever, and it is strictly better than today, where a
-vendored hook that drifts is detectable only by hash.
+#### Deliverable: the README that ends the re-derivation
 
-**Both gating unknowns are now answered — spiked live 2026-08-18, both harnesses, then reverted.**
+Phase 7 is not done when the plugins exist — it is done when the architecture stops being rediscovered.
+**A plan is deleted when its work completes, so none of the above may live only here.** Ship a durable doc
+in `dotagents` (the repo that is general to every codebase and the one opened when starting a new project),
+linked from `agent-standards/README.md`, containing exactly:
 
-- **Codex needs its own one-time install; it does not auto-load a repo-declared plugin.** `codex plugin
-  list` run from *inside* `agent-standards` — which carries `.agents/plugins/marketplace.json` at its root
-  — listed only the three globally-configured marketplaces. After `codex plugin marketplace add <path>` the
-  plugin appeared as **`not installed`** and needed `codex plugin add`. Codex did resolve the marketplace
-  through `.agents/plugins/marketplace.json`, confirming 6b's finding about the path. So both harnesses are
-  symmetric: marketplace add + plugin add, once per machine. Codex also reads `claude-plugins-official` via
-  `.claude-plugin/marketplace.json`, so **one marketplace repo serves both tools**.
-- **A plugin-shipped `hooks/hooks.json` fires with ZERO repo wiring.** Proven end-to-end, not inferred: a
-  scratch git repo containing *only* `.agents/skill-routes.json` — no `.claude/settings.json`, no `.codex/`,
-  no vendored hook — blocked a write into a routed path, named the owning skill, and the agent loaded it
-  and retried. `claude plugin details` independently lists `Hooks (1) PreToolUse (harness-only — no model
-  context cost)`. **This retires the vendoring rationale outright.** 6b's "repo-level wiring stays
-  irreducibly per-harness" is true of where a hook is *authored*, and does not imply a repo must wire a
-  hook the plugin already carries.
+- the repo map above, with *why* each is separate and an explicit "do not merge these";
+- the authoring → generate → install chain, stating plainly that a plugin copies and does not reference;
+- the per-machine one-time setup for **both** harnesses, with the real commands;
+- what a **new project** needs: nothing but its own `AGENTS.md` roster and, if it wants routing,
+  `.agents/skill-routes.json`.
 
-**So the per-repo residue is smaller than this phase first assumed:** a service repo needs only
-`.agents/skill-routes.json` plus its `AGENTS.md` roster. The two wiring files are needed only for hooks a
-plugin does not ship (Concertable's `merge-review-gate.py`, the plan-handoff Stop hook), not for the router.
+#### Three defects found while spiking, all blocking
 
-Measured cost: the 7-skill `agent-process` plugin is **~1,750 tokens always-on**, per `claude plugin details`.
-
-**Three defects found while spiking, all fixed before Phase 7 can proceed:**
-
-1. **The plugin payload's `hooks.json` is missing `apply_patch` — ENF1 again, one layer up.**
+1. **The plugin payload's `hooks.json` omits `apply_patch` — ENF1 again, one layer up.**
    `plugins/agent-process/hooks/hooks.json` matches `Write|Edit|MultiEdit|NotebookEdit`; the repo's
    `.codex/hooks.json` matches `…|apply_patch`. The plugin is therefore **inert for every Codex write**.
    It escaped the ENF1 fix because it is hand-authored in the plugin subtree rather than generated from
-   `.agents/`, so the two wiring files drifted. Generate it from one source, and extend the drift test to
-   compare matchers rather than only asserting the hook filename appears in both.
+   `.agents/`. The drift test cannot see it either — it asserts the hook *filename* appears in both wiring
+   files, which stayed true throughout. Generate it from one source and compare matchers, not filenames.
 2. **A malformed `skill-routes.json` disables routing silently.** `load_routes` catches `ValueError` and
-   returns `None`, so the hook exits 0. A typo'd fixture in this spike produced zero enforcement and zero
-   warning, and looked identical to a correctly-passing write — the same swallowed-error shape the merge
-   confirm loop warns about. A routes file that exists but does not parse must fail loudly.
+   returns `None`, so the hook exits 0. A typo'd fixture during the spike produced zero enforcement and
+   zero warning, indistinguishable from a clean pass, and nearly caused this plan to record "plugin hooks
+   do not fire". A routes file that exists but does not parse must fail loudly.
 3. **Router output is mojibaked on Windows** — skill descriptions render `.NET �` where an em dash belongs,
-   in the text the agent is meant to act on. Set the stdout/stderr encoding explicitly.
+   in the very text the agent is meant to act on.
 
-**Sequencing.** After Phase 5 (the domain tree), and after the cut has produced at least one real service
-repo — that repo is the proof. Do not delete `.agents/skills/` from Concertable before the Codex question
-is answered; until then Concertable is the fallback host for anything a plugin cannot yet deliver.
+#### Sequencing
+
+Fix the three defects in `agent-standards` first — they are independent of the cut and of this PR. Then
+build the plugin payloads; then the README; then a repo stops vendoring. Deleting `.agents/skills/` as a
+*delivery* path is safe once the plugins are installed, but `.agents/skills/` remains the **authoring**
+home, so it is not deleted — only its stub and vendor derivatives are.
 
 ### Deferred to follow-up PRs
 Auto-load thinning (`api/AGENTS.md:3`'s three imports; the 86 merge lines and 32 Docker lines that
