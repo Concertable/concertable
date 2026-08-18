@@ -6,7 +6,8 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules-phase2`
 - Branch: `Refactor/launch_deal-lifecycle-modules-phase2`
 - PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633). Published
-  current-main and Application counterparty-notification work head `af500baa92a0d182ff177fa36a4ba061669f3e00`;
+  current-main, Concert creation email, and composition-root work head
+  `c91ab3886018f8eb806d276a5b32ef0f4b5c0da2`;
   local HEAD, the remote branch, and PR `headRefOid` matched exactly after the work-head push.
 - Dependency/package gates: none block the remaining B2B-internal implementation. Phase 1 delivery is terminal; final `api/**` delivery will own its routine package publication and platform-sync gate only after the complete refactor merges.
 - Last reconciled: 2026-08-18 after clearing Concert's stale composition-root registrations and
@@ -53,8 +54,8 @@ the current `origin/main` without conflicts as `10140df12`; the merge and verifi
 published together through work head `ebf259e22` and the branch is 0 commits behind.
 
 The clean branch merged the two newly fetched `origin/main` package-pin commits without conflicts as
-local commit `b03309fc5` before this slice. It is 0 commits behind; the merge is not yet published and
-belongs in the next coherent work-head push with the email-composition recovery.
+`b03309fc5`. It is 0 commits behind, and the merge is published with the Concert creation and
+composition-root recovery in `c91ab3886`.
 
 The committed Phase 2 checkpoint removes the Opportunity-to-Application, Application-to-Booking, and
 Booking-to-Concert EF navigations and establishes the initial Contracts seams. Published checkpoint
@@ -127,8 +128,8 @@ sender and service tests no longer construct deleted shared-lifecycle or event s
 seeder/fingerprint, dashboard/projection, email-ownership, or stale global-using diagnostic remains in
 Concert.
 
-The current candidate includes the Concert creation email-composition and composition-root recovery
-with the current-main merge. Concert no longer registers Application's validator or scans
+Published checkpoint `c91ab3886` includes the Concert creation email-composition and composition-root
+recovery with the current-main merge. Concert no longer registers Application's validator or scans
 Opportunity's validators, while `BookingConfirmedDomainEventHandler` is registered through its
 pre-commit handler contract. Concert.Infrastructure now exposes only nine `CompleteExecutor`
 Result/lambda errors and one cross-module `InvoiceRepository` query. The focused Concert unit tests
@@ -209,6 +210,10 @@ generalize selector/factory infrastructure in this slice.
   registration, and focused tests from Concert into Application, and removes the obsolete `Cancelled`
   Application notification copy. Local HEAD, the remote branch, and draft PR #633 `headRefOid` all
   equalled `af500baa92a0d182ff177fa36a4ba061669f3e00` after the work-head push.
+- Published current-main, Concert creation email, and composition-root recovery range
+  `a86c3e0ea..c91ab3886` from starting remote head
+  `a86c3e0ea41bb2a0c258591182cf46c70771d96b`; local HEAD, the remote branch, and draft PR #633
+  `headRefOid` all equalled `c91ab3886018f8eb806d276a5b32ef0f4b5c0da2` after the work-head push.
 - Merged the 93-commit `origin/main` drift without conflicts as
   `ff2e4dc553aad7bd9093e958235fa809efe5c881`, then verified local HEAD, the remote branch, and draft PR
   #633 `headRefOid` matched and the branch was 0 commits behind.
