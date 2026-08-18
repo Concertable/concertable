@@ -801,7 +801,7 @@ and does not recurse, and because two source repos must land in one namespace. I
 already used for the work-repo skills. One stated trade-off: junctions make the installed set depend on
 the repo staying put, and a deploy script must therefore also report orphaned and missing links.
 
-### Phase 7 — one authored copy, delivered as plugins, to both harnesses
+### Phase 7 — one authored copy, delivered as plugins, to both harnesses — BUILT (install unproven; `concertable-delivery` is 5b)
 
 **Decided 2026-08-18; every mechanic below was verified live that day on both tools, then reverted — no
 marketplace, plugin or config entry was left on the machine.** The polyrepo cut removes the premise the
@@ -882,6 +882,58 @@ linked from `agent-standards/README.md`, containing exactly:
    do not fire". A routes file that exists but does not parse must fail loudly.
 3. **Router output is mojibaked on Windows** — skill descriptions render `.NET �` where an em dash belongs,
    in the very text the agent is meant to act on.
+
+#### A fourth defect, found while building — the hook denied its own delivery mode
+
+`skill_description` searched only `~/.agents/skills` and `~/.claude/skills`, the junction roots. A plugin
+copies its payload into `<harness>/plugins/cache/<marketplace>/<plugin>/<version>/skills/` instead — so in
+the delivery mode this phase makes *primary*, the router would block a write, name the owning skill, and
+report that correctly-installed standard as `NOT INSTALLED — a deployment fault`. Enforcement's most
+visible message would have been actively wrong the day plugins became the delivery path.
+
+Fixed to search nearest-first: `CLAUDE_PLUGIN_ROOT` and the hook's own plugin subtree (exact, no globbing,
+and the one that answers when the hook is itself running from an install), then the junction roots, then
+every other installed plugin under both `~/.claude` and `~/.codex`, which share the same cache shape. An
+uninstall leaves the cache directory carrying `.orphaned_at` — one was found on this machine — so those are
+skipped rather than read as available. All three resolution tests were confirmed to fail without the fix.
+
+#### What landed, 2026-08-18
+
+`Concertable/agent-standards#2` and `tomjseery/dotagents#1` (the same PRs as Phase 5; the plugin work
+builds on trees that exist only on those branches).
+
+- **Payloads are assigned by domain**, via an authored `.agents/plugins/payloads.json` cross-checked both
+  ways against `marketplace.json`. That is the "explicit skill-to-plugin map" the generator previously
+  refused to proceed without. A plugin receives only its own domains' docs and their routers, so a
+  TypeScript project installing `react-standards` does not also receive the .NET corpus. A domain no
+  plugin ships is now an error — otherwise a clone silently cannot install it.
+- **Three plugins in `dotagents`**: `dotnet-standards` (20 docs), `react-standards` (9),
+  `communication-standards` (2); `agent-process` (7) keeps the hook. All 31 plugin routers were verified to
+  resolve to a real doc inside their own plugin.
+- **`dotagents` gained CI.** It had none, so its generated files were only as current as the last local
+  run — and the check also proves the generator works on Linux/PowerShell 7 while staying 5.1-compatible.
+- **Pruning is by generated-set membership**, not by skill name: a doc moving between plugins otherwise
+  leaves a stale copy and a consumer installs two conflicting copies of one rule. Negative-tested by
+  moving a domain and moving it back.
+- **`dotagents/ARCHITECTURE.md` is the durable deliverable** — repo map with the explicit do-not-merge, the
+  authoring → generate → install chain stating that a plugin copies and does not reference, per-machine
+  setup for both harnesses, and what a new project needs. Linked from both READMEs.
+
+**The utilities question, settled:** the 10 machine-tooling skills ship in no plugin. They are procedures
+for working the machine, not standards a project consults, and `dotagents` remains a clone-and-junction
+repo anyway for `~/AGENTS.md` and `~/.claude/`. A fifth `personal-utilities` plugin is possible — the map
+makes it one entry — but nothing needs it.
+
+**Not yet installable in practice, so the #637 gate is NOT satisfied:** the plugins live on two unmerged
+branches, so a `marketplace add` against either `main` still finds none. Remaining: merge both PRs, then
+verify one real install per harness. That verification mutates machine config, so it is Tommy's to run or
+to authorize.
+
+**The generator duplication was assessed and consciously kept.** The two `sync-generated.ps1` files are
+structurally parallel but not identical (one has a hook and one plugin, the other has utilities and three),
+and `agent-standards` CI must self-verify without access to a private repo — which rules out a single
+shared copy short of a published module or submodule. Two ~280-line scripts with genuinely different
+delivery targets is the cheaper correct answer; revisit only if a third repo appears.
 
 #### Sequencing
 

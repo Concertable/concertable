@@ -11,7 +11,7 @@
   conflicts resolved, below), from 2 behind after platform-sync #645 merged — a clean merge carrying only
   the `<ConcertablePlatformVersion>` bump `0.1.0-alpha.0.1055` → `0.1.0-alpha.0.1061` across the five
   service `Directory.Packages.props` — and from 10 behind at `2b04d57e2`.
-- Shared repos **today** (target shape in `## Topology` below): `Concertable/agent-standards` — `standards/process/` (7 docs) + the `skill_router` hook, on `Refactor/StandardsDomainTree`, **PR #2 open, CI green, unmerged**; and `tomjseery/dotagents` — `standards/{dotnet,react,communication}/` (31 docs) + 10 self-contained utilities, on `Refactor/StandardsDomainTree`, **PR #1 open, unmerged**. `main` in both still carries the pre-inversion flat layout, which is what the 48 live junctions point at. Plus `agent-utilities` (session tooling, no skills) and `agent-starter-kit` (to archive), cloned at `C:\Users\TommySeery\source\repos\{agent-standards,dotagents}`
+- Shared repos **today** (target shape in `## Topology` below): `Concertable/agent-standards` — `standards/process/` (7 docs) + the `skill_router` hook, shipping the `agent-process` plugin, on `Refactor/StandardsDomainTree`, **PR #2 open, CI green, unmerged**; and `tomjseery/dotagents` — `standards/{dotnet,react,communication}/` (31 docs) + 10 self-contained utilities, shipping `dotnet-standards`/`react-standards`/`communication-standards`, on `Refactor/StandardsDomainTree`, **PR #1 open, unmerged**. `main` in both still carries the pre-inversion flat layout with no plugins at all, which is what the 48 live junctions point at and why no `marketplace add` can find anything yet. Plus `agent-utilities` (session tooling, no skills) and `agent-starter-kit` (to archive), cloned at `C:\Users\TommySeery\source\repos\{agent-standards,dotagents}`. Delivery architecture: `dotagents/ARCHITECTURE.md`
 - Dependency/package gates: no consumer migration to do, but this PR **will** trigger publish + platform sync — `publish-packages.yml` triggers on the coarse `paths: api/**`, which this branch's `api/**` markdown matches. MinVer republishes and a `chore/platform-sync-*` PR opens; non-breaking (no published type changed), so it should auto-merge green. Follow it to green anyway — whoever merges owns the sync.
 - Last reconciled: 2026-08-18 — fetched at the doc-truth commit `4bbb2ddb0`: **0 behind `origin/main`**, 49 ahead, local head = `origin/Docs/GuidanceDocsRestructure` = PR #637 head, `mergeStateStatus` `CLEAN`, auto-merge off, label `skip-e2e`. `agent-standards` unchanged at `88cf091` (pushed) — re-check currency at enqueue time
 
@@ -47,14 +47,55 @@ a generated `INDEX.md` per domain and a build gate that refuses a router pointin
 with no router, or two routers claiming one doc. **Neither PR is merged and nothing is deployed** — the
 deployment junctions would point at trees that exist only on those branches.
 
-**What remains, and why this is still not near done:** the corpus is organized but not yet *installable*
-without junctions, which is Phase 7 and is now the only remaining gate on #637. Beyond it: `api/agents/`
-is still a destination the polyrepo cut removes (5b), the discovery pass has not run (5c, with
-`dotnet/STACK.md` its first known gap), Phase 3c (markdown outside the conventions folders), Phase 4 (rows
-still with >1 home, chiefly seeding across `api/AGENTS.md` and `SEEDING_CONVENTIONS.md`), and the deferred
-auto-load thinning of root `AGENTS.md`.
+**Phase 7 is BUILT on the same two PRs**: four plugins now carry the corpus (`agent-process` 7 docs +
+the hook, `dotnet-standards` 20, `react-standards` 9, `communication-standards` 2), assigned by domain
+from an authored map, and `dotagents/ARCHITECTURE.md` is the durable home for the delivery
+architecture. Building it exposed a fourth blocking defect: the hook resolved skills only in the
+junction roots, so it would have reported every plugin-installed skill as `NOT INSTALLED - a deployment
+fault` in the very mode Phase 7 makes primary.
+
+**The #637 gate is still NOT satisfied.** Installable was built, not proven: the plugins live on two
+unmerged branches, so a `marketplace add` against either `main` finds none. What closes it is merging
+both PRs and verifying one real install per harness - and that verification mutates machine config, so
+it is Tommy's to run or authorize.
+
+**What remains after that:** `api/agents/` is still a destination the polyrepo cut removes (5b), the
+discovery pass has not run (5c, with `dotnet/STACK.md` its first known gap), Phase 3c (markdown outside
+the conventions folders), Phase 4 (rows still with >1 home, chiefly seeding across `api/AGENTS.md` and
+`SEEDING_CONVENTIONS.md`), and the deferred auto-load thinning of root `AGENTS.md`.
 
 ## Done
+
+**Phase 7 — the corpus ships as plugins, and the architecture stops being rediscovered** (same two PRs)
+
+- **A fourth blocking defect, found by building it.** `skill_description` searched only `~/.agents/skills`
+  and `~/.claude/skills`. A plugin copies its payload into
+  `<harness>/plugins/cache/<marketplace>/<plugin>/<version>/skills/`, so under plugin delivery the router
+  would block a write, name the owning skill, and call that correctly-installed standard "a deployment
+  fault". Now searches `CLAUDE_PLUGIN_ROOT` and its own plugin subtree first, then the junction roots, then
+  every other installed plugin under both `~/.claude` and `~/.codex`. An uninstall leaves `.orphaned_at`
+  behind - one was found on this machine - so orphaned caches are skipped rather than read as available.
+  All three resolution tests confirmed to fail without the fix; hook tests 32 → 36.
+- **Payloads assigned by domain** from an authored `.agents/plugins/payloads.json`, cross-checked both ways
+  against `marketplace.json` - the "explicit skill-to-plugin map" the generator previously refused to
+  proceed without. A plugin gets only its own domains, so a TypeScript project installing `react-standards`
+  does not also receive the .NET corpus. A domain no plugin ships is an error. All guards negative-tested,
+  and all 31 plugin routers verified to resolve to a real doc inside their own plugin.
+- **Pruning is by generated-set membership**, not skill name: a doc moving between plugins otherwise leaves
+  a stale copy, and a consumer installs two conflicting copies of one rule. Proven by moving a domain and
+  moving it back.
+- **`dotagents` gained CI** - it had none, so its generated files were only as current as the last local
+  run. The check also proves the generator runs on Linux/PowerShell 7 while staying 5.1-compatible.
+- **`dotagents/ARCHITECTURE.md`** carries the repo map with its explicit do-not-merge, the
+  authoring → generate → install chain (a plugin copies, it does not reference), per-machine setup for both
+  harnesses, and what a new project needs. Linked from both READMEs. This plan is deleted when it
+  completes, so none of it may live only here.
+- **Settled: the 10 utilities ship in no plugin.** They are procedures for working the machine, not
+  standards a project consults, and `dotagents` stays a clone-and-junction repo for `~/AGENTS.md` and
+  `~/.claude/` regardless. A fifth `personal-utilities` plugin is one map entry away if ever wanted.
+- **Generator duplication assessed and consciously kept.** The two scripts are parallel but not identical,
+  and `agent-standards` CI must self-verify without reaching a private repo, which rules out one shared copy
+  short of a published module. Revisit only if a third repo appears.
 
 **Phase 5 — the doc is the payload, the skill is the router** (`Concertable/agent-standards#2`, CI green;
 `tomjseery/dotagents#1`. Neither merged, nothing deployed.)
@@ -338,40 +379,43 @@ inventory has been checked against code.
 
 ## Next Steps
 
-**Next work is Phase 7: ship the corpus as plugins, so it travels with a clone.** Phase 5 is done - the
-corpus is organized by domain in both shared repos (PRs open, unmerged) - which leaves *installability*
-as the last gate on delivering this restructure. Phase 3b already removed 2,662 lines from this repo, and
-until a clean machine can install the replacement, the only thing holding it is 48 junctions on one
-machine. Everything else below is sequenced behind Phase 7.
+**Next work is to LAND and PROVE the delivery, not to write more of it.** Phases 5 and 7 are both built on
+`Concertable/agent-standards#2` and `tomjseery/dotagents#1`: the corpus is organized by domain and ships as
+four plugins with a durable architecture doc. What is missing is not code - it is that a plugin
+`marketplace add` against either repo's `main` still finds nothing, because both PRs are open. Until an
+install is proven, the 2,662 lines Phase 3b removed from this repo are still held only by 48 junctions on
+one machine, and #637 must not merge.
 
-**First, though: land the two Phase 5 PRs and deploy.** `Concertable/agent-standards#2` (CI green) and
-`tomjseery/dotagents#1`, then `pwsh dotagents/.agents/deploy-skills.ps1`. Deployment was deliberately not
-run - the junctions would point at `standards/` trees that exist only on those branches, so a
-`git checkout main` would dangle every domain. Until it runs, Tommy's live corpus is the pre-inversion
-one, and the two repos' `main` branches still hold the flat layout.
+Three steps, in order:
+
+1. **Merge both PRs.** `agent-standards#2` (CI green) and `dotagents#1` (CI added this session).
+2. **Prove one install per harness** - `/plugin marketplace add` + `/plugin install` for Claude and
+   `codex plugin add` for Codex, per `dotagents/ARCHITECTURE.md`. Confirm a routed skill loads and its doc
+   opens from inside the plugin. This mutates machine config, so it is Tommy's to run or authorize.
+3. **Then run `pwsh dotagents/.agents/deploy-skills.ps1`** for the personal half (`~/AGENTS.md`,
+   `~/.claude/`, the 10 utilities, and the standards-domain junctions). It was deliberately not run this
+   session: the junctions would point at `standards/` trees that exist only on those branches, so a
+   `git checkout main` would dangle every domain.
+
+Only once step 2 passes is the #637 standing constraint below actually satisfied. Everything after that is
+sequenced behind it.
 
 **Standing constraint - #637 does not merge, and no session may propose merging it.** Verified
 2026-08-18: `~/.claude/skills` is 48/48 junctions (41 -> `dotagents`, 7 -> `agent-standards`) and
 `installed_plugins.json` carries no standards plugin. The branch guts `RESULT_PATTERN.md`, both
 `CODE_CONVENTIONS.md`, both `CODE_PATTERNS.md` and deletes `UNIT_CONVENTIONS.md`, `E2E_CONVENTIONS.md`,
 `MICROSERVICE_COMMUNICATION.md`, `DEBUGGING_CONVENTIONS.md`, `CONVENTIONS.md`. Move a clone or open the
-repo anywhere else and those rules are gone. **Phase 5 has now made it organized; it merges only when
-Phase 7 also makes it installable on a clean machine without junctions.** Earlier revisions of this ledger said
+repo anywhere else and those rules are gone. **Phases 5 and 7 have made it organized and built its
+installer; it merges only once an install is actually PROVEN on a clean machine without junctions** - built
+is not proven, and both plugin repos still have the payload sitting on an unmerged branch. Earlier revisions of this ledger said
 "enqueue-ready, review clean, paused on Tommy's read"; both were true and neither was the point - a
 clean review speaks to the diff's own quality, never to whether what it deletes has a home. Phase 6
 riding this PR fixed the *enforcement* ordering, never the *delivery* ordering. Do not reinstate a merge
 instruction until that condition actually holds.
 
-1. **Phase 7 - plugins, so the corpus travels with a clone.** Mechanics are fully verified (plan's
-   "Verified mechanics - do not re-derive these"): both harnesses load the same plugin, Codex shows
-   skills namespaced (`agent-process:committing`), neither auto-installs from repo settings, and a
-   plugin's `hooks.json` fires with **zero** repo wiring - which retires vendoring. **The three blocking
-   defects are FIXED and merged** (`agent-standards` `78e058693`): the payload matcher now covers all
-   eight tool names (it was inert for every Codex write), a malformed `skill-routes.json` now blocks
-   instead of silently disabling routing, and router output is UTF-8. Remaining: build the four plugin
-   payloads (`agent-process`, `dotnet-standards`, `react-standards`, `concertable-delivery`), then the
-   README - Phase 7's real deliverable, since this plan is deleted when it completes and the repo map
-   and delivery mechanics cannot live only here.
+1. **The one piece of Phase 7 still outstanding is `concertable-delivery`**, and it is blocked on 5b:
+   its `standards/concertable/` domain does not exist yet. Adding it is one `payloads.json` entry plus the
+   domain, because the mechanism is built and guarded. Nothing else in Phase 7 remains to design.
 
    Two things Phase 5 hands it: the plugin payload generation for `standards/` already exists in
    `agent-standards/.agents/sync-generated.ps1` (tree copied into the plugin, router paths rewritten
@@ -414,7 +458,9 @@ instruction until that condition actually holds.
    `api/agents/CODE_CONVENTIONS.md`; natural home is `microservice-boundaries` or `proto`, neither of
    which mentions `MessageType`).
 
-6. **Tommy's, not agent work.** Approve the Codex `PreToolUse` hook once in a Codex session in this
+6. **Tommy's, not agent work.** **Prove one plugin install per harness** once both PRs land (step 2 of the
+   opening sequence) — it mutates machine config, and it is the evidence the #637 constraint waits on.
+   Approve the Codex `PreToolUse` hook once in a Codex session in this
    worktree (inert until approved, and safe now that ENF1 made it actually fire). Archive
    `agent-starter-kit`. The `Concertable/agent-standards` -> `standards` rename: two of its five hard
    references die with vendoring, and there are **zero installed consumers today**, so it is cheapest
