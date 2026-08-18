@@ -387,10 +387,14 @@ install is proven, the 2,662 lines Phase 3b removed from this repo are still hel
 one machine, and #637 must not merge.
 
 Three steps, in order — **prove the install BEFORE merging, not after.** An earlier revision of this
-ledger had these reversed, which would have merged an unproven payload into two `main` branches. Neither
-harness forces that: `claude plugin marketplace add` takes "a URL, path, or GitHub repo" and
-`codex plugin marketplace add` takes "a local path, `owner/repo[@ref]`, HTTPS Git URL" plus a `--ref`
-flag. So the branch, or the working tree itself, is directly installable.
+ledger had these reversed, which would have merged an unproven payload into two `main` branches.
+
+Neither harness forces that, and the capability relied on is the one they **share: a local path.**
+`claude plugin marketplace add` takes "a URL, path, or GitHub repo"; `codex plugin marketplace add` takes
+"a local path, `owner/repo[@ref]`, HTTPS Git URL or SSH Git URL". Since each repo's working tree is
+already the branch checkout, pointing a marketplace at that directory verifies the exact payload with no
+ref fetching at all. (Codex additionally accepts a remote ref via `@ref`/`--ref`; Claude's help does not
+advertise one. Immaterial — nothing here depends on it.)
 
 1. **Prove one install per harness, off the branch.** Add the local worktree (or `owner/repo@ref`) as a
    marketplace, install a standards plugin, and confirm a routed skill loads *and* its doc opens from
