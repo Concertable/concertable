@@ -935,6 +935,27 @@ and `agent-standards` CI must self-verify without access to a private repo — w
 shared copy short of a published module or submodule. Two ~280-line scripts with genuinely different
 delivery targets is the cheaper correct answer; revisit only if a third repo appears.
 
+#### Gap: Concertable's own hooks were never assigned a home
+
+Raised 2026-08-18 and **not previously in this plan**. `skill_router.py` moved to `agent-standards` and
+ships in `agent-process`. Four hooks did not, and the audience test says three of them should:
+
+| Hook | Enforces | Standard now lives in | Verdict |
+|---|---|---|---|
+| `plan_handoff_stop.py` + launcher (594) | the plan-handoff pointer | `agent-standards` → `standards/process/PLANS.md` | move — the rule already left; the enforcement is stranded |
+| `plan_graph.py` (325) | plan graph metadata, blockers, reciprocal handoffs | same | move |
+| `docs_reachability.py` (135) | every doc reachable from something that loads it | `agent-standards` → `standards/process/DOCS_AND_DEBT.md` | mostly move; it also carries Concertable-specific checks that stay |
+| `merge-review-gate.py` (281) | the merge gate | `agent-standards` → `standards/process/MERGING.md` | move; also currently Claude-only (`.claude/settings.json`, no `.codex` wiring), which is the asymmetry ENF1 already burned us on once |
+
+**Why it matters beyond tidiness:** enforcement living apart from the standard it enforces is the same
+defect as a rule with two homes — the standard moved to `agent-standards` in Phase 5 while its hook stayed
+behind, so the two can now drift with nothing to catch it. It is also why these hooks are still *vendored*
+per-repo, which Phase 7 exists to retire.
+
+**One thing to verify, not assume:** mechanic #4 proved a plugin's `hooks.json` fires with zero repo wiring
+for **PreToolUse**. Nothing here has verified it for **Stop**, which is the event `plan_handoff_stop` uses.
+Check that before moving it, or the handoff gate silently stops firing.
+
 #### Sequencing
 
 Fix the three defects in `agent-standards` first — they are independent of the cut and of this PR. Then

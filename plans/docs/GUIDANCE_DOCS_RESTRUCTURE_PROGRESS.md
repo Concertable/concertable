@@ -434,7 +434,16 @@ instruction until that condition actually holds.
    duplication this plan otherwise forbids. Sharing them needs a package or submodule, so it is Phase 7's
    to solve, not something to fix by copying a third time.
 
-2. **Phase 5b / 5c / 3c / 4**, in that order now the tree exists. 5b: `api/agents/` is deleted, not
+2. **Move Concertable's four remaining hooks to `agent-standards`** — new scope, raised 2026-08-18, see
+   the plan's "Gap: Concertable's own hooks were never assigned a home". `plan_handoff_stop.py` + launcher,
+   `plan_graph.py`, `docs_reachability.py` and `merge-review-gate.py` all enforce standards that moved to
+   `standards/process/` in Phase 5, so enforcement now sits apart from the rule it enforces and the two can
+   drift with nothing watching. They are also the last vendored per-repo hooks, which Phase 7 exists to
+   retire. **Verify a plugin `Stop` hook fires with zero repo wiring first** — mechanic #4 proved it only for
+   `PreToolUse`, and `plan_handoff_stop` is a `Stop` hook, so moving it on the assumption would silently
+   disable the handoff gate.
+
+3. **Phase 5b / 5c / 3c / 4**, in that order now the tree exists. 5b: `api/agents/` is deleted, not
    thinned - the polyrepo cut leaves no `api/` node to host it. 5c: the discovery pass, since relocation
    only moves rules that already exist as prose (B2B's stance taxonomy - `TenantScopedDbContext`,
    `ReadDbContext`, `AdminDbContext` and the filtered-entity list - lives only in code). 3c: the six
@@ -442,7 +451,7 @@ instruction until that condition actually holds.
    scaffold; `notes/Concert-Rust-Analysis.md` is referenced by nothing). 4: collapse the remaining
    duplication rows - chiefly `api/AGENTS.md:28-47` still restating 20 lines of seeding inline.
 
-3. **Cut the E2E doc footprint as one pass** (Tommy: "use this as an opportunity to cut all of this
+4. **Cut the E2E doc footprint as one pass** (Tommy: "use this as an opportunity to cut all of this
    bloat"). None of it is stale, but almost none of it is a *convention*: `E2E_CONSIDERATIONS.md` (37)
    deletes with its four sections redistributed ("do not add timeouts" is already owned verbatim by
    `failing-tests`; the 16-line Stripe-card section names its own unfixed root cause, so it is a
@@ -454,11 +463,11 @@ instruction until that condition actually holds.
    `.agents/skills/e2e-*` runbooks (711) each restate the Docker-health rule twice; `remote-validation`
    owns it - replace with a pointer.
 
-4. **Make the 7 process skills concrete.** They were written generic for a shared repo; `merging` must
+5. **Make the 7 process skills concrete.** They were written generic for a shared repo; `merging` must
    lose the confirm-loop *body* and keep the rule, with `.agents/skills/merge/SKILL.md` owning the
    procedure. Same for `pr-preflight`.
 
-5. **Standards fixes found while cutting** - none blocking, and they now land in the `standards/<domain>/` doc rather than the `SKILL.md`: `persistence` teaches a context-typed base
+6. **Standards fixes found while cutting** - none blocking, and they now land in the `standards/<domain>/` doc rather than the `SKILL.md`: `persistence` teaches a context-typed base
    (`Repository<TEntity, OrderDbContext, Guid>`) but Concertable's shared bases are capability-typed
    with no `TContext`; "one repository per entity" has no skill home; `e2e-scenarios` closes by pointing
    at "the `agent-process` standards", a name no skill has; `csharp-style`'s `extension()` section lacks
@@ -468,7 +477,7 @@ instruction until that condition actually holds.
    `api/agents/CODE_CONVENTIONS.md`; natural home is `microservice-boundaries` or `proto`, neither of
    which mentions `MessageType`).
 
-6. **Tommy's, not agent work.** **Prove one plugin install per harness** once both PRs land (step 2 of the
+7. **Tommy's, not agent work.** **Prove one plugin install per harness** once both PRs land (step 2 of the
    opening sequence) — it mutates machine config, and it is the evidence the #637 constraint waits on.
    Approve the Codex `PreToolUse` hook once in a Codex session in this
    worktree (inert until approved, and safe now that ENF1 made it actually fire). Archive
@@ -478,7 +487,7 @@ instruction until that condition actually holds.
    (`api/Concertable.Shared/TECH_DEBT.md:70`). Whether React Hook Form is adopted (in no `app/`
    workspace today).
 
-7. **Deferred to its own PR:** auto-load thinning of root `AGENTS.md` (the 86 merge lines and 32 Docker
+8. **Deferred to its own PR:** auto-load thinning of root `AGENTS.md` (the 86 merge lines and 32 Docker
    lines `/merge` and `scripts/e2e.ps1` already automate), the analyzer push-down plus
    `EnforceCodeStyleInBuild`, and **a CI job running the Python hook tests** - nothing in
    `.github/workflows/` runs them today, so every hook gate here is only as live as the last person who
