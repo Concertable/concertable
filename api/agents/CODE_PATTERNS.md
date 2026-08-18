@@ -12,8 +12,12 @@ families and workflow steps — are in
 ## One repository per entity — never fold a satellite entity into another entity's repository
 
 A repository's generic base binds it to exactly one entity. Give every entity its own repository even
-when several share a module and DbContext, and even when one is queried far more than another — Concert's
-six sibling entities have six repositories, Conversations' two have two.
+when several share a module and DbContext, and even when one is queried far more than another.
+
+Repository counts therefore run *ahead* of entity counts rather than tracking them, because stance and
+projection shape are independent dimensions: Concert's 9 entities carry 13 repositories and
+Conversations' 3 carry 4, once a separate read stance, an admin stance and a read-model repository each
+earn their own.
 
 The tell that a repository has drifted: its interface mixes queries for two or more unrelated entity
 types, or it hand-writes a `GetXByIdAsync`/`AddX` pair that re-implements what the generic base already
@@ -30,6 +34,11 @@ Refit interface — one per remote contract:
 - **`IGoogleGeocodingApi`** — third-party REST. External, we don't own the shape.
 - **`IUserClaimsApi`** — the internal `/internal/users/{sub}/claims` hop. The standing transition-window
   exception to "our own internal sync is gRPC"; it stays Refit until that service has a gRPC surface.
+- **`ICustomerUserClaimsApi`** (`Concertable.Auth/Services/IUserClaimsApi.cs`) — an empty interface deriving
+  from `IUserClaimsApi`, carrying no members of its own. Refit configures a client *per interface type*, so
+  each source service the claims hop reaches needs its own marker to hang a base address and token handler
+  on; `AddRemoteProfileClaimsProvider<TApi>` is generic over exactly that. Customer is the only source
+  registered today — a second one is a second marker, not a second contract.
 - **`ITokenApi`** (`Concertable.Kernel.Auth`) — the OAuth2 `/connect/token` client-credentials POST behind
   `ClientCredentialsTokenService`. Form-encoded via `[Body(BodySerializationMethod.UrlEncoded)]`, response
   pinned with `[JsonPropertyName]` (`access_token`/`expires_in`), authority set as the base address per
