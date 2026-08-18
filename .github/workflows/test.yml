@@ -595,7 +595,7 @@ jobs:
         run: npm ci
       - name: Test frontend tooling and enforce workspace boundaries
         working-directory: app
-        run: npm run test:package-tools && npm run test:boundaries && npm run lint:boundaries
+        run: npm run test:boundaries && npm run lint:boundaries
 
   carve-fe:
     # FE analogue of the backend carve-* gates: each surface must restore its shared @concertable tiers

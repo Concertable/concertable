@@ -3,59 +3,82 @@
 - Plan: `plans/platform/B2B_PACKAGE_TOPOLOGY_PLAN.md`
 - Roadmap: `plans/platform/POLYREPO_ROADMAP.md`
 - Roadmap item: `platform/b2b-package-topology`
-- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-B2bPackageTopology`
-- Branch: `Refactor/B2bPackageTopology`
-- PR: draft [#643](https://github.com/Concertable/concertable/pull/643)
-- Dependency/package gates: Phase 2 is delivery-gated on a feed-published and verified Phase 1 `@concertable/web-b2b` version; Phase 3 is delivery-gated on the first feed-published versions of both first-class Phase 2 packages.
-- Last reconciled: 2026-08-17 against `origin/main` `c90ece92a879b97619b9691426a2d65176b0841d` and the settled two-package topology.
+- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-B2bPackageTopologyPhase2`
+- Branch: `Refactor/B2bPackageTopologyPhase2`
+- PR: draft [#653](https://github.com/Concertable/concertable/pull/653)
+- Dependency/package gates: Phase 1 is satisfied by feed-verified `@concertable/web-b2b@0.1.0-alpha.0.4284`; Phase 3 is delivery-gated on the first feed-published versions of both first-class Phase 2 packages.
+- Last reconciled: 2026-08-18 against `origin/main` `de4f377e817127bfd200bf9f92a807ac2423c757` and the terminal Phase 1 publication.
 
 ## Current state
 
-Phase 1 is implemented, committed, verified, fully reviewed, and pushed to draft PR #643. The reusable packer
-stages the published files under an alias without mutating the source manifest; PR CI now runs its
-focused unit test, and the publish workflow packs, verifies, publishes, and feed-verifies both names.
-The existing source package remains `@concertable/b2b`; no consumer manifests, imports, lockfile
-entries, or runtime files have changed. Local, remote-tracking, and PR head are verified equal at
-`921412108b63d1eca52346656fc6fee5f1c6f743`. Exact-head PR CI run
-[32049656253](https://github.com/Concertable/concertable/actions/runs/32049656253) passed, after which
-the branch merged nine new `origin/main` commits cleanly. The alias test and ordered web-package gate
-passed again against that current base; the updated merge head is not pushed yet.
+Phase 1 is terminal. PR #643 merged as `50f89dbfe` after full-E2E merge-group run
+[32052220186](https://github.com/Concertable/concertable/actions/runs/32052220186) passed. Consolidated
+frontend publication run [32055197413](https://github.com/Concertable/concertable/actions/runs/32055197413)
+published and feed-verified `@concertable/web-b2b@0.1.0-alpha.0.4284`. Its merged worktree was removed
+through `scripts/worktrees.ps1 close -PlanManaged`.
+
+Phase 2 has a coherent local candidate. `app/web/b2b/shared` is now the first-class
+`@concertable/web-b2b` package and both manager surfaces consume that identity. The retained
+`@concertable/b2b` identity now belongs to `app/b2b/shared`, with additive artist, venue, and
+platform-configured tenant-core exports. Publication, workspace, lockfile, boundary, and Metro
+integration are updated, with no consumer cutover begun ahead of Phase 3. The reviewed work head
+`60fcd7395f57c9f73eb3cc5e5ee198aecfa8fd5d` created the correctly capitalized remote branch and was
+fetched back equal. The push checkpoint then landed as `dca48cd6aae06aa55f8f7b98d8444f03e640f02e`,
+and draft PR #653 opened from that exact local/remote head.
 
 ## Next Steps
 
-Push the current-main merge head, verify local/remote/PR equality, and let replacement exact-head CI
-pass. Then enqueue PR #643 with `full-e2e`, land Phase 1, and verify the publish workflow produced the
-exact `@concertable/web-b2b` version before beginning Phase 2 delivery.
+Let exact-head PR CI run [32148856488](https://github.com/Concertable/concertable/actions/runs/32148856488)
+through the feed-restored carve and complete frontend matrices; diagnose and fix any real failure at
+its focused scope. Once exact-head CI is green, retain the draft and wait for explicit `/merge`
+authorization. Do not start Phase 3 delivery until both canonical packages from Phase 2 are published
+and feed-verified.
 
 ## Completed work
 
-- **Phase 1 implementation (`693c68c9a`):** non-mutating alias packer and install-level unit test; parameterized B2B
-  package verification; dual tarball/feed publication; PR-CI tool-test wiring; package-topology plan
-  and roadmap registration.
-- **Review and draft PR (`1613e2e7c`, PR #643):** full correctness/architecture/security review found
-  no issues; the reviewed head was pushed and verified equal across local, remote-tracking, and the
-  initial draft PR head.
+- **Phase 1 terminal (PR #643, merge `50f89dbfe`):** non-mutating alias packer, install-level unit test,
+  dual publication/feed verification, clean correctness/architecture/security review, full E2E, and
+  published `@concertable/web-b2b@0.1.0-alpha.0.4284`.
+- **Phase 2 coherent candidate (`fc59c26aa`):** first-class manager-web package rename and consumer
+  import migration; new cross-platform B2B package with artist/venue Query and Mutation APIs plus a
+  configurable, persisted tenant session; explicit workspace/build/publication/boundary integration;
+  obsolete alias packer removal; and complete lockfile regeneration.
+- **Phase 2 review fixes (`6e87fcf36`):** removed editor facades that mirrored Query data into Zustand
+  and bypassed the zod write boundary, and added focused artist/venue multipart contract tests.
+- **Reviewed work-head push:** created `origin/Refactor/B2bPackageTopologyPhase2` from no prior remote
+  ref and verified its fetched tip equals `60fcd7395f57c9f73eb3cc5e5ee198aecfa8fd5d`.
+- **Draft PR #653:** opened from verified local/remote head
+  `dca48cd6aae06aa55f8f7b98d8444f03e640f02e`; initial exact-head run 32148856488 has a green change
+  detector with the six feed-restored carves, frontend boundaries, and local platform pack pending.
+- **Mobile workspace resolution:** both Metro configurations watch every junctioned shared workspace
+  they resolve locally, while carved/feed installs continue to use physical package directories.
 
 ## Verification
 
-- `node --test app/scripts/pack-fe-package-alias.test.mjs`: passed 1/1 from the root execution context.
-- `npm run build:web-packages`: passed in dependency order; `@concertable/shared` tests 6/6,
-  `@concertable/b2b` tests 17/17, and shared, web, customer, and B2B package builds all completed green.
-- After merging current `origin/main` `c90ece92a`, `npm run test:package-tools` passed 1/1 and
-  `npm run build:web-packages` passed again with shared 6/6 and B2B 17/17 tests.
-- `git diff --check`: passed.
-- `app/package.json`: JSON parse passed.
-- New-file trailing-whitespace scan: passed.
-- `app/web/b2b/shared/package.json` and `app/package-lock.json`: zero diff; consumers and runtime source
-  are unchanged.
+- Phase 1 exact-head CI attempt 2 passed after attempt 1 failed closed on a GitHub GraphQL 503 before
+  any build/test job ran. Full-E2E merge-group run 32052220186 and publication run 32055197413 passed.
+- `@concertable/b2b`: 5 focused test files and 15 tests passed; build typecheck and alias rewriting
+  passed.
+- Existing package gates passed: universal shared 6/6, manager-web B2B 17/17, web shared 25/25, and
+  shared, web, customer, mobile, B2B, and web-B2B package builds.
+- Boundary tooling passed 2/2 tests and dependency-cruiser reported zero violations across all 12
+  workspaces.
+- Customer, venue, artist, and business production web builds passed. Both mobile TypeScript checks
+  and both Android exports passed.
+- CI-equivalent, version-pinned local tarballs passed clean-consumer verification:
+  `@concertable/b2b` under Node and Metro/Android, and `@concertable/web-b2b` under Node.
+- Workspace lockfile regeneration, plan graph validation, package JSON parsing, identity/platform
+  grep gates, and `git diff --check` passed.
+- Feed-restored surface carves and the complete frontend matrices remain assigned to exact-head PR CI.
 
 ## Reviews
 
-- Full correctness and architecture review of `9205e82df..693c68c9a` found no issues. Security review
-  of the workflow/package-publication changes found no issues. Both watermarks are recorded in
-  `reviews/Refactor-B2bPackageTopology.md`.
-- Incremental review of the review/ledger-only range `693c68c9a..382070aec` found one stale next-step
-  entry; it is corrected in the review checkpoint and no finding remains open.
+- Phase 1 review is terminal with no open findings in `reviews/Refactor-B2bPackageTopology.md`.
+- Full native, frontend-architecture, test-coverage, and workflow-security review of
+  `de4f377e8..fc59c26aa` recorded four findings in
+  `reviews/Refactor-B2bPackageTopologyPhase2.md`; all were addressed in `6e87fcf36`. Incremental review
+  of `fc59c26aa..6e87fcf36` found no new issues, and the review/security watermarks are current through
+  `6e87fcf36`.
 
 ## Decisions, discoveries, blockers, and deviations
 
@@ -74,6 +97,6 @@ exact `@concertable/web-b2b` version before beginning Phase 2 delivery.
 ## Resume prompt
 
 ```
-cd C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-B2bPackageTopology
+cd C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-B2bPackageTopologyPhase2
 Read @plans/platform/B2B_PACKAGE_TOPOLOGY_PLAN.md and @plans/platform/B2B_PACKAGE_TOPOLOGY_PROGRESS.md and do what its `## Next Steps` says.
 ```
