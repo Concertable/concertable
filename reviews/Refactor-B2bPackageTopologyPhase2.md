@@ -5,9 +5,9 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `fc59c26aa8459aca425ece6e61302c0939b4f99a`  _(2026-08-18)_
+**Reviewed up to commit:** `6e87fcf36b20cb4dbe8dcc01b6a6d93512156bff`  _(2026-08-18)_
 
-**Security-reviewed up to commit:** `fc59c26aa8459aca425ece6e61302c0939b4f99a`  _(2026-08-18)_
+**Security-reviewed up to commit:** `6e87fcf36b20cb4dbe8dcc01b6a6d93512156bff`  _(2026-08-18)_
 
 > Range reviewed: `de4f377e8..fc59c26aa` (1 commit).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
@@ -26,3 +26,10 @@
 ## Security review
 
 No security issues found in the frontend package publication and verification workflow changes.
+
+## Incremental review — 2026-08-18
+
+> Range reviewed: `fc59c26aa..6e87fcf36` (1 commit).
+
+No issues found. Checked correctness, frontend tier and state ownership, write boundaries, and test
+coverage of the corrective delta. The delta contains no new security-sensitive paths.

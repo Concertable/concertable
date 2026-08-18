@@ -25,9 +25,9 @@ integration are updated, with no consumer cutover begun ahead of Phase 3.
 
 ## Next Steps
 
-Commit the coherent Phase 2 candidate, run `/review`, address every actionable finding, and open its
-draft PR. Let exact-head PR CI own the feed-restored carve and complete frontend matrices. Do not start
-Phase 3 delivery until both canonical packages from Phase 2 are published and feed-verified.
+Push the reviewed Phase 2 candidate, verify local/remote equality, and open its draft PR. Let
+exact-head PR CI own the feed-restored carve and complete frontend matrices. Do not start Phase 3
+delivery until both canonical packages from Phase 2 are published and feed-verified.
 
 ## Completed work
 
@@ -66,8 +66,9 @@ Phase 3 delivery until both canonical packages from Phase 2 are published and fe
 - Phase 1 review is terminal with no open findings in `reviews/Refactor-B2bPackageTopology.md`.
 - Full native, frontend-architecture, test-coverage, and workflow-security review of
   `de4f377e8..fc59c26aa` recorded four findings in
-  `reviews/Refactor-B2bPackageTopologyPhase2.md`; all are addressed in the review-fix commit. Review
-  of that corrective delta is the next gate.
+  `reviews/Refactor-B2bPackageTopologyPhase2.md`; all were addressed in `6e87fcf36`. Incremental review
+  of `fc59c26aa..6e87fcf36` found no new issues, and the review/security watermarks are current through
+  `6e87fcf36`.
 
 ## Decisions, discoveries, blockers, and deviations
 
