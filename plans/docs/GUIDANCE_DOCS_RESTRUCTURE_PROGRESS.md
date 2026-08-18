@@ -452,7 +452,37 @@ instruction until that condition actually holds.
    `PreToolUse`, and `plan_handoff_stop` is a `Stop` hook, so moving it on the assumption would silently
    disable the handoff gate.
 
-3. **Phase 5b / 5c / 3c / 4**, in that order now the tree exists. 5b: `api/agents/` is deleted, not
+3. **Two confirmed content losses from the relocation, found by a mechanical sweep 2026-08-18.** A
+   coverage check compared every backticked identifier in the ~2,350 removed lines against the whole
+   destination (both standards repos plus Concertable's thinned remainder): 166 of 686 absent, and all but
+   these were Concertable type names stripped during generalisation or rotted citations deliberately cut.
+
+   - **Which assertion library belongs to which tier is now recorded nowhere.** The generic rule survived
+     (`dotnet/testing/UNIT.md:56`, "pick **one** assertion library per test tier"), but the old
+     `UNIT_CONVENTIONS.md:66-69` also recorded the actual decision — unit tests use xUnit `Assert.*`,
+     integration tests use Shouldly `ShouldBe`. `Shouldly`/`ShouldBe` now appears in **zero** standards
+     docs. The rule kept its shape and lost its content.
+   - **An explicitly-tracked open decision vanished.** The same lines flagged "whether unit tests should
+     adopt Shouldly too is an **open call** — codify it here once decided". That question is in neither
+     repo now. An unresolved decision that silently disappears is worse than one still on the page: nobody
+     will resolve it, because nobody will know it was open.
+
+   Both belong in `dotnet/STACK.md`, which **does not exist** — so this reframes that gap. It was recorded
+   above as a *new* node ("nothing yet says which .NET library to reach for which job"); it is partly a
+   **regression**, because the testing-library assignments *were* documented before the move.
+
+   Checked and cleared by the same sweep, so do not re-litigate: the unit-versus-integration boundary
+   survived correctly generalised (`WebApplicationFactory` → "host factory", `Testcontainers` →
+   "containers", `UNIT.md:3-5`); the type-name-suffix table survived with only its BCL exemplar cells
+   dropped (`NAMING.md:17-20`); `Testcontainers`/`Respawn` still appear in five Concertable docs, which is
+   the right home for product infrastructure.
+
+   **This was not the independent audit it should have been.** Five subagent attempts died on API 529
+   during the sweep, so this is a self-check by the same session that did the work, and it is mechanical
+   rather than semantic — it can only find rules whose *identifiers* vanished, never a rule reworded into
+   uselessness or a dropped "except when X". A genuine second-pair-of-eyes audit is still owed.
+
+4. **Phase 5b / 5c / 3c / 4**, in that order now the tree exists. 5b: `api/agents/` is deleted, not
    thinned - the polyrepo cut leaves no `api/` node to host it. 5c: the discovery pass, since relocation
    only moves rules that already exist as prose (B2B's stance taxonomy - `TenantScopedDbContext`,
    `ReadDbContext`, `AdminDbContext` and the filtered-entity list - lives only in code). 3c: the six
@@ -460,7 +490,7 @@ instruction until that condition actually holds.
    scaffold; `notes/Concert-Rust-Analysis.md` is referenced by nothing). 4: collapse the remaining
    duplication rows - chiefly `api/AGENTS.md:28-47` still restating 20 lines of seeding inline.
 
-4. **Cut the E2E doc footprint as one pass** (Tommy: "use this as an opportunity to cut all of this
+5. **Cut the E2E doc footprint as one pass** (Tommy: "use this as an opportunity to cut all of this
    bloat"). None of it is stale, but almost none of it is a *convention*: `E2E_CONSIDERATIONS.md` (37)
    deletes with its four sections redistributed ("do not add timeouts" is already owned verbatim by
    `failing-tests`; the 16-line Stripe-card section names its own unfixed root cause, so it is a
@@ -472,11 +502,11 @@ instruction until that condition actually holds.
    `.agents/skills/e2e-*` runbooks (711) each restate the Docker-health rule twice; `remote-validation`
    owns it - replace with a pointer.
 
-5. **Make the 7 process skills concrete.** They were written generic for a shared repo; `merging` must
+6. **Make the 7 process skills concrete.** They were written generic for a shared repo; `merging` must
    lose the confirm-loop *body* and keep the rule, with `.agents/skills/merge/SKILL.md` owning the
    procedure. Same for `pr-preflight`.
 
-6. **Standards fixes found while cutting** - none blocking, and they now land in the `standards/<domain>/` doc rather than the `SKILL.md`: `persistence` teaches a context-typed base
+7. **Standards fixes found while cutting** - none blocking, and they now land in the `standards/<domain>/` doc rather than the `SKILL.md`: `persistence` teaches a context-typed base
    (`Repository<TEntity, OrderDbContext, Guid>`) but Concertable's shared bases are capability-typed
    with no `TContext`; "one repository per entity" has no skill home; `e2e-scenarios` closes by pointing
    at "the `agent-process` standards", a name no skill has; `csharp-style`'s `extension()` section lacks
@@ -486,7 +516,7 @@ instruction until that condition actually holds.
    `api/agents/CODE_CONVENTIONS.md`; natural home is `microservice-boundaries` or `proto`, neither of
    which mentions `MessageType`).
 
-7. **Tommy's, not agent work.** **Prove one plugin install per harness** once both PRs land (step 2 of the
+8. **Tommy's, not agent work.** **Prove one plugin install per harness** once both PRs land (step 2 of the
    opening sequence) — it mutates machine config, and it is the evidence the #637 constraint waits on.
    Approve the Codex `PreToolUse` hook once in a Codex session in this
    worktree (inert until approved, and safe now that ENF1 made it actually fire). Archive
@@ -496,7 +526,7 @@ instruction until that condition actually holds.
    (`api/Concertable.Shared/TECH_DEBT.md:70`). Whether React Hook Form is adopted (in no `app/`
    workspace today).
 
-8. **Deferred to its own PR:** auto-load thinning of root `AGENTS.md` (the 86 merge lines and 32 Docker
+9. **Deferred to its own PR:** auto-load thinning of root `AGENTS.md` (the 86 merge lines and 32 Docker
    lines `/merge` and `scripts/e2e.ps1` already automate), the analyzer push-down plus
    `EnforceCodeStyleInBuild`, and **a CI job running the Python hook tests** - nothing in
    `.github/workflows/` runs them today, so every hook gate here is only as live as the last person who
