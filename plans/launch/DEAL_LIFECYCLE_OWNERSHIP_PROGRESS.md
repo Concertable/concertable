@@ -10,8 +10,8 @@
   the worktree retains a large uncommitted Phase 3/4 candidate that must be preserved and reconciled
   after the design reset.
 - Dependency/package gates: none block the remaining B2B-internal implementation. Phase 1 delivery is terminal; final `api/**` delivery will own its routine package publication and platform-sync gate only after the complete refactor merges.
-- Last reconciled: 2026-08-18 after the module-boundary and transaction design review; Concert
-  collaborator placement remains intentionally undecided pending fresh-context research
+- Last reconciled: 2026-08-18 after the fresh-context Concert application-boundary research selected
+  uniform service-owned creation plus separate operation-specific Cancel and Complete executors
 
 ## Current state
 
@@ -51,7 +51,8 @@ Rejected PR #614 is closed, and its DealTerms branch and worktree were retired w
 Phase 1 merged through PR #625, published successfully, and reached a green platform sync. Its merged
 worktree and local branch were removed through the plan-managed repository command. This branch merged
 the then-current `origin/main` at `451c10395bfe6dcbf1ae6713033440761489387e`; the latest fetch now
-shows the 89-commit base drift recorded above.
+shows 9 commits of base drift. The preserved dirty candidate prevents a safe current-main merge until
+its next coherent checkpoint is committed.
 
 The committed Phase 2 checkpoint removes the Opportunity-to-Application, Application-to-Booking, and
 Booking-to-Concert EF navigations and establishes the initial Contracts seams. Published checkpoint
@@ -87,25 +88,26 @@ split. This candidate has not passed a current host build or full focused gate a
 as an approved implementation. Preserve it, inspect it against the decisions below, and amend it rather
 than restarting or restoring the legacy cross-module model.
 
+The Concert collaborator boundary is now resolved from the final candidate and repository conventions.
+`IConcertService.CreateAsync(ConfirmedBooking)` owns the uniform creation path. Cancel and Complete each
+use a separate operation-specific executor backed by a module-local generic step factory with exact
+`DealType` coverage. There is no umbrella `IConcertExecutor`, and the candidate's raw `StepResolver`
+shape must be replaced because keyed service lookup belongs only in the validated factory.
+
 ## Next Steps
 
-Resume with a fresh-context architecture check before editing the uncommitted Concert candidate:
+Resume the preserved Phase 3/4 candidate against the recorded Concert boundary decision:
 
-1. Independently research the Concert application boundary against the actual final dependency graph,
-   keyed-strategy convention, Result pattern, and comparable repository code. Treat the leading design
-   as a hypothesis: `ConcertExecutor` executes deal-specific Cancel and Complete steps, while uniform
-   `IConcertService.CreateAsync(ConfirmedBooking)` owns creation and returns a typed `UnitResult`.
-   Explicitly test whether creation genuinely varies by `DealType`, whether `Executor` has a broader
-   established meaning, and whether either placement creates a dependency bag. Do not implement until
-   the evidence-backed decision is recorded in this plan and ledger.
-2. Reconcile the existing uncommitted work with that decision. Keep
+1. Reconcile the existing uncommitted work with that decision. Keep
    `BookingConfirmedDomainEventHandler` thin, pass only the immutable `ConfirmedBooking` contract into
-   Concert, and use typed Results for expected failures rather than explicit throws.
-3. Finish atomic Application acceptance with a conditional Opportunity `Open` to `Filled` claim inside
+   Concert, replace the raw `StepResolver` with a validated module-local step factory, split Cancel and
+   Complete into operation-specific executors, and use typed Results for expected failures rather than
+   explicit throws.
+2. Finish atomic Application acceptance with a conditional Opportunity `Open` to `Filled` claim inside
    the existing ambient transaction. Preserve synchronous pre-commit `ApplicationAcceptedDomainEvent`
    handling for Booking/Contract formation; the outbox is for outbound durable delivery, not
    asynchronous Booking creation. Add concurrency and rollback coverage.
-4. Continue the remaining payment/Concert carve, delete the god workflow and shared lifecycle state,
+3. Continue the remaining payment/Concert carve, delete the god workflow and shared lifecycle state,
    finish projections/migrations/consumers/guidance, and run the focused gates before publishing the
    next coherent checkpoint to draft PR #633. No intermediate phase is mergeable.
 
@@ -302,13 +304,14 @@ Resume with a fresh-context architecture check before editing the uncommitted Co
   unused `MarkFilledAsync` path does not prevent two concurrent Applications from winning.
 - `ConfirmedBooking` is the only Booking-to-Concert creation input. Concert must not reload live
   upstream aggregates.
-- The internal `ConcertExecutor` idea remains under consideration specifically for step-driven Concert
-  operations. Whether it owns Cancel/Complete only or also uniform creation is not approved and must be
-  researched before implementation. `ConcertCreator` and a separate `ConcertDraftService` are not the
-  assumed target.
-- `BookingConfirmedDomainEventHandler` remains a thin event adapter. The current leading hypothesis is
-  that it calls `IConcertService.CreateAsync(ConfirmedBooking)`, returning a typed `UnitResult`, while
-  `ConcertExecutor` hides deal-specific Cancel/Complete step selection.
+- The Concert collaborator boundary is resolved: uniform creation remains on `IConcertService`, while
+  Cancel and Complete each have one operation-specific executor backed by the module-local keyed step
+  factory. There is no umbrella `IConcertExecutor`, `ConcertCreator`, or separate `ConcertDraftService`.
+- `BookingConfirmedDomainEventHandler` remains a thin event adapter. It calls uniform
+  `IConcertService.CreateAsync(ConfirmedBooking)`; separate Cancel and
+  Complete executors hide their own deal-specific step selection. Creation has no expected
+  caller-actionable failure after Application genre validation and Booking confirmation; missing or
+  mismatched local projections remain invariant failures.
 - HTTP hosts compose only `AddXApi(configuration)` boundaries; each API extension composes its own
   module infrastructure. The analogous Customer host violations are recorded in
   `api/Concertable.Customer/TECH_DEBT.md` for later correction and an architecture guard.
@@ -373,9 +376,9 @@ Resume with a fresh-context architecture check before editing the uncommitted Co
 - Application and Opportunity HATEOAS currently derive checkout and command links from the Concert
   workflow capability registry.
 - Committed Booking-to-Concert creation still carries legacy book-step/draft-service history, while the
-  uncommitted candidate removes `ConcertDraftService` and calls Concert creation from
-  `BookingConfirmedDomainEventHandler`. Its final `ConcertService` versus `ConcertExecutor` placement is
-  the mandatory first research decision in `## Next Steps`.
+  uncommitted candidate removes `ConcertDraftService` and calls uniform creation from
+  `BookingConfirmedDomainEventHandler`. Cancel and Complete must be extracted from the candidate's
+  dependency-heavy `ConcertService` into their separate operation-specific executors.
 
 ## Downstream handoffs
 

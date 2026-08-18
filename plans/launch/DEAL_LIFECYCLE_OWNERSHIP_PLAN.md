@@ -133,12 +133,19 @@ completion, and any recovery state whose success is required to complete those o
 not inspect `Booking.Application.State` or ask Booking/Deal how to interpret Concert state.
 
 Concert creation consumes the immutable `ConfirmedBooking` handoff from `Booking.Contracts`; it never
-loads a live Booking or Application aggregate. Creation is currently understood to be uniform across
-`DealType`, while cancellation and completion select deal-specific steps. The exact internal
-collaborator boundary is deliberately unresolved: the leading candidate keeps
-`CreateAsync(ConfirmedBooking)` on `IConcertService` and places step-driven Cancel/Complete operations
-on an internal `IConcertExecutor`, but a fresh AI must inspect the final dependency shape, repository
-conventions, Result handling, and tests before this is implemented or recorded as the final design.
+loads a live Booking or Application aggregate. Creation is uniform across `DealType`: every case uses
+the same projection lookup, genre intersection, aggregate creation, persistence, notification, and
+email path. The immutable terms cases supply different data to `ConcertEntity.CreateDraft`; they do
+not select different creation behaviour. `IConcertService.CreateAsync(ConfirmedBooking)` therefore
+owns creation.
+
+Cancellation and completion each use their own operation-specific executor and keyed step factory.
+There is no multi-operation `IConcertExecutor`: established executors own one named lifecycle
+operation, and combining both operations would create a dependency bag rather than a cohesive facade.
+The pre-commit `BookingConfirmedDomainEventHandler` remains a thin adapter to the service. Creation has
+no expected caller-actionable failure after a confirmed Booking: Application already validated genre
+eligibility, while a missing or mismatched local projection is an invariant violation. Cancel and
+Complete keep their operation-owned typed Results for expected failures.
 
 Settlement and invoice records must be assessed by identity during the carve. They may remain
 Concert-owned children where they make a Concert completion operation durable, or move to a
@@ -211,25 +218,25 @@ names rather than repeating the aggregate name:
 | Booking | `IConfirmStep`, `ICancelStep` |
 | Concert | `ICancelStep`, `ICompleteStep`, and local settlement-recovery steps where required |
 
-The module-local keyed selector is the only code in that module allowed to perform keyed DI lookup.
+The module-local generic factory is the only code in that module allowed to perform keyed DI lookup.
 A caller requests one operation-specific dependency through a named business-facing collaborator:
 
 ```csharp
-await concertExecutor.CompleteAsync(concertId, cancellationToken);
+await completeExecutor.CompleteAsync(concertId, cancellationToken);
 ```
 
 The generic keyed-registration mechanism may be mechanically similar in each module, but
-registrations, coverage declarations, step contracts, implementations, and selector instances are
+registrations, coverage declarations, step contracts, implementations, and factory instances are
 module-local. There is no shared `IWorkflowStepResolver`, cross-module registry, or registration block.
-Whether that selector is named a resolver or a factory must be checked against the repository's current
-keyed-strategy convention before implementation; the business-facing collaborator must not expose
-service-location mechanics.
+The generic type is a factory because it returns the selected step; the operation-specific executor
+consumes that step and returns the final application result. Only the factory may depend on
+`IKeyedServiceProvider`.
 
-`ConcertExecutor` is a candidate name for the internal facade that executes Concert's deal-specific
-Cancel and Complete steps. It is not permission to turn an executor into a miscellaneous use-case bag.
-Whether uniform Concert creation belongs beside those operations or remains on `ConcertService` is an
-explicit pre-implementation research decision. Expected failures use typed Results; no design may
-convert them into explicit exceptions merely to cross an internal boundary.
+Cancel and Complete use separate executors because each is one named Concert lifecycle operation with
+its own validation, persistence, transaction, IO, and typed failure contract. Uniform creation remains
+on `IConcertService`; it neither selects a keyed step nor belongs in either executor. Expected failures
+use typed Results; no design may convert them into explicit exceptions merely to cross an internal
+boundary.
 
 Each module declares exact `DealType` coverage vertically at its own composition root. Repeating the
 closed key in three independent declarations is correct ownership, not duplication. Adding a new
@@ -407,7 +414,7 @@ transition, and all accept/payment arrival orders pass focused integration cover
 
 ### Phase 4 — give Concert independent operational ownership
 
-- [ ] Before changing the Concert application boundary, independently research the candidate
+- [x] Before changing the Concert application boundary, independently research the candidate
   `IConcertExecutor`/`ConcertExecutor` and uniform `CreateAsync(ConfirmedBooking)` placement against the
   final dependency graph, keyed-step conventions, typed-Result semantics, and comparable repository
   code. Record the decision in this plan and ledger before implementation.
@@ -486,6 +493,8 @@ whole workflow.
 - a BookingWorkflow, ConcertWorkflow, or shared Workflow module spanning multiple aggregates;
 - treating `ConcertExecutor` as a replacement umbrella workflow or a dependency bag unrelated to
   executing Concert-owned step families;
+- combining Cancel and Complete behind one multi-operation `IConcertExecutor` rather than preserving
+  one cohesive executor per named lifecycle operation;
 - one shared resolver, registry, workflow definition, state enum, or state machine for all modules;
 - identifier-only Booking confirmation or confirmation that reloads a live Application aggregate;
 - payment outcome contracts that combine success/failure with nullable case-specific fields;
