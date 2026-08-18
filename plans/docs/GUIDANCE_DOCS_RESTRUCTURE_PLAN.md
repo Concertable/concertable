@@ -296,7 +296,7 @@ skill routes to it.
 **Superseded 2026-08-18 — the shape below is what Phase 3a shipped, not the target.** Phase 3a's split was
 made on *portability* (generic vs Concertable), which is why React ended up beside .NET and machine
 utilities in one repo. The target is a single `standards` repo with domain trees (`dotnet/`, `react/`,
-`process/`, `concertable/`, later `infra/`) and flat routing skills — see Phase 5. Both repos keep
+`process/`, `platform/`, later `infra/`) and flat routing skills — see Phase 5. Both repos keep
 `.agents/skills/` canonical and generate the Claude-side stubs from it, so nothing is Claude-only and
 Codex reads the same files.
 
@@ -448,7 +448,7 @@ resolved under meta-rule 7 by deciding import-or-pointer, not both. Same treatme
 double-writes, which currently load twice. Runs after 3b: dedupeing into files 3b then restructures would
 edit the same lines twice.
 
-### Phase 5 — domain trees, skills as routers — DONE (both repos; `concertable/` is 5b)
+### Phase 5 — domain trees, skills as routers — DONE (both repos; `platform/` is 5b)
 
 **This phase gates delivery of the whole restructure — recorded 2026-08-18.** Phase 3b already removed
 2,662 lines from `api/agents/**` and `app/agents/**`. Until this phase and Phase 7 land, the only thing
@@ -500,7 +500,9 @@ standards/                       one such tree per repo; see the repo split belo
   process/
     BRANCHING.md  COMMITTING.md  MERGING.md  PLANS.md
     DOCS_AND_DEBT.md  FAILING_TESTS.md  REMOTE_VALIDATION.md
-  concertable/                   the platform roster every service repo inherits once api/ is gone
+  platform/                      the roster every service repo inherits once api/ is gone. NOT named
+                                 `concertable/`: this repo is already in the Concertable org, and a
+                                 folder may not repeat what its path already says.
     DATA_ACCESS.md               Concertable.DataAccess capability hierarchy
     CONTRACTS.md                 IPagination location, integration-event wire versioning
     HTTP_CLIENTS.md              the Refit inventory (IGoogleGeocodingApi, ITokenApi,
@@ -510,6 +512,17 @@ standards/                       one such tree per repo; see the repo split belo
   infra/                         later
   .agents/skills/<name>/SKILL.md thin router -> its doc. Flat, one level.
 ```
+
+**The repo boundary is part of the path — a folder never repeats it.** `agent-standards` lives in the
+Concertable org, so everything in it is already Concertable-scoped; a `concertable/` folder inside it says
+the word twice. Earlier revisions of this plan called that domain `concertable/` because they assumed **one**
+merged `standards` repo holding generic and product rules together, where the folder was the only thing
+separating them. Phase 7 split the repos by audience instead, which made the folder redundant the moment it
+was decided. The domain is **`platform/`** — the roster every Concertable service inherits — which also keeps
+the deployed namespace collision-free, since domains from both repos land side by side under
+`~/.agents/standards/<domain>`.
+
+Same rule, same reason as the two below: state a thing at the level that owns it, and never again.
 
 **Two naming rules, and they pull in opposite directions on purpose.**
 
@@ -535,7 +548,7 @@ two halves land in one deployed namespace without either repo owning the parent:
 | Repo | Domains |
 |---|---|
 | `dotagents` | `dotnet/`, `react/`, `communication/` |
-| `agent-standards` | `process/`, later `concertable/` |
+| `agent-standards` | `process/`, later `platform/` |
 
 `agent-utilities` keeps the machine tooling that is neither a standard nor stack-specific.
 `agent-starter-kit` is a strict subset of `dotagents` — two of its eight skills differ only by carrying a
@@ -609,13 +622,13 @@ tier, applied per rule:
 | The rule… | Home |
 |---|---|
 | names no product | `standards/dotnet/` or `standards/react/` |
-| names a platform type every Concertable service uses | `standards/concertable/` |
+| names a platform type every Concertable service uses | `standards/platform/` |
 | names one service's type | that service's own repo |
 
 Worked example, the one Tommy raised: *"a repository binds to a capability, not a context type"* is
 generic → `standards/dotnet/data/PERSISTENCE.md`. The `Concertable.DataAccess` capability hierarchy
 (`IReadDbContext` → `IReadRepository` → `ReadRepository`) is platform-wide →
-`standards/concertable/DATA_ACCESS.md`. B2B's concrete stances — `TenantScopedDbContext` for tenant-scoped
+`standards/platform/DATA_ACCESS.md`. B2B's concrete stances — `TenantScopedDbContext` for tenant-scoped
 read/write, `VenueArtistTenantScopedDbContext`, `ReadDbContext` for unfiltered reads, `AdminDbContext` for
 everything, and which entities carry a query filter — are B2B's → the B2B repo.
 
@@ -801,7 +814,7 @@ and does not recurse, and because two source repos must land in one namespace. I
 already used for the work-repo skills. One stated trade-off: junctions make the installed set depend on
 the repo staying put, and a deploy script must therefore also report orphaned and missing links.
 
-### Phase 7 — one authored copy, delivered as plugins, to both harnesses — BUILT (install unproven; `concertable-delivery` is 5b)
+### Phase 7 — one authored copy, delivered as plugins, to both harnesses — BUILT (install unproven; the `platform/` plugin is 5b)
 
 **Decided 2026-08-18; every mechanic below was verified live that day on both tools, then reverted — no
 marketplace, plugin or config entry was left on the machine.** The polyrepo cut removes the premise the

@@ -355,23 +355,30 @@ breaks.
 Phase 3a split the corpus on **portability**, which is why React sat beside .NET and machine utilities in
 one repo. Settled shape, by domain instead:
 
-| Repo | Holds |
-|---|---|
-| `standards` (rename of `Concertable/agent-standards`) | `dotnet/`, `react/`, `process/`, `concertable/`, later `infra/` — docs tree + flat routing skills |
-| `agent-utilities` | machine tooling (`sync`, `worktree`, `recents`, `search`, `unmerged`, …) |
-| service repos | that service's own rosters |
-| `dotagents` | **stays its own repo — corrected 2026-08-18.** It is Tommy's *personal machine config*: its README mirrors `%USERPROFILE%` (`~/AGENTS.md`, `~/.agents/`, `~/.claude/`), synced across machines, and its general engineering standards apply to **every** codebase he owns, not to Concertable. Folding it into a Concertable org repo would scope personal, cross-project standards to one product. An earlier revision of this table said it collapses into `standards/dotnet/` + `standards/react/`; that was wrong. |
-| `agent-starter-kit` | archived — strict subset of `dotagents`, two skills BOM-broken |
+**Split by audience, and the repo boundary carries it.** Two canonical homes, three tiers:
+
+| Repo | Domains | Audience |
+|---|---|---|
+| `tomjseery/dotagents` | `dotnet/`, `react/`, `communication/` | **every** codebase Tommy owns. Also his personal machine config — its README mirrors `%USERPROFILE%` (`~/AGENTS.md`, `~/.agents/`, `~/.claude/`), synced across machines. An earlier revision had it collapsing into a Concertable-org `standards` repo; that was wrong, and would have scoped personal cross-project standards to one product. |
+| `Concertable/agent-standards` | `process/`, and `platform/` once 5b lands | Concertable service repos |
+| service repos | no domains — an `AGENTS.md` roster only | that one service |
+| `agent-utilities` | machine tooling (`sync`, `worktree`, `recents`, `search`, `unmerged`, …) | personal |
+| `agent-starter-kit` | archived — strict subset of `dotagents`, two skills BOM-broken | — |
+
+**No domain is named `concertable/` — corrected 2026-08-18.** `agent-standards` is already an org-scoped
+repo, so a folder of that name states Concertable twice; the repo boundary IS part of the path. The domain
+carrying the shared platform roster is `platform/`. The name only existed because an earlier revision assumed
+one merged repo holding generic and product rules, where a folder was the sole separator.
 
 **`api/agents/` is deleted, not thinned.** POLYREPO_ROADMAP §6 settled the same day as a true one-way cut,
 so there is no `api/` node to host it. Each rule re-homes by one test: names no product → `standards/dotnet`
-or `standards/react`; names a platform type every service uses → `standards/concertable`; names one
+or `standards/react`; names a platform type every service uses → `standards/platform`; names one
 service's type → that service's repo.
 
 **Refined 2026-08-18 — a service repo carries no skills at all (Phase 7).** The table above still had
 each repo holding *something*. It should hold no skills: not `.claude/skills/` stubs, not
 `.agents/skills/`, not a vendored hook. Skills become four plugins out of `standards` (`agent-process`,
-`dotnet-standards`, `react-standards`, `concertable-delivery`), installed once per machine at user scope;
+`dotnet-standards`, `react-standards`, and a `platform` plugin), installed once per machine at user scope;
 a repo keeps only its `AGENTS.md` roster, its `skill-routes.json`, and the two per-harness wiring files.
 Phase 6b had rejected this because a repo-declared plugin does not auto-install — correct, and re-verified
 today — but it weighed that ritual against one repo. `--scope user` is machine-wide, so the cost is one
@@ -432,8 +439,9 @@ clean review speaks to the diff's own quality, never to whether what it deletes 
 riding this PR fixed the *enforcement* ordering, never the *delivery* ordering. Do not reinstate a merge
 instruction until that condition actually holds.
 
-1. **The one piece of Phase 7 still outstanding is `concertable-delivery`**, and it is blocked on 5b:
-   its `standards/concertable/` domain does not exist yet. Adding it is one `payloads.json` entry plus the
+1. **The one piece of Phase 7 still outstanding is the `platform` plugin**, and it is blocked on 5b: its
+   `standards/platform/` domain does not exist yet. **Not** `concertable/` — `agent-standards` is already an
+   org-scoped repo, so a folder of that name repeats what the path says; see the plan's naming rules. Adding it is one `payloads.json` entry plus the
    domain, because the mechanism is built and guarded. Nothing else in Phase 7 remains to design.
 
    Two things Phase 5 hands it: the plugin payload generation for `standards/` already exists in
