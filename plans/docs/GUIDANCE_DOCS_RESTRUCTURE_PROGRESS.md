@@ -439,6 +439,13 @@ Audit findings: `reviews/Docs-GuidanceDocsRestructure-AuditFindings.md` (16 defe
 on which tier a doc lands in, so the remaining split comes first. **Tier 2 is done** — `react-agents`
 exists and holds the React corpus; what is left is the Concertable tier.
 
+**Scope of step 1 revised 2026-08-18, with Tommy:** the target shape now mirrors the generic tiers' folder
+layout instead of flattening it (`dotnet/testing/INTEGRATION.md`, not one `TESTING.md`), `RESULT_PATTERN.md`
+gained the target it never had, `results/ERRORS.md` + `testing/{UNIT,E2E}.md` are named gaps for 5c, and
+**Phase 3c's `api/ARCHITECTURE.md` row is pulled forward into this step** — it is platform topology, not a
+per-service doc, and the polyrepo cut deletes the `api/` node hosting it. Full target: the plan's Tier 3
+block.
+
 1. **Add `standards/dotnet/` and `standards/react/` to `agent-standards`, and re-home the 480 lines** still
    in `api/agents/` (`CODE_CONVENTIONS`, `CODE_PATTERNS`, `INTEGRATION_CONVENTIONS`, `MODULE_STRUCTURE`,
    `RESULT_PATTERN`, `SEEDING_CONVENTIONS`) and `app/agents/` (`CODE_CONVENTIONS`, `CODE_PATTERNS`). Target

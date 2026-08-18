@@ -256,29 +256,59 @@ standards/react/
 
 No `platform/`, no `concertable/`. Concertable **is** the platform and the repo already says so.
 
+**A local section mirrors its generic counterpart's folder shape and doc names, path for path.** That is
+what makes the pairing findable: `agent-standards/standards/dotnet/testing/INTEGRATION.md` sits at the same
+path as `dotagents/standards/dotnet/testing/INTEGRATION.md`, and both deploy into one
+`~/.agents/standards/` tree. A flat `TESTING.md` catch-all beside a generic `testing/` folder throws that
+away — an earlier revision of this section did exactly that and is corrected here.
+
 ```text
 standards/dotnet/
-  DATA_ACCESS.md        the Concertable.DataAccess capability hierarchy
-  CONTRACTS.md          IPagination's home, integration-event wire versioning
-  HTTP_CLIENTS.md       the Refit inventory and the ITokenApi caveat
-  SEEDING_INVENTORY.md  the forbidden-table list — what a seeder may never insert
-  GEOMETRY.md           IGeometryProvider
-  PACKAGES.md           the platform pin, UseLocalCore, carve enforcement
-  TESTING.md            SqlFixture, TestAuthHandler, the Environments extension members
+  CONTRACTS.md              IPagination's home, integration-event wire versioning
+  HTTP_CLIENTS.md           the Refit inventory and the ITokenApi caveat
+  PACKAGES.md               platform pin, Reunion pins and never-redistribute, UseLocalCore, carve
+  data/PERSISTENCE.md       the Concertable.DataAccess capability hierarchy, one repository per entity
+  data/SEEDING.md           the forbidden-table list, the B2B simulator, the two exceptions
+  data/MIGRATIONS.md        no additive migrations, initial-migrations.ps1
+  data/GEOMETRY.md          IGeometryProvider, WGS84
+  results/TERMINALS.md      the Concertable.Grpc cancellation predicate and detail extraction
+  results/ERRORS.md         GAP — no Concertable error inventory is written down yet (5c)
+  structure/MODULES.md      project naming, what the cross-module rules resolved to here
+  structure/HTTP_API.md     Tenant internally, organization at the HTTP boundary
+  structure/SERVICE_BOUNDARIES.md  the service roster, adapter-vs-data here, contract distribution
+  testing/INTEGRATION.md    the four fixtures, the shared harness, SeedState
+  testing/UNIT.md           GAP (5c)
+  testing/E2E.md            GAP (5c)
 standards/react/
-  APP_TIERS.md          the four SPAs, route literals, the typecheck boundary gate
-  CLIENTS.md            apiClient / paymentClient / searchClient / customerClient
-  IDENTITY.md           User vs B2bIdentity, memberships
+  HTTP.md               the four clients, which layer configures them, the isApiError seam
+  TYPESCRIPT.md         FormData PascalCase vs JSON camelCase, the live $type unions
+  CONTRACTS.md          third-party envelopes that keep a suffix
+  FORMS.md              the zod schema inventory
+  CLIENT_STATE.md       the tenant feature owns active-tenant state and the imperative session
+  STRUCTURE.md          useMountEffect
+  IDENTITY.md           User in shared, B2bIdentity composed in the b2b tenant feature
   PERMISSIONS.md        the SharedPermissions matrix
+  APP_TIERS.md          the four SPAs, route literals, the typecheck boundary gate
   BROWSER_STORAGE.md
 standards/process/
   BRANCHING.md  COMMITTING.md  MERGING.md  PLANS.md
   REMOTE_VALIDATION.md  DOCS_AND_DEBT.md  FAILING_TESTS.md
 ```
 
+A `GAP` row is a slot named rather than silently missing: no doc is created for it, and 5c either fills it
+or deletes the row. `RESULT_PATTERN.md`'s Reunion content had **no target at all** in the previous revision
+of this list and would have been dropped in the move; it is now split across `PACKAGES.md` and
+`results/TERMINALS.md`.
+
 `process/` is a peer of the two stack sections, not a redundant name: branching and merging are neither
 .NET nor React. Where a process rule is genuinely generic it still lives here rather than earning a fourth
 repo — a known wrinkle, recorded rather than silently decided.
+
+**Skill names must disambiguate across tiers, because the deployed skill namespace is flat.** `persistence`
+is already dotagents'; the Concertable counterpart is `concertable-persistence`, and where one name would
+serve two domains it carries both (`concertable-dotnet-contracts`, `concertable-react-contracts`). The
+generator refuses a doc with no router, so every doc above owns one. The cost is real and is recorded in
+the progress ledger: each router's description is always-on.
 
 ### Tier 4 — each microservice repo: only what is true of that service
 
@@ -296,7 +326,10 @@ conventions of its own, it names a sibling doc in its own repo:
 ### How every doc in every tier is organised
 
 - **One concern per doc.** Past ~80 lines a section earns its own file; under ~20 lines a file merges into
-  its parent.
+  its parent. A doc that would become a catch-all for several concerns is a **folder** of those concerns
+  instead — `testing/{UNIT,INTEGRATION,E2E}.md`, never one `TESTING.md`.
+- **A local doc mirrors its generic counterpart's path and name exactly**, so the pair is findable in the
+  one deployed tree. A local doc with no generic counterpart just takes its own name.
 - **A rule is statement, anti-pattern, one example — in that order, ~15 lines.** Longer earns its own `##`.
 - **Headings are imperative rule statements**, not topic labels: "Repositories inherit the module base",
   not "Repositories".
@@ -557,6 +590,9 @@ the `TECH_DEBT.md` set, `E2E_BASELINE.md`, `BROWSER_STORAGE.md` — and is not t
 | `api/docs/VS_TEST_EXPLORER_TROUBLESHOOTING.md` | 51 | Duplicate of the `reset-test-explorer` skill. One owner, one pointer. |
 | `docs/USP.md`, `docs/DEEP_RESEARCH_PROMPT_GUIDE.md`, `docs/OVERVIEW.md` | 319 | All orphaned. `OVERVIEW.md` is the clearest "what is Concertable" anywhere and nothing links it — link it from root. |
 | `api/docs/` as a tree | — | After 3b it holds only the two files above. Collapse it; two parallel doc trees in one service tree with no stated distinction is the original defect. |
+| `api/ARCHITECTURE.md` | 242 | **Pulled forward into Next Step 1.** Not a per-service doc — it is the platform's topology, and the polyrepo cut deletes the `api/` node that hosts it. Splits: the roster, adapter-vs-data here, and contract distribution to `agent-standards/standards/dotnet/structure/SERVICE_BOUNDARIES.md`, beside its generic counterpart; anything true of one service only to that service's repo. Done in the same pass as `api/agents/`, because both land in the same `structure/` folder. |
+
+The rest of the table stays deferred; only the `api/ARCHITECTURE.md` row moves into Next Step 1.
 
 **Settled (was: "settle before 3b edits root `AGENTS.md`").** The merge-confirmation loop exists in root
 `AGENTS.md`, in `.agents/skills/merge/SKILL.md` which *automates* it, and in the `merging` standards skill.
