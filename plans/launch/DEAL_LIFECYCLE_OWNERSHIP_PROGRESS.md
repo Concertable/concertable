@@ -11,8 +11,8 @@
   `4b5ed8a9aac086e24e0f2c377e8b25f1ec00ae18`;
   local HEAD, the remote branch, and PR `headRefOid` matched exactly after the work-head push.
 - Dependency/package gates: none block the remaining B2B-internal implementation. Phase 1 delivery is terminal; final `api/**` delivery will own its routine package publication and platform-sync gate only after the complete refactor merges.
-- Last reconciled: 2026-08-18 after clearing the Concert completion executor's Result/lambda
-  diagnostics and reducing the compile frontier to `InvoiceRepository`
+- Last reconciled: 2026-08-18 after replacing the final Invoice-to-Booking DbContext traversal with
+  the Concert-owned immutable application/booking facts and clearing the Concert Infrastructure build
 
 ## Current state
 
@@ -135,28 +135,29 @@ Opportunity's validators, while `BookingConfirmedDomainEventHandler` is register
 pre-commit handler contract. Published completion checkpoint `7b44c105e` supplies the existing
 `Result<SettlementOutcome, FinishConcertError>` target to the generic unit-of-work call, clearing all
 nine `CompleteExecutor` diagnostics without changing its typed failures, transaction, or module-local
-completion-step selection. Concert.Infrastructure now exposes only the deferred cross-module
-`InvoiceRepository` query error. The focused Concert unit tests cannot compile until that downstream
-production frontier is cleared.
+completion-step selection. The prior Concert.Infrastructure build exposed only the deferred cross-module
+`InvoiceRepository` query error. The Invoice repository now resolves application-based reads through
+the Concert-owned `ApplicationId` and `BookingId` facts delivered by `ConfirmedBooking`; no Booking
+runtime query or new facade dependency is required. Concert.Infrastructure compiles with 0 errors, so
+the Concert unit-test project is the next bounded compile/run frontier.
 
 ## Next Steps
 
-Fresh-context Concert invoice-query compile-recovery slice only — preserve the checkpointed creation,
-composition-root, and completion work and do not continue into migrations, guidance, tests, or another
+Fresh-context Concert unit-test compile/recovery slice only — preserve the green Concert
+Infrastructure boundary and do not continue into migrations, guidance, integration tests, or another
 lifecycle operation:
 
 The keyed-selector design concern is a recorded non-blocking follow-up. Do not refactor, rename, or
 generalize selector/factory infrastructure in this slice.
 
-1. Resolve only the `InvoiceRepository.cs(23)` CS1061 diagnostic by replacing its removed
-   `ConcertDbContext.Bookings` traversal with the narrow Booking-owned contract or projection required
-   by the invoice query. Preserve Invoice ownership and wire behaviour; do not broaden Concert's
-   DbContext or add a runtime reference to Booking Infrastructure/Domain.
-2. Run a scoped Invoice/Booking ownership grep, `git diff --check`, and the Concert Infrastructure
-   Release build with single-worker MSBuild.
-3. The slice gate is zero `InvoiceRepository` cross-module-query diagnostics and an exact record of the
-   next production compile frontier. Update this ledger with that result and stop the context; do not
-   continue into the newly exposed file in the same continuation.
+1. Run the Concert unit-test project in Release with `--no-restore`, disabled build servers, and
+   single-worker MSBuild to expose its exact remaining compile/test frontier.
+2. If it is red, use the repository's unit/integration debug workflow and resolve only failures caused
+   by the already-removed shared lifecycle or relocated Application/Booking/Concert ownership. Stop
+   and record any unrelated production frontier rather than entering another lifecycle operation.
+3. Run a scoped rejected-ownership vocabulary grep, `git diff --check`, and repeat the Concert unit
+   suite. The slice gate is a green suite or an exact recorded unrelated production blocker; update
+   this ledger with the result and stop the context.
 
 ## Completed work
 
@@ -222,6 +223,8 @@ generalize selector/factory infrastructure in this slice.
 - Published Concert completion compile-recovery range `4b5ed8a9a..7b44c105e` from starting remote
   head `4b5ed8a9aac086e24e0f2c377e8b25f1ec00ae18`; local HEAD, the remote branch, and draft PR #633
   `headRefOid` all equalled `7b44c105e1f0af9ecc1894e6bc50335a24d156d2` after the work-head push.
+- Replaced the final `InvoiceRepository` cross-module DbContext traversal with a query over Concert's
+  immutable local `ApplicationId`/`BookingId` handoff facts; Concert Infrastructure now compiles.
 - Merged the 93-commit `origin/main` drift without conflicts as
   `ff2e4dc553aad7bd9093e958235fa809efe5c881`, then verified local HEAD, the remote branch, and draft PR
   #633 `headRefOid` matched and the branch was 0 commits behind.
@@ -233,9 +236,11 @@ generalize selector/factory infrastructure in this slice.
   Concert. Their owning composition roots retain both registrations, and Concert registers
   `BookingConfirmedDomainEventHandler` through
   `IPreCommitDomainEventHandler<BookingConfirmedDomainEvent>`.
-- The Concert.Infrastructure single-worker Release build reports 0 warnings and exactly one error:
-  CS1061 in `InvoiceRepository` at line 23 for the removed `ConcertDbContext.Bookings` surface. All
-  nine `CompleteExecutor` CS8031 diagnostics are cleared.
+- The scoped Invoice/Booking ownership grep across Concert repositories and repository interfaces
+  finds no `context.Bookings`, `BookingEntity`, or Booking Domain/Infrastructure dependency.
+- The Concert.Infrastructure single-worker Release build passes with 0 errors and one inherited
+  `UserEntity` CS0628 warning. The former `InvoiceRepository` CS1061 diagnostic and all nine
+  `CompleteExecutor` diagnostics are cleared.
 - Every `ICompleteExecutor`, `CompleteExecutor`, and `ICompleteStep` source reference is Concert-owned;
   the scoped completion scan finds no `IConcertWorkflow`, `ConcertWorkflow`,
   `IConcertStateMachineRegistry`, `LifecycleState`, `IFinishStep`, or `FinishExecutor` match.
