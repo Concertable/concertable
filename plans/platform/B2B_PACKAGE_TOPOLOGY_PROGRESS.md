@@ -21,13 +21,15 @@ Phase 2 has a coherent local candidate. `app/web/b2b/shared` is now the first-cl
 `@concertable/web-b2b` package and both manager surfaces consume that identity. The retained
 `@concertable/b2b` identity now belongs to `app/b2b/shared`, with additive artist, venue, and
 platform-configured tenant-core exports. Publication, workspace, lockfile, boundary, and Metro
-integration are updated, with no consumer cutover begun ahead of Phase 3.
+integration are updated, with no consumer cutover begun ahead of Phase 3. The reviewed work head
+`60fcd7395f57c9f73eb3cc5e5ee198aecfa8fd5d` created the correctly capitalized remote branch and was
+fetched back equal; no PR existed at that head.
 
 ## Next Steps
 
-Push the reviewed Phase 2 candidate, verify local/remote equality, and open its draft PR. Let
-exact-head PR CI own the feed-restored carve and complete frontend matrices. Do not start Phase 3
-delivery until both canonical packages from Phase 2 are published and feed-verified.
+Open the draft PR from the verified remote branch, record its exact head, and let exact-head PR CI own
+the feed-restored carve and complete frontend matrices. Do not start Phase 3 delivery until both
+canonical packages from Phase 2 are published and feed-verified.
 
 ## Completed work
 
@@ -38,8 +40,10 @@ delivery until both canonical packages from Phase 2 are published and feed-verif
   import migration; new cross-platform B2B package with artist/venue Query and Mutation APIs plus a
   configurable, persisted tenant session; explicit workspace/build/publication/boundary integration;
   obsolete alias packer removal; and complete lockfile regeneration.
-- **Phase 2 review fixes (this commit):** removed editor facades that mirrored Query data into Zustand
+- **Phase 2 review fixes (`6e87fcf36`):** removed editor facades that mirrored Query data into Zustand
   and bypassed the zod write boundary, and added focused artist/venue multipart contract tests.
+- **Reviewed work-head push:** created `origin/Refactor/B2bPackageTopologyPhase2` from no prior remote
+  ref and verified its fetched tip equals `60fcd7395f57c9f73eb3cc5e5ee198aecfa8fd5d`.
 - **Mobile workspace resolution:** both Metro configurations watch every junctioned shared workspace
   they resolve locally, while carved/feed installs continue to use physical package directories.
 
