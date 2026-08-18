@@ -34,10 +34,12 @@ Phase 3 delivery until both canonical packages from Phase 2 are published and fe
 - **Phase 1 terminal (PR #643, merge `50f89dbfe`):** non-mutating alias packer, install-level unit test,
   dual publication/feed verification, clean correctness/architecture/security review, full E2E, and
   published `@concertable/web-b2b@0.1.0-alpha.0.4284`.
-- **Phase 2 coherent candidate (this commit):** first-class manager-web package rename and consumer import migration;
-  new cross-platform B2B package with private facade-owned artist/venue stores and a configurable,
-  persisted tenant session; explicit workspace/build/publication/boundary integration; obsolete alias
-  packer removal; and complete lockfile regeneration.
+- **Phase 2 coherent candidate (`fc59c26aa`):** first-class manager-web package rename and consumer
+  import migration; new cross-platform B2B package with artist/venue Query and Mutation APIs plus a
+  configurable, persisted tenant session; explicit workspace/build/publication/boundary integration;
+  obsolete alias packer removal; and complete lockfile regeneration.
+- **Phase 2 review fixes (this commit):** removed editor facades that mirrored Query data into Zustand
+  and bypassed the zod write boundary, and added focused artist/venue multipart contract tests.
 - **Mobile workspace resolution:** both Metro configurations watch every junctioned shared workspace
   they resolve locally, while carved/feed installs continue to use physical package directories.
 
@@ -45,7 +47,8 @@ Phase 3 delivery until both canonical packages from Phase 2 are published and fe
 
 - Phase 1 exact-head CI attempt 2 passed after attempt 1 failed closed on a GitHub GraphQL 503 before
   any build/test job ran. Full-E2E merge-group run 32052220186 and publication run 32055197413 passed.
-- `@concertable/b2b`: 3 test files and 11 tests passed; build and alias rewriting passed.
+- `@concertable/b2b`: 5 focused test files and 15 tests passed; build typecheck and alias rewriting
+  passed.
 - Existing package gates passed: universal shared 6/6, manager-web B2B 17/17, web shared 25/25, and
   shared, web, customer, mobile, B2B, and web-B2B package builds.
 - Boundary tooling passed 2/2 tests and dependency-cruiser reported zero violations across all 12
@@ -61,7 +64,10 @@ Phase 3 delivery until both canonical packages from Phase 2 are published and fe
 ## Reviews
 
 - Phase 1 review is terminal with no open findings in `reviews/Refactor-B2bPackageTopology.md`.
-- Phase 2 review is the next gate after the candidate commit.
+- Full native, frontend-architecture, test-coverage, and workflow-security review of
+  `de4f377e8..fc59c26aa` recorded four findings in
+  `reviews/Refactor-B2bPackageTopologyPhase2.md`; all are addressed in the review-fix commit. Review
+  of that corrective delta is the next gate.
 
 ## Decisions, discoveries, blockers, and deviations
 
