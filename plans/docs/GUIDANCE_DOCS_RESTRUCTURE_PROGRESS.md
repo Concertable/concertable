@@ -458,11 +458,28 @@ in `agent-standards`, vendored here with a hash check, wired for **both** harnes
 12. **Phase 7 — delete skills from service repos entirely** (new, plan updated 2026-08-18). The end state
    Tommy named: a new microservice repo is an `AGENTS.md` roster plus two wiring files. Gated behind
    Phase 5 (the domain tree) and behind the cut producing one real service repo to prove it against.
-   **First actionable step is a spike, not a migration**: answer whether Codex auto-loads a repo-declared
-   plugin from `.agents/plugins/marketplace.json` or needs its own one-time install, and whether a
-   plugin-shipped `hooks/hooks.json` fires without repo wiring. Both answers are cheap to get and both
-   gate deleting `.agents/skills/` anywhere. Until then Concertable stays the fallback host and the 28
-   stubs stay — they are generated, and their one real bug (the BOM comparison) is fixed.
+   **The spike is DONE (2026-08-18) and both gates are open.** Run live on both harnesses, then fully
+   reverted — no marketplace, plugin or config entry left behind on the machine, and `config.toml` back to
+   zero `agent-standards` references.
+   - **Codex needs its own one-time install**, exactly like Claude: `codex plugin list` from inside
+     `agent-standards` showed nothing; after `marketplace add` it read `not installed` and needed
+     `codex plugin add`. It *does* resolve `.agents/plugins/marketplace.json` natively, and it also reads
+     `.claude-plugin/marketplace.json`, so one marketplace repo serves both tools.
+   - **Plugin hooks fire with ZERO repo wiring** — proven, not inferred. A scratch repo holding only
+     `.agents/skill-routes.json` blocked a routed write, named the owning skill, and the agent loaded it
+     and retried. So **vendoring is retired**, and the per-repo residue shrinks to `skill-routes.json` +
+     the roster; the two wiring files are needed only for hooks no plugin ships.
+   - Measured: `agent-process` costs **~1,750 tok always-on** for its 7 skills.
+
+   **Three defects the spike surfaced, now the actual blockers** (detail in the plan's Phase 7):
+   the plugin payload's `hooks.json` **omits `apply_patch`, so it is inert for every Codex write** — ENF1
+   repeated one layer up, escaping the fix because that file is hand-authored rather than generated;
+   a malformed `skill-routes.json` **disables routing silently** (`load_routes` swallows the parse error and
+   the hook exits 0 — this bit during the spike and looked exactly like a clean pass); and router output is
+   **mojibaked on Windows**. Fix these in `agent-standards` before any repo stops vendoring.
+
+   Until then Concertable stays the fallback host and the 28 stubs stay — they are generated, and their one
+   real bug (the BOM comparison) is fixed.
 
 ## Also Tommy's, not blocking
 

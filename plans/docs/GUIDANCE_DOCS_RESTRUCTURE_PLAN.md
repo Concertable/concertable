@@ -796,13 +796,43 @@ plugin is missing it **fails loudly** instead of exiting 0. That buys the same p
 unenforcement — without a code copy in every repo forever, and it is strictly better than today, where a
 vendored hook that drifts is detectable only by hash.
 
-**Open, and gating:**
+**Both gating unknowns are now answered — spiked live 2026-08-18, both harnesses, then reverted.**
 
-- **Codex's install semantics.** Phase 6b verified `.agents/plugins/marketplace.json` is Codex's native
-  manifest path; it did not establish whether Codex auto-loads a repo-declared plugin or needs its own
-  one-time install. Answer this before deleting `.agents/skills/` anywhere.
-- **Whether a plugin-shipped `hooks/hooks.json` fires without repo wiring.** 6b concluded it does not; if
-  that holds, the two wiring files above are permanent and correct rather than a transitional cost.
+- **Codex needs its own one-time install; it does not auto-load a repo-declared plugin.** `codex plugin
+  list` run from *inside* `agent-standards` — which carries `.agents/plugins/marketplace.json` at its root
+  — listed only the three globally-configured marketplaces. After `codex plugin marketplace add <path>` the
+  plugin appeared as **`not installed`** and needed `codex plugin add`. Codex did resolve the marketplace
+  through `.agents/plugins/marketplace.json`, confirming 6b's finding about the path. So both harnesses are
+  symmetric: marketplace add + plugin add, once per machine. Codex also reads `claude-plugins-official` via
+  `.claude-plugin/marketplace.json`, so **one marketplace repo serves both tools**.
+- **A plugin-shipped `hooks/hooks.json` fires with ZERO repo wiring.** Proven end-to-end, not inferred: a
+  scratch git repo containing *only* `.agents/skill-routes.json` — no `.claude/settings.json`, no `.codex/`,
+  no vendored hook — blocked a write into a routed path, named the owning skill, and the agent loaded it
+  and retried. `claude plugin details` independently lists `Hooks (1) PreToolUse (harness-only — no model
+  context cost)`. **This retires the vendoring rationale outright.** 6b's "repo-level wiring stays
+  irreducibly per-harness" is true of where a hook is *authored*, and does not imply a repo must wire a
+  hook the plugin already carries.
+
+**So the per-repo residue is smaller than this phase first assumed:** a service repo needs only
+`.agents/skill-routes.json` plus its `AGENTS.md` roster. The two wiring files are needed only for hooks a
+plugin does not ship (Concertable's `merge-review-gate.py`, the plan-handoff Stop hook), not for the router.
+
+Measured cost: the 7-skill `agent-process` plugin is **~1,750 tokens always-on**, per `claude plugin details`.
+
+**Three defects found while spiking, all fixed before Phase 7 can proceed:**
+
+1. **The plugin payload's `hooks.json` is missing `apply_patch` — ENF1 again, one layer up.**
+   `plugins/agent-process/hooks/hooks.json` matches `Write|Edit|MultiEdit|NotebookEdit`; the repo's
+   `.codex/hooks.json` matches `…|apply_patch`. The plugin is therefore **inert for every Codex write**.
+   It escaped the ENF1 fix because it is hand-authored in the plugin subtree rather than generated from
+   `.agents/`, so the two wiring files drifted. Generate it from one source, and extend the drift test to
+   compare matchers rather than only asserting the hook filename appears in both.
+2. **A malformed `skill-routes.json` disables routing silently.** `load_routes` catches `ValueError` and
+   returns `None`, so the hook exits 0. A typo'd fixture in this spike produced zero enforcement and zero
+   warning, and looked identical to a correctly-passing write — the same swallowed-error shape the merge
+   confirm loop warns about. A routes file that exists but does not parse must fail loudly.
+3. **Router output is mojibaked on Windows** — skill descriptions render `.NET �` where an em dash belongs,
+   in the text the agent is meant to act on. Set the stdout/stderr encoding explicitly.
 
 **Sequencing.** After Phase 5 (the domain tree), and after the cut has produced at least one real service
 repo — that repo is the proof. Do not delete `.agents/skills/` from Concertable before the Codex question
