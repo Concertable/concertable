@@ -273,6 +273,18 @@ so there is no `api/` node to host it. Each rule re-homes by one test: names no 
 or `standards/react`; names a platform type every service uses → `standards/concertable`; names one
 service's type → that service's repo.
 
+**Refined 2026-08-18 — a service repo carries no skills at all (Phase 7).** The table above still had
+each repo holding *something*. It should hold no skills: not `.claude/skills/` stubs, not
+`.agents/skills/`, not a vendored hook. Skills become four plugins out of `standards` (`agent-process`,
+`dotnet-standards`, `react-standards`, `concertable-delivery`), installed once per machine at user scope;
+a repo keeps only its `AGENTS.md` roster, its `skill-routes.json`, and the two per-harness wiring files.
+Phase 6b had rejected this because a repo-declared plugin does not auto-install — correct, and re-verified
+today — but it weighed that ritual against one repo. `--scope user` is machine-wide, so the cost is one
+command **per machine**, not per repo, and does not grow with the service count. Vendoring is retired in
+favour of a hook that fails loudly when the plugin is missing, which buys the same no-silent-unenforcement
+property without a code copy in every repo. Two gating unknowns are recorded in the plan's Phase 7: Codex's
+install semantics, and whether a plugin-shipped `hooks.json` fires without repo wiring.
+
 Also added: **Phase 5c, the discovery pass.** The earlier phases only relocate rules that already exist as
 prose. Conventions that live solely in code — B2B's stance taxonomy (`TenantScopedDbContext` tenant-scoped
 read/write, `ReadDbContext` unfiltered reads, `AdminDbContext` everything, plus the filtered-entity list) is
@@ -442,6 +454,15 @@ in `agent-standards`, vendored here with a hash check, wired for **both** harnes
    `.github/workflows/` runs them today, so every hook gate here is only as live as the last person who ran
    it locally (`agent-standards` already has this; Concertable does not). Its own PR because touching
    `.github/workflows/**` pulls the merge gate's security-marker requirement in with it.
+
+12. **Phase 7 — delete skills from service repos entirely** (new, plan updated 2026-08-18). The end state
+   Tommy named: a new microservice repo is an `AGENTS.md` roster plus two wiring files. Gated behind
+   Phase 5 (the domain tree) and behind the cut producing one real service repo to prove it against.
+   **First actionable step is a spike, not a migration**: answer whether Codex auto-loads a repo-declared
+   plugin from `.agents/plugins/marketplace.json` or needs its own one-time install, and whether a
+   plugin-shipped `hooks/hooks.json` fires without repo wiring. Both answers are cheap to get and both
+   gate deleting `.agents/skills/` anywhere. Until then Concertable stays the fallback host and the 28
+   stubs stay — they are generated, and their one real bug (the BOM comparison) is fixed.
 
 ## Also Tommy's, not blocking
 

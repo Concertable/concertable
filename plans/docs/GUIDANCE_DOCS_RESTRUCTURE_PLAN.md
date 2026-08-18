@@ -746,6 +746,68 @@ and does not recurse, and because two source repos must land in one namespace. I
 already used for the work-repo skills. One stated trade-off: junctions make the installed set depend on
 the repo staying put, and a deploy script must therefore also report orphaned and missing links.
 
+### Phase 7 — a service repo carries no skills at all
+
+**Decided 2026-08-18.** The polyrepo cut removes the premise the earlier phases were written against:
+there is no "the repo" to hold a corpus. Phases 3b/5/5b thin and re-home the *docs*; this phase removes
+the *skills* from service repos entirely. Target: a new microservice repo is an `AGENTS.md` roster plus
+two wiring files, and nothing else agent-related.
+
+| Leaves every repo | Stays in every repo |
+|---|---|
+| `.claude/skills/**` — the 28 generated stubs | `AGENTS.md` + `CLAUDE.md` — that service's roster only |
+| `.agents/sync-claude-skill-stubs.ps1` | `.claude/settings.json` — marketplace declaration + hook wiring |
+| `.agents/skills/**` | `.codex/hooks.json` — the same, per-harness and irreducible |
+| `.agents/hooks/skill_router.py` (vendored copy) | `.agents/skill-routes.json` — this repo's path→standard data |
+| `.agents/hooks/vendored.json`, `vendor-hooks.ps1` | |
+
+**Plugin decomposition** — four, split by who must load them rather than by portability:
+
+| Plugin | Holds |
+|---|---|
+| `agent-process` (exists) | branching, committing, merging, plans, docs-and-debt, failing-tests, remote-validation |
+| `dotnet-standards` | the ~20 .NET skills |
+| `react-standards` | the ~9 TS/React skills |
+| `concertable-delivery` | merge, merge-docs, pr-preflight, package-cutover, create-gh-pr, the review family, the roadmap family, techdebt, the `e2e-*` runbooks, integration-debug |
+
+Machine tooling (`sync`, `worktree`, `recents`, `search`, `unmerged`, `prune-worktrees`) stays in
+`agent-utilities` and is never repo-declared — it is personal scope by nature.
+
+**Installation is per-machine once, and that is what makes this work.** Verified 2026-08-18 against the
+current docs: a plugin from an external-source marketplace does **not** auto-install from a project's
+`.claude/settings.json` — *"doesn't load until the team member installs it"*. Phase 6b read that as fatal
+and vendored instead. It is not fatal, because the install takes user scope:
+
+```bash
+claude plugin marketplace add Concertable/agent-standards
+claude plugin install agent-process@agent-standards --scope user
+```
+
+User scope is machine-wide — `~/.claude/plugins/installed_plugins.json` already carries `clangd-lsp` and
+`rust-analyzer-lsp` as `"scope": "user"` — so the cost is one command per **machine**, not one per repo.
+It does not grow with the service count, which is the only dimension the polyrepo cut changes. Phase 6b
+weighed the ritual against one repo; against fifteen service repos the arithmetic inverts.
+
+**This retires vendoring rather than preserving it.** Phase 6b's objection — *"enforcement that is absent
+on a fresh clone is not enforcement"* — is real but mis-scoped: with a user-scope install the standards
+are absent on a fresh **machine**, not a fresh clone. Defend that case with an assertion instead of a
+copy. The repo-wired hook stays (neither harness reads hook wiring out of `.agents/`), and when the
+plugin is missing it **fails loudly** instead of exiting 0. That buys the same property — no silent
+unenforcement — without a code copy in every repo forever, and it is strictly better than today, where a
+vendored hook that drifts is detectable only by hash.
+
+**Open, and gating:**
+
+- **Codex's install semantics.** Phase 6b verified `.agents/plugins/marketplace.json` is Codex's native
+  manifest path; it did not establish whether Codex auto-loads a repo-declared plugin or needs its own
+  one-time install. Answer this before deleting `.agents/skills/` anywhere.
+- **Whether a plugin-shipped `hooks/hooks.json` fires without repo wiring.** 6b concluded it does not; if
+  that holds, the two wiring files above are permanent and correct rather than a transitional cost.
+
+**Sequencing.** After Phase 5 (the domain tree), and after the cut has produced at least one real service
+repo — that repo is the proof. Do not delete `.agents/skills/` from Concertable before the Codex question
+is answered; until then Concertable is the fallback host for anything a plugin cannot yet deliver.
+
 ### Deferred to follow-up PRs
 Auto-load thinning (`api/AGENTS.md:3`'s three imports; the 86 merge lines and 32 Docker lines that
 `/merge` and `scripts/e2e.ps1` already automate); the analyzer push-down plus
