@@ -218,19 +218,28 @@ names rather than repeating the aggregate name:
 | Booking | `IConfirmStep`, `ICancelStep` |
 | Concert | `ICancelStep`, `ICompleteStep`, and local settlement-recovery steps where required |
 
-The module-local generic factory is the only code in that module allowed to perform keyed DI lookup.
-A caller requests one operation-specific dependency through a named business-facing collaborator:
+Keyed selection remains module-local and hidden behind a named business-facing collaborator. A caller
+requests one operation-specific dependency:
 
 ```csharp
 await completeExecutor.CompleteAsync(concertId, cancellationToken);
 ```
 
-The generic keyed-registration mechanism may be mechanically similar in each module, but
-registrations, coverage declarations, step contracts, implementations, and factory instances are
+Registrations, coverage declarations, step contracts, implementations, and selector instances are
 module-local. There is no shared `IWorkflowStepResolver`, cross-module registry, or registration block.
-The generic type is a factory because it returns the selected step; the operation-specific executor
-consumes that step and returns the final application result. Only the factory may depend on
-`IKeyedServiceProvider`.
+The lifecycle cutover does not settle the runtime selector mechanism: the existing open-generic
+`*StrategyFactory<TStrategy>` and `StepResolver<TStep>` shapes do not constrain permitted strategy
+families or callers, defer invalid use to keyed-DI runtime lookup, and force scoped container dispatch
+even for singleton-only families. Generic invariance does not provide those business invariants.
+
+A separate non-blocking investigation must retain one vertical registration source and its exact
+coverage, duplicate-key, unexpected-key, and lifetime validation while evaluating closed
+operation-owned selectors. It must support immutable singleton dispatch, including a
+`FrozenDictionary` or demonstrably equivalent direct map for singleton-only families, preserve
+scope-correct resolution for scoped families, and avoid repeated per-facade key maps. Until that design
+is proven, this lifecycle PR must not multiply generic selector wrappers or rewrite existing selectors
+solely for naming consistency; it uses the smallest module-local selection seam required for the
+ownership cutover and treats that seam as provisional.
 
 Cancel and Complete use separate executors because each is one named Concert lifecycle operation with
 its own validation, persistence, transaction, IO, and typed failure contract. Uniform creation remains
@@ -444,11 +453,12 @@ Gate: Concert can validate and complete every operation from its own state plus 
 
 - [ ] Delete `IConcertWorkflow`, concrete `*Workflow` dependency-holders, the workflow factory,
   cross-stage builder, state-machine registry, and reflection capability registry.
-- [ ] Add local `State`, `Trigger`, `StateMachine`, keyed selectors, named operation facades, and
-  contextual step contracts only where each module needs them.
+- [ ] Add local `State`, `Trigger`, `StateMachine`, the minimum provisional keyed-selection seams,
+  named operation facades, and contextual step contracts only where each module needs them.
 - [ ] Register exact per-`DealType` step coverage independently in Application, Booking, and Concert.
-- [ ] Update `api/agents/CODE_PATTERNS.md` and module guidance so shared keyed infrastructure cannot be
-  mistaken for shared workflow ownership.
+- [ ] Update module guidance for lifecycle ownership without ratifying the provisional selector
+  mechanism; the separate dispatch investigation owns any general `api/agents/CODE_PATTERNS.md`
+  replacement.
 
 Gate: each command resolves one local step; no service can resolve another module's steps or request a
 whole workflow.
@@ -479,8 +489,8 @@ whole workflow.
 - There is no shared workflow module, cross-module step registry, umbrella state machine, or dependency-
   holder exposing all steps.
 - Contextual local names (`State`, `Trigger`, `StateMachine`, `ICancelStep`) are used without redundant
-  aggregate prefixes inside their module; keyed-selector naming matches its actual factory/resolution
-  semantics and remains module-local.
+  aggregate prefixes inside their module; keyed selection remains module-local behind operation-owned
+  collaborators without claiming the provisional selector mechanism as the final pattern.
 - Every `DealType` has exact, independently validated coverage for the local operations it requires.
 - Accept and Booking-confirmation boundaries are atomic or durably convergent as specified; every
   callback order is idempotent.

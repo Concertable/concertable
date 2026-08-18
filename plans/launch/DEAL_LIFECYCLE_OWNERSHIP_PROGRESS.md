@@ -10,8 +10,8 @@
   the worktree retains a large uncommitted Phase 3/4 candidate that must be preserved and reconciled
   after the design reset.
 - Dependency/package gates: none block the remaining B2B-internal implementation. Phase 1 delivery is terminal; final `api/**` delivery will own its routine package publication and platform-sync gate only after the complete refactor merges.
-- Last reconciled: 2026-08-18 after the fresh-context Concert application-boundary research selected
-  uniform service-owned creation plus separate operation-specific Cancel and Complete executors
+- Last reconciled: 2026-08-18 after completing the dashboard/projection compile-recovery slice and
+  recording the module-owned seeder frontier as the next bounded lifecycle slice
 
 ## Current state
 
@@ -90,36 +90,61 @@ than restarting or restoring the legacy cross-module model.
 
 The Concert collaborator boundary is now resolved from the final candidate and repository conventions.
 `IConcertService.CreateAsync(ConfirmedBooking)` owns the uniform creation path. Cancel and Complete each
-use a separate operation-specific executor backed by a module-local generic step factory with exact
-`DealType` coverage. There is no umbrella `IConcertExecutor`, and the candidate's raw `StepResolver`
-shape must be replaced because keyed service lookup belongs only in the validated factory.
+use a separate operation-specific executor backed by module-local keyed selection with exact
+`DealType` coverage. There is no umbrella `IConcertExecutor`. The selector mechanism is deliberately
+provisional: the existing open-generic factories and `StepResolver<TStep>` lack semantic constraints,
+route singleton-only families through scoped keyed-DI lookup, and must be investigated separately
+without giving up vertical coverage validation or reintroducing repeated per-facade maps. That
+investigation does not block the lifecycle ownership cutover.
 
-The 2026-08-18 continuation exceeded a safe slice and is interrupted with uncommitted runtime edits.
-It combined Concert executors, payment callbacks, persistence cleanup, an atomic Opportunity claim,
-and the next compile frontier in one context. That breadth caused a concrete design error: it copied
-the legacy deferred-refund callback into Concert as an inbox-acknowledged state validation with no
-state change or output. Tommy rejected that no-op handler. The attempted removal was interrupted, so
-the worktree may contain a partially applied edit and must be audited before any further implementation.
-No runtime checkpoint from that continuation has been committed.
+The interrupted continuation's 175-path worktree state is now audited. The 89 staged deletions, 7
+unstaged deletions, 66 modified paths, and 13 untracked paths form the preserved Phase 3/4 candidate:
+Application/Booking ownership, Concert state and operation executors, Opportunity's atomic claim,
+host composition, focused tests, and owning tech-debt entries. Within that candidate, the payment
+handler rewrites are deliberate bounded implementation: refund success/rejection mutate Concert
+cancellation state, and settlement success/failure mutate Concert settlement state inside the owning
+inbox/outbox transaction. The only accidental mechanical carry-over found was the deferred-refund
+subscription. Its processor interface and method and its module registration were already absent in
+the interrupted patch; the remaining B2B host subscription is now removed. No
+`RefundEscrowDeferredEvent` reference remains in Concert or the B2B host.
+
+The duplicate Concert `IDealTermsRenderer`, `IDealTermsSerializer`, `IDealTerms`, their implementations,
+registrations, and DealTerms-specific unit coverage are removed. The scoped production scan finds no
+retained Concert runtime consumer, and Concert.Application now compiles.
+
+The dashboard/projection compile-recovery slice is complete. Concert now queries only Concert-owned
+read models and aggregates for its dashboard counts. Application owns pending/accepted dashboard
+projections and its checkout-capability rule; Opportunity owns upcoming/open queries from its own read
+context. `ConcertDashboardService` composes those narrow Contracts-facing results without a shared
+workflow registry or cross-module entity query. Application.Infrastructure and
+Opportunity.Infrastructure both build with 0 warnings and 0 errors. Concert.Infrastructure now reaches
+10 errors in the next independent frontier: five seeder/fingerprint ownership diagnostics, three
+obsolete Application counterparty notification diagnostics, and two Concert creation email-composition
+diagnostics. No dashboard/projection or stale global-using diagnostic remains. This commit is the
+first recovery checkpoint for the preserved Phase 3/4 candidate and completed compile-recovery slices.
 
 ## Next Steps
 
-Recovery slice only — do not continue into dashboards, projections, migrations, guidance, or another
-lifecycle operation in this context:
+Fresh-context module-owned seeder compile-recovery slice only — do not continue into the obsolete
+Application counterparty notification handler, Concert creation email composition, migrations,
+guidance, or another lifecycle operation:
 
-1. Inspect the full uncommitted diff and the interrupted patch state without editing. Classify every
-   post-checkpoint change as preserved candidate work, deliberate bounded implementation, or accidental
-   mechanical carry-over.
-2. Correct only the Concert refund-outcome boundary. `FinancialOperationOutcomeProcessor` handles
-   refund success and rejection because they change Concert cancellation state. Remove its
-   `RefundEscrowDeferredEvent` interface, method, and DI registration: deferral leaves Concert in
-   `CancellationPending`, while Payment owns retry and later publishes the next material fact.
-3. Audit the other newly rewritten Concert payment handlers against the same rule and the recorded
-   state/transaction invariants. Do not broaden the edit if their purpose is uncertain; record the
-   exact uncertainty instead.
-4. Run `git diff --check`, the scoped legacy-reference grep, and the smallest affected Concert build
-   with single-worker MSBuild. Update this ledger with the exact result and stop the context. Only a
-   later fresh continuation may select the next bounded slice.
+The keyed-selector design concern is a recorded non-blocking follow-up. Do not refactor, rename, or
+generalize selector/factory infrastructure in this slice.
+
+1. Read `api/agents/SEEDING_CONVENTIONS.md` in full before editing any seeder.
+2. Remove Concert seeder ownership of Opportunity, Application, and Booking rows in
+   `ConcertDevSeeder`, `ConcertTestSeeder`, and `SeededApplicationSigner`. Establish the minimum
+   module-owned dev/test seeder sequence needed to preserve the existing `SeedState` identities,
+   Application signature/fingerprint facts, Booking links, and Concert creation inputs. Do not make
+   `ITermsFingerprintCalculator` public, add a runtime-project reference across modules, or let one
+   module write another module's tables.
+3. Run the scoped seeder ownership grep, `git diff --check`, each affected module Infrastructure
+   Release build, and the Concert Infrastructure Release build with single-worker MSBuild. The slice
+   gate is that all seeder/fingerprint diagnostics are gone and the Concert build either passes or
+   reaches only the recorded notification/email frontier.
+4. Update this ledger with the exact result and stop the context. Do not fix the next frontier in the
+   same continuation.
 
 ## Completed work
 
@@ -172,6 +197,22 @@ lifecycle operation in this context:
 
 ## Verification
 
+- Dead Concert terms-rendering slice: the scoped production-reference scan across Concert and the B2B
+  host returned no `IDealTermsRenderer`, `IDealTermsSerializer`, `IDealTerms`, renderer/serializer
+  implementation, or per-`DealType` terms implementation match; `git diff --check` passed.
+- Dashboard/projection rejected-boundary scan across `ConcertDashboardService`,
+  `ConcertDashboardRepository`, both dashboard mappers, and Concert.Infrastructure global usings:
+  no `IConcertWorkflowCapabilityRegistry`, deleted workflow-executor namespace, `LifecycleState`,
+  `ApplicationEntity`, or `OpportunityEntity` match.
+- Application.Infrastructure and Opportunity.Infrastructure Release builds with `--no-restore`,
+  disabled build servers, and single-worker MSBuild: 0 warnings and 0 errors.
+- `dotnet build api/Concertable.B2B/src/Modules/Concert/Concertable.B2B.Concert.Infrastructure/Concertable.B2B.Concert.Infrastructure.csproj --configuration Release --no-restore --disable-build-servers --maxcpucount:1`
+  cleared the dashboard/projection frontier and stopped at 10 errors with 0 warnings: five
+  `ITermsFingerprintCalculator` seeder diagnostics, three
+  `ApplicationCounterpartyNotifiedDomainEvent`/`ApplicationNotification` diagnostics, and two
+  `BookingConfirmationEmailSender` diagnostics.
+- Refund recovery slice: `git diff --check` passed, and the scoped
+  `RefundEscrowDeferredEvent` scan across Concert plus the B2B host returned no matches.
 - The published 270-path candidate remains an intentionally non-mergeable carve. Its Application-to-
   Booking seam is verified; the host and architecture suite stop at 37 Concert.Application compile
   errors naming legacy shared-workflow consumers of types already moved to their owning modules.
@@ -342,10 +383,15 @@ lifecycle operation in this context:
 - One state machine exists per owning aggregate/module, not per individual enum value.
 - Local state machines may use different structures; no common lifecycle interface is required.
 - Context supplies names inside a module: `State`, `Trigger`, `StateMachine`, and `ICancelStep` do not
-  need Application/Booking/Concert prefixes internally. Resolver-versus-factory naming for the keyed
-  selector is part of the mandatory Concert-boundary research rather than a settled exception.
-- Generic keyed-DI or transition plumbing may be shared only when it has no domain knowledge. Strategy
-  registrations, transition tables, capabilities, and resolver instances remain module-local.
+  need Application/Booking/Concert prefixes internally.
+- The existing open-generic strategy factories and `StepResolver<TStep>` are not the approved final
+  dispatch pattern. They lack strategy-family and caller invariants, add scoped keyed-container lookup
+  to singleton-only dispatch, and repeat the same service-locator wrapper across modules. A separate
+  non-blocking investigation must preserve vertical exact-coverage validation while designing closed,
+  operation-owned, lifetime-aware dispatch with immutable singleton maps and no repeated per-facade
+  key declarations. Do not expand this concern inside the lifecycle compile-recovery slices.
+- Generic transition plumbing may be shared only when it has no domain knowledge. Strategy
+  registrations, transition tables, capabilities, and selector instances remain module-local.
 - Application records pre-accept payment evidence only because the callback can arrive before Booking
   exists. The evidence is not a continuation of Application lifecycle state.
 - `Application.Contracts` supplies the immutable accepted-application provenance required to create a
