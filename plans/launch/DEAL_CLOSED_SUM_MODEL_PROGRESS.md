@@ -7,7 +7,8 @@
 - Roadmap item: `launch/deal-closed-sum-model`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-launch_deal-dispatch-plan`
 - Branch: `Docs/launch_deal-dispatch-plan`
-- PR: not created
+- PR: docs-delivery PR [#658](https://github.com/Concertable/concertable/pull/658) at published work
+  head `7bde70f64de10ea2bdd81758eb81c86046d80df7`
 - Base: `origin/main` at `1647ec6f85911503e8f2ad3ce2bb0fdc94cd1d14`
 - Dependency gates: implementation blocked on terminal delivery of lifecycle PR #633; the C# 15
   cut-over also requires the B2B .NET 11 compiler/runtime/consumer matrix
@@ -80,6 +81,8 @@ Resume when: Current `main` contains the delivered lifecycle split and the lifec
 - `git diff --check`: passed.
 - Docs delivery branch review of `1647ec6f8..ecfcd2bb6` passed the accuracy, contradiction,
   placement, concision, dangling-reference, and followability lenses with no findings.
+- Docs-delivery publication: local work head, `origin/Docs/launch_deal-dispatch-plan`, and PR #658
+  `headRefOid` all equalled `7bde70f64de10ea2bdd81758eb81c86046d80df7`; the PR carries `skip-e2e`.
 - Stale-design scans found no surviving keyed-completion, retained-keyed, mapper/updater/terms-switch,
   or `IKeyedServiceProvider` target direction in the affected plan graph.
 - Complete docs review of `1647ec6f8..88c368d39` plus the finding-fix working tree passed the
