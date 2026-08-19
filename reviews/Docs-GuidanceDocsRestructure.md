@@ -5,9 +5,9 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `6d80032ed68f008b1ebfe46d816a612b61d22448`  _(2026-08-19)_
+**Reviewed up to commit:** `510202cf6a33c41ab6ee136c727ec052b2cca679`  _(2026-08-19)_
 
-**Security-reviewed up to commit:** `6d80032ed68f008b1ebfe46d816a612b61d22448`  _(2026-08-19)_
+**Security-reviewed up to commit:** `510202cf6a33c41ab6ee136c727ec052b2cca679`  _(2026-08-19)_
 
 > Range reviewed: `9205e82d..2b93b45b` (12 commits reviewed; markers moved to `54b91961`, the fix commit, 73 files — markdown plus one Python hook).
 > Markers moved forward three times with nothing re-reviewable in between: once to the fix commit
@@ -465,3 +465,63 @@ supplies. ENF9 below is why that stamp had to be a judgement call at all.
   cannot be checked against anything. Fix: land #2 with a merge commit so the SHAs survive, or re-run
   `vendor-hooks.ps1 -Into <repo>` against `agent-standards` `main` after it merges and commit the
   re-pinned manifest here before #637 is enqueued.
+
+## Incremental review — 2026-08-19
+
+> Range reviewed: `6d80032e..9799ac91` (8 commits, 25 files). Layer 1 (native `code-reviewer`) and the
+> security layer both ran; the delta touches `.github/workflows/**`, so the security marker is re-stamped.
+
+**Security layer: no findings at the bar.** Every changed `subprocess.run` uses an argv list, no
+`eval`/`exec`/`pickle`/`yaml.load` was introduced, `claude-review.yml` stays on
+`pull_request: types: [labeled]` so its OAuth secret is never exposed to fork head code, and the new
+`hook-tests` job takes `contents: read` with no secrets. The merge gate's new opt-in fails **closed** on
+an unreadable config, which is the correct direction.
+
+**Native layer: five findings, all fixed on the branch at `9799ac91`.** Every one was a claim the code
+did not support — the same failure mode as this PR's first review, found again by checking the tree
+rather than the prose.
+
+- [x] **NAT13 — HIGH — native/correctness** — `.github/workflows/claude-review.yml:30`
+  The prompt replaced its inline conventions with "load the skills `skill-routes.json` names", but those
+  skills are not vendored into this repo — they arrive as plugins or junctions on a developer's machine —
+  so on `ubuntu-latest` the CI reviewer had **no** conventions at all. Deleting the stale inline copies
+  was right; the replacement pointed at nothing. Now points at the docs actually in the checkout, and
+  tells the reviewer to name the owning skill and say the rule could not be checked here.
+- [x] **NAT14 — MEDIUM — native/correctness** — `docs/OVERVIEW.md:13`
+  Cited a `Contract` module. `ContractEntity`, `IContractIssuer` and `IContractPdfRenderer` are the
+  **Concert** module's, which `api/Concertable.B2B/AGENTS.md` already states.
+  `api/Concertable.B2B/src/Modules/Contract` held only an `AGENTS.md`/`CLAUDE.md` pair for a test project
+  that does not exist and is in no solution — rename leftovers, deleted here.
+- [x] **NAT15 — MEDIUM — native/correctness** — `docs/OVERVIEW.md:37`
+  Same defect in the service table: `Contract` dropped from B2B's module list.
+- [x] **NAT16 — LOW — native/correctness** — `.agents/skill-routes.json:69`
+  `Configurations?/[^/]*Configuration\.cs$` matched 57 of 58 EF configuration files, silently skipping
+  `LedgerEntityConfigurations.cs` — the plural suffix. Every file in a `Configurations/` folder is a
+  configuration, so the pattern now says that.
+- [x] **NAT17 — LOW — native/correctness** — `api/AGENTS.md:57`
+  Offered `ITenantContext` as the example of "a separate abstraction only the services with the concept
+  depend on", but it is declared in shared `Concertable.Kernel.Identity` beside `ICurrentUser`, so the
+  example contradicted its own rule. Now states what is true: declared there so the shared interceptor
+  can read it, implemented and depended on by B2B alone.
+
+**Found by the branch's own author-side pass, also fixed here:** the `reset-test-explorer` skill cleaned
+only the two `.Ui` projects while Customer's `.E2ETests.Mobile` is a Reqnroll project too (so the
+symptom the skill exists to clear survived it), and its expected-groups list hardcoded test counts that
+the next scenario invalidates; `docs/INDEX.md` had the three product docs filed under "Process".
+
+**Fixed upstream in the same pass**, because the corpus's own rule is that enforcement moves with the rule
+it enforces:
+
+- `agent-standards` `2231bd0` — the merge gate never read `gh pr merge --repo <other>/<repo>`, so it
+  resolved the PR number against the local checkout: a sibling merge blocked on an unrelated local
+  branch's review, and would **pass** whenever the local PR of that number carried a clean one. Same class
+  as ENF8. +4 tests, mutation-checked.
+- `agent-standards` `0d773bd` — `common_git_dir()` was defined and called from nowhere, with a comment
+  describing a hazard the live code handles elsewhere: dead code that reads as load-bearing.
+- `agent-standards` `9795896` — two overclaims in the new docs: an `ITenantContext` file count stated as
+  "all B2B's" when 61 of 64 are, and an unverified assertion about Customer's scoping.
+- `dotagents` `82e5d87` — the borrowed-table and covariance examples named real Concertable identifiers
+  in a generic standard, which is exactly what stops it being lifted into another repo.
+
+Re-verified after the fixes: this repo's hook tests **14 passed**, `agent-standards` **155 passed**,
+`docs_reachability.py` **0 errors**, `sync-generated.ps1 -Check` clean in both standards repos.
