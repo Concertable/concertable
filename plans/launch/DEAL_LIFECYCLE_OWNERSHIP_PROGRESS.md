@@ -6,15 +6,15 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules-phase2`
 - Branch: `Refactor/launch_deal-lifecycle-modules-phase2`
 - PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633). Published
-  Concert unit fixture recovery range `5d2aedfea..e4dab271c` from starting remote head
-  `5d2aedfeaad04ef264cb67b804a11254aacfe362`; local HEAD, the remote branch, and PR `headRefOid`
-  matched `e4dab271c2758baed2269091610c4a8ed161eeb3` after the work-head push. Prior exact-head CI run
+  Opportunity request-builder recovery range `9e14bc46c..2e60a1e08` from starting remote head
+  `9e14bc46cc4d66bba92f7bd54d4a13b73639fb84`; local HEAD, the remote branch, and PR `headRefOid`
+  matched `2e60a1e0857e4405ec8d173b6e6eb194d3f1652a` after the work-head push. Prior exact-head CI run
   `32236953306` failed the build on stale Concert unit, Workers unit, integration, and E2E test
-  consumers. The Workers and Concert unit frontiers are now cleared; the next exact integration action
-  is recorded in `## Next Steps`.
+  consumers. The Workers, Concert unit, and Opportunity request-builder frontiers are now cleared; the
+  next exact integration action is recorded in `## Next Steps`.
 - Dependency/package gates: none block the remaining B2B-internal implementation. Phase 1 delivery is terminal; final `api/**` delivery will own its routine package publication and platform-sync gate only after the complete refactor merges.
-- Last reconciled: 2026-08-19 after the focused Concert integration Opportunity request-builder
-  namespace recovery and exact remaining compiler-frontier capture
+- Last reconciled: 2026-08-19 after publishing and verifying the focused Concert integration
+  Opportunity request-builder recovery at `2e60a1e0857e4405ec8d173b6e6eb194d3f1652a`
 
 ## Current state
 
