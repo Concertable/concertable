@@ -1,128 +1,77 @@
 # API rate limiting progress
 
 - Plan: `plans/launch/RATE_LIMITING_PLAN.md`
-- Roadmap: `plans/launch/LAUNCH_ROADMAP.md`
-- Roadmap item: `launch/rate-limiting`
+- Roadmap: `plans/launch/LAUNCH_ROADMAP.md` · item `launch/rate-limiting`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-launch_rate-limiting`
 - Branch: `Feature/launch_rate-limiting`
-- PRs: #646 (Phase 1, **MERGED** — ServiceDefaults seam) · #655 (Phase 2, **draft** — Auth + B2B consumers)
-- Dependency/package gates: **cleared.** Phase 1 published `Concertable.ServiceDefaults` `0.1.0-alpha.0.1070`;
-  `chore/platform-sync-0.1.0-alpha.0.1070` (#654) merged, bumping every pin. No inbound blockers.
-- Last reconciled: 2026-08-19, from `origin/main` + draft-PR CI (#655 run 32170178751) + repository evidence.
+- PRs: #646 (superseded seam v1, **MERGED**) · #655 (**producer v2 — seam refactor**, this branch) · consumer PR (all 5 services, **not yet created** — gated on #655 publish)
+- Last reconciled: 2026-08-19, from `origin/main` + full endpoint sweep (3 subagents) + repository evidence.
 
 ## Current state
 
-**Both phases implemented. Phase 1 merged; Phase 2 pushed to draft PR #655 with draft-PR CI GREEN
-(run 32269078574 — build, carve, unit, integration all pass). Awaiting Tommy's merge authorization.**
+**Design changed mid-flight (with Tommy): from a global-fallback + central-policy model to opt-in
+named policies, shared mechanism + per-service ownership, across all five services.** Rationale and the
+endpoint evidence (36 of 146 HTTP endpoints — ~25% — are real abuse surfaces) are in the plan's "Why
+opt-in" section.
 
-The earlier CI failure (integration tests tripping the new limiter) is fixed and confirmed green.
+**Producer (Phase 1, #655) implemented and green locally.** `Concertable.ServiceDefaults` rebuilt to the
+opt-in seam: `AddDefaultRateLimiting` (plumbing + 429/`Retry-After` `OnRejected` only), `AddRateLimitPolicy`
+(one named fixed-window policy, lazy `IOptionsMonitor<RateLimitWindow>` config binding), `RateLimitWindow`,
+`UseDefaultRateLimiting`. Removed the old global limiter, `RateLimitPolicies` constants, and
+`RateLimitingOptions`. The lazy binding fixes the earlier eager-bind wart (which had forced env-var-only
+test overrides). Unit tests: partition trips 429 + `Retry-After`, and per-user vs per-IP key resolution — **4 pass**.
 
-Draft-PR CI on #655 came back red: the **Auth integration suite** failed 7 tests with
-`Expected 200/302, got 429 TooManyRequests` on the `Pages/Account` credential POSTs (the other
-integration jobs were fail-fast *cancellations*, not real failures). Root cause: the in-memory limiter's
-partitions live on the shared `WebApplicationFactory` host and **survive Respawn**, so functional tests —
-which fire many requests through one IP/`sub` partition — accumulate past the production caps and 429.
-This is a latent trap for every throttled endpoint (Auth `Login`/`Global`; B2B `Apply`/`Upload`/`Messaging`/`Global`),
-not just the ones that happened to run before the fail-fast cancel.
-
-Fix (uses the existing `RateLimitingOptions` config seam — no producer/ServiceDefaults change): the
-integration environments configure the limits effectively-unlimited so functional suites don't trip the
-abuse throttle they aren't testing, and the one test that must prove the throttle
-(`ApplicationRateLimitApiTests`) re-enables `Apply` at a low limit on its own isolated host, preserving
-429 + `Retry-After` coverage.
-
-Phase 1 (the shared web-only seam in `Concertable.ServiceDefaults`) merged via #646 and is on the feed at
-`0.1.0-alpha.0.1070`. Phase 2 opts Auth and B2B into it and attaches the named policies to the endpoints
-each service owns:
-
-- **Auth** — `AddDefaultRateLimiting()` + `UseDefaultRateLimiting()` (after `UseRouting`); `Login` on the
-  `Pages/Account` credential POSTs (`Login`/`Register`/`ForgotPassword`/`ResetPassword`).
-- **B2B** — the pair placed after auth/`TenantResolutionMiddleware`, before authorization/`MapControllers`;
-  `Apply` → `ApplicationController.Apply`, `Upload` → `BlobController.Upload`, `Messaging` →
-  `MessageController.Report`. `UseForwardedHeaders` added before the limiter.
-
-Two evidence-based deviations from the presumed surface (see `## Decisions` below): `/connect/token` is
-**not** thrown on the tight `Login` cap (it carries service auth in prod), and `Messaging` protects the
-`Report` write because there is **no** user-facing message-compose endpoint.
-
-Builds: Auth, B2B.Web, and the Concert integration test project all compile 0/0. The full
-build/carve/unit/integration matrix is owned by draft-PR CI (remote-first); the Apply 429 integration
-test runs there.
+**PR #655 repurposed to producer-only.** The obsolete Phase-2 consumer wiring it carried (Auth + B2B
+tagging, built for the abandoned global design, referencing the now-removed `RateLimitPolicies`) was
+reverted to `origin/main`; the old `ApplicationRateLimitApiTests` deleted. #655 now diffs only the
+ServiceDefaults refactor + these plan docs.
 
 ## Next Steps
 
-**Paused: Tommy — review the Phase 2 draft PR #655 and authorize its merge.** Phase 2 is implemented,
-built, and pushed, including the fix for the CI integration-test failure (limiter disabled in the
-integration environments; throttle still proven in `ApplicationRateLimitApiTests`). **Draft-PR CI is
-GREEN** on the exact remote head (run 32269078574). Nothing further is safely implementable locally.
+**Push the producer refactor to draft PR #655, let CI validate, then (on Tommy's merge authorization)
+merge it so the new seam publishes.** Local state is committed and green; the branch is being brought
+current with `origin/main` (4 behind, docs-only) before push.
 
-- **Resume when:** Tommy authorizes the merge. On merge of an `api/**` change, `publish-packages`
-  republishes and `platform-sync` opens a `chore/platform-sync-*` pin bump — follow it to green/merged
-  (additive consumer-only change, so non-breaking → auto-merges).
-- **Then:** the lifecycle is terminal. Close the worktree with
-  `./scripts/worktrees.ps1 close -Worktree <path> -PullRequest 655 -PlanManaged`, and delete this plan +
-  ledger from a `Docs/*_closeout` worktree (git history is the archive).
+- **Merge #655 (needs Tommy's go-ahead):** on merge of this `api/**` change, `publish-packages`
+  republishes `Concertable.ServiceDefaults` and `platform-sync` opens a `chore/platform-sync-*` pin bump.
+  Non-breaking (no consumer on `main` uses the rate-limit API yet) → follow it to green/merged.
+- **Then create the consumer PR** (Phase 2, new branch off the new pin): opt all five web hosts into the
+  seam and apply the named policies per the plan's surface table, lift the integration-fixture disable
+  step into `Concertable.Testing.Integration`, add 429 + `Retry-After` integration tests (one per
+  partition kind), and tick roadmap line 44 + §7 in the shipping commit.
 
 ## Completed work
 
-- **Phase 1 (merged, #646)** — `RateLimitPolicies`, `RateLimitingOptions`, `RateLimitingExtensions`
-  (`AddDefaultRateLimiting`/`UseDefaultRateLimiting`, global fallback + four named fixed-window policies,
-  `OnRejected` → 429 + `Retry-After` + ProblemDetails) in `Concertable.ServiceDefaults`, plus its unit test
-  project. Distributed-store deferral logged in `api/TECH_DEBT.md`.
-- **Phase 2 (draft, #655)** — consumer wiring + policy application in Auth & B2B per the plan. Added
-  `Concertable.ServiceDefaults` package reference to `Concertable.B2B.Concert.Api` and
-  `Concertable.B2B.Conversations.Api` (needed for the `RateLimitPolicies` constants). Added
-  `ApplicationRateLimitApiTests` (Apply → 429 + `Retry-After`, isolated via a unique `sub`). Added the
-  production trusted-proxy `ForwardedHeaders` dependency to `api/TECH_DEBT.md` (owned by
-  `launch/config-and-deployment`). Roadmap line 44 + §7 line ticked in the shipping commit.
+- **Design decision** — opt-in, no global fallback; shared mechanism + per-service policies; all 5
+  throttles one endpoint, no global cap.
+- **Phase 1 producer refactor (this branch)** — the ServiceDefaults seam above; unit tests rewritten and
+  green; obsolete consumer wiring stripped from #655.
+- **#646** — merged seam v1 (global + central policies); superseded by this refactor.
 
 ## Verification
 
-- `dotnet build` → 0/0 for `Concertable.Auth`, `Concertable.B2B.Web`, and
-  `Concertable.B2B.Concert.IntegrationTests` (transitively builds the module Api projects + fixture).
-- ServiceDefaults `0.1.0-alpha.0.1070` restores from the feed with the new extension methods (Auth built
-  clean against it — proves the published version carries Phase 1).
-- Apply 429 + `Retry-After` integration test authored; runs in draft-PR CI (Docker/Testcontainers), not
-  locally (remote-first).
-- Limiter CI-failure fix builds 0/0 locally (`Concertable.B2B.Concert.IntegrationTests` + Auth
-  `Concertable.Auth.IntegrationTests`, transitively their fixtures/hosts) and is **confirmed green in
-  draft-PR CI** (run 32269078574: full build, carve, unit, and integration matrix all pass).
-
-## Reviews
-
-- 2026-08-17 `/review` (medium) on Phase 1 → clean (`reviews/Feature-launch_rate-limiting.md`). The
-  per-IP `ForwardedHeaders` note it pinned is now addressed (middleware wired before the limiter in both
-  hosts; production trusted-proxy binding logged as config-gate debt).
-- Phase 2 review pending (draft-PR CI + any `/review` before merge authorization).
+- `dotnet build` + `dotnet test` → 0/0, **4/4 pass** for `Concertable.ServiceDefaults.UnitTests`.
+- Full build/carve/unit/integration matrix owned by draft-PR CI (remote-first).
 
 ## Decisions, discoveries, blockers, and deviations
 
-- **`/connect/token` is NOT throttled with `Login`.** ROPC is registered only under `IsE2E()`
-  (`Auth/Program.cs`), so production `/connect/token` carries service client-credentials (B2B/Customer/Auth
-  all POST there) + auth-code exchange + refresh — no password entry. A tight per-IP Login cap there would
-  throttle the platform's own service auth for zero brute-force benefit; the real interactive surface is
-  the `Pages/Account` Razor Pages, which carry `Login`. The token endpoint keeps the generous global
-  fallback limiter.
-- **No user-facing message-compose surface exists.** `MessageController` is read/`mark-read`/`report`;
-  `NotificationHub` has no client-invokable send method; the only caller of `IConversationsModule.SendAsync`
-  is `ApplicationNotifier` (messages are lifecycle-generated, already bounded by `Apply`). So `Messaging`
-  protects the one spammable conversations write, `Report`. A future direct-compose endpoint must carry
-  `[EnableRateLimiting(RateLimitPolicies.Messaging)]`.
-- **Per-IP correctness is config-gated.** Both hosts run `UseForwardedHeaders` before the limiter, but the
-  production trusted-proxy `ForwardedHeadersOptions` binding is owned by `launch/config-and-deployment`
-  (logged in `api/TECH_DEBT.md`). Until then, behind an ingress the per-IP policies collapse to the proxy IP
-  (fails toward over-limiting — not a security hole).
-- **Integration env disables the throttle — via env vars, because the limiter binds config eagerly.**
-  In-memory limiter partitions persist across the shared test host and survive Respawn, so leaving
-  production caps on 429s functional tests that fire many requests through one partition. First attempt
-  set the windows via the fixtures' `ConfigureAppConfiguration` in-memory collection — that FAILED in CI
-  (Auth green, but B2B `ContractApiTests` still 429'd): `AddDefaultRateLimiting` binds
-  `builder.Configuration` **eagerly** at host build (line 58), before the in-memory source is merged, so
-  only sources present at builder creation (**environment variables**) reach it. Both fixtures now set the
-  `RateLimiting__*__PermitLimit` env vars effectively-unlimited (no ServiceDefaults change).
-  `ApplicationRateLimitApiTests` re-enables `Apply` at 10 on an isolated `WithWebHostBuilder` host built
-  under a scoped `Apply` env var (`fixture.CreateClientWithApplyRateLimit`), so the 429 + `Retry-After`
-  control is still proven.
-- **Partition on `sub`, not tenant** (Phase 1 decision, unchanged). In-process limiter only (deferred).
-- **Worktree recreated off `origin/main` for Phase 2** after #646 merged and its worktree was closed —
-  the standard plans/AGENTS per-PR-slice lifecycle.
+- **Opt-in, no global fallback** (this session, with Tommy). ~25% of endpoints need a limit; two-thirds
+  of those are anonymous (per-IP), the rest authenticated writes (per-user). A global per-user cap helps
+  the ~75% workflow-bounded endpoints not at all, can't partition the anonymous majority, and risks
+  false-positives on legit burst traffic.
+- **Shared mechanism, per-service policies** — ServiceDefaults owns plumbing + `AddRateLimitPolicy` only;
+  each service names and owns its policies. Honors "shared is the intersection, never the union".
+- **Lazy config binding** — named `IOptionsMonitor<RateLimitWindow>` resolved per request, replacing the
+  eager `Bind()` at builder time that had forced integration tests to disable the limiter via env vars.
+  Phase 2's shared test helper can now use ordinary config.
+- **Forced publish-first split** — `Concertable.ServiceDefaults` is a feed package, not in the
+  `UseLocalCore` swap set, so consumers can't compile against the new API until it republishes; a combined
+  producer+consumer PR can't pass CI. #655 = producer; a follow-up branch = consumers.
+- **`/connect/token` not throttled; Payment webhook never throttled; `Messaging` protects `report`** —
+  carried over from the sweep (no user-facing message-compose endpoint exists; `report` is the spammable
+  conversations write).
+- **Adjacent auth gaps found by the sweep (to log/fix in the consumer PR, not this producer PR):** Auth
+  `POST /Account/ChangePassword` unthrottled (Phase 2 adds a per-user policy); B2B anon `DELETE
+  api/blob/{fileName}` + `GET download`; Payment `GET /api/Transaction` missing `[Authorize]` — the last
+  two logged in `api/TECH_DEBT.md` alongside the Phase 2 wiring.
+- **Partition on `sub`, not tenant**; in-process limiter only (distributed store deferred).
