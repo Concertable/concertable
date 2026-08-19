@@ -6,14 +6,14 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules-phase2`
 - Branch: `Refactor/launch_deal-lifecycle-modules-phase2`
 - PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633). Published
-  B2B Web host/API recovery range `a183b2df2..d1703c218` from starting remote head
-  `a183b2df2005d969e94f8759648a7c5e5934b983`; local HEAD, the remote branch, and PR `headRefOid`
-  matched `d1703c2188b28dd2f0adbbf8b5ad8005d09092c3` after the work-head push. Prior exact-head CI
-  run `32192242931` also identified the still-outstanding Workers unit-test references recorded in
-  `## Next Steps`.
+  head, remote branch, and PR `headRefOid` matched
+  `a7eddeeaa133a221a1a86f062ff436f86d0fb20e` before this continuation. Exact-head CI run
+  `32236953306` failed the build on stale Concert unit, Workers unit, integration, and E2E test
+  consumers. This checkpoint clears the Workers unit frontier and hides the four lifecycle-module
+  dev seeders behind their owning API composition roots; it is not yet published.
 - Dependency/package gates: none block the remaining B2B-internal implementation. Phase 1 delivery is terminal; final `api/**` delivery will own its routine package publication and platform-sync gate only after the complete refactor merges.
-- Last reconciled: 2026-08-19 after clearing the B2B Web host/API compile frontier and identifying the
-  next exact-head CI frontier
+- Last reconciled: 2026-08-19 after clearing the Workers unit frontier, tightening lifecycle API
+  composition, and identifying the next exact-head CI frontier
 
 ## Current state
 
@@ -156,30 +156,36 @@ deleted workflow namespace or injects Booking's internal Contract service, and t
 their API extensions without direct references to their Infrastructure namespaces. The repeated B2B
 Web Release build passes with 0 warnings and 0 errors.
 
+The current checkpoint moves the Workers completion-runner fixture from the deleted
+`IFinishExecutor`/`FinishAsync`/`GetEndedConfirmedIdsAsync` vocabulary to `ICompleteExecutor`,
+`CompleteAsync`, and `GetEndedPendingCompletionIdsAsync`. Opportunity, Application, Booking, and
+Concert now register their module-owned dev seeders inside `AddXApi`; the Web host no longer composes
+those seeders separately. The focused Workers suite passes 5/5 and the B2B Web Release build passes
+with 0 warnings and 0 errors.
+
 ## Next Steps
 
-Fresh-context B2B Workers unit-test compile/recovery slice only — preserve the green module
-Infrastructure, Concert unit-test, and B2B Web host boundaries and do not continue into migrations,
-guidance, integration tests, or another lifecycle operation:
+Fresh-context Concert unit-test constructor recovery slice only — preserve the green Workers and B2B
+Web boundaries and do not continue into integration tests, E2E tests, migrations, guidance, or another
+lifecycle operation:
 
 The keyed-selector design concern is a recorded non-blocking follow-up. Do not refactor, rename, or
 generalize selector/factory infrastructure in this slice.
 
 1. Run `dotnet test
-   api/Concertable.B2B/tests/Concertable.B2B.Workers.UnitTests/Concertable.B2B.Workers.UnitTests.csproj
+   api/Concertable.B2B/src/Modules/Concert/Tests/Concertable.B2B.Concert.UnitTests/Concertable.B2B.Concert.UnitTests.csproj
    --configuration Release --no-restore --disable-build-servers --maxcpucount:1` to reproduce the
-   exact-head CI `ConcertFinishedFunctionTests` compile errors against the deleted
-   `Application.Workflow.Executors.IFinishExecutor` boundary.
-2. Update only the completion-runner tests and their fixture vocabulary to the production
-   `ICompleteExecutor`, `CompleteAsync`, `GetEndedPendingCompletionIdsAsync`, and current typed
-   completion outcome. Stop and record any unrelated production frontier rather than entering another
-   lifecycle operation.
-3. Run a scoped deleted Finish/workflow vocabulary grep over the Workers unit project,
-   `git diff --check`, and repeat the focused Release test command. The slice gate is a green suite or
-   an exact recorded unrelated production blocker; update this ledger and stop the context.
+   exact-head CI `ConcertServiceCreateTests.cs:71` and `ConcertServiceTests.cs:46` constructor errors.
+2. Update only those `ConcertService` fixture constructions to supply the current logger dependency.
+   Stop and record any unrelated production frontier rather than entering integration or E2E recovery.
+3. Run `git diff --check` and repeat the focused Release test command. The slice gate is a green suite
+   or an exact recorded unrelated production blocker; update this ledger and stop the context.
 
 ## Completed work
 
+- Recovered the Workers completion-runner fixture onto the current operation-owned executor and moved
+  the four lifecycle-module dev-seeder registrations behind `AddOpportunityApi`, `AddApplicationApi`,
+  `AddBookingApi`, and `AddConcertApi`.
 - Reconstructed `origin/main` and the rejected aggregate-collapse, premature state-split, and
   Deal-owned workflow attempts.
 - Established that the combined `ApplicationEntity.State` is an ownership defect rather than evidence
@@ -257,6 +263,18 @@ generalize selector/factory infrastructure in this slice.
 
 ## Verification
 
+- `dotnet test
+  api/Concertable.B2B/tests/Concertable.B2B.Workers.UnitTests/Concertable.B2B.Workers.UnitTests.csproj
+  --configuration Release --no-restore --disable-build-servers --maxcpucount:1`: 5/5 passed.
+- `dotnet build api/Concertable.B2B/src/Concertable.B2B.Web/Concertable.B2B.Web.csproj
+  --configuration Release --no-restore --disable-build-servers --maxcpucount:1`: 0 warnings and
+  0 errors after the lifecycle API composition-root change.
+- The scoped Workers scan finds no `IFinishExecutor`, `FinishAsync`, `GetEndedConfirmedIdsAsync`, or
+  deleted `Application.Workflow.Executors` reference. The B2B Web host has no direct Opportunity,
+  Application, Booking, or Concert dev-seeder call. `git diff --check` passes.
+- Exact-head CI run `32236953306` at `a7eddeeaa` identifies the next bounded frontier as two stale
+  `ConcertService` unit-test constructor calls missing the current logger dependency; its broader
+  integration/E2E stale-ownership errors remain for later bounded slices.
 - Repeated `dotnet build
   api/Concertable.B2B/src/Concertable.B2B.Web/Concertable.B2B.Web.csproj --configuration Release
   --no-restore --disable-build-servers --maxcpucount:1`: 0 warnings and 0 errors.
