@@ -7,14 +7,14 @@
 - Branch: `Refactor/launch_deal-lifecycle-modules-phase2`
 - PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633) remains
   published at `0511c35cadca144c7614b27596575eb66692bc62`. Local merge checkpoint
-  `922dcf321` reconciles 17 incoming `origin/main` commits plus the settled dispatch plans; the branch is
-  0 commits behind and 52 commits ahead of current `origin/main`. The Workers, Concert unit, Opportunity
-  request-builder, and `ApplicationCancelApiTests` frontiers remain cleared; the next exact integration
-  action is recorded in `## Next Steps`.
-- Dependency/package gates: none block the remaining B2B-internal implementation. Phase 1 delivery is terminal; final `api/**` delivery will own its routine package publication and platform-sync gate only after the complete refactor merges.
-- Last reconciled: 2026-08-19 at local merge checkpoint `922dcf321`, after recording the PR #633 net10
-  operation-factory bridge and the generated/native .NET 11 target without changing the immediate
-  `ApplicationDoorSplitApiTests` recovery slice
+  `922dcf321` and planning checkpoint `0598ccc70` reconcile current `origin/main` plus the settled
+  dispatch design. The Workers, Concert unit, Opportunity request-builder, and
+  `ApplicationCancelApiTests` frontiers remain cleared.
+- Dependency/package gates: blocked on terminal Phase 0-1 delivery of
+  `plans/launch/DEAL_CLOSED_SUM_MODEL_PROGRESS.md`. Phase 1 delivery remains terminal; final `api/**`
+  package publication and platform sync remain part of PR #633's later delivery lifecycle.
+- Last reconciled: 2026-08-19 after suspending PR #633 behind the independently deliverable Deal
+  dispatch foundation while preserving its `ApplicationDoorSplitApiTests` continuation
 
 ## Current state
 
@@ -180,32 +180,18 @@ owned by that file are gone, `git diff --check` passes, and the exact remaining 
 22 errors outside this slice. Published work head `da3d55be6` is verified equal across local, remote,
 and draft PR #633.
 
+Tommy selected the Deal dispatch foundation as the next delivery owner before further lifecycle recovery.
+The local PR #633 worktree is preserved at its current committed checkpoint and remains 0 commits behind
+the reconciled `origin/main`; its next integration slice is unchanged but suspended. The foundation must
+land first so this PR consumes generated net10 factories directly rather than adding temporary keyed or
+handwritten dispatch that would be replaced during .NET 11 preparation.
+
 ## Next Steps
 
-Fresh-context `ApplicationDoorSplitApiTests` module-owned read/state compile-recovery slice only —
-preserve the green Concert/Workers unit, B2B Web, Opportunity request-builder, and
-`ApplicationCancelApiTests` boundaries and do not enter the other integration fixtures, E2E tests,
-migrations, guidance, or another lifecycle operation:
-
-The dispatch design is now settled, but it is sequenced after compile recovery. Do not refactor,
-rename, or generalize selector/factory infrastructure in this slice. Once the integration/E2E/migration
-frontier is green, this PR owns the best-effort net10 replacement of heterogeneous generic step resolvers
-with dedicated operation factories and Dunet implementation unions. The .NET 11 generated/native form
-remains in the downstream closed-Deal plan.
-
-1. Run `dotnet build
-   api/Concertable.B2B/src/Modules/Concert/Tests/Concertable.B2B.Concert.IntegrationTests/Concertable.B2B.Concert.IntegrationTests.csproj
-   --configuration Release --no-restore --disable-build-servers --maxcpucount:1
-   --property:GenerateFullPaths=false --consoleLoggerParameters:ErrorsOnly` to reproduce the 22-error
-   frontier. `Application/ApplicationDoorSplitApiTests.cs` owns the first stale Concert lifecycle
-   import and still reads Application and Booking state through the Concert context.
-2. Update only `Application/ApplicationDoorSplitApiTests.cs` using the existing fixture seams:
-   Application creation assertions read `ApplicationReads`, payment-failure assertions read the
-   Booking through `BookingReads` and expect `BookingState.FinancialConfirmationFailed`, and genuine
-   Concert existence assertions remain on `ConcertReads`. Do not migrate another test file.
-3. Run `git diff --check` and repeat the focused errors-only Release build. The slice gate is removal
-   of every `ApplicationDoorSplitApiTests.cs` diagnostic without reintroducing a cross-stage read context;
-   record the exact remaining integration frontier, update this ledger, and stop the context.
+Blocked: PR #633 is suspended until the Deal dispatch foundation is delivered on `main`.
+Blocked by: `plans/launch/DEAL_CLOSED_SUM_MODEL_PROGRESS.md` Phases 0-1.
+Unblock action: The Deal owner must deliver the generator/analyzer plus Deal-owned mapper/updater factory foundation through review, CI, merge, package publication, and platform sync, then update this ledger to resume the preserved `ApplicationDoorSplitApiTests` module-owned read/state compile-recovery slice from the current 22-error frontier.
+Resume when: Current `main` contains the delivered Deal foundation, its ledger records the Phase 1 delivery lifecycle terminal green, and this branch has merged that exact `origin/main` state.
 
 ## Completed work
 
@@ -559,8 +545,9 @@ remains in the downstream closed-Deal plan.
   cases have different invocations is not a strategy family. The dedicated name is `IAcceptFactory`, not
   `IAcceptStepFactory`.
 - PR #633 owns the best-effort net10 heterogeneous-operation conversion after its compile-recovery
-  frontier is green. The downstream Deal plan owns generated common-interface factories and the .NET 11
-  native/closed compiler-enforced form.
+  frontier is green, but only after the Deal foundation lands. It consumes the generated
+  common-interface and dedicated-operation factory machinery directly. The downstream Deal plan retains
+  the later .NET 11 native/closed compiler-enforced cut-over.
 - Generic transition plumbing may be shared only when it has no domain knowledge. Strategy
   registrations, transition tables, capabilities, and selector instances remain module-local.
 - Application records pre-accept payment evidence only because the callback can arrive before Booking
@@ -612,7 +599,8 @@ remains in the downstream closed-Deal plan.
   Gate: this lifecycle implementation must land before the .NET 11 plan applies native unions to the
   resulting closed value shapes and enables module-local dedicated factories to return native
   implementation unions without restoring the rejected god-workflow model.
-- Waiting plan: `plans/launch/DEAL_CLOSED_SUM_MODEL_PROGRESS.md`.
-  Gate: this lifecycle implementation must land before the Deal plan replaces remaining honest
-  same-interface selectors with generated invariant factories and upgrades the net10 operation factories
-  to compiler-exhaustive native unions and closed-Deal switches.
+- Blocking prerequisite owner: `plans/launch/DEAL_CLOSED_SUM_MODEL_PROGRESS.md`.
+  Gate: its Phase 0 generator proof and Phase 1 Deal-owned mapper/updater foundation must be terminal on
+  `main` before this PR resumes and consumes the generated Application and operation-factory surfaces.
+  After PR #633 delivers, the same Deal ledger resumes for the compiler-exhaustive native-union and
+  closed-Deal cut-over.

@@ -5,14 +5,19 @@
 - Plan: `plans/launch/DEAL_CLOSED_SUM_MODEL_PLAN.md`
 - Roadmap: `plans/launch/LAUNCH_ROADMAP.md`
 - Roadmap item: `launch/deal-closed-sum-model`
-- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-launch_deal-dispatch-plan`
-- Branch: `Docs/launch_deal-dispatch-plan`
-- PR: docs-delivery PR [#658](https://github.com/Concertable/concertable/pull/658) at published work
-  head `7bde70f64de10ea2bdd81758eb81c86046d80df7`
-- Base: `origin/main` at `1647ec6f85911503e8f2ad3ce2bb0fdc94cd1d14`
-- Dependency gates: implementation blocked on terminal delivery of lifecycle PR #633; the C# 15
-  cut-over also requires the B2B .NET 11 compiler/runtime/consumer matrix
-- Last reconciled: 2026-08-19
+- Worktree: not created; next worktree is reserved as
+  `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-deal-dispatch-foundation`
+- Branch: `Refactor/deal-dispatch-foundation` (reserved; not created)
+- Planning PR: docs-delivery PR [#658](https://github.com/Concertable/concertable/pull/658) merged at
+  `fee8614e014f383a8db7f750fa3bebde1853071f`
+- Implementation PR: not created
+- Base: create from fresh `origin/main`; reconciled baseline
+  `6229e87c64326aad86c8cbc85e23802266808a48`
+- Dependency gates: Phases 0-1 are unblocked. Phase 2 is executed by lifecycle PR #633 after the
+  foundation lands; Phase 3 also requires the B2B .NET 11 compiler/runtime/consumer matrix.
+- Downstream dependent: `plans/launch/DEAL_LIFECYCLE_OWNERSHIP_PROGRESS.md` is suspended until the
+  Phase 1 foundation is terminal on `main`.
+- Last reconciled: 2026-08-19 after reversing the over-broad lifecycle blocker
 
 ## Current state
 
@@ -33,20 +38,41 @@ inputs, results, or capabilities are genuinely heterogeneous. Each uses a dedica
 matches by operation case; several Deal cases may deliberately share one implementation.
 Cancellation is direct, payer/payee direction is data, and the dead settlement resolver is deleted.
 
-Net10 uses the same handwritten factory/facade surface with `IDeal`, generated catalog diagnostics,
+Net10 uses the same generated factory/facade surface with `IDeal`, catalog diagnostics,
 and an explicit unknown-case fallback. C# 15 changes the parameter to closed `Deal`, removes the
 fallback from generated switches, and promotes `CS8509` to an error. The generator independently
 requires one case implementation for every declared family.
 
-No production code has changed. The complete factory, registration, lifetime, casting, invariance,
-exhaustiveness, fifth-case, and delivery contract is now in the plan.
+No dispatch production code has changed. The generator/analyzer and Deal-owned mapper/updater foundation
+are now the immediately actionable slice. Application terms and lifecycle operation factories consume
+that merged foundation in PR #633; native unions and closed Deal remain later compiler/runtime work.
 
 ## Next Steps
 
-Blocked: The target Application, Booking, and Concert module layout is not yet delivered on `main`.
-Blocked by: `plans/launch/DEAL_LIFECYCLE_OWNERSHIP_PROGRESS.md` and lifecycle PR #633.
-Unblock action: The lifecycle owner must deliver PR #633 and its remaining review, CI, merge, package, platform-sync, and ledger gates, then register this plan as the follow-on owner for replacing provisional selectors with generated common-interface factories, unions, direct calls, or data according to the settled classification.
-Resume when: Current `main` contains the delivered lifecycle split and the lifecycle ledger records its delivery lifecycle terminal green; then create the Phase 0 generator-proof worktree from `origin/main`.
+Create `Refactor/deal-dispatch-foundation` from fresh `origin/main` in the reserved worktree and execute
+Phases 0-1 only:
+
+1. Add the B2B-local incremental generator/analyzer and prove the real Application/Infrastructure
+   two-project topology for both invariant common-interface factories and dedicated heterogeneous union
+   factories. Include negative compile fixtures for missing cases, wrong module/family, invalid aliases,
+   union membership, registration invocation, and invariant misuse.
+2. Migrate only Deal-owned `IDealMapper` and `IDealUpdater` to generated
+   `IDealStrategyFactory<TStrategy>` selection, including contract/entity selectors, typed mismatch,
+   generated registrations, and DI validation.
+3. Do not edit lifecycle PR #633, Application `IDealTerms`, runtime target frameworks, native unions, or
+   the published Deal hierarchy in this foundation PR.
+4. Open a draft PR at the first coherent generator checkpoint, use remote-first validation, review the
+   complete foundation, and carry merge, package publication, and platform sync to terminal green.
+5. Update this ledger with the delivered foundation SHA, change the lifecycle ledger from blocked to its
+   preserved `ApplicationDoorSplitApiTests` continuation, and surface that owner next.
+
+## Downstream handoffs
+
+- `plans/launch/DEAL_LIFECYCLE_OWNERSHIP_PROGRESS.md` is blocked on Phases 0-1 reaching terminal green
+  on `main`. The foundation owner must then update that ledger to resume its preserved
+  `ApplicationDoorSplitApiTests` slice.
+- `plans/dotnet-11/B2B_WORKFLOW_UNIONS_PROGRESS.md` remains indirectly blocked on terminal lifecycle
+  delivery and later supplies the compiler/runtime matrix required by this plan's Phase 3.
 
 ## Completed work
 

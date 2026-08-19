@@ -237,20 +237,21 @@ await acceptFactory.Create(deal).Match(
     depositEscrow => depositEscrow.Value.AcceptAsync(application, cancellationToken));
 ```
 
-After its current compile-recovery frontier is green, PR #633 uses the best-effort net10 form: a
-module-local Dunet union whose cases contain concrete operation implementations, a dedicated handwritten
-factory such as `IAcceptFactory`, typed constructor injection, one Deal-to-operation mapping in that factory, and
-Dunet's exhaustive `.Match(...)` over the operation cases. Multiple Deal cases may deliberately map to
-one operation case. The factory retains an unknown-`IDeal` fallback and focused catalog tests; net10 does
-not claim native compiler exhaustiveness.
+PR #633 pauses at its current committed recovery checkpoint until the Deal dispatch foundation is
+terminal on `main`. After it resumes, it consumes the delivered generator directly: a module-local Dunet
+union whose cases contain concrete operation implementations, a generated dedicated factory such as
+`IAcceptFactory`, typed constructor injection, one generated Deal-to-operation mapping, and Dunet's
+exhaustive `.Match(...)` over the operation cases. Multiple Deal cases may deliberately map to one
+operation case. The net10 factory retains an unknown-`IDeal` fallback and generated catalog diagnostics;
+net10 does not claim native compiler exhaustiveness.
 
 Because this union names concrete DI implementations, it and its factory remain in the owning module's
 Infrastructure assembly beside the effectful consumer. It must not make Application reference
 Infrastructure or turn a cross-module fact into a service carrier.
 
 The .NET 11 follow-up preserves the factory and call-site semantics, replaces the Dunet wrapper with a
-native union, and absorbs the handwritten mapping into the generated module catalog against `closed Deal`. The compiler
-then enforces both the operation-union match and generated Deal switch. Neither design contains an
+native union, and regenerates the module catalog against `closed Deal`. The compiler then enforces both
+the operation-union match and generated Deal switch. Neither design contains an
 `IWorkflowStepResolver`, `IStepResolver<TStep>`, `IKeyedServiceProvider`, global workflow bundle, or
 four-Deal executor switch.
 
@@ -476,12 +477,13 @@ Gate: Concert can validate and complete every operation from its own state plus 
 - [ ] Update module guidance for lifecycle ownership without ratifying the provisional selector
   mechanism; the separate dispatch investigation owns any general `api/agents/CODE_PATTERNS.md`
   replacement.
-- [ ] After the full compile-recovery frontier is green, replace heterogeneous `StepResolver<TStep>`
-  families with dedicated net10 operation factories and Dunet unions over concrete implementations.
-  Keep mapping once at the module composition boundary, allow deliberate many-Deal-to-one-operation
-  aliases, match by operation case, and remove keyed service-provider lookup.
-- [ ] Do not convert honest same-interface families to operation unions. Their provisional selector
-  replacement remains owned by the generated module strategy-factory plan.
+- [ ] After the Deal foundation gate opens and the compile-recovery frontier is green, consume its
+  generator for Application `IDealTerms` and for dedicated net10 operation factories plus Dunet unions
+  over heterogeneous concrete implementations. Keep mapping once at the module composition boundary,
+  allow deliberate many-Deal-to-one-operation aliases, match by operation case, and remove keyed
+  service-provider lookup.
+- [ ] Do not convert honest same-interface families to operation unions or introduce an interim
+  handwritten factory. Use the delivered invariant module strategy factory directly.
 
 Gate: each command resolves one local step; no service can resolve another module's steps or request a
 whole workflow.

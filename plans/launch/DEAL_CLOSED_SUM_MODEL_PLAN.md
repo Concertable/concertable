@@ -60,16 +60,19 @@ This plan owns:
 It does not own unrelated keyed policies in Payment, Search, tax jurisdiction, provider selection, or
 configuration selection.
 
-Two gates control delivery:
+Delivery is phase-ordered rather than blocked as one unit:
 
-1. The final Application, Booking, and Concert APIs and module graph must land before their provisional
-   selectors can be replaced.
-2. The .NET 11 workstream must establish the supported C# 15 compiler/runtime/consumer matrix before
-   the native-union and published closed-Deal cut-over.
+1. The B2B-local generator/analyzer, its real two-project fixtures, and the Deal-owned net10
+   `IDealMapper`/`IDealUpdater` factory migration are independent of the lifecycle split and land first.
+2. That foundation must be terminal on `main` before lifecycle PR #633 resumes. The lifecycle owner then
+   consumes it for Application `IDealTerms` and the module-local heterogeneous operation factories on the
+   actual split graph; no temporary keyed or handwritten dispatch layer is introduced.
+3. The final Application, Booking, and Concert APIs must be delivered before this plan reconciles their
+   complete operation catalog and begins the representation cut-over.
+4. The .NET 11 workstream must establish the supported C# 15 compiler/runtime/consumer matrix before the
+   native-union and published closed-Deal cut-over.
 
-The generator and net10 factory can be implemented after the first gate without waiting for the
-second. The handwritten consumer surface remains the same when the Deal parameter changes from
-`IDeal` to `Deal`.
+The net10 and C# 15 consumer surfaces are deliberately identical apart from `IDeal` becoming `Deal`.
 
 ## 3. Why a generator is selected
 
@@ -734,8 +737,6 @@ failure requires targeted diagnosis.
 
 ### Phase 0 — generator proof before product migration
 
-Dependency: terminal delivery of `@plans/launch/DEAL_LIFECYCLE_OWNERSHIP_PROGRESS.md`.
-
 - Add the B2B-local incremental generator/analyzer project as an analyzer-only reference in each
   participating Application/Infrastructure project pair, without a runtime cross-service dependency.
 - Prove the Infrastructure-local anchor, referenced Application symbol discovery through the real
@@ -747,40 +748,48 @@ Dependency: terminal delivery of `@plans/launch/DEAL_LIFECYCLE_OWNERSHIP_PROGRES
   fixture as proof of layer feasibility.
 - Add negative compile fixtures for missing fifth case, wrong-module family, factory marker misuse,
   missing registration invocation, and non-invariant assignment.
+- Prove the dedicated heterogeneous-factory path separately: a module-local Infrastructure union over
+  concrete implementations, deliberate many-Deal-to-one-operation aliases, exact known-case coverage,
+  union membership diagnostics, typed constructor injection, and generated registration output.
 - Measure generated output and diagnostics before migrating a production family.
 
 Gate: no production family changes; every claimed compiler/generator guarantee has an executable
 positive or negative compile test, and no handwritten source contains the five-type closed generic.
 
-### Phase 1 — net10 common-interface factory cut-over
+### Phase 1 — net10 Deal foundation cut-over
 
-- Add the module markers and invariant Application and Deal factory interfaces.
-- Migrate `IDealTerms`, `IDealMapper`, and `IDealUpdater` to generated exhaustive factories and closed
-  family registrations.
-- Preserve named renderer, serializer, mapper, and updater facades.
+- Add the Deal marker and invariant `IDealStrategyFactory<TStrategy>`.
+- Migrate Deal-owned `IDealMapper` and `IDealUpdater` to generated total-known-catalog factories and
+  closed family registrations.
+- Preserve named mapper and updater facades.
 - Remove built-in keyed registrations, `IKeyedServiceProvider`, duplicated builders/factories, and
-  per-family coverage declarations for these families.
+  per-family coverage declarations for the migrated Deal families.
 - Make updater entity/source incoherence a typed operation failure rather than `InvalidCastException`.
 - Prove scoped construction, `ValidateOnBuild`, `ValidateScopes`, and all-case behaviour.
+- Deliver the foundation PR, its review and CI, package publication, and platform sync to terminal green;
+  then update the lifecycle ledger and surface its suspended continuation.
 
-Gate: only generated code performs common-interface Deal selection; no consumer switches, keyed
-lookup, dictionary, service provider, or long closed generic remains.
+Gate: current `main` contains the reviewed generator/analyzer and Deal mapper/updater cut-over; only
+generated code performs their selection, and the lifecycle ledger records the exact foundation commit
+that permits PR #633 to resume.
 
-### Phase 2 — heterogeneous lifecycle and data correction
+### Phase 2 — lifecycle consumption and net10 operation correction
 
-- Reconcile PR #633's best-effort net10 operation factories against the landed APIs, then implement the
-  dedicated acceptance, confirmation, and completion factories and Dunet unions not already delivered.
-- Delete provisional generic step resolvers. Reuse the generator's catalog, coverage, and registration
-  machinery for dedicated factories, but do not route their union outputs through the common-interface
-  strategy contract.
+- Resume lifecycle PR #633 from current `main` and add Application's marker plus
+  `IApplicationDealStrategyFactory<TStrategy>` through the delivered generator.
+- Migrate Application `IDealTerms` to the generated common-interface factory.
+- Replace provisional generic step resolvers with generated dedicated acceptance, confirmation, and
+  completion factories plus Dunet implementation unions wherever the landed APIs prove heterogeneous
+  invocations. Do not route their union outputs through the common-interface strategy contract.
 - Delete cancellation selection and call the refund collaborator directly.
 - Replace payer/payee services with one owned direction value.
 - Delete the dead settlement resolver and replace nullable `DealType` interpretation with immutable
   Concert-owned settlement terms.
 - Stabilize explicit `DealType` values, conversions, persistence constraints, and wire tokens.
 
-Gate: no fake-uniform operation input/result survives; direct and data cases are absent from DI; all
-current cases and mismatch paths have focused coverage.
+Gate: lifecycle PR #633 is terminal on `main`; no fake-uniform operation input/result survives; direct
+and data cases are absent from DI; all current cases and mismatch paths have focused coverage; and this
+ledger has reconciled the delivered module catalog.
 
 ### Phase 3 — C# 15 native unions and closed Deal
 
