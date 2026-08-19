@@ -650,6 +650,43 @@ not a vendored hook. Skills arrive as plugins installed once per machine at user
 `AGENTS.md` roster, its `skill-routes.json`, and the two per-harness wiring files.
 
 
+## The prefix is gone — plugins namespace the pairs now (2026-08-19)
+
+**Tommy called it: `concertable-` on every skill inside `Concertable/agent-standards` restated the repo
+that already owned them.** The plan states the same rule for folders one paragraph before it names the
+skills — *there is no `platform/` or `concertable/` folder, Concertable is the platform and the repo
+boundary carries that scope* — and the names contradicted it. The justification on the page
+(*"skills are flat, so names must be globally unique"*) was written before plugins existed and was
+already dead when it was read; three more prefixed skills were added on top of it earlier this session
+without anyone re-deriving it.
+
+**What the prefix was actually holding up, and where that job moved.** `deploy-skills.ps1` junctioned
+every skill from all three repos flat into one `~/.claude/skills` and threw on a duplicate — correctly.
+16 of the 23 collide once unprefixed, because a generic rule and this system's roster of the same topic
+are *meant* to share a name, exactly as their doc paths already do. So the collision moved to the
+namespace built for it:
+
+| Piece | Change |
+|---|---|
+| `agent-standards` #3 | 23 skills lose the prefix; plugins `concertable-dotnet`/`concertable-react` → `dotnet`/`react`; `skill_router.py` learns `plugin:skill` (6 tests, mutation-checked) |
+| `dotagents` #2 | `deploy-skills.ps1` stops junctioning **routers** (told from utilities by whether they name a `standards/*.md` doc — the discriminator `sync-generated.ps1` already uses), keeps the 10 utilities and the repo-scoped standards trees, and prunes junctions it no longer owns |
+| `react-agents` | nothing — its only `concertable-` hit is the English word |
+| this repo | 144 occurrences by exact token match; routes qualified where both halves load |
+
+**Exact-token replacement, never a prefix sweep.** Most `concertable-*` strings here are Aspire resource
+names, OIDC client ids and npm packages — `concertable-auth`, `concertable-app`, `concertable-sql-server`,
+`concertable-payment-error-bin`. A sweep would have renamed the running system; those are asserted intact.
+
+**The half that makes it correct rather than cosmetic:** `skill_description()` returned the first
+`<root>/<name>/SKILL.md` across every search root, so an unqualified `persistence` would answer from
+whichever plugin was walked first and hide the other with no error — the shadowing that already happened
+once to the docs. Routes now say `dotnet-standards:persistence` **and** `dotnet:persistence` where both
+are meant; a skill with one home stays bare so a route does not break when a skill changes plugin.
+
+**ENF12 is reopened, knowingly.** The re-vendored `skill_router.py` pins commits on #3's branch. The
+alternative was shipping a routing table the vendored hook cannot resolve, which blocks every routed
+write. Re-pin against `main` once #3 merges.
+
 ## Next Steps
 
 **The four tiers match the model and the process corpus now has one home.** Authoritative statement:
@@ -786,10 +823,18 @@ directory already did.
    apply. Merging will trigger publish + platform sync (`paths: api/**` matches this branch's `api/**`
    markdown); follow the `chore/platform-sync-*` PR to green.
 
-3. **`agent-standards` #2 is merged (`b95debad`, a merge commit) and ENF12 is closed.** Re-vendored
-   from `main`: all six pins are now ancestors of `origin/main`, checked with `merge-base --is-ancestor`
-   rather than inferred, and the copy picked up the `--repo` jurisdiction fix and the dead-code removal.
-   This repo's 14 hook tests pass against it.
+3. **The prefix removal is delivery-gated on two upstream PRs, in this order.**
+
+   1. Land **`tomjseery/dotagents` #2** and **`Concertable/agent-standards` #3** — they are one change
+      split across two repos, and #3 alone leaves `deploy-skills.ps1` throwing on the duplicate names
+      it now sees.
+   2. Re-vendor from `agent-standards` `main`, commit the re-pinned `vendored.json`, and close ENF12
+      again.
+   3. **Install the five plugins before running `deploy-skills.ps1`.** None are installed today —
+      junctions are the only delivery, so pruning first leaves the machine with no standards at all.
+      Dry run verified: 10 utilities kept, 60 router junctions pruned, standards trees untouched.
+   4. Sweep for `concertable-<skill>` outside these four repos — the global `CLAUDE.md`, work repos,
+      saved prompts. Not audited.
 
    **`dotagents` #1 still needs Tommy** — `CLEAN`, `verify` green, and nothing else depends on it:
    `gh pr merge 1 --repo tomjseery/dotagents --merge`.

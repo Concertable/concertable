@@ -456,7 +456,7 @@ supplies. ENF9 below is why that stamp had to be a judgement call at all.
   `.github/workflows/test.yml` gains a `hook-tests` job (`setup-python` 3.13, the same discover
   command upstream CI runs) and `ci-complete` — the single required check — needs it.
 
-- [x] **ENF12 — LOW — the manifest's provenance pins point at commits that exist only on an unmerged PR
+- [ ] **ENF12 — LOW — the manifest's provenance pins point at commits that exist only on an unmerged PR
   branch** — `.agents/hooks/vendored.json`
   All six entries record commits (`e0946731`, `7cb3fddd`, `6a5e1fb1`) that `git branch -r --contains`
   resolves to `origin/Refactor/StandardsDomainTree` alone — `agent-standards` #2, still open. That repo
@@ -467,6 +467,9 @@ supplies. ENF9 below is why that stamp had to be a judgement call at all.
   re-pinned manifest here before #637 is enqueued.
   **Closed 2026-08-19:** #2 merged as `b95debad` with a merge commit, and the hooks were re-vendored
   from `main`. Every pin is an ancestor of `origin/main` by `merge-base --is-ancestor`.
+  **Reopened the same day:** the prefix removal re-vendored `skill_router.py` from `agent-standards`
+  #3's branch, because the alternative was a routing table the vendored hook cannot resolve. Re-pin
+  against `main` once #3 merges.
 
 ## Incremental review — 2026-08-19
 
