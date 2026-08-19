@@ -20,7 +20,7 @@ opt-in seam: `AddDefaultRateLimiting` (plumbing + 429/`Retry-After` `OnRejected`
 (one named fixed-window policy, lazy `IOptionsMonitor<RateLimitWindow>` config binding), `RateLimitWindow`,
 `UseDefaultRateLimiting`. Removed the old global limiter, `RateLimitPolicies` constants, and
 `RateLimitingOptions`. The lazy binding fixes the earlier eager-bind wart (which had forced env-var-only
-test overrides). Unit tests: partition trips 429 + `Retry-After`, and per-user vs per-IP key resolution — **4 pass**.
+test overrides). Unit tests: partition trips 429 + `Retry-After`, and per-user vs per-IP key resolution — **5 pass**.
 
 **PR #655 repurposed to producer-only.** The obsolete Phase-2 consumer wiring it carried (Auth + B2B
 tagging, built for the abandoned global design, referencing the now-removed `RateLimitPolicies`) was
@@ -29,9 +29,14 @@ ServiceDefaults refactor + these plan docs.
 
 ## Next Steps
 
-**Producer refactor pushed to draft PR #655; `/review` complete and clean (see `## Reviews`). Awaiting
-Tommy's merge authorization so the new seam publishes.** Local state is committed and green; branch is
-current with `origin/main`.
+**Paused: Tommy — authorize merging producer PR #655 so the new seam publishes.** `/review` complete and
+clean (see `## Reviews`); committed, green (build 0/0, 5/5 unit), and the draft PR is now current with
+`origin/main` (re-synced past the #651 admin-module refactor). Nothing further is safely implementable
+locally — the consumer PR cannot compile against the new API until #655 publishes (ServiceDefaults is a
+feed package, not in the `UseLocalCore` swap set).
+
+- **Resume when:** #655 is merged, `publish-packages` has republished `Concertable.ServiceDefaults`, and
+  its `chore/platform-sync-*` pin bump is green/merged (the new `<ConcertablePlatformVersion>` is on the feed).
 
 - **Merge #655 (needs Tommy's go-ahead — review gate satisfied):** on merge of this `api/**` change, `publish-packages`
   republishes `Concertable.ServiceDefaults` and `platform-sync` opens a `chore/platform-sync-*` pin bump.
