@@ -162,6 +162,19 @@
       "note": "Build and package config is per service folder by design - there is deliberately no repo-root version or build config, because a carve takes only the service folder and would leave anything above it behind."
     },
     {
+      "path": "Mappers\\.cs$",
+      "skills": [
+        "dotnet-standards:csharp-naming"
+      ]
+    },
+    {
+      "path": "Extensions\\.cs$",
+      "skills": [
+        "dotnet-standards:csharp-style",
+        "dotnet-standards:csharp-naming"
+      ]
+    },
+    {
       "path": "Migrations/.*\\.cs$",
       "skills": [
         "migrations"

@@ -79,6 +79,8 @@ When a topic has both, the skill owns the rule and the file owns the inventory.
 | Proto naming, proto mappers, wire error mapping | skill `proto` |
 | Seeding — drive the trigger, never write the row | skill `seeding` |
 | Which .NET library for which job, and what is deliberately not used | skill `dotnet-stack` |
+| `XMappers` placement and naming; when a pure operation is an extension vs a named evaluator | skill `csharp-naming` |
+| `extension()` block form, and migrating a legacy `this`-parameter container | skill `csharp-style` |
 | Unit / integration / E2E scenario authoring | skills `unit-testing`, `integration-testing`, `e2e-scenarios` |
 | **This system's** `Concertable.DataAccess` capability hierarchy, one repository per entity | skill: `persistence` |
 | **This system's** `IGeometryProvider` / WGS84 | skill: `geometry` |
