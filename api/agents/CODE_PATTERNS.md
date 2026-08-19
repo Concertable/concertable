@@ -33,7 +33,7 @@ so the codebase has zero calls; the building blocks (all in `B2B.DataAccess.Infr
 - **`PrivilegedDbContext`** (abstract, same seam) — the unscoped-but-writable stance: composes the provider
   with no tenancy, but **writable** (unlike `XReadDbContext`), so a cross-tenant operator can act on rows
   it doesn't own; the `TenantInterceptor` write-guard no-ops for a tenant-less write. One subclass per
-  module that has an admin write flow, e.g. `VenueAdminDbContext` (venue approval).
+  module that has an admin write flow, e.g. `VenuePrivilegedDbContext` (venue approval).
 
 Query classes then split by **data-access stance**, one stance per class (mixing them in one class is
 the LSP violation — callers can't know which contract a method honors):
@@ -42,8 +42,8 @@ the LSP violation — callers can't know which contract a method honors):
   entity declares. The default.
 - **`XReadRepository`** — read-only access through the module's tenant-independent `XReadDbContext`.
   Its contract controls which data leaves the module.
-- **`XAdminRepository`** — privileged cross-tenant read/write (e.g. admin approval) on the writable
-  `PrivilegedDbContext`. Only where an admin write flow exists, e.g. `VenueAdminRepository`.
+- **`XPrivilegedRepository`** — privileged cross-tenant read/write (e.g. admin approval) on the writable
+  `PrivilegedDbContext`. Only where an admin write flow exists, e.g. `VenuePrivilegedRepository`.
 - **Domain facts that aren't naturally entity repositories** may get their own purpose-named
   abstraction on the module's `XReadDbContext`, e.g. `IConcertAvailability`, when they form a real,
   independently consumed capability. Do not wrap a single query already owned by an aggregate
@@ -54,7 +54,7 @@ The injection site is then self-documenting: a service holding `repository` + `r
 which queries see what.
 
 **A stance class only exists when the entity has more than one stance.** A single-stance entity is a
-plain `XRepository` — don't pre-qualify it `Public*`/`Admin*` with no sibling to disambiguate from;
+plain `XRepository` — don't pre-qualify it `Public*`/`Privileged*` with no sibling to disambiguate from;
 rename it the day a second stance is actually born. The qualifier carries *which* contract; with
 nothing to contrast, it's noise.
 
@@ -72,10 +72,12 @@ Repository qualifiers describe the contract that differs from a service's unqual
 are not one vocabulary to impose across every service:
 
 - **B2B data-access stance:** `XRepository` uses the normal tenant-bound `XDbContext`, `XReadRepository`
-  uses the tenant-independent/read-only `XReadDbContext`, and `XAdminRepository` uses
+  uses the tenant-independent/read-only `XReadDbContext`, and `XPrivilegedRepository` uses
   unfiltered/writable `PrivilegedDbContext`. Purpose-named internal lookups and facts may share
   `XReadDbContext`. Name the
-  composed contract, never the filtering mechanism: do not substitute `Unscoped` or `CrossTenant`.
+  composed contract, never the filtering mechanism: do not substitute `Unscoped`, `CrossTenant`, or
+  `Admin` — `Admin` collides with platform-admin identity (`Concertable.B2B.Admin`); `Privileged`
+  names the access level without that collision.
 - **Mutability:** the shared `Repository<...>` surface permits writes; `ReadRepository<...>` exposes
   queries only. Customer's event-synced replicas therefore use `XReadRepository` even without a
   writable sibling — `Read` states a capability, not an audience.
