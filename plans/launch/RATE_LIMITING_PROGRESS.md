@@ -12,8 +12,10 @@
 
 ## Current state
 
-**Both phases implemented. Phase 1 merged; Phase 2 built green and pushed to draft PR #655. A Phase 2
-CI failure (integration tests tripping the new limiter) was diagnosed and fixed; awaiting the re-run.**
+**Both phases implemented. Phase 1 merged; Phase 2 pushed to draft PR #655 with draft-PR CI GREEN
+(run 32269078574 — build, carve, unit, integration all pass). Awaiting Tommy's merge authorization.**
+
+The earlier CI failure (integration tests tripping the new limiter) is fixed and confirmed green.
 
 Draft-PR CI on #655 came back red: the **Auth integration suite** failed 7 tests with
 `Expected 200/302, got 429 TooManyRequests` on the `Pages/Account` credential POSTs (the other
@@ -51,9 +53,8 @@ test runs there.
 
 **Paused: Tommy — review the Phase 2 draft PR #655 and authorize its merge.** Phase 2 is implemented,
 built, and pushed, including the fix for the CI integration-test failure (limiter disabled in the
-integration environments; throttle still proven in `ApplicationRateLimitApiTests`). Nothing further is
-safely implementable locally. Draft-PR CI is re-validating the exact remote head (build, carve, unit,
-integration).
+integration environments; throttle still proven in `ApplicationRateLimitApiTests`). **Draft-PR CI is
+GREEN** on the exact remote head (run 32269078574). Nothing further is safely implementable locally.
 
 - **Resume when:** Tommy authorizes the merge. On merge of an `api/**` change, `publish-packages`
   republishes and `platform-sync` opens a `chore/platform-sync-*` pin bump — follow it to green/merged
@@ -84,8 +85,8 @@ integration).
 - Apply 429 + `Retry-After` integration test authored; runs in draft-PR CI (Docker/Testcontainers), not
   locally (remote-first).
 - Limiter CI-failure fix builds 0/0 locally (`Concertable.B2B.Concert.IntegrationTests` + Auth
-  `Concertable.Auth.IntegrationTests`, transitively their fixtures/hosts); the integration re-run is
-  owned by draft-PR CI.
+  `Concertable.Auth.IntegrationTests`, transitively their fixtures/hosts) and is **confirmed green in
+  draft-PR CI** (run 32269078574: full build, carve, unit, and integration matrix all pass).
 
 ## Reviews
 
