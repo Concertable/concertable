@@ -7,8 +7,8 @@
 - Branch: `Refactor/launch_deal-lifecycle-modules-phase2`
 - PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633) remains
   published at `0511c35cadca144c7614b27596575eb66692bc62`. Local merge checkpoint
-  `922dcf321` and planning checkpoint `0598ccc70` reconcile current `origin/main` plus the settled
-  dispatch design. The Workers, Concert unit, Opportunity request-builder, and
+  `922dcf321` reconciled baseline `6229e87c64326aad86c8cbc85e23802266808a48`; planning checkpoint
+  `0598ccc70` records the settled dispatch design. The Workers, Concert unit, Opportunity request-builder, and
   `ApplicationCancelApiTests` frontiers remain cleared.
 - Dependency/package gates: blocked on terminal Phase 0-1 delivery of
   `plans/launch/DEAL_CLOSED_SUM_MODEL_PROGRESS.md`. Phase 1 delivery remains terminal; final `api/**`
@@ -50,10 +50,10 @@ The fresh implementation branch contains only current-main Deal vocabulary; none
 runtime change was carried forward.
 
 Tommy selected the Deal dispatch foundation as the next delivery owner before further lifecycle recovery.
-The local PR #633 worktree is preserved at its current committed checkpoint and remains 0 commits behind
-the reconciled `origin/main`; its next integration slice is unchanged but suspended. The foundation must
-land first so this PR consumes generated net10 factories directly rather than adding temporary keyed or
-handwritten dispatch that would be replaced during .NET 11 preparation.
+The local PR #633 worktree is preserved at its current committed checkpoint; its next integration slice
+is unchanged but suspended. After the foundation lands, the branch must merge fresh `origin/main` before
+that slice resumes so it consumes generated net10 factories directly rather than adding temporary keyed
+or handwritten dispatch that would be replaced during .NET 11 preparation.
 
 ## Next Steps
 
@@ -191,9 +191,10 @@ Resume when: Current `main` contains the delivered Deal foundation, its ledger r
   reorder, or merge Application, Booking, and Concert.
 - .NET 11 native unions are the selected mechanism for justified closed internal values after the
   module split, including the combined journey projection and module-local state, trigger, or
-  operation-outcome shapes with case-specific data. They do not contain DI services, create shared
-  lifecycle ownership; persistence maps each module's discriminator explicitly. They do not preserve
-  Deal-keyed service resolution.
+  operation-outcome shapes with case-specific data. Separate module-local implementation unions may
+  contain the owning heterogeneous operation implementations. Neither form creates shared lifecycle
+  ownership or preserves Deal-keyed service resolution; persistence maps each module's discriminator
+  explicitly.
 - Rust is not an implementation option for this lifecycle, Deal behaviour, or settlement work. The
   obsolete Rust engine plan was deleted rather than retained as a paused alternative.
 - Opportunity is not hidden inside Application. Its physical extraction is part of the module carve.

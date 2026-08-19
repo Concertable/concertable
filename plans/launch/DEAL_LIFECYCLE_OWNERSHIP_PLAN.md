@@ -372,8 +372,8 @@ Gate: Concert can validate and complete every operation from its own state plus 
 - [ ] Do not convert honest same-interface families to operation unions or introduce an interim
   handwritten factory. Use the delivered invariant module strategy factory directly.
 
-Gate: each command resolves one local step; no service can resolve another module's steps or request a
-whole workflow.
+Gate: each command invokes one module-owned operation; no service can resolve another module's
+operations or request a whole workflow.
 
 ### Phase 6 — projections, compatibility, and delivery
 

@@ -8,11 +8,11 @@
 - Worktree: not created; next worktree is reserved as
   `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-deal-dispatch-foundation`
 - Branch: `Refactor/deal-dispatch-foundation` (reserved; not created)
-- Planning PR: docs-delivery PR [#658](https://github.com/Concertable/concertable/pull/658) merged at
+- Planning PR: docs-delivery PR [#658](https://github.com/Concertable/concertable/pull/658) merged as
+  `29e7a1ad1d9ecf6bf59e39261ad700625d1ffa52` from head
   `fee8614e014f383a8db7f750fa3bebde1853071f`
 - Implementation PR: not created
-- Base: create from fresh `origin/main`; reconciled baseline
-  `6229e87c64326aad86c8cbc85e23802266808a48`
+- Base: create from fresh `origin/main` after this planning delivery; no implementation base exists yet
 - Dependency gates: Phases 0-1 are unblocked. Phase 2 is executed by lifecycle PR #633 after the
   foundation lands; Phase 3 also requires the B2B .NET 11 compiler/runtime/consumer matrix.
 - Downstream dependent: `plans/launch/DEAL_LIFECYCLE_OWNERSHIP_PROGRESS.md` is suspended until the
