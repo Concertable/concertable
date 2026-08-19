@@ -765,7 +765,7 @@ carries a clean review. Same class as ENF8. The flag now decides jurisdiction th
 directory already did.
 
 1. **What is left of the two phases.** 5c: `dotnet/STACK.md` and the five `react` `NEW` rows
-   (`ROUTING.md`, `TABLES.md`, `UI.md`, `DATES.md`, `FORMS.md`) — all in the two generic repos, none in
+   (`ROUTING.md`, `UI.md`, `TABLES.md`, `DATES.md`, `TESTING.md`) — all in the two generic repos, none in
    Concertable. 3c:
    `app/web/shared/BROWSER_STORAGE.md` → `react/BROWSER_STORAGE.md`, `react/APP_TIERS.md`, and the two
    rows above that need a decision rather than work (`notes/Concert-Rust-Analysis.md`, collapsing
