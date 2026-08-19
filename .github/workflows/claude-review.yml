@@ -26,12 +26,15 @@ jobs:
             Review this PR for Concertable, a .NET 10 / React platform of independent microservices.
             Your final response will be posted verbatim as a PR comment, so write it as a review.
 
-            Follow the repo-root `AGENTS.md`. Do not review from memory of the conventions: read
-            `.agents/skill-routes.json`, and for every changed path load the skills it names — each is
-            the single home of its rule, so restating one here would just drift from it. The pairs that
-            matter most for backend changes are `module-structure` + `concertable-module-structure`,
-            `persistence` + `concertable-persistence`, `multitenancy`, `http-api` +
-            `concertable-http-api`, and `concertable-migrations`.
+            The conventions are load-on-demand skills that are NOT vendored into this repo, so on this
+            runner you do not have them. Do not review from memory of them and do not restate one here —
+            each has exactly one home and a copy in this prompt would drift from it.
+
+            Read, and review against, the docs that ARE in the checkout: repo-root `AGENTS.md`,
+            `api/AGENTS.md`, `api/ARCHITECTURE.md`, `docs/INDEX.md`, `api/Concertable.B2B/CODE_PATTERNS.md`,
+            and any `AGENTS.md` in a directory the diff touches. `.agents/skill-routes.json` maps each
+            changed path to the skill that owns its rules: name that skill when a change lands in its
+            territory and say the rule could not be checked here, rather than guessing at it.
 
             Be terse. Flag real issues only — don't nit-pick style or restate what the diff does.
             Group findings as: 🔴 Bugs/regressions, 🟡 Suggestions, 🟣 Pre-existing debt to ignore.

@@ -10,7 +10,8 @@ An artist **applies**, the venue **accepts**, and a **Concert** is created. The 
 price and quantity, customers buy tickets, and after the concert settlement runs against the deal.
 
 A **Contract** is a different thing from a Deal, and the two are easy to confuse: the Deal is the money
-terms, and the Contract is the signed PDF the booking produces (`Contract` module, `IContractIssuer`).
+terms, and the Contract is the frozen snapshot minted at Accept and rendered as a PDF. It lives in the
+Concert module (`ContractEntity`, `IContractIssuer`) — there is no Contract module.
 
 ## The four deal types
 
@@ -34,7 +35,7 @@ what: [`api/ARCHITECTURE.md`](../api/ARCHITECTURE.md).
 
 | Service | Owns |
 |---|---|
-| **B2B** | the venue/artist side — modules Artist, Venue, Concert, Deal, Contract, Conversations, Tenant, User |
+| **B2B** | the venue/artist side — modules Artist, Venue, Concert, Deal, Conversations, Tenant, User |
 | **Customer** | the fan-facing marketplace — Artist, Venue, Concert, Ticket, Review, Preference, User |
 | **Search** | the event-fed search read model |
 | **Payment** | Stripe Connect money movement, escrow and payouts |

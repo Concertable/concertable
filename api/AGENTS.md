@@ -54,7 +54,8 @@ legitimately lives in `Kernel` does NOT license adding audience-specific *member
 
 When a shared adapter needs an audience-specific value, either the **caller** resolves it and passes it in,
 or it lives in a **separate abstraction only the services with the concept depend on** (e.g. an
-`ITenantContext` referenced by B2B, not by Customer).
+`ITenantContext`, declared beside `ICurrentUser` so the shared save-interceptor can read it, but
+implemented and depended on by B2B alone).
 
 Anti-pattern, do not reintroduce: a tenant/owner key on the shared `ICurrentUser` — an `Owner` member and
 `GetOwnerId()` extension once lived in `Kernel` for exactly this, and were removed. As resolved: Payment
