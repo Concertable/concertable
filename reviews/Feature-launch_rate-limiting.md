@@ -5,10 +5,12 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `9d2921e8f823513f77f919c23586eeb0c49eb353`  _(2026-08-19)_
+**Reviewed up to commit:** `07b0bdaae90f30cf87bda7485a26b966902b3288`  _(2026-08-19)_
 
-> Range reviewed (latest): `29e7a1ad1..9d2921e8f` — the opt-in seam refactor (#655 producer). See the
-> 2026-08-19 incremental section; the 2026-08-17 pass below reviewed the now-superseded seam v1.
+> Range reviewed (latest): `6229e87c6..26b9a4354` — re-stamp after merging `origin/main` (the `1073`
+> platform-sync pin bump) into #655 to make it current for merge; #655's ServiceDefaults code is
+> byte-identical to the clean `9d2921e8f` review (diff `9d2921e8f..HEAD` touches zero ServiceDefaults
+> files). See the 2026-08-19 incremental section; the 2026-08-17 pass below reviewed the superseded seam v1.
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
 
 ## Findings
