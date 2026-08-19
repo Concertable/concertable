@@ -5,16 +5,16 @@
 - Roadmap item: `launch/deal-lifecycle-ownership`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules-phase2`
 - Branch: `Refactor/launch_deal-lifecycle-modules-phase2`
-- PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633). Published
-  `ApplicationCancelApiTests` recovery range `f64d5fe32..da3d55be6` from starting remote head
-  `f64d5fe329da2d5d7d94ec8ed4b0ef3421309059`; local HEAD, the remote branch, and PR `headRefOid`
-  matched `da3d55be62fdd12e002fea9610c5409d090c731c` after the work-head push. Prior exact-head CI run
-  `32236953306` failed the build on stale Concert unit, Workers unit, integration, and E2E test
-  consumers. The Workers, Concert unit, Opportunity request-builder, and `ApplicationCancelApiTests`
-  frontiers are now cleared; the next exact integration action is recorded in `## Next Steps`.
+- PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633) remains
+  published at `0511c35cadca144c7614b27596575eb66692bc62`. Local merge checkpoint
+  `922dcf321` reconciles 17 incoming `origin/main` commits plus the settled dispatch plans; the branch is
+  0 commits behind and 52 commits ahead of current `origin/main`. The Workers, Concert unit, Opportunity
+  request-builder, and `ApplicationCancelApiTests` frontiers remain cleared; the next exact integration
+  action is recorded in `## Next Steps`.
 - Dependency/package gates: none block the remaining B2B-internal implementation. Phase 1 delivery is terminal; final `api/**` delivery will own its routine package publication and platform-sync gate only after the complete refactor merges.
-- Last reconciled: 2026-08-19 after publishing and verifying the focused `ApplicationCancelApiTests`
-  module-owned read/state compile recovery at `da3d55be62fdd12e002fea9610c5409d090c731c`
+- Last reconciled: 2026-08-19 at local merge checkpoint `922dcf321`, after recording the PR #633 net10
+  operation-factory bridge and the generated/native .NET 11 target without changing the immediate
+  `ApplicationDoorSplitApiTests` recovery slice
 
 ## Current state
 
