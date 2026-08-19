@@ -139,9 +139,13 @@ email path. The immutable terms cases supply different data to `ConcertEntity.Cr
 not select different creation behaviour. `IConcertService.CreateAsync(ConfirmedBooking)` therefore
 owns creation.
 
-Cancellation and completion each use their own operation-specific executor and keyed step factory.
-There is no multi-operation `IConcertExecutor`: established executors own one named lifecycle
-operation, and combining both operations would create a dependency bag rather than a cohesive facade.
+Cancellation and completion each use their own operation-specific executor. The lifecycle delivery may
+retain its minimum provisional keyed seams, but the downstream Deal dispatch plan classifies them:
+cancellation becomes a direct refund collaborator because every Deal case is identical, while completion
+retains validated keyed release/payout implementations because it is one substantial homogeneous
+operation with materially different effect graphs. There is no multi-operation `IConcertExecutor`:
+established executors own one named lifecycle operation, and combining both operations would create a
+dependency bag rather than a cohesive facade.
 The pre-commit `BookingConfirmedDomainEventHandler` remains a thin adapter to the service. Creation has
 no expected caller-actionable failure after a confirmed Booking: Application already validated genre
 eligibility, while a missing or mismatched local projection is an invariant violation. Cancel and
@@ -232,12 +236,12 @@ The lifecycle cutover does not settle the runtime selector mechanism: the existi
 families or callers, defer invalid use to keyed-DI runtime lookup, and force scoped container dispatch
 even for singleton-only families. Generic invariance does not provide those business invariants.
 
-A separate non-blocking investigation must retain one vertical registration source and its exact
-coverage, duplicate-key, unexpected-key, and lifetime validation while evaluating closed
-operation-owned selectors. It must support immutable singleton dispatch, including a
-`FrozenDictionary` or demonstrably equivalent direct map for singleton-only families, preserve
-scope-correct resolution for scoped families, and avoid repeated per-facade key maps. Until that design
-is proven, this lifecycle PR must not multiply generic selector wrappers or rewrite existing selectors
+The downstream Deal dispatch plan has settled the mechanism. Every caller uses one named operation
+interface. Substantial homogeneous behavior uses module-local validated keyed implementations; trivial
+homogeneous behavior uses one operation-owned match; heterogeneous inputs/results use unions; identical
+behavior is direct; static variation is data. The shared keyed builder retains one vertical registration
+source with exact coverage, duplicate-key, unexpected-key, family, and lifetime validation. Until that
+plan resumes, this lifecycle PR must not multiply generic selector wrappers or rewrite existing selectors
 solely for naming consistency; it uses the smallest module-local selection seam required for the
 ownership cutover and treats that seam as provisional.
 
