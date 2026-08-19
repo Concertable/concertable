@@ -34,6 +34,17 @@ Work order for the route-coverage change. Findings are `- [ ]` until fixed, `- [
   is preferred over a name-shaped one. It also documents `note`, which the hook supports and the
   contract never mentioned.
 
+- [x] **DOC4 — MEDIUM — Lens A (a roadmap that overstates completion)** — `plans/docs/DOCS_ROADMAP.md`
+  Four of five items read `[x]`, which says the epic is nearly shipped. It is not: the restructure split
+  the corpus by portability but applied it as though this repo survives, and
+  `plans/platform/POLYREPO_ROADMAP.md` records the ruling that it does not. Measured: ~259 lines of
+  generic plan process (`plans/agents/PLAN.md` 96% generic, `PROMPTS.md` 98%, `plans/agents/ROADMAP.md`
+  100%) sit in a repo with no future, while six sibling process docs already moved; three route rows are
+  anchored on `^api/`/`^app/`/`^plans/`, none of which exist in a service repo; and the hub docs open by
+  describing a monorepo. Added `docs/polyrepo-ready` with the measurements and the reason copying into
+  eight repos is the wrong answer. Distinct from `POLYREPO_ROADMAP` 4c, which is about where a plan
+  *document* lives, not how one is written.
+
 ## Verified, no finding
 
 - **Lens A, skill resolution** — all **53** distinct skills named in the table resolve to an installed
