@@ -131,7 +131,10 @@ that reference as part of this stream.)
 read-only mirrors. This unblocks §4c and settles the guidance question that was blocked behind it: there
 is no `api/` node in a polyrepo, so `api/agents/` and `api/AGENTS.md` are destinations with no future.
 Everything in them re-homes to `standards/` (platform-wide, inherited by every service repo) or to the
-owning service's repo — see `plans/docs/GUIDANCE_DOCS_RESTRUCTURE_PLAN.md` Phase 5b.
+owning service's repo. **Done 2026-08-19:** `api/agents/` and `app/agents/` are deleted, the generic half
+lives in `tomjseery/dotagents` and `tomjseery/react-agents` and this system's roster in
+`Concertable/agent-standards`, all delivered as plugins; `api/AGENTS.md` is 78 lines of pointers with no
+`@`-imports. `docs/INDEX.md` maps topic to owner.
 
 The remaining sub-decision is still open: whether a true cut restructures to per-service colocation
 (`services/<x>/{api,web,mobile}`) or uses a multi-source mirror assembler.
