@@ -13,8 +13,8 @@
   consumers. The Workers and Concert unit frontiers are now cleared; the next exact integration action
   is recorded in `## Next Steps`.
 - Dependency/package gates: none block the remaining B2B-internal implementation. Phase 1 delivery is terminal; final `api/**` delivery will own its routine package publication and platform-sync gate only after the complete refactor merges.
-- Last reconciled: 2026-08-19 after publishing and verifying the focused Concert unit constructor
-  recovery at `e4dab271c2758baed2269091610c4a8ed161eeb3`
+- Last reconciled: 2026-08-19 after the focused Concert integration Opportunity request-builder
+  namespace recovery and exact remaining compiler-frontier capture
 
 ## Current state
 
@@ -169,29 +169,38 @@ supplying the existing `IBookingModule` boundary at both fixture construction si
 the trailing logger parameter only because each positional argument list was one entry short; both
 fixtures already supplied `ILogger<ConcertService>`. The focused Release suite passes 88/88.
 
+The focused Concert integration request-builder recovery now imports `OpportunityRequest` from its
+Opportunity-owned Application namespace. The repeated project build removes both builder diagnostics
+and leaves 26 stale integration-test ownership diagnostics across Application and Concert fixtures;
+no other integration fixture was changed in this slice.
+
 ## Next Steps
 
-Fresh-context Concert integration `OpportunityRequestBuilders` compile-recovery slice only — preserve
-the green Concert/Workers unit and B2B Web boundaries and do not enter the other integration fixtures,
-E2E tests, migrations, guidance, or another lifecycle operation:
+Fresh-context `ApplicationCancelApiTests` module-owned read/state compile-recovery slice only — preserve
+the green Concert/Workers unit, B2B Web, and Opportunity request-builder boundaries and do not enter
+the other integration fixtures, E2E tests, migrations, guidance, or another lifecycle operation:
 
 The keyed-selector design concern is a recorded non-blocking follow-up. Do not refactor, rename, or
 generalize selector/factory infrastructure in this slice.
 
 1. Run `dotnet build
    api/Concertable.B2B/src/Modules/Concert/Tests/Concertable.B2B.Concert.IntegrationTests/Concertable.B2B.Concert.IntegrationTests.csproj
-   --configuration Release --no-restore --disable-build-servers --maxcpucount:1` to reproduce the
-   remaining compile frontier. CI run `32236953306` identified two stale `OpportunityRequest` references
-   in `Opportunity/OpportunityRequestBuilders.cs`; the Workers and Concert unit diagnostics from that run
-   are now cleared.
-2. Update only `Opportunity/OpportunityRequestBuilders.cs` to consume the request from its current
-   Opportunity-owned namespace. Do not migrate other integration fixtures in this slice.
-3. Run `git diff --check` and repeat the focused Release build. The slice gate is removal of both
-   `OpportunityRequestBuilders.cs` diagnostics with the exact remaining integration frontier recorded;
-   update this ledger and stop the context.
+   --configuration Release --no-restore --disable-build-servers --maxcpucount:1
+   --property:GenerateFullPaths=false --consoleLoggerParameters:ErrorsOnly` to reproduce the 26-error
+   frontier. `Application/ApplicationCancelApiTests.cs` owns four of those diagnostics: its deleted
+   Concert lifecycle import, two missing Booking entity references, and the removed combined state.
+2. Update only `Application/ApplicationCancelApiTests.cs` and the minimum existing integration-fixture
+   read seam it requires so Application, Booking, and Concert assertions read their owning module
+   contexts and use `ApplicationState`, `BookingState`, or `ConcertState` according to the asserted
+   stage. Do not restore cross-module sets on `ConcertReadDbContext` or migrate another test file.
+3. Run `git diff --check` and repeat the focused errors-only Release build. The slice gate is removal
+   of every `ApplicationCancelApiTests.cs` diagnostic without reintroducing a cross-stage read context;
+   record the exact remaining integration frontier, update this ledger, and stop the context.
 
 ## Completed work
 
+- Recovered `OpportunityRequestBuilders` onto the Opportunity-owned request namespace in this commit; both stale
+  builder diagnostics are gone and the remaining integration frontier is exactly 26 errors.
 - Recovered both surviving `ConcertService` unit-test fixtures onto the current `IBookingModule`
   constructor boundary; the focused Release suite passes 88/88.
 - Recovered the Workers completion-runner fixture onto the current operation-owned executor and moved
@@ -274,6 +283,15 @@ generalize selector/factory infrastructure in this slice.
 
 ## Verification
 
+- `dotnet build
+  api/Concertable.B2B/src/Modules/Concert/Tests/Concertable.B2B.Concert.IntegrationTests/Concertable.B2B.Concert.IntegrationTests.csproj
+  --configuration Release --no-restore --disable-build-servers --maxcpucount:1`: the baseline produced
+  28 errors, including two `OpportunityRequestBuilders.cs` diagnostics; after the namespace recovery it
+  produces 26 errors and no builder diagnostic.
+- Errors-only repeated build confirms the exact remaining 26-error frontier: 17 deleted
+  Concert lifecycle/workflow namespace imports, two combined-state references, two Booking entity
+  references, two Contract entity references, two Application entity references, and one settlement
+  outcome reference, with `ApplicationCancelApiTests.cs` first for the next bounded recovery.
 - `dotnet test
   api/Concertable.B2B/src/Modules/Concert/Tests/Concertable.B2B.Concert.UnitTests/Concertable.B2B.Concert.UnitTests.csproj
   --configuration Release --no-restore --disable-build-servers --maxcpucount:1`: 88/88 passed after
