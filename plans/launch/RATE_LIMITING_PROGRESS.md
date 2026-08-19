@@ -39,9 +39,8 @@ net-new `IntegrationTestHostExtensions` step; each service owns its own `ApiFixt
 touched test project).** Remaining is delivery only:
 
 - **Draft PR #670 open**; PR CI owns build/carve/unit/integration (no positive E2E trigger — see plan's Validation posture).
-- **`/review`** the branch; address findings (also produces the review file the merge gate requires).
-- **`/merge`** once green; then follow the `api/**` platform-sync PR to green/merged (this touches `api/**`,
-  so it republishes ServiceDefaults + all consumers and re-bumps the pin — non-breaking, should auto-merge).
+- **`/review` complete** (medium, both layers + security). NAT1 (Auth prod ForwardedHeaders → global-lockout) **fixed** `a67537bad`; NAT2 (Customer policy-name literals) recorded as a deliberate trade-off (no service-wide assembly; see review + Decisions). Review + security markers stamped at `a67537bad`.
+- **`/merge`** once CI green (blocked for the agent by `merge_review_gate.py` — **Tommy runs it**): `! gh pr merge 670 --squash --auto`. Then follow the `api/**` platform-sync PR to green/merged (republishes ServiceDefaults + consumers, re-bumps the pin — non-breaking, should auto-merge).
 - On merge, the plan is terminal → delete `RATE_LIMITING_PLAN.md` + this ledger (roadmap already ticked, not deleted).
 
 ## Completed work
@@ -99,3 +98,11 @@ touched test project).** Remaining is delivery only:
   api/blob/{fileName}` + `GET download`; Payment `GET /api/Transaction` missing `[Authorize]` — the last
   two logged in `api/TECH_DEBT.md` alongside the Phase 2 wiring.
 - **Partition on `sub`, not tenant**; in-process limiter only (distributed store deferred).
+- **Policy-name constants per service; Customer uses literals** (review NAT2). B2B/Search/Payment/Auth put
+  `RateLimitPolicies` in a project both host and controllers reach (B2B `Tenant.Contracts`; Search/Payment
+  `.Api`; Auth host). Customer has no service-wide assembly the module `*.Api` projects share, so its host
+  holds the constants (registration + fixture `All`) and controllers carry matching literals — fail-fast at
+  startup, `public-read`/`review` covered by trip tests. Durable fix (a new shared Customer project) logged
+  in `api/Concertable.Customer/TECH_DEBT.md` as a topology decision for Tommy.
+- **Auth forwarded-headers made environment-agnostic** (review NAT1) — was Dev-only, which would have made
+  the prod per-IP credential throttle a global lockout. Now matches the other four hosts.
