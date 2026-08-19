@@ -5,7 +5,7 @@
 - Roadmap item: `launch/rate-limiting`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-launch_rate-limiting`
 - Branch: `Feature/launch_rate-limiting`
-- PRs: #646 (superseded seam v1, **MERGED**) · #655 (**producer v2 — seam refactor**, **MERGED** 2026-08-19T20:34Z) · #663 (`chore/platform-sync-0.1.0-alpha.0.1078` — sync from #655, **MERGED** 2026-08-19T21:25Z) · **#670 (Phase 2 consumers — all 5 services, DRAFT, open)**
+- PRs: #646 (superseded seam v1, **MERGED**) · #655 (**producer v2 — seam refactor**, **MERGED** 2026-08-19T20:34Z) · #663 (`chore/platform-sync-0.1.0-alpha.0.1078` — sync from #655, **MERGED** 2026-08-19T21:25Z) · **#670 (Phase 2 consumers — all 5 services, READY, CI green/CLEAN, awaiting merge)**
 - Last reconciled: 2026-08-19, from `origin/main` + repository evidence. #655 + #663 both merged; all five services pin `0.1.0-alpha.0.1078` (the opt-in seam). Spent #655 worktree closed; fresh Phase-2 worktree recreated off `origin/main` (`7f782a237`).
 
 ## Current state
@@ -38,10 +38,10 @@ net-new `IntegrationTestHostExtensions` step; each service owns its own `ApiFixt
 **Phase 2 consumer rollout implemented on this branch and building 0/0 (full `api/Concertable.slnx` + each
 touched test project).** Remaining is delivery only:
 
-- **Draft PR #670 open**; PR CI owns build/carve/unit/integration (no positive E2E trigger — see plan's Validation posture).
-- **`/review` complete** (medium, both layers + security). NAT1 (Auth prod ForwardedHeaders → global-lockout) **fixed** `a67537bad`; NAT2 (Customer policy-name literals) recorded as a deliberate trade-off (no service-wide assembly; see review + Decisions). Review + security markers stamped at `a67537bad`.
-- **`/merge`** once CI green (blocked for the agent by `merge_review_gate.py` — **Tommy runs it**): `! gh pr merge 670 --squash --auto`. Then follow the `api/**` platform-sync PR to green/merged (republishes ServiceDefaults + consumers, re-bumps the pin — non-breaking, should auto-merge).
-- On merge, the plan is terminal → delete `RATE_LIMITING_PLAN.md` + this ledger (roadmap already ticked, not deleted).
+- **PR #670 ready + CI green** — 58 checks pass, 0 fails, `mergeStateStatus: CLEAN` (full build/carve/unit/integration matrix; the rate-limit trip tests + relax helper pass remotely). No positive E2E trigger.
+- **`/review` complete** (medium, both layers + security). NAT1 (Auth prod ForwardedHeaders → global-lockout) **fixed** `a67537bad`; NAT2 (Customer policy-name literals) recorded as a deliberate trade-off (no service-wide assembly; logged in `Customer/TECH_DEBT.md`). Review + security markers stamped.
+- **Merge blocked for the agent by `merge_review_gate.py` — Tommy runs it:** `/merge 670` (or `! gh pr merge 670 --merge --auto`; repo convention is merge-commits). Then follow the `api/**` platform-sync PR to green/merged (republishes ServiceDefaults + consumers, re-bumps the pin — non-breaking, should auto-merge).
+- On merge: close this worktree (`-PlanManaged`), and the plan is terminal → delete `RATE_LIMITING_PLAN.md` + this ledger (roadmap already ticked, not deleted).
 
 ## Completed work
 
