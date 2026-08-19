@@ -23,9 +23,8 @@ never changes the working tree, index, or any branch.
 ## Repo facts (why these checks exist)
 
 - **`main` is protected by a merge queue** that rebuilds each entry on current main. That does **not**
-  make being behind `main` safe to enqueue: root [`AGENTS.md`](../../../AGENTS.md) "Before enabling
-  auto-merge" requires the branch to be current with base first, and it is a hard gate here too.
-  A second, separate failure is your
+  make being behind `main` safe to enqueue: root [`AGENTS.md`](../../../AGENTS.md) "Merging" requires
+  the branch to be current with base first, and it is a hard gate here too. A second, separate failure is your
   **local being out of sync with its own remote**: behind `origin/<branch>` (you'd push over newer
   work or merge a stale PR) or tracking a **`[gone]`** remote (the branch already merged + was
   deleted — you're on a dead branch). This is the exact "sync thing" that blocks a clean PR.
@@ -49,7 +48,7 @@ never changes the working tree, index, or any branch.
    ```
    - **main** → BLOCKER (nothing to PR; branch first).
    - Not `<Type>/<Name>` with a **capitalized** prefix (`Feature/`, `Fix/`, `Bug/`, `Refactor/`, …) →
-     warn (see `AGENTS.md` "Git branch"; never a lowercase `feature/…`).
+     warn (the `git-branching` skill owns the naming rule; never a lowercase `feature/…`).
 
 2. **Local in sync with origin (the sync gate).**
    ```
@@ -90,16 +89,16 @@ never changes the working tree, index, or any branch.
    gh pr list --state open --search "head:chore/platform-sync" --json number,title,url
    ```
    - If one exists, check its status (`gh pr checks <n>`). **Red/pending** → BLOCKER-ish: merges are
-     gated until it goes green; surface it so it's triaged (see `AGENTS.md` merge-monitor section).
+     gated until it goes green; surface it so it's triaged (root `AGENTS.md` "Platform sync").
 
 7. **No half-done published-package cut-over.** If this branch moved/renamed a type in a packable
    `Concertable.*`, run the rename definition-of-done grep for the OLD identity:
    ```
    grep -rniE "<old.namespace.or.type>" -- . ':!*/obj/*' ':!*/bin/*'
    ```
-   - Non-zero outside a written allowlist → BLOCKER: the cut-over is out of sync (`plans/AGENTS.md`
-     "Never leave the codebase out of sync"). Skip this check entirely if the branch touched no
-     packable contract.
+   - Non-zero outside a written allowlist → BLOCKER: the cut-over is out of sync
+     (`plans/agents/PLAN.md` "Never leave the codebase out of sync"). Skip this check entirely if the
+     branch touched no packable contract.
 
 8. **Targeted local checkpoint present.** Confirm the branch has the required generators/invariants,
    smallest affected build, and focused unit tests recorded. Do not run a full local solution build or

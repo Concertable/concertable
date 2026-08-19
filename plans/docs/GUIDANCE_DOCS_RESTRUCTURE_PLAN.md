@@ -612,9 +612,11 @@ enable auto-merge on a stale branch; a failed check is a real failure, never ret
 standards skill stays as the *generic* standard for carve-out repos that will not have this repo's `merge`
 skill, and must be reduced to the rule without the loop body. Same shape for `pr-preflight` and `review`.
 
-3b did **not** need this ruling after all: it never edited root `AGENTS.md`'s merge or Docker blocks, because
-the plan already defers auto-load thinning to a follow-up PR. Executing the ruling belongs to that PR (root
-side) and to Next Step 4 (standards-skill side).
+**Executed 2026-08-19, both sides, as part of the process cut-over.** The loop lives only in
+`.agents/skills/merge/SKILL.md` Step 4 — whose own wait loop had been a naive `state == MERGED` poll blind to
+`DIRTY`, a red `merge_group` run and the never-admitted glitch, so the move closed a real gap as well as a
+duplicate. Root `AGENTS.md` keeps four one-line invariants and the generic `MERGING.md` keeps the rule plus
+the five signals a loop must read. `pr-preflight`'s three references were repointed; `review` needed none.
 
 ### Phase 4 — dedupe to one home
 Collapse each duplication row. Biggest win: seeding from 5 locations to the `seeding` skill (the principle)

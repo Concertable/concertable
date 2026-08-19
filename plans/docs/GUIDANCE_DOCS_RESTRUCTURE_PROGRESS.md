@@ -6,14 +6,14 @@
 - Also delivered by this ledger: roadmap item `docs/agent-standards`, now checked off
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-guidance-docs`
 - Branch: `Docs/GuidanceDocsRestructure`
-- PR: #637 — **open working branch, NOT for merge** (see the standing constraint under Next Steps; it deletes 2,662 lines whose replacement is not yet correctly tiered). Label `skip-e2e`.
+- PR: #637 — the tiering constraint that held it open is **cleared**; it now needs a docs-review and an explicit merge instruction, nothing else. Label `skip-e2e`.
   commit). Updated for base currency three times on 2026-08-17: from **69 behind** and `DIRTY` (three doc
   conflicts resolved, below), from 2 behind after platform-sync #645 merged — a clean merge carrying only
   the `<ConcertablePlatformVersion>` bump `0.1.0-alpha.0.1055` → `0.1.0-alpha.0.1061` across the five
   service `Directory.Packages.props` — and from 10 behind at `2b04d57e2`.
 - Shared repos **today**: `tomjseery/dotagents` — `standards/dotnet/` (20 docs) only; `tomjseery/react-agents` — `standards/react/` (9), created 2026-08-18 on `main`; `Concertable/agent-standards` — `standards/process/` (7) + `standards/dotnet/` (12) + `standards/react/` (8) + the `skill_router` hook, three plugins. All three repos CI green at `852e467` / `9cb5ea3` / `b6312f7`. `dotagents` and `agent-standards` are still on `Refactor/StandardsDomainTree` with PRs open and CI green (`dotagents#1`, `agent-standards#2`), neither merged. Target shape and the three purged wrong models: `## Topology` below.
 - Dependency/package gates: no consumer migration to do, but this PR **will** trigger publish + platform sync — `publish-packages.yml` triggers on the coarse `paths: api/**`, which this branch's `api/**` markdown matches. MinVer republishes and a `chore/platform-sync-*` PR opens; non-breaking (no published type changed), so it should auto-merge green. Follow it to green anyway — whoever merges owns the sync.
-- Last reconciled: 2026-08-19 — steps 1 and Tier 2 both landed. `dotagents` `852e467`, `react-agents` `9cb5ea3`, `agent-standards` `b6312f7`, all pushed and CI green; #637 at the re-home commit. Re-check currency at enqueue time
+- Last reconciled: 2026-08-19 — the process cut-over landed on #637; `agent-standards` gained the MERGING body reduction (unpushed at the time of writing this line, see `## Next Steps`). `dotagents` `852e467`, `react-agents` `9cb5ea3`. Re-check currency at enqueue time.
 
 **Scope changed 2026-08-17: this is no longer a docs PR.** It now carries build behaviour
 (`api/TestConventions.targets` gating every test project) and a PreToolUse hook, because Phase 6 must land
@@ -23,7 +23,8 @@ more than it did, since the new targets file participates in every project's bui
 
 ## Current state
 
-**All four tiers match the model. Nothing is merged.** The corpus is 56 docs across three standards repos,
+**All four tiers match the model, and the process corpus is now moved rather than copied. Nothing is
+merged.** The corpus is 56 docs across three standards repos,
 each doc owned by exactly one router skill, delivered as five plugins and — on this machine — as junctions.
 The in-repo docs hold only this system's roster of real types, contexts, clients, tables and pins.
 
@@ -37,7 +38,7 @@ The in-repo docs hold only this system's roster of real types, contexts, clients
 **Auto-loaded floor.** An `api/**` prompt loads `api/AGENTS.md` (77) + `api/ARCHITECTURE.md` (62) with
 **zero** `@`-imports, from 1,429 lines at the start of this plan. An `app/**` prompt loads
 `app/AGENTS.md` (36), from 786. A unit-test project pulls in a 6-line stub; an E2E project none. Root
-`AGENTS.md` is still 298 lines — its thinning is deliberately deferred to a follow-up PR.
+`AGENTS.md` is 150 lines, from 298 — thinned by the process cut-over rather than by a follow-up PR.
 
 **Enforcement is complete at three tiers and in both harnesses.** `api/TestConventions.targets` fails a
 misnamed or misclassified test project; the write-time `skill_router.py` blocks the first write into a
@@ -62,13 +63,46 @@ tested literally, because this machine has the junctions. What was proven juncti
 the payload is self-contained and its internal paths resolve inside the cache; the end-to-end claim is
 inferred from that, not observed.
 
-**What remains:** the process cutover (Next Step 1 — the only thing gating #637), the 16 audit defects,
-moving Concertable's four remaining hooks, then 5c (discovery — `dotnet/STACK.md` is its first known gap),
-3c (markdown outside the conventions folders), 4 (re-check which duplication rows survive — step 1 resolved
-the seeding row by deleting `api/agents/SEEDING_CONVENTIONS.md` and cutting `api/AGENTS.md`'s second copy of
-the forbidden-table list), and root `AGENTS.md`'s auto-load thinning.
+**The process corpus has one home (2026-08-19).** The six Concertable originals went 969 → 572 lines, each
+keeping only this repo's labels, scripts, hooks and commands and naming the skill that owns the generic half;
+all seven skill names are now referenced from in-repo markdown, where the audit measured zero. Root
+`AGENTS.md` is 150 lines, from 298. The merge poll loop lives only in `.agents/skills/merge/SKILL.md` Step 4.
+
+**What remains:** the 15 open audit defects (P0-structural is closed), moving Concertable's four remaining
+hooks, then 5c (discovery — `dotnet/STACK.md` is its first known gap), 3c (markdown outside the conventions
+folders), and 4 (the last duplication row — the Docker-health block still exists in five `e2e-*` skills).
 
 ## Done
+
+**Process corpus cut over — copied became moved** (2026-08-19)
+
+- Six originals slimmed to Concertable-only procedure, 969 → 572 lines: root `AGENTS.md` 298 → 150,
+  `plans/AGENTS.md` 168 → 71, `plans/agents/PLAN.md` 328 → 233, `plans/agents/ROADMAP.md` 51 → 34,
+  `docs/REMOTE_VALIDATION.md` 57 → 27, `PROMPTS.md` 67 → 57. Each names the owning skill and keeps only real
+  labels, scripts, hooks, commands and the invariants whose violation is silent and expensive.
+- **Deleted outright** (the skill states it, nothing here adds to it): the commit-when-green block and
+  fewest-safe-merges from `plans/AGENTS.md`, the tech-debt / code-comments / throwaway-markdown sections from
+  root `AGENTS.md` (the comment *policy* is global, per the Phase 3a decision), the branch-from-`origin/main`
+  and casing-hazard paragraphs, the gate-ownership table and delivery loop from `docs/REMOTE_VALIDATION.md`,
+  and the rename grep gate from `plans/AGENTS.md`.
+- **Phase 3c's ruling executed on both sides.** The four-terminal-state poll loop now lives only in
+  `.agents/skills/merge/SKILL.md` Step 4 — which previously carried a naive `state == MERGED` loop that could
+  not see `DIRTY`, a red `merge_group` run, or the never-admitted glitch, so this fixed a real gap as well as
+  a duplicate. Root `AGENTS.md` keeps four one-line invariants; the generic `agent-standards`
+  `standards/process/MERGING.md` keeps the rule plus the five signals a loop must read and drops the body
+  (95 → 78 lines), with `sync-generated.ps1` re-run so the `agent-process` plugin copy matches.
+- **Four new `skill-routes.json` rows** where a path implies a process skill: `plans/**.md` and `PROMPTS.md`
+  → `plans`; `TECH_DEBT.md`, any `AGENTS.md`/`CLAUDE.md`, and `.agents/skills/*/SKILL.md` → `docs-and-debt`.
+  `--skills-for` verified against one path per row. `git-branching`, `committing`, `merging`,
+  `remote-validation` and `failing-tests` get no row — no path implies them.
+- Cross-references repointed rather than left dangling: `pr-preflight` (three), `package-cutover` (one, which
+  named a `plans/AGENTS.md` section that no longer existed), and `docs/INDEX.md`'s whole Process table.
+- Gates: `docs_reachability` 0 errors / 26 warnings (all pre-existing), `plan_graph` clean, 94 hook tests
+  green.
+- **Discrepancy left in place, not silently resolved:** Phase 3a recorded that "questions come before
+  actions" and "act on reversible work" *stay global*, but neither is in `dotagents/AGENTS.md` — they are
+  only in Concertable's root `AGENTS.md`. Cutting them would have deleted live rules with no other home, so
+  they stayed. Moving them into the global file is a one-line change Tommy owns.
 
 **Tier 2 split — `tomjseery/react-agents` exists** (`react-agents` `main` `b69b517`, CI green;
 `dotagents#1` `1389a2e`, CI green)
@@ -450,70 +484,54 @@ not a vendored hook. Skills arrive as plugins installed once per machine at user
 
 ## Next Steps
 
-**The four tiers now match the model.** Authoritative statement: `dotagents/AGENTS.md` (mirrors to
-`~/AGENTS.md`, so it loads every session) and `dotagents/ARCHITECTURE.md`; the file-by-file target is the
-plan's "target structure — four tiers" section. Three superseded models were purged — do not reintroduce a
-merged standards repo, `dotagents` holding both stacks, or a `platform/`/`concertable/` folder.
+**The four tiers match the model and the process corpus now has one home.** Authoritative statement:
+`dotagents/AGENTS.md` (mirrors to `~/AGENTS.md`, so it loads every session) and
+`dotagents/ARCHITECTURE.md`; the file-by-file target is the plan's "target structure — four tiers" section.
+Three superseded models were purged — do not reintroduce a merged standards repo, `dotagents` holding both
+stacks, or a `platform/`/`concertable/` folder.
 
-**Repo heads at handoff, all pushed and CI green:** `dotagents` `852e467` (#1), `react-agents` `9cb5ea3`
-(`main`), `agent-standards` `b6312f7` (#2), Concertable `72b692246` (#637, 55 pass / 5 skip). Nothing is
-merged; #637 is the working branch and is **not** for merge (see the gate below).
+**Repo heads at handoff:** `dotagents` `852e467` (#1), `react-agents` `9cb5ea3` (`main`),
+`agent-standards` `69a8631` (#2, the MERGING body reduction pushed 2026-08-19 — confirm its CI went green),
+Concertable #637 at the process cut-over commit. Nothing is merged.
 
 **Deployed layout on this machine:** `~/.agents/standards/<repo>/<domain>/` — repo-scoped, because a
 generic domain and its Concertable counterpart share a relative path on purpose. Skills stay flat in
 `~/.agents/skills` and `~/.claude/skills` (66 of them). `deploy-skills.ps1` in `dotagents` owns both.
 
-Audit findings: `reviews/Docs-GuidanceDocsRestructure-AuditFindings.md` (16 defects).
+Audit findings: `reviews/Docs-GuidanceDocsRestructure-AuditFindings.md` — **15 open**, P0-structural closed.
 
-**Still open from step 1, deliberately:** `results/ERRORS.md`, `testing/UNIT.md` and `testing/E2E.md` are
-named gaps — nothing in the 480 lines was error-inventory or unit/E2E content, so 5c fills them or deletes
-the rows. `react/APP_TIERS.md` and `react/BROWSER_STORAGE.md` are named in the plan's Tier 3 block but
-their sources sit outside the 480 lines, so they stay with the rest of 3c.
+**Still open from the earlier step, deliberately:** `results/ERRORS.md`, `testing/UNIT.md` and
+`testing/E2E.md` are named gaps for 5c to fill or delete. `react/APP_TIERS.md` and
+`react/BROWSER_STORAGE.md` are named in the plan's Tier 3 block but their sources sit outside the moved
+lines, so they stay with the rest of 3c.
 
-1. **Cut the process corpus over — P0 in the findings, and the only thing gating #637.**
-   `standards/process/` was **copied, not moved**. Measured 2026-08-19: the seven extracted docs are 463
-   lines in `agent-standards`, while the Concertable originals still sit at full length —
-
-   | Concertable original | Lines | Extracted counterpart |
-   |---|---|---|
-   | `AGENTS.md` | 298 | `BRANCHING`, `COMMITTING`, `MERGING`, `DOCS_AND_DEBT`, `FAILING_TESTS` |
-   | `plans/AGENTS.md` | 168 | `PLANS`, `COMMITTING`, `REMOTE_VALIDATION` |
-   | `plans/agents/PLAN.md` | 328 | `PLANS` |
-   | `plans/agents/ROADMAP.md` | 51 | `PLANS` |
-   | `docs/REMOTE_VALIDATION.md` | 57 | `REMOTE_VALIDATION` |
-   | `PROMPTS.md` | 67 | `PLANS` |
-
-   — and **`grep` for each of the seven skill names across every Concertable `*.md` returns zero files**, so
-   nothing routes to them. `MERGING.md` duplicates root `AGENTS.md`'s poll loop near-byte-for-byte.
-
-   Slim each original to Concertable-only procedure (real labels, workflows, commands, script paths) and
-   point at the owning skill, exactly as the stack halves now do. Phase 3c's already-settled ruling applies:
-   **the executable in-repo `merge` skill owns the procedure**, root `AGENTS.md` keeps only the invariants
-   whose violation is silent and expensive, one line each, and the generic `merging` standard drops the loop
-   body. Add the seven to `.agents/skill-routes.json` where a path implies one.
-
-2. **Fix the 16 audit defects**, P0 correctness first: the `[LoggerMessage]` carve-out (the corpus currently
+1. **Fix the 15 audit defects**, P0 correctness first: the `[LoggerMessage]` carve-out (the corpus currently
    bans its own canonical example), the `XMappers` examples that demonstrate a banned form, and
    `PERSISTENCE.md`'s impossible repository signature. Then the paraphrase-losses — `axios`,
    `Reqnroll`/`Playwright`, `Aspire` and its four extension methods, `Docker`/`pre-login handshake`,
    `Monitor`, the `NAMING.md` precedent column, `[Collection]`/`InitializeAsync`,
    `Environments`/`IHostEnvironment`, the raw-hook litmus members, the TanStack API names, `silenceErrors`,
-   the retry cap, `grep -rniE`.
+   the retry cap, `grep -rniE`. Almost all of these live in `dotagents` / `react-agents` /
+   `agent-standards`, not in this repo; each fix needs its repo's `sync-generated.ps1` re-run so the plugin
+   copy follows.
 
-3. **Move Concertable's four remaining hooks to `agent-standards`** — `plan_handoff_stop.py` + launcher,
+2. **Move Concertable's four remaining hooks to `agent-standards`** — `plan_handoff_stop.py` + launcher,
    `plan_graph.py`, `docs_reachability.py`, `merge-review-gate.py`. They enforce standards that already
    moved, so enforcement sits apart from its rule with nothing watching for drift. **Verify a plugin `Stop`
    hook fires with zero repo wiring first** — that was proven only for `PreToolUse`.
 
-4. **Then the remaining phases**: 5c (the discovery pass — conventions that exist only in code, e.g. B2B's
-   stance taxonomy), 3c (markdown outside the conventions folders), 4 (the last duplication rows), and the
-   deferred auto-load thinning of root `AGENTS.md`.
+3. **Then the remaining phases**: 5c (the discovery pass — conventions that exist only in code, e.g. B2B's
+   stance taxonomy), 3c (markdown outside the conventions folders), and the last duplication row — the
+   Docker-health block is still near-verbatim in five `e2e-*` skills, with root `AGENTS.md` now holding the
+   four-line invariant version.
 
-**#637's tiering blocker is cleared.** All four tiers now match the model, the corpus it points at is the
-one the model describes, and the install was proven in both harnesses. What remains before merge is
-**step 1** — `standards/process/` was copied rather than moved, so the Concertable originals still sit at
-full length and nothing references the extracted docs. Merging with that outstanding ships two live copies
-of the process rules.
+4. **#637 needs a review, then an explicit merge instruction.** The tiering blocker is cleared and the
+   process corpus is no longer duplicated, so nothing structural holds it open. It is **not** a docs-only
+   PR — it carries `api/TestConventions.targets` and a PreToolUse hook — so the docs-only auto-merge path
+   does not apply. Run `/docs-review` over the branch, address what it finds, then wait for Tommy. Merging
+   will trigger publish + platform sync (`paths: api/**` matches this branch's `api/**` markdown); follow
+   the `chore/platform-sync-*` PR to green.
+
 
 **Tommy's, not agent work:**
 

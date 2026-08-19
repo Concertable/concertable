@@ -7,7 +7,12 @@ Two independent read-only audits, 2026-08-18, briefed on the confirmed paraphras
 tier a doc ends up in, so the tier split (create `react-agents`; add `dotnet/` + `react/` to
 `agent-standards`) comes before fixing these.
 
-## P0 — structural: the process corpus was COPIED, not moved
+## P0 — structural: the process corpus was COPIED, not moved — **CLOSED 2026-08-19**
+
+**Fixed.** The six originals are slimmed to Concertable-only procedure and all seven skill names are now
+referenced (`git-branching`, `committing`, `merging`, `plans`, `remote-validation`, `failing-tests`,
+`docs-and-debt`): 969 lines → 572. The poll loop has one home, `.agents/skills/merge/SKILL.md` Step 4;
+the generic `MERGING.md` keeps the rule and the five signals without a runnable body. Original finding:
 
 `standards/process/` (7 docs, 423 lines) was extracted and its Concertable originals were left at **full
 length** with **nothing linking them**. Verified mechanically: searching all Concertable markdown for

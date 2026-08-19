@@ -148,6 +148,34 @@
         "concertable-identity",
         "concertable-permissions"
       ]
+    },
+    {
+      "path": "^plans/.*\\.md$",
+      "skills": [
+        "plans"
+      ],
+      "note": "The lifecycle rules a plan or ledger must satisfy - what each artifact is, when it is deleted, the two dependency graphs, cross-plan blockers. This repo's layout, hooks and commands are plans/AGENTS.md and plans/agents/."
+    },
+    {
+      "path": "^PROMPTS\\.md$",
+      "skills": [
+        "plans"
+      ],
+      "note": "This file is only the exact shape of the continuation pointer; the rule that a non-terminal plan must emit one belongs to the skill."
+    },
+    {
+      "path": "(^|/)TECH_DEBT\\.md$",
+      "skills": [
+        "docs-and-debt"
+      ],
+      "note": "Debt is recorded in the TECH_DEBT.md of the area that owns the problem, and the whole entry is deleted once fixed - never kept as an archive."
+    },
+    {
+      "path": "(^|/)(AGENTS|CLAUDE)\\.md$|^\\.agents/skills/[^/]+/SKILL\\.md$",
+      "skills": [
+        "docs-and-debt"
+      ],
+      "note": "Writing guidance is the moment one-rule-one-home is won or lost: check docs/INDEX.md for an existing owner first, and never add a second copy of a rule that already has one."
     }
   ]
 }

@@ -20,21 +20,22 @@ When a topic has both, the skill owns the rule and the file owns the inventory.
 | Topic | Owner |
 |---|---|
 | Long-term-over-hack; questions before actions; autonomy on reversible work | [`AGENTS.md`](../AGENTS.md) |
-| Branching, `<Type>/<Name>` casing, worktree identity gate, branch from `origin/main` | [`AGENTS.md`](../AGENTS.md) "Git branch" |
+| Branching — `<Type>/<Name>` casing, branching from `origin/main`, refactors that stay on their feature branch | skill `git-branching` |
+| The worktree identity gate; splitting durable guidance onto a `Docs/*` branch | [`AGENTS.md`](../AGENTS.md) "Git branch" |
+| When to commit, when to push, fewest safe merges | skill `committing` |
 | Ready-for-review ≠ merge authorization | [`AGENTS.md`](../AGENTS.md) |
-| Branch must be current with base before auto-merge | [`AGENTS.md`](../AGENTS.md) "Before enabling auto-merge" |
-| Merge confirmation — the four terminal states, bash until-loop, never `Monitor` | [`AGENTS.md`](../AGENTS.md) "Confirming a PR merge" |
-| Platform sync gate after an `api/**` merge | [`AGENTS.md`](../AGENTS.md) "Platform sync is a live gate" |
+| Merge procedure — currency check, enqueue, the four terminal states, sync follow-through | [`.agents/skills/merge/SKILL.md`](../.agents/skills/merge/SKILL.md) (generic rule: skill `merging`) |
+| The merge invariants too expensive to wait for a skill | [`AGENTS.md`](../AGENTS.md) "Merging" |
 | Which E2E tier a merge runs | [`.agents/skills/merge/SKILL.md`](../.agents/skills/merge/SKILL.md) Step 4 |
-| Docker health pre-flight before any E2E run | [`AGENTS.md`](../AGENTS.md) "E2E suites" |
-| Which gate runs where — local vs draft-PR CI vs merge queue | [`REMOTE_VALIDATION.md`](./REMOTE_VALIDATION.md) |
-| Recording and clearing tech debt | [`AGENTS.md`](../AGENTS.md) "Tech debt" |
-| Plan/roadmap/ledger structure and lifecycle | [`plans/AGENTS.md`](../plans/AGENTS.md), [`plans/agents/PLAN.md`](../plans/agents/PLAN.md) |
+| Platform sync gate after an `api/**` merge | [`AGENTS.md`](../AGENTS.md) "Platform sync is a live gate" |
+| Which gate runs where, and the Docker pre-flight before any local E2E | skill `remote-validation`; this repo's commands [`REMOTE_VALIDATION.md`](./REMOTE_VALIDATION.md) |
+| A red suite is never just reported | skill `failing-tests`; this repo's debug routing [`plans/AGENTS.md`](../plans/AGENTS.md) |
+| Plan/roadmap/ledger structure and lifecycle | skill `plans`; here [`plans/AGENTS.md`](../plans/AGENTS.md), [`plans/agents/PLAN.md`](../plans/agents/PLAN.md) |
 | Review files as work orders; addressing and deleting findings | [`reviews/AGENTS.md`](../reviews/AGENTS.md) |
 | Continuation, handoff and resume prompt shape | [`PROMPTS.md`](../PROMPTS.md) |
-| Code comments — default to none | [`AGENTS.md`](../AGENTS.md) "Code comments" |
-| Doc locality, `CLAUDE.md` siblings, reachability | [`AGENTS.md`](../AGENTS.md) "Per-area guidance" |
-| Throwaway working markdown | [`AGENTS.md`](../AGENTS.md) |
+| One rule one home, doc locality, reachability, tech debt, throwaway markdown | skill `docs-and-debt` |
+| Code comments — default to none | global agent instructions (mechanics: skill `comments`) |
+| Doc locality and `CLAUDE.md` siblings as enforced here | [`AGENTS.md`](../AGENTS.md) "Per-area guidance" |
 | Worktree cleanup | [`AGENTS.md`](../AGENTS.md) + `scripts/worktrees.ps1` |
 
 ## Architecture — what may depend on what
@@ -58,7 +59,7 @@ When a topic has both, the skill owns the rule and the file owns the inventory.
 |---|---|
 | C# style — fields, ctors, `null!`, braces, optional params, `base.`, `#region`, `extension()` | skill `csharp-style` |
 | C# naming — suffix table, `Projection`, `Response`/`Dto`, `XMappers`, evaluators, frozen tables | skill `csharp-naming` |
-| Comments and XML doc mechanics | skill `comments` (policy: [`AGENTS.md`](../AGENTS.md) "Code comments") |
+| Comments and XML doc mechanics | skill `comments` (the default-to-none policy is global) |
 | DI registration, dependency-holders, lifetimes | skill `dependency-injection` |
 | Logging — source-generated `Log.cs`, probes included | skill `logging` |
 | Validator tool choice, `ValidationResult`, accumulation | skill `validation` |
