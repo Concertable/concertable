@@ -42,6 +42,10 @@ The in-repo docs hold only this system's roster of real types, contexts, clients
 `app/AGENTS.md` (36), from 786. A unit-test project pulls in a 6-line stub; an E2E project none. Root
 `AGENTS.md` is 150 lines, from 298 — thinned by the process cut-over rather than by a follow-up PR.
 
+**Every hook is upstream-owned (2026-08-19).** All six live in `agent-standards` and are vendored down;
+this repo keeps only `skill-routes.json` and `merge-gate.json` — its data — and the tests over them. A
+plugin `Stop` hook was proven to fire and to block with zero repo wiring before any of it moved.
+
 **Enforcement is complete at three tiers and in both harnesses.** `api/TestConventions.targets` fails a
 misnamed or misclassified test project; the write-time `skill_router.py` blocks the first write into a
 routed path whichever harness makes it, resolving descriptions from plugin caches as well as junction
@@ -77,10 +81,56 @@ deleted; the corpus no longer contradicts itself, and no rule is missing the ide
 lives in `remote-validation`, root `AGENTS.md` keeps the invariant, and the four `e2e-*` skills keep only
 the command and the stop-and-tell-the-user procedure.
 
-**What remains:** moving Concertable's four remaining hooks, then 5c (discovery — `dotnet/STACK.md` is its
-first known gap) and 3c (markdown outside the conventions folders).
+**Enforcement now lives with its rule (2026-08-19).** All six hooks are vendored from
+`agent-standards`; Concertable keeps only its two tables (`skill-routes.json`, `merge-gate.json`) and the
+tests over them. A plugin `Stop` hook was proven to fire *and block* with zero repo wiring first — the
+gate this step was held behind.
+
+**What remains:** 5c (discovery — `dotnet/STACK.md` is its first known gap) and 3c (markdown outside the
+conventions folders).
 
 ## Done
+
+**The last four hooks moved to `agent-standards`** (2026-08-19; `agent-standards` `7cb3fdd`, this PR
+`569591efe`)
+
+- **The gate first: a plugin `Stop` hook was only ever assumed to work.** Proven by real install of a probe
+  plugin into a directory with **zero** hook wiring: it fires; it **blocks** (the model was re-prompted and
+  complied); `stop_hook_active` flips to `true` on the retry, so `plan_handoff_stop.py`'s recursion guard
+  behaves identically under plugin delivery; and both `CLAUDE_PROJECT_DIR` and the payload's `cwd` give the
+  consuming repo's root, which is what the hook already resolves from. Machine restored to its pre-test
+  snapshot (1 marketplace, 4 plugins). Proven in headless `-p`; interactive uses the same machinery but was
+  not separately observed.
+- **`plan_handoff_stop.py`, `plan_graph.py` and `docs_reachability.py` moved byte-identical** — all three
+  already took their root from the payload or `--root`, so nothing needed changing.
+- **`merge_review_gate.py` had two couplings to this repo and both are now data.** Jurisdiction was "does
+  `cwd` belong to the repo this hook *file* lives in", which a plugin-delivered copy can only ever answer
+  no to — inert while looking wired. It is now an opt-in `.agents/merge-gate.json` found by walking up
+  from the directory the merge actually runs in, so `cd <other-repo> && merge` is judged by *that* repo's
+  opt-in; `same_repository()` is deleted rather than kept as dead code. Its security-path list named
+  Concertable services; the generic patterns (CI workflows, auth/credential vocabulary) stay in the hook
+  and the service names moved to `security_paths`. A present-but-broken table blocks rather than failing open.
+- **The launcher would have blocked every turn under plugin delivery.** Its currency check asks whether a
+  checkout still matches its `origin/main`; a plugin has no repo above it, so the check could only fail. It
+  now detects `CLAUDE_PLUGIN_ROOT` and runs the sibling implementation, keeping **one** `Stop` entrypoint
+  for both delivery routes.
+- **Two pre-existing defects surfaced, neither caused by this move.** The vendored `skill_router.py` was
+  pinned at `268796e` with three upstream commits missing — including plugin-cache resolution and the
+  orphaned-cache fix. Nothing was watching for it: `sync-generated -Check` validates the *generator*, not a
+  consumer's copy. Refreshing it then failed `test_an_unreadable_routes_file_fails_open`, a mechanism test
+  duplicated here that still asserted the fail-open behaviour upstream deliberately reversed in `78e0586`.
+- **Mechanism tests moved wholesale; this repo keeps only tests over its own tables.** All five plan/docs
+  test files were already fixture-based, and the merge gate's hand-rolled script is rewritten as unittest.
+  The eight duplicated router mechanism tests here are deleted, with a class docstring recording why the
+  duplication drifted. `agent-standards` 13 → 145 tests; Concertable 20 → 12.
+- **The Codex gap is recorded, not silent.** The gate knows only Claude's `Bash` tool name, so it stays
+  Claude-wired; `SHELL_TOOLS` in the hook states that vocabulary, and `SINGLE_HARNESS` in
+  `test_vendored_hooks.py` is the one legal half-wiring, carrying its reason plus a companion test that
+  fails once the exemption is no longer needed. The both-harnesses rule now skips hooks wired in neither,
+  because `plan_graph.py` and `docs_reachability.py` are command-line checks rather than hooks.
+- Verified: `agent-standards` **145 passed**, generator `-Check` clean; Concertable hook suite **12 passed**,
+  `docs_reachability` **0 errors / 26 warnings** (all pre-existing `plans/` working docs), `plan_graph`
+  **0 errors**, and the moved gate correctly blocks `gh pr merge 637` on the stale review marker.
 
 **Incremental docs-review of the branch, and its findings fixed** (2026-08-19, `890c68d28`)
 
@@ -564,21 +614,18 @@ Audit findings: **all closed**; `reviews/Docs-GuidanceDocsRestructure-AuditFindi
 `react/BROWSER_STORAGE.md` are named in the plan's Tier 3 block but their sources sit outside the moved
 lines, so they stay with the rest of 3c.
 
-1. **Move Concertable's four remaining hooks to `agent-standards`** — `plan_handoff_stop.py` + launcher,
-   `plan_graph.py`, `docs_reachability.py`, `merge-review-gate.py`. They enforce standards that already
-   moved, so enforcement sits apart from its rule with nothing watching for drift. **Verify a plugin `Stop`
-   hook fires with zero repo wiring first** — that was proven only for `PreToolUse`.
-
-2. **Then the two remaining phases**: 5c (the discovery pass — conventions that exist only in code, e.g.
+1. **The two remaining phases**: 5c (the discovery pass — conventions that exist only in code, e.g.
    B2B's stance taxonomy) and 3c (markdown outside the conventions folders).
 
-3. **#637 is reviewed and needs only an explicit merge instruction.** The docs-review ran on
-   2026-08-19 (`reviews/Docs-GuidanceDocsRestructure.md`, incremental section) and its three findings are
-   fixed; nothing structural holds the PR open. It is **not** a docs-only PR — it carries
-   `api/TestConventions.targets` and a PreToolUse hook — so the docs-only auto-merge path does not apply.
-   Re-run `/incremental-review` if the branch moves again, then wait for Tommy. Merging will trigger
-   publish + platform sync (`paths: api/**` matches this branch's `api/**` markdown); follow the
-   `chore/platform-sync-*` PR to green.
+2. **#637 needs a fresh `/incremental-review`, then an explicit merge instruction.** The branch moved
+   after the last review, so its marker is stale at `890c68d2` — the merge gate itself blocks on this,
+   verified live. It is **not** a docs-only PR — it carries `api/TestConventions.targets` and hooks — so
+   the docs-only auto-merge path does not apply. Review the hook-ownership commits, then wait for Tommy.
+   Merging will trigger publish + platform sync (`paths: api/**` matches this branch's `api/**` markdown);
+   follow the `chore/platform-sync-*` PR to green.
+
+3. **`agent-standards` #2 and `dotagents` #1 are still open and unmerged**, and Concertable's hooks are
+   vendored *from* `agent-standards`. Land those before treating the upstream ownership as settled.
 
 
 **Tommy's, not agent work:**
