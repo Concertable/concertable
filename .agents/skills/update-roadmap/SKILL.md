@@ -12,8 +12,7 @@ Update the complete live ROADMAP -> PLAN -> PROGRESS graph from one authoritativ
 1. Resolve `/update-roadmap [@plans/<epic>/<EPIC>_ROADMAP.md] <change set or source>`. Ask only when
    more than one roadmap plausibly owns it. Verify compatibility-sensitive claims against the named
    upstream source, release, package, or baseline when available.
-2. Read `AGENTS.md`, `plans/AGENTS.md`, `plans/agents/ROADMAP.md`, `plans/agents/PLAN.md`,
-   `PROMPTS.md`, and the roadmap. Read `api/ARCHITECTURE.md` for cross-service impact.
+2. Read `AGENTS.md`, `plans/AGENTS.md`, the `plans` and `handoff` skills, and the roadmap. Read `api/ARCHITECTURE.md` for cross-service impact.
 3. Run `python .agents/hooks/plan_graph.py --root <absolute-worktree>`. Find every live ledger whose
    `Roadmap:` header names the roadmap, then reconcile its declared branch/worktree/PR with real git
    and GitHub state. Read each plan and ledger from its owning worktree because it may be ahead of
@@ -37,4 +36,4 @@ Update the complete live ROADMAP -> PLAN -> PROGRESS graph from one authoritativ
    standalone roadmap/unowned-plan branch through `docs-review` and `merge-docs`; leave live-plan
    commits on their owner branches unless Tommy explicitly requested a push.
 8. Report the source evidence, changed artifacts, justified `none` classifications, validation, and
-   commits. Follow `PROMPTS.md` for each explicitly targeted actionable or blocked ledger.
+   commits. Follow the `handoff` skill for each explicitly targeted actionable or blocked ledger.

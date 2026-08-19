@@ -2,8 +2,8 @@
 
 > **Roadmap** for settling the agent/developer guidance corpus — root `AGENTS.md`, `api/agents/*`,
 > `app/agents/*`, `docs/*`, `api/docs/*`, and the repo-local skills. This is the living epic tracker,
-> not an implementation plan. Each buildable item spins off its own `_PLAN.md` and `_PROGRESS.md`; see
-> [`../agents/ROADMAP.md`](../agents/ROADMAP.md).
+> not an implementation plan. Each buildable item spins off its own `_PLAN.md` and `_PROGRESS.md`;
+> the roadmap tier is the `plans` skill.
 >
 > **Goal:** every rule has exactly one home, contradictions cannot survive unnoticed, each consumer
 > loads only the topics it can act on, and the generic half lives in a separate repo mounted at a fixed
@@ -36,7 +36,7 @@ standing contradiction was structurally invisible to the one process meant to fi
 | [x] | `docs/agent-standards` | Move the generic conventions out as `.agents`-canonical, load-on-demand skills — 35 total, split by whether the rule names this product: 28 generic in `tomjseery/dotagents` (`~/.agents/skills/`), 7 Concertable process ones in `Concertable/agent-standards` | docs/guidance-reconcile |
 | [x] | `docs/guidance-restructure` | Reduce `api/agents/*` and `app/agents/*` to the in-repo hard floor (2,681 lines → ≈330), give each service a thin `CODE_CONVENTIONS.md`/`CODE_PATTERNS.md` of its own precedents, and collapse every duplicated rule to one home | docs/agent-standards |
 | [x] | `docs/guidance-autoload` | Delivered by `docs/guidance-restructure` rather than separately: an `api/**` prompt loads 78 lines with zero `@`-imports (from 1,428 at `dc037f477`), root `AGENTS.md` is 150 (from 300), and the merge loop and Docker block are one-line pointers at the skills that automate them | docs/guidance-restructure |
-| [ ] | `docs/polyrepo-ready` | Finish the split the polyrepo cut requires: move the ~259 lines of generic plan process (`plans/agents/PLAN.md` 96% generic, `PROMPTS.md` 98%, `plans/agents/ROADMAP.md` 100%) into `standards/process/`, re-anchor the three monorepo-shaped route rows, and re-premise the docs that open by describing a monorepo | docs/guidance-restructure |
+| [ ] | `docs/polyrepo-ready` | Finish the split the polyrepo cut requires. **Phase 1 shipped:** the 324 lines of generic plan process (`plans/agents/PLAN.md`, `plans/agents/ROADMAP.md`, `PROMPTS.md`) are now `standards/process/PLANS.md` + a new `HANDOFF.md`, and those three files are deleted. Left: re-anchor the three monorepo-shaped route rows, re-premise the docs that open by describing a monorepo, and prove one service's guidance standalone | docs/guidance-restructure |
 | [ ] | `docs/analyzer-pushdown` | Set `EnforceCodeStyleInBuild` so `severity = error` style rules actually fail a build, move what prose re-argues into `.editorconfig`, and document the rules currently enforced with no written home (`MA0053`, file-scoped namespaces) | docs/guidance-restructure |
 
 ## The corpus is not polyrepo-ready, and that is the next item
@@ -50,11 +50,10 @@ destinations with no future.
 
 What that leaves, measured rather than estimated:
 
-- **~259 lines of generic plan process sit in a repo that is going away.** `plans/agents/PLAN.md` (183
-  lines, 4% mention this repo), `PROMPTS.md` (50, 2%), `plans/agents/ROADMAP.md` (26, 0%). Six sibling
-  process docs — branching, committing, merging, remote validation, docs-and-debt, failing-tests —
-  already moved to `standards/process/`; plans moved 78 lines and left 259. There is no reason for the
-  asymmetry beyond the restructure scoping `PLANS.md` narrowly and nobody re-deriving it.
+- ~~**Generic plan process sits in a repo that is going away.**~~ **Fixed** — 324 lines (`plans/agents/PLAN.md`
+  233, `PROMPTS.md` 57, `plans/agents/ROADMAP.md` 34; 32 of them naming anything Concertable-specific) now
+  live in `standards/process/PLANS.md` and `HANDOFF.md`. Six sibling process docs had already moved; the
+  asymmetry was the restructure scoping `PLANS.md` narrowly and nobody re-deriving it.
 - **Three route rows are anchored on the monorepo layout** — the `^api/` and `^app/` area floors and
   `^plans/`. None of those path prefixes exist in a standalone service repo. The four layer routes
   (`.Application/`, `.Api/`, `.Domain/`, `.Infrastructure/`) key on architecture rather than location and

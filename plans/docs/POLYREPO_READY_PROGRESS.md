@@ -3,59 +3,95 @@
 - Plan: `plans/docs/POLYREPO_READY_PLAN.md`
 - Roadmap: `plans/docs/DOCS_ROADMAP.md`
 - Roadmap item: `docs/polyrepo-ready`
-- Worktree: none yet — create one from current `origin/main`
-- Branch: none yet
-- PR: none yet
+- Worktree: `C:/Users/TommySeery/source/repos/Concertable.worktrees/Docs/docs_polyrepo-ready`
+- Branch: `Docs/docs_polyrepo-ready`
+- PR: this repo — pending; producer — `Concertable/agent-standards` [PR #5](https://github.com/Concertable/agent-standards/pull/5)
+- Package gate: this branch's docs point at `standards/process/PLANS.md` and `HANDOFF.md`, which ship
+  from agent-standards PR #5. **#5 merges first**, then this one.
 
 ## Current state
 
-**Nothing implemented. The plan is written, its decisions are taken, and every phase is unblocked.**
-This ledger exists so the work can start from a fresh worktree without re-deriving anything.
+**Phase 1 is implemented across both repos and delivery-gated on the producer PR.** Phases 2–4 are
+untouched and unblocked.
 
-The predecessor, `docs/guidance-restructure`, shipped and was closed out on 2026-08-19 (#637 merged as
-`b61feed88`, sync #661 green, plan and ledger deleted in #666). It left the corpus split by portability
-but shaped for a monorepo, which is what this item finishes.
+This branch is cut from `Docs/skill-routes-mapper-coverage` (PR #668), not from `origin/main`, because
+that PR carries this plan *and* the route table this work edits — branching from `main` would have
+conflicted on `.agents/skill-routes.json`. Its commits drop out of this PR's diff as soon as #668 merges.
 
-**Already true, and load-bearing for this work:**
+## Completed milestones
 
-- Five plugins are installed at `--scope user` and all **67** routers open a byte-identical copy of their
-  own repo's doc, so moving a doc between repos is a publish-and-reinstall, not a copy.
-- The route table gates **100%** of tracked source files via two area floors and four layer routes;
-  `matching_routes` yields every match, so a floor and a specific row both fire.
-- Six process docs already live in `agent-standards/standards/process/`, which is where Phase 1's content
-  joins them.
+- **Phase 1 producer — agent-standards PR #5.** `standards/process/PLANS.md` 78 → 248 lines, absorbing the
+  method from `plans/agents/PLAN.md` and the roadmap tier from `plans/agents/ROADMAP.md`; new
+  `standards/process/HANDOFF.md` (57) for the continuation pointer's exact shape; new `handoff` router;
+  `plans` router description widened and handing the prompt shape to `handoff`; README charter reworded to
+  separate roster (`dotnet`, `react`) from method (`process`) and to record why a fourth process repo was
+  rejected. `sync-generated.ps1` wrote 7 files, `-Check` reports 107 current, hook tests 161/161.
+- **Phase 1 consumer — this branch.** `PROMPTS.md`, `plans/agents/PLAN.md` and `plans/agents/ROADMAP.md`
+  deleted (`plans/agents/` is gone). `plans/AGENTS.md` rewritten as the in-repo floor: layout, ledger
+  template + checkpoint paths, `plan_graph.py`/`plan_handoff_stop.py`, `worktrees.ps1 close/retire`,
+  `/resume-plan` + `/continue-roadmap` + this repo's review skills, the debug tiers,
+  `initial-migrations.ps1`, the merge-queue E2E tier, and the carve's instance of the breaking-contract
+  rule. Every citation re-pointed: root `AGENTS.md`, `docs/INDEX.md` (2 rows), the `^PROMPTS.md$` route row
+  removed and the `plans` row's note rewritten, eight skills (`continue-roadmap`, `docs-review` ×4,
+  `merge`, `merge-docs`, `package-cutover`, `pr-preflight`, `resume-plan` ×2, `update-roadmap` ×2,
+  `plan-progress-checkpoint` ×2), `api/Concertable.Shared/TECH_DEBT.md`, and the five roadmap headers that
+  linked the deleted roadmap playbook.
 
-**Measured baseline for Phase 1**, so progress is checkable rather than asserted:
+## Verification
 
-| File | Lines | Lines mentioning this repo |
-|---|---|---|
-| `plans/agents/PLAN.md` | 183 | 8 (4%) |
-| `PROMPTS.md` | 50 | 1 (2%) |
-| `plans/agents/ROADMAP.md` | 26 | 0 (0%) |
-| `plans/AGENTS.md` | 53 | 7 (13%) — **stays** |
+- `python .agents/hooks/plan_graph.py --root <worktree>` → 0 errors, 0 warnings.
+- `python .agents/hooks/docs_reachability.py` → 0 errors, 26 warnings, all pre-existing `plans/` ones.
+- `python -m unittest discover -s .agents/hooks/tests` → 14/14.
+- The `plans` route still fires: `skill_router.py --skills-for` on a `plans/**/*.md` path resolves to
+  `plans` (and `docs-and-debt` for `plans/AGENTS.md`).
+- Grep sweep: no guidance doc mentions a moved file. The only survivors are historical records in
+  `plans/launch/MUSIC_LICENCE_ATTESTATION_PROGRESS.md`, `reviews/Fix-WorktreeLifecycleAutomation.md` and
+  `reviews/Docs-skill-routes-mapper-coverage.md`, deliberately left as the record of what was decided.
+
+## Review state
+
+None yet. This branch needs `/docs-review` before it merges.
+
+## Decisions and discoveries
+
+- **The measured baseline in the plan was wrong and is corrected.** The 259 lines it recorded were
+  actually 324 (`PLAN.md` 233, `PROMPTS.md` 57, `ROADMAP.md` 34), of which 32 carry any
+  Concertable-specific name or command. The plan and roadmap now carry the `wc -l` figures.
+- **The "Watch for" trap in the old Next Steps did not exist as written.** Neither `plan_graph.py` nor
+  `plan_handoff_stop.py` reads `PROMPTS.md`; the Stop hook hard-codes the pointer's shape (`plan_handoff_stop.py:339-347`)
+  and both hooks are vendored *from* agent-standards, so the enforcement already sits with the doc's new
+  home. Deleting `PROMPTS.md` broke no gate. What did need re-pointing was prose, not code.
+- **PLANS.md at 248 lines is past agent-standards' own "earns its own file past about eighty lines"
+  guideline.** It is one topic and the plan directed one file, so it landed as one. Splitting the ledger
+  format or the blocker schema into their own nodes is a live option for Phase 4 to settle.
+- **`handoff` was verified collision-free** against all skill names in `dotagents` (32), `react-agents`
+  (14), `agent-standards` (31) and this repo (28) before it was added.
+- **No new route row was added for `handoff`.** Phase 1's "add a `handoff` router" is the SKILL.md in
+  agent-standards. A route row naming a skill the machine has not reinstalled yet would block writes to
+  `plans/**` until the plugin cache refreshed, and the `^plans/` row plus the widened `plans` description
+  already carry the trigger.
 
 ## Next Steps
 
-1. **Phase 1 — move the 259 lines.** Create a worktree from current `origin/main`, and a matching branch
-   in `Concertable/agent-standards`; the two land together because the in-repo shim must not point at a
-   doc that has not shipped yet. Fold `plans/agents/PLAN.md` and `ROADMAP.md` into
-   `standards/process/PLANS.md`, move `PROMPTS.md` to a new `standards/process/HANDOFF.md`, add its
-   router, widen the `plans` skill description, and reduce the in-repo files to the layout/scripts/skill
-   names named in the plan's Phase 1.
+1. **`/docs-review` this branch and address every finding.** That is the only gate a docs/meta PR gets.
+   Then deliver in order: agent-standards [PR #5](https://github.com/Concertable/agent-standards/pull/5)
+   goes in first, because the docs on this branch name `standards/process/PLANS.md` and `HANDOFF.md` and
+   this branch landing first would point at a doc that has not shipped; this branch then lands through
+   `/merge-docs`. Tommy needs one harness action per machine afterwards so the new router is live:
+   `/plugin marketplace update agent-standards` (Claude) or the Codex equivalent — nothing in either repo
+   can do that step.
 
-   **Watch for:** the Stop hook and `plan_graph.py` both read the handoff pointer's shape, and
-   `PROMPTS.md` is currently its only definition — so move the doc and re-point those two together, or
-   every plan handoff in the repo starts failing its own gate.
-
-2. **Phase 2 — re-anchor `^api/`, `^app/`, `^plans/`.** Verify by replaying every tracked path through
-   the table twice: once against the monorepo tree, once against a tree with the prefix stripped, and
-   require 100% both times.
+2. **Phase 2 — re-anchor `^api/`, `^app/`, `^plans/`.** Key the two area floors on what a file *is*, the
+   way the four layer routes already do. Verify by replaying every tracked path through the table twice:
+   once against the monorepo tree, once against a tree with the prefix stripped, and require 100% both
+   times. Note this touches the same three rows PR #668 rewrote, so do it on a branch that has #668's
+   version of the table.
 
 3. **Phases 3 and 4** as the plan states. Phase 4 is the only one that produces evidence rather than
    edits; do not call the item done without it.
 
 **Open question for Tommy, not blocking:** each carved service repo will need its own thin
-`plans/AGENTS.md` and hook wiring naming its own script paths — roughly 50 lines × 8 repos of genuinely
-local content. Vendoring already handles the hooks. Whether that thin file is **generated** from a
-template at carve time or hand-kept per repo is a real choice, and Phase 4 is where it gets tested either
-way.
+`plans/AGENTS.md` and hook wiring naming its own script paths — the file this phase left behind is 79
+lines of genuinely local content, times eight repos. Vendoring already handles the hooks. Whether that
+thin file is **generated** from a template at carve time or hand-kept per repo is a real choice, and
+Phase 4 is where it gets tested either way.

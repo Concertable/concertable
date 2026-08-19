@@ -97,7 +97,7 @@ never changes the working tree, index, or any branch.
    grep -rniE "<old.namespace.or.type>" -- . ':!*/obj/*' ':!*/bin/*'
    ```
    - Non-zero outside a written allowlist → BLOCKER: the cut-over is out of sync
-     (`plans/agents/PLAN.md` "Never leave the codebase out of sync"). Skip this check entirely if the
+     (the `plans` skill, "Never leave the codebase out of sync"). Skip this check entirely if the
      branch touched no packable contract.
 
 8. **Targeted local checkpoint present.** Confirm the branch has the required generators/invariants,

@@ -17,7 +17,7 @@ reintroduced at repo scale.
 
 | Problem | Measure |
 |---|---|
-| Generic plan process sits in a repo with no future | `plans/agents/PLAN.md` 183 lines, **4%** mention this repo · `PROMPTS.md` 50, **2%** · `plans/agents/ROADMAP.md` 26, **0%** — 259 lines |
+| ~~Generic plan process sits in a repo with no future~~ — **moved, Phase 1** | `plans/agents/PLAN.md` 233 lines · `PROMPTS.md` 57 · `plans/agents/ROADMAP.md` 34 — **324 lines**, of which 32 carried a Concertable-specific name or command (the 259 first recorded here undercounted; `wc -l` on the files at the time of the move is the number) |
 | Route rows anchored on the monorepo layout | 3 of 37: `^api/…`, `^app/…`, `^plans/…` — no such prefix exists in a service repo |
 | Hub docs open by describing a monorepo | root `AGENTS.md` line 1; `docs/INDEX.md` is a monorepo index |
 
@@ -50,24 +50,29 @@ re-anchor should follow, not a second set of prefixes.
 
 ## Phases
 
-### Phase 1 — move the 259 lines of generic plan process out
+### Phase 1 — move the generic plan process out ✅ **done**
 
-Target `Concertable/agent-standards`:
+Target `Concertable/agent-standards` (PR [#5](https://github.com/Concertable/agent-standards/pull/5)):
 
-- `plans/agents/PLAN.md` (183) → merge into `standards/process/PLANS.md`. That file already owns the
-  lifecycle; this adds the *method* — phases, verification gates, the four-line blocker schema, the
-  ledger format.
-- `plans/agents/ROADMAP.md` (26) → same file, as the roadmap tier.
-- `PROMPTS.md` (50) → `standards/process/HANDOFF.md`, a new node. It is the continuation pointer's exact
-  shape and nothing else defines it, so it earns its own doc rather than a section.
-- Update the `plans` skill description to cover the added surface; add a `handoff` router.
+- [x] `plans/agents/PLAN.md` (233) → merged into `standards/process/PLANS.md`, which went 78 → 248. It
+  already owned the lifecycle; this added the *method* — phases, verification gates, the four-line
+  blocker schema, the ledger format.
+- [x] `plans/agents/ROADMAP.md` (34) → same file, as the roadmap tier.
+- [x] `PROMPTS.md` (57) → `standards/process/HANDOFF.md` (57), a new node. It is the continuation
+  pointer's exact shape and nothing else defines it, so it earns its own doc rather than a section.
+- [x] `plans` skill description widened; `handoff` router added; the README charter reworded to say which
+  domain is a roster and which is method, and why a fourth process repo was rejected.
 
-**What stays in-repo, deliberately:** `plans/AGENTS.md` (53 lines, **13%** this-repo) keeps only the
-`plans/<epic>/` layout, `plan_graph.py`'s invocation, `worktrees.ps1 close -PlanManaged`, and the
-debug-skill names by tier. That is genuinely per-repo and is what each carved service will carry.
+**What stayed in-repo, deliberately:** `plans/AGENTS.md` (71 → 79 lines) keeps the `plans/<epic>/`
+layout, `plan_graph.py` and `plan_handoff_stop.py`, `worktrees.ps1 close -PlanManaged`, the debug-skill
+names by tier, `/resume-plan` and `/continue-roadmap`, `initial-migrations.ps1`, the merge-queue E2E
+tier, and the carve's own instance of the breaking-contract rule. That is genuinely per-repo and is what
+each carved service will carry.
 
-**Gate:** `plan_graph.py` and `docs_reachability.py` clean; the `plans` route still fires on a
-`plans/**/*.md` write and resolves to the merged doc; no surviving link points at a moved file.
+**Gate — met.** `plan_graph.py` 0 errors, `docs_reachability.py` 0 errors (26 pre-existing warnings, all
+in `plans/`); the `plans` route still fires on a `plans/**/*.md` write; hook tests 14/14 here and 161/161
+in `agent-standards`; no guidance doc links a moved file (the only surviving mentions are historical
+records in spent ledgers and review files).
 
 ### Phase 2 — re-anchor the three monorepo-shaped route rows
 

@@ -250,14 +250,7 @@
       "skills": [
         "plans"
       ],
-      "note": "The lifecycle rules a plan or ledger must satisfy - what each artifact is, when it is deleted, the two dependency graphs, cross-plan blockers. This repo's layout, hooks and commands are plans/AGENTS.md and plans/agents/."
-    },
-    {
-      "path": "^PROMPTS\\.md$",
-      "skills": [
-        "plans"
-      ],
-      "note": "This file is only the exact shape of the continuation pointer; the rule that a non-terminal plan must emit one belongs to the skill."
+      "note": "The lifecycle and method a plan or ledger must satisfy - what each artifact is, its phases and their gates, when it is deleted, the two dependency graphs, cross-plan blockers. This repo's layout, hooks and commands are plans/AGENTS.md; the handoff prompt a non-terminal ledger must end with is the handoff skill."
     },
     {
       "path": "(^|/)TECH_DEBT\\.md$",
