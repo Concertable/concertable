@@ -63,9 +63,16 @@ No `FeatureTitle`, `TestType`, or scenario-tag-derived `Category` groups.
 
 - Only the Reqnroll UI E2E projects need bin/obj cleaned — other test projects (integration, unit)
   are already tracked by VS because they were built in a previous session.
-- The `StripFeatureTraits` MSBuild task in `api/Tests/Directory.Build.targets` runs
-  `BeforeTargets="CoreCompile"` — it always fires before compilation, stripping Reqnroll's
-  auto-generated scenario-tag traits and injecting `[Trait("Category", "Ui")]` on every test
-  method. This holds for both incremental and full builds in VS.
+- The intended `Category` groups come from an `[assembly: AssemblyTrait("Category", ...)]` in each
+  test project's own `AssemblyInfo.cs` — `Unit`, `Integration`, and so on. Those are the ones to keep.
+- The `StripFeatureTraits` MSBuild task runs `BeforeTargets="CoreCompile"` — it always fires before
+  compilation, stripping Reqnroll's auto-generated `FeatureTitle` and scenario-tag traits and
+  injecting `[Trait("Category", "Ui")]` on every test method. This holds for both incremental and
+  full builds in VS. There is no `api/Tests/` tree: the task lives in a `Directory.Build.targets` per
+  test tree — `api/Concertable.B2B/tests/E2ETests/`, `api/Concertable.Customer/tests/E2ETests/` and
+  `api/Concertable.Shared/tests/`.
+- If the stripped groups reappear, either the task did not run or the TestStore is stale. Both are
+  fixed by the full reset above; deleting only `api/.vs/Concertable.slnx/v18/TestStore` sometimes
+  clears a purely stale cache, but do not follow it with a CLI build of a Ui project.
 - To sub-group inside `Category [Ui]` by project (B2B vs Customer): in Test Explorer click
   **Group By → add Project** as a secondary level after Trait.

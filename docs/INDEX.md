@@ -19,6 +19,9 @@ When a topic has both, the skill owns the rule and the file owns the inventory.
 
 | Topic | Owner |
 |---|---|
+| What the product is, the core loop, the four deal types | [`OVERVIEW.md`](./OVERVIEW.md) |
+| Product thesis and competitive landscape | [`USP.md`](./USP.md) |
+| How to run a `/deep-research` discovery | [`DEEP_RESEARCH_PROMPT_GUIDE.md`](./DEEP_RESEARCH_PROMPT_GUIDE.md) |
 | Long-term-over-hack; questions before actions; autonomy on reversible work | [`AGENTS.md`](../AGENTS.md) |
 | Branching — `<Type>/<Name>` casing, branching from `origin/main`, refactors that stay on their feature branch | skill `git-branching` |
 | The worktree identity gate; splitting durable guidance onto a `Docs/*` branch | [`AGENTS.md`](../AGENTS.md) "Git branch" |
