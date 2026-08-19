@@ -1,4 +1,4 @@
-﻿---
+---
 name: incremental-review
 description: Compatibility stub for Claude Code. The canonical skill lives in .agents/skills/incremental-review/SKILL.md.
 ---

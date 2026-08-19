@@ -67,7 +67,7 @@ or queueing. Never push a checkpoint-only local tail to a queued, locked, merged
    remain open.
 
    **The gate is hook-enforced, and the hook is where the `!` escape comes in.**
-   `.claude/hooks/merge-review-gate.py` (PreToolUse) blocks the *agent's* `gh pr merge` until
+   `.agents/hooks/merge_review_gate.py` (PreToolUse) blocks the *agent's* `gh pr merge` until
    `reviews/<branch>.md` is current + clean. It resolves *this session's* checkout branch, so a worktree
    PR merged from a main-rooted session trips it looking for `reviews/main.md`. When the merge is
    authorized — review clean, or Tommy chose to bypass — **don't ask how to proceed: hand him the command
@@ -108,8 +108,9 @@ or queueing. Never push a checkpoint-only local tail to a queued, locked, merged
      exact-head PR CI before continuing.
 
 3. **Wait for the PR's own checks to reach a terminal state, then verify green.**
-   - Poll `gh pr checks <n>` until **no** check is `pending`. Prefer the `Monitor` tool with an
-     until-loop so you're notified instead of busy-waiting, e.g.:
+   - Poll `gh pr checks <n>` until **no** check is `pending`, with a Bash background until-loop —
+     never the `Monitor` tool (its detached poller silently missed merges here; root
+     [`AGENTS.md`](../../../AGENTS.md) "Merging" states the invariant). e.g.:
      ```
      while true; do out=$(gh pr checks <n> 2>&1);
        pend=$(echo "$out" | awk -F'\t' '$2=="pending"' | wc -l);
@@ -165,14 +166,72 @@ or queueing. Never push a checkpoint-only local tail to a queued, locked, merged
      admission fails or the head changed, reconcile the outcome before the next source update; do not
      push an observation-only commit or silently enqueue a different head.
    - **No `--delete-branch`** (the queue rejects it).
-   - `--auto` only *enqueues*. Now **wait for it to actually land** — the queue runs carves plus the
-     selected E2E tier on the merge group and merges only if green. A positive-trigger PR runs
-     `e2e-api-tests` + `e2e-ui-tests`; allow ~30-40 min. A `skip-e2e` PR keeps the hard floor and the
-     current-main queue merge but both E2E jobs no-op.
-     ```
-     while true; do st=$(gh pr view <n> --json state --jq .state 2>&1);
-       echo "$st"; [ "$st" = "MERGED" ] && break; [ "$st" = "CLOSED" ] && { echo "CLOSED-unmerged"; break; };
-       sleep 60; done
+   - `--auto` only *enqueues*. Now **wait for it to actually land**, with a Bash `run_in_background`
+     until-loop — never the `Monitor` tool. The queue runs carves plus the selected E2E tier on the merge
+     group and merges only if green. A positive-trigger PR runs `e2e-api-tests` + `e2e-ui-tests`; allow
+     ~30-40 min. A `skip-e2e` PR keeps the hard floor and the current-main queue merge but both E2E jobs
+     no-op.
+
+     The loop resolves to exactly ONE of four terminal states and reports it automatically, no reprompt.
+     It **never retries and never toggles**: a failed check is a real failure to surface and debug, not
+     something to poke.
+
+     1. **Merged** — report `✓ landed as <sha>` and stop.
+     2. **A check failed** — report `✗ CI failed: <job/check>`, point at the run log, and **stop. Do not
+        retry** (re-running a genuinely-failing E2E just fails again). Hand off with a ready-to-paste
+        `/e2e-ui-debug` | `/e2e-api-debug` dispatch prompt — worktree path, branch, PR, failing
+        scenario(s), and the failure signature — for a dedicated debug session, rather than driving a heavy
+        local E2E run inline. Emit it **as soon as the failure is obviously genuine** (deterministic, in
+        the changed area); only a *flake-signature* failure (the whole suite dead at startup/auth) waits
+        for a fresh-stack re-run to fail again first.
+     3. **Conflicted mid-wait** — `main` moved while you waited, the PR went `DIRTY`, and **GitHub
+        silently disabled auto-merge when it did.** Nothing is wrong with the work and nothing is retrying;
+        the PR simply stopped being enqueued. Report `✗ #<n> DIRTY`, then update the branch, rebuild, push,
+        and re-arm `--auto`. This is the state that looks most like "still waiting" and is the easiest hour
+        to lose — watch `mergeStateStatus` and the auto-merge flag, not just checks.
+     4. **Green but never admitted** — `CLEAN`, every check passes, auto-merge is on, yet GitHub never adds
+        it to the queue. That is an auto-merge **re-evaluation glitch** (armed while checks were pending,
+        then never looked at again), **not** a test failure. The remedy is a **one-time** action —
+        `gh pr merge --disable-auto <n>` then `--auto <n>`, or break-glass admin-merge — never an
+        automated loop.
+
+     **Telling 2 from 4 requires inspecting the actual run results, not just PR state** — this is the
+     trap. After a `merge_group` run FAILS, GitHub ejects the PR back to `OPEN`/`CLEAN`/not-queued, which
+     looks **identical** to the never-admitted glitch. The failure lives on the
+     `gh-readonly-queue/...pr-<n>-...` run, not on the PR head's checks, so `gh pr checks <n>` alone won't
+     show it. The loop must also scan `merge_group` run conclusions for this PR — a failed one means 2
+     (debug it), none-ever-dispatched means 4 (nudge it once).
+
+     **Never swallow poll errors** (`2>/dev/null || continue`) — a broken `gh` then looks identical to
+     "still waiting". Capture stderr into the state (`2>&1`), echo the state every poll, and **cap** the
+     loop so a persistent failure surfaces instead of hanging forever.
+     ```bash
+     pr=<n>; repo=Concertable/concertable; max=90; i=0; cleanpolls=0
+     while :; do i=$((i+1))
+       # Read state + mergeStateStatus into SEPARATE vars — never a joined string. `case "$st"` must
+       # compare the bare state ("MERGED"), or it silently never matches "MERGED UNKNOWN" and the loop
+       # times out instead of reporting the merge (the "monitored for ages, missed the merge" bug).
+       read -r st mss auto < <(gh pr view "$pr" --json state,mergeStateStatus,autoMergeRequest -q '.state+" "+.mergeStateStatus+" "+((.autoMergeRequest!=null)|tostring)' 2>&1)
+       inq=$(gh api graphql -f query='{repository(owner:"'"${repo%/*}"'",name:"'"${repo#*/}"'"){pullRequest(number:'"$pr"'){mergeQueueEntry{state}}}}' -q '.data.repository.pullRequest.mergeQueueEntry.state // "no"' 2>&1)
+       fail=$(gh pr checks "$pr" 2>/dev/null | awk -F'\t' '$2=="fail"{print $1}' | paste -sd, -)
+       mgfail=$(gh run list --event merge_group -L 15 --json conclusion,headBranch --jq '.[]|select(.headBranch|contains("pr-'"$pr"'-"))|.conclusion' 2>/dev/null | grep -c failure)
+       echo "poll $i: [$st/$mss] auto=[$auto] queue=[$inq] pr-checks-failing=[${fail:-none}] merge_group-failures=[$mgfail]"
+       case "$st" in
+         MERGED) echo ">>> #$pr ✓ MERGED"; exit 0;;
+         CLOSED) echo ">>> #$pr CLOSED without merging"; exit 0;;
+       esac
+       # Conflicted with main -> GitHub turned auto-merge off. Terminal: it will never enqueue itself.
+       if [ "$mss" = DIRTY ]; then
+         echo ">>> #$pr ✗ DIRTY — conflicted with main, auto-merge disabled; update+rebuild+push, then re-arm --auto"; exit 4; fi
+       if [ -n "$fail" ] || [ "$mgfail" -gt 0 ]; then
+         echo ">>> #$pr ✗ CI FAILED (pr:[$fail] merge_group-failures:$mgfail) — inspect the run, do NOT retry"; exit 2; fi
+       # green + mergeable + never admitted, sustained past normal latency -> the re-eval glitch (4)
+       if [ "$st" = OPEN ] && [ "$mss" = CLEAN ] && [ "$inq" = no ]; then cleanpolls=$((cleanpolls+1)); else cleanpolls=0; fi
+       if [ "$cleanpolls" -ge 6 ]; then
+         echo ">>> #$pr ⚠ GREEN but unadmitted ~6min (GitHub re-eval glitch, NOT a failure) — re-assert auto-merge once or break-glass"; exit 3; fi
+       [ "$i" -ge "$max" ] && { echo ">>> #$pr still [$st/$mss] after $max polls — surfacing"; exit 1; }
+       sleep 60
+     done
      ```
    - **If the queue kicks the PR out (E2E went red in the merge group):** the PR returns to `OPEN` and a
      merge-queue check fails. Treat it exactly like a red suite — enter `e2e-api-debug` / `e2e-ui-debug`,
@@ -227,7 +286,7 @@ or queueing. Never push a checkpoint-only local tail to a queued, locked, merged
    - **If publication succeeded:** the sync PR opens within a few minutes. Checkpoint its number, URL,
      branch, version, and initial state when discovered, then poll ITS checks. A pin
      bump is package-only, so E2E no-ops — the gate is `build` + `unit` + `integration`, usually a few
-     minutes (prefer the `Monitor` tool over busy-waiting):
+     minutes (Bash background until-loop, not `Monitor` — same rule):
      ```
      # there is only ever ONE open sync PR
      while true; do sp=$(gh pr list --state open --json number,headRefName \

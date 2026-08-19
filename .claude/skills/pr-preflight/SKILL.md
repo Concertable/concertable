@@ -1,4 +1,4 @@
-﻿---
+---
 name: pr-preflight
 description: Compatibility stub for Claude Code. The canonical skill lives in .agents/skills/pr-preflight/SKILL.md.
 ---

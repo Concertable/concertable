@@ -34,13 +34,13 @@ plan-managed, read and apply
 
 Both suites need Docker (SQL containers, ASB emulator, stripe-cli) and the Stripe/Google secrets (`Stripe__SecretKey`, `GoogleApiKey`).
 
-**Verify Docker with the real gate — `docker ps` is NOT enough.** `docker ps` answering (and even `docker run hello-world` succeeding, and a bare TCP connect to a published port) does NOT prove Docker is healthy: a half-started/flapping engine keeps `docker ps` answering and completes TCP handshakes at the host-side `docker-proxy` while host→container forwarding of real bytes for NEW containers is dead. The suite then dies later at SQL fixture startup with `pre-login handshake` resets and zero scenarios run. Use the data-round-trip probe:
+**`docker ps` answering is NOT proof Docker is healthy** — why the cheap checks miss a half-started engine, and the `pre-login handshake` signature it produces, are in the `remote-validation` skill. Run the real gate:
 
 ```powershell
-./docker-health.ps1   # fresh container + published port + real HTTP round-trip + stability check; exit 1 = unhealthy
+./scripts/docker-health.ps1   # fresh container + published port + real HTTP round-trip + stability check; exit 1 = unhealthy
 ```
 
-`./e2e.ps1 api|ui ...` runs this gate automatically and refuses to boot on failure — but run it yourself first so you catch a bad engine before anything else. If it reports unhealthy, **STOP**: tell the user Docker is half-started/down and to wait for Docker Desktop to show **Running**, then retry. Do **not** rerun the suite or debug application code for this — it is an environment failure (see root `AGENTS.md`). If a run dies instantly with a Stripe-auth / missing-config error, confirm the secrets are set before debugging anything else.
+`./scripts/e2e.ps1 api|ui ...` runs this gate automatically and refuses to boot on failure — but run it yourself first so you catch a bad engine before anything else. If it reports unhealthy, **STOP**: tell the user Docker is half-started/down and to wait for Docker Desktop to show **Running**, then retry. Do **not** rerun the suite or debug application code for this — it is an environment failure. If a run dies instantly with a Stripe-auth / missing-config error, confirm the secrets are set before debugging anything else.
 
 Tell the user the exact targeted test(s) being run. Use the full two-layer cost estimate only when the user explicitly requested a discovery sweep and no failures are already known.
 
@@ -51,7 +51,7 @@ The two E2E apps must **never** run concurrently (the `e2e_parallel_execution` f
 Run and fix the API suite to green using the full **`e2e-api-debug`** flow:
 
 ```powershell
-./e2e.ps1 api run        # both services; exits non-zero on any failure
+./scripts/e2e.ps1 api run        # both services; exits non-zero on any failure
 ```
 
 - Watch startup for hangs (Step 0b in `e2e-api-debug` — ASB emulator exit 139, payout-account stall, etc.).
@@ -67,7 +67,7 @@ If the user scoped to `ui` only, skip this step.
 Run and fix the UI suite to green using the full **`e2e-ui-debug`** flow:
 
 ```powershell
-./e2e.ps1 ui run         # all 30 Reqnroll scenarios, headless
+./scripts/e2e.ps1 ui run         # all 30 Reqnroll scenarios, headless
 ```
 
 - Watch startup (same Aspire AppHost, same startup-hang playbook).

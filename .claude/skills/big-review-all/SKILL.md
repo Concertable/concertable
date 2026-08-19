@@ -1,4 +1,4 @@
-﻿---
+---
 name: big-review-all
 description: Compatibility stub for Claude Code. The canonical skill lives in .agents/skills/big-review-all/SKILL.md.
 ---

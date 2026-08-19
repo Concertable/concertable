@@ -1,4 +1,4 @@
-﻿---
+---
 name: integration-debug
 description: Compatibility stub for Claude Code. The canonical skill lives in .agents/skills/integration-debug/SKILL.md.
 ---
