@@ -3,7 +3,7 @@
 Work order for PR [#666](https://github.com/Concertable/concertable/pull/666) — the guidance-docs
 restructure close-out. Findings are `- [ ]` until fixed, `- [x]` when addressed on the branch.
 
-**Reviewed up to commit:** `PLACEHOLDER`  _(2026-08-19)_
+**Reviewed up to commit:** `d4fd6b24e921b4f0e31f80c9c082a392ae15146f`  _(2026-08-19)_
 
 > Range: `origin/main...HEAD` — 4 files, 6 insertions, 2,218 deletions.
 
