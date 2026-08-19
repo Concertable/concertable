@@ -29,13 +29,11 @@ ServiceDefaults refactor + these plan docs.
 
 ## Next Steps
 
-**Producer refactor pushed to draft PR #655 and building in CI. Review is the next gate, then (on
-Tommy's authorization) merge so the new seam publishes.** Local state is committed and green; branch is
+**Producer refactor pushed to draft PR #655; `/review` complete and clean (see `## Reviews`). Awaiting
+Tommy's merge authorization so the new seam publishes.** Local state is committed and green; branch is
 current with `origin/main`.
 
-- **Review #655 (mandatory pre-merge gate):** run `/review` on the producer diff; record the outcome in
-  `## Reviews` and address findings before any merge.
-- **Merge #655 (needs Tommy's go-ahead, after review is clean):** on merge of this `api/**` change, `publish-packages`
+- **Merge #655 (needs Tommy's go-ahead — review gate satisfied):** on merge of this `api/**` change, `publish-packages`
   republishes `Concertable.ServiceDefaults` and `platform-sync` opens a `chore/platform-sync-*` pin bump.
   Non-breaking (no consumer on `main` uses the rate-limit API yet) → follow it to green/merged.
 - **Then create the consumer PR** (Phase 2, new branch off the new pin): opt all five web hosts into the
@@ -58,8 +56,10 @@ current with `origin/main`.
 
 ## Reviews
 
-- Producer PR #655 (seam refactor) — **review pending** (`/review` before merge authorization). The
-  prior 2026-08-17 `/review` covered seam v1, now superseded by this refactor.
+- Producer PR #655 (seam refactor) — **`/review` complete 2026-08-19 (medium), both layers clean.** One
+  Lens F gap (lazy config binding unpinned) fixed in-pass (test added, commit `9d2921e8f`); no open
+  findings. See `reviews/Feature-launch_rate-limiting.md` (2026-08-19 section). The prior 2026-08-17 pass
+  covered the now-superseded seam v1.
 
 ## Decisions, discoveries, blockers, and deviations
 
