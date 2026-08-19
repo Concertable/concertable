@@ -5,13 +5,14 @@
 - Roadmap item: `launch/deal-lifecycle-ownership`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules-phase2`
 - Branch: `Refactor/launch_deal-lifecycle-modules-phase2`
-- PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633). Published
-  Concert unit-test recovery work head `b390da9b3fa67731edefcf1e9fbc60c6d251e056` from starting
-  remote head `34010ca4cc0e42af5868115afdaa0cae2c25674c`; local HEAD, the remote branch, and PR
-  `headRefOid` matched exactly after the work-head push.
+- PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633). Local HEAD,
+  the remote branch, and PR `headRefOid` currently equal
+  `a183b2df2005d969e94f8759648a7c5e5934b983`. Exact-head CI run `32192242931` failed the build on
+  the host/API errors repaired by the current local candidate and the still-outstanding Workers unit
+  test references recorded in `## Next Steps`.
 - Dependency/package gates: none block the remaining B2B-internal implementation. Phase 1 delivery is terminal; final `api/**` delivery will own its routine package publication and platform-sync gate only after the complete refactor merges.
-- Last reconciled: 2026-08-18 after clearing the Concert unit-test ownership frontier and passing the
-  focused Release suite
+- Last reconciled: 2026-08-19 after clearing the B2B Web host/API compile frontier and identifying the
+  next exact-head CI frontier
 
 ## Current state
 
@@ -146,25 +147,35 @@ contract directly, validate only Concert-owned state and persistence, and retain
 regression against `ConcertService.CreateAsync`. The scoped stale-ownership vocabulary scan is empty,
 the project builds with 0 warnings and 0 errors, and the Release suite passes 88/88.
 
+The current B2B Web host/API recovery candidate clears all four host-facing errors from exact-head CI
+run `32192242931`. Application.Api resolves its moved request type, Concert.Api no longer imports the
+deleted workflow namespace or injects Booking's internal Contract service, and the existing
+`/api/concert/{id}/contract/pdf` route now resolves the document through the forward
+`Concert -> Booking.Contracts` facade. The host composes moved modules and their dev seeders through
+their API extensions without direct references to their Infrastructure namespaces. The repeated B2B
+Web Release build passes with 0 warnings and 0 errors.
+
 ## Next Steps
 
-Fresh-context B2B Web host compile/recovery slice only — preserve the green module Infrastructure and
-Concert unit-test boundaries and do not continue into migrations, guidance, integration tests, or
-another lifecycle operation:
+Fresh-context B2B Workers unit-test compile/recovery slice only — preserve the green module
+Infrastructure, Concert unit-test, and B2B Web host boundaries and do not continue into migrations,
+guidance, integration tests, or another lifecycle operation:
 
 The keyed-selector design concern is a recorded non-blocking follow-up. Do not refactor, rename, or
 generalize selector/factory infrastructure in this slice.
 
-1. Build `api/Concertable.B2B/src/Concertable.B2B.Web/Concertable.B2B.Web.csproj` in Release with
-   `--no-restore`, disabled build servers, and single-worker MSBuild to expose the exact remaining host
-   and API compile frontier.
-2. If it is red, use the repository's unit/integration debug workflow and resolve only failures caused
-   by the already-removed shared lifecycle or relocated Opportunity/Application/Booking/Concert
-   ownership. Stop and record any unrelated production frontier rather than entering another
+1. Run `dotnet test
+   api/Concertable.B2B/tests/Concertable.B2B.Workers.UnitTests/Concertable.B2B.Workers.UnitTests.csproj
+   --configuration Release --no-restore --disable-build-servers --maxcpucount:1` to reproduce the
+   exact-head CI `ConcertFinishedFunctionTests` compile errors against the deleted
+   `Application.Workflow.Executors.IFinishExecutor` boundary.
+2. Update only the completion-runner tests and their fixture vocabulary to the production
+   `ICompleteExecutor`, `CompleteAsync`, `GetEndedPendingCompletionIdsAsync`, and current typed
+   completion outcome. Stop and record any unrelated production frontier rather than entering another
    lifecycle operation.
-3. Run a scoped rejected-ownership vocabulary grep over the B2B host and module API projects,
-   `git diff --check`, and repeat the Web build. The slice gate is a green build or an exact recorded
-   unrelated production blocker; update this ledger and stop the context.
+3. Run a scoped deleted Finish/workflow vocabulary grep over the Workers unit project,
+   `git diff --check`, and repeat the focused Release test command. The slice gate is a green suite or
+   an exact recorded unrelated production blocker; update this ledger and stop the context.
 
 ## Completed work
 
@@ -239,9 +250,21 @@ generalize selector/factory infrastructure in this slice.
 - Merged the 93-commit `origin/main` drift without conflicts as
   `ff2e4dc553aad7bd9093e958235fa809efe5c881`, then verified local HEAD, the remote branch, and draft PR
   #633 `headRefOid` matched and the branch was 0 commits behind.
+- Cleared the B2B host/API compile frontier by routing the Concert contract-PDF compatibility endpoint
+  through `IBookingModule`, removing stale workflow/request imports, and keeping dev-seeder
+  registration behind module API composition extensions.
 
 ## Verification
 
+- Repeated `dotnet build
+  api/Concertable.B2B/src/Concertable.B2B.Web/Concertable.B2B.Web.csproj --configuration Release
+  --no-restore --disable-build-servers --maxcpucount:1`: 0 warnings and 0 errors.
+- Scoped host/module-API ownership scans find no deleted workflow, shared lifecycle, cross-stage entity,
+  moved-module host Infrastructure import, or Concert-API `IContractService` reference.
+- Exact-head CI run `32192242931` at `a183b2df2` proves the remaining full-build frontier is confined to
+  `Concertable.B2B.Workers.UnitTests/Functions/ConcertFinishedFunctionTests.cs`, which still references
+  the deleted `IFinishExecutor` and workflow namespace.
+- Current candidate `git diff --check`: passed.
 - Concert unit-test ownership scan finds no `IConcertWorkflow`, `ConcertWorkflow`,
   `IConcertStateMachineRegistry`, `LifecycleState`, `IFinishStep`, `FinishExecutor`,
   `ConcertDraftService`, `ContractIssuer`, Application/Booking/Opportunity entities or repositories,
