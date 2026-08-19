@@ -5,9 +5,9 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `16230d76ffa3f3810476d63001c5050be41a8d34`  _(2026-08-19)_
+**Reviewed up to commit:** `5e7addf31452d8173a81d045b1579b495a996258`  _(2026-08-19)_
 
-**Security-reviewed up to commit:** `16230d76ffa3f3810476d63001c5050be41a8d34`  _(2026-08-19)_
+**Security-reviewed up to commit:** `5e7addf31452d8173a81d045b1579b495a996258`  _(2026-08-19)_
 
 > Range reviewed: `9205e82d..2b93b45b` (12 commits reviewed; markers moved to `54b91961`, the fix commit, 73 files — markdown plus one Python hook).
 > Markers moved forward three times with nothing re-reviewable in between: once to the fix commit
@@ -390,7 +390,7 @@ range — no new credential, network, or shell-injection surface; every `subproc
 Claude's plugin manifest) is only ever read as `SKILL.md` text for a name the repo's own route table
 supplies. ENF9 below is why that stamp had to be a judgement call at all.
 
-- [ ] **ENF8 — HIGH — correctness: the merge gate's security layer fails open depending on which
+- [x] **ENF8 — HIGH — correctness: the merge gate's security layer fails open depending on which
   checkout you merge from** — `.agents/hooks/merge_review_gate.py:322-336`
   The primary gate deliberately resolves the *PR's* branch and head (`gh pr view <n> --json headRefOid`)
   so "a worktree PR merged from a main-rooted session" is judged correctly — that fix is the file's own
@@ -403,8 +403,11 @@ supplies. ENF9 below is why that stamp had to be a judgement call at all.
   silently, and the merge is allowed. Fix upstream in `Concertable/agent-standards` (this file is
   vendored): pass the already-resolved `head` into both the merge-base and the diff, add the case to
   upstream's gate tests, re-run `vendor-hooks.ps1 -Into <repo>`, commit the re-pinned manifest here.
+  Fixed upstream in `agent-standards` `32795d8` and vendored down: `changed_against_main(head)`
+  classifies the head the gate already resolved, with six tests pinning it — the one that fails if
+  the literal `HEAD` comes back was mutation-checked against the old expression.
 
-- [ ] **ENF9 — MEDIUM — correctness: the security marker goes stale on commits that cannot have
+- [x] **ENF9 — MEDIUM — correctness: the security marker goes stale on commits that cannot have
   invalidated it, and no documented step clears that** — `.agents/hooks/merge_review_gate.py:346-354`
   Marker currency is `marker == head`, exempted only by `review_only` (everything since touched
   `reviews/` alone). So on a branch that *ever* touched a security-sensitive path, any ordinary commit —
@@ -418,8 +421,11 @@ supplies. ENF9 below is why that stamp had to be a judgement call at all.
   changed between the marker and the head (`touches_security(diff(sreviewed..head))`), not by whether any
   commit did. Sensitive paths untouched since the security review → the security review still covers
   them.
+  Fixed in the same upstream commit: `security_no_longer_covered(marker, head, patterns)` asks
+  whether a security-sensitive path moved since the marker, so an ordinary commit no longer
+  invalidates it and an unresolvable marker still fails closed.
 
-- [ ] **ENF10 — MEDIUM — correctness: the wiring test now passes for a hook wired in NEITHER harness,
+- [x] **ENF10 — MEDIUM — correctness: the wiring test now passes for a hook wired in NEITHER harness,
   and the README states an exception list that is already wrong** —
   `.agents/hooks/tests/test_vendored_hooks.py:88-96`, `.agents/README.md:23-27`
   `test_every_vendored_hook_is_wired_for_both_harnesses` gained `wired = [...]; if not wired: continue`.
@@ -432,8 +438,12 @@ supplies. ENF9 below is why that stamp had to be a judgement call at all.
   exception". Fix: name the category instead of inferring it — a `"delivery"` field in `vendored.json`
   (`hook` | `command` | `invoked-by-launcher`), assert both-harness wiring for every `hook` entry, and
   state the three kinds in `.agents/README.md`.
+  `vendor-hooks.ps1` now derives each hook's `delivery` from its own `hooks.json` and records it in
+  the manifest; `test_vendored_hooks.py` asserts a `hook` is wired in both harnesses and an
+  `invoked` one in neither. Unwiring `skill_router.py` from both files now fails the suite (checked).
+  `.agents/README.md` states the two kinds.
 
-- [ ] **ENF11 — MEDIUM — correctness: nothing in this repo's CI runs the guard that six vendored hooks
+- [x] **ENF11 — MEDIUM — correctness: nothing in this repo's CI runs the guard that six vendored hooks
   were not edited in place** — `.github/workflows/test.yml`
   This range takes the vendored set from one file to six and removes the local tests for five of them, so
   `tests/test_vendored_hooks.py` is now the only thing standing between an in-place edit and a silent
@@ -443,6 +453,8 @@ supplies. ENF9 below is why that stamp had to be a judgement call at all.
   a `hook tests` step running `python -m unittest discover -s .agents/hooks/tests -t .agents/hooks/tests`.
   Fix: add a `hook-tests` job to `test.yml` (`actions/setup-python@v5`, 3.13, that same discover command)
   and add it to `ci-complete`'s `needs`, which is the single required check.
+  `.github/workflows/test.yml` gains a `hook-tests` job (`setup-python` 3.13, the same discover
+  command upstream CI runs) and `ci-complete` — the single required check — needs it.
 
 - [ ] **ENF12 — LOW — the manifest's provenance pins point at commits that exist only on an unmerged PR
   branch** — `.agents/hooks/vendored.json`
