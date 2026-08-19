@@ -145,9 +145,9 @@ Review **only** the changes in `<start>..HEAD`. Read beyond them only to confirm
 
 Logic errors, broken control flow, missing `await`, race conditions, atomicity/transaction gaps (e.g. a cross-context write that isn't in one transaction), null/boundary mistakes, wrong EF queries, swallowed exceptions. Real bugs hit in practice — not theoretical.
 
-### Lens B — Microservice isolation (the high-value lens — `microservice-boundaries`)
+### Lens B — Microservice isolation (the high-value lens — `dotnet:microservice-boundaries`)
 
-Concertable is a multi-service system; **B2B, Customer, and Search are data services that must NEVER depend on each other's runtime.** Flag, citing the `microservice-boundaries` skill:
+Concertable is a multi-service system; **B2B, Customer, and Search are data services that must NEVER depend on each other's runtime.** Flag, citing the `dotnet:microservice-boundaries` skill:
 
 - A **data service referencing another data service's non-Contracts project** — Customer (or its modules/tests) referencing B2B's `.Domain` / `.Application` / `.Infrastructure` / `.Seed` (anything beyond `*.Contracts`). Only `*.Contracts` (integration-event records + DTOs) may cross a service boundary.
 - A data service **`WaitFor`-ing another data service** in any AppHost (the bug to never introduce). `WaitFor` is for **adapter** services only (`Auth`, `Payment`, `Notification`). `WithReference` is fine.
@@ -156,14 +156,14 @@ Concertable is a multi-service system; **B2B, Customer, and Search are data serv
 - A producer's `*.Seed.Contracts` **referencing a consumer's** (dependency must point downward only: consumer → producer).
 - Customer entities reaching back into B2B via nav chains instead of holding **purchase-time snapshots** of B2B fields.
 
-### Lens C — Module boundaries (`module-structure` + `module-structure` skills)
+### Lens C — Module boundaries (`dotnet-standards:module-structure` + `dotnet:module-structure` skills)
 
 - Cross-module calls not going through `Contracts` / the module facade (`IXModule`).
 - EF queries inlined in a module facade (facades delegate to Application abstractions).
 - A module writing through `IUnitOfWork` (tied to `ApplicationDbContext`, silently no-ops) instead of `xRepository.SaveChangesAsync()`.
 - Impl types left `public` when an interface was extracted to `internal`.
 
-### Lens D — Seeding (`seeding` + `seeding` skills)
+### Lens D — Seeding (`dotnet-standards:seeding` + `dotnet:seeding` skills)
 
 - A seeder directly writing data whose only production write path is a reaction (read-model projections, `UserEntity`, manager profiles, Stripe `PayoutAccount`, inbox/outbox rows). The fix is to drive the event, never `context.X.AddRange(...)`.
 - `IDevSeeder` vs `ITestSeeder` misuse (`ITestSeeder` never runs in dev/E2E).

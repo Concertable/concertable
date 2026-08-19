@@ -52,10 +52,9 @@ When a topic has both, the skill owns the rule and the file owns the inventory.
 |---|---|
 | System-wide premise; monorepo vs the split-repo world | [`ARCHITECTURE.md`](../ARCHITECTURE.md) |
 | Cross-service references are Contracts-only; this monorepo's `api/` folder layout | [`api/ARCHITECTURE.md`](../api/ARCHITECTURE.md) |
-| Protocol selection — gRPC / HTTP / Service Bus | skill `microservice-boundaries` |
-| Adapter vs data services, what may `WaitFor` what, standalone-AppHost-is-canonical, the surface each service exposes | skill `microservice-boundaries` |
-| Producer seed libraries point downward only; the simulator that makes standalone work | skill `seeding` |
-| Cross-service contract distribution; per-folder build closures; `UseLocalCore`; the carve gates | skill `packages` |
+| Protocol selection — gRPC / HTTP / Service Bus | skill `dotnet-standards:microservice-boundaries` |
+| Adapter vs data services, what may `WaitFor` what, standalone-AppHost-is-canonical, the surface each service exposes | skill `dotnet-standards:microservice-boundaries` |
+| Producer seed libraries point downward only; the simulator that makes standalone work | skill `dotnet-standards:seeding` |
 | Design rationale and decision history (not current state) | [`api/docs/MICROSERVICES_ARCHITECTURE.md`](../api/docs/MICROSERVICES_ARCHITECTURE.md) |
 | Per-service specifics | that service's own `AGENTS.md` / `ARCHITECTURE.md` |
 
@@ -69,34 +68,34 @@ When a topic has both, the skill owns the rule and the file owns the inventory.
 | DI registration, dependency-holders, lifetimes | skill `dependency-injection` |
 | Logging — source-generated `Log.cs`, probes included | skill `logging` |
 | Validator tool choice, `ValidationResult`, accumulation | skill `validation` |
-| Repositories, `Schema.cs`, pagination, unit of work, write→read FKs | skill `persistence` |
-| Tenancy composition, context stances, query filters, repository qualifiers | skill `multitenancy` |
-| Domain events — raise on the entity, dispatch at the save, publish through the outbox | skill `domain-events` |
+| Repositories, `Schema.cs`, pagination, unit of work, write→read FKs | skill `dotnet-standards:persistence` |
+| Tenancy composition, context stances, query filters, repository qualifiers | skill `dotnet-standards:multitenancy` |
+| Domain events — raise on the entity, dispatch at the save, publish through the outbox | skill `dotnet-standards:domain-events` |
 | Behaviour that varies by a closed key | skill `keyed-strategies` |
-| Project layering, reference graph, visibility cascade, cross-module rules, module facades | skill `module-structure` |
-| Endpoint contracts — DTO vs `Response`, `Request` records, route vocabulary | skill `http-api` |
-| Result and Option carriers; typed errors; transport terminals | skills `result-carriers`, `result-errors`, `result-terminals` |
+| Project layering, reference graph, visibility cascade, cross-module rules, module facades | skill `dotnet-standards:module-structure` |
+| Endpoint contracts — DTO vs `Response`, `Request` records, route vocabulary | skill `dotnet-standards:http-api` |
+| Result and Option carriers; typed errors; transport terminals | skills `result-carriers`, `result-errors`, `dotnet-standards:result-terminals` |
 | Proto naming, proto mappers, wire error mapping | skill `proto` |
-| Seeding — drive the trigger, never write the row | skill `seeding` |
+| Seeding — drive the trigger, never write the row | skill `dotnet-standards:seeding` |
 | Which .NET library for which job, and what is deliberately not used | skill `dotnet-stack` |
 | `XMappers` placement and naming; when a pure operation is an extension vs a named evaluator | skill `csharp-naming` |
 | `extension()` block form, and migrating a legacy `this`-parameter container | skill `csharp-style` |
-| Unit / integration / E2E scenario authoring | skills `unit-testing`, `integration-testing`, `e2e-scenarios` |
-| **This system's** `Concertable.DataAccess` capability hierarchy, one repository per entity | skill: `persistence` |
+| Unit / integration / E2E scenario authoring | skills `dotnet-standards:unit-testing`, `dotnet-standards:integration-testing`, `e2e-scenarios` |
+| **This system's** `Concertable.DataAccess` capability hierarchy, one repository per entity | skill: `dotnet:persistence` |
 | **This system's** `IGeometryProvider` / WGS84 | skill: `geometry` |
 | **This system's** `IPagination.Map` placement, integration-event wire versioning, the `Genre` enum | skill: `dotnet-contracts` |
 | **This system's** Refit client inventory and the `ITokenApi` caveat | skill: `http-clients` |
-| **This system's** Reunion pins, never-redistribute, the package closure and carve gates | skill: `packages` |
-| **This system's** gRPC cancellation predicate | skill: `result-terminals` |
-| **This system's** project naming, internal controllers, no cross-module read context | skill: `module-structure` |
-| **This system's** `Tenant`-to-`organization` translation and route shapes | skill: `http-api` |
-| **This system's** service roster, adapter-vs-data, the surfaces each exposes | skill: `microservice-boundaries` |
+| Contract distribution, per-folder build closures, `UseLocalCore`, the Reunion pins, never-redistribute and the carve gates | skill `packages` |
+| **This system's** gRPC cancellation predicate | skill: `dotnet:result-terminals` |
+| **This system's** project naming, internal controllers, no cross-module read context | skill: `dotnet:module-structure` |
+| **This system's** `Tenant`-to-`organization` translation and route shapes | skill: `dotnet:http-api` |
+| **This system's** service roster, adapter-vs-data, the surfaces each exposes | skill: `dotnet:microservice-boundaries` |
 | **This system's** migration policy | skill: `migrations` |
-| **This system's** tenanted service, which project owns each stance piece | skill: `multitenancy` |
-| **This system's** 13 pre-commit handlers and the seeding interceptor's phase swap | skill: `domain-events` |
-| **This system's** forbidden seed tables, the B2B simulator, the ticket-sales exception | skill: `seeding` |
-| **This system's** integration fixtures and shared harness members | skill: `integration-testing` |
-| **This system's** test-tier gate, the unit-tier bans, the settled assertion library | skill: `unit-testing` |
+| **This system's** tenanted service, which project owns each stance piece | skill: `dotnet:multitenancy` |
+| **This system's** 13 pre-commit handlers and the seeding interceptor's phase swap | skill: `dotnet:domain-events` |
+| **This system's** forbidden seed tables, the B2B simulator, the ticket-sales exception | skill: `dotnet:seeding` |
+| **This system's** integration fixtures and shared harness members | skill: `dotnet:integration-testing` |
+| **This system's** test-tier gate, the unit-tier bans, the settled assertion library | skill: `dotnet:unit-testing` |
 | **This repo's** E2E baseline path, run script, seeded fast-forward | [`Concertable.Testing.E2E`](../api/Concertable.Shared/tests/Concertable.Testing.E2E/AGENTS.md) |
 | Page objects, `data-testid` naming, step-binding shape; the Stripe 3DS/timeout traps | [`E2E_UI_CONVENTIONS.md`](../api/Concertable.Shared/tests/Concertable.Testing.E2E/E2E_UI_CONVENTIONS.md), [`E2E_CONSIDERATIONS.md`](../api/Concertable.Shared/tests/Concertable.Testing.E2E/E2E_CONSIDERATIONS.md) |
 | B2B's DbContext stances, filtered entities, `DealType` families and workflow steps | [`api/Concertable.B2B/CODE_PATTERNS.md`](../api/Concertable.B2B/CODE_PATTERNS.md) |
@@ -107,12 +106,12 @@ When a topic has both, the skill owns the rule and the file owns the inventory.
 
 | Topic | Owner |
 |---|---|
-| `interface` vs `type`, casing, `undefined` over `null`, discriminated unions | skill `typescript-style` |
+| `interface` vs `type`, casing, `undefined` over `null`, discriminated unions | skill `react-standards:typescript-style` |
 | Read/write contract naming, one `types.ts` per feature | skill `contract-naming` |
 | Feature slices, hooks vs components, raw vs facade hooks, Effects, table dispatch | skill `react-structure` |
 | Queries, mutations, query keys, mutation variables | skill `server-state` |
-| Private stores, facade hooks, derived state, imperative session | skill `client-state` |
-| `xApi` objects, one client per backend, errors resolved once | skill `http-layer` |
+| Private stores, facade hooks, derived state, imperative session | skill `react-standards:client-state` |
+| `xApi` objects, one client per backend, errors resolved once | skill `react-standards:http-layer` |
 | The zod parse between buffer and request | skill `write-boundary` |
 | Slots over role checks, composed identity, tier discipline | skill `tiered-shared-code` |
 | Which library to reach for | skill `stack-defaults` |
@@ -122,10 +121,10 @@ When a topic has both, the skill owns the rule and the file owns the inventory.
 | dayjs behind one formatting module | skill `date-formatting` |
 | What a Vitest suite covers and what the browser suite owns | skill `frontend-testing` |
 | **This system's** surfaces, sharing tiers, route contract and typecheck gate | skill: `app-tiers` |
-| **This system's** four HTTP clients and the `isApiError` seam | skill: `http-layer` |
-| **This system's** `$type` unions and `FormData` casing | skill: `typescript-style` |
+| **This system's** four HTTP clients and the `isApiError` seam | skill: `react:http-layer` |
+| **This system's** `$type` unions and `FormData` casing | skill: `react:typescript-style` |
 | **This system's** `User`/`B2bIdentity` split | skill: `identity` |
-| **This system's** tenant session and active-tenant state | skill: `client-state` |
+| **This system's** tenant session and active-tenant state | skill: `react:client-state` |
 | **This system's** `SharedPermissions` matrix | skill: `permissions` |
 | Axios confined to the client layer; where a guard may branch on status | skills `react-standards:http-layer`, `react:http-layer` |
 | What belongs in each tier | that tier's own `AGENTS.md` |
