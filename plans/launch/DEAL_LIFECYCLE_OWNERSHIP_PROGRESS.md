@@ -6,11 +6,11 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules-phase2`
 - Branch: `Refactor/launch_deal-lifecycle-modules-phase2`
 - PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633). Published
-  head, remote branch, and PR `headRefOid` matched
-  `a7eddeeaa133a221a1a86f062ff436f86d0fb20e` before this continuation. Exact-head CI run
+  Workers and API-composition recovery range `a7eddeeaa..d6c688433` from starting remote head
+  `a7eddeeaa133a221a1a86f062ff436f86d0fb20e`; local HEAD, the remote branch, and PR `headRefOid`
+  matched `d6c688433d800411577d5e259656d27ee26a3679` after the work-head push. Prior exact-head CI run
   `32236953306` failed the build on stale Concert unit, Workers unit, integration, and E2E test
-  consumers. This checkpoint clears the Workers unit frontier and hides the four lifecycle-module
-  dev seeders behind their owning API composition roots; it is not yet published.
+  consumers; the next exact action is the Concert unit constructor slice in `## Next Steps`.
 - Dependency/package gates: none block the remaining B2B-internal implementation. Phase 1 delivery is terminal; final `api/**` delivery will own its routine package publication and platform-sync gate only after the complete refactor merges.
 - Last reconciled: 2026-08-19 after clearing the Workers unit frontier, tightening lifecycle API
   composition, and identifying the next exact-head CI frontier
