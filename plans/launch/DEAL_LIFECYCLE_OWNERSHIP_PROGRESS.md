@@ -187,8 +187,11 @@ preserve the green Concert/Workers unit, B2B Web, Opportunity request-builder, a
 `ApplicationCancelApiTests` boundaries and do not enter the other integration fixtures, E2E tests,
 migrations, guidance, or another lifecycle operation:
 
-The keyed-selector design concern is a recorded non-blocking follow-up. Do not refactor, rename, or
-generalize selector/factory infrastructure in this slice.
+The dispatch design is now settled, but it is sequenced after compile recovery. Do not refactor,
+rename, or generalize selector/factory infrastructure in this slice. Once the integration/E2E/migration
+frontier is green, this PR owns the best-effort net10 replacement of heterogeneous generic step resolvers
+with dedicated operation factories and Dunet implementation unions. The .NET 11 generated/native form
+remains in the downstream closed-Deal plan.
 
 1. Run `dotnet build
    api/Concertable.B2B/src/Modules/Concert/Tests/Concertable.B2B.Concert.IntegrationTests/Concertable.B2B.Concert.IntegrationTests.csproj
@@ -547,12 +550,17 @@ generalize selector/factory infrastructure in this slice.
 - Local state machines may use different structures; no common lifecycle interface is required.
 - Context supplies names inside a module: `State`, `Trigger`, `StateMachine`, and `ICancelStep` do not
   need Application/Booking/Concert prefixes internally.
-- The existing open-generic strategy factories and `StepResolver<TStep>` are not the approved final
-  dispatch pattern. They lack strategy-family and caller invariants, add scoped keyed-container lookup
-  to singleton-only dispatch, and repeat the same service-locator wrapper across modules. A separate
-  non-blocking investigation must preserve vertical exact-coverage validation while designing closed,
-  operation-owned, lifetime-aware dispatch with immutable singleton maps and no repeated per-facade
-  key declarations. Do not expand this concern inside the lifecycle compile-recovery slices.
+- The dispatch investigation is concluded. Honest same-interface families use generated module-specific
+  invariant strategy factories. Heterogeneous lifecycle operations use dedicated non-generic factories
+  returning Dunet implementation unions on net10 and native implementation unions on .NET 11. The
+  consumer matches acceptance/confirmation/completion kind, not four Deal cases; deliberate aliases let
+  multiple Deals share one implementation. Neither path uses `IKeyedServiceProvider` or a global workflow.
+- `IApplicationDealStrategyFactory<TStrategy>` is not reused for `Accept`: an implementation union whose
+  cases have different invocations is not a strategy family. The dedicated name is `IAcceptFactory`, not
+  `IAcceptStepFactory`.
+- PR #633 owns the best-effort net10 heterogeneous-operation conversion after its compile-recovery
+  frontier is green. The downstream Deal plan owns generated common-interface factories and the .NET 11
+  native/closed compiler-enforced form.
 - Generic transition plumbing may be shared only when it has no domain knowledge. Strategy
   registrations, transition tables, capabilities, and selector instances remain module-local.
 - Application records pre-accept payment evidence only because the callback can arrive before Booking
@@ -567,11 +575,10 @@ generalize selector/factory infrastructure in this slice.
   as `VerifyPaymentSucceeded` and `VerifyPaymentFailed`; `ApplicationPaymentVerified` is not used.
 - The fixed progression is an invariant to enforce, not an extension point. A `DealType` cannot skip,
   reorder, or merge Application, Booking, and Concert.
-- .NET 11 native unions are the selected mechanism for justified closed internal values after the
-  module split, including the combined journey projection and module-local state, trigger, or
-  operation-outcome shapes with case-specific data. They do not contain DI services, create shared
-  lifecycle ownership, or replace local step resolvers; persistence maps each module's discriminator
-  explicitly.
+- .NET 11 native unions are selected for justified closed internal values and module-local heterogeneous
+  operation choices after the module split. A dedicated typed factory may return a union containing its
+  concrete operation implementations; the union does not resolve DI, create shared lifecycle ownership,
+  or restore the global workflow. Persistence maps each module's discriminator explicitly.
 - Rust is not an implementation option for this lifecycle, Deal behaviour, or settlement work. The
   obsolete Rust engine plan was deleted rather than retained as a paused alternative.
 - Opportunity is not hidden inside Application. Its physical extraction is part of the module carve.
@@ -603,9 +610,9 @@ generalize selector/factory infrastructure in this slice.
 
 - Waiting plan: `plans/dotnet-11/B2B_WORKFLOW_UNIONS_PROGRESS.md`.
   Gate: this lifecycle implementation must land before the .NET 11 plan applies native unions to the
-  resulting closed value shapes; it must not union concrete DI step implementations from the rejected
-  god-workflow model.
+  resulting closed value shapes and enables module-local dedicated factories to return native
+  implementation unions without restoring the rejected god-workflow model.
 - Waiting plan: `plans/launch/DEAL_CLOSED_SUM_MODEL_PROGRESS.md`.
-  Gate: this lifecycle implementation must land before the Deal plan classifies every provisional
-  selector into retained keyed, local match, native/Dunet union, direct, or data form on the final module
-  layout.
+  Gate: this lifecycle implementation must land before the Deal plan replaces remaining honest
+  same-interface selectors with generated invariant factories and upgrades the net10 operation factories
+  to compiler-exhaustive native unions and closed-Deal switches.

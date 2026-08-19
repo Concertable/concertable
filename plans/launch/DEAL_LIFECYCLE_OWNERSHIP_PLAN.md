@@ -222,28 +222,37 @@ names rather than repeating the aggregate name:
 | Booking | `IConfirmStep`, `ICancelStep` |
 | Concert | `ICancelStep`, `ICompleteStep`, and local settlement-recovery steps where required |
 
-Keyed selection remains module-local and hidden behind a named business-facing collaborator. A caller
-requests one operation-specific dependency:
+Deal-varying operations are classified by invocation shape. A genuine same-interface family is selected
+through the module's invariant Deal strategy factory. An operation whose implementations require
+different parameters, results, or capabilities gets a dedicated operation factory returning a closed
+operation union. Its consumer matches the operation kind, never the four Deal cases:
 
 ```csharp
-await completeExecutor.CompleteAsync(concertId, cancellationToken);
+await acceptFactory.Create(deal).Match(
+    captureEscrow => captureEscrow.Value.AcceptAsync(application, cancellationToken),
+    paid => paid.Value.AcceptAsync(
+        application,
+        RequirePaymentMethod(paymentMethodId),
+        cancellationToken),
+    depositEscrow => depositEscrow.Value.AcceptAsync(application, cancellationToken));
 ```
 
-Registrations, coverage declarations, step contracts, implementations, and selector instances are
-module-local. There is no shared `IWorkflowStepResolver`, cross-module registry, or registration block.
-The lifecycle cutover does not settle the runtime selector mechanism: the existing open-generic
-`*StrategyFactory<TStrategy>` and `StepResolver<TStep>` shapes do not constrain permitted strategy
-families or callers, defer invalid use to keyed-DI runtime lookup, and force scoped container dispatch
-even for singleton-only families. Generic invariance does not provide those business invariants.
+After its current compile-recovery frontier is green, PR #633 uses the best-effort net10 form: a
+module-local Dunet union whose cases contain concrete operation implementations, a dedicated handwritten
+factory such as `IAcceptFactory`, typed constructor injection, one Deal-to-operation mapping in that factory, and
+Dunet's exhaustive `.Match(...)` over the operation cases. Multiple Deal cases may deliberately map to
+one operation case. The factory retains an unknown-`IDeal` fallback and focused catalog tests; net10 does
+not claim native compiler exhaustiveness.
 
-The downstream Deal dispatch plan has settled the mechanism. Every caller uses one named operation
-interface. Substantial homogeneous behavior uses module-local validated keyed implementations; trivial
-homogeneous behavior uses one operation-owned match; heterogeneous inputs/results use unions; identical
-behavior is direct; static variation is data. The shared keyed builder retains one vertical registration
-source with exact coverage, duplicate-key, unexpected-key, family, and lifetime validation. Until that
-plan resumes, this lifecycle PR must not multiply generic selector wrappers or rewrite existing selectors
-solely for naming consistency; it uses the smallest module-local selection seam required for the
-ownership cutover and treats that seam as provisional.
+The .NET 11 follow-up preserves the factory and call-site semantics, replaces the Dunet wrapper with a
+native union, and absorbs the handwritten mapping into the generated module catalog against `closed Deal`. The compiler
+then enforces both the operation-union match and generated Deal switch. Neither design contains an
+`IWorkflowStepResolver`, `IStepResolver<TStep>`, `IKeyedServiceProvider`, global workflow bundle, or
+four-Deal executor switch.
+
+`IApplicationDealStrategyFactory<TStrategy>` remains separate and applies only to genuine Application
+strategy families such as `IDealTerms`. It is not reused as `IApplicationDealStrategyFactory<Accept>`:
+the union cases do not share one substitutable invocation, so `Accept` is not a strategy family.
 
 Cancel and Complete use separate executors because each is one named Concert lifecycle operation with
 its own validation, persistence, transaction, IO, and typed failure contract. Uniform creation remains
@@ -463,6 +472,12 @@ Gate: Concert can validate and complete every operation from its own state plus 
 - [ ] Update module guidance for lifecycle ownership without ratifying the provisional selector
   mechanism; the separate dispatch investigation owns any general `api/agents/CODE_PATTERNS.md`
   replacement.
+- [ ] After the full compile-recovery frontier is green, replace heterogeneous `StepResolver<TStep>`
+  families with dedicated net10 operation factories and Dunet unions over concrete implementations.
+  Keep mapping once at the module composition boundary, allow deliberate many-Deal-to-one-operation
+  aliases, match by operation case, and remove keyed service-provider lookup.
+- [ ] Do not convert honest same-interface families to operation unions. Their provisional selector
+  replacement remains owned by the generated module strategy-factory plan.
 
 Gate: each command resolves one local step; no service can resolve another module's steps or request a
 whole workflow.
@@ -493,9 +508,11 @@ whole workflow.
 - There is no shared workflow module, cross-module step registry, umbrella state machine, or dependency-
   holder exposing all steps.
 - Contextual local names (`State`, `Trigger`, `StateMachine`, `ICancelStep`) are used without redundant
-  aggregate prefixes inside their module; keyed selection remains module-local behind operation-owned
-  collaborators without claiming the provisional selector mechanism as the final pattern.
-- Every `DealType` has exact, independently validated coverage for the local operations it requires.
+  aggregate prefixes inside their module.
+- Heterogeneous Deal-varying operations resolve once through module-local dedicated factories and match
+  by operation case; no executor repeats a four-Deal switch or resolves keyed services.
+- Every current Deal case has exact, independently tested net10 factory coverage, with an explicit
+  fallback for open `IDeal` and no false claim of native exhaustiveness.
 - Accept and Booking-confirmation boundaries are atomic or durably convergent as specified; every
   callback order is idempotent.
 - Opportunity acceptance uses an atomic claim, so concurrent Applications cannot both become accepted.
@@ -524,6 +541,7 @@ whole workflow.
 - one shared resolver, registry, workflow definition, state enum, or state machine for all modules;
 - identifier-only Booking confirmation or confirmation that reloads a live Application aggregate;
 - payment outcome contracts that combine success/failure with nullable case-specific fields;
-- unions over DI service implementations rather than closed values;
+- a global or cross-module union over DI services, or any union that performs service location; a
+  module-local dedicated factory returning its closed heterogeneous operation implementations is allowed;
 - any Rust lifecycle, settlement, or Deal decision engine;
 - backwards synchronous calls or a command cycle hidden behind facades, DTOs, events, or Contracts.

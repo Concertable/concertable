@@ -47,15 +47,22 @@ table-stakes items were resolved in the same pass.
 **Architecture refactors — ready, not launch gates:**
 
 - [x] ✅ **Deal-type strategy registration** — shipped in PR #451: module-local factories and vertically declared registration replace the repeated `DealType → strategy` dictionaries while preserving named business facades and the Deal/Concert boundary. `launch/deal-strategy-registration`
+- [ ] 🟡 **Deal representation and common-interface dispatch** `launch/deal-closed-sum-model` — define selection once for every honest same-interface Deal family through an invariant module factory whose exhaustive implementation, switches, long generic types, closed registrations, and missing-case diagnostics are source-generated. One reusable generator template lives in B2B build tooling, while each runtime factory remains module-owned. The proven families are terms, mapper, and updater. Heterogeneous lifecycle operations use dedicated typed factories returning Dunet implementation unions on net10 and native implementation unions on C# 15; consumers match operation kind and multiple Deals may share one implementation. Cancellation is direct and static direction/settlement facts are data. C# 15 also moves the published Deal payload to a closed record hierarchy. Plan: [DEAL_CLOSED_SUM_MODEL_PLAN.md](DEAL_CLOSED_SUM_MODEL_PLAN.md).
 - [ ] 🟡 **Application → Booking → Concert module ownership** `launch/deal-lifecycle-ownership` — design approved 2026-08-16: split the current
   Concert umbrella into honest Opportunity, Application, Booking/Contract, and Concert ownership;
-  each lifecycle aggregate owns independent state, transitions, contextual steps, and a module-local
-  resolver. The fixed stage order never varies by `DealType`; no umbrella process entity, shared
+  each lifecycle aggregate owns independent state, transitions, and contextual operations. Its current
+  keyed selectors are provisional delivery seams owned for replacement by the Deal dispatch plan:
+  honest same-interface mapper/updater/terms families use generated invariant factories, while
+  heterogeneous lifecycle operations use dedicated typed factories plus implementation-union matches;
+  multiple Deals may share one operation implementation; identical behavior is direct and
+  static variation is data. The fixed
+  stage order never varies by `DealType`; no umbrella process entity, shared
   workflow module, cross-module state machine, Deal-owned orchestration, or Rust decision engine is
   allowed. The remaining decomposition lands as one complete PR; its implementation phases are draft-
   branch checkpoints, not separately mergeable slices. Split only if a real published-package or
   deployment dependency appears. The follow-on .NET 11 slice owns native unions for closed internal
-  values, never DI service dispatch. See
+  values and module-local heterogeneous operation choices; typed factories own DI construction and no
+  union performs service resolution or restores the global workflow. See
   [DEAL_LIFECYCLE_OWNERSHIP_PLAN.md](DEAL_LIFECYCLE_OWNERSHIP_PLAN.md).
 
 **Competitor table-stakes — verified ABSENT 2026-08-16 (was "verify before trusting"):**

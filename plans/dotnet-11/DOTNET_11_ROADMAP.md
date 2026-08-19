@@ -7,7 +7,8 @@
 > **Current decision:** the first adoption slice is the B2B runtime after the Application, Booking,
 > and Concert module split lands. Native unions will model closed internal values, beginning with the
 > combined journey projection and proven case-specific module states, triggers, and operation
-> outcomes, but never workflow services, cross-module lifecycle ownership, or DI dispatch.
+> outcomes and module-local heterogeneous operation choices, but never a global workflow bundle,
+> cross-module lifecycle ownership, service location, or DI dispatch inside the union.
 
 ## How to continue this roadmap
 
@@ -40,7 +41,10 @@ hosting, and toolchain conventions.
   [`B2B_WORKFLOW_UNIONS_PROGRESS.md`](B2B_WORKFLOW_UNIONS_PROGRESS.md). Upgrade the B2B runtime and
   reverse build/test closure while keeping published cross-service contracts net10-compatible. Add
   the journey-stage union and the case-specific module state, trigger, and operation-outcome unions justified after the
-  lifecycle split; never union concrete DI step implementations.
+  lifecycle split; allow concrete implementation unions only behind module-local dedicated typed
+  factories, never as a restored cross-module workflow. Record the supported C# 15
+  compiler/target matrix needed by the downstream Deal representation cut-over and the native-union
+  syntax/runtime gate for its heterogeneous operation values.
 
 ### Blocked follow-up
 
@@ -60,8 +64,10 @@ slice.
 ReUnion integration + B2B typed-result delivery
 └── Application → Booking → Concert ownership delivery
     └── B2B .NET 11 platform-only checkpoint
-        └── native closed-value unions
-            └── merge-queue full E2E + platform sync
+        ├── native closed-value unions
+        │   └── merge-queue full E2E + platform sync
+        └── supported C# 15 compiler/target matrix
+            └── launch/deal-closed-sum-model native-operation-union + closed-Deal cut-over
 
 .NET 11 GA + Azure Functions net11 support
 └── B2B GA/deployment-readiness follow-up
@@ -92,10 +98,13 @@ ReUnion integration + B2B typed-result delivery
 - The B2B runtime and every direct reverse build/test consumer compile on a supported .NET 11 SDK.
 - Customer, Search, Payment, and Auth remain independently buildable on net10 against published B2B
   contract packages.
-- Application, Booking, and Concert retain independent state machines and module-local step resolvers;
-  no native union contains or dispatches service implementations.
+- Application, Booking, and Concert retain independent state machines and contextual operations; no
+  native union performs service resolution or recreates a workflow bundle, heterogeneous lifecycle
+  operations use dedicated factories plus union matches, and the Deal workstream replaces honest
+  same-interface selection with its generated invariant module factory.
 - Native unions model the combined journey projection and proven case-specific module states,
-  triggers, and operation outcomes with exhaustive coverage; they never contain runtime services.
+  triggers, operation outcomes, and approved module-local heterogeneous operation choices with
+  exhaustive coverage.
 - The B2B preview slice and its generated platform-sync PR are merged with full merge-queue E2E green.
 - The GA follow-up is merged, B2B Workers are supported by the target host, and the preview deployment
   restriction is gone.
