@@ -5,9 +5,12 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `99d68e500488d25ce909cbba039e9685f98fb164`  _(2026-08-17)_
+**Reviewed up to commit:** `07b0bdaae90f30cf87bda7485a26b966902b3288`  _(2026-08-19)_
 
-> Range reviewed: `bfbfd863c..6050bd927` (4 commits — Phase 1 seam + test + plan docs).
+> Range reviewed (latest): `6229e87c6..26b9a4354` — re-stamp after merging `origin/main` (the `1073`
+> platform-sync pin bump) into #655 to make it current for merge; #655's ServiceDefaults code is
+> byte-identical to the clean `9d2921e8f` review (diff `9d2921e8f..HEAD` touches zero ServiceDefaults
+> files). See the 2026-08-19 incremental section; the 2026-08-17 pass below reviewed the superseded seam v1.
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
 
 ## Findings
@@ -44,3 +47,34 @@ never have run. Root cause of the miss: neither authoring nor this review loaded
 
 ### Noted, not a finding (out-of-diff, tracked in the plan)
 - The IP-keyed policies (`Login`, `Upload`) partition on `Connection.RemoteIpAddress`, which collapses to the proxy IP unless the host runs `UseForwardedHeaders` before `UseDefaultRateLimiting`. This is a Phase-2 consumer/host-pipeline concern (the seam correctly reads the connection IP), and `Login` runs on `Concertable.Auth`, which already configures ForwardedHeaders. Pinned as an explicit Phase-2 requirement in `plans/launch/RATE_LIMITING_PLAN.md`.
+
+## Incremental review — 2026-08-19 (opt-in seam refactor, #655 producer)
+
+Reviews `29e7a1ad1..9d2921e8f` at `medium` — the refactor of `Concertable.ServiceDefaults` from a
+global-fallback + central-policy model to opt-in named policies (`AddDefaultRateLimiting` plumbing +
+`AddRateLimitPolicy` + `RateLimitWindow` + lazy `IOptionsMonitor` binding; removed the global limiter,
+`RateLimitPolicies`, `RateLimitingOptions`). This **supersedes** the 2026-08-17 seam-v1 pass above; that
+design no longer exists.
+
+**No open findings.** Both layers clean; the one gap found was fixed in-pass.
+
+- Layer 1 (native `code-reviewer`, medium): **no findings**. Verified `Configure<RateLimiterOptions>`
+  policy registration composes additively and order-independently with `AddRateLimiter`; the per-request
+  `IOptionsMonitor<RateLimitWindow>.Get(name)` is a cached singleton lookup (not a re-bind or per-request
+  allocation) and is what lets `BindConfiguration` reloads take effect; `.Configure(defaults)` then
+  `.BindConfiguration(...)` orders config-over-defaults correctly with defaults intact when the section is
+  absent; the `OnRejected` 429/`Retry-After`/ProblemDetails path matches the official ASP.NET Core pattern
+  (status set before invocation, `IProblemDetailsService` null-guarded); `ResolvePartitionKey` fallbacks
+  are sound.
+- Layer 2 (Concertable lenses):
+  - **Microservice isolation / module boundaries / seeding** — N/A; shared host infrastructure, no
+    cross-service or cross-module references, no persistence.
+  - **C# conventions** — file-scoped namespaces, sealed types, no primary constructors on stateful types,
+    single-statement branches without braces, no inline logging. Clean.
+  - **Test coverage (Lens F)** — [x] **CV1 — LOW — test-coverage** — `…/RateLimitingTests.cs` — the
+    refactor's headline change is *lazy* config binding (the eager-bind fix), but nothing asserted it.
+    **Fixed** (commit `9d2921e8f`): added `AddRateLimitPolicy_BindsNamedWindowFromConfigLayeredAfterRegistration_OverDefaults`
+    — config added *after* `AddRateLimitPolicy` still wins, absent keys keep the passed defaults. 5 tests pass.
+
+Security layer: not run — no changed path matches the security-sensitive set (no Auth/Payment/`*.Contracts`/
+`*Controller*.cs`/workflow/credential paths); ServiceDefaults infra only.
