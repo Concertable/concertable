@@ -693,6 +693,8 @@ write. Re-pin against `main` once #3 merges.
 
 ## Next Steps
 
+Paused: Tommy — every remaining step is a merge, and all three are his. Land [dotagents #2](https://github.com/tomjseery/dotagents/pull/2) and [agent-standards #3](https://github.com/Concertable/agent-standards/pull/3) together (`gh pr merge 2 --repo tomjseery/dotagents --merge`, `gh pr merge 3 --repo Concertable/agent-standards --merge`; both `CLEAN`, `verify` green, and this session cannot run either — see item 3), then give the merge instruction for [#637](https://github.com/Concertable/concertable/pull/637). Resume when #2 and #3 are `MERGED`, which unblocks 3.2–3.4 (re-vendor, install the five plugins, sweep the prefix).
+
 **The four tiers match the model and the process corpus now has one home.** Authoritative statement:
 `dotagents/AGENTS.md` (mirrors to `~/AGENTS.md`, so it loads every session) and
 `dotagents/ARCHITECTURE.md`; the file-by-file target is the plan's "target structure — four tiers" section.
