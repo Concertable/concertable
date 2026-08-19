@@ -504,6 +504,13 @@ A heterogeneous operation uses the same generated catalog and registration infra
 different semantic contract. It does not implement a strategy marker and does not inherit from
 `IApplicationDealStrategyFactory<TStrategy>`.
 
+An implementation union is Infrastructure-local because its cases name concrete DI implementations.
+The dedicated factory contract, union, generated factory, registrations, and effectful consumer therefore
+live in the owning module's Infrastructure compilation. They must not be placed in Application and force
+an inward layer to reference Infrastructure. Only immutable operation facts that genuinely cross a layer
+or module boundary live in Application or Contracts, as ordinary value unions distinct from this
+implementation-selection union.
+
 The net10 Application shape is:
 
 ```csharp

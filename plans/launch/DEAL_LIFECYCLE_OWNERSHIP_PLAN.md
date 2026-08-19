@@ -244,6 +244,10 @@ Dunet's exhaustive `.Match(...)` over the operation cases. Multiple Deal cases m
 one operation case. The factory retains an unknown-`IDeal` fallback and focused catalog tests; net10 does
 not claim native compiler exhaustiveness.
 
+Because this union names concrete DI implementations, it and its factory remain in the owning module's
+Infrastructure assembly beside the effectful consumer. It must not make Application reference
+Infrastructure or turn a cross-module fact into a service carrier.
+
 The .NET 11 follow-up preserves the factory and call-site semantics, replaces the Dunet wrapper with a
 native union, and absorbs the handwritten mapping into the generated module catalog against `closed Deal`. The compiler
 then enforces both the operation-union match and generated Deal switch. Neither design contains an
