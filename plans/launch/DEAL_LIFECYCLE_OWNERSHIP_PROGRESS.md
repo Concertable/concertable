@@ -5,11 +5,12 @@
 - Roadmap item: `launch/deal-lifecycle-ownership`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules-phase2`
 - Branch: `Refactor/launch_deal-lifecycle-modules-phase2`
-- PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633). Local HEAD,
-  the remote branch, and PR `headRefOid` currently equal
-  `a183b2df2005d969e94f8759648a7c5e5934b983`. Exact-head CI run `32192242931` failed the build on
-  the host/API errors repaired by the current local candidate and the still-outstanding Workers unit
-  test references recorded in `## Next Steps`.
+- PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633). Published
+  B2B Web host/API recovery range `a183b2df2..d1703c218` from starting remote head
+  `a183b2df2005d969e94f8759648a7c5e5934b983`; local HEAD, the remote branch, and PR `headRefOid`
+  matched `d1703c2188b28dd2f0adbbf8b5ad8005d09092c3` after the work-head push. Prior exact-head CI
+  run `32192242931` also identified the still-outstanding Workers unit-test references recorded in
+  `## Next Steps`.
 - Dependency/package gates: none block the remaining B2B-internal implementation. Phase 1 delivery is terminal; final `api/**` delivery will own its routine package publication and platform-sync gate only after the complete refactor merges.
 - Last reconciled: 2026-08-19 after clearing the B2B Web host/API compile frontier and identifying the
   next exact-head CI frontier
@@ -147,8 +148,8 @@ contract directly, validate only Concert-owned state and persistence, and retain
 regression against `ConcertService.CreateAsync`. The scoped stale-ownership vocabulary scan is empty,
 the project builds with 0 warnings and 0 errors, and the Release suite passes 88/88.
 
-The current B2B Web host/API recovery candidate clears all four host-facing errors from exact-head CI
-run `32192242931`. Application.Api resolves its moved request type, Concert.Api no longer imports the
+Published work head `d1703c218` clears all four host-facing errors from exact-head CI run
+`32192242931`. Application.Api resolves its moved request type, Concert.Api no longer imports the
 deleted workflow namespace or injects Booking's internal Contract service, and the existing
 `/api/concert/{id}/contract/pdf` route now resolves the document through the forward
 `Concert -> Booking.Contracts` facade. The host composes moved modules and their dev seeders through
@@ -252,7 +253,7 @@ generalize selector/factory infrastructure in this slice.
   #633 `headRefOid` matched and the branch was 0 commits behind.
 - Cleared the B2B host/API compile frontier by routing the Concert contract-PDF compatibility endpoint
   through `IBookingModule`, removing stale workflow/request imports, and keeping dev-seeder
-  registration behind module API composition extensions.
+  registration behind module API composition extensions; published as `d1703c218`.
 
 ## Verification
 
@@ -264,7 +265,7 @@ generalize selector/factory infrastructure in this slice.
 - Exact-head CI run `32192242931` at `a183b2df2` proves the remaining full-build frontier is confined to
   `Concertable.B2B.Workers.UnitTests/Functions/ConcertFinishedFunctionTests.cs`, which still references
   the deleted `IFinishExecutor` and workflow namespace.
-- Current candidate `git diff --check`: passed.
+- Work head `d1703c218` `git diff --check`: passed.
 - Concert unit-test ownership scan finds no `IConcertWorkflow`, `ConcertWorkflow`,
   `IConcertStateMachineRegistry`, `LifecycleState`, `IFinishStep`, `FinishExecutor`,
   `ConcertDraftService`, `ContractIssuer`, Application/Booking/Opportunity entities or repositories,
