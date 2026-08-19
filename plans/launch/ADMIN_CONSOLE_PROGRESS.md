@@ -5,22 +5,31 @@
 - Roadmap item: `launch/admin-console`
 - Worktree: `C:\Users\tommy\source\repos\Concertable\.worktrees\Feature-launch_admin-console`
 - Branch: `Feature/launch_admin-console` (Phase 2 — new branch of the same name, Phase 1's was deleted on merge)
-- PR: Phase 2: [#648](https://github.com/Concertable/concertable/pull/648) — **READY FOR REVIEW** (draft
-  CI all green, `mergeStateStatus: CLEAN`; not yet merged — merge waits on Tommy's explicit instruction).
-  Phase 1: [#624](https://github.com/Concertable/concertable/pull/624) — **MERGED**
+- PR: Phase 2: [#648](https://github.com/Concertable/concertable/pull/648) — **READY FOR REVIEW**, branch
+  re-synced with `origin/main` (see reconciliation below); not yet merged — merge waits on Tommy's
+  explicit instruction. Phase 1: [#624](https://github.com/Concertable/concertable/pull/624) — **MERGED**
   (`7fd40bf59860c27f1c1d1e48537901b022de0f43`, 2026-08-17T14:18:26Z)
 - Dependency/package gates: none. No published-package boundary crosses this plan (Auth + B2B edits land
   in the same repo, no NuGet republish/platform-sync gate).
-- Last reconciled: 2026-08-17, #648's draft CI ran clean (full build, all carves, unit + integration
-  matrices including `AdminProvisioningTests`; the 3 E2E jobs correctly skipped per phase scope, zero
-  failing checks) and the PR was marked ready for review. `Refactor/b2b_admin-module` (see below) still
-  has no PR open — its worktree is mid-refactor with uncommitted changes — so step 2 (merge it into this
-  branch before #648 merges) remains not-yet-actionable and is not blocking.
-- Parallel, independent work: `Refactor/b2b_admin-module` (separate worktree/session, dispatched
-  2026-08-17) extracts `Concertable.B2B.Admin` out of `Concertable.B2B.User` to match the
-  `Concertable.B2B.Tenant` precedent (own `AdminDbContext`, plain `Guid` FKs, `IAdminModule` facade for
-  `UserController.Me()`'s grant-check). Purely internal — routes/DTOs unchanged — so it does not block
-  or get blocked by this ledger; fold in a note here once it merges.
+- Last reconciled: 2026-08-19. #648's branch had drifted 36 commits behind `origin/main` and GitHub
+  reported it `DIRTY`/`CONFLICTING`. Merged `origin/main` in: the only real conflict was an additive
+  clash in `app/package.json` between this branch's `build:admin` script and main's `@concertable/web-b2b`
+  addition (from the merged `Refactor/B2bPackageTopology`, #643) to `build:packages`/`build:web-packages`
+  — resolved by keeping both additions (`3b10b5302`). `app/package-lock.json` and
+  `app/scripts/check-fe-boundaries.mjs` auto-merged cleanly. Verified locally before push:
+  `npm install` clean, `npm run lint:boundaries` clean (all 10 workspaces), `npm run build:admin` green,
+  and `dotnet build` green on `Concertable.B2B.Web`, `Concertable.Auth`, `Concertable.B2B.AppHost`, and
+  the umbrella `Concertable.AppHost`. Pushed; PR flipped from `DIRTY`/`CONFLICTING` to
+  `BLOCKED`/`MERGEABLE` (blocked = draft-PR CI re-running on the new head, not a real block) — recheck
+  `gh pr checks 648` once that run completes before treating it as ready again.
+  `Refactor/b2b_admin-module` now has an **open** PR ([#651](https://github.com/Concertable/concertable/pull/651),
+  not yet merged) — the ledger previously said no PR existed; step 1 below remains not-yet-actionable
+  until #651 merges, not blocking.
+- Parallel, independent work: `Refactor/b2b_admin-module` (separate worktree/session) extracts
+  `Concertable.B2B.Admin` out of `Concertable.B2B.User` to match the `Concertable.B2B.Tenant` precedent
+  (own `AdminDbContext`, plain `Guid` FKs, `IAdminModule` facade for `UserController.Me()`'s grant-check).
+  Purely internal — routes/DTOs unchanged — so it does not block or get blocked by this ledger; fold in a
+  note here once it merges. Open as PR #651 as of this reconciliation.
 
 ## Current state
 
@@ -125,11 +134,13 @@ draft PR [#648](https://github.com/Concertable/concertable/pull/648).
    this branch before #648 merges, so Phase 2 doesn't ship against the old `Concertable.B2B.User`-owned
    Admin location. Not a hard blocker — #648 builds and runs fine against the current location either
    way, since the HTTP contract is unchanged — just do it before #648's own merge to avoid a needless
-   rebase later. As of this reconciliation, that refactor has no PR open yet (its worktree is
-   mid-refactor, uncommitted), so this step is not yet actionable — recheck
-   `gh pr list --head Refactor/b2b_admin-module --state all` before merging #648.
-2. #648 is ready for review (draft CI green, marked ready). Merge only on Tommy's explicit instruction —
-   when given, follow the root `AGENTS.md` "Before enabling auto-merge" currency check first.
+   rebase later. As of this reconciliation (2026-08-19), that refactor is **open as PR #651**, not yet
+   merged — recheck `gh pr view 651 --json state` before merging #648.
+2. #648 is ready for review; its branch was just re-synced with `origin/main` after drifting 36 commits
+   (see reconciliation above) — confirm draft-PR CI is green on the new head (`gh pr checks 648`) before
+   treating it as ready again. Merge only on Tommy's explicit instruction — when given, follow the root
+   `AGENTS.md` "Before enabling auto-merge" currency check first (re-check `behind` count, since more
+   time may have passed since this resync).
 3. Phases 3 (moderation UI) and 4 (venue approval UI, plus the new `GET /api/Venue/pending-approval`
    endpoint) follow once Phase 2 is merged — see the plan for scope.
 
