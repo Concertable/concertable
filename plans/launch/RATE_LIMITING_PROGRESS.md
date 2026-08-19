@@ -5,7 +5,7 @@
 - Roadmap item: `launch/rate-limiting`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-launch_rate-limiting`
 - Branch: `Feature/launch_rate-limiting`
-- PRs: #646 (superseded seam v1, **MERGED**) · #655 (**producer v2 — seam refactor**, **MERGED** 2026-08-19T20:34Z) · #663 (`chore/platform-sync-0.1.0-alpha.0.1078` — sync from #655, **MERGED** 2026-08-19T21:25Z) · **consumer PR (Phase 2, all 5 services — in progress on this branch, not yet opened)**
+- PRs: #646 (superseded seam v1, **MERGED**) · #655 (**producer v2 — seam refactor**, **MERGED** 2026-08-19T20:34Z) · #663 (`chore/platform-sync-0.1.0-alpha.0.1078` — sync from #655, **MERGED** 2026-08-19T21:25Z) · **#670 (Phase 2 consumers — all 5 services, DRAFT, open)**
 - Last reconciled: 2026-08-19, from `origin/main` + repository evidence. #655 + #663 both merged; all five services pin `0.1.0-alpha.0.1078` (the opt-in seam). Spent #655 worktree closed; fresh Phase-2 worktree recreated off `origin/main` (`7f782a237`).
 
 ## Current state
@@ -38,9 +38,8 @@ net-new `IntegrationTestHostExtensions` step; each service owns its own `ApiFixt
 **Phase 2 consumer rollout implemented on this branch and building 0/0 (full `api/Concertable.slnx` + each
 touched test project).** Remaining is delivery only:
 
-- **Open the consumer PR** (draft) from `Feature/launch_rate-limiting`; PR CI owns build/carve/unit/integration
-  (no positive E2E trigger — see plan's Validation posture).
-- **`/review`** the branch; address findings.
+- **Draft PR #670 open**; PR CI owns build/carve/unit/integration (no positive E2E trigger — see plan's Validation posture).
+- **`/review`** the branch; address findings (also produces the review file the merge gate requires).
 - **`/merge`** once green; then follow the `api/**` platform-sync PR to green/merged (this touches `api/**`,
   so it republishes ServiceDefaults + all consumers and re-bumps the pin — non-breaking, should auto-merge).
 - On merge, the plan is terminal → delete `RATE_LIMITING_PLAN.md` + this ledger (roadmap already ticked, not deleted).
