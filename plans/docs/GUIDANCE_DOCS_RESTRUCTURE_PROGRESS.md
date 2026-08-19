@@ -32,8 +32,8 @@ The in-repo docs hold only this system's roster of real types, contexts, clients
 |---|---|---|
 | `tomjseery/dotagents` #1 | `852e467` | `standards/dotnet/` 20 docs · plugin `dotnet-standards` · 10 utility skills · `deploy-skills.ps1` |
 | `tomjseery/react-agents` `main` | `9cb5ea3` | `standards/react/` 9 · plugin `react-standards` |
-| `Concertable/agent-standards` #2 | `b6312f7` | `standards/process/` 7 + `dotnet/` 12 + `react/` 8 · plugins `agent-process` (owns the hook), `concertable-dotnet`, `concertable-react` |
-| `Concertable/concertable` #637 | `72b692246` | the reduction — 55 CI checks pass, 5 skip. **Working branch, NOT for merge** |
+| `Concertable/agent-standards` #2 | `69a8631` | `standards/process/` 7 + `dotnet/` 12 + `react/` 8 · plugins `agent-process` (owns the hook), `concertable-dotnet`, `concertable-react` |
+| `Concertable/concertable` #637 | `e1eb4157c` | the reduction plus the process cut-over. Needs `/docs-review`, then an explicit merge instruction |
 
 **Auto-loaded floor.** An `api/**` prompt loads `api/AGENTS.md` (77) + `api/ARCHITECTURE.md` (62) with
 **zero** `@`-imports, from 1,429 lines at the start of this plan. An `app/**` prompt loads
@@ -491,8 +491,8 @@ Three superseded models were purged — do not reintroduce a merged standards re
 stacks, or a `platform/`/`concertable/` folder.
 
 **Repo heads at handoff:** `dotagents` `852e467` (#1), `react-agents` `9cb5ea3` (`main`),
-`agent-standards` `69a8631` (#2, the MERGING body reduction pushed 2026-08-19 — confirm its CI went green),
-Concertable #637 at the process cut-over commit. Nothing is merged.
+`agent-standards` `69a8631` (#2, the MERGING body reduction pushed 2026-08-19),
+Concertable #637 at `e1eb4157c` (the process cut-over). Nothing is merged.
 
 **Deployed layout on this machine:** `~/.agents/standards/<repo>/<domain>/` — repo-scoped, because a
 generic domain and its Concertable counterpart share a relative path on purpose. Skills stay flat in
