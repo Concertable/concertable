@@ -5,7 +5,7 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `b525776b4a9cbdbf227dabcf8d507a9651817d16`  _(2026-08-18)_
+**Reviewed up to commit:** `b413784cddcd3d296f49b2682c0f5d7b336a994c`  _(2026-08-19)_
 
 **Security-reviewed up to commit:** `b525776b4a9cbdbf227dabcf8d507a9651817d16`  _(2026-08-18)_
 
@@ -328,3 +328,41 @@ plus a clean build re-checked for a unit and an integration project through diff
   the URL the doc names is produced by the token. Corrected to state the token mechanism and name the
   transformer, including main's own `TECH_DEBT.md` caveat that it is wired only in the B2B host.
   Re-verified after the merge: controller counts unchanged (36 internal, 3 public), so ENF5 still holds.
+
+## Incremental docs review — 2026-08-19
+
+> Range: `b525776b4..b413784cd` — the branch's own 25 commits since the last marker (the merges of
+> `origin/main` in between carry other PRs' work, already reviewed there). Docs/meta scope: `.agents/**`,
+> `.claude/hooks/**`, every `AGENTS.md`, `docs/**`, `plans/**`, `reviews/**`. Lenses: accuracy vs reality,
+> cross-doc contradiction, doc home, harness-reloaded concision, dangling references, followable
+> instruction.
+
+Mechanically verified clean: `docs_reachability.py` 0 errors; every one of the 35 skills named in
+`.agents/skill-routes.json` resolves; every `` `x` skill `` reference across the hubs and skill files
+resolves; every relative link in `docs/INDEX.md` resolves; every enforcer the INDEX names exists on disk;
+`scripts/worktrees.ps1` really takes `audit|close|retire` and `-PlanManaged`; `merge/SKILL.md` really has a
+Step 4 and it really is the E2E tier; the hook suites pass (94 + 13 subtests, plus the 8 merge-gate cases).
+
+All three findings are one class: **`docs/INDEX.md` — the file whose entire job is to be the anti-drift
+map — was not reconciled when the docs it points at were reduced.** It is the last place that should go
+stale, because a reader consults it precisely to avoid searching.
+
+- [x] **ACC7 — MEDIUM — accuracy** — `docs/INDEX.md:47-52`
+  Five rows still send backend-architecture topics to `api/ARCHITECTURE.md` — adapter-vs-data services and
+  `WaitFor`, standalone-AppHost-is-canonical and the simulator, producer seed libraries pointing downward,
+  contract distribution / build closures / `UseLocalCore`, and which surface each service exposes — but
+  `1e9bd3088` cut that file to 62 lines whose second sentence is "**The topology itself is not in this
+  repo**", naming `concertable-microservice-boundaries`, `concertable-packages` and `concertable-seeding` as
+  the owners. Row 52 also quotes a section, "The surface each service actually exposes", that no longer
+  exists there — the file's only headings are "The one thing to read before crossing a service boundary",
+  "Folder layout" and "Related docs". Repointed each row at its real owner; `api/ARCHITECTURE.md` keeps the
+  Contracts-only rule and the folder layout, which is what it still holds.
+
+- [x] **ACC8 — MEDIUM — accuracy** — `docs/INDEX.md:90`
+  The row sends "DTOs vs Responses at the controller boundary" to `api/AGENTS.md`, which contains no
+  occurrence of either word — that rule is `http-api` plus `concertable-http-api`. The row's other two
+  topics (migrations, shared-is-the-intersection) are genuinely still there. Split the row.
+
+- [x] **ACC9 — LOW — accuracy** — `docs/INDEX.md:111`
+  Points at `app/web/AGENTS.md` "HTTP errors", deleted in `a70788482` when the axios ban was collapsed to
+  one home. Repointed at `http-layer` (the rule) and `concertable-http-layer` (the `isApiError` inventory).

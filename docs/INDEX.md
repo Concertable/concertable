@@ -43,13 +43,11 @@ When a topic has both, the skill owns the rule and the file owns the inventory.
 | Topic | Owner |
 |---|---|
 | System-wide premise; monorepo vs the split-repo world | [`ARCHITECTURE.md`](../ARCHITECTURE.md) |
-| **Current-state backend architecture — authoritative** | [`api/ARCHITECTURE.md`](../api/ARCHITECTURE.md) |
-| Adapter vs data services; what may `WaitFor` what | [`api/ARCHITECTURE.md`](../api/ARCHITECTURE.md) |
-| Standalone AppHost is canonical; the simulator pattern | [`api/ARCHITECTURE.md`](../api/ARCHITECTURE.md) |
-| Producer seed libraries point downward only | [`api/ARCHITECTURE.md`](../api/ARCHITECTURE.md) |
-| Cross-service contract distribution; per-folder build closures; `UseLocalCore` | [`api/ARCHITECTURE.md`](../api/ARCHITECTURE.md) |
+| Cross-service references are Contracts-only; this monorepo's `api/` folder layout | [`api/ARCHITECTURE.md`](../api/ARCHITECTURE.md) |
 | Protocol selection — gRPC / HTTP / Service Bus | skill `microservice-boundaries` |
-| Which surface each service actually exposes | [`api/ARCHITECTURE.md`](../api/ARCHITECTURE.md) "The surface each service actually exposes" |
+| Adapter vs data services, what may `WaitFor` what, standalone-AppHost-is-canonical, the surface each service exposes | skill `concertable-microservice-boundaries` |
+| Producer seed libraries point downward only; the simulator that makes standalone work | skill `concertable-seeding` |
+| Cross-service contract distribution; per-folder build closures; `UseLocalCore`; the carve gates | skill `concertable-packages` |
 | Design rationale and decision history (not current state) | [`api/docs/MICROSERVICES_ARCHITECTURE.md`](../api/docs/MICROSERVICES_ARCHITECTURE.md) |
 | Per-service specifics | that service's own `AGENTS.md` / `ARCHITECTURE.md` |
 
@@ -87,7 +85,8 @@ When a topic has both, the skill owns the rule and the file owns the inventory.
 | **This repo's** E2E baseline path, run script, seeded fast-forward | [`Concertable.Testing.E2E`](../api/Concertable.Shared/tests/Concertable.Testing.E2E/AGENTS.md) |
 | Page objects, `data-testid` naming, step-binding shape; the Stripe 3DS/timeout traps | [`E2E_UI_CONVENTIONS.md`](../api/Concertable.Shared/tests/Concertable.Testing.E2E/E2E_UI_CONVENTIONS.md), [`E2E_CONSIDERATIONS.md`](../api/Concertable.Shared/tests/Concertable.Testing.E2E/E2E_CONSIDERATIONS.md) |
 | B2B's DbContext stances, filtered entities, `DealType` families and workflow steps | [`api/Concertable.B2B/CODE_PATTERNS.md`](../api/Concertable.B2B/CODE_PATTERNS.md) |
-| DTOs vs Responses at the controller boundary; migrations; shared-is-the-intersection | [`api/AGENTS.md`](../api/AGENTS.md) |
+| DTOs vs `Response` at the controller boundary | skills `http-api`, `concertable-http-api` |
+| Migrations; shared-is-the-intersection; the seeder trigger rule | [`api/AGENTS.md`](../api/AGENTS.md) |
 
 ## Frontend code (`app/`)
 
@@ -108,7 +107,7 @@ When a topic has both, the skill owns the rule and the file owns the inventory.
 | **This system's** `User`/`B2bIdentity` split | skill: `concertable-identity` |
 | **This system's** tenant session and active-tenant state | skill: `concertable-client-state` |
 | **This system's** `SharedPermissions` matrix | skill: `concertable-permissions` |
-| Axios confinement and the error contract | [`app/web/AGENTS.md`](../app/web/AGENTS.md) "HTTP errors" |
+| Axios confined to the client layer; where a guard may branch on status | skills `http-layer`, `concertable-http-layer` |
 | What belongs in each tier | that tier's own `AGENTS.md` |
 | Browser storage inventory and consent gating | [`app/web/shared/BROWSER_STORAGE.md`](../app/web/shared/BROWSER_STORAGE.md) |
 
