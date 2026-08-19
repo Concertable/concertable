@@ -27,11 +27,14 @@ tested upstream over fixtures, and `tests/` here only asserts that this repo's o
 verdicts we expect.
 
 A hook is carried rather than installed on purpose: a plugin only runs on a machine where someone
-installed it, so enforcement that depends on an install is absent on a fresh clone. Each is therefore
+installed it, so enforcement that depends on an install is absent on a fresh clone. Each manifest entry
+carries the `delivery` upstream derived from its own wiring: a `hook` fires from a harness event and is
 wired in both `.claude/settings.json` and `.codex/hooks.json` — one harness only is the defect, not a
-partial rollout. The single exception is `merge_review_gate.py`, which knows only Claude's `Bash` tool
-name; `SINGLE_HARNESS` in `tests/test_vendored_hooks.py` carries that exemption and its reason, and
-that test fails if the exemption outlives it.
+partial rollout — and an `invoked` one is a command-line check or a file another hook runs by path, so
+it is wired in neither. `tests/test_vendored_hooks.py` asserts both directions; treating "wired
+nowhere" as legal on its own is what let a harness-fired hook lose both wirings and stay green. The
+single exception is `merge_review_gate.py`, which knows only Claude's `Bash` tool name; `SINGLE_HARNESS`
+in that file carries the exemption and its reason, and the suite fails if the exemption outlives it.
 
 ## Global starter kit
 

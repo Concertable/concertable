@@ -3,36 +3,42 @@
     "docs_reachability.py": {
       "source": "Concertable/agent-standards",
       "path": ".agents/hooks/docs_reachability.py",
+      "delivery": "invoked",
       "commit": "e09467314ae5e0fce98546ff1370cb57a7f728a3",
       "sha256": "sha256:5a79595faaf4fe21c63b5af9defffe39ba1969747987002fad7297ed47bcc3d8"
     },
     "merge_review_gate.py": {
       "source": "Concertable/agent-standards",
       "path": ".agents/hooks/merge_review_gate.py",
-      "commit": "7cb3fddd978607489d0c6394b6ab7f8e755561a5",
-      "sha256": "sha256:45b28631dd5e8653cecbf93f81858c2249404b4ec0a8e80c3a7a9372f3b8805e"
+      "delivery": "hook",
+      "commit": "32795d81ca3352267c5575015dc6da99a14e9f10",
+      "sha256": "sha256:00d1c87b1d8f4f5a67d021bba14431d159dd12a02ade9fddc802bd8ee71704e1"
     },
     "plan_graph.py": {
       "source": "Concertable/agent-standards",
       "path": ".agents/hooks/plan_graph.py",
+      "delivery": "invoked",
       "commit": "e09467314ae5e0fce98546ff1370cb57a7f728a3",
       "sha256": "sha256:cfa58050e17da0711f72f2469359056be532a291faeb99fbdac990140f24d3d8"
     },
     "plan_handoff_stop.py": {
       "source": "Concertable/agent-standards",
       "path": ".agents/hooks/plan_handoff_stop.py",
+      "delivery": "invoked",
       "commit": "e09467314ae5e0fce98546ff1370cb57a7f728a3",
       "sha256": "sha256:8101cb4ea0bba31cb2f5b03f865685e46a92e900ffe0e19d4bb9834291f06372"
     },
     "plan_handoff_stop_launcher.py": {
       "source": "Concertable/agent-standards",
       "path": ".agents/hooks/plan_handoff_stop_launcher.py",
+      "delivery": "hook",
       "commit": "e09467314ae5e0fce98546ff1370cb57a7f728a3",
       "sha256": "sha256:43ad4b1b04c878c436123a1edf3414d6bfd73d2896276feb79da0f4329875466"
     },
     "skill_router.py": {
       "source": "Concertable/agent-standards",
       "path": ".agents/hooks/skill_router.py",
+      "delivery": "hook",
       "commit": "6a5e1fb1ca6b76d61627a3fb185de5cdb1322a60",
       "sha256": "sha256:95f55b691452af18d39a5e167ba2dbef8e2b7e4389953e6511f8d47ffc26173f"
     }

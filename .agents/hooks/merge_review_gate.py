@@ -19,7 +19,7 @@ The review file is what `review` / `docs-review` write:
 `reviews/<branch-with-slashes-as-dashes>.md`, carrying a top-of-file
 `**Reviewed up to commit:** \`<sha>\`` marker and `- [ ]` / `- [x]` findings.
 
-Security layer: when the reviewed range touches security-sensitive paths, the merge
+Security layer: when the head being merged touches security-sensitive paths, the merge
 also requires a current `**Security-reviewed up to commit:** \`<sha>\`` marker —
 stamped by `review` Step 1d after it runs `/security-review`.
 
@@ -206,6 +206,40 @@ def review_only(base, head):
     return bool(changed) and all(x.startswith("reviews/") for x in changed)
 
 
+def changed_against_main(head):
+    """Paths `head` changes relative to main. Unresolvable -> empty, the caller fails open.
+
+    Every ref here must be the head being MERGED, never the literal HEAD: the gate resolves a PR's
+    own head so a worktree PR merges correctly from any checkout, and a security classification that
+    reads the session's branch instead answered for whatever that checkout happened to be sitting on.
+    """
+    try:
+        try:
+            # origin/main not local main: local main drifts stale and would false-positive the
+            # security check by dragging unrelated commits into the range.
+            base = git("merge-base", "origin/main", head)
+        except Exception:  # noqa: BLE001
+            base = git("merge-base", "main", head)
+        return git("diff", "--name-only", base + ".." + head).splitlines()
+    except Exception:  # noqa: BLE001
+        return []
+
+
+def security_no_longer_covered(marker, head, patterns):
+    """True when a security-sensitive path changed between the security marker and head.
+
+    Asking instead whether ANY commit landed leaves the gate with no legal exit: an ordinary doc or
+    ledger commit makes the marker stale, while the review procedure runs its security layer only for
+    a security-sensitive range and so never re-stamps it. Sensitive paths untouched since the security
+    review are still covered by it.
+    """
+    try:
+        changed = git("diff", "--name-only", marker + ".." + head).splitlines()
+    except Exception:  # noqa: BLE001 - unresolvable range -> fail closed
+        return True
+    return touches_security(changed, patterns) is not None
+
+
 def block(reason):
     sys.stderr.write(reason)
     sys.exit(2)
@@ -319,21 +353,10 @@ def main():
             "`- [ ]` item, then merge. First: " + open_findings[0][:120]
         )
 
-    # Security layer: a security-sensitive range also needs a current security marker.
+    # Security layer: a security-sensitive head also needs a current security marker.
     # Detection failure fails OPEN (the primary review gate already fired) so an
     # unresolvable base can't wedge every merge; a resolvable sensitive path fails CLOSED.
-    try:
-        # origin/main not local main: local main drifts stale and would false-positive
-        # the security check by dragging unrelated commits into the range.
-        try:
-            base = git("merge-base", "origin/main", "HEAD")
-        except Exception:  # noqa: BLE001
-            base = git("merge-base", "main", "HEAD")
-        changed = git("diff", "--name-only", base + "..HEAD").splitlines()
-    except Exception:  # noqa: BLE001 — can't classify → don't block on the security sub-check
-        changed = []
-
-    sensitive = touches_security(changed, patterns)
+    sensitive = touches_security(changed_against_main(head), patterns)
     if sensitive:
         sm = re.search(r"Security-reviewed up to commit:.*?`([0-9a-fA-F]{7,40})`", review)
         if not sm:
@@ -345,11 +368,11 @@ def main():
             )
         sreviewed = sm.group(1).lower()
         if not (head.lower().startswith(sreviewed) or sreviewed.startswith(head.lower())) \
-                and not review_only(sreviewed, head):
+                and security_no_longer_covered(sreviewed, head, patterns):
             block(
                 "MERGE GATE (security layer): security review is STALE — reviews/" + slug + ".md "
-                "security marker is at " + sreviewed + " but HEAD is " + head[:12] + ". Commits "
-                "landed since the security review. Re-run /security-review, then merge."
+                "security marker is at " + sreviewed + " but a security-sensitive path changed "
+                "since it, up to " + head[:12] + ". Re-run /security-review, then merge."
             )
 
     sys.exit(0)  # reviewed, current, clean → allow the merge

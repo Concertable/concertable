@@ -9,6 +9,9 @@ HOOKS = Path(__file__).resolve().parents[1]
 REPO = HOOKS.parents[1]
 MANIFEST = HOOKS / "vendored.json"
 WIRING = (REPO / ".claude" / "settings.json", REPO / ".codex" / "hooks.json")
+# Upstream derives these from its own hooks.json: `hook` fires from a harness event and must be wired
+# in every harness here; `invoked` is run by another hook or from a command line and is wired nowhere.
+DELIVERY_KINDS = ("hook", "invoked")
 
 # The ONE place a half-wired hook is legal, and only with its reason written down. Each entry is
 # outstanding work, not a settled shape: delete it the moment the hook can be wired everywhere.
@@ -81,19 +84,31 @@ class VendoredHookTests(unittest.TestCase):
                 self.assertTrue(entry["path"])
                 self.assertRegex(entry["commit"], r"^[0-9a-f]{40}$")
 
-    def test_every_vendored_hook_is_wired_for_both_harnesses(self):
+    def test_every_vendored_hook_declares_how_it_is_delivered(self):
+        for name, entry in self.entries.items():
+            with self.subTest(hook=name):
+                self.assertIn(entry.get("delivery"), DELIVERY_KINDS)
+
+    def test_every_harness_fired_hook_is_wired_for_both_harnesses(self):
         # A hook wired in one harness only is the defect this vendoring exists to remove: the router
-        # spent its first life in .claude/settings.json alone, so Codex never ran it. A hook wired in
-        # NEITHER is a vendored command-line check rather than a hook, and is not that defect.
-        for name in self.entries:
-            if name in SINGLE_HARNESS:
-                continue
-            wired = [w for w in WIRING if name in w.read_text(encoding="utf-8")]
-            if not wired:
+        # spent its first life in .claude/settings.json alone, so Codex never ran it.
+        for name, entry in self.entries.items():
+            if entry["delivery"] != "hook" or name in SINGLE_HARNESS:
                 continue
             for wiring in WIRING:
                 with self.subTest(hook=name, wiring=wiring.name):
                     self.assertIn(name, wiring.read_text(encoding="utf-8"))
+
+    def test_an_invoked_hook_is_wired_in_no_harness(self):
+        # `invoked` is a command-line check or a file another hook runs by path. Reading "wired
+        # nowhere" as legal by itself is what let a harness-fired hook lose both its wirings and
+        # still pass, so the kind decides and both directions are asserted.
+        for name, entry in self.entries.items():
+            if entry["delivery"] != "invoked":
+                continue
+            for wiring in WIRING:
+                with self.subTest(hook=name, wiring=wiring.name):
+                    self.assertNotIn(name, wiring.read_text(encoding="utf-8"))
 
     def test_every_single_harness_exemption_is_still_needed(self):
         # The allowlist is the one place a half-wired hook is legal, so it must not outlive its
