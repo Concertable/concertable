@@ -3,11 +3,14 @@
 - Plan: `plans/launch/DEAL_LIFECYCLE_OWNERSHIP_PLAN.md`
 - Roadmap: `plans/launch/LAUNCH_ROADMAP.md`
 - Roadmap item: `launch/deal-lifecycle-ownership`
-- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules`
-- Branch: `Refactor/launch_deal-lifecycle-modules`
-- PR: draft implementation PR [#625](https://github.com/Concertable/concertable/pull/625) at current-main work head `b88e867ab6f2a52d8fcb838d688957450e361820`, carrying reviewed source head `1457a2508db5b69d5a0fa7f05eea78ba412edd76`; docs-only decision PR #622 merged as `5c33f849444dda60ece44070353716c08819b2d8`; rejected PR #614 is closed and retired
-- Dependency/package gates: Phase 1 characterization and review are complete, and the branch is current with `origin/main`. Replacement exact-head draft-PR CI must pass, then PR #625 can enter the merge queue. Phase 2 has not started.
-- Last reconciled: 2026-08-17 after incorporating platform-sync #629, rebuilding affected projects, and publishing the exact work head
+- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules-phase2`
+- Branch: `Refactor/launch_deal-lifecycle-modules-phase2`
+- PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633) at published
+  head `0511c35cadca144c7614b27596575eb66692bc62`; PR #625 merged as
+  `4efa1740e0e74601361e4c6595cc1d9d94e1b1bb`
+- Dependency/package gates: Phase 1 delivery is terminal. PR #633 owns Phases 2-6 through the complete
+  module/state refactor; package publication and platform sync become gates only after that PR merges.
+- Last reconciled: 2026-08-19 against live PR state and the published PR #633 progress ledger
 
 ## Current state
 
@@ -15,10 +18,10 @@ Tommy approved the target ownership design on 2026-08-16. The fixed progression 
 Booking → Concert for every `DealType`; DealType varies only the local behaviour performed at each
 stage. Opportunity remains the upstream one-Deal/many-Applications aggregate.
 
-Application, Booking, and Concert will become independent modules with their own state, transition
-model, contextual step contracts, and module-local step resolver. There is no umbrella process entity,
-shared lifecycle state, workflow module, cross-module resolver, or parent state machine. A combined
-status exists only as a read projection.
+Application, Booking, and Concert are being separated into independent modules with their own state,
+transition model, contextual operation contracts, and provisional module-local selection. There is no
+umbrella process entity, shared lifecycle state, workflow module, cross-module resolver, or parent state
+machine. A combined status exists only as a read projection.
 
 Phase 1 characterization is complete. Existing integration coverage already pins both
 payment/Accept arrival orders, payment failures, pre- and post-Concert cancellation, late-capture
@@ -27,10 +30,16 @@ two missing cases are now covered: payment-webhook redelivery asserts exactly on
 and a failed settlement followed by a successful retry reaches the existing completion outcome. No
 new test asserts the legacy shared lifecycle topology, transition table, source layout, or filenames.
 
-The speculative future-module architecture guard was removed because it matched no types before the
-modules existed. Phase 2 will add compile-time project boundaries and ArchUnitNET rules against each
-real assembly as it is scaffolded. The correction is published and reviewed; replacement exact-head
-CI and merge delivery remain before Phase 2 starts.
+Phase 1 characterization merged through PR #625, its package publication succeeded, and platform-sync
+PR #630 merged green. PR #633 owns the complete remaining decomposition through the plan's definition
+of done. Phases 2-6 are implementation/recovery checkpoints on that one draft PR, not separate merge
+candidates.
+
+The published PR #633 frontier has cleared the Opportunity request-builder, Concert unit, Workers unit,
+B2B Web, and `ApplicationCancelApiTests` ownership recoveries. The remaining integration compile
+frontier continues one fixture at a time from the exact action below. The keyed-selector concern is a
+recorded non-blocking follow-up owned by the Deal plan and must not be expanded inside these recovery
+slices.
 
 Rejected PR #614 is closed, and its DealTerms branch and worktree were retired with exact-head checks.
 The fresh implementation branch contains only current-main Deal vocabulary; none of the rejected
@@ -38,12 +47,23 @@ runtime change was carried forward.
 
 ## Next Steps
 
-1. Confirm replacement exact-head draft-PR CI, mark PR #625 ready, and merge it through the queue with
-   the mechanically selected E2E tier; follow package publication and platform sync to terminal green.
-2. Resume Phase 2 from a fresh plan-managed worktree after PR #625 lands.
+Fresh-context `ApplicationDoorSplitApiTests` module-owned read/state compile-recovery slice only:
+
+1. In the PR #633 worktree, reproduce the 22-error Concert integration frontier and isolate
+   `Application/ApplicationDoorSplitApiTests.cs`.
+2. Update only that fixture through the existing module-owned read seams: Application creation through
+   `ApplicationReads`, Booking payment failure through `BookingReads` with
+   `BookingState.FinancialConfirmationFailed`, and genuine Concert existence through `ConcertReads`.
+3. Run `git diff --check` and repeat the focused errors-only Release build. Record the exact remaining
+   frontier and stop without entering another fixture, E2E, migration, guidance, or lifecycle operation.
 
 ## Completed work
 
+- Phase 1 PR #625 merged as `4efa1740e0e74601361e4c6595cc1d9d94e1b1bb`; its package
+  publication succeeded and platform-sync PR #630 merged green.
+- Opened draft whole-refactor PR #633 for Phases 2-6. Its published head
+  `0511c35cadca144c7614b27596575eb66692bc62` includes the Opportunity request-builder, Concert unit,
+  Workers unit, B2B Web, and `ApplicationCancelApiTests` recovery checkpoints.
 - Reconstructed `origin/main` and the rejected aggregate-collapse, premature state-split, and
   Deal-owned workflow attempts.
 - Established that the combined `ApplicationEntity.State` is an ownership defect rather than evidence
@@ -82,6 +102,10 @@ runtime change was carried forward.
 
 ## Verification
 
+- Live GitHub state on 2026-08-19: PR #625 is merged; PR #633 is an open draft at
+  `0511c35cadca144c7614b27596575eb66692bc62`.
+- The published PR #633 ledger records the next isolated `ApplicationDoorSplitApiTests` recovery slice
+  from a 22-error Concert integration compile frontier.
 - `origin/main` uses one broad `LifecycleState` on Application while Booking and Concert have no
   lifecycle state of their own.
 - Public Application mapping already collapses post-accept states back to Accepted, proving those later
@@ -140,10 +164,11 @@ runtime change was carried forward.
 
 - One state machine exists per owning aggregate/module, not per individual enum value.
 - Local state machines may use different structures; no common lifecycle interface is required.
-- Context supplies names inside a module: `State`, `Trigger`, `StateMachine`, `IStepResolver<TStep>`,
-  and `ICancelStep` do not need Application/Booking/Concert prefixes internally.
-- Generic keyed-DI or transition plumbing may be shared only when it has no domain knowledge. Strategy
-  registrations, transition tables, capabilities, and resolver instances remain module-local.
+- Context supplies names inside a module: `State`, `Trigger`, `StateMachine`, and `ICancelStep` do not
+  need Application/Booking/Concert prefixes internally.
+- Module-local Deal-keyed step resolvers in the delivery branch are provisional seams. The Deal
+  dispatch plan owns their removal through operation-owned union values and exhaustive matches after
+  this lifecycle lands; its generated common-interface factory applies only to terms, mapper, and updater.
 - Application records pre-accept payment evidence only because the callback can arrive before Booking
   exists. The evidence is not a continuation of Application lifecycle state.
 - The fixed progression is an invariant to enforce, not an extension point. A `DealType` cannot skip,
@@ -151,8 +176,8 @@ runtime change was carried forward.
 - .NET 11 native unions are the selected mechanism for justified closed internal values after the
   module split, including the combined journey projection and module-local state, trigger, or
   operation-outcome shapes with case-specific data. They do not contain DI services, create shared
-  lifecycle ownership, or replace local step resolvers; persistence maps each module's discriminator
-  explicitly.
+  lifecycle ownership; persistence maps each module's discriminator explicitly. They do not preserve
+  Deal-keyed service resolution.
 - Rust is not an implementation option for this lifecycle, Deal behaviour, or settlement work. The
   obsolete Rust engine plan was deleted rather than retained as a paused alternative.
 - Opportunity is not hidden inside Application. Its physical extraction is part of the module carve.
@@ -182,3 +207,7 @@ runtime change was carried forward.
   Gate: this lifecycle implementation must land before the .NET 11 plan applies native unions to the
   resulting closed value shapes; it must not union concrete DI step implementations from the rejected
   god-workflow model.
+- Waiting plan: `plans/launch/DEAL_CLOSED_SUM_MODEL_PROGRESS.md`.
+  Gate: this lifecycle implementation must land before the Deal plan removes provisional lifecycle
+  selectors through unions/matches and installs generated invariant factories only for the final
+  same-interface terms, mapper, and updater families.
