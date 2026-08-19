@@ -6,16 +6,15 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules-phase2`
 - Branch: `Refactor/launch_deal-lifecycle-modules-phase2`
 - PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633). Published
-  Opportunity request-builder recovery range `9e14bc46c..2e60a1e08` from starting remote head
-  `9e14bc46cc4d66bba92f7bd54d4a13b73639fb84`; local HEAD, the remote branch, and PR `headRefOid`
-  matched `2e60a1e0857e4405ec8d173b6e6eb194d3f1652a` after the work-head push. Prior exact-head CI run
+  `ApplicationCancelApiTests` recovery range `f64d5fe32..da3d55be6` from starting remote head
+  `f64d5fe329da2d5d7d94ec8ed4b0ef3421309059`; local HEAD, the remote branch, and PR `headRefOid`
+  matched `da3d55be62fdd12e002fea9610c5409d090c731c` after the work-head push. Prior exact-head CI run
   `32236953306` failed the build on stale Concert unit, Workers unit, integration, and E2E test
-  consumers. The Workers, Concert unit, and Opportunity request-builder frontiers are now cleared; the
-  next exact integration action is recorded in `## Next Steps`.
+  consumers. The Workers, Concert unit, Opportunity request-builder, and `ApplicationCancelApiTests`
+  frontiers are now cleared; the next exact integration action is recorded in `## Next Steps`.
 - Dependency/package gates: none block the remaining B2B-internal implementation. Phase 1 delivery is terminal; final `api/**` delivery will own its routine package publication and platform-sync gate only after the complete refactor merges.
-- Last reconciled: 2026-08-19 after locally verifying the focused `ApplicationCancelApiTests`
-  module-owned read/state compile recovery against published checkpoint
-  `f64d5fe329da2d5d7d94ec8ed4b0ef3421309059`
+- Last reconciled: 2026-08-19 after publishing and verifying the focused `ApplicationCancelApiTests`
+  module-owned read/state compile recovery at `da3d55be62fdd12e002fea9610c5409d090c731c`
 
 ## Current state
 
@@ -178,7 +177,8 @@ The focused `ApplicationCancelApiTests` recovery now reads Application, Booking,
 through their owning contexts exposed by the existing fixture reset scope. Its assertions use
 `ApplicationState`, `BookingState`, or `ConcertState` for the stage they verify. All four diagnostics
 owned by that file are gone, `git diff --check` passes, and the exact remaining integration frontier is
-22 errors outside this slice.
+22 errors outside this slice. Published work head `da3d55be6` is verified equal across local, remote,
+and draft PR #633.
 
 ## Next Steps
 
@@ -206,10 +206,10 @@ generalize selector/factory infrastructure in this slice.
 
 ## Completed work
 
-- Recovered `ApplicationCancelApiTests` onto Application-, Booking-, and Concert-owned context/state
-  assertions; its four diagnostics are gone and the remaining integration frontier is exactly 22 errors.
-- Recovered `OpportunityRequestBuilders` onto the Opportunity-owned request namespace in this commit; both stale
-  builder diagnostics are gone and the remaining integration frontier is exactly 26 errors.
+- Published `ApplicationCancelApiTests` recovery range `f64d5fe32..da3d55be6`; its four diagnostics are
+  gone, the remaining integration frontier is exactly 22 errors, and local, remote, and PR heads matched.
+- Recovered `OpportunityRequestBuilders` onto the Opportunity-owned request namespace in its prior
+  checkpoint; both stale builder diagnostics are gone and the remaining integration frontier was 26 errors.
 - Recovered both surviving `ConcertService` unit-test fixtures onto the current `IBookingModule`
   constructor boundary; the focused Release suite passes 88/88.
 - Recovered the Workers completion-runner fixture onto the current operation-owned executor and moved
