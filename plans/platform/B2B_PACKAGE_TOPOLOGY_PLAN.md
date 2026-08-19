@@ -29,7 +29,7 @@ Phase 2 may be prepared against the exact Phase 1 tarball but is delivery-gated 
 published. Phase 3 may be prepared against exact Phase 2 artifacts but is merge-gated until both
 first-class package identities are available from the feed. Every intermediate merge stays green.
 
-## Phase 1 - expand the web package identity
+## Phase 1 - expand the web package identity — complete
 
 - Add one reusable script that stages the existing package files with only the manifest `name` changed,
   packs with lifecycle scripts disabled, and never writes into the source package.
@@ -43,7 +43,7 @@ first-class package identities are available from the feed. Every intermediate m
 Gate: alias-packer unit test, ordered web-package build/tests, workflow syntax, and `git diff --check`
 pass. Exact-head PR CI owns the complete frontend package, boundary, and carve matrices.
 
-## Phase 2 - establish the web and cross-platform packages
+## Phase 2 - establish the web and cross-platform packages — in progress
 
 - Make `app/web/b2b/shared` the first-class `@concertable/web-b2b` package and migrate every
   manager-web-only dependency/import/build reference that must follow it.
