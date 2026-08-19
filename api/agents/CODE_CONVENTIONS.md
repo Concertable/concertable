@@ -384,6 +384,16 @@ internal static class EscrowMappers
 }
 ```
 
+**A reusable `IQueryable`-to-`IQueryable` join/projection is still data access, not this
+Application-layer `XMappers` shape** — but it's the same *kind* of thing (a named `ToTarget()`
+type-to-type extension), so it gets the same treatment one layer down: name and file it as
+`QueryableXMappers` in the Infrastructure project's own `Mappers/` folder (e.g.
+`Concertable.Search.Infrastructure/Mappers/QueryableVenueHeaderMappers.ToHeaderDtos`), never
+`XExtensions` and never the Application-layer `XMappers`. The receiver distinguishes the two: an
+`XMappers` extension takes an already-materialized value (`TenantMappers.ToDto(this TenantEntity
+tenant)`); a `QueryableXMappers` extension takes and returns `IQueryable<T>` — still an untranslated
+expression tree, not yet run against the database.
+
 ## Versioned integration events — version the wire identity, not the C# type
 
 Keep the CLR event name free of transport-version suffixes. Put the version in the stable

@@ -101,10 +101,9 @@ more unrelated entity types (e.g. `IUserRepository` returning both `UserEntity` 
 rows), or it hand-writes a `GetXByIdAsync`/`AddX` pair that only re-implements what the generic base
 already gives the *wrong* entity type bound as `TEntity`. Split it — one interface, one repository, one
 entity — even if the caller (a single service) ends up injecting two repositories instead of one; that
-is the service's job, not a reason to merge the persistence contracts.
-
-`ITenantRepository` (Tenant module) is a known, pre-existing violation — logged in that module's
-`TECH_DEBT.md`, not a pattern to copy.
+is the service's job, not a reason to merge the persistence contracts. The Tenant module's
+`ITenantRepository`/`IMembershipRepository`/`IInvitationRepository` split is the reference example for
+a module that used to violate this and was corrected.
 
 ## Module-local keyed strategy factory
 
