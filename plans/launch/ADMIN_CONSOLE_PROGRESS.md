@@ -32,6 +32,44 @@
   45 pending checks resolved to 0 pending / 0 failures, `mergeStateStatus CLEAN`, `mergeable MERGEABLE`,
   not draft. Re-checked #651: still `state OPEN`, `isDraft true`, `mergeStateStatus BLOCKED`, not merged
   — step 1 remains not-yet-actionable. No action taken beyond confirmation; merge still waits on Tommy.
+- Reconciled 2026-08-19 (same day, later still): Tommy reported #651 merged. Confirmed via
+  `gh pr view 651` (`state MERGED`, `mergedAt 2026-08-19T18:27:56Z`). Merged `origin/main` into this
+  branch (137 commits behind) per Next Steps step 1. Ten files conflicted: seven backend (the
+  Admin-module extraction moved `IAdminRepository`/`AdminRepository`/`AdminService`/`IAdminService`/
+  `IAdminModule`/`AdminModule`/`CredentialRegisteredHandler`/`UserController`/both `AdminServiceTests`/
+  `AdminProvisioningTests` out of `Concertable.B2B.User` into a new `Concertable.B2B.Admin` module) and
+  three docs (`app/AGENTS.md`, `app/web/AGENTS.md`, `app/web/shared/AGENTS.md`, from the concurrently
+  merged `Docs/GuidanceDocsRestructure`, #637).
+  **The backend conflict was a real security regression risk, not just a textual clash:** #651 branched
+  off `main` after Phase 1 (#624) merged but *before* this branch's post-login security fix (design
+  decision 1) was written, so its mechanical module extraction preserved Phase 1's original,
+  registration-time grant (`CredentialRegisteredHandler` → `IAdminModule.GrantIfEligibleAsync(sub,
+  email)`, wrapped in a new `IUnitOfWorkBehavior` for atomicity) — exactly the gap design decision 1
+  closes. Resolved every conflict toward this branch's secure design
+  (`AdminService.EnsureCurrentUserAdminGrantedIfEligibleAsync()`, called from `UserController.Me()` via
+  the new `IAdminModule` facade) reapplied onto the new module boundary, not a silent revert to the
+  registration-time grant. Also: renamed `AddAdmin`→`GrantAdmin` on `IAdminRepository`/`AdminRepository`
+  (adopted #651's rename), deleted the now-dead `IUnitOfWorkBehavior`/`UnitOfWork<UserDbContext>`
+  registration in `Concertable.B2B.User.Infrastructure` (existed only to support the reverted design),
+  updated the stale `AdminService.GrantIfEligibleAsync` doc-comment reference in `AdminInvitationEntity`,
+  and split `AdminProvisioningTests` to match #651's module-ownership split: Admin's own
+  `AdminProvisioningTests.cs` keeps the grant-eligibility (`Login_*`) tests using a `RegisterAsync`+
+  `LogInAsync` helper pair (dispatching `CredentialRegisteredEvent` via the generic
+  `IIntegrationEventHandler<T>` interface, not the internal `CredentialRegisteredHandler`, since Admin's
+  test project has no `InternalsVisibleTo` grant into `Concertable.B2B.User.Infrastructure`); removed the
+  now-redundant/stale `Registration_AdminClient_CreatesUser_EvenWithNoMatchingAdminGrant` from User's
+  `UserProvisioningTests.cs` (its premise — the ambient-transaction grant call — no longer exists, and
+  it's covered by the existing `[InlineData(ClientIds.Admin)]` case on `Registration_ManagerClient_CreatesUser`).
+  **Docs conflict:** adopted #637's slimmed skill-referencing structure in all three files; one of them
+  (`app/web/AGENTS.md`) stated a now-stale fact independent of the restructure — "run the four web
+  builds" — which is wrong since this branch's Phase 2 added the fifth (`web-admin`); corrected to five
+  and flagged that the external `app-tiers` skill (`Concertable/agent-standards` plugin, outside this
+  repo) still needs its own follow-up update for the fifth SPA — not fixable from here.
+  **Verified:** `dotnet build` on `Concertable.B2B.Web` (full host): 0 errors. Built and ran
+  `Concertable.B2B.Admin.UnitTests`: 31/31 passing. Built `Concertable.B2B.Admin.IntegrationTests`,
+  `Concertable.B2B.User.IntegrationTests`, `Concertable.B2B.User.UnitTests`: all green (integration
+  tests compile-only, no local Docker). `npm run lint:boundaries`: clean across all 13 workspaces.
+  `npm run build:admin`: green. Committed as `80208ce22` and pushed; draft-PR CI running on that head.
 - Parallel, independent work: `Refactor/b2b_admin-module` (separate worktree/session) extracts
   `Concertable.B2B.Admin` out of `Concertable.B2B.User` to match the `Concertable.B2B.Tenant` precedent
   (own `AdminDbContext`, plain `Guid` FKs, `IAdminModule` facade for `UserController.Me()`'s grant-check).
@@ -137,16 +175,11 @@ draft PR [#648](https://github.com/Concertable/concertable/pull/648).
 
 ## Next Steps
 
-Paused: Tommy — #648 ([PR #648](https://github.com/Concertable/concertable/pull/648)) is confirmed ready
-(draft-PR CI reconfirmed green on head `4e1ec207b`: 0 pending / 0 failing checks, `mergeStateStatus
-CLEAN`, `mergeable MERGEABLE`, not draft); nothing further to verify. Resume condition: Tommy gives an
-explicit instruction to merge #648 (when given, re-check the `behind` count per the root `AGENTS.md`
-"Before enabling auto-merge" currency check first, since time has passed since the resync). Separately,
-non-blocking: `Refactor/b2b_admin-module` ([PR #651](https://github.com/Concertable/concertable/pull/651))
-is still open/draft, `mergeStateStatus BLOCKED`, not yet merged — once it merges to `main`, merge it into
-this branch before #648 merges (avoids shipping Phase 2 against the old `Concertable.B2B.User`-owned
-Admin location; not a hard blocker since the HTTP contract is unchanged). Phases 3 (moderation UI) and 4
-(venue approval UI, plus the new `GET /api/Venue/pending-approval` endpoint) follow once Phase 2 merges.
+Paused: Tommy — #648 ([PR #648](https://github.com/Concertable/concertable/pull/648)) is merged with
+`origin/main` (which now includes #651) and pushed at head `80208ce22`; draft-PR CI is running on that
+head. Resume condition: once CI confirms green, merge is gated only on Tommy's explicit instruction (when
+given, re-check the `behind` count per the root `AGENTS.md` "Before enabling auto-merge" currency check
+first). See "Current state" below for the merge-conflict resolution.
 
 ## Completed work
 
