@@ -5,8 +5,8 @@
 - Roadmap item: `launch/rate-limiting`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-launch_rate-limiting`
 - Branch: `Feature/launch_rate-limiting`
-- PRs: #646 (superseded seam v1, **MERGED**) · #655 (**producer v2 — seam refactor**, this branch) · consumer PR (all 5 services, **not yet created** — gated on #655 publish)
-- Last reconciled: 2026-08-19, from `origin/main` + full endpoint sweep (3 subagents) + repository evidence.
+- PRs: #646 (superseded seam v1, **MERGED**) · #655 (**producer v2 — seam refactor**, this branch — **merge authorized, enqueued**) · consumer PR (all 5 services, **not yet created** — gated on #655 publish)
+- Last reconciled: 2026-08-19, from `origin/main` + repository evidence. Tommy authorized merging #655 (full chain).
 
 ## Current state
 
@@ -29,22 +29,18 @@ ServiceDefaults refactor + these plan docs.
 
 ## Next Steps
 
-**Paused: Tommy — authorize merging producer PR #655 so the new seam publishes.** `/review` complete and
-clean (see `## Reviews`); committed, green (build 0/0, 5/5 unit), and the draft PR is now current with
-`origin/main` (re-synced past the #651 admin-module refactor). Nothing further is safely implementable
-locally — the consumer PR cannot compile against the new API until #655 publishes (ServiceDefaults is a
-feed package, not in the `UseLocalCore` swap set).
+**In progress: merging producer PR #655 (Tommy authorized the full chain, 2026-08-19).** Re-synced current
+with `origin/main` (pin `1073`), rebuilt 0/0, 5/5 unit; `/review` re-run clean at HEAD (see `## Reviews`);
+`skip-e2e` (no positive trigger — internal shared-infra refactor); enqueued into the merge queue.
 
-- **Resume when:** #655 is merged, `publish-packages` has republished `Concertable.ServiceDefaults`, and
-  its `chore/platform-sync-*` pin bump is green/merged (the new `<ConcertablePlatformVersion>` is on the feed).
-
-- **Merge #655 (needs Tommy's go-ahead — review gate satisfied):** on merge of this `api/**` change, `publish-packages`
-  republishes `Concertable.ServiceDefaults` and `platform-sync` opens a `chore/platform-sync-*` pin bump.
-  Non-breaking (no consumer on `main` uses the rate-limit API yet) → follow it to green/merged.
-- **Then create the consumer PR** (Phase 2, new branch off the new pin): opt all five web hosts into the
+- **On #655 merge:** `publish-packages` republishes `Concertable.ServiceDefaults` and `platform-sync`
+  opens a `chore/platform-sync-*` pin bump. Non-breaking (no consumer on `main` uses the rate-limit API
+  yet) → follow it to green/merged. Then close this PR's worktree (`-PlanManaged`).
+- **Then create the consumer PR** (Phase 2, new worktree off the new pin): opt all five web hosts into the
   seam and apply the named policies per the plan's surface table, lift the integration-fixture disable
   step into `Concertable.Testing.Integration`, add 429 + `Retry-After` integration tests (one per
-  partition kind), and tick roadmap line 44 + §7 in the shipping commit.
+  partition kind), confirm `UseForwardedHeaders` before `UseDefaultRateLimiting` for the per-IP policies,
+  and tick roadmap line 44 + §7 in the shipping commit.
 
 ## Completed work
 
