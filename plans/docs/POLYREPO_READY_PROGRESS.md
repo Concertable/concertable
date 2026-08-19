@@ -16,7 +16,9 @@ untouched and unblocked.
 
 This branch is cut from `Docs/skill-routes-mapper-coverage` (PR #668), not from `origin/main`, because
 that PR carries this plan *and* the route table this work edits — branching from `main` would have
-conflicted on `.agents/skill-routes.json`. Its commits drop out of this PR's diff as soon as #668 merges.
+conflicted on `.agents/skill-routes.json`. Its commits drop out of this PR's diff as soon as #668
+merges. **`test.yml` only triggers on PRs based on `main`**, so PR #669 reports no checks until it is
+retargeted — retarget it the moment #668 lands, then read its CI.
 
 ## Completed milestones
 
