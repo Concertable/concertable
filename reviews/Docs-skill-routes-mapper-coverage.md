@@ -2,7 +2,7 @@
 
 Work order for the route-coverage change. Findings are `- [ ]` until fixed, `- [x]` when addressed.
 
-**Reviewed up to commit:** `PLACEHOLDER`  _(2026-08-19)_
+**Reviewed up to commit:** `6f46455e91481210ae82164aa3fa17625ebc6285`  _(2026-08-19)_
 
 > Range: `origin/main...HEAD`. Scope: `.agents/skill-routes.json`, `docs/INDEX.md`, and the deletion of
 > a spent review. All paths are meta, so this is a `docs-review`, not a `review` — but the route table
