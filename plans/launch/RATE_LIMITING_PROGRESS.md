@@ -1,7 +1,8 @@
 # API rate limiting progress
 
 - Plan: `plans/launch/RATE_LIMITING_PLAN.md`
-- Roadmap: `plans/launch/LAUNCH_ROADMAP.md` · item `launch/rate-limiting`
+- Roadmap: `plans/launch/LAUNCH_ROADMAP.md`
+- Roadmap item: `launch/rate-limiting`
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-launch_rate-limiting`
 - Branch: `Feature/launch_rate-limiting`
 - PRs: #646 (superseded seam v1, **MERGED**) · #655 (**producer v2 — seam refactor**, this branch) · consumer PR (all 5 services, **not yet created** — gated on #655 publish)
@@ -28,11 +29,13 @@ ServiceDefaults refactor + these plan docs.
 
 ## Next Steps
 
-**Push the producer refactor to draft PR #655, let CI validate, then (on Tommy's merge authorization)
-merge it so the new seam publishes.** Local state is committed and green; the branch is being brought
-current with `origin/main` (4 behind, docs-only) before push.
+**Producer refactor pushed to draft PR #655 and building in CI. Review is the next gate, then (on
+Tommy's authorization) merge so the new seam publishes.** Local state is committed and green; branch is
+current with `origin/main`.
 
-- **Merge #655 (needs Tommy's go-ahead):** on merge of this `api/**` change, `publish-packages`
+- **Review #655 (mandatory pre-merge gate):** run `/review` on the producer diff; record the outcome in
+  `## Reviews` and address findings before any merge.
+- **Merge #655 (needs Tommy's go-ahead, after review is clean):** on merge of this `api/**` change, `publish-packages`
   republishes `Concertable.ServiceDefaults` and `platform-sync` opens a `chore/platform-sync-*` pin bump.
   Non-breaking (no consumer on `main` uses the rate-limit API yet) → follow it to green/merged.
 - **Then create the consumer PR** (Phase 2, new branch off the new pin): opt all five web hosts into the
@@ -52,6 +55,11 @@ current with `origin/main` (4 behind, docs-only) before push.
 
 - `dotnet build` + `dotnet test` → 0/0, **4/4 pass** for `Concertable.ServiceDefaults.UnitTests`.
 - Full build/carve/unit/integration matrix owned by draft-PR CI (remote-first).
+
+## Reviews
+
+- Producer PR #655 (seam refactor) — **review pending** (`/review` before merge authorization). The
+  prior 2026-08-17 `/review` covered seam v1, now superseded by this refactor.
 
 ## Decisions, discoveries, blockers, and deviations
 
