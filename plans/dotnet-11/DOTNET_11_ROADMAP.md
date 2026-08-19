@@ -4,8 +4,9 @@
 > independently deployed net10 services or published cross-service contracts onto a preview runtime.
 > Each implementation item owns a plan and progress ledger in this folder.
 >
-> **Current decision:** the first adoption slice is the B2B runtime after the Application, Booking,
-> and Concert module split lands. Native unions will model closed internal values, beginning with the
+> **Current decision:** first deliver the net10 Deal generator plus mapper/updater foundation, then
+> complete the Application, Booking, and Concert module split that consumes it. The first .NET 11
+> adoption slice is the B2B runtime after that module split lands. Native unions will model closed internal values, beginning with the
 > combined journey projection and proven case-specific module states, triggers, and operation
 > outcomes, but never workflow services, cross-module lifecycle ownership, or DI dispatch.
 
@@ -29,6 +30,10 @@ hosting, and toolchain conventions.
 - [x] ✅ **ReUnion integration and Payment carrier cutover.** PR #453 and platform-sync PR #463 are
   merged; B2B now owns its remaining Reunion migration directly.
 - [x] ✅ **B2B typed-result migration.** Landed in PR #552. It no longer owns this roadmap's return path.
+- [ ] 🟡 **Net10 Deal dispatch foundation.** Owned by
+  [`../launch/DEAL_CLOSED_SUM_MODEL_PROGRESS.md`](../launch/DEAL_CLOSED_SUM_MODEL_PROGRESS.md) Phases 0-1.
+  It delivers the generator/analyzer and Deal-owned mapper/updater factories before lifecycle PR #633
+  resumes; it does not change target frameworks or introduce native unions.
 - [ ] 🟠 **Application, Booking, and Concert ownership.** Owned by
   [`../launch/DEAL_LIFECYCLE_OWNERSHIP_PROGRESS.md`](../launch/DEAL_LIFECYCLE_OWNERSHIP_PROGRESS.md).
   It deletes the cross-stage workflow model this roadmap previously intended to convert.
@@ -60,12 +65,13 @@ slice.
 
 ```text
 ReUnion integration + B2B typed-result delivery
-└── Application → Booking → Concert ownership delivery
-    └── B2B .NET 11 platform-only checkpoint
-        ├── native closed-value unions
-        │   └── merge-queue full E2E + platform sync
-        └── supported C# 15 compiler/target matrix
-            └── launch/deal-closed-sum-model native-operation-union + closed-Deal cut-over
+└── net10 Deal generator + mapper/updater foundation
+    └── Application → Booking → Concert ownership delivery
+        └── B2B .NET 11 platform-only checkpoint
+            ├── native closed-value unions
+            │   └── merge-queue full E2E + platform sync
+            └── supported C# 15 compiler/target matrix
+                └── launch/deal-closed-sum-model native-operation-union + closed-Deal cut-over
 
 .NET 11 GA + Azure Functions net11 support
 └── B2B GA/deployment-readiness follow-up
