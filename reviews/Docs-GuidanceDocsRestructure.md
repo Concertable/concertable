@@ -5,9 +5,9 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `9b914b2832af5b9cbd8187334d0499a6ba8e85c7`  _(2026-08-19)_
+**Reviewed up to commit:** `f2bc5e97faa4b838f9d6711ac9c6d4334b077a68`  _(2026-08-19)_
 
-**Security-reviewed up to commit:** `9b914b2832af5b9cbd8187334d0499a6ba8e85c7`  _(2026-08-19)_
+**Security-reviewed up to commit:** `f2bc5e97faa4b838f9d6711ac9c6d4334b077a68`  _(2026-08-19)_
 
 > Range reviewed: `9205e82d..2b93b45b` (12 commits reviewed; markers moved to `54b91961`, the fix commit, 73 files — markdown plus one Python hook).
 > Markers moved forward three times with nothing re-reviewable in between: once to the fix commit
@@ -535,3 +535,79 @@ it enforces:
 
 Re-verified after the fixes: this repo's hook tests **14 passed**, `agent-standards` **155 passed**,
 `docs_reachability.py` **0 errors**, `sync-generated.ps1 -Check` clean in both standards repos.
+
+## Incremental review — 2026-08-19 (second)
+
+> Range reviewed: `9b914b28..f2bc5e97` (16 commits). Layer 1 (native `code-reviewer` subagent, medium
+> effort) and Layer 2 (Concertable's lenses, via the `docs-and-debt` skill the router named for 35 of the
+> changed paths). The security layer ran: three paths matched `merge-gate.json`'s `Concertable.Auth` /
+> `Concertable.Payment` patterns.
+
+**Security layer: nothing at the bar.** All three matching files are markdown — two integration-test
+`AGENTS.md` files and `Concertable.Payment/TECH_DEBT.md` — and every change in them is prefix-removal
+text. No code, no credentials, no workflow, no dependency change.
+
+**Every finding below is a defect this branch introduced, and all seven are fixed on it.** The theme is
+one mistake with seven faces: `275ce2073` stripped `concertable-` from every skill reference, which is
+right where the plugin qualifier carries the distinction and wrong everywhere a sentence named *both*
+halves of a pair.
+
+- [x] **NAT1 — HIGH — correctness** — `.agents/skill-routes.json`
+  The shared-tier route named `react:tiered-shared-code`, which does not exist: the `react` plugin ships
+  nine skills and `tiered-shared-code` is not among them — it lives only in `react-standards`, because
+  `agent-standards` has no `react/SHARED_CODE.md`. The router's own text for an unresolvable route is
+  `NOT INSTALLED - ... A route pointing at a missing skill is a deployment fault, not a reason to
+  proceed`, and it would have rendered on the first write into any of the six shared trees. Introduced by
+  this branch when the route was added. Fixed: the entry is gone; `app-tiers` on the same row already
+  *is* the Concertable counterpart, exactly as the plan's Tier-2 list has it.
+
+- [x] **NAT2 — MEDIUM — correctness** — `api/TestConventions.targets:29`, `:43`, `:46`
+  The build-gate error text read `Skills: unit-testing, unit-testing, integration-testing` — the same
+  token twice. A developer who trips the tier gate was told to load one skill twice and never told the
+  pair is `dotnet-standards:unit-testing` + `dotnet:unit-testing`, which is exactly where the two-plugin
+  collision lives. Missed by the markdown sweep because `.targets` is XML. Fixed in all three messages.
+  `.agents/skills/review/SKILL.md` carried the identical damage in its Lens C and Lens D headings and in
+  Lens B's bare `microservice-boundaries` — fixed too, so the review skill names the skill it means.
+
+- [x] **NAT3 — MEDIUM — correctness** — `docs/INDEX.md`
+  The topic→owner table distinguished a generic skill from this system's by **a colon** — `skill `X``
+  versus `skill: `X`` — and 14 names appeared in both forms, so `seeding`, `persistence`, `unit-testing`,
+  `http-layer` and ten others each named two different skills on two rows. A reader looking up "the
+  forbidden seed tables" loads whichever resolves first: the shadowing `skill_router.py`'s `plugin_of`
+  logic exists to prevent. Fixed: 28 row-references qualified `dotnet-standards:`/`dotnet:` and
+  `react-standards:`/`react:`. Names with one home stay bare, per the plan's rule.
+  A fifteenth, `packages`, turned out not to be ambiguous but **duplicated** — two rows for one skill,
+  the first implying a generic counterpart that has never existed. Merged into one.
+
+- [x] **NAT4 — MEDIUM — correctness** — `.agents/skill-routes.json`
+  The shared-tier route enumerated five of the repo's six shared workspaces and omitted
+  `app/b2b/shared` (`@concertable/b2b`, 25 `.ts` files including a second `features/tenant` with its own
+  `permissions.ts` and `memberships.ts`), so a write widening that package loaded `react:client-state`,
+  `react:identity` and `react:permissions` but **no tier skill at all**. The ledger defers that
+  workspace's *tier-map row* to `B2B_PACKAGE_TOPOLOGY_PLAN` on the grounds that nothing imports it yet —
+  neither reason covers the enforcement route, and no plan owned it. Fixed: `b2b/shared` added to the
+  alternation.
+
+- [x] **NAT5 — LOW — correctness** — `AGENTS.md:54`
+  The frontend bullet listed this system's rosters as bare `http-layer` / `typescript-style` / `identity`
+  / `permissions` while the backend bullet directly above it names the `dotnet` plugin and spells out
+  "the plugin says which one you mean". Two of those four exist in both `react` and `react-standards`,
+  and root `AGENTS.md` never named the `react` plugin anywhere, so the reader could not resolve them.
+  Fixed, and the three with no generic counterpart are now labelled as such.
+
+- [x] **CON1 — MEDIUM — convention (Layer 2)** — 29 sites across 25 files
+  Prose naming both halves of a pair collapsed into one name twice: *"Conventions: the
+  `integration-testing` skill, plus `integration-testing` for this system's fixture roster"* — one skill
+  named twice, and the instruction to load the other silently gone. 18 integration-test `AGENTS.md`
+  files, 3 service `ARCHITECTURE.md` files, 2 seeding references, 2 `docs/INDEX.md` rows, one e2e skill.
+  Fixed with the qualifier `skill-routes.json` already uses; all 14 qualified names in the corpus verified
+  to resolve to an installed plugin skill.
+
+**Checked and cleared:** the new `Mappers\.cs$` (61 files) and `Extensions\.cs$` (112 files) routes match
+only intended C# files and their targets exist with one home each; `app/.*/routes/.*\.tsx$` (79),
+`app/.*/components/ui/.*\.tsx$` (44) and `app/.*\.test\.tsx?$` (18) match cleanly with no false
+positives; `notes/Concert-Rust-Analysis.md` had no inbound reference outside its own deletion record;
+`docs_reachability.py` reports 0 errors and `plan_graph.py` 0; and every claim in the new
+`api/Concertable.Shared/TECH_DEBT.md` Kernel entry was independently verified — the three package
+references, zero `Newtonsoft`/`Dapper` usages under `src/`, `SelectMessages` having only its own
+definition, and the arch guard enumerating `Concertable.Kernel/Functional` only.
