@@ -5,7 +5,7 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `b413784cddcd3d296f49b2682c0f5d7b336a994c`  _(2026-08-19)_
+**Reviewed up to commit:** `890c68d28907a895133fbad545de259b2ae7214d`  _(2026-08-19)_
 
 **Security-reviewed up to commit:** `b525776b4a9cbdbf227dabcf8d507a9651817d16`  _(2026-08-18)_
 

@@ -82,6 +82,19 @@ first known gap) and 3c (markdown outside the conventions folders).
 
 ## Done
 
+**Incremental docs-review of the branch, and its findings fixed** (2026-08-19, `890c68d28`)
+
+- Range `b525776b4..b413784cd` — the branch's own 25 commits since the last marker. **Three findings,
+  all the same class and all in `docs/INDEX.md`:** five architecture rows still pointed at
+  `api/ARCHITECTURE.md` for topics `1e9bd3088` moved out of it (one quoting a section that no longer
+  exists there), a backend row sent "DTOs vs Responses" to `api/AGENTS.md` which contains neither word,
+  and a frontend row pointed at the `app/web/AGENTS.md` "HTTP errors" section deleted the same day. All
+  fixed; the file whose job is to be the anti-drift map is the one that had drifted.
+- Clean on everything checked mechanically: reachability 0 errors, all 35 routed skills resolve, every
+  `` `x` skill `` reference and every `INDEX` link resolves, every enforcer the INDEX names exists,
+  `scripts/worktrees.ps1` really takes `audit|close|retire` + `-PlanManaged`, `merge` Step 4 really is the
+  E2E tier, and the hook suites pass (94 tests + 13 subtests + 8 merge-gate cases).
+
 **Phase 4 finished — the last duplication row** (2026-08-19)
 
 - The Docker-health pre-flight was near-verbatim in `e2e-api-debug`, `e2e-debug`, `e2e-ui-debug` and
@@ -559,12 +572,13 @@ lines, so they stay with the rest of 3c.
 2. **Then the two remaining phases**: 5c (the discovery pass — conventions that exist only in code, e.g.
    B2B's stance taxonomy) and 3c (markdown outside the conventions folders).
 
-3. **#637 needs a review, then an explicit merge instruction.** The tiering blocker is cleared and the
-   process corpus is no longer duplicated, so nothing structural holds it open. It is **not** a docs-only
-   PR — it carries `api/TestConventions.targets` and a PreToolUse hook — so the docs-only auto-merge path
-   does not apply. Run `/docs-review` over the branch, address what it finds, then wait for Tommy. Merging
-   will trigger publish + platform sync (`paths: api/**` matches this branch's `api/**` markdown); follow
-   the `chore/platform-sync-*` PR to green.
+3. **#637 is reviewed and needs only an explicit merge instruction.** The docs-review ran on
+   2026-08-19 (`reviews/Docs-GuidanceDocsRestructure.md`, incremental section) and its three findings are
+   fixed; nothing structural holds the PR open. It is **not** a docs-only PR — it carries
+   `api/TestConventions.targets` and a PreToolUse hook — so the docs-only auto-merge path does not apply.
+   Re-run `/incremental-review` if the branch moves again, then wait for Tommy. Merging will trigger
+   publish + platform sync (`paths: api/**` matches this branch's `api/**` markdown); follow the
+   `chore/platform-sync-*` PR to green.
 
 
 **Tommy's, not agent work:**
