@@ -6,16 +6,15 @@
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-launch_deal-lifecycle-modules-phase2`
 - Branch: `Refactor/launch_deal-lifecycle-modules-phase2`
 - PR: draft whole-refactor PR [#633](https://github.com/Concertable/concertable/pull/633). Published
-  Workers and API-composition recovery range `a7eddeeaa..d6c688433` from starting remote head
-  `a7eddeeaa133a221a1a86f062ff436f86d0fb20e`; local HEAD, the remote branch, and PR `headRefOid`
-  matched `d6c688433d800411577d5e259656d27ee26a3679` after the work-head push. Prior exact-head CI run
+  Concert unit fixture recovery range `5d2aedfea..e4dab271c` from starting remote head
+  `5d2aedfeaad04ef264cb67b804a11254aacfe362`; local HEAD, the remote branch, and PR `headRefOid`
+  matched `e4dab271c2758baed2269091610c4a8ed161eeb3` after the work-head push. Prior exact-head CI run
   `32236953306` failed the build on stale Concert unit, Workers unit, integration, and E2E test
   consumers. The Workers and Concert unit frontiers are now cleared; the next exact integration action
   is recorded in `## Next Steps`.
 - Dependency/package gates: none block the remaining B2B-internal implementation. Phase 1 delivery is terminal; final `api/**` delivery will own its routine package publication and platform-sync gate only after the complete refactor merges.
-- Last reconciled: 2026-08-19 after reproducing the focused Concert unit constructor frontier against
-  current branch/PR head `5d2aedfeaad04ef264cb67b804a11254aacfe362` and clearing it in the
-  current candidate
+- Last reconciled: 2026-08-19 after publishing and verifying the focused Concert unit constructor
+  recovery at `e4dab271c2758baed2269091610c4a8ed161eeb3`
 
 ## Current state
 
@@ -165,10 +164,10 @@ Concert now register their module-owned dev seeders inside `AddXApi`; the Web ho
 those seeders separately. The focused Workers suite passes 5/5 and the B2B Web Release build passes
 with 0 warnings and 0 errors.
 
-The current candidate clears the two remaining Concert unit-test constructor diagnostics by supplying
-the existing `IBookingModule` boundary at both fixture construction sites. The compiler named the
-trailing logger parameter only because each positional argument list was one entry short; both fixtures
-already supplied `ILogger<ConcertService>`. The focused Release suite passes 88/88.
+Published work head `e4dab271c` clears the two remaining Concert unit-test constructor diagnostics by
+supplying the existing `IBookingModule` boundary at both fixture construction sites. The compiler named
+the trailing logger parameter only because each positional argument list was one entry short; both
+fixtures already supplied `ILogger<ConcertService>`. The focused Release suite passes 88/88.
 
 ## Next Steps
 
