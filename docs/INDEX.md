@@ -152,6 +152,7 @@ diagnostic or test name, not an argument.
 | No `gh pr merge` without a current, clean code-review | `.agents/hooks/merge_review_gate.py` over `.agents/merge-gate.json` | Gate |
 | A test project's name declares its tier; a unit test cannot boot a host, container or database | `api/TestConventions.targets` + `api/BannedSymbols.UnitTests.txt` | Yes |
 | The standard that owns a path is loaded before the first write into it | `.agents/hooks/skill_router.py` over `.agents/skill-routes.json`, wired in `.claude/settings.json` and `.codex/hooks.json` | Gate |
+| **No source file is ungated.** Two area floors (`api/**/*.cs`, `app/**/*.{ts,tsx}`) plus four layer routes keyed on the project's layer, so a file shape nobody wrote a rule for still loads its floor | the same table — floors first, specific routes add to them rather than replace them | Gate |
 | A vendored hook still matches upstream, and is wired in both harnesses or in neither as its `delivery` says | `.agents/hooks/tests/test_vendored_hooks.py`, run by the `hook-tests` CI job | Yes |
 | A review loads the same standards the author was required to load | `skill_router.py --skills-for` over the same table, run by [`review`](../.agents/skills/review/SKILL.md) Step 2 | Gate |
 
