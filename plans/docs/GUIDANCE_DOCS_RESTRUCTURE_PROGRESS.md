@@ -6,7 +6,7 @@
 - Also delivered by this ledger: roadmap item `docs/agent-standards`, now checked off
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-guidance-docs`
 - Branch: `Docs/GuidanceDocsRestructure`
-- PR: #637 at `17aa128c0`. Reviewed at `fcec9925` with 4 of 5 findings fixed; three commits have landed since, so both markers are stale and `/incremental-review` plus `/security-review` must run before enqueue. Still needs the upstream merge that closes ENF12, then an explicit merge instruction. Label `skip-e2e`.
+- PR: #637 at `91f9d1abf`. Reviewed at `fcec9925` with 4 of 5 findings fixed; three commits have landed since, so both markers are stale and `/incremental-review` plus `/security-review` must run before enqueue. Still needs the upstream merge that closes ENF12, then an explicit merge instruction. Label `skip-e2e`.
   commit). Updated for base currency three times on 2026-08-17: from **69 behind** and `DIRTY` (three doc
   conflicts resolved, below), from 2 behind after platform-sync #645 merged — a clean merge carrying only
   the `<ConcertablePlatformVersion>` bump `0.1.0-alpha.0.1055` → `0.1.0-alpha.0.1061` across the five
@@ -660,7 +660,7 @@ Three superseded models were purged — do not reintroduce a merged standards re
 stacks, or a `platform/`/`concertable/` folder.
 
 **Repo heads at handoff:** `dotagents` `f0dd2c5` (#1), `react-agents` `1ebb42b` (`main`),
-`agent-standards` `7c7c589` (#2), Concertable #637 at `17aa128c0`, all pushed 2026-08-19. Nothing is
+`agent-standards` `7c7c589` (#2), Concertable #637 at `91f9d1abf`, all pushed 2026-08-19. Nothing is
 merged.
 
 **Deployed layout on this machine:** `~/.agents/standards/<repo>/<domain>/` — repo-scoped, because a
@@ -701,6 +701,37 @@ lines, so they stay with the rest of 3c.
 that owns the words, and `app/shared/AGENTS.md` reduced from restating `react/SHARED_CODE.md` and
 `react/IDENTITY.md` to its own inventory.
 
+**Five of 3c's rows are taken** — the ones whose disposition the plan had already settled, and every one
+was carrying a wrong claim rather than merely sitting in the wrong place:
+
+- **`docs/OVERVIEW.md`** — the best product primer in the repo, orphaned, so nothing had checked it. It
+  called the money terms a **Contract** (which is now the signed PDF, so the old wording actively
+  misleads), said Versus pays "the max of the two, or guarantee + split depending on type" when
+  `VersusSettlementAmount` is unambiguously guarantee **plus** the percent, described `PaymentMethod` as
+  upfront-vs-settled when it is `Cash`/`Transfer`, told the reader to go read `CalculateArtistShare`
+  which does not exist, listed four B2B modules that are services or a library now while missing Deal,
+  Conversations and Tenant, and gave mobile three apps. Rewritten against the code; linked from root
+  `AGENTS.md`.
+- **`docs/USP.md`, `docs/DEEP_RESEARCH_PROMPT_GUIDE.md`** — linked from `docs/INDEX.md`; no longer orphans.
+- **`app/README.md`** — was still the untouched Vite scaffold. Now the real inventory: 12 workspaces, six
+  published, and the two `error`-severity dependency-cruiser rules — including
+  `cross-platform-b2b-has-no-platform-dependencies`, which no doc mentioned.
+- **`api/docs/VS_TEST_EXPLORER_TROUBLESHOOTING.md`** — deleted. Not a duplicate of the
+  `reset-test-explorer` skill but a *contradicting* one: it told you to CLI-rebuild the project, the one
+  thing the skill says never to do (VS only registers a container it built itself). Its two unique facts
+  moved into the skill. Both files had cited `api/Tests/`, which does not exist. `api/docs/` now holds
+  only `MICROSERVICES_ARCHITECTURE.md`, which four service `ARCHITECTURE.md` files link on purpose.
+- **`README.md`** — still said Auth was the first service on feed packages and the rest built from
+  source. Phase 2 recorded this row as done; it was not.
+
+**Found while doing 3c, and left alone deliberately:** `app/b2b/shared` (`@concertable/b2b`, 25 files
+including a second `features/tenant`) is a **sixth** sharing tier that `app/AGENTS.md`'s tier table does
+not list, and nothing imports it yet. It is mid-cut-over under `plans/platform/B2B_PACKAGE_TOPOLOGY_PLAN.md`
+with its own live worktree, so the tier map is that plan's to settle — `app/README.md` states the
+workspace inventory as fact without asserting a tier story. `notes/Concert-Rust-Analysis.md` (444 lines)
+and the `api/docs/`-as-a-tree collapse both stay open: the plan leaves each a delete-or-keep decision, and
+neither is loaded anywhere, so neither costs anything while it waits.
+
 **Four more citations of the deleted `api/agents/*`, all missed because they are not markdown.** The
 audit swept backticked identifiers in docs; these are machine-read payloads:
 
@@ -726,13 +757,14 @@ wrong and the second is dangerous — a sibling merge **passes** whenever the lo
 carries a clean review. Same class as ENF8. The flag now decides jurisdiction the way the target
 directory already did.
 
-1. **The remaining phases**: 3c (markdown outside the conventions folders) and the rest of 5c —
-   `dotnet/STACK.md`, the five `react` `NEW` rows, the three `agent-standards` `GAP` rows. 3c's table is
-   unchanged, plus `app/web/shared/BROWSER_STORAGE.md` → `react/BROWSER_STORAGE.md` and
-   `react/APP_TIERS.md`.
+1. **What is left of the two phases.** 5c: `dotnet/STACK.md`, the five `react` `NEW` rows, the three
+   `agent-standards` `GAP` rows (`results/ERRORS.md`, `testing/UNIT.md`, `testing/E2E.md`). 3c:
+   `app/web/shared/BROWSER_STORAGE.md` → `react/BROWSER_STORAGE.md`, `react/APP_TIERS.md`, and the two
+   rows above that need a decision rather than work (`notes/Concert-Rust-Analysis.md`, collapsing
+   `api/docs/`). The tier-map row for `app/b2b/shared` belongs to `B2B_PACKAGE_TOPOLOGY_PLAN`, not here.
 
 2. **#637 needs a fresh `/incremental-review` before it can be enqueued.** Both markers sit at
-   `6d80032ed` and three commits have landed since (`87b0be777`, `17aa128c0`, and this ledger's). The
+   `6d80032ed` and five commits have landed since (`87b0be777` … `91f9d1abf`). The
    **security** marker in particular is stale by construction: `17aa128c0` touches
    `.github/workflows/claude-review.yml`, which the gate treats as security-sensitive, so
    `/security-review` has to run and re-stamp. It is **not** a docs-only PR — it carries
