@@ -78,6 +78,8 @@ Resume when: Current `main` contains the delivered lifecycle split and the lifec
   C:\Users\TommySeery\source\repos\Concertable.worktrees\Refactor\keyed-strategy-dispatch`: 0 errors
   and 0 warnings.
 - `git diff --check`: passed.
+- Docs delivery branch review of `1647ec6f8..ecfcd2bb6` passed the accuracy, contradiction,
+  placement, concision, dangling-reference, and followability lenses with no findings.
 - Stale-design scans found no surviving keyed-completion, retained-keyed, mapper/updater/terms-switch,
   or `IKeyedServiceProvider` target direction in the affected plan graph.
 - Complete docs review of `1647ec6f8..88c368d39` plus the finding-fix working tree passed the
@@ -93,6 +95,8 @@ Resume when: Current `main` contains the delivered lifecycle split and the lifec
 - `reviews/Refactor-keyed-strategy-dispatch.md` is stamped at
   `dc9b6a744c9196e088f6280b13b4ab9b45c34976`. Its original boundary findings and four incremental
   findings are resolved, final confirmation is clean, and no finding remains open.
+- `reviews/Docs-launch_deal-dispatch-plan.md` records the clean review of the squashed docs-delivery
+  commit `ecfcd2bb692ad90cc27092d2c8d97534fc204987`; no delivery-branch finding is open.
 
 ## Decisions and discoveries
 
