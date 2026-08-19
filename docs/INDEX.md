@@ -63,6 +63,7 @@ When a topic has both, the skill owns the rule and the file owns the inventory.
 | Validator tool choice, `ValidationResult`, accumulation | skill `validation` |
 | Repositories, `Schema.cs`, pagination, unit of work, write→read FKs | skill `persistence` |
 | Tenancy composition, context stances, query filters, repository qualifiers | skill `multitenancy` |
+| Domain events — raise on the entity, dispatch at the save, publish through the outbox | skill `domain-events` |
 | Behaviour that varies by a closed key | skill `keyed-strategies` |
 | Project layering, reference graph, visibility cascade, cross-module rules, module facades | skill `module-structure` |
 | Endpoint contracts — DTO vs `Response`, `Request` records, route vocabulary | skill `http-api` |
@@ -80,6 +81,8 @@ When a topic has both, the skill owns the rule and the file owns the inventory.
 | **This system's** `Tenant`-to-`organization` translation and route shapes | skill: `concertable-http-api` |
 | **This system's** service roster, adapter-vs-data, the surfaces each exposes | skill: `concertable-microservice-boundaries` |
 | **This system's** migration policy | skill: `concertable-migrations` |
+| **This system's** tenanted service, which project owns each stance piece | skill: `concertable-multitenancy` |
+| **This system's** 13 pre-commit handlers and the seeding interceptor's phase swap | skill: `concertable-domain-events` |
 | **This system's** forbidden seed tables, the B2B simulator, the ticket-sales exception | skill: `concertable-seeding` |
 | **This system's** integration fixtures and shared harness members | skill: `concertable-integration-testing` |
 | **This repo's** E2E baseline path, run script, seeded fast-forward | [`Concertable.Testing.E2E`](../api/Concertable.Shared/tests/Concertable.Testing.E2E/AGENTS.md) |

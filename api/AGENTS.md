@@ -2,7 +2,7 @@
 
 The .NET app. **No standard lives in this repo.** The generic .NET rules are load-on-demand skills
 (`csharp-style`, `csharp-naming`, `comments`, `dependency-injection`, `logging`, `validation`,
-`persistence`, `multitenancy`, `keyed-strategies`, `module-structure`, `http-api`,
+`persistence`, `multitenancy`, `domain-events`, `keyed-strategies`, `module-structure`, `http-api`,
 `microservice-boundaries`, `proto`, `seeding`, `result-carriers`, `result-errors`, `result-terminals`,
 `unit-testing`, `integration-testing`, `e2e-scenarios`), and what is true of *this* system is their
 `concertable-` counterparts (`concertable-persistence`, `concertable-seeding`,
@@ -54,7 +54,7 @@ legitimately lives in `Kernel` does NOT license adding audience-specific *member
 
 When a shared adapter needs an audience-specific value, either the **caller** resolves it and passes it in,
 or it lives in a **separate abstraction only the services with the concept depend on** (e.g. an
-`ICurrentTenant` referenced by B2B, not by Customer).
+`ITenantContext` referenced by B2B, not by Customer).
 
 Anti-pattern, do not reintroduce: a tenant/owner key on the shared `ICurrentUser` — an `Owner` member and
 `GetOwnerId()` extension once lived in `Kernel` for exactly this, and were removed. As resolved: Payment

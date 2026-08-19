@@ -51,8 +51,33 @@
       "skills": [
         "persistence",
         "concertable-persistence",
-        "multitenancy"
+        "multitenancy",
+        "concertable-multitenancy"
       ]
+    },
+    {
+      "path": "DbContext\\.cs$",
+      "skills": [
+        "multitenancy",
+        "concertable-multitenancy"
+      ],
+      "note": "A context IS a tenancy stance - which base it derives from decides what every query through it can see. Only B2B has tenanted stances; the per-module roster is api/Concertable.B2B/CODE_PATTERNS.md."
+    },
+    {
+      "path": "Configurations?/[^/]*Configuration\\.cs$",
+      "skills": [
+        "persistence",
+        "concertable-persistence"
+      ],
+      "note": "Mapping a table another module owns needs ExcludeFromMigrations here, or two migrations claim the same table."
+    },
+    {
+      "path": "/Events/[^/]*\\.cs$",
+      "skills": [
+        "domain-events",
+        "concertable-domain-events"
+      ],
+      "note": "A state change announces itself by raising on the entity; the pre-commit handler is what turns that into a published integration event, so the outbox row commits with the write."
     },
     {
       "path": "Seeder\\.cs$",

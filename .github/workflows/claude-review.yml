@@ -23,16 +23,15 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           use_sticky_comment: true
           prompt: |
-            Review this PR for a .NET 10 / React modular monolith called Concertable.
+            Review this PR for Concertable, a .NET 10 / React platform of independent microservices.
             Your final response will be posted verbatim as a PR comment, so write it as a review.
 
-            Follow the rules in the repo-root `CLAUDE.md` and `api/agents/MODULAR_MONOLITH_RULES.md`.
-            Pay particular attention to:
-            - Module boundaries: cross-module calls must go through `IXModule` facades in `Module.Contracts`, never direct project references into another module's Application/Infrastructure.
-            - DTO vs Response: services return DTOs from `Module.Application/DTOs`; controllers return DTOs verbatim unless a `Response` shape is genuinely needed.
-            - Migrations: no additive migrations — model changes require re-running `initial-migrations.ps1`.
-            - Module services save their own context (`xRepository.SaveChangesAsync()`), never `IUnitOfWork`.
-            - Read-model `Id` must be `ValueGeneratedNever`.
+            Follow the repo-root `AGENTS.md`. Do not review from memory of the conventions: read
+            `.agents/skill-routes.json`, and for every changed path load the skills it names — each is
+            the single home of its rule, so restating one here would just drift from it. The pairs that
+            matter most for backend changes are `module-structure` + `concertable-module-structure`,
+            `persistence` + `concertable-persistence`, `multitenancy`, `http-api` +
+            `concertable-http-api`, and `concertable-migrations`.
 
             Be terse. Flag real issues only — don't nit-pick style or restate what the diff does.
             Group findings as: 🔴 Bugs/regressions, 🟡 Suggestions, 🟣 Pre-existing debt to ignore.
