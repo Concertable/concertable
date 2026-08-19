@@ -659,8 +659,8 @@ not a vendored hook. Skills arrive as plugins installed once per machine at user
 Three superseded models were purged — do not reintroduce a merged standards repo, `dotagents` holding both
 stacks, or a `platform/`/`concertable/` folder.
 
-**Repo heads at handoff:** `dotagents` `2715edc` (#1), `react-agents` `1ebb42b` (`main`),
-`agent-standards` `9e22eb2` (#2), Concertable #637 at the head this ledger commit creates, all pushed
+**Repo heads at handoff:** `dotagents` `82e5d87` (#1), `react-agents` `1ebb42b` (`main`),
+`agent-standards` `0d773bd` (#2), Concertable #637 at the head this ledger commit creates, all pushed
 2026-08-19. Nothing is merged.
 
 **Deployed layout on this machine:** `~/.agents/standards/<repo>/<domain>/` — repo-scoped, because a
@@ -756,6 +756,13 @@ audit swept backticked identifiers in docs; these are machine-read payloads:
 `ICurrentUser` + `ITenantContext`, both `Concertable.Kernel.Identity`. The claim it illustrated —
 referenced by B2B, not Customer — is exactly true of `ITenantContext` (61 B2B files, 0 Customer).
 
+**Three upstream fixes the review pass produced**, because enforcement moves with the rule it enforces:
+`agent-standards` `0d773bd` removed `common_git_dir()`, defined and called from nowhere while its comment
+described a hazard the live code handles elsewhere; `9795896` corrected two overclaims in the new docs
+(an `ITenantContext` count stated as "all B2B's" when 61 of 64 are, and an unverified claim about
+Customer's scoping); `dotagents` `82e5d87` took two real Concertable identifiers out of a generic
+standard's examples.
+
 **A merge-gate defect found live and fixed upstream** (`agent-standards` `2231bd0`, +4 tests,
 mutation-checked). `gh pr merge <n> --repo <other>/<repo>` never read the flag, so `gh pr view <n>`
 resolved `<n>` against the local checkout: merging `agent-standards` #2 from a Concertable session
@@ -771,11 +778,11 @@ directory already did.
    rows above that need a decision rather than work (`notes/Concert-Rust-Analysis.md`, collapsing
    `api/docs/`). The tier-map row for `app/b2b/shared` belongs to `B2B_PACKAGE_TOPOLOGY_PLAN`, not here.
 
-2. **#637 needs a fresh `/incremental-review` before it can be enqueued.** Both markers sit at
-   `6d80032ed` and six commits have landed since, starting at `87b0be777`. The
-   **security** marker in particular is stale by construction: `17aa128c0` touches
-   `.github/workflows/claude-review.yml`, which the gate treats as security-sensitive, so
-   `/security-review` has to run and re-stamp. It is **not** a docs-only PR — it carries
+2. **#637 is re-reviewed and both markers are current; it waits on ENF12 and then on Tommy.**
+   `/incremental-review` ran over `6d80032e..9799ac91` — native layer plus the security layer, which the
+   `.github/workflows/**` change obliged. **Security: nothing at the bar. Native: five findings, all
+   fixed on the branch**, plus four fixed upstream. The one open `- [ ]` in the review file is still
+   ENF12, which only the upstream merge closes. It is **not** a docs-only PR — it carries
    `api/TestConventions.targets`, the CI job and the hooks — so the docs-only auto-merge path does not
    apply. Merging will trigger publish + platform sync (`paths: api/**` matches this branch's `api/**`
    markdown); follow the `chore/platform-sync-*` PR to green.
