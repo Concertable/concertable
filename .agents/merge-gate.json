@@ -1,0 +1,9 @@
+{
+  "$comment": "Opts this repo into .agents/hooks/merge_review_gate.py, which refuses `gh pr merge` without a current, clean reviews/<branch>.md. `security_paths` are the paths whose change additionally demands a `Security-reviewed up to commit:` marker - this repo's own inventory, since which services hold auth and money is not something the mechanism can know. The generic patterns (CI workflows, auth/credential vocabulary) live in the hook and apply everywhere, so they are deliberately absent here. Kept targeted so unrelated merges are never blocked.",
+  "security_paths": [
+    "(^|/)Concertable\\.Auth",
+    "(^|/)Concertable\\.Payment",
+    "\\.Contracts(/|\\.)",
+    "Controller[A-Za-z]*\\.cs$"
+  ]
+}

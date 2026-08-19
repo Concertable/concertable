@@ -1,4 +1,4 @@
-﻿---
+---
 name: reset-test-explorer
 description: Compatibility stub for Claude Code. The canonical skill lives in .agents/skills/reset-test-explorer/SKILL.md.
 ---

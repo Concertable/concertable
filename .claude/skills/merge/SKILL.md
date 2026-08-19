@@ -1,4 +1,4 @@
-﻿---
+---
 name: merge
 description: Compatibility stub for Claude Code. The canonical skill lives in .agents/skills/merge/SKILL.md.
 ---

@@ -6,7 +6,7 @@
 >
 > **Constraint that changed the plan:** This is a learning side project. The Nov 2026 launch in `LAUNCH_ROADMAP.md` is aspirational, not a hard deadline. Skill development (event-driven architecture, transactional outbox, sagas, OpenTelemetry, Service Bus operations) is an explicit goal alongside any eventual deployment.
 >
-> **Companion docs:** [LAUNCH_ROADMAP.md](/plans/launch/LAUNCH_ROADMAP.md), [MARKETPLACE_PLAN.md](/plans/marketplace/MARKETPLACE_PLAN.md), [LAUNCH_CHECKLIST.md](/plans/launch/LAUNCH_CHECKLIST.md), [USER_MODEL_PLAN.md](/plans/launch/USER_MODEL_PLAN.md).
+> **Companion docs:** [LAUNCH_ROADMAP.md](../../plans/launch/LAUNCH_ROADMAP.md), [MARKETPLACE_PLAN.md](../../plans/marketplace/MARKETPLACE_PLAN.md), [LAUNCH_CHECKLIST.md](../../plans/launch/LAUNCH_CHECKLIST.md).
 
 ---
 
@@ -243,7 +243,9 @@ The two-package wire/framework rule still applies for `Concertable.Contracts` vs
 
 - **Sync HTTP between B2B.Api and Customer.Api** — would create distributed-monolith coupling. Async events only.
 - **Sync HTTP from Search.Api outbound to B2B or Customer** — Search is read-only and event-fed. If Search ever needed to "fill in a missing field" by sync-calling a data service, the projection is wrong and the fix is to expand the event, not introduce coupling.
-- **gRPC between services** — same antipattern risk as sync HTTP, with worse-fitting tooling.
+- **gRPC between data services** (`B2B`, `Customer`, `Search`) — same antipattern risk as sync HTTP.
+  gRPC *to an adapter* (`Auth`, `Payment`) is allowed and is the standing default for our-own internal
+  sync calls — see the `microservice-boundaries` skill and `api/ARCHITECTURE.md`.
 - **Cross-service joins, shared schemas, shared DBs** — each service has its own database.
 - **Project references between B2B modules and Customer modules** — only `Concertable.Contracts` (and the authorization-helpers library) may be referenced by both. Enforce via CI architecture tests.
 
@@ -389,7 +391,7 @@ If those hold, mono-repo → poly-repo is a folder move + replacing project refe
 
 ## 8.5 Modular monolith inside each microservice
 
-The microservices split **does not retire the modular monolith pattern** — it shrinks the pattern's scope to the inside of each service. The current discipline (`IXModule` facades, per-module `XDbContext` with its own schema, in-process domain events between modules via `IEventRaiser`, module-owned `IEntityTypeConfiguration<T>`, NetArchTest boundary enforcement, `CONVENTIONS.md`) **carries forward verbatim into each microservice's internal structure**.
+The microservices split **does not retire the modular monolith pattern** — it shrinks the pattern's scope to the inside of each service. The current discipline (`IXModule` facades, per-module `XDbContext` with its own schema, in-process domain events between modules via `IEventRaiser`, module-owned `IEntityTypeConfiguration<T>`, NetArchTest boundary enforcement, `MODULE_STRUCTURE.md`) **carries forward verbatim into each microservice's internal structure**.
 
 **Inside `Concertable.B2B`:**
 
@@ -431,7 +433,7 @@ Same shape inside `Concertable.Customer` (modules: Concert, Preference, Review, 
 - If a sub-module within a service later needs its own deployable (e.g., `Contract` grows to warrant a `Concertable.B2B.Deal.Api`), extraction is a packaging change because the internal boundary already exists.
 - In-process domain events between modules avoid the latency and operational complexity of the bus for flows that don't actually cross a service boundary.
 - The same patterns devs (or future-you) already know, scoped smaller.
-- `CONVENTIONS.md` doesn't get deleted — it gets cited *per service*.
+- `MODULE_STRUCTURE.md` doesn't get deleted — it gets cited *per service*.
 
 **What this is not:** an excuse to keep B2B and Customer modules together. The microservices split between bounded contexts (§1) is not negotiable. Inside a bounded context, the modular monolith pattern still applies.
 
@@ -458,7 +460,8 @@ Roughly a year of evenings-and-weekends if taken seriously. Valuable on a CV at 
 
 ## 10. Non-goals and rejected patterns
 
-- **No gRPC between services.** Synchronous coupling regardless of wire format.
+- **No gRPC between data services.** Synchronous coupling regardless of wire format. Adapter services
+  accept sync gRPC by design (§3).
 - **No shared "domain logic" service that B2B and Customer both call sync for venue/concert/artist data.** That is the distributed-monolith antipattern. Project via events instead.
 - **No shared database.** Each service has its own. Citadel (shared DB, multiple hosts) was considered and rejected because it doesn't serve the learning goals.
 - **No premature webhook fan-out service.** Single Webhook Receiver service is an option *later* if Stripe event routing gets complex. Start with each service exposing its own webhook endpoint, or Payment receiving all webhooks.
@@ -489,7 +492,7 @@ Roughly a year of evenings-and-weekends if taken seriously. Valuable on a CV at 
 **Foundational decisions (2026-05-18/19)** — all baked into §§2–8 above:
 - Event-driven microservices over Citadel (shared DB). Reason: learning goals + B2B/Customer are genuinely separate bounded contexts.
 - Adapter vs data service rule: Payment and Auth accept sync calls; B2B and Customer do not (§3).
-- No gRPC. No shared DB. No sync between B2B and Customer.
+- No gRPC between data services. No shared DB. No sync between B2B and Customer.
 - B2B tokens are identity-only; B2B authority derives from active tenant membership (§5.5). Customer's transitional claims remain Customer-owned.
 - Service-to-service: `client_credentials` via Duende. Rejected mTLS and API keys.
 - Customer owns `TicketEntity`, `ReviewEntity`, `AvailableTickets`. B2B owns `TotalTickets` capacity.
@@ -514,9 +517,9 @@ Roughly a year of evenings-and-weekends if taken seriously. Valuable on a CV at 
 
 ## 13. Reference
 
-- [LAUNCH_ROADMAP.md](/plans/launch/LAUNCH_ROADMAP.md) — broader launch context (mostly applies to B2B deployment if/when it happens)
-- [MARKETPLACE_PLAN.md](/plans/marketplace/MARKETPLACE_PLAN.md) — original marketplace deferral plan; partially superseded by this doc since marketplace would return as a separate microservice, not as a feature flag
-- [LAUNCH_CHECKLIST.md](/plans/launch/LAUNCH_CHECKLIST.md) — legal/business setup checklist
+- [LAUNCH_ROADMAP.md](../../plans/launch/LAUNCH_ROADMAP.md) — broader launch context (mostly applies to B2B deployment if/when it happens)
+- [MARKETPLACE_PLAN.md](../../plans/marketplace/MARKETPLACE_PLAN.md) — original marketplace deferral plan; partially superseded by this doc since marketplace would return as a separate microservice, not as a feature flag
+- [LAUNCH_CHECKLIST.md](../../plans/launch/LAUNCH_CHECKLIST.md) — legal/business setup checklist
 - MassTransit docs — https://masstransit.io
 - *Microservices Patterns* (Chris Richardson) — outbox, sagas, CQRS, idempotency
 - *Building Microservices* (Sam Newman) — boundaries, distributed-monolith antipatterns

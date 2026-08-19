@@ -1,0 +1,246 @@
+{
+  "_comment": [
+    "Path -> owning skill. The ONLY place this mapping lives; a new concern is a new row here, not",
+    "another paragraph in an AGENTS.md nobody reads. skill_router.py enforces it on Write/Edit, and",
+    "the review skill reads the same table so a review cannot miss what an author was required to load.",
+    "",
+    "path    : regex matched against the repo-relative POSIX path.",
+    "skills  : must be invoked before writing this file. `plugin:skill` where a generic standard and this system's roster share a name - both load, and the plugin says which is which. A name with one home stays bare. The router quotes each skill's own description rather than restating rules, so there is exactly one copy.",
+    "deny    : regex matched against the content being written. A hit is a hard block, not a nudge -",
+    "          only put mechanically-decidable violations here."
+  ],
+  "routes": [
+    {
+      "path": "\\.UnitTests/.*\\.cs$",
+      "skills": [
+        "dotnet-standards:unit-testing",
+        "dotnet:unit-testing"
+      ],
+      "deny": [
+        {
+          "pattern": "WebApplicationFactory|TestServer|WebApplication\\.Create|Testcontainers|Respawn",
+          "reason": "This is a *.UnitTests project and this code boots a host, container or database. That makes it an integration test. Put it in this service's *.IntegrationTests project, which owns the fixture that boots the real Program. The build enforces this too (api/TestConventions.targets)."
+        }
+      ]
+    },
+    {
+      "path": "\\.IntegrationTests/.*\\.cs$",
+      "skills": [
+        "dotnet-standards:integration-testing",
+        "dotnet:integration-testing"
+      ]
+    },
+    {
+      "path": "\\.E2ETests[^/]*/.*\\.(cs|feature)$",
+      "skills": [
+        "e2e-scenarios"
+      ]
+    },
+    {
+      "path": "\\.csproj$",
+      "content_requires": "<IsTestProject>\\s*true",
+      "skills": [
+        "dotnet-standards:unit-testing",
+        "dotnet:unit-testing",
+        "dotnet-standards:integration-testing",
+        "dotnet:integration-testing"
+      ],
+      "note": "Creating a test project is the classification moment: decide unit vs integration BEFORE the name exists, because the name is what declares the tier and the build fails a name that states none."
+    },
+    {
+      "path": "Repository\\.cs$",
+      "skills": [
+        "dotnet-standards:persistence",
+        "dotnet:persistence",
+        "dotnet-standards:multitenancy",
+        "dotnet:multitenancy"
+      ]
+    },
+    {
+      "path": "DbContext\\.cs$",
+      "skills": [
+        "dotnet-standards:multitenancy",
+        "dotnet:multitenancy"
+      ],
+      "note": "A context IS a tenancy stance - which base it derives from decides what every query through it can see. Only B2B has tenanted stances; the per-module roster is api/Concertable.B2B/CODE_PATTERNS.md."
+    },
+    {
+      "path": "Configurations/[^/]*\\.cs$",
+      "skills": [
+        "dotnet-standards:persistence",
+        "dotnet:persistence"
+      ],
+      "note": "Mapping a table another module owns needs ExcludeFromMigrations here, or two migrations claim the same table."
+    },
+    {
+      "path": "/Events/[^/]*\\.cs$",
+      "skills": [
+        "dotnet-standards:domain-events",
+        "dotnet:domain-events"
+      ],
+      "note": "A state change announces itself by raising on the entity; the pre-commit handler is what turns that into a published integration event, so the outbox row commits with the write."
+    },
+    {
+      "path": "Seeder\\.cs$",
+      "skills": [
+        "dotnet-standards:seeding",
+        "dotnet:seeding"
+      ],
+      "note": "The rule whose violation is silent and expensive: a seeder may only write what production code writes directly. If the only production write is a handler reacting to an event, drive the event. The forbidden-table roster is the seeding skill."
+    },
+    {
+      "path": "Validators?\\.cs$",
+      "skills": [
+        "validation"
+      ]
+    },
+    {
+      "path": "Module\\.cs$",
+      "skills": [
+        "dotnet-standards:module-structure",
+        "dotnet:module-structure"
+      ]
+    },
+    {
+      "path": "AppHost[^/]*/Program\\.cs$",
+      "skills": [
+        "dotnet-standards:microservice-boundaries",
+        "dotnet:microservice-boundaries"
+      ],
+      "note": "A data service WaitFor-ing another data service is the bug to never introduce. The live topology is api/ARCHITECTURE.md."
+    },
+    {
+      "path": "Controller\\.cs$",
+      "skills": [
+        "dotnet-standards:http-api",
+        "dotnet:http-api",
+        "dotnet-standards:result-terminals",
+        "dotnet:result-terminals"
+      ]
+    },
+    {
+      "path": "\\.proto$",
+      "skills": [
+        "proto"
+      ]
+    },
+    {
+      "path": "/Log\\.cs$",
+      "skills": [
+        "logging"
+      ]
+    },
+    {
+      "path": "app/.*/api/[^/]*\\.ts$",
+      "skills": [
+        "react-standards:http-layer",
+        "react:http-layer",
+        "react-standards:contract-naming",
+        "react:contract-naming"
+      ]
+    },
+    {
+      "path": "app/.*/(hooks|queries)/use[^/]*\\.ts$",
+      "skills": [
+        "server-state",
+        "react-standards:client-state",
+        "react:client-state"
+      ]
+    },
+    {
+      "path": "app/.*/schemas/[^/]*\\.ts$",
+      "skills": [
+        "react-standards:write-boundary",
+        "react:write-boundary"
+      ]
+    },
+    {
+      "path": "Directory\\.(Build|Packages)\\.(props|targets)$",
+      "skills": [
+        "packages"
+      ],
+      "note": "Build and package config is per service folder by design - there is deliberately no repo-root version or build config, because a carve takes only the service folder and would leave anything above it behind."
+    },
+    {
+      "path": "Mappers\\.cs$",
+      "skills": [
+        "dotnet-standards:csharp-naming"
+      ]
+    },
+    {
+      "path": "Extensions\\.cs$",
+      "skills": [
+        "dotnet-standards:csharp-style",
+        "dotnet-standards:csharp-naming"
+      ]
+    },
+    {
+      "path": "Migrations/.*\\.cs$",
+      "skills": [
+        "migrations"
+      ]
+    },
+    {
+      "path": "app/.*/features/tenant/.*\\.ts$",
+      "skills": [
+        "react:client-state",
+        "react:identity",
+        "react:permissions"
+      ]
+    },
+    {
+      "path": "^plans/.*\\.md$",
+      "skills": [
+        "plans"
+      ],
+      "note": "The lifecycle rules a plan or ledger must satisfy - what each artifact is, when it is deleted, the two dependency graphs, cross-plan blockers. This repo's layout, hooks and commands are plans/AGENTS.md and plans/agents/."
+    },
+    {
+      "path": "^PROMPTS\\.md$",
+      "skills": [
+        "plans"
+      ],
+      "note": "This file is only the exact shape of the continuation pointer; the rule that a non-terminal plan must emit one belongs to the skill."
+    },
+    {
+      "path": "(^|/)TECH_DEBT\\.md$",
+      "skills": [
+        "docs-and-debt"
+      ],
+      "note": "Debt is recorded in the TECH_DEBT.md of the area that owns the problem, and the whole entry is deleted once fixed - never kept as an archive."
+    },
+    {
+      "path": "(^|/)(AGENTS|CLAUDE)\\.md$|^\\.agents/skills/[^/]+/SKILL\\.md$",
+      "skills": [
+        "docs-and-debt"
+      ],
+      "note": "Writing guidance is the moment one-rule-one-home is won or lost: check docs/INDEX.md for an existing owner first, and never add a second copy of a rule that already has one."
+    },
+    {
+      "path": "app/(shared|b2b/shared|customer/shared|web/shared|web/b2b/shared|mobile/shared)/.*\\.(ts|tsx)$",
+      "skills": [
+        "app-tiers",
+        "react-standards:tiered-shared-code"
+      ]
+    },
+    {
+      "path": "app/.*/routes/.*\\.tsx$",
+      "skills": [
+        "routing",
+        "app-tiers"
+      ]
+    },
+    {
+      "path": "app/.*/components/ui/.*\\.tsx$",
+      "skills": [
+        "ui-components"
+      ]
+    },
+    {
+      "path": "app/.*\\.test\\.tsx?$",
+      "skills": [
+        "frontend-testing"
+      ]
+    }
+  ]
+}
