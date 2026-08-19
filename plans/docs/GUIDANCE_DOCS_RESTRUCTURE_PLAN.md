@@ -217,6 +217,7 @@ standards/dotnet/
   structure/HTTP_API.md           DTOs out, Request records in, identity from the route
   structure/PROTO.md              proto naming, XMappers, what may cross the wire
   structure/KEYED_STRATEGIES.md   the keyed factory shape and the anti-patterns it replaces
+  structure/DOMAIN_EVENTS.md      raise on the entity, dispatch at the save, the two phases
   testing/UNIT.md         what makes it a unit test, xUnit shape, assertions per tier
   testing/INTEGRATION.md  WebApplicationFactory, Testcontainers + Respawn, IScoped
   testing/E2E.md          Reqnroll + Playwright scenario authoring
@@ -271,14 +272,14 @@ standards/dotnet/
   data/SEEDING.md           the forbidden-table list, the B2B simulator, the two exceptions
   data/MIGRATIONS.md        no additive migrations, initial-migrations.ps1
   data/GEOMETRY.md          IGeometryProvider, WGS84
+  data/MULTITENANCY.md      only B2B is tenanted; which project owns each stance piece
   results/TERMINALS.md      the Concertable.Grpc cancellation predicate and detail extraction
-  results/ERRORS.md         GAP — no Concertable error inventory is written down yet (5c)
   structure/MODULES.md      project naming, what the cross-module rules resolved to here
   structure/HTTP_API.md     Tenant internally, organization at the HTTP boundary
   structure/SERVICE_BOUNDARIES.md  the service roster, adapter-vs-data here, contract distribution
+  structure/DOMAIN_EVENTS.md  the Kernel contracts, all-13-pre-commit, the seeding phase swap
   testing/INTEGRATION.md    the four fixtures, the shared harness, SeedState
-  testing/UNIT.md           GAP (5c)
-  testing/E2E.md            GAP (5c)
+  testing/UNIT.md           the TestConventions.targets tier gate and the unit-tier bans
 standards/react/
   HTTP.md               the four clients, which layer configures them, the isApiError seam
   TYPESCRIPT.md         FormData PascalCase vs JSON camelCase, the live $type unions
@@ -296,7 +297,15 @@ standards/process/
 ```
 
 A `GAP` row is a slot named rather than silently missing: no doc is created for it, and 5c either fills it
-or deletes the row. `RESULT_PATTERN.md`'s Reunion content had **no target at all** in the previous revision
+or deletes the row. **All three .NET GAP rows are resolved (2026-08-19):** `testing/UNIT.md` is written —
+the tier gate `api/TestConventions.targets` enforces is real Concertable content, and it settles the
+Shouldly open call, because the build already fails a unit project that references it. The other two rows
+are **deleted rather than filled**, each for a reason the corpus's own rules give: an inventory of the 75
+error unions would rot on the next feature and the per-module definition-contract tests already enforce
+their shape mechanically, so `results/ERRORS.md` has nothing durable to hold; and Concertable's E2E
+conventions live with the harness they drive, in `Concertable.Testing.E2E`'s own `AGENTS.md` and its two
+sibling docs, which `docs/INDEX.md` already names as the owners — a second copy in `agent-standards` would
+be the disease, not the cure. `RESULT_PATTERN.md`'s Reunion content had **no target at all** in the previous revision
 of this list and would have been dropped in the move; it is now split across `PACKAGES.md` and
 `results/TERMINALS.md`.
 

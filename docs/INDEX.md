@@ -88,6 +88,7 @@ When a topic has both, the skill owns the rule and the file owns the inventory.
 | **This system's** 13 pre-commit handlers and the seeding interceptor's phase swap | skill: `concertable-domain-events` |
 | **This system's** forbidden seed tables, the B2B simulator, the ticket-sales exception | skill: `concertable-seeding` |
 | **This system's** integration fixtures and shared harness members | skill: `concertable-integration-testing` |
+| **This system's** test-tier gate, the unit-tier bans, the settled assertion library | skill: `concertable-unit-testing` |
 | **This repo's** E2E baseline path, run script, seeded fast-forward | [`Concertable.Testing.E2E`](../api/Concertable.Shared/tests/Concertable.Testing.E2E/AGENTS.md) |
 | Page objects, `data-testid` naming, step-binding shape; the Stripe 3DS/timeout traps | [`E2E_UI_CONVENTIONS.md`](../api/Concertable.Shared/tests/Concertable.Testing.E2E/E2E_UI_CONVENTIONS.md), [`E2E_CONSIDERATIONS.md`](../api/Concertable.Shared/tests/Concertable.Testing.E2E/E2E_CONSIDERATIONS.md) |
 | B2B's DbContext stances, filtered entities, `DealType` families and workflow steps | [`api/Concertable.B2B/CODE_PATTERNS.md`](../api/Concertable.B2B/CODE_PATTERNS.md) |

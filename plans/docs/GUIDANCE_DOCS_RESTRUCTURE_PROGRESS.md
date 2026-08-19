@@ -6,7 +6,7 @@
 - Also delivered by this ledger: roadmap item `docs/agent-standards`, now checked off
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-guidance-docs`
 - Branch: `Docs/GuidanceDocsRestructure`
-- PR: #637 at `91f9d1abf`. Reviewed at `fcec9925` with 4 of 5 findings fixed; three commits have landed since, so both markers are stale and `/incremental-review` plus `/security-review` must run before enqueue. Still needs the upstream merge that closes ENF12, then an explicit merge instruction. Label `skip-e2e`.
+- PR: #637. Reviewed at `fcec9925` with 4 of 5 findings fixed; three commits have landed since, so both markers are stale and `/incremental-review` plus `/security-review` must run before enqueue. Still needs the upstream merge that closes ENF12, then an explicit merge instruction. Label `skip-e2e`.
   commit). Updated for base currency three times on 2026-08-17: from **69 behind** and `DIRTY` (three doc
   conflicts resolved, below), from 2 behind after platform-sync #645 merged — a clean merge carrying only
   the `<ConcertablePlatformVersion>` bump `0.1.0-alpha.0.1055` → `0.1.0-alpha.0.1061` across the five
@@ -659,9 +659,9 @@ not a vendored hook. Skills arrive as plugins installed once per machine at user
 Three superseded models were purged — do not reintroduce a merged standards repo, `dotagents` holding both
 stacks, or a `platform/`/`concertable/` folder.
 
-**Repo heads at handoff:** `dotagents` `f0dd2c5` (#1), `react-agents` `1ebb42b` (`main`),
-`agent-standards` `7c7c589` (#2), Concertable #637 at `91f9d1abf`, all pushed 2026-08-19. Nothing is
-merged.
+**Repo heads at handoff:** `dotagents` `2715edc` (#1), `react-agents` `1ebb42b` (`main`),
+`agent-standards` `9e22eb2` (#2), Concertable #637 at the head this ledger commit creates, all pushed
+2026-08-19. Nothing is merged.
 
 **Deployed layout on this machine:** `~/.agents/standards/<repo>/<domain>/` — repo-scoped, because a
 generic domain and its Concertable counterpart share a relative path on purpose. Skills stay flat in
@@ -670,10 +670,17 @@ generic domain and its Concertable counterpart share a relative path on purpose.
 
 Audit findings: **all closed**; `reviews/Docs-GuidanceDocsRestructure-AuditFindings.md` is deleted.
 
-**Still open from the earlier step, deliberately:** `results/ERRORS.md`, `testing/UNIT.md` and
-`testing/E2E.md` are named gaps for 5c to fill or delete. `react/APP_TIERS.md` and
-`react/BROWSER_STORAGE.md` are named in the plan's Tier 3 block but their sources sit outside the moved
-lines, so they stay with the rest of 3c.
+**The three `agent-standards` `GAP` rows are resolved.** `testing/UNIT.md` is written +
+`concertable-unit-testing`: the tier gate in `api/TestConventions.targets` is real Concertable content,
+and writing it down settled the Shouldly open call — the build already fails a unit project that
+references it, so it was never actually open. `results/ERRORS.md` and `testing/E2E.md` are **deleted from
+the plan rather than filled**, each by the corpus's own rules: a roster of the 75 error unions rots on the
+next feature and the per-module definition-contract tests enforce their shape already, and Concertable's
+E2E conventions live with the harness they drive in `Concertable.Testing.E2E`, which `docs/INDEX.md`
+already names as the owner.
+
+`react/APP_TIERS.md` and `react/BROWSER_STORAGE.md` are still named in the plan's Tier 3 block but their
+sources sit outside the moved lines, so they stay with the rest of 3c.
 
 ### Done on 2026-08-19, after the handoff above
 
@@ -757,14 +764,15 @@ wrong and the second is dangerous — a sibling merge **passes** whenever the lo
 carries a clean review. Same class as ENF8. The flag now decides jurisdiction the way the target
 directory already did.
 
-1. **What is left of the two phases.** 5c: `dotnet/STACK.md`, the five `react` `NEW` rows, the three
-   `agent-standards` `GAP` rows (`results/ERRORS.md`, `testing/UNIT.md`, `testing/E2E.md`). 3c:
+1. **What is left of the two phases.** 5c: `dotnet/STACK.md` and the five `react` `NEW` rows
+   (`ROUTING.md`, `TABLES.md`, `UI.md`, `DATES.md`, `FORMS.md`) — all in the two generic repos, none in
+   Concertable. 3c:
    `app/web/shared/BROWSER_STORAGE.md` → `react/BROWSER_STORAGE.md`, `react/APP_TIERS.md`, and the two
    rows above that need a decision rather than work (`notes/Concert-Rust-Analysis.md`, collapsing
    `api/docs/`). The tier-map row for `app/b2b/shared` belongs to `B2B_PACKAGE_TOPOLOGY_PLAN`, not here.
 
 2. **#637 needs a fresh `/incremental-review` before it can be enqueued.** Both markers sit at
-   `6d80032ed` and five commits have landed since (`87b0be777` … `91f9d1abf`). The
+   `6d80032ed` and six commits have landed since, starting at `87b0be777`. The
    **security** marker in particular is stale by construction: `17aa128c0` touches
    `.github/workflows/claude-review.yml`, which the gate treats as security-sensitive, so
    `/security-review` has to run and re-stamp. It is **not** a docs-only PR — it carries
@@ -798,7 +806,6 @@ directory already did.
 - Archive `agent-starter-kit`.
 - Rule on `GenreController` in a shared library (`api/Concertable.Shared/TECH_DEBT.md:70`).
 - Decide whether React Hook Form is adopted (in no `app/` workspace today).
-- Settle the Shouldly-for-unit-tests open call recorded in `dotnet/testing/UNIT.md`.
 
 **Operational note for whoever picks this up:** the Bash tool truncates a long command, and a heredoc that
 gets cut mid-body fails as `unexpected EOF while looking for matching quote` rather than as a length error.
