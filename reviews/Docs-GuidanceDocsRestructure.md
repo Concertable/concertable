@@ -5,9 +5,9 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `f2bc5e97faa4b838f9d6711ac9c6d4334b077a68`  _(2026-08-19)_
+**Reviewed up to commit:** `67915aa1649d822a537b65f3f56c3f518cad6ae4`  _(2026-08-19)_
 
-**Security-reviewed up to commit:** `f2bc5e97faa4b838f9d6711ac9c6d4334b077a68`  _(2026-08-19)_
+**Security-reviewed up to commit:** `67915aa1649d822a537b65f3f56c3f518cad6ae4`  _(2026-08-19)_
 
 > Range reviewed: `9205e82d..2b93b45b` (12 commits reviewed; markers moved to `54b91961`, the fix commit, 73 files — markdown plus one Python hook).
 > Markers moved forward three times with nothing re-reviewable in between: once to the fix commit
@@ -611,3 +611,56 @@ positives; `notes/Concert-Rust-Analysis.md` had no inbound reference outside its
 `api/Concertable.Shared/TECH_DEBT.md` Kernel entry was independently verified — the three package
 references, zero `Newtonsoft`/`Dapper` usages under `src/`, `SelectMessages` having only its own
 definition, and the arch guard enumerating `Concertable.Kernel/Functional` only.
+
+## Incremental review — 2026-08-19 (third: the `origin/main` merge)
+
+> Range: `f2bc5e97..67915aa1`. Almost all of it is `origin/main`'s **already-reviewed** B2B Admin module
+> (~2,100 lines across 60 files, covered by `reviews/Refactor-b2b_admin-module.md`, which merged with it).
+> Branch-authored content is the conflict resolution and the six fixes below.
+
+**The merge conflicted exactly where this branch is pointed**: `main` had *modified* three
+`api/agents/*.md` files that this branch *deletes*. Resolving it "keep the deletion" without reading the
+other side would have silently dropped two real changes, which is the drift this whole plan exists to
+stop. What `main` had added, and where each landed instead:
+
+- **`AdminDbContext` → `PrivilegedDbContext`** (three commits: `db9b39335`, `ce38b233b`, `7ce04e629`),
+  with `XAdminRepository` → `XPrivilegedRepository`. The in-repo stance roster
+  `api/Concertable.B2B/CODE_PATTERNS.md` was **stale against the code** and is now corrected against the
+  real classes (`PrivilegedDbContext` in `B2B.DataAccess.Infrastructure`, with `VenuePrivilegedDbContext`
+  and `ConversationsPrivilegedDbContext` as subclasses; `VenuePrivilegedRepository`,
+  `MessagePrivilegedRepository`, `ContentReportPrivilegedRepository`).
+  **The trap worth recording:** the Admin *module* has its own `AdminDbContext`, which is a different
+  thing from the retired cross-tenant stance — a blind rename either way would be wrong.
+- **`AdminProfiles` moved to the `admin` schema** and B2B's `CredentialRegisteredHandler` now calls
+  `IAdminModule.GrantIfEligibleAsync` in the same transaction. Verified against `Schema.Name == "admin"`,
+  `IAdminModule.GrantIfEligibleAsync`, and B2B's `DbFixture` ignoring `AdminSchema.Name`/`AdminProfiles`.
+  Landed upstream in `agent-standards` (`Fix/PrivilegedStanceRename`), which also carried the
+  `PrivilegedDbContext` rename into `data/MULTITENANCY.md` — both copies were about to become the only
+  ones, stale.
+
+- [x] **MRG1 — MEDIUM — dangling reference (2 sites, one of them a code comment)** — two files created on
+  `main` since this branch's base cite docs this branch deletes:
+  `api/Concertable.B2B/src/Modules/Admin/TECH_DEBT.md:10` (`api/agents/CODE_PATTERNS.md`) and
+  `api/Concertable.B2B/tests/Concertable.B2B.ArchitectureTests/ModuleBoundaryTests.cs:11`
+  (`api/agents/MODULE_STRUCTURE.md`, a path that **never existed**). Both repointed at the owning skill.
+
+- [x] **MRG2 — MEDIUM — unreachable docs (2 files)** — the Admin module's two new test `AGENTS.md` files
+  arrived in the pre-restructure shape: a link *and* an `@`-import of
+  `api/agents/{INTEGRATION,UNIT}_CONVENTIONS.md`, both deleted here, so `docs_reachability.py` went to
+  **2 errors**. Rewritten in the current shape (tier statement + the qualified skill pair, no `@`-import,
+  per meta-rule 7). Back to 0 errors.
+
+- [x] **MRG3 — LOW — ambiguous skill name (31 files)** — every `*.UnitTests/AGENTS.md` said "Conventions:
+  the `unit-testing` skill", a name both `dotnet-standards` and `dotnet` ship, so it resolved to whichever
+  plugin was walked first. Same defect as NAT3, in the one place NAT3 did not reach. All 31 now name the
+  pair.
+
+**Verification after the merge:** `docs_reachability.py` 0 errors, `plan_graph.py` 0, router tests 6/6,
+zero remaining `api/agents/` references anywhere outside `plans/`/`reviews/`, and all **31**
+plugin-qualified skill names in the repo resolve to an installed plugin skill — the single exception being
+`react:tiered-shared-code` quoted inside NAT1 above, which is the finding text describing the defect, not
+a live reference.
+
+**Security layer: nothing at the bar, and nothing branch-authored.** The delta's security-sensitive paths
+(`AdminController.cs`, `AdminAttribute.cs`, `AdminProfileHandler.cs`, `*.Contracts`) are all `origin/main`'s
+Admin module, reviewed under its own work-order before it merged. This branch authored no code in the range.
