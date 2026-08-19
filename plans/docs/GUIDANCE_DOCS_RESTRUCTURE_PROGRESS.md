@@ -23,66 +23,50 @@ more than it did, since the new targets file participates in every project's bui
 
 ## Current state
 
-**#637 is not deliverable and that is the headline.** Everything below describes a branch that is
-internally coherent and externally unsupported: the reduction happened, but what it reduced *to* is
-reachable only through machine-local junctions. Read the standing constraint in `## Next Steps` before acting
-on anything here — the next work is Phase 7, not merging.
+**All four tiers match the model. Nothing is merged.** The corpus is 56 docs across three standards repos,
+each doc owned by exactly one router skill, delivered as five plugins and — on this machine — as junctions.
+The in-repo docs hold only this system's roster of real types, contexts, clients, tables and pins.
 
-The reduction has happened. Every generic rule now has exactly one home — a skill — and the in-repo docs hold
-only this system's roster of real types, contexts, clients, tables and pins. The corpus that auto-loads on an
-`api/**` prompt went from **1,429 lines to 246**, and on an `app/**` prompt from **786 to 151**; a unit-test
-project no longer pulls in 80 lines and an E2E project no longer pulls in 37.
+| Repo | Head | Contents |
+|---|---|---|
+| `tomjseery/dotagents` #1 | `852e467` | `standards/dotnet/` 20 docs · plugin `dotnet-standards` · 10 utility skills · `deploy-skills.ps1` |
+| `tomjseery/react-agents` `main` | `9cb5ea3` | `standards/react/` 9 · plugin `react-standards` |
+| `Concertable/agent-standards` #2 | `b6312f7` | `standards/process/` 7 + `dotnet/` 12 + `react/` 8 · plugins `agent-process` (owns the hook), `concertable-dotnet`, `concertable-react` |
+| `Concertable/concertable` #637 | `72b692246` | the reduction — 55 CI checks pass, 5 skip. **Working branch, NOT for merge** |
 
-Enforcement is now complete at all three tiers, **and in both harnesses** — the incremental review found the
-router had been enforcing in Claude only, so a Codex session wrote past it silently. The build fails a
-misnamed or misclassified test project, the write-time router blocks the first write into a routed path
-whichever harness makes it, every test project's stub opens with the unit-vs-integration decision, and
-`/review` resolves the standards it owes from the same table. Phase 6a is deployed — 46 junctions across
-both roots.
+**Auto-loaded floor.** An `api/**` prompt loads `api/AGENTS.md` (77) + `api/ARCHITECTURE.md` (62) with
+**zero** `@`-imports, from 1,429 lines at the start of this plan. An `app/**` prompt loads
+`app/AGENTS.md` (36), from 786. A unit-test project pulls in a 6-line stub; an E2E project none. Root
+`AGENTS.md` is still 298 lines — its thinning is deliberately deferred to a follow-up PR.
 
-**Phase 5 is now done in both shared repos** (`Concertable/agent-standards#2` — CI green;
-`tomjseery/dotagents#1`). The corpus is organized by domain and the payload is out of the `SKILL.md`
-files: 38 standards are now docs under `standards/<domain>/`, each routed to by an eight-line skill, with
-a generated `INDEX.md` per domain and a build gate that refuses a router pointing at a missing doc, a doc
-with no router, or two routers claiming one doc. **Neither PR is merged and nothing is deployed** — the
-deployment junctions would point at trees that exist only on those branches.
+**Enforcement is complete at three tiers and in both harnesses.** `api/TestConventions.targets` fails a
+misnamed or misclassified test project; the write-time `skill_router.py` blocks the first write into a
+routed path whichever harness makes it, resolving descriptions from plugin caches as well as junction
+roots; `/review` resolves the standards it owes from the same `skill-routes.json`. Every route now names
+both the generic skill and its Concertable counterpart.
 
-**Phase 7 is BUILT on the same two PRs**: four plugins now carry the corpus (`agent-process` 7 docs +
-the hook, `dotnet-standards` 20, `react-standards` 9, `communication-standards` 2 — the last since removed), assigned by domain
-from an authored map, and `dotagents/ARCHITECTURE.md` is the durable home for the delivery
-architecture. Building it exposed a fourth blocking defect: the hook resolved skills only in the
-junction roots, so it would have reported every plugin-installed skill as `NOT INSTALLED - a deployment
-fault` in the very mode Phase 7 makes primary.
+**Deployed here:** 66 skills junctioned into both `~/.agents/skills` and `~/.claude/skills`, and 5
+repo-scoped standards junctions at `~/.agents/standards/<repo>/<domain>/`. All **112** deployed routers
+(56 × two roots) verified to open a byte-identical copy of their own repo's authored doc.
 
-**The #637 gate is now SATISFIED — the install is proven, 2026-08-18.** Both plugins were installed for
-real from the branch worktree as a local-path marketplace, in **both** harnesses, and every one of the 20
-`dotnet-standards` routers resolved to a real doc inside the plugin's own copy (20/20 in Claude, 20/20 in
-Codex). Claude copied the payload into a sha-versioned cache even from a `Directory` source, confirming
-copies-not-references. Codex read `.agents/plugins/marketplace.json` natively while Claude used
-`.claude-plugin/` — one repo, both formats. The machine was restored to its exact pre-test snapshot
-afterwards. Measured cost: `dotnet-standards` adds **~5,242 always-on tokens** (20 descriptions), each
-router ~90 on invoke.
+**The install is proven, in both harnesses (2026-08-18).** Plugins installed for real from a branch
+worktree as a local-path marketplace; every `dotnet-standards` router resolved inside the plugin's own
+copy, 20/20 in Claude and 20/20 in Codex. Claude copied the payload into a sha-versioned cache even from a
+`Directory` source, confirming copies-not-references; Codex read `.agents/plugins/marketplace.json`
+natively while Claude used `.claude-plugin/`. The machine was restored to its pre-test snapshot. Measured
+cost: ~5,242 always-on tokens per 20 router descriptions, ~90 per router on invoke — so the 20
+`concertable-*` routers add roughly the same again.
 
-**One caveat, stated rather than glossed:** "without junctions" could not be tested literally, because this
-machine has 48 of them. What was proven junction-independently is the part that matters — the payload is
-self-contained and its internal paths resolve inside the cache. The end-to-end "agent reads it on a machine
-that never cloned the repo" is inferred from that, not observed.
+**Caveat, stated rather than glossed:** "works on a machine that never cloned the repo" could not be
+tested literally, because this machine has the junctions. What was proven junction-independently is that
+the payload is self-contained and its internal paths resolve inside the cache; the end-to-end claim is
+inferred from that, not observed.
 
-**Tier 2 is now real.** `tomjseery/react-agents` exists, private, with the nine React docs, their routers,
-the generator, the marketplace, the `react-standards` plugin and a green CI check; `dotagents` no longer
-carries them, and `deploy-skills.ps1` takes all three repos as source roots. The 38 deployed routers were
-re-checked afterwards and every one resolves to a real doc — `~/.agents/standards/` had in fact never been
-deployed on this machine before, so that gap closed with the same run.
-
-**Step 1 is done: the tiers now match the model.** `agent-standards` has all three domains, `api/agents/`
-and `app/agents/` are deleted, and `api/ARCHITECTURE.md` keeps only this monorepo's folder layout. The
-auto-loaded floor for an `api/**` prompt is 77 + 62 lines with zero `@`-imports, down from 98 + 242 plus
-three imports.
-
-**What remains:** the
-discovery pass has not run (5c, with `dotnet/STACK.md` its first known gap), Phase 3c (markdown outside
-the conventions folders), Phase 4 (rows still with >1 home, chiefly seeding across `api/AGENTS.md` and
-`SEEDING_CONVENTIONS.md`), and the deferred auto-load thinning of root `AGENTS.md`.
+**What remains:** the process cutover (Next Step 1 — the only thing gating #637), the 16 audit defects,
+moving Concertable's four remaining hooks, then 5c (discovery — `dotnet/STACK.md` is its first known gap),
+3c (markdown outside the conventions folders), 4 (re-check which duplication rows survive — step 1 resolved
+the seeding row by deleting `api/agents/SEEDING_CONVENTIONS.md` and cutting `api/AGENTS.md`'s second copy of
+the forbidden-table list), and root `AGENTS.md`'s auto-load thinning.
 
 ## Done
 
@@ -436,13 +420,14 @@ breaks.
 
 **Authoritative statement: `dotagents/AGENTS.md` (mirrors to `~/AGENTS.md`, so it loads every session) and
 `dotagents/ARCHITECTURE.md`. The plan's "target structure — four tiers" section is the file-by-file version.
-This ledger does not restate the model — it records only what is not yet true of it.**
+This ledger does not restate the model — it records only what is not yet true of it. As of 2026-08-19 the
+file trees match it; what is left is the process corpus still living in two places (Next Step 1).**
 
 | Tier | Repo | Status |
 |---|---|---|
 | Generic .NET | `tomjseery/dotagents` | 20 docs in `standards/dotnet/` — correct |
 | Generic React/TS | `tomjseery/react-agents` | created 2026-08-18 — 9 docs in `standards/react/`, moved out of `dotagents` |
-| Concertable | `Concertable/agent-standards` | only `standards/process/` exists; needs `dotnet/` + `react/` sections, into which the 480 lines still in `api/agents/` + `app/agents/` re-home |
+| Concertable | `Concertable/agent-standards` | all three sections built 2026-08-19 — `process/` 7, `dotnet/` 12, `react/` 8. `api/agents/` and `app/agents/` are deleted |
 | One microservice | that service's own repo | 67 backend + 8 app `AGENTS.md` in place, and each may name sibling docs (`CODE_CONVENTIONS.md`) where a module has conventions of its own |
 
 `dot` in `dotagents` is **dotNET**, not dotfiles. `agent-standards` gets no `platform/` or `concertable/`
@@ -465,26 +450,47 @@ not a vendored hook. Skills arrive as plugins installed once per machine at user
 
 ## Next Steps
 
-**The model is settled and written down; the trees do not match it yet.** Authoritative statement:
-`dotagents/AGENTS.md` (mirrors to `~/AGENTS.md`, so it loads every session) and
-`dotagents/ARCHITECTURE.md`; the file-by-file target is the plan's "target structure — four tiers" section.
-Three superseded models were purged — do not reintroduce a merged standards repo, `dotagents` holding both
-stacks, or a `platform/`/`concertable/` folder.
+**The four tiers now match the model.** Authoritative statement: `dotagents/AGENTS.md` (mirrors to
+`~/AGENTS.md`, so it loads every session) and `dotagents/ARCHITECTURE.md`; the file-by-file target is the
+plan's "target structure — four tiers" section. Three superseded models were purged — do not reintroduce a
+merged standards repo, `dotagents` holding both stacks, or a `platform/`/`concertable/` folder.
 
-Audit findings: `reviews/Docs-GuidanceDocsRestructure-AuditFindings.md` (16 defects). Several move depending
-on which tier a doc lands in, so the remaining split comes first. **Tier 2 is done** — `react-agents`
-exists and holds the React corpus; what is left is the Concertable tier.
+**Repo heads at handoff, all pushed and CI green:** `dotagents` `852e467` (#1), `react-agents` `9cb5ea3`
+(`main`), `agent-standards` `b6312f7` (#2), Concertable `72b692246` (#637, 55 pass / 5 skip). Nothing is
+merged; #637 is the working branch and is **not** for merge (see the gate below).
+
+**Deployed layout on this machine:** `~/.agents/standards/<repo>/<domain>/` — repo-scoped, because a
+generic domain and its Concertable counterpart share a relative path on purpose. Skills stay flat in
+`~/.agents/skills` and `~/.claude/skills` (66 of them). `deploy-skills.ps1` in `dotagents` owns both.
+
+Audit findings: `reviews/Docs-GuidanceDocsRestructure-AuditFindings.md` (16 defects).
 
 **Still open from step 1, deliberately:** `results/ERRORS.md`, `testing/UNIT.md` and `testing/E2E.md` are
 named gaps — nothing in the 480 lines was error-inventory or unit/E2E content, so 5c fills them or deletes
 the rows. `react/APP_TIERS.md` and `react/BROWSER_STORAGE.md` are named in the plan's Tier 3 block but
 their sources sit outside the 480 lines, so they stay with the rest of 3c.
 
-1. **Cut the process corpus over — P0 in the findings.** `standards/process/` was copied, not moved: its
-   Concertable originals sit at full length and nothing references the extracted docs (zero hits for any
-   process skill name across Concertable markdown), and `MERGING.md` duplicates root `AGENTS.md`'s poll loop
-   near-byte-for-byte. Slim the Concertable originals to Concertable-only procedure and point at the skills,
-   exactly as the React half already does.
+1. **Cut the process corpus over — P0 in the findings, and the only thing gating #637.**
+   `standards/process/` was **copied, not moved**. Measured 2026-08-19: the seven extracted docs are 463
+   lines in `agent-standards`, while the Concertable originals still sit at full length —
+
+   | Concertable original | Lines | Extracted counterpart |
+   |---|---|---|
+   | `AGENTS.md` | 298 | `BRANCHING`, `COMMITTING`, `MERGING`, `DOCS_AND_DEBT`, `FAILING_TESTS` |
+   | `plans/AGENTS.md` | 168 | `PLANS`, `COMMITTING`, `REMOTE_VALIDATION` |
+   | `plans/agents/PLAN.md` | 328 | `PLANS` |
+   | `plans/agents/ROADMAP.md` | 51 | `PLANS` |
+   | `docs/REMOTE_VALIDATION.md` | 57 | `REMOTE_VALIDATION` |
+   | `PROMPTS.md` | 67 | `PLANS` |
+
+   — and **`grep` for each of the seven skill names across every Concertable `*.md` returns zero files**, so
+   nothing routes to them. `MERGING.md` duplicates root `AGENTS.md`'s poll loop near-byte-for-byte.
+
+   Slim each original to Concertable-only procedure (real labels, workflows, commands, script paths) and
+   point at the owning skill, exactly as the stack halves now do. Phase 3c's already-settled ruling applies:
+   **the executable in-repo `merge` skill owns the procedure**, root `AGENTS.md` keeps only the invariants
+   whose violation is silent and expensive, one line each, and the generic `merging` standard drops the loop
+   body. Add the seven to `.agents/skill-routes.json` where a path implies one.
 
 2. **Fix the 16 audit defects**, P0 correctness first: the `[LoggerMessage]` carve-out (the corpus currently
    bans its own canonical example), the `XMappers` examples that demonstrate a banned form, and
@@ -509,10 +515,22 @@ one the model describes, and the install was proven in both harnesses. What rema
 full length and nothing references the extracted docs. Merging with that outstanding ships two live copies
 of the process rules.
 
-**Tommy's, not agent work:** approve the Codex `PreToolUse` hook once in a Codex session in this worktree;
-archive `agent-starter-kit`; rule on `GenreController` in a shared library
-(`api/Concertable.Shared/TECH_DEBT.md:70`); decide whether React Hook Form is adopted (in no `app/`
-workspace today); settle the Shouldly-for-unit-tests open call now recorded in `dotnet/testing/UNIT.md`.
+**Tommy's, not agent work:**
+
+- **`draft-comment` and `explaining-code` are deployed nowhere.** Their docs were removed from `dotagents`
+  on 2026-08-19 as not that repo's to hold (`dotagents` `a7e9b40`; text recoverable at `1389a2e^`). His
+  (`attach-pr-screenshots`, `create-devops-item`, `create-gh-pr`, `implement`, `ship`, `verify`,
+  wired up", not "does not exist". **Needs Tommy to say which repo owns them.**
+- Approve the Codex `PreToolUse` hook once in a Codex session in this worktree.
+- Archive `agent-starter-kit`.
+- Rule on `GenreController` in a shared library (`api/Concertable.Shared/TECH_DEBT.md:70`).
+- Decide whether React Hook Form is adopted (in no `app/` workspace today).
+- Settle the Shouldly-for-unit-tests open call recorded in `dotnet/testing/UNIT.md`.
+
+**Operational note for whoever picks this up:** the Bash tool truncates a long command, and a heredoc that
+gets cut mid-body fails as `unexpected EOF while looking for matching quote` rather than as a length error.
+Two doc-writing batches died that way. Write the file with the Write tool, or put a generator in a `.py`
+file and run that — do not push long content through a heredoc.
 
 
 ## Also Tommy's, not blocking

@@ -252,7 +252,7 @@ standards/react/
   TESTING.md        Vitest — what to test at which level                              NEW
 ```
 
-### Tier 3 — `Concertable/agent-standards`: everything Concertable, by stack
+### Tier 3 — `Concertable/agent-standards`: everything Concertable, by stack — **BUILT 2026-08-19**
 
 No `platform/`, no `concertable/`. Concertable **is** the platform and the repo already says so.
 
@@ -623,7 +623,7 @@ resolved under meta-rule 7 by deciding import-or-pointer, not both. Same treatme
 double-writes, which currently load twice. Runs after 3b: dedupeing into files 3b then restructures would
 edit the same lines twice.
 
-### Phase 5 — domain trees, skills as routers — PARTIAL (trees built; the tier split is wrong, see 5b)
+### Phase 5 — domain trees, skills as routers — DONE (all four tiers; see 5b)
 
 **This phase gates delivery of the whole restructure — recorded 2026-08-18.** Phase 3b already removed
 2,662 lines from `api/agents/**` and `app/agents/**`. Until this phase and Phase 7 land, the only thing
@@ -788,7 +788,7 @@ in `dotagents/README.md`'s named-gaps list. The two generators are now near-iden
 repos, which is the duplication this plan otherwise forbids; sharing them needs a package or submodule, so
 it is logged for Phase 7 rather than solved by copy.
 
-### Phase 5b — `api/agents/` is deleted, not thinned
+### Phase 5b — `api/agents/` is deleted, not thinned — DONE 2026-08-19
 
 **The monorepo is going** (POLYREPO_ROADMAP §6, settled 2026-08-18: a true one-way cut, not read-only
 mirrors). There is no `api/` node in a polyrepo, so nothing can live at `api/agents/` — the folder and
@@ -990,7 +990,7 @@ and does not recurse, and because two source repos must land in one namespace. I
 already used for the work-repo skills. One stated trade-off: junctions make the installed set depend on
 the repo staying put, and a deploy script must therefore also report orphaned and missing links.
 
-### Phase 7 — one authored copy, delivered as plugins, to both harnesses — BUILT (install proven; per-tier plugin split pending 5b)
+### Phase 7 — one authored copy, delivered as plugins, to both harnesses — DONE (install proven; five plugins across three repos)
 
 **Decided 2026-08-18; every mechanic below was verified live that day on both tools, then reverted — no
 marketplace, plugin or config entry was left on the machine.** The polyrepo cut removes the premise the
