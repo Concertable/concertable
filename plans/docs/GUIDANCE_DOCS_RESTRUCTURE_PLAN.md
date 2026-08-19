@@ -304,11 +304,20 @@ of this list and would have been dropped in the move; it is now split across `PA
 .NET nor React. Where a process rule is genuinely generic it still lives here rather than earning a fourth
 repo — a known wrinkle, recorded rather than silently decided.
 
-**Skill names must disambiguate across tiers, because the deployed skill namespace is flat.** `persistence`
-is already dotagents'; the Concertable counterpart is `concertable-persistence`, and where one name would
-serve two domains it carries both (`concertable-dotnet-contracts`, `concertable-react-contracts`). The
-generator refuses a doc with no router, so every doc above owns one. The cost is real and is recorded in
-the progress ledger: each router's description is always-on.
+**Skill names must disambiguate across tiers; doc paths must not.** The two namespaces have opposite
+constraints, and conflating them caused a live defect (below).
+
+- **Skills are flat**, because discovery is `<root>/skills/*/SKILL.md` and does not recurse. So
+  `persistence` is already dotagents' and the Concertable counterpart is `concertable-persistence`; where
+  one name would serve two domains it carries both (`concertable-dotnet-contracts`,
+  `concertable-react-contracts`). The generator refuses a doc with no router, so every doc above owns one.
+  Each router's description is always-on — a real cost, recorded in the ledger.
+- **Docs deploy repo-scoped**, at `~/.agents/standards/<repo>/<domain>/`. They are only ever opened by
+  path, so they need not be flat — and must not be: the mirror means a generic doc and its counterpart
+  share a relative path deliberately, so one flat junction point makes one repo's tree shadow the other's
+  **silently**. That happened: `concertable-persistence` resolved to dotagents' generic `PERSISTENCE.md`,
+  right path, wrong repo, no error. Eight paths collide this way. Fixed in `deploy-skills.ps1`; plugin
+  delivery was never affected, because each plugin carries its own subtree.
 
 ### Tier 4 — each microservice repo: only what is true of that service
 
