@@ -5,9 +5,9 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `510202cf6a33c41ab6ee136c727ec052b2cca679`  _(2026-08-19)_
+**Reviewed up to commit:** `9b914b2832af5b9cbd8187334d0499a6ba8e85c7`  _(2026-08-19)_
 
-**Security-reviewed up to commit:** `510202cf6a33c41ab6ee136c727ec052b2cca679`  _(2026-08-19)_
+**Security-reviewed up to commit:** `9b914b2832af5b9cbd8187334d0499a6ba8e85c7`  _(2026-08-19)_
 
 > Range reviewed: `9205e82d..2b93b45b` (12 commits reviewed; markers moved to `54b91961`, the fix commit, 73 files — markdown plus one Python hook).
 > Markers moved forward three times with nothing re-reviewable in between: once to the fix commit
@@ -456,7 +456,7 @@ supplies. ENF9 below is why that stamp had to be a judgement call at all.
   `.github/workflows/test.yml` gains a `hook-tests` job (`setup-python` 3.13, the same discover
   command upstream CI runs) and `ci-complete` — the single required check — needs it.
 
-- [ ] **ENF12 — LOW — the manifest's provenance pins point at commits that exist only on an unmerged PR
+- [x] **ENF12 — LOW — the manifest's provenance pins point at commits that exist only on an unmerged PR
   branch** — `.agents/hooks/vendored.json`
   All six entries record commits (`e0946731`, `7cb3fddd`, `6a5e1fb1`) that `git branch -r --contains`
   resolves to `origin/Refactor/StandardsDomainTree` alone — `agent-standards` #2, still open. That repo
@@ -465,6 +465,8 @@ supplies. ENF9 below is why that stamp had to be a judgement call at all.
   cannot be checked against anything. Fix: land #2 with a merge commit so the SHAs survive, or re-run
   `vendor-hooks.ps1 -Into <repo>` against `agent-standards` `main` after it merges and commit the
   re-pinned manifest here before #637 is enqueued.
+  **Closed 2026-08-19:** #2 merged as `b95debad` with a merge commit, and the hooks were re-vendored
+  from `main`. Every pin is an ancestor of `origin/main` by `merge-base --is-ancestor`.
 
 ## Incremental review — 2026-08-19
 
