@@ -6,6 +6,17 @@ Debt spanning multiple services or host `Program.cs` files. Debt inside the shar
 
 ## MED
 
+### Controller route-token casing is implemented only in the B2B host
+
+`Concertable.B2B.Web` owns `KebabCaseRouteTransformer` and registers
+`RouteTokenTransformerConvention` directly in `Program.cs`. Controller-token casing is an HTTP-host
+convention rather than B2B domain behaviour, so leaving it local lets other backend hosts implement a
+different route format or copy the same plumbing.
+
+**Resolves when:** `Concertable.Shared.Api` exposes the transformer through one shared MVC registration
+extension, the package is published, every MVC host installs that extension, and the B2B-local
+transformer and inline registration are removed.
+
 ### Async application and persistence APIs do not consistently propagate cancellation
 
 Many application-service, repository, module-facade, and infrastructure methods perform EF Core,
@@ -242,4 +253,18 @@ publish-first cut-over, not an edit.
 **Resolves when:** `public sealed record ActionLink(string Href, string Method)` lives in
 `Concertable.Shared.Api`, is published, and both module-local copies are deleted in the follow-up PR
 once the pin carries it. Any new Api module uses the shared one rather than minting a third.
+
+### Rate limiting is in-process only — no distributed store for horizontally-scaled correctness
+
+`AddDefaultRateLimiting` (`Concertable.ServiceDefaults`) registers the built-in `AddRateLimiter`, whose
+partitioned limiters live in each process's memory. Under horizontal scale every replica counts
+independently, so a policy nominally set to N/min actually permits up to N×(replica count)/min — the
+per-user/per-IP ceiling loosens in proportion to the fleet. This is acceptable at launch (single-instance
+per service) and is the deliberate scope cut in `plans/launch/RATE_LIMITING_PLAN.md`: an in-process
+limiter delivers the abuse floor now without standing up shared infrastructure.
+
+**Resolves when:** the limiter is backed by a shared store (e.g. Redis) so counts are fleet-global, or a
+gateway/edge layer enforces the coarse per-IP ceiling ahead of the app while the app keeps the
+identity-aware policies. Revisit before any service runs more than one replica with rate limiting as a
+relied-upon control.
 

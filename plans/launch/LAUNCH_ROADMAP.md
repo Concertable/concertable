@@ -257,7 +257,7 @@ Concrete checklist for Month 6. Don't launch without all of these green.
 - [ ] support@ inbox monitored; SLA documented (target: first response within 1 working day)
 - [ ] Status page live
 - [ ] Database backups verified
-- [ ] Rate limiting active on auth, apply, messaging and upload endpoints `launch/rate-limiting`
+- [ ] Rate limiting active on auth, apply, messaging and upload endpoints
 - [ ] Incident response process documented
 - [ ] First 10 beta venues + 50 beta artists onboarded
 - [ ] Marketing site live with pricing page
