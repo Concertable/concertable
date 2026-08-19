@@ -1,7 +1,7 @@
 # app/shared — `@concertable/shared`, the widest tier
 
 Inherits [`../AGENTS.md`](../AGENTS.md) — the tier map and the standards skills. The tier rule itself
-belongs to the `tiered-shared-code` skill and `User`-versus-`B2bIdentity` to `concertable-identity`;
+belongs to the `tiered-shared-code` skill and `User`-versus-`B2bIdentity` to `identity`;
 neither is restated here. This file is only this package's inventory and the homes of the concepts it
 excludes.
 

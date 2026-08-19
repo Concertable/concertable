@@ -5,8 +5,7 @@
     "the review skill reads the same table so a review cannot miss what an author was required to load.",
     "",
     "path    : regex matched against the repo-relative POSIX path.",
-    "skills  : must be invoked before writing this file. The router quotes each skill's own",
-    "          description rather than restating rules, so there is exactly one copy.",
+    "skills  : must be invoked before writing this file. `plugin:skill` where a generic standard and this system's roster share a name - both load, and the plugin says which is which. A name with one home stays bare. The router quotes each skill's own description rather than restating rules, so there is exactly one copy.",
     "deny    : regex matched against the content being written. A hit is a hard block, not a nudge -",
     "          only put mechanically-decidable violations here."
   ],
@@ -14,8 +13,8 @@
     {
       "path": "\\.UnitTests/.*\\.cs$",
       "skills": [
-        "unit-testing",
-        "concertable-unit-testing"
+        "dotnet-standards:unit-testing",
+        "dotnet:unit-testing"
       ],
       "deny": [
         {
@@ -27,8 +26,8 @@
     {
       "path": "\\.IntegrationTests/.*\\.cs$",
       "skills": [
-        "integration-testing",
-        "concertable-integration-testing"
+        "dotnet-standards:integration-testing",
+        "dotnet:integration-testing"
       ]
     },
     {
@@ -41,53 +40,53 @@
       "path": "\\.csproj$",
       "content_requires": "<IsTestProject>\\s*true",
       "skills": [
-        "unit-testing",
-        "concertable-unit-testing",
-        "integration-testing",
-        "concertable-integration-testing"
+        "dotnet-standards:unit-testing",
+        "dotnet:unit-testing",
+        "dotnet-standards:integration-testing",
+        "dotnet:integration-testing"
       ],
       "note": "Creating a test project is the classification moment: decide unit vs integration BEFORE the name exists, because the name is what declares the tier and the build fails a name that states none."
     },
     {
       "path": "Repository\\.cs$",
       "skills": [
-        "persistence",
-        "concertable-persistence",
-        "multitenancy",
-        "concertable-multitenancy"
+        "dotnet-standards:persistence",
+        "dotnet:persistence",
+        "dotnet-standards:multitenancy",
+        "dotnet:multitenancy"
       ]
     },
     {
       "path": "DbContext\\.cs$",
       "skills": [
-        "multitenancy",
-        "concertable-multitenancy"
+        "dotnet-standards:multitenancy",
+        "dotnet:multitenancy"
       ],
       "note": "A context IS a tenancy stance - which base it derives from decides what every query through it can see. Only B2B has tenanted stances; the per-module roster is api/Concertable.B2B/CODE_PATTERNS.md."
     },
     {
       "path": "Configurations/[^/]*\\.cs$",
       "skills": [
-        "persistence",
-        "concertable-persistence"
+        "dotnet-standards:persistence",
+        "dotnet:persistence"
       ],
       "note": "Mapping a table another module owns needs ExcludeFromMigrations here, or two migrations claim the same table."
     },
     {
       "path": "/Events/[^/]*\\.cs$",
       "skills": [
-        "domain-events",
-        "concertable-domain-events"
+        "dotnet-standards:domain-events",
+        "dotnet:domain-events"
       ],
       "note": "A state change announces itself by raising on the entity; the pre-commit handler is what turns that into a published integration event, so the outbox row commits with the write."
     },
     {
       "path": "Seeder\\.cs$",
       "skills": [
-        "seeding",
-        "concertable-seeding"
+        "dotnet-standards:seeding",
+        "dotnet:seeding"
       ],
-      "note": "The rule whose violation is silent and expensive: a seeder may only write what production code writes directly. If the only production write is a handler reacting to an event, drive the event. The forbidden-table roster is the concertable-seeding skill."
+      "note": "The rule whose violation is silent and expensive: a seeder may only write what production code writes directly. If the only production write is a handler reacting to an event, drive the event. The forbidden-table roster is the seeding skill."
     },
     {
       "path": "Validators?\\.cs$",
@@ -98,25 +97,25 @@
     {
       "path": "Module\\.cs$",
       "skills": [
-        "module-structure",
-        "concertable-module-structure"
+        "dotnet-standards:module-structure",
+        "dotnet:module-structure"
       ]
     },
     {
       "path": "AppHost[^/]*/Program\\.cs$",
       "skills": [
-        "microservice-boundaries",
-        "concertable-microservice-boundaries"
+        "dotnet-standards:microservice-boundaries",
+        "dotnet:microservice-boundaries"
       ],
       "note": "A data service WaitFor-ing another data service is the bug to never introduce. The live topology is api/ARCHITECTURE.md."
     },
     {
       "path": "Controller\\.cs$",
       "skills": [
-        "http-api",
-        "concertable-http-api",
-        "result-terminals",
-        "concertable-result-terminals"
+        "dotnet-standards:http-api",
+        "dotnet:http-api",
+        "dotnet-standards:result-terminals",
+        "dotnet:result-terminals"
       ]
     },
     {
@@ -134,46 +133,46 @@
     {
       "path": "app/.*/api/[^/]*\\.ts$",
       "skills": [
-        "http-layer",
-        "concertable-http-layer",
-        "contract-naming",
-        "concertable-contract-naming"
+        "react-standards:http-layer",
+        "react:http-layer",
+        "react-standards:contract-naming",
+        "react:contract-naming"
       ]
     },
     {
       "path": "app/.*/(hooks|queries)/use[^/]*\\.ts$",
       "skills": [
         "server-state",
-        "client-state",
-        "concertable-client-state"
+        "react-standards:client-state",
+        "react:client-state"
       ]
     },
     {
       "path": "app/.*/schemas/[^/]*\\.ts$",
       "skills": [
-        "write-boundary",
-        "concertable-write-boundary"
+        "react-standards:write-boundary",
+        "react:write-boundary"
       ]
     },
     {
       "path": "Directory\\.(Build|Packages)\\.(props|targets)$",
       "skills": [
-        "concertable-packages"
+        "packages"
       ],
       "note": "Build and package config is per service folder by design - there is deliberately no repo-root version or build config, because a carve takes only the service folder and would leave anything above it behind."
     },
     {
       "path": "Migrations/.*\\.cs$",
       "skills": [
-        "concertable-migrations"
+        "migrations"
       ]
     },
     {
       "path": "app/.*/features/tenant/.*\\.ts$",
       "skills": [
-        "concertable-client-state",
-        "concertable-identity",
-        "concertable-permissions"
+        "react:client-state",
+        "react:identity",
+        "react:permissions"
       ]
     },
     {

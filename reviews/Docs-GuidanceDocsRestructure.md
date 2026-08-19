@@ -352,7 +352,7 @@ stale, because a reader consults it precisely to avoid searching.
   `WaitFor`, standalone-AppHost-is-canonical and the simulator, producer seed libraries pointing downward,
   contract distribution / build closures / `UseLocalCore`, and which surface each service exposes — but
   `1e9bd3088` cut that file to 62 lines whose second sentence is "**The topology itself is not in this
-  repo**", naming `concertable-microservice-boundaries`, `concertable-packages` and `concertable-seeding` as
+  repo**", naming `microservice-boundaries`, `packages` and `seeding` as
   the owners. Row 52 also quotes a section, "The surface each service actually exposes", that no longer
   exists there — the file's only headings are "The one thing to read before crossing a service boundary",
   "Folder layout" and "Related docs". Repointed each row at its real owner; `api/ARCHITECTURE.md` keeps the
@@ -360,12 +360,12 @@ stale, because a reader consults it precisely to avoid searching.
 
 - [x] **ACC8 — MEDIUM — accuracy** — `docs/INDEX.md:90`
   The row sends "DTOs vs Responses at the controller boundary" to `api/AGENTS.md`, which contains no
-  occurrence of either word — that rule is `http-api` plus `concertable-http-api`. The row's other two
+  occurrence of either word — that rule is `http-api` plus `http-api`. The row's other two
   topics (migrations, shared-is-the-intersection) are genuinely still there. Split the row.
 
 - [x] **ACC9 — LOW — accuracy** — `docs/INDEX.md:111`
   Points at `app/web/AGENTS.md` "HTTP errors", deleted in `a70788482` when the axios ban was collapsed to
-  one home. Repointed at `http-layer` (the rule) and `concertable-http-layer` (the `isApiError` inventory).
+  one home. Repointed at `http-layer` (the rule) and `http-layer` (the `isApiError` inventory).
 
 ## Incremental review — 2026-08-19 (hook ownership)
 

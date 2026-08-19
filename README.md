@@ -7,7 +7,7 @@
   **Every** backend service restores its shared-platform dependencies as packages from the org's
   private GitHub Packages feed — no service builds them from source any more — so without the token
   restore fails (401 / NU1101) before the app starts. The closure, the pins and the local
-  `UseLocalCore` inner loop are the `concertable-packages` skill.
+  `UseLocalCore` inner loop are the `packages` skill.
 
 ### Start
 From the repo root:

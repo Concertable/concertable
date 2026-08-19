@@ -3,11 +3,11 @@
 The React/TypeScript surfaces. **No standard lives in this repo.** The generic TS/React rules are
 load-on-demand skills (`typescript-style`, `contract-naming`, `react-structure`, `server-state`,
 `client-state`, `http-layer`, `write-boundary`, `tiered-shared-code`, `stack-defaults`), and what is true
-of *this* system is their `concertable-` counterparts — `concertable-http-layer` (the four clients and the
-`isApiError` seam), `concertable-typescript-style` (the live `$type` unions, multipart casing),
-`concertable-identity` (`User` versus `B2bIdentity`), `concertable-permissions`,
-`concertable-client-state` (the tenant session), `concertable-contract-naming`,
-`concertable-write-boundary` and `concertable-react-structure`. The task you are doing is the trigger to
+of *this* system is their same-named counterparts in the `react` plugin — `http-layer` (the four clients and the
+`isApiError` seam), `typescript-style` (the live `$type` unions, multipart casing),
+`identity` (`User` versus `B2bIdentity`), `permissions`,
+`client-state` (the tenant session), `contract-naming`,
+`write-boundary` and `react-structure`. The task you are doing is the trigger to
 load the matching pair; `.agents/skill-routes.json` maps path to skill.
 
 What stays here is the tier map — which is structural, not a convention, and is what every tier doc below

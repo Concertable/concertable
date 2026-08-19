@@ -5,9 +5,9 @@ The .NET app. **No standard lives in this repo.** The generic .NET rules are loa
 `persistence`, `multitenancy`, `domain-events`, `keyed-strategies`, `module-structure`, `http-api`,
 `microservice-boundaries`, `proto`, `seeding`, `result-carriers`, `result-errors`, `result-terminals`,
 `unit-testing`, `integration-testing`, `e2e-scenarios`), and what is true of *this* system is their
-`concertable-` counterparts (`concertable-persistence`, `concertable-seeding`,
-`concertable-microservice-boundaries`, `concertable-packages`, `concertable-http-clients`,
-`concertable-integration-testing`, and the rest). The task you are doing is the trigger to load the
+counterparts of the same name from the `dotnet` plugin (`persistence`, `seeding`,
+`microservice-boundaries`, `packages`, `http-clients`,
+`integration-testing`, and the rest). The task you are doing is the trigger to load the
 matching pair; `.agents/skill-routes.json` maps path to skill, and the write-time hook enforces it.
 
 Below is only the floor — the handful of rules whose violation is silent, expensive, and not worth
@@ -26,7 +26,7 @@ this service lived alone?*
   service is the bug to never introduce.
 
 The roster, the surfaces each service exposes, and the simulator pattern that makes standalone hosts work
-are the `concertable-microservice-boundaries` skill.
+are the `microservice-boundaries` skill.
 
 ## STOP — a seeder may only write what production writes directly
 
@@ -39,7 +39,7 @@ Quick check before writing a seeder body: open the entity's repository, service 
 production code calling `.Add`/`.AddRange` on this DbSet is inside a handler reacting to an event, your
 seeder is not allowed to write it either.
 
-**Which tables that means here is the `concertable-seeding` skill — read it in full before writing or
+**Which tables that means here is the `seeding` skill — read it in full before writing or
 changing any `IDevSeeder` or `ITestSeeder`.** This mistake has cost real time, multiple times.
 
 ## Shared code is the intersection, never the union
@@ -75,4 +75,4 @@ method to the project's `Log.cs`. `CA1848` is an error, so the inline form fails
 
 Run `./initial-migrations.ps1` from `api/` when the model changes. There is no production data, so the
 re-scaffold is free — never raise "but this needs a migration" as an argument against a change. Full rule:
-the `concertable-migrations` skill.
+the `migrations` skill.

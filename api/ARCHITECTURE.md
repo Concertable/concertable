@@ -2,9 +2,9 @@
 
 **The topology itself is not in this repo.** Which services exist, which are adapters versus data
 services, what each may depend on, the surface each exposes, and why standalone-is-canonical are the
-`concertable-microservice-boundaries` skill. The package closure, the carve gates, `UseLocalCore` and the
-publish-then-sync loop are `concertable-packages`. The seed simulator and the forbidden-table roster are
-`concertable-seeding`.
+`microservice-boundaries` skill. The package closure, the carve gates, `UseLocalCore` and the
+publish-then-sync loop are `packages`. The seed simulator and the forbidden-table roster are
+`seeding`.
 
 That is deliberate: the `api/` node disappears when the services split into their own repos, so anything
 that would have to survive the split cannot live under it. What stays here is this monorepo's own folder
@@ -24,7 +24,7 @@ cross-service project Customer references, why `Concertable.Customer.Seed` does 
 why we build seeding simulators instead of monolithic AppHosts, and why direct projection-table seeding is
 forbidden. Forgetting it leads to designs that re-monolith the system.
 
-Re-read `concertable-microservice-boundaries` any time a cross-service dependency feels easier than the
+Re-read `microservice-boundaries` any time a cross-service dependency feels easier than the
 simulator pattern.
 
 ## Folder layout

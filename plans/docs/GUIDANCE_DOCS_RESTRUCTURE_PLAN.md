@@ -317,14 +317,14 @@ repo — a known wrinkle, recorded rather than silently decided.
 constraints, and conflating them caused a live defect (below).
 
 - **Skills are flat**, because discovery is `<root>/skills/*/SKILL.md` and does not recurse. So
-  `persistence` is already dotagents' and the Concertable counterpart is `concertable-persistence`; where
-  one name would serve two domains it carries both (`concertable-dotnet-contracts`,
-  `concertable-react-contracts`). The generator refuses a doc with no router, so every doc above owns one.
+  `persistence` is already dotagents' and the Concertable counterpart is `persistence`; where
+  one name would serve two domains it carries both (`dotnet-contracts`,
+  `react-contracts`). The generator refuses a doc with no router, so every doc above owns one.
   Each router's description is always-on — a real cost, recorded in the ledger.
 - **Docs deploy repo-scoped**, at `~/.agents/standards/<repo>/<domain>/`. They are only ever opened by
   path, so they need not be flat — and must not be: the mirror means a generic doc and its counterpart
   share a relative path deliberately, so one flat junction point makes one repo's tree shadow the other's
-  **silently**. That happened: `concertable-persistence` resolved to dotagents' generic `PERSISTENCE.md`,
+  **silently**. That happened: `persistence` resolved to dotagents' generic `PERSISTENCE.md`,
   right path, wrong repo, no error. Eight paths collide this way. Fixed in `deploy-skills.ps1`; plugin
   delivery was never affected, because each plugin carries its own subtree.
 

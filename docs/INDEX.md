@@ -53,9 +53,9 @@ When a topic has both, the skill owns the rule and the file owns the inventory.
 | System-wide premise; monorepo vs the split-repo world | [`ARCHITECTURE.md`](../ARCHITECTURE.md) |
 | Cross-service references are Contracts-only; this monorepo's `api/` folder layout | [`api/ARCHITECTURE.md`](../api/ARCHITECTURE.md) |
 | Protocol selection — gRPC / HTTP / Service Bus | skill `microservice-boundaries` |
-| Adapter vs data services, what may `WaitFor` what, standalone-AppHost-is-canonical, the surface each service exposes | skill `concertable-microservice-boundaries` |
-| Producer seed libraries point downward only; the simulator that makes standalone work | skill `concertable-seeding` |
-| Cross-service contract distribution; per-folder build closures; `UseLocalCore`; the carve gates | skill `concertable-packages` |
+| Adapter vs data services, what may `WaitFor` what, standalone-AppHost-is-canonical, the surface each service exposes | skill `microservice-boundaries` |
+| Producer seed libraries point downward only; the simulator that makes standalone work | skill `seeding` |
+| Cross-service contract distribution; per-folder build closures; `UseLocalCore`; the carve gates | skill `packages` |
 | Design rationale and decision history (not current state) | [`api/docs/MICROSERVICES_ARCHITECTURE.md`](../api/docs/MICROSERVICES_ARCHITECTURE.md) |
 | Per-service specifics | that service's own `AGENTS.md` / `ARCHITECTURE.md` |
 
@@ -79,25 +79,25 @@ When a topic has both, the skill owns the rule and the file owns the inventory.
 | Proto naming, proto mappers, wire error mapping | skill `proto` |
 | Seeding — drive the trigger, never write the row | skill `seeding` |
 | Unit / integration / E2E scenario authoring | skills `unit-testing`, `integration-testing`, `e2e-scenarios` |
-| **This system's** `Concertable.DataAccess` capability hierarchy, one repository per entity | skill: `concertable-persistence` |
-| **This system's** `IGeometryProvider` / WGS84 | skill: `concertable-geometry` |
-| **This system's** `IPagination.Map` placement, integration-event wire versioning, the `Genre` enum | skill: `concertable-dotnet-contracts` |
-| **This system's** Refit client inventory and the `ITokenApi` caveat | skill: `concertable-http-clients` |
-| **This system's** Reunion pins, never-redistribute, the package closure and carve gates | skill: `concertable-packages` |
-| **This system's** gRPC cancellation predicate | skill: `concertable-result-terminals` |
-| **This system's** project naming, internal controllers, no cross-module read context | skill: `concertable-module-structure` |
-| **This system's** `Tenant`-to-`organization` translation and route shapes | skill: `concertable-http-api` |
-| **This system's** service roster, adapter-vs-data, the surfaces each exposes | skill: `concertable-microservice-boundaries` |
-| **This system's** migration policy | skill: `concertable-migrations` |
-| **This system's** tenanted service, which project owns each stance piece | skill: `concertable-multitenancy` |
-| **This system's** 13 pre-commit handlers and the seeding interceptor's phase swap | skill: `concertable-domain-events` |
-| **This system's** forbidden seed tables, the B2B simulator, the ticket-sales exception | skill: `concertable-seeding` |
-| **This system's** integration fixtures and shared harness members | skill: `concertable-integration-testing` |
-| **This system's** test-tier gate, the unit-tier bans, the settled assertion library | skill: `concertable-unit-testing` |
+| **This system's** `Concertable.DataAccess` capability hierarchy, one repository per entity | skill: `persistence` |
+| **This system's** `IGeometryProvider` / WGS84 | skill: `geometry` |
+| **This system's** `IPagination.Map` placement, integration-event wire versioning, the `Genre` enum | skill: `dotnet-contracts` |
+| **This system's** Refit client inventory and the `ITokenApi` caveat | skill: `http-clients` |
+| **This system's** Reunion pins, never-redistribute, the package closure and carve gates | skill: `packages` |
+| **This system's** gRPC cancellation predicate | skill: `result-terminals` |
+| **This system's** project naming, internal controllers, no cross-module read context | skill: `module-structure` |
+| **This system's** `Tenant`-to-`organization` translation and route shapes | skill: `http-api` |
+| **This system's** service roster, adapter-vs-data, the surfaces each exposes | skill: `microservice-boundaries` |
+| **This system's** migration policy | skill: `migrations` |
+| **This system's** tenanted service, which project owns each stance piece | skill: `multitenancy` |
+| **This system's** 13 pre-commit handlers and the seeding interceptor's phase swap | skill: `domain-events` |
+| **This system's** forbidden seed tables, the B2B simulator, the ticket-sales exception | skill: `seeding` |
+| **This system's** integration fixtures and shared harness members | skill: `integration-testing` |
+| **This system's** test-tier gate, the unit-tier bans, the settled assertion library | skill: `unit-testing` |
 | **This repo's** E2E baseline path, run script, seeded fast-forward | [`Concertable.Testing.E2E`](../api/Concertable.Shared/tests/Concertable.Testing.E2E/AGENTS.md) |
 | Page objects, `data-testid` naming, step-binding shape; the Stripe 3DS/timeout traps | [`E2E_UI_CONVENTIONS.md`](../api/Concertable.Shared/tests/Concertable.Testing.E2E/E2E_UI_CONVENTIONS.md), [`E2E_CONSIDERATIONS.md`](../api/Concertable.Shared/tests/Concertable.Testing.E2E/E2E_CONSIDERATIONS.md) |
 | B2B's DbContext stances, filtered entities, `DealType` families and workflow steps | [`api/Concertable.B2B/CODE_PATTERNS.md`](../api/Concertable.B2B/CODE_PATTERNS.md) |
-| DTOs vs `Response` at the controller boundary | skills `http-api`, `concertable-http-api` |
+| DTOs vs `Response` at the controller boundary | skills `http-api`, `http-api` |
 | Migrations; shared-is-the-intersection; the seeder trigger rule | [`api/AGENTS.md`](../api/AGENTS.md) |
 
 ## Frontend code (`app/`)
@@ -114,12 +114,12 @@ When a topic has both, the skill owns the rule and the file owns the inventory.
 | Slots over role checks, composed identity, tier discipline | skill `tiered-shared-code` |
 | Which library to reach for | skill `stack-defaults` |
 | The sharing tiers and the build gate | [`app/AGENTS.md`](../app/AGENTS.md) |
-| **This system's** four HTTP clients and the `isApiError` seam | skill: `concertable-http-layer` |
-| **This system's** `$type` unions and `FormData` casing | skill: `concertable-typescript-style` |
-| **This system's** `User`/`B2bIdentity` split | skill: `concertable-identity` |
-| **This system's** tenant session and active-tenant state | skill: `concertable-client-state` |
-| **This system's** `SharedPermissions` matrix | skill: `concertable-permissions` |
-| Axios confined to the client layer; where a guard may branch on status | skills `http-layer`, `concertable-http-layer` |
+| **This system's** four HTTP clients and the `isApiError` seam | skill: `http-layer` |
+| **This system's** `$type` unions and `FormData` casing | skill: `typescript-style` |
+| **This system's** `User`/`B2bIdentity` split | skill: `identity` |
+| **This system's** tenant session and active-tenant state | skill: `client-state` |
+| **This system's** `SharedPermissions` matrix | skill: `permissions` |
+| Axios confined to the client layer; where a guard may branch on status | skills `http-layer`, `http-layer` |
 | What belongs in each tier | that tier's own `AGENTS.md` |
 | Browser storage inventory and consent gating | [`app/web/shared/BROWSER_STORAGE.md`](../app/web/shared/BROWSER_STORAGE.md) |
 

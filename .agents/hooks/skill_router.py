@@ -223,10 +223,38 @@ def written_targets(tool_input):
     return ordered
 
 
+def plugin_of(skills_dir):
+    """The plugin a `<...>/skills` directory belongs to, or None for a linked (non-plugin) root.
+
+    Cache layout is `<cache>/<marketplace>/<plugin>/<version>/skills`, so the plugin is two levels up
+    from the yielded directory; an own-plugin root is `<plugin-root>/skills`, one level up. A linked
+    root is `~/.claude/skills`, which belongs to no plugin - checked by name, since it is the only
+    shape without a plugin above it.
+    """
+    parents = skills_dir.parents
+    # <cache>/<marketplace>/<plugin>/<version>/skills - plugin is two above, cache four above.
+    if len(parents) >= 4 and parents[3].name == "cache":
+        return parents[1].name
+    parent = skills_dir.parent
+    if parent.name in {".agents", ".claude"}:
+        return None
+    return parent.name
+
+
 def skill_description(name):
-    """The skill's own description, so the rule text has exactly one home."""
+    """The skill's own description, so the rule text has exactly one home.
+
+    A name may be plugin-qualified (`dotnet:persistence`). It has to be able to be: a local roster and
+    its generic counterpart deliberately share a skill name, so an unqualified lookup returns whichever
+    root is walked first and silently hides the other - the same shadowing that once made
+    agent-standards' PERSISTENCE.md resolve to dotagents'. Unqualified still works for a skill with one
+    home, which is every utility and every route that names only one side.
+    """
+    wanted_plugin, _, bare = name.rpartition(":")
     for root in skill_search_dirs():
-        skill = root / name / "SKILL.md"
+        if wanted_plugin and plugin_of(root) != wanted_plugin:
+            continue
+        skill = root / bare / "SKILL.md"
         if not skill.is_file():
             continue
         try:

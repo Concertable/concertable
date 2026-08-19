@@ -36,7 +36,7 @@ The in-repo docs hold only this system's roster of real types, contexts, clients
 |---|---|---|
 | `tomjseery/dotagents` #1 | `e52a11b` | `standards/dotnet/` 20 docs · plugin `dotnet-standards` · 10 utility skills · `deploy-skills.ps1` |
 | `tomjseery/react-agents` `main` | `1ebb42b` | `standards/react/` 9 · plugin `react-standards` |
-| `Concertable/agent-standards` #2 | `32795d8` | `standards/process/` 7 + `dotnet/` 12 + `react/` 8 · plugins `agent-process` (owns the hook), `concertable-dotnet`, `concertable-react` |
+| `Concertable/agent-standards` #2 | `32795d8` | `standards/process/` 7 + `dotnet/` 12 + `react/` 8 · plugins `agent-process` (owns the hook), `dotnet`, `react` |
 | `Concertable/concertable` #637 | `fcec9925` | the reduction, the process cut-over, and the review's four fixes. Needs the upstream merge for ENF12, then an explicit merge instruction |
 
 **Auto-loaded floor.** An `api/**` prompt loads `api/AGENTS.md` (77) + `api/ARCHITECTURE.md` (62) with
@@ -107,7 +107,7 @@ against the whole current corpus, and four live concepts landed nowhere:
 - `ExcludeFromMigrations` (37 code files) — same source, same loss.
 - `CallCredentials` (1) — how a gRPC call carries credentials, from `MICROSERVICE_COMMUNICATION.md`.
 - Concertable's tenancy inventory is *not* lost but is Tier-4 only (`api/Concertable.B2B/CODE_PATTERNS.md`,
-  its `ARCHITECTURE.md`), and there is no `concertable-multitenancy` router, so the write-time router never
+  its `ARCHITECTURE.md`), and there is no `multitenancy` router, so the write-time router never
   loads it; the generic `multitenancy` skill is routed on `Repository.cs$` alone.
 
 Two in-scope doc defects the audit also turned up, neither of them 5c:
@@ -305,7 +305,7 @@ Two in-scope doc defects the audit also turned up, neither of them 5c:
      generating them — the same class of bug pruning-by-generated-set-membership was added to prevent.
   3. **`deploy-skills.ps1` junctioned per domain onto one flat `~/.agents/standards/<domain>`.** Correct
      while each domain lived in one repo; wrong the moment a generic domain and its counterpart share a
-     name on purpose. Eight paths collide, and it failed **silently**: `concertable-persistence` opened
+     name on purpose. Eight paths collide, and it failed **silently**: `persistence` opened
      dotagents' generic `PERSISTENCE.md` — right path, wrong repo, no error. Standards now deploy at
      `~/.agents/standards/<repo>/<domain>`; skills stay flat because discovery does not recurse, standards
      do not because they are only opened by path. Plugin delivery was never affected — each plugin carries
@@ -665,12 +665,12 @@ stacks, or a `platform/`/`concertable/` folder.
 **Deployed layout on this machine:** `~/.agents/standards/<repo>/<domain>/` — repo-scoped, because a
 generic domain and its Concertable counterpart share a relative path on purpose. Skills stay flat in
 `~/.agents/skills` and `~/.claude/skills` (**69** of them, after `domain-events`,
-`concertable-domain-events` and `concertable-multitenancy`). `deploy-skills.ps1` in `dotagents` owns both.
+`domain-events` and `multitenancy`). `deploy-skills.ps1` in `dotagents` owns both.
 
 Audit findings: **all closed**; `reviews/Docs-GuidanceDocsRestructure-AuditFindings.md` is deleted.
 
 **The three `agent-standards` `GAP` rows are resolved.** `testing/UNIT.md` is written +
-`concertable-unit-testing`: the tier gate in `api/TestConventions.targets` is real Concertable content,
+`unit-testing`: the tier gate in `api/TestConventions.targets` is real Concertable content,
 and writing it down settled the Shouldly open call — the build already fails a unit project that
 references it, so it was never actually open. `results/ERRORS.md` and `testing/E2E.md` are **deleted from
 the plan rather than filled**, each by the corpus's own rules: a roster of the 75 error unions rots on the
@@ -687,7 +687,7 @@ sources sit outside the moved lines, so they stay with the rest of 3c.
 
 - **Domain events** — generic `dotagents/standards/dotnet/structure/DOMAIN_EVENTS.md` + `domain-events`,
   and Concertable's roster in `agent-standards/standards/dotnet/structure/DOMAIN_EVENTS.md` +
-  `concertable-domain-events`. Measured, not assumed: 13 domain events, 13 handlers, **all 13
+  `domain-events`. Measured, not assumed: 13 domain events, 13 handlers, **all 13
   pre-commit**, none doing anything but one `bus.PublishAsync`. `SeedingDomainEventDispatchInterceptor`
   runs pre-commit handlers in `SavedChangesAsync` while a seeding scope is active — the doc records the
   behaviour and says outright that no reason for it is written anywhere, rather than inventing one.
@@ -695,12 +695,12 @@ sources sit outside the moved lines, so they stay with the rest of 3c.
   from `DbContextBase`, plus Concert borrowing the two rating projections) in `agent-standards`'.
 - **`CallCredentials`** — the rule in generic `structure/PROTO.md`; `AddPaymentClient`'s five stubs and
   their shared `payment:write` scope in `agent-standards`' `structure/SERVICE_BOUNDARIES.md`.
-- **`concertable-multitenancy`** — the routing hole, not a missing doc. B2B's stance roster stays in
+- **`multitenancy`** — the routing hole, not a missing doc. B2B's stance roster stays in
   `api/Concertable.B2B/CODE_PATTERNS.md` (it travels with the service); the new
   `agent-standards/standards/dotnet/data/MULTITENANCY.md` carries what is platform truth instead — that
   of the five services **only B2B has a tenant stance**, and which project owns each piece — and points
   at B2B's doc for the per-module table. Routes added: `/Events/`, `DbContext.cs`,
-  `Configurations/*Configuration.cs`, and `concertable-multitenancy` onto `Repository.cs`, which
+  `Configurations/*Configuration.cs`, and `multitenancy` onto `Repository.cs`, which
   previously carried the generic `multitenancy` skill alone.
 
 **The two in-scope doc defects are fixed** — six `CLAUDE.md`-for-content citations repointed at the file
@@ -751,7 +751,7 @@ audit swept backticked identifiers in docs; these are machine-read payloads:
   `skill-routes.json` and loads the pairs for the changed paths.
 
 **`ICurrentTenant` does not exist.** `api/AGENTS.md` (auto-loaded), `agent-standards`'
-`react/IDENTITY.md` and the `concertable-identity` description all named it; the real pair is
+`react/IDENTITY.md` and the `identity` description all named it; the real pair is
 `ICurrentUser` + `ITenantContext`, both `Concertable.Kernel.Identity`. The claim it illustrated —
 referenced by B2B, not Customer — is exactly true of `ITenantContext` (61 B2B files, 0 Customer).
 
