@@ -47,10 +47,15 @@ table-stakes items were resolved in the same pass.
 **Architecture refactors — ready, not launch gates:**
 
 - [x] ✅ **Deal-type strategy registration** — shipped in PR #451: module-local factories and vertically declared registration replace the repeated `DealType → strategy` dictionaries while preserving named business facades and the Deal/Concert boundary. `launch/deal-strategy-registration`
+- [ ] 🟡 **Deal representation and common-interface dispatch** `launch/deal-closed-sum-model` — define selection once for every honest same-interface Deal family through an invariant module factory whose exhaustive implementation, switches, long generic types, closed registrations, and missing-case diagnostics are source-generated. One reusable generator template lives in B2B build tooling, while each runtime factory remains module-owned. The proven families are terms, mapper, and updater. Heterogeneous lifecycle inputs/results/capabilities use Dunet on net10 and native unions on C# 15; executors and steps are not forced through the common factory. Cancellation is direct and static direction/settlement facts are data. Application acceptance is fixed as exactly the paid/simple union. C# 15 also moves the published Deal payload to a closed record hierarchy. Plan: [DEAL_CLOSED_SUM_MODEL_PLAN.md](DEAL_CLOSED_SUM_MODEL_PLAN.md).
 - [ ] 🟡 **Application → Booking → Concert module ownership** `launch/deal-lifecycle-ownership` — design approved 2026-08-16: split the current
   Concert umbrella into honest Opportunity, Application, Booking/Contract, and Concert ownership;
-  each lifecycle aggregate owns independent state, transitions, contextual steps, and a module-local
-  resolver. The fixed stage order never varies by `DealType`; no umbrella process entity, shared
+  each lifecycle aggregate owns independent state, transitions, and contextual operations. Its current
+  keyed selectors are provisional delivery seams owned for replacement by the Deal dispatch plan:
+  honest same-interface mapper/updater/terms families use generated invariant factories, while
+  heterogeneous lifecycle executors/steps use unions and matches; identical behavior is direct and
+  static variation is data. The fixed
+  stage order never varies by `DealType`; no umbrella process entity, shared
   workflow module, cross-module state machine, Deal-owned orchestration, or Rust decision engine is
   allowed. The follow-on .NET 11 slice owns native unions for closed internal values, never DI service
   dispatch. See
