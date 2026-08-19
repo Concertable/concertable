@@ -49,7 +49,7 @@ public string LongName { get; init; } = string.Empty;
 
 ## No primary constructors for captured state
 
-Captured constructor parameters — anything read by a method or property — must be explicit `private readonly` fields assigned via `this.field = param`, never primary-constructor captures. This covers services, repositories, handlers, and validators, and any base class that uses its dependencies (e.g. the `TenantScopedDbContext` / `AdminDbContext` bases, whose `provider` and `defaultSchema` are read in `OnModelCreating`).
+Captured constructor parameters — anything read by a method or property — must be explicit `private readonly` fields assigned via `this.field = param`, never primary-constructor captures. This covers services, repositories, handlers, and validators, and any base class that uses its dependencies (e.g. the `TenantScopedDbContext` / `UnscopedDbContext` bases, whose `provider` and `defaultSchema` are read in `OnModelCreating`).
 
 A constructor that only forwards its parameters to `base(...)` and captures nothing may use a primary constructor — there is no field to make `readonly`, so the shorthand is the clearest spelling. The pure base-forwarder leaf DB contexts (e.g. `VenueDbContext`, `VenueAdminDbContext`) are the standing example.
 
