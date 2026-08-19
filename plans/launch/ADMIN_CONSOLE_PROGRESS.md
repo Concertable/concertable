@@ -28,6 +28,10 @@
   `Refactor/b2b_admin-module` now has an **open** PR ([#651](https://github.com/Concertable/concertable/pull/651),
   `state OPEN`, `mergeStateStatus BLOCKED`, not yet merged) — the ledger previously said no PR existed;
   step 1 below remains not-yet-actionable until #651 merges, not blocking.
+- Re-reconciled 2026-08-19 (same day, later): polled #648's checks on head `4e1ec207b` to completion —
+  45 pending checks resolved to 0 pending / 0 failures, `mergeStateStatus CLEAN`, `mergeable MERGEABLE`,
+  not draft. Re-checked #651: still `state OPEN`, `isDraft true`, `mergeStateStatus BLOCKED`, not merged
+  — step 1 remains not-yet-actionable. No action taken beyond confirmation; merge still waits on Tommy.
 - Parallel, independent work: `Refactor/b2b_admin-module` (separate worktree/session) extracts
   `Concertable.B2B.Admin` out of `Concertable.B2B.User` to match the `Concertable.B2B.Tenant` precedent
   (own `AdminDbContext`, plain `Guid` FKs, `IAdminModule` facade for `UserController.Me()`'s grant-check).
@@ -133,19 +137,16 @@ draft PR [#648](https://github.com/Concertable/concertable/pull/648).
 
 ## Next Steps
 
-1. Once `Refactor/b2b_admin-module` (parallel, independent — see header) merges to `main`, merge it into
-   this branch before #648 merges, so Phase 2 doesn't ship against the old `Concertable.B2B.User`-owned
-   Admin location. Not a hard blocker — #648 builds and runs fine against the current location either
-   way, since the HTTP contract is unchanged — just do it before #648's own merge to avoid a needless
-   rebase later. As of this reconciliation (2026-08-19), that refactor is **open as PR #651**, not yet
-   merged — recheck `gh pr view 651 --json state` before merging #648.
-2. #648 is ready for review; its branch was just re-synced with `origin/main` after drifting 36 commits
-   (see reconciliation above) — confirm draft-PR CI is green on the new head (`gh pr checks 648`) before
-   treating it as ready again. Merge only on Tommy's explicit instruction — when given, follow the root
-   `AGENTS.md` "Before enabling auto-merge" currency check first (re-check `behind` count, since more
-   time may have passed since this resync).
-3. Phases 3 (moderation UI) and 4 (venue approval UI, plus the new `GET /api/Venue/pending-approval`
-   endpoint) follow once Phase 2 is merged — see the plan for scope.
+Paused: Tommy — #648 ([PR #648](https://github.com/Concertable/concertable/pull/648)) is confirmed ready
+(draft-PR CI reconfirmed green on head `4e1ec207b`: 0 pending / 0 failing checks, `mergeStateStatus
+CLEAN`, `mergeable MERGEABLE`, not draft); nothing further to verify. Resume condition: Tommy gives an
+explicit instruction to merge #648 (when given, re-check the `behind` count per the root `AGENTS.md`
+"Before enabling auto-merge" currency check first, since time has passed since the resync). Separately,
+non-blocking: `Refactor/b2b_admin-module` ([PR #651](https://github.com/Concertable/concertable/pull/651))
+is still open/draft, `mergeStateStatus BLOCKED`, not yet merged — once it merges to `main`, merge it into
+this branch before #648 merges (avoids shipping Phase 2 against the old `Concertable.B2B.User`-owned
+Admin location; not a hard blocker since the HTTP contract is unchanged). Phases 3 (moderation UI) and 4
+(venue approval UI, plus the new `GET /api/Venue/pending-approval` endpoint) follow once Phase 2 merges.
 
 ## Completed work
 
