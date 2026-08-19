@@ -13,13 +13,13 @@ MA0053.class_with_virtual_member_should_be_sealed = false
 MA0053.exceptions_should_be_sealed = true
 
 # Logging — no inline logger.LogXxx templates; use the source-generated [LoggerMessage] methods
-# (api/agents/CODE_CONVENTIONS.md "Logging — source-generated Log.cs").
+# (the `logging` skill).
 dotnet_diagnostic.CA1848.severity = error
 
 # Banned APIs (Microsoft.CodeAnalysis.BannedApiAnalyzers) — the list is api/BannedSymbols.txt.
 dotnet_diagnostic.RS0030.severity = error
 
-# Private INSTANCE fields: camelCase, no underscore prefix (api/agents/CODE_CONVENTIONS.md). Static and
+# Private INSTANCE fields: camelCase, no underscore prefix (the `csharp-style` skill). Static and
 # const fields keep their own casing — the two severity=none rules below claim them first, so the
 # instance rule (first-match-wins) never touches them.
 dotnet_naming_rule.private_const_fields_unenforced.symbols = private_const_fields

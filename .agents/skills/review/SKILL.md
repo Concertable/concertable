@@ -111,7 +111,7 @@ Run `git diff --name-only <start>..HEAD`. If any path hits Auth, Payment, `*.Con
 **Security-reviewed up to commit:** `<full-HEAD-sha>`  _(<today's ISO date>)_
 ```
 
-The merge gate's `_SECURITY_PATTERNS` (in `merge-review-gate.py`) is the source of truth for which paths count; it refuses to merge a security-sensitive branch without this marker current at HEAD. No sensitive paths → skip this step, no marker.
+The merge gate is the source of truth for which paths count — `security_paths` in `.agents/merge-gate.json` for this repo's services, plus the generic patterns in `merge_review_gate.py`; it refuses to merge a security-sensitive branch without this marker current at HEAD. No sensitive paths → skip this step, no marker.
 
 ## Step 2 — Load the rules (read before flagging anything)
 
@@ -119,14 +119,22 @@ These docs are the source of truth. Read the ones relevant to the diff — do no
 
 - Root `AGENTS.md` and `api/AGENTS.md` — top-of-context rules + pointers.
 - `api/ARCHITECTURE.md` and root `ARCHITECTURE.md` — **microservice premise** (the boundary rules below).
-- `api/agents/CODE_CONVENTIONS.md` — C# conventions (source-generated logging, field naming, ctors, etc.).
-- `app/agents/CODE_CONVENTIONS.md` — **frontend** conventions (null-vs-undefined, contract types, casing,
-  TanStack Query shape, stores, form buffers), and `app/agents/CODE_PATTERNS.md` — **frontend** patterns
-  (slots over role checks, hooks orchestrate/components render, one `xApi` per resource, the zod write
-  boundary, table dispatch). Read both whenever the diff touches `app/`, plus `app/AGENTS.md` and the
-  tier doc for the directory touched.
-- `api/agents/MODULAR_MONOLITH_RULES.md` — module boundaries within a service.
-- `api/agents/SEEDING_CONVENTIONS.md` — what may and may not be seeded directly.
+- The **skills the changed paths oblige**, resolved from the same `.agents/skill-routes.json` the
+  write-time router enforces — not from memory, and not from a list in this file. **Invoke every skill
+  it names, before flagging anything**; a review that skips one repeats the author's blind spot, which
+  is the failure this wiring exists for. A `DENY PATTERN HIT` line is a confirmed finding, not a hint.
+
+  ```bash
+  git diff --name-only "<start>..HEAD" | python .agents/hooks/skill_router.py --skills-for
+  ```
+
+  Only flag a convention issue the invoked skill actually states. The table is the floor, not the
+  ceiling — invoke any other skill the diff plainly touches too, and when you had to *remember* one,
+  that is a missing row in the table, not a paragraph to add here.
+- The `dotnet` and `react` plugins' skills — **this system's** precedents: real context/client/permission names, the
+  Refit inventory, the `isApiError` seam. The router table already pairs each generic skill with its
+  local counterpart, so `--skills-for` names both. For an `app/` diff also read `app/AGENTS.md` and the
+  tier doc for the directory touched; for a B2B diff read `api/Concertable.B2B/CODE_PATTERNS.md`.
 - Any `AGENTS.md` in directories the diff touches (each service / module may add local rules).
 
 ## Step 3 — Review the diff through these lenses
@@ -137,9 +145,9 @@ Review **only** the changes in `<start>..HEAD`. Read beyond them only to confirm
 
 Logic errors, broken control flow, missing `await`, race conditions, atomicity/transaction gaps (e.g. a cross-context write that isn't in one transaction), null/boundary mistakes, wrong EF queries, swallowed exceptions. Real bugs hit in practice — not theoretical.
 
-### Lens B — Microservice isolation (the high-value lens — `api/ARCHITECTURE.md`)
+### Lens B — Microservice isolation (the high-value lens — `dotnet:microservice-boundaries`)
 
-Concertable is a multi-service system; **B2B, Customer, and Search are data services that must NEVER depend on each other's runtime.** Flag, citing `api/ARCHITECTURE.md`:
+Concertable is a multi-service system; **B2B, Customer, and Search are data services that must NEVER depend on each other's runtime.** Flag, citing the `dotnet:microservice-boundaries` skill:
 
 - A **data service referencing another data service's non-Contracts project** — Customer (or its modules/tests) referencing B2B's `.Domain` / `.Application` / `.Infrastructure` / `.Seed` (anything beyond `*.Contracts`). Only `*.Contracts` (integration-event records + DTOs) may cross a service boundary.
 - A data service **`WaitFor`-ing another data service** in any AppHost (the bug to never introduce). `WaitFor` is for **adapter** services only (`Auth`, `Payment`, `Notification`). `WithReference` is fine.
@@ -148,20 +156,20 @@ Concertable is a multi-service system; **B2B, Customer, and Search are data serv
 - A producer's `*.Seed.Contracts` **referencing a consumer's** (dependency must point downward only: consumer → producer).
 - Customer entities reaching back into B2B via nav chains instead of holding **purchase-time snapshots** of B2B fields.
 
-### Lens C — Module boundaries (`api/agents/MODULAR_MONOLITH_RULES.md`)
+### Lens C — Module boundaries (`dotnet-standards:module-structure` + `dotnet:module-structure` skills)
 
 - Cross-module calls not going through `Contracts` / the module facade (`IXModule`).
 - EF queries inlined in a module facade (facades delegate to Application abstractions).
 - A module writing through `IUnitOfWork` (tied to `ApplicationDbContext`, silently no-ops) instead of `xRepository.SaveChangesAsync()`.
 - Impl types left `public` when an interface was extracted to `internal`.
 
-### Lens D — Seeding (`api/agents/SEEDING_CONVENTIONS.md`)
+### Lens D — Seeding (`dotnet-standards:seeding` + `dotnet:seeding` skills)
 
 - A seeder directly writing data whose only production write path is a reaction (read-model projections, `UserEntity`, manager profiles, Stripe `PayoutAccount`, inbox/outbox rows). The fix is to drive the event, never `context.X.AddRange(...)`.
 - `IDevSeeder` vs `ITestSeeder` misuse (`ITestSeeder` never runs in dev/E2E).
 - Integration events published from a service layer instead of raised from a domain event.
 
-### Lens E — C# conventions (`api/agents/CODE_CONVENTIONS.md`)
+### Lens E — C# conventions (`csharp-style`, `csharp-naming`, `logging`, `persistence` skills)
 
 - Inline logging templates (`logger.LogInformation("...")`) instead of a source-generated `[LoggerMessage]` in the project's `Log.cs`.
 - Primary constructors on services/repos/handlers/validators (use explicit ctor + `private readonly` fields, no `_` prefix).
@@ -173,8 +181,7 @@ Frontend (`app/`), same lens, different doc — these recur:
   type). `null` is only for a deliberately-set-empty state that something downstream branches on.
 - A read type named `XDto`/`XResponse`, or a write input that is not an `XRequest`.
 - Server state fetched or mutated from `useEffect` instead of TanStack Query.
-- A free-typed form submitting its raw buffer without a zod parse (`CODE_PATTERNS.md` "The write
-  boundary is a zod parse").
+- A free-typed form submitting its raw buffer without a zod parse (`write-boundary` skill).
 - Variation resolved inside a shared tier with an identity/role check instead of an injected slot.
 - Code sitting at a narrower tier than every consumer that legitimately needs it, or a wider one than
   every consumer can legitimately run.

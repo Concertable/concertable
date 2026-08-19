@@ -1,4 +1,4 @@
-﻿---
+---
 name: e2e-api-debug
 description: Compatibility stub for Claude Code. The canonical skill lives in .agents/skills/e2e-api-debug/SKILL.md.
 ---

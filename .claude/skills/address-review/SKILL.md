@@ -1,4 +1,4 @@
-﻿---
+---
 name: address-review
 description: Compatibility stub for Claude Code. The canonical skill lives in .agents/skills/address-review/SKILL.md.
 ---

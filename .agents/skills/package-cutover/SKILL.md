@@ -169,7 +169,7 @@ grep -rniE "$OLDNS\.$OLD\b" api --include=*.cs | grep -viE "[/\\](bin|obj)[/\\]|
 - Old-identity grep gate = 0 (allowlist only in-flight migration snapshots).
 - Affected unit + integration tests via `integration-debug`; a red run → drive that skill, don't
   report red. E2E only if the change is behaviourally risky (a pure move/rename is not — see
-  `plans/AGENTS.md` "When to run the E2E suites").
+  `plans/AGENTS.md` "Merge-queue E2E tier").
 - Re-scaffold done where the model moved.
 
 ## Scope guard
