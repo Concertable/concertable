@@ -111,13 +111,17 @@ integration).
   production trusted-proxy `ForwardedHeadersOptions` binding is owned by `launch/config-and-deployment`
   (logged in `api/TECH_DEBT.md`). Until then, behind an ingress the per-IP policies collapse to the proxy IP
   (fails toward over-limiting — not a security hole).
-- **Integration env disables the throttle; the seam is the config, not code.** In-memory limiter
-  partitions persist across the shared test host and survive Respawn, so leaving production caps on 429s
-  functional tests that fire many requests through one partition. The Auth + B2B integration fixtures set
-  the `RateLimiting:*:PermitLimit` windows effectively-unlimited via the existing config seam (no
-  ServiceDefaults change). `ApplicationRateLimitApiTests` re-enables `Apply` at 10 on an isolated
-  `WithWebHostBuilder` host (new no-user `CreateClient(configure)` overload + `TestClientOptions.UseApplyRateLimit`),
-  so the 429 + `Retry-After` control is still proven.
+- **Integration env disables the throttle — via env vars, because the limiter binds config eagerly.**
+  In-memory limiter partitions persist across the shared test host and survive Respawn, so leaving
+  production caps on 429s functional tests that fire many requests through one partition. First attempt
+  set the windows via the fixtures' `ConfigureAppConfiguration` in-memory collection — that FAILED in CI
+  (Auth green, but B2B `ContractApiTests` still 429'd): `AddDefaultRateLimiting` binds
+  `builder.Configuration` **eagerly** at host build (line 58), before the in-memory source is merged, so
+  only sources present at builder creation (**environment variables**) reach it. Both fixtures now set the
+  `RateLimiting__*__PermitLimit` env vars effectively-unlimited (no ServiceDefaults change).
+  `ApplicationRateLimitApiTests` re-enables `Apply` at 10 on an isolated `WithWebHostBuilder` host built
+  under a scoped `Apply` env var (`fixture.CreateClientWithApplyRateLimit`), so the 429 + `Retry-After`
+  control is still proven.
 - **Partition on `sub`, not tenant** (Phase 1 decision, unchanged). In-process limiter only (deferred).
 - **Worktree recreated off `origin/main` for Phase 2** after #646 merged and its worktree was closed —
   the standard plans/AGENTS per-PR-slice lifecycle.
