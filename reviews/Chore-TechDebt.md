@@ -3,7 +3,7 @@
 > **This file is a work order, not a discussion.** If you're handed this file, fix the open `[ ]`
 > findings directly and report what changed. Tick each `[x]` as you land it.
 
-**Reviewed up to commit:** `91c4a42dfa5f06cce1e9deada3d869b174bd18dc`  _(2026-08-19)_
+**Reviewed up to commit:** `4d8b02f777a060357b7d2e33bad9cca8207addbd`  _(2026-08-19)_
 
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
 
@@ -92,3 +92,31 @@ Every other changed path auto-merged cleanly (main-only or branch-only edits, no
 
 **No findings.** Re-verified after the merge: `dotnet build api/Concertable.B2B/Concertable.B2B.slnx`
 0 errors; `Concertable.B2B.Tenant.UnitTests` 131/131; `Concertable.B2B.Tenant.IntegrationTests` 58/58.
+
+## Incremental review — 2026-08-19 (second merge from origin/main)
+
+Range `91c4a42df..4d8b02f77` — `main` moved again (~122 commits: PR #637
+`Docs/GuidanceDocsRestructure`, deleting `api/agents/` and `app/agents/` entirely in favour of
+load-on-demand skills backed by an external `Concertable/agent-standards` repo, plus its own
+platform-sync `chore/platform-sync-0.1.0-alpha.0.1073`) while this PR sat queued a second time,
+DIRTY'ing it again. **Not a re-review of that restructure** — already reviewed in its own
+`reviews/Docs-GuidanceDocsRestructure.md`, already on `main`.
+
+Two conflicts:
+
+- `api/Concertable.B2B/src/Modules/Tenant/TECH_DEBT.md` — same shape as the first merge (PR #651 had
+  already updated the same deleted-entry's prose; this time the restructure updated it again to point
+  at "the `persistence` skill" instead of the deleted `CODE_PATTERNS.md`). Resolved the same way: kept
+  this branch's side (`No outstanding debt.`) — verified byte-identical pre/post-merge, zero new logic.
+- `api/agents/CODE_CONVENTIONS.md` / `api/agents/CODE_PATTERNS.md` — modify/delete: this PR's earlier
+  commits edited both (the `QueryableXMappers` clarification, correcting the stale `ITenantRepository`
+  violation callout); the restructure deletes both files outright, moving their content to the external
+  `agent-standards` repo. **Accepted the deletion** — resurrecting a deliberately, already-reviewed
+  upstream-removed file to keep two local edits would be wrong. Those two doc corrections have no
+  reachable home from this checkout (no local `agent-standards` clone) and are dropped; flagged to
+  Tommy in the final chat summary rather than silently lost.
+
+**No findings** in what this merge commit itself introduces (both conflict resolutions verified
+pure/mechanical, no new logic). Re-verified after the merge: `dotnet build
+api/Concertable.B2B/Concertable.B2B.slnx` 0 errors (now against platform pin `0.1.0-alpha.0.1073`);
+`Concertable.B2B.Tenant.UnitTests` 131/131; `Concertable.B2B.Tenant.IntegrationTests` 58/58.
