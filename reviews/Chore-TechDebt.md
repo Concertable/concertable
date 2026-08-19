@@ -3,7 +3,7 @@
 > **This file is a work order, not a discussion.** If you're handed this file, fix the open `[ ]`
 > findings directly and report what changed. Tick each `[x]` as you land it.
 
-**Reviewed up to commit:** `3264275d8cee1b15f6215876df11bcf4be4230da`  _(2026-08-19)_
+**Reviewed up to commit:** `91c4a42dfa5f06cce1e9deada3d869b174bd18dc`  _(2026-08-19)_
 
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
 
@@ -73,3 +73,22 @@ Two layers (native + Concertable lenses). **No findings.**
   - *Test coverage* — the new/changed wiring (three-repository `DeleteAsync`, `InsertAsync` inserts,
     the mapper extraction) is exercised by the integration suite above; no added/altered behaviour
     lacks a covering test.
+
+## Incremental review — 2026-08-19 (merge from origin/main)
+
+Range `3264275d8..91c4a42df` — `main` moved (PR #651, `Refactor/b2b_admin-module`, extracting
+`Concertable.B2B.Admin` out of `Concertable.B2B.User` + an `Admin`→`Privileged` repository/DbContext
+rename) while this PR sat in the merge queue, DIRTY'd it, and disabled auto-merge. Updated the branch
+with `git merge origin/main`. **Not a re-review of PR #651** — it is already reviewed in its own
+`reviews/Refactor-b2b_admin-module.md`, already on `main`, and this merge doesn't touch any of it;
+scoped to what this merge commit itself introduces.
+
+One real conflict: `api/Concertable.B2B/src/Modules/Tenant/TECH_DEBT.md` — PR #651 edited the prose of
+the `ITenantRepository` entry this PR's first commit already deleted (renaming its `AdminRepository`
+reference to `Admin module's AdminRepository`). Resolved by keeping this branch's side (`No outstanding
+debt.`) — verified byte-identical, pre- and post-merge, via `git show 3264275d8:…TECH_DEBT.md` vs
+`git show 91c4a42df:…TECH_DEBT.md`: a pure "ours" resolution, zero new logic, nothing to review.
+Every other changed path auto-merged cleanly (main-only or branch-only edits, no overlap).
+
+**No findings.** Re-verified after the merge: `dotnet build api/Concertable.B2B/Concertable.B2B.slnx`
+0 errors; `Concertable.B2B.Tenant.UnitTests` 131/131; `Concertable.B2B.Tenant.IntegrationTests` 58/58.
