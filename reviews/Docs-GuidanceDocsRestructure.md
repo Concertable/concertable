@@ -5,9 +5,9 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `5e7addf31452d8173a81d045b1579b495a996258`  _(2026-08-19)_
+**Reviewed up to commit:** `6d80032ed68f008b1ebfe46d816a612b61d22448`  _(2026-08-19)_
 
-**Security-reviewed up to commit:** `5e7addf31452d8173a81d045b1579b495a996258`  _(2026-08-19)_
+**Security-reviewed up to commit:** `6d80032ed68f008b1ebfe46d816a612b61d22448`  _(2026-08-19)_
 
 > Range reviewed: `9205e82d..2b93b45b` (12 commits reviewed; markers moved to `54b91961`, the fix commit, 73 files — markdown plus one Python hook).
 > Markers moved forward three times with nothing re-reviewable in between: once to the fix commit
