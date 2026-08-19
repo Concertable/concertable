@@ -30,7 +30,7 @@ so the codebase has zero calls; the building blocks (all in `B2B.DataAccess.Infr
   the shared DataAccess `ReadDbContext`, which composes the module's configuration provider with no
   tenancy on top. It is read-only by construction — `SaveChanges` throws — so the write-side
   `TenantInterceptor` guard can never be bypassed through it. Example: `ConcertReadDbContext`.
-- **`UnscopedDbContext`** (abstract, same seam) — the unscoped-but-writable stance: composes the provider
+- **`PrivilegedDbContext`** (abstract, same seam) — the unscoped-but-writable stance: composes the provider
   with no tenancy, but **writable** (unlike `XReadDbContext`), so a cross-tenant operator can act on rows
   it doesn't own; the `TenantInterceptor` write-guard no-ops for a tenant-less write. One subclass per
   module that has an admin write flow, e.g. `VenueAdminDbContext` (venue approval).
@@ -43,7 +43,7 @@ the LSP violation — callers can't know which contract a method honors):
 - **`XReadRepository`** — read-only access through the module's tenant-independent `XReadDbContext`.
   Its contract controls which data leaves the module.
 - **`XAdminRepository`** — privileged cross-tenant read/write (e.g. admin approval) on the writable
-  `UnscopedDbContext`. Only where an admin write flow exists, e.g. `VenueAdminRepository`.
+  `PrivilegedDbContext`. Only where an admin write flow exists, e.g. `VenueAdminRepository`.
 - **Domain facts that aren't naturally entity repositories** may get their own purpose-named
   abstraction on the module's `XReadDbContext`, e.g. `IConcertAvailability`, when they form a real,
   independently consumed capability. Do not wrap a single query already owned by an aggregate
@@ -73,7 +73,7 @@ are not one vocabulary to impose across every service:
 
 - **B2B data-access stance:** `XRepository` uses the normal tenant-bound `XDbContext`, `XReadRepository`
   uses the tenant-independent/read-only `XReadDbContext`, and `XAdminRepository` uses
-  unfiltered/writable `UnscopedDbContext`. Purpose-named internal lookups and facts may share
+  unfiltered/writable `PrivilegedDbContext`. Purpose-named internal lookups and facts may share
   `XReadDbContext`. Name the
   composed contract, never the filtering mechanism: do not substitute `Unscoped` or `CrossTenant`.
 - **Mutability:** the shared `Repository<...>` surface permits writes; `ReadRepository<...>` exposes
