@@ -8,11 +8,26 @@
 - PRs: #646 (Phase 1, **MERGED** — ServiceDefaults seam) · #655 (Phase 2, **draft** — Auth + B2B consumers)
 - Dependency/package gates: **cleared.** Phase 1 published `Concertable.ServiceDefaults` `0.1.0-alpha.0.1070`;
   `chore/platform-sync-0.1.0-alpha.0.1070` (#654) merged, bumping every pin. No inbound blockers.
-- Last reconciled: 2026-08-18, from `origin/main` + repository evidence.
+- Last reconciled: 2026-08-19, from `origin/main` + draft-PR CI (#655 run 32170178751) + repository evidence.
 
 ## Current state
 
-**Both phases implemented. Phase 1 merged; Phase 2 built green and pushed to draft PR #655.**
+**Both phases implemented. Phase 1 merged; Phase 2 built green and pushed to draft PR #655. A Phase 2
+CI failure (integration tests tripping the new limiter) was diagnosed and fixed; awaiting the re-run.**
+
+Draft-PR CI on #655 came back red: the **Auth integration suite** failed 7 tests with
+`Expected 200/302, got 429 TooManyRequests` on the `Pages/Account` credential POSTs (the other
+integration jobs were fail-fast *cancellations*, not real failures). Root cause: the in-memory limiter's
+partitions live on the shared `WebApplicationFactory` host and **survive Respawn**, so functional tests —
+which fire many requests through one IP/`sub` partition — accumulate past the production caps and 429.
+This is a latent trap for every throttled endpoint (Auth `Login`/`Global`; B2B `Apply`/`Upload`/`Messaging`/`Global`),
+not just the ones that happened to run before the fail-fast cancel.
+
+Fix (uses the existing `RateLimitingOptions` config seam — no producer/ServiceDefaults change): the
+integration environments configure the limits effectively-unlimited so functional suites don't trip the
+abuse throttle they aren't testing, and the one test that must prove the throttle
+(`ApplicationRateLimitApiTests`) re-enables `Apply` at a low limit on its own isolated host, preserving
+429 + `Retry-After` coverage.
 
 Phase 1 (the shared web-only seam in `Concertable.ServiceDefaults`) merged via #646 and is on the feed at
 `0.1.0-alpha.0.1070`. Phase 2 opts Auth and B2B into it and attaches the named policies to the endpoints
@@ -35,8 +50,10 @@ test runs there.
 ## Next Steps
 
 **Paused: Tommy — review the Phase 2 draft PR #655 and authorize its merge.** Phase 2 is implemented,
-built, and pushed; nothing further is safely implementable locally. Draft-PR CI is validating the exact
-remote head (build, carve, unit, integration).
+built, and pushed, including the fix for the CI integration-test failure (limiter disabled in the
+integration environments; throttle still proven in `ApplicationRateLimitApiTests`). Nothing further is
+safely implementable locally. Draft-PR CI is re-validating the exact remote head (build, carve, unit,
+integration).
 
 - **Resume when:** Tommy authorizes the merge. On merge of an `api/**` change, `publish-packages`
   republishes and `platform-sync` opens a `chore/platform-sync-*` pin bump — follow it to green/merged
@@ -66,6 +83,9 @@ remote head (build, carve, unit, integration).
   clean against it — proves the published version carries Phase 1).
 - Apply 429 + `Retry-After` integration test authored; runs in draft-PR CI (Docker/Testcontainers), not
   locally (remote-first).
+- Limiter CI-failure fix builds 0/0 locally (`Concertable.B2B.Concert.IntegrationTests` + Auth
+  `Concertable.Auth.IntegrationTests`, transitively their fixtures/hosts); the integration re-run is
+  owned by draft-PR CI.
 
 ## Reviews
 
@@ -91,6 +111,13 @@ remote head (build, carve, unit, integration).
   production trusted-proxy `ForwardedHeadersOptions` binding is owned by `launch/config-and-deployment`
   (logged in `api/TECH_DEBT.md`). Until then, behind an ingress the per-IP policies collapse to the proxy IP
   (fails toward over-limiting — not a security hole).
+- **Integration env disables the throttle; the seam is the config, not code.** In-memory limiter
+  partitions persist across the shared test host and survive Respawn, so leaving production caps on 429s
+  functional tests that fire many requests through one partition. The Auth + B2B integration fixtures set
+  the `RateLimiting:*:PermitLimit` windows effectively-unlimited via the existing config seam (no
+  ServiceDefaults change). `ApplicationRateLimitApiTests` re-enables `Apply` at 10 on an isolated
+  `WithWebHostBuilder` host (new no-user `CreateClient(configure)` overload + `TestClientOptions.UseApplyRateLimit`),
+  so the 429 + `Retry-After` control is still proven.
 - **Partition on `sub`, not tenant** (Phase 1 decision, unchanged). In-process limiter only (deferred).
 - **Worktree recreated off `origin/main` for Phase 2** after #646 merged and its worktree was closed —
   the standard plans/AGENTS per-PR-slice lifecycle.
