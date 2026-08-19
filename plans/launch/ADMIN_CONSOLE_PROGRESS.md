@@ -20,11 +20,14 @@
   `npm install` clean, `npm run lint:boundaries` clean (all 10 workspaces), `npm run build:admin` green,
   and `dotnet build` green on `Concertable.B2B.Web`, `Concertable.Auth`, `Concertable.B2B.AppHost`, and
   the umbrella `Concertable.AppHost`. Pushed; PR flipped from `DIRTY`/`CONFLICTING` to
-  `BLOCKED`/`MERGEABLE` (blocked = draft-PR CI re-running on the new head, not a real block) — recheck
-  `gh pr checks 648` once that run completes before treating it as ready again.
+  `BLOCKED`/`MERGEABLE` (blocked = draft-PR CI re-running on the new head, not a real block).
+  Reconfirmed same day once that run completed: `gh pr checks 648` — every required check `pass`, the
+  three E2E jobs correctly `skipping` per this plan's phase scope; `gh pr view 648` — `state OPEN`,
+  `mergeStateStatus CLEAN`, `mergeable MERGEABLE`, not draft. **#648 is genuinely ready; nothing further
+  to verify — merge is gated only on Tommy's explicit instruction (see Next Steps).**
   `Refactor/b2b_admin-module` now has an **open** PR ([#651](https://github.com/Concertable/concertable/pull/651),
-  not yet merged) — the ledger previously said no PR existed; step 1 below remains not-yet-actionable
-  until #651 merges, not blocking.
+  `state OPEN`, `mergeStateStatus BLOCKED`, not yet merged) — the ledger previously said no PR existed;
+  step 1 below remains not-yet-actionable until #651 merges, not blocking.
 - Parallel, independent work: `Refactor/b2b_admin-module` (separate worktree/session) extracts
   `Concertable.B2B.Admin` out of `Concertable.B2B.User` to match the `Concertable.B2B.Tenant` precedent
   (own `AdminDbContext`, plain `Guid` FKs, `IAdminModule` facade for `UserController.Me()`'s grant-check).
