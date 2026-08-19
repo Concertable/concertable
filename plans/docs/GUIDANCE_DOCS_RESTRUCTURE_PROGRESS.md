@@ -6,16 +6,18 @@
 - Also delivered by this ledger: roadmap item `docs/agent-standards`, now checked off
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-guidance-docs`
 - Branch: `Docs/GuidanceDocsRestructure`
-- PR: #637 — the tiering constraint that held it open is **cleared**; it now needs a docs-review and an explicit merge instruction, nothing else. Label `skip-e2e`.
+- PR: #637 — reviewed at `fcec9925` with 4 of 5 findings fixed on the branch; it now needs the upstream merge that closes ENF12, then an explicit merge instruction. Label `skip-e2e`.
   commit). Updated for base currency three times on 2026-08-17: from **69 behind** and `DIRTY` (three doc
   conflicts resolved, below), from 2 behind after platform-sync #645 merged — a clean merge carrying only
   the `<ConcertablePlatformVersion>` bump `0.1.0-alpha.0.1055` → `0.1.0-alpha.0.1061` across the five
   service `Directory.Packages.props` — and from 10 behind at `2b04d57e2`.
 - Shared repos **today**: `tomjseery/dotagents` — `standards/dotnet/` (20 docs) only; `tomjseery/react-agents` — `standards/react/` (9), created 2026-08-18 on `main`; `Concertable/agent-standards` — `standards/process/` (7) + `standards/dotnet/` (12) + `standards/react/` (8) + the `skill_router` hook, three plugins. All three repos CI green at `852e467` / `9cb5ea3` / `b6312f7`. `dotagents` and `agent-standards` are still on `Refactor/StandardsDomainTree` with PRs open and CI green (`dotagents#1`, `agent-standards#2`), neither merged. Target shape and the three purged wrong models: `## Topology` below.
 - Dependency/package gates: no consumer migration to do, but this PR **will** trigger publish + platform sync — `publish-packages.yml` triggers on the coarse `paths: api/**`, which this branch's `api/**` markdown matches. MinVer republishes and a `chore/platform-sync-*` PR opens; non-breaking (no published type changed), so it should auto-merge green. Follow it to green anyway — whoever merges owns the sync.
-- Last reconciled: 2026-08-19 — the 15 open audit defects are closed and the findings file is deleted.
-  `dotagents` `e52a11b` (#1), `react-agents` `1ebb42b` (`main`), `agent-standards` `c66157c` (#2), all
-  pushed, `sync-generated.ps1 -Check` green in each. Re-check currency at enqueue time.
+- Last reconciled: 2026-08-19 — `/incremental-review` over `890c68d2..16230d76` (the hook-ownership
+  commits) found five findings and four are fixed. `agent-standards` `32795d8` (#2) carries the gate
+  fix and the `delivery` field, `sync-generated.ps1 -Check` green; `dotagents` `e52a11b` (#1),
+  `react-agents` `1ebb42b` (`main`) unchanged. #637 at `fcec9925` + the marker commit, 0 behind
+  `origin/main`, all checks green at `16230d76`. Re-check currency at enqueue time.
 
 **Scope changed 2026-08-17: this is no longer a docs PR.** It now carries build behaviour
 (`api/TestConventions.targets` gating every test project) and a PreToolUse hook, because Phase 6 must land
@@ -34,8 +36,8 @@ The in-repo docs hold only this system's roster of real types, contexts, clients
 |---|---|---|
 | `tomjseery/dotagents` #1 | `e52a11b` | `standards/dotnet/` 20 docs · plugin `dotnet-standards` · 10 utility skills · `deploy-skills.ps1` |
 | `tomjseery/react-agents` `main` | `1ebb42b` | `standards/react/` 9 · plugin `react-standards` |
-| `Concertable/agent-standards` #2 | `c66157c` | `standards/process/` 7 + `dotnet/` 12 + `react/` 8 · plugins `agent-process` (owns the hook), `concertable-dotnet`, `concertable-react` |
-| `Concertable/concertable` #637 | `e1eb4157c` | the reduction plus the process cut-over. Needs `/docs-review`, then an explicit merge instruction |
+| `Concertable/agent-standards` #2 | `32795d8` | `standards/process/` 7 + `dotnet/` 12 + `react/` 8 · plugins `agent-process` (owns the hook), `concertable-dotnet`, `concertable-react` |
+| `Concertable/concertable` #637 | `fcec9925` | the reduction, the process cut-over, and the review's four fixes. Needs the upstream merge for ENF12, then an explicit merge instruction |
 
 **Auto-loaded floor.** An `api/**` prompt loads `api/AGENTS.md` (77) + `api/ARCHITECTURE.md` (62) with
 **zero** `@`-imports, from 1,429 lines at the start of this plan. An `app/**` prompt loads
@@ -86,8 +88,9 @@ the command and the stop-and-tell-the-user procedure.
 tests over them. A plugin `Stop` hook was proven to fire *and block* with zero repo wiring first — the
 gate this step was held behind.
 
-**What remains:** 5c (discovery — `dotnet/STACK.md` is its first known gap) and 3c (markdown outside the
-conventions folders).
+**What remains:** 5c (discovery — `dotnet/STACK.md` is its first known gap), 3c (markdown outside the
+conventions folders), and ENF12 — the vendored hooks' provenance pins name commits that live only on
+`agent-standards` #2's branch, so that PR must land before #637 is enqueued.
 
 ## Done
 
@@ -559,6 +562,33 @@ mirror diffs identical at 13, and `customerClient` is where the doc says. The co
 precedent rather than a number — the doc cited Conversations as proof of a rule `MessageRepository`
 breaks.
 
+**The hook-ownership commits are reviewed** (`890c68d2..16230d76`, 3 commits, 20 files). Verified first
+rather than assumed: all six vendored copies hash byte-identical to the commits `vendored.json` records,
+every mechanism test deleted here exists upstream where CI runs it, and `CLAUDE_PLUGIN_ROOT` is the
+variable both harnesses substitute, so the launcher's plugin guard is not Claude-only. **Five findings;
+four fixed on the branch at `fcec9925`, ENF12 open because only a merge can close it.**
+
+- **ENF8 (HIGH)** — the merge gate resolves a PR's own head so a worktree PR merges correctly from any
+  checkout, then its security layer diffed the literal `HEAD`. Shown live: PR #637 judged from the main
+  checkout classified **0 files**, found nothing sensitive, and never asked for the security marker, where
+  its own worktree classifies 16 paths. The layer failed open on exactly the flow the gate supports.
+- **ENF9 (MEDIUM)** — security-marker currency was `marker == head` with only a `reviews/`-only exemption,
+  while `review` Step 1d re-stamps it only for a sensitive range. No legal exit, so the marker was being
+  hand-moved; it now asks whether a security-sensitive path changed since the marker.
+- **ENF10 (MEDIUM)** — the wiring test's new "wired nowhere is fine" escape legalized a harness-fired hook
+  losing both wirings. `vendor-hooks.ps1` now records each hook's `delivery`, derived from its own
+  `hooks.json`, and the test asserts both directions; unwiring `skill_router.py` from both files fails.
+- **ENF11 (MEDIUM)** — no workflow here ran the vendoring guard at all, so six generated copies were
+  protected by memory. `test.yml` gains `hook-tests` and `ci-complete` needs it.
+- **ENF12 (LOW, open)** — every `commit` in `vendored.json` resolves only to `agent-standards`
+  `Refactor/StandardsDomainTree`. Squash-merging #2 deletes that branch and the provenance with it. Close
+  it by landing #2 (merge commit, or re-vendor against `main` afterwards and commit the re-pinned
+  manifest).
+
+ENF8/ENF9 are authored in `agent-standards` `32795d8` with six new tests; the one that catches a return to
+the literal `HEAD` was mutation-checked. Upstream 151 tests pass, this repo's 14 pass, `docs_reachability`
+and `plan_graph` 0 errors.
+
 ## Topology — four tiers, settled 2026-08-18
 
 **Authoritative statement: `dotagents/AGENTS.md` (mirrors to `~/AGENTS.md`, so it loads every session) and
@@ -600,8 +630,8 @@ Three superseded models were purged — do not reintroduce a merged standards re
 stacks, or a `platform/`/`concertable/` folder.
 
 **Repo heads at handoff:** `dotagents` `e52a11b` (#1), `react-agents` `1ebb42b` (`main`),
-`agent-standards` `c66157c` (#2) — all three carrying the audit fixes, pushed 2026-08-19. Concertable #637
-at the audit-closure commit. Nothing is merged.
+`agent-standards` `32795d8` (#2, carrying the merge-gate fix and the `delivery` field), pushed
+2026-08-19. Concertable #637 at `fcec9925` plus its marker commit. Nothing is merged.
 
 **Deployed layout on this machine:** `~/.agents/standards/<repo>/<domain>/` — repo-scoped, because a
 generic domain and its Concertable counterpart share a relative path on purpose. Skills stay flat in
@@ -617,15 +647,17 @@ lines, so they stay with the rest of 3c.
 1. **The two remaining phases**: 5c (the discovery pass — conventions that exist only in code, e.g.
    B2B's stance taxonomy) and 3c (markdown outside the conventions folders).
 
-2. **#637 needs a fresh `/incremental-review`, then an explicit merge instruction.** The branch moved
-   after the last review, so its marker is stale at `890c68d2` — the merge gate itself blocks on this,
-   verified live. It is **not** a docs-only PR — it carries `api/TestConventions.targets` and hooks — so
-   the docs-only auto-merge path does not apply. Review the hook-ownership commits, then wait for Tommy.
-   Merging will trigger publish + platform sync (`paths: api/**` matches this branch's `api/**` markdown);
-   follow the `chore/platform-sync-*` PR to green.
+2. **#637 is reviewed and its markers are current; it now waits on ENF12 and then on Tommy.** The
+   review is clean apart from ENF12, which only the upstream merge closes. It is **not** a docs-only PR —
+   it carries `api/TestConventions.targets`, the CI job and the hooks — so the docs-only auto-merge path
+   does not apply. Merging will trigger publish + platform sync (`paths: api/**` matches this branch's
+   `api/**` markdown); follow the `chore/platform-sync-*` PR to green.
 
-3. **`agent-standards` #2 and `dotagents` #1 are still open and unmerged**, and Concertable's hooks are
-   vendored *from* `agent-standards`. Land those before treating the upstream ownership as settled.
+3. **Land `agent-standards` #2 and `dotagents` #1** (both `CLEAN`, `verify` green). #2 is now a
+   prerequisite, not just tidiness: Concertable's six hooks are vendored from it and their provenance pins
+   resolve only on its branch (ENF12). After it merges, re-run
+   `pwsh .agents/vendor-hooks.ps1 -Into <worktree>` from a checkout on `main`, commit the re-pinned
+   `vendored.json`, tick ENF12, and re-stamp the markers in a `reviews/`-only commit.
 
 
 **Tommy's, not agent work:**
