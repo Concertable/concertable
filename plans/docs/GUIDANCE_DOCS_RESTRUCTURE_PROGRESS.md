@@ -27,16 +27,18 @@ more than it did, since the new targets file participates in every project's bui
 
 ## Current state
 
-**All four tiers match the model, and the process corpus is now moved rather than copied. Nothing is
-merged.** The corpus is 56 docs across three standards repos,
-each doc owned by exactly one router skill, delivered as five plugins and — on this machine — as junctions.
+**All four tiers match the model, the process corpus is moved rather than copied, and all three standards
+repos are merged to `main` — only Concertable #637 is still open.** The corpus is **62** docs across three
+standards repos, each doc owned by exactly one router skill, delivered as five plugins. **On this machine
+it is currently delivered by nothing:** the `concertable-*` junctions died with the prefix removal and no
+plugin is installed yet (`## Next Steps`).
 The in-repo docs hold only this system's roster of real types, contexts, clients, tables and pins.
 
 | Repo | Head | Contents |
 |---|---|---|
-| `tomjseery/dotagents` #2 | `c52bf8a` | `standards/dotnet/` **21** docs · plugin `dotnet-standards` · 10 utility skills · `deploy-skills.ps1`. #1 merged 2026-08-19 |
+| `tomjseery/dotagents` `main` | `2bb4c9d` | `standards/dotnet/` **21** docs · plugin `dotnet-standards` · 10 utility skills · `deploy-skills.ps1`. #1 and #2 both merged 2026-08-19 |
 | `tomjseery/react-agents` `main` | `19ca86d` | `standards/react/` **14** · plugin `react-standards`. Pushed straight to `main`, as this repo has been run since it was created |
-| `Concertable/agent-standards` #3 | `dfb10ce` | `standards/process/` 7 + `dotnet/` 12 + `react/` **9** · plugins `agent-process` (owns the hook), `dotnet`, `react`. #2 merged 2026-08-19 |
+| `Concertable/agent-standards` `main` | `bbb5cd6` | `standards/process/` 7 + `dotnet/` 12 + `react/` **9** · plugins `agent-process` (owns the hook), `dotnet`, `react`. #2 and #3 both merged 2026-08-19 |
 | `Concertable/concertable` #637 | this ledger's commit | the reduction, the process cut-over, the review's fixes, and 3c's close-out. Waits on an explicit merge instruction |
 
 **Auto-loaded floor.** An `api/**` prompt loads `api/AGENTS.md` (77) + `api/ARCHITECTURE.md` (62) with
@@ -693,7 +695,20 @@ write. Re-pin against `main` once #3 merges.
 
 ## Next Steps
 
-Paused: Tommy — every remaining step is a merge, and all three are his. Land [dotagents #2](https://github.com/tomjseery/dotagents/pull/2) and [agent-standards #3](https://github.com/Concertable/agent-standards/pull/3) together (`gh pr merge 2 --repo tomjseery/dotagents --merge`, `gh pr merge 3 --repo Concertable/agent-standards --merge`; both `CLEAN`, `verify` green, and this session cannot run either — see item 3), then give the merge instruction for [#637](https://github.com/Concertable/concertable/pull/637). Resume when #2 and #3 are `MERGED`, which unblocks 3.2–3.4 (re-vendor, install the five plugins, sweep the prefix).
+Paused: Tommy — install the five plugins, then everything else is unblocked. **23 skill junctions in each of `~/.claude/skills` and `~/.agents/skills` are broken as of the two merges** — they point at the `concertable-*` folders `agent-standards` #3 deleted — and no plugin is installed, so those 23 rules currently load from nowhere. Do **not** run `deploy-skills.ps1` first: it no longer junctions routers, so on a machine with no plugins it prunes the surviving 47 too. Install (per machine, `--scope user`, and the two private marketplaces need git credentials), then say so and I will run `deploy-skills.ps1` and verify every router resolves:
+
+```
+/plugin marketplace add Concertable/agent-standards
+/plugin install agent-process@agent-standards
+/plugin install dotnet@agent-standards
+/plugin install react@agent-standards
+/plugin marketplace add tomjseery/dotagents
+/plugin install dotnet-standards@dotagents
+/plugin marketplace add tomjseery/react-agents
+/plugin install react-standards@react-agents
+```
+
+Then give the merge instruction for [#637](https://github.com/Concertable/concertable/pull/637). Resume when the five plugins appear in `~/.claude/plugins/installed_plugins.json`.
 
 **The four tiers match the model and the process corpus now has one home.** Authoritative statement:
 `dotagents/AGENTS.md` (mirrors to `~/AGENTS.md`, so it loads every session) and
@@ -889,19 +904,31 @@ that bans the carrier — `TypedResultArchitectureTests.KernelFunctionalTypes_Do
    apply. Merging will trigger publish + platform sync (`paths: api/**` matches this branch's `api/**`
    markdown); follow the `chore/platform-sync-*` PR to green.
 
-3. **The prefix removal is delivery-gated on two upstream PRs, in this order.**
+3. **The prefix removal landed. `dotagents` #2 merged as `2bb4c9d` and `agent-standards` #3 as
+   `bbb5cd6`, both 2026-08-19 with merge commits.** What is left of this item:
 
-   1. Land **`tomjseery/dotagents` #2** and **`Concertable/agent-standards` #3** — they are one change
-      split across two repos, and #3 alone leaves `deploy-skills.ps1` throwing on the duplicate names
-      it now sees. **Both are `CLEAN` with `verify` green.** They could not be merged from this session
-      — see "the merge is blocked from here" below.
-   2. Re-vendor from `agent-standards` `main`, commit the re-pinned `vendored.json`, and close ENF12
-      again.
-   3. **Install the five plugins before running `deploy-skills.ps1`.** None are installed today —
-      junctions are the only delivery, so pruning first leaves the machine with no standards at all.
-      Dry run verified: 10 utilities kept, 60 router junctions pruned, standards trees untouched.
-   4. Sweep for `concertable-<skill>` outside these four repos — the global `CLAUDE.md`, work repos,
-      saved prompts. Not audited.
+   1. ~~Land #2 and #3.~~ **Done** — Tommy merged both.
+   2. ~~Re-vendor from `agent-standards` `main` and close ENF12.~~ **Done, and the re-pin was a no-op.**
+      `vendor-hooks.ps1 -Into <this worktree>` against `main` produced **zero diff**: the vendor script
+      records the commit that last *changed* each hook, and `a8a3e6f` — the pin ENF12 called branch-only —
+      became an ancestor of `origin/main` the moment #3 merged with a merge commit. All pins pass
+      `merge-base --is-ancestor`; `test_vendored_hooks.py` 8/8, `test_skill_router.py` 6/6. **ENF12 is
+      closed and `reviews/Docs-GuidanceDocsRestructure.md` now has zero open `- [ ]`.** Worth keeping: the
+      gate already carries `2231bd0`, the `--repo` jurisdiction fix, because `0d773bd` is later than it.
+   3. **Install the five plugins, then run `deploy-skills.ps1`** — Tommy's, and now urgent rather than
+      tidy. Measured after the merges: `~/.claude/skills` and `~/.agents/skills` each hold **47 live and
+      23 broken** junctions, the 23 being exactly the `concertable-*` folders #3 deleted, with nothing
+      else broken in either root. `installed_plugins.json` lists only `stripe`, `clangd-lsp` and
+      `rust-analyzer-lsp`, and `known_marketplaces.json` only `claude-plugins-official` — so no standards
+      plugin is installed and none of this session's seven new routers is junctioned either. Running
+      `deploy-skills.ps1` **before** the installs would prune the surviving 47 as well.
+   4. ~~Sweep for `concertable-<skill>` outside these four repos.~~ **Done, clean.** `~/.claude`,
+      `~/.agents`, `~/.codex` and every sibling repo under `source/repos` were searched for the 31 skill
+      names carrying the old prefix. Every hit is either harness-owned transcript history
+      (`.claude/projects/`, `.claude/file-history/`, `.codex/sessions/`), which is immutable and not
+      config, or the false-positive class this ledger predicted: `infra/variables.tf` names
+      `concertable-migrations` as a **container image slug** and `concertable-config` as a sibling repo
+      and Azure App Configuration store. No live config anywhere carries a prefixed skill name.
 
    **`dotagents` #1 merged 2026-08-19**, as did `agent-standards` #2.
 
