@@ -38,11 +38,16 @@ Remove-Item -Recurse -Force "api/Concertable.B2B/tests/E2ETests/Concertable.B2B.
 Remove-Item -Recurse -Force "api/Concertable.B2B/tests/E2ETests/Concertable.B2B.E2ETests.Ui/obj" -Confirm:$false -ErrorAction SilentlyContinue
 Remove-Item -Recurse -Force "api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui/bin" -Confirm:$false -ErrorAction SilentlyContinue
 Remove-Item -Recurse -Force "api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Ui/obj" -Confirm:$false -ErrorAction SilentlyContinue
+Remove-Item -Recurse -Force "api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Mobile/bin" -Confirm:$false -ErrorAction SilentlyContinue
+Remove-Item -Recurse -Force "api/Concertable.Customer/tests/E2ETests/Concertable.Customer.E2ETests.Mobile/obj" -Confirm:$false -ErrorAction SilentlyContinue
 Remove-Item -Recurse -Force "api/.vs" -Confirm:$false -ErrorAction SilentlyContinue
 Write-Host "Done"
 ```
 
-VS must build the Ui projects itself to register them as test containers. Never CLI pre-build them.
+VS must build these projects itself to register them as test containers. Never CLI pre-build them.
+
+Those three are every Reqnroll project in the repo — the two `.Ui` suites and Customer's `.Mobile` one,
+which carries `Category=Mobile`. Any new Reqnroll project belongs in this list.
 
 ## Step 3 — Tell the user what to do next
 
@@ -51,17 +56,16 @@ Tell the user:
 > **Open Visual Studio, then press `Ctrl+Shift+B` (Build All) before checking Test Explorer.**
 > Wait for the build to fully finish before opening Test Explorer.
 
-After Build All completes, Test Explorer should show:
-- `Category [Ui] (30)` — 23 B2B + 7 Customer tests
-- `Category [Integration] (130+)`
-- `Category [Unit]`
-- `Category [Api]`
+After Build All completes, Test Explorer should group by the `AssemblyTrait("Category", ...)` each test
+project declares in its own `AssemblyInfo.cs` — today `Ui`, `Mobile`, `Api`, `Integration` and `Unit`.
 
-No `FeatureTitle`, `TestType`, or scenario-tag-derived `Category` groups.
+Judge the result by the shape, not by a count: every category present, and **no** `FeatureTitle`,
+`TestType`, or scenario-tag-derived `Category` group. A count in this file would be wrong by the next
+scenario anyone writes.
 
 ## Notes
 
-- Only the Reqnroll UI E2E projects need bin/obj cleaned — other test projects (integration, unit)
+- Only the Reqnroll E2E projects need bin/obj cleaned — other test projects (integration, unit)
   are already tracked by VS because they were built in a previous session.
 - The intended `Category` groups come from an `[assembly: AssemblyTrait("Category", ...)]` in each
   test project's own `AssemblyInfo.cs` — `Unit`, `Integration`, and so on. Those are the ones to keep.

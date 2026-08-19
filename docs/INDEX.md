@@ -15,13 +15,18 @@ When a topic has both, the skill owns the rule and the file owns the inventory.
 `.agents/hooks/docs_reachability.py` checks that docs are *reachable*. Nothing checks that they are
 *non-duplicated* or *correct*. That is what this file and the rules at the bottom are for.
 
-## Process — how work gets done
+## Product — what is being built
 
 | Topic | Owner |
 |---|---|
 | What the product is, the core loop, the four deal types | [`OVERVIEW.md`](./OVERVIEW.md) |
 | Product thesis and competitive landscape | [`USP.md`](./USP.md) |
 | How to run a `/deep-research` discovery | [`DEEP_RESEARCH_PROMPT_GUIDE.md`](./DEEP_RESEARCH_PROMPT_GUIDE.md) |
+
+## Process — how work gets done
+
+| Topic | Owner |
+|---|---|
 | Long-term-over-hack; questions before actions; autonomy on reversible work | [`AGENTS.md`](../AGENTS.md) |
 | Branching — `<Type>/<Name>` casing, branching from `origin/main`, refactors that stay on their feature branch | skill `git-branching` |
 | The worktree identity gate; splitting durable guidance onto a `Docs/*` branch | [`AGENTS.md`](../AGENTS.md) "Git branch" |
