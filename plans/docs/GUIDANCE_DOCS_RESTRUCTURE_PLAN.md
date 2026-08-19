@@ -196,7 +196,7 @@ repo already says — which is why there is no `platform/` or `concertable/` fol
 
 ```text
 standards/dotnet/
-  STACK.md              which .NET library for which job, and what is deliberately not used   NEW
+  STACK.md              which .NET library for which job, and what is deliberately not used
   STYLE.md              fields, this.-qualification, null!, explicit fields over primary-ctor
                         captures, brace shape, base., #region, C# 14 extension() blocks
   NAMING.md             the collaborator-suffix table WITH its precedent column, agent-noun
@@ -246,11 +246,11 @@ standards/react/
   FORMS.md          the zod submit boundary; parse then map the parsed result
   HTTP.md           axios, one client per backend, errors resolved once at the query client
   SHARED_CODE.md    tiers, slots over role checks, composed identity
-  ROUTING.md        typed routes, search-param validation, guards, loader vs query   NEW
-  UI.md             Tailwind + cn/cva, Radix/shadcn ownership, sonner, framer-motion  NEW
-  TABLES.md         TanStack Table                                                    NEW
-  DATES.md          dayjs behind one formatting module                                NEW
-  TESTING.md        Vitest — what to test at which level                              NEW
+  ROUTING.md        typed routes, search-param validation, guards, loader vs query
+  UI.md             Tailwind + cn/cva, Radix/shadcn ownership, sonner, framer-motion
+  TABLES.md         TanStack Table
+  DATES.md          dayjs behind one formatting module
+  TESTING.md        Vitest — what to test at which level
 ```
 
 ### Tier 3 — `Concertable/agent-standards`: everything Concertable, by stack — **BUILT 2026-08-19**
@@ -289,8 +289,7 @@ standards/react/
   STRUCTURE.md          useMountEffect
   IDENTITY.md           User in shared, B2bIdentity composed in the b2b tenant feature
   PERMISSIONS.md        the SharedPermissions matrix
-  APP_TIERS.md          the four SPAs, route literals, the typecheck boundary gate
-  BROWSER_STORAGE.md
+  APP_TIERS.md          the surfaces, the five sharing tiers, route literals, the typecheck gate
 standards/process/
   BRANCHING.md  COMMITTING.md  MERGING.md  PLANS.md
   REMOTE_VALIDATION.md  DOCS_AND_DEBT.md  FAILING_TESTS.md
@@ -308,6 +307,15 @@ sibling docs, which `docs/INDEX.md` already names as the owners — a second cop
 be the disease, not the cure. `RESULT_PATTERN.md`'s Reunion content had **no target at all** in the previous revision
 of this list and would have been dropped in the move; it is now split across `PACKAGES.md` and
 `results/TERMINALS.md`.
+
+**`react/BROWSER_STORAGE.md` is deleted from this list rather than filled (2026-08-19)**, resolving a
+contradiction inside this plan: 3c already names `BROWSER_STORAGE.md` among the docs "already sitting in
+the right place… not touched". It is not a standard — it is the engineering record a solicitor turns into
+the storage policy, its stated source of truth is `storageManifest.ts` two directories away, a drift-guard
+test in the same tree fails the build when the two disagree, and every path in it points into
+`app/web/shared/src`. `docs/INDEX.md` already names it as the owner. Moving it would separate a compliance
+record from the code and the test that keep it honest — the same reason Concertable's E2E conventions stay
+with their harness.
 
 `process/` is a peer of the two stack sections, not a redundant name: branching and merging are neither
 .NET nor React. Where a process rule is genuinely generic it still lives here rather than earning a fourth
@@ -595,7 +603,12 @@ One rule was **kept in repo rather than cut**: "one repository per entity", whic
 and no skill owns yet. Cutting it would have deleted a live rule; it is a promotion candidate for
 `persistence`.
 
-### Phase 3c — the markdown outside the two conventions folders
+### Phase 3c — the markdown outside the two conventions folders — DONE 2026-08-19
+
+Every row is disposed of. The last three: `APP_TIERS.md` written into `agent-standards` with the in-repo
+docs reduced to pointers, and the two decision rows below settled in favour of deleting the Rust analysis
+and keeping `api/docs/`.
+
 10,011 lines of markdown live outside `plans/`, `reviews/`, `api/agents/` and `app/agents/`. Most of it is
 domain knowledge already sitting in the right place — per-service `ARCHITECTURE.md`, `LEGAL_REQUIREMENTS.md`,
 the `TECH_DEBT.md` set, `E2E_BASELINE.md`, `BROWSER_STORAGE.md` — and is not touched. What needs a decision:
@@ -603,11 +616,11 @@ the `TECH_DEBT.md` set, `E2E_BASELINE.md`, `BROWSER_STORAGE.md` — and is not t
 | File | Lines | Disposition |
 |---|---|---|
 | `app/README.md` | 73 | Still the unmodified Vite scaffold, describing ESLint config the repo doesn't use. Replace with the tier map. |
-| `notes/Concert-Rust-Analysis.md` | 444 | Orphan analysis, referenced by nothing. Delete per the throwaway-markdown rule, or give it a home. |
+| `notes/Concert-Rust-Analysis.md` | 444 | ~~Delete or give it a home.~~ **Deleted 2026-08-19.** Its verdict — move the whole Concert + Contract vertical to Rust — is the opposite of the decision Tommy approved on 2026-08-16 in `DEAL_LIFECYCLE_OWNERSHIP_PLAN` (decompose in C#, no umbrella workflow object), and two of the three "concrete facts from the code" it argues from (`IVerifies`, `IHasApplyCheckout`) no longer exist. A rejected design, per the tombstone rule. `notes/` went with it. |
 | `api/docs/MICROSERVICES_ARCHITECTURE.md` | 525 | Self-declared subordinate to `api/ARCHITECTURE.md`, stale-dated. Keep as dated history or fold and delete. |
 | `api/docs/VS_TEST_EXPLORER_TROUBLESHOOTING.md` | 51 | Duplicate of the `reset-test-explorer` skill. One owner, one pointer. |
 | `docs/USP.md`, `docs/DEEP_RESEARCH_PROMPT_GUIDE.md`, `docs/OVERVIEW.md` | 319 | All orphaned. `OVERVIEW.md` is the clearest "what is Concertable" anywhere and nothing links it — link it from root. |
-| `api/docs/` as a tree | — | After 3b it holds only the two files above. Collapse it; two parallel doc trees in one service tree with no stated distinction is the original defect. |
+| `api/docs/` as a tree | — | ~~Collapse it.~~ **Kept, 2026-08-19.** The defect was `api/docs/` *beside* `api/agents/` — two trees, no stated distinction. `api/agents/` is gone, so one tree holding one file remains, its distinction from `api/ARCHITECTURE.md` is stated in both, and `docs/INDEX.md` names it. Moving it would rewrite five deliberate inbound links to change nothing. |
 | `api/ARCHITECTURE.md` | 242 | **Pulled forward into Next Step 1.** Not a per-service doc — it is the platform's topology, and the polyrepo cut deletes the `api/` node that hosts it. Splits: the roster, adapter-vs-data here, and contract distribution to `agent-standards/standards/dotnet/structure/SERVICE_BOUNDARIES.md`, beside its generic counterpart; anything true of one service only to that service's repo. Done in the same pass as `api/agents/`, because both land in the same `structure/` folder. |
 
 The rest of the table stays deferred; only the `api/ARCHITECTURE.md` row moves into Next Step 1.
@@ -819,7 +832,15 @@ generic → `standards/dotnet/data/PERSISTENCE.md`. The `Concertable.DataAccess`
 read/write, `VenueArtistTenantScopedDbContext`, `ReadDbContext` for unfiltered reads, `AdminDbContext` for
 everything, and which entities carry a query filter — are B2B's → the B2B repo.
 
-### Phase 5c — the discovery pass: write down what was never written down
+### Phase 5c — the discovery pass: write down what was never written down — DONE 2026-08-19
+
+**Every named gap this plan owned is filled.** The last six: `dotnet/STACK.md` in `dotagents`, and
+`react/ROUTING.md`, `UI.md`, `TABLES.md`, `DATES.md`, `TESTING.md` in `react-agents` — each written from
+the code and the package manifests, not from the old docs. The gaps the two generic READMEs still list
+(`messaging`, `configuration`, `caching`, `observability`, `authorization`, `background-jobs`;
+`component-design`, `loading-and-errors`, `accessibility`, `formatting`, `realtime`, `performance`,
+`type-safety`, `cross-platform`) are those repos' own backlog, not this plan's.
+
 
 **New scope, 2026-08-18.** Phases 3–5 move and organize rules that already exist as prose. They do not
 find the conventions that live only in the code and in Tommy's head — and the B2B stance taxonomy above

@@ -78,6 +78,7 @@ When a topic has both, the skill owns the rule and the file owns the inventory.
 | Result and Option carriers; typed errors; transport terminals | skills `result-carriers`, `result-errors`, `result-terminals` |
 | Proto naming, proto mappers, wire error mapping | skill `proto` |
 | Seeding — drive the trigger, never write the row | skill `seeding` |
+| Which .NET library for which job, and what is deliberately not used | skill `dotnet-stack` |
 | Unit / integration / E2E scenario authoring | skills `unit-testing`, `integration-testing`, `e2e-scenarios` |
 | **This system's** `Concertable.DataAccess` capability hierarchy, one repository per entity | skill: `persistence` |
 | **This system's** `IGeometryProvider` / WGS84 | skill: `geometry` |
@@ -113,7 +114,12 @@ When a topic has both, the skill owns the rule and the file owns the inventory.
 | The zod parse between buffer and request | skill `write-boundary` |
 | Slots over role checks, composed identity, tier discipline | skill `tiered-shared-code` |
 | Which library to reach for | skill `stack-defaults` |
-| The sharing tiers and the build gate | [`app/AGENTS.md`](../app/AGENTS.md) |
+| Routing, guards, search params, loader vs query | skill `routing` |
+| Tailwind, `cn`/`cva`, owned primitives, toasts, motion | skill `ui-components` |
+| TanStack Table behind one `DataTable` | skill `data-tables` |
+| dayjs behind one formatting module | skill `date-formatting` |
+| What a Vitest suite covers and what the browser suite owns | skill `frontend-testing` |
+| **This system's** surfaces, sharing tiers, route contract and typecheck gate | skill: `app-tiers` |
 | **This system's** four HTTP clients and the `isApiError` seam | skill: `http-layer` |
 | **This system's** `$type` unions and `FormData` casing | skill: `typescript-style` |
 | **This system's** `User`/`B2bIdentity` split | skill: `identity` |

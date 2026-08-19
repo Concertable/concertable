@@ -202,6 +202,33 @@
         "docs-and-debt"
       ],
       "note": "Writing guidance is the moment one-rule-one-home is won or lost: check docs/INDEX.md for an existing owner first, and never add a second copy of a rule that already has one."
+    },
+    {
+      "path": "app/(shared|customer/shared|web/shared|web/b2b/shared|mobile/shared)/.*\\.(ts|tsx)$",
+      "skills": [
+        "app-tiers",
+        "react-standards:tiered-shared-code",
+        "react:tiered-shared-code"
+      ]
+    },
+    {
+      "path": "app/.*/routes/.*\\.tsx$",
+      "skills": [
+        "routing",
+        "app-tiers"
+      ]
+    },
+    {
+      "path": "app/.*/components/ui/.*\\.tsx$",
+      "skills": [
+        "ui-components"
+      ]
+    },
+    {
+      "path": "app/.*\\.test\\.tsx?$",
+      "skills": [
+        "frontend-testing"
+      ]
     }
   ]
 }
