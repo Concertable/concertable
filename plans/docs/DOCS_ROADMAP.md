@@ -34,8 +34,8 @@ standing contradiction was structurally invisible to the one process meant to fi
 |---|---|---|---|
 | [x] | `docs/guidance-reconcile` | Reconcile the ten contradictions and every dangling reference; delete the two obsolete north-star docs; extend the reachability hook to fail on dead and root-absolute links | — |
 | [x] | `docs/agent-standards` | Move the generic conventions out as `.agents`-canonical, load-on-demand skills — 35 total, split by whether the rule names this product: 28 generic in `tomjseery/dotagents` (`~/.agents/skills/`), 7 Concertable process ones in `Concertable/agent-standards` | docs/guidance-reconcile |
-| [ ] | `docs/guidance-restructure` | Reduce `api/agents/*` and `app/agents/*` to the in-repo hard floor (2,681 lines → ≈330), give each service a thin `CODE_CONVENTIONS.md`/`CODE_PATTERNS.md` of its own precedents, and collapse every duplicated rule to one home | docs/agent-standards |
-| [ ] | `docs/guidance-autoload` | Cut the auto-loaded floor: drop the three `@`-imports, and reduce the always-loaded merge and Docker blocks that `/merge` and `scripts/e2e.ps1` already automate | docs/guidance-restructure |
+| [x] | `docs/guidance-restructure` | Reduce `api/agents/*` and `app/agents/*` to the in-repo hard floor (2,681 lines → ≈330), give each service a thin `CODE_CONVENTIONS.md`/`CODE_PATTERNS.md` of its own precedents, and collapse every duplicated rule to one home | docs/agent-standards |
+| [x] | `docs/guidance-autoload` | Delivered by `docs/guidance-restructure` rather than separately: an `api/**` prompt loads 78 lines with zero `@`-imports (from 1,429), root `AGENTS.md` is 150 (from 298), and the merge loop and Docker block are one-line pointers at the skills that automate them | docs/guidance-restructure |
 | [ ] | `docs/analyzer-pushdown` | Set `EnforceCodeStyleInBuild` so `severity = error` style rules actually fail a build, move what prose re-argues into `.editorconfig`, and document the rules currently enforced with no written home (`MA0053`, file-scoped namespaces) | docs/guidance-restructure |
 
 ## Standing principles
