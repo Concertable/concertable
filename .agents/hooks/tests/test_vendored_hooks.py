@@ -10,6 +10,16 @@ REPO = HOOKS.parents[1]
 MANIFEST = HOOKS / "vendored.json"
 WIRING = (REPO / ".claude" / "settings.json", REPO / ".codex" / "hooks.json")
 
+# The ONE place a half-wired hook is legal, and only with its reason written down. Each entry is
+# outstanding work, not a settled shape: delete it the moment the hook can be wired everywhere.
+SINGLE_HARNESS = {
+    "merge_review_gate.py": (
+        "the gate's SHELL_TOOLS vocabulary holds only Claude's `Bash`. Codex's shell tool name is "
+        "not established, and wiring a matcher the hook ignores is enforcement that is inert while "
+        "looking wired. Add the name to SHELL_TOOLS upstream, wire .codex/hooks.json, drop this row."
+    ),
+}
+
 
 def normalized(path):
     return path.read_bytes().decode("utf-8").replace("\r\n", "\n")
@@ -73,11 +83,28 @@ class VendoredHookTests(unittest.TestCase):
 
     def test_every_vendored_hook_is_wired_for_both_harnesses(self):
         # A hook wired in one harness only is the defect this vendoring exists to remove: the router
-        # spent its first life in .claude/settings.json alone, so Codex never ran it.
+        # spent its first life in .claude/settings.json alone, so Codex never ran it. A hook wired in
+        # NEITHER is a vendored command-line check rather than a hook, and is not that defect.
         for name in self.entries:
+            if name in SINGLE_HARNESS:
+                continue
+            wired = [w for w in WIRING if name in w.read_text(encoding="utf-8")]
+            if not wired:
+                continue
             for wiring in WIRING:
                 with self.subTest(hook=name, wiring=wiring.name):
                     self.assertIn(name, wiring.read_text(encoding="utf-8"))
+
+    def test_every_single_harness_exemption_is_still_needed(self):
+        # The allowlist is the one place a half-wired hook is legal, so it must not outlive its
+        # reason - an exemption for a hook that is now wired everywhere hides the next regression.
+        for name, reason in SINGLE_HARNESS.items():
+            with self.subTest(hook=name):
+                self.assertIn(name, self.entries, f"{name} is exempted but no longer vendored.")
+                wired = [
+                    w.parent.name for w in WIRING if name in w.read_text(encoding="utf-8")
+                ]
+                self.assertEqual([".claude"], wired, f"{name}: {reason}")
 
     def test_every_wired_tool_name_is_one_the_hook_acts_on(self):
         # Being named in both wiring files is not the same as running in both. The router was matched

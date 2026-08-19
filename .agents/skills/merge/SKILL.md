@@ -67,7 +67,7 @@ or queueing. Never push a checkpoint-only local tail to a queued, locked, merged
    remain open.
 
    **The gate is hook-enforced, and the hook is where the `!` escape comes in.**
-   `.claude/hooks/merge-review-gate.py` (PreToolUse) blocks the *agent's* `gh pr merge` until
+   `.agents/hooks/merge_review_gate.py` (PreToolUse) blocks the *agent's* `gh pr merge` until
    `reviews/<branch>.md` is current + clean. It resolves *this session's* checkout branch, so a worktree
    PR merged from a main-rooted session trips it looking for `reviews/main.md`. When the merge is
    authorized — review clean, or Tommy chose to bypass — **don't ask how to proceed: hand him the command

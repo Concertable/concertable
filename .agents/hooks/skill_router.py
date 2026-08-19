@@ -42,6 +42,12 @@ import sys
 import tempfile
 from pathlib import Path
 
+# Skill descriptions carry non-ASCII punctuation, and this text is what the agent acts on.
+# Windows defaults these streams to cp1252, which renders it as mojibake.
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        _stream.reconfigure(encoding="utf-8", errors="replace")
+
 
 ROUTES_FILE = ".agents/skill-routes.json"
 # Lowercased, because the two harnesses do not agree on casing or on names. Claude writes through
@@ -61,8 +67,83 @@ PATH_KEYS = ("file_path", "notebook_path", "path", "filepath")
 # An apply_patch envelope names its files inside the patch body, so a key lookup alone sees none of them.
 PATCH_FILE_TARGET = re.compile(r"\*\*\*\s+(?:Add|Update|Delete)\s+File:\s*([^\r\n]+)", re.IGNORECASE)
 PATCH_ADDED_LINE = re.compile(r"^\+(?!\+\+)(.*)$", re.MULTILINE)
-SKILL_ROOTS = (Path.home() / ".agents" / "skills", Path.home() / ".claude" / "skills")
 QUERY_FLAG = "--skills-for"
+# Junction/copy deployment: one flat namespace per harness root.
+LINKED_SKILL_ROOTS = (".agents/skills", ".claude/skills")
+# Plugin deployment: <harness>/plugins/cache/<marketplace>/<plugin>/<version>/skills/<name>/SKILL.md.
+# Both harnesses use that shape under their own home, and a plugin's skills are NOT in the roots above -
+# so resolving only those reports every plugin-installed skill as missing.
+PLUGIN_CACHE_ROOTS = (".claude/plugins/cache", ".codex/plugins/cache")
+# Some uninstall paths leave the cache directory behind carrying this marker. It is a useful hint but
+# NOT a reliable one: removing a marketplace dropped its plugins from the manifest while leaving the
+# whole payload in the cache with no marker at all. So the manifest below is the authority where one
+# exists, and this only filters what the directory walk turns up.
+ORPHAN_MARKER = ".orphaned_at"
+CLAUDE_INSTALL_MANIFEST = ".claude/plugins/installed_plugins.json"
+
+
+def manifest_install_roots():
+    """Claude's authoritative installed set. None when unreadable, meaning fall back to walking.
+
+    A cache directory is evidence a plugin WAS installed, never that it still is.
+    """
+    manifest = Path.home() / CLAUDE_INSTALL_MANIFEST
+    try:
+        data = json.loads(manifest.read_text(encoding="utf-8-sig"))
+    except (OSError, ValueError):
+        return None
+    plugins = data.get("plugins")
+    if not isinstance(plugins, dict):
+        return None
+    roots = []
+    for installs in plugins.values():
+        if not isinstance(installs, list):
+            continue
+        for install in installs:
+            path = install.get("installPath") if isinstance(install, dict) else None
+            if path:
+                roots.append(Path(path))
+    return roots
+
+
+def skill_search_dirs():
+    """Every directory that may hold `<name>/SKILL.md`, nearest delivery first.
+
+    Ordered own-plugin, then linked roots, then other plugins: the first is exact and needs no globbing,
+    and it is the one that answers when this hook is itself running from an installed plugin.
+    """
+    home = Path.home()
+
+    own = os.environ.get("CLAUDE_PLUGIN_ROOT")
+    if own:
+        yield Path(own) / "skills"
+    # hooks/skill_router.py -> the plugin root that copied it. True in an install, harmless in a repo.
+    yield Path(__file__).resolve().parent.parent / "skills"
+
+    for relative in LINKED_SKILL_ROOTS:
+        yield home / relative
+
+    manifest_roots = manifest_install_roots()
+    if manifest_roots is not None:
+        for root in manifest_roots:
+            yield root / "skills"
+
+    for relative in PLUGIN_CACHE_ROOTS:
+        # Claude's installs are already covered authoritatively above; walking its cache as well would
+        # resurrect uninstalled payloads that no longer appear in the manifest.
+        if manifest_roots is not None and relative.startswith(".claude/"):
+            continue
+        cache = home / relative
+        if not cache.is_dir():
+            continue
+        try:
+            versions = sorted(cache.glob("*/*/*"))
+        except OSError:
+            continue
+        for version in versions:
+            if (version / ORPHAN_MARKER).exists():
+                continue
+            yield version / "skills"
 
 
 def repo_relative(path, cwd):
@@ -144,7 +225,7 @@ def written_targets(tool_input):
 
 def skill_description(name):
     """The skill's own description, so the rule text has exactly one home."""
-    for root in SKILL_ROOTS:
+    for root in skill_search_dirs():
         skill = root / name / "SKILL.md"
         if not skill.is_file():
             continue
@@ -185,11 +266,31 @@ def find_repo_root(cwd):
     return None
 
 
+class RoutesUnusable(Exception):
+    """The repo opted into routing and the table cannot be read. Never silently ignored."""
+
+
 def load_routes(root):
-    try:
-        return json.loads((root / ROUTES_FILE).read_text(encoding="utf-8")).get("routes", [])
-    except (OSError, ValueError):
+    """Absent table -> None, the repo has not opted in. Present but unusable -> raises.
+
+    Failing open on a malformed table is the ENF1 failure exactly: enforcement that is inert while
+    looking wired. A repo that created this file asked for routing, so a typo in it is a loud stop.
+    """
+    path = root / ROUTES_FILE
+    if not path.is_file():
         return None
+    try:
+        parsed = json.loads(path.read_text(encoding="utf-8"))
+    except OSError as error:
+        raise RoutesUnusable(f"{ROUTES_FILE} exists but could not be read: {error}") from error
+    except ValueError as error:
+        raise RoutesUnusable(f"{ROUTES_FILE} exists but is not valid JSON: {error}") from error
+    routes = parsed.get("routes")
+    if routes is None:
+        raise RoutesUnusable(f"{ROUTES_FILE} has no `routes` key.")
+    if not isinstance(routes, list):
+        raise RoutesUnusable(f"{ROUTES_FILE} `routes` must be a list, got {type(routes).__name__}.")
+    return routes
 
 
 def matching_routes(routes, rel, content):
@@ -219,7 +320,12 @@ def query(argv):
 
     cwd = os.getcwd()
     root = find_repo_root(cwd)
-    routes = load_routes(root) if root else None
+    try:
+        routes = load_routes(root) if root else None
+    except RoutesUnusable as error:
+        print(f"SKILL ROUTER - {error}")
+        print("The table exists, so routing was asked for. Fix it; do not review against a dead table.")
+        return 2
     if not routes:
         print(f"no readable {ROUTES_FILE} above {cwd} - no skill is owed")
         return 0
@@ -277,7 +383,19 @@ def main():
     root = find_repo_root(cwd)
     if root is None:
         sys.exit(0)
-    routes = load_routes(root)
+    try:
+        routes = load_routes(root)
+    except RoutesUnusable as error:
+        sys.stderr.write(
+            "SKILL ROUTER - blocked, the routing table itself is broken:"
+            "\n\n"
+            f"  {error}"
+            "\n\n"
+            "This repo opted into routing by carrying the file, so a table that cannot be read is a"
+            " stop, not a silent pass - otherwise every write from here on is unenforced and looks"
+            " fine.\n"
+        )
+        sys.exit(2)
     if not routes:
         sys.exit(0)
 
@@ -327,8 +445,9 @@ def main():
                 lines.append(f"      {desc}")
             else:
                 lines.append(
-                    "      NOT INSTALLED - no SKILL.md under ~/.agents/skills or ~/.claude/skills. A "
-                    "route pointing at a missing skill is a deployment fault, not a reason to proceed."
+                    "      NOT INSTALLED - no SKILL.md in this plugin, under ~/.agents/skills or "
+                    "~/.claude/skills, or in any installed plugin. A route pointing at a missing skill "
+                    "is a deployment fault, not a reason to proceed."
                 )
         if route.get("note"):
             lines.append(f"      NOTE: {route['note']}")

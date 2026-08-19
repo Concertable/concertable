@@ -12,6 +12,14 @@ ROUTES = Path(__file__).resolve().parents[2] / "skill-routes.json"
 
 
 class SkillRouterTests(unittest.TestCase):
+    """This repo's own route table, run through the vendored router.
+
+    The mechanism is asserted upstream in `Concertable/agent-standards` over a fixture table, so
+    a route added here cannot change what the mechanism is proven to do. Duplicating a mechanism
+    test here drifts: the copy asserting a malformed table fails open outlived the upstream fix
+    that made it block, and only surfaced when the stale vendored router was finally refreshed.
+    """
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.root = Path(self.temp.name).resolve()
@@ -54,12 +62,6 @@ class SkillRouterTests(unittest.TestCase):
             text=True,
         )
 
-    def test_non_write_tool_is_ignored(self):
-        self.assertEqual(0, self.run_hook(tool="Bash").returncode)
-
-    def test_unrouted_path_is_allowed(self):
-        self.assertEqual(0, self.run_hook(path="src/Whatever.cs").returncode)
-
     def test_this_repos_table_enforces_against_a_codex_patch_too(self):
         # Both harnesses run the same vendored router, so both must reach the same verdict on this
         # repo's own table - not just the one whose payload shape the router was written against.
@@ -68,42 +70,6 @@ class SkillRouterTests(unittest.TestCase):
             "*** Add File: api/Concertable.Svc/tests/Concertable.Svc.UnitTests/HostTests.cs\n"
             "+var f = new WebApplicationFactory<Program>();\n"
             "*** End Patch\n"
-        )
-
-        self.assertEqual(2, result.returncode)
-        self.assertIn("integration test", result.stderr)
-
-    def test_first_write_to_a_routed_path_blocks_and_names_the_skill(self):
-        result = self.run_hook(path="api/Svc.UnitTests/SomeTests.cs", content="public class X { }")
-
-        self.assertEqual(2, result.returncode)
-        self.assertIn("unit-testing", result.stderr)
-        self.assertIn("NOT written", result.stderr)
-
-    def test_second_write_to_the_same_route_is_allowed(self):
-        self.run_hook(path="api/Svc.UnitTests/A.cs", content="class A { }")
-
-        result = self.run_hook(path="api/Svc.UnitTests/B.cs", content="class B { }")
-
-        self.assertEqual(0, result.returncode)
-
-    def test_a_new_session_is_reminded_again(self):
-        self.run_hook(path="api/Svc.UnitTests/A.cs", content="class A { }")
-
-        # A fresh uuid every run: the router keys its state file by session id, and those files
-        # outlive the test, so a literal id passes once and then fails for ever.
-        result = self.run_hook(
-            path="api/Svc.UnitTests/B.cs", content="class B { }", session=str(uuid.uuid4())
-        )
-
-        self.assertEqual(2, result.returncode)
-
-    def test_a_deny_pattern_blocks_even_after_the_route_is_seen(self):
-        self.run_hook(path="api/Svc.UnitTests/A.cs", content="class A { }")
-
-        result = self.run_hook(
-            path="api/Svc.UnitTests/B.cs",
-            content="var f = new WebApplicationFactory<Program>();",
         )
 
         self.assertEqual(2, result.returncode)
@@ -133,21 +99,6 @@ class SkillRouterTests(unittest.TestCase):
             path="api/Svc/Svc.csproj",
             content="<Project><PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup></Project>",
         )
-
-        self.assertEqual(0, result.returncode)
-
-    def test_an_unreadable_routes_file_fails_open(self):
-        (self.root / ".agents" / "skill-routes.json").write_text("{ not json", encoding="utf-8")
-
-        result = self.run_hook(path="api/Svc.UnitTests/A.cs", content="class A { }")
-
-        self.assertEqual(0, result.returncode)
-
-    def test_a_repo_without_the_routes_file_is_ignored(self):
-        other = Path(tempfile.mkdtemp()).resolve()
-        (other / ".git").mkdir()
-
-        result = self.run_hook(path="api/Svc.UnitTests/A.cs", content="class A { }", root=other)
 
         self.assertEqual(0, result.returncode)
 

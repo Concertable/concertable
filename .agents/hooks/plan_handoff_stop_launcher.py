@@ -1,4 +1,5 @@
 import json
+import os
 import runpy
 import subprocess
 import sys
@@ -54,7 +55,26 @@ def block_once(data, reason):
     return {"decision": "block", "reason": reason}
 
 
+def plugin_delivered():
+    """True when this copy came from an installed plugin rather than a repo's vendored copy.
+
+    The currency check below asks whether a repo's checkout still matches its origin/main. A
+    plugin has no such repo above it, so the check can only ever fail - which would block every
+    turn. Under plugin delivery the plugin IS the author, so there is nothing to verify.
+    """
+    plugin_root = os.environ.get("CLAUDE_PLUGIN_ROOT")
+    if not plugin_root:
+        return False
+    try:
+        return Path(plugin_root).resolve() in Path(__file__).resolve().parents
+    except OSError:
+        return False
+
+
 def main():
+    if plugin_delivered():
+        runpy.run_path(str(Path(__file__).resolve().parent / "plan_handoff_stop.py"), run_name="__main__")
+        return
     root = Path(__file__).resolve().parents[2]
     if not implementation_is_current(root):
         try:

@@ -12,18 +12,26 @@ If Claude Code also needs to discover the skill, add only a compatibility stub a
 `.claude/skills/<name>/SKILL.md` that points back to the matching `.agents` skill. Do not duplicate
 the full instructions in `.claude`; duplicated skill bodies drift.
 
-## Hooks — repo-owned versus vendored
+## Hooks are all vendored — change them upstream, never here
 
-`.agents/hooks/` mixes two kinds of file, and `vendored.json` is what tells them apart. A hook listed
-there is **generated** from `Concertable/agent-standards` and must be changed upstream, then re-synced
-with that repo's `.agents/vendor-hooks.ps1 -Into <this repo>`; editing the copy in place fails
-`test_vendored_hooks.py`. Everything not listed (`plan_graph.py`, `plan_handoff_stop.py`,
-`docs_reachability.py`) is Concertable's own and is edited here.
+Every file in `.agents/hooks/` is **generated** from `Concertable/agent-standards` and listed in
+`vendored.json`. Change it there, then re-sync with that repo's
+`.agents/vendor-hooks.ps1 -Into <this repo>`; editing a copy in place fails `test_vendored_hooks.py`.
+Each hook enforces a standard that lives upstream too, so the rule and the thing that enforces it
+cannot drift apart.
 
-A vendored hook is carried rather than installed on purpose: a plugin only runs on a machine where
-someone installed it, so enforcement that depends on an install is absent on a fresh clone. Each hook
-is therefore wired in both `.claude/settings.json` and `.codex/hooks.json` — one harness only is the
-defect, not a partial rollout.
+What stays here is this repo's **data**: `.agents/skill-routes.json` (path → owning standard) and
+`.agents/merge-gate.json` (this repo's security-sensitive paths). A hook without its table does
+nothing; the table without the hook enforces nothing. Tests split the same way — the mechanism is
+tested upstream over fixtures, and `tests/` here only asserts that this repo's own tables produce the
+verdicts we expect.
+
+A hook is carried rather than installed on purpose: a plugin only runs on a machine where someone
+installed it, so enforcement that depends on an install is absent on a fresh clone. Each is therefore
+wired in both `.claude/settings.json` and `.codex/hooks.json` — one harness only is the defect, not a
+partial rollout. The single exception is `merge_review_gate.py`, which knows only Claude's `Bash` tool
+name; `SINGLE_HARNESS` in `tests/test_vendored_hooks.py` carries that exemption and its reason, and
+that test fails if the exemption outlives it.
 
 ## Global starter kit
 

@@ -19,10 +19,14 @@ The review file is what `review` / `docs-review` write:
 `reviews/<branch-with-slashes-as-dashes>.md`, carrying a top-of-file
 `**Reviewed up to commit:** \`<sha>\`` marker and `- [ ]` / `- [x]` findings.
 
-Security layer: when the reviewed range touches security-sensitive paths (Auth,
-Payment, *.Contracts, controllers, auth/authz/secret/credential files, CI
-workflows), the merge also requires a current `**Security-reviewed up to commit:**
-\`<sha>\`` marker — stamped by `review` Step 1d after it runs `/security-review`.
+Security layer: when the reviewed range touches security-sensitive paths, the merge
+also requires a current `**Security-reviewed up to commit:** \`<sha>\`` marker —
+stamped by `review` Step 1d after it runs `/security-review`.
+
+A repo opts in by carrying `.agents/merge-gate.json`; without one the hook exits 0
+and claims no jurisdiction. That file also names the repo's own security-sensitive
+paths, which are its inventory rather than this mechanism's — the generic patterns
+below (workflows, auth/secret vocabulary) apply everywhere and stay here.
 """
 
 import json
@@ -49,22 +53,63 @@ def git(*args):
 
 _ENABLE_TOKENS = ("--auto", "--admin", "--merge", "--squash", "--rebase")
 
+CONFIG_FILE = ".agents/merge-gate.json"
+
+# Lowercased, and the hook's whole vocabulary: a harness whose shell tool is not named here
+# cannot be wired to this gate, because a matcher the hook ignores is enforcement that is inert
+# while looking wired. Codex's shell tool name is not established yet, so it carries no entry.
+SHELL_TOOLS = {"bash"}
+
 # Paths whose change makes a diff security-sensitive — a merge touching any of
 # these needs a current `Security-reviewed up to commit:` marker too. Kept
 # targeted (concrete high-value areas) so unrelated merges are never blocked.
+# These hold in any repo; a repo's own service and project names go in its
+# CONFIG_FILE under `security_paths`.
 _SECURITY_PATTERNS = (
-    re.compile(r"(^|/)Concertable\.Auth"),
-    re.compile(r"(^|/)Concertable\.Payment"),
-    re.compile(r"\.Contracts(/|\.)"),
-    re.compile(r"Controller[A-Za-z]*\.cs$"),
     re.compile(r"^\.github/workflows/"),
     re.compile(r"(?i)(authoriz|authentic|credential|\bsecret|password|apikey|api_key)"),
 )
 
 
-def touches_security(changed_paths):
+class ConfigUnusable(Exception):
+    """The repo opted into the gate and the table cannot be read. Never silently ignored."""
+
+
+def find_config(cwd):
+    """The opted-in repo root at or above `cwd`, or None. Walking up rather than asking git
+    keeps a worktree, a submodule and a plain checkout on the same answer."""
+    try:
+        base = Path(cwd).resolve()
+    except OSError:
+        return None
+    for candidate in (base, *base.parents):
+        if (candidate / CONFIG_FILE).is_file():
+            return candidate / CONFIG_FILE
+    return None
+
+
+def security_patterns(config_path):
+    """The generic patterns plus the repo's own. A present but broken table is a loud stop:
+    failing open here would leave the gate inert while looking wired."""
+    patterns = list(_SECURITY_PATTERNS)
+    try:
+        parsed = json.loads(config_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as error:
+        raise ConfigUnusable(f"{CONFIG_FILE} exists but could not be read: {error}") from error
+    declared = parsed.get("security_paths", [])
+    if not isinstance(declared, list):
+        raise ConfigUnusable(f"{CONFIG_FILE} `security_paths` must be a list.")
+    for entry in declared:
+        try:
+            patterns.append(re.compile(entry))
+        except (TypeError, re.error) as error:
+            raise ConfigUnusable(f"{CONFIG_FILE} `security_paths` entry {entry!r}: {error}") from error
+    return patterns
+
+
+def touches_security(changed_paths, patterns=_SECURITY_PATTERNS):
     for path in changed_paths:
-        for pat in _SECURITY_PATTERNS:
+        for pat in patterns:
             if pat.search(path):
                 return path
     return None
@@ -137,14 +182,6 @@ def common_git_dir(cwd):
     return path.resolve() if path.is_absolute() else (Path(cwd) / path).resolve()
 
 
-def same_repository(cwd):
-    """True when `cwd` belongs to the repository this hook file lives in."""
-    try:
-        return common_git_dir(cwd) == common_git_dir(str(Path(__file__).resolve().parent))
-    except Exception:  # noqa: BLE001 - unresolvable means do not claim jurisdiction
-        return False
-
-
 def gh_json(*args):
     """Runs where the merge runs. `git` was already cwd-aware and this was not, so a
     `cd <other-repo> && gh pr merge <n>` resolved <n> against THIS repo - gating an
@@ -180,7 +217,7 @@ def main():
     except ValueError:
         sys.exit(0)  # not our JSON — don't interfere
 
-    if data.get("tool_name") != "Bash":
+    if str(data.get("tool_name", "")).lower() not in SHELL_TOOLS:
         sys.exit(0)
 
     command = (data.get("tool_input") or {}).get("command", "")
@@ -197,12 +234,17 @@ def main():
         block("MERGE GATE: cannot resolve git state (" + str(exc) + "); refusing "
               "`gh pr merge` until a code-review can be verified.")
 
-    # Only this repository's merges. `reviews/<branch>.md` is THIS repo's convention, and a
-    # sibling repo merged from this session has its own rules - gating it here demanded a
-    # review file that repo never had. Worktrees share a common git dir, so compare that
-    # rather than the toplevel, which differs per worktree of the same repo.
-    if not same_repository(_GIT_CWD[0]):
+    # Only an opted-in repository's merges. `reviews/<branch>.md` is a convention a repo
+    # adopts, and a sibling repo merged from this session has its own rules - gating it here
+    # demanded a review file that repo never had. The question is asked of the directory the
+    # merge RUNS in, so a `cd <other-repo> && merge` is judged by that repo's opt-in.
+    config_path = find_config(_GIT_CWD[0])
+    if config_path is None:
         sys.exit(0)
+    try:
+        patterns = security_patterns(config_path)
+    except ConfigUnusable as exc:
+        block("MERGE GATE: " + str(exc))
 
     # Gate the branch being MERGED, not the branch this session happens to sit on.
     # Resolving the session's checkout meant a worktree PR merged from a main-rooted
@@ -291,7 +333,7 @@ def main():
     except Exception:  # noqa: BLE001 — can't classify → don't block on the security sub-check
         changed = []
 
-    sensitive = touches_security(changed)
+    sensitive = touches_security(changed, patterns)
     if sensitive:
         sm = re.search(r"Security-reviewed up to commit:.*?`([0-9a-fA-F]{7,40})`", review)
         if not sm:

@@ -111,7 +111,7 @@ Run `git diff --name-only <start>..HEAD`. If any path hits Auth, Payment, `*.Con
 **Security-reviewed up to commit:** `<full-HEAD-sha>`  _(<today's ISO date>)_
 ```
 
-The merge gate's `_SECURITY_PATTERNS` (in `merge-review-gate.py`) is the source of truth for which paths count; it refuses to merge a security-sensitive branch without this marker current at HEAD. No sensitive paths → skip this step, no marker.
+The merge gate is the source of truth for which paths count — `security_paths` in `.agents/merge-gate.json` for this repo's services, plus the generic patterns in `merge_review_gate.py`; it refuses to merge a security-sensitive branch without this marker current at HEAD. No sensitive paths → skip this step, no marker.
 
 ## Step 2 — Load the rules (read before flagging anything)
 

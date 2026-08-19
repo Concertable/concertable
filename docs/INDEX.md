@@ -129,7 +129,8 @@ diagnostic or test name, not an argument.
 | Service boundaries hold when carved | `EnforceServiceBoundary` + the `carve-*` CI jobs | Yes |
 | Docker is really healthy before E2E | `scripts/docker-health.ps1`, gated by `scripts/e2e.ps1` | Gate |
 | Docs are reachable; `CLAUDE.md` siblings exist; every test project carries a stub stating its tier | `.agents/hooks/docs_reachability.py` via `docs-review` | Gate |
-| Plan handoff ends with its continuation pointer | `.agents/hooks/plan_handoff_stop.py` | Gate |
+| Plan handoff ends with its continuation pointer | `.agents/hooks/plan_handoff_stop_launcher.py` | Gate |
+| No `gh pr merge` without a current, clean code-review | `.agents/hooks/merge_review_gate.py` over `.agents/merge-gate.json` | Gate |
 | A test project's name declares its tier; a unit test cannot boot a host, container or database | `api/TestConventions.targets` + `api/BannedSymbols.UnitTests.txt` | Yes |
 | The standard that owns a path is loaded before the first write into it | `.agents/hooks/skill_router.py` over `.agents/skill-routes.json`, wired in `.claude/settings.json` and `.codex/hooks.json` | Gate |
 | A vendored hook still matches upstream and is wired for both harnesses | `.agents/hooks/tests/test_vendored_hooks.py` | Gate |
