@@ -88,9 +88,39 @@ the command and the stop-and-tell-the-user procedure.
 tests over them. A plugin `Stop` hook was proven to fire *and block* with zero repo wiring first — the
 gate this step was held behind.
 
-**What remains:** 5c (discovery — `dotnet/STACK.md` is its first known gap), 3c (markdown outside the
-conventions folders), and ENF12 — the vendored hooks' provenance pins name commits that live only on
-`agent-standards` #2's branch, so that PR must land before #637 is enqueued.
+**What remains:** 5c (discovery), 3c (markdown outside the conventions folders), and ENF12 — the
+vendored hooks' provenance pins name commits that live only on `agent-standards` #2's branch, so that PR
+must land before #637 is enqueued.
+
+**The move itself is now audited, not asserted (2026-08-19).** What is mechanically proven: every doc the
+plan's four-tier list names exists, and the only absences are rows the plan itself marks `GAP`/`NEW` (1 in
+`dotagents`, 5 in `react-agents`, 3 in `agent-standards`) plus the two 3c holdovers; `api/agents/` and
+`app/agents/` are gone; doc↔router is 1:1 in all three repos (20/9/27, no doc with none or two); all **112**
+deployed routers open a byte-identical copy of their own repo's doc, so no cross-repo shadowing; the six
+vendored hooks hash to the commits `vendored.json` records.
+
+**What the audit found still outstanding** — every deleted doc's backticked identifiers were checked
+against the whole current corpus, and four live concepts landed nowhere:
+
+- `IDomainEvent` (60 code files) and `IDomainEventDispatcher` (7) — the raise-in-the-domain /
+  dispatch-to-integration-event mechanism is documented in no standard and no in-repo doc. `MM_NORTH_STAR.md`
+  held it and was deleted as obsolete; this is one of the "still-true corollaries" that was never inlined.
+- `ExcludeFromMigrations` (37 code files) — same source, same loss.
+- `CallCredentials` (1) — how a gRPC call carries credentials, from `MICROSERVICE_COMMUNICATION.md`.
+- Concertable's tenancy inventory is *not* lost but is Tier-4 only (`api/Concertable.B2B/CODE_PATTERNS.md`,
+  its `ARCHITECTURE.md`), and there is no `concertable-multitenancy` router, so the write-time router never
+  loads it; the generic `multitenancy` skill is routed on `Repository.cs$` alone.
+
+Two in-scope doc defects the audit also turned up, neither of them 5c:
+
+- **Six in-repo docs still cite a `CLAUDE.md` for content** — `ARCHITECTURE.md:13`, `app/shared/AGENTS.md:14`,
+  `app/web/shared/AGENTS.md:9` and `:34`, `app/web/b2b/shared/AGENTS.md:22`,
+  `api/Concertable.B2B/src/Modules/Deal/ARCHITECTURE.md:329`, `api/Concertable.Shared/TECH_DEBT.md:9`. Every
+  `CLAUDE.md` is a one-line `@AGENTS.md` stub, so each of these points at a file without the text it quotes.
+  Phase 2 claims this was fixed.
+- **`app/shared/AGENTS.md` still restates ~40 lines** of the shared-tier intersection rule and the
+  `User`/`B2bIdentity` composition that `react/SHARED_CODE.md` and `agent-standards/react/IDENTITY.md` now
+  own — a Phase 4 dedupe that was missed because the file is not under `app/agents/`.
 
 ## Done
 
@@ -644,8 +674,14 @@ Audit findings: **all closed**; `reviews/Docs-GuidanceDocsRestructure-AuditFindi
 `react/BROWSER_STORAGE.md` are named in the plan's Tier 3 block but their sources sit outside the moved
 lines, so they stay with the rest of 3c.
 
-1. **The two remaining phases**: 5c (the discovery pass — conventions that exist only in code, e.g.
-   B2B's stance taxonomy) and 3c (markdown outside the conventions folders).
+1. **The two remaining phases**: 5c (the discovery pass — conventions that exist only in code) and 3c
+   (markdown outside the conventions folders). 5c's known gaps are now named rather than guessed:
+   `dotnet/STACK.md`, the five `react` `NEW` rows, the three `agent-standards` `GAP` rows, and the four
+   undocumented live concepts in `## Current state` (domain events, `ExcludeFromMigrations`,
+   `CallCredentials`, and a `concertable-multitenancy` router over B2B's existing Tier-4 tenancy docs).
+   3c's table is unchanged, plus `app/web/shared/BROWSER_STORAGE.md` → `react/BROWSER_STORAGE.md` and
+   `react/APP_TIERS.md`. The two `CLAUDE.md`-citation and `app/shared/AGENTS.md` defects above are
+   small and belong on this branch, not in a phase.
 
 2. **#637 is reviewed and its markers are current; it now waits on ENF12 and then on Tommy.** The
    review is clean apart from ENF12, which only the upstream merge closes. It is **not** a docs-only PR —
