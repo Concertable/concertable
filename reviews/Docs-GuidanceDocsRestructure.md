@@ -5,9 +5,9 @@
 > Tick each `[x]` as you land it. Pause only for a genuinely irreversible/ambiguous finding: flag it
 > in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `890c68d28907a895133fbad545de259b2ae7214d`  _(2026-08-19)_
+**Reviewed up to commit:** `16230d76ffa3f3810476d63001c5050be41a8d34`  _(2026-08-19)_
 
-**Security-reviewed up to commit:** `b525776b4a9cbdbf227dabcf8d507a9651817d16`  _(2026-08-18)_
+**Security-reviewed up to commit:** `16230d76ffa3f3810476d63001c5050be41a8d34`  _(2026-08-19)_
 
 > Range reviewed: `9205e82d..2b93b45b` (12 commits reviewed; markers moved to `54b91961`, the fix commit, 73 files — markdown plus one Python hook).
 > Markers moved forward three times with nothing re-reviewable in between: once to the fix commit
@@ -366,3 +366,90 @@ stale, because a reader consults it precisely to avoid searching.
 - [x] **ACC9 — LOW — accuracy** — `docs/INDEX.md:111`
   Points at `app/web/AGENTS.md` "HTTP errors", deleted in `a70788482` when the axios ban was collapsed to
   one home. Repointed at `http-layer` (the rule) and `concertable-http-layer` (the `isApiError` inventory).
+
+## Incremental review — 2026-08-19 (hook ownership)
+
+> Range: `890c68d28..16230d76f` — 3 commits, 20 files (5 vendored hooks arriving, 6 local test files
+> leaving, the wiring repoint, `.agents/merge-gate.json`, and the ledger). Layer 1 (the native
+> correctness/reuse/simplification/efficiency catalog) was run inline over the same range rather than
+> through the `code-reviewer` subagent — this session is directed not to spawn agents — so its findings
+> carry the `ENF` series with the architecture lenses rather than separate `NAT#` IDs.
+
+Mechanically verified before flagging anything: all 12 remaining hook tests pass; each of the six
+vendored copies hashes byte-identical to the file at the commit `vendored.json` records for it (checked
+against the `agent-standards` clone, normalized line endings, all six OK); every mechanism test deleted
+here exists upstream and upstream CI runs `unittest discover` over it; `uuid` is still used after the
+deletions; `CLAUDE_PLUGIN_ROOT` really is the variable Codex substitutes too, so the launcher's
+plugin-delivery guard is not Claude-only.
+
+Security layer: no path in this range matches the gate's own patterns (`.agents/merge-gate.json` plus
+the generic workflow/credential set), so Step 1d's trigger did not fire and `/security-review` was not
+re-run. The security marker is re-stamped on the strength of a manual read of every Python line in the
+range — no new credential, network, or shell-injection surface; every `subprocess` call is list-form,
+`runpy` targets are derived from `__file__`, and the one externally-supplied path (`installPath` from
+Claude's plugin manifest) is only ever read as `SKILL.md` text for a name the repo's own route table
+supplies. ENF9 below is why that stamp had to be a judgement call at all.
+
+- [ ] **ENF8 — HIGH — correctness: the merge gate's security layer fails open depending on which
+  checkout you merge from** — `.agents/hooks/merge_review_gate.py:322-336`
+  The primary gate deliberately resolves the *PR's* branch and head (`gh pr view <n> --json headRefOid`)
+  so "a worktree PR merged from a main-rooted session" is judged correctly — that fix is the file's own
+  headline comment. The security layer then classifies a different thing: `base = merge-base origin/main
+  HEAD` and `git diff --name-only base..HEAD`, both against the session's HEAD, not the `head` the lines
+  above just resolved. Demonstrated live: run the module's own helpers from the main checkout for PR #637
+  and the classifier sees **0 files** and returns `None`, so the `Security-reviewed up to commit:`
+  requirement never fires — while the same PR merged from its own worktree classifies 16 paths as
+  sensitive. A security-sensitive PR merged from any other checkout skips the security layer entirely,
+  silently, and the merge is allowed. Fix upstream in `Concertable/agent-standards` (this file is
+  vendored): pass the already-resolved `head` into both the merge-base and the diff, add the case to
+  upstream's gate tests, re-run `vendor-hooks.ps1 -Into <repo>`, commit the re-pinned manifest here.
+
+- [ ] **ENF9 — MEDIUM — correctness: the security marker goes stale on commits that cannot have
+  invalidated it, and no documented step clears that** — `.agents/hooks/merge_review_gate.py:346-354`
+  Marker currency is `marker == head`, exempted only by `review_only` (everything since touched
+  `reviews/` alone). So on a branch that *ever* touched a security-sensitive path, any ordinary commit —
+  a doc edit, a ledger update, a merge of `origin/main` — makes the security marker stale and blocks the
+  merge. The review procedure has no step that clears it: Step 1d says to run the security layer only
+  when the *range* is sensitive, so for that ordinary commit it correctly says skip, and the marker is
+  never re-stamped. The two rules together have no legal exit, which is why this branch's marker has been
+  hand-moved forward four times now (three recorded above, once here) — a gate whose satisfying action is
+  an undocumented manual judgement is the failure mode this vendoring exists to remove. Fix upstream,
+  same file and same re-vendor: judge the security marker by whether any *security-sensitive* path
+  changed between the marker and the head (`touches_security(diff(sreviewed..head))`), not by whether any
+  commit did. Sensitive paths untouched since the security review → the security review still covers
+  them.
+
+- [ ] **ENF10 — MEDIUM — correctness: the wiring test now passes for a hook wired in NEITHER harness,
+  and the README states an exception list that is already wrong** —
+  `.agents/hooks/tests/test_vendored_hooks.py:88-96`, `.agents/README.md:23-27`
+  `test_every_vendored_hook_is_wired_for_both_harnesses` gained `wired = [...]; if not wired: continue`.
+  That silently legalizes the case it exists to catch: drop `skill_router.py` or
+  `plan_handoff_stop_launcher.py` from both `.claude/settings.json` and `.codex/hooks.json` and the suite
+  stays green with the router enforcing nothing. The escape was added for `docs_reachability.py` and
+  `plan_graph.py`, which are command-line checks rather than hooks, plus `plan_handoff_stop.py`, which the
+  launcher invokes by path — three of the six files, none of them named anywhere. `.agents/README.md`
+  meanwhile asserts each hook "is therefore wired in both" with `merge_review_gate.py` as "the single
+  exception". Fix: name the category instead of inferring it — a `"delivery"` field in `vendored.json`
+  (`hook` | `command` | `invoked-by-launcher`), assert both-harness wiring for every `hook` entry, and
+  state the three kinds in `.agents/README.md`.
+
+- [ ] **ENF11 — MEDIUM — correctness: nothing in this repo's CI runs the guard that six vendored hooks
+  were not edited in place** — `.github/workflows/test.yml`
+  This range takes the vendored set from one file to six and removes the local tests for five of them, so
+  `tests/test_vendored_hooks.py` is now the only thing standing between an in-place edit and a silent
+  divergence from upstream. No workflow in `.github/workflows/` invokes Python at all (grepped for
+  `python` and `unittest` across all eight files: zero hits), so that guard runs only when a human or
+  agent remembers to. Upstream already does exactly this — `agent-standards/.github/workflows/ci.yml` has
+  a `hook tests` step running `python -m unittest discover -s .agents/hooks/tests -t .agents/hooks/tests`.
+  Fix: add a `hook-tests` job to `test.yml` (`actions/setup-python@v5`, 3.13, that same discover command)
+  and add it to `ci-complete`'s `needs`, which is the single required check.
+
+- [ ] **ENF12 — LOW — the manifest's provenance pins point at commits that exist only on an unmerged PR
+  branch** — `.agents/hooks/vendored.json`
+  All six entries record commits (`e0946731`, `7cb3fddd`, `6a5e1fb1`) that `git branch -r --contains`
+  resolves to `origin/Refactor/StandardsDomainTree` alone — `agent-standards` #2, still open. That repo
+  allows squash merge and the branch is deleted on merge, after which every `commit` field here names an
+  unreachable object and the manifest's own instruction ("change it there at this commit and re-sync")
+  cannot be checked against anything. Fix: land #2 with a merge commit so the SHAs survive, or re-run
+  `vendor-hooks.ps1 -Into <repo>` against `agent-standards` `main` after it merges and commit the
+  re-pinned manifest here before #637 is enqueued.
