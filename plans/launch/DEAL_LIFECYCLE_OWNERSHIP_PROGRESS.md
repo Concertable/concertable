@@ -10,10 +10,12 @@
   `a7eddeeaa133a221a1a86f062ff436f86d0fb20e`; local HEAD, the remote branch, and PR `headRefOid`
   matched `d6c688433d800411577d5e259656d27ee26a3679` after the work-head push. Prior exact-head CI run
   `32236953306` failed the build on stale Concert unit, Workers unit, integration, and E2E test
-  consumers; the next exact action is the Concert unit constructor slice in `## Next Steps`.
+  consumers. The Workers and Concert unit frontiers are now cleared; the next exact integration action
+  is recorded in `## Next Steps`.
 - Dependency/package gates: none block the remaining B2B-internal implementation. Phase 1 delivery is terminal; final `api/**` delivery will own its routine package publication and platform-sync gate only after the complete refactor merges.
-- Last reconciled: 2026-08-19 after clearing the Workers unit frontier, tightening lifecycle API
-  composition, and identifying the next exact-head CI frontier
+- Last reconciled: 2026-08-19 after reproducing the focused Concert unit constructor frontier against
+  current branch/PR head `5d2aedfeaad04ef264cb67b804a11254aacfe362` and clearing it in the
+  current candidate
 
 ## Current state
 
@@ -163,26 +165,36 @@ Concert now register their module-owned dev seeders inside `AddXApi`; the Web ho
 those seeders separately. The focused Workers suite passes 5/5 and the B2B Web Release build passes
 with 0 warnings and 0 errors.
 
+The current candidate clears the two remaining Concert unit-test constructor diagnostics by supplying
+the existing `IBookingModule` boundary at both fixture construction sites. The compiler named the
+trailing logger parameter only because each positional argument list was one entry short; both fixtures
+already supplied `ILogger<ConcertService>`. The focused Release suite passes 88/88.
+
 ## Next Steps
 
-Fresh-context Concert unit-test constructor recovery slice only — preserve the green Workers and B2B
-Web boundaries and do not continue into integration tests, E2E tests, migrations, guidance, or another
-lifecycle operation:
+Fresh-context Concert integration `OpportunityRequestBuilders` compile-recovery slice only — preserve
+the green Concert/Workers unit and B2B Web boundaries and do not enter the other integration fixtures,
+E2E tests, migrations, guidance, or another lifecycle operation:
 
 The keyed-selector design concern is a recorded non-blocking follow-up. Do not refactor, rename, or
 generalize selector/factory infrastructure in this slice.
 
-1. Run `dotnet test
-   api/Concertable.B2B/src/Modules/Concert/Tests/Concertable.B2B.Concert.UnitTests/Concertable.B2B.Concert.UnitTests.csproj
+1. Run `dotnet build
+   api/Concertable.B2B/src/Modules/Concert/Tests/Concertable.B2B.Concert.IntegrationTests/Concertable.B2B.Concert.IntegrationTests.csproj
    --configuration Release --no-restore --disable-build-servers --maxcpucount:1` to reproduce the
-   exact-head CI `ConcertServiceCreateTests.cs:71` and `ConcertServiceTests.cs:46` constructor errors.
-2. Update only those `ConcertService` fixture constructions to supply the current logger dependency.
-   Stop and record any unrelated production frontier rather than entering integration or E2E recovery.
-3. Run `git diff --check` and repeat the focused Release test command. The slice gate is a green suite
-   or an exact recorded unrelated production blocker; update this ledger and stop the context.
+   remaining compile frontier. CI run `32236953306` identified two stale `OpportunityRequest` references
+   in `Opportunity/OpportunityRequestBuilders.cs`; the Workers and Concert unit diagnostics from that run
+   are now cleared.
+2. Update only `Opportunity/OpportunityRequestBuilders.cs` to consume the request from its current
+   Opportunity-owned namespace. Do not migrate other integration fixtures in this slice.
+3. Run `git diff --check` and repeat the focused Release build. The slice gate is removal of both
+   `OpportunityRequestBuilders.cs` diagnostics with the exact remaining integration frontier recorded;
+   update this ledger and stop the context.
 
 ## Completed work
 
+- Recovered both surviving `ConcertService` unit-test fixtures onto the current `IBookingModule`
+  constructor boundary; the focused Release suite passes 88/88.
 - Recovered the Workers completion-runner fixture onto the current operation-owned executor and moved
   the four lifecycle-module dev-seeder registrations behind `AddOpportunityApi`, `AddApplicationApi`,
   `AddBookingApi`, and `AddConcertApi`.
@@ -263,6 +275,11 @@ generalize selector/factory infrastructure in this slice.
 
 ## Verification
 
+- `dotnet test
+  api/Concertable.B2B/src/Modules/Concert/Tests/Concertable.B2B.Concert.UnitTests/Concertable.B2B.Concert.UnitTests.csproj
+  --configuration Release --no-restore --disable-build-servers --maxcpucount:1`: 88/88 passed after
+  supplying `IBookingModule` at both `ConcertService` fixture construction sites.
+- Current candidate `git diff --check`: passed.
 - `dotnet test
   api/Concertable.B2B/tests/Concertable.B2B.Workers.UnitTests/Concertable.B2B.Workers.UnitTests.csproj
   --configuration Release --no-restore --disable-build-servers --maxcpucount:1`: 5/5 passed.
