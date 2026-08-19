@@ -6,7 +6,7 @@
 - Also delivered by this ledger: roadmap item `docs/agent-standards`, now checked off
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-guidance-docs`
 - Branch: `Docs/GuidanceDocsRestructure`
-- PR: #637 — reviewed at `fcec9925` with 4 of 5 findings fixed on the branch; it now needs the upstream merge that closes ENF12, then an explicit merge instruction. Label `skip-e2e`.
+- PR: #637 at `17aa128c0`. Reviewed at `fcec9925` with 4 of 5 findings fixed; three commits have landed since, so both markers are stale and `/incremental-review` plus `/security-review` must run before enqueue. Still needs the upstream merge that closes ENF12, then an explicit merge instruction. Label `skip-e2e`.
   commit). Updated for base currency three times on 2026-08-17: from **69 behind** and `DIRTY` (three doc
   conflicts resolved, below), from 2 behind after platform-sync #645 merged — a clean merge carrying only
   the `<ConcertablePlatformVersion>` bump `0.1.0-alpha.0.1055` → `0.1.0-alpha.0.1061` across the five
@@ -659,13 +659,14 @@ not a vendored hook. Skills arrive as plugins installed once per machine at user
 Three superseded models were purged — do not reintroduce a merged standards repo, `dotagents` holding both
 stacks, or a `platform/`/`concertable/` folder.
 
-**Repo heads at handoff:** `dotagents` `e52a11b` (#1), `react-agents` `1ebb42b` (`main`),
-`agent-standards` `32795d8` (#2, carrying the merge-gate fix and the `delivery` field), pushed
-2026-08-19. Concertable #637 at `fcec9925` plus its marker commit. Nothing is merged.
+**Repo heads at handoff:** `dotagents` `f0dd2c5` (#1), `react-agents` `1ebb42b` (`main`),
+`agent-standards` `7c7c589` (#2), Concertable #637 at `17aa128c0`, all pushed 2026-08-19. Nothing is
+merged.
 
 **Deployed layout on this machine:** `~/.agents/standards/<repo>/<domain>/` — repo-scoped, because a
 generic domain and its Concertable counterpart share a relative path on purpose. Skills stay flat in
-`~/.agents/skills` and `~/.claude/skills` (66 of them). `deploy-skills.ps1` in `dotagents` owns both.
+`~/.agents/skills` and `~/.claude/skills` (**69** of them, after `domain-events`,
+`concertable-domain-events` and `concertable-multitenancy`). `deploy-skills.ps1` in `dotagents` owns both.
 
 Audit findings: **all closed**; `reviews/Docs-GuidanceDocsRestructure-AuditFindings.md` is deleted.
 
@@ -674,26 +675,85 @@ Audit findings: **all closed**; `reviews/Docs-GuidanceDocsRestructure-AuditFindi
 `react/BROWSER_STORAGE.md` are named in the plan's Tier 3 block but their sources sit outside the moved
 lines, so they stay with the rest of 3c.
 
-1. **The two remaining phases**: 5c (the discovery pass — conventions that exist only in code) and 3c
-   (markdown outside the conventions folders). 5c's known gaps are now named rather than guessed:
-   `dotnet/STACK.md`, the five `react` `NEW` rows, the three `agent-standards` `GAP` rows, and the four
-   undocumented live concepts in `## Current state` (domain events, `ExcludeFromMigrations`,
-   `CallCredentials`, and a `concertable-multitenancy` router over B2B's existing Tier-4 tenancy docs).
-   3c's table is unchanged, plus `app/web/shared/BROWSER_STORAGE.md` → `react/BROWSER_STORAGE.md` and
-   `react/APP_TIERS.md`. The two `CLAUDE.md`-citation and `app/shared/AGENTS.md` defects above are
-   small and belong on this branch, not in a phase.
+### Done on 2026-08-19, after the handoff above
 
-2. **#637 is reviewed and its markers are current; it now waits on ENF12 and then on Tommy.** The
-   review is clean apart from ENF12, which only the upstream merge closes. It is **not** a docs-only PR —
-   it carries `api/TestConventions.targets`, the CI job and the hooks — so the docs-only auto-merge path
-   does not apply. Merging will trigger publish + platform sync (`paths: api/**` matches this branch's
-   `api/**` markdown); follow the `chore/platform-sync-*` PR to green.
+**5c's four undocumented live concepts are closed**, each verified against the code before it was written:
 
-3. **Land `agent-standards` #2 and `dotagents` #1** (both `CLEAN`, `verify` green). #2 is now a
-   prerequisite, not just tidiness: Concertable's six hooks are vendored from it and their provenance pins
-   resolve only on its branch (ENF12). After it merges, re-run
-   `pwsh .agents/vendor-hooks.ps1 -Into <worktree>` from a checkout on `main`, commit the re-pinned
-   `vendored.json`, tick ENF12, and re-stamp the markers in a `reviews/`-only commit.
+- **Domain events** — generic `dotagents/standards/dotnet/structure/DOMAIN_EVENTS.md` + `domain-events`,
+  and Concertable's roster in `agent-standards/standards/dotnet/structure/DOMAIN_EVENTS.md` +
+  `concertable-domain-events`. Measured, not assumed: 13 domain events, 13 handlers, **all 13
+  pre-commit**, none doing anything but one `bus.PublishAsync`. `SeedingDomainEventDispatchInterceptor`
+  runs pre-commit handlers in `SavedChangesAsync` while a seeding scope is active — the doc records the
+  behaviour and says outright that no reason for it is written anywhere, rather than inventing one.
+- **`ExcludeFromMigrations`** — the rule in generic `data/PERSISTENCE.md`; the roster (outbox and inbox
+  from `DbContextBase`, plus Concert borrowing the two rating projections) in `agent-standards`'.
+- **`CallCredentials`** — the rule in generic `structure/PROTO.md`; `AddPaymentClient`'s five stubs and
+  their shared `payment:write` scope in `agent-standards`' `structure/SERVICE_BOUNDARIES.md`.
+- **`concertable-multitenancy`** — the routing hole, not a missing doc. B2B's stance roster stays in
+  `api/Concertable.B2B/CODE_PATTERNS.md` (it travels with the service); the new
+  `agent-standards/standards/dotnet/data/MULTITENANCY.md` carries what is platform truth instead — that
+  of the five services **only B2B has a tenant stance**, and which project owns each piece — and points
+  at B2B's doc for the per-module table. Routes added: `/Events/`, `DbContext.cs`,
+  `Configurations/*Configuration.cs`, and `concertable-multitenancy` onto `Repository.cs`, which
+  previously carried the generic `multitenancy` skill alone.
+
+**The two in-scope doc defects are fixed** — six `CLAUDE.md`-for-content citations repointed at the file
+that owns the words, and `app/shared/AGENTS.md` reduced from restating `react/SHARED_CODE.md` and
+`react/IDENTITY.md` to its own inventory.
+
+**Four more citations of the deleted `api/agents/*`, all missed because they are not markdown.** The
+audit swept backticked identifiers in docs; these are machine-read payloads:
+
+- `api/BannedSymbols.txt` (×2) — the RS0030 message shown at the moment a developer reaches for
+  `IgnoreQueryFilters` pointed at `api/agents/CODE_PATTERNS.md`.
+- `.editorconfig` (×2) — the CA1848 and private-field comments.
+- `.github/workflows/claude-review.yml` — worse than a dead link: it called the system a modular
+  monolith, cited `api/agents/MODULAR_MONOLITH_RULES.md`, and restated five rules inline, one of which
+  ("module services save their own context, never `IUnitOfWork`") is the **opposite** of the current
+  persistence standard, so the automated PR reviewer was flagging conforming code. It now reads
+  `skill-routes.json` and loads the pairs for the changed paths.
+
+**`ICurrentTenant` does not exist.** `api/AGENTS.md` (auto-loaded), `agent-standards`'
+`react/IDENTITY.md` and the `concertable-identity` description all named it; the real pair is
+`ICurrentUser` + `ITenantContext`, both `Concertable.Kernel.Identity`. The claim it illustrated —
+referenced by B2B, not Customer — is exactly true of `ITenantContext` (61 B2B files, 0 Customer).
+
+**A merge-gate defect found live and fixed upstream** (`agent-standards` `2231bd0`, +4 tests,
+mutation-checked). `gh pr merge <n> --repo <other>/<repo>` never read the flag, so `gh pr view <n>`
+resolved `<n>` against the local checkout: merging `agent-standards` #2 from a Concertable session
+blocked on `reviews/TS-ReviewRefactor.md`, a merged and unrelated Concertable PR. Both directions are
+wrong and the second is dangerous — a sibling merge **passes** whenever the local PR of the same number
+carries a clean review. Same class as ENF8. The flag now decides jurisdiction the way the target
+directory already did.
+
+1. **The remaining phases**: 3c (markdown outside the conventions folders) and the rest of 5c —
+   `dotnet/STACK.md`, the five `react` `NEW` rows, the three `agent-standards` `GAP` rows. 3c's table is
+   unchanged, plus `app/web/shared/BROWSER_STORAGE.md` → `react/BROWSER_STORAGE.md` and
+   `react/APP_TIERS.md`.
+
+2. **#637 needs a fresh `/incremental-review` before it can be enqueued.** Both markers sit at
+   `6d80032ed` and three commits have landed since (`87b0be777`, `17aa128c0`, and this ledger's). The
+   **security** marker in particular is stale by construction: `17aa128c0` touches
+   `.github/workflows/claude-review.yml`, which the gate treats as security-sensitive, so
+   `/security-review` has to run and re-stamp. It is **not** a docs-only PR — it carries
+   `api/TestConventions.targets`, the CI job and the hooks — so the docs-only auto-merge path does not
+   apply. Merging will trigger publish + platform sync (`paths: api/**` matches this branch's `api/**`
+   markdown); follow the `chore/platform-sync-*` PR to green.
+
+3. **Landing `agent-standards` #2 and `dotagents` #1 needs Tommy** — both `CLEAN` with `verify` green,
+   and the work is done, but this session could not merge them: the Bash gate that fires is the *stale*
+   copy on `main` (which #637 replaces), and the GitHub API path was refused by the sandbox classifier.
+   #2 is a prerequisite, not tidiness — Concertable's six hooks are vendored from it and their
+   provenance pins resolve only on its branch (ENF12).
+
+   ```bash
+   gh pr merge 2 --repo Concertable/agent-standards --merge   # merge commit: keeps the vendored SHAs reachable
+   gh pr merge 1 --repo tomjseery/dotagents --merge
+   ```
+
+   Then re-run `pwsh .agents/vendor-hooks.ps1 -Into <worktree>` from a checkout on `main`, commit the
+   re-pinned `vendored.json` (it also picks up the `--repo` jurisdiction fix), tick ENF12, and re-stamp
+   the markers.
 
 
 **Tommy's, not agent work:**
