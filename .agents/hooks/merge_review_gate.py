@@ -24,9 +24,11 @@ also requires a current `**Security-reviewed up to commit:** \`<sha>\`` marker �
 stamped by `review` Step 1d after it runs `/security-review`.
 
 A repo opts in by carrying `.agents/merge-gate.json`; without one the hook exits 0
-and claims no jurisdiction. That file also names the repo's own security-sensitive
-paths, which are its inventory rather than this mechanism's — the generic patterns
-below (workflows, auth/secret vocabulary) apply everywhere and stay here.
+and claims no jurisdiction. A `--repo <owner>/<name>` naming some other repository is
+likewise not this gate's business, for the same reason a `cd <other-repo> && merge` is
+not. That file also names the repo's own security-sensitive paths, which are its
+inventory rather than this mechanism's — the generic patterns below (workflows,
+auth/secret vocabulary) apply everywhere and stay here.
 """
 
 import json
@@ -152,6 +154,41 @@ def pr_number(command):
     return m.group(1) if m else None
 
 
+_SLUG_RE = re.compile(r"[:/]?([^/:]+)/([^/:]+?)(?:\.git)?/?$")
+_REPO_FLAG_RE = re.compile(r"(?:--repo|-R)(?:\s+|=)((?:\"[^\"]*\")|(?:\'[^\']*\')|(?:\S+))")
+
+
+def normalize_slug(value):
+    """`owner/name`, lowercased, from a slug, an SSH remote or an HTTPS URL."""
+    m = _SLUG_RE.search(value.strip())
+    return (m.group(1) + "/" + m.group(2)).lower() if m else None
+
+
+def repo_flag(command):
+    """The repository `--repo`/`-R` names, or None.
+
+    A command that names another repository is that repository's merge. Resolving its PR
+    number against this checkout gated it on an unrelated local branch — which blocks a
+    legitimate sibling merge and, worse, passes one whenever the local PR of the same
+    number happens to carry a clean review.
+    """
+    m = _REPO_FLAG_RE.search(command)
+    if not m:
+        return None
+    value = m.group(1)
+    if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
+        value = value[1:-1]
+    return normalize_slug(value)
+
+
+def local_repo_slug():
+    """`owner/name` for the checkout the merge runs in, or None when origin is unreadable."""
+    try:
+        return normalize_slug(git("remote", "get-url", "origin"))
+    except Exception:  # noqa: BLE001 - no origin / broken remote; the caller fails closed
+        return None
+
+
 _CD_RE = re.compile(r"(?:^|[;&|]|&&)\s*cd\s+((?:\"[^\"]*\")|(?:\'[^\']*\')|(?:[^\s;&|]+))")
 
 
@@ -169,17 +206,6 @@ def merge_target_dir(command, data):
         if len(target) >= 2 and target[0] == target[-1] and target[0] in "\"'":
             target = target[1:-1]
     return target or data.get("cwd") or "."
-
-
-def common_git_dir(cwd):
-    # git answers this relative to the repo it was asked in, so it must be resolved against
-    # that directory - resolving it against this process's cwd silently compares the wrong path.
-    out = subprocess.run(
-        ["git", "rev-parse", "--git-common-dir"],
-        capture_output=True, text=True, check=True, cwd=cwd,
-    ).stdout.strip()
-    path = Path(out)
-    return path.resolve() if path.is_absolute() else (Path(cwd) / path).resolve()
 
 
 def gh_json(*args):
@@ -267,6 +293,16 @@ def main():
     except Exception as exc:  # noqa: BLE001 — a merge with a broken check must not slip through
         block("MERGE GATE: cannot resolve git state (" + str(exc) + "); refusing "
               "`gh pr merge` until a code-review can be verified.")
+
+    named = repo_flag(command)
+    if named is not None:
+        local = local_repo_slug()
+        if local is None:
+            block("MERGE GATE: `--repo " + named + "` names a repository and this checkout's "
+                  "origin cannot be read, so the gate cannot tell whether the merge is its own; "
+                  "refusing until it can.")
+        if local != named:
+            sys.exit(0)
 
     # Only an opted-in repository's merges. `reviews/<branch>.md` is a convention a repo
     # adopts, and a sibling repo merged from this session has its own rules - gating it here

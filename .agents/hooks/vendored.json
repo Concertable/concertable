@@ -11,8 +11,8 @@
       "source": "Concertable/agent-standards",
       "path": ".agents/hooks/merge_review_gate.py",
       "delivery": "hook",
-      "commit": "32795d81ca3352267c5575015dc6da99a14e9f10",
-      "sha256": "sha256:00d1c87b1d8f4f5a67d021bba14431d159dd12a02ade9fddc802bd8ee71704e1"
+      "commit": "0d773bd3db958b6922650ea1675adc3035c0ea89",
+      "sha256": "sha256:43af8a68ed4febe922f0504b9b1dccc1ebf21cdfb7877df216460f2f58886156"
     },
     "plan_graph.py": {
       "source": "Concertable/agent-standards",

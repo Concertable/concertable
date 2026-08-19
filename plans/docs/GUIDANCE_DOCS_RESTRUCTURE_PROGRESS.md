@@ -6,7 +6,7 @@
 - Also delivered by this ledger: roadmap item `docs/agent-standards`, now checked off
 - Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Docs-guidance-docs`
 - Branch: `Docs/GuidanceDocsRestructure`
-- PR: #637. Reviewed at `fcec9925` with 4 of 5 findings fixed; three commits have landed since, so both markers are stale and `/incremental-review` plus `/security-review` must run before enqueue. Still needs the upstream merge that closes ENF12, then an explicit merge instruction. Label `skip-e2e`.
+- PR: #637 — CI fully green at the reviewed head (0 failing), both markers current, ENF12 closed. Waits only on an explicit merge instruction. Label `skip-e2e`. Reviewed at `fcec9925` with 4 of 5 findings fixed; three commits have landed since, so both markers are stale and `/incremental-review` plus `/security-review` must run before enqueue. Still needs the upstream merge that closes ENF12, then an explicit merge instruction. Label `skip-e2e`.
   commit). Updated for base currency three times on 2026-08-17: from **69 behind** and `DIRTY` (three doc
   conflicts resolved, below), from 2 behind after platform-sync #645 merged — a clean merge carrying only
   the `<ConcertablePlatformVersion>` bump `0.1.0-alpha.0.1055` → `0.1.0-alpha.0.1061` across the five
@@ -88,9 +88,8 @@ the command and the stop-and-tell-the-user procedure.
 tests over them. A plugin `Stop` hook was proven to fire *and block* with zero repo wiring first — the
 gate this step was held behind.
 
-**What remains:** 5c (discovery), 3c (markdown outside the conventions folders), and ENF12 — the
-vendored hooks' provenance pins name commits that live only on `agent-standards` #2's branch, so that PR
-must land before #637 is enqueued.
+**What remains:** the rest of 5c (discovery) and 3c (markdown outside the conventions folders). ENF12 is
+closed — #2 merged as a merge commit and the hooks were re-vendored from `main`.
 
 **The move itself is now audited, not asserted (2026-08-19).** What is mechanically proven: every doc the
 plan's four-tier list names exists, and the only absences are rows the plan itself marks `GAP`/`NEW` (1 in
@@ -787,20 +786,13 @@ directory already did.
    apply. Merging will trigger publish + platform sync (`paths: api/**` matches this branch's `api/**`
    markdown); follow the `chore/platform-sync-*` PR to green.
 
-3. **Landing `agent-standards` #2 and `dotagents` #1 needs Tommy** — both `CLEAN` with `verify` green,
-   and the work is done, but this session could not merge them: the Bash gate that fires is the *stale*
-   copy on `main` (which #637 replaces), and the GitHub API path was refused by the sandbox classifier.
-   #2 is a prerequisite, not tidiness — Concertable's six hooks are vendored from it and their
-   provenance pins resolve only on its branch (ENF12).
+3. **`agent-standards` #2 is merged (`b95debad`, a merge commit) and ENF12 is closed.** Re-vendored
+   from `main`: all six pins are now ancestors of `origin/main`, checked with `merge-base --is-ancestor`
+   rather than inferred, and the copy picked up the `--repo` jurisdiction fix and the dead-code removal.
+   This repo's 14 hook tests pass against it.
 
-   ```bash
-   gh pr merge 2 --repo Concertable/agent-standards --merge   # merge commit: keeps the vendored SHAs reachable
-   gh pr merge 1 --repo tomjseery/dotagents --merge
-   ```
-
-   Then re-run `pwsh .agents/vendor-hooks.ps1 -Into <worktree>` from a checkout on `main`, commit the
-   re-pinned `vendored.json` (it also picks up the `--repo` jurisdiction fix), tick ENF12, and re-stamp
-   the markers.
+   **`dotagents` #1 still needs Tommy** — `CLEAN`, `verify` green, and nothing else depends on it:
+   `gh pr merge 1 --repo tomjseery/dotagents --merge`.
 
 
 **Tommy's, not agent work:**
