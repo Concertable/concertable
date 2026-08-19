@@ -33,13 +33,13 @@ Before any report or stop, including PASS, FAIL, baseline drift, format error, o
 failure, if this workflow is plan-managed, read and apply
 [the shared plan-progress checkpoint](../resume-plan/references/plan-progress-checkpoint.md).
 
-Verify Docker with the real gate. **`docker ps` answering is NOT proof Docker is healthy** — a half-started/flapping engine keeps `docker ps` (and `docker run hello-world`, and a bare TCP connect) working while host→container forwarding of real bytes for NEW containers is dead, and the suite then dies at SQL fixture startup with `pre-login handshake` resets:
+Verify Docker with the real gate. **`docker ps` answering is NOT proof Docker is healthy** — why the cheap checks miss a half-started engine, and the `pre-login handshake` signature it produces, are in the `remote-validation` skill. Run the real gate:
 
 ```powershell
 ./scripts/docker-health.ps1   # fresh container + published port + real HTTP round-trip + stability check; exit 1 = unhealthy
 ```
 
-`./scripts/e2e.ps1 ui regress` runs this automatically and refuses to boot on failure. If it reports unhealthy, **STOP** — tell the user Docker is half-started/down and to wait for Docker Desktop to show **Running**, then retry. Do not rerun or debug application code for this; it's an environment failure (root `AGENTS.md`).
+`./scripts/e2e.ps1 ui regress` runs this automatically and refuses to boot on failure. If it reports unhealthy, **STOP** — tell the user Docker is half-started/down and to wait for Docker Desktop to show **Running**, then retry. Do not rerun or debug application code for this; it's an environment failure.
 
 Then tell the user it's starting and give a rough duration scaled to the passing-baseline size (a small passing set ~3-6 min; the whole suite ~25-30 min): **"Starting regression check -- will report the verdict."** The script prints `Baseline says N scenarios must pass` early in its output; relay that count once you see it.
 

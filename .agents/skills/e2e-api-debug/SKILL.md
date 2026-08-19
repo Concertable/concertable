@@ -69,13 +69,13 @@ Before any report or stop, including an environment or startup failure, if this 
 plan-managed, read and apply
 [the shared plan-progress checkpoint](../resume-plan/references/plan-progress-checkpoint.md).
 
-These tests need Docker (SQL containers, ASB emulator, stripe-cli). **`docker ps` answering is NOT proof Docker is healthy** — a half-started/flapping engine keeps `docker ps` (and even `docker run hello-world`, and a bare TCP connect) working while host→container forwarding of real bytes for NEW containers is dead, and the suite then dies at SQL fixture startup with `pre-login handshake` resets. Use the data-round-trip gate:
+These tests need Docker (SQL containers, ASB emulator, stripe-cli). **`docker ps` answering is NOT proof Docker is healthy** — why the cheap checks miss a half-started engine, and the `pre-login handshake` signature it produces, are in the `remote-validation` skill. Run the real gate:
 
 ```powershell
 ./scripts/docker-health.ps1   # fresh container + published port + real HTTP round-trip + stability check; exit 1 = unhealthy
 ```
 
-`./scripts/e2e.ps1 api ...` runs this automatically and refuses to boot on failure. If it reports unhealthy, **STOP** — tell the user Docker is half-started/down and to wait for Docker Desktop to show **Running**, then retry. Do not rerun or debug application code for this; it's an environment failure (root `AGENTS.md`).
+`./scripts/e2e.ps1 api ...` runs this automatically and refuses to boot on failure. If it reports unhealthy, **STOP** — tell the user Docker is half-started/down and to wait for Docker Desktop to show **Running**, then retry. Do not rerun or debug application code for this; it's an environment failure.
 
 The suite also needs Stripe + Google secrets in the environment (`Stripe__SecretKey`, `GoogleApiKey`) — the same ones CI injects. If a run dies immediately with a Stripe auth error or missing-config exception, confirm those are set before debugging anything else.
 

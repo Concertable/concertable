@@ -73,11 +73,22 @@ all seven skill names are now referenced from in-repo markdown, where the audit 
 **The audit is closed (2026-08-19).** All 16 defects and the four P2 rows are fixed and the findings file is
 deleted; the corpus no longer contradicts itself, and no rule is missing the identifier it turns on.
 
+**Phase 4 is complete.** The Docker-health block no longer exists in more than one place: the mechanism
+lives in `remote-validation`, root `AGENTS.md` keeps the invariant, and the four `e2e-*` skills keep only
+the command and the stop-and-tell-the-user procedure.
+
 **What remains:** moving Concertable's four remaining hooks, then 5c (discovery — `dotnet/STACK.md` is its
-first known gap), 3c (markdown outside the conventions folders), and 4 (the last duplication row — the
-Docker-health block still exists in five `e2e-*` skills).
+first known gap) and 3c (markdown outside the conventions folders).
 
 ## Done
+
+**Phase 4 finished — the last duplication row** (2026-08-19)
+
+- The Docker-health pre-flight was near-verbatim in `e2e-api-debug`, `e2e-debug`, `e2e-ui-debug` and
+  `e2e-ui-regress`. Each now carries one pointer line plus what is genuinely local — the
+  `./scripts/docker-health.ps1` invocation, that `./scripts/e2e.ps1` gates on it automatically, and the
+  stop-and-wait-for-Docker-Desktop procedure. The mechanism (why `docker ps`, `hello-world` and a bare TCP
+  connect all miss it, and the `pre-login handshake` signature) is stated once, in `remote-validation`.
 
 **Audit closed — 16 defects and 4 duplication rows** (2026-08-19; `dotagents` `e52a11b`,
 `react-agents` `1ebb42b`, `agent-standards` `c66157c`)
@@ -545,10 +556,8 @@ lines, so they stay with the rest of 3c.
    moved, so enforcement sits apart from its rule with nothing watching for drift. **Verify a plugin `Stop`
    hook fires with zero repo wiring first** — that was proven only for `PreToolUse`.
 
-2. **Then the remaining phases**: 5c (the discovery pass — conventions that exist only in code, e.g. B2B's
-   stance taxonomy), 3c (markdown outside the conventions folders), and the last duplication row — the
-   Docker-health block is still near-verbatim in five `e2e-*` skills, with root `AGENTS.md` now holding the
-   four-line invariant version.
+2. **Then the two remaining phases**: 5c (the discovery pass — conventions that exist only in code, e.g.
+   B2B's stance taxonomy) and 3c (markdown outside the conventions folders).
 
 3. **#637 needs a review, then an explicit merge instruction.** The tiering blocker is cleared and the
    process corpus is no longer duplicated, so nothing structural holds it open. It is **not** a docs-only
