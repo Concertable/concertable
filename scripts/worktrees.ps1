@@ -23,7 +23,7 @@ function Run {
     try {
         $ErrorActionPreference = 'Continue'
         # No ".exe": Windows resolves it through PATHEXT, and hard-coding it makes every call fail on Linux.
-        $executable = (Get-Command $Program -CommandType Application -ErrorAction Stop).Source
+        $executable = (Get-Command $Program -CommandType Application -ErrorAction Stop | Select-Object -First 1).Source
         $output = @(& $executable @Arguments 2>&1)
         $exitCode = $LASTEXITCODE
     }
