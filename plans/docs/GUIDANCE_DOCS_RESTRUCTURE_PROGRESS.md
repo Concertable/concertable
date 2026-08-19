@@ -29,9 +29,9 @@ more than it did, since the new targets file participates in every project's bui
 
 **All four tiers match the model, the process corpus is moved rather than copied, and all three standards
 repos are merged to `main` — only Concertable #637 is still open.** The corpus is **62** docs across three
-standards repos, each doc owned by exactly one router skill, delivered as five plugins. **On this machine
-it is currently delivered by nothing:** the `concertable-*` junctions died with the prefix removal and no
-plugin is installed yet (`## Next Steps`).
+standards repos, each doc owned by exactly one router skill, delivered as five plugins. **Delivered on this machine for real
+as of 2026-08-19:** five plugins installed at the merged heads, 60 router junctions pruned per root, and
+all 67 routers verified to open a byte-identical copy of their own repo's doc.
 The in-repo docs hold only this system's roster of real types, contexts, clients, tables and pins.
 
 | Repo | Head | Contents |
@@ -695,20 +695,7 @@ write. Re-pin against `main` once #3 merges.
 
 ## Next Steps
 
-Paused: Tommy — install the five plugins, then everything else is unblocked. **23 skill junctions in each of `~/.claude/skills` and `~/.agents/skills` are broken as of the two merges** — they point at the `concertable-*` folders `agent-standards` #3 deleted — and no plugin is installed, so those 23 rules currently load from nowhere. Do **not** run `deploy-skills.ps1` first: it no longer junctions routers, so on a machine with no plugins it prunes the surviving 47 too. Install (per machine, `--scope user`, and the two private marketplaces need git credentials), then say so and I will run `deploy-skills.ps1` and verify every router resolves:
-
-```
-/plugin marketplace add Concertable/agent-standards
-/plugin install agent-process@agent-standards
-/plugin install dotnet@agent-standards
-/plugin install react@agent-standards
-/plugin marketplace add tomjseery/dotagents
-/plugin install dotnet-standards@dotagents
-/plugin marketplace add tomjseery/react-agents
-/plugin install react-standards@react-agents
-```
-
-Then give the merge instruction for [#637](https://github.com/Concertable/concertable/pull/637). Resume when the five plugins appear in `~/.claude/plugins/installed_plugins.json`.
+Paused: Tommy — one thing left, and it is the merge instruction for [#637](https://github.com/Concertable/concertable/pull/637). It is not docs-only (it carries `api/TestConventions.targets`, the `hook-tests` CI job and the vendored hooks), so merging triggers publish + platform sync and whoever merges owns the `chore/platform-sync-*` PR to green. Resume when the merge instruction is given.
 
 **The four tiers match the model and the process corpus now has one home.** Authoritative statement:
 `dotagents/AGENTS.md` (mirrors to `~/AGENTS.md`, so it loads every session) and
@@ -915,13 +902,29 @@ that bans the carrier — `TypedResultArchitectureTests.KernelFunctionalTypes_Do
       `merge-base --is-ancestor`; `test_vendored_hooks.py` 8/8, `test_skill_router.py` 6/6. **ENF12 is
       closed and `reviews/Docs-GuidanceDocsRestructure.md` now has zero open `- [ ]`.** Worth keeping: the
       gate already carries `2231bd0`, the `--repo` jurisdiction fix, because `0d773bd` is later than it.
-   3. **Install the five plugins, then run `deploy-skills.ps1`** — Tommy's, and now urgent rather than
-      tidy. Measured after the merges: `~/.claude/skills` and `~/.agents/skills` each hold **47 live and
-      23 broken** junctions, the 23 being exactly the `concertable-*` folders #3 deleted, with nothing
-      else broken in either root. `installed_plugins.json` lists only `stripe`, `clangd-lsp` and
-      `rust-analyzer-lsp`, and `known_marketplaces.json` only `claude-plugins-official` — so no standards
-      plugin is installed and none of this session's seven new routers is junctioned either. Running
-      `deploy-skills.ps1` **before** the installs would prune the surviving 47 as well.
+   3. ~~Install the five plugins, then run `deploy-skills.ps1`.~~ **Done 2026-08-19, and it is the first
+      time the corpus has actually been delivered the way the model says.** The `claude plugin` CLI does
+      what the `/plugin` slash commands do, so the installs ran from this session: three marketplaces
+      added, five plugins installed at `--scope user`, pinned to the merged heads — `bbb5cd6`
+      (agent-standards ×3), `2bb4c9d` (dotagents), `19ca86d` (react-agents). `deploy-skills.ps1` then
+      pruned 60 router junctions from each of `~/.claude/skills` and `~/.agents/skills` and kept the 10
+      utilities; both roots now read **10 live, 0 broken**, from 47 live + 23 broken before it. The five
+      repo-scoped standards trees were untouched. The `-WhatIf` run matched the live run exactly.
+
+      **Verified, not assumed:** all **67** routers across the five installed plugins open a doc that is
+      byte-identical (LF-normalised) to its own repo's authored copy — so no plugin shadows another's
+      doc at the same relative path. **16 skill names are deliberately delivered by two plugins each**
+      (`persistence`, `seeding`, `unit-testing`, `http-layer`, …), which is the collision the prefix
+      existed to avoid and the plugin namespace now absorbs; **zero** routes in `skill-routes.json` name
+      one of those 16 without a plugin qualifier, which is the check that matters — an unqualified route
+      would resolve to whichever plugin is walked first, silently.
+
+      **One leftover found:** `~/.claude/plugins/cache/agent-standards/agent-process/88cf091a3c2b/` is an
+      orphaned cache directory from the 2026-08-18 install proof — not referenced by
+      `installed_plugins.json`, so nothing loads it, and it holds a pre-cut-over `agent-process` whose
+      seven process skills carry inline bodies instead of router sentences. Harmless where it sits, and
+      it briefly made this ledger's own verification report seven phantom non-routers. Safe to delete;
+      left alone because it costs nothing and is Tommy's cache.
    4. ~~Sweep for `concertable-<skill>` outside these four repos.~~ **Done, clean.** `~/.claude`,
       `~/.agents`, `~/.codex` and every sibling repo under `source/repos` were searched for the 31 skill
       names carrying the old prefix. Every hit is either harness-owned transcript history
