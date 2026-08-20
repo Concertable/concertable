@@ -50,11 +50,10 @@ dependency.
    ! cd C:/Users/TommySeery/source/repos/Concertable.worktrees/Docs/docs_polyrepo-ready-merge-family; gh pr merge 676 --merge --auto
    ```
 
-   `merge_review_gate.py` refuses an agent-issued merge in this session — it cannot resolve git state
-   (`WinError 267`) for a worktree branch from a session rooted in the main checkout, and in the producer
-   repo it has no Concertable branch to resolve at all. Handing the command over is the queue procedure's
-   own answer to that, and it matches on the command string, so the phrase cannot appear in an agent Bash
-   call either. Both reviews are clean and recorded below. **#676 lands through the queue, not the
+   Two independent gates put those invocations in Tommy's hands, and step 0 of the queue procedure already
+   prescribes exactly this handover: `merge_review_gate.py` fails closed on a `WinError 267` (see
+   `## Decisions`), and the harness's auto-mode classifier declines the action for the agent regardless.
+   Both reviews are clean and recorded below. **#676 lands through the queue, not the
    meta-only path** — it edits a comment in `.github/workflows/test.yml` that pointed at a skill file it
    deletes, and a CI workflow definition fails the meta-only path gate by path even for a comment. That is
    the gate working, not a problem to route around; the alternative was shipping a known dead pointer.
@@ -141,9 +140,10 @@ N1 family 2, delivery gate (2026-08-20):
 - agent-standards #7: `verify` pass, `CLEAN`, 0 behind `origin/main`. That repo has no merge queue — its
   rulesets API answers 403 on a private free plan — so it merges directly rather than through `--auto`.
 - #676: every non-`merge_group` check **pass** — build, `ci-complete`, all seven carves, `fe-boundaries`,
-  `hook-tests`, the full integration matrix; `CLEAN`; 0 behind `origin/main`; PR head equals local
-  `fd9231be`. The four `skipping` rows are the `merge_group`-gated E2E suites plus `review`, which is
-  expected on the PR itself.
+  `hook-tests`, the full integration matrix; `CLEAN`; 0 behind `origin/main`. Verified at `fd9231be` and
+  re-verified in full at `3f70e103` after the first checkpoint pushed. The only non-pass rows are the three
+  `merge_group`-gated E2E suites reporting `skipping`, which is expected on the PR itself. Every checkpoint
+  commit re-runs the PR gate, so the green set belongs to whichever head the ledger's last push produced.
 - **E2E tier: `skip-e2e` applied to #676, no `full-e2e`.** No positive trigger — the diff is markdown plus
   one comment line in `.github/workflows/test.yml`: no UI flow, no HTTP or cross-service contract, no
   published package shape, no auth or routing behaviour. The hard floor still gates it.
@@ -250,6 +250,14 @@ finding deferred (`PLANS.md` at 248 lines is 3× that repo's eighty-line split r
   ledger made the refresh a per-machine follow-up; it has not happened, so thirteen merged skills currently
   resolve under no name. This is not a work item to schedule — it is one command, and until it runs, every
   subsequent family compounds the same gap. Hence its promotion to Next Step 1.
+- **The vendored review gate has a path bug, and it fails closed — so it looks like a refusal.**
+  `merge_review_gate.py`'s `merge_target_dir` takes the literal argument of the last `cd` before the merge
+  command and hands it to `subprocess(cwd=…)`. From Git Bash that argument is a POSIX path (`/c/Users/…`),
+  which Windows Python cannot use as a working directory, so `git rev-parse --show-toplevel` raises
+  `WinError 267` and the gate blocks with "cannot resolve git state" — on a branch whose review is clean.
+  A Windows-form `cd C:/Users/…` resolves fine, so the fix is one normalization step in the hook, in
+  `agent-standards`, on its own slice. **Not amended onto #7:** that branch is reviewed and green, and a
+  hook change is neither this family's content nor covered by its review.
 - **`worktree` will recur as family 4's naming problem.** It exists in `dotagents` *and* in the work repos,
   which is two collisions rather than one, and unlike `create-gh-pr` it has real in-repo citations. Flagged
   now so family 4 budgets for it rather than discovering it mid-slice.
