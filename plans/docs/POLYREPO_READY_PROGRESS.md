@@ -42,8 +42,10 @@ reports "no checks reported" until it is retargeted — retarget it the moment #
    once against the monorepo tree, once against a tree with the prefix stripped, and require 100% both
    times. Do it on a branch that has #668's version of the table.
 
-3. **Phases 3 and 4** as the plan states. Phase 4 is the only one that produces evidence rather than
-   edits; do not call the item done without it.
+3. **Phases 3, 4 and 5** as the plan states. Phase 5 (the workflow skills) was added after Phase 1 shipped
+   and is the larger remaining piece; Phase 4 is the only one that produces evidence rather than edits, and
+   it is not meaningful before Phase 5 — a carved service repo with no `review`/`docs-review` skill cannot
+   review anything. Do not call the item done without Phase 4.
 
 **Open question for Tommy, not blocking:** each carved service repo will need its own thin
 `plans/AGENTS.md` and hook wiring naming its own script paths — the file this phase left behind is 75
@@ -128,6 +130,12 @@ Phase 4 settles), and #668 → an `## Incremental review` section on
   agent-standards. A route row naming a skill the machine has not reinstalled yet would block writes to
   `plans/**` until the plugin cache refreshed, and the `^plans/` row plus the widened `plans` description
   already carry the trigger.
+- **Phase 1 never examined the skill roster, and that is a scope gap, not a decision.** It measured three
+  documents and moved three documents. Counting lines that name anything Concertable-specific: the review
+  family (`review`, `docs-review`, `big-review`, `incremental-review`, `address-review`, `big-review-all`)
+  is 813 lines with 25 such lines; the git family (`commit`, `commit-all`, `push`, `pull`, `sync`) is 334
+  lines with **zero**; `docs-review` alone is 195 lines with 5. Neither family has a counterpart in
+  `dotagents` or `agent-standards`, so eight carved repos inherit eight copies. Now Phase 5 of the plan.
 - **Codex needs no separate setup for this change.** The canonical guidance is `.agents/**` (Codex reads it
   directly; `.claude/skills/*` are stubs), both hooks already handle Claude and Codex, and Codex reaches the
   standards through per-domain junctions from `~/.agents/standards/agent-standards/*` into the local

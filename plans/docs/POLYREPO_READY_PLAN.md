@@ -97,8 +97,42 @@ candidate — an adapter service with the fewest inbound dependencies.
 
 **This is the only phase that tests the claim.** The first three are edits; this is the evidence.
 
+### Phase 5 — the workflow skills, which Phase 1 never looked at
+
+Phase 1 moved the plan *standards*. It left all 28 executable skills in `.agents/skills/`, and a count of
+lines naming anything Concertable-specific (a service, script, hook path, CI job, label, doc) says that is
+wrong for two families:
+
+| Family | Lines | Lines naming this repo |
+|---|---|---|
+| `review` · `docs-review` · `big-review` · `incremental-review` · `address-review` · `big-review-all` | 813 | 25 |
+| `commit` · `commit-all` · `push` · `pull` · `sync` | 334 | 0 |
+| `resume-plan` · `continue-roadmap` · `update-roadmap` | 163 | 14 |
+| `merge` · `e2e-*` · `integration-debug` · `pr-preflight` · `reset-test-explorer` · `package-cutover` | ~1,700 | 10–53 each — genuinely local, keep |
+
+`docs-review` is the clearest case: 195 lines, of which 5 carry a repo-specific reference (`api/**`/`app/**`
+as example paths, `plans/AGENTS.md`, `reviews/AGENTS.md`, `docs/INDEX.md`, one `docs_reachability.py` call).
+That is the same 96%-generic shape that justified moving `plans/agents/PLAN.md`, and it has no counterpart
+anywhere: `dotagents` carries no `review`/`docs-review`/`commit`/`push`, and `agent-standards` carries the
+process *standards* but no review workflow. Eight carved repos inherit eight copies otherwise — the exact
+copy-and-drift failure this epic exists to kill.
+
+The split follows Phase 1's shape: generic body out to `agent-standards/standards/process/` with its router,
+a thin in-repo floor keeping only the hook paths, script names, review-file location and skill names this
+repo actually owns. Order by cost of duplication: the review family first, then the git family (which also
+needs reconciling against `dotagents`' `commit-push`/`sync`/`pull-main`, functionally overlapping today),
+then the three plan-workflow skills, which are the executable counterparts of the `plans` skill Phase 1
+already moved.
+
+**Gate:** for every moved skill, the in-repo remainder names only things that exist in *this* repo, the
+router resolves from a fresh install, and a simulated carved tree loses no rule. Same evidence bar as
+Phase 4 — and Phase 4's "prove it on one service" is not meaningful until this lands, because a carved
+Payment repo with no review skill cannot review anything.
+
 ## Explicitly not in scope
 
 - Moving plan *documents* (4c above).
 - The polyrepo cut itself, its seam decision, or any repo creation.
 - `docs/analyzer-pushdown`, which is independent of this.
+- ~~The workflow skills in `.agents/skills/`~~ — silently out of scope until Phase 5 named them. Phase 1
+  measured three documents and moved three documents; nothing in it examined the skill roster.
