@@ -5,7 +5,7 @@
 - Roadmap item: `docs/polyrepo-ready`
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable.worktrees/Docs/docs_polyrepo-ready-git-family`
 - Branch: `Docs/docs_polyrepo-ready-git-family`, from `main` at `1176a002f` - N1 family 4, git.
-- PR: this repo - **#679**, open at `c1254eb75`; producer - **agent-standards #9, open at `06405a3`**.
+- PR: this repo - **#679**, open at `c1254eb75`; producer - **agent-standards #9, open at `9bf6b55`, `verify` green**.
   Shipped so far: Phase 1 as #669 + agent-standards #5; N1 family 1 as #675 + agent-standards #6; N1
   family 2 as #676 + agent-standards #7 at `30734a9`; N1 family 3 as **#677, merged 2026-08-20 at
   `1176a002f`** + agent-standards #8 at `2d9a8fe`.
@@ -76,7 +76,7 @@ plan-workflow (203) and `package-cutover` (184).
 
 ## Completed work
 
-- **N1 family 4 producer - agent-standards #9, open at `06405a3`.** Six docs under
+- **N1 family 4 producer - agent-standards #9, open at `9bf6b55`.** Six docs under
   `standards/process/git/`, one router each: `COMMIT.md` <- `commit`; `COMMIT_ALL.md` <- `commit-all`;
   `PUSH.md` <- `push`; `PULL.md` <- `pull`; `SYNC.md` <- **`sync-checkout`** (was `sync`); `WORKTREE.md` <-
   **`open-worktree`** (was `worktree`). Phase 1 had already moved this family's *principles* -
@@ -277,6 +277,18 @@ finding deferred (`PLANS.md` at 248 lines is 3× that repo's eighty-line split r
 
 ## Decisions, discoveries, blockers, and deviations
 
+- **A generated file that depends on the generating machine's culture is not generated, and this family
+  is what exposed it.** agent-standards' `verify` failed on a tree `sync-generated.ps1 -Check` called
+  current locally: CI regenerated `standards/process/INDEX.md` into a different row order and called it
+  stale. `Sort-Object` compares **culture-aware**, and cultures disagree about punctuation. This family is
+  the first to put two docs in one folder whose names collide on a prefix separated by punctuation -
+  `COMMIT.md` against `COMMIT_ALL.md`, '.' against '_' - and Windows .NET ordered them one way while Linux
+  ICU ordered them the other. The three existing subfolders (`merge/`, `review/`, `testing/`) contain no
+  such pair, which is why four families shipped before anything noticed. Fixed at the generator with an
+  ordinal sort over a tab-packed folder+path key rather than by renaming the doc around it: a rename dodges
+  this instance and leaves the landmine for whichever family next adds a prefix pair. Windows output is
+  byte-identical (176 files, 0 written), which is the proof - the committed INDEX was already the ordinal
+  order and Linux was the divergent one.
 - **The plan's own measurement was wrong, and the family that checked it is the one that found out.**
   The N1 table said of this family: *"Zero lines name this repo."* Five of the six held to that - `commit`,
   `commit-all`, `push` and `pull` are generic to the point of saying so in their own descriptions. But
