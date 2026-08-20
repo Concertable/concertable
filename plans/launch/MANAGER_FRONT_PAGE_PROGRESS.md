@@ -12,9 +12,8 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
 
 ## Next Steps
 
-1. Commit the locally green reconciliation through `origin/main` commit `087a65cf`, then push the work head to draft PR #563 through the compound plan push protocol.
-2. Require exact-head CI green and diagnose any deterministic failure.
-3. After CI is green, complete the remaining Phase A.8 authenticated seeded venue/artist UX review below.
+1. Require exact-head CI green for draft PR #563 after this checkpoint is transported; diagnose any deterministic failure.
+2. After CI is green, complete the remaining Phase A.8 authenticated seeded venue/artist UX review below.
 
 ## Reviews
 
@@ -49,7 +48,9 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
   and Venue migrations were re-scaffolded from the merged model. The B2B Web build succeeds with 0 errors (the one
   `UserEntity` constructor warning is present in `origin/main`); the architecture suite passes 10/10 after removing
   two unused `Reunion` references from the incoming Admin unit-test project; and Venue, Artist, Customer, and Business
-  production builds all pass.
+  production builds all pass. Starting remote and PR head `e67c9bca2384a1c22a5e0e14d9523d3cd1a3e594` advanced through
+  `e67c9bca2..66c067d31`; fetch verification proved local HEAD, the remote-tracking branch, and draft PR #563 all
+  equal reviewed work head `66c067d31ffcca7f782462c43e8bac0a4758f4e0`.
 
 - **Exact-head CI follow-up is locally verified.** PR run
   [`31953565101`](https://github.com/Concertable/concertable/actions/runs/31953565101) passed every frontend carve,
