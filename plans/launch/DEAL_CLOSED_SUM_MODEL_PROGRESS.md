@@ -10,17 +10,16 @@
 - Branch: `Refactor/deal-dispatch-foundation`
 - Implementation PR: [#678](https://github.com/Concertable/concertable/pull/678), draft, targeting `main`;
   verified remote head `e4fdc642d8856c776a7d47f51e1379c6eb1dcf5e`
-- Push state: work head `23bad4f9af115e189e55316960d13073db704c1e` was pushed as the 9-commit
-  `1176a002f8e58878f1650b193e7b9ab22daf385c..23bad4f9af115e189e55316960d13073db704c1e`
-  range to the new `origin/Refactor/deal-dispatch-foundation` upstream and verified equal locally and
-  remotely; this ledger commit is the checkpoint-transport leg
+- Push state: reviewed work head `0a0958719cd44cdb29e8228bacaa8c464c485642` was pushed and verified
+  equal locally, at `origin/Refactor/deal-dispatch-foundation`, and on PR #678; this ledger commit is
+  the checkpoint-transport leg
 - Prototype branch: `Spike/net11-closed-dispatch`
 - Prototype commit: `785cd80403eb2f3db173428854730dec961e39d9`
 - Foundation implementation commit: `a7c836930652dc18653f9e8a5670019310fdef54`
 - Current-main merge commit: `beab16bd980c28c76021016ddd3101fa38b1ce91`
 - Downstream dependent: `plans/launch/DEAL_LIFECYCLE_OWNERSHIP_PROGRESS.md` remains suspended until
   this foundation is terminal on `main`.
-- Last reconciled: 2026-08-20 after the clean pre-merge incremental review, before its checkpoint push
+- Last reconciled: 2026-08-20 after the verified reviewed-work push and before checkpoint transport
 
 ## Current state
 
@@ -76,8 +75,8 @@ Those compile-time guarantees belong to the separate public library and later .N
 
 ## Next Steps
 
-Push the clean incremental-review checkpoint through the plan-managed two-leg protocol, require local,
-remote-tracking, and PR heads to agree, then wait for exact-head PR CI and run `/merge`.
+After this checkpoint commit is transported and local, remote-tracking, and PR heads are verified equal,
+wait for exact-head PR CI, apply the merge skill's E2E tier, and enqueue PR #678 through the merge queue.
 
 ## Separate public-library follow-up
 
