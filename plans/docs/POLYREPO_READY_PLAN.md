@@ -19,7 +19,7 @@ reintroduced at repo scale.
 | Problem | Measure |
 |---|---|
 | ~~Generic plan process sits in a repo with no future~~ — **moved, Phase 1** | `plans/agents/PLAN.md` 233 lines · `PROMPTS.md` 57 · `plans/agents/ROADMAP.md` 34 — **324 lines**, of which 32 carried a Concertable-specific name or command (the 259 first recorded here counted non-blank lines; these are `wc -l` at the time of the move) |
-| The route table has no home after the cut | 36 rows in root `.agents/skill-routes.json`. `agent-standards` **vendors the hook** (`vendor-hooks.ps1`, provenance-hashed) but ships **no** table — so the table is per-repo data, and 3 rows (`^api/…`, `^app/…`, `^plans/…`) name paths a service repo does not have. The *convention* those 36 rows follow has no owner anywhere |
+| The route table has no home after the cut | 37 rows in root `.agents/skill-routes.json`. `agent-standards` **vendors the hook** (`vendor-hooks.ps1`, provenance-hashed) but ships **no** table — so the table is per-repo data, and 3 rows (`^api/…`, `^app/…`, `^plans/…`) name paths a service repo does not have. The *convention* those 37 rows follow has no owner anywhere |
 | The hub docs are in the deleted root | root `AGENTS.md` (147 lines) and `docs/INDEX.md` — not "they open by describing a monorepo", which is the wording; the problem is every rule in them needs a destination |
 | The 28 workflow skills are in the deleted root | **3,285** lines in `.agents/skills/`, every family platform-wide — N1 |
 
@@ -101,7 +101,7 @@ next node, and the nodes are known and measured (`origin/main` at `1d15a7920`):
 | # | Node | Size | Destination | Leaves behind |
 |---|---|---|---|---|
 | N1 | `.agents/skills/` — 12 skills left of 28 | **816** of 3,285 lines | platform-wide, three families left of six | per-repo values: script paths, suite names |
-| N2 | `.agents/skill-routes.json` — 36 rows | 36 rows | the *convention* + a generator | the table itself: per-repo data |
+| N2 | `.agents/skill-routes.json` — 37 rows | 37 rows | the *convention* + a generator | the table itself: per-repo data |
 | N3 | `api/AGENTS.md` + `api/CLAUDE.md` | 78 | platform-wide | nothing — §6 deletes this node |
 | N4 | `api/ARCHITECTURE.md` + `api/docs/MICROSERVICES_ARCHITECTURE.md` | 62 + 525 | platform-wide (cross-service by definition) | nothing |
 | N5 | root `AGENTS.md` | 147 | platform-wide, minus the monorepo-only lines | nothing |
@@ -180,14 +180,14 @@ instead of this repo's and junctioned sixteen untracked skill directories into a
 a stale copy of a skill that now ships from the plugin. `sync-checkout` and `open-worktree` resolve it, and
 `git/WORKTREE.md` states the junction hazard as a rule.
 
-### N2 — the route table's convention (36 rows)
+### N2 — the route table's convention (37 rows)
 
 The mechanism already splits the way §6 requires: `agent-standards` vendors `skill_router.py` through
 `vendor-hooks.ps1` (provenance-hashed) and ships **no** table, so the hook is platform-wide procedure and
 the table is per-repo data. The three area-floor rows (`^api/`, `^app/`, `^plans/`) are therefore values
 that cease to exist with the root — nothing to re-anchor.
 
-What has no owner is one tier up: **the convention those 36 rows follow.** That every source file is gated
+What has no owner is one tier up: **the convention those 37 rows follow.** That every source file is gated
 by an area floor plus a layer route, that every matching row fires rather than the first, that a row keyed
 on location cannot port while one keyed on architecture can, what a row's `note` is for — all of it lives
 today inside the table's own notes and `docs/INDEX.md`, both in the deleted root. Eight repos would

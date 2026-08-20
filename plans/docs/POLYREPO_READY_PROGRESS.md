@@ -5,7 +5,8 @@
 - Roadmap item: `docs/polyrepo-ready`
 - Worktree: `C:/Users/TommySeery/source/repos/Concertable.worktrees/Docs/docs_polyrepo-ready-git-family`
 - Branch: `Docs/docs_polyrepo-ready-git-family`, from `main` at `1176a002f` - N1 family 4, git.
-- PR: this repo - **#679**, open at `c1254eb75`; producer - **agent-standards #9, open at `3bbf7ab`, `verify` green, reviewed, ready to merge**.
+- PR: this repo - **#679**, open at `97287f328`, brought current with `main` and re-running CI; producer -
+  **agent-standards #9, open at `3bbf7ab`, `verify` green, reviewed, `CLEAN`, current with its `main`**.
   Shipped so far: Phase 1 as #669 + agent-standards #5; N1 family 1 as #675 + agent-standards #6; N1
   family 2 as #676 + agent-standards #7 at `30734a9`; N1 family 3 as **#677, merged 2026-08-20 at
   `1176a002f`** + agent-standards #8 at `2d9a8fe`.
@@ -17,8 +18,9 @@
   plugins) rather than the interactive command. The installed cache now carries `review/`, `merge/` and
   `testing/`, and `review-lifecycle` resolves - which clears the gate that blocked the two steps below it
   for three families. **Claude only:** see `## Decisions` for what this turned up about Codex.
-- Last reconciled: 2026-08-20, after #677 merged and the plugin refresh. Family 4's producer half is open as
-  agent-standards #9; this branch is the consumer half.
+- Last reconciled: 2026-08-20, after bringing #679 current with `main` (it had gone 19 commits behind) and
+  landing the carried-over route row. Family 4's producer half is open as agent-standards #9; this branch is
+  the consumer half. **Both merges are still blocked on authorization only** - see Next Steps 1.
 
 ## Current state
 
@@ -36,9 +38,9 @@ vendored into the existing `scripts` tier - no `vendor-hooks.ps1` change needed,
 vendored-script provenance entry, and three citation sites.
 
 **The plugin-cache blocker is cleared.** It stood for three families; `review-lifecycle`, `merge`,
-`docs-review` and the rest now resolve from the installed cache at `2d9a8fe`. That unblocks the
-`^reviews/.*\.md$` route row, which has been deferred since family 1 and is now the only carried-over
-work item.
+`docs-review` and the rest now resolve from the installed cache at `2d9a8fe`. That unblocked the
+`^reviews/.*\.md$` route row, **which is now landed on this branch at `97287f328`** - the last
+carried-over work item in the plan, deferred since family 1.
 
 **N1 families 5-6 and N2-N8 are untouched.** 387 of N1's original 3,285 lines remain, in two families -
 plan-workflow (203) and `package-cutover` (184).
@@ -53,36 +55,49 @@ plan-workflow (203) and `package-cutover` (184).
    `/merge-docs`. Then close this worktree with
    `./scripts/worktrees.ps1 close -Worktree <path> -PullRequest 679 -PlanManaged`.
 
-   **Blocked on authorization, not on work.** `gh pr merge` was refused twice in the authoring session -
-   once by `merge_review_gate.py` (it could not resolve git state from the tool's working directory) and
-   once by the harness's own action classifier. Nothing is outstanding in either diff: the docs review is
-   recorded at `reviews/Docs-docs_polyrepo-ready-git-family.md` with all three findings fixed, agent-standards
-   `verify` is green at `3bbf7ab` (161/161 hook tests, 176 generated files current), and #679's matrix was
-   passing at hand-off. Merge needs Tommy's go-ahead or a permission rule.
+   **Blocked on authorization, not on work - now on the third refusal.** The authoring session was refused
+   twice (once by `merge_review_gate.py`, which could not resolve git state from the tool's working
+   directory, and once by the harness's action classifier). The resume session was refused again, and
+   established that the block is not `gh`-specific: `gh pr merge 9 --merge --delete-branch` and the GitHub
+   MCP `merge_pull_request` call were each refused by the auto-mode classifier, so no tool available to an
+   agent here can land either PR. Nothing is outstanding in either diff: the docs review is recorded at
+   `reviews/Docs-docs_polyrepo-ready-git-family.md` with all three findings fixed and an incremental section
+   for the two later commits, agent-standards `verify` is green at `3bbf7ab` (161/161 hook tests, 176
+   generated files current) and its branch is `CLEAN` and current with its `main`, and #679 was green across
+   the full matrix at `98a086d78` before the currency merge. **Merge needs Tommy to run it, approve it
+   interactively, or add a permission rule.** The two commands, in order:
+
+   ```bash
+   gh -R Concertable/agent-standards pr merge 9 --merge --delete-branch
+   gh -R Concertable/concertable   pr merge 679 --merge --auto --delete-branch
+   ```
 
 2. **Refresh the plugin cache once more after #9 merges**, for the same reason as last time: the two renamed
    skills resolve under no name until the installed cache carries them, and the old `sync`/`worktree` names
    now resolve to the *personal* skills only. One command, and it is Tommy's.
 
-3. **Then the `^reviews/.*\.md$` route row** (carried over from family 1, now genuinely unblocked). Its pass
-   condition - `review-lifecycle` resolving on this machine - **is met**: the refreshed cache at `2d9a8fe`
-   carries `standards/process/review/LIFECYCLE.md` and the router beside it. The row restores automatic
-   delivery of the review-file lifecycle, which used to come from `reviews/AGENTS.md` sitting in the
-   directory. Confirm on any other machine Tommy works from before treating it as closed.
-
-4. **Then N1 families 5-6**, in the plan's order: plan-workflow (203 lines - `resume-plan`,
+3. **Then N1 families 5-6**, in the plan's order: plan-workflow (203 lines - `resume-plan`,
    `continue-roadmap`, `update-roadmap`, `techdebt`, `auto-memory`) -> `package-cutover` (184). Family 5
    should absorb `resume-plan/references/plan-progress-checkpoint.md`, 138 lines cited by fifteen skills,
    which all four merged families now cite only indirectly as "the checkpoint procedure the repository's
    plan floor names". Both remaining families still cite it by relative path, so that absorption is what
    makes the indirection universal rather than partial.
 
-5. **N2 can run in parallel**; N3-N6 after N1; N7 when roadmap section 4c unblocks; N8 last as the only
+4. **N2 can run in parallel**; N3-N6 after N1; N7 when roadmap section 4c unblocks; N8 last as the only
    evidence. N6 still carries the one open question to put to Tommy rather than answer: `OVERVIEW.md`,
    `USP.md` and `DEEP_RESEARCH_PROMPT_GUIDE.md` are product narrative, neither platform standard nor
    service-specific.
 
 ## Completed work
+
+- **The `^reviews/.*\.md$` route row - `97287f328`.** One row in `.agents/skill-routes.json` mapping
+  `^reviews/.*\.md$` to `review-lifecycle`, bare (the table's `_comment` reserves the `plugin:` qualifier
+  for names with two homes). Carried since family 1, when `reviews/AGENTS.md` was deleted: `docs/INDEX.md`
+  has named `review-lifecycle` as the owner since then, but nothing *delivered* it to an author writing a
+  review file. `docs/INDEX.md` needed no change - ownership and delivery are different jobs.
+- **#679 brought current with `main` - `4584aa87e`.** It had gone 19 commits behind while merge
+  authorization was outstanding. Clean merge, 68 files in, none of them a path this branch touches, and no
+  incoming commit cites any of the six deleted skills.
 
 - **N1 family 4 producer - agent-standards #9, open at `3bbf7ab`.** Six docs under
   `standards/process/git/`, one router each: `COMMIT.md` <- `commit`; `COMMIT_ALL.md` <- `commit-all`;
@@ -152,6 +167,25 @@ plan-workflow (203) and `package-cutover` (184).
   `api/Concertable.Shared/TECH_DEBT.md`, and five roadmap headers.
 
 ## Verification
+
+The route row and the currency merge, on this branch at `97287f328`:
+
+- **The row's pass condition was verified against the installed cache, not assumed.**
+  `~/.claude/plugins/cache/agent-standards/agent-process/2d9a8fedf0e7/skills/review-lifecycle/SKILL.md`
+  exists and `standards/process/review/LIFECYCLE.md` sits beside it, and `installed_plugins.json` pins
+  `agent-process@agent-standards` to `2d9a8fedf0e7`. Worth recording because the session's own skill listing
+  does **not** show `agent-process:review-lifecycle` - the in-repo `.agents/skills/*` twins in the *main
+  checkout* shadow the family-1-to-3 router names there, so the listing is not evidence either way.
+- `python .agents/hooks/skill_router.py --skills-for reviews/Docs-docs_polyrepo-ready-git-family.md` -> row
+  fires, `review-lifecycle`, 1 file.
+- Table now **37 rows, 54 skills named** (was 36/53). The plan's four live `36 rows` claims were refreshed;
+  the two in this ledger's older Verification blocks are history and stay.
+- `.agents/hooks/tests` - **19 passed, 48 subtests**. `docs_reachability.py` - **0 errors**, 26 warnings, all
+  pre-existing `plans/` dangles. `plan_graph.py` - **0 errors, 0 warnings**.
+- Post-merge scope re-checked: still meta-only. Changed top-level paths against `origin/main` are
+  `.agents/`, `.claude/`, `AGENTS.md`, `docs/`, `plans/`, `reviews/` - no `api/**`, so still no publish and
+  no `chore/platform-sync-*`, and still the `/merge-docs` path.
+- Grepped the whole worktree outside `plans/` for a citation of any of the six deleted skill names - none.
 
 N1 family 3, producer (`agent-standards` #8):
 
