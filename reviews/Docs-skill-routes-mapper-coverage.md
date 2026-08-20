@@ -2,7 +2,7 @@
 
 Work order for the route-coverage change. Findings are `- [ ]` until fixed, `- [x]` when addressed.
 
-**Reviewed up to commit:** `60acb8f6b1a833cf29e91a56b2b53daa9d62637a`  _(2026-08-20)_
+**Reviewed up to commit:** `0853f10db70e54a4aabd61c8924b5077d39613c1`  _(2026-08-20)_
 
 > Range: `origin/main...HEAD`. Scope: `.agents/skill-routes.json`, `docs/INDEX.md`, and the deletion of
 > a spent review. All paths are meta, so this is a `docs-review`, not a `review` — but the route table
@@ -96,3 +96,7 @@ worktree: `plan_graph.py` 0 errors/0 warnings, `docs_reachability.py` 0 errors.
 Nothing else in the range needs a change: the ledger's headers satisfy the graph, the plan cites only
 `POLYREPO_ROADMAP` (a sibling epic's roadmap, not its own — the coupling rule bars citing its own), and
 the re-stamp is honest about what it covered.
+
+Re-stamped to `0853f10db` after merging `origin/main` (9 commits: the #663 platform sync and the
+#667 review sweep). That merge authored nothing on this branch — the branch's diff against `main`
+is the same seven meta paths — so the review above still covers everything this PR changes.
