@@ -7,13 +7,23 @@ namespace Concertable.B2B.Concert.Infrastructure.Services.Settlement;
 
 internal sealed class SettlementAmountResolver : ISettlementAmountResolver
 {
-    private readonly IConcertDealStrategyFactory<ISettlementAmountResolver> resolvers;
+    private readonly IConcertRepository concertRepository;
+    private readonly IConcertDealStrategyFactory<ISettlementGrossCalculator> calculators;
 
-    public SettlementAmountResolver(IConcertDealStrategyFactory<ISettlementAmountResolver> resolvers)
+    public SettlementAmountResolver(
+        IConcertRepository concertRepository,
+        IConcertDealStrategyFactory<ISettlementGrossCalculator> calculators)
     {
-        this.resolvers = resolvers;
+        this.concertRepository = concertRepository;
+        this.calculators = calculators;
     }
 
-    public Task<Money> ResolveGrossAsync(int concertId, IDeal deal, CancellationToken ct = default) =>
-        resolvers.Create(deal.DealType).ResolveGrossAsync(concertId, deal, ct);
+    public async Task<Money> ResolveGrossAsync(int concertId, IDeal deal, CancellationToken ct = default)
+    {
+        var calculator = calculators.Create(deal.DealType);
+        var eligibleTakings = calculator.RequiresEligibleTakings
+            ? await concertRepository.GetTotalRevenueByConcertIdAsync(concertId)
+            : null;
+        return calculator.CalculateGross(deal, eligibleTakings);
+    }
 }

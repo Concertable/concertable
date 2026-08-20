@@ -85,11 +85,11 @@ public sealed class ConcertDealStrategyFactoryTests
     }
 
     [Theory]
-    [InlineData(DealType.FlatFee, typeof(FlatFeeSettlementAmount))]
-    [InlineData(DealType.DoorSplit, typeof(DoorSplitSettlementAmount))]
-    [InlineData(DealType.Versus, typeof(VersusSettlementAmount))]
-    [InlineData(DealType.VenueHire, typeof(VenueHireSettlementAmount))]
-    public void Create_SettlementAmountType_ResolvesExpectedStrategyFromRequestScope(
+    [InlineData(DealType.FlatFee, typeof(FlatFeeGrossCalculator))]
+    [InlineData(DealType.DoorSplit, typeof(DoorSplitGrossCalculator))]
+    [InlineData(DealType.Versus, typeof(VersusGrossCalculator))]
+    [InlineData(DealType.VenueHire, typeof(VenueHireGrossCalculator))]
+    public void Create_SettlementGrossType_ResolvesExpectedStrategyFromRequestScope(
         DealType dealType,
         Type expectedType)
     {
@@ -101,7 +101,7 @@ public sealed class ConcertDealStrategyFactoryTests
         });
         using var scope = provider.CreateScope();
         var factory = scope.ServiceProvider
-            .GetRequiredService<IConcertDealStrategyFactory<ISettlementAmountResolver>>();
+            .GetRequiredService<IConcertDealStrategyFactory<ISettlementGrossCalculator>>();
 
         var strategy = factory.Create(dealType);
 
