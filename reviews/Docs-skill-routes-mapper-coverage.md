@@ -2,7 +2,7 @@
 
 Work order for the route-coverage change. Findings are `- [ ]` until fixed, `- [x]` when addressed.
 
-**Reviewed up to commit:** `08ff41bf305454a05ac4d7409a6e1fcd0607b3ef`  _(2026-08-19)_
+**Reviewed up to commit:** `60acb8f6b1a833cf29e91a56b2b53daa9d62637a`  _(2026-08-20)_
 
 > Range: `origin/main...HEAD`. Scope: `.agents/skill-routes.json`, `docs/INDEX.md`, and the deletion of
 > a spent review. All paths are meta, so this is a `docs-review`, not a `review` — but the route table
@@ -66,3 +66,33 @@ Work order for the route-coverage change. Findings are `- [ ]` until fixed, `- [
 **layer** route, so ~163 near-empty files would load 2–3 skills on a write. Left deliberately: these are
 written once per project, and adding the same negative lookahead to four layer patterns would cost more
 in table readability than it saves in noise. Recorded here rather than silently shipped.
+
+## Incremental review — 2026-08-20
+
+Range `08ff41bf3..60acb8f6b` (2 commits): the re-stamp of this file, and `60acb8f6b` spinning off
+`docs/polyrepo-ready` as `plans/docs/POLYREPO_READY_PLAN.md` (+100) and its ledger (+61). Gates in this
+worktree: `plan_graph.py` 0 errors/0 warnings, `docs_reachability.py` 0 errors.
+
+- [wontfix] **DOC5 — LOW — Lens A (imprecise label)** — `plans/docs/POLYREPO_READY_PLAN.md:20`,
+  `POLYREPO_READY_PROGRESS.md` baseline table
+  The baseline column is headed `Lines` but the figures are **non-blank** lines: 183/50/26/53 are exactly
+  `grep -cv '^[[:space:]]*$'` on `plans/agents/PLAN.md`, `PROMPTS.md`, `plans/agents/ROADMAP.md` and
+  `plans/AGENTS.md`, whose `wc -l` totals are 233/57/34/71. The measurement is internally consistent —
+  every file counted the same way — so the 259 figure is sound for what it measures; only the label is
+  ambiguous. It did mislead downstream: the follow-up branch read the totals as a correction and recorded
+  that the baseline had been "wrong".
+  **Not fixed here** — [#669](https://github.com/Concertable/concertable/pull/669) replaces this whole
+  table with `wc -l` figures within minutes of this PR landing, and editing the same lines on this branch
+  buys a merge conflict for no reader benefit. Fixed instead where it survives: #669 now states the
+  baseline counted non-blank lines rather than calling it an error.
+
+- [wontfix] **DOC6 — LOW — Lens A (stale claim)** — `POLYREPO_READY_PROGRESS.md` `## Next Steps`
+  "Watch for: the Stop hook and `plan_graph.py` both read the handoff pointer's shape, and `PROMPTS.md`
+  is currently its only definition." Neither hook reads `PROMPTS.md`; `plan_handoff_stop.py` hard-codes
+  the pointer's shape. A planning-time caution that turned out not to exist.
+  **Not fixed here** — #669 deletes this `## Next Steps` entirely and records the disproof as a
+  discovery. Same reasoning as DOC5.
+
+Nothing else in the range needs a change: the ledger's headers satisfy the graph, the plan cites only
+`POLYREPO_ROADMAP` (a sibling epic's roadmap, not its own — the coupling rule bars citing its own), and
+the re-stamp is honest about what it covered.
