@@ -84,10 +84,10 @@ plan-workflow (203) and `package-cutover` (184).
    plan floor names". Both remaining families still cite it by relative path, so that absorption is what
    makes the indirection universal rather than partial.
 
-4. **N2 can run in parallel**; N3-N6 after N1; N7 when roadmap section 4c unblocks; N8 last as the only
-   evidence. N6 still carries the one open question to put to Tommy rather than answer: `OVERVIEW.md`,
-   `USP.md` and `DEEP_RESEARCH_PROMPT_GUIDE.md` are product narrative, neither platform standard nor
-   service-specific.
+4. **N2 can run in parallel**; N3-N6 and **N7a** (`plans/AGENTS.md`'s content) after N1; **N7b** (the
+   plan-document tree) when roadmap §4c unblocks; N8 last as the only evidence. N6 still carries the one
+   open question to put to Tommy rather than answer: `OVERVIEW.md`, `USP.md` and
+   `DEEP_RESEARCH_PROMPT_GUIDE.md` are product narrative, neither platform standard nor service-specific.
 
 ## Completed work
 
