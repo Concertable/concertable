@@ -32,9 +32,11 @@ When a topic has both, the skill owns the rule and the file owns the inventory.
 | The worktree identity gate; splitting durable guidance onto a `Docs/*` branch | [`AGENTS.md`](../AGENTS.md) "Git branch" |
 | When to commit, when to push, fewest safe merges | skill `committing` |
 | Ready-for-review ≠ merge authorization | [`AGENTS.md`](../AGENTS.md) |
-| Merge procedure — currency check, enqueue, the four terminal states, sync follow-through | [`.agents/skills/merge/SKILL.md`](../.agents/skills/merge/SKILL.md) (generic rule: skill `merging`) |
+| Merge procedure — currency check, enqueue, the four terminal states, sync follow-through | skill `merge` (the reasoning behind each state: skill `merging`) |
+| Opening a PR, and the read-only gate that clears a branch first | skills `open-pr`, `pr-preflight` |
+| Landing a meta-only change without the queue's E2E gate | skill `merge-docs` |
 | The merge invariants too expensive to wait for a skill | [`AGENTS.md`](../AGENTS.md) "Merging" |
-| Which E2E tier a merge runs | [`.agents/skills/merge/SKILL.md`](../.agents/skills/merge/SKILL.md) Step 4 |
+| Which E2E tier a merge runs | skill `merge`, Step 4 |
 | Platform sync gate after an `api/**` merge | [`AGENTS.md`](../AGENTS.md) "Platform sync is a live gate" |
 | Which gate runs where, and the Docker pre-flight before any local E2E | skill `remote-validation`; this repo's commands [`REMOTE_VALIDATION.md`](./REMOTE_VALIDATION.md) |
 | A red suite is never just reported | skill `failing-tests`; this repo's debug routing [`plans/AGENTS.md`](../plans/AGENTS.md) |

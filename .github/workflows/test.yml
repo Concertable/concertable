@@ -30,7 +30,7 @@ jobs:
     #                 run_e2e + run_e2e_ui false: a dep bump can break compile/tests so those gate, but it has ZERO
     #                 runtime delta so E2E no-ops.
     #   - anything else -> initially enables every job; this is conservative job plumbing, not E2E-tier policy.
-    # `.agents/skills/merge/SKILL.md` is the single source of truth for the E2E tier: a positive trigger keeps
+    # The `merge` skill's Step 4 is the single source of truth for the E2E tier: a positive trigger keeps
     # full E2E on via `full-e2e`; no positive trigger selects `skip-e2e`. The hard floor remains build + carve +
     # unit + integration, and every PR still merges through the queue on current main.
     # The same E2E selections can also be supplied as git TRAILERS on their own line — `Skip-E2E: true` or
