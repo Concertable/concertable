@@ -19,9 +19,9 @@ reintroduced at repo scale.
 | Problem | Measure |
 |---|---|
 | ~~Generic plan process sits in a repo with no future~~ — **moved, Phase 1** | `plans/agents/PLAN.md` 233 lines · `PROMPTS.md` 57 · `plans/agents/ROADMAP.md` 34 — **324 lines**, of which 32 carried a Concertable-specific name or command (the 259 first recorded here counted non-blank lines; these are `wc -l` at the time of the move) |
-| The route table has no home after the cut | 37 rows in root `.agents/skill-routes.json`. `agent-standards` **vendors the hook** (`vendor-hooks.ps1`, provenance-hashed) but ships **no** table — so the table is per-repo data, and 3 rows (`^api/…`, `^app/…`, `^plans/…`) name paths a service repo does not have. The *convention* those 37 rows follow has no owner anywhere |
+| The route table has no home after the cut | 36 rows in root `.agents/skill-routes.json`. `agent-standards` **vendors the hook** (`vendor-hooks.ps1`, provenance-hashed) but ships **no** table — so the table is per-repo data, and 3 rows (`^api/…`, `^app/…`, `^plans/…`) name paths a service repo does not have. The *convention* those 36 rows follow has no owner anywhere |
 | The hub docs are in the deleted root | root `AGENTS.md` (147 lines) and `docs/INDEX.md` — not "they open by describing a monorepo", which is the wording; the problem is every rule in them needs a destination |
-| The 28 workflow skills are in the deleted root | 2,900 lines in `.agents/skills/`, every family platform-wide — Phase 5 |
+| The 28 workflow skills are in the deleted root | **3,285** lines in `.agents/skills/`, every family platform-wide — N1 |
 
 Six sibling process docs — branching, committing, merging, remote validation, docs-and-debt,
 failing-tests — already moved to `standards/process/`. Plans moved 78 lines and left 259. There is no
@@ -64,8 +64,6 @@ is deleted with it or replicated eight times, which is the failure this epic exi
 **common across services**, never *does it mention Concertable*: `/merge` names the queue and
 platform-sync and is still platform-wide, because all eight repos merge and all eight own a sync.
 
-## Phases
-
 ### Phase 1 — move the generic plan process out ✅ **done**
 
 Target `Concertable/agent-standards` (PR [#5](https://github.com/Concertable/agent-standards/pull/5)):
@@ -87,60 +85,38 @@ per-repo" was the mistake above in miniature: **every one of those is platform-w
 a plan graph, close plan-managed worktrees, debug by tier, and own a merge queue; only the *values* differ
 (this service's script path, this service's suite names). So the content belongs in `standards/` with the
 values named by each repo's own thin `AGENTS.md` — not as 75 lines copied eight times, which is what the
-ledger's "generated or hand-kept?" open question was really asking. Phase 5 settles it with the rest.
+ledger's "generated or hand-kept?" open question was really asking. N1 and N7 settle it with the rest.
 
 **Gate — met.** `plan_graph.py` 0 errors, `docs_reachability.py` 0 errors (26 pre-existing warnings, all
 in `plans/`); the `plans` route still fires on a `plans/**/*.md` write; hook tests 14/14 here and 161/161
 in `agent-standards`; no guidance doc links a moved file (the only surviving mentions are historical
 records in spent ledgers and review files).
 
-### Phase 2 — give the route table's convention a home; the monorepo rows die with the root
+## The remaining work is one node at a time
 
-The original framing was "re-anchor the three monorepo-shaped rows so the table works in both shapes". That
-keeps a root table alive in two worlds, which §6 does not allow. The mechanism already splits the way the
-rule requires: `agent-standards` vendors `skill_router.py` into each repo and ships **no** table, so the
-table is per-repo *data* and the hook is the platform-wide *procedure*.
+Phase 1 proved the shape: measure a node, move the platform-wide content to `agent-standards`, leave the
+per-repo values behind, land producer then consumer. Everything left is that same operation applied to the
+next node, and the nodes are known and measured (`origin/main` at `1d15a7920`):
 
-So the three area-floor rows are not re-anchored — they are values that cease to exist when the root does.
-What is missing is one tier up: **the convention 37 rows follow has no owner.** That every source file is
-gated by an area floor plus a layer route, that every matching row fires rather than the first, that a row
-keyed on location cannot port while one keyed on architecture can, and what a row's `note` is for — all of
-that lives today as prose inside the table's own notes and `docs/INDEX.md`, both in the deleted root, so
-eight repos would hand-write eight tables from no stated rule.
+| # | Node | Size | Destination | Leaves behind |
+|---|---|---|---|---|
+| N1 | `.agents/skills/` — 28 skills | **3,285** lines | platform-wide, six families | per-repo values: script paths, suite names |
+| N2 | `.agents/skill-routes.json` — 36 rows | 36 rows | the *convention* + a generator | the table itself: per-repo data |
+| N3 | `api/AGENTS.md` + `api/CLAUDE.md` | 78 | platform-wide | nothing — §6 deletes this node |
+| N4 | `api/ARCHITECTURE.md` + `api/docs/MICROSERVICES_ARCHITECTURE.md` | 62 + 525 | platform-wide (cross-service by definition) | nothing |
+| N5 | root `AGENTS.md` | 147 | platform-wide, minus the monorepo-only lines | nothing |
+| N6 | `docs/` — `INDEX.md` 188 · `USP.md` 203 · `DEEP_RESEARCH_PROMPT_GUIDE.md` 81 · `OVERVIEW.md` 55 · `REMOTE_VALIDATION.md` 27 | 554 | mixed — see N6 | nothing |
+| N7 | `plans/` tree + `plans/AGENTS.md` 75 | tree | platform-wide + per-repo values | gated on roadmap §4c |
+| N8 | *(gate)* prove one carved service standalone | — | — | — |
 
-- Publish that convention from `agent-standards` beside the vendored hook, and a template or generator that
-  emits a repo's table from its own layout, so a carved repo's table is derived rather than copied.
-- Keep the layer rows as the portable core; let each repo's own floors name its own top-level directories.
+**One node per slice, in this order.** N1 first: every hub below it points *at* skills, so re-homing a hub
+before its targets have addresses writes pointers to nowhere. N2 is independent and can run in parallel.
+N3–N6 follow N1. N7 waits on an external decision. N8 is last and is the only evidence.
 
-**Gate:** generate the table for a simulated carved service tree from the published convention, replay
-every tracked path in that tree, and require 100% coverage with no row naming a path outside the repo. The
-monorepo's own table only has to keep working until the root is deleted.
+### N1 — the 28 workflow skills (3,285 lines)
 
-### Phase 3 — re-home the hub docs, rather than re-premise them
-
-The original framing here was "root `AGENTS.md` opens *It is a monorepo* — reword it so the monorepo is
-named as current packaging rather than premise". Under §6 that is effort spent on a file with no future:
-root `AGENTS.md` and `docs/INDEX.md` are as deleted as `api/AGENTS.md` was. **Split their content by the
-same test instead** — every rule in them is platform-wide (→ `agent-standards`, where the eight repos
-inherit it) or single-service (→ that service's repo) — and let what remains at root be whatever genuinely
-describes the monorepo *while it exists*, since it dies with it. Rewording the premise of a doomed hub is
-the cosmetic tier; re-homing its rules is the work.
-
-### Phase 4 — prove it on one service, or it is not done
-
-Take the smallest independently-carvable service and check its guidance standalone: every route fires,
-every skill resolves, no doc links a path outside the service, no doc asserts a monorepo. Payment is the
-candidate — an adapter service with the fewest inbound dependencies.
-
-**This is the only phase that tests the claim.** The first three are edits; this is the evidence.
-
-### Phase 5 — the 28 workflow skills, split by the two-destination test
-
-Phase 1 moved the plan *standards* and never looked at `.agents/skills/`. All 28 skills — 2,900 lines — sit
-in the root that is being deleted, and under §6 each one is platform-wide or single-service. Applying the
-test rather than the "does it name Concertable" question that produced a keep-bucket:
-
-**Platform-wide → `agent-standards` (every service repo needs them, so a copy per repo is eight copies):**
+Under §6 each skill is platform-wide or single-service. Applying that test rather than "does it name
+Concertable" (which is what produced a keep-bucket in an earlier draft of this plan):
 
 | Family | Lines | Why it is common |
 |---|---|---|
@@ -149,28 +125,91 @@ test rather than the "does it name Concertable" question that produced a keep-bu
 | `e2e-ui-debug` · `e2e-api-debug` · `e2e-ui-regress` · `e2e-debug` · `integration-debug` · `reset-test-explorer` | 1,022 | Every repo debugs a red suite by tier. The *procedure* is common; the artifact it invokes (`scripts/e2e.ps1`, the suite names) is the per-repo value |
 | `commit` · `commit-all` · `push` · `pull` · `sync` · `worktree` | 429 | Zero lines name this repo. Also needs reconciling with `dotagents`' `commit-push`/`sync`/`pull-main`, which already duplicate them |
 | `resume-plan` · `continue-roadmap` · `update-roadmap` · `techdebt` · `auto-memory` | 203 | The executable counterparts of the `plans` skill Phase 1 already moved |
-| `package-cutover` | 184 | Published-contract cut-over is the carve's own mechanic, identical in every repo that consumes the feed |
+| `package-cutover` | 184 | Published-contract cut-over is the carve's own mechanic, identical in every repo consuming the feed |
 
-**Single-service → that service's repo:** nothing in the current roster, which is the finding. What each
-repo carries is *values*, not procedure: its own `scripts/e2e.ps1`, its suite names, its hook paths, its
-`initial-migrations.ps1` — named in its own thin `AGENTS.md`, the way `Concertable.Payment` already models.
+**Single-service: none.** That is the finding. What a carved repo keeps is *values* — its `scripts/e2e.ps1`,
+its suite names, its hook and migration paths — named in a thin `AGENTS.md` on the `Concertable.Payment`
+model. The same applies to `plans/AGENTS.md` (N7).
 
-So the skill *bodies* leave, parameterised over those values, and each carved repo keeps a short floor that
-supplies them. The same applies to `plans/AGENTS.md`, which Phase 1 left behind (see its note above).
+One family per slice, ordered by cost of duplication: review → merge/PR → test-debug (largest; needs the
+parameterisation decided first) → git (plus the `dotagents` overlap) → plan-workflow → `package-cutover`.
 
-**Order by cost of duplication:** review family → merge/PR family → the test-debug family (largest, and
-needs the parameterisation decided first) → git family (plus the `dotagents` overlap) → plan-workflow.
+**Gate per family:** a simulated carved tree loses no rule, the router resolves the moved skill from a
+fresh install, and what stays at root is only values this repo owns.
 
-**Gate:** for each moved skill, a simulated carved tree loses no rule, the router resolves from a fresh
-install, and what remains at root is only values that repo genuinely owns. Phase 4 depends on all of it —
-"prove it on one service" is meaningless while a carved Payment repo would have no review, merge, or debug
-skill at all.
+### N2 — the route table's convention (36 rows)
+
+The mechanism already splits the way §6 requires: `agent-standards` vendors `skill_router.py` through
+`vendor-hooks.ps1` (provenance-hashed) and ships **no** table, so the hook is platform-wide procedure and
+the table is per-repo data. The three area-floor rows (`^api/`, `^app/`, `^plans/`) are therefore values
+that cease to exist with the root — nothing to re-anchor.
+
+What has no owner is one tier up: **the convention those 36 rows follow.** That every source file is gated
+by an area floor plus a layer route, that every matching row fires rather than the first, that a row keyed
+on location cannot port while one keyed on architecture can, what a row's `note` is for — all of it lives
+today inside the table's own notes and `docs/INDEX.md`, both in the deleted root. Eight repos would
+hand-write eight tables from no stated rule.
+
+- Publish the convention from `agent-standards` beside the vendored hook, plus a template or generator that
+  emits a repo's table from its own layout, so a carved table is derived rather than copied.
+- Keep the layer rows as the portable core; each repo's floors name its own top-level directories.
+
+**Gate:** generate the table for a simulated carved tree from the published convention, replay every
+tracked path in that tree, require 100% coverage and no row naming a path outside the repo.
+
+### N3 — `api/AGENTS.md` + `api/CLAUDE.md` (78 lines)
+
+§6 names this node explicitly: *"there is no `api/` node in a polyrepo."* It is already pointers-only with
+no `@`-imports, so this is a re-home, not a rewrite: the pointers that are platform-wide (the service
+roster, the boundary rule, which skill owns what) go to `agent-standards`; anything naming one service was
+already pushed down in roadmap 4a/4b. Nothing stays.
+
+### N4 — `api/ARCHITECTURE.md` (62) + `api/docs/MICROSERVICES_ARCHITECTURE.md` (525)
+
+Cross-service by definition — the carve, the publish→sync loop, Contracts-only dependencies. Platform-wide
+in full, and the largest single document left. It is also what every service repo needs on day one to know
+what it may depend on, so it cannot be the last node moved.
+
+### N5 — root `AGENTS.md` (147 lines)
+
+Split by the same test. The monorepo-only lines (that this *is* a monorepo, where `api/` and `app/` sit) do
+not port and die with the root; everything else — the scalable-fix rule, the autonomy rules, the merge and
+platform-sync invariants, doc locality, the review gates — is platform-wide. Rewording its opening sentence
+so the monorepo reads as "current packaging" is the cosmetic tier and is explicitly **not** the work.
+
+### N6 — `docs/` (554 lines across five files)
+
+Three different answers in one folder, so it is one node with three outcomes:
+
+- `INDEX.md` (188) — the topic→owner map. Platform-wide, and its per-repo half is a short "what this repo
+  owns" list. Blocked on N1: the map's rows point at skills, so it can only be written once they have homes.
+- `REMOTE_VALIDATION.md` (27) — already a thin pointer at the `remote-validation` standard; folds into the
+  per-repo floor with its commands.
+- `OVERVIEW.md` (55), `USP.md` (203), `DEEP_RESEARCH_PROMPT_GUIDE.md` (81) — **not agent guidance and not
+  service-specific: product narrative.** Neither destination fits, which makes this the one genuinely open
+  question in the plan. **Do not invent a home** — surface it with N6 and let Tommy place them.
+
+### N7 — the `plans/` tree and `plans/AGENTS.md` (75 lines)
+
+Gated on roadmap §4c (where a cross-service plan physically lives), which is gated on §6's remaining
+sub-decision. The file itself is not gated: every rule in it is platform-wide with per-repo values, which is
+also the answer to the ledger's old "generate it eight times or hand-keep it?" question — neither, the
+content leaves.
+
+### N8 — prove one carved service standalone, or none of this is done
+
+Take the smallest independently-carvable service and check its guidance alone: every route fires, every
+skill resolves, no doc links a path outside the service, no doc asserts a monorepo. Payment is the
+candidate — an adapter service with the fewest inbound dependencies.
+
+**This is the only node that produces evidence rather than edits**, and it depends on N1–N6: a carved
+Payment repo with no review, merge or debug skill cannot prove anything.
 
 ## Explicitly not in scope
 
 - Moving plan *documents* (4c above).
 - The polyrepo cut itself, its seam decision, or any repo creation.
 - `docs/analyzer-pushdown`, which is independent of this.
-- ~~The workflow skills in `.agents/skills/`~~ — silently out of scope until Phase 5 named them, and first
+- ~~The workflow skills in `.agents/skills/`~~ — silently out of scope until N1 named them, and first
   classified with a "genuinely local, keep" bucket that §6 does not allow. Phase 1 measured three documents
   and moved three documents; nothing in it examined the skill roster.

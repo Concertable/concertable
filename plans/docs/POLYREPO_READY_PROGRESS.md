@@ -3,58 +3,48 @@
 - Plan: `plans/docs/POLYREPO_READY_PLAN.md`
 - Roadmap: `plans/docs/DOCS_ROADMAP.md`
 - Roadmap item: `docs/polyrepo-ready`
-- Worktree: `C:/Users/TommySeery/source/repos/Concertable.worktrees/Docs/docs_polyrepo-ready`
-- Branch: `Docs/docs_polyrepo-ready`
-- PR: this repo — [#669](https://github.com/Concertable/concertable/pull/669), based on
-  `Docs/skill-routes-mapper-coverage` (retarget to `main` when [#668](https://github.com/Concertable/concertable/pull/668)
-  lands); producer — `Concertable/agent-standards` [PR #5](https://github.com/Concertable/agent-standards/pull/5)
-- Dependency/package gates: this branch's docs point at `standards/process/PLANS.md` and `HANDOFF.md`, which
-  ship from agent-standards PR #5. **#5 merges first**, then #668 (this branch's base), then this one.
-- Last reconciled: 2026-08-20, from `gh pr view` on #5/#668/#669, `gh pr checks`, and the hook gates below.
-  All three branches are current with their base (0 behind) and every review marker is re-stamped to head.
+- Worktree: `C:/Users/TommySeery/source/repos/Concertable.worktrees/Docs/docs_polyrepo-ready-nodes`
+- Branch: `Docs/docs_polyrepo-ready-nodes`
+- PR: this repo — #669 MERGED as `1d15a7920`; producer `Concertable/agent-standards` #5 MERGED as `1d44caa38`. Current slice: no PR opened yet
+- Dependency/package gates: none open. Phase 1's producer shipped; platform-sync #672 (0.1.0-alpha.0.1086) was the merge's own sync and carried no consumer migration.
+- Last reconciled: 2026-08-20 after the three merges, from `gh pr view`, `git ls-tree origin/main` for the node inventory, and `wc -l` for every figure in the plan.
 
 ## Current state
 
-**Phase 1 is implemented across both repos, reviewed, and delivery-gated on the producer PR.** Phases 2–4
-are untouched and unblocked.
+**Phase 1 is merged in both repos.** agent-standards #5 → `1d44caa38`; this repo #668 → `6f8a31f02` and
+#669 → `1d15a7920`; both worktrees closed with `worktrees.ps1 close`; agent-standards `main` pulled so
+Codex reads the merged standards through its junctions. The one remaining harness step is Tommy running
+`/plugin marketplace update agent-standards` per machine so the `handoff` router resolves in Claude.
 
-This branch is cut from `Docs/skill-routes-mapper-coverage` (PR #668), not from `origin/main`, because
-that PR carries this plan *and* the route table this work edits — branching from `main` would have
-conflicted on `.agents/skill-routes.json`. Its commits drop out of this PR's diff as soon as #668
-merges. **`test.yml` only triggers on PRs based on `main`** (`pull_request: branches: [main]`), so #669
-reports "no checks reported" until it is retargeted — retarget it the moment #668 lands, then read its CI.
+**Everything else is untouched and now expressed as nodes, not phases.** The plan carries a measured
+inventory of every guidance node still sitting in the root that §6 deletes — N1 skills (3,285 lines), N2 the
+36-row route table’s convention, N3 `api/AGENTS.md` (78), N4 `api/ARCHITECTURE.md` + `MICROSERVICES_ARCHITECTURE.md`
+(587), N5 root `AGENTS.md` (147), N6 `docs/` (554), N7 the `plans/` tree — worked one at a time in that
+order, each as its own producer→consumer slice. N8 proves one carved service and is the only evidence.
+
+The 136 `AGENTS.md`/`CLAUDE.md` pairs under `api/**` are **not** in scope: they are per-service,
+per-module and per-test-project, already at the lowest containing node, and they ride their service into its
+repo. That is the destination working as intended.
 
 ## Next Steps
 
-1. **Deliver Phase 1, in this order.** agent-standards
-   [PR #5](https://github.com/Concertable/agent-standards/pull/5) merges first — the docs on this branch name
-   `standards/process/PLANS.md` and `HANDOFF.md`, so landing this one first would point at a doc that has not
-   shipped. Then [#668](https://github.com/Concertable/concertable/pull/668) merges (it is this branch's base
-   and carries the route table this work edits), retarget
-   [#669](https://github.com/Concertable/concertable/pull/669) to `main`, read the CI that then triggers for
-   the first time, and land it through `/merge-docs`. Its docs review is recorded below and clean, so the
-   review gate is met. Tommy needs one harness action per machine afterwards so the new router is live:
-   `/plugin marketplace update agent-standards` (Claude). Codex reads the standards through junctions into
-   the local `agent-standards` checkout, so it needs nothing beyond that repo being on merged `main`.
+1. **N1, family 1 — the review skills (813 lines).** Producer PR in `Concertable/agent-standards`: move
+   `review`, `docs-review`, `big-review`, `incremental-review`, `address-review`, `big-review-all` out as
+   `standards/process/` docs with their routers, parameterised over the values a repo supplies (its review
+   file location, its hook paths, its area globs). Consumer PR here deletes the six bodies and leaves the
+   values. Land producer first, exactly as Phase 1 did. Gate: a simulated carved tree loses no rule, the
+   routers resolve from a fresh install, and `docs-review` still runs end-to-end from the moved copy — this
+   plan's own next review is the test case.
 
-2. **Phase 2 — re-anchor `^api/`, `^app/`, `^plans/`.** Key the two area floors on what a file *is*, the
-   way the four layer routes already do. Verify by replaying every tracked path through the table twice:
-   once against the monorepo tree, once against a tree with the prefix stripped, and require 100% both
-   times. Do it on a branch that has #668's version of the table.
+2. **Then N1 families 2–6, one slice each**, in the plan's order: merge/PR (634) → test-debug (1,022, needs
+   the script-path parameterisation decided first) → git (429, plus reconciling `dotagents`'
+   `commit-push`/`sync`/`pull-main` overlap) → plan-workflow (203) → `package-cutover` (184).
 
-3. **Phases 2, 3, 4 and 5** as the plan now states — all four were rewritten against §6 after Phase 1
-   shipped, so read the plan rather than any earlier summary of it. Every artifact is answered by the
-   two-destination rule at the top of the plan: platform-wide → `agent-standards`, single-service → that service's repo, nothing stays.
-   Phase 5 (all 28 workflow skills, 2,900 lines, none of them single-service) is the largest piece left and
-   Phase 4 depends on it — "prove it on one service" is meaningless while a carved Payment repo would have
-   no review, merge, or debug skill. Phase 3 is a re-homing pass, not a rewording pass. Do not call the item
-   done without Phase 4.
+3. **N2 can run in parallel** — it touches only the route convention and a generator, not the skills.
 
-**Open question for Tommy, not blocking:** each carved service repo will need its own thin
-`plans/AGENTS.md` and hook wiring naming its own script paths — the file this phase left behind is 75
-lines of genuinely local content, times eight repos. Vendoring already handles the hooks. Whether that
-thin file is **generated** from a template at carve time or hand-kept per repo is a real choice, and
-Phase 4 is where it gets tested either way.
+4. **N3–N6 after N1**, then N7 when roadmap §4c unblocks, then N8 as the terminal evidence gate. N6 carries
+   the one open question to put to Tommy rather than answer: `OVERVIEW.md`, `USP.md` and
+   `DEEP_RESEARCH_PROMPT_GUIDE.md` are product narrative, neither platform standard nor service-specific.
 
 ## Completed work
 
