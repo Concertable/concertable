@@ -39,7 +39,8 @@ When a topic has both, the skill owns the rule and the file owns the inventory.
 | Which gate runs where, and the Docker pre-flight before any local E2E | skill `remote-validation`; this repo's commands [`REMOTE_VALIDATION.md`](./REMOTE_VALIDATION.md) |
 | A red suite is never just reported | skill `failing-tests`; this repo's debug routing [`plans/AGENTS.md`](../plans/AGENTS.md) |
 | Plan/roadmap/ledger structure, lifecycle and method | skill `plans`; this repo's layout, scripts and skill names [`plans/AGENTS.md`](../plans/AGENTS.md) |
-| Review files as work orders; addressing and deleting findings | [`reviews/AGENTS.md`](../reviews/AGENTS.md) |
+| Reviewing a branch, a docs diff, a massive branch, or only the new commits | skills `review`, `docs-review`, `big-review`, `big-review-all`, `incremental-review` |
+| Review files as work orders; addressing and deleting findings | skills `address-review`, `review-lifecycle` |
 | Continuation, handoff and resume prompt shape | skill `handoff` |
 | One rule one home, doc locality, reachability, tech debt, throwaway markdown | skill `docs-and-debt` |
 | Code comments — default to none | global agent instructions (mechanics: skill `comments`) |
@@ -154,7 +155,7 @@ diagnostic or test name, not an argument.
 | The standard that owns a path is loaded before the first write into it | `.agents/hooks/skill_router.py` over `.agents/skill-routes.json`, wired in `.claude/settings.json` and `.codex/hooks.json` | Gate |
 | **No source file is ungated.** Two area floors (`api/**/*.cs`, `app/**/*.{ts,tsx}`) plus four layer routes keyed on the project's layer, so a file shape nobody wrote a rule for still loads its floor | the same table — floors first, specific routes add to them rather than replace them | Gate |
 | A vendored hook still matches upstream, and is wired in both harnesses or in neither as its `delivery` says | `.agents/hooks/tests/test_vendored_hooks.py`, run by the `hook-tests` CI job | Yes |
-| A review loads the same standards the author was required to load | `skill_router.py --skills-for` over the same table, run by [`review`](../.agents/skills/review/SKILL.md) Step 2 | Gate |
+| A review loads the same standards the author was required to load | `skill_router.py --skills-for` over the same table, run by skill `review` Step 2 | Gate |
 
 ## Adding to the corpus
 
