@@ -4,9 +4,9 @@
 > findings directly and report what changed. Tick each `[x]` as you land it. Pause only for a genuinely
 > ambiguous finding: flag it in one line, take the safe path, keep going.
 
-**Reviewed up to commit:** `2053862d1274a8b690dba60827f2c50b1c1f4955`  _(2026-08-20)_
+**Reviewed up to commit:** `0dc9ddd03c4a8e8e45623581ae07b92ca557870b`  _(2026-08-20)_
 
-> Range reviewed: `133b018da..2053862d1` (4 commits).
+> Range reviewed: `133b018da..0dc9ddd03` (7 commits).
 > Status legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[wontfix]` (note why).
 
 Run from the moved copy of the procedure — `standards/process/review/DOCS.md` on `agent-standards`
