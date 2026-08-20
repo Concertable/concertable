@@ -13,7 +13,7 @@ bypass that the `/merge` skill reserves for doc-/config-only PRs, made into its 
 schema, deployment, or test-selection consequence, STOP and use `/merge` — the queue must gate it.
 
 - **In scope (meta-only):** `**/*.md`, `.agents/**`, `.claude/**`, `.codex/**`, `plans/**`, `docs/**`,
-  `AGENTS.md`, `CLAUDE.md`, `README*`, `PROMPTS.md`. Nothing else.
+  `AGENTS.md`, `CLAUDE.md`, `README*`. Nothing else.
 - **Out of scope → route to `/merge`:** any `api/**` or `app/**` runtime/source, `package.json` /
   lockfiles / workspace config, `*.csproj` / CPM, `.github/workflows/**` (CI/test-selection logic),
   migrations, deployment artifacts. When unsure, it is **not** docs-only.

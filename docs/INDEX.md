@@ -38,9 +38,9 @@ When a topic has both, the skill owns the rule and the file owns the inventory.
 | Platform sync gate after an `api/**` merge | [`AGENTS.md`](../AGENTS.md) "Platform sync is a live gate" |
 | Which gate runs where, and the Docker pre-flight before any local E2E | skill `remote-validation`; this repo's commands [`REMOTE_VALIDATION.md`](./REMOTE_VALIDATION.md) |
 | A red suite is never just reported | skill `failing-tests`; this repo's debug routing [`plans/AGENTS.md`](../plans/AGENTS.md) |
-| Plan/roadmap/ledger structure and lifecycle | skill `plans`; here [`plans/AGENTS.md`](../plans/AGENTS.md), [`plans/agents/PLAN.md`](../plans/agents/PLAN.md) |
+| Plan/roadmap/ledger structure, lifecycle and method | skill `plans`; this repo's layout, scripts and skill names [`plans/AGENTS.md`](../plans/AGENTS.md) |
 | Review files as work orders; addressing and deleting findings | [`reviews/AGENTS.md`](../reviews/AGENTS.md) |
-| Continuation, handoff and resume prompt shape | [`PROMPTS.md`](../PROMPTS.md) |
+| Continuation, handoff and resume prompt shape | skill `handoff` |
 | One rule one home, doc locality, reachability, tech debt, throwaway markdown | skill `docs-and-debt` |
 | Code comments — default to none | global agent instructions (mechanics: skill `comments`) |
 | Doc locality and `CLAUDE.md` siblings as enforced here | [`AGENTS.md`](../AGENTS.md) "Per-area guidance" |

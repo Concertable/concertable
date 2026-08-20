@@ -8,7 +8,7 @@ client IP for anonymous surfaces).
 
 Next steps live in **@plans/launch/RATE_LIMITING_PROGRESS.md → `## Next Steps`**. This plan holds the
 design and outstanding phases; the ledger holds operational truth. Read [`plans/AGENTS.md`](../AGENTS.md)
-and [`plans/agents/PLAN.md`](../agents/PLAN.md) before working from it.
+and the `plans` skill before working from it.
 
 ## Why opt-in, not a global fallback (the decision, with evidence)
 

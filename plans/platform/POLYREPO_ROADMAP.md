@@ -1,8 +1,8 @@
 # Polyrepo Roadmap — services as genuinely standalone repos
 
 > **Roadmap** for the polyrepo epic — the living progress tracker, not a plan (no `_PROGRESS.md`, never
-> deleted, lives until the epic ships). Each buildable item spins off its own feature plan; see
-> [`../agents/ROADMAP.md`](../agents/ROADMAP.md).
+> deleted, lives until the epic ships). Each buildable item spins off its own feature plan; the
+> roadmap tier is the `plans` skill.
 >
 > **North star:** [`api/AGENTS.md`](../../api/AGENTS.md) — *"The monorepo is a convenience only. Each
 > service is independently owned and will split into its own repo with its own developers. Design every
