@@ -13,9 +13,11 @@
 - Prototype branch: `Spike/net11-closed-dispatch`
 - Prototype commit: `785cd80403eb2f3db173428854730dec961e39d9`
 - Foundation implementation commit: `a7c836930652dc18653f9e8a5670019310fdef54`
+- Current-main merge commit: `beab16bd980c28c76021016ddd3101fa38b1ce91`
 - Downstream dependent: `plans/launch/DEAL_LIFECYCLE_OWNERSHIP_PROGRESS.md` remains suspended until
   this foundation is terminal on `main`.
-- Last reconciled: 2026-08-20 after the full review and clean incremental review of both fix commits
+- Last reconciled: 2026-08-20 after merging current `origin/main`, focused revalidation, and a clean
+  post-merge incremental review
 
 ## Current state
 
@@ -30,9 +32,9 @@ ask only that factory to select the concrete leaf.
 
 Deal Infrastructure now implements the factory with Microsoft's built-in keyed DI. The module-local
 validated builder declares mapper/updater registrations vertically by `DealType`, rejects duplicates and
-lifetime conflicts, and requires complete coverage for both families during composition. Only the Deal
-composition root and internal factory use keyed APIs. The updater facade validates DTO/entity `DealType`
-agreement before resolving and casting a concrete updater.
+lifetime conflicts, and requires complete coverage for both families during composition. Deal-owned keyed
+registration and resolution remain confined to Deal Infrastructure. The updater facade validates DTO/entity
+`DealType` agreement before resolving and casting a concrete updater.
 
 The production generator projects, analyzer references, attributes, anchors, and generated registration
 dependency have been removed from this branch. The complete prototype remains recoverable from
@@ -71,9 +73,8 @@ Those compile-time guarantees belong to the separate public library and later .N
 
 ## Next Steps
 
-Bring `Refactor/deal-dispatch-foundation` up to date with current `origin/main` in this worktree, resolve any
-conflicts, rerun the affected focused gates, and incrementally review the resulting branch-only changes. Run
-`/pr-preflight` only after that review is clean; do not push or create the PR before the preflight is green.
+Run `/pr-preflight` on the clean, reviewed `Refactor/deal-dispatch-foundation` branch. If it is green, use
+its reported next command as the next delivery action; do not push or create the PR before that result.
 
 ## Separate public-library follow-up
 
@@ -125,18 +126,18 @@ The public library is not implemented or published by the current PR.
 
 ## Verification
 
-- Deal unit tests: 57 passed, 0 failed at `bb8aa0840`, including JSON, catalog, registration-builder,
+- Deal unit tests: 57 passed, 0 failed after `beab16bd9`, including JSON, catalog, registration-builder,
   factory, lifetime, and mismatch coverage.
-- Concert unit tests: 229 passed, 0 failed.
+- Concert unit tests: 229 passed, 0 failed after `beab16bd9`.
 - `dotnet build api/Concertable.B2B/Concertable.B2B.slnx --no-restore --nologo`: succeeded with 0 errors
-  and 2 existing generated nullable-context warnings.
-- Architecture tests: 8 passed and 1 unrelated existing package-ownership test failed. The first
+  and 2 existing generated nullable-context warnings after `beab16bd9`.
+- Architecture tests after `beab16bd9`: 8 passed and 1 unrelated existing package-ownership test failed. The first
   mismatch is the DataAccess unit-test project retaining an unused direct `Reunion` package; a read-only
   diagnostic found the same stale-package class in several projects outside this change. No Deal
   project is mismatched.
 - No E2E suite was run locally.
-- Invariant scans passed: no production `IDeal`, old concrete C# DTO names, generator protocol,
-  keyed-DI use outside Deal Infrastructure, or strategy switches in Deal consumers.
+- Invariant scans passed after `beab16bd9`: no production `IDeal`, old concrete C# DTO names, generator
+  protocol, Deal-owned keyed-DI use outside Deal Infrastructure, or strategy switches in Deal consumers.
 - `git diff --check`: passed.
 - `python .agents/hooks/plan_graph.py --root
   C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-deal-dispatch-foundation`: 0 errors
@@ -150,6 +151,8 @@ The public library is not implemented or published by the current PR.
 - CV2 fixed in `bb8aa0840`: validated vertical strategy registration and composition-time family coverage
   were restored.
 - Incremental review `2e34ce37..bb8aa084`: clean; reviewed watermark is `bb8aa0840`.
+- Post-main-sync incremental review `bb8aa084..beab16bd` (28 commits): clean; native and security-sensitive
+  passes found no issues, and both review watermarks are `beab16bd9`.
 
 ## Decisions and discoveries
 
