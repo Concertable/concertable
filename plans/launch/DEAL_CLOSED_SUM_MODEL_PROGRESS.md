@@ -15,8 +15,7 @@
 - Foundation implementation commit: `a7c836930652dc18653f9e8a5670019310fdef54`
 - Downstream dependent: `plans/launch/DEAL_LIFECYCLE_OWNERSHIP_PROGRESS.md` remains suspended until
   this foundation is terminal on `main`.
-- Last reconciled: 2026-08-20 after replacing the prototype generator with the .NET 10 keyed-DI
-  foundation
+- Last reconciled: 2026-08-20 after the full review and clean incremental review of both fix commits
 
 ## Current state
 
@@ -29,10 +28,11 @@ Deal Application retains invariant `IDealStrategyFactory<TStrategy>` with `Creat
 `Create(DealEntity)`. `IDealMapper` and `IDealUpdater` inherit the module strategy marker; their facades
 ask only that factory to select the concrete leaf.
 
-Deal Infrastructure now implements the factory with Microsoft's built-in keyed DI. Each mapper and
-updater leaf is keyed by `DealType`; only the Deal composition root and internal factory use keyed APIs.
-The updater facade validates DTO/entity `DealType` agreement before resolving and casting a concrete
-updater.
+Deal Infrastructure now implements the factory with Microsoft's built-in keyed DI. The module-local
+validated builder declares mapper/updater registrations vertically by `DealType`, rejects duplicates and
+lifetime conflicts, and requires complete coverage for both families during composition. Only the Deal
+composition root and internal factory use keyed APIs. The updater facade validates DTO/entity `DealType`
+agreement before resolving and casting a concrete updater.
 
 The production generator projects, analyzer references, attributes, anchors, and generated registration
 dependency have been removed from this branch. The complete prototype remains recoverable from
@@ -52,6 +52,7 @@ The .NET 10 foundation provides:
 - an invariant module-owned factory seam;
 - one selection mechanism shared by mapper/updater facades;
 - selection from either `DealDto` or `DealEntity`;
+- composition-time validation of every mapper/updater family and `DealType` pair;
 - keyed-provider isolation inside Deal Infrastructure;
 - typed DTO/entity mismatch failure;
 - tests aligning the known DTO/entity/enum/JSON/keyed-registration/frontend-token catalogs;
@@ -70,9 +71,9 @@ Those compile-time guarantees belong to the separate public library and later .N
 
 ## Next Steps
 
-Run `/review` on `Refactor/deal-dispatch-foundation` against its merge base, resolve every high-confidence
-finding, and rerun only the affected focused gates. Do not push or create the PR until that review is
-clean.
+Bring `Refactor/deal-dispatch-foundation` up to date with current `origin/main` in this worktree, resolve any
+conflicts, rerun the affected focused gates, and incrementally review the resulting branch-only changes. Run
+`/pr-preflight` only after that review is clean; do not push or create the PR before the preflight is green.
 
 ## Separate public-library follow-up
 
@@ -110,6 +111,8 @@ The public library is not implemented or published by the current PR.
 - Preserved invariant `IDealStrategyFactory<TStrategy>` and both selector overloads.
 - Replaced generator dispatch with Microsoft keyed singleton registrations and one internal scoped
   factory in Deal Infrastructure.
+- Restored the module-local validated strategy builder and vertical mapper/updater registration in
+  `bb8aa0840`, with complete coverage required during composition.
 - Retained mapper/updater leaves and typed mismatch validation.
 - Added registration completeness coverage for the Cartesian product of current `DealType` values and
   both strategy families.
@@ -122,8 +125,8 @@ The public library is not implemented or published by the current PR.
 
 ## Verification
 
-- Deal unit tests: 50 passed, 0 failed, including JSON, catalog, registration, factory, lifetime, and
-  mismatch coverage.
+- Deal unit tests: 57 passed, 0 failed at `bb8aa0840`, including JSON, catalog, registration-builder,
+  factory, lifetime, and mismatch coverage.
 - Concert unit tests: 229 passed, 0 failed.
 - `dotnet build api/Concertable.B2B/Concertable.B2B.slnx --no-restore --nologo`: succeeded with 0 errors
   and 2 existing generated nullable-context warnings.
@@ -138,6 +141,15 @@ The public library is not implemented or published by the current PR.
 - `python .agents/hooks/plan_graph.py --root
   C:\Users\TommySeery\source\repos\Concertable\.worktrees\Refactor-deal-dispatch-foundation`: 0 errors
   and 0 warnings.
+
+## Reviews
+
+- Full review `133b018d..2e34ce37`: two findings in
+  `reviews/Refactor-deal-dispatch-foundation.md`.
+- CV1 fixed in `91e1aa756`: the keyed factory again uses an explicit readonly dependency field.
+- CV2 fixed in `bb8aa0840`: validated vertical strategy registration and composition-time family coverage
+  were restored.
+- Incremental review `2e34ce37..bb8aa084`: clean; reviewed watermark is `bb8aa0840`.
 
 ## Decisions and discoveries
 
