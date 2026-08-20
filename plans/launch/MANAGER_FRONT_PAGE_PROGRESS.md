@@ -12,8 +12,7 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
 
 ## Next Steps
 
-1. Require exact-head CI green for draft PR #563 after this checkpoint is transported; diagnose any deterministic failure.
-2. After CI is green, complete the remaining Phase A.8 authenticated seeded venue/artist UX review below.
+Paused: Tommy — review and explicitly authorize merging draft producer PR [#685](https://github.com/Concertable/concertable/pull/685); resume after its exact-merge `publish-fe-packages` run publishes and verifies a new `@concertable/web` alpha containing the review-route exports.
 
 ## Reviews
 
@@ -31,6 +30,22 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
   are closed; both review markers are stamped to code checkpoint `7529c57616b4632b6ce2fc4a78fc0cbc8872508e`.
 
 ## Current implementation
+
+- **The exact-head consumer failure is diagnosed and its publish-first producer is green.** Draft PR #563 exact-head
+  run [`32421218561`](https://github.com/Concertable/concertable/actions/runs/32421218561) deterministically failed the
+  standalone Venue, Artist, and Customer web carves because the branch consumes `ReviewRouteProvider`,
+  `b2bReviewBasePath`, and `customerReviewBasePath` from monorepo source while the published `@concertable/web`
+  package restored by those carves does not contain them. The prerequisite camel-case producer merge's frontend
+  publication run [`32418971755`](https://github.com/Concertable/concertable/actions/runs/32418971755) had also failed:
+  `verify-fe-package.mjs` still constructed the now-invalid `"Rock"` genre, so no replacement frontend packages were
+  published and consumer PR #600 remains feed-blocked too. Draft producer PR
+  [#685](https://github.com/Concertable/concertable/pull/685), exact head
+  `3851e2f02cf040af81c8f06751b7040210942b4b`, repairs the package verifier and adds the surface-configurable review
+  route provider with customer-compatible defaults and focused route tests. Its exact-head run
+  [`32424120414`](https://github.com/Concertable/concertable/actions/runs/32424120414) completed successfully, including
+  every frontend package/standalone carve and the backend matrix. After explicit review and merge authorization, its
+  exact merge must publish and verify the new alpha; then #563 can merge current main, rebuild all four SPAs, push an
+  exact head, require CI green, and complete the remaining Phase A.8 authenticated seeded venue/artist UX review.
 
 - **Current-main reconciliation and review-route normalization are locally green and committed in this commit.** The
   full 657-commit drift through `origin/main` commit `087a65cf` is reconciled without restoring removed public
