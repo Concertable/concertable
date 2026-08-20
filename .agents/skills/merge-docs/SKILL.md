@@ -22,7 +22,9 @@ Plain `git`/`gh` only (personal repo — never the work PR/ADO skills).
 
 ## Steps
 
-0. **Docs review first.** A docs/meta PR still gates on a review — just `/docs-review`, not
+0. **Docs review first,** unless the branch is a **pure close-out** — net diff deletions only, per
+   `docs-review`'s "When NOT to use"; then there is nothing to review and you merge straight through.
+   Otherwise a docs/meta PR still gates on a review — just `/docs-review`, not
    `/review` (it has no runtime to code-review). Confirm a clean docs-review of this branch before
    the admin-merge below; if none exists or findings are open, stop and hand off a `/docs-review`
    prompt naming this worktree and branch. The `--admin` bypass skips the queue, so this is the only

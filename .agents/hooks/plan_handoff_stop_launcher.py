@@ -43,15 +43,31 @@ def implementation_is_current(root):
     )
 
 
+def block_once(data, reason):
+    if data.get("stop_hook_active") or data.get("stopHookActive"):
+        return {
+            "systemMessage": (
+                "Plan handoff hook repair was already attempted in this turn; allowing the turn "
+                "to end to prevent a recursive Stop-hook loop."
+            )
+        }
+    return {"decision": "block", "reason": reason}
+
+
 def main():
     root = Path(__file__).resolve().parents[2]
     if not implementation_is_current(root):
-        result = {
-            "systemMessage": (
-                "Plan handoff hook bundle differs from origin/main (advisory); its reminders may not "
-                "match trunk. Sync this branch with current main before relying on them."
-            )
-        }
+        try:
+            data = json.loads(sys.stdin.buffer.read().decode("utf-8-sig"))
+        except Exception:
+            data = {}
+        result = block_once(
+            data,
+            (
+                "HANDOFF GATE ERROR: this checkout's plan handoff hook bundle differs from "
+                "origin/main. Sync this branch with current main before relying on plan handoffs."
+            ),
+        )
         json.dump(result, sys.stdout)
         sys.stdout.write("\n")
         return

@@ -2,12 +2,11 @@ import { apiClient } from "@concertable/shared/lib/apiClient";
 import type { Pagination } from "@concertable/shared/types/common";
 import type { PaginationParams } from "@concertable/shared/hooks/usePagination";
 import type { Review, ReviewSummary, ReviewEntityType } from "../types";
-
-const basePath = (type: ReviewEntityType, id: number) =>
-  `/${type}s/${id}/reviews`;
+import type { ReviewBasePath } from "../ReviewRouteProvider";
 
 const reviewApi = {
   getReviews: async (
+    basePath: ReviewBasePath,
     type: ReviewEntityType,
     id: number,
     params: PaginationParams,
@@ -16,7 +15,11 @@ const reviewApi = {
     return data;
   },
 
-  getReviewSummary: async (type: ReviewEntityType, id: number): Promise<ReviewSummary> => {
+  getReviewSummary: async (
+    basePath: ReviewBasePath,
+    type: ReviewEntityType,
+    id: number,
+  ): Promise<ReviewSummary> => {
     const { data } = await apiClient.get<ReviewSummary>(`${basePath(type, id)}/summary`);
     return data;
   },

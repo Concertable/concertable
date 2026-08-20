@@ -51,51 +51,105 @@ public string LongName { get; init; } = string.Empty;
 
 Captured constructor parameters — anything read by a method or property — must be explicit `private readonly` fields assigned via `this.field = param`, never primary-constructor captures. This covers services, repositories, handlers, and validators, and any base class that uses its dependencies (e.g. the `TenantScopedDbContext` / `AdminDbContext` bases, whose `provider` and `defaultSchema` are read in `OnModelCreating`).
 
-A constructor that only forwards its parameters to `base(...)` and captures nothing may use a primary constructor — there is no field to make `readonly`, so the shorthand is the clearest spelling. The pure base-forwarder leaf DB contexts (e.g. `PublicVenueDbContext`, `AdminVenueDbContext`) are the standing example.
+A constructor that only forwards its parameters to `base(...)` and captures nothing may use a primary constructor — there is no field to make `readonly`, so the shorthand is the clearest spelling. The pure base-forwarder leaf DB contexts (e.g. `VenueDbContext`, `VenueAdminDbContext`) are the standing example.
 
-## Repositories — inherit the module `Repository<T>` base
+## Repositories — depend on the matching context capability
 
-Every module owns a `Repositories/Repository.cs` that binds the shared
-`Concertable.DataAccess.Infrastructure` bases to the module's `DbContext` and key type
-(`int` + `IIdEntity` for most modules, `Guid` + `IGuidEntity` for User/Tenant):
+The shared `Concertable.DataAccess.Infrastructure` implementations mirror the context and repository
+capability hierarchies:
+
+```text
+IReadDbContext  -> IReadRepository<TEntity, TKey>  -> ReadRepository<TEntity, TKey>
+IWriteDbContext -> IWriteRepository<TEntity>      -> WriteRepository<TEntity>
+IDbContext      -> IRepository<TEntity, TKey>      -> Repository<TEntity, TKey>
+```
+
+The shared bases deliberately have no concrete `TContext` parameter. Their protected `Context`
+properties expose only the matching `IReadDbContext`, `IWriteDbContext`, or `IDbContext` capability.
+
+A module may keep a local `Repository<TEntity>` alias to bind its normal concrete context and key type
+(`int` + `IIdEntity` for most modules, `Guid` + `IGuidEntity` for User/Tenant). Its constructor accepts
+the concrete module context and forwards it to the context-free shared base:
 
 ```csharp
-internal abstract class WriteRepository<TEntity>(TenantDbContext context)
-    : WriteRepository<TEntity, TenantDbContext>(context)
-    where TEntity : class;
-
 internal abstract class Repository<TEntity>(TenantDbContext context)
-    : Repository<TEntity, TenantDbContext, Guid>(context)
+    : Repository<TEntity, Guid>(context)
     where TEntity : class, IGuidEntity;
 ```
 
-A concrete repository inherits that base and implements the module's `IXRepository`,
-which extends `IRepository<XEntity, TKey>` (or `IRepository<XEntity>` for `int` keys) and
-needs **no members of its own** unless the module has extra queries.
-`GetAll`/`GetById`/`Exists`/`Add`/`Update`/`Remove`/`SaveChanges` all come from the base —
-**never re-declare them** (not even a `CancellationToken` overload of `GetById`). Add only
-the *extra* finders the base can't express (e.g. `GetByUserIdAsync`), querying through the
-inherited `context` field.
+Keep a module-local `ReadRepository<TEntity>` or `WriteRepository<TEntity>` alias only when concrete
+repositories actually derive from it. A standalone read or write contract uses the matching shared
+base; a combined CRUD contract uses `Repository<TEntity, TKey>`.
+
+A concrete repository implements the module's `IXRepository`, which extends the matching shared
+interface, and needs **no members of its own** unless the module has extra queries.
+`GetAll`/`GetById`/`Exists`/`Add`/`Update`/`Remove`/`SaveChanges` come from the combined base —
+**never re-declare them** (not even a `CancellationToken` overload of `GetById`). Add only the extra
+finders the base cannot express.
+
+Use the inherited `Context` capability for generic entity queries. If a specialized repository needs
+typed `DbSet` properties or EF-specific APIs such as `Entry`, `Database`, `ChangeTracker`, or bulk
+operations, retain the concrete context in a private readonly `context` field on that repository:
 
 ```csharp
-internal interface ITenantRepository : IRepository<TenantEntity, Guid>;
-
 internal sealed class TenantRepository : Repository<TenantEntity>, ITenantRepository
 {
-    public TenantRepository(TenantDbContext context) : base(context) { }
-    // extra finders only (e.g. GetByUserIdAsync) — query via the inherited `context`
+    private readonly TenantDbContext context;
+
+    public TenantRepository(TenantDbContext context) : base(context)
+    {
+        this.context = context;
+    }
+
+    public Task<TenantMembershipEntity?> FindMembershipAsync(Guid tenantId, Guid userId, CancellationToken ct = default) =>
+        context.Memberships.FirstOrDefaultAsync(m => m.TenantId == tenantId && m.UserId == userId, ct);
 }
 ```
 
-The injected `DbContext` field is always named `context` (never `dbContext`) — see the
-field-naming rule above. Don't hand-roll a bare `IXRepository` that re-implements CRUD;
-inherit the base.
+The injected concrete context field is always named `context` (never `dbContext`) — see the
+field-naming rule above. Do not retain it when the protected capability is sufficient, and do not
+hand-roll a bare `IXRepository` that re-implements matching generic CRUD.
 
 **Name a repository method for the query, a service method for the intent.** A repository
 finder says literally what it fetches and by what key — `GetByTenantIdAsync`,
 `GetUnreadCountByTenantIdAsync` — so the data access is obvious at the call site. The
 use-case name (`GetInboxAsync`, `GetInboxSummaryAsync`) belongs on the *service* that calls
 it. Don't push an intent name (`GetInbox`) down onto the repository.
+
+**Adding one entity with nothing else staged — use `InsertAsync`, not `AddAsync` + `SaveChangesAsync`.**
+`IWriteRepository<TEntity>` gives both: `AddAsync` stages only (for a unit of work that stages more than
+one write before a single shared save), `InsertAsync` stages *and* saves in one call. When the add is the
+only write happening in that method, `InsertAsync` is the one-line form — writing `repository.Add(x);
+await repository.SaveChangesAsync(ct);` as the last two statements of a method is the same operation
+spelled with an extra line and an extra round-trip to reason about.
+
+```csharp
+// CORRECT — the add is the only staged write in this method
+await repository.InsertAsync(invitation, ct);
+
+// WRONG — two calls for what InsertAsync already does in one
+repository.Add(invitation);
+await repository.SaveChangesAsync(ct);
+```
+
+Reach for the two-call `AddAsync` + `SaveChangesAsync` form only when something *else* is staged first
+(another `Add`/`Update`/`Remove` in the same method) and the save is meant to commit all of it together.
+
+**Active tenant is the default scope of B2B application services.** `ITenantContext` is the single
+authority for the tenant selected by `X-Tenant-Id`. A controller does not accept or resolve a tenant
+ID, and a repository does not independently interpret the active request. Name the ordinary scoped
+use case for its domain intent (`GetDetailsAsync`, `CreateAsync`, `UpdateAsync`); name an alternative
+capability explicitly (`GetDetailsByIdAsync`). Repository queries state the actual key
+(`GetDetailsByTenantIdAsync(Guid tenantId, CancellationToken ct = default)`). Do not add profile-ID
+resolver methods merely to turn the active tenant into an Artist or Venue ID. Tenant-owned queries
+use `TenantId` directly, backed by a module-local projection when they cross a module boundary.
+
+`CurrentUser`, `ForUser`, `Me`, and `Self` are reserved for data belonging to the authenticated human.
+Do not add `ActiveTenant` to every ordinary B2B service method merely to restate its default scope.
+
+**Every asynchronous application-service and repository method that can reach I/O accepts a
+`CancellationToken ct = default`.** Pass it through every awaited framework or dependency call that
+supports cancellation. Cancellation propagates as cancellation; it is never converted to a Result.
 
 ## Repository query outputs — `Projection` only names an intermediate query shape
 
@@ -296,8 +350,8 @@ service/client DTOs that adapters (gRPC clients, service interfaces) pass around
   with a `using` alias in the few files that need both
   (`using Transfer = Concertable.Payment.Contracts.Transfer;`).
 - **Proto message names stay `*Response`.** `EscrowResponse`/`PaymentResponse` in a `.proto` are the
-  native gRPC RPC vocabulary — wire-only, generated, and never surfaced as the C# DTO. The client- and
-  server-side `XMappers` map proto `*Response` ⇄ the suffix-free C# DTO.
+  native gRPC RPC vocabulary — wire-only, generated, and never surfaced as the C# payload. The client- and
+  server-side `XMappers` map proto `*Response` ⇄ the C# payload.
 
 ```csharp
 // CORRECT — unambiguous service/client payloads need no suffix
@@ -318,30 +372,70 @@ Type-to-type mapping (e.g. gRPC proto ⇄ domain/contract types) lives in a stat
 ```csharp
 internal static class EscrowMappers
 {
-    public static EscrowDeposit ToEscrowDeposit(this Proto.EscrowResponse r) => ...;
-    public static EscrowStatus ToEscrowStatus(this Proto.EscrowStatusType s) => ...;
+    extension(Proto.EscrowResponse response)
+    {
+        public EscrowDeposit ToEscrowDeposit() => ...;
+    }
+
+    extension(Proto.EscrowStatusType status)
+    {
+        public EscrowStatus ToEscrowStatus() => ...;
+    }
 }
 ```
 
-## Paginated results — project with `IPagination<T>.Select`, never `new Pagination<T>(...)`
+## Versioned integration events — version the wire identity, not the C# type
+
+Keep the CLR event name free of transport-version suffixes. Put the version in the stable
+`MessageType` wire identity: `PaymentOperationStateChanged` with
+`concertable.payment.payment-operation-state-changed.v1`, never `PaymentOperationStateChangedV1`.
+Application code talks in domain event names; serializers and brokers own wire-version selection.
+
+## Pure operations — extensions for receiver-owned behaviour, named evaluators for policy
+
+A pure operation belongs on an extension when one receiver clearly owns the transformation or question.
+Use the shortest unambiguous domain name: `value.ToDto()`, `observation.ToNormalized()`,
+`state.IsTerminal()`. Keep a receiver's related extensions together in one `XExtensions` class or the
+domain mapping family's `XMappers` class; do not scatter them across unrelated helpers.
+
+A decision over two or more peer inputs does not belong to either receiver. Keep the policy visible at
+the call site behind an operation-specific static type such as `TransitionEvaluator.Evaluate(current,
+observation)`. Do not use `Specification` for an evaluator; in this codebase that name is reserved for
+query/specification-pattern semantics.
+
+Represent a closed, deterministic key-to-value table once with `FrozenDictionary` or `FrozenSet` when
+the entries are data rather than behaviour. This includes enum translations, provider-status
+normalization, fixed error definitions, and legal transition edges. Use guarded code when the outcome
+depends on contextual validation or calculation. Do not create parallel frozen maps for the same key
+family; the validated keyed-strategy registry rule in `CODE_PATTERNS.md` remains authoritative there.
+
+## Paginated results — project with `IPagination<T>.Map`, never `new Pagination<T>(...)`
 
 Mapping a page from entity to DTO, or DTO to Response, is one call:
 
 ```csharp
-return (await repository.GetQueueAsync(pageParams)).Select(r => r.ToDto());
+return (await reportRepository.GetQueueAsync(pageParams)).Map(r => r.ToDto());
 ```
 
-`PaginationExtensions.Select` carries `TotalCount`/`PageNumber`/`PageSize` across for you. Hand-writing
-`new Pagination<TDestination>(source.Data.Select(...).ToList(), source.TotalCount, source.PageNumber,
-source.PageSize)` restates four arguments that have exactly one correct value, and it is how the repo
-ended up with eight-plus copies of the same constructor call.
+`Map` lives in `Concertable.Contracts` beside `IPagination<T>`, so every layer can reach it — including
+`*.Api`, which deliberately does not reference the data-access package. It carries
+`TotalCount`/`PageNumber`/`PageSize` across for you; hand-writing `new Pagination<TDestination>(...)`
+restates four arguments that have exactly one correct value.
 
-One live caveat: the extension sits in `Concertable.DataAccess.Infrastructure`, which `*.Api` projects
-deliberately do not reference — so Api response mappers genuinely cannot reach it and hand-construct
-today. Every layer that *can* reach it (Application, Infrastructure) uses it. Moving `Select` to
-`Concertable.Contracts`, next to `IPagination<T>` itself — and renaming it `Map`, since it preserves a
-carrier rather than behaving like LINQ's lazy `Select` — is logged in
-[`../TECH_DEBT.md`](../TECH_DEBT.md).
+One case is **not** `Map`: **only the item type widens**. `IPagination<out T>` is covariant, so an
+`IPagination<ArtistHeader>` already *is* an `IPagination<IHeader>`. Return it; don't re-wrap and don't
+`Map(x => x)`.
+
+**An `async` mapper is not an exception.** A mapper is normally `async` because it *prefetches a
+dependency in one batch*, not because projecting a row is asynchronous. Await the batch first, then
+`Map` synchronously over the result — as `OpportunityMapper.ToDtosAsync` does with its deal lookup:
+
+```csharp
+var deals = await DealsByIdAsync(opportunities.Data);
+return opportunities.Map(o => ToDto(o, deals));
+```
+
+Awaiting *inside* the selector would be the real defect anyway — that is a per-row round trip (N+1).
 
 ## `#region` — sparingly, to group same-shaped members in an aggregating file
 
@@ -368,12 +462,17 @@ No inline `logger.LogInformation/LogWarning/LogError(...)`. Each project owns on
 internal static partial void PublishedVenueEvents(this ILogger logger, int count);
 ```
 
-## Extension members — C# 14 `extension()` blocks, not `this`
+## Extension members — always use C# 14 `extension()` blocks
 
-New extension members go in `extension(Receiver)` blocks — one `XExtensions` static class per receiver type
-(`EnvironmentsExtensions` extends `Environments`; `HostEnvironmentExtensions` extends `IHostEnvironment`). This is
-the modern unified form (it also does properties/indexers/static members and groups by receiver). Never add a new
-legacy `public static … (this X x)` method; the existing ones await a migration sweep ([`../TECH_DEBT.md`](../TECH_DEBT.md)).
+All ordinary extension members use `extension(Receiver)` blocks. Keep receiver-owned members in one
+`XExtensions` class; an `XMappers` mapping family may contain one block for each related receiver.
+When an existing extension container is edited, migrate every ordinary member in that container so a
+class never mixes `extension()` blocks with legacy `this` parameters. Never add a new
+`public static … (this X x)` method.
+
+The only exception is a declaration contract that genuinely requires the receiver in the method
+signature, such as source-generated `[LoggerMessage]` partial methods. Existing untouched legacy
+containers remain the migration sweep tracked in [`../TECH_DEBT.md`](../TECH_DEBT.md).
 
 ## Geometry — use IGeometryProvider
 

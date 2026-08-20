@@ -172,9 +172,8 @@ Tests share a single Testcontainers SQL Server per `ApiFixture`; Respawn resets 
 To inspect mid-test:
 
 ```csharp
-using var scope = fixture.Services.CreateScope();
-var db = scope.ServiceProvider.GetRequiredService<XDbContext>();
-var rows = await db.Set<XEntity>().ToListAsync();
+var scoped = fixture.Services.GetRequiredService<IScoped<XDbContext>>();
+var rows = await scoped.RunAsync(db => db.Set<XEntity>().ToListAsync());
 ```
 
 ### Cross-context FK gotcha

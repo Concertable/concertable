@@ -3,7 +3,7 @@
 - Plan: `plans/launch/MANAGER_FRONT_PAGE_PLAN.md`
 - Roadmap: `plans/launch/LAUNCH_ROADMAP.md`
 - Roadmap item: `launch/manager-front-page`
-- Worktree: `C:\Users\TommySeery\source\repos\Concertable\.worktrees\Feature-launch-dashboard-b2b-consumer`
+- Worktree: `C:\Users\tommy\source\repos\Concertable\.worktrees\Feature-launch-dashboard-b2b-consumer`
 - Branch: `Feature/launch_dashboard-b2b-consumer`
 - PR: [#563](https://github.com/Concertable/concertable/pull/563) — draft implementation PR
 
@@ -12,8 +12,9 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
 
 ## Next Steps
 
-1. Require replacement exact-head CI green for PR #563 work head `7529c57616b4632b6ce2fc4a78fc0cbc8872508e`; diagnose any deterministic failure.
-2. After CI is green, complete the remaining Phase A.8 authenticated seeded venue/artist UX review below.
+1. Finish this commit for the locally green reconciliation through main commit `1647ec6f8`, then fetch and reconcile the newer `origin/main` tip before pushing the reviewed work head to draft PR #563 through the compound plan push protocol.
+2. Require exact-head CI green and diagnose any deterministic failure.
+3. After CI is green, complete the remaining Phase A.8 authenticated seeded venue/artist UX review below.
 
 ## Reviews
 
@@ -31,6 +32,21 @@ where they conflict. Read alongside [MANAGER_FRONT_PAGE_PLAN.md](MANAGER_FRONT_P
   are closed; both review markers are stamped to code checkpoint `7529c57616b4632b6ce2fc4a78fc0cbc8872508e`.
 
 ## Current implementation
+
+- **Current-main reconciliation and review-route normalization are locally green and committed in this commit.** The
+  404-commit drift through main commit `1647ec6f8` is reconciled without restoring removed public repositories,
+  obsolete module lookups, or stale package ownership.
+  B2B Artist and Venue now expose singular nested review resources at `artist/{id}/review` and
+  `venue/{id}/review`; each parent controller owns its resource `RouteSegment`, each review controller owns
+  `RouteSegment = "review"`, and an architecture test enforces controller-name/route-leaf consistency. Current-tenant
+  recent reviews use `organization/{artist|venue}/review/recent`. The shared web review UI receives a route builder at
+  app composition: B2B uses the singular contract while Customer explicitly retains its existing plural contract.
+  The venue opportunity-count projection remains behaviourally safe but is logged in
+  `api/Concertable.B2B/TECH_DEBT.md` for migration from `IOpportunityRepository` to
+  `IOpportunityReadRepository`/`IConcertReadDbContext`; no general `Query` escape hatch was restored. Generated Artist
+  and Venue migrations were re-scaffolded from the merged model. B2B Web builds with 0 warnings/errors; architecture
+  passes 10/10; Artist, Venue, and Concert units pass 18/18, 20/20, and 233/233. Frontend package tests/builds pass,
+  and Customer, Venue, Artist, and Business production builds all pass.
 
 - **Exact-head CI follow-up is locally verified.** PR run
   [`31953565101`](https://github.com/Concertable/concertable/actions/runs/31953565101) passed every frontend carve,

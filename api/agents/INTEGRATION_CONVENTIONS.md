@@ -81,6 +81,23 @@ seeders) stays in the service's own fixture.
 Assertions use Shouldly (`ShouldBe`) — on a failing status the message carries URL + status + response
 body.
 
+## Scoped services and event handlers
+
+An integration test is a scope root. Resolve `Concertable.Kernel.DependencyInjection.IScoped<T>` from
+`fixture.Services` and use `RunAsync` whenever the test needs one scoped `DbContext`, repository,
+service, or handler collection. Do not hand-write `CreateScope()` / `CreateAsyncScope()` for those
+cases. A manual scope is reserved for a test that must coordinate multiple distinct services in the
+same scoped lifetime and has no narrower scope-root aggregate to resolve.
+
+Dispatch integration events through
+`IScoped<IEnumerable<IIntegrationEventHandler<TEvent>>>` and invoke every registered handler inside
+that one scope, matching the in-process message pipeline. Use the Kernel abstraction for new code; the
+copy in `Concertable.DataAccess` is a temporary compatibility surface for unmigrated consumers.
+
+Do not use `IScoped<T>` from code that already runs inside an existing request or fixture-provided
+scope. Resolve the dependency from that ambient scope instead so its `DbContext` and transaction stay
+shared.
+
 ## Grouping a large test class
 
 **Naming.** Test files are `<Resource><Qualifier>ApiTests` — the resource/controller first

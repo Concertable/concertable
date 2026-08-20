@@ -1,16 +1,16 @@
 # Prompts
 
-- **Plan-managed handoff convention:** if a `_PROGRESS.md` ledger with non-terminal
-  `## Next Steps` is owned by the current or explicitly targeted worktree, hand off by ending with the
+- **Hard final-response gate for plan-managed work:** if a `_PROGRESS.md` ledger with non-terminal
+  `## Next Steps` is owned by the current or explicitly targeted worktree, the response is incomplete
+  until it ends with the
   explained continuation pointer below. Merely naming a dependency ledger
   for reading, or editing its copy from another plan's worktree to register a return handoff, does not
   claim it. A ledger whose declared worktree already exists elsewhere is left to that owner unless
   the turn explicitly targets that worktree. “Implementation complete” is not “nothing remains” while review,
   PR, merge, publication, dependency, or platform-sync gates remain. A summary or paraphrased next
   action is not the handoff. The structured blocked and paused states below are exceptions that emit no
-  pointer. The Stop hook surfaces the pointer as a non-blocking reminder — it no longer rejects a
-  response or requires verbatim wording, so hand off in your own words when you actually stop, not on
-  every interim turn.
+  pointer. The Stop hook rejects the first incomplete final response and supplies the exact handoff for
+  one bounded repair attempt; it never recursively blocks the repair response.
 
 - Start with the worktree opener — `cd <absolute-worktree-path>`, or `/worktree create <Type>/<Name>`
   when the worktree doesn't exist yet — and keep it inside the paste-ready prompt.
@@ -30,8 +30,8 @@
   Read @plans/<PLAN>_PLAN.md and @plans/<this-worktree-ledger>_PROGRESS.md and do what its `## Next Steps` says.
   ```
 
-  Nothing follows the pointer. When you hand off, the final-response shape is a result summary, the
-  `Why:` line, then the two-line pointer as the final content.
+  Nothing follows the pointer. The final-response shape is a result summary, the `Why:` line, then the
+  two-line pointer as the final content.
 
   The `<opener>` is `/worktree create <Type>/<epic>_<name>` when the plan's worktree doesn't exist yet — a
   freshly-written plan, after a clear with no live worktree, or normal continuation after a prior PR's
@@ -58,8 +58,9 @@
     `Paused: <who> — <action>` (lighter than the four-line schema), give the exact action and observable
     `Resume when` condition, with no prompt.
 
-  Never re-poll an unchanged blocker into repeated "still blocked" commits. The Stop hook stays silent
-  for a blocked or paused plan; it no longer rejects the pointer or the report.
+  Never re-poll an unchanged blocker into repeated "still blocked" commits. The Stop hook requires a
+  blocked plan's four lines verbatim, rejects its continuation pointer, and stays silent for a paused
+  plan.
 - Use the handoff instead of asking whether to continue.
 - Before an implementation PR merges, route through `/review` or `/big-review`; use
   `/incremental-review` after later code commits.

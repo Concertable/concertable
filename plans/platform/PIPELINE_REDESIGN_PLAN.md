@@ -154,10 +154,12 @@ on) is correct and worth keeping. The pain is the gate wired to it. Redesign:
    only in the queue" asymmetry, and monitors read a check that reflects reality.
 3. **The queue re-runs the same aggregate against live main** — its actual purpose (catch semantic
    conflicts between concurrently-green PRs). Same `ci-complete`, same determinism.
-4. **Native GitHub auto-merge, no poller.** With one always-reporting required check, GitHub's built-in
-   auto-merge admits and merges without external nudging. `auto-merge.yml`'s toggle/dequeue heuristics
-   (#3, #4 self-heal, N1) are **deleted**. Ejection (#4) becomes unambiguous: a failed `ci-complete` is
-   a plain failed required check, not a state indistinguishable from a stall.
+4. **Native GitHub auto-merge after explicit merge authorization, no poller.** With one
+   always-reporting required check, the repository merge workflow enables GitHub's built-in
+   auto-merge only after an explicit merge instruction. PR readiness remains review state and never
+   authorizes delivery. `auto-merge.yml`'s toggle/dequeue heuristics and the later repo-wide
+   `enable-auto-merge.yml` ready-event trigger are **deleted**. Ejection (#4) becomes unambiguous: a
+   failed `ci-complete` is a plain failed required check, not a state indistinguishable from a stall.
 
 `grouping_strategy: ALLGREEN`, `max_entries_to_build: 5` stay. `check_response_timeout` can drop from
 60 min once no required check can be `skipped`.
@@ -227,8 +229,10 @@ stack, but *on the PR* with the quarantine lane — PR-authoritative immediately
   (`current_user_can_bypass: always`); the `Auto-merge` poller workflow `disabled_manually`.
 - ✅ **Phase 1** — `ci-complete` shipped to `main` (PR #226, merged `42e08574` via break-glass), and
   the ruleset repointed to require **only** `ci-complete`. The multi-check + skippable surface that
-  stalled admission/dispatch is gone. `auto-merge.yml` poller replaced by the minimal
-  `enable-auto-merge.yml`. State applied imperatively (API), not yet captured in Terraform.
+  stalled admission/dispatch is gone. The `auto-merge.yml` poller was retired; its later
+  `enable-auto-merge.yml` replacement was also removed after PR #561 proved that coupling
+  `ready_for_review` to queue admission bypassed explicit merge authorization. State applied
+  imperatively (API), not yet captured in Terraform.
 - ⬜ **Phase 0 (Terraform)** — remaining: author the `github` provider config that **imports the
   now-live ruleset** (bypass + `ci-complete`-only) so protection is code-managed. Doing it now imports
   the *final* desired state directly.
@@ -254,8 +258,8 @@ stack, but *on the PR* with the quarantine lane — PR-authoritative immediately
   admit). That is handled by *detection*, not automation (see Phase 3). **Deferred (not blocking):** wiring
   `E2E_BASELINE.md` as the CI quarantine source of truth (D3) — the tag is the mechanism for now.
   **Un-quarantine** the scenario once it's green N consecutive runs.
-- 🔶 **Phase 3** — de-padding in progress. The `auto-merge.yml` poller was already retired in Phase 1
-  (replaced by the minimal `enable-auto-merge.yml`); the dead `ci-gate` job is **deleted** (superseded by
+- 🔶 **Phase 3** — de-padding in progress. The `auto-merge.yml` poller and the later repo-wide
+  `enable-auto-merge.yml` ready-event trigger are retired; the dead `ci-gate` job is **deleted** (superseded by
   `ci-complete`, which the ruleset alone requires) and `mirror.yml` is **off the hot path** (manual-only;
   N7). The merge-confirm monitor (`AGENTS.md`) is now a **3-outcome classifier** — merged / CI-failed
   (name the check, STOP, never retry) / green-but-unadmitted (the re-eval glitch, surfaced as its own state
@@ -313,8 +317,9 @@ Both change live repo state, so they wait on an explicit go-ahead — but they'r
 - **Reversible:** re-add the merge_group-only gating; un-quarantine.
 
 ### Phase 3 — Retire the band-aid pile. Fixes #4, N1.
-- **What:** Delete `auto-merge.yml`'s poller/toggle/dequeue heuristics (replace with a minimal
-  "enable native auto-merge on ready" step, or fold into the ruleset). Delete the CLAUDE.md
+- **What:** Delete `auto-merge.yml`'s poller/toggle/dequeue heuristics and every repo-wide
+  ready-event auto-merge trigger. Explicit `/merge` authorization enables native auto-merge; only
+  narrowly scoped generated-PR workflows such as platform-sync may enable it themselves. Delete the CLAUDE.md
   monitor/until-loop guidance that compensates for the old stalls. Move `mirror.yml` off the hot path
   (N4, N7).
 - **Why:** the payoff — only safe once Phases 1–2 prove native auto-merge + PR-authoritative gating are
